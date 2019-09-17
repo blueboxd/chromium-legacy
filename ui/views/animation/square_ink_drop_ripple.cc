@@ -110,24 +110,6 @@ enum InkDropSubAnimations {
 // The scale factor used to burst the ACTION_TRIGGERED bubble as it fades out.
 constexpr float kQuickActionBurstScale = 1.3f;
 
-// Duration constants for InkDropStateSubAnimations. See the
-// InkDropStateSubAnimations enum documentation for more info.
-int kAnimationDurationInMs[] = {
-    150,  // HIDDEN_FADE_OUT
-    200,  // HIDDEN_TRANSFORM
-    0,    // ACTION_PENDING_FADE_IN
-    160,  // ACTION_PENDING_TRANSFORM
-    150,  // ACTION_TRIGGERED_FADE_OUT
-    160,  // ACTION_TRIGGERED_TRANSFORM
-    200,  // ALTERNATE_ACTION_PENDING
-    150,  // ALTERNATE_ACTION_TRIGGERED_FADE_OUT
-    200,  // ALTERNATE_ACTION_TRIGGERED_TRANSFORM
-    200,  // ACTIVATED_CIRCLE_TRANSFORM
-    160,  // ACTIVATED_RECT_TRANSFORM
-    150,  // DEACTIVATED_FADE_OUT
-    200,  // DEACTIVATED_TRANSFORM
-};
-
 // Returns the InkDropState sub animation duration for the given |state|.
 base::TimeDelta GetAnimationDuration(InkDropSubAnimations state) {
   if (!PlatformStyle::kUseRipples ||
@@ -135,7 +117,24 @@ base::TimeDelta GetAnimationDuration(InkDropSubAnimations state) {
     return base::TimeDelta();
   }
 
-  return base::TimeDelta::FromMilliseconds(kAnimationDurationInMs[state]);
+  // Duration constants for InkDropStateSubAnimations. See the
+  // InkDropStateSubAnimations enum documentation for more info.
+  constexpr base::TimeDelta kAnimationDuration[] = {
+      base::TimeDelta::FromMilliseconds(150),  // HIDDEN_FADE_OUT
+      base::TimeDelta::FromMilliseconds(200),  // HIDDEN_TRANSFORM
+      base::TimeDelta(),                       // ACTION_PENDING_FADE_IN
+      base::TimeDelta::FromMilliseconds(160),  // ACTION_PENDING_TRANSFORM
+      base::TimeDelta::FromMilliseconds(150),  // ACTION_TRIGGERED_FADE_OUT
+      base::TimeDelta::FromMilliseconds(160),  // ACTION_TRIGGERED_TRANSFORM
+      base::TimeDelta::FromMilliseconds(200),  // ALTERNATE_ACTION_PENDING
+      base::TimeDelta::FromMilliseconds(150),  // ALTERNAT..._TRIGGERED_FADE_OUT
+      base::TimeDelta::FromMilliseconds(200),  // ALTERNA..._TRIGGERED_TRANSFORM
+      base::TimeDelta::FromMilliseconds(200),  // ACTIVATED_CIRCLE_TRANSFORM
+      base::TimeDelta::FromMilliseconds(160),  // ACTIVATED_RECT_TRANSFORM
+      base::TimeDelta::FromMilliseconds(150),  // DEACTIVATED_FADE_OUT
+      base::TimeDelta::FromMilliseconds(200),  // DEACTIVATED_TRANSFORM
+  };
+  return kAnimationDuration[state];
 }
 
 }  // namespace

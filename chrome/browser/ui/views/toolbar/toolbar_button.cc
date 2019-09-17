@@ -141,7 +141,7 @@ void ToolbarButton::UpdateHighlightBackgroundAndInsets() {
 void ToolbarButton::SetLabelSideSpacing(int spacing) {
   gfx::Insets label_insets;
   // Add the spacing only if text is non-empty.
-  if (GetText().empty()) {
+  if (!GetText().empty()) {
     // Add spacing to the opposing side.
     if (GetHorizontalAlignment() == gfx::ALIGN_RIGHT) {
       label_insets = gfx::Insets(0, spacing, 0, 0);
@@ -218,13 +218,12 @@ bool ToolbarButton::OnMousePressed(const ui::MouseEvent& event) {
     y_position_on_lbuttondown_ = event.y();
 
     // Schedule a task that will show the menu.
-    const int kMenuTimerDelay = 500;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&ToolbarButton::ShowDropDownMenu,
                        show_menu_factory_.GetWeakPtr(),
                        ui::GetMenuSourceTypeForEvent(event)),
-        base::TimeDelta::FromMilliseconds(kMenuTimerDelay));
+        base::TimeDelta::FromMilliseconds(500));
   }
 
   return LabelButton::OnMousePressed(event);

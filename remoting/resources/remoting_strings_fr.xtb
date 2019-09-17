@@ -183,11 +183,11 @@
 <translation id="5419185025274123272">Impossible de réinitialiser l'application. Vous pouvez toujours envoyer un rapport de bug.</translation>
 <translation id="5419418238395129586">Dernière connexion : <ph name="DATE" /></translation>
 <translation id="544077782045763683">L'hôte a été arrêté.</translation>
-<translation id="5463789431147491241">Pour utiliser <ph name="PRODUCT_NAME" /> sur ce Mac, procédez comme suit :
+<translation id="5463789431147491241">Pour utiliser <ph name="PRODUCT_NAME" /> avec ce Mac, procédez comme suit :
 
 Sélectionnez "<ph name="BUTTON_NAME" />" ci-dessous. Dans le volet des préférences de sécurité et de confidentialité, cochez la case à côté de "<ph name="SERVICE_SCRIPT_NAME" />".
 
-Si le script "<ph name="SERVICE_SCRIPT_NAME" />" est déjà coché, décochez-le, puis cochez-le à nouveau.</translation>
+Si "<ph name="SERVICE_SCRIPT_NAME" />" est déjà coché, décochez-le, puis cochez-le à nouveau.</translation>
 <translation id="5510035215749041527">Se déconnecter maintenant</translation>
 <translation id="5593560073513909978">Le service est momentanément indisponible. Veuillez réessayer ultérieurement.</translation>
 <translation id="5601503069213153581">Code d'accès</translation>
@@ -311,7 +311,7 @@ Si le script "<ph name="SERVICE_SCRIPT_NAME" />" est déjà coché, décochez-le
 <translation id="8513093439376855948">Hôte de messagerie native pour la gestion d'hôte de Remoting</translation>
 <translation id="8525306231823319788">Plein écran</translation>
 <translation id="8548209692293300397">Vous vous êtes auparavant connecté avec le nom d'utilisateur "<ph name="USER_NAME" />" (<ph name="USER_EMAIL" />). Pour accéder à vos ordinateurs avec ce compte, <ph name="LINK_BEGIN" />connectez-vous à Google Chrome<ph name="LINK_END" /> avec ce compte, puis réinstallez le Bureau à distance Chrome.</translation>
-<translation id="858006550102277544">Commentaire</translation>
+<translation id="858006550102277544">Description</translation>
 <translation id="8642984861538780905">Correcte</translation>
 <translation id="8712909229180978490">Je ne vois pas mes fichiers enregistrés en ligne sur Google Drive.</translation>
 <translation id="8743328882720071828">Souhaitez-vous autoriser <ph name="CLIENT_USERNAME" /> à voir et contrôler votre ordinateur ?</translation>

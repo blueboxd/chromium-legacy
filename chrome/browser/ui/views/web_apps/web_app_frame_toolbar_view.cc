@@ -172,9 +172,9 @@ WebAppFrameToolbarView::ContentSettingsContainer::ContentSettingsContainer(
         std::move(model), delegate,
         views::CustomFrameView::GetWindowTitleFontList());
     // Padding around content setting icons.
-    constexpr int kContentSettingIconInteriorPadding = 4;
-    image_view->SetBorder(views::CreateEmptyBorder(
-        gfx::Insets(kContentSettingIconInteriorPadding)));
+    constexpr auto kContentSettingIconInteriorPadding = gfx::Insets(4);
+    image_view->SetBorder(
+        views::CreateEmptyBorder(kContentSettingIconInteriorPadding));
     image_view->disable_animation();
     views::SetHitTestComponent(image_view.get(), static_cast<int>(HTCLIENT));
     content_setting_views_.push_back(image_view.get());

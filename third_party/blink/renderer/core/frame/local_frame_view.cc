@@ -242,7 +242,8 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       layout_count_for_testing_(0),
       lifecycle_update_count_for_testing_(0),
       nested_layout_count_(0),
-      update_plugins_timer_(frame.GetTaskRunner(TaskType::kInternalDefault),
+      // We want plugin updates to happen in FIFO order with loading tasks.
+      update_plugins_timer_(frame.GetTaskRunner(TaskType::kInternalLoading),
                             this,
                             &LocalFrameView::UpdatePluginsTimerFired),
       first_layout_(true),

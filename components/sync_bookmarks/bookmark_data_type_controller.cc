@@ -7,8 +7,6 @@
 #include <utility>
 
 #include "base/metrics/histogram.h"
-#include "components/bookmarks/browser/bookmark_model.h"
-#include "components/history/core/browser/history_service.h"
 #include "components/sync/driver/model_associator.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_service.h"
@@ -29,9 +27,7 @@ BookmarkDataTypeController::BookmarkDataTypeController(
                                          sync_service),
       bookmark_model_(bookmark_model),
       history_service_(history_service),
-      component_factory_(component_factory),
-      history_service_observer_(this),
-      bookmark_model_observer_(this) {}
+      component_factory_(component_factory) {}
 
 BookmarkDataTypeController::~BookmarkDataTypeController() {}
 

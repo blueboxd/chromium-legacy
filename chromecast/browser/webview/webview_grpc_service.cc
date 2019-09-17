@@ -12,25 +12,12 @@
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/webview/webview_controller.h"
-#include "components/exo/surface.h"
-#include "components/exo/wm_helper.h"
 #include "third_party/grpc/src/include/grpcpp/grpcpp.h"
 #include "third_party/grpc/src/include/grpcpp/security/server_credentials.h"
 #include "third_party/grpc/src/include/grpcpp/server_builder.h"
 
 namespace chromecast {
 namespace {
-
-aura::Window* FindChildWindowWithID(aura::Window* window, int id) {
-  if (window->GetProperty(exo::kClientSurfaceIdKey) == id)
-    return window;
-  for (auto* w : window->children()) {
-    auto* ret = FindChildWindowWithID(w, id);
-    if (ret)
-      return ret;
-  }
-  return nullptr;
-}
 
 typedef base::RepeatingCallback<void(bool)> GrpcCallback;
 
@@ -40,11 +27,13 @@ typedef base::RepeatingCallback<void(bool)> GrpcCallback;
 // no other outstanding read or write operations.
 // Deletion bounces off the webview thread to synchronize with request
 // processing.
-class WebviewRpcInstance : public WebviewController::Client {
+class WebviewRpcInstance : public WebviewController::Client,
+                           public WebviewWindowManager::Observer {
  public:
   WebviewRpcInstance(webview::WebviewService::AsyncService* service,
                      grpc::ServerCompletionQueue* cq,
-                     scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+                     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                     WebviewWindowManager* window_manager);
   ~WebviewRpcInstance() override;
 
  private:
@@ -60,8 +49,12 @@ class WebviewRpcInstance : public WebviewController::Client {
   void ProcessRequestOnWebviewThread(
       std::unique_ptr<webview::WebviewRequest> request);
 
+  // WebviewController::Client:
   void EnqueueSend(std::unique_ptr<webview::WebviewResponse> response) override;
   void OnError(const std::string& error_message) override;
+
+  // WebviewWindowManager::Observer:
+  void OnNewWebviewContainerWindow(aura::Window* window, int app_id) override;
 
   GrpcCallback init_callback_;
   GrpcCallback read_callback_;
@@ -87,14 +80,24 @@ class WebviewRpcInstance : public WebviewController::Client {
   grpc::WriteOptions write_options_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
+  WebviewWindowManager* window_manager_;
+
+  int app_id_ = 0;
+  int window_id_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(WebviewRpcInstance);
 };
 
 WebviewRpcInstance::WebviewRpcInstance(
     webview::WebviewService::AsyncService* service,
     grpc::ServerCompletionQueue* cq,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : service_(service), cq_(cq), io_(&ctx_), task_runner_(task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    WebviewWindowManager* window_manager)
+    : service_(service),
+      cq_(cq),
+      io_(&ctx_),
+      task_runner_(task_runner),
+      window_manager_(window_manager) {
   write_options_.clear_buffer_hint();
   write_options_.clear_corked();
 
@@ -108,6 +111,7 @@ WebviewRpcInstance::WebviewRpcInstance(
                                           base::Unretained(this));
 
   service_->RequestCreateWebview(&ctx_, &io_, cq_, cq_, &init_callback_);
+  window_manager_->AddObserver(this);
 }
 
 WebviewRpcInstance::~WebviewRpcInstance() {
@@ -115,6 +119,8 @@ WebviewRpcInstance::~WebviewRpcInstance() {
   if (webview_) {
     webview_.release()->Destroy();
   }
+
+  window_manager_->RemoveObserver(this);
 }
 
 void WebviewRpcInstance::FinishComplete(bool ok) {
@@ -136,7 +142,7 @@ void WebviewRpcInstance::InitComplete(bool ok) {
 
   // Create a new instance to handle new requests.
   // Instances of this class delete themselves.
-  new WebviewRpcInstance(service_, cq_, task_runner_);
+  new WebviewRpcInstance(service_, cq_, task_runner_, window_manager_);
 }
 
 void WebviewRpcInstance::ReadComplete(bool ok) {
@@ -173,18 +179,12 @@ bool WebviewRpcInstance::Initialize() {
 }
 
 void WebviewRpcInstance::CreateWebview(int app_id, int window_id) {
-  auto* root_window =
-      exo::WMHelper::GetInstance()->GetRootWindowForNewWindows();
-  auto* surface_window = FindChildWindowWithID(root_window, app_id);
-  if (!surface_window) {
-    OnError("Failed to find valid surface to display webview on");
-    return;
-  }
+  app_id_ = app_id;
+  window_id_ = window_id;
 
   content::BrowserContext* browser_context =
       shell::CastBrowserProcess::GetInstance()->browser_context();
   webview_ = std::make_unique<WebviewController>(browser_context, this);
-  webview_->AttachTo(surface_window, window_id);
 
   // Begin reading again.
   io_.Read(request_.get(), &read_callback_);
@@ -230,31 +230,31 @@ void WebviewRpcInstance::OnError(const std::string& error_message) {
   send_pending_ = true;
 }
 
+void WebviewRpcInstance::OnNewWebviewContainerWindow(aura::Window* window,
+                                                     int app_id) {
+  if (app_id != app_id_)
+    return;
+
+  webview_->AttachTo(window, window_id_);
+  // The Webview is attached! No reason to keep on listening for window property
+  // updates.
+  window_manager_->RemoveObserver(this);
+}
+
 }  // namespace
 
 WebviewAsyncService::WebviewAsyncService(
-    scoped_refptr<base::SingleThreadTaskRunner> webview_task_runner)
-    : webview_task_runner_(std::move(webview_task_runner)) {}
-
-WebviewAsyncService::~WebviewAsyncService() {
-  if (server_) {
-    server_->Shutdown();
-    cq_->Shutdown();
-
-    base::PlatformThread::Join(rpc_thread_);
-  }
+    std::unique_ptr<webview::WebviewService::AsyncService> service,
+    std::unique_ptr<grpc::ServerCompletionQueue> cq,
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+    : ui_task_runner_(std::move(ui_task_runner)),
+      cq_(std::move(cq)),
+      service_(std::move(service)) {
+  base::PlatformThread::Create(0, this, &rpc_thread_);
 }
 
-void WebviewAsyncService::StartWithSocket(const base::FilePath& socket_path) {
-  DCHECK(!server_.get());
-
-  grpc::ServerBuilder builder;
-  builder.AddListeningPort("unix:" + socket_path.value(),
-                           grpc::InsecureServerCredentials());
-  builder.RegisterService(&service_);
-  cq_ = builder.AddCompletionQueue();
-  server_ = builder.BuildAndStart();
-  base::PlatformThread::Create(0, this, &rpc_thread_);
+WebviewAsyncService::~WebviewAsyncService() {
+  base::PlatformThread::Join(rpc_thread_);
 }
 
 void WebviewAsyncService::ThreadMain() {
@@ -263,7 +263,8 @@ void WebviewAsyncService::ThreadMain() {
   void* tag;
   bool ok;
   // This self-deletes.
-  new WebviewRpcInstance(&service_, cq_.get(), webview_task_runner_);
+  new WebviewRpcInstance(service_.get(), cq_.get(), ui_task_runner_,
+                         &window_manager_);
   // This thread is joined when this service is destroyed.
   while (cq_->Next(&tag, &ok)) {
     reinterpret_cast<GrpcCallback*>(tag)->Run(ok);

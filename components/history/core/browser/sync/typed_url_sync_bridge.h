@@ -24,7 +24,7 @@
 namespace history {
 
 class TypedURLSyncBridge : public syncer::ModelTypeSyncBridge,
-                           public history::HistoryBackendObserver {
+                           public HistoryBackendObserver {
  public:
   // |sync_metadata_store| is owned by |history_backend|, and must outlive
   // TypedURLSyncBridge.
@@ -49,7 +49,7 @@ class TypedURLSyncBridge : public syncer::ModelTypeSyncBridge,
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
   bool SupportsGetStorageKey() const override;
 
-  // history::HistoryBackendObserver:
+  // HistoryBackendObserver:
   void OnURLVisited(HistoryBackend* history_backend,
                     ui::PageTransition transition,
                     const URLRow& row,

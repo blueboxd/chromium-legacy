@@ -53,10 +53,10 @@ namespace {
 const char kTestSessionStoragePageText[] = "pony";
 
 // A text string that is included in |kTestPageHTML|.
-const char kTextInTestPageHTML[] = "test";
+const char kTextInTestPageHTML[] = "this_is_a_test_string";
 
 // A test page HTML containing |kTextInTestPageHTML|.
-const char kTestPageHTML[] = "<html><body>test</body><html>";
+const char kTestPageHTML[] = "<html><body>this_is_a_test_string</body><html>";
 
 // Returns a session storage with a single committed entry of a test HTML page.
 CRWSessionStorage* GetTestSessionStorage() {
@@ -669,16 +669,7 @@ TEST_P(WebStateTest, LoadChromeThenHTML) {
 }
 
 // Tests that reloading after loading HTML page will load the online page.
-// TODO(crbug.com/994468): This test sometimes shows an error page instead of
-// the online page when SlimNavigationManager is enabled.
-#if !TARGET_IPHONE_SIMULATOR
-#define MAYBE_LoadChromeThenWaitThenHTMLThenReload \
-  LoadChromeThenWaitThenHTMLThenReload
-#else
-#define MAYBE_LoadChromeThenWaitThenHTMLThenReload \
-  FLAKY_LoadChromeThenWaitThenHTMLThenReload
-#endif
-TEST_P(WebStateTest, MAYBE_LoadChromeThenWaitThenHTMLThenReload) {
+TEST_P(WebStateTest, LoadChromeThenWaitThenHTMLThenReload) {
   net::EmbeddedTestServer server;
   net::test_server::RegisterDefaultHandlers(&server);
   ASSERT_TRUE(server.Start());

@@ -41,7 +41,7 @@
 <translation id="1258753120186372309">Дудл Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Пошук і огляд</translation>
 <translation id="1264974993859112054">Спорт</translation>
-<translation id="1266864766717917324">Не вдалося надіслати контент (<ph name="CONTENT_TYPE" />)</translation>
+<translation id="1266864766717917324">Не вдалося надіслати: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Зупинити</translation>
 <translation id="1283039547216852943">Торкніться, щоб розгорнути</translation>
 <translation id="1285320974508926690">Ніколи не перекладати цей сайт</translation>
@@ -66,12 +66,13 @@
 <translation id="1407135791313364759">Відкрити все</translation>
 <translation id="1409426117486808224">Спрощений перегляд відкритих вкладок</translation>
 <translation id="1409879593029778104">Файл <ph name="FILE_NAME" /> не завантажено, оскільки він уже є.</translation>
+<translation id="1413136574162415971">Ми можемо перевірити, чи ваші паролі не було розкрито внаслідок порушення безпеки даних. Цю функцію буде ввімкнено, коли ви ввійдете в обліковий запис Google і ввімкнете синхронізацію.</translation>
 <translation id="1414981605391750300">З’єднання з Google. Це може зайняти хвилину…</translation>
 <translation id="1416550906796893042">Версія додатка</translation>
 <translation id="1430915738399379752">Друк</translation>
 <translation id="1445680696957526815">Компоненти Chrome несумісні одне з одним. Веб-переглядач може оновлюватися, спробуйте через декілька хвилин. Якщо проблема не зникне, видаліть Chrome і встановіть його знову.</translation>
 <translation id="1446450296470737166">Повний контроль пристроїв MIDI</translation>
-<translation id="1450753235335490080">Не вдалося надіслати контент (<ph name="CONTENT_TYPE" />)</translation>
+<translation id="1450753235335490080">Не вдалося надіслати: <ph name="CONTENT_TYPE" /></translation>
 <translation id="145097072038377568">Вимкнено в налаштуваннях Android</translation>
 <translation id="1477626028522505441">Файл <ph name="FILE_NAME" /> не завантажено через проблеми із сервером.</translation>
 <translation id="1501480321619201731">Видалити групу</translation>
@@ -160,6 +161,7 @@
 <translation id="2091887806945687916">Сигнал</translation>
 <translation id="2096012225669085171">Синхронізація та персоналізація на всіх пристроях</translation>
 <translation id="2100273922101894616">Автоматичний вхід</translation>
+<translation id="2100314319871056947">Спробуйте надіслати текст меншими частинами</translation>
 <translation id="2107397443965016585">Запитувати, перш ніж дозволяти сайтам відтворювати захищений вміст (рекомендовано)</translation>
 <translation id="2111511281910874386">Перейти на сторінку</translation>
 <translation id="2122601567107267586">Не вдалося відкрити додаток</translation>
@@ -253,6 +255,7 @@
 <translation id="2836148919159985482">Щоб вийти з повноекранного режиму, торкніться кнопки "Назад".</translation>
 <translation id="2842985007712546952">Батьківська папка</translation>
 <translation id="2858138569776157458">Популярні сайти</translation>
+<translation id="2860954141821109167">Переконайтеся, що на цьому пристрої ввімкнено додаток Телефон</translation>
 <translation id="2870560284913253234">Сайт</translation>
 <translation id="2874939134665556319">Попередня композиція</translation>
 <translation id="2876369937070532032">Надсилає в Google URL-адреси деяких відвіданих сторінок, коли ваша безпека під загрозою</translation>
@@ -277,6 +280,7 @@
 <translation id="2996291259634659425">Створити парольну фразу</translation>
 <translation id="2996809686854298943">Потрібна URL-адреса</translation>
 <translation id="300526633675317032">Буде видалено всі дані сайтів (<ph name="SIZE_IN_KB" />).</translation>
+<translation id="3016635187733453316">Перевірте, чи пристрій підключено до Інтернету</translation>
 <translation id="3029613699374795922">Завантажено <ph name="KBS" /> КБ</translation>
 <translation id="3029704984691124060">Парольні фрази не збігаються</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Довідка<ph name="END_LINK" /></translation>
@@ -841,6 +845,7 @@
 <translation id="723171743924126238">Вибрати зображення</translation>
 <translation id="7233236755231902816">Щоб переглядати сторінки вашою мовою, установіть останню версію Chrome</translation>
 <translation id="7243308994586599757">Опції можна знайти внизу екрана</translation>
+<translation id="7248069434667874558">Переконайтеся, що на пристрої <ph name="TARGET_DEVICE_NAME" /> увімкнено синхронізацію в Chrome</translation>
 <translation id="7250468141469952378">Вибрано <ph name="ITEM_COUNT" /></translation>
 <translation id="7274013316676448362">Заблокований сайт</translation>
 <translation id="7290209999329137901">Не можна перейменувати</translation>
@@ -955,6 +960,7 @@
 <translation id="8007176423574883786">Вимкнено для цього пристрою</translation>
 <translation id="8013372441983637696">Також видалити дані Chrome із цього пристрою</translation>
 <translation id="8015452622527143194">Відновити розміри всіх елементів за умовчанням</translation>
+<translation id="8015780634880457457">Ми можемо перевірити, чи не було ваші паролі розкрито внаслідок порушення безпеки даних</translation>
 <translation id="802154636333426148">Не вдалося завантажити</translation>
 <translation id="8026334261755873520">Очистити історію</translation>
 <translation id="8035133914807600019">Нова папка…</translation>
@@ -1017,6 +1023,7 @@
 <translation id="8445448999790540984">Не вдається експортувати паролі</translation>
 <translation id="8447861592752582886">Скасувати доступ до пристрою</translation>
 <translation id="8461694314515752532">Шифрувати синхронізовані дані за допомогою власної парольної фрази</translation>
+<translation id="8466613982764129868">Переконайтеся, що пристрій <ph name="TARGET_DEVICE_NAME" /> підключено до Інтернету</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Доступ у режимі офлайн</translation>
 <translation id="8489271220582375723">Відкрити сторінку "Історія"</translation>
@@ -1107,6 +1114,7 @@
 <translation id="9188680907066685419">Вийти з керованого облікового запису</translation>
 <translation id="9204836675896933765">Залишився 1 файл</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9209888181064652401">Неможливо здійснювати виклики</translation>
 <translation id="9219103736887031265">Зображення</translation>
 <translation id="926205370408745186">Видалити активність у Chrome із Цифрового добробуту</translation>
 <translation id="932327136139879170">Домашня сторінка</translation>

@@ -66,6 +66,7 @@
 <translation id="1407135791313364759">Otvori sve</translation>
 <translation id="1409426117486808224">Pojednostavljeni prikaz za otvorene kartice</translation>
 <translation id="1409879593029778104">Preuzimanje datoteke <ph name="FILE_NAME" /> nije uspjelo jer datoteka već postoji.</translation>
+<translation id="1413136574162415971">Google može provjeriti jesu li vaše zaporke bile obuhvaćene povredom podataka. To će se uključiti kada se prijavite na svoj Google račun i uključite sinkronizaciju.</translation>
 <translation id="1414981605391750300">Kontaktiranje Googlea. To bi moglo potrajati…</translation>
 <translation id="1416550906796893042">Verzija aplikacije</translation>
 <translation id="1430915738399379752">Ispis</translation>
@@ -160,6 +161,7 @@
 <translation id="2091887806945687916">Zvuk</translation>
 <translation id="2096012225669085171">Sinkronizacija i prilagodba na svim uređajima</translation>
 <translation id="2100273922101894616">Automatska prijava</translation>
+<translation id="2100314319871056947">Pokušajte podijeliti tekst na manje dijelove</translation>
 <translation id="2107397443965016585">Web-lokacije moraju tražiti dopuštenje za reprodukciju zaštićenog sadržaja (preporučeno)</translation>
 <translation id="2111511281910874386">Idi na stranicu</translation>
 <translation id="2122601567107267586">Otvaranje aplikacije nije uspjelo</translation>
@@ -253,6 +255,7 @@
 <translation id="2836148919159985482">Dodirnite gumb Natrag da biste zatvorili prikaz na cijelom zaslonu.</translation>
 <translation id="2842985007712546952">Nadređena mapa</translation>
 <translation id="2858138569776157458">Najpopularnije web-lokacije</translation>
+<translation id="2860954141821109167">Provjerite je li na uređaju omogućena aplikacija telefona</translation>
 <translation id="2870560284913253234">Web lokacija</translation>
 <translation id="2874939134665556319">Prethodna pjesma</translation>
 <translation id="2876369937070532032">Googleu šalje URL-ove nekih stranica koje posjećujete kada je ugrožena vaša sigurnost</translation>
@@ -277,6 +280,7 @@
 <translation id="2996291259634659425">Stvaranje zaporke</translation>
 <translation id="2996809686854298943">Potreban URL</translation>
 <translation id="300526633675317032">Time će se izbrisati cijela pohrana web-lokacije veličine <ph name="SIZE_IN_KB" />.</translation>
+<translation id="3016635187733453316">Provjerite je li uređaj povezan s internetom</translation>
 <translation id="3029613699374795922">Preuzeto <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">Zaporke se ne podudaraju</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Potražite pomoć<ph name="END_LINK" /></translation>
@@ -579,7 +583,7 @@ Prije nego što pokrenete VR, provjerite je li ta web-lokacija pouzdana.</transl
 <translation id="5324858694974489420">Postavke nadređenog računa</translation>
 <translation id="5327248766486351172">Naziv</translation>
 <translation id="5335288049665977812">Web-lokacije mogu pokretati JavaScript (preporučeno)</translation>
-<translation id="5342314432463739672">Zahtjevi za dopuštenje</translation>
+<translation id="5342314432463739672">Zahtjevi za dopuštenja</translation>
 <translation id="5357811892247919462">Primljena je kartica</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> otvorena kartica, dodirnite da biste prešli na drugu karticu}one{<ph name="OPEN_TABS_MANY" /> otvorena kartica, dodirnite da biste prešli na drugu karticu}few{<ph name="OPEN_TABS_MANY" /> otvorene kartice, dodirnite da biste prešli na drugu karticu}other{<ph name="OPEN_TABS_MANY" /> otvorenih kartica, dodirnite da biste prešli na drugu karticu}}</translation>
 <translation id="5391532827096253100">Veza s web-lokacijom nije sigurna. Informacije o web-lokaciji</translation>
@@ -841,6 +845,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="723171743924126238">Odaberite slike</translation>
 <translation id="7233236755231902816">Za prikaz weba na vašem jeziku preuzmite najnoviju verziju Chromea</translation>
 <translation id="7243308994586599757">Opcije dostupne pri dnu zaslona</translation>
+<translation id="7248069434667874558">Provjerite je li na uređaju <ph name="TARGET_DEVICE_NAME" /> uključena sinkronizacija u Chromeu</translation>
 <translation id="7250468141469952378">Odabrano: <ph name="ITEM_COUNT" /></translation>
 <translation id="7274013316676448362">Blokirana web-lokacija</translation>
 <translation id="7290209999329137901">Promjena naziva nije dostupna</translation>
@@ -880,7 +885,7 @@ Web-lokacija NE dobiva pristup fotoaparatu. Slike fotoaparata možete vidjeti sa
 <translation id="7493994139787901920"><ph name="VERSION" /> (ažurirano <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">spremljeni podaci</translation>
 <translation id="7498271377022651285">Pričekajte…</translation>
-<translation id="7510943789645525906">Upozorava ako je zaporka koju upotrebljavate bila obuhvaćena povredom podataka</translation>
+<translation id="7510943789645525906">Upozorava ako je zaporka koju upotrebljavate ugrožena zbog povrede podataka</translation>
 <translation id="7514365320538308">Preuzmi</translation>
 <translation id="751961395872307827">Povezivanje s web-lokacijom nije uspjelo</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -955,6 +960,7 @@ Web-lokacija NE dobiva pristup fotoaparatu. Slike fotoaparata možete vidjeti sa
 <translation id="8007176423574883786">Isključeno za ovaj uređaj</translation>
 <translation id="8013372441983637696">Izbriši podatke iz Chromea i s ovog uređaja</translation>
 <translation id="8015452622527143194">Vraćanje svega na stranici na zadanu veličinu</translation>
+<translation id="8015780634880457457">Google može provjeriti jesu li vaše zaporke bile obuhvaćene povredom podataka</translation>
 <translation id="802154636333426148">Preuzimanje nije uspjelo</translation>
 <translation id="8026334261755873520">Brisanje podataka o pregledavanju</translation>
 <translation id="8035133914807600019">Nova mapa…</translation>
@@ -1017,6 +1023,7 @@ Web-lokacija NE dobiva pristup fotoaparatu. Slike fotoaparata možete vidjeti sa
 <translation id="8445448999790540984">Izvoz zaporki nije moguć</translation>
 <translation id="8447861592752582886">Opozovi odobrenje uređaja</translation>
 <translation id="8461694314515752532">Kriptiraj sinkronizirane podatke vlastitom šifrom za sinkronizaciju</translation>
+<translation id="8466613982764129868">Provjerite je li <ph name="TARGET_DEVICE_NAME" /> povezan s internetom</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Dostupno izvanmrežno</translation>
 <translation id="8489271220582375723">Prikaz stranice povijesti</translation>
@@ -1107,6 +1114,7 @@ Web-lokacija NE dobiva pristup fotoaparatu. Slike fotoaparata možete vidjeti sa
 <translation id="9188680907066685419">Odjava s upravljanog računa</translation>
 <translation id="9204836675896933765">Preostala je 1 datoteka</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9209888181064652401">Upućivanje poziva nije moguće</translation>
 <translation id="9219103736887031265">Slike</translation>
 <translation id="926205370408745186">Uklanjanje vaše aktivnosti u Chromeu iz Digitalne ravnoteže</translation>
 <translation id="932327136139879170">Početna stranica</translation>

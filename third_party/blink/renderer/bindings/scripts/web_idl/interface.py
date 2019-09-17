@@ -174,20 +174,31 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
         return self._attributes
 
     @property
-    def operation_groups(self):
-        """
-        Returns groups of operations, including [Unforgeable] operations in
-        ancestors.  Operation groups are sorted by their identifier.
-
-        All operations are grouped by their identifier in OperationGroup's,
-        even when there exists a single operation with that identifier.
-        """
-        assert False, "Not implemented yet."
-
-    @property
     def constants(self):
         """Returns constants."""
         return self._constants
+
+    @property
+    def operations(self):
+        """
+        Returns all operations, including special operations without an
+        identifier, as well as [Unforgeable] operations in ancestors.
+        """
+        return self._operations
+
+    @property
+    def operation_groups(self):
+        """
+        Returns groups of overloaded operations, including [Unforgeable]
+        operations in ancestors.
+
+        All operations that have an identifier are grouped by identifier, thus
+        it's possible that there is a single operation in a certain operation
+        group.  If an operation doesn't have an identifier, i.e. if it's a
+        merely special operation, then the operation doesn't appear in any
+        operation group.
+        """
+        return self._operation_groups
 
     @property
     def constructors(self):

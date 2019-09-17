@@ -131,7 +131,7 @@ base::Value OncValueForManualProxyList(
 
   base::Value exclude_domains(base::Value::Type::LIST);
   for (const auto& rule : bypass_rules.rules())
-    exclude_domains.GetList().emplace_back(rule->ToString());
+    exclude_domains.Append(rule->ToString());
   result.SetKey(::onc::proxy::kExcludeDomains,
                 CreateEffectiveValue(source, std::move(exclude_domains)));
 

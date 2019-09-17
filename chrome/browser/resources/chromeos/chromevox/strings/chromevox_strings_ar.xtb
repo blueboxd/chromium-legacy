@@ -233,6 +233,7 @@
 <translation id="27527859628328957">الانتقال إلى العنصر التالي القابل للتركيز</translation>
 <translation id="2770781857296573485">الدخول إلى استكشاف المجموعات</translation>
 <translation id="2777845298774924149">تم الإنهاء</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{أكثر من عنصر واحد (#)}zero{أكثر من # عنصر}two{أكثر من عنصرَين (#)}few{أكثر من # عناصر}many{أكثر من # عنصرًا}other{أكثر من # عنصر}}</translation>
 <translation id="2784959586797362050">‏يمكنك دائمًا إرسال تعليقات إلينا مباشرةً بالضغط على "Search+a" ثم "i". نتطلع بشدة لمعرفة رأيك.</translation>
 <translation id="2800204403141299078">ليس هناك المزيد من العناصر المختلفة.</translation>
 <translation id="2800780099804980316">ليس هناك عنوان سابق من المستوى الأول.</translation>
@@ -715,6 +716,7 @@
 <translation id="5956928062748260866">مربع حوار</translation>
 <translation id="5963413905009737549">قسم</translation>
 <translation id="5968607524793740041">عرض قائمة السياقات</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{تتضمن عنصرًا واحدًا (#)}zero{لا تتضمن أيَّ عناصر (#)}two{تتضمن عنصرَين (#)}few{تتضمن # عناصر}many{تتضمن # عنصرًا}other{تتضمن # عنصر}}</translation>
 <translation id="5981446804259161541">سماوي فاتح</translation>
 <translation id="5983179082906765664">زيادة دقة التنقل</translation>
 <translation id="5992285135956208197">مستند رسومي</translation>

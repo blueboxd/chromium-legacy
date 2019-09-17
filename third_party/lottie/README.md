@@ -39,6 +39,15 @@ worker.postMessage({
 })
 ```
 
+### 3. Pausing the animation
+```js
+worker.postMessage({
+  control: {
+    play: false
+  }
+})
+```
+
 ## Message field description
 ```python
 data: {
@@ -51,6 +60,9 @@ data: {
   params: {
     loop: 'Set "true" for a looping animation',
     autoplay: 'Set "true" for the animation to autoplay on load',
+  },
+  control: {
+    play: 'Set "true" to play a paused animation or "false" to pause a playing animation',
   }
 },
 ```
@@ -71,7 +83,13 @@ its parent thread:
     name: 'playing'
 }
 ```
-3. **'resized'**
+3. **'paused'**
+```javascript
+{
+    name: 'paused'
+}
+```
+4. **'resized'**
 ```javascript
 {
     name: 'resized',

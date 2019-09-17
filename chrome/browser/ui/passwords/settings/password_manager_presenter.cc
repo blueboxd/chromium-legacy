@@ -228,16 +228,6 @@ const autofill::PasswordForm* PasswordManagerPresenter::GetPasswordException(
 }
 
 void PasswordManagerPresenter::ChangeSavedPassword(
-    size_t index,
-    const base::string16& new_username,
-    const base::Optional<base::string16>& new_password) {
-  DCHECK_LT(index, password_map_.size());
-
-  ChangeSavedPasswords(std::next(password_map_.begin(), index)->second,
-                       new_username, new_password);
-}
-
-void PasswordManagerPresenter::ChangeSavedPassword(
     const std::string& sort_key,
     const base::string16& new_username,
     const base::Optional<base::string16>& new_password) {

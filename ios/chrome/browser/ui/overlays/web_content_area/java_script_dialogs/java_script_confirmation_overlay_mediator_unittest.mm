@@ -33,11 +33,10 @@ class JavaScriptConfirmationOverlayMediatorTest
   }
 
   // Creates a mediator and sets it for testing.
-  void CreateMediator() {
+  void CreateMediator(bool is_main_frame = true) {
     request_ = OverlayRequest::CreateWithConfig<
         JavaScriptConfirmationOverlayRequestConfig>(
-        JavaScriptDialogSource(&web_state_, url_, /*is_main_frame=*/true),
-        message_);
+        JavaScriptDialogSource(&web_state_, url_, is_main_frame), message_);
     SetMediator([[JavaScriptConfirmationOverlayMediator alloc]
         initWithRequest:request_.get()]);
   }
@@ -56,9 +55,25 @@ class JavaScriptConfirmationOverlayMediatorTest
   std::unique_ptr<OverlayRequest> request_;
 };
 
-// Tests that the consumer values are set correctly for confirmations.
-TEST_F(JavaScriptConfirmationOverlayMediatorTest, ConfirmationSetup) {
+// Tests that the consumer values are set correctly for confirmations from the
+// main frame.
+TEST_F(JavaScriptConfirmationOverlayMediatorTest, ConfirmationSetupMainFrame) {
   CreateMediator();
+
+  // Verify the consumer values.
+  EXPECT_NSEQ(base::SysUTF8ToNSString(message()), consumer().title);
+  EXPECT_EQ(0U, consumer().textFieldConfigurations.count);
+  ASSERT_EQ(2U, consumer().actions.count);
+  EXPECT_EQ(UIAlertActionStyleDefault, consumer().actions[0].style);
+  EXPECT_NSEQ(l10n_util::GetNSString(IDS_OK), consumer().actions[0].title);
+  EXPECT_EQ(UIAlertActionStyleCancel, consumer().actions[1].style);
+  EXPECT_NSEQ(l10n_util::GetNSString(IDS_CANCEL), consumer().actions[1].title);
+}
+
+// Tests that the consumer values are set correctly for confirmations from
+// iframes.
+TEST_F(JavaScriptConfirmationOverlayMediatorTest, ConfirmationSetupIFrame) {
+  CreateMediator(/*is_main_frame=*/false);
 
   // Verify the consumer values.
   EXPECT_NSEQ(base::SysUTF8ToNSString(message()), consumer().message);
@@ -78,7 +93,7 @@ TEST_F(JavaScriptConfirmationOverlayMediatorTest,
   CreateMediator();
 
   // Verify the consumer values.
-  EXPECT_NSEQ(base::SysUTF8ToNSString(message()), consumer().message);
+  EXPECT_NSEQ(base::SysUTF8ToNSString(message()), consumer().title);
   EXPECT_EQ(0U, consumer().textFieldConfigurations.count);
   ASSERT_EQ(3U, consumer().actions.count);
   EXPECT_EQ(UIAlertActionStyleDefault, consumer().actions[0].style);

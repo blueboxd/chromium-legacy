@@ -950,11 +950,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "enable-autofill-import-dynamic-forms",
-    "owners": [ "hozhng@google.com", "jiahuiguo@google.com" ],
-    "expiry_milestone": 79
-  },
-  {
     "name": "enable-autofill-local-card-migration-uses-strike-system-v2",
     "owners": [ "annelim@google.com", "jsaul@google.com" , "jiahuiguo@google.com"],
     "expiry_milestone": 84
@@ -2957,6 +2952,14 @@
     "name": "show-autofill-type-predictions",
     "owners": [ "ftirelo", "mathp" ],
     // This is used by autofill devs to debug on Android.
+    "expiry_milestone": -1
+  },
+  {
+    "name": "show-bluetooth-debug-log-toggle",
+    "owners": [ "hansberry", "khorimoto", "yshavit" ],
+    // This is a debug tool used to help in the field with Bluetooth issues
+    // caused by specific hardware, noisy environments, etc. Thus, it should not
+    // expire.
     "expiry_milestone": -1
   },
   {

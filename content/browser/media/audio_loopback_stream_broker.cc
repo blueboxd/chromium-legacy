@@ -25,7 +25,8 @@ AudioLoopbackStreamBroker::AudioLoopbackStreamBroker(
     uint32_t shared_memory_count,
     bool mute_source,
     AudioStreamBroker::DeleterCallback deleter,
-    mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client)
+    mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+        renderer_factory_client)
     : AudioStreamBroker(render_process_id, render_frame_id),
       source_(source),
       params_(params),
@@ -43,7 +44,7 @@ AudioLoopbackStreamBroker::AudioLoopbackStreamBroker(
   }
 
   // Unretained is safe because |this| owns |renderer_factory_client_|.
-  renderer_factory_client_.set_connection_error_handler(base::BindOnce(
+  renderer_factory_client_.set_disconnect_handler(base::BindOnce(
       &AudioLoopbackStreamBroker::Cleanup, base::Unretained(this)));
 
   // Notify the source that we are capturing from it.

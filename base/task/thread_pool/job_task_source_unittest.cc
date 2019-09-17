@@ -108,6 +108,8 @@ TEST_F(ThreadPoolJobTaskSourceTest, Clear) {
   EXPECT_EQ(registered_task_source_d.WillRunTask(),
             TaskSource::RunStatus::kAllowedNotSaturated);
 
+  EXPECT_FALSE(task_source->ShouldYield());
+
   {
     EXPECT_EQ(1U, task_source->GetRemainingConcurrency());
     auto task = registered_task_source_c.Clear();
@@ -116,6 +118,7 @@ TEST_F(ThreadPoolJobTaskSourceTest, Clear) {
     EXPECT_EQ(0U, task_source->GetRemainingConcurrency());
   }
   // The task source shouldn't allow any further tasks after Clear.
+  EXPECT_TRUE(task_source->ShouldYield());
   EXPECT_EQ(RegisteredTaskSource::CreateForTesting(task_source).WillRunTask(),
             TaskSource::RunStatus::kDisallowed);
 
@@ -131,15 +134,53 @@ TEST_F(ThreadPoolJobTaskSourceTest, Clear) {
   std::move(task_a->task).Run();
   registered_task_source_a.DidProcessTask();
 
-  // A valid outstanding RunStatus can also take & run a task.
+  // A valid outstanding RunStatus can also take and run a task.
   {
     auto task = registered_task_source_b.TakeTask();
     std::move(task->task).Run();
     registered_task_source_b.DidProcessTask();
   }
-  // Sanity check.
+}
+
+// Verifies that a job task source doesn't return an "allowed" RunStatus after
+// Cancel() is called.
+TEST_F(ThreadPoolJobTaskSourceTest, Cancel) {
+  auto job_task = base::MakeRefCounted<test::MockJobTask>(
+      DoNothing(), /* num_tasks_to_run */ 3);
+  scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
+      FROM_HERE, {ThreadPool(), TaskPriority::BEST_EFFORT},
+      &pooled_task_runner_delegate_);
+
+  auto registered_task_source_a =
+      RegisteredTaskSource::CreateForTesting(task_source);
+  EXPECT_EQ(registered_task_source_a.WillRunTask(),
+            TaskSource::RunStatus::kAllowedNotSaturated);
+  auto task_a = registered_task_source_a.TakeTask();
+
+  auto registered_task_source_b =
+      RegisteredTaskSource::CreateForTesting(task_source);
+  EXPECT_EQ(registered_task_source_b.WillRunTask(),
+            TaskSource::RunStatus::kAllowedNotSaturated);
+
+  EXPECT_FALSE(task_source->ShouldYield());
+
+  task_source->Cancel();
+  EXPECT_TRUE(task_source->ShouldYield());
+
+  // The task source shouldn't allow any further tasks after Cancel.
   EXPECT_EQ(RegisteredTaskSource::CreateForTesting(task_source).WillRunTask(),
             TaskSource::RunStatus::kDisallowed);
+
+  // A task that was already acquired can still run.
+  std::move(task_a->task).Run();
+  registered_task_source_a.DidProcessTask();
+
+  // A RegisteredTaskSource that's ready can also take and run a task.
+  {
+    auto task = registered_task_source_b.TakeTask();
+    std::move(task->task).Run();
+    registered_task_source_b.DidProcessTask();
+  }
 }
 
 // Verifies that multiple tasks can run in parallel up to |max_concurrency|.

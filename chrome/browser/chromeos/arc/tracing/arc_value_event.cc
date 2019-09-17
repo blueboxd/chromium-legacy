@@ -18,11 +18,10 @@ base::ListValue SerializeValueEvents(const ValueEvents& value_events) {
   base::ListValue list;
   for (const auto& event : value_events) {
     base::ListValue event_value;
-    event_value.GetList().push_back(base::Value(static_cast<int>(event.type)));
-    event_value.GetList().push_back(
-        base::Value(static_cast<double>(event.timestamp)));
-    event_value.GetList().push_back(base::Value(event.value));
-    list.GetList().emplace_back(std::move(event_value));
+    event_value.Append(base::Value(static_cast<int>(event.type)));
+    event_value.Append(base::Value(static_cast<double>(event.timestamp)));
+    event_value.Append(base::Value(event.value));
+    list.Append(std::move(event_value));
   }
   return list;
 }

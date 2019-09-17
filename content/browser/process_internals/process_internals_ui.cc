@@ -5,9 +5,13 @@
 #include "content/browser/process_internals/process_internals_ui.h"
 
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "content/browser/process_internals/process_internals.mojom.h"
+#include "content/browser/process_internals/process_internals_handler_impl.h"
 #include "content/grit/content_resources.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -16,12 +20,8 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/url_constants.h"
-
-#include "content/browser/process_internals/process_internals.mojom.h"
-#include "content/browser/process_internals/process_internals_handler_impl.h"
-
-#include "content/public/common/bindings_policy.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace content {
 
@@ -51,11 +51,11 @@ ProcessInternalsUI::ProcessInternalsUI(WebUI* web_ui)
 ProcessInternalsUI::~ProcessInternalsUI() = default;
 
 void ProcessInternalsUI::BindProcessInternalsHandler(
-    ::mojom::ProcessInternalsHandlerRequest request,
+    mojo::PendingReceiver<::mojom::ProcessInternalsHandler> receiver,
     RenderFrameHost* render_frame_host) {
   ui_handler_ = std::make_unique<ProcessInternalsHandlerImpl>(
       render_frame_host->GetSiteInstance()->GetBrowserContext(),
-      std::move(request));
+      std::move(receiver));
 }
 
 void ProcessInternalsUI::OnInterfaceRequestFromFrame(

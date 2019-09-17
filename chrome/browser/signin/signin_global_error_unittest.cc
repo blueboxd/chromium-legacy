@@ -64,7 +64,8 @@ class SigninGlobalErrorTest : public testing::Test {
     ASSERT_TRUE(profile_manager_.profile_attributes_storage()->
         GetProfileAttributesWithPath(profile()->GetPath(), &entry));
 
-    entry->SetAuthInfo(account_info.gaia, base::UTF8ToUTF16(kTestEmail));
+    entry->SetAuthInfo(account_info.gaia, base::UTF8ToUTF16(kTestEmail),
+                       /*is_consented_primary_account=*/true);
 
     global_error_ = SigninGlobalErrorFactory::GetForProfile(profile());
     error_controller_ = SigninErrorControllerFactory::GetForProfile(profile());

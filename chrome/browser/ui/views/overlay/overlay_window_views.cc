@@ -51,57 +51,52 @@ std::unique_ptr<content::OverlayWindow> content::OverlayWindow::Create(
 }
 
 namespace {
-constexpr gfx::Size kMinWindowSize = gfx::Size(260, 146);
+constexpr gfx::Size kMinWindowSize(260, 146);
 
-const int kOverlayBorderThickness = 10;
+constexpr int kOverlayBorderThickness = 10;
 
 // The opacity of the controls scrim.
-const double kControlsScrimOpacity = 0.6;
+constexpr double kControlsScrimOpacity = 0.6;
 
 #if defined(OS_CHROMEOS)
 // The opacity of the resize handle control.
-const double kResizeHandleOpacity = 0.38;
+constexpr double kResizeHandleOpacity = 0.38;
 #endif
 
 // Size of a primary control.
-constexpr gfx::Size kPrimaryControlSize = gfx::Size(36, 36);
+constexpr gfx::Size kPrimaryControlSize(36, 36);
 
 // Margin from the bottom of the window for primary controls.
-const int kPrimaryControlBottomMargin = 8;
+constexpr int kPrimaryControlBottomMargin = 8;
 
 // Size of a secondary control.
-constexpr gfx::Size kSecondaryControlSize = gfx::Size(20, 20);
+constexpr gfx::Size kSecondaryControlSize(20, 20);
 
 // Margin from the bottom of the window for secondary controls.
-const int kSecondaryControlBottomMargin = 16;
+constexpr int kSecondaryControlBottomMargin = 16;
 
 // Margin between controls.
-const int kControlMargin = 32;
-
-// Delay in milliseconds before controls bounds are updated. It is the same as
-// HIDE_NOTIFICATION_DELAY_MILLIS in MediaSessionTabHelper.java
-const int kUpdateControlsBoundsDelayMs = 1000;
+constexpr int kControlMargin = 32;
 
 // Returns the quadrant the OverlayWindowViews is primarily in on the current
 // work area.
 OverlayWindowViews::WindowQuadrant GetCurrentWindowQuadrant(
     const gfx::Rect window_bounds,
     content::PictureInPictureWindowController* controller) {
-  gfx::Rect work_area =
+  const gfx::Rect work_area =
       display::Screen::GetScreen()
           ->GetDisplayNearestWindow(
               controller->GetInitiatorWebContents()->GetTopLevelNativeWindow())
           .work_area();
-  gfx::Point window_center = window_bounds.CenterPoint();
+  const gfx::Point window_center = window_bounds.CenterPoint();
 
   // Check which quadrant the center of the window appears in.
+  const bool top = window_center.y() < work_area.height() / 2;
   if (window_center.x() < work_area.width() / 2) {
-    return (window_center.y() < work_area.height() / 2)
-               ? OverlayWindowViews::WindowQuadrant::kTopLeft
+    return top ? OverlayWindowViews::WindowQuadrant::kTopLeft
                : OverlayWindowViews::WindowQuadrant::kBottomLeft;
   }
-  return (window_center.y() < work_area.height() / 2)
-             ? OverlayWindowViews::WindowQuadrant::kTopRight
+  return top ? OverlayWindowViews::WindowQuadrant::kTopRight
              : OverlayWindowViews::WindowQuadrant::kBottomRight;
 }
 
@@ -202,9 +197,11 @@ OverlayWindowViews::OverlayWindowViews(
     content::PictureInPictureWindowController* controller)
     : controller_(controller),
       hide_controls_timer_(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(2500 /* 2.5 seconds */),
-      base::BindRepeating(&OverlayWindowViews::UpdateControlsVisibility,
-                          base::Unretained(this), false /* is_visible */)) {
+          FROM_HERE,
+          base::TimeDelta::FromMilliseconds(2500),
+          base::BindRepeating(&OverlayWindowViews::UpdateControlsVisibility,
+                              base::Unretained(this),
+                              false /* is_visible */)) {
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = CalculateAndUpdateWindowBounds();
@@ -506,8 +503,7 @@ void OverlayWindowViews::UpdateControlsBounds() {
 
   update_controls_bounds_timer_ = std::make_unique<base::OneShotTimer>();
   update_controls_bounds_timer_->Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kUpdateControlsBoundsDelayMs),
+      FROM_HERE, base::TimeDelta::FromSeconds(1),
       base::BindOnce(&OverlayWindowViews::OnUpdateControlsBounds,
                      base::Unretained(this)));
 }

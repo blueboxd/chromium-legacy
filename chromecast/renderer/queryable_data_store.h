@@ -10,7 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chromecast/common/mojom/queryable_data_store.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 
 namespace base {
 class Value;
@@ -27,8 +28,8 @@ class QueryableDataStore : public shell::mojom::QueryableDataStore {
       const scoped_refptr<base::TaskRunner> render_main_thread);
   ~QueryableDataStore() override;
 
-  void BindQueryableDataStoreRequest(
-      shell::mojom::QueryableDataStoreRequest request);
+  void BindQueryableDataStoreReceiver(
+      mojo::PendingReceiver<shell::mojom::QueryableDataStore> receiver);
 
  private:
   // shell::mojom::QueryableDataStore implementation:
@@ -36,7 +37,7 @@ class QueryableDataStore : public shell::mojom::QueryableDataStore {
 
   const scoped_refptr<base::TaskRunner> render_main_thread_;
 
-  mojo::BindingSet<shell::mojom::QueryableDataStore> queryable_data_bindings_;
+  mojo::ReceiverSet<shell::mojom::QueryableDataStore> queryable_data_receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(QueryableDataStore);
 };

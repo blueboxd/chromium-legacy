@@ -570,7 +570,6 @@ crbug.com/874695 virtual/mouseevent_fractional/fast/events/middleClickAutoscroll
 crbug.com/874695 virtual/mouseevent_fractional/fast/events/touch/gesture/gesture-click.html [ Slow ]
 crbug.com/874695 virtual/mouseevent_fractional/fast/events/touch/touch-slider-no-js-touch-listener.html [ Slow ]
 crbug.com/874695 virtual/scroll_customization/fast/scroll-behavior/overscroll-behavior.html [ Slow ]
-crbug.com/874695 virtual/stable/http/tests/navigation/navigation-interrupted-by-fragment.html [ Slow ]
 crbug.com/874695 virtual/stable/http/tests/navigation/new-window-redirect-history.html [ Slow ]
 crbug.com/874695 virtual/stable/http/tests/navigation/slowmetaredirect-basic.html [ Slow ]
 crbug.com/874695 virtual/stable/http/tests/navigation/slowtimerredirect-basic.html [ Slow ]

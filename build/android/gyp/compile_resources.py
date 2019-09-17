@@ -50,13 +50,6 @@ _PNG_WEBP_BLACKLIST_PATTERN = re.compile('|'.join([
     r'.*daydream_icon_.*\.png']))
 
 
-def _ListToDictionary(lst, separator):
-  """Splits each element of the passed-in |lst| using |separator| and creates
-  dictionary treating first element of the split as the key and second as the
-  value."""
-  return dict(item.split(separator, 1) for item in lst)
-
-
 def _ParseArgs(args):
   """Parses command line options.
 
@@ -100,17 +93,13 @@ def _ParseArgs(args):
 
   input_opts.add_argument(
       '--package-id',
-      help='Custom package ID for resources (instead of 0x7f). Cannot be used '
-      'with --shared-resources.')
-
-  input_opts.add_argument(
-      '--package-name-to-id-mapping',
-      help='List containing mapping from package name to package IDs that will '
-      'be assigned.')
+      type=int,
+      help='Decimal integer representing custom package ID for resources '
+      '(instead of 127==0x7f). Cannot be used with --shared-resources.')
 
   input_opts.add_argument(
       '--package-name',
-      help='Package name that will be used to determine package ID.')
+      help='Package name that will be used to create R class.')
 
   input_opts.add_argument(
       '--rename-manifest-package', help='Package name to force AAPT to use.')
@@ -266,11 +255,8 @@ def _ParseArgs(args):
     parser.error(
         '--resources-path-map-out-path requires --short-resource-paths')
 
-  if options.package_name_to_id_mapping:
-    package_names_list = build_utils.ParseGnList(
-        options.package_name_to_id_mapping)
-    options.package_name_to_id_mapping = _ListToDictionary(
-        package_names_list, '=')
+  if options.package_id and options.shared_resources:
+    parser.error('--package-id and --shared-resources are mutually exclusive')
 
   return options
 
@@ -421,19 +407,6 @@ def _MoveImagesToNonMdpiFolders(res_root):
       renamed_paths[os.path.relpath(dst_file, res_root)] = os.path.relpath(
           src_file, res_root)
   return renamed_paths
-
-
-def _PackageIdFromOptions(options):
-  package_id = None
-  if options.package_id:
-    package_id = options.package_id
-  if options.package_name:
-    package_id = options.package_name_to_id_mapping.get(options.package_name)
-    if package_id is None:
-      raise Exception(
-          'Package name %s is not present in package_name_to_id_mapping.' %
-          options.package_name)
-  return package_id
 
 
 def _FixManifest(options, temp_dir):
@@ -751,9 +724,12 @@ def _PackageApk(options, build):
   if options.no_xml_namespaces:
     link_command.append('--no-xml-namespaces')
 
-  package_id = _PackageIdFromOptions(options)
-  if package_id is not None:
-    link_command += ['--package-id', package_id, '--allow-reserved-package-id']
+  if options.package_id:
+    link_command += [
+        '--package-id',
+        hex(options.package_id),
+        '--allow-reserved-package-id',
+    ]
 
   fixed_manifest, desired_manifest_package_name = _FixManifest(
       options, build.temp_dir)
@@ -962,10 +938,12 @@ def main(args):
     build_utils.ZipDir(build.srcjar_path, build.srcjar_dir)
 
     # Sanity check that the created resources have the expected package ID.
-    expected_id = _PackageIdFromOptions(options)
-    if expected_id is None:
-      expected_id = '0x00' if options.shared_resources else '0x7f'
-    expected_id = int(expected_id, 16)
+    if options.package_id:
+      expected_id = options.package_id
+    elif options.shared_resources:
+      expected_id = 0
+    else:
+      expected_id = 127  # == '0x7f'.
     _, package_id = resource_utils.ExtractArscPackage(
         options.aapt2_path,
         build.arsc_path if options.arsc_path else build.proto_path)

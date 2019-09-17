@@ -38,7 +38,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Pilih &amp;semua</translation>
 <translation id="1938451708255335766">Untuk melaraskan ketumpatan paparan tetingkap, mulakan semula apl.</translation>
-<translation id="2006524834898217237">Pastikan peranti ini disambungkan ke internet.</translation>
+<translation id="2006524834898217237">Pastikan peranti ini disambungkan ke Internet.</translation>
 <translation id="208586643495776849">Sila cuba lagi</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1h}other{#h}}</translation>
 <translation id="2148716181193084225">Hari ini</translation>
@@ -113,6 +113,7 @@
 <translation id="4788285488841504513">{MONTHS,plural, =1{Berbaki 1 bulan}other{Berbaki # bulan}}</translation>
 <translation id="4841881773802181781">Penyisipan</translation>
 <translation id="4881695831933465202">Buka</translation>
+<translation id="4888938634149558681">Buat panggilan</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 saat}other{# saat}}</translation>
 <translation id="4971687151119236543">Lagu Media Sebelumnya</translation>
 <translation id="5046499563572181734">Ketik di sini</translation>
@@ -228,7 +229,7 @@
 <translation id="8876215549894133151">Format:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">Rak sentiasa disembunyikan</translation>
-<translation id="8996630695507351249">Pastikan <ph name="TARGET_DEVICE_NAME" /> disambungkan ke internet.</translation>
+<translation id="8996630695507351249">Pastikan <ph name="TARGET_DEVICE_NAME" /> disambungkan ke Internet.</translation>
 <translation id="9002566407876343676">buka</translation>
 <translation id="9039076430527029379">Beralih ke Halaman <ph name="PAGE_NUMBER" />, baris <ph name="ROW_NUMBER" />, lajur <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 saat}other{# saat}}</translation>

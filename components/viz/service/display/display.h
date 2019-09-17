@@ -175,6 +175,8 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
 
   base::ScopedClosureRunner GetCacheBackBufferCb();
 
+  bool IsRootFrameMissing() const;
+
  private:
   // TODO(cblume, crbug.com/900973): |enable_shared_images| is a temporary
   // solution that unblocks us until SharedImages are threadsafe in WebView.

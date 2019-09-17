@@ -19,7 +19,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
@@ -42,6 +41,7 @@
 #include "components/history/core/browser/in_memory_database.h"
 #include "components/history/core/browser/in_memory_history_backend.h"
 #include "components/history/core/browser/keyword_search_term.h"
+#include "components/history/core/browser/sync/typed_url_sync_bridge.h"
 #include "components/history/core/browser/visit_delegate.h"
 #include "components/history/core/test/database_test_utils.h"
 #include "components/history/core/test/history_client_fake_bookmarks.h"
@@ -3587,7 +3587,7 @@ TEST_F(HistoryBackendTest, RemoveNotification) {
   // Add a URL.
   GURL url("http://www.google.com");
   std::unique_ptr<HistoryService> service(
-      new HistoryService(base::WrapUnique(new HistoryClientFakeBookmarks),
+      new HistoryService(std::make_unique<HistoryClientFakeBookmarks>(),
                          std::unique_ptr<history::VisitDelegate>()));
   EXPECT_TRUE(service->Init(
       TestHistoryDatabaseParamsForPath(scoped_temp_dir.GetPath())));

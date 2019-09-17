@@ -16,6 +16,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelPrope
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.INITIAL_SCROLL_INDEX;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.IS_DIALOG_VISIBLE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.IS_MAIN_CONTENT_VISIBLE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.MENU_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.PRIMARY_COLOR;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.SCRIMVIEW_OBSERVER;
 import static org.chromium.chrome.browser.tasks.tab_management.TabGridPanelProperties.TINT;
@@ -114,6 +115,8 @@ class TabGridPanelViewBinder {
                     .scrollToPositionWithOffset(index, 0);
         } else if (IS_MAIN_CONTENT_VISIBLE == propertyKey) {
             viewHolder.contentView.setVisibility(View.VISIBLE);
+        } else if (MENU_CLICK_LISTENER == propertyKey) {
+            viewHolder.toolbarView.setMenuButtonOnClickListener(model.get(MENU_CLICK_LISTENER));
         }
     }
 }

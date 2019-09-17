@@ -1110,8 +1110,7 @@ void PrintRenderFrameHelper::DidStartNavigation(
   is_loading_ = true;
 }
 
-void PrintRenderFrameHelper::DidFailProvisionalLoad(
-    const blink::WebURLError& error) {
+void PrintRenderFrameHelper::DidFailProvisionalLoad() {
   DidFinishLoad();
 }
 
@@ -1199,10 +1198,15 @@ void PrintRenderFrameHelper::OnPrintRenderFrameRequest(
   print_render_frame_binding_.Bind(std::move(request));
 }
 
-void PrintRenderFrameHelper::InitiatePrintPreview(bool has_selection) {
+void PrintRenderFrameHelper::InitiatePrintPreview(
+    mojom::PrintRendererAssociatedPtrInfo print_renderer,
+    bool has_selection) {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   if (ipc_nesting_level_ > 1)
     return;
+
+  if (print_renderer)
+    print_renderer_.Bind(std::move(print_renderer));
 
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
 

@@ -51,6 +51,9 @@
 <translation id="2094919256425865063">Tetap tutup Chrome?</translation>
 <translation id="2120620239521071941">Tindakan ini akan menghapus <ph name="ITEMS_COUNT" /> item dari perangkat ini. Untuk mengambil data nanti, login ke Chrome sebagai <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Bantu Chrome jadi lebih baik dengan melaporkan <ph name="BEGIN_LINK" />setelan saat ini<ph name="END_LINK" /></translation>
+<translation id="2128103434102193461">Untuk detail Chrome OS, lihat <ph name="LINK_BEGIN" />
+      Tentang Chrome OS<ph name="LINK_END" /></translation>
+<translation id="2151406531797534936">Mulai ulang Chrome sekarang</translation>
 <translation id="216054706567564023">Instal Chrome di ponsel. Kami akan mengirimkan SMS ke nomor telepon pemulihan akun Anda.</translation>
 <translation id="2246246234298806438">Google Chrome tidak dapat menampilkan pratinjau cetak jika penampil PDF default hilang.</translation>
 <translation id="2252923619938421629">Bantu menjadikan Google Chrome lebih baik dengan melaporkan setelan saat ini</translation>
@@ -219,6 +222,7 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, histori, dan s
 <translation id="7589360514048265910">Komputer ini tidak akan menerima update Google Chrome lagi karena Mac OS X 10.9 sudah tidak didukung.</translation>
 <translation id="7592736734348559088">Google Chrome tidak dapat menyinkronkan data karena detail ID masuk akun Anda belum diperbarui.</translation>
 <translation id="7626032353295482388">Selamat Datang di Chrome</translation>
+<translation id="7629695634924605473">Chrome akan memberi tahu jika sandi Anda disusupi</translation>
 <translation id="7641148173327520642">Administrator sistem Anda telah mengonfigurasi Google Chrome untuk membuka <ph name="ALTERNATIVE_BROWSER_NAME" /> guna mengakses <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Logo Chrome Enterprise</translation>
 <translation id="7747138024166251722">Pemasang tidak dapat membuat direktori sementara. Periksa kapasitas kosong pada disk dan izin untuk memasang software.</translation>

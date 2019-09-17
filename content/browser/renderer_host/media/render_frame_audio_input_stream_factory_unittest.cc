@@ -220,8 +220,8 @@ TEST_F(MAYBE_RenderFrameAudioInputStreamFactoryTest,
           kDeviceName));
   base::RunLoop().RunUntilIdle();
 
-  mojom::RendererAudioInputStreamFactoryClientPtr client;
-  mojo::MakeRequest(&client);
+  mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client;
+  ignore_result(client.InitWithNewPipeAndPassReceiver());
   factory_remote->CreateStream(std::move(client), session_id, kParams, kAGC,
                                kSharedMemoryCount, nullptr);
 
@@ -247,8 +247,8 @@ TEST_F(MAYBE_RenderFrameAudioInputStreamFactoryTest,
           capture_id.ToString(), kDeviceName));
   base::RunLoop().RunUntilIdle();
 
-  mojom::RendererAudioInputStreamFactoryClientPtr client;
-  mojo::MakeRequest(&client);
+  mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client;
+  ignore_result(client.InitWithNewPipeAndPassReceiver());
   factory_remote->CreateStream(std::move(client), session_id, kParams, kAGC,
                                kSharedMemoryCount, nullptr);
 
@@ -275,8 +275,8 @@ TEST_F(MAYBE_RenderFrameAudioInputStreamFactoryTest,
   base::RunLoop().RunUntilIdle();
 
   source_contents.reset();
-  mojom::RendererAudioInputStreamFactoryClientPtr client;
-  mojo::MakeRequest(&client);
+  mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client;
+  ignore_result(client.InitWithNewPipeAndPassReceiver());
   factory_remote->CreateStream(std::move(client), session_id, kParams, kAGC,
                                kSharedMemoryCount, nullptr);
 
@@ -293,9 +293,8 @@ TEST_F(MAYBE_RenderFrameAudioInputStreamFactoryTest,
       main_rfh());
 
   base::UnguessableToken session_id = base::UnguessableToken::Create();
-  mojom::RendererAudioInputStreamFactoryClientPtr client;
-  mojo::MakeRequest(&client);
-
+  mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client;
+  ignore_result(client.InitWithNewPipeAndPassReceiver());
   factory_remote->CreateStream(std::move(client), session_id, kParams, kAGC,
                                kSharedMemoryCount, nullptr);
 

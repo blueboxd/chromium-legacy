@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/autofill/mock_address_accessory_controller.h"
 #include "chrome/browser/autofill/mock_credit_card_accessory_controller.h"
 #include "chrome/browser/autofill/mock_manual_filling_view.h"
@@ -57,6 +58,9 @@ AccessorySheetData populate_sheet(AccessoryTabType type) {
 }
 
 }  // namespace
+
+// TODO(crbug/1004585) Crashes on Android
+#if !defined(OS_ANDROID)
 
 class ManualFillingControllerTest : public ChromeRenderViewHostTestHarness {
  public:
@@ -345,3 +349,5 @@ TEST_F(ManualFillingControllerTest, RequestsFaviconForOrigin) {
 
   base::RunLoop().RunUntilIdle();
 }
+
+#endif  // !defined(OS_ANDROID)

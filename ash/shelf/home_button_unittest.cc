@@ -177,7 +177,7 @@ TEST_F(HomeButtonTest, LongPressGesture) {
   // Simulate two user with primary user as active.
   CreateUserSessions(2);
 
-  // Enable voice interaction in system settings.
+  // Enable the Assistant in system settings.
   prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, true);
   assistant_state()->NotifyFeatureAllowed(
       mojom::AssistantAllowedState::ALLOWED);
@@ -210,13 +210,13 @@ TEST_F(HomeButtonTest, LongPressGestureWithSecondaryUser) {
   assistant_state()->NotifyFeatureAllowed(
       mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER);
 
-  // Enable voice interaction in system settings.
+  // Enable the Assistant in system settings.
   prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, true);
 
   ui::GestureEvent long_press =
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
   SendGestureEvent(&long_press);
-  // Voice interaction is disabled for secondary user.
+  // The Assistant is disabled for secondary user.
   EXPECT_NE(AssistantVisibility::kVisible, Shell::Get()
                                                ->assistant_controller()
                                                ->ui_controller()
@@ -236,8 +236,8 @@ TEST_F(HomeButtonTest, LongPressGestureWithSettingsDisabled) {
   // Simulate two user with primary user as active.
   CreateUserSessions(2);
 
-  // Simulate a user who has already completed setup flow, but disabled voice
-  // interaction in settings.
+  // Simulate a user who has already completed setup flow, but disabled the
+  // Assistant in settings.
   prefs()->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, false);
   assistant_state()->NotifyFeatureAllowed(
       mojom::AssistantAllowedState::ALLOWED);

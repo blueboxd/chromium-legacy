@@ -35,7 +35,7 @@
 #include "content/browser/devtools/devtools_video_consumer.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -1081,19 +1081,19 @@ void TracingHandler::EmitFrameTree() {
 }
 
 void TracingHandler::ReadyToCommitNavigation(
-    NavigationHandleImpl* navigation_handle) {
+    NavigationRequest* navigation_request) {
   if (!did_initiate_recording_)
     return;
   auto data = std::make_unique<base::trace_event::TracedValue>();
-  FillFrameData(data.get(), navigation_handle->frame_tree_node(),
-                navigation_handle->GetRenderFrameHost(),
-                navigation_handle->GetURL());
+  FillFrameData(data.get(), navigation_request->frame_tree_node(),
+                navigation_request->GetRenderFrameHost(),
+                navigation_request->GetURL());
   TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
                        "FrameCommittedInBrowser", TRACE_EVENT_SCOPE_THREAD,
                        "data", std::move(data));
 
   SetupProcessFilter(base::kNullProcessId,
-                     navigation_handle->GetRenderFrameHost());
+                     navigation_request->GetRenderFrameHost());
   session_->ChangeTraceConfig(trace_config_);
 }
 

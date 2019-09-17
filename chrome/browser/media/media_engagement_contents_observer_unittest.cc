@@ -33,6 +33,8 @@
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// TODO(crbug/1004580) All these tests crash on Android
+#if !defined(OS_ANDROID)
 class MediaEngagementContentsObserverTest
     : public ChromeRenderViewHostTestHarness {
  public:
@@ -1391,3 +1393,5 @@ TEST_F(MediaEngagementContentsObserverTest, IgnoreAudioContextIfDisabled) {
   SimulateAudioContextPlaybackTimerFired();
   EXPECT_FALSE(WasSignificantAudioContextPlaybackRecorded());
 }
+
+#endif  // !defined(OS_ANDROID)

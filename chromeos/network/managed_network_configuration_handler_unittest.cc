@@ -186,7 +186,7 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
           ADD_FAILURE() << "Network configuration invalid.";
           return;
         }
-        validated_network_configs.GetList().push_back(
+        validated_network_configs.Append(
             std::move(*(validated_network_config)));
       }
     }

@@ -34,20 +34,19 @@ using BubbleFrameViewTest = ViewsTestBase;
 
 namespace {
 
-const BubbleBorder::Arrow kArrow = BubbleBorder::TOP_LEFT;
-const SkColor kColor = SK_ColorRED;
-const int kMargin = 6;
-const int kMinimumClientWidth = 100;
-const int kMinimumClientHeight = 200;
-const int kMaximumClientWidth = 300;
-const int kMaximumClientHeight = 300;
-const int kPreferredClientWidth = 150;
-const int kPreferredClientHeight = 250;
+constexpr BubbleBorder::Arrow kArrow = BubbleBorder::TOP_LEFT;
+constexpr SkColor kColor = SK_ColorRED;
+constexpr int kMargin = 6;
+constexpr gfx::Size kMinimumClientSize = gfx::Size(100, 200);
+constexpr gfx::Size kPreferredClientSize = gfx::Size(150, 250);
+constexpr gfx::Size kMaximumClientSize = gfx::Size(300, 300);
 
 // These account for non-client areas like the title bar, footnote etc. However
 // these do not take the bubble border into consideration.
-const int kExpectedAdditionalWidth = 12;
-const int kExpectedAdditionalHeight = 12;
+gfx::Size AddAdditionalSize(gfx::Size size) {
+  size.Enlarge(12, 12);
+  return size;
+}
 
 class TestBubbleFrameViewWidgetDelegate : public WidgetDelegate {
  public:
@@ -62,12 +61,10 @@ class TestBubbleFrameViewWidgetDelegate : public WidgetDelegate {
 
   View* GetContentsView() override {
     if (!contents_view_) {
-      StaticSizedView* contents_view = new StaticSizedView(
-          gfx::Size(kPreferredClientWidth, kPreferredClientHeight));
-      contents_view->set_minimum_size(
-          gfx::Size(kMinimumClientWidth, kMinimumClientHeight));
-      contents_view->set_maximum_size(
-          gfx::Size(kMaximumClientWidth, kMaximumClientHeight));
+      StaticSizedView* contents_view =
+          new StaticSizedView(kPreferredClientSize);
+      contents_view->set_minimum_size(kMinimumClientSize);
+      contents_view->set_maximum_size(kMaximumClientSize);
       contents_view_ = contents_view;
     }
     return contents_view_;
@@ -795,8 +792,7 @@ TEST_F(BubbleFrameViewTest, GetPreferredSize) {
   // Expect that a border has been added to the preferred size.
   preferred_rect.Inset(frame.GetBorderInsets());
 
-  gfx::Size expected_size(kPreferredClientWidth + kExpectedAdditionalWidth,
-                          kPreferredClientHeight + kExpectedAdditionalHeight);
+  gfx::Size expected_size = AddAdditionalSize(kPreferredClientSize);
   EXPECT_EQ(expected_size, preferred_rect.size());
 }
 
@@ -831,8 +827,7 @@ TEST_F(BubbleFrameViewTest, GetMinimumSize) {
   // Expect that a border has been added to the minimum size.
   minimum_rect.Inset(frame.GetBorderInsets());
 
-  gfx::Size expected_size(kMinimumClientWidth + kExpectedAdditionalWidth,
-                          kMinimumClientHeight + kExpectedAdditionalHeight);
+  gfx::Size expected_size = AddAdditionalSize(kMinimumClientSize);
   EXPECT_EQ(expected_size, minimum_rect.size());
 }
 
@@ -847,8 +842,7 @@ TEST_F(BubbleFrameViewTest, GetMaximumSize) {
   maximum_rect.Inset(frame.GetBorderInsets());
 
   // Should ignore the contents view's maximum size and use the preferred size.
-  gfx::Size expected_size(kPreferredClientWidth + kExpectedAdditionalWidth,
-                          kPreferredClientHeight + kExpectedAdditionalHeight);
+  gfx::Size expected_size = AddAdditionalSize(kPreferredClientSize);
   EXPECT_EQ(expected_size, maximum_rect.size());
 #endif
 }

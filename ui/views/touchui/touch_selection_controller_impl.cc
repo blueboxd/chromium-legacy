@@ -62,10 +62,6 @@ constexpr int kSelectionHandleVerticalDragOffset = 5;
 constexpr int kSelectionHandleHorizPadding = 10;
 constexpr int kSelectionHandleVertPadding = 20;
 
-constexpr int kQuickMenuTimoutMs = 200;
-
-constexpr int kSelectionHandleQuickFadeDurationMs = 50;
-
 // Minimum height for selection handle bar. If the bar height is going to be
 // less than this value, handle will not be shown.
 constexpr int kSelectionHandleBarMinHeight = 5;
@@ -305,8 +301,7 @@ class TouchSelectionControllerImpl::EditingHandleView
     if (widget_->IsVisible() == visible)
       return;
     widget_->SetVisibilityAnimationDuration(
-        base::TimeDelta::FromMilliseconds(
-            quick ? kSelectionHandleQuickFadeDurationMs : 0));
+        quick ? base::TimeDelta::FromMilliseconds(50) : base::TimeDelta());
     if (visible)
       widget_->Show();
     else
@@ -664,11 +659,9 @@ void TouchSelectionControllerImpl::QuickMenuTimerFired() {
 void TouchSelectionControllerImpl::StartQuickMenuTimer() {
   if (quick_menu_timer_.IsRunning())
     return;
-  quick_menu_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kQuickMenuTimoutMs),
-      this,
-      &TouchSelectionControllerImpl::QuickMenuTimerFired);
+  quick_menu_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(200),
+                          this,
+                          &TouchSelectionControllerImpl::QuickMenuTimerFired);
 }
 
 void TouchSelectionControllerImpl::UpdateQuickMenu() {

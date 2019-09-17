@@ -117,7 +117,7 @@ base::Value ProtoToList(
     const google::protobuf::RepeatedPtrField<std::string>& strings) {
   base::Value result(base::Value::Type::LIST);
   for (const std::string& string : strings)
-    result.GetList().emplace_back(string);
+    result.Append(string);
   return result;
 }
 

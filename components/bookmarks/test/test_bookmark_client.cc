@@ -6,12 +6,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -25,7 +25,7 @@ TestBookmarkClient::~TestBookmarkClient() {}
 
 // static
 std::unique_ptr<BookmarkModel> TestBookmarkClient::CreateModel() {
-  return CreateModelWithClient(base::WrapUnique(new TestBookmarkClient));
+  return CreateModelWithClient(std::make_unique<TestBookmarkClient>());
 }
 
 // static

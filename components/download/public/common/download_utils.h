@@ -111,6 +111,13 @@ constexpr char kDownloadContentValidationLengthFinchKey[] =
 // Get the number of bytes to validate from finch configuration.
 int64_t GetDownloadValidationLengthConfig();
 
+// Finch parameter key value for the time to delete expired downloads in days.
+constexpr char kExpiredDownloadDeleteTimeFinchKey[] =
+    "expired_download_delete_days";
+
+// Returns the time to delete expired downloads.
+COMPONENTS_DOWNLOAD_EXPORT base::TimeDelta GetExpiredDownloadDeleteTime();
+
 }  // namespace download
 
 #endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_UTILS_H_

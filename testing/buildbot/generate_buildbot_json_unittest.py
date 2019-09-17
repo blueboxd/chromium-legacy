@@ -1283,6 +1283,7 @@ JUNIT_OUTPUT = """\
   "Fake Tester": {
     "junit_tests": [
       {
+        "name": "foo_test",
         "test": "foo_test"
       }
     ]

@@ -9,8 +9,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/device/hid/hid_device_info.h"
 #include "services/device/hid/hid_service.h"
 #include "services/device/public/mojom/hid.mojom.h"
@@ -30,7 +31,7 @@ class HidManagerImpl : public mojom::HidManager, public HidService::Observer {
   // passed |hid_service|.
   static void SetHidServiceForTesting(std::unique_ptr<HidService> hid_service);
 
-  void AddBinding(mojom::HidManagerRequest request);
+  void AddReceiver(mojo::PendingReceiver<mojom::HidManager> receiver);
 
   // mojom::HidManager implementation:
   void GetDevicesAndSetClient(mojom::HidManagerClientAssociatedPtrInfo client,
@@ -56,7 +57,7 @@ class HidManagerImpl : public mojom::HidManager, public HidService::Observer {
   void OnDeviceRemoved(mojom::HidDeviceInfoPtr device_info) override;
 
   std::unique_ptr<HidService> hid_service_;
-  mojo::BindingSet<mojom::HidManager> bindings_;
+  mojo::ReceiverSet<mojom::HidManager> receivers_;
   mojo::AssociatedInterfacePtrSet<mojom::HidManagerClient> clients_;
   ScopedObserver<HidService, HidService::Observer> hid_service_observer_;
 

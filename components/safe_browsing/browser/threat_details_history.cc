@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/task/post_task.h"
-#include "components/history/core/browser/history_service.h"
 #include "components/safe_browsing/browser/threat_details.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -24,9 +23,7 @@ namespace safe_browsing {
 
 ThreatDetailsRedirectsCollector::ThreatDetailsRedirectsCollector(
     const base::WeakPtr<history::HistoryService>& history_service)
-    : has_started_(false),
-      history_service_(history_service),
-      history_service_observer_(this) {
+    : has_started_(false), history_service_(history_service) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (history_service) {

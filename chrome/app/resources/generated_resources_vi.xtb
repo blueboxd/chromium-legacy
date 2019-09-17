@@ -479,6 +479,7 @@
 <translation id="1698122934742150150">Chỉ phiên ẩn danh hiện tại</translation>
 <translation id="1698650002254827833">Không tải được danh sách ứng dụng. Vui lòng thử lại.</translation>
 <translation id="1701062906490865540">Xóa người này</translation>
+<translation id="1703331064825191675">Không bao giờ phải lo lắng về mật khẩu của bạn</translation>
 <translation id="1706586824377653884">Do quản trị viên thêm</translation>
 <translation id="1706625117072057435">Mức thu phóng</translation>
 <translation id="1708338024780164500">(Không hoạt động)</translation>
@@ -528,6 +529,7 @@
 <translation id="1764226536771329714">beta</translation>
 <translation id="176587472219019965">Cửa sổ &amp;Mới</translation>
 <translation id="1766575458646819543">Đã thoát chế độ toàn màn hình</translation>
+<translation id="1766957085594317166">Lưu các mật khẩu vào Tài khoản Google của bạn một cách an toàn để bạn không phải nhập lại mật khẩu nữa</translation>
 <translation id="1768278914020124551">Rất tiếc! Đã xảy ra lỗi khi liên hệ với máy chủ đăng nhập. Vui lòng kiểm tra kết nối mạng của bạn và tên miền, sau đó thử lại.</translation>
 <translation id="1769104665586091481">Mở Liên kết bằng Cửa sổ &amp;Mới</translation>
 <translation id="1773212559869067373">Chứng chỉ xác thực bị từ chối cục bộ</translation>
@@ -1875,6 +1877,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="3748026146096797577">Chưa được kết nối</translation>
 <translation id="3752582316358263300">OK...</translation>
 <translation id="3752673729237782832">Thiết bị của tôi</translation>
+<translation id="3753033997400164841">Lưu trữ một lần. Dùng ở mọi nơi</translation>
 <translation id="3755411799582650620">Giờ đây, <ph name="PHONE_NAME" /> của bạn cũng có thể mở khóa <ph name="DEVICE_TYPE" /> này.</translation>
 <translation id="375636864092143889">Trang web đang sử dụng micrô của bạn</translation>
 <translation id="3757733214359997190">Không tìm thấy trang web nào</translation>
@@ -2167,7 +2170,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4146026355784316281">Luôn mở bằng trình xem hệ thống</translation>
 <translation id="4146785383423576110">Đặt lại và dọn dẹp</translation>
 <translation id="4147911968024186208">Vui lòng thử lại. Nếu bạn vẫn thấy lỗi này, vui lòng liên hệ với người đại diện hỗ trợ của bạn.</translation>
-<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">Hiển thị</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 tab}other{# tab}}</translation>
 <translation id="4154664944169082762">Dấu vân tay</translation>
@@ -2208,6 +2210,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4232375817808480934">Định cấu hình Kerberos</translation>
 <translation id="4235200303672858594">Toàn màn hình</translation>
 <translation id="4235965441080806197">Hủy đăng nhập</translation>
+<translation id="4242145785130247982">Không hỗ trợ nhiều chứng chỉ ứng dụng khách</translation>
 <translation id="4242533952199664413">Mở phần cài đặt</translation>
 <translation id="4242577469625748426">Không thể cài đặt các cài đặt chính sách trên thiết bị: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Tìm thêm ứng dụng bút cảm ứng</translation>
@@ -2666,6 +2669,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4957949153200969297">Chỉ bật các tính năng liên quan đến <ph name="IDS_SHORT_PRODUCT_NAME" /> Sync</translation>
 <translation id="4959262764292427323">Các mật khẩu được lưu trong Tài khoản Google của bạn, vì vậy, bạn có thể sử dụng các mật khẩu đó trên bất cứ thiết bị nào</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> - <ph name="PROFILE_NAME" /></translation>
+<translation id="496185450405387901">Quản trị viên của bạn đã cài đặt ứng dụng này.</translation>
 <translation id="4964455510556214366">Sắp xếp</translation>
 <translation id="4964673849688379040">Đang kiểm tra...</translation>
 <translation id="4965808351167763748">Bạn có chắc chắn muốn thiết lập thiết bị này để chạy Hangouts Meet không?</translation>
@@ -2923,6 +2927,7 @@ Nhớ kiểm tra xem trang web này có tin cậy không trước khi vào chế
 <translation id="5360150013186312835">Hiển thị trên thanh công cụ</translation>
 <translation id="5362741141255528695">Chọn tệp khóa cá nhân.</translation>
 <translation id="5363109466694494651">Powerwash và hoàn nguyên</translation>
+<translation id="5365716706805792666">Google có thể kiểm tra xem mật khẩu của bạn có bị ảnh hưởng trong một vụ rò rỉ dữ liệu không. Tùy chọn này sẽ được bật khi bạn đăng nhập bằng Tài khoản Google của mình.</translation>
 <translation id="5365881113273618889">Thư mục bạn đã chọn chứa các tệp nhạy cảm. Bạn có chắc chắn muốn cấp cho "<ph name="APP_NAME" />" quyền ghi vào thư mục này vĩnh viễn không?</translation>
 <translation id="5367091008316207019">Đang đọc tệp..</translation>
 <translation id="5368720394188453070">Điện thoại của bạn bị khóa. Hãy mở khóa điện thoại để truy cập.</translation>
@@ -3519,7 +3524,6 @@ Nhớ kiểm tra xem trang web này có tin cậy không trước khi vào chế
 <translation id="6212039847102026977">Hiển thị thuộc tính mạng nâng cao</translation>
 <translation id="6212168817037875041">Tắt màn hình</translation>
 <translation id="6212752530110374741">Gửi liên kết qua email</translation>
-<translation id="6214642087594370545">Hiển thị cảnh báo khi bạn dùng một mật khẩu không an toàn mà dẫn đến sự cố rò rỉ dữ liệu trước đó. Tính năng này chỉ dành cho người dùng đã đăng nhập.</translation>
 <translation id="6216696360484424239">Đăng nhập tự động</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> đang ngoại tuyến. Hãy kết nối với Internet rồi thử lại.</translation>
 <translation id="6220413761270491930">Lỗi khi tải tiện ích</translation>
@@ -3876,6 +3880,7 @@ Nhớ kiểm tra xem trang web này có tin cậy không trước khi vào chế
 <translation id="6769712124046837540">Đang thêm máy in...</translation>
 <translation id="6770664076092644100">Xác minh qua NFC</translation>
 <translation id="6771503742377376720">Là Tổ chức phát hành chứng chỉ</translation>
+<translation id="6775163072363532304">Các thiết bị hiện có sẽ xuất hiện ở đây.</translation>
 <translation id="6777817260680419853">Đã chặn chuyển hướng</translation>
 <translation id="6778737459546443941">Cha mẹ của bạn chưa phê duyệt trang web</translation>
 <translation id="677965093459947883">Rất nhỏ</translation>
@@ -4336,6 +4341,7 @@ Nhớ kiểm tra xem trang web này có tin cậy không trước khi vào chế
 <translation id="7441830548568730290">Người dùng khác</translation>
 <translation id="7442465037756169001">Bạn hiện có thể thiết lập phần cứng Hangouts Meet.</translation>
 <translation id="744341768939279100">Tạo cấu hình mới</translation>
+<translation id="7443806024147773267">Sử dụng mật khẩu mỗi khi bạn đăng nhập vào Tài khoản Google của mình</translation>
 <translation id="7444046173054089907">Trang web này bị chặn</translation>
 <translation id="7444983668544353857">Vô hiệu hóa <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">Tự động cài đặt ứng dụng</translation>
@@ -4749,6 +4755,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8014154204619229810">Trình cập nhật hiện đang chạy. Hãy làm mới sau một phút nữa để kiểm tra lại.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> không thể hoàn nguyên về phiên bản được cài đặt trước. Vui lòng thử lại để Powerwash thiết bị của bạn.</translation>
 <translation id="8014210335923519270">Cải tiến <ph name="IDS_SHORT_PRODUCT_NAME" /> và tăng cường bảo mật cho sản phẩm bằng cách gửi thông tin hệ thống và việc sử dụng cho Google</translation>
+<translation id="8015780634880457457">Google có thể kiểm tra xem mật khẩu của bạn có bị ảnh hưởng trong một vụ rò rỉ dữ liệu không</translation>
 <translation id="8016266267177410919">Bộ nhớ tạm thời</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Đã chỉnh sửa phím tắt</translation>
@@ -4867,6 +4874,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8188389033983459049">Kiểm tra mục cài đặt thiết bị và bật Bluetooth để tiếp tục</translation>
 <translation id="8190193592390505034">Đang kết nối đến <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">Quản lý ứng dụng, tiện ích và chủ đề của bạn</translation>
+<translation id="819464600477418284">Không thể gỡ cài đặt ứng dụng này vì đây là một phần của Chrome OS.</translation>
 <translation id="8195027750202970175">Dung lượng trên đĩa</translation>
 <translation id="8198323535106903877">Chúng tôi sẽ cài đặt <ph name="NUMBER_OF_APPS" /> ứng dụng đó cho bạn</translation>
 <translation id="8199300056570174101">Thuộc tính của thiết bị và mạng (dịch vụ)</translation>
@@ -4927,6 +4935,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
     <ph name="BEGIN_PARAGRAPH2" />Việc tắt tính năng này không ảnh hưởng đến khả năng thiết bị này gửi thông tin cần thiết cho các dịch vụ thiết yếu như bảo mật và bản cập nhật hệ thống.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />Chủ sở hữu có thể kiểm soát tính năng này trong mục Cài đặt &gt; Nâng cao &gt; Tự động gửi dữ liệu chẩn đoán và dữ liệu sử dụng cho Google.<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />Nếu bạn bật tùy chọn cài đặt Hoạt động web và ứng dụng bổ sung cho con bạn, thì dữ liệu này có thể được lưu vào Tài khoản Google của con. Bạn có thể tìm hiểu thêm về các tùy chọn cài đặt này cùng cách điều chỉnh tại families.google.com.<ph name="END_PARAGRAPH4" /></translation>
+<translation id="826905130698769948">Chứng chỉ ứng dụng khách không hợp lệ</translation>
 <translation id="8270242299912238708">Tài liệu PDF</translation>
 <translation id="827097179112817503">Hiển thị nút trang chủ</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{Đã xóa 1 dấu trang}other{Đã xóa # dấu trang}}</translation>
@@ -5340,6 +5349,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8874184842967597500">Chưa kết nối</translation>
 <translation id="8876307312329369159">Không thể thay đổi tùy chọn cài đặt này trong phiên minh họa.</translation>
 <translation id="8877448029301136595">[thư mục cha]</translation>
+<translation id="8879220587046205278">Các ứng dụng trên Google Play có thể yêu cầu quyền truy cập vào toàn bộ hệ thống tệp để đọc và ghi tệp trên các thiết bị lưu trữ bên ngoài. Bất cứ ai dùng ổ đĩa bên ngoài sẽ nhìn thấy các tệp và thư mục tạo trên thiết bị này.</translation>
 <translation id="8879284080359814990">&amp;Hiển thị Dưới dạng Tab</translation>
 <translation id="8879921471468674457">Ghi nhớ thông tin đăng nhập</translation>
 <translation id="8881020143150461183">Vui lòng thử lại. Nếu cần hỗ trợ kỹ thuật, hãy liên hệ với <ph name="CARRIER_NAME" />.</translation>

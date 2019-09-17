@@ -41,6 +41,7 @@
 #include "gpu/config/gpu_feature_type.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_lists_version.h"
+#include "gpu/config/gpu_util.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "skia/ext/skia_commit_hash.h"
@@ -113,27 +114,6 @@ std::unique_ptr<base::ListValue> DxDiagNodeToList(const gpu::DxDiagNode& node) {
     list->Append(NewDescriptionValuePair(it->first, std::move(sublist)));
   }
   return list;
-}
-
-std::string D3dFeaturelevelToString(uint32_t d3d_feature_level) {
-  if (d3d_feature_level == 0) {
-    return "Not supported";
-  } else {
-    return base::StringPrintf("D3D %d.%d", (d3d_feature_level >> 12) & 0xF,
-                              (d3d_feature_level >> 8) & 0xF);
-  }
-}
-
-std::string VulkanVersionToString(uint32_t vulkan_version) {
-  if (vulkan_version == 0) {
-    return "Not supported";
-  } else {
-    // Vulkan version number VK_MAKE_VERSION(major, minor, patch)
-    // (((major) << 22) | ((minor) << 12) | (patch))
-    return base::StringPrintf(
-        "Vulkan API %d.%d.%d", (vulkan_version >> 22) & 0x3FF,
-        (vulkan_version >> 12) & 0x3FF, vulkan_version & 0xFFF);
-  }
 }
 #endif
 
@@ -212,12 +192,13 @@ std::unique_ptr<base::ListValue> BasicGpuInfoAsListValue(
 
   basic_info->Append(NewDescriptionValuePair(
       "Driver D3D12 feature level",
-      D3dFeaturelevelToString(
+      gpu::D3DFeatureLevelToString(
           gpu_info.dx12_vulkan_version_info.d3d12_feature_level)));
 
   basic_info->Append(NewDescriptionValuePair(
       "Driver Vulkan API version",
-      VulkanVersionToString(gpu_info.dx12_vulkan_version_info.vulkan_version)));
+      gpu::VulkanVersionToString(
+          gpu_info.dx12_vulkan_version_info.vulkan_version)));
 #endif
 
   basic_info->Append(

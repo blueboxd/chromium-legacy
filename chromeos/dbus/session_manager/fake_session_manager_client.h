@@ -135,6 +135,8 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   void EmitArcBooted(const cryptohome::AccountIdentifier& cryptohome_id,
                      VoidDBusMethodCallback callback) override;
   void GetArcStartTime(DBusMethodCallback<base::TimeTicks> callback) override;
+  void EnableAdbSideload(EnableAdbSideloadCallback callback) override;
+  void QueryAdbSideload(QueryAdbSideloadCallback callback) override;
 
   // Notifies observers as if ArcInstanceStopped signal is received.
   void NotifyArcInstanceStopped();

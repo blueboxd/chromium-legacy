@@ -284,7 +284,6 @@ class AppBannerManager : public content::WebContentsObserver,
   virtual void UpdateState(State state);
 
   // content::WebContentsObserver overrides.
-  void DidStartNavigation(content::NavigationHandle* handle) override;
   void DidFinishNavigation(content::NavigationHandle* handle) override;
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;

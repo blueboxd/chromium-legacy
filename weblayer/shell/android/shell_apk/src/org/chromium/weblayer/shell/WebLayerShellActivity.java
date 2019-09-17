@@ -4,12 +4,14 @@
 
 package org.chromium.weblayer.shell;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -50,6 +52,10 @@ public class WebLayerShellActivity extends FragmentActivity {
                 LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             return mBrowserFragment.onCreateView();
         }
+    }
+
+    public BrowserController getBrowserController() {
+        return mBrowserController;
     }
 
     @Override
@@ -94,7 +100,12 @@ public class WebLayerShellActivity extends FragmentActivity {
         transaction.commit();
 
         mBrowserFragment.setTopView(mUrlView);
-        loadUrl("http://google.com");
+
+        String startupUrl = getUrlFromIntent(getIntent());
+        if (TextUtils.isEmpty(startupUrl)) {
+            startupUrl = "http://google.com";
+        }
+        loadUrl(startupUrl);
         mBrowserController.addObserver(new BrowserObserver() {
             @Override
             public void displayURLChanged(Uri uri) {
@@ -115,9 +126,13 @@ public class WebLayerShellActivity extends FragmentActivity {
         super.onStart();
     }
 
-    private void loadUrl(String url) {
+    public void loadUrl(String url) {
         mBrowserController.getNavigationController().navigate(Uri.parse(sanitizeUrl(url)));
         mUrlView.clearFocus();
+    }
+
+    private static String getUrlFromIntent(Intent intent) {
+        return intent != null ? intent.getDataString() : null;
     }
 
     /**

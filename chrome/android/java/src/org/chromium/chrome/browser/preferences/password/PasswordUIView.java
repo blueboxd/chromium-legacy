@@ -76,12 +76,6 @@ public final class PasswordUIView implements PasswordManagerHandler {
     }
 
     @Override
-    public void changeSavedPasswordEntry(int index, String newUsername, String newPassword) {
-        PasswordUIViewJni.get().handleChangeSavedPasswordEntry(
-                mNativePasswordUIViewAndroid, PasswordUIView.this, index, newUsername, newPassword);
-    }
-
-    @Override
     public void removeSavedPasswordException(int index) {
         PasswordUIViewJni.get().handleRemoveSavedPasswordException(
                 mNativePasswordUIViewAndroid, PasswordUIView.this, index);
@@ -134,8 +128,6 @@ public final class PasswordUIView implements PasswordManagerHandler {
                 long nativePasswordUIViewAndroid, PasswordUIView caller, int index);
         void handleRemoveSavedPasswordEntry(
                 long nativePasswordUIViewAndroid, PasswordUIView caller, int index);
-        void handleChangeSavedPasswordEntry(long nativePasswordUIViewAndroid, PasswordUIView caller,
-                int index, String newUsername, String newPassword);
         void handleRemoveSavedPasswordException(
                 long nativePasswordUIViewAndroid, PasswordUIView caller, int index);
         String getAccountDashboardURL();

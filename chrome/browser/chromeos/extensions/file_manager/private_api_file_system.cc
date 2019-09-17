@@ -1262,7 +1262,7 @@ void FileManagerPrivateSearchFilesFunction::OnSearchByPattern(
     entry.SetKey("fileSystemRoot", base::Value(fs_root));
     entry.SetKey("fileFullPath", base::Value(fs_path.AsUTF8Unsafe()));
     entry.SetKey("fileIsDirectory", base::Value(result.second));
-    entries->GetList().emplace_back(std::move(entry));
+    entries->Append(std::move(entry));
   }
 
   auto result = std::make_unique<base::DictionaryValue>();

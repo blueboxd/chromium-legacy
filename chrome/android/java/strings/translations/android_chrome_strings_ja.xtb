@@ -66,6 +66,7 @@
 <translation id="1407135791313364759">すべて開く</translation>
 <translation id="1409426117486808224">開いているタブの簡易表示</translation>
 <translation id="1409879593029778104"><ph name="FILE_NAME" /> は既に存在しているためダウンロードできませんでした。</translation>
+<translation id="1413136574162415971">Google ではお使いのパスワードがデータ侵害の対象になっていたかを確認できます。この機能は、Google アカウントにログインして同期をオンにすると有効になります。</translation>
 <translation id="1414981605391750300">Google に問い合わせています。これには 1 分ほどかかる場合があります…</translation>
 <translation id="1416550906796893042">アプリケーションのバージョン</translation>
 <translation id="1430915738399379752">印刷</translation>
@@ -160,6 +161,7 @@
 <translation id="2091887806945687916">音声</translation>
 <translation id="2096012225669085171">デバイス間の同期とカスタマイズ</translation>
 <translation id="2100273922101894616">自動ログイン</translation>
+<translation id="2100314319871056947">共有するテキスト ブロックを小さくしてください</translation>
 <translation id="2107397443965016585">保護されたコンテンツの再生をサイトに許可する前に確認する（推奨）</translation>
 <translation id="2111511281910874386">ページを開く</translation>
 <translation id="2122601567107267586">アプリを開けませんでした</translation>
@@ -253,6 +255,7 @@
 <translation id="2836148919159985482">全画面表示を終了するには戻るボタンをタップします。</translation>
 <translation id="2842985007712546952">親フォルダ</translation>
 <translation id="2858138569776157458">上位のサイト</translation>
+<translation id="2860954141821109167">このデバイスで通話アプリが有効になっていることを確認してください</translation>
 <translation id="2870560284913253234">サイト</translation>
 <translation id="2874939134665556319">前のトラック</translation>
 <translation id="2876369937070532032">セキュリティ上のリスクがある場合に、アクセスした一部のページの URL が Google に送信されます</translation>
@@ -277,6 +280,7 @@
 <translation id="2996291259634659425">パスフレーズの作成</translation>
 <translation id="2996809686854298943">URLが必要です</translation>
 <translation id="300526633675317032">ウェブサイトのストレージ <ph name="SIZE_IN_KB" /> のデータをすべて削除します。</translation>
+<translation id="3016635187733453316">このデバイスがインターネットに接続していることを確認してください</translation>
 <translation id="3029613699374795922"><ph name="KBS" /> KB をダウンロード済み</translation>
 <translation id="3029704984691124060">パスフレーズが一致しません</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" /></translation>
@@ -841,6 +845,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="723171743924126238">画像を選択</translation>
 <translation id="7233236755231902816">お使いの言語でウェブを表示するには、Chrome の最新バージョンを入手してください</translation>
 <translation id="7243308994586599757">画面の下の方にオプションがあります</translation>
+<translation id="7248069434667874558">Chrome で <ph name="TARGET_DEVICE_NAME" /> の同期がオンになっていることを確認してください</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> 件選択されています</translation>
 <translation id="7274013316676448362">ブロック中のサイト</translation>
 <translation id="7290209999329137901">名前の変更はできません</translation>
@@ -955,6 +960,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="8007176423574883786">このデバイスに対して無効</translation>
 <translation id="8013372441983637696">Chrome データもこのデバイスから削除する</translation>
 <translation id="8015452622527143194">ページ上のすべての要素をデフォルトのサイズに戻す</translation>
+<translation id="8015780634880457457">Google ではお使いのパスワードがデータ侵害の対象になっていたかを確認できます</translation>
 <translation id="802154636333426148">ダウンロード エラー</translation>
 <translation id="8026334261755873520">閲覧履歴データの削除</translation>
 <translation id="8035133914807600019">新しいフォルダ...</translation>
@@ -1017,6 +1023,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="8445448999790540984">パスワードをエクスポートできません</translation>
 <translation id="8447861592752582886">デバイスの許可を取り消します</translation>
 <translation id="8461694314515752532">同期データを同期パスフレーズで暗号化する</translation>
+<translation id="8466613982764129868"><ph name="TARGET_DEVICE_NAME" />がインターネットに接続していることを確認してください</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">オフラインでの利用</translation>
 <translation id="8489271220582375723">履歴ページを開く</translation>
@@ -1107,6 +1114,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="9188680907066685419">管理対象アカウントからログアウトする</translation>
 <translation id="9204836675896933765">残り 1 ファイル</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9209888181064652401">通話ができません</translation>
 <translation id="9219103736887031265">画像</translation>
 <translation id="926205370408745186">Chrome のアクティビティを Digital Wellbeing から削除</translation>
 <translation id="932327136139879170">ホーム</translation>

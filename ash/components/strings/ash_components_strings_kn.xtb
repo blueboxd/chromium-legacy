@@ -23,6 +23,7 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">ವಿಳಾಸ ಪಟ್ಟಿಯಲ್ಲಿ ನಿಮ್ಮ ಇನ್‌ಪುಟ್‌ಗೆ www. ಮತ್ತು .com ಅನ್ನು ಸೇರಿಸಿ, ನಂತರ ಪುಟವನ್ನು ತೆರೆಯಿರಿ</translation>
+<translation id="1872219238824176091">ಪ್ರಸ್ತುತ ಡೆಸ್ಕ್ ಅನ್ನು ತೆಗೆದುಹಾಕಿ</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, ನಂತರ <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> ಅಥವಾ <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">ಮುಂದಿನ ಟ್ಯಾಬ್‌ಗೆ ಹೋಗಿ</translation>
 <translation id="2010818616644390445">ವಿಂಡೋದಲ್ಲಿ ಕೊನೆಯ ಟ್ಯಾಬ್‌ಗೆ ಹೋಗಿ</translation>
@@ -42,6 +43,7 @@
 <translation id="2441202986792279177">ವಿಂಡೋಗಳ ನಡುವೆ ತ್ವರಿತವಾಗಿ ಬದಲಿಸಿ</translation>
 <translation id="2454251766545114447">ಡಿಸ್‌ಪ್ಲೇ ಅನ್ನು ಝೂಮ್ ಔಟ್ ಮಾಡಿ</translation>
 <translation id="2478303094958140141">ChromeVox (ಮಾತಿನ ಪ್ರತಿಕ್ರಿಯೆ) ಆನ್‌ ಅಥವಾ ಆಫ್‌ ಮಾಡಿ</translation>
+<translation id="2488661730534396940">ಎಡಭಾಗದಲ್ಲಿರುವ ಡೆಸ್ಕ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">ವೆಬ್‌ ಪುಟವನ್ನು ಸ್ಕ್ರಾಲ್ ಡೌನ್ ಮಾಡಿ</translation>
 <translation id="2574014812750545982">ಪುಟದಲ್ಲಿನ ಝೂಮ್ ಮಟ್ಟವನ್ನು ಮರುಹೊಂದಿಸಿ</translation>
@@ -49,6 +51,7 @@
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, ನಂತರ <ph name="TAB" /> ಅಥವಾ <ph name="RIGHT" /></translation>
 <translation id="2750942583782703988">ನಿಮ್ಮ ಪ್ರಸ್ತುತ ಪುಟವನ್ನು ಮರುಲೋಡ್ ಮಾಡಿ</translation>
 <translation id="2764005613199379871">ಹುಡುಕಾಟ ವಿಳಾಸ ಪಟ್ಟಿಯಲ್ಲಿ ಫೋಕಸ್ ಇರಿಸಿ</translation>
+<translation id="2774822903829597107">ಹೊಸ ಡೆಸ್ಕ್ ಒಂದನ್ನು ರಚಿಸಿ</translation>
 <translation id="2789868185375229787">ಪುಟದಲ್ಲಿ ಝೂಮ್ ಔಟ್ ಮಾಡಿ</translation>
 <translation id="2804480015716812239"><ph name="ALT" /> ಅನ್ನು ಒತ್ತಿರಿ ಮತ್ತು ಲಿಂಕ್‌ ಅನ್ನು ಕ್ಲಿಕ್‌ ಮಾಡಿ</translation>
 <translation id="2830827904629746450">ಬಲಭಾಗದಲ್ಲಿ ವಿಂಡೋವನ್ನು ಡಾಕ್‌ ಮಾಡಿ</translation>
@@ -100,6 +103,7 @@
 <translation id="4642092649622328492">ಭಾಗಶಃ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಅನ್ನು ತೆಗೆದುಕೊಳ್ಳಿ</translation>
 <translation id="4698850295812410683">ಸ್ಟೈಲಸ್‌ ಪರಿಕರಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="4801989101741319327">ಮುಂದಿನ ಅಕ್ಷರದ ಕೊನೆಗೆ ಸರಿಸಿ</translation>
+<translation id="4866066940972151697">ಬಲಭಾಗದಲ್ಲಿರುವ ಡೆಸ್ಕ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="4916163929714267752">ಹೊಸ ವಿಂಡೋದಲ್ಲಿ ಲಿಂಕ್ ತೆರೆಯಿರಿ</translation>
 <translation id="5030659775136592441">ಬುಕ್‌ಮಾರ್ಕ್ ನಿರ್ವಾಹಕವನ್ನು ತೋರಿಸಿ</translation>
 <translation id="5034421018520995080">ಪುಟದ ಮೇಲಿನ ಭಾಗಕ್ಕೆ ಹೋಗಿ</translation>

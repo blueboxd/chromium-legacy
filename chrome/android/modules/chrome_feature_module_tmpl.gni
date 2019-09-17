@@ -33,6 +33,7 @@ template("chrome_feature_module") {
                              "base_module_target",
                              "manifest_package",
                              "min_sdk_version",
+                             "package_id",
                              "uncompress_shared_libraries",
                              "version_code",
                              "version_name",
@@ -54,7 +55,6 @@ template("chrome_feature_module") {
     proguard_enabled = !is_java_debug
 
     package_name = _module_desc.name
-    package_name_to_id_mapping = resource_packages_id_mapping
 
     _loadable_modules_32_bit = []
     _loadable_modules_64_bit = []

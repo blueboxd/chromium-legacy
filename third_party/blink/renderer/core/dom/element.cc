@@ -127,6 +127,7 @@
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/parser/nesting_level_incrementer.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/intersection_observer/element_intersection_observer_data.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/invisible_dom/activate_invisible_event.h"
@@ -425,6 +426,55 @@ bool ElementIsDescendantOfShadowIncludingAncestor(
 
   Element* document_element = shadow_host->GetDocument().documentElement();
   return candidate.IsDescendantOf(document_element);
+}
+
+// The first algorithm in
+// https://html.spec.whatwg.org/C/#the-autofocus-attribute
+void EnqueueAutofocus(Element& element) {
+  // When an element with the autofocus attribute specified is inserted into a
+  // document, run the following steps:
+  DCHECK(element.isConnected());
+  if (!element.IsAutofocusable())
+    return;
+
+  // 1. If the user has indicated (for example, by starting to type in a form
+  // control) that they do not wish focus to be changed, then optionally return.
+
+  // We don't implement this optional step. If other browsers have such
+  // behavior, we should follow it or standardize it.
+
+  // 2. Let target be the element's node document.
+  Document& doc = element.GetDocument();
+
+  // 3. If target's browsing context is null, then return.
+  if (!doc.GetFrame())
+    return;
+
+  // 4. If target's active sandboxing flag set has the sandboxed automatic
+  // features browsing context flag, then return.
+  if (doc.IsSandboxed(WebSandboxFlags::kAutomaticFeatures)) {
+    doc.AddConsoleMessage(ConsoleMessage::Create(
+        mojom::ConsoleMessageSource::kSecurity,
+        mojom::ConsoleMessageLevel::kError,
+        "Blocked autofocusing on a form control because the form's frame is "
+        "sandboxed and the 'allow-scripts' permission is not set."));
+    return;
+  }
+
+  // 5. Let topDocument be the active document of target's browsing context's
+  // top-level browsing context.
+  // 6. If target's origin is not the same as the origin of topDocument,
+  // then return.
+  if (!doc.IsInMainFrame() &&
+      !doc.TopFrameOrigin()->CanAccess(doc.GetSecurityOrigin())) {
+    doc.AddConsoleMessage(ConsoleMessage::Create(
+        mojom::ConsoleMessageSource::kSecurity,
+        mojom::ConsoleMessageLevel::kError,
+        "Blocked autofocusing on a form control in a cross-origin subframe."));
+    return;
+  }
+
+  element.GetDocument().TopDocument().EnqueueAutofocusCandidate(element);
 }
 
 }  // namespace
@@ -2519,6 +2569,8 @@ Node::InsertionNotificationRequest Element::InsertedInto(
   }
 
   if (isConnected()) {
+    EnqueueAutofocus(*this);
+
     if (GetCustomElementState() == CustomElementState::kCustom)
       CustomElement::EnqueueConnectedCallback(*this);
     else if (IsUpgradedV0CustomElement())
@@ -4032,6 +4084,13 @@ bool Element::IsMouseFocusable() const {
          !GetDocument().NeedsLayoutTreeUpdateForNode(*this));
   return isConnected() && !IsInert() && IsFocusableStyle() && SupportsFocus() &&
          !DisplayLockPreventsActivation();
+}
+
+bool Element::IsAutofocusable() const {
+  // https://html.spec.whatwg.org/C/#global-attributes
+  // https://svgwg.org/svg2-draft/struct.html#autofocusattribute
+  return (IsHTMLElement() || IsSVGElement()) &&
+         FastHasAttribute(html_names::kAutofocusAttr);
 }
 
 bool Element::ActivateDisplayLockIfNeeded() {

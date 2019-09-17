@@ -2408,12 +2408,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_PREFETCH_BADGE_NEW" desc="Message on download home to show that there are new prefetched contents">
         New
       </message>
-      <message name="IDS_DOWNLOAD_SUCCEEDED_MESSAGE" desc="App-based transient message shown when a file download has succeeded." meaning="Android">
-        <ph name="FILE_NAME">%1$s<ex>http://abc.com/test.pdf</ex></ph> downloaded in <ph name="PRODUCT_NAME">%2$s<ex>Chrome</ex></ph>
-      </message>
-      <message name="IDS_DOWNLOAD_SUCCEEDED_MESSAGE_DEFAULT" desc="Transient message shown when a file download has succeeded." meaning="Android">
-        <ph name="FILE_NAME">%1$s<ex>http://abc.com/test.pdf</ex></ph> downloaded
-      </message>
       <message name="IDS_FILE_SIZE_DOWNLOADED_KB" desc="Notification message showing how many KBs have been downloaded.">
         Downloaded <ph name="KBS">%1$.1f<ex>10.1</ex></ph> KB
       </message>

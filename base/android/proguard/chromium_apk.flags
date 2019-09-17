@@ -65,11 +65,6 @@
 # ~1%, and reduces the method count by ~4%.
 -allowaccessmodification
 
-# The support library contains references to newer platform versions.
-# Don't warn about those in case this app is linking against an older
-# platform version.  We know about them, and they are safe.
--dontwarn android.support.**
-
 # Ensure @RemovableInRelease actually works.
 -checkdiscard class ** {
   @org.chromium.base.annotations.RemovableInRelease *;

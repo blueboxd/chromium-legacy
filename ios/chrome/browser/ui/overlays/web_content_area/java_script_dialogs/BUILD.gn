@@ -9,6 +9,7 @@ source_set("common") {
     "java_script_dialog_overlay_coordinator+subclassing.h",
     "java_script_dialog_overlay_coordinator.h",
     "java_script_dialog_overlay_coordinator.mm",
+    "java_script_dialog_overlay_mediator+subclassing.h",
     "java_script_dialog_overlay_mediator.h",
     "java_script_dialog_overlay_mediator.mm",
   ]

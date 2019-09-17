@@ -516,12 +516,6 @@ const char kEnableAutofillDoNotMigrateUnsupportedLocalCardsDescription[] =
     "If enabled, local cards from unsupported networks will not be offered "
     "local card migration.";
 
-const char kEnableAutofillImportDynamicFormsName[] =
-    "Allow credit card import from dynamic forms after entry";
-const char kEnableAutofillImportDynamicFormsDescription[] =
-    "If enabled, offers credit card save for dynamic forms from the page after "
-    "information has been entered into them.";
-
 const char kEnableAutofillLocalCardMigrationUsesStrikeSystemV2Name[] =
     "Enable limit on offering to migrate local cards repeatedly using the "
     "updated strike system implementation";
@@ -3483,6 +3477,12 @@ const char kSchedulerConfigurationConservative[] =
     "Disables Hyper-Threading on relevant CPUs.";
 const char kSchedulerConfigurationPerformance[] =
     "Enables Hyper-Threading on relevant CPUs.";
+
+const char kShowBluetoothDebugLogToggleName[] =
+    "Show Bluetooth debug log toggle";
+const char kShowBluetoothDebugLogToggleDescription[] =
+    "Enables a toggle which can enable debug (i.e., verbose) logs for "
+    "Bluetooth";
 
 const char kShowBluetoothDeviceBatteryName[] = "Show Bluetooth device battery";
 const char kShowBluetoothDeviceBatteryDescription[] =

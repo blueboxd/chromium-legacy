@@ -53,10 +53,11 @@
 @dynamic delegate;
 
 - (instancetype)
-initWithBaseViewController:(UIViewController*)viewController
-              browserState:(ios::ChromeBrowserState*)browserState
-              webStateList:(WebStateList*)webStateList
-          injectionHandler:(ManualFillInjectionHandler*)injectionHandler {
+    initWithBaseViewController:(UIViewController*)viewController
+                  browserState:(ios::ChromeBrowserState*)browserState
+                  webStateList:(WebStateList*)webStateList
+              injectionHandler:(ManualFillInjectionHandler*)injectionHandler
+                    dispatcher:(id<BrowserCoordinatorCommands>)dispatcher {
   self = [super initWithBaseViewController:viewController
                               browserState:browserState
                           injectionHandler:injectionHandler];
@@ -75,7 +76,8 @@ initWithBaseViewController:(UIViewController*)viewController
     std::vector<autofill::CreditCard*> cards =
         _personalDataManager->GetCreditCards();
 
-    _cardMediator = [[ManualFillCardMediator alloc] initWithCards:cards];
+    _cardMediator = [[ManualFillCardMediator alloc] initWithCards:cards
+                                                       dispatcher:dispatcher];
     _cardMediator.navigationDelegate = self;
     _cardMediator.contentInjector = self.injectionHandler;
     _cardMediator.consumer = _cardViewController;

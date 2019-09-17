@@ -171,7 +171,6 @@ void PreviewsLitePageRedirectURLLoader::CreateRedirectInformation(
 
   redirect_info_ = net::RedirectInfo::ComputeRedirectInfo(
       modified_resource_request_.method, modified_resource_request_.url,
-      modified_resource_request_.request_initiator,
       modified_resource_request_.site_for_cookies,
       net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT,
       modified_resource_request_.referrer_policy,

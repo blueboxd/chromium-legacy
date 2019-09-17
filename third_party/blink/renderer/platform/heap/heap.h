@@ -293,7 +293,8 @@ class PLATFORM_EXPORT ThreadHeap {
   bool AdvanceMarking(MarkingVisitor*, base::TimeTicks deadline);
   void VerifyMarking();
 
-  void AdvanceConcurrentMarking(ConcurrentMarkingVisitor*);
+  // Returns true if marker is done
+  bool AdvanceConcurrentMarking(ConcurrentMarkingVisitor*, base::TimeTicks);
 
   // Conservatively checks whether an address is a pointer in any of the
   // thread heaps.  If so marks the object pointed to as live.

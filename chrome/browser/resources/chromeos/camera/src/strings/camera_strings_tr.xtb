@@ -19,6 +19,7 @@
 <translation id="2501953888035679275">Kameranızla fotoğraf çekin ve video kaydedin.</translation>
 <translation id="2549985041256363841">Kaydı başlat</translation>
 <translation id="2599796128805996109">Arka kamera</translation>
+<translation id="2912439424121107408">Uzman modu bu cihazda desteklenmiyor</translation>
 <translation id="2968794441791257519">Kamerayla çekilen fotoğraflar ve videolar, İndirilenler klasörüne taşınacaktır. Bunlara Dosyalar uygulamasından erişebilirsiniz.
 
         Depolama iznine sahip uygulamalar fotoğraflarınıza ve videolarınıza erişebilecektir.</translation>
@@ -41,10 +42,12 @@
         Lütfen kameranın düzgün bir şekilde bağlanıp bağlanmadığını kontrol edin.</translation>
 <translation id="5152121255775685072">Galeriye git</translation>
 <translation id="5671277269877808209">Kare</translation>
+<translation id="5775960006311140197">Uzman modu</translation>
 <translation id="5869546221129391014">Tablo</translation>
 <translation id="6040143037577758943">Kapat</translation>
 <translation id="6073451960410192870">Kaydı durdur</translation>
 <translation id="6165508094623778733">Daha fazla bilgi edinin</translation>
+<translation id="6197807149213783179">Meta veriyi kaydet</translation>
 <translation id="6233780560267770709">3'e 3</translation>
 <translation id="6243827288366940320">Altın oran</translation>
 <translation id="6248749904681914629">Harici kamera</translation>
@@ -66,6 +69,7 @@
 <translation id="8261506727792406068">Sil</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8732462232047530626">Meta veriyi önizle</translation>
 <translation id="8815966864175525708">Portre fotoğrafı çekme moduna geç</translation>
 <translation id="8870695351537079478">Kayıt başlatılamıyor</translation>
 <translation id="9045155556724273246">10 saniye</translation>

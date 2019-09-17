@@ -64,9 +64,15 @@ const PIN_INPUT_ALLOWED_NON_NUMBER_KEY_CODES = new Set([
   154,  // LaunchControlPanel, aka system tray menu
 ]);
 
-/** @return {boolean} */
-function receivedFocusFromKeyboard() {
-  return !!document.querySelector('html.focus-outline-visible');
+/**
+ * @param {!Event} event
+ * @return {boolean}
+ */
+function receivedEventFromKeyboard(event) {
+  if (!event.detail || !event.detail.sourceEvent) {
+    return false;
+  }
+  return event.detail.sourceEvent.detail === 0;
 }
 
 Polymer({
@@ -250,7 +256,7 @@ Polymer({
 
   /**
    * Called when a keypad number has been tapped.
-   * @param {Event} event The event object.
+   * @param {!Event} event The event object.
    * @private
    */
   onNumberTap_: function(event) {
@@ -266,7 +272,7 @@ Polymer({
     // button, therefore we transfer focus back to the input, but if a number
     // button is tabbed into, it should keep focus, so users can use tab and
     // spacebar/return to enter their PIN.
-    if (!receivedFocusFromKeyboard()) {
+    if (!receivedEventFromKeyboard(event)) {
       this.focusInput(selectionStart + 1, selectionStart + 1);
     }
     event.stopImmediatePropagation();
@@ -319,11 +325,11 @@ Polymer({
    * onBackspacePointerUp_ will handle the events if they come from mouse or
    * touch. Note: This does not support repeatedly backspacing by holding down
    * the space or enter key like touch or mouse does.
-   * @param {Event} event The event object.
+   * @param {!Event} event The event object.
    * @private
    */
   onBackspaceTap_: function(event) {
-    if (!receivedFocusFromKeyboard()) {
+    if (!receivedEventFromKeyboard(event)) {
       return;
     }
 
@@ -336,7 +342,7 @@ Polymer({
    * Called when the user presses or touches the backspace button. Starts a
    * timer which starts an interval to repeatedly backspace the pin value until
    * the interval is cleared.
-   * @param {Event} event The event object.
+   * @param {!Event} event The event object.
    * @private
    */
   onBackspacePointerDown_: function(event) {
@@ -345,7 +351,7 @@ Polymer({
           setInterval(this.onPinClear_.bind(this), REPEAT_BACKSPACE_DELAY_MS);
     }.bind(this), INITIAL_BACKSPACE_DELAY_MS);
 
-    if (!receivedFocusFromKeyboard()) {
+    if (!receivedEventFromKeyboard(event)) {
       this.focusInput(this.selectionStart_, this.selectionEnd_);
     }
     event.stopImmediatePropagation();
@@ -366,7 +372,7 @@ Polymer({
    * Called when the user unpresses or untouches the backspace button. Stops the
    * interval callback and fires a backspace event if there is no interval
    * running.
-   * @param {Event} event The event object.
+   * @param {!Event} event The event object.
    * @private
    */
   onBackspacePointerUp_: function(event) {
@@ -381,7 +387,7 @@ Polymer({
     // virtual keyboard, even if focusInput() is wrapped in a setTimeout. Blur
     // the input element first to workaround this.
     this.blur();
-    if (!receivedFocusFromKeyboard()) {
+    if (!receivedEventFromKeyboard(event)) {
       this.focusInput(this.selectionStart_, this.selectionEnd_);
     }
     event.stopImmediatePropagation();

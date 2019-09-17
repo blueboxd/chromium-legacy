@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {getInstance} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
+// #import {eventToPromise} from 'chrome://test/test_util.m.js';
+// clang-format on
+
 suite('cr-toast-manager', () => {
   let toastManager;
 
@@ -26,8 +31,12 @@ suite('cr-toast-manager', () => {
     assertFalse(toastManager.$.button.hidden);
 
     toastManager.hide();
-    assertEquals(
-        'hidden', window.getComputedStyle(toastManager.$.button).visibility);
+    const whenDone =
+        new Promise(resolve => window.requestAnimationFrame(resolve));
+    return whenDone.then(() => {
+      assertEquals(
+          'hidden', window.getComputedStyle(toastManager.$.button).visibility);
+    });
   });
 
   test('undo-click fired when undo button is clicked', async () => {

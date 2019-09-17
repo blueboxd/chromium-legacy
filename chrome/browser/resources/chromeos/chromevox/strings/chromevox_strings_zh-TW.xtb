@@ -233,6 +233,7 @@
 <translation id="27527859628328957">跳至下一個可選擇的項目</translation>
 <translation id="2770781857296573485">輸入群組探索</translation>
 <translation id="2777845298774924149">結束</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{+#}other{+#}}</translation>
 <translation id="2784959586797362050">和以前一樣，我們竭誠歡迎你提供意見。只要直接按下搜尋鍵 + A 鍵，再按下 I 鍵即可暢所欲言。</translation>
 <translation id="2800204403141299078">已無其他元素。</translation>
 <translation id="2800780099804980316">沒有上一個第 1 階標題。</translation>
@@ -715,6 +716,7 @@
 <translation id="5956928062748260866">對話方塊</translation>
 <translation id="5963413905009737549">區段</translation>
 <translation id="5968607524793740041">顯示內容選單</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{有 # 個項目}other{有 # 個項目}}</translation>
 <translation id="5981446804259161541">淺青</translation>
 <translation id="5983179082906765664">增加導覽精細度</translation>
 <translation id="5992285135956208197">圖形文件</translation>

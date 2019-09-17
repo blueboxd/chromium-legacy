@@ -2902,6 +2902,8 @@ TEST_F(ShelfLayoutManagerTest, ShelfItemRespondToGestureEvent) {
   generator->MoveMouseTo(0, 0);
 
   ShelfTestUtil::AddAppShortcut("app_id", TYPE_APP);
+  ShelfViewTestAPI(GetPrimaryShelf()->GetShelfViewForTesting())
+      .RunMessageLoopUntilAnimationsDone();
 
   // Turn on the auto-hide mode for shelf. Check the initial states.
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
@@ -3346,6 +3348,8 @@ TEST_F(ShelfLayoutManagerTest, ShelfRemainsCenteredOnSecondDisplay) {
   EXPECT_NE(display_1, display_2);
 
   ShelfTestUtil::AddAppShortcut("app_id", TYPE_PINNED_APP);
+  ShelfViewTestAPI(GetPrimaryShelf()->GetShelfViewForTesting())
+      .RunMessageLoopUntilAnimationsDone();
   gfx::Point app_center_1 = shelf_1->GetShelfViewForTesting()
                                 ->first_visible_button_for_testing()
                                 ->bounds()

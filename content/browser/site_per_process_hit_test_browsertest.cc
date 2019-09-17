@@ -2805,6 +2805,92 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
               kHitTestTolerance);
 }
 
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
+                       PointerEventsNoneWithNestedOOPIF) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/frame_tree/page_with_positioned_nested_frames.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+  RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B C\n"
+      "   +--Site B ------- proxies for A C\n"
+      "        +--Site C -- proxies for A B\n"
+      "Where A = http://127.0.0.1/\n"
+      "      B = http://a.com/\n"
+      "      C = http://baz.com/",
+      DepictFrameTree(root));
+
+  FrameTreeNode* child_node = root->child_at(0);
+  FrameTreeNode* grandchild_node = child_node->child_at(0);
+
+  // This is to make sure that the hit_test_data is clean before running the
+  // hit_test_data_change_observer.
+  WaitForHitTestData(child_node->current_frame_host());
+  WaitForHitTestData(grandchild_node->current_frame_host());
+
+  HitTestRegionObserver hit_test_data_change_observer(
+      root_view->GetRootFrameSinkId());
+  hit_test_data_change_observer.WaitForHitTestData();
+
+  EXPECT_TRUE(ExecuteScript(web_contents(),
+                            "document.getElementsByTagName('iframe')[0].style."
+                            "pointerEvents = 'none';"));
+
+  hit_test_data_change_observer.WaitForHitTestDataChange();
+
+  MainThreadFrameObserver observer(
+      root->current_frame_host()->GetRenderWidgetHost());
+  observer.Wait();
+
+  // Create listeners for mouse events.
+  RenderWidgetHostMouseEventMonitor main_frame_monitor(
+      root->current_frame_host()->GetRenderWidgetHost());
+  RenderWidgetHostMouseEventMonitor child_frame_monitor(
+      child_node->current_frame_host()->GetRenderWidgetHost());
+
+  // ------------------------
+  // root    50px
+  //     ---------------------
+  //     |child  50px        |
+  // 50px|    -------------- |
+  //     |50px| grand_child ||
+  //     |    |             ||
+  //     |    |-------------||
+  //     ---------------------
+  //
+  // Since child has pointer-events: none, (125, 125) should be claimed by root.
+  blink::WebMouseEvent mouse_event(
+      blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  mouse_event.button = blink::WebPointerProperties::Button::kLeft;
+  SetWebEventPositions(&mouse_event, gfx::Point(125, 125), root_view);
+  mouse_event.click_count = 1;
+
+  main_frame_monitor.ResetEventReceived();
+  child_frame_monitor.ResetEventReceived();
+
+  InputEventAckWaiter waiter(root->current_frame_host()->GetRenderWidgetHost(),
+                             blink::WebInputEvent::kMouseDown);
+  RenderWidgetHostInputEventRouter* router =
+      web_contents()->GetInputEventRouter();
+  router->RouteMouseEvent(root_view, &mouse_event, ui::LatencyInfo());
+  waiter.Wait();
+
+  EXPECT_TRUE(main_frame_monitor.EventWasReceived());
+  EXPECT_NEAR(125, main_frame_monitor.event().PositionInWidget().x,
+              kHitTestTolerance);
+  EXPECT_NEAR(125, main_frame_monitor.event().PositionInWidget().y,
+              kHitTestTolerance);
+  EXPECT_FALSE(child_frame_monitor.EventWasReceived());
+}
+
 // This test tests that browser process can successfully hit test on nested
 // OOPIFs that are partially occluded by main frame elements.
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,

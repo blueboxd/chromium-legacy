@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "gpu/config/gpu_info.h"
+#include "gpu/config/gpu_util.h"
 
 namespace {
 
@@ -102,9 +103,10 @@ void EnumerateDx12VulkanVersionInfo(const gpu::Dx12VulkanVersionInfo& info,
   enumerator->BeginDx12VulkanVersionInfo();
   enumerator->AddBool("supportsDx12", info.supports_dx12);
   enumerator->AddBool("supportsVulkan", info.supports_vulkan);
-  enumerator->AddInt("dx12FeatureLevel",
-                     static_cast<int>(info.d3d12_feature_level));
-  enumerator->AddInt("vulkanVersion", static_cast<int>(info.vulkan_version));
+  enumerator->AddString("dx12FeatureLevel",
+                        gpu::D3DFeatureLevelToString(info.d3d12_feature_level));
+  enumerator->AddString("vulkanVersion",
+                        gpu::VulkanVersionToString(info.vulkan_version));
   enumerator->EndDx12VulkanVersionInfo();
 }
 #endif

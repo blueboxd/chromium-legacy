@@ -84,10 +84,11 @@ class IdlCompiler(object):
         # Merge mixins.
         self._merge_interface_mixins()
 
-        self._group_overloaded_functions()
-
         # Process inheritances.
         self._process_interface_inheritances()
+
+        # Make groups of overloaded functions including inherited ones.
+        self._group_overloaded_functions()
 
         # Updates on IRs are finished.  Create API objects.
         self._create_public_objects()
@@ -246,28 +247,9 @@ class IdlCompiler(object):
                     make_copy(to_be_merged.operations))
             self._ir_map.add(new_interface)
 
-    def _group_overloaded_functions(self):
-        old_interfaces = self._ir_map.irs_of_kind(IRMap.IR.Kind.INTERFACE)
-
-        self._ir_map.move_to_new_phase()
-
-        for old_interface in old_interfaces:
-            assert not old_interface.operation_groups
-            new_interface = make_copy(old_interface)
-
-            sort_key = lambda x: x.identifier
-            sorted_operations = sorted(new_interface.operations, key=sort_key)
-            new_interface.operation_groups = [
-                OperationGroup.IR(operations=list(operations))
-                for identifier, operations in itertools.groupby(
-                    sorted_operations, key=sort_key) if identifier
-            ]
-
-            self._ir_map.add(new_interface)
-
     def _process_interface_inheritances(self):
         def is_own_member(member):
-            return 'Unfogeable' in member.extended_attributes
+            return 'Unforgeable' in member.extended_attributes
 
         def create_inheritance_stack(obj, table):
             if obj.inherited is None:
@@ -292,6 +274,25 @@ class IdlCompiler(object):
                     make_copy(operation) for operation in interface.operations
                     if is_own_member(operation)
                 ])
+            self._ir_map.add(new_interface)
+
+    def _group_overloaded_functions(self):
+        old_interfaces = self._ir_map.irs_of_kind(IRMap.IR.Kind.INTERFACE)
+
+        self._ir_map.move_to_new_phase()
+
+        for old_interface in old_interfaces:
+            assert not old_interface.operation_groups
+            new_interface = make_copy(old_interface)
+
+            sort_key = lambda x: x.identifier
+            sorted_operations = sorted(new_interface.operations, key=sort_key)
+            new_interface.operation_groups = [
+                OperationGroup.IR(operations=list(operations))
+                for identifier, operations in itertools.groupby(
+                    sorted_operations, key=sort_key) if identifier
+            ]
+
             self._ir_map.add(new_interface)
 
     def _create_public_objects(self):

@@ -506,7 +506,7 @@ void FakeShillDeviceClient::AddCellularFoundNetwork(
                     base::Value(base::StringPrintf("Network %d", idx)));
   new_result.SetKey(shill::kTechnologyProperty, base::Value("GSM"));
   new_result.SetKey(shill::kStatusProperty, base::Value("available"));
-  scan_results->GetList().push_back(std::move(new_result));
+  scan_results->Append(std::move(new_result));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&FakeShillDeviceClient::NotifyObserversPropertyChanged,

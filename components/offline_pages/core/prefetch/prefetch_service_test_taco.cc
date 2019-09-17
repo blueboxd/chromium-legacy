@@ -4,10 +4,10 @@
 
 #include "components/offline_pages/core/prefetch/prefetch_service_test_taco.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/image_fetcher/core/mock_image_fetcher.h"
@@ -78,8 +78,8 @@ PrefetchServiceTestTaco::PrefetchServiceTestTaco(SuggestionSource source) {
       std::make_unique<PrefetchStore>(base::ThreadTaskRunnerHandle::Get());
 
   download_service_ = std::make_unique<TestDownloadService>();
-  prefetch_downloader_ = base::WrapUnique(new PrefetchDownloaderImpl(
-      download_service_.get(), kTestChannel, pref_service_.get()));
+  prefetch_downloader_ = std::make_unique<PrefetchDownloaderImpl>(
+      download_service_.get(), kTestChannel, pref_service_.get());
   download_client_ =
       std::make_unique<TestDownloadClient>(prefetch_downloader_.get());
   download_service_->SetClient(download_client_.get());

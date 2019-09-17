@@ -166,7 +166,7 @@ const CGFloat kEditIconLength = 18;
     UIImage* editImage = [[UIImage imageNamed:@"table_view_cell_edit_icon"]
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     _editIconView = [[UIImageView alloc] initWithImage:editImage];
-    _editIconView.tintColor = UIColor.cr_secondaryLabelColor;
+    _editIconView.tintColor = [UIColor colorNamed:kGrey400Color];
     _editIconView.translatesAutoresizingMaskIntoConstraints = NO;
     [contentView addSubview:_editIconView];
 

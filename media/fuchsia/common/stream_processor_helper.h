@@ -26,35 +26,38 @@ class StreamProcessorHelper {
  public:
   class IoPacket {
    public:
-    static std::unique_ptr<IoPacket> CreateInput(
-        size_t index,
-        size_t size,
-        base::TimeDelta timestamp,
-        fuchsia::media::FormatDetails format,
-        base::OnceClosure destroy_cb);
+    static IoPacket CreateInput(size_t index,
+                                size_t size,
+                                base::TimeDelta timestamp,
+                                bool unit_end,
+                                base::OnceClosure destroy_cb);
 
-    static std::unique_ptr<IoPacket> CreateOutput(size_t index,
-                                                  size_t offset,
-                                                  size_t size,
-                                                  base::TimeDelta timestamp,
-                                                  base::OnceClosure destroy_cb);
+    static IoPacket CreateOutput(size_t index,
+                                 size_t offset,
+                                 size_t size,
+                                 base::TimeDelta timestamp,
+                                 bool unit_end,
+                                 base::OnceClosure destroy_cb);
 
     IoPacket(size_t index,
              size_t offset,
              size_t size,
              base::TimeDelta timestamp,
-             fuchsia::media::FormatDetails format,
+             bool unit_end,
              base::OnceClosure destroy_cb);
     ~IoPacket();
 
+    IoPacket(IoPacket&&);
+    IoPacket& operator=(IoPacket&&);
+
     size_t index() const { return index_; }
-
     size_t offset() const { return offset_; }
-
     size_t size() const { return size_; }
-
     base::TimeDelta timestamp() const { return timestamp_; }
-
+    bool unit_end() const { return unit_end_; }
+    void set_format(fuchsia::media::FormatDetails format) {
+      format_ = std::move(format);
+    }
     const fuchsia::media::FormatDetails& format() const { return format_; }
 
    private:
@@ -62,8 +65,11 @@ class StreamProcessorHelper {
     size_t offset_;
     size_t size_;
     base::TimeDelta timestamp_;
+    bool unit_end_;
     fuchsia::media::FormatDetails format_;
     base::ScopedClosureRunner destroy_cb_;
+
+    DISALLOW_COPY_AND_ASSIGN(IoPacket);
   };
 
   class Client {
@@ -83,9 +89,9 @@ class StreamProcessorHelper {
     virtual void OnOutputFormat(fuchsia::media::StreamOutputFormat format) = 0;
 
     // Called when output packet is available. Deleting |packet| will notify
-    // StreamProcessor the output buffer is available to be re-used.
-    // Client should delete |packet| on the same thread as this function.
-    virtual void OnOutputPacket(std::unique_ptr<IoPacket> packet) = 0;
+    // StreamProcessor the output buffer is available to be re-used. Client
+    // should delete |packet| on the same thread as this function.
+    virtual void OnOutputPacket(IoPacket packet) = 0;
 
     // Only available for decryption, which indicates currently the
     // StreamProcessor doesn't have the content key to process.
@@ -102,9 +108,9 @@ class StreamProcessorHelper {
                         Client* client);
   ~StreamProcessorHelper();
 
-  // Process one packet. |packet| is owned by this class until the buffer
-  // represented by |packet| is released.
-  void Process(std::unique_ptr<IoPacket> packet);
+  // Process one packet. Caller can reuse the underlying buffer when the
+  // |packet| is destroyed.
+  void Process(IoPacket packet);
 
   // Push End-Of-Stream to StreamProcessor. No more data should be sent to
   // StreamProcessor without calling Reset.
@@ -153,7 +159,7 @@ class StreamProcessorHelper {
 
   // Map from packet index to corresponding input IoPacket. IoPacket should be
   // owned by this class until StreamProcessor released the buffer.
-  base::flat_map<size_t, std::unique_ptr<IoPacket>> input_packets_;
+  base::flat_map<size_t, IoPacket> input_packets_;
 
   // Output buffers.
   uint64_t output_buffer_lifetime_ordinal_ = 1;

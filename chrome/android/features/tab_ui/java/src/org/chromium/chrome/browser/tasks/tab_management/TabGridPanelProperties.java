@@ -57,10 +57,13 @@ class TabGridPanelProperties {
             new PropertyModel.WritableObjectPropertyKey(true);
     public static final PropertyModel.WritableBooleanPropertyKey IS_MAIN_CONTENT_VISIBLE =
             new PropertyModel.WritableBooleanPropertyKey();
+    public static final PropertyModel
+            .WritableObjectPropertyKey<OnClickListener> MENU_CLICK_LISTENER =
+            new PropertyModel.WritableObjectPropertyKey<>();
     public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {COLLAPSE_CLICK_LISTENER,
             ADD_CLICK_LISTENER, HEADER_TITLE, CONTENT_TOP_MARGIN, PRIMARY_COLOR, TINT,
             IS_DIALOG_VISIBLE, SCRIMVIEW_OBSERVER, ANIMATION_PARAMS, UNGROUP_BAR_STATUS,
             DIALOG_BACKGROUND_RESOUCE_ID, DIALOG_UNGROUP_BAR_BACKGROUND_COLOR_ID,
             DIALOG_UNGROUP_BAR_HOVERED_BACKGROUND_COLOR_ID, DIALOG_UNGROUP_BAR_TEXT_APPEARANCE,
-            INITIAL_SCROLL_INDEX, IS_MAIN_CONTENT_VISIBLE};
+            INITIAL_SCROLL_INDEX, IS_MAIN_CONTENT_VISIBLE, MENU_CLICK_LISTENER};
 }

@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/tracing/public/cpp/base_agent.h"
 #include "services/tracing/public/mojom/tracing.mojom.h"
 
@@ -34,14 +35,15 @@ class CrOSTracingAgent : public tracing::BaseAgent {
   void StartTracing(const std::string& config,
                     base::TimeTicks coordinator_time,
                     Agent::StartTracingCallback callback) override;
-  void StopAndFlush(tracing::mojom::RecorderPtr recorder) override;
+  void StopAndFlush(
+      mojo::PendingRemote<tracing::mojom::Recorder> recorder) override;
 
   void StartTracingCallbackProxy(Agent::StartTracingCallback callback,
                                  bool success);
   void RecorderProxy(const scoped_refptr<base::RefCountedString>& events);
 
   std::unique_ptr<CrOSSystemTracingSession> session_;
-  tracing::mojom::RecorderPtr recorder_;
+  mojo::Remote<tracing::mojom::Recorder> recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(CrOSTracingAgent);
 };

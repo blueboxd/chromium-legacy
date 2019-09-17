@@ -3684,6 +3684,42 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DuplicateContentDisposition) {
             downloads[0]->GetTargetFilePath().BaseName().value());
 }
 
+// Test that the network isolation key is populated for <a download> triggered
+// download request that doesn't go through the navigation path.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest,
+                       DownloadAttributeNetworkIsolationKeyPopulated) {
+  GURL frame_url = embedded_test_server()->GetURL(
+      "/download/download-attribute.html?noclick=/download/download-test.lib");
+  GURL document_url = embedded_test_server()->GetURL(
+      "/download/iframe-host.html?target=" + frame_url.spec());
+
+  // Load a page that contains a same-origin iframe, where the iframe contains
+  // a <a download> link same-origin to the iframe's origin.
+  TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
+  shell()->LoadURL(document_url);
+  same_tab_observer.Wait();
+
+  FetchHistogramsFromChildProcesses();
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount("HttpCache.NetworkIsolationKeyPresent", 0);
+
+  std::unique_ptr<DownloadCreateObserver> observer(
+      new DownloadCreateObserver(DownloadManagerForShell(shell())));
+
+  // click the <a download> link in the child frame
+  EXPECT_TRUE(
+      ExecJs(shell()->web_contents()->GetAllFrames()[1],
+             "var anchorElement = document.querySelector('a[download]'); "
+             "anchorElement.click();"));
+  download::DownloadItem* download = observer->WaitForFinished();
+  WaitForCompletion(download);
+
+  FetchHistogramsFromChildProcesses();
+  // Assert that the NIK for the download request is populated.
+  histogram_tester.ExpectUniqueSample("HttpCache.NetworkIsolationKeyPresent",
+                                      true /*sample*/, 1 /*count*/);
+}
+
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeSameOriginIFrame) {
   GURL frame_url = embedded_test_server()->GetURL(
       "/download/download-attribute.html?target=/download/download-test.lib");

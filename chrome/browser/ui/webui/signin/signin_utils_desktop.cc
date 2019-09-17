@@ -85,6 +85,9 @@ bool CanOfferSignin(Profile* profile,
                 .GetAllProfilesAttributes();
 
         for (const ProfileAttributesEntry* entry : entries) {
+          if (!entry->IsAuthenticated())
+            continue;
+
           // For backward compatibility, need to check also the username of the
           // profile, since the GAIA ID may not have been set yet in the
           // ProfileAttributesStorage.  It will be set once the profile

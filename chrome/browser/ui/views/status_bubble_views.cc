@@ -52,32 +52,32 @@
 namespace {
 
 // The alpha and color of the bubble's shadow.
-const SkColor kShadowColor = SkColorSetARGB(30, 0, 0, 0);
+constexpr SkColor kShadowColor = SkColorSetARGB(30, 0, 0, 0);
 
 // The roundedness of the edges of our bubble.
-const int kBubbleCornerRadius = 4;
+constexpr int kBubbleCornerRadius = 4;
 
 // How close the mouse can get to the infobubble before it starts sliding
 // off-screen.
-const int kMousePadding = 20;
+constexpr int kMousePadding = 20;
 
 // The horizontal offset of the text within the status bubble, not including the
 // outer shadow ring.
-const int kTextPositionX = 5;
+constexpr int kTextPositionX = 5;
 
 // The minimum horizontal space between the (right) end of the text and the edge
 // of the status bubble, not including the outer shadow ring.
-const int kTextHorizPadding = 5;
+constexpr int kTextHorizPadding = 5;
 
 // Delays before we start hiding or showing the bubble after we receive a
 // show or hide request.
-const int kShowDelay = 80;
-const int kHideDelay = 250;
+constexpr auto kShowDelay = base::TimeDelta::FromMilliseconds(80);
+constexpr auto kHideDelay = base::TimeDelta::FromMilliseconds(250);
 
 // How long each fade should last for.
 constexpr auto kShowFadeDuration = base::TimeDelta::FromMilliseconds(120);
 constexpr auto kHideFadeDuration = base::TimeDelta::FromMilliseconds(200);
-const int kFramerate = 25;
+constexpr int kFramerate = 25;
 
 // How long each expansion step should take.
 constexpr auto kMinExpansionStepDuration =
@@ -335,7 +335,7 @@ void StatusBubbleViews::StatusView::ResetTimer() {
   if (state_ == BUBBLE_SHOWING_TIMER) {
     // We hadn't yet begun showing anything when we received a new request
     // for something to show, so we start from scratch.
-    RestartTimer(base::TimeDelta::FromMilliseconds(kShowDelay));
+    RestartTimer(kShowDelay);
   }
 }
 
@@ -352,7 +352,7 @@ void StatusBubbleViews::StatusView::StartFade(float start,
 void StatusBubbleViews::StatusView::StartHiding() {
   if (state_ == BUBBLE_SHOWN) {
     state_ = BUBBLE_HIDING_TIMER;
-    StartTimer(base::TimeDelta::FromMilliseconds(kHideDelay));
+    StartTimer(kHideDelay);
   } else if (state_ == BUBBLE_SHOWING_FADE) {
     state_ = BUBBLE_HIDING_FADE;
     // Figure out where we are in the current fade.
@@ -371,7 +371,7 @@ void StatusBubbleViews::StatusView::StartShowing() {
   if (state_ == BUBBLE_HIDDEN) {
     GetWidget()->ShowInactive();
     state_ = BUBBLE_SHOWING_TIMER;
-    StartTimer(base::TimeDelta::FromMilliseconds(kShowDelay));
+    StartTimer(kShowDelay);
   } else if (state_ == BUBBLE_HIDING_TIMER) {
     state_ = BUBBLE_SHOWN;
     CancelTimer();

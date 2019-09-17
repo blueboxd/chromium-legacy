@@ -14,6 +14,7 @@
 #include "ash/shelf/shelf_tooltip_delegate.h"
 #include "ash/shelf/shelf_view.h"
 #include "ui/views/animation/ink_drop_host_view.h"
+#include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 
 namespace views {
@@ -25,7 +26,8 @@ namespace ash {
 class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
                                        public ShellObserver,
                                        public ShelfButtonDelegate,
-                                       public ShelfTooltipDelegate {
+                                       public ShelfTooltipDelegate,
+                                       public views::ContextMenuController {
  public:
   enum LayoutStrategy {
     // The arrow buttons are not shown. It means that there is enough space to
@@ -131,6 +133,12 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // ShelfButtonDelegate:
   void OnShelfButtonAboutToRequestFocusFromTabTraversal(ShelfButton* button,
                                                         bool reverse) override;
+
+  // ContextMenuController:
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
+
   void ButtonPressed(views::Button* sender,
                      const ui::Event& event,
                      views::InkDrop* ink_drop) override;

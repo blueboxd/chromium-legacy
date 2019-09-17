@@ -180,21 +180,12 @@ int XGetModifiers() {
   return modifiers;
 }
 
-// The time to wait for the target to respond after the user has released the
-// mouse button before ending the move loop.
-const int kEndMoveLoopTimeoutMs = 1000;
-
-// The time to wait since sending the last XdndPosition message before
-// reprocessing the most recent mouse move event in case that the window
-// stacking order has changed and |source_current_window_| needs to be updated.
-const int kRepeatMouseMoveTimeoutMs = 350;
-
 // The minimum alpha before we declare a pixel transparent when searching in
 // our source image.
-const uint32_t kMinAlpha = 32;
+constexpr uint32_t kMinAlpha = 32;
 
 // |drag_widget_|'s opacity.
-const float kDragWidgetOpacity = .75f;
+constexpr float kDragWidgetOpacity = .75f;
 
 static base::LazyInstance<
     std::map<::Window, views::DesktopDragDropClientAuraX11*> >::Leaky
@@ -1021,11 +1012,8 @@ void DesktopDragDropClientAuraX11::ProcessMouseMove(
 }
 
 void DesktopDragDropClientAuraX11::StartEndMoveLoopTimer() {
-  end_move_loop_timer_.Start(FROM_HERE,
-                             base::TimeDelta::FromMilliseconds(
-                                 kEndMoveLoopTimeoutMs),
-                             this,
-                             &DesktopDragDropClientAuraX11::EndMoveLoop);
+  end_move_loop_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(1000),
+                             this, &DesktopDragDropClientAuraX11::EndMoveLoop);
 }
 
 void DesktopDragDropClientAuraX11::EndMoveLoop() {
@@ -1239,7 +1227,7 @@ void DesktopDragDropClientAuraX11::SendXdndPosition(
   // the Xdnd protocol both recommend that drag events should be sent
   // periodically.
   repeat_mouse_move_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(kRepeatMouseMoveTimeoutMs),
+      FROM_HERE, base::TimeDelta::FromMilliseconds(350),
       base::BindOnce(&DesktopDragDropClientAuraX11::ProcessMouseMove,
                      base::Unretained(this), screen_point, event_time));
 }

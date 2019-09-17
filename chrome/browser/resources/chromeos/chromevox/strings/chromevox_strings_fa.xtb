@@ -233,6 +233,7 @@
 <translation id="27527859628328957">پرش به مورد قابل فوکوس بعدی</translation>
 <translation id="2770781857296573485">به کاوش گروه وارد شوید</translation>
 <translation id="2777845298774924149">خارج شد</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{#+}one{#+}other{#+}}</translation>
 <translation id="2784959586797362050">‏مثل همیشه، می‌توانید با فشار دادن Search+a و سپس i مستقیماً برای ما بازخورد ارسال کنید. مشتاق شنیدن نظرات شما هستیم.</translation>
 <translation id="2800204403141299078">هیچ عنصر متفاوت دیگری نیست.</translation>
 <translation id="2800780099804980316">عنوان سطح ۱ قبلی وجود ندارد.</translation>
@@ -715,6 +716,7 @@
 <translation id="5956928062748260866">گفتگو</translation>
 <translation id="5963413905009737549">بخش</translation>
 <translation id="5968607524793740041">نمایش منوی بافت</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{شامل # مورد}one{شامل # مورد}other{شامل # مورد}}</translation>
 <translation id="5981446804259161541">فیروزه‌ای روشن</translation>
 <translation id="5983179082906765664">افزایش جزئیات پیمایش</translation>
 <translation id="5992285135956208197">سند گرافیکی</translation>

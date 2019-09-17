@@ -233,6 +233,7 @@
 <translation id="27527859628328957">આગલી ફોકસ કરવા યોગ્ય આઇટમ પર જમ્પ કરો</translation>
 <translation id="2770781857296573485">સમૂહ અન્વેષણ દાખલ કરો</translation>
 <translation id="2777845298774924149">બહાર</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{+#}one{+#}other{+#}}</translation>
 <translation id="2784959586797362050">હંમેશની જેમ, તમે શોધ+a પછી i દબાવીને અમને સીધો જ પ્રતિસાદ મોકલી શકો છો. અમે તમારો પ્રતિસાદ મેળવવા આતુર છીએ.</translation>
 <translation id="2800204403141299078">કોઈ વધુ અલગ ઘટકો નથી.</translation>
 <translation id="2800780099804980316">કોઈ પાછલું લેવલ 1 શીર્ષક નથી.</translation>
@@ -715,6 +716,7 @@
 <translation id="5956928062748260866">સંવાદ</translation>
 <translation id="5963413905009737549">સેક્શન</translation>
 <translation id="5968607524793740041">સંદર્ભ મેનૂ બતાવો</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{# આઇટમ સાથે}one{# આઇટમ સાથે}other{# આઇટમ સાથે}}</translation>
 <translation id="5981446804259161541">આછો સ્યાન</translation>
 <translation id="5983179082906765664">નેવિગેશન ગ્રેન્યુલેરિટી વધારો</translation>
 <translation id="5992285135956208197">ગ્રાફિક્સ દસ્તાવેજ</translation>

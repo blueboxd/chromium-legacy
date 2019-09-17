@@ -80,7 +80,7 @@ class ExpandOwnersTest(unittest.TestCase):
   <summary>I like coffee.</summary>
 </histogram>
 
-<histogram name="Maple.Syrup">
+<histogram name="Maple.Syrup" units="units">
   <owner>joe@chromium.org</owner>
   <owner>{path}</owner>
   <owner>kim@chromium.org</owner>
@@ -101,7 +101,7 @@ class ExpandOwnersTest(unittest.TestCase):
   <component>Default&gt;Component</component>
 </histogram>
 
-<histogram name="Maple.Syrup">
+<histogram name="Maple.Syrup" units="units">
   <owner>joe@chromium.org</owner>
   <owner>amy@chromium.org</owner>
   <owner>rae@chromium.org</owner>

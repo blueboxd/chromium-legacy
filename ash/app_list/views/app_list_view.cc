@@ -109,6 +109,30 @@ constexpr char kAppListDragInTabletHistogram[] =
 constexpr char kAppListDragInTabletMaxLatencyHistogram[] =
     "Apps.StateTransition.Drag.PresentationTime.MaxLatency.TabletMode";
 
+// Returns whether AppList's rounded corners should be hidden based on
+// the app list view state and app list view bounds.
+bool ShouldHideRoundedCorners(ash::AppListViewState app_list_state,
+                              const gfx::Rect& bounds) {
+  switch (app_list_state) {
+    case ash::AppListViewState::kClosed:
+      return false;
+    case ash::AppListViewState::kFullscreenAllApps:
+    case ash::AppListViewState::kFullscreenSearch:
+      // Hide rounded corners in fullscreen state.
+      return true;
+
+    case ash::AppListViewState::kPeeking:
+    case ash::AppListViewState::kHalf:
+      // When the virtual keyboard shows, the AppListView is moved upward to
+      // avoid the overlapping area with the virtual keyboard. As a result, its
+      // bottom side may be on the display edge. Stop showing the rounded
+      // corners under this circumstance.
+      return bounds.y() == 0;
+  }
+  NOTREACHED();
+  return false;
+}
+
 // This view forwards the focus to the search box widget by providing it as a
 // FocusTraversable when a focus search is provided.
 class SearchBoxFocusHost : public views::View {
@@ -791,7 +815,7 @@ void AppListView::Layout() {
 
   app_list_background_shield_->UpdateBounds(contents_bounds);
 
-  UpdateAppListBackgroundYPosition();
+  UpdateAppListBackgroundYPosition(app_list_state_);
 }
 
 ax::mojom::Role AppListView::GetAccessibleWindowRole() {
@@ -1517,7 +1541,6 @@ void AppListView::SetState(ash::AppListViewState new_state) {
     // Layout is called on animation completion, which makes the child views
     // jump. Update y positions in advance here to avoid that.
     app_list_main_view_->contents_view()->UpdateYPositionAndOpacity();
-    UpdateAppListBackgroundYPosition();
   }
 
   if (GetWidget()->IsActive()) {
@@ -1576,6 +1599,7 @@ void AppListView::ApplyBoundsAnimation(ash::AppListViewState target_state,
   if (is_side_shelf_) {
     // There is no animation in side shelf.
     OnBoundsAnimationCompleted();
+    UpdateAppListBackgroundYPosition(target_state);
     if (animation_observer)
       animation_observer->OnImplicitAnimationsCompleted();
     return;
@@ -1615,10 +1639,14 @@ void AppListView::ApplyBoundsAnimation(ash::AppListViewState target_state,
   const int current_y_with_transform =
       current_bounds_y + GetRemainingBoundsAnimationDistance();
 
+  const gfx::Transform current_shield_transform =
+      app_list_background_shield_->layer()->transform();
+
   // Schedule the animation; set to the target bounds, and make the transform
   // to make this appear in the original location. Then set an empty transform
   // with the animation.
   layer->SetBounds(target_bounds);
+
   gfx::Transform transform;
   const int y_offset = current_y_with_transform - target_bounds.y();
   transform.Translate(0, y_offset);
@@ -1638,6 +1666,27 @@ void AppListView::ApplyBoundsAnimation(ash::AppListViewState target_state,
     DCHECK_EQ(ash::AppListViewState::kClosed, target_state);
     animation.AddObserver(animation_observer);
   }
+
+  // In fullscreen state, or peeking state with restricted vertical space, the
+  // background shield is translated upwards to ensure background radius is not
+  // visible.
+  // NOTE: layer->SetBounds() changes shield transform, so reset the transform
+  // to the value before the |layer| bounds are set before starting the
+  // animation.
+  app_list_background_shield_->SetTransform(current_shield_transform);
+  ui::ScopedLayerAnimationSettings shield_animation(
+      app_list_background_shield_->layer()->GetAnimator());
+  shield_animation.SetTransitionDuration(duration_ms);
+  shield_animation.SetTweenType(gfx::Tween::EASE_OUT);
+  shield_animation.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
+
+  gfx::Transform shield_transform;
+  if (ShouldHideRoundedCorners(target_state, target_bounds)) {
+    shield_transform.Translate(0,
+                               -AppListConfig::instance().background_radius());
+  }
+  app_list_background_shield_->SetTransform(shield_transform);
 
   if (update_childview_each_frame_) {
     layer->GetAnimator()->StartAnimation(new ui::LayerAnimationSequence(
@@ -1921,11 +1970,15 @@ void AppListView::OnWindowBoundsChanged(aura::Window* window,
   UpdateAppListConfig(window);
 
   gfx::Transform transform;
-  if (ShouldHideRoundedCorners(new_bounds))
+  if (ShouldHideRoundedCorners(app_list_state_, new_bounds))
     transform.Translate(0, -AppListConfig::instance().background_radius());
 
-  app_list_background_shield_->SetTransform(transform);
-  app_list_background_shield_->SchedulePaint();
+  // Avoid setting new transform if the shield is animating to (or already has)
+  // the target value.
+  if (app_list_background_shield_->layer()->GetTargetTransform() != transform) {
+    app_list_background_shield_->SetTransform(transform);
+    app_list_background_shield_->SchedulePaint();
+  }
 }
 
 void AppListView::OnBoundsAnimationCompleted() {
@@ -1961,7 +2014,7 @@ void AppListView::UpdateChildViewsYPositionAndOpacity() {
   if (app_list_state_ == ash::AppListViewState::kClosed)
     return;
 
-  UpdateAppListBackgroundYPosition();
+  UpdateAppListBackgroundYPosition(app_list_state_);
 
   // Update the opacity of the background shield.
   SetBackgroundShieldColor();
@@ -2166,7 +2219,8 @@ gfx::Rect AppListView::GetPreferredWidgetBoundsForState(
                 GetFullscreenStateHeight()));
 }
 
-void AppListView::UpdateAppListBackgroundYPosition() {
+void AppListView::UpdateAppListBackgroundYPosition(
+    ash::AppListViewState state) {
   // Update the y position of the background shield.
   gfx::Transform transform;
   if (is_in_drag_) {
@@ -2184,13 +2238,14 @@ void AppListView::UpdateAppListBackgroundYPosition() {
       transform.Translate(0, -AppListConfig::instance().background_radius() *
                                  (app_list_transition_progress - 1));
     }
-  } else if (is_fullscreen() || ShouldHideRoundedCorners(GetBoundsInScreen())) {
-    // AppListView::Layout may be called after OnWindowBoundsChanged. It may
-    // reset the transform of |app_list_background_shield_|. So hide the rounded
-    // corners here when ShouldHideRoundedCorners returns true.
+  } else if (ShouldHideRoundedCorners(state, GetBoundsInScreen())) {
     transform.Translate(0, -AppListConfig::instance().background_radius());
   }
-  app_list_background_shield_->SetTransform(transform);
+
+  // Avoid setting new transform if the shield is animating to (or already has)
+  // the target value.
+  if (app_list_background_shield_->layer()->GetTargetTransform() != transform)
+    app_list_background_shield_->SetTransform(transform);
 }
 
 bool AppListView::ShouldUpdateChildViewsDuringAnimation(
@@ -2214,16 +2269,6 @@ bool AppListView::ShouldUpdateChildViewsDuringAnimation(
 
   return GetWidget()->GetNativeView()->bounds().origin().y() >
          GetPreferredWidgetYForState(target_state);
-}
-
-bool AppListView::ShouldHideRoundedCorners(const gfx::Rect& bounds) const {
-  // When the virtual keyboard shows, the AppListView is moved upward to avoid
-  // the overlapping area with the virtual keyboard. As a result, its bottom
-  // side may be on the display edge. Stop showing the rounded corners under
-  // this circumstance.
-  return (app_list_state_ == ash::AppListViewState::kPeeking ||
-          app_list_state_ == ash::AppListViewState::kHalf) &&
-         bounds.y() == 0;
 }
 
 void AppListView::OnStateTransitionAnimationCompleted() {

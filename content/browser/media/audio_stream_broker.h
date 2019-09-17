@@ -16,6 +16,7 @@
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "media/mojo/mojom/audio_input_stream.mojom.h"
 #include "media/mojo/mojom/audio_output_stream.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/audio/public/mojom/audio_processing.mojom.h"
 
 namespace audio {
@@ -107,7 +108,7 @@ class CONTENT_EXPORT AudioStreamBrokerFactory {
       bool enable_agc,
       audio::mojom::AudioProcessingConfigPtr processing_config,
       AudioStreamBroker::DeleterCallback deleter,
-      mojom::RendererAudioInputStreamFactoryClientPtr
+      mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
           renderer_factory_client) = 0;
 
   virtual std::unique_ptr<AudioStreamBroker> CreateAudioLoopbackStreamBroker(
@@ -118,7 +119,7 @@ class CONTENT_EXPORT AudioStreamBrokerFactory {
       uint32_t shared_memory_count,
       bool mute_source,
       AudioStreamBroker::DeleterCallback deleter,
-      mojom::RendererAudioInputStreamFactoryClientPtr
+      mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
           renderer_factory_client) = 0;
 
   virtual std::unique_ptr<AudioStreamBroker> CreateAudioOutputStreamBroker(

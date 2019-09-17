@@ -3008,6 +3008,10 @@
     "label": "//android_webview/tools/automated_ui_tests:webview_ui_test_app_test_apk",
     "type": "console_test_launcher",
   },
+  "weblayer_instrumentation_test_apk": {
+    "label": "//weblayer/shell/android:weblayer_instrumentation_test_apk",
+    "type": "console_test_launcher",
+  },
   "weblayer_shell": {
     "label": "//weblayer/shell/android:run_weblayer_shell",
     "type": "additional_compile_target",

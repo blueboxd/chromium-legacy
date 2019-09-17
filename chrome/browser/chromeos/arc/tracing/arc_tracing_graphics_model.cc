@@ -1339,12 +1339,11 @@ base::ListValue SerializeEvents(
   base::ListValue list;
   for (const auto& event : events) {
     base::ListValue event_value;
-    event_value.GetList().push_back(base::Value(static_cast<int>(event.type)));
-    event_value.GetList().push_back(
-        base::Value(static_cast<double>(event.timestamp)));
+    event_value.Append(base::Value(static_cast<int>(event.type)));
+    event_value.Append(base::Value(static_cast<double>(event.timestamp)));
     if (!event.content.empty())
-      event_value.GetList().push_back(base::Value(event.content));
-    list.GetList().emplace_back(std::move(event_value));
+      event_value.Append(base::Value(event.content));
+    list.Append(std::move(event_value));
   }
   return list;
 }
@@ -1356,7 +1355,7 @@ base::DictionaryValue SerializeEventsContainer(
 
   base::ListValue buffer_list;
   for (auto& buffer : events.buffer_events())
-    buffer_list.GetList().emplace_back(SerializeEvents(buffer));
+    buffer_list.Append(SerializeEvents(buffer));
 
   dictionary.SetKey(kKeyBuffers, std::move(buffer_list));
   dictionary.SetKey(kKeyGlobalEvents, SerializeEvents(events.global_events()));
@@ -1745,7 +1744,7 @@ std::unique_ptr<base::DictionaryValue> ArcTracingGraphicsModel::Serialize()
     base::DictionaryValue view_value = SerializeEventsContainer(view.second);
     view_value.SetKey(kKeyActivity, base::Value(view.first.activity));
     view_value.SetKey(kKeyTaskId, base::Value(view.first.task_id));
-    view_list.GetList().emplace_back(std::move(view_value));
+    view_list.Append(std::move(view_value));
   }
   root->SetKey(kKeyViews, std::move(view_list));
 

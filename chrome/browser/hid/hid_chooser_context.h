@@ -15,6 +15,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/hid.mojom.h"
 #include "url/origin.h"
 
@@ -55,12 +57,14 @@ class HidChooserContext : public ChooserContextBase {
 
   device::mojom::HidManager* GetHidManager();
 
-  void SetHidManagerForTesting(device::mojom::HidManagerPtr manager);
+  void SetHidManagerForTesting(
+      mojo::PendingRemote<device::mojom::HidManager> manager);
   base::WeakPtr<HidChooserContext> AsWeakPtr();
 
  private:
   void EnsureHidManagerConnection();
-  void SetUpHidManagerConnection(device::mojom::HidManagerPtr manager);
+  void SetUpHidManagerConnection(
+      mojo::PendingRemote<device::mojom::HidManager> manager);
   void OnHidManagerConnectionError();
 
   const bool is_incognito_;
@@ -74,7 +78,7 @@ class HidChooserContext : public ChooserContextBase {
   // Holds information about devices in |ephemeral_devices_|.
   std::map<std::string, base::Value> device_info_;
 
-  device::mojom::HidManagerPtr hid_manager_;
+  mojo::Remote<device::mojom::HidManager> hid_manager_;
 
   base::WeakPtrFactory<HidChooserContext> weak_factory_{this};
 

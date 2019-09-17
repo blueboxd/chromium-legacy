@@ -37,7 +37,7 @@ namespace content {
 class SignedExchangeEnvelope;
 class FrameTreeNode;
 class FileSelectListener;
-class NavigationHandleImpl;
+class NavigationHandle;
 class NavigationRequest;
 class NavigationThrottle;
 class RenderFrameHostImpl;
@@ -129,7 +129,7 @@ void OnResponseReceivedExtraInfo(
     const base::Optional<std::string>& response_headers_text);
 
 std::vector<std::unique_ptr<NavigationThrottle>> CreateNavigationThrottles(
-    NavigationHandleImpl* navigation_handle);
+    NavigationHandle* navigation_handle);
 
 // Asks any interested agents to handle the given certificate error. Returns
 // |true| if the error was handled, |false| otherwise.

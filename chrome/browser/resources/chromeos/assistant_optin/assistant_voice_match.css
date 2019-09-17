@@ -19,15 +19,17 @@
   color: #757575;
 }
 
-#voice-match-video-container {
+#voice-match-animation-container {
   flex-grow: 1;
 }
 
-#voice-match-video {
+#voice-match-animation {
+  height: 170px;
   left: 50%;
   position: relative;
   top: 50%;
   transform: translate(-50%, -50%);
+  width: 255px;
 }
 
 #already-setup-video-container {

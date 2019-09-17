@@ -206,21 +206,21 @@
       <slot select="[problem]"></slot>
       <div id="rowsContainer">
         <div class="row">
-          <cr-button class="digit-button" on-click="onNumberTap_" value="1"
+          <cr-button class="digit-button" on-tap="onNumberTap_" value="1"
               noink>
             <inner-text class="number">[[i18n('pinKeyboard1')]]</inner-text>
             <inner-text class="letter"
                 hidden="[[!enableLetters]]">&nbsp;</inner-text>
             <paper-ripple class="circle" center></paper-ripple>
           </cr-button>
-          <cr-button class="digit-button" on-click="onNumberTap_" value="2"
+          <cr-button class="digit-button" on-tap="onNumberTap_" value="2"
               noink>
             <inner-text class="number">[[i18n('pinKeyboard2')]]</inner-text>
             <inner-text class="letter"
                 hidden="[[!enableLetters]]">ABC</inner-text>
             <paper-ripple class="circle" center></paper-ripple>
           </cr-button>
-          <cr-button class="digit-button" on-click="onNumberTap_" value="3"
+          <cr-button class="digit-button" on-tap="onNumberTap_" value="3"
               noink>
             <inner-text class="number">[[i18n('pinKeyboard3')]]</inner-text>
             <inner-text class="letter"
@@ -229,21 +229,21 @@
           </cr-button>
         </div>
         <div class="row">
-          <cr-button class="digit-button" on-click="onNumberTap_" value="4"
+          <cr-button class="digit-button" on-tap="onNumberTap_" value="4"
               noink>
             <inner-text class="number">[[i18n('pinKeyboard4')]]</inner-text>
             <inner-text class="letter"
                 hidden="[[!enableLetters]]">GHI</inner-text>
             <paper-ripple class="circle" center></paper-ripple>
           </cr-button>
-          <cr-button class="digit-button" on-click="onNumberTap_" value="5"
+          <cr-button class="digit-button" on-tap="onNumberTap_" value="5"
               noink>
             <inner-text class="number">[[i18n('pinKeyboard5')]]</inner-text>
             <inner-text class="letter"
                 hidden="[[!enableLetters]]">JKL</inner-text>
             <paper-ripple class="circle" center></paper-ripple>
           </cr-button>
-          <cr-button class="digit-button" on-click="onNumberTap_" value="6"
+          <cr-button class="digit-button" on-tap="onNumberTap_" value="6"
               noink>
             <inner-text class="number">[[i18n('pinKeyboard6')]]</inner-text>
             <inner-text class="letter"
@@ -252,21 +252,21 @@
           </cr-button>
         </div>
         <div class="row">
-          <cr-button class="digit-button" on-click="onNumberTap_" value="7"
+          <cr-button class="digit-button" on-tap="onNumberTap_" value="7"
               noink>
             <inner-text class="number">[[i18n('pinKeyboard7')]]</inner-text>
             <inner-text class="letter"
                 hidden="[[!enableLetters]]">PQRS</inner-text>
             <paper-ripple class="circle" center></paper-ripple>
           </cr-button>
-          <cr-button class="digit-button" on-click="onNumberTap_" value="8"
+          <cr-button class="digit-button" on-tap="onNumberTap_" value="8"
               noink>
             <inner-text class="number">[[i18n('pinKeyboard8')]]</inner-text>
             <inner-text class="letter"
                 hidden="[[!enableLetters]]">TUV</inner-text>
             <paper-ripple class="circle" center></paper-ripple>
           </cr-button>
-          <cr-button class="digit-button" on-click="onNumberTap_" value="9"
+          <cr-button class="digit-button" on-tap="onNumberTap_" value="9"
               noink>
             <inner-text class="number">[[i18n('pinKeyboard9')]]</inner-text>
             <inner-text class="letter"
@@ -276,7 +276,7 @@
         </div>
         <div class="row bottom-row">
           <div class="digit-button"></div>
-          <cr-button class="digit-button" on-click="onNumberTap_" value="0"
+          <cr-button class="digit-button" on-tap="onNumberTap_" value="0"
               noink>
             <inner-text class="number">[[i18n('pinKeyboard0')]]</inner-text>
             <inner-text class="letter"
@@ -286,7 +286,7 @@
           <cr-icon-button id="backspaceButton"
               disabled$="[[!hasInput_(value)]]"
               iron-icon="pin-keyboard:backspace"
-              on-click="onBackspaceTap_"
+              on-tap="onBackspaceTap_"
               on-pointerdown="onBackspacePointerDown_"
               on-pointerout="clearAndReset_"
               on-pointerup="onBackspacePointerUp_"

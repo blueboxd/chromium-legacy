@@ -71,6 +71,7 @@
 <translation id="1292701964462482250">"Software di komputer mencegah Chrome terhubung dengan aman ke web" (khusus komputer Windows)</translation>
 <translation id="1294154142200295408">Variasi baris perintah</translation>
 <translation id="129553762522093515">Baru saja ditutup</translation>
+<translation id="1298536327547837046">Pemindaian Malware</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Coba hapus cookie Anda<ph name="END_LINK" /></translation>
 <translation id="1307966114820526988">Fitur yang Tidak Digunakan Lagi</translation>
 <translation id="1320233736580025032">Prc1 (Envelope)</translation>
@@ -167,6 +168,7 @@
 <translation id="1734878702283171397">Coba hubungi admin sistem.</translation>
 <translation id="1740951997222943430">Masukkan bulan habis masa berlaku yang valid</translation>
 <translation id="1743520634839655729">Untuk membayar lebih cepat di pembelian berikutnya, simpan kartu, nama, dan alamat penagihan ke Akun Google Anda dan ke perangkat ini.</translation>
+<translation id="1743570585616704562">Tidak dikenali</translation>
 <translation id="1745880797583122200">Browser Anda dikelola</translation>
 <translation id="17513872634828108">Buka tab</translation>
 <translation id="1753706481035618306">Nomor halaman</translation>
@@ -428,6 +430,7 @@
 <translation id="320323717674993345">Batalkan Pembayaran</translation>
 <translation id="3207960819495026254">Diberi bookmark</translation>
 <translation id="3209034400446768650">Halaman mungkin dikenakan biaya</translation>
+<translation id="3215092763954878852">Tidak dapat menggunakan WebAuthn</translation>
 <translation id="3225919329040284222">Server menunjukkan sertifikat yang tidak sesuai dengan harapan terpasang. Harapan ini disertakan untuk situs web tertentu dengan keamanan tinggi guna melindungi Anda.</translation>
 <translation id="3226128629678568754">Tekan tombol muat ulang untuk mengirimkan lagi data yang dibutuhkan untuk memuat halaman ini.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
@@ -563,6 +566,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Tidak ada}=1{Dari 1 situs }other{Dari # situs }}</translation>
 <translation id="397105322502079400">Menghitung...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> diblokir.</translation>
+<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> telah mengaktifkan Perlindungan Ancaman Chrome Enterprise di browser Anda. Perlindungan Ancaman Chrome Enterprise memiliki akses ke beberapa data Anda.</translation>
 <translation id="3987940399970879459">Kurang dari 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 halaman web di sekitar}other{# halaman web di sekitar}}</translation>
 <translation id="4030383055268325496">&amp;Urungkan penambahan</translation>
@@ -631,6 +635,7 @@
 <translation id="4277028893293644418">Setel ulang sandi</translation>
 <translation id="4279811152705618813"><ph name="DEVICE_TYPE" /> Anda dikelola oleh <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Kartu ini telah disimpan di Akun Google Anda}other{Kartu-kartu ini telah disimpan di Akun Google Anda}}</translation>
+<translation id="428847186335018806">Pindai file yang Anda download atau upload di Chrome.</translation>
 <translation id="42981349822642051">Luaskan</translation>
 <translation id="4302965934281694568">Chou3 (Envelope)</translation>
 <translation id="4305817255990598646">Alihkan</translation>
@@ -669,6 +674,7 @@
 <translation id="4506176782989081258">Kesalahan validasi: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Hubungi admin sistem</translation>
 <translation id="450710068430902550">Berbagi dengan Administrator</translation>
+<translation id="4508814173490746936">Tidak dapat menggunakan Touch ID</translation>
 <translation id="4510487217173779431">Chou4 (Envelope)</translation>
 <translation id="4515275063822566619">Kartu dan alamat berasal dari Chrome dan Akun Google (<ph name="ACCOUNT_EMAIL" />). Anda dapat mengelolanya di <ph name="BEGIN_LINK" />Setelan<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (Envelope)</translation>
@@ -764,6 +770,7 @@
 <translation id="5045550434625856497">Sandi salah</translation>
 <translation id="5056549851600133418">Artikel untuk Anda</translation>
 <translation id="5068524481479508725">A10</translation>
+<translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 terpakai)}other{(# terpakai)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Periksa alamat proxy<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">Sertifikat server saat ini tidak valid.</translation>
 <translation id="5087580092889165836">Tambahkan kartu</translation>
@@ -993,6 +1000,7 @@
 <translation id="6302269476990306341">Asisten Google di Chrome sedang dihentikan</translation>
 <translation id="6305205051461490394"><ph name="URL" /> tidak dapat dijangkau.</translation>
 <translation id="6321917430147971392">Periksa setelan DNS Anda</translation>
+<translation id="6322182122604171028">Tidak dapat menggunakan Windows Hello</translation>
 <translation id="6328639280570009161">Coba nonaktifkan prediksi jaringan</translation>
 <translation id="6328784461820205019">"Koneksi Anda tidak bersifat pribadi" atau "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" atau "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" atau "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" atau "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" atau "SSL certificate error"S</translation>
 <translation id="6328786501058569169">Situs ini bersifat menipu</translation>
@@ -1016,6 +1024,7 @@
 <translation id="6433490469411711332">Edit info kontak</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> menolak untuk tersambung.</translation>
 <translation id="6434309073475700221">Tutup</translation>
+<translation id="6435221585574090192">Bagikan data tentang peristiwa keamanan yang telah ditandai oleh Perlindungan Ancaman Chrome Enterprise kepada Administrator Anda. Ini mungkin termasuk URL halaman, nama file dan metadata file, nama pengguna perangkat dan nama pengguna Chrome Anda.</translation>
 <translation id="6440503408713884761">Diabaikan</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">Tambahkan informasi lainnya</translation>
@@ -1060,6 +1069,7 @@
 <translation id="6671697161687535275">Hapus saran formulir dari Chromium?</translation>
 <translation id="6685834062052613830">Keluar dan selesaikan penyiapan</translation>
 <translation id="6689271823431384964">Chrome menawarkan untuk menyimpan informasi kartu ke Akun Google Anda karena Anda sedang login. Anda dapat mengubah perilaku ini di setelan. Nama pemegang kartu berasal dari akun Anda.</translation>
+<translation id="6707256370811247129">Pindai konten cache dan file yang Anda download atau upload di Chrome.</translation>
 <translation id="6710213216561001401">Sebelumnya</translation>
 <translation id="6710594484020273272">&lt;Ketik istilah penelusuran&gt;</translation>
 <translation id="671076103358959139">Token Pendaftaran:</translation>
@@ -1078,6 +1088,7 @@
 <translation id="681021252041861472">Kolom Wajib Diisi</translation>
 <translation id="6810899417690483278">ID Penyesuaian</translation>
 <translation id="6825578344716086703">Anda berusaha menjangkau <ph name="DOMAIN" />, tetapi server menyajikan sertifikat yang ditandatangani menggunakan algoritme tanda tangan yang lemah (seperti SHA-1). Hal ini berarti kredensial keamanan yang disajikan server mungkin telah dipalsukan, dan server tersebut mungkin bukan yang diharapkan (Anda mungkin sedang berkomunikasi dengan penyerang).</translation>
+<translation id="6826370046007623921">Pencegahan Kebocoran Data</translation>
 <translation id="6831043979455480757">Terjemahkan</translation>
 <translation id="6839929833149231406">Wilayah</translation>
 <translation id="6852204201400771460">Muat ulang aplikasi?</translation>
@@ -1222,6 +1233,7 @@
 <translation id="7542995811387359312">Pengisian kartu kredit otomatis dinonaktifkan karena formulir ini tidak menggunakan sambungan aman.</translation>
 <translation id="7548892272833184391">Memperbaiki error koneksi</translation>
 <translation id="7549584377607005141">Halaman web ini membutuhkan data yang Anda masukkan sebelumnya agar dapat ditampilkan dengan benar. Anda dapat mengirimkan data ini lagi, namun dengan begitu Anda akan mengulangi tindakan apa pun yang sebelumnya dilakukan oleh halaman ini.</translation>
+<translation id="7550637293666041147">Nama pengguna perangkat dan nama pengguna Chrome Anda</translation>
 <translation id="7552846755917812628">Coba tips berikut:</translation>
 <translation id="7554791636758816595">Tab Baru</translation>
 <translation id="7564049878696755256">Anda dapat kehilangan akses ke akun <ph name="ORG_NAME" /> atau mengalami pencurian identitas. Chrome menyarankan Anda untuk mengubah sandi sekarang.</translation>
@@ -1236,6 +1248,7 @@
 <translation id="7610193165460212391">Nilai di luar jangkauan <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Masa berlaku habis: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Anda sudah memiliki data yang dienkripsi menggunakan versi sandi Akun Google yang berbeda. Masukkan sandi di bawah.</translation>
+<translation id="7625784245512586808">Perlindungan Ancaman Chrome Enterprise</translation>
 <translation id="7633909222644580952">Data performa dan laporan kerusakan</translation>
 <translation id="7637571805876720304">Hapus kartu kredit dari Chromium?</translation>
 <translation id="7638605456503525968">Port serial</translation>
@@ -1346,6 +1359,7 @@
 <translation id="8211406090763984747">Koneksi aman</translation>
 <translation id="8218327578424803826">Lokasi yang Ditetapkan:</translation>
 <translation id="8220146938470311105">C7/C6 (Envelope)</translation>
+<translation id="8220639454292072926">Pelaporan Perusahaan</translation>
 <translation id="8225771182978767009">Orang yang menyiapkan komputer ini telah memilih untuk memblokir situs ini.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Buka halaman dalam tab Samaran baru</translation>
@@ -1426,6 +1440,7 @@
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Alamat DNS&lt;/abbr&gt; <ph name="HOST_NAME" /> tidak dapat ditemukan. Mendiagnosis masalah.</translation>
 <translation id="874846938927089722">Kartu Kredit dan Prabayar yang Diterima</translation>
 <translation id="874918643257405732">Bookmark tab ini</translation>
+<translation id="8751426954251315517">Coba lagi lain waktu</translation>
 <translation id="8759274551635299824">Kartu sudah tidak aktif</translation>
 <translation id="8761567432415473239">Google Safe Browsing baru-baru ini <ph name="BEGIN_LINK" />menemukan program berbahaya<ph name="END_LINK" /> di <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Perangkat USB</translation>
@@ -1490,6 +1505,7 @@
 <translation id="9080712759204168376">Ringkasan Pesanan</translation>
 <translation id="9089260154716455634">Kebijakan Waktu Nonaktif:</translation>
 <translation id="9095388113577226029">Bahasa lainnya...</translation>
+<translation id="9098981495403789647">Administrator Anda telah mengaktifkan Perlindungan Ancaman Chrome Enterprise di browser Anda. Perlindungan Ancaman Chrome Enterprise memiliki akses ke beberapa data Anda.</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> biasanya menggunakan enkripsi untuk melindungi informasi Anda. Saat Chromium mencoba menyambung ke <ph name="SITE" /> kali ini, situs web mengembalikan kredensial yang salah dan tidak biasa. Hal ini dapat terjadi jika ada penyerang yang berpura-pura menjadi <ph name="SITE" />, atau layar masuk Wi-Fi mengganggu sambungan. Informasi Anda masih aman karena Chromium menghentikan sambungan sebelum terjadi pertukaran data apa pun.</translation>
 <translation id="9106062320799175032">Tambahkan Alamat Penagihan</translation>
 <translation id="9114524666733003316">Mengonfirmasi kartu...</translation>

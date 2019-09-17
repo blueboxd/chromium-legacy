@@ -200,7 +200,8 @@ LayerTreeHost::~LayerTreeHost() {
   mutator_host_->SetMutatorHostClient(nullptr);
 
   // We must clear any pointers into the layer tree prior to destroying it.
-  RegisterViewportLayers(ViewportLayers());
+  if (IsUsingLayerLists())
+    RegisterViewportLayers(ViewportLayers());
 
   if (root_layer_) {
     root_layer_->SetLayerTreeHost(nullptr);
@@ -801,13 +802,7 @@ bool LayerTreeHost::DoUpdateLayers() {
   // need to be built here.
   if (!IsUsingLayerLists()) {
     TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::BuildPropertyTrees");
-    Layer* page_scale_layer = viewport_layers_.page_scale.get();
-    gfx::Transform identity_transform;
-    PropertyTreeBuilder::BuildPropertyTrees(
-        root_layer_.get(), page_scale_layer, inner_viewport_scroll_layer(),
-        outer_viewport_scroll_layer(), overscroll_elasticity_element_id(),
-        elastic_overscroll_, page_scale_factor_, device_scale_factor_,
-        device_viewport_rect_, identity_transform, &property_trees_);
+    PropertyTreeBuilder::BuildPropertyTrees(this);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                          "LayerTreeHost::UpdateLayers_BuiltPropertyTrees",
                          TRACE_EVENT_SCOPE_THREAD, "property_trees",
@@ -1110,12 +1105,7 @@ void LayerTreeHost::RegisterViewportLayers(const ViewportLayers& layers) {
   //     overscroll elasticity (optional)
   //       page scale
   //         inner viewport scroll
-  DCHECK(IsUsingLayerLists() || !layers.page_scale ||
-         layers.inner_viewport_scroll->parent() == layers.page_scale);
-  DCHECK(IsUsingLayerLists() || !layers.page_scale ||
-         layers.page_scale->parent()->element_id() ==
-             layers.overscroll_elasticity_element_id ||
-         layers.page_scale->parent() == layers.inner_viewport_container);
+  DCHECK(IsUsingLayerLists());
   viewport_layers_.overscroll_elasticity_element_id =
       layers.overscroll_elasticity_element_id;
   viewport_layers_.page_scale = layers.page_scale;
@@ -1693,12 +1683,7 @@ void LayerTreeHost::SetElementIdsForTesting() {
 }
 
 void LayerTreeHost::BuildPropertyTreesForTesting() {
-  gfx::Transform identity_transform;
-  PropertyTreeBuilder::BuildPropertyTrees(
-      root_layer(), page_scale_layer(), inner_viewport_scroll_layer(),
-      outer_viewport_scroll_layer(), overscroll_elasticity_element_id(),
-      elastic_overscroll(), page_scale_factor(), device_scale_factor(),
-      device_viewport_rect(), identity_transform, property_trees());
+  PropertyTreeBuilder::BuildPropertyTrees(this);
 }
 
 bool LayerTreeHost::IsElementInPropertyTrees(ElementId element_id,

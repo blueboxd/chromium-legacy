@@ -428,7 +428,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     viz::mojom::ExternalBeginFrameControllerAssociatedRequest request = nullptr;
     external_begin_frame_source_mojo =
         std::make_unique<viz::ExternalBeginFrameSourceMojo>(
-            std::move(request),
+            GetFrameSinkManager(), std::move(request),
             viz::BeginFrameSource::kNotRestartableId);
     begin_frame_source = external_begin_frame_source_mojo.get();
   } else if (disable_frame_rate_limit_) {

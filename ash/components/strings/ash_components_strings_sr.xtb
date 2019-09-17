@@ -23,6 +23,7 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">Додајте елементе www. и .com уносу у траци за адресу, па отворите страницу</translation>
+<translation id="1872219238824176091">Уклоните актуелну радну површину</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, па <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> или <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">Идите на следећу картицу</translation>
 <translation id="2010818616644390445">Идите на последњу картицу у прозору</translation>
@@ -42,6 +43,7 @@
 <translation id="2441202986792279177">Брзо прелазите са једног прозора на други</translation>
 <translation id="2454251766545114447">Умањите приказ</translation>
 <translation id="2478303094958140141">Укључите или искључите ChromeVox (говорне повратне информације)</translation>
+<translation id="2488661730534396940">Активирајте радну површину на левој страни</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Померајте се надоле на веб-страници</translation>
 <translation id="2574014812750545982">Ресетујте ниво зумирања на страници</translation>
@@ -49,6 +51,7 @@
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, па <ph name="TAB" /> или <ph name="RIGHT" /></translation>
 <translation id="2750942583782703988">Поново учитајте тренутну страницу</translation>
 <translation id="2764005613199379871">Поставите фокус на траку за адресу и претрагу</translation>
+<translation id="2774822903829597107">Направите нову радну површину</translation>
 <translation id="2789868185375229787">Умањите страницу</translation>
 <translation id="2804480015716812239">Притисните <ph name="ALT" /> и кликните на линк</translation>
 <translation id="2830827904629746450">Закачите прозор на десној страни</translation>
@@ -100,6 +103,7 @@
 <translation id="4642092649622328492">Направите делимичан снимак екрана</translation>
 <translation id="4698850295812410683">Прикажите алатке за писаљку</translation>
 <translation id="4801989101741319327">Померите на крај следеће речи</translation>
+<translation id="4866066940972151697">Активирајте радну површину на десној страни</translation>
 <translation id="4916163929714267752">Отворите линк у новом прозору</translation>
 <translation id="5030659775136592441">Прикажите менаџер обележивача</translation>
 <translation id="5034421018520995080">Идите на врх странице</translation>

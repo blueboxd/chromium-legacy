@@ -12,6 +12,7 @@ import android.view.textclassifier.TextClassifier;
 import android.view.textclassifier.TextSelection;
 
 import org.chromium.content.browser.selection.SmartSelectionClient;
+import org.chromium.ui.touch_selection.SelectionEventType;
 
 /**
  * Interface to a content layer client that can process and modify selection text.
@@ -94,7 +95,7 @@ public interface SelectionClient {
      * @param posXPix The x coordinate of the selection start handle.
      * @param posYPix The y coordinate of the selection start handle.
      */
-    void onSelectionEvent(int eventType, float posXPix, float posYPix);
+    void onSelectionEvent(@SelectionEventType int eventType, float posXPix, float posYPix);
 
     /**
      * Acknowledges that a selectWordAroundCaret action has completed with the given result.

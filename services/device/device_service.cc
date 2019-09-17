@@ -182,7 +182,7 @@ void DeviceService::OnStart() {
   registry_.AddInterface<mojom::BatteryMonitor>(base::Bind(
       &DeviceService::BindBatteryMonitorReceiver, base::Unretained(this)));
   registry_.AddInterface<mojom::HidManager>(base::Bind(
-      &DeviceService::BindHidManagerRequest, base::Unretained(this)));
+      &DeviceService::BindHidManagerReceiver, base::Unretained(this)));
   registry_.AddInterface<mojom::NFCProvider>(base::Bind(
       &DeviceService::BindNFCProviderReceiver, base::Unretained(this)));
   registry_.AddInterface<mojom::VibrationManager>(base::Bind(
@@ -235,10 +235,11 @@ void DeviceService::BindBatteryMonitorReceiver(
   BatteryMonitorImpl::Create(std::move(receiver));
 }
 
-void DeviceService::BindHidManagerRequest(mojom::HidManagerRequest request) {
+void DeviceService::BindHidManagerReceiver(
+    mojo::PendingReceiver<mojom::HidManager> receiver) {
   if (!hid_manager_)
     hid_manager_ = std::make_unique<HidManagerImpl>();
-  hid_manager_->AddBinding(std::move(request));
+  hid_manager_->AddReceiver(std::move(receiver));
 }
 
 void DeviceService::BindNFCProviderReceiver(

@@ -35,8 +35,7 @@ using test::TestInkDrop;
 
 namespace {
 
-constexpr int kContentHeight = 200;
-constexpr int kContentWidth = 200;
+constexpr gfx::Size kContentSize = gfx::Size(200, 200);
 
 class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
  public:
@@ -51,9 +50,7 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
 
   // BubbleDialogDelegateView overrides:
   View* GetInitiallyFocusedView() override { return view_; }
-  gfx::Size CalculatePreferredSize() const override {
-    return gfx::Size(kContentWidth, kContentHeight);
-  }
+  gfx::Size CalculatePreferredSize() const override { return kContentSize; }
   void AddedToWidget() override {
     if (title_view_)
       GetBubbleFrameView()->SetTitleView(std::move(title_view_));
@@ -422,10 +419,10 @@ TEST_F(BubbleDialogDelegateViewTest, CustomTitle) {
   // Use GetContentsBounds() to exclude the bubble border, which can change per
   // platform.
   gfx::Rect frame_size = bubble_frame->GetContentsBounds();
-  EXPECT_EQ(content_margins.height() + kContentHeight + title_margins.height() +
-                kTitleHeight,
+  EXPECT_EQ(content_margins.height() + kContentSize.height() +
+                title_margins.height() + kTitleHeight,
             frame_size.height());
-  EXPECT_EQ(content_margins.width() + kContentWidth, frame_size.width());
+  EXPECT_EQ(content_margins.width() + kContentSize.width(), frame_size.width());
 
   // Set the title preferred size to 0. The bubble frame makes fewer assumptions
   // about custom title views, so there should still be margins for it while the
@@ -434,17 +431,19 @@ TEST_F(BubbleDialogDelegateViewTest, CustomTitle) {
   bubble_widget->UpdateWindowTitle();
   bubble_delegate->SizeToContents();
   frame_size = bubble_frame->GetContentsBounds();
-  EXPECT_EQ(content_margins.height() + kContentHeight + title_margins.height(),
-            frame_size.height());
-  EXPECT_EQ(content_margins.width() + kContentWidth, frame_size.width());
+  EXPECT_EQ(
+      content_margins.height() + kContentSize.height() + title_margins.height(),
+      frame_size.height());
+  EXPECT_EQ(content_margins.width() + kContentSize.width(), frame_size.width());
 
   // Now hide the title properly. The margins should also disappear.
   bubble_delegate->set_should_show_window_title(false);
   bubble_widget->UpdateWindowTitle();
   bubble_delegate->SizeToContents();
   frame_size = bubble_frame->GetContentsBounds();
-  EXPECT_EQ(content_margins.height() + kContentHeight, frame_size.height());
-  EXPECT_EQ(content_margins.width() + kContentWidth, frame_size.width());
+  EXPECT_EQ(content_margins.height() + kContentSize.height(),
+            frame_size.height());
+  EXPECT_EQ(content_margins.width() + kContentSize.width(), frame_size.width());
 }
 
 // Ensure the BubbleFrameView correctly resizes when the title is provided by a

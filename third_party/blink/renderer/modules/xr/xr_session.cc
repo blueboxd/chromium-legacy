@@ -830,6 +830,14 @@ void XRSession::UpdateVisibilityState() {
   }
 
   XRVisibilityState state = device_visibility_state_;
+
+  // The WebXR spec requires that if our document is not focused, that we don't
+  // hand out real poses. For immersive sessions, we have to rely on the device
+  // to tell us it's visibility state, as some runtimes (WMR) put focus in the
+  // headset, and thus we cannot rely on Document Focus state. This is fine
+  // because while the runtime reports us as focused the content owned by the
+  // session should be focued, which is owned by the document. For inline, we
+  // can and must rely on frame focus.
   if (!immersive() && !xr_->IsFrameFocused()) {
     state = XRVisibilityState::HIDDEN;
   }
@@ -1020,9 +1028,12 @@ XRFrame* XRSession::CreatePresentationFrame() {
 
   XRFrame* presentation_frame =
       MakeGarbageCollected<XRFrame>(this, world_information_);
-  if (base_pose_matrix_) {
-    DVLOG(2) << __func__
-             << " : base_pose_matrix_ is set, updating presentation frame";
+
+  // TODO(1004201): Determine if world_information_ should be treated similarly
+  // to the base pose matrix.
+  if (base_pose_matrix_ && visibility_state_ != XRVisibilityState::HIDDEN) {
+    DVLOG(2) << __func__ << " : base_pose_matrix_ is set and not hidden,"
+             << " updating presentation frame";
     presentation_frame->SetBasePoseMatrix(*base_pose_matrix_);
   }
   return presentation_frame;
@@ -1075,6 +1086,11 @@ void XRSession::OnInputStateChangeInternal(
     int16_t frame_id,
     base::span<const device::mojom::blink::XRInputSourceStatePtr> input_states,
     bool from_eventing) {
+  // If we're in any state other than visible, input should not be processed
+  if (visibility_state_ != XRVisibilityState::VISIBLE) {
+    return;
+  }
+
   HeapVector<Member<XRInputSource>> added;
   HeapVector<Member<XRInputSource>> removed;
   last_frame_id_ = frame_id;

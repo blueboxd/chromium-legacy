@@ -232,6 +232,7 @@
 <translation id="27527859628328957">ข้ามไปยังรายการที่โฟกัสได้ถัดไป</translation>
 <translation id="2770781857296573485">ป้อนการสำรวจกลุ่ม</translation>
 <translation id="2777845298774924149">ออกแล้ว</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{+#}other{+#}}</translation>
 <translation id="2784959586797362050">คุณส่งความคิดเห็นถึงเราได้ตามปกติด้วยการกด Search+a แล้วกด i เรายินดีอย่างยิ่งที่จะได้รับฟังความคิดเห็นจากคุณ</translation>
 <translation id="2800204403141299078">ไม่มีองค์ประกอบที่ต่างกันเพิ่มเติม</translation>
 <translation id="2800780099804980316">ไม่มีส่วนหัวระดับ 1 ก่อนหน้า</translation>
@@ -714,6 +715,7 @@
 <translation id="5956928062748260866">ช่องโต้ตอบ</translation>
 <translation id="5963413905009737549">ส่วน</translation>
 <translation id="5968607524793740041">แสดงเมนูตามบริบท</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{ที่มี # รายการ}other{ที่มี # รายการ}}</translation>
 <translation id="5981446804259161541">สีฟ้าอ่อน</translation>
 <translation id="5983179082906765664">เพิ่มความละเอียดในการนำทาง</translation>
 <translation id="5992285135956208197">เอกสารกราฟิก</translation>

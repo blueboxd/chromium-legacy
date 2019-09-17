@@ -84,7 +84,8 @@
       <div slot="footer" class="layout vertical center">
         <div id="sensorLocationContainer">
           <template is="dom-if" if="[[shouldUseLottieAnimation_]]">
-            <cr-lottie animation-url="fingerprint_scanner_animation.json">
+            <cr-lottie id="scannerLocationLottie"
+                animation-url="fingerprint_scanner_animation.json">
             </cr-lottie>
           </template>
           <template is="dom-if" if="[[!shouldUseLottieAnimation_]]">

@@ -42,8 +42,9 @@ int GetThemePropertyId(OmniboxPart part, OmniboxPartState state) {
     case OmniboxPart::RESULTS_TEXT_DEFAULT:
       return TP::COLOR_OMNIBOX_TEXT;
     case OmniboxPart::LOCATION_BAR_TEXT_DIMMED:
-    case OmniboxPart::RESULTS_TEXT_DIMMED:
       return TP::COLOR_OMNIBOX_TEXT_DIMMED;
+    case OmniboxPart::RESULTS_TEXT_DIMMED:
+      return TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED;
     case OmniboxPart::RESULTS_ICON:
       return TP::COLOR_OMNIBOX_RESULTS_ICON;
     case OmniboxPart::RESULTS_TEXT_URL:

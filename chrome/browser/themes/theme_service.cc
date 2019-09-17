@@ -1155,6 +1155,9 @@ base::Optional<SkColor> ThemeService::GetOmniboxColor(
   auto results_bg_selected_color = [&]() {
     return blend_toward_max_contrast(results_bg_color(), 0x29);
   };
+  auto blend_with_clamped_contrast = [&](OmniboxColor bg) {
+    return blend_for_min_contrast(fg, fg, blend_for_min_contrast(bg, bg));
+  };
 
   auto get_omnibox_color_impl = [&](int id) -> base::Optional<OmniboxColor> {
     switch (id) {
@@ -1179,8 +1182,11 @@ base::Optional<SkColor> ThemeService::GetOmniboxColor(
       case TP::COLOR_OMNIBOX_BUBBLE_OUTLINE_EXPERIMENTAL_KEYWORD_MODE:
         return url_color(results_bg_color());
       case TP::COLOR_OMNIBOX_TEXT_DIMMED:
+        return blend_with_clamped_contrast(bg);
+      case TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED:
+        return blend_with_clamped_contrast(results_bg_selected_color());
       case TP::COLOR_OMNIBOX_RESULTS_ICON:
-        return blend_for_min_contrast(fg, results_bg_color());
+        return derive_default_icon_color(fg);
       case TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED:
         return blend_toward_max_contrast(results_bg_color(), 0x1A);
       case TP::COLOR_OMNIBOX_RESULTS_URL:

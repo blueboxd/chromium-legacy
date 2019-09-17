@@ -22,7 +22,9 @@ class LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin
     // the surface bounds to be larger. It also has a parent that clips the
     // masked layer and its surface.
 
-    scoped_refptr<Layer> root = Layer::Create();
+    SetInitialRootBounds(gfx::Size(100, 100));
+    LayerTreeTest::SetupTree();
+    Layer* root = layer_tree_host()->root_layer();
 
     scoped_refptr<FakePictureLayer> content_layer =
         FakePictureLayer::Create(&client_);
@@ -42,9 +44,6 @@ class LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin
             &client_, std::move(recording_source));
     content_layer->SetMaskLayer(mask_layer);
 
-    gfx::Size root_size(100, 100);
-    root->SetBounds(root_size);
-
     gfx::Size layer_size(100, 100);
     content_layer->SetBounds(layer_size);
 
@@ -52,16 +51,23 @@ class LayerTreeTestMaskLayerForSurfaceWithContentRectNotAtOrigin
     mask_layer->SetBounds(mask_size);
     mask_layer_id_ = mask_layer->id();
 
-    layer_tree_host()->SetRootLayer(root);
-    LayerTreeTest::SetupTree();
-    scoped_refptr<Layer> outer_viewport_scroll_layer = Layer::Create();
-    outer_viewport_scroll_layer->SetBounds(layer_size);
-    SetupViewport(root.get(), outer_viewport_scroll_layer, gfx::Size(50, 50));
-    layer_tree_host()->outer_viewport_container_layer()->SetMasksToBounds(true);
-    outer_viewport_scroll_layer->AddChild(content_layer);
+    scoped_refptr<Layer> clip_layer = Layer::Create();
+    clip_layer->SetBounds(gfx::Size(50, 50));
+    clip_layer->SetMasksToBounds(true);
+
+    scoped_refptr<Layer> scroll_layer = Layer::Create();
+    scroll_layer->SetBounds(layer_size);
+    scroll_layer->SetScrollable(gfx::Size(50, 50));
+    scroll_layer->SetMasksToBounds(true);
+    scroll_layer->SetElementId(
+        LayerIdToElementIdForTesting(scroll_layer->id()));
+
+    root->AddChild(clip_layer);
+    clip_layer->AddChild(scroll_layer);
+    scroll_layer->AddChild(content_layer);
 
     client_.set_bounds(root->bounds());
-    outer_viewport_scroll_layer->SetScrollOffset(gfx::ScrollOffset(50, 50));
+    scroll_layer->SetScrollOffset(gfx::ScrollOffset(50, 50));
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }

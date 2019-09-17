@@ -52,8 +52,6 @@ constexpr SkColor kTabHighlightBackgroundColor_Active =
 constexpr SkColor kTabHighlightBackgroundColor_Focused =
     SkColorSetARGB(0xFF, 0xD2, 0xE3, 0xFC);
 constexpr int kTabHighlightBorderRadius = 32;
-constexpr int kTabHighlightPreferredHeight = 32;
-constexpr int kTabHighlightPreferredWidth = 192;
 
 constexpr gfx::Font::Weight kHoverWeightBorder = gfx::Font::Weight::NORMAL;
 constexpr gfx::Font::Weight kHoverWeightHighlight = gfx::Font::Weight::MEDIUM;
@@ -65,7 +63,6 @@ constexpr gfx::Font::Weight kInactiveWeightHighlight =
 constexpr int kLabelFontSizeDeltaHighlight = 1;
 
 constexpr int kHarmonyTabStripTabHeight = 32;
-constexpr int kBorderThickness = 2;
 
 }  // namespace
 
@@ -139,17 +136,11 @@ Tab::Tab(TabbedPane* tabbed_pane, const base::string16& title, View* contents)
   if (is_vertical)
     title_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
 
-  if (is_highlight_style && is_vertical) {
-    constexpr int kTabVerticalPadding = 8;
-    constexpr int kTabHorizontalPadding = 32;
-    SetBorder(CreateEmptyBorder(gfx::Insets(
-        kTabVerticalPadding, kTabHorizontalPadding, kTabVerticalPadding, 0)));
-  } else {
-    constexpr int kTabVerticalPadding = 5;
-    constexpr int kTabHorizontalPadding = 10;
-    SetBorder(CreateEmptyBorder(
-        gfx::Insets(kTabVerticalPadding, kTabHorizontalPadding)));
-  }
+  constexpr auto kTabPadding = gfx::Insets(5, 10);
+  constexpr auto kTabPaddingVerticalHighlight = gfx::Insets(8, 32, 8, 0);
+  SetBorder(CreateEmptyBorder((is_highlight_style && is_vertical)
+                                  ? kTabPaddingVerticalHighlight
+                                  : kTabPadding));
   SetLayoutManager(std::make_unique<FillLayout>());
   SetState(State::kInactive);
   // Calculate the size while the font list is normal and set the max size.
@@ -264,8 +255,8 @@ gfx::Size Tab::CalculatePreferredSize() const {
   size.Enlarge(GetInsets().width(), GetInsets().height());
   if (tabbed_pane_->GetStyle() == TabbedPane::TabStripStyle::kHighlight &&
       tabbed_pane_->GetOrientation() == TabbedPane::Orientation::kVertical) {
-    size.SetToMax(
-        gfx::Size(kTabHighlightPreferredWidth, kTabHighlightPreferredHeight));
+    constexpr gfx::Size kTabHighlightPreferredSize = gfx::Size(192, 32);
+    size.SetToMax(kTabHighlightPreferredSize);
   }
   return size;
 }
@@ -361,7 +352,8 @@ MdTab::MdTab(TabbedPane* tabbed_pane,
              View* contents)
     : Tab(tabbed_pane, title, contents) {
   if (tabbed_pane->GetOrientation() == TabbedPane::Orientation::kHorizontal) {
-    SetBorder(CreateEmptyBorder(gfx::Insets(kBorderThickness)));
+    constexpr auto kBorderThickness = gfx::Insets(2);
+    SetBorder(CreateEmptyBorder(kBorderThickness));
   }
   OnStateChanged();
 }
@@ -432,17 +424,15 @@ TabStrip::TabStrip(TabbedPane::Orientation orientation,
     : orientation_(orientation), style_(style) {
   std::unique_ptr<BoxLayout> layout;
   if (orientation == TabbedPane::Orientation::kHorizontal) {
-    constexpr int kTabStripLeadingEdgePadding = 9;
-    layout = std::make_unique<BoxLayout>(
-        BoxLayout::Orientation::kHorizontal,
-        gfx::Insets(0, kTabStripLeadingEdgePadding));
+    constexpr auto kEdgePadding = gfx::Insets(0, 9);
+    layout = std::make_unique<BoxLayout>(BoxLayout::Orientation::kHorizontal,
+                                         kEdgePadding);
     layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kEnd);
   } else {
-    constexpr int kTabStripEdgePadding = 8;
+    constexpr auto kEdgePadding = gfx::Insets(8, 0, 0, 0);
     constexpr int kTabSpacing = 8;
-    layout = std::make_unique<BoxLayout>(
-        BoxLayout::Orientation::kVertical,
-        gfx::Insets(kTabStripEdgePadding, 0, 0, 0), kTabSpacing);
+    layout = std::make_unique<BoxLayout>(BoxLayout::Orientation::kVertical,
+                                         kEdgePadding, kTabSpacing);
     layout->set_cross_axis_alignment(BoxLayout::CrossAxisAlignment::kStart);
   }
   layout->set_main_axis_alignment(BoxLayout::MainAxisAlignment::kStart);

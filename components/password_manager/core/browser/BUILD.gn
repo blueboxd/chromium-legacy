@@ -205,13 +205,9 @@ jumbo_static_library("browser") {
       "password_reuse_detector.h",
       "password_reuse_detector_consumer.cc",
       "password_reuse_detector_consumer.h",
+      "password_store_signin_notifier.cc",
+      "password_store_signin_notifier.h",
     ]
-    if (is_win || is_mac || is_linux || is_chromeos) {
-      sources += [
-        "password_store_signin_notifier.cc",
-        "password_store_signin_notifier.h",
-      ]
-    }
   }
 
   public_deps = [
@@ -279,7 +275,7 @@ jumbo_static_library("browser") {
     ]
   }
 
-  if (is_posix && !is_mac && !is_ios) {
+  if ((is_posix && !is_mac && !is_ios) || is_fuchsia) {
     sources += [ "login_database_posix.cc" ]
   }
 

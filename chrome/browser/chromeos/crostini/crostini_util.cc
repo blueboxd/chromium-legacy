@@ -533,7 +533,7 @@ void AddNewLxdContainerToPrefs(Profile* profile,
   new_container.SetKey(prefs::kContainerKey, base::Value(container_name));
 
   ListPrefUpdate updater(pref_service, crostini::prefs::kCrostiniContainers);
-  updater->GetList().emplace_back(std::move(new_container));
+  updater->Append(std::move(new_container));
 }
 
 void RemoveLxdContainerFromPrefs(Profile* profile,

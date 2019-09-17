@@ -233,6 +233,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="27527859628328957">Liigu järgmise fookustatud üksuse juurde</translation>
 <translation id="2770781857296573485">Rühma uuringu sisestamine</translation>
 <translation id="2777845298774924149">Väljus</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{+#}other{+#}}</translation>
 <translation id="2784959586797362050">Nagu alati, võite saata meile otse tagasisidet, vajutades klahvikombinatsiooni Otsing + A ning seejärel klahvi I. Meil on alati hea meel teie arvamust kuulda.</translation>
 <translation id="2800204403141299078">Pole rohkem erinevaid elemente.</translation>
 <translation id="2800780099804980316">Eelmist 1. taseme pealkirja ei ole.</translation>
@@ -715,6 +716,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="5956928062748260866">Dialoog</translation>
 <translation id="5963413905009737549">Jaotis</translation>
 <translation id="5968607524793740041">Kontekstimenüü kuvamine</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{# üksusega}other{# üksusega}}</translation>
 <translation id="5981446804259161541">Hele tsüaan</translation>
 <translation id="5983179082906765664">Suurenda navigatsiooni detailsust</translation>
 <translation id="5992285135956208197">Graafika dokument</translation>

@@ -476,6 +476,7 @@
 <translation id="1698122934742150150">Bare denne inkognitoøkten</translation>
 <translation id="1698650002254827833">Listen over apper kan ikke lastes inn. Prøv på nytt.</translation>
 <translation id="1701062906490865540">Fjern denne personen</translation>
+<translation id="1703331064825191675">Slutt å bekymre deg for passordene dine</translation>
 <translation id="1706586824377653884">Lagt til av administratoren din</translation>
 <translation id="1706625117072057435">Zoomnivåer</translation>
 <translation id="1708338024780164500">(Inaktiv)</translation>
@@ -525,6 +526,7 @@
 <translation id="1764226536771329714">beta</translation>
 <translation id="176587472219019965">&amp;Nytt vindu</translation>
 <translation id="1766575458646819543">Gikk ut av fullskjerm</translation>
+<translation id="1766957085594317166">Lagre passordene sikkert i Google-kontoen, så trenger du aldri å skrive dem inn igjen</translation>
 <translation id="1768278914020124551">Beklager. Det oppsto et problem ved forsøket på å kontakte påloggingstjeneren. Sjekk nettverkstilkoblingen din og domenenavnet, og prøv på nytt.</translation>
 <translation id="1769104665586091481">&amp;Åpne link i nytt vindu</translation>
 <translation id="1773212559869067373">Autentiseringssertifikatet ble avvist lokalt</translation>
@@ -1872,6 +1874,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="3748026146096797577">Ikke tilkoblet</translation>
 <translation id="3752582316358263300">OK</translation>
 <translation id="3752673729237782832">Mine enheter</translation>
+<translation id="3753033997400164841">Lagre én gang. Bruk overalt</translation>
 <translation id="3755411799582650620">Du kan nå også låse opp <ph name="DEVICE_TYPE" /> med <ph name="PHONE_NAME" />.</translation>
 <translation id="375636864092143889">Nettstedet bruker mikrofonen din</translation>
 <translation id="3757733214359997190">Fant ingen nettsteder</translation>
@@ -2162,7 +2165,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4146026355784316281">Åpne alltid med systemvisningsprogrammet</translation>
 <translation id="4146785383423576110">Tilbakestill og rydd opp</translation>
 <translation id="4147911968024186208">Prøv på nytt. Hvis du ser denne feilen igjen, kan du kontakte brukerstøtterepresentanten din.</translation>
-<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">Skjerm</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 fane}other{# faner}}</translation>
 <translation id="4154664944169082762">Fingeravtrykk</translation>
@@ -2203,6 +2205,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4232375817808480934">Konfigurer Kerberos</translation>
 <translation id="4235200303672858594">Hele skjermen</translation>
 <translation id="4235965441080806197">Avbryt påloggingen</translation>
+<translation id="4242145785130247982">Flere klientsertifikater støttes ikke</translation>
 <translation id="4242533952199664413">Åpne innstillingene</translation>
 <translation id="4242577469625748426">Kunne ikke installere angivelse av innstillinger på enheten: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Finn flere pekepennapper</translation>
@@ -2661,6 +2664,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4957949153200969297">Slår bare på funksjoner knyttet til <ph name="IDS_SHORT_PRODUCT_NAME" />-synkronisering</translation>
 <translation id="4959262764292427323">Passordene er lagret i Google-kontoen din, slik at du kan bruke dem på alle enheter</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> – <ph name="PROFILE_NAME" /></translation>
+<translation id="496185450405387901">Denne appen er installert av administratoren.</translation>
 <translation id="4964455510556214366">Oppsett</translation>
 <translation id="4964673849688379040">Kontrollerer …</translation>
 <translation id="4965808351167763748">Er du sikker på at du vil konfigurere Hangouts Meet på denne enheten?</translation>
@@ -2918,6 +2922,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5360150013186312835">Vis i verktøyraden</translation>
 <translation id="5362741141255528695">Velg privat nøkkelfil.</translation>
 <translation id="5363109466694494651">Powerwash og tilbakestill</translation>
+<translation id="5365716706805792666">Google kan sjekke om passordene dine har vært en del av et databrudd. Dette blir slått på når du logger på med Google-kontoen din.</translation>
 <translation id="5365881113273618889">Mappen du valgte, inneholder sensitive filer. Er du sikker på at du vil gi «<ph name="APP_NAME" />» permanent skrivetilgang til denne mappen?</translation>
 <translation id="5367091008316207019">Leser filen …</translation>
 <translation id="5368720394188453070">Telefonen er låst. Lås den opp for å få tilgang.</translation>
@@ -3514,7 +3519,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6212039847102026977">Vis avanserte nettverksegenskaper</translation>
 <translation id="6212168817037875041">Slå av skjermen</translation>
 <translation id="6212752530110374741">Send linken på e-post</translation>
-<translation id="6214642087594370545">Vis en advarsel når du bruker utrygge passord som har vært en del av et databrudd. Dette er kun tilgjengelig for påloggede brukere.</translation>
 <translation id="6216696360484424239">Logg på automatisk</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> er uten nett. Koble til Internett og prøv på nytt.</translation>
 <translation id="6220413761270491930">Det oppsto en feil under innlastingen av utvidelsen</translation>
@@ -3871,6 +3875,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6769712124046837540">Legger til skriver …</translation>
 <translation id="6770664076092644100">Bekreft via NFC</translation>
 <translation id="6771503742377376720">Er en sertifiseringsinstans</translation>
+<translation id="6775163072363532304">Tilgjengelige enheter vises her.</translation>
 <translation id="6777817260680419853">Viderekobling er blokkert</translation>
 <translation id="6778737459546443941">Forelderen din har ikke godkjent det ennå</translation>
 <translation id="677965093459947883">Veldig liten</translation>
@@ -4331,6 +4336,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7441830548568730290">Andre brukere</translation>
 <translation id="7442465037756169001">Hangouts Meet hardware er klar til å konfigureres.</translation>
 <translation id="744341768939279100">Opprett en ny profil</translation>
+<translation id="7443806024147773267">Få tilgang til passordene dine når du er logget på Google-kontoen</translation>
 <translation id="7444046173054089907">Dette nettstedet er blokkert</translation>
 <translation id="7444983668544353857">Slå av <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">Installer apper automatisk</translation>
@@ -4744,6 +4750,7 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8014154204619229810">Oppdateringsprogrammet kjører. Last inn siden på nytt om en liten stund for å sjekke igjen.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> kunne ikke tilbakestilles til forrige versjon. Prøv å utføre en powerwash av enheten på nytt.</translation>
 <translation id="8014210335923519270">Gjør <ph name="IDS_SHORT_PRODUCT_NAME" /> bedre og sikrere ved å sende systeminformasjon og bruk til Google</translation>
+<translation id="8015780634880457457">Google kan sjekke om passordene dine har vært en del av et databrudd</translation>
 <translation id="8016266267177410919">Midlertidig lagring</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Snarveien er endret</translation>
@@ -4862,6 +4869,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8188389033983459049">Sjekk enhetsinnstillingene dine og slå det på for å fortsette</translation>
 <translation id="8190193592390505034">Kobler til <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">Administrering av programmer, utvidelser og temaer</translation>
+<translation id="819464600477418284">Denne appen kan ikke avinstalleres, da den er en del av Chrome OS.</translation>
 <translation id="8195027750202970175">Lagringsstørrelse</translation>
 <translation id="8198323535106903877">Vi installerer de <ph name="NUMBER_OF_APPS" /> appene for deg</translation>
 <translation id="8199300056570174101">Egenskaper for nettverk (tjeneste) og enhet</translation>
@@ -4922,6 +4930,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
     <ph name="BEGIN_PARAGRAPH2" />Selv om denne funksjonen slås av, kan enheten fortsatt sende informasjonen den trenger for å motta nødvendige tjenester, som systemoppdateringer og sikkerhet.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />Eieren kan kontrollere funksjonen fra Innstillinger &gt; Avansert &gt; Send diagnostikk og bruksdata til Google automatisk.<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />Hvis ytterligere nett- og appaktivitet er slått på for barnet ditt, kan disse dataene bli lagret i barnets Google-konto. Finn ut mer om disse innstillingene og hvordan du justerer dem, på families.google.com.<ph name="END_PARAGRAPH4" /></translation>
+<translation id="826905130698769948">Ugyldig klientsertifikat</translation>
 <translation id="8270242299912238708">PDF-dokumenter</translation>
 <translation id="827097179112817503">Vis startsideknapp</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 bokmerke er slettet}other{# bokmerker er slettet}}</translation>
@@ -5335,6 +5344,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8874184842967597500">Ikke tilkoblet</translation>
 <translation id="8876307312329369159">Denne innstillingen kan ikke endres under en demonstrasjonsøkt.</translation>
 <translation id="8877448029301136595">[overordnet katalog]</translation>
+<translation id="8879220587046205278">Apper fra Google Play trenger kanskje full tilgang til filsystemet for å kunne lese og skrive til filer på eksterne lagringsenheter. Filer og mapper som opprettes på enheten, er synlige for alle som bruker den eksterne stasjonen.</translation>
 <translation id="8879284080359814990">Vi&amp;s som fane</translation>
 <translation id="8879921471468674457">Husk påloggingsinfo</translation>
 <translation id="8881020143150461183">Prøv på nytt. For teknisk brukerstøtte, kontakt <ph name="CARRIER_NAME" />.</translation>

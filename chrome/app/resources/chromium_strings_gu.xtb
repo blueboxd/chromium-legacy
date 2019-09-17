@@ -92,6 +92,8 @@
 <translation id="4230135487732243613">તમારા Chromium ડેટાને આ એકાઉન્ટ સાથે લિંક કરીએ?</translation>
 <translation id="4271805377592243930">Chromium સાથે સહાય મેળવો</translation>
 <translation id="4285930937574705105">અમઉલ્લેખિત ભૂલને કારણે ઇન્સ્ટોલેશન નિષ્ફળ થયું. જો Chromium હાલમાં ચાલી રહ્યું હોય, તો તેને બંધ કરો અને ફરી પ્રયાસ કરો.</translation>
+<translation id="4371648796594901282">Chromium OSની વિગતો માટે, કૃપા કરીને <ph name="LINK_BEGIN" />
+      Chromium OS વિશે<ph name="LINK_END" /> જુઓ</translation>
 <translation id="4407044323746248786">છતાં પણ Chromiumમાંથી બહાર નિકળવું છે?</translation>
 <translation id="4415566066719264597">Chromiumને બૅકગ્રાઉન્ડમાં ચાલવા દો</translation>
 <translation id="4423735387467980091">Chromium ને કસ્ટમાઇઝ અને નિયંત્રિત કરો</translation>
@@ -124,6 +126,7 @@
 <translation id="5623402015214259806">{0,plural, =0{Chromium અપડેટ ઉપલબ્ધ છે}=1{Chromium અપડેટ ઉપલબ્ધ છે}one{Chromium અપડેટ # દિવસ માટે ઉપલબ્ધ છે}other{Chromium અપડેટ # દિવસ માટે ઉપલબ્ધ છે}}</translation>
 <translation id="5631814766731275228">Chromiumમાંનું નામ અને ફોટો</translation>
 <translation id="5634636535844844681">Chromium માટે Windows 7 અથવા તે પછીનું સંસ્કરણ આવશ્યક છે.</translation>
+<translation id="5653831366781983928">કૃપા કરીને હવે Chromium ફરી શરૂ કરો</translation>
 <translation id="5680901439334282664">Chromium માં સાઇન ઇન કરો</translation>
 <translation id="5698481217667032250">આ ભાષામાં Chromium બતાવો</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -166,6 +169,7 @@
 <translation id="6734080038664603509">&amp;Chromium ને અપડેટ કરો</translation>
 <translation id="6734291798041940871">Chromium, તમારા કમ્પ્યુટર પર તમામ વપરાશકર્તાઓ માટે પહેલાંથી ઇન્સ્ટૉલ કરેલ છે.</translation>
 <translation id="6810143991807788455">વર્તમાન સેટિંગ્સની જાણ કરીને Chromium ને વધુ સારું બનાવવામાં સહાય કરો</translation>
+<translation id="6847869444787758381">Chromium વડે તમે તમારા પાસવર્ડમાં ક્યારેક ચેડાં થાય તો તેના વિશે જાણકારી મેળવી શકો છો</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromium પર કૉપિ કરેલું છે)</translation>
 <translation id="6868056391275687737">Chromiumની બીજી કૉપિ ચાલી રહી છે. અપડેટ કરવા માટે, એ કૉપિ બંધ કરો.</translation>

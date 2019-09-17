@@ -71,6 +71,7 @@
 <translation id="1292701964462482250">"Hay software en tu ordenador que impide que Chrome se conecte a la Web de forma segura" (solo para ordenadores Windows)</translation>
 <translation id="1294154142200295408">Variaciones de la línea de comandos</translation>
 <translation id="129553762522093515">Cerrado recientemente</translation>
+<translation id="1298536327547837046">Análisis de software malicioso</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Borrar las cookies<ph name="END_LINK" /></translation>
 <translation id="1307966114820526988">Funciones obsoletas</translation>
 <translation id="1320233736580025032">Prc1 (sobre)</translation>
@@ -167,6 +168,7 @@
 <translation id="1734878702283171397">Intenta ponerte en contacto con el administrador del sistema.</translation>
 <translation id="1740951997222943430">Introduce un mes de vencimiento válido</translation>
 <translation id="1743520634839655729">Para pagar más rápido la próxima vez, guarda tu tarjeta, tu nombre y tu dirección de facturación en tu cuenta de Google y en este dispositivo.</translation>
+<translation id="1743570585616704562">No se ha reconocido</translation>
 <translation id="1745880797583122200">Tu navegador está administrado</translation>
 <translation id="17513872634828108">Pestañas abiertas</translation>
 <translation id="1753706481035618306">Número de página</translation>
@@ -428,6 +430,7 @@
 <translation id="320323717674993345">Cancelar pago</translation>
 <translation id="3207960819495026254">Añadido a marcadores</translation>
 <translation id="3209034400446768650">La página puede cobrarte dinero</translation>
+<translation id="3215092763954878852">No se ha podido usar WebAuthn</translation>
 <translation id="3225919329040284222">El servidor ha mostrado un certificado que no coincide con lo que se esperaba. Algunos sitios web tienen un alto nivel de seguridad para garantizar tu protección y esperan ciertas características de los certificados.</translation>
 <translation id="3226128629678568754">Pulsa el botón de actualización de página para que se vuelvan a enviar los datos necesarios para cargar la página.</translation>
 <translation id="3227137524299004712">Micrófono</translation>
@@ -564,6 +567,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Ninguno}=1{De 1 sitio web }other{De # sitios web }}</translation>
 <translation id="397105322502079400">Calculando...</translation>
 <translation id="3973234410852337861">La página <ph name="HOST_NAME" /> está bloqueada</translation>
+<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> ha habilitado la protección contra amenazas de Chrome Enterprise en tu navegador. La protección contra amenazas de Chrome Enterprise tiene acceso a algunos de tus datos.</translation>
 <translation id="3987940399970879459">Menos de 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{ 1 página web cercana}other{ # páginas web cercanas}}</translation>
 <translation id="4030383055268325496">&amp;Deshacer acción de añadir</translation>
@@ -632,6 +636,7 @@
 <translation id="4277028893293644418">Cambiar contraseña</translation>
 <translation id="4279811152705618813">Tu <ph name="DEVICE_TYPE" /> lo gestiona <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Se ha guardado esta tarjeta en tu cuenta de Google}other{Se han guardado estas tarjetas en tu cuenta de Google}}</translation>
+<translation id="428847186335018806">Analiza los archivos que descargues o subas en Chrome.</translation>
 <translation id="42981349822642051">Mostrar</translation>
 <translation id="4302965934281694568">Chou3 (sobre)</translation>
 <translation id="4305817255990598646">Cambiar</translation>
@@ -670,6 +675,7 @@
 <translation id="4506176782989081258">Error de validación: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Ponerte en contacto con el administrador del sistema</translation>
 <translation id="450710068430902550">Compartir con el administrador</translation>
+<translation id="4508814173490746936">No se ha podido usar Touch ID</translation>
 <translation id="4510487217173779431">Chou4 (sobre)</translation>
 <translation id="4515275063822566619">Las tarjetas y las direcciones proceden de Chrome y tu cuenta de Google (<ph name="ACCOUNT_EMAIL" />). Puedes gestionarlas en <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (sobre)</translation>
@@ -765,6 +771,7 @@
 <translation id="5045550434625856497">Contraseña incorrecta</translation>
 <translation id="5056549851600133418">Artículos recomendados para ti</translation>
 <translation id="5068524481479508725">A10</translation>
+<translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 en uso)}other{(# en uso)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Comprobar la dirección del proxy<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">El certificado del servidor no es válido en este momento.</translation>
 <translation id="5087580092889165836">Añadir tarjeta</translation>
@@ -994,6 +1001,7 @@
 <translation id="6302269476990306341">Se está parando el Asistente de Google en Chrome</translation>
 <translation id="6305205051461490394">No se puede acceder a <ph name="URL" />.</translation>
 <translation id="6321917430147971392">Comprueba tu configuración de DNS</translation>
+<translation id="6322182122604171028">No se ha podido usar Windows Hello</translation>
 <translation id="6328639280570009161">Prueba a inhabilitar la predicción de red</translation>
 <translation id="6328784461820205019">"La conexión no es privada" o "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" o "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" o "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" o "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" o "Error de certificado SSL"</translation>
 <translation id="6328786501058569169">Este sitio web es engañoso</translation>
@@ -1017,6 +1025,7 @@
 <translation id="6433490469411711332">Editar información de contacto</translation>
 <translation id="6433595998831338502">La página <ph name="HOST_NAME" /> ha rechazado la conexión.</translation>
 <translation id="6434309073475700221">Rechazar</translation>
+<translation id="6435221585574090192">Comparte con tu administrador los datos de actividades relacionadas con la seguridad que marque la protección contra amenazas de Chrome Enterprise. Estos datos pueden incluir las URL de páginas, los nombres y metadatos de archivos, y tu nombre de usuario en el dispositivo y en Chrome.</translation>
 <translation id="6440503408713884761">Ignorada</translation>
 <translation id="6446163441502663861">Kahu (sobre)</translation>
 <translation id="6446608382365791566">Añadir más información</translation>
@@ -1061,6 +1070,7 @@
 <translation id="6671697161687535275">¿Quitar sugerencia de formulario de Chromium?</translation>
 <translation id="6685834062052613830">Cierra sesión y completa la configuración</translation>
 <translation id="6689271823431384964">Chrome te ofrece guardar las tarjetas en tu cuenta de Google porque has iniciado sesión. Puedes cambiar esta opción en los ajustes. El nombre del titular procede de tu cuenta.</translation>
+<translation id="6707256370811247129">Comprueba el contenido de caché y los archivos que has descargado o subido en Chrome.</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6710594484020273272">&lt;Introducir término de búsqueda&gt;</translation>
 <translation id="671076103358959139">Token de registro:</translation>
@@ -1079,6 +1089,7 @@
 <translation id="681021252041861472">Campo obligatorio</translation>
 <translation id="6810899417690483278">ID de personalización</translation>
 <translation id="6825578344716086703">Has intentado acceder a <ph name="DOMAIN" />, pero el servidor ha presentado un certificado firmado con un algoritmo de firma no seguro (por ejemplo, SHA-1). Una posible causa de este problema es que se hayan falsificado las credenciales de seguridad presentadas por el servidor y que hayas accedido a la página de un atacante en lugar de establecer conexión con el servidor en cuestión.</translation>
+<translation id="6826370046007623921">Prevención de la pérdida de datos</translation>
 <translation id="6831043979455480757">Traducir</translation>
 <translation id="6839929833149231406">Área</translation>
 <translation id="6852204201400771460">¿Quieres volver a cargar la aplicación?</translation>
@@ -1225,6 +1236,7 @@ Más información:
 <translation id="7542995811387359312">La opción de autocompletado de la tarjeta de crédito está inhabilitada porque este formulario no utiliza una conexión segura.</translation>
 <translation id="7548892272833184391">Solucionar errores de conexión</translation>
 <translation id="7549584377607005141">Esta página web necesita los datos introducidos anteriormente para mostrarse correctamente. Puedes volver a enviar los datos, pero se repetirán las acciones que haya realizado la página.</translation>
+<translation id="7550637293666041147">Tu nombre de usuario en el dispositivo y en Chrome</translation>
 <translation id="7552846755917812628">Prueba los siguientes consejos:</translation>
 <translation id="7554791636758816595">Nueva pestaña</translation>
 <translation id="7564049878696755256">Podrías perder el acceso a tu cuenta de <ph name="ORG_NAME" /> o tener problemas de suplantación de identidad. Chrome te recomienda que cambies tu contraseña ahora.</translation>
@@ -1239,6 +1251,7 @@ Más información:
 <translation id="7610193165460212391">El valor <ph name="VALUE" /> se encuentra fuera del intervalo.</translation>
 <translation id="7613889955535752492">Caducidad: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Has usado anteriormente otra versión de la contraseña de tu cuenta de Google para el cifrado de datos. Introdúcela a continuación.</translation>
+<translation id="7625784245512586808">Protección contra amenazas de Chrome Enterprise</translation>
 <translation id="7633909222644580952">Datos de rendimiento e informes sobre fallos</translation>
 <translation id="7637571805876720304">¿Quitar tarjeta de crédito de Chromium?</translation>
 <translation id="7638605456503525968">Puertos serie</translation>
@@ -1349,6 +1362,7 @@ Más información:
 <translation id="8211406090763984747">La conexión es segura</translation>
 <translation id="8218327578424803826">Ubicación asignada:</translation>
 <translation id="8220146938470311105">C7/C6 (sobre)</translation>
+<translation id="8220639454292072926">Informes de empresa</translation>
 <translation id="8225771182978767009">La persona que ha configurado este ordenador ha elegido bloquear este sitio web.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" /> o <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Abre una página en una nueva pestaña de incógnito</translation>
@@ -1431,6 +1445,7 @@ Más información:
 <translation id="8740359287975076522">No se ha podido encontrar la &lt;abbr id="dnsDefinition"&gt;dirección DNS&lt;/abbr&gt; de la página <ph name="HOST_NAME" />. Se está diagnosticando el problema.</translation>
 <translation id="874846938927089722">Tarjetas prepago y de crédito aceptadas</translation>
 <translation id="874918643257405732">Añadir esta pestaña a marcadores</translation>
+<translation id="8751426954251315517">Vuelve a intentarlo más adelante</translation>
 <translation id="8759274551635299824">La tarjeta ha caducado</translation>
 <translation id="8761567432415473239">La función de Navegación Segura de Google <ph name="BEGIN_LINK" />encontró programas dañinos<ph name="END_LINK" /> recientemente en el sitio <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Dispositivo USB</translation>
@@ -1495,6 +1510,7 @@ Más información:
 <translation id="9080712759204168376">Resumen del pedido</translation>
 <translation id="9089260154716455634">Política fuera del horario:</translation>
 <translation id="9095388113577226029">Más idiomas...</translation>
+<translation id="9098981495403789647">Tu administrador ha habilitado la protección contra amenazas de Chrome Enterprise en tu navegador. La protección contra amenazas de Chrome Enterprise tiene acceso a algunos de tus datos.</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> utiliza normalmente el cifrado para proteger tu información. Cuando Chromium intentó establecer conexión con <ph name="SITE" />, el sitio web devolvió unas credenciales inusuales e incorrectas. Esto puede ocurrir si un atacante intenta suplantar la identidad de <ph name="SITE" /> o si una pantalla de inicio de sesión Wi-Fi interrumpe la conexión. Tu información sigue estando protegida, ya que Chromium detuvo la conexión antes de que se intercambiaran datos.</translation>
 <translation id="9106062320799175032">Añade una dirección de facturación</translation>
 <translation id="9114524666733003316">Confirmando tarjeta...</translation>

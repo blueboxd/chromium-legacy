@@ -8,7 +8,7 @@ import android.graphics.Rect;
 import android.view.View;
 import android.widget.ProgressBar;
 
-import org.chromium.chrome.browser.widget.ToolbarProgressBar;
+import org.chromium.chrome.browser.toolbar.ToolbarProgressBar;
 
 /**
  * An interface for outside packages to interact with the top toolbar. Other than for testing

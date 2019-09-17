@@ -233,6 +233,7 @@
 <translation id="27527859628328957">次のフォーカス可能項目にジャンプ</translation>
 <translation id="2770781857296573485">グループ検索を入力</translation>
 <translation id="2777845298774924149">終了しました</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{+#}other{+#}}</translation>
 <translation id="2784959586797362050">フィードバックを送信するには、検索+a キーを押した後 i キーを押してください。ご意見をお待ちしています。</translation>
 <translation id="2800204403141299078">この他に異なる要素はありません。</translation>
 <translation id="2800780099804980316">前のレベル 1 見出しはありません。</translation>
@@ -715,6 +716,7 @@
 <translation id="5956928062748260866">ダイアログ</translation>
 <translation id="5963413905009737549">セクション</translation>
 <translation id="5968607524793740041">コンテキスト メニューを表示</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{（# 個のアイテム）}other{（# 個のアイテム）}}</translation>
 <translation id="5981446804259161541">ライトシアン</translation>
 <translation id="5983179082906765664">一度に移動する単位を小さくする</translation>
 <translation id="5992285135956208197">図形ドキュメント</translation>

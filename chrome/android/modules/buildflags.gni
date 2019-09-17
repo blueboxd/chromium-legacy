@@ -9,7 +9,9 @@ import("//device/vr/buildflags/buildflags.gni")
 # This variable indicates whether the native feature module system is engaged.
 # Currently, this implies a build configuration that supports native modules,
 # and that at least one feature is using a native module.
-if (is_android && is_clang && use_lld && !is_component_build) {
+# TODO(https://crbug.com/1004329): Partitioning should work with is_debug. When
+# this bug is fixed, remove that condition here.
+if (is_android && is_clang && use_lld && !is_component_build && !is_debug) {
   use_native_modules = enable_vr && modularize_vr_native
 } else {
   use_native_modules = false

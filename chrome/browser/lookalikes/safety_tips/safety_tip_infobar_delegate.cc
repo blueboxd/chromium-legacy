@@ -96,7 +96,7 @@ SafetyTipInfoBarDelegate::GetIdentifier() const {
 }
 
 int SafetyTipInfoBarDelegate::GetIconId() const {
-  return IDR_ANDROID_INFOBAR_TIP;
+  return IDR_ANDROID_INFOBAR_SAFETYTIP_SHIELD;
 }
 
 void SafetyTipInfoBarDelegate::InfoBarDismissed() {

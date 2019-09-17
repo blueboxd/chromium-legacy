@@ -134,7 +134,7 @@ class VIEWS_EXPORT InkDropHostView : public View {
 
  protected:
   // Size used for the default SquareInkDropRipple.
-  static constexpr int kDefaultInkDropSize = 24;
+  static constexpr gfx::Size kDefaultInkDropSize = gfx::Size(24, 24);
 
   // Called after a new InkDrop instance is created.
   virtual void OnInkDropCreated() {}
@@ -151,8 +151,7 @@ class VIEWS_EXPORT InkDropHostView : public View {
   // directly.
   std::unique_ptr<InkDropRipple> CreateDefaultInkDropRipple(
       const gfx::Point& center_point,
-      const gfx::Size& size = gfx::Size(kDefaultInkDropSize,
-                                        kDefaultInkDropSize)) const;
+      const gfx::Size& size = kDefaultInkDropSize) const;
 
   // Creates a SquareInkDropRipple centered on |center_point|.
   std::unique_ptr<InkDropRipple> CreateSquareInkDropRipple(
@@ -163,8 +162,7 @@ class VIEWS_EXPORT InkDropHostView : public View {
   // directly.
   std::unique_ptr<InkDropHighlight> CreateDefaultInkDropHighlight(
       const gfx::PointF& center_point,
-      const gfx::Size& size = gfx::Size(kDefaultInkDropSize,
-                                        kDefaultInkDropSize)) const;
+      const gfx::Size& size = kDefaultInkDropSize) const;
 
   // Creates a InkDropHighlight centered on |center_point|.
   std::unique_ptr<InkDropHighlight> CreateSquareInkDropHighlight(

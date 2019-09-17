@@ -47,7 +47,9 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 @property(nonatomic, strong)
     GoogleServicesSettingsCoordinator* googleServicesSettingsCoordinator;
 
-// Current ViewController being presented by this Navigation Controller.
+// Current SettingsViewController being presented by this Navigation Controller.
+// If nil it means the Navigation Controller is not presenting anything, or the
+// VC being presented is not a SettingsRootTableViewController.
 @property(nonatomic, weak)
     SettingsRootTableViewController* currentPresentedSettingsViewController;
 
@@ -404,8 +406,7 @@ initWithRootViewController:(UIViewController*)rootViewController
       willShowViewController:(UIViewController*)viewController
                     animated:(BOOL)animated {
   self.currentPresentedSettingsViewController =
-      base::mac::ObjCCastStrict<SettingsRootTableViewController>(
-          viewController);
+      base::mac::ObjCCast<SettingsRootTableViewController>(viewController);
 }
 
 #pragma mark - UIResponder

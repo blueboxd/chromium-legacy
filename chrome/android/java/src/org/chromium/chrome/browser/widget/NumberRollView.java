@@ -153,4 +153,13 @@ public class NumberRollView extends FrameLayout {
     public void endAnimationsForTesting() {
         if (mLastRollAnimator != null) mLastRollAnimator.end();
     }
+
+    /**
+     * Update the text appearance for both {@link TextView}.
+     * @param resId The new text appearance to use.
+     */
+    public void setTextAppearance(int resId) {
+        mUpNumber.setTextAppearance(mUpNumber.getContext(), resId);
+        mDownNumber.setTextAppearance(mDownNumber.getContext(), resId);
+    }
 }

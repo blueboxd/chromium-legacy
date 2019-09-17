@@ -71,6 +71,7 @@
 <translation id="1292701964462482250">"Kuna programu kwenye kompyuta yako inayoizuia Chrome isiunganishe kwenye wavuti kwa usalama" (kompyuta za Windows pekee)</translation>
 <translation id="1294154142200295408">Tofauti za miundo ya amri</translation>
 <translation id="129553762522093515">Vilivyofungwa hivi karibuni</translation>
+<translation id="1298536327547837046">Uchanganuzi wa Programu Hasidi</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Jaribu kufuta vidakuzi kwenye kivinjari chako<ph name="END_LINK" /></translation>
 <translation id="1307966114820526988">Vipengele Vilivyoacha Kutumiwa</translation>
 <translation id="1320233736580025032">Prc1 (Bahasha)</translation>
@@ -167,6 +168,7 @@
 <translation id="1734878702283171397">Kuwasiliana na msimamizi wa mfumo.</translation>
 <translation id="1740951997222943430">Andika mwezi sahihi wa kuisha kwa muda wa matumizi</translation>
 <translation id="1743520634839655729">Ili ulipe kwa haraka wakati ujao, hifadhi anwani ya kutuma bili, jina na maelezo ya kadi yako kwenye Akaunti yako ya Google na kwenye kifaa hiki.</translation>
+<translation id="1743570585616704562">Haikutambua alama ya kidole</translation>
 <translation id="1745880797583122200">Kivinjari chako kinadhibitiwa</translation>
 <translation id="17513872634828108">Vichupo vilivyo wazi</translation>
 <translation id="1753706481035618306">Nambari ya ukurasa</translation>
@@ -428,6 +430,7 @@
 <translation id="320323717674993345">Ghairi Malipo</translation>
 <translation id="3207960819495026254">Imealamishwa</translation>
 <translation id="3209034400446768650">Huenda ukurasa ukakutoza</translation>
+<translation id="3215092763954878852">Imeshindwa kutumia WebAuthn</translation>
 <translation id="3225919329040284222">Seva imewasilisha cheti kisicholingana na matarajio ya kijenzi cha ndani. Matarajio haya yanajumlishwa kwa baadhi ya tovuti za usalama wa juu ili kukulinda.</translation>
 <translation id="3226128629678568754">Bonyeza kitufe cha kupakia upya ili kuwasilisha upya data inayohitajika kupakia ukurasa.</translation>
 <translation id="3227137524299004712">Maikrofoni</translation>
@@ -564,6 +567,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Hamna}=1{Kutoka kwenye tovuti 1 }other{Kutoka kwenye tovuti # }}</translation>
 <translation id="397105322502079400">Inakokotoa...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> imezuiwa.</translation>
+<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> imewasha Ulinzi wa Hatari wa Biashara ya Chrome kwenye kivinjari chako. Ulinzi wa Hatari wa Biashara ya Chrome una uwezo wa kufikia baadhi ya data yako.</translation>
 <translation id="3987940399970879459">Chini ya MB 1</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{ukurasa 1 wa wavuti ulio karibu}other{kurasa # za wavuti zilizo karibu}}</translation>
 <translation id="4030383055268325496">Tendua kuongeza</translation>
@@ -632,6 +636,7 @@
 <translation id="4277028893293644418">Badilisha nenosiri</translation>
 <translation id="4279811152705618813"><ph name="DEVICE_TYPE" /> yako inasimamiwa na <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Kadi hii imehifadhiwa kwenye Akaunti yako ya Google}other{Kadi hizi zimehifadhiwa kwenye Akaunti yako ya Google}}</translation>
+<translation id="428847186335018806">Kuchanganua faili unazopakua au kupakia kwenye Chrome.</translation>
 <translation id="42981349822642051">Panua</translation>
 <translation id="4302965934281694568">Chou3 (Bahasha)</translation>
 <translation id="4305817255990598646">Badilisha</translation>
@@ -670,6 +675,7 @@
 <translation id="4506176782989081258">Hitilafu ya uthibitishaji: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Kuwasiliana na msimamizi wa mfumo</translation>
 <translation id="450710068430902550">Kushiriki na Msimamizi</translation>
+<translation id="4508814173490746936">Imeshindwa kutumia Touch ID</translation>
 <translation id="4510487217173779431">Chou4 (Bahasha)</translation>
 <translation id="4515275063822566619">Kadi na anwani zinatoka Chrome na Akaunti yako ya Google (<ph name="ACCOUNT_EMAIL" />). Unaweza kuzidhibiti katika <ph name="BEGIN_LINK" />Mipangilio<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (Bahasha)</translation>
@@ -765,6 +771,7 @@
 <translation id="5045550434625856497">Nenosiri lisilo sahihi</translation>
 <translation id="5056549851600133418">Makala kwa ajili yako</translation>
 <translation id="5068524481479508725">A10</translation>
+<translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 kinatumika)}other{(# vinatumika)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Kuangalia anwani mbadala<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">Cheti cha seva si sahihi kwa sasa.</translation>
 <translation id="5087580092889165836">Ongeza kadi</translation>
@@ -994,6 +1001,7 @@
 <translation id="6302269476990306341">Programu ya Mratibu wa Google katika Chrome inaacha kufanya kazi</translation>
 <translation id="6305205051461490394"><ph name="URL" /> haiwezi kufikiwa.</translation>
 <translation id="6321917430147971392">Angalia mipangilio yako ya DNS</translation>
+<translation id="6322182122604171028">Imeshindwa kutumia Windows Hello</translation>
 <translation id="6328639280570009161">Jaribu kuzima utabiri wa mtandao</translation>
 <translation id="6328784461820205019">"Muunganisho wako si wa faragha" au "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" au "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" au "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" au "hitilafu ya cheti cha SSL"</translation>
 <translation id="6328786501058569169">Tovuti hii ni ya udanganyifu</translation>
@@ -1017,6 +1025,7 @@
 <translation id="6433490469411711332">Badilisha maelezo ya mawasiliano</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> imekataa kuunganisha.</translation>
 <translation id="6434309073475700221">Tupa</translation>
+<translation id="6435221585574090192">Kushiriki data kuhusu matukio ya usalama ambayo yameripotiwa na kipengele cha Ulinzi wa Hatari wa Biashara ya Chrome na msimamizi wako. Hii inaweza kujumuisha URL za ukurasa, jina la faili na metadata ya faili, jina lako la mtumiaji wa kifaa na jina lako la mtumiaji wa Chrome.</translation>
 <translation id="6440503408713884761">Imepuuzwa</translation>
 <translation id="6446163441502663861">Kahu (Bahasha)</translation>
 <translation id="6446608382365791566">Ongeza maelezo zaidi</translation>
@@ -1061,6 +1070,7 @@
 <translation id="6671697161687535275">Je, ungependa kuondoa pendekezo la fomu kwenye Chromium?</translation>
 <translation id="6685834062052613830">Ondoka na ukamilishe kuweka mipangilio</translation>
 <translation id="6689271823431384964">Chrome itakuhifadhia kadi zako katika Akaunti yako ya Google kwa sababu umeingia katika akaunti. Unaweza kubadilisha hali hii katika mipangilio. Jina la mwenye kadi linatoka kwenye akaunti yako.</translation>
+<translation id="6707256370811247129">Kuchanganua maudhui ya akiba na faili ambazo unapakia au kupakua kwenye Chrome.</translation>
 <translation id="6710213216561001401">Iliyotangulia</translation>
 <translation id="6710594484020273272">&lt;Andika neno unalotaka kutafuta&gt;</translation>
 <translation id="671076103358959139">Tokeni ya Kujiandikisha:</translation>
@@ -1079,6 +1089,7 @@
 <translation id="681021252041861472">Sehemu Hii Sharti Ijazwe</translation>
 <translation id="6810899417690483278">Kitambulisho cha kubadilisha ili kukufaa</translation>
 <translation id="6825578344716086703">Umejaribu kufikia <ph name="DOMAIN" />, lakini seva iliwasilisha cheti kilichotiwa sahihi na kanuni duni. Hii inamaanisha kuwa stakabadhi za usalama zilizowasilishwa na seva hiyo huenda ni bandia na seva hiyo huenda ikawa si ile uliyotarajia (unaweza kuwa unawasiliana na mvamizi).</translation>
+<translation id="6826370046007623921">Mfumo wa Kuzuia Data Isipotee</translation>
 <translation id="6831043979455480757">Tafsiri</translation>
 <translation id="6839929833149231406">Eneo</translation>
 <translation id="6852204201400771460">Ungependa kupakia programu upya?</translation>
@@ -1223,6 +1234,7 @@
 <translation id="7542995811387359312">Mjazo otomatiki wa kadi ya mkopo umelemazwa kwa sababu fomu hii haitumii muunganisho salama.</translation>
 <translation id="7548892272833184391">Rekebisha hitilafu za muunganisho</translation>
 <translation id="7549584377607005141">Ukurasa huu wa wavuti unahitaji data ambayo uliingiza mapema ili ionyeshwe inavyostahili. Unaweza kutuma tena data hii, lakini kwa kufanya hivyo utarudia hatua yoyote ambayo ukurasa huu ulifanya hapo awali.</translation>
+<translation id="7550637293666041147">Jina lako la mtumiaji wa kifaa na jina lako la mtumiaji wa Chrome</translation>
 <translation id="7552846755917812628">Jaribu vidokezo vinavyofuata:</translation>
 <translation id="7554791636758816595">Kichupo Kipya</translation>
 <translation id="7564049878696755256">Unaweza kupoteza uwezo wa kufikia Akaunti yako ya <ph name="ORG_NAME" /> au kuibiwa utambulisho. Chrome inapendekeza ubadilishe nenosiri lako sasa.</translation>
@@ -1237,6 +1249,7 @@
 <translation id="7610193165460212391">Thamani imezidi masafa<ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Muda wa matumizi utakwisha: <ph name="EXPIRATION_MONTH" /> / <ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Tayari una data ambayo imesimbwa kwa fiche kwa kutumia toleo tofauti la nenosiri lako la  Akaunti ya Google. Tafadhali liingize hapo chini.</translation>
+<translation id="7625784245512586808">Ulinzi wa Hatari wa Biashara ya Chrome</translation>
 <translation id="7633909222644580952">Ripoti za utendaji na programu kuacha kufanya kazi</translation>
 <translation id="7637571805876720304">Je, ungependa kuondoa kadi ya mikopo kwenye Chromium?</translation>
 <translation id="7638605456503525968">Milango ya kuingiza</translation>
@@ -1347,6 +1360,7 @@
 <translation id="8211406090763984747">Muunganisho ni salama</translation>
 <translation id="8218327578424803826">Mahali Palipohawilishwa:</translation>
 <translation id="8220146938470311105">C7/C6 (Bahasha)</translation>
+<translation id="8220639454292072926">Kuripoti Biashara</translation>
 <translation id="8225771182978767009">Mtu ambaye aliweka mipangilio ya kompyuta hii ameamua kuzuia tovuti hii.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Fungua ukurasa kwenye kichupo fiche kipya</translation>
@@ -1428,6 +1442,7 @@
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> &lt;abbr id="dnsDefinition"&gt;anwani ya DNS&lt;/abbr&gt; haikupatikana. Tatizo linachunguzwa.</translation>
 <translation id="874846938927089722">Kadi za Mikopo na za Kulipia Awali Zinazokubaliwa</translation>
 <translation id="874918643257405732">Alamisha kichupo hiki</translation>
+<translation id="8751426954251315517">Tafadhali jaribu tena baadaye</translation>
 <translation id="8759274551635299824">Muda wa matumizi wa kadi hii umekwisha</translation>
 <translation id="8761567432415473239">Kuvinjari Salama kwa Google <ph name="BEGIN_LINK" />kulipata programu zinazodhuru<ph name="END_LINK" /> kwenye <ph name="SITE" /> hivi karibuni.</translation>
 <translation id="8763927697961133303">Kifaa cha USB</translation>
@@ -1492,6 +1507,7 @@
 <translation id="9080712759204168376">Muhtasari wa Agizo</translation>
 <translation id="9089260154716455634">Sera ya Saa Zisizo za Kazi:</translation>
 <translation id="9095388113577226029">Lugha zaidi...</translation>
+<translation id="9098981495403789647">Msimamizi wako amewasha kipengele cha Ulinzi wa Hatari wa Biashara ya Chrome kwenye kivinjari chako. Ulinzi wa Hatari wa Biashara ya Chrome una uwezo wa kufikia baadhi ya data yako.</translation>
 <translation id="9103872766612412690">Kwa kawaida <ph name="SITE" /> hutumia usimbaji fiche ili kulinda maelezo yako. Chromium ilipojaribu kuunganisha kwenye <ph name="SITE" /> wakati huu, tovuti ilituma kitambulisho kisicho cha kawaida na kisicho sahihi. Hili linaweza kutokea mvamizi anapojaribu kujifanya kuwa <ph name="SITE" />, au uchanganuzi wa kuingia katika Wi-Fi umeingilia muunganisho. Maelezo yako yangali salama kwa sababu Chromium ilisimamisha muunganisho kabla data yoyote itumwe.</translation>
 <translation id="9106062320799175032">Ongeza Anwani ya Kutuma Bili</translation>
 <translation id="9114524666733003316">Inathibitisha kadi…</translation>

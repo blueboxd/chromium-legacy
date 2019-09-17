@@ -113,6 +113,7 @@
 <translation id="4788285488841504513">{MONTHS,plural, =1{還剩 1 個月}other{還剩 # 個月}}</translation>
 <translation id="4841881773802181781">插入</translation>
 <translation id="4881695831933465202">開啟</translation>
+<translation id="4888938634149558681">撥打電話</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 秒}other{# 秒}}</translation>
 <translation id="4971687151119236543">上一首媒體曲目</translation>
 <translation id="5046499563572181734">輕觸這裡</translation>
@@ -162,7 +163,7 @@
 <translation id="6578407462441924264">未命名</translation>
 <translation id="6612467943526193239">如要結束校正模式，請按下 Esc 鍵。</translation>
 <translation id="6620110761915583480">儲存檔案</translation>
-<translation id="6656912866303152668">請確認「<ph name="TARGET_DEVICE_NAME" />」的 Chrome 同步功能已開啟，然後嘗試重新傳送。</translation>
+<translation id="6656912866303152668">請確認「<ph name="TARGET_DEVICE_NAME" />」已開啟了 Chrome 的同步功能，然後再傳送一次。</translation>
 <translation id="6699343763173986273">下一首媒體曲目</translation>
 <translation id="673773751041746814">刪除</translation>
 <translation id="6779314412797872738">如要將號碼從這個裝置傳送到你的 Android 手機，請在這兩個裝置的設定中<ph name="TROUBLESHOOT_LINK" />。</translation>

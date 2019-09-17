@@ -55,6 +55,9 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2094919256425865063">Želite vseeno zapreti Chrome?</translation>
 <translation id="2120620239521071941">S tem bo iz te naprave izbrisanih več elementov (<ph name="ITEMS_COUNT" />). Če želite pozneje prenesti podatke, se v Chrome prijavite kot <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Pomagajte izboljšati Google Chrome s <ph name="BEGIN_LINK" />poročanjem trenutnih nastavitev<ph name="END_LINK" /></translation>
+<translation id="2128103434102193461">Glede podrobnosti o sistemu OS Chrome glejte <ph name="LINK_BEGIN" />
+      O sistemu OS Chrome<ph name="LINK_END" /></translation>
+<translation id="2151406531797534936">Znova zaženite Chrome</translation>
 <translation id="216054706567564023">Namestite Chrome v telefonu. Na telefonsko številko za obnovitev računa bomo poslali SMS.</translation>
 <translation id="2246246234298806438">Google Chrome ne more odpreti predogleda tiskanja, če ni vgrajenega pregledovalnika datotek PDF.</translation>
 <translation id="2252923619938421629">Pomagajte izboljšati Google Chrome s poročanjem trenutnih nastavitev</translation>
@@ -227,6 +230,7 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="7589360514048265910">Ta računalnik ne bo več prejemal posodobitev za Google Chrome, ker sistem Mac OS X 10.9 ni več podprt.</translation>
 <translation id="7592736734348559088">Google Chrome ni mogel sinhronizirati podatkov, ker so podatki za prijavo v račun zastareli.</translation>
 <translation id="7626032353295482388">Dobrodošli v Chromu</translation>
+<translation id="7629695634924605473">Chrome vam sporoči, če so gesla ogrožena</translation>
 <translation id="7641148173327520642">Skrbnik sistema je Google Chrome nastavil tako, da za dostop do <ph name="TARGET_URL_HOSTNAME" /> odpre brskalnik <ph name="ALTERNATIVE_BROWSER_NAME" />.</translation>
 <translation id="7651907282515937834">Logotip za Chrome Enterprise</translation>
 <translation id="7747138024166251722">Namestitvenemu programu ni uspelo ustvariti začasnega imenika. Preverite, ali je na disku dovolj prostora in ali imate dovoljenje za namestitev programske opreme.</translation>

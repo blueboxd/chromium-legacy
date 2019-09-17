@@ -458,7 +458,7 @@ void SetStringList(const char* key,
     return;
   base::Value list(base::Value::Type::LIST);
   for (const std::string& s : *property)
-    list.GetList().push_back(base::Value(s));
+    list.Append(base::Value(s));
   dict->SetKey(key, std::move(list));
 }
 

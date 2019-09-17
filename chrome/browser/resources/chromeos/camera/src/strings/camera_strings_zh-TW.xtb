@@ -19,6 +19,7 @@
 <translation id="2501953888035679275">使用相機拍攝相片及錄製影片。</translation>
 <translation id="2549985041256363841">開始錄影</translation>
 <translation id="2599796128805996109">後置鏡頭</translation>
+<translation id="2912439424121107408">此裝置不支援專家模式</translation>
 <translation id="2968794441791257519">使用相機拍攝的相片和影片將移至「下載內容」資料夾，你可以在「檔案」應用程式中找到這些內容。
 
         具備儲存空間權限的應用程式將可存取你的相片和影片。</translation>
@@ -41,10 +42,12 @@
         請檢查相機是否已正確連接。</translation>
 <translation id="5152121255775685072">前往圖片庫</translation>
 <translation id="5671277269877808209">正方形</translation>
+<translation id="5775960006311140197">專家模式</translation>
 <translation id="5869546221129391014">格線</translation>
 <translation id="6040143037577758943">關閉</translation>
 <translation id="6073451960410192870">停止錄影</translation>
 <translation id="6165508094623778733">瞭解詳情</translation>
+<translation id="6197807149213783179">儲存中繼資料</translation>
 <translation id="6233780560267770709">3 x 3</translation>
 <translation id="6243827288366940320">黃金比例</translation>
 <translation id="6248749904681914629">外接鏡頭</translation>
@@ -66,6 +69,7 @@
 <translation id="8261506727792406068">刪除</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8687491812650032292">HD 高畫質 <ph name="HEIGHT" />p (<ph name="WIDTH" />：<ph name="HEIGHT" />)</translation>
+<translation id="8732462232047530626">預覽中繼資料</translation>
 <translation id="8815966864175525708">切換為肖像相片拍攝模式</translation>
 <translation id="8870695351537079478">無法開始錄影</translation>
 <translation id="9045155556724273246">10 秒</translation>

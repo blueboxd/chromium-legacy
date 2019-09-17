@@ -4,6 +4,9 @@
 
 #import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_scanner_string_util.h"
 
+#include "base/strings/sys_string_conversions.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
+
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
@@ -52,16 +55,15 @@ NSString* ExtractCreditCardNumber(NSString* string) {
   }
 
   NSString* stringMatchingPattern = [text substringWithRange:match.range];
-
   NSString* creditCardNumber =
       SubstituteSimilarCharactersInRecognizedText(stringMatchingPattern);
-  NSCharacterSet* allowedCharacterSet =
-      [NSCharacterSet decimalDigitCharacterSet];
-  NSCharacterSet* creditCardNumberSet =
-      [NSCharacterSet characterSetWithCharactersInString:creditCardNumber];
-  if ([allowedCharacterSet isSupersetOfSet:creditCardNumberSet]) {
+
+  autofill::CreditCard creditCard = autofill::CreditCard();
+  creditCard.SetNumber(base::SysNSStringToUTF16(creditCardNumber));
+  if (creditCard.HasValidCardNumber()) {
     return creditCardNumber;
   }
+
   return nil;
 }
 

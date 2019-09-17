@@ -89,6 +89,8 @@
 <translation id="4230135487732243613">‏داده‌های Chromium به این حساب مرتبط شود؟</translation>
 <translation id="4271805377592243930">‏دریافت کمک برای Chromium</translation>
 <translation id="4285930937574705105">‏به دلیل خطای نامشخص نصب ناموفق بود. اگر Chromium در حال اجرا است، لطفاً آن را ببندید و دوباره سعی کنید.</translation>
+<translation id="4371648796594901282">‏برای اطلاع از جزئیات سیستم عامل Chromium، لطفاً <ph name="LINK_BEGIN" />
+      درباره سیستم عامل Chromium<ph name="LINK_END" /> را ببینید</translation>
 <translation id="4407044323746248786">‏درهرصورت از Chromium خارج می‌شوید؟</translation>
 <translation id="4415566066719264597">‏اجازه به Chromium برای اجرا در پس‌زمینه</translation>
 <translation id="4423735387467980091">‏سفارشی کردن و کنترل Chromium</translation>
@@ -121,6 +123,7 @@
 <translation id="5623402015214259806">{0,plural, =0{‏به‌روزرسانی Chromium دردسترس است}=1{‏به‌روزرسانی Chromium دردسترس است}one{‏به‌روزرسانی Chromium از # روز پیش دردسترس است}other{‏به‌روزرسانی Chromium از # روز پیش دردسترس است}}</translation>
 <translation id="5631814766731275228">‏نام و تصویر Chromium</translation>
 <translation id="5634636535844844681">‏Chromium به Windows 7 یا بالاتر نیاز دارد.</translation>
+<translation id="5653831366781983928">‏لطفاً اکنون Chromium را بازراه‌اندازی کنید</translation>
 <translation id="5680901439334282664">‏ورود به سیستم Chromium</translation>
 <translation id="5698481217667032250">‏نمایش Chromium به این زبان</translation>
 <translation id="5820394555380036790">‏سیستم عامل Chromium </translation>
@@ -163,6 +166,7 @@
 <translation id="6734080038664603509">‏به‌روزرسانی &amp;Chromium</translation>
 <translation id="6734291798041940871">‏Chromium از قبل برای همه کاربران این رایانه نصب شده است.</translation>
 <translation id="6810143991807788455">‏با گزارش تنظیمات کنونی، به بهتر شدن Chromium کمک کنید</translation>
+<translation id="6847869444787758381">‏Chromium می‌تواند، اگر گذرواژه‌هایتان در معرض خطر باشد، مطلعتان کند</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">‏Google Pay (در Chromium کپی شد)</translation>
 <translation id="6868056391275687737">‏نسخه‌های دیگری از Chromium درحال اجرا است. برای به‌روزرسانی، آن‌ها را ببندید.</translation>

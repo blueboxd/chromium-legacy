@@ -10,7 +10,6 @@
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -208,12 +207,12 @@ bool TargetAutoAttacher::ShouldThrottleFramesNavigation() {
 }
 
 DevToolsAgentHost* TargetAutoAttacher::AutoAttachToFrame(
-    NavigationHandleImpl* navigation_handle) {
+    NavigationRequest* navigation_request) {
   if (!ShouldThrottleFramesNavigation())
     return nullptr;
 
-  FrameTreeNode* frame_tree_node = navigation_handle->frame_tree_node();
-  RenderFrameHostImpl* new_host = navigation_handle->GetRenderFrameHost();
+  FrameTreeNode* frame_tree_node = navigation_request->frame_tree_node();
+  RenderFrameHostImpl* new_host = navigation_request->GetRenderFrameHost();
 
   // |new_host| can be nullptr for navigation that doesn't commmit
   // (e.g. download). Skip possibly detaching the old agent host so the DevTools
@@ -237,7 +236,7 @@ DevToolsAgentHost* TargetAutoAttacher::AutoAttachToFrame(
 
   if (new_cross_process) {
     agent_host = RenderFrameDevToolsAgentHost::CreateForCrossProcessNavigation(
-        navigation_handle);
+        navigation_request);
     DCHECK(auto_attached_hosts_.find(agent_host) == auto_attached_hosts_.end());
     attach_callback_.Run(agent_host.get(), wait_for_debugger_on_start_);
     auto_attached_hosts_.insert(agent_host);

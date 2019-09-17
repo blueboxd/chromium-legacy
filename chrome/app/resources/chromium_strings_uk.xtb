@@ -90,6 +90,8 @@
 <translation id="4230135487732243613">Пов’язати ваші дані Chromium із цим обліковим записом?</translation>
 <translation id="4271805377592243930">Отримати довідку щодо Chromium</translation>
 <translation id="4285930937574705105">Не вдалося встановити через невизначену помилку. Якщо Chromium зараз запущено, закрийте його та повторіть спробу.</translation>
+<translation id="4371648796594901282">Щоб отримати докладнішу інформацію, перегляньте сторінку <ph name="LINK_BEGIN" />
+      Про ОС Chromium<ph name="LINK_END" /></translation>
 <translation id="4407044323746248786">Усе одно вийти з Chromium?</translation>
 <translation id="4415566066719264597">Дозволити Chromium працювати у фоновому режимі</translation>
 <translation id="4423735387467980091">Налаштування та керування Chromium</translation>
@@ -122,6 +124,7 @@
 <translation id="5623402015214259806">{0,plural, =0{Доступне оновлення Chromium}=1{Доступне оновлення Chromium}one{Оновлення Chromium доступне вже # день}few{Оновлення Chromium доступне вже # дні}many{Оновлення Chromium доступне вже # днів}other{Оновлення Chromium доступне вже # дня}}</translation>
 <translation id="5631814766731275228">Ім’я та зображення профілю Chromium</translation>
 <translation id="5634636535844844681">Для роботи Chromium потрібно мати ОС Windows 7 або новішої версії.</translation>
+<translation id="5653831366781983928">Перезапустіть Chromium</translation>
 <translation id="5680901439334282664">увійдіть в обліковий запис Chromium</translation>
 <translation id="5698481217667032250">Вибрати цю мову для Chromium</translation>
 <translation id="5820394555380036790">ОС Chromium</translation>
@@ -164,6 +167,7 @@
 <translation id="6734080038664603509">Оновити &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium уже встановлено для всіх користувачів на вашому комп’ютері.</translation>
 <translation id="6810143991807788455">Допоможіть покращити Chromium, надсилаючи звіти про поточні налаштування</translation>
+<translation id="6847869444787758381">Chromium повідомляє, коли ваші паролі зламують</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (скопійовано в Chromium)</translation>
 <translation id="6868056391275687737">Запущено інші копії Chromium. Щоб оновити, закрийте їх.</translation>

@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "components/bubble/bubble_controller.h"
 #include "components/bubble/bubble_manager_mocks.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -323,8 +322,8 @@ TEST_F(BubbleManagerTest, CloseAllShouldWorkWithoutBubbles) {
 TEST_F(BubbleManagerTest, AllowBubbleChainingOnClose) {
   BubbleReference chained_bubble;
   BubbleReference ref =
-      manager_->ShowBubble(base::WrapUnique(new ChainShowBubbleDelegate(
-          manager_.get(), MockBubbleDelegate::Default(), &chained_bubble)));
+      manager_->ShowBubble(std::make_unique<ChainShowBubbleDelegate>(
+          manager_.get(), MockBubbleDelegate::Default(), &chained_bubble));
   ASSERT_FALSE(chained_bubble);  // Bubble not yet visible.
   ASSERT_TRUE(manager_->CloseBubble(ref, BUBBLE_CLOSE_FORCED));
   ASSERT_TRUE(chained_bubble);  // Bubble is now visible.
@@ -335,8 +334,8 @@ TEST_F(BubbleManagerTest, AllowBubbleChainingOnClose) {
 TEST_F(BubbleManagerTest, AllowBubbleChainingOnCloseAll) {
   BubbleReference chained_bubble;
   BubbleReference ref =
-      manager_->ShowBubble(base::WrapUnique(new ChainShowBubbleDelegate(
-          manager_.get(), MockBubbleDelegate::Default(), &chained_bubble)));
+      manager_->ShowBubble(std::make_unique<ChainShowBubbleDelegate>(
+          manager_.get(), MockBubbleDelegate::Default(), &chained_bubble));
   ASSERT_FALSE(chained_bubble);  // Bubble not yet visible.
   manager_->CloseAllBubbles(BUBBLE_CLOSE_FORCED);
   ASSERT_TRUE(chained_bubble);  // Bubble is now visible.
@@ -358,8 +357,8 @@ TEST_F(BubbleManagerTest, BubblesDoNotChainOnDestroy) {
   EXPECT_CALL(*chained_delegate, ShouldClose(testing::_)).Times(0);
   EXPECT_CALL(*chained_delegate, DidClose(testing::_)).Times(0);
 
-  manager_->ShowBubble(base::WrapUnique(new ChainShowBubbleDelegate(
-      manager_.get(), std::move(chained_delegate), nullptr)));
+  manager_->ShowBubble(std::make_unique<ChainShowBubbleDelegate>(
+      manager_.get(), std::move(chained_delegate), nullptr));
   manager_.reset();
 }
 

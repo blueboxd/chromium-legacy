@@ -191,6 +191,13 @@ bool HitTestQuery::FindTargetInRegionForLocation(
     Target* target) const {
   gfx::PointF location_transformed(location);
 
+  // Exclude a region and all its descendants if the region has the ignore bit
+  // set.
+  if (features::IsVizHitTestingSurfaceLayerEnabled() &&
+      hit_test_data_[region_index].flags & HitTestRegionFlags::kHitTestIgnore) {
+    return false;
+  }
+
   if (is_location_relative_to_parent) {
     // HasPerspective() is checked for the transform because the point will not
     // be transformed correctly for a plane with a different normal.

@@ -392,7 +392,6 @@ void ThrottlingURLLoader::StartNow() {
 
     net::RedirectInfo redirect_info = net::RedirectInfo::ComputeRedirectInfo(
         start_info_->url_request.method, start_info_->url_request.url,
-        start_info_->url_request.request_initiator,
         start_info_->url_request.site_for_cookies, first_party_url_policy,
         start_info_->url_request.referrer_policy,
         start_info_->url_request.referrer.spec(),

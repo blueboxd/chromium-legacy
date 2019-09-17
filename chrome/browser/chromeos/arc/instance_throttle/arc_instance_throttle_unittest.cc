@@ -36,7 +36,8 @@ class ArcInstanceThrottleTest : public testing::Test {
                 base::BindRepeating(FakeArcSession::Create)))),
         testing_profile_(std::make_unique<TestingProfile>()),
         disable_cpu_restriction_counter_(0),
-        enable_cpu_restriction_counter_(0) {
+        enable_cpu_restriction_counter_(0),
+        record_uma_counter_(0) {
     SetArcAvailableCommandLineForTesting(
         base::CommandLine::ForCurrentProcess());
 
@@ -68,6 +69,10 @@ class ArcInstanceThrottleTest : public testing::Test {
 
   ArcThrottleObserver* critical_observer() { return &critical_observer_; }
   ArcThrottleObserver* low_observer() { return &low_observer_; }
+  const std::string& last_recorded_observer_name() const {
+    return last_recorded_observer_name_;
+  }
+  size_t uma_count() const { return record_uma_counter_; }
 
  private:
   class TestDelegateImpl : public ArcInstanceThrottle::Delegate {
@@ -79,6 +84,11 @@ class ArcInstanceThrottleTest : public testing::Test {
         ++(test_->disable_cpu_restriction_counter_);
       else
         ++(test_->enable_cpu_restriction_counter_);
+    }
+    void RecordCpuRestrictionDisabledUMA(const std::string& observer_name,
+                                         base::TimeDelta delta) override {
+      ++(test_->record_uma_counter_);
+      test_->last_recorded_observer_name_ = observer_name;
     }
 
    private:
@@ -96,6 +106,8 @@ class ArcInstanceThrottleTest : public testing::Test {
       ArcThrottleObserver::PriorityLevel::CRITICAL, "CriticalObserver"};
   ArcThrottleObserver low_observer_{ArcThrottleObserver::PriorityLevel::LOW,
                                     "LowObserver"};
+  std::string last_recorded_observer_name_;
+  size_t record_uma_counter_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcInstanceThrottleTest);
 };
@@ -130,6 +142,43 @@ TEST_F(ArcInstanceThrottleTest, TestOnObserverStateChanged) {
   critical_observer()->SetActive(false);
   EXPECT_EQ(2U, enable_cpu_restriction_counter());
   EXPECT_EQ(1U, disable_cpu_restriction_counter());
+
+  arc_instance_throttle()->SetObserversForTesting({});
+}
+
+// Tests that ArcInstanceThrottle records the duration that the effective
+// observer is active.
+TEST_F(ArcInstanceThrottleTest, RecordCpuRestrictionDisabledUMA) {
+  std::vector<ArcThrottleObserver*> observers = {critical_observer(),
+                                                 low_observer()};
+  arc_instance_throttle()->SetObserversForTesting(observers);
+  EXPECT_EQ(0U, uma_count());
+
+  // The effective observer transitions from null to critical_observer; no UMA
+  // is recorded yet.
+  critical_observer()->SetActive(true);
+  EXPECT_EQ(0U, uma_count());
+  low_observer()->SetActive(true);
+  EXPECT_EQ(0U, uma_count());
+
+  // The effective observer transitions from critical_observer to low_observer;
+  // UMA should be recorded for critical_observer.
+  critical_observer()->SetActive(false);
+  EXPECT_EQ(1U, uma_count());
+  EXPECT_EQ(critical_observer()->name(), last_recorded_observer_name());
+
+  // Effective observer transitions from low_observer to critical_observer; UMA
+  // should be recorded for low_observer.
+  critical_observer()->SetActive(true);
+  EXPECT_EQ(2U, uma_count());
+  EXPECT_EQ(low_observer()->name(), last_recorded_observer_name());
+
+  // Effective observer transitions from critical_observer to null; UMA should
+  // be recorded for critical_observer.
+  low_observer()->SetActive(false);
+  critical_observer()->SetActive(false);
+  EXPECT_EQ(3U, uma_count());
+  EXPECT_EQ(critical_observer()->name(), last_recorded_observer_name());
 
   arc_instance_throttle()->SetObserversForTesting({});
 }

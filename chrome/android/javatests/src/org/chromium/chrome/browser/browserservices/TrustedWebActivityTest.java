@@ -32,6 +32,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
@@ -40,6 +41,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.net.test.EmbeddedTestServerRule;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
@@ -116,6 +118,8 @@ public class TrustedWebActivityTest {
     @Test
     @MediumTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP_MR1)
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    // Customizing status bar color is disallowed for tablets.
     public void testStatusBarColorPrecedence() throws TimeoutException, InterruptedException {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 

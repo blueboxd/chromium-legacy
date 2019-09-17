@@ -343,11 +343,7 @@ views::View* HoverButton::GetTooltipHandlerForPoint(const gfx::Point& point) {
     }
   }
 
-  // If possible, take advantage of the |views::Label| tooltip behavior, which
-  // only sets the tooltip when the text is too long.
-  if (title_)
-    return this;
-  return label();
+  return this;
 }
 
 void HoverButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {

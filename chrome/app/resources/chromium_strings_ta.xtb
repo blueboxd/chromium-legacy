@@ -90,6 +90,8 @@
 <translation id="4230135487732243613">உங்கள் Chromium தரவை இந்தக் கணக்குடன் இணைக்கவா?</translation>
 <translation id="4271805377592243930">Chromium தொடர்பான உதவி பெறுக</translation>
 <translation id="4285930937574705105">குறிப்பிடப்படாத பிழைக் காரணமாக நிறுவல் தோல்வியடைந்தது. Chromium தற்போது இயக்கத்தில் இருந்தால், அதை மூடி, பின்னர் முயலவும்.</translation>
+<translation id="4371648796594901282">Chromium OS விவரங்களுக்கு <ph name="LINK_BEGIN" />
+Chromium OS அறிமுகம்<ph name="LINK_END" /> என்பதைப் பார்க்கவும்</translation>
 <translation id="4407044323746248786">Chromium இலிருந்து வெளியேறவா?</translation>
 <translation id="4415566066719264597">பின்னணியில் Chromiumஐ இயங்க அனுமதி</translation>
 <translation id="4423735387467980091">Chromium ஐ தனிப்பயனாக்கி கட்டுப்படுத்துக</translation>
@@ -122,6 +124,7 @@
 <translation id="5623402015214259806">{0,plural, =0{Chromiumமிற்கான புதுப்பிப்பு உள்ளது}=1{Chromiumமிற்கான புதுப்பிப்பு உள்ளது}other{Chromiumமிற்கான புதுப்பிப்பு வந்து # நாட்களாகிறது}}</translation>
 <translation id="5631814766731275228">Chromium பெயர் மற்றும் படம்</translation>
 <translation id="5634636535844844681">Windows 7 அல்லது அதற்குப் பிந்தைய பதிப்புகளில் மட்டுமே Chromium இயங்கும்.</translation>
+<translation id="5653831366781983928">Chromiumமை இப்போது மீண்டும் தொடங்கவும்</translation>
 <translation id="5680901439334282664">Chromium இல் உள்நுழைக</translation>
 <translation id="5698481217667032250">Chromiumமை இந்த மொழியில் காட்டு</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -164,6 +167,7 @@
 <translation id="6734080038664603509">&amp;Chromium ஐப் புதுப்பி</translation>
 <translation id="6734291798041940871">உங்கள் கம்ப்யூட்டரில் ஏற்கனவே எல்லாப் பயனர்களுக்கும் Chromium நிறுவப்பட்டுள்ளது.</translation>
 <translation id="6810143991807788455">நடப்பு அமைப்புகள் குறித்து தெரிவிப்பதன் மூலம் Chromiumஐச் சிறந்ததாக்க உதவவும்</translation>
+<translation id="6847869444787758381">கடவுச்சொற்கள் பாதுகாப்பை இழக்கும்பட்சத்தில் அவற்றை Chromium உங்களுக்குத் தெரியப்படுத்தும்</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromiumக்கு நகலெடுக்கப்பட்டது)</translation>
 <translation id="6868056391275687737">Chromiumமின் பிற நேர்வுகள் செயல்பாட்டில் உள்ளன. புதுப்பிக்க அவற்றை மூடவும்.</translation>

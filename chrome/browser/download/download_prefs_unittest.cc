@@ -13,11 +13,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/drive/drive_pref_names.h"
 #include "content/public/test/test_service_manager_context.h"
 #endif
@@ -221,32 +219,8 @@ TEST(DownloadPrefsTest, DownloadDirSanitization) {
                                 parent_reference.value());
   EXPECT_EQ(prefs.DownloadPath(), default_dir);
 
-  // Drive
-  {
-    base::test::ScopedFeatureList features;
-    features.InitAndDisableFeature(chromeos::features::kDriveFs);
-    auto* integration_service =
-        drive::DriveIntegrationServiceFactory::GetForProfile(&profile);
-    integration_service->SetEnabled(true);
-
-    // My Drive root.
-    ExpectValidDownloadDir(
-        &profile, &prefs,
-        base::FilePath("/special/drive-0123456789abcdef/root"));
-    // My Drive/foo.
-    ExpectValidDownloadDir(
-        &profile, &prefs,
-        base::FilePath("/special/drive-0123456789abcdef/root/foo"));
-    // Invalid path without one of the drive roots.
-    profile.GetPrefs()->SetString(prefs::kDownloadDefaultDirectory,
-                                  "/special/drive-0123456789abcdef");
-    EXPECT_EQ(prefs.DownloadPath(), default_dir);
-  }
-
   // DriveFS
   {
-    base::test::ScopedFeatureList features;
-    features.InitAndEnableFeature(chromeos::features::kDriveFs);
     // Create new profile for enabled feature to work.
     TestingProfile profile2(base::FilePath("/home/chronos/u-0123456789abcdef"));
     chromeos::FakeChromeUserManager user_manager;

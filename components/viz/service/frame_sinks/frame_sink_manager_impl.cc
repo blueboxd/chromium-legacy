@@ -566,6 +566,18 @@ VideoDetector* FrameSinkManagerImpl::CreateVideoDetectorForTesting(
   return video_detector_.get();
 }
 
+void FrameSinkManagerImpl::DidBeginFrame(const FrameSinkId& frame_sink_id,
+                                         const BeginFrameArgs& args) {
+  for (auto& observer : observer_list_)
+    observer.OnFrameSinkDidBeginFrame(frame_sink_id, args);
+}
+
+void FrameSinkManagerImpl::DidFinishFrame(const FrameSinkId& frame_sink_id,
+                                          const BeginFrameArgs& args) {
+  for (auto& observer : observer_list_)
+    observer.OnFrameSinkDidFinishFrame(frame_sink_id, args);
+}
+
 void FrameSinkManagerImpl::AddObserver(FrameSinkObserver* obs) {
   observer_list_.AddObserver(obs);
 }

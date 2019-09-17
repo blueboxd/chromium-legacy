@@ -66,6 +66,7 @@
 <translation id="1407135791313364759">Abrir tudo</translation>
 <translation id="1409426117486808224">Vista simplificada dos separadores abertos</translation>
 <translation id="1409879593029778104">A transferência de <ph name="FILE_NAME" /> foi impedida porque o ficheiro já existe.</translation>
+<translation id="1413136574162415971">A Google pode verificar se as suas palavras-passe estiveram envolvidas numa violação de dados. Esta funcionalidade será ativada quando iniciar sessão com a sua Conta Google e ativar a sincronização.</translation>
 <translation id="1414981605391750300">A contactar a Google… Isto pode demorar um pouco…</translation>
 <translation id="1416550906796893042">Versão da aplicação</translation>
 <translation id="1430915738399379752">Imprimir</translation>
@@ -160,6 +161,7 @@
 <translation id="2091887806945687916">Som</translation>
 <translation id="2096012225669085171">Sincronizar e personalizar entre dispositivos</translation>
 <translation id="2100273922101894616">Início de sessão automático</translation>
+<translation id="2100314319871056947">Experimente partilhar o texto em partes mais pequenas.</translation>
 <translation id="2107397443965016585">Perguntar antes de permitir que os sites reproduzam conteúdos protegidos (recomendado)</translation>
 <translation id="2111511281910874386">Ir para a página</translation>
 <translation id="2122601567107267586">Não foi possível abrir a aplicação.</translation>
@@ -253,6 +255,7 @@
 <translation id="2836148919159985482">Toque no botão de retrocesso para sair do ecrã inteiro.</translation>
 <translation id="2842985007712546952">Pasta superior</translation>
 <translation id="2858138569776157458">Princ. sites</translation>
+<translation id="2860954141821109167">Certifique-se de que uma aplicação de telefone está ativada neste dispositivo.</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2874939134665556319">Faixa anterior</translation>
 <translation id="2876369937070532032">Quando a sua segurança está em risco, envia para a Google URLs de algumas páginas que visita.</translation>
@@ -277,6 +280,7 @@
 <translation id="2996291259634659425">Criar frase de acesso</translation>
 <translation id="2996809686854298943">URL obrigatório</translation>
 <translation id="300526633675317032">Esta ação elimina os <ph name="SIZE_IN_KB" /> de armazenamento do Website.</translation>
+<translation id="3016635187733453316">Certifique-se de que este dispositivo está ligado à Internet.</translation>
 <translation id="3029613699374795922"><ph name="KBS" /> KB transferido(s)</translation>
 <translation id="3029704984691124060">As frases de acesso não coincidem</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obter ajuda<ph name="END_LINK" /></translation>
@@ -841,6 +845,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="723171743924126238">Selecionar imagens</translation>
 <translation id="7233236755231902816">Para ver a Web no seu idioma, obtenha a versão mais recente do Chrome.</translation>
 <translation id="7243308994586599757">Opções disponíveis junto à parte inferior do ecrã</translation>
+<translation id="7248069434667874558">Certifique-se de que o <ph name="TARGET_DEVICE_NAME" /> tem a sincronização ativada no Chrome.</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> selecionado(s).</translation>
 <translation id="7274013316676448362">Site bloqueado</translation>
 <translation id="7290209999329137901">Opção de mudar o nome não disponível</translation>
@@ -955,6 +960,7 @@ O site NÃO fica com acesso à câmara. As imagens da câmara estão visíveis a
 <translation id="8007176423574883786">Desativada para este dispositivo</translation>
 <translation id="8013372441983637696">Limpar também os dados do Chrome deste dispositivo</translation>
 <translation id="8015452622527143194">Repor tamanho predefinido dos itens na página</translation>
+<translation id="8015780634880457457">A Google pode verificar se as suas palavras-passe estiveram envolvidas numa violação de dados.</translation>
 <translation id="802154636333426148">Falha ao transferir</translation>
 <translation id="8026334261755873520">Limpar dados de navegação</translation>
 <translation id="8035133914807600019">Nova pasta…</translation>
@@ -1017,6 +1023,7 @@ O site NÃO fica com acesso à câmara. As imagens da câmara estão visíveis a
 <translation id="8445448999790540984">Não é possível exportar as palavras-passe</translation>
 <translation id="8447861592752582886">Revogar autorização do dispositivo</translation>
 <translation id="8461694314515752532">Encriptar dados sincronizados com a sua própria frase de acesso de sincronização</translation>
+<translation id="8466613982764129868">Certifique-se de que o <ph name="TARGET_DEVICE_NAME" /> está ligado à Internet.</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Disponível offline</translation>
 <translation id="8489271220582375723">Abrir a página do histórico</translation>
@@ -1107,6 +1114,7 @@ O site NÃO fica com acesso à câmara. As imagens da câmara estão visíveis a
 <translation id="9188680907066685419">Terminar sessão na conta gerida</translation>
 <translation id="9204836675896933765">Falta 1 ficheiro</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9209888181064652401">Não é possível efetuar chamadas</translation>
 <translation id="9219103736887031265">Imagens</translation>
 <translation id="926205370408745186">Remova a atividade do Chrome do Bem-estar digital</translation>
 <translation id="932327136139879170">Página inicial</translation>

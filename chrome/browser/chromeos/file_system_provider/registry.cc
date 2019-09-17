@@ -79,8 +79,7 @@ void Registry::RememberFileSystem(
       // Only persistent subscribers should be stored in persistent storage.
       // Other ones should not be restired after a restart.
       if (subscriber_it.second.persistent) {
-        persistent_origins_value.GetList().emplace_back(
-            subscriber_it.first.spec());
+        persistent_origins_value.Append(subscriber_it.first.spec());
       }
     }
     watcher.SetKey(kPrefKeyWatcherPersistentOrigins,

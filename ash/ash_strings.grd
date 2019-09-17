@@ -689,25 +689,25 @@ This file contains the strings for ash.
       <message name="IDS_ASH_PALETTE_SETTINGS" desc="The label on the setting button used to open palette setting page.">
         Stylus settings
       </message>
-      <message name="IDS_ASH_VOICE_INTERACTION_LOCALE_UNSUPPORTED_TOAST_MESSAGE" desc="Message content on the toast that appears when the voice interaction shortcut is pressed but the locale is unsupported.">
+      <message name="IDS_ASH_ASSISTANT_LOCALE_UNSUPPORTED_TOAST_MESSAGE" desc="Message content on the toast that appears when the voice interaction shortcut is pressed but the locale is unsupported.">
         The Google Assistant doesn’t speak this language.
       </message>
-      <message name="IDS_ASH_VOICE_INTERACTION_SECONDARY_USER_TOAST_MESSAGE" desc="Message content on the toast that appears when the voice interaction shortcut is pressed but the active user profile is not the primary user profile.">
+      <message name="IDS_ASH_ASSISTANT_SECONDARY_USER_TOAST_MESSAGE" desc="Message content on the toast that appears when the voice interaction shortcut is pressed but the active user profile is not the primary user profile.">
         The Google Assistant is only available for primary profile.
       </message>
-      <message name="IDS_ASH_VOICE_INTERACTION_DISABLED_BY_POLICY_MESSAGE" desc="Message content on the toast that appears when the voice interaction shortcut is pressed but the feature is disabled by enterprise policy.">
+      <message name="IDS_ASH_ASSISTANT_DISABLED_BY_POLICY_MESSAGE" desc="Message content on the toast that appears when the voice interaction shortcut is pressed but the feature is disabled by enterprise policy.">
         The Google Assistant is disabled by your administrator.
       </message>
-      <message name="IDS_ASH_VOICE_INTERACTION_DISABLED_IN_DEMO_MODE_MESSAGE" desc="Message content on the toast that appears when the voice interaction shortcut is pressed in a demo session, which does not support voice interaction.">
+      <message name="IDS_ASH_ASSISTANT_DISABLED_IN_DEMO_MODE_MESSAGE" desc="Message content on the toast that appears when the voice interaction shortcut is pressed in a demo session, which does not support voice interaction.">
         The Google Assistant is not available in a demo session.
       </message>
-      <message name="IDS_ASH_VOICE_INTERACTION_DISABLED_IN_PUBLIC_SESSION_MESSAGE" desc="Message content on the toast that appears when the voice interaction shortcut is pressed in a public session, which does not support voice interaction.">
+      <message name="IDS_ASH_ASSISTANT_DISABLED_IN_PUBLIC_SESSION_MESSAGE" desc="Message content on the toast that appears when the voice interaction shortcut is pressed in a public session, which does not support voice interaction.">
         The Google Assistant is not available in a public session.
       </message>
-      <message name="IDS_ASH_VOICE_INTERACTION_DISABLED_IN_GUEST_MESSAGE" desc="Message content on the toast that appears when the voice interaction shortcut is pressed in a guest session, which does not support voice interaction.">
+      <message name="IDS_ASH_ASSISTANT_DISABLED_IN_GUEST_MESSAGE" desc="Message content on the toast that appears when the voice interaction shortcut is pressed in a guest session, which does not support voice interaction.">
         The Google Assistant is not available in a guest session.
       </message>
-      <message name="IDS_ASH_VOICE_INTERACTION_DISABLED_BY_ACCOUNT_MESSAGE" desc="Message content on the toast that appears when the voice interaction shortcut is pressed but current logged in user account does not support voice interaction.">
+      <message name="IDS_ASH_ASSISTANT_DISABLED_BY_ACCOUNT_MESSAGE" desc="Message content on the toast that appears when the voice interaction shortcut is pressed but current logged in user account does not support voice interaction.">
         The Google Assistant is not available for current user account.
       </message>
 

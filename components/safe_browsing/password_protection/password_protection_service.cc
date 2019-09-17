@@ -19,7 +19,6 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/history/core/browser/history_service.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/safe_browsing/common/utils.h"
@@ -60,8 +59,7 @@ PasswordProtectionService::PasswordProtectionService(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     HistoryService* history_service)
     : database_manager_(database_manager),
-      url_loader_factory_(url_loader_factory),
-      history_service_observer_(this) {
+      url_loader_factory_(url_loader_factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (history_service)
     history_service_observer_.Add(history_service);

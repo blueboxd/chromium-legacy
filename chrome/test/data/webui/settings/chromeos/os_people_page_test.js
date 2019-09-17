@@ -147,6 +147,8 @@ cr.define('settings_people_page', function() {
     test('GAIA name and picture, account manager enabled', async () => {
       loadTimeData.overrideValues({
         isAccountManagerEnabled: true,
+        // settings-account-manager requires this to have a value.
+        secondaryGoogleAccountSigninAllowed: true,
       });
       peoplePage = document.createElement('os-settings-people-page');
       peoplePage.pageVisibility = settings.pageVisibility;

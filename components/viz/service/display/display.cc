@@ -396,11 +396,14 @@ void Display::InitializeRenderer(bool enable_shared_images) {
           : 0);
 }
 
-void Display::UpdateRootFrameMissing() {
+bool Display::IsRootFrameMissing() const {
   Surface* surface = surface_manager_->GetSurfaceForId(current_surface_id_);
-  bool root_frame_missing = !surface || !surface->HasActiveFrame();
+  return !surface || !surface->HasActiveFrame();
+}
+
+void Display::UpdateRootFrameMissing() {
   if (scheduler_)
-    scheduler_->SetRootFrameMissing(root_frame_missing);
+    scheduler_->SetRootFrameMissing(IsRootFrameMissing());
 }
 
 void Display::OnContextLost() {

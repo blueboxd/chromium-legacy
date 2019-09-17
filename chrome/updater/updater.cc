@@ -59,12 +59,8 @@ namespace updater {
 
 namespace {
 
-// For now, use the Flash CRX for testing.
-// CRX id is mimojjlkmoijpicakmndhoigimigcmbb.
-const uint8_t mimo_hash[] = {0xc8, 0xce, 0x99, 0xba, 0xce, 0x89, 0xf8, 0x20,
-                             0xac, 0xd3, 0x7e, 0x86, 0x8c, 0x86, 0x2c, 0x11,
-                             0xb9, 0x40, 0xc5, 0x55, 0xaf, 0x08, 0x63, 0x70,
-                             0x54, 0xf9, 0x56, 0xd3, 0xe7, 0x88, 0xba, 0x8c};
+// For now, use a specific app ID.
+const char kOmaha4AppId[] = "{44FC7FE2-65CE-487C-93F4-EDEE46EEAAAB}";
 
 void ThreadPoolStart() {
   base::ThreadPoolInstance::CreateAndStartWithDefaultParams("Updater");
@@ -152,8 +148,7 @@ int UpdaterUninstall() {
 }
 
 int UpdaterUpdateApps() {
-  auto installer = base::MakeRefCounted<Installer>(
-      std::vector<uint8_t>(std::cbegin(mimo_hash), std::cend(mimo_hash)));
+  auto installer = base::MakeRefCounted<Installer>(kOmaha4AppId);
   installer->FindInstallOfApp();
   const auto component = installer->MakeCrxComponent();
 
@@ -170,7 +165,7 @@ int UpdaterUpdateApps() {
     Observer observer(update_client);
     update_client->AddObserver(&observer);
 
-    const std::vector<std::string> ids = {installer->crx_id()};
+    const std::vector<std::string> ids = {installer->app_id()};
     update_client->Update(
         ids,
         base::BindOnce(

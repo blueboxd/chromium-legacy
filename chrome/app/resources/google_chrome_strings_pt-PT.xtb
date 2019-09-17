@@ -51,6 +51,9 @@
 <translation id="2094919256425865063">Pretende fechar o Chrome mesmo assim?</translation>
 <translation id="2120620239521071941">Esta ação elimina <ph name="ITEMS_COUNT" /> itens deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Ajude a melhorar o Chrome ao comunicar as <ph name="BEGIN_LINK" />definições atuais<ph name="END_LINK" /></translation>
+<translation id="2128103434102193461">Para obter detalhes do Chrome OS, consulte <ph name="LINK_BEGIN" />
+      Acerca do Chrome OS<ph name="LINK_END" /></translation>
+<translation id="2151406531797534936">Reinicie o Chrome agora</translation>
 <translation id="216054706567564023">Instale o Chrome no telemóvel. Vamos enviar uma SMS para o seu número de telefone de recuperação de conta.</translation>
 <translation id="2246246234298806438">O Google Chrome não pode mostrar a pré-visualização de impressão quando o visualizador de PDF incorporado está em falta.</translation>
 <translation id="2252923619938421629">Ajude a melhorar o Google Chrome, comunicando as definições atuais</translation>
@@ -219,6 +222,7 @@ Se, mesmo assim, iniciar sessão, as informações do Chrome, como marcadores, h
 <translation id="7589360514048265910">Este computador deixará de receber atualizações do Google Chrome, uma vez que o Mac OS X 10.9 já não é suportado.</translation>
 <translation id="7592736734348559088">O Google Chrome não conseguiu sincronizar os dados porque os detalhes de início de sessão da sua conta estão desatualizados.</translation>
 <translation id="7626032353295482388">Bem-vindo ao Chrome</translation>
+<translation id="7629695634924605473">O Chrome indica-lhe se as suas palavras-passe forem comprometidas.</translation>
 <translation id="7641148173327520642">O administrador do sistema configurou o Google Chrome para abrir o <ph name="ALTERNATIVE_BROWSER_NAME" /> e aceder a <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Logótipo do Chrome Enterprise</translation>
 <translation id="7747138024166251722">O programa de instalação não conseguiu criar um directório temporário. Verifique se há espaço livre no disco e permissão para a instalação do software.</translation>

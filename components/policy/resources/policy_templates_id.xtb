@@ -84,6 +84,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya dinonaktifkan bagi penggun
       Jika kebijakan ini tidak disetel, GPO yang disimpan dalam cache dapat digunakan kembali selama maksimal 25 jam.
 
       Jika kebijakan ini disetel ke 0, menyimpan GPO ke cache akan dinonaktifkan. Perlu diketahui bahwa ini akan meningkatkan beban server karena GPO akan didownload ulang pada setiap pengambilan kebijakan, walaupun GPO tidak berubah.</translation>
+<translation id="1111470455889178048">Kirim upload dan download pengguna untuk pemindaian</translation>
 <translation id="1117462881884985156"><ph name="PRODUCT_NAME" /> akan mengabaikan proxy apa pun untuk daftar host yang diberikan di sini.
 
           Kebijakan ini hanya berpengaruh jika Anda telah memilih setelan proxy manual pada 'Pilih cara menentukan setelan server proxy' dan jika kebijakan <ph name="PROXY_SETTINGS_POLICY_NAME" /> tidak ditentukan.
@@ -383,6 +384,7 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
       tidak diizinkan.</translation>
 <translation id="1634989431648355062">Izinkan plugin <ph name="FLASH_PLUGIN_NAME" /> di situs ini</translation>
 <translation id="1645793986494086629">Skema:</translation>
+<translation id="1648816843164517573">Daftar nama yang akan melewati pemeriksaan kebijakan HSTS</translation>
 <translation id="1653229475925941921">Jika ditetapkan, kebijakan ini akan mengontrol jenis kaca pembesar layar yang diaktifkan. Jika ditetapkan ke "None", kebijakan ini akan menonaktifkan kaca pembesar layar.
 
           Jika kebijakan ini ditetapkan, pengguna tidak dapat mengubah atau menggantinya.
@@ -870,6 +872,7 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 <translation id="254653220329944566">Mengaktifkan pelaporan cloud <ph name="PRODUCT_NAME" /></translation>
 <translation id="2548572254685798999">Laporkan informasi Safe Browsing</translation>
 <translation id="2550593661567988768">Khusus pencetakan simpleks</translation>
+<translation id="2551520365302988324">Kirim upload pengguna untuk pemindaian</translation>
 <translation id="2552966063069741410">Zona Waktu</translation>
 <translation id="2562339630163277285">Menentukan URL mesin telusur yang digunakan untuk memberikan hasil instan. URL harus berisi string <ph name="SEARCH_TERM_MARKER" />, yang akan diganti pada waktu kueri dengan teks yang telah dimasukkan oleh pengguna sejauh ini.
 
@@ -946,6 +949,7 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 <translation id="2665422249821137126">Mengaktifkan kursor besar di layar login</translation>
 <translation id="2672012807430078509">Kontrol yang mengaktifkan NTLM sebagai protokol autentikasi untuk pemasangan SMB</translation>
 <translation id="267596348720209223">Menentukan penyandiaksaraan karakter yang didukung oleh penyedia penelusuran. Penyandiaksaraan adalah nama-nama halaman kode seperti UTF-8, GB2312, dan ISO-8859-1. Kode tersebut dicoba dalam urutan yang disediakan. Kebijakan ini bersifat opsional. Jika tidak disetel, default yang akan digunakan adalah UTF-8. Kebijakan ini hanya dipatuhi jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
+<translation id="2679827548357140943">Daftar domain di mana konten yang diupload perlu mendapat pemeriksaan malware</translation>
 <translation id="268577405881275241">Aktifkan fitur proxy kompresi data</translation>
 <translation id="2693108589792503178">Mengonfigurasi URL ubah sandi.</translation>
 <translation id="2694143893026486692">Kaca pembesar yang dipasang ke dok diaktifkan</translation>
@@ -1318,6 +1322,10 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 <translation id="332771718998993005">Tentukan nama yang diiklankan sebagai tujuan <ph name="PRODUCT_NAME" />.
 
           Jika kebijakan ini disetel ke string yang tidak kosong, string tersebut akan digunakan sebagai nama tujuan <ph name="PRODUCT_NAME" />. Jika tidak, nama tujuan akan menjadi nama perangkat. Jika kebijakan ini tidak disetel, nama tujuan akan menjadi nama perangkat, dan pemilik perangkat (atau pengguna dari domain yang mengelola perangkat) akan diizinkan untuk mengubahnya. Karakter nama dibatasi hingga 24 karakter.</translation>
+<translation id="3331950121151548952">Daftar domain di mana konten yang diupload perlu mendapat pemeriksaan malware.  Kebijakan ini hanya digunakan jika <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> ditetapkan ke nilai yang mengizinkan atau menerapkan pemeriksaan malware pada file yang diupload.
+
+      Jika kebijakan ini tidak ditetapkan atau ditetapkan ke daftar domain kosong, konten yang diupload tidak ada yang mendapat pemeriksaan malware.
+      </translation>
 <translation id="3335468714959531450">Memungkinkan Anda menyetel daftar pola URL yang menentukan situs mana yang diizinkan untuk menyetel cookie.
 
           Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs yaitu dari kebijakan 'DefaultCookiesSetting' jika disetel, atau dari konfigurasi pribadi pengguna.
@@ -1387,6 +1395,15 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
           Jika kebijakan ini disetel ke False atau dibiarkan tidak disetel, penundaan pengelolaan daya dan batas lama sesi mulai berjalan langsung saat sesi dimulai.</translation>
 <translation id="3478024346823118645">Hapus data pengguna saat keluar</translation>
 <translation id="3480961938508521469">Mengisi baterai hingga penuh pada kecepatan standar.</translation>
+<translation id="3483729306380590354">Menetapkan nilai awal pengisian daya baterai kustom dalam persen.
+
+          Baterai akan memulai pengisian daya jika sudah mencapai nilai awal pengisian daya baterai kustom.
+
+          <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> harus minimal lima persen di bawah <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />.
+
+          Kebijakan ini hanya digunakan jika <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" /> ditetapkan ke <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" />.
+
+          Jika kebijakan ini tidak dikonfigurasi atau tidak ditetapkan, mode pengisian daya baterai standar <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" /> akan diterapkan.</translation>
 <translation id="348495353354674884">Aktifkan keyboard virtual</translation>
 <translation id="3487623755010328395">
         Jika kebijakan ini disetel, <ph name="PRODUCT_NAME" /> akan mencoba mendaftar dan menerapkan kebijakan cloud yang terkait untuk semua profil.
@@ -1829,6 +1846,15 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
           Jika Anda menetapkan kebijakan ini, pengguna tidak dapat mengubah atau menggantinya.
 
           Jika kebijakan ini tidak ditetapkan, klik otomatis mula-mula akan dinonaktifkan, tetapi dapat diaktifkan oleh pengguna kapan saja.</translation>
+<translation id="4215197846797661927">Menetapkan konfigurasi hari mode pengisian daya baterai lanjutan.
+
+          Kebijakan ini hanya digunakan jika <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> ditetapkan ke true.
+
+          Jika kebijakan ini tidak dikonfigurasi atau tidak ditetapkan, mode pengisian daya baterai lanjutan akan selalu nonaktif.
+
+          Catatan: <ph name="CHARGE_START_TIME_FIELD_NAME" /> harus lebih kecil dari <ph name="CHARGE_END_TIME_FIELD_NAME" />.
+
+          Catatan: nilai yang diizinkan untuk kolom <ph name="MINUTE_FIELD_NAME" /> di <ph name="CHARGE_START_TIME_FIELD_NAME" /> dan <ph name="CHARGE_END_TIME_FIELD_NAME" /> adalah 0, 15, 30, 45.</translation>
 <translation id="4224610387358583899">Penundaan kunci layar</translation>
 <translation id="423797045246308574">Memungkinkan Anda menyetel daftar pola URL guna menentukan situs yang diizinkan untuk menggunakan pembuatan kunci. Jika pola URL ada di dalam 'KeygenAllowedForUrls', maka kebijakan ini akan mengganti pengecualian ini.
 
@@ -1894,6 +1920,17 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
           Nilai kebijakan harus ditentukan dalam milidetik. Nilai dikunci ke kurang dari atau sama dengan penundaan menganggur.
 
           Pesan peringatan hanya ditampilkan jika tindakan menganggurnya adalah untuk logout atau mematikan.</translation>
+<translation id="4342827592971649626">Kebijakan ini mengontrol pemindaian mendalam pada download pengguna dengan Safe Browsing. Jika tidak ditetapkan, atau ditetapkan ke default, 'Jangan pindai file', download pengguna tidak akan dipindai oleh Safe Browsing.
+
+      Jika ditetapkan ke 'Tolak pemindaian file.', pengguna akan dilarang memindai download mereka. Ini berbeda dari default, karena pengguna tertentu (misalnya pengguna Perlindungan Lanjutan) dapat mengirimkan download mereka untuk dipindai. Setelan ini akan mencegah pengguna dalam melakukan pemindaian.
+
+      Jika ditetapkan ke 'Kirim download pengguna untuk pemindaian', download pengguna akan dikirimkan melalui jaringan ke Safe Browsing untuk pemindaian malware.
+
+      Jika ditetapkan ke 'Kirim upload pengguna untuk pemindaian', upload pengguna akan dikirimkan melalui jaringan ke Safe Browsing untuk pemindaian malware.
+
+      Jika ditetapkan ke 'Kirim upload dan download pengguna untuk pemindaian', akan berperilaku sesuai aturan yang dijelaskan di 'Kirim upload pengguna untuk pemindaian' dan 'Kirim download pengguna untuk pemindaian'.
+
+      Lihat kebijakan <ph name="DELAY_DELIVER_UNTIL_VERDICT_POLICY_NAME" /> dan <ph name="UNSAFE_EVENTS_REPORTING_ENABLED" /> untuk mengetahui bagaimana detail hasil pemindaian ditampilkan kepada pengguna dan admin.</translation>
 <translation id="4344356660952451291">Daftar domain yang akan digunakan untuk memeriksa kepatuhan konten yang didownload</translation>
 <translation id="4346674324214534449">Memungkinkan Anda menyetel apakah iklan harus diblokir di situs yang menayangkan iklan mengganggu.
 
@@ -2449,6 +2486,16 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Jika kebijakan ini ditetapkan, pengguna tidak dapat mengubah atau menggantinya.
 
       Jika kebijakan ini tidak ditetapkan, pengguna dapat memilih gambar yang akan ditampilkan di desktop dan di latar belakang layar login.</translation>
+<translation id="5437214086679373363">Mengontrol apakah pengguna akan diizinkan untuk mengupload atau mendownload file yang dilindungi sandi saat diperlukan pemindaian.  Batasan ini hanya berlaku untuk file yang akan memerlukan pemindaian seperti ditentukan oleh <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" />, dan kebijakan yang mengontrol daftar domain yang dapat diperiksa.
+
+      Jika kebijakan ini ditetapkan ke 'Tidak ada', <ph name="PRODUCT_NAME" /> akan memblokir pengguna untuk mengupload atau mendownload file yang dilindungi sandi.
+
+      Jika kebijakan ini ditetapkan ke 'Izinkan download', <ph name="PRODUCT_NAME" /> akan mengizinkan pengguna untuk mendownload file yang dilindungi sandi.
+
+      Jika kebijakan ini ditetapkan ke 'Izinkan upload', <ph name="PRODUCT_NAME" /> akan mengizinkan pengguna untuk mengupload file yang dilindungi sandi.
+
+      Jika kebijakan ini tidak ditetapkan atau ditetapkan ke 'Izinkan upload dan download', <ph name="PRODUCT_NAME" /> akan berperilaku sesuai dengan aturan yang dijelaskan di 'Izinkan download' dan 'Izinkan upload'.
+      </translation>
 <translation id="5437733496511628148">Jika setelan ini diaktifkan, elemen halaman web tidak diizinkan menyetel cookie yang tidak berasal dari domain yang tercantum di kolom URL browser.
 
       Jika setelan ini dinonaktifkan, elemen halaman diizinkan menyetel cookie yang tidak berasal dari domain yang tercantum di kolom URL browser dan pengguna tidak dapat mengubah setelan ini.
@@ -3324,13 +3371,32 @@ Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translatio
 
       Untuk informasi selengkapnya terkait kebijakan <ph name="IEEM_SITELIST_POLICY" /> Internet Explorer: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">URL yang akan diberi akses ke perangkat perekam video tanpa peringatan</translation>
+<translation id="713712866686796666">Menetapkan konfigurasi hari pergeseran puncak daya.
+
+          Kebijakan ini hanya digunakan jika <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> ditetapkan ke true.
+
+          Jika kebijakan ini tidak dikonfigurasi atau tidak ditetapkan, pergeseran puncak daya akan selalu dinonaktifkan.
+
+          Catatan: nilai yang diizinkan untuk kolom <ph name="MINUTE_FIELD_NAME" /> di <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" />, dan <ph name="CHARGE_START_TIME_FIELD_NAME" /> adalah 0, 15, 30, 45.</translation>
 <translation id="7138678301420049075">Lainnya</translation>
+<translation id="7139809614375682935">Menetapkan nilai akhir pengisian daya baterai kustom dalam persen.
+
+          Baterai akan berhenti mengisi daya jika sudah mencapai nilai akhir pengisian daya baterai kustom.
+
+          <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> harus minimal lima persen di bawah <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />.
+
+          Kebijakan ini hanya digunakan jika <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" /> ditetapkan ke <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" />.
+
+          Jika kebijakan ini tidak dikonfigurasi atau tidak ditetapkan, mode pengisian daya baterai standar <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" /> akan diterapkan.</translation>
 <translation id="7140629953254369759">Menginstruksikan <ph name="PRODUCT_OS_NAME" /> untuk menggunakan konfigurasi penjadwal tugas yang diidentifikasi berdasarkan nama yang ditentukan.
 
       Kebijakan ini dapat disetel ke "konservatif" dan "performa", yang akan memilih konfigurasi penjadwal tugas yang disetel untuk stabilitas vs performa maksimum.
 
       Jika kebijakan tidak disetel, pengguna akan dapat memilih sendiri.</translation>
 <translation id="7145335384492396213">Mode pencetakan PIN default</translation>
+<translation id="7149042336307555519"> Jenis sambungan yang diizinkan untuk digunakan update OS. Update OS berpotensi menyebabkan beban berat pada sambungan karena ukurannya dan mungkin menimbulkan biaya tambahan. Oleh karena itu, update tersebut akan dinonaktifkan secara default untuk jenis sambungan yang dianggap mahal (saat ini hanya "data seluler").
+
+      Pengidentifikasi jenis sambungan yang dikenal adalah <ph name="CONNECTION_TYPE_ETHERNET_NAME" />, <ph name="CONNECTION_TYPE_WIFI_NAME" />, dan <ph name="CONNECTION_TYPE_CELLULAR_NAME" />.</translation>
 <translation id="7152605873936173525">Mengontrol mode resolver DNS-over-HTTPS. Perlu diingat bahwa kebijakan ini hanya akan menetapkan mode default untuk setiap kueri. Mode tersebut mungkin digantikan untuk jenis kueri khusus seperti permintaan untuk memutuskan hostname server DNS-over-HTTPS.
 
       Mode <ph name="SECURE_DNS_MODE_OFF" /> akan menonaktifkan DNS-over-HTTPS.
@@ -3363,6 +3429,17 @@ Jika kebijakan ini disetel ke true atau tidak disetel, penguncian layar saat akt
 Jika kebijakan ini disetel ke false, permintaan penguncian layar saat aktif akan didemosikan ke permintaan penguncian layar saat aktif di sistem.</translation>
 <translation id="7177857088692019405">Membuka kunci dengan cepat</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
+<translation id="7187447094921703950">Mengaktifkan kebijakan pengelolaan pergeseran puncak daya.
+
+          Pergeseran Puncak adalah kebijakan penghematan daya yang meminimalkan penggunaan arus listrik AC selama waktu penggunaan puncak sepanjang hari itu. Untuk setiap hari kerja, waktu mulai dan berakhir bagi sistem untuk berjalan dalam mode Pergeseran Puncak daya dapat disetel. Selama waktu tersebut, sistem akan dijalankan dari baterai meskipun arus listrik AC terhubung, dengan syarat daya baterai masih berada di atas ambang batas yang ditentukan. Setelah waktu berakhir yang ditentukan, sistem akan berjalan menggunakan arus listrik AC jika terhubung tetapi tidak akan mengisi daya baterai. Sistem akan berfungsi kembali secara normal menggunakan arus listrik AC dan mengisi ulang daya baterai setelah waktu Mulai Pengisian yang ditentukan.
+
+          Jika kebijakan ini ditetapkan ke true, dan <ph name="DEVICE_POWER_PEAK_SHIFT_BATTERY_THRESHOLD_NAME" />, <ph name="DEVICE_POWER_PEAK_SHIFT_DAY_CONFIG_NAME" /> ditetapkan, pergeseran puncak daya akan selalu diaktifkan dengan syarat didukung di perangkat.
+
+          Jika kebijakan ini ditetapkan ke false, pergeseran puncak daya akan selalu dinonaktifkan.
+
+          Jika kebijakan ini ditetapkan, pengguna tidak dapat mengubah atau menggantinya.
+
+          Jika kebijakan ini tidak ditetapkan, pergeseran puncak daya mula-mula dinonaktifkan dan tidak dapat diaktifkan oleh pengguna.</translation>
 <translation id="718956142899066210">Jenis sambungan yang diizinkan untuk pembaruan</translation>
 <translation id="7190286937411178540">Mengaktifkan fitur aksesibilitas penyorotan fokus keyboard</translation>
 <translation id="7194407337890404814">Nama penyedia penelusuran default</translation>
@@ -3983,6 +4060,17 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
 
           Jika kebijakan ini tidak ditetapkan, setelan tersebut akan diaktifkan.</translation>
 <translation id="8382184662529825177">Mengaktifkan penggunaan pengesahan jarak jauh untuk perlindungan konten bagi perangkat</translation>
+<translation id="8382693763260501307">Mengaktifkan kebijakan pengelolaan daya mode pengisian daya baterai lanjutan.
+
+          Mode Pengisian Daya Baterai Lanjutan memungkinkan pengguna memaksimalkan kesehatan baterai. Dalam Mode Pengisian Daya Lanjutan, sistem akan menggunakan algoritme pengisian daya standar dan teknik lainnya selama di luar jam kerja untuk memaksimalkan kesehatan baterai. Selama jam kerja, pengisian daya ekspres digunakan. Pengisian daya ekspres ini memungkinkan baterai untuk terisi lebih cepat, sehingga baterai akan penuh lebih cepat. Waktu saat sistem akan paling banyak digunakan setiap harinya ditentukan dengan waktu mulai dan durasi.
+
+          Jika kebijakan ini ditetapkan ke true, dan <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_DAY_CONFIG_NAME" /> ditetapkan, mode pengisian daya baterai lanjutan akan selalu aktif dengan syarat didukung di perangkat.
+
+          Jika kebijakan ini ditetapkan ke false, mode pengisian daya baterai lanjutan akan selalu nonaktif.
+
+          Jika kebijakan ini ditetapkan, pengguna tidak dapat mengubah atau menggantinya.
+
+          Jika kebijakan ini tidak ditetapkan, mode pengisian daya baterai lanjutan dinonaktifkan dan tidak dapat diaktifkan oleh pengguna.</translation>
 <translation id="838870586332499308">Aktifkan roaming data</translation>
 <translation id="8390049129576938611">Menonaktifkan penampil PDF internal di <ph name="PRODUCT_NAME" />. Bukan memperlakukannya sebagai download dan mengizinkan membuka file PDF menggunakan aplikasi default.
 
@@ -4175,9 +4263,15 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
       Jika kebijakan ini dikonfigurasi, kumpulan aplikasi akan ditetapkan dan tidak dapat diubah oleh pengguna.
 
       Jika kebijakan ini tidak ditetapkan, pengguna dapat mengubah daftar aplikasi yang dipasangi pin di peluncur.</translation>
+<translation id="8779504970846195767">Menetapkan ambang batas pergeseran puncak daya baterai dalam persen.
+
+          Kebijakan ini hanya digunakan jika <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> ditetapkan ke true.
+
+          Jika kebijakan ini tidak dikonfigurasi atau tidak ditetapkan, pergeseran puncak daya akan selalu dinonaktifkan.</translation>
 <translation id="8798099450830957504">Default</translation>
 <translation id="8800453707696044281">Menetapkan nilai akhir pengisian daya baterai kustom dalam persen</translation>
 <translation id="8801680448782904838">Beri tahu pengguna bahwa meluncurkan ulang browser atau memulai ulang perangkat direkomendasikan atau diperlukan</translation>
+<translation id="8802816494059596691">Hostname yang ditentukan dalam daftar ini akan dikecualikan dari pemeriksaan kebijakan HSTS yang berpotensi mengupgrade permintaan dari http ke https. Hanya hostname berlabel tunggal yang diizinkan dalam kebijakan ini. Hostname harus dikanonikalisasi: semua IDN harus dikonversi ke format berlabel A, dan semua huruf ASCII harus berupa huruf kecil. Kebijakan ini hanya berlaku untuk hostname tertentu yang sudah ditentukan; tidak berlaku bagi subdomain nama yang ditentukan.</translation>
 <translation id="8818173863808665831">Melaporkan lokasi geografis perangkat.
 
       Jika kebijakan tidak disetel, atau disetel ke false, lokasi tidak akan dilaporkan.</translation>
@@ -4325,6 +4419,17 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
       Jika nilai kebijakan ditetapkan ke token yang dipetakan ke Quick Fix Build, perangkat akan diupdate ke Quick Fix Build yang sesuai jika update tidak diblokir oleh kebijakan lain.
 
       Jika kebijakan ini tidak ditetapkan, atau jika nilainya tidak dipetakan ke Quick Fix Build, perangkat tidak akan diupdate ke Quick Fix Build. Jika perangkat sudah menjalankan Quick Fix Build dan kebijakan tidak ditetapkan lagi atau nilainya tidak lagi dipetakan ke Quick Fix Build, perangkat akan diupdate ke versi reguler jika update tidak diblokir oleh kebijakan lain.</translation>
+<translation id="9053158112041032237">Menentukan kebijakan pengelolaan daya mode pengisian daya baterai.
+
+          Mengontrol pengisian daya baterai secara dinamis untuk meminimalkan keausan baterai akibat ketegangan baterai dan memperpanjang masa pakai baterai.
+
+          Jika mode pengisian daya baterai kustom dipilih, <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> dan <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" /> harus ditentukan.
+
+          Jika kebijakan ini ditetapkan, mode pengisian daya baterai akan diterapkan dengan syarat didukung di perangkat.
+
+          Jika kebijakan ini tidak ditetapkan dan kebijakan didukung di perangkat, mode pengisian daya baterai standar akan diterapkan dan tidak dapat diubah oleh pengguna.
+
+          Catatan: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> akan mengganti kebijakan ini jika kebijakan tersebut ditentukan.</translation>
 <translation id="9054012305936267950">Kebijakan ini mengontrol perilaku login browser. Dengan kebijakan ini, Anda dapat menentukan apakah pengguna dapat login ke <ph name="PRODUCT_NAME" /> dengan akun mereka dan menggunakan layanan terkait akun seperti sinkronisasi Chrome.
 
       Jika kebijakan ini ditetapkan ke "Nonaktifkan login browser", pengguna tidak dapat login ke browser dan menggunakan layanan berbasis akun. Dalam hal ini, fitur tingkat browser seperti sinkronisasi Chrome tidak dapat digunakan dan tidak akan tersedia. Jika pengguna telah login dan kebijakan ini ditetapkan ke "Nonaktif", pengguna akan dibuat logout saat berikutnya menjalankan Chrome, tetapi data profil lokalnya, seperti bookmark, sandi, dsb. akan tetap tersimpan. Pengguna tetap dapat login dan menggunakan layanan web Google seperti Gmail.

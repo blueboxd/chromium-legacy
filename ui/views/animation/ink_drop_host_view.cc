@@ -21,6 +21,9 @@
 
 namespace views {
 
+// static
+constexpr gfx::Size InkDropHostView::kDefaultInkDropSize;
+
 InkDropHostView::InkDropHostViewEventHandlerDelegate::
     InkDropHostViewEventHandlerDelegate(InkDropHostView* host_view)
     : host_view_(host_view) {}

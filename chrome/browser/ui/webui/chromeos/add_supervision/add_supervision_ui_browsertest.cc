@@ -204,6 +204,39 @@ IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest,
   ASSERT_TRUE(ConfirmSignoutDialog::IsShowing());
 }
 
+IN_PROC_BROWSER_TEST_F(AddSupervisionBrowserTest, UMATest) {
+  base::HistogramTester histogram_tester;
+  base::UserActionTester user_action_tester;
+
+  // Should see 0 Add Supervision enrollment metrics at first.
+  histogram_tester.ExpectTotalCount("AddSupervisionDialog.Enrollment", 0);
+
+  // Should see 0 user actions at first.
+  EXPECT_EQ(user_action_tester.GetActionCount(
+                "AddSupervisionDialog_AttemptedSignoutAfterEnrollment"),
+            0);
+
+  // Open the Add Supervision URL.
+  ui_test_utils::NavigateToURL(browser(), add_supervision_webui_url());
+  content::WaitForLoadStop(contents());
+
+  // Simulate supervision being enabled.
+  ASSERT_TRUE(content::ExecuteScript(
+      contents(), std::string(kGetAddSupervisionUIElementJS) +
+                      std::string(".server.notifySupervisionEnabled()")));
+
+  // Should see 1 Add Supervision process completed.
+  histogram_tester.ExpectUniqueSample(
+      "AddSupervisionDialog.Enrollment",
+      AddSupervisionMetricsRecorder::EnrollmentState::kCompleted, 1);
+  histogram_tester.ExpectTotalCount("AddSupervisionDialog.Enrollment", 1);
+
+  // Should see 1 EnrollmentCompleted action.
+  EXPECT_EQ(user_action_tester.GetActionCount(
+                "AddSupervisionDialog_EnrollmentCompleted"),
+            1);
+}
+
 #endif  // !defined(MEMORY_SANITIZER)
 
 }  // namespace chromeos

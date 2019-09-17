@@ -359,11 +359,10 @@ bool IsWidevineAvailable(base::FilePath* cdm_path,
       // This list must match the CDM that is being bundled with Chrome.
       capability->video_codecs.push_back(media::VideoCodec::kCodecVP8);
       capability->video_codecs.push_back(media::VideoCodec::kCodecVP9);
+      capability->video_codecs.push_back(media::VideoCodec::kCodecAV1);
       // TODO(crbug.com/899403): Update this and tests after Widevine CDM
       // supports VP9 profile 2.
       capability->supports_vp9_profile2 = false;
-      // TODO(crbug.com/953504): Update this and tests after Widevine CDM
-      // supports AV1.
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
       capability->video_codecs.push_back(media::VideoCodec::kCodecH264);
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)

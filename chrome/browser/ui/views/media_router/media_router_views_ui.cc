@@ -80,7 +80,7 @@ MediaSource GetSourceForRouteObserver(const std::vector<MediaSource>& sources) {
   auto source_it = std::find_if(
       sources.begin(), sources.end(),
       [](const auto& source) { return source.IsCastPresentationUrl(); });
-  return source_it != sources.end() ? *source_it : MediaSource("");
+  return source_it != sources.end() ? *source_it : MediaSource(std::string());
 }
 
 }  // namespace
@@ -105,7 +105,7 @@ class MediaRouterViewsUI::WebContentsFullscreenOnLoadedObserver final
     // which will occur):
     //   * after loading is complete and,
     //   ** capture has begun and fullscreen requested,
-    //   ** kMaxSecondsToWaitForCapture seconds have passed without capture,
+    //   ** 10 seconds have passed without capture,
     //   * another navigation is started,
     //   * the WebContents is destroyed.
     if (web_contents->IsLoading()) {
@@ -114,7 +114,7 @@ class MediaRouterViewsUI::WebContentsFullscreenOnLoadedObserver final
       FullScreenFirstVideoElement(web_contents);
     }
   }
-  ~WebContentsFullscreenOnLoadedObserver() override {}
+  ~WebContentsFullscreenOnLoadedObserver() override = default;
 
   // content::WebContentsObserver implementation.
   void DidStopLoading() override {
@@ -139,21 +139,6 @@ class MediaRouterViewsUI::WebContentsFullscreenOnLoadedObserver final
   }
 
  private:
-  const GURL file_url_;
-
-  // Time intervals used by the logic that detects if capture has started.
-  const int kMaxSecondsToWaitForCapture = 10;
-  const int kPollIntervalInSeconds = 1;
-
-  // The time at which fullscreen was requested.
-  base::TimeTicks fullscreen_request_time_;
-
-  // Poll timer to monitor the capturer count when fullscreening local files.
-  //
-  // TODO(crbug.com/540965): Add a method to WebContentsObserver to report
-  // capturer count changes and get rid of this polling-based approach.
-  base::OneShotTimer capture_poll_timer_;
-
   // Sends a request for full screen to the WebContents targeted at the first
   // video element.  The request is only sent after capture has begun.
   void FullScreenFirstVideoElement(content::WebContents* web_contents) {
@@ -176,8 +161,9 @@ class MediaRouterViewsUI::WebContentsFullscreenOnLoadedObserver final
       client->RequestFullscreenVideoElement();
       delete this;
       return;
-    } else if (base::TimeTicks::Now() - fullscreen_request_time_ >
-               base::TimeDelta::FromSeconds(kMaxSecondsToWaitForCapture)) {
+    }
+    if (base::TimeTicks::Now() - fullscreen_request_time_ >
+        base::TimeDelta::FromSeconds(10)) {
       // If content capture hasn't started within the timeout skip fullscreen.
       DLOG(WARNING) << "Capture of local content did not start within timeout";
       delete this;
@@ -185,14 +171,25 @@ class MediaRouterViewsUI::WebContentsFullscreenOnLoadedObserver final
     }
 
     capture_poll_timer_.Start(
-        FROM_HERE, base::TimeDelta::FromSeconds(kPollIntervalInSeconds),
+        FROM_HERE, base::TimeDelta::FromSeconds(1),
         base::BindRepeating(
             &WebContentsFullscreenOnLoadedObserver::FullscreenIfContentCaptured,
             base::Unretained(this), web_contents));
   }
+
+  const GURL file_url_;
+
+  // The time at which fullscreen was requested.
+  base::TimeTicks fullscreen_request_time_;
+
+  // Poll timer to monitor the capturer count when fullscreening local files.
+  //
+  // TODO(crbug.com/540965): Add a method to WebContentsObserver to report
+  // capturer count changes and get rid of this polling-based approach.
+  base::OneShotTimer capture_poll_timer_;
 };
 
-MediaRouterViewsUI::MediaRouterViewsUI() : initiator_(nullptr) {}
+MediaRouterViewsUI::MediaRouterViewsUI() = default;
 
 MediaRouterViewsUI::~MediaRouterViewsUI() {
   for (CastDialogController::Observer& observer : observers_)
@@ -917,9 +914,8 @@ void MediaRouterViewsUI::FullScreenFirstVideoElement(
     const GURL& file_url,
     content::WebContents* web_contents,
     const RouteRequestResult& result) {
-  if (result.result_code() == RouteRequestResult::OK) {
+  if (result.result_code() == RouteRequestResult::OK)
     new WebContentsFullscreenOnLoadedObserver(file_url, web_contents);
-  }
 }
 
 void MediaRouterViewsUI::MaybeReportFileInformation(
@@ -937,10 +933,9 @@ content::WebContents* MediaRouterViewsUI::OpenTabWithUrl(const GURL& url) {
     load_params.transition_type = ui::PAGE_TRANSITION_GENERATED;
     initiator_->GetController().LoadURLWithParams(load_params);
     return initiator_;
-  } else {
-    return chrome::AddSelectedTabWithURL(GetBrowser(), url,
-                                         ui::PAGE_TRANSITION_LINK);
   }
+  return chrome::AddSelectedTabWithURL(GetBrowser(), url,
+                                       ui::PAGE_TRANSITION_LINK);
 }
 
 MediaRouter* MediaRouterViewsUI::GetMediaRouter() const {

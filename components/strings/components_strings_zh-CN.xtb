@@ -71,6 +71,7 @@
 <translation id="1292701964462482250">“您计算机上的软件导致 Chrome 无法安全地连接到网络”（仅限 Windows 计算机）</translation>
 <translation id="1294154142200295408">命令行变体</translation>
 <translation id="129553762522093515">最近关闭的标签页</translation>
+<translation id="1298536327547837046">恶意软件扫描</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />尝试清除 Cookie<ph name="END_LINK" /></translation>
 <translation id="1307966114820526988">已被弃用的功能</translation>
 <translation id="1320233736580025032">Prc1 (Envelope)</translation>
@@ -167,6 +168,7 @@
 <translation id="1734878702283171397">请尝试联系系统管理员。</translation>
 <translation id="1740951997222943430">请输入有效的失效月份</translation>
 <translation id="1743520634839655729">若想在下次购物时更快捷地付款，请将您的付款卡信息、姓名和帐单邮寄地址保存到您的 Google 帐号名下以及这台设备中。</translation>
+<translation id="1743570585616704562">无法识别</translation>
 <translation id="1745880797583122200">您的浏览器受管理</translation>
 <translation id="17513872634828108">目前打开的标签页</translation>
 <translation id="1753706481035618306">页码</translation>
@@ -424,6 +426,7 @@
 <translation id="320323717674993345">取消付款</translation>
 <translation id="3207960819495026254">已加书签</translation>
 <translation id="3209034400446768650">此网页可能会收取费用</translation>
+<translation id="3215092763954878852">无法使用 WebAuthn</translation>
 <translation id="3225919329040284222">服务器提供的证书与内置预期证书不匹配。这些预期证书是针对某些高安全性网站提供的，以便为您提供保护。</translation>
 <translation id="3226128629678568754">按“重新加载”按钮，重新提交加载该网页所需的数据。</translation>
 <translation id="3227137524299004712">麦克风</translation>
@@ -558,6 +561,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{无}=1{来自 1 个网站}other{来自 # 个网站}}</translation>
 <translation id="397105322502079400">正在计算...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> 已被屏蔽</translation>
+<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> 已在您的浏览器中启用了 Chrome 企业版威胁防护功能。Chrome 企业版威胁防护功能可以访问您的部分数据。</translation>
 <translation id="3987940399970879459">小于 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{附近有 1 个网页}other{附近有 # 个网页}}</translation>
 <translation id="4030383055268325496">撤消添加(&amp;U)</translation>
@@ -626,6 +630,7 @@
 <translation id="4277028893293644418">重置密码</translation>
 <translation id="4279811152705618813">您的 <ph name="DEVICE_TYPE" /> 由 <ph name="ENROLLMENT_DOMAIN" /> 管理</translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{这张卡已保存到您的 Google 帐号中}other{这些卡已保存到您的 Google 帐号中}}</translation>
+<translation id="428847186335018806">扫描您在 Chrome 中下载或上传的文件。</translation>
 <translation id="42981349822642051">展开</translation>
 <translation id="4302965934281694568">Chou3 (Envelope)</translation>
 <translation id="4305817255990598646">切换</translation>
@@ -664,6 +669,7 @@
 <translation id="4506176782989081258">验证错误：<ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">联系系统管理员</translation>
 <translation id="450710068430902550">与管理员分享</translation>
+<translation id="4508814173490746936">无法使用 Touch ID</translation>
 <translation id="4510487217173779431">Chou4 (Envelope)</translation>
 <translation id="4515275063822566619">信用卡选项和地址选项均来自 Chrome 和您的 Google 帐号 (<ph name="ACCOUNT_EMAIL" />)。您可在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中管理这些选项。</translation>
 <translation id="4517607026994743406">Comm-10 (Envelope)</translation>
@@ -759,6 +765,7 @@
 <translation id="5045550434625856497">密码不正确</translation>
 <translation id="5056549851600133418">为您推荐的文章</translation>
 <translation id="5068524481479508725">A10</translation>
+<translation id="5068778127327928576">{NUM_COOKIES,plural, =1{（使用了 1 个）}other{（使用了 # 个）}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />检查代理服务器地址<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">服务器的证书目前无效。</translation>
 <translation id="5087580092889165836">添加新卡</translation>
@@ -986,6 +993,7 @@
 <translation id="6302269476990306341">Chrome 中的 Google 助理即将停止工作</translation>
 <translation id="6305205051461490394">无法访问 <ph name="URL" />。</translation>
 <translation id="6321917430147971392">请检查您的DNS设置是否正确</translation>
+<translation id="6322182122604171028">无法使用 Windows Hello</translation>
 <translation id="6328639280570009161">请尝试停用网络联想查询功能</translation>
 <translation id="6328784461820205019">“您的连接不是私密连接”、“&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;”、“&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;”、“&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;”、“&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;”或“SSL 证书错误”</translation>
 <translation id="6328786501058569169">此网站是欺骗性网站</translation>
@@ -1009,6 +1017,7 @@
 <translation id="6433490469411711332">修改联系信息</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> 拒绝了我们的连接请求。</translation>
 <translation id="6434309073475700221">放弃</translation>
+<translation id="6435221585574090192">与您的管理员分享 Chrome 企业版威胁防护功能所报告的安全性事件的相关数据。这些数据可能包括页面网址、文件名、文件元数据、您的设备用户名和 Chrome 用户名。</translation>
 <translation id="6440503408713884761">已忽略</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">添加更多信息</translation>
@@ -1053,6 +1062,7 @@
 <translation id="6671697161687535275">要从 Chromium 中移除表单填写建议吗？</translation>
 <translation id="6685834062052613830">请退出并完成设置</translation>
 <translation id="6689271823431384964">Chrome 正在询问是否要将卡保存到您的 Google 帐号中，因为您已登录。您可在“设置”中更改此行为。持卡人姓名来自您的帐号。</translation>
+<translation id="6707256370811247129">扫描您在 Chrome 中下载或上传的缓存和文件的内容。</translation>
 <translation id="6710213216561001401">上一个</translation>
 <translation id="6710594484020273272">&lt;输入搜索字词&gt;</translation>
 <translation id="671076103358959139">注册令牌：</translation>
@@ -1071,6 +1081,7 @@
 <translation id="681021252041861472">必填字段</translation>
 <translation id="6810899417690483278">自定义 ID</translation>
 <translation id="6825578344716086703">您尝试访问的是 <ph name="DOMAIN" />，但是服务器出示的证书是使用弱签名算法（例如 SHA-1）签署的。这意味着服务器出示的安全凭据可能是伪造的，因此这可能并不是您想要访问的服务器（您可能正在与攻击者进行通信）。</translation>
+<translation id="6826370046007623921">数据泄露防护</translation>
 <translation id="6831043979455480757">翻译</translation>
 <translation id="6839929833149231406">地域</translation>
 <translation id="6852204201400771460">要重新加载应用吗？</translation>
@@ -1217,6 +1228,7 @@
 <translation id="7542995811387359312">由于该表单不使用安全连接，因此自动填写信用卡信息的功能已停用。</translation>
 <translation id="7548892272833184391">修正网络连接错误</translation>
 <translation id="7549584377607005141">此网页需要使用您之前输入的数据才能正常显示。您可以重新发送这些数据，不过，这么做会重复执行此网页之前执行过的所有操作。</translation>
+<translation id="7550637293666041147">您的设备用户名和 Chrome 用户名</translation>
 <translation id="7552846755917812628">请尝试按以下提示操作：</translation>
 <translation id="7554791636758816595">新标签页</translation>
 <translation id="7564049878696755256">您可能会无法再访问自己的 <ph name="ORG_NAME" /> 帐号，或者身份信息遭到盗用。Chrome 建议您立即更改密码。</translation>
@@ -1231,6 +1243,7 @@
 <translation id="7610193165460212391">值超出了范围 (<ph name="VALUE" />)。</translation>
 <translation id="7613889955535752492">过期时间：<ph name="EXPIRATION_YEAR" /> 年 <ph name="EXPIRATION_MONTH" /> 月</translation>
 <translation id="7615602087246926389">您已经使用不同版本的 Google 帐号密码加密了数据。请在下方输入。</translation>
+<translation id="7625784245512586808">Chrome 企业版威胁防护</translation>
 <translation id="7633909222644580952">性能数据和崩溃报告</translation>
 <translation id="7637571805876720304">要从 Chromium 中移除信用卡吗？</translation>
 <translation id="7638605456503525968">串行端口</translation>
@@ -1341,6 +1354,7 @@
 <translation id="8211406090763984747">连接是安全的</translation>
 <translation id="8218327578424803826">分配的位置：</translation>
 <translation id="8220146938470311105">C7/C6 (Envelope)</translation>
+<translation id="8220639454292072926">企业版报告</translation>
 <translation id="8225771182978767009">设置此计算机的用户已选择屏蔽此网站。</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />、<ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">在新的无痕式标签页中打开网页</translation>
@@ -1424,6 +1438,7 @@
 <translation id="8740359287975076522">无法找到 <ph name="HOST_NAME" /> 的 &lt;abbr id="dnsDefinition"&gt;DNS 地址&lt;/abbr&gt;。正在诊断该问题。</translation>
 <translation id="874846938927089722">接受的信用卡和预付卡</translation>
 <translation id="874918643257405732">为此标签页添加书签</translation>
+<translation id="8751426954251315517">请稍后重试</translation>
 <translation id="8759274551635299824">此信用卡已失效</translation>
 <translation id="8761567432415473239">Google安全浏览功能最近在<ph name="SITE" />上<ph name="BEGIN_LINK" />发现了有害程序<ph name="END_LINK" />。</translation>
 <translation id="8763927697961133303">USB 设备</translation>
@@ -1488,6 +1503,7 @@
 <translation id="9080712759204168376">订单摘要</translation>
 <translation id="9089260154716455634">“非工作时间”政策：</translation>
 <translation id="9095388113577226029">更多语言…</translation>
+<translation id="9098981495403789647">您的管理员已在您的浏览器中启用了 Chrome 企业版威胁防护功能。Chrome 企业版威胁防护功能可以访问您的部分数据。</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> 通常会使用加密技术来保护您的信息。Chromium 此次尝试连接到 <ph name="SITE" /> 时，此网站发回了异常的错误凭据。这可能是因为有攻击者在试图冒充 <ph name="SITE" />，或 Wi-Fi 登录屏幕中断了此次连接。请放心，您的信息仍然是安全的，因为 Chromium 尚未进行任何数据交换便停止了连接。</translation>
 <translation id="9106062320799175032">添加帐单邮寄地址</translation>
 <translation id="9114524666733003316">正在确认信用卡…</translation>

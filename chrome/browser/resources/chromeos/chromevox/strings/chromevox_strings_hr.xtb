@@ -233,6 +233,7 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="27527859628328957">Skok na sljedeću stavku s mogućnošću fokusiranja</translation>
 <translation id="2770781857296573485">Unesite grupno istraživanje</translation>
 <translation id="2777845298774924149">Izašli ste</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{+#}one{+#}few{+#}other{+#}}</translation>
 <translation id="2784959586797362050">Kao i uvijek, povratne informacije možete nam poslati izravno pritiskom na tipku za pretraživanje i "A", a zatim "I". Pošaljite nam ih što prije.</translation>
 <translation id="2800204403141299078">Nema više različitih elemenata.</translation>
 <translation id="2800780099804980316">Nema prethodnog naslova razine 1.</translation>
@@ -715,6 +716,7 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="5956928062748260866">Dijaloški okvir</translation>
 <translation id="5963413905009737549">Odjeljak</translation>
 <translation id="5968607524793740041">Prikaz kontekstnog izbornika</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{s # stavkom}one{s # stavkom}few{s # stavke}other{s # stavki}}</translation>
 <translation id="5981446804259161541">Svijetlocijan</translation>
 <translation id="5983179082906765664">Povećanje razine pojedinosti navigacije</translation>
 <translation id="5992285135956208197">Grafički dokument</translation>

@@ -78,7 +78,6 @@ std::unique_ptr<views::BoxLayout> CreateBoxLayout(
 
 std::unique_ptr<views::View> CreateBorderedBoxView(
     std::unique_ptr<views::View> children_container) {
-  constexpr int kOuterMargin = 16;
   constexpr int kBorderThickness = 1;
   const SkColor kBorderColor =
       ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
@@ -97,7 +96,8 @@ std::unique_ptr<views::View> CreateBorderedBoxView(
   // margins.
   auto outer_view = std::make_unique<views::View>();
   outer_view->SetLayoutManager(std::make_unique<views::FillLayout>());
-  outer_view->SetBorder(views::CreateEmptyBorder(gfx::Insets(kOuterMargin)));
+  constexpr auto kOuterMargin = gfx::Insets(16);
+  outer_view->SetBorder(views::CreateEmptyBorder(kOuterMargin));
   outer_view->AddChildView(std::move(children_container));
 
   return outer_view;
@@ -232,7 +232,7 @@ void ProfileMenuViewBase::AddShortcutFeatureButton(
     const gfx::VectorIcon& icon,
     const base::string16& text,
     base::RepeatingClosure action) {
-  constexpr int kVerticalMargin = 8;
+  constexpr auto kMargins = gfx::Insets(8, 0);
   constexpr int kButtonSpacing = 6;
   constexpr int kIconSize = 16;
   constexpr int kIconPadding = 6;
@@ -247,8 +247,8 @@ void ProfileMenuViewBase::AddShortcutFeatureButton(
   if (!shortcut_features_container_->GetLayoutManager()) {
     views::BoxLayout* layout = shortcut_features_container_->SetLayoutManager(
         std::make_unique<views::BoxLayout>(
-            views::BoxLayout::Orientation::kHorizontal,
-            gfx::Insets(kVerticalMargin, 0), kButtonSpacing));
+            views::BoxLayout::Orientation::kHorizontal, kMargins,
+            kButtonSpacing));
     layout->set_main_axis_alignment(
         views::BoxLayout::MainAxisAlignment::kCenter);
   }
@@ -297,15 +297,14 @@ void ProfileMenuViewBase::AddAccountFeatureButton(
 void ProfileMenuViewBase::AddSelectableProfile(const gfx::Image& image,
                                                const base::string16& name,
                                                base::RepeatingClosure action) {
-  constexpr int kTopMargin = 8;
+  constexpr auto kMargins = gfx::Insets(8, 0, 0, 0);
   constexpr int kImageSize = 22;
 
   // Initialize layout if this is the first time a button is added.
   if (!selectable_profiles_container_->GetLayoutManager()) {
     selectable_profiles_container_->SetLayoutManager(
         std::make_unique<views::BoxLayout>(
-            views::BoxLayout::Orientation::kVertical,
-            gfx::Insets(kTopMargin, 0, 0, 0)));
+            views::BoxLayout::Orientation::kVertical, kMargins));
   }
 
   gfx::Image sized_image =
@@ -313,6 +312,26 @@ void ProfileMenuViewBase::AddSelectableProfile(const gfx::Image& image,
                                    kImageSize, profiles::SHAPE_CIRCLE);
   views::Button* button = selectable_profiles_container_->AddChildView(
       std::make_unique<HoverButton>(this, sized_image.AsImageSkia(), name));
+
+  RegisterClickAction(button, std::move(action));
+}
+
+void ProfileMenuViewBase::AddProfileFeatureButton(
+    const gfx::ImageSkia& icon,
+    const base::string16& text,
+    base::RepeatingClosure action) {
+  constexpr int kIconSize = 22;
+
+  // Initialize layout if this is the first time a button is added.
+  if (!profile_features_container_->GetLayoutManager()) {
+    profile_features_container_->SetLayoutManager(
+        std::make_unique<views::BoxLayout>(
+            views::BoxLayout::Orientation::kVertical));
+  }
+
+  views::Button* button = profile_features_container_->AddChildView(
+      std::make_unique<HoverButton>(this, SizeImage(icon, kIconSize), text));
+
   RegisterClickAction(button, std::move(action));
 }
 
@@ -426,6 +445,8 @@ void ProfileMenuViewBase::Reset() {
       CreateBorderedBoxView(std::move(bordered_box_container)));
 
   selectable_profiles_container_ =
+      components->AddChildView(std::make_unique<views::View>());
+  profile_features_container_ =
       components->AddChildView(std::make_unique<views::View>());
 
   // Create a scroll view to hold the components.

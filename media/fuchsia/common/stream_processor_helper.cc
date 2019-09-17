@@ -13,39 +13,42 @@ StreamProcessorHelper::IoPacket::IoPacket(size_t index,
                                           size_t offset,
                                           size_t size,
                                           base::TimeDelta timestamp,
-                                          fuchsia::media::FormatDetails format,
+                                          bool unit_end,
                                           base::OnceClosure destroy_cb)
     : index_(index),
       offset_(offset),
       size_(size),
       timestamp_(timestamp),
-      format_(std::move(format)),
+      unit_end_(unit_end),
       destroy_cb_(std::move(destroy_cb)) {}
 
 StreamProcessorHelper::IoPacket::~IoPacket() = default;
 
+StreamProcessorHelper::IoPacket::IoPacket(IoPacket&&) = default;
+StreamProcessorHelper::IoPacket& StreamProcessorHelper::IoPacket::operator=(
+    IoPacket&&) = default;
+
 // static
-std::unique_ptr<StreamProcessorHelper::IoPacket>
-StreamProcessorHelper::IoPacket::CreateInput(
+StreamProcessorHelper::IoPacket StreamProcessorHelper::IoPacket::CreateInput(
     size_t index,
     size_t size,
     base::TimeDelta timestamp,
-    fuchsia::media::FormatDetails format,
+    bool unit_end,
     base::OnceClosure destroy_cb) {
-  return std::make_unique<IoPacket>(index, 0 /* offset */, size, timestamp,
-                                    std::move(format), std::move(destroy_cb));
+  return IoPacket(index, 0 /* offset */, size, timestamp, unit_end,
+                  std::move(destroy_cb));
 }
 
 // static
-std::unique_ptr<StreamProcessorHelper::IoPacket>
-StreamProcessorHelper::IoPacket::CreateOutput(size_t index,
-                                              size_t offset,
-                                              size_t size,
-                                              base::TimeDelta timestamp,
-                                              base::OnceClosure destroy_cb) {
-  return std::make_unique<IoPacket>(index, offset, size, timestamp,
-                                    fuchsia::media::FormatDetails(),
-                                    std::move(destroy_cb));
+StreamProcessorHelper::IoPacket StreamProcessorHelper::IoPacket::CreateOutput(
+    size_t index,
+    size_t offset,
+    size_t size,
+    base::TimeDelta timestamp,
+    bool unit_end,
+    base::OnceClosure destroy_cb) {
+  return IoPacket(index, offset, size, timestamp, unit_end,
+                  std::move(destroy_cb));
 }
 
 StreamProcessorHelper::StreamProcessorHelper(
@@ -83,29 +86,29 @@ StreamProcessorHelper::StreamProcessorHelper(
 
 StreamProcessorHelper::~StreamProcessorHelper() = default;
 
-void StreamProcessorHelper::Process(std::unique_ptr<IoPacket> input) {
-  DCHECK(input);
+void StreamProcessorHelper::Process(IoPacket input) {
   DCHECK(processor_);
 
   fuchsia::media::Packet packet;
   packet.mutable_header()->set_buffer_lifetime_ordinal(
       input_buffer_lifetime_ordinal_);
-  packet.mutable_header()->set_packet_index(input->index());
+  packet.mutable_header()->set_packet_index(input.index());
   packet.set_buffer_index(packet.header().packet_index());
-  packet.set_timestamp_ish(input->timestamp().InNanoseconds());
+  packet.set_timestamp_ish(input.timestamp().InNanoseconds());
   packet.set_stream_lifetime_ordinal(stream_lifetime_ordinal_);
-  packet.set_start_offset(input->offset());
-  packet.set_valid_length_bytes(input->size());
+  packet.set_start_offset(input.offset());
+  packet.set_valid_length_bytes(input.size());
+  packet.set_known_end_access_unit(input.unit_end());
 
   active_stream_ = true;
 
-  if (!input->format().IsEmpty()) {
+  if (!input.format().IsEmpty()) {
     processor_->QueueInputFormatDetails(stream_lifetime_ordinal_,
-                                        fidl::Clone(input->format()));
+                                        fidl::Clone(input.format()));
   }
 
-  DCHECK(input_packets_.find(input->index()) == input_packets_.end());
-  input_packets_[input->index()] = std::move(input);
+  DCHECK(input_packets_.find(input.index()) == input_packets_.end());
+  input_packets_.insert_or_assign(input.index(), std::move(input));
   processor_->QueueInputPacket(std::move(packet));
 }
 
@@ -183,10 +186,15 @@ void StreamProcessorHelper::OnFreeInputPacket(
 
   auto it = input_packets_.find(free_input_packet.packet_index());
   if (it == input_packets_.end()) {
-    DLOG(WARNING) << "Received OnFreeInputPacket() with invalid packet index.";
+    DLOG(ERROR) << "Received OnFreeInputPacket() with invalid packet index.";
+    OnError();
     return;
   }
 
+  // The packet should be destroyed only after it's removed from
+  // |input_packets_|. Otherwise packet destruction observer may call Process()
+  // for the next packet while the current packet is still in |input_packets_|.
+  auto packet = std::move(it->second);
   input_packets_.erase(it);
 }
 
@@ -269,6 +277,7 @@ void StreamProcessorHelper::OnOutputPacket(fuchsia::media::Packet output_packet,
   client_->OnOutputPacket(IoPacket::CreateOutput(
       buffer_index, output_packet.start_offset(),
       output_packet.valid_length_bytes(), timestamp,
+      output_packet.known_end_access_unit(),
       base::BindOnce(&StreamProcessorHelper::OnRecycleOutputBuffer, weak_this_,
                      output_buffer_lifetime_ordinal_, packet_index)));
 }

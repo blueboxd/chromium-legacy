@@ -144,6 +144,9 @@ class DeepScanningDialogDelegate : public TabModalConfirmDialogDelegate {
   // DeepScanningDialogDelegates.
   static void SetFactoryForTesting(Factory factory);
 
+  // Overrides the DM token used for testing purposes.
+  static void SetDMTokenForTesting(const char* dm_token);
+
  protected:
   DeepScanningDialogDelegate(content::WebContents* web_contents,
                              Data data,
@@ -163,6 +166,9 @@ class DeepScanningDialogDelegate : public TabModalConfirmDialogDelegate {
 
  private:
   class FileSourceRequest;
+
+  // Gets the device level DM token to use with deep scans.
+  static std::string GetDMToken();
 
   // Uploads data for deep scanning.  Returns true if uploading is occurring in
   // the background and false if there is nothing to do.

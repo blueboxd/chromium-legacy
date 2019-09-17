@@ -21,10 +21,10 @@ namespace views {
 
 // The default diameter of a Throbber. If you change this, also change
 // kCheckmarkDipSize.
-static constexpr int kDefaultDiameter = 16;
+constexpr int kDefaultDiameter = 16;
 // The size of the checkmark, in DIP. This magic number matches the default
-// diamater plus padding inherent in the checkmark SVG.
-static constexpr int kCheckmarkDipSize = 18;
+// diameter plus padding inherent in the checkmark SVG.
+constexpr int kCheckmarkDipSize = kDefaultDiameter + 2;
 
 Throbber::Throbber() = default;
 
@@ -37,9 +37,8 @@ void Throbber::Start() {
     return;
 
   start_time_ = base::TimeTicks::Now();
-  constexpr int kFrameTimeMs = 30;
   timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(kFrameTimeMs),
+      FROM_HERE, base::TimeDelta::FromMilliseconds(30),
       base::BindRepeating(&Throbber::SchedulePaint, base::Unretained(this)));
   SchedulePaint();  // paint right away
 }

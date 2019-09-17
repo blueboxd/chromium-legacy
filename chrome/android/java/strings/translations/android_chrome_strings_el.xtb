@@ -66,6 +66,7 @@
 <translation id="1407135791313364759">Άνοιγμα όλων</translation>
 <translation id="1409426117486808224">Απλοποιημένη προβολή για ανοικτές καρτέλες</translation>
 <translation id="1409879593029778104">Η λήψη του αρχείου <ph name="FILE_NAME" /> απετράπη, επειδή το αρχείο υπάρχει ήδη.</translation>
+<translation id="1413136574162415971">Το Google μπορεί να ελέγχει εάν οι κωδικοί πρόσβασής σας ήταν μέρος της παραβίασης δεδομένων. Αυτή η λειτουργία θα ενεργοποιείται όταν συνδέεστε με τον Λογαριασμό σας Google και ενεργοποιείτε τον συγχρονισμό.</translation>
 <translation id="1414981605391750300">Επικοινωνία με Google… Αυτή η διαδικασία μπορεί να διαρκέσει μερικά λεπτά…</translation>
 <translation id="1416550906796893042">Έκδοση εφαρμογής</translation>
 <translation id="1430915738399379752">Εκτύπωση</translation>
@@ -160,6 +161,7 @@
 <translation id="2091887806945687916">Ήχος</translation>
 <translation id="2096012225669085171">Συγχρονισμός και εξατομίκευση σε όλες τις συσκευές</translation>
 <translation id="2100273922101894616">Αυτόματη σύνδεση</translation>
+<translation id="2100314319871056947">Δοκιμάστε να κοινοποιήσετε το κείμενο σε μικρότερα τμήματα.</translation>
 <translation id="2107397443965016585">Να γίνεται ερώτηση προτού επιτραπεί στους ιστοτόπους η αναπαραγωγή προστατευόμενου περιεχομένου (συνιστάται)</translation>
 <translation id="2111511281910874386">Μετάβαση στη σελίδα</translation>
 <translation id="2122601567107267586">Δεν ήταν δυνατό το άνοιγμα της εφαρμογής</translation>
@@ -253,6 +255,7 @@
 <translation id="2836148919159985482">Πατήστε το κουμπί επιστροφής για έξοδο από την πλήρη οθόνη.</translation>
 <translation id="2842985007712546952">Γονικός φάκελος</translation>
 <translation id="2858138569776157458">Κορ. ιστότοποι</translation>
+<translation id="2860954141821109167">Βεβαιωθείτε ότι είναι ενεργοποιημένη μια εφαρμογή τηλεφώνου σε αυτήν τη συσκευή.</translation>
 <translation id="2870560284913253234">Ιστότοπος</translation>
 <translation id="2874939134665556319">Προηγούμενο κομμάτι</translation>
 <translation id="2876369937070532032">Στέλνει URL από ορισμένες σελίδες που επισκέπτεστε στο Google, όταν η ασφάλειά σας βρίσκεται σε κίνδυνο</translation>
@@ -277,6 +280,7 @@
 <translation id="2996291259634659425">Δημιουργία φράσης πρόσβασης</translation>
 <translation id="2996809686854298943">Απαιτείται διεύθυνση URL</translation>
 <translation id="300526633675317032">Αυτό θα διαγράψει και τα <ph name="SIZE_IN_KB" /> του αποθηκευτικού χώρου ιστοτόπων.</translation>
+<translation id="3016635187733453316">Βεβαιωθείτε ότι η συσκευή είναι συνδεδεμένη στο διαδίκτυο.</translation>
 <translation id="3029613699374795922">Έγινε λήψη <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">Οι φράσεις πρόσβασης δεν συμφωνούν</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Λάβετε βοήθεια<ph name="END_LINK" /></translation>
@@ -841,6 +845,7 @@
 <translation id="723171743924126238">Επιλέξτε εικόνες</translation>
 <translation id="7233236755231902816">Για να δείτε τον ιστό στη γλώσσα σας, κατεβάστε την πιο πρόσφατη έκδοση του Chrome</translation>
 <translation id="7243308994586599757">Διαθέσιμες επιλογές κοντά κάτω μέρος της οθόνης</translation>
+<translation id="7248069434667874558">Βεβαιωθείτε ότι ο συγχρονισμός στο Chrome έχει ενεργοποιηθεί για τη συσκευή <ph name="TARGET_DEVICE_NAME" />.</translation>
 <translation id="7250468141469952378">Επιλέχθηκαν <ph name="ITEM_COUNT" /></translation>
 <translation id="7274013316676448362">Αποκλεισμένος ιστότοπος</translation>
 <translation id="7290209999329137901">Η μετονομασία δεν είναι διαθέσιμη</translation>
@@ -955,6 +960,7 @@
 <translation id="8007176423574883786">Έχει απενεργοποιηθεί για αυτήν τη συσκευή</translation>
 <translation id="8013372441983637696">Επίσης, να διαγραφούν τα δεδομένα Chrome από αυτήν τη συσκευή.</translation>
 <translation id="8015452622527143194">Επαναφορά στοιχείων σελίδας σε κανονικό μέγεθος</translation>
+<translation id="8015780634880457457">Το Google μπορεί να ελέγχει εάν οι κωδικοί πρόσβασής σας ήταν μέρος της παραβίασης δεδομένων.</translation>
 <translation id="802154636333426148">Η λήψη απέτυχε</translation>
 <translation id="8026334261755873520">Διαγραφή δεδομένων περιήγησης</translation>
 <translation id="8035133914807600019">Νέος φάκελος…</translation>
@@ -1017,6 +1023,7 @@
 <translation id="8445448999790540984">Δεν είναι δυνατή η εξαγωγή κωδικών πρόσβασης</translation>
 <translation id="8447861592752582886">Ανάκληση άδειας συσκευής</translation>
 <translation id="8461694314515752532">Κρυπτογράφηση συγχρονισμένων δεδομένων με τη δική σας φράση πρόσβασης συγχρονισμού</translation>
+<translation id="8466613982764129868">Βεβαιωθείτε ότι η συσκευή <ph name="TARGET_DEVICE_NAME" /> είναι συνδεδεμένη στο διαδίκτυο.</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Διαθέσιμο εκτός σύνδεσης</translation>
 <translation id="8489271220582375723">Άνοιγμα σελίδας "Ιστορικό"</translation>
@@ -1107,6 +1114,7 @@
 <translation id="9188680907066685419">Αποσύνδεση από διαχειριζόμενο λογαριασμό</translation>
 <translation id="9204836675896933765">1 αρχείο απομένει</translation>
 <translation id="9206873250291191720">Α</translation>
+<translation id="9209888181064652401">Δεν είναι δυνατή η πραγματοποίηση κλήσεων</translation>
 <translation id="9219103736887031265">Εικόνες</translation>
 <translation id="926205370408745186">Κατάργηση της δραστηριότητάς σας στο Chrome από το Digital Wellbeing</translation>
 <translation id="932327136139879170">Αρχική σελίδα</translation>

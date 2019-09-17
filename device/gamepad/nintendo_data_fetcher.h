@@ -15,6 +15,7 @@
 #include "device/gamepad/nintendo_controller.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/hid.mojom.h"
 
 namespace device {
@@ -110,7 +111,7 @@ class DEVICE_GAMEPAD_EXPORT NintendoDataFetcher : public GamepadDataFetcher,
   // A mapping from source ID to connected Nintendo Switch devices.
   ControllerMap controllers_;
 
-  mojom::HidManagerPtr hid_manager_;
+  mojo::Remote<mojom::HidManager> hid_manager_;
   mojo::AssociatedBinding<mojom::HidManagerClient> binding_;
   base::WeakPtrFactory<NintendoDataFetcher> weak_factory_{this};
 

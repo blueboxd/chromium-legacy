@@ -66,6 +66,7 @@
 <translation id="1407135791313364759">全部打开</translation>
 <translation id="1409426117486808224">使用简化版视图查看打开的标签页</translation>
 <translation id="1409879593029778104">系统已阻止下载 <ph name="FILE_NAME" />，因为文件已存在。</translation>
+<translation id="1413136574162415971">Google 可检查您的密码是否曾遭遇过数据泄露。当您登录了自己的 Google 帐号并开启了同步功能时，系统即会开启此服务。</translation>
 <translation id="1414981605391750300">正在连接到 Google，请稍等片刻…</translation>
 <translation id="1416550906796893042">应用版本</translation>
 <translation id="1430915738399379752">打印</translation>
@@ -160,6 +161,7 @@
 <translation id="2091887806945687916">声音</translation>
 <translation id="2096012225669085171">在所有设备上保持同步并进行个性化设置</translation>
 <translation id="2100273922101894616">自动登录</translation>
+<translation id="2100314319871056947">请尝试使用较小的文本块进行分享</translation>
 <translation id="2107397443965016585">网站需先询问并得到许可才能播放受保护内容 （推荐）</translation>
 <translation id="2111511281910874386">转至相关网页</translation>
 <translation id="2122601567107267586">无法打开此应用</translation>
@@ -253,6 +255,7 @@
 <translation id="2836148919159985482">触摸“返回”按钮即可退出全屏模式。</translation>
 <translation id="2842985007712546952">父文件夹</translation>
 <translation id="2858138569776157458">热门网站</translation>
+<translation id="2860954141821109167">请确保已在此设备上启用了一款电话应用</translation>
 <translation id="2870560284913253234">网站</translation>
 <translation id="2874939134665556319">上一曲</translation>
 <translation id="2876369937070532032">当您面临安全风险时，将您所访问的部分网页的网址发送给 Google</translation>
@@ -277,6 +280,7 @@
 <translation id="2996291259634659425">创建密码</translation>
 <translation id="2996809686854298943">必须提供网址</translation>
 <translation id="300526633675317032">这会清除全部的网站存储数据 (<ph name="SIZE_IN_KB" />)。</translation>
+<translation id="3016635187733453316">请确保此设备已连接到互联网。</translation>
 <translation id="3029613699374795922">已下载 <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">密码不匹配</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />获取帮助<ph name="END_LINK" /></translation>
@@ -841,6 +845,7 @@
 <translation id="723171743924126238">选择图片</translation>
 <translation id="7233236755231902816">若要使用您的语言查看网页，请获取最新版本的 Chrome</translation>
 <translation id="7243308994586599757">选项在靠近屏幕底部的位置</translation>
+<translation id="7248069434667874558">请确保<ph name="TARGET_DEVICE_NAME" />已在 Chrome 中开启同步功能</translation>
 <translation id="7250468141469952378">已选择 <ph name="ITEM_COUNT" /> 项</translation>
 <translation id="7274013316676448362">禁止访问的网站</translation>
 <translation id="7290209999329137901">不可重命名</translation>
@@ -955,6 +960,7 @@
 <translation id="8007176423574883786">已对此设备停用</translation>
 <translation id="8013372441983637696">同时从此设备中清除您的 Chrome 数据</translation>
 <translation id="8015452622527143194">将网页上的所有内容恢复到默认大小</translation>
+<translation id="8015780634880457457">Google 可检查您的密码是否曾遭遇过数据泄露</translation>
 <translation id="802154636333426148">下载失败</translation>
 <translation id="8026334261755873520">清除浏览数据</translation>
 <translation id="8035133914807600019">新建文件夹…</translation>
@@ -1017,6 +1023,7 @@
 <translation id="8445448999790540984">无法导出密码</translation>
 <translation id="8447861592752582886">撤消设备权限</translation>
 <translation id="8461694314515752532">使用您自己的同步密码加密已同步的数据</translation>
+<translation id="8466613982764129868">请确保<ph name="TARGET_DEVICE_NAME" />已连接到互联网</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">可离线使用</translation>
 <translation id="8489271220582375723">打开历史记录页</translation>
@@ -1107,6 +1114,7 @@
 <translation id="9188680907066685419">退出受管理的帐号</translation>
 <translation id="9204836675896933765">还剩 1 个文件</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9209888181064652401">无法致电</translation>
 <translation id="9219103736887031265">图片</translation>
 <translation id="926205370408745186">从“数字健康”应用中移除您的 Chrome 活动记录</translation>
 <translation id="932327136139879170">首页</translation>

@@ -8,7 +8,7 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min}few{# min}many{# min}other{# min}}</translation>
 <translation id="1181037720776840403">Usuń</translation>
 <translation id="1243314992276662751">Prześlij</translation>
-<translation id="1266864766717917324">Nie udało się udostępnić <ph name="CONTENT_TYPE" /></translation>
+<translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> – nie udało się udostępnić</translation>
 <translation id="1269641567813814718">Windows</translation>
 <translation id="1290982764014248209">Przenieś aplikację <ph name="DRAGGED_APP" /> do folderu <ph name="FOLDER_NAME" />.</translation>
 <translation id="1291104554099683393">Spróbuj udostępnić jego mniejsze fragmenty.</translation>
@@ -18,7 +18,7 @@
 <translation id="1383876407941801731">Szukaj</translation>
 <translation id="1398853756734560583">Maksymalizuj</translation>
 <translation id="1409544243779336081">Rekomendacja aplikacji</translation>
-<translation id="1450753235335490080">Nie udało się udostępnić <ph name="CONTENT_TYPE" /></translation>
+<translation id="1450753235335490080"><ph name="CONTENT_TYPE" />: nie udało się udostępnić</translation>
 <translation id="1498028757988366001">Z Twojej historii wyszukiwania. Jeśli usuniesz zapytanie „<ph name="QUERY" />” z historii, zostanie ono trwale usunięte z Twojego konta na wszystkich urządzeniach.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuta i }few{# minuty i }many{# minut i }other{# minuty i }}</translation>
 <translation id="1643823602425662293">Powiadomienie</translation>
@@ -113,6 +113,7 @@
 <translation id="4788285488841504513">{MONTHS,plural, =1{Pozostał miesiąc}few{Pozostały # miesiące}many{Pozostało # miesięcy}other{Pozostało # miesiąca}}</translation>
 <translation id="4841881773802181781">Wstawienie</translation>
 <translation id="4881695831933465202">Otwórz</translation>
+<translation id="4888938634149558681">Zadzwoń</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekunda}few{# sekundy}many{# sekund}other{# sekundy}}</translation>
 <translation id="4971687151119236543">Poprzedni utwór multimedialny</translation>
 <translation id="5046499563572181734">Kliknij tutaj</translation>

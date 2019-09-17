@@ -47,6 +47,8 @@ const char ProfileAttributesEntry::kAvatarIconKey[] = "avatar_icon";
 const char ProfileAttributesEntry::kBackgroundAppsKey[] = "background_apps";
 const char ProfileAttributesEntry::kProfileIsEphemeral[] = "is_ephemeral";
 const char ProfileAttributesEntry::kUserNameKey[] = "user_name";
+const char ProfileAttributesEntry::kIsConsentedPrimaryAccountKey[] =
+    "is_consented_primary_account";
 
 // static
 void ProfileAttributesEntry::RegisterLocalStatePrefs(
@@ -89,7 +91,7 @@ void ProfileAttributesEntry::Initialize(ProfileInfoCache* cache,
     // left-overs from legacy supervised users. Just unlock them, so users can
     // keep using them.
     SetLocalAuthCredentials(std::string());
-    SetAuthInfo(std::string(), base::string16());
+    SetAuthInfo(std::string(), base::string16(), false);
     SetIsSigninRequired(false);
 #endif
   }
@@ -212,12 +214,19 @@ bool ProfileAttributesEntry::IsUsingDefaultName() const {
   return profile_info_cache_->ProfileIsUsingDefaultNameAtIndex(profile_index());
 }
 
+SigninState ProfileAttributesEntry::GetSigninState() const {
+  bool is_consented_primary_account = GetBool(kIsConsentedPrimaryAccountKey);
+  if (!GetGAIAId().empty() || !GetUserName().empty()) {
+    return is_consented_primary_account
+               ? SigninState::kSignedInWithConsentedPrimaryAccount
+               : SigninState::kSignedInWithUnconsentedPrimaryAccount;
+  }
+  DCHECK(!is_consented_primary_account);
+  return SigninState::kNotSignedIn;
+}
+
 bool ProfileAttributesEntry::IsAuthenticated() const {
-  // The profile is authenticated if the gaia_id of the info is not empty.
-  // If it is empty, also check if the user name is not empty.  This latter
-  // check is needed in case the profile has not been loaded yet and the
-  // gaia_id property has not yet been written.
-  return !GetGAIAId().empty() || !GetUserName().empty();
+  return GetBool(kIsConsentedPrimaryAccountKey);
 }
 
 bool ProfileAttributesEntry::IsUsingDefaultAvatar() const {
@@ -361,10 +370,11 @@ void ProfileAttributesEntry::SetAvatarIconIndex(size_t icon_index) {
   profile_info_cache_->NotifyOnProfileAvatarChanged(profile_path);
 }
 
-void ProfileAttributesEntry::SetAuthInfo(
-    const std::string& gaia_id, const base::string16& user_name) {
+void ProfileAttributesEntry::SetAuthInfo(const std::string& gaia_id,
+                                         const base::string16& user_name,
+                                         bool is_consented_primary_account) {
   profile_info_cache_->SetAuthInfoOfProfileAtIndex(
-      profile_index(), gaia_id, user_name);
+      profile_index(), gaia_id, user_name, is_consented_primary_account);
 }
 
 size_t ProfileAttributesEntry::profile_index() const {

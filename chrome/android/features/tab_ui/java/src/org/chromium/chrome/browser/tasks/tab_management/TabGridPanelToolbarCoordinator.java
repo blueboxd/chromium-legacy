@@ -40,9 +40,7 @@ class TabGridPanelToolbarCoordinator implements Destroyable {
             PropertyModel toolbarPropertyModel, TabGridDialogParent dialog) {
         mToolbarView = (TabGroupUiToolbarView) LayoutInflater.from(context).inflate(
                 R.layout.bottom_tab_grid_toolbar, contentView, false);
-        if (dialog != null) {
-            mToolbarView.setupDialogToolbarLayout();
-        }
+        mToolbarView.setupToolbarLayout(dialog != null);
         mModelChangeProcessor = PropertyModelChangeProcessor.create(toolbarPropertyModel,
                 new TabGridPanelViewBinder.ViewHolder(mToolbarView, contentView, dialog),
                 TabGridPanelViewBinder::bind);

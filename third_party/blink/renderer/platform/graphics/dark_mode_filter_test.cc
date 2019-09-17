@@ -19,7 +19,7 @@ TEST(DarkModeFilterTest, DoNotApplyFilterWhenDarkModeIsOff) {
   DarkModeFilter filter;
 
   DarkModeSettings settings;
-  settings.mode = DarkMode::kOff;
+  settings.mode = DarkModeInversionAlgorithm::kOff;
   filter.UpdateSettings(settings);
 
   EXPECT_EQ(Color::kWhite,
@@ -38,7 +38,7 @@ TEST(DarkModeFilterTest, ApplyDarkModeToColorsAndFlags) {
   DarkModeFilter filter;
 
   DarkModeSettings settings;
-  settings.mode = DarkMode::kSimpleInvertForTesting;
+  settings.mode = DarkModeInversionAlgorithm::kSimpleInvertForTesting;
   filter.UpdateSettings(settings);
 
   EXPECT_EQ(Color::kBlack,

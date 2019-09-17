@@ -369,7 +369,6 @@ class CORE_EXPORT HTMLInputElement
   bool CanBeSuccessfulSubmitButton() const final;
 
   void ResetImpl() final;
-  bool SupportsAutofocus() const final;
 
   EventDispatchHandlingState* PreDispatchEventHandler(Event&) final;
   void PostDispatchEventHandler(Event&, EventDispatchHandlingState*) final;

@@ -23,7 +23,6 @@
 #include "media/audio/audio_logging.h"
 #include "media/base/media_switches.h"
 #include "media/base/user_input_monitor.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 #if defined(OS_CHROMEOS)
@@ -70,7 +69,8 @@ AudioInputStreamBroker::AudioInputStreamBroker(
     bool enable_agc,
     audio::mojom::AudioProcessingConfigPtr processing_config,
     AudioStreamBroker::DeleterCallback deleter,
-    mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client)
+    mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+        renderer_factory_client)
     : AudioStreamBroker(render_process_id, render_frame_id),
       device_id_(device_id),
       params_(params),
@@ -79,7 +79,7 @@ AudioInputStreamBroker::AudioInputStreamBroker(
       enable_agc_(enable_agc),
       deleter_(std::move(deleter)),
       processing_config_(std::move(processing_config)),
-      renderer_factory_client_(renderer_factory_client.PassInterface()) {
+      renderer_factory_client_(std::move(renderer_factory_client)) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(renderer_factory_client_);
   DCHECK(deleter_);

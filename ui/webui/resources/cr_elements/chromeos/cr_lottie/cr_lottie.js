@@ -8,6 +8,7 @@
  * Fires a 'cr-lottie-initialized' event when the animation was successfully
  * initialized.
  * Fires a 'cr-lottie-playing' event when the animation starts playing.
+ * Fires a 'cr-lottie-paused' event when the animation has paused.
  * Fires a 'cr-lottie-resized' event when the canvas the animation is being
  * drawn on is resized.
  */
@@ -25,6 +26,10 @@ Polymer({
     animationUrl: {
       type: String,
       value: '',
+    },
+    autoplay: {
+      type: Boolean,
+      value: false,
     },
   },
 
@@ -69,6 +74,16 @@ Polymer({
   },
 
   /**
+   * Controls the animation based on the value of |shouldPlay|.
+   * @param {boolean} shouldPlay Will play the animation if true else pauses it.
+   */
+  setPlay: function(shouldPlay) {
+    if (this.isAnimationLoaded_) {
+      this.worker_.postMessage({control: {play: shouldPlay}});
+    }
+  },
+
+  /**
    * Initializes all the members of this polymer element.
    * @private
    */
@@ -88,7 +103,7 @@ Polymer({
 
     // Open animation file and start playing the animation.
     this.sendXmlHttpRequest_(
-        this.animationUrl, 'json', this.startAnimation_.bind(this));
+        this.animationUrl, 'json', this.initAnimation_.bind(this));
   },
 
   /**
@@ -157,18 +172,18 @@ Polymer({
   },
 
   /**
-   * Starts playing the animation on the canvas.
+   * Initializes the the animation on the web worker with the data provided.
    * @param {Object|null|string} animationData The animation that will be
    * played.
    * @private
    */
-  startAnimation_: function(animationData) {
+  initAnimation_: function(animationData) {
     this.worker_.postMessage(
         {
           canvas: this.offscreenCanvas_,
           animationData: animationData,
           drawSize: this.getCanvasDrawBufferSize_(),
-          params: {loop: true, autoplay: true}
+          params: {loop: true, autoplay: this.autoplay}
         },
         [this.offscreenCanvas_]);
   },
@@ -184,6 +199,8 @@ Polymer({
       this.fire('cr-lottie-initialized');
     } else if (event.data.name == 'playing') {
       this.fire('cr-lottie-playing');
+    } else if (event.data.name == 'paused') {
+      this.fire('cr-lottie-paused');
     } else if (event.data.name == 'resized') {
       this.fire('cr-lottie-resized', event.data.size);
     }

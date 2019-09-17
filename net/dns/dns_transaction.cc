@@ -865,7 +865,8 @@ class DnsOverHttpsProbeRunner {
     session_->SetProbeSuccess(doh_server_index, false /* success */);
     ContinueProbe(doh_server_index, context,
                   probe_stats_[doh_server_index]->weak_factory.GetWeakPtr(),
-                  network_change, base::TimeTicks::Now());
+                  network_change,
+                  base::TimeTicks::Now() /* sequence_start_time */);
   }
 
  private:
@@ -883,7 +884,7 @@ class DnsOverHttpsProbeRunner {
                      URLRequestContext* context,
                      base::WeakPtr<ProbeStats> probe_stats,
                      bool network_change,
-                     base::TimeTicks start_time) {
+                     base::TimeTicks sequence_start_time) {
     // If the ProbeStats for which this probe was scheduled has been deleted,
     // don't continue to send probes.
     if (!probe_stats)
@@ -900,7 +901,7 @@ class DnsOverHttpsProbeRunner {
         FROM_HERE,
         base::BindOnce(&DnsOverHttpsProbeRunner::ContinueProbe,
                        base::Unretained(this), doh_server_index, context,
-                       probe_stats, network_change, start_time),
+                       probe_stats, network_change, sequence_start_time),
         probe_stats->backoff_entry->GetTimeUntilRelease());
 
     unsigned attempt_number = probe_stats->probe_attempts.size();
@@ -910,17 +911,19 @@ class DnsOverHttpsProbeRunner {
                             &probe_stats->probe_attempts, context,
                             RequestPriority::DEFAULT_PRIORITY);
 
-    probe_stats->probe_attempts.back()->Start(
-        base::BindOnce(&DnsOverHttpsProbeRunner::ProbeComplete,
-                       base::Unretained(this), attempt_number, doh_server_index,
-                       std::move(probe_stats), network_change, start_time));
+    probe_stats->probe_attempts.back()->Start(base::BindOnce(
+        &DnsOverHttpsProbeRunner::ProbeComplete, base::Unretained(this),
+        attempt_number, doh_server_index, std::move(probe_stats),
+        network_change, sequence_start_time,
+        base::TimeTicks::Now() /* query_start_time */));
   }
 
   void ProbeComplete(unsigned attempt_number,
                      int doh_server_index,
                      base::WeakPtr<ProbeStats> probe_stats,
                      bool network_change,
-                     base::TimeTicks start,
+                     base::TimeTicks sequence_start_time,
+                     base::TimeTicks query_start_time,
                      int rv) {
     bool success = false;
     if (rv == OK && probe_stats) {
@@ -941,7 +944,7 @@ class DnsOverHttpsProbeRunner {
         session_->RecordServerSuccess(doh_server_index,
                                       true /* is_doh_server */);
         session_->RecordRTT(doh_server_index, true /* is_doh_server */,
-                            base::TimeTicks::Now() - start, rv);
+                            base::TimeTicks::Now() - query_start_time, rv);
         session_->SetProbeSuccess(doh_server_index, true /* success */);
         probe_stats_[doh_server_index] = nullptr;
         success = true;
@@ -952,7 +955,7 @@ class DnsOverHttpsProbeRunner {
         base::StringPrintf("Net.DNS.ProbeSequence.%s.%s.AttemptTime",
                            network_change ? "NetworkChange" : "ConfigChange",
                            success ? "Success" : "Failure"),
-        base::TimeTicks::Now() - start);
+        base::TimeTicks::Now() - sequence_start_time);
   }
 
   DnsSession* session_;

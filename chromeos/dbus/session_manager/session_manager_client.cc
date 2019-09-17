@@ -623,6 +623,28 @@ class SessionManagerClientImpl : public SessionManagerClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void EnableAdbSideload(EnableAdbSideloadCallback callback) override {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerEnableAdbSideload);
+
+    session_manager_proxy_->CallMethodWithErrorResponse(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&SessionManagerClientImpl::OnEnableAdbSideload,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void QueryAdbSideload(QueryAdbSideloadCallback callback) override {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerQueryAdbSideload);
+
+    session_manager_proxy_->CallMethodWithErrorResponse(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&SessionManagerClientImpl::OnQueryAdbSideload,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   void Init(dbus::Bus* bus) {
     session_manager_proxy_ = bus->GetObjectProxy(
         login_manager::kSessionManagerServiceName,
@@ -976,6 +998,45 @@ class SessionManagerClientImpl : public SessionManagerClient {
     }
 
     std::move(callback).Run(base::TimeTicks::FromInternalValue(ticks));
+  }
+
+  void OnEnableAdbSideload(EnableAdbSideloadCallback callback,
+                           dbus::Response* response,
+                           dbus::ErrorResponse* error) {
+    if (!response) {
+      LOG(ERROR) << "Failed to call EnableAdbSideload: "
+                 << (error ? error->ToString() : "(null)");
+      std::move(callback).Run(false);
+      return;
+    }
+
+    bool succeeded;
+    dbus::MessageReader reader(response);
+    if (!reader.PopBool(&succeeded)) {
+      LOG(ERROR) << "Failed to enable sideloading";
+      std::move(callback).Run(false);
+      return;
+    }
+    std::move(callback).Run(true);
+  }
+
+  void OnQueryAdbSideload(QueryAdbSideloadCallback callback,
+                          dbus::Response* response,
+                          dbus::ErrorResponse* error) {
+    if (!response) {
+      LOG(ERROR) << "Failed to call QueryAdbSideload: "
+                 << (error ? error->ToString() : "(null)");
+      std::move(callback).Run(false, false);
+      return;
+    }
+
+    bool is_allowed;
+    dbus::MessageReader reader(response);
+    if (!reader.PopBool(&is_allowed)) {
+      LOG(ERROR) << "Failed to interpret the response";
+      std::move(callback).Run(false, false);
+    }
+    std::move(callback).Run(true, is_allowed);
   }
 
   dbus::ObjectProxy* session_manager_proxy_ = nullptr;

@@ -26,6 +26,7 @@ import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.m.js';
 import 'chrome://resources/js/action_link.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
+import * as crToastManager from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 class HelloPolymer3Element extends PolymerElement {
@@ -148,6 +149,13 @@ class HelloPolymer3Element extends PolymerElement {
       </div>
 
       <a is="action-link">I am an action link</a>
+
+      <div>
+        <cr-toast-manager></cr-toast-manager>
+        <cr-button on-click="showToastWithManager_">
+          Show toast for 2s
+        </cr-button>
+      </div>
     `;
   }
 
@@ -175,6 +183,12 @@ class HelloPolymer3Element extends PolymerElement {
       tabNames_: {
         type: Array,
         value: () => (['A', 'B']),
+      },
+
+      /** @private */
+      isFirst_: {
+        type: Boolean,
+        value: true,
       },
     };
   }
@@ -221,6 +235,15 @@ class HelloPolymer3Element extends PolymerElement {
    */
   showActionMenu_(e) {
     this.shadowRoot.querySelector('cr-action-menu').showAt(e.target);
+  }
+
+  /** @private */
+  showToastWithManager_() {
+    const toastManager = crToastManager.getInstance();
+    toastManager.duration = 2000;
+    toastManager.show(
+        'I am toasted ' + (this.isFirst_ ? 'first' : 'second'), false);
+    this.isFirst_ = !this.isFirst_;
   }
 }  // class HelloPolymer3
 

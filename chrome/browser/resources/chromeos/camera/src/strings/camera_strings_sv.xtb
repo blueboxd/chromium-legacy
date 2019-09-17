@@ -19,6 +19,7 @@
 <translation id="2501953888035679275">Ta foton och spela in video med kameran.</translation>
 <translation id="2549985041256363841">Börja spela in</translation>
 <translation id="2599796128805996109">Bakre kamera</translation>
+<translation id="2912439424121107408">Expertläget stöds inte på den här enheten</translation>
 <translation id="2968794441791257519">Videor och foton du tagit med kameran flyttas till mappen Nedladdningar. Du kan öppna dem i Filer.
 
         Fotona och videorna blir tillgängliga för appar som har åtkomstbehörighet till lagringsutrymmet.</translation>
@@ -41,10 +42,12 @@
         Kontrollera kameraanslutningen.</translation>
 <translation id="5152121255775685072">Besök galleriet</translation>
 <translation id="5671277269877808209">Kvadratiskt</translation>
+<translation id="5775960006311140197">Expertläge</translation>
 <translation id="5869546221129391014">Rutnät</translation>
 <translation id="6040143037577758943">Stäng</translation>
 <translation id="6073451960410192870">Sluta spela in</translation>
 <translation id="6165508094623778733">Läs mer</translation>
+<translation id="6197807149213783179">Spara metadata</translation>
 <translation id="6233780560267770709">Tre gånger tre</translation>
 <translation id="6243827288366940320">Gyllene snittet</translation>
 <translation id="6248749904681914629">Extern kamera</translation>
@@ -66,6 +69,7 @@
 <translation id="8261506727792406068">Radera</translation>
 <translation id="8428213095426709021">Inställningar</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8732462232047530626">Förhandsgranska metadata</translation>
 <translation id="8815966864175525708">Byt till att ta porträttfoto</translation>
 <translation id="8870695351537079478">Det gick inte att starta inspelningen</translation>
 <translation id="9045155556724273246">Tio sekunder</translation>

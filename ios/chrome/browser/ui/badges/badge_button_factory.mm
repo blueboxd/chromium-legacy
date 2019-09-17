@@ -42,6 +42,8 @@
       return [self passwordsUpdateBadgeButton];
     case BadgeType::kBadgeTypeIncognito:
       return [self incognitoBadgeButton];
+    case BadgeType::kBadgeTypeOverflow:
+      return [self overflowBadgeButton];
     case BadgeType::kBadgeTypeNone:
       NOTREACHED() << "A badge should not have kBadgeTypeNone";
       return nil;
@@ -93,6 +95,20 @@
   button.accessibilityIdentifier = kBadgeButtonIncognitoAccessibilityIdentifier;
   button.accessibilityLabel =
       l10n_util::GetNSString(IDS_IOS_BADGE_INCOGNITO_HINT);
+  return button;
+}
+
+- (BadgeButton*)overflowBadgeButton {
+  BadgeButton* button =
+      [self createButtonForType:BadgeType::kBadgeTypeOverflow
+                     imageNamed:@"wrench_badge"
+                  renderingMode:UIImageRenderingModeAlwaysTemplate];
+  [button addTarget:self.actionHandler
+                action:@selector(overflowBadgeButtonTapped:)
+      forControlEvents:UIControlEventTouchUpInside];
+  button.accessibilityIdentifier = kBadgeButtonOverflowAccessibilityIdentifier;
+  button.accessibilityLabel =
+      l10n_util::GetNSString(IDS_IOS_OVERFLOW_BADGE_HINT);
   return button;
 }
 

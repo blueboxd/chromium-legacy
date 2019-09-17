@@ -479,6 +479,7 @@
 <translation id="1698122934742150150">Apenas para a sessão no modo de navegação anónima atual</translation>
 <translation id="1698650002254827833">Não é possível carregar a lista de aplicações. Tente novamente.</translation>
 <translation id="1701062906490865540">Remover esta pessoa</translation>
+<translation id="1703331064825191675">Nunca mais se preocupe com as suas palavras-passe</translation>
 <translation id="1706586824377653884">Adicionado pelo gestor</translation>
 <translation id="1706625117072057435">Níveis de zoom</translation>
 <translation id="1708338024780164500">(Inativa)</translation>
@@ -528,6 +529,7 @@
 <translation id="1764226536771329714">beta</translation>
 <translation id="176587472219019965">&amp;Nova Janela</translation>
 <translation id="1766575458646819543">Saiu do modo de ecrã inteiro</translation>
+<translation id="1766957085594317166">Guarde as palavras-passe em segurança na sua Conta Google para que não tenha de as introduzir novamente.</translation>
 <translation id="1768278914020124551">Ups! Ocorreu um problema ao contactar o servidor de início de sessão. Verifique a sua ligação de rede e o nome do domínio, e tente novamente.</translation>
 <translation id="1769104665586091481">Abrir Link Numa Nova &amp;Janela</translation>
 <translation id="1773212559869067373">Certificado de autenticação rejeitado localmente</translation>
@@ -1875,6 +1877,7 @@ Pretende pará-lo?</translation>
 <translation id="3748026146096797577">Desligado</translation>
 <translation id="3752582316358263300">OK...</translation>
 <translation id="3752673729237782832">Os meus dispositivos</translation>
+<translation id="3753033997400164841">Armazene uma vez. Utilize em todas as plataformas.</translation>
 <translation id="3755411799582650620">O seu <ph name="PHONE_NAME" /> pode agora desbloquear também este <ph name="DEVICE_TYPE" />.</translation>
 <translation id="375636864092143889">O site está a utilizar o microfone.</translation>
 <translation id="3757733214359997190">Não foram encontrados sites.</translation>
@@ -2167,7 +2170,6 @@ Pretende pará-lo?</translation>
 <translation id="4146026355784316281">Abrir sempre com o visualizador do sistema</translation>
 <translation id="4146785383423576110">Repor e limpar</translation>
 <translation id="4147911968024186208">Tente novamente. Se vir novamente este erro, contacte o seu representante do apoio técnico.</translation>
-<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">Visualização</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 separador}other{# separadores}}</translation>
 <translation id="4154664944169082762">Impressões digitais</translation>
@@ -2208,6 +2210,7 @@ Pretende pará-lo?</translation>
 <translation id="4232375817808480934">Configure o Kerberos</translation>
 <translation id="4235200303672858594">Ecrã inteiro</translation>
 <translation id="4235965441080806197">Cancelar início de sessão</translation>
+<translation id="4242145785130247982">Não são suportados certificados de vários clientes.</translation>
 <translation id="4242533952199664413">Abrir definições</translation>
 <translation id="4242577469625748426">Falha ao instalar as definições da política no dispositivo: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Encontrar mais aplicações para a caneta stylus</translation>
@@ -2666,6 +2669,7 @@ Pretende pará-lo?</translation>
 <translation id="4957949153200969297">Ativa apenas funcionalidades relacionadas com a Sincronização do <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="4959262764292427323">As palavras-passe são guardadas na sua Conta Google para que as possa utilizar em qualquer dispositivo.</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> – <ph name="PROFILE_NAME" /></translation>
+<translation id="496185450405387901">Esta aplicação foi instalada pelo seu administrador.</translation>
 <translation id="4964455510556214366">Disposição</translation>
 <translation id="4964673849688379040">A verificar...</translation>
 <translation id="4965808351167763748">Tem a certeza de que pretende configurar este dispositivo para executar o Hangouts Meet?</translation>
@@ -2923,6 +2927,7 @@ Certifique-se de que confia neste site antes de entrar na RV.</translation>
 <translation id="5360150013186312835">Mostrar na Barra de ferramentas</translation>
 <translation id="5362741141255528695">Selecionar ficheiro de chave privada.</translation>
 <translation id="5363109466694494651">Powerwash e reverter</translation>
+<translation id="5365716706805792666">A Google pode verificar se as suas palavras-passe estiveram envolvidas numa violação de dados. Esta funcionalidade será ativada quando iniciar sessão com a sua Conta Google.</translation>
 <translation id="5365881113273618889">A pasta que selecionou contém ficheiros confidenciais. Tem a certeza de que pretende conceder à aplicação "<ph name="APP_NAME" />" acesso de escrita permanente a esta pasta?</translation>
 <translation id="5367091008316207019">A ler ficheiro...</translation>
 <translation id="5368720394188453070">O seu telemóvel está bloqueado. Desbloqueie-o para introduzir.</translation>
@@ -3520,7 +3525,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6212039847102026977">Mostrar propriedades de rede avançadas</translation>
 <translation id="6212168817037875041">Desligar o ecrã</translation>
 <translation id="6212752530110374741">Enviar link por email</translation>
-<translation id="6214642087594370545">Esta funcionalidade permite apresentar um aviso quando utilizar uma palavra-passe insegura que tenha feito parte de uma violação de dados. Apenas está disponível para utilizadores com sessão iniciada.</translation>
 <translation id="6216696360484424239">Iniciar sessão automaticamente</translation>
 <translation id="6218058416316985984">O <ph name="DEVICE_TYPE" /> está offline. Ligue-se à Internet e tente novamente.</translation>
 <translation id="6220413761270491930">Erro ao carregar a extensão</translation>
@@ -3877,6 +3881,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6769712124046837540">A adicionar impressora…</translation>
 <translation id="6770664076092644100">Validar através de NFC</translation>
 <translation id="6771503742377376720">É uma autoridade de certificação</translation>
+<translation id="6775163072363532304">Os dispositivos disponíveis aparecem aqui.</translation>
 <translation id="6777817260680419853">Redirecionamento bloqueado</translation>
 <translation id="6778737459546443941">O teu pai/a tua mãe ainda não o aprovou</translation>
 <translation id="677965093459947883">Muito pequeno</translation>
@@ -4337,6 +4342,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7441830548568730290">Outros utilizadores</translation>
 <translation id="7442465037756169001">O hardware Hangouts Meet está pronto para ser configurado.</translation>
 <translation id="744341768939279100">Criar um novo perfil</translation>
+<translation id="7443806024147773267">Aceda às suas palavras-passe sempre que tiver sessão iniciada na sua Conta Google.</translation>
 <translation id="7444046173054089907">Este site está bloqueado</translation>
 <translation id="7444983668544353857">Desactivar <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">Instalar aplicações automaticamente</translation>
@@ -4750,6 +4756,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8014154204619229810">O atualizador está em execução atualmente. Atualize dentro de um minuto para verificar novamente.</translation>
 <translation id="8014206674403687691">Não é possível reverter para a versão anteriormente instalada do <ph name="IDS_SHORT_PRODUCT_NAME" />. Repita o processo de Powerwash do dispositivo.</translation>
 <translation id="8014210335923519270">Melhore o <ph name="IDS_SHORT_PRODUCT_NAME" /> e a sua segurança ao enviar informações do sistema e de utilização para a Google.</translation>
+<translation id="8015780634880457457">A Google pode verificar se as suas palavras-passe estiveram envolvidas numa violação de dados.</translation>
 <translation id="8016266267177410919">Armazenamento temporário</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Atalho editado</translation>
@@ -4867,6 +4874,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8188389033983459049">Verifique as definições do dispositivo e ative-o para continuar.</translation>
 <translation id="8190193592390505034">A ligar a <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">Gerir as suas aplicações, extensões e temas</translation>
+<translation id="819464600477418284">Esta aplicação faz parte do Chrome OS, pelo que não é possível desinstalá-la.</translation>
 <translation id="8195027750202970175">Tamanho em disco</translation>
 <translation id="8198323535106903877">Vamos instalar essas <ph name="NUMBER_OF_APPS" /> aplicações por si</translation>
 <translation id="8199300056570174101">Propriedades da rede (serviço) e do dispositivo</translation>
@@ -4927,6 +4935,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
     <ph name="BEGIN_PARAGRAPH2" />A desativação desta funcionalidade não afeta a capacidade deste dispositivo de enviar as informações necessárias para serviços essenciais, como as atualizações do sistema e a segurança.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />O proprietário pode controlar esta funcionalidade ao aceder a Definições &gt; Avançadas &gt; Enviar automaticamente dados de diagnóstico e de utilização para a Google.<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />Se a Atividade da Web e de aplicações adicional estiver ativada para a criança, estes dados poderão ser guardados na respetiva Conta Google. Saiba mais acerca destas definições e como as ajustar em families.google.com.<ph name="END_PARAGRAPH4" /></translation>
+<translation id="826905130698769948">Certificado de cliente inválido.</translation>
 <translation id="8270242299912238708">Docs PDF</translation>
 <translation id="827097179112817503">Mostrar botão Página inicial</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 marcador eliminado}other{# marcadores eliminados}}</translation>
@@ -5340,6 +5349,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8874184842967597500">Sem ligação</translation>
 <translation id="8876307312329369159">Não é possível alterar esta definição numa sessão de demonstração.</translation>
 <translation id="8877448029301136595">[directório principal]</translation>
+<translation id="8879220587046205278">As aplicações do Google Play podem necessitar de acesso completo ao sistema de ficheiros para ler e gravar ficheiros em dispositivos de armazenamento externos. Os ficheiros e as pastas criados no dispositivo são visíveis para qualquer pessoa que utilize a unidade externa.</translation>
 <translation id="8879284080359814990">Mo&amp;strar Como Separador</translation>
 <translation id="8879921471468674457">Memorizar informações de início de sessão</translation>
 <translation id="8881020143150461183">Tente novamente. Para obter apoio técnico, contacte o operador <ph name="CARRIER_NAME" />.</translation>

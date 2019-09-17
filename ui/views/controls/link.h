@@ -30,7 +30,7 @@ class VIEWS_EXPORT Link : public Label {
 
   // The padding for the focus ring border when rendering a focused Link with
   // FocusStyle::kRing.
-  static constexpr int kFocusBorderPadding = 1;
+  static constexpr gfx::Insets kFocusBorderPadding = gfx::Insets(1);
 
   // How the Link is styled when focused.
   enum class FocusStyle {

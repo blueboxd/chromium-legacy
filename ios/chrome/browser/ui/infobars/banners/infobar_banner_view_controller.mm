@@ -51,7 +51,6 @@ const CGFloat kContainerStackVerticalPadding = 18.0;
 const CGFloat kIconWidth = 25.0;
 
 // Gesture constants.
-const CGFloat kChangeInPositionForTransition = 100.0;
 const CGFloat kChangeInPositionForDismissal = -15.0;
 const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 }  // namespace
@@ -313,27 +312,11 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
     self.startingTouch = touchLocation;
     [self animateBannerToScaleUpState];
   } else if (gesture.state == UIGestureRecognizerStateChanged) {
-    self.view.center =
-        CGPointMake(self.view.center.x, self.view.center.y + touchLocation.y -
-                                            self.startingTouch.y);
-    // If dragged down by more than kChangeInPositionForTransition, present
-    // the InfobarModal.
-    BOOL dragDownExceededThreshold =
-        (self.view.center.y - self.originalCenter.y >
-         kChangeInPositionForTransition);
-    if (dragDownExceededThreshold) {
-      base::RecordAction(
-          base::UserMetricsAction("MobileMessagesBannerDraggedDown"));
-      [self.metricsRecorder
-          recordBannerDismissType:MobileMessagesBannerDismissType::
-                                      ExpandedToModal];
-      [self recordBannerOnScreenTime];
-      [self.delegate presentInfobarModalFromBanner];
-      // Since the modal has now been presented prevent any external dismissal.
-      self.shouldDismissAfterTouchesEnded = NO;
-      // Cancel the gesture since the modal has now been presented.
-      gesture.state = UIGestureRecognizerStateCancelled;
-      return;
+    // Don't allow the banner to be dragged down past its original position.
+    CGFloat newYPosition =
+        self.view.center.y + touchLocation.y - self.startingTouch.y;
+    if (newYPosition < self.originalCenter.y) {
+      self.view.center = CGPointMake(self.view.center.x, newYPosition);
     }
   }
 

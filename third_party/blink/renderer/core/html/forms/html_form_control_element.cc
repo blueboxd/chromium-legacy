@@ -33,7 +33,6 @@
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/forms/validity_state.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
-#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -179,14 +178,6 @@ bool HTMLFormControlElement::IsDisabledOrReadOnly() const {
   return IsDisabledFormControl() || IsReadOnly();
 }
 
-bool HTMLFormControlElement::SupportsAutofocus() const {
-  return false;
-}
-
-bool HTMLFormControlElement::IsAutofocusable() const {
-  return FastHasAttribute(kAutofocusAttr) && SupportsAutofocus();
-}
-
 void HTMLFormControlElement::SetAutofillState(WebAutofillState autofill_state) {
   if (autofill_state == autofill_state_)
     return;
@@ -214,57 +205,6 @@ const AtomicString& HTMLFormControlElement::autocapitalize() const {
   return g_empty_atom;
 }
 
-// The first algorithm in
-// https://html.spec.whatwg.org/C/#the-autofocus-attribute
-static bool ShouldAutofocus(const HTMLFormControlElement* element) {
-  // When an element with the autofocus attribute specified is inserted into a
-  // document, run the following steps:
-  if (!element->isConnected())
-    return false;
-  if (!element->IsAutofocusable())
-    return false;
-
-  // 1. If the user has indicated (for example, by starting to type in a form
-  // control) that they do not wish focus to be changed, then optionally return.
-
-  // We don't implement this optional step. If other browsers have such
-  // behavior, we should follow it or standardize it.
-
-  // 2. Let target be the element's node document.
-  Document& doc = element->GetDocument();
-
-  // 3. If target's browsing context is null, then return.
-  if (!doc.GetFrame())
-    return false;
-
-  // 4. If target's active sandboxing flag set has the sandboxed automatic
-  // features browsing context flag, then return.
-  if (doc.IsSandboxed(WebSandboxFlags::kAutomaticFeatures)) {
-    doc.AddConsoleMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kSecurity,
-        mojom::ConsoleMessageLevel::kError,
-        "Blocked autofocusing on a form control because the form's frame is "
-        "sandboxed and the 'allow-scripts' permission is not set."));
-    return false;
-  }
-
-  // 5. Let topDocument be the active document of target's browsing context's
-  // top-level browsing context.
-  // 6. If target's origin is not the same as the origin of topDocument,
-  // then return.
-  if (!doc.IsInMainFrame() &&
-      !doc.TopFrameOrigin()->CanAccess(doc.GetSecurityOrigin())) {
-    doc.AddConsoleMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kSecurity,
-        mojom::ConsoleMessageLevel::kError,
-        "Blocked autofocusing on a form control in a cross-origin subframe."));
-    return false;
-  }
-
-  // Will call Document::EnqueueAutofocusCandidate() with |element|.
-  return true;
-}
-
 void HTMLFormControlElement::AttachLayoutTree(AttachContext& context) {
   HTMLElement::AttachLayoutTree(context);
 
@@ -286,9 +226,6 @@ Node::InsertionNotificationRequest HTMLFormControlElement::InsertedInto(
     ContainerNode& insertion_point) {
   HTMLElement::InsertedInto(insertion_point);
   ListedElement::InsertedInto(insertion_point);
-
-  if (ShouldAutofocus(this))
-    GetDocument().TopDocument().EnqueueAutofocusCandidate(*this);
   return kInsertionDone;
 }
 

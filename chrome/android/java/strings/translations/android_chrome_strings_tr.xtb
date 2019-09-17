@@ -66,6 +66,7 @@
 <translation id="1407135791313364759">Tümünü aç</translation>
 <translation id="1409426117486808224">Açık sekmeler için basitleştirilmiş görünüm</translation>
 <translation id="1409879593029778104"><ph name="FILE_NAME" /> dosyası zaten var olduğu için indirme işlemi engellendi.</translation>
+<translation id="1413136574162415971">Google, şifrelerinizin bir veri ihlaline dahil olup olmadığını kontrol edebilir. Bu, Google Hesabınızla oturum açıp Chrome'da senkronizasyonu etkinleştirdiğinizde açılacaktır.</translation>
 <translation id="1414981605391750300">Google ile bağlantı kuruluyor. Bu işlem bir dakika sürebilir…</translation>
 <translation id="1416550906796893042">Uygulama sürümü</translation>
 <translation id="1430915738399379752">Yazdır</translation>
@@ -160,6 +161,7 @@
 <translation id="2091887806945687916">Ses</translation>
 <translation id="2096012225669085171">Cihazlar arasında senkronizasyon ve kişiselleştirme</translation>
 <translation id="2100273922101894616">Otomatik Oturum Aç</translation>
+<translation id="2100314319871056947">Metni daha küçük parçalar halinde paylaşmayı deneyin</translation>
 <translation id="2107397443965016585">Sitelerin korumalı içeriği oynatmasına izin vermeden önce sor (önerilir)</translation>
 <translation id="2111511281910874386">Sayfaya gidin</translation>
 <translation id="2122601567107267586">Uygulama açılamadı</translation>
@@ -253,6 +255,7 @@
 <translation id="2836148919159985482">Tam ekrandan çıkmak için geri düğmesine dokunun.</translation>
 <translation id="2842985007712546952">Ana klasör</translation>
 <translation id="2858138569776157458">Popüler siteler</translation>
+<translation id="2860954141821109167">Bu cihazda bir telefon uygulamasının etkinleştirildiğinden emin olun</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2874939134665556319">Önceki parça</translation>
 <translation id="2876369937070532032">Güvenliğiniz risk altında olduğunda ziyaret ettiğiniz bazı sayfaların URL'lerini Google'a gönderir</translation>
@@ -277,6 +280,7 @@
 <translation id="2996291259634659425">Parola oluşturun</translation>
 <translation id="2996809686854298943">URL gerekli</translation>
 <translation id="300526633675317032">Bu işlem <ph name="SIZE_IN_KB" /> olan web sitesi depolama alanının tamamını temizleyecek.</translation>
+<translation id="3016635187733453316">Bu cihazın internete bağlı olduğundan emin olun</translation>
 <translation id="3029613699374795922"><ph name="KBS" /> KB indirildi</translation>
 <translation id="3029704984691124060">Parolalar eşleşmiyor</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Yardım alın<ph name="END_LINK" /></translation>
@@ -841,6 +845,7 @@ VR moduna girmeden önce bu siteye güvendiğinizden emin olun.</translation>
 <translation id="723171743924126238">Resim seç</translation>
 <translation id="7233236755231902816">Web'i kendi dilinizde görmek için Chrome'un en son sürümünü edinin</translation>
 <translation id="7243308994586599757">Sayfanın altına yakın bir yerde kullanılabilen seçenekler</translation>
+<translation id="7248069434667874558"><ph name="TARGET_DEVICE_NAME" /> cihazının Chrome'da senkronizasyonunun açık olduğundan emin olun</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> öğe seçildi</translation>
 <translation id="7274013316676448362">Engellenmiş site</translation>
 <translation id="7290209999329137901">Yeniden adlandırma yapılamıyor</translation>
@@ -955,6 +960,7 @@ Site kameraya ERİŞMEZ. Kamera görüntülerini yalnızca siz görebilirsiniz.<
 <translation id="8007176423574883786">Bu cihaz için kapatıldı</translation>
 <translation id="8013372441983637696">Chrome verilerinizi de bu cihazdan temizleyin</translation>
 <translation id="8015452622527143194">Sayfadaki her şeyi varsayılan boyutuna döndürür</translation>
+<translation id="8015780634880457457">Google, şifrelerinizin bir veri ihlaline dahil olup olmadığını kontrol edebilir</translation>
 <translation id="802154636333426148">İndirilemedi</translation>
 <translation id="8026334261755873520">Tarama verilerini temizle</translation>
 <translation id="8035133914807600019">Yeni klasör…</translation>
@@ -1017,6 +1023,7 @@ Site kameraya ERİŞMEZ. Kamera görüntülerini yalnızca siz görebilirsiniz.<
 <translation id="8445448999790540984">Şifreler dışa aktarılamıyor</translation>
 <translation id="8447861592752582886">Cihaz iznini iptal et</translation>
 <translation id="8461694314515752532">Senkronize edilen verileri senkronizasyon parolanızı kullanarak şifrele</translation>
+<translation id="8466613982764129868"><ph name="TARGET_DEVICE_NAME" /> cihazının internete bağlı olduğundan emin olun</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Çevrimdışı kullanılabilir</translation>
 <translation id="8489271220582375723">Geçmiş sayfasını açar</translation>
@@ -1107,6 +1114,7 @@ Site kameraya ERİŞMEZ. Kamera görüntülerini yalnızca siz görebilirsiniz.<
 <translation id="9188680907066685419">Yönetilen hesabın oturumunu kapat</translation>
 <translation id="9204836675896933765">1 dosya kaldı</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9209888181064652401">Arama yapılamıyor</translation>
 <translation id="9219103736887031265">Resimler</translation>
 <translation id="926205370408745186">Chrome etkinliğinizi Dijital Denge'den kaldırma</translation>
 <translation id="932327136139879170">Ana Sayfa</translation>

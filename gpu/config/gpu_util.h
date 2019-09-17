@@ -80,6 +80,11 @@ GPU_EXPORT GpuSeriesType GetGpuSeriesType(uint32_t vendor_id,
 GPU_EXPORT std::string GetIntelGpuGeneration(uint32_t vendor_id,
                                              uint32_t device_id);
 
+#if defined(OS_WIN)
+GPU_EXPORT std::string D3DFeatureLevelToString(uint32_t d3d_feature_level);
+GPU_EXPORT std::string VulkanVersionToString(uint32_t vulkan_version);
+#endif  // OS_WIN
+
 }  // namespace gpu
 
 #endif  // GPU_CONFIG_GPU_UTIL_H_

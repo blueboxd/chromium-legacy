@@ -7,11 +7,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -845,8 +845,8 @@ TEST_F(DataReductionProxyCompressionStatsTest,
   RecordDataUsage("https://www.foo.com", 1000, 1250, fifteen_mins_ago);
 
   auto expected_data_usage =
-      base::WrapUnique(new std::vector<data_reduction_proxy::DataUsageBucket>(
-          kNumExpectedBuckets));
+      std::make_unique<std::vector<data_reduction_proxy::DataUsageBucket>>(
+          kNumExpectedBuckets);
   data_reduction_proxy::PerConnectionDataUsage* connection_usage =
       expected_data_usage->at(kNumExpectedBuckets - 2).add_connection_usage();
   data_reduction_proxy::PerSiteDataUsage* site_usage =

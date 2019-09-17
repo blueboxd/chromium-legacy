@@ -158,7 +158,6 @@ ResourceRequest FrameLoader::ResourceRequestForReload(
   if (client_redirect_policy == ClientRedirectPolicy::kClientRedirect) {
     request.SetHttpReferrer(SecurityPolicy::GenerateReferrer(
         frame_->GetDocument()->GetReferrerPolicy(),
-        frame_->GetDocument()->GetSecurityOrigin(),
         frame_->GetDocument()->Url(),
         frame_->GetDocument()->OutgoingReferrer()));
   }

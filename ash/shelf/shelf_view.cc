@@ -822,6 +822,32 @@ void ShelfView::CreateDragIconProxy(
   drag_image_->SetWidgetVisible(true);
 }
 
+void ShelfView::ShowContextMenuForViewImpl(views::View* source,
+                                           const gfx::Point& point,
+                                           ui::MenuSourceType source_type) {
+  // Prevent concurrent requests that may show application or context menus.
+  const ShelfItem* item = ShelfItemForView(source);
+  if (!item_awaiting_response_.IsNull()) {
+    if (item && item->id != item_awaiting_response_) {
+      static_cast<views::Button*>(source)->AnimateInkDrop(
+          views::InkDropState::DEACTIVATED, nullptr);
+    }
+    return;
+  }
+  last_pressed_index_ = -1;
+  if (!item || !model_->GetShelfItemDelegate(item->id)) {
+    ShowShelfContextMenu(ShelfID(), point, source, source_type, nullptr);
+    return;
+  }
+
+  item_awaiting_response_ = item->id;
+  const int64_t display_id = GetDisplayIdForView(this);
+  model_->GetShelfItemDelegate(item->id)->GetContextMenu(
+      display_id, base::BindOnce(&ShelfView::ShowShelfContextMenu,
+                                 weak_factory_.GetWeakPtr(), item->id, point,
+                                 source, source_type));
+}
+
 void ShelfView::OnTabletModeStarted() {
   // Close all menus when tablet mode starts to ensure that the clamshell only
   // context menu options are not available in tablet mode.
@@ -967,6 +993,19 @@ bool ShelfView::HandleGestureEvent(const ui::GestureEvent* event) {
   }
 
   return false;
+}
+
+bool ShelfView::ShouldShowTooltipForChildView(
+    const views::View* child_view) const {
+  DCHECK_EQ(this, child_view->parent());
+
+  if (child_view == overflow_button_)
+    return true;
+  // Don't show a tooltip for a view that's currently being dragged.
+  if (child_view == drag_view_)
+    return false;
+
+  return ShelfItemForView(child_view) && !IsShowingMenuForView(child_view);
 }
 
 // static
@@ -2298,32 +2337,6 @@ void ShelfView::ShowShelfContextMenu(
   ShowMenu(std::move(model), source, point, /*context_menu=*/true, source_type);
 }
 
-void ShelfView::ShowContextMenuForViewImpl(views::View* source,
-                                           const gfx::Point& point,
-                                           ui::MenuSourceType source_type) {
-  // Prevent concurrent requests that may show application or context menus.
-  const ShelfItem* item = ShelfItemForView(source);
-  if (!item_awaiting_response_.IsNull()) {
-    if (item && item->id != item_awaiting_response_) {
-      static_cast<views::Button*>(source)->AnimateInkDrop(
-          views::InkDropState::DEACTIVATED, nullptr);
-    }
-    return;
-  }
-  last_pressed_index_ = -1;
-  if (!item || !model_->GetShelfItemDelegate(item->id)) {
-    ShowShelfContextMenu(ShelfID(), point, source, source_type, nullptr);
-    return;
-  }
-
-  item_awaiting_response_ = item->id;
-  const int64_t display_id = GetDisplayIdForView(this);
-  model_->GetShelfItemDelegate(item->id)->GetContextMenu(
-      display_id, base::BindOnce(&ShelfView::ShowShelfContextMenu,
-                                 weak_factory_.GetWeakPtr(), item->id, point,
-                                 source, source_type));
-}
-
 void ShelfView::ShowMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,
                          views::View* source,
                          const gfx::Point& click_point,
@@ -2480,17 +2493,6 @@ base::string16 ShelfView::GetTitleForChildView(const views::View* view) const {
 
   const ShelfItem* item = ShelfItemForView(view);
   return item ? item->title : base::string16();
-}
-
-bool ShelfView::ShouldShowTooltipForChildView(
-    const views::View* child_view) const {
-  if (child_view == overflow_button_)
-    return true;
-  // Don't show a tooltip for a view that's currently being dragged.
-  if (child_view == drag_view_)
-    return false;
-
-  return ShelfItemForView(child_view) && !IsShowingMenuForView(child_view);
 }
 
 }  // namespace ash

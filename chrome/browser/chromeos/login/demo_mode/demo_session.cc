@@ -355,7 +355,7 @@ base::Value DemoSession::GetCountryList() {
     dict.SetString(
         "title", l10n_util::GetDisplayNameForCountry(country, current_locale));
     dict.SetBoolean("selected", current_country == country);
-    country_list.GetList().push_back(std::move(dict));
+    country_list.Append(std::move(dict));
   }
   return country_list;
 }

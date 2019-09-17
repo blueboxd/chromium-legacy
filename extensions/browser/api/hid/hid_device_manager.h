@@ -19,6 +19,8 @@
 #include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/common/api/hid.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/hid.mojom.h"
 
 namespace device {
@@ -79,7 +81,7 @@ class HidDeviceManager : public BrowserContextKeyedAPI,
   virtual void LazyInitialize();
 
   void SetFakeHidManagerForTesting(
-      device::mojom::HidManagerPtr fake_hid_manager);
+      mojo::PendingRemote<device::mojom::HidManager> fake_hid_manager);
 
  private:
   friend class BrowserContextKeyedAPIFactory<HidDeviceManager>;
@@ -122,7 +124,7 @@ class HidDeviceManager : public BrowserContextKeyedAPI,
   content::BrowserContext* browser_context_ = nullptr;
   EventRouter* event_router_ = nullptr;
   bool initialized_ = false;
-  device::mojom::HidManagerPtr hid_manager_;
+  mojo::Remote<device::mojom::HidManager> hid_manager_;
   mojo::AssociatedBinding<device::mojom::HidManagerClient> binding_;
   bool enumeration_ready_ = false;
   std::vector<std::unique_ptr<GetApiDevicesParams>> pending_enumerations_;

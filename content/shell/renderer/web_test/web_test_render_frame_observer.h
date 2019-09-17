@@ -24,7 +24,7 @@ class WebTestRenderFrameObserver : public RenderFrameObserver,
       blink::WebDocumentLoader* document_loader) override;
   void DidCommitProvisionalLoad(bool is_same_document_navigation,
                                 ui::PageTransition transition) override;
-  void DidFailProvisionalLoad(const blink::WebURLError& error) override;
+  void DidFailProvisionalLoad() override;
   void OnDestruct() override;
 
   // mojom::WebTestControl implementation.

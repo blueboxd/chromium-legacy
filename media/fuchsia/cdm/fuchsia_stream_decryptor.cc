@@ -22,7 +22,7 @@ namespace {
 
 // FuchsiaClearStreamDecryptor copies decrypted data immediately once it's
 // available, so it doesn't need more than one output buffer.
-const size_t kMinOutputAudioOutputFrames = 1;
+const size_t kMinClearStreamOutputFrames = 1;
 
 std::string GetEncryptionMode(EncryptionMode mode) {
   switch (mode) {
@@ -96,55 +96,14 @@ FuchsiaStreamDecryptorBase::~FuchsiaStreamDecryptorBase() = default;
 void FuchsiaStreamDecryptorBase::DecryptInternal(
     scoped_refptr<DecoderBuffer> encrypted) {
   DCHECK(!encrypted->end_of_stream()) << "EOS frame is always clear.";
-  DCHECK(!pending_encrypted_buffer_);
-
-  // Input buffer writer is not available. Wait.
-  if (!input_writer_) {
-    pending_encrypted_buffer_ = std::move(encrypted);
-    return;
-  }
-
-  // Decryptor can only process one buffer at a time, which means there
-  // should be always enough unused buffers.
-  base::Optional<size_t> buf_index = input_writer_->Acquire();
-
-  // No available input buffer. Just wait for the next available one.
-  if (!buf_index.has_value()) {
-    pending_encrypted_buffer_ = std::move(encrypted);
-    return;
-  }
-
-  size_t index = buf_index.value();
-
-  size_t bytes = input_writer_->Write(
-      index, base::make_span(encrypted->data(), encrypted->data_size()));
-  if (bytes < encrypted->data_size()) {
-    // The encrypted data size is too big. Decryptor should consider
-    // splitting the buffer and update the IV and subsample entries.
-    // TODO(yucliu): Handle large encrypted buffer correctly. For now, just
-    // reject the decryption.
-    DLOG(ERROR) << "Encrypted data size is too big.";
-    OnError();
-    return;
-  }
-
-  const DecryptConfig* decrypt_config = encrypted->decrypt_config();
-  DCHECK(decrypt_config);
-
-  auto input_packet = StreamProcessorHelper::IoPacket::CreateInput(
-      index, encrypted->data_size(), encrypted->timestamp(),
-      GetFormatDetails(decrypt_config),
-      base::BindOnce(&FuchsiaStreamDecryptorBase::OnInputPacketReleased,
-                     base::Unretained(this), index));
-
-  processor_.Process(std::move(input_packet));
+  input_writer_queue_.EnqueueBuffer(std::move(encrypted));
 }
 
 void FuchsiaStreamDecryptorBase::ResetStream() {
   // Close current stream and drop all the cached decoder buffers.
   // Keep input and output buffers to avoid buffer re-allocation.
   processor_.Reset();
-  pending_encrypted_buffer_ = nullptr;
+  input_writer_queue_.ResetQueue();
 }
 
 // StreamProcessorHelper::Client implementation:
@@ -168,17 +127,6 @@ void FuchsiaStreamDecryptorBase::AllocateInputBuffers(
                      base::Unretained(this)));
 }
 
-void FuchsiaStreamDecryptorBase::OnInputPacketReleased(size_t index) {
-  input_writer_->Release(index);
-
-  if (!pending_encrypted_buffer_)
-    return;
-
-  // If there are pending decryption request, handle it now since we have
-  // available input buffers.
-  DecryptInternal(std::move(pending_encrypted_buffer_));
-}
-
 void FuchsiaStreamDecryptorBase::OnInputBufferPoolCreated(
     std::unique_ptr<SysmemBufferPool> pool) {
   if (!pool) {
@@ -194,24 +142,38 @@ void FuchsiaStreamDecryptorBase::OnInputBufferPoolCreated(
   processor_.CompleteInputBuffersAllocation(input_pool_->TakeToken());
 
   input_pool_->CreateWriter(base::BindOnce(
-      &FuchsiaStreamDecryptorBase::OnInputBufferPoolWriterCreated,
-      base::Unretained(this)));
+      &FuchsiaStreamDecryptorBase::OnWriterCreated, base::Unretained(this)));
 }
 
-void FuchsiaStreamDecryptorBase::OnInputBufferPoolWriterCreated(
+void FuchsiaStreamDecryptorBase::OnWriterCreated(
     std::unique_ptr<SysmemBufferWriter> writer) {
   if (!writer) {
-    LOG(ERROR) << "Fail to enable input buffer writer";
     OnError();
     return;
   }
 
-  DCHECK(!input_writer_);
-  input_writer_ = std::move(writer);
+  input_writer_queue_.Start(
+      std::move(writer),
+      base::BindRepeating(&FuchsiaStreamDecryptorBase::SendInputPacket,
+                          base::Unretained(this)),
+      SysmemBufferWriterQueue::EndOfStreamCB());
+}
 
-  if (pending_encrypted_buffer_) {
-    DecryptInternal(std::move(pending_encrypted_buffer_));
+void FuchsiaStreamDecryptorBase::SendInputPacket(
+    const DecoderBuffer* buffer,
+    StreamProcessorHelper::IoPacket packet) {
+  if (!packet.unit_end()) {
+    // The encrypted data size is too big. Decryptor should consider
+    // splitting the buffer and update the IV and subsample entries.
+    // TODO(crbug.com/1003651): Handle large encrypted buffer correctly. For
+    // now, just reject the decryption.
+    LOG(ERROR) << "DecoderBuffer doesn't fit in one packet.";
+    OnError();
+    return;
   }
+
+  packet.set_format(GetFormatDetails(buffer->decrypt_config()));
+  processor_.Process(std::move(packet));
 }
 
 std::unique_ptr<FuchsiaClearStreamDecryptor>
@@ -240,7 +202,7 @@ void FuchsiaClearStreamDecryptor::Decrypt(
     Decryptor::DecryptCB decrypt_cb) {
   DCHECK(!decrypt_cb_);
   decrypt_cb_ = std::move(decrypt_cb);
-
+  current_status_ = Decryptor::kSuccess;
   DecryptInternal(std::move(encrypted));
 }
 
@@ -262,7 +224,7 @@ void FuchsiaClearStreamDecryptor::AllocateOutputBuffers(
   }
 
   size_t max_used_output_buffers = std::max(
-      kMinOutputAudioOutputFrames,
+      kMinClearStreamOutputFrames,
       static_cast<size_t>(stream_constraints.packet_count_for_client_min()));
 
   output_pool_creator_ =
@@ -283,28 +245,63 @@ void FuchsiaClearStreamDecryptor::OnOutputFormat(
     fuchsia::media::StreamOutputFormat format) {}
 
 void FuchsiaClearStreamDecryptor::OnOutputPacket(
-    std::unique_ptr<StreamProcessorHelper::IoPacket> packet) {
+    StreamProcessorHelper::IoPacket packet) {
+  DCHECK(decrypt_cb_);
+
   DCHECK(output_reader_);
   if (!output_pool_->is_live()) {
     DLOG(ERROR) << "Output buffer pool is dead.";
     return;
   }
 
-  auto clear_buffer = base::MakeRefCounted<DecoderBuffer>(packet->size());
-  clear_buffer->set_timestamp(packet->timestamp());
+  // If that's not the last packet for the current Decrypt() request then just
+  // store the output and wait for the next packet.
+  if (!packet.unit_end()) {
+    size_t pos = output_data_.size();
+    output_data_.resize(pos + packet.size());
 
-  bool read_success =
-      output_reader_->Read(packet->index(), packet->offset(),
-                           base::make_span(clear_buffer->writable_data(),
-                                           clear_buffer->data_size()));
+    bool read_success = output_reader_->Read(
+        packet.index(), packet.offset(),
+        base::make_span(output_data_.data() + pos, packet.size()));
 
-  if (!read_success) {
-    DLOG(ERROR) << "Fail to get decrypted result.";
-    std::move(decrypt_cb_).Run(Decryptor::kError, nullptr);
+    if (!read_success) {
+      // If we've failed to read a partial packet then delay reporting the error
+      // until we've received the last packet to make sure we consume all output
+      // packets generated by the last Decrypt() call.
+      DLOG(ERROR) << "Fail to get decrypted result.";
+      current_status_ = Decryptor::kError;
+      output_data_.clear();
+    }
+
     return;
   }
 
-  std::move(decrypt_cb_).Run(Decryptor::kSuccess, std::move(clear_buffer));
+  // We've received the last packet. Assemble DecoderBuffer and pass it to the
+  // DecryptCB.
+  auto clear_buffer =
+      base::MakeRefCounted<DecoderBuffer>(output_data_.size() + packet.size());
+  clear_buffer->set_timestamp(packet.timestamp());
+
+  // Copy data received in the previous packets.
+  memcpy(clear_buffer->writable_data(), output_data_.data(),
+         output_data_.size());
+  output_data_.clear();
+
+  // Copy data received in the last packet
+  bool read_success = output_reader_->Read(
+      packet.index(), packet.offset(),
+      base::make_span(clear_buffer->writable_data() + output_data_.size(),
+                      packet.size()));
+
+  if (!read_success) {
+    DLOG(ERROR) << "Fail to get decrypted result.";
+    current_status_ = Decryptor::kError;
+  }
+
+  std::move(decrypt_cb_)
+      .Run(current_status_, current_status_ == Decryptor::kSuccess
+                                ? std::move(clear_buffer)
+                                : nullptr);
 }
 
 void FuchsiaClearStreamDecryptor::OnNoKey() {

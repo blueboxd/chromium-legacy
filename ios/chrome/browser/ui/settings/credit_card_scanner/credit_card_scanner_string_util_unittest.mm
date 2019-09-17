@@ -61,9 +61,17 @@ TEST_F(CreditCardScannerStringUtilUnitTest,
 // Tests extracting card number from valid card number text (14 digits).
 TEST_F(CreditCardScannerStringUtilUnitTest,
        TestExtractCardNumberFromValidCreditCardNumber14Digits) {
+  NSString* cardNumber = ios::ExtractCreditCardNumber(@"36904001001529");
+
+  EXPECT_NSEQ(cardNumber, @"36904001001529");
+}
+
+// Tests extracting card number from invalid card number text (14 digits).
+TEST_F(CreditCardScannerStringUtilUnitTest,
+       TestExtractCardNumberFromInvalidCreditCardNumber14Digits) {
   NSString* cardNumber = ios::ExtractCreditCardNumber(@"4111111111111");
 
-  EXPECT_NSEQ(cardNumber, @"4111111111111");
+  EXPECT_FALSE(cardNumber);
 }
 
 // Tests extracting card number from valid card number text contains wrong
@@ -79,9 +87,9 @@ TEST_F(CreditCardScannerStringUtilUnitTest,
 // illegal characters.
 TEST_F(CreditCardScannerStringUtilUnitTest,
        TestExtractCardNumberFromValidCreditCardNumberAfterConversion) {
-  NSString* cardNumber = ios::ExtractCreditCardNumber(@"41b1C1g1D1i1L1z1");
+  NSString* cardNumber = ios::ExtractCreditCardNumber(@"4U24u0TLzu6636B5");
 
-  EXPECT_NSEQ(cardNumber, @"4181019101111171");
+  EXPECT_NSEQ(cardNumber, @"4024007170663685");
 }
 
 // Tests extracting card number from invalid card number text (10 digits).

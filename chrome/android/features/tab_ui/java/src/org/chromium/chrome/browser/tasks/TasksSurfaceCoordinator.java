@@ -4,10 +4,9 @@
 
 package org.chromium.chrome.browser.tasks;
 
-import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL;
-
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
@@ -24,6 +23,8 @@ public class TasksSurfaceCoordinator implements TasksSurface {
     private final TabSwitcher mTabSwitcher;
     private final TasksView mView;
     private final PropertyModelChangeProcessor mPropertyModelChangeProcessor;
+    private final MostVisitedListCoordinator mMostVisitedList;
+    private final TasksSurfaceMediator mMediator;
 
     public TasksSurfaceCoordinator(
             ChromeActivity activity, boolean isTabCarousel, PropertyModel propertyModel) {
@@ -31,15 +32,22 @@ public class TasksSurfaceCoordinator implements TasksSurface {
         mPropertyModelChangeProcessor =
                 PropertyModelChangeProcessor.create(propertyModel, mView, TasksViewBinder::bind);
         if (isTabCarousel) {
-            propertyModel.set(IS_TAB_CAROUSEL, true);
             mTabSwitcher = TabManagementModuleProvider.getDelegate().createCarouselTabSwitcher(
                     activity, mView.getTabSwitcherContainer());
         } else {
             mTabSwitcher = TabManagementModuleProvider.getDelegate().createGridTabSwitcher(
                     activity, mView.getTabSwitcherContainer());
         }
+
+        mMediator = new TasksSurfaceMediator(
+                activity, propertyModel, isTabCarousel, activity.getOverviewModeBehavior());
+
+        // TODO(mattsimmons): Handle incognito/dark theming.
+        LinearLayout mvTilesLayout = mView.findViewById(R.id.mv_tiles_layout);
+        mMostVisitedList = new MostVisitedListCoordinator(activity, mvTilesLayout);
     }
 
+    /** TasksSurface implementation. */
     @Override
     public void setOnTabSelectingListener(TabSwitcher.OnTabSelectingListener listener) {
         mTabSwitcher.setOnTabSelectingListener(listener);
@@ -58,5 +66,10 @@ public class TasksSurfaceCoordinator implements TasksSurface {
     @Override
     public ViewGroup getContainerView() {
         return mView;
+    }
+
+    @Override
+    public void destroy() {
+        mMediator.destroy();
     }
 }

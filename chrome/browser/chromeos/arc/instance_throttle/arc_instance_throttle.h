@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/instance_throttle/arc_active_window_throttle_observer.h"
 #include "chrome/browser/chromeos/arc/instance_throttle/arc_boot_phase_throttle_observer.h"
 #include "chrome/browser/chromeos/arc/instance_throttle/arc_throttle_observer.h"
@@ -34,6 +35,9 @@ class ArcInstanceThrottle : public KeyedService {
     virtual ~Delegate() = default;
 
     virtual void SetCpuRestriction(bool) = 0;
+    virtual void RecordCpuRestrictionDisabledUMA(
+        const std::string& observer_name,
+        base::TimeDelta delta) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
@@ -73,6 +77,8 @@ class ArcInstanceThrottle : public KeyedService {
   std::unique_ptr<Delegate> delegate_;
   ArcThrottleObserver::PriorityLevel level_{
       ArcThrottleObserver::PriorityLevel::UNKNOWN};
+  ArcThrottleObserver* last_effective_observer_ = nullptr;
+  base::TimeTicks last_throttle_transition_;
 
   // Throttle Observers
   ArcActiveWindowThrottleObserver active_window_throttle_observer_;

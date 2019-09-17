@@ -40,15 +40,6 @@
 
 using views::LabelButtonBorder;
 
-namespace {
-
-// Toolbar action buttons have no insets because the badges are drawn right at
-// the edge of the view's area. Other badding (such as centering the icon) is
-// handled directly by the Image.
-const int kBorderInset = 0;
-
-}  // namespace
-
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarActionView::Delegate
 
@@ -121,8 +112,10 @@ std::unique_ptr<LabelButtonBorder> ToolbarActionView::CreateDefaultBorder()
     const {
   std::unique_ptr<LabelButtonBorder> border =
       LabelButton::CreateDefaultBorder();
-  border->set_insets(
-      gfx::Insets(kBorderInset, kBorderInset, kBorderInset, kBorderInset));
+  // Toolbar action buttons have no insets because the badges are drawn right at
+  // the edge of the view's area. Other padding (such as centering the icon) is
+  // handled directly by the Image.
+  border->set_insets(gfx::Insets());
   return border;
 }
 

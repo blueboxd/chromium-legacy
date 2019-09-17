@@ -20,6 +20,9 @@ ScrollPredictor::ScrollPredictor() {
   std::string predictor_name = GetFieldTrialParamValueByFeature(
       features::kResamplingScrollEvents, "predictor");
 
+  if (predictor_name.empty())
+    predictor_name = ui::input_prediction::kScrollPredictorNameLinearResampling;
+
   input_prediction::PredictorType predictor_type =
       ui::PredictorFactory::GetPredictorTypeFromName(predictor_name);
   predictor_ = ui::PredictorFactory::GetPredictor(predictor_type);

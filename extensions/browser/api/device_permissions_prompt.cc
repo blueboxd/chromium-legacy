@@ -22,6 +22,7 @@
 #include "extensions/common/extension.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/cpp/hid/hid_device_filter.h"
 #include "services/device/public/cpp/hid/hid_usage_and_page.h"
 #include "services/device/public/cpp/usb/usb_utils.h"
@@ -217,8 +218,8 @@ class HidDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     service_manager::Connector* connector = content::GetSystemConnector();
     DCHECK(connector);
-    connector->BindInterface(device::mojom::kServiceName,
-                             mojo::MakeRequest(&hid_manager_));
+    connector->Connect(device::mojom::kServiceName,
+                       hid_manager_.BindNewPipeAndPassReceiver());
 
     device::mojom::HidManagerClientAssociatedPtrInfo client;
     binding_.Bind(mojo::MakeRequest(&client));
@@ -297,7 +298,7 @@ class HidDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
 
   bool initialized_;
   std::vector<HidDeviceFilter> filters_;
-  device::mojom::HidManagerPtr hid_manager_;
+  mojo::Remote<device::mojom::HidManager> hid_manager_;
   DevicePermissionsPrompt::HidDevicesCallback callback_;
   mojo::AssociatedBinding<device::mojom::HidManagerClient> binding_;
 };

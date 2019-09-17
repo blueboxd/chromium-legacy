@@ -23,6 +23,7 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">முகவரிப் பட்டியில் உங்கள் உள்ளீட்டில் www., .com ஆகியவற்றைச் சேர்த்து, பின்னர் பக்கத்தைத் திறக்கும்</translation>
+<translation id="1872219238824176091">தற்போதைய டெஸ்க்கை அகற்றும்</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, பின்னர் <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> அல்லது <ph name="LEFT" />ஐ அழுத்தவும்</translation>
 <translation id="1996162290124031907">அடுத்த தாவலுக்குச் செல்லும்</translation>
 <translation id="2010818616644390445">சாளரத்தில் கடைசித் தாவலுக்குச் செல்லும்</translation>
@@ -42,6 +43,7 @@
 <translation id="2441202986792279177">சாளரங்களுக்கிடையே விரைவாக மாற்றும்</translation>
 <translation id="2454251766545114447">காட்சியின் அளவைச் சிறிதாக்கும்</translation>
 <translation id="2478303094958140141">ChromeVoxஐ (பேச்சுவடிவக் கருத்து) இயக்கும் அல்லது முடக்கும்</translation>
+<translation id="2488661730534396940">இடதுபுறத்தில் உள்ள டெஸ்க்கை ஆக்டிவேட் செய்யும்</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">இணையப் பக்கத்தில் கீழே செல்லும்</translation>
 <translation id="2574014812750545982">பக்கத்தில், இயல்பான அளவிற்குக் காட்சியை மீட்டமைக்கும்</translation>
@@ -49,6 +51,7 @@
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, பின்னர் <ph name="TAB" /> அல்லது <ph name="RIGHT" />ஐ அழுத்தவும்</translation>
 <translation id="2750942583782703988">உங்கள் தற்போதைய பக்கத்தை மீண்டும் ஏற்றும்</translation>
 <translation id="2764005613199379871">தேடல் முகவரிப் பட்டியில் ஃபோகஸ் செய்யும்</translation>
+<translation id="2774822903829597107">புதிய டெஸ்க்கை உருவாக்கும்</translation>
 <translation id="2789868185375229787">பக்கத்தைச் சிறிதாக்கிக் காட்டும்</translation>
 <translation id="2804480015716812239"><ph name="ALT" />ஐ அழுத்தி, இணைப்பைக் கிளிக் செய்யவும்</translation>
 <translation id="2830827904629746450">சாளரத்தை வலதுபுறத்தில் டாக் செய்யும்</translation>
@@ -100,6 +103,7 @@
 <translation id="4642092649622328492">பகுதியளவு ஸ்கிரீன்ஷாட்டை எடுக்கும்</translation>
 <translation id="4698850295812410683">ஸ்டைலஸ் கருவிகளைக் காட்டும்</translation>
 <translation id="4801989101741319327">அடுத்த சொல்லின் முடிவுக்கு நகர்த்தும்</translation>
+<translation id="4866066940972151697">வலதுபுறத்தில் உள்ள டெஸ்க்கை ஆக்டிவேட் செய்யும்</translation>
 <translation id="4916163929714267752">இணைப்பை புதிய சாளரத்தில் திறக்கும்</translation>
 <translation id="5030659775136592441">புத்தகக்குறி நிர்வாகியைக் காட்டும்</translation>
 <translation id="5034421018520995080">பக்கத்தின் மேல்பக்கத்திற்குச் செல்லும்</translation>

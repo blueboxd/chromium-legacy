@@ -866,11 +866,7 @@ void ChromeLauncherController::DoShowAppInfoFlow(
                             AppInfoLaunchSource::FROM_SHELF,
                             AppInfoLaunchSource::NUM_LAUNCH_SOURCES);
 
-  ShowAppInfoInNativeDialog(BrowserList::GetInstance()
-                                ->GetLastActive()
-                                ->tab_strip_model()
-                                ->GetActiveWebContents(),
-                            profile, extension, base::Closure());
+  ShowAppInfo(profile, extension, base::Closure());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

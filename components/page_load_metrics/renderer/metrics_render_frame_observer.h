@@ -69,7 +69,7 @@ class MetricsRenderFrameObserver
                                       bool from_archive) override;
   void ReadyToCommitNavigation(
       blink::WebDocumentLoader* document_loader) override;
-  void DidFailProvisionalLoad(const blink::WebURLError& error) override;
+  void DidFailProvisionalLoad() override;
   void DidCommitProvisionalLoad(bool is_same_document_navigation,
                                 ui::PageTransition transition) override;
   void OnDestruct() override;

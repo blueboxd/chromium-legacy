@@ -51,6 +51,9 @@
 <translation id="2094919256425865063">Усе одно вийти з Chrome?</translation>
 <translation id="2120620239521071941">З цього пристрою буде видалено стільки елементів: <ph name="ITEMS_COUNT" />. Щоб відновити дані пізніше, увійдіть в обліковий запис Chrome як <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Допоможіть покращити Chrome, надсилаючи звіти про <ph name="BEGIN_LINK" />поточні налаштування<ph name="END_LINK" /></translation>
+<translation id="2128103434102193461">Щоб отримати докладнішу інформацію, перегляньте сторінку <ph name="LINK_BEGIN" />
+      Про ОС Chrome<ph name="LINK_END" /></translation>
+<translation id="2151406531797534936">Перезапустіть Chrome</translation>
 <translation id="216054706567564023">Установіть Chrome на телефоні. Ми надішлемо SMS на номер телефону для відновлення облікового запису.</translation>
 <translation id="2246246234298806438">Google Chrome не може відобразити попередній перегляд версії для друку, якщо немає вбудованого переглядача PDF.</translation>
 <translation id="2252923619938421629">Допоможіть покращити Google Chrome, повідомляючи поточні налаштування</translation>
@@ -219,6 +222,7 @@
 <translation id="7589360514048265910">На цей комп’ютер більше не надходитимуть оновлення Google Chrome, оскільки ОС Mac X 10.9 уже не підтримується.</translation>
 <translation id="7592736734348559088">Google Chrome не вдалося синхронізувати ваші дані, оскільки дані для входу в обліковий запис застаріли.</translation>
 <translation id="7626032353295482388">Вітаємо у Chrome!</translation>
+<translation id="7629695634924605473">Chrome повідомляє, коли ваші паролі зламують</translation>
 <translation id="7641148173327520642">Ваш системний адміністратор налаштував Google Chrome відкривати сторінку <ph name="TARGET_URL_HOSTNAME" /> в <ph name="ALTERNATIVE_BROWSER_NAME" />.</translation>
 <translation id="7651907282515937834">Логотип Chrome Enterprise</translation>
 <translation id="7747138024166251722">Програмі встановлення не вдалося створити тимчасовий каталог. Перевірте наявність вільного простору на диску та дозволу на встановлення програмного забезпечення.</translation>

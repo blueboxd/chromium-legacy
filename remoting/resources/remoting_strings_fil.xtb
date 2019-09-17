@@ -187,7 +187,7 @@
 
 Piliin ang '<ph name="BUTTON_NAME" />' sa ibaba. Sa iyong mga kagustuhan sa Seguridad at Privacy, lagyan ng check ang kahon sa tabi ng '<ph name="SERVICE_SCRIPT_NAME" />.'
 
-Kung may check na ang '<ph name="SERVICE_SCRIPT_NAME" />,' i-uncheck ito at muling lagyan ng check.</translation>
+Kung may check na ang '<ph name="SERVICE_SCRIPT_NAME" />,' i-uncheck ito at lagyan ito ulit ng check.</translation>
 <translation id="5510035215749041527">Alisin na sa pagkakakonekta</translation>
 <translation id="5593560073513909978">Pansamantalang hindi available ang serbisyo. Pakisubukang muli sa ibang pagkakataon.</translation>
 <translation id="5601503069213153581">PIN</translation>
@@ -304,7 +304,7 @@ Kung may check na ang '<ph name="SERVICE_SCRIPT_NAME" />,' i-uncheck ito at muli
 <translation id="837021510621780684">Mula sa computer na ito</translation>
 <translation id="8383794970363966105">Upang magamit ang Chromoting, kakailanganin mong magdagdag ng Google Account sa iyong device.</translation>
 <translation id="8386846956409881180">Na-configure ang host gamit ang mga di-wastong kredensyal sa OAuth.</translation>
-<translation id="8406498562923498210">Pumili ng session na ilulunsad sa iyong environment ng Remote na Desktop ng Chrome. (Tandaang puwedeng hindi sinusuportahan ng ilang uri ng session ang pagtakbo sa Remote na Desktop ng Chrome at sa lokal na console nang sabay.)</translation>
+<translation id="8406498562923498210">Pumili ng session na ilulunsad sa iyong environment ng Remote na Desktop ng Chrome. (Tandaang posibleng hindi sinusuportahan ng ilang uri ng session ang pagtakbo sa Remote na Desktop ng Chrome at sa lokal na console nang sabay.)</translation>
 <translation id="8428213095426709021">Mga Setting</translation>
 <translation id="8445362773033888690">Tingnan sa Google Play Store</translation>
 <translation id="8509907436388546015">Proseso ng Pagsasama ng Desktop</translation>

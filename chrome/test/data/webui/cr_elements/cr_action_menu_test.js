@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 
 // clang-format off
-// #import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
+// #import {AnchorAlignment} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
 // #import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
 //
-// #import {AnchorAlignment} from 'chrome://resources/cr_elements/cr_action_menu/anchor_alignment.m.js';
 // #import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
 // #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 // #import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';

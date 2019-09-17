@@ -304,42 +304,6 @@ void CollectMatchingPaths(const base::FilePath& root_path,
   }
 }
 
-bool CollectPathsRecursivelyWithLimits(const base::FilePath& file_path,
-                                       size_t max_files,
-                                       size_t max_filesize,
-                                       bool allow_folders,
-                                       FilePathSet* paths) {
-  DCHECK(paths);
-
-  FilePathSet collected_paths;
-  collected_paths.Insert(file_path);
-
-  size_t count_files = 0;
-  base::FileEnumerator file_enum(
-      file_path, true,
-      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES);
-  for (base::FilePath file = file_enum.Next(); !file.empty();
-       file = file_enum.Next()) {
-    if (count_files >= max_files)
-      return false;
-    ++count_files;
-
-    base::FileEnumerator::FileInfo file_info = file_enum.GetInfo();
-    if (file_info.IsDirectory()) {
-      if (!allow_folders)
-        return false;
-    } else {
-      if (static_cast<size_t>(file_info.GetSize()) >= max_filesize)
-        return false;
-    }
-
-    collected_paths.Insert(file);
-  }
-
-  paths->CopyFrom(collected_paths);
-  return true;
-}
-
 bool PathContainsWildcards(const base::FilePath& file_path) {
   base::FilePath::StringType name(file_path.value());
   return NameContainsWildcards(name);

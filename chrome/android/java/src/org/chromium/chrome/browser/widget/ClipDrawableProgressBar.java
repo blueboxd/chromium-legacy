@@ -37,7 +37,7 @@ public class ClipDrawableProgressBar extends ImageView {
      * An observer for visible progress updates.
      */
     @VisibleForTesting
-    interface ProgressBarObserver {
+    public interface ProgressBarObserver {
         /**
          * A notification that the visible progress has been updated. This may not coincide with
          * updates from the web page due to animations for the progress bar running.
@@ -89,7 +89,7 @@ public class ClipDrawableProgressBar extends ImageView {
      * @param observer An update observer for the progress bar.
      */
     @VisibleForTesting
-    void setProgressBarObserver(ProgressBarObserver observer) {
+    public void setProgressBarObserver(ProgressBarObserver observer) {
         assert mProgressBarObserver == null;
         mProgressBarObserver = observer;
     }

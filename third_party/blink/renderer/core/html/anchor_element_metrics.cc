@@ -283,10 +283,15 @@ void AnchorElementMetrics::MaybeReportViewportMetricsOnLoad(
     if (!anchor_element.Href().ProtocolIsInHTTPFamily())
       continue;
 
-    if (anchor_element.VisibleBoundsInVisualViewport().IsEmpty() &&
-        (!anchor_element.GetDocument().GetFrame() ||
-         !GetRootDocument(anchor_element) ||
-         !IsUrlIncrementedByOne(anchor_element))) {
+    // If the anchor doesn't have a valid frame/root document, skip it.
+    if (!anchor_element.GetDocument().GetFrame() ||
+        !GetRootDocument(anchor_element)) {
+      continue;
+    }
+
+    // Only anchors with width/height should be evaluated.
+    if (!anchor_element.GetLayoutObject() ||
+        anchor_element.GetLayoutObject()->AbsoluteBoundingBoxRect().IsEmpty()) {
       continue;
     }
 
@@ -297,9 +302,9 @@ void AnchorElementMetrics::MaybeReportViewportMetricsOnLoad(
 
     anchor_elements_metrics.push_back(anchor_metric.value().CreateMetricsPtr());
 
-    // Webpages with more than 40 anchors will stop processing at the 40th
+    // Webpages with more than 100 anchors will stop processing at the 100th
     // anchor element.
-    if (anchor_elements_metrics.size() >= 40)
+    if (anchor_elements_metrics.size() >= 100)
       break;
   }
 

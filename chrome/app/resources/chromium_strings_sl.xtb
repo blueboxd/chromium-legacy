@@ -93,6 +93,8 @@ Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph 
 <translation id="4230135487732243613">Želite svoje podatke v Chromiumu povezati s tem računom?</translation>
 <translation id="4271805377592243930">Pomoč za Chromium</translation>
 <translation id="4285930937574705105">Namestitev ni bila izvedena zaradi nedoločene napake. Če se Chromium trenutno izvaja, ga zaprite in poskusite znova.</translation>
+<translation id="4371648796594901282">Glede podrobnosti o sistemu OS Chromium glejte <ph name="LINK_BEGIN" />
+      O sistemu OS Chromium<ph name="LINK_END" /></translation>
 <translation id="4407044323746248786">Želite vseeno zapreti Chromium?</translation>
 <translation id="4415566066719264597">Naj se Chromium izvaja v ozadju</translation>
 <translation id="4423735387467980091">Prilagajanje in nadziranje Chromiuma</translation>
@@ -125,6 +127,7 @@ Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph 
 <translation id="5623402015214259806">{0,plural, =0{Posodobitev za Chromium je na voljo}=1{Posodobitev za Chromium je na voljo}one{Posodobitev za Chromium je na voljo že # dan}two{Posodobitev za Chromium je na voljo že # dneva}few{Posodobitev za Chromium je na voljo že # dni}other{Posodobitev za Chromium je na voljo že # dni}}</translation>
 <translation id="5631814766731275228">Ime in slika za Chromium</translation>
 <translation id="5634636535844844681">Za Chromium potrebujete Windows 7 ali novejši.</translation>
+<translation id="5653831366781983928">Znova zaženite Chromium</translation>
 <translation id="5680901439334282664">se prijavite v Chromium</translation>
 <translation id="5698481217667032250">Prikaži Chromium v tem jeziku</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -167,6 +170,7 @@ Nekatere funkcije morda ne bodo na voljo. Določite drug imenik profila ali upor
 <translation id="6734080038664603509">Posodobi &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium je že nameščen za vse uporabnike v računalniku.</translation>
 <translation id="6810143991807788455">Pomagajte izboljšati Chromium s poročanjem o trenutnih nastavitvah</translation>
+<translation id="6847869444787758381">Chromium vam sporoči, če so gesla ogrožena</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (kopirano v Chromium)</translation>
 <translation id="6868056391275687737">Izvajajo se druge kopije Chromiuma. Če želite opraviti posodobitev, jih zaprite.</translation>

@@ -7,7 +7,8 @@
 
 #include "content/browser/process_internals/process_internals.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace content {
 
@@ -18,7 +19,7 @@ class ProcessInternalsHandlerImpl : public ::mojom::ProcessInternalsHandler {
  public:
   ProcessInternalsHandlerImpl(
       BrowserContext* browser_context,
-      mojo::InterfaceRequest<::mojom::ProcessInternalsHandler> request);
+      mojo::PendingReceiver<::mojom::ProcessInternalsHandler> receiver);
   ~ProcessInternalsHandlerImpl() override;
 
   // mojom::ProcessInternalsHandler overrides:
@@ -31,7 +32,7 @@ class ProcessInternalsHandlerImpl : public ::mojom::ProcessInternalsHandler {
 
  private:
   BrowserContext* browser_context_;
-  mojo::Binding<::mojom::ProcessInternalsHandler> binding_;
+  mojo::Receiver<::mojom::ProcessInternalsHandler> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessInternalsHandlerImpl);
 };

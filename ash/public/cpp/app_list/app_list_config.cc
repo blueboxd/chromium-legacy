@@ -246,6 +246,12 @@ int ItemIconInFolderIconMarginForType(ash::AppListConfigType type) {
   return ItemIconInFolderIconMarginForType(ash::AppListConfigType::kShared);
 }
 
+int SuggestionChipIconDimension() {
+  // This is needed because chrome uses default instance when generating icons
+  // for suggestion chip and needs to be done for all configs including kShared.
+  return app_list_features::IsScalableAppListEnabled() ? 20 : 16;
+}
+
 }  // namespace
 
 AppListConfig::AppListConfig(ash::AppListConfigType type)
@@ -272,7 +278,7 @@ AppListConfig::AppListConfig(ash::AppListConfigType type)
       search_list_icon_dimension_(20),
       search_list_icon_vertical_bar_dimension_(48),
       search_list_badge_icon_dimension_(14),
-      suggestion_chip_icon_dimension_(16),
+      suggestion_chip_icon_dimension_(SuggestionChipIconDimension()),
       app_title_max_line_height_(AppTitleMaxLineHeightForType(type)),
       app_title_font_(AppTitleFontForType(type)),
       peeking_app_list_height_(284),

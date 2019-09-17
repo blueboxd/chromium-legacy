@@ -17,6 +17,7 @@
 
         <!-- Status bar color -->
         <item name="android:statusBarColor" tools:targetApi="21">@android:color/black</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="23">false</item>
         <item name="colorPrimaryDark">@android:color/black</item>
 
         <!-- Text colors -->

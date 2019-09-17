@@ -17,7 +17,7 @@ import "services/audio/public/mojom/audio_processing.mojom";
 // by the lifetime of the client.
 interface RendererAudioInputStreamFactory {
   CreateStream(
-      RendererAudioInputStreamFactoryClient client,
+      pending_remote<RendererAudioInputStreamFactoryClient> client,
       mojo_base.mojom.UnguessableToken session_id,
       media.mojom.AudioParameters params,
       bool automatic_gain_control,

@@ -83,7 +83,19 @@ void MapperXboxOneS2016Firmware(const Gamepad& input, Gamepad* mapped) {
   mapped->buttons[BUTTON_INDEX_START] = input.buttons[11];
   mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = input.buttons[13];
   mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = input.buttons[14];
-  mapped->buttons[BUTTON_INDEX_META] = input.buttons[15];
+
+  // Xbox Wireless Controller (045e:02fd) received a firmware update in 2019
+  // that changed which field is populated with the Xbox button state. Check
+  // both fields and combine the results.
+  auto& xbox_old = input.buttons[15];
+  auto& xbox_new = input.buttons[12];
+  mapped->buttons[BUTTON_INDEX_META].pressed =
+      (xbox_old.pressed || xbox_new.pressed);
+  mapped->buttons[BUTTON_INDEX_META].touched =
+      (xbox_old.touched || xbox_new.touched);
+  mapped->buttons[BUTTON_INDEX_META].value =
+      std::max(xbox_old.value, xbox_new.value);
+
   mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[5];
   DpadFromAxis(mapped, input.axes[9]);
 

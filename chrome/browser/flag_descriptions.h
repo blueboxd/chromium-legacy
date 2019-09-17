@@ -321,9 +321,6 @@ extern const char kEnableAutofillCreditCardUploadFeedbackDescription[];
 extern const char kEnableAutofillDoNotMigrateUnsupportedLocalCardsName[];
 extern const char kEnableAutofillDoNotMigrateUnsupportedLocalCardsDescription[];
 
-extern const char kEnableAutofillImportDynamicFormsName[];
-extern const char kEnableAutofillImportDynamicFormsDescription[];
-
 extern const char kEnableAutofillLocalCardMigrationUsesStrikeSystemV2Name[];
 extern const char
     kEnableAutofillLocalCardMigrationUsesStrikeSystemV2Description[];
@@ -2076,6 +2073,9 @@ extern const char kSchedulerConfigurationName[];
 extern const char kSchedulerConfigurationDescription[];
 extern const char kSchedulerConfigurationConservative[];
 extern const char kSchedulerConfigurationPerformance[];
+
+extern const char kShowBluetoothDebugLogToggleName[];
+extern const char kShowBluetoothDebugLogToggleDescription[];
 
 extern const char kShowBluetoothDeviceBatteryName[];
 extern const char kShowBluetoothDeviceBatteryDescription[];

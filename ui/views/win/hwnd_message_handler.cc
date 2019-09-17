@@ -320,7 +320,8 @@ void RecordDeltaBetweenTimeNowAndPerformanceCountHistogram(
   }
 }
 
-constexpr int kTouchDownContextResetTimeout = 500;
+constexpr auto kTouchDownContextResetTimeout =
+    base::TimeDelta::FromMilliseconds(500);
 
 // Windows does not flag synthesized mouse messages from touch or pen in all
 // cases. This causes us grief as we don't want to process touch and mouse
@@ -2624,7 +2625,7 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
             FROM_HERE,
             base::BindOnce(&HWNDMessageHandler::ResetTouchDownContext,
                            msg_handler_weak_factory_.GetWeakPtr()),
-            base::TimeDelta::FromMilliseconds(kTouchDownContextResetTimeout));
+            kTouchDownContextResetTimeout);
       } else {
         if (input[i].dwFlags & TOUCHEVENTF_MOVE) {
           GenerateTouchEvent(ui::ET_TOUCH_MOVED, touch_point, touch_id,
@@ -3034,7 +3035,7 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouch(UINT message,
         FROM_HERE,
         base::BindOnce(&HWNDMessageHandler::ResetTouchDownContext,
                        msg_handler_weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(kTouchDownContextResetTimeout));
+        kTouchDownContextResetTimeout);
   }
 
   POINTER_INFO pointer_info = pointer_touch_info.pointerInfo;

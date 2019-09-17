@@ -132,6 +132,9 @@ void SigninErrorUI::Initialize(Browser* browser, bool is_system_profile) {
               .GetAllProfilesAttributes();
       DCHECK(!email.empty());
       for (const ProfileAttributesEntry* entry : entries) {
+        if (!entry->IsAuthenticated())
+          continue;
+
         if (gaia::AreEmailsSame(base::UTF16ToUTF8(email),
                                 base::UTF16ToUTF8(entry->GetUserName()))) {
           handler->set_duplicate_profile_path(entry->GetPath());

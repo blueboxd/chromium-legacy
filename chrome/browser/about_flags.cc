@@ -1221,13 +1221,18 @@ const FeatureEntry::FeatureParam kStartSurfaceAndroid_TwoPanesSurface[] = {
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_Toolbar[] = {
     {"start_surface_variation", "toolbar"}};
 
+const FeatureEntry::FeatureParam kStartSurfaceAndroid_TasksOnly[] = {
+    {"start_surface_variation", "tasksonly"}};
+
 const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
     {"Single Surface", kStartSurfaceAndroid_SingleSurface,
      base::size(kStartSurfaceAndroid_SingleSurface), nullptr},
     {"Two Panes Surface", kStartSurfaceAndroid_TwoPanesSurface,
      base::size(kStartSurfaceAndroid_TwoPanesSurface), nullptr},
     {"Start Surface Toolbar", kStartSurfaceAndroid_Toolbar,
-     base::size(kStartSurfaceAndroid_Toolbar), nullptr}};
+     base::size(kStartSurfaceAndroid_Toolbar), nullptr},
+    {"Tasks Only", kStartSurfaceAndroid_TasksOnly,
+     base::size(kStartSurfaceAndroid_TasksOnly), nullptr}};
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
@@ -1696,6 +1701,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"shelf-scrollable", flag_descriptions::kShelfScrollableName,
      flag_descriptions::kShelfScrollableDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kShelfScrollable)},
+    {"show-bluetooth-debug-log-toggle",
+     flag_descriptions::kShowBluetoothDebugLogToggleName,
+     flag_descriptions::kShowBluetoothDebugLogToggleDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kShowBluetoothDebugLogToggle)},
     {"show-bluetooth-device-battery",
      flag_descriptions::kShowBluetoothDeviceBatteryName,
      flag_descriptions::kShowBluetoothDeviceBatteryDescription, kOsCrOS,
@@ -2608,10 +2617,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUpstreamEditableExpirationDate)},
-    {"enable-autofill-import-dynamic-forms",
-     flag_descriptions::kEnableAutofillImportDynamicFormsName,
-     flag_descriptions::kEnableAutofillImportDynamicFormsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(autofill::features::kAutofillImportDynamicForms)},
     {"enable-autofill-local-card-migration-uses-strike-system-v2",
      flag_descriptions::kEnableAutofillLocalCardMigrationUsesStrikeSystemV2Name,
      flag_descriptions::

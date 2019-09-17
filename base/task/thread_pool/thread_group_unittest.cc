@@ -53,6 +53,7 @@ using ThreadGroupNativeType =
 #endif
 
 constexpr size_t kMaxTasks = 4;
+constexpr size_t kTooManyTasks = 1000;
 // By default, tests allow half of the thread group to be used by best-effort
 // tasks.
 constexpr size_t kMaxBestEffortTasks = kMaxTasks / 2;
@@ -651,6 +652,48 @@ TEST_P(ThreadGroupTest, ScheduleJobTaskSourceMultipleTime) {
 
   // Flush the task tracker to be sure that no local variables are accessed by
   // tasks after the end of the scope.
+  task_tracker_.FlushForTesting();
+}
+
+// Verify that Cancel() on a job stops running the worker task and causes
+// current workers to yield.
+TEST_P(ThreadGroupTest, CancelJobTaskSource) {
+  StartThreadGroup();
+
+  CheckedLock tasks_running_lock;
+  std::unique_ptr<ConditionVariable> tasks_running_cv =
+      tasks_running_lock.CreateConditionVariable();
+  bool tasks_running = false;
+
+  // Schedule a big number of tasks.
+  auto job_task = base::MakeRefCounted<test::MockJobTask>(
+      BindLambdaForTesting([&](experimental::JobDelegate* delegate) {
+        {
+          CheckedAutoLock auto_lock(tasks_running_lock);
+          tasks_running = true;
+        }
+        tasks_running_cv->Signal();
+
+        while (!delegate->ShouldYield()) {
+        }
+      }),
+      /* num_tasks_to_run */ kTooManyTasks);
+  scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
+      FROM_HERE, {ThreadPool()}, &mock_pooled_task_runner_delegate_);
+
+  mock_pooled_task_runner_delegate_.EnqueueJobTaskSource(task_source);
+
+  // Wait for at least 1 task to start running.
+  {
+    CheckedAutoLock auto_lock(tasks_running_lock);
+    while (!tasks_running)
+      tasks_running_cv->Wait();
+  }
+
+  // Cancels pending tasks and unblocks running ones.
+  task_source->Cancel();
+
+  // This should not block since the job got cancelled.
   task_tracker_.FlushForTesting();
 }
 

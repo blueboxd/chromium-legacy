@@ -38,6 +38,7 @@ import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.browser.webapps.WebappTestHelper;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 /**
  * Tests that WebappActivities are launched correctly.
@@ -99,27 +100,29 @@ public class WebappModeTest {
 
     @Before
     public void setUp() throws Exception {
-        WebappRegistry.refreshSharedPrefsForTesting();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            WebappRegistry.refreshSharedPrefsForTesting();
 
-        // Register the webapps so when the data storage is opened, the test doesn't crash. There is
-        // no race condition with the retrieval as AsyncTasks are run sequentially on the background
-        // thread.
-        WebappRegistry.getInstance().register(
-                WEBAPP_1_ID, new WebappRegistry.FetchWebappDataStorageCallback() {
-                    @Override
-                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                        storage.updateFromShortcutIntent(createIntent(
-                                WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true));
-                    }
-                });
-        WebappRegistry.getInstance().register(
-                WEBAPP_2_ID, new WebappRegistry.FetchWebappDataStorageCallback() {
-                    @Override
-                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                        storage.updateFromShortcutIntent(createIntent(
-                                WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true));
-                    }
-                });
+            // Register the webapps so when the data storage is opened, the test doesn't crash.
+            // There is no race condition with the retrieval as AsyncTasks are run sequentially on
+            // the background thread.
+            WebappRegistry.getInstance().register(
+                    WEBAPP_1_ID, new WebappRegistry.FetchWebappDataStorageCallback() {
+                        @Override
+                        public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
+                            storage.updateFromShortcutIntent(createIntent(
+                                    WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true));
+                        }
+                    });
+            WebappRegistry.getInstance().register(
+                    WEBAPP_2_ID, new WebappRegistry.FetchWebappDataStorageCallback() {
+                        @Override
+                        public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
+                            storage.updateFromShortcutIntent(createIntent(
+                                    WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true));
+                        }
+                    });
+        });
     }
 
     /**
@@ -319,7 +322,7 @@ public class WebappModeTest {
                 Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
                 return isWebappActivityReady(lastActivity);
             }
-        });
+        }, 10000, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         return (WebappActivity) ApplicationStatus.getLastTrackedFocusedActivity();
     }
 

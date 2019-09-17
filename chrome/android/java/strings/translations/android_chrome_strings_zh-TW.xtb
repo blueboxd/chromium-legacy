@@ -66,6 +66,7 @@
 <translation id="1407135791313364759">全部開啟</translation>
 <translation id="1409426117486808224">使用簡易檢視模式查看開啟的分頁</translation>
 <translation id="1409879593029778104"><ph name="FILE_NAME" /> 檔案已存在，因此無法下載。</translation>
+<translation id="1413136574162415971">Google 可以檢查你的密碼資料是否外洩。當你使用 Google 帳戶登入並開啟同步功能時，系統會開啟這項功能。</translation>
 <translation id="1414981605391750300">正在連線至 Google。可能需要一分鐘…</translation>
 <translation id="1416550906796893042">應用程式版本</translation>
 <translation id="1430915738399379752">列印</translation>
@@ -160,6 +161,7 @@
 <translation id="2091887806945687916">音訊</translation>
 <translation id="2096012225669085171">讓多部裝置保持同步，並提供人化體驗</translation>
 <translation id="2100273922101894616">自動登入</translation>
+<translation id="2100314319871056947">請嘗試將要分享的文字分成多個片段</translation>
 <translation id="2107397443965016585">允許網站播放受保護的內容前，必須先詢問你 (建議)</translation>
 <translation id="2111511281910874386">前往指定頁面</translation>
 <translation id="2122601567107267586">無法開啟應用程式</translation>
@@ -253,6 +255,7 @@
 <translation id="2836148919159985482">輕觸返回按鈕即可結束全螢幕模式。</translation>
 <translation id="2842985007712546952">上層資料夾</translation>
 <translation id="2858138569776157458">熱門網站</translation>
+<translation id="2860954141821109167">請確認此裝置已啟用手機應用程式</translation>
 <translation id="2870560284913253234">網站</translation>
 <translation id="2874939134665556319">上一首曲目</translation>
 <translation id="2876369937070532032">當網站具有安全性風險時，Chrome 會將你造訪的部分網頁網址傳送給 Google</translation>
@@ -277,6 +280,7 @@
 <translation id="2996291259634659425">建立通關密語</translation>
 <translation id="2996809686854298943">必須要有網址</translation>
 <translation id="300526633675317032">這會將網站儲存的資料全部清除 (共 <ph name="SIZE_IN_KB" />)。</translation>
+<translation id="3016635187733453316">請確認此裝置已連上網際網路</translation>
 <translation id="3029613699374795922">已下載 <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">通關密語不符</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />取得說明<ph name="END_LINK" /></translation>
@@ -841,6 +845,7 @@
 <translation id="723171743924126238">選取圖片</translation>
 <translation id="7233236755231902816">如要以你偏好的語言查看網頁，請取得最新版本的 Chrome</translation>
 <translation id="7243308994586599757">選項在接近畫面底部的位置</translation>
+<translation id="7248069434667874558">請確認「<ph name="TARGET_DEVICE_NAME" />」的 Chrome 同步功能已開啟</translation>
 <translation id="7250468141469952378">已選取 <ph name="ITEM_COUNT" /> 個項目</translation>
 <translation id="7274013316676448362">已封鎖網站</translation>
 <translation id="7290209999329137901">無法重新命名</translation>
@@ -955,6 +960,7 @@
 <translation id="8007176423574883786">已在這個裝置上關閉</translation>
 <translation id="8013372441983637696">一併清除你在這個裝置上的 Chrome 資料</translation>
 <translation id="8015452622527143194">將網頁上的所有內容都回復為預設大小</translation>
+<translation id="8015780634880457457">Google 可以檢查你的密碼資料是否外洩</translation>
 <translation id="802154636333426148">下載失敗</translation>
 <translation id="8026334261755873520">清除瀏覽資料</translation>
 <translation id="8035133914807600019">新資料夾…</translation>
@@ -1017,6 +1023,7 @@
 <translation id="8445448999790540984">無法匯出密碼</translation>
 <translation id="8447861592752582886">撤銷裝置權限</translation>
 <translation id="8461694314515752532">使用你自己的同步通關密語，加密保護同步資料</translation>
+<translation id="8466613982764129868">請確認「<ph name="TARGET_DEVICE_NAME" />」已連上網際網路</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">可離線使用</translation>
 <translation id="8489271220582375723">開啟記錄頁面</translation>
@@ -1107,6 +1114,7 @@
 <translation id="9188680907066685419">登出受管理的帳戶</translation>
 <translation id="9204836675896933765">還剩 1 個檔案</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9209888181064652401">無法撥打電話</translation>
 <translation id="9219103736887031265">圖片</translation>
 <translation id="926205370408745186">將你的 Chrome 活動記錄從數位健康中移除</translation>
 <translation id="932327136139879170">首頁</translation>

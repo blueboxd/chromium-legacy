@@ -2170,7 +2170,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4146026355784316281">Always Open With System Viewer</translation>
 <translation id="4146785383423576110">Reset and clean up</translation>
 <translation id="4147911968024186208">Please retry. If you see this error again, please contact your support representative.</translation>
-<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">Display</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 tab}other{# tabs}}</translation>
 <translation id="4154664944169082762">Fingerprints</translation>
@@ -3525,7 +3524,6 @@ Make sure that you trust this site before entering VR.</translation>
 <translation id="6212039847102026977">Show advanced network properties</translation>
 <translation id="6212168817037875041">Turn off display</translation>
 <translation id="6212752530110374741">Email Link</translation>
-<translation id="6214642087594370545">Show a warning when you use an unsafe password that was part of a data breach. It is available for signed-in users only.</translation>
 <translation id="6216696360484424239">Sign in automatically</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> is offline. Connect to the Internet and try again.</translation>
 <translation id="6220413761270491930">Error Loading Extension</translation>

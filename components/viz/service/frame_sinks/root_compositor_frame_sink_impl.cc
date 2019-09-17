@@ -64,6 +64,7 @@ RootCompositorFrameSinkImpl::Create(
   if (params->external_begin_frame_controller.is_pending()) {
     auto owned_external_begin_frame_source_mojo =
         std::make_unique<ExternalBeginFrameSourceMojo>(
+            frame_sink_manager,
             std::move(params->external_begin_frame_controller), restart_id);
     external_begin_frame_source_mojo =
         owned_external_begin_frame_source_mojo.get();

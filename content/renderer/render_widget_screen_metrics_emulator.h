@@ -56,7 +56,6 @@ class CONTENT_EXPORT RenderWidgetScreenMetricsEmulator {
   void OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
                            const gfx::Rect& window_screen_rect);
   void OnShowContextMenu(ContextMenuParams* params);
-  gfx::Rect AdjustValidationMessageAnchor(const gfx::Rect& anchor);
 
   // Apply parameters to the render widget.
   void Apply();

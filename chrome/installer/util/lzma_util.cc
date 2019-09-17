@@ -258,15 +258,28 @@ DWORD LzmaUtilImpl::UnPack(const base::FilePath& location,
       break;
     }
 
-    if ((!WriteFile(hFile, outBuffer + offset, (DWORD)outSizeProcessed,
-                    &written, NULL)) ||
-        (written != outSizeProcessed)) {
-      ret = GetLastError();
-      PLOG(ERROR) << L"Error returned by WriteFile";
-      CloseHandle(hFile);
-      unpack_status_ = UNPACK_WRITE_FILE_ERROR;
-      break;
+    // Don't write all of the data at once because this can lead to kernel
+    // address-space exhaustion on 32-bit Windows (see https://crbug.com/1001022
+    // for details).
+    constexpr size_t kMaxWriteAmount = 8 * 1024 * 1024;
+    for (size_t total_written = 0; total_written < outSizeProcessed; /**/) {
+      const size_t write_amount =
+          std::min(kMaxWriteAmount, outSizeProcessed - total_written);
+      if ((!WriteFile(hFile, outBuffer + offset + total_written,
+                      static_cast<DWORD>(write_amount), &written, nullptr)) ||
+          (written != write_amount)) {
+        ret = GetLastError();
+        PLOG(ERROR) << L"Error returned by WriteFile";
+        CloseHandle(hFile);
+        unpack_status_ = UNPACK_WRITE_FILE_ERROR;
+        break;
+      }
+      total_written += write_amount;
     }
+
+    // Break out of the file loop if the write loop failed.
+    if (unpack_status_ != UNPACK_NO_ERROR)
+      break;
 
     if (SzBitWithVals_Check(&db.MTime, i)) {
       if (!SetFileTime(hFile, NULL, NULL,

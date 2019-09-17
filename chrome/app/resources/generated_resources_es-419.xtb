@@ -476,6 +476,7 @@
 <translation id="1698122934742150150">Solo para la sesión en modo incógnito actual</translation>
 <translation id="1698650002254827833">No se puede cargar la lista de apps. Vuelve a intentarlo.</translation>
 <translation id="1701062906490865540">Eliminar a esta persona</translation>
+<translation id="1703331064825191675">Ya no tendrás que preocuparte por tus contraseñas</translation>
 <translation id="1706586824377653884">Agregado por el administrador</translation>
 <translation id="1706625117072057435">Niveles de zoom</translation>
 <translation id="1708338024780164500">(Inactiva)</translation>
@@ -525,6 +526,7 @@
 <translation id="1764226536771329714">beta</translation>
 <translation id="176587472219019965">&amp;Nueva ventana</translation>
 <translation id="1766575458646819543">Saliste de la pantalla completa</translation>
+<translation id="1766957085594317166">Guarda las contraseñas de forma segura en tu Cuenta de Google para no tener que volver a escribirlas</translation>
 <translation id="1768278914020124551">Se produjo un error al contactar el servidor de acceso. Comprueba la conexión de tu red y el nombre del dominio; luego, vuelve a intentarlo.</translation>
 <translation id="1769104665586091481">Abrir vínculo en una ventana &amp;nueva</translation>
 <translation id="1773212559869067373">Certificado de autenticación rechazado de forma local</translation>
@@ -1447,7 +1449,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3124111068741548686">A cargo del USUARIO</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3127156390846601284">Se borrarán todos los datos que se almacenan en tu dispositivo y se restablecerán los permisos para todos los sitios que se mostraron. ¿Deseas continuar?</translation>
-<translation id="3127860049873093642">Para evitar problemas de carga y rendimiento, usa un adaptador de alimentación con conexión USB tipo C o de Dell compatible.</translation>
+<translation id="3127860049873093642">Para evitar problemas de carga y rendimiento, usa un adaptador de alimentación compatible de Dell o con conexión USB tipo C.</translation>
 <translation id="3129173833825111527">Margen izquierdo</translation>
 <translation id="3130528281680948470">El dispositivo se restablecerá y todas las cuentas de usuario y los datos locales se eliminarán. Esta acción no se puede deshacer.</translation>
 <translation id="313205617302240621">¿Olvidaste la contraseña?</translation>
@@ -1872,6 +1874,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3748026146096797577">Sin conexión</translation>
 <translation id="3752582316358263300">Aceptar</translation>
 <translation id="3752673729237782832">Mis dispositivos</translation>
+<translation id="3753033997400164841">Almacena las contraseñas una vez y úsalas en todas partes</translation>
 <translation id="3755411799582650620">El <ph name="PHONE_NAME" /> ahora también puede desbloquear este dispositivo <ph name="DEVICE_TYPE" />.</translation>
 <translation id="375636864092143889">El sitio está usando el micrófono</translation>
 <translation id="3757733214359997190">No se encontraron sitios</translation>
@@ -2164,7 +2167,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4146026355784316281">Abrir siempre con el visualizador del sistema</translation>
 <translation id="4146785383423576110">Restablecer y limpiar</translation>
 <translation id="4147911968024186208">Vuelve a intentarlo. Si vuelves a ver este error, comunícate con tu representante de asistencia.</translation>
-<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">Pantalla</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 pestaña}other{# pestañas}}</translation>
 <translation id="4154664944169082762">Huellas digitales</translation>
@@ -2205,6 +2207,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4232375817808480934">Configurar Kerberos</translation>
 <translation id="4235200303672858594">Toda la pantalla</translation>
 <translation id="4235965441080806197">Cancelar acceso</translation>
+<translation id="4242145785130247982">No se admiten Certificados de cliente múltiples.</translation>
 <translation id="4242533952199664413">Abrir la configuración</translation>
 <translation id="4242577469625748426">Se produjo un error al instalar la configuración de la política en el dispositivo: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Encontrar más apps para la pluma stylus</translation>
@@ -2663,6 +2666,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4957949153200969297">Solo habilita funciones relacionadas con la Sincronización de <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="4959262764292427323">Las contraseñas se guardan en tu cuenta de Google para que puedas usarlas en cualquier dispositivo</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> - <ph name="PROFILE_NAME" /></translation>
+<translation id="496185450405387901">Tu administrador instaló esta app.</translation>
 <translation id="4964455510556214366">Disposición</translation>
 <translation id="4964673849688379040">Verificando…</translation>
 <translation id="4965808351167763748">¿Seguro que deseas configurar este dispositivo para ejecutar Meet de Hangouts?</translation>
@@ -2920,6 +2924,7 @@ Asegúrate de que este sitio sea de confianza antes de entrar en el modo RV.</tr
 <translation id="5360150013186312835">Mostrar en la barra de herramientas</translation>
 <translation id="5362741141255528695">Seleccionar archivo de clave privada.</translation>
 <translation id="5363109466694494651">Utilizar la función Powerwash y revertir</translation>
+<translation id="5365716706805792666">Google puede determinar si tus contraseñas formaron parte de un incumplimiento de datos. Se activará esta opción cuando accedas con tu Cuenta de Google.</translation>
 <translation id="5365881113273618889">La carpeta seleccionada contiene archivos confidenciales. ¿Confirmas que deseas otorgar a "<ph name="APP_NAME" />" acceso de escritura permanente a esta carpeta?</translation>
 <translation id="5367091008316207019">Leyendo el archivo...</translation>
 <translation id="5368720394188453070">El teléfono está bloqueado. Desbloquéalo para ingresar.</translation>
@@ -3056,7 +3061,7 @@ Asegúrate de que este sitio sea de confianza antes de entrar en el modo RV.</tr
 <translation id="5543983818738093899">Comprobando estado…</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5546865291508181392">Buscar</translation>
-<translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{"<ph name="TAB_TITLE" />"}=1{"<ph name="TAB_TITLE" />" y 1 pestaña más}other{"<ph name="TAB_TITLE" />" y # pestañas más}}</translation>
+<translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{"<ph name="TAB_TITLE" />"}=1{"<ph name="TAB_TITLE" />" y 1 pestaña más}other{"<ph name="TAB_TITLE" />" y # pestañas más}}</translation>
 <translation id="5551573675707792127">Entrada de texto y teclado</translation>
 <translation id="5553089923092577885">Asignaciones de directivas para certificados</translation>
 <translation id="5554489410841842733">Este ícono será visible cuando la extensión pueda actuar en la página actual.</translation>
@@ -3516,7 +3521,6 @@ Asegúrate de que este sitio sea de confianza antes de entrar en el modo RV.</tr
 <translation id="6212039847102026977">Mostrar las propiedades de red avanzadas</translation>
 <translation id="6212168817037875041">Apagar la pantalla</translation>
 <translation id="6212752530110374741">Compartir vínculo por correo electrónico</translation>
-<translation id="6214642087594370545">Muestra una alerta cuando usas una contraseña no segura afectada por un incumplimiento de datos. Solo está disponible para usuarios que hayan accedido a la cuenta.</translation>
 <translation id="6216696360484424239">Acceder automáticamente</translation>
 <translation id="6218058416316985984">El dispositivo <ph name="DEVICE_TYPE" /> no está conectado a Internet. Conéctalo y vuelve a intentarlo.</translation>
 <translation id="6220413761270491930">Error al cargar la extensión</translation>
@@ -3873,6 +3877,7 @@ Asegúrate de que este sitio sea de confianza antes de entrar en el modo RV.</tr
 <translation id="6769712124046837540">Agregando impresora…</translation>
 <translation id="6770664076092644100">Verificar mediante NFC</translation>
 <translation id="6771503742377376720">Es una Entidad de certificación</translation>
+<translation id="6775163072363532304">Aquí aparecerán los dispositivos disponibles.</translation>
 <translation id="6777817260680419853">Se bloqueó el redireccionamiento</translation>
 <translation id="6778737459546443941">Uno de tus padres aún no lo aprobó</translation>
 <translation id="677965093459947883">Muy pequeño</translation>
@@ -4333,6 +4338,7 @@ Asegúrate de que este sitio sea de confianza antes de entrar en el modo RV.</tr
 <translation id="7441830548568730290">Otros usuarios</translation>
 <translation id="7442465037756169001">El hardware de Hangouts Meet ya está listo para su configuración.</translation>
 <translation id="744341768939279100">Crear un perfil nuevo</translation>
+<translation id="7443806024147773267">Cuando accedas a tu Cuenta de Google, podrás consultar tus contraseñas en cualquier momento</translation>
 <translation id="7444046173054089907">Este sitio está bloqueado</translation>
 <translation id="7444983668544353857">Inhabilitar <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">Instala apps automáticamente</translation>
@@ -4746,6 +4752,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8014154204619229810">El actualizador se está ejecutando en este momento. Actualiza dentro de un minuto para verificarlo de nuevo.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> no puede volver a la versión instalada previamente. Vuelve a intentarlo para utilizar la función Powerwash en el dispositivo.</translation>
 <translation id="8014210335923519270">Para mejorar <ph name="IDS_SHORT_PRODUCT_NAME" /> y su seguridad, envía a Google información sobre el sistema y sobre el modo en que lo usas</translation>
+<translation id="8015780634880457457">Google puede determinar si tus contraseñas formaron parte de un incumplimiento de datos</translation>
 <translation id="8016266267177410919">Almacenamiento temporal</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Se editó el acceso directo</translation>
@@ -4864,6 +4871,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8188389033983459049">Revisa la configuración del dispositivo y activa la conexión Bluetooth para continuar</translation>
 <translation id="8190193592390505034">Estableciendo conexión con <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">Administrar tus aplicaciones, extensiones y temas</translation>
+<translation id="819464600477418284">No se puede desinstalar esta app porque forma parte del Sistema Operativo Chrome.</translation>
 <translation id="8195027750202970175">Tamaño en disco</translation>
 <translation id="8198323535106903877">Instalaremos las <ph name="NUMBER_OF_APPS" /> apps por ti</translation>
 <translation id="8199300056570174101">Propiedades de la red (servicio) y del dispositivo</translation>
@@ -4924,6 +4932,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
     <ph name="BEGIN_PARAGRAPH2" />Si desactivas esta función, no se verá afectada la capacidad del dispositivo de enviar la información que necesita para recibir servicios esenciales, como actualizaciones del sistema y seguridad.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />El propietario puede controlar esta función desde Configuración &gt; Avanzada &gt; Envía a Google datos de uso y diagnóstico automáticamente.<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />Si activaste la Actividad web y de aplicaciones adicional para tu hijo, es posible que se guarden estos datos en tu Cuenta de Google. Obtén más información acerca de estas opciones de configuración y cómo ajustarlas en families.google.com.<ph name="END_PARAGRAPH4" /></translation>
+<translation id="826905130698769948">El Certificado de cliente no es válido</translation>
 <translation id="8270242299912238708">Documentos PDF</translation>
 <translation id="827097179112817503">Mostrar el botón de la Página principal</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 favorito borrado}other{# favoritos borrados}}</translation>
@@ -5337,6 +5346,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8874184842967597500">No conectado</translation>
 <translation id="8876307312329369159">No se puede cambiar esta configuración en la sesión de demostración.</translation>
 <translation id="8877448029301136595">[directorio principal]</translation>
+<translation id="8879220587046205278">Es posible que las apps de Google Play necesiten acceder a todo el sistema de archivos para leer y escribir archivos en dispositivos externos de almacenamiento. Cualquier persona que use la unidad externa podrá ver los archivos y carpetas creados en este dispositivo.</translation>
 <translation id="8879284080359814990">Mo&amp;strar como pestaña</translation>
 <translation id="8879921471468674457">Recordar la información de acceso</translation>
 <translation id="8881020143150461183">Vuelve a intentarlo. Si necesitas asistencia técnica, comunícate con <ph name="CARRIER_NAME" />.</translation>
@@ -5406,7 +5416,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8973596347849323817">Puedes personalizar este dispositivo para que se adapte a tus necesidades. Estas funciones de accesibilidad pueden cambiarse más tarde en Configuración.</translation>
 <translation id="897414447285476047">El archivo de destino está incompleto debido a un problema de conexión.</translation>
 <translation id="897525204902889653">Servicio de cuarentena</translation>
-<translation id="8975562453115131273">{NUM_OTHER_TABS,plural, =0{"<ph name="TAB_TITLE" />"}=1{"<ph name="TAB_TITLE" />" y 1 pestaña más}other{"<ph name="TAB_TITLE" />" y # pestañas más}}</translation>
+<translation id="8975562453115131273">{NUM_OTHER_TABS,plural, =0{"<ph name="TAB_TITLE" />"}=1{"<ph name="TAB_TITLE" />" y 1 pestaña más}other{"<ph name="TAB_TITLE" />" y # pestañas más}}</translation>
 <translation id="8976520271376534479">Flash está bloqueado en esta página.</translation>
 <translation id="8977811652087512276">Contraseña incorrecta o archivo dañado</translation>
 <translation id="8978154919215542464">Activada: sincronizar todo</translation>

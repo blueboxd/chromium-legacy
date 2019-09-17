@@ -481,8 +481,9 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiAuthRequiredTest,
       << message_;
 }
 
+// TODO(https://crbug.com/1003598): Flake on multiple platforms.
 IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiAuthRequiredTest,
-                       WebRequestAuthRequiredAsync) {
+                       DISABLED_WebRequestAuthRequiredAsync) {
   CancelLoginDialog login_dialog_helper;
 
   ASSERT_TRUE(StartEmbeddedTestServer());

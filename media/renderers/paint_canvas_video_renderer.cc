@@ -648,7 +648,23 @@ void PaintCanvasVideoRenderer::Paint(scoped_refptr<VideoFrame> video_frame,
                 .set_image(std::move(non_texture_image), image.content_id())
                 .TakePaintImage();
   }
-  canvas->drawImage(image, 0, 0, &video_flags);
+
+  SkImageInfo info;
+  size_t row_bytes;
+  SkIPoint origin;
+  void* pixels = nullptr;
+  if (!need_transform && video_frame->IsMappable() &&
+      flags.getAlpha() == SK_AlphaOPAQUE &&
+      flags.getBlendMode() == SkBlendMode::kSrc &&
+      flags.getFilterQuality() == kLow_SkFilterQuality &&
+      (pixels = canvas->accessTopLayerPixels(&info, &row_bytes, &origin)) &&
+      info.colorType() == kBGRA_8888_SkColorType) {
+    const size_t offset = info.computeOffset(origin.x(), origin.y(), row_bytes);
+    void* const pixels_offset = reinterpret_cast<char*>(pixels) + offset;
+    ConvertVideoFrameToRGBPixels(video_frame.get(), pixels_offset, row_bytes);
+  } else {
+    canvas->drawImage(image, 0, 0, &video_flags);
+  }
 
   if (need_transform)
     canvas->restore();

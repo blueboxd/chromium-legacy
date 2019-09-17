@@ -66,6 +66,7 @@
 <translation id="1407135791313364759">Tout ouvrir</translation>
 <translation id="1409426117486808224">Vue simplifiée pour les onglets ouverts</translation>
 <translation id="1409879593029778104">Le téléchargement du fichier "<ph name="FILE_NAME" />" a été bloqué, car le fichier existe déjà.</translation>
+<translation id="1413136574162415971">Google peut vérifier si vos mots de passe ont été piratés suite à une violation de données. Cette option sera activée si vous vous connectez avec votre compte Google et si vous activez la synchronisation.</translation>
 <translation id="1414981605391750300">Mise en relation avec Google. Cette opération peut prendre une minute…</translation>
 <translation id="1416550906796893042">Version de l'application</translation>
 <translation id="1430915738399379752">Imprimer</translation>
@@ -160,6 +161,7 @@
 <translation id="2091887806945687916">Son</translation>
 <translation id="2096012225669085171">Synchroniser et personnaliser les données sur tous les appareils</translation>
 <translation id="2100273922101894616">Connexion automatique</translation>
+<translation id="2100314319871056947">Essayez de partager le texte en plusieurs fois</translation>
 <translation id="2107397443965016585">Demander avant d'autoriser les sites à lire les contenus protégés (recommandé)</translation>
 <translation id="2111511281910874386">Accéder à la page</translation>
 <translation id="2122601567107267586">Impossible d'ouvrir l'application</translation>
@@ -253,6 +255,7 @@
 <translation id="2836148919159985482">Appuyez sur le bouton Retour pour quitter le mode plein écran.</translation>
 <translation id="2842985007712546952">Dossier parent</translation>
 <translation id="2858138569776157458">Sites populaires</translation>
+<translation id="2860954141821109167">Assurez-vous qu'une application Téléphone est activée sur cet appareil</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2874939134665556319">Piste précédente</translation>
 <translation id="2876369937070532032">Envoyer à Google les URL des pages que vous consultez présentant un risque pour votre sécurité</translation>
@@ -277,6 +280,7 @@
 <translation id="2996291259634659425">Créer une phrase secrète</translation>
 <translation id="2996809686854298943">Veuillez saisir une URL.</translation>
 <translation id="300526633675317032">Cette action aura pour effet de libérer l'espace de stockage utilisé pour les données de site (<ph name="SIZE_IN_KB" />).</translation>
+<translation id="3016635187733453316">Assurez-vous que cet appareil est bien connecté à Internet</translation>
 <translation id="3029613699374795922"><ph name="KBS" /> Ko téléchargé(s)</translation>
 <translation id="3029704984691124060">Les phrases secrètes ne correspondent pas.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obtenir de l'aide<ph name="END_LINK" /></translation>
@@ -841,6 +845,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="723171743924126238">Sélectionner des images</translation>
 <translation id="7233236755231902816">Pour afficher le Web dans votre langue, téléchargez la dernière version de Chrome</translation>
 <translation id="7243308994586599757">Options disponibles au bas de l'écran</translation>
+<translation id="7248069434667874558">Assurez-vous que la synchronisation est activée sur votre <ph name="TARGET_DEVICE_NAME" /> dans Chrome</translation>
 <translation id="7250468141469952378">Nombre d'éléments sélectionnés : <ph name="ITEM_COUNT" /></translation>
 <translation id="7274013316676448362">Site bloqué</translation>
 <translation id="7290209999329137901">Option de changement de nom indisponible</translation>
@@ -880,7 +885,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="7493994139787901920"><ph name="VERSION" /> (Dernière mise à jour <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">de données économisées</translation>
 <translation id="7498271377022651285">Veuillez patienter…</translation>
-<translation id="7510943789645525906">Recevez une alerte si l'un de vos mots de passe est compromis suite à une violation de données</translation>
+<translation id="7510943789645525906">Recevoir une alerte si l'un de vos mots de passe est compromis suite à une violation de données</translation>
 <translation id="7514365320538308">Télécharger</translation>
 <translation id="751961395872307827">Impossible de se connecter au site</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -955,6 +960,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="8007176423574883786">Désactivée pour cet appareil</translation>
 <translation id="8013372441983637696">Supprimer également vos données Chrome sur cet appareil</translation>
 <translation id="8015452622527143194">Rétablir taille par défaut des éléments de la page</translation>
+<translation id="8015780634880457457">Google peut vérifier si vos mots de passe ont été piratés suite à une violation de données</translation>
 <translation id="802154636333426148">Échec du téléchargement</translation>
 <translation id="8026334261755873520">Effacer les données de navigation</translation>
 <translation id="8035133914807600019">Nouveau dossier…</translation>
@@ -1017,6 +1023,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="8445448999790540984">Impossible d'exporter les mots de passe</translation>
 <translation id="8447861592752582886">Révoquer l'autorisation d'accès à l'appareil</translation>
 <translation id="8461694314515752532">Chiffrer les données synchronisées avec votre propre phrase secrète de synchronisation</translation>
+<translation id="8466613982764129868">Assurez-vous que <ph name="TARGET_DEVICE_NAME" /> est connecté à Internet</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Disponible hors connexion</translation>
 <translation id="8489271220582375723">Ouvrir la page "Historique"</translation>
@@ -1107,6 +1114,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="9188680907066685419">Se déconnecter d'un compte géré</translation>
 <translation id="9204836675896933765">1 fichier restant</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9209888181064652401">Impossible de passer des appels</translation>
 <translation id="9219103736887031265">Images</translation>
 <translation id="926205370408745186">Supprimer votre activité Chrome de Bien-être numérique</translation>
 <translation id="932327136139879170">Accueil</translation>

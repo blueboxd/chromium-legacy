@@ -30,8 +30,8 @@ GamepadSource NintendoDataFetcher::source() {
 void NintendoDataFetcher::OnAddedToProvider() {
   // Open a connection to the HID service. On a successful connection,
   // OnGetDevices will be called with a list of connected HID devices.
-  connector()->BindInterface(mojom::kServiceName,
-                             mojo::MakeRequest(&hid_manager_));
+  connector()->Connect(mojom::kServiceName,
+                       hid_manager_.BindNewPipeAndPassReceiver());
   mojom::HidManagerClientAssociatedPtrInfo client;
   binding_.Bind(mojo::MakeRequest(&client));
   hid_manager_->GetDevicesAndSetClient(

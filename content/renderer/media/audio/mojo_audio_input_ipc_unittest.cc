@@ -19,6 +19,8 @@
 #include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -80,7 +82,8 @@ class FakeStreamCreator {
       : stream_(stream), binding_(stream_), initially_muted_(initially_muted) {}
 
   void Create(const media::AudioSourceParameters& source_params,
-              mojom::RendererAudioInputStreamFactoryClientPtr factory_client,
+              mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+                  factory_client,
               mojo::PendingReceiver<audio::mojom::AudioProcessorControls>
                   controls_receiver,
               const media::AudioParameters& params,
@@ -89,7 +92,8 @@ class FakeStreamCreator {
     EXPECT_FALSE(binding_.is_bound());
     EXPECT_NE(stream_, nullptr);
     EXPECT_EQ(source_params.session_id, SourceParams().session_id);
-    std::swap(factory_client_, factory_client);
+    factory_client_.reset();
+    factory_client_.Bind(std::move(factory_client));
     media::mojom::AudioInputStreamPtr stream_ptr;
     binding_.Bind(mojo::MakeRequest(&stream_ptr));
     base::CancelableSyncSocket foreign_socket;
@@ -122,7 +126,7 @@ class FakeStreamCreator {
  private:
   media::mojom::AudioInputStream* stream_;
   media::mojom::AudioInputStreamClientPtr stream_client_;
-  mojom::RendererAudioInputStreamFactoryClientPtr factory_client_;
+  mojo::Remote<mojom::RendererAudioInputStreamFactoryClient> factory_client_;
   mojo::Binding<media::mojom::AudioInputStream> binding_;
   bool initially_muted_;
   base::CancelableSyncSocket socket_;
@@ -162,17 +166,18 @@ TEST(MojoAudioInputIPC, FactoryDisconnected_SendsError) {
       base::test::SingleThreadTaskEnvironment::MainThreadType::IO);
   StrictMock<MockDelegate> delegate;
 
-  const std::unique_ptr<media::AudioInputIPC> ipc =
-      std::make_unique<MojoAudioInputIPC>(
-          SourceParams(),
-          base::BindRepeating(
-              [](const media::AudioSourceParameters&,
-                 mojom::RendererAudioInputStreamFactoryClientPtr factory_client,
-                 mojo::PendingReceiver<audio::mojom::AudioProcessorControls>
-                     controls_receiver,
-                 const media::AudioParameters& params,
-                 bool automatic_gain_control, uint32_t total_segments) {}),
-          base::BindRepeating(&AssociateOutputForAec));
+  const std::unique_ptr<media::AudioInputIPC> ipc = std::make_unique<
+      MojoAudioInputIPC>(
+      SourceParams(),
+      base::BindRepeating(
+          [](const media::AudioSourceParameters&,
+             mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+                 factory_client,
+             mojo::PendingReceiver<audio::mojom::AudioProcessorControls>
+                 controls_receiver,
+             const media::AudioParameters& params, bool automatic_gain_control,
+             uint32_t total_segments) {}),
+      base::BindRepeating(&AssociateOutputForAec));
 
   EXPECT_CALL(delegate, OnError());
 

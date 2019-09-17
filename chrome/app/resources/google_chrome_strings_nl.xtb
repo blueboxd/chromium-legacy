@@ -54,6 +54,8 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="2094919256425865063">Chrome toch sluiten?</translation>
 <translation id="2120620239521071941">Hiermee worden <ph name="ITEMS_COUNT" /> items verwijderd van dit apparaat. Als je je gegevens later wilt terughalen, log je in bij Chrome als <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Help Chrome beter te maken door de <ph name="BEGIN_LINK" />huidige instellingen<ph name="END_LINK" /> te melden</translation>
+<translation id="2128103434102193461">Ga naar <ph name="LINK_BEGIN" />Over Chrome OS<ph name="LINK_END" /> voor meer informatie over Chrome OS</translation>
+<translation id="2151406531797534936">Start Chrome nu opnieuw op</translation>
 <translation id="216054706567564023">Installeer Chrome op je telefoon. We sturen een sms naar het hersteltelefoonnummer voor je account.</translation>
 <translation id="2246246234298806438">Google Chrome kan het afdrukvoorbeeld niet weergeven wanneer de ingebouwde pdf-viewer ontbreekt.</translation>
 <translation id="2252923619938421629">Help Google Chrome beter te maken door de huidige instellingen te melden</translation>
@@ -163,7 +165,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="5543953544073077331">Er zijn andere exemplaren van Chrome actief. Sluit ze om een update uit te voeren.</translation>
 <translation id="556024056938947818">Google Chrome probeert wachtwoorden weer te geven.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5657226924540934362">Als je een instelling niet ziet op deze pagina, kijk je in de <ph name="LINK_BEGIN" />Chrome OS-instellingen<ph name="LINK_END" /></translation>
+<translation id="5657226924540934362">Kijk je in de <ph name="LINK_BEGIN" />Chrome OS-instellingen<ph name="LINK_END" />als een instelling ontbreekt op deze pagina.</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> kan gevaarlijk zijn en is daarom door Chrome geblokkeerd.</translation>
 <translation id="5686916850681061684">Pas Google Chrome aan en beheer de instellingen. Je aandacht is vereist. Klik voor meer informatie.</translation>
 <translation id="5690427481109656848">Google LLC</translation>
@@ -223,6 +225,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="7589360514048265910">Deze computer ontvangt geen Google Chrome-updates meer omdat Mac OS X 10.9 niet meer wordt ondersteund.</translation>
 <translation id="7592736734348559088">Google Chrome kan je gegevens niet synchroniseren omdat de inloggegevens voor je account zijn verouderd.</translation>
 <translation id="7626032353295482388">Welkom bij Chrome</translation>
+<translation id="7629695634924605473">Chrome laat het je weten als je wachtwoorden mogelijk niet veilig meer zijn</translation>
 <translation id="7641148173327520642">Je systeembeheerder heeft Google Chrome geconfigureerd om <ph name="ALTERNATIVE_BROWSER_NAME" /> te openen voor toegang tot <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Chrome Enterprise-logo</translation>
 <translation id="7747138024166251722">Het installatieprogramma kan geen tijdelijke directory maken. Controleer of je nog schijfruimte hebt en of je toestemming hebt om software te installeren.</translation>

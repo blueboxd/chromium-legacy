@@ -36,9 +36,9 @@ class Installer final : public update_client::CrxInstaller {
     DISALLOW_COPY_AND_ASSIGN(InstallInfo);
   };
 
-  explicit Installer(const std::vector<uint8_t>& pk_hash);
+  explicit Installer(const std::string& app_id);
 
-  const std::string crx_id() const { return crx_id_; }
+  const std::string app_id() const { return app_id_; }
 
   // Finds the highest version install of the app, and updates the install
   // info for this installer instance.
@@ -62,8 +62,7 @@ class Installer final : public update_client::CrxInstaller {
 
   Result InstallHelper(const base::FilePath& unpack_path);
 
-  const std::vector<uint8_t> pk_hash_;
-  const std::string crx_id_;
+  const std::string app_id_;
   std::unique_ptr<InstallInfo> install_info_;
 
   DISALLOW_COPY_AND_ASSIGN(Installer);

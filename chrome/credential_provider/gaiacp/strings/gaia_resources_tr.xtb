@@ -4,13 +4,20 @@
 <translation id="1337821341856692531">Geçerli Windows şifrenizi girmeden devam etmek, geri alınamaz bilgi kaybına neden olabilir.</translation>
 <translation id="1383286653814676580">Google Kimlik Bilgisi Sağlayıcısı oturum açma sayfasını çalıştırmak için kullanılır.</translation>
 <translation id="1894475569413661128">İş hesabınızı kullanarak oturum açın.</translation>
+<translation id="2329184763010379754">Yalnızca bu bilgisayarı kilitleyen kullanıcının oturum açmasına izin verilir.</translation>
+<translation id="2398071111662077301">Chrome yüklemesiyle ilgili bir sorun nedeniyle Google ile Oturum Açma ekranı yüklenemiyor. Yöneticinizle iletişime geçin.</translation>
 <translation id="2469311484561825731">İş hesabınızda oturum açılamadı. Bilgisayarın internete bağlı olduğundan emin olup tekrar deneyin.</translation>
+<translation id="2679096858700291438">Yanlış bir Windows şifresi girdiniz. Lütfen tekrar deneyin.</translation>
+<translation id="2831078752570172210">Hesabınız kilitlendi. Lütfen sistem yöneticinizle iletişime geçin.</translation>
+<translation id="2844349213149998955">Bu cihazda kişisel hesapla oturum açılmasına izin verilmiyor. Lütfen bir iş hesabıyla giriş yapın.</translation>
 <translation id="3306357053520292004">Bu bilgisayardaki bir kullanıcı zaten bu hesap kullanılarak eklenmiş. Lütfen farklı bir hesapla oturum açın.</translation>
 <translation id="3968372833844047539">Sadece Gsuite Enterprise kullanıcılarının giriş yapmasına izin verilir.</translation>
 <translation id="4057329986137569701">Dahili bir hata oluştu.</translation>
 <translation id="4267670563222825190">Hesabınız için hiçbir alan kullanıcısı bulunamadı. Lütfen yöneticinizle görüşün.</translation>
 <translation id="4300229033992784001">Hesap şifreniz değişti. Windows hesabınızı iş hesabınızla senkronize etmek için lütfen mevcut Windows şifrenizi girin.</translation>
 <translation id="4706454071748629324">Yeni kullanıcı eklenemedi. Bu bilgisayar yalnızca bir kullanıcının, iş hesabı kullanılarak oluşturulmasına izin verir.</translation>
+<translation id="6033715878377252112">Windows için Google Kimlik Bilgisi Sağlayıcı yardımcısı</translation>
+<translation id="6149399665202317746">Windows için Google Kimlik Bilgisi Sağlayıcı</translation>
 <translation id="6312494990035843744">Bu alanda iş hesabı ile oturum açmaya izin verilmiyor. Farklı bir hesap deneyin.</translation>
 <translation id="6463752215771576050">Bu bilgisayar kurumsal yönetim için kaydedilemedi.  Lütfen farklı bir iş Hesabı ile oturum açın.</translation>
 <translation id="6657585470893396449">Şifre</translation>
@@ -22,5 +29,7 @@
 <translation id="8639729688781680518">Windows Şifresini Unuttum</translation>
 <translation id="866458870819756755">Kullanıcı oluşturulamadı.</translation>
 <translation id="8875753657315897487">İş hesabınızı kullanarak oturum açın.</translation>
+<translation id="8973975512230260387">Oturumunuzun süresi doldu. Google iş hesabınızı kullanarak oturum açın.</translation>
+<translation id="9055998212250844221">Windows için Google Kimlik Bilgisi Sağlayıcı tarafından oluşturulan kullanıcı hesabı</translation>
 <translation id="9135619837062629367">Bu hesapla oturum açmaya izin verilmiyor. Farklı bir hesapla oturum açmayı deneyin.</translation>
 </translationbundle>

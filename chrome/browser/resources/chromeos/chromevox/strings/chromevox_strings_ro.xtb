@@ -233,6 +233,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="27527859628328957">Salt la elementul focalizabil următor</translation>
 <translation id="2770781857296573485">Trece la explorarea grupului</translation>
 <translation id="2777845298774924149">S-a ieșit</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{+#}few{+#}other{+#}}</translation>
 <translation id="2784959586797362050">Ca de obicei, ne poți trimite feedback direct apăsând pe tasta de căutare + a, apoi pe i. Ne-ar face plăcere să ne contactezi.</translation>
 <translation id="2800204403141299078">Nu mai există elemente diferite.</translation>
 <translation id="2800780099804980316">Nu există un titlu de nivel 1 anterior.</translation>
@@ -715,6 +716,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="5956928062748260866">Dialog</translation>
 <translation id="5963413905009737549">Secțiune</translation>
 <translation id="5968607524793740041">Afișează meniul contextual</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{cu # element}few{cu # elemente}other{cu # de elemente}}</translation>
 <translation id="5981446804259161541">Cyan deschis</translation>
 <translation id="5983179082906765664">Creșteți granularitatea de navigare</translation>
 <translation id="5992285135956208197">Document grafic</translation>

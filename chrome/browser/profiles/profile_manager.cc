@@ -567,7 +567,8 @@ void ProfileManager::CreateProfileAsync(const base::FilePath& profile_path,
     if (profiles::IsDefaultAvatarIconUrl(icon_url, &icon_index)) {
       // add profile to cache with user selected name and avatar
       GetProfileAttributesStorage().AddProfile(
-          profile_path, name, std::string(), base::string16(), icon_index,
+          profile_path, name, std::string(), base::string16(),
+          /*is_consented_primary_account=*/false, icon_index,
           /*supervised_user_id=*/std::string(), EmptyAccountId());
     }
   }
@@ -1577,7 +1578,10 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
 
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
-  CoreAccountInfo account_info = identity_manager->GetPrimaryAccountInfo();
+  bool is_consented_primary_account = identity_manager->HasPrimaryAccount();
+  CoreAccountInfo account_info =
+      identity_manager->GetUnconsentedPrimaryAccountInfo();
+
   base::string16 username = base::UTF8ToUTF16(account_info.email);
 
   ProfileAttributesStorage& storage = GetProfileAttributesStorage();
@@ -1592,7 +1596,8 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
       bool was_authenticated_status = entry->IsAuthenticated();
 #endif
       // The ProfileAttributesStorage's info must match the Identity Manager.
-      entry->SetAuthInfo(account_info.gaia, username);
+      entry->SetAuthInfo(account_info.gaia, username,
+                         is_consented_primary_account);
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
       // Sign out if force-sign-in policy is enabled and profile is not signed
       // in.
@@ -1640,7 +1645,8 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
 #endif
 
   storage.AddProfile(profile->GetPath(), profile_name, account_info.gaia,
-                     username, icon_index, supervised_user_id, account_id);
+                     username, is_consented_primary_account, icon_index,
+                     supervised_user_id, account_id);
 
   if (profile->GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles)) {
     ProfileAttributesEntry* entry;

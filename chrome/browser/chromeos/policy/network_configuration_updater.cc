@@ -290,7 +290,7 @@ void NetworkConfigurationUpdater::SetRecommended(
   DCHECK(onc_value->is_dict());
   base::Value recommended_list(base::Value::Type::LIST);
   for (const auto& recommended_field_name : recommended_field_names) {
-    recommended_list.GetList().push_back(base::Value(recommended_field_name));
+    recommended_list.Append(base::Value(recommended_field_name));
   }
   onc_value->SetKey(::onc::kRecommended, std::move(recommended_list));
 }

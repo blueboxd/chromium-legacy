@@ -102,13 +102,10 @@ const struct {
   unsigned bit;
   const char* const name;
 } kBitsToOs[] = {
-    {kOsMac, "Mac"},
-    {kOsWin, "Windows"},
-    {kOsLinux, "Linux"},
-    {kOsCrOS, "Chrome OS"},
-    {kOsAndroid, "Android"},
-    {kOsCrOSOwnerOnly, "Chrome OS (owner only)"},
-    {kOsIos, "iOS"},
+    {kOsMac, "Mac"},         {kOsWin, "Windows"},
+    {kOsLinux, "Linux"},     {kOsCrOS, "Chrome OS"},
+    {kOsAndroid, "Android"}, {kOsCrOSOwnerOnly, "Chrome OS (owner only)"},
+    {kOsIos, "iOS"},         {kOsFuchsia, "Fuchsia"},
 };
 
 // Adds a |StringValue| to |list| for each platform where |bitmask| indicates
@@ -694,6 +691,8 @@ int FlagsState::GetCurrentPlatform() {
   return kOsLinux;
 #elif defined(OS_ANDROID)
   return kOsAndroid;
+#elif defined(OS_FUCHSIA)
+  return kOsFuchsia;
 #else
 #error Unknown platform
 #endif

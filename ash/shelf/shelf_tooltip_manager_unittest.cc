@@ -31,9 +31,10 @@ class ShelfTooltipManagerTest : public AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
     shelf_view_ = GetPrimaryShelf()->GetShelfViewForTesting();
-    ShelfViewTestAPI test_api(shelf_view_);
-    test_api.AddItem(TYPE_PINNED_APP);
-    tooltip_manager_ = test_api.tooltip_manager();
+    test_api_ = std::make_unique<ShelfViewTestAPI>(shelf_view_);
+    test_api_->AddItem(TYPE_PINNED_APP);
+    test_api_->RunMessageLoopUntilAnimationsDone();
+    tooltip_manager_ = test_api_->tooltip_manager();
     tooltip_manager_->set_timer_delay_for_test(0);
   }
 
@@ -49,6 +50,7 @@ class ShelfTooltipManagerTest : public AshTestBase {
  protected:
   ShelfView* shelf_view_;
   ShelfTooltipManager* tooltip_manager_;
+  std::unique_ptr<ShelfViewTestAPI> test_api_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShelfTooltipManagerTest);
@@ -89,6 +91,8 @@ TEST_F(ShelfTooltipManagerTest, DoNotShowForInvalidView) {
   item.id = ShelfID("foo");
   item.type = TYPE_PINNED_APP;
   const int index = model->Add(item);
+  ShelfViewTestAPI(GetPrimaryShelf()->GetShelfViewForTesting())
+      .RunMessageLoopUntilAnimationsDone();
   // Note: There's no easy way to correlate shelf a model index/id to its view.
   tooltip_manager_->ShowTooltipWithDelay(shelf_view_->children().back());
   EXPECT_TRUE(IsTimerRunning());

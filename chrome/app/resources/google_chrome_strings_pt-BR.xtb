@@ -50,6 +50,9 @@
 <translation id="2094919256425865063">Sair do Chrome mesmo assim?</translation>
 <translation id="2120620239521071941">Essa ação excluirá <ph name="ITEMS_COUNT" /> itens desse dispositivo. Para recuperar seus dados mais tarde, faça login no Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Ajude a melhorar o Chrome informando as <ph name="BEGIN_LINK" />configurações atuais<ph name="END_LINK" /></translation>
+<translation id="2128103434102193461">Para detalhes sobre Chrome OS, veja <ph name="LINK_BEGIN" />
+Sobre Chrome OS<ph name="LINK_END" /></translation>
+<translation id="2151406531797534936">Reinicie o Chrome agora</translation>
 <translation id="216054706567564023">Instale o Chrome no seu smartphone. Enviaremos um SMS para o número de recuperação da sua conta.</translation>
 <translation id="2246246234298806438">O Google Chrome não consegue mostrar a visualização de impressão quando não há visualizador de PDF integrado.</translation>
 <translation id="2252923619938421629">Ajude a melhorar o Google Chrome informando as configurações atuais</translation>
@@ -217,6 +220,7 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="7589360514048265910">Este computador não receberá mais atualizações do Google Chrome, porque o Mac OS X 10.9 não é mais compatível.</translation>
 <translation id="7592736734348559088">O Google Chrome não pôde sincronizar seus dados, pois os detalhes de login da sua conta estão desatualizados.</translation>
 <translation id="7626032353295482388">Bem-vindo ao Google Chrome</translation>
+<translation id="7629695634924605473">O Chrome avisa se suas senhas forem comprometidas</translation>
 <translation id="7641148173327520642">O administrador do seu sistema configurou o Google Chrome para abrir o <ph name="ALTERNATIVE_BROWSER_NAME" /> ao acessar <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Logotipo do Chrome Enterprise</translation>
 <translation id="7747138024166251722">O instalador não conseguiu criar um diretório temporário. Verifique se há espaço livre em disco e se há permissão para a instalação de software.</translation>

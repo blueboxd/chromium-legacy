@@ -24,6 +24,8 @@ class FieldTrial;
 class FieldTrialList;
 
 // Specifies whether a given feature is enabled or disabled by default.
+// NOTE: The actual runtime state may be different, due to a field trial or a
+// command line switch.
 enum FeatureState {
   FEATURE_DISABLED_BY_DEFAULT,
   FEATURE_ENABLED_BY_DEFAULT,
@@ -42,6 +44,8 @@ struct BASE_EXPORT Feature {
   const char* const name;
 
   // The default state (i.e. enabled or disabled) for this feature.
+  // NOTE: The actual runtime state may be different, due to a field trial or a
+  // command line switch.
   const FeatureState default_state;
 };
 

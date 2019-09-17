@@ -71,6 +71,7 @@
 <translation id="1292701964462482250">«Det er programvare på datamaskinen din som hindrer Chrome i å koble trygt til Internett» (bare på Windows-datamaskiner)</translation>
 <translation id="1294154142200295408">Variasjoner i kommandolinjen</translation>
 <translation id="129553762522093515">Nylig lukket</translation>
+<translation id="1298536327547837046">Gjennomsøking etter skadelig programvare</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Prøv å slette informasjonskapslene dine<ph name="END_LINK" /></translation>
 <translation id="1307966114820526988">Avviklede funksjoner</translation>
 <translation id="1320233736580025032">Prc1 (konvolutt)</translation>
@@ -167,6 +168,7 @@
 <translation id="1734878702283171397">Prøv å kontakte systemadministratoren.</translation>
 <translation id="1740951997222943430">Angi en gyldig utløpsmåned</translation>
 <translation id="1743520634839655729">For å betale raskere neste gang, lagre kortet og faktureringsadressen i Google-kontoen din og på denne enheten.</translation>
+<translation id="1743570585616704562">Ikke gjenkjent</translation>
 <translation id="1745880797583122200">Nettleseren din administreres</translation>
 <translation id="17513872634828108">Åpne faner</translation>
 <translation id="1753706481035618306">Sidenummer</translation>
@@ -428,6 +430,7 @@ brukere av denne nettleseren.</translation>
 <translation id="320323717674993345">Avbryt betalingen</translation>
 <translation id="3207960819495026254">Bokmerket</translation>
 <translation id="3209034400446768650">Siden kan belaste deg for penger</translation>
+<translation id="3215092763954878852">Kunne ikke bruke WebAuthn</translation>
 <translation id="3225919329040284222">Tjeneren oppga et sertifikat som ikke samsvarte med innebygde forventninger. Disse forventningene benyttes for visse nettsteder med høy sikkerhet, og brukes for å beskytte deg.</translation>
 <translation id="3226128629678568754">Trykk på knappen for å laste inn på nytt, for å sende inn dataene som trengs for å laste inn siden på nytt.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
@@ -564,6 +567,7 @@ brukere av denne nettleseren.</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{Ingen}=1{Fra 1 nettsted }other{Fra # nettsteder }}</translation>
 <translation id="397105322502079400">Beregner …</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> er blokkert</translation>
+<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> har slått på Chrome Enterprise trusselbeskyttelse i nettleseren din. Chrome Enterprise trusselbeskyttelse har tilgang til noen av dataene dine.</translation>
 <translation id="3987940399970879459">Under 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 Like ved-nettside}other{# Like ved-nettsider}}</translation>
 <translation id="4030383055268325496">&amp;Angre tilleggingen</translation>
@@ -632,6 +636,7 @@ brukere av denne nettleseren.</translation>
 <translation id="4277028893293644418">Tilbakestill passordet</translation>
 <translation id="4279811152705618813"><ph name="DEVICE_TYPE" /> administreres av <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Dette kortet er lagret i Google-kontoen din}other{Disse kortene er lagret i Google-kontoen din}}</translation>
+<translation id="428847186335018806">Gjennomsøk filer du laster ned eller opp i Chrome.</translation>
 <translation id="42981349822642051">Vis</translation>
 <translation id="4302965934281694568">Chou3 (konvolutt)</translation>
 <translation id="4305817255990598646">Bytt</translation>
@@ -670,6 +675,7 @@ brukere av denne nettleseren.</translation>
 <translation id="4506176782989081258">Valideringsfeil: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Kontakt systemadministratoren</translation>
 <translation id="450710068430902550">Deling med administratoren</translation>
+<translation id="4508814173490746936">Kunne ikke bruke Touch ID</translation>
 <translation id="4510487217173779431">Chou4 (konvolutt)</translation>
 <translation id="4515275063822566619">Kortene og adressene er fra Chrome og Google-kontoen din (<ph name="ACCOUNT_EMAIL" />). Du kan administrere dem i <ph name="BEGIN_LINK" />Innstillinger<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (konvolutt)</translation>
@@ -765,6 +771,7 @@ brukere av denne nettleseren.</translation>
 <translation id="5045550434625856497">Feil passord</translation>
 <translation id="5056549851600133418">Artikler for deg</translation>
 <translation id="5068524481479508725">A10</translation>
+<translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 i bruk)}other{(# i bruk)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Sjekk proxy-tjeneradressen<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">Sertifikatet til tjeneren er ikke gyldig for øyeblikket.</translation>
 <translation id="5087580092889165836">Legg til et kort</translation>
@@ -994,6 +1001,7 @@ brukere av denne nettleseren.</translation>
 <translation id="6302269476990306341">Stopper Google-assistenten i Chrome</translation>
 <translation id="6305205051461490394"><ph name="URL" /> er ikke tilgjengelig.</translation>
 <translation id="6321917430147971392">Kontrollér DNS-innstillingene dine</translation>
+<translation id="6322182122604171028">Kunne ikke bruke Windows Hello</translation>
 <translation id="6328639280570009161">Prøv å slå av nettverksforutsigelse</translation>
 <translation id="6328784461820205019">«Tilkoblingen din er ikke privat», «&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;», «&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;», «&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;», «&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;» eller «SSL-sertifikatfeil»</translation>
 <translation id="6328786501058569169">Dette nettstedet er villedende</translation>
@@ -1017,6 +1025,7 @@ brukere av denne nettleseren.</translation>
 <translation id="6433490469411711332">Endre kontaktinformasjonen</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> avviste tilkoblingsforsøket.</translation>
 <translation id="6434309073475700221">Forkast</translation>
+<translation id="6435221585574090192">Del data om sikkerhetshendelser som er rapport av Chrome Enterprise trusselbeskyttelse, med administratoren. Dette kan blant annet være nettsideadresser, filnavn og -metadata samt brukernavnet ditt på enheten og i Chrome.</translation>
 <translation id="6440503408713884761">Ignorert</translation>
 <translation id="6446163441502663861">Kahu (konvolutt)</translation>
 <translation id="6446608382365791566">Legg til mer informasjon</translation>
@@ -1061,6 +1070,7 @@ brukere av denne nettleseren.</translation>
 <translation id="6671697161687535275">Vil du fjerne forslaget fra Chromium?</translation>
 <translation id="6685834062052613830">Logg av og fullfør konfigurasjonen</translation>
 <translation id="6689271823431384964">Chrome tilbyr å lagre kort i Google-kontoen din fordi du er logget på. Du kan endre dette i innstillingene. Kortinnehaverens navn kommer fra kontoen din.</translation>
+<translation id="6707256370811247129">Gjennomsøk innholdet i bufferen og filene du laster ned eller opp i Chrome.</translation>
 <translation id="6710213216561001401">Forrige</translation>
 <translation id="6710594484020273272">&lt;Skriv inn en søketerm&gt;</translation>
 <translation id="671076103358959139">Registreringstoken:</translation>
@@ -1079,6 +1089,7 @@ brukere av denne nettleseren.</translation>
 <translation id="681021252041861472">Obligatorisk felt</translation>
 <translation id="6810899417690483278">Tilpasnings-ID</translation>
 <translation id="6825578344716086703">Du prøvde å gå til <ph name="DOMAIN" />, men tjeneren presenterte et sertifikat som er signert med en svak signaturalgoritme (for eksempel SHA-1). Dette betyr at sikkerhetslegitimasjonen tjeneren presenterte, kan være forfalsket. Tjeneren kan med andre ord være en annen tjener enn du tror (og du kommuniserer kanskje med en angriper).</translation>
+<translation id="6826370046007623921">Forebygging av datatap</translation>
 <translation id="6831043979455480757">Oversett</translation>
 <translation id="6839929833149231406">Område</translation>
 <translation id="6852204201400771460">Vil du laste inn appen på nytt?</translation>
@@ -1224,6 +1235,7 @@ brukere av denne nettleseren.</translation>
 <translation id="7542995811387359312">Automatisk utfylling av kredittkort er deaktivert fordi dette skjemaet ikke bruker en sikker tilkobling.</translation>
 <translation id="7548892272833184391">Fiks tilkoblingsfeil</translation>
 <translation id="7549584377607005141">Denne nettsiden krever data som du har skrevet inn tidligere for å vises korrekt. Du kan sende inn dataene på nytt, men hvis du gjør det, gjentas eventuelle handlinger denne siden utførte.</translation>
+<translation id="7550637293666041147">Brukernavnet ditt på enheten og i Chrome</translation>
 <translation id="7552846755917812628">Prøv følgende tips:</translation>
 <translation id="7554791636758816595">Ny fane</translation>
 <translation id="7564049878696755256">Du kan miste tilgangen til <ph name="ORG_NAME" />-kontoen din eller bli utsatt for identitetstyveri. Chrome anbefaler at du endrer passordet ditt nå.</translation>
@@ -1238,6 +1250,7 @@ brukere av denne nettleseren.</translation>
 <translation id="7610193165460212391">Verdien er utenfor rekkevidden <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Utløpsdato: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Du har allerede data som er kryptert med en annen versjon av Google-kontopassordet ditt. Skriv det inn nedenfor.</translation>
+<translation id="7625784245512586808">Chrome Enterprise trusselbeskyttelse</translation>
 <translation id="7633909222644580952">Ytelsesdata og programstopprapporter</translation>
 <translation id="7637571805876720304">Vil du fjerne kredittkortet fra Chromium?</translation>
 <translation id="7638605456503525968">Serielle porter</translation>
@@ -1348,6 +1361,7 @@ brukere av denne nettleseren.</translation>
 <translation id="8211406090763984747">Tilkoblingen er sikker</translation>
 <translation id="8218327578424803826">Tilordnet posisjon:</translation>
 <translation id="8220146938470311105">C7/C6 (konvolutt)</translation>
+<translation id="8220639454292072926">Enterprise-rapportering</translation>
 <translation id="8225771182978767009">Personen som konfigurerte denne datamaskinen, har valgt å blokkere dette nettstedet.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Åpne siden i et nytt inkognitovindu</translation>
@@ -1430,6 +1444,7 @@ Mer informasjon:
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;DNS-adressen&lt;/abbr&gt; til <ph name="HOST_NAME" /> ble ikke funnet. Problemet diagnostiseres.</translation>
 <translation id="874846938927089722">Godkjente kredittkort og forhåndsbetalte kort</translation>
 <translation id="874918643257405732">Bokmerk denne fanen</translation>
+<translation id="8751426954251315517">Prøv på nytt neste gang</translation>
 <translation id="8759274551635299824">Dette kortet er utløpt</translation>
 <translation id="8761567432415473239">Google Safe Browsing oppdaget nylig <ph name="BEGIN_LINK" />skadelige programmer<ph name="END_LINK" /> på <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB-enhet</translation>
@@ -1494,6 +1509,7 @@ Mer informasjon:
 <translation id="9080712759204168376">Bestillingssammendrag</translation>
 <translation id="9089260154716455634">Regler for bruk utenom arbeidstiden:</translation>
 <translation id="9095388113577226029">Flere språk</translation>
+<translation id="9098981495403789647">Administratoren har slått på Chrome Enterprise trusselbeskyttelse i nettleseren din. Chrome Enterprise trusselbeskyttelse har tilgang til noen av dataene dine.</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> bruker vanligvis kryptering for å beskytte informasjonen din. Da Chromium prøvde å koble til <ph name="SITE" /> denne gangen, sendte nettstedet tilbake uvanlig og feil legitimasjon. Dette kan skje hvis en angriper prøver å utgi seg for å være <ph name="SITE" />, eller hvis en Wi-Fi-påloggingsskjerm har avbrutt tilkoblingen. Informasjonen din er likevel sikker fordi Chromium stoppet tilkoblingen før det ble utvekslet noen data.</translation>
 <translation id="9106062320799175032">Legg til faktureringsadresse</translation>
 <translation id="9114524666733003316">Bekrefter kortet …</translation>

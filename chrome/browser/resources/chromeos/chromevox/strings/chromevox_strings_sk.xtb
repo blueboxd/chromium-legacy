@@ -232,6 +232,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="27527859628328957">Prejsť na ďalšiu zamerateľnú položku</translation>
 <translation id="2770781857296573485">Vstúpiť do režimu preskúmavania skupín</translation>
 <translation id="2777845298774924149">Ukončené</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{+#}few{+#}many{+#}other{+#}}</translation>
 <translation id="2784959586797362050">Spätnú väzbu nám môžete ako zvyčajne odoslať priamo tak, že stlačíte kombináciu klávesov Hľadať + A a potom kláves I. Tešíme sa na váš názor.</translation>
 <translation id="2800204403141299078">Žiadne ďalšie odlišné prvky</translation>
 <translation id="2800780099804980316">Žiadny predchádzajúci nadpis 1. úrovne</translation>
@@ -714,6 +715,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="5956928062748260866">Dialógové okno</translation>
 <translation id="5963413905009737549">Sekcia</translation>
 <translation id="5968607524793740041">Zobraziť kontextovú ponuku</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{s # položkou}few{s # položkami}many{with # items}other{s # položkami}}</translation>
 <translation id="5981446804259161541">Svetloazúrová</translation>
 <translation id="5983179082906765664">Zvýšiť podrobnosť navigácie</translation>
 <translation id="5992285135956208197">Grafický dokument</translation>

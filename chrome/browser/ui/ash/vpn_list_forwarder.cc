@@ -10,13 +10,9 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/user_manager/user.h"
-#include "components/user_manager/user_manager.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -83,9 +79,8 @@ VpnListForwarder::VpnListForwarder() {
     AttachToPrimaryUserProfile();
   } else {
     // If no user is logged in, wait until the first user logs in (thus becoming
-    // the primary user) and a profile is created for that user.
-    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
-                   content::NotificationService::AllSources());
+    // the primary user).
+    user_manager::UserManager::Get()->AddSessionStateObserver(this);
   }
 
   ash::GetNetworkConfigService(
@@ -93,6 +88,7 @@ VpnListForwarder::VpnListForwarder() {
 }
 
 VpnListForwarder::~VpnListForwarder() {
+  user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
   if (extension_registry_)
     extension_registry_->RemoveObserver(this);
   if (arc_vpn_provider_manager_)
@@ -148,26 +144,12 @@ void VpnListForwarder::OnShutdown(extensions::ExtensionRegistry* registry) {
   extension_registry_ = nullptr;
 }
 
-void VpnListForwarder::Observe(int type,
-                               const content::NotificationSource& source,
-                               const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_PROFILE_CREATED, type);
-  const Profile* const profile = content::Source<Profile>(source).ptr();
-  if (!chromeos::ProfileHelper::Get()->IsPrimaryProfile(profile)) {
-    // If the profile that was just created does not belong to the primary user
-    // (e.g. login profile), ignore it.
-    return;
-  }
-
-  // The first user logged in (thus becoming the primary user) and a profile was
-  // created for that user. Stop observing profile creation. Wait one message
-  // loop cycle to allow other code which observes the
-  // chrome::NOTIFICATION_PROFILE_CREATED notification to finish initializing
-  // the profile, then start observing the primary user's extension registry.
-  registrar_.RemoveAll();
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&VpnListForwarder::AttachToPrimaryUserProfile,
-                                weak_factory_.GetWeakPtr()));
+void VpnListForwarder::ActiveUserChanged(user_manager::User* active_user) {
+  DCHECK_EQ(user_manager::UserManager::Get()->GetPrimaryUser(), active_user);
+  active_user->AddProfileCreatedObserver(
+      base::BindOnce(&VpnListForwarder::AttachToPrimaryUserProfile,
+                     weak_factory_.GetWeakPtr()));
+  user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
 }
 
 void VpnListForwarder::SetVpnProviders() {

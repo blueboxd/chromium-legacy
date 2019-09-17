@@ -58,6 +58,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
                          const base::string16& name,
                          const std::string& gaia_id,
                          const base::string16& user_name,
+                         bool is_consented_primary_account,
                          size_t icon_index,
                          const std::string& supervised_user_id,
                          const AccountId& account_id);
@@ -111,7 +112,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void SetNameOfProfileAtIndex(size_t index, const base::string16& name);
   void SetAuthInfoOfProfileAtIndex(size_t index,
                                    const std::string& gaia_id,
-                                   const base::string16& user_name);
+                                   const base::string16& user_name,
+                                   bool is_consented_primary_account);
   // Will be removed SOON with ProfileInfoCache tests. Do not use!
   void SetAvatarIconOfProfileAtIndex(size_t index, size_t icon_index);
   void SetIsOmittedProfileAtIndex(size_t index, bool is_omitted);
@@ -143,6 +145,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
                   const base::string16& name,
                   const std::string& gaia_id,
                   const base::string16& user_name,
+                  bool is_consented_primary_account,
                   size_t icon_index,
                   const std::string& supervised_user_id,
                   const AccountId& account_id) override;

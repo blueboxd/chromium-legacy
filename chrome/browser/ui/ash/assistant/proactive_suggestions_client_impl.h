@@ -13,6 +13,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "components/sync/driver/sync_service_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class ProactiveSuggestionsLoader;
@@ -25,7 +26,8 @@ class ProactiveSuggestionsClientImpl : public ash::ProactiveSuggestionsClient,
                                        public BrowserListObserver,
                                        public TabStripModelObserver,
                                        public content::WebContentsObserver,
-                                       public ash::AssistantStateObserver {
+                                       public ash::AssistantStateObserver,
+                                       public syncer::SyncServiceObserver {
  public:
   explicit ProactiveSuggestionsClientImpl(Profile* profile);
   ~ProactiveSuggestionsClientImpl() override;
@@ -51,6 +53,9 @@ class ProactiveSuggestionsClientImpl : public ash::ProactiveSuggestionsClient,
   // AssistantStateObserver:
   void OnAssistantSettingsEnabled(bool enabled) override;
   void OnAssistantContextEnabled(bool enabled) override;
+
+  // syncer::SyncServiceObserver:
+  void OnStateChanged(syncer::SyncService* sync) override;
 
  private:
   void SetActiveBrowser(Browser* browser);

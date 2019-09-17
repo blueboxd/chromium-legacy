@@ -64,7 +64,6 @@ class HTMLButtonElement final : public HTMLFormControlElement {
   bool IsLabelable() const override { return true; }
   bool TypeShouldForceLegacyLayout() const final { return true; }
   bool IsInteractiveContent() const override;
-  bool SupportsAutofocus() const override;
   bool MatchesDefaultPseudoClass() const override;
 
   bool CanBeSuccessfulSubmitButton() const override;

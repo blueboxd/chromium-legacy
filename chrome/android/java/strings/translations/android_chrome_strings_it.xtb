@@ -66,6 +66,7 @@
 <translation id="1407135791313364759">Apri tutte</translation>
 <translation id="1409426117486808224">Visualizzazione semplificata delle schede aperte</translation>
 <translation id="1409879593029778104">Download di <ph name="FILE_NAME" /> impedito perché il file esiste già.</translation>
+<translation id="1413136574162415971">Google può controllare se le tue password sono state oggetto di una violazione dei dati. Questa impostazione viene attivata se accedi con il tuo Account Google e attivi la sincronizzazione.</translation>
 <translation id="1414981605391750300">Connessione a Google in corso. L'operazione potrebbe richiedere un minuto…</translation>
 <translation id="1416550906796893042">Versione applicazione</translation>
 <translation id="1430915738399379752">Stampa</translation>
@@ -160,6 +161,7 @@
 <translation id="2091887806945687916">Audio</translation>
 <translation id="2096012225669085171">Sincronizza e personalizza su tutti i dispositivi</translation>
 <translation id="2100273922101894616">Accesso automatico</translation>
+<translation id="2100314319871056947">Prova a condividere il testo in parti più piccole</translation>
 <translation id="2107397443965016585">Chiedi prima di consentire ai siti di riprodurre contenuti protetti (opzione consigliata)</translation>
 <translation id="2111511281910874386">Vai alla pagina</translation>
 <translation id="2122601567107267586">Impossibile aprire l'app</translation>
@@ -253,6 +255,7 @@
 <translation id="2836148919159985482">Tocca il pulsante Indietro per uscire dalla modalità a schermo intero.</translation>
 <translation id="2842985007712546952">Cartella principale</translation>
 <translation id="2858138569776157458">Siti princ.</translation>
+<translation id="2860954141821109167">Assicurati che su questo dispositivo ci sia un'app per telefono attiva</translation>
 <translation id="2870560284913253234">Sito</translation>
 <translation id="2874939134665556319">Traccia precedente</translation>
 <translation id="2876369937070532032">Invia a Google gli URL di alcune pagine che visiti quando la tua sicurezza è a rischio</translation>
@@ -277,6 +280,7 @@
 <translation id="2996291259634659425">Crea passphrase</translation>
 <translation id="2996809686854298943">URL obbligatorio</translation>
 <translation id="300526633675317032">Verranno cancellati tutti i <ph name="SIZE_IN_KB" /> di memoria utilizzata dai siti web.</translation>
+<translation id="3016635187733453316">Assicurati che questo dispositivo sia connesso a Internet</translation>
 <translation id="3029613699374795922">Sono stati scricati <ph name="KBS" /> kB</translation>
 <translation id="3029704984691124060">Le passphrase non corrispondono</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Richiedi assistenza<ph name="END_LINK" /></translation>
@@ -841,6 +845,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="723171743924126238">Seleziona immagini</translation>
 <translation id="7233236755231902816">Per navigare sul Web nella tua lingua, scarica l'ultima versione di Chrome</translation>
 <translation id="7243308994586599757">Opzioni disponibili nella parte inferiore dello schermo</translation>
+<translation id="7248069434667874558">Assicurati che in Chrome sia attiva la sincronizzazione di <ph name="TARGET_DEVICE_NAME" /></translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> elementi selezionati</translation>
 <translation id="7274013316676448362">Sito bloccato</translation>
 <translation id="7290209999329137901">Impossibile rinominare</translation>
@@ -955,6 +960,7 @@ Il sito NON ottiene l'accesso alla videocamera. Le immagini della videocamera so
 <translation id="8007176423574883786">Disattivata per questo dispositivo</translation>
 <translation id="8013372441983637696">Cancella i tuoi dati di Chrome anche da questo dispositivo</translation>
 <translation id="8015452622527143194">Ripristina le dimensioni predefinite della pagina</translation>
+<translation id="8015780634880457457">Google può controllare se le tue password sono state oggetto di una violazione dei dati</translation>
 <translation id="802154636333426148">Download non riuscito</translation>
 <translation id="8026334261755873520">Cancella dati di navigazione</translation>
 <translation id="8035133914807600019">Nuova cartella…</translation>
@@ -1017,6 +1023,7 @@ Il sito NON ottiene l'accesso alla videocamera. Le immagini della videocamera so
 <translation id="8445448999790540984">Impossibile esportare le password</translation>
 <translation id="8447861592752582886">Revoca autorizzazione dispositivo</translation>
 <translation id="8461694314515752532">Cripta i dati sincronizzati con la tua passphrase di sincronizzazione</translation>
+<translation id="8466613982764129868">Assicurati che il dispositivo <ph name="TARGET_DEVICE_NAME" /> sia connesso a Internet</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Disponibile offline</translation>
 <translation id="8489271220582375723">Apri la pagina Cronologia</translation>
@@ -1107,6 +1114,7 @@ Il sito NON ottiene l'accesso alla videocamera. Le immagini della videocamera so
 <translation id="9188680907066685419">Esci dall'account gestito</translation>
 <translation id="9204836675896933765">1 file rimanente</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9209888181064652401">Impossibile effettuare chiamate</translation>
 <translation id="9219103736887031265">Immagini</translation>
 <translation id="926205370408745186">Rimuovi la tua attività di Chrome da Benessere digitale</translation>
 <translation id="932327136139879170">Home page</translation>

@@ -8,16 +8,20 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
+import android.util.Pair;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PackageUtils;
 import org.chromium.base.StrictModeContext;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionStore;
 import org.chromium.chrome.browser.browsing_data.UrlFilter;
 import org.chromium.chrome.browser.browsing_data.UrlFilterBridge;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.util.ArrayList;
@@ -60,6 +64,8 @@ public class WebappRegistry {
         private static WebappRegistry sInstance = new WebappRegistry();
     }
 
+    private boolean mIsInitialized;
+
     private HashMap<String, WebappDataStorage> mStorages;
     private SharedPreferences mPreferences;
     private TrustedWebActivityPermissionStore mTrustedWebActivityPermissionStore;
@@ -93,24 +99,27 @@ public class WebappRegistry {
     }
 
     /**
-     * Warm up the WebappRegistry and a specific WebappDataStorage SharedPreferences.
+     * Warm up the WebappRegistry and a specific WebappDataStorage SharedPreferences. Can be called
+     * from any thread.
      * @param id The web app id to warm up in addition to the WebappRegistry.
      */
     public static void warmUpSharedPrefsForId(String id) {
-        getInstance().initStorages(id, false);
+        getInstance().initStorages(id);
     }
 
     /**
-     * Warm up the WebappRegistry and all WebappDataStorage SharedPreferences.
+     * Warm up the WebappRegistry and all WebappDataStorage SharedPreferences. Can be called from
+     * any thread.
      */
     public static void warmUpSharedPrefs() {
-        getInstance().initStorages(null, false);
+        getInstance().initStorages(null);
     }
 
     @VisibleForTesting
     public static void refreshSharedPrefsForTesting() {
         Holder.sInstance = new WebappRegistry();
-        getInstance().initStorages(null, true);
+        getInstance().clearStoragesForTesting();
+        getInstance().initStorages(null);
     }
 
     /**
@@ -343,23 +352,45 @@ public class WebappRegistry {
         }
     }
 
-    private void initStorages(String idToInitialize, boolean replaceExisting) {
+    private void clearStoragesForTesting() {
+        ThreadUtils.assertOnUiThread();
+        mStorages.clear();
+    }
+
+    private void initStorages(String idToInitialize) {
         Set<String> webapps = mPreferences.getStringSet(KEY_WEBAPP_SET, Collections.emptySet());
         boolean initAll = (idToInitialize == null || idToInitialize.isEmpty());
 
-        // Don't overwrite any entry in mStorages unless replaceExisting is set to true.
+        if (initAll && !mIsInitialized) {
+            mTrustedWebActivityPermissionStore.initStorage();
+            mIsInitialized = true;
+        }
+
+        List<Pair<String, WebappDataStorage>> initedStorages =
+                new ArrayList<Pair<String, WebappDataStorage>>();
         if (initAll) {
             for (String id : webapps) {
-                if (replaceExisting || !mStorages.containsKey(id)) {
-                    mStorages.put(id, WebappDataStorage.open(id));
+                if (!mStorages.containsKey(id)) {
+                    initedStorages.add(Pair.create(id, WebappDataStorage.open(id)));
                 }
             }
-
-            mTrustedWebActivityPermissionStore.initStorage();
         } else {
-            if (webapps.contains(idToInitialize)
-                    && (replaceExisting || !mStorages.containsKey(idToInitialize))) {
-                mStorages.put(idToInitialize, WebappDataStorage.open(idToInitialize));
+            if (webapps.contains(idToInitialize) && !mStorages.containsKey(idToInitialize)) {
+                initedStorages.add(
+                        Pair.create(idToInitialize, WebappDataStorage.open(idToInitialize)));
+            }
+        }
+
+        PostTask.runOrPostTask(
+                UiThreadTaskTraits.DEFAULT, () -> { initStoragesOnUiThread(initedStorages); });
+    }
+
+    private void initStoragesOnUiThread(List<Pair<String, WebappDataStorage>> initedStorages) {
+        ThreadUtils.assertOnUiThread();
+
+        for (Pair<String, WebappDataStorage> initedStorage : initedStorages) {
+            if (!mStorages.containsKey(initedStorage.first)) {
+                mStorages.put(initedStorage.first, initedStorage.second);
             }
         }
     }

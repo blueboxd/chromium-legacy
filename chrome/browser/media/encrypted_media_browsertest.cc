@@ -611,24 +611,10 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_VP9Profile2) {
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_WebM_AV1) {
-#if BUILDFLAG(ENABLE_WIDEVINE)
-  // TODO(crbug.com/884845): Update Widevine CDM to support AV1.
-  if (IsWidevine(CurrentKeySystem())) {
-    DVLOG(0) << "Skipping test - Widevine CDM does not support AV1";
-    return;
-  }
-#endif
   TestSimplePlayback("bear-av1-cenc.webm");
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_WebM_AV1_10bit) {
-#if BUILDFLAG(ENABLE_WIDEVINE)
-  // TODO(crbug.com/884845): Update Widevine CDM to support AV1.
-  if (IsWidevine(CurrentKeySystem())) {
-    DVLOG(0) << "Skipping test - Widevine CDM does not support AV1";
-    return;
-  }
-#endif
   TestSimplePlayback("bear-av1-320x180-10bit-cenc.webm");
 }
 
@@ -638,13 +624,6 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_AV1) {
     DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
     return;
   }
-#if BUILDFLAG(ENABLE_WIDEVINE)
-  // TODO(crbug.com/884845): Update Widevine CDM to support AV1.
-  if (IsWidevine(CurrentKeySystem())) {
-    DVLOG(0) << "Skipping test - Widevine CDM does not support AV1";
-    return;
-  }
-#endif
   TestSimplePlayback("bear-av1-cenc.mp4");
 }
 
@@ -654,13 +633,6 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4_AV1_10bit) {
     DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
     return;
   }
-#if BUILDFLAG(ENABLE_WIDEVINE)
-  // TODO(crbug.com/884845): Update Widevine CDM to support AV1.
-  if (IsWidevine(CurrentKeySystem())) {
-    DVLOG(0) << "Skipping test - Widevine CDM does not support AV1";
-    return;
-  }
-#endif
   TestSimplePlayback("bear-av1-320x180-10bit-cenc.mp4");
 }
 #endif  // BUILDFLAG(ENABLE_AV1_DECODER)
@@ -992,7 +964,8 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, CdmProxy) {
 // save anything to disk. Instead we are only running the tests that actually
 // have the CDM do file access.
 
-IN_PROC_BROWSER_TEST_F(ECKIncognitoEncryptedMediaTest, FileIO) {
+// TODO(crbug.com/999421) Disabled due to flake on all platforms
+IN_PROC_BROWSER_TEST_F(ECKIncognitoEncryptedMediaTest, DISABLED_FileIO) {
   // Try the FileIO test using the default CDM API while running in incognito.
   TestNonPlaybackCases(kExternalClearKeyFileIOTestKeySystem, kUnitTestSuccess);
 }

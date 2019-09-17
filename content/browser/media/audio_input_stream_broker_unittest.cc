@@ -11,7 +11,7 @@
 #include "base/test/mock_callback.h"
 #include "content/public/test/browser_task_environment.h"
 #include "media/mojo/mojom/audio_input_stream.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/audio/public/cpp/fake_stream_factory.h"
@@ -47,10 +47,9 @@ class MockRendererAudioInputStreamFactoryClient
   MockRendererAudioInputStreamFactoryClient() = default;
   ~MockRendererAudioInputStreamFactoryClient() override = default;
 
-  mojom::RendererAudioInputStreamFactoryClientPtr MakePtr() {
-    mojom::RendererAudioInputStreamFactoryClientPtr ret;
-    binding_.Bind(mojo::MakeRequest(&ret));
-    return ret;
+  mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+  MakeRemote() {
+    return receiver_.BindNewPipeAndPassRemote();
   }
 
   MOCK_METHOD0(OnStreamCreated, void());
@@ -67,10 +66,10 @@ class MockRendererAudioInputStreamFactoryClient
     OnStreamCreated();
   }
 
-  void CloseBinding() { binding_.Close(); }
+  void CloseReceiver() { receiver_.reset(); }
 
  private:
-  mojo::Binding<mojom::RendererAudioInputStreamFactoryClient> binding_{this};
+  mojo::Receiver<mojom::RendererAudioInputStreamFactoryClient> receiver_{this};
   media::mojom::AudioInputStreamPtr input_stream_;
   media::mojom::AudioInputStreamClientRequest client_request_;
   DISALLOW_COPY_AND_ASSIGN(MockRendererAudioInputStreamFactoryClient);
@@ -151,7 +150,7 @@ struct TestEnvironment {
             kEnableAgc,
             nullptr,
             deleter.Get(),
-            renderer_factory_client.MakePtr())) {}
+            renderer_factory_client.MakeRemote())) {}
 
   void RunUntilIdle() { task_environment.RunUntilIdle(); }
 
@@ -174,7 +173,7 @@ TEST(AudioInputStreamBrokerTest, StoresProcessAndFrameId) {
   AudioInputStreamBroker broker(
       kRenderProcessId, kRenderFrameId, kDeviceId, TestParams(), kShMemCount,
       nullptr /*user_input_monitor*/, kEnableAgc, nullptr, deleter.Get(),
-      renderer_factory_client.MakePtr());
+      renderer_factory_client.MakeRemote());
 
   EXPECT_EQ(kRenderProcessId, broker.render_process_id());
   EXPECT_EQ(kRenderFrameId, broker.render_frame_id());
@@ -242,7 +241,7 @@ TEST(AudioInputStreamBrokerTest, RendererFactoryClientDisconnect_CallsDeleter) {
 
   EXPECT_CALL(env.deleter, Run(env.broker.release()))
       .WillOnce(testing::DeleteArg<0>());
-  env.renderer_factory_client.CloseBinding();
+  env.renderer_factory_client.CloseReceiver();
   env.RunUntilIdle();
   Mock::VerifyAndClear(&env.deleter);
 

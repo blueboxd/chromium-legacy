@@ -49,6 +49,18 @@ cast_source_set("net") {
   }
 }
 
+cast_source_set("io_buffer_pool") {
+  sources = [
+    "io_buffer_pool.cc",
+    "io_buffer_pool.h",
+  ]
+
+  deps = [
+    "//base",
+    "//net",
+  ]
+}
+
 cast_source_set("small_message_socket") {
   sources = [
     "small_message_socket.cc",
@@ -86,9 +98,11 @@ cast_source_set("test_support") {
 test("cast_net_unittests") {
   sources = [
     "fake_stream_socket_unittest.cc",
+    "io_buffer_pool_unittest.cc",
   ]
 
   deps = [
+    ":io_buffer_pool",
     ":test_support",
     "//base",
     "//base/test:run_all_unittests",

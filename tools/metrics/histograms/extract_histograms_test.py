@@ -11,13 +11,13 @@ import extract_histograms
 TEST_SUFFIX_OBSOLETION_XML_CONTENT = """
 <histogram-configuration>
 <histograms>
-  <histogram name="Test.Test1">
+  <histogram name="Test.Test1" units="units">
     <owner>chrome-metrics-team@google.com</owner>
     <summary>
       Sample description.
     </summary>
   </histogram>
-  <histogram name="Test.Test2">
+  <histogram name="Test.Test2" units="units">
     <owner>chrome-metrics-team@google.com</owner>
     <summary>
       Sample description.
@@ -43,7 +43,8 @@ TEST_SUFFIX_OBSOLETION_XML_CONTENT = """
     <suffix name="ObsoleteSuffixNonObsoleteGroup1" label="Obsolete suffix">
       <obsolete>This suffix is obsolete</obsolete>
     </suffix>
-    <suffix name="NonObsoleteSuffixNonObsoleteGroup2" label="Non obsolete suffix"/>
+    <suffix name="NonObsoleteSuffixNonObsoleteGroup2"
+        label="Non obsolete suffix"/>
     <affected-histogram name="Test.Test2"/>
   </histogram_suffixes>
 
@@ -52,7 +53,8 @@ TEST_SUFFIX_OBSOLETION_XML_CONTENT = """
     <suffix name="ObsoleteSuffixObsoleteGroup1" label="First obsolete suffix">
       <obsolete>This suffix is obsolete</obsolete>
     </suffix>
-    <suffix name="NonObsoleteSuffixObsoleteGroup2" label="Second obsolete suffix"/>
+    <suffix name="NonObsoleteSuffixObsoleteGroup2"
+        label="Second obsolete suffix"/>
     <affected-histogram name="Test.Test2"/>
   </histogram_suffixes>
 </histogram_suffixes_list>
@@ -62,13 +64,14 @@ TEST_SUFFIX_OBSOLETION_XML_CONTENT = """
 TEST_BASE_HISTOGRAM_XML_CONTENT = """
 <histogram-configuration>
 <histograms>
-  <histogram base="true" name="Test.Base" expires_after="2211-11-22">
+  <histogram base="true" name="Test.Base" expires_after="2211-11-22"
+      units="units">
     <owner>chrome-metrics-team@google.com</owner>
     <summary>
       Base histogram.
     </summary>
   </histogram>
-  <histogram base="true" name="Test.Base.Obsolete">
+  <histogram base="true" name="Test.Base.Obsolete" units="units">
     <owner>chrome-metrics-team@google.com</owner>
     <summary>
       Obsolete base histogram.
@@ -77,13 +80,13 @@ TEST_BASE_HISTOGRAM_XML_CONTENT = """
       The whole related set of histograms is obsolete!
     </obsolete>
   </histogram>
-  <histogram base="false" name="Test.NotBase.Explicit">
+  <histogram base="false" name="Test.NotBase.Explicit" units="units" >
     <owner>chrome-metrics-team@google.com</owner>
     <summary>
       Not a base histogram: base attribute explicitly set to "false".
     </summary>
   </histogram>
-  <histogram name="Test.NotBase.Implicit" expires_after="M100">
+  <histogram name="Test.NotBase.Implicit" expires_after="M100" units="units" >
     <owner>chrome-metrics-team@google.com</owner>
     <summary>
       Not a base histogram: no base attribute specified.
@@ -187,7 +190,7 @@ class ExtractHistogramsTest(unittest.TestCase):
 
 <histograms>
 
-<histogram name="Histogram.Name"{}>
+<histogram name="Histogram.Name"{} units="units" >
   <owner>SomeOne@google.com</owner>
   <summary>Summary</summary>
 </histogram>
@@ -242,7 +245,7 @@ class ExtractHistogramsTest(unittest.TestCase):
 
 <histograms>
 
-<histogram name="Histogram.Name"{}>
+<histogram name="Histogram.Name"{} units="units">
   <owner>SomeOne@google.com</owner>
   <summary>Summary</summary>
 </histogram>
@@ -279,7 +282,7 @@ class ExtractHistogramsTest(unittest.TestCase):
     multiple_paragraph_pattern = xml.dom.minidom.parseString("""
 <histogram-configuration>
 <histograms>
-  <histogram name="MultiParagraphTest.Test1">
+  <histogram name="MultiParagraphTest.Test1" units="units">
     <owner>chrome-metrics-team@google.com</owner>
     <summary>
       Sample description
@@ -287,7 +290,7 @@ class ExtractHistogramsTest(unittest.TestCase):
     </summary>
   </histogram>
 
-  <histogram name="MultiParagraphTest.Test2">
+  <histogram name="MultiParagraphTest.Test2" units="units">
     <owner>chrome-metrics-team@google.com</owner>
     <summary>
       Multi-paragraph sample description UI&gt;Browser.
@@ -312,7 +315,6 @@ class ExtractHistogramsTest(unittest.TestCase):
         'Multi-paragraph sample description UI>Browser. Words.\n\n'
         'Still multi-paragraph sample description.\n\nHere.')
 
-
   def testNewHistogramWithoutSummary(self):
     histogram_without_summary = xml.dom.minidom.parseString("""
 <histogram-configuration>
@@ -326,6 +328,59 @@ class ExtractHistogramsTest(unittest.TestCase):
     _, have_errors = extract_histograms._ExtractHistogramsFromXmlTree(
         histogram_without_summary, {})
     self.assertTrue(have_errors)
+
+  def testNewHistogramWithoutEnumOrUnit(self):
+    histogram_without_enum_or_unit = xml.dom.minidom.parseString("""
+<histogram-configuration>
+<histograms>
+ <histogram name="Test.Histogram">
+  <owner>chrome-metrics-team@google.com</owner>
+  <summary> This is a summary </summary>
+ </histogram>
+</histograms>
+</histogram-configuration>
+""")
+    _, have_errors = extract_histograms._ExtractHistogramsFromXmlTree(
+        histogram_without_enum_or_unit, {})
+    self.assertTrue(have_errors)
+
+  def testNewHistogramWithEnum(self):
+    histogram_with_enum = xml.dom.minidom.parseString("""
+<histogram-configuration>
+<enums>
+  <enum name="MyEnumType">
+    <summary>This is an example enum type</summary>
+    <int value="1" label="FIRST_VALUE">This is the first value.</int>
+    <int value="2" label="SECOND_VALUE">This is the second value.</int>
+  </enum>
+</enums>
+
+<histograms>
+ <histogram name="Test.Histogram.Enum" enum="MyEnumType">
+  <owner>chrome-metrics-team@google.com</owner>
+  <summary> This is a summary </summary>
+ </histogram>
+</histograms>
+</histogram-configuration>
+""")
+    _, have_errors = extract_histograms.ExtractHistogramsFromDom(
+        histogram_with_enum)
+    self.assertFalse(have_errors)
+
+  def testNewHistogramWithUnits(self):
+    histogram_with_units = xml.dom.minidom.parseString("""
+<histogram-configuration>
+<histograms>
+ <histogram name="Test.Histogram" units="units">
+  <owner>chrome-metrics-team@google.com</owner>
+  <summary> This is a summary </summary>
+ </histogram>
+</histograms>
+</histogram-configuration>
+""")
+    _, have_errors = extract_histograms._ExtractHistogramsFromXmlTree(
+        histogram_with_units, {})
+    self.assertFalse(have_errors)
 
   def testNewHistogramWithEmptyOwnerTag(self):
     histogram_with_empty_owner_tag = xml.dom.minidom.parseString("""

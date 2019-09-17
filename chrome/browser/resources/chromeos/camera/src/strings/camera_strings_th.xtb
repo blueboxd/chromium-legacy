@@ -19,6 +19,7 @@
 <translation id="2501953888035679275">ถ่ายภาพและบันทึกวิดีโอด้วยกล้อง</translation>
 <translation id="2549985041256363841">เริ่มบันทึก</translation>
 <translation id="2599796128805996109">กล้องหลัง</translation>
+<translation id="2912439424121107408">อุปกรณ์นี้ไม่รองรับโหมดผู้เชี่ยวชาญ</translation>
 <translation id="2968794441791257519">รูปภาพและวิดีโอที่ถ่ายจากกล้องจะย้ายไปยังโฟลเดอร์ "ดาวน์โหลด" คุณจะเข้าถึงรายการเหล่านี้ได้ในแอป Files
 
 แอปที่มีสิทธิ์ในพื้นที่เก็บข้อมูลจะเข้าถึงรูปภาพและวิดีโอของคุณได้</translation>
@@ -41,10 +42,12 @@
         โปรดตรวจสอบว่ากล้องเชื่อมต่ออย่างถูกต้อง</translation>
 <translation id="5152121255775685072">ไปที่แกลเลอรี</translation>
 <translation id="5671277269877808209">สี่เหลี่ยมจัตุรัส</translation>
+<translation id="5775960006311140197">โหมดผู้เชี่ยวชาญ</translation>
 <translation id="5869546221129391014">ตาราง</translation>
 <translation id="6040143037577758943">ปิด</translation>
 <translation id="6073451960410192870">หยุดบันทึก</translation>
 <translation id="6165508094623778733">ดูข้อมูลเพิ่มเติม</translation>
+<translation id="6197807149213783179">บันทึกข้อมูลเมตา</translation>
 <translation id="6233780560267770709">3 x 3</translation>
 <translation id="6243827288366940320">อัตราส่วนทองคำ</translation>
 <translation id="6248749904681914629">กล้องภายนอก</translation>
@@ -66,6 +69,7 @@
 <translation id="8261506727792406068">ลบ</translation>
 <translation id="8428213095426709021">การตั้งค่า</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8732462232047530626">แสดงตัวอย่างข้อมูลเมตา</translation>
 <translation id="8815966864175525708">เปลี่ยนเป็นถ่ายภาพบุคคล</translation>
 <translation id="8870695351537079478">เริ่มบันทึกวิดีโอไม่ได้</translation>
 <translation id="9045155556724273246">10 วินาที</translation>

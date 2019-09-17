@@ -12163,7 +12163,8 @@ var events = {
   INITIALIZED: 'initialized',  // Send when the animation was successfully
                                // initialized.
   RESIZED: 'resized',  // Sent when the animation has been resized.
-  PLAYING: 'playing'   // Send when the animation started playing.
+  PLAYING: 'playing',  // Send when the animation started playing.
+  PAUSED: 'paused'  // Sent when the animation has paused.
 };
 
 /**
@@ -12191,12 +12192,17 @@ sendResizeEvent = function() {
 };
 
 /**
- * Informs the parent thread that the animation has started playing.
+ * Informs the parent thread that the animation is playing.
  */
 sendPlayEvent = function() {
-  postMessage({
-    name: events.PLAYING
-  });
+  postMessage({name: events.PLAYING});
+}
+
+/**
+ * Informs the parent thread that the animation is paused.
+ */
+sendPauseEvent = function() {
+  postMessage({name: events.PAUSED});
 }
 
 /**
@@ -12272,6 +12278,25 @@ updateCanvasSize = function(canvas, size) {
   }
 }
 
+/**
+ * Updates the animation state to play or pause. Informs the parent thread if
+ * the state has changed.
+ * @param {Object<string, bool>} control Has information about playing or
+ *     pausing the animation.
+ */
+updateAnimationState = function(control) {
+  if (!control) {
+    return;
+  }
+  if (control.play && currentAnimation.isPaused) {
+    currentAnimation.play();
+    sendPlayEvent();
+  } else if (!control.play && !currentAnimation.isPaused) {
+    currentAnimation.pause();
+    sendPauseEvent();
+  }
+}
+
 onmessage = function(evt) {
   if (!evt || !evt.data) return;
 
@@ -12286,4 +12311,5 @@ onmessage = function(evt) {
 
   updateCanvasSize(canvas, evt.data.drawSize);
   initAnimation(evt.data.animationData, evt.data.params, canvas);
+  updateAnimationState(evt.data.control);
 };

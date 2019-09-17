@@ -317,8 +317,7 @@ public class DownloadManagerService
         mUpdateDelayInMillis = updateDelayInMillis;
         mHandler = handler;
         mDownloadSnackbarController = new DownloadSnackbarController();
-        mOMADownloadHandler =
-                new OMADownloadHandler(applicationContext, mDownloadSnackbarController);
+        mOMADownloadHandler = new OMADownloadHandler(applicationContext);
         // Note that this technically leaks the native object, however, DownloadManagerService
         // is a singleton that lives forever and there's no clean shutdown of Chrome on Android.
         init();
@@ -553,7 +552,6 @@ public class DownloadManagerService
                 // TODO(cmsy): Use correct FailState.
                 mDownloadNotifier.notifyDownloadFailed(info);
                 Log.w(TAG, "Download failed: " + info.getFilePath());
-                onDownloadFailed(item, DownloadManager.ERROR_UNKNOWN);
                 break;
             case DownloadStatus.IN_PROGRESS:
                 if (info.isPaused()) {
@@ -629,7 +627,6 @@ public class DownloadManagerService
                                    .build();
                     mDownloadNotifier.notifyDownloadFailed(info);
                     // TODO(qinmin): get the failure message from native.
-                    onDownloadFailed(item, DownloadManager.ERROR_UNKNOWN);
                     maybeRecordBackgroundDownload(
                             UmaBackgroundDownload.FAILED, info.getDownloadGuid());
                 }
@@ -833,13 +830,7 @@ public class DownloadManagerService
             return;
         }
 
-        // TODO(shaktisahu): We should show this on infobar instead.
-        if (FeatureUtilities.isDownloadProgressInfoBarEnabled()) {
-            getInfoBarController(downloadItem.getDownloadInfo().isOffTheRecord())
-                    .onDownloadStarted();
-        } else {
-            DownloadUtils.showDownloadStartToast(ContextUtils.getApplicationContext());
-        }
+        getInfoBarController(downloadItem.getDownloadInfo().isOffTheRecord()).onDownloadStarted();
         addUmaStatsEntry(new DownloadUmaStatsEntry(String.valueOf(response.downloadId),
                 downloadItem.getStartTime(), 0, false, true, 0, 0));
     }
@@ -1023,8 +1014,6 @@ public class DownloadManagerService
     protected void onDownloadFailed(DownloadItem item, int reason) {
         String failureMessage =
                 getDownloadFailureMessage(item.getDownloadInfo().getFileName(), reason);
-        // TODO(shaktisahu): Notify infobar controller of the failure.
-        if (FeatureUtilities.isDownloadProgressInfoBarEnabled()) return;
 
         if (mDownloadSnackbarController.getSnackbarManager() != null) {
             mDownloadSnackbarController.onDownloadFailed(
@@ -1286,8 +1275,6 @@ public class DownloadManagerService
                 if (infobarController != null) {
                     infobarController.onNotificationShown(info.getContentId(), notificationId);
                 }
-                mDownloadSnackbarController.onDownloadSucceeded(
-                        info, notificationId, systemDownloadId, canResolve, false);
             }
         } else {
             if (getInfoBarController(info.isOffTheRecord()) != null) {
@@ -1425,10 +1412,6 @@ public class DownloadManagerService
                                         .onItemUpdated(DownloadInfo.createOfflineItem(
                                                                item.getDownloadInfo()),
                                                 null);
-                                mDownloadSnackbarController.onDownloadSucceeded(
-                                        item.getDownloadInfo(),
-                                        DownloadSnackbarController.INVALID_NOTIFICATION_ID,
-                                        item.getSystemDownloadId(), canResolve, true);
                             }
                         }
                     }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);

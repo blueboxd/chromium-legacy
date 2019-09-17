@@ -4,13 +4,20 @@
 <translation id="1337821341856692531">Jos jatkat lisäämättä nykyistä Windows-salasanaa, saatat menettää joitain tietoja pysyvästi.</translation>
 <translation id="1383286653814676580">Käytetään Googlen tunnistuspalvelun kirjautumissivun käynnistämiseen.</translation>
 <translation id="1894475569413661128">Kirjaudu sisään työtililläsi.</translation>
+<translation id="2329184763010379754">Vain tietokoneen lukinneella käyttäjällä on oikeus kirjautua sisään.</translation>
+<translation id="2398071111662077301">Googlen kirjautumisnäyttöä ei voitu ladata Chromen asennuksessa ilmenneen ongelman takia. Ota yhteyttä järjestelmänvalvojaasi.</translation>
 <translation id="2469311484561825731">Työtilillesi kirjautuminen epäonnistui. Varmista, että tietokoneen internetyhteys toimii, ja yritä uudelleen.</translation>
+<translation id="2679096858700291438">Kirjoittamasi Windows-salasana on virheellinen. Yritä uudelleen.</translation>
+<translation id="2831078752570172210">Tilisi on lukittu. Ota yhteyttä tilisi järjestelmänvalvojaan.</translation>
+<translation id="2844349213149998955">Kirjautuminen tähän laitteeseen kuuluvalla henkilökohtaisella tilillä on estetty. Kirjaudu sisään työtilillä.</translation>
 <translation id="3306357053520292004">Tämän tietokoneen käyttäjä on jo lisätty tällä tilillä. Kirjaudu sisään toisella tilillä.</translation>
 <translation id="3968372833844047539">Vain Gsuite Enterprise ‑käyttäjät voivat kirjautua sisään.</translation>
 <translation id="4057329986137569701">Tapahtui sisäinen virhe.</translation>
 <translation id="4267670563222825190">Verkkotunnuksen käyttäjää ei löytynyt tililtäsi. Ota yhteyttä järjestelmänvalvojaasi.</translation>
 <translation id="4300229033992784001">Tilisi salasana on muuttunut. Synkronoi Windows- ja työtilisi lisäämällä nykyinen Windows-salasanasi.</translation>
 <translation id="4706454071748629324">Uuden käyttäjän lisääminen epäonnistui. Tämä tietokone sallii vain yhden käyttäjän luomisen työtilillä.</translation>
+<translation id="6033715878377252112">Googlen tunnistuspalvelu Windowsille ‑apuri</translation>
+<translation id="6149399665202317746">Googlen tunnistuspalvelu Windowsille</translation>
 <translation id="6312494990035843744">Kirjautuminen tähän verkkotunnukseen kuuluvalla työtilillä on estetty. Käytä toista tiliä.</translation>
 <translation id="6463752215771576050">Tämän tietokoneen rekisteröinti yritysylläpitoon epäonnistui.  Kirjaudu sisään toisella työtilillä.</translation>
 <translation id="6657585470893396449">Salasana</translation>
@@ -22,5 +29,7 @@
 <translation id="8639729688781680518">Unohdin Windows-salasanan</translation>
 <translation id="866458870819756755">Käyttäjän luominen epäonnistui.</translation>
 <translation id="8875753657315897487">Kirjaudu sisään työtililläsi</translation>
+<translation id="8973975512230260387">Istuntosi on vanhentunut. Kirjaudu sisään Google-työtililläsi.</translation>
+<translation id="9055998212250844221">Käyttäjätilin loi Googlen tunnistuspalvelu Windowsille</translation>
 <translation id="9135619837062629367">Kirjautuminen tällä tilillä on estetty. Käytä toista tiliä.</translation>
 </translationbundle>

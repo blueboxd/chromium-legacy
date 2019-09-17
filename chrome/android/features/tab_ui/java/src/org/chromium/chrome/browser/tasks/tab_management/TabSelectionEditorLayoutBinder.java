@@ -31,6 +31,17 @@ public class TabSelectionEditorLayoutBinder {
         } else if (TabSelectionEditorProperties.TOOLBAR_NAVIGATION_LISTENER == propertyKey) {
             view.getToolbar().setNavigationOnClickListener(
                     model.get(TabSelectionEditorProperties.TOOLBAR_NAVIGATION_LISTENER));
+        } else if (TabSelectionEditorProperties.PRIMARY_COLOR == propertyKey) {
+            view.setBackgroundColor(model.get(TabSelectionEditorProperties.PRIMARY_COLOR));
+        } else if (TabSelectionEditorProperties.TOOLBAR_BACKGROUND_COLOR == propertyKey) {
+            view.getToolbar().setToolbarBackgroundColor(
+                    model.get(TabSelectionEditorProperties.TOOLBAR_BACKGROUND_COLOR));
+        } else if (TabSelectionEditorProperties.TOOLBAR_GROUP_BUTTON_TINT == propertyKey) {
+            view.getToolbar().setButtonTint(
+                    model.get(TabSelectionEditorProperties.TOOLBAR_GROUP_BUTTON_TINT));
+        } else if (TabSelectionEditorProperties.TOOLBAR_TEXT_APPEARANCE == propertyKey) {
+            view.getToolbar().setTextAppearance(
+                    model.get(TabSelectionEditorProperties.TOOLBAR_TEXT_APPEARANCE));
         }
     }
 }

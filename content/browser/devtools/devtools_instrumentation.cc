@@ -13,7 +13,6 @@
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/frame_host/frame_tree_node.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_package/signed_exchange_envelope.h"
@@ -182,9 +181,10 @@ void OnSignedExchangeCertificateRequestCompleted(
 }
 
 std::vector<std::unique_ptr<NavigationThrottle>> CreateNavigationThrottles(
-    NavigationHandleImpl* navigation_handle) {
+    NavigationHandle* navigation_handle) {
   std::vector<std::unique_ptr<NavigationThrottle>> result;
-  FrameTreeNode* frame_tree_node = navigation_handle->frame_tree_node();
+  FrameTreeNode* frame_tree_node =
+      NavigationRequest::From(navigation_handle)->frame_tree_node();
 
   DevToolsAgentHostImpl* agent_host =
       RenderFrameDevToolsAgentHost::GetFor(frame_tree_node);

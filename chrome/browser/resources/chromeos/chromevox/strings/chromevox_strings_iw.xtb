@@ -233,6 +233,7 @@
 <translation id="27527859628328957">דלג לפריט הבא הניתן למיקוד</translation>
 <translation id="2770781857296573485">הזן סקירת קבוצה</translation>
 <translation id="2777845298774924149">יצאת</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{+1}two{+#}many{+#}other{+#}}</translation>
 <translation id="2784959586797362050">‏כמו תמיד, אפשר לשלוח לנו משוב באופן ישיר על-ידי הקשה על Search+a+i. נשמח לשמוע ממך.</translation>
 <translation id="2800204403141299078">אין עוד אלמנטים שונים.</translation>
 <translation id="2800780099804980316">אין כותרת קודמת של רמה 1.</translation>
@@ -715,6 +716,7 @@
 <translation id="5956928062748260866">דו-שיח</translation>
 <translation id="5963413905009737549">קטע</translation>
 <translation id="5968607524793740041">הצג תפריט הקשר</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{עם פריט אחד}two{with # items}many{with # items}other{עם # פריטים}}</translation>
 <translation id="5981446804259161541">ציאן בהיר</translation>
 <translation id="5983179082906765664">העמק את רמת הפירוט של הניווט</translation>
 <translation id="5992285135956208197">מסמך גרפי</translation>

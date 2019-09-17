@@ -90,7 +90,7 @@ class QRView : public views::View {
   ~QRView() override {}
 
   void RefreshQRCode(const uint8_t new_qr_data[QRCode::kInputBytes]) {
-    state_++;
+    state_ = (state_ + 1) % 6;
     qr_tiles_ = qr_.Generate(new_qr_data);
     SchedulePaint();
   }
@@ -108,7 +108,7 @@ class QRView : public views::View {
     // kV is the intensity of the colors in the QR code.
     constexpr uint8_t kV = 0x70;
     SkColor on;
-    switch (state_ % 6) {
+    switch (state_) {
       case 0:
         on = SkColorSetARGB(0xff, kV, 0, 0);
         break;
@@ -175,7 +175,7 @@ class QRView : public views::View {
 
     for (int y = 0; y < rows; y++) {
       uint8_t current_byte;
-      unsigned bits = 0;
+      int bits = 0;
 
       for (int x = 0; x < kDinoWidth; x++) {
         if (bits == 0) {
@@ -198,7 +198,7 @@ class QRView : public views::View {
 
   QRCode qr_;
   base::span<const uint8_t, QRCode::kTotalSize> qr_tiles_;
-  unsigned state_ = 0;
+  int state_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(QRView);
 };

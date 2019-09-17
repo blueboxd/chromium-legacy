@@ -7,6 +7,7 @@
 #include "chromecast/common/mojom/queryable_data_store.mojom.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace chromecast {
@@ -22,10 +23,10 @@ void QueryableDataHostCast::SendQueryableValue(const std::string& key,
                                                const base::Value& value) {
   for (content::RenderFrameHost* render_frame_host :
        web_contents_->GetAllFrames()) {
-    shell::mojom::QueryableDataStorePtr queryable_data_store_ptr;
+    mojo::Remote<shell::mojom::QueryableDataStore> queryable_data_store_remote;
     render_frame_host->GetRemoteInterfaces()->GetInterface(
-        &queryable_data_store_ptr);
-    queryable_data_store_ptr->Set(key, value.Clone());
+        queryable_data_store_remote.BindNewPipeAndPassReceiver());
+    queryable_data_store_remote->Set(key, value.Clone());
   }
 }
 

@@ -108,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(AppDownloadingScreenTest, NoAppsSelected) {
 
 IN_PROC_BROWSER_TEST_F(AppDownloadingScreenTest, SingleAppSelected) {
   base::Value apps(base::Value::Type::LIST);
-  apps.GetList().emplace_back("app.test.package.1");
+  apps.Append("app.test.package.1");
 
   ProfileManager::GetActiveUserProfile()->GetPrefs()->Set(
       arc::prefs::kArcFastAppReinstallPackages, std::move(apps));
@@ -141,8 +141,8 @@ IN_PROC_BROWSER_TEST_F(AppDownloadingScreenTest, SingleAppSelected) {
 
 IN_PROC_BROWSER_TEST_F(AppDownloadingScreenTest, MultipleAppsSelected) {
   base::Value apps(base::Value::Type::LIST);
-  apps.GetList().emplace_back("app.test.package.1");
-  apps.GetList().emplace_back("app.test.package.2");
+  apps.Append("app.test.package.1");
+  apps.Append("app.test.package.2");
 
   ProfileManager::GetActiveUserProfile()->GetPrefs()->Set(
       arc::prefs::kArcFastAppReinstallPackages, std::move(apps));

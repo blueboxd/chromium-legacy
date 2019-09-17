@@ -36,11 +36,6 @@ crbug.com/835943 [ Linux ] http/tests/appcache/non-html.xhtml [ Leak Pass ]
 crbug.com/860117 [ Linux ] editing/pasteboard/drag-drop-iframe-refresh-crash.html [ Pass Leak ]
 crbug.com/976438 [ Linux ] external/wpt/css/selectors/focus-visible-007.html [ Pass Leak ]
 
-# -----------------------------------------------------------------
-# Not revert suspected CL as jam@ request, expected to be fixed soon.
-# -----------------------------------------------------------------
-crbug.com/765721 [ Linux ] http/tests/navigation/navigation-interrupted-by-fragment.html [ Pass Leak ]
-crbug.com/765721 [ Linux ] virtual/stable/http/tests/navigation/navigation-interrupted-by-fragment.html [ Pass Leak ]
 
 crbug.com/809609 [ Linux ] editing/pasteboard/drop-file-svg.html [ Pass Leak ]
 crbug.com/809609 [ Linux ] editing/inserting/insert_div_with_style.html [ Pass Leak ]

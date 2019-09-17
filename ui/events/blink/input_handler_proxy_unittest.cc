@@ -81,11 +81,11 @@ MATCHER_P(WheelEventsMatch, expected, "") {
 
 WebScopedInputEvent CreateGestureScrollPinch(WebInputEvent::Type type,
                                              WebGestureDevice source_device,
+                                             base::TimeTicks event_time,
                                              float delta_y_or_scale = 0,
                                              int x = 0,
                                              int y = 0) {
-  WebGestureEvent gesture(type, WebInputEvent::kNoModifiers,
-                          WebInputEvent::GetStaticTimeStampForTests(),
+  WebGestureEvent gesture(type, WebInputEvent::kNoModifiers, event_time,
                           source_device);
   if (type == WebInputEvent::kGestureScrollUpdate) {
     gesture.data.scroll_update.delta_y = delta_y_or_scale;
@@ -446,7 +446,9 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
                                           int y = 0) {
     LatencyInfo latency;
     input_handler_proxy_.HandleInputEventWithLatencyInfo(
-        CreateGestureScrollPinch(type, source_device, delta_y_or_scale, x, y),
+        CreateGestureScrollPinch(type, source_device,
+                                 input_handler_proxy_.tick_clock_->NowTicks(),
+                                 delta_y_or_scale, x, y),
         latency,
         base::BindOnce(
             &InputHandlerProxyEventQueueTest::DidHandleInputEventAndOverscroll,
@@ -1972,6 +1974,10 @@ TEST_F(InputHandlerProxyEventQueueTest, CoalescedEventSwitchToMainThread) {
 }
 
 TEST_F(InputHandlerProxyEventQueueTest, ScrollPredictorTest) {
+  base::SimpleTestTickClock tick_clock;
+  tick_clock.SetNowTicks(base::TimeTicks());
+  SetInputHandlerProxyTickClockForTesting(&tick_clock);
+
   cc::InputHandlerScrollResult scroll_result_did_scroll_;
   scroll_result_did_scroll_.did_scroll = true;
   EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
@@ -1984,16 +1990,19 @@ TEST_F(InputHandlerProxyEventQueueTest, ScrollPredictorTest) {
 
   // No prediction when start with a GSB
   ui::InputPredictor::InputData result;
+  tick_clock.Advance(base::TimeDelta::FromMilliseconds(8));
   HandleGestureEvent(WebInputEvent::kGestureScrollBegin);
   DeliverInputForBeginFrame();
   EXPECT_FALSE(GestureScrollEventPredictionAvailable(&result));
 
   // Test predictor returns last GSU delta.
+  tick_clock.Advance(base::TimeDelta::FromMilliseconds(8));
   HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -20);
+  tick_clock.Advance(base::TimeDelta::FromMilliseconds(8));
   HandleGestureEvent(WebInputEvent::kGestureScrollUpdate, -15);
   DeliverInputForBeginFrame();
   EXPECT_TRUE(GestureScrollEventPredictionAvailable(&result));
-  EXPECT_EQ(-35, result.pos.y());
+  EXPECT_NE(0, result.pos.y());
 
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 
@@ -2001,6 +2010,7 @@ TEST_F(InputHandlerProxyEventQueueTest, ScrollPredictorTest) {
   EXPECT_CALL(mock_input_handler_, SetNeedsAnimateInput()).Times(1);
   EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
       .WillOnce(testing::Return(kImplThreadScrollState));
+  tick_clock.Advance(base::TimeDelta::FromMilliseconds(8));
   HandleGestureEvent(WebInputEvent::kGestureScrollBegin);
   DeliverInputForBeginFrame();
   EXPECT_FALSE(GestureScrollEventPredictionAvailable(&result));
@@ -2544,6 +2554,8 @@ class InputHandlerProxyMomentumScrollJankTest : public testing::Test {
                              &mock_client_,
                              /*force_input_to_main_thread=*/false) {
     tick_clock_.SetNowTicks(base::TimeTicks::Now());
+    // Disable scroll predictor for this test.
+    input_handler_proxy_.scroll_predictor_ = nullptr;
     input_handler_proxy_.SetTickClockForTesting(&tick_clock_);
   }
 

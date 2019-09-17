@@ -25,6 +25,7 @@
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/ui/badges/badge_button_action_handler.h"
 #import "ios/chrome/browser/ui/badges/badge_button_factory.h"
+#import "ios/chrome/browser/ui/badges/badge_delegate.h"
 #import "ios/chrome/browser/ui/badges/badge_mediator.h"
 #import "ios/chrome/browser/ui/badges/badge_view_controller.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -72,10 +73,11 @@ const char* const kOmniboxQueryLocationAuthorizationStatusHistogram =
 const int kLocationAuthorizationStatusCount = 5;
 }  // namespace
 
-@interface LocationBarCoordinator ()<LoadQueryCommands,
-                                     LocationBarDelegate,
-                                     LocationBarViewControllerDelegate,
-                                     LocationBarConsumer> {
+@interface LocationBarCoordinator () <BadgeDelegate,
+                                      LoadQueryCommands,
+                                      LocationBarDelegate,
+                                      LocationBarViewControllerDelegate,
+                                      LocationBarConsumer> {
   // API endpoint for omnibox.
   std::unique_ptr<WebOmniboxEditControllerImpl> _editController;
   // Observer that updates |viewController| for fullscreen events.
@@ -173,10 +175,14 @@ const int kLocationAuthorizationStatusCount = 5;
   self.omniboxPopupCoordinator.webStateList = self.webStateList;
   [self.omniboxPopupCoordinator start];
 
-  // Create BadgeMediator and set the viewController as its consumer.
+  // Create an action handler that will handle the action to take for button
+  // taps.
   BadgeButtonActionHandler* actionHandler =
       [[BadgeButtonActionHandler alloc] init];
   actionHandler.dispatcher = static_cast<id<InfobarCommands>>(self.dispatcher);
+  actionHandler.buttonActionDelegate = self;
+  // Create button factory that wil be used by the ViewController to get
+  // BadgeButtons for a BadgeType.
   BadgeButtonFactory* buttonFactory =
       [[BadgeButtonFactory alloc] initWithActionHandler:actionHandler];
   self.badgeViewController =
@@ -184,6 +190,7 @@ const int kLocationAuthorizationStatusCount = 5;
   [self.viewController addChildViewController:self.badgeViewController];
   [self.viewController setBadgeView:self.badgeViewController.view];
   [self.badgeViewController didMoveToParentViewController:self.viewController];
+  // Create BadgeMediator and set the viewController as its consumer.
   self.badgeMediator =
       [[BadgeMediator alloc] initWithConsumer:self.badgeViewController
                                  webStateList:self.webStateList];
@@ -252,6 +259,13 @@ const int kLocationAuthorizationStatusCount = 5;
 
 - (id<EditViewAnimatee>)editViewAnimatee {
   return self.omniboxCoordinator.animatee;
+}
+
+#pragma mark - BadgeDelegate
+
+- (void)showOverflowMenu {
+  // TODO(crbug.com/976901): Retrieve badges to show in overflow menu and send
+  // signal to BVC.
 }
 
 #pragma mark - LoadQueryCommands

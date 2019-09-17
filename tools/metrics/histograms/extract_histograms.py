@@ -404,6 +404,12 @@ def _ExtractHistogramsFromXmlTree(tree, enums):
       logging.error('histogram %s should specify <owner>s', name)
       have_errors = True
 
+    # Histograms should have either units or enum.
+    if (not histogram.hasAttribute('units') and
+        not histogram.hasAttribute('enum')):
+      logging.error('histogram %s should have either units or enum', name)
+      have_errors = True
+
     # Handle units.
     if histogram.hasAttribute('units'):
       histogram_entry['units'] = histogram.getAttribute('units')

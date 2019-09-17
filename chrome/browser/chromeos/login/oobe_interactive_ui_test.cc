@@ -1,3 +1,4 @@
+
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -305,7 +306,7 @@ class FakeRecommendAppsFetcher : public RecommendAppsFetcher {
     base::Value app(base::Value::Type::DICTIONARY);
     app.SetKey("package_name", base::Value("test.package"));
     base::Value app_list(base::Value::Type::LIST);
-    app_list.GetList().emplace_back(std::move(app));
+    app_list.Append(std::move(app));
     delegate_->OnLoadSuccess(std::move(app_list));
   }
   void Retry() override { NOTREACHED(); }
@@ -585,7 +586,13 @@ void OobeInteractiveUITest::SimpleEndToEnd() {
   WaitForLoginDisplayHostShutdown();
 }
 
-IN_PROC_BROWSER_TEST_P(OobeInteractiveUITest, SimpleEndToEnd) {
+// Timing out on debug bots. crbug.com/1004327
+#if defined(NDEBUG)
+#define MAYBE_SimpleEndToEnd SimpleEndToEnd
+#else
+#define MAYBE_SimpleEndToEnd DISABLED_SimpleEndToEnd
+#endif
+IN_PROC_BROWSER_TEST_P(OobeInteractiveUITest, MAYBE_SimpleEndToEnd) {
   SimpleEndToEnd();
 }
 
@@ -643,8 +650,8 @@ void OobeZeroTouchInteractiveUITest::ZeroTouchEndToEnd() {
   WaitForLoginDisplayHostShutdown();
 }
 
-// crbug.com/997987
-#if defined(MEMORY_SANITIZER)
+// crbug.com/997987. Disabled in debug since they time out.crbug.com/1004327
+#if defined(MEMORY_SANITIZER) || !defined(NDEBUG)
 #define MAYBE_EndToEnd DISABLED_EndToEnd
 #else
 #define MAYBE_EndToEnd EndToEnd
@@ -820,7 +827,8 @@ class EphemeralUserOobeTest
       &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
 };
 
-IN_PROC_BROWSER_TEST_P(EphemeralUserOobeTest, RegularEphemeralUser) {
+// TODO(crbug.com/1004561) Disabled due to flake.
+IN_PROC_BROWSER_TEST_P(EphemeralUserOobeTest, DISABLED_RegularEphemeralUser) {
   ScopedQuickUnlockPrivateGetAuthTokenFunctionObserver get_auth_token_observer;
 
   WaitForGaiaSignInScreen(test_setup()->arc_state() != ArcState::kNotAvailable);

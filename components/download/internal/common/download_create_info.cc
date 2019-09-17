@@ -4,10 +4,10 @@
 
 #include "components/download/public/common/download_create_info.h"
 
+#include <memory>
 #include <string>
 
 #include "base/format_macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/http/http_response_headers.h"
 
@@ -35,8 +35,7 @@ DownloadCreateInfo::DownloadCreateInfo(
       is_content_initiated(false) {}
 
 DownloadCreateInfo::DownloadCreateInfo()
-    : DownloadCreateInfo(base::Time(), base::WrapUnique(new DownloadSaveInfo)) {
-}
+    : DownloadCreateInfo(base::Time(), std::make_unique<DownloadSaveInfo>()) {}
 
 DownloadCreateInfo::~DownloadCreateInfo() {}
 

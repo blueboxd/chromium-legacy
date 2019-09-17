@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/full_card_request_result_delegate_bridge.h"
 
+@protocol BrowserCoordinatorCommands;
 namespace autofill {
 class CreditCard;
 }  // namespace autofill
@@ -39,6 +40,7 @@ extern NSString* const ManageCardsAccessibilityIdentifier;
 
 // The designated initializer. |cards| must not be nil.
 - (instancetype)initWithCards:(std::vector<autofill::CreditCard*>)cards
+                   dispatcher:(id<BrowserCoordinatorCommands>)dispatcher
     NS_DESIGNATED_INITIALIZER;
 
 // Unavailable. Use |initWithCards:|.

@@ -232,6 +232,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="27527859628328957">Ves a l'element enfocable següent</translation>
 <translation id="2770781857296573485">Entra a l'exploració de grups</translation>
 <translation id="2777845298774924149">S'ha sortit</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{# més}other{# més}}</translation>
 <translation id="2784959586797362050">Com sempre, per enviar-nos suggeriments directament, prem Cerca+A i després la tecla I. Ens agradaria saber la teva opinió.</translation>
 <translation id="2800204403141299078">No hi ha més elements diferents.</translation>
 <translation id="2800780099804980316">No hi ha cap capçalera anterior del nivell 1.</translation>
@@ -714,6 +715,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="5956928062748260866">Diàleg</translation>
 <translation id="5963413905009737549">Secció</translation>
 <translation id="5968607524793740041">Mostra el menú contextual</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{amb # element}other{amb # elements}}</translation>
 <translation id="5981446804259161541">Cian clar</translation>
 <translation id="5983179082906765664">Augmenta la granularitat de la navegació</translation>
 <translation id="5992285135956208197">Document gràfic</translation>

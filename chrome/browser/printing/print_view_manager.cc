@@ -110,24 +110,13 @@ bool PrintViewManager::BasicPrint(content::RenderFrameHost* rfh) {
 
 bool PrintViewManager::PrintPreviewNow(content::RenderFrameHost* rfh,
                                        bool has_selection) {
-  // Users can send print commands all they want and it is beyond
-  // PrintViewManager's control. Just ignore the extra commands.
-  // See http://crbug.com/136842 for example.
-  if (print_preview_state_ != NOT_PREVIEWING)
-    return false;
+  return PrintPreview(rfh, nullptr, has_selection);
+}
 
-  // Don't print / print preview interstitials or crashed tabs.
-  if (IsInterstitialOrCrashed())
-    return false;
-
-  mojom::PrintRenderFrameAssociatedPtr print_render_frame;
-  rfh->GetRemoteAssociatedInterfaces()->GetInterface(&print_render_frame);
-  print_render_frame->InitiatePrintPreview(has_selection);
-
-  DCHECK(!print_preview_rfh_);
-  print_preview_rfh_ = rfh;
-  print_preview_state_ = USER_INITIATED_PREVIEW;
-  return true;
+bool PrintViewManager::PrintPreviewWithPrintRenderer(
+    content::RenderFrameHost* rfh,
+    mojom::PrintRendererAssociatedPtrInfo print_renderer) {
+  return PrintPreview(rfh, std::move(print_renderer), false);
 }
 
 void PrintViewManager::PrintPreviewForWebNode(content::RenderFrameHost* rfh) {
@@ -201,6 +190,31 @@ void PrintViewManager::RenderFrameDeleted(
   if (render_frame_host == print_preview_rfh_)
     PrintPreviewDone();
   PrintViewManagerBase::RenderFrameDeleted(render_frame_host);
+}
+
+bool PrintViewManager::PrintPreview(
+    content::RenderFrameHost* rfh,
+    mojom::PrintRendererAssociatedPtrInfo print_renderer,
+    bool has_selection) {
+  // Users can send print commands all they want and it is beyond
+  // PrintViewManager's control. Just ignore the extra commands.
+  // See http://crbug.com/136842 for example.
+  if (print_preview_state_ != NOT_PREVIEWING)
+    return false;
+
+  // Don't print / print preview interstitials or crashed tabs.
+  if (IsInterstitialOrCrashed())
+    return false;
+
+  mojom::PrintRenderFrameAssociatedPtr print_render_frame;
+  rfh->GetRemoteAssociatedInterfaces()->GetInterface(&print_render_frame);
+  print_render_frame->InitiatePrintPreview(std::move(print_renderer),
+                                           has_selection);
+
+  DCHECK(!print_preview_rfh_);
+  print_preview_rfh_ = rfh;
+  print_preview_state_ = USER_INITIATED_PREVIEW;
+  return true;
 }
 
 void PrintViewManager::OnDidShowPrintDialog(content::RenderFrameHost* rfh) {

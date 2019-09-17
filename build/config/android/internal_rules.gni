@@ -2025,16 +2025,10 @@ if (enable_java_templates) {
   #   post_process_script: (optional)
   #
   #   package_name: (optional)
-  #     Name of the package for the purpose of assigning package ID.
-  #
-  #   package_name_to_id_mapping: (optional)
-  #     List containing mapping from package names to package IDs. It will be
-  #     used to determine which package ID to assign if package_name variable
-  #     was passed in.
+  #     Name of the package for the purpose of creating R class.
   #
   #   package_id: (optional)
-  #     Use a custom package ID in resource IDs (same purpose as
-  #    package_name_to_id_mapping)
+  #     Use a custom package ID in resource IDs.
   #
   #   arsc_package_name: (optional)
   #     Use this package name in the arsc file rather than the package name
@@ -2270,8 +2264,8 @@ if (enable_java_templates) {
       }
       if (defined(invoker.package_name)) {
         args += [
-          "--package-name=${invoker.package_name}",
-          "--package-name-to-id-mapping=${invoker.package_name_to_id_mapping}",
+          "--package-name",
+          invoker.package_name,
         ]
       }
       if (defined(invoker.arsc_package_name)) {

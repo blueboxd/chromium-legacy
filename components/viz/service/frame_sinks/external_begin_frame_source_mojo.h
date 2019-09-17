@@ -7,13 +7,17 @@
 
 #include <memory>
 
+#include "base/containers/flat_set.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/service/display/display.h"
+#include "components/viz/service/frame_sinks/frame_sink_observer.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "services/viz/privileged/mojom/compositing/external_begin_frame_controller.mojom.h"
 
 namespace viz {
+
+class FrameSinkManagerImpl;
 
 // Implementation of ExternalBeginFrameSource that's controlled by IPCs over
 // the mojom::ExternalBeginFrameController interface. Replaces the Display's
@@ -23,9 +27,11 @@ class VIZ_SERVICE_EXPORT ExternalBeginFrameSourceMojo
     : public mojom::ExternalBeginFrameController,
       public DisplayObserver,
       public ExternalBeginFrameSource,
-      public ExternalBeginFrameSourceClient {
+      public ExternalBeginFrameSourceClient,
+      public FrameSinkObserver {
  public:
   ExternalBeginFrameSourceMojo(
+      FrameSinkManagerImpl* frame_sink_manager,
       mojom::ExternalBeginFrameControllerAssociatedRequest controller_request,
       uint32_t restart_id);
   ~ExternalBeginFrameSourceMojo() override;
@@ -46,9 +52,36 @@ class VIZ_SERVICE_EXPORT ExternalBeginFrameSourceMojo
   void OnDisplayDidFinishFrame(const BeginFrameAck& ack) override;
   void OnDisplayDestroyed() override;
 
-  base::OnceCallback<void(const BeginFrameAck& ack)> pending_frame_callback_;
-  mojo::AssociatedBinding<mojom::ExternalBeginFrameController> binding_;
+  // FrameSinkObserver overrides.
+  void OnRegisteredFrameSinkId(const FrameSinkId& frame_sink_id) override {}
+  void OnInvalidatedFrameSinkId(const FrameSinkId& frame_sink_id) override {}
+  void OnCreatedCompositorFrameSink(const FrameSinkId& frame_sink_id,
+                                    bool is_root) override {}
+  void OnDestroyedCompositorFrameSink(
+      const FrameSinkId& frame_sink_id) override;
+  void OnRegisteredFrameSinkHierarchy(
+      const FrameSinkId& parent_frame_sink_id,
+      const FrameSinkId& child_frame_sink_id) override {}
+  void OnUnregisteredFrameSinkHierarchy(
+      const FrameSinkId& parent_frame_sink_id,
+      const FrameSinkId& child_frame_sink_id) override {}
+  void OnFrameSinkDidBeginFrame(const FrameSinkId& frame_sink_id,
+                                const BeginFrameArgs& args) override;
+  void OnFrameSinkDidFinishFrame(const FrameSinkId& frame_sink_id,
+                                 const BeginFrameArgs& args) override;
 
+  void MaybeProduceFrameCallback();
+
+  FrameSinkManagerImpl* const frame_sink_manager_;
+
+  mojo::AssociatedBinding<mojom::ExternalBeginFrameController> binding_;
+  base::OnceCallback<void(const BeginFrameAck& ack)> pending_frame_callback_;
+  // The frame source id as specified in BeginFrameArgs passed to
+  // IssueExternalBeginFrame. Note this is likely to be different from our
+  // source id, but this is what will be reported to FrameSinkObserver methods.
+  uint64_t original_source_id_ = BeginFrameArgs::kStartingSourceId;
+
+  base::flat_set<FrameSinkId> pending_frame_sinks_;
   Display* display_ = nullptr;
 };
 

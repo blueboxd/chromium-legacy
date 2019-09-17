@@ -35,8 +35,9 @@ enum class MobileMessagesBannerDismissType {
   TimedOut = 0,
   // Infobar Banner was dismissed by being swiped up.
   SwipedUp = 1,
-  // Infobar Banner was dismissed by being dragged into an Infobar Modal.
-  ExpandedToModal = 2,
+  // *DEPRECATED* Infobar Banner was dismissed by being dragged into an Infobar
+  // Modal.
+  ExpandedToModal_DEPRECATED = 2,
   // Infobar Banner was dismissed by being tapped into an Infobar Modal.
   TappedToModal = 3,
   // Highest enumerator. Recommended by Histogram metrics best practices.

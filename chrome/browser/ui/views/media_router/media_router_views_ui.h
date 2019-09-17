@@ -408,7 +408,7 @@ class MediaRouterViewsUI
   base::WeakPtr<PresentationServiceDelegateImpl> presentation_service_delegate_;
 
   // WebContents for the tab for which the Cast dialog is shown.
-  content::WebContents* initiator_;
+  content::WebContents* initiator_ = nullptr;
 
   // The dialog that handles opening the file dialog and validating and
   // returning the results.

@@ -101,7 +101,6 @@ class CORE_EXPORT HTMLTextAreaElement final : public TextControlElement {
 
   bool IsEnumeratable() const override { return true; }
   bool IsInteractiveContent() const override;
-  bool SupportsAutofocus() const override;
   bool IsLabelable() const override { return true; }
 
   const AtomicString& FormControlType() const override;

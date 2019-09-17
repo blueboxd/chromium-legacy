@@ -66,6 +66,7 @@
 <translation id="1407135791313364759">باز کردن همه</translation>
 <translation id="1409426117486808224">نمای ساده‌شده برای برگه‌های باز</translation>
 <translation id="1409879593029778104">بارگیری <ph name="FILE_NAME" /> انجام نشد زیرا فایل از قبل موجود است.</translation>
+<translation id="1413136574162415971">‏Google می‌تواند بررسی کند آیا گذرواژه‌هایتان بخشی از نقض داده‌ها بوده است یا نه. اگر با حساب Google به سیستم وارد شوید و همگام‌سازی را روشن کرده باشید، این ویژگی روشن خواهد شد.</translation>
 <translation id="1414981605391750300">‏درحال اتصال به Google. ممکن است یک دقیقه طول بکشد…</translation>
 <translation id="1416550906796893042">نسخه برنامه</translation>
 <translation id="1430915738399379752">چاپ</translation>
@@ -160,6 +161,7 @@
 <translation id="2091887806945687916">صدا</translation>
 <translation id="2096012225669085171">همگام‌سازی و شخصی‌سازی در همه دستگاه‌ها</translation>
 <translation id="2100273922101894616">ورود به سیستم خودکار</translation>
+<translation id="2100314319871056947">بخش‌های کوچک‌تری از نوشتار را به اشتراک بگذارید</translation>
 <translation id="2107397443965016585">قبل از اجازه به سایت‌ها برای پخش محتوای محافظت‌شده سؤال شود (توصیه می‌شود)</translation>
 <translation id="2111511281910874386">رفتن به صفحه</translation>
 <translation id="2122601567107267586">باز کردن برنامه امکان‌پذیر نیست</translation>
@@ -253,6 +255,7 @@
 <translation id="2836148919159985482">برای خروج از حالت تمام صفحه، دکمه برگشت را لمس کنید.</translation>
 <translation id="2842985007712546952">پوشه اصلی</translation>
 <translation id="2858138569776157458">سایت‌های برتر</translation>
+<translation id="2860954141821109167">مطمئن شوید برنامه تلفن در این دستگاه فعال باشد</translation>
 <translation id="2870560284913253234">سایت</translation>
 <translation id="2874939134665556319">آهنگ قبلی</translation>
 <translation id="2876369937070532032">‏اگر امنیتتان درخطر باشد، نشانی وب برخی از صفحه‌هایی را که بازدید می‌کنید به Google می‌فرستد</translation>
@@ -277,6 +280,7 @@
 <translation id="2996291259634659425">ایجاد عبارت عبور</translation>
 <translation id="2996809686854298943">نشانی وب لازم است</translation>
 <translation id="300526633675317032">این کار کل <ph name="SIZE_IN_KB" /> فضای ذخیره‌سازی وب‌سایت را پاک می‌کند.</translation>
+<translation id="3016635187733453316">مطمئن شوید این دستگاه به اینترنت متصل باشد</translation>
 <translation id="3029613699374795922"><ph name="KBS" /> کیلوبایت بارگیری شد</translation>
 <translation id="3029704984691124060">عبارت‌های عبور مطابقت ندارند</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />دریافت راهنمایی<ph name="END_LINK" /></translation>
@@ -841,6 +845,7 @@
 <translation id="723171743924126238">انتخاب تصاویر</translation>
 <translation id="7233236755231902816">‏برای اینکه وب را به زبان خود ببینید، آخرین نسخه Chrome را دریافت کنید</translation>
 <translation id="7243308994586599757">گزینه‌ها در نزدیک پایین صفحه نمایش در دسترس هستند</translation>
+<translation id="7248069434667874558">‏مطمئن شوید همگام‌سازی <ph name="TARGET_DEVICE_NAME" /> در Chrome روشن باشد</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> مورد انتخاب شد</translation>
 <translation id="7274013316676448362">سایت مسدودشده</translation>
 <translation id="7290209999329137901">عدم‌دسترسی به تغییر نام</translation>
@@ -955,6 +960,7 @@
 <translation id="8007176423574883786">برای این دستگاه غیرفعال شد</translation>
 <translation id="8013372441983637696">‏داده‌های این Chrome هم از این دستگاه پاک شود</translation>
 <translation id="8015452622527143194">برگرداندن همه‌چیز در صفحه به‌اندازه پیش‌فرض</translation>
+<translation id="8015780634880457457">‏Google می‌تواند بررسی کند که آیا گذرواژه‌هایتان بخشی از نقض داده بوده است یا نه</translation>
 <translation id="802154636333426148">بارگیری نشد</translation>
 <translation id="8026334261755873520">پاک کردن داده‌های مرور</translation>
 <translation id="8035133914807600019">پوشه جدید…</translation>
@@ -1017,6 +1023,7 @@
 <translation id="8445448999790540984">گذرواژه‌ها صادر نشدند</translation>
 <translation id="8447861592752582886">لغو مجوز دستگاه</translation>
 <translation id="8461694314515752532">رمزگذاری داده‌های همگام‌سازی‌شده با عبارت عبور همگام‌سازی خودتان</translation>
+<translation id="8466613982764129868">مطمئن شوید <ph name="TARGET_DEVICE_NAME" /> به اینترنت متصل باشد</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">امکان دسترسی به صورت آفلاین</translation>
 <translation id="8489271220582375723">باز کردن صفحه سابقه</translation>
@@ -1107,6 +1114,7 @@
 <translation id="9188680907066685419">خروج از حساب مدیریت‌شده</translation>
 <translation id="9204836675896933765">۱ فایل باقی مانده است</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9209888181064652401">برقراری تماس ممکن نیست</translation>
 <translation id="9219103736887031265">تصاویر</translation>
 <translation id="926205370408745186">‏فعالیت Chrome شما از «آسایش دیجیتالی» برداشته شود</translation>
 <translation id="932327136139879170">منزل</translation>

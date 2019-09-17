@@ -110,16 +110,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
       base::WeakPtr<CanvasResourceDispatcher>,
       bool is_origin_top_left = true);
 
-  static std::unique_ptr<CanvasResourceProvider> CreateForTesting(
-      const IntSize&,
-      ResourceProviderType,
-      base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
-      unsigned msaa_sample_count,
-      const CanvasColorParams&,
-      uint8_t presentation_mode,
-      base::WeakPtr<CanvasResourceDispatcher>,
-      bool is_origin_top_left = true);
-
   // Use Snapshot() for capturing a frame that is intended to be displayed via
   // the compositor. Cases that are destined to be transferred via a
   // TransferableResource should call ProduceCanvasResource() instead.
@@ -194,6 +184,10 @@ class PLATFORM_EXPORT CanvasResourceProvider
   // Notifies the provider when the texture params associated with |resource|
   // are modified externally from the provider's SkSurface.
   virtual void NotifyTexParamsModified(const CanvasResource* resource) {}
+
+  size_t cached_resources_count_for_testing() const {
+    return canvas_resources_.size();
+  }
 
  protected:
   gpu::gles2::GLES2Interface* ContextGL() const;

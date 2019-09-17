@@ -21,7 +21,8 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -56,8 +57,9 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
   FakeContentAutofillDriver() : called_field_change_(false) {}
   ~FakeContentAutofillDriver() override {}
 
-  void BindRequest(mojom::AutofillDriverAssociatedRequest request) {
-    bindings_.AddBinding(this, std::move(request));
+  void BindReceiver(
+      mojo::PendingAssociatedReceiver<mojom::AutofillDriver> receiver) {
+    receivers_.Add(this, std::move(receiver));
   }
 
   bool called_field_change() const { return called_field_change_; }
@@ -127,7 +129,7 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
   // Records data received via FormSeen() call.
   std::unique_ptr<std::vector<FormData>> forms_;
 
-  mojo::AssociatedBindingSet<mojom::AutofillDriver> bindings_;
+  mojo::AssociatedReceiverSet<mojom::AutofillDriver> receivers_;
 };
 
 }  // namespace
@@ -156,8 +158,9 @@ class AutofillRendererTest : public ChromeRenderViewTest {
   }
 
   void BindAutofillDriver(mojo::ScopedInterfaceEndpointHandle handle) {
-    fake_driver_.BindRequest(
-        mojom::AutofillDriverAssociatedRequest(std::move(handle)));
+    fake_driver_.BindReceiver(
+        mojo::PendingAssociatedReceiver<mojom::AutofillDriver>(
+            std::move(handle)));
   }
 
   FakeContentAutofillDriver fake_driver_;

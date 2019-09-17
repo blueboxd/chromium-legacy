@@ -75,7 +75,7 @@ class ScriptInjectionManager::RFOHelper : public content::RenderFrameObserver {
   bool OnMessageReceived(const IPC::Message& message) override;
   void DidCreateNewDocument() override;
   void DidCreateDocumentElement() override;
-  void DidFailProvisionalLoad(const blink::WebURLError& error) override;
+  void DidFailProvisionalLoad() override;
   void DidFinishDocumentLoad() override;
   void FrameDetached() override;
   void OnDestruct() override;
@@ -146,8 +146,7 @@ void ScriptInjectionManager::RFOHelper::DidCreateDocumentElement() {
                      weak_factory_.GetWeakPtr(), UserScript::DOCUMENT_START));
 }
 
-void ScriptInjectionManager::RFOHelper::DidFailProvisionalLoad(
-    const blink::WebURLError& error) {
+void ScriptInjectionManager::RFOHelper::DidFailProvisionalLoad() {
   auto it = manager_->frame_statuses_.find(render_frame());
   if (it != manager_->frame_statuses_.end() &&
       it->second == UserScript::DOCUMENT_START) {
@@ -210,7 +209,7 @@ void ScriptInjectionManager::RFOHelper::OnStop() {
   // If the navigation request fails (e.g. 204/205/downloads), notify the
   // extension to avoid keeping the frame in a START state indefinitely which
   // leads to deadlocks.
-  DidFailProvisionalLoad(blink::WebURLError(net::ERR_FAILED, blink::WebURL()));
+  DidFailProvisionalLoad();
 }
 
 void ScriptInjectionManager::RFOHelper::OnExecuteCode(

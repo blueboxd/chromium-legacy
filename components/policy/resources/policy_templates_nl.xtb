@@ -97,6 +97,7 @@
       Als dit beleid niet is ingesteld, mogen in het cachegeheugen opgeslagen GPO's maximaal gedurende 25 uur opnieuw worden gebruikt.
 
       Als dit beleid is ingesteld op 0, worden er geen GPO's in het cachegeheugen opgeslagen. Houd er rekening mee dat de server hierdoor zwaarder wordt belast, aangezien GPO's telkens opnieuw worden gedownload wanneer er beleid wordt opgehaald, zelfs als ze niet zijn gewijzigd.</translation>
+<translation id="1111470455889178048">Gebruikersuploads en -downloads verzenden om te laten scannen</translation>
 <translation id="1117462881884985156"><ph name="PRODUCT_NAME" /> omzeilt elke proxy voor de lijst met hosts die hier wordt gespecificeerd.
 
           Dit beleid wordt alleen van kracht als je handmatige proxyinstellingen hebt geselecteerd bij 'Kies hoe je proxyserverinstellingen wilt specificeren' en als het beleid <ph name="PROXY_SETTINGS_POLICY_NAME" /> niet is gespecificeerd.
@@ -399,6 +400,7 @@
       zijn niet toegestaan</translation>
 <translation id="1634989431648355062">De <ph name="FLASH_PLUGIN_NAME" />-plug-in toestaan op deze sites</translation>
 <translation id="1645793986494086629">Schema:</translation>
+<translation id="1648816843164517573">Lijst met namen die de controle van het HSTS-beleid overslaan</translation>
 <translation id="1653229475925941921">Als dit beleid is ingesteld, bepaalt dit het type vergrootglas dat is ingeschakeld. Als het beleid is ingesteld op 'Geen', wordt het vergrootglas uitgeschakeld.
 
           Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of overschrijven.
@@ -904,6 +906,7 @@
 <translation id="254653220329944566">Schakelt cloudrapportage voor <ph name="PRODUCT_NAME" /> in</translation>
 <translation id="2548572254685798999">Gegevens over Safe Browsing rapporteren</translation>
 <translation id="2550593661567988768">Alleen enkelzijdig afdrukken</translation>
+<translation id="2551520365302988324">Gebruikersuploads verzenden om te laten scannen</translation>
 <translation id="2552966063069741410">Tijdzone</translation>
 <translation id="2562339630163277285">Hiermee kun je de URL opgeven van de zoekmachine die wordt gebruikt om instantresultaten te leveren. De URL moet de tekenreeks <ph name="SEARCH_TERM_MARKER" /> bevatten. Deze tekenreeks wordt op het moment van de zoekopdracht vervangen door de tekst die de gebruiker tot op dat moment heeft getypt.
 
@@ -984,6 +987,7 @@
           Dit beleid is optioneel. Als het beleid niet wordt ingesteld, wordt de standaardcodering (UTF-8) gebruikt.
 
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
+<translation id="2679827548357140943">Lijst met domeinen waarvoor geüploade content moet worden gecontroleerd op malware</translation>
 <translation id="268577405881275241">De proxyfunctie voor het comprimeren van gegevens inschakelen</translation>
 <translation id="2693108589792503178">Configureer de URL voor het wijzigen van het wachtwoord.</translation>
 <translation id="2694143893026486692">Gedockt vergrootglas ingeschakeld</translation>
@@ -1361,6 +1365,10 @@
 <translation id="332771718998993005">De naam bepalen die wordt geadverteerd als een bestemming van <ph name="PRODUCT_NAME" />.
 
           Als dit beleid is ingesteld op een niet-lege tekenreeks, wordt die tekenreeks gebruikt als de naam van de <ph name="PRODUCT_NAME" />-bestemming. Anders wordt de apparaatnaam gebruikt voor de bestemmingsnaam. Als dit beleid niet is ingesteld, is de naam van de bestemming de apparaatnaam en kan de eigenaar van het apparaat (of een gebruiker in het domein dat het apparaat beheert) deze naam wijzigen. De naam mag maximaal 24 tekens lang zijn.</translation>
+<translation id="3331950121151548952">Lijst met domeinen waarvoor geüploade content moet worden gecontroleerd op malware.  Dit beleid wordt alleen gebruikt als <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> is ingesteld op een waarde die malwarecontroles voor uploads toestaat of afdwingt.
+
+      Als dit beleid niet is ingesteld of is ingesteld op een lege lijst met domeinen, wordt geüploade content niet gecontroleerd op malware.
+      </translation>
 <translation id="3335468714959531450">Hiermee kun je een lijst met URL-patronen instellen waarmee sites worden gespecificeerd die cookies mogen instellen.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid DefaultCookiesSetting (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.
@@ -1430,6 +1438,15 @@
           Als dit beleid is ingesteld op 'False', worden vertragingen in energiebeheer en de limiet voor sessielengte gestart bij het starten van de sessie.</translation>
 <translation id="3478024346823118645">Gebruikersgegevens wissen bij uitloggen</translation>
 <translation id="3480961938508521469">De batterij volledig opladen met een normale snelheid.</translation>
+<translation id="3483729306380590354">Geef een aangepast startpunt voor batterijoplading op in procenten.
+
+          De batterij begint met opladen wanneer de waarde van het aangepaste startpunt voor batterijoplading wordt bereikt.
+
+          <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> moet ten minste vijf procentpunten lager zijn dan <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />.
+
+          Dit beleid wordt alleen gebruikt als <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" /> is ingesteld op <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" />.
+
+          Als dit beleid niet is geconfigureerd of niet is ingesteld, wordt de <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" /> batterijoplaadmodus toegepast.</translation>
 <translation id="348495353354674884">Virtueel toetsenbord inschakelen</translation>
 <translation id="3487623755010328395">
         Als dit beleid is ingesteld, probeert <ph name="PRODUCT_NAME" /> zichzelf te registreren en het bijbehorende cloudbeleid voor alle profielen toe te passen.
@@ -1868,6 +1885,15 @@
           Als je dit beleid instelt, kunnen gebruikers het niet wijzigen of overschrijven.
 
           Als dit beleid niet is ingesteld, is de functie voor automatisch klikken in eerste instantie uitgeschakeld, maar kan de gebruiker deze op elk gewenst moment inschakelen.</translation>
+<translation id="4215197846797661927">Stel een dagconfiguratie voor de geavanceerde batterijoplaadmodus in.
+
+          Dit beleid wordt alleen gebruikt als <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> is ingesteld op True.
+
+          Als dit beleid niet is geconfigureerd of niet is ingesteld, is de geavanceerde batterijoplaadmodus altijd uitgeschakeld.
+
+          Opmerking: <ph name="CHARGE_START_TIME_FIELD_NAME" /> moet minder zijn dan <ph name="CHARGE_END_TIME_FIELD_NAME" />.
+
+          Opmerking: Toegestane waarden voor het veld <ph name="MINUTE_FIELD_NAME" /> in <ph name="CHARGE_START_TIME_FIELD_NAME" /> en <ph name="CHARGE_END_TIME_FIELD_NAME" /> zijn 0, 15, 30, 45.</translation>
 <translation id="4224610387358583899">Drempels voor schermvergrendeling</translation>
 <translation id="423797045246308574">Hiermee kun je een lijst met URL-patronen instellen waarmee sites worden gespecificeerd die geen sleutels mogen genereren. Als een URL-patroon in 'KeygenAllowedForUrls' staat, worden deze uitzonderingen overschreven door dit beleid.
 
@@ -1933,6 +1959,17 @@
           De beleidswaarde moet worden gespecificeerd in milliseconden. De opgegeven waarden moeten kleiner dan of gelijk aan de inactieve vertraging zijn.
 
           Het waarschuwingsbericht wordt alleen weergegeven als de inactieve actie 'uitloggen' of 'afsluiten' is.</translation>
+<translation id="4342827592971649626">Met dit beleid worden uitgebreide scans van gebruikersdownloads met Safe Browsing beheerd. Als dit beleid niet is ingesteld of 'Bestanden niet scannen' (de standaardinstelling) is ingesteld, worden gebruikersdownloads niet gescand door Safe Browsing.
+
+      Als 'Het scannen van bestanden verbieden' is ingesteld, mogen gebruikers hun downloads niet scannen. Dit wijkt af van de standaardinstelling omdat bepaalde gebruikers (zoals gebruikers van 'Geavanceerde beveiliging') hun downloads kunnen sturen om ze te laten scannen. Deze instelling voorkomt dat deze gebruikers downloads scannen.
+
+      Als 'Gebruikersdownloads verzenden voor scannen' is ingesteld, worden gebruikersdownloads via het netwerk naar Safe Browsing gestuurd om ze te scannen op malware.
+
+      Als 'Gebruikersuploads verzenden voor scannen' is ingesteld, worden gebruikersuploads via het netwerk naar Safe Browsing gestuurd om ze te scannen op malware.
+
+      Als 'Gebruikersuploads en -downloads verzenden voor scannen' is ingesteld, gedraagt deze zich volgens de regels die zijn beschreven onder 'Gebruikersuploads verzenden voor scannen' en 'Gebruikersdownloads verzenden voor scannen'.
+
+      Lees <ph name="DELAY_DELIVER_UNTIL_VERDICT_POLICY_NAME" /> en <ph name="UNSAFE_EVENTS_REPORTING_ENABLED" /> voor meer informatie over hoe de gebruiker en de beheerder de resultaten van de scans te zien krijgen.</translation>
 <translation id="4344356660952451291">Lijst met domeinen waarvoor gedownloade content moet worden gecontroleerd op naleving</translation>
 <translation id="4346674324214534449">Hiermee kun je instellen of advertenties moeten worden voorkomen op sites met opdringerige advertenties.
 
@@ -2523,6 +2560,16 @@
       Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of negeren.
 
       Als het beleid niet wordt ingesteld, kan de gebruiker een afbeelding kiezen die op het bureaublad en op de achtergrond van het inlogscherm wordt weergegeven.</translation>
+<translation id="5437214086679373363">Hiermee wordt bepaald of gebruikers bestanden met wachtwoordbeveiliging mogen uploaden of downloaden wanneer scannen is vereist.  Deze beperking geldt alleen voor bestanden die moeten worden gescand, zoals bepaald door <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> en de beleidsregels die de lijst met domeinen beheren waarvoor controles zijn ingeschakeld.
+
+      Als dit beleid is ingesteld op 'Geen', voorkomt <ph name="PRODUCT_NAME" /> dat de gebruiker met een wachtwoord beschermde bestanden uploadt of downloadt.
+
+      Als dit beleid is ingesteld op 'Downloads toestaan', staat <ph name="PRODUCT_NAME" /> toe dat de gebruiker bestanden met wachtwoordbeveiliging downloadt.
+
+      Als dit beleid is ingesteld op 'Uploads toestaan', staat <ph name="PRODUCT_NAME" /> toe dat de gebruiker bestanden met wachtwoordbeveiliging uploadt.
+
+      Als dit beleid niet is ingesteld of is ingesteld op 'Uploads en downloads toestaan', werkt <ph name="PRODUCT_NAME" /> in overeenstemming met de regels die worden beschreven onder 'Downloads toestaan' en 'Uploads toestaan'.
+      </translation>
 <translation id="5437733496511628148">Als je deze instelling inschakelt, kunnen er geen cookies worden ingesteld door webpagina-elementen die niet afkomstig zijn van het domein dat in de adresbalk van de browser staat.
 
       Als je deze instelling uitschakelt, kunnen cookies worden ingesteld door webpagina-elementen die niet afkomstig zijn van het domein dat in de adresbalk van de browser staat, en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
@@ -3431,13 +3478,32 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Ga naar https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode voor meer informatie over het beleid <ph name="IEEM_SITELIST_POLICY" /> van Internet Explorer</translation>
 <translation id="7132877481099023201">URL's die zonder prompt toegang krijgen tot apparaten voor het vastleggen van video</translation>
+<translation id="713712866686796666">Stel de dagelijkse configuratie voor stroompiekverschuiving in.
+
+          Dit beleid wordt alleen gebruikt als <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> is ingesteld op True.
+
+          Als dit beleid niet is geconfigureerd of niet is ingesteld, is stroompiekverschuiving altijd uitgeschakeld.
+
+          Opmerking: Toegestane waarden voor het veld <ph name="MINUTE_FIELD_NAME" /> in <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> en <ph name="CHARGE_START_TIME_FIELD_NAME" /> zijn 0, 15, 30, 45.</translation>
 <translation id="7138678301420049075">Overige</translation>
+<translation id="7139809614375682935">Geef een aangepaste batterijoplaadstop op in procenten.
+
+          De batterij stopt met opladen wanneer de waarde van de aangepaste batterijoplaadstop wordt bereikt.
+
+          <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> moet ten minste vijf procentpunten lager zijn dan <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />.
+
+          Dit beleid wordt alleen gebruikt als <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" /> is ingesteld op <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" />.
+
+          Als dit beleid niet is geconfigureerd of niet is ingesteld, wordt de <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" /> batterijoplaadmodus toegepast.</translation>
 <translation id="7140629953254369759">Geeft <ph name="PRODUCT_OS_NAME" /> de instructie om de taakplannerconfiguratie met de opgegeven naam te gebruiken.
 
       Dit beleid kan worden ingesteld op 'Conservative' (Conservatief) en 'Performance' (Prestaties), waarmee een taakplannerconfiguratie wordt gekozen die is afgestemd op respectievelijk stabiliteit of optimale prestaties.
 
       Als het beleid niet is ingesteld, kan de gebruiker zelf een keuze maken.</translation>
 <translation id="7145335384492396213">Standaardmodus voor afdrukken met pincode</translation>
+<translation id="7149042336307555519"> De typen verbindingen die mogen worden gebruikt voor OS-updates. Vanwege hun grootte kunnen OS-updates de verbinding zwaar belasten, wat kan leiden tot extra kosten. Daarom zijn ze standaard niet ingeschakeld voor verbindingstypen die als duur worden beschouwd (momenteel alleen verbindingen van het type 'mobiel').
+
+      De herkende ID's voor verbindingstypen zijn <ph name="CONNECTION_TYPE_ETHERNET_NAME" />, <ph name="CONNECTION_TYPE_WIFI_NAME" /> en <ph name="CONNECTION_TYPE_CELLULAR_NAME" />.</translation>
 <translation id="7152605873936173525">Hiermee wordt de modus van de DNS-over-HTTPS-resolver bepaald. Houd er rekening mee dat dit beleid alleen de standaardmodus voor elke query instelt. De modus kan worden overschreven voor speciale typen query's, zoals verzoeken om de hostnaam van een DNS-over-HTTPS-server om te zetten.
 
       In de modus <ph name="SECURE_DNS_MODE_OFF" /> wordt DNS-over-HTTPS uitgeschakeld.
@@ -3469,6 +3535,17 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           Als dit beleid is ingesteld op 'false', worden verzoeken voor wake locks van het scherm gedegradeerd tot verzoeken voor wake locks van het systeem.</translation>
 <translation id="7177857088692019405">Snel ontgrendelen</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
+<translation id="7187447094921703950">Schakel het beleid voor het beheer van stroompiekverschuiving in.
+
+          Piekverschuiving is een energiebesparingsbeleid waarmee het gebruik van wisselstroom op piekuren gedurende de dag wordt geminimaliseerd. Voor elke dag van de week kan een begin- en eindtijd voor stroompiekverschuiving worden ingesteld. Op deze tijden gebruikt het systeem de batterij, ook als de wisselstroom is aangesloten, zolang het batterijniveau maar boven de opgegeven drempel blijft. Na de opgegeven eindtijd gebruikt het systeem wisselstroom als deze is aangesloten maar wordt de batterij niet opgeladen. Het systeem keert terug naar de normale werking waarbij wisselstroom wordt gebruikt en de batterij wordt opgeladen na de opgegeven starttijd voor opladen.
+
+          Als dit beleid is ingesteld op True en <ph name="DEVICE_POWER_PEAK_SHIFT_BATTERY_THRESHOLD_NAME" /> en <ph name="DEVICE_POWER_PEAK_SHIFT_DAY_CONFIG_NAME" /> zijn ingesteld, wordt stroompiekverschuiving altijd ingeschakeld als dit wordt ondersteund door het apparaat.
+
+          Als dit beleid is ingesteld op False, wordt stroompiekverschuiving altijd uitgeschakeld.
+
+          Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of negeren.
+
+          Als dit beleid niet wordt ingesteld, wordt stroompiekverschuiving in eerste instantie uitgeschakeld en kan dit worden ingeschakeld door de gebruiker.</translation>
 <translation id="718956142899066210">Verbindingstypen die zijn toegestaan voor updates</translation>
 <translation id="7190286937411178540">De toegankelijkheidsfunctie voor markeren via toetsenbordfocus inschakelen</translation>
 <translation id="7194407337890404814">Naam van standaardzoekprovider</translation>
@@ -4105,6 +4182,17 @@ De aanbevolen manier om beleidsregels te configureren op Windows, is via GPO, ma
 
           Als dit beleid niet is ingesteld, wordt de instelling ingeschakeld.</translation>
 <translation id="8382184662529825177">Het gebruik van externe verificatie inschakelen voor het beveiligen van content voor het apparaat</translation>
+<translation id="8382693763260501307">Schakel het stroombeheerbeleid voor de geavanceerde batterijoplaadmodus in.
+
+          In de geavanceerde batterijoplaadmodus kan de gebruiker de staat van de batterij maximaliseren. In de geavanceerde batterijoplaadmodus gebruikt het systeem buiten werktijden een standaard oplaadalgoritme en andere technieken om de staat van de batterij te maximaliseren. Tijdens werktijden wordt snel opgeladen. Dankzij dit snelle opladen is de batterij sneller volledig opgeladen. Voor elke dag wordt een begintijd en een duur opgegeven om aan te geven wanneer het systeem het intensiefst wordt gebruikt.
+
+          Als dit beleid is ingesteld op True en <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_DAY_CONFIG_NAME" /> is ingesteld, wordt de geavanceerde batterijoplaadmodus altijd ingeschakeld als dit wordt ondersteund door het apparaat.
+
+          Als dit beleid is ingesteld op False, wordt de geavanceerde batterijoplaadmodus altijd uitgeschakeld.
+
+          Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of negeren.
+
+          Als dit beleid niet wordt ingesteld, wordt de geavanceerde batterijoplaadmodus uitgeschakeld en kan deze niet worden ingeschakeld door de gebruiker.</translation>
 <translation id="838870586332499308">Dataroaming inschakelen</translation>
 <translation id="8390049129576938611">Hiermee wordt de interne pdf-viewer in <ph name="PRODUCT_NAME" /> uitgeschakeld. In plaats daarvan wordt dit beschouwd als download. De gebruiker kan pdf-bestanden openen met de standaard-app.
 
@@ -4300,9 +4388,15 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
       Als dit beleid is geconfigureerd, staat de reeks met apps vast en kan de gebruiker deze niet wijzigen.
 
       Als dit beleid niet is ingesteld, kan de gebruiker de lijst met vastgezette apps in de Launcher wijzigen.</translation>
+<translation id="8779504970846195767">Stel de drempel voor stroompiekverschuiving van de batterij in procenten in.
+
+          Dit beleid wordt alleen gebruikt als <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> is ingesteld op True.
+
+          Als dit beleid niet is geconfigureerd of niet is ingesteld, is stroompiekverschuiving altijd uitgeschakeld.</translation>
 <translation id="8798099450830957504">Standaard</translation>
 <translation id="8800453707696044281">Een custom batterijoplaadstop opgeven in procenten</translation>
 <translation id="8801680448782904838">Een gebruiker laten weten dat het aanbevolen of vereist is om de browser of het apparaat opnieuw op te starten</translation>
+<translation id="8802816494059596691">De op deze lijst vermelde hostnamen zijn vrijgesteld van de controle van het HSTS-beleid die verzoeken kan upgraden van HTTP naar HTTPS. In dit beleid zijn alleen hostnamen met één label toegestaan. Hostnamen moeten een canonieke URL hebben: Eventuele IDN's moeten worden geconverteerd naar de A-labelindeling en alle ASCII-letters moeten kleine letters zijn. Dit beleid is alleen van toepassing op de vermelde specifieke hostnamen en is niet van toepassing op de subdomeinen van de vermelde namen.</translation>
 <translation id="8818173863808665831">De geografische locatie van het apparaat rapporteren.
 
       Als het beleid niet is ingesteld of is ingesteld op 'false', wordt de locatie niet gerapporteerd.</translation>
@@ -4465,6 +4559,17 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
       Als de beleidswaarde is ingesteld op een token dat naar een Quick Fix Build verwijst, wordt het apparaat geüpdatet naar de bijbehorende Quick Fix Build als de update niet wordt geblokkeerd door een ander beleid.
 
       Als dit beleid niet is ingesteld of als de waarde niet verwijst naar een Quick Fix Build, wordt het apparaat niet geüpdatet naar een Quick Fix Build. Als er al een Quick Fix Build op het apparaat wordt uitgevoerd en het beleid niet meer is ingesteld of de waarde niet meer verwijst naar een Quick Fix Build, wordt het apparaat geüpdatet naar een reguliere build als de update niet wordt geblokkeerd door een ander beleid.</translation>
+<translation id="9053158112041032237">Bepaalt het stroombeheerbeleid van de geavanceerde batterijoplaadmodus.
+
+          Hiermee wordt het opladen van de batterij dynamisch beheerd om de batterijbelasting te minimaliseren en de levensduur van de batterij te verlengen.
+
+          Als de geavanceerde batterijoplaadmodus is geselecteerd, moeten <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> en <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" /> worden opgegeven.
+
+          Als dit beleid wordt ingesteld en het apparaat deze modus ondersteunt, wordt de batterijoplaadmodus toegepast.
+
+          Als het apparaat het beleid wel ondersteunt, maar het beleid niet wordt ingesteld, wordt de standaard batterijoplaadmodus toegepast en kan de gebruiker de modus niet wijzigen.
+
+          Opmerking: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> overschrijft dit beleid als het is opgegeven.</translation>
 <translation id="9054012305936267950">Met dit beleid wordt het inloggedrag van de browser beheerd. Hiermee kun je specificeren of gebruikers kunnen inloggen bij <ph name="PRODUCT_NAME" /> met kun account en accountgerelateerde services (zoals Chrome-synchronisatie) kunnen gebruiken.
 
       Als het beleid is ingesteld op 'Inloggen bij browser uitschakelen', kan de gebruiker niet inloggen bij de browser en geen accountgebaseerde services gebruiken. Functies op browserniveau (zoals Chrome-synchronisatie) kunnen in dit geval niet worden gebruikt en zijn niet beschikbaar. Als de gebruiker was ingelogd en het beleid is ingesteld op 'Uitgeschakeld', wordt de gebruiker uitgelogd wanneer die Chrome de volgende keer gebruikt. De lokale profielgegevens van de gebruiker (zoals bladwijzers, wachtwoorden, enzovoort) blijven behouden. De gebruiker kan nog steeds inloggen bij en gebruikmaken van Google-webservices zoals Gmail.

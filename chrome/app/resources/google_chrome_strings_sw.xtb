@@ -54,6 +54,8 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="2094919256425865063">Ungependa kufunga Chrome?</translation>
 <translation id="2120620239521071941">Hatua hii itafuta vipengee <ph name="ITEMS_COUNT" /> kwenye kifaa hiki. Ili urejeshe data yako baadaye, ingia katika Chrome ukitumia <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Saidia kuboresha Chrome kwa kuripoti kuhusu <ph name="BEGIN_LINK" />mipangilio ya sasa<ph name="END_LINK" /></translation>
+<translation id="2128103434102193461">Ili upate maelezo kuhusu Mfumo wa Uendeshaji wa Chrome, tafadhali angalia <ph name="LINK_BEGIN" />Kuhusu Mfumo wa Uendeshaji wa Chrome<ph name="LINK_END" /></translation>
+<translation id="2151406531797534936">Tafadhali zima kisha uwashe Chrome sasa</translation>
 <translation id="216054706567564023">Sakinisha Chrome kwenye simu yako. Tutatuma SMS kwenye nambari yako ya simu ya mbinu za kurejesha uwezo wa kufikia akaunti.</translation>
 <translation id="2246246234298806438">Google Chrome haiwezi kuonyesha uhakiki wa kuchapisha wakati kionyeshi kilichojengewa ndani cha PDF kinakosekana.</translation>
 <translation id="2252923619938421629">Saidia kuboresha Google Chrome kwa kuripoti mipangilio ya sasa</translation>
@@ -226,6 +228,7 @@ Google Chrome haiwezi kufufua mipangilio yako.</translation>
 <translation id="7589360514048265910">Kompyuta hii haitapokea tena masasisho ya Google Chrome kwa sababu Mac OS X 10.9 haitumiki tena.</translation>
 <translation id="7592736734348559088">Google Chrome haikuweza kusawazisha data yako kwa sababu maelezo yako ya kuingia katika akaunti yanahitaji kusasishwa.</translation>
 <translation id="7626032353295482388">Karibu kwenye Chrome</translation>
+<translation id="7629695634924605473">Chrome hukuruhusu ujue iwapo manenosiri yako yameathiriwa</translation>
 <translation id="7641148173327520642">Msimamizi wa mfumo unaotumia ameweka mipangilio ya Google Chrome ifungue <ph name="ALTERNATIVE_BROWSER_NAME" /> ili kufikia <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Nembo ya Chrome Enterprise</translation>
 <translation id="7747138024166251722">Kisakinishi hakikuweza kuunda saraka la muda. Tafadhali chunguza nafasi iliyo wazi kwenye diski na ruhusa ya kusakinisha programu.</translation>

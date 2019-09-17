@@ -71,6 +71,7 @@
 <translation id="1292701964462482250">“Programmatūra jūsu datorā, kuras dēļ pārlūkā Chrome nevar izveidot drošu tīmekļa savienojumu” (tikai Windows datoros)</translation>
 <translation id="1294154142200295408">Komandrindu varianti</translation>
 <translation id="129553762522093515">Nesen aizvērtas</translation>
+<translation id="1298536327547837046">Ļaunprātīgas programmatūras meklēšana</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Dzēsiet sīkfailus<ph name="END_LINK" /></translation>
 <translation id="1307966114820526988">Funkcijas, kuru darbība ir pārtraukta</translation>
 <translation id="1320233736580025032">Prc1 (aploksne)</translation>
@@ -167,6 +168,7 @@
 <translation id="1734878702283171397">Sazinieties ar sistēmas administratoru.</translation>
 <translation id="1740951997222943430">Ievadiet derīgu mēnesi</translation>
 <translation id="1743520634839655729">Lai nākamreiz veiktu maksājumu ātrāk, saglabājiet kartes datus, vārdu un norēķinu adresi savā Google kontā un šajā ierīcē.</translation>
+<translation id="1743570585616704562">Nav atpazīts</translation>
 <translation id="1745880797583122200">Jūsu pārlūks tiek pārvaldīts</translation>
 <translation id="17513872634828108">Atvērt cilnes</translation>
 <translation id="1753706481035618306">Lapas numurs</translation>
@@ -426,6 +428,7 @@
 <translation id="320323717674993345">Atcelt maksājumu</translation>
 <translation id="3207960819495026254">Atzīmēts kā grāmatzīme</translation>
 <translation id="3209034400446768650">Lapā var tikt iekasēta nauda</translation>
+<translation id="3215092763954878852">Neizdevās izmantot WebAuthn</translation>
 <translation id="3225919329040284222">Serveris uzrādīja sertifikātu, kas neatbilst iebūvētajām cerībām. Šīs cerības ir ietvertas konkrētām, augstas drošības vietnēm, lai aizsargātu jūs.</translation>
 <translation id="3226128629678568754">Nospiediet atkārtotas ielādes pogu, lai atkārtoti iesniegtu datus, kas nepieciešami lapas ielādei.</translation>
 <translation id="3227137524299004712">Mikrofons</translation>
@@ -561,6 +564,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Nav}=1{No 1 vietnes }zero{No # vietnēm }one{No # vietnes }other{No # vietnēm }}</translation>
 <translation id="397105322502079400">Aprēķina...</translation>
 <translation id="3973234410852337861">Vietne <ph name="HOST_NAME" /> ir bloķēta</translation>
+<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> ir iespējojis pārlūkā funkciju Chrome Enterprise Threat Protection. Chrome Enterprise Threat Protection var piekļūt daļai jūsu datu.</translation>
 <translation id="3987940399970879459">Mazāk nekā 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{Tuvumā ir 1 tīmekļa lapa}zero{Tuvumā ir # tīmekļa lapas}one{Tuvumā ir # tīmekļa lapa}other{Tuvumā ir # tīmekļa lapas}}</translation>
 <translation id="4030383055268325496">&amp;Atsaukt pievienošanu</translation>
@@ -629,6 +633,7 @@
 <translation id="4277028893293644418">Atiestatīt paroli</translation>
 <translation id="4279811152705618813">Jūsu ierīci (veids: <ph name="DEVICE_TYPE" />) pārvalda <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Šī karte tika saglabāta jūsu Google kontā}zero{Šīs kartes tika saglabātas jūsu Google kontā}one{Šīs kartes tika saglabātas jūsu Google kontā}other{Šīs kartes tika saglabātas jūsu Google kontā}}</translation>
+<translation id="428847186335018806">Pārmeklēt failus, ko augšupielādējat vai lejupielādējat pārlūkā Chrome.</translation>
 <translation id="42981349822642051">Izvērst</translation>
 <translation id="4302965934281694568">Chou3 (aploksne)</translation>
 <translation id="4305817255990598646">Pāriet</translation>
@@ -667,6 +672,7 @@
 <translation id="4506176782989081258">Validācijas kļūda: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Sazinieties ar sistēmas administratoru.</translation>
 <translation id="450710068430902550">Kopīgošana ar administratoru</translation>
+<translation id="4508814173490746936">Neizdevās izmantot Touch ID</translation>
 <translation id="4510487217173779431">Chou4 (aploksne)</translation>
 <translation id="4515275063822566619">Kartes un adreses tiek iegūtas no Chrome un jūsu Google konta (<ph name="ACCOUNT_EMAIL" />). Varat tās pārvaldīt <ph name="BEGIN_LINK" />iestatījumos<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (aploksne)</translation>
@@ -762,6 +768,7 @@
 <translation id="5045550434625856497">Nepareiza parole</translation>
 <translation id="5056549851600133418">Jums piemeklēti raksti</translation>
 <translation id="5068524481479508725">A10</translation>
+<translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(viens tiek lietots)}zero{(# tiek lietoti)}one{(# tiek lietots)}other{(# tiek lietoti)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Pārbaudiet starpniekservera adresi<ph name="END_LINK" />.</translation>
 <translation id="5087286274860437796">Servera sertifikāts šobrīd nav derīgs.</translation>
 <translation id="5087580092889165836">Pievienot karti</translation>
@@ -990,6 +997,7 @@
 <translation id="6302269476990306341">Tiek pārtraukta Google asistenta darbība pārlūkprogrammā Chrome.</translation>
 <translation id="6305205051461490394">Vietne <ph name="URL" /> nav sasniedzama.</translation>
 <translation id="6321917430147971392">Sistēmas DNS iestatījumu pārbaude</translation>
+<translation id="6322182122604171028">Neizdevās izmantot Windows Hello</translation>
 <translation id="6328639280570009161">Tīkla prognožu atspējošana</translation>
 <translation id="6328784461820205019">“Savienojums nav privāts”, “&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;”, “&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;”, “&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;”, “&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;” vai “SSL sertifikāta kļūda”</translation>
 <translation id="6328786501058569169">Šī vietne ir krāpnieciska</translation>
@@ -1013,6 +1021,7 @@
 <translation id="6433490469411711332">Kontaktinformācijas rediģēšana</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> noraidīja savienojuma izveidi.</translation>
 <translation id="6434309073475700221">Atmest</translation>
+<translation id="6435221585574090192">Kopīgot ar jūsu administratoru datus par notikumiem, kuri ir saistīti ar drošību un ir atzīmēti funkcijā Chrome Enterprise Threat Protection. Šādos datos var būt ietverti lapu vietrāži URL, faila nosaukums un faila metadati, kā arī lietotājvārdi, ko izmantojat ierīcē un pārlūkā Chrome.</translation>
 <translation id="6440503408713884761">Ignorēts</translation>
 <translation id="6446163441502663861">Kahu (aploksne)</translation>
 <translation id="6446608382365791566">Papildu informācijas pievienošana</translation>
@@ -1057,6 +1066,7 @@
 <translation id="6671697161687535275">Vai noņemt veidlapas ieteikumu no pārlūka Chromium?</translation>
 <translation id="6685834062052613830">Izrakstieties un pabeidziet iestatīšanu</translation>
 <translation id="6689271823431384964">Pārlūkprogrammā Chrome tiek piedāvāts saglabāt jūsu kartes Google kontā, jo esat pierakstījies. Varat mainīt šo darbību iestatījumos. Kartes īpašnieka vārds tiek iegūts no jūsu konta.</translation>
+<translation id="6707256370811247129">Meklēt datus kešatmiņas saturā un failos, ko augšupielādējat vai lejupielādējat pārlūkā Chrome.</translation>
 <translation id="6710213216561001401">Iepriekšējais</translation>
 <translation id="6710594484020273272">&lt;Ierakstiet meklēšanas vienumu&gt;</translation>
 <translation id="671076103358959139">Reģistrācijas pilnvara:</translation>
@@ -1075,6 +1085,7 @@
 <translation id="681021252041861472">Obligātais lauks</translation>
 <translation id="6810899417690483278">Pielāgošanas ID</translation>
 <translation id="6825578344716086703">Jūs mēģinājāt sasniegt domēnu <ph name="DOMAIN" />, bet serveris uzrādīja sertifikātu, kas ir parakstīts, izmantojot vāju paraksta algoritmu (piemēram, SHA-1). Tas nozīmē, ka servera norādītie drošības akreditācijas dati var būt viltoti un šis serveris var nebūt tas serveris, kuru mēģināt sasniegt (iespējams, jūs sazināties ar uzbrucēju).</translation>
+<translation id="6826370046007623921">Datu zuduma novēršana</translation>
 <translation id="6831043979455480757">Tulkot</translation>
 <translation id="6839929833149231406">Apgabals</translation>
 <translation id="6852204201400771460">Vai atkārtoti ielādēt lietotni?</translation>
@@ -1221,6 +1232,7 @@ Papildu informācija:
 <translation id="7542995811387359312">Automātiska kredītkartes numura ievadīšana ir atspējota, jo šai veidlapai netiek izmantots drošs savienojums.</translation>
 <translation id="7548892272833184391">Savienojuma kļūdu novēršana</translation>
 <translation id="7549584377607005141">Lai tīmekļa lapu varētu attēlot pareizi, tai nepieciešami jūsu iepriekš ievadītie dati. Varat atkārtoti nosūtīt šos datus, taču tādā gadījumā tiks atkārtota ikviena darbība, ko pirms tam veica lapa.</translation>
+<translation id="7550637293666041147">Jūsu lietotājvārds ierīcē un pārlūkā Chrome</translation>
 <translation id="7552846755917812628">Izmantojiet tālāk sniegtos padomus.</translation>
 <translation id="7554791636758816595">Jauna cilne</translation>
 <translation id="7564049878696755256">Varat zaudēt piekļuvi savam <ph name="ORG_NAME" /> kontam, vai jūsu identitāte var tikt nozagta. Chrome iesaka nekavējoties nomainīt paroli.</translation>
@@ -1235,6 +1247,7 @@ Papildu informācija:
 <translation id="7610193165460212391">Vērtība pārsniedz diapazonu: <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Derīguma termiņš: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Jums jau ir dati, kas šifrēti, izmantojot citu Google konta paroles versiju. Ievadiet to šeit.</translation>
+<translation id="7625784245512586808">Chrome Enterprise Threat Protection</translation>
 <translation id="7633909222644580952">Veiktspējas dati un avāriju pārskati</translation>
 <translation id="7637571805876720304">Vai noņemt kredītkarti no pārlūka Chromium?</translation>
 <translation id="7638605456503525968">Seriālie porti</translation>
@@ -1345,6 +1358,7 @@ Papildu informācija:
 <translation id="8211406090763984747">Savienojums ir drošs</translation>
 <translation id="8218327578424803826">Piešķirtā atrašanās vieta:</translation>
 <translation id="8220146938470311105">C7/C6 (aploksne)</translation>
+<translation id="8220639454292072926">Enterprise pārskati</translation>
 <translation id="8225771182978767009">Persona, kura iestatīja šo datoru, izvēlējās bloķēt šo vietni.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Atvērt lapu jaunā inkognito režīma cilnē</translation>
@@ -1428,6 +1442,7 @@ Papildu informācija:
 <translation id="8740359287975076522">Nevarēja atrast <ph name="HOST_NAME" /> &lt;abbr id="dnsDefinition"&gt;DNS adresi&lt;/abbr&gt;. Notiek problēmas diagnosticēšana.</translation>
 <translation id="874846938927089722">Atbalstītās kredītkartes un priekšapmaksas kartes</translation>
 <translation id="874918643257405732">Saglabāt šo cilni kā grāmatzīmi</translation>
+<translation id="8751426954251315517">Mēģiniet vēlreiz nākamajā reizē</translation>
 <translation id="8759274551635299824">Kartes derīguma termiņš ir beidzies</translation>
 <translation id="8761567432415473239">Google drošās pārlūkošanas tehnoloģija nesen vietnē <ph name="SITE" /> <ph name="BEGIN_LINK" />atklāja kaitīgas programmas<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB ierīce</translation>
@@ -1492,6 +1507,7 @@ Papildu informācija:
 <translation id="9080712759204168376">Pasūtījuma kopsavilkums</translation>
 <translation id="9089260154716455634">Izslēgšanas stundu politika:</translation>
 <translation id="9095388113577226029">Citas valodas…</translation>
+<translation id="9098981495403789647">Jūsu administrators pārlūkā ir iespējojis Chrome Enterprise Threat Protection. Chrome Enterprise Threat Protection var piekļūt daļai jūsu datu.</translation>
 <translation id="9103872766612412690">Vietnē <ph name="SITE" /> informācijas aizsargāšanai parasti tiek izmantota šifrēšana. Kad pārlūkā Chromium tika mēģināts izveidot savienojumu ar vietni <ph name="SITE" />, šoreiz tā nosūtīja neparastus un nepareizus akreditācijas datus. Iespējams, tas notika, jo uzbrucējs mēģināja uzdoties par vietni <ph name="SITE" />, vai arī Wi-Fi pierakstīšanās ekrāns pārtrauca savienojumu. Jūsu informācija joprojām ir drošībā, jo pārlūks Chromium pārtrauca savienojumu, pirms tika veikta jebkādu datu apmaiņa.</translation>
 <translation id="9106062320799175032">Norēķinu adreses pievienošana</translation>
 <translation id="9114524666733003316">Notiek kartes apstiprināšana...</translation>

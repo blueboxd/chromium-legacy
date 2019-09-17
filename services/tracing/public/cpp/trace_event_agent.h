@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/tracing/public/cpp/base_agent.h"
 #include "services/tracing/public/mojom/tracing.mojom.h"
 
@@ -52,7 +53,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventAgent : public BaseAgent {
   void StartTracing(const std::string& config,
                     base::TimeTicks coordinator_time,
                     StartTracingCallback callback) override;
-  void StopAndFlush(mojom::RecorderPtr recorder) override;
+  void StopAndFlush(mojo::PendingRemote<mojom::Recorder> recorder) override;
 
   void RequestBufferStatus(RequestBufferStatusCallback callback) override;
 
@@ -60,7 +61,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventAgent : public BaseAgent {
                        bool has_more_events);
 
   uint8_t enabled_tracing_modes_;
-  mojom::RecorderPtr recorder_;
+  mojo::Remote<mojom::Recorder> recorder_;
   std::vector<MetadataGeneratorFunction> metadata_generator_functions_;
 
   THREAD_CHECKER(thread_checker_);

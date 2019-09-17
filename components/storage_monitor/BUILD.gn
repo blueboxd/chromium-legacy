@@ -88,6 +88,10 @@ static_library("storage_monitor") {
     ]
     deps += [ "//device/udev_linux" ]
   }
+
+  if (is_fuchsia) {
+    sources += [ "storage_monitor_fuchsia.cc" ]
+  }
 }
 
 static_library("test_support") {

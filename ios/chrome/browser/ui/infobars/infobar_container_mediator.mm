@@ -99,14 +99,23 @@
 
 - (void)infobarWasAccepted:(InfobarType)infobarType
                forWebState:(web::WebState*)webState {
-  if (IsInfobarUIRebootEnabled()) {
     DCHECK(webState);
     DCHECK_EQ(webState, self.webStateList->GetActiveWebState());
     InfobarBadgeTabHelper* infobarBadgeTabHelper =
         InfobarBadgeTabHelper::FromWebState(webState);
     DCHECK(infobarBadgeTabHelper);
     infobarBadgeTabHelper->UpdateBadgeForInfobarAccepted(infobarType);
-  }
+}
+
+- (void)infobarBannerWasDismissed:(InfobarType)infobarType
+                      forWebState:(web::WebState*)webState {
+  DCHECK(webState);
+  // If the banner is dismissed because of a change in WebState, |webState| will
+  // not match the AcitveWebStaate, so don't DCHECK.
+  InfobarBadgeTabHelper* infobarBadgeTabHelper =
+      InfobarBadgeTabHelper::FromWebState(webState);
+  DCHECK(infobarBadgeTabHelper);
+  infobarBadgeTabHelper->UpdateBadgeForInfobarBannerDismissed(infobarType);
 }
 
 #pragma mark - UpgradeCenterClient

@@ -44,7 +44,7 @@ constexpr extensions::api::certificate_provider::Hash kSupportedHashes[] = {
 base::Value ConvertBytesToValue(base::span<const uint8_t> bytes) {
   base::Value value(base::Value::Type::LIST);
   for (auto byte : bytes)
-    value.GetList().emplace_back(byte);
+    value.Append(byte);
   return value;
 }
 
@@ -66,7 +66,7 @@ base::Value MakeCertInfoValue(const net::X509Certificate& certificate) {
                          ConvertBytesToValue(GetCertDer(certificate)));
   base::Value supported_hashes_value(base::Value::Type::LIST);
   for (auto supported_hash : kSupportedHashes) {
-    supported_hashes_value.GetList().emplace_back(base::Value(
+    supported_hashes_value.Append(base::Value(
         extensions::api::certificate_provider::ToString(supported_hash)));
   }
   cert_info_value.SetKey("supportedHashes", std::move(supported_hashes_value));
@@ -164,7 +164,7 @@ void TestCertificateProviderExtension::Observe(
 base::Value TestCertificateProviderExtension::HandleCertificatesRequest() {
   base::Value cert_info_values(base::Value::Type::LIST);
   if (!should_fail_certificate_requests_)
-    cert_info_values.GetList().emplace_back(MakeCertInfoValue(*certificate_));
+    cert_info_values.Append(MakeCertInfoValue(*certificate_));
   return cert_info_values;
 }
 

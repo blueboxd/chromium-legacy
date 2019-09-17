@@ -22,6 +22,7 @@ source_set("http_auth_dialogs") {
     "//ios/chrome/browser/ui/alert_view_controller",
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/overlays:coordinators",
+    "//ios/chrome/browser/ui/presenters",
     "//ui/base",
   ]
 }

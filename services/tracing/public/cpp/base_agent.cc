@@ -52,7 +52,8 @@ void BaseAgent::StartTracing(const std::string& config,
   std::move(callback).Run(true /* success */);
 }
 
-void BaseAgent::StopAndFlush(tracing::mojom::RecorderPtr recorder) {}
+void BaseAgent::StopAndFlush(
+    mojo::PendingRemote<tracing::mojom::Recorder> recorder) {}
 
 void BaseAgent::RequestBufferStatus(
     Agent::RequestBufferStatusCallback callback) {

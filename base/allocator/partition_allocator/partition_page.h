@@ -11,6 +11,7 @@
 #include "base/allocator/partition_allocator/partition_bucket.h"
 #include "base/allocator/partition_allocator/partition_cookie.h"
 #include "base/allocator/partition_allocator/partition_freelist_entry.h"
+#include "base/allocator/partition_allocator/random.h"
 #include "base/logging.h"
 
 namespace base {
@@ -201,19 +202,28 @@ ALWAYS_INLINE size_t PartitionPage::get_raw_size() const {
 }
 
 ALWAYS_INLINE void PartitionPage::Free(void* ptr) {
-#if DCHECK_IS_ON()
   size_t slot_size = this->bucket->slot_size;
   const size_t raw_size = get_raw_size();
   if (raw_size) {
     slot_size = raw_size;
   }
 
+#if DCHECK_IS_ON()
   // If these asserts fire, you probably corrupted memory.
   PartitionCookieCheckValue(ptr);
   PartitionCookieCheckValue(reinterpret_cast<char*>(ptr) + slot_size -
                             kCookieSize);
 
   memset(ptr, kFreedByte, slot_size);
+#else
+  // Probabilistically poison the memory. The goal is to do it often enough to
+  // catch bugs in production, but not so often that it significantly affects
+  // performance. Set fewer bits in the mask to increase the probability of
+  // poisoning; set more to reduce the performance effect.
+  constexpr uint32_t kProbabilityMask = 0x3f;
+  if (kProbabilityMask == (RandomValue() & kProbabilityMask)) {
+    memset(ptr, kFreedByte, slot_size);
+  }
 #endif
 
   DCHECK(this->num_allocated_slots);

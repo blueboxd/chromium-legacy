@@ -4,13 +4,20 @@
 <translation id="1337821341856692531">Če boste nadaljevali brez vnosa trenutnega gesla za Windows, lahko pride do trajne izgube podatkov.</translation>
 <translation id="1383286653814676580">Uporabljeno za izvajanje strani za prijavo z Googlovim ponudnikom poverilnic.</translation>
 <translation id="1894475569413661128">Prijavite se s službenim računom.</translation>
+<translation id="2329184763010379754">Samo uporabnik, ki je zaklenil ta računalnik, se lahko prijavi.</translation>
+<translation id="2398071111662077301">Zaslona za prijavo v Google ni mogoče naložiti zaradi težave pri namestitvi Chroma. Obrnite se na skrbnika.</translation>
 <translation id="2469311484561825731">Prijava v službeni račun ni uspela. Preverite, ali je v računalniku vzpostavljena internetna povezava, in poskusite znova.</translation>
+<translation id="2679096858700291438">Vnesli ste nepravilno geslo za Windows. Poskusite znova.</translation>
+<translation id="2831078752570172210">Vaš račun je zaklenjen. Obrnite se na skrbnika sistema.</translation>
+<translation id="2844349213149998955">Prijava z osebnim računom v tej napravi ni dovoljena. Prijavite se s službenim računom.</translation>
 <translation id="3306357053520292004">V tem računalniku je že bil dodan uporabnik s tem računom. Prijavite se z drugim računom.</translation>
 <translation id="3968372833844047539">Prijavijo se lahko samo uporabniki storitve Gsuite Enterprise.</translation>
 <translation id="4057329986137569701">Prišlo je do notranje napake.</translation>
 <translation id="4267670563222825190">Za vaš račun ni bilo mogoče najti nobenega uporabnika domene. Obrnite se na skrbnika.</translation>
 <translation id="4300229033992784001">Geslo računa je spremenjeno. Vnesite trenutno geslo za Windows, če želite sinhronizirati račun za Windows s službenim računom.</translation>
 <translation id="4706454071748629324">Ni bilo mogoče dodati novega uporabnika. V tem računalniku je s službenim računom dovoljeno ustvariti samo enega uporabnika.</translation>
+<translation id="6033715878377252112">Pomočnik za Googlov ponudnik poverilnic za Windows</translation>
+<translation id="6149399665202317746">Googlov ponudnik poverilnic za Windows</translation>
 <translation id="6312494990035843744">Prijava s službenim računom v tej domeni ni dovoljena. Poskusite z drugim računom.</translation>
 <translation id="6463752215771576050">Tega računalnika ni mogoče včlaniti za upravljanje v poslovnem okolju.  Prijavite se z drugim službenim računom.</translation>
 <translation id="6657585470893396449">Geslo</translation>
@@ -22,5 +29,7 @@
 <translation id="8639729688781680518">Pozabljeno geslo za Windows</translation>
 <translation id="866458870819756755">Uporabnika ni bilo mogoče ustvariti.</translation>
 <translation id="8875753657315897487">Prijavite se s službenim računom</translation>
+<translation id="8973975512230260387">Seja je potekla. Prijavite se z Googlovim službenim računom.</translation>
+<translation id="9055998212250844221">Uporabniški račun, ki ga je ustvaril Googlov ponudnik poverilnic za Windows</translation>
 <translation id="9135619837062629367">Prijava s tem računom ni dovoljena. Poskusite z drugim računom.</translation>
 </translationbundle>

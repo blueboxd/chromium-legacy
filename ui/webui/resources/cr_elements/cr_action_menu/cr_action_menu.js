@@ -34,6 +34,18 @@ let ShowAtConfig;
  */
 let ShowAtPositionConfig;
 
+/**
+ * @enum {number}
+ * @const
+ */
+/* #export */ const AnchorAlignment = {
+  BEFORE_START: -2,
+  AFTER_START: -1,
+  CENTER: 0,
+  BEFORE_END: 1,
+  AFTER_END: 2,
+};
+
 /** @const {string} */
 const DROPDOWN_ITEM_CLASS = 'dropdown-item';
 

@@ -233,6 +233,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="27527859628328957">Melompat ke item yang dapat difokuskan berikutnya</translation>
 <translation id="2770781857296573485">Masukkan penjelajahan grup</translation>
 <translation id="2777845298774924149">Keluar</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{+#}other{+#}}</translation>
 <translation id="2784959586797362050">Seperti biasa, Anda dapat langsung mengirimkan masukan kepada kami dengan menekan tombol Penelusuran+a lalu i. Kami menyambut baik masukan Anda.</translation>
 <translation id="2800204403141299078">Tidak ada elemen berbeda lainnya.</translation>
 <translation id="2800780099804980316">Tidak ada judul tingkat 1 sebelumnya.</translation>
@@ -715,6 +716,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="5956928062748260866">Dialog</translation>
 <translation id="5963413905009737549">Bagian</translation>
 <translation id="5968607524793740041">Tampilkan menu konteks</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{dengan # item}other{dengan # item}}</translation>
 <translation id="5981446804259161541">Light Cyan</translation>
 <translation id="5983179082906765664">Meningkatkan granularitas navigasi</translation>
 <translation id="5992285135956208197">Dokumen grafis</translation>

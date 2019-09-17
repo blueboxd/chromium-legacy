@@ -351,7 +351,7 @@ void LocalTranslator::TranslateStaticIPConfig() {
         value_ref = base::Value(kDefaultIpAddr);
     }
     while (name_servers->GetList().size() < 4)
-      name_servers->GetList().push_back(base::Value(kDefaultIpAddr));
+      name_servers->Append(base::Value(kDefaultIpAddr));
   }
 }
 

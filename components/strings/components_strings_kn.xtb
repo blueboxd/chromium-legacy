@@ -71,6 +71,7 @@
 <translation id="1292701964462482250">"ಸುರಕ್ಷಿತವಾಗಿ ವೆಬ್‌ಗೆ ಸಂಪರ್ಕಿಸುವ Chrome ನ ಕಾರ್ಯವನ್ನು ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿರುವ ಸಾಫ್ಟ್‌ವೇರ್‌ ಸ್ಥಗಿತಗೊಳಿಸಿದೆ" (Windows ಕಂಪ್ಯೂಟರ್‌ಗಳಿಗೆ ಮಾತ್ರ)</translation>
 <translation id="1294154142200295408">ಕಮಾಂಡ್-ಲೈನ್ ವ್ಯತ್ಯಾಸಗಳು</translation>
 <translation id="129553762522093515">ಇತ್ತೀಚೆಗೆ ಮುಚ್ಚಲಾಗಿರುವುದು</translation>
+<translation id="1298536327547837046">ಮಾಲ್‌ವೇರ್‌ ಸ್ಕ್ಯಾನಿಂಗ್</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />ನಿಮ್ಮ ಕುಕೀಗಳನ್ನು ತೆರವುಗೊಳಿಸಲು ಪ್ರಯತ್ನಿಸಿ<ph name="END_LINK" /></translation>
 <translation id="1307966114820526988">ತೆಗೆದುಹಾಕಲಾದ ವೈಶಿಷ್ಟ್ಯಗಳು</translation>
 <translation id="1320233736580025032">Prc1 (Envelope)</translation>
@@ -166,6 +167,7 @@
 <translation id="1734878702283171397">ಸಿಸ್ಟಂ ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಲು ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="1740951997222943430">ಮಾನ್ಯವಾದ ಅವಧಿ-ಮುಕ್ತಾಯ ತಿಂಗಳನ್ನು ನಮೂದಿಸಿ</translation>
 <translation id="1743520634839655729">ಮುಂದಿನ ಬಾರಿ ವೇಗವಾಗಿ ಪಾವತಿಸಲು, ನಿಮ್ಮ ಕಾರ್ಡ್‌, ಹೆಸರು ಮತ್ತು ನಿಮ್ಮ ಬಿಲ್ಲಿಂಗ್ ವಿಳಾಸವನ್ನು Google ಖಾತೆಯಲ್ಲಿ ಮತ್ತು ಈ ಸಾಧನದಲ್ಲಿ ಉಳಿಸಿ.</translation>
+<translation id="1743570585616704562">ಗುರುತಿಸಲಾಗಿಲ್ಲ</translation>
 <translation id="1745880797583122200">ನಿಮ್ಮ ಬ್ರೌಸರ್ ಅನ್ನು ನಿರ್ವಹಿಸಲಾಗಿದೆ</translation>
 <translation id="17513872634828108">ತೆರೆದ ಟ್ಯಾಬ್‌ಗಳು</translation>
 <translation id="1753706481035618306">ಪುಟ ಸಂಖ್ಯೆ</translation>
@@ -423,6 +425,7 @@
 <translation id="320323717674993345">ಪಾವತಿಯನ್ನು ರದ್ದುಮಾಡಿ</translation>
 <translation id="3207960819495026254">ಬುಕ್‌ಮಾರ್ಕ್‌ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="3209034400446768650">ಈ ಪುಟವು, ಶುಲ್ಕ ವಿಧಿಸಬಹುದು</translation>
+<translation id="3215092763954878852">WebAuthn ಅನ್ನು ಬಳಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ</translation>
 <translation id="3225919329040284222">ಆಂತರಿಕ ಮಾನದಂಡಗಳಿಗೆ ಹೊಂದಿಕೆಯಾಗದ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಸರ್ವರ್ ಹಾಜರಿಪಡಿಸಿದೆ. ನಿಮ್ಮ ಸುರಕ್ಷತೆಯ ಸಲುವಾಗಿ ಕೆಲವು ಹೆಚ್ಚು ಸುರಕ್ಷಿತ ವೆಬ್ ಸೈಟ್‌ಗಳಲ್ಲಿ ಈ ಮಾನದಂಡಗಳನ್ನು ಸೇರ್ಪಡೆಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="3226128629678568754">ಪುಟವನ್ನು ಲೋಡ್ ಮಾಡುವುದಕ್ಕೆ ಅಗತ್ಯವಿರುವ ಡೇಟಾವನ್ನು ಮರುಸಲ್ಲಿಸಲು ಮರುಲೋಡ್ ಬಟನ್ ಒತ್ತಿರಿ.</translation>
 <translation id="3227137524299004712">ಮೈಕ್ರೋಫೋನ್</translation>
@@ -558,6 +561,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{ಯಾವುದೂ ಇಲ್ಲ}=1{1 ಸೈಟ್‌ನಿಂದ }one{# ಸೈಟ್‌ಗಳಿಂದ }other{# ಸೈಟ್‌ಗಳಿಂದ }}</translation>
 <translation id="397105322502079400">ಎಣಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> ಅನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ</translation>
+<translation id="3981540111851280311">ನಿಮ್ಮ ಬ್ರೌಸರ್‌ನಲ್ಲಿ Chrome ಎಂಟರ್‌ಪ್ರೈಸ್ ಬೆದರಿಕೆ ರಕ್ಷಣೆಯನ್ನು <ph name="ENROLLMENT_DOMAIN" /> ಸಕ್ರಿಯಗೊಳಿಸಿದೆ. Chrome ಎಂಟರ್‌ಪ್ರೈಸ್ ಬೆದರಿಕೆ ರಕ್ಷಣೆಯು ನಿಮ್ಮ ಕೆಲವು ಡೇಟಾಗೆ ಪ್ರವೇಶವನ್ನು ಹೊಂದಿದೆ.</translation>
 <translation id="3987940399970879459">1 MB ಗಿಂತ ಕಡಿಮೆ</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{ಹತ್ತಿರದ 1 ವೆಬ್ ಪುಟ}one{ಹತ್ತಿರದ # ವೆಬ್ ಪುಟಗಳು}other{ಹತ್ತಿರದ # ವೆಬ್ ಪುಟಗಳು}}</translation>
 <translation id="4030383055268325496">&amp;ಸೇರಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
@@ -574,6 +578,7 @@
 <translation id="4103249731201008433">ಸಾಧನದ ಸರಣಿಯ ಸಂಖ್ಯೆ ಅಮಾನ್ಯವಾಗಿದೆ</translation>
 <translation id="410351446219883937">ಆಟೋಪ್ಲೇ</translation>
 <translation id="4103763322291513355">ನಿಮ್ಮ ಸಿಸ್ಟಂ ನಿರ್ವಾಹಕರು ವಿಧಿಸಿರುವ ಕಪ್ಪುಪಟ್ಟಿಯ URLಗಳು ಮತ್ತು ಇತರ ನೀತಿಗಳನ್ನು ವೀಕ್ಷಿಸಲು &lt;strong&gt;chrome://policy&lt;/strong&gt; ಗೆ ಭೇಟಿ ನೀಡಿ.</translation>
+<translation id="4108231218301530806">ಮುಂದಿನ ಬಾರಿ ಈ ಕಾರ್ಡ್ ಪರಿಶೀಲಿಸಲು ಫಿಂಗರ್‌ ಪ್ರಿಂಟ್ ಬಳಸಿ.</translation>
 <translation id="4110652170750985508">ನಿಮ್ಮ ಪಾವತಿಯನ್ನು ಪರಿಶೀಲಿಸಿ</translation>
 <translation id="4112140312785995938">ಹಿಂದಕ್ಕೆ ಸೀಕ್ ಮಾಡಿ</translation>
 <translation id="4116663294526079822">ಈ ಸೈಟ್‌ನಲ್ಲಿ ಯಾವಾಗಲೂ ಅನುಮತಿಸಿ</translation>
@@ -625,6 +630,7 @@
 <translation id="4277028893293644418">ಪಾಸ್‌ವರ್ಡ್ ಮರುಹೊಂದಿಸಿ</translation>
 <translation id="4279811152705618813">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಸಾಧನವನ್ನು <ph name="ENROLLMENT_DOMAIN" /> ಡೊಮೇನ್ ನಿರ್ವಹಿಸುತ್ತಿದೆ</translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{ಈ ಕಾರ್ಡ್ ಅನ್ನು ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ}one{ಈ ಕಾರ್ಡ್‌ಗಳನ್ನು ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ}other{ಈ ಕಾರ್ಡ್‌ಗಳನ್ನು ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ}}</translation>
+<translation id="428847186335018806">ನೀವು Chrome ನಲ್ಲಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡುವ ಅಥವಾ ಅಪ್‌ಲೋಡ್ ಮಾಡುವ ಫೈಲ್‌ಗಳನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ.</translation>
 <translation id="42981349822642051">ವಿಸ್ತರಿಸಿ</translation>
 <translation id="4302965934281694568">Chou3 (Envelope)</translation>
 <translation id="4305817255990598646">ಬದಲಿಸಿ</translation>
@@ -663,6 +669,7 @@
 <translation id="4506176782989081258">ಮೌಲ್ಯೀಕರಿಸುವಿಕೆಯ ದೋಷ: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">ಸಿಸ್ಟಂ ನಿರ್ವಾಹಕರನ್ನು ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="450710068430902550">ನಿರ್ವಾಹಕರೊಂದಿಗೆ ಹಂಚಿಕೊಳ್ಳುವುದು</translation>
+<translation id="4508814173490746936">ಸ್ಪರ್ಶ ID ಅನ್ನು ಬಳಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ</translation>
 <translation id="4510487217173779431">Chou4 (Envelope)</translation>
 <translation id="4515275063822566619">ಕಾರ್ಡ್‌ಗಳು ಮತ್ತು ವಿಳಾಸಗಳನ್ನು ನಿಮ್ಮ Chrome ಮತ್ತು ನಿಮ್ಮ Google ಖಾತೆಯಿಂದ (<ph name="ACCOUNT_EMAIL" />) ಪಡೆಯಲಾಗಿದೆ. ನೀವು ಅವುಗಳನ್ನು <ph name="BEGIN_LINK" />ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ನಿರ್ವಹಿಸಬಹುದು.</translation>
 <translation id="4517607026994743406">Comm-10 (Envelope)</translation>
@@ -758,6 +765,7 @@
 <translation id="5045550434625856497">ತಪ್ಪು ಪಾಸ್‌ವರ್ಡ್</translation>
 <translation id="5056549851600133418">ನಿಮಗಾಗಿ ಲೇಖನಗಳು</translation>
 <translation id="5068524481479508725">A10</translation>
+<translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 ಬಳಕೆಯಲ್ಲಿದೆ)}one{(# ಬಳಕೆಯಲ್ಲಿದೆ)}other{(# ಬಳಕೆಯಲ್ಲಿದೆ)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />ಪ್ರಾಕ್ಸಿ ವಿಳಾಸವನ್ನು ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">ಈ ಸಮಯದಲ್ಲಿ ಸರ್ವರ್‌ನ ಪ್ರಮಾಣಪತ್ರ ಮಾನ್ಯವಾಗಿಲ್ಲ.</translation>
 <translation id="5087580092889165836">ಕಾರ್ಡ್ ಸೇರಿಸಿ</translation>
@@ -986,6 +994,7 @@
 <translation id="6302269476990306341">Chrome ನಲ್ಲಿನ Google ಅಸಿಸ್ಟೆಂಟ್ ನಿಲ್ಲುತ್ತಿದೆ</translation>
 <translation id="6305205051461490394"><ph name="URL" /> ತಲುಪಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="6321917430147971392">ನಿಮ್ಮ DNS ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಿ</translation>
+<translation id="6322182122604171028">Windows Hello ಅನ್ನು ಬಳಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ</translation>
 <translation id="6328639280570009161">ನೆಟ್‌ವರ್ಕ್ ಮುನ್ಸೂಚನೆಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲು ಪ್ರಯತ್ನಿಸಿ</translation>
 <translation id="6328784461820205019">"ನಿಮ್ಮ ಸಂಪರ್ಕ ಖಾಸಗಿಯಾಗಿಲ್ಲ" ಅಥವಾ "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" ಅಥವಾ "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" ಅಥವಾ "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" ಅಥವಾ "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" ಅಥವಾ "SSL ಪ್ರಮಾಣಪತ್ರ ದೋಷ"</translation>
 <translation id="6328786501058569169">ಈ ಸೈಟ್ ಮೋಸಗೊಳಿಸುವುದಾಗಿದೆ</translation>
@@ -1009,6 +1018,7 @@
 <translation id="6433490469411711332">ಸಂಪರ್ಕ ಮಾಹಿತಿ ಎಡಿಟ್ ಮಾಡಿ</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> ಸಂಪರ್ಕಗೊಳ್ಳಲು ನಿರಾಕರಿಸಿದೆ.</translation>
 <translation id="6434309073475700221">ತಿರಸ್ಕರಿಸಿ</translation>
+<translation id="6435221585574090192">ನಿಮ್ಮ ನಿರ್ವಾಹಕರೊಂದಿಗೆ Chrome ಎಂಟರ್‌ಪ್ರೈಸ್ ಬೆದರಿಕೆ ರಕ್ಷಣೆಯಿಂದ ಫ್ಲ್ಯಾಗ್ ಮಾಡಲಾದ ಭದ್ರತಾ ಈವೆಂಟ್‌ಗಳ ಕುರಿತು ಡೇಟಾವನ್ನು ಹಂಚಿಕೊಳ್ಳಿ. ಪುಟ URL ಗಳು, ಫೈಲ್ ಹೆಸರು ಮತ್ತು ಫೈಲ್ ಮೆಟಾಡೇಟಾ, ನಿಮ್ಮ ಸಾಧನದ ಬಳಕೆದಾರರ ಹೆಸರು ಮತ್ತು Chrome ಬಳಕೆದಾರರ ಹೆಸರುಗಳನ್ನು ಇವು ಒಳಗೊಂಡಿರಬಹುದು.</translation>
 <translation id="6440503408713884761">ನಿರ್ಲಕ್ಷಿಸಲಾಗಿದೆ</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">ಇನ್ನಷ್ಟು ಮಾಹಿತಿಯನ್ನು ಸೇರಿಸಿ</translation>
@@ -1053,6 +1063,7 @@
 <translation id="6671697161687535275">Chromium ನಿಂದ ಫಾರ್ಮ್ ಸಲಹೆಯನ್ನು ತೆಗೆದುಹಾಕುವುದೇ?</translation>
 <translation id="6685834062052613830">ಸೈನ್‌ ಔಟ್‌ ಮಾಡಿ ಹಾಗೂ ಸೆಟಪ್ ಪೂರ್ಣಗೊಳಿಸಿ</translation>
 <translation id="6689271823431384964">ನೀವು ಸೈನ್ ಇನ್ ಮಾಡಿರುವ ಕಾರಣದಿಂದಾಗಿ, ನಿಮ್ಮ Google ಖಾತೆಯಲ್ಲಿ ನಿಮ್ಮ ಕಾರ್ಡ್‌ಗಳನ್ನು ಉಳಿಸಲು Chrome ಅವಕಾಶ ನೀಡುತ್ತಿದೆ. ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ನೀವು ಈ ವರ್ತನೆಯನ್ನು ಬದಲಿಸಬಹುದು. ಕಾರ್ಡ್ ಹೋಲ್ಡರ್ ಹೆಸರು ನಿಮ್ಮ ಖಾತೆಯಿಂದ ಬರುತ್ತದೆ.</translation>
+<translation id="6707256370811247129">ನೀವು Chrome ನಲ್ಲಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡುವ ಅಥವಾ ಅಪ್‌ಲೋಡ್ ಮಾಡುವ ಫೈಲ್‌ಗಳು ಮತ್ತು ಕ್ಯಾಷ್‌ನ ವಿಷಯಗಳನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ.</translation>
 <translation id="6710213216561001401">ಹಿಂದೆ</translation>
 <translation id="6710594484020273272">&lt;ಹುಡುಕಾಟದ ಪದ ಟೈಪ್ ಮಾಡಿ&gt;</translation>
 <translation id="671076103358959139">ನೋಂದಣಿಯ ಟೋಕನ್:</translation>
@@ -1071,6 +1082,7 @@
 <translation id="681021252041861472">ಅಗತ್ಯವಿರುವ ಕ್ಷೇತ್ರ</translation>
 <translation id="6810899417690483278">ಕಸ್ಟಮೈಸೇಶನ್ ಐಡಿ</translation>
 <translation id="6825578344716086703">ನೀವು <ph name="DOMAIN" /> ಅನ್ನು ತಲುಪಲು ಪ್ರಯತ್ನಿಸಿದಿರಿ, ಆದರೆ ದುರ್ಬಲ ಸಹಿ ಅಲ್ಗಾರಿದಮ್ (SHA-1 ಅದರಂತೆ) ಬಳಸಿಕೊಂಡು ಸಹಿ ಮಾಡಿದ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಸರ್ವರ್ ಒದಗಿಸಿದೆ. ಇದರರ್ಥ ಸರ್ವರ್ ಒದಗಿಸಿದ ಸುರಕ್ಷತೆ ಪ್ರಮಾಣಪತ್ರಗಳನ್ನು ಖೋಟಾ ತಯಾರಿಸಿರಬಹುದು, ಮತ್ತು ನೀವು ನಿರೀಕ್ಷಿಸಿದ ಸರ್ವರ್ ಅದಾಗಿರದೇ ಇರಬಹುದು (ನೀವು ದಾಳಿಕೋರರೊಂದಿಗೆ ಸಂವಹನ ಮಾಡುತ್ತಿರಬಹುದು).</translation>
+<translation id="6826370046007623921">ಡೇಟಾ ನಷ್ಟದ ತಡೆ</translation>
 <translation id="6831043979455480757">ಅನುವಾದಿಸು</translation>
 <translation id="6839929833149231406">ಪ್ರದೇಶ</translation>
 <translation id="6852204201400771460">ಅಪ್ಲಿಕೇಶನ್ ಅನ್ನು ಪುನಃ ಆರಂಭಿಸಬೇಕೆ?</translation>
@@ -1216,6 +1228,7 @@
 <translation id="7542995811387359312">ಈ ಫಾರ್ಮ್ ಸುರಕ್ಷಿತವಾದ ಸಂಪರ್ಕವನ್ನು ಬಳಸುತ್ತಿಲ್ಲವಾದ ಕಾರಣ ಸ್ವಯಂಚಾಲಿತ ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್ ಭರ್ತಿ ಮಾಡುವಿಕೆಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="7548892272833184391">ಸಂಪರ್ಕ ದೋಷಗಳನ್ನು ಸರಿಪಡಿಸಿ</translation>
 <translation id="7549584377607005141">ಈ ವೆಬ್‌ಪುಟವು ಸರಿಯಾಗಿ ಪ್ರದರ್ಶನಗೊಳ್ಳಲು ಈ ಮೊದಲು ನೀವು ನಮೂದಿಸಿದ ಡೇಟಾದ ಅಗತ್ಯವಿದೆ. ನೀವು ಈ ಡೇಟಾವನ್ನು ಮತ್ತೆ ಕಳುಹಿಸಬಹುದು, ಆದರೆ ಹಾಗೆ ಮಾಡುವುದರಿಂದ ಈ ಪುಟವು ಈ ಮೊದಲು ಪೂರೈಸಿದ ಯಾವುದೇ ಕ್ರಿಯೆಯನ್ನು ನೀವು ಪುನರಾವರ್ತಿಸುತ್ತೀರಿ.</translation>
+<translation id="7550637293666041147">ನಿಮ್ಮ ಸಾಧನದ ಬಳಕೆದಾರರ ಹೆಸರು ಮತ್ತು Chrome ಬಳಕೆದಾರರ ಹೆಸರು</translation>
 <translation id="7552846755917812628">ಕೆಳಗಿನ ಸಲಹೆಗಳನ್ನು ಪ್ರಯತ್ನಿಸಿ:</translation>
 <translation id="7554791636758816595">ಹೊಸ ಟ್ಯಾಬ್</translation>
 <translation id="7564049878696755256">ನಿಮ್ಮ <ph name="ORG_NAME" /> ಖಾತೆಗೆ ನೀವು ಪ್ರವೇಶವನ್ನು ಕಳೆದುಕೊಳ್ಳಬಹುದು ಅಥವಾ ಗುರುತು ಕಳ್ಳತನಕ್ಕೆ ಒಳಗಾಗಬಹುದು. ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ ಅನ್ನು ಇದೀಗ ಬದಲಾಯಿಸುವಂತೆ Chrome ಶಿಫಾರಸು ಮಾಡುತ್ತದೆ.</translation>
@@ -1230,6 +1243,7 @@
 <translation id="7610193165460212391">ಮೌಲ್ಯವು ವ್ಯಾಪ್ತಿಯಿಂದ <ph name="VALUE" /> ಹೊರಗಿದೆ.</translation>
 <translation id="7613889955535752492">ಅವಧಿ ಮೀರುವ ಸಮಯ: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">ನಿಮ್ಮ Google ಖಾತೆಯ ಪಾಸ್‌ವರ್ಡ್‌ನ ಬೇರೆ ಆವೃತ್ತಿಯನ್ನು ಬಳಸಿಕೊಂಡು ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಲಾದ ಡೇಟಾವನ್ನು ನೀವು ಈಗಾಗಲೇ ಹೊಂದಿರುವಿರಿ. ದಯವಿಟ್ಟು  ಕೆಳಗೆ ಇದನ್ನು ನಮೂದಿಸಿ.</translation>
+<translation id="7625784245512586808">Chrome ಎಂಟರ್‌ಪ್ರೈಸ್ ಬೆದರಿಕೆ ರಕ್ಷಣೆ</translation>
 <translation id="7633909222644580952">ಕಾರ್ಯಕ್ಷಮತೆಯ ಡೇಟಾ ಮತ್ತು ಕ್ರ್ಯಾಶ್ ವರದಿಗಳು</translation>
 <translation id="7637571805876720304">Chromium ನಿಂದ ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್ ತೆಗೆದುಹಾಕುವುದೇ?</translation>
 <translation id="7638605456503525968">ಸೀರಿಯಲ್ ಪೋರ್ಟ್‌ಗಳು</translation>
@@ -1340,6 +1354,7 @@
 <translation id="8211406090763984747">ಸಂಪರ್ಕ ಸುರಕ್ಷಿತವಾಗಿದೆ</translation>
 <translation id="8218327578424803826">ನಿಯೋಜಿಸಲಾದ ಸ್ಥಳ:</translation>
 <translation id="8220146938470311105">C7/C6 (Envelope)</translation>
+<translation id="8220639454292072926">ಎಂಟರ್‌ಪ್ರೈಸ್ ವರದಿಮಾಡುವಿಕೆ</translation>
 <translation id="8225771182978767009">ಈ ಕಂಪ್ಯೂಟರ್ ಹೊಂದಿಸಿರುವ ವ್ಯಕ್ತಿಯು ಈ ಸೈಟ್ ನಿರ್ಬಂಧಿಸಲು ಆಯ್ಕೆಮಾಡಿದ್ದಾರೆ.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">ಪುಟವನ್ನು ಹೊಸ ಅದೃಶ್ಯ ಟ್ಯಾಬ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
@@ -1423,6 +1438,7 @@
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> ನ &lt;abbr id="dnsDefinition"&gt;DNS ವಿಳಾಸ&lt;/abbr&gt; ಕಂಡುಬರಲಿಲ್ಲ. ಸಮಸ್ಯೆಯನ್ನು ಪತ್ತೆಹಚ್ಚಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="874846938927089722">ಸ್ವೀಕೃತ ಕ್ರೆಡಿಟ್ ಮತ್ತು ಪ್ರೀಪೇಯ್ಡ್ ಕಾರ್ಡ್‌ಗಳು</translation>
 <translation id="874918643257405732">ಈ ಟ್ಯಾಬ್ ಅನ್ನು ಬುಕ್‌ಮಾರ್ಕ್ ಮಾಡಿ</translation>
+<translation id="8751426954251315517">ಮುಂದಿನ ಬಾರಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ</translation>
 <translation id="8759274551635299824">ಈ ಕಾರ್ಡ್‌ನ ಅವಧಿ ಮುಕ್ತಾಯವಾಗಿದೆ</translation>
 <translation id="8761567432415473239">Google ಸುರಕ್ಷಿತ ಬ್ರೌಸಿಂಗ್‌ ಇತ್ತೀಚಿಗೆ <ph name="SITE" /> ನಲ್ಲಿ <ph name="BEGIN_LINK" />ಹಾನಿಕಾರಕ ಪ್ರೋಗ್ರಾಂಗಳನ್ನು ಕಂಡುಹಿಡಿದಿದೆ<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB ಸಾಧನ</translation>
@@ -1487,6 +1503,7 @@
 <translation id="9080712759204168376">ಆರ್ಡರ್ ಸಾರಾಂಶ</translation>
 <translation id="9089260154716455634">ಬಿಡುವಿನ ಅವಧಿಯ ಕಾರ್ಯನೀತಿ:</translation>
 <translation id="9095388113577226029">ಇನ್ನಷ್ಟು ಭಾಷೆಗಳು...</translation>
+<translation id="9098981495403789647">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ನಿಮ್ಮ ಬ್ರೌಸರ್‌ನಲ್ಲಿ Chrome ಎಂಟರ್‌ಪ್ರೈಸ್ ಬೆದರಿಕೆ ರಕ್ಷಣೆಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿದ್ದಾರೆ. Chrome ಎಂಟರ್‌ಪ್ರೈಸ್ ಬೆದರಿಕೆ ರಕ್ಷಣೆಯು ನಿಮ್ಮ ಕೆಲವು ಡೇಟಾಗೆ ಪ್ರವೇಶವನ್ನು ಹೊಂದಿದೆ.</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> ಸಾಮಾನ್ಯವಾಗಿ ನಿಮ್ಮ ಮಾಹಿತಿಯನ್ನು ಸಂರಕ್ಷಿಸಲು ಎನ್‌ಕ್ರಿಪ್ಶನ್ ಪ್ರಯೋಜನವನ್ನು ಬಳಸಿಕೊಳ್ಳುತ್ತದೆ. ಈ ಸಂದರ್ಭದಲ್ಲಿ Chromium <ph name="SITE" /> ವೆಬ್‌ಸೈಟ್‌ಗೆ ಸಂಪರ್ಕಿಸಲು ಪ್ರಯತ್ನಿಸಿದಾಗ, ಆ ವೆಬ್‌ಸೈಟ್‌‌ ಅಸಹಜ ಮತ್ತು ತಪ್ಪು ರುಜುವಾತುಗಳನ್ನು ಹಿಂತಿರುಗಿಸಿದೆ. ದಾಳಿಕೋರರು <ph name="SITE" /> ರೂಪದಲ್ಲಿ ಸೋಗು ಹಾಕಲು ಪ್ರಯತ್ನಿಸುತ್ತಿರುವಾಗ ಅಥವಾ ವೈ-ಫೈ ಸೈನ್-ಇನ್ ಪರದೆಯು ಸಂಪರ್ಕಕ್ಕೆ ಅಡ್ಡಿಯುಂಟು ಮಾಡಿದಾಗ ಇದು ಕಂಡುಬರಬಹುದು. ಯಾವುದೇ ಡೇಟಾವನ್ನು ವಿನಿಮಯ ಮಾಡಿಕೊಳ್ಳುವ ಮೊದಲೇ Chromium ಸಂಪರ್ಕ ಕಡಿತಗೊಳಿಸಿರುವ ಕಾರಣ, ನಿಮ್ಮ ಮಾಹಿತಿ ಈಗಲೂ ಸುರಕ್ಷಿತವಾಗಿದೆ.</translation>
 <translation id="9106062320799175032">ಬಿಲ್ಲಿಂಗ್ ವಿಳಾಸವನ್ನು ಸೇರಿಸಿ</translation>
 <translation id="9114524666733003316">ಕಾರ್ಡ್‌ ದೃಢೀಕರಿಸಲಾಗುತ್ತಿದೆ...</translation>

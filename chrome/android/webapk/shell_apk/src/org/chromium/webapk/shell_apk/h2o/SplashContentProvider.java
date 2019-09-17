@@ -54,12 +54,14 @@ public class SplashContentProvider
      * downsampled to fit. Capping the maximum size of the screenshot decreases bitmap encoding
      * time and image transfer time.
      */
-    public static final int MAX_TRANSFER_SIZE_BYTES = 1024 * 1024 * 4;
+    public static final int MAX_TRANSFER_SIZE_BYTES = 1024 * 1024 * 12;
 
-    /** Mime type of transferred screenshot. */
-    private static final String SPLASH_MIME_TYPE = "image/png";
+    /**
+     * The encoding type of the last image vended by the ContentProvider.
+     */
+    private static Bitmap.CompressFormat sEncodingFormat;
 
-    private static AtomicReference<ExpiringData> sCachedSplashPngBytes = new AtomicReference<>();
+    private static AtomicReference<ExpiringData> sCachedSplashBytes = new AtomicReference<>();
 
     /** The URI handled by this content provider. */
     private String mContentProviderUri;
@@ -68,14 +70,15 @@ public class SplashContentProvider
      * Temporarily caches the passed-in splash screen screenshot. To preserve memory, the cached
      * data is cleared after a delay.
      */
-    public static void cache(
-            Context context, byte[] splashPngBytes, int splashWidth, int splashHeight) {
+    public static void cache(Context context, byte[] splashBytes,
+            Bitmap.CompressFormat encodingFormat, int splashWidth, int splashHeight) {
         SharedPreferences.Editor editor = WebApkSharedPreferences.getPrefs(context).edit();
         editor.putInt(WebApkSharedPreferences.PREF_SPLASH_WIDTH, splashWidth);
         editor.putInt(WebApkSharedPreferences.PREF_SPLASH_HEIGHT, splashHeight);
         editor.apply();
 
-        getAndSetCachedData(splashPngBytes);
+        sEncodingFormat = encodingFormat;
+        getAndSetCachedData(splashBytes);
     }
 
     public static void clearCache() {
@@ -86,12 +89,12 @@ public class SplashContentProvider
      * Sets the cached splash screen screenshot and returns the old one.
      * Thread safety: Can be called from any thread.
      */
-    private static byte[] getAndSetCachedData(byte[] newSplashPngBytes) {
+    private static byte[] getAndSetCachedData(byte[] newSplashBytes) {
         ExpiringData newData = null;
-        if (newSplashPngBytes != null) {
-            newData = new ExpiringData(newSplashPngBytes, SplashContentProvider::clearCache);
+        if (newSplashBytes != null) {
+            newData = new ExpiringData(newSplashBytes, SplashContentProvider::clearCache);
         }
-        ExpiringData oldCachedData = sCachedSplashPngBytes.getAndSet(newData);
+        ExpiringData oldCachedData = sCachedSplashBytes.getAndSet(newData);
         if (oldCachedData == null) return null;
 
         oldCachedData.removeCallbacks();
@@ -117,16 +120,18 @@ public class SplashContentProvider
     public void writeDataToPipe(
             ParcelFileDescriptor output, Uri uri, String mimeType, Bundle opts, Void unused) {
         try (OutputStream out = new FileOutputStream(output.getFileDescriptor())) {
-            byte[] cachedSplashPngBytes = getAndSetCachedData(null);
-            if (cachedSplashPngBytes != null) {
-                out.write(cachedSplashPngBytes);
+            byte[] cachedSplashBytes = getAndSetCachedData(null);
+            if (cachedSplashBytes != null) {
+                out.write(cachedSplashBytes);
             } else {
                 // One way that this case gets hit is when the WebAPK is brought to the foreground
                 // via Android Recents after the Android OOM killer has killed the host browser but
                 // not SplashActivity.
                 Bitmap splashScreenshot = recreateAndScreenshotSplash();
                 if (splashScreenshot != null) {
-                    splashScreenshot.compress(Bitmap.CompressFormat.PNG, 100, out);
+                    sEncodingFormat = SplashUtils.selectBitmapEncoding(
+                            splashScreenshot.getWidth(), splashScreenshot.getHeight());
+                    splashScreenshot.compress(sEncodingFormat, 100, out);
                 }
             }
             out.flush();
@@ -137,7 +142,18 @@ public class SplashContentProvider
     @Override
     public String getType(Uri uri) {
         if (uri != null && uri.toString().equals(mContentProviderUri)) {
-            return SPLASH_MIME_TYPE;
+            if (sEncodingFormat == null) {
+                Context context = getContext().getApplicationContext();
+                SharedPreferences prefs = WebApkSharedPreferences.getPrefs(context);
+                int splashWidth = prefs.getInt(WebApkSharedPreferences.PREF_SPLASH_WIDTH, -1);
+                int splashHeight = prefs.getInt(WebApkSharedPreferences.PREF_SPLASH_HEIGHT, -1);
+                sEncodingFormat = SplashUtils.selectBitmapEncoding(splashWidth, splashHeight);
+            }
+            if (sEncodingFormat == Bitmap.CompressFormat.PNG) {
+                return "image/png";
+            } else if (sEncodingFormat == Bitmap.CompressFormat.JPEG) {
+                return "image/jpeg";
+            }
         }
         return null;
     }

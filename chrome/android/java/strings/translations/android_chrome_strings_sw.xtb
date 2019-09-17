@@ -66,6 +66,7 @@
 <translation id="1407135791313364759">Fungua zote</translation>
 <translation id="1409426117486808224">Mwonekano uliorahisishwa kwa ajili ya vichupo vilivyofunguliwa</translation>
 <translation id="1409879593029778104">Kipakuliwa cha <ph name="FILE_NAME" /> kimezuiwa kwa sababu faili tayari ipo.</translation>
+<translation id="1413136574162415971">Google inaweza kukagua iwapo manenosiri yako yaliathiriwa na ufichuzi haramu wa data. Hii itawashwa ukiingia kwa kutumia Akaunti yako ya Google na ukiwasha kipengele cha usawazishaji.</translation>
 <translation id="1414981605391750300">Inawasiliana na Google. Huenda ikachukua dakika moja…</translation>
 <translation id="1416550906796893042">Toleo la programu</translation>
 <translation id="1430915738399379752">Chapisha</translation>
@@ -160,6 +161,7 @@
 <translation id="2091887806945687916">Sauti</translation>
 <translation id="2096012225669085171">Sawazisha na uweke mapendeleo kwenye vifaa vyote</translation>
 <translation id="2100273922101894616">Ingia katika Akaunti Kiotomatiki</translation>
+<translation id="2100314319871056947">Jaribu kushiriki maandishi katika sehemu ndogo ndogo</translation>
 <translation id="2107397443965016585">Iulize kabla ya kuruhusu tovuti kucheza maudhui yanayolindwa (inapendekezwa)</translation>
 <translation id="2111511281910874386">Nenda kwenye ukurasa</translation>
 <translation id="2122601567107267586">Imeshindwa kufungua programu</translation>
@@ -253,6 +255,7 @@
 <translation id="2836148919159985482">Gusa kitufe cha kurudi nyuma ili uondoke kwenye skrini nzima.</translation>
 <translation id="2842985007712546952">Folda kuu</translation>
 <translation id="2858138569776157458">Tovuti maarufu</translation>
+<translation id="2860954141821109167">Hakikisha kuwa programu ya simu imewashwa kwenye kifaa hiki</translation>
 <translation id="2870560284913253234">Tovuti</translation>
 <translation id="2874939134665556319">Wimbo uliotangulia</translation>
 <translation id="2876369937070532032">Hutuma kwa Google URL za baadhi ya kurasa ambazo umetembelea wakati usalama wako uko hatarini</translation>
@@ -277,6 +280,7 @@
 <translation id="2996291259634659425">Unda kauli ya siri</translation>
 <translation id="2996809686854298943">URL inahitajika</translation>
 <translation id="300526633675317032">Hatua hii itafuta <ph name="SIZE_IN_KB" /> yote ya hifadhi ya tovuti.</translation>
+<translation id="3016635187733453316">Hakikisha kwamba kifaa hiki kimeunganishwa kwenye intaneti</translation>
 <translation id="3029613699374795922">Umepakua KB <ph name="KBS" /></translation>
 <translation id="3029704984691124060">Kaulisiri hazilingani</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Pata usaidizi<ph name="END_LINK" /></translation>
@@ -840,6 +844,7 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="723171743924126238">Chagua picha</translation>
 <translation id="7233236755231902816">Ili uone tovuti katika lugha unayotumia, pata toleo jipya la Chrome</translation>
 <translation id="7243308994586599757">Chaguo zinapatikana karibu na sehemu ya chini ya skrini</translation>
+<translation id="7248069434667874558">Hakikisha kuwa umewasha kipengele cha usawazishaji katika <ph name="TARGET_DEVICE_NAME" /> kwenye Chrome</translation>
 <translation id="7250468141469952378">Imechagua <ph name="ITEM_COUNT" /></translation>
 <translation id="7274013316676448362">Tovuti imezuiwa</translation>
 <translation id="7290209999329137901">Huwezi kubadilisha jina</translation>
@@ -953,6 +958,7 @@ Tovuti hii HAIPATI idhini ya kufikia kamera. Ni wewe pekee utaona picha hizi za 
 <translation id="8007176423574883786">Imezimwa kwa kifaa hiki</translation>
 <translation id="8013372441983637696">Pia, futa data yako ya Chrome kwenye kifaa hiki</translation>
 <translation id="8015452622527143194">Rejesha kila kitu katika ukubwa wa kawaida</translation>
+<translation id="8015780634880457457">Google inaweza kuangalia iwapo manenosiri yako yaliathiriwa na ufichuzi haramu wa data</translation>
 <translation id="802154636333426148">Haikuweza kupakua</translation>
 <translation id="8026334261755873520">Futa data ya kuvinjari</translation>
 <translation id="8035133914807600019">Folda mpya…</translation>
@@ -1015,6 +1021,7 @@ Tovuti hii HAIPATI idhini ya kufikia kamera. Ni wewe pekee utaona picha hizi za 
 <translation id="8445448999790540984">Haiwezi kuhamisha manenosiri</translation>
 <translation id="8447861592752582886">Batilisha ruhusa ya kifaa</translation>
 <translation id="8461694314515752532">Simba data iliyosawazishwa kwa njia fiche ukitumia kauli yako ya siri ya usawazishaji</translation>
+<translation id="8466613982764129868">Hakikisha kwamba <ph name="TARGET_DEVICE_NAME" /> imeunganishwa kwenye intaneti</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Kinapatikana nje ya mtandao</translation>
 <translation id="8489271220582375723">Fungua ukurasa wa historia</translation>
@@ -1105,6 +1112,7 @@ Tovuti hii HAIPATI idhini ya kufikia kamera. Ni wewe pekee utaona picha hizi za 
 <translation id="9188680907066685419">Ondoka kwenye akaunti inayodhibitiwa</translation>
 <translation id="9204836675896933765">Imesalia faili 1</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9209888181064652401">Imeshindwa kupiga simu</translation>
 <translation id="9219103736887031265">Picha</translation>
 <translation id="926205370408745186">Ondoa shughuli zako za Chrome kwenye mpango wa Nidhamu Dijitali</translation>
 <translation id="932327136139879170">Mwanzo</translation>

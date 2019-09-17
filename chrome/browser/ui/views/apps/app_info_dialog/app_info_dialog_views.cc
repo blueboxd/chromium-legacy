@@ -14,6 +14,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/apps/app_info_dialog.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_dialog_container.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_footer_panel.h"
 #include "chrome/browser/ui/views/apps/app_info_dialog/app_info_header_panel.h"
@@ -50,6 +52,7 @@ namespace {
 // The color of the separator used inside the dialog - should match the app
 // list's app_list::kDialogSeparatorColor
 constexpr SkColor kDialogSeparatorColor = SkColorSetRGB(0xD1, 0xD1, 0xD1);
+constexpr gfx::Size kDialogSize = gfx::Size(380, 490);
 
 }  // namespace
 
@@ -76,11 +79,21 @@ void ShowAppInfoInAppList(gfx::NativeWindow parent,
 }
 #endif
 
+void ShowAppInfo(Profile* profile,
+                 const extensions::Extension* app,
+                 const base::Closure& close_callback) {
+  views::DialogDelegate* dialog = CreateDialogContainerForView(
+      std::make_unique<AppInfoDialog>(profile, app), kDialogSize,
+      close_callback);
+  views::Widget* dialog_widget =
+      views::DialogDelegate::CreateDialogWidget(dialog, nullptr, nullptr);
+  dialog_widget->Show();
+}
+
 void ShowAppInfoInNativeDialog(content::WebContents* web_contents,
                                Profile* profile,
                                const extensions::Extension* app,
                                const base::Closure& close_callback) {
-  constexpr gfx::Size kDialogSize = gfx::Size(380, 490);
   views::DialogDelegate* dialog = CreateDialogContainerForView(
       std::make_unique<AppInfoDialog>(profile, app), kDialogSize,
       close_callback);

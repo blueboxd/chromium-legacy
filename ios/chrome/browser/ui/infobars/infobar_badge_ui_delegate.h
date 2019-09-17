@@ -22,6 +22,11 @@ enum class InfobarType;
 - (void)infobarWasAccepted:(InfobarType)infobarType
                forWebState:(web::WebState*)webState;
 
+// Called whenever an InfobarBanner of type |infobarType| in |webState| was
+// dismissed. |webState| cannot be nil.
+- (void)infobarBannerWasDismissed:(InfobarType)infobarType
+                      forWebState:(web::WebState*)webState;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_INFOBARS_INFOBAR_BADGE_UI_DELEGATE_H_

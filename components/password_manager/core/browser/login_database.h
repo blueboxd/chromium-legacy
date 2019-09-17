@@ -209,7 +209,7 @@ class LoginDatabase : public PasswordStoreSync::MetadataStore {
   void enable_encryption() { use_encryption_ = true; }
   // This instance should not encrypt/decrypt password values using OSCrypt.
   void disable_encryption() { use_encryption_ = false; }
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
  private:
 #if defined(OS_IOS)

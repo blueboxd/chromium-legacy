@@ -379,7 +379,7 @@ TEST_F(GAIAInfoUpdateServiceTest, LogOut) {
 
 TEST_F(GAIAInfoUpdateServiceTest, LogIn) {
   // Log in.
-  EXPECT_CALL(*service(), Update());
+  EXPECT_CALL(*service(), Update()).Times(testing::AtLeast(1));
   identity_test_env()->SetPrimaryAccount("pat@example.com");
 }
 

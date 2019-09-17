@@ -1115,9 +1115,8 @@ IFACEMETHODIMP AXPlatformNodeWin::get_accState(VARIANT var_id, VARIANT* state) {
 
 IFACEMETHODIMP AXPlatformNodeWin::get_accHelp(VARIANT var_id, BSTR* help) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_HELP);
-  AXPlatformNodeWin* target;
-  COM_OBJECT_VALIDATE_VAR_ID_1_ARG_AND_GET_TARGET(var_id, help, target);
-  return target->GetHelpText(help);
+  COM_OBJECT_VALIDATE_1_ARG(help);
+  return S_FALSE;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_accValue(VARIANT var_id, BSTR* value) {
@@ -3829,8 +3828,20 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_HelpTextPropertyId:
-      V_VT(result) = VT_BSTR;
-      GetHelpText(&V_BSTR(result));
+      if (HasStringAttribute(ax::mojom::StringAttribute::kPlaceholder)) {
+        V_VT(result) = VT_BSTR;
+        GetStringAttributeAsBstr(ax::mojom::StringAttribute::kPlaceholder,
+                                 &V_BSTR(result));
+      } else if (data.GetNameFrom() == ax::mojom::NameFrom::kPlaceholder ||
+                 data.GetNameFrom() == ax::mojom::NameFrom::kTitle) {
+        V_VT(result) = VT_BSTR;
+        GetStringAttributeAsBstr(ax::mojom::StringAttribute::kName,
+                                 &V_BSTR(result));
+      } else if (HasStringAttribute(ax::mojom::StringAttribute::kTooltip)) {
+        V_VT(result) = VT_BSTR;
+        GetStringAttributeAsBstr(ax::mojom::StringAttribute::kTooltip,
+                                 &V_BSTR(result));
+      }
       break;
 
     case UIA_IsContentElementPropertyId:
@@ -6936,21 +6947,6 @@ HRESULT AXPlatformNodeWin::AllocateComArrayFromVector(
   for (LONG i = 0; i < count; i++)
     (*selected)[i] = results[i];
   return S_OK;
-}
-
-HRESULT AXPlatformNodeWin::GetHelpText(BSTR* helpText) {
-  if (HasStringAttribute(ax::mojom::StringAttribute::kPlaceholder)) {
-    return GetStringAttributeAsBstr(ax::mojom::StringAttribute::kPlaceholder,
-                                    helpText);
-  } else if (GetData().GetNameFrom() == ax::mojom::NameFrom::kPlaceholder ||
-             GetData().GetNameFrom() == ax::mojom::NameFrom::kTitle) {
-    return GetStringAttributeAsBstr(ax::mojom::StringAttribute::kName,
-                                    helpText);
-  } else if (HasStringAttribute(ax::mojom::StringAttribute::kTooltip)) {
-    return GetStringAttributeAsBstr(ax::mojom::StringAttribute::kTooltip,
-                                    helpText);
-  }
-  return S_FALSE;
 }
 
 // TODO(dmazzoni): Remove this function once combo box refactoring is

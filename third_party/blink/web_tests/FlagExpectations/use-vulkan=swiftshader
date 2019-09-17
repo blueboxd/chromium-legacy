@@ -19,3 +19,34 @@ crbug.com/994331 compositing/lots-of-img-layers.html [ Skip ]
 
 # Not rendering the rightmost frame.
 crbug.com/1001616 media/alpha-video-playback.html [ Skip ]
+
+# OffscreenCanvas not rendering.
+crbug.com/1002538 fast/canvas/OffscreenCanvas-2d-drawImage-in-worker.html [ Skip ]
+crbug.com/1002538 fast/canvas/OffscreenCanvas-2d-drawImage.html [ Skip ]
+crbug.com/1002538 fast/canvas/OffscreenCanvas-2d-gradients-in-worker.html [ Skip ]
+crbug.com/1002538 fast/canvas/OffscreenCanvas-2d-imageSmoothing-in-worker.html [ Skip ]
+crbug.com/1002538 fast/canvas/OffscreenCanvas-2d-imageSmoothing.html [ Skip ]
+crbug.com/1002538 fast/canvas/OffscreenCanvas-2d-pattern-in-worker.html [ Skip ]
+crbug.com/1002538 fast/canvas/OffscreenCanvas-2d-pattern.html [ Skip ]
+crbug.com/1002538 fast/canvas/OffscreenCanvas-Bitmaprenderer-TransferToImageBitmapResetsToBlack.html [ Skip ]
+crbug.com/1002538 fast/canvas/OffscreenCanvas-clearRect-in-worker.html [ Skip ]
+crbug.com/1002538 fast/canvas/OffscreenCanvas-fillRect-in-worker.html [ Skip ]
+crbug.com/1002538 fast/canvas/OffscreenCanvas-filter-in-worker.html [ Skip ]
+crbug.com/1002538 fast/canvas/OffscreenCanvas-paths-in-worker.html [ Skip ]
+crbug.com/1002538 fast/canvas/OffscreenCanvas-strokeRect-in-worker.html [ Skip ]
+crbug.com/1002538 fast/canvas/OffscreenCanvas-text-FontFace-in-worker.html [ Skip ]
+crbug.com/1002538 fast/canvas/OffscreenCanvas-text-rendering-in-worker.html [ Skip ]
+crbug.com/1002538 fast/canvas/OffscreenCanvas-transform-shadow-in-worker.html [ Skip ]
+
+# Expected Image Region Rendering Nothing.
+crbug.com/1002547 fast/canvas/imagebitmap/transferFromImageBitmap-alpha.html [ Skip ]
+crbug.com/1002547 fast/canvas/imagebitmap/transferFromImageBitmap-no-alpha.html [ Skip ]
+crbug.com/1002547 fast/canvas/imagebitmap/transferFromImageBitmap.html [ Skip ]
+
+# Canvas not painting correctly.
+crbug.com/1003794 fast/canvas/canvas-composite-video-shadow.html [ Skip ]
+crbug.com/1003794 fast/canvas/canvas-composite-video.html [ Skip ]
+crbug.com/1003794 fast/canvas/canvas-pattern-video.html [ Skip ]
+
+# createImageBitmap fails for HTMLVideoElement
+crbug.com/1003799 fast/canvas/color-space/canvas-createImageBitmap-p3.html [ Skip ]

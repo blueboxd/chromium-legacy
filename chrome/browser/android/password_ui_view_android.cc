@@ -148,18 +148,6 @@ void PasswordUIViewAndroid::HandleRemoveSavedPasswordException(
   password_manager_presenter_.RemovePasswordException(index);
 }
 
-void PasswordUIViewAndroid::HandleChangeSavedPasswordEntry(
-    JNIEnv* env,
-    const base::android::JavaRef<jobject>&,
-    int index,
-    const JavaRef<jstring>& new_username,
-    const JavaRef<jstring>& new_password) {
-  DCHECK_EQ(State::ALIVE, state_);
-  password_manager_presenter_.ChangeSavedPassword(
-      index, ConvertJavaStringToUTF16(env, new_username),
-      ConvertJavaStringToUTF16(env, new_password));
-}
-
 void PasswordUIViewAndroid::HandleSerializePasswords(
     JNIEnv* env,
     const JavaRef<jobject>&,

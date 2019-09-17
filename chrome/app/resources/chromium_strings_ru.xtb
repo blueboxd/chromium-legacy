@@ -88,6 +88,7 @@
 <translation id="4230135487732243613">Связать данные Chromium с этим аккаунтом?</translation>
 <translation id="4271805377592243930">Справка Chromium</translation>
 <translation id="4285930937574705105">Установка не удалась из-за неизвестной ошибки. Если Chromium продолжает работать, закройте его и повторите попытку.</translation>
+<translation id="4371648796594901282">Подробнее <ph name="LINK_BEGIN" />о Chromium OS<ph name="LINK_END" /></translation>
 <translation id="4407044323746248786">Закрыть Chromium?</translation>
 <translation id="4415566066719264597">Разрешить Chromium работать в фоновом режиме</translation>
 <translation id="4423735387467980091">Настройка и управление Chromium</translation>
@@ -120,6 +121,7 @@
 <translation id="5623402015214259806">{0,plural, =0{Доступно обновление Chromium}=1{Доступно обновление Chromium}one{Обновление Chromium доступно # день}few{Обновление Chromium доступно # дня}many{Обновление Chromium доступно # дней}other{Обновление Chromium доступно # дня}}</translation>
 <translation id="5631814766731275228">Имя и изображение профиля Chromium</translation>
 <translation id="5634636535844844681">Для работы Chromium необходима ОС Windows 7 или более поздней версии.</translation>
+<translation id="5653831366781983928">Перезапустите Chromium</translation>
 <translation id="5680901439334282664">войдите в Chromium</translation>
 <translation id="5698481217667032250">Отображать Chromium на этом языке</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -162,6 +164,7 @@
 <translation id="6734080038664603509">Обновить &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium уже установлен для всех пользователей вашего компьютера</translation>
 <translation id="6810143991807788455">Отправьте отчет о текущих настройках Chromium и помогите усовершенствовать работу браузера</translation>
+<translation id="6847869444787758381">Chromium сообщит вам, если возникнет проблема с безопасностью ваших паролей.</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (скопирована в Chromium)</translation>
 <translation id="6868056391275687737">Запущены другие экземпляры Chromium. Чтобы выполнить обновление, закройте их.</translation>
@@ -190,8 +193,7 @@
 <translation id="753534427205733210">{0,plural, =1{Chromium перезапустится через 1 минуту}one{Chromium перезапустится через # минуту}few{Chromium перезапустится через # минуты}many{Chromium перезапустится через # минут}other{Chromium перезапустится через # минуты}}</translation>
 <translation id="7549178288319965365">О Chromium OS</translation>
 <translation id="7561906087460245826">Также удалить данные из Chromium (<ph name="URL" />)</translation>
-<translation id="7585853947355360626">Если нужного параметра нет на этой странице, откройте <ph name="LINK_BEGIN" />
-      настройки Chromium OS<ph name="LINK_END" /></translation>
+<translation id="7585853947355360626">Если нужного параметра нет на этой странице, откройте <ph name="LINK_BEGIN" />настройки Chromium OS<ph name="LINK_END" />.</translation>
 <translation id="761356813943268536">Chromium использует камеру и микрофон.</translation>
 <translation id="7617377681829253106">Chromium становится все лучше</translation>
 <translation id="7686590090926151193">Chromium не является браузером по умолчанию.</translation>
@@ -225,8 +227,7 @@
 <translation id="8619360774459241877">Запуск Chromium...</translation>
 <translation id="8621669128220841554">В процессе установки произошла неизвестная ошибка. Скачайте Chromium ещё раз.</translation>
 <translation id="8667808506758191620">На устройстве <ph name="DEVICE_TYPE" /> используется последняя версия Chromium OS.</translation>
-<translation id="8682540261359803721">Если нужного параметра нет на этой странице, откройте <ph name="LINK_BEGIN" />
-      настройки браузера Chromium<ph name="LINK_END" />.</translation>
+<translation id="8682540261359803721">Если нужного параметра нет на этой странице, откройте <ph name="LINK_BEGIN" />настройки браузера Chromium<ph name="LINK_END" />.</translation>
 <translation id="8697124171261953979">Кроме того, расширение изменило стартовую страницу Chromium и поисковую систему, используемую по умолчанию при вводе запроса в омнибокс.</translation>
 <translation id="8704119203788522458">Ваш персональный Chromium</translation>
 <translation id="8739167630197873875">Вы удаляете файлы cookie при выходе из Chromium. Чтобы продолжить синхронизацию, измените <ph name="COOKIE_SETTINGS_LINK" />.</translation>

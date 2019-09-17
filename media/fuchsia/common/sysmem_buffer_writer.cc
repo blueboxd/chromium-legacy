@@ -122,6 +122,16 @@ void SysmemBufferWriter::Release(size_t index) {
   buffers_[index].Release();
 }
 
+void SysmemBufferWriter::ReleaseAll() {
+  for (auto& buf : buffers_) {
+    buf.Release();
+  }
+}
+
+size_t SysmemBufferWriter::num_buffers() const {
+  return buffers_.size();
+}
+
 // static
 std::unique_ptr<SysmemBufferWriter> SysmemBufferWriter::Create(
     fuchsia::sysmem::BufferCollectionInfo_2 info) {
@@ -164,8 +174,13 @@ SysmemBufferWriter::GetRecommendedConstraints(
   buffer_constraints.min_buffer_count_for_camping =
       stream_constraints.default_settings().packet_count_for_client();
   buffer_constraints.has_buffer_memory_constraints = true;
+
+  const int kDefaultPacketSize = 512 * 1024;
   buffer_constraints.buffer_memory_constraints.min_size_bytes =
-      stream_constraints.has_per_packet_buffer_bytes_recommended();
+      stream_constraints.has_per_packet_buffer_bytes_recommended()
+          ? stream_constraints.per_packet_buffer_bytes_recommended()
+          : kDefaultPacketSize;
+
   buffer_constraints.buffer_memory_constraints.ram_domain_supported = true;
   buffer_constraints.buffer_memory_constraints.cpu_domain_supported = true;
 

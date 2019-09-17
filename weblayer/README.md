@@ -28,3 +28,12 @@ Bug tracker: [Internals>WebLayer](https://bugs.chromium.org/p/chromium/issues/li
 `common` internal code which runs in the browser and child processes
 
 `renderer` internal code which runs in the renderer process
+
+## Testing
+
+To run instrumentation tests:
+
+$ autoninja -C out/Default weblayer_instrumentation_test_apk
+$ out/Default/bin/run_weblayer_instrumentation_test_apk
+
+The test script will build and install all necessary APKs.

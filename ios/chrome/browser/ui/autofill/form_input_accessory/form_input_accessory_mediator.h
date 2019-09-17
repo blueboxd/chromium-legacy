@@ -10,7 +10,7 @@
 #include "components/password_manager/core/browser/password_store.h"
 #import "ios/chrome/browser/autofill/form_input_navigator.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
-#import "ios/web/public/web_state/web_state_observer_bridge.h"
+#import "ios/web/public/web_state_observer_bridge.h"
 
 @class ChromeCoordinator;
 @protocol FormInputAccessoryConsumer;

@@ -90,6 +90,8 @@
 <translation id="4230135487732243613">要將你的 Chromium 資料連結至這個帳戶嗎？</translation>
 <translation id="4271805377592243930">前往 Chromium 說明頁面</translation>
 <translation id="4285930937574705105">不明錯誤導致安裝失敗。如果目前 Chromium 正在執行，請關閉 Chromium，然後再試一次。</translation>
+<translation id="4371648796594901282">如需 Chromium 作業系統的詳細資料，請參閱<ph name="LINK_BEGIN" />
+      關於 Chromium 作業系統<ph name="LINK_END" /></translation>
 <translation id="4407044323746248786">確定要結束 Chromium 嗎？</translation>
 <translation id="4415566066719264597">讓 Chromium 在背景執行</translation>
 <translation id="4423735387467980091">自訂及控制 Chromium</translation>
@@ -122,6 +124,7 @@
 <translation id="5623402015214259806">{0,plural, =0{有可用的 Chromium 更新}=1{有可用的 Chromium 更新}other{Chromium 更新已發布 # 天}}</translation>
 <translation id="5631814766731275228">Chromium 名稱和相片</translation>
 <translation id="5634636535844844681">Chromium 僅支援 Windows 7 以上版本的作業系統。</translation>
+<translation id="5653831366781983928">請立即重新啟動 Chromium</translation>
 <translation id="5680901439334282664">登入 Chromium</translation>
 <translation id="5698481217667032250">將 Chromium 的介面文字設為這種語言</translation>
 <translation id="5820394555380036790">Chromium 作業系統</translation>
@@ -164,6 +167,7 @@
 <translation id="6734080038664603509">更新 Chromium(&amp;C)</translation>
 <translation id="6734291798041940871">電腦上的所有使用者都已經安裝 Chromium 了。</translation>
 <translation id="6810143991807788455">只要回報目前的設定，就能助我們一臂之力，讓 Chromium 更臻完美</translation>
+<translation id="6847869444787758381">Chromium 會通知你密碼是否曾遭到盜用</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (已複製到 Chromium)</translation>
 <translation id="6868056391275687737">有其他 Chromium 瀏覽器正在執行中。如要更新，請關閉這些瀏覽器。</translation>
@@ -194,7 +198,7 @@ Chromium 無法復原你的設定。</translation>
 <translation id="753534427205733210">{0,plural, =1{Chromium 將在 1 分鐘後重新啟動}other{Chromium 將在 # 分鐘後重新啟動}}</translation>
 <translation id="7549178288319965365">關於 Chromium 作業系統</translation>
 <translation id="7561906087460245826">一併清除 Chromium 中的資料 (<ph name="URL" />)</translation>
-<translation id="7585853947355360626">如果這個頁面上未顯示你的設定，請檢查 <ph name="LINK_BEGIN" />
+<translation id="7585853947355360626">如果這個頁面上並未顯示你的設定，請檢查 <ph name="LINK_BEGIN" />
       Chromium 作業系統設定<ph name="LINK_END" /></translation>
 <translation id="761356813943268536">Chromium 正在使用你的攝影機和麥克風。</translation>
 <translation id="7617377681829253106">Chromium 變得更進步了</translation>
@@ -229,7 +233,7 @@ Chromium 無法復原你的設定。</translation>
 <translation id="8619360774459241877">正在啟動 Chromium…</translation>
 <translation id="8621669128220841554">不明錯誤導致安裝失敗，請重新下載 Chromium。</translation>
 <translation id="8667808506758191620">您的 <ph name="DEVICE_TYPE" /> 已搭載最新版作業系統。</translation>
-<translation id="8682540261359803721">如果這個頁面上未顯示你的設定，請檢查 <ph name="LINK_BEGIN" />
+<translation id="8682540261359803721">如果這個頁面上並未顯示你的設定，請檢查 <ph name="LINK_BEGIN" />
       Chromium 瀏覽器設定<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">這個擴充功能也會控管 Chromium 啟動時或你使用網址列搜尋時所顯示的網頁。</translation>
 <translation id="8704119203788522458">這是你專屬的 Chromium</translation>

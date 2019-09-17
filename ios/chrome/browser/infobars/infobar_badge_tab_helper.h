@@ -34,6 +34,9 @@ class InfobarBadgeTabHelper
   // Updates Infobar badge for the case where Infobar of |infobar_type| was
   // accepted.
   void UpdateBadgeForInfobarAccepted(InfobarType infobar_type);
+  // Updates Infobar badge for the case where an Infobar banner of
+  // |infobar_type| was dismissed.
+  void UpdateBadgeForInfobarBannerDismissed(InfobarType infobar_type);
 
   // Returns all BadgeItems for the TabHelper Webstate.
   std::vector<id<BadgeItem>> GetInfobarBadgeItems();

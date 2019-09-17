@@ -233,6 +233,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="27527859628328957">Saltar al siguiente elemento enfocable</translation>
 <translation id="2770781857296573485">Ingresar exploración de grupos</translation>
 <translation id="2777845298774924149">Salió.</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{# más}other{# más}}</translation>
 <translation id="2784959586797362050">Como siempre, si deseas enviarnos comentarios, presiona la tecla Buscar + a, luego, i. Esperamos tus mensajes.</translation>
 <translation id="2800204403141299078">No hay más elementos diferentes.</translation>
 <translation id="2800780099804980316">No hay ningún encabezado de nivel 1 anterior.</translation>
@@ -715,6 +716,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="5956928062748260866">Cuadro de diálogo</translation>
 <translation id="5963413905009737549">Sección</translation>
 <translation id="5968607524793740041">Mostrar el menú contextual</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{con # elemento}other{con # elementos}}</translation>
 <translation id="5981446804259161541">Cian claro</translation>
 <translation id="5983179082906765664">Aumentar nivel de detalle de navegación</translation>
 <translation id="5992285135956208197">Documento gráfico</translation>

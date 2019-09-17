@@ -305,8 +305,7 @@ void SelectSingleClientCertificateFromOnc(
   ASSERT_TRUE(certs->GetList().size() > client_certificate_index);
 
   base::ListValue selected_certs;
-  selected_certs.GetList().push_back(
-      certs->GetList()[client_certificate_index].Clone());
+  selected_certs.Append(certs->GetList()[client_certificate_index].Clone());
 
   chromeos::onc::OncParsedCertificates parsed_selected_certs(selected_certs);
   ASSERT_FALSE(parsed_selected_certs.has_error());

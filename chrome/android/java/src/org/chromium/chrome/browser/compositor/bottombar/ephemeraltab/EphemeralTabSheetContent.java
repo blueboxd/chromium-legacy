@@ -5,16 +5,23 @@
 package org.chromium.chrome.browser.compositor.bottombar.ephemeraltab;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.TransitionDrawable;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.thinwebview.ThinWebView;
 import org.chromium.chrome.browser.thinwebview.ThinWebViewFactory;
+import org.chromium.chrome.browser.ui.widget.FadingShadow;
+import org.chromium.chrome.browser.ui.widget.FadingShadowView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.RenderCoordinates;
@@ -26,19 +33,30 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public class EphemeralTabSheetContent implements BottomSheet.BottomSheetContent {
     private final Context mContext;
+    private final Runnable mOpenNewTabCallback;
+    private final Runnable mToolbarClickCallback;
+
     private ViewGroup mToolbarView;
     private ViewGroup mSheetContentView;
 
     private WebContents mWebContents;
     private ContentView mWebContentView;
     private ThinWebView mThinWebView;
+    private FadingShadowView mShadow;
+    private Drawable mCurrentFavicon;
+    private ImageView mFaviconView;
 
     /**
      * Constructor.
      * @param context An Android context.
+     * @param openNewTabCallback Callback invoked to open a new tab.
+     * @param toolbarClickCallback Callback invoked when user clicks on the toolbar.
      */
-    public EphemeralTabSheetContent(Context context) {
+    public EphemeralTabSheetContent(
+            Context context, Runnable openNewTabCallback, Runnable toolbarClickCallback) {
         mContext = context;
+        mOpenNewTabCallback = openNewTabCallback;
+        mToolbarClickCallback = toolbarClickCallback;
 
         createThinWebView();
         createToolbarView();
@@ -58,8 +76,10 @@ public class EphemeralTabSheetContent implements BottomSheet.BottomSheetContent 
         mThinWebView.attachWebContents(mWebContents, mWebContentView);
     }
 
-    // Create a ThinWebView, add it to the view hierarchy, which represents the contents of the
-    // bottom sheet.
+    /**
+     * Create a ThinWebView, add it to the view hierarchy, which represents the contents of the
+     * bottom sheet.
+     */
     private void createThinWebView() {
         mThinWebView = ThinWebViewFactory.create(mContext, new WindowAndroid(mContext));
 
@@ -74,11 +94,54 @@ public class EphemeralTabSheetContent implements BottomSheet.BottomSheetContent 
     private void createToolbarView() {
         mToolbarView = (ViewGroup) LayoutInflater.from(mContext).inflate(
                 R.layout.ephemeral_tab_toolbar, null);
+        mShadow = mToolbarView.findViewById(R.id.shadow);
+        mShadow.init(ApiCompatibilityUtils.getColor(
+                             mContext.getResources(), R.color.toolbar_shadow_color),
+                FadingShadow.POSITION_TOP);
+        ImageView openInNewTabButton = mToolbarView.findViewById(R.id.open_in_new_tab);
+        openInNewTabButton.setOnClickListener(view -> mOpenNewTabCallback.run());
+
+        View toolbar = mToolbarView.findViewById(R.id.toolbar);
+        toolbar.setOnClickListener(view -> mToolbarClickCallback.run());
+
+        mFaviconView = mToolbarView.findViewById(R.id.favicon);
+        mCurrentFavicon = mFaviconView.getDrawable();
     }
 
+    /** Method to be called to start the favicon anmiation. */
+    public void startFaviconAnimation(Drawable favicon) {
+        assert favicon != null;
+
+        // TODO(shaktisahu): Find out if there is a better way for this animation.
+        Drawable presentedDrawable = favicon;
+        if (mCurrentFavicon != null && !(mCurrentFavicon instanceof TransitionDrawable)) {
+            TransitionDrawable transitionDrawable = ApiCompatibilityUtils.createTransitionDrawable(
+                    new Drawable[] {mCurrentFavicon, favicon});
+            transitionDrawable.setCrossFadeEnabled(true);
+            transitionDrawable.startTransition((int) BottomSheet.BASE_ANIMATION_DURATION_MS);
+            presentedDrawable = transitionDrawable;
+        }
+
+        mFaviconView.setImageDrawable(presentedDrawable);
+        mCurrentFavicon = favicon;
+    }
+
+    /** Sets the ephemeral tab title text. */
     public void setTitleText(String text) {
         TextView toolbarText = mToolbarView.findViewById(R.id.ephemeral_tab_text);
         toolbarText.setText(text);
+    }
+
+    /** Sets the progress percentage on the progress bar. */
+    public void setProgress(int progress) {
+        ProgressBar progressBar = mToolbarView.findViewById(R.id.progress_bar);
+        progressBar.setProgress(progress);
+    }
+
+    /** Called to show or hide the progress bar. */
+    public void setProgressVisible(boolean visible) {
+        ProgressBar progressBar = mToolbarView.findViewById(R.id.progress_bar);
+        progressBar.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
     @Override
@@ -117,6 +180,11 @@ public class EphemeralTabSheetContent implements BottomSheet.BottomSheetContent 
     @Override
     public boolean isPeekStateEnabled() {
         return true;
+    }
+
+    @Override
+    public boolean hideOnScroll() {
+        return false;
     }
 
     @Override

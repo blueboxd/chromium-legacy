@@ -1,1 +1,5 @@
-# TODO(jonross): Remove once Finch completes.
+# One portion of the image is offset.
+crbug.com/1002522 fast/canvas/canvas-toDataURL-webp.html [ Skip ]
+
+# Blurring is not pixelated.
+crbug.com/1002525 fast/canvas/pixelated.html [ Skip ]

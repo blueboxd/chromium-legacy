@@ -23,6 +23,7 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">অ্যাড্রেস বারে আপনার ইনপুটে www. এবং .com যোগ করে পৃষ্ঠা খুলুন</translation>
+<translation id="1872219238824176091">বর্তমানের ডেস্কটি সরিয়ে দিন</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, তারপর <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> অথবা <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">পরের ট্যাবে যান</translation>
 <translation id="2010818616644390445">উইন্ডোটির শেষ ট্যাবে যান</translation>
@@ -42,6 +43,7 @@
 <translation id="2441202986792279177">উইন্ডোগুলির মধ্যে দ্রুত পরিবর্তন করুন</translation>
 <translation id="2454251766545114447">ডিসপ্লের জুম কমান</translation>
 <translation id="2478303094958140141">ChromeVox (স্ক্রিনে যা আছে তা পড়ে শোনানোর বৈশিষ্ট্য) চালু অথবা বন্ধ করুন</translation>
+<translation id="2488661730534396940">বাঁদিকে ডেস্ক চালু করুন</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">ওয়েব পৃষ্ঠাটিকে স্ক্রল করে নিচে নিয়ে আসুন</translation>
 <translation id="2574014812750545982">পৃষ্ঠায় জুম লেভেল রিসেট করুন</translation>
@@ -49,6 +51,7 @@
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, তারপর <ph name="TAB" /> অথবা <ph name="RIGHT" /></translation>
 <translation id="2750942583782703988">আপনার বর্তমান পৃষ্ঠাটি আবার লোড করুন</translation>
 <translation id="2764005613199379871">সার্চ অ্যাড্রেস বারে ফোকাস রাখুন</translation>
+<translation id="2774822903829597107">একটি নতুন ডেস্ক তৈরি করুন</translation>
 <translation id="2789868185375229787">পৃষ্ঠাটি ছোট করুন</translation>
 <translation id="2804480015716812239"><ph name="ALT" /> টিপুন এবং একটি লিঙ্কে ক্লিক করুন</translation>
 <translation id="2830827904629746450">ডান দিকে উইন্ডো ডক করুন</translation>
@@ -100,6 +103,7 @@
 <translation id="4642092649622328492">আংশিক স্ক্রিনশট নিন</translation>
 <translation id="4698850295812410683">স্টাইলাস টুল দেখান</translation>
 <translation id="4801989101741319327">পরের শব্দের শেষে নিয়ে যান</translation>
+<translation id="4866066940972151697">ডানদিকে ডেস্ক চালু করুন</translation>
 <translation id="4916163929714267752">একটি নতুন উইন্ডোতে লিঙ্কটি খুলুন</translation>
 <translation id="5030659775136592441">বুকমার্ক পরিচালক দেখান</translation>
 <translation id="5034421018520995080">পৃষ্ঠার উপরে যান</translation>

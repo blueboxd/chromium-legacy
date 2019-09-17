@@ -6,9 +6,40 @@
 
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/ash/assistant/proactive_suggestions_loader.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
+
+namespace {
+
+// Helpers ---------------------------------------------------------------------
+
+syncer::SyncService* GetSyncService(Profile* profile) {
+  return profile->IsSyncAllowed()
+             ? ProfileSyncServiceFactory::GetForProfile(profile)
+             : nullptr;
+}
+
+bool IsHistorySyncEnabledWithoutPassphrase(Profile* profile) {
+  auto* sync_service = GetSyncService(profile);
+  if (!sync_service)
+    return false;
+
+  const auto* user_settings = sync_service->GetUserSettings();
+  if (!user_settings)
+    return false;
+
+  return user_settings->GetSelectedTypes().Has(
+             syncer::UserSelectableType::kHistory) &&
+         !user_settings->IsUsingSecondaryPassphrase();
+}
+
+}  // namespace
+
+// ProactiveSuggestionsClientImpl ----------------------------------------------
 
 ProactiveSuggestionsClientImpl::ProactiveSuggestionsClientImpl(
     Profile* profile)
@@ -20,6 +51,12 @@ ProactiveSuggestionsClientImpl::ProactiveSuggestionsClientImpl(
   // We observe the singleton BrowserList to receive events pertaining to the
   // currently active browser.
   BrowserList::AddObserver(this);
+
+  // We observe the SyncService to detect changes in user sync settings which
+  // may affect whether or not we will observe the active browser.
+  auto* sync_service = GetSyncService(profile_);
+  if (sync_service)
+    sync_service->AddObserver(this);
 }
 
 ProactiveSuggestionsClientImpl::~ProactiveSuggestionsClientImpl() {
@@ -30,6 +67,10 @@ ProactiveSuggestionsClientImpl::~ProactiveSuggestionsClientImpl() {
 
   if (active_browser_)
     active_browser_->tab_strip_model()->RemoveObserver(this);
+
+  auto* sync_service = GetSyncService(profile_);
+  if (sync_service)
+    sync_service->RemoveObserver(this);
 
   BrowserList::RemoveObserver(this);
   ash::AssistantState::Get()->RemoveObserver(this);
@@ -87,6 +128,12 @@ void ProactiveSuggestionsClientImpl::OnAssistantContextEnabled(bool enabled) {
   // When Assistant screen context is enabled/disabled in settings we may need
   // to resume/pause observation of the browser. We accomplish this by updating
   // active state.
+  UpdateActiveState();
+}
+
+void ProactiveSuggestionsClientImpl::OnStateChanged(syncer::SyncService* sync) {
+  // When the state of the SyncService has changed, we may need to resume/pause
+  // observation of the browser. We accomplish this by updating active state.
   UpdateActiveState();
 }
 
@@ -161,10 +208,13 @@ void ProactiveSuggestionsClientImpl::UpdateActiveState() {
   auto* tab_strip_model = active_browser_->tab_strip_model();
 
   // We never observe browsers that are off the record and we never observe
-  // browsers when the user has disabled either Assistant or screen context.
+  // browsers when the user has disabled either Assistant or screen context. We
+  // also don't observe the browser when the user has disabled history sync or
+  // is using a sync passphrase.
   if (active_browser_->profile()->IsOffTheRecord() ||
       !ash::AssistantState::Get()->settings_enabled().value_or(false) ||
-      !ash::AssistantState::Get()->context_enabled().value_or(false)) {
+      !ash::AssistantState::Get()->context_enabled().value_or(false) ||
+      !IsHistorySyncEnabledWithoutPassphrase(profile_)) {
     tab_strip_model->RemoveObserver(this);
     SetActiveContents(nullptr);
     return;

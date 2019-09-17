@@ -795,8 +795,7 @@ class PolicyProvidedCertsForSigninExtensionTest
     onc_cert_scope.SetKey(onc::scope::kId, base::Value(extension_id));
 
     base::Value onc_cert_trust_bits(base::Value::Type::LIST);
-    onc_cert_trust_bits.GetList().push_back(
-        base::Value(onc::certificate::kWeb));
+    onc_cert_trust_bits.Append(base::Value(onc::certificate::kWeb));
 
     base::Value onc_certificate(base::Value::Type::DICTIONARY);
     onc_certificate.SetKey(onc::certificate::kGUID, base::Value("guid"));
@@ -808,7 +807,7 @@ class PolicyProvidedCertsForSigninExtensionTest
                            std::move(onc_cert_trust_bits));
 
     base::Value onc_certificates(base::Value::Type::LIST);
-    onc_certificates.GetList().emplace_back(std::move(onc_certificate));
+    onc_certificates.Append(std::move(onc_certificate));
 
     base::Value onc_dict(base::Value::Type::DICTIONARY);
     onc_dict.SetKey(onc::toplevel_config::kCertificates,

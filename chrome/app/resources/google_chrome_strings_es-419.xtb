@@ -51,6 +51,9 @@
 <translation id="2094919256425865063">¿Deseas salir de Chrome de todos modos?</translation>
 <translation id="2120620239521071941">Esta acción borrará <ph name="ITEMS_COUNT" /> elementos de este dispositivo. Si más adelante deseas recuperar los datos, accede a tu cuenta en Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Informa tu <ph name="BEGIN_LINK" />configuración actual<ph name="END_LINK" /> para ayudarnos a mejorar Chrome</translation>
+<translation id="2128103434102193461">Puedes visitar <ph name="LINK_BEGIN" />Acerca del Sistema operativo Chrome<ph name="LINK_END" />
+      para obtener información sobre este SO</translation>
+<translation id="2151406531797534936">Reinicia Chrome ahora</translation>
 <translation id="216054706567564023">Instala Chrome en el teléfono. Te enviaremos un SMS al número de teléfono de recuperación de la cuenta.</translation>
 <translation id="2246246234298806438">Google Chrome no puede mostrar la vista previa de impresión si falta el visor de PDF incorporado.</translation>
 <translation id="2252923619938421629">Informa tu configuración actual para ayudarnos a mejorar Google Chrome.</translation>
@@ -164,7 +167,7 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="5686916850681061684">Personaliza y controla Google Chrome. Una alerta necesita tu atención. Haz clic para ver los detalles.</translation>
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome se reiniciará en 1 segundo}other{Google Chrome se reiniciará en # segundos}}</translation>
-<translation id="573759479754913123">Acerca de Chrome OS</translation>
+<translation id="573759479754913123">Acerca del sistema operativo Chrome</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" />: Google Chrome Canary</translation>
 <translation id="5804318322022881572">No se pudo iniciar Chrome. Vuelve a intentarlo.</translation>
 <translation id="5877064549588274448">Se cambió el canal. Reinicia el dispositivo para aplicar los cambios.</translation>
@@ -219,6 +222,7 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="7589360514048265910">Esta computadora no recibirá más actualizaciones de Google Chrome porque Mac OS X 10.9 ya no es compatible.</translation>
 <translation id="7592736734348559088">Google Chrome no pudo sincronizar los datos porque los datos de acceso de la cuenta están obsoletos.</translation>
 <translation id="7626032353295482388">Te damos la bienvenida a Chrome</translation>
+<translation id="7629695634924605473">Chrome te informará si tus contraseñas corren se ven comprometidas</translation>
 <translation id="7641148173327520642">El administrador del sistema configuró Google Chrome de manera que se abriera <ph name="ALTERNATIVE_BROWSER_NAME" /> para acceder a <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Logotipo de Chrome Enterprise</translation>
 <translation id="7747138024166251722">El instalador no pudo crear un directorio temporal. Verifique si hay espacio disponible en el disco y cuenta con permiso para instalar software.</translation>

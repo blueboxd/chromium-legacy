@@ -132,8 +132,8 @@ class TestDragDropClient : public SimpleTestDragDropClient {
  public:
   // The location in screen coordinates used for the synthetic mouse moves
   // generated in SetTopmostXWindowAndMoveMouse().
-  static const int kMouseMoveX;
-  static const int kMouseMoveY;
+  static constexpr int kMouseMoveX = 100;
+  static constexpr int kMouseMoveY = 200;
 
   TestDragDropClient(aura::Window* window,
                      DesktopNativeCursorManager* cursor_manager);
@@ -278,12 +278,6 @@ XID SimpleTestDragDropClient::FindWindowFor(const gfx::Point& screen_point) {
 
 ///////////////////////////////////////////////////////////////////////////////
 // TestDragDropClient
-
-// static
-const int TestDragDropClient::kMouseMoveX = 100;
-
-// static
-const int TestDragDropClient::kMouseMoveY = 200;
 
 TestDragDropClient::TestDragDropClient(
     aura::Window* window,

@@ -66,6 +66,7 @@
 <translation id="1407135791313364759">Odpri vse</translation>
 <translation id="1409426117486808224">Poenostavljen pogled za odprte zavihke</translation>
 <translation id="1409879593029778104">Prenos datoteke <ph name="FILE_NAME" /> je bil preprečen, ker datoteka že obstaja.</translation>
+<translation id="1413136574162415971">Google lahko preveri, ali so bila vaša gesla del podatkovne kršitve. To je vklopljeno, če se prijavite z računom Google in vklopite sinhronizacijo.</translation>
 <translation id="1414981605391750300">Vzpostavljanje stika z Googlom. To lahko traja kakšno minuto …</translation>
 <translation id="1416550906796893042">Različica aplikacije</translation>
 <translation id="1430915738399379752">Natisni</translation>
@@ -160,6 +161,7 @@
 <translation id="2091887806945687916">Zvok</translation>
 <translation id="2096012225669085171">Sinhronizacija in prilagajanje med napravami</translation>
 <translation id="2100273922101894616">Samodejna prijava</translation>
+<translation id="2100314319871056947">Poskusite deliti besedilo v manjših kosih</translation>
 <translation id="2107397443965016585">Prikaži poziv, preden se spletnim mestom dovoli predvajanje zaščitene vsebine (priporočeno)</translation>
 <translation id="2111511281910874386">Pojdi na stran</translation>
 <translation id="2122601567107267586">Aplikacije ni bilo mogoče odpreti</translation>
@@ -253,6 +255,7 @@
 <translation id="2836148919159985482">Dotaknite se gumba za nazaj, če želite zapreti celozaslonski način.</translation>
 <translation id="2842985007712546952">Nadrejena mapa</translation>
 <translation id="2858138569776157458">Najb. prilj.</translation>
+<translation id="2860954141821109167">V tej napravi mora biti omogočena aplikacija Telefon</translation>
 <translation id="2870560284913253234">Spletno mesto</translation>
 <translation id="2874939134665556319">Prejšnja skladba</translation>
 <translation id="2876369937070532032">Googlu pošlje URL-je nekaterih strani, ki jih obiščete, kadar je ogrožena vaša varnost</translation>
@@ -277,6 +280,7 @@
 <translation id="2996291259634659425">Ustvarjanje gesla</translation>
 <translation id="2996809686854298943">URL je obvezen</translation>
 <translation id="300526633675317032">S tem bo izbrisanih vseh <ph name="SIZE_IN_KB" /> shranjenih podatkov spletnega mesta.</translation>
+<translation id="3016635187733453316">Naprava mora biti povezana z internetom</translation>
 <translation id="3029613699374795922">Preneseno <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">Gesli se ne ujemata</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Poiščite pomoč<ph name="END_LINK" /></translation>
@@ -841,6 +845,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="723171743924126238">Izberite slike</translation>
 <translation id="7233236755231902816">Če si želite splet ogledovati v svojem jeziku, posodobite Chrome na najnovejšo različico</translation>
 <translation id="7243308994586599757">Možnosti so na voljo pri dnu zaslona</translation>
+<translation id="7248069434667874558">Poskrbite, da ima naprava <ph name="TARGET_DEVICE_NAME" /> vklopljeno sinhronizacijo v Chromu</translation>
 <translation id="7250468141469952378">Št. izbranih: <ph name="ITEM_COUNT" /></translation>
 <translation id="7274013316676448362">Blokirano spletno mesto</translation>
 <translation id="7290209999329137901">Preimenovanje ni na voljo</translation>
@@ -955,6 +960,7 @@ Spletno mesto NIMA dostopa do kamere. Posnetki kamere so vidni samo vam.</transl
 <translation id="8007176423574883786">Izklopljeno za to napravo</translation>
 <translation id="8013372441983637696">Prav tako izbriši podatke v Chromu iz te naprave</translation>
 <translation id="8015452622527143194">Vrnitev vsebine strani na privzeto velikost</translation>
+<translation id="8015780634880457457">Google lahko preveri, ali so bila vaša gesla del podatkovne kršitve</translation>
 <translation id="802154636333426148">Prenos ni uspel</translation>
 <translation id="8026334261755873520">Izbriši podatke brskanja</translation>
 <translation id="8035133914807600019">Nova mapa …</translation>
@@ -1017,6 +1023,7 @@ Spletno mesto NIMA dostopa do kamere. Posnetki kamere so vidni samo vam.</transl
 <translation id="8445448999790540984">Gesel ni mogoče izvoziti</translation>
 <translation id="8447861592752582886">Umik dovoljenja za dostop do naprave</translation>
 <translation id="8461694314515752532">Šifriranje sinhroniziranih podatkov z vašim geslom za sinhronizacijo</translation>
+<translation id="8466613982764129868">Naprava <ph name="TARGET_DEVICE_NAME" /> mora biti povezana v internet</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /><ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Na voljo brez povezave</translation>
 <translation id="8489271220582375723">Odpiranje strani z zgodovino</translation>
@@ -1107,6 +1114,7 @@ Spletno mesto NIMA dostopa do kamere. Posnetki kamere so vidni samo vam.</transl
 <translation id="9188680907066685419">Odjava iz upravljanega računa</translation>
 <translation id="9204836675896933765">Še 1 datoteka</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9209888181064652401">Ni mogoče klicati</translation>
 <translation id="9219103736887031265">Slike</translation>
 <translation id="926205370408745186">Odstranitev dejavnosti v Chromu iz Digitalne dobrobiti</translation>
 <translation id="932327136139879170">Domov</translation>

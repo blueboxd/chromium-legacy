@@ -22,7 +22,7 @@ namespace views {
 
 // Amount of time between when the mouse moves outside the Host's zone and when
 // the listener is notified.
-constexpr int kNotifyListenerTimeMs = 300;
+constexpr auto kNotifyListenerTime = base::TimeDelta::FromMilliseconds(300);
 
 class MouseWatcher::Observer : public ui::EventObserver {
  public:
@@ -72,7 +72,7 @@ class MouseWatcher::Observer : public ui::EventObserver {
             base::BindOnce(&Observer::NotifyListener,
                            notify_listener_factory_.GetWeakPtr()),
             event_type == EventType::kMove
-                ? base::TimeDelta::FromMilliseconds(kNotifyListenerTimeMs)
+                ? kNotifyListenerTime
                 : mouse_watcher_->notify_on_exit_time_);
       }
     } else {
@@ -105,8 +105,7 @@ MouseWatcher::MouseWatcher(std::unique_ptr<MouseWatcherHost> host,
                            MouseWatcherListener* listener)
     : host_(std::move(host)),
       listener_(listener),
-      notify_on_exit_time_(
-          base::TimeDelta::FromMilliseconds(kNotifyListenerTimeMs)) {}
+      notify_on_exit_time_(kNotifyListenerTime) {}
 
 MouseWatcher::~MouseWatcher() = default;
 

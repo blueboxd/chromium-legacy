@@ -71,6 +71,7 @@
 <translation id="1292701964462482250">Un logiciel installé sur votre ordinateur empêche Chrome de se connecter au Web de manière sécurisée (sous Windows uniquement)</translation>
 <translation id="1294154142200295408">Variations de ligne de commande</translation>
 <translation id="129553762522093515">Récemment fermés</translation>
+<translation id="1298536327547837046">Analyse à la recherche de logiciels malveillants</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Essayez de supprimer les cookies.<ph name="END_LINK" /></translation>
 <translation id="1307966114820526988">Fonctionnalités obsolètes</translation>
 <translation id="1320233736580025032">Prc1 (enveloppe)</translation>
@@ -167,6 +168,7 @@
 <translation id="1734878702283171397">Essayez de contacter l'administrateur système.</translation>
 <translation id="1740951997222943430">Saisissez un mois d'expiration valide</translation>
 <translation id="1743520634839655729">Pour régler plus rapidement vos achats la prochaine fois, enregistrez votre carte, votre nom et votre adresse de facturation dans votre compte Google et sur cet appareil.</translation>
+<translation id="1743570585616704562">Non reconnu</translation>
 <translation id="1745880797583122200">Votre navigateur est géré</translation>
 <translation id="17513872634828108">Onglets ouverts</translation>
 <translation id="1753706481035618306">Numéro de page</translation>
@@ -426,6 +428,7 @@
 <translation id="320323717674993345">Annuler le paiement</translation>
 <translation id="3207960819495026254">Favori</translation>
 <translation id="3209034400446768650">Cette page peut vous facturer de l'argent</translation>
+<translation id="3215092763954878852">Impossible d'utiliser WebAuthn</translation>
 <translation id="3225919329040284222">Le serveur dispose d'un certificat qui ne répond pas aux exigences intégrées. Celles-ci sont incluses dans certains sites Web très sécurisés afin de vous protéger.</translation>
 <translation id="3226128629678568754">Veuillez appuyer sur le bouton d'actualisation pour renvoyer les données nécessaires au chargement de la page.</translation>
 <translation id="3227137524299004712">Micro</translation>
@@ -562,6 +565,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Aucun}=1{De 1 site }one{De # site }other{De # sites }}</translation>
 <translation id="397105322502079400">Calcul en cours…</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> est bloqué</translation>
+<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> a activé la fonctionnalité de protection Chrome Enterprise contre les menaces dans votre navigateur. Cette fonctionnalité a accès à certaines de vos données.</translation>
 <translation id="3987940399970879459">Moins de 1 Mo</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 page Web à proximité}one{# page Web à proximité}other{# pages Web à proximité}}</translation>
 <translation id="4030383055268325496">&amp;Annuler l'ajout</translation>
@@ -578,7 +582,7 @@
 <translation id="4103249731201008433">Le numéro de série de l'appareil n'est pas valide.</translation>
 <translation id="410351446219883937">Lecture automatique</translation>
 <translation id="4103763322291513355">Accédez à &lt;strong&gt;chrome://policy&lt;/strong&gt; pour consulter une liste des URL ajoutées à la liste noire et des autres règles définies par votre administrateur système.</translation>
-<translation id="4108231218301530806">Utiliser votre empreinte pour valider la carte la prochaine fois.</translation>
+<translation id="4108231218301530806">Utiliser votre empreinte digitale pour valider cette carte la prochaine fois.</translation>
 <translation id="4110652170750985508">Vérifier votre paiement</translation>
 <translation id="4112140312785995938">Retour rapide</translation>
 <translation id="4116663294526079822">Toujours autoriser sur ce site</translation>
@@ -630,6 +634,7 @@
 <translation id="4277028893293644418">Réinitialiser le mot de passe</translation>
 <translation id="4279811152705618813">Votre <ph name="DEVICE_TYPE" /> est géré par <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Cette carte a été enregistrée dans votre compte Google}one{Cette carte a été enregistrée dans votre compte Google}other{Ces cartes ont été enregistrées dans votre compte Google}}</translation>
+<translation id="428847186335018806">Analysez les fichiers que vous téléchargez ou importez dans Chrome.</translation>
 <translation id="42981349822642051">Développer</translation>
 <translation id="4302965934281694568">Chou3 (enveloppe)</translation>
 <translation id="4305817255990598646">Changer</translation>
@@ -668,6 +673,7 @@
 <translation id="4506176782989081258">Erreur de validation : <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4506599922270137252">Contacter l'administrateur système</translation>
 <translation id="450710068430902550">Partage avec l'administrateur</translation>
+<translation id="4508814173490746936">Impossible d'utiliser Touch ID</translation>
 <translation id="4510487217173779431">Chou4 (enveloppe)</translation>
 <translation id="4515275063822566619">Les cartes et les adresses proviennent de Chrome et de votre compte Google (<ph name="ACCOUNT_EMAIL" />). Vous pouvez les gérer dans les <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (enveloppe)</translation>
@@ -763,6 +769,7 @@
 <translation id="5045550434625856497">Mot de passe incorrect</translation>
 <translation id="5056549851600133418">Articles pour vous</translation>
 <translation id="5068524481479508725">A10</translation>
+<translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 en cours d'utilisation)}one{(# en cours d'utilisation)}other{(# en cours d'utilisation)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Vérifier l'adresse du proxy<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">Le certificat actuel du serveur n'est pas valide.</translation>
 <translation id="5087580092889165836">Ajouter une carte</translation>
@@ -991,6 +998,7 @@
 <translation id="6302269476990306341">Arrêt de l'Assistant Google dans Chrome</translation>
 <translation id="6305205051461490394"><ph name="URL" /> est inaccessible.</translation>
 <translation id="6321917430147971392">Vérifiez vos paramètres DNS</translation>
+<translation id="6322182122604171028">Impossible d'utiliser Windows Hello</translation>
 <translation id="6328639280570009161">Essayez de désactiver la prédiction réseau</translation>
 <translation id="6328784461820205019">"Votre connexion n'est pas privée", "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" ou "Erreur de certificat SSL"</translation>
 <translation id="6328786501058569169">Ce site est trompeur</translation>
@@ -1014,6 +1022,7 @@
 <translation id="6433490469411711332">Modifier les coordonnées</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> n'autorise pas la connexion.</translation>
 <translation id="6434309073475700221">Annuler</translation>
+<translation id="6435221585574090192">Transmettez à votre administrateur les données sur les événements liés à la sécurité qui ont été signalés par la fonctionnalité de protection contre les menaces disponible dans Chrome Enterprise. Il peut s'agir d'URL de pages, de noms et de métadonnées de fichiers, de votre nom d'utilisateur Chrome et de celui lié à votre appareil.</translation>
 <translation id="6440503408713884761">Ignoré</translation>
 <translation id="6446163441502663861">Kahu (enveloppe)</translation>
 <translation id="6446608382365791566">Ajouter d'autres informations</translation>
@@ -1058,6 +1067,7 @@
 <translation id="6671697161687535275">Supprimer la suggestion de saisie de formulaire de Chromium ?</translation>
 <translation id="6685834062052613830">Déconnectez-vous et complétez la configuration.</translation>
 <translation id="6689271823431384964">Chrome propose d'enregistrer vos cartes dans votre compte Google, car vous êtes connecté. Vous pouvez modifier ce comportement dans les paramètres. Le nom du titulaire de la carte provient de votre compte.</translation>
+<translation id="6707256370811247129">Analysez le contenu du cache et des fichiers que vous téléchargez ou importez dans Chrome.</translation>
 <translation id="6710213216561001401">Précédent</translation>
 <translation id="6710594484020273272">&lt;Saisissez le terme de recherche&gt;</translation>
 <translation id="671076103358959139">Jeton d'inscription :</translation>
@@ -1076,6 +1086,7 @@
 <translation id="681021252041861472">Champ obligatoire</translation>
 <translation id="6810899417690483278">ID de la personnalisation</translation>
 <translation id="6825578344716086703">Vous avez tenté d'accéder à <ph name="DOMAIN" />, mais le serveur a présenté un certificat signé à l'aide d'un algorithme de signature faible (par exemple, SHA-1). Il est possible que le certificat fourni par le serveur ait été falsifié. Il se peut donc que le serveur ne soit pas celui auquel vous souhaitez accéder, et qu'il s'agisse d'une tentative de piratage.</translation>
+<translation id="6826370046007623921">Protection contre la perte de données</translation>
 <translation id="6831043979455480757">Traduire</translation>
 <translation id="6839929833149231406">Zone</translation>
 <translation id="6852204201400771460">Actualiser l'application ?</translation>
@@ -1222,6 +1233,7 @@ Informations supplémentaires :
 <translation id="7542995811387359312">La saisie automatique des numéros de carte de paiement est désactivée, car la connexion utilisée par ce formulaire n'est pas sécurisée.</translation>
 <translation id="7548892272833184391">Corriger les erreurs de connexion</translation>
 <translation id="7549584377607005141">Pour s'afficher correctement, cette page Web a besoin des données que vous avez saisies précédemment. Vous pouvez envoyer de nouveau ces données. Cependant, en procédant ainsi, vous répéterez toute action déjà effectuée sur cette page.</translation>
+<translation id="7550637293666041147">Votre nom d'utilisateur Chrome et celui lié à votre appareil</translation>
 <translation id="7552846755917812628">Essayez les astuces suivantes :</translation>
 <translation id="7554791636758816595">Nouvel onglet</translation>
 <translation id="7564049878696755256">Vous risquez de perdre l'accès à votre compte <ph name="ORG_NAME" /> ou d'être victime d'usurpation d'identité. L'équipe Chrome vous recommande de modifier votre mot de passe maintenant.</translation>
@@ -1236,6 +1248,7 @@ Informations supplémentaires :
 <translation id="7610193165460212391">La valeur <ph name="VALUE" /> est hors limites.</translation>
 <translation id="7613889955535752492">Date d'expiration : <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Vous disposez déjà de données chiffrées à l'aide d'une autre version de votre mot de passe de compte Google. Veuillez saisir celui-ci ci-dessous.</translation>
+<translation id="7625784245512586808">Protection Chrome Enterprise contre les menaces</translation>
 <translation id="7633909222644580952">Données relatives aux performances et rapports d'erreur</translation>
 <translation id="7637571805876720304">Supprimer les données de carte de paiement de Chromium ?</translation>
 <translation id="7638605456503525968">Ports série</translation>
@@ -1346,6 +1359,7 @@ Informations supplémentaires :
 <translation id="8211406090763984747">La connexion est sécurisée</translation>
 <translation id="8218327578424803826">Position attribuée : </translation>
 <translation id="8220146938470311105">C7/C6 (enveloppe)</translation>
+<translation id="8220639454292072926">Rapports d'entreprise</translation>
 <translation id="8225771182978767009">La personne qui a configuré cet ordinateur a choisi de bloquer ce site.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Ouvrir la page dans un nouvel onglet de navigation privée</translation>
@@ -1428,6 +1442,7 @@ Informations supplémentaires :
 <translation id="8740359287975076522">L'&lt;abbr id="dnsDefinition"&gt;adresse DNS&lt;/abbr&gt; de <ph name="HOST_NAME" /> est introuvable. Identification du problème…</translation>
 <translation id="874846938927089722">Cartes de crédit et cartes prépayées acceptées</translation>
 <translation id="874918643257405732">Ajouter cet onglet aux favoris</translation>
+<translation id="8751426954251315517">Veuillez réessayer plus tard</translation>
 <translation id="8759274551635299824">Carte arrivée à expiration</translation>
 <translation id="8761567432415473239">La fonctionnalité de navigation sécurisée a récemment permis de <ph name="BEGIN_LINK" />détecter des programmes dangereux<ph name="END_LINK" /> sur le site <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Périphérique USB</translation>
@@ -1492,6 +1507,7 @@ Informations supplémentaires :
 <translation id="9080712759204168376">Récapitulatif de la commande</translation>
 <translation id="9089260154716455634">Règle en heures creuses :</translation>
 <translation id="9095388113577226029">Plus de langues…</translation>
+<translation id="9098981495403789647">Votre administrateur a activé la fonctionnalité de protection Chrome Enterprise contre les menaces dans votre navigateur. Cette fonctionnalité a accès à certaines de vos données.</translation>
 <translation id="9103872766612412690">Un chiffrement est normalement utilisé sur le site <ph name="SITE" /> pour protéger vos informations. Lors de la dernière tentative de connexion de Chromium au site <ph name="SITE" />, des identifiants inhabituels et incorrects ont été retournés. Il est possible qu'un individu malveillant tente de se faire passer pour <ph name="SITE" /> ou qu'un écran de connexion Wi-Fi ait interrompu la connexion. Vos informations restent sécurisées, car nous avons arrêté la connexion avant l'échange des données.</translation>
 <translation id="9106062320799175032">Ajouter une adresse de facturation</translation>
 <translation id="9114524666733003316">Validation de la carte…</translation>

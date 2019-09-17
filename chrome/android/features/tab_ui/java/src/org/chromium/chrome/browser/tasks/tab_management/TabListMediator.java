@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import android.app.Activity;
 import android.content.ComponentCallbacks;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
@@ -461,8 +462,9 @@ class TabListMediator {
             @Override
             public void didMoveTab(Tab tab, int newIndex, int curIndex) {
                 if (mTabModelSelector.getTabModelFilterProvider().getCurrentTabModelFilter()
-                                instanceof TabGroupModelFilter)
+                                instanceof TabGroupModelFilter) {
                     return;
+                }
                 onTabMoved(newIndex, curIndex);
             }
 
@@ -980,9 +982,28 @@ class TabListMediator {
                         .build();
 
         if (mUiType == UiType.SELECTABLE) {
-            tabInfo.set(TabProperties.CHECKED_DRAWABLE_STATE_LIST,
-                    AppCompatResources.getColorStateList(
-                            mContext, R.color.default_icon_color_inverse));
+            // Incognito in both light/dark theme is the same as non-incognito mode in dark theme.
+            // Non-incognito mode and incognito in both light/dark themes in dark theme all look
+            // dark.
+            ColorStateList checkedDrawableColorList = AppCompatResources.getColorStateList(mContext,
+                    tab.isIncognito() ? R.color.default_icon_color_dark
+                                      : R.color.default_icon_color_inverse);
+            ColorStateList actionButtonBackgroundColorList =
+                    AppCompatResources.getColorStateList(mContext,
+                            tab.isIncognito() ? R.color.default_icon_color_white
+                                              : R.color.default_icon_color);
+            // TODO(995876): Update color modern_blue_300 to active_color_dark when the associated
+            // bug is landed.
+            ColorStateList actionbuttonSelectedBackgroundColorList =
+                    AppCompatResources.getColorStateList(mContext,
+                            tab.isIncognito() ? R.color.modern_blue_300
+                                              : R.color.light_active_color);
+
+            tabInfo.set(TabProperties.CHECKED_DRAWABLE_STATE_LIST, checkedDrawableColorList);
+            tabInfo.set(TabProperties.SELECTABLE_TAB_ACTION_BUTTON_BACKGROUND,
+                    actionButtonBackgroundColorList);
+            tabInfo.set(TabProperties.SELECTABLE_TAB_ACTION_BUTTON_SELECTED_BACKGROUND,
+                    actionbuttonSelectedBackgroundColorList);
         }
 
         if (index >= mModel.size()) {

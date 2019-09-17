@@ -19,6 +19,7 @@
 <translation id="2501953888035679275">Fotografiază și înregistrează videoclipuri cu camera foto.</translation>
 <translation id="2549985041256363841">Pornește înregistrarea</translation>
 <translation id="2599796128805996109">Camera foto posterioară</translation>
+<translation id="2912439424121107408">Modul expert nu este acceptat pe acest dispozitiv</translation>
 <translation id="2968794441791257519">Fotografiile și videoclipurile făcute cu camera foto vor fi mutate în dosarul Descărcări. Le poți accesa în Fișiere.
 
         Aplicațiile cu permisiuni de stocare vor avea acces la fotografiile și videoclipurile tale.</translation>
@@ -41,10 +42,12 @@
         Verifică dacă ai conectat corect camera foto.</translation>
 <translation id="5152121255775685072">Accesează galeria</translation>
 <translation id="5671277269877808209">Pătrat</translation>
+<translation id="5775960006311140197">Modul expert</translation>
 <translation id="5869546221129391014">Grilă</translation>
 <translation id="6040143037577758943">Închide</translation>
 <translation id="6073451960410192870">Oprește înregistrarea</translation>
 <translation id="6165508094623778733">Află mai multe</translation>
+<translation id="6197807149213783179">Salvează metadatele</translation>
 <translation id="6233780560267770709">3 pe 3</translation>
 <translation id="6243827288366940320">Raportul de aur</translation>
 <translation id="6248749904681914629">Cameră externă</translation>
@@ -66,6 +69,7 @@
 <translation id="8261506727792406068">Șterge</translation>
 <translation id="8428213095426709021">Setări</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8732462232047530626">Metadatele de previzualizare</translation>
 <translation id="8815966864175525708">Comută pentru a face o fotografie portret</translation>
 <translation id="8870695351537079478">Nu se poate porni înregistrarea</translation>
 <translation id="9045155556724273246">10 secunde</translation>

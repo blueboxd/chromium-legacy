@@ -54,6 +54,8 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="2094919256425865063">Přesto Chrome ukončit?</translation>
 <translation id="2120620239521071941">Ze zařízení bude smazán následující počet položek: <ph name="ITEMS_COUNT" />. Budete-li chtít své údaje později načíst, přihlaste se do Chromu jako <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Pomozte s vylepšováním prohlížeče Chrome tím, že nahlásíte <ph name="BEGIN_LINK" />aktuální nastavení<ph name="END_LINK" /></translation>
+<translation id="2128103434102193461">Podrobnosti o systému Chrome OS najdete na stránce <ph name="LINK_BEGIN" />O operačním systému Chrome OS<ph name="LINK_END" /></translation>
+<translation id="2151406531797534936">Restartujte Chrome</translation>
 <translation id="216054706567564023">Nainstalujte si Chrome do telefonu. Zašleme vám SMS na telefonní číslo pro obnovení účtu.</translation>
 <translation id="2246246234298806438">Pokud chybí integrovaný program k zobrazení souborů PDF, nemůže Google Chrome zobrazit náhled tisku.</translation>
 <translation id="2252923619938421629">Pomoci s vylepšováním prohlížeče Google Chrome prostřednictvím nahlášení aktuálního nastavení</translation>
@@ -225,6 +227,7 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="7589360514048265910">Tento počítač již nebude dostávat aktualizace Google Chrome, protože systém Mac OS X 10.9 již není podporován.</translation>
 <translation id="7592736734348559088">Google Chrome vaše data nemohl synchronizovat, protože vaše přihlašovací údaje nejsou aktuální.</translation>
 <translation id="7626032353295482388">Vítá vás Chrome</translation>
+<translation id="7629695634924605473">Pokud vaše hesla někdo prolomí, Chrome vás o tom bude informovat</translation>
 <translation id="7641148173327520642">Administrátor systému nakonfiguroval prohlížeč Google Chrome tak, aby pro přístup k adrese <ph name="TARGET_URL_HOSTNAME" /> otevřel prohlížeč <ph name="ALTERNATIVE_BROWSER_NAME" />.</translation>
 <translation id="7651907282515937834">Logo Chrome Enterprise</translation>
 <translation id="7747138024166251722">Instalační soubor nemohl vytvořit dočasný adresář. Zkontrolujte prosím volné místo na disku a povolení instalovat software.</translation>

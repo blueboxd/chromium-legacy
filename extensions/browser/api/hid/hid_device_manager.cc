@@ -287,12 +287,12 @@ void HidDeviceManager::LazyInitialize() {
   if (!hid_manager_) {
     // |hid_manager_| is initialized and safe to use whether or not the
     // connection is successful.
-    device::mojom::HidManagerRequest request = mojo::MakeRequest(&hid_manager_);
 
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     auto* connector = content::GetSystemConnector();
     DCHECK(connector);
-    connector->BindInterface(device::mojom::kServiceName, std::move(request));
+    connector->Connect(device::mojom::kServiceName,
+                       hid_manager_.BindNewPipeAndPassReceiver());
   }
   // Enumerate HID devices and set client.
   std::vector<device::mojom::HidDeviceInfoPtr> empty_devices;
@@ -309,10 +309,10 @@ void HidDeviceManager::LazyInitialize() {
 }
 
 void HidDeviceManager::SetFakeHidManagerForTesting(
-    device::mojom::HidManagerPtr fake_hid_manager) {
+    mojo::PendingRemote<device::mojom::HidManager> fake_hid_manager) {
   DCHECK(!hid_manager_);
   DCHECK(fake_hid_manager);
-  hid_manager_ = std::move(fake_hid_manager);
+  hid_manager_.Bind(std::move(fake_hid_manager));
   LazyInitialize();
 }
 std::unique_ptr<base::ListValue> HidDeviceManager::CreateApiDeviceList(

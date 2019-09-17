@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/full_card_request_result_delegate_bridge.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_card_cell.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_content_injector.h"
+#import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/settings/autofill/features.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
@@ -47,14 +48,19 @@ NSString* const ManageCardsAccessibilityIdentifier =
 // All available credit cards.
 @property(nonatomic, assign) std::vector<autofill::CreditCard*> cards;
 
+// The dispatcher used by this Mediator.
+@property(nonatomic, weak) id<BrowserCoordinatorCommands> dispatcher;
+
 @end
 
 @implementation ManualFillCardMediator
 
-- (instancetype)initWithCards:(std::vector<autofill::CreditCard*>)cards {
+- (instancetype)initWithCards:(std::vector<autofill::CreditCard*>)cards
+                   dispatcher:(id<BrowserCoordinatorCommands>)dispatcher {
   self = [super init];
   if (self) {
     _cards = cards;
+    _dispatcher = dispatcher;
   }
   return self;
 }
@@ -130,13 +136,13 @@ NSString* const ManageCardsAccessibilityIdentifier =
     NSString* addCreditCardsTitle =
         l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_ADD_PAYMENT_METHOD);
 
+    __weak __typeof(self) weakSelf = self;
     auto addCreditCardsItem = [[ManualFillActionItem alloc]
         initWithTitle:addCreditCardsTitle
                action:^{
                  base::RecordAction(base::UserMetricsAction(
-                     "ManualFallback_CreditCard_OpenAddPaymentMethod"));
-                 // TODO(crbug.com/984561): Add action to navigate to the add
-                 // credit card details screen here.
+                     "ManualFallback_CreditCard_OpenAddCreditCard"));
+                 [weakSelf.dispatcher showAddCreditCard];
                }];
     [self.consumer
         presentActions:@[ addCreditCardsItem, manageCreditCardsItem ]];

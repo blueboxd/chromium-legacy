@@ -5,10 +5,10 @@
 #include "components/exo/display.h"
 
 #include <iterator>
+#include <memory>
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
@@ -72,7 +72,7 @@ Display::~Display() {}
 std::unique_ptr<Surface> Display::CreateSurface() {
   TRACE_EVENT0("exo", "Display::CreateSurface");
 
-  return base::WrapUnique(new Surface);
+  return std::make_unique<Surface>();
 }
 
 std::unique_ptr<SharedMemory> Display::CreateSharedMemory(

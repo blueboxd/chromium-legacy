@@ -25,6 +25,7 @@
 #include "media/audio/audio_input_delegate.h"
 #include "media/mojo/mojom/audio_logging.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/audio/public/mojom/audio_processing.mojom.h"
 
@@ -72,20 +73,21 @@ class CONTENT_EXPORT OldRenderFrameAudioInputStreamFactory
 
   // mojom::RendererAudioInputStreamFactory implementation.
   void CreateStream(
-      mojom::RendererAudioInputStreamFactoryClientPtr client,
+      mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client,
       const base::UnguessableToken& session_id,
       const media::AudioParameters& audio_params,
       bool automatic_gain_control,
       uint32_t shared_memory_count,
       audio::mojom::AudioProcessingConfigPtr processing_config) override;
 
-  void DoCreateStream(mojom::RendererAudioInputStreamFactoryClientPtr client,
-                      const base::UnguessableToken& session_id,
-                      const media::AudioParameters& audio_params,
-                      bool automatic_gain_control,
-                      uint32_t shared_memory_count,
-                      AudioInputDeviceManager::KeyboardMicRegistration
-                          keyboard_mic_registration);
+  void DoCreateStream(
+      mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client,
+      const base::UnguessableToken& session_id,
+      const media::AudioParameters& audio_params,
+      bool automatic_gain_control,
+      uint32_t shared_memory_count,
+      AudioInputDeviceManager::KeyboardMicRegistration
+          keyboard_mic_registration);
 
   void AssociateInputAndOutputForAec(
       const base::UnguessableToken& input_stream_id,

@@ -41,7 +41,7 @@ interface AgentRegistry {
 interface Agent {
   StartTracing(string config, mojo_base.mojom.TimeTicks coordinator_time)
       => (bool success);
-  StopAndFlush(Recorder recorder);
+  StopAndFlush(pending_remote<Recorder> recorder);
   RequestBufferStatus() => (uint32 capacity, uint32 count);
 };
 

@@ -115,19 +115,19 @@ bool AreSigninCookiesClearedOnExit(Profile* profile) {
 // needed to make the icon look smaller, otherwise it looks too big compared to
 // the other icons. See crbug.com/951751 for more information.
 gfx::ImageSkia GetGoogleIconForUserMenu(int icon_size) {
-  constexpr int kIconPadding = 2;
+  constexpr gfx::Insets kIconPadding = gfx::Insets(2);
   SkColor icon_color =
       ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
           ui::NativeTheme::kColorId_DefaultIconColor);
   // |CreateVectorIcon()| doesn't override colors specified in the .icon file,
   // therefore the image has to be colored manually with |CreateColorMask()|.
-  gfx::ImageSkia google_icon = gfx::CreateVectorIcon(
-      kGoogleGLogoIcon, icon_size - 2 * kIconPadding, gfx::kPlaceholderColor);
+  gfx::ImageSkia google_icon =
+      gfx::CreateVectorIcon(kGoogleGLogoIcon, icon_size - kIconPadding.width(),
+                            gfx::kPlaceholderColor);
   gfx::ImageSkia grey_google_icon =
       gfx::ImageSkiaOperations::CreateColorMask(google_icon, icon_color);
 
-  return gfx::CanvasImageSource::CreatePadded(grey_google_icon,
-                                              gfx::Insets(kIconPadding));
+  return gfx::CanvasImageSource::CreatePadded(grey_google_icon, kIconPadding);
 }
 #endif
 
@@ -172,6 +172,7 @@ void ProfileMenuView::BuildMenu() {
   BuildAutofillButtons();
   BuildAccountFeatureButtons();
   BuildSelectableProfiles();
+  BuildProfileFeatureButtons();
 }
 
 void ProfileMenuView::OnAvatarMenuChanged(
@@ -463,6 +464,28 @@ void ProfileMenuView::BuildSelectableProfiles() {
         base::BindRepeating(&ProfileMenuView::OnOtherProfileSelected,
                             base::Unretained(this), profile_entry->GetPath()));
   }
+}
+
+void ProfileMenuView::BuildProfileFeatureButtons() {
+  constexpr float kIconToImageRatio = 0.75;
+
+  AddProfileFeatureButton(
+      ImageForMenu(kUserMenuGuestIcon, kIconToImageRatio),
+      l10n_util::GetStringUTF16(IDS_PROFILES_OPEN_GUEST_PROFILE_BUTTON),
+      base::BindRepeating(&ProfileMenuView::OnGuestProfileButtonClicked,
+                          base::Unretained(this)));
+
+  AddProfileFeatureButton(
+      ImageForMenu(vector_icons::kSettingsIcon, kIconToImageRatio),
+      l10n_util::GetStringUTF16(IDS_PROFILES_MANAGE_USERS_BUTTON),
+      base::BindRepeating(&ProfileMenuView::OnManageProfilesButtonClicked,
+                          base::Unretained(this)));
+
+  AddProfileFeatureButton(
+      ImageForMenu(kCloseAllIcon, kIconToImageRatio),
+      l10n_util::GetStringUTF16(IDS_PROFILES_CLOSE_ALL_WINDOWS_BUTTON),
+      base::BindRepeating(&ProfileMenuView::OnExitProfileButtonClicked,
+                          base::Unretained(this)));
 }
 
 void ProfileMenuView::AddProfileMenuView(AvatarMenu* avatar_menu) {

@@ -11,8 +11,6 @@ source_set("pup_data_base") {
   sources = [
     "pup_data.cc",
     "pup_data.h",
-    "pup_disk_util.cc",
-    "pup_disk_util.h",
     "uws_catalog.h",
   ]
 
@@ -81,7 +79,6 @@ source_set("unittest_sources") {
     "dynamic_pup_unittest.cc",
     "pup_cleaner_util_unittest.cc",
     "pup_data_unittest.cc",
-    "pup_disk_util_unittest.cc",
   ]
 
   deps = [

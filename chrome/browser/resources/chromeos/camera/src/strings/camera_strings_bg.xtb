@@ -19,6 +19,7 @@
 <translation id="2501953888035679275">Правете снимки и записвайте видеоклипове с камерата си.</translation>
 <translation id="2549985041256363841">Старт на записа</translation>
 <translation id="2599796128805996109">Задна камера</translation>
+<translation id="2912439424121107408">Експертният режим не се поддържа на това устройство</translation>
 <translation id="2968794441791257519">Направените с камерата снимки и видеоклипове ще бъдат преместени в папката „Изтегляния“. Можете да осъществите достъп до тях от „Файлове“.
 
 Приложенията с разрешения за хранилището ще имат достъп до снимките и видеоклиповете ви.</translation>
@@ -41,10 +42,12 @@
         Моля, проверете дали камерата е свързана правилно.</translation>
 <translation id="5152121255775685072">Към галерията</translation>
 <translation id="5671277269877808209">Квадрат</translation>
+<translation id="5775960006311140197">Експертен режим</translation>
 <translation id="5869546221129391014">Таблица</translation>
 <translation id="6040143037577758943">Затваряне</translation>
 <translation id="6073451960410192870">Спиране на записа</translation>
 <translation id="6165508094623778733">Научете повече</translation>
+<translation id="6197807149213783179">Запазване на метаданните</translation>
 <translation id="6233780560267770709">3 на 3</translation>
 <translation id="6243827288366940320">Златно сечение</translation>
 <translation id="6248749904681914629">Външна камера</translation>
@@ -66,6 +69,7 @@
 <translation id="8261506727792406068">Изтриване</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8687491812650032292">HD при <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8732462232047530626">Преглед на метаданните</translation>
 <translation id="8815966864175525708">Превключвател за правене на вертикална снимка</translation>
 <translation id="8870695351537079478">Записването не може да се стартира</translation>
 <translation id="9045155556724273246">10 секунди</translation>

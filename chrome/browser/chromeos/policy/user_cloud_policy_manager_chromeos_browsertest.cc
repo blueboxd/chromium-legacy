@@ -156,7 +156,7 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest, StartSession) {
   base::Value mandatory_policy(base::Value::Type::DICTIONARY);
   base::Value startup_urls(base::Value::Type::LIST);
   for (auto* const url : kStartupURLs)
-    startup_urls.GetList().push_back(base::Value(url));
+    startup_urls.Append(base::Value(url));
   mandatory_policy.SetKey(key::kRestoreOnStartupURLs, std::move(startup_urls));
   mandatory_policy.SetKey(key::kRestoreOnStartup,
                           base::Value(SessionStartupPref::kPrefValueURLs));

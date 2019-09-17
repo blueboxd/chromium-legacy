@@ -20,7 +20,6 @@
 #include "base/sequence_checker.h"
 #include "chrome/browser/performance_manager/public/graph/graph.h"
 #include "chrome/browser/performance_manager/public/graph/node_attached_data.h"
-#include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace performance_manager {

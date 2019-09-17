@@ -22,7 +22,7 @@ Color GetColorWithBrightness(int target_brightness) {
 
 TEST(DarkModeColorClassifierTest, ApplyFilterToDarkTextOnly) {
   DarkModeSettings settings;
-  settings.mode = DarkMode::kSimpleInvertForTesting;
+  settings.mode = DarkModeInversionAlgorithm::kSimpleInvertForTesting;
   settings.text_brightness_threshold = 200;
   auto classifier = DarkModeColorClassifier::MakeTextColorClassifier(settings);
 
@@ -51,7 +51,7 @@ TEST(DarkModeColorClassifierTest, ApplyFilterToDarkTextOnly) {
 
 TEST(DarkModeColorClassifierTest, ApplyFilterToLightBackgroundElementsOnly) {
   DarkModeSettings settings;
-  settings.mode = DarkMode::kSimpleInvertForTesting;
+  settings.mode = DarkModeInversionAlgorithm::kSimpleInvertForTesting;
   settings.background_brightness_threshold = 200;
   auto classifier =
       DarkModeColorClassifier::MakeBackgroundColorClassifier(settings);

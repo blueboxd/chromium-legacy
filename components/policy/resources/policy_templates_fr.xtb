@@ -97,6 +97,7 @@
       Si cette règle n'est pas définie, les GPO mis en cache peuvent être réutilisés dans un délai maximal de 25 heures.
 
       Si cette règle est définie sur 0, la mise en cache des GPO est désactivée. Notez que cela augmente la charge du serveur, car les GPO sont de nouveau téléchargés à chaque récupération de règle, même s'ils ne sont pas modifiés.</translation>
+<translation id="1111470455889178048">Envoyer les importations et les téléchargements des utilisateurs pour analyse</translation>
 <translation id="1117462881884985156"><ph name="PRODUCT_NAME" /> ignore tout serveur proxy pour la liste d'hôtes spécifiée ici.
 
           Cette règle ne prend effet que si vous avez sélectionné les paramètres de proxy manuels dans l'option "Sélectionner le mode de spécification des paramètres de serveur proxy", et si la règle <ph name="PROXY_SETTINGS_POLICY_NAME" /> n'a pas été spécifiée.
@@ -401,6 +402,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       ne sont pas autorisés.</translation>
 <translation id="1634989431648355062">Autoriser le plug-in "<ph name="FLASH_PLUGIN_NAME" />" sur ces sites</translation>
 <translation id="1645793986494086629">Schéma :</translation>
+<translation id="1648816843164517573">Liste des noms qui seront exemptés de la vérification de la règle HSTS</translation>
 <translation id="1653229475925941921">Si cette règle est définie, elle contrôle le type de loupe activé. Définissez la règle sur "None" pour désactiver la loupe.
 
           Si vous définissez cette règle, les utilisateurs n'ont pas la possibilité de la modifier ni de l'ignorer.
@@ -910,6 +912,7 @@ Cette règle n'est disponible que sur les instances Windows qui sont associées 
 <translation id="254653220329944566">Active la création de rapports dans le cloud pour <ph name="PRODUCT_NAME" /></translation>
 <translation id="2548572254685798999">Enregistrer les informations de navigation sécurisée</translation>
 <translation id="2550593661567988768">Impression recto seulement</translation>
+<translation id="2551520365302988324">Envoyer les importations des utilisateurs pour analyse</translation>
 <translation id="2552966063069741410">Fuseau horaire</translation>
 <translation id="2562339630163277285">Spécifie l'URL du moteur de recherche utilisé pour fournir des résultats instantanés. Cette URL doit contenir la chaîne <ph name="SEARCH_TERM_MARKER" />, qui sera remplacée lors de la requête par le texte déjà saisi par l'utilisateur.
 
@@ -990,6 +993,7 @@ Si cette règle n'est pas configurée, le paramètre "AskGeolocation" est utilis
 Cette règle est facultative. Si elle n'est pas configurée, la valeur par défaut UTF-8 est utilisée. 
 
 Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
+<translation id="2679827548357140943">Liste des domaines pour lesquels le contenu importé doit être vérifié afin de détecter d'éventuels logiciels malveillants</translation>
 <translation id="268577405881275241">Activer la fonctionnalité de proxy pour la compression de données</translation>
 <translation id="2693108589792503178">Configurez l'URL de modification de mot de passe.</translation>
 <translation id="2694143893026486692">Loupe ancrée activée</translation>
@@ -1368,6 +1372,10 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="332771718998993005">Détermine le nom de la destination <ph name="PRODUCT_NAME" />.
 
           Si cette règle est définie sur une chaîne non vide, cette chaîne devient le nom de la destination <ph name="PRODUCT_NAME" />. Sinon, le nom de la destination est le nom de l'appareil. Si cette règle n'est pas définie, le nom de la destination est celui de l'appareil, et le propriétaire de l'appareil (ou un utilisateur du domaine gérant l'appareil) peut le modifier. Le nom est limité à 24 caractères.</translation>
+<translation id="3331950121151548952">Liste des domaines pour lesquels le contenu importé doit être vérifié afin de détecter d'éventuels logiciels malveillants.  Cette règle n'est utilisée que si la règle <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> est définie sur une valeur autorisant ou imposant la vérification des importations à la recherche d'éventuels logiciels malveillants.
+
+      Si cette règle n'est pas définie ou si elle est configurée, mais qu'aucun domaine n'est indiqué dans la liste, aucun contenu importé n'est vérifié pour déterminer s'il contient ou non un logiciel malveillant.
+      </translation>
 <translation id="3335468714959531450">Permet de définir une liste de formats d'URL spécifiant les sites autorisés à utiliser des cookies.
 
           Si cette règle n'est pas configurée, la valeur par défaut globale est utilisée pour tous les sites à partir de la règle "DefaultCookiesSetting" si celle-ci est définie ou, à défaut, à partir de la configuration personnelle de l'utilisateur.
@@ -1437,6 +1445,15 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
           Si la règle est définie sur "False" ou si elle n'a pas été configurée, les délais liés à la gestion de l'alimentation et la limite relative à la durée de la session sont activés dès que la session débute.</translation>
 <translation id="3478024346823118645">Effacer les données utilisateur à la déconnexion</translation>
 <translation id="3480961938508521469">Recharge complète de la batterie en mode standard.</translation>
+<translation id="3483729306380590354">Permet de personnaliser le pourcentage auquel la batterie doit commencer à charger.
+
+          La batterie commence à se charger lorsqu'elle atteint le niveau défini.
+
+          La règle <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> doit être inférieure d'au moins cinq points par rapport à la règle <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />.
+
+          Cette règle n'est utilisée que si la règle <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" /> est définie sur <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" />.
+
+          Si cette règle n'est pas configurée ni définie, le mode <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" /> de recharge de la batterie est alors appliqué.</translation>
 <translation id="348495353354674884">Activer le clavier virtuel</translation>
 <translation id="3487623755010328395">
         Si cette règle est activée, <ph name="PRODUCT_NAME" /> tente de s'enregistrer et d'appliquer la règle relative au cloud associée à tous les profils.
@@ -1880,6 +1897,15 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
           Si vous configurez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
 
           Si elle n'est pas définie, le clic automatique est désactivé au départ, mais les utilisateurs peuvent l'activer à tout moment.</translation>
+<translation id="4215197846797661927">Permet de définir le jour de recharge de la batterie en mode avancé.
+
+          Cette règle n'est utilisée que si la règle <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> est définie sur "True".
+
+          Si cette règle n'est pas configurée ni définie, le mode avancé de recharge de la batterie est toujours désactivé.
+
+          Remarque : La valeur du champ <ph name="CHARGE_START_TIME_FIELD_NAME" /> doit être inférieure à celle du champ <ph name="CHARGE_END_TIME_FIELD_NAME" />.
+
+          Remarque : Les valeurs autorisées dans le champ <ph name="MINUTE_FIELD_NAME" /> de <ph name="CHARGE_START_TIME_FIELD_NAME" /> et <ph name="CHARGE_END_TIME_FIELD_NAME" /> sont 0, 15, 30 et 45.</translation>
 <translation id="4224610387358583899">Délais de verrouillage de l'écran</translation>
 <translation id="423797045246308574">Permet de définir une liste de formats d'URL qui déterminent les sites qui ne sont pas autorisés à utiliser la génération de clé. Si la règle "KeygenAllowedForUrls" est appliquée à un format d'URL, elle a priorité sur ces exceptions.
 
@@ -1946,6 +1972,17 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
           La valeur de la règle doit être indiquée en millisecondes. Les valeurs doivent être inférieures ou égales au délai d'inactivité.
 
           Le message d'avertissement ne s'affiche que si le dépassement du délai d'inactivité entraîne une déconnexion ou l'arrêt de l'appareil.</translation>
+<translation id="4342827592971649626">Cette règle permet de contrôler l'analyse approfondie des téléchargements des utilisateurs à l'aide de la navigation sécurisée. Si cette règle n'est pas configurée ou si elle est définie sur le paramètre par défaut ("Ne pas analyser les fichiers"), les téléchargements des utilisateurs ne sont pas analysés par la navigation sécurisée.
+
+      Si cette règle est définie sur "Interdire l'analyse des fichiers", les utilisateurs ne sont pas autorisés à analyser leurs téléchargements. Ce paramètre est différent de celui par défaut, dans la mesure où certains utilisateurs (comme les utilisateurs de la Protection Avancée) peuvent envoyer leurs téléchargements pour analyse. Avec ce paramètre, ces utilisateurs ne peuvent donc pas analyser leurs fichiers.
+
+      Si cette règle est définie sur "Envoyer les téléchargements des utilisateurs pour analyse", les téléchargements des utilisateurs sont envoyés sur le réseau à la navigation sécurisée afin d'y être analysés pour détecter les éventuels logiciels malveillants.
+
+      Si cette règle est définie sur "Envoyer les importations des utilisateurs pour analyse", les importations des utilisateurs sont envoyés sur le réseau à la navigation sécurisée afin d'y être analysés pour détecter les éventuels logiciels malveillants.
+
+      Si cette règle est définie sur "Envoyer les importations et les téléchargements des utilisateurs pour analyse", le produit se comporte conformément aux règles indiquées sous "Envoyer les importations des utilisateurs pour analyse" et "Envoyer les téléchargements des utilisateurs pour analyse".
+
+      Pour savoir comment les utilisateurs et les administrateurs peuvent consulter les résultats de l'analyse, reportez-vous aux règles <ph name="DELAY_DELIVER_UNTIL_VERDICT_POLICY_NAME" /> et <ph name="UNSAFE_EVENTS_REPORTING_ENABLED" />.</translation>
 <translation id="4344356660952451291">Liste des domaines pour lesquels le contenu téléchargé doit faire l'objet d'une vérification de conformité</translation>
 <translation id="4346674324214534449">Vous permet de définir si les annonces doivent être bloquées sur les sites présentant des annonces intrusives.
 
@@ -2533,6 +2570,16 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Si vous définissez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
 
       Si la règle n'est pas définie, l'utilisateur peut choisir une image à afficher sur le bureau et en arrière-plan de l'écran de connexion.</translation>
+<translation id="5437214086679373363">Permet de déterminer si les utilisateurs sont autorisés ou non à importer ou à télécharger des fichiers protégés par un mot de passe lorsqu'une analyse est requise.  Cette restriction ne s'applique qu'aux fichiers nécessitant une analyse comme défini par <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> et par les règles qui régissent la liste des domaines pour lesquels les vérifications sont activées.
+
+      Si cette règle est définie sur "Aucune", <ph name="PRODUCT_NAME" /> empêche l'utilisateur d'importer ou de télécharger des fichiers protégés par un mot de passe.
+
+      Si cette règle est définie sur "Autoriser les téléchargements", <ph name="PRODUCT_NAME" /> autorise l'utilisateur à télécharger des fichiers protégés par un mot de passe.
+
+      Si cette règle est définie sur "Autoriser les importations", <ph name="PRODUCT_NAME" /> autorise l'utilisateur à importer des fichiers protégés par un mot de passe.
+
+      Si cette règle n'est pas configurée ou si elle est définie sur "Autoriser les importations et les téléchargements", <ph name="PRODUCT_NAME" /> se comporte conformément aux règles indiquées sous "Autoriser les téléchargements" et "Autoriser les importations".
+      </translation>
 <translation id="5437733496511628148">L'activation de ce paramètre empêche que des cookies soient définis par des éléments de page Web qui ne font pas partie du domaine indiqué dans la barre d'adresse du navigateur.
 
       La désactivation de ce paramètre autorise le fait que des cookies soient définis par des éléments de page Web qui ne font pas partie du domaine indiqué dans la barre d'adresse du navigateur, sans que les utilisateurs puissent modifier ce réglage.
@@ -3455,13 +3502,32 @@ En cas de non-configuration de cette règle, aucune restriction ne s'applique qu
 
       Pour en savoir plus sur la règle <ph name="IEEM_SITELIST_POLICY" /> d'Internet Explorer, consultez la page https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">URL autorisées à accéder aux appareils de capture vidéo sans avis préalable</translation>
+<translation id="713712866686796666">Permet de définir la configuration quotidienne du passage à l'alimentation via la batterie.
+
+          Cette règle n'est utilisée que si la règle <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> est définie sur "True".
+
+          Si cette règle n'est pas configurée ni définie, le passage à l'alimentation via la batterie est désactivé.
+
+          Remarque : Les valeurs autorisées dans le champ <ph name="MINUTE_FIELD_NAME" /> de <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> et <ph name="CHARGE_START_TIME_FIELD_NAME" /> sont 0, 15, 30 et 45.</translation>
 <translation id="7138678301420049075">Autre</translation>
+<translation id="7139809614375682935">Permet de personnaliser le pourcentage auquel la charge de la batterie doit s'arrêter.
+
+          Une fois ce pourcentage atteint, la charge s'arrête.
+
+          La règle <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> doit être inférieure d'au moins cinq points par rapport à la règle <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />.
+
+          Cette règle n'est utilisée que si la règle <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" /> est définie sur <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" />.
+
+          Si cette règle n'est pas configurée ni définie, le mode <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" /> de recharge de la batterie est alors appliqué.</translation>
 <translation id="7140629953254369759">Contraint <ph name="PRODUCT_OS_NAME" /> à utiliser la configuration du planificateur de tâches identifiée par le nom spécifié.
 
       Cette règle dispose des options "prudent" et "performances", vous permettant de sélectionner des configurations de planificateurs de tâches privilégiant, respectivement, la stabilité ou les performances.
 
       Si cette règle n'est pas paramétrée, l'utilisateur pourra faire son propre choix.</translation>
 <translation id="7145335384492396213">Mode d'impression par code défini par défaut</translation>
+<translation id="7149042336307555519"> Types de connexion autorisés pour les mises à jour du système d'exploitation. En raison de leur taille, les mises à jour du système d'exploitation peuvent considérablement ralentir la connexion et entraînent parfois des frais supplémentaires. C'est pourquoi elles ne sont pas activées par défaut pour les types de connexion jugés onéreux (actuellement, seul le type de connexion au réseau mobile est concerné).
+
+      Les identifiants des types de connexion reconnus sont <ph name="CONNECTION_TYPE_ETHERNET_NAME" />, <ph name="CONNECTION_TYPE_WIFI_NAME" /> et <ph name="CONNECTION_TYPE_CELLULAR_NAME" />.</translation>
 <translation id="7152605873936173525">Permet de contrôler le mode du résolveur DNS-over-HTTPS. Veuillez noter que cette règle ne définit que le mode par défaut pour chaque requête. Ce mode peut être ignoré pour les requêtes spéciales, telles que celles visant à résoudre un nom d'hôte de serveur DNS-over-HTTPS.
 
       Le mode <ph name="SECURE_DNS_MODE_OFF" /> désactive DNS-over-HTTPS.
@@ -3494,6 +3560,17 @@ En cas de non-configuration de cette règle, aucune restriction ne s'applique qu
           Si cette règle est définie sur "False", les demandes de wakelocks forçant l'activation de l'écran seront rétrogradées au rang de demandes de wakelocks système.</translation>
 <translation id="7177857088692019405">Déverrouillage rapide</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
+<translation id="7187447094921703950">Permet d'activer la règle de gestion de l'alimentation avec passage à l'alimentation via la batterie.
+
+          Le passage à l'alimentation via la batterie est une règle d'économie d'énergie qui réduit au maximum le recours au courant alternatif pendant les pics d'utilisation au cours de la journée. Il est possible de définir une heure de début et de fin de ce mode pour chaque jour de la semaine. À ces périodes, le système fonctionnera sur la batterie, même si l'appareil est branché sur le courant alternatif, tant que le niveau de la batterie reste au-dessus du seuil défini. À la fin de la plage spécifiée, le système fonctionnera sur le courant alternatif s'il y est branché, mais ne rechargera pas la batterie. Le système reprendra son fonctionnement habituel en utilisant le courant alternatif et en rechargeant la batterie à l'heure de début de charge spécifiée.
+
+          Si cette règle est définie sur "True", et si les règles <ph name="DEVICE_POWER_PEAK_SHIFT_BATTERY_THRESHOLD_NAME" /> et <ph name="DEVICE_POWER_PEAK_SHIFT_DAY_CONFIG_NAME" /> sont configurées, le passage à l'alimentation via la batterie est activé s'il est compatible avec l'appareil.
+
+          Si cette règle est définie sur "False", le passage à l'alimentation via la batterie est désactivé.
+
+          Si vous configurez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
+
+          Si cette règle n'est pas configurée, le passage à l'alimentation via la batterie est désactivé au départ et ne peut être activé par l'utilisateur.</translation>
 <translation id="718956142899066210">Types de connexion autorisés pour les mises à jour</translation>
 <translation id="7190286937411178540">Activer la fonctionnalité d'accessibilité de mise en surbrillance au clavier</translation>
 <translation id="7194407337890404814">Nom du moteur de recherche par défaut</translation>
@@ -4134,6 +4211,17 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 
           Si cette règle n'est pas configurée, le paramètre est activé.</translation>
 <translation id="8382184662529825177">Autoriser l'utilisation de l'attestation à distance pour assurer la protection du contenu de l'appareil</translation>
+<translation id="8382693763260501307">Permet de gérer l'alimentation en mode avancé de recharge de la batterie.
+
+          Le mode avancé de recharge de la batterie permet à l'utilisateur de maximiser les performances de la batterie. Pour ce faire, le système combine un algorithme de recharge standard avec d'autres techniques en dehors des heures de travail. Pendant les heures de travail, une option de recharge rapide est utilisée. La batterie est alors rechargée plus rapidement, et le niveau de charge complète est atteint plus vite. Pour chaque jour, vous pouvez définir l'heure à partir de laquelle le système est le plus sollicité, ainsi que la durée de cette utilisation intensive.
+
+          Si cette règle est définie sur "True" et si la règle <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_DAY_CONFIG_NAME" /> est configurée, le mode avancé de recharge de la batterie est toujours activé s'il est compatible avec l'appareil.
+
+          Si cette règle est définie sur "False", ce mode est toujours désactivé.
+
+          Si vous configurez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
+
+          Si cette règle n'est pas configurée, ce mode est désactivé et ne peut être activé par l'utilisateur.</translation>
 <translation id="838870586332499308">Activer l'itinérance des données</translation>
 <translation id="8390049129576938611">Désactive la visionneuse de documents PDF intégrée dans <ph name="PRODUCT_NAME" />. Les fichiers PDF sont alors traités comme des téléchargements que l'utilisateur peut ouvrir avec l'application par défaut.
 
@@ -4332,9 +4420,15 @@ Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du
       Si cette règle est configurée, le groupe d'applications est figé et ne peut plus être modifié par l'utilisateur.
 
       Si cette règle n'est pas définie, l'utilisateur a la possibilité de modifier la liste des applications épinglées dans le Lanceur d'applications.</translation>
+<translation id="8779504970846195767">Permet de définir en pourcentage le seuil de passage à l'alimentation via la batterie.
+
+          Cette règle n'est utilisée que si la règle <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> est définie sur "True".
+
+          Si cette règle n'est pas configurée ni définie, le passage à l'alimentation via la batterie est désactivé.</translation>
 <translation id="8798099450830957504">Par défaut</translation>
 <translation id="8800453707696044281">Personnaliser le pourcentage auquel la recharge de la batterie doit s'arrêter</translation>
 <translation id="8801680448782904838">Avertir un utilisateur qu'un redémarrage du navigateur ou de l'appareil est recommandé ou exigé</translation>
+<translation id="8802816494059596691">Les noms d'hôte indiqués dans cette liste seront exemptés de la vérification de la règle HSTS susceptible de remplacer les requêtes HTTP en requêtes HTTPS. Seuls les noms d'hôte sans extension sont autorisés dans cette règle. Les noms d'hôtes doivent être mis sous forme canonique : tous les noms de domaine internationalisés (IDN) doivent être convertis dans leur format d'étiquette A, et toutes les lettres ASCII doivent être en minuscules. Cette règle ne s'applique qu'aux noms d'hôte spécifiques indiqués. Elle ne s'applique pas aux sous-domaines des noms spécifiés.</translation>
 <translation id="8818173863808665831">Permet d'indiquer l'emplacement géographique de l'appareil.
 
       Si cette règle n'est pas définie, ou si la valeur "false" lui est attribuée, l'emplacement n'est pas indiqué.</translation>
@@ -4498,6 +4592,17 @@ indique uniquement les imprimantes qui peuvent être choisies.
       Si la règle est définie sur un jeton qui correspond à un build Quick Fix, l'appareil sera mis à jour avec le build Quick Fix correspondant à condition que la mise à jour ne soit pas bloquée par une autre règle.
 
       Si la règle n'est pas définie ou si la valeur ne correspond à aucun build Quick Fix, l'appareil ne sera pas mis à jour avec un tel build. Si l'appareil exécute déjà un build Quick Fix, mais que la règle n'est plus définie ou que sa valeur ne correspond plus à aucun build de ce type, il est mis à jour avec un build normal à condition que la mise à jour ne soit pas bloquée par une autre règle.</translation>
+<translation id="9053158112041032237">Permet de gérer l'alimentation suivant le mode de recharge de la batterie.
+
+          La recharge est contrôlée dynamiquement afin de réduire au maximum l'usure de la batterie due aux contraintes et d'allonger sa durée de vie.
+
+          Si le mode personnalisé de recharge est sélectionné, les règles <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> et <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" /> doivent être définies.
+
+          Si cette règle est définie, le mode de recharge de la batterie est appliqué si l'appareil est compatible.
+
+          Si cette règle n'est pas définie et si elle est compatible avec l'appareil, le mode standard de recharge de la batterie est appliqué et ne peut pas être modifié par l'utilisateur.
+
+          Remarque : <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> remplace cette règle si l'ancienne est définie.</translation>
 <translation id="9054012305936267950">Cette règle vous permet de gérer la connexion au navigateur et de spécifier si l'utilisateur peut ou non se connecter à <ph name="PRODUCT_NAME" /> avec son compte et utiliser les services associés, comme la synchronisation Chrome.
 
       Si la règle est définie sur "Désactiver la connexion au navigateur", l'utilisateur ne peut pas se connecter au navigateur et utiliser les services associés. Dans ce cas, les fonctionnalités qui opèrent au niveau de ce dernier, comme la synchronisation Chrome, ne peuvent pas être utilisées et sont donc indisponibles. Si l'utilisateur était connecté au moment où la règle est passée à l'état "Désactivée", il sera déconnecté la prochaine fois qu'il utilisera Chrome, mais ses données de profil locales (favoris, mots de passe, etc.) seront conservées. Il pourra tout de même se connecter aux services Web Google, comme Gmail, et s'en servir.

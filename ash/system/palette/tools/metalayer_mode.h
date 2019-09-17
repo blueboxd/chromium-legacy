@@ -15,7 +15,7 @@
 namespace ash {
 
 // A palette tool that lets the user select a screen region to be passed
-// to the voice interaction framework.
+// to the Assistant framework.
 //
 // Unlike other palette tools, it can be activated not only through the stylus
 // menu, but also by the stylus button click.

@@ -15,6 +15,7 @@ interface PrintRenderer {
 // printing grunt work for RenderView.
 interface PrintRenderFrame {
   // Tells the RenderFrame to initiate print preview for the entire
-  // document.
-  InitiatePrintPreview(bool has_selection);
+  // document. Optionally provides a |print_renderer| to render print documents.
+  InitiatePrintPreview(associated PrintRenderer? print_renderer,
+                       bool has_selection);
 };

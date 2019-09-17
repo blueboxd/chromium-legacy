@@ -59,15 +59,26 @@ public final class ReturnToChromeExperimentsUtil {
      * Whether we should display the omnibox on the tab switcher in addition to the
      *  tab switcher toolbar.
      *
-     * Depends on tab grid being enabled.
-     *
      * @return true if the tab switcher on return and tab grid features are both ON, else false.
      */
     public static boolean shouldShowOmniboxOnTabSwitcher() {
         return ChromeFeatureList.isInitialized()
                 && (FeatureUtilities.isGridTabSwitcherEnabled()
                         || FeatureUtilities.isTabGroupsAndroidEnabled())
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_SWITCHER_ON_RETURN);
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.START_SURFACE_ANDROID);
+    }
+
+    /**
+     * TODO(mattsimmons): Merge this with the one above once all the surface variations work
+     *  correctly with mv tiles, omnibox, etc. (both should be true when != NO_START_SURFACE)
+     * @return Whether we show the most visited tiles on the tab switcher.
+     */
+    public static boolean shouldShowMostVisitedOnTabSwitcher() {
+        return ChromeFeatureList.isInitialized()
+                && ChromeFeatureList
+                           .getFieldTrialParamByFeature(ChromeFeatureList.START_SURFACE_ANDROID,
+                                   "start_surface_variation")
+                           .equals("tasksonly");
     }
 
     /**
@@ -77,6 +88,8 @@ public final class ReturnToChromeExperimentsUtil {
      * @param transition The page transition type.
      * @return true if we have handled the navigation, false otherwise.
      */
+    // TODO(mattsimmons): This needs to be updated for MV tiles to record the correct metrics.
+    // TODO(mattsimmons): Rename/Refactor since it's not just location bar now.
     public static boolean willHandleLoadUrlFromLocationBar(
             String url, @PageTransition int transition) {
         ChromeActivity chromeActivity = getActivityPresentingOverviewWithOmnibox();

@@ -604,12 +604,6 @@ void RenderWidget::ApplyEmulatedScreenMetricsForPopupWidget(
                              emulator->original_screen_info());
 }
 
-gfx::Rect RenderWidget::AdjustValidationMessageAnchor(const gfx::Rect& anchor) {
-  if (screen_metrics_emulator_)
-    return screen_metrics_emulator_->AdjustValidationMessageAnchor(anchor);
-  return anchor;
-}
-
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 void RenderWidget::SetExternalPopupOriginAdjustmentsForEmulation(
     ExternalPopupMenu* popup) {
@@ -624,6 +618,14 @@ void RenderWidget::OnShowHostContextMenu(ContextMenuParams* params) {
 }
 
 bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
+  // TODO(https://crbug.com/1000502): Don't process IPC messages on undead
+  // RenderWidgets. We would like to eventually remove them altogether, so they
+  // won't be able to process IPC messages. An undead widget may become
+  // provisional again, so we must check for that too. Provisional frames don't
+  // receive messages until swapped in.
+  if (is_undead_)
+    return false;
+
   bool handled = false;
   IPC_BEGIN_MESSAGE_MAP(RenderWidget, message)
     IPC_MESSAGE_HANDLER(WidgetMsg_EnableDeviceEmulation,
@@ -634,13 +636,11 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
   if (handled)
     return true;
 
-  // TODO(https://crbug.com/1000502): Don't process IPC messages on undead
-  // RenderWidgets. We would like to eventually remove them altogether, so they
-  // won't be able to process IPC messages. An undead widget may become
-  // provisional again, so we must check for that too. Provisional frames don't
-  // receive messages until swapped in.
-  if (IsUndeadOrProvisional())
+  // TODO(https://crbug.com/1000502): We shouldn't process IPC messages on
+  // provisional frames.
+  if (IsForProvisionalFrame())
     return false;
+
 #if defined(OS_MACOSX)
   if (IPC_MESSAGE_CLASS(message) == TextInputClientMsgStart)
     return text_input_client_observer_->OnMessageReceived(message);

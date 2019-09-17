@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
@@ -165,6 +166,9 @@ class CompositedScrollingBrowserTest : public ContentBrowserTest {
 #endif
 IN_PROC_BROWSER_TEST_F(CompositedScrollingBrowserTest,
                        MAYBE_Scroll3DTransformedScroller) {
+  // Disable scroll resampling because this is checking scroll distance.
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndDisableFeature(features::kResamplingScrollEvents);
   LoadURL();
   double scroll_distance =
       DoTouchScroll(gfx::Point(50, 150), gfx::Vector2d(0, 100));

@@ -226,14 +226,12 @@ void PDFResource::SetAccessibilityPageInfo(
   std::vector<ppapi::PdfAccessibilityLinkInfo> link_vector;
   link_vector.reserve(page_info->link_count);
   for (size_t i = 0; i < page_info->link_count; i++) {
-    ppapi::PdfAccessibilityLinkInfo link(links[i]);
-    link_vector.emplace_back(link);
+    link_vector.emplace_back(links[i]);
   }
   std::vector<ppapi::PdfAccessibilityImageInfo> image_vector;
   image_vector.reserve(page_info->image_count);
   for (size_t i = 0; i < page_info->image_count; i++) {
-    ppapi::PdfAccessibilityImageInfo image(images[i]);
-    image_vector.emplace_back(image);
+    image_vector.emplace_back(images[i]);
   }
   Post(RENDERER, PpapiHostMsg_PDF_SetAccessibilityPageInfo(
                      *page_info, text_run_vector, char_vector, link_vector,

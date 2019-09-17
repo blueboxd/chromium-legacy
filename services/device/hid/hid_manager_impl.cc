@@ -36,8 +36,9 @@ void HidManagerImpl::SetHidServiceForTesting(
   g_hid_service.Get() = std::move(hid_service);
 }
 
-void HidManagerImpl::AddBinding(mojom::HidManagerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void HidManagerImpl::AddReceiver(
+    mojo::PendingReceiver<mojom::HidManager> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void HidManagerImpl::GetDevicesAndSetClient(

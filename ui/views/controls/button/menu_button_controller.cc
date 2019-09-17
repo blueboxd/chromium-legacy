@@ -299,8 +299,8 @@ bool MenuButtonController::IsTriggerableEventType(const ui::Event& event) {
 }
 
 bool MenuButtonController::IsIntentionalMenuTrigger() const {
-  return (TimeTicks::Now() - menu_closed_time_).InMilliseconds() >=
-         kMinimumMsBetweenButtonClicks;
+  return (TimeTicks::Now() - menu_closed_time_) >=
+         kMinimumTimeBetweenButtonClicks;
 }
 
 void MenuButtonController::IncrementPressedLocked(

@@ -35,6 +35,24 @@
           ],
         },
       },
+      'chromeos-betty-pi-arc-google-rel': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromeos_device_friendly_gtests',
+          'isolated_scripts': 'chromeos_isolated_scripts',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'kvm': '1',
+              'os': 'Ubuntu-16.04',
+              'pool': 'chrome.tests.cros-vm',
+            },
+          ],
+        },
+      },
       'chromeos-kevin-google-rel': {
         'additional_compile_targets': [
           'chromiumos_preflight',
@@ -2786,7 +2804,7 @@
           'amd_8870m',
           'gpu_pool',
           'limited_capacity_bot',
-          'mac_10.14.4',
+          'mac_10.14.6',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_release_gtests',
@@ -2800,7 +2818,7 @@
           'gpu_pool',
           'intel_iris_5100',
           'limited_capacity_bot',
-          'mac_10.14.4',
+          'mac_10.14.6',
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_release_gtests',
@@ -2812,7 +2830,7 @@
         'browser_config': 'release',
         'mixins': [
           'gpu_pool',
-          'mac_10.14.4',
+          'mac_10.14.6',
           'limited_capacity_bot',
           'nvidia_750m_mac_edition',
         ],

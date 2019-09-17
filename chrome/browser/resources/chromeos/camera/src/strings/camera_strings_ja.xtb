@@ -19,6 +19,7 @@
 <translation id="2501953888035679275">カメラを使って写真や動画を撮影できます。</translation>
 <translation id="2549985041256363841">撮影を開始</translation>
 <translation id="2599796128805996109">背面カメラ</translation>
+<translation id="2912439424121107408">このデバイスではエキスパート モードはサポートされていません</translation>
 <translation id="2968794441791257519">カメラで撮影した写真と動画を [ダウンロード] フォルダに移動します。これらの写真や動画には、[ファイル] からアクセスできます。
 
         また、ストレージへのアクセスが許可されているアプリからも、これらの写真や動画にアクセスできます。</translation>
@@ -41,10 +42,12 @@
         カメラが正しく接続されているかご確認ください。</translation>
 <translation id="5152121255775685072">ギャラリーに移動</translation>
 <translation id="5671277269877808209">スクエア</translation>
+<translation id="5775960006311140197">エキスパート モード</translation>
 <translation id="5869546221129391014">グリッド</translation>
 <translation id="6040143037577758943">閉じる</translation>
 <translation id="6073451960410192870">撮影を停止</translation>
 <translation id="6165508094623778733">詳細</translation>
+<translation id="6197807149213783179">メタデータを保存</translation>
 <translation id="6233780560267770709">3 かける 3</translation>
 <translation id="6243827288366940320">黄金比</translation>
 <translation id="6248749904681914629">外部カメラ</translation>
@@ -66,6 +69,7 @@
 <translation id="8261506727792406068">削除</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p（<ph name="WIDTH" />:<ph name="HEIGHT" />）</translation>
+<translation id="8732462232047530626">メタデータのプレビュー</translation>
 <translation id="8815966864175525708">縦向きの写真の撮影に切り替え</translation>
 <translation id="8870695351537079478">録画を開始できません</translation>
 <translation id="9045155556724273246">10 秒</translation>

@@ -2378,6 +2378,11 @@ TEST_F(ShelfViewTest, ShelfDragViewAndContextMenu) {
   ShelfID shelf_id("123");
   window->SetProperty(kShelfIDKey, shelf_id.Serialize());
   window->SetProperty(kShelfItemTypeKey, static_cast<int32_t>(TYPE_DIALOG));
+
+  // Waits for the bounds animation triggered by window property setting to
+  // finish.
+  test_api_->RunMessageLoopUntilAnimationsDone();
+
   ShelfAppButton* button = GetButtonByID(shelf_id);
   ASSERT_TRUE(button);
 

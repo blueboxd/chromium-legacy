@@ -313,13 +313,16 @@ class PlatformSensorAndProviderTestWin : public ::testing::Test {
   }
 
   // Sets minimal reporting frequency for the mock sensor.
-  void SetSupportedReportingFrequency(double frequency) {
+  void SetSupportedReportingFrequency(int frequency) {
     ON_CALL(*sensor_, GetProperty(SENSOR_PROPERTY_MIN_REPORT_INTERVAL, _))
         .WillByDefault(
             Invoke([frequency](REFPROPERTYKEY key, PROPVARIANT* pProperty) {
               pProperty->vt = VT_UI4;
-              pProperty->ulVal =
-                  (1 / frequency) * base::Time::kMillisecondsPerSecond;
+              pProperty->ulVal = 0;
+              if (frequency != 0) {
+                pProperty->ulVal =
+                    (1.0 / frequency) * base::Time::kMillisecondsPerSecond;
+              }
               return S_OK;
             }));
   }

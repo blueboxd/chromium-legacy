@@ -197,7 +197,14 @@ TEST_F(RelaunchNotificationControllerTest, CreateDestroy) {
 // Without the browser.relaunch_notification preference set, the controller
 // should not be observing the UpgradeDetector, and should therefore never
 // attempt to show any notifications.
-TEST_F(RelaunchNotificationControllerTest, PolicyUnset) {
+
+// TODO(1004568) Disabled due to race condition.
+#if defined(THREAD_SANATIZER)
+#define MAYBE_PolicyUnset DISABLED_PolicyUnset
+#else
+#define MAYBE_PolicyUnset PolicyUnset
+#endif
+TEST_F(RelaunchNotificationControllerTest, MAYBE_PolicyUnset) {
   ::testing::StrictMock<MockControllerDelegate> mock_controller_delegate;
 
   FakeRelaunchNotificationController controller(

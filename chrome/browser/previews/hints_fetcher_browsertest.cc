@@ -101,9 +101,8 @@ class HintsFetcherDisabledBrowserTest
   ~HintsFetcherDisabledBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
-    g_browser_process->network_quality_tracker()
-        ->ReportEffectiveConnectionTypeForTesting(
-            net::EFFECTIVE_CONNECTION_TYPE_2G);
+    content::NetworkConnectionChangeSimulator().SetConnectionType(
+        network::mojom::ConnectionType::CONNECTION_2G);
 
     InProcessBrowserTest::SetUpOnMainThread();
   }

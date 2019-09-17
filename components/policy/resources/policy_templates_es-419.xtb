@@ -96,6 +96,7 @@
       Si no se especifica la política, pueden volverse a utilizar los GPO almacenados en caché por hasta 25 horas.
 
       Si se establece la política en 0, los GPO dejan de almacenarse en caché. Ten en cuenta que esta acción aumenta la carga del servidor, ya que se vuelven a descargar los GPO en cada obtención de la política, incluso si no cambiaron.</translation>
+<translation id="1111470455889178048">Analizar las cargas y descargas del usuario</translation>
 <translation id="1117462881884985156"><ph name="PRODUCT_NAME" /> omitirá cualquier proxy de la lista de hosts que se proporciona aquí.
 
           Esta política solo se aplicará si se selecciona la configuración manual de proxy en "Elegir cómo especificar la configuración del servidor proxy" y si no se especifica la política <ph name="PROXY_SETTINGS_POLICY_NAME" />.
@@ -396,6 +397,7 @@
        se rechaza de forma automática. Los patrones comodines no se permiten.</translation>
 <translation id="1634989431648355062">Permitir el complemento <ph name="FLASH_PLUGIN_NAME" /> en estos sitios</translation>
 <translation id="1645793986494086629">Esquema:</translation>
+<translation id="1648816843164517573">Lista de nombres que omitirán la revisión de la política de HSTS</translation>
 <translation id="1653229475925941921">Si se configura esta política, controlará el tipo de lupa habilitado. Si la política se configura como "ninguna", se inhabilitará la lupa.
 
           Si configuras esta política, los usuarios no podrán modificarla ni anularla.
@@ -879,6 +881,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="254653220329944566">Habilitar los informes en la nube de <ph name="PRODUCT_NAME" /></translation>
 <translation id="2548572254685798999">Enviar información de "Navegación segura"</translation>
 <translation id="2550593661567988768">Solo impresión simple</translation>
+<translation id="2551520365302988324">Analizar las cargas del usuario</translation>
 <translation id="2552966063069741410">Zona horaria</translation>
 <translation id="2562339630163277285">Especifica la URL del motor de búsqueda que se usa para proporcionar resultados al instante. La URL debe contener el string "<ph name="SEARCH_TERM_MARKER" />", el cual se reemplazará en el momento de la consulta con el texto que el usuario haya ingresado hasta entonces.
 
@@ -953,6 +956,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="2665422249821137126">Habilita el cursor grande en la pantalla de acceso</translation>
 <translation id="2672012807430078509">Controlar el uso de NTLM como protocolo de autenticación para las activaciones de archivos compartidos SMB</translation>
 <translation id="267596348720209223">Especifica la codificación de caracteres admitida por el proveedor de búsqueda. Las codificaciones son nombres de páginas de códigos, como UTF-8, GB2312 e ISO-8859-1. Se prueban en el orden dado. Esta política es opcional. Si no se configura, se usará el valor predeterminado, que es UTF-8. Esta política solo se respeta si la política "DefaultSearchProviderEnabled" está habilitada.</translation>
+<translation id="2679827548357140943">Lista de dominios en los que es necesario revisar el contenido subido para detectar software malicioso</translation>
 <translation id="268577405881275241">Habilitar la función del proxy de compresión de datos</translation>
 <translation id="2693108589792503178">Configura la URL de cambio de contraseña.</translation>
 <translation id="2694143893026486692">Se habilitó la lupa con vista acoplada</translation>
@@ -1323,6 +1327,10 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="332771718998993005">Determina el nombre anunciado como un destino de <ph name="PRODUCT_NAME" />.
 
           Si esta política se establece con una string no vacía, esa string se usará como el nombre del destino de <ph name="PRODUCT_NAME" />. De lo contrario, el nombre del destino será el nombre del dispositivo. Si esta política no se establece, el nombre del destino será el nombre del dispositivo, y el propietario del dispositivo (o un usuario del dominio que administre el dispositivo) podrá cambiarlo. El nombre tiene un límite máximo de 24 caracteres.</translation>
+<translation id="3331950121151548952">Indica una lista de dominios en los que es necesario revisar las cargas para detectar software malicioso.  Se utiliza esta política únicamente si se establece <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> con un valor que permite la revisión de las cargas para detectar software malicioso o la aplica de manera forzosa.
+
+      Si no se establece esta política o se establece como una lista vacía de dominios, no se revisarán las cargas para detectar si hay software malicioso.
+      </translation>
 <translation id="3335468714959531450">Te permite configurar una lista de patrones de URL con los sitios autorizados para configurar cookies.
 
           Si no se configura esta política, se usará el valor global predeterminado para todos los sitios ya sea de la política "DefaultCookiesSetting" (si está configurada) o de otro tipo de configuración personal del usuario.
@@ -1393,6 +1401,15 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Si esta política no se establece o se establece en "False", las demoras de administración de energía y el límite de duración de la sesión se ejecutan tan pronto como comienza la sesión.</translation>
 <translation id="3478024346823118645">Eliminar los datos del usuario al salir</translation>
 <translation id="3480961938508521469">Cargar la batería por completo a un ritmo normal</translation>
+<translation id="3483729306380590354">Establece el porcentaje del nivel de la batería en el que debe comenzar la carga.
+
+          La batería comienza a cargarse cuando se agota el nivel personalizado para el comienzo de la carga.
+
+          <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> debe estar al menos cinco puntos porcentuales por debajo de <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />.
+
+          Se usa esta política únicamente si se establece <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" /> como <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" />.
+
+          Si no se configura o no se establece esta política, se aplicará el modo de carga <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" /> para la batería.</translation>
 <translation id="348495353354674884">Habilitar el teclado virtual</translation>
 <translation id="3487623755010328395">
         Si se establece esta política, <ph name="PRODUCT_NAME" /> intentará registrarse y aplicar la política de nube asociada para todos los perfiles.
@@ -1835,6 +1852,15 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
 
           Si no la estableces, el clic automático estará inicialmente inhabilitado, pero el usuario podrá habilitarlo en cualquier momento.</translation>
+<translation id="4215197846797661927">Establece la configuración avanzada para el modo de carga de la batería durante el día.
+
+          Se usa esta política únicamente si se establece <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> como verdadero.
+
+          Si no se configura o no se establece, el modo avanzado de carga de la batería estará siempre inhabilitado.
+
+          Nota: <ph name="CHARGE_START_TIME_FIELD_NAME" /> debe ser menor que <ph name="CHARGE_END_TIME_FIELD_NAME" />.
+
+          Nota: Los valores permitidos para el campo <ph name="MINUTE_FIELD_NAME" /> en <ph name="CHARGE_START_TIME_FIELD_NAME" /> y <ph name="CHARGE_END_TIME_FIELD_NAME" /> son 0, 15, 30, 45.</translation>
 <translation id="4224610387358583899">Demoras de bloqueo de pantalla</translation>
 <translation id="423797045246308574">Te permite configurar una lista de patrones de URL que especifican los sitios a los que no se les permite utilizar la generación de claves. Si un patrón de URL tiene configurada la política "KeygenAllowedForUrls", esta anula estas excepciones.
 
@@ -1900,6 +1926,17 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           El valor de la política deberá especificarse en milisegundos. Los valores deben ser menores o iguales que la demora por inactividad.
 
           Solo se muestra el mensaje de advertencia si la acción de inactividad es salir de la cuenta o apagar el dispositivo.</translation>
+<translation id="4342827592971649626">Esta política controla el análisis detallado de las descargas del usuario con Navegación segura. Si no se configura o se le asigna el valor predeterminado "No analizar archivos", Navegación segura no analizará las descargas del usuario.
+
+      Si se le asigna el valor "Prohibir el análisis de archivos", los usuarios no podrán analizar las descargas. El valor predeterminado permite que algunos usuarios (p. ej., los de la Protección avanzada) analicen sus descargas. Por el contrario, esta configuración impedirá que estos usuarios realicen el análisis.
+
+      Si se establece el valor "Analizar las descargas del usuario", se enviarán las descargas de los usuarios a través de la red a Navegación segura para analizar la presencia de software malicioso.
+
+      Si se establece el valor "Analizar las cargas del usuario", se enviarán las cargas de los usuarios a través de la red a Navegación segura para analizar la presencia de software malicioso.
+
+      Si se le asigna el valor "Analizar las cargas y descargas del usuario", se comportará conforme a las reglas que se describen en "Analizar las descargas del usuario" y "Analizar las cargas del usuario".
+
+      Consulta las políticas <ph name="DELAY_DELIVER_UNTIL_VERDICT_POLICY_NAME" /> y <ph name="UNSAFE_EVENTS_REPORTING_ENABLED" /> para obtener información sobre la forma en que el usuario y el administrador ven los resultados del análisis.</translation>
 <translation id="4344356660952451291">Lista de dominios en los que se comprobará el cumplimiento de las normas del contenido descargado</translation>
 <translation id="4346674324214534449">Te permite establecer si se bloquearán los anuncios en sitios con anuncios intrusivos.
 
@@ -2449,6 +2486,16 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si configuras esta política, los usuarios no podrán modificarla ni anularla.
 
       Si no se configura esta política, los usuarios podrán elegir la imagen del fondo de pantalla del escritorio y de la pantalla de acceso.</translation>
+<translation id="5437214086679373363">Controla si se permite a los usuarios cargar o descargar archivos protegidos con contraseña cuando sea necesario analizarlos.  Esta restricción solo se aplica a los archivos que deban analizarse conforme a lo determinado en <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> y las políticas que controlan la lista de dominios en los que se hayan habilitado las comprobaciones.
+
+      Si se configura esta política como "Ninguno", <ph name="PRODUCT_NAME" /> evitará que el usuario cargue o descargue archivos protegidos por contraseña.
+
+      Si se le asigna el valor "Permitir descargas", <ph name="PRODUCT_NAME" /> permitirá que el usuario descargue archivos protegidos con contraseña.
+
+      Si se le asigna el valor "Permitir cargas", <ph name="PRODUCT_NAME" /> permitirá que el usuario cargue archivos protegidos con contraseña.
+
+      Si se le asigna el valor "Permitir cargas y descargas", <ph name="PRODUCT_NAME" /> se comportará conforme a las reglas que se describen en "Permitir descargas" y "Permitir cargas".
+      </translation>
 <translation id="5437733496511628148">Si habilitas esta configuración, se impide que se configuren cookies mediante elementos de páginas web que no son del dominio y que se encuentran en la barra de direcciones del navegador.
 
       Si inhabilitas esta configuración, las cookies pueden configurarse mediante elementos de páginas web que no son del dominio y que se encuentran en la barra de direcciones del navegador. Además, el usuario no podrá cambiar esta configuración.
@@ -3348,13 +3395,32 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       Para obtener más información sobre la política <ph name="IEEM_SITELIST_POLICY" /> de Internet Explorer, consulta: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">Las URL que recibirán acceso a dispositivos de captura de video sin solicitarlo</translation>
+<translation id="713712866686796666">Establece la configuración diurna para el cambio de pico de consumo de energía.
+
+          Se usa esta política únicamente si se establece <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> como verdadero.
+
+          Si no se configura o no se establece esta política, el cambio de pico de consumo de energía estará siempre inhabilitado.
+
+          Nota: Los valores permitidos para el campo <ph name="MINUTE_FIELD_NAME" /> en <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> y <ph name="CHARGE_START_TIME_FIELD_NAME" /> son 0, 15, 30, 45.</translation>
 <translation id="7138678301420049075">Otros</translation>
+<translation id="7139809614375682935">Establece el porcentaje del nivel de la batería en el que se debe detener la carga.
+
+          Cuando se alcance este valor, se detendrá la carga de la batería.
+
+          <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> debe estar al menos cinco puntos porcentuales por debajo de <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />.
+
+          Se usa esta política únicamente si se establece <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" /> como <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" />.
+
+          Si no se configura o no se establece esta política, se aplicará el modo de carga <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" /> para la batería.</translation>
 <translation id="7140629953254369759">Indica a <ph name="PRODUCT_OS_NAME" /> que use la configuración del programador de tareas identificada con el nombre indicado.
 
       Esta política se puede configurar con los valores "conservador" y "rendimiento" para darle prioridad a la estabilidad o el máximo rendimiento del programador de tareas respectivamente.
 
       Si la política no se configura, el usuario puede tomar su propia decisión.</translation>
 <translation id="7145335384492396213">Modo de impresión con PIN predeterminado</translation>
+<translation id="7149042336307555519"> Esta política controla los tipos de conexiones permitidos en las actualizaciones del SO. Es posible que el tamaño de las actualizaciones del SO sobrecargue la conexión, lo que podría generar costos adicionales para el usuario. Por lo tanto, no están habilitadas de forma predeterminada en conexiones que se consideren costosas (actualmente, solo "cellular").
+
+      Los identificadores de tipos de conexión son <ph name="CONNECTION_TYPE_ETHERNET_NAME" />, <ph name="CONNECTION_TYPE_WIFI_NAME" /> y <ph name="CONNECTION_TYPE_CELLULAR_NAME" />.</translation>
 <translation id="7152605873936173525">Controla el modo del agente de resolución de DNS sobre HTTPS. Ten en cuenta que esta política solo establecerá el modo predeterminado para cada consulta. Se puede anular el modo en tipos de solicitudes especiales, como las que se usan para resolver el nombre de host de un servidor con el protocolo DNS sobre HTTPS.
 
       El modo <ph name="SECURE_DNS_MODE_OFF" /> inhabilitará DNS sobre HTTPS.
@@ -3387,6 +3453,17 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
           Si se establece esta política como falsa, las solicitudes de bloqueos de activación pantalla se considerarán como del sistema.</translation>
 <translation id="7177857088692019405">Desbloqueo rápido</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
+<translation id="7187447094921703950">Habilita la política de administración energética para el cambio de pico de consumo de energía.
+
+          El cambio de pico es una política destinada a ahorrar energía que minimiza el uso de corriente alterna en los picos de consumo de energía durante el día. Se puede establecer una hora de comienzo y finalización para ejecutar el modo de cambio de pico de consumo de energía en cada día de la semana. En estos períodos, el sistema utilizará la energía de la batería, incluso si está conectada la corriente alterna, siempre que la batería se encuentre por encima del umbral especificado. Después del tiempo de finalización especificado, el sistema funcionará mediante corriente alterna (en caso de estar conectado), pero no cargará la batería. El sistema volverá a funcionar con normalidad a través de corriente alterna y cargará la batería después del tiempo de inicio de carga especificado.
+
+          Si se establece esta política como verdadera y se establecen <ph name="DEVICE_POWER_PEAK_SHIFT_BATTERY_THRESHOLD_NAME" /> y <ph name="DEVICE_POWER_PEAK_SHIFT_DAY_CONFIG_NAME" />, el cambio de pico de consumo de energía estará siempre habilitado (cuando el dispositivo admita esta función).
+
+          Si se establece como falsa, el cambio de pico de consumo de energía estará siempre inhabilitado.
+
+          Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
+
+          Si no se establece, se inhabilitará el cambio de pico de consumo de energía desde un principio, y el usuario no podrá habilitarla.</translation>
 <translation id="718956142899066210">Tipos de conexión permitidos para realizar actualizaciones</translation>
 <translation id="7190286937411178540">Habilita la función de accesibilidad para destacar el cursor del teclado</translation>
 <translation id="7194407337890404814">Nombre del proveedor de búsqueda predeterminado</translation>
@@ -4021,6 +4098,17 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
           Si no se establece esta política, se habilitará la configuración.</translation>
 <translation id="8382184662529825177">Habilita el uso de la atestación remota para la protección de contenido del dispositivo.</translation>
+<translation id="8382693763260501307">Habilita la política para administrar la energía en el modo avanzado de carga de la batería.
+
+          El modo avanzado de carga permite que el usuario optimice el estado de la batería. En el modo avanzado de carga, el sistema usará un algoritmo estándar de carga y otras técnicas durante las horas en que no se utilice el dispositivo para optimizar el estado de la batería. Durante las horas de funcionamiento, se usará una carga rápida. La carga rápida permite que la batería se cargue más rápido; por lo tanto, se completará antes. Para cada día, se especifica el período en que el sistema tendrá más actividad mediante la hora de inicio y la duración.
+
+          Si se establece esta política como verdadera y se configura <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_DAY_CONFIG_NAME" />, siempre estará habilitado el modo avanzado de carga de la batería (cuando lo admita el dispositivo).
+
+          Si se establece como falsa, el modo avanzado de carga de la batería estará siempre inhabilitado.
+
+          Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
+
+          Si no se establece, se inhabilitará el modo avanzado de carga de la batería, y el usuario no podrá habilitarlo.</translation>
 <translation id="838870586332499308">Activar la itinerancia de datos</translation>
 <translation id="8390049129576938611">Inhabilita la app interna para ver archivos PDF <ph name="PRODUCT_NAME" />. Los considera archivos de descarga y le permite al usuario abrirlos con la aplicación predeterminada.
 
@@ -4229,9 +4317,15 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si se configura esta política, el usuario no podrá cambiar el conjunto de apps.
 
       Si no se configura, el usuario podrá cambiar la lista de apps fijas en el Selector.</translation>
+<translation id="8779504970846195767">Establece en porcentaje el umbral de la batería para el cambio de pico de consumo de energía.
+
+          Se usa esta política únicamente si se establece <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> como verdadero.
+
+          Si no se configura o no se establece esta política, el cambio de pico de consumo de energía estará siempre inhabilitado.</translation>
 <translation id="8798099450830957504">Predeterminado</translation>
 <translation id="8800453707696044281">Establecer el porcentaje del nivel de la batería en el que se debe detener la carga</translation>
 <translation id="8801680448782904838">Notificar a un usuario que se recomienda o es obligatorio reiniciar el navegador o el dispositivo</translation>
+<translation id="8802816494059596691">Los nombres de host que se especifican en esta lista no se incluirán en la revisión de la política de HSTS que podría mejorar las solicitudes de http a https. En esta política, solo se permiten nombres de host con una sola etiqueta. Los nombres de host deben estar canonicalizados: debe convertirse cualquier IDN a su formato de etiqueta A y deben estar en minúscula todas las letras en formato ASCII. Esta política solo se aplica a los nombres de host específicos de la lista; no se aplica a los subdominios de estos nombres.</translation>
 <translation id="8818173863808665831">Informa la ubicación geográfica del dispositivo.
 
      Si no se configura la política, ni se establece como falsa, no se informará la ubicación.</translation>
@@ -4392,6 +4486,17 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si se establece el valor de esta política en un token que se mapee a una versión de corrección rápida, se actualizará el dispositivo a la versión de corrección rápida correspondiente en caso de que otra política no haya bloqueado la actualización.
 
       Si no se establece esta política, o su valor no se mapea a una versión de corrección rápida, no se actualizará el dispositivo a una versión de corrección rápida. Si el dispositivo ya está ejecutando una versión de corrección rápida y la política dejó de establecerse, o su valor ya no se mapea a una versión de corrección rápida, el dispositivo se actualizará a una versión convencional en caso de que otra política no haya bloqueado la actualización.</translation>
+<translation id="9053158112041032237">Especifica la política para administrar la energía en el modo avanzado de carga de la batería.
+
+          Controla de forma dinámica la carga de la batería para reducir su desgaste debido al uso y aumentar su duración.
+
+          Si se selecciona el modo personalizado de carga de la batería, deben especificarse las políticas <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> y <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />.
+
+          Si se establece esta política, se aplicará el modo de carga de la batería (cuando lo admita el dispositivo).
+
+          Si no se establece esta política (y el dispositivo no la admite), se aplicará el modo estándar de carga de la batería, y el usuario no podrá cambiarlo.
+
+          Nota: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> anula esta política si se especifica la política anterior.</translation>
 <translation id="9054012305936267950">Esta política controla el comportamiento de acceso en el navegador. Te permite especificar si el usuario puede acceder a <ph name="PRODUCT_NAME" /> con su cuenta y usar los servicios relacionados, como la "Sincronización de Chrome".
 
       Si la política se establece como "Inhabilitar el acceso en el navegador", el usuario no podrá acceder a su cuenta en el navegador ni podrá usar los servicios basados en la cuenta. En este caso, las funciones al nivel del navegador (como la "Sincronización de Chrome") no se podrán usar ni estarán disponibles. Si el usuario accedió a su cuenta y la política se establece como "Inhabilitada", saldrá de su cuenta la próxima vez que ejecute Chrome, pero se conservarán sus datos de perfil locales (como los favoritos, las contraseñas, etc.). El usuario podrá acceder a servicios web de Google, como Gmail, y usarlos.

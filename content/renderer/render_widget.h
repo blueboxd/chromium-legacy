@@ -559,8 +559,6 @@ class CONTENT_EXPORT RenderWidget
 
   void ApplyEmulatedScreenMetricsForPopupWidget(RenderWidget* origin_widget);
 
-  gfx::Rect AdjustValidationMessageAnchor(const gfx::Rect& anchor);
-
   // Checks if the selection bounds have been changed. If they are changed,
   // the new value will be sent to the browser process.
   void UpdateSelectionBounds();

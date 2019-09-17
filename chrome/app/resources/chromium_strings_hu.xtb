@@ -90,6 +90,7 @@
 <translation id="4230135487732243613">Társítja Chromium-adatait ezzel a fiókkal?</translation>
 <translation id="4271805377592243930">Segítség a Chromium használatával kapcsolatban</translation>
 <translation id="4285930937574705105">A telepítés váratlan hiba miatt nem sikerült. Ha a Chromium jelenleg fut, zárja be, majd próbálkozzon újra.</translation>
+<translation id="4371648796594901282">A Chromium OS rendszerről bővebben <ph name="LINK_BEGIN" />A Chromium OS névjegye<ph name="LINK_END" /> oldalon tájékozódhat</translation>
 <translation id="4407044323746248786">Biztosan kilép a Chromiumból?</translation>
 <translation id="4415566066719264597">A Chromium futhat a háttérben</translation>
 <translation id="4423735387467980091">A Chromium személyre szabása és beállításai</translation>
@@ -122,6 +123,7 @@
 <translation id="5623402015214259806">{0,plural, =0{Rendelkezésre áll egy Chromium-frissítés}=1{Rendelkezésre áll egy Chromium-frissítés}other{# napja rendelkezésre áll egy Chromium-frissítés}}</translation>
 <translation id="5631814766731275228">Chromium-név és -kép</translation>
 <translation id="5634636535844844681">A Chromium futtatásához Windows 7 vagy újabb verzió szükséges.</translation>
+<translation id="5653831366781983928">Indítsa újra a Chromiumot most</translation>
 <translation id="5680901439334282664">bejelentkezés a Chromiumba</translation>
 <translation id="5698481217667032250">A Chromium megjelenítése ezen a nyelven</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -162,6 +164,7 @@
 <translation id="6734080038664603509">A &amp;Chromium frissítése</translation>
 <translation id="6734291798041940871">A Chromium már telepítve van az összes felhasználó számára a számítógépen.</translation>
 <translation id="6810143991807788455">Segítsen a Chromium fejlesztésében a jelenlegi beállítások elküldésével</translation>
+<translation id="6847869444787758381">A Chromium tájékoztatja arról, ha jelszavai illetéktelen kezekbe kerülnek</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (a Chromiumba másolva)</translation>
 <translation id="6868056391275687737">További Chromium-példányok is futnak. A frissítéshez zárja be őket.</translation>

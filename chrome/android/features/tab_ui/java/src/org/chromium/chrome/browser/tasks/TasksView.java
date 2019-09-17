@@ -38,6 +38,10 @@ class TasksView extends LinearLayout {
         return mTabSwitcherContainer;
     }
 
+    /**
+     * Sets whether the tasks view should behave in Carousel mode.
+     * @param isTabCarousel whether the tab switcher is in .CAROUSEL mode
+     */
     void setIsTabCarousel(boolean isTabCarousel) {
         if (isTabCarousel) {
             // TODO(crbug.com/982018): Change view according to incognito and dark mode.
@@ -55,7 +59,17 @@ class TasksView extends LinearLayout {
         }
     }
 
-    void setMoreTabsOnClicklistener(@Nullable View.OnClickListener listener) {
+    /**
+     * Set the visibility of the Most Visited Tiles.
+     */
+    void setMostVisitedVisibility(int visibility) {
+        findViewById(R.id.mv_tiles_container).setVisibility(visibility);
+    }
+
+    /**
+     * Set the {@link android.view.View.OnClickListener} for More Tabs.
+     */
+    void setMoreTabsOnClickListener(@Nullable View.OnClickListener listener) {
         findViewById(R.id.more_tabs).setOnClickListener(listener);
     }
 }

@@ -322,9 +322,6 @@ PrefService* WizardController::local_state_for_testing_ = nullptr;
 WizardController::WizardController()
     : screen_manager_(std::make_unique<ScreenManager>()),
       network_state_helper_(std::make_unique<login::NetworkStateHelper>()) {
-  // In session OOBE was initiated from voice interaction keyboard shortcuts.
-  is_in_session_oobe_ =
-      session_manager::SessionManager::Get()->IsSessionStarted();
   AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
   if (accessibility_manager) {
     // accessibility_manager could be null in Tests.
@@ -1054,11 +1051,6 @@ void WizardController::OnArcTermsOfServiceScreenExit(
 }
 
 void WizardController::OnArcTermsOfServiceSkipped() {
-  if (is_in_session_oobe_) {
-    OnOobeFlowFinished();
-    return;
-  }
-
   // If the user finished with the PlayStore Terms of Service, advance to the
   // assistant opt-in flow screen.
   ShowAssistantOptInFlowScreen();
@@ -1151,13 +1143,6 @@ void WizardController::OnSupervisionTransitionScreenExit() {
 }
 
 void WizardController::OnOobeFlowFinished() {
-  if (is_in_session_oobe_ && current_screen_->screen_id() !=
-                                 SupervisionTransitionScreenView::kScreenId) {
-    GetLoginDisplayHost()->SetStatusAreaVisible(true);
-    GetLoginDisplayHost()->Finalize(base::OnceClosure());
-    return;
-  }
-
   if (!time_oobe_started_.is_null()) {
     base::TimeDelta delta = base::Time::Now() - time_oobe_started_;
     UMA_HISTOGRAM_CUSTOM_TIMES("OOBE.BootToSignInCompleted", delta,

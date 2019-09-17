@@ -88,8 +88,6 @@ struct CC_EXPORT EffectNode {
 
   gfx::Vector2dF surface_contents_scale;
 
-  gfx::Size unscaled_mask_target_size;
-
   bool cache_render_surface : 1;
   bool has_copy_request : 1;
   bool hidden_by_backface_visibility : 1;

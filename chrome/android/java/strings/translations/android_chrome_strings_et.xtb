@@ -66,6 +66,7 @@
 <translation id="1407135791313364759">Ava kõik</translation>
 <translation id="1409426117486808224">Avatud vahelehtede lihtsustatud vaade</translation>
 <translation id="1409879593029778104">Faili <ph name="FILE_NAME" /> ei laaditud alla, kuna fail on juba olemas.</translation>
+<translation id="1413136574162415971">Google saab kontrollida, kas teie paroolid olid osa andmetega seotud rikkumisest. See lülitatakse sisse, kui logite sisse oma Google'i kontoga ja lülitate sünkroonimise sisse.</translation>
 <translation id="1414981605391750300">Google'iga ühenduse võtmine. See võib natuke aega võtta …</translation>
 <translation id="1416550906796893042">Rakenduse versioon</translation>
 <translation id="1430915738399379752">Printimine</translation>
@@ -160,6 +161,7 @@
 <translation id="2091887806945687916">Heli</translation>
 <translation id="2096012225669085171">Seadmete vahel sünkroonimine ja isikupärastamine</translation>
 <translation id="2100273922101894616">Automaatne sisselogimine</translation>
+<translation id="2100314319871056947">Proovige teksti jagada väiksemate lõikudena</translation>
 <translation id="2107397443965016585">Küsi enne saidile kaitstud sisu esitamiseks loa andmist (soovitatav)</translation>
 <translation id="2111511281910874386">Minge lehele</translation>
 <translation id="2122601567107267586">Rakendust ei õnnestunud avada</translation>
@@ -253,6 +255,7 @@
 <translation id="2836148919159985482">Täisekraanilt väljumiseks puudutage tagasinuppu.</translation>
 <translation id="2842985007712546952">Emakaust</translation>
 <translation id="2858138569776157458">Popid saidid</translation>
+<translation id="2860954141821109167">Veenduge, et telefonirakendus oleks selles seadmes lubatud</translation>
 <translation id="2870560284913253234">Sait</translation>
 <translation id="2874939134665556319">Eelmine lugu</translation>
 <translation id="2876369937070532032">Saadab mõnede teie külastatud lehtede URL-id Google'ile, kui teie turvalisus ohtu satub</translation>
@@ -277,6 +280,7 @@
 <translation id="2996291259634659425">Parooli loomine</translation>
 <translation id="2996809686854298943">Vaja on URL-i</translation>
 <translation id="300526633675317032">See tühjendab veebisaidi salvestusruumi mahuga <ph name="SIZE_IN_KB" />.</translation>
+<translation id="3016635187733453316">Veenduge, et seadmel oleks internetiühendus</translation>
 <translation id="3029613699374795922">Alla on laaditud <ph name="KBS" /> kB</translation>
 <translation id="3029704984691124060">Paroolid ei ühti</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Küsige abi<ph name="END_LINK" /></translation>
@@ -841,6 +845,7 @@ Näiteks võivad mõned veebisaidid taotlusele reageerida nii, et näitavad teil
 <translation id="723171743924126238">Kujutiste valimine</translation>
 <translation id="7233236755231902816">Hankige Chrome'i uusim versioon, et saaksite oma keeles veebi sirvida</translation>
 <translation id="7243308994586599757">Valikud on saadaval ekraani allosas</translation>
+<translation id="7248069434667874558">Veenduge, et seadmes <ph name="TARGET_DEVICE_NAME" /> oleks Chrome'i sünkroonimine sisse lülitatud</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> on valitud</translation>
 <translation id="7274013316676448362">Blokeeritud sait</translation>
 <translation id="7290209999329137901">Ümbernimetamine ei ole võimalik</translation>
@@ -955,6 +960,7 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="8007176423574883786">Selle seadme puhul on välja lülitatud</translation>
 <translation id="8013372441983637696">Kustuta sellest seadmest ka Chrome'i andmed</translation>
 <translation id="8015452622527143194">Lehel kuvatud sisu vaikesuuruses kuvamine</translation>
+<translation id="8015780634880457457">Google saab kontrollida, kas teie paroolid olid osa andmetega seotud rikkumisest</translation>
 <translation id="802154636333426148">Allalaadimine ebaõnnestus</translation>
 <translation id="8026334261755873520">Sirvimisandmete kustutamine</translation>
 <translation id="8035133914807600019">Uus kaust …</translation>
@@ -1017,6 +1023,7 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="8445448999790540984">Paroole ei saa eksportida</translation>
 <translation id="8447861592752582886">Seadme loa tühistamine</translation>
 <translation id="8461694314515752532">Krüpteeri sünkroonitud andmed sünkroonimisparooliga</translation>
+<translation id="8466613982764129868">Veenduge, et seadmel <ph name="TARGET_DEVICE_NAME" /> oleks internetiühendus</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Võrguühenduseta saadaval</translation>
 <translation id="8489271220582375723">Lehe Ajalugu avamine</translation>
@@ -1107,6 +1114,7 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="9188680907066685419">Hallatud kontolt väljalogimine</translation>
 <translation id="9204836675896933765">Üks fail on jäänud</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9209888181064652401">Ei saa helistada</translation>
 <translation id="9219103736887031265">Pildid</translation>
 <translation id="926205370408745186">Chrome'i tegevuste eemaldamine teenusest Digitaalne heaolu</translation>
 <translation id="932327136139879170">Kodu</translation>

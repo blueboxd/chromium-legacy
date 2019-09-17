@@ -9,6 +9,7 @@
 #include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/ui/badges/badge_button.h"
+#import "ios/chrome/browser/ui/badges/badge_delegate.h"
 #import "ios/chrome/browser/ui/commands/infobar_commands.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -41,6 +42,11 @@
         displayModalInfobar:InfobarType::kInfobarTypePasswordUpdate];
   }
   [metricsRecorder recordBadgeTappedInState:state];
+}
+
+- (void)overflowBadgeButtonTapped:(id)sender {
+  [self.buttonActionDelegate showOverflowMenu];
+  // TODO(crbug.com/976901): Add metric for this action.
 }
 
 @end

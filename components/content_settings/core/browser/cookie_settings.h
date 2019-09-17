@@ -127,7 +127,7 @@ class CookieSettings : public CookieSettingsBase,
 
   void AddObserver(Observer* obs) { observers_.AddObserver(obs); }
 
-  void RemoveObserver(const Observer* obs) { observers_.RemoveObserver(obs); }
+  void RemoveObserver(Observer* obs) { observers_.RemoveObserver(obs); }
 
   bool IsCookieControlsEnabled();
 

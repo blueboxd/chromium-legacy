@@ -42,6 +42,7 @@ bool JobDelegate::ShouldYield() {
   AssertExpectedConcurrency(recorded_max_concurrency_);
 #endif  // DCHECK_IS_ON()
   const bool should_yield =
+      task_source_->ShouldYield() ||
       pooled_task_runner_delegate_->ShouldYield(task_source_);
 
 #if DCHECK_IS_ON()

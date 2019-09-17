@@ -60,7 +60,7 @@
     "gtest_tests": [
       {
         "args": [
-          "--enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--enable-features=UseSkiaRenderer",
           "--test-launcher-filter-file=../../testing/buildbot/filters/skia_renderer.browser_tests.filter"
         ],
         "merge": {
@@ -81,7 +81,7 @@
       },
       {
         "args": [
-          "--enable-features=VizDisplayCompositor,UseSkiaRenderer"
+          "--enable-features=UseSkiaRenderer"
         ],
         "merge": {
           "args": [],
@@ -105,7 +105,7 @@
           "--test-launcher-bot-mode",
           "--test-launcher-jobs=1",
           "--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter",
-          "--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization",
+          "--enable-features=UseSkiaRenderer,UiGpuRasterization",
           "--use-vulkan=swiftshader",
           "--enable-oop-rasterization",
           "--enable-gpu-rasterization",
@@ -135,7 +135,7 @@
         "args": [
           "--num-retries=3",
           "--additional-driver-flag=--enable-gpu-rasterization",
-          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--additional-driver-flag=--enable-features=UseSkiaRenderer",
           "--additional-driver-flag=--use-gl=swiftshader",
           "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
@@ -168,7 +168,7 @@
         "args": [
           "--num-retries=3",
           "--additional-driver-flag=--enable-gpu-rasterization",
-          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--additional-driver-flag=--enable-features=UseSkiaRenderer",
           "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
           "--additional-driver-flag=--use-vulkan=swiftshader",
@@ -505,6 +505,51 @@
           "shards": 5
         },
         "test": "content_shell_test_apk"
+      },
+      {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "weblayer_instrumentation_test_apk"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
+          "hard_timeout": 3600,
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ]
+        },
+        "test": "weblayer_instrumentation_test_apk"
       },
       {
         "args": [
@@ -7449,69 +7494,91 @@
     ],
     "junit_tests": [
       {
+        "name": "android_webview_junit_tests",
         "test": "android_webview_junit_tests"
       },
       {
+        "name": "base_junit_tests",
         "test": "base_junit_tests"
       },
       {
+        "name": "chrome_junit_tests",
         "test": "chrome_junit_tests"
       },
       {
+        "name": "components_background_task_scheduler_junit_tests",
         "test": "components_background_task_scheduler_junit_tests"
       },
       {
+        "name": "components_gcm_driver_junit_tests",
         "test": "components_gcm_driver_junit_tests"
       },
       {
+        "name": "components_invalidation_impl_junit_tests",
         "test": "components_invalidation_impl_junit_tests"
       },
       {
+        "name": "components_policy_junit_tests",
         "test": "components_policy_junit_tests"
       },
       {
+        "name": "components_signin_junit_tests",
         "test": "components_signin_junit_tests"
       },
       {
+        "name": "components_variations_junit_tests",
         "test": "components_variations_junit_tests"
       },
       {
+        "name": "content_junit_tests",
         "test": "content_junit_tests"
       },
       {
+        "name": "device_junit_tests",
         "test": "device_junit_tests"
       },
       {
+        "name": "junit_unit_tests",
         "test": "junit_unit_tests"
       },
       {
+        "name": "keyboard_accessory_junit_tests",
         "test": "keyboard_accessory_junit_tests"
       },
       {
+        "name": "media_base_junit_tests",
         "test": "media_base_junit_tests"
       },
       {
+        "name": "media_router_junit_tests",
         "test": "media_router_junit_tests"
       },
       {
+        "name": "module_installer_junit_tests",
         "test": "module_installer_junit_tests"
       },
       {
+        "name": "net_junit_tests",
         "test": "net_junit_tests"
       },
       {
+        "name": "service_junit_tests",
         "test": "service_junit_tests"
       },
       {
+        "name": "ui_junit_tests",
         "test": "ui_junit_tests"
       },
       {
+        "name": "webapk_client_junit_tests",
         "test": "webapk_client_junit_tests"
       },
       {
+        "name": "webapk_shell_apk_h2o_junit_tests",
         "test": "webapk_shell_apk_h2o_junit_tests"
       },
       {
+        "name": "webapk_shell_apk_junit_tests",
         "test": "webapk_shell_apk_junit_tests"
       }
     ]
@@ -7705,6 +7772,50 @@
           "shards": 5
         },
         "test": "content_shell_test_apk"
+      },
+      {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "weblayer_instrumentation_test_apk"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
+              "location": "bin",
+              "revision": "git_revision:ff387eadf445b24c935f1cf7d6ddd279f8a6b04c"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "device_os": "MMB29Q",
+              "device_os_type": "userdebug",
+              "device_type": "bullhead",
+              "os": "Android"
+            }
+          ],
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ]
+        },
+        "test": "weblayer_instrumentation_test_apk"
       },
       {
         "args": [
@@ -8582,6 +8693,25 @@
       },
       {
         "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.components_unittests.filter"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "arm64",
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
+        "test": "components_unittests"
+      },
+      {
+        "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter"
         ],
         "merge": {
@@ -9100,6 +9230,25 @@
       },
       {
         "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.components_unittests.filter"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
+        "test": "components_unittests"
+      },
+      {
+        "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter"
         ],
         "merge": {
@@ -9615,6 +9764,25 @@
           ]
         },
         "test": "cast_runner_unittests"
+      },
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.components_unittests.filter"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-16.04"
+            }
+          ]
+        },
+        "test": "components_unittests"
       },
       {
         "args": [
@@ -14540,7 +14708,7 @@
       },
       {
         "args": [
-          "--enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--enable-features=UseSkiaRenderer",
           "--test-launcher-filter-file=../../testing/buildbot/filters/skia_renderer.content_browsertests.filter"
         ],
         "merge": {
@@ -15705,7 +15873,7 @@
         "args": [
           "--num-retries=3",
           "--additional-driver-flag=--enable-gpu-rasterization",
-          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--additional-driver-flag=--enable-features=UseSkiaRenderer",
           "--additional-driver-flag=--use-gl=swiftshader",
           "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
@@ -15820,7 +15988,7 @@
         "args": [
           "--num-retries=3",
           "--additional-driver-flag=--enable-gpu-rasterization",
-          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--additional-driver-flag=--enable-features=UseSkiaRenderer",
           "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
           "--additional-driver-flag=--use-vulkan=swiftshader",

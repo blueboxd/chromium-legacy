@@ -298,7 +298,7 @@ TEST_F(WorkerThreadTest, AsyncTerminate_ImmediatelyAfterStart) {
 
 // Disabled due to flakiness: https://crbug.com/1003217.
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
-    defined(THREAD_SANITIZER) || defined(OS_WIN)
+    defined(THREAD_SANITIZER) || defined(OS_WIN) || defined(OS_ANDROID)
 #define MAYBE_SyncTerminate_ImmediatelyAfterStart \
   DISABLED_SyncTerminate_ImmediatelyAfterStart
 #else

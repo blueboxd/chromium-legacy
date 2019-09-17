@@ -7,6 +7,8 @@
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
@@ -30,6 +32,7 @@
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
@@ -211,6 +214,15 @@ void LauncherControllerHelper::LaunchApp(const ash::ShelfID& id,
   }
 
   const std::string& app_id = id.app_id;
+  if (base::FeatureList::IsEnabled(features::kAppServiceShelf)) {
+    apps::AppServiceProxy* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(profile_);
+    DCHECK(proxy);
+    proxy->Launch(app_id, event_flags, apps::mojom::LaunchSource::kFromShelf,
+                  display_id);
+    return;
+  }
+
   const ArcAppListPrefs* arc_prefs = GetArcAppListPrefs();
   if (arc_prefs && arc_prefs->IsRegistered(app_id)) {
     arc::LaunchApp(profile_, app_id, event_flags,

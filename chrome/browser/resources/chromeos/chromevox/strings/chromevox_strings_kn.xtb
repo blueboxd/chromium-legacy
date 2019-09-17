@@ -233,6 +233,7 @@
 <translation id="27527859628328957">ಮುಂದೆ ಗಮನಹರಿಸಬಹುದಾದ ಐಟಂಗೆ ಹೋಗಿ</translation>
 <translation id="2770781857296573485">ಗುಂಪು ಪರಿಶೋಧನೆಯನ್ನು ನಮೂದಿಸಿ</translation>
 <translation id="2777845298774924149">ನಿರ್ಗಮಿಸಲಾಗಿದೆ</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{+#}one{+#}other{+#}}</translation>
 <translation id="2784959586797362050">ಎಂದಿನಂತೆಯೇ Search+a ನಂತರ i ಒತ್ತುವ ಮೂಲಕ ನೇರವಾಗಿ ನಮಗೆ ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ನೀವು ಕಳುಹಿಸಬಹುದು. ನಿಮ್ಮಿಂದ ಕೇಳಲು ನಾವು ಉತ್ಸುಕರಾಗಿದ್ದೇವೆ.</translation>
 <translation id="2800204403141299078">ಹೆಚ್ಚಿನ ವಿಭಿನ್ನ ಅಂಶಗಳಿಲ್ಲ.</translation>
 <translation id="2800780099804980316">ಹಿಂದಿನ ಹಂತದ 1 ಶಿರೋನಾಮೆಯಿಲ್ಲ.</translation>
@@ -715,6 +716,7 @@
 <translation id="5956928062748260866">ಸಂವಾದ</translation>
 <translation id="5963413905009737549">ವಿಭಾಗ</translation>
 <translation id="5968607524793740041">ಸಂದರ್ಭದ ಮೆನು ತೋರಿಸಿ</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{# ಐಟಂನೊಂದಿಗೆ}one{# ಐಟಂಗಳೊಂದಿಗೆ}other{# ಐಟಂಗಳೊಂದಿಗೆ}}</translation>
 <translation id="5981446804259161541">ತಿಳಿ ಹಸಿರುನೀಲಿ</translation>
 <translation id="5983179082906765664">ನ್ಯಾವಿಗೇಶನ್ ರಚನೆಯನ್ನು ಹೆಚ್ಚಿಸಿ</translation>
 <translation id="5992285135956208197">ಗ್ರಾಫಿಕ್ಸ್ ಡಾಕ್ಯುಮೆಂಟ್</translation>

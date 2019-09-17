@@ -11,6 +11,7 @@ import android.widget.Button;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
+import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 
 import java.util.List;
 
@@ -59,6 +60,15 @@ public class PhotoPickerToolbar extends SelectableListToolbar<PickerBitmap> {
     public void onNavigationBack() {
         super.onNavigationBack();
         mDelegate.onNavigationBackCallback();
+    }
+
+    @Override
+    public void initialize(SelectionDelegate<PickerBitmap> delegate, int titleResId,
+            int normalGroupResId, int selectedGroupResId, boolean updateStatusBarColor) {
+        super.initialize(
+                delegate, titleResId, normalGroupResId, selectedGroupResId, updateStatusBarColor);
+
+        showBackArrow();
     }
 
     @Override

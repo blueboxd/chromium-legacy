@@ -41,7 +41,7 @@
 <translation id="1258753120186372309">Doodles de Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1260236875608242557">Buscar y explorar</translation>
 <translation id="1264974993859112054">Deportes</translation>
-<translation id="1266864766717917324">No se ha podido compartir <ph name="CONTENT_TYPE" /></translation>
+<translation id="1266864766717917324">No se ha podido compartir: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1272079795634619415">Interrumpir</translation>
 <translation id="1283039547216852943">Toca para ampliar</translation>
 <translation id="1285320974508926690">No traducir nunca este sitio</translation>
@@ -66,12 +66,13 @@
 <translation id="1407135791313364759">Abrir todas</translation>
 <translation id="1409426117486808224">Vista simplificada de las pestañas abiertas</translation>
 <translation id="1409879593029778104">No se ha descargado <ph name="FILE_NAME" /> porque este archivo ya existe.</translation>
+<translation id="1413136574162415971">Google puede comprobar si tus contraseñas se han visto afectadas por una quiebra de seguridad de datos. Esta función se activará cuando inicies sesión con tu cuenta de Google y actives la sincronización.</translation>
 <translation id="1414981605391750300">Contactando con Google. Esto puede tardar un minuto…</translation>
 <translation id="1416550906796893042">Versión de la aplicación</translation>
 <translation id="1430915738399379752">Imprimir</translation>
 <translation id="1445680696957526815">Los componentes de Chrome no son compatibles entre sí. Es posible que Chrome se esté actualizando. Vuelve a intentarlo dentro de unos minutos. Si el problema persiste, prueba a desinstalar Chrome y volver a instalarlo.</translation>
 <translation id="1446450296470737166">Control total dispositivos MIDI</translation>
-<translation id="1450753235335490080">No se ha podido compartir <ph name="CONTENT_TYPE" /></translation>
+<translation id="1450753235335490080">No se ha podido compartir: <ph name="CONTENT_TYPE" /></translation>
 <translation id="145097072038377568">Ajustes de Android desactivados</translation>
 <translation id="1477626028522505441">No se ha podido descargar <ph name="FILE_NAME" /> debido a problemas con el servidor.</translation>
 <translation id="1501480321619201731">Eliminar grupo</translation>
@@ -160,6 +161,7 @@
 <translation id="2091887806945687916">Sonido</translation>
 <translation id="2096012225669085171">Sincroniza y personaliza todos tus dispositivos</translation>
 <translation id="2100273922101894616">Iniciar sesión automáticamente</translation>
+<translation id="2100314319871056947">Prueba a compartir el texto dividiéndolo en partes más pequeñas</translation>
 <translation id="2107397443965016585">Preguntar antes de permitir que los sitios web reproduzcan contenido protegido (opción recomendada)</translation>
 <translation id="2111511281910874386">Ir a la página</translation>
 <translation id="2122601567107267586">No se ha podido abrir la aplicación</translation>
@@ -253,6 +255,7 @@
 <translation id="2836148919159985482">Toca el botón de retroceso para salir de la pantalla completa.</translation>
 <translation id="2842985007712546952">Carpeta principal</translation>
 <translation id="2858138569776157458">Populares</translation>
+<translation id="2860954141821109167">Comprueba que se haya habilitado una aplicación de teléfono en este dispositivo</translation>
 <translation id="2870560284913253234">Sitio</translation>
 <translation id="2874939134665556319">Pista anterior</translation>
 <translation id="2876369937070532032">Envía a Google las URL de algunas de las páginas que visitas cuando tu seguridad corre peligro</translation>
@@ -277,6 +280,7 @@
 <translation id="2996291259634659425">Crea una frase de contraseña</translation>
 <translation id="2996809686854298943">URL necesaria</translation>
 <translation id="300526633675317032">Se borrarán los <ph name="SIZE_IN_KB" /> de almacenamiento del sitio web.</translation>
+<translation id="3016635187733453316">Comprueba que este dispositivo esté conectado a Internet.</translation>
 <translation id="3029613699374795922">kB descargados: <ph name="KBS" /></translation>
 <translation id="3029704984691124060">Las frases de contraseña no coinciden</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obtener ayuda<ph name="END_LINK" /></translation>
@@ -841,6 +845,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="723171743924126238">Seleccionar imágenes</translation>
 <translation id="7233236755231902816">Si quieres ver la Web en tu idioma, consigue la última versión de Chrome</translation>
 <translation id="7243308994586599757">Opciones disponibles cerca de la parte inferior de la pantalla</translation>
+<translation id="7248069434667874558">Asegúrate de que la sincronización de tu <ph name="TARGET_DEVICE_NAME" /> está activada en Chrome</translation>
 <translation id="7250468141469952378">Elementos seleccionados: <ph name="ITEM_COUNT" /></translation>
 <translation id="7274013316676448362">Sitio web bloqueado</translation>
 <translation id="7290209999329137901">El cambio de nombre no está disponible</translation>
@@ -880,7 +885,7 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="7493994139787901920"><ph name="VERSION" /> (actualizada el <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">de datos ahorrados</translation>
 <translation id="7498271377022651285">Espera…</translation>
-<translation id="7510943789645525906">Te avisa si una de tus contraseñas se ha visto afectada por una quiebra de seguridad de datos</translation>
+<translation id="7510943789645525906">Te avisa si alguna de tus contraseñas se ha visto afectada por una quiebra de seguridad de datos</translation>
 <translation id="7514365320538308">Descargar</translation>
 <translation id="751961395872307827">No se puede establecer conexión con el sitio web</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -955,6 +960,7 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="8007176423574883786">Desactivada para este dispositivo</translation>
 <translation id="8013372441983637696">Borrar también los datos de Chrome de este dispositivo</translation>
 <translation id="8015452622527143194">Restaura el tamaño predeterminado del contenido</translation>
+<translation id="8015780634880457457">Google puede comprobar si tus contraseñas se han vistos afectadas por una quiebra de seguridad de datos</translation>
 <translation id="802154636333426148">No se ha podido descargar el archivo</translation>
 <translation id="8026334261755873520">Borrar datos de navegación</translation>
 <translation id="8035133914807600019">Nueva carpeta…</translation>
@@ -1017,6 +1023,7 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="8445448999790540984">No se pueden exportar las contraseñas</translation>
 <translation id="8447861592752582886">Revocar permiso de dispositivo</translation>
 <translation id="8461694314515752532">Cifrar los datos sincronizados con tu propia frase de contraseña de sincronización</translation>
+<translation id="8466613982764129868">Comprueba que tu <ph name="TARGET_DEVICE_NAME" /> esté conectado a Internet</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Disponible sin conexión</translation>
 <translation id="8489271220582375723">Abre la página Historial</translation>
@@ -1107,6 +1114,7 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="9188680907066685419">Cierra sesión en la cuenta gestionada</translation>
 <translation id="9204836675896933765">1 archivo restante</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9209888181064652401">No se pueden hacer llamadas</translation>
 <translation id="9219103736887031265">Imágenes</translation>
 <translation id="926205370408745186">Eliminar tu actividad de Chrome de Bienestar digital</translation>
 <translation id="932327136139879170">Página principal</translation>

@@ -1108,6 +1108,9 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_OPTIONS_WEB_SERVICES_LABEL" desc="Title for group of web services items in Privacy settings table, including Show Suggestions, Preload Webpages, and Send Usage Data. [Length: 10em] [iOS only]">
         Web Services
       </message>
+      <message name="IDS_IOS_OVERFLOW_BADGE_HINT" desc="Button displayed when there is more than one badge to show [iOS only]">
+        Show available page actions
+      </message>
       <message name="IDS_IOS_OVERSCROLL_NEW_TAB_LABEL" desc="The text to use for the tooltip for the overscroll new tab action. [Length: 20em] [iOS only]">
         New Tab
       </message>
@@ -2082,9 +2085,9 @@ New Search
       to dismiss a presented view with pending changes.">
         Discard Changes
       </message>
-      <message name="IDS_IOS_VIEW_CONTROLLER_DISMISS_CANCEL_CHANGES" desc="Text displayed on an alert button for Canceling the alert whenever trying
+      <message name="IDS_IOS_VIEW_CONTROLLER_DISMISS_CANCEL_CHANGES" desc="Text displayed on an alert button to prevent dismissal of the view whenever trying
       to dismiss a presented view with pending changes.">
-        Cancel
+        Keep Editing
       </message>
       <message name="IDS_IOS_ADD_CREDIT_CARD_VIEW_CONTROLLER_DISMISS_ALERT_TITLE" desc="Text displayed on an alert as a title whenever trying to dismiss a presented 'add new credit card view' with pending changes.">
         Are you sure you want to discard this new card?

@@ -672,6 +672,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   virtual bool IsMouseFocusable() const;
   bool IsFocusedElementInDocument() const;
   Element* AdjustedFocusedElementInTreeScope() const;
+  bool IsAutofocusable() const;
 
   virtual void DispatchFocusEvent(
       Element* old_focused_element,

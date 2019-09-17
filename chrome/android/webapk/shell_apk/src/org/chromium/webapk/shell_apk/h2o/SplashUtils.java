@@ -18,6 +18,12 @@ import org.chromium.webapk.shell_apk.WebApkUtils;
 
 /** Contains splash screen related utility methods. */
 public class SplashUtils {
+    /**
+     * The maximum image size to PNG-encode. JPEG encoding is > 2 times faster on large bitmaps.
+     * JPEG encoding is preferable to downscaling the screenshot.
+     */
+    private static final int MAX_SIZE_ENCODE_PNG = 1024 * 1024;
+
     /** Creates view with splash screen. */
     public static View createSplashView(Context context) {
         Resources resources = context.getResources();
@@ -28,6 +34,7 @@ public class SplashUtils {
         SplashLayout.createLayout(context, layout, icon, false /* isIconAdaptive */,
                 false /* isIconGenerated */, resources.getString(R.string.name),
                 WebApkUtils.shouldUseLightForegroundOnBackground(backgroundColor));
+        layout.setBackgroundColor(backgroundColor);
         return layout;
     }
 
@@ -55,6 +62,12 @@ public class SplashUtils {
         canvas.concat(matrix);
         view.draw(canvas);
         return bitmap;
+    }
+
+    /** Selects encoding for the bitmap based on its size. */
+    public static Bitmap.CompressFormat selectBitmapEncoding(int width, int height) {
+        return (width * height <= MAX_SIZE_ENCODE_PNG) ? Bitmap.CompressFormat.PNG
+                                                       : Bitmap.CompressFormat.JPEG;
     }
 
     /** Creates splash view with the passed-in dimensions and screenshots it. */

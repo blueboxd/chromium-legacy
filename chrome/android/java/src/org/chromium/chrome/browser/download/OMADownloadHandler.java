@@ -42,7 +42,6 @@ import org.chromium.chrome.browser.content.ContentUtils;
 import org.chromium.chrome.browser.download.DownloadManagerBridge.DownloadEnqueueRequest;
 import org.chromium.chrome.browser.download.DownloadManagerBridge.DownloadEnqueueResponse;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.download.R;
 import org.chromium.components.download.DownloadCollectionBridge;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
@@ -131,7 +130,6 @@ public class OMADownloadHandler extends BroadcastReceiver {
             new LongSparseArray<DownloadItem>();
     private final LongSparseArray<OMAInfo> mPendingOMADownloads =
             new LongSparseArray<OMAInfo>();
-    private final DownloadSnackbarController mDownloadSnackbarController;
     private final ObserverList<TestObserver> mObservers = new ObserverList<>();
 
     /**
@@ -257,11 +255,10 @@ public class OMADownloadHandler extends BroadcastReceiver {
         }
     }
 
-    public OMADownloadHandler(
-            Context context, DownloadSnackbarController downloadSnackbarController) {
+    /** Constructor. */
+    public OMADownloadHandler(Context context) {
         mContext = context;
         mSharedPrefs = ContextUtils.getAppSharedPreferences();
-        mDownloadSnackbarController = downloadSnackbarController;
     }
 
     /**
@@ -863,25 +860,13 @@ public class OMADownloadHandler extends BroadcastReceiver {
                 if (result.downloadStatus == DownloadManagerService.DownloadStatus.COMPLETE) {
                     onDownloadCompleted(item.getDownloadInfo(), downloadId, installNotifyURI);
                     removeOMADownloadFromSharedPrefs(downloadId);
-                    if (FeatureUtilities.isDownloadProgressInfoBarEnabled()) {
-                        showDownloadOnInfoBar(item, result.downloadStatus);
-                    } else {
-                        mDownloadSnackbarController.onDownloadSucceeded(item.getDownloadInfo(),
-                                DownloadSnackbarController.INVALID_NOTIFICATION_ID, downloadId,
-                                canResolve, true);
-                    }
-
+                    showDownloadOnInfoBar(item, result.downloadStatus);
                 } else if (result.downloadStatus == DownloadManagerService.DownloadStatus.FAILED) {
                     onDownloadFailed(item.getDownloadInfo(), downloadId, result.failureReason,
                             installNotifyURI);
                     removeOMADownloadFromSharedPrefs(downloadId);
-                    if (FeatureUtilities.isDownloadProgressInfoBarEnabled()) {
-                        // TODO(shaktisahu): Find a way to pass the failure reason.
-                        showDownloadOnInfoBar(item, result.downloadStatus);
-                    } else {
-                        DownloadManagerService.getDownloadManagerService().onDownloadFailed(
-                                item, result.failureReason);
-                    }
+                    // TODO(shaktisahu): Find a way to pass the failure reason.
+                    showDownloadOnInfoBar(item, result.downloadStatus);
                 }
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);

@@ -42,30 +42,20 @@
 -keep class com.android.webview.chromium.DrawGLFunctor
 -keep class com.android.webview.chromium.GraphicsUtils
 
-# Don't note about the API 21 compatibility code which references various
-# hidden APIs via reflection.
--dontnote com.android.webview.chromium.WebViewDelegateFactory$Api21CompatibilityDelegate
-
-# DefaultAndroidKeyStore uses reflection to access internal OpenSSL state.
--dontnote org.chromium.net.DefaultAndroidKeyStore
-
-# MediaPlayerBridge uses reflection to access internal metadata.
--dontnote org.chromium.media.MediaPlayerBridge
-
-# ProxyChangeListener$ProxyReceiver uses reflection to access internal
-# android.net.ProxyProperties.
--dontnote org.chromium.net.ProxyChangeListener$ProxyReceiver
-
 -keep class org.chromium.android_webview.AwBrowserProcess {
     java.nio.channels.FileLock sExclusiveFileLock;
 }
 
-# We strip some unused resources when preprocessing the GMS client libs.
--dontwarn com.google.android.gms.R**
-
-# Trichrome builds don't include a native library list in the main APK; it's
-# picked up from the library APK at runtime.
--dontwarn org.chromium.base.library_loader.NativeLibraries
+# Workaround for crbug/1002847. Methods of BaseGmsClient are incorrectly
+# removed even though they are required for the derived class GmsClient
+# to correctly implement Api$Client.
+# TODO: remove once crbug/1002847 resolved.
+-keep public class com.google.android.gms.common.internal.BaseGmsClient {
+  public void disconnect();
+  public void dump(java.lang.String,java.io.FileDescriptor,java.io.PrintWriter,java.lang.String[]);
+  public int getMinApkVersion();
+  public boolean requiresSignIn();
+}
 
 ################################################################################
 # ../../android_webview/support_library/boundary_interfaces/proguard.flags
@@ -149,11 +139,6 @@
 # Allowing Proguard to change modifiers. This change shrinks the .dex size by
 # ~1%, and reduces the method count by ~4%.
 -allowaccessmodification
-
-# The support library contains references to newer platform versions.
-# Don't warn about those in case this app is linking against an older
-# platform version.  We know about them, and they are safe.
--dontwarn android.support.**
 
 # Ensure @RemovableInRelease actually works.
 -checkdiscard class ** {
@@ -341,10 +326,6 @@
     boolean mShiftingMode;
 }
 
-# Trichrome builds don't include a native library list in the main APK; it's
-# picked up from the library APK at runtime.
--dontwarn org.chromium.base.library_loader.NativeLibraries
-
 # Let proguard know CastMediaOptions in CastOptions is always null, so it can
 # trim unused MediaNotificationService methods. This saves about 170 methods in
 # the dex file. https://crbug.com/855081
@@ -360,6 +341,17 @@
   public <init>();
   public <clinit>();
   *** build() return null;
+}
+
+# Workaround for crbug/1002847. Methods of BaseGmsClient are incorrectly
+# removed even though they are required for the derived class GmsClient
+# to correctly implement Api$Client.
+# TODO: remove once crbug/1002847 resolved.
+-keep public class com.google.android.gms.common.internal.BaseGmsClient {
+  public void disconnect();
+  public void dump(java.lang.String,java.io.FileDescriptor,java.io.PrintWriter,java.lang.String[]);
+  public int getMinApkVersion();
+  public boolean requiresSignIn();
 }
 
 ################################################################################

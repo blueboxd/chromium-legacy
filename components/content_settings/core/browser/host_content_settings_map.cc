@@ -12,7 +12,6 @@
 
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -253,22 +252,25 @@ HostContentSettingsMap::HostContentSettingsMap(
       store_last_modified_(store_last_modified) {
   TRACE_EVENT0("startup", "HostContentSettingsMap::HostContentSettingsMap");
 
-  content_settings::PolicyProvider* policy_provider =
-      new content_settings::PolicyProvider(prefs_);
-  content_settings_providers_[POLICY_PROVIDER] =
-      base::WrapUnique(policy_provider);
+  auto policy_provider_ptr =
+      std::make_unique<content_settings::PolicyProvider>(prefs_);
+  auto* policy_provider = policy_provider_ptr.get();
+  content_settings_providers_[POLICY_PROVIDER] = std::move(policy_provider_ptr);
   policy_provider->AddObserver(this);
 
-  pref_provider_ = new content_settings::PrefProvider(
+  auto pref_provider_ptr = std::make_unique<content_settings::PrefProvider>(
       prefs_, is_off_the_record_, store_last_modified_);
-  content_settings_providers_[PREF_PROVIDER] = base::WrapUnique(pref_provider_);
+  pref_provider_ = pref_provider_ptr.get();
+  content_settings_providers_[PREF_PROVIDER] = std::move(pref_provider_ptr);
   user_modifiable_providers_.push_back(pref_provider_);
   pref_provider_->AddObserver(this);
 
-  content_settings::EphemeralProvider* ephemeral_provider =
-      new content_settings::EphemeralProvider(store_last_modified_);
+  auto ephemeral_provider_ptr =
+      std::make_unique<content_settings::EphemeralProvider>(
+          store_last_modified_);
+  auto* ephemeral_provider = ephemeral_provider_ptr.get();
   content_settings_providers_[EPHEMERAL_PROVIDER] =
-      base::WrapUnique(ephemeral_provider);
+      std::move(ephemeral_provider_ptr);
   user_modifiable_providers_.push_back(ephemeral_provider);
   ephemeral_provider->AddObserver(this);
 

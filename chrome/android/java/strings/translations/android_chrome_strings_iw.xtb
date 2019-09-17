@@ -66,6 +66,7 @@
 <translation id="1407135791313364759">פתח הכל</translation>
 <translation id="1409426117486808224">תצוגה פשוטה של כרטיסיות פתוחות</translation>
 <translation id="1409879593029778104">הורדת <ph name="FILE_NAME" /> נמנעה מכיוון שהקובץ כבר קיים.</translation>
+<translation id="1413136574162415971">‏Google יכולה לבדוק אם הסיסמאות שלך היו חלק מפרצה באבטחת המידע. האפשרות הזאת תופעל אחרי כניסה באמצעות חשבון Google והפעלת הסנכרון.</translation>
 <translation id="1414981605391750300">‏המערכת יוצרת קשר עם Google. עוד מעט מסיימים…</translation>
 <translation id="1416550906796893042">גרסת אפליקציה</translation>
 <translation id="1430915738399379752">הדפסה</translation>
@@ -160,6 +161,7 @@
 <translation id="2091887806945687916">צליל</translation>
 <translation id="2096012225669085171">סנכרון והתאמה אישית במכשירים שונים</translation>
 <translation id="2100273922101894616">כניסה אוטומטית</translation>
+<translation id="2100314319871056947">כדאי לשתף את הטקסט במקטעים קטנים יותר</translation>
 <translation id="2107397443965016585">יש לבקש ממני אישור לפני מתן הרשאה לאתרים להציג תוכן מוגן (מומלץ)</translation>
 <translation id="2111511281910874386">מעבר לדף</translation>
 <translation id="2122601567107267586">לא ניתן היה לפתוח את היישום</translation>
@@ -253,6 +255,7 @@
 <translation id="2836148919159985482">כדי לצאת ממסך מלא, גע בלחצן 'הקודם'.</translation>
 <translation id="2842985007712546952">תיקיית אב</translation>
 <translation id="2858138569776157458">אתרים נבחרים</translation>
+<translation id="2860954141821109167">יש לוודא שמופעלת במכשיר הזה אפליקציה לטלפון</translation>
 <translation id="2870560284913253234">אתר</translation>
 <translation id="2874939134665556319">הרצועה הקודמת</translation>
 <translation id="2876369937070532032">‏שולחת ל-Google כתובות URL של חלק מהדפים שאליהם נכנסת, אם מתגלה סיכון אבטחה</translation>
@@ -277,6 +280,7 @@
 <translation id="2996291259634659425">יצירת ביטוי סיסמה</translation>
 <translation id="2996809686854298943">דרושה כתובת אתר</translation>
 <translation id="300526633675317032">פעולה זו תמחק את כל נתוני האתר המאוחסנים (<ph name="SIZE_IN_KB" />).</translation>
+<translation id="3016635187733453316">יש לוודא שהמכשיר הזה מחובר לאינטרנט</translation>
 <translation id="3029613699374795922">‏בוצעה הורדה של KB <ph name="KBS" /></translation>
 <translation id="3029704984691124060">ביטויי הסיסמה אינם תואמים</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />קבל עזרה<ph name="END_LINK" /></translation>
@@ -841,6 +845,7 @@
 <translation id="723171743924126238">בחר תמונות</translation>
 <translation id="7233236755231902816">‏כדי לראות באינטרנט תוכן בשפה שלך, יש להוריד את הגרסה האחרונה של Chrome</translation>
 <translation id="7243308994586599757">אפשרויות הזמינות באזור החלק התחתון של המסך</translation>
+<translation id="7248069434667874558">‏יש לוודא שהסנכרון ב-Chrome הופעל ב-<ph name="TARGET_DEVICE_NAME" /></translation>
 <translation id="7250468141469952378">נבחרו <ph name="ITEM_COUNT" /></translation>
 <translation id="7274013316676448362">אתר חסום</translation>
 <translation id="7290209999329137901">לא ניתן היה לשנת את השם מפני שהפריט לא זמין</translation>
@@ -955,6 +960,7 @@
 <translation id="8007176423574883786">כבוי בשביל המכשיר הזה</translation>
 <translation id="8013372441983637696">‏יש לנקות גם את נתוני Chrome מהמכשיר הזה</translation>
 <translation id="8015452622527143194">החזר את כל מה שמופיע בדף לגודל ברירת המחדל</translation>
+<translation id="8015780634880457457">‏Google יכולה לבדוק אם הסיסמאות שלך היו חלק מפרצה באבטחת המידע</translation>
 <translation id="802154636333426148">ההורדה נכשלה</translation>
 <translation id="8026334261755873520">ניקוי נתוני גלישה</translation>
 <translation id="8035133914807600019">תיקייה חדשה…</translation>
@@ -1017,6 +1023,7 @@
 <translation id="8445448999790540984">אי אפשר לייצא סיסמאות</translation>
 <translation id="8447861592752582886">שלול הרשאות מכשיר</translation>
 <translation id="8461694314515752532">הצפנת נתונים מסונכרנים בעזרת ביטוי סיסמה אישי לסנכרון</translation>
+<translation id="8466613982764129868">יש לוודא ש-<ph name="TARGET_DEVICE_NAME" /> מחובר לאינטרנט</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">זמין במצב לא מקוון</translation>
 <translation id="8489271220582375723">פתח את דף ההיסטוריה</translation>
@@ -1107,6 +1114,7 @@
 <translation id="9188680907066685419">צא מהחשבון המנוהל</translation>
 <translation id="9204836675896933765">נותר קובץ אחד</translation>
 <translation id="9206873250291191720">א</translation>
+<translation id="9209888181064652401">לא ניתן לבצע שיחות</translation>
 <translation id="9219103736887031265">תמונות</translation>
 <translation id="926205370408745186">‏הסרת הפעילות שלך ב-Chrome מ'שימוש חכם בדיגיטל'.</translation>
 <translation id="932327136139879170">בית</translation>

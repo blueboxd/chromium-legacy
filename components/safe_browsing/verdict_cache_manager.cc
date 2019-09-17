@@ -9,7 +9,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
-#include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/proto/csd.pb.h"
@@ -148,7 +147,6 @@ VerdictCacheManager::VerdictCacheManager(
     scoped_refptr<HostContentSettingsMap> content_settings)
     : stored_verdict_count_password_on_focus_(base::nullopt),
       stored_verdict_count_password_entry_(base::nullopt),
-      history_service_observer_(this),
       content_settings_(content_settings) {
   if (history_service)
     history_service_observer_.Add(history_service);

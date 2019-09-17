@@ -19,6 +19,7 @@
 <translation id="2501953888035679275">Sie können Fotos und Videos mit Ihrer Kamera aufnehmen.</translation>
 <translation id="2549985041256363841">Aufnahme starten</translation>
 <translation id="2599796128805996109">Kamera auf der Rückseite</translation>
+<translation id="2912439424121107408">Einstellungen für Fortgeschrittene werden auf diesem Gerät nicht unterstützt</translation>
 <translation id="2968794441791257519">Mit der Kamera aufgenommene Fotos und Videos werden in den Ordner "Downloads" verschoben. Sie können sie in der App "Dateien" ansehen.
 
         Apps mit Speicherberechtigungen haben Zugriff auf Ihre Fotos und Videos.</translation>
@@ -41,10 +42,12 @@
         Bitte überprüfen Sie, ob die Kamera richtig verbunden ist.</translation>
 <translation id="5152121255775685072">Zur Galerie</translation>
 <translation id="5671277269877808209">Quadrat</translation>
+<translation id="5775960006311140197">Einstellungen für Fortgeschrittene</translation>
 <translation id="5869546221129391014">Raster</translation>
 <translation id="6040143037577758943">Schließen</translation>
 <translation id="6073451960410192870">Aufnahme beenden</translation>
 <translation id="6165508094623778733">Weitere Informationen</translation>
+<translation id="6197807149213783179">Metadaten speichern</translation>
 <translation id="6233780560267770709">3 mal 3</translation>
 <translation id="6243827288366940320">Goldener Schnitt</translation>
 <translation id="6248749904681914629">Externe Kamera</translation>
@@ -66,6 +69,7 @@
 <translation id="8261506727792406068">Löschen</translation>
 <translation id="8428213095426709021">Einstellungen</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8732462232047530626">Vorschau der Metadaten anzeigen</translation>
 <translation id="8815966864175525708">Zum Modus für Hochformat-Fotos wechseln</translation>
 <translation id="8870695351537079478">Videoaufnahme konnte nicht gestartet werden</translation>
 <translation id="9045155556724273246">10 Sekunden</translation>

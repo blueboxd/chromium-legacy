@@ -26,8 +26,7 @@ namespace views {
 namespace {
 
 // Constants are measured in dip.
-constexpr int kTrackHeight = 12;
-constexpr int kTrackWidth = 28;
+constexpr gfx::Size kTrackSize = gfx::Size(28, 12);
 // Margins from edge of track to edge of view.
 constexpr int kTrackVerticalMargin = 5;
 constexpr int kTrackHorizontalMargin = 6;
@@ -157,7 +156,7 @@ bool ToggleButton::GetAcceptsEvents() const {
 }
 
 gfx::Size ToggleButton::CalculatePreferredSize() const {
-  gfx::Rect rect(kTrackWidth, kTrackHeight);
+  gfx::Rect rect(kTrackSize);
   rect.Inset(gfx::Insets(-kTrackVerticalMargin, -kTrackHorizontalMargin));
   if (border())
     rect.Inset(-border()->GetInsets());
@@ -166,7 +165,7 @@ gfx::Size ToggleButton::CalculatePreferredSize() const {
 
 gfx::Rect ToggleButton::GetTrackBounds() const {
   gfx::Rect track_bounds(GetContentsBounds());
-  track_bounds.ClampToCenteredSize(gfx::Size(kTrackWidth, kTrackHeight));
+  track_bounds.ClampToCenteredSize(kTrackSize);
   return track_bounds;
 }
 

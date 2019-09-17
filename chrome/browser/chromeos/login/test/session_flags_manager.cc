@@ -237,7 +237,7 @@ base::Value SessionFlagsManager::GetSwitchesValueFromArgv(
     flag_value.SetKey(kFlagNameKey, base::Value(flag.first));
     flag_value.SetKey(kFlagValueKey, base::Value(flag.second));
 
-    flag_list.GetList().emplace_back(std::move(flag_value));
+    flag_list.Append(std::move(flag_value));
   }
   return flag_list;
 }

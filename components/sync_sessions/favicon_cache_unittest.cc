@@ -4,9 +4,9 @@
 
 #include "components/sync_sessions/favicon_cache.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -419,7 +419,7 @@ SyncFaviconCacheTest::CreateAndPassProcessor() {
 
 std::unique_ptr<syncer::SyncErrorFactory>
 SyncFaviconCacheTest::CreateAndPassSyncErrorFactory() {
-  return base::WrapUnique(new syncer::SyncErrorFactoryMock);
+  return std::make_unique<syncer::SyncErrorFactoryMock>();
 }
 
 void SyncFaviconCacheTest::PopulateFaviconService(

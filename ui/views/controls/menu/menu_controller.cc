@@ -101,13 +101,12 @@ bool AcceleratorShouldCancelMenu(const ui::Accelerator& accelerator) {
 }
 #endif
 
-// When showing context menu on mouse down, the user might accidentally select
-// the menu item on the subsequent mouse up. To prevent this, we add the
-// following delay before the user is able to select an item.
-int menu_selection_hold_time_ms = kMinimumMsPressedToActivate;
-
-// Period of the scroll timer (in milliseconds).
-constexpr int kScrollTimerMS = 30;
+// The amount of time the mouse should be down before a mouse release is
+// considered intentional. This is to prevent spurious mouse releases from
+// activating controls, especially when some UI element is revealed under the
+// source of the activation (ex. menus showing underneath menu buttons).
+base::TimeDelta menu_selection_hold_time =
+    base::TimeDelta::FromMilliseconds(200);
 
 // Amount of time from when the drop exits the menu and the menu is hidden.
 constexpr int kCloseOnExitTime = 1200;
@@ -359,8 +358,7 @@ class MenuController::MenuScrollTask {
     is_scrolling_up_ = new_is_up;
 
     if (!scrolling_timer_.IsRunning()) {
-      scrolling_timer_.Start(FROM_HERE,
-                             TimeDelta::FromMilliseconds(kScrollTimerMS), this,
+      scrolling_timer_.Start(FROM_HERE, TimeDelta::FromMilliseconds(30), this,
                              &MenuScrollTask::Run);
     }
   }
@@ -772,7 +770,7 @@ void MenuController::OnMouseReleased(SubmenuView* source,
     }
     // If a mouse release was received quickly after showing.
     base::TimeDelta time_shown = base::TimeTicks::Now() - menu_start_time_;
-    if (time_shown.InMilliseconds() < menu_selection_hold_time_ms) {
+    if (time_shown < menu_selection_hold_time) {
       // And it wasn't far from the mouse press location.
       gfx::Point screen_loc(event.location());
       View::ConvertPointToScreen(source->GetScrollViewContainer(), &screen_loc);
@@ -793,7 +791,7 @@ void MenuController::OnMouseReleased(SubmenuView* source,
         part.menu->GetDelegate()->IsTriggerableEvent(part.menu, event)) {
       base::TimeDelta shown_time = base::TimeTicks::Now() - menu_start_time_;
       if (!state_.context_menu || !View::ShouldShowContextMenuOnMousePress() ||
-          shown_time.InMilliseconds() > menu_selection_hold_time_ms) {
+          shown_time > menu_selection_hold_time) {
         Accept(part.menu, event.flags());
       }
       return;
@@ -1280,7 +1278,7 @@ void MenuController::ClearStateForTest() {
 
 // static
 void MenuController::TurnOffMenuSelectionHoldForTest() {
-  menu_selection_hold_time_ms = -1;
+  menu_selection_hold_time = base::TimeDelta();
 }
 
 void MenuController::OnMenuItemDestroying(MenuItemView* menu_item) {

@@ -702,7 +702,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
   WaitForLayout();
 
   histogram_tester.ExpectTotalCount("AnchorElementMetrics.Visible.RatioArea",
-                                    1);
+                                    2);
 
   EXPECT_TRUE(content::ExecuteScript(
       browser()->tab_strip_model()->GetActiveWebContents(),
@@ -727,7 +727,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
   WaitForLayout();
 
   histogram_tester.ExpectTotalCount("AnchorElementMetrics.Visible.RatioArea",
-                                    1);
+                                    2);
 
   EXPECT_TRUE(content::ExecuteScript(
       browser()->tab_strip_model()->GetActiveWebContents(),
@@ -854,9 +854,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
       NavigationPredictor::Action::kPrefetch, 1);
 }
 
-// Tests that the browser only receives anchor elements that are in the
-// viewport, and from anchor elements whose target differ from document URL
-// by one digit.
+// Tests that the browser receives anchors from anywhere on the page.
 IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
                        ViewportOnlyAndUrlIncrementByOne) {
   base::HistogramTester histogram_tester;
@@ -866,8 +864,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
   WaitForLayout();
 
   histogram_tester.ExpectUniqueSample(
-      "AnchorElementMetrics.Visible.NumberOfAnchorElements", 2, 1);
-  // Same document anchor element should be removed after merge.
+      "AnchorElementMetrics.Visible.NumberOfAnchorElements", 3, 1);
   histogram_tester.ExpectUniqueSample(
-      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 2, 1);
+      "AnchorElementMetrics.Visible.NumberOfAnchorElementsAfterMerge", 3, 1);
 }

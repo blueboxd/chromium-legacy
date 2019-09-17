@@ -24,13 +24,14 @@ media::mojom::AudioInputStreamClientPtr CreatePtrAndStoreRequest(
 }  // namespace
 
 AudioInputStreamHandle::AudioInputStreamHandle(
-    mojom::RendererAudioInputStreamFactoryClientPtr client,
+    mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+        client_pending_remote,
     media::MojoAudioInputStream::CreateDelegateCallback
         create_delegate_callback,
     DeleterCallback deleter_callback)
     : stream_id_(base::UnguessableToken::Create()),
       deleter_callback_(std::move(deleter_callback)),
-      client_(std::move(client)),
+      client_remote_(std::move(client_pending_remote)),
       stream_ptr_(),
       stream_client_request_(),
       stream_(mojo::MakeRequest(&stream_ptr_),
@@ -40,10 +41,10 @@ AudioInputStreamHandle::AudioInputStreamHandle(
                              base::Unretained(this)),
               base::BindOnce(&AudioInputStreamHandle::CallDeleter,
                              base::Unretained(this))) {
-  // Unretained is safe since |this| owns |stream_| and |client_|.
-  DCHECK(client_);
+  // Unretained is safe since |this| owns |stream_| and |client_remote_|.
+  DCHECK(client_remote_);
   DCHECK(deleter_callback_);
-  client_.set_connection_error_handler(base::BindOnce(
+  client_remote_.set_disconnect_handler(base::BindOnce(
       &AudioInputStreamHandle::CallDeleter, base::Unretained(this)));
 }
 
@@ -61,12 +62,12 @@ void AudioInputStreamHandle::OnCreated(
     media::mojom::ReadOnlyAudioDataPipePtr data_pipe,
     bool initially_muted) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(client_);
+  DCHECK(client_remote_);
   DCHECK(deleter_callback_)
       << "|deleter_callback_| was called, but |this| hasn't been destructed!";
-  client_->StreamCreated(std::move(stream_ptr_),
-                         std::move(stream_client_request_),
-                         std::move(data_pipe), initially_muted, stream_id_);
+  client_remote_->StreamCreated(
+      std::move(stream_ptr_), std::move(stream_client_request_),
+      std::move(data_pipe), initially_muted, stream_id_);
 }
 
 void AudioInputStreamHandle::CallDeleter() {

@@ -90,6 +90,8 @@
 <translation id="4230135487732243613">Vă conectați datele Chromium cu acest cont?</translation>
 <translation id="4271805377592243930">Obține ajutor privind Chromium</translation>
 <translation id="4285930937574705105">Instalarea a eșuat din cauza unei erori necunoscute. Dacă Chromium rulează în acest moment, închideți-l și încercați din nou.</translation>
+<translation id="4371648796594901282">Pentru detalii despre sistemul de operare Chromium, accesează <ph name="LINK_BEGIN" />
+      Despre sistemul de operare Chromium<ph name="LINK_END" /></translation>
 <translation id="4407044323746248786">Ieși din Chromium oricum?</translation>
 <translation id="4415566066719264597">Permite Chromium să ruleze în fundal</translation>
 <translation id="4423735387467980091">Personalizați și controlați Chromium</translation>
@@ -122,6 +124,7 @@
 <translation id="5623402015214259806">{0,plural, =0{Este disponibilă o actualizare Chromium}=1{Este disponibilă o actualizare Chromium}few{O actualizare Chromium este disponibilă de # zile}other{O actualizare Chromium este disponibilă de # de zile}}</translation>
 <translation id="5631814766731275228">Numele și imaginea profilului Chromium</translation>
 <translation id="5634636535844844681">Chromium necesită Windows 7 sau o versiune ulterioară.</translation>
+<translation id="5653831366781983928">Repornește Chromium acum</translation>
 <translation id="5680901439334282664">conectează-te la Chromium</translation>
 <translation id="5698481217667032250">Afișează Chromium în această limbă</translation>
 <translation id="5820394555380036790">Sistemul de operare Chromium</translation>
@@ -164,6 +167,7 @@ Este posibil ca unele funcții să nu fie disponibile. Specificați un director 
 <translation id="6734080038664603509">Actualizați &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium este instalat deja pentru toți utilizatorii de pe computerul tău.</translation>
 <translation id="6810143991807788455">Contribuie la îmbunătățirea browserului Chromium raportând setările actuale</translation>
+<translation id="6847869444787758381">Chromium te anunță dacă parolele tale sunt compromise</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copiat în Chromium)</translation>
 <translation id="6868056391275687737">Alte copii de Chromium rulează acum. Pentru a actualiza, închide-le.</translation>

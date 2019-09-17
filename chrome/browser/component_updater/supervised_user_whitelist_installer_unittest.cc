@@ -211,10 +211,12 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
 
     profile_attributes_storage()->AddProfile(
         GetProfilePath(kClientId), base::ASCIIToUTF16("A Profile"),
-        std::string(), base::string16(), 0, std::string(), EmptyAccountId());
+        std::string(), base::string16(), false, 0, std::string(),
+        EmptyAccountId());
     profile_attributes_storage()->AddProfile(
         GetProfilePath(kOtherClientId), base::ASCIIToUTF16("Another Profile"),
-        std::string(), base::string16(), 0, std::string(), EmptyAccountId());
+        std::string(), base::string16(), false, 0, std::string(),
+        EmptyAccountId());
 
     installer_ = SupervisedUserWhitelistInstaller::Create(
         &component_update_service_,

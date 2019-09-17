@@ -232,6 +232,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="27527859628328957">Zum nächsten fokussierbaren Element springen</translation>
 <translation id="2770781857296573485">Gruppenerkundung starten</translation>
 <translation id="2777845298774924149">Beendet</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{+#}other{+#}}</translation>
 <translation id="2784959586797362050">Sie können uns wie gewohnt direktes Feedback senden, indem Sie auf "Suche + a" und dann auf "i" drücken. Wir würden uns freuen, von Ihnen zu hören.</translation>
 <translation id="2800204403141299078">Keine weiteren anderen Elemente</translation>
 <translation id="2800780099804980316">Keine vorherige Überschrift der Ebene 1</translation>
@@ -714,6 +715,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="5956928062748260866">Dialogfeld</translation>
 <translation id="5963413905009737549">Section-Element</translation>
 <translation id="5968607524793740041">Kontextmenü anzeigen</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{mit # Element}other{mit # Elementen}}</translation>
 <translation id="5981446804259161541">Hellcyan</translation>
 <translation id="5983179082906765664">Navigationsgenauigkeit erhöhen</translation>
 <translation id="5992285135956208197">Grafikdokument</translation>

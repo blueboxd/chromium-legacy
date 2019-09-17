@@ -20,12 +20,6 @@ namespace views {
 
 namespace {
 
-// The length of the fade animation.
-constexpr int kFadeDurationMs = 240;
-
-// How long we should wait before hiding the scrollbar.
-constexpr int kScrollbarHideTimeoutMs = 500;
-
 // The thickness of the normal and expanded scrollbars.
 constexpr int kScrollbarThickness = 12;
 constexpr int kExpandedScrollbarThickness = 16;
@@ -176,11 +170,10 @@ void CocoaScrollBarThumb::OnMouseExited(const ui::MouseEvent& event) {
 
 CocoaScrollBar::CocoaScrollBar(bool horizontal)
     : ScrollBar(horizontal),
-      hide_scrollbar_timer_(
-          FROM_HERE,
-          base::TimeDelta::FromMilliseconds(kScrollbarHideTimeoutMs),
-          base::BindRepeating(&CocoaScrollBar::HideScrollbar,
-                              base::Unretained(this))),
+      hide_scrollbar_timer_(FROM_HERE,
+                            base::TimeDelta::FromMilliseconds(500),
+                            base::BindRepeating(&CocoaScrollBar::HideScrollbar,
+                                                base::Unretained(this))),
       thickness_animation_(this),
       last_contents_scroll_offset_(0),
       is_expanded_(false),
@@ -483,8 +476,7 @@ void CocoaScrollBar::HideScrollbar() {
   did_start_dragging_ = false;
 
   ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
-  animation.SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kFadeDurationMs));
+  animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(240));
   animation.AddObserver(this);
   layer()->SetOpacity(0.0f);
 }

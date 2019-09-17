@@ -470,9 +470,9 @@ void ArcTracingBridge::ArcTracingAgent::StartTracing(
 }
 
 void ArcTracingBridge::ArcTracingAgent::StopAndFlush(
-    tracing::mojom::RecorderPtr recorder) {
+    mojo::PendingRemote<tracing::mojom::Recorder> recorder) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  recorder_ = std::move(recorder);
+  recorder_.Bind(std::move(recorder));
   // |bridge_| owns us, so it's OK to pass an unretained pointer.
   bridge_->StopAndFlush(
       base::BindOnce(&ArcTracingAgent::OnTraceData, base::Unretained(this)));

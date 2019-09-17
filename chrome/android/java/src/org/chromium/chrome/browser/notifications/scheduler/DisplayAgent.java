@@ -189,6 +189,7 @@ public class DisplayAgent {
             case NotificationIntentInterceptor.IntentType.CONTENT_INTENT:
                 DisplayAgentJni.get().onUserAction(Profile.getLastUsedProfile(), clientType,
                         UserActionType.CLICK, guid, ActionButtonType.UNKNOWN_ACTION, null);
+                closeNotification(guid);
                 break;
             case NotificationIntentInterceptor.IntentType.DELETE_INTENT:
                 DisplayAgentJni.get().onUserAction(Profile.getLastUsedProfile(), clientType,
@@ -200,8 +201,14 @@ public class DisplayAgent {
                 String buttonId = IntentUtils.safeGetStringExtra(intent, EXTRA_ACTION_BUTTON_ID);
                 DisplayAgentJni.get().onUserAction(Profile.getLastUsedProfile(), clientType,
                         UserActionType.BUTTON_CLICK, guid, actionButtonType, buttonId);
+                closeNotification(guid);
                 break;
         }
+    }
+
+    private static void closeNotification(String guid) {
+        new NotificationManagerProxyImpl(ContextUtils.getApplicationContext())
+                .cancel(DISPLAY_AGENT_TAG, guid.hashCode());
     }
 
     /**

@@ -72,7 +72,7 @@ class PLATFORM_EXPORT MailboxTextureHolder final : public TextureHolder {
   unsigned texture_id_;
   bool is_converted_from_skia_texture_;
   scoped_refptr<base::SingleThreadTaskRunner> texture_thread_task_runner_;
-  PlatformThreadId thread_id_;
+  base::PlatformThreadId thread_id_;
   bool did_issue_ordering_barrier_ = false;
   SkImageInfo sk_image_info_;
   GLenum texture_target_;

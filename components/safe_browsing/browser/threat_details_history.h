@@ -16,6 +16,7 @@
 #include "base/scoped_observer.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -76,7 +77,7 @@ class ThreatDetailsRedirectsCollector
 
   base::WeakPtr<history::HistoryService> history_service_;
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
-      history_service_observer_;
+      history_service_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ThreatDetailsRedirectsCollector);
 };

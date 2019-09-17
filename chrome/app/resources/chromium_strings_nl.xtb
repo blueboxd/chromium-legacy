@@ -92,6 +92,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="4230135487732243613">Wil je je Chromium-gegevens aan dit account koppelen?</translation>
 <translation id="4271805377592243930">Hulp bij Chromium</translation>
 <translation id="4285930937574705105">De installatie is mislukt wegens een onbekende fout. Als Chromium momenteel actief is, moet je Chromium sluiten en het opnieuw proberen.</translation>
+<translation id="4371648796594901282">Ga naar <ph name="LINK_BEGIN" />Over Chromium OS<ph name="LINK_END" /> voor meer informatie over Chromium OS</translation>
 <translation id="4407044323746248786">Chromium toch sluiten?</translation>
 <translation id="4415566066719264597">Chromium laten uitvoeren op de achtergrond</translation>
 <translation id="4423735387467980091">Chromium aanpassen en beheren</translation>
@@ -124,6 +125,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="5623402015214259806">{0,plural, =0{Er is een Chromium-update beschikbaar}=1{Er is een Chromium-update beschikbaar}other{Er is al # dagen een Chromium-update beschikbaar}}</translation>
 <translation id="5631814766731275228">Naam en afbeelding voor Chromium</translation>
 <translation id="5634636535844844681">Voor Chromium is Windows 7 of hoger vereist.</translation>
+<translation id="5653831366781983928">Start Chromium nu opnieuw op</translation>
 <translation id="5680901439334282664">inloggen bij Chromium</translation>
 <translation id="5698481217667032250">Chromium weergeven in deze taal</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -166,6 +168,7 @@ Sommige functies zijn mogelijk niet beschikbaar. Geef een andere profieldirector
 <translation id="6734080038664603509">&amp;Chromium updaten</translation>
 <translation id="6734291798041940871">Chromium is al geïnstalleerd voor alle gebruikers op je computer.</translation>
 <translation id="6810143991807788455">Help Chromium beter te maken door de huidige instellingen te melden</translation>
+<translation id="6847869444787758381">Chromium laat het je weten als je wachtwoorden mogelijk niet veilig meer zijn</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (gekopieerd naar Chromium)</translation>
 <translation id="6868056391275687737">Er zijn andere exemplaren van Chromium actief. Sluit ze om een update uit te voeren.</translation>
@@ -196,7 +199,7 @@ Chromium kan je instellingen niet herstellen.</translation>
 <translation id="753534427205733210">{0,plural, =1{Chromium wordt over één minuut opnieuw gestart}other{Chromium wordt over # minuten opnieuw gestart}}</translation>
 <translation id="7549178288319965365">Over Chromium OS</translation>
 <translation id="7561906087460245826">Ook gegevens van Chromium wissen (<ph name="URL" />)</translation>
-<translation id="7585853947355360626">Als je een instelling niet ziet op deze pagina, kijk je in de <ph name="LINK_BEGIN" />Chromium OS-instellingen<ph name="LINK_END" /></translation>
+<translation id="7585853947355360626">Kijk je in de <ph name="LINK_BEGIN" />Chromium OS-instellingen<ph name="LINK_END" />als je een instelling niet ziet op deze pagina.</translation>
 <translation id="761356813943268536">Chromium gebruikt je camera en microfoon.</translation>
 <translation id="7617377681829253106">Chromium is nu nog beter</translation>
 <translation id="7686590090926151193">Chromium is niet je standaardbrowser</translation>
@@ -230,7 +233,7 @@ Chromium kan je instellingen niet herstellen.</translation>
 <translation id="8619360774459241877">Chromium starten…</translation>
 <translation id="8621669128220841554">De installatie is mislukt wegens een onbekende fout. Download Chromium opnieuw.</translation>
 <translation id="8667808506758191620">Je <ph name="DEVICE_TYPE" /> is up-to-date.</translation>
-<translation id="8682540261359803721">Als je een instelling niet ziet op deze pagina, kijk je in de <ph name="LINK_BEGIN" />instellingen van je Chromium-browser<ph name="LINK_END" /></translation>
+<translation id="8682540261359803721">Kijk in de <ph name="LINK_BEGIN" />instellingen van je Chromium-browser<ph name="LINK_END" />als je een instelling niet ziet op deze pagina</translation>
 <translation id="8697124171261953979">Hiermee wordt ook gecontroleerd welke pagina wordt weergegeven wanneer je Chromium start of vanuit de omnibox zoekt.</translation>
 <translation id="8704119203788522458">Personaliseer jouw Chromium</translation>
 <translation id="8739167630197873875">Je wist cookies wanneer je Chromium sluit. Als je wilt doorgaan met synchroniseren, wijzig je deze <ph name="COOKIE_SETTINGS_LINK" />.</translation>

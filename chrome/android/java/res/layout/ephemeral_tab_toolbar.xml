@@ -3,18 +3,93 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/ephemeral_tab_caption_view"
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:paddingBottom="30dp"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/overlay_panel_bar_height"
-    android:background="@color/overlay_panel_bar_background_color"
-    android:orientation="vertical">
+    android:layout_height="86dp">
 
-    <TextView
-        android:id="@+id/ephemeral_tab_text"
+    <LinearLayout
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/overlay_panel_bar_height"
-        android:ellipsize="end"
-        android:singleLine="true"
-        android:textAppearance="@style/TextAppearance.BlackTitle1" />
-</LinearLayout>
+        android:layout_height="@dimen/toolbar_height_no_shadow"
+        android:orientation="vertical">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="4dp" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:orientation="horizontal">
+
+            <org.chromium.ui.widget.ChromeImageView
+                android:id="@+id/favicon"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:padding="12dp"
+                android:src="@drawable/ic_chrome"
+                app:tint="@color/default_icon_color_blue"
+                android:scaleType="fitCenter"
+                tools:ignore="ContentDescription" />
+
+            <ImageView
+                android:id="@+id/drag_handlebar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal|top"
+                android:layout_marginTop="4dp"
+                android:layout_centerHorizontal="true"
+                android:importantForAccessibility="no"
+                android:src="@drawable/drag_handlebar" />
+
+            <org.chromium.ui.widget.ChromeImageView
+                android:id="@+id/open_in_new_tab"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:padding="12dp"
+                android:src="@drawable/open_in_new_tab"
+                app:tint="@color/default_icon_color"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/ephemeral_tab_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:layout_toStartOf="@id/open_in_new_tab"
+                android:layout_toEndOf="@id/favicon"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textAppearance="@style/TextAppearance.BlackTitle1" />
+        </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="2dp" />
+
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:max="100"
+            android:progressBackgroundTint="@color/modern_blue_300"
+            android:progressTint="@color/modern_blue_600" />
+    </LinearLayout>
+
+    <org.chromium.chrome.browser.ui.widget.FadingShadowView
+        android:id="@+id/shadow"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/action_bar_shadow_height"
+        android:layout_marginTop="@dimen/toolbar_height_no_shadow"/>
+
+</FrameLayout>

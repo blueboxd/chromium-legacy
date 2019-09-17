@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/tracing/public/mojom/tracing.mojom.h"
 
 namespace tracing {
@@ -28,7 +29,9 @@ void MockAgent::StartTracing(const std::string& config,
   std::move(cb).Run(true);
 }
 
-void MockAgent::StopAndFlush(mojom::RecorderPtr recorder) {
+void MockAgent::StopAndFlush(
+    mojo::PendingRemote<mojom::Recorder> pending_recorder) {
+  mojo::Remote<mojom::Recorder> recorder(std::move(pending_recorder));
   call_stat_.push_back("StopAndFlush");
   if (!metadata_.empty())
     recorder->AddMetadata(metadata_.Clone());

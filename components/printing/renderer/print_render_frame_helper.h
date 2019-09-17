@@ -190,7 +190,7 @@ class PrintRenderFrameHelper
   void DidStartNavigation(
       const GURL& url,
       base::Optional<blink::WebNavigationType> navigation_type) override;
-  void DidFailProvisionalLoad(const blink::WebURLError& error) override;
+  void DidFailProvisionalLoad() override;
   void DidFinishLoad() override;
   void ScriptedPrint(bool user_initiated) override;
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -199,7 +199,9 @@ class PrintRenderFrameHelper
       mojom::PrintRenderFrameAssociatedRequest request);
 
   // printing::mojom::PrintRenderFrame:
-  void InitiatePrintPreview(bool has_selection) override;
+  void InitiatePrintPreview(
+      mojom::PrintRendererAssociatedPtrInfo print_renderer,
+      bool has_selection) override;
 
   // Message handlers ---------------------------------------------------------
   void OnPrintPages();
@@ -400,6 +402,10 @@ class PrintRenderFrameHelper
 
   // Used to check the prerendering status.
   const std::unique_ptr<Delegate> delegate_;
+
+  // Used to render print documents from an external source (ARC, Crostini,
+  // etc.).
+  mojom::PrintRendererAssociatedPtr print_renderer_;
 
   mojo::AssociatedBinding<mojom::PrintRenderFrame> print_render_frame_binding_;
 

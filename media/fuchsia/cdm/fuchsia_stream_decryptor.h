@@ -12,10 +12,10 @@
 #include "media/base/decryptor.h"
 #include "media/fuchsia/common/stream_processor_helper.h"
 #include "media/fuchsia/common/sysmem_buffer_pool.h"
+#include "media/fuchsia/common/sysmem_buffer_writer_queue.h"
 
 namespace media {
 class SysmemBufferReader;
-class SysmemBufferWriter;
 
 // Base class for media stream decryptor implementations.
 class FuchsiaStreamDecryptorBase : public StreamProcessorHelper::Client {
@@ -37,17 +37,14 @@ class FuchsiaStreamDecryptorBase : public StreamProcessorHelper::Client {
   BufferAllocator allocator_;
 
  private:
-  void OnInputPacketReleased(size_t index);
   void OnInputBufferPoolCreated(std::unique_ptr<SysmemBufferPool> pool);
-  void OnInputBufferPoolWriterCreated(
-      std::unique_ptr<SysmemBufferWriter> writer);
+  void OnWriterCreated(std::unique_ptr<SysmemBufferWriter> writer);
+  void SendInputPacket(const DecoderBuffer* buffer,
+                       StreamProcessorHelper::IoPacket packet);
 
-  // Pending buffers due to input buffer pool not available.
-  scoped_refptr<DecoderBuffer> pending_encrypted_buffer_;
-
+  SysmemBufferWriterQueue input_writer_queue_;
   std::unique_ptr<SysmemBufferPool::Creator> input_pool_creator_;
   std::unique_ptr<SysmemBufferPool> input_pool_;
-  std::unique_ptr<SysmemBufferWriter> input_writer_;
 
   DISALLOW_COPY_AND_ASSIGN(FuchsiaStreamDecryptorBase);
 };
@@ -72,8 +69,7 @@ class FuchsiaClearStreamDecryptor : public FuchsiaStreamDecryptorBase {
                                  stream_constraints) override;
   void OnProcessEos() override;
   void OnOutputFormat(fuchsia::media::StreamOutputFormat format) override;
-  void OnOutputPacket(
-      std::unique_ptr<StreamProcessorHelper::IoPacket> packet) override;
+  void OnOutputPacket(StreamProcessorHelper::IoPacket packet) override;
   void OnNoKey() override;
   void OnError() override;
 
@@ -88,7 +84,10 @@ class FuchsiaClearStreamDecryptor : public FuchsiaStreamDecryptorBase {
   std::unique_ptr<SysmemBufferPool> output_pool_;
   std::unique_ptr<SysmemBufferReader> output_reader_;
 
-  scoped_refptr<DecoderBuffer> clear_buffer_;
+  // Used to re-assemble decrypted output that was split between multiple sysmem
+  // buffers.
+  Decryptor::Status current_status_ = Decryptor::kSuccess;
+  std::vector<uint8_t> output_data_;
 
   DISALLOW_COPY_AND_ASSIGN(FuchsiaClearStreamDecryptor);
 };

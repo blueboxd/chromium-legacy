@@ -19,6 +19,7 @@
 <translation id="2501953888035679275">Jäädvustage oma kaameraga fotosid ja salvestage videoid.</translation>
 <translation id="2549985041256363841">Alusta salvestamist</translation>
 <translation id="2599796128805996109">Tagakaamera</translation>
+<translation id="2912439424121107408">Ekspertrežiimi selles seadmes ei toetata</translation>
 <translation id="2968794441791257519">Kaameraga tehtud fotod ja videod teisaldatakse kausta Allalaadimised. Pääsete neile juurde jaotises Failid.
 
 Salvestusruumi kasutuse lubadega rakendustel on juurdepääs teie fotodele ja videotele.</translation>
@@ -41,10 +42,12 @@ Salvestusruumi kasutuse lubadega rakendustel on juurdepääs teie fotodele ja vi
         Kontrollige, kas kaamera on korralikult ühendatud.</translation>
 <translation id="5152121255775685072">Ava galerii</translation>
 <translation id="5671277269877808209">Ruut</translation>
+<translation id="5775960006311140197">Ekspertrežiim</translation>
 <translation id="5869546221129391014">Ruudustik</translation>
 <translation id="6040143037577758943">Sulge</translation>
 <translation id="6073451960410192870">Peata salvestamine</translation>
 <translation id="6165508094623778733">Lisateave</translation>
+<translation id="6197807149213783179">Salvesta metaandmed</translation>
 <translation id="6233780560267770709">3 korda 3</translation>
 <translation id="6243827288366940320">Kuldlõige</translation>
 <translation id="6248749904681914629">Väline kaamera</translation>
@@ -66,6 +69,7 @@ Salvestusruumi kasutuse lubadega rakendustel on juurdepääs teie fotodele ja vi
 <translation id="8261506727792406068">Kustuta</translation>
 <translation id="8428213095426709021">Seaded</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" /> : <ph name="HEIGHT" />)</translation>
+<translation id="8732462232047530626">Metaandmete eelvaade</translation>
 <translation id="8815966864175525708">Vaheta vertikaalpaigutuses foto jäädvustamiseks</translation>
 <translation id="8870695351537079478">Salvestamise alustamine ebaõnnestus</translation>
 <translation id="9045155556724273246">10 sekundit</translation>

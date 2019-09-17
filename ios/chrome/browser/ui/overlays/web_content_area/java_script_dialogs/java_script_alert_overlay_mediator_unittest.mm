@@ -25,14 +25,35 @@
 
 using JavaScriptAlertOverlayMediatorTest = JavaScriptDialogOverlayMediatorTest;
 
-// Tests that the consumer values are set correctly for alerts.
-TEST_F(JavaScriptAlertOverlayMediatorTest, AlertSetup) {
+// Tests that the consumer values are set correctly for alerts from the main
+// frame.
+TEST_F(JavaScriptAlertOverlayMediatorTest, AlertSetupMainFrame) {
   web::TestWebState web_state;
   const GURL kUrl("https://chromium.test");
   const std::string kMessage("Message");
   std::unique_ptr<OverlayRequest> request =
       OverlayRequest::CreateWithConfig<JavaScriptAlertOverlayRequestConfig>(
           JavaScriptDialogSource(&web_state, kUrl, /*is_main_frame=*/true),
+          kMessage);
+  SetMediator(
+      [[JavaScriptAlertOverlayMediator alloc] initWithRequest:request.get()]);
+
+  // Verify the consumer values.
+  EXPECT_NSEQ(base::SysUTF8ToNSString(kMessage), consumer().title);
+  EXPECT_EQ(0U, consumer().textFieldConfigurations.count);
+  ASSERT_EQ(1U, consumer().actions.count);
+  EXPECT_EQ(UIAlertActionStyleDefault, consumer().actions[0].style);
+  EXPECT_NSEQ(l10n_util::GetNSString(IDS_OK), consumer().actions[0].title);
+}
+
+// Tests that the consumer values are set correctly for alerts from an iframe.
+TEST_F(JavaScriptAlertOverlayMediatorTest, AlertSetupIFrame) {
+  web::TestWebState web_state;
+  const GURL kUrl("https://chromium.test");
+  const std::string kMessage("Message");
+  std::unique_ptr<OverlayRequest> request =
+      OverlayRequest::CreateWithConfig<JavaScriptAlertOverlayRequestConfig>(
+          JavaScriptDialogSource(&web_state, kUrl, /*is_main_frame=*/false),
           kMessage);
   SetMediator(
       [[JavaScriptAlertOverlayMediator alloc] initWithRequest:request.get()]);
@@ -63,7 +84,7 @@ TEST_F(JavaScriptAlertOverlayMediatorTest, AlertSetupWithBlockingOption) {
       [[JavaScriptAlertOverlayMediator alloc] initWithRequest:request.get()]);
 
   // Verify the consumer values.
-  EXPECT_NSEQ(base::SysUTF8ToNSString(kMessage), consumer().message);
+  EXPECT_NSEQ(base::SysUTF8ToNSString(kMessage), consumer().title);
   EXPECT_EQ(0U, consumer().textFieldConfigurations.count);
   ASSERT_EQ(2U, consumer().actions.count);
   EXPECT_EQ(UIAlertActionStyleDefault, consumer().actions[0].style);

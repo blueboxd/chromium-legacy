@@ -29,18 +29,6 @@
 
 using base::UserMetricsAction;
 
-namespace {
-
-// How long to give the user until auto-restart if no action is taken. The code
-// assumes this to be less than a minute.
-const int kCountdownDuration = 30;  // Seconds.
-
-// How often to refresh the bubble UI to update the counter. As long as the
-// countdown is in seconds, this should be 1000 or lower.
-const int kRefreshBubbleEvery = 1000;  // Millisecond.
-
-}  // namespace
-
 ////////////////////////////////////////////////////////////////////////////////
 // CriticalNotificationBubbleView
 
@@ -54,9 +42,11 @@ CriticalNotificationBubbleView::CriticalNotificationBubbleView(
 CriticalNotificationBubbleView::~CriticalNotificationBubbleView() {
 }
 
-int CriticalNotificationBubbleView::GetRemainingTime() const {
-  base::TimeDelta time_lapsed = base::TimeTicks::Now() - bubble_created_;
-  return kCountdownDuration - time_lapsed.InSeconds();
+base::TimeDelta CriticalNotificationBubbleView::GetRemainingTime() const {
+  // How long to give the user until auto-restart if no action is taken.
+  constexpr auto kCountdownDuration = base::TimeDelta::FromSeconds(30);
+  const base::TimeDelta time_lapsed = base::TimeTicks::Now() - bubble_created_;
+  return kCountdownDuration - time_lapsed;
 }
 
 void CriticalNotificationBubbleView::OnCountdown() {
@@ -67,8 +57,7 @@ void CriticalNotificationBubbleView::OnCountdown() {
     return;
   }
 
-  int seconds = GetRemainingTime();
-  if (seconds <= 0) {
+  if (GetRemainingTime() <= base::TimeDelta()) {
     // Time's up!
     upgrade_detector->acknowledge_critical_update();
 
@@ -85,11 +74,12 @@ void CriticalNotificationBubbleView::OnCountdown() {
 }
 
 base::string16 CriticalNotificationBubbleView::GetWindowTitle() const {
-  int seconds = GetRemainingTime();
-  return seconds > 0 ? l10n_util::GetPluralStringFUTF16(
-                           IDS_CRITICAL_NOTIFICATION_TITLE, seconds)
-                     : l10n_util::GetStringUTF16(
-                           IDS_CRITICAL_NOTIFICATION_TITLE_ALTERNATE);
+  const auto remaining_time = GetRemainingTime();
+  return remaining_time > base::TimeDelta()
+             ? l10n_util::GetPluralStringFUTF16(IDS_CRITICAL_NOTIFICATION_TITLE,
+                                                remaining_time.InSeconds())
+             : l10n_util::GetStringUTF16(
+                   IDS_CRITICAL_NOTIFICATION_TITLE_ALTERNATE);
 }
 
 void CriticalNotificationBubbleView::WindowClosing() {
@@ -139,9 +129,8 @@ void CriticalNotificationBubbleView::Init() {
       margins().width());
   AddChildView(std::move(message));
 
-  refresh_timer_.Start(FROM_HERE,
-      base::TimeDelta::FromMilliseconds(kRefreshBubbleEvery),
-      this, &CriticalNotificationBubbleView::OnCountdown);
+  refresh_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(1), this,
+                       &CriticalNotificationBubbleView::OnCountdown);
 
   base::RecordAction(UserMetricsAction("CriticalNotificationShown"));
 }

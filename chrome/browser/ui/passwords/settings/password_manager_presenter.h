@@ -60,11 +60,7 @@ class PasswordManagerPresenter
   // Gets the password exception entry at |index|.
   const autofill::PasswordForm* GetPasswordException(size_t index) const;
 
-  // Changes the username and password at |index|, or corresponding to
-  // |sort_key|.
-  void ChangeSavedPassword(size_t index,
-                           const base::string16& new_username,
-                           const base::Optional<base::string16>& new_password);
+  // Changes the username and password corresponding to |sort_key|.
   void ChangeSavedPassword(const std::string& sort_key,
                            const base::string16& new_username,
                            const base::Optional<base::string16>& new_password);

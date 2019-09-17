@@ -66,6 +66,7 @@
 <translation id="1407135791313364759">Alle öffnen</translation>
 <translation id="1409426117486808224">Vereinfachte Ansicht für geöffnete Tabs</translation>
 <translation id="1409879593029778104"><ph name="FILE_NAME" /> konnte nicht heruntergeladen werden, da die Datei bereits vorhanden ist.</translation>
+<translation id="1413136574162415971">Google kann prüfen, ob Ihre Passwörter von einer Datenpanne betroffen sind. Diese Funktion wird aktiviert, wenn Sie sich mit Ihrem Google-Konto anmelden und die Synchronisierung aktivieren.</translation>
 <translation id="1414981605391750300">Google wird kontaktiert. Das kann einen Moment dauern.</translation>
 <translation id="1416550906796893042">Anwendungsversion</translation>
 <translation id="1430915738399379752">Drucken</translation>
@@ -160,6 +161,7 @@
 <translation id="2091887806945687916">Ton</translation>
 <translation id="2096012225669085171">Geräteübergreifend synchronisieren und personalisieren</translation>
 <translation id="2100273922101894616">Automatisch anmelden</translation>
+<translation id="2100314319871056947">Bitte teilen Sie den Text in mehrere Abschnitte ein</translation>
 <translation id="2107397443965016585">Fragen, bevor Websites erlaubt wird, geschützten Inhalt wiederzugeben (empfohlen)</translation>
 <translation id="2111511281910874386">Seite aufrufen</translation>
 <translation id="2122601567107267586">App konnte nicht geöffnet werden</translation>
@@ -253,6 +255,7 @@
 <translation id="2836148919159985482">Tippen Sie zum Beenden des Vollbildmodus auf die Zurück-Taste.</translation>
 <translation id="2842985007712546952">Übergeordneter Ordner</translation>
 <translation id="2858138569776157458">Top-Websites</translation>
+<translation id="2860954141821109167">Prüfen Sie, ob auf diesem Gerät eine Telefon-App aktiviert ist</translation>
 <translation id="2870560284913253234">Website</translation>
 <translation id="2874939134665556319">Vorheriger Titel</translation>
 <translation id="2876369937070532032">URLs einiger von mir besuchter Seiten an Google senden, wenn meine Sicherheit gefährdet ist</translation>
@@ -277,6 +280,7 @@
 <translation id="2996291259634659425">Passphrase erstellen</translation>
 <translation id="2996809686854298943">URL erforderlich</translation>
 <translation id="300526633675317032">Der gesamte Websitespeicher (<ph name="SIZE_IN_KB" />) wird gelöscht.</translation>
+<translation id="3016635187733453316">Prüfen Sie, ob das Gerät mit dem Internet verbunden ist</translation>
 <translation id="3029613699374795922"><ph name="KBS" /> KB heruntergeladen</translation>
 <translation id="3029704984691124060">Passphrasen stimmen nicht überein.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Hilfe aufrufen<ph name="END_LINK" /></translation>
@@ -841,6 +845,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="723171743924126238">Bilder auswählen</translation>
 <translation id="7233236755231902816">Das Web in Ihrer Sprache – mit der aktuellen Version von Chrome</translation>
 <translation id="7243308994586599757">Optionen unten auf dem Bildschirm verfügbar</translation>
+<translation id="7248069434667874558">Prüfen Sie, ob auf "<ph name="TARGET_DEVICE_NAME" />" die Synchronisierung in Chrome aktiviert ist</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> ausgewählt</translation>
 <translation id="7274013316676448362">Blockierte Website</translation>
 <translation id="7290209999329137901">Umbenennen nicht verfügbar</translation>
@@ -955,6 +960,7 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="8007176423574883786">Für dieses Gerät deaktiviert</translation>
 <translation id="8013372441983637696">Meine Chrome-Daten auch von diesem Gerät löschen</translation>
 <translation id="8015452622527143194">Gesamten Seiteninhalt auf Standardgröße zurücksetzen</translation>
+<translation id="8015780634880457457">Google kann prüfen, ob Ihre Passwörter von einer Datenpanne betroffen sind</translation>
 <translation id="802154636333426148">Downloadfehler</translation>
 <translation id="8026334261755873520">Browserdaten löschen</translation>
 <translation id="8035133914807600019">Neuer Ordner…</translation>
@@ -1017,6 +1023,7 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="8445448999790540984">Passwörter können nicht exportiert werden</translation>
 <translation id="8447861592752582886">Zugriffsberechtigung auf Gerät widerrufen</translation>
 <translation id="8461694314515752532">Synchronisierte Daten mit eigener Synchronisierungspassphrase verschlüsseln</translation>
+<translation id="8466613982764129868">Prüfen Sie, ob "<ph name="TARGET_DEVICE_NAME" />" mit dem Internet verbunden ist</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Offline verfügbar</translation>
 <translation id="8489271220582375723">Verlaufsseite öffnen</translation>
@@ -1107,6 +1114,7 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="9188680907066685419">Von verwaltetem Konto abmelden</translation>
 <translation id="9204836675896933765">Noch 1 Datei</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9209888181064652401">Es können keine Anrufe getätigt werden</translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="926205370408745186">Chrome-Aktivitäten aus Digital Wellbeing entfernen</translation>
 <translation id="932327136139879170">Privat</translation>

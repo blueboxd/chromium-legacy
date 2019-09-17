@@ -79,10 +79,10 @@ std::unique_ptr<ProtoDatabase<P, T>> ProtoDatabaseProvider::GetDB(
     ProtoDbType db_type,
     const base::FilePath& unique_db_dir,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
-  return base::WrapUnique(new ProtoDatabaseImpl<P, T>(
+  return std::make_unique<ProtoDatabaseImpl<P, T>>(
       db_type, unique_db_dir, task_runner,
       base::WrapUnique(new SharedProtoDatabaseProvider(
-          client_task_runner_, weak_factory_.GetWeakPtr()))));
+          client_task_runner_, weak_factory_.GetWeakPtr())));
 }
 
 }  // namespace leveldb_proto

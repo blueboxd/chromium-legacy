@@ -177,9 +177,9 @@ const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_MEDIA_PLAY_PAUSE, ui::EF_NONE, MEDIA_PLAY_PAUSE},
     {true, ui::VKEY_MEDIA_PREV_TRACK, ui::EF_NONE, MEDIA_PREV_TRACK},
 
-    // Voice Interaction shortcuts.
-    {true, ui::VKEY_A, ui::EF_COMMAND_DOWN, START_VOICE_INTERACTION},
-    {true, ui::VKEY_ASSISTANT, ui::EF_NONE, START_VOICE_INTERACTION},
+    // Assistant shortcuts.
+    {true, ui::VKEY_A, ui::EF_COMMAND_DOWN, START_ASSISTANT},
+    {true, ui::VKEY_ASSISTANT, ui::EF_NONE, START_ASSISTANT},
 
     // IME mode change key.
     {true, ui::VKEY_MODECHANGE, ui::EF_NONE, SWITCH_TO_NEXT_IME},

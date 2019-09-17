@@ -17,6 +17,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.UrlConstants;
+import org.chromium.chrome.browser.util.ViewUtils;
+import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.NavigationHistory;
@@ -34,15 +36,14 @@ import java.util.Set;
  * Mediattor class for navigation sheet.
  */
 class NavigationSheetMediator {
-    private final Context mContext;
     private final ClickListener mClickListener;
     private final FaviconHelper mFaviconHelper;
+    private final RoundedIconGenerator mIconGenerator;
     private final int mFaviconSize;
     private final ModelList mModelList;
     private final Drawable mHistoryIcon;
 
     private NavigationHistory mHistory;
-    private FaviconHelper.DefaultFaviconHelper mDefaultFaviconHelper;
 
     /**
      * Performs an action when a navigation item is clicked.
@@ -72,10 +73,10 @@ class NavigationSheetMediator {
     }
 
     NavigationSheetMediator(Context context, ModelList modelList, ClickListener listener) {
-        mContext = context;
         mModelList = modelList;
         mClickListener = listener;
         mFaviconHelper = new FaviconHelper();
+        mIconGenerator = ViewUtils.createDefaultRoundedIconGenerator(context.getResources(), true);
         mFaviconSize = context.getResources().getDimensionPixelSize(R.dimen.default_favicon_size);
         mHistoryIcon = TintedDrawable.constructTintedDrawable(
                 context, R.drawable.ic_history_googblue_24dp, R.color.default_icon_color);
@@ -117,7 +118,6 @@ class NavigationSheetMediator {
      */
     void clear() {
         mModelList.clear();
-        if (mDefaultFaviconHelper != null) mDefaultFaviconHelper.clearCache();
     }
 
     /**
@@ -129,14 +129,9 @@ class NavigationSheetMediator {
         // This callback can come after the sheet is hidden (which clears modelList).
         // Do nothing if that happens.
         if (mModelList.size() == 0) return;
-        if (favicon == null) {
-            if (mDefaultFaviconHelper == null) {
-                mDefaultFaviconHelper = new FaviconHelper.DefaultFaviconHelper();
-            }
-            favicon = mDefaultFaviconHelper.getDefaultFaviconBitmap(mContext, pageUrl, true);
-        }
         for (int i = 0; i < mHistory.getEntryCount(); i++) {
             if (TextUtils.equals(pageUrl, mHistory.getEntryAtIndex(i).getUrl())) {
+                if (favicon == null) favicon = mIconGenerator.generateIconForUrl(pageUrl);
                 mModelList.get(i).model.set(ItemProperties.ICON, new BitmapDrawable(favicon));
             }
         }

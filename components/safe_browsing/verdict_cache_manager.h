@@ -12,13 +12,10 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "url/gurl.h"
-
-namespace history {
-class HistoryService;
-}
 
 class HostContentSettingsMap;
 
@@ -105,7 +102,7 @@ class VerdictCacheManager : public history::HistoryServiceObserver {
   base::Optional<size_t> stored_verdict_count_password_entry_;
 
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
-      history_service_observer_;
+      history_service_observer_{this};
 
   // Content settings maps associated with this instance.
   scoped_refptr<HostContentSettingsMap> content_settings_;

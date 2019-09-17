@@ -69,7 +69,7 @@ class FakeRecommendAppsFetcher : public RecommendAppsFetcher {
     EXPECT_TRUE(started_);
     base::Value app_list(base::Value::Type::LIST);
     for (const auto& app : apps) {
-      app_list.GetList().emplace_back(app.ToValue());
+      app_list.Append(app.ToValue());
     }
     delegate_->OnLoadSuccess(app_list);
   }
@@ -296,8 +296,8 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, BasicSelection) {
   ASSERT_TRUE(fast_reinstall_packages);
 
   base::Value expected_pref_value(base::Value::Type::LIST);
-  expected_pref_value.GetList().emplace_back("test.app.foo.app1");
-  expected_pref_value.GetList().emplace_back("test.app.foo.app2");
+  expected_pref_value.Append("test.app.foo.app1");
+  expected_pref_value.Append("test.app.foo.app2");
   EXPECT_EQ(expected_pref_value, *fast_reinstall_packages);
 }
 
@@ -369,7 +369,7 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenTest, SelectionChange) {
   ASSERT_TRUE(fast_reinstall_packages);
 
   base::Value expected_pref_value(base::Value::Type::LIST);
-  expected_pref_value.GetList().emplace_back("test.app.foo.app2");
+  expected_pref_value.Append("test.app.foo.app2");
   EXPECT_EQ(expected_pref_value, *fast_reinstall_packages);
 }
 

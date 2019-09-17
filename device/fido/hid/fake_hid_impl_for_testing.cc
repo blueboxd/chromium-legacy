@@ -127,13 +127,14 @@ FakeFidoHidManager::FakeFidoHidManager() = default;
 
 FakeFidoHidManager::~FakeFidoHidManager() = default;
 
-void FakeFidoHidManager::AddBinding(mojo::ScopedMessagePipeHandle handle) {
-  bindings_.AddBinding(this,
-                       device::mojom::HidManagerRequest(std::move(handle)));
+void FakeFidoHidManager::AddReceiver(mojo::ScopedMessagePipeHandle handle) {
+  receivers_.Add(this, mojo::PendingReceiver<device::mojom::HidManager>(
+                           std::move(handle)));
 }
 
-void FakeFidoHidManager::AddBinding2(device::mojom::HidManagerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void FakeFidoHidManager::AddReceiver2(
+    mojo::PendingReceiver<device::mojom::HidManager> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void FakeFidoHidManager::AddFidoHidDevice(std::string guid) {
@@ -216,7 +217,7 @@ ScopedFakeFidoHidManager::ScopedFakeFidoHidManager() {
   connector_->OverrideBinderForTesting(
       service_manager::ServiceFilter::ByName(device::mojom::kServiceName),
       device::mojom::HidManager::Name_,
-      base::BindRepeating(&FakeFidoHidManager::AddBinding,
+      base::BindRepeating(&FakeFidoHidManager::AddReceiver,
                           base::Unretained(this)));
 }
 

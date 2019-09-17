@@ -96,8 +96,6 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
   bool IsReadOnly() const;
   bool IsDisabledOrReadOnly() const;
 
-  bool IsAutofocusable() const;
-
   bool MayTriggerVirtualKeyboard() const override;
 
   WebAutofillState GetAutofillState() const { return autofill_state_; }
@@ -153,7 +151,6 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
   void DidRecalcStyle(const StyleRecalcChange) override;
 
   virtual void ResetImpl() {}
-  virtual bool SupportsAutofocus() const;
 
  private:
   bool IsFormControlElement() const final { return true; }

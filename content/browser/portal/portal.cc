@@ -78,6 +78,13 @@ Portal* Portal::Create(
     RenderFrameHostImpl* owner_render_frame_host,
     mojo::PendingAssociatedReceiver<blink::mojom::Portal> receiver,
     mojo::PendingAssociatedRemote<blink::mojom::PortalClient> client) {
+  if (!IsEnabled()) {
+    mojo::ReportBadMessage(
+        "blink.mojom.Portal can only be used if the Portals feature is "
+        "enabled.");
+    return nullptr;
+  }
+
   auto portal_ptr = base::WrapUnique(new Portal(owner_render_frame_host));
   Portal* portal = portal_ptr.get();
   portal->binding_ = mojo::MakeStrongAssociatedBinding<blink::mojom::Portal>(
@@ -97,6 +104,13 @@ void Portal::BindPortalHostReceiver(
     RenderFrameHostImpl* frame,
     mojo::PendingAssociatedReceiver<blink::mojom::PortalHost>
         pending_receiver) {
+  if (!IsEnabled()) {
+    mojo::ReportBadMessage(
+        "blink.mojom.PortalHost can only be used if the Portals feature is "
+        "enabled.");
+    return;
+  }
+
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(frame));
 

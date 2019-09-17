@@ -66,6 +66,7 @@
 <translation id="1407135791313364759">সব খুলুন</translation>
 <translation id="1409426117486808224">খোলা ট্যাবের জন্য সরলীকৃত ভিউ</translation>
 <translation id="1409879593029778104">ফাইল ইতিমধ্যেই থাকায় <ph name="FILE_NAME" /> ডাউনলোড আটকানো হয়েছে।</translation>
+<translation id="1413136574162415971">আপনার পাসওয়ার্ড কোনও ডেটার নিরাপত্তা লঙ্ঘনের অংশ ছিল কিনা তা Google যাচাই করতে পারে। আপনার Google অ্যাকাউন্ট ব্যবহার করে সাইন-ইন করে সিঙ্ক চালু করলেই এটি চালু হয়ে যাবে।</translation>
 <translation id="1414981605391750300">Google এর সাথে যোগাযোগ করা হচ্ছে। এতে একটু সময় লাগবে…</translation>
 <translation id="1416550906796893042">অ্যাপ্লিকেশন ভার্সন</translation>
 <translation id="1430915738399379752">প্রিন্ট</translation>
@@ -160,6 +161,7 @@
 <translation id="2091887806945687916">আওয়াজ</translation>
 <translation id="2096012225669085171">বিভিন্ন ডিভাইস জুড়ে সিঙ্ক এবং ব্যক্তিগতকৃত করুন</translation>
 <translation id="2100273922101894616">অটো সাইন-ইন</translation>
+<translation id="2100314319871056947">টেক্সটটি ছোট ছোট ভাগে ভাগ করে পাঠানোর চেষ্টা করুন</translation>
 <translation id="2107397443965016585">সাইটকে সুরক্ষিত কন্টেন্ট চালানোর অনুমতি দেওয়ার আগে জিজ্ঞাসা করুন (প্রস্তাবিত)</translation>
 <translation id="2111511281910874386">এই পৃষ্ঠাতে যান</translation>
 <translation id="2122601567107267586">অ্যাপটি খোলা যায়নি</translation>
@@ -253,6 +255,7 @@
 <translation id="2836148919159985482">পূর্ণ স্ক্রিন থেকে বেরিয়ে যেতে পিছনে ফেরার বোতাম স্পর্শ করুন।</translation>
 <translation id="2842985007712546952">অভিভাবক ফোল্ডার</translation>
 <translation id="2858138569776157458">সেরা সাইট</translation>
+<translation id="2860954141821109167">এই ডিভাইসে ফোন অ্যাপ চালু করা আছে কিনা দেখে নিন</translation>
 <translation id="2870560284913253234">সাইট</translation>
 <translation id="2874939134665556319">পূর্ববর্তী ট্র্যাক</translation>
 <translation id="2876369937070532032">নিরাপত্তা সংক্রান্ত কোনও ঝুঁকি থাকলে, আপনার দেখা কিছু পৃষ্ঠার ইউআরএল Google-কে পাঠায়</translation>
@@ -277,6 +280,7 @@
 <translation id="2996291259634659425">পাসফ্রেজ তৈরি করুন</translation>
 <translation id="2996809686854298943">URL প্রয়োজন</translation>
 <translation id="300526633675317032">এটা ওয়েবসাইট স্টোরেজের <ph name="SIZE_IN_KB" />-এর পুরোটা সাফ করবে।</translation>
+<translation id="3016635187733453316">এই ডিভাইসটি ইন্টারনেটে কানেক্ট করা আছে কিনা দেখে নিন</translation>
 <translation id="3029613699374795922"><ph name="KBS" /> KB ডাউনলোড হয়েছে</translation>
 <translation id="3029704984691124060">পাসফ্রেজসমূহ মেলে না</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />সহায়তা পান<ph name="END_LINK" /></translation>
@@ -843,6 +847,7 @@
 <translation id="723171743924126238">ছবি বেছে নিন</translation>
 <translation id="7233236755231902816">ওয়েবের কন্টেন্ট নিজের ভাষায় পড়তে, Chrome-এর লেটেস্ট ভার্সন ইনস্টল করুন</translation>
 <translation id="7243308994586599757">স্ক্রীনের প্রায় নীচের দিকে বিকল্পগুলি উপলব্ধ</translation>
+<translation id="7248069434667874558">Chrome-এ <ph name="TARGET_DEVICE_NAME" /> সিঙ্ক করার ফিচার চালু করে রেখেছেন কিনা দেখে নিন।</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" />টি বেছে নেওয়া হয়েছে</translation>
 <translation id="7274013316676448362">অবরুদ্ধ সাইট</translation>
 <translation id="7290209999329137901">আবার নামকরণের বিকল্পটি উপলভ্য নেই</translation>
@@ -957,6 +962,7 @@
 <translation id="8007176423574883786">এই ডিভাইসের জন্য বন্ধ করা আছে</translation>
 <translation id="8013372441983637696">এছাড়া এই ডিভাইস থেকে Chrome ডেটা সরিয়ে ফেলুন</translation>
 <translation id="8015452622527143194">পৃষ্ঠার সবকিছুকে ডিফল্ট আকারে ফিরিয়ে আনুন</translation>
+<translation id="8015780634880457457">আপনার পাসওয়ার্ড কোনও ডেটার নিরাপত্তা লঙ্ঘনের অংশ ছিল কিনা তা Google যাচাই করতে পারে</translation>
 <translation id="802154636333426148">ডাউনলোড করা যায়নি</translation>
 <translation id="8026334261755873520">ব্রাউজ করা ডেটা সাফ করুন</translation>
 <translation id="8035133914807600019">নতুন ফোল্ডার...</translation>
@@ -1019,6 +1025,7 @@
 <translation id="8445448999790540984">পাসওয়ার্ড এক্সপোর্ট করা যাচ্ছে না</translation>
 <translation id="8447861592752582886">ডিভাইসের অনুমতি প্রত্যাহার করুন</translation>
 <translation id="8461694314515752532">আপনার নিজস্ব সিঙ্ক পাসফ্রেজ দিয়ে সিঙ্ক করা ডেটা এনক্রিপ্ট করুন</translation>
+<translation id="8466613982764129868"><ph name="TARGET_DEVICE_NAME" /> ডিভাইসটি ইন্টারনেটের সাথে কানেক্ট করা আছে কিনা দেখে নিন</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">অফলাইনে উপলব্ধ</translation>
 <translation id="8489271220582375723">ইতিহাস পৃষ্ঠাটি খুলুন</translation>
@@ -1109,6 +1116,7 @@
 <translation id="9188680907066685419">ম্যানেজ করা অ্যাকাউন্ট থেকে সাইন-আউট করুন</translation>
 <translation id="9204836675896933765">১টি ফাইল বাকি</translation>
 <translation id="9206873250291191720">আ</translation>
+<translation id="9209888181064652401">কল করা যাচ্ছে না</translation>
 <translation id="9219103736887031265">ছবিগুলি</translation>
 <translation id="926205370408745186">ডিজিটাল ওয়েলবিং থেকে আপনার Chrome অ্যাক্টিভিটি সরিয়ে দিন</translation>
 <translation id="932327136139879170">হোম</translation>

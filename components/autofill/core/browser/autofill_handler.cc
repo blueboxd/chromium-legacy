@@ -88,20 +88,13 @@ void AutofillHandler::OnFormsSeen(const std::vector<FormData>& forms,
     // Try to find the FormStructure that corresponds to |form| if the form
     // contains credit card fields only.
     // |cached_form_structure| may still be nullptr after this call.
-    if (base::FeatureList::IsEnabled(features::kAutofillImportDynamicForms)) {
-      ignore_result(FindCachedForm(form, &cached_form_structure));
-      bool only_contains_credit_card_fields = true;
-      if (cached_form_structure) {
-        for (const FormType& form_type :
-             cached_form_structure->GetFormTypes()) {
-          if (form_type != CREDIT_CARD_FORM) {
-            only_contains_credit_card_fields = false;
-            break;
-          }
+    ignore_result(FindCachedForm(form, &cached_form_structure));
+    if (cached_form_structure) {
+      for (const FormType& form_type : cached_form_structure->GetFormTypes()) {
+        if (form_type != CREDIT_CARD_FORM) {
+          cached_form_structure = nullptr;
+          break;
         }
-      }
-      if (!only_contains_credit_card_fields) {
-        cached_form_structure = nullptr;
       }
     }
 

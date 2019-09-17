@@ -20,6 +20,7 @@
 
     <!-- Tab Actions -->
     <item type="id" name="close_tab" />
+    <item type="id" name="ungroup_tab" />
 
     <!-- InfoBar constants -->
     <item type="id" name="infobar_icon" />

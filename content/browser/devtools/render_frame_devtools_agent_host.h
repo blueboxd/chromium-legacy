@@ -33,7 +33,7 @@ namespace content {
 class BrowserContext;
 class DevToolsFrameTraceRecorder;
 class FrameTreeNode;
-class NavigationHandleImpl;
+class NavigationRequest;
 class RenderFrameHostImpl;
 struct DevToolsFrameMetadata;
 
@@ -59,7 +59,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   // This method is called when new frame is created during cross process
   // navigation.
   static scoped_refptr<DevToolsAgentHost> CreateForCrossProcessNavigation(
-      NavigationHandleImpl* handle);
+      NavigationRequest* request);
   static scoped_refptr<DevToolsAgentHost> FindForDangling(
       FrameTreeNode* frame_tree_node);
 
@@ -142,7 +142,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   // The active host we are talking to.
   RenderFrameHostImpl* frame_host_ = nullptr;
-  base::flat_set<NavigationHandleImpl*> navigation_handles_;
+  base::flat_set<NavigationRequest*> navigation_requests_;
   bool render_frame_alive_ = false;
   void* active_file_chooser_interceptor_ = nullptr;
 

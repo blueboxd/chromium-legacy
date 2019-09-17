@@ -69,8 +69,8 @@ TEST_F(UsageTimeLimitProcessorInternalTest, TimeLimitWindowValid) {
       base::TimeDelta::FromMinutes(8 * 60 + 20), last_updated);
 
   base::Value window_limit_entries(base::Value::Type::LIST);
-  window_limit_entries.GetList().push_back(std::move(monday_time_limit));
-  window_limit_entries.GetList().push_back(std::move(friday_time_limit));
+  window_limit_entries.Append(std::move(monday_time_limit));
+  window_limit_entries.Append(std::move(friday_time_limit));
 
   base::Value time_window_limit = base::Value(base::Value::Type::DICTIONARY);
   time_window_limit.SetKey("entries", std::move(window_limit_entries));
@@ -173,8 +173,8 @@ TEST_F(UsageTimeLimitProcessorInternalTest, OverrideValid) {
       base::Value(utils::CreatePolicyTimestamp("1 Jan 2018 9:00:00")));
 
   base::Value overrides(base::Value::Type::LIST);
-  overrides.GetList().push_back(std::move(override_one));
-  overrides.GetList().push_back(std::move(override_two));
+  overrides.Append(std::move(override_one));
+  overrides.Append(std::move(override_two));
 
   // Call tested functions.
   base::Optional<TimeLimitOverride> override_struct =
@@ -219,9 +219,9 @@ TEST_F(UsageTimeLimitProcessorInternalTest, OverrideWithDurationValid) {
       base::Value(utils::CreatePolicyTimestamp("1 Jan 2018 8:00:00")));
 
   base::Value overrides(base::Value::Type::LIST);
-  overrides.GetList().push_back(std::move(override_one));
-  overrides.GetList().push_back(std::move(override_two));
-  overrides.GetList().push_back(std::move(override_three));
+  overrides.Append(std::move(override_one));
+  overrides.Append(std::move(override_two));
+  overrides.Append(std::move(override_three));
 
   // Call tested functions.
   base::Optional<TimeLimitOverride> override_struct =
@@ -262,10 +262,10 @@ TEST_F(UsageTimeLimitProcessorInternalTest, MultipleOverrides) {
   override_two.SetKey("created_at_millis", base::Value("1200000"));
 
   base::Value overrides(base::Value::Type::LIST);
-  overrides.GetList().push_back(std::move(override_one));
-  overrides.GetList().push_back(std::move(override_two));
-  overrides.GetList().push_back(std::move(override_three));
-  overrides.GetList().push_back(std::move(override_four));
+  overrides.Append(std::move(override_one));
+  overrides.Append(std::move(override_two));
+  overrides.Append(std::move(override_three));
+  overrides.Append(std::move(override_four));
 
   // Call tested functions.
   base::Optional<TimeLimitOverride> override_struct =

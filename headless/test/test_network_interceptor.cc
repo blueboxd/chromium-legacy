@@ -49,8 +49,7 @@ class RedirectLoader : public network::mojom::URLLoader {
  private:
   void NotifyRedirect(const std::string& location) {
     auto redirect_info = net::RedirectInfo::ComputeRedirectInfo(
-        url_request_.method, url_request_.url, url_request_.request_initiator,
-        url_request_.site_for_cookies,
+        url_request_.method, url_request_.url, url_request_.site_for_cookies,
         net::URLRequest::FirstPartyURLPolicy::
             UPDATE_FIRST_PARTY_URL_ON_REDIRECT,
         url_request_.referrer_policy, url_request_.referrer.spec(),

@@ -185,9 +185,9 @@
 <translation id="544077782045763683">Host is afgesloten.</translation>
 <translation id="5463789431147491241">Volg deze stappen om <ph name="PRODUCT_NAME" /> te gebruiken op deze Mac:
 
-Selecteer '<ph name="BUTTON_NAME" />' hieronder. Vink in je voorkeuren voor beveiliging en privacy het selectievakje naast '<ph name="SERVICE_SCRIPT_NAME" />' aan.
+Selecteer '<ph name="BUTTON_NAME" />' hieronder. Vink het selectievakje naast '<ph name="SERVICE_SCRIPT_NAME" />' aan in je voorkeuren voor beveiliging en privacy.
 
-Als '<ph name="SERVICE_SCRIPT_NAME" />' al is aangevinkt, vink je dit uit en opnieuw aan.</translation>
+Als '<ph name="SERVICE_SCRIPT_NAME" />' al is aangevinkt, vink je dit eerst uit en opnieuw aan.</translation>
 <translation id="5510035215749041527">Nu verbinding verbreken</translation>
 <translation id="5593560073513909978">De service is tijdelijk niet beschikbaar. Probeer het later opnieuw.</translation>
 <translation id="5601503069213153581">Pincode</translation>
@@ -304,7 +304,7 @@ Als '<ph name="SERVICE_SCRIPT_NAME" />' al is aangevinkt, vink je dit uit en opn
 <translation id="837021510621780684">Vanaf deze computer</translation>
 <translation id="8383794970363966105">Als je Chromoting wilt gebruiken, moet je een Google-account aan je apparaat toevoegen</translation>
 <translation id="8386846956409881180">Host is geconfigureerd met ongeldige OAuth-inloggegevens.</translation>
-<translation id="8406498562923498210">Selecteer een sessie om te starten in je Chrome Remote Desktop-omgeving. (Houd er rekening mee dat bepaalde sessietypen niet tegelijkertijd kunnen worden uitgevoerd in Chrome Remote Desktop en op de lokale console.)</translation>
+<translation id="8406498562923498210">Selecteer een sessie om te starten in je Chrome Remote Desktop-omgeving. (Houd er rekening mee dat sommige sessies niet tegelijkertijd in Chrome Remote Desktop en op de lokale console kunnen worden uitgevoerd.)</translation>
 <translation id="8428213095426709021">Instellingen</translation>
 <translation id="8445362773033888690">Bekijken in de Google Play Store</translation>
 <translation id="8509907436388546015">Desktopintegratieproces</translation>

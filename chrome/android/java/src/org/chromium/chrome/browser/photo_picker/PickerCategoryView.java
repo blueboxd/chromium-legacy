@@ -62,7 +62,7 @@ public class PickerCategoryView extends RelativeLayout
      * A container class for keeping track of the data we need to show a photo/video tile in the
      * photo picker (the data we store in the cache).
      */
-    static public class Thumbnail {
+    public static class Thumbnail {
         public List<Bitmap> bitmaps;
         public String videoDuration;
 
@@ -186,7 +186,6 @@ public class PickerCategoryView extends RelativeLayout
                 false);
         toolbar.setNavigationOnClickListener(this);
         toolbar.setDelegate(delegate);
-        toolbar.showBackArrow();
         Button doneButton = (Button) toolbar.findViewById(R.id.done);
         doneButton.setOnClickListener(this);
         mVideoView = findViewById(R.id.video_player);

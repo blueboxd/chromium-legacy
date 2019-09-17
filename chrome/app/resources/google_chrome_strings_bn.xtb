@@ -53,6 +53,9 @@
 <translation id="2094919256425865063">তা স্বত্তেও Chrome বন্ধ করবেন?</translation>
 <translation id="2120620239521071941">এটি এই ডিভাইস থেকে <ph name="ITEMS_COUNT" />টি আইটেম মুছে দেবে। আপনার ডেটা পরে পুনরুদ্ধার করার জন্য, Chrome-এ <ph name="USER_EMAIL" /> হিসেবে সাইন-ইন করুন।</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />বর্তমান সেটিংস<ph name="END_LINK" />-এর রিপোর্ট করে Chrome-কে আরও ভাল করে তুলতে সাহায্য করুন</translation>
+<translation id="2128103434102193461">Chrome OS-এর বিশদ বিবরণ পেতে <ph name="LINK_BEGIN" />
+      Chrome OS সম্পর্কে<ph name="LINK_END" /> পৃষ্ঠা দেখুন</translation>
+<translation id="2151406531797534936">এখনই Chrome রিস্টার্ট করুন</translation>
 <translation id="216054706567564023">আপনার ফোনে Chrome ইনস্টল করুন। আমরা আপনার অ্যাকাউন্ট ফিরিয়ে আনার ফোন নম্বরে একটি এসএমএস পাঠাব।</translation>
 <translation id="2246246234298806438">বিলট-ইন PDF viewer অনুপস্থিত থাকার সময়ে Google Chrome প্রিন্ট প্রিভিউ দেখাতে পারে না৷</translation>
 <translation id="2252923619938421629">বর্তমান সেটিংস রিপোর্ট করে Google Chrome আরও ভালো করে তুলতে সাহায্য করুন</translation>
@@ -223,6 +226,7 @@
 <translation id="7589360514048265910">এই কম্পিউটারটি আর Google Chrome এর আপডেট গ্রহণ করবে না কারণ এই Mac OS X 10.9 আর সমর্থিত নয়৷</translation>
 <translation id="7592736734348559088">Google Chrome আপনার অ্যাকাউন্ট সাইন-ইন বিশদ বিবরণটি পুরনো হওয়ার কারণে সিঙ্ক করতে পারেনি৷</translation>
 <translation id="7626032353295482388">Chrome এ স্বাগতম</translation>
+<translation id="7629695634924605473">আপনার পাসওয়ার্ড কখনও চুরি হলে তা Chrome আপনাকে জানিয়ে দেবে</translation>
 <translation id="7641148173327520642"><ph name="TARGET_URL_HOSTNAME" /> অ্যাক্সেস করতে <ph name="ALTERNATIVE_BROWSER_NAME" /> ব্যবহার করার জন্য আপনার সিস্টেম অ্যাডমিনিস্ট্রেটর Google Chrome কনফিগার করেছে।</translation>
 <translation id="7651907282515937834">Chrome এন্টারপ্রাইজ লোগো</translation>
 <translation id="7747138024166251722">ইনস্টলারটি অস্থায়ী ডাইরেক্টরি তৈরি করতে পারে নি৷ অনুগ্রহ করে খালি ডিস্ক স্পেশ এবং সফটওয়্যারটি ইনস্টল করার অনুমতি যাচাই করে নিন৷</translation>

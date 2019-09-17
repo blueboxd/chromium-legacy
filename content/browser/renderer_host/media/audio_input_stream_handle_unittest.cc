@@ -14,7 +14,8 @@
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "media/audio/audio_input_delegate.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -80,9 +81,11 @@ std::unique_ptr<media::AudioInputDelegate> CreateFakeDelegate(
 class AudioInputStreamHandleTest : public Test {
  public:
   AudioInputStreamHandleTest()
-      : client_binding_(&client_, mojo::MakeRequest(&client_ptr_)),
+      : client_receiver_(
+            &client_,
+            client_pending_remote_.InitWithNewPipeAndPassReceiver()),
         handle_(std::make_unique<AudioInputStreamHandle>(
-            std::move(client_ptr_),
+            std::move(client_pending_remote_),
             base::BindOnce(&CreateFakeDelegate, &event_handler_),
             deleter_.Get())),
         local_(std::make_unique<base::CancelableSyncSocket>()),
@@ -109,7 +112,7 @@ class AudioInputStreamHandleTest : public Test {
 
   MockRendererAudioInputStreamFactoryClient* client() { return &client_; }
 
-  void UnbindClientBinding() { client_binding_.Unbind(); }
+  void ResetClientReceiver() { client_receiver_.reset(); }
 
   void ExpectHandleWillCallDeleter() {
     EXPECT_CALL(deleter_, Run(handle_.release()))
@@ -124,8 +127,9 @@ class AudioInputStreamHandleTest : public Test {
  private:
   base::test::SingleThreadTaskEnvironment task_environment_;
   StrictMock<MockRendererAudioInputStreamFactoryClient> client_;
-  mojom::RendererAudioInputStreamFactoryClientPtr client_ptr_;
-  mojo::Binding<mojom::RendererAudioInputStreamFactoryClient> client_binding_;
+  mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+      client_pending_remote_;
+  mojo::Receiver<mojom::RendererAudioInputStreamFactoryClient> client_receiver_;
   StrictMock<MockDeleter> deleter_;
   media::AudioInputDelegate::EventHandler* event_handler_ = nullptr;
   std::unique_ptr<AudioInputStreamHandle> handle_;
@@ -148,7 +152,7 @@ TEST_F(AudioInputStreamHandleTest,
        DestructClientBeforeCreationFinishes_CancelsStreamCreation) {
   ExpectHandleWillCallDeleter();
 
-  UnbindClientBinding();
+  ResetClientReceiver();
   base::RunLoop().RunUntilIdle();
 
   VerifyDeleterWasCalled();
@@ -165,7 +169,7 @@ TEST_F(AudioInputStreamHandleTest,
 
   ExpectHandleWillCallDeleter();
 
-  UnbindClientBinding();
+  ResetClientReceiver();
   base::RunLoop().RunUntilIdle();
 
   VerifyDeleterWasCalled();

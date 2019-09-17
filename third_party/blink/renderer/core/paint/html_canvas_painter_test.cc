@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "cc/layers/layer.h"
+#include "components/viz/test/test_context_provider.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
@@ -16,8 +17,7 @@
 #include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_2d_layer_bridge.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
-#include "third_party/blink/renderer/platform/graphics/test/fake_gles2_interface.h"
-#include "third_party/blink/renderer/platform/graphics/test/fake_web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/platform/graphics/test/gpu_test_utils.h"
 #include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
@@ -33,14 +33,8 @@ class HTMLCanvasPainterTestForCAP : public PaintControllerPaintTest {
 
  protected:
   void SetUp() override {
-    auto factory = [](FakeGLES2Interface* gl, bool* gpu_compositing_disabled)
-        -> std::unique_ptr<WebGraphicsContext3DProvider> {
-      *gpu_compositing_disabled = false;
-      gl->SetIsContextLost(false);
-      return std::make_unique<FakeWebGraphicsContext3DProvider>(gl);
-    };
-    SharedGpuContext::SetContextProviderFactoryForTesting(
-        WTF::BindRepeating(factory, WTF::Unretained(&gl_)));
+    test_context_provider_ = viz::TestContextProvider::Create();
+    InitializeSharedGpuContext(test_context_provider_.get());
     PaintControllerPaintTest::SetUp();
   }
 
@@ -68,7 +62,7 @@ class HTMLCanvasPainterTestForCAP : public PaintControllerPaintTest {
   }
 
  private:
-  FakeGLES2Interface gl_;
+  scoped_refptr<viz::TestContextProvider> test_context_provider_;
 };
 
 INSTANTIATE_CAP_TEST_SUITE_P(HTMLCanvasPainterTestForCAP);

@@ -33,6 +33,7 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/favicon_url.h"
 #include "content/public/common/resource_load_info.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -376,12 +377,13 @@ void CastWebContentsImpl::RenderFrameCreated(
   media_playback_options->SetUseCmaRenderer(use_cma_renderer_);
 
   // Send queryable values
-  chromecast::shell::mojom::QueryableDataStorePtr queryable_data_store_ptr;
+  mojo::Remote<chromecast::shell::mojom::QueryableDataStore>
+      queryable_data_store_remote;
   render_frame_host->GetRemoteInterfaces()->GetInterface(
-      &queryable_data_store_ptr);
+      queryable_data_store_remote.BindNewPipeAndPassReceiver());
   for (const auto& value : QueryableData::GetValues()) {
     // base::Value is not copyable.
-    queryable_data_store_ptr->Set(value.first, value.second.Clone());
+    queryable_data_store_remote->Set(value.first, value.second.Clone());
   }
 }
 

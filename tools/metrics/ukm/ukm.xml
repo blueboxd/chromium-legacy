@@ -213,7 +213,7 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
-<event name="AdPageLoad">
+<event name="AdPageLoad" singular="True">
   <owner>johnidel@chromium.org</owner>
   <owner>jkarlin@chromium.org</owner>
   <summary>
@@ -1068,6 +1068,15 @@ be describing additional metrics about the same event.
     <summary>
       The system which generated the prediction: heuristics, server, overall.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.ActualType,metrics.PredictedType"/>
+        <index fields="metrics.PredictedType"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="ValidationEvent" enum="AutofillQualitiyMetricType">
     <summary>

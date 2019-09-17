@@ -901,7 +901,9 @@ TEST_F(TabLifecycleUnitTest, DisableHeuristicsFlag) {
   decision_details.Clear();
 }
 
-TEST_F(TabLifecycleUnitTest, CannotFreezeOrDiscardIfConnectedToBluetooth) {
+// TODO(crbug.com/1004578) Disabled due to flake
+TEST_F(TabLifecycleUnitTest,
+       DISABLED_CannotFreezeOrDiscardIfConnectedToBluetooth) {
   TabLifecycleUnit tab_lifecycle_unit(GetTabLifecycleUnitSource(), &observers_,
                                       usage_clock_.get(), web_contents_,
                                       tab_strip_model_.get());

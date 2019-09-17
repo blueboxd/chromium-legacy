@@ -8,7 +8,6 @@
 #import <Foundation/Foundation.h>
 
 class OverlayRequest;
-class JavaScriptDialogSource;
 @protocol AlertConsumer;
 @protocol JavaScriptDialogOverlayMediatorDelegate;
 
@@ -18,9 +17,6 @@ class JavaScriptDialogSource;
 
 // The request passed on initialization.
 @property(nonatomic, readonly) OverlayRequest* request;
-
-// Returns the source for the OverlayRequest.
-@property(nonatomic, readonly) const JavaScriptDialogSource* requestSource;
 
 // The consumer to be updated by this mediator.  Setting to a new value uses the
 // configuration data in |request| to update the new consumer.

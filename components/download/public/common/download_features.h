@@ -53,6 +53,10 @@ COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
 // Whether parallel download is used for QUIC connections.
 COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature
     kUseParallelRequestsForQUIC;
+
+// Whether to delete expired download.
+COMPONENTS_DOWNLOAD_EXPORT extern const base::Feature kDeleteExpiredDownloads;
+
 }  // namespace features
 
 }  // namespace download

@@ -23,6 +23,7 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">വിലാസ ബാറിലെ നിങ്ങളുടെ ഇന്‍‌പുട്ടിൽ www., .com എന്നിവ ചേർത്ത ശേഷം പേജ് തുറക്കുക</translation>
+<translation id="1872219238824176091">നിലവിലെ ഡെസ്‌ക് നീക്കം ചെയ്യുക</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, തുടർന്ന് <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> അല്ലെങ്കിൽ <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">അടുത്ത ടാബിലേക്ക് പോവുക</translation>
 <translation id="2010818616644390445">വിൻഡോയിലെ അവസാന ടാബിലേക്ക് പോവുക</translation>
@@ -42,6 +43,7 @@
 <translation id="2441202986792279177">വിന്‍ഡോകൾക്ക് ഇടയിൽ വേഗത്തിൽ മാറുക</translation>
 <translation id="2454251766545114447">സൂം ഔട്ട് ഡിസ്‌പ്ലേ ചെയ്യുക</translation>
 <translation id="2478303094958140141">ChromeVox (സംഭാഷണ ഫീഡ്‌ബാക്ക്) ഓണാക്കുക അല്ലെങ്കിൽ  ഓഫാക്കുക</translation>
+<translation id="2488661730534396940">ഇടതുവശത്ത് ഡെസ്‌ക് സജീവമാക്കുക</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">വെബ് പേജ് താഴേയ്‌ക്ക് സ്‌ക്രോൾ ചെയ്യുക</translation>
 <translation id="2574014812750545982">പേജിൽ സൂം നില പുനഃസജ്ജീകരിക്കുക</translation>
@@ -49,6 +51,7 @@
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, തുടർന്ന് <ph name="TAB" /> അല്ലെങ്കിൽ <ph name="RIGHT" /></translation>
 <translation id="2750942583782703988">നിങ്ങളുടെ നിലവിലെ പേജ് വീണ്ടും ലോഡ് ചെയ്യുക</translation>
 <translation id="2764005613199379871">തിരയൽ വിലാസബാറിൽ ഫോക്കസ് ചെയ്യുക</translation>
+<translation id="2774822903829597107">പുതിയൊരു ഡെസ്‌ക് സൃഷ്‌ടിക്കുക</translation>
 <translation id="2789868185375229787">പേജിൽ സൂം ഔട്ട് ചെയ്യുക</translation>
 <translation id="2804480015716812239"><ph name="ALT" /> അമർത്തി ഒരു ലിങ്ക് ക്ലിക്ക് ചെയ്യുക</translation>
 <translation id="2830827904629746450">വലത് വശത്ത് ഒരു വിൻഡോ ഡോക്ക് ചെയ്യുക</translation>
@@ -100,6 +103,7 @@
 <translation id="4642092649622328492">ഭാഗിക സ്‌ക്രീൻഷോട്ട് എടുക്കുക</translation>
 <translation id="4698850295812410683">സ്റ്റൈലസ് ടൂളുകൾ കാണിക്കുക</translation>
 <translation id="4801989101741319327">അടുത്ത വാക്കിന്റെ അവസാനത്തിലേക്ക് നീങ്ങുക</translation>
+<translation id="4866066940972151697">വലതുവശത്ത് ഡെസ്‌ക് സജീവമാക്കുക</translation>
 <translation id="4916163929714267752">ഒരു പുതിയ വിൻഡോയിൽ ലിങ്ക് തുറക്കുക</translation>
 <translation id="5030659775136592441">ബുക്ക്മാർക്ക് മാനേജർ കാണിക്കുക</translation>
 <translation id="5034421018520995080">പേജിന്റെ മുകളിലേക്ക് പോവുക</translation>

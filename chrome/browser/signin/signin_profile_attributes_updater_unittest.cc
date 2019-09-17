@@ -74,7 +74,7 @@ TEST_F(SigninProfileAttributesUpdaterTest, SigninSignout) {
   ProfileAttributesEntry* entry;
   ASSERT_TRUE(profile_manager_.profile_attributes_storage()
                   ->GetProfileAttributesWithPath(profile_path_, &entry));
-  ASSERT_FALSE(entry->IsAuthenticated());
+  ASSERT_EQ(entry->GetSigninState(), SigninState::kNotSignedIn);
   EXPECT_FALSE(entry->IsSigninRequired());
 
   // Signin.
@@ -85,7 +85,7 @@ TEST_F(SigninProfileAttributesUpdaterTest, SigninSignout) {
 
   // Signout.
   identity_test_env_.ClearPrimaryAccount();
-  EXPECT_FALSE(entry->IsAuthenticated());
+  EXPECT_EQ(entry->GetSigninState(), SigninState::kNotSignedIn);
   EXPECT_FALSE(entry->IsSigninRequired());
 }
 #endif  // !defined(OS_CHROMEOS)
@@ -149,7 +149,7 @@ TEST_F(SigninProfileAttributesUpdaterWithForceSigninTest, IsSigninRequired) {
   EXPECT_EQ(kEmail, base::UTF16ToUTF8(entry->GetUserName()));
 
   identity_test_env_.ClearPrimaryAccount();
-  EXPECT_FALSE(entry->IsAuthenticated());
+  EXPECT_EQ(entry->GetSigninState(), SigninState::kNotSignedIn);
   EXPECT_TRUE(entry->IsSigninRequired());
 }
 #endif

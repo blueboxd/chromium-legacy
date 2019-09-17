@@ -57,6 +57,7 @@ NSString* const kGridToVisibleTabAnimation = @"grid_to_visible_tab_animation";
 // These are the values grouped in the user_application_state parameter.
 NSString* const kOrientationState = @"orient";
 NSString* const kHorizontalSizeClass = @"sizeclass";
+NSString* const kUserInterfaceStyle = @"user_interface_style";
 NSString* const kSignedIn = @"signIn";
 NSString* const kIsShowingPDF = @"pdf";
 NSString* const kVideoPlaying = @"avplay";
@@ -317,6 +318,12 @@ void SetCurrentHorizontalSizeClass(int horizontalSizeClass) {
   [[CrashReportUserApplicationState sharedInstance]
        setValue:kHorizontalSizeClass
       withValue:horizontalSizeClass];
+}
+
+void SetCurrentUserInterfaceStyle(int userInterfaceStyle) {
+  [[CrashReportUserApplicationState sharedInstance]
+       setValue:kUserInterfaceStyle
+      withValue:userInterfaceStyle];
 }
 
 void SetCurrentlySignedIn(bool signedIn) {

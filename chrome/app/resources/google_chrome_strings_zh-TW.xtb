@@ -43,7 +43,7 @@
 <translation id="1873233029667955273">Google Chrome 並非你的預設瀏覽器</translation>
 <translation id="1874309113135274312">Google Chrome 測試版 (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome 版本過舊</translation>
-<translation id="1900795423379050516">如果這個頁面上未顯示你的設定，請檢查 <ph name="LINK_BEGIN" />
+<translation id="1900795423379050516">如果這個頁面上並未顯示你的設定，請檢查 <ph name="LINK_BEGIN" />
       Chrome 瀏覽器設定<ph name="LINK_END" /></translation>
 <translation id="1915828456209461693">有可用的 Chrome 更新，只要重新啟動 Chrome 即可套用。</translation>
 <translation id="1919130412786645364">允許登入 Chrome</translation>
@@ -51,6 +51,9 @@
 <translation id="2094919256425865063">確定要關閉 Chrome 嗎？</translation>
 <translation id="2120620239521071941">登出後，系統會將 <ph name="ITEMS_COUNT" /> 個項目從這個裝置上刪除。日後如要重新取得你的資料，請以 <ph name="USER_EMAIL" /> 身分登入 Chrome。</translation>
 <translation id="2123055963409958220">只要回報<ph name="BEGIN_LINK" />目前的設定<ph name="END_LINK" />，就能助我們一臂之力，讓 Chrome 更臻完美</translation>
+<translation id="2128103434102193461">如需 Chrome 作業系統的詳細資料，請參閱<ph name="LINK_BEGIN" />
+      關於 Chrome 作業系統<ph name="LINK_END" /></translation>
+<translation id="2151406531797534936">請立即重新啟動 Chrome</translation>
 <translation id="216054706567564023">在手機上安裝 Chrome。我們會傳送簡訊到你的帳戶備援電話號碼。</translation>
 <translation id="2246246234298806438">缺乏內建的 PDF 檢視器時，Google Chrome 無法顯示列印預覽。</translation>
 <translation id="2252923619938421629">只要回報目前的設定，就能助我們一臂之力，讓 Google Chrome 更臻完美</translation>
@@ -221,6 +224,7 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="7589360514048265910">我們已不支援 Mac OS X 10.9，因此這部電腦不會再收到 Google Chrome 更新。</translation>
 <translation id="7592736734348559088">你的帳戶登入詳細資料尚未更新，因此 Google Chrome 無法同步處理你的資料。</translation>
 <translation id="7626032353295482388">歡迎使用 Chrome</translation>
+<translation id="7629695634924605473">Chrome 會通知你密碼是否曾遭到盜用</translation>
 <translation id="7641148173327520642">你的系統管理員已設定由 Google Chrome 開啟 <ph name="ALTERNATIVE_BROWSER_NAME" /> 以存取 <ph name="TARGET_URL_HOSTNAME" />。</translation>
 <translation id="7651907282515937834">Chrome Enterprise 標誌</translation>
 <translation id="7747138024166251722">安裝程式無法建立暫時目錄，請檢查可用磁碟空間與權限，以順利安裝軟體。</translation>

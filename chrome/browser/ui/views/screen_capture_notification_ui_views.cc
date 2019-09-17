@@ -37,8 +37,6 @@ namespace {
 
 const int kHorizontalMargin = 10;
 const float kWindowAlphaValue = 0.96f;
-const int kPaddingVertical = 5;
-const int kPaddingHorizontal = 10;
 
 namespace {
 
@@ -259,9 +257,9 @@ views::ClientView* ScreenCaptureNotificationUIViews::CreateClientView(
 views::NonClientFrameView*
 ScreenCaptureNotificationUIViews::CreateNonClientFrameView(
     views::Widget* widget) {
-  views::BubbleFrameView* frame = new views::BubbleFrameView(
-      gfx::Insets(), gfx::Insets(kPaddingVertical, kPaddingHorizontal,
-                                 kPaddingVertical, kPaddingHorizontal));
+  constexpr auto kPadding = gfx::Insets(5, 10);
+  views::BubbleFrameView* frame =
+      new views::BubbleFrameView(gfx::Insets(), kPadding);
   SkColor color = widget->GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DialogBackground);
   frame->SetBubbleBorder(std::unique_ptr<views::BubbleBorder>(

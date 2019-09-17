@@ -66,6 +66,7 @@
 <translation id="1407135791313364759">Otevřít vše</translation>
 <translation id="1409426117486808224">Zjednodušené zobrazení otevřených karet</translation>
 <translation id="1409879593029778104">Stažení souboru <ph name="FILE_NAME" /> bylo zabráněno, protože soubor již existuje.</translation>
+<translation id="1413136574162415971">Google může kontrolovat, zda vaše hesla nebyla součástí úniku dat. Pokud se přihlásíte pomocí účtu Google a zapnete synchronizaci, tato funkce bude zapnutá.</translation>
 <translation id="1414981605391750300">Kontaktování Googlu. Může to chvíli trvat…</translation>
 <translation id="1416550906796893042">Verze aplikace</translation>
 <translation id="1430915738399379752">Tisk</translation>
@@ -160,6 +161,7 @@
 <translation id="2091887806945687916">Zvuk</translation>
 <translation id="2096012225669085171">Synchronizovat a přizpůsobit na různých zařízeních</translation>
 <translation id="2100273922101894616">Přihlásit se automaticky</translation>
+<translation id="2100314319871056947">Zkuste text sdílet po menších částech</translation>
 <translation id="2107397443965016585">Před povolením spuštění chráněného obsahu na webu se zeptat (doporučeno)</translation>
 <translation id="2111511281910874386">Přejít na stránku</translation>
 <translation id="2122601567107267586">Aplikaci nelze otevřít</translation>
@@ -253,6 +255,7 @@
 <translation id="2836148919159985482">Režim celé obrazovky ukončíte klepnutím na tlačítko Zpět.</translation>
 <translation id="2842985007712546952">Nadřazená složka</translation>
 <translation id="2858138569776157458">Top weby</translation>
+<translation id="2860954141821109167">Zkontrolujte zda je na tomto zařízení povolená aplikace k telefonování</translation>
 <translation id="2870560284913253234">Stránky</translation>
 <translation id="2874939134665556319">Předchozí skladba</translation>
 <translation id="2876369937070532032">Když je ohrožena vaše bezpečnost, odesílá adresy URL některých navštívených stránek do Googlu</translation>
@@ -277,6 +280,7 @@
 <translation id="2996291259634659425">Vytvoření heslové fráze</translation>
 <translation id="2996809686854298943">Je požadována adresa URL</translation>
 <translation id="300526633675317032">Tímto vymažete celé úložiště webů (<ph name="SIZE_IN_KB" />).</translation>
+<translation id="3016635187733453316">Zkontrolujte, zda je toto zařízení připojeno k internetu</translation>
 <translation id="3029613699374795922">Staženo: <ph name="KBS" /> kB</translation>
 <translation id="3029704984691124060">Heslové fráze se neshodují</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Zobrazit nápovědu<ph name="END_LINK" /></translation>
@@ -841,6 +845,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="723171743924126238">Vyberte fotky</translation>
 <translation id="7233236755231902816">Chcete-li si web prohlížet ve svém jazyce, stáhněte si nejnovější verzi Chromu</translation>
 <translation id="7243308994586599757">Možnosti jsou k dispozici ve spodní části obrazovky</translation>
+<translation id="7248069434667874558">Zkontrolujte, zda je v Chromu na zařízení <ph name="TARGET_DEVICE_NAME" /> zapnutá synchronizace</translation>
 <translation id="7250468141469952378">Vybráno: <ph name="ITEM_COUNT" /></translation>
 <translation id="7274013316676448362">Blokovaný web</translation>
 <translation id="7290209999329137901">Přejmenování není k dispozici</translation>
@@ -880,7 +885,7 @@ Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy
 <translation id="7493994139787901920"><ph name="VERSION" /> (aktualizováno <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">uspořená data</translation>
 <translation id="7498271377022651285">Čekejte prosím…</translation>
-<translation id="7510943789645525906">Upozorní vás, pokud vaše heslo bylo součástí porušení zabezpečení údajů</translation>
+<translation id="7510943789645525906">Upozorní vás, pokud vaše heslo bylo součástí úniku dat</translation>
 <translation id="7514365320538308">Stáhnout</translation>
 <translation id="751961395872307827">K webu se nelze připojit</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -955,6 +960,7 @@ Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy
 <translation id="8007176423574883786">Vypnuto v tomto zařízení</translation>
 <translation id="8013372441983637696">Vymazat data prohlížeče Chrome také z tohoto zařízení</translation>
 <translation id="8015452622527143194">Vrátit veškerý obsah stránky na původní velikost</translation>
+<translation id="8015780634880457457">Google může kontrolovat, zda vaše hesla nebyla součástí úniku dat</translation>
 <translation id="802154636333426148">Stažení se nezdařilo</translation>
 <translation id="8026334261755873520">Vymazat údaje o prohlížení</translation>
 <translation id="8035133914807600019">Nová složka…</translation>
@@ -1017,6 +1023,7 @@ Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy
 <translation id="8445448999790540984">Hesla se nepodařilo exportovat</translation>
 <translation id="8447861592752582886">Zrušit oprávnění zařízení</translation>
 <translation id="8461694314515752532">Šifrovat synchronizovaná data pomocí vlastní heslové fráze pro synchronizaci</translation>
+<translation id="8466613982764129868">Zkontrolujte, zda je zařízení<ph name="TARGET_DEVICE_NAME" /> připojené k internetu</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Dostupné offline</translation>
 <translation id="8489271220582375723">Otevřít stránku historie</translation>
@@ -1107,6 +1114,7 @@ Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy
 <translation id="9188680907066685419">Odhlásit se ze spravovaného účtu</translation>
 <translation id="9204836675896933765">Zbývá 1 soubor</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9209888181064652401">Nelze uskutečňovat hovory</translation>
 <translation id="9219103736887031265">Obrázky</translation>
 <translation id="926205370408745186">Odstranit vaši aktivitu v Chromu z digitální rovnováhy</translation>
 <translation id="932327136139879170">Domovská stránka</translation>

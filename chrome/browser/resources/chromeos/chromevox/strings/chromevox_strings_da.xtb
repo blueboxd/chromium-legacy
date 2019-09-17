@@ -233,6 +233,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="27527859628328957">Gå til næste element, der kan fokuseres på</translation>
 <translation id="2770781857296573485">Start udforskning af grupper</translation>
 <translation id="2777845298774924149">Lukket</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{+#}one{+#}other{+#}}</translation>
 <translation id="2784959586797362050">Du kan som altid sende os direkte feedback ved at trykke på søgetasten+a og derefter i. Vi glæder os til at høre fra dig.</translation>
 <translation id="2800204403141299078">Ikke flere anderledes elementer.</translation>
 <translation id="2800780099804980316">Ingen tidligere niveau 1-overskrifter.</translation>
@@ -715,6 +716,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="5956928062748260866">Dialogboks</translation>
 <translation id="5963413905009737549">Afsnit</translation>
 <translation id="5968607524793740041">Vis genvejsmenu</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{med # element}one{med # element}other{med # elementer}}</translation>
 <translation id="5981446804259161541">Lys cyanblå</translation>
 <translation id="5983179082906765664">Øg detaljegraden for navigation</translation>
 <translation id="5992285135956208197">Grafikdokument</translation>

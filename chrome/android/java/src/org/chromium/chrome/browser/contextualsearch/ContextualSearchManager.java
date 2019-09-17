@@ -62,6 +62,7 @@ import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.contextual_search.mojom.OverlayPosition;
 import org.chromium.net.NetworkChangeNotifier;
+import org.chromium.ui.touch_selection.SelectionEventType;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -194,9 +195,6 @@ public class ContextualSearchManager
     // Counter for how many times we've called SelectWordAroundCaret without an ACK returned.
     // TODO(donnd): replace with a more systematic approach using the InternalStateController.
     private int mSelectWordAroundCaretCounter;
-
-    /** Whether Smart Text Selection might be active.  If false, we know it's not active. */
-    private boolean mCouldSmartSelectionBeActive;
 
     /** An observer that reports selected context to GSA for search quality. */
     private ContextualSearchObserver mContextReportingObserver;
@@ -1262,15 +1260,6 @@ public class ContextualSearchManager
     }
 
     /**
-     * Notifies Contextual Search whether Smart Selection could be active.
-     * @param isSmartSelectionEnabledInChrome Whether Smart Selection is enabled in Chrome, and
-     *        therefore could be active.
-     */
-    void setCouldSmartSelectionBeActive(boolean isSmartSelectionEnabledInChrome) {
-        mCouldSmartSelectionBeActive = isSmartSelectionEnabledInChrome;
-    }
-
-    /**
      * Implements the {@link SelectionClient} interface for Contextual Search.
      * Handles messages from Content about selection changes.  These are the key drivers of
      * Contextual Search logic.
@@ -1285,7 +1274,8 @@ public class ContextualSearchManager
         }
 
         @Override
-        public void onSelectionEvent(int eventType, float posXPix, float posYPix) {
+        public void onSelectionEvent(
+                @SelectionEventType int eventType, float posXPix, float posYPix) {
             if (!isOverlayVideoMode()) {
                 mSelectionController.handleSelectionEvent(eventType, posXPix, posYPix);
             }
@@ -1573,19 +1563,6 @@ public class ContextualSearchManager
                         mSelectionController.getSelectionType() == SelectionType.TAP
                         || mSelectionController.getSelectionType()
                                 == SelectionType.RESOLVING_LONG_PRESS;
-                if (!isResolvingGesture && mCouldSmartSelectionBeActive && mContext != null) {
-                    // If Smart Selection might be active we need to work around a race
-                    // condition gathering surrounding text.  See https://crbug.com/773330.
-                    // Instead we just return the selection which is good enough for the assistant.
-                    mInternalStateController.notifyStartingWorkOn(
-                            InternalState.GATHERING_SURROUNDINGS);
-                    String currentSelection = mSelectionController.getSelectedText();
-                    mContext.setSurroundingText(getBaseWebContents(), currentSelection);
-                    mInternalStateController.notifyFinishedWorkOn(
-                            InternalState.GATHERING_SURROUNDINGS);
-                    return;
-                }
-
                 if (isResolvingGesture && mPolicy.shouldPreviousGestureResolve()) {
                     ContextualSearchInteractionPersister.PersistedInteraction interaction =
                             mInteractionRecorder.getInteractionPersister()
@@ -1699,7 +1676,8 @@ public class ContextualSearchManager
 
                 String selection = mSelectionController.getSelectedText();
                 assert !TextUtils.isEmpty(selection);
-                boolean isRestrictedResolve = mPolicy.isPrivacyAggressiveResolveEnabled()
+                boolean isRestrictedResolve =
+                        mPolicy.isPrivacyAggressiveResolveEnabled() && mPolicy.isPromoAvailable()
                         || mSelectionController.isAdjustedSelection();
                 mNetworkCommunicator.startSearchTermResolutionRequest(
                         selection, isRestrictedResolve);
@@ -1714,14 +1692,16 @@ public class ContextualSearchManager
 
             @Override
             public void showContextualSearchResolvingUi() {
-                mInternalStateController.notifyStartingWorkOn(InternalState.SHOW_RESOLVING_UI);
-                if (mSelectionController.getSelectionType() != SelectionType.UNDETERMINED) {
+                if (mSelectionController.getSelectionType() == SelectionType.UNDETERMINED) {
+                    mInternalStateController.reset(StateChangeReason.INVALID_SELECTION);
+                } else {
+                    mInternalStateController.notifyStartingWorkOn(InternalState.SHOW_RESOLVING_UI);
                     boolean isTap = mSelectionController.getSelectionType() == SelectionType.TAP;
                     showContextualSearch(isTap ? StateChangeReason.TEXT_SELECT_TAP
                                                : StateChangeReason.TEXT_SELECT_LONG_PRESS);
                     if (isTap) ContextualSearchUma.logRankerFeaturesAvailable(true);
+                    mInternalStateController.notifyFinishedWorkOn(InternalState.SHOW_RESOLVING_UI);
                 }
-                mInternalStateController.notifyFinishedWorkOn(InternalState.SHOW_RESOLVING_UI);
             }
 
             @Override

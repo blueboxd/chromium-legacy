@@ -78,7 +78,7 @@ enum AcceleratorAction {
   SHOW_STYLUS_TOOLS,
   SHOW_TASK_MANAGER,
   START_AMBIENT_MODE,
-  START_VOICE_INTERACTION,
+  START_ASSISTANT,
   SUSPEND,
   SWAP_PRIMARY_DISPLAY,
   SWITCH_IME,  // Switch to another IME depending on the accelerator.

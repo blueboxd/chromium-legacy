@@ -21,8 +21,8 @@
 #include "device/fido/hid/fake_hid_impl_for_testing.h"
 #include "device/fido/hid/fido_hid_message.h"
 #include "device/fido/test_callback_receiver.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/cpp/hid/hid_device_filter.h"
 #include "services/device/public/mojom/hid.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -223,13 +223,13 @@ class FidoHidDeviceTest : public ::testing::Test {
  public:
   void SetUp() override {
     fake_hid_manager_ = std::make_unique<FakeFidoHidManager>();
-    fake_hid_manager_->AddBinding2(mojo::MakeRequest(&hid_manager_));
+    fake_hid_manager_->AddReceiver2(hid_manager_.BindNewPipeAndPassReceiver());
   }
 
  protected:
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-  device::mojom::HidManagerPtr hid_manager_;
+  mojo::Remote<device::mojom::HidManager> hid_manager_;
   std::unique_ptr<FakeFidoHidManager> fake_hid_manager_;
 };
 

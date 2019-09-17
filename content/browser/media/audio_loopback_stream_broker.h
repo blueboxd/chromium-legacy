@@ -18,6 +18,8 @@
 #include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "media/mojo/mojom/audio_input_stream.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace audio {
 namespace mojom {
@@ -42,7 +44,8 @@ class CONTENT_EXPORT AudioLoopbackStreamBroker final
       uint32_t shared_memory_count,
       bool mute_source,
       AudioStreamBroker::DeleterCallback deleter,
-      mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client);
+      mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+          renderer_factory_client);
 
   ~AudioLoopbackStreamBroker() final;
 
@@ -72,7 +75,8 @@ class CONTENT_EXPORT AudioLoopbackStreamBroker final
   // loopback stream is running.
   base::Optional<AudioMutingSession> muter_;
 
-  mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client_;
+  mojo::Remote<mojom::RendererAudioInputStreamFactoryClient>
+      renderer_factory_client_;
   mojo::Binding<AudioInputStreamObserver> observer_binding_;
   media::mojom::AudioInputStreamClientRequest client_request_;
 

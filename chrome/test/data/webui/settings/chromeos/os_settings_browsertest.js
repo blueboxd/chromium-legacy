@@ -192,7 +192,7 @@ var OSSettingsAppManagementPageTest =
   }
 };
 
-// Disabled due to: https://crbug.com/1003483
+// Flaky in debug. https://crbug.com/1003483
 TEST_F('OSSettingsAppManagementPageTest', 'MAYBE_AllJsTests', () => {
   mocha.run();
 });
@@ -260,7 +260,7 @@ var OSSettingsAppManagementManagedAppTest =
   }
 };
 
-// Disabled due to: https://crbug.com/1003483
+// Flaky in debug. https://crbug.com/1003483
 TEST_F('OSSettingsAppManagementManagedAppTest', 'MAYBE_AllJsTests', () => {
   mocha.run();
 });
@@ -684,6 +684,11 @@ TEST_F('OSSettingsMultideviceSubpageTest', 'AllJsTests', () => {
 var OSSettingsPeoplePageAccountManagerTest =
     class extends OSSettingsBrowserTest {
   /** @override */
+  get featureList() {
+    return {enabled: ['chromeos::features::kAccountManager']};
+  }
+
+  /** @override */
   get browsePreload() {
     return super.browsePreload + 'people_page/account_manager.html';
   }
@@ -832,8 +837,7 @@ var OSSettingsPeoplePageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-// Disabled due to: https://crbug.com/1003562
-TEST_F('OSSettingsPeoplePageTest', 'DISABLED_AllJsTests', () => {
+TEST_F('OSSettingsPeoplePageTest', 'AllJsTests', () => {
   mocha.run();
 });
 
@@ -851,7 +855,7 @@ var OSSettingsPersonalizationPageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-// Disabled due to: https://crbug.com/1003483
+// Flaky in debug. https://crbug.com/1003483
 TEST_F('OSSettingsPersonalizationPageTest', 'MAYBE_AllJsTests', () => {
   mocha.run();
 });
@@ -1008,7 +1012,7 @@ var OSSettingsResetPageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-// Disabled due to: https://crbug.com/1003483
+// Flaky in debug. https://crbug.com/1003483
 TEST_F('OSSettingsResetPageTest', 'MAYBE_AllJsTests', () => {
   mocha.run();
 });

@@ -89,6 +89,7 @@ source_set("unit_tests") {
     "notification_store_unittest.cc",
     "proto_conversion_unittest.cc",
     "scheduled_notification_manager_unittest.cc",
+    "scheduler_config_unittest.cc",
     "scheduler_utils_unittest.cc",
     "stats_unittest.cc",
   ]

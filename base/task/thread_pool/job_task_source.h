@@ -42,6 +42,10 @@ class BASE_EXPORT JobTaskSource : public TaskSource {
   // number of worker should be adjusted.
   void NotifyConcurrencyIncrease();
 
+  // Cancels this JobTaskSource, causing all workers to yield and WillRunTask()
+  // to return RunStatus::kDisallowed.
+  void Cancel(TaskSource::Transaction* transaction = nullptr);
+
   // TaskSource:
   ExecutionEnvironment GetExecutionEnvironment() override;
   size_t GetRemainingConcurrency() const override;
@@ -49,6 +53,10 @@ class BASE_EXPORT JobTaskSource : public TaskSource {
   // Returns the maximum number of tasks from this TaskSource that can run
   // concurrently.
   size_t GetMaxConcurrency() const;
+
+  // Returns true if a worker should return from the worker task on the current
+  // thread ASAP.
+  bool ShouldYield() const;
 
 #if DCHECK_IS_ON()
   size_t GetConcurrencyIncreaseVersion() const;
@@ -58,8 +66,44 @@ class BASE_EXPORT JobTaskSource : public TaskSource {
 #endif  // DCHECK_IS_ON()
 
  private:
-  static constexpr size_t kInvalidWorkerCount =
-      std::numeric_limits<size_t>::max();
+  // Atomic internal state to track the number of workers running a task from
+  // this JobTaskSource and whether this JobTaskSource is canceled.
+  class State {
+   public:
+    static constexpr size_t kCanceledMask = 1;
+    static constexpr size_t kWorkerCountBitOffset = 1;
+    static constexpr size_t kWorkerCountIncrement = 1 << kWorkerCountBitOffset;
+
+    struct Value {
+      size_t worker_count() const { return value >> kWorkerCountBitOffset; }
+      // Returns true if canceled.
+      bool is_canceled() const { return value & kCanceledMask; }
+
+      uint32_t value;
+    };
+
+    State();
+    ~State();
+
+    // Sets as canceled using std::memory_order_relaxed. Returns the state
+    // before the operation.
+    Value Cancel();
+
+    // Increments the worker count by 1 if smaller than |max_concurrency| and if
+    // |!is_canceled()|, using std::memory_order_release, and returns the state
+    // before the operation. Equivalent to Load() otherwise.
+    Value TryIncrementWorkerCountRelease(size_t max_concurrency);
+
+    // Decrements the worker count by 1 using std::memory_order_acquire. Returns
+    // the state before the operation.
+    Value DecrementWorkerCountAcquire();
+
+    // Loads and returns the state, using std::memory_order_relaxed.
+    Value Load() const;
+
+   private:
+    std::atomic<uint32_t> value_{0};
+  };
 
   ~JobTaskSource() override;
 
@@ -70,9 +114,8 @@ class BASE_EXPORT JobTaskSource : public TaskSource {
   bool DidProcessTask(TaskSource::Transaction* transaction) override;
   SequenceSortKey GetSortKey() const override;
 
-  // The current number of workers concurrently running tasks from this
-  // TaskSource.
-  std::atomic_size_t worker_count_{0U};
+  // Current atomic state.
+  State state_;
 
   const Location from_here_;
   base::RepeatingCallback<size_t()> max_concurrency_callback_;

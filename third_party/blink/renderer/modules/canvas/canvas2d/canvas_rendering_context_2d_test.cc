@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "build/build_config.h"
+#include "components/viz/test/test_context_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -35,8 +36,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/test/fake_canvas_resource_host.h"
-#include "third_party/blink/renderer/platform/graphics/test/fake_gles2_interface.h"
-#include "third_party/blink/renderer/platform/graphics/test/fake_web_graphics_context_3d_provider.h"
+#include "third_party/blink/renderer/platform/graphics/test/gpu_test_utils.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -176,7 +176,7 @@ class CanvasRenderingContext2DTest : public ::testing::Test {
   Persistent<ImageData> partial_image_data_;
   FakeImageSource opaque_bitmap_;
   FakeImageSource alpha_bitmap_;
-  FakeGLES2Interface gl_;
+  scoped_refptr<viz::TestContextProvider> test_context_provider_;
 
   StringOrCanvasGradientOrCanvasPattern& OpaqueGradient() {
     return wrap_gradients_->opaque_gradient_;
@@ -201,15 +201,8 @@ void CanvasRenderingContext2DTest::CreateContext(OpacityMode opacity_mode,
 }
 
 void CanvasRenderingContext2DTest::SetUp() {
-  auto factory = [](FakeGLES2Interface* gl, bool* gpu_compositing_disabled)
-      -> std::unique_ptr<WebGraphicsContext3DProvider> {
-    *gpu_compositing_disabled = false;
-    gl->SetIsContextLost(false);
-    return std::make_unique<FakeWebGraphicsContext3DProvider>(gl);
-  };
-  SharedGpuContext::SetContextProviderFactoryForTesting(
-      WTF::BindRepeating(factory, WTF::Unretained(&gl_)));
-
+  test_context_provider_ = viz::TestContextProvider::Create();
+  InitializeSharedGpuContext(test_context_provider_.get());
   allow_accelerated_.reset(
       new ScopedAccelerated2dCanvasForTest(AllowsAcceleration()));
   web_view_helper_ = std::make_unique<frame_test_helpers::WebViewHelper>();

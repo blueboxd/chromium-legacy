@@ -84,6 +84,7 @@
       如果此政策未设置，已缓存的 GPO 最多可被重复使用 25 小时。
 
       如果此政策设为 0，系统就会关闭 GPO 缓存。请注意，这样设置会增加服务器负载，因为系统在每次提取政策时都要重新下载 GPO（即使版本未变也是如此）。</translation>
+<translation id="1111470455889178048">发送用户上传内容和下载内容进行扫描</translation>
 <translation id="1117462881884985156"><ph name="PRODUCT_NAME" /> 会绕过在此处指定的主机列表中的任何代理。
 
           只有当您在“选择如何指定代理服务器设置”中选择了手动代理设置且未指定 <ph name="PROXY_SETTINGS_POLICY_NAME" /> 政策时，该政策才会生效。
@@ -367,6 +368,7 @@
 <translation id="163200210584085447">系统会将此列表中的网址格式与请求网址的安全来源进行比对。如果找到了匹配项，系统将允许相应网址通过 SAML 登录页面访问视频捕获设备。如果未找到匹配项，系统将自动拒绝授予访问权限。不允许使用通配符模式。</translation>
 <translation id="1634989431648355062">允许这些网站运行 <ph name="FLASH_PLUGIN_NAME" /> 插件</translation>
 <translation id="1645793986494086629">架构：</translation>
+<translation id="1648816843164517573">以列表形式指定：哪些名称将绕过 HSTS 政策检查</translation>
 <translation id="1653229475925941921">如果设置了此政策，则会控制启用的放大镜类型。如果将此政策设为“None”，则会停用放大镜。
 
           如果您设置了此政策，用户将无法对其进行更改或替换。
@@ -843,6 +845,7 @@
 <translation id="254653220329944566">启用 <ph name="PRODUCT_NAME" /> 云端报告</translation>
 <translation id="2548572254685798999">报告安全浏览信息</translation>
 <translation id="2550593661567988768">仅限单面打印</translation>
+<translation id="2551520365302988324">发送用户上传内容进行扫描</translation>
 <translation id="2552966063069741410">时区</translation>
 <translation id="2562339630163277285">指定用于提供即搜即得结果的搜索引擎网址。该网址应包含字符串“<ph name="SEARCH_TERM_MARKER" />”，系统会在用户进行查询时将该字符串替换为用户输入的文字。
 
@@ -917,6 +920,7 @@
 <translation id="2665422249821137126">在登录屏幕上启用大号光标</translation>
 <translation id="2672012807430078509">控制是否允许将 NTLM 作为 SMB 装载功能的身份验证协议</translation>
 <translation id="267596348720209223">指定搜索服务提供商支持的字符编码。编码是指类似于 UTF-8、GB2312 和 ISO-8859-1 的代码页名称，并按此顺序进行尝试。此政策是可选的，如果未设置，将使用默认值 UTF-8。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
+<translation id="2679827548357140943">以列表形式指定：对于哪些网域，系统需要在上传内容时检查恶意软件</translation>
 <translation id="268577405881275241">启用数据压缩代理功能</translation>
 <translation id="2693108589792503178">配置用于更改密码的网址。</translation>
 <translation id="2694143893026486692">已启用停靠的放大镜</translation>
@@ -1286,6 +1290,10 @@
 <translation id="332771718998993005">将广告中宣传的名称确定为 <ph name="PRODUCT_NAME" /> 目标名称。
 
           如果此政策设为非空字符串，该字符串将被用作 <ph name="PRODUCT_NAME" /> 目标名称。否则，目标名称便是设备名称。如果此政策未设置，则目标名称将是设备名称，且设备所有者（或者该设备的托管网域内的用户）将能更改该名称。该名称的长度不得超过 24 个字符。</translation>
+<translation id="3331950121151548952">以列表形式指定：对于哪些网域，系统需要在上传内容时执行恶意软件检查。仅当 <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> 的值设为允许或强制对上传内容执行恶意软件检查时，才会用到此政策。
+
+      如果此政策设为一个空的网域列表或未设置，系统便无需对任何上传内容执行恶意软件检查。
+      </translation>
 <translation id="3335468714959531450">让您能够设置一系列网址格式，以用于指定允许哪些网站设置 Cookie。
 
           如果未设置此政策，系统将会对所有网站使用“DefaultCookiesSetting”政策中的全局默认值（倘若已设置“DefaultCookiesSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultCookiesSetting”政策）。
@@ -1353,6 +1361,15 @@
           如果该政策设置为 False 或未设置，电源管理延迟和会话长度限制将在会话启动后立即开始计算。</translation>
 <translation id="3478024346823118645">退出时清除用户数据</translation>
 <translation id="3480961938508521469">以标准速率将电池充满。</translation>
+<translation id="3483729306380590354">设置自定义电池充电起始电量（以百分比表示）。
+
+          当电池电量消耗到自定义电池充电起始电量时，电池就会开始充电。
+
+          <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> 必须至少比 <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" /> 低 5 个百分点。
+
+          仅当 <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" /> 设为 <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" /> 时，才会用到此政策。
+
+          如果未配置或未设置此政策，则会应用 <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" /> 电池充电模式。</translation>
 <translation id="348495353354674884">启用虚拟键盘</translation>
 <translation id="3487623755010328395">
         如果已设置此政策，<ph name="PRODUCT_NAME" /> 将会尝试自行注册并为所有个人资料应用关联的云政策。
@@ -1781,6 +1798,15 @@
           如果您设置了此政策，用户将无法更改或覆盖它。
 
           如果未设置此政策，则“自动点击”最初会处于停用状态，但用户可以随时启用该功能。</translation>
+<translation id="4215197846797661927">设定日间高级电池充电模式配置。
+
+          仅当 <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> 设为 true 时，才会用到此政策。
+
+          如果未配置或未设置此政策，则高级电池充电模式会始终处于停用状态。
+
+          注意：<ph name="CHARGE_START_TIME_FIELD_NAME" /> 必须早于 <ph name="CHARGE_END_TIME_FIELD_NAME" />。
+
+          注意：<ph name="CHARGE_START_TIME_FIELD_NAME" /> 和 <ph name="CHARGE_END_TIME_FIELD_NAME" /> 所允许的 <ph name="MINUTE_FIELD_NAME" /> 字段值为 0、15、30、45。</translation>
 <translation id="4224610387358583899">屏幕锁定延迟时间</translation>
 <translation id="423797045246308574">可让您设置一个网址格式列表，以便指定哪些网站不能使用密钥生成功能。对于同时还包含在“KeygenAllowedForUrls”中的网址格式，系统将应用此政策而忽略“KeygenBlockedForUrls”政策。
 
@@ -1846,6 +1872,17 @@
           指定的政策值应以毫秒为单位，并且不得大于闲置延迟时间。
 
           仅当闲置操作为注销或关机时，系统才会显示警告消息。</translation>
+<translation id="4342827592971649626">此政策用于控制安全浏览功能对用户下载内容的深度扫描。如果此政策未设置，或设为默认的“不扫描文件”，安全浏览功能将不会扫描用户下载内容。
+
+      如果此政策设为“禁止扫描文件”，系统将会禁止用户扫描他们的下载内容。此设置不同于默认设置：默认设置允许某些用户（例如，那些已加入高级保护计划的用户）将他们的下载内容发送给服务器进行扫描，但此设置会禁止这类用户进行扫描。
+
+      如果此政策设为“发送用户下载内容进行扫描”，系统就会将用户下载内容通过网络发送给安全浏览功能，以进行恶意软件扫描。
+
+      如果此政策设为“发送用户上传内容进行扫描”，系统就会将用户上传内容通过网络发送给安全浏览功能，以进行恶意软件扫描。
+
+      如果此政策设为“发送用户上传内容和下载内容进行扫描”，则系统将根据“发送用户上传内容进行扫描”和“发送用户下载内容进行扫描”所述的规则操作。
+
+      若想详细了解系统会如何向用户和管理员显示扫描结果，请参阅 <ph name="DELAY_DELIVER_UNTIL_VERDICT_POLICY_NAME" /> 和 <ph name="UNSAFE_EVENTS_REPORTING_ENABLED" /> 政策。</translation>
 <translation id="4344356660952451291">需要检查下载内容是否合规的网域列表</translation>
 <translation id="4346674324214534449">可让您设置是否应禁止含侵扰性广告的网站展示广告。
 
@@ -2398,6 +2435,16 @@
       如果您设置了此政策，用户将无法更改或替换此政策。
 
       如果未设置此政策，用户将可以自行选择要在桌面和登录屏幕背景中显示的图片。</translation>
+<translation id="5437214086679373363">控制是否允许用户在需要扫描时上传或下载受密码保护的文件。此限制仅适用于需要扫描的文件，是否需要扫描取决于 <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />、<ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> 以及用于控制哪些网域需要启用检查功能的政策。
+
+      如果此政策未设置或设为“无”，则 <ph name="PRODUCT_NAME" /> 会禁止用户上传或下载受密码保护的文件。
+
+      如果此政策设为“允许下载”，则 <ph name="PRODUCT_NAME" /> 会允许用户下载受密码保护的文件。
+
+      如果此政策设为“允许上传”，则 <ph name="PRODUCT_NAME" /> 会允许用户上传受密码保护的文件。
+
+      如果此政策未设置或设为“允许上传和下载”，则 <ph name="PRODUCT_NAME" /> 将根据“允许下载”和“允许上传”所述的规则操作。
+      </translation>
 <translation id="5437733496511628148">启用此设置后，如果网页元素并非来自浏览器的地址栏中的网域，就无法设置 Cookie。
 
       停用此设置后，并非来自浏览器地址栏中的网域的网页元素也可以设置 Cookie，并且用户无法更改此设置。
@@ -3271,13 +3318,32 @@
 
       如需详细了解 Internet Explorer 的 <ph name="IEEM_SITELIST_POLICY" /> 政策，请访问 https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">无需提示用户即可使用视频捕获设备的网址</translation>
+<translation id="713712866686796666">用于设定日间用电高峰转移配置。
+
+          仅当 <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> 设为 true 时，才会用到此政策。
+
+          如果未配置或未设置此政策，“用电高峰转移”将始终处于停用状态。
+
+          注意：<ph name="START_TIME_FIELD_NAME" />、<ph name="END_TIME_FIELD_NAME" /> 和 <ph name="CHARGE_START_TIME_FIELD_NAME" /> 所允许的 <ph name="MINUTE_FIELD_NAME" /> 字段值为 0、15、30、45。</translation>
 <translation id="7138678301420049075">其他</translation>
+<translation id="7139809614375682935">设置电池充电自定义停止充电值（以百分比表示）。
+
+          当电池电量达到电池充电自定义停止充电值时，电池就会停止充电。
+
+          <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> 必须至少比 <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" /> 低 5 个百分点。
+
+          仅当 <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" /> 设为 <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" /> 时，才会用到此政策。
+
+          如果未配置或未设置此政策，则会应用 <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" /> 电池充电模式。</translation>
 <translation id="7140629953254369759">指示 <ph name="PRODUCT_OS_NAME" />使用由指定名称标识的任务调度程序配置。
 
       您可以将此政策设置为“conservative”和"performance”，这将分别选择以稳定性和最佳性能为目标进行优化的任务调度程序配置。
 
       如果未设置此政策，则用户可以自行选择。</translation>
 <translation id="7145335384492396213">默认 PIN 码打印模式</translation>
+<translation id="7149042336307555519"> 指定可使用哪些连接类型来更新操作系统。由于规模庞大，操作系统更新可能会对连接造成沉重负荷，也可能会产生额外费用。所以，在默认情况下，当用户使用较为昂贵的连接类型（目前仅包括“cellular”）时，系统不会启用操作系统更新。
+
+      系统可识别的连接类型标识符包括 <ph name="CONNECTION_TYPE_ETHERNET_NAME" />、<ph name="CONNECTION_TYPE_WIFI_NAME" /> 和 <ph name="CONNECTION_TYPE_CELLULAR_NAME" />。</translation>
 <translation id="7152605873936173525">控制 DNS-over-HTTPS 解析器的模式。请注意，此政策仅会为每次查询设置默认模式。对于特殊类型的查询（例如，请求解析 DNS-over-HTTPS 服务器主机名），此政策所设的模式可能会被覆盖。
 
       “<ph name="SECURE_DNS_MODE_OFF" />”模式会停用 DNS-over-HTTPS。
@@ -3306,6 +3372,17 @@
           如果将此政策设为 false，屏幕唤醒锁定请求将降级为系统唤醒锁定请求。</translation>
 <translation id="7177857088692019405">快速解锁</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
+<translation id="7187447094921703950">启用用电高峰转移电源管理政策。
+
+          “用电高峰转移”是一种节电政策，可在一天中的用电高峰期间尽可能减少对交流电的使用。对于每个工作日，您都可设置开始时间和结束时间以运行“用电高峰转移”模式。在您所设定的时段内，只要电池电量高于指定阈值，即使连接了交流电，系统也会仅使用电池来维持运行。待指定的结束时间过后，系统将会使用交流电（如果已连接）来维持运行，但不会为电池充电。待指定的充电开始时间过后，系统会再次使用交流电来维持正常运行，并会为电池充电。
+
+          如果此政策设为 true，并且 <ph name="DEVICE_POWER_PEAK_SHIFT_BATTERY_THRESHOLD_NAME" /> 和 <ph name="DEVICE_POWER_PEAK_SHIFT_DAY_CONFIG_NAME" /> 均已设置，“用电高峰转移”将会始终处于启用状态（如果设备支持的话）。
+
+          如果此政策设为 false，“用电高峰转移”将会始终处于停用状态。
+
+          如果您设置了此政策，用户将无法更改或覆盖它。
+
+          如果未设置此政策，“用电高峰转移”的初始状态为停用，且无法由用户启用。</translation>
 <translation id="718956142899066210">允许用于更新的连接类型</translation>
 <translation id="7190286937411178540">启用“键盘焦点突出显示”无障碍功能</translation>
 <translation id="7194407337890404814">默认搜索服务提供商名称</translation>
@@ -3928,6 +4005,17 @@
 
           如果未设置此政策，系统将启用此设置。</translation>
 <translation id="8382184662529825177">允许为设备使用远程认证来保护内容</translation>
+<translation id="8382693763260501307">启用高级电池充电模式电源管理政策。
+
+          高级电池充电模式让用户能够最大限度地延长电池寿命。在高级充电模式下，系统会在非工作时间使用标准充电算法和其他技术来最大限度地延长电池寿命。在工作时间，系统会使用快速充电。快速充电可更快地为电池充电，因此只需较短的时间即可将电池充满。每天系统使用量最大的时段由开始时间和持续时间指定。
+
+          如果此政策设为 true，并且设置了 <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_DAY_CONFIG_NAME" />，则高级电池充电模式会始终处于启用状态（如果相应设备支持的话）。
+
+          如果此政策设为 false，则高级电池充电模式会始终处于停用状态。
+
+          如果您设置了此政策，用户将无法更改或覆盖它。
+
+          如果未设置此政策，则高级电池充电模式会处于停用状态，且无法由用户启用。</translation>
 <translation id="838870586332499308">启用数据漫游</translation>
 <translation id="8390049129576938611">在 <ph name="PRODUCT_NAME" /> 中停用内部 PDF 查看器。改为将此 PDF 查看器视为下载项，并允许用户使用此默认应用打开 PDF 文件。
 
@@ -4114,9 +4202,15 @@
       如果配置了此政策，该组应用会固定不变且无法由用户更改。
 
       如果未设置此政策，用户便可更改启动器中的固定应用列表。</translation>
+<translation id="8779504970846195767">用于设定用电高峰转移电量阈值（以百分比表示）。
+
+          仅当 <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> 设为 true 时，才会用到此政策。
+
+          如果未配置或未设置此政策，“用电高峰转移”将始终处于停用状态。</translation>
 <translation id="8798099450830957504">默认</translation>
 <translation id="8800453707696044281">设置电池充电自定义停止充电值（以百分比表示）</translation>
 <translation id="8801680448782904838">系统建议或要求重新启动浏览器或重启设备时，通知用户</translation>
+<translation id="8802816494059596691">此列表中指定的主机名将免受 HSTS 政策检查，该检查可能会将请求从 HTTP 升级到 HTTPS。此政策只允许使用单标签主机名。必须使用规范化主机名：任何 IDN 都必须被转换为对应的 A 标签格式，并且所有 ASCII 字母都必须小写。此政策只适用于指定的特定主机名，不适用于指定名称的子网域。</translation>
 <translation id="8818173863808665831">报告设备的地理位置。
 
       如果未设置此政策或将其设为 false，系统将不会报告相关位置。</translation>
@@ -4260,6 +4354,17 @@
       如果此政策的值设为与 Quick Fix Build 对应的令牌，那么只要更新未被其他政策阻止，该设备就会更新至相应的 Quick Fix Build。
 
       如果未设置此政策，或者此政策的值不与 Quick Fix Build 对应，该设备便不会更新至 Quick Fix Build。如果该设备已在运行 Quick Fix Build，并且您已不再设置此政策或者此政策的值已不再与 Quick Fix Build 对应，那么只要更新未被其他政策阻止，该设备就会更新至常规版本。</translation>
+<translation id="9053158112041032237">指定电池充电模式电源管理政策。
+
+          动态地控制电池充电，以最大限度地减少因电池应力导致的电池损耗，从而延长电池寿命。
+
+          如果选择了自定义电池充电模式，则必须指定 <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> 和 <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />。
+
+          如果设置了此政策，则会应用电池充电模式（如果相应设备支持的话）。
+
+          如果未设置此政策，并且相应设备支持此政策，则会应用标准电池充电模式，而且无法由用户更改。
+
+          注意：<ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" />（若已指定）会覆盖此政策。</translation>
 <translation id="9054012305936267950">此政策旨在控制浏览器的登录行为。它允许您指定用户是否可使用其帐号登录 <ph name="PRODUCT_NAME" /> 并使用帐号相关服务（如 Chrome 同步）。
 
       如果此政策设为“禁止登录浏览器”，用户便无法登录浏览器并使用帐号相关服务。在这种情况下，用户无法使用也无法访问浏览器级功能（如 Chrome 同步）。如果用户已登录并且此政策设为“停用”，则用户将在下次运行 Chrome 时退出登录，但他们的本地个人资料数据（如书签、密码等）会被予以保留。用户仍能登录并使用 Google 网络服务（如 Gmail）。

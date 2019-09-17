@@ -158,9 +158,4 @@ void RenderWidgetScreenMetricsEmulator::OnShowContextMenu(
   params->y *= scale_;
 }
 
-gfx::Rect RenderWidgetScreenMetricsEmulator::AdjustValidationMessageAnchor(
-    const gfx::Rect& anchor) {
-  return gfx::ScaleToEnclosedRect(anchor, scale_);
-}
-
 }  // namespace content

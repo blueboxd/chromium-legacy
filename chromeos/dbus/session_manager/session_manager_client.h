@@ -421,6 +421,23 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
   virtual void GetArcStartTime(
       DBusMethodCallback<base::TimeTicks> callback) = 0;
 
+  using EnableAdbSideloadCallback = base::OnceCallback<void(bool succeeded)>;
+
+  // Asynchronously attempts to enable ARC APK Sideloading. Upon completion,
+  // invokes |callback| with the result; true on success, false on failure of
+  // any kind.
+  virtual void EnableAdbSideload(EnableAdbSideloadCallback callback) = 0;
+
+  using QueryAdbSideloadCallback =
+      base::OnceCallback<void(bool succeeded, bool is_allowed)>;
+
+  // Asynchronously queries for the current status of ARC APK Sideloading. Upon
+  // completion, invokes |callback| with |succeeded| indicating if the query
+  // could be completed. If |succeeded| is true, |is_allowed| contains the
+  // current status of whether ARC APK Sideloading is allowed on this device,
+  // based on previous explicit user opt-in.
+  virtual void QueryAdbSideload(QueryAdbSideloadCallback callback) = 0;
+
  protected:
   // Use Initialize/Shutdown instead.
   SessionManagerClient();

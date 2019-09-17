@@ -34,7 +34,7 @@ class LoadWatcher : public content::RenderFrameObserver {
     delete this;
   }
 
-  void DidFailProvisionalLoad(const blink::WebURLError& error) override {
+  void DidFailProvisionalLoad() override {
     // Use PostTask to avoid running user scripts while handling this
     // DidFailProvisionalLoad notification.
     base::ThreadTaskRunnerHandle::Get()->PostTask(

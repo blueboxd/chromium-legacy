@@ -313,6 +313,10 @@ public class TabGridDialogMediator {
         };
     }
 
+    private View.OnClickListener getMenuButtonClickListener() {
+        return TabGridDialogMenuCoordinator.getTabGridDialogMenuOnClickListener(null);
+    }
+
     private List<Tab> getRelatedTabs(int tabId) {
         return mTabModelSelector.getTabModelFilterProvider()
                 .getCurrentTabModelFilter()

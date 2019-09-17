@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/device_service_test_base.h"
 #include "services/device/hid/hid_manager_impl.h"
 #include "services/device/hid/mock_hid_connection.h"
@@ -128,7 +129,8 @@ class HidManagerTest : public DeviceServiceTestBase {
     // Transfer the ownership of the |mock_hid_service| to HidManagerImpl.
     // It is safe to use the |mock_hid_service_| in this test.
     HidManagerImpl::SetHidServiceForTesting(std::move(mock_hid_service));
-    connector()->BindInterface(mojom::kServiceName, &hid_manager_);
+    connector()->Connect(mojom::kServiceName,
+                         hid_manager_.BindNewPipeAndPassReceiver());
   }
 
   void TearDown() override { HidManagerImpl::SetHidServiceForTesting(nullptr); }
@@ -141,7 +143,7 @@ class HidManagerTest : public DeviceServiceTestBase {
     mock_hid_service_->RemoveDevice(platform_device_id);
   }
 
-  mojom::HidManagerPtr hid_manager_;
+  mojo::Remote<mojom::HidManager> hid_manager_;
   MockHidService* mock_hid_service_;
 
   DISALLOW_COPY_AND_ASSIGN(HidManagerTest);

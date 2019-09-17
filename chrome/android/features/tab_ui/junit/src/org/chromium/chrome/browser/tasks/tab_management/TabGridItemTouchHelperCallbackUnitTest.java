@@ -392,6 +392,33 @@ public class TabGridItemTouchHelperCallbackUnitTest {
     }
 
     @Test
+    public void onReleaseTab_Merge_Scrolling() {
+        initAndAssertAllProperties();
+
+        // Simulate the selection of card#2 in TabListModel.
+        mModel.get(1).model.set(TabProperties.CARD_ANIMATION_STATUS,
+                ClosableTabGridView.AnimationStatus.SELECTED_CARD_ZOOM_IN);
+        mModel.get(1).model.set(TabProperties.ALPHA, 0.8f);
+        mItemTouchHelperCallback.setSelectedTabIndexForTesting(POSITION2);
+
+        // Simulate hovering on card#1.
+        mItemTouchHelperCallback.setHoveredTabIndexForTesting(POSITION1);
+
+        // Simulate that the recyclerView is scrolling when the drop-to-merge happens.
+        when(mRecyclerView.isComputingLayout()).thenReturn(true);
+
+        mItemTouchHelperCallback.onSelectedChanged(
+                mMockViewHolder2, ItemTouchHelper.ACTION_STATE_IDLE);
+
+        verify(mGridLayoutManager, never()).removeView(mItemView2);
+        verify(mTabGroupModelFilter, never()).mergeTabsToGroup(TAB2_ID, TAB1_ID);
+        verify(mTracker, never()).notifyEvent(eq(EventConstants.TAB_DRAG_AND_DROP_TO_GROUP));
+        assertThat(mModel.get(1).model.get(TabProperties.CARD_ANIMATION_STATUS),
+                equalTo(ClosableTabGridView.AnimationStatus.SELECTED_CARD_ZOOM_OUT));
+        assertThat(mModel.get(1).model.get(TabProperties.ALPHA), equalTo(1f));
+    }
+
+    @Test
     public void onReleaseTab_UngroupBar_Hide() {
         initAndAssertAllProperties();
         setupItemTouchHelperCallback(true);
@@ -417,6 +444,25 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         verify(mTabGridDialogHandler)
                 .updateUngroupBarStatus(TabGridDialogParent.UngroupBarStatus.HIDE);
         verify(mGridLayoutManager).removeView(mItemView1);
+    }
+
+    @Test
+    public void onReleaseTab_Ungroup_Scrolling() {
+        initAndAssertAllProperties();
+
+        setupItemTouchHelperCallback(true);
+        mItemTouchHelperCallback.setUnGroupTabIndexForTesting(POSITION1);
+
+        // Simulate that the recyclerView is scrolling when the drop-to-ungroup happens.
+        when(mRecyclerView.isComputingLayout()).thenReturn(true);
+
+        mItemTouchHelperCallback.onSelectedChanged(
+                mMockViewHolder1, ItemTouchHelper.ACTION_STATE_IDLE);
+
+        verify(mTabGroupModelFilter, never()).moveTabOutOfGroup(TAB1_ID);
+        verify(mTabGridDialogHandler)
+                .updateUngroupBarStatus(TabGridDialogParent.UngroupBarStatus.HIDE);
+        verify(mGridLayoutManager, never()).removeView(mItemView1);
     }
 
     @Test

@@ -87,6 +87,7 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
       Se la norma non viene impostata, i GPO memorizzati nella cache possono essere riutilizzati per un periodo massimo di 25 ore.
 
       Se la norma è impostata su 0, la memorizzazione nella cache del GPO è disattivata. Tieni presente che in questo modo aumenterà il carico del server perché i GPO verranno scaricati nuovamente a ogni recupero della norma, anche se non sono stati modificati.</translation>
+<translation id="1111470455889178048">Invia caricamenti e download degli utenti da analizzare</translation>
 <translation id="1117462881884985156"><ph name="PRODUCT_NAME" /> aggirerà qualsiasi proxy per l'elenco di host fornito.
 
           Questa norma viene applicata solo se hai selezionato manualmente le impostazioni proxy in "Scegli come specificare le impostazioni del server proxy" e se la norma <ph name="PROXY_SETTINGS_POLICY_NAME" /> non è stata specificata.
@@ -378,6 +379,7 @@ Se l'impostazione è disattivata o non è stata configurata, gli utenti aziendal
 <translation id="163200210584085447">I pattern di questo elenco verranno confrontati con l'origine di sicurezza dell'URL richiedente. Se viene trovata una corrispondenza, l'accesso ai dispositivi di acquisizione video verrà concesso sulle pagine di accesso SAML. In caso contrario, l'accesso verrà automaticamente negato. Non sono consentite sequenze con caratteri jolly.</translation>
 <translation id="1634989431648355062">Consenti il plug-in <ph name="FLASH_PLUGIN_NAME" /> su questi siti</translation>
 <translation id="1645793986494086629">Schema:</translation>
+<translation id="1648816843164517573">Elenco di nomi che eviteranno il controllo dei criteri HSTS</translation>
 <translation id="1653229475925941921">Se questa norma viene impostata, consente di controllare il tipo di lente di ingrandimento che viene attivata. Se imposti la norma su "None", la lente di ingrandimento viene disatttivata.
 
           Se imposti questa norma, gli utenti non potranno modificarla o sostituirla.
@@ -864,6 +866,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="254653220329944566">Consente di attivare il reporting su cloud di <ph name="PRODUCT_NAME" /></translation>
 <translation id="2548572254685798999">Segnala dati di Navigazione sicura</translation>
 <translation id="2550593661567988768">Solo stampa su un lato</translation>
+<translation id="2551520365302988324">Invia caricamenti degli utenti da analizzare</translation>
 <translation id="2552966063069741410">Fuso orario</translation>
 <translation id="2562339630163277285">Consente di specificare l'URL del motore di ricerca utilizzato per fornire risultati immediati. L'URL deve contenere la stringa <ph name="SEARCH_TERM_MARKER" />, che verrà sostituita in fase di query dal testo inserito dall'utente fino a quel momento.
 
@@ -938,6 +941,7 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="2665422249821137126">Attiva il puntatore grande nella schermata di accesso</translation>
 <translation id="2672012807430078509">Controlla l'attivazione del protocollo di autenticazione NTLM per i montaggi SMB</translation>
 <translation id="267596348720209223">Consente di specificare le codifiche dei caratteri supportate dal provider di ricerca. Le codifiche sono nomi di pagine codificati come UTF-8, GB2312 e ISO-8859-1. Vengono provate nell'ordine indicato. Questa norma è facoltativa. Se non viene impostata viene utilizzato il valore predefinito UTF-8. Questa norma viene rispettata soltanto se è attiva la norma "DefaultSearchProviderEnabled".</translation>
+<translation id="2679827548357140943">Elenco di domini per i quali è necessario controllare la presenza di malware nei contenuti caricati</translation>
 <translation id="268577405881275241">Attiva la funzione proxy di compressione dei dati</translation>
 <translation id="2693108589792503178">Configura l'URL di modifica della password.</translation>
 <translation id="2694143893026486692">Lente d'ingrandimento ancorata attivata</translation>
@@ -1307,6 +1311,10 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="332771718998993005">Consente di stabilire il nome pubblicizzato come destinazione di <ph name="PRODUCT_NAME" />.
 
           Se questa norma viene impostata su una stringa non vuota, tale stringa verrà usata come nome della destinazione di <ph name="PRODUCT_NAME" />. In caso contrario, il nome della destinazione sarà quello del dispositivo. Se questa norma non viene impostata, il nome della destinazione sarà il nome del dispositivo, che il proprietario (o un utente del dominio che gestisce il dispositivo) potrà cambiare. Il nome può essere formato da massimo 24 caratteri.</translation>
+<translation id="3331950121151548952">Elenco di domini per i quali è necessario controllare la presenza di malware nei contenuti caricati.  Questo criterio viene utilizzato solo se il criterio <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> viene impostato su un valore che consente o applica i controlli della presenza di malware per i caricamenti.
+
+      Se questo criterio non viene impostato o viene impostato su un elenco di domini vuoto, non verrà verificata la presenza di malware nei contenuti caricati.
+      </translation>
 <translation id="3335468714959531450">Questa norma consente di impostare un elenco di pattern URL che specificano i siti autorizzati a impostare cookie.
 
           Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultCookiesSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.
@@ -1374,6 +1382,15 @@ Se questa norma viene impostata su True, i ritardi di gestione dell'alimentazion
 Se questa norma viene impostata su False o non viene impostata, i ritardi di gestione dell'alimentazione e il limite di durata delle sessioni iniziano immediatamente all'avvio della sessione.</translation>
 <translation id="3478024346823118645">Cancella dati utente all'uscita</translation>
 <translation id="3480961938508521469">Carica completamente la batteria con la modalità standard.</translation>
+<translation id="3483729306380590354">Consente di impostare il valore personalizzato espresso in percentuale raggiunto il quale viene avviata la ricarica della batteria.
+
+          La ricarica della batteria viene avviata quando viene raggiunto il valore di avvio della ricarica personalizzato.
+
+          Il valore <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> deve essere di almeno cinque punti percentuali inferiore al valore <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />.
+
+          Questo criterio viene usato soltanto se il criterio <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" /> è impostato su <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" />.
+
+          Se questo criterio non viene configurato o non viene impostato, verrà applicata la modalità di ricarica <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" /> della batteria.</translation>
 <translation id="348495353354674884">Attiva tastiera virtuale</translation>
 <translation id="3487623755010328395">
         Se è impostata questa norma, <ph name="PRODUCT_NAME" /> proverà a registrarsi e ad applicare a tutti i profili la norma relativa alla cloud associata.
@@ -1807,6 +1824,15 @@ Il valore della norma dovrebbe essere specificato in secondi. Il valore minimo d
           Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
 
           Se questo criterio non viene impostato, inizialmente il clic automatico è disattivato, ma l'utente può attivarlo in qualsiasi momento.</translation>
+<translation id="4215197846797661927">Consente di impostare la configurazione giornaliera per la modalità di ricarica avanzata della batteria.
+
+          Questo criterio viene usato soltanto se il criterio <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> è impostato su true.
+
+          Se questo criterio non viene configurato o non viene impostato, la modalità di ricarica avanzata della batteria sarà sempre disattivata.
+
+          Nota: il valore <ph name="CHARGE_START_TIME_FIELD_NAME" /> deve essere inferiore al valore <ph name="CHARGE_END_TIME_FIELD_NAME" />.
+
+          Nota: i valori consentiti per il campo <ph name="MINUTE_FIELD_NAME" /> in <ph name="CHARGE_START_TIME_FIELD_NAME" /> e <ph name="CHARGE_END_TIME_FIELD_NAME" /> sono 0, 15, 30, 45.</translation>
 <translation id="4224610387358583899">Ritardi del blocco schermo</translation>
 <translation id="423797045246308574">Consente di impostare un elenco di pattern URL che specificano i siti in cui non è consentito l'utilizzo della generazione di chiavi. Se un pattern URL è indicato nella norma "KeygenAllowedForUrls", quest'ultima ha la precedenza su queste eccezioni.
 
@@ -1872,6 +1898,17 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
           Il valore della norma deve essere specificato in millisecondi. I valori sono fissati in modo da essere minori o uguali al ritardo di inattività.
 
           L'avviso viene mostrato solo se l'azione richiesta in caso di inattività è la disconnessione o lo spegnimento.</translation>
+<translation id="4342827592971649626">Questo criterio consente di controllare l'analisi approfondita dei download degli utenti tramite Navigazione sicura. Se non viene impostato o viene impostata l'opzione predefinita "Non analizzare i file", i download degli utenti non verranno analizzati dalla funzionalità Navigazione sicura.
+
+      Se viene impostata l'opzione "Vieta l'analisi dei file", gli utenti non potranno analizzare i propri download. Quest'ultima impostazione differisce da quella predefinita che permette ad alcuni utenti, ad esempio gli utenti che usano la protezione avanzata, di inviare i propri download da analizzare. Questa impostazione impedirà l'analisi anche a questi utenti.
+
+      Se viene impostata l'opzione "Invia download degli utenti da analizzare", i download degli utenti verranno inviati tramite la rete alla funzionalità Navigazione sicura per verificare l'eventuale presenza di malware.
+
+      Se viene impostata l'opzione "Invia caricamenti degli utenti da analizzare", i caricamenti degli utenti verranno inviati tramite la rete alla funzionalità Navigazione sicura per verificare l'eventuale presenza di malware.
+
+      Se viene impostata l'opzione "Invia caricamenti e download degli utenti da analizzare", il comportamento del criterio è basato sulle regole descritte nelle impostazioni "Invia caricamenti degli utenti da analizzare" e "Invia download degli utenti da analizzare".
+
+      Per informazioni dettagliate sulla modalità di visualizzazione dei risultati dell'analisi per l'utente e l'amministratore, vedi i criteri <ph name="DELAY_DELIVER_UNTIL_VERDICT_POLICY_NAME" /> e <ph name="UNSAFE_EVENTS_REPORTING_ENABLED" />.</translation>
 <translation id="4344356660952451291">Elenco di domini per i quali è necessario verificare la conformità dei contenuti scaricati</translation>
 <translation id="4346674324214534449">Consente di stabilire se bloccare o meno gli annunci su siti con annunci invasivi.
 
@@ -2424,6 +2461,16 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
       Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
 
       Se il criterio non è impostato, l'utente può scegliere un'immagine da visualizzare sul desktop e sullo sfondo della schermata di accesso.</translation>
+<translation id="5437214086679373363">Consente di stabilire se consentire o meno agli utenti di caricare o scaricare i file protetti da password quando è richiesta l'analisi.  Tale limitazione si applica esclusivamente ai file che dovrebbero essere analizzati secondo quanto stabilito da <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> e dai criteri che controllano l'elenco di domini per i quali sono attivi i controlli.
+
+      Se questo criterio viene impostato su "Nessuno", <ph name="PRODUCT_NAME" /> impedisce all'utente di caricare o scaricare file protetti da password.
+
+      Se questo criterio viene impostato su "Consenti download", <ph name="PRODUCT_NAME" /> consente all'utente di scaricare file protetti da password.
+
+      Se questo criterio viene impostato su "Consenti caricamenti", <ph name="PRODUCT_NAME" /> consente all'utente di caricare file protetti da password.
+
+      Se questo criterio non viene impostato o viene impostato su "Consenti caricamenti e download", <ph name="PRODUCT_NAME" /> si comporta secondo le regole descritte nelle impostazioni "Consenti download" e "Consenti caricamenti".
+      </translation>
 <translation id="5437733496511628148">L'attivazione di questa impostazione impedisce l'impostazione dei cookie da parte degli elementi delle pagine web non provenienti dal dominio riportato nella barra degli indirizzi del browser.
 
       La disattivazione di questa impostazione consente ai cookie di essere impostati da elementi delle pagine web non provenienti dal dominio riportato nella barra degli indirizzi del browser e impedisce agli utenti di modificare questa impostazione.
@@ -3313,13 +3360,32 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
 
       Per ulteriori informazioni sul criterio <ph name="IEEM_SITELIST_POLICY" /> di Internet Explorer: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">URL a cui verrà concesso l'accesso ai dispositivi di acquisizione video senza richieste</translation>
+<translation id="713712866686796666">Consente di impostare la configurazione giornaliera della variazione dei picchi energetici.
+
+          Questo criterio viene usato soltanto se il criterio <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> è impostato su true.
+
+          Se questo criterio non viene configurato o non viene impostato, la variazione dei picchi energetici risulterà sempre disattivata.
+
+          Nota: i valori consentiti per il campo <ph name="MINUTE_FIELD_NAME" /> in <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> e <ph name="CHARGE_START_TIME_FIELD_NAME" /> sono 0, 15, 30, 45.</translation>
 <translation id="7138678301420049075">Altro</translation>
+<translation id="7139809614375682935">Consente di impostare il valore personalizzato espresso in percentuale raggiunto il quale viene interrotta la ricarica della batteria.
+
+          La ricarica della batteria viene interrotta quando viene raggiunto il valore di interruzione della ricarica personalizzato.
+
+          Il valore <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> deve essere di almeno cinque punti percentuali inferiore al valore <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />.
+
+          Questo criterio viene usato soltanto se il criterio <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" /> è impostato su <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" />.
+
+          Se questo criterio non viene configurato o non viene impostato, verrà applicata la modalità di ricarica <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" /> della batteria.</translation>
 <translation id="7140629953254369759">Indica a <ph name="PRODUCT_OS_NAME" /> di usare la configurazione del programma di pianificazione delle attività identificato dal nome specificato.
 
       La norma può essere impostata su "conservativa" e "rendimento", opzioni che selezionano le configurazioni del programma di pianificazione più adatte, rispettivamente, per la stabilità o il massimo rendimento.
 
       Se la norma non viene impostata, l'utente è libero di fare la propria scelta.</translation>
 <translation id="7145335384492396213">Modalità di stampa PIN predefinita</translation>
+<translation id="7149042336307555519"> I tipi di connessioni che è consentito utilizzare per gli aggiornamenti del sistema operativo. Gli aggiornamenti del sistema operativo potrebbero gravare sulla connessione a causa delle loro dimensioni e potrebbero comportare costi aggiuntivi. Di conseguenza, per impostazione predefinita non sono attivi per i tipi di connessione considerati costosi (attualmente solo "cellulare").
+
+      Gli identificatori dei tipi di connessione riconosciuti sono <ph name="CONNECTION_TYPE_ETHERNET_NAME" />, <ph name="CONNECTION_TYPE_WIFI_NAME" /> e <ph name="CONNECTION_TYPE_CELLULAR_NAME" />.</translation>
 <translation id="7152605873936173525">Consente di controllare la modalità del resolver di DNS over HTTPS. Tieni presente che questo criterio imposta solo la modalità predefinita per ciascuna query. La modalità può essere ignorata per tipi speciali di query, ad esempio le richieste di risoluzione del nome host del server DNS over HTTPS.
 
       La modalità <ph name="SECURE_DNS_MODE_OFF" /> disattiverà DNS over HTTPS.
@@ -3348,6 +3414,17 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
           Se questa norma viene impostata su false, le richieste di wakelock dello schermo verranno retrocesse a richieste di wakelock di sistema.</translation>
 <translation id="7177857088692019405">Sblocco rapido</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
+<translation id="7187447094921703950">Consente di attivare il criterio di gestione della variazione dei picchi energetici.
+
+          Variazione dei picchi è un criterio per il risparmio energetico che riduce al minimo l'utilizzo della corrente alternata durante i momenti della giornata di utilizzo più intenso. Per ogni giorno feriale è possibile impostare un orario di inizio e di fine per l'esecuzione della modalità Variazione dei picchi energetici. Nel periodo impostato, il sistema usa la batteria, anche se è presente il collegamento alla corrente alternata, finché il livello della batteria rimane al di sopra della soglia specificata. Dopo l'orario di fine specificato, il sistema usa la corrente alternata, se è presente il collegamento, ma non ricarica la batteria. Il sistema funzionerà di nuovo normalmente con la corrente alternata e la ricarica della batteria, dopo l'orario di inizio della ricarica specificato.
+
+          Se questo criterio viene impostato su true e sono impostati i criteri <ph name="DEVICE_POWER_PEAK_SHIFT_BATTERY_THRESHOLD_NAME" /> e <ph name="DEVICE_POWER_PEAK_SHIFT_DAY_CONFIG_NAME" />, la variazione dei picchi energetici sarà sempre attiva, se supportata dal dispositivo.
+
+          Se questo criterio viene impostato su false, la variazione dei picchi energetici sarà sempre disattivata.
+
+          Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
+
+          Se questo criterio non viene impostato, inizialmente la variazione dei picchi energetici è disattivata e non può essere attivata dall'utente.</translation>
 <translation id="718956142899066210">Tipi di connessioni consentiti per gli aggiornamenti</translation>
 <translation id="7190286937411178540">Attiva la funzione di accessibilità di evidenziazione dell'elemento attivo tramite tastiera</translation>
 <translation id="7194407337890404814">Nome del provider di ricerca predefinito</translation>
@@ -3971,6 +4048,17 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 
           Se questa norma non è impostata, l'impostazione viene attivata.</translation>
 <translation id="8382184662529825177">Attiva l'utilizzo dell'attestazione remota per la protezione dei contenuti per il dispositivo</translation>
+<translation id="8382693763260501307">Consente di attivare il criterio di gestione della modalità di ricarica avanzata della batteria.
+
+          La modalità di ricarica avanzata della batteria consente all'utente di massimizzare le condizioni della batteria. In modalità di ricarica avanzata, il sistema utilizza un algoritmo di ricarica standard e altre tecniche durante gli orari non di lavoro per massimizzare le condizioni della batteria. Durante gli orari di lavoro viene utilizzata una ricarica express. La ricarica express permette di ricaricare la batteria in modo più rapido; perciò, la carica completa avviene in tempi minori. Per ogni giorno, il tempo in cui il sistema viene usato con maggiore frequenza è specificato da ora di inizio e durata.
+
+          Se questo criterio viene impostato su true e il criterio <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_DAY_CONFIG_NAME" /> è impostato, la modalità di ricarica avanzata della batteria sarà sempre attiva se supportata sul dispositivo.
+
+          Se questo criterio viene impostato su false, la modalità di ricarica avanzata della batteria sarà sempre disattivata.
+
+          Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
+
+          Se questo criterio non viene impostato, la modalità di ricarica avanzata della batteria è disattivata e non può essere attivata dall'utente.</translation>
 <translation id="838870586332499308">Attiva roaming dati</translation>
 <translation id="8390049129576938611">Consente di disattivare il visualizzatore di PDF interno di <ph name="PRODUCT_NAME" />. I file PDF vengono gestiti come download che l'utente può aprire con l'applicazione predefinita.
 
@@ -4157,10 +4245,16 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
       Se questo criterio viene configurato, il gruppo di applicazioni è fisso e non può essere modificato dagli utenti.
 
       Se questo criterio non viene impostato, gli utenti possono modificare l'elenco di app bloccate in Avvio app.</translation>
+<translation id="8779504970846195767">Consente di impostare un valore percentuale per il limite di consumo della batteria per la variazione dei picchi energetici.
+
+          Questo criterio viene usato soltanto se il criterio <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> è impostato su true.
+
+          Se questo criterio non viene configurato o non viene impostato, la variazione dei picchi energetici risulterà sempre disattivata.</translation>
 <translation id="8798099450830957504">Predefinito</translation>
 <translation id="8800453707696044281">Imposta il valore percentuale personalizzato raggiunto il quale viene interrotta la ricarica della batteria</translation>
 <translation id="8801680448782904838">Invia a un utente una notifica che comunica che è consigliato o necessario eseguire un riavvio del browser o del dispositivo
 </translation>
+<translation id="8802816494059596691">I nomi host specificati in questo elenco saranno esenti dal controllo dei criteri HSTS che potrebbero eseguire l'upgrade delle richieste da http a https. Solo i nomi host con etichetta singola sono consentiti in questo criterio. I nomi host devono essere in forma canonica: ogni IDN deve essere convertito nel relativo formato A-label e tutte le lettere ASCII devono essere minuscole. Questo criterio si applica soltanto ai nomi host specificati e non ai relativi sottodomini.</translation>
 <translation id="8818173863808665831">Consente di segnalare la posizione geografica del dispositivo.
 
 Se la norma non viene impostata o viene impostata su false, la posizione non viene segnalata.</translation>
@@ -4307,6 +4401,17 @@ https://www.w3.org/TR/secure-contexts/
       Se il valore della norma viene impostato su un token associato a una build di correzione rapida, il dispositivo verrà aggiornato alla build di correzione rapida corrispondente se l'aggiornamento non è bloccato da un'altra norma.
 
       Se questa norma non è impostata o se il valore non è associato a una build di correzione rapida, il dispositivo non verrà aggiornato a una build di correzione rapida. Se il dispositivo esegue già una build di correzione rapida e la norma non è più impostata o il suo valore non è più associato a una build di correzione rapida, il dispositivo verrà aggiornato a una normale build se l'aggiornamento non è bloccato da un'altra norma.</translation>
+<translation id="9053158112041032237">Consente di specificare il criterio di gestione della modalità di ricarica della batteria.
+
+          Controlla in modo dinamico la carica della batteria per minimizzarne l'usura dovuta alle sollecitazioni dell'utilizzo e aumentarne la durata.
+
+          Se viene selezionata la modalità di ricarica personalizzata della batteria, è necessario specificare i criteri <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> e <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />.
+
+          Se questo criterio viene impostato, la modalità di ricarica della batteria verrà applicata se supportata sul dispositivo.
+
+          Se questo criterio non viene impostato ed è supportato sul dispositivo, verrà applicata la modalità di ricarica standard della batteria e l'impostazione non potrà essere modificata dall'utente.
+
+          Nota: se specificato, <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> sostituisce questo criterio.</translation>
 <translation id="9054012305936267950">Questo criterio consente di stabilire il comportamento di accesso del browser. Ti consente di specificare se l'utente può accedere a <ph name="PRODUCT_NAME" /> con il proprio account e usare i servizi correlati all'account come Sincronizzazione Chrome.
 
       Se il criterio viene impostato su "Disattiva accesso al browser", l'utente non potrà accedere al browser e usare i servizi basati sull'account. In questo caso, le funzionalità a livello di browser come la Sincronizzazione Chrome non potranno essere usate e non saranno disponibili. Se il criterio viene impostato su "Disattivata" dopo che l'utente ha eseguito l'accesso, l'utente verrà scollegato alla successiva esecuzione di Chrome, ma i dati locali del profilo, come preferiti, password ecc., verranno mantenuti. L'utente potrà comunque accedere e usare i servizi web di Google come Gmail.

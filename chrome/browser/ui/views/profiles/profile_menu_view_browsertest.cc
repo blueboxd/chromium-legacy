@@ -87,7 +87,8 @@ void AddAccountToProfile(Profile* profile, const char* signed_in_email) {
   ProfileAttributesEntry* entry_signed_in;
   ASSERT_TRUE(storage.GetProfileAttributesWithPath(profile->GetPath(),
                                                    &entry_signed_in));
-  entry_signed_in->SetAuthInfo("12345", base::UTF8ToUTF16(signed_in_email));
+  entry_signed_in->SetAuthInfo("12345", base::UTF8ToUTF16(signed_in_email),
+                               true);
   profile->GetPrefs()->SetString(prefs::kGoogleServicesHostedDomain,
                                  "google.com");
 }
@@ -668,12 +669,15 @@ class ProfileMenuClickTest_MultipleProfiles : public ProfileMenuClickTest {
  public:
   // List of actionable items in the correct order as they appear in the menu.
   // If a new button is added to the menu, it should also be added to this list.
-  static constexpr ProfileMenuView::ActionableItem kOrderedActionableItems[6] =
+  static constexpr ProfileMenuView::ActionableItem kOrderedActionableItems[9] =
       {ProfileMenuView::ActionableItem::kPasswordsButton,
        ProfileMenuView::ActionableItem::kCreditCardsButton,
        ProfileMenuView::ActionableItem::kAddressesButton,
        ProfileMenuView::ActionableItem::kOtherProfileButton,
        ProfileMenuView::ActionableItem::kOtherProfileButton,
+       ProfileMenuView::ActionableItem::kGuestProfileButton,
+       ProfileMenuView::ActionableItem::kManageProfilesButton,
+       ProfileMenuView::ActionableItem::kExitProfileButton,
        // The first button is added again to finish the cycle and test that
        // there are no other buttons at the end.
        ProfileMenuView::ActionableItem::kPasswordsButton};
@@ -711,11 +715,14 @@ class ProfileMenuClickTest_WithPrimaryAccount : public ProfileMenuClickTest {
  public:
   // List of actionable items in the correct order as they appear in the menu.
   // If a new button is added to the menu, it should also be added to this list.
-  static constexpr ProfileMenuView::ActionableItem kOrderedActionableItems[5] =
+  static constexpr ProfileMenuView::ActionableItem kOrderedActionableItems[8] =
       {ProfileMenuView::ActionableItem::kPasswordsButton,
        ProfileMenuView::ActionableItem::kCreditCardsButton,
        ProfileMenuView::ActionableItem::kAddressesButton,
        ProfileMenuView::ActionableItem::kManageGoogleAccountButton,
+       ProfileMenuView::ActionableItem::kGuestProfileButton,
+       ProfileMenuView::ActionableItem::kManageProfilesButton,
+       ProfileMenuView::ActionableItem::kExitProfileButton,
        // The first button is added again to finish the cycle and test that
        // there are no other buttons at the end.
        ProfileMenuView::ActionableItem::kPasswordsButton};
@@ -757,12 +764,15 @@ class ProfileMenuClickTest_WithUnconsentedPrimaryAccount
  public:
   // List of actionable items in the correct order as they appear in the menu.
   // If a new button is added to the menu, it should also be added to this list.
-  static constexpr ProfileMenuView::ActionableItem kOrderedActionableItems[6] =
+  static constexpr ProfileMenuView::ActionableItem kOrderedActionableItems[9] =
       {ProfileMenuView::ActionableItem::kPasswordsButton,
        ProfileMenuView::ActionableItem::kCreditCardsButton,
        ProfileMenuView::ActionableItem::kAddressesButton,
        ProfileMenuView::ActionableItem::kManageGoogleAccountButton,
        ProfileMenuView::ActionableItem::kSignoutButton,
+       ProfileMenuView::ActionableItem::kGuestProfileButton,
+       ProfileMenuView::ActionableItem::kManageProfilesButton,
+       ProfileMenuView::ActionableItem::kExitProfileButton,
        // The first button is added again to finish the cycle and test that
        // there are no other buttons at the end.
        ProfileMenuView::ActionableItem::kPasswordsButton};

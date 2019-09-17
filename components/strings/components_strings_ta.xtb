@@ -71,6 +71,7 @@
 <translation id="1292701964462482250">"உங்கள் கம்ப்யூட்டரில் உள்ள மென்பொருள் இணையத்துடன் பாதுகாப்பாக இணைவதிலிருந்து Chromeமைத் தடுக்கிறது" (Windows கம்ப்யூட்டர்கள் மட்டும்)</translation>
 <translation id="1294154142200295408">கட்டளை வரி மாற்று வடிவங்கள்</translation>
 <translation id="129553762522093515">சமீபத்தில் மூடியவை</translation>
+<translation id="1298536327547837046">மால்வேரை ஸ்கேன் செய்கிறது</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />குக்கீகளை அழிக்கவும்<ph name="END_LINK" /></translation>
 <translation id="1307966114820526988">தடுக்கப்பட்ட அம்சங்கள்</translation>
 <translation id="1320233736580025032">Prc1 (என்வலப்)</translation>
@@ -167,6 +168,7 @@
 <translation id="1734878702283171397">கணினி நிர்வாகியைத் தொடர்புகொள்ளவும்</translation>
 <translation id="1740951997222943430">சரியான காலாவதி மாதத்தை உள்ளிடவும்</translation>
 <translation id="1743520634839655729">அடுத்த முறை விரைவாகப் பணம் செலுத்த, உங்கள் கார்டின் பெயரையும் பில்லிங் முகவரியையும் உங்கள் Google கணக்கிலும் இந்தச் சாதனத்திலும் சேமிக்கவும்.</translation>
+<translation id="1743570585616704562">அடையாளங்காண முடியவில்லை</translation>
 <translation id="1745880797583122200">உங்கள் உலாவி நிர்வகிக்கப்படுகிறது</translation>
 <translation id="17513872634828108">தாவல்களைத் திற</translation>
 <translation id="1753706481035618306">பக்க எண்</translation>
@@ -423,6 +425,7 @@
 <translation id="320323717674993345">கட்டணம் செலுத்துவதை ரத்துசெய்</translation>
 <translation id="3207960819495026254">புக்மார்க் செய்யப்பட்டது</translation>
 <translation id="3209034400446768650">இந்தப் பக்கத்திற்குச் சென்றால் கட்டணம் விதிக்கக்கூடும்</translation>
+<translation id="3215092763954878852">WebAuthnனைப் பயன்படுத்த முடியவில்லை</translation>
 <translation id="3225919329040284222">உள்ளமைந்த எதிர்பார்ப்புகளுடன் பொருந்தாத சான்றிதழை சேவையகம் வழங்கியது. சில உயர்-பாதுகாப்பு வலைத்தளங்களில் உங்களைப் பாதுகாக்கவே இந்த எதிர்பார்ப்புகள் சேர்க்கப்படுகின்றன.</translation>
 <translation id="3226128629678568754">பக்கத்தை ஏற்ற தேவைப்படும் தரவை மறுமுறைச் சமர்ப்பிப்பதற்கு மீண்டும் ஏற்று என்ற பொத்தானை அழுத்துக.</translation>
 <translation id="3227137524299004712">மைக்ரோஃபோன்</translation>
@@ -558,6 +561,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{ஏதுமில்லை}=1{1 தளத்திலிருந்து }other{# தளங்களிலிருந்து }}</translation>
 <translation id="397105322502079400">கணக்கிடுகிறது...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> தடுக்கப்பட்டுள்ளது</translation>
+<translation id="3981540111851280311">உங்கள் உலாவியில் Chrome Enterprise Threat Protectionனை <ph name="ENROLLMENT_DOMAIN" /> இயக்கியுள்ளது. உங்களின் சில தரவை Chrome Enterprise Threat Protectionனால் அணுக முடியும்.</translation>
 <translation id="3987940399970879459">1 மெ.பை. அளவை விடக் குறைவாக உள்ளது</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{அருகில் ஒரு இணையப் பக்கம் உள்ளது}other{அருகில் # இணையப் பக்கங்கள் உள்ளன}}</translation>
 <translation id="4030383055268325496">&amp;சேர்த்தலைச் செயல்தவிர்</translation>
@@ -626,6 +630,7 @@
 <translation id="4277028893293644418">கடவுச்சொல்லை மீட்டமை</translation>
 <translation id="4279811152705618813"><ph name="DEVICE_TYPE" />ஐ நிர்வகிப்பது: <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{இந்தக் கார்டு உங்கள் Google கணக்கில் சேமிக்கப்பட்டது}other{இந்தக் கார்டுகள் உங்கள் Google கணக்கில் சேமிக்கப்பட்டன}}</translation>
+<translation id="428847186335018806">Chromeமில் நீங்கள் பதிவேற்றும் அல்லது பதிவிறக்கும் கோப்புகளை ஸ்கேன் செய்யும்.</translation>
 <translation id="42981349822642051">விரி</translation>
 <translation id="4302965934281694568">Chou3 (என்வலப்)</translation>
 <translation id="4305817255990598646">மாறு</translation>
@@ -664,6 +669,7 @@
 <translation id="4506176782989081258">சரிபார்ப்புப் பிழை: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">கணினி நிர்வாகியைத் தொடர்புகொள்ளுதல்</translation>
 <translation id="450710068430902550">நிர்வாகியுடன் பகிர்பவை</translation>
+<translation id="4508814173490746936">Touch IDயைப் பயன்படுத்த இயலவில்லை</translation>
 <translation id="4510487217173779431">Chou4 (என்வலப்)</translation>
 <translation id="4515275063822566619">கார்டுகளும் முகவரிகளும் Chromeமிலிருந்தும் <ph name="ACCOUNT_EMAIL" /> எனும் உங்கள் Google கணக்கிலிருந்தும் பெறப்பட்டவையாகும். <ph name="BEGIN_LINK" />அமைப்புகளில்<ph name="END_LINK" /> அவற்றை நிர்வகிக்கலாம்.</translation>
 <translation id="4517607026994743406">Comm-10 (என்வலப்)</translation>
@@ -759,6 +765,7 @@
 <translation id="5045550434625856497">தவறான கடவுச்சொல்</translation>
 <translation id="5056549851600133418">உங்களுக்கான செய்திக் கட்டுரைகள்</translation>
 <translation id="5068524481479508725">A10</translation>
+<translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(ஒன்று பயன்பாட்டில் உள்ளது)}other{(# பயன்பாட்டில் உள்ளன)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />ப்ராக்ஸி முகவரியைச் சரிபார்த்தல்<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">தற்போது சேவையகத்தின் சான்றிதழ் செல்லுபடியாகாது.</translation>
 <translation id="5087580092889165836">கார்டைச் சேர்</translation>
@@ -986,6 +993,7 @@
 <translation id="6302269476990306341">’Chromeமில் Google அசிஸ்டண்ட்’ நிறுத்தப்படுகிறது</translation>
 <translation id="6305205051461490394"><ph name="URL" />ஐ அடையமுடியவில்லை.</translation>
 <translation id="6321917430147971392">உங்கள் DNS அமைப்புகளைச் சரிபார்க்கவும்</translation>
+<translation id="6322182122604171028">Windows Helloவைப் பயன்படுத்த இயலவில்லை</translation>
 <translation id="6328639280570009161">நெட்வொர்க் யூகத்தை முடக்க முயலவும்</translation>
 <translation id="6328784461820205019">"உங்கள் இணைப்பு தனிப்பட்டது அல்ல" அல்லது "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" அல்லது "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" அல்லது "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" அல்லது "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" அல்லது "SSL சான்றிதழ் பிழை"</translation>
 <translation id="6328786501058569169">இது ஏமாற்றக்கூடிய தளம்</translation>
@@ -1009,6 +1017,7 @@
 <translation id="6433490469411711332">தொடர்புத் தகவலை மாற்று</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> இணைக்க மறுத்தது.</translation>
 <translation id="6434309073475700221">நிராகரி</translation>
+<translation id="6435221585574090192">உங்கள் நிர்வாகியுடன் Chrome Enterprise Threat Protection கொடியிட்டுள்ள பாதுகாப்பு தொடர்பான செயல்பாடுகளின் தரவைப் பகிரும். இவற்றில் பக்க URLகள், கோப்பின் பெயரும் தரவுத்தகவலும், உங்கள் சாதன மற்றும் Chrome பயனர்பெயர் ஆகியவை அடங்கும்.</translation>
 <translation id="6440503408713884761">புறக்கணிக்கப்பட்டது</translation>
 <translation id="6446163441502663861">Kahu (என்வலப்)</translation>
 <translation id="6446608382365791566">மேலும் தகவலைச் சேர்க்கவும்</translation>
@@ -1053,6 +1062,7 @@
 <translation id="6671697161687535275">Chromium இலிருந்து படிவப் பரிந்துரையை அகற்றவா?</translation>
 <translation id="6685834062052613830">வெளியேறி, அமைப்பை முடிக்கவும்</translation>
 <translation id="6689271823431384964">நீங்கள் உள்நுழைந்துள்ளதால் Google கணக்கில் உங்கள் கார்டு விவரங்களைச் சேமிக்கும் விருப்பத்தை Chrome வழங்குகிறது. இதை நீங்கள் அமைப்புகளில் மாற்றலாம். கார்டு உரிமையாளரின் பெயர் உங்கள் கணக்கிலிருந்து பெறப்படுகிறது.</translation>
+<translation id="6707256370811247129">Chromeமில் நீங்கள் பதிவேற்றும் அல்லது பதிவிறக்கும் கோப்புகளையும் தற்காலிக சேமிப்பின் உள்ளடக்கங்களையும் ஸ்கேன் செய்யும்.</translation>
 <translation id="6710213216561001401">முந்தையது</translation>
 <translation id="6710594484020273272">&lt;தேடல் வார்த்தையை உள்ளிடுக&gt;</translation>
 <translation id="671076103358959139">பதிவு டோக்கன்:</translation>
@@ -1071,6 +1081,7 @@
 <translation id="681021252041861472">அவசியமானவை</translation>
 <translation id="6810899417690483278">தனிப்பயனாக்கல் ஐடி</translation>
 <translation id="6825578344716086703"><ph name="DOMAIN" />க்குச் செல்ல முயற்சி செய்தீர்கள். ஆனால் சேவையகமானது வலிமையற்ற கையொப்ப அல்காரிதமை (SHA-1 போன்றது) பயன்படுத்தி, கையொப்பமிடப்பட்ட சான்றிதழை வழங்கியது. அதாவது, சேவையகம் வழங்கிய பாதுகாப்பு அனுமதிச் சான்றுகள் போலியானதாக்கப்பட்டிருக்கலாம், மேலும் அந்தச் சேவையகம் நீங்கள் எதிர்பார்த்த (ஹேக்கருடன் தகவல் பரிமாற்றம் செய்திருக்கக்கூடும்) சேவையகமாக இல்லாமலிருக்கலாம்.</translation>
+<translation id="6826370046007623921">தரவு இழப்புத் தடுப்பு</translation>
 <translation id="6831043979455480757">மொழிபெயர்</translation>
 <translation id="6839929833149231406">பரப்பு</translation>
 <translation id="6852204201400771460">ஆப்ஸை ரெஃப்ரெஷ் செய்யவா?</translation>
@@ -1217,6 +1228,7 @@
 <translation id="7542995811387359312">இந்தப் படிவம் பாதுகாப்பான இணைப்பைப் பயன்படுத்தாத காரணத்தால், தானியங்கு கடன் அட்டை நிரப்புதல் முடக்கப்பட்டிருக்கிறது.</translation>
 <translation id="7548892272833184391">இணைப்புப் பிழைகளைச் சரிசெய்யவும்</translation>
 <translation id="7549584377607005141">சரியாக காண்பிக்கப்படுவதற்கு நீங்கள் ஏற்கனவே உள்ளிட்ட தரவு இந்த இணையப்பக்கத்திற்கு தேவைப்படுகிறது. இந்த தரவை நீங்கள் மீண்டும் அனுப்பலாம், ஆனால் அவ்வாறு செய்வதனால் இந்தப் பக்கம் ஏற்கனவே செயற்படுத்திய எல்லாச் செயலையும் மீண்டும் செய்வீர்கள்.</translation>
+<translation id="7550637293666041147">உங்கள் சாதன மற்றும் Chrome பயனர்பெயர்</translation>
 <translation id="7552846755917812628">பின்வரும் உதவிக் குறிப்புகளைச் செய்து பார்க்கவும்:</translation>
 <translation id="7554791636758816595">புதிய தாவல்</translation>
 <translation id="7564049878696755256"><ph name="ORG_NAME" /> கணக்கிற்கான அணுகலை நீங்கள் இழக்கக்கூடும் அல்லது அடையாளத் திருட்டை எதிர்கொள்ளக்கூடும். இப்போதே உங்கள் கடவுச்சொல்லை மாற்றும்படி Chrome பரிந்துரைக்கிறது.</translation>
@@ -1231,6 +1243,7 @@
 <translation id="7610193165460212391"><ph name="VALUE" /> என்ற மதிப்பு வரம்பை மீறியுள்ளது.</translation>
 <translation id="7613889955535752492">காலாவதியாவது: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">உங்கள் Google கணக்கு கடவுச்சொல்லின் மற்றொரு பதிப்பைப் பயன்படுத்தி குறியாக்கப்பட்ட தரவு உங்களிடம் ஏற்கனவே உள்ளது. கீழே அதை உள்ளிடுக.</translation>
+<translation id="7625784245512586808">Chrome Enterprise Threat Protection</translation>
 <translation id="7633909222644580952">செயல்திறன் தரவுகள் &amp; சிதைவு அறிக்கைகள்</translation>
 <translation id="7637571805876720304">Chromium இலிருந்து கிரெடிட் கார்டை அகற்றவா?</translation>
 <translation id="7638605456503525968">சீரியல் போர்ட்டுகள்</translation>
@@ -1341,6 +1354,7 @@
 <translation id="8211406090763984747">இணைப்பு பாதுகாப்பானது</translation>
 <translation id="8218327578424803826">ஒதுக்கிய இருப்பிடம்:</translation>
 <translation id="8220146938470311105">C7/C6 (என்வலப்)</translation>
+<translation id="8220639454292072926">நிறுவன அறிக்கையளித்தல்</translation>
 <translation id="8225771182978767009">இந்தக் கம்ப்யூட்டரை அமைத்த நபர் இந்தத் தளத்தைத் தடுக்கும்படி தேர்வுசெய்துள்ளார்.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">புதிய மறைநிலைத் தாவலில் பக்கத்தைத் திறக்கவும்</translation>
@@ -1423,6 +1437,7 @@
 <translation id="8740359287975076522"><ph name="HOST_NAME" />’s &lt;abbr id="dnsDefinition"&gt;DNS முகவரியைக்&lt;/abbr&gt; கண்டறிய முடியவில்லை. சிக்கலை ஆய்வு செய்கிறது.</translation>
 <translation id="874846938927089722">ஏற்கப்படும் கிரெடிட் மற்றும் ப்ரீபெய்டு கார்டுகள்</translation>
 <translation id="874918643257405732">இந்தத் தாவலைப் புக்மார்க் செய்யும்</translation>
+<translation id="8751426954251315517">பிறகு மீண்டும் முயலவும்</translation>
 <translation id="8759274551635299824">கார்டு காலாவதியாகிவிட்டது</translation>
 <translation id="8761567432415473239">Google பாதுகாப்பான தேடல், <ph name="SITE" /> இல் சமீபத்தில் <ph name="BEGIN_LINK" />தீங்கான நிரல்களைக் கண்டறிந்தது<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB சாதனம்</translation>
@@ -1487,6 +1502,7 @@
 <translation id="9080712759204168376">ஆர்டர் பற்றிய சுருக்கவிவரம்</translation>
 <translation id="9089260154716455634">Off-Hours கொள்கை:</translation>
 <translation id="9095388113577226029">மேலும் மொழிகள்...</translation>
+<translation id="9098981495403789647">உலாவியில் Chrome Enterprise Threat Protectionனை உங்கள் நிர்வாகி இயக்கியுள்ளார். உங்களின் சில தரவை Chrome Enterprise Threat Protectionனால் அணுக முடியும்.</translation>
 <translation id="9103872766612412690">வழக்கமாக, <ph name="SITE" /> உங்கள் தகவலைப் பாதுகாப்பதற்காக என்க்ரிப்ஷனைப் பயன்படுத்துகிறது.
 இந்த முறை <ph name="SITE" /> உடன் இணைவதற்கு Chromium முயற்சித்தபோது வழக்கத்திற்கு மாறான, தவறான நற்சான்றிதழ்களை இணையதளம் வழங்கியது. தாக்குபவர் தன்னை <ph name="SITE" /> ஆகக் காட்ட முயற்சிக்கும் போது அல்லது இணைப்பை வைஃபை உள்நுழைவுத் திரை குறுக்கிடும் போது இது ஏற்படலாம். இருப்பினும், தரவு எதுவும் பரிமாற்றப்படுவதற்கு முன் Chromium இணைப்பை நிறுத்தியதால் உங்கள் தகவல் பாதுகாப்பாகவே இருக்கிறது.</translation>
 <translation id="9106062320799175032">பில்லிங் முகவரியைச் சேர்க்கவும்</translation>

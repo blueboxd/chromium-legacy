@@ -6,7 +6,8 @@
 
 #include <stdint.h>
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/test/test_mock_time_task_runner.h"
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/begin_frame_source_test.h"
@@ -69,7 +70,7 @@ class BackToBackBeginFrameSourceTest : public ::testing::Test {
 
     delay_based_time_source_ = time_source.get();
     source_.reset(new BackToBackBeginFrameSource(std::move(time_source)));
-    obs_ = base::WrapUnique(new ::testing::NiceMock<MockBeginFrameObserver>);
+    obs_ = std::make_unique<::testing::NiceMock<MockBeginFrameObserver>>();
   }
 
   void TearDown() override { obs_.reset(); }

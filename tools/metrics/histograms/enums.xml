@@ -24650,6 +24650,7 @@ Called by update_net_error_codes.py.-->
   <int value="3030" label="DelegateFocus"/>
   <int value="3031" label="DelegateFocusNotFirstInFlatTree"/>
   <int value="3032" label="ThirdPartySharedWorker"/>
+  <int value="3033" label="ThirdPartyBroadcastChannel"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -36248,6 +36249,7 @@ from previous Chrome versions.
   <int value="-10709540"
       label="OmniboxUIExperimentHideSuggestionUrlScheme:enabled"/>
   <int value="-9599490" label="KernelnextVMs:disabled"/>
+  <int value="-9322265" label="ShowBluetoothDebugLogToggle:enabled"/>
   <int value="-5052940" label="enable-simplified-fullscreen"/>
   <int value="-3093629" label="DcheckIsFatal:disabled"/>
   <int value="-2953333" label="AndroidHistoryManager:disabled"/>
@@ -36449,6 +36451,7 @@ from previous Chrome versions.
   <int value="293134455" label="AutofillSendBillingCustomerNumber:disabled"/>
   <int value="293996306" label="ArrayPrototypeValues:disabled"/>
   <int value="296215399" label="WindowsMixedReality:disabled"/>
+  <int value="297095559" label="ShowBluetoothDebugLogToggle:disabled"/>
   <int value="299792415" label="OmniboxSuggestionTransparencyOptions:enabled"/>
   <int value="300095239" label="FCMInvalidations:enabled"/>
   <int value="301869874" label="NTPPhysicalWebPageSuggestions:disabled"/>
@@ -41326,6 +41329,11 @@ Called by update_use_counter_css.py.-->
   <int value="3" label="Navigation not intercepted"/>
 </enum>
 
+<enum name="NavigationIsLockedProcess">
+  <int value="0" label="Process is not locked to origin"/>
+  <int value="1" label="Process is locked to origin"/>
+</enum>
+
 <enum name="NavigationIsSameBrowsingInstance">
   <int value="0" label="Cross BrowsingInstance navigation"/>
   <int value="1" label="Same BrowsingInstance navigation"/>
@@ -41377,6 +41385,11 @@ Called by update_use_counter_css.py.-->
   <int value="7"
       label="An origin was preconnected to when the user kept the tab in the
              foreground until the previous preconnect expired."/>
+</enum>
+
+<enum name="NavigationRequiresDedicatedProcess">
+  <int value="0" label="Does not require dedicated process"/>
+  <int value="1" label="Requires dedicated process"/>
 </enum>
 
 <enum name="NavigationScheme">

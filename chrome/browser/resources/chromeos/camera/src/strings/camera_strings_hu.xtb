@@ -19,6 +19,7 @@
 <translation id="2501953888035679275">Fotókat és videókat készíthet a kamerával.</translation>
 <translation id="2549985041256363841">Felvétel megkezdése</translation>
 <translation id="2599796128805996109">Hátsó kamera</translation>
+<translation id="2912439424121107408">A szakértői mód nem támogatott ezen az eszközön</translation>
 <translation id="2968794441791257519">A kamerával készített fotók és videók a Letöltések mappába kerülnek. A Fájlok alkalmazásban férhet hozzájuk.
 
         A tárhelyengedéllyel rendelkező alkalmazások hozzáférhetnek a fotókhoz és a videókhoz.</translation>
@@ -41,10 +42,12 @@
         Ellenőrizze, hogy a kamera megfelelően van-e csatlakoztatva.</translation>
 <translation id="5152121255775685072">Ugrás a galériába</translation>
 <translation id="5671277269877808209">Négyzet</translation>
+<translation id="5775960006311140197">Szakértői mód</translation>
 <translation id="5869546221129391014">Rács</translation>
 <translation id="6040143037577758943">Bezárás</translation>
 <translation id="6073451960410192870">Felvétel leállítása</translation>
 <translation id="6165508094623778733">További információ</translation>
+<translation id="6197807149213783179">Metaadatok mentése</translation>
 <translation id="6233780560267770709">Háromszor hármas</translation>
 <translation id="6243827288366940320">Aranymetszés</translation>
 <translation id="6248749904681914629">Külső kamera</translation>
@@ -66,6 +69,7 @@
 <translation id="8261506727792406068">Törlés</translation>
 <translation id="8428213095426709021">Beállítások</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" /> × <ph name="HEIGHT" />)</translation>
+<translation id="8732462232047530626">Metaadatok előnézete</translation>
 <translation id="8815966864175525708">Váltás álló fotó készítésére</translation>
 <translation id="8870695351537079478">Nem sikerült elindítani a felvételt.</translation>
 <translation id="9045155556724273246">10 másodperc</translation>

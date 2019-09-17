@@ -14,10 +14,13 @@ source_set("common") {
     "sysmem_buffer_reader.h",
     "sysmem_buffer_writer.cc",
     "sysmem_buffer_writer.h",
+    "sysmem_buffer_writer_queue.cc",
+    "sysmem_buffer_writer_queue.h",
   ]
 
   deps = [
     "//base",
+    "//media/base",
     "//third_party/fuchsia-sdk/sdk:media",
     "//third_party/fuchsia-sdk/sdk:sysmem",
   ]

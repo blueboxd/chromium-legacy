@@ -100,7 +100,6 @@ class LayerTestCommon {
         origin_effect->render_surface_reason = RenderSurfaceReason::kMask;
         origin_effect->is_masked = true;
         origin_effect->mask_layer_id = ptr->id();
-        origin_effect->unscaled_mask_target_size = origin->bounds();
         ptr->SetOffsetToTransformParent(origin->offset_to_transform_parent());
         CopyProperties(origin, ptr);
       }

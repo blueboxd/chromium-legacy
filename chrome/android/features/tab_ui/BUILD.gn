@@ -77,6 +77,8 @@ android_resources("java_resources") {
 
 android_library("java") {
   java_files = [
+    "java/src/org/chromium/chrome/browser/tasks/MostVisitedListCoordinator.java",
+    "java/src/org/chromium/chrome/browser/tasks/TasksSurfaceMediator.java",
     "java/src/org/chromium/chrome/browser/tasks/TasksSurfaceCoordinator.java",
     "java/src/org/chromium/chrome/browser/tasks/TasksView.java",
     "java/src/org/chromium/chrome/browser/tasks/TasksViewBinder.java",
@@ -86,6 +88,9 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/tasks/tab_management/SelectableTabGridView.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGridDialogCoordinator.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGridDialogMediator.java",
+    "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGridDialogMenuCoordinator.java",
+    "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGridDialogMenuItemBinder.java",
+    "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGridDialogMenuItemProperties.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGridDialogParent.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGridIphItemCoordinator.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGridIphItemMediator.java",

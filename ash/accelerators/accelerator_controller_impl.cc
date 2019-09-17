@@ -118,8 +118,8 @@ using base::UserMetricsAction;
 using message_center::Notification;
 using message_center::SystemNotificationWarningLevel;
 
-// Toast id and duration for voice interaction shortcuts
-constexpr char kVoiceInteractionErrorToastId[] = "voice_interaction_error";
+// Toast id and duration for Assistant shortcuts.
+constexpr char kAssistantErrorToastId[] = "assistant_error";
 const char kFeatureDisabledByPolicyToastId[] = "disabled_by_policy_error";
 constexpr int kToastDurationMs = 2500;
 
@@ -806,7 +806,7 @@ void HandleToggleAmbientMode(const ui::Accelerator& accelerator) {
   Shell::Get()->ambient_controller()->Toggle();
 }
 
-void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
+void HandleToggleAssistant(const ui::Accelerator& accelerator) {
   if (accelerator.IsCmdDown() && accelerator.key_code() == ui::VKEY_SPACE) {
     base::RecordAction(
         base::UserMetricsAction("VoiceInteraction.Started.Search_Space"));
@@ -826,51 +826,50 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
       mojom::AssistantAllowedState::ALLOWED)) {
     case mojom::AssistantAllowedState::DISALLOWED_BY_NONPRIMARY_USER:
       // Show a toast if the active user is not primary.
-      ShowToast(kVoiceInteractionErrorToastId,
+      ShowToast(kAssistantErrorToastId,
                 l10n_util::GetStringUTF16(
-                    IDS_ASH_VOICE_INTERACTION_SECONDARY_USER_TOAST_MESSAGE));
+                    IDS_ASH_ASSISTANT_SECONDARY_USER_TOAST_MESSAGE));
       return;
     case mojom::AssistantAllowedState::DISALLOWED_BY_LOCALE:
-      // Show a toast if voice interaction is disabled due to unsupported
+      // Show a toast if the Assistant is disabled due to unsupported
       // locales.
-      ShowToast(
-          kVoiceInteractionErrorToastId,
-          l10n_util::GetStringUTF16(
-              IDS_ASH_VOICE_INTERACTION_LOCALE_UNSUPPORTED_TOAST_MESSAGE));
+      ShowToast(kAssistantErrorToastId,
+                l10n_util::GetStringUTF16(
+                    IDS_ASH_ASSISTANT_LOCALE_UNSUPPORTED_TOAST_MESSAGE));
       return;
     case mojom::AssistantAllowedState::DISALLOWED_BY_POLICY:
-      // Show a toast if voice interaction is disabled due to enterprise policy.
-      ShowToast(kVoiceInteractionErrorToastId,
+      // Show a toast if the Assistant is disabled due to enterprise policy.
+      ShowToast(kAssistantErrorToastId,
                 l10n_util::GetStringUTF16(
-                    IDS_ASH_VOICE_INTERACTION_DISABLED_BY_POLICY_MESSAGE));
+                    IDS_ASH_ASSISTANT_DISABLED_BY_POLICY_MESSAGE));
       return;
     case mojom::AssistantAllowedState::DISALLOWED_BY_DEMO_MODE:
-      // Show a toast if voice interaction is disabled due to being in Demo
+      // Show a toast if the Assistant is disabled due to being in Demo
       // Mode.
-      ShowToast(kVoiceInteractionErrorToastId,
+      ShowToast(kAssistantErrorToastId,
                 l10n_util::GetStringUTF16(
-                    IDS_ASH_VOICE_INTERACTION_DISABLED_IN_DEMO_MODE_MESSAGE));
+                    IDS_ASH_ASSISTANT_DISABLED_IN_DEMO_MODE_MESSAGE));
       return;
     case mojom::AssistantAllowedState::DISALLOWED_BY_PUBLIC_SESSION:
-      // Show a toast if voice interaction is disabled due to being in Demo
-      // Mode.
-      ShowToast(kVoiceInteractionErrorToastId,
+      // Show a toast if the Assistant is disabled due to being in public
+      // session.
+      ShowToast(kAssistantErrorToastId,
                 l10n_util::GetStringUTF16(
-                    IDS_ASH_VOICE_INTERACTION_DISABLED_IN_DEMO_MODE_MESSAGE));
+                    IDS_ASH_ASSISTANT_DISABLED_IN_PUBLIC_SESSION_MESSAGE));
       return;
     case mojom::AssistantAllowedState::DISALLOWED_BY_SUPERVISED_USER:
       // supervised user is deprecated, wait for the code clean up.
       NOTREACHED();
       return;
     case mojom::AssistantAllowedState::DISALLOWED_BY_INCOGNITO:
-      ShowToast(kVoiceInteractionErrorToastId,
+      ShowToast(kAssistantErrorToastId,
                 l10n_util::GetStringUTF16(
-                    IDS_ASH_VOICE_INTERACTION_DISABLED_IN_GUEST_MESSAGE));
+                    IDS_ASH_ASSISTANT_DISABLED_IN_GUEST_MESSAGE));
       return;
     case mojom::AssistantAllowedState::DISALLOWED_BY_ACCOUNT_TYPE:
-      ShowToast(kVoiceInteractionErrorToastId,
+      ShowToast(kAssistantErrorToastId,
                 l10n_util::GetStringUTF16(
-                    IDS_ASH_VOICE_INTERACTION_DISABLED_BY_ACCOUNT_MESSAGE));
+                    IDS_ASH_ASSISTANT_DISABLED_BY_ACCOUNT_MESSAGE));
       return;
     case mojom::AssistantAllowedState::DISALLOWED_BY_KIOSK_MODE:
       // No need to show toast in KIOSK mode.
@@ -1568,7 +1567,7 @@ bool AcceleratorControllerImpl::CanPerformAction(
       return CanHandleShowStylusTools();
     case START_AMBIENT_MODE:
       return CanHandleStartAmbientMode();
-    case START_VOICE_INTERACTION:
+    case START_ASSISTANT:
       return true;
     case SWAP_PRIMARY_DISPLAY:
       return display::Screen::GetScreen()->GetNumDisplays() > 1;
@@ -1903,8 +1902,8 @@ void AcceleratorControllerImpl::PerformAction(
     case START_AMBIENT_MODE:
       HandleToggleAmbientMode(accelerator);
       break;
-    case START_VOICE_INTERACTION:
-      HandleToggleVoiceInteraction(accelerator);
+    case START_ASSISTANT:
+      HandleToggleAssistant(accelerator);
       break;
     case SUSPEND:
       HandleSuspend();

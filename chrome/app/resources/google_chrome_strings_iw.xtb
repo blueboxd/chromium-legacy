@@ -51,6 +51,9 @@
 <translation id="2094919256425865063">‏לסגור את Chrome בכל זאת?</translation>
 <translation id="2120620239521071941">‏פעולה זו תמחק <ph name="ITEMS_COUNT" /> פריטים מהמכשיר. כדי לשחזר את הנתונים מאוחר יותר, היכנס אל Chrome עם <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">‏דיווח על <ph name="BEGIN_LINK" />ההגדרות הנוכחיות<ph name="END_LINK" /> יעזור לשפר את Chrome</translation>
+<translation id="2128103434102193461">‏כדי לקבל פרטים נוספים לגבי Chrome OS, אפשר לעיין בדף <ph name="LINK_BEGIN" />
+      מידע על Chrome OS<ph name="LINK_END" /></translation>
+<translation id="2151406531797534936">‏יש להפעיל מחדש את Chrome עכשיו</translation>
 <translation id="216054706567564023">‏יש להתקין את Chrome בטלפון שלך, ולאחר מכן נשלח הודעת SMS למספר שמוגדר לשחזור החשבון.</translation>
 <translation id="2246246234298806438">‏Google Chrome אינו יכול להצג תצוגה מקדימה של ההדפסה כאשר מציג ה-‏PDF המובנה חסר.</translation>
 <translation id="2252923619938421629">‏עזור לשפר את Google Chrome על ידי דיווח על ההגדרות הנוכחיות</translation>
@@ -219,6 +222,7 @@
 <translation id="7589360514048265910">‏המחשב הזה יפסיק לקבל עדכונים של Google Chrome כי כבר אין תמיכה בגירסה 10.9 של Mac OS X.</translation>
 <translation id="7592736734348559088">‏Google Chrome לא הצליח לסנכרן את הנתונים שלך מפני שפרטי הכניסה של חשבונך אינם מעודכנים.</translation>
 <translation id="7626032353295482388">‏ברוכים הבאים ל-Chrome</translation>
+<translation id="7629695634924605473">‏Chrome מודיע לך אם הסיסמאות שלך נמצאות בסיכון</translation>
 <translation id="7641148173327520642">‏לפי הגדרת מנהל המערכת, Google Chrome יפתח את <ph name="ALTERNATIVE_BROWSER_NAME" /> כדי לגשת אל <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">‏לוגו של Chrome Enterprise</translation>
 <translation id="7747138024166251722">המתקין לא הצליח ליצור ספריה זמנית. בדוק את המקום הפנוי בדיסק ואת האישור להתקנת תוכנה.</translation>

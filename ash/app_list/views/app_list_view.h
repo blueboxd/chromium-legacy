@@ -437,17 +437,13 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   gfx::Rect GetPreferredWidgetBoundsForState(ash::AppListViewState state);
 
   // Updates y position of |app_list_background_shield_| based on the
-  // |app_list_state_| and |is_in_drag_|.
-  void UpdateAppListBackgroundYPosition();
+  // |state| and |is_in_drag_|.
+  void UpdateAppListBackgroundYPosition(ash::AppListViewState state);
 
   // Returns whether it should update child views' position and opacity in each
   // animation frame.
   bool ShouldUpdateChildViewsDuringAnimation(
       ash::AppListViewState target_state) const;
-
-  // Returns whether AppList's rounded corners should be hidden based on
-  // |bounds|.
-  bool ShouldHideRoundedCorners(const gfx::Rect& bounds) const;
 
   AppListViewDelegate* delegate_;    // Weak. Owned by AppListService.
   AppListModel* const model_;        // Not Owned.

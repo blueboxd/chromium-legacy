@@ -71,6 +71,7 @@
 <translation id="1292701964462482250">„Софтуер на компютъра ви пречи на Chrome да се свърже безопасно с мрежата“ (само на компютри под Windows)</translation>
 <translation id="1294154142200295408">Варианти във формат за командния ред</translation>
 <translation id="129553762522093515">Наскоро затворени</translation>
+<translation id="1298536327547837046">Сканиране за злонамерен софтуер</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Опитайте да изчистите „бисквитките“ си<ph name="END_LINK" /></translation>
 <translation id="1307966114820526988">Оттеглени функции</translation>
 <translation id="1320233736580025032">Prc1 (плик)</translation>
@@ -167,6 +168,7 @@
 <translation id="1734878702283171397">Свържете се със системния администратор.</translation>
 <translation id="1740951997222943430">Въведете валиден месец на изтичане</translation>
 <translation id="1743520634839655729">За да платите по-бързо следващия път, запазете картата, името и адреса си за фактуриране в профила си в Google и на това устройство.</translation>
+<translation id="1743570585616704562">Не е разпознато</translation>
 <translation id="1745880797583122200">Браузърът ви е управляван</translation>
 <translation id="17513872634828108">Отворени раздели</translation>
 <translation id="1753706481035618306">Номер на страницата</translation>
@@ -426,6 +428,7 @@
 <translation id="320323717674993345">Анулиране на плащането</translation>
 <translation id="3207960819495026254">С отметка</translation>
 <translation id="3209034400446768650">Страницата може да ви таксува</translation>
+<translation id="3215092763954878852">WebAuthn не можа да се използва</translation>
 <translation id="3225919329040284222">Сървърът предостави сертификат, който не съответства на вградените очаквания. Те са включени за определени уебсайтове с голяма степен на сигурност, за да ви предпазим.</translation>
 <translation id="3226128629678568754">Натиснете бутона за презареждане, за да изпратите отново данните, необходими за отварянето на страницата.</translation>
 <translation id="3227137524299004712">Микрофон</translation>
@@ -562,6 +565,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Няма}=1{От 1 сайт }other{От # сайта }}</translation>
 <translation id="397105322502079400">Изчислява се...</translation>
 <translation id="3973234410852337861">Хостът <ph name="HOST_NAME" /> е блокиран</translation>
+<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> активира защитата срещу заплахи на Chrome Enterprise в браузъра ви. Функцията има достъп до някои от данните ви.</translation>
 <translation id="3987940399970879459">По-малко от 1 МБ</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 уеб страница в близост}other{# уеб страници в близост}}</translation>
 <translation id="4030383055268325496">&amp;Отмяна на добавянето</translation>
@@ -630,6 +634,7 @@
 <translation id="4277028893293644418">Повторно задаване на паролата</translation>
 <translation id="4279811152705618813">Вашият <ph name="DEVICE_TYPE" /> се управлява от <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Тази карта е запазена в профила ви в Google}other{Тези карти са запазени в профила ви в Google}}</translation>
+<translation id="428847186335018806">Сканиране на файловете, които изтегляте или качвате в Chrome.</translation>
 <translation id="42981349822642051">Разгъване</translation>
 <translation id="4302965934281694568">Chou3 (плик)</translation>
 <translation id="4305817255990598646">Превключване</translation>
@@ -668,6 +673,7 @@
 <translation id="4506176782989081258">Грешка при потвърждаването: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Свържете се със системния администратор.</translation>
 <translation id="450710068430902550">Споделяне с администратор</translation>
+<translation id="4508814173490746936">Touch ID не можа да се използва</translation>
 <translation id="4510487217173779431">Chou4 (плик)</translation>
 <translation id="4515275063822566619">Картите и адресите са от Chrome и профила ви в Google (<ph name="ACCOUNT_EMAIL" />). Можете да ги управлявате от <ph name="BEGIN_LINK" />настройките<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (плик)</translation>
@@ -763,6 +769,7 @@
 <translation id="5045550434625856497">Грешна парола</translation>
 <translation id="5056549851600133418">Статии за вас</translation>
 <translation id="5068524481479508725">A10</translation>
+<translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(използва се 1)}other{(използват се #)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Проверете адреса на прокси сървъра<ph name="END_LINK" />.</translation>
 <translation id="5087286274860437796">Понастоящем сертификатът на сървъра не е валиден.</translation>
 <translation id="5087580092889165836">Добавяне на карта</translation>
@@ -991,6 +998,7 @@
 <translation id="6302269476990306341">Google Асистент в Chrome се спира</translation>
 <translation id="6305205051461490394">Няма достъп до <ph name="URL" />.</translation>
 <translation id="6321917430147971392">Проверете настройките си за DNS</translation>
+<translation id="6322182122604171028">Windows Hello не можа да се използва</translation>
 <translation id="6328639280570009161">Опитайте да деактивирате предвижданията за мрежата</translation>
 <translation id="6328784461820205019">„Връзката ви не е частна“, „&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;“, „&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;“, „&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;“, „&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;“ или „Грешка при SSL сертификатите“</translation>
 <translation id="6328786501058569169">Този сайт е измамен</translation>
@@ -1014,6 +1022,7 @@
 <translation id="6433490469411711332">Редактиране на информацията за връзка</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> отказа да установи връзка.</translation>
 <translation id="6434309073475700221">Отхвърляне</translation>
+<translation id="6435221585574090192">Споделяне с администратора ви на данни за събития, свързани със сигурността, за които е сигнализирано от функцията на Chrome Enterprise за защита срещу заплахи. Данните може да включват URL адреси на страници, имена и метаданни на файлове, както и потребителското име на устройството ви и в Chrome.</translation>
 <translation id="6440503408713884761">Пренебрегнато</translation>
 <translation id="6446163441502663861">Kahu (плик)</translation>
 <translation id="6446608382365791566">Добавяне на още информация</translation>
@@ -1058,6 +1067,7 @@
 <translation id="6671697161687535275">Предложението за формуляри да се премахне ли от Chromium?</translation>
 <translation id="6685834062052613830">Излизане от профила и завършване на настройването</translation>
 <translation id="6689271823431384964">Chrome предлага да запази картите ви в профила ви в Google, защото сте влезли в него. Можете да промените това поведение от настройките. Името на картодържателя е от профила ви.</translation>
+<translation id="6707256370811247129">Сканиране на съдържанието на кеша и файловете, които изтегляте или качвате в Chrome.</translation>
 <translation id="6710213216561001401">Предишна</translation>
 <translation id="6710594484020273272">&lt;Въведете дума за търсене&gt;</translation>
 <translation id="671076103358959139">Означение за регистриране:</translation>
@@ -1076,6 +1086,7 @@
 <translation id="681021252041861472">Задължително поле</translation>
 <translation id="6810899417690483278">Идент. № на персонализирането</translation>
 <translation id="6825578344716086703">Опитахте да отворите <ph name="DOMAIN" />, но сървърът предостави сертификат, подписан със слаб алгоритъм (например SHA-1). Това означава, че идентификационните данни за сигурност от сървъра може да са фалшифицирани и той да не е този, който очаквате (възможно е да сте се свързали с извършител на атака).</translation>
+<translation id="6826370046007623921">Защита от загуба на данни</translation>
 <translation id="6831043979455480757">Превод</translation>
 <translation id="6839929833149231406">Район</translation>
 <translation id="6852204201400771460">Искате ли да презаредите приложението?</translation>
@@ -1222,6 +1233,7 @@
 <translation id="7542995811387359312">Автоматичното попълване на кредитната карта е деактивирано, защото този формуляр не използва защитена връзка.</translation>
 <translation id="7548892272833184391">Отстраняване на грешки във връзката</translation>
 <translation id="7549584377607005141">За да се покаже правилно тази уеб страница, са необходими по-рано въведените от вас данни. Можете да ги изпратите отново, но така ще повторите всяко изпълнено от нея действие.</translation>
+<translation id="7550637293666041147">Потребителското име на устройството ви и в Chrome</translation>
 <translation id="7552846755917812628">Изпробвайте следните съвети:</translation>
 <translation id="7554791636758816595">Нов раздел</translation>
 <translation id="7564049878696755256">Възможно е да загубите достъп до профила си в/ъв <ph name="ORG_NAME" /> или самоличността ви да бъде открадната. Chrome препоръчва да промените паролата си сега.</translation>
@@ -1236,6 +1248,7 @@
 <translation id="7610193165460212391">Стойността е извън обхват <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Валидна до: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Вече имате данни, които са шифровани посредством друга версия на паролата за профила ви в Google. Моля, въведете я по-долу.</translation>
+<translation id="7625784245512586808">Защита срещу заплахи на Chrome Enterprise</translation>
 <translation id="7633909222644580952">Данни за ефективността и сигнали за сривове</translation>
 <translation id="7637571805876720304">Кредитната карта да се премахне ли от Chromium?</translation>
 <translation id="7638605456503525968">Серийни портове</translation>
@@ -1346,6 +1359,7 @@
 <translation id="8211406090763984747">Връзката е защитена</translation>
 <translation id="8218327578424803826">Зададено местоположение:</translation>
 <translation id="8220146938470311105">C7/C6 (плик)</translation>
+<translation id="8220639454292072926">Корпоративно отчитане</translation>
 <translation id="8225771182978767009">Човекът, който е настроил компютъра, е блокирал този сайт.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" /> и <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Отворете страницата в нов раздел в режим „инкогнито“.</translation>
@@ -1428,6 +1442,7 @@
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;DNS адресът&lt;/abbr&gt; на <ph name="HOST_NAME" /> не можа да бъде намерен. Проблемът се диагностицира.</translation>
 <translation id="874846938927089722">Приемани кредитни и предплатени карти</translation>
 <translation id="874918643257405732">Запазване на отметка към този раздел</translation>
+<translation id="8751426954251315517">Моля, опитайте отново следващия път</translation>
 <translation id="8759274551635299824">Тази карта е изтекла</translation>
 <translation id="8761567432415473239">Google Безопасно сърфиране наскоро <ph name="BEGIN_LINK" />откри опасни програми<ph name="END_LINK" /> на <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB устройство</translation>
@@ -1492,6 +1507,7 @@
 <translation id="9080712759204168376">Обобщена информация за поръчката</translation>
 <translation id="9089260154716455634">Пренебрегване на правилата:</translation>
 <translation id="9095388113577226029">Още езици...</translation>
+<translation id="9098981495403789647">Администраторът ви е активирал защитата срещу заплахи на Chrome Enterprise в браузъра ви. Функцията има достъп до някои от данните ви.</translation>
 <translation id="9103872766612412690">Обикновено <ph name="SITE" /> използва шифроване за защита на информацията ви. Когато Chromium опита да установи връзка с/ъс <ph name="SITE" /> този път, уебсайтът върна необичайни и неправилни идентификационни данни. Това може да се случи, когато извършител на атака пробва да се представи за <ph name="SITE" /> или връзката е прекъсната от екран за вход в Wi-Fi. Информацията ви продължава да е защитена, тъй като Chromium спря връзката, преди да бъдат обменени данни.</translation>
 <translation id="9106062320799175032">Добавяне на адрес за фактуриране</translation>
 <translation id="9114524666733003316">Картата се потвърждава...</translation>

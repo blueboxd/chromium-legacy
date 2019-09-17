@@ -10,7 +10,6 @@ frame "iframe" - ReadyToCommitNavigation
 frame "iframe" - didCommitLoadForFrame
 CONSOLE MESSAGE: line 12: iframe: clicking
 frame "iframe" - BeginNavigation request to 'http://127.0.0.1:8000/loading/resources/onreadystatechange-detach-iframe.html?done', http method GET
-frame "iframe" - DidStartNavigation
 CONSOLE MESSAGE: line 5: iframe: onreadystatechange
 frame "iframe" - didFailLoadWithError
 main frame - didHandleOnloadEventsForFrame

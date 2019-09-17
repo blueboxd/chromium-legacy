@@ -233,6 +233,7 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="27527859628328957">Langkau ke item boleh fokus seterusnya</translation>
 <translation id="2770781857296573485">Masukkan penerokaan kumpulan</translation>
 <translation id="2777845298774924149">Keluar</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{+#}other{+#}}</translation>
 <translation id="2784959586797362050">Seperti biasa, anda boleh menghantar terus maklum balas dengan menekan Carian+a, kemudian i. Kami mengalu-alukan pendapat daripada anda.</translation>
 <translation id="2800204403141299078">Tiada lagi unsur yang berbeza.</translation>
 <translation id="2800780099804980316">Tiada tajuk tahap 1 terdahulu.</translation>
@@ -715,6 +716,7 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="5956928062748260866">Dialog</translation>
 <translation id="5963413905009737549">Bahagian</translation>
 <translation id="5968607524793740041">Paparkan menu konteks</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{yang mengandungi # item}other{yang mengandungi # item}}</translation>
 <translation id="5981446804259161541">Sian Cerah</translation>
 <translation id="5983179082906765664">Tingkatkan kebutiran navigasi</translation>
 <translation id="5992285135956208197">Dokumen grafik</translation>

@@ -69,6 +69,7 @@ group("gn_all") {
     "//base/util:base_util_unittests",
     "//chrome/installer",
     "//chrome/updater",
+    "//components:components_unittests",
     "//components/gwp_asan:gwp_asan_unittests",
     "//net:net_unittests",
     "//services:services_unittests",
@@ -89,10 +90,6 @@ group("gn_all") {
       "//crypto:crypto_unittests",
       "//google_apis/gcm:gcm_unit_tests",
     ]
-  }
-
-  if (!is_fuchsia) {
-    deps += [ "//components:components_unittests" ]
   }
 
   if (closure_compile) {

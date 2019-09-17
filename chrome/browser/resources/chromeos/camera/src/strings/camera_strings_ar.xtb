@@ -19,6 +19,7 @@
 <translation id="2501953888035679275">يمكنك التقاط الصور وتسجيل الفيديوهات باستخدام الكاميرا.</translation>
 <translation id="2549985041256363841">بدء التسجيل</translation>
 <translation id="2599796128805996109">الكاميرا الخلفية</translation>
+<translation id="2912439424121107408">الوضع المختصّ غير متاح على هذا الجهاز</translation>
 <translation id="2968794441791257519">سيتم نقل الصور والفيديوهات الملتقَطة بالكاميرا إلى مجلد "التنزيلات". ويمكنك الوصول إليها من خلال "الملفات".
 
         ستتمكن التطبيقات المزوّدة بأذونات مساحة التخزين من الوصول إلى صورك وفيديوهاتك.</translation>
@@ -41,10 +42,12 @@
         يُرجى التحقُّق من اتصال الكاميرا بشكلٍ صحيح.</translation>
 <translation id="5152121255775685072">الانتقال إلى المعرض</translation>
 <translation id="5671277269877808209">وضع المربّع</translation>
+<translation id="5775960006311140197">الوضع المختصّ</translation>
 <translation id="5869546221129391014">شبكة</translation>
 <translation id="6040143037577758943">إغلاق</translation>
 <translation id="6073451960410192870">إيقاف التسجيل</translation>
 <translation id="6165508094623778733">مزيد من المعلومات</translation>
+<translation id="6197807149213783179">حفظ البيانات الوصفية</translation>
 <translation id="6233780560267770709">3 × 3</translation>
 <translation id="6243827288366940320">النسبة الذهبية</translation>
 <translation id="6248749904681914629">الكاميرا الخارجية</translation>
@@ -66,6 +69,7 @@
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8428213095426709021">الإعدادات</translation>
 <translation id="8687491812650032292">دقة عالية <ph name="HEIGHT" />بكسل (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8732462232047530626">معاينة البيانات الوصفية</translation>
 <translation id="8815966864175525708">التبديل لالتقاط صورة أشخاص</translation>
 <translation id="8870695351537079478">يتعذّر بدء التسجيل</translation>
 <translation id="9045155556724273246">10 ثوانٍ</translation>

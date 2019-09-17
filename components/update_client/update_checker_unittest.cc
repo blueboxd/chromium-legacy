@@ -234,6 +234,7 @@ scoped_refptr<UpdateContext> UpdateCheckerTest::MakeMockUpdateContext() const {
 
 std::unique_ptr<Component> UpdateCheckerTest::MakeComponent() const {
   CrxComponent crx_component;
+  crx_component.app_id = "jebgalgnebhfojomionfpkfelancnnkf";
   crx_component.name = "test_jebg";
   crx_component.pk_hash.assign(jebg_hash, jebg_hash + base::size(jebg_hash));
   crx_component.installer = nullptr;

@@ -55,6 +55,9 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2094919256425865063">Vill du avsluta Chrome ändå?</translation>
 <translation id="2120620239521071941"><ph name="ITEMS_COUNT" /> tas bort från enheten. Logga in i Chrome som <ph name="USER_EMAIL" /> om du vill kunna återställa datan senare.</translation>
 <translation id="2123055963409958220">Hjälp oss att förbättra Chrome genom att rapportera <ph name="BEGIN_LINK" />dina aktuella inställningar<ph name="END_LINK" /></translation>
+<translation id="2128103434102193461">Mer information om Chrome OS finns under <ph name="LINK_BEGIN" />
+      Om Chrome OS<ph name="LINK_END" /></translation>
+<translation id="2151406531797534936">Starta om Chrome nu</translation>
 <translation id="216054706567564023">Installera Chrome på mobilen. Vi skickar ett sms till ditt telefonnummer för kontoåterställning.</translation>
 <translation id="2246246234298806438">Förhandsgranskningen av utskriften kan inte visas i Google Chrome eftersom den inbyggda PDF-läsaren saknas.</translation>
 <translation id="2252923619938421629">Hjälp oss att förbättra Google Chrome genom att rapportera dina aktuella inställningar</translation>
@@ -227,6 +230,7 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="7589360514048265910">Den här datorn får inte längre uppdateringar för Google Chrome eftersom Mac OS X 10.9 inte längre stöds.</translation>
 <translation id="7592736734348559088">Google Chrome kunde inte synkronisera data eftersom inloggningsuppgifterna för kontot är inaktuella.</translation>
 <translation id="7626032353295482388">Välkommen till Chrome</translation>
+<translation id="7629695634924605473">Om dina lösenord någonsin skulle läcka ut får du veta det i Chrome</translation>
 <translation id="7641148173327520642">Systemadministratören har konfigurerat Google Chrome så att <ph name="TARGET_URL_HOSTNAME" /> öppnas i <ph name="ALTERNATIVE_BROWSER_NAME" />.</translation>
 <translation id="7651907282515937834">Logotyp för Chrome Enterprise</translation>
 <translation id="7747138024166251722">Det gick inte att skapa en tillfällig katalog för installationsfilen. Kontrollera diskutrymmet och att du har behörighet att installera program.</translation>

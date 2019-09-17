@@ -1027,11 +1027,13 @@ void LayerTreeHostImpl::FrameData::AsValueInto(
     base::trace_event::TracedValue* value) const {
   value->SetBoolean("has_no_damage", has_no_damage);
 
-  // Quad data can be quite large, so only dump render passes if we select
-  // viz.quads.
-  bool quads_enabled;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("viz.quads"),
-                                     &quads_enabled);
+  // Quad data can be quite large, so only dump render passes if we are
+  // logging verbosely or viz.quads tracing category is enabled.
+  bool quads_enabled = VLOG_IS_ON(3);
+  if (!quads_enabled) {
+    TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("viz.quads"),
+                                       &quads_enabled);
+  }
   if (quads_enabled) {
     value->BeginArray("render_passes");
     for (size_t i = 0; i < render_passes.size(); ++i) {
@@ -1041,6 +1043,18 @@ void LayerTreeHostImpl::FrameData::AsValueInto(
     }
     value->EndArray();
   }
+}
+
+std::string LayerTreeHostImpl::FrameData::ToString() const {
+  base::trace_event::TracedValue value;
+  AsValueInto(&value);
+  std::string str;
+  base::JSONWriter::WriteWithOptions(
+      *value.ToBaseValue(),
+      base::JSONWriter::OPTIONS_OMIT_DOUBLE_TYPE_PRESERVATION |
+          base::JSONWriter::OPTIONS_PRETTY_PRINT,
+      &str);
+  return str;
 }
 
 DrawMode LayerTreeHostImpl::GetDrawMode() const {
@@ -1574,6 +1588,15 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
   }
 
   DrawResult draw_result = CalculateRenderPasses(frame);
+
+  // Dump render passes and draw quads if run with:
+  //   --vmodule=layer_tree_host_impl=3
+  if (VLOG_IS_ON(3)) {
+    VLOG(3) << "Prepare to draw ("
+            << (client_name ? client_name : "<unknown client>") << ")\n"
+            << frame->ToString();
+  }
+
   if (draw_result != DRAW_SUCCESS) {
     DCHECK(!resourceless_software_draw_);
     return draw_result;

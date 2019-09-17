@@ -88,7 +88,7 @@ AppLaunchEventLogger::AppLaunchEventLogger()
       weak_factory_(this) {
   task_runner_ = base::CreateSequencedTaskRunner(
       {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN});
   EnforceLoggingPolicy();
 }
 

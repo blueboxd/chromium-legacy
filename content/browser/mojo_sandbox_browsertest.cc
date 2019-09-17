@@ -16,6 +16,7 @@
 #include "content/public/common/bind_interface_helpers.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/test_service.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace content {
@@ -65,12 +66,12 @@ class MojoSandboxTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(MojoSandboxTest, SubprocessSharedBuffer) {
   // Ensures that a shared buffer can be created within a sandboxed process.
 
-  mojom::TestServicePtr test_service;
-  BindInterface(host_.get(), &test_service);
+  mojo::Remote<mojom::TestService> test_service;
+  BindInterface(host_.get(), test_service.BindNewPipeAndPassReceiver());
 
   bool got_response = false;
   base::RunLoop run_loop;
-  test_service.set_connection_error_handler(run_loop.QuitClosure());
+  test_service.set_disconnect_handler(run_loop.QuitClosure());
   test_service->CreateSharedBuffer(
       kTestMessage,
       base::BindOnce(

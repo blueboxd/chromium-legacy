@@ -23,6 +23,7 @@
 <translation id="169515659049020177">Maj</translation>
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">Ajouter "www." et ".com" à votre saisie dans la barre d'adresse et ouvrir la page</translation>
+<translation id="1872219238824176091">Supprimer le bureau actuel</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, puis <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> ou <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">Accéder à l'onglet suivant</translation>
 <translation id="2010818616644390445">Accéder au dernier onglet dans la fenêtre</translation>
@@ -42,6 +43,7 @@
 <translation id="2441202986792279177">Changer de fenêtre rapidement</translation>
 <translation id="2454251766545114447">Zoom arrière de l'écran</translation>
 <translation id="2478303094958140141">Activer ou désactiver ChromeVox (commentaires audio)</translation>
+<translation id="2488661730534396940">Activer le bureau à gauche</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Faire défiler la page Web vers le bas</translation>
 <translation id="2574014812750545982">Réinitialiser le niveau de zoom de la page</translation>
@@ -49,6 +51,7 @@
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, puis <ph name="TAB" /> ou <ph name="RIGHT" /></translation>
 <translation id="2750942583782703988">Actualiser la page active</translation>
 <translation id="2764005613199379871">Mettre en évidence la barre d'adresse et de recherche</translation>
+<translation id="2774822903829597107">Créer un bureau</translation>
 <translation id="2789868185375229787">Faire un zoom arrière sur la page</translation>
 <translation id="2804480015716812239">Appuyez sur <ph name="ALT" /> et cliquez sur un lien</translation>
 <translation id="2830827904629746450">Ancrer une fenêtre sur la droite</translation>
@@ -100,6 +103,7 @@
 <translation id="4642092649622328492">Faire une capture d'écran partielle</translation>
 <translation id="4698850295812410683">Afficher les outils de stylet</translation>
 <translation id="4801989101741319327">Atteindre la fin du mot suivant</translation>
+<translation id="4866066940972151697">Activer le bureau à droite</translation>
 <translation id="4916163929714267752">Ouvrir le lien dans une nouvelle fenêtre</translation>
 <translation id="5030659775136592441">Afficher le gestionnaire de favoris</translation>
 <translation id="5034421018520995080">Accéder au haut de la page</translation>

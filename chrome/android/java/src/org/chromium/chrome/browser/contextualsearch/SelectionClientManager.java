@@ -15,6 +15,7 @@ import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.SelectionMetricsLogger;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.touch_selection.SelectionEventType;
 
 /**
  * Manages the current {@link SelectionClient} instances, with support for 0-2 instances.
@@ -45,9 +46,6 @@ public class SelectionClientManager {
      */
     SelectionClientManager(WebContents webContents) {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SMART_SELECTION)
-                // TODO(donnd): revert this line when crbug.com/956277 is fixed.
-                && !ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.CONTEXTUAL_SEARCH_LONGPRESS_RESOLVE)
                 && Build.VERSION.SDK_INT > Build.VERSION_CODES.O) {
             assert webContents != null;
             mOptionalSelectionClient = SelectionClient.createSmartSelectionClient(webContents);
@@ -63,11 +61,6 @@ public class SelectionClientManager {
     SelectionClientManager(SelectionClient optionalSelectionClient, boolean enableSmartSelection) {
         mOptionalSelectionClient = optionalSelectionClient;
         mIsSmartSelectionEnabledInChrome = enableSmartSelection;
-    }
-
-    /** @return Whether Smart Text Selection is currently enabled in Chrome. */
-    boolean isSmartSelectionEnabledInChrome() {
-        return mIsSmartSelectionEnabledInChrome;
     }
 
     /**
@@ -160,7 +153,8 @@ public class SelectionClientManager {
         }
 
         @Override
-        public void onSelectionEvent(int eventType, float posXPix, float posYPix) {
+        public void onSelectionEvent(
+                @SelectionEventType int eventType, float posXPix, float posYPix) {
             mSmartSelectionClient.onSelectionEvent(eventType, posXPix, posYPix);
             mContextualSearchSelectionClient.onSelectionEvent(eventType, posXPix, posYPix);
         }

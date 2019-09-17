@@ -17,8 +17,8 @@
 
 namespace {
 
-const int kResizeHandleButtonMargin = 4;
-const int kResizeHandleButtonSize = 16;
+constexpr int kResizeHandleButtonMargin = 4;
+constexpr int kResizeHandleButtonSize = 16;
 
 constexpr SkColor kResizeHandleIconColor = SK_ColorWHITE;
 

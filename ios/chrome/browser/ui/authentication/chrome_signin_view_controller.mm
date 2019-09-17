@@ -362,7 +362,8 @@ enum AuthenticationState {
       IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SCROLL_BUTTON);
   [_primaryButton setTitle:primaryButtonTitle forState:UIControlStateNormal];
   UIImage* primaryButtomImage =
-      [UIImage imageNamed:@"signin_confirmation_more"];
+      [[UIImage imageNamed:@"signin_confirmation_more"]
+          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   [_primaryButton setImage:primaryButtomImage forState:UIControlStateNormal];
   [self setSecondaryButtonStyling:_primaryButton];
 }

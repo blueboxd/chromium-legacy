@@ -456,23 +456,19 @@ void DownloadOfflineContentProvider::OnDownloadUpdated(DownloadItem* item) {
     return;
 
   UpdateDelta update_delta;
-  if (item->GetState() == DownloadItem::COMPLETE) {
-    update_delta.state_changed = completed_downloads_.find(item->GetGuid()) ==
-                                 completed_downloads_.end();
-
+  auto offline_item = OfflineItemUtils::CreateOfflineItem(name_space_, item);
+  if (offline_item.state == OfflineItemState::COMPLETE ||
+      offline_item.state == OfflineItemState::FAILED ||
+      offline_item.state == OfflineItemState::CANCELLED) {
     // TODO(crbug.com/938152): May be move this to DownloadItem.
     // Never call this for completed downloads from history.
-    if (completed_downloads_.find(item->GetGuid()) !=
-        completed_downloads_.end()) {
-      return;
-    }
+    item->RemoveObserver(this);
 
-    completed_downloads_.insert(item->GetGuid());
-
-    AddCompletedDownload(item);
+    update_delta.state_changed = true;
+    if (item->GetState() == DownloadItem::COMPLETE)
+      AddCompletedDownload(item);
   }
 
-  auto offline_item = OfflineItemUtils::CreateOfflineItem(name_space_, item);
   UpdateObservers(offline_item, update_delta);
 }
 
@@ -487,10 +483,6 @@ void DownloadOfflineContentProvider::OnDownloadRemoved(DownloadItem* item) {
   ContentId contentId(name_space_, item->GetGuid());
   for (auto& observer : observers_)
     observer.OnItemRemoved(contentId);
-}
-
-void DownloadOfflineContentProvider::OnDownloadDestroyed(DownloadItem* item) {
-  completed_downloads_.erase(item->GetGuid());
 }
 
 void DownloadOfflineContentProvider::AddCompletedDownload(DownloadItem* item) {

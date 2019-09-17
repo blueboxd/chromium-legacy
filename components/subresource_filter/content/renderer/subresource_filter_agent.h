@@ -98,7 +98,7 @@ class SubresourceFilterAgent
   // content::RenderFrameObserver:
   void OnDestruct() override;
   void DidCreateNewDocument() override;
-  void DidFailProvisionalLoad(const blink::WebURLError& error) override;
+  void DidFailProvisionalLoad() override;
   void DidFinishLoad() override;
   void WillCreateWorkerFetchContext(blink::WebWorkerFetchContext*) override;
 

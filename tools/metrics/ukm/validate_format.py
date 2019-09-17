@@ -30,7 +30,7 @@ def main():
 
     results = dict();
 
-    if not metricCheckSuccess or not metricCheckSuccess:
+    if not ownerCheckSuccess or not metricCheckSuccess:
       results['Errors'] = ownerCheckErrors + metricCheckErrors
     if metricCheckWarnings and not IGNORE_METRIC_CHECK_WARNINGS:
       results['Warnings'] = metricCheckWarnings

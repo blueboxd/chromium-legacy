@@ -39,6 +39,9 @@
     ManualFillAccessoryViewControllerDelegate,
     PasswordCoordinatorDelegate>
 
+// The dispatcher used by this Coordinator.
+@property(nonatomic, weak) id<BrowserCoordinatorCommands> dispatcher;
+
 // The Mediator for the input accessory view controller.
 @property(nonatomic, strong)
     FormInputAccessoryMediator* formInputAccessoryMediator;
@@ -63,7 +66,8 @@
     initWithBaseViewController:(UIViewController*)viewController
                   browserState:(ios::ChromeBrowserState*)browserState
                   webStateList:(WebStateList*)webStateList
-              injectionHandler:(ManualFillInjectionHandler*)injectionHandler {
+              injectionHandler:(ManualFillInjectionHandler*)injectionHandler
+                    dispatcher:(id<BrowserCoordinatorCommands>)dispatcher {
   DCHECK(browserState);
   DCHECK(webStateList);
   self = [super initWithBaseViewController:viewController
@@ -92,6 +96,7 @@
                webStateList:webStateList
         personalDataManager:personalDataManager
               passwordStore:passwordStore];
+    _dispatcher = dispatcher;
   }
   return self;
 }
@@ -138,7 +143,8 @@
                     browserState:self.browserState
                                      ->GetOriginalChromeBrowserState()
                     webStateList:self.webStateList
-                injectionHandler:self.injectionHandler];
+                injectionHandler:self.injectionHandler
+                      dispatcher:self.dispatcher];
   cardCoordinator.delegate = self;
   if (IsIPadIdiom()) {
     [cardCoordinator presentFromButton:button];

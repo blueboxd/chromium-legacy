@@ -17,6 +17,7 @@
 #include "base/scoped_observer.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/values.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/safe_browsing/buildflags.h"
@@ -34,10 +35,6 @@
 namespace content {
 class WebContents;
 class NavigationHandle;
-}
-
-namespace history {
-class HistoryService;
 }
 
 namespace policy {
@@ -439,7 +436,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   std::set<scoped_refptr<PasswordProtectionRequest>> warning_requests_;
 
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
-      history_service_observer_;
+      history_service_observer_{this};
 
   // Weakptr can only cancel task if it is posted to the same thread. Therefore,
   // we need CancelableTaskTracker to cancel tasks posted to IO thread.

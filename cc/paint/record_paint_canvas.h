@@ -31,6 +31,10 @@ class CC_PAINT_EXPORT RecordPaintCanvas final : public PaintCanvas {
 
   SkImageInfo imageInfo() const override;
 
+  void* accessTopLayerPixels(SkImageInfo* info,
+                             size_t* rowBytes,
+                             SkIPoint* origin = nullptr) override;
+
   void flush() override;
 
   int save() override;

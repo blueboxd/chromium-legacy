@@ -90,6 +90,7 @@
 <translation id="4230135487732243613">Voleu enllaçar les vostres dades de Chromium amb aquest compte?</translation>
 <translation id="4271805377592243930">Obtén ajuda per a Chromium</translation>
 <translation id="4285930937574705105">S'ha produït un error no especificat durant la instal·lació. Si Chromium s'està executant en aquests moments, tanqueu-lo i torneu-ho a provar.</translation>
+<translation id="4371648796594901282">Per obtenir informació sobre Chromium OS, consulta <ph name="LINK_BEGIN" />Sobre Chromium OS<ph name="LINK_END" /></translation>
 <translation id="4407044323746248786">Vols sortir de Chromium igualment?</translation>
 <translation id="4415566066719264597">Permet que Chromium s'executi en segon pla</translation>
 <translation id="4423735387467980091">Personalitza i controla Chromium</translation>
@@ -122,6 +123,7 @@
 <translation id="5623402015214259806">{0,plural, =0{Hi ha una actualització de Chromium disponible}=1{Hi ha una actualització de Chromium disponible}other{Fa # dies que hi ha una actualització de Chromium disponible}}</translation>
 <translation id="5631814766731275228">Nom i foto de Chromium</translation>
 <translation id="5634636535844844681">Chromium requereix Windows 7 o una versió posterior.</translation>
+<translation id="5653831366781983928">Reinicia Chromium ara</translation>
 <translation id="5680901439334282664">Inicia la sessió a Chromium</translation>
 <translation id="5698481217667032250">Mostra Chromium en aquest idioma</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -164,6 +166,7 @@
 <translation id="6734080038664603509">Actualitza &amp;Chromium</translation>
 <translation id="6734291798041940871">Ja tens instal·lat Chromium per a tots els usuaris de l'ordinador.</translation>
 <translation id="6810143991807788455">Informa de la configuració actual per ajudar-nos a millorar Chromium</translation>
+<translation id="6847869444787758381">Chromium et permet saber si les contrasenyes s'han posat en perill</translation>
 <translation id="6857782730669500492">Chromium: <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copiada a Chromium)</translation>
 <translation id="6868056391275687737">S'estan executant altres còpies de Chromium. Tanca-les per poder fer l'actualització.</translation>

@@ -71,6 +71,7 @@
 <translation id="1292701964462482250">"ซอฟต์แวร์ในคอมพิวเตอร์ของคุณทำให้ Chrome เชื่อมต่อกับเว็บอย่างปลอดภัยไม่ได้" (คอมพิวเตอร์ที่ใช้ระบบปฏิบัติการ Windows เท่านั้น)</translation>
 <translation id="1294154142200295408">บรรทัดคำสั่งรูปแบบต่างๆ</translation>
 <translation id="129553762522093515">เพิ่งปิด</translation>
+<translation id="1298536327547837046">การสแกนหามัลแวร์</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />ลองล้างคุกกี้<ph name="END_LINK" /></translation>
 <translation id="1307966114820526988">ฟีเจอร์ที่เลิกใช้งานแล้ว</translation>
 <translation id="1320233736580025032">Prc1 (ซองจดหมาย)</translation>
@@ -167,6 +168,7 @@
 <translation id="1734878702283171397">ลองติดต่อผู้ดูแลระบบ</translation>
 <translation id="1740951997222943430">ป้อนเดือนที่หมดอายุที่ถูกต้อง</translation>
 <translation id="1743520634839655729">เพื่อความรวดเร็วในการชำระเงินครั้งถัดไป โปรดบันทึกบัตร ชื่อ และที่อยู่สำหรับการเรียกเก็บเงินไว้ในบัญชี Google และในอุปกรณ์นี้</translation>
+<translation id="1743570585616704562">ไม่รู้จัก</translation>
 <translation id="1745880797583122200">เบราว์เซอร์ของคุณมีการจัดการ</translation>
 <translation id="17513872634828108">แท็บที่เปิดอยู่</translation>
 <translation id="1753706481035618306">เลขหน้า</translation>
@@ -426,6 +428,7 @@
 <translation id="320323717674993345">ยกเลิกการชำระเงิน</translation>
 <translation id="3207960819495026254">บุ๊กมาร์กแล้ว</translation>
 <translation id="3209034400446768650">อาจมีการเรียกเก็บเงินในหน้านี้</translation>
+<translation id="3215092763954878852">ใช้ WebAuthn ไม่ได้</translation>
 <translation id="3225919329040284222">เซิร์ฟเวอร์แสดงใบรับรองที่ไม่ตรงกับการคาดการณ์ที่มีอยู่ การคาดการณ์เหล่านี้มีอยู่ในบางเว็บไซต์ที่มีการรักษาความปลอดภัยสูงเพื่อปกป้องคุณ</translation>
 <translation id="3226128629678568754">กดปุ่มโหลดซ้ำเพื่อส่งซ้ำข้อมูลที่จำเป็นในการโหลดหน้าเว็บ</translation>
 <translation id="3227137524299004712">ไมโครโฟน</translation>
@@ -561,6 +564,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{ไม่มี}=1{จากเว็บไซต์ 1 แห่ง }other{จากเว็บไซต์ #  แห่ง }}</translation>
 <translation id="397105322502079400">กำลังคำนวณ...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> ถูกบล็อก</translation>
+<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> ได้เปิดใช้ฟีเจอร์ป้องกันภัยคุกคามของ Chrome Enterprise ในเบราว์เซอร์ ฟีเจอร์ป้องกันภัยคุกคามของ Chrome Enterprise มีสิทธิ์เข้าถึงข้อมูลบางส่วนของคุณ</translation>
 <translation id="3987940399970879459">ไม่ถึง 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{มีหน้าเว็บ 1 หน้าใกล้ๆ}other{มีหน้าเว็บ # หน้าใกล้ๆ}}</translation>
 <translation id="4030383055268325496">&amp;เลิกทำการเพิ่ม</translation>
@@ -629,6 +633,7 @@
 <translation id="4277028893293644418">รีเซ็ตรหัสผ่าน</translation>
 <translation id="4279811152705618813"><ph name="DEVICE_TYPE" /> ของคุณจัดการโดย <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{บันทึกบัตรนี้ลงในบัญชี Google ของคุณแล้ว}other{บันทึกบัตรเหล่านี้ลงในบัญชี Google ของคุณแล้ว}}</translation>
+<translation id="428847186335018806">สแกนไฟล์ที่คุณดาวน์โหลดหรืออัปโหลดใน Chrome</translation>
 <translation id="42981349822642051">ขยาย</translation>
 <translation id="4302965934281694568">Chou3 (ซองจดหมาย)</translation>
 <translation id="4305817255990598646">สลับ</translation>
@@ -667,6 +672,7 @@
 <translation id="4506176782989081258">ข้อผิดพลาดในการตรวจสอบ: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">ติดต่อผู้ดูแลระบบ</translation>
 <translation id="450710068430902550">การแชร์กับผู้ดูแลระบบ</translation>
+<translation id="4508814173490746936">ใช้ Touch ID ไม่ได้</translation>
 <translation id="4510487217173779431">Chou4 (ซองจดหมาย)</translation>
 <translation id="4515275063822566619">ข้อมูลบัตรและที่อยู่มาจาก Chrome และบัญชี Google (<ph name="ACCOUNT_EMAIL" />) คุณสามารถจัดการข้อมูลเหล่านี้ใน<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" /></translation>
 <translation id="4517607026994743406">Comm-10 (ซองจดหมาย)</translation>
@@ -762,6 +768,7 @@
 <translation id="5045550434625856497">รหัสผ่านไม่ถูกต้อง</translation>
 <translation id="5056549851600133418">บทความสำหรับคุณ</translation>
 <translation id="5068524481479508725">A10</translation>
+<translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(ใช้งานอยู่ 1 รายการ)}other{(ใช้งานอยู่ # รายการ)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />ตรวจสอบที่อยู่พร็อกซี<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">ใบรับรองของเซิร์ฟเวอร์ไม่สามารถใช้ได้ในขณะนี้</translation>
 <translation id="5087580092889165836">เพิ่มบัตร</translation>
@@ -990,6 +997,7 @@
 <translation id="6302269476990306341">Google Assistant ใน Chrome หยุดทำงาน</translation>
 <translation id="6305205051461490394">ไม่สามารถเข้าถึง <ph name="URL" /></translation>
 <translation id="6321917430147971392">ตรวจสอบการตั้งค่า DNS</translation>
+<translation id="6322182122604171028">ใช้ Windows Hello ไม่ได้</translation>
 <translation id="6328639280570009161">ลองปิดการคาดคะเนเครือข่าย</translation>
 <translation id="6328784461820205019">"การเชื่อมต่อของคุณไม่เป็นส่วนตัว" หรือ "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" หรือ "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" หรือ "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" หรือ "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" หรือ "ข้อผิดพลาดของใบรับรอง SSL"</translation>
 <translation id="6328786501058569169">เว็บไซต์นี้มีการหลอกลวง</translation>
@@ -1013,6 +1021,7 @@
 <translation id="6433490469411711332">แก้ไขข้อมูลติดต่อ</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> ปฏิเสธการเชื่อมต่อ</translation>
 <translation id="6434309073475700221">ทิ้ง</translation>
+<translation id="6435221585574090192">แชร์ข้อมูลให้ผู้ดูแลระบบทราบเกี่ยวกับการดำเนินการด้านความปลอดภัยที่ฟีเจอร์ป้องกันภัยคุกคามของ Chrome Enterprise แจ้งว่าไม่เหมาะสม ข้อมูลดังกล่าวอาจรวมถึง URL หน้าเว็บ ชื่อไฟล์และข้อมูลเมตาของไฟล์ ชื่อผู้ใช้ในอุปกรณ์ และชื่อผู้ใช้ใน Chrome</translation>
 <translation id="6440503408713884761">ละเว้น</translation>
 <translation id="6446163441502663861">Kahu (ซองจดหมาย)</translation>
 <translation id="6446608382365791566">เพิ่มข้อมูลเพิ่มเติม</translation>
@@ -1057,6 +1066,7 @@
 <translation id="6671697161687535275">ต้องการนำคำแนะนำสำหรับแบบฟอร์มออกจาก Chromium ใช่ไหม</translation>
 <translation id="6685834062052613830">ออกจากระบบและตั้งค่าให้เสร็จสมบูรณ์</translation>
 <translation id="6689271823431384964">Chrome เสนอที่จะบันทึกบัตรลงในบัญชี Google ของคุณเพราะคุณลงชื่อเข้าใช้อยู่ คุณปรับเปลี่ยนลักษณะการทำงานนี้ได้ในการตั้งค่า ชื่อผู้ถือบัตรมาจากบัญชีของคุณ</translation>
+<translation id="6707256370811247129">สแกนเนื้อหาของแคชและไฟล์ที่คุณดาวน์โหลดหรืออัปโหลดใน Chrome</translation>
 <translation id="6710213216561001401">ก่อนหน้า</translation>
 <translation id="6710594484020273272">&lt;พิมพ์ข้อความค้นหา&gt;</translation>
 <translation id="671076103358959139">โทเค็นการลงทะเบียน:</translation>
@@ -1075,6 +1085,7 @@
 <translation id="681021252041861472">ช่องที่ต้องกรอก</translation>
 <translation id="6810899417690483278">รหัสการปรับแต่ง</translation>
 <translation id="6825578344716086703">คุณพยายามเข้าถึง <ph name="DOMAIN" /> แต่เซิร์ฟเวอร์แสดงใบรับรองที่ลงนามด้วยอัลกอริทึมลายเซ็นที่ไม่รัดกุม (เช่น SHA-1) ซึ่งหมายความว่าข้อมูลรับรองด้านความปลอดภัยที่เซิร์ฟเวอร์แสดงอาจถูกปลอมแปลงขึ้น และเซิร์ฟเวอร์ดังกล่าวอาจไม่ใช่เซิร์ฟเวอร์ที่คุณคิด (คุณอาจกำลังติดต่อกับผู้โจมตี)</translation>
+<translation id="6826370046007623921">ป้องกันข้อมูลรั่วไหล</translation>
 <translation id="6831043979455480757">แปลภาษา</translation>
 <translation id="6839929833149231406">พื้นที่</translation>
 <translation id="6852204201400771460">โหลดแอปซ้ำไหม</translation>
@@ -1221,6 +1232,7 @@
 <translation id="7542995811387359312">การป้อนหมายเลขบัตรเครดิตอัตโนมัติถูกปิดใช้งานเนื่องจากฟอร์มนี้ไม่ได้ใช้การเชื่อมต่อที่ปลอดภัย</translation>
 <translation id="7548892272833184391">แก้ไขข้อผิดพลาดในการเชื่อมต่อ</translation>
 <translation id="7549584377607005141">หน้าเว็บนี้ต้องใช้ข้อมูลที่คุณป้อนก่อนหน้านี้เพื่อให้แสดงได้อย่างถูกต้อง คุณสามารถส่งข้อมูลนี้ได้อีกครั้ง แต่การทำเช่นนั้นจะเป็นการทำสิ่งที่หน้าเว็บนี้เคยดำเนินการซ้ำอีกครั้ง</translation>
+<translation id="7550637293666041147">ชื่อผู้ใช้ของคุณในอุปกรณ์และใน Chrome</translation>
 <translation id="7552846755917812628">ลองทำตามเคล็ดลับต่อไปนี้:</translation>
 <translation id="7554791636758816595">แท็บใหม่</translation>
 <translation id="7564049878696755256">คุณอาจเข้าถึงบัญชี <ph name="ORG_NAME" /> ไม่ได้หรือถูกโจรกรรมข้อมูลประจำตัว Chrome ขอแนะนำให้เปลี่ยนรหัสผ่านตอนนี้เลย</translation>
@@ -1235,6 +1247,7 @@
 <translation id="7610193165460212391">ค่าอยู่นอกช่วง <ph name="VALUE" /></translation>
 <translation id="7613889955535752492">หมดอายุ: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">คุณมีข้อมูลที่ถูกเข้ารหัสโดยใช้รหัสผ่านบัญชี Google รูปแบบอื่นอยู่แล้ว โปรดป้อนรหัสผ่านด้านล่าง</translation>
+<translation id="7625784245512586808">การป้องกันภัยคุกคามของ Chrome Enterprise</translation>
 <translation id="7633909222644580952">ข้อมูลประสิทธิภาพและรายงานข้อขัดข้อง</translation>
 <translation id="7637571805876720304">ต้องการนำบัตรเครดิตออกจาก Chromium ใช่ไหม</translation>
 <translation id="7638605456503525968">พอร์ตอนุกรม</translation>
@@ -1345,6 +1358,7 @@
 <translation id="8211406090763984747">การเชื่อมต่อปลอดภัย</translation>
 <translation id="8218327578424803826">ตำแหน่งที่มอบหมาย:</translation>
 <translation id="8220146938470311105">C7/C6 (ซองจดหมาย)</translation>
+<translation id="8220639454292072926">การรายงานระดับองค์กร</translation>
 <translation id="8225771182978767009">ผู้ที่ตั้งค่าคอมพิวเตอร์เครื่องนี้เลือกบล็อกเว็บไซต์นี้</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">เปิดหน้าเว็บในแท็บไม่ระบุตัวตนใหม่</translation>
@@ -1428,6 +1442,7 @@
 <translation id="8740359287975076522">ไม่พบ&lt;abbr id="dnsDefinition"&gt;ที่อยู่ DNS&lt;/abbr&gt; ของ <ph name="HOST_NAME" /> กำลังวินิจฉัยปัญหา</translation>
 <translation id="874846938927089722">บัตรเครดิตและบัตรเติมเงินที่ยอมรับ</translation>
 <translation id="874918643257405732">บุ๊กมาร์กแท็บนี้</translation>
+<translation id="8751426954251315517">โปรดลองอีกครั้งในคราวหน้า</translation>
 <translation id="8759274551635299824">บัตรนี้หมดอายุแล้ว</translation>
 <translation id="8761567432415473239">Google Safe Browsing <ph name="BEGIN_LINK" />พบโปรแกรมที่เป็นอันตราย<ph name="END_LINK" />บน <ph name="SITE" /> เมื่อเร็วๆ นี้</translation>
 <translation id="8763927697961133303">อุปกรณ์ USB</translation>
@@ -1492,6 +1507,7 @@
 <translation id="9080712759204168376">สรุปการสั่งซื้อ</translation>
 <translation id="9089260154716455634">นโยบายสำหรับช่วงที่ไม่ค่อยมีการใช้งาน:</translation>
 <translation id="9095388113577226029">ภาษาเพิ่มเติม...</translation>
+<translation id="9098981495403789647">ผู้ดูแลระบบได้เปิดใช้ฟีเจอร์ป้องกันภัยคุกคามของ Chrome Enterprise ในเบราว์เซอร์ ฟีเจอร์ป้องกันภัยคุกคามของ Chrome Enterprise มีสิทธิ์เข้าถึงข้อมูลบางส่วนของคุณ</translation>
 <translation id="9103872766612412690">โดยทั่วไป <ph name="SITE" /> จะใช้การเข้ารหัสเพื่อปกป้องข้อมูลของคุณ เมื่อ Chromium พยายามเชื่อมต่อกับ <ph name="SITE" /> ในครั้งนี้ เว็บไซต์ดังกล่าวส่งข้อมูลรับรองที่ผิดปกติและไม่ถูกต้องกลับมา เหตุการณ์นี้อาจเกิดขึ้นเมื่อผู้บุกรุกพยายามปลอมเป็น <ph name="SITE" /> หรือหน้าจอการลงชื่อเข้าใช้ Wi-Fi รบกวนการเชื่อมต่อ ข้อมูลของคุณยังปลอดภัยอยู่เนื่องจาก Chromium หยุดการเชื่อมต่อก่อนมีการแลกเปลี่ยนข้อมูล</translation>
 <translation id="9106062320799175032">เพิ่มที่อยู่สำหรับการเรียกเก็บเงิน</translation>
 <translation id="9114524666733003316">กำลังยืนยันบัตร…</translation>

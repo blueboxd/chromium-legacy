@@ -398,6 +398,7 @@ void ComponentInstaller::FinishRegistration(
 
   update_client::CrxComponent crx;
   installer_policy_->GetHash(&crx.pk_hash);
+  crx.app_id = update_client::GetCrxIdFromPublicKeyHash(crx.pk_hash);
   crx.installer = this;
   crx.version = current_version_;
   crx.fingerprint = current_fingerprint_;

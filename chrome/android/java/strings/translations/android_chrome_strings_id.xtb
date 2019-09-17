@@ -66,6 +66,7 @@
 <translation id="1407135791313364759">Buka semua</translation>
 <translation id="1409426117486808224">Tampilan sederhana untuk tab yang terbuka</translation>
 <translation id="1409879593029778104">Download <ph name="FILE_NAME" /> dicegah karena file sudah ada.</translation>
+<translation id="1413136574162415971">Google dapat memeriksa apakah sandi Anda pernah bocor saat terjadi pelanggaran data. Fitur ini akan diaktifkan ketika Anda login dengan Akun Google dan mengaktifkan sinkronisasi.</translation>
 <translation id="1414981605391750300">Menghubungi Google. Tindakan ini memerlukan waktu beberapa saat…</translation>
 <translation id="1416550906796893042">Versi aplikasi</translation>
 <translation id="1430915738399379752">Cetak</translation>
@@ -160,6 +161,7 @@
 <translation id="2091887806945687916">Suara</translation>
 <translation id="2096012225669085171">Sinkronkan dan personalisasi di berbagai perangkat</translation>
 <translation id="2100273922101894616">Login Otomatis</translation>
+<translation id="2100314319871056947">Coba bagikan teks dalam potongan yang lebih kecil</translation>
 <translation id="2107397443965016585">Tanyakan sebelum mengizinkan situs memutar konten yang dilindungi (direkomendasikan)</translation>
 <translation id="2111511281910874386">Buka halaman</translation>
 <translation id="2122601567107267586">Tidak dapat membuka aplikasi</translation>
@@ -253,6 +255,7 @@
 <translation id="2836148919159985482">Ketuk tombol kembali untuk keluar dari mode layar penuh.</translation>
 <translation id="2842985007712546952">Folder induk</translation>
 <translation id="2858138569776157458">Situs populer</translation>
+<translation id="2860954141821109167">Pastikan aplikasi telepon diaktifkan di perangkat ini</translation>
 <translation id="2870560284913253234">Situs</translation>
 <translation id="2874939134665556319">Lagu sebelumnya</translation>
 <translation id="2876369937070532032">Mengirimkan URL beberapa halaman yang Anda kunjungi ke Google, jika keamanan Anda berisiko</translation>
@@ -277,6 +280,7 @@
 <translation id="2996291259634659425">Buat frasa sandi</translation>
 <translation id="2996809686854298943">Perlu URL</translation>
 <translation id="300526633675317032">Ini akan menghapus seluruh penyimpanan situs web, sebesar <ph name="SIZE_IN_KB" />.</translation>
+<translation id="3016635187733453316">Pastikan perangkat ini tersambung ke internet</translation>
 <translation id="3029613699374795922">Terdownload <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">Frasa sandi tidak cocok</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Dapatkan bantuan<ph name="END_LINK" /></translation>
@@ -841,6 +845,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="723171743924126238">Pilih gambar</translation>
 <translation id="7233236755231902816">Untuk melihat web dalam bahasa Anda, dapatkan versi terbaru Chrome</translation>
 <translation id="7243308994586599757">Opsi terdapat di dekat bagian bawah layar</translation>
+<translation id="7248069434667874558">Pastikan <ph name="TARGET_DEVICE_NAME" /> telah mengaktifkan sinkronisasi di Chrome</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> dipilih</translation>
 <translation id="7274013316676448362">Situs yang diblokir</translation>
 <translation id="7290209999329137901">Ganti nama tidak tersedia</translation>
@@ -955,6 +960,7 @@ Situs TIDAK mendapatkan akses ke kamera. Gambar kamera hanya dapat dilihat oleh 
 <translation id="8007176423574883786">Dinonaktifkan untuk perangkat ini</translation>
 <translation id="8013372441983637696">Hapus juga data Chrome Anda dari perangkat ini</translation>
 <translation id="8015452622527143194">Mengembalikan semua di halaman ke ukuran default</translation>
+<translation id="8015780634880457457">Google dapat memeriksa apakah sandi Anda pernah bocor saat terjadi pelanggaran data.</translation>
 <translation id="802154636333426148">Download gagal</translation>
 <translation id="8026334261755873520">Hapus data penjelajahan</translation>
 <translation id="8035133914807600019">Folder baru…</translation>
@@ -1017,6 +1023,7 @@ Situs TIDAK mendapatkan akses ke kamera. Gambar kamera hanya dapat dilihat oleh 
 <translation id="8445448999790540984">Tidak dapat mengekspor sandi</translation>
 <translation id="8447861592752582886">Cabut izin perangkat</translation>
 <translation id="8461694314515752532">Enkripsikan data yang disinkronkan dengan frasa sandi sinkronisasi Anda sendiri</translation>
+<translation id="8466613982764129868">Pastikan <ph name="TARGET_DEVICE_NAME" /> tersambung ke internet</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Tersedia secara offline</translation>
 <translation id="8489271220582375723">Membuka halaman histori</translation>
@@ -1107,6 +1114,7 @@ Situs TIDAK mendapatkan akses ke kamera. Gambar kamera hanya dapat dilihat oleh 
 <translation id="9188680907066685419">Keluar dari akun yang dikelola</translation>
 <translation id="9204836675896933765">1 file tersisa</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9209888181064652401">Tidak dapat menelepon</translation>
 <translation id="9219103736887031265">Gambar</translation>
 <translation id="926205370408745186">Hapus aktivitas Chrome Anda dari Kesehatan Digital</translation>
 <translation id="932327136139879170">Beranda</translation>

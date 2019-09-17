@@ -19,6 +19,7 @@
 <translation id="2501953888035679275">Fes fotos i grava vídeos amb la càmera.</translation>
 <translation id="2549985041256363841">Comença a gravar</translation>
 <translation id="2599796128805996109">Càmera posterior</translation>
+<translation id="2912439424121107408">El mode expert no s'admet en aquest dispositiu</translation>
 <translation id="2968794441791257519">Les fotos i els vídeos que es facin amb la càmera es mouran a la carpeta Baixades. Pots accedir-hi des de Fitxers.
 
         Les aplicacions amb permisos d'emmagatzematge tindran accés a les fotos i als vídeos.</translation>
@@ -41,10 +42,12 @@
         Comprova que estigui ben connectada.</translation>
 <translation id="5152121255775685072">Ves a la galeria</translation>
 <translation id="5671277269877808209">Quadrat</translation>
+<translation id="5775960006311140197">Mode expert</translation>
 <translation id="5869546221129391014">Quadrícula</translation>
 <translation id="6040143037577758943">Tanca</translation>
 <translation id="6073451960410192870">Atura la gravació</translation>
 <translation id="6165508094623778733">Més informació</translation>
+<translation id="6197807149213783179">Desa les metadades</translation>
 <translation id="6233780560267770709">3 per 3</translation>
 <translation id="6243827288366940320">Proporció àuria</translation>
 <translation id="6248749904681914629">Càmera externa</translation>
@@ -66,6 +69,7 @@
 <translation id="8261506727792406068">Suprimeix</translation>
 <translation id="8428213095426709021">Configuració</translation>
 <translation id="8687491812650032292">HD de <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8732462232047530626">Previsualitza les metadades</translation>
 <translation id="8815966864175525708">Botó per fer una foto vertical</translation>
 <translation id="8870695351537079478">No es pot iniciar la gravació</translation>
 <translation id="9045155556724273246">10 segons</translation>

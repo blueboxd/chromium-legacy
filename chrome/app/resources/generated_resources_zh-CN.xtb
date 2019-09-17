@@ -476,6 +476,7 @@
 <translation id="1698122934742150150">仅限当前的隐身会话</translation>
 <translation id="1698650002254827833">无法加载应用列表，请重试。</translation>
 <translation id="1701062906490865540">移除此用户</translation>
+<translation id="1703331064825191675">再也不必费心记住您的密码</translation>
 <translation id="1706586824377653884">此图标是由管理员添加的</translation>
 <translation id="1706625117072057435">缩放级别</translation>
 <translation id="1708338024780164500">（无效）</translation>
@@ -525,6 +526,7 @@
 <translation id="1764226536771329714">测试版</translation>
 <translation id="176587472219019965">打开新的窗口(&amp;N)</translation>
 <translation id="1766575458646819543">已退出全屏模式</translation>
+<translation id="1766957085594317166">将密码安全地保存到您的 Google 帐号中，彻底为您免除再次输入的麻烦</translation>
 <translation id="1768278914020124551">糟糕！联系登录服务器时出现了问题。请检查您的网络连接和域名，然后重试。</translation>
 <translation id="1769104665586091481">在新窗口中打开链接(&amp;W)</translation>
 <translation id="1773212559869067373">身份验证证书遭到本地拒绝</translation>
@@ -1871,6 +1873,7 @@
 <translation id="3748026146096797577">未建立连接</translation>
 <translation id="3752582316358263300">确定...</translation>
 <translation id="3752673729237782832">我的设备</translation>
+<translation id="3753033997400164841">一次储存，随时随地使用</translation>
 <translation id="3755411799582650620">您的“<ph name="PHONE_NAME" />”现在也可用来为此 <ph name="DEVICE_TYPE" /> 解锁。</translation>
 <translation id="375636864092143889">该网站正在使用您的麦克风</translation>
 <translation id="3757733214359997190">未找到任何网站</translation>
@@ -2162,7 +2165,6 @@
 <translation id="4146026355784316281">始终使用系统查看器打开</translation>
 <translation id="4146785383423576110">重置并清理</translation>
 <translation id="4147911968024186208">请重试。如果系统仍提示此错误，请与您的支持代表联系。</translation>
-<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">显示</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 个标签页}other{# 个标签页}}</translation>
 <translation id="4154664944169082762">指纹</translation>
@@ -2203,6 +2205,7 @@
 <translation id="4232375817808480934">配置 Kerberos</translation>
 <translation id="4235200303672858594">整个屏幕</translation>
 <translation id="4235965441080806197">取消登录</translation>
+<translation id="4242145785130247982">有多个客户端证书不受支持</translation>
 <translation id="4242533952199664413">打开“设置”</translation>
 <translation id="4242577469625748426">无法在设备上安装策略设置：<ph name="VALIDATION_ERROR" />。</translation>
 <translation id="4244238649050961491">查找更多触控笔应用</translation>
@@ -2661,6 +2664,7 @@
 <translation id="4957949153200969297">仅启用与 <ph name="IDS_SHORT_PRODUCT_NAME" /> 同步相关的功能</translation>
 <translation id="4959262764292427323">系统会将密码保存在您的 Google 帐号中，以便您在任意设备上使用密码</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> - <ph name="PROFILE_NAME" /></translation>
+<translation id="496185450405387901">您的管理员已安装此应用。</translation>
 <translation id="4964455510556214366">排列方式</translation>
 <translation id="4964673849688379040">正在检查…</translation>
 <translation id="4965808351167763748">确定要将此设备设为运行 Hangouts Meet 吗？</translation>
@@ -2918,6 +2922,7 @@
 <translation id="5360150013186312835">在工具栏中显示</translation>
 <translation id="5362741141255528695">选择私有密钥文件。</translation>
 <translation id="5363109466694494651">执行 Powerwash 操作并还原</translation>
+<translation id="5365716706805792666">Google 可检查您的密码是否曾遭遇过数据泄露。当您登录了自己的 Google 帐号时，系统即会开启此服务。</translation>
 <translation id="5365881113273618889">您所选的文件夹中包含敏感文件。确定要向“<ph name="APP_NAME" />”授予对此文件夹的永久写入权限吗？</translation>
 <translation id="5367091008316207019">正在读取文件...</translation>
 <translation id="5368720394188453070">配对手机已锁定，需将其解锁才能进入。</translation>
@@ -3514,7 +3519,6 @@
 <translation id="6212039847102026977">显示高级网络属性</translation>
 <translation id="6212168817037875041">关闭显示屏</translation>
 <translation id="6212752530110374741">通过电子邮件发送链接</translation>
-<translation id="6214642087594370545">如果您使用的密码不安全并可能会导致数据泄露，系统就会向您显示警告。该功能仅适用于已登录帐号的用户。</translation>
 <translation id="6216696360484424239">自动登录</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> 处于离线状态。请连接到互联网，然后重试。</translation>
 <translation id="6220413761270491930">加载扩展程序时出错</translation>
@@ -3871,6 +3875,7 @@
 <translation id="6769712124046837540">添加打印机…</translation>
 <translation id="6770664076092644100">通过 NFC 进行验证</translation>
 <translation id="6771503742377376720">是证书授权中心</translation>
+<translation id="6775163072363532304">可用设备将会显示在此处。</translation>
 <translation id="6777817260680419853">已禁止重定向</translation>
 <translation id="6778737459546443941">您的父亲/母亲尚未批准此网站</translation>
 <translation id="677965093459947883">特小</translation>
@@ -4331,6 +4336,7 @@
 <translation id="7441830548568730290">其他用户</translation>
 <translation id="7442465037756169001">您的 Hangouts Meet 设备现已可供设置了。</translation>
 <translation id="744341768939279100">创建新的个人资料</translation>
+<translation id="7443806024147773267">只要您登录自己的 Google 帐号，即可获取您的密码</translation>
 <translation id="7444046173054089907">此网站已被屏蔽</translation>
 <translation id="7444983668544353857">停用<ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">自动安装应用</translation>
@@ -4744,6 +4750,7 @@
 <translation id="8014154204619229810">更新程序正在运行，请稍后刷新并再次查看。</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" />无法还原到之前安装的版本。请重新尝试对您的设备执行 Powerwash 操作。</translation>
 <translation id="8014210335923519270">将系统信息和使用情况数据发送给 Google，帮助改进 <ph name="IDS_SHORT_PRODUCT_NAME" /> 并提高其安全性</translation>
+<translation id="8015780634880457457">Google 可检查您的密码是否曾遭遇过数据泄露</translation>
 <translation id="8016266267177410919">临时存储</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">已修改快捷方式</translation>
@@ -4861,6 +4868,7 @@
 <translation id="8188389033983459049">请检查您的设备设置，并开启蓝牙以继续</translation>
 <translation id="8190193592390505034">正在连接到<ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">管理您的应用、扩展程序和主题背景</translation>
+<translation id="819464600477418284">无法卸载此应用，因为它是 Chrome 操作系统的一部分。</translation>
 <translation id="8195027750202970175">占用的存储空间</translation>
 <translation id="8198323535106903877">我们将为您安装这 <ph name="NUMBER_OF_APPS" /> 款应用</translation>
 <translation id="8199300056570174101">网络（服务）和设备属性</translation>
@@ -4921,6 +4929,7 @@
     <ph name="BEGIN_PARAGRAPH2" />关闭这项功能并不会影响此设备发送基本服务（例如系统更新和安全防护）所需的信息。<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />所有者可以通过“设置”&gt;“高级”&gt;“自动向 Google 发送诊断数据和使用情况数据”来控制这项功能。<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />如果您已为孩子开启了“其他网络与应用活动记录”设置，这些数据可能会保存在您孩子的 Google 帐号中。您可以前往 families.google.com 详细了解这些设置以及对应的调整方式。<ph name="END_PARAGRAPH4" /></translation>
+<translation id="826905130698769948">客户端证书无效</translation>
 <translation id="8270242299912238708">PDF 文档</translation>
 <translation id="827097179112817503">显示“主页”按钮</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{已删除 1 个书签}other{已删除 # 个书签}}</translation>
@@ -5334,6 +5343,7 @@
 <translation id="8874184842967597500">未连接</translation>
 <translation id="8876307312329369159">在演示会话中，此设置无法更改。</translation>
 <translation id="8877448029301136595">[上级目录]</translation>
+<translation id="8879220587046205278">Google Play 中的应用可能需要获得完整的文件系统访问权限，以便在外部存储设备上读取和写入文件。任何使用外部驱动器的人员都能看到在此设备上创建的文件和文件夹。</translation>
 <translation id="8879284080359814990">显示为标签页(&amp;S)</translation>
 <translation id="8879921471468674457">记住登录信息</translation>
 <translation id="8881020143150461183">请重试。如需技术支持，请联系<ph name="CARRIER_NAME" />。</translation>

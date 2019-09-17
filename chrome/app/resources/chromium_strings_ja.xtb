@@ -90,6 +90,7 @@
 <translation id="4230135487732243613">Chromium データをこのアカウントにリンクしますか？</translation>
 <translation id="4271805377592243930">Chromium のヘルプを見る</translation>
 <translation id="4285930937574705105">原因不明のエラーによりインストールが失敗しました。実行中の Chromium を終了してからもう一度お試しください。</translation>
+<translation id="4371648796594901282">Chromium OS の詳細については、<ph name="LINK_BEGIN" />Chromium OS について<ph name="LINK_END" />をご覧ください</translation>
 <translation id="4407044323746248786">今すぐ Chromium を終了しますか？</translation>
 <translation id="4415566066719264597">Chromium をバックグラウンドで実行する</translation>
 <translation id="4423735387467980091">Chromium の設定</translation>
@@ -122,6 +123,7 @@
 <translation id="5623402015214259806">{0,plural, =0{Chromium のアップデートが利用可能です}=1{Chromium のアップデートが利用可能です}other{Chromium のアップデートが利用可能になってから # 日経過しています}}</translation>
 <translation id="5631814766731275228">Chromium の名前と画像</translation>
 <translation id="5634636535844844681">Chromium のご利用には Windows 7 以上が必要です。</translation>
+<translation id="5653831366781983928">今すぐ Chromium を再起動してください</translation>
 <translation id="5680901439334282664">Chromium にログイン</translation>
 <translation id="5698481217667032250">Chromium をこの言語で表示</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -164,6 +166,7 @@
 <translation id="6734080038664603509">Chromium を更新(&amp;C)</translation>
 <translation id="6734291798041940871">Chromium は既にパソコンのすべてのユーザーに対してインストールされています。</translation>
 <translation id="6810143991807788455">現在の設定を送信して Chromium の品質向上にご協力ください</translation>
+<translation id="6847869444787758381">Chromium では、特定のパスワードが侵害された事実の有無がわかります</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay（Chromium にコピー）</translation>
 <translation id="6868056391275687737">Chromium の他のコピーが動作しています。更新するには他のコピーを終了してください。</translation>

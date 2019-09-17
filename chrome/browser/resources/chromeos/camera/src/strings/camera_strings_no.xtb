@@ -19,6 +19,7 @@
 <translation id="2501953888035679275">Ta bilder og ta opp video med kameraet.</translation>
 <translation id="2549985041256363841">Start opptak</translation>
 <translation id="2599796128805996109">Bakre kamera</translation>
+<translation id="2912439424121107408">Ekspertmodus støttes ikke på denne enheten</translation>
 <translation id="2968794441791257519">Bilder og videoer som er tatt med kameraet, flyttes til mappen Nedlastinger. Du har tilgang til dem i Filer.
 
 Apper med lagringstillatelser har tilgang til bildene og videoene dine.</translation>
@@ -41,10 +42,12 @@ Apper med lagringstillatelser har tilgang til bildene og videoene dine.</transla
         Sjekk om kameraet er koblet til riktig.</translation>
 <translation id="5152121255775685072">Gå til galleriet</translation>
 <translation id="5671277269877808209">Kvadrat</translation>
+<translation id="5775960006311140197">Ekspertmodus</translation>
 <translation id="5869546221129391014">Rutenett</translation>
 <translation id="6040143037577758943">Lukk</translation>
 <translation id="6073451960410192870">Stopp opptaket</translation>
 <translation id="6165508094623778733">Finn ut mer</translation>
+<translation id="6197807149213783179">Lagre metadata</translation>
 <translation id="6233780560267770709">3 ganger 3</translation>
 <translation id="6243827288366940320">Det gylne snitt</translation>
 <translation id="6248749904681914629">Eksternt kamera</translation>
@@ -66,6 +69,7 @@ Apper med lagringstillatelser har tilgang til bildene og videoene dine.</transla
 <translation id="8261506727792406068">Slett</translation>
 <translation id="8428213095426709021">Innstillinger</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8732462232047530626">Forhåndsvis metadata</translation>
 <translation id="8815966864175525708">Bytt til bilde i stående format</translation>
 <translation id="8870695351537079478">Kan ikke starte opptak</translation>
 <translation id="9045155556724273246">10 sekunder</translation>

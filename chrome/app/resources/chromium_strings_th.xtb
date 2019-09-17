@@ -90,6 +90,7 @@
 <translation id="4230135487732243613">เชื่อมโยงข้อมูล Chromium กับบัญชีนี้ไหม</translation>
 <translation id="4271805377592243930">รับความช่วยเหลือเกี่ยวกับ Chromium</translation>
 <translation id="4285930937574705105">การติดตั้งล้มเหลวเนื่องจากมีข้อผิดพลาดที่ไม่ได้ระบุ หาก Chromium ทำงานอยู่ในขณะนี้ โปรดปิดและลองอีกครั้ง</translation>
+<translation id="4371648796594901282">สำหรับรายละเอียดของ Chromium OS โปรดดู<ph name="LINK_BEGIN" />เกี่ยวกับ Chromium OS<ph name="LINK_END" /></translation>
 <translation id="4407044323746248786">ออกจาก Chromium ใช่ไหม</translation>
 <translation id="4415566066719264597">ให้ Chromium ทำงานในพื้นหลัง</translation>
 <translation id="4423735387467980091">กำหนดค่าและควบคุม Chromium</translation>
@@ -122,6 +123,7 @@
 <translation id="5623402015214259806">{0,plural, =0{มีอัปเดต Chromium พร้อมให้ใช้งาน}=1{มีอัปเดต Chromium พร้อมให้ใช้งาน}other{อัปเดต Chromium พร้อมให้ใช้งานมาแล้ว # วัน}}</translation>
 <translation id="5631814766731275228">ชื่อและภาพโปรไฟล์ Chromium</translation>
 <translation id="5634636535844844681">Chromium ต้องใช้ Windows 7 ขึ้นไป</translation>
+<translation id="5653831366781983928">โปรดรีสตาร์ท Chromium ตอนนี้เลย</translation>
 <translation id="5680901439334282664">ลงชื่อเข้าใช้ Chromium</translation>
 <translation id="5698481217667032250">แสดง Chromium ในภาษานี้</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -164,6 +166,7 @@
 <translation id="6734080038664603509">อัปเดต &amp;Chromium</translation>
 <translation id="6734291798041940871">มีการติดตั้ง Chromium สำหรับผู้ใช้ทุกคนบนคอมพิวเตอร์ของคุณแล้ว</translation>
 <translation id="6810143991807788455">ช่วยให้ Chromium ดียิ่งขึ้นด้วยการรายงานการตั้งค่าปัจจุบัน</translation>
+<translation id="6847869444787758381">Chromium จะแจ้งให้ทราบหากมีคนล่วงรู้รหัสผ่านของคุณ</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (คัดลอกไปยัง Chromium)</translation>
 <translation id="6868056391275687737">ใช้งาน Chromium สำเนาอื่นอยู่ ปิดสำเนานั้นก่อนแล้วค่อยอัปเดต</translation>

@@ -23,6 +23,7 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">Adicionar www. e .com à entrada na barra de endereço e depois abrir a página</translation>
+<translation id="1872219238824176091">Remover a área de trabalho atual</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> e depois <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> ou <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">Ir para a próxima guia</translation>
 <translation id="2010818616644390445">Ir para a última guia da janela</translation>
@@ -42,6 +43,7 @@
 <translation id="2441202986792279177">Alternar rapidamente entre janelas</translation>
 <translation id="2454251766545114447">Diminuir zoom da tela</translation>
 <translation id="2478303094958140141">Ativar ou desativar o ChromeVox (feedback falado)</translation>
+<translation id="2488661730534396940">Ativar área de trabalho à esquerda</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Rolar a página da Web para baixo</translation>
 <translation id="2574014812750545982">Redefinir nível de zoom na página</translation>
@@ -49,6 +51,7 @@
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> e depois <ph name="TAB" /> ou <ph name="RIGHT" /></translation>
 <translation id="2750942583782703988">Atualizar a página atual</translation>
 <translation id="2764005613199379871">Colocar o foco na barra de endereço de pesquisa</translation>
+<translation id="2774822903829597107">Criar uma nova área de trabalho</translation>
 <translation id="2789868185375229787">Diminuir zoom na página</translation>
 <translation id="2804480015716812239">Pressione <ph name="ALT" /> e clique em um link</translation>
 <translation id="2830827904629746450">Ancorar uma janela à direita</translation>
@@ -100,6 +103,7 @@
 <translation id="4642092649622328492">Fazer uma captura de tela parcial</translation>
 <translation id="4698850295812410683">Mostrar ferramentas da stylus</translation>
 <translation id="4801989101741319327">Mover para o fim da próxima palavra</translation>
+<translation id="4866066940972151697">Ativar a área de trabalho à direita</translation>
 <translation id="4916163929714267752">Abrir o link em uma nova janela</translation>
 <translation id="5030659775136592441">Mostrar gerenciador de favoritos</translation>
 <translation id="5034421018520995080">Ir para a parte superior da página</translation>

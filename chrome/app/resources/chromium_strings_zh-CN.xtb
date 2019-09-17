@@ -90,6 +90,8 @@
 <translation id="4230135487732243613">是否将您的 Chromium 数据与此帐号相关联？</translation>
 <translation id="4271805377592243930">获取有关 Chromium 的帮助</translation>
 <translation id="4285930937574705105">未知错误导致安装失败。如果 Chromium 正在运行，请将其关闭，然后重试。</translation>
+<translation id="4371648796594901282">如需详细了解 Chromium 操作系统，请参阅 <ph name="LINK_BEGIN" />
+      Chromium 操作系统简介<ph name="LINK_END" /></translation>
 <translation id="4407044323746248786">仍要退出 Chromium？</translation>
 <translation id="4415566066719264597">让 Chromium 在后台运行</translation>
 <translation id="4423735387467980091">自定义及控制 Chromium</translation>
@@ -122,6 +124,7 @@
 <translation id="5623402015214259806">{0,plural, =0{有一项可用的 Chromium 更新}=1{有一项可用的 Chromium 更新}other{有一项可用的 Chromium 更新（已发布 # 天）}}</translation>
 <translation id="5631814766731275228">Chromium 名称和图片</translation>
 <translation id="5634636535844844681">Chromium 仅支持 Windows 7 或更高版本的操作系统。</translation>
+<translation id="5653831366781983928">请立即重启 Chromium</translation>
 <translation id="5680901439334282664">登录 Chromium</translation>
 <translation id="5698481217667032250">以这种语言显示 Chromium</translation>
 <translation id="5820394555380036790">Chromium 操作系统</translation>
@@ -164,6 +167,7 @@
 <translation id="6734080038664603509">更新 Chromium(&amp;C)</translation>
 <translation id="6734291798041940871">已为您计算机上的所有用户都安装 Chromium。</translation>
 <translation id="6810143991807788455">报告当前设置，帮助我们完善 Chromium</translation>
+<translation id="6847869444787758381">Chromium 会让您知道您的密码是否曾被泄露</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay（已复制到 Chromium）</translation>
 <translation id="6868056391275687737">Chromium 的其他副本正在运行。若要更新，请关闭这些副本。</translation>

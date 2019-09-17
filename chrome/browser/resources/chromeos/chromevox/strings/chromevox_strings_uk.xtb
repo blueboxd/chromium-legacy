@@ -232,6 +232,7 @@
 <translation id="27527859628328957">Перейти до наступного інтерактивного елемента</translation>
 <translation id="2770781857296573485">Почати вивчення груп</translation>
 <translation id="2777845298774924149">Ви закрили</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{+#}one{+#}few{+#}many{+#}other{+#}}</translation>
 <translation id="2784959586797362050">Надішліть нам відгук, натиснувши комбінацію клавіш пошуку+a, а потім – клавішу i. Нас цікавить ваша думка.</translation>
 <translation id="2800204403141299078">Інших несхожих елементів немає.</translation>
 <translation id="2800780099804980316">Немає попереднього заголовка рівня 1.</translation>
@@ -714,6 +715,7 @@
 <translation id="5956928062748260866">Діалогове вікно</translation>
 <translation id="5963413905009737549">Розділ</translation>
 <translation id="5968607524793740041">Показати контекстне меню</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{з # елементом}one{з # елементом}few{з # елементами}many{з # елементами}other{з # елемента}}</translation>
 <translation id="5981446804259161541">Світло-блакитний</translation>
 <translation id="5983179082906765664">Збільшити деталізацію навігації</translation>
 <translation id="5992285135956208197">Графічний документ</translation>

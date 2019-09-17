@@ -99,11 +99,12 @@ void TraceEventAgent::StartTracing(const std::string& config,
   std::move(callback).Run(true);
 }
 
-void TraceEventAgent::StopAndFlush(mojom::RecorderPtr recorder) {
+void TraceEventAgent::StopAndFlush(
+    mojo::PendingRemote<mojom::Recorder> recorder) {
   DCHECK(!IsBoundForTesting() || !TracingUsesPerfettoBackend());
   DCHECK(!recorder_);
 
-  recorder_ = std::move(recorder);
+  recorder_.Bind(std::move(recorder));
   base::trace_event::TraceLog::GetInstance()->SetDisabled(
       enabled_tracing_modes_);
   enabled_tracing_modes_ = 0;

@@ -87,6 +87,7 @@
       如果你沒有設定這項政策，系統最多會將快取 GPO 重複使用 25 小時。
 
       如將這項政策設為 0，就代表關閉 GPO 快取功能；請注意，這項設定會增加伺服器負載，因為即使 GPO 沒有更動，系統還是必須在每次擷取政策時重新下載 GPO。</translation>
+<translation id="1111470455889178048">傳送使用者上傳及下載的內容以供掃描</translation>
 <translation id="1117462881884985156"><ph name="PRODUCT_NAME" /> 會略過這項政策所指定的一系列主機的 Proxy。
 
           你必須在「選擇如何指定 Proxy 伺服器設定」中選取手動 Proxy 設定，並且未指定 <ph name="PROXY_SETTINGS_POLICY_NAME" /> 政策，這項政策才會生效。
@@ -389,6 +390,7 @@
       萬用模式。</translation>
 <translation id="1634989431648355062">允許在這些網站上執行 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式</translation>
 <translation id="1645793986494086629">架構：</translation>
+<translation id="1648816843164517573">可略過 HTTP 嚴格傳輸安全性政策檢查的名稱清單</translation>
 <translation id="1653229475925941921">如果設定這項政策，政策會控管啟用的放大鏡類型。將這項政策設為「None」，即可停用放大鏡。
 
           設定這項政策後，使用者無法變更或覆寫這項政策。
@@ -880,6 +882,7 @@
 <translation id="254653220329944566">啟用 <ph name="PRODUCT_NAME" /> 雲端報告功能</translation>
 <translation id="2548572254685798999">回報安全瀏覽資訊</translation>
 <translation id="2550593661567988768">僅限單面列印</translation>
+<translation id="2551520365302988324">傳送使用者上傳內容以供掃描</translation>
 <translation id="2552966063069741410">時區</translation>
 <translation id="2562339630163277285">指定用於提供互動智慧搜尋結果的搜尋引擎網址。網址應包含 <ph name="SEARCH_TERM_MARKER" /> 字串，使用者輸入的查詢文字會取代這個字串。
 
@@ -954,6 +957,7 @@
 <translation id="2665422249821137126">在登入畫面上啟用大型游標</translation>
 <translation id="2672012807430078509">控管是否要為 SMB 掛接功能啟用 NTLM 驗證通訊協定</translation>
 <translation id="267596348720209223">指定搜尋引擎支援的字元編碼。編碼就是 UTF-8、GB2312 和 ISO-8859-1 等字碼頁名稱。系統會以提供的順序來測試。這項政策是選擇性的，如果未設定，預設會使用的是 UTF-8。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
+<translation id="2679827548357140943">須檢查上傳內容是否包含惡意軟體的網域清單</translation>
 <translation id="268577405881275241">啟用資料壓縮 Proxy 功能</translation>
 <translation id="2693108589792503178">設定變更密碼網址。</translation>
 <translation id="2694143893026486692">停駐放大鏡已啟用</translation>
@@ -1322,6 +1326,10 @@
 <translation id="332771718998993005">確定公開為「<ph name="PRODUCT_NAME" />」目的地的名稱。
 
           如果這項政策設為非空白字串，該字串就會成為「<ph name="PRODUCT_NAME" />」目的地的名稱，否則目的地名稱將會是裝置名稱。如果未設定這項政策，則目的地名稱會是裝置名稱，且裝置擁有者 (或裝置管理網域中的使用者) 可進行變更。名稱長度上限為 24 個字元。</translation>
+<translation id="3331950121151548952">須檢查上傳內容是否包含惡意軟體的網域清單。你必須將 <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> 的值設為允許或強制針對上傳內容執行惡意軟體檢查，才能使用這項政策。
+
+          如果不設定這項政策或設定為空白的網域清單，系統不會檢查上傳內容是否包含惡意軟體。
+      </translation>
 <translation id="3335468714959531450">讓你設定網址模式清單，指定可設定 Cookie 的網站。
 
           如果未設定這項政策，系統會根據「DefaultCookiesSetting」政策 (如有設定) 或使用者的個人設定，將通用預設值套用至所有網站。
@@ -1391,6 +1399,15 @@
           如果這項政策設為 False 或未設定，系統會延遲管理電源，並且在工作階段開始後立即執行工作階段長度限制。</translation>
 <translation id="3478024346823118645">登出後清除使用者資料</translation>
 <translation id="3480961938508521469">以標準充電速度將電池完全充飽。</translation>
+<translation id="3483729306380590354">自訂開始充電的值 (以百分比為單位)。
+
+          電池電量耗用到自訂的開始充電值時，就會開始充電。
+
+          <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> 的值必須至少比 <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />.的值低五個百分點。
+
+          你必須將 <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" /> 設為 <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" />，才能使用這項政策。
+
+          如果未設定或不設定這項政策，系統將套用 <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" /> 充電模式。</translation>
 <translation id="348495353354674884">啟用虛擬鍵盤</translation>
 <translation id="3487623755010328395">
         如果設定這項政策，<ph name="PRODUCT_NAME" /> 嘗試自動註冊，並且為所有設定檔套用相關聯的雲端政策。
@@ -1815,6 +1832,15 @@
           設定這項政策後，使用者即無法變更或覆寫。
 
           如果不設定這項政策，系統預設會停用自動點擊功能，但使用者隨時可以啟用這項功能。</translation>
+<translation id="4215197846797661927">設定進階充電模式日間配置。
+
+          你必須將 <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> 設為 True，才能使用這項政策。
+
+          如果未設定或不設定這項政策，系統將一律停用進階充電模式。
+
+          注意：<ph name="CHARGE_START_TIME_FIELD_NAME" /> 必須小於 <ph name="CHARGE_END_TIME_FIELD_NAME" />。
+
+          注意：在 <ph name="CHARGE_START_TIME_FIELD_NAME" /> 和<ph name="CHARGE_END_TIME_FIELD_NAME" /> 的 <ph name="MINUTE_FIELD_NAME" /> 欄位中，允許的值為 0、15、30、45。</translation>
 <translation id="4224610387358583899">螢幕鎖定延遲</translation>
 <translation id="423797045246308574">允許您設定網址模式清單，指定禁止使用金鑰產生功能的網站。如果網址模式為「KeygenAllowedForUrls」，這項政策就會覆寫這類例外狀況。
 
@@ -1880,6 +1906,17 @@
           指定政策值時需以毫秒為單位。這項設定值必須小於或等於閒置延遲時間。
 
           只有當閒置動作設為登出或關機時，系統才會顯示警告訊息。</translation>
+<translation id="4342827592971649626">這項政策可控管安全瀏覽功能是否要對使用者下載的內容進行深度掃描。如果不設定這項政策，或設為預設的「不要掃描檔案」，安全瀏覽功能將不會掃描使用者下載的內容。
+
+      如果將這項政策設為「禁止掃描檔案」，系統將禁止使用者掃描下載內容。這項設定與預設值不同，因為特定使用者 (例如加入進階保護計畫的使用者) 可以將下載內容傳送給系統進行掃描。這項設定會禁止這些使用者掃描下載內容。
+
+      如果將這項政策設為「傳送使用者下載內容以供掃描」，系統會將使用者下載的內容透過網路傳送給安全瀏覽功能，進行惡意軟體掃描。
+
+      如果將這項政策設為「傳送使用者上傳內容以供掃描」，系統會將使用者上傳的內容透過網路傳送給安全瀏覽功能，進行惡意軟體掃描。
+
+      如果將這項政策設為「傳送使用者上傳及下載的內容以供掃描」，系統會依照「傳送使用者上傳內容以供掃描」以及「傳送使用者下載內容以供掃描」設定的規則執行作業。
+
+      如要進一步瞭解使用者和管理員如何查看掃描結果，請參閱 <ph name="DELAY_DELIVER_UNTIL_VERDICT_POLICY_NAME" /> 和 <ph name="UNSAFE_EVENTS_REPORTING_ENABLED" /> 政策。</translation>
 <translation id="4344356660952451291">須檢查下載內容是否符合規範的網域清單</translation>
 <translation id="4346674324214534449">讓你設定是否禁止含侵入式廣告的網站顯示廣告。
 
@@ -2437,6 +2474,16 @@
       設定這項政策後，使用者即無法變更或覆寫。
 
       如果不設定這項政策，使用者可自行選擇桌面和登入畫面背景的顯示圖片。</translation>
+<translation id="5437214086679373363">必須進行掃描時，控管使用者是否可以上傳或下載受密碼保護的檔案。如果 <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />、<ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> 或控管已啟用檢查功能的網域清單政策判斷檔案需要掃描，系統才會套用這項限制。
+
+      如果將這項政策設為「無」，<ph name="PRODUCT_NAME" /> 會禁止使用者上傳或下載受密碼保護的檔案。
+
+      如果將這項政策設為「允許下載」，<ph name="PRODUCT_NAME" /> 會允許使用者下載受密碼保護的檔案。
+
+      如果將這項政策設為「允許上傳」，<ph name="PRODUCT_NAME" /> 會允許使用者上傳受密碼保護的檔案。
+
+      如果不設定這項政策或設為「允許上傳及下載」，<ph name="PRODUCT_NAME" /> 會依照「允許下載」和「允許上傳」設定的規則執行作業。
+      </translation>
 <translation id="5437733496511628148">如果啟用這項設定，系統將禁止第三方設定 Cookie；網頁元素必須來自瀏覽器網址列中的網域，才能設定 Cookie。
 
       如果停用這項設定，即使網頁元素不是來自瀏覽器網址列中的網域，也能設定 Cookie；使用者並無法變更這項設定。
@@ -3310,13 +3357,32 @@
 
       如要進一步瞭解 Internet Explorer 的 <ph name="IEEM_SITELIST_POLICY" /> 政策，請參閱：https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">系統會直接授權存取視訊擷取裝置而不需提示的網址</translation>
+<translation id="713712866686796666">設定日間用電尖峰轉移配置。
+
+          你必須將 <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> 設為 True，才能使用這項政策。
+
+          如果未設定或不設定這項政策，系統將一律關閉用電尖峰轉移功能。
+
+          注意：在 <ph name="START_TIME_FIELD_NAME" />、<ph name="END_TIME_FIELD_NAME" /> 和 <ph name="CHARGE_START_TIME_FIELD_NAME" /> 的 <ph name="MINUTE_FIELD_NAME" /> 欄位中，允許的值為 0、15、30、45。</translation>
 <translation id="7138678301420049075">其他</translation>
+<translation id="7139809614375682935">自訂電池的停止充電值 (以百分比表示)。
+
+          電池電量達到自訂的停止充電值時，就會停止充電。
+
+          <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> 的值必須至少比 <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />.的值低五個百分點。
+
+          你必須將 <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" /> 設為 <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" />，才能使用這項政策。
+
+          如果未設定或不設定這項政策，系統將套用 <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" /> 充電模式。</translation>
 <translation id="7140629953254369759">指示 <ph name="PRODUCT_OS_NAME" /> 根據指定名稱使用不同的工作排程器設定。
 
       你可以將這項政策設為「conservative」或「performance」，讓系統選取以穩定性或效能最佳化為主的工作排程器設定。
 
       如果不設定這項政策，使用者將可自行選取偏好設定。</translation>
 <translation id="7145335384492396213">預設 PIN 碼列印模式</translation>
+<translation id="7149042336307555519"> 允許用來進行作業系統更新的連線類型。由於作業系統更新檔案較大，可能會對連線流量造成沉重負荷，也可能會產生額外費用。因此當使用者使用較昂貴的連線類型 (目前僅有「cellular」) 時，系統預設不會啟用作業系統更新。
+
+      系統可識別的連線類型識別碼包括 <ph name="CONNECTION_TYPE_ETHERNET_NAME" />、<ph name="CONNECTION_TYPE_WIFI_NAME" /> 和 <ph name="CONNECTION_TYPE_CELLULAR_NAME" />。</translation>
 <translation id="7152605873936173525">控管 DNS-over-HTTPS 解析器的模式。請注意，這項政策只會設定每次查詢的預設模式。系統可能會覆寫特殊查詢類型的模式，例如解析 DNS-over-HTTPS 伺服器主機名稱的要求。
 
       <ph name="SECURE_DNS_MODE_OFF" /> 模式會停用 DNS-over-HTTPS。
@@ -3346,6 +3412,17 @@
           如果這項政策設為「False」，系統將忽略螢幕 Wake Lock 使用要求。</translation>
 <translation id="7177857088692019405">快速解鎖</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
+<translation id="7187447094921703950">啟用「用電尖峰轉移」電源管理政策。
+
+          「用電尖峰轉移」是一項省電政策，能夠在一天中的用電尖峰期間，將交流電的使用量降到最低。你可以針對每個工作日，個別設定「用電尖峰轉移」模式的開始和結束時間。在你所設定的時間內，只要電池電量高於指定閾值，即使裝置已連接到交流電源，系統仍會強制使用電池供電。到達指定的結束時間之後，如果裝置連接到交流電源，系統就會改用交流電源，但不會對電池充電。到達指定的充電開始時間之後，如果裝置連接到交流電源，系統會再次使用交流電源運作，同時為電池充電。
+
+          如果將這項政策設為 True，並設定 <ph name="DEVICE_POWER_PEAK_SHIFT_BATTERY_THRESHOLD_NAME" />、<ph name="DEVICE_POWER_PEAK_SHIFT_DAY_CONFIG_NAME" /> 政策，系統將一律在支援的裝置上開啟用電尖峰轉移功能。
+
+          如果將這項政策設為 False，系統一律會關閉尖峰用電轉移功能。
+
+          設定這項政策後，使用者即無法變更或覆寫。
+
+          如果未設定這項政策，系統預設會關閉用電尖峰轉移功能，且使用者無法啟用這項功能。</translation>
 <translation id="718956142899066210">允許進行更新的連線類型</translation>
 <translation id="7190286937411178540">啟用鍵盤焦點醒目顯示無障礙功能</translation>
 <translation id="7194407337890404814">預設搜尋引擎名稱</translation>
@@ -3963,6 +4040,17 @@
 
           如果不設定這項政策，系統就會啟用這項政策。</translation>
 <translation id="8382184662529825177">啟用可用於保護裝置內容的遠端認證機制</translation>
+<translation id="8382693763260501307">啟用進階充電模式電源管理政策。
+
+          進階充電模式可讓使用者大幅延長電池壽命。使用進階充電模式時，系統會在非工作時間採用標準充電演算法和其他技術儘可能延長電池壽命。在工作時間則會使用快速充電模式。這種快速充電模式會加快充電速度，因此電池可以更快充飽。你可以設定開始時間和持續期間，指定每天最常使用系統的時間。
+
+          如果將這項政策設為 True，且已設定 <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_DAY_CONFIG_NAME" />，系統將一律在支援的裝置上啟用進階充電模式。
+
+          如果將這項政策設為 False，系統將一律停用進階充電模式。
+
+          設定這項政策後，使用者即無法變更或覆寫。
+
+          如果未設定這項政策，系統會停用進階充電模式，且使用者無法啟用。</translation>
 <translation id="838870586332499308">啟用數據漫遊</translation>
 <translation id="8390049129576938611">停用 <ph name="PRODUCT_NAME" /> 的內部 PDF 檢視器。改為將 PDF 檔案視為下載項目，允許使用者使用預設的應用程式開啟。
 
@@ -4157,9 +4245,15 @@
       如果設定這項政策，應用程式集將會固定，且使用者無法變更。
 
       如果不設定這項政策，使用者就可以變更啟動器中的固定應用程式清單。</translation>
+<translation id="8779504970846195767">設定用電尖峰轉移電池閾值 (以百分比為單位)。
+
+          你必須將 <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> 設為 True，才能使用這項政策。
+
+          如果未設定或不設定這項政策，系統將一律關閉用電尖峰轉移功能。</translation>
 <translation id="8798099450830957504">預設</translation>
 <translation id="8800453707696044281">自訂電池停止充電值 (以百分比表示)</translation>
 <translation id="8801680448782904838">透過通知建議或要求使用者重新啟動瀏覽器或裝置</translation>
+<translation id="8802816494059596691">這份清單中指定的主機名稱會從 HTTP 嚴格傳輸安全性政策檢查作業中排除，該檢查可能會將要求從 HTTP 升級為 HTTPS。這項政策只允許單一標籤主機名稱。主機名稱必須標準化：任何 IDN 都必須轉換為單一標籤格式，且所有 ASCII 字母都必須使用小寫。這項政策只適用於指定的主機名稱，不適用於指定主機名稱的子網域。</translation>
 <translation id="8818173863808665831">回報裝置的地理位置。
 
       如果未設定這項政策，或將其設定為 False，系統將不會回報位置。</translation>
@@ -4308,6 +4402,17 @@
       如果將政策值設為對應至快速修復版本的符記，且其他政策未封鎖更新，則裝置會更新為相應的快速修復版本。
 
       如果未設定這項政策，或政策值未對應至快速修復版本，則裝置不會更新為快速修復版本。如果裝置已執行快速修復版本，且你不再設定這項政策，或政策值不再對應至快速修復版本，那麼在其他政策未封鎖更新的情況下，裝置會更新為相應的一般版本。</translation>
+<translation id="9053158112041032237">指定充電模式電源管理政策。
+
+          以動態方式控管充電模式，盡可能降低因過度使用造成的電池耗損，並延長電池壽命。
+
+          如果已選取自訂充電模式，就必須指定 <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> 和 <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />。
+
+          如果設定了這項政策，系統將一律在支援的裝置上套用充電模式。
+
+          如果裝置支援這項政策但你未設定政策，系統會套用標準充電模式，且使用者無法變更這個模式。
+
+          注意：如果指定 <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" />，這項政策會遭到覆寫。</translation>
 <translation id="9054012305936267950">這項政策可控管瀏覽器的登入行為。你可以指定使用者是否能用個人帳戶登入 <ph name="PRODUCT_NAME" /> 並使用帳戶相關服務 (例如 Chrome 同步功能)。
 
       如果將這項政策設為「禁止登入瀏覽器」，使用者將無法登入瀏覽器，也無法使用帳戶相關服務。在這種情況下，使用者無法使用瀏覽器層級的功能 (例如 Chrome 同步功能)。如果這項政策在使用者登入瀏覽器後才設為「停用」，則這些已登入的使用者會在下次執行 Chrome 時被登出，但系統仍會保留他們的本機設定檔資料 (例如書籤、密碼等)。使用者仍然可以登入並使用 Gmail 等 Google 網路服務。

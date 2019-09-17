@@ -4,6 +4,7 @@
 
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/chromeos/cr_lottie/cr_lottie.html">
 <dom-module id="assistant-voice-match">
   <template>
     <link rel="stylesheet" href="../login/oobe_flex_layout.css">
@@ -24,10 +25,11 @@
             <div class="content" id="no-dsp-message"
                 i18n-content="assistantVoiceMatchNoDspMessage">
             </div>
-            <div id="voice-match-video-container">
-              <video id="voice-match-video" muted autoplay loop>
-                <source src="voice_laptop_1x.webm" type="video/webm">
-              </video>
+            <div id="voice-match-animation-container">
+              <div id="voice-match-animation">
+                <cr-lottie animation-url="voice_match_animation.json">
+                </cr-lottie>
+              </div>
             </div>
           </div>
           <div id="recording-container">

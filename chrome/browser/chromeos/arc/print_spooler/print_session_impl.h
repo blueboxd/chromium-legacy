@@ -13,6 +13,7 @@
 #include "components/arc/mojom/print_spooler.mojom.h"
 #include "components/printing/common/print.mojom.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace ash {
@@ -27,15 +28,15 @@ namespace arc {
 
 // Implementation of PrintSessionHost interface. Also used by other classes to
 // send print-related messages to ARC.
-class PrintSessionImpl : public arc::mojom::PrintSessionHost,
+class PrintSessionImpl : public mojom::PrintSessionHost,
                          public ArcCustomTabModalDialogHost,
                          public content::WebContentsUserData<PrintSessionImpl>,
                          public printing::mojom::PrintRenderer {
  public:
-  static arc::mojom::PrintSessionHostPtr Create(
+  static mojom::PrintSessionHostPtr Create(
       std::unique_ptr<content::WebContents> web_contents,
       std::unique_ptr<ash::ArcCustomTab> custom_tab,
-      arc::mojom::PrintSessionInstancePtr instance);
+      mojom::PrintSessionInstancePtr instance);
 
   ~PrintSessionImpl() override;
 
@@ -45,8 +46,8 @@ class PrintSessionImpl : public arc::mojom::PrintSessionHost,
  private:
   PrintSessionImpl(std::unique_ptr<content::WebContents> web_contents,
                    std::unique_ptr<ash::ArcCustomTab> custom_tab,
-                   arc::mojom::PrintSessionInstancePtr instance,
-                   arc::mojom::PrintSessionHostRequest request);
+                   mojom::PrintSessionInstancePtr instance,
+                   mojom::PrintSessionHostRequest request);
   friend class content::WebContentsUserData<PrintSessionImpl>;
 
   // Used to close the ARC Custom Tab used for printing. If the remote end
@@ -57,12 +58,16 @@ class PrintSessionImpl : public arc::mojom::PrintSessionHost,
   // Opens Chrome print preview after waiting for the PDF plugin to load.
   void StartPrintAfterDelay();
 
+  // Used to send messages to ARC and request a new print document.
+  mojom::PrintSessionInstancePtr instance_;
+
+  // Binding for PrintRenderer.
+  mojo::AssociatedBinding<printing::mojom::PrintRenderer>
+      print_renderer_binding_;
+
   // Used to bind the PrintSessionHost interface implementation to a message
   // pipe.
-  mojo::Binding<arc::mojom::PrintSessionHost> binding_;
-
-  // Used to send messages to ARC and request a new print document.
-  arc::mojom::PrintSessionInstancePtr instance_;
+  mojo::Binding<mojom::PrintSessionHost> session_binding_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

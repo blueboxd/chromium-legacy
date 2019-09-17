@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
 #include "chrome/browser/chromeos/arc/instance_throttle/arc_throttle_observer.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
@@ -23,6 +24,14 @@ class DefaultDelegateImpl : public ArcInstanceThrottle::Delegate {
   ~DefaultDelegateImpl() override = default;
   void SetCpuRestriction(bool restrict) override {
     SetArcCpuRestriction(restrict);
+  }
+
+  void RecordCpuRestrictionDisabledUMA(const std::string& observer_name,
+                                       base::TimeDelta delta) override {
+    DVLOG(2) << "ARC throttling was disabled for "
+             << delta.InMillisecondsRoundedUp()
+             << " ms due to: " << observer_name;
+    UmaHistogramLongTimes("Arc.CpuRestrictionDisabled." + observer_name, delta);
   }
 
  private:
@@ -85,16 +94,33 @@ void ArcInstanceThrottle::Shutdown() {
 void ArcInstanceThrottle::OnObserverStateChanged() {
   ArcThrottleObserver::PriorityLevel max_level =
       ArcThrottleObserver::PriorityLevel::LOW;
+  ArcThrottleObserver* effective_observer = nullptr;
   std::string active_observers;
+
   for (auto* observer : GetAllObservers()) {
     if (!observer->active())
       continue;
     active_observers += (" " + observer->GetDebugDescription());
-    if (max_level < observer->level())
+    if (observer->level() >= max_level) {
       max_level = observer->level();
+      effective_observer = observer;
+    }
   }
-  if (!active_observers.empty())
-    VLOG(1) << "Active Throttle Observers: " << active_observers;
+
+  DVLOG_IF(1, !active_observers.empty())
+      << "Active Throttle Observers: " << active_observers;
+
+  if (effective_observer != last_effective_observer_) {
+    // If there is a new effective observer, record the duration that the last
+    // effective observer was active.
+    if (last_effective_observer_)
+      delegate_->RecordCpuRestrictionDisabledUMA(
+          last_effective_observer_->name(),
+          base::TimeTicks::Now() - last_throttle_transition_);
+    last_throttle_transition_ = base::TimeTicks::Now();
+    last_effective_observer_ = effective_observer;
+  }
+
   ThrottleInstance(max_level);
 }
 

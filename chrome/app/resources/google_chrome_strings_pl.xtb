@@ -43,14 +43,16 @@
 <translation id="1873233029667955273">Google Chrome nie jest domyślną przeglądarką</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome jest nieaktualny</translation>
-<translation id="1900795423379050516">Jeśli ustawienia nie widać na tej stronie, zajrzyj do
-      <ph name="LINK_BEGIN" />ustawień przeglądarki Chrome<ph name="LINK_END" /></translation>
+<translation id="1900795423379050516">Jeśli ustawienia nie widać na tej stronie, zajrzyj do <ph name="LINK_BEGIN" />ustawień przeglądarki Chrome<ph name="LINK_END" /></translation>
 <translation id="1915828456209461693">Dostępna jest aktualizacja Chrome, która zostanie zastosowana natychmiast po ponownym uruchomieniu.</translation>
 <translation id="1919130412786645364">Zezwalaj na logowanie się w Chrome</translation>
 <translation id="2063848847527508675">Żeby system operacyjny Chrome mógł zastosować aktualizacje, musisz go ponownie uruchomić.</translation>
 <translation id="2094919256425865063">Zamknąć Chrome mimo to?</translation>
 <translation id="2120620239521071941">Spowoduje to usunięcie <ph name="ITEMS_COUNT" /> elementów z tego urządzenia. Aby później odzyskać dane, zaloguj się w Chrome jako <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Pomóż udoskonalić Chrome, zgłaszając <ph name="BEGIN_LINK" />bieżące ustawienia<ph name="END_LINK" /></translation>
+<translation id="2128103434102193461">Szczegóły dotyczące Chrome OS znajdziesz w sekcji <ph name="LINK_BEGIN" />
+      System operacyjny Chrome – informacje<ph name="LINK_END" /></translation>
+<translation id="2151406531797534936">Uruchom Chrome ponownie</translation>
 <translation id="216054706567564023">Zainstaluj Chrome na telefonie. Wyślemy SMS-a pod numer telefonu do odzyskiwania konta.</translation>
 <translation id="2246246234298806438">Google Chrome nie może pokazać podglądu wydruku, gdy nie ma wbudowanej przeglądarki PDF.</translation>
 <translation id="2252923619938421629">Pomóż udoskonalić Google Chrome, zgłaszając bieżące ustawienia</translation>
@@ -158,8 +160,7 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="5543953544073077331">Są uruchomione inne kopie Chrome. Zamknij je, by przeprowadzić aktualizację.</translation>
 <translation id="556024056938947818">Google Chrome próbuje pokazać hasła.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5657226924540934362">Jeśli ustawienia nie widać na tej stronie, zajrzyj do <ph name="LINK_BEGIN" />
-      ustawień systemu operacyjnego Chrome<ph name="LINK_END" /></translation>
+<translation id="5657226924540934362">Jeśli ustawienia nie widać na tej stronie, zajrzyj do <ph name="LINK_BEGIN" />ustawień systemu operacyjnego Chrome<ph name="LINK_END" /></translation>
 <translation id="565744775970812598">Plik <ph name="FILE_NAME" /> może być niebezpieczny, dlatego został zablokowany przez Chrome.</translation>
 <translation id="5686916850681061684">Dostosuj i kontroluj Google Chrome. Pewna kwestia wymaga Twojej uwagi – kliknij, by przejść do szczegółów.</translation>
 <translation id="5690427481109656848">Google LLC</translation>
@@ -219,6 +220,7 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="7589360514048265910">Google Chrome nie będzie już aktualizować się na tym komputerze, bo system Mac OS X 10.9 nie jest już obsługiwany.</translation>
 <translation id="7592736734348559088">Google Chrome nie może zsynchronizować danych, ponieważ dane logowania na Twoje konto są nieaktualne.</translation>
 <translation id="7626032353295482388">Witamy w Chrome</translation>
+<translation id="7629695634924605473">Chrome poinformuje Cię, jeśli Twoje hasła dostaną się w niepowołane ręce</translation>
 <translation id="7641148173327520642">Administrator systemu skonfigurował Google Chrome tak, by strona <ph name="TARGET_URL_HOSTNAME" /> otwierała się w przeglądarce <ph name="ALTERNATIVE_BROWSER_NAME" />.</translation>
 <translation id="7651907282515937834">Logo Chrome Enterprise</translation>
 <translation id="7747138024166251722">Instalator nie mógł utworzyć katalogu tymczasowego. Sprawdź, czy na dysku jest dość wolnego miejsca oraz sprawdź, czy posiadasz uprawnienia do instalowania programów.</translation>

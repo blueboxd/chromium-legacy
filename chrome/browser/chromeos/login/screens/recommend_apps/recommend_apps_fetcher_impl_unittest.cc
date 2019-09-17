@@ -412,7 +412,7 @@ TEST_F(RecommendAppsFetcherImplTest, ExtraLargeScreenWithTouch) {
   app.SetKey("name", base::Value("Test app 1"));
   app.SetKey("icon", base::Value("http://test.app"));
   app.SetKey("package_name", base::Value("test.app1"));
-  expected_apps.GetList().emplace_back(std::move(app));
+  expected_apps.Append(std::move(app));
 
   EXPECT_EQ(expected_apps, delegate_.loaded_apps());
 }
@@ -480,7 +480,7 @@ TEST_F(RecommendAppsFetcherImplTest, NoArcFeatures) {
   app.SetKey("name", base::Value("Test app 1"));
   app.SetKey("icon", base::Value("http://test.app"));
   app.SetKey("package_name", base::Value("test.app1"));
-  expected_apps.GetList().emplace_back(std::move(app));
+  expected_apps.Append(std::move(app));
 
   EXPECT_EQ(expected_apps, delegate_.loaded_apps());
 }
@@ -545,7 +545,7 @@ TEST_F(RecommendAppsFetcherImplTest, HasHardKeyboard) {
   app.SetKey("name", base::Value("Test app 1"));
   app.SetKey("icon", base::Value("http://test.app"));
   app.SetKey("package_name", base::Value("test.app1"));
-  expected_apps.GetList().emplace_back(std::move(app));
+  expected_apps.Append(std::move(app));
 
   EXPECT_EQ(expected_apps, delegate_.loaded_apps());
 }
@@ -604,7 +604,7 @@ TEST_F(RecommendAppsFetcherImplTest, NoKeyboard) {
   app.SetKey("name", base::Value("Test app 1"));
   app.SetKey("icon", base::Value("http://test.app"));
   app.SetKey("package_name", base::Value("test.app1"));
-  expected_apps.GetList().emplace_back(std::move(app));
+  expected_apps.Append(std::move(app));
 
   EXPECT_EQ(expected_apps, delegate_.loaded_apps());
 }
@@ -669,7 +669,7 @@ TEST_F(RecommendAppsFetcherImplTest, ExtraLargeScreenWithStylus) {
   app.SetKey("name", base::Value("Test app 1"));
   app.SetKey("icon", base::Value("http://test.app"));
   app.SetKey("package_name", base::Value("test.app1"));
-  expected_apps.GetList().emplace_back(std::move(app));
+  expected_apps.Append(std::move(app));
 
   EXPECT_EQ(expected_apps, delegate_.loaded_apps());
 }
@@ -729,7 +729,7 @@ TEST_F(RecommendAppsFetcherImplTest, LargeScreenWithoutTouchScreen) {
   app.SetKey("name", base::Value("Test app 1"));
   app.SetKey("icon", base::Value("http://test.app"));
   app.SetKey("package_name", base::Value("test.app1"));
-  expected_apps.GetList().emplace_back(std::move(app));
+  expected_apps.Append(std::move(app));
 
   EXPECT_EQ(expected_apps, delegate_.loaded_apps());
 }
@@ -789,7 +789,7 @@ TEST_F(RecommendAppsFetcherImplTest, NormalScreenWithoutTouchScreen) {
   app.SetKey("name", base::Value("Test app 1"));
   app.SetKey("icon", base::Value("http://test.app"));
   app.SetKey("package_name", base::Value("test.app1"));
-  expected_apps.GetList().emplace_back(std::move(app));
+  expected_apps.Append(std::move(app));
 
   EXPECT_EQ(expected_apps, delegate_.loaded_apps());
 }
@@ -850,7 +850,7 @@ TEST_F(RecommendAppsFetcherImplTest, SmallScreenWithoutTouchScreen) {
   app.SetKey("name", base::Value("Test app 1"));
   app.SetKey("icon", base::Value("http://test.app"));
   app.SetKey("package_name", base::Value("test.app1"));
-  expected_apps.GetList().emplace_back(std::move(app));
+  expected_apps.Append(std::move(app));
 
   EXPECT_EQ(expected_apps, delegate_.loaded_apps());
 }
@@ -911,7 +911,7 @@ TEST_F(RecommendAppsFetcherImplTest, ArcFeaturesReadyBeforeAsh) {
   app.SetKey("name", base::Value("Test app 1"));
   app.SetKey("icon", base::Value("http://test.app"));
   app.SetKey("package_name", base::Value("test.app1"));
-  expected_apps.GetList().emplace_back(std::move(app));
+  expected_apps.Append(std::move(app));
 
   EXPECT_EQ(expected_apps, delegate_.loaded_apps());
 }
@@ -960,7 +960,7 @@ TEST_F(RecommendAppsFetcherImplTest, RetryCalledBeforeFirstRequest) {
   app.SetKey("name", base::Value("Test app 1"));
   app.SetKey("icon", base::Value("http://test.app"));
   app.SetKey("package_name", base::Value("test.app1"));
-  expected_apps.GetList().emplace_back(std::move(app));
+  expected_apps.Append(std::move(app));
 
   EXPECT_EQ(expected_apps, delegate_.loaded_apps());
 
@@ -1046,7 +1046,7 @@ TEST_F(RecommendAppsFetcherImplTest, ResponseWithLeadeingBrackets) {
   app.SetKey("name", base::Value("Test app 1"));
   app.SetKey("icon", base::Value("http://test.app"));
   app.SetKey("package_name", base::Value("test.app1"));
-  expected_apps.GetList().emplace_back(std::move(app));
+  expected_apps.Append(std::move(app));
 
   EXPECT_EQ(expected_apps, delegate_.loaded_apps());
 }
@@ -1130,11 +1130,11 @@ TEST_F(RecommendAppsFetcherImplTest, ResponseWithMultipleApps) {
   app1.SetKey("name", base::Value("Test app 1"));
   app1.SetKey("icon", base::Value("http://test.app"));
   app1.SetKey("package_name", base::Value("test.app1"));
-  expected_apps.GetList().emplace_back(std::move(app1));
+  expected_apps.Append(std::move(app1));
 
   base::Value app2(base::Value::Type::DICTIONARY);
   app2.SetKey("package_name", base::Value("test.app2"));
-  expected_apps.GetList().emplace_back(std::move(app2));
+  expected_apps.Append(std::move(app2));
 
   EXPECT_EQ(expected_apps, delegate_.loaded_apps());
 }
@@ -1174,11 +1174,11 @@ TEST_F(RecommendAppsFetcherImplTest, InvalidAppItemsIgnored) {
   app1.SetKey("name", base::Value("Test app 1"));
   app1.SetKey("icon", base::Value("http://test.app"));
   app1.SetKey("package_name", base::Value("test.app1"));
-  expected_apps.GetList().emplace_back(std::move(app1));
+  expected_apps.Append(std::move(app1));
 
   base::Value app2(base::Value::Type::DICTIONARY);
   app2.SetKey("package_name", base::Value("test.app2"));
-  expected_apps.GetList().emplace_back(std::move(app2));
+  expected_apps.Append(std::move(app2));
 
   EXPECT_EQ(expected_apps, delegate_.loaded_apps());
 }
@@ -1341,7 +1341,7 @@ TEST_F(RecommendAppsFetcherImplTest, SuccessOnRetry) {
   app.SetKey("name", base::Value("Test app 1"));
   app.SetKey("icon", base::Value("http://test.app"));
   app.SetKey("package_name", base::Value("test.app1"));
-  expected_apps.GetList().emplace_back(std::move(app));
+  expected_apps.Append(std::move(app));
 
   EXPECT_EQ(expected_apps, delegate_.loaded_apps());
 }

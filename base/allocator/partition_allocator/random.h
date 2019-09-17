@@ -15,7 +15,7 @@ namespace base {
 // `base::RandUint64` which is very unpredictable, but which is expensive due to
 // the need to call into the kernel. Therefore this generator uses a fast,
 // entirely user-space function after initialization.
-uint32_t RandomValue();
+BASE_EXPORT uint32_t RandomValue();
 
 // Sets the seed for the random number generator to a known value, to cause the
 // RNG to generate a predictable sequence of outputs. May be called multiple

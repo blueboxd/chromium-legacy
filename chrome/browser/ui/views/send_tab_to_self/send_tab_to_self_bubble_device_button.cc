@@ -22,10 +22,6 @@ namespace send_tab_to_self {
 
 namespace {
 
-// Icon sizes in DIP.
-constexpr int kPrimaryIconSize = 20;
-constexpr int kPrimaryIconBorderWidth = 6;
-
 enum class DeviceIconType {
   DESKTOP = 0,
   PHONE = 1,
@@ -52,6 +48,7 @@ gfx::ImageSkia CreateDeviceIcon(DeviceIconType icon_type) {
       vector_icon = &kSendTabToSelfIcon;
   }
 
+  constexpr int kPrimaryIconSize = 20;
   return gfx::CreateVectorIcon(*vector_icon, kPrimaryIconSize,
                                GetColorfromTheme());
 }
@@ -66,8 +63,8 @@ std::unique_ptr<views::ImageView> CreateIconView(
   }
   auto icon_view = std::make_unique<views::ImageView>();
   icon_view->SetImage(image);
-  icon_view->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(kPrimaryIconBorderWidth)));
+  constexpr auto kPrimaryIconBorder = gfx::Insets(6);
+  icon_view->SetBorder(views::CreateEmptyBorder(kPrimaryIconBorder));
   return icon_view;
 }
 

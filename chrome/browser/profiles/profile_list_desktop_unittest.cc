@@ -77,8 +77,8 @@ class ProfileListDesktopTest : public testing::Test {
   void AddOmittedProfile(const std::string& name) {
     ProfileAttributesStorage* storage = manager()->profile_attributes_storage();
     storage->AddProfile(manager()->profiles_dir().AppendASCII(name),
-                        ASCIIToUTF16(name), std::string(), base::string16(), 0,
-                        "TEST_ID", EmptyAccountId());
+                        ASCIIToUTF16(name), std::string(), base::string16(),
+                        false, 0, "TEST_ID", EmptyAccountId());
   }
 
   int change_count() const { return mock_observer_->change_count(); }

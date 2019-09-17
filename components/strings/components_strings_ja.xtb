@@ -71,6 +71,7 @@
 <translation id="1292701964462482250">「パソコンにインストールされているソフトウェアが原因で、Chrome からインターネットに安全に接続することができません」（Windows パソコンのみ）</translation>
 <translation id="1294154142200295408">コマンドラインのバリエーション</translation>
 <translation id="129553762522093515">最近閉じたタブ</translation>
+<translation id="1298536327547837046">マルウェア スキャン</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Cookie を消去してみてください<ph name="END_LINK" /></translation>
 <translation id="1307966114820526988">サポート終了の機能</translation>
 <translation id="1320233736580025032">Prc1（封筒）</translation>
@@ -167,6 +168,7 @@
 <translation id="1734878702283171397">システム管理者にお問い合わせください。</translation>
 <translation id="1740951997222943430">有効期限（月）を正しい形式で入力してください</translation>
 <translation id="1743520634839655729">カード、お名前、請求先住所を Google アカウントとこのデバイスに保存すると、次回のお支払いが簡単になります。</translation>
+<translation id="1743570585616704562">認識されませんでした</translation>
 <translation id="1745880797583122200">ご使用のブラウザは管理されています</translation>
 <translation id="17513872634828108">開いているタブ</translation>
 <translation id="1753706481035618306">ページ番号</translation>
@@ -426,6 +428,7 @@
 <translation id="320323717674993345">支払いをキャンセル</translation>
 <translation id="3207960819495026254">ブックマークしました</translation>
 <translation id="3209034400446768650">このページでは料金が請求される可能性があります</translation>
+<translation id="3215092763954878852">WebAuthn を使用できませんでした</translation>
 <translation id="3225919329040284222">サーバーの提示した証明書が、組み込まれている想定の証明書と一致しません。これらの想定の証明書は、ユーザー保護のため、特定の安全性の高いウェブサイトについて用意されています。</translation>
 <translation id="3226128629678568754">ページの読み込みに必要なデータを再送信するには、再読み込みボタンを押してください。</translation>
 <translation id="3227137524299004712">マイク</translation>
@@ -562,6 +565,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{なし}=1{1 件のサイトから}other{# 件のサイトから}}</translation>
 <translation id="397105322502079400">計算しています...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> はブロックされています</translation>
+<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> がブラウザで Chrome Enterprise Threat Protection を有効にしています。Chrome Enterprise Threat Protection がユーザーのデータの一部にアクセスできます。</translation>
 <translation id="3987940399970879459">1 MB 未満</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 件の近くのウェブページ}other{# 件の近くのウェブページ}}</translation>
 <translation id="4030383055268325496">追加の取り消し（&amp;U）</translation>
@@ -630,6 +634,7 @@
 <translation id="4277028893293644418">パスワードを再設定</translation>
 <translation id="4279811152705618813">この <ph name="DEVICE_TYPE" /> は <ph name="ENROLLMENT_DOMAIN" /> によって管理されています</translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{このカードを Google アカウントに保存しました}other{これらのカードを Google アカウントに保存しました}}</translation>
+<translation id="428847186335018806">Chrome でダウンロードまたはアップロードしたファイルをスキャンします。</translation>
 <translation id="42981349822642051">展開</translation>
 <translation id="4302965934281694568">長3（封筒）</translation>
 <translation id="4305817255990598646">切り替え</translation>
@@ -668,6 +673,7 @@
 <translation id="4506176782989081258">検証エラー: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">システム管理者に問い合わせる</translation>
 <translation id="450710068430902550">管理者との共有</translation>
+<translation id="4508814173490746936">Touch ID を使用できませんでした</translation>
 <translation id="4510487217173779431">長4（封筒）</translation>
 <translation id="4515275063822566619">Chrome と Google アカウント（<ph name="ACCOUNT_EMAIL" />）に保存されているクレジット カードと住所です。[<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で管理できます。</translation>
 <translation id="4517607026994743406">Comm-10（封筒）</translation>
@@ -763,6 +769,7 @@
 <translation id="5045550434625856497">パスワードが正しくありません</translation>
 <translation id="5056549851600133418">おすすめの記事</translation>
 <translation id="5068524481479508725">A10</translation>
+<translation id="5068778127327928576">{NUM_COOKIES,plural, =1{（1 個が使用中）}other{（# 個が使用中）}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />プロキシ アドレスを確認する<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">サーバーの証明書が現在有効ではありません。</translation>
 <translation id="5087580092889165836">カードを追加</translation>
@@ -991,6 +998,7 @@
 <translation id="6302269476990306341">Chrome の Google アシスタントを停止しています</translation>
 <translation id="6305205051461490394"><ph name="URL" /> にアクセスできません。</translation>
 <translation id="6321917430147971392">DNS 設定を確認してください</translation>
+<translation id="6322182122604171028">Windows Hello を使用できませんでした</translation>
 <translation id="6328639280570009161">ネットワーク予測を無効にしてみてください</translation>
 <translation id="6328784461820205019">「この接続ではプライバシーが保護されません」、「&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;」、「&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;」、「&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;」、「&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;」、「SSL 証明書エラー」</translation>
 <translation id="6328786501058569169">これは偽のサイトです</translation>
@@ -1014,6 +1022,7 @@
 <translation id="6433490469411711332">連絡先情報の編集</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> で接続が拒否されました。</translation>
 <translation id="6434309073475700221">破棄</translation>
+<translation id="6435221585574090192">Chrome Enterprise Threat Protection によってフラグ付けされたセキュリティ イベントに関するデータを、管理者と共有できます。データの例としては、ページ URL、ファイル名、ファイル メタデータ、デバイスのユーザー名、Chrome のユーザー名などがあります。</translation>
 <translation id="6440503408713884761">除外されました</translation>
 <translation id="6446163441502663861">Kahu（封筒）</translation>
 <translation id="6446608382365791566">他の情報を追加</translation>
@@ -1058,6 +1067,7 @@
 <translation id="6671697161687535275">Chromium から候補を削除してもよろしいですか？</translation>
 <translation id="6685834062052613830">ログアウトして設定を完了してください</translation>
 <translation id="6689271823431384964">ログインしている場合は、その Google アカウントにカードを保存できます。この動作は設定で変更できます。カード名義人はアカウントから取得されます。</translation>
+<translation id="6707256370811247129">Chrome でダウンロードまたはアップロードしたキャッシュとファイルのコンテンツをスキャンします。</translation>
 <translation id="6710213216561001401">前へ</translation>
 <translation id="6710594484020273272">&lt;検索キーワードを入力&gt;</translation>
 <translation id="671076103358959139">登録トークン:</translation>
@@ -1076,6 +1086,7 @@
 <translation id="681021252041861472">必須項目</translation>
 <translation id="6810899417690483278">カスタム ID</translation>
 <translation id="6825578344716086703"><ph name="DOMAIN" /> にアクセスしようとしましたが、脆弱な署名アルゴリズム（SHA-1 など）を使用して署名された証明書がサーバーから提示されました。このセキュリティ認証情報は偽装されたものである可能性があり、アクセスしようとしたサーバーとは別のサーバーが応答している可能性があります（悪意のあるユーザーと通信している可能性があります）。</translation>
+<translation id="6826370046007623921">データ損失の防止</translation>
 <translation id="6831043979455480757">翻訳</translation>
 <translation id="6839929833149231406">地区</translation>
 <translation id="6852204201400771460">アプリを再読み込みしますか？</translation>
@@ -1222,6 +1233,7 @@
 <translation id="7542995811387359312">このフォームは安全な接続を使用していないため、クレジットカードの自動入力が無効になっています。</translation>
 <translation id="7548892272833184391">接続エラーを解決する</translation>
 <translation id="7549584377607005141">このウェブページを正しく表示するには、先ほど入力したデータが必要です。データは再送信できますが、このページで先ほど行った操作を繰り返すことになります。</translation>
+<translation id="7550637293666041147">お客様のデバイスのユーザー名と Chrome のユーザー名</translation>
 <translation id="7552846755917812628">次のことをお試しください。</translation>
 <translation id="7554791636758816595">新しいタブ</translation>
 <translation id="7564049878696755256"><ph name="ORG_NAME" /> アカウントにアクセスできなくなったり、個人情報が盗まれたりする可能性があります。今すぐパスワードを変更することをおすすめします。</translation>
@@ -1236,6 +1248,7 @@
 <translation id="7610193165460212391">値（<ph name="VALUE" />）が範囲外です。</translation>
 <translation id="7613889955535752492">有効期限: <ph name="EXPIRATION_MONTH" /> / <ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">別の Google アカウント パスワードを使って暗号化したデータが既にあります。パスワードを以下に入力してください。</translation>
+<translation id="7625784245512586808">Chrome Enterprise Threat Protection</translation>
 <translation id="7633909222644580952">パフォーマンス データと障害レポート</translation>
 <translation id="7637571805876720304">Chromium からクレジット カードを削除してもよろしいですか？</translation>
 <translation id="7638605456503525968">シリアルポート</translation>
@@ -1346,6 +1359,7 @@
 <translation id="8211406090763984747">この接続は保護されています</translation>
 <translation id="8218327578424803826">割り当てられた場所:</translation>
 <translation id="8220146938470311105">C7 / C6（封筒）</translation>
+<translation id="8220639454292072926">企業レポート</translation>
 <translation id="8225771182978767009">このサイトは、このパソコンを設定したユーザーによってブロックされています。</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />、<ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">ページを新しいシークレット タブで開く</translation>
@@ -1429,6 +1443,7 @@
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> の &lt;abbr id="dnsDefinition"&gt;DNS アドレス&lt;/abbr&gt;が見つかりませんでした。問題を診断しています。</translation>
 <translation id="874846938927089722">利用可能なクレジット カードとプリペイド カード</translation>
 <translation id="874918643257405732">このタブをブックマークに追加します</translation>
+<translation id="8751426954251315517">後でもう一度お試しください。</translation>
 <translation id="8759274551635299824">このカードは有効期限が切れています</translation>
 <translation id="8761567432415473239"><ph name="SITE" /> では最近、Google セーフ ブラウジングにより<ph name="BEGIN_LINK" />有害なプログラムが検出<ph name="END_LINK" />されました。</translation>
 <translation id="8763927697961133303">USB デバイス</translation>
@@ -1493,6 +1508,7 @@
 <translation id="9080712759204168376">ご注文の概要</translation>
 <translation id="9089260154716455634">管理時間外のポリシー:</translation>
 <translation id="9095388113577226029">その他の言語...</translation>
+<translation id="9098981495403789647">管理者がブラウザで Chrome Enterprise Threat Protection を有効にしています。Chrome Enterprise Threat Protection がユーザーのデータの一部にアクセスできます。</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> では通常、暗号化して情報を保護しています。今回、Chromium から <ph name="SITE" /> への接続試行時に、このウェブサイトからいつもとは異なる誤った認証情報が返されました。悪意のあるユーザーが <ph name="SITE" /> になりすまそうとしているか、Wi-Fi ログイン画面で接続が中断された可能性があります。データのやり取りが行われる前に Chromium によって接続が停止されたため、情報は引き続き保護されています。</translation>
 <translation id="9106062320799175032">請求先住所の追加</translation>
 <translation id="9114524666733003316">カードを確認しています…</translation>

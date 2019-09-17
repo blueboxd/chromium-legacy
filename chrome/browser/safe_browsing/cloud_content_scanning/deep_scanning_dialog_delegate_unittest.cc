@@ -10,7 +10,6 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/policy/fake_browser_dm_token_storage.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -110,13 +109,10 @@ class BaseTest : public testing::Test {
   BaseTest() : profile_manager_(TestingBrowserProcess::GetGlobal()) {
     EXPECT_TRUE(profile_manager_.SetUp());
     profile_ = profile_manager_.CreateTestingProfile("test-user");
-
-    // Set a client id, otherwise it is not possible to set a DM token.
-    fake_dm_token_storage_.SetClientId("client_id");
   }
 
   void SetDMToken(const char* dm_token) {
-    fake_dm_token_storage_.SetDMToken(dm_token);
+    DeepScanningDialogDelegate::SetDMTokenForTesting(dm_token);
   }
 
   void EnableFeatures(const std::vector<base::Feature>& features) {
@@ -149,7 +145,6 @@ class BaseTest : public testing::Test {
   TestingPrefServiceSimple pref_service_;
   TestingProfileManager profile_manager_;
   TestingProfile* profile_;
-  policy::FakeBrowserDMTokenStorage fake_dm_token_storage_;
 };
 
 using DeepScanningDialogDelegateIsEnabledTest = BaseTest;

@@ -566,19 +566,24 @@ void SVGAnimateElement::DidChangeAnimationTarget() {
 }
 
 void SVGAnimateElement::SetAttributeName(const QualifiedName& attribute_name) {
+  if (attribute_name == attribute_name_)
+    return;
   WillChangeAnimationTarget();
   attribute_name_ = attribute_name;
   DidChangeAnimationTarget();
 }
 
-void SVGAnimateElement::SetAttributeType(const AtomicString& attribute_type) {
+void SVGAnimateElement::SetAttributeType(
+    const AtomicString& attribute_type_string) {
+  AttributeType attribute_type = kAttributeTypeAuto;
+  if (attribute_type_string == "CSS")
+    attribute_type = kAttributeTypeCSS;
+  else if (attribute_type_string == "XML")
+    attribute_type = kAttributeTypeXML;
+  if (attribute_type == attribute_type_)
+    return;
   WillChangeAnimationTarget();
-  if (attribute_type == "CSS")
-    attribute_type_ = kAttributeTypeCSS;
-  else if (attribute_type == "XML")
-    attribute_type_ = kAttributeTypeXML;
-  else
-    attribute_type_ = kAttributeTypeAuto;
+  attribute_type_ = attribute_type;
   DidChangeAnimationTarget();
 }
 

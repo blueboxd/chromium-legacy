@@ -90,6 +90,8 @@
 <translation id="4230135487732243613">‏هل ترغب في ربط بياناتك في Chromium بهذا الحساب؟</translation>
 <translation id="4271805377592243930">‏الحصول على مساعدة في Chromium</translation>
 <translation id="4285930937574705105">‏تعذّر إتمام عملية التثبيت بسبب خطأ غير محدد. إذا كان Chromium في حالة التشغيل حاليًا، فالرجاء إغلاقه وإعادة المحاولة.</translation>
+<translation id="4371648796594901282">‏بالنسبة إلى تفاصيل نظام تشغيل Chromium، يُرجى الاطّلاع على <ph name="LINK_BEGIN" />
+      لمحة عن نظام التشغيل Chromium<ph name="LINK_END" /></translation>
 <translation id="4407044323746248786">‏هل تريد الخروج من Chromium على أي حال؟</translation>
 <translation id="4415566066719264597">‏السماح بتشغيل Chromium في الخلفية</translation>
 <translation id="4423735387467980091">‏تخصيص Chromium والتحكم فيه</translation>
@@ -122,6 +124,7 @@
 <translation id="5623402015214259806">{0,plural, =0{‏يتوفر تحديث لمتصفح Chromium}=1{‏يتوفر تحديث لمتصفح Chromium}two{‏يتوفر تحديث لمتصفح Chromium منذ يومين}few{‏يتوفر تحديث لمتصفح Chromium منذ # أيام}many{‏يتوفر تحديث لمتصفح Chromium منذ # يومًا}other{‏يتوفر تحديث لمتصفح Chromium منذ # يوم}}</translation>
 <translation id="5631814766731275228">‏الاسم والصورة على Chromium</translation>
 <translation id="5634636535844844681">‏يتطلب Chromium نظام التشغيل Windows 7 أو إصدارًا أحدث.</translation>
+<translation id="5653831366781983928">‏يُرجى إعادة تشغيل Chromium الآن</translation>
 <translation id="5680901439334282664">‏تسجيل الدخول إلى Chromium</translation>
 <translation id="5698481217667032250">‏عرض Chromium بهذه اللغة</translation>
 <translation id="5820394555380036790">‏نظام التشغيل Chromium</translation>
@@ -164,6 +167,7 @@
 <translation id="6734080038664603509">‏تح&amp;ديث Chromium</translation>
 <translation id="6734291798041940871">‏يتم تثبيت Chromium بالفعل لجميع المستخدمين على جهاز الكمبيوتر.</translation>
 <translation id="6810143991807788455">‏ساعد في تحسين Chromium بالإبلاغ عن الإعدادات الحالية</translation>
+<translation id="6847869444787758381">‏يتم إعلامك من خلال Chromium في حال تم اختراق كلمات المرور في أي وقت.</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">‏Google Pay (تم النسخ إلى Chromium)</translation>
 <translation id="6868056391275687737">‏هناك نُسخ أخرى من Chromium قيد التشغيل. يُرجى إغلاقها لإجراء التحديث.</translation>
@@ -194,7 +198,7 @@
 <translation id="753534427205733210">{0,plural, =1{‏ستتم إعادة تشغيل Chromium في غضون دقيقة واحدة}zero{‏ستتم إعادة تشغيل Chromium في غضون # دقيقة}two{‏ستتم إعادة تشغيل Chromium في غضون دقيقتين}few{‏ستتم إعادة تشغيل Chromium في غضون # دقائق}many{‏ستتم إعادة تشغيل Chromium في غضون # دقيقةً}other{‏ستتم إعادة تشغيل Chromium في غضون # دقيقة}}</translation>
 <translation id="7549178288319965365">‏حول نظام التشغيل Chromium</translation>
 <translation id="7561906087460245826">‏محو البيانات من Chromium أيضًا (<ph name="URL" />)</translation>
-<translation id="7585853947355360626">‏في حال عدم عرض إعداد على هذه الصفحة، ابحث عن <ph name="LINK_BEGIN" />
+<translation id="7585853947355360626">‏في حال عدم عرض إعداد على هذه الصفحة، انتقل إلى <ph name="LINK_BEGIN" />
     إعدادات نظام التشغيل Chromium<ph name="LINK_END" /></translation>
 <translation id="761356813943268536">‏يستخدم Chromium الكاميرا والميكروفون.</translation>
 <translation id="7617377681829253106">‏Chromium أصبح أفضل</translation>
@@ -229,7 +233,7 @@
 <translation id="8619360774459241877">‏جارٍ إطلاق Chromium...</translation>
 <translation id="8621669128220841554">‏تعذّر التثبيت نظرًا لحدوث خطأ غير محدد. يُرجى إعادة تنزيل Chromium.</translation>
 <translation id="8667808506758191620">جهاز <ph name="DEVICE_TYPE" /> مُحدّث.</translation>
-<translation id="8682540261359803721">‏في حال عدم عرض إعداد على هذه الصفحة، ابحث عن <ph name="LINK_BEGIN" />
+<translation id="8682540261359803721">‏في حال عدم عرض إعداد على هذه الصفحة، اذهب إلى <ph name="LINK_BEGIN" />
     إعدادات متصفِّح Chromium<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chromium أو إجراء بحث من المربع متعدد الاستخدامات.</translation>
 <translation id="8704119203788522458">‏هذا هو Chromium الخاص بك</translation>

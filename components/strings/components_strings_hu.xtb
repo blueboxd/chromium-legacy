@@ -71,6 +71,7 @@
 <translation id="1292701964462482250">„A számítógépen található valamelyik szoftver megakadályozza a Chrome-ot abban, hogy biztonságosan csatlakozzon az internetre” (csak Windows rendszerű számítógépeken)</translation>
 <translation id="1294154142200295408">Parancssorváltozatok</translation>
 <translation id="129553762522093515">Mostanában bezárt</translation>
+<translation id="1298536327547837046">Rosszindulatú program keresése</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Próbálkozzon a cookie-k törlésével<ph name="END_LINK" /></translation>
 <translation id="1307966114820526988">Elavult funkciók</translation>
 <translation id="1320233736580025032">Prc1 (boríték)</translation>
@@ -167,6 +168,7 @@
 <translation id="1734878702283171397">Próbálja felvenni a kapcsolatot a rendszergazdával.</translation>
 <translation id="1740951997222943430">Érvényes lejárati hónapot kell megadnia</translation>
 <translation id="1743520634839655729">A következő alkalommal gyorsabban fizethet, ha kártyáját, nevét és számlázási címét elmenti Google-fiókjába és az eszközre.</translation>
+<translation id="1743570585616704562">Nem sikerült felismerni</translation>
 <translation id="1745880797583122200">A böngésző felügyelet alatt áll</translation>
 <translation id="17513872634828108">Megnyitott lapok</translation>
 <translation id="1753706481035618306">Oldalszám</translation>
@@ -424,6 +426,7 @@
 <translation id="320323717674993345">Fizetés visszavonása</translation>
 <translation id="3207960819495026254">Könyvjelző rögzítve</translation>
 <translation id="3209034400446768650">Az oldal díjat számíthat fel</translation>
+<translation id="3215092763954878852">Hiba történt a WebAuthn használata során</translation>
 <translation id="3225919329040284222">A szerver tanúsítványa nem felel meg a beépített elvárásoknak. Ezek a beépített elvárások bizonyos nagy biztonságú webhelyekre vonatkoznak az Ön védelme érdekében.</translation>
 <translation id="3226128629678568754">Nyomja meg a frissítés gombot az oldal betöltéséhez szükséges adatok újraküldéséhez.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
@@ -560,6 +563,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Nincs}=1{ 1 webhelytől }other{# webhelytől }}</translation>
 <translation id="397105322502079400">Számítás…</translation>
 <translation id="3973234410852337861">A(z) <ph name="HOST_NAME" /> le van tiltva</translation>
+<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> engedélyezte a Chrome Enterprise fenyegetések elleni védelme szolgáltatást a böngészőben. A Chrome Enterprise fenyegetések elleni védelme hozzáfér az Ön bizonyos adataihoz.</translation>
 <translation id="3987940399970879459">Kevesebb mint 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 közeli weboldal}other{# közeli weboldal}}</translation>
 <translation id="4030383055268325496">&amp;Hozzáadás visszavonása</translation>
@@ -628,6 +632,7 @@
 <translation id="4277028893293644418">Jelszó visszaállítása</translation>
 <translation id="4279811152705618813"><ph name="DEVICE_TYPE" /> eszközét a(z) <ph name="ENROLLMENT_DOMAIN" /> kezeli</translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{A kártyát mentettük a Google-fiókjába.}other{Ezeket a kártyákat mentettük a Google-fiókjába.}}</translation>
+<translation id="428847186335018806">A Chrome használatával letöltött és feltöltött fájlok ellenőrzése.</translation>
 <translation id="42981349822642051">Kibontás</translation>
 <translation id="4302965934281694568">Chou3 (boríték)</translation>
 <translation id="4305817255990598646">Váltás</translation>
@@ -666,6 +671,7 @@
 <translation id="4506176782989081258">Érvényesítési hiba: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Kapcsolatfelvétel a rendszergazdával</translation>
 <translation id="450710068430902550">Megosztás a rendszergazdával</translation>
+<translation id="4508814173490746936">Hiba történt a Touch ID használata során</translation>
 <translation id="4510487217173779431">Chou4 (boríték)</translation>
 <translation id="4515275063822566619">A kártyák és a címek a Chrome-ból és az Ön Google-fiókjából (<ph name="ACCOUNT_EMAIL" />) származnak. A <ph name="BEGIN_LINK" />Beállításokban<ph name="END_LINK" /> kezelheti őket.</translation>
 <translation id="4517607026994743406">Comm-10 (boríték)</translation>
@@ -761,6 +767,7 @@
 <translation id="5045550434625856497">Helytelen jelszó</translation>
 <translation id="5056549851600133418">Cikkek Önnek</translation>
 <translation id="5068524481479508725">A10</translation>
+<translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 van használatban)}other{(# van használatban)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />A proxy címének ellenőrzése<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">A szerver tanúsítványa jelenleg nem érvényes.</translation>
 <translation id="5087580092889165836">Kártya hozzáadása</translation>
@@ -989,6 +996,7 @@
 <translation id="6302269476990306341">A Google Segéd a Chrome-ban szolgáltatás leáll</translation>
 <translation id="6305205051461490394">A(z) <ph name="URL" /> nem érhető el.</translation>
 <translation id="6321917430147971392">Ellenőrizze a DNS-beállításokat</translation>
+<translation id="6322182122604171028">Hiba történt a Windows Hello használata során</translation>
 <translation id="6328639280570009161">Próbálkozzon a hálózati előrejelzések kikapcsolásával</translation>
 <translation id="6328784461820205019">„Az Ön kapcsolata nem privát”, „&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;”, „&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;”, „&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;”, „&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;” vagy „SSL-tanúsítványhiba”</translation>
 <translation id="6328786501058569169">A webhely megtévesztő</translation>
@@ -1012,6 +1020,7 @@
 <translation id="6433490469411711332">Kapcsolattartási adatok szerkesztése</translation>
 <translation id="6433595998831338502">A(z) <ph name="HOST_NAME" /> visszautasította a csatlakozást.</translation>
 <translation id="6434309073475700221">Elvetés</translation>
+<translation id="6435221585574090192">A Chrome Enterprise fenyegetések elleni védelme által megjelölt biztonsági események adatait megoszthatja az adminisztrátorral. Az adatok tartalmazhatják az oldalak URL-jeit, a fájlok nevét és metaadatait, valamint az eszközhöz és a Chrome-hoz tartozó felhasználónevét.</translation>
 <translation id="6440503408713884761">Figyelmen kívül hagyva</translation>
 <translation id="6446163441502663861">Kahu (boríték)</translation>
 <translation id="6446608382365791566">További adatok hozzáadása</translation>
@@ -1056,6 +1065,7 @@
 <translation id="6671697161687535275">Eltávolítja az űrlapjavaslatot a Chromiumból?</translation>
 <translation id="6685834062052613830">Kijelentkezés és a beállítás befejezése</translation>
 <translation id="6689271823431384964">A Chrome felajánlja a kártyák mentését az Ön Google-fiókjába, mert be van jelentkezve. A beállítások között ezt bármikor módosíthatja. A kártyatulajdonos nevének forrása az Ön fiókja.</translation>
+<translation id="6707256370811247129">A gyorsítótár és a Chrome használatával letöltött és feltöltött fájlok tartalmának ellenőrzése.</translation>
 <translation id="6710213216561001401">Előző</translation>
 <translation id="6710594484020273272">&lt;Írja be a keresési kifejezést&gt;</translation>
 <translation id="671076103358959139">Regisztrációs token</translation>
@@ -1074,6 +1084,7 @@
 <translation id="681021252041861472">Kötelező mező</translation>
 <translation id="6810899417690483278">Testreszabás-azonosító</translation>
 <translation id="6825578344716086703">Megpróbálta elérni a(z) <ph name="DOMAIN" /> webhelyet, de a szerver gyenge aláírási algoritmust használó tanúsítványt mutatott be. Ez alapján elképzelhető, hogy a szerver által megadott biztonsági tanúsítványt meghamisították, és a szerver nem az, amelyikre számított (lehet, hogy éppen valamilyen támadóval kommunikál).</translation>
+<translation id="6826370046007623921">Adatszivárgás elleni védelem</translation>
 <translation id="6831043979455480757">Fordítás</translation>
 <translation id="6839929833149231406">Terület</translation>
 <translation id="6852204201400771460">Újratölti az alkalmazást?</translation>
@@ -1220,6 +1231,7 @@ További részletek:
 <translation id="7542995811387359312">Az automatikus bankkártya-kitöltés le van tiltva, mivel ez az űrlap nem biztonságos kapcsolatot használ.</translation>
 <translation id="7548892272833184391">A kapcsolódási hibák elhárítása</translation>
 <translation id="7549584377607005141">Ez a weboldal korábban megadott adatokat kér ahhoz, hogy megfelelően jelenjen meg. Az adatokat újra elküldheti, de ezzel meg fog ismételni minden olyan műveletet, amelyet ez az oldal korábban végrehajtott.</translation>
+<translation id="7550637293666041147">Az Ön, eszközhöz és a Chrome-hoz tartozó felhasználóneve</translation>
 <translation id="7552846755917812628">Próbálja ki az alábbi tippeket:</translation>
 <translation id="7554791636758816595">Új lap</translation>
 <translation id="7564049878696755256">Elveszítheti hozzáférést <ph name="ORG_NAME" />-fiókjához, vagy visszaélhetnek személyes adataival. A Chrome azt javasolja, hogy azonnal módosítsa jelszavát.</translation>
@@ -1234,6 +1246,7 @@ További részletek:
 <translation id="7610193165460212391">Az érték kívül esik a következő tartományon: <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Lejárat: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Már rendelkezik olyan adattal, amely Google-fiókja jelszavának egy másik verziójával van titkosítva. Kérjük, lentebb adja azt meg.</translation>
+<translation id="7625784245512586808">Chrome Enterprise fenyegetések elleni védelme</translation>
 <translation id="7633909222644580952">Teljesítményre vonatkozó adatok és hibajelentések</translation>
 <translation id="7637571805876720304">Eltávolítja a hitelkártyát a Chromiumból?</translation>
 <translation id="7638605456503525968">Soros portok</translation>
@@ -1344,6 +1357,7 @@ További részletek:
 <translation id="8211406090763984747">A kapcsolat biztonságos</translation>
 <translation id="8218327578424803826">Hozzárendelt helyszín:</translation>
 <translation id="8220146938470311105">C7/C6 (boríték)</translation>
+<translation id="8220639454292072926">Vállalati jelentéskészítés</translation>
 <translation id="8225771182978767009">A számítógépet beállító személy a webhely letiltása mellett döntött.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" /> és <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Oldal megnyitása új inkognitóablakban</translation>
@@ -1427,6 +1441,7 @@ További részletek:
 <translation id="8740359287975076522">A(z) <ph name="HOST_NAME" /> &lt;abbr id="dnsDefinition"&gt;DNS-címe&lt;/abbr&gt; nem található. A probléma diagnosztizálása folyamatban van.</translation>
 <translation id="874846938927089722">Elfogadott hitel- és feltöltőkártyák</translation>
 <translation id="874918643257405732">Lap hozzáadása a könyvjelzőkhöz</translation>
+<translation id="8751426954251315517">Próbálja újra később</translation>
 <translation id="8759274551635299824">A kártya lejárt</translation>
 <translation id="8761567432415473239">A Google Biztonságos Böngészés nemrég <ph name="BEGIN_LINK" />ártalmas programokat talált<ph name="END_LINK" /> a következő webhelyen: <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB-eszköz</translation>
@@ -1491,6 +1506,7 @@ További részletek:
 <translation id="9080712759204168376">Megrendelés összegzése</translation>
 <translation id="9089260154716455634">Házirend figyelmen kívül hagyása:</translation>
 <translation id="9095388113577226029">További nyelvek…</translation>
+<translation id="9098981495403789647">Az adminisztrátor engedélyezte a Chrome Enterprise fenyegetések elleni védelme szolgáltatást a böngészőben. A Chrome Enterprise fenyegetések elleni védelme hozzáfér az Ön bizonyos adataihoz.</translation>
 <translation id="9103872766612412690">A(z) <ph name="SITE" /> webhely rendes esetben titkosítást alkalmaz az Ön adatainak védelme érdekében. Amikor a Chromium most csatlakozni próbált, a(z) <ph name="SITE" /> webhely szokatlan és helytelen hitelesítési adatokat küldött vissza.Ez olyankor fordulhat elő, amikor egy támadó megpróbálja magát kiadni a(z) <ph name="SITE" /> webhelynek, vagy valamilyen Wi-Fi-bejelentkezési képernyő megszakította a kapcsolatot. Adatai továbbra is biztonságban vannak, mivel a Chromium még azt megelőzően megszakította a kapcsolatot, hogy bármiféle adatcserére sor kerülhetett volna.</translation>
 <translation id="9106062320799175032">Számlázási cím hozzáadása</translation>
 <translation id="9114524666733003316">Kártya ellenőrzése…</translation>

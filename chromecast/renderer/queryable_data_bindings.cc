@@ -27,7 +27,7 @@ QueryableDataBindings::QueryableDataBindings(content::RenderFrame* frame)
       queryable_data_store_(std::make_unique<QueryableDataStore>(
           base::ThreadTaskRunnerHandle::Get())) {
   registry_.AddInterface<shell::mojom::QueryableDataStore>(
-      base::BindRepeating(&QueryableDataStore::BindQueryableDataStoreRequest,
+      base::BindRepeating(&QueryableDataStore::BindQueryableDataStoreReceiver,
                           base::Unretained(queryable_data_store_.get())));
 }
 

@@ -154,9 +154,8 @@ void MailboxTextureHolder::Sync(MailboxSyncMode mode) {
 
 void MailboxTextureHolder::InitCommon() {
   DCHECK(!thread_id_);
-  Thread* thread = Thread::Current();
-  thread_id_ = thread->ThreadId();
-  texture_thread_task_runner_ = thread->GetTaskRunner();
+  thread_id_ = base::PlatformThread::CurrentId();
+  texture_thread_task_runner_ = Thread::Current()->GetTaskRunner();
 }
 
 bool MailboxTextureHolder::IsValid() const {
@@ -169,7 +168,7 @@ bool MailboxTextureHolder::IsValid() const {
 }
 
 bool MailboxTextureHolder::IsCrossThread() const {
-  return thread_id_ != Thread::Current()->ThreadId();
+  return thread_id_ != base::PlatformThread::CurrentId();
 }
 
 MailboxTextureHolder::~MailboxTextureHolder() {
@@ -177,8 +176,7 @@ MailboxTextureHolder::~MailboxTextureHolder() {
       new gpu::SyncToken(mailbox_ref()->sync_token()));
   std::unique_ptr<gpu::Mailbox> passed_mailbox(new gpu::Mailbox(mailbox_));
 
-  if (texture_thread_task_runner_ &&
-      thread_id_ != Thread::Current()->ThreadId()) {
+  if (texture_thread_task_runner_ && IsCrossThread()) {
     PostCrossThreadTask(
         *texture_thread_task_runner_, FROM_HERE,
         CrossThreadBindOnce(&ReleaseTexture, is_converted_from_skia_texture_,

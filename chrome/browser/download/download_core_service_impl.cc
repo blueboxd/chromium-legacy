@@ -80,8 +80,7 @@ DownloadCoreServiceImpl::GetDownloadManagerDelegate() {
   // Pass an empty delegate when constructing the DownloadUIController. The
   // default delegate does all the notifications we need.
   download_ui_.reset(new DownloadUIController(
-      manager, std::unique_ptr<DownloadUIController::Delegate>(),
-      download_provider));
+      manager, std::unique_ptr<DownloadUIController::Delegate>()));
 
 #if !defined(OS_ANDROID)
   download_shelf_controller_.reset(new DownloadShelfController(profile_));

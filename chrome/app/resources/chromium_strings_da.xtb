@@ -90,6 +90,8 @@
 <translation id="4230135487732243613">Vil du linke dine Chromium-data til denne konto?</translation>
 <translation id="4271805377592243930">Få hjælp til Chromium</translation>
 <translation id="4285930937574705105">Installationen mislykkedes på grund af en ikke-specificeret fejl. Hvis Chromium kører, skal du lukke programmet og prøve igen.</translation>
+<translation id="4371648796594901282">Få flere oplysninger om Chromium OS i <ph name="LINK_BEGIN" />
+      Om Chromium OS<ph name="LINK_END" /></translation>
 <translation id="4407044323746248786">Vil du afslutte Chromium alligevel?</translation>
 <translation id="4415566066719264597">Lad Chromium køre i baggrunden</translation>
 <translation id="4423735387467980091">Tilpas og kontrollér Chromium</translation>
@@ -122,6 +124,7 @@
 <translation id="5623402015214259806">{0,plural, =0{Der er en tilgængelig Chromium-opdatering}=1{Der er en tilgængelig Chromium-opdatering}one{En Chromium-opdatering har været tilgængelig i # dag}other{En Chromium-opdatering har været tilgængelig i # dage}}</translation>
 <translation id="5631814766731275228">Chromium-navn og -billede</translation>
 <translation id="5634636535844844681">Chromium kræver Windows 7 eller nyere.</translation>
+<translation id="5653831366781983928">Genstart Chromium nu</translation>
 <translation id="5680901439334282664">log ind på Chromium</translation>
 <translation id="5698481217667032250">Vis Chromium på dette sprog</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -164,6 +167,7 @@ Visse funktioner kan være utilgængelige. Angiv en anden profilmappe, eller bru
 <translation id="6734080038664603509">Opdater &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium er allerede installeret for alle brugere på computeren.</translation>
 <translation id="6810143991807788455">Hjælp med at gøre Chromium bedre ved at rapportere de aktuelle indstillinger</translation>
+<translation id="6847869444787758381">Chromium giver dig besked, hvis dine adgangskoder kompromitteres</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (kopieret til Chromium)</translation>
 <translation id="6868056391275687737">Der kører andre kopier af Chromium. Luk dem for at fortsætte opdateringen.</translation>

@@ -95,6 +95,10 @@ class BufferAllocator {
   std::unique_ptr<SysmemBufferPool::Creator> MakeBufferPoolCreator(
       size_t num_shared_token);
 
+  // TODO(sergeyu): Update FuchsiaVideoDecoder to use SysmemBufferPool and
+  // remove this function.
+  fuchsia::sysmem::Allocator* raw() { return allocator_.get(); }
+
  private:
   fuchsia::sysmem::AllocatorPtr allocator_;
 

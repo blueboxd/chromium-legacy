@@ -28,6 +28,13 @@ SkImageInfo RecordPaintCanvas::imageInfo() const {
   return GetCanvas()->imageInfo();
 }
 
+void* RecordPaintCanvas::accessTopLayerPixels(SkImageInfo* info,
+                                              size_t* rowBytes,
+                                              SkIPoint* origin) {
+  // Modifications to the underlying pixels cannot be saved.
+  return nullptr;
+}
+
 void RecordPaintCanvas::flush() {
   // This is a noop when recording.
 }

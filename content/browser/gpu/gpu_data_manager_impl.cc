@@ -130,6 +130,11 @@ void GpuDataManagerImpl::UpdateDx12VulkanRequestStatus(bool request_continues) {
   base::AutoLock auto_lock(lock_);
   private_->UpdateDx12VulkanRequestStatus(request_continues);
 }
+
+bool GpuDataManagerImpl::Dx12VulkanRequested() const {
+  base::AutoLock auto_lock(lock_);
+  return private_->Dx12VulkanRequested();
+}
 #endif
 
 void GpuDataManagerImpl::UpdateGpuFeatureInfo(

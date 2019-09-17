@@ -55,6 +55,10 @@ const base::Feature kUseParallelRequestsForHTTP2{
 
 const base::Feature kUseParallelRequestsForQUIC{
     "UseParallelRequestsForQUIC", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kDeleteExpiredDownloads{"DeleteExpiredDownloads",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace features
 
 }  // namespace download

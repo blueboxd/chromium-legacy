@@ -18,7 +18,6 @@
 #include "components/subresource_filter/content/browser/navigation_console_logger.h"
 #include "components/subresource_filter/content/browser/page_load_statistics.h"
 #include "components/subresource_filter/content/browser/subresource_filter_client.h"
-#include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/content/common/subresource_filter_utils.h"
 #include "components/subresource_filter/content/mojom/subresource_filter_agent.mojom.h"
@@ -41,7 +40,6 @@ ContentSubresourceFilterThrottleManager::
         content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       binding_(web_contents, this),
-      scoped_observer_(this),
       dealer_handle_(dealer_handle),
       client_(client) {
   SubresourceFilterObserverManager::CreateForWebContents(web_contents);

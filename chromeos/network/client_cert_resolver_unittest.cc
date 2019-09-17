@@ -84,7 +84,7 @@ std::unique_ptr<onc::OncParsedCertificates> OncParsedCertificatesForPkcs12File(
   onc_certificate.SetKey("Type", base::Value("Client"));
   onc_certificate.SetKey("PKCS12", base::Value(pkcs12_base64_encoded));
   base::Value onc_certificates(base::Value::Type::LIST);
-  onc_certificates.GetList().push_back(std::move(onc_certificate));
+  onc_certificates.Append(std::move(onc_certificate));
   return std::make_unique<onc::OncParsedCertificates>(onc_certificates);
 }
 

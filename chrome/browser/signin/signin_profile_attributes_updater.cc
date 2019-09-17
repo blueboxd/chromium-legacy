@@ -49,13 +49,14 @@ void SigninProfileAttributesUpdater::UpdateProfileAttributes() {
     return;
   }
 
-  if (identity_manager_->HasPrimaryAccount()) {
-    CoreAccountInfo account_info = identity_manager_->GetPrimaryAccountInfo();
-    entry->SetAuthInfo(account_info.gaia,
-                       base::UTF8ToUTF16(account_info.email));
+  CoreAccountInfo account_info =
+      identity_manager_->GetUnconsentedPrimaryAccountInfo();
+  if (!account_info.IsEmpty()) {
+    entry->SetAuthInfo(account_info.gaia, base::UTF8ToUTF16(account_info.email),
+                       identity_manager_->HasPrimaryAccount());
   } else {
     entry->SetLocalAuthCredentials(std::string());
-    entry->SetAuthInfo(std::string(), base::string16());
+    entry->SetAuthInfo(std::string(), base::string16(), false);
     if (!signin_util::IsForceSigninEnabled())
       entry->SetIsSigninRequired(false);
   }
@@ -78,5 +79,10 @@ void SigninProfileAttributesUpdater::OnPrimaryAccountSet(
 
 void SigninProfileAttributesUpdater::OnPrimaryAccountCleared(
     const CoreAccountInfo& previous_primary_account_info) {
+  UpdateProfileAttributes();
+}
+
+void SigninProfileAttributesUpdater::OnUnconsentedPrimaryAccountChanged(
+    const CoreAccountInfo& unconsented_primary_account_info) {
   UpdateProfileAttributes();
 }

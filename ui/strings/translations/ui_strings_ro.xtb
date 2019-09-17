@@ -113,6 +113,7 @@
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 lună rămasă}few{# luni rămase}other{# de luni rămase}}</translation>
 <translation id="4841881773802181781">Inserare</translation>
 <translation id="4881695831933465202">Deschide</translation>
+<translation id="4888938634149558681">Apelează</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{o secundă}few{# secunde}other{# de secunde}}</translation>
 <translation id="4971687151119236543">Melodia anterioară din conținutul media</translation>
 <translation id="5046499563572181734">Atinge aici</translation>
@@ -162,7 +163,7 @@
 <translation id="6578407462441924264">Nedenumit</translation>
 <translation id="6612467943526193239">Pentru a ieși din calibrare, apasă pe Esc.</translation>
 <translation id="6620110761915583480">Salvează fișierul</translation>
-<translation id="6656912866303152668">Asigură-te că <ph name="TARGET_DEVICE_NAME" /> are sincronizarea activată în Chrome, apoi încearcă să trimiți din nou.</translation>
+<translation id="6656912866303152668">Asigură-te că dispozitivul <ph name="TARGET_DEVICE_NAME" /> are sincronizarea activată în Chrome, apoi încearcă să trimiți din nou.</translation>
 <translation id="6699343763173986273">Melodia următoare din conținutul media</translation>
 <translation id="673773751041746814">Ștergere</translation>
 <translation id="6779314412797872738">Pentru a trimite un număr de aici pe telefonul Android, <ph name="TROUBLESHOOT_LINK" /> pentru ambele dispozitive din setări.</translation>
@@ -228,7 +229,7 @@
 <translation id="8876215549894133151">Format:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KO</translation>
 <translation id="8926951137623668982">Raftul este ascuns mereu</translation>
-<translation id="8996630695507351249">Asigură-te că <ph name="TARGET_DEVICE_NAME" /> este conectat la internet.</translation>
+<translation id="8996630695507351249">Asigură-te că dispozitivul <ph name="TARGET_DEVICE_NAME" /> este conectat la internet.</translation>
 <translation id="9002566407876343676">deschide</translation>
 <translation id="9039076430527029379">Mută la pagina <ph name="PAGE_NUMBER" />, rândul <ph name="ROW_NUMBER" />, coloana <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{O sec.}few{# sec.}other{# sec.}}</translation>

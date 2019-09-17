@@ -11,5 +11,6 @@
 extern NSString* const kBadgeButtonSavePasswordAccessibilityIdentifier;
 extern NSString* const kBadgeButtonUpdatePasswordAccessibilityIdentifier;
 extern NSString* const kBadgeButtonIncognitoAccessibilityIdentifier;
+extern NSString* const kBadgeButtonOverflowAccessibilityIdentifier;
 
 #endif  // IOS_CHROME_BROWSER_UI_BADGES_BADGE_CONSTANTS_H_

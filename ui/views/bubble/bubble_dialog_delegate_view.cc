@@ -307,8 +307,7 @@ void BubbleDialogDelegateView::OnBeforeBubbleWidgetInit(
     Widget* widget) const {}
 
 void BubbleDialogDelegateView::UseCompactMargins() {
-  const int kCompactMargin = 6;
-  set_margins(gfx::Insets(kCompactMargin));
+  set_margins(gfx::Insets(6));
 }
 
 void BubbleDialogDelegateView::OnAnchorBoundsChanged() {

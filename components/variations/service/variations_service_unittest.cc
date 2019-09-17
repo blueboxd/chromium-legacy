@@ -15,7 +15,6 @@
 #include "base/feature_list.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -134,7 +133,7 @@ class TestVariationsService : public VariationsService {
       PrefService* local_state,
       metrics::MetricsStateManager* state_manager,
       bool use_secure_url)
-      : VariationsService(base::WrapUnique(new TestVariationsServiceClient()),
+      : VariationsService(std::make_unique<TestVariationsServiceClient>(),
                           std::move(test_notifier),
                           local_state,
                           state_manager,

@@ -1232,7 +1232,8 @@ INSTANTIATE_TEST_SUITE_P(UkmConsentParamBrowserTests,
 // Verify that sources kept alive in-memory will be discarded by UKM service in
 // one reporting cycle after the web contents are destroyed when the tab is
 // closed or when the user navigated away in the same tab.
-IN_PROC_BROWSER_TEST_P(UkmBrowserTest, EvictObsoleteSources) {
+// Disabled as per crbug.com/1004296.
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, DISABLED_EvictObsoleteSources) {
   MetricsConsentOverride metrics_consent(true);
   Profile* profile = ProfileManager::GetActiveUserProfile();
   std::unique_ptr<ProfileSyncServiceHarness> harness =

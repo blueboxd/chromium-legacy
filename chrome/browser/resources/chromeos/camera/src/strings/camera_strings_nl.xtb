@@ -19,6 +19,7 @@
 <translation id="2501953888035679275">Maak foto's en neem video's op met je camera.</translation>
 <translation id="2549985041256363841">Opname starten</translation>
 <translation id="2599796128805996109">Camera aan achterzijde</translation>
+<translation id="2912439424121107408">Expertmodus wordt niet ondersteund op dit apparaat</translation>
 <translation id="2968794441791257519">Foto's en video's die zijn gemaakt met de camera worden verplaatst naar de map Downloads. Je kunt ze vinden via Bestanden.
 
         Apps met opslagmachtiging hebben toegang tot je foto's en video's.</translation>
@@ -41,10 +42,12 @@
         Controleer of de camera correct is aangesloten.</translation>
 <translation id="5152121255775685072">Naar galerij</translation>
 <translation id="5671277269877808209">Vierkant</translation>
+<translation id="5775960006311140197">Expertmodus</translation>
 <translation id="5869546221129391014">Raster</translation>
 <translation id="6040143037577758943">Sluiten</translation>
 <translation id="6073451960410192870">Opname stoppen</translation>
 <translation id="6165508094623778733">Meer informatie</translation>
+<translation id="6197807149213783179">Metadata opslaan</translation>
 <translation id="6233780560267770709">3 bij 3</translation>
 <translation id="6243827288366940320">Gulden snede</translation>
 <translation id="6248749904681914629">Externe camera</translation>
@@ -66,6 +69,7 @@
 <translation id="8261506727792406068">Verwijderen</translation>
 <translation id="8428213095426709021">Instellingen</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8732462232047530626">Voorbeeld van metadata bekijken</translation>
 <translation id="8815966864175525708">Schakel over om portretfoto te maken</translation>
 <translation id="8870695351537079478">Kan opname niet starten</translation>
 <translation id="9045155556724273246">10 seconden</translation>

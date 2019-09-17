@@ -12,8 +12,6 @@
 
 namespace content {
 
-class NavigationHandleImpl;
-
 // This class owns the set of NavigationThrottles added to a NavigationHandle.
 // It is responsible for calling the various sets of events on its
 // NavigationThrottle, and notifying its delegate of the results of said events.

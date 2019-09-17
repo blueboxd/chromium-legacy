@@ -31,7 +31,7 @@ bool AreFloatsEqual(float a, float b) {
 
 void VerifySettingsAreUnchanged(const DarkModeSettings& a,
                                 const DarkModeSettings& b) {
-  if (a.mode == DarkMode::kOff)
+  if (a.mode == DarkModeInversionAlgorithm::kOff)
     return;
 
   DCHECK_EQ(a.image_policy, b.image_policy);
@@ -89,7 +89,7 @@ DarkModeFilter::DarkModeFilter()
       color_filter_(nullptr),
       image_filter_(nullptr) {
   DarkModeSettings default_settings;
-  default_settings.mode = DarkMode::kOff;
+  default_settings.mode = DarkModeInversionAlgorithm::kOff;
   UpdateSettings(default_settings);
 }
 

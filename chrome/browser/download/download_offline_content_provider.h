@@ -90,7 +90,6 @@ class DownloadOfflineContentProvider
   // DownloadItem::Observer overrides
   void OnDownloadUpdated(DownloadItem* item) override;
   void OnDownloadRemoved(DownloadItem* item) override;
-  void OnDownloadDestroyed(DownloadItem* download) override;
 
  private:
   enum class State {
@@ -129,8 +128,6 @@ class DownloadOfflineContentProvider
   std::string name_space_;
   SimpleDownloadManagerCoordinator* manager_;
 
-  // Tracks the completed downloads in the current session.
-  std::set<std::string> completed_downloads_;
   std::unique_ptr<download::AllDownloadEventNotifier::Observer>
       all_download_observer_;
   bool checked_for_externally_removed_downloads_;

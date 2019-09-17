@@ -12,6 +12,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -25,9 +26,10 @@ import org.chromium.ui.widget.ChromeImageView;
 public class TabGroupUiToolbarView extends FrameLayout {
     private ChromeImageView mRightButton;
     private ChromeImageView mLeftButton;
+    private ChromeImageView mMenuButton;
     private ViewGroup mContainerView;
     private TextView mTitleTextView;
-    private View mMainContent;
+    private LinearLayout mMainContent;
 
     public TabGroupUiToolbarView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -52,13 +54,18 @@ public class TabGroupUiToolbarView extends FrameLayout {
         mRightButton.setOnClickListener(listener);
     }
 
+    void setMenuButtonOnClickListener(OnClickListener listener) {
+        mMenuButton.setOnClickListener(listener);
+    }
+
     ViewGroup getViewContainer() {
         return mContainerView;
     }
 
     void setMainContentVisibility(boolean isVisible) {
-        if (mContainerView == null)
+        if (mContainerView == null) {
             throw new IllegalStateException("Current Toolbar doesn't have a container view");
+        }
 
         for (int i = 0; i < ((ViewGroup) mContainerView).getChildCount(); i++) {
             View child = ((ViewGroup) mContainerView).getChildAt(i);
@@ -67,8 +74,9 @@ public class TabGroupUiToolbarView extends FrameLayout {
     }
 
     void setTitle(String title) {
-        if (mTitleTextView == null)
+        if (mTitleTextView == null) {
             throw new IllegalStateException("Current Toolbar doesn't have a title text view");
+        }
 
         mTitleTextView.setText(title);
     }
@@ -84,9 +92,15 @@ public class TabGroupUiToolbarView extends FrameLayout {
     }
 
     /**
-     * Setup a TabGridDialog-specific toolbar. It is different from the toolbar for TabGridSheet.
+     * Setup the toolbar layout base on the component it belongs to. The toolbars for TabGridSheet
+     * and TabGridDialog are different.
      */
-    void setupDialogToolbarLayout() {
+    void setupToolbarLayout(boolean isDialog) {
+        if (!isDialog) {
+            // We don't support toolbar menu for TabGridSheet.
+            mMainContent.removeView(mMenuButton);
+            return;
+        }
         Context context = getContext();
         mLeftButton.setImageResource(org.chromium.chrome.R.drawable.ic_arrow_back_24dp);
         int topicMargin =

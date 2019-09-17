@@ -51,6 +51,9 @@
 <translation id="2094919256425865063">仍要退出 Chrome？</translation>
 <translation id="2120620239521071941">这会从这台设备上删除 <ph name="ITEMS_COUNT" /> 项内容。如果日后想要检索您的数据，届时请以 <ph name="USER_EMAIL" /> 的身份登录 Chrome。</translation>
 <translation id="2123055963409958220">报告<ph name="BEGIN_LINK" />当前设置<ph name="END_LINK" />，协助我们改进 Chrome</translation>
+<translation id="2128103434102193461">如需详细了解 Chrome 操作系统，请参阅<ph name="LINK_BEGIN" />
+      Chrome 操作系统简介<ph name="LINK_END" /></translation>
+<translation id="2151406531797534936">请立即重启 Chrome</translation>
 <translation id="216054706567564023">请在您的手机上安装 Chrome。我们会将一条短信发送到您帐号的辅助电话号码。</translation>
 <translation id="2246246234298806438">在缺少内置 PDF 查看器的情况下，Google Chrome 浏览器无法显示打印预览。</translation>
 <translation id="2252923619938421629">报告当前设置，帮助我们改进 Google Chrome</translation>
@@ -219,6 +222,7 @@
 <translation id="7589360514048265910">此计算机将不会再收到 Google Chrome 更新，因为 Mac OS X 10.9 不再受支持。</translation>
 <translation id="7592736734348559088">由于您的帐号登录详细信息已过期，Google Chrome无法同步您的数据。</translation>
 <translation id="7626032353295482388">欢迎使用 Chrome</translation>
+<translation id="7629695634924605473">Chrome 会让您知道您的密码是否曾被泄露</translation>
 <translation id="7641148173327520642">您的系统管理员已将 Google Chrome 配置为使用<ph name="ALTERNATIVE_BROWSER_NAME" />访问 <ph name="TARGET_URL_HOSTNAME" />。</translation>
 <translation id="7651907282515937834">Chrome 企业版徽标</translation>
 <translation id="7747138024166251722">安装程序无法创建临时目录。请检查您是否有足够的磁盘空间和权限来安装该软件。</translation>

@@ -92,6 +92,8 @@
 <translation id="4230135487732243613">നിങ്ങളുടെ Chromium ഡാറ്റ ഈ അക്കൗണ്ടുമായി ലിങ്ക് ചെയ്യണോ?</translation>
 <translation id="4271805377592243930">Chromium ഉപയോഗിക്കുന്നതിനുള്ള സഹായം തേടുക</translation>
 <translation id="4285930937574705105">അവ്യക്തമായ പിശകിനാൽ ഇൻസ്റ്റാൾ ചെയ്യൽ പരാജയപ്പെട്ടു. Chromium നിലവിൽ പ്രവർത്തിക്കുന്നുണ്ടെങ്കിൽ, അത് അടച്ചതിനുശേഷം വീണ്ടും ശ്രമിക്കുക.</translation>
+<translation id="4371648796594901282">Chromium OS വിശദാംശങ്ങൾക്ക് <ph name="LINK_BEGIN" />
+      Chromium OS-നെക്കുറിച്ച്<ph name="LINK_END" /> എന്ന പേജ് കാണുക</translation>
 <translation id="4407044323746248786">എന്തായാലും Chromium-ത്തിൽ നിന്ന് പുറത്തുകടക്കണോ?</translation>
 <translation id="4415566066719264597">Chromium-ത്തെ പശ്ചാത്തലത്തിൽ പ്രവർത്തിക്കാൻ അനുവദിക്കുക</translation>
 <translation id="4423735387467980091">Chromium ഇഷ്‌ടാനുസൃതമാക്കുക, നിയന്ത്രിക്കുക</translation>
@@ -124,6 +126,7 @@
 <translation id="5623402015214259806">{0,plural, =0{Chromium-ത്തിനൊരു അപ്‌ഡേറ്റ് ലഭ്യമാണ്}=1{Chromium-ത്തിനൊരു അപ്‌ഡേറ്റ് ലഭ്യമാണ്}other{# ദിവസമായി Chromium-ത്തിനൊരു അപ്‌ഡേറ്റ് ലഭ്യമാണ്}}</translation>
 <translation id="5631814766731275228">Chromium പേരും ചിത്രവും</translation>
 <translation id="5634636535844844681">Chromium-ത്തിന് Windows 7 അല്ലെങ്കിൽ അതിനുശേഷമുള്ള പതിപ്പ് ആവശ്യമാണ്.</translation>
+<translation id="5653831366781983928">Chromium ഇപ്പോൾ റീസ്‌റ്റാർട്ട് ചെയ്യുക</translation>
 <translation id="5680901439334282664">Chromium-ലേക്ക് സൈൻ ഇൻ ചെയ്യുക</translation>
 <translation id="5698481217667032250">ഈ ഭാഷയിൽ Chromium പ്രദർശിപ്പിക്കുക</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -166,6 +169,7 @@
 <translation id="6734080038664603509">&amp;Chromium അപ്‌ഡേറ്റ് ചെയ്യുക</translation>
 <translation id="6734291798041940871">നിങ്ങളുടെ കമ്പ്യൂട്ടറിലെ എല്ലാ ഉപയോക്താക്കൾക്കുമായി നിലവിൽ Chromium ഇൻസ്റ്റാൾ ചെയ്‌തിട്ടുണ്ട്.</translation>
 <translation id="6810143991807788455">നിലവിലെ ക്രമീകരണങ്ങൾ റിപ്പോർട്ട് ചെയ്യുന്നതിലൂടെ Chromium മികച്ചതാക്കാൻ സഹായിക്കുക</translation>
+<translation id="6847869444787758381">നിങ്ങളുടെ പാസ്‌വേഡുകൾ എപ്പോഴെങ്കിലും അപഹരിക്കപ്പെട്ടിട്ടുണ്ടെങ്കിൽ അക്കാര്യം Chromium നിങ്ങളെ അറിയിക്കും</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromium-ത്തിലേക്ക് പകർത്തി)</translation>
 <translation id="6868056391275687737">Chromium-ത്തിൻ്റെ മറ്റ് പകർപ്പുകൾ റൺ ചെയ്യുന്നുണ്ട്. അപ്ഡേറ്റ് ചെയ്യാൻ അവ അടയ്ക്കുക.</translation>

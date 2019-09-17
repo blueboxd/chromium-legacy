@@ -354,8 +354,8 @@ TEST_F(ComponentActiveDirectoryPolicyServiceTest, ConvertsTypes) {
                        std::make_unique<base::Value>(1.0), nullptr);
 
   auto list = std::make_unique<base::ListValue>();
-  list->GetList().push_back(base::Value("One"));
-  list->GetList().push_back(base::Value("Two"));
+  list->Append(base::Value("One"));
+  list->Append(base::Value("Two"));
   expected_policy_.Set("ListAsSubkeys", POLICY_LEVEL_MANDATORY,
                        POLICY_SCOPE_USER, POLICY_SOURCE_ACTIVE_DIRECTORY,
                        std::move(list), nullptr);

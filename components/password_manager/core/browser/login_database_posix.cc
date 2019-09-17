@@ -29,10 +29,12 @@ void RecordPasswordDecryptionResult(PasswordDecryptionResult result) {
 LoginDatabase::EncryptionResult LoginDatabase::EncryptedString(
     const base::string16& plain_text,
     std::string* cipher_text) const {
+#if !defined(OS_FUCHSIA)
   if (!use_encryption_) {
     *cipher_text = base::UTF16ToUTF8(plain_text);
     return ENCRYPTION_RESULT_SUCCESS;
   }
+#endif
 
   return OSCrypt::EncryptString16(plain_text, cipher_text)
              ? ENCRYPTION_RESULT_SUCCESS
@@ -42,6 +44,7 @@ LoginDatabase::EncryptionResult LoginDatabase::EncryptedString(
 LoginDatabase::EncryptionResult LoginDatabase::DecryptedString(
     const std::string& cipher_text,
     base::string16* plain_text) const {
+#if !defined(OS_FUCHSIA)
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   // On Android and ChromeOS, we have a mix of obfuscated and plain-text
   // passwords. Obfuscated passwords always start with "v10", therefore anything
@@ -59,6 +62,7 @@ LoginDatabase::EncryptionResult LoginDatabase::DecryptedString(
         PasswordDecryptionResult::kSucceededBySkipping);
     return ENCRYPTION_RESULT_SUCCESS;
   }
+#endif  // !defined(OS_FUCHSIA)
 
   bool decryption_success = OSCrypt::DecryptString16(cipher_text, plain_text);
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)

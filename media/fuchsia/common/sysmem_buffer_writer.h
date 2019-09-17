@@ -43,6 +43,11 @@ class SysmemBufferWriter {
   // Notify the pool buffer at |index| is free to write new data.
   void Release(size_t index);
 
+  // Mark all buffers as unused.
+  void ReleaseAll();
+
+  size_t num_buffers() const;
+
  private:
   std::vector<Buffer> buffers_;
 

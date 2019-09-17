@@ -72,7 +72,7 @@
 <translation id="1294154142200295408">अलग-अलग तरह की कमांड-लाइन</translation>
 <translation id="129553762522093515">हाल ही में बंद किए गए</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />अपनी कुकी साफ़ करके देखें<ph name="END_LINK" /></translation>
-<translation id="1307966114820526988">बंद की गईं सुविधाएं</translation>
+<translation id="1307966114820526988">बंद की गई सुविधाएं</translation>
 <translation id="1320233736580025032">पीआरसी1 (एन्वेलप)</translation>
 <translation id="132301787627749051">क्लिपबोर्ड इमेज खोजें</translation>
 <translation id="1323433172918577554">और दिखाएं</translation>
@@ -167,6 +167,7 @@
 <translation id="1734878702283171397">सिस्टम व्यवस्थापक से संपर्क करने का प्रयास करें.</translation>
 <translation id="1740951997222943430">खत्म होने का मान्य महीना डालें</translation>
 <translation id="1743520634839655729">अगली बार तेज़ी से भुगतान करने के लिए, अपने कार्ड, नाम और बिलिंग पते को अपने 'Google खाते' में और इस डिवाइस में सेव करें.</translation>
+<translation id="1743570585616704562">उंगली की पहचान नहीं हो सकी</translation>
 <translation id="1745880797583122200">आपका ब्राउज़र प्रबंधित है</translation>
 <translation id="17513872634828108">टैब खोलें</translation>
 <translation id="1753706481035618306">पृष्‍ठ संख्‍या</translation>
@@ -577,6 +578,7 @@
 <translation id="4103249731201008433">डिवाइस की क्रम संख्या गलत है</translation>
 <translation id="410351446219883937">अपने आप चलाएं</translation>
 <translation id="4103763322291513355">प्रतिबंधित किए गए यूआरएल और आपके सिस्टम ए़़डमिन ने जिन अन्य नीतियों को लागू किया है, उन्हें देखने के लिए &lt;strong&gt;chrome://policy&lt;/strong&gt; पर जाएं.</translation>
+<translation id="4108231218301530806">अगली बार इस कार्ड की पुष्टि के लिए फ़िंगरप्रिंट का इस्तेमाल करें.</translation>
 <translation id="4110652170750985508">अपना भुगतान देखें</translation>
 <translation id="4112140312785995938">पीछे जाएं</translation>
 <translation id="4116663294526079822">इस साइट पर हमेशा अनुमति दें</translation>
@@ -801,7 +803,7 @@
 <translation id="5251803541071282808">क्लाउड</translation>
 <translation id="5252000469029418751">सी7 (एन्वेलप)</translation>
 <translation id="5254958791078852567">ई1</translation>
-<translation id="5269999699920406580">सिस्टम-व्यापी रूप से लागू होने वाली सुविधाओं को सिर्फ़ मालिक ही सेट कर सकता है: <ph name="OWNER_EMAIL" /></translation>
+<translation id="5269999699920406580">सिस्टम से जुड़ी हुई सुविधाओं को सिर्फ़ मालिक ही सेट कर सकता है: <ph name="OWNER_EMAIL" /></translation>
 <translation id="5273658854610202413">चेतावनी: इस नीति को PolicyDictionaryMultipleSourceMergeList नीति में बताए अनुसार नहीं मिलाया जा सकता, क्योंकि यह शब्दकोश की उन नीतियों का हिस्सा नहीं है जिन्हें मिलाया जा सकता है.</translation>
 <translation id="5283044957620376778">बी1</translation>
 <translation id="528468243742722775">खत्म</translation>
@@ -838,7 +840,7 @@
 <translation id="5457113250005438886">अमान्य</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> और <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> अन्य}one{<ph name="CONTACT_PREVIEW" /> और <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> अन्य}other{<ph name="CONTACT_PREVIEW" /> और <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> अन्य}}</translation>
 <translation id="5470861586879999274">&amp;बदलाव को फिर से लागू करें</translation>
-<translation id="5473728911100096288">इन सुविधाओं को चालू करके, आप रोके गए फ़ीचर इस्तेमाल करेंगे जो आने वाले वर्शन में मौजूद नहीं होंगे.</translation>
+<translation id="5473728911100096288">इन सुविधाओं को चालू करके, आप रोकी गई सुविधाएं इस्तेमाल करेंगे. ये आने वाले वर्शन में मौजूद नहीं होंगी.</translation>
 <translation id="5478437291406423475">बी6/सी4 (एन्वेलप)</translation>
 <translation id="5481076368049295676">यह सामग्री आपके डिवाइस पर ऐसा खतरनाक सॉफ़्टवेयर इंस्टॉल करने की कोशिश कर सकती है जो आपकी जानकारी चुरा सकता है या उसे हटा सकता है. <ph name="BEGIN_LINK" />फिर भी दिखाएं<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">मान्य पता जोड़ें</translation>

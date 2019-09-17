@@ -13,6 +13,8 @@
 #include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "media/mojo/mojom/audio_input_stream.mojom.h"
 #include "media/mojo/services/mojo_audio_input_stream.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/handle.h"
 
@@ -26,10 +28,12 @@ class CONTENT_EXPORT AudioInputStreamHandle {
 
   // |deleter_callback| will be called when encountering an error, in which
   // case |this| should be synchronously destructed by its owner.
-  AudioInputStreamHandle(mojom::RendererAudioInputStreamFactoryClientPtr client,
-                         media::MojoAudioInputStream::CreateDelegateCallback
-                             create_delegate_callback,
-                         DeleterCallback deleter_callback);
+  AudioInputStreamHandle(
+      mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+          client_pending_remote,
+      media::MojoAudioInputStream::CreateDelegateCallback
+          create_delegate_callback,
+      DeleterCallback deleter_callback);
 
   ~AudioInputStreamHandle();
 
@@ -44,7 +48,7 @@ class CONTENT_EXPORT AudioInputStreamHandle {
   SEQUENCE_CHECKER(sequence_checker_);
   const base::UnguessableToken stream_id_;
   DeleterCallback deleter_callback_;
-  mojom::RendererAudioInputStreamFactoryClientPtr client_;
+  mojo::Remote<mojom::RendererAudioInputStreamFactoryClient> client_remote_;
   media::mojom::AudioInputStreamPtr stream_ptr_;
   media::mojom::AudioInputStreamClientRequest stream_client_request_;
   media::MojoAudioInputStream stream_;

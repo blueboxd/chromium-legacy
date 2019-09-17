@@ -19,6 +19,7 @@
 <translation id="2501953888035679275">Съемка фото и видео на камеру устройства.</translation>
 <translation id="2549985041256363841">Начать запись</translation>
 <translation id="2599796128805996109">Основная камера</translation>
+<translation id="2912439424121107408">Режим эксперта не поддерживается на этом устройстве.</translation>
 <translation id="2968794441791257519">Фотографии и видео, полученные с камеры, будут перемещены в папку скачанных файлов. Вы также сможете найти их в папке "Файлы".
 
 Приложения, которым вы разрешили пользоваться хранилищем, получат доступ к вашим фотографиям и видео.</translation>
@@ -41,10 +42,12 @@
         Проверьте, правильно ли подключена камера.</translation>
 <translation id="5152121255775685072">Перейти в галерею</translation>
 <translation id="5671277269877808209">Квадрат</translation>
+<translation id="5775960006311140197">Режим эксперта</translation>
 <translation id="5869546221129391014">Сетка</translation>
 <translation id="6040143037577758943">Закрыть</translation>
 <translation id="6073451960410192870">Остановить запись</translation>
 <translation id="6165508094623778733">Подробнее...</translation>
+<translation id="6197807149213783179">Сохранение метаданных</translation>
 <translation id="6233780560267770709">3 на 3</translation>
 <translation id="6243827288366940320">Золотое сечение</translation>
 <translation id="6248749904681914629">Внешняя камера</translation>
@@ -66,6 +69,7 @@
 <translation id="8261506727792406068">Удалить</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8732462232047530626">Просмотр метаданных</translation>
 <translation id="8815966864175525708">Перейти к созданию вертикального фото</translation>
 <translation id="8870695351537079478">Не удалось начать запись</translation>
 <translation id="9045155556724273246">10 секунд</translation>

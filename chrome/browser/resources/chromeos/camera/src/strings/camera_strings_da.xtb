@@ -19,6 +19,7 @@
 <translation id="2501953888035679275">Tag billeder, og optag videoer med dit kamera.</translation>
 <translation id="2549985041256363841">Start optagelse</translation>
 <translation id="2599796128805996109">Bagsidekamera</translation>
+<translation id="2912439424121107408">Eksperttilstand understøttes ikke på denne enhed</translation>
 <translation id="2968794441791257519">Billeder og videoer, der er taget med kameraet, flyttes til mappen Downloads. Du kan få adgang til dem i Filer.
 
         Apps med lagertilladelser får adgang til dine billeder og videoer.</translation>
@@ -41,10 +42,12 @@
         Tjek, om kameraet er tilsluttet korrekt.</translation>
 <translation id="5152121255775685072">Gå til galleri</translation>
 <translation id="5671277269877808209">Kvadrat</translation>
+<translation id="5775960006311140197">Eksperttilstand</translation>
 <translation id="5869546221129391014">Gitter</translation>
 <translation id="6040143037577758943">Luk</translation>
 <translation id="6073451960410192870">Stop optagelse</translation>
 <translation id="6165508094623778733">Flere oplysninger</translation>
+<translation id="6197807149213783179">Gem metadata</translation>
 <translation id="6233780560267770709">3 gange 3</translation>
 <translation id="6243827288366940320">Det gyldne snit</translation>
 <translation id="6248749904681914629">Eksternt kamera</translation>
@@ -66,6 +69,7 @@
 <translation id="8261506727792406068">Slet</translation>
 <translation id="8428213095426709021">Indstillinger</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8732462232047530626">Se forhåndsvisning af metadata</translation>
 <translation id="8815966864175525708">Skift for at tage et billede i stående format</translation>
 <translation id="8870695351537079478">Det er ikke muligt at starte en optagelse</translation>
 <translation id="9045155556724273246">10 sekunder</translation>

@@ -1661,17 +1661,11 @@ AutotestPrivateSetAssistantEnabledFunction::Run() {
   if (!err_msg.empty())
     return RespondNow(Error(err_msg));
 
-  // There are three possible states for the voice interaction:
   // |NOT_READY| means service not running;
-  // |STOPPED| means service running but UI not shown;
-  // |RUNNING| means service running with UI shown on screen.
-  // When enabling Assistant, either |STOPPED| or |RUNNING| state could be
-  // possible depending on whether the UI has been brought up.
-  auto current_state = ash::AssistantState::Get()->assistant_state();
-  const bool not_ready =
-      (current_state == ash::mojom::AssistantState::NOT_READY);
-  const bool success = (params->enabled != not_ready);
-  if (success)
+  // |STOPPED| means service running;
+  auto new_state = params->enabled ? ash::mojom::AssistantState::READY
+                                   : ash::mojom::AssistantState::NOT_READY;
+  if (ash::AssistantState::Get()->assistant_state() == new_state)
     return RespondNow(NoArguments());
 
   // Assistant service has not responded yet, set up a delayed timer to wait for

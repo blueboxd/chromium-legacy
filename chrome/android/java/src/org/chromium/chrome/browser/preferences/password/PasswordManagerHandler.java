@@ -61,14 +61,6 @@ public interface PasswordManagerHandler {
     void removeSavedPasswordEntry(int index);
 
     /**
-     * Change saved password entry at index.
-     * @param index of password entry to change.
-     * @param new_username is the username after a change.
-     * @param new_password is the password after a change.
-     */
-    void changeSavedPasswordEntry(int index, String newUsername, String newPassword);
-
-    /**
      * Remove saved exception entry at index.
      *
      * @param index of exception entry.

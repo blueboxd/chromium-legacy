@@ -764,7 +764,7 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     const em::DeviceNativePrintersBlacklistProto& proto(
         policy.native_device_printers_blacklist());
     for (const auto& id : proto.blacklist())
-      list.GetList().emplace_back(id);
+      list.Append(id);
     new_values_cache->SetValue(kDeviceNativePrintersBlacklist, std::move(list));
   }
 
@@ -773,7 +773,7 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     const em::DeviceNativePrintersWhitelistProto& proto(
         policy.native_device_printers_whitelist());
     for (const auto& id : proto.whitelist())
-      list.GetList().emplace_back(id);
+      list.Append(id);
     new_values_cache->SetValue(kDeviceNativePrintersWhitelist, std::move(list));
   }
 

@@ -115,6 +115,7 @@ void ProfileInfoCache::AddProfileToCache(const base::FilePath& profile_path,
                                          const base::string16& name,
                                          const std::string& gaia_id,
                                          const base::string16& user_name,
+                                         bool is_consented_primary_account,
                                          size_t icon_index,
                                          const std::string& supervised_user_id,
                                          const AccountId& account_id) {
@@ -134,6 +135,10 @@ void ProfileInfoCache::AddProfileToCache(const base::FilePath& profile_path,
   info->SetString(kNameKey, name);
   info->SetString(kGAIAIdKey, gaia_id);
   info->SetString(ProfileAttributesEntry::kUserNameKey, user_name);
+  DCHECK(!is_consented_primary_account || !gaia_id.empty() ||
+         !user_name.empty());
+  info->SetBoolean(ProfileAttributesEntry::kIsConsentedPrimaryAccountKey,
+                   is_consented_primary_account);
   info->SetString(ProfileAttributesEntry::kAvatarIconKey,
                   profiles::GetDefaultAvatarIconUrl(icon_index));
   // Default value for whether background apps are running is false.
@@ -398,9 +403,16 @@ void ProfileInfoCache::SetNameOfProfileAtIndex(size_t index,
 void ProfileInfoCache::SetAuthInfoOfProfileAtIndex(
     size_t index,
     const std::string& gaia_id,
-    const base::string16& user_name) {
-  // If both gaia_id and username are unchanged, abort early.
-  if (gaia_id == GetGAIAIdOfProfileAtIndex(index) &&
+    const base::string16& user_name,
+    bool is_consented_primary_account) {
+  bool is_consented_primary_account_state;
+  GetInfoForProfileAtIndex(index)->GetBoolean(
+      ProfileAttributesEntry::kIsConsentedPrimaryAccountKey,
+      &is_consented_primary_account_state);
+
+  // If gaia_id, username and consent state are unchanged, abort early.
+  if (is_consented_primary_account_state == is_consented_primary_account &&
+      gaia_id == GetGAIAIdOfProfileAtIndex(index) &&
       user_name == GetUserNameOfProfileAtIndex(index)) {
     return;
   }
@@ -410,6 +422,10 @@ void ProfileInfoCache::SetAuthInfoOfProfileAtIndex(
 
   info->SetString(kGAIAIdKey, gaia_id);
   info->SetString(ProfileAttributesEntry::kUserNameKey, user_name);
+  DCHECK(!is_consented_primary_account || !gaia_id.empty() ||
+         !user_name.empty());
+  info->SetBoolean(ProfileAttributesEntry::kIsConsentedPrimaryAccountKey,
+                   is_consented_primary_account);
 
   SetInfoForProfileAtIndex(index, std::move(info));
 
@@ -740,10 +756,12 @@ void ProfileInfoCache::AddProfile(const base::FilePath& profile_path,
                                   const base::string16& name,
                                   const std::string& gaia_id,
                                   const base::string16& user_name,
+                                  bool is_consented_primary_account,
                                   size_t icon_index,
                                   const std::string& supervised_user_id,
                                   const AccountId& account_id) {
-  AddProfileToCache(profile_path, name, gaia_id, user_name, icon_index,
+  AddProfileToCache(profile_path, name, gaia_id, user_name,
+                    is_consented_primary_account, icon_index,
                     supervised_user_id, account_id);
 }
 

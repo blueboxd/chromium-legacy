@@ -26,8 +26,8 @@ FidoHidDiscovery::~FidoHidDiscovery() = default;
 
 void FidoHidDiscovery::StartInternal() {
   DCHECK(connector_);
-  connector_->BindInterface(device::mojom::kServiceName,
-                            mojo::MakeRequest(&hid_manager_));
+  connector_->Connect(device::mojom::kServiceName,
+                      hid_manager_.BindNewPipeAndPassReceiver());
   device::mojom::HidManagerClientAssociatedPtrInfo client;
   binding_.Bind(mojo::MakeRequest(&client));
 

@@ -18,7 +18,7 @@
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/ui/context_menu_params.h"
 #import "ios/web/public/web_state.h"
-#import "ios/web/public/web_state/web_state_observer_bridge.h"
+#import "ios/web/public/web_state_observer_bridge.h"
 #import "ios/web/web_state/context_menu_constants.h"
 #import "ios/web/web_state/context_menu_params_utils.h"
 #import "ios/web/web_state/ui/html_element_fetch_request.h"

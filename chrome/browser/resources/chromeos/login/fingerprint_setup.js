@@ -176,6 +176,13 @@ Polymer({
    */
   onContinueToSensorLocationScreen_: function(e) {
     this.showScreen_('placeFinger');
+
+    if (this.shouldUseLottieAnimation_) {
+      const placeFingerScreen = this.getActiveScreen_();
+      let lottieElement = /** @type{CrLottieElement} */ (
+          placeFingerScreen.querySelector('#scannerLocationLottie'));
+      lottieElement.setPlay(true);
+    }
   },
 
   /**

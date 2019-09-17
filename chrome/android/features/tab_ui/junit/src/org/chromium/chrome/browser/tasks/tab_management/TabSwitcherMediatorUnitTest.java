@@ -73,7 +73,8 @@ import java.util.List;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, shadows = {ShadowRecordHistogram.class})
-@DisableFeatures(ChromeFeatureList.TAB_SWITCHER_ON_RETURN)
+@DisableFeatures(
+        {ChromeFeatureList.TAB_SWITCHER_ON_RETURN, ChromeFeatureList.START_SURFACE_ANDROID})
 @EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
 public class TabSwitcherMediatorUnitTest {
     @Rule
@@ -193,6 +194,7 @@ public class TabSwitcherMediatorUnitTest {
     public void tearDown() {
         RecordUserAction.setDisabledForTests(false);
         RecordHistogram.setDisabledForTests(false);
+        FeatureUtilities.setGridTabSwitcherEnabledForTesting(false);
     }
 
     @Test

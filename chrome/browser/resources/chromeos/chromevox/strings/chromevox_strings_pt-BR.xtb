@@ -233,6 +233,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="27527859628328957">Ir para o próximo item focalizável</translation>
 <translation id="2770781857296573485">Entrar na exploração de grupo</translation>
 <translation id="2777845298774924149">Saiu</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{+#}one{+#}other{+#}}</translation>
 <translation id="2784959586797362050">Como sempre, você pode enviar seus comentários diretamente para nós pressionando "Pesquisa"+ "a" e depois a tecla "i". Estamos ansiosos para saber sua opinião.</translation>
 <translation id="2800204403141299078">Não há mais elementos diferentes.</translation>
 <translation id="2800780099804980316">Nenhum cabeçalho anterior de nível 1.</translation>
@@ -715,6 +716,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="5956928062748260866">Diálogo</translation>
 <translation id="5963413905009737549">Seção</translation>
 <translation id="5968607524793740041">Mostrar menu de contexto</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{com # item}one{com # item}other{com # itens}}</translation>
 <translation id="5981446804259161541">Ciano-claro</translation>
 <translation id="5983179082906765664">Aumentar granularidade de navegação</translation>
 <translation id="5992285135956208197">Documento gráfico</translation>

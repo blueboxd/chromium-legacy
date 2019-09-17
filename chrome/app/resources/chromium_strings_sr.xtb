@@ -92,6 +92,7 @@
 <translation id="4230135487732243613">Желите ли да повежете Chromium податке са овим налогом?</translation>
 <translation id="4271805377592243930">Пронађите помоћ за Chromium</translation>
 <translation id="4285930937574705105">Инсталација није успела због неодређене грешке. Ако је Chromium тренутно отворен, затворите га и покушајте поново.</translation>
+<translation id="4371648796594901282">Детаље о Chromium ОС-у потражите у одељку <ph name="LINK_BEGIN" />О Chromium ОС-у<ph name="LINK_END" /></translation>
 <translation id="4407044323746248786">Желите ли ипак да затворите Chromium?</translation>
 <translation id="4415566066719264597">Нека Chromium ради у позадини</translation>
 <translation id="4423735387467980091">Прилагодите и контролишите Chromium</translation>
@@ -124,6 +125,7 @@
 <translation id="5623402015214259806">{0,plural, =0{Ажурирање за Chromium је доступно}=1{Ажурирање за Chromium је доступно}one{Ажурирање за Chromium је доступно већ # дан}few{Ажурирање за Chromium је доступно већ # дана}other{Ажурирање за Chromium је доступно већ # дана}}</translation>
 <translation id="5631814766731275228">Назив и слика Chromium профила</translation>
 <translation id="5634636535844844681">За Chromium је потребан Windows 7 или новија верзија.</translation>
+<translation id="5653831366781983928">Рестартујте Chromium</translation>
 <translation id="5680901439334282664">пријавите се на Chromium</translation>
 <translation id="5698481217667032250">Приказуј Chromium на овом језику</translation>
 <translation id="5820394555380036790">Chromium ОС</translation>
@@ -166,6 +168,7 @@
 <translation id="6734080038664603509">Ажурирај &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium је већ инсталиран за све кориснике на рачунару.</translation>
 <translation id="6810143991807788455">Помозите да побољшамо Chromium тако што ћете послати извештај о актуелним подешавањима</translation>
+<translation id="6847869444787758381">Chromium вас обавештава ако су лозинке угрожене</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (копирано у Chromium)</translation>
 <translation id="6868056391275687737">Друге копије Chromium-а су активне. Да бисте обавили ажурирање, затворите их.</translation>

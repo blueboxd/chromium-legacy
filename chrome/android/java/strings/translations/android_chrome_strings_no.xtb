@@ -66,6 +66,7 @@
 <translation id="1407135791313364759">Åpne alle</translation>
 <translation id="1409426117486808224">Forenklet visning for åpne faner</translation>
 <translation id="1409879593029778104">Nedlastingen av <ph name="FILE_NAME" /> ble avbrutt fordi filen finnes allerede.</translation>
+<translation id="1413136574162415971">Google kan sjekke om passordene dine har vært en del av et databrudd. Dette blir slått på når du logger på med Google-kontoen din og slår på synkronisering.</translation>
 <translation id="1414981605391750300">Kontakter Google. Dette kan ta en liten stund.</translation>
 <translation id="1416550906796893042">Programversjon</translation>
 <translation id="1430915738399379752">Skriv ut</translation>
@@ -160,6 +161,7 @@
 <translation id="2091887806945687916">Lyd</translation>
 <translation id="2096012225669085171">Synkronisering og personlig tilpasning på alle enheter</translation>
 <translation id="2100273922101894616">Automatisk pålogging</translation>
+<translation id="2100314319871056947">Prøv å dele teksten i mindre deler</translation>
 <translation id="2107397443965016585">Spør før nettsteder får tillatelse til å spille beskyttet innhold (anbefalt)</translation>
 <translation id="2111511281910874386">Gå til side</translation>
 <translation id="2122601567107267586">Kunne ikke åpne appen</translation>
@@ -253,6 +255,7 @@
 <translation id="2836148919159985482">Trykk på tilbakeknappen for å avslutte fullskjerm.</translation>
 <translation id="2842985007712546952">Overordnet mappe</translation>
 <translation id="2858138569776157458">Populært</translation>
+<translation id="2860954141821109167">Kontrollér at en telefon-app er påslått på denne enheten</translation>
 <translation id="2870560284913253234">Nettsted</translation>
 <translation id="2874939134665556319">Forrige spor</translation>
 <translation id="2876369937070532032">Sender Google nettadressene til noen av sidene du besøker, når sikkerheten din står i fare</translation>
@@ -277,6 +280,7 @@
 <translation id="2996291259634659425">Opprett en passordfrase</translation>
 <translation id="2996809686854298943">Nettadresse kreves</translation>
 <translation id="300526633675317032">Dette sletter alle dataene (<ph name="SIZE_IN_KB" />) fra nettstedslagringen.</translation>
+<translation id="3016635187733453316">Kontrollér at enheten er koblet til internett</translation>
 <translation id="3029613699374795922"><ph name="KBS" /> kB er lastet ned</translation>
 <translation id="3029704984691124060">Passordfrasene stemmer ikke overens</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Få hjelp<ph name="END_LINK" /></translation>
@@ -841,6 +845,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="723171743924126238">Velg bilder</translation>
 <translation id="7233236755231902816">For å se nettet på ditt eget språk, skaff den nyeste versjonen av Chrome</translation>
 <translation id="7243308994586599757">Du finner alternativer ved bunnen av skjermen</translation>
+<translation id="7248069434667874558">Kontrollér at <ph name="TARGET_DEVICE_NAME" /> har synkronisering påslått i Chrome</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> er valgt</translation>
 <translation id="7274013316676448362">Blokkert nettsted</translation>
 <translation id="7290209999329137901">Du kan ikke endre navn</translation>
@@ -955,6 +960,7 @@ Nettstedet får IKKE tilgang til kameraet. Kamerabildene er kun synlige for deg.
 <translation id="8007176423574883786">Slått av for denne enheten</translation>
 <translation id="8013372441983637696">Fjern også Chrome-dataene dine fra denne enheten</translation>
 <translation id="8015452622527143194">Tilbakestill alt på siden til standardstørrelsen</translation>
+<translation id="8015780634880457457">Google kan sjekke om passordene dine har vært en del av et databrudd</translation>
 <translation id="802154636333426148">Nedlastingen mislyktes</translation>
 <translation id="8026334261755873520">Slett nettleserdata</translation>
 <translation id="8035133914807600019">Ny mappe</translation>
@@ -1017,6 +1023,7 @@ Nettstedet får IKKE tilgang til kameraet. Kamerabildene er kun synlige for deg.
 <translation id="8445448999790540984">Kan ikke eksportere passordene</translation>
 <translation id="8447861592752582886">Opphev tillatelsen til enhetstilgang</translation>
 <translation id="8461694314515752532">Kryptér synkroniserte data med din egen passordfrase for synkronisering</translation>
+<translation id="8466613982764129868">Kontrollér at <ph name="TARGET_DEVICE_NAME" /> er koblet til internett</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Tilgjengelig utenfor nettet</translation>
 <translation id="8489271220582375723">Åpne loggsiden</translation>
@@ -1107,6 +1114,7 @@ Nettstedet får IKKE tilgang til kameraet. Kamerabildene er kun synlige for deg.
 <translation id="9188680907066685419">Logg av administrert konto</translation>
 <translation id="9204836675896933765">1 fil gjenstår</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9209888181064652401">Kan ikke ringe</translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="926205370408745186">Fjerne Chrome-aktiviteten din fra Digital balanse</translation>
 <translation id="932327136139879170">Gå til startsiden</translation>

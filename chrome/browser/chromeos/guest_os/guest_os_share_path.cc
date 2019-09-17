@@ -498,7 +498,7 @@ void GuestOsSharePath::RegisterPersistedPath(const std::string& vm_name,
   }
   if (!already_shared) {
     base::Value vms(base::Value::Type::LIST);
-    vms.GetList().emplace_back(base::Value(vm_name));
+    vms.Append(base::Value(vm_name));
     shared_paths->SetKey(path.value(), std::move(vms));
   }
 }
@@ -514,8 +514,7 @@ void GuestOsSharePath::MigratePersistedPathsToMultiVM(
   base::Value dict(base::Value::Type::DICTIONARY);
   for (const auto& shared_path : *shared_paths) {
     base::Value termina(base::Value::Type::LIST);
-    termina.GetList().emplace_back(
-        base::Value(crostini::kCrostiniDefaultVmName));
+    termina.Append(base::Value(crostini::kCrostiniDefaultVmName));
     dict.SetKey(shared_path.GetString(), std::move(termina));
   }
   profile_prefs->Set(prefs::kGuestOSPathsSharedToVms, std::move(dict));

@@ -51,6 +51,9 @@
 <translation id="2094919256425865063">Ieși din Chrome oricum?</translation>
 <translation id="2120620239521071941">Astfel, se vor șterge <ph name="ITEMS_COUNT" /> elemente de pe acest dispozitiv. Pentru a recupera datele mai târziu, conectează-te la Chrome ca <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Contribuie la îmbunătățirea browserului Chrome raportând <ph name="BEGIN_LINK" />setările actuale<ph name="END_LINK" /></translation>
+<translation id="2128103434102193461">Pentru detalii despre sistemul de operare Chrome, accesează <ph name="LINK_BEGIN" />
+      Despre sistemul de operare Chrome<ph name="LINK_END" /></translation>
+<translation id="2151406531797534936">Repornește Chrome acum</translation>
 <translation id="216054706567564023">Instalează Chrome pe telefon. Vom trimite un SMS la numărul de telefon de recuperare a contului.</translation>
 <translation id="2246246234298806438">Google Chrome nu poate afișa previzualizarea înainte de printare când vizualizatorul PDF încorporat lipsește.</translation>
 <translation id="2252923619938421629">Contribuie la îmbunătățirea browserului Google Chrome raportând setările actuale</translation>
@@ -219,6 +222,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="7589360514048265910">Acest computer nu va mai primi actualizări pentru Google Chrome, deoarece Mac OS X 10.9 nu mai este acceptat.</translation>
 <translation id="7592736734348559088">Google Chrome nu a putut sincroniza datele, deoarece detaliile de conectare pentru contul dvs. nu sunt actualizate.</translation>
 <translation id="7626032353295482388">Bun venit la Chrome</translation>
+<translation id="7629695634924605473">Chrome te anunță dacă parolele tale sunt compromise</translation>
 <translation id="7641148173327520642">Administratorul sistemului a configurat Google Chrome să deschidă <ph name="ALTERNATIVE_BROWSER_NAME" /> pentru a accesa <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Sigla Chrome Enterprise</translation>
 <translation id="7747138024166251722">Programul de instalare nu a putut crea un director temporar. Verifică dacă există suficient spațiu liber și dacă ai drepturile necesare pentru a instala software-ul.</translation>

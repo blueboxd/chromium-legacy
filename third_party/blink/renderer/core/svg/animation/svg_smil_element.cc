@@ -265,8 +265,7 @@ void SVGSMILElement::BuildPendingResource() {
   if (svg_target && !svg_target->isConnected())
     svg_target = nullptr;
 
-  if (svg_target != targetElement())
-    SetTargetElement(svg_target);
+  SetTargetElement(svg_target);
 
   if (svg_target) {
     // Register us with the target in the dependencies map. Any change of
@@ -615,6 +614,8 @@ void SVGSMILElement::DisconnectEventBaseConditions() {
 }
 
 void SVGSMILElement::SetTargetElement(SVGElement* target) {
+  if (target == target_element_)
+    return;
   WillChangeAnimationTarget();
 
   // Clear values that may depend on the previous target.

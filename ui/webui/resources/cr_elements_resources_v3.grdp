@@ -6,11 +6,6 @@
          use_base_dir="false"
          type="BINDATA"
          compress="gzip" />
-  <include name="IDR_CR_ELEMENTS_CR_ACTION_MENU_ANCHOR_ALIGNMENT_M_JS"
-         file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_action_menu/anchor_alignment.m.js"
-         use_base_dir="false"
-         type="BINDATA"
-         compress="gzip" />
   <include name="IDR_CR_ELEMENTS_CR_ACTION_MENU_M_JS"
          file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_action_menu/cr_action_menu.m.js"
          use_base_dir="false"
@@ -123,6 +118,11 @@
          compress="gzip" />
   <include name="IDR_CR_ELEMENTS_CR_TOAST_M_JS"
          file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_toast/cr_toast.m.js"
+         use_base_dir="false"
+         type="BINDATA"
+         compress="gzip" />
+  <include name="IDR_CR_ELEMENTS_CR_TOAST_MANAGER_M_JS"
+         file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_toast/cr_toast_manager.m.js"
          use_base_dir="false"
          type="BINDATA"
          compress="gzip" />

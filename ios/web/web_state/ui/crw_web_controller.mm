@@ -424,6 +424,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   for (NSString* keyPath in self.WKWebViewObservers) {
     [_webView removeObserver:self forKeyPath:keyPath];
   }
+  self.webViewNavigationObserver.webView = nil;
 
   CRWWKScriptMessageRouter* messageRouter =
       [self webViewConfigurationProvider].GetScriptMessageRouter();

@@ -43,7 +43,7 @@ base::DictionaryValue PolicyFromConfigs(
   dict.SetKey(kCurrentConfigDictKey, current_config.ToDictionary());
   base::Value old_configs_value(base::Value::Type::LIST);
   for (const auto& config : old_configs)
-    old_configs_value.GetList().push_back(config.ToDictionary());
+    old_configs_value.Append(config.ToDictionary());
   dict.SetKey(kOldConfigsDictKey, std::move(old_configs_value));
   return dict;
 }

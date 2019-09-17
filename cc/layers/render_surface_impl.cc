@@ -452,9 +452,9 @@ void RenderSurfaceImpl::AppendQuads(DrawMode draw_mode,
     gfx::SizeF mask_uv_size;
     mask_layer->GetContentsResourceId(&mask_resource_id, &mask_texture_size,
                                       &mask_uv_size);
-    gfx::SizeF unclipped_mask_target_size = gfx::ScaleSize(
-        gfx::SizeF(OwningEffectNode()->unscaled_mask_target_size),
-        surface_contents_scale.x(), surface_contents_scale.y());
+    gfx::SizeF unclipped_mask_target_size =
+        gfx::ScaleSize(gfx::SizeF(mask_layer->bounds()),
+                       surface_contents_scale.x(), surface_contents_scale.y());
     // Convert content_rect from target space to normalized mask UV space.
     // Where |unclipped_mask_target_size| maps to |mask_uv_size|.
     mask_uv_rect = gfx::ScaleRect(

@@ -67,8 +67,7 @@ void WebTestRenderFrameObserver::DidCommitProvisionalLoad(
       ->DidCommitNavigationInMainFrame();
 }
 
-void WebTestRenderFrameObserver::DidFailProvisionalLoad(
-    const blink::WebURLError& error) {
+void WebTestRenderFrameObserver::DidFailProvisionalLoad() {
   if (!render_frame()->IsMainFrame())
     return;
   focus_on_next_commit_ = false;

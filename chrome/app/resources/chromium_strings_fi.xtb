@@ -90,6 +90,8 @@
 <translation id="4230135487732243613">Linkitetäänkö Chromium-tiedot tähän tiliin?</translation>
 <translation id="4271805377592243930">Ohjeita Chromiumin käyttöön</translation>
 <translation id="4285930937574705105">Asennus epäonnistui tuntemattoman virheen takia. Jos Chromium on tällä hetkellä käynnissä, sulje se ja yritä uudelleen.</translation>
+<translation id="4371648796594901282">Tutustu Chromium-käyttöjärjestelmään lukemalla <ph name="LINK_BEGIN" />
+      Tietoja Chromium-käyttöjärjestelmästä<ph name="LINK_END" /></translation>
 <translation id="4407044323746248786">Suljetaanko Chromium silti?</translation>
 <translation id="4415566066719264597">Jätä Chromium käyntiin taustalle</translation>
 <translation id="4423735387467980091">Chromiumin muokkaus ja hallinta</translation>
@@ -122,6 +124,7 @@
 <translation id="5623402015214259806">{0,plural, =0{Chromium-päivitys on saatavilla}=1{Chromium-päivitys on saatavilla}other{Chromium-päivitys on ollut saatavilla # vuorokauden ajan}}</translation>
 <translation id="5631814766731275228">Chromiumin nimi ja kuva</translation>
 <translation id="5634636535844844681">Chromium edellyttää Windows 7:ää tai uudempaa versiota.</translation>
+<translation id="5653831366781983928">Käynnistä Chromium uudelleen nyt</translation>
 <translation id="5680901439334282664">Kirjaudu sisään Chromiumiin</translation>
 <translation id="5698481217667032250">Näytä Chromium tällä kielellä</translation>
 <translation id="5820394555380036790">Chromium-käyttöjärjestelmä</translation>
@@ -164,6 +167,7 @@ Kaikki ominaisuudet eivät ehkä ole käytettävissä. Määritä jokin muu prof
 <translation id="6734080038664603509">Päivitä &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium on jo asennettuna kaikille tietokoneen käyttäjille.</translation>
 <translation id="6810143991807788455">Auta parantamaan Chromiumia ilmoittamalla nykyiset asetukset.</translation>
+<translation id="6847869444787758381">Chromium ilmoittaa sinulle, jos salasanasi ovat vaarantuneet</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (kopioitu Chromiumiin)</translation>
 <translation id="6868056391275687737">Chromiumin muita kopioita on käynnissä. Sulje ne päivittämistä varten.</translation>

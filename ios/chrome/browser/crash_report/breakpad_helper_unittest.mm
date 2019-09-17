@@ -60,6 +60,7 @@ TEST_F(BreakpadHelperTest, CrashReportUserApplicationStateAllKeys) {
   // single breakpad record.
   breakpad_helper::SetCurrentOrientation(3, 7);
   breakpad_helper::SetCurrentHorizontalSizeClass(2);
+  breakpad_helper::SetCurrentUserInterfaceStyle(2);
   breakpad_helper::SetRegularTabCount(999);
   breakpad_helper::SetIncognitoTabCount(999);
   breakpad_helper::SetDestroyingAndRebuildingIncognitoBrowserState(true);

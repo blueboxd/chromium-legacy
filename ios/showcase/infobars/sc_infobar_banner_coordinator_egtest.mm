@@ -89,8 +89,8 @@ using ::showcase_utils::Close;
       assertWithMatcher:grey_nil()];
 }
 
-// Tests that the InfobarModal is presented when the Banner its swiped down.
-- (void)testInfobarBannerSwipeDown {
+// Tests that the InfobarModal is not presented when the Banner its swiped down.
+- (void)testInfobarBannerCantSwipeDown {
   // Check Banner was presented.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kInfobarBannerViewIdentifier)]
@@ -99,20 +99,17 @@ using ::showcase_utils::Close;
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kInfobarBannerViewIdentifier)]
       performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
-  // Check Modal was presented.
+  // Check the Modal is not presented.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kInfobarBannerPresentedModalLabel)]
-      assertWithMatcher:grey_notNil()];
-  // Dismiss Modal.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(kInfobarModalCancelButton)]
-      performAction:grey_tap()];
-  // Check neither the Banner nor Modal are presented.
+      assertWithMatcher:grey_nil()];
+  // Check the banner is still interactable by swiping it up.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kInfobarBannerViewIdentifier)]
-      assertWithMatcher:grey_nil()];
+      performAction:grey_swipeFastInDirection(kGREYDirectionUp)];
+  // Check Banner was dismissed.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kInfobarBannerPresentedModalLabel)]
+                                          kInfobarBannerViewIdentifier)]
       assertWithMatcher:grey_nil()];
 }
 

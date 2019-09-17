@@ -1015,11 +1015,11 @@ void ManagedNetworkConfigurationHandlerImpl::GetDeviceStateProperties(
         << "GetDeviceStateProperties: Setting IPv4 properties from network: "
         << service_path;
     if (network->ipv4_config())
-      ip_configs->GetList().push_back(network->ipv4_config()->Clone());
+      ip_configs->Append(network->ipv4_config()->Clone());
   } else {
     // Convert the DeviceState IPConfigs dictionary to a ListValue.
     for (const auto iter : device_state->ip_configs().DictItems())
-      ip_configs->GetList().push_back(iter.second.Clone());
+      ip_configs->Append(iter.second.Clone());
   }
   if (!ip_configs->GetList().empty()) {
     properties->SetWithoutPathExpansion(shill::kIPConfigsProperty,

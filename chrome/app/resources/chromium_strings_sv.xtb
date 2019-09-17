@@ -92,6 +92,8 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="4230135487732243613">Vill du koppla dina uppgifter i Chromium till det här kontot?</translation>
 <translation id="4271805377592243930">Få hjälp med Chromium</translation>
 <translation id="4285930937574705105">Installationen misslyckades på grund av ett ospecificerat fel. Stäng Chromium om det är igång och försök sedan igen.</translation>
+<translation id="4371648796594901282">Mer information om Chromium OS finns under <ph name="LINK_BEGIN" />
+      Om Chromium OS<ph name="LINK_END" /></translation>
 <translation id="4407044323746248786">Vill du avsluta Chromium ändå?</translation>
 <translation id="4415566066719264597">Låt Chromium köras i bakgrunden</translation>
 <translation id="4423735387467980091">Anpassa och kontrollera Chromium</translation>
@@ -124,6 +126,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="5623402015214259806">{0,plural, =0{Det finns en uppdatering för Chromium}=1{Det finns en uppdatering för Chromium}other{Det finns en uppdatering för Chromium sedan # dagar}}</translation>
 <translation id="5631814766731275228">Namn och bild i Chromium</translation>
 <translation id="5634636535844844681">För Chromium krävs Windows 7 eller senare.</translation>
+<translation id="5653831366781983928">Starta om Chromium nu</translation>
 <translation id="5680901439334282664">Logga in i Chromium</translation>
 <translation id="5698481217667032250">Visa Chromium på det här språket</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -166,6 +169,7 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 <translation id="6734080038664603509">Uppdatera &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium har redan installerats för alla användare på datorn.</translation>
 <translation id="6810143991807788455">Hjälp oss att förbättra Chromium genom att rapportera dina aktuella inställningar</translation>
+<translation id="6847869444787758381">Om dina lösenord någonsin skulle läcka ut får du veta det i Chromium</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (har kopierats till Chromium)</translation>
 <translation id="6868056391275687737">Andra kopior av Chromium körs. Stäng dem om du vill uppdatera.</translation>

@@ -117,7 +117,6 @@ RedirectInfo::~RedirectInfo() = default;
 RedirectInfo RedirectInfo::ComputeRedirectInfo(
     const std::string& original_method,
     const GURL& original_url,
-    const base::Optional<url::Origin>& initiator,
     const GURL& original_site_for_cookies,
     URLRequest::FirstPartyURLPolicy original_first_party_url_policy,
     URLRequest::ReferrerPolicy original_referrer_policy,
@@ -167,9 +166,9 @@ RedirectInfo RedirectInfo::ComputeRedirectInfo(
 
   // Alter the referrer if redirecting cross-origin (especially HTTP->HTTPS).
   redirect_info.new_referrer =
-      URLRequestJob::ComputeReferrerForPolicy(
-          redirect_info.new_referrer_policy, GURL(original_referrer),
-          initiator.value_or(url::Origin()), redirect_info.new_url)
+      URLRequestJob::ComputeReferrerForPolicy(redirect_info.new_referrer_policy,
+                                              GURL(original_referrer),
+                                              redirect_info.new_url)
           .spec();
 
   return redirect_info;

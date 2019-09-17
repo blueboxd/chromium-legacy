@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "device/fido/fido_device_discovery.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/cpp/hid/hid_device_filter.h"
 #include "services/device/public/mojom/hid.mojom.h"
 
@@ -43,7 +44,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDiscovery
   void OnGetDevices(std::vector<device::mojom::HidDeviceInfoPtr> devices);
 
   service_manager::Connector* connector_;
-  device::mojom::HidManagerPtr hid_manager_;
+  mojo::Remote<device::mojom::HidManager> hid_manager_;
   mojo::AssociatedBinding<device::mojom::HidManagerClient> binding_;
   HidDeviceFilter filter_;
   base::WeakPtrFactory<FidoHidDiscovery> weak_factory_{this};

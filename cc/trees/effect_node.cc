@@ -66,7 +66,6 @@ bool EffectNode::operator==(const EffectNode& other) const {
          HasRenderSurface() == other.HasRenderSurface() &&
          blend_mode == other.blend_mode &&
          surface_contents_scale == other.surface_contents_scale &&
-         unscaled_mask_target_size == other.unscaled_mask_target_size &&
          hidden_by_backface_visibility == other.hidden_by_backface_visibility &&
          double_sided == other.double_sided &&
          trilinear_filtering == other.trilinear_filtering &&

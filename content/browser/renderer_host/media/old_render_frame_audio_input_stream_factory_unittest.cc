@@ -24,6 +24,8 @@
 #include "media/base/audio_parameters.h"
 #include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/audio/public/mojom/audio_processing.mojom.h"
@@ -114,7 +116,9 @@ class OldOldRenderFrameAudioInputStreamFactoryTest : public testing::Test {
         audio_manager_(std::make_unique<media::TestAudioThread>()),
         audio_system_(&audio_manager_),
         media_stream_manager_(&audio_system_, audio_manager_.GetTaskRunner()),
-        client_binding_(&client_, mojo::MakeRequest(&client_ptr_)),
+        client_receiver_(
+            &client_,
+            client_pending_remote_.InitWithNewPipeAndPassReceiver()),
         factory_handle_(RenderFrameAudioInputStreamFactoryHandle::CreateFactory(
             base::BindRepeating(&CreateFakeDelegate, &event_handler_),
             &media_stream_manager_,
@@ -148,15 +152,16 @@ class OldOldRenderFrameAudioInputStreamFactoryTest : public testing::Test {
   mojo::Remote<mojom::RendererAudioInputStreamFactory> factory_remote_;
   media::mojom::AudioInputStreamPtr stream_ptr_;
   MockRendererAudioInputStreamFactoryClient client_;
-  mojom::RendererAudioInputStreamFactoryClientPtr client_ptr_;
+  mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+      client_pending_remote_;
   media::AudioInputDelegate::EventHandler* event_handler_ = nullptr;
-  mojo::Binding<mojom::RendererAudioInputStreamFactoryClient> client_binding_;
+  mojo::Receiver<mojom::RendererAudioInputStreamFactoryClient> client_receiver_;
   UniqueAudioInputStreamFactoryPtr factory_handle_;
 };
 
 TEST_F(OldOldRenderFrameAudioInputStreamFactoryTest, CreateStream) {
   const base::UnguessableToken kSessionId = base::UnguessableToken::Create();
-  factory_remote_->CreateStream(std::move(client_ptr_), kSessionId,
+  factory_remote_->CreateStream(std::move(client_pending_remote_), kSessionId,
                                 GetTestAudioParameters(), kAGC,
                                 kSharedMemoryCount, nullptr);
 

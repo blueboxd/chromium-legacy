@@ -426,11 +426,6 @@ void AssistantUiController::OnUiVisibilityChanged(
     AssistantVisibility old_visibility,
     base::Optional<AssistantEntryPoint> entry_point,
     base::Optional<AssistantExitPoint> exit_point) {
-  AssistantState::Get()->NotifyStatusChanged(
-      new_visibility == AssistantVisibility::kVisible
-          ? mojom::AssistantState::VISIBLE
-          : mojom::AssistantState::READY);
-
   switch (new_visibility) {
     case AssistantVisibility::kClosed:
       // When the UI is closed, we stop the auto close timer as it may be

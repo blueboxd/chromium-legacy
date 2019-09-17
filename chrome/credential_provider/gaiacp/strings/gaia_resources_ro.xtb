@@ -4,13 +4,20 @@
 <translation id="1337821341856692531">Dacă vei continua fără să introduci parola pentru Windows actuală, este posibil să pierzi informații fără să le mai poți recupera.</translation>
 <translation id="1383286653814676580">Folosit pentru a afișa pagina de conectare la furnizorul de date de conectare la Google.</translation>
 <translation id="1894475569413661128">Conectează-te folosind contul de serviciu.</translation>
+<translation id="2329184763010379754">Numai utilizatorul care a blocat acest computer are permisiunea de a se conecta.</translation>
+<translation id="2398071111662077301">Nu se poate încărca ecranul de conectare Google din cauza unei probleme cu instalarea Chrome. Contactează administratorul.</translation>
 <translation id="2469311484561825731">Conectarea la contul de serviciu nu a reușit. Asigură-te că acest computer e conectat la internet, apoi încearcă din nou.</translation>
+<translation id="2679096858700291438">Ai introdus o parolă Windows incorectă. Încearcă din nou.</translation>
+<translation id="2831078752570172210">Contul tău a fost blocat. Contactează administratorul de sistem.</translation>
+<translation id="2844349213149998955">Pe acest dispozitiv nu este permisă conectarea folosind un cont personal. Conectează-te cu un cont de serviciu.</translation>
 <translation id="3306357053520292004">Un utilizator de pe acest computer a fost deja adăugat cu acest cont. Conectați-vă cu un alt cont.</translation>
 <translation id="3968372833844047539">Doar utilizatorii G Suite Enterprise au permisiunea de a se conecta.</translation>
 <translation id="4057329986137569701">A apărut o eroare internă.</translation>
 <translation id="4267670563222825190">Nu s-a găsit niciun utilizator de domeniu pentru contul tău. Contactează administratorul.</translation>
 <translation id="4300229033992784001">Parola contului a fost schimbată. Introdu parola Windows curentă pentru a sincroniza parola Windows cu contul de serviciu.</translation>
 <translation id="4706454071748629324">Nu s-a reușit adăugarea unui utilizator nou. Computerul permite crearea unui singur utilizator folosind un cont de serviciu.</translation>
+<translation id="6033715878377252112">Instrumentul Furnizor de date de conectare Google pentru Windows</translation>
+<translation id="6149399665202317746">Furnizor de date de conectare Google pentru Windows</translation>
 <translation id="6312494990035843744">Pe acest domeniu nu este permisă conectarea folosind un cont de serviciu. Încearcă un alt cont.</translation>
 <translation id="6463752215771576050">Nu s-a putut înregistra acest computer pentru gestionarea de întreprindere.  Conectează-te cu un alt cont de serviciu.</translation>
 <translation id="6657585470893396449">Parolă</translation>
@@ -22,5 +29,7 @@
 <translation id="8639729688781680518">Am uitat parola pentru Windows</translation>
 <translation id="866458870819756755">Nu s-a putut crea un utilizator.</translation>
 <translation id="8875753657315897487">Conectează-te folosind contul de serviciu</translation>
+<translation id="8973975512230260387">Sesiunea a expirat. Conectează-te folosind contul de serviciu Google.</translation>
+<translation id="9055998212250844221">Cont de utilizator creat de Furnizorul de date de conectare Google pentru Windows</translation>
 <translation id="9135619837062629367">Conectarea cu acest cont nu este permisă. Încearcă un alt cont.</translation>
 </translationbundle>

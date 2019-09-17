@@ -233,6 +233,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="27527859628328957">Pāriet uz nākamo fokusējamo vienumu</translation>
 <translation id="2770781857296573485">Sākt grupu izpēti</translation>
 <translation id="2777845298774924149">Tika aizvērts</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{un vēl #}zero{un vēl #}one{un vēl #}other{un vēl #}}</translation>
 <translation id="2784959586797362050">Kā vienmēr, varat sūtīt atsauksmes tieši mums, nospiežot meklēšanas taustiņu un “a”, pēc tam “i”. Ar prieku saņemsim jūsu atsauksmes!</translation>
 <translation id="2800204403141299078">Nav neviena cita atšķirīga elementa.</translation>
 <translation id="2800780099804980316">Iepriekš nav neviena 1. līmeņa virsraksta.</translation>
@@ -715,6 +716,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="5956928062748260866">Dialoglodziņš</translation>
 <translation id="5963413905009737549">Sadaļa</translation>
 <translation id="5968607524793740041">Rādīt kontekstizvēlni</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{ar # vienumu}zero{ar # vienumiem}one{ar # vienumu}other{ar # vienumiem}}</translation>
 <translation id="5981446804259161541">Gaiši ciānzila</translation>
 <translation id="5983179082906765664">Palielināt navigācijas precizitāti</translation>
 <translation id="5992285135956208197">Grafikas dokuments</translation>

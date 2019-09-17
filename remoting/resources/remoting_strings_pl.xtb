@@ -183,9 +183,9 @@
 <translation id="5419185025274123272">Nie można zresetować aplikacji. Wciąż możesz przesłać zgłoszenie błędu.</translation>
 <translation id="5419418238395129586">Ostatnio online: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Host został wyłączony.</translation>
-<translation id="5463789431147491241">Aby używać <ph name="PRODUCT_NAME" /> na tym Maku:
+<translation id="5463789431147491241">Aby używać usługi <ph name="PRODUCT_NAME" /> na tym Maku:
 
-Kliknij „<ph name="BUTTON_NAME" />” poniżej. W ustawieniach Bezpieczeństwo i prywatność zaznacz „<ph name="SERVICE_SCRIPT_NAME" />”.
+Kliknij „<ph name="BUTTON_NAME" />” poniżej. W ustawieniach Prywatność i bezpieczeństwo zaznacz „<ph name="SERVICE_SCRIPT_NAME" />”.
 
 Jeśli pole „<ph name="SERVICE_SCRIPT_NAME" />” jest już zaznaczone, odznacz je i zaznacz ponownie.</translation>
 <translation id="5510035215749041527">Odłącz teraz</translation>
@@ -304,7 +304,7 @@ Jeśli pole „<ph name="SERVICE_SCRIPT_NAME" />” jest już zaznaczone, odznac
 <translation id="837021510621780684">Z tego komputera</translation>
 <translation id="8383794970363966105">Aby użyć funkcji Chromoting, musisz dodać do urządzenia konto Google.</translation>
 <translation id="8386846956409881180">Host został skonfigurowany z nieprawidłowymi danymi logowania protokołu OAuth.</translation>
-<translation id="8406498562923498210">Wybierz sesję, którą chcesz uruchomić w środowisku Pulpitu zdalnego Chrome. (Uwaga: niektóre typy sesji nie mogą działać jednocześnie w Pulpicie zdalnym Chrome i na konsoli lokalnej).</translation>
+<translation id="8406498562923498210">Wybierz sesję, którą chcesz uruchomić w środowisku Pulpitu zdalnego Chrome. Uwaga: niektóre typy sesji nie mogą działać jednocześnie w Pulpicie zdalnym Chrome i na konsoli lokalnej.</translation>
 <translation id="8428213095426709021">Ustawienia</translation>
 <translation id="8445362773033888690">Wyświetl w Sklepie Google Play</translation>
 <translation id="8509907436388546015">Proces integracji pulpitu</translation>

@@ -6802,7 +6802,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -6832,7 +6832,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -6862,7 +6862,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -6892,7 +6892,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -6922,7 +6922,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer",
           "--dont-restore-color-profile-after-test",
           "--os-type",
           "android",
@@ -6959,7 +6959,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer",
           "--dont-restore-color-profile-after-test"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -6990,7 +6990,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer",
           "--dont-restore-color-profile-after-test",
           "--os-type",
           "android",
@@ -7090,7 +7090,7 @@
           "--browser=android-chromium",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=VizDisplayCompositor,UseSkiaRenderer --disable-software-compositing-fallback",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer",
           "--dont-restore-color-profile-after-test",
           "--os-type",
           "android",
@@ -10409,7 +10409,7 @@
           "--test-launcher-bot-mode",
           "--test-launcher-jobs=1",
           "--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter",
-          "--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization",
+          "--enable-features=UseSkiaRenderer,UiGpuRasterization",
           "--use-vulkan=native",
           "--enable-oop-rasterization",
           "--enable-gpu-rasterization",
@@ -10529,7 +10529,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -10558,7 +10558,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -10587,7 +10587,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -10616,7 +10616,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -10645,7 +10645,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer",
           "--dont-restore-color-profile-after-test",
           "--os-type",
           "linux",
@@ -10681,7 +10681,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer",
           "--dont-restore-color-profile-after-test"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -10708,7 +10708,7 @@
         "args": [
           "--num-retries=3",
           "--additional-driver-flag=--enable-gpu-rasterization",
-          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--additional-driver-flag=--enable-features=UseSkiaRenderer",
           "--additional-driver-flag=--use-gl=any",
           "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
@@ -10750,7 +10750,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer",
           "--dont-restore-color-profile-after-test",
           "--os-type",
           "linux",
@@ -10793,7 +10793,7 @@
         "args": [
           "--num-retries=3",
           "--additional-driver-flag=--enable-gpu-rasterization",
-          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--additional-driver-flag=--enable-features=UseSkiaRenderer",
           "--additional-driver-flag=--use-gl=any",
           "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
@@ -10837,7 +10837,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=VizDisplayCompositor,UseSkiaRenderer --disable-software-compositing-fallback",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer",
           "--dont-restore-color-profile-after-test",
           "--os-type",
           "linux",
@@ -10955,7 +10955,7 @@
           "--test-launcher-bot-mode",
           "--test-launcher-jobs=1",
           "--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter",
-          "--enable-features=VizDisplayCompositor,UseSkiaRenderer,UiGpuRasterization",
+          "--enable-features=UseSkiaRenderer,UiGpuRasterization",
           "--use-vulkan=native",
           "--enable-oop-rasterization",
           "--enable-gpu-rasterization",
@@ -11075,7 +11075,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -11104,7 +11104,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -11133,7 +11133,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -11162,7 +11162,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "merge": {
@@ -11191,7 +11191,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer",
           "--dont-restore-color-profile-after-test",
           "--os-type",
           "linux",
@@ -11227,7 +11227,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer",
           "--dont-restore-color-profile-after-test"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -11254,7 +11254,7 @@
         "args": [
           "--num-retries=3",
           "--additional-driver-flag=--enable-gpu-rasterization",
-          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--additional-driver-flag=--enable-features=UseSkiaRenderer",
           "--additional-driver-flag=--use-gl=any",
           "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
@@ -11296,7 +11296,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer",
           "--dont-restore-color-profile-after-test",
           "--os-type",
           "linux",
@@ -11339,7 +11339,7 @@
         "args": [
           "--num-retries=3",
           "--additional-driver-flag=--enable-gpu-rasterization",
-          "--additional-driver-flag=--enable-features=VizDisplayCompositor,UseSkiaRenderer",
+          "--additional-driver-flag=--enable-features=UseSkiaRenderer",
           "--additional-driver-flag=--use-gl=any",
           "--additional-driver-flag=--force-gpu-rasterization",
           "--additional-driver-flag=--enable-oop-rasterization",
@@ -11383,7 +11383,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=VizDisplayCompositor,UseSkiaRenderer --disable-software-compositing-fallback",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer",
           "--dont-restore-color-profile-after-test",
           "--os-type",
           "linux",
@@ -11748,7 +11748,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -11773,7 +11773,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -11799,7 +11799,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -11822,7 +11822,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -11844,7 +11844,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -11866,7 +11866,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -11885,7 +11885,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -11908,7 +11908,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -11927,7 +11927,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -11959,7 +11959,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -11989,7 +11989,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12019,7 +12019,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12049,7 +12049,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12083,7 +12083,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12120,7 +12120,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12165,7 +12165,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12197,7 +12197,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12227,7 +12227,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12259,7 +12259,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12290,7 +12290,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12321,7 +12321,7 @@
           "dimension_sets": [
             {
               "gpu": "1002:6821",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12350,7 +12350,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12375,7 +12375,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12401,7 +12401,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12424,7 +12424,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12446,7 +12446,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12468,7 +12468,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12487,7 +12487,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12510,7 +12510,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12529,7 +12529,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12561,7 +12561,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12591,7 +12591,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12621,7 +12621,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12651,7 +12651,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12685,7 +12685,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12722,7 +12722,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12767,7 +12767,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12799,7 +12799,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12829,7 +12829,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12861,7 +12861,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12892,7 +12892,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12923,7 +12923,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12952,7 +12952,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -12977,7 +12977,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -13003,7 +13003,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -13026,7 +13026,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -13048,7 +13048,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -13070,7 +13070,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -13089,7 +13089,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -13112,7 +13112,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -13131,7 +13131,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -13163,7 +13163,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -13193,7 +13193,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -13223,7 +13223,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -13253,7 +13253,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -13287,7 +13287,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -13324,7 +13324,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -13369,7 +13369,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -13401,7 +13401,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -13431,7 +13431,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -13463,7 +13463,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -13494,7 +13494,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -13525,7 +13525,7 @@
           "dimension_sets": [
             {
               "gpu": "10de:0fe9",
-              "os": "Mac-10.14.4",
+              "os": "Mac-10.14.6",
               "pool": "Chrome-GPU"
             }
           ],
@@ -23089,6 +23089,31 @@
     "gtest_tests": [
       {
         "args": [
+          "--use-gpu-in-tests",
+          "--test-launcher-retry-limit=0"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-26.20.100.6912",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "expiration": 21600,
+          "shards": 4
+        },
+        "test": "angle_end2end_tests"
+      },
+      {
+        "args": [
           "--use-gpu-in-tests"
         ],
         "merge": {
@@ -23435,33 +23460,6 @@
       }
     ],
     "isolated_scripts": [
-      {
-        "args": [
-          "--gtest-benchmark-name=angle_perftests",
-          "-v",
-          "--one-frame-only"
-        ],
-        "isolate_name": "angle_perftests",
-        "merge": {
-          "args": [
-            "--smoke-test-mode"
-          ],
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "name": "angle_perftests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "8086:5912-26.20.100.6912",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "expiration": 21600
-        }
-      },
       {
         "args": [
           "context_lost",

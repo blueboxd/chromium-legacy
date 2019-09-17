@@ -23,24 +23,20 @@
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/url_row.h"
 #include "components/history/core/browser/web_history_service.h"
 #include "components/history/core/browser/web_history_service_observer.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "url/gurl.h"
-
-namespace syncer {
-class SyncService;
-class SyncServiceObserver;
-}  // namespace syncer
 
 FORWARD_DECLARE_TEST(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions);
 
 namespace history {
 
 class BrowsingHistoryDriver;
-class HistoryService;
 class QueryResults;
 struct QueryOptions;
 
@@ -232,15 +228,15 @@ class BrowsingHistoryService : public HistoryServiceObserver,
 
   // HistoryService (local history) observer.
   ScopedObserver<HistoryService, HistoryServiceObserver>
-      history_service_observer_;
+      history_service_observer_{this};
 
   // WebHistoryService (synced history) observer.
   ScopedObserver<WebHistoryService, WebHistoryServiceObserver>
-      web_history_service_observer_;
+      web_history_service_observer_{this};
 
   // SyncService observer listens to late initialization of history sync.
   ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
-      sync_service_observer_;
+      sync_service_observer_{this};
 
   // Whether the last call to Web History returned synced results.
   bool has_synced_results_ = false;

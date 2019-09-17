@@ -299,9 +299,6 @@ class WizardController {
   // Returns false if timezone has already been resolved.
   bool SetOnTimeZoneResolvedForTesting(const base::Closure& callback);
 
-  // Start voice interaction setup wizard in container
-  void StartVoiceInteractionSetupWizard();
-
   // Start the enrollment screen using the config from
   // |prescribed_enrollment_config_|. If |force_interactive| is true,
   // the user will be presented with a manual enrollment screen requiring
@@ -364,8 +361,6 @@ class WizardController {
   bool oobe_marked_completed_ = false;
 
   bool login_screen_started_ = false;
-
-  bool is_in_session_oobe_ = false;
 
   // Non-owning pointer to local state used for testing.
   static PrefService* local_state_for_testing_;

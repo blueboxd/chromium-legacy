@@ -86,10 +86,8 @@ std::string MenuTypeToString(::testing::TestParamInfo<MenuType> info) {
 class MenuRunnerCocoaTest : public ViewsTestBase,
                             public ::testing::WithParamInterface<MenuType> {
  public:
-  enum {
-    kWindowHeight = 200,
-    kWindowOffset = 100,
-  };
+  static constexpr int kWindowHeight = 200;
+  static constexpr int kWindowOffset = 100;
 
   MenuRunnerCocoaTest() = default;
   ~MenuRunnerCocoaTest() override = default;

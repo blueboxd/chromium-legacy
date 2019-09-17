@@ -60,6 +60,9 @@ class GAIAInfoUpdateService : public KeyedService,
       const CoreAccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
       const CoreAccountInfo& previous_primary_account_info) override;
+  void OnUnconsentedPrimaryAccountChanged(
+      const CoreAccountInfo& unconsented_primary_account_info) override;
+  void OnRefreshTokensLoaded() override;
 
   Profile* profile_;
   std::unique_ptr<ProfileDownloader> profile_image_downloader_;

@@ -47,9 +47,11 @@ std::unique_ptr<SystemInfo::Size> GfxSizeToSystemInfoSize(
 }
 // Give the GPU process a few seconds to provide GPU info.
 // Linux Debug builds need more time -- see Issue 796437.
-// Windows builds need more time -- see Issue 873112.
-#if (defined(OS_LINUX) && !defined(NDEBUG)) || defined(OS_WIN)
+// Windows builds need more time -- see Issue 873112 and 1004472.
+#if (defined(OS_LINUX) && !defined(NDEBUG))
 const int kGPUInfoWatchdogTimeoutMs = 20000;
+#elif defined(OS_WIN)
+const int kGPUInfoWatchdogTimeoutMs = 30000;
 #else
 const int kGPUInfoWatchdogTimeoutMs = 5000;
 #endif
@@ -288,10 +290,16 @@ class SystemInfoHandlerGpuObserver : public content::GpuDataManagerObserver {
   }
 
   void OnGpuInfoUpdate() override {
-    if (GpuDataManagerImpl::GetInstance()->IsGpuFeatureInfoAvailable() &&
-        GpuDataManagerImpl::GetInstance()->IsDx12VulkanVersionAvailable()) {
-      UnregisterAndSendResponse();
-    }
+    if (!GpuDataManagerImpl::GetInstance()->IsGpuFeatureInfoAvailable())
+      return;
+    base::CommandLine* command = base::CommandLine::ForCurrentProcess();
+    // Only wait for DX12/Vulkan info if requested at Chrome start up.
+    if (!command->HasSwitch(
+            switches::kDisableGpuProcessForDX12VulkanInfoCollection) &&
+        command->HasSwitch(switches::kNoDelayForDX12VulkanInfoCollection) &&
+        !GpuDataManagerImpl::GetInstance()->IsDx12VulkanVersionAvailable())
+      return;
+    UnregisterAndSendResponse();
   }
 
   void OnGpuProcessCrashed(base::TerminationStatus exit_code) override {

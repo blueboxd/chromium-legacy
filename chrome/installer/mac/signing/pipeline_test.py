@@ -240,18 +240,20 @@ class TestPipelineHelpers(unittest.TestCase):
             mock.call('$W/App Product Canary.app')
         ])
 
-    def test_package_and_sign_no_branding(self, **kwargs):
+    def test_package_and_sign_dmg_no_branding(self, **kwargs):
         manager = mock.Mock()
         for attr in kwargs:
             manager.attach_mock(kwargs[attr], attr)
 
         config = test_config.TestConfig()
-        dist = model.Distribution()
+        dist = model.Distribution(package_as_dmg=True, package_as_pkg=False)
         dist_config = dist.to_config(config)
 
         paths = self.paths.replace_work('$W')
-        self.assertEqual('$O/AppProduct-99.0.9999.99.dmg',
-                         pipeline._package_and_sign_dmg(paths, dist_config))
+        self.assertEqual(
+            '$O/AppProduct-99.0.9999.99.dmg',
+            pipeline._package_and_sign_item(pipeline._package_dmg, paths,
+                                            dist_config))
 
         manager.assert_has_calls([
             mock.call.make_dir('$W/empty'),
@@ -272,19 +274,55 @@ class TestPipelineHelpers(unittest.TestCase):
         self.assertEqual('AppProduct-99.0.9999.99',
                          kwargs['sign_part'].mock_calls[0][1][2].identifier)
 
-    def test_package_and_sign_branding(self, **kwargs):
+    def test_package_and_sign_pkg_no_branding(self, **kwargs):
+        manager = mock.Mock()
+        for attr in kwargs:
+            manager.attach_mock(kwargs[attr], attr)
+
+        config = test_config.TestConfig()
+        dist = model.Distribution(package_as_dmg=False, package_as_pkg=True)
+        dist_config = dist.to_config(config)
+
+        paths = self.paths.replace_work('$W')
+        self.assertEqual(
+            '$O/AppProduct-99.0.9999.99.pkg',
+            pipeline._package_and_sign_item(pipeline._package_pkg, paths,
+                                            dist_config))
+
+        manager.assert_has_calls([
+            mock.call.run_command(mock.ANY),
+            mock.call.sign_part(paths, dist_config, mock.ANY),
+            mock.call.verify_part(paths, mock.ANY)
+        ])
+
+        run_command = [
+            call for call in manager.mock_calls if call[0] == 'run_command'
+        ][0]
+        pkgbuild_args = run_command[1][0]
+
+        self.assertEqual('test.signing.bundle_id',
+                         _get_adjacent_item(pkgbuild_args, '--identifier'))
+        self.assertEqual('99.0.9999.99',
+                         _get_adjacent_item(pkgbuild_args, '--version'))
+
+    def test_package_and_sign_dmg_branding(self, **kwargs):
         manager = mock.Mock()
         for attr in kwargs:
             manager.attach_mock(kwargs[attr], attr)
 
         config = test_config.TestConfig()
         dist = model.Distribution(
-            branding_code='MOO', packaging_name_fragment='ForCows')
+            branding_code='MOO',
+            packaging_name_fragment='ForCows',
+            package_as_dmg=True,
+            package_as_pkg=False)
         dist_config = dist.to_config(config)
 
         paths = self.paths.replace_work('$W')
-        self.assertEqual('$O/AppProduct-99.0.9999.99-ForCows.dmg',
-                         pipeline._package_and_sign_dmg(paths, dist_config))
+        self.assertEqual(
+            '$O/AppProduct-99.0.9999.99-ForCows.dmg',
+            pipeline._package_and_sign_item(pipeline._package_dmg, paths,
+                                            dist_config))
 
         manager.assert_has_calls([
             mock.call.make_dir('$W/empty'),
@@ -304,6 +342,41 @@ class TestPipelineHelpers(unittest.TestCase):
                          _get_adjacent_item(pkg_dmg_args, '--volname'))
         self.assertEqual('AppProduct-99.0.9999.99-MOO',
                          kwargs['sign_part'].mock_calls[0][1][2].identifier)
+
+    def test_package_and_sign_pkg_branding(self, **kwargs):
+        manager = mock.Mock()
+        for attr in kwargs:
+            manager.attach_mock(kwargs[attr], attr)
+
+        config = test_config.TestConfig()
+        dist = model.Distribution(
+            branding_code='MOO',
+            packaging_name_fragment='ForCows',
+            package_as_dmg=False,
+            package_as_pkg=True)
+        dist_config = dist.to_config(config)
+
+        paths = self.paths.replace_work('$W')
+        self.assertEqual(
+            '$O/AppProduct-99.0.9999.99-ForCows.pkg',
+            pipeline._package_and_sign_item(pipeline._package_pkg, paths,
+                                            dist_config))
+
+        manager.assert_has_calls([
+            mock.call.run_command(mock.ANY),
+            mock.call.sign_part(paths, dist_config, mock.ANY),
+            mock.call.verify_part(paths, mock.ANY)
+        ])
+
+        run_command = [
+            call for call in manager.mock_calls if call[0] == 'run_command'
+        ][0]
+        pkgbuild_args = run_command[1][0]
+
+        self.assertEqual('test.signing.bundle_id',
+                         _get_adjacent_item(pkgbuild_args, '--identifier'))
+        self.assertEqual('99.0.9999.99',
+                         _get_adjacent_item(pkgbuild_args, '--version'))
 
     def test_package_dmg_no_customize(self, **kwargs):
         dist = model.Distribution()
@@ -451,7 +524,7 @@ class TestPipelineHelpers(unittest.TestCase):
     'signing.pipeline', **{
         m: mock.DEFAULT
         for m in ('_customize_and_sign_chrome', '_staple_chrome',
-                  '_package_and_sign_dmg', '_package_installer_tools')
+                  '_package_and_sign_item', '_package_installer_tools')
     })
 @mock.patch('signing.commands.tempfile.mkdtemp', _get_work_dir)
 class TestSignAll(unittest.TestCase):
@@ -460,7 +533,7 @@ class TestSignAll(unittest.TestCase):
         _get_work_dir.count = 0
         self.paths = model.Paths('$I', '$O', None)
 
-    def test_sign_basic_distribution(self, **kwargs):
+    def test_sign_basic_distribution_dmg(self, **kwargs):
         manager = mock.Mock()
         for attr in kwargs:
             manager.attach_mock(kwargs[attr], attr)
@@ -471,10 +544,25 @@ class TestSignAll(unittest.TestCase):
         kwargs['wait_for_results'].side_effect = [
             iter([app_uuid]), iter([dmg_uuid])
         ]
-        kwargs[
-            '_package_and_sign_dmg'].return_value = '$O/AppProduct-99.0.9999.99.dmg'
 
-        config = test_config.TestConfig()
+        def package_and_sign_side_effect(packager, paths, dist_config):
+            if packager == pipeline._package_dmg:
+                return '$O/AppProduct-99.0.9999.99.dmg'
+            assert False
+
+        kwargs[
+            '_package_and_sign_item'].side_effect = package_and_sign_side_effect
+
+        class Config(test_config.TestConfig):
+
+            @property
+            def distributions(self):
+                return [
+                    model.Distribution(
+                        package_as_dmg=True, package_as_pkg=False),
+                ]
+
+        config = Config()
         pipeline.sign_all(self.paths, config)
 
         self.assertEqual(1, kwargs['_package_installer_tools'].call_count)
@@ -500,7 +588,8 @@ class TestSignAll(unittest.TestCase):
                 mock.ANY),
 
             # Make the DMG.
-            mock.call._package_and_sign_dmg(mock.ANY, mock.ANY),
+            mock.call._package_and_sign_item(pipeline._package_dmg, mock.ANY,
+                                             mock.ANY),
 
             # Notarize the DMG.
             mock.call.submit('$O/AppProduct-99.0.9999.99.dmg', mock.ANY),
@@ -508,6 +597,156 @@ class TestSignAll(unittest.TestCase):
                 dmg_uuid: None
             }.keys(), mock.ANY),
             mock.call.staple('$O/AppProduct-99.0.9999.99.dmg'),
+            mock.call.shutil.rmtree('$W_1'),
+
+            # Package the installer tools.
+            mock.call._package_installer_tools(mock.ANY, mock.ANY),
+        ])
+
+    def test_sign_basic_distribution_pkg(self, **kwargs):
+        manager = mock.Mock()
+        for attr in kwargs:
+            manager.attach_mock(kwargs[attr], attr)
+
+        app_uuid = 'b2ce64e5-4fae-4043-9c20-d9ff53065b2a'
+        pkg_uuid = 'cb811baf-5d35-4caa-adf4-1f61b4991eed'
+        kwargs['submit'].side_effect = [app_uuid, pkg_uuid]
+        kwargs['wait_for_results'].side_effect = [
+            iter([app_uuid]), iter([pkg_uuid])
+        ]
+
+        def package_and_sign_side_effect(packager, paths, dist_config):
+            if packager == pipeline._package_pkg:
+                return '$O/AppProduct-99.0.9999.99.pkg'
+            assert False
+
+        kwargs[
+            '_package_and_sign_item'].side_effect = package_and_sign_side_effect
+
+        class Config(test_config.TestConfig):
+
+            @property
+            def distributions(self):
+                return [
+                    model.Distribution(
+                        package_as_dmg=False, package_as_pkg=True),
+                ]
+
+        config = Config()
+        pipeline.sign_all(self.paths, config)
+
+        self.assertEqual(1, kwargs['_package_installer_tools'].call_count)
+
+        manager.assert_has_calls([
+            # First customize the distribution and sign it.
+            mock.call._customize_and_sign_chrome(
+                mock.ANY, mock.ANY, '$W_1/AppProduct-99.0.9999.99', mock.ANY),
+
+            # Prepare the app for notarization.
+            mock.call.run_command([
+                'zip', '--recurse-paths', '--symlinks', '--quiet',
+                '$W_1/AppProduct-99.0.9999.99.zip', 'App Product.app'
+            ],
+                                  cwd='$W_1/AppProduct-99.0.9999.99'),
+            mock.call.submit('$W_1/AppProduct-99.0.9999.99.zip', mock.ANY),
+            mock.call.shutil.rmtree('$W_2'),
+            mock.call.wait_for_results({
+                app_uuid: None
+            }.keys(), mock.ANY),
+            mock.call._staple_chrome(
+                self.paths.replace_work('$W_1/AppProduct-99.0.9999.99'),
+                mock.ANY),
+
+            # Make the DMG.
+            mock.call._package_and_sign_item(pipeline._package_pkg, mock.ANY,
+                                             mock.ANY),
+
+            # Notarize the DMG.
+            mock.call.submit('$O/AppProduct-99.0.9999.99.pkg', mock.ANY),
+            mock.call.wait_for_results({
+                pkg_uuid: None
+            }.keys(), mock.ANY),
+            mock.call.staple('$O/AppProduct-99.0.9999.99.pkg'),
+            mock.call.shutil.rmtree('$W_1'),
+
+            # Package the installer tools.
+            mock.call._package_installer_tools(mock.ANY, mock.ANY),
+        ])
+
+    def test_sign_basic_distribution_dmg_pkg(self, **kwargs):
+        manager = mock.Mock()
+        for attr in kwargs:
+            manager.attach_mock(kwargs[attr], attr)
+
+        app_uuid = '6de7df90-cf07-4213-9ce6-45f83588a386'
+        dmg_uuid = '7f77eefd-6c9d-4271-9367-760dc78a49dd'
+        pkg_uuid = '364d9b29-a0a0-4661-b366-e35449197671'
+        kwargs['submit'].side_effect = [app_uuid, dmg_uuid, pkg_uuid]
+        kwargs['wait_for_results'].side_effect = [
+            iter([app_uuid]), iter([dmg_uuid, pkg_uuid])
+        ]
+
+        def package_and_sign_side_effect(packager, paths, dist_config):
+            if packager == pipeline._package_dmg:
+                return '$O/AppProduct-99.0.9999.99.dmg'
+            if packager == pipeline._package_pkg:
+                return '$O/AppProduct-99.0.9999.99.pkg'
+            assert False
+
+        kwargs[
+            '_package_and_sign_item'].side_effect = package_and_sign_side_effect
+
+        class Config(test_config.TestConfig):
+
+            @property
+            def distributions(self):
+                return [
+                    model.Distribution(
+                        package_as_dmg=True, package_as_pkg=True),
+                ]
+
+        config = Config()
+        pipeline.sign_all(self.paths, config)
+
+        self.assertEqual(1, kwargs['_package_installer_tools'].call_count)
+
+        manager.assert_has_calls([
+            # First customize the distribution and sign it.
+            mock.call._customize_and_sign_chrome(
+                mock.ANY, mock.ANY, '$W_1/AppProduct-99.0.9999.99', mock.ANY),
+
+            # Prepare the app for notarization.
+            mock.call.run_command([
+                'zip', '--recurse-paths', '--symlinks', '--quiet',
+                '$W_1/AppProduct-99.0.9999.99.zip', 'App Product.app'
+            ],
+                                  cwd='$W_1/AppProduct-99.0.9999.99'),
+            mock.call.submit('$W_1/AppProduct-99.0.9999.99.zip', mock.ANY),
+            mock.call.shutil.rmtree('$W_2'),
+            mock.call.wait_for_results({
+                app_uuid: None
+            }.keys(), mock.ANY),
+            mock.call._staple_chrome(
+                self.paths.replace_work('$W_1/AppProduct-99.0.9999.99'),
+                mock.ANY),
+
+            # Make the DMG, and submit for notarization.
+            mock.call._package_and_sign_item(pipeline._package_dmg, mock.ANY,
+                                             mock.ANY),
+            mock.call.submit('$O/AppProduct-99.0.9999.99.dmg', mock.ANY),
+
+            # Make the PKG, and submit for notarization.
+            mock.call._package_and_sign_item(pipeline._package_pkg, mock.ANY,
+                                             mock.ANY),
+            mock.call.submit('$O/AppProduct-99.0.9999.99.pkg', mock.ANY),
+
+            # Wait for notarization results.
+            mock.call.wait_for_results({
+                dmg_uuid: None,
+                pkg_uuid: None
+            }.keys(), mock.ANY),
+            mock.call.staple('$O/AppProduct-99.0.9999.99.dmg'),
+            mock.call.staple('$O/AppProduct-99.0.9999.99.pkg'),
             mock.call.shutil.rmtree('$W_1'),
 
             # Package the installer tools.
@@ -571,7 +810,8 @@ class TestSignAll(unittest.TestCase):
             mock.call.shutil.rmtree('$W_2'),
 
             # Make the DMG.
-            mock.call._package_and_sign_dmg(mock.ANY, mock.ANY),
+            mock.call._package_and_sign_item(pipeline._package_dmg, mock.ANY,
+                                             mock.ANY),
             mock.call.shutil.rmtree('$W_1'),
 
             # Package the installer tools.
@@ -606,10 +846,6 @@ class TestSignAll(unittest.TestCase):
         for attr in kwargs:
             manager.attach_mock(kwargs[attr], attr)
 
-        kwargs['submit'].return_value = '6a017701-6545-4f01-bb15-1169443d0e12'
-        kwargs['wait_for_results'].return_value = iter(
-            '6a017701-6545-4f01-bb15-1169443d0e12')
-
         class Config(test_config.TestConfig):
 
             @property
@@ -617,29 +853,67 @@ class TestSignAll(unittest.TestCase):
                 return [
                     model.Distribution(),
                     model.Distribution(
-                        branding_code='MOO', packaging_name_fragment='ForCows'),
+                        branding_code='MOO',
+                        packaging_name_fragment='ForCows',
+                        package_as_dmg=True,
+                        package_as_pkg=False),
+                    model.Distribution(
+                        branding_code='ARF',
+                        packaging_name_fragment='ForDogs',
+                        package_as_dmg=False,
+                        package_as_pkg=True),
+                    model.Distribution(
+                        branding_code='MOOF',
+                        packaging_name_fragment='ForDogcows',
+                        package_as_dmg=True,
+                        package_as_pkg=True),
                 ]
 
         config = Config()
         pipeline.sign_all(self.paths, config, do_notarization=False)
 
         self.assertEqual(1, kwargs['_package_installer_tools'].call_count)
-        self.assertEqual(2, kwargs['_customize_and_sign_chrome'].call_count)
+        self.assertEqual(4, kwargs['_customize_and_sign_chrome'].call_count)
 
         manager.assert_has_calls([
+            # Customizations.
             mock.call._customize_and_sign_chrome(
                 mock.ANY, mock.ANY, '$W_1/AppProduct-99.0.9999.99', mock.ANY),
             mock.call.shutil.rmtree('$W_2'),
             mock.call._customize_and_sign_chrome(
-                mock.ANY, mock.ANY, '$W_1/AppProduct-99.0.9999.99-ForCows',
+                mock.ANY, mock.ANY, '$W_1/AppProduct-99.0.9999.99-ForCows-MOO',
                 mock.ANY),
             mock.call.shutil.rmtree('$W_3'),
-            mock.call._package_and_sign_dmg(
+            mock.call._customize_and_sign_chrome(
+                mock.ANY, mock.ANY, '$W_1/AppProduct-99.0.9999.99-ForDogs-ARF',
+                mock.ANY),
+            mock.call.shutil.rmtree('$W_4'),
+            mock.call._customize_and_sign_chrome(
+                mock.ANY, mock.ANY,
+                '$W_1/AppProduct-99.0.9999.99-ForDogcows-MOOF', mock.ANY),
+            mock.call.shutil.rmtree('$W_5'),
+
+            # Packaging and signing.
+            mock.call._package_and_sign_item(
+                pipeline._package_dmg,
                 self.paths.replace_work('$W_1/AppProduct-99.0.9999.99'),
                 mock.ANY),
-            mock.call._package_and_sign_dmg(
-                self.paths.replace_work('$W_1/AppProduct-99.0.9999.99-ForCows'),
-                mock.ANY),
+            mock.call._package_and_sign_item(
+                pipeline._package_dmg,
+                self.paths.replace_work(
+                    '$W_1/AppProduct-99.0.9999.99-ForCows-MOO'), mock.ANY),
+            mock.call._package_and_sign_item(
+                pipeline._package_pkg,
+                self.paths.replace_work(
+                    '$W_1/AppProduct-99.0.9999.99-ForDogs-ARF'), mock.ANY),
+            mock.call._package_and_sign_item(
+                pipeline._package_dmg,
+                self.paths.replace_work(
+                    '$W_1/AppProduct-99.0.9999.99-ForDogcows-MOOF'), mock.ANY),
+            mock.call._package_and_sign_item(
+                pipeline._package_pkg,
+                self.paths.replace_work(
+                    '$W_1/AppProduct-99.0.9999.99-ForDogcows-MOOF'), mock.ANY),
             mock.call.shutil.rmtree('$W_1'),
 
             # Finally the installer tools.

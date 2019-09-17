@@ -67,10 +67,10 @@ class HidChooserControllerTest : public ChromeRenderViewHostTestHarness {
     web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
 
     // Set fake HID manager for HidChooserContext.
-    device::mojom::HidManagerPtr hid_manager_ptr;
-    hid_manager_.Bind(mojo::MakeRequest(&hid_manager_ptr));
+    mojo::PendingRemote<device::mojom::HidManager> hid_manager;
+    hid_manager_.Bind(hid_manager.InitWithNewPipeAndPassReceiver());
     HidChooserContextFactory::GetForProfile(profile())->SetHidManagerForTesting(
-        std::move(hid_manager_ptr));
+        std::move(hid_manager));
   }
 
   std::unique_ptr<HidChooserController> CreateHidChooserController(

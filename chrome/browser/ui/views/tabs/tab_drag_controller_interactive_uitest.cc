@@ -856,6 +856,73 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_THAT(model->ListTabsInGroup(group1), testing::ElementsAre(0, 1, 2, 3));
 }
 
+// Creates a browser with four tabs. The first two tabs are in Tab Group 1.
+// Dragging the third tab over one to the left will result in the tab joining
+// Tab Group 1. While this drag is still in session, pressing escape will revert
+// group of the tab to before the drag session started.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       RevertDragSingleTabIntoGroup) {
+  scoped_feature_list_.InitAndEnableFeature(features::kTabGroups);
+
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  TabStripModel* model = browser()->tab_strip_model();
+
+  AddTabsAndResetBrowser(browser(), 3);
+  TabGroupId group1 = model->AddToNewGroup({0, 1});
+  StopAnimating(tab_strip);
+
+  // Dragging the tab in the second index to the tab in the first index switches
+  // the tabs and adds the dragged tab to the group.
+  ASSERT_TRUE(PressInput(GetCenterInScreenCoordinates(tab_strip->tab_at(2))));
+  ASSERT_TRUE(DragInputTo(GetCenterInScreenCoordinates(tab_strip->tab_at(1))));
+
+  EXPECT_EQ("0 2 1 3", IDString(model));
+  EXPECT_THAT(model->ListTabsInGroup(group1), testing::ElementsAre(0, 1, 2));
+
+  ASSERT_TRUE(TabDragController::IsActive());
+
+  // Pressing escape will revert the tabs to original state before the drag.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_ESCAPE, false,
+                                              false, false, false));
+  EXPECT_EQ("0 1 2 3", IDString(model));
+  EXPECT_THAT(model->ListTabsInGroup(group1), testing::ElementsAre(0, 1));
+}
+
+// Creates a browser with four tabs. The last two tabs are in Tab Group 1. The
+// second tab is in Tab Group 2. Dragging the second tab over one to the right
+// will result in the tab joining Tab Group 1. While this drag is still in
+// session, pressing escape will revert group of the tab to before the drag
+// session started.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       RevertDragSingleTabGroupIntoGroup) {
+  scoped_feature_list_.InitAndEnableFeature(features::kTabGroups);
+
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  TabStripModel* model = browser()->tab_strip_model();
+
+  AddTabsAndResetBrowser(browser(), 3);
+  TabGroupId group1 = model->AddToNewGroup({2, 3});
+  TabGroupId group2 = model->AddToNewGroup({1});
+  StopAnimating(tab_strip);
+
+  // Dragging the tab in the first index to the tab in the second index switches
+  // the tabs and adds the dragged tab to the group.
+  ASSERT_TRUE(PressInput(GetCenterInScreenCoordinates(tab_strip->tab_at(1))));
+  ASSERT_TRUE(DragInputTo(GetCenterInScreenCoordinates(tab_strip->tab_at(2))));
+
+  EXPECT_EQ("0 2 1 3", IDString(model));
+  EXPECT_THAT(model->ListTabsInGroup(group1), testing::ElementsAre(1, 2, 3));
+
+  ASSERT_TRUE(TabDragController::IsActive());
+
+  // Pressing escape will revert the tabs to original state before the drag.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_ESCAPE, false,
+                                              false, false, false));
+  EXPECT_EQ("0 1 2 3", IDString(model));
+  EXPECT_THAT(model->ListTabsInGroup(group1), testing::ElementsAre(2, 3));
+  EXPECT_THAT(model->ListTabsInGroup(group2), testing::ElementsAre(1));
+}
+
 // Drags a tab within the window (without dragging the whole window) then
 // pressing a key ends the drag.
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,

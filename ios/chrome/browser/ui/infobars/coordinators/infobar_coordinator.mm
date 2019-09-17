@@ -239,6 +239,8 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   self.infobarBannerState = InfobarBannerPresentationState::NotPresented;
   [self configureAccessibilityForBannerInViewController:self.baseViewController
                                              presenting:NO];
+  [self.badgeDelegate infobarBannerWasDismissed:self.infobarType
+                                    forWebState:self.webState];
   self.bannerTransitionDriver = nil;
   animatedFullscreenDisabler_ = nullptr;
   [self infobarWasDismissed];

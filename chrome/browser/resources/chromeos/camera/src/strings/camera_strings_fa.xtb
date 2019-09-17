@@ -19,6 +19,7 @@
 <translation id="2501953888035679275">با دوربینتان عکس بگیرید و فیلم‌برداری کنید.</translation>
 <translation id="2549985041256363841">شروع ضبط</translation>
 <translation id="2599796128805996109">دوربین پشت</translation>
+<translation id="2912439424121107408">«حالت کارشناس» در این دستگاه پشتیبانی نمی‌شود</translation>
 <translation id="2968794441791257519">‏عکس‌ها و ویدیوهایی که با دوربین گرفته شده است، به پوشه «بارگیری‌ها» منتقل خواهد شد. می‌توانید در Files به آن‌ها دسترسی داشته باشید.
 
         برنامه‌هایی که مجوز فضای ذخیره‌سازی دارند، به عکس‌ها و ویدیوهایتان دسترسی خواهند داشت.</translation>
@@ -41,10 +42,12 @@
         مطمئن شوید دوربین درست وصل شده باشد.</translation>
 <translation id="5152121255775685072">رفتن به گالری</translation>
 <translation id="5671277269877808209">مربع</translation>
+<translation id="5775960006311140197">حالت کارشناس</translation>
 <translation id="5869546221129391014">جدولی</translation>
 <translation id="6040143037577758943">بستن</translation>
 <translation id="6073451960410192870">توقف ضبط</translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
+<translation id="6197807149213783179">ذخیره فراداده</translation>
 <translation id="6233780560267770709">۳ در ۳</translation>
 <translation id="6243827288366940320">نسبت طلایی</translation>
 <translation id="6248749904681914629">دوربین خارجی</translation>
@@ -66,6 +69,7 @@
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8428213095426709021">تنظیمات</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8732462232047530626">پیش‌نمایش فراداده</translation>
 <translation id="8815966864175525708">تغییر وضعیت به گرفتن عکس چهره</translation>
 <translation id="8870695351537079478">شروع ضبط انجام نشد</translation>
 <translation id="9045155556724273246">۱۰ ثانیه</translation>

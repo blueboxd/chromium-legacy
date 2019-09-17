@@ -19,6 +19,7 @@
 <translation id="2501953888035679275">Снимајте слике и видео снимке помоћу камере.</translation>
 <translation id="2549985041256363841">Започни снимање</translation>
 <translation id="2599796128805996109">Задња камера</translation>
+<translation id="2912439424121107408">Режим за стручњаке није подржан на овом уређају</translation>
 <translation id="2968794441791257519">Слике и видео снимци који су снимљени помоћу камере ће се преместити у директоријум Преузимања. Можете да им приступите у Датотекама.
 
         Апликације са дозволама за приступ меморијском простору ће имати приступ сликама и видео снимцима.</translation>
@@ -41,10 +42,12 @@
         Проверите да ли је камера исправно повезана.</translation>
 <translation id="5152121255775685072">Иди у галерију</translation>
 <translation id="5671277269877808209">Квадрат</translation>
+<translation id="5775960006311140197">Режим за стручњаке</translation>
 <translation id="5869546221129391014">Мрежа</translation>
 <translation id="6040143037577758943">Затвори</translation>
 <translation id="6073451960410192870">Заустави снимање</translation>
 <translation id="6165508094623778733">Сазнајте више</translation>
+<translation id="6197807149213783179">Сачувај метаподатке</translation>
 <translation id="6233780560267770709">3 са 3</translation>
 <translation id="6243827288366940320">Златни пресек</translation>
 <translation id="6248749904681914629">Спољна камера</translation>
@@ -66,6 +69,7 @@
 <translation id="8261506727792406068">Избриши</translation>
 <translation id="8428213095426709021">Подешавања</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" /> пиксела (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8732462232047530626">Прикажи метаподатке</translation>
 <translation id="8815966864175525708">Пређи на режим за снимање усправних слика</translation>
 <translation id="8870695351537079478">Снимање није могло да почне</translation>
 <translation id="9045155556724273246">10 секунди</translation>

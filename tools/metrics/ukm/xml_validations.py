@@ -60,7 +60,7 @@ class UkmXmlValidation(object):
     enums, _ = extract_histograms.ExtractEnumsFromXmlTree(enum_tree)
 
     for event_node in self.config.getElementsByTagName('event'):
-      for metric_node in self.config.getElementsByTagName('metric'):
+      for metric_node in event_node.getElementsByTagName('metric'):
         if metric_node.hasAttribute('enum'):
           enum_name = metric_node.getAttribute('enum');
           # Check if the enum is defined in enums.xml.

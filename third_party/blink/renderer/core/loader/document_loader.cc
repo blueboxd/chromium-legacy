@@ -497,12 +497,8 @@ void DocumentLoader::SetHistoryItemStateForCommit(
     history_item_ = MakeGarbageCollected<HistoryItem>();
 
   history_item_->SetURL(UrlForHistory());
-  scoped_refptr<const SecurityOrigin> origin =
-      requestor_origin_ ? requestor_origin_
-                        : SecurityOrigin::CreateUniqueOpaque();
   history_item_->SetReferrer(SecurityPolicy::GenerateReferrer(
-      referrer_.referrer_policy, origin, history_item_->Url(),
-      referrer_.referrer));
+      referrer_.referrer_policy, history_item_->Url(), referrer_.referrer));
   if (DeprecatedEqualIgnoringCase(http_method_, "POST")) {
     // FIXME: Eventually we have to make this smart enough to handle the case
     // where we have a stream for the body to handle the "data interspersed with
@@ -982,8 +978,9 @@ void DocumentLoader::CommitSameDocumentNavigationInternal(
 
   // If we have a provisional request for a different document, a fragment
   // scroll should cancel it.
+  // Note: see fragment-change-does-not-cancel-pending-navigation, where
+  // this does not actually happen.
   GetFrameLoader().DetachProvisionalDocumentLoader();
-  GetFrameLoader().CancelClientNavigation();
   GetFrameLoader().DidFinishNavigation(
       FrameLoader::NavigationFinishState::kSuccess);
 

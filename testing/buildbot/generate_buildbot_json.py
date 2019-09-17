@@ -638,7 +638,8 @@ class BBJSONGenerator(object):
                                      test_config):
       return None
     result = {
-      'test': test_name,
+      'name': test_name,
+      'test': test_config.get('test', test_name),
     }
     return result
 
@@ -1050,6 +1051,7 @@ class BBJSONGenerator(object):
       # Defined in internal configs.
       'chromeos-amd64-generic-google-rel',
       'chromeos-betty-google-rel',
+      'chromeos-betty-pi-arc-google-rel',
       'chromeos-kevin-google-rel',
       # code coverage, see https://crbug.com/1000367.
       'linux-chromeos-coverage-rel-dummy',

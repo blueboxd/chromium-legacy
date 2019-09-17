@@ -154,7 +154,7 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
             if (mHoveredTabIndex != TabModel.INVALID_TAB_INDEX && mActionsOnAllRelatedTabs) {
                 RecyclerView.ViewHolder selectedViewHolder =
                         mRecyclerView.findViewHolderForAdapterPosition(mSelectedTabIndex);
-                if (selectedViewHolder != null) {
+                if (selectedViewHolder != null && !mRecyclerView.isComputingLayout()) {
                     View selectedItemView = selectedViewHolder.itemView;
                     onTabMergeToGroup(mSelectedTabIndex, mHoveredTabIndex);
                     mRecyclerView.getLayoutManager().removeView(selectedItemView);
@@ -173,7 +173,7 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
                                 .getCurrentTabModelFilter();
                 RecyclerView.ViewHolder ungroupViewHolder =
                         mRecyclerView.findViewHolderForAdapterPosition(mUnGroupTabIndex);
-                if (ungroupViewHolder != null) {
+                if (ungroupViewHolder != null && !mRecyclerView.isComputingLayout()) {
                     View ungroupItemView = ungroupViewHolder.itemView;
                     filter.moveTabOutOfGroup(
                             mModel.get(mUnGroupTabIndex).model.get(TabProperties.TAB_ID));

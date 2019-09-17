@@ -193,7 +193,7 @@
 #import "ios/web/public/ui/crw_web_view_proxy.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web/public/web_state/web_state_delegate_bridge.h"
-#include "ios/web/public/web_state/web_state_observer_bridge.h"
+#import "ios/web/public/web_state_observer_bridge.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #include "ui/base/l10n/l10n_util.h"
 

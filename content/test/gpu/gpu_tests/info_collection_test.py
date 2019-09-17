@@ -27,6 +27,8 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
             options.expected_device_id))
     yield ('InfoCollection_direct_composition', '_',
            ('_RunDirectCompositionTest', '_', '_'))
+    yield ('InfoCollection_dx12_vulkan', '_',
+           ('_RunDX12VulkanTest', '_', '_'))
 
   @classmethod
   def SetUpProcess(cls):
@@ -86,6 +88,17 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
         if expected != detected:
           self.fail('%s mismatch, expected %s but got %s.' %
               (field, self._ValueToStr(expected), self._ValueToStr(detected)))
+
+  def _RunDX12VulkanTest(self, gpu, unused_arg_0, unused_arg_1):
+    os_name = self.browser.platform.GetOSName()
+    if os_name and os_name.lower() == 'win':
+      self.RestartBrowserIfNecessaryWithArgs([
+        '--no-delay-for-dx12-vulkan-info-collection'])
+      # Need to re-request system info for DX12/Vulkan bits.
+      system_info = self.browser.GetSystemInfo()
+      if not system_info:
+        self.fail("Browser doesn't support GetSystemInfo")
+      # TODO(zmo): Verify Win GPU bots DX12/Vulkan supports are as expected.
 
   @staticmethod
   def _ValueToStr(value):

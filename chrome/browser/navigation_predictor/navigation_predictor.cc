@@ -95,7 +95,7 @@ struct NavigationPredictor::NavigationScore {
   const bool is_url_incremented_by_one;
 
   // Rank in terms of anchor element area. It starts at 0, a lower rank implies
-  // a larger area. Capped at 40.
+  // a larger area. Capped at 100.
   const size_t area_rank;
 
   // Calculated navigation score, based on |area_rank| and other metrics.

@@ -66,6 +66,7 @@
 <translation id="1407135791313364759">Mở tất cả</translation>
 <translation id="1409426117486808224">Chế độ xem đơn giản cho tab đang mở</translation>
 <translation id="1409879593029778104">Đã ngăn tải xuống <ph name="FILE_NAME" /> do tệp này đã tồn tại.</translation>
+<translation id="1413136574162415971">Google có thể kiểm tra xem mật khẩu của bạn có bị ảnh hưởng trong một vụ rò rỉ dữ liệu không. Tùy chọn này sẽ được bật khi bạn đăng nhập bằng Tài khoản Google của mình và bật tính năng đồng bộ hóa.</translation>
 <translation id="1414981605391750300">Đang liên hệ với Google. Quá trình này có thể mất ít phút…</translation>
 <translation id="1416550906796893042">Phiên bản ứng dụng</translation>
 <translation id="1430915738399379752">In</translation>
@@ -160,6 +161,7 @@
 <translation id="2091887806945687916">Âm thanh</translation>
 <translation id="2096012225669085171">Đồng bộ hóa và cá nhân hóa trên các thiết bị</translation>
 <translation id="2100273922101894616">Tự động đăng nhập</translation>
+<translation id="2100314319871056947">Hãy thử chia sẻ văn bản theo các đoạn nhỏ hơn</translation>
 <translation id="2107397443965016585">Hỏi trước khi cho phép trang web phát nội dung được bảo vệ (khuyên dùng)</translation>
 <translation id="2111511281910874386">Chuyển đến trang</translation>
 <translation id="2122601567107267586">Không thể mở ứng dụng</translation>
@@ -253,6 +255,7 @@
 <translation id="2836148919159985482">Chạm vào nút quay lại để thoát khỏi chế độ toàn màn hình.</translation>
 <translation id="2842985007712546952">Thư mục mẹ</translation>
 <translation id="2858138569776157458">Trang web hàng đầu</translation>
+<translation id="2860954141821109167">Hãy đảm bảo bạn đã bật ứng dụng điện thoại trên thiết bị này</translation>
 <translation id="2870560284913253234">Trang web</translation>
 <translation id="2874939134665556319">Bản nhạc trước</translation>
 <translation id="2876369937070532032">Gửi URL của một số trang mà bạn truy cập cho Google khi bạn gặp rủi ro về bảo mật</translation>
@@ -277,6 +280,7 @@
 <translation id="2996291259634659425">Tạo cụm mật khẩu</translation>
 <translation id="2996809686854298943">Cần có URL</translation>
 <translation id="300526633675317032">Thao tác này sẽ xóa tất cả <ph name="SIZE_IN_KB" /> bộ nhớ trang web.</translation>
+<translation id="3016635187733453316">Hãy đảm bảo thiết bị này có kết nối Internet</translation>
 <translation id="3029613699374795922">Đã tải xuống <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">Cụm mật khẩu không khớp</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Nhận trợ giúp<ph name="END_LINK" /></translation>
@@ -841,6 +845,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="723171743924126238">Chọn hình ảnh</translation>
 <translation id="7233236755231902816">Để duyệt web bằng ngôn ngữ của bạn, hãy tải phiên bản Chrome mới nhất</translation>
 <translation id="7243308994586599757">Có các tùy chọn ở gần cuối màn hình</translation>
+<translation id="7248069434667874558">Hãy đảm bảo <ph name="TARGET_DEVICE_NAME" /> đã bật tính năng đồng bộ hóa trên Chrome</translation>
 <translation id="7250468141469952378">Đã chọn <ph name="ITEM_COUNT" /></translation>
 <translation id="7274013316676448362">Trang web bị chặn</translation>
 <translation id="7290209999329137901">Không đổi tên được</translation>
@@ -955,6 +960,7 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="8007176423574883786">Tắt cho thiết bị này</translation>
 <translation id="8013372441983637696">Xóa cả dữ liệu của bạn trên Chrome khỏi thiết bị này</translation>
 <translation id="8015452622527143194">Trả lại mọi nội dung trên trang về kích thước mặc định</translation>
+<translation id="8015780634880457457">Google có thể kiểm tra xem mật khẩu của bạn có bị ảnh hưởng trong một vụ rò rỉ dữ liệu không</translation>
 <translation id="802154636333426148">Tải xuống không thành công</translation>
 <translation id="8026334261755873520">Xóa dữ liệu duyệt web</translation>
 <translation id="8035133914807600019">Thư mục mới...</translation>
@@ -1017,6 +1023,7 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="8445448999790540984">Không xuất được mật khẩu</translation>
 <translation id="8447861592752582886">Thu hồi quyền truy cập thiết bị</translation>
 <translation id="8461694314515752532">Mã hóa dữ liệu đã đồng bộ hóa bằng cụm mật khẩu đồng bộ hóa của riêng bạn</translation>
+<translation id="8466613982764129868">Hãy đảm bảo <ph name="TARGET_DEVICE_NAME" /> có kết nối Internet</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Khả dụng ngoại tuyến</translation>
 <translation id="8489271220582375723">Mở trang lịch sử</translation>
@@ -1107,6 +1114,7 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="9188680907066685419">Đăng xuất khỏi tài khoản được quản lý</translation>
 <translation id="9204836675896933765">Còn lại 1 tệp</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9209888181064652401">Không thể gọi điện</translation>
 <translation id="9219103736887031265">Hình ảnh</translation>
 <translation id="926205370408745186">Xóa hoạt động của bạn trên Chrome khỏi Digital Wellbeing</translation>
 <translation id="932327136139879170">Trang chủ</translation>

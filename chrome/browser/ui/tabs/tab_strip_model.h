@@ -436,7 +436,14 @@ class TabStripModel {
   // Similar to AddToExistingGroup(), but creates a group with id |group| if it
   // doesn't exist. This is only intended to be called from session restore
   // code.
+  // TODO(crbug.com/1004346): Update the group's old metadata (title and color).
   void AddToGroupForRestore(const std::vector<int>& indices, TabGroupId group);
+
+  // Updates the tab group of the tab at |index|. If |group| is nullopt, the tab
+  // will be removed from the current group. If |group| does not exist, it will
+  // create the group then add the tab to the group.
+  // TODO(crbug.com/1004346): Update the group's old metadata (title and color).
+  void UpdateGroupForDragRevert(int index, base::Optional<TabGroupId> group);
 
   // Removes the set of tabs pointed to by |indices| from the the groups they
   // are in, if any. The tabs are moved out of the group if necessary. |indices|

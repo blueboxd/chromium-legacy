@@ -51,6 +51,9 @@
 <translation id="2094919256425865063">Yine de Chrome'dan çıkılsın mı?</translation>
 <translation id="2120620239521071941">Bu işlem, <ph name="ITEMS_COUNT" /> öğeyi bu cihazdan silecektir. Verilerinizi daha sonra geri almak için Chrome'da <ph name="USER_EMAIL" /> hesabıyla oturum açın.</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />Mevcut ayarlarınızı<ph name="END_LINK" /> bildirerek Chrome'u daha iyi hale getirmemize yardımcı olun</translation>
+<translation id="2128103434102193461">Chrome OS ayrıntıları için lütfen <ph name="LINK_BEGIN" />
+      Chrome OS Hakkında<ph name="LINK_END" /> sayfasına bakın</translation>
+<translation id="2151406531797534936">Lütfen Chrome'u şimdi yeniden başlatın</translation>
 <translation id="216054706567564023">Chrome'u telefonunuza yükleyin. Hesap kurtarma telefon numaranıza SMS göndereceğiz.</translation>
 <translation id="2246246234298806438">Google Chrome, dahili PDF görüntüleyici yokken baskı önizlemeyi gösteremez.</translation>
 <translation id="2252923619938421629">Mevcut ayarlarınızı bildirerek Google Chrome'u daha iyi hale getirmemize yardımcı olun</translation>
@@ -221,6 +224,7 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="7589360514048265910">Mac OS X 10.9 artık desteklenmediğinden, bu bilgisayar artık Google Chrome güncellemelerini almayacak.</translation>
 <translation id="7592736734348559088">Hesap oturum açma ayrıntılarınız güncel olmadığından Google Chrome, verilerinizi senkronize edemedi.</translation>
 <translation id="7626032353295482388">Chrome'a Hoş Geldiniz</translation>
+<translation id="7629695634924605473">Chrome, şifrelerinizin güvenliğinin ihlal edilip edilmediğini size bildirir</translation>
 <translation id="7641148173327520642">Sistem yöneticiniz Google Chrome'u <ph name="TARGET_URL_HOSTNAME" /> adresine erişmek için <ph name="ALTERNATIVE_BROWSER_NAME" /> tarayıcısını açacak şekilde yapılandırmış.</translation>
 <translation id="7651907282515937834">Chrome Enterprise logosu</translation>
 <translation id="7747138024166251722">Yükleyici geçici bir dizin oluşturamadı. Lütfen, kullanılabilir disk alanını ve yazılım yükleme iznini kontrol edin.</translation>

@@ -55,6 +55,8 @@
 <translation id="2094919256425865063">Желите ли ипак да затворите Chrome?</translation>
 <translation id="2120620239521071941">Овим ћете избрисати <ph name="ITEMS_COUNT" /> ставке(и) са овог уређаја. Да бисте касније вратили податке, пријавите се у Chrome као <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Помозите да побољшамо Chrome тако што ћете послати извештај о <ph name="BEGIN_LINK" />актуелним подешавањима<ph name="END_LINK" /></translation>
+<translation id="2128103434102193461">Детаље о Chrome ОС-у потражите у одељку <ph name="LINK_BEGIN" />О Chrome ОС-у<ph name="LINK_END" /></translation>
+<translation id="2151406531797534936">Поново покрените Chrome</translation>
 <translation id="216054706567564023">Инсталирајте Chrome на телефону. Послаћемо вам SMS на број телефона за враћање приступа налогу.</translation>
 <translation id="2246246234298806438">Google Chrome не може да покаже приказ пре штампања када недостаје уграђени PDF приказивач.</translation>
 <translation id="2252923619938421629">Помозите да побољшамо Google Chrome тако што ћете послати извештај о актуелним подешавањима</translation>
@@ -227,6 +229,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="7589360514048265910">Овај рачунар више неће добијати ажурирања за Google Chrome зато што Mac OS X 10.9 више није подржан.</translation>
 <translation id="7592736734348559088">Google Chrome не може да синхронизује податке зато што су подаци за пријављивање на налог застарели.</translation>
 <translation id="7626032353295482388">Добро дошли у Chrome</translation>
+<translation id="7629695634924605473">Chrome вас обавештава ако су лозинке угрожене</translation>
 <translation id="7641148173327520642">Администратор система је конфигурисао Google Chrome да отвара прегледач <ph name="ALTERNATIVE_BROWSER_NAME" /> да би приступао <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Chrome Enterprise логотип</translation>
 <translation id="7747138024166251722">Програм за инсталацију није могао да направи привремени директоријум. Проверите да ли имате слободног простора на диску, као и дозволу да инсталирате софтвер.</translation>

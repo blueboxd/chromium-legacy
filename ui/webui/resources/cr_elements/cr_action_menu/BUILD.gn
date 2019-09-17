@@ -4,32 +4,21 @@
 
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/polymer/polymer.gni")
-import("../../tools/js_modulizer.gni")
 
 js_type_check("closure_compile") {
   deps = [
-    ":anchor_alignment",
     ":cr_action_menu",
   ]
 }
 
-js_library("anchor_alignment") {
-}
-
 js_library("cr_action_menu") {
   deps = [
-    ":anchor_alignment",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:util",
     "//ui/webui/resources/js/cr/ui:focus_row",
     "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
   externs_list = [ "$externs_path/pending.js" ]
-}
-
-js_modulizer("modulize") {
-  input_files = [ "anchor_alignment.js" ]
-  deps = []
 }
 
 polymer_modulizer("cr_action_menu") {
@@ -47,7 +36,6 @@ polymer_modulizer("cr_action_menu") {
     "ui/webui/resources/html/polymer.html|dom,html,Polymer",
     "ui/webui/resources/html/assert.html|assert",
     "ui/webui/resources/html/cr.html|isMac, isWindows",
-    "ui/webui/resources/cr_elements/cr_action_menu/anchor_alignment.html|AnchorAlignment",
     "ui/webui/resources/html/cr/ui/focus_row.html|FocusRow",
     "ui/webui/resources/html/cr/ui/focus_without_ink.html|focusWithoutInk",
     "ui/webui/resources/html/util.html|getDeepActiveElement, hasKeyModifiers",
@@ -57,17 +45,8 @@ polymer_modulizer("cr_action_menu") {
 js_type_check("closure_compile_module") {
   is_polymer3 = true
   deps = [
-    ":anchor_alignment.m",
     ":cr_action_menu.m",
   ]
-}
-
-js_library("anchor_alignment.m") {
-  sources = [
-    "$root_gen_dir/ui/webui/resources/cr_elements/cr_action_menu/anchor_alignment.m.js",
-  ]
-  deps = []
-  extra_deps = [ ":modulize" ]
 }
 
 js_library("cr_action_menu.m") {
@@ -75,7 +54,6 @@ js_library("cr_action_menu.m") {
     "$root_gen_dir/ui/webui/resources/cr_elements/cr_action_menu/cr_action_menu.m.js",
   ]
   deps = [
-    ":anchor_alignment.m",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:cr.m",

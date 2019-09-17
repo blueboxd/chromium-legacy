@@ -4,7 +4,8 @@
 
 #include "components/drive/resource_entry_conversion.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/time/time.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_api_util.h"
@@ -265,7 +266,7 @@ TEST(ResourceEntryConversionTest,
 TEST(ResourceEntryConversionTest, ConvertChangeResourceToResourceEntry) {
   google_apis::ChangeResource change_resource;
   change_resource.set_type(google_apis::ChangeResource::FILE);
-  change_resource.set_file(base::WrapUnique(new google_apis::FileResource));
+  change_resource.set_file(std::make_unique<google_apis::FileResource>());
   change_resource.set_file_id("resource_id");
   change_resource.set_modification_date(GetTestTime());
 
@@ -295,7 +296,7 @@ TEST(ResourceEntryConversionTest,
      ConvertChangeResourceToResourceEntry_Trashed) {
   google_apis::ChangeResource change_resource;
   change_resource.set_type(google_apis::ChangeResource::FILE);
-  change_resource.set_file(base::WrapUnique(new google_apis::FileResource));
+  change_resource.set_file(std::make_unique<google_apis::FileResource>());
   change_resource.set_file_id("resource_id");
   change_resource.set_modification_date(GetTestTime());
 
@@ -443,7 +444,7 @@ TEST(ResourceEntryConversionTest,
   google_apis::ChangeResource change_resource;
   change_resource.set_type(google_apis::ChangeResource::TEAM_DRIVE);
   change_resource.set_team_drive(
-      base::WrapUnique(new google_apis::TeamDriveResource));
+      std::make_unique<google_apis::TeamDriveResource>());
   change_resource.set_team_drive_id("team_drive_id");
   change_resource.set_modification_date(GetTestTime());
   change_resource.set_deleted(false);

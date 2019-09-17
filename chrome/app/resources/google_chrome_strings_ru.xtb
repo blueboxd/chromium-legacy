@@ -43,14 +43,16 @@
 <translation id="1873233029667955273">Google Chrome не является браузером по умолчанию.</translation>
 <translation id="1874309113135274312">Google Chrome (бета, mDNS-In)</translation>
 <translation id="1877026089748256423">Версия Chrome устарела</translation>
-<translation id="1900795423379050516">Если нужного параметра нет на этой странице, откройте <ph name="LINK_BEGIN" />
-      настройки браузера Chrome<ph name="LINK_END" />.</translation>
+<translation id="1900795423379050516">Если нужного параметра нет на этой странице, откройте <ph name="LINK_BEGIN" />настройки браузера Chrome<ph name="LINK_END" />.</translation>
 <translation id="1915828456209461693">Для Chrome доступно обновление. Оно будет установлено при перезапуске браузера.</translation>
 <translation id="1919130412786645364">Разрешить вход в Chrome</translation>
 <translation id="2063848847527508675">Перезагрузите Chrome OS, чтобы установить обновление.</translation>
 <translation id="2094919256425865063">Завершить работу Chrome?</translation>
 <translation id="2120620239521071941">С устройства будут удалены объекты (<ph name="ITEMS_COUNT" />). Чтобы восстановить данные позже, войдите в Chrome как <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Отправьте отчет о <ph name="BEGIN_LINK" />текущих настройках Chrome<ph name="END_LINK" />, чтобы помочь нам улучшить браузер</translation>
+<translation id="2128103434102193461">Узнать больше о Chrome OS: <ph name="LINK_BEGIN" />
+      О Chrome OS<ph name="LINK_END" /></translation>
+<translation id="2151406531797534936">Перезапустите Chrome</translation>
 <translation id="216054706567564023">Установите Chrome на телефон. Мы отправим SMS на номер, указанный в вашем аккаунте.</translation>
 <translation id="2246246234298806438">Если отсутствует встроенный просмотрщик PDF, предварительный просмотр в Google Chrome невозможен.</translation>
 <translation id="2252923619938421629">Отправьте отчет о текущих настройках Google Chrome и помогите усовершенствовать работу браузера</translation>
@@ -87,7 +89,7 @@
 <translation id="3080151273017101988">Не отключать работающие в фоновом режиме сервисы при закрытии браузера</translation>
 <translation id="3089968997497233615">Доступна новая, более безопасная версия Google Chrome.</translation>
 <translation id="3149510190863420837">Приложения Chrome</translation>
-<translation id="3282568296779691940">Войдите в Chrome</translation>
+<translation id="3282568296779691940">Войти в Chrome</translation>
 <translation id="3340978935015468852">настройках</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome перезапускается}=1{Chrome перезапустится через 1 секунду}one{Chrome перезапустится через # секунду}few{Chrome перезапустится через # секунды}many{Chrome перезапустится через # секунд}other{Chrome перезапустится через # секунды}}</translation>
@@ -158,8 +160,7 @@
 <translation id="5543953544073077331">Запущены другие экземпляры Chrome. Чтобы выполнить обновление, закройте их.</translation>
 <translation id="556024056938947818">Вводимые пароли будут отображаться в Google Chrome.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5657226924540934362">Если нужного параметра нет на этой странице, откройте <ph name="LINK_BEGIN" />
-      настройки Chrome OS<ph name="LINK_END" />.</translation>
+<translation id="5657226924540934362">Если нужного параметра нет на этой странице, откройте <ph name="LINK_BEGIN" />настройки Chrome OS<ph name="LINK_END" />.</translation>
 <translation id="565744775970812598">Chrome заблокировал файл <ph name="FILE_NAME" /> как потенциально опасный.</translation>
 <translation id="5686916850681061684">Настройка и управление Google Chrome Требуется ваше внимание. Нажмите, чтобы получить подробную информацию.</translation>
 <translation id="5690427481109656848">Google LLC</translation>
@@ -219,6 +220,7 @@
 <translation id="7589360514048265910">Google Chrome больше не будет обновляться на этом компьютере, так как поддержка Mac OS X 10.9 прекращена.</translation>
 <translation id="7592736734348559088">Google Chrome не удалось синхронизировать данные, поскольку ваши учетные данные устарели.</translation>
 <translation id="7626032353295482388">Добро пожаловать в Chrome!</translation>
+<translation id="7629695634924605473">Chrome сообщит вам, если возникнет проблема с безопасностью ваших паролей.</translation>
 <translation id="7641148173327520642">Ваш системный администратор задал настройки, согласно которым Google Chrome должен запускать <ph name="ALTERNATIVE_BROWSER_NAME" /> для доступа к сайту <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Логотип Chrome Enterprise</translation>
 <translation id="7747138024166251722">Программе установки не удалось создать временный каталог. Возможно, у вас нет прав на установку приложений или недостаточно места на диске.</translation>

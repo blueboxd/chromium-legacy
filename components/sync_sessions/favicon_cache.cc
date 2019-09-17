@@ -11,7 +11,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "components/favicon/core/favicon_service.h"
-#include "components/history/core/browser/history_service.h"
 #include "components/sync/model/sync_change_processor.h"
 #include "components/sync/model/time.h"
 #include "components/sync/protocol/favicon_image_specifics.pb.h"
@@ -227,8 +226,7 @@ FaviconCache::FaviconCache(favicon::FaviconService* favicon_service,
                            int max_sync_favicon_limit)
     : favicon_service_(favicon_service),
       history_service_(history_service),
-      max_sync_favicon_limit_(max_sync_favicon_limit),
-      history_service_observer_(this) {
+      max_sync_favicon_limit_(max_sync_favicon_limit) {
   if (history_service)
     history_service_observer_.Add(history_service);
   DVLOG(1) << "Setting favicon limit to " << max_sync_favicon_limit;

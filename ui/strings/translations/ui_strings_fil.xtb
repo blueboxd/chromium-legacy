@@ -156,13 +156,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 segundo ang nakalipas}one{# segundo ang nakalipas}other{# na segundo ang nakalipas}}</translation>
 <translation id="6430678249303439055">I-block ang lahat ng notification mula sa app na ito</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 segundo ang nakalipas}one{# segundo ang nakalipas}other{# na segundo ang nakalipas}}</translation>
-<translation id="6539092367496845964">Nagkaproblema. Subukang muli sa ibang pagkakataon.</translation>
+<translation id="6539092367496845964">Nagkaproblema. Subukan ulit sa ibang pagkakataon.</translation>
 <translation id="654149438358937226">I-block ang lahat ng notification</translation>
 <translation id="6567071839949112727">i-click ang ancestor</translation>
 <translation id="6578407462441924264">Walang Pangalan</translation>
 <translation id="6612467943526193239">Upang lumabas sa pag-calibrate pindutin ang Esc.</translation>
 <translation id="6620110761915583480">I-save ang File</translation>
-<translation id="6656912866303152668">Tiyaking na-on ng <ph name="TARGET_DEVICE_NAME" /> ang pag-sync sa Chrome, at pagkatapos ay subukang ipadala muli.</translation>
+<translation id="6656912866303152668">Tiyaking naka-on sa <ph name="TARGET_DEVICE_NAME" /> ang pag-sync sa Chrome, at pagkatapos ay subukang ipadala ulit.</translation>
 <translation id="6699343763173986273">Susunod na Track ng Media</translation>
 <translation id="673773751041746814">Pag-delete</translation>
 <translation id="6779314412797872738">Para magpadala ng numero sa iyong Android phone mula rito, <ph name="TROUBLESHOOT_LINK" /> para sa parehong device sa mga setting.</translation>

@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-FAIL Contenteditable element should support autofocus assert_equals: expected "DIV" but got "BODY"
-FAIL Element with tabindex should support autofocus assert_equals: expected "SPAN" but got "BODY"
-PASS Non-HTMLElement should not support autofocus
-Harness: the test ran to completion.
-

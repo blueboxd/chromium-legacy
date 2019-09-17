@@ -528,7 +528,7 @@ void FakeShillManagerClient::AddGeoNetwork(
     list_value = stub_geo_networks_.SetKey(
         technology, base::Value(base::Value::Type::LIST));
   }
-  list_value->GetList().push_back(network.Clone());
+  list_value->Append(network.Clone());
 }
 
 void FakeShillManagerClient::AddProfile(const std::string& profile_path) {
@@ -632,11 +632,11 @@ void FakeShillManagerClient::SortManagerServices(bool notify) {
   complete_path_list->GetList().clear();
   for (const base::Value& dict : complete_dict_list) {
     std::string service_path = GetStringValue(dict, kPathKey);
-    complete_path_list->GetList().push_back(base::Value(service_path));
+    complete_path_list->Append(base::Value(service_path));
   }
   // Append disabled networks to the end of the complete path list.
   for (const std::string& path : disabled_path_list)
-    complete_path_list->GetList().push_back(base::Value(path));
+    complete_path_list->Append(base::Value(path));
 
   // Notify observers if the order changed.
   if (notify && *complete_path_list != prev_complete_path_list)

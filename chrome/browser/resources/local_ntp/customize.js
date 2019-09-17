@@ -765,6 +765,7 @@ customize.showCollectionSelectionDialog = function() {
       $(customize.IDS.BACKGROUNDS_MENU) :
       $(customize.IDS.TILES);
   if (configData.richerPicker && customize.builtTiles) {
+    tileContainer.focus();
     return;
   }
   customize.builtTiles = true;
@@ -855,7 +856,7 @@ customize.showCollectionSelectionDialog = function() {
   $(customize.IDS.BACKGROUNDS_DEFAULT_ICON).onClickOverride =
       $(customize.IDS.BACKGROUNDS_DEFAULT).onkeydown;
 
-  $(customize.IDS.TILES).focus();
+  tileContainer.focus();
 };
 
 /**

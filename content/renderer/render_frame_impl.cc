@@ -453,9 +453,8 @@ void FillNavigationParamsRequest(
   navigation_params->ip_address_space = commit_params.ip_address_space;
 
   if (common_params.referrer->url.is_valid()) {
-    url::Origin origin = common_params.initiator_origin.value_or(url::Origin());
     WebString referrer = WebSecurityPolicy::GenerateReferrerHeader(
-        common_params.referrer->policy, origin, common_params.url,
+        common_params.referrer->policy, common_params.url,
         WebString::FromUTF8(common_params.referrer->url.spec()));
     navigation_params->referrer = referrer;
     navigation_params->referrer_policy = common_params.referrer->policy;
@@ -502,7 +501,7 @@ void FillNavigationParamsRequest(
       WebURLLoaderImpl::PopulateURLResponse(
           exchange->inner_url,
           network::ResourceResponseHead(exchange->inner_response),
-          &web_response, false /* report_security_info */, -1 /* request_id */);
+          &web_response, false /* report_security_info*/, -1 /* request_id */);
       navigation_params->prefetched_signed_exchanges.emplace_back(
           std::make_unique<
               blink::WebNavigationParams::PrefetchedSignedExchange>(
@@ -3032,16 +3031,15 @@ void RenderFrameImpl::DidFailProvisionalLoad(const WebURLError& error,
   //       SSL manager can react to the provisional load failure before being
   //       notified the load stopped.
   //
-  NotifyObserversOfFailedProvisionalLoad(error);
+  NotifyObserversOfFailedProvisionalLoad();
 
   // Notify the browser that we failed a provisional load with an error.
   SendFailedProvisionalLoad(http_method.Ascii(), error, frame_);
 }
 
-void RenderFrameImpl::NotifyObserversOfFailedProvisionalLoad(
-    const blink::WebURLError& error) {
+void RenderFrameImpl::NotifyObserversOfFailedProvisionalLoad() {
   for (auto& observer : observers_)
-    observer.DidFailProvisionalLoad(error);
+    observer.DidFailProvisionalLoad();
 }
 
 void RenderFrameImpl::LoadNavigationErrorPage(
@@ -3839,7 +3837,7 @@ void RenderFrameImpl::CommitFailedNavigationInternal(
   if (commit_params->nav_entry_id == 0) {
     // For renderer initiated navigations, we send out a
     // DidFailProvisionalLoad() notification.
-    NotifyObserversOfFailedProvisionalLoad(error);
+    NotifyObserversOfFailedProvisionalLoad();
 
     // |browser_side_navigation_pending_| can be false if we are committing
     // failed navigation in a different process than it was started, e.g.
@@ -6635,9 +6633,6 @@ void RenderFrameImpl::BeginNavigation(
     sync_navigation_callback_.Cancel();
     mhtml_body_loader_client_.reset();
 
-    for (auto& observer : observers_)
-      observer.DidStartNavigation(url, info->navigation_type);
-
     // First navigation in a frame to an empty document must be handled
     // synchronously.
     bool is_first_real_empty_document_navigation =
@@ -6646,6 +6641,8 @@ void RenderFrameImpl::BeginNavigation(
 
     if (is_first_real_empty_document_navigation &&
         !is_history_navigation_in_new_child_frame) {
+      for (auto& observer : observers_)
+        observer.DidStartNavigation(url, info->navigation_type);
       CommitSyncNavigation(std::move(info));
       return;
     }
@@ -6659,6 +6656,8 @@ void RenderFrameImpl::BeginNavigation(
       if (!frame_->WillStartNavigation(
               *info, false /* is_history_navigation_in_new_child_frame */))
         return;
+      for (auto& observer : observers_)
+        observer.DidStartNavigation(url, info->navigation_type);
       // Only the first navigation in a frame to an empty document must be
       // handled synchronously, the others are required to happen
       // asynchronously. So a PostTask is used.
@@ -7187,6 +7186,8 @@ void RenderFrameImpl::BeginNavigationInternal(
                                    is_history_navigation_in_new_child_frame))
     return;
 
+  for (auto& observer : observers_)
+    observer.DidStartNavigation(info->url_request.Url(), info->navigation_type);
   browser_side_navigation_pending_ = true;
   browser_side_navigation_pending_url_ = info->url_request.Url();
 

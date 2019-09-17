@@ -236,6 +236,9 @@ class TabDragController : public views::WidgetObserver {
     // Is the tab pinned?
     bool pinned;
 
+    // Stores the group the tab is in, or nullopt if tab is not grouped.
+    base::Optional<TabGroupId> group_id;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(TabDragData);
   };
@@ -305,9 +308,8 @@ class TabDragController : public views::WidgetObserver {
 
   // If necessary starts the |move_stacked_timer_|. The timer is started if
   // close enough to an edge with stacked tabs.
-  void StartMoveStackedTimerIfNecessary(
-      const gfx::Point& point_in_screen,
-      int delay_ms);
+  void StartMoveStackedTimerIfNecessary(const gfx::Point& point_in_screen,
+                                        base::TimeDelta delay);
 
   // Returns the TabDragContext for the specified window, or NULL if
   // one doesn't exist or isn't compatible.

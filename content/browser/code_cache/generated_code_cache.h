@@ -164,9 +164,12 @@ class CONTENT_EXPORT GeneratedCodeCache {
 
   // Issues the queued operation at the front of the queue for the given |key|.
   void IssueQueuedOperationForEntry(const std::string& key);
-  // Enqueues into the list if there is an in-progress operation. Otherwise
-  // creates an entry to indicate there is an active operation.
-  bool EnqueueAsPendingOperation(const std::string& key,
+  // Checks for in-progress operations. If there are none, marks the key as
+  // in-progress and returns true. Otherwise returns false.
+  bool TryBeginOperation(const std::string& key);
+  // Enqueues the operation as pending for the key. This should only be called
+  // if TryBeginOperation returned false.
+  void EnqueueAsPendingOperation(const std::string& key,
                                  std::unique_ptr<PendingOperation> op);
   void IssueOperation(PendingOperation* op);
 

@@ -88,8 +88,28 @@ class JavaScriptPromptOverlayMediatorTest
   FakePromptOverlayMediatorDataSource* data_source_ = nil;
 };
 
-// Tests that the consumer values are set correctly for main frame prompts.
-TEST_F(JavaScriptPromptOverlayMediatorTest, PromptSetup) {
+// Tests that the consumer values are set correctly for main frame prompts from
+// the main frame.
+TEST_F(JavaScriptPromptOverlayMediatorTest, PromptSetupMainFrame) {
+  CreateMediator();
+
+  // Verify the consumer values.
+  EXPECT_NSEQ(base::SysUTF8ToNSString(message()), consumer().title);
+  ASSERT_EQ(1U, consumer().textFieldConfigurations.count);
+  EXPECT_NSEQ(base::SysUTF8ToNSString(default_prompt_value()),
+              consumer().textFieldConfigurations[0].text);
+  EXPECT_FALSE(!!consumer().textFieldConfigurations[0].placeholder);
+  EXPECT_NSEQ(kJavaScriptPromptTextFieldAccessibiltyIdentifier,
+              consumer().textFieldConfigurations[0].accessibilityIdentifier);
+  ASSERT_EQ(2U, consumer().actions.count);
+  EXPECT_EQ(UIAlertActionStyleDefault, consumer().actions[0].style);
+  EXPECT_NSEQ(l10n_util::GetNSString(IDS_OK), consumer().actions[0].title);
+  EXPECT_EQ(UIAlertActionStyleCancel, consumer().actions[1].style);
+  EXPECT_NSEQ(l10n_util::GetNSString(IDS_CANCEL), consumer().actions[1].title);
+}
+
+// Tests that the consumer values are set correctly for prompts from iframes.
+TEST_F(JavaScriptPromptOverlayMediatorTest, PromptSetupIframe) {
   CreateMediator();
 
   // Verify the consumer values.

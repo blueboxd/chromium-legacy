@@ -61,7 +61,8 @@ void ForwardingAudioStreamFactory::Core::CreateInputStream(
     uint32_t shared_memory_count,
     bool enable_agc,
     audio::mojom::AudioProcessingConfigPtr processing_config,
-    mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client) {
+    mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+        renderer_factory_client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // |this| owns |inputs_|, so Unretained is safe.
@@ -117,7 +118,8 @@ void ForwardingAudioStreamFactory::Core::CreateLoopbackStream(
     const media::AudioParameters& params,
     uint32_t shared_memory_count,
     bool mute_source,
-    mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client) {
+    mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+        renderer_factory_client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(loopback_source);
 

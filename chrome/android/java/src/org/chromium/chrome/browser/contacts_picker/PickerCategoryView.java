@@ -156,7 +156,6 @@ public class PickerCategoryView extends OptimizedFrameLayout
         mToolbar.setNavigationOnClickListener(this);
         mToolbar.initializeSearchView(this, R.string.contacts_picker_search, 0);
         mToolbar.setDelegate(delegate);
-        mToolbar.showBackArrow();
         mSelectableListLayout.configureWideDisplayStyle();
 
         mSearchButton = (ImageView) mToolbar.findViewById(R.id.search);

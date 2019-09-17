@@ -25,9 +25,9 @@ void QueryableDataStore::Set(const std::string& key, base::Value value) {
                                 std::move(value)));
 }
 
-void QueryableDataStore::BindQueryableDataStoreRequest(
-    shell::mojom::QueryableDataStoreRequest request) {
-  queryable_data_bindings_.AddBinding(this, std::move(request));
+void QueryableDataStore::BindQueryableDataStoreReceiver(
+    mojo::PendingReceiver<shell::mojom::QueryableDataStore> receiver) {
+  queryable_data_receivers_.Add(this, std::move(receiver));
 }
 
 }  // namespace chromecast

@@ -88,6 +88,8 @@
 <translation id="4230135487732243613">Да се свържат ли данните ви в Chromium с този профил?</translation>
 <translation id="4271805377592243930">Получаване на помощ за Chromium</translation>
 <translation id="4285930937574705105">Инсталирането не бе успешно поради неизвестна грешка. Ако Chromium понастоящем се изпълнява, моля, затворете го и опитайте отново.</translation>
+<translation id="4371648796594901282">За подробности относно Chromium OS, моля, вижте
+<ph name="LINK_BEGIN" />Всичко за Chromium OS<ph name="LINK_END" /></translation>
 <translation id="4407044323746248786">Искате ли да излезете от Chromium въпреки това?</translation>
 <translation id="4415566066719264597">Разрешаване на Chromium да се изпълнява на заден план</translation>
 <translation id="4423735387467980091">Персонализиране и контролиране на Chromium</translation>
@@ -120,6 +122,7 @@
 <translation id="5623402015214259806">{0,plural, =0{Налице е актуализация за Chromium}=1{Налице е актуализация за Chromium}other{Налице е актуализация за Chromium от # дни}}</translation>
 <translation id="5631814766731275228">Име и снимка за Chromium</translation>
 <translation id="5634636535844844681">За Chromium се изисква Windows 7 или по-нова версия.</translation>
+<translation id="5653831366781983928">Моля, рестартирайте Chromium сега</translation>
 <translation id="5680901439334282664">Влезте в Chromium</translation>
 <translation id="5698481217667032250">Показване на Chromium на този език</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -160,6 +163,7 @@
 <translation id="6734080038664603509">Актуализиране на &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium вече е инсталиран за всички потребители на компютъра ви.</translation>
 <translation id="6810143991807788455">Помогнете за подобряването на Chromium, като подадете сигнал за текущите настройки</translation>
+<translation id="6847869444787758381">Chromium ви уведомява, ако паролите ви бъдат компрометирани</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (копирано в Chromium)</translation>
 <translation id="6868056391275687737">Изпълняват се други копия на Chromium. Затворете ги, за да актуализирате.</translation>

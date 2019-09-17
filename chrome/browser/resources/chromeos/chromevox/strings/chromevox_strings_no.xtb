@@ -233,6 +233,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="27527859628328957">Gå til neste fokuserbare element</translation>
 <translation id="2770781857296573485">Kjør gruppeutforsking</translation>
 <translation id="2777845298774924149">Lukket</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{+#}other{+#}}</translation>
 <translation id="2784959586797362050">Du kan sende oss tilbakemelding direkte ved å trykke på søketasten+A og deretter I. Vi ser frem til å høre fra deg.</translation>
 <translation id="2800204403141299078">Det er ingen flere ulike elementer.</translation>
 <translation id="2800780099804980316">Det finnes ikke tidligere overskrifter på nivå 1.</translation>
@@ -715,6 +716,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="5956928062748260866">Dialog</translation>
 <translation id="5963413905009737549">Del</translation>
 <translation id="5968607524793740041">Vis den kontekstuelle menyen</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{med # punkt}other{med # punkter}}</translation>
 <translation id="5981446804259161541">Lys cyan</translation>
 <translation id="5983179082906765664">Øk detaljnivået for navigeringen</translation>
 <translation id="5992285135956208197">Grafikkdokument</translation>

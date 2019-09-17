@@ -55,6 +55,9 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="2094919256425865063">¿Quieres cerrar Chrome de todas formas?</translation>
 <translation id="2120620239521071941">Se eliminarán <ph name="ITEMS_COUNT" /> elementos de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Genera un informe de la <ph name="BEGIN_LINK" />configuración actual<ph name="END_LINK" /> para ayudar a mejorar Chrome</translation>
+<translation id="2128103434102193461">Para obtener más información sobre Chrome OS, consulta <ph name="LINK_BEGIN" />
+      Información de Chrome OS<ph name="LINK_END" /></translation>
+<translation id="2151406531797534936">Reinicia Chrome ahora</translation>
 <translation id="216054706567564023">Instala Chrome en tu teléfono. Te enviaremos un SMS al número de recuperación de la cuenta.</translation>
 <translation id="2246246234298806438">Google Chrome no puede mostrar la vista previa de impresión si falta el visor de PDFs integrado.</translation>
 <translation id="2252923619938421629">Ayuda a mejorar Google Chrome notificando la configuración actual</translation>
@@ -227,6 +230,7 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="7589360514048265910">Este ordenador no volverá a recibir actualizaciones de Google Chrome porque ya no es compatible con Mac OS X 10.9.</translation>
 <translation id="7592736734348559088">Google Chrome no ha podido sincronizar los datos porque la información de inicio de sesión de tu cuenta está obsoleta.</translation>
 <translation id="7626032353295482388">Te damos la bienvenida a Chrome</translation>
+<translation id="7629695634924605473">Chrome te avisará si tus contraseñas están en riesgo</translation>
 <translation id="7641148173327520642">El administrador del sistema ha configurado Google Chrome para que abra <ph name="ALTERNATIVE_BROWSER_NAME" /> al acceder a <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Logotipo de Chrome Enterprise</translation>
 <translation id="7747138024166251722">El programa de instalación no ha podido crear un directorio temporal. Comprueba si hay espacio libre en el disco y si tienes autorización para instalar el software.</translation>

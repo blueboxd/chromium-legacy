@@ -24,17 +24,26 @@ SkiaPaintCanvas::SkiaPaintCanvas(SkCanvas* canvas,
 SkiaPaintCanvas::SkiaPaintCanvas(const SkBitmap& bitmap,
                                  ImageProvider* image_provider)
     : canvas_(new SkCanvas(bitmap)),
+      bitmap_(bitmap),
       owned_(canvas_),
       image_provider_(image_provider) {}
 
 SkiaPaintCanvas::SkiaPaintCanvas(const SkBitmap& bitmap,
                                  const SkSurfaceProps& props)
-    : canvas_(new SkCanvas(bitmap, props)), owned_(canvas_) {}
+    : canvas_(new SkCanvas(bitmap, props)), bitmap_(bitmap), owned_(canvas_) {}
 
 SkiaPaintCanvas::~SkiaPaintCanvas() = default;
 
 SkImageInfo SkiaPaintCanvas::imageInfo() const {
   return canvas_->imageInfo();
+}
+
+void* SkiaPaintCanvas::accessTopLayerPixels(SkImageInfo* info,
+                                            size_t* rowBytes,
+                                            SkIPoint* origin) {
+  if (bitmap_.isNull() || bitmap_.isImmutable())
+    return nullptr;
+  return canvas_->accessTopLayerPixels(info, rowBytes, origin);
 }
 
 void SkiaPaintCanvas::flush() {

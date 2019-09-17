@@ -35,7 +35,6 @@
 #include "components/omnibox/browser/url_prefix.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/search/search.h"
-#include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/variations/net/variations_http_headers.h"
@@ -143,8 +142,7 @@ SearchProvider::SearchProvider(AutocompleteProviderClient* client,
     : BaseSearchProvider(AutocompleteProvider::TYPE_SEARCH, client),
       listener_(listener),
       providers_(client->GetTemplateURLService()),
-      answers_cache_(10),
-      observer_(this) {
+      answers_cache_(10) {
   TemplateURLService* template_url_service = client->GetTemplateURLService();
 
   // |template_url_service| can be null in tests.

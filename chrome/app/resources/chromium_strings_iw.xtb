@@ -88,6 +88,8 @@
 <translation id="4230135487732243613">‏האם לקשר את הנתונים שלך ב-Chromium לחשבון זה?</translation>
 <translation id="4271805377592243930">‏קבל עזרה בנושא Chromium</translation>
 <translation id="4285930937574705105">‏ההתקנה נכשלה בשל שגיאה לא צפויה. אם Chromium  פועל כעת, סגור אותו ונסה שוב.</translation>
+<translation id="4371648796594901282">‏כדי לקבל פרטים נוספים לגבי Chromium OS, אפשר לעיין בדף <ph name="LINK_BEGIN" />
+      מידע על Chromium OS<ph name="LINK_END" /></translation>
 <translation id="4407044323746248786">‏לסגור את Chromium בכל זאת?</translation>
 <translation id="4415566066719264597">‏Chromium יכול לפעול ברקע</translation>
 <translation id="4423735387467980091">‏התאם אישית ושלוט ב-Chromium</translation>
@@ -120,6 +122,7 @@
 <translation id="5623402015214259806">{0,plural, =0{‏יש עדכון ל-Chromium}=1{‏יש עדכון ל-Chromium}two{‏עדכון של Chromium זמין כבר # ימים}many{‏עדכון של Chromium זמין כבר # ימים}other{‏עדכון של Chromium זמין כבר # ימים}}</translation>
 <translation id="5631814766731275228">‏שם ותמונה ב-Chromium</translation>
 <translation id="5634636535844844681">‏כדי להשתמש ב-Chromium יש צורך ב-Windows מגירסה 7 ואילך.</translation>
+<translation id="5653831366781983928">‏יש להפעיל מחדש את Chromium</translation>
 <translation id="5680901439334282664">‏היכנס אל Chromium</translation>
 <translation id="5698481217667032250">‏הצג את Chromium בשפה זו</translation>
 <translation id="5820394555380036790">‏מערכת ההפעלה של Chromium</translation>
@@ -162,6 +165,7 @@
 <translation id="6734080038664603509">‏עדכן &amp;את Chromium‏</translation>
 <translation id="6734291798041940871">‏Chromium כבר מותקן במחשב ונגיש לכל המשתמשים.</translation>
 <translation id="6810143991807788455">‏עזור לשפר את Chromium על ידי דיווח ההגדרות הנוכחיות</translation>
+<translation id="6847869444787758381">‏Chromium מודיע לך אם הסיסמאות שלך נמצאות בסיכון</translation>
 <translation id="6857782730669500492">‏Chromium‏ - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">‏Google Pay (‏הועתק ל-Chromium)</translation>
 <translation id="6868056391275687737">‏עותקים אחרים של Chromium פועלים. כדי לעדכן צריך לסגור אותם.</translation>

@@ -25,6 +25,12 @@ class PrefRegistrySimple;
 class PrefService;
 class ProfileInfoCache;
 
+enum class SigninState {
+  kNotSignedIn,
+  kSignedInWithUnconsentedPrimaryAccount,
+  kSignedInWithConsentedPrimaryAccount,
+};
+
 class ProfileAttributesEntry {
  public:
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
@@ -86,6 +92,8 @@ class ProfileAttributesEntry {
   // Returns true if the profile is using a default name, typically of the
   // format "Person %d".
   bool IsUsingDefaultName() const;
+  // Returns Signin state.
+  SigninState GetSigninState() const;
   // Returns true if the profile is signed in.
   bool IsAuthenticated() const;
   // Returns true if the Profile is using the default avatar, which is one of
@@ -120,7 +128,9 @@ class ProfileAttributesEntry {
   void SetIsAuthError(bool value);
   void SetAvatarIconIndex(size_t icon_index);
 
-  void SetAuthInfo(const std::string& gaia_id, const base::string16& user_name);
+  void SetAuthInfo(const std::string& gaia_id,
+                   const base::string16& user_name,
+                   bool is_consented_primary_account);
 
   // Lock/Unlock the profile, should be called only if force-sign-in is enabled.
   void LockForceSigninProfile(bool is_lock);
@@ -129,6 +139,7 @@ class ProfileAttributesEntry {
   static const char kBackgroundAppsKey[];
   static const char kProfileIsEphemeral[];
   static const char kUserNameKey[];
+  static const char kIsConsentedPrimaryAccountKey[];
 
  private:
   friend class ProfileInfoCache;

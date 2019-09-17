@@ -136,6 +136,7 @@
     <!-- Overlay panel dimensions -->
     <dimen name="overlay_panel_bar_height_legacy">56dp</dimen>
     <dimen name="overlay_panel_bar_height">60dp</dimen>
+    <dimen name="preview_tab_favicon_size">24dp</dimen>
 
     <!-- Autofill keyboard accessory dimensions -->
     <dimen name="keyboard_accessory_height_with_shadow">56dp</dimen>

@@ -1,5 +1,10 @@
 # Some browser_tests are flaking and as the SkiaRenderer changes some timings
-# the rate of flakes could be affected. Currently all known cases of this are
-# fixed. See https://crbug.com/982933 for details.
+# the rate of flakes could be affected. Currently most cases of this are fixed.
+# See https://crbug.com/982933 for details.
 # Add vasilyt@chromium.org and jonross@chromium.org on bugs related to flakes.
 
+# New flake exposed by SkiaRenderer. https://crbug.com/1004299
+-DataSaverSiteBreakdownMetricsObserverBrowserTest.LazyLoadFrameDisabledInReload
+
+# Flaking generally. https://crbug.com/1000813
+-SaveCardBubbleViewsFullFormBrowserTestForStatusChip.ClickingOnCreditCardIconInStatusChipReshowsBubble

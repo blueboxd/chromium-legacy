@@ -16,6 +16,10 @@ public class TasksSurfaceProperties {
     public static final PropertyModel
             .WritableObjectPropertyKey<View.OnClickListener> MORE_TABS_CLICK_LISTENER =
             new PropertyModel.WritableObjectPropertyKey<View.OnClickListener>();
-    public static final PropertyKey[] ALL_KEYS =
-            new PropertyKey[] {IS_TAB_CAROUSEL, MORE_TABS_CLICK_LISTENER};
+    public static final PropertyModel.WritableBooleanPropertyKey MV_TILES_VISIBLE =
+            new PropertyModel.WritableBooleanPropertyKey();
+    public static final PropertyModel.WritableIntPropertyKey TOP_PADDING =
+            new PropertyModel.WritableIntPropertyKey();
+    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {
+            IS_TAB_CAROUSEL, MORE_TABS_CLICK_LISTENER, MV_TILES_VISIBLE, TOP_PADDING};
 }

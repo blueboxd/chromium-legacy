@@ -18,18 +18,6 @@ if (enable_arcore) {
   import("//chrome/android/features/ar/ar_module.gni")
 }
 
-# Mapping that controls package IDs assigned to modules. The package IDs have to
-# be unique and lower than 0x7f.
-# TODO(crbug.com/984158): Autogenerate instead of explicit list.
-resource_packages_id_mapping = [
-  "ar=0x7e",
-  "vr=0x7d",
-  "tab_ui=0x7c",
-  "autofill_assistant=0x7b",
-  "dev_ui=0x7a",
-  "test_dummy=0x79",
-]
-
 # List of feature module descs for each Chrome flavor. These lists are used to
 # autogenerate the relevant module targets and bundles. A feature module desc
 # is a GN scope with the following fields:

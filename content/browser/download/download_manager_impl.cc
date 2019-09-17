@@ -83,7 +83,6 @@
 namespace content {
 namespace {
 
-#if defined(OS_ANDROID)
 void DeleteDownloadedFileOnUIThread(const base::FilePath& file_path) {
   if (!file_path.empty()) {
     download::GetDownloadTaskRunner()->PostTask(
@@ -92,7 +91,6 @@ void DeleteDownloadedFileOnUIThread(const base::FilePath& file_path) {
                        file_path));
   }
 }
-#endif
 
 StoragePartitionImpl* GetStoragePartition(BrowserContext* context,
                                           int render_process_id,
@@ -552,16 +550,16 @@ void DownloadManagerImpl::OnDownloadsInitialized() {
     uint32_t id = download->GetId();
     if (id > max_id)
       max_id = id;
-#if defined(OS_ANDROID)
-    // On android, clean up cancelled and non resumable interrupted downloads.
+
+    // Clean up cancelled and non resumable interrupted downloads.
     if (ShouldClearDownloadFromDB(download->GetURL(), download->GetState(),
-                                  download->GetLastReason())) {
+                                  download->GetLastReason(),
+                                  download->GetStartTime())) {
       cleared_download_guids_on_startup_.insert(download->GetGuid());
       DeleteDownloadedFileOnUIThread(download->GetFullPath());
       it = in_progress_downloads_.erase(it);
       continue;
     }
-#endif  // defined(OS_ANDROID)
     ++it;
   }
   PostInitialization(DOWNLOAD_INITIALIZATION_DEPENDENCY_IN_PROGRESS_CACHE);
@@ -902,20 +900,20 @@ download::DownloadItem* DownloadManagerImpl::CreateDownloadItem(
   // Retrive the in-progress download if it exists. Notice that this also
   // removes it from |in_progress_downloads_|.
   auto in_progress_download = RetrieveInProgressDownload(id);
-#if defined(OS_ANDROID)
-  // On Android, there is no way to interact with cancelled or non-resumable
-  // download. Simply returning null and don't store them in this class to
-  // reduce memory usage.
+
+  // Return null to clear cancelled or non-resumable download.
   if (cleared_download_guids_on_startup_.find(guid) !=
       cleared_download_guids_on_startup_.end()) {
     return nullptr;
   }
+
   if (url_chain.empty() ||
-      ShouldClearDownloadFromDB(url_chain.back(), state, interrupt_reason)) {
+      ShouldClearDownloadFromDB(url_chain.back(), state, interrupt_reason,
+                                start_time)) {
     DeleteDownloadedFileOnUIThread(current_path);
     return nullptr;
   }
-#endif
+
   auto item = base::WrapUnique(item_factory_->CreatePersistedItem(
       this, guid, id, current_path, target_path, url_chain, referrer_url,
       site_url, tab_url, tab_refererr_url, request_initiator, mime_type,
@@ -991,28 +989,26 @@ void DownloadManagerImpl::PostInitialization(
   if (!history_loaded || !in_progress_cache_initialized_)
     return;
 
-#if defined(OS_ANDROID)
-    for (const auto& guid : cleared_download_guids_on_startup_)
-      in_progress_manager_->RemoveInProgressDownload(guid);
-    if (cancelled_download_cleared_from_history_ > 0) {
-      UMA_HISTOGRAM_COUNTS_1000(
-          "MobileDownload.CancelledDownloadRemovedFromHistory",
-          cancelled_download_cleared_from_history_);
-    }
+  for (const auto& guid : cleared_download_guids_on_startup_) {
+    in_progress_manager_->RemoveInProgressDownload(guid);
+  }
 
-    if (interrupted_download_cleared_from_history_ > 0) {
-      UMA_HISTOGRAM_COUNTS_1000(
-          "MobileDownload.InterruptedDownloadsRemovedFromHistory",
-          interrupted_download_cleared_from_history_);
-    }
-#endif
+  if (cancelled_download_cleared_from_history_ > 0) {
+    UMA_HISTOGRAM_COUNTS_1000("Download.CancelledDownloadRemovedFromHistory",
+                              cancelled_download_cleared_from_history_);
+  }
 
-    if (in_progress_downloads_.empty()) {
-      OnDownloadManagerInitialized();
-    } else {
-      GetNextId(base::BindOnce(&DownloadManagerImpl::ImportInProgressDownloads,
-                               weak_factory_.GetWeakPtr()));
-    }
+  if (interrupted_download_cleared_from_history_ > 0) {
+    UMA_HISTOGRAM_COUNTS_1000("Download.InterruptedDownloadsRemovedFromHistory",
+                              interrupted_download_cleared_from_history_);
+  }
+
+  if (in_progress_downloads_.empty()) {
+    OnDownloadManagerInitialized();
+  } else {
+    GetNextId(base::BindOnce(&DownloadManagerImpl::ImportInProgressDownloads,
+                             weak_factory_.GetWeakPtr()));
+  }
 }
 
 void DownloadManagerImpl::ImportInProgressDownloads(uint32_t id) {
@@ -1196,6 +1192,11 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
       tab_url = entry->GetURL();
       tab_referrer_url = entry->GetReferrer().url;
     }
+    RenderFrameHost* top_frame = web_contents->GetMainFrame();
+    if (top_frame) {
+      params->set_network_isolation_key(net::NetworkIsolationKey(
+          top_frame->GetLastCommittedOrigin(), rfh->GetLastCommittedOrigin()));
+    }
   }
 
   DCHECK_EQ(params->url().SchemeIsBlob(), bool{blob_url_loader_factory});
@@ -1333,25 +1334,33 @@ bool DownloadManagerImpl::IsNextIdInitialized() const {
   return is_history_download_id_retrieved_ && in_progress_cache_initialized_;
 }
 
-#if defined(OS_ANDROID)
 bool DownloadManagerImpl::ShouldClearDownloadFromDB(
     const GURL& url,
     download::DownloadItem::DownloadState state,
-    download::DownloadInterruptReason reason) {
-  if (state == download::DownloadItem::CANCELLED) {
+    download::DownloadInterruptReason reason,
+    const base::Time& start_time) {
+  if (!base::FeatureList::IsEnabled(
+          download::features::kDeleteExpiredDownloads)) {
+    return false;
+  }
+
+  // Use system time to determine if the download is expired. Manually setting
+  // the system time can affect this.
+  bool expired = base::Time::Now() - start_time >=
+                 download::GetExpiredDownloadDeleteTime();
+  if (state == download::DownloadItem::CANCELLED && expired) {
     ++cancelled_download_cleared_from_history_;
     return true;
   }
+
   if (reason != download::DOWNLOAD_INTERRUPT_REASON_NONE &&
-      download::GetDownloadResumeMode(url, reason, false /* restart_required */,
-                                      false /* user_action_required */) ==
-          download::ResumeMode::INVALID) {
+      state == download::DownloadItem::INTERRUPTED && expired) {
     ++interrupted_download_cleared_from_history_;
     return true;
   }
+
   return false;
 }
-#endif  // defined(OS_ANDROID)
 
 std::unique_ptr<download::DownloadItemImpl>
 DownloadManagerImpl::RetrieveInProgressDownload(uint32_t id) {

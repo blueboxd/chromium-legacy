@@ -37,6 +37,7 @@
 #import "ios/chrome/browser/ui/qr_scanner/qr_scanner_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_coordinator.h"
+#import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_coordinator.h"
 #import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
 #import "ios/chrome/browser/ui/translate/translate_infobar_coordinator.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -56,6 +57,7 @@
 #endif
 
 @interface BrowserCoordinator () <AutofillSecurityAlertPresenter,
+                                  BrowserCoordinatorCommands,
                                   FormInputAccessoryCoordinatorNavigator,
                                   RepostFormTabHelperDelegate,
                                   URLLoadingServiceDelegate,
@@ -83,6 +85,10 @@
 
 // Presents a QLPreviewController in order to display USDZ format 3D models.
 @property(nonatomic, strong) ARQuickLookCoordinator* ARQuickLookCoordinator;
+
+// Coordinator to add new credit card.
+@property(nonatomic, strong)
+    AutofillAddCreditCardCoordinator* addCreditCardCoordinator;
 
 // Coordinator in charge of the presenting autofill options above the
 // keyboard.
@@ -267,7 +273,9 @@
       initWithBaseViewController:self.viewController
                     browserState:self.browserState
                     webStateList:self.tabModel.webStateList
-                injectionHandler:self.injectionHandler];
+                injectionHandler:self.injectionHandler
+                      dispatcher:static_cast<id<BrowserCoordinatorCommands>>(
+                                     self.dispatcher)];
   self.formInputAccessoryCoordinator.navigator = self;
   [self.formInputAccessoryCoordinator start];
 
@@ -310,6 +318,10 @@
 
   self.storeKitCoordinator = [[StoreKitCoordinator alloc]
       initWithBaseViewController:self.viewController];
+
+  self.addCreditCardCoordinator = [[AutofillAddCreditCardCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                    browserState:self.browserState];
 }
 
 // Stops child coordinators.
@@ -356,6 +368,9 @@
 
   [self.translateInfobarCoordinator stop];
   self.translateInfobarCoordinator = nil;
+
+  [self.addCreditCardCoordinator stop];
+  self.addCreditCardCoordinator = nil;
 }
 
 #pragma mark - AutofillSecurityAlertPresenter
@@ -421,6 +436,10 @@
   self.recentTabsCoordinator.dispatcher = self.applicationCommandHandler;
   self.recentTabsCoordinator.webStateList = self.tabModel.webStateList;
   [self.recentTabsCoordinator start];
+}
+
+- (void)showAddCreditCard {
+  [self.addCreditCardCoordinator start];
 }
 
 #pragma mark - FormInputAccessoryCoordinatorNavigator

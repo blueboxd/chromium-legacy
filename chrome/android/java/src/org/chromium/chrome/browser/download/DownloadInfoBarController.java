@@ -361,6 +361,11 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         computeNextStepForUpdate(item);
     }
 
+    /** @return Whether the infobar is currently showing. */
+    public boolean isShowing() {
+        return mCurrentInfoBar != null;
+    }
+
     /**
      * Helper method to get the parameters for showing accelerated download infobar IPH.
      * @return The UI parameters to show IPH, if an IPH should be shown, null otherwise.

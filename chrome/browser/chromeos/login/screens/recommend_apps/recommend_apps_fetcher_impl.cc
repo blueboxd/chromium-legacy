@@ -622,7 +622,7 @@ base::Optional<base::Value> RecommendAppsFetcherImpl::ParseResponse(
       continue;
     }
 
-    output.GetList().push_back(std::move(output_map));
+    output.Append(std::move(output_map));
   }
 
   RecordUmaResponseParseResult(RECOMMEND_APPS_RESPONSE_PARSE_RESULT_NO_ERROR);

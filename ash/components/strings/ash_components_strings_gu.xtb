@@ -23,6 +23,7 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">ઍડ્રેસ બારમાંના તમારા ઇનપુટમાં www. અને .com ઉમેરો, પછી પેજ ખોલો</translation>
+<translation id="1872219238824176091">વર્તમાન ડેસ્ક કાઢી નાખો</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, પછી <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> અથવા <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">આગળના ટૅબ પર જાઓ</translation>
 <translation id="2010818616644390445">વિંડોમાં છેલ્લા ટૅબ પર જાઓ</translation>
@@ -42,6 +43,7 @@
 <translation id="2441202986792279177">વિંડોને ઝડપથી સ્વિચ કરો</translation>
 <translation id="2454251766545114447">ડિસ્પ્લે ઝૂમ ઘટાડો</translation>
 <translation id="2478303094958140141">ChromeVox (બોલાયેલ પ્રતિસાદ) ચાલુ અથવા બંધ કરો</translation>
+<translation id="2488661730534396940">ડાબી બાજુના ડેસ્કને સક્રિય કરો</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">વેબપેજમાં નીચે સ્ક્રોલ કરો</translation>
 <translation id="2574014812750545982">પેજ પર ઝૂમ લેવલ રીસેટ કરો</translation>
@@ -49,6 +51,7 @@
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, પછી <ph name="TAB" /> અથવા <ph name="RIGHT" /></translation>
 <translation id="2750942583782703988">તમારું વર્તમાન પેજ ફરીથી લોડ કરો</translation>
 <translation id="2764005613199379871">શોધ ઍડ્રેસ બારમાં ફોકસ કરો</translation>
+<translation id="2774822903829597107">નવું ડેસ્ક બનાવો</translation>
 <translation id="2789868185375229787">આ પેજ પર ઝૂમ ઘટાડો</translation>
 <translation id="2804480015716812239"><ph name="ALT" />ને દબાવો અને લિંકને ક્લિક કરો</translation>
 <translation id="2830827904629746450">જમણી બાજુની વિંડોને ડૉક કરો</translation>
@@ -100,6 +103,7 @@
 <translation id="4642092649622328492">આંશિક સ્ક્રીનશૉટ લો</translation>
 <translation id="4698850295812410683">સ્ટાઇલસનાં સાધનો બતાવો</translation>
 <translation id="4801989101741319327">આગલા શબ્દના અંતે જાઓ</translation>
+<translation id="4866066940972151697">જમણી બાજુના ડેસ્કને સક્રિય કરો</translation>
 <translation id="4916163929714267752">લિંકને નવી વિંડોમાં ખોલો</translation>
 <translation id="5030659775136592441">બુકમાર્ક મેનેજર બતાવો</translation>
 <translation id="5034421018520995080">પેજની ટોચે જાઓ</translation>

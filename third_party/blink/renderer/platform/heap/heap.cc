@@ -284,13 +284,12 @@ bool DrainWorklistWithDeadline(base::TimeTicks deadline,
                                Worklist* worklist,
                                Callback callback,
                                int task_id) {
-  const size_t kDeadlineCheckInterval = 2500;
+  const size_t kDeadlineCheckInterval = 1250;
 
   size_t processed_callback_count = 0;
   typename Worklist::EntryType item;
   while (worklist->Pop(task_id, &item)) {
     callback(item);
-    processed_callback_count++;
     if (++processed_callback_count == kDeadlineCheckInterval) {
       if (deadline <= base::TimeTicks::Now()) {
         return false;
@@ -348,11 +347,12 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
   return true;
 }
 
-void ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor) {
-  // TODO(omerkatz): Use deadline to avoid priority inversion and
-  // periodically flush v8 worklist.
-  DrainWorklistWithDeadline(
-      base::TimeTicks::Max(), marking_worklist_.get(),
+bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,
+                                          base::TimeTicks deadline) {
+  // Iteratively mark all objects that are reachable from the objects
+  // currently pushed onto the marking worklist.
+  return DrainWorklistWithDeadline(
+      deadline, marking_worklist_.get(),
       [visitor](const MarkingItem& item) {
         DCHECK(
             !HeapObjectHeader::FromPayload(item.object)

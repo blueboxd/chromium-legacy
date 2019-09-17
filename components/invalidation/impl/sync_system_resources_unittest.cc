@@ -4,13 +4,13 @@
 
 #include "components/invalidation/impl/sync_system_resources.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "components/invalidation/impl/push_client_channel.h"
@@ -52,7 +52,7 @@ class MockStorageCallback {
 class SyncSystemResourcesTest : public testing::Test {
  protected:
   SyncSystemResourcesTest()
-      : push_client_channel_(base::WrapUnique(new notifier::FakePushClient())),
+      : push_client_channel_(std::make_unique<notifier::FakePushClient>()),
         sync_system_resources_(&push_client_channel_, &mock_state_writer_) {}
 
   ~SyncSystemResourcesTest() override {}

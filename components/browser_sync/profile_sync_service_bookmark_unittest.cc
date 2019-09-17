@@ -22,7 +22,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -438,7 +437,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
   std::unique_ptr<BookmarkModel> CreateBookmarkModel(bool delete_bookmarks) {
     const base::FilePath& data_path = data_dir_.GetPath();
     auto model = std::make_unique<BookmarkModel>(
-        base::WrapUnique(new bookmarks::TestBookmarkClient()));
+        std::make_unique<bookmarks::TestBookmarkClient>());
     managed_bookmark_service_->BookmarkModelCreated(model.get());
     int64_t next_id = 0;
     static_cast<bookmarks::TestBookmarkClient*>(model->client())

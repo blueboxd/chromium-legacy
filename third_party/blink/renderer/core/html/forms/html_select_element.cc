@@ -1851,10 +1851,6 @@ bool HTMLSelectElement::IsInteractiveContent() const {
   return true;
 }
 
-bool HTMLSelectElement::SupportsAutofocus() const {
-  return true;
-}
-
 void HTMLSelectElement::Trace(Visitor* visitor) {
   visitor->Trace(list_items_);
   visitor->Trace(last_on_change_option_);

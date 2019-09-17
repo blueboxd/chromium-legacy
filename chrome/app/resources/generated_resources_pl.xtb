@@ -302,7 +302,7 @@
 <translation id="1444628761356461360">Tym urządzeniem zarządza właściciel urządzenia: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="144518587530125858">Nie można wczytać ścieżki „<ph name="IMAGE_PATH" />” dla motywu.</translation>
 <translation id="1445693676523799095">To może chwilę potrwać</translation>
-<translation id="1450011005989029586">W wyniku naruszenia bezpieczeństwa danych w witrynie lub aplikacji doszło do ujawnienia Twojego hasła. Chrome zaleca natychmiastową <ph name="BOLD" /> na <ph name="ORIGIN" />.</translation>
+<translation id="1450011005989029586">W wyniku naruszenia bezpieczeństwa danych w witrynie lub aplikacji doszło do ujawnienia Twojego hasła. Chrome zaleca: natychmiast <ph name="BOLD" /> na <ph name="ORIGIN" />.</translation>
 <translation id="1451375123200651445">Strona internetowa, pojedynczy plik</translation>
 <translation id="1451917004835509682">Dodaj nadzorowaną osobę</translation>
 <translation id="1454223536435069390">Wykon&amp;aj zrzut ekranu</translation>
@@ -479,6 +479,7 @@
 <translation id="1698122934742150150">Tylko w bieżącej sesji incognito</translation>
 <translation id="1698650002254827833">Nie można załadować listy aplikacji. Spróbuj ponownie.</translation>
 <translation id="1701062906490865540">Usuń tę osobę</translation>
+<translation id="1703331064825191675">Nie musisz się już martwić o bezpieczeństwo swoich haseł</translation>
 <translation id="1706586824377653884">Dodane przez administratora</translation>
 <translation id="1706625117072057435">Poziomy powiększenia</translation>
 <translation id="1708338024780164500">(Nieaktywne)</translation>
@@ -528,6 +529,7 @@
 <translation id="1764226536771329714">beta</translation>
 <translation id="176587472219019965">&amp;Nowe okno</translation>
 <translation id="1766575458646819543">Wyłączono tryb pełnego ekranu</translation>
+<translation id="1766957085594317166">Możesz bezpiecznie zapisać hasła na swoim koncie Google, by w przyszłości nie musieć ich wpisywać</translation>
 <translation id="1768278914020124551">Ups. Podczas łączenia się z serwerem logowania wystąpił problem. Sprawdź połączenie sieciowe i nazwę domeny, a potem spróbuj jeszcze raz.</translation>
 <translation id="1769104665586091481">Otwórz link w nowym &amp;oknie</translation>
 <translation id="1773212559869067373">Certyfikat uwierzytelniania został odrzucony lokalnie</translation>
@@ -1875,6 +1877,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="3748026146096797577">Brak połączenia</translation>
 <translation id="3752582316358263300">OK</translation>
 <translation id="3752673729237782832">Moje urządzenia</translation>
+<translation id="3753033997400164841">Zapisz raz – używaj w dowolnym miejscu</translation>
 <translation id="3755411799582650620">Telefon <ph name="PHONE_NAME" /> może teraz odblokowywać też urządzenie <ph name="DEVICE_TYPE" />.</translation>
 <translation id="375636864092143889">Strona używa mikrofonu</translation>
 <translation id="3757733214359997190">Nie znaleziono stron</translation>
@@ -2167,7 +2170,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4146026355784316281">Zawsze otwieraj w przeglądarce systemowej</translation>
 <translation id="4146785383423576110">Resetowanie komputera i czyszczenie danych</translation>
 <translation id="4147911968024186208">Spróbuj jeszcze raz. Jeśli ten błąd pojawi się ponownie, skontaktuj się z przedstawicielem pomocy.</translation>
-<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">Wyświetlacz</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 karta}few{# karty}many{# kart}other{# karty}}</translation>
 <translation id="4154664944169082762">Odciski cyfrowe</translation>
@@ -2208,6 +2210,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4232375817808480934">Konfigurowanie Kerberos</translation>
 <translation id="4235200303672858594">Cały ekran</translation>
 <translation id="4235965441080806197">Anuluj logowanie</translation>
+<translation id="4242145785130247982">Funkcja nie obsługuje wielu certyfikatów klienta</translation>
 <translation id="4242533952199664413">Otwórz ustawienia</translation>
 <translation id="4242577469625748426">Instalacja ustawień zasad na urządzeniu nie powiodła się: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Znajdź więcej aplikacji dla rysika</translation>
@@ -2230,7 +2233,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4267953847983678297">Automatycznie łącz się z siecią komórkową</translation>
 <translation id="4268025649754414643">Szyfrowanie klucza</translation>
 <translation id="4270393598798225102">Wersja <ph name="NUMBER" /></translation>
-<translation id="4270615291506829403">zmianę hasła</translation>
+<translation id="4270615291506829403">zmień hasło</translation>
 <translation id="4275663329226226506">Multimedia</translation>
 <translation id="4275830172053184480">Zrestartuj urządzenie</translation>
 <translation id="4278101229438943600">Twój Asystent jest gotowy</translation>
@@ -2666,6 +2669,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="4957949153200969297">Włącz tylko funkcje związane z Synchronizacją <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="4959262764292427323">Hasła są zapisywane na Twoim koncie Google, dzięki czemu możesz ich używać na dowolnym urządzeniu</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> – <ph name="PROFILE_NAME" /></translation>
+<translation id="496185450405387901">Tę aplikację zainstalował administrator.</translation>
 <translation id="4964455510556214366">Układ</translation>
 <translation id="4964673849688379040">Sprawdzam...</translation>
 <translation id="4965808351167763748">Czy na pewno chcesz skonfigurować to urządzenie na potrzeby Hangouts Meet?</translation>
@@ -2923,6 +2927,7 @@ Zanim włączysz VR na tej stronie, sprawdź, czy można uznać ją za zaufaną.
 <translation id="5360150013186312835">Pokaż na pasku narzędzi</translation>
 <translation id="5362741141255528695">Wybierz plik kluczy prywatnych.</translation>
 <translation id="5363109466694494651">Wykonaj Powerwash i przywróć</translation>
+<translation id="5365716706805792666">Google może sprawdzić, czy bezpieczeństwo Twoich haseł zostało naruszone. Ta funkcja zostanie włączona, gdy zalogujesz się na swoje konto Google.</translation>
 <translation id="5365881113273618889">Wybrany folder zawiera poufne pliki. Czy na pewno chcesz, by aplikacja „<ph name="APP_NAME" />” miała do niego stały dostęp z uprawnieniami do zapisu?</translation>
 <translation id="5367091008316207019">Odczytuję plik..</translation>
 <translation id="5368720394188453070">Twój telefon jest zablokowany. Aby uzyskać do niego dostęp, odblokuj go.</translation>
@@ -3519,7 +3524,6 @@ Zanim włączysz VR na tej stronie, sprawdź, czy można uznać ją za zaufaną.
 <translation id="6212039847102026977">Pokaż zaawansowane właściwości sieci</translation>
 <translation id="6212168817037875041">Wyłącz ekran</translation>
 <translation id="6212752530110374741">Prześlij link e-mailem</translation>
-<translation id="6214642087594370545">Wyświetli ostrzeżenie, kiedy użyjesz hasła, które wykorzystano do naruszenia bezpieczeństwa danych. Ta funkcja jest dostępna tylko dla zalogowanych użytkowników.</translation>
 <translation id="6216696360484424239">Logowanie automatyczne</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> jest offline. Połącz się z internetem i spróbuj ponownie.</translation>
 <translation id="6220413761270491930">Błąd podczas ładowania rozszerzenia</translation>
@@ -3876,6 +3880,7 @@ Zanim włączysz VR na tej stronie, sprawdź, czy można uznać ją za zaufaną.
 <translation id="6769712124046837540">Dodaję drukarkę...</translation>
 <translation id="6770664076092644100">Zweryfikuj przez NFC</translation>
 <translation id="6771503742377376720">Jest urzędem certyfikacji</translation>
+<translation id="6775163072363532304">Tu pojawią się dostępne urządzenia.</translation>
 <translation id="6777817260680419853">Przekierowanie zostało zablokowane</translation>
 <translation id="6778737459546443941">Twój rodzic jeszcze na to nie zezwolił</translation>
 <translation id="677965093459947883">Bardzo mała</translation>
@@ -4267,7 +4272,7 @@ Zanim włączysz VR na tej stronie, sprawdź, czy można uznać ją za zaufaną.
 <translation id="7334190995941642545">Smart Lock jest obecnie niedostępny. Spróbuj ponownie później.</translation>
 <translation id="7334274148831027933">Włącz lupę zadokowaną</translation>
 <translation id="7335974957018254119">Używaj sprawdzania pisowni dla języka:</translation>
-<translation id="7336799713063880535">Blokuję powiadom.</translation>
+<translation id="7336799713063880535">Zablokowane.</translation>
 <translation id="7338630283264858612">Numer seryjny urządzenia jest nieprawidłowy.</translation>
 <translation id="7339763383339757376">PKCS #7, jeden certyfikat</translation>
 <translation id="7339785458027436441">Sprawdzaj pisownię w trakcie pisania</translation>
@@ -4336,6 +4341,7 @@ Zanim włączysz VR na tej stronie, sprawdź, czy można uznać ją za zaufaną.
 <translation id="7441830548568730290">Inni użytkownicy</translation>
 <translation id="7442465037756169001">Hardware Hangouts Meet jest gotowy do konfiguracji.</translation>
 <translation id="744341768939279100">Utwórz nowy profil</translation>
+<translation id="7443806024147773267">Miej dostęp do swoich haseł zawsze wtedy, gdy zalogujesz się na swoje konto Google</translation>
 <translation id="7444046173054089907">Ta strona jest zablokowana</translation>
 <translation id="7444983668544353857">Wyłącz – <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">Automatyczne instalowanie aplikacji</translation>
@@ -4749,6 +4755,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8014154204619229810">Obecnie działa aktualizator. Odśwież za minutę, by sprawdzić ponownie.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> nie może przywrócić poprzednio zainstalowanej wersji. Spróbuj ponownie, by wykonać Powerwash na urządzeniu.</translation>
 <translation id="8014210335923519270">Pomóż nam ulepszyć działanie i zwiększyć bezpieczeństwo <ph name="IDS_SHORT_PRODUCT_NAME" />, wysyłając informacje o systemie i użytkowaniu do Google</translation>
+<translation id="8015780634880457457">Google może sprawdzić, czy bezpieczeństwo Twoich haseł zostało naruszone</translation>
 <translation id="8016266267177410919">Pamięć tymczasowa</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Skrót był edytowany</translation>
@@ -4867,6 +4874,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8188389033983459049">Sprawdź ustawienia urządzenia i włącz tę opcję, by kontynuować</translation>
 <translation id="8190193592390505034">Łączenie z siecią <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">Zarządzanie Twoimi aplikacjami, rozszerzeniami i motywami</translation>
+<translation id="819464600477418284">Tej aplikacji nie można odinstalować, ponieważ stanowi ona część systemu operacyjnego Chrome.</translation>
 <translation id="8195027750202970175">Rozmiar na dysku</translation>
 <translation id="8198323535106903877">Zainstalujemy dla Ciebie te aplikacje (<ph name="NUMBER_OF_APPS" />)</translation>
 <translation id="8199300056570174101">Właściwości sieci (usługi) i urządzenia</translation>
@@ -4927,6 +4935,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
     <ph name="BEGIN_PARAGRAPH2" />Wyłączenie tej funkcji nie wpływa na możliwość wysyłania przez urządzenie informacji potrzebnych do działania ważnych usług, na przykład zabezpieczeń czy aktualizacji systemu.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />Właściciel może włączyć lub wyłączyć tę funkcję, wybierając Ustawienia &gt; Zaawansowane &gt; Automatycznie wysyłaj do Google dane diagnostyczne i informacje o użytkowaniu.<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />Jeśli dodatkowo Twoje dziecko ma włączoną Aktywność w internecie i aplikacjach, dane mogą być zapisywane na jego koncie Google. Więcej informacji o tych ustawieniach i ich zmienianiu znajdziesz na families.google.com<ph name="END_PARAGRAPH4" /></translation>
+<translation id="826905130698769948">Nieprawidłowy certyfikat klienta</translation>
 <translation id="8270242299912238708">Dokumenty PDF</translation>
 <translation id="827097179112817503">Pokaż przycisk strony głównej</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{Usunięto 1 zakładkę}few{Usunięto # zakładki}many{Usunięto # zakładek}other{Usunięto # zakładki}}</translation>
@@ -5340,6 +5349,7 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8874184842967597500">Brak połączenia</translation>
 <translation id="8876307312329369159">Tego ustawienia nie można zmienić w sesji demonstracyjnej.</translation>
 <translation id="8877448029301136595">[katalog główny]</translation>
+<translation id="8879220587046205278">Aplikacje z Google Play mogą wymagać pełnego dostępu do systemu plików, by odczytywać i zapisywać pliki na zewnętrznych urządzeniach pamięci masowej. Pliki i foldery utworzone na urządzeniu są widoczne dla każdej osoby używającej dysku zewnętrznego.</translation>
 <translation id="8879284080359814990">&amp;Pokaż jako kartę</translation>
 <translation id="8879921471468674457">Zapamiętaj dane logowania</translation>
 <translation id="8881020143150461183">Spróbuj ponownie. Aby uzyskać pomoc techniczną, skontaktuj się z <ph name="CARRIER_NAME" />.</translation>

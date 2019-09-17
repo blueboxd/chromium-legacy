@@ -42,12 +42,10 @@ CastDialogNoSinksView::CastDialogNoSinksView(Profile* profile)
   looking_for_sinks_view_ = CreateLookingForSinksView();
   AddChildView(looking_for_sinks_view_);
 
-  constexpr int kThrobberDurationInSeconds = 3;
-  base::PostDelayedTask(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&CastDialogNoSinksView::ShowHelpIconView,
-                     weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromSeconds(kThrobberDurationInSeconds));
+  base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
+                        base::BindOnce(&CastDialogNoSinksView::ShowHelpIconView,
+                                       weak_factory_.GetWeakPtr()),
+                        base::TimeDelta::FromSeconds(3));
 }
 
 CastDialogNoSinksView::~CastDialogNoSinksView() = default;
@@ -93,8 +91,7 @@ views::View* CastDialogNoSinksView::CreateHelpIconView() {
                       gfx::CreateVectorIcon(::vector_icons::kHelpOutlineIcon,
                                             kPrimaryIconSize, icon_color));
   help_icon->SetFocusForPlatform();
-  help_icon->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(kPrimaryIconBorderWidth)));
+  help_icon->SetBorder(views::CreateEmptyBorder(kPrimaryIconBorder));
   help_icon->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_NO_DEVICES_FOUND_BUTTON));
   HoverButton* view =

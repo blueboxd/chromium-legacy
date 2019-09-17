@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/constants.h"
 #include "services/service_manager/public/cpp/manifest.h"
@@ -90,9 +91,9 @@ TEST(BackgroundServiceManagerTest, MAYBE_Basic) {
                base::Token::CreateRandom()),
       service.PassInterface(), mojo::NullReceiver() /* metadata_receiver */);
 
-  mojom::TestServicePtr test_service;
-  service_impl.connector()->BindInterface(ServiceFilter::ByName(kAppName),
-                                          &test_service);
+  mojo::Remote<mojom::TestService> test_service;
+  service_impl.connector()->Connect(ServiceFilter::ByName(kAppName),
+                                    test_service.BindNewPipeAndPassReceiver());
   base::RunLoop run_loop;
   bool got_result = false;
   test_service->Test(base::BindOnce(&SetFlagAndRunClosure, &got_result,

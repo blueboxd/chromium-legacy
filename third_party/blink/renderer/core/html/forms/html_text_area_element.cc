@@ -613,10 +613,6 @@ bool HTMLTextAreaElement::IsInteractiveContent() const {
   return true;
 }
 
-bool HTMLTextAreaElement::SupportsAutofocus() const {
-  return true;
-}
-
 void HTMLTextAreaElement::CloneNonAttributePropertiesFrom(
     const Element& source,
     CloneChildrenFlag flag) {

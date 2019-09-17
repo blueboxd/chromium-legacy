@@ -19,6 +19,7 @@
 <translation id="2501953888035679275">Prenez des photos et enregistrez des vidéos avec votre appareil photo.</translation>
 <translation id="2549985041256363841">Démarrer l'enregistrement</translation>
 <translation id="2599796128805996109">Caméra arrière</translation>
+<translation id="2912439424121107408">Le mode Expert n'est pas compatible avec cet appareil</translation>
 <translation id="2968794441791257519">Les photos et les vidéos prises avec l'appareil photo seront déplacées vers le dossier "Téléchargements". Vous pouvez y accéder via l'application Fichiers.
 
         Les applications disposant d'autorisations d'accès à l'espace de stockage pourront accéder à vos photos et vidéos.</translation>
@@ -41,10 +42,12 @@
         Vérifiez qu'il est bien connecté.</translation>
 <translation id="5152121255775685072">Accéder à la galerie</translation>
 <translation id="5671277269877808209">Carré</translation>
+<translation id="5775960006311140197">Mode Expert</translation>
 <translation id="5869546221129391014">Grille</translation>
 <translation id="6040143037577758943">Fermer</translation>
 <translation id="6073451960410192870">Arrêter l'enregistrement</translation>
 <translation id="6165508094623778733">En savoir plus</translation>
+<translation id="6197807149213783179">Enregistrer les métadonnées</translation>
 <translation id="6233780560267770709">3 par 3</translation>
 <translation id="6243827288366940320">Ratio optimal</translation>
 <translation id="6248749904681914629">Caméra externe</translation>
@@ -66,6 +69,7 @@
 <translation id="8261506727792406068">Supprimer</translation>
 <translation id="8428213095426709021">Paramètres</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8732462232047530626">Prévisualiser les métadonnées</translation>
 <translation id="8815966864175525708">Bouton permettant de prendre une photo en mode portrait</translation>
 <translation id="8870695351537079478">Impossible de démarrer l'enregistrement</translation>
 <translation id="9045155556724273246">10 secondes</translation>

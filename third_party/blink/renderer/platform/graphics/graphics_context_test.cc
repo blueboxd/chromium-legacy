@@ -184,7 +184,7 @@ TEST_F(GraphicsContextDarkModeTest, NoDarkMode) {
 
 TEST_F(GraphicsContextDarkModeTest, DarkModeOff) {
   DarkModeSettings settings;
-  settings.mode = DarkMode::kOff;
+  settings.mode = DarkModeInversionAlgorithm::kOff;
   settings.grayscale = false;
   settings.contrast = 0;
   context_->SetDarkMode(settings);
@@ -201,7 +201,7 @@ TEST_F(GraphicsContextDarkModeTest, DarkModeOff) {
 // is replaced with |255 - c| for easy testing.
 TEST_F(GraphicsContextDarkModeTest, SimpleInvertForTesting) {
   DarkModeSettings settings;
-  settings.mode = DarkMode::kSimpleInvertForTesting;
+  settings.mode = DarkModeInversionAlgorithm::kSimpleInvertForTesting;
   settings.grayscale = false;
   settings.contrast = 0;
   context_->SetDarkMode(settings);
@@ -217,7 +217,7 @@ TEST_F(GraphicsContextDarkModeTest, SimpleInvertForTesting) {
 // Invert brightness (with gamma correction).
 TEST_F(GraphicsContextDarkModeTest, InvertBrightness) {
   DarkModeSettings settings;
-  settings.mode = DarkMode::kInvertBrightness;
+  settings.mode = DarkModeInversionAlgorithm::kInvertBrightness;
   settings.grayscale = false;
   settings.contrast = 0;
   context_->SetDarkMode(settings);
@@ -233,7 +233,7 @@ TEST_F(GraphicsContextDarkModeTest, InvertBrightness) {
 // Invert lightness (in HSL space).
 TEST_F(GraphicsContextDarkModeTest, InvertLightness) {
   DarkModeSettings settings;
-  settings.mode = DarkMode::kInvertLightness;
+  settings.mode = DarkModeInversionAlgorithm::kInvertLightness;
   settings.grayscale = false;
   settings.contrast = 0;
   context_->SetDarkMode(settings);
@@ -249,7 +249,7 @@ TEST_F(GraphicsContextDarkModeTest, InvertLightness) {
 // Invert lightness plus grayscale.
 TEST_F(GraphicsContextDarkModeTest, InvertLightnessPlusGrayscale) {
   DarkModeSettings settings;
-  settings.mode = DarkMode::kInvertLightness;
+  settings.mode = DarkModeInversionAlgorithm::kInvertLightness;
   settings.grayscale = true;
   settings.contrast = 0;
   context_->SetDarkMode(settings);
@@ -264,7 +264,7 @@ TEST_F(GraphicsContextDarkModeTest, InvertLightnessPlusGrayscale) {
 
 TEST_F(GraphicsContextDarkModeTest, InvertLightnessPlusContrast) {
   DarkModeSettings settings;
-  settings.mode = DarkMode::kInvertLightness;
+  settings.mode = DarkModeInversionAlgorithm::kInvertLightness;
   settings.grayscale = false;
   settings.contrast = 0.2;
   context_->SetDarkMode(settings);

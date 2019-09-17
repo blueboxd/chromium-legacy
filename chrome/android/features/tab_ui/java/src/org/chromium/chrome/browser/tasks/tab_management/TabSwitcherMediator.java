@@ -11,7 +11,6 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerP
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.IS_VISIBLE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.SHADOW_TOP_MARGIN;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.TOP_CONTROLS_HEIGHT;
-import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.TOP_PADDING;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListContainerProperties.VISIBILITY_LISTENER;
 
 import android.graphics.Bitmap;
@@ -238,23 +237,21 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                         .isIncognito());
         mContainerViewModel.set(ANIMATE_VISIBILITY_CHANGES, true);
 
-        // Container view takes care of padding and margin in carousel mode.
+        // Container view takes care of padding and margin in start surface.
         if (mode != TabListCoordinator.TabListMode.CAROUSEL) {
-            mContainerViewModel.set(TOP_CONTROLS_HEIGHT, fullscreenManager.getTopControlsHeight());
+            int topControlsHeight = ReturnToChromeExperimentsUtil.shouldShowOmniboxOnTabSwitcher()
+                    ? 0
+                    : fullscreenManager.getTopControlsHeight();
+            mContainerViewModel.set(TOP_CONTROLS_HEIGHT, topControlsHeight);
             mContainerViewModel.set(
                     BOTTOM_CONTROLS_HEIGHT, fullscreenManager.getBottomControlsHeight());
 
             int toolbarHeight =
                     ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
                             R.dimen.toolbar_height_no_shadow);
-            int topPadding = ReturnToChromeExperimentsUtil.shouldShowOmniboxOnTabSwitcher()
-                    ? toolbarHeight
-                    : DEFAULT_TOP_PADDING;
-            mContainerViewModel.set(TOP_PADDING, topPadding);
-            int shadowTopMargin = ReturnToChromeExperimentsUtil.shouldShowOmniboxOnTabSwitcher()
-                    ? toolbarHeight * 2
-                    : toolbarHeight;
-            mContainerViewModel.set(SHADOW_TOP_MARGIN, shadowTopMargin);
+            mContainerViewModel.set(SHADOW_TOP_MARGIN,
+                    ReturnToChromeExperimentsUtil.shouldShowOmniboxOnTabSwitcher() ? 0
+                                                                                   : toolbarHeight);
         }
 
         mContainerView = containerView;
@@ -565,8 +562,9 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
 
     @Nullable
     TabListMediator.TabActionListener getCreateGroupButtonOnClickListener(Tab tab) {
-        if (!ableToCreateGroup(tab) || FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled())
+        if (!ableToCreateGroup(tab) || FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
             return null;
+        }
 
         return tabId -> {
             Tab parentTab = TabModelUtils.getTabById(mTabModelSelector.getCurrentModel(), tabId);

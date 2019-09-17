@@ -71,7 +71,6 @@ test("components_unittests") {
     "//components/blacklist/opt_out_blacklist/sql:unit_tests",
     "//components/bookmarks/browser:unit_tests",
     "//components/bookmarks/managed:unit_tests",
-    "//components/browser_sync:unit_tests",
     "//components/browsing_data/core:unit_tests",
     "//components/bubble:unit_tests",
     "//components/captive_portal:unit_tests",
@@ -134,7 +133,6 @@ test("components_unittests") {
     "//components/search_engines:unit_tests",
     "//components/search_provider_logos:unit_tests",
     "//components/security_state/core:unit_tests",
-    "//components/send_tab_to_self:unit_tests",
     "//components/services/heap_profiling/public/cpp:unit_tests",
     "//components/services/storage:tests",
     "//components/services/unzip:unit_tests",
@@ -151,9 +149,7 @@ test("components_unittests") {
     "//components/suggestions:unit_tests",
     "//components/sync:unit_tests",
     "//components/sync_bookmarks:unit_tests",
-    "//components/sync_device_info:unit_tests",
     "//components/sync_preferences:unit_tests",
-    "//components/sync_sessions:unit_tests",
     "//components/sync_user_events:unit_tests",
     "//components/tab_count_metrics:unit_tests",
     "//components/test:run_all_unittests",
@@ -163,7 +159,6 @@ test("components_unittests") {
     "//components/ukm:unit_tests",
     "//components/undo:unit_tests",
     "//components/unified_consent:unit_tests",
-    "//components/update_client:unit_tests",
     "//components/upload_list:unit_tests",
     "//components/url_formatter:unit_tests",
     "//components/url_formatter/spoof_checks/top_domains:unit_tests",
@@ -192,6 +187,16 @@ test("components_unittests") {
     deps += [ "//components/nacl/browser:unit_tests" ]
   }
 
+  if (!is_fuchsia) {
+    deps += [
+      "//components/browser_sync:unit_tests",
+      "//components/send_tab_to_self:unit_tests",
+      "//components/sync_device_info:unit_tests",
+      "//components/sync_sessions:unit_tests",
+      "//components/update_client:unit_tests",
+    ]
+  }
+
   if (is_ios) {
     deps += [
       "//components/autofill/ios/browser:unit_tests",
@@ -213,13 +218,6 @@ test("components_unittests") {
       "//components/certificate_transparency:unit_tests",
       "//components/content_capture/browser:unit_tests",
       "//components/contextual_search/core:unit_tests",
-      "//components/crash/content/app:unit_tests",
-      "//components/crash/content/browser:unit_tests",
-      "//components/data_reduction_proxy/content/browser:unit_tests",
-      "//components/data_reduction_proxy/content/common:unit_tests",
-      "//components/data_reduction_proxy/content/renderer:unit_tests",
-      "//components/data_reduction_proxy/core/browser:unit_tests",
-      "//components/data_reduction_proxy/core/common:unit_tests",
       "//components/data_use_measurement/core:unit_tests",
       "//components/discardable_memory/common:unit_tests",
       "//components/discardable_memory/service:unit_tests",
@@ -267,6 +265,18 @@ test("components_unittests") {
       "//components/web_cache/browser:unit_tests",
       "//components/webcrypto:unit_tests",
     ]
+
+    if (!is_fuchsia) {
+      deps += [
+        "//components/crash/content/app:unit_tests",
+        "//components/crash/content/browser:unit_tests",
+        "//components/data_reduction_proxy/content/browser:unit_tests",
+        "//components/data_reduction_proxy/content/common:unit_tests",
+        "//components/data_reduction_proxy/content/renderer:unit_tests",
+        "//components/data_reduction_proxy/core/browser:unit_tests",
+        "//components/data_reduction_proxy/core/common:unit_tests",
+      ]
+    }
 
     data_deps = [
       ":components_tests_pak",
@@ -480,7 +490,9 @@ if (is_android) {
   }
 }
 
-if (!is_ios) {
+# TODO(https://crbug.com/961457): components_browsertests no-op build is not a
+# no-op under Fuchsia.
+if (!is_ios && !is_fuchsia) {
   test("components_browsertests") {
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 

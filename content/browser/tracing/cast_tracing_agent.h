@@ -9,6 +9,7 @@
 #include <string>
 
 #include "chromecast/tracing/system_tracer.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/tracing/public/cpp/base_agent.h"
 #include "services/tracing/public/mojom/tracing.mojom.h"
 
@@ -35,14 +36,15 @@ class CastTracingAgent : public tracing::BaseAgent {
   void StartTracing(const std::string& config,
                     base::TimeTicks coordinator_time,
                     Agent::StartTracingCallback callback) override;
-  void StopAndFlush(tracing::mojom::RecorderPtr recorder) override;
+  void StopAndFlush(
+      mojo::PendingRemote<tracing::mojom::Recorder> recorder) override;
 
   void StartTracingCallbackProxy(Agent::StartTracingCallback callback,
                                  bool success);
   void HandleTraceData(chromecast::SystemTracer::Status status,
                        std::string trace_data);
 
-  tracing::mojom::RecorderPtr recorder_;
+  mojo::Remote<tracing::mojom::Recorder> recorder_;
 
   // Task runner for collecting traces in a worker thread.
   scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;

@@ -203,10 +203,6 @@ bool HTMLButtonElement::IsInteractiveContent() const {
   return true;
 }
 
-bool HTMLButtonElement::SupportsAutofocus() const {
-  return true;
-}
-
 bool HTMLButtonElement::MatchesDefaultPseudoClass() const {
   // HTMLFormElement::findDefaultButton() traverses the tree. So we check
   // canBeSuccessfulSubmitButton() first for early return.

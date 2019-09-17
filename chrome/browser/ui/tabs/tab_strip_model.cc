@@ -1105,6 +1105,41 @@ void TabStripModel::AddToGroupForRestore(const std::vector<int>& indices,
     AddToNewGroupImpl(indices, group);
 }
 
+void TabStripModel::UpdateGroupForDragRevert(int index,
+                                             base::Optional<TabGroupId> group) {
+  DCHECK(!reentrancy_guard_);
+  base::AutoReset<bool> resetter(&reentrancy_guard_, true);
+
+  // Ungroup tab before moving, so that if this is the last tab in the group
+  // observers can delete that group.
+  base::Optional<TabGroupId> old_group = UngroupTab(index);
+
+  if (group.has_value()) {
+    auto add_to_group_and_notify = [&]() {
+      contents_data_[index]->set_group(group.value());
+      group_data_.at(group.value()).TabAdded();
+      NotifyGroupChange(index, old_group, group);
+    };
+
+    const bool group_exists = base::Contains(group_data_, group.value());
+    if (group_exists) {
+      add_to_group_and_notify();
+    } else {
+      auto data_it =
+          group_data_.emplace(group.value(), GroupData(TabGroupVisualData()))
+              .first;
+      add_to_group_and_notify();
+      // Notify observers about the initial visual data.
+      for (auto& observer : observers_) {
+        observer.OnTabGroupVisualDataChanged(this, group.value(),
+                                             &data_it->second.visual_data());
+      }
+    }
+  }
+
+  NotifyGroupChange(index, old_group, group);
+}
+
 void TabStripModel::RemoveFromGroup(const std::vector<int>& indices) {
   DCHECK(!reentrancy_guard_);
   base::AutoReset<bool> resetter(&reentrancy_guard_, true);

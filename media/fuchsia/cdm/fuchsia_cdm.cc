@@ -12,6 +12,13 @@
 #include "media/base/cdm_promise.h"
 #include "media/fuchsia/cdm/fuchsia_decryptor.h"
 
+#define REJECT_PROMISE_AND_RETURN_IF_BAD_CDM(promise, cdm)         \
+  if (!cdm) {                                                      \
+    promise->reject(CdmPromise::Exception::INVALID_STATE_ERROR, 0, \
+                    "CDM channel is disconnected.");               \
+    return;                                                        \
+  }
+
 namespace media {
 
 namespace {
@@ -226,10 +233,12 @@ FuchsiaCdm::FuchsiaCdm(fuchsia::media::drm::ContentDecryptionModulePtr cdm,
       session_callbacks_(std::move(callbacks)),
       decryptor_(new FuchsiaDecryptor(cdm_.get())) {
   DCHECK(cdm_);
-  cdm_.set_error_handler([](zx_status_t status) {
-    // Error will be handled in CdmSession::OnSessionError.
+  cdm_.set_error_handler([this](zx_status_t status) {
     ZX_LOG(ERROR, status) << "The fuchsia.media.drm.ContentDecryptionModule"
                           << " channel was terminated.";
+
+    // Reject all the pending promises.
+    promises_.Clear();
   });
 }
 
@@ -238,6 +247,8 @@ FuchsiaCdm::~FuchsiaCdm() = default;
 void FuchsiaCdm::SetServerCertificate(
     const std::vector<uint8_t>& certificate,
     std::unique_ptr<SimpleCdmPromise> promise) {
+  REJECT_PROMISE_AND_RETURN_IF_BAD_CDM(promise, cdm_);
+
   uint32_t promise_id = promises_.SavePromise(std::move(promise));
   cdm_->SetServerCertificate(
       certificate,
@@ -272,6 +283,8 @@ void FuchsiaCdm::CreateSessionAndGenerateRequest(
                     "init data type is not supported.");
     return;
   }
+
+  REJECT_PROMISE_AND_RETURN_IF_BAD_CDM(promise, cdm_);
 
   uint32_t promise_id = promises_.SavePromise(std::move(promise));
 
@@ -343,6 +356,8 @@ void FuchsiaCdm::UpdateSession(const std::string& session_id,
                     "session doesn't exist.");
     return;
   }
+
+  REJECT_PROMISE_AND_RETURN_IF_BAD_CDM(promise, cdm_);
 
   // Caller should NOT pass in an empty response.
   DCHECK(!response.empty());

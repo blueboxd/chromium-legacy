@@ -94,10 +94,10 @@ class LabColorFilter : public DarkModeColorFilter {
 std::unique_ptr<DarkModeColorFilter> DarkModeColorFilter::FromSettings(
     const DarkModeSettings& settings) {
   switch (settings.mode) {
-    case DarkMode::kOff:
+    case DarkModeInversionAlgorithm::kOff:
       return nullptr;
 
-    case DarkMode::kSimpleInvertForTesting:
+    case DarkModeInversionAlgorithm::kSimpleInvertForTesting:
       uint8_t identity[256], invert[256];
       for (int i = 0; i < 256; ++i) {
         identity[i] = i;
@@ -106,15 +106,15 @@ std::unique_ptr<DarkModeColorFilter> DarkModeColorFilter::FromSettings(
       return std::make_unique<SkColorFilterWrapper>(
           SkTableColorFilter::MakeARGB(identity, invert, invert, invert));
 
-    case DarkMode::kInvertBrightness:
+    case DarkModeInversionAlgorithm::kInvertBrightness:
       return std::make_unique<SkColorFilterWrapper>(SkColorFilterFromSettings(
           SkHighContrastConfig::InvertStyle::kInvertBrightness, settings));
 
-    case DarkMode::kInvertLightness:
+    case DarkModeInversionAlgorithm::kInvertLightness:
       return std::make_unique<SkColorFilterWrapper>(SkColorFilterFromSettings(
           SkHighContrastConfig::InvertStyle::kInvertLightness, settings));
 
-    case DarkMode::kInvertLightnessLAB:
+    case DarkModeInversionAlgorithm::kInvertLightnessLAB:
       return std::make_unique<LabColorFilter>();
   }
   NOTREACHED();

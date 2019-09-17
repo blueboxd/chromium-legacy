@@ -244,11 +244,12 @@ void CrOSTracingAgent::StartTracing(const std::string& config,
                              base::Unretained(this), std::move(callback)));
 }
 
-void CrOSTracingAgent::StopAndFlush(tracing::mojom::RecorderPtr recorder) {
+void CrOSTracingAgent::StopAndFlush(
+    mojo::PendingRemote<tracing::mojom::Recorder> recorder) {
   // This may be called even if we are not tracing.
   if (!session_)
     return;
-  recorder_ = std::move(recorder);
+  recorder_.Bind(std::move(recorder));
   session_->StopTracing(
       base::BindOnce(&CrOSTracingAgent::RecorderProxy, base::Unretained(this)));
 }

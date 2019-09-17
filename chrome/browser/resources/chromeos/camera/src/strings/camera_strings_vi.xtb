@@ -19,6 +19,7 @@
 <translation id="2501953888035679275">Chụp ảnh và quay video bằng máy ảnh.</translation>
 <translation id="2549985041256363841">Bắt đầu ghi</translation>
 <translation id="2599796128805996109">Máy ảnh mặt sau</translation>
+<translation id="2912439424121107408">Thiết bị này không hỗ trợ chế độ Chuyên gia</translation>
 <translation id="2968794441791257519">Ảnh và video mà bạn chụp và quay bằng máy ảnh sẽ được chuyển đến thư mục Tệp đã tải xuống. Bạn có thể truy cập vào những nội dung này trong ứng dụng Files.
 
         Ứng dụng có quyền truy cập vào bộ nhớ sẽ có quyền truy cập vào ảnh và video của bạn.</translation>
@@ -41,10 +42,12 @@
         Vui lòng kiểm tra xem máy ảnh có được kết nối đúng cách không.</translation>
 <translation id="5152121255775685072">Truy cập thư viện</translation>
 <translation id="5671277269877808209">Vuông</translation>
+<translation id="5775960006311140197">Chế độ Chuyên gia</translation>
 <translation id="5869546221129391014">Lưới</translation>
 <translation id="6040143037577758943">Đóng</translation>
 <translation id="6073451960410192870">Dừng ghi</translation>
 <translation id="6165508094623778733">Tìm hiểu thêm</translation>
+<translation id="6197807149213783179">Lưu siêu dữ liệu</translation>
 <translation id="6233780560267770709">3 x 3</translation>
 <translation id="6243827288366940320">Tỷ lệ vàng</translation>
 <translation id="6248749904681914629">Máy ảnh gắn ngoài</translation>
@@ -66,6 +69,7 @@
 <translation id="8261506727792406068">Xóa</translation>
 <translation id="8428213095426709021">Cài đặt</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8732462232047530626">Xem trước siêu dữ liệu</translation>
 <translation id="8815966864175525708">Chuyển sang chụp ảnh chân dung</translation>
 <translation id="8870695351537079478">Không thể bắt đầu quay</translation>
 <translation id="9045155556724273246">10 giây</translation>

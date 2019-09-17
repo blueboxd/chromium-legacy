@@ -176,36 +176,6 @@ public class DownloadManagerServiceTest {
     }
 
     /**
-     * Mock implementation of the DownloadSnackbarController.
-     */
-    static class MockDownloadSnackbarController extends DownloadSnackbarController {
-        private boolean mSucceeded;
-        private boolean mFailed;
-
-        public void waitForSnackbarControllerToFinish(final boolean success) {
-            CriteriaHelper.pollInstrumentationThread(
-                    new Criteria("Failed while waiting for all calls to complete.") {
-                        @Override
-                        public boolean isSatisfied() {
-                            return success ? mSucceeded : mFailed;
-                        }
-                    });
-        }
-
-        @Override
-        public void onDownloadSucceeded(
-                DownloadInfo downloadInfo, int notificationId, long downloadId,
-                boolean canBeResolved, boolean usesAndroidDownloadManager) {
-            mSucceeded = true;
-        }
-
-        @Override
-        public void onDownloadFailed(String errorMessage, boolean showAllDownloads) {
-            mFailed = true;
-        }
-    }
-
-    /**
      * A set that each object can be matched ^only^ once. Once matched, the object
      * will be removed from the set. This is useful to write expectations
      * for a sequence of calls where order of calls is not defined. Client can
@@ -251,7 +221,6 @@ public class DownloadManagerServiceTest {
 
     private static class DownloadManagerServiceForTest extends DownloadManagerService {
         boolean mResumed;
-        DownloadSnackbarController mDownloadSnackbarController;
 
         public DownloadManagerServiceForTest(
                 MockDownloadNotifier mockNotifier, long updateDelayInMillis) {
@@ -270,18 +239,6 @@ public class DownloadManagerServiceTest {
         protected void scheduleUpdateIfNeeded() {
             TestThreadUtils.runOnUiThreadBlocking(
                     () -> DownloadManagerServiceForTest.super.scheduleUpdateIfNeeded());
-        }
-
-        @Override
-        protected void setDownloadSnackbarController(
-                DownloadSnackbarController downloadSnackbarController) {
-            mDownloadSnackbarController = downloadSnackbarController;
-            super.setDownloadSnackbarController(downloadSnackbarController);
-        }
-
-        @Override
-        protected void onDownloadFailed(DownloadItem downloadItem, int reason) {
-            mDownloadSnackbarController.onDownloadFailed("", false);
         }
     }
 
@@ -402,18 +359,16 @@ public class DownloadManagerServiceTest {
     public void testDownloadCompletedIsCalled() throws InterruptedException {
         if (useDownloadOfflineContentProvider()) return;
         MockDownloadNotifier notifier = new MockDownloadNotifier();
-        MockDownloadSnackbarController snackbarController = new MockDownloadSnackbarController();
         createDownloadManagerService(notifier, UPDATE_DELAY_FOR_TEST);
         TestThreadUtils.runOnUiThreadBlocking(
                 (Runnable) () -> DownloadManagerService.setDownloadManagerService(mService));
-        mService.setDownloadSnackbarController(snackbarController);
+        DownloadInfoBarController infoBarController = mService.getInfoBarController(false);
         // Try calling download completed directly.
         DownloadInfo successful = getDownloadInfo();
         notifier.expect(MethodID.DOWNLOAD_SUCCESSFUL, successful);
 
         mService.onDownloadCompleted(successful);
         notifier.waitTillExpectedCallsComplete();
-        snackbarController.waitForSnackbarControllerToFinish(true);
 
         // Now check that a successful notification appears after a download progress.
         DownloadInfo progress = getDownloadInfo();
@@ -423,7 +378,6 @@ public class DownloadManagerServiceTest {
         Thread.sleep(DELAY_BETWEEN_CALLS);
         mService.onDownloadCompleted(progress);
         notifier.waitTillExpectedCallsComplete();
-        snackbarController.waitForSnackbarControllerToFinish(true);
     }
 
     @Test
@@ -431,11 +385,9 @@ public class DownloadManagerServiceTest {
     @Feature({"Download"})
     public void testDownloadFailedIsCalled() throws InterruptedException {
         MockDownloadNotifier notifier = new MockDownloadNotifier();
-        MockDownloadSnackbarController snackbarController = new MockDownloadSnackbarController();
         createDownloadManagerService(notifier, UPDATE_DELAY_FOR_TEST);
         TestThreadUtils.runOnUiThreadBlocking(
                 (Runnable) () -> DownloadManagerService.setDownloadManagerService(mService));
-        mService.setDownloadSnackbarController(snackbarController);
         // Check that if an interrupted download cannot be resumed, it will trigger a download
         // failure.
         DownloadInfo failure =
@@ -443,7 +395,6 @@ public class DownloadManagerServiceTest {
         notifier.expect(MethodID.DOWNLOAD_FAILED, failure);
         mService.onDownloadInterrupted(failure, false);
         notifier.waitTillExpectedCallsComplete();
-        snackbarController.waitForSnackbarControllerToFinish(false);
     }
 
     @Test

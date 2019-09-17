@@ -233,6 +233,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="27527859628328957">Ugrás a következő fókuszálható elemre</translation>
 <translation id="2770781857296573485">Csoportfelfedezés megadása</translation>
 <translation id="2777845298774924149">Kilépett</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{+#}other{+#}}</translation>
 <translation id="2784959586797362050">Mint mindig, a Keresés+a billentyűkombináció, majd az i billentyű lenyomása után küldhet nekünk közvetlen visszajelzést. Kíváncsian várjuk véleményét.</translation>
 <translation id="2800204403141299078">Nincs több eltérő elem.</translation>
 <translation id="2800780099804980316">Nincs előző 1-es szintű címsor.</translation>
@@ -715,6 +716,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="5956928062748260866">Párbeszédpanel</translation>
 <translation id="5963413905009737549">Szakasz</translation>
 <translation id="5968607524793740041">Helyi menü megjelenítése</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{# elemmel}other{# elemmel}}</translation>
 <translation id="5981446804259161541">Világos ciánkék</translation>
 <translation id="5983179082906765664">Navigáció részletezettségének növelése</translation>
 <translation id="5992285135956208197">Grafikus dokumentum</translation>

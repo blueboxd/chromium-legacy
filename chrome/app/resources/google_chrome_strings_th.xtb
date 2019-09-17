@@ -50,6 +50,8 @@
 <translation id="2094919256425865063">ปิด Chrome ใช่ไหม</translation>
 <translation id="2120620239521071941">การดำเนินการนี้จะลบ <ph name="ITEMS_COUNT" /> รายการออกจากอุปกรณ์นี้ หากต้องการดึงข้อมูลภายหลัง ให้ลงชื่อเข้าใช้ Chrome ด้วย <ph name="USER_EMAIL" /></translation>
 <translation id="2123055963409958220">ช่วยให้ Chrome ดียิ่งขึ้นด้วยการรายงาน<ph name="BEGIN_LINK" />การตั้งค่าปัจจุบัน<ph name="END_LINK" /></translation>
+<translation id="2128103434102193461">สำหรับรายละเอียดของ Chrome OS โปรดดู<ph name="LINK_BEGIN" />เกี่ยวกับ Chrome OS<ph name="LINK_END" /></translation>
+<translation id="2151406531797534936">โปรดรีสตาร์ท Chrome ตอนนี้เลย</translation>
 <translation id="216054706567564023">ติดตั้ง Chrome ในโทรศัพท์ เราจะส่ง SMS ไปยังหมายเลขโทรศัพท์สำหรับการกู้คืนบัญชีของคุณ</translation>
 <translation id="2246246234298806438">Google Chrome ไม่สามารถแสดงหน้าตัวอย่างก่อนพิมพ์หากไม่มีโปรแกรมดู PDF ในตัว</translation>
 <translation id="2252923619938421629">ช่วยให้ Google Chrome ดียิ่งขึ้นด้วยการรายงานการตั้งค่าปัจจุบัน</translation>
@@ -217,6 +219,7 @@
 <translation id="7589360514048265910">คอมพิวเตอร์เครื่องนี้จะไม่ได้รับการอัปเดตจาก Google Chrome อีก เนื่องจากระบบไม่รองรับ Mac OS X 10.9 แล้ว</translation>
 <translation id="7592736734348559088">Google Chrome ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากรายละเอียดการลงชื่อเข้าใช้บัญชีของคุณล้าสมัย</translation>
 <translation id="7626032353295482388">ยินดีต้อนรับสู่ Chrome</translation>
+<translation id="7629695634924605473">Chrome จะแจ้งให้ทราบหากมีคนล่วงรู้รหัสผ่านของคุณ</translation>
 <translation id="7641148173327520642">ผู้ดูแลระบบได้กำหนดค่าให้ Google Chrome เปิด <ph name="ALTERNATIVE_BROWSER_NAME" /> เพื่อเข้าถึง <ph name="TARGET_URL_HOSTNAME" /></translation>
 <translation id="7651907282515937834">โลโก้ Chrome Enterprise</translation>
 <translation id="7747138024166251722">โปรแกรมติดตั้งสร้างไดเรกทอรีชั่วคราวไม่ได้ โปรดตรวจสอบพื้นที่ดิสก์ว่างและการอนุญาตให้ติดตั้งซอฟต์แวร์</translation>

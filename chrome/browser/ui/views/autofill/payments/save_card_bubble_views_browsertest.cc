@@ -1950,8 +1950,7 @@ IN_PROC_BROWSER_TEST_F(
 // dynamic change form.
 IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTest,
                        Logic_CanOfferToSaveDynamicForm) {
-  scoped_feature_list_.InitWithFeatures(
-      {features::kAutofillUpstream, features::kAutofillImportDynamicForms}, {});
+  scoped_feature_list_.InitAndEnableFeature(features::kAutofillUpstream);
 
   // Start sync.
   harness_->SetupSync();

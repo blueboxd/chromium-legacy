@@ -51,6 +51,9 @@
 <translation id="2094919256425865063">Suljetaanko Chrome silti?</translation>
 <translation id="2120620239521071941"><ph name="ITEMS_COUNT" /> kohdetta poistetaan pysyvästi tältä laitteelta. Jos haluat palauttaa tiedot myöhemmin, kirjaudu Chromeen käyttäjänä <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Auta parantamaan Chromea ilmoittamalla <ph name="BEGIN_LINK" />nykyiset asetukset<ph name="END_LINK" />.</translation>
+<translation id="2128103434102193461">Tutustu Chrome-käyttöjärjestelmään lukemalla <ph name="LINK_BEGIN" />
+      Tietoja Chrome-käyttöjärjestelmästä<ph name="LINK_END" /></translation>
+<translation id="2151406531797534936">Käynnistä Chrome uudelleen nyt</translation>
 <translation id="216054706567564023">Asenna Chrome puhelimellesi. Lähetämme tekstiviestin palauttamisen puhelinnumeroosi.</translation>
 <translation id="2246246234298806438">Google Chrome ei voi näyttää tulostusesikatselua, koska PDF-katseluohjelma puuttuu.</translation>
 <translation id="2252923619938421629">Auta parantamaan Google Chromea ilmoittamalla nykyiset asetukset.</translation>
@@ -219,6 +222,7 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="7589360514048265910">Tämän tietokone ei enää saa Google Chrome ‑päivityksiä, koska Mac OS X 10.9:ää ei enää tueta.</translation>
 <translation id="7592736734348559088">Google Chrome ei voinut synkronoida tietoja, sillä tilin kirjautumistiedot ovat vanhentuneet.</translation>
 <translation id="7626032353295482388">Tervetuloa Chromeen</translation>
+<translation id="7629695634924605473">Chrome ilmoittaa sinulle, jos salasanasi ovat vaarantuneet</translation>
 <translation id="7641148173327520642">Järjestelmänvalvojasi on määrittänyt Chromen avaamaan osoitteen <ph name="TARGET_URL_HOSTNAME" /> selaimella <ph name="ALTERNATIVE_BROWSER_NAME" />.</translation>
 <translation id="7651907282515937834">Chrome Enterprise ‑logo</translation>
 <translation id="7747138024166251722">Asennusohjelma ei pystynyt luomaan väliaikaista hakemistoa. Tarkista, että käytettävissä on riittävästi levytilaa ja että sinulla on oikeus asentaa ohjelmia.</translation>

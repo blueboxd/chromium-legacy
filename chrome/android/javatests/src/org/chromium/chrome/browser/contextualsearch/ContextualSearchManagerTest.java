@@ -66,6 +66,7 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchFakeServer.F
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchInternalStateController.InternalState;
 import org.chromium.chrome.browser.contextualsearch.ResolvedSearchTerm.CardTag;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
+import org.chromium.chrome.browser.findinpage.FindToolbar;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
 import org.chromium.chrome.browser.locale.LocaleManager;
@@ -74,7 +75,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.browser.widget.findinpage.FindToolbar;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -159,7 +159,7 @@ public class ContextualSearchManagerTest {
      * @return The name of the outcome if the give parameter is an outcome, or {@code null} if it's
      *         not.
      */
-    private final static String expectedOutcomeName(
+    private static final String expectedOutcomeName(
             @ContextualSearchInteractionRecorder.Feature int feature) {
         switch (feature) {
                 // We don't log whether the quick action was clicked unless we actually have a
@@ -177,7 +177,7 @@ public class ContextualSearchManagerTest {
      * @return The name of the outcome if it's expected to be logged, or {@code null} if it's not
      *         expected to be logged.
      */
-    private final static String expectedFeatureName(
+    private static final String expectedFeatureName(
             @ContextualSearchInteractionRecorder.Feature int feature) {
         switch (feature) {
             // We don't log previous user impressions and CTR if not available for the

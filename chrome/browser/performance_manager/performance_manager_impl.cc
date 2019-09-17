@@ -29,7 +29,6 @@
 #include "chrome/browser/performance_manager/graph/worker_node_impl.h"
 #include "chrome/browser/performance_manager/observers/isolation_context_metrics.h"
 #include "chrome/browser/performance_manager/observers/metrics_collector.h"
-#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_features.h"
 
 #if defined(OS_LINUX)
@@ -292,13 +291,9 @@ void PerformanceManagerImpl::BatchDeleteNodesImpl(
 }
 
 void PerformanceManagerImpl::OnStart() {
-  // Some tests don't initialize the service manager connection, so this class
-  // tolerates its absence for tests.
-  auto* connector = content::GetSystemConnector();
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&PerformanceManagerImpl::OnStartImpl,
-                                base::Unretained(this),
-                                connector ? connector->Clone() : nullptr));
+  task_runner_->PostTask(FROM_HERE,
+                         base::BindOnce(&PerformanceManagerImpl::OnStartImpl,
+                                        base::Unretained(this)));
 }
 
 void PerformanceManagerImpl::RunCallbackWithGraphImpl(
@@ -315,8 +310,7 @@ void PerformanceManagerImpl::RunCallbackWithGraph(
   std::move(graph_callback).Run(&graph_);
 }
 
-void PerformanceManagerImpl::OnStartImpl(
-    std::unique_ptr<service_manager::Connector> connector) {
+void PerformanceManagerImpl::OnStartImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   graph_.PassToGraph(std::make_unique<FreezeOriginTrialPolicyAggregator>());
@@ -339,10 +333,7 @@ void PerformanceManagerImpl::OnStartImpl(
 #endif  // BUILDFLAG(USE_TCMALLOC)
 #endif  // defined(OS_LINUX)
 
-  if (connector) {
-    ukm_recorder_ = ukm::MojoUkmRecorder::Create(connector.get());
-    graph_.set_ukm_recorder(ukm_recorder_.get());
-  }
+  graph_.set_ukm_recorder(ukm::UkmRecorder::Get());
 }
 
 }  // namespace performance_manager

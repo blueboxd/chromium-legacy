@@ -90,6 +90,8 @@
 <translation id="4230135487732243613">Vil du koble Chromium-dataene dine til denne kontoen?</translation>
 <translation id="4271805377592243930">Få hjelp med Chromium</translation>
 <translation id="4285930937574705105">Installeringen mislyktes på grunn av en uspesifisert feil. Lukk Chromium hvis nettleseren kjører, og prøv på nytt.</translation>
+<translation id="4371648796594901282">For detaljer om Chromium OS, se <ph name="LINK_BEGIN" />
+      Om Chromium OS<ph name="LINK_END" /></translation>
 <translation id="4407044323746248786">Vil du avslutte Chromium likevel?</translation>
 <translation id="4415566066719264597">La Chromium kjøre i bakgrunnen</translation>
 <translation id="4423735387467980091">Tilpass og kontrollér Chromium</translation>
@@ -122,6 +124,7 @@
 <translation id="5623402015214259806">{0,plural, =0{En Chromium-oppdatering er tilgjengelig}=1{En Chromium-oppdatering er tilgjengelig}other{En Chromium-oppdatering har vært tilgjengelig i # dager}}</translation>
 <translation id="5631814766731275228">Navn og bilde i Chromium</translation>
 <translation id="5634636535844844681">Chromium krever Windows 7 eller nyere.</translation>
+<translation id="5653831366781983928">Start Chromium på nytt nå</translation>
 <translation id="5680901439334282664">logg på Chromium</translation>
 <translation id="5698481217667032250">Vis Chromium på dette språket</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -164,6 +167,7 @@ Det er mulig at enkelte funksjoner ikke er tilgjengelige. Angi en annen profilka
 <translation id="6734080038664603509">Oppdater &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium er allerede installert for alle brukerne på datamaskinen din.</translation>
 <translation id="6810143991807788455">Bidra til å gjøre Chromium bedre ved å rapportere inn de gjeldende innstillingene</translation>
+<translation id="6847869444787758381">Med Chromium får du beskjed hvis passordene dine noensinne utsettes for sikkerhetsbrudd</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (kopiert til Chromium)</translation>
 <translation id="6868056391275687737">Andre kopier av Chromium kjører. For å oppdatere må du lukke dem.</translation>

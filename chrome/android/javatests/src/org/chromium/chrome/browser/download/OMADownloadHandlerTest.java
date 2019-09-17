@@ -95,42 +95,12 @@ public class OMADownloadHandlerTest {
         }
     }
 
-    /**
-     * Mock implementation of the DownloadSnackbarController.
-     */
-    static class MockDownloadSnackbarController extends DownloadSnackbarController {
-        public boolean mSucceeded;
-        public boolean mFailed;
-
-        public void waitForSnackbarControllerToFinish(final boolean success) {
-            CriteriaHelper.pollInstrumentationThread(
-                    new Criteria("Failed while waiting for all calls to complete.") {
-                        @Override
-                        public boolean isSatisfied() {
-                            return success ? mSucceeded : mFailed;
-                        }
-                    });
-        }
-
-        @Override
-        public void onDownloadSucceeded(DownloadInfo downloadInfo, int notificationId,
-                long downloadId, boolean canBeResolved, boolean usesAndroidDownloadManager) {
-            mSucceeded = true;
-        }
-
-        @Override
-        public void onDownloadFailed(String errorMessage, boolean showAllDownloads) {
-            mFailed = true;
-        }
-    }
-
     private static class OMADownloadHandlerForTest extends OMADownloadHandler {
         public String mNofityURI;
         public long mDownloadId;
 
-        public OMADownloadHandlerForTest(
-                Context context, DownloadSnackbarController downloadSnackbarController) {
-            super(context, downloadSnackbarController);
+        public OMADownloadHandlerForTest(Context context) {
+            super(context);
             addObserverForTest(downloadId -> { mDownloadId = downloadId; });
         }
 
@@ -350,10 +320,7 @@ public class OMADownloadHandlerTest {
                 UrlUtils.getIsolatedTestFilePath("chrome/test/data/android/download/download.txt"),
                 4, true);
 
-        final MockDownloadSnackbarController snackbarController =
-                new MockDownloadSnackbarController();
-        final OMADownloadHandlerForTest omaHandler =
-                new OMADownloadHandlerForTest(context, snackbarController);
+        final OMADownloadHandlerForTest omaHandler = new OMADownloadHandlerForTest(context);
 
         // Write a few pending downloads into shared preferences.
         Set<String> pendingOmaDownloads = new HashSet<>();
@@ -406,10 +373,7 @@ public class OMADownloadHandlerTest {
 
         try {
             DownloadInfo info = new DownloadInfo.Builder().build();
-            final MockDownloadSnackbarController snackbarController =
-                    new MockDownloadSnackbarController();
-            final OMADownloadHandlerForTest omaHandler = new OMADownloadHandlerForTest(
-                    context, snackbarController) {
+            final OMADownloadHandlerForTest omaHandler = new OMADownloadHandlerForTest(context) {
                 @Override
                 public void onReceive(Context context, Intent intent) {
                     // Ignore all the broadcasts.

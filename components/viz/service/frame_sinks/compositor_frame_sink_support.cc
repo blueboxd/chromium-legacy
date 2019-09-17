@@ -323,8 +323,10 @@ void CompositorFrameSinkSupport::DidNotProduceFrame(const BeginFrameAck& ack) {
   if (last_activated_surface_id_.is_valid())
     surface_manager_->SurfaceModified(last_activated_surface_id_, modified_ack);
 
-  if (begin_frame_source_)
+  if (begin_frame_source_) {
     begin_frame_source_->DidFinishFrame(this);
+    frame_sink_manager_->DidFinishFrame(frame_sink_id_, last_begin_frame_args_);
+  }
 }
 
 void CompositorFrameSinkSupport::SubmitCompositorFrame(
@@ -528,8 +530,10 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
       break;
   }
 
-  if (begin_frame_source_)
+  if (begin_frame_source_) {
     begin_frame_source_->DidFinishFrame(this);
+    frame_sink_manager_->DidFinishFrame(frame_sink_id_, last_begin_frame_args_);
+  }
 
   return SubmitResult::ACCEPTED;
 }
@@ -637,6 +641,7 @@ void CompositorFrameSinkSupport::OnBeginFrame(const BeginFrameArgs& args) {
                            "IssueBeginFrame");
     last_frame_time_ = args.frame_time;
     client_->OnBeginFrame(copy_args, std::move(frame_timing_details_));
+    frame_sink_manager_->DidBeginFrame(frame_sink_id_, args);
     frame_timing_details_.clear();
     UpdateNeedsBeginFramesInternal();
   }

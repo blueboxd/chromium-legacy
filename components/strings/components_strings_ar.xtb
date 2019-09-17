@@ -71,6 +71,7 @@
 <translation id="1292701964462482250">‏"هناك برامج على جهاز الكمبيوتر تمنع اتصال Chrome بالويب بأمان" (أجهزة الكمبيوتر المزوّدة بنظام التشغيل Windows فقط)</translation>
 <translation id="1294154142200295408">صيغ سطر الأوامر</translation>
 <translation id="129553762522093515">المغلقة حديثًا</translation>
+<translation id="1298536327547837046">فحص البرامج الضارة</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />جرّب محو ملفات تعريف الارتباط<ph name="END_LINK" /></translation>
 <translation id="1307966114820526988">الميزات المتوقفة</translation>
 <translation id="1320233736580025032">‏Prc1 (مغلف)</translation>
@@ -167,6 +168,7 @@
 <translation id="1734878702283171397">جرّب الاتصال بمشرف النظام.</translation>
 <translation id="1740951997222943430">أدخِل شهر انتهاء صلاحية صحيح</translation>
 <translation id="1743520634839655729">‏للدفع بشكلٍ أسرع في المرة القادمة، يمكنك حفظ البطاقة والاسم وعنوان إرسال الفواتير في حسابك على Google وفي هذا الجهاز.</translation>
+<translation id="1743570585616704562">لم يتم التعرف عليها</translation>
 <translation id="1745880797583122200">إدارة متصفِّحك</translation>
 <translation id="17513872634828108">علامات التبويب المفتوحة</translation>
 <translation id="1753706481035618306">رقم الصفحة</translation>
@@ -428,6 +430,7 @@
 <translation id="320323717674993345">إلغاء الدفع</translation>
 <translation id="3207960819495026254">تمت إضافتها إلى الإشارات المرجعية.</translation>
 <translation id="3209034400446768650">إمكانية تحصيل الصفحة للرسوم</translation>
+<translation id="3215092763954878852">‏تعذّر استخدام WebAuthn</translation>
 <translation id="3225919329040284222">قدم الخادم شهادة لا تتطابق مع التوقعات المضمّنة. تم تضمين هذه التوقعات للحصول على مواقع ويب موثوقة وآمنة جدًا لتوفير الحماية لك.</translation>
 <translation id="3226128629678568754">اضغط على زر إعادة التحميل لإعادة إرسال البيانات المطلوبة لتحميل الصفحة.</translation>
 <translation id="3227137524299004712">الميكروفون</translation>
@@ -564,6 +567,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{بدون}=1{من موقع واحد }two{من موقعين (#) }few{من # مواقع }many{من # موقعًا }other{من # موقع }}</translation>
 <translation id="397105322502079400">جارٍ الحساب...</translation>
 <translation id="3973234410852337861">تم حظر <ph name="HOST_NAME" /></translation>
+<translation id="3981540111851280311">‏فعَّل <ph name="ENROLLMENT_DOMAIN" /> "الحماية من التهديدات من خلال Chrome Enterprise" على متصفحك. تتضمن ميزة "الحماية من التهديدات من خلال Chrome Enterprise" إذن الوصول إلى بعض بياناتك.</translation>
 <translation id="3987940399970879459">أقل من ميغابايت واحد</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{صفحة ويب واحدة مجاورة}zero{# صفحات ويب مجاورة}two{صفحتا ويب (#) مجاورتان}few{# صفحات ويب مجاورة}many{# صفحة ويب مجاورة}other{# صفحة ويب مجاورة}}</translation>
 <translation id="4030383055268325496">تراجع عن الإ&amp;ضافة</translation>
@@ -632,6 +636,7 @@
 <translation id="4277028893293644418">إعادة تعيين كلمة المرور</translation>
 <translation id="4279811152705618813">يدير <ph name="ENROLLMENT_DOMAIN" /> الجهاز <ph name="DEVICE_TYPE" />.</translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{‏تم حفظ هذه البطاقة في حسابك على Google}zero{‏تم حفظ هذه البطاقات في حسابك على Google}two{‏تم حفظ هاتين البطاقتين في حسابك على Google}few{‏تم حفظ هذه البطاقات في حسابك على Google}many{‏تم حفظ هذه البطاقات في حسابك على Google}other{‏تم حفظ هذه البطاقات في حسابك على Google}}</translation>
+<translation id="428847186335018806">‏عليك فحص الملفات التي تم تنزيلها أو تحميلها في Chrome.</translation>
 <translation id="42981349822642051">توسيع</translation>
 <translation id="4302965934281694568">‏Chou3 (مغلف)</translation>
 <translation id="4305817255990598646">تبديل</translation>
@@ -670,6 +675,7 @@
 <translation id="4506176782989081258">خطأ في عملية التحقق: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4506599922270137252">الاتصال بمشرف النظام</translation>
 <translation id="450710068430902550">المشاركة مع المشرف</translation>
+<translation id="4508814173490746936">تعذُّر استخدام رقم التعريف باللمس</translation>
 <translation id="4510487217173779431">‏Chou4 (مغلف)</translation>
 <translation id="4515275063822566619">‏يتم أخذ البطاقات والعناوين من Chrome وحسابك على Google (<ph name="ACCOUNT_EMAIL" />)، ويمكنك إدارتها في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">‏Comm-10 (مغلف)</translation>
@@ -765,6 +771,7 @@
 <translation id="5045550434625856497">كلمة مرور غير صحيحة</translation>
 <translation id="5056549851600133418">مقالات لك</translation>
 <translation id="5068524481479508725">A10</translation>
+<translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(ملف تعريف ارتباط واحد قيد الاستخدام)}zero{(لا تتوفر أيُّ ملفات تعريف ارتباط (#) قيد الاستخدام)}two{(ملفا تعريف ارتباط (#) قيد الاستخدام)}few{(# ملفات تعريف ارتباط قيد الاستخدام)}many{(# ملف تعريف ارتباط قيد الاستخدام)}other{(# ملف تعريف ارتباط قيد الاستخدام)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />التحقق من عنوان الخادم الوكيل<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">شهادة الخادم ليست صالحة حاليًا.</translation>
 <translation id="5087580092889165836">إضافة بطاقة</translation>
@@ -993,6 +1000,7 @@
 <translation id="6302269476990306341">‏جارٍ إيقاف "مساعد Google" على Chrome</translation>
 <translation id="6305205051461490394">يتعذر الوصول إلى <ph name="URL" />.</translation>
 <translation id="6321917430147971392">التحقق من إعدادات نظام أسماء النطاقات</translation>
+<translation id="6322182122604171028">‏تعذُّر استخدام Windows Hello</translation>
 <translation id="6328639280570009161">تجربة إيقاف التنبؤ بإجراءات الشبكة</translation>
 <translation id="6328784461820205019">‏"لا يتمتَّع اتصالك بالخصوصية" أو "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" أو "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" أو "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" أو "خطأ في شهادة طبقة المقابس الآمنة (SSL)"</translation>
 <translation id="6328786501058569169">هذا الموقع مخادع</translation>
@@ -1016,6 +1024,7 @@
 <translation id="6433490469411711332">تعديل معلومات الاتصال</translation>
 <translation id="6433595998831338502">رفض <ph name="HOST_NAME" /> الاتصال.</translation>
 <translation id="6434309073475700221">إلغاء</translation>
+<translation id="6435221585574090192">‏يمكنك مشاركة البيانات حول الأحداث الأمنية التي تم وضع علامة عليها من خلال "الحماية من التهديدات باستخدام Chrome Enterprise" مع المشرف. يمكن أن تتضمن هذه البيانات عناوين URL للصفحة واسم الملف والبيانات الوصفية للملف واسم المستخدم لجهازك واسم مستخدم Chrome.</translation>
 <translation id="6440503408713884761">تم تجاهله</translation>
 <translation id="6446163441502663861">‏Kahu (مغلف)</translation>
 <translation id="6446608382365791566">إضافة مزيد من المعلومات</translation>
@@ -1060,6 +1069,7 @@
 <translation id="6671697161687535275">‏هل تريد إزالة اقتراح النموذج من Chromium؟</translation>
 <translation id="6685834062052613830">الخروج وإكمال الإعداد</translation>
 <translation id="6689271823431384964">‏يتيح لك Chrome حفظ بطاقاتك في حسابك على Google لأنك سجَّلت الدخول. يمكنك تغيير هذا السلوك في الإعدادات. ويتم الحصول على اسم حامل البطاقة من حسابك.</translation>
+<translation id="6707256370811247129">‏عليك فحص محتوى ذاكرة التخزين المؤقت والملفات التي تم تنزيلها أو تحميلها في Chrome.</translation>
 <translation id="6710213216561001401">السابق</translation>
 <translation id="6710594484020273272">&lt;إدخال عبارة البحث&gt;</translation>
 <translation id="671076103358959139">الرمز المميّز للتسجيل:</translation>
@@ -1078,6 +1088,7 @@
 <translation id="681021252041861472">الحقل مطلوب</translation>
 <translation id="6810899417690483278">رقم تعريف التخصيص</translation>
 <translation id="6825578344716086703">‏لقد حاولت الوصول إلى <ph name="DOMAIN" />، ولكن قدَّم الخادم شهادة موقّعة باستخدام خوارزمية توقيع ضعيفة (مثل SHA-1)، مما يعني أن بيانات اعتماد الأمان التي قدمها الخادم من المحتمل أنه تم تزييفها، وأن الخادم قد لا يكون هو الخادم الذي تتوقعه (قد تكون على اتصال بأحد المهاجمين).</translation>
+<translation id="6826370046007623921">منع فقدان البيانات</translation>
 <translation id="6831043979455480757">ترجمة</translation>
 <translation id="6839929833149231406">المنطقة</translation>
 <translation id="6852204201400771460">هل تريد إعادة تحميل التطبيق؟</translation>
@@ -1224,6 +1235,7 @@
 <translation id="7542995811387359312">تم إيقاف الملء التلقائي لبطاقة الائتمان لأن هذا النموذج لا يستخدم اتصالاً آمنًا.</translation>
 <translation id="7548892272833184391">إصلاح أخطاء الاتصال</translation>
 <translation id="7549584377607005141">تتطلب صفحة الويب هذه البيانات التي أدخلتها في وقت سابق لعرضها بشكل صحيح. يمكنك إرسال هذه المعلومات مرة أخرى ولكن بذلك ستكرر أي إجراء اتخذته هذه الصفحة في وقت سابق.</translation>
+<translation id="7550637293666041147">‏اسم مستخدم الجهاز واسم مستخدم Chrome</translation>
 <translation id="7552846755917812628">جرّب النصائح التالية:</translation>
 <translation id="7554791636758816595">علامة تبويب جديدة</translation>
 <translation id="7564049878696755256">‏قد تفقد إمكانية الوصول إلى حسابك على <ph name="ORG_NAME" /> أو تتعرض لسرقة هويتك. لذا يوصي Chrome بتغيير كلمة مرورك الآن.</translation>
@@ -1238,6 +1250,7 @@
 <translation id="7610193165460212391">القيمة خارج النطاق <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">تاريخ انتهاء الصلاحية: <ph name="EXPIRATION_MONTH" /> / <ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">‏لديك فعلاً بيانات تم تشفيرها باستخدام نسخة أخرى من كلمة مرور حسابك في Google. يُرجى إدخالها أدناه.</translation>
+<translation id="7625784245512586808">‏الحماية من التهديدات من خلال Chrome Enterprise</translation>
 <translation id="7633909222644580952">تقارير الأعطال وبيانات الأداء</translation>
 <translation id="7637571805876720304">‏هل تريد إزالة بطاقة الائتمان من Chromium؟</translation>
 <translation id="7638605456503525968">المنافذ التسلسلية</translation>
@@ -1348,6 +1361,7 @@
 <translation id="8211406090763984747">الاتصال بموقع الويب هذا آمن</translation>
 <translation id="8218327578424803826">الموقع الذي تم تعيينه:</translation>
 <translation id="8220146938470311105">‏C7/C6 (مغلف)</translation>
+<translation id="8220639454292072926">إعداد التقارير للمؤسسة</translation>
 <translation id="8225771182978767009">اختار الشخص الذي أعد جهاز الكمبيوتر حظر موقع الويب هذا.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />، <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">يمكنك فتح الصفحة في علامة تبويب جديدة للتصفح المتخفي</translation>
@@ -1431,6 +1445,7 @@
 <translation id="8740359287975076522">‏تعذر العثور على &lt;/abbr&gt;عنوان نظام أسماء النطاقات (DNS)‏&lt;abbr id="dnsDefinition"&gt; لـ <ph name="HOST_NAME" />. جارٍ تشخيص المشكلة.</translation>
 <translation id="874846938927089722">بطاقات الائتمان وبطاقات الدفع المسبق المقبولة</translation>
 <translation id="874918643257405732">وضع إشارة مرجعية لعلامة التبويب هذه</translation>
+<translation id="8751426954251315517">يُرجى إعادة المحاولة في المرة القادمة</translation>
 <translation id="8759274551635299824">هذه البطاقة منتهية الصلاحية</translation>
 <translation id="8761567432415473239">‏عثر ‏‫التصفح الآمن من Google‬ مؤخرًا <ph name="BEGIN_LINK" />على برامج ضارة<ph name="END_LINK" /> في <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">‏جهاز USB</translation>
@@ -1495,6 +1510,7 @@
 <translation id="9080712759204168376">ملخص الطلبات</translation>
 <translation id="9089260154716455634">سياسة "التوقف عن العمل":</translation>
 <translation id="9095388113577226029">مزيد من اللغات...</translation>
+<translation id="9098981495403789647">‏فعَّل مشرفك ميزة "الحماية من التهديدات من خلال Chrome Enterprise" على متصفحك. تتضمن ميزة "الحماية من التهديدات من خلال Chrome Enterprise" إذن الوصول إلى بعض بياناتك.</translation>
 <translation id="9103872766612412690">‏يستخدم <ph name="SITE" /> التشفير عادة لحماية معلوماتك. عندما حاول Chromium الاتصال بموقع <ph name="SITE" /> هذه المرة، أرجَع موقع الويب بيانات اعتماد غير عادية وغير صحيحة. وقد يحدث هذا عندما يحاول أحد المهاجمين التظاهر بأنه موقع <ph name="SITE" />، أو إذا قاطعت شاشة تسجيل دخول Wi-Fi الاتصال. ولكن لا تزال معلوماتك آمنة نظرًا لأن Chromium أوقَفَ الاتصال قبل تبادل أي بيانات.</translation>
 <translation id="9106062320799175032">إضافة عنوان إرسال الفواتير</translation>
 <translation id="9114524666733003316">جارٍ التحقق من البطاقة...</translation>

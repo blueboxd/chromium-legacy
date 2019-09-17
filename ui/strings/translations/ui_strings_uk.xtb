@@ -8,7 +8,7 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 хв}one{# хв}few{# хв}many{# хв}other{# хв}}</translation>
 <translation id="1181037720776840403">Видалити</translation>
 <translation id="1243314992276662751">Завантажити</translation>
-<translation id="1266864766717917324">Не вдалося надіслати контент (<ph name="CONTENT_TYPE" />)</translation>
+<translation id="1266864766717917324">Не вдалося надіслати: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1290982764014248209">Перемістити додаток <ph name="DRAGGED_APP" /> у папку "<ph name="FOLDER_NAME" />".</translation>
 <translation id="1291104554099683393">Спробуйте надіслати його меншими частинами.</translation>
@@ -18,7 +18,7 @@
 <translation id="1383876407941801731">Пошук</translation>
 <translation id="1398853756734560583">Збільшити</translation>
 <translation id="1409544243779336081">Рекомендовані додатки</translation>
-<translation id="1450753235335490080">Не вдалося надіслати контент (<ph name="CONTENT_TYPE" />)</translation>
+<translation id="1450753235335490080">Не вдалося надіслати: <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">Ви раніше це шукали. Якщо видалити запит "<ph name="QUERY" />" з історії, він назавжди зникне з вашого облікового запису на всіх пристроях.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 хвилина та }one{# хвилина та }few{# хвилини та }many{# хвилин і }other{# хвилини та }}</translation>
 <translation id="1643823602425662293">Сповіщення</translation>
@@ -113,6 +113,7 @@
 <translation id="4788285488841504513">{MONTHS,plural, =1{Залишився 1 місяць}one{Залишився # місяць}few{Залишилося # місяці}many{Залишилося # місяців}other{Залишилося # місяця}}</translation>
 <translation id="4841881773802181781">Вставлення</translation>
 <translation id="4881695831933465202">Відкрити</translation>
+<translation id="4888938634149558681">Зателефонувати</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 секунда}one{# секунда}few{# секунди}many{# секунд}other{# секунди}}</translation>
 <translation id="4971687151119236543">Попередня композиція</translation>
 <translation id="5046499563572181734">Торкніться тут</translation>

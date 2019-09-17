@@ -124,7 +124,7 @@ OldRenderFrameAudioInputStreamFactory::
 }
 
 void OldRenderFrameAudioInputStreamFactory::CreateStream(
-    mojom::RendererAudioInputStreamFactoryClientPtr client,
+    mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client,
     const base::UnguessableToken& session_id,
     const media::AudioParameters& audio_params,
     bool automatic_gain_control,
@@ -151,7 +151,7 @@ void OldRenderFrameAudioInputStreamFactory::CreateStream(
 }
 
 void OldRenderFrameAudioInputStreamFactory::DoCreateStream(
-    mojom::RendererAudioInputStreamFactoryClientPtr client,
+    mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client,
     const base::UnguessableToken& session_id,
     const media::AudioParameters& audio_params,
     bool automatic_gain_control,

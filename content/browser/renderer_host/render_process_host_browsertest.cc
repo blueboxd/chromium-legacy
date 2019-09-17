@@ -38,6 +38,7 @@
 #include "media/base/media_switches.h"
 #include "media/base/test_data_util.h"
 #include "media/mojo/buildflags.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -235,9 +236,9 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, SpareRenderProcessHostKilled) {
 
   RenderProcessHost* spare_renderer =
       RenderProcessHostImpl::GetSpareRenderProcessHostForTesting();
-  mojom::TestServicePtr service;
+  mojo::Remote<mojom::TestService> service;
   ASSERT_NE(nullptr, spare_renderer);
-  BindInterface(spare_renderer, &service);
+  BindInterface(spare_renderer, service.BindNewPipeAndPassReceiver());
 
   base::RunLoop run_loop;
   set_process_exit_callback(run_loop.QuitClosure());
@@ -673,8 +674,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessOnBadMojoMessage) {
   process_exits_ = 0;
   rph->AddObserver(this);
 
-  mojom::TestServicePtr service;
-  BindInterface(rph, &service);
+  mojo::Remote<mojom::TestService> service;
+  BindInterface(rph, service.BindNewPipeAndPassReceiver());
 
   base::RunLoop run_loop;
   set_process_exit_callback(run_loop.QuitClosure());
@@ -752,8 +753,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessZerosAudioStreams) {
   process_exits_ = 0;
   rph->AddObserver(this);
 
-  mojom::TestServicePtr service;
-  BindInterface(rph, &service);
+  mojo::Remote<mojom::TestService> service;
+  BindInterface(rph, service.BindNewPipeAndPassReceiver());
 
   {
     // Force a bad message event to occur which will terminate the renderer.
@@ -855,8 +856,8 @@ IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
   process_exits_ = 0;
   rph->AddObserver(this);
 
-  mojom::TestServicePtr service;
-  BindInterface(rph, &service);
+  mojo::Remote<mojom::TestService> service;
+  BindInterface(rph, service.BindNewPipeAndPassReceiver());
 
   {
     // Force a bad message event to occur which will terminate the renderer.
@@ -921,8 +922,8 @@ IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
   process_exits_ = 0;
   rph->AddObserver(this);
 
-  mojom::TestServicePtr service;
-  BindInterface(rph, &service);
+  mojo::Remote<mojom::TestService> service;
+  BindInterface(rph, service.BindNewPipeAndPassReceiver());
 
   {
     // Force a bad message event to occur which will terminate the renderer.

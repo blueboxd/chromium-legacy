@@ -232,6 +232,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="27527859628328957">Passa a elemento attivabile successivo</translation>
 <translation id="2770781857296573485">Attiva l'esplorazione dei gruppi</translation>
 <translation id="2777845298774924149">Uscita</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{+#}other{+#}}</translation>
 <translation id="2784959586797362050">Come sempre, inviaci direttamente la tua opinione premendo il tasto per la ricerca + A, quindi I. Siamo ansiosi di sentire cosa ne pensi.</translation>
 <translation id="2800204403141299078">Nessun altro elemento diverso.</translation>
 <translation id="2800780099804980316">Nessuna intestazione livello 1 precedente.</translation>
@@ -714,6 +715,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="5956928062748260866">Finestra di dialogo</translation>
 <translation id="5963413905009737549">Sezione</translation>
 <translation id="5968607524793740041">Mostra il menu contestuale</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{con # voce}other{con # voci}}</translation>
 <translation id="5981446804259161541">Ciano chiaro</translation>
 <translation id="5983179082906765664">Aumenta livello di dettaglio navigazione</translation>
 <translation id="5992285135956208197">Documento grafico</translation>

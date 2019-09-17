@@ -226,7 +226,8 @@ bool ThemePainterDefault::PaintTextField(const Node* node,
   // incorrectly (e.g. https://crbug.com/937872).
   // TODO(gilmanmh): Implement a more permanent solution that allows use of
   // native dark themes.
-  if (paint_info.context.dark_mode_settings().mode != DarkMode::kOff)
+  if (paint_info.context.dark_mode_settings().mode !=
+      DarkModeInversionAlgorithm::kOff)
     return true;
 
   ControlPart part = style.EffectiveAppearance();

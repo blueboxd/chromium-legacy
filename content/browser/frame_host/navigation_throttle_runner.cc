@@ -10,10 +10,11 @@
 #include "content/browser/frame_host/form_submission_throttle.h"
 #include "content/browser/frame_host/history_navigation_ablation_study_navigation_throttle.h"
 #include "content/browser/frame_host/mixed_content_navigation_throttle.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator_delegate.h"
 #include "content/browser/frame_host/origin_policy_throttle.h"
 #include "content/browser/frame_host/webui_navigation_throttle.h"
+#include "content/public/browser/navigation_handle.h"
 
 namespace content {
 
@@ -89,41 +90,40 @@ void NavigationThrottleRunner::RegisterNavigationThrottles() {
   std::vector<std::unique_ptr<NavigationThrottle>> testing_throttles =
       std::move(throttles_);
 
-  NavigationHandleImpl* handle = static_cast<NavigationHandleImpl*>(handle_);
-  throttles_ =
-      handle->navigation_request()->GetDelegate()->CreateThrottlesForNavigation(
-          handle);
+  throttles_ = NavigationRequest::From(handle_)
+                   ->GetDelegate()
+                   ->CreateThrottlesForNavigation(handle_);
 
   // Enforce rules for WebUI navigations.
-  AddThrottle(WebUINavigationThrottle::CreateThrottleForNavigation(handle));
+  AddThrottle(WebUINavigationThrottle::CreateThrottleForNavigation(handle_));
 
   // Check for renderer-inititated main frame navigations to blocked URL schemes
   // (data, filesystem). This is done early as it may block the main frame
   // navigation altogether.
   AddThrottle(
-      BlockedSchemeNavigationThrottle::CreateThrottleForNavigation(handle));
+      BlockedSchemeNavigationThrottle::CreateThrottleForNavigation(handle_));
 
-  AddThrottle(AncestorThrottle::MaybeCreateThrottleFor(handle));
-  AddThrottle(FormSubmissionThrottle::MaybeCreateThrottleFor(handle));
+  AddThrottle(AncestorThrottle::MaybeCreateThrottleFor(handle_));
+  AddThrottle(FormSubmissionThrottle::MaybeCreateThrottleFor(handle_));
 
   // Check for mixed content. This is done after the AncestorThrottle and the
   // FormSubmissionThrottle so that when folks block mixed content with a CSP
   // policy, they don't get a warning. They'll still get a warning in the
   // console about CSP blocking the load.
   AddThrottle(
-      MixedContentNavigationThrottle::CreateThrottleForNavigation(handle));
+      MixedContentNavigationThrottle::CreateThrottleForNavigation(handle_));
 
   // Handle Origin Policy (if enabled)
-  AddThrottle(OriginPolicyThrottle::MaybeCreateThrottleFor(handle));
+  AddThrottle(OriginPolicyThrottle::MaybeCreateThrottleFor(handle_));
 
   for (auto& throttle :
-       devtools_instrumentation::CreateNavigationThrottles(handle)) {
+       devtools_instrumentation::CreateNavigationThrottles(handle_)) {
     AddThrottle(std::move(throttle));
   }
 
   // Delay navigation for an ablation study (if needed).
   AddThrottle(HistoryNavigationAblationStudyNavigationThrottle::
-                  MaybeCreateForNavigation(handle));
+                  MaybeCreateForNavigation(handle_));
 
   // Insert all testing NavigationThrottles last.
   throttles_.insert(throttles_.end(),

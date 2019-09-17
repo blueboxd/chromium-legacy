@@ -53,6 +53,9 @@
 <translation id="2094919256425865063">Bạn vẫn muốn thoát khỏi Chrome?</translation>
 <translation id="2120620239521071941">Thao tác này sẽ xóa <ph name="ITEMS_COUNT" /> mục khỏi thiết bị này. Để truy xuất dữ liệu của bạn sau, hãy đăng nhập vào Chrome dưới dạng <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Giúp cải thiện Chrome bằng cách báo cáo <ph name="BEGIN_LINK" />cài đặt hiện tại<ph name="END_LINK" /></translation>
+<translation id="2128103434102193461">Để biết thông tin chi tiết về Chrome OS, vui lòng xem phần <ph name="LINK_BEGIN" />
+      Giới thiệu về Chrome OS<ph name="LINK_END" /></translation>
+<translation id="2151406531797534936">Vui lòng khởi động lại Chrome ngay bây giờ</translation>
 <translation id="216054706567564023">Cài đặt Chrome trên điện thoại của bạn. Chúng tôi sẽ gửi SMS tới số điện thoại khôi phục tài khoản của bạn.</translation>
 <translation id="2246246234298806438">Google Chrome không thể hiển thị xem trước bản in khi thiếu trình xem PDF được cài sẵn.</translation>
 <translation id="2252923619938421629">Giúp cải thiện Google Chrome bằng cách báo cáo cài đặt hiện tại</translation>
@@ -223,6 +226,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="7589360514048265910">Máy tính này sẽ không còn nhận được bản cập nhật của Google Chrome do hệ điều hành Mac OS X 10.9 không được hỗ trợ nữa.</translation>
 <translation id="7592736734348559088">Google Chrome không thể đồng bộ hóa dữ liệu của bạn vì chi tiết đăng nhập tài khoản của bạn đã cũ.</translation>
 <translation id="7626032353295482388">Chào mừng bạn đến với Chrome</translation>
+<translation id="7629695634924605473">Chrome cho bạn biết mật khẩu của bạn có bị đánh cắp hay không</translation>
 <translation id="7641148173327520642">Quản trị viên hệ thống đã định cấu hình Google Chrome để mở <ph name="ALTERNATIVE_BROWSER_NAME" /> khi truy cập vào <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Biểu trưng Chrome Enterprise</translation>
 <translation id="7747138024166251722">Trình cài đặt không thể tạo thư mục tạm thời. Vui lòng kiểm tra dung lượng ổ đĩa còn trống và quyền cài đặt phần mềm.</translation>

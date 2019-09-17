@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
@@ -31,7 +30,6 @@ using base::FilePath;
 using base::FilePersistentMemoryAllocator;
 using base::MemoryMappedFile;
 using base::PersistentMemoryAllocator;
-using base::WrapUnique;
 
 namespace {
 
@@ -94,8 +92,8 @@ class StabilityReportExtractorThreadTrackerTest : public testing::Test {
     // Create a persistent memory allocator.
     if (!FilePersistentMemoryAllocator::IsFileAcceptable(*mmfile, true))
       return nullptr;
-    return WrapUnique(new FilePersistentMemoryAllocator(
-        std::move(mmfile), kFileSize, kAllocatorId, kAllocatorName, false));
+    return std::make_unique<FilePersistentMemoryAllocator>(
+        std::move(mmfile), kFileSize, kAllocatorId, kAllocatorName, false);
   }
 
   std::unique_ptr<ThreadActivityTracker> CreateTracker(
@@ -117,7 +115,7 @@ class StabilityReportExtractorThreadTrackerTest : public testing::Test {
     // Make the allocation iterable so it can be found by other processes.
     allocator->MakeIterable(mem_reference);
 
-    return WrapUnique(new ThreadActivityTracker(mem_base, tracker_mem_size));
+    return std::make_unique<ThreadActivityTracker>(mem_base, tracker_mem_size);
   }
 
   void PerformBasicReportValidation(const StabilityReport& report) {

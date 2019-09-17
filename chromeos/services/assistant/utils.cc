@@ -115,7 +115,7 @@ std::string CreateLibAssistantConfig() {
   dict.SetKey("enable_eraser", Value(features::IsAudioEraserEnabled()));
   dict.SetKey("enable_eraser_toggling",
               Value(features::IsAudioEraserEnabled()));
-  sources.GetList().push_back(std::move(dict));
+  sources.Append(std::move(dict));
   audio_input.SetKey("sources", std::move(sources));
 
   config.SetKey("audio_input", std::move(audio_input));

@@ -148,8 +148,9 @@ class ContextualSearchPolicy {
         }
 
         if (isPrivacyAggressiveResolveEnabled()
-                && mSelectionController.getSelectionType() == SelectionType.RESOLVING_LONG_PRESS)
+                && mSelectionController.getSelectionType() == SelectionType.RESOLVING_LONG_PRESS) {
             return true;
+        }
 
         return isPromoAvailable() ? isBasePageHTTP(mNetworkCommunicator.getBasePageUrl()) : true;
     }
@@ -251,7 +252,7 @@ class ContextualSearchPolicy {
 
     /**
      * @return Whether a verbatim request should be made for the given base page, assuming there
-     *         is no exiting request.
+     *         is no existing request.
      */
     boolean shouldCreateVerbatimRequest() {
         if (isPrivacyAggressiveResolveEnabled()) return false;
@@ -491,8 +492,9 @@ class ContextualSearchPolicy {
      */
     String getHomeCountry(Context context) {
         if (ContextualSearchFieldTrial.getSwitch(
-                    ContextualSearchSwitch.IS_SEND_HOME_COUNTRY_DISABLED))
+                    ContextualSearchSwitch.IS_SEND_HOME_COUNTRY_DISABLED)) {
             return "";
+        }
 
         TelephonyManager telephonyManager =
                 (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);

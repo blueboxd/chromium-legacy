@@ -156,16 +156,18 @@ class CanvasResourceProviderTest : public Test {
   ScopedTestingPlatformSupport<GpuMemoryBufferTestPlatform> platform_;
 };
 
-TEST_F(CanvasResourceProviderTest,
-       CanvasResourceProviderTextureGpuMemoryBuffer) {
+TEST_F(CanvasResourceProviderTest, CanvasResourceProviderAcceleratedOverlay) {
   const IntSize kSize(10, 10);
   const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
                                        kRGBA8CanvasPixelFormat, kNonOpaque);
   EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
+  EnsureOverlaysSupported();
 
-  auto provider = CanvasResourceProvider::CreateForTesting(
-      kSize, CanvasResourceProvider::kTextureGpuMemoryBuffer,
-      context_provider_wrapper_, 0 /* msaa_sample_count */, kColorParams,
+  auto provider = CanvasResourceProvider::Create(
+      kSize,
+      CanvasResourceProvider::ResourceUsage::kAcceleratedDirect2DResourceUsage,
+      context_provider_wrapper_, 0 /* msaa_sample_count */,
+      kMedium_SkFilterQuality, kColorParams,
       CanvasResourceProvider::kAllowImageChromiumPresentationMode,
       nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
 
@@ -209,12 +211,12 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderTexture) {
   EXPECT_FALSE(provider->IsSingleBuffered());
 }
 
-TEST_F(CanvasResourceProviderTest,
-       CanvasResourceProviderBitmapGpuMemoryBuffer) {
+TEST_F(CanvasResourceProviderTest, CanvasResourceProviderUnacceleratedOverlay) {
   const IntSize kSize(10, 10);
   const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
                                        kRGBA8CanvasPixelFormat, kNonOpaque);
   EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
+  EnsureOverlaysSupported();
 
   auto provider = CanvasResourceProvider::Create(
       kSize,
@@ -238,15 +240,19 @@ TEST_F(CanvasResourceProviderTest,
   EXPECT_FALSE(provider->IsSingleBuffered());
 }
 
-TEST_F(CanvasResourceProviderTest, CanvasResourceProviderSharedImage) {
+TEST_F(CanvasResourceProviderTest,
+       CanvasResourceProviderSharedImageResourceRecycling) {
   const IntSize kSize(10, 10);
   const CanvasColorParams kColorParams(kSRGBCanvasColorSpace,
                                        kRGBA8CanvasPixelFormat, kNonOpaque);
   EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
 
-  auto provider = CanvasResourceProvider::CreateForTesting(
-      kSize, CanvasResourceProvider::kSharedImage, context_provider_wrapper_,
-      0 /* msaa_sample_count */, kColorParams,
+  auto provider = CanvasResourceProvider::Create(
+      kSize,
+      CanvasResourceProvider::ResourceUsage::
+          kAcceleratedCompositedResourceUsage,
+      context_provider_wrapper_, 0 /* msaa_sample_count */,
+      kMedium_SkFilterQuality, kColorParams,
       CanvasResourceProvider::kAllowImageChromiumPresentationMode,
       nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
 
@@ -295,9 +301,12 @@ TEST_F(CanvasResourceProviderTest,
                                        kRGBA8CanvasPixelFormat, kNonOpaque);
   EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
 
-  auto provider = CanvasResourceProvider::CreateForTesting(
-      kSize, CanvasResourceProvider::kSharedImage, context_provider_wrapper_,
-      0 /* msaa_sample_count */, kColorParams,
+  auto provider = CanvasResourceProvider::Create(
+      kSize,
+      CanvasResourceProvider::ResourceUsage::
+          kAcceleratedCompositedResourceUsage,
+      context_provider_wrapper_, 0 /* msaa_sample_count */,
+      kMedium_SkFilterQuality, kColorParams,
       CanvasResourceProvider::kAllowImageChromiumPresentationMode,
       nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
   ASSERT_TRUE(provider->IsValid());
@@ -336,9 +345,12 @@ TEST_F(CanvasResourceProviderTest,
                                        kRGBA8CanvasPixelFormat, kNonOpaque);
   EnsureBufferFormatIsSupported(kColorParams.GetBufferFormat());
 
-  auto provider = CanvasResourceProvider::CreateForTesting(
-      kSize, CanvasResourceProvider::kSharedImage, context_provider_wrapper_,
-      0 /* msaa_sample_count */, kColorParams,
+  auto provider = CanvasResourceProvider::Create(
+      kSize,
+      CanvasResourceProvider::ResourceUsage::
+          kAcceleratedCompositedResourceUsage,
+      context_provider_wrapper_, 0 /* msaa_sample_count */,
+      kMedium_SkFilterQuality, kColorParams,
       CanvasResourceProvider::kAllowImageChromiumPresentationMode,
       nullptr /* resource_dispatcher */, true /* is_origin_top_left */);
   ASSERT_TRUE(provider->IsValid());
@@ -473,7 +485,7 @@ TEST_F(CanvasResourceProviderTest,
       ExternalCanvasResource::Create(
           mailbox, kSize, GL_TEXTURE_2D, kColorParams,
           SharedGpuContext::ContextProviderWrapper(), provider->CreateWeakPtr(),
-          kNone_SkFilterQuality);
+          kMedium_SkFilterQuality);
 
   // NewOrRecycledResource() would return nullptr before an ImportResource().
   EXPECT_TRUE(provider->ImportResource(resource));

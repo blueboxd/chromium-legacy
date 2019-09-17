@@ -17,6 +17,7 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_service.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 #if defined(OS_MACOSX) || defined(OS_LINUX)
 #include <sys/wait.h>
@@ -73,7 +74,7 @@ class UtilityProcessHostBrowserTest : public BrowserChildProcessObserver,
 #endif
     EXPECT_TRUE(host->Start());
 
-    BindInterface(host, &service_);
+    BindInterface(host, service_.BindNewPipeAndPassReceiver());
     if (crash) {
       service_->DoCrashImmediately(
           base::BindOnce(&UtilityProcessHostBrowserTest::OnSomethingOnIOThread,
@@ -98,7 +99,7 @@ class UtilityProcessHostBrowserTest : public BrowserChildProcessObserver,
     base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(done_closure_));
   }
 
-  mojom::TestServicePtr service_;
+  mojo::Remote<mojom::TestService> service_;
   base::OnceClosure done_closure_;
 
   // Access on UI thread.

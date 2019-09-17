@@ -24,6 +24,8 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/app_service/app_service_test.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
@@ -73,6 +75,7 @@ class LauncherContextMenuTest : public ChromeAshTestBase {
 
   void SetUp() override {
     arc_test_.SetUp(&profile_);
+    app_service_test_.SetUp(&profile_);
     session_manager_ = std::make_unique<session_manager::SessionManager>();
     ChromeAshTestBase::SetUp();
     model_ = std::make_unique<ash::ShelfModel>();
@@ -81,6 +84,7 @@ class LauncherContextMenuTest : public ChromeAshTestBase {
 
     // Disable safe icon decoding to ensure ArcAppShortcutRequests returns in
     // the test environment.
+    ArcAppIcon::DisableSafeDecodingForTesting();
     arc::IconDecodeRequest::DisableSafeDecodingForTesting();
   }
 
@@ -140,6 +144,8 @@ class LauncherContextMenuTest : public ChromeAshTestBase {
 
   ArcAppTest& arc_test() { return arc_test_; }
 
+  AppServiceTest& app_service_test() { return app_service_test_; }
+
   TestingProfile* profile() { return &profile_; }
 
   ChromeLauncherController* controller() { return launcher_controller_.get(); }
@@ -149,6 +155,7 @@ class LauncherContextMenuTest : public ChromeAshTestBase {
  private:
   TestingProfile profile_;
   ArcAppTest arc_test_;
+  AppServiceTest app_service_test_;
   std::unique_ptr<session_manager::SessionManager> session_manager_;
   std::unique_ptr<ash::ShelfModel> model_;
   std::unique_ptr<ChromeLauncherController> launcher_controller_;

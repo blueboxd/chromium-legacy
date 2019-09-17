@@ -56,7 +56,7 @@
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"  // Temporary
 #include "content/browser/site_instance_impl.h"
@@ -960,10 +960,10 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
   NavigateWithoutEntry(params);
 }
 
-bool NavigationControllerImpl::PendingEntryMatchesHandle(
-    NavigationHandleImpl* handle) const {
+bool NavigationControllerImpl::PendingEntryMatchesRequest(
+    NavigationRequest* request) const {
   return pending_entry_ &&
-         pending_entry_->GetUniqueID() == handle->pending_nav_entry_id();
+         pending_entry_->GetUniqueID() == request->nav_entry_id();
 }
 
 bool NavigationControllerImpl::RendererDidNavigate(
@@ -1049,35 +1049,33 @@ bool NavigationControllerImpl::RendererDidNavigate(
   // renderer.  Limit this to a very narrow set of conditions to avoid risks to
   // other navigation types. See https://crbug.com/900036.
   // TODO(crbug.com/926009): Handle history.pushState() as well.
-  NavigationHandleImpl* navigation_handle =
-      navigation_request->navigation_handle();
   bool keep_pending_entry = is_same_document_navigation &&
                             details->type == NAVIGATION_TYPE_EXISTING_PAGE &&
                             pending_entry_ &&
-                            !PendingEntryMatchesHandle(navigation_handle);
+                            !PendingEntryMatchesRequest(navigation_request);
 
   switch (details->type) {
     case NAVIGATION_TYPE_NEW_PAGE:
       RendererDidNavigateToNewPage(
           rfh, params, details->is_same_document, details->did_replace_entry,
-          previous_document_was_activated, navigation_handle);
+          previous_document_was_activated, navigation_request);
       break;
     case NAVIGATION_TYPE_EXISTING_PAGE:
       RendererDidNavigateToExistingPage(rfh, params, details->is_same_document,
-                                        was_restored, navigation_handle,
+                                        was_restored, navigation_request,
                                         keep_pending_entry);
       break;
     case NAVIGATION_TYPE_SAME_PAGE:
       RendererDidNavigateToSamePage(rfh, params, details->is_same_document,
-                                    navigation_handle);
+                                    navigation_request);
       break;
     case NAVIGATION_TYPE_NEW_SUBFRAME:
       RendererDidNavigateNewSubframe(
           rfh, params, details->is_same_document, details->did_replace_entry,
-          previous_document_was_activated, navigation_handle);
+          previous_document_was_activated, navigation_request);
       break;
     case NAVIGATION_TYPE_AUTO_SUBFRAME:
-      if (!RendererDidNavigateAutoSubframe(rfh, params, navigation_handle)) {
+      if (!RendererDidNavigateAutoSubframe(rfh, params, navigation_request)) {
         // We don't send a notification about auto-subframe PageState during
         // UpdateStateForFrame, since it looks like nothing has changed.  Send
         // it here at commit time instead.
@@ -1129,8 +1127,8 @@ bool NavigationControllerImpl::RendererDidNavigate(
         std::move(back_forward_cache_metrics));
   }
   active_entry->back_forward_cache_metrics()->DidCommitNavigation(
-      navigation_request->navigation_handle()->GetNavigationId(),
-      active_entry->GetUniqueID(), rfh->frame_tree_node()->IsMainFrame());
+      navigation_request->GetNavigationId(), active_entry->GetUniqueID(),
+      rfh->frame_tree_node()->IsMainFrame());
 
   // Grab the corresponding FrameNavigationEntry for a few updates, but only if
   // the SiteInstance matches (to avoid updating the wrong entry by mistake).
@@ -1173,7 +1171,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
   NotifyNavigationEntryCommitted(details);
 
   if (active_entry->GetURL().SchemeIs(url::kHttpsScheme) && !rfh->GetParent() &&
-      navigation_handle->GetNetErrorCode() == net::OK) {
+      navigation_request->GetNetErrorCode() == net::OK) {
     UMA_HISTOGRAM_BOOLEAN("Navigation.SecureSchemeHasSSLStatus",
                           !!active_entry->GetSSL().certificate);
   }
@@ -1321,12 +1319,12 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
     bool is_same_document,
     bool replace_entry,
     bool previous_document_was_activated,
-    NavigationHandleImpl* handle) {
+    NavigationRequest* request) {
   std::unique_ptr<NavigationEntryImpl> new_entry;
   bool update_virtual_url = false;
 
   const base::Optional<url::Origin>& initiator_origin =
-      handle->navigation_request()->common_params().initiator_origin;
+      request->common_params().initiator_origin;
 
   // First check if this is an in-page navigation.  If so, clone the current
   // entry instead of looking at the pending entry, because the pending entry
@@ -1349,7 +1347,7 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
       new_entry->GetSSL() = SSLStatus();
 
       if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent() &&
-          handle->GetNetErrorCode() == net::OK) {
+          request->GetNetErrorCode() == net::OK) {
         UMA_HISTOGRAM_BOOLEAN(
             "Navigation.SecureSchemeHasSSLStatus.NewPageInPageOriginMismatch",
             !!new_entry->GetSSL().certificate);
@@ -1365,7 +1363,7 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
     update_virtual_url = new_entry->update_virtual_url_with_url();
 
     if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent() &&
-        handle->GetNetErrorCode() == net::OK) {
+        request->GetNetErrorCode() == net::OK) {
       UMA_HISTOGRAM_BOOLEAN("Navigation.SecureSchemeHasSSLStatus.NewPageInPage",
                             !!new_entry->GetSSL().certificate);
     }
@@ -1373,25 +1371,25 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
 
   // Only make a copy of the pending entry if it is appropriate for the new page
   // that was just loaded. Verify this by checking if the entry corresponds
-  // to the given navigation handle. Additionally, coarsely check that:
+  // to the given NavigationRequest. Additionally, coarsely check that:
   // 1. The SiteInstance hasn't been assigned to something else.
   // 2. The pending entry was intended as a new entry, rather than being a
   // history navigation that was interrupted by an unrelated,
   // renderer-initiated navigation.
   // TODO(csharrison): Investigate whether we can remove some of the coarser
   // checks.
-  if (!new_entry &&
-      PendingEntryMatchesHandle(handle) && pending_entry_index_ == -1 &&
+  if (!new_entry && PendingEntryMatchesRequest(request) &&
+      pending_entry_index_ == -1 &&
       (!pending_entry_->site_instance() ||
        pending_entry_->site_instance() == rfh->GetSiteInstance())) {
     new_entry = pending_entry_->Clone();
 
     update_virtual_url = new_entry->update_virtual_url_with_url();
     new_entry->GetSSL() =
-        SSLStatus(handle->GetSSLInfo().value_or(net::SSLInfo()));
+        SSLStatus(request->GetSSLInfo().value_or(net::SSLInfo()));
 
     if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent() &&
-        handle->GetNetErrorCode() == net::OK) {
+        request->GetNetErrorCode() == net::OK) {
       UMA_HISTOGRAM_BOOLEAN(
           "Navigation.SecureSchemeHasSSLStatus.NewPagePendingEntryMatches",
           !!new_entry->GetSSL().certificate);
@@ -1403,7 +1401,7 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
     new_entry = std::make_unique<NavigationEntryImpl>(
         rfh->GetSiteInstance(), params.url, params.referrer, initiator_origin,
         base::string16(),  // title
-        params.transition, handle->IsRendererInitiated(),
+        params.transition, request->IsRendererInitiated(),
         nullptr);  // blob_url_loader_factory
 
     // Find out whether the new entry needs to update its virtual URL on URL
@@ -1421,10 +1419,10 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
     // the URL.
     update_virtual_url = needs_update;
     new_entry->GetSSL() =
-        SSLStatus(handle->GetSSLInfo().value_or(net::SSLInfo()));
+        SSLStatus(request->GetSSLInfo().value_or(net::SSLInfo()));
 
     if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent() &&
-        handle->GetNetErrorCode() == net::OK) {
+        request->GetNetErrorCode() == net::OK) {
       UMA_HISTOGRAM_BOOLEAN(
           "Navigation.SecureSchemeHasSSLStatus.NewPageNoMatchingEntry",
           !!new_entry->GetSSL().certificate);
@@ -1488,7 +1486,7 @@ void NavigationControllerImpl::RendererDidNavigateToNewPage(
 
   SetShouldSkipOnBackForwardUIIfNeeded(rfh, replace_entry,
                                        previous_document_was_activated,
-                                       handle->IsRendererInitiated());
+                                       request->IsRendererInitiated());
 
   InsertOrReplaceEntry(std::move(new_entry), replace_entry);
 }
@@ -1498,7 +1496,7 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
     bool is_same_document,
     bool was_restored,
-    NavigationHandleImpl* handle,
+    NavigationRequest* request,
     bool keep_pending_entry) {
   DCHECK(GetLastCommittedEntry()) << "ClassifyNavigation should guarantee "
                                   << "that a last committed entry exists.";
@@ -1513,13 +1511,13 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
     // entry.
     entry = GetLastCommittedEntry();
     // If this is a same document navigation, then there's no SSLStatus in the
-    // NavigationHandle so don't overwrite the existing entry's SSLStatus.
+    // NavigationRequest so don't overwrite the existing entry's SSLStatus.
     if (!is_same_document)
       entry->GetSSL() =
-          SSLStatus(handle->GetSSLInfo().value_or(net::SSLInfo()));
+          SSLStatus(request->GetSSLInfo().value_or(net::SSLInfo()));
 
     if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent() &&
-        handle->GetNetErrorCode() == net::OK) {
+        request->GetNetErrorCode() == net::OK) {
       bool has_cert = !!entry->GetSSL().certificate;
       if (is_same_document) {
         UMA_HISTOGRAM_BOOLEAN(
@@ -1538,7 +1536,7 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
     entry = GetEntryWithUniqueID(params.nav_entry_id);
 
     if (is_same_document) {
-      // There's no SSLStatus in the NavigationHandle for same document
+      // There's no SSLStatus in the NavigationRequest for same document
       // navigations, so normally we leave |entry|'s SSLStatus as is. However if
       // this was a restored same document navigation entry, then it won't have
       // an SSLStatus. So we need to copy over the SSLStatus from the entry that
@@ -1550,19 +1548,19 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
         entry->GetSSL() = last_entry->GetSSL();
       }
     } else {
-      // In rapid back/forward navigations |handle| sometimes won't have a cert
-      // (http://crbug.com/727892). So we use the handle's cert if it exists,
+      // In rapid back/forward navigations |request| sometimes won't have a cert
+      // (http://crbug.com/727892). So we use the request's cert if it exists,
       // otherwise we only reuse the existing cert if the origins match.
-      if (handle->GetSSLInfo().has_value() &&
-          handle->GetSSLInfo()->is_valid()) {
-        entry->GetSSL() = SSLStatus(*(handle->GetSSLInfo()));
-      } else if (entry->GetURL().GetOrigin() != handle->GetURL().GetOrigin()) {
+      if (request->GetSSLInfo().has_value() &&
+          request->GetSSLInfo()->is_valid()) {
+        entry->GetSSL() = SSLStatus(*(request->GetSSLInfo()));
+      } else if (entry->GetURL().GetOrigin() != request->GetURL().GetOrigin()) {
         entry->GetSSL() = SSLStatus();
       }
     }
 
     if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent() &&
-        handle->GetNetErrorCode() == net::OK) {
+        request->GetNetErrorCode() == net::OK) {
       bool has_cert = !!entry->GetSSL().certificate;
       if (is_same_document && was_restored) {
         UMA_HISTOGRAM_BOOLEAN(
@@ -1600,13 +1598,13 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
     CopyReplacedNavigationEntryDataIfPreviouslyEmpty(entry, entry);
 
     // If this is a same document navigation, then there's no SSLStatus in the
-    // NavigationHandle so don't overwrite the existing entry's SSLStatus.
+    // NavigationRequest so don't overwrite the existing entry's SSLStatus.
     if (!is_same_document)
       entry->GetSSL() =
-          SSLStatus(handle->GetSSLInfo().value_or(net::SSLInfo()));
+          SSLStatus(request->GetSSLInfo().value_or(net::SSLInfo()));
 
     if (params.url.SchemeIs(url::kHttpsScheme) && !rfh->GetParent() &&
-        handle->GetNetErrorCode() == net::OK) {
+        request->GetNetErrorCode() == net::OK) {
       bool has_cert = !!entry->GetSSL().certificate;
       if (is_same_document) {
         UMA_HISTOGRAM_BOOLEAN(
@@ -1641,7 +1639,7 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
   // Update the existing FrameNavigationEntry to ensure all of its members
   // reflect the parameters coming from the renderer process.
   const base::Optional<url::Origin>& initiator_origin =
-      handle->navigation_request()->common_params().initiator_origin;
+      request->common_params().initiator_origin;
   entry->AddOrUpdateFrameEntry(
       rfh->frame_tree_node(), params.item_sequence_number,
       params.document_sequence_number, rfh->GetSiteInstance(), nullptr,
@@ -1674,7 +1672,7 @@ void NavigationControllerImpl::RendererDidNavigateToSamePage(
     RenderFrameHostImpl* rfh,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
     bool is_same_document,
-    NavigationHandleImpl* handle) {
+    NavigationRequest* request) {
   // This classification says that we have a pending entry that's the same as
   // the last committed entry. This entry is guaranteed to exist by
   // ClassifyNavigation. All we need to do is update the existing entry.
@@ -1704,10 +1702,10 @@ void NavigationControllerImpl::RendererDidNavigateToSamePage(
   // change, the previous SSLStatus is still valid.
   if (!is_same_document)
     existing_entry->GetSSL() =
-        SSLStatus(handle->GetSSLInfo().value_or(net::SSLInfo()));
+        SSLStatus(request->GetSSLInfo().value_or(net::SSLInfo()));
 
   if (existing_entry->GetURL().SchemeIs(url::kHttpsScheme) &&
-      !rfh->GetParent() && handle->GetNetErrorCode() == net::OK) {
+      !rfh->GetParent() && request->GetNetErrorCode() == net::OK) {
     UMA_HISTOGRAM_BOOLEAN("Navigation.SecureSchemeHasSSLStatus.SamePage",
                           !!existing_entry->GetSSL().certificate);
   }
@@ -1718,7 +1716,7 @@ void NavigationControllerImpl::RendererDidNavigateToSamePage(
   // Update the existing FrameNavigationEntry to ensure all of its members
   // reflect the parameters coming from the renderer process.
   const base::Optional<url::Origin>& initiator_origin =
-      handle->navigation_request()->common_params().initiator_origin;
+      request->common_params().initiator_origin;
   existing_entry->AddOrUpdateFrameEntry(
       rfh->frame_tree_node(), params.item_sequence_number,
       params.document_sequence_number, rfh->GetSiteInstance(), nullptr,
@@ -1735,7 +1733,7 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
     bool is_same_document,
     bool replace_entry,
     bool previous_document_was_activated,
-    NavigationHandleImpl* handle) {
+    NavigationRequest* request) {
   DCHECK(ui::PageTransitionCoreTypeIs(params.transition,
                                       ui::PAGE_TRANSITION_MANUAL_SUBFRAME));
 
@@ -1755,7 +1753,7 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
   // This FrameNavigationEntry might not end up being used in the
   // CloneAndReplace() call below, if a spot can't be found for it in the tree.
   const base::Optional<url::Origin>& initiator_origin =
-      handle->navigation_request()->common_params().initiator_origin;
+      request->common_params().initiator_origin;
   auto frame_entry = base::MakeRefCounted<FrameNavigationEntry>(
       rfh->frame_tree_node()->unique_name(), params.item_sequence_number,
       params.document_sequence_number, rfh->GetSiteInstance(), nullptr,
@@ -1770,7 +1768,7 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
 
   SetShouldSkipOnBackForwardUIIfNeeded(rfh, replace_entry,
                                        previous_document_was_activated,
-                                       handle->IsRendererInitiated());
+                                       request->IsRendererInitiated());
 
   // TODO(creis): Update this to add the frame_entry if we can't find the one
   // to replace, which can happen due to a unique name change. See
@@ -1783,7 +1781,7 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
 bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
     RenderFrameHostImpl* rfh,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-    NavigationHandleImpl* handle) {
+    NavigationRequest* request) {
   DCHECK(ui::PageTransitionCoreTypeIs(params.transition,
                                       ui::PAGE_TRANSITION_AUTO_SUBFRAME));
 
@@ -1833,7 +1831,7 @@ bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
   // it may be a "history auto" case where we update an existing one.
   NavigationEntryImpl* last_committed = GetLastCommittedEntry();
   const base::Optional<url::Origin>& initiator_origin =
-      handle->navigation_request()->common_params().initiator_origin;
+      request->common_params().initiator_origin;
   last_committed->AddOrUpdateFrameEntry(
       rfh->frame_tree_node(), params.item_sequence_number,
       params.document_sequence_number, rfh->GetSiteInstance(), nullptr,

@@ -377,7 +377,6 @@ void GpuDataManagerImplPrivate::RequestDxDiagNodeData() {
 #if defined(OS_WIN)
   if (gpu_info_dx_diag_requested_)
     return;
-
   gpu_info_dx_diag_requested_ = true;
   GpuProcessHost::CallOnIO(
       GPU_PROCESS_KIND_UNSANDBOXED_NO_GL, true /* force_create */,
@@ -400,10 +399,9 @@ void GpuDataManagerImplPrivate::RequestDxDiagNodeData() {
 void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion(
     bool delayed) {
 #if defined(OS_WIN)
-  if (gpu_info_dx12_vulkan_requested_)
-    return;
-
   base::OnceClosure task = base::BindOnce([]() {
+    if (GpuDataManagerImpl::GetInstance()->Dx12VulkanRequested())
+      return;
     GpuProcessHost* host = GpuProcessHost::Get(
         GPU_PROCESS_KIND_UNSANDBOXED_NO_GL, true /* force_create */);
     if (!host) {
@@ -421,8 +419,6 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion(
     base::PostDelayedTask(FROM_HERE, {BrowserThread::IO}, std::move(task),
                           base::TimeDelta::FromSeconds(120));
   } else {
-    gpu_info_dx12_vulkan_requested_ = true;
-    gpu_info_dx12_vulkan_request_failed_ = false;
     base::PostTask(FROM_HERE, {BrowserThread::IO}, std::move(task));
   }
 #endif
@@ -435,10 +431,11 @@ bool GpuDataManagerImplPrivate::IsEssentialGpuInfoAvailable() const {
 
 bool GpuDataManagerImplPrivate::IsDx12VulkanVersionAvailable() const {
 #if defined(OS_WIN)
-  // gpu_integration_test needs dx12/Vulkan info. If this info is needed,
-  // --no-delay-for-dx12-vulkan-info-collection should be added to the browser
-  // command line. This function returns the status of availability to the tests
-  // based on whether gpu info has been requested or not.
+  // Certain gpu_integration_test needs dx12/Vulkan info. If this info is
+  // needed, --no-delay-for-dx12-vulkan-info-collection should be added to the
+  // browser command line, so that the collection of this info isn't delayed.
+  // This function returns the status of availability to the tests based on
+  // whether gpu info has been requested or not.
 
   return gpu_info_dx12_vulkan_valid_ || !gpu_info_dx12_vulkan_requested_ ||
          gpu_info_dx12_vulkan_request_failed_;
@@ -566,6 +563,10 @@ void GpuDataManagerImplPrivate::UpdateDx12VulkanRequestStatus(
 
   if (gpu_info_dx12_vulkan_request_failed_)
     NotifyGpuInfoUpdate();
+}
+
+bool GpuDataManagerImplPrivate::Dx12VulkanRequested() const {
+  return gpu_info_dx12_vulkan_requested_;
 }
 #endif
 

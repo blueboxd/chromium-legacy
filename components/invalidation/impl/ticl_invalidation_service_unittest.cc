@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/test/task_environment.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
@@ -58,7 +57,7 @@ class TiclInvalidationServiceTestDelegate {
   void InitializeInvalidationService() {
     fake_invalidator_ = new syncer::FakeInvalidator();
     invalidation_service_->InitForTest(
-        base::WrapUnique(new syncer::FakeInvalidationStateTracker),
+        std::make_unique<syncer::FakeInvalidationStateTracker>(),
         fake_invalidator_);
   }
 

@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
@@ -692,8 +691,8 @@ TEST_F(StaleHostResolverTest, CreatedByContext) {
   config.ConfigureURLRequestContextBuilder(&builder, &net_log);
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(
-      base::WrapUnique(new net::ProxyConfigServiceFixed(
-          net::ProxyConfigWithAnnotation::CreateDirect())));
+      std::make_unique<net::ProxyConfigServiceFixed>(
+          net::ProxyConfigWithAnnotation::CreateDirect()));
   std::unique_ptr<net::URLRequestContext> context(builder.Build());
 
   // Experimental options ensure context's resolver is a StaleHostResolver.

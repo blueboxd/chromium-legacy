@@ -68,6 +68,8 @@
 - (void)updateBreakpad {
   breakpad_helper::SetCurrentHorizontalSizeClass(
       self.traitCollection.horizontalSizeClass);
+  breakpad_helper::SetCurrentUserInterfaceStyle(
+      self.traitCollection.userInterfaceStyle);
 }
 
 #pragma mark - UITraitEnvironment
@@ -87,6 +89,7 @@
       [self.userInterfaceStyleRecorder
           userInterfaceStyleDidChange:self.traitCollection.userInterfaceStyle];
     }
+    [self updateBreakpad];
   }
 }
 

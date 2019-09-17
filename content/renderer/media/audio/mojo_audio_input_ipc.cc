@@ -22,8 +22,7 @@ MojoAudioInputIPC::MojoAudioInputIPC(
     : source_params_(source_params),
       stream_creator_(std::move(stream_creator)),
       stream_associator_(std::move(stream_associator)),
-      stream_client_binding_(this),
-      factory_client_binding_(this) {
+      stream_client_binding_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(stream_creator_);
   DCHECK(stream_associator_);
@@ -41,9 +40,9 @@ void MojoAudioInputIPC::CreateStream(media::AudioInputIPCDelegate* delegate,
 
   delegate_ = delegate;
 
-  mojom::RendererAudioInputStreamFactoryClientPtr client;
-  factory_client_binding_.Bind(mojo::MakeRequest(&client));
-  factory_client_binding_.set_connection_error_handler(base::BindOnce(
+  mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client;
+  factory_client_receiver_.Bind(client.InitWithNewPipeAndPassReceiver());
+  factory_client_receiver_.set_disconnect_handler(base::BindOnce(
       &media::AudioInputIPCDelegate::OnError, base::Unretained(delegate_)));
 
   stream_creation_start_time_ = base::TimeTicks::Now();
@@ -83,8 +82,8 @@ media::AudioProcessorControls* MojoAudioInputIPC::GetProcessorControls() {
 void MojoAudioInputIPC::CloseStream() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   delegate_ = nullptr;
-  if (factory_client_binding_.is_bound())
-    factory_client_binding_.Unbind();
+  if (factory_client_receiver_.is_bound())
+    factory_client_receiver_.reset();
   if (stream_client_binding_.is_bound())
     stream_client_binding_.Unbind();
   stream_.reset();

@@ -1363,6 +1363,42 @@ should be able to be added at any place in this file.
   <description>A Chrome OS user manually starts Select To Speak.</description>
 </action>
 
+<action name="Accessibility.NativeApi.DoDefault">
+  <owner>aleventhal@chromium.org</owner>
+  <owner>dmazzoni@chromium.org</owner>
+  <description>
+    The DoDefault action (for example, to click on a button or link) has been
+    called on an accessibility node using a native accessibility API.
+  </description>
+</action>
+
+<action name="Accessibility.NativeApi.HitTest">
+  <owner>aleventhal@chromium.org</owner>
+  <owner>dmazzoni@chromium.org</owner>
+  <description>
+    The HitTest action has been called on an accessibility node using a native
+    accessibility API.
+  </description>
+</action>
+
+<action name="Accessibility.NativeApi.ScrollToMakeVisible">
+  <owner>aleventhal@chromium.org</owner>
+  <owner>dmazzoni@chromium.org</owner>
+  <description>
+    The ScrollToMakeVisible action has been called on an accessibility node
+    using a native accessibility API.
+  </description>
+</action>
+
+<action name="Accessibility.NativeApi.SetFocus">
+  <owner>aleventhal@chromium.org</owner>
+  <owner>dmazzoni@chromium.org</owner>
+  <description>
+    The SetFocus action has been called on an accessibility node using a native
+    accessibility API.
+  </description>
+</action>
+
 <action name="Accessibility.TwoFingersHeldDown">
   <owner>dmazzoni@chromium.org</owner>
   <description>

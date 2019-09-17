@@ -436,10 +436,13 @@ void AppBannerManager::ResetBindings() {
 }
 
 void AppBannerManager::ResetCurrentPageData() {
+  load_finished_ = false;
+  has_sufficient_engagement_ = false;
   active_media_players_.clear();
   manifest_ = blink::Manifest();
   manifest_url_ = GURL();
   validated_url_ = GURL();
+  UpdateState(State::INACTIVE);
   SetInstallableWebAppCheckResult(InstallableWebAppCheckResult::kUnknown);
 }
 
@@ -546,22 +549,14 @@ void AppBannerManager::UpdateState(State state) {
   state_ = state;
 }
 
-void AppBannerManager::DidStartNavigation(content::NavigationHandle* handle) {
-  if (!handle->IsInMainFrame() || handle->IsSameDocument())
+void AppBannerManager::DidFinishNavigation(content::NavigationHandle* handle) {
+  if (!handle->IsInMainFrame() || !handle->HasCommitted() ||
+      handle->IsSameDocument()) {
     return;
-
+  }
   if (state_ != State::COMPLETE && state_ != State::INACTIVE)
     Terminate();
-  UpdateState(State::INACTIVE);
-  load_finished_ = false;
-  has_sufficient_engagement_ = false;
-}
-
-void AppBannerManager::DidFinishNavigation(content::NavigationHandle* handle) {
-  if (handle->IsInMainFrame() && handle->HasCommitted() &&
-      !handle->IsSameDocument()) {
-    ResetCurrentPageData();
-  }
+  ResetCurrentPageData();
 }
 
 void AppBannerManager::DidFinishLoad(

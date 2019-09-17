@@ -311,11 +311,6 @@ void PostAnnouncementNotification(NSString* announcement) {
 }
 
 void NotifyMacEvent(AXPlatformNodeCocoa* target, ax::mojom::Event event_type) {
-  NSString* announcement_text = [target announcementTextForEvent:event_type];
-  if (announcement_text) {
-    PostAnnouncementNotification(announcement_text);
-    return;
-  }
   NSString* notification =
       [AXPlatformNodeCocoa nativeNotificationFromAXEvent:event_type];
   if (notification)
@@ -1150,27 +1145,21 @@ gfx::NativeViewAccessible AXPlatformNodeMac::GetNativeViewAccessible() {
 
 void AXPlatformNodeMac::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
   GetNativeViewAccessible();
-  // Add mappings between ax::mojom::Event and NSAccessibility notifications
-  // using the EventMap above. This switch contains exceptions to those
-  // mappings.
-  switch (event_type) {
-    case ax::mojom::Event::kTextChanged:
-      // If the view is a user-editable textfield, this should change the value.
-      if (GetData().role == ax::mojom::Role::kTextField) {
-        NotifyMacEvent(native_node_, ax::mojom::Event::kValueChanged);
-        return;
-      }
-      break;
-    case ax::mojom::Event::kSelection:
-      // On Mac, map menu item selection to a focus event.
-      if (ui::IsMenuItem(GetData().role)) {
-        NotifyMacEvent(native_node_, ax::mojom::Event::kFocus);
-        return;
-      }
-      break;
-    default:
-      break;
+  // Handle special cases.
+  NSString* announcement_text =
+      [native_node_ announcementTextForEvent:event_type];
+  if (announcement_text) {
+    PostAnnouncementNotification(announcement_text);
+    return;
   }
+  if (event_type == ax::mojom::Event::kSelection &&
+      ui::IsMenuItem(GetData().role)) {
+    // On Mac, map menu item selection to a focus event.
+    NotifyMacEvent(native_node_, ax::mojom::Event::kFocus);
+    return;
+  }
+  // Otherwise, use mappings between ax::mojom::Event and NSAccessibility
+  // notifications from the EventMap above.
   NotifyMacEvent(native_node_, event_type);
 }
 

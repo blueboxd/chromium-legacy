@@ -66,6 +66,7 @@
 <translation id="1407135791313364759">Deschideți-le pe toate</translation>
 <translation id="1409426117486808224">Afișare simplificată pentru filele deschise</translation>
 <translation id="1409879593029778104">Descărcarea fișierului <ph name="FILE_NAME" /> a fost împiedicată, deoarece fișierul există deja.</translation>
+<translation id="1413136574162415971">Google poate verifica dacă parolele tale fac parte dintr-o încălcare a securității datelor. Opțiunea va fi activată atunci când te conectezi cu Contul Google și activezi sincronizarea.</translation>
 <translation id="1414981605391750300">Se contactează Google. Poate dura un minut...</translation>
 <translation id="1416550906796893042">Versiunea aplicației</translation>
 <translation id="1430915738399379752">Printează</translation>
@@ -160,6 +161,7 @@
 <translation id="2091887806945687916">Sunet</translation>
 <translation id="2096012225669085171">Sincronizează și personalizează pe toate dispozitivele</translation>
 <translation id="2100273922101894616">Conectare automată</translation>
+<translation id="2100314319871056947">Împarte textul în fragmente mai mici</translation>
 <translation id="2107397443965016585">Întreabă înainte de a permite site-urilor să redea conținut protejat (recomandat)</translation>
 <translation id="2111511281910874386">Accesează pagina</translation>
 <translation id="2122601567107267586">Aplicația nu poate fi deschisă</translation>
@@ -253,6 +255,7 @@
 <translation id="2836148919159985482">Atinge butonul Înapoi pentru a ieși din ecranul complet.</translation>
 <translation id="2842985007712546952">Dosar părinte</translation>
 <translation id="2858138569776157458">Site-uri de top</translation>
+<translation id="2860954141821109167">Verifică dacă pe dispozitiv este activată o aplicație de telefon</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2874939134665556319">Melodia anterioară</translation>
 <translation id="2876369937070532032">Trimite la Google adrese URL ale unor pagini pe care le accesezi, când securitatea este în pericol</translation>
@@ -277,6 +280,7 @@
 <translation id="2996291259634659425">Creează o expresie de acces</translation>
 <translation id="2996809686854298943">Adresă URL obligatorie</translation>
 <translation id="300526633675317032">Astfel, se vor șterge <ph name="SIZE_IN_KB" /> din stocarea site-urilor.</translation>
+<translation id="3016635187733453316">Verifică dacă dispozitivul este conectat la internet</translation>
 <translation id="3029613699374795922"><ph name="KBS" /> KB descărcați</translation>
 <translation id="3029704984691124060">Expresiile de acces nu corespund</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obține ajutor<ph name="END_LINK" /></translation>
@@ -841,6 +845,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="723171743924126238">Selectează imagini</translation>
 <translation id="7233236755231902816">Pentru a naviga pe internet în limba ta, este necesară cea mai recentă versiune de Chrome</translation>
 <translation id="7243308994586599757">Opțiuni disponibile în partea de jos a ecranului</translation>
+<translation id="7248069434667874558">Verifică dacă <ph name="TARGET_DEVICE_NAME" /> are sincronizarea activată în Chrome</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> selectate</translation>
 <translation id="7274013316676448362">Site blocat</translation>
 <translation id="7290209999329137901">Nu se poate redenumi</translation>
@@ -955,6 +960,7 @@ Acest site NU primește acces la cameră. Imaginile camerei sunt vizibile doar p
 <translation id="8007176423574883786">Dezactivată pentru acest dispozitiv</translation>
 <translation id="8013372441983637696">Șterge și datele Chrome de pe acest dispozitiv</translation>
 <translation id="8015452622527143194">Readuce pagina la dimensiunea prestabilită</translation>
+<translation id="8015780634880457457">Google poate verifica dacă parolele tale fac parte dintr-o încălcare a securității datelor</translation>
 <translation id="802154636333426148">Descărcarea nu a reușit</translation>
 <translation id="8026334261755873520">Șterge datele de navigare</translation>
 <translation id="8035133914807600019">Dosar nou…</translation>
@@ -1017,6 +1023,7 @@ Acest site NU primește acces la cameră. Imaginile camerei sunt vizibile doar p
 <translation id="8445448999790540984">Nu se pot exporta parole</translation>
 <translation id="8447861592752582886">Revocă permisiunea de accesare a dispozitivului</translation>
 <translation id="8461694314515752532">Criptează datele sincronizate folosind propria expresie de acces pentru sincronizare</translation>
+<translation id="8466613982764129868">Asigură-te că <ph name="TARGET_DEVICE_NAME" /> este conectat la internet</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Disponibil offline</translation>
 <translation id="8489271220582375723">Deschide pagina Istoric</translation>
@@ -1107,6 +1114,7 @@ Acest site NU primește acces la cameră. Imaginile camerei sunt vizibile doar p
 <translation id="9188680907066685419">Deconectează-te de la contul gestionat</translation>
 <translation id="9204836675896933765">1 fișier rămas</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9209888181064652401">Nu pot apela</translation>
 <translation id="9219103736887031265">Imagini</translation>
 <translation id="926205370408745186">Elimină activitatea în Chrome din Bunăstarea digitală</translation>
 <translation id="932327136139879170">Pagina de pornire</translation>

@@ -559,9 +559,8 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AssistantStateUpdateAfterShow) {
   screen_waiter.set_assert_next_screen();
   screen_waiter.Wait();
 
-  // Value prop screen will not be sohwn  until it receives assistant settings
-  // config, which is blocked on voice interaction controller
-  // client getting out of NOT_READY state.
+  // Value prop screen will not be sohwn until it receives assistant settings
+  // config, which is blocked on the Assistant state becomes READY state.
   test::OobeJS().ExpectHiddenPath({"assistant-optin-flow-card", "value-prop"});
   test::OobeJS().ExpectVisiblePath({"assistant-optin-flow-card", "loading"});
 

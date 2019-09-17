@@ -1,0 +1,14 @@
+-PersonalDataManagerTest*
+-RemoteSuggestionsProviderImplTest.*
+-S2LangQuadTreeDataTest.TreeContainsDataRank*
+-SecurityStateContentUtilsTest.*
+-ShortcutsProviderTest.*
+-SimpleJsonStringSchemaValidatingPolicyHandlerTest.*
+-SyncBookmarkDataTypeControllerTest.*
+-SyncedBookmarkTrackerTest.*
+-TranslateManagerTest.*
+-TranslatePrefsTest.*
+-TranslateUIDelegateTest.*
+-URLBlacklistPolicyHandlerTest.CheckPolicySettings_*
+-USS/AutofillWalletSyncBridge.MergeSyncData_*
+-ZeroSuggestProviderTest.*

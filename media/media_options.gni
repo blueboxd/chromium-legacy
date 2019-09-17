@@ -30,7 +30,10 @@ media_subcomponent_deps = [
 ]
 
 if (is_fuchsia) {
-  media_subcomponent_deps += [ "//media/fuchsia/cdm" ]
+  media_subcomponent_deps += [
+    "//media/fuchsia/cdm",
+    "//media/fuchsia/common",
+  ]
 }
 
 declare_args() {

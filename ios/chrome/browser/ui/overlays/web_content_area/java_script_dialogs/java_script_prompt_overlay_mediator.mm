@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/overlays/overlay_request_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_dialog_blocking_action.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_dialog_overlay_coordinator+subclassing.h"
+#import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_dialog_overlay_mediator+subclassing.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -33,10 +34,6 @@ NSString* const kJavaScriptPromptTextFieldAccessibiltyIdentifier =
 @implementation JavaScriptPromptOverlayMediator
 
 #pragma mark - Accessors
-
-- (const JavaScriptDialogSource*)requestSource {
-  return &self.config->source();
-}
 
 - (JavaScriptPromptOverlayRequestConfig*)config {
   return self.request->GetConfig<JavaScriptPromptOverlayRequestConfig>();
@@ -88,6 +85,18 @@ NSString* const kJavaScriptPromptTextFieldAccessibiltyIdentifier =
   self.request->set_response(
       OverlayResponse::CreateWithInfo<JavaScriptPromptOverlayResponseInfo>(
           base::SysNSStringToUTF8(textInput)));
+}
+
+@end
+
+@implementation JavaScriptPromptOverlayMediator (Subclassing)
+
+- (const JavaScriptDialogSource&)requestSource {
+  return self.config->source();
+}
+
+- (const std::string&)requestMessage {
+  return self.config->message();
 }
 
 @end

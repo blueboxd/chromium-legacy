@@ -621,7 +621,8 @@ class PixelTestPages(object):
   # Pages that should be run with GPU rasterization enabled.
   @staticmethod
   def GpuRasterizationPages(base_name):
-    browser_args = ['--force-gpu-rasterization']
+    browser_args = ['--force-gpu-rasterization',
+                    '--disable-software-compositing-fallback']
     return [
       PixelTestPage(
         'pixel_background.html',
@@ -744,6 +745,7 @@ class PixelTestPages(object):
   def ExperimentalCanvasFeaturesPages(base_name):
     browser_args = [
       '--enable-experimental-web-platform-features'] # for lowLatency
+    accelerated_args = ['--disable-software-compositing-fallback']
     unaccelerated_args = [
       '--disable-accelerated-2d-canvas',
       '--disable-gpu-compositing']
@@ -833,14 +835,14 @@ class PixelTestPages(object):
         base_name + '_OffscreenCanvasAccelerated2D',
         test_rect=[0, 0, 360, 200],
         revision=12,
-        browser_args=browser_args),
+        browser_args=browser_args + accelerated_args),
 
       PixelTestPage(
         'pixel_offscreenCanvas_2d_commit_worker.html',
         base_name + '_OffscreenCanvasAccelerated2DWorker',
         test_rect=[0, 0, 360, 200],
         revision=12,
-        browser_args=browser_args),
+        browser_args=browser_args + accelerated_args),
 
       PixelTestPage(
         'pixel_offscreenCanvas_2d_commit_main.html',
@@ -889,7 +891,7 @@ class PixelTestPages(object):
         base_name + '_CanvasDisplayLinearRGBAccelerated2D',
         test_rect=[0, 0, 140, 140],
         revision=10,
-        browser_args=browser_args),
+        browser_args=browser_args + accelerated_args),
 
       PixelTestPage(
         'pixel_canvas_display_linear-rgb.html',
@@ -910,7 +912,7 @@ class PixelTestPages(object):
         base_name + '_CanvasDisplaySRGBAccelerated2D',
         test_rect=[0, 0, 140, 140],
         revision=0, # not used, unsupported
-        browser_args=browser_args),
+        browser_args=browser_args + accelerated_args),
 
       PixelTestPage(
         'pixel_canvas_display_srgb.html',

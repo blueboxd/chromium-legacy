@@ -30,9 +30,9 @@ const char kTestMetadataKey[] = "TraceEventAgentTestMetadata";
 
 class MockRecorder : public mojom::Recorder {
  public:
-  explicit MockRecorder(mojom::RecorderRequest request)
-      : binding_(this, std::move(request)) {
-    binding_.set_connection_error_handler(base::BindRepeating(
+  explicit MockRecorder(mojo::PendingReceiver<mojom::Recorder> receiver)
+      : receiver_(this, std::move(receiver)) {
+    receiver_.set_disconnect_handler(base::BindRepeating(
         &MockRecorder::OnConnectionError, base::Unretained(this)));
   }
 
@@ -75,7 +75,7 @@ class MockRecorder : public mojom::Recorder {
       quit_closure_.Run();
   }
 
-  mojo::Binding<mojom::Recorder> binding_;
+  mojo::Receiver<mojom::Recorder> receiver_;
   std::string events_;
   std::string metadata_;
   base::Closure quit_closure_;
@@ -98,10 +98,11 @@ class TraceEventAgentTest : public testing::Test {
   }
 
   void StopAndFlush(base::Closure quit_closure) {
-    mojom::RecorderPtr recorder_ptr;
-    recorder_.reset(new MockRecorder(MakeRequest(&recorder_ptr)));
+    mojo::PendingRemote<mojom::Recorder> recorder;
+    recorder_.reset(
+        new MockRecorder(recorder.InitWithNewPipeAndPassReceiver()));
     recorder_->set_quit_closure(quit_closure);
-    TraceEventAgent::GetInstance()->StopAndFlush(std::move(recorder_ptr));
+    TraceEventAgent::GetInstance()->StopAndFlush(std::move(recorder));
   }
 
   void AddMetadataGeneratorFunction(

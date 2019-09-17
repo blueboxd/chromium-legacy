@@ -75,6 +75,7 @@
   "overlay-strategies",
   "set-market-url-for-testing",
   "show-autofill-type-predictions",
+  "show-bluetooth-debug-log-toggle",
   "show-taps",
   "show-touch-hud",
   "tint-gl-composited-content",

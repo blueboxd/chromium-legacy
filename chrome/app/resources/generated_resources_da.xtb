@@ -479,6 +479,7 @@
 <translation id="1698122934742150150">Kun for den aktuelle inkognitosession</translation>
 <translation id="1698650002254827833">Listen med apps kunne ikke indlæses. Prøv igen.</translation>
 <translation id="1701062906490865540">Fjern denne person</translation>
+<translation id="1703331064825191675">Glem aldrig dine adgangskoder igen</translation>
 <translation id="1706586824377653884">Tilføjet af din administrator</translation>
 <translation id="1706625117072057435">Zoomniveauer</translation>
 <translation id="1708338024780164500">(inaktiv)</translation>
@@ -528,6 +529,7 @@
 <translation id="1764226536771329714">beta</translation>
 <translation id="176587472219019965">&amp;Nyt vindue</translation>
 <translation id="1766575458646819543">Fuld skærm er afsluttet</translation>
+<translation id="1766957085594317166">Gem adgangskoder sikkert på din Google-konto. Så behøver du aldrig at indtaste dem igen.</translation>
 <translation id="1768278914020124551">Ups! Der var problemer med at oprette forbindelse til loginserveren. Tjek din netværksforbindelse og domænenavnet, og prøv igen.</translation>
 <translation id="1769104665586091481">Åbn link i nyt &amp;vindue</translation>
 <translation id="1773212559869067373">Godkendelsescertifikatet blev afvist lokalt</translation>
@@ -1875,6 +1877,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="3748026146096797577">Ikke forbundet</translation>
 <translation id="3752582316358263300">OK...</translation>
 <translation id="3752673729237782832">Mine enheder</translation>
+<translation id="3753033997400164841">Gem én gang. Brug overalt.</translation>
 <translation id="3755411799582650620">Din <ph name="PHONE_NAME" /> kan nu også låse denne <ph name="DEVICE_TYPE" /> op.</translation>
 <translation id="375636864092143889">Websitet anvender din mikrofon</translation>
 <translation id="3757733214359997190">Der blev ikke fundet nogen websites</translation>
@@ -2167,7 +2170,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4146026355784316281">Åbn altid med systemets visningsprogram</translation>
 <translation id="4146785383423576110">Nulstil og ryd op</translation>
 <translation id="4147911968024186208">Prøv igen. Hvis du ser denne fejl igen, skal du kontakte din supportrepræsentant.</translation>
-<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">Skærm</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 fane}one{# faner}other{# faner}}</translation>
 <translation id="4154664944169082762">Fingeraftryk</translation>
@@ -2208,6 +2210,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4232375817808480934">Konfigurer Kerberos</translation>
 <translation id="4235200303672858594">Hele skærmen</translation>
 <translation id="4235965441080806197">Annuller login</translation>
+<translation id="4242145785130247982">Flere klientcertifikater understøttes ikke</translation>
 <translation id="4242533952199664413">Åbn Indstillinger</translation>
 <translation id="4242577469625748426">Det lykkedes ikke at installere politikindstillinger på enheden: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Find flere apps til styluspenne</translation>
@@ -2666,6 +2669,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4957949153200969297">Aktivér kun funktioner, der er relateret til <ph name="IDS_SHORT_PRODUCT_NAME" />-synkronisering</translation>
 <translation id="4959262764292427323">Adgangskoder gemmes på din Google-konto, så du kan bruge dem på enhver enhed</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> – <ph name="PROFILE_NAME" /></translation>
+<translation id="496185450405387901">Denne app blev installeret af din administrator.</translation>
 <translation id="4964455510556214366">Opstilling</translation>
 <translation id="4964673849688379040">Kontrollerer...</translation>
 <translation id="4965808351167763748">Er du sikker på, at du vil konfigurere denne enhed til at køre Hangouts Meet?</translation>
@@ -2923,6 +2927,7 @@ Sørg for, at du har tillid til dette website, før du starter VR.</translation>
 <translation id="5360150013186312835">Vis på værktøjslinjen</translation>
 <translation id="5362741141255528695">Vælg privat nøglefil.</translation>
 <translation id="5363109466694494651">Powerwash, og vend tilbage</translation>
+<translation id="5365716706805792666">Google kan tjekke, om dine adgangskoder har været del af et brud på datasikkerheden. Denne funktion aktiveres, når du logger ind med din Google-konto.</translation>
 <translation id="5365881113273618889">Den valgte mappe indeholder følsomme filer. Er du sikker på, at du vil give "<ph name="APP_NAME" />" permanent skriveadgang til denne mappe?</translation>
 <translation id="5367091008316207019">Læser fil...</translation>
 <translation id="5368720394188453070">Din telefon er låst. Lås den op for at få adgang.</translation>
@@ -3520,7 +3525,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6212039847102026977">Vis avancerede netværksegenskaber</translation>
 <translation id="6212168817037875041">Sluk skærmen</translation>
 <translation id="6212752530110374741">Send link via mail</translation>
-<translation id="6214642087594370545">Vis en advarsel, når du bruger en usikker adgangskode, som har været involveret i et brud på datasikkerheden. Funktionen kan kun benyttes af brugere, der er logget ind.</translation>
 <translation id="6216696360484424239">Log automatisk ind</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> er offline. Opret forbindelse til internettet, og prøv igen.</translation>
 <translation id="6220413761270491930">Der opstod en fejl ved indlæsning af udvidelsen</translation>
@@ -3877,6 +3881,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6769712124046837540">Tilføjer printer...</translation>
 <translation id="6770664076092644100">Bekræft via NFC</translation>
 <translation id="6771503742377376720">Er en certificeringsautoritet</translation>
+<translation id="6775163072363532304">Tilgængelige enheder vises her.</translation>
 <translation id="6777817260680419853">Omdirigeringen blev blokeret</translation>
 <translation id="6778737459546443941">Din forælder har ikke godkendt det endnu</translation>
 <translation id="677965093459947883">Meget lille</translation>
@@ -4337,6 +4342,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7441830548568730290">Andre brugere</translation>
 <translation id="7442465037756169001">Dit Hangouts Meet-hardware er klar til konfiguration.</translation>
 <translation id="744341768939279100">Opret en ny profil</translation>
+<translation id="7443806024147773267">Få adgang til dine adgangskoder, så snart du logger ind på din Google-konto</translation>
 <translation id="7444046173054089907">Dette website er blokeret</translation>
 <translation id="7444983668544353857">Deaktiver <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">Installer apps automatisk</translation>
@@ -4749,6 +4755,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8014154204619229810">Opdateringsprogrammet kører i øjeblikket. Opdater om et minut for at kontrollere igen.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> kan ikke vende tilbage til den tidligere version. Prøv Powerwash i stedet.</translation>
 <translation id="8014210335923519270">Gør <ph name="IDS_SHORT_PRODUCT_NAME" /> og dens sikkerhed bedre ved at sende systemoplysninger og brug til Google</translation>
+<translation id="8015780634880457457">Google kan tjekke, om dine adgangskoder har været del af et brud på datasikkerheden</translation>
 <translation id="8016266267177410919">Midlertidig lagring</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Genvejen blev redigeret</translation>
@@ -4867,6 +4874,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8188389033983459049">Tjek enhedens indstillinger, og aktivér Bluetooth for at fortsætte</translation>
 <translation id="8190193592390505034">Forbinder til <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">Administrere dine apps, udvidelser og temaer</translation>
+<translation id="819464600477418284">Denne app kan ikke afinstalleres, fordi den er en del af Chrome OS.</translation>
 <translation id="8195027750202970175">Filstørrelse</translation>
 <translation id="8198323535106903877">Vi installerer disse <ph name="NUMBER_OF_APPS" /> apps til dig</translation>
 <translation id="8199300056570174101">Egenskaber for netværkstjeneste og enhed</translation>
@@ -4927,6 +4935,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
     <ph name="BEGIN_PARAGRAPH2" />Hvis denne funktion deaktiveres, påvirker det ikke enhedens evne til at sende de oplysninger, den har brug for i forbindelse med vigtige tjenester som f.eks. systemopdateringer og sikkerhedsfunktioner.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />TEjeren kan styre funktionen under Indstillinger &gt; Avanceret &gt; Send automatisk diagnostik og brugsdata til Google.<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />Hvis yderligere indstillinger for Web- og appaktivitet er aktiveret, gemmes disse data muligvis på din Google-konto. Du kan få flere oplysninger om disse indstillinger og ændring af dem på families.google.com.<ph name="END_PARAGRAPH4" /></translation>
+<translation id="826905130698769948">Ugyldigt klientcertifikat</translation>
 <translation id="8270242299912238708">PDF-dokumenter</translation>
 <translation id="827097179112817503">Vis knappen Startside</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 bogmærke er slettet}one{# bogmærke er slettet}other{# bogmærker er slettet}}</translation>
@@ -5341,6 +5350,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8874184842967597500">Ikke tilsluttet</translation>
 <translation id="8876307312329369159">Denne indstilling kan ikke ændres i en demosession.</translation>
 <translation id="8877448029301136595">[parent directory]</translation>
+<translation id="8879220587046205278">Apps fra Google Play skal muligvis have fuld adgang til filsystemet for at læse og skrive filer på eksterne lagerenheder. De filer og mapper, som oprettes på enheden, er synlige for alle, der bruger det eksterne drev.</translation>
 <translation id="8879284080359814990">&amp;Vis som fane</translation>
 <translation id="8879921471468674457">Husk loginoplysninger</translation>
 <translation id="8881020143150461183">Prøv igen. Kontakt <ph name="CARRIER_NAME" /> for at få teknisk support.</translation>

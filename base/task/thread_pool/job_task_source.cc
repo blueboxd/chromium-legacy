@@ -19,6 +19,39 @@
 namespace base {
 namespace internal {
 
+JobTaskSource::State::State() = default;
+JobTaskSource::State::~State() = default;
+
+JobTaskSource::State::Value JobTaskSource::State::Cancel() {
+  return {value_.fetch_or(kCanceledMask, std::memory_order_relaxed)};
+}
+
+JobTaskSource::State::Value
+JobTaskSource::State::TryIncrementWorkerCountRelease(size_t max_concurrency) {
+  uint32_t value_before_add = value_.load(std::memory_order_relaxed);
+
+  // std::memory_order_release on success to establish Release-Acquire ordering
+  // with DecrementWorkerCountAcquire() (see WillRunTask()).
+  while (!(value_before_add & kCanceledMask) &&
+         (value_before_add >> kWorkerCountBitOffset) < max_concurrency &&
+         !value_.compare_exchange_weak(
+             value_before_add, value_before_add + kWorkerCountIncrement,
+             std::memory_order_release, std::memory_order_relaxed)) {
+  }
+  return {value_before_add};
+}
+
+JobTaskSource::State::Value
+JobTaskSource::State::DecrementWorkerCountAcquire() {
+  const size_t value_before_sub = value_.fetch_sub(kWorkerCountIncrement);
+  DCHECK((value_before_sub >> kWorkerCountBitOffset) > 0);
+  return {value_before_sub};
+}
+
+JobTaskSource::State::Value JobTaskSource::State::Load() const {
+  return {value_.load(std::memory_order_relaxed)};
+}
+
 JobTaskSource::JobTaskSource(
     const Location& from_here,
     const TaskTraits& traits,
@@ -44,48 +77,46 @@ JobTaskSource::JobTaskSource(
 }
 
 JobTaskSource::~JobTaskSource() {
-#if DCHECK_IS_ON()
-  auto worker_count = worker_count_.load(std::memory_order_relaxed);
   // Make sure there's no outstanding active run operation left.
-  DCHECK(worker_count == 0U || worker_count == kInvalidWorkerCount)
-      << worker_count;
-#endif
+  DCHECK_EQ(state_.Load().worker_count(), 0U);
 }
 
 ExecutionEnvironment JobTaskSource::GetExecutionEnvironment() {
   return {SequenceToken::Create(), nullptr};
 }
 
+void JobTaskSource::Cancel(TaskSource::Transaction* transaction) {
+  // Sets the kCanceledMask bit on |state_| so that further calls to
+  // WillRunTask() never succeed. std::memory_order_relaxed is sufficient
+  // because this task source never needs to be re-enqueued after Cancel().
+  state_.Cancel();
+}
+
 TaskSource::RunStatus JobTaskSource::WillRunTask() {
   // When this call is caused by an increase of max concurrency followed by an
   // associated NotifyConcurrencyIncrease(), the priority queue lock guarantees
   // an happens-after relation with NotifyConcurrencyIncrease(). The memory
-  // operations on |worker_count| below and in DidProcessTask() use
+  // operations on |state| below and in DidProcessTask() use
   // std::memory_order_release and std::memory_order_acquire respectively to
   // establish a Release-Acquire ordering. This ensures that all memory
   // side-effects made before this point, including an increase of max
   // concurrency followed by NotifyConcurrencyIncrease() are visible to a
   // DidProcessTask() call which is ordered after this one.
   const size_t max_concurrency = GetMaxConcurrency();
-  size_t worker_count_before_add =
-      worker_count_.load(std::memory_order_relaxed);
+  const auto state_before_add =
+      state_.TryIncrementWorkerCountRelease(max_concurrency);
 
-  // std::memory_order_release on success to make the newest |max_concurrency|
-  // visible to a thread that calls DidProcessTask() containing a matching
-  // std::memory_order_acquire.
-  while (worker_count_before_add < max_concurrency &&
-         !worker_count_.compare_exchange_weak(
-             worker_count_before_add, worker_count_before_add + 1,
-             std::memory_order_release, std::memory_order_relaxed)) {
-  }
   // Don't allow this worker to run the task if either:
-  //   A) |worker_count_| is already at |max_concurrency|.
-  //   B) |max_concurrency| was lowered below or to |worker_count_|.
-  //   C) |worker_count_| was invalidated.
-  if (worker_count_before_add >= max_concurrency) {
-    // The caller is prevented from running a task from this TaskSource.
+  //   A) |state_| was canceled.
+  //   B) |worker_count| is already at |max_concurrency|.
+  //   C) |max_concurrency| was lowered below or to |worker_count|.
+  // Case A:
+  if (state_before_add.is_canceled())
     return RunStatus::kDisallowed;
-  }
+  const size_t worker_count_before_add = state_before_add.worker_count();
+  // Case B) or C):
+  if (worker_count_before_add >= max_concurrency)
+    return RunStatus::kDisallowed;
 
   DCHECK_LT(worker_count_before_add, max_concurrency);
   return max_concurrency == worker_count_before_add + 1
@@ -96,12 +127,12 @@ TaskSource::RunStatus JobTaskSource::WillRunTask() {
 size_t JobTaskSource::GetRemainingConcurrency() const {
   // std::memory_order_relaxed is sufficient because no other state is
   // synchronized with GetRemainingConcurrency().
-  const size_t worker_count = worker_count_.load(std::memory_order_relaxed);
+  const auto state = state_.Load();
   const size_t max_concurrency = GetMaxConcurrency();
   // Avoid underflows.
-  if (worker_count > max_concurrency)
+  if (state.is_canceled() || state.worker_count() > max_concurrency)
     return 0;
-  return max_concurrency - worker_count;
+  return max_concurrency - state.worker_count();
 }
 
 void JobTaskSource::NotifyConcurrencyIncrease() {
@@ -123,6 +154,10 @@ void JobTaskSource::NotifyConcurrencyIncrease() {
 
 size_t JobTaskSource::GetMaxConcurrency() const {
   return max_concurrency_callback_.Run();
+}
+
+bool JobTaskSource::ShouldYield() const {
+  return state_.Load().is_canceled();
 }
 
 #if DCHECK_IS_ON()
@@ -151,16 +186,15 @@ bool JobTaskSource::WaitForConcurrencyIncreaseUpdate(size_t recorded_version) {
 #endif  // DCHECK_IS_ON()
 
 Optional<Task> JobTaskSource::TakeTask(TaskSource::Transaction* transaction) {
-  DCHECK_GT(worker_count_.load(std::memory_order_relaxed), 0U);
+  // JobTaskSource members are not lock-protected so no need to acquire a lock
+  // if |transaction| is nullptr.
+  DCHECK_GT(state_.Load().worker_count(), 0U);
   DCHECK(worker_task_);
   return base::make_optional<Task>(from_here_, worker_task_, TimeDelta());
 }
 
 bool JobTaskSource::DidProcessTask(TaskSource::Transaction* transaction) {
-  size_t worker_count_before_sub =
-      worker_count_.load(std::memory_order_relaxed);
-
-  // std::memory_order_acquire on |worker_count_| is necessary to establish
+  // std::memory_order_acquire on |state_| is necessary to establish
   // Release-Acquire ordering (see WillRunTask()).
   // When the task source needs to be queued, either because the current task
   // yielded or because of NotifyConcurrencyIncrease(), one of the following is
@@ -169,7 +203,7 @@ bool JobTaskSource::DidProcessTask(TaskSource::Transaction* transaction) {
   //      extra work yet): Incorrectly returning false is fine and the memory
   //      barrier may be ineffective.
   //   B) The JobTaskSource() is no longer in the queue: The Release-Acquire
-  //      ordering with WillRunTask() established by |worker_count| ensures that
+  //      ordering with WillRunTask() established by |state_| ensures that
   //      the upcoming call for GetMaxConcurrency() happens-after any
   //      NotifyConcurrencyIncrease() that happened-before WillRunTask(). If
   //      this task completed because it yielded, this barrier guarantees that
@@ -177,19 +211,17 @@ bool JobTaskSource::DidProcessTask(TaskSource::Transaction* transaction) {
   //
   // Note that stale values the other way around (incorrectly re-enqueuing) are
   // not an issue because the queues support empty task sources.
-  while (worker_count_before_sub != kInvalidWorkerCount &&
-         !worker_count_.compare_exchange_weak(
-             worker_count_before_sub, worker_count_before_sub - 1,
-             std::memory_order_acquire, std::memory_order_relaxed)) {
-  }
-  if (worker_count_before_sub == kInvalidWorkerCount)
+  const auto state_before_sub = state_.DecrementWorkerCountAcquire();
+
+  // A canceled task source should never get re-enqueued.
+  if (state_before_sub.is_canceled())
     return false;
 
-  DCHECK_GT(worker_count_before_sub, 0U);
+  DCHECK_GT(state_before_sub.worker_count(), 0U);
 
   // Re-enqueue the TaskSource if the task ran and the worker count is below the
   // max concurrency.
-  return worker_count_before_sub <= GetMaxConcurrency();
+  return state_before_sub.worker_count() <= GetMaxConcurrency();
 }
 
 SequenceSortKey JobTaskSource::GetSortKey() const {
@@ -197,12 +229,7 @@ SequenceSortKey JobTaskSource::GetSortKey() const {
 }
 
 Optional<Task> JobTaskSource::Clear(TaskSource::Transaction* transaction) {
-  // Invalidate |worker_count_| so that further calls to WillRunTask() never
-  // succeed. std::memory_order_relaxed is sufficient because this task source
-  // never needs to be re-enqueued after Clear().
-  size_t worker_count_before_store =
-      worker_count_.exchange(kInvalidWorkerCount, std::memory_order_relaxed);
-  DCHECK_GT(worker_count_before_store, 0U);
+  Cancel();
   // Nothing is cleared since other workers might still racily run tasks. For
   // simplicity, the destructor will take care of it once all references are
   // released.

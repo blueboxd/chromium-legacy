@@ -140,6 +140,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.top.Toolbar;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
@@ -154,7 +155,6 @@ import org.chromium.chrome.browser.vr.ArDelegate;
 import org.chromium.chrome.browser.vr.ArDelegateProvider;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.webapps.addtohomescreen.AddToHomescreenManager;
-import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
@@ -2377,8 +2377,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     private void setLowEndTheme() {
-        if (getThemeId() == R.style.Theme_Chromium_WithWindowAnimation_LowEnd)
+        if (getThemeId() == R.style.Theme_Chromium_WithWindowAnimation_LowEnd) {
             setTheme(R.style.Theme_Chromium_WithWindowAnimation_LowEnd);
+        }
     }
 
     /**
@@ -2400,8 +2401,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     @Override
     public boolean onActivityResultWithNative(int requestCode, int resultCode, Intent intent) {
         if (super.onActivityResultWithNative(requestCode, resultCode, intent)) return true;
-        if (VrModuleProvider.getDelegate().onActivityResultWithNative(requestCode, resultCode))
+        if (VrModuleProvider.getDelegate().onActivityResultWithNative(requestCode, resultCode)) {
             return true;
+        }
         return false;
     }
 
@@ -2486,8 +2488,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     public boolean startActivityIfNeeded(Intent intent, int requestCode, Bundle options) {
         // Avoid starting Activities when possible while in VR.
         if (VrModuleProvider.getDelegate().isInVr()
-                && !VrModuleProvider.getIntentDelegate().isVrIntent(intent))
+                && !VrModuleProvider.getIntentDelegate().isVrIntent(intent)) {
             return false;
+        }
         return super.startActivityIfNeeded(intent, requestCode, options);
     }
 

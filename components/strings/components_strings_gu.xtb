@@ -71,6 +71,7 @@
 <translation id="1292701964462482250">"તમારા કમ્પ્યુટરમાંનું સૉફ્ટવેર Chromeને સુરક્ષિત રીતે વેબ સાથે કનેક્ટ થવાથી અટકાવે છે" (માત્ર Windows કમ્પ્યુટર)</translation>
 <translation id="1294154142200295408">આદેશ વાક્યમાં વિવિધતા</translation>
 <translation id="129553762522093515">તાજેતરમાં બંધ કરેલા</translation>
+<translation id="1298536327547837046">માલવેરની તપાસ કરવી</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />તમારી કૂકીઝને સાફ કરવાનો પ્રયાસ કરો<ph name="END_LINK" /></translation>
 <translation id="1307966114820526988">નાપસંદ કરેલી સુવિધાઓ</translation>
 <translation id="1320233736580025032">Prc1 (એન્વલપ)</translation>
@@ -167,6 +168,7 @@
 <translation id="1734878702283171397">સિસ્ટમ વ્યવસ્થાપકનો સંપર્ક કરવાનો પ્રયાસ કરો.</translation>
 <translation id="1740951997222943430">એક માન્ય સમાપ્તિ મહિનો દાખલ કરો</translation>
 <translation id="1743520634839655729">આગલી વખતે વધુ ઝડપથી ચુકવણી કરવા માટે, તમારા કાર્ડ, નામ અને બિલિંગ સરનામાને તમારા Google એકાઉન્ટ અને આ ઉપકરણ પર સાચવો.</translation>
+<translation id="1743570585616704562">ઓળખાયેલ નથી</translation>
 <translation id="1745880797583122200">તમારું બ્રાઉઝર મેનેજ કરવામાં આવે છે</translation>
 <translation id="17513872634828108">ટેબ્સ ખોલો</translation>
 <translation id="1753706481035618306">પૃષ્ઠ નંબર</translation>
@@ -428,6 +430,7 @@
 <translation id="320323717674993345">ચુકવણી રદ કરો</translation>
 <translation id="3207960819495026254">બુકમાર્ક કરેલ</translation>
 <translation id="3209034400446768650">પેજ કદાચ નાણાં વસૂલી શકે છે</translation>
+<translation id="3215092763954878852">WebAuthnનો ઉપયોગ કરી શક્યાં નથી</translation>
 <translation id="3225919329040284222">સર્વર એક પ્રમાણપત્ર પ્રસ્તુત કરે છે જે બિલ્ટ-ઇન અપેક્ષાઓ સાથે મેળ ખાતું નથી. આ અપેક્ષાઓમાં તમને સુરક્ષિત રાખવા માટે અમુક ચોક્કસ, ઉચ્ચ-સુરક્ષા વેબસાઇટ્સનો સમાવેશ થાય છે.</translation>
 <translation id="3226128629678568754">પૃષ્ઠને લોડ કરવા માટે જરૂરી ડેટા ફરીથી સબમિટ કરવા માટે ફરીથી લોડ કરો બટન દબાવો.</translation>
 <translation id="3227137524299004712">માઇક્રોફોન</translation>
@@ -563,6 +566,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{કોઈ નહીં}=1{1 સાઇટમાંથી }one{# સાઇટમાંથી }other{# સાઇટમાંથી }}</translation>
 <translation id="397105322502079400">ગણના કરી રહ્યું છે...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> અવરોધિત છે</translation>
+<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" />માં તમારા બ્રાઉઝર પર Chrome એન્ટરપ્રાઇઝ જોખમ સંરક્ષણ સેવા ચાલુ કરેલી છે. Chrome એન્ટરપ્રાઇઝ જોખમ સંરક્ષણ સેવાને તમારા અમુક ડેટાનો ઍક્સેસ છે.</translation>
 <translation id="3987940399970879459">1 MB કરતાં ઓછું</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{નજીકમાં 1 વેબ પેજ}one{નજીકમાં # વેબ પેજ}other{નજીકમાં # વેબ પેજ}}</translation>
 <translation id="4030383055268325496">&amp;ઉમેરવું પૂર્વવત્ કરો</translation>
@@ -631,6 +635,7 @@
 <translation id="4277028893293644418">પાસવર્ડ રીસેટ કરો</translation>
 <translation id="4279811152705618813">તમારા <ph name="DEVICE_TYPE" />ને <ph name="ENROLLMENT_DOMAIN" /> મેનેજ કરે છે</translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{આ કાર્ડને તમારા Google એકાઉન્ટમાં સાચવવામાં આવ્યું છે}one{આ કાર્ડને Google એકાઉન્ટમાં સાચવવામાં આવ્યાં છે}other{આ કાર્ડને Google એકાઉન્ટમાં સાચવવામાં આવ્યાં છે}}</translation>
+<translation id="428847186335018806">તમે Chromeમાં ડાઉનલોડ અથવા અપલોડ કરેલી ફાઇલો તપાસો.</translation>
 <translation id="42981349822642051">વિસ્તૃત કરો</translation>
 <translation id="4302965934281694568">Chou3 (એન્વલપ)</translation>
 <translation id="4305817255990598646">સ્વિચ</translation>
@@ -669,6 +674,7 @@
 <translation id="4506176782989081258">માન્યતા ભૂલ: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">સિસ્ટમ વ્યવસ્થાપકનો સંપર્ક કરીને</translation>
 <translation id="450710068430902550">વ્યવસ્થાપક સાથે શેર કરવું</translation>
+<translation id="4508814173490746936">ટચ IDનો ઉપયોગ કરી શક્યાં નથી</translation>
 <translation id="4510487217173779431">Chou4 (એન્વલપ)</translation>
 <translation id="4515275063822566619">કાર્ડ અને સરનામા Chrome અને Google એકાઉન્ટ (<ph name="ACCOUNT_EMAIL" />)માંથી છે. તમે તેને <ph name="BEGIN_LINK" />સેટિંગ<ph name="END_LINK" />માં જઈને મેનેજ કરી શકો છો.</translation>
 <translation id="4517607026994743406">Comm-10 (એન્વલપ)</translation>
@@ -764,6 +770,7 @@
 <translation id="5045550434625856497">ખોટો પાસવર્ડ</translation>
 <translation id="5056549851600133418">તમારા માટે લેખ</translation>
 <translation id="5068524481479508725">A10</translation>
+<translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 ઉપયોગમાં છે)}one{(# ઉપયોગમાં છે)}other{(# ઉપયોગમાં છે)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />પ્રૉક્સી ઍડ્રેસ ચેક કરવાનો પ્રયાસ કરો<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">સર્વરનું પ્રમાણપત્ર આ સમયે માન્ય નથી.</translation>
 <translation id="5087580092889165836">કાર્ડ ઉમેરો</translation>
@@ -993,6 +1000,7 @@
 <translation id="6302269476990306341">Chromeમાં Google આસિસ્ટંટ રોકાઈ રહ્યું છે</translation>
 <translation id="6305205051461490394"><ph name="URL" />, પહોંચવા યોગ્ય નથી.</translation>
 <translation id="6321917430147971392">તમારી DNS સેટિંગ્સ તપાસો</translation>
+<translation id="6322182122604171028">Windows Helloનો ઉપયોગ કરી શક્યાં નથી</translation>
 <translation id="6328639280570009161">નેટવર્ક પૂર્વાનુમાનને અક્ષમ કરવાનો પ્રયાસ કરો</translation>
 <translation id="6328784461820205019">"તમારું કનેક્શન ખાનગી નથી" અથવા "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" અથવા "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" અથવા "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" અથવા "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" અથવા "SSL પ્રમાણપત્ર ભૂલ"</translation>
 <translation id="6328786501058569169">આ સાઇટ ભ્રામક છે</translation>
@@ -1016,6 +1024,7 @@
 <translation id="6433490469411711332">સંપર્ક માહિતીમાં ફેરફાર કરો</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> એ કનેક્ટ કરવાનો ઇનકાર કર્યો.</translation>
 <translation id="6434309073475700221">કાઢી નાખો</translation>
+<translation id="6435221585574090192">Chrome એન્ટરપ્રાઇઝ જોખમ સંરક્ષણ સેવા દ્વારા ચિહ્નિત કરવામાં આવેલી સુરક્ષા ઇવેન્ટ વિશેનો ડેટા તમારા વ્યવસ્થાપક સાથે શેર કરો. આમાં પેજની URLs, ફાઇલનું નામ અને ફાઇલ મેટાડેટા, તમારું ડિવાઇસ વપરાશકર્તા નામ અને Chrome વપરાશકર્તા નામનો સમાવેશ હોય શકે.</translation>
 <translation id="6440503408713884761">અવગણી</translation>
 <translation id="6446163441502663861">Kahu (એન્વલપ)</translation>
 <translation id="6446608382365791566">વધુ માહિતી ઉમેરો</translation>
@@ -1060,6 +1069,7 @@
 <translation id="6671697161687535275">Chromium માંથી ફોર્મ સૂચન દૂર કરીએ?</translation>
 <translation id="6685834062052613830">સાઇન આઉટ કરો અને સેટઅપ પૂર્ણ કરો</translation>
 <translation id="6689271823431384964">તમે સાઇન ઇન કરેલું છે તેથી Chrome તમને તમારા કાર્ડ તમારા Google એકાઉન્ટમાં સાચવવાની ઑફર કરે છે. તમે સેટિંગમાં આ વર્તણૂકને બદલી શકો છો. કાર્ડધારકનું નામ તમારા એકાઉન્ટમાંથી આવે છે.</translation>
+<translation id="6707256370811247129">તમે Chromeમાં ડાઉનલોડ અથવા અપલોડ કરો છો તે કૅશ મેમરી અને ફાઇલોનું કન્ટેન્ટ તપાસો.</translation>
 <translation id="6710213216561001401">પાછલી</translation>
 <translation id="6710594484020273272">&lt;શોધ શબ્દ લખો&gt;</translation>
 <translation id="671076103358959139">નોંધણી ટોકન:</translation>
@@ -1078,6 +1088,7 @@
 <translation id="681021252041861472">ફરજિયાત</translation>
 <translation id="6810899417690483278">કસ્ટમાઇઝેશન ID</translation>
 <translation id="6825578344716086703">તમે <ph name="DOMAIN" /> પર પહોંચવાનો પ્રયાસ કર્યો, પરંતુ સર્વરે નબળા સહી ઍલ્ગોરિધમ (જેમ કે SHA-1)નો ઉપયોગ કરીને સહીિત કરેલું પ્રમાણપત્ર પ્રસ્તુત કર્યું. આનો અર્થ એ છે કે સર્વરે પ્રસ્તુત કરેલા સુરક્ષા પ્રમાણપત્રો બનાવટી હોય શકે છે અને તે સર્વર તમારું અપેક્ષિત સર્વર (તમે કોઈ હુમલાખોર સાથે વાર્તાલાપ કરતા હોય શકે) ન પણ હોય.</translation>
+<translation id="6826370046007623921">ડેટા નુકસાન અટકાવ</translation>
 <translation id="6831043979455480757">અનુવાદ કરો</translation>
 <translation id="6839929833149231406">ક્ષેત્ર</translation>
 <translation id="6852204201400771460">ઍપ ફરીથી લોડ કરીએ?</translation>
@@ -1224,6 +1235,7 @@
 <translation id="7542995811387359312">આપમેળે ક્રેડિટ કાર્ડ ભરણ અક્ષમ કર્યું છે કારણ કે આ ફોર્મ સુરક્ષિત કનેક્શનનો ઉપયોગ કરતું નથી.</translation>
 <translation id="7548892272833184391">કનેક્શન ભૂલો સુધારો</translation>
 <translation id="7549584377607005141">આ વેબપેજને તે ડેટાની જરૂર છે જે તમે પહેલાં બરાબર રીતે પ્રદર્શિત થાય તે માટે દાખલ કર્યો હતો. તમે આ ડેટા ફરીથી મોકલી શકો છો, પણ આમ કરીને તમે કોઈપણ ક્રિયા કે જે પેજ પહેલાં જ કરી ચૂક્યું છે તેનું પુનરાવર્તન કરશો.</translation>
+<translation id="7550637293666041147">તમારું ડિવાઇસ વપરાશકર્તા નામ અને Chrome વપરાશકર્તા નામ</translation>
 <translation id="7552846755917812628">નીચેની ટિપને અજમાવો:</translation>
 <translation id="7554791636758816595">નવું ટૅબ</translation>
 <translation id="7564049878696755256">તમે તમારા <ph name="ORG_NAME" /> એકાઉન્ટનો ઍક્સેસ ગુમાવી શકો છો અથવા તમને ઓળખ ચોરીનો અનુભવ થઈ શકે છે. Chrome તમને હમણાં જ તમારો પાસવર્ડ બદલવાની ભલામણ કરે છે.</translation>
@@ -1238,6 +1250,7 @@
 <translation id="7610193165460212391">મૂલ્ય <ph name="VALUE" /> શ્રેણી બહારનું છે.</translation>
 <translation id="7613889955535752492">સમાપ્તિ: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">તમારી પાસે પેહલાથી જ ડેટા છે જે તમારા Google એકાઉન્ટ પાસવર્ડના વિવિધ વર્ઝનનો ઉપયોગ કરીને એન્ક્રિપ્ટ કરેલો છે.</translation>
+<translation id="7625784245512586808">Chrome એન્ટરપ્રાઇઝ જોખમ સંરક્ષણ સેવા</translation>
 <translation id="7633909222644580952">કાર્યપ્રદર્શન ડેટા અને ક્રૅશ રિપોર્ટ</translation>
 <translation id="7637571805876720304">Chromium માંથી ક્રેડિટ કાર્ડ દૂર કરીએ?</translation>
 <translation id="7638605456503525968">સીરિયલ પોર્ટ</translation>
@@ -1348,6 +1361,7 @@
 <translation id="8211406090763984747">કનેક્શન સુરક્ષિત છે</translation>
 <translation id="8218327578424803826">સોંપાયેલ સ્થાન:</translation>
 <translation id="8220146938470311105">C7/C6 (એન્વલપ)</translation>
+<translation id="8220639454292072926">એન્ટરપ્રાઇઝ રિપોર્ટિંગ</translation>
 <translation id="8225771182978767009">આ કમ્પ્યુટરને સેટ કરનાર વ્યક્તિએ આ સાઇટને અવરોધિત કરવાનું પસંદ કર્યું છે.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">એક નવી છુપી વિંડોમાં પેજ ખોલો</translation>
@@ -1430,6 +1444,7 @@
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> નું &lt;abbr id="dnsDefinition"&gt;DNS સરનામું&lt;/abbr&gt; શોધી શકાયું નથી. સમસ્યાનું નિદાન કરી રહ્યાં છીએ.</translation>
 <translation id="874846938927089722">સ્વીકૃત ક્રેડિટ અને પ્રિપેઇડ કાર્ડ</translation>
 <translation id="874918643257405732">આ ટૅબને બુકમાર્ક કરો</translation>
+<translation id="8751426954251315517">કૃપા કરીને આગલી વખતે ફરી પ્રયાસ કરો</translation>
 <translation id="8759274551635299824">આ કાર્ડની સમયસીમા સમાપ્ત થઈ ગઈ છે</translation>
 <translation id="8761567432415473239">Google Safe Browsing ને તાજેતરમાં <ph name="SITE" /> પર <ph name="BEGIN_LINK" />હાનિકારક પ્રોગ્રામ્સ મળ્યાં<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB ઉપકરણ</translation>
@@ -1494,6 +1509,7 @@
 <translation id="9080712759204168376">ઑર્ડરનો સારાંશ</translation>
 <translation id="9089260154716455634">બિન-કામકાજી સમય સંબંધી નીતિ:</translation>
 <translation id="9095388113577226029">વધુ ભાષાઓ...</translation>
+<translation id="9098981495403789647">તમારા વ્યવસ્થાપકે તમારા બ્રાઉઝર પર Chrome એન્ટરપ્રાઇઝ જોખમ સંરક્ષણ સેવા ચાલુ કરેલી છે. Chrome એન્ટરપ્રાઇઝ જોખમ સંરક્ષણ સેવાને તમારા અમુક ડેટાનો ઍક્સેસ છે.</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> સામાન્ય રીતે તમારી માહિતીને સુરક્ષિત રાખવા માટે એન્ક્રિપ્શનનો ઉપયોગ કરે છે. જ્યારે આ સમયે Chromium દ્વારા <ph name="SITE" />થી કનેક્ટ કરવાનો પ્રયાસ થયો, ત્યારે વેબસાઇટે અસામાન્ય અને ખોટા લૉગ ઇન વિગતને પાછા મોકલ્યાં. આવું ત્યારે થઈ શકે જ્યારે કોઈ હુમલાખોર <ph name="SITE" /> હોવાનો ડોળ કરવાનો પ્રયાસ કરી રહ્યો હોવ અથવા કોઈ Wi-Fi સાઇન-ઇન સ્ક્રીને કનેક્શનમાં વિક્ષેપ પાડ્યો હોય. તમારી માહિતી હજી પણ સુરક્ષિત છે કારણ કે Chromium એ કોઈ પણ ડેટા વિનિમય થાય એ પહેલાં જ કનેક્શન રોકી દીધું.</translation>
 <translation id="9106062320799175032">બિલિંગ સરનામું ઉમેરો</translation>
 <translation id="9114524666733003316">કાર્ડ કન્ફર્મ કરી રહ્યાં છીએ...</translation>

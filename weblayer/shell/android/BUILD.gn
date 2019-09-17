@@ -133,3 +133,21 @@ generate_wrapper("run_weblayer_shell") {
     ":weblayer_support_apk",
   ]
 }
+
+instrumentation_test_apk("weblayer_instrumentation_test_apk") {
+  apk_name = "WebLayerInstrumentationTest"
+  apk_under_test = "//weblayer/shell/android:weblayer_shell_apk"
+  android_manifest = "javatests/AndroidManifest.xml"
+  min_sdk_version = 21
+  deps = [
+    "//base:base_java_test_support",
+    "//content/public/test/android:content_java_test_support",
+    "//third_party/android_support_test_runner:runner_java",
+  ]
+  java_files = [
+    "javatests/src/org/chromium/weblayer/test/NavigationTest.java",
+    "javatests/src/org/chromium/weblayer/test/WebLayerShellActivityTestRule.java",
+    "shell_apk/src/org/chromium/weblayer/shell/WebLayerShellActivity.java",
+  ]
+  additional_apks = [ "//weblayer/shell/android:weblayer_support_apk" ]
+}

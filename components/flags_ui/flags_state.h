@@ -44,6 +44,7 @@ enum {
   kOsCrOSOwnerOnly = 1 << 5,
   kOsIos = 1 << 6,
   kDeprecated = 1 << 7,
+  kOsFuchsia = 1 << 8,
 };
 
 // A flag controlling the behavior of the |ConvertFlagsToSwitches| function -

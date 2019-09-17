@@ -20,12 +20,6 @@
 
 namespace views {
 
-namespace {
-
-constexpr int64_t kTimeBeforeClearingMS = 1000;
-
-}  // namespace
-
 PrefixSelector::PrefixSelector(PrefixDelegate* delegate, View* host_view)
     : prefix_delegate_(delegate),
       host_view_(host_view),
@@ -39,7 +33,8 @@ void PrefixSelector::OnViewBlur() {
 
 bool PrefixSelector::ShouldContinueSelection() const {
   const base::TimeTicks now(tick_clock_->NowTicks());
-  return ((now - time_of_last_key_).InMilliseconds() < kTimeBeforeClearingMS);
+  constexpr auto kTimeBeforeClearing = base::TimeDelta::FromSeconds(1);
+  return (now - time_of_last_key_) < kTimeBeforeClearing;
 }
 
 void PrefixSelector::SetCompositionText(

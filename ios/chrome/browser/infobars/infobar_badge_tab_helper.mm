@@ -40,6 +40,9 @@ void InfobarBadgeTabHelper::UpdateBadgeForInfobarAccepted(
     infobar_badge_models_[infobar_type] = badgeModel;
 }
 
+void InfobarBadgeTabHelper::UpdateBadgeForInfobarBannerDismissed(
+    InfobarType infobar_type) {}
+
 std::vector<id<BadgeItem>> InfobarBadgeTabHelper::GetInfobarBadgeItems() {
   // Return all infobar badge items.
   std::vector<id<BadgeItem>> infobar_badges_items;

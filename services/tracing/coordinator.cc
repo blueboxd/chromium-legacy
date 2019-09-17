@@ -23,6 +23,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
@@ -72,11 +73,12 @@ class Coordinator::TraceStreamer : public base::SupportsWeakPtr<TraceStreamer> {
       const std::string& label,
       mojom::TraceDataType type,
       base::WeakPtr<AgentRegistry::AgentEntry> agent_entry) {
-    mojom::RecorderPtr ptr;
-    mojom::RecorderRequest request = MakeRequest(&ptr);
+    mojo::PendingRemote<mojom::Recorder> remote;
+    mojo::PendingReceiver<mojom::Recorder> receiver =
+        remote.InitWithNewPipeAndPassReceiver();
     if (processed_labels_.count(label) == 0) {
       auto recorder = std::make_unique<Recorder>(
-          std::move(request), type,
+          std::move(receiver), type,
           base::BindRepeating(&Coordinator::TraceStreamer::OnRecorderDataChange,
                               AsWeakPtr(), label));
       recorders_[label].insert(std::move(recorder));
@@ -88,7 +90,7 @@ class Coordinator::TraceStreamer : public base::SupportsWeakPtr<TraceStreamer> {
     // from the main thread.
     main_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&Coordinator::SendRecorder, coordinator_,
-                                  agent_entry, std::move(ptr)));
+                                  agent_entry, std::move(remote)));
   }
 
   // Called from |main_task_runner_| either after flushing is complete or at
@@ -521,14 +523,15 @@ void Coordinator::SendStopTracingToAgent(
 
 void Coordinator::SendRecorder(
     base::WeakPtr<AgentRegistry::AgentEntry> agent_entry,
-    mojom::RecorderPtr recorder) {
+    mojo::PendingRemote<mojom::Recorder> recorder) {
   if (agent_entry) {
     agent_entry->agent()->StopAndFlush(std::move(recorder));
   } else {
     // Recorders are created and closed on |backend_task_runner_|.
+    mojo::Remote<mojom::Recorder> remote_recorder(std::move(recorder));
     backend_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce([](mojom::RecorderPtr ptr) {}, std::move(recorder)));
+        FROM_HERE, base::BindOnce([](mojo::Remote<mojom::Recorder> ptr) {},
+                                  std::move(remote_recorder)));
   }
 }
 
@@ -545,14 +548,14 @@ void Coordinator::OnFlushDone() {
 
 void Coordinator::SendStopTracingWithNoOpRecorderToAgent(
     AgentRegistry::AgentEntry* agent_entry) {
-  mojom::RecorderPtr ptr;
-  // We need to create a message pipe and bind |ptr| to one end of it before
-  // sending |ptr| to the agent; otherwise, the agent will fail as soon as it
-  // tries to invoke a method on |ptr|. We do not have to bind the
-  // implementation end of the message pipe since we are going to ignore the
-  // messages.
-  MakeRequest(&ptr);
-  agent_entry->agent()->StopAndFlush(std::move(ptr));
+  mojo::PendingRemote<mojom::Recorder> pending_remote;
+  // We need to create a message pipe and bind |pending_remote| to one end of it
+  // before sending |pending_remote| to the agent; otherwise, the agent will
+  // fail as soon as it tries to invoke a method on |pending_remote|. We do not
+  // have to bind the implementation end of the message pipe since we are going
+  // to ignore the messages.
+  auto receiver = pending_remote.InitWithNewPipeAndPassReceiver();
+  agent_entry->agent()->StopAndFlush(std::move(pending_remote));
 }
 
 void Coordinator::IsTracing(IsTracingCallback callback) {

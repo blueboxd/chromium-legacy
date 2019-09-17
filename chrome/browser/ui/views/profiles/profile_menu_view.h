@@ -102,6 +102,7 @@ class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
   void BuildAutofillButtons();
   void BuildAccountFeatureButtons();
   void BuildSelectableProfiles();
+  void BuildProfileFeatureButtons();
 
   // Adds the profile chooser view.
   void AddProfileMenuView(AvatarMenu* avatar_menu);

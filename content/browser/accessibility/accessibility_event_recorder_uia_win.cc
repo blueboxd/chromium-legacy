@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_com_initializer.h"
+#include "base/win/scoped_safearray.h"
 #include "base/win/scoped_variant.h"
 #include "base/win/windows_version.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_utils_win.h"
@@ -301,14 +302,14 @@ AccessibilityEventRecorderUia::Thread::EventHandler::HandleFocusChangedEvent(
   if (!owner_)
     return S_OK;
 
-  base::win::ScopedBstr id;
-  sender->get_CurrentAutomationId(id.Receive());
-  base::win::ScopedVariant id_variant(id, id.Length());
+  base::win::ScopedSafearray id;
+  sender->GetRuntimeId(id.Receive());
+  base::win::ScopedVariant id_variant(id.Release());
 
   Microsoft::WRL::ComPtr<IUIAutomationElement> element_found;
   Microsoft::WRL::ComPtr<IUIAutomationCondition> condition;
 
-  owner_->uia_->CreatePropertyCondition(UIA_AutomationIdPropertyId, id_variant,
+  owner_->uia_->CreatePropertyCondition(UIA_RuntimeIdPropertyId, id_variant,
                                         &condition);
   CHECK(condition);
   root_->FindFirst(TreeScope::TreeScope_Subtree, condition.Get(),

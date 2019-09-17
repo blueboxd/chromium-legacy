@@ -285,12 +285,13 @@ void CastTracingAgent::StartTracing(const std::string& config,
                              base::Unretained(this), std::move(callback)));
 }
 
-void CastTracingAgent::StopAndFlush(tracing::mojom::RecorderPtr recorder) {
+void CastTracingAgent::StopAndFlush(
+    mojo::PendingRemote<tracing::mojom::Recorder> recorder) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // This may be called even if we are not tracing.
   if (!session_)
     return;
-  recorder_ = std::move(recorder);
+  recorder_.Bind(std::move(recorder));
   session_->StopTracing(base::BindRepeating(&CastTracingAgent::HandleTraceData,
                                             base::Unretained(this)));
 }

@@ -18,7 +18,7 @@
 <translation id="1383876407941801731">ค้นหา</translation>
 <translation id="1398853756734560583">ย่อ</translation>
 <translation id="1409544243779336081">แอปแนะนำ</translation>
-<translation id="1450753235335490080">แชร์<ph name="CONTENT_TYPE" />ไม่ได้</translation>
+<translation id="1450753235335490080">แชร์<ph name="CONTENT_TYPE" />ไม่สำเร็จ</translation>
 <translation id="1498028757988366001">คุณเคยค้นหารายการนี้ การลบ "<ph name="QUERY" />" ออกจากประวัติการเข้าชมจะนำรายการนี้ออกจากบัญชีของคุณในอุปกรณ์ทุกเครื่องอย่างถาวร</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 นาทีกับอีก }other{# นาทีกับอีก }}</translation>
 <translation id="1643823602425662293">การแจ้งเตือน</translation>
@@ -113,6 +113,7 @@
 <translation id="4788285488841504513">{MONTHS,plural, =1{เหลือ 1 เดือน}other{เหลือ # เดือน}}</translation>
 <translation id="4841881773802181781">การแทรก</translation>
 <translation id="4881695831933465202">เปิด</translation>
+<translation id="4888938634149558681">โทรออก</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 วินาที}other{# วินาที}}</translation>
 <translation id="4971687151119236543">แทร็กก่อนหน้าของสื่อ</translation>
 <translation id="5046499563572181734">แตะที่นี่</translation>

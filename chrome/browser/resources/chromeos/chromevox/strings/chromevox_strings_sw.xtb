@@ -232,6 +232,7 @@
 <translation id="27527859628328957">Ruka hadi kipengee kinachoweza kulengwa kinachofuata</translation>
 <translation id="2770781857296573485">Ingia ugunduaji wa kikundi</translation>
 <translation id="2777845298774924149">Imeondoka</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{+#}other{+#}}</translation>
 <translation id="2784959586797362050">Kama kawaida, unaweza kututumia maoni moja kwa moja kwa kubonyeza Tafuta+a kisha i. Tunasubiri maoni yako kwa hamu.</translation>
 <translation id="2800204403141299078">Hakuna vipengee zaidi tofauti.</translation>
 <translation id="2800780099804980316">Hakuna kichwa cha ngazi ya 1 iliyotangulia.</translation>
@@ -714,6 +715,7 @@
 <translation id="5956928062748260866">Mazungumzo</translation>
 <translation id="5963413905009737549">Sehemu</translation>
 <translation id="5968607524793740041">Onyesha menyu</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{na kipengee #}other{na vipengee #}}</translation>
 <translation id="5981446804259161541">Samawati ya Kijani Hafifu</translation>
 <translation id="5983179082906765664">Ongeza kiwango cha maelezo unapodurusu</translation>
 <translation id="5992285135956208197">Hati ya picha</translation>

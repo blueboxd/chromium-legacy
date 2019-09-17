@@ -23,6 +23,7 @@
 <translation id="169515659049020177">Maiusc</translation>
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">Aggiunge www. e .com all'indirizzo inserito nella barra degli indirizzi, quindi apre la pagina</translation>
+<translation id="1872219238824176091">Rimuovi il desktop corrente</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, quindi <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> o <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">Passa alla scheda successiva</translation>
 <translation id="2010818616644390445">Passa all'ultima scheda della finestra</translation>
@@ -42,6 +43,7 @@
 <translation id="2441202986792279177">Passa velocemente da una finestra all'altra</translation>
 <translation id="2454251766545114447">Diminuisci lo zoom dello schermo</translation>
 <translation id="2478303094958140141">Attiva o disattiva ChromeVox (funzione di lettura vocale)</translation>
+<translation id="2488661730534396940">Attiva il desktop a sinistra</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Scorre la pagina web verso il basso</translation>
 <translation id="2574014812750545982">Reimposta il livello di zoom nella pagina</translation>
@@ -49,6 +51,7 @@
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, quindi <ph name="TAB" /> o <ph name="RIGHT" /></translation>
 <translation id="2750942583782703988">Carica di nuovo la pagina corrente</translation>
 <translation id="2764005613199379871">Consente di impostare lo stato attivo nella barra degli indirizzi di ricerca</translation>
+<translation id="2774822903829597107">Crea un nuovo desktop</translation>
 <translation id="2789868185375229787">Diminuisce lo zoom nella pagina</translation>
 <translation id="2804480015716812239">Premi <ph name="ALT" /> e fai clic su un link</translation>
 <translation id="2830827904629746450">Aggancia una finestra a destra</translation>
@@ -100,6 +103,7 @@
 <translation id="4642092649622328492">Acquisisce lo screenshot parziale</translation>
 <translation id="4698850295812410683">Consente di mostrare gli strumenti stilo</translation>
 <translation id="4801989101741319327">Passa alla fine della parola successiva</translation>
+<translation id="4866066940972151697">Attiva il desktop a destra</translation>
 <translation id="4916163929714267752">Apre il link in una nuova finestra</translation>
 <translation id="5030659775136592441">Consente di mostrare Gestione Preferiti</translation>
 <translation id="5034421018520995080">Passa alla parte superiore della pagina</translation>

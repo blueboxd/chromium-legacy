@@ -33,7 +33,6 @@
 #include "components/history/core/browser/history_backend_notifier.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/keyword_id.h"
-#include "components/history/core/browser/sync/typed_url_sync_bridge.h"
 #include "components/history/core/browser/thumbnail_database.h"
 #include "components/history/core/browser/visit_tracker.h"
 #include "sql/init_status.h"
@@ -54,6 +53,7 @@ struct DownloadRow;
 class HistoryBackendClient;
 class HistoryBackendDBBaseTest;
 class HistoryBackendObserver;
+class HistoryBackend;
 class HistoryBackendTest;
 class HistoryDatabase;
 struct HistoryDatabaseParams;
@@ -486,12 +486,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   HistoryDatabase* db() const { return db_.get(); }
 
   ExpireHistoryBackend* expire_backend() { return &expirer_; }
-
-  void SetTypedURLSyncBridgeForTest(
-      std::unique_ptr<TypedURLSyncBridge> bridge) {
-    typed_url_sync_bridge_ = std::move(bridge);
-  }
 #endif
+
+  void SetTypedURLSyncBridgeForTest(std::unique_ptr<TypedURLSyncBridge> bridge);
 
   // Returns true if the passed visit time is already expired (used by the sync
   // code to avoid syncing visits that would immediately be expired).

@@ -19,6 +19,7 @@
 <translation id="2501953888035679275">আপনার ক্যামেরা ব্যবহার করে ছবি তুলুন এবং ভিডিও রেকর্ড করুন।</translation>
 <translation id="2549985041256363841">রেকর্ডিং শুরু করুন</translation>
 <translation id="2599796128805996109">পিছনের ক্যামেরা</translation>
+<translation id="2912439424121107408">এই ডিভাইসে এক্সপার্ট মোড কাজ করে না</translation>
 <translation id="2968794441791257519">ক্যামেরায় তোলা ফটো ও ভিডিও ডাউনলোড ফোল্ডারে সরিয়ে দেওয়া হবে। আপনি সেগুলি ফাইল থেকে অ্যাক্সেস করতে পারবেন।
 
         আপনার ফটো ও ভিডিওতে স্টোরেজ ব্যবহারের অনুমতি আছে এমন অ্যাপের অ্যাক্সেস থাকবে।</translation>
@@ -41,10 +42,12 @@
         ক্যামেরা ঠিকভাবে কানেক্ট করা আছে কিনা দেখুন।</translation>
 <translation id="5152121255775685072">গ্যালারিতে যান</translation>
 <translation id="5671277269877808209">চৌকো</translation>
+<translation id="5775960006311140197">বিশেষজ্ঞ মোড</translation>
 <translation id="5869546221129391014">গ্রিড</translation>
 <translation id="6040143037577758943">বন্ধ</translation>
 <translation id="6073451960410192870">রেকর্ডিং বন্ধ করুন</translation>
 <translation id="6165508094623778733">আরও জানুন</translation>
+<translation id="6197807149213783179">মেটাডেটা সেভ করুন</translation>
 <translation id="6233780560267770709">৩ x ৩</translation>
 <translation id="6243827288366940320">গোল্ডেন অনুপাত</translation>
 <translation id="6248749904681914629">এক্সটার্নাল ক্যামেরা</translation>
@@ -66,6 +69,7 @@
 <translation id="8261506727792406068">মুছুন</translation>
 <translation id="8428213095426709021">সেটিংস</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8732462232047530626">মেটাডেটা প্রিভিউ করুন</translation>
 <translation id="8815966864175525708">পোর্ট্রেট ফটো তুলতে মোড পাল্টান</translation>
 <translation id="8870695351537079478">রেকর্ডিং শুরু করা যাচ্ছে না</translation>
 <translation id="9045155556724273246">১০ সেকেন্ড</translation>

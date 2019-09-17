@@ -29,7 +29,7 @@
 #include "ios/web/public/security/ssl_status.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state.h"
-#import "ios/web/public/web_state/web_state_observer_bridge.h"
+#import "ios/web/public/web_state_observer_bridge.h"
 #include "skia/ext/skia_utils_ios.h"
 #include "ui/base/l10n/l10n_util.h"
 

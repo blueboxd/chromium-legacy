@@ -198,6 +198,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
     FrameData& operator=(const FrameData&) = delete;
     void AsValueInto(base::trace_event::TracedValue* value) const;
+    std::string ToString() const;
 
     // frame_token is populated by the LayerTreeHostImpl when submitted.
     uint32_t frame_token = 0;

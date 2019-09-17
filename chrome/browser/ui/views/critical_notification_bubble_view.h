@@ -26,9 +26,8 @@ class CriticalNotificationBubbleView : public views::BubbleDialogDelegateView {
       const views::ViewHierarchyChangedDetails& details) override;
 
  private:
-  // Helper function to calculate the remaining time (in seconds) until
-  // spontaneous reboot.
-  int GetRemainingTime() const;
+  // Helper function to calculate the remaining time until spontaneous reboot.
+  base::TimeDelta GetRemainingTime() const;
 
   // Called when the timer fires each time the clock ticks.
   void OnCountdown();

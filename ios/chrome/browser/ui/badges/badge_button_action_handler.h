@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 @protocol InfobarCommands;
+@protocol BadgeDelegate;
 
 // Handler for the actions associated with the different badge buttons.
 @interface BadgeButtonActionHandler : NSObject
@@ -15,8 +16,14 @@
 // The dispatcher for badge button actions.
 @property(nonatomic, weak) id<InfobarCommands> dispatcher;
 
+// The command handler.
+@property(nonatomic, weak) id<BadgeDelegate> buttonActionDelegate;
+
 // Action when a Passwords badge is tapped.
 - (void)passwordsBadgeButtonTapped:(id)sender;
+
+// Action when the overflow badge is tapped.
+- (void)overflowBadgeButtonTapped:(id)sender;
 
 @end
 

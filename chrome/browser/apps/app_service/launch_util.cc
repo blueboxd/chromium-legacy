@@ -22,6 +22,8 @@ ash::ShelfLaunchSource ConvertLaunchSource(
     case apps::mojom::LaunchSource::kFromAppListQueryContextMenu:
     case apps::mojom::LaunchSource::kFromAppListRecommendation:
       return ash::LAUNCH_FROM_APP_LIST_SEARCH;
+    case apps::mojom::LaunchSource::kFromShelf:
+      return ash::LAUNCH_FROM_SHELF;
   }
 }
 

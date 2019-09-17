@@ -50,6 +50,10 @@ class CC_PAINT_EXPORT PaintCanvas {
   // recording or not, so could be simplified or removed.
   virtual SkImageInfo imageInfo() const = 0;
 
+  virtual void* accessTopLayerPixels(SkImageInfo* info,
+                                     size_t* rowBytes,
+                                     SkIPoint* origin = nullptr) = 0;
+
   // TODO(enne): It would be nice to get rid of flush() entirely, as it
   // doesn't really make sense for recording.  However, this gets used by
   // PaintCanvasVideoRenderer which takes a PaintCanvas to paint both

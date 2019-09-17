@@ -66,6 +66,7 @@
 <translation id="1407135791313364759">Buka semua</translation>
 <translation id="1409426117486808224">Paparan ringkas bagi tab terbuka</translation>
 <translation id="1409879593029778104">Muat turun <ph name="FILE_NAME" /> dihalang kerana fail ini sudah wujud.</translation>
+<translation id="1413136574162415971">Google boleh menyemak sama ada kata laluan anda terlibat dalam pelanggaran data. Semakan ini akan dihidupkan apabila anda log masuk dengan Akaun Google anda dan menghidupkan penyegerakan.</translation>
 <translation id="1414981605391750300">Menghubungi Google. Mungkin mengambil sedikit masa…</translation>
 <translation id="1416550906796893042">Versi aplikasi</translation>
 <translation id="1430915738399379752">Cetak</translation>
@@ -160,6 +161,7 @@
 <translation id="2091887806945687916">Bunyi</translation>
 <translation id="2096012225669085171">Segerakkan dan peribadikan pada semua peranti</translation>
 <translation id="2100273922101894616">Auto Log masuk</translation>
+<translation id="2100314319871056947">Cuba kongsikan teks itu dalam bahagian yang lebih kecil</translation>
 <translation id="2107397443965016585">Tanya sebelum membenarkan tapak memainkan kandungan yang dilindungi (disyorkan)</translation>
 <translation id="2111511281910874386">Pergi ke halaman</translation>
 <translation id="2122601567107267586">Tidak dapat membuka apl</translation>
@@ -253,6 +255,7 @@
 <translation id="2836148919159985482">Sentuh butang kembali untuk keluar daripada skrin penuh.</translation>
 <translation id="2842985007712546952">Folder induk</translation>
 <translation id="2858138569776157458">Tapak popular</translation>
+<translation id="2860954141821109167">Pastikan apl telefon didayakan pada peranti ini</translation>
 <translation id="2870560284913253234">Tapak</translation>
 <translation id="2874939134665556319">Lagu sebelumnya</translation>
 <translation id="2876369937070532032">Menghantar URL sesetengah halaman yang anda lawati kepada Google, apabila keselamatan anda terancam</translation>
@@ -277,6 +280,7 @@
 <translation id="2996291259634659425">Buat ungkapan laluan</translation>
 <translation id="2996809686854298943">URL yang diperlukan</translation>
 <translation id="300526633675317032">Tindakan ini akan menghapuskan semua <ph name="SIZE_IN_KB" /> daripada storan tapak web.</translation>
+<translation id="3016635187733453316">Pastikan peranti ini disambungkan ke Internet</translation>
 <translation id="3029613699374795922">Dimuat turun <ph name="KBS" /> KB</translation>
 <translation id="3029704984691124060">Frasa laluan tidak sepadan</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Dapatkan bantuan<ph name="END_LINK" /></translation>
@@ -841,6 +845,7 @@ Sebagai contoh, sesetengah tapak web mungkin memberi respons kepada permintaan i
 <translation id="723171743924126238">Pilih imej</translation>
 <translation id="7233236755231902816">Untuk melihat web dalam bahasa anda, dapatkan versi terkini Chrome</translation>
 <translation id="7243308994586599757">Pilihan tersedia berhampiran bahagian bawah skrin</translation>
+<translation id="7248069434667874558">Pastikan penyegerakan telah dihidupkan dalam Chrome pada <ph name="TARGET_DEVICE_NAME" /></translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> dipilih</translation>
 <translation id="7274013316676448362">Tapak yang disekat</translation>
 <translation id="7290209999329137901">Penamaan semula tidak tersedia</translation>
@@ -880,7 +885,7 @@ Tapak TIDAK memperoleh akses kepada kamera. Hanya anda dapat melihat imej kamera
 <translation id="7493994139787901920"><ph name="VERSION" /> (Dikemas kini <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">data disimpan</translation>
 <translation id="7498271377022651285">Sila tunggu…</translation>
-<translation id="7510943789645525906">Memberi anda amaran jika kata laluan yang anda gunakan adalah sebahagian daripada pelanggaran data.</translation>
+<translation id="7510943789645525906">Memberi anda amaran jika kata laluan yang anda gunakan adalah sebahagian daripada pelanggaran data</translation>
 <translation id="7514365320538308">Muat Turun</translation>
 <translation id="751961395872307827">Tidak dapat menyambung ke tapak</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -955,6 +960,7 @@ Tapak TIDAK memperoleh akses kepada kamera. Hanya anda dapat melihat imej kamera
 <translation id="8007176423574883786">Dimatikan untuk peranti ini</translation>
 <translation id="8013372441983637696">Selain itu, kosongkan data Chrome anda daripada peranti ini</translation>
 <translation id="8015452622527143194">Kembalikan semua yg ada pd halaman kpd saiz lalai</translation>
+<translation id="8015780634880457457">Google boleh menyemak sama ada kata laluan anda terlibat dalam pelanggaran data</translation>
 <translation id="802154636333426148">Muat turun gagal</translation>
 <translation id="8026334261755873520">Kosongkan data semakan imbas</translation>
 <translation id="8035133914807600019">Folder baharu...</translation>
@@ -1017,6 +1023,7 @@ Tapak TIDAK memperoleh akses kepada kamera. Hanya anda dapat melihat imej kamera
 <translation id="8445448999790540984">Tidak dapat mengeskport kata laluan</translation>
 <translation id="8447861592752582886">Batalkan kebenaran peranti</translation>
 <translation id="8461694314515752532">Sulitkan data yang disegerakkan dengan ungkapan laluan penyegerakan anda sendiri</translation>
+<translation id="8466613982764129868">Pastikan <ph name="TARGET_DEVICE_NAME" /> disambungkan ke Internet</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Tersedia di luar talian</translation>
 <translation id="8489271220582375723">Buka halaman sejarah</translation>
@@ -1107,6 +1114,7 @@ Tapak TIDAK memperoleh akses kepada kamera. Hanya anda dapat melihat imej kamera
 <translation id="9188680907066685419">Log keluar daripada akaun terurus</translation>
 <translation id="9204836675896933765">1 fail lagi</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9209888181064652401">Tidak dapat membuat panggilan</translation>
 <translation id="9219103736887031265">Imej</translation>
 <translation id="926205370408745186">Alih keluar aktiviti Chrome anda daripada Kesejahteraan Digital</translation>
 <translation id="932327136139879170">Laman Utama</translation>

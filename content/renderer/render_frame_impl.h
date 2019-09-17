@@ -924,7 +924,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // the Mojo IPC layer.
   void MaybeEnableMojoBindings();
 
-  void NotifyObserversOfFailedProvisionalLoad(const blink::WebURLError& error);
+  void NotifyObserversOfFailedProvisionalLoad();
 
   bool handling_select_range() const { return handling_select_range_; }
 

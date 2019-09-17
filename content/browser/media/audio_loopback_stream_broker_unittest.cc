@@ -12,6 +12,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "media/mojo/mojom/audio_input_stream.mojom.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/audio/public/cpp/fake_stream_factory.h"
@@ -58,13 +59,12 @@ using MockDeleterCallback = StrictMock<
 class MockRendererAudioInputStreamFactoryClient
     : public mojom::RendererAudioInputStreamFactoryClient {
  public:
-  MockRendererAudioInputStreamFactoryClient() : binding_(this) {}
+  MockRendererAudioInputStreamFactoryClient() = default;
   ~MockRendererAudioInputStreamFactoryClient() override {}
 
-  mojom::RendererAudioInputStreamFactoryClientPtr MakePtr() {
-    mojom::RendererAudioInputStreamFactoryClientPtr ret;
-    binding_.Bind(mojo::MakeRequest(&ret));
-    return ret;
+  mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient>
+  MakeRemote() {
+    return receiver_.BindNewPipeAndPassRemote();
   }
 
   MOCK_METHOD0(OnStreamCreated, void());
@@ -82,10 +82,10 @@ class MockRendererAudioInputStreamFactoryClient
     OnStreamCreated();
   }
 
-  void CloseBinding() { binding_.Close(); }
+  void CloseReceiver() { receiver_.reset(); }
 
  private:
-  mojo::Binding<mojom::RendererAudioInputStreamFactoryClient> binding_;
+  mojo::Receiver<mojom::RendererAudioInputStreamFactoryClient> receiver_{this};
   media::mojom::AudioInputStreamPtr input_stream_;
   media::mojom::AudioInputStreamClientRequest client_request_;
 };
@@ -163,7 +163,7 @@ struct TestEnvironment {
     EXPECT_CALL(source, AddLoopbackSink(_));
     broker = std::make_unique<AudioLoopbackStreamBroker>(
         kRenderProcessId, kRenderFrameId, &source, TestParams(), kShMemCount,
-        mute_source, deleter.Get(), renderer_factory_client.MakePtr());
+        mute_source, deleter.Get(), renderer_factory_client.MakeRemote());
   }
 
   void RunUntilIdle() { task_environment.RunUntilIdle(); }
@@ -191,7 +191,7 @@ TEST(AudioLoopbackStreamBrokerTest, StoresProcessAndFrameId) {
 
   AudioLoopbackStreamBroker broker(
       kRenderProcessId, kRenderFrameId, &source, TestParams(), kShMemCount,
-      !kMuteSource, deleter.Get(), renderer_factory_client.MakePtr());
+      !kMuteSource, deleter.Get(), renderer_factory_client.MakeRemote());
 
   EXPECT_EQ(kRenderProcessId, broker.render_process_id());
   EXPECT_EQ(kRenderFrameId, broker.render_frame_id());
@@ -332,7 +332,7 @@ TEST(AudioLoopbackStreamBrokerTest,
 
   EXPECT_CALL(env.deleter, Run(env.broker.release()))
       .WillOnce(testing::DeleteArg<0>());
-  env.renderer_factory_client.CloseBinding();
+  env.renderer_factory_client.CloseReceiver();
   env.RunUntilIdle();
   Mock::VerifyAndClear(&env.deleter);
 

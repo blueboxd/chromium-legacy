@@ -66,6 +66,7 @@
 <translation id="1407135791313364759">બધું ખોલો</translation>
 <translation id="1409426117486808224">ખુલ્લી ટૅબ માટે સરળ દૃશ્ય</translation>
 <translation id="1409879593029778104"><ph name="FILE_NAME" /> ડાઉનલોડ રોકાયું કારણકે ફાઇલ પહેલેથી અસ્તિત્વ ધરાવે છે.</translation>
+<translation id="1413136574162415971">Google તમારા પાસવર્ડ ડેટા ઉલ્લંઘનનો ભાગ હતો કે નહીં તે ચેક કરી શકે છે. જ્યારે તમે તમારા Google એકાઉન્ટ વડે સાઇન ઇન કરશો અને સિંક ચાલુ કરેલું હોય ત્યારે આ ચાલુ થશે.</translation>
 <translation id="1414981605391750300">Googleનો સંપર્ક કરી રહ્યાં છીએ. આમાં એક મિનિટ લાગી શકે છે…</translation>
 <translation id="1416550906796893042">ઍપ્લિકેશન વર્ઝન</translation>
 <translation id="1430915738399379752">પ્રિન્ટ</translation>
@@ -160,6 +161,7 @@
 <translation id="2091887806945687916">ધ્વનિ</translation>
 <translation id="2096012225669085171">સમગ્ર ઉપકરણો પર સિંક કરો અને વ્યક્તિગત બનાવો</translation>
 <translation id="2100273922101894616">સ્વતઃ સાઇન-ઇન</translation>
+<translation id="2100314319871056947">ટેક્સ્ટને નાના-નાના ટૂકડામાં શેર કરી જુઓ</translation>
 <translation id="2107397443965016585">સાઇટને સંરક્ષિત કન્ટેન્ટ ચલાવવાની મંજૂરી આપતા પહેલાંં પૂછો (સુઝાવ આપેલ)</translation>
 <translation id="2111511281910874386">પૃષ્ઠ પર જાઓ</translation>
 <translation id="2122601567107267586">ઍપ ખોલી ન શક્યાં</translation>
@@ -253,6 +255,7 @@
 <translation id="2836148919159985482">પૂર્ણ સ્ક્રીનથી બહાર નીકળવા માટે પાછળ બટન ટચ કરો.</translation>
 <translation id="2842985007712546952">પેરન્ટ ફોલ્ડર</translation>
 <translation id="2858138569776157458">લોકપ્રિય સાઇટ</translation>
+<translation id="2860954141821109167">ખાતરી કરો કે આ ડિવાઇસ પર ફોન ઍપ ચાલુ કરેલી છે</translation>
 <translation id="2870560284913253234">સાઇટ</translation>
 <translation id="2874939134665556319">પાછલું ટ્રૅક</translation>
 <translation id="2876369937070532032">તમારી સુરક્ષા જોખમમાં હોય ત્યારે, તમે મુલાકાત લેતા હો તે કેટલાક પેજના URLs Googleને મોકલે છે</translation>
@@ -277,6 +280,7 @@
 <translation id="2996291259634659425">પાસફ્રેઝ બનાવો</translation>
 <translation id="2996809686854298943">URL આવશ્યક છે</translation>
 <translation id="300526633675317032">આ <ph name="SIZE_IN_KB" /> નું બધું વેબસાઇટ સ્ટોરેજ સાફ કરશે.</translation>
+<translation id="3016635187733453316">ખાતરી કરો કે આ ડિવાઇસ ઇન્ટરનેટ સાથે કનેક્ટ કરેલું છે</translation>
 <translation id="3029613699374795922"><ph name="KBS" /> KB ડાઉનલોડ કર્યા</translation>
 <translation id="3029704984691124060">પાસફ્રેઝેસ મેળ ખાતા નથી</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />સહાય મેળવો<ph name="END_LINK" /></translation>
@@ -841,6 +845,7 @@ VR મોડમાં દાખલ થતા પહેલા ખાતરી ક
 <translation id="723171743924126238">છબીઓ પસંદ કરો</translation>
 <translation id="7233236755231902816">વેબ તમારી ભાષામાં જોવા માટે Chromeનું એકદમ નવું વર્ઝન મેળવો</translation>
 <translation id="7243308994586599757">સ્ક્રીનના તળિયા નજીક વિકલ્પો ઉપલબ્ધ છે</translation>
+<translation id="7248069434667874558">ખાતરી કરો કે <ph name="TARGET_DEVICE_NAME" />માં Chromeમાં સિંક ચાલુ કરેલું છે</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" />ની પસંદગી કરી</translation>
 <translation id="7274013316676448362">અવરોધિત સાઇટ</translation>
 <translation id="7290209999329137901">નામ બદલવું ઉપલબ્ધ નથી</translation>
@@ -955,6 +960,7 @@ VR મોડમાં દાખલ થતા પહેલા ખાતરી ક
 <translation id="8007176423574883786">આ ઉપકરણ માટે બંધ કર્યું</translation>
 <translation id="8013372441983637696">આ ડિવાઇસમાંથી તમારો Chrome ડેટા પણ સાફ કરો</translation>
 <translation id="8015452622527143194">પેજ પરનું બધું કન્ટેન્ટ પાછું ડિફૉલ્ટ કદમાં બદલો</translation>
+<translation id="8015780634880457457">Google તમારા પાસવર્ડ ડેટા ઉલ્લંઘનનો ભાગ હતો કે નહીં તે ચેક કરી શકે છે</translation>
 <translation id="802154636333426148">ડાઉનલોડ નિષ્ફળ થયું</translation>
 <translation id="8026334261755873520">બ્રાઉઝિંગ ડેટા સાફ કરો</translation>
 <translation id="8035133914807600019">નવું ફોલ્ડર...</translation>
@@ -1017,6 +1023,7 @@ VR મોડમાં દાખલ થતા પહેલા ખાતરી ક
 <translation id="8445448999790540984">બધા પાસવર્ડ નિકાસ કરી શકાતાં નથી</translation>
 <translation id="8447861592752582886">ઉપકરણની પરવાનગી રદબાતલ કરો</translation>
 <translation id="8461694314515752532">તમારા પોતાના સિંક પાસફ્રેઝ સાથે સિંક કરેલા ડેટાને એન્ક્રિપ્ટ કરો</translation>
+<translation id="8466613982764129868">ખાતરી કરો કે <ph name="TARGET_DEVICE_NAME" />ને ઇન્ટરનેટ સાથે કનેક્ટ કરેલું છે</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">ઑફલાઇન ઉપલબ્ધ</translation>
 <translation id="8489271220582375723">ઇતિહાસ પૃષ્ઠ ખોલો</translation>
@@ -1107,6 +1114,7 @@ VR મોડમાં દાખલ થતા પહેલા ખાતરી ક
 <translation id="9188680907066685419">સંચાલિત એકાઉન્ટમાંથી સાઇન આઉટ કરો</translation>
 <translation id="9204836675896933765">1 ફાઇલ બાકી છે</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9209888181064652401">કૉલ કરી શકતા નથી</translation>
 <translation id="9219103736887031265">છબીઓ</translation>
 <translation id="926205370408745186">ડિજિટલ લાઇફસ્ટાઇલમાંથી તમારી Chromeની પ્રવૃત્તિને કેવી રીતે કાઢવી</translation>
 <translation id="932327136139879170">હોમ</translation>

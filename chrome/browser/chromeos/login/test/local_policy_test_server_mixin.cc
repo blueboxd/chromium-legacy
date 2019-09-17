@@ -27,7 +27,7 @@ base::Value GetDefaultConfig() {
   base::Value config(base::Value::Type::DICTIONARY);
 
   base::Value managed_users(base::Value::Type::LIST);
-  managed_users.GetList().emplace_back("*");
+  managed_users.Append("*");
   config.SetKey("managed_users", std::move(managed_users));
 
   config.SetKey("robot_api_auth_code",
@@ -136,7 +136,7 @@ bool LocalPolicyTestServerMixin::UpdateUserPolicy(
   // username is set in policy responses, even if the request does not contain
   // username field.
   base::Value managed_users_list(base::Value::Type::LIST);
-  managed_users_list.GetList().emplace_back("*");
+  managed_users_list.Append("*");
   server_config_.SetKey("managed_users", std::move(managed_users_list));
   server_config_.SetKey("policy_user", base::Value(policy_user));
   server_config_.SetKey("current_key_index", base::Value(0));
@@ -159,7 +159,7 @@ bool LocalPolicyTestServerMixin::UpdateUserPolicy(
   policy_type_dict.SetKey("recommended", recommended_policy.Clone());
 
   base::Value managed_users_list(base::Value::Type::LIST);
-  managed_users_list.GetList().emplace_back("*");
+  managed_users_list.Append("*");
 
   server_config_.SetKey(policy::dm_protocol::kChromeUserPolicyType,
                         std::move(policy_type_dict));

@@ -21,13 +21,8 @@
 #include "chrome/browser/performance_manager/public/performance_manager.h"
 #include "chrome/browser/performance_manager/public/render_process_host_proxy.h"
 #include "chrome/browser/performance_manager/public/web_contents_proxy.h"
-#include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
 
 class GURL;
-
-namespace ukm {
-class MojoUkmRecorder;
-}  // namespace ukm
 
 namespace performance_manager {
 
@@ -145,7 +140,7 @@ class PerformanceManagerImpl : public PerformanceManager {
   void BatchDeleteNodesImpl(std::vector<std::unique_ptr<NodeBase>> nodes);
 
   void OnStart();
-  void OnStartImpl(std::unique_ptr<service_manager::Connector> connector);
+  void OnStartImpl();
   void RunCallbackWithGraphImpl(GraphImplCallback graph_callback);
   void RunCallbackWithGraph(GraphCallback graph_callback);
 
@@ -156,10 +151,6 @@ class PerformanceManagerImpl : public PerformanceManager {
   // The performance task runner.
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   GraphImpl graph_;
-
-  // Provided to |graph_|.
-  // TODO(siggi): This no longer needs to go through mojo.
-  std::unique_ptr<ukm::MojoUkmRecorder> ukm_recorder_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

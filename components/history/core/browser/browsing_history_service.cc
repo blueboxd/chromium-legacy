@@ -20,11 +20,8 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/history/core/browser/browsing_history_driver.h"
-#include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/sync/driver/sync_service.h"
-#include "components/sync/driver/sync_service_observer.h"
 #include "components/sync/protocol/history_delete_directive_specifics.pb.h"
 
 namespace history {
@@ -167,9 +164,6 @@ BrowsingHistoryService::BrowsingHistoryService(
     syncer::SyncService* sync_service,
     std::unique_ptr<base::OneShotTimer> web_history_timer)
     : web_history_timer_(std::move(web_history_timer)),
-      history_service_observer_(this),
-      web_history_service_observer_(this),
-      sync_service_observer_(this),
       driver_(driver),
       local_history_(local_history),
       sync_service_(sync_service),

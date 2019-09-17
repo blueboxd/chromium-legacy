@@ -294,28 +294,45 @@ def _process_v3_ready(js_file, html_file):
   out_filename = os.path.basename(js_file)
   return lines, out_filename
 
-
 def _process_dom_module(js_file, html_file):
   html_template = _extract_template(html_file, 'dom-module')
   js_imports = _generate_js_imports(html_file)
 
+  # Remove IFFE opening/closing lines.
   IIFE_OPENING = '(function() {\n'
   IIFE_OPENING_ARROW = '(() => {\n'
   IIFE_CLOSING = '})();'
+
+  # Remove this line.
+  CR_DEFINE_START_REGEX = 'cr.define\('
+  # Ignore all lines after this comment, including the line it appears on.
+  CR_DEFINE_END_REGEX = r'\s*// #cr_define_end'
+
+  # Replace export annotations with 'export'.
+  EXPORT_LINE_REGEX = '/* #export */'
 
   with open(js_file) as f:
     lines = f.readlines()
 
   imports_added = False
   iife_found = False
+  cr_define_found = False
+  cr_define_end_line = -1
 
   for i, line in enumerate(lines):
     if not imports_added:
       if line.startswith(IIFE_OPENING) or line.startswith(IIFE_OPENING_ARROW):
+        assert not cr_define_found, 'cr.define() and IFFE in the same file'
         # Replace the IIFE opening line with the JS imports.
         line = '\n'.join(js_imports) + '\n\n'
         imports_added = True
         iife_found = True
+      elif re.match(CR_DEFINE_START_REGEX, line):
+        assert not cr_define_found, 'Multiple cr.define()s are not supported'
+        assert not iife_found, 'cr.define() and IFFE in the same file'
+        line = '\n'.join(js_imports) + '\n\n'
+        cr_define_found = True
+        imports_added = True
       elif line.startswith('Polymer({\n'):
         # Place the JS imports right before the opening "Polymer({" line.
         line = line.replace(
@@ -329,11 +346,22 @@ def _process_dom_module(js_file, html_file):
         r'Polymer({',
         'Polymer({\n  _template: html`%s`,' % html_template)
 
+    line = line.replace(EXPORT_LINE_REGEX, 'export')
+
     if line.startswith('cr.exportPath('):
       line = ''
 
+    if re.match(CR_DEFINE_END_REGEX, line):
+      assert cr_define_found, 'Found cr_define_end without cr.define()'
+      cr_define_end_line = i
+      break
+
     line = _rewrite_namespaces(line)
     lines[i] = line
+
+  if cr_define_found:
+    assert cr_define_end_line != -1, 'No cr_define_end found'
+    lines = lines[0:cr_define_end_line]
 
   if iife_found:
     last_line = lines[-1]

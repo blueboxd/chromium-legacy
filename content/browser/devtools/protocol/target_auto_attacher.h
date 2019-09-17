@@ -13,7 +13,7 @@ namespace content {
 
 class DevToolsAgentHostImpl;
 class DevToolsRendererChannel;
-class NavigationHandleImpl;
+class NavigationRequest;
 class RenderFrameHostImpl;
 
 namespace protocol {
@@ -40,7 +40,7 @@ class TargetAutoAttacher : public ServiceWorkerDevToolsManager::Observer {
   void AgentHostClosed(DevToolsAgentHost* host);
 
   bool ShouldThrottleFramesNavigation();
-  DevToolsAgentHost* AutoAttachToFrame(NavigationHandleImpl* navigation_handle);
+  DevToolsAgentHost* AutoAttachToFrame(NavigationRequest* navigation_request);
   void ChildWorkerCreated(DevToolsAgentHostImpl* agent_host,
                           bool waiting_for_debugger);
 

@@ -71,6 +71,7 @@
 <translation id="1292701964462482250">"Bilgisayarınızdaki yazılım, Chrome'un web'e güvenli bir şekilde bağlanmasını engelliyor" (yalnızca Windows bilgisayarlar)</translation>
 <translation id="1294154142200295408">Komut satırı varyasyonları</translation>
 <translation id="129553762522093515">Son kapatılan</translation>
+<translation id="1298536327547837046">Kötü Amaçlı Yazılım Tarama</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Çerezlerinizi temizlemeyi deneyin<ph name="END_LINK" /></translation>
 <translation id="1307966114820526988">Kullanımdan Kaldırılan Özellikler</translation>
 <translation id="1320233736580025032">Prc1 (Zarf)</translation>
@@ -167,6 +168,7 @@
 <translation id="1734878702283171397">Sistem yöneticisiyle iletişime geçmeyi deneyin.</translation>
 <translation id="1740951997222943430">Geçerli bir son kullanma ayı girin</translation>
 <translation id="1743520634839655729">Gelecek sefer daha hızlı ödeme yapabilmek için kartınızı, adınızı ve fatura adresinizi Google hesabınıza kaydedin.</translation>
+<translation id="1743570585616704562">Tanınmadı</translation>
 <translation id="1745880797583122200">Tarayıcınız yönetilmektedir</translation>
 <translation id="17513872634828108">Açık sekmeler</translation>
 <translation id="1753706481035618306">Sayfa numarası</translation>
@@ -426,6 +428,7 @@
 <translation id="320323717674993345">Ödemeyi iptal et</translation>
 <translation id="3207960819495026254">Yer işareti koyuldu</translation>
 <translation id="3209034400446768650">Sayfa sizden ücret alabilir</translation>
+<translation id="3215092763954878852">WebAuthn kullanılamadı</translation>
 <translation id="3225919329040284222">Sunucu, yerleşik beklentilerle eşleşmeyen bir sertifika sundu. Bu beklentiler sizi korumak amacıyla bazı yüksek güvenlikli web sitelerinde bulunur.</translation>
 <translation id="3226128629678568754">Sayfayı yüklemek üzere gereken verileri tekrar göndermek için yeniden yükle düğmesine basın.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
@@ -562,6 +565,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Yok}=1{1 siteden }other{# siteden }}</translation>
 <translation id="397105322502079400">Hesaplanııyor...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> engellendi</translation>
+<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" />, tarayıcınızda Chrome Enterprise Threat Protection özelliğini etkinleştirdi. Chrome Enterprise Threat Protection özelliğinin verilerinizin bir kısmına erişimi vardır.</translation>
 <translation id="3987940399970879459">1 MB'tan az</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{Yakındaki 1 web sayfası}other{Yakındaki # web sayfası}}</translation>
 <translation id="4030383055268325496">Eklemeyi &amp;geri al</translation>
@@ -630,6 +634,7 @@
 <translation id="4277028893293644418">Şifreyi sıfırla</translation>
 <translation id="4279811152705618813"><ph name="DEVICE_TYPE" /> cihazınız <ph name="ENROLLMENT_DOMAIN" /> tarafından yönetiliyor.</translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Bu kart Google Hesabınıza kaydedildi}other{Bu kartlar Google Hesabınıza kaydedildi}}</translation>
+<translation id="428847186335018806">Chrome'da indirdiğiniz veya yüklediğiniz dosyaları tarama.</translation>
 <translation id="42981349822642051">Genişlet</translation>
 <translation id="4302965934281694568">Chou3 (Zarf)</translation>
 <translation id="4305817255990598646">Anahtar</translation>
@@ -668,6 +673,7 @@
 <translation id="4506176782989081258">Doğrulama hatası: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Sistem yöneticisiyle iletişime geçme</translation>
 <translation id="450710068430902550">Yöneticiyle Paylaşma</translation>
+<translation id="4508814173490746936">Touch ID kullanılamadı</translation>
 <translation id="4510487217173779431">Chou4 (Zarf)</translation>
 <translation id="4515275063822566619">Kart ve adres bilgileri Chrome'dan ve Google Hesabınızdan (<ph name="ACCOUNT_EMAIL" />) alınmaktadır. Bunları <ph name="BEGIN_LINK" />Ayarlar<ph name="END_LINK" />'dan yönetebilirsiniz.</translation>
 <translation id="4517607026994743406">Comm-10 (Zarf)</translation>
@@ -763,6 +769,7 @@
 <translation id="5045550434625856497">Hatalı parola</translation>
 <translation id="5056549851600133418">Size uygun makaleler</translation>
 <translation id="5068524481479508725">A10</translation>
+<translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 çerez kullanımda)}other{(# çerez kullanımda)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Proxy adresini kontrol etme<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">Sunucu sertifikası şu anda geçerli değil.</translation>
 <translation id="5087580092889165836">Kart ekle</translation>
@@ -992,6 +999,7 @@
 <translation id="6302269476990306341">Chrome'da Google Asistan durduruluyor</translation>
 <translation id="6305205051461490394"><ph name="URL" /> adresine ulaşılamıyor.</translation>
 <translation id="6321917430147971392">DNS ayarlarınızı kontrol edin</translation>
+<translation id="6322182122604171028">Windows Hello kullanılamadı</translation>
 <translation id="6328639280570009161">Ağ tahmin özelliğini devre dışı bırakmayı deneyin</translation>
 <translation id="6328784461820205019">"Bağlantınız gizli değil", "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" veya "SSL sertifika hatası"</translation>
 <translation id="6328786501058569169">Bu site yanıltıcıdır</translation>
@@ -1015,6 +1023,7 @@
 <translation id="6433490469411711332">İletişim bilgilerini düzenle</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> bağlanmayı reddetti.</translation>
 <translation id="6434309073475700221">Sil</translation>
+<translation id="6435221585574090192">Chrome Enterprise Threat Protection tarafından işaretlenen güvenlik işlemleri hakkında Yöneticiniz ile veri paylaşın. Bu veriler, sayfa URL'lerini, dosya adını, dosya meta verisini, cihaz kullanıcı adınızı ve Chrome kullanıcı adınızı içerebilir.</translation>
 <translation id="6440503408713884761">Yoksayıldı</translation>
 <translation id="6446163441502663861">Kahu (Zarf)</translation>
 <translation id="6446608382365791566">Daha fazla bilgi ekleyin</translation>
@@ -1059,6 +1068,7 @@
 <translation id="6671697161687535275">Form önerisi Chromium'dan kaldırılsın mı?</translation>
 <translation id="6685834062052613830">Çıkış yapın ve kurulumu tamamlayın</translation>
 <translation id="6689271823431384964">Chrome, oturumunuz açık olduğu için kartlarınızı Google Hesabınıza kaydetmeyi öneriyor. Bu davranışı ayarlardan değiştirebilirsiniz. Kart sahibinin adı hesabınızdan gelir.</translation>
+<translation id="6707256370811247129">Önbelleğin içeriğini ve Chrome'da indirdiğiniz veya yüklediğiniz dosyaları tarama.</translation>
 <translation id="6710213216561001401">Önceki</translation>
 <translation id="6710594484020273272">&lt;Arama terimini yazın&gt;</translation>
 <translation id="671076103358959139">Kayıt Jetonu:</translation>
@@ -1077,6 +1087,7 @@
 <translation id="681021252041861472">Gerekli Alan</translation>
 <translation id="6810899417690483278">Özelleştirme Kimliği</translation>
 <translation id="6825578344716086703"><ph name="DOMAIN" /> alanına erişme girişiminde bulundunuz ancak sunucu SHA-1 gibi zayıf bir imza algoritması kullanılarak imzalanmış bir sertifika sağladı. Bu, sunucunun sağladığı güvenlik bilgilerinin sahte olabileceği anlamına gelir ve sunucu sizin beklediğiniz sunucu olmayabilir (bir saldırgan ile irtibat kuruyor olabilirsiniz).</translation>
+<translation id="6826370046007623921">Veri Kaybını Önleme</translation>
 <translation id="6831043979455480757">Çevir</translation>
 <translation id="6839929833149231406">Bölge</translation>
 <translation id="6852204201400771460">Uygulama yeniden yüklensin mi?</translation>
@@ -1223,6 +1234,7 @@ Ek ayrıntılar:
 <translation id="7542995811387359312">Bu form güvenli bağlantı kullanmadığından kredi kartı bilgilerini otomatik doldurma özelliği devre dışı bırakıldı.</translation>
 <translation id="7548892272833184391">Bağlantı hatalarını düzeltme</translation>
 <translation id="7549584377607005141">Bu Web sayfasının düzgün şekilde görüntülenmesi için, önceden girdiğiniz veriler gerekiyor. Bu verileri tekrar gönderebilirsiniz, ancak bunu yaptığınızda bu sayfanın daha önce gerçekleştirdiği işlemler de tekrar edilir.</translation>
+<translation id="7550637293666041147">Cihaz kullanıcı adınız ve Chrome kullanıcı adınız</translation>
 <translation id="7552846755917812628">Aşağıdaki ipuçlarını deneyin:</translation>
 <translation id="7554791636758816595">Yeni Sekme</translation>
 <translation id="7564049878696755256"><ph name="ORG_NAME" /> hesabınıza erişimi kaybedebilir veya kimlik hırsızlığına maruz kalabilirsiniz. Chrome, şifrenizi hemen değiştirmenizi önerir.</translation>
@@ -1237,6 +1249,7 @@ Ek ayrıntılar:
 <translation id="7610193165460212391">Değer aralık dışında: <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Son kullanım tarihi: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Google Hesabı şifrenizin farklı bir sürümü kullanılarak şifrelenmiş verileriniz zaten var. Lütfen bu şifreyi aşağıya girin.</translation>
+<translation id="7625784245512586808">Chrome Enterprise Threat Protection</translation>
 <translation id="7633909222644580952">Performans verileri ve kilitlenme raporları</translation>
 <translation id="7637571805876720304">Kredi kartı Chromium'dan kaldırılsın mı?</translation>
 <translation id="7638605456503525968">Seri bağlantı noktaları</translation>
@@ -1347,6 +1360,7 @@ Ek ayrıntılar:
 <translation id="8211406090763984747">Bağlantı güvenli</translation>
 <translation id="8218327578424803826">Atanan Konum:</translation>
 <translation id="8220146938470311105">C7/C6 (Zarf)</translation>
+<translation id="8220639454292072926">Kurumsal Raporlama</translation>
 <translation id="8225771182978767009">Bu bilgisayarı kuran kişi bu siteyi engellemeyi seçmiş.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Sayfayı yeni bir Gizli sekmede aç</translation>
@@ -1430,6 +1444,7 @@ Ek ayrıntılar:
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> ana makinesinin &lt;abbr id="dnsDefinition"&gt;DNS adresi&lt;/abbr&gt; bulunamadı. Sorun teşhis ediliyor.</translation>
 <translation id="874846938927089722">Kabul Edilen Kredi Kartları ve Ön Ödemeli Kartlar</translation>
 <translation id="874918643257405732">Bu sekmeye yer işareti koy</translation>
+<translation id="8751426954251315517">Lütfen bir dahaki sefer tekrar deneyin</translation>
 <translation id="8759274551635299824">Bu kartın kullanım süresi doldu</translation>
 <translation id="8761567432415473239">Google Güvenli Tarama, yakın zamanda <ph name="SITE" /> sitesinde <ph name="BEGIN_LINK" />zararlı programlar buldu<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB cihaz</translation>
@@ -1494,6 +1509,7 @@ Ek ayrıntılar:
 <translation id="9080712759204168376">Sipariş Özeti</translation>
 <translation id="9089260154716455634">Mesai Dışı Saatler Politikası:</translation>
 <translation id="9095388113577226029">Diğer diller...</translation>
+<translation id="9098981495403789647">Yöneticiniz, tarayıcınızda Chrome Enterprise Threat Protection özelliğini etkinleştirdi. Chrome Enterprise Threat Protection özelliğinin verilerinizin bir kısmına erişimi vardır.</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> normalde bilgilerinizi korumak için şifreleme kullanmaktadır. Chromium bu sefer <ph name="SITE" /> sitesine bağlanmayı denediğinde, web sitesi sıra dışı ve yanlış kimlik bilgileri döndürdü. Bir saldırgan <ph name="SITE" /> gibi davranmaya çalışıyor olabilir ya da bir Kablosuz oturum açma ekranı bağlantıyı kesmiştir. Chromium herhangi bir veri alışverişinden önce bağlantıyı durdurduğu için bilgileriniz hâlâ güvendedir.</translation>
 <translation id="9106062320799175032">Fatura Adresi Ekleyin</translation>
 <translation id="9114524666733003316">Kart onaylanıyor...</translation>

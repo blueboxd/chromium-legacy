@@ -2413,6 +2413,7 @@ enum WebFeature {
   kDelegateFocus = 3030,
   kDelegateFocusNotFirstInFlatTree = 3031,
   kThirdPartySharedWorker = 3032,
+  kThirdPartyBroadcastChannel = 3033,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

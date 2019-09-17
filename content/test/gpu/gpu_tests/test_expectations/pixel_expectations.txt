@@ -181,20 +181,6 @@ crbug.com/974380 [ win ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorke
 crbug.com/974380 [ mac ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker [ Skip ]
 crbug.com/974383 [ mac ] Pixel_CanvasDisplayLinearRGBAccelerated2D [ Skip ]
 
-# Fails when the browser features SkiaRenderer & Vulkan are enabled on Linux
-crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_CanvasDisplayLinearRGBUnaccelerated2D [ Skip ]
-crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing [ Skip ]
-crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_CanvasDisplaySRGBUnaccelerated2D [ Skip ]
-crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_CanvasDisplaySRGBUnaccelerated2DGPUCompositing [ Skip ]
-crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_CanvasUnacceleratedLowLatency2D [ Skip ]
-crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_Canvas2DTabSwitch_SoftwareCompositing [ Skip ]
-crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_OffscreenCanvasUnaccelerated2D [ Skip ]
-crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_OffscreenCanvasUnaccelerated2DWorker [ Skip ]
-crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_OffscreenCanvasWebGLSoftwareCompositing [ Skip ]
-crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker [ Skip ]
-crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_RepeatedWebGLTo2D_SoftwareCompositing [ Skip ]
-crbug.com/985366 [ linux skia-renderer use-vulkan ] Pixel_CanvasLowLatency2D [ Skip ]
-
 # Also producing blank images on Intel
 crbug.com/974383 [ linux skia-renderer use-vulkan intel ] Pixel_CanvasDisplayLinearRGBAccelerated2D [ Skip ]
 

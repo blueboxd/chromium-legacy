@@ -51,7 +51,7 @@ class Dictionary(UserDefinedType, WithExtendedAttributes,
 
             self.is_partial = is_partial
             self.inherited = inherited
-            self.own_members = own_members
+            self.own_members = list(own_members)
 
         def iter_all_members(self):
             return iter(self.own_members)

@@ -207,6 +207,11 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
                            const gfx::Vector2d& cursor_offset_from_center,
                            float scale_factor) override;
 
+  // Overridden from views::ContextMenuController:
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
+
   // ash::TabletModeObserver:
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
@@ -282,6 +287,9 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
 
   // Handles the gesture event. Returns true if |event| has been consumed.
   bool HandleGestureEvent(const ui::GestureEvent* event);
+
+  // Different from ShouldShowTooltipForView, |view| here must be a child view.
+  bool ShouldShowTooltipForChildView(const views::View* child_view) const;
 
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const {
@@ -507,11 +515,6 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
                          ShelfAction action,
                          ShelfItemDelegate::AppMenuItems menu_items);
 
-  // Overridden from views::ContextMenuController:
-  void ShowContextMenuForViewImpl(views::View* source,
-                                  const gfx::Point& point,
-                                  ui::MenuSourceType source_type) override;
-
   // Show either a context or normal click menu of given |menu_model|.
   // If |context_menu| is set, the displayed menu is a context menu and not
   // a menu listing one or more running applications.
@@ -553,9 +556,6 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
 
   // Different from GetTitleForView, |view| here must be a child view.
   base::string16 GetTitleForChildView(const views::View* view) const;
-
-  // Different from ShouldShowTooltipForView, |view| here must be a child view.
-  bool ShouldShowTooltipForChildView(const views::View* child_view) const;
 
   // The model; owned by Launcher.
   ShelfModel* model_;

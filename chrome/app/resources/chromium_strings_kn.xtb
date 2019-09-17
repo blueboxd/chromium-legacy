@@ -88,6 +88,7 @@
 <translation id="4230135487732243613">ಈ ಖಾತೆಗೆ ನಿಮ್ಮ Chromium ಡೇಟಾವನ್ನು ಲಿಂಕ್ ಮಾಡುವುದೇ?</translation>
 <translation id="4271805377592243930">Chromium ಜೊತೆಗೆ ಸಹಾಯ ಪಡೆಯಿರಿ</translation>
 <translation id="4285930937574705105">ಅನಿರ್ದಿಷ್ಟ ದೋಷದಿಂದಾಗಿ ಸ್ಥಾಪನೆಯು ವಿಫಲಗೊಂಡಿದೆ. Chromium ಪ್ರಸ್ತುತ ಚಾಲನೆಯಲ್ಲಿದ್ದರೆ, ದಯವಿಟ್ಟು ಅದನ್ನು ಮುಚ್ಚಿರಿ ಮತ್ತು ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
+<translation id="4371648796594901282">Chromium OS ವಿವರಗಳಿಗಾಗಿ,  <ph name="LINK_BEGIN" />Chromium OS ಬಗ್ಗೆ<ph name="LINK_END" /> ನೋಡಿ</translation>
 <translation id="4407044323746248786">ಹೇಗಿದ್ದರೂ Chromium ನಿಂದ ನಿರ್ಗಮಿಸುವುದೇ?</translation>
 <translation id="4415566066719264597">Chromium ಹಿನ್ನೆಲೆಯಲ್ಲಿ ರನ್ ಆಗಲು ಅನುಮತಿಸಿ</translation>
 <translation id="4423735387467980091">Chromium ಅನ್ನು ಕಸ್ಟಮೈಸ್ ಮಾಡಿ ಮತ್ತು ನಿಯಂತ್ರಿಸಿ</translation>
@@ -120,6 +121,7 @@
 <translation id="5623402015214259806">{0,plural, =0{Chromium ಅಪ್‌ಡೇಟ್ ಲಭ್ಯವಿದೆ}=1{Chromium ಅಪ್‌ಡೇಟ್ ಲಭ್ಯವಿದೆ}one{# ದಿನಗಳ ಮಟ್ಟಿಗೆ Chromium ಅಪ್‌ಡೇಟ್ ಲಭ್ಯವಿದೆ}other{# ದಿನಗಳ ಮಟ್ಟಿಗೆ Chromium ಅಪ್‌ಡೇಟ್ ಲಭ್ಯವಿದೆ}}</translation>
 <translation id="5631814766731275228">Chromium ಹೆಸರು ಮತ್ತು ಚಿತ್ರ</translation>
 <translation id="5634636535844844681">Chromium ಗೆ Windows 7 ಅಥವಾ ಹೆಚ್ಚಿನ ಆವೃತ್ತಿ ಅಗತ್ಯವಿರುತ್ತದೆ.</translation>
+<translation id="5653831366781983928">ಇದೀಗ Chromium ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="5680901439334282664">Chromium ಗೆ ಸೈನ್ ಇನ್ ಆಗಿ</translation>
 <translation id="5698481217667032250">ಈ ಭಾಷೆಯಲ್ಲಿ Chromium ಪ್ರದರ್ಶಿಸು</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -160,6 +162,7 @@
 <translation id="6734080038664603509">&amp;Chromium ಅಪ್‌ಡೇಟ್‌ ಮಾಡಿ</translation>
 <translation id="6734291798041940871">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿನ ಎಲ್ಲ ಬಳಕೆದಾರರಿಗೆ ಈಗಾಗಲೇ Chromium ಸ್ಥಾಪಿತವಾಗಿದೆ.</translation>
 <translation id="6810143991807788455">ಪ್ರಸ್ತುತ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ವರದಿ ಮಾಡುವುದರ ಮೂಲಕ Chromium ಅನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಸಹಾಯಮಾಡಿ</translation>
+<translation id="6847869444787758381">ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಎಂದಾದರೂ ಹ್ಯಾಕ್‌ ಆಗಿವೆಯೇ ಎಂಬುದನ್ನು Chromium ನಿಮಗೆ ತಿಳಿಸುತ್ತದೆ</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromium ಗೆ ನಕಲಿಸಲಾಗಿದೆ)</translation>
 <translation id="6868056391275687737">Chromium ನ ಇತರ ನಕಲುಗಳು ರನ್ ಆಗುತ್ತಿವೆ. ಅಪ್‌ಡೇಟ್ ಮಾಡಲು, ಅವುಗಳನ್ನು ಮುಚ್ಚಿರಿ.</translation>
@@ -188,6 +191,7 @@
 <translation id="753534427205733210">{0,plural, =1{1 ನಿಮಿಷದಲ್ಲಿ Chromium ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}one{# ನಿಮಿಷಗಳಲ್ಲಿ Chromium ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}other{# ನಿಮಿಷಗಳಲ್ಲಿ Chromium ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}}</translation>
 <translation id="7549178288319965365">Chromium OS ಕುರಿತು</translation>
 <translation id="7561906087460245826">Chromium ನಿಂದಲೂ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಿ (<ph name="URL" />)</translation>
+<translation id="7585853947355360626">ಈ ಪುಟದಲ್ಲಿ ಸೆಟ್ಟಿಂಗ್ ಒಂದು ಕಾಣಿಸದಿದ್ದರೆ, ನಿಮ್ಮ <ph name="LINK_BEGIN" />Chromium OS ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="LINK_END" /> ನೋಡಿರಿ</translation>
 <translation id="761356813943268536">Chromium ನಿಮ್ಮ ಕ್ಯಾಮರಾ ಮತ್ತು ಮೈಕ್ರೋಫೋನ್ ಬಳಸುತ್ತಿದೆ.</translation>
 <translation id="7617377681829253106">Chromium ಇದೀಗ ಉತ್ತಮಗೊಂಡಿದೆ</translation>
 <translation id="7686590090926151193">Chromium ನಿಮ್ಮ ಡೀಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಅಲ್ಲ</translation>
@@ -221,6 +225,7 @@
 <translation id="8619360774459241877">Chromium ಅನ್ನು ಪ್ರಾರಂಭಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="8621669128220841554">ಅನಿರ್ದಿಷ್ಟ ದೋಷದಿಂದಾಗಿ ಸ್ಥಾಪನೆ ವಿಫಲವಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೊಮ್ಮೆ Chromium ಅನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.</translation>
 <translation id="8667808506758191620">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ನವೀಕೃತವಾಗಿದೆ.</translation>
+<translation id="8682540261359803721">ಈ ಪುಟದಲ್ಲಿ ಸೆಟ್ಟಿಂಗ್ ಒಂದು ಕಾಣಿಸದಿದ್ದರೆ, ನಿಮ್ಮ <ph name="LINK_BEGIN" />Chromium ಬ್ರೌಸರ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="LINK_END" /> ನೋಡಿರಿ</translation>
 <translation id="8697124171261953979">ನೀವು Chromium ಪ್ರಾರಂಭಿಸಿದಾಗ ಅಥವಾ ಓಮ್ನಿಬಾಕ್ಸ್‌ನಿಂದ ಹುಡುಕಿದಾಗ ತೋರಿಸಬೇಕಾದ ಪುಟವನ್ನು ಕೂಡಾ ಇದು ನಿಯಂತ್ರಿಸುತ್ತದೆ.</translation>
 <translation id="8704119203788522458">ಇದು ನಿಮ್ಮ Chromium</translation>
 <translation id="8739167630197873875">Chromium ನಿಂದ ನಿರ್ಗಮಿಸಿದಾಗ ಕುಕೀಗಳನ್ನು ನೀವು ತೆರವುಗೊಳಿಸುತ್ತೀರಿ. ಸಿಂಕ್ ಮಾಡುವುದನ್ನು ಮುಂದುವರಿಸಲು, ಈ <ph name="COOKIE_SETTINGS_LINK" /> ಅನ್ನು ಬದಲಾಯಿಸಿ.</translation>

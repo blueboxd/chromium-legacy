@@ -67,8 +67,9 @@ void ProfileDownloader::StartForAccount(const std::string& account_id) {
 
   // TODO(triploblastic@): Remove explicit conversion once ProfileDownloader
   // has been fixed to use CoreAccountId.
-  account_id_ = account_id.empty() ? identity_manager_->GetPrimaryAccountId().id
-                                   : account_id;
+  account_id_ = account_id.empty()
+                    ? identity_manager_->GetUnconsentedPrimaryAccountId().id
+                    : account_id;
   StartFetchingOAuth2AccessToken();
 }
 

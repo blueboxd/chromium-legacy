@@ -7,8 +7,10 @@
 
 namespace blink {
 
-enum class DarkMode {
+enum class DarkModeInversionAlgorithm {
   // Default, drawing is unfiltered.
+  // TODO(https://crbug.com/1002664): This value is deprecated and in the
+  // process of being removed.
   kOff,
   // For testing only, does a simple 8-bit invert of every RGB pixel component.
   kSimpleInvertForTesting,
@@ -42,7 +44,7 @@ enum class DarkModeClassifierType {
 // BuildDarkModeSettings() in
 //   //src/third_party/blink/renderer/core/accessibility/apply_dark_mode.h
 struct DarkModeSettings {
-  DarkMode mode = DarkMode::kOff;
+  DarkModeInversionAlgorithm mode = DarkModeInversionAlgorithm::kOff;
   bool grayscale = false;
   float image_grayscale_percent = 0.0;  // Valid range from 0.0 to 1.0
   float contrast = 0.0;                 // Valid range from -1.0 to 1.0

@@ -476,6 +476,7 @@
 <translation id="1698122934742150150">Nur aktuelle Inkognitositzung</translation>
 <translation id="1698650002254827833">Die App-Liste kann nicht geladen werden. Bitte versuchen Sie es noch einmal.</translation>
 <translation id="1701062906490865540">Diese Person entfernen</translation>
+<translation id="1703331064825191675">Sie müssen sich keine Sorgen mehr um Ihre Passwörter machen</translation>
 <translation id="1706586824377653884">Von Ihrem Administrator hinzugefügt</translation>
 <translation id="1706625117072057435">Zoomstufen</translation>
 <translation id="1708338024780164500">(Inaktiv)</translation>
@@ -525,6 +526,7 @@
 <translation id="1764226536771329714">Beta</translation>
 <translation id="176587472219019965">Neues &amp;Fenster</translation>
 <translation id="1766575458646819543">Vollbildmodus beendet</translation>
+<translation id="1766957085594317166">Speichern Sie Passwörter sicher in Ihrem Google-Konto, um sie nie wieder eingeben zu müssen</translation>
 <translation id="1768278914020124551">Hoppla! Beim Kontaktieren des Anmeldeservers ist ein Problem aufgetreten. Überprüfen Sie bitte Ihre Netzwerkverbindung und den Domainnamen und versuchen Sie es noch einmal.</translation>
 <translation id="1769104665586091481">Link in neuem &amp;Fenster öffnen</translation>
 <translation id="1773212559869067373">Lokale Ablehnung des Authentifizierungszertifikats</translation>
@@ -1871,6 +1873,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3748026146096797577">Nicht verbunden</translation>
 <translation id="3752582316358263300">Ok</translation>
 <translation id="3752673729237782832">Meine Geräte</translation>
+<translation id="3753033997400164841">Einmal speichern. Überall verwenden</translation>
 <translation id="3755411799582650620">Sie können mit Ihrem <ph name="PHONE_NAME" /> jetzt Ihr <ph name="DEVICE_TYPE" /> entsperren.</translation>
 <translation id="375636864092143889">Die Website verwendet Ihr Mikrofon</translation>
 <translation id="3757733214359997190">Keine Websites gefunden</translation>
@@ -2163,7 +2166,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4146026355784316281">Immer mit System Viewer öffnen</translation>
 <translation id="4146785383423576110">Zurücksetzen und bereinigen</translation>
 <translation id="4147911968024186208">Bitte versuchen Sie es noch einmal. Wenn dieser Fehler wieder auftritt, wenden Sie sich an Ihren Support-Mitarbeiter.</translation>
-<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">Display</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 Tab}other{# Tabs}}</translation>
 <translation id="4154664944169082762">Fingerabdrücke</translation>
@@ -2204,6 +2206,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4232375817808480934">Kerberos konfigurieren</translation>
 <translation id="4235200303672858594">Gesamten Bildschirm</translation>
 <translation id="4235965441080806197">Anmeldung abbrechen</translation>
+<translation id="4242145785130247982">Mehrere Clientzertifikate werden nicht unterstützt</translation>
 <translation id="4242533952199664413">Einstellungen öffnen</translation>
 <translation id="4242577469625748426">Fehler beim Installieren der Richtlinieneinstellungen auf dem Gerät: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Mehr Eingabestift-Apps suchen</translation>
@@ -2662,6 +2665,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4957949153200969297">Nur Funktionen aktivieren, die zur <ph name="IDS_SHORT_PRODUCT_NAME" />-Synchronisierung gehören</translation>
 <translation id="4959262764292427323">Passwörter werden in Ihrem Google-Konto gespeichert, sodass Sie sie auf jedem Gerät verwenden können</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> – <ph name="PROFILE_NAME" /></translation>
+<translation id="496185450405387901">Die App wurde von Ihrem Administrator installiert.</translation>
 <translation id="4964455510556214366">Anordnung</translation>
 <translation id="4964673849688379040">Wird überprüft...</translation>
 <translation id="4965808351167763748">Möchten Sie dieses Gerät wirklich für Hangouts Meet einrichten?</translation>
@@ -2919,6 +2923,7 @@ Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translati
 <translation id="5360150013186312835">In Symbolleiste anzeigen</translation>
 <translation id="5362741141255528695">Private Schlüsseldatei auswählen</translation>
 <translation id="5363109466694494651">Powerwash durchführen und zurücksetzen</translation>
+<translation id="5365716706805792666">Google kann prüfen, ob Ihre Passwörter von einer Datenpanne betroffen sind. Diese Funktion wird aktiviert, wenn Sie sich mit Ihrem Google-Konto anmelden.</translation>
 <translation id="5365881113273618889">Der ausgewählte Ordner enthält vertrauliche Dateien. Möchten Sie <ph name="APP_NAME" /> wirklich dauerhaft Schreibzugriff auf diesen Ordner gewähren?</translation>
 <translation id="5367091008316207019">Datei wird gelesen...</translation>
 <translation id="5368720394188453070">Ihr Telefon ist gesperrt. Entsperren Sie es, um fortzufahren.</translation>
@@ -3515,7 +3520,6 @@ Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translati
 <translation id="6212039847102026977">Erweiterte Netzwerkeigenschaften anzeigen</translation>
 <translation id="6212168817037875041">Display deaktivieren</translation>
 <translation id="6212752530110374741">Link per E-Mail versenden</translation>
-<translation id="6214642087594370545">Sie sehen eine Warnmeldung, wenn Sie ein Passwort verwenden, das aufgrund einer Datenpanne unsicher ist. Diese Funktion ist nur für angemeldete Nutzer verfügbar.</translation>
 <translation id="6216696360484424239">Automatisch anmelden</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> ist offline. Stellen Sie eine Internetverbindung her und versuchen Sie es noch einmal.</translation>
 <translation id="6220413761270491930">Fehler beim Laden der Erweiterung</translation>
@@ -3872,6 +3876,7 @@ Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translati
 <translation id="6769712124046837540">Drucker wird hinzugefügt...</translation>
 <translation id="6770664076092644100">Über NFC bestätigen</translation>
 <translation id="6771503742377376720">Ist eine Zertifizierungsstelle</translation>
+<translation id="6775163072363532304">Verfügbare Geräte werden hier angezeigt.</translation>
 <translation id="6777817260680419853">Weiterleitung blockiert</translation>
 <translation id="6778737459546443941">Dein Elternteil hat die Berechtigung noch nicht erteilt</translation>
 <translation id="677965093459947883">Sehr klein</translation>
@@ -4332,6 +4337,7 @@ Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translati
 <translation id="7441830548568730290">Andere Nutzer</translation>
 <translation id="7442465037756169001">Sie können Ihre Hangouts Meet-Hardware jetzt einrichten.</translation>
 <translation id="744341768939279100">Neues Profil erstellen</translation>
+<translation id="7443806024147773267">Überall dort, wo Sie mit Ihrem Google-Konto angemeldet sind, können Sie auf Ihre Passwörter zugreifen</translation>
 <translation id="7444046173054089907">Diese Website ist blockiert</translation>
 <translation id="7444983668544353857"><ph name="NETWORKDEVICE" /> deaktivieren</translation>
 <translation id="7448430327655618736">Apps automatisch installieren</translation>
@@ -4745,6 +4751,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8014154204619229810">Der Updater wird momentan ausgeführt. Bitte versuchen Sie es in einer Minute erneut, indem Sie eine Aktualisierung vornehmen.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> konnte die zuvor installierte Version nicht wiederherstellen. Bitte versuchen Sie erneut, ein Powerwash für Ihr Gerät durchzuführen.</translation>
 <translation id="8014210335923519270"><ph name="IDS_SHORT_PRODUCT_NAME" /> und die Sicherheit verbessern, indem System- und Nutzungsdaten an Google gesendet werden</translation>
+<translation id="8015780634880457457">Google kann prüfen, ob Ihre Passwörter von einer Datenpanne betroffen sind</translation>
 <translation id="8016266267177410919">Temporärer Speicher</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Verknüpfung bearbeitet</translation>
@@ -4862,6 +4869,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8188389033983459049">Überprüfen Sie Ihre Geräteeinstellungen und aktivieren Sie Bluetooth, um fortzufahren</translation>
 <translation id="8190193592390505034">Verbindung zu <ph name="PROVIDER_NAME" /> wird hergestellt.</translation>
 <translation id="8191230140820435481">Apps, Erweiterungen und Designs verwalten</translation>
+<translation id="819464600477418284">Diese App kann nicht deinstalliert werden, da sie Teil von Chrome OS ist.</translation>
 <translation id="8195027750202970175">Dateigröße</translation>
 <translation id="8198323535106903877"><ph name="NUMBER_OF_APPS" /> Apps werden installiert</translation>
 <translation id="8199300056570174101">Netzwerk(dienst) und Geräteeigenschaften</translation>
@@ -4922,6 +4930,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
     <ph name="BEGIN_PARAGRAPH2" />Wenn Sie diese Funktion deaktivieren, kann Ihr Gerät weiterhin die für wichtige Dienste erforderlichen Informationen senden, beispielsweise für Systemupdates und -sicherheit.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />Der Eigentümer kann diese Funktion unter "Einstellungen" &gt; "Erweitert" &gt; "Diagnose- und Nutzungsdaten automatisch an Google senden" steuern.<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />Wenn für Ihr Kind zusätzlich die Einstellung "Web- &amp; App-Aktivitäten" aktiviert ist, werden diese Daten möglicherweise in seinem Google-Konto gespeichert. Weitere Informationen zu diesen Einstellungen und den möglichen Anpassungen finden Sie unter families.google.com.<ph name="END_PARAGRAPH4" /></translation>
+<translation id="826905130698769948">Ungültiges Clientzertifikat</translation>
 <translation id="8270242299912238708">PDF-Dokumente</translation>
 <translation id="827097179112817503">Schaltfläche "Startseite" anzeigen</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 Lesezeichen gelöscht}other{# Lesezeichen gelöscht}}</translation>
@@ -5335,6 +5344,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8874184842967597500">Nicht verbunden</translation>
 <translation id="8876307312329369159">Diese Einstellung kann nicht in einer Demositzung geändert werden.</translation>
 <translation id="8877448029301136595">[übergeordnetes Verzeichnis]</translation>
+<translation id="8879220587046205278">Google Play-Apps benötigen möglicherweise vollständigen Zugriff auf Ihr Dateisystem, um auf externen Speichergeräten Dateien lesen und schreiben zu können. Dateien und Ordner, die auf dem Gerät erstellt werden, sind für alle Nutzer des externen Speichergeräts sichtbar.</translation>
 <translation id="8879284080359814990">Tab "Anzeigen al&amp;s"</translation>
 <translation id="8879921471468674457">Anmeldedaten speichern</translation>
 <translation id="8881020143150461183">Versuchen Sie es noch einmal. Für technischen Support wenden Sie sich bitte an <ph name="CARRIER_NAME" />.</translation>

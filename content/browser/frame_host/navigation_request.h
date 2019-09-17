@@ -179,6 +179,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
       bool is_renderer_initiated,
       bool is_same_document);
 
+  static NavigationRequest* From(NavigationHandle* handle);
+
   ~NavigationRequest() override;
 
   // NavigationHandle implementation:

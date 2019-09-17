@@ -63,6 +63,11 @@
 @end
 
 @implementation InfobarBadgeUITestDelegate
+- (void)infobarBannerWasDismissed:(InfobarType)infobarType
+                      forWebState:(web::WebState*)webState {
+  // TODO(crbug.com/977340): Test this method.
+  self.infobarBadgeTabHelper->UpdateBadgeForInfobarBannerDismissed(infobarType);
+}
 - (void)infobarWasAccepted:(InfobarType)infobarType
                forWebState:(web::WebState*)webState {
   self.infobarBadgeTabHelper->UpdateBadgeForInfobarAccepted(infobarType);

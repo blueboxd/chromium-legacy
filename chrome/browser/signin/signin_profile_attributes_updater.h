@@ -44,6 +44,8 @@ class SigninProfileAttributesUpdater
       const CoreAccountInfo& primary_account_info) override;
   void OnPrimaryAccountCleared(
       const CoreAccountInfo& previous_primary_account_info) override;
+  void OnUnconsentedPrimaryAccountChanged(
+      const CoreAccountInfo& unconsented_primary_account_info) override;
 
   signin::IdentityManager* identity_manager_;
   SigninErrorController* signin_error_controller_;

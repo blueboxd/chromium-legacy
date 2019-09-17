@@ -192,7 +192,7 @@
         Get organized
       </message>
       <message name="IDS_IPH_DRAG_AND_DROP_CONTENT" desc="This text shows on the in-product help dialog for drag-and-drop. It gives instructions on how to drag and drop to create a group.">
-        Drag a tab onto another tab to group them
+        To group tabs, touch &amp; hold a tab. Then, drag it onto another tab.
       </message>
 
       <!-- Tab Carousel strings -->

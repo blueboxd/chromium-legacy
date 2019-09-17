@@ -12,7 +12,7 @@
 #import "components/password_manager/ios/password_form_helper.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_manager_client.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_manager_driver.h"
-#import "ios/web/public/web_state/web_state_observer_bridge.h"
+#import "ios/web/public/web_state_observer_bridge.h"
 
 @protocol ApplicationCommands;
 @class NotifyUserAutoSigninViewController;

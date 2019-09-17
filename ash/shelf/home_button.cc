@@ -28,8 +28,8 @@
 namespace ash {
 namespace {
 
-constexpr uint8_t kVoiceInteractionRunningAlpha = 255;     // 100% alpha
-constexpr uint8_t kVoiceInteractionNotRunningAlpha = 138;  // 54% alpha
+constexpr uint8_t kAssistantVisibleAlpha = 255;    // 100% alpha
+constexpr uint8_t kAssistantInvisibleAlpha = 138;  // 54% alpha
 
 }  // namespace
 
@@ -93,7 +93,7 @@ void HomeButton::ButtonPressed(views::Button* sender,
   OnPressed(show_source, event.time_stamp());
 }
 
-void HomeButton::OnVoiceInteractionAvailabilityChanged() {
+void HomeButton::OnAssistantAvailabilityChanged() {
   SchedulePaint();
 }
 
@@ -125,7 +125,7 @@ void HomeButton::PaintButtonContents(gfx::Canvas* canvas) {
   // factors.
   float ring_outer_radius_dp = 7.f;
   float ring_thickness_dp = 1.5f;
-  if (controller_.IsVoiceInteractionAvailable()) {
+  if (controller_.IsAssistantAvailable()) {
     ring_outer_radius_dp = 8.f;
     ring_thickness_dp = 1.f;
   }
@@ -138,11 +138,11 @@ void HomeButton::PaintButtonContents(gfx::Canvas* canvas) {
     fg_flags.setStyle(cc::PaintFlags::kStroke_Style);
     fg_flags.setColor(ShelfConfig::Get()->shelf_icon_color());
 
-    if (controller_.IsVoiceInteractionAvailable()) {
+    if (controller_.IsAssistantAvailable()) {
       // active: 100% alpha, inactive: 54% alpha
-      fg_flags.setAlpha(controller_.IsVoiceInteractionRunning()
-                            ? kVoiceInteractionRunningAlpha
-                            : kVoiceInteractionNotRunningAlpha);
+      fg_flags.setAlpha(controller_.IsAssistantVisible()
+                            ? kAssistantVisibleAlpha
+                            : kAssistantInvisibleAlpha);
     }
 
     const float thickness = std::ceil(ring_thickness_dp * dsf);
@@ -151,7 +151,7 @@ void HomeButton::PaintButtonContents(gfx::Canvas* canvas) {
     // Make sure the center of the circle lands on pixel centers.
     canvas->DrawCircle(circle_center, radius, fg_flags);
 
-    if (controller_.IsVoiceInteractionAvailable()) {
+    if (controller_.IsAssistantAvailable()) {
       fg_flags.setAlpha(255);
       const float kCircleRadiusDp = 5.f;
       fg_flags.setStyle(cc::PaintFlags::kFill_Style);

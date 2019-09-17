@@ -3068,31 +3068,25 @@
   <message name="IDS_ARC_USB_ACCESS_PERMISSION_HEADING" desc="Heading text in the content area of the Android app USB device access permission prompt. Tells the user the app will be able to access the usb device if confirmed.">
     Allow "<ph name="APP_NAME">$1<ex>Gmail Checker</ex></ph>" to access:
   </message>
-  <message name="IDS_VOICE_INTERACTION_VALUE_PROP_LOADING" desc="Loading message of the voice interaction value prop dialog.">
+  <message name="IDS_ASSISTANT_VALUE_PROP_LOADING" desc="Loading message of the voice interaction value prop dialog.">
     Loading Google Assistant...
   </message>
-  <message name="IDS_VOICE_INTERACTION_VALUE_PROP_LOAD_ERROR_TITLE" desc="Load error title of the voice interaction value prop dialog.">
+  <message name="IDS_ASSISTANT_VALUE_PROP_LOAD_ERROR_TITLE" desc="Load error title of the voice interaction value prop dialog.">
     Google Assistant
   </message>
-  <message name="IDS_VOICE_INTERACTION_VALUE_PROP_LOAD_ERROR_MESSAGE" desc="Load error message of the voice interaction value prop dialog.">
+  <message name="IDS_ASSISTANT_VALUE_PROP_LOAD_ERROR_MESSAGE" desc="Load error message of the voice interaction value prop dialog.">
     Google Assistant was unable to load, please check your network connection and retry.
   </message>
-  <message name="IDS_VOICE_INTERACTION_VALUE_PROP_SKIP_BUTTON" desc="Button label for skipping voice interaction value prop upon error.">
+  <message name="IDS_ASSISTANT_VALUE_PROP_SKIP_BUTTON" desc="Button label for skipping voice interaction value prop upon error.">
     Skip
   </message>
-  <message name="IDS_VOICE_INTERACTION_VALUE_PROP_RETRY_BUTTON" desc="Button label for retry loading voice interaction value prop.">
+  <message name="IDS_ASSISTANT_VALUE_PROP_RETRY_BUTTON" desc="Button label for retry loading voice interaction value prop.">
     Retry
-  </message>
-  <message name="IDS_VOICE_INTERACTION_VALUE_PROP_NEXT_BUTTION" desc="Button label for accepting voice interaction value proposition.">
-    Next
-  </message>
-  <message name="IDS_WAIT_FOR_CONTAINER_READY_TITLE" desc="Title of the wait for container ready OOBE screen.">
-    Just a sec
   </message>
   <message name="IDS_WAIT_FOR_CONTAINER_READY_INTRO_MESSAGE" desc="Introduction message for the wait for container ready OOBE screen">
     Ask it questions. Tell it to do things. It's your personal Google, always ready to help.
   </message>
-  <message name="IDS_VOICE_INTERACTION_LOGO" desc="Logo label for voice interaction.">
+  <message name="IDS_ASSISTANT_LOGO" desc="Logo label for voice interaction.">
     Google assistant logo
   </message>
   <message name="IDS_ASSISTANT_SCREEN_CONTEXT_TITLE" desc="Title for assistant screen context optin. This is also used as the title for a toggle that lets the assistant use whats on the screen in Assistant settings page.">

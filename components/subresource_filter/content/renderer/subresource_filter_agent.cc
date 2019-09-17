@@ -212,8 +212,7 @@ void SubresourceFilterAgent::DidCreateNewDocument() {
   SetSubresourceFilterForCommittedLoad(std::move(filter));
 }
 
-void SubresourceFilterAgent::DidFailProvisionalLoad(
-    const blink::WebURLError& error) {
+void SubresourceFilterAgent::DidFailProvisionalLoad() {
   // TODO(engedy): Add a test with `frame-ancestor` violation to exercise this.
   ResetInfoForNextCommit();
 }

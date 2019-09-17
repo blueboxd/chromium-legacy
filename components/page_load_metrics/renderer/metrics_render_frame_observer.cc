@@ -209,8 +209,7 @@ void MetricsRenderFrameObserver::ReadyToCommitNavigation(
   provisional_frame_resource_id = 0;
 }
 
-void MetricsRenderFrameObserver::DidFailProvisionalLoad(
-    const blink::WebURLError& error) {
+void MetricsRenderFrameObserver::DidFailProvisionalLoad() {
   // Clear the data use tracker for the provisional navigation that started.
   provisional_frame_resource_data_use_.reset();
 }

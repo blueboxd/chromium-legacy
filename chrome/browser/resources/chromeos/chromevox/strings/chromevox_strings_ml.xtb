@@ -232,6 +232,7 @@
 <translation id="27527859628328957">ഫോക്കസ് ചെയ്യാനാകുന്ന അടുത്ത ഇനത്തിലേക്ക് പോകുക</translation>
 <translation id="2770781857296573485">ഗ്രൂപ്പ് പര്യവേക്ഷണം നൽകുക</translation>
 <translation id="2777845298774924149">പുറത്തുകടന്നു</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{+#}other{+#}}</translation>
 <translation id="2784959586797362050">എപ്പോഴും എന്ന പോലെ, തിരയുക+a എന്നതും തുടർന്ന് i എന്നതും അമർത്തിക്കൊണ്ട് നിങ്ങൾക്ക് നേരിട്ട് ഫീഡ്‌ബാക്ക് അയയ്ക്കാവുന്നതാണ്. നിങ്ങളുടെ അഭിപ്രായമറിയാൻ ഞങ്ങൾ ജിജ്ഞാസയോടെ കാത്തിരിക്കുന്നു.</translation>
 <translation id="2800204403141299078">മറ്റ് വ്യത്യസ്‌ത ഘടകങ്ങൾ ഒന്നുമില്ല.</translation>
 <translation id="2800780099804980316">മുൻ നില 1 ശീർഷകം ഒന്നുമില്ല.</translation>
@@ -714,6 +715,7 @@
 <translation id="5956928062748260866">ഡയലോഗ്</translation>
 <translation id="5963413905009737549">വിഭാഗം</translation>
 <translation id="5968607524793740041">സന്ദർഭ മെനു കാണിക്കുക</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{# ഇനമുള്ള}other{# ഇനങ്ങളുള്ള}}</translation>
 <translation id="5981446804259161541">ഇളം സിയാൻ</translation>
 <translation id="5983179082906765664">നാവിഗേഷൻ ഗ്രാനുലാരിറ്റി വർദ്ധിപ്പിക്കുക</translation>
 <translation id="5992285135956208197">ഗ്രാഫിക്‌സ് ഡോക്യുമെന്റ്</translation>

@@ -25,15 +25,15 @@
 namespace arc {
 
 // static
-arc::mojom::PrintSessionHostPtr PrintSessionImpl::Create(
+mojom::PrintSessionHostPtr PrintSessionImpl::Create(
     std::unique_ptr<content::WebContents> web_contents,
     std::unique_ptr<ash::ArcCustomTab> custom_tab,
-    arc::mojom::PrintSessionInstancePtr instance) {
+    mojom::PrintSessionInstancePtr instance) {
   if (!custom_tab || !instance)
     return nullptr;
 
   // This object will be deleted when the mojo connection is closed.
-  arc::mojom::PrintSessionHostPtr ptr;
+  mojom::PrintSessionHostPtr ptr;
   new PrintSessionImpl(std::move(web_contents), std::move(custom_tab),
                        std::move(instance), mojo::MakeRequest(&ptr));
   return ptr;
@@ -42,13 +42,14 @@ arc::mojom::PrintSessionHostPtr PrintSessionImpl::Create(
 PrintSessionImpl::PrintSessionImpl(
     std::unique_ptr<content::WebContents> web_contents,
     std::unique_ptr<ash::ArcCustomTab> custom_tab,
-    arc::mojom::PrintSessionInstancePtr instance,
-    arc::mojom::PrintSessionHostRequest request)
+    mojom::PrintSessionInstancePtr instance,
+    mojom::PrintSessionHostRequest request)
     : ArcCustomTabModalDialogHost(std::move(custom_tab),
                                   std::move(web_contents)),
-      binding_(this, std::move(request)),
-      instance_(std::move(instance)) {
-  binding_.set_connection_error_handler(
+      instance_(std::move(instance)),
+      print_renderer_binding_(this),
+      session_binding_(this, std::move(request)) {
+  session_binding_.set_connection_error_handler(
       base::BindOnce(&PrintSessionImpl::Close, weak_ptr_factory_.GetWeakPtr()));
   web_contents_->SetUserData(UserDataKey(), base::WrapUnique(this));
 
@@ -86,7 +87,10 @@ void PrintSessionImpl::OnPrintPreviewClosed() {
 }
 
 void PrintSessionImpl::StartPrintAfterDelay() {
-  printing::StartPrint(web_contents_.get(), false, false);
+  printing::mojom::PrintRendererAssociatedPtrInfo print_renderer_ptr_info;
+  print_renderer_binding_.Bind(mojo::MakeRequest(&print_renderer_ptr_info));
+  printing::StartPrint(web_contents_.get(), std::move(print_renderer_ptr_info),
+                       false, false);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PrintSessionImpl)

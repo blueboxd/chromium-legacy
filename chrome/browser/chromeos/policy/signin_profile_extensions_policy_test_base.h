@@ -14,9 +14,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/version_info/channel.h"
 #include "extensions/common/features/feature_channel.h"
-#include "net/test/embedded_test_server/http_request.h"
-#include "net/test/embedded_test_server/http_response.h"
-
 namespace policy {
 
 // Base class for testing sign-in profile apps/extensions that are installed via
@@ -42,12 +39,6 @@ class SigninProfileExtensionsPolicyTestBase
   const version_info::Channel channel_;
 
  private:
-  // Replace "mock.http" with "127.0.0.1:<port>" on "update_manifest.xml" files.
-  // Host resolver doesn't work here because the test file doesn't know the
-  // correct port number.
-  std::unique_ptr<net::test_server::HttpResponse> InterceptMockHttp(
-      const net::test_server::HttpRequest& request);
-
   const extensions::ScopedCurrentChannel scoped_current_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninProfileExtensionsPolicyTestBase);

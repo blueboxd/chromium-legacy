@@ -79,8 +79,7 @@ std::unique_ptr<views::ImageView> CreatePrimaryIconView(
     const gfx::ImageSkia& image) {
   auto icon_view = std::make_unique<views::ImageView>();
   icon_view->SetImage(image);
-  icon_view->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(kPrimaryIconBorderWidth)));
+  icon_view->SetBorder(views::CreateEmptyBorder(kPrimaryIconBorder));
   return icon_view;
 }
 

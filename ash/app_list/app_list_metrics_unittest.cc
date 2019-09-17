@@ -78,6 +78,9 @@ class AppListAppLaunchedMetricTest : public AshTestBase {
 
     app_list_test_model_ = static_cast<app_list::test::AppListTestModel*>(
         Shell::Get()->app_list_controller()->GetModel());
+
+    shelf_test_api_ = std::make_unique<ShelfViewTestAPI>(
+        GetPrimaryShelf()->GetShelfViewForTesting());
   }
 
   void TearDown() override {
@@ -87,11 +90,13 @@ class AppListAppLaunchedMetricTest : public AshTestBase {
 
  protected:
   void CreateAndClickShelfItem() {
-    // Add shelf item to be launched.
+    // Add shelf item to be launched. Waits for the shelf view's bounds
+    // animations to end.
     ShelfItem shelf_item;
     shelf_item.id = ash::ShelfID("app_id");
     shelf_item.type = TYPE_BROWSER_SHORTCUT;
     ShelfModel::Get()->Add(shelf_item);
+    shelf_test_api_->RunMessageLoopUntilAnimationsDone();
 
     // The TestShelfItemDelegate will simulate a window activation after the
     // shelf item is clicked.
@@ -103,10 +108,8 @@ class AppListAppLaunchedMetricTest : public AshTestBase {
 
   void ClickShelfItem() {
     // Get location of the shelf item.
-    ShelfViewTestAPI shelf_test_api(
-        GetPrimaryShelf()->GetShelfViewForTesting());
-    ShelfView* shelf_view = shelf_test_api.shelf_view();
-    const views::ViewModel* view_model = shelf_view->view_model_for_test();
+    const views::ViewModel* view_model =
+        GetPrimaryShelf()->GetShelfViewForTesting()->view_model_for_test();
     gfx::Point center = view_model->view_at(kBrowserAppIndexOnShelf)
                             ->GetBoundsInScreen()
                             .CenterPoint();
@@ -189,6 +192,7 @@ class AppListAppLaunchedMetricTest : public AshTestBase {
  private:
   app_list::SearchModel* search_model_ = nullptr;
   app_list::test::AppListTestModel* app_list_test_model_ = nullptr;
+  std::unique_ptr<ShelfViewTestAPI> shelf_test_api_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListAppLaunchedMetricTest);
 };

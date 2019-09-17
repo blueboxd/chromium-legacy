@@ -1752,6 +1752,12 @@ size_t NumParallelJobs() {
   }
 
   // Default to the number of processor cores.
+#if defined(OS_WIN)
+  // Use processors in all groups (Windows splits more than 64 logical
+  // processors into groups).
+  return base::checked_cast<size_t>(
+      ::GetActiveProcessorCount(ALL_PROCESSOR_GROUPS));
+#endif
   return base::checked_cast<size_t>(SysInfo::NumberOfProcessors());
 }
 

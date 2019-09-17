@@ -31,8 +31,6 @@
 
 namespace history {
 
-// Forward declaration for friend statements.
-class HistoryBackend;
 class PageUsageData;
 
 // Container for a list of URLs.

@@ -53,6 +53,9 @@
 <translation id="2094919256425865063">Να τερματιστεί η λειτουργία του Chrome ούτως ή άλλως;</translation>
 <translation id="2120620239521071941">Με αυτήν την ενέργεια θα διαγραφούν <ph name="ITEMS_COUNT" /> στοιχεία από αυτήν τη συσκευή. Για να ανακτήσετε τα δεδομένα σας αργότερα, συνδεθείτε στο Chrome ως <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Συμβάλετε στη βελτίωση του Chrome, αναφέροντας τις <ph name="BEGIN_LINK" />τρέχουσες ρυθμίσεις<ph name="END_LINK" /></translation>
+<translation id="2128103434102193461">Για λεπτομέρειες σχετικά με το Chrome OS, ανατρέξτε στην ενότητα <ph name="LINK_BEGIN" />
+      Σχετικά με το Chrome OS<ph name="LINK_END" /></translation>
+<translation id="2151406531797534936">Επανεκκινήστε το Chrome τώρα</translation>
 <translation id="216054706567564023">Εγκαταστήστε το Chrome στο τηλέφωνό σας. Θα στείλουμε ένα SMS στον αριθμό τηλεφώνου ανάκτησης του λογαριασμού σας.</translation>
 <translation id="2246246234298806438">Το Google Chrome δεν είναι δυνατό να εμφανίσει την προεπισκόπηση εκτύπωσης όταν λείπει το ενσωματωμένο πρόγραμμα προβολής PDF.</translation>
 <translation id="2252923619938421629">Συμβάλετε στη βελτίωση του Google Chrome αναφέροντας τις τρέχουσες ρυθμίσεις</translation>
@@ -223,6 +226,7 @@
 <translation id="7589360514048265910">Αυτός ο υπολογιστής δεν θα λαμβάνει πλέον ενημερώσεις του Google Chrome επειδή το Mac OS X 10.9 δεν υποστηρίζεται πλέον.</translation>
 <translation id="7592736734348559088">Το Google Chrome δεν κατάφερε να συγχρονίσει τα δεδομένα σας επειδή τα στοιχεία σύνδεσης στο λογαριασμό σας δεν έχουν ενημερωθεί.</translation>
 <translation id="7626032353295482388">Καλώς ήρθατε στο Chrome</translation>
+<translation id="7629695634924605473">Το Chrome σας ενημερώνει σε περίπτωση παραβίασης των κωδικών πρόσβασής σας.</translation>
 <translation id="7641148173327520642">Ο διαχειριστής συστήματος έχει διαμορφώσει το Google Chrome έτσι ώστε να ανοίγει <ph name="ALTERNATIVE_BROWSER_NAME" /> για πρόσβαση σε <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Λογότυπο Chrome Enterprise</translation>
 <translation id="7747138024166251722">Δεν ήταν δυνατή η δημιουργία ενός προσωρινού καταλόγου από το πρόγραμμα εγκατάστασης. Ελέγξτε τον κενό χώρο του δίσκου και το δικαίωμα εγκατάστασης του λογισμικού.</translation>

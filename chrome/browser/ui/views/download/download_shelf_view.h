@@ -117,13 +117,6 @@ class DownloadShelfView : public views::AccessiblePaneView,
   // Padding between the show all link and close button.
   static constexpr int kCloseAndLinkPadding = 6;
 
-  // Amount of time to delay if the mouse leaves the shelf by way of entering
-  // another window. This is much larger than the normal delay as opening a
-  // download is most likely going to trigger a new window to appear over the
-  // button. Delay the time so that the user has a chance to quickly close the
-  // other app and return to chrome with the download shelf still open.
-  static constexpr int kNotifyOnExitTimeMS = 5000;
-
   // Adds a View representing a download to this DownloadShelfView.
   // DownloadShelfView takes ownership of the View, and will delete it as
   // necessary.

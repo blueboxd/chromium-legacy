@@ -195,7 +195,6 @@ crbug.com/774873 [ Linux ] virtual/exotic-color-space/images/color-profile-borde
 crbug.com/774873 [ Win ] virtual/exotic-color-space/images/color-profile-border-fade.html [ Pass Failure ]
 
 crbug.com/974652 [ Linux Debug ] virtual/gpu/fast/canvas/OffscreenCanvas-copyImage.html [ Pass Failure ]
-crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/OffscreenCanvas-copyImage.html [ Pass Failure ]
 
 crbug.com/974666 [ Mac10.13 ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Pass Failure ]
 crbug.com/974720 [ Mac10.13 ] fast/text/firstline/capitalize-transform-2.html [ Pass Crash ]
@@ -254,10 +253,6 @@ crbug.com/955533 wpt_internal/display-lock/sizing/overflow-auto-with-overflow.ht
 
 # MSAN failure
 crbug.com/996625 inspector-protocol/accessibility/accessibility-getFullAXTree-display-locked.js [ Skip ]
-
-# Sheriff 2018/05/25
-crbug.com/846747 http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
-crbug.com/846747 virtual/stable/http/tests/navigation/navigation-interrupted-by-fragment.html  [ Pass Timeout ]
 
 crbug.com/849459 fragmentation/repeating-thead-under-repeating-thead.html [ Failure ]
 

@@ -579,7 +579,7 @@ Tiyaking pinagkakatiwalaan mo ang site na ito bago ka pumasok sa VR.</translatio
 <translation id="5324858694974489420">Mga Setting para sa Magulang</translation>
 <translation id="5327248766486351172">Pangalan</translation>
 <translation id="5335288049665977812">Payagan ang mga site na magpatakbo ng JavaScript (inirerekomenda)</translation>
-<translation id="5342314432463739672">Mga kahilingan ng pahintulot</translation>
+<translation id="5342314432463739672">Mga kahilingan sa pahintulot</translation>
 <translation id="5357811892247919462">Natanggap ang tab</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> nakabukas na tab, i-tap para lumipat ng tab}one{<ph name="OPEN_TABS_MANY" /> nakabukas na tab, i-tap para lumipat ng tab}other{<ph name="OPEN_TABS_MANY" /> na nakabukas na tab, i-tap para lumipat ng tab}}</translation>
 <translation id="5391532827096253100">Hindi secure ang iyong koneksyon sa site na ito. Impormasyon ng site</translation>
@@ -749,7 +749,7 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6532866250404780454">Hindi lalabas ang mga site na binibisita mo sa Chrome. Ide-delete ang lahat ng timer sa site.</translation>
 <translation id="6534565668554028783">Masyadong matagal bago nakatugon ang Google</translation>
 <translation id="6538442820324228105"><ph name="GBS" /> GB ang na-download</translation>
-<translation id="6539092367496845964">Nagkaproblema. Subukang muli sa ibang pagkakataon.</translation>
+<translation id="6539092367496845964">Nagkaproblema. Subukan ulit sa ibang pagkakataon.</translation>
 <translation id="654446541061731451">Pumili ng tab upang mag-beam</translation>
 <translation id="6545017243486555795">I-clear ang Lahat ng Data</translation>
 <translation id="6545864417968258051">Pag-scan ng Bluetooth</translation>
@@ -880,7 +880,7 @@ HINDI magkakaroon ng access sa camera ang site. Ikaw lang ang makakakita ng mga 
 <translation id="7493994139787901920"><ph name="VERSION" /> (Na-update <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">natipid na data</translation>
 <translation id="7498271377022651285">Mangyaring maghintay…</translation>
-<translation id="7510943789645525906">Nagbibigay sa iyo ng babala kung ang isang password na ginamit mo ay bahagi ng paglabag sa data</translation>
+<translation id="7510943789645525906">Nagbibigay sa iyo ng babala kung ang isang password na ginagamit mo ay bahagi ng isang paglabag sa data</translation>
 <translation id="7514365320538308">I-download</translation>
 <translation id="751961395872307827">Hindi makakonekta sa site</translation>
 <translation id="7521387064766892559">JavaScript</translation>

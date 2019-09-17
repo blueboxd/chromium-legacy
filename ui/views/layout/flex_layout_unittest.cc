@@ -117,12 +117,12 @@ class FlexLayoutTest : public testing::Test {
 
  protected:
   // Constants re-used in many tests.
-  static const Insets kSmallInsets;
-  static const Insets kLayoutInsets;
-  static const Insets kLargeInsets;
-  static const Size kChild1Size;
-  static const Size kChild2Size;
-  static const Size kChild3Size;
+  static constexpr Insets kSmallInsets = Insets(1, 2, 3, 4);
+  static constexpr Insets kLayoutInsets = Insets(5, 6, 7, 9);
+  static constexpr Insets kLargeInsets = Insets(10, 11, 12, 13);
+  static constexpr Size kChild1Size = Size(12, 10);
+  static constexpr Size kChild2Size = Size(13, 11);
+  static constexpr Size kChild3Size = Size(17, 13);
 
   // Preferred size or drop out.
   static const FlexSpecification kDropOut;
@@ -149,12 +149,13 @@ class FlexLayoutTest : public testing::Test {
   FlexLayout* layout_;
 };
 
-const Insets FlexLayoutTest::kSmallInsets{1, 2, 3, 4};
-const Insets FlexLayoutTest::kLayoutInsets{5, 6, 7, 9};
-const Insets FlexLayoutTest::kLargeInsets{10, 11, 12, 13};
-const Size FlexLayoutTest::kChild1Size{12, 10};
-const Size FlexLayoutTest::kChild2Size{13, 11};
-const Size FlexLayoutTest::kChild3Size{17, 13};
+// static
+constexpr Insets FlexLayoutTest::kSmallInsets;
+constexpr Insets FlexLayoutTest::kLayoutInsets;
+constexpr Insets FlexLayoutTest::kLargeInsets;
+constexpr Size FlexLayoutTest::kChild1Size;
+constexpr Size FlexLayoutTest::kChild2Size;
+constexpr Size FlexLayoutTest::kChild3Size;
 
 const FlexSpecification FlexLayoutTest::kDropOut =
     FlexSpecification::ForSizeRule(MinimumFlexSizeRule::kPreferredSnapToZero,
@@ -2035,22 +2036,21 @@ class FlexLayoutCrossAxisFitTest : public FlexLayoutTest {
 
  protected:
   static constexpr size_t kNumChildren = 3;
-  static const gfx::Size kHostSize;
-  static const gfx::Size kChildSizes[kNumChildren];
-  static const gfx::Insets kChildMargins[kNumChildren];
+  static constexpr gfx::Size kHostSize = gfx::Size(200, 20);
+  static constexpr gfx::Size kChildSizes[kNumChildren] = {{10, 10},
+                                                          {10, 10},
+                                                          {10, 30}};
+  static constexpr gfx::Insets kChildMargins[kNumChildren] = {{6, 0, 2, 0},
+                                                              {10, 0, 5, 0},
+                                                              {6, 0, 2, 0}};
 
   std::vector<View*> child_views_;
 };
 
-const gfx::Size FlexLayoutCrossAxisFitTest::kHostSize{200, 20};
-
-const gfx::Size FlexLayoutCrossAxisFitTest::kChildSizes[]{{10, 10},
-                                                          {10, 10},
-                                                          {10, 30}};
-
-const gfx::Insets FlexLayoutCrossAxisFitTest::kChildMargins[]{{6, 0, 2, 0},
-                                                              {10, 0, 5, 0},
-                                                              {6, 0, 2, 0}};
+// static
+constexpr gfx::Size FlexLayoutCrossAxisFitTest::kHostSize;
+constexpr gfx::Size FlexLayoutCrossAxisFitTest::kChildSizes[kNumChildren];
+constexpr gfx::Insets FlexLayoutCrossAxisFitTest::kChildMargins[kNumChildren];
 
 TEST_F(FlexLayoutCrossAxisFitTest, Layout_CrossStretch) {
   layout_->SetCrossAxisAlignment(LayoutAlignment::kStretch);

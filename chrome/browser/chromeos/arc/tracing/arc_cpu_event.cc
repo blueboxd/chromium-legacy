@@ -124,11 +124,10 @@ base::ListValue SerializeCpuEvents(const CpuEvents& cpu_events) {
   base::ListValue list;
   for (const auto& event : cpu_events) {
     base::ListValue event_value;
-    event_value.GetList().push_back(base::Value(static_cast<int>(event.type)));
-    event_value.GetList().push_back(
-        base::Value(static_cast<double>(event.timestamp)));
-    event_value.GetList().push_back(base::Value(static_cast<int>(event.tid)));
-    list.GetList().emplace_back(std::move(event_value));
+    event_value.Append(base::Value(static_cast<int>(event.type)));
+    event_value.Append(base::Value(static_cast<double>(event.timestamp)));
+    event_value.Append(base::Value(static_cast<int>(event.tid)));
+    list.Append(std::move(event_value));
   }
   return list;
 }
@@ -136,7 +135,7 @@ base::ListValue SerializeCpuEvents(const CpuEvents& cpu_events) {
 base::ListValue SerializeAllCpuEvents(const AllCpuEvents& all_cpu_events) {
   base::ListValue list;
   for (const auto& cpu_events : all_cpu_events)
-    list.GetList().emplace_back(SerializeCpuEvents(cpu_events));
+    list.Append(SerializeCpuEvents(cpu_events));
   return list;
 }
 

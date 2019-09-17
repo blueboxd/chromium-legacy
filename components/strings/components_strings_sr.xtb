@@ -71,6 +71,7 @@
 <translation id="1292701964462482250">„Софтвер на вашем рачунару онемогућава Chrome-у да се безбедно повеже на веб“ (само на Windows рачунарима)</translation>
 <translation id="1294154142200295408">Варијације командне линије</translation>
 <translation id="129553762522093515">Недавно затворено</translation>
+<translation id="1298536327547837046">Скенирање малвера</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Покушајте да обришете колачиће<ph name="END_LINK" /></translation>
 <translation id="1307966114820526988">Застареле функције</translation>
 <translation id="1320233736580025032">Prc1 (коверат)</translation>
@@ -167,6 +168,7 @@
 <translation id="1734878702283171397">Покушајте да контактирате администратора система.</translation>
 <translation id="1740951997222943430">Унесите важећи месец истека</translation>
 <translation id="1743520634839655729">Да бисте следећи пут платили брже, сачувајте картицу, име и адресу за обрачун на Google налогу и овом уређају.</translation>
+<translation id="1743570585616704562">Није препознат</translation>
 <translation id="1745880797583122200">Прегледачем се управља</translation>
 <translation id="17513872634828108">Отворене картице</translation>
 <translation id="1753706481035618306">Број странице</translation>
@@ -428,6 +430,7 @@
 <translation id="320323717674993345">Откажи плаћање</translation>
 <translation id="3207960819495026254">Обележено</translation>
 <translation id="3209034400446768650">Страница може да наплаћује</translation>
+<translation id="3215092763954878852">Коришћење веб-стандарда WebAuthn није успело</translation>
 <translation id="3225919329040284222">Сервер је приказао сертификат који се не подудара са уграђеним очекивањима. Та очекивања су обухваћена за одређене веб-сајтове са јаким безбедносним мерама како би вас заштитила.</translation>
 <translation id="3226128629678568754">Притисните дугме Поново учитај да бисте поново послали податке потребне за учитавање странице.</translation>
 <translation id="3227137524299004712">Микрофон</translation>
@@ -564,6 +567,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{None}=1{Са 1 сајта }one{Са # сајта }few{Са # сајта }other{Са # сајтова }}</translation>
 <translation id="397105322502079400">Израчунавање...</translation>
 <translation id="3973234410852337861">Хост <ph name="HOST_NAME" /> је блокиран</translation>
+<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> је у прегледачу омогућио Chrome Enterprise заштиту од претњи. Chrome Enterprise заштита од претњи има приступ неким вашим подацима.</translation>
 <translation id="3987940399970879459">Мање од 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 веб-страница у околини}one{# веб-страница у околини}few{# веб-странице у околини}other{# веб-страница у околини}}</translation>
 <translation id="4030383055268325496">&amp;Опозови додавање</translation>
@@ -632,6 +636,7 @@
 <translation id="4277028893293644418">Ресетујте лозинку</translation>
 <translation id="4279811152705618813"><ph name="DEVICE_TYPE" />-ом управља <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Ова картица је сачувана на Google налогу}one{Ове картице су сачуване на Google налогу}few{Ове картице су сачуване на Google налогу}other{Ове картице су сачуване на Google налогу}}</translation>
+<translation id="428847186335018806">Скенирајте датотеке које преузимате или отпремате у Chrome-у.</translation>
 <translation id="42981349822642051">Проширите</translation>
 <translation id="4302965934281694568">Chou3 (коверат)</translation>
 <translation id="4305817255990598646">Пређи</translation>
@@ -670,6 +675,7 @@
 <translation id="4506176782989081258">Грешка при потврди ваљаности: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">да контактирате администратора система</translation>
 <translation id="450710068430902550">Дељење са администратором</translation>
+<translation id="4508814173490746936">Коришћење Touch ID-а није успело</translation>
 <translation id="4510487217173779431">Chou4 (коверат)</translation>
 <translation id="4515275063822566619">Картице и адресе су из Chrome-а и са вашег Google налога (<ph name="ACCOUNT_EMAIL" />). Њима можете да управљате у <ph name="BEGIN_LINK" />подешавњима<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (коверат)</translation>
@@ -765,6 +771,7 @@
 <translation id="5045550434625856497">Неисправна лозинка</translation>
 <translation id="5056549851600133418">Чланци за вас</translation>
 <translation id="5068524481479508725">A10</translation>
+<translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(користи се 1)}one{(користи се #)}few{(користе се #)}other{(користи се #)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />да проверите адресу проксија<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">Сертификат сервера тренутно није важећи.</translation>
 <translation id="5087580092889165836">Додај картицу</translation>
@@ -993,6 +1000,7 @@
 <translation id="6302269476990306341">Google помоћник у Chrome-у се зауставља</translation>
 <translation id="6305205051461490394">URL <ph name="URL" /> није доступан.</translation>
 <translation id="6321917430147971392">Проверите DNS подешавања</translation>
+<translation id="6322182122604171028">Коришћење функције Windows Hello није успело</translation>
 <translation id="6328639280570009161">Покушајте да онемогућите предвиђање мреже</translation>
 <translation id="6328784461820205019">„Веза није приватна“ или „&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;“ или „&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;“ или „&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;“ или „&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;“ или „Грешка у вези са SSL сертификатом“</translation>
 <translation id="6328786501058569169">Овај сајт је обмањујућ</translation>
@@ -1016,6 +1024,7 @@
 <translation id="6433490469411711332">Измените контакт информације</translation>
 <translation id="6433595998831338502">Хост <ph name="HOST_NAME" /> је одбио повезивање.</translation>
 <translation id="6434309073475700221">Одбаци</translation>
+<translation id="6435221585574090192">Делите са администатором податке о безбедносним догађајима које је означила Chrome Enterprise заштита од претњи. Они могу да обухватају URL-ове страница, називе датотека и метаподатке датотека, корисничко име уређаја и корисничко име за Chrome.</translation>
 <translation id="6440503408713884761">Занемарено</translation>
 <translation id="6446163441502663861">Kahu (коверат)</translation>
 <translation id="6446608382365791566">Додајте још информација</translation>
@@ -1060,6 +1069,7 @@
 <translation id="6671697161687535275">Желите ли да уклоните предлог из Chromium-а?</translation>
 <translation id="6685834062052613830">Одјавите се и довршите подешавање</translation>
 <translation id="6689271823431384964">Chrome вам нуди чување картица на Google налогу зато што сте пријављени. То можете да промените у подешавањима. Име власника картице смо узели са налога.</translation>
+<translation id="6707256370811247129">Скенирајте садржај кеша и датотеке које преузимате или отпремате у Chrome-у.</translation>
 <translation id="6710213216561001401">Претходно</translation>
 <translation id="6710594484020273272">&lt;Унесите термин за претрагу&gt;</translation>
 <translation id="671076103358959139">Токен за регистрацију:</translation>
@@ -1078,6 +1088,7 @@
 <translation id="681021252041861472">Обавезно поље</translation>
 <translation id="6810899417690483278">ИД за прилагођавање</translation>
 <translation id="6825578344716086703">Покушали сте да посетите <ph name="DOMAIN" />, али је сервер послао сертификат потписан слабим алгоритмом (као што је SHA-1). То значи да су безбедносни акредитиви које је сервер послао можда кривотворени и сервер можда није онај који мислите да јесте (можда комуницирате са нападачем).</translation>
+<translation id="6826370046007623921">Спречавање губитка података</translation>
 <translation id="6831043979455480757">Преведи</translation>
 <translation id="6839929833149231406">Област</translation>
 <translation id="6852204201400771460">Желите ли да поново учитате апликацију?</translation>
@@ -1224,6 +1235,7 @@
 <translation id="7542995811387359312">Онемогућено је аутоматско попуњавање кредитне картице зато што овај образац не користи безбедну везу.</translation>
 <translation id="7548892272833184391">Отклоните грешке при повезивању</translation>
 <translation id="7549584377607005141">Ова веб-страница захтева податке које сте унели раније да би се правилно приказала. Можете поново да пошаљете те податке, али ако то урадите, поновићете било коју радњу коју је ова страница претходно обавила.</translation>
+<translation id="7550637293666041147">Корисничко име уређаја и корисничко име за Chrome</translation>
 <translation id="7552846755917812628">Испробајте следеће савете:</translation>
 <translation id="7554791636758816595">Нова картица</translation>
 <translation id="7564049878696755256">Можете да изгубите приступ налогу за <ph name="ORG_NAME" /> или би могло да дође до крађе идентитета. Chrome вам препоручује да одмах промените лозинку.</translation>
@@ -1238,6 +1250,7 @@
 <translation id="7610193165460212391">Вредност је изван опсега <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Истиче: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Већ имате податке који су шифровани помоћу друге верзије лозинке за Google налог. Унесите је у наставку.</translation>
+<translation id="7625784245512586808">Chrome Enterprise заштита од претњи</translation>
 <translation id="7633909222644580952">Подаци о учинку и извештаји о отказивању</translation>
 <translation id="7637571805876720304">Желите ли да уклоните кредитну картицу из Chromium-а?</translation>
 <translation id="7638605456503525968">Серијски портови</translation>
@@ -1348,6 +1361,7 @@
 <translation id="8211406090763984747">Веза је безбедна</translation>
 <translation id="8218327578424803826">Додељена локација:</translation>
 <translation id="8220146938470311105">C7/C6 (коверат)</translation>
+<translation id="8220639454292072926">Извештавање за предузећа</translation>
 <translation id="8225771182978767009">Особа која је подесила овај рачунар је одлучила да блокира овај сајт.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Отворите страницу на новој картици без архивирања</translation>
@@ -1431,6 +1445,7 @@
 <translation id="8740359287975076522">Нисмо успели да пронађемо &lt;abbr id="dnsDefinition"&gt;DNS адресу&lt;/abbr&gt; хоста <ph name="HOST_NAME" />. Покушавамо да утврдимо у чему је проблем.</translation>
 <translation id="874846938927089722">Кредитне и припејд картице које се прихватају</translation>
 <translation id="874918643257405732">Обележите ову картицу</translation>
+<translation id="8751426954251315517">Пробајте поново следећи пут</translation>
 <translation id="8759274551635299824">Ова картица је истекла</translation>
 <translation id="8761567432415473239">Google безбедно прегледање је недавно <ph name="BEGIN_LINK" />открило штетне програме<ph name="END_LINK" /> на <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">USB уређај</translation>
@@ -1495,6 +1510,7 @@
 <translation id="9080712759204168376">Резиме поруџбине</translation>
 <translation id="9089260154716455634">Смернице са временским распоредом:</translation>
 <translation id="9095388113577226029">Још језика...</translation>
+<translation id="9098981495403789647">Администратор је у прегледачу омогућио Chrome Enterprise заштиту од претњи. Chrome Enterprise заштита од претњи има приступ неким вашим подацима.</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> обично користи шифровање да би заштитио информације. Када је Chromium овог пута покушао да се повеже са <ph name="SITE" />, веб-сајт је вратио необичне и нетачне акредитиве. Или нападач покушава да се представи као <ph name="SITE" /> или је екран за Wi-Fi пријављивање прекинуо везу. Информације су и даље безбедне зато што је Chromium прекинуо везу пре него што су размењени било какви подаци.</translation>
 <translation id="9106062320799175032">Додајте адресу за обрачун</translation>
 <translation id="9114524666733003316">Картица се потврђује...</translation>

@@ -19,6 +19,7 @@
 <translation id="2501953888035679275">Τραβήξτε φωτογραφίες και βίντεο με την κάμερά σας.</translation>
 <translation id="2549985041256363841">Έναρξη εγγραφής</translation>
 <translation id="2599796128805996109">Πίσω κάμερα</translation>
+<translation id="2912439424121107408">Η λειτουργία Expert δεν υποστηρίζεται σε αυτήν τη συσκευή.</translation>
 <translation id="2968794441791257519">Οι φωτογραφίες και τα βίντεο που λήφθηκαν με την κάμερα θα μετακινηθούν στον φάκελο "Λήψεις". Μπορείτε να αποκτήσετε πρόσβαση σε αυτά στα Αρχεία.
 
         Οι εφαρμογές με άδειες αποθηκευτικού χώρου θα έχουν πρόσβαση στις φωτογραφίες και τα βίντεό σας.</translation>
@@ -41,10 +42,12 @@
         Ελέγξτε εάν η κάμερα έχει συνδεθεί σωστά.</translation>
 <translation id="5152121255775685072">Μετάβαση στο gallery</translation>
 <translation id="5671277269877808209">Τετράγωνο</translation>
+<translation id="5775960006311140197">Λειτουργία Expert</translation>
 <translation id="5869546221129391014">Πλέγμα</translation>
 <translation id="6040143037577758943">Κλείσιμο</translation>
 <translation id="6073451960410192870">Διακοπή εγγραφής</translation>
 <translation id="6165508094623778733">Μάθετε περισσότερα</translation>
+<translation id="6197807149213783179">Αποθήκευση μεταδεδομένων</translation>
 <translation id="6233780560267770709">3 επί 3</translation>
 <translation id="6243827288366940320">Ιδανικός λόγος διαστάσεων</translation>
 <translation id="6248749904681914629">Εξωτερική κάμερα</translation>
@@ -66,6 +69,7 @@
 <translation id="8261506727792406068">Διαγραφή</translation>
 <translation id="8428213095426709021">Ρυθμίσεις</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8732462232047530626">Προεπισκόπηση μεταδεδομένων</translation>
 <translation id="8815966864175525708">Μετάβαση στη λειτουργία λήψης φωτογραφίας πορτραίτου</translation>
 <translation id="8870695351537079478">Δεν είναι δυνατή η έναρξη της εγγραφής</translation>
 <translation id="9045155556724273246">10 δευτερόλεπτα</translation>

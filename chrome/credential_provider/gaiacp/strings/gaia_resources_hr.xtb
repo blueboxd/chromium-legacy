@@ -4,13 +4,20 @@
 <translation id="1337821341856692531">Ako nastavite bez unošenja svoje trenutačne zaporke za Windows, možete nepovratno izgubiti informacije.</translation>
 <translation id="1383286653814676580">Upotrebljava se za pokretanje stranice za prijavu na Google davatelj vjerodajnica.</translation>
 <translation id="1894475569413661128">Prijavite se radnim računom.</translation>
+<translation id="2329184763010379754">Može se prijaviti samo korisnik koji je zaključao računalo.</translation>
+<translation id="2398071111662077301">Učitavanje zaslona za prijavu Google računom nije uspjelo zbog problema s vašom instalacijom Chromea. Obratite se svom administratoru.</translation>
 <translation id="2469311484561825731">Prijava na radni račun nije uspjela. Provjerite je li računalo povezano s internetom i pokušajte ponovo.</translation>
+<translation id="2679096858700291438">Unijeli ste netočnu zaporku za Windows. Pokušajte ponovo.</translation>
+<translation id="2831078752570172210">Izgubili ste pristup računu. Obratite se administratoru sustava.</translation>
+<translation id="2844349213149998955">Na ovom uređaju nije dopuštena prijava osobnim računom. Prijavite se poslovnim računom.</translation>
 <translation id="3306357053520292004">Na ovom je računalu već dodan korisnik pomoću tog. Prijavite se nekim drugim računom.</translation>
 <translation id="3968372833844047539">Prijava je dopuštena samo poslovnim korisnicima Gsuitea.</translation>
 <translation id="4057329986137569701">Došlo je do interne pogreške.</translation>
 <translation id="4267670563222825190">Za vaš račun nije pronađen nijedan korisnik domene. Obratite se administratoru.</translation>
 <translation id="4300229033992784001">Promijenjena je zaporka vašeg računa. Unesite svoju trenutačnu zaporku za Windows kako biste sinkronizirali svoj Windows račun s radnim računom.</translation>
 <translation id="4706454071748629324">Dodavanje novog korisnika nije uspjelo. Ovo računalo dopušta izradu samo jednog korisnika s radnim računom.</translation>
+<translation id="6033715878377252112">Pomoć za Google davatelj vjerodajnica za Windows</translation>
+<translation id="6149399665202317746">Google davatelj vjerodajnica za Windows</translation>
 <translation id="6312494990035843744">Na toj domeni nije dopuštena prijava radnim računom. Pokušajte s nekim drugim računom.</translation>
 <translation id="6463752215771576050">To računalo nije moguće prijaviti za poslovno upravljanje.  Prijavite se nekim drugim radnim računom.</translation>
 <translation id="6657585470893396449">Zaporka</translation>
@@ -22,5 +29,7 @@
 <translation id="8639729688781680518">Zaboravili ste zaporku za Windows</translation>
 <translation id="866458870819756755">Izrada korisnika nije uspjela</translation>
 <translation id="8875753657315897487">Prijavite se radnim računom</translation>
+<translation id="8973975512230260387">Vaša je sesija istekla. Prijavite se poslovnim računom za Google.</translation>
+<translation id="9055998212250844221">Korisnički račun koji je izradio Google davatelj vjerodajnica za Windows</translation>
 <translation id="9135619837062629367">Prijava tim računom nije dopuštena. Pokušajte s nekim drugim računom.</translation>
 </translationbundle>

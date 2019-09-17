@@ -50,11 +50,11 @@ void TrayBluetoothHelperExperimental::Initialize() {
 }
 
 void TrayBluetoothHelperExperimental::StartBluetoothDiscovering() {
-  bluetooth_system_->StartScan(base::DoNothing());
+  bluetooth_system_->StartScan(base::NullCallback());
 }
 
 void TrayBluetoothHelperExperimental::StopBluetoothDiscovering() {
-  bluetooth_system_->StopScan(base::DoNothing());
+  bluetooth_system_->StopScan(base::NullCallback());
 }
 
 void TrayBluetoothHelperExperimental::ConnectToBluetoothDevice(
@@ -68,7 +68,7 @@ TrayBluetoothHelperExperimental::GetBluetoothState() {
 }
 
 void TrayBluetoothHelperExperimental::SetBluetoothEnabled(bool enabled) {
-  bluetooth_system_->SetPowered(enabled, base::DoNothing());
+  bluetooth_system_->SetPowered(enabled, base::NullCallback());
 }
 
 bool TrayBluetoothHelperExperimental::HasBluetoothDiscoverySession() {

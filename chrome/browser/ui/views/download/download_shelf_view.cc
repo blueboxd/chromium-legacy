@@ -97,8 +97,12 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
       l10n_util::GetStringUTF16(IDS_ACCNAME_DOWNLOADS_BAR));
   GetViewAccessibility().OverrideRole(ax::mojom::Role::kGroup);
 
-  mouse_watcher_.set_notify_on_exit_time(
-      base::TimeDelta::FromMilliseconds(kNotifyOnExitTimeMS));
+  // Delay 5 seconds if the mouse leaves the shelf by way of entering another
+  // window. This is much larger than the normal delay as opening a download is
+  // most likely going to trigger a new window to appear over the button. Delay
+  // a long time so that the user has a chance to quickly close the other app
+  // and return to chrome with the download shelf still open.
+  mouse_watcher_.set_notify_on_exit_time(base::TimeDelta::FromSeconds(5));
   SetID(VIEW_ID_DOWNLOAD_SHELF);
   parent->AddChildView(this);
 }

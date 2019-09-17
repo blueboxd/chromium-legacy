@@ -53,6 +53,9 @@
 <translation id="2094919256425865063">Kas väljuda Chrome'ist ikkagi?</translation>
 <translation id="2120620239521071941">See kustutab sellest seadmest <ph name="ITEMS_COUNT" /> üksust. Hiljem oma andmete toomiseks logige Chrome'i sisse kasutajana <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Aidake Chrome paremaks muuta, teavitades meid <ph name="BEGIN_LINK" />praegustest seadetest<ph name="END_LINK" /></translation>
+<translation id="2128103434102193461">Chrome OS-i üksikasjade nägemiseks avage leht <ph name="LINK_BEGIN" />
+      Teave Chrome OS-i kohta<ph name="LINK_END" /></translation>
+<translation id="2151406531797534936">Käivitage Chrome kohe uuesti</translation>
 <translation id="216054706567564023">Installige Chrome oma telefoni. Saadame SMS-i teie konto taastamise telefoninumbrile.</translation>
 <translation id="2246246234298806438">Google Chrome ei saa kuvada printimise eelvaadet, kui sisseehitatud PDF-vaatur puudub.</translation>
 <translation id="2252923619938421629">Aidake muuta Google Chrome paremaks, teavitades meid praegustest seadetest</translation>
@@ -223,6 +226,7 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="7589360514048265910">See arvuti ei saa enam Google Chrome'i värskendusi, kuna operatsioonisüsteemi Mac OS X 10.9 enam ei toetata.</translation>
 <translation id="7592736734348559088">Google Chrome ei saanud andmeid sünkroonida, sest teie konto sisselogimisandmed on aegunud.</translation>
 <translation id="7626032353295482388">Tere tulemast Chrome'i</translation>
+<translation id="7629695634924605473">Chrome annab teile teada, kui teie paroolid ohtu satuvad</translation>
 <translation id="7641148173327520642">Teie süsteemiadministraator on seadistanud Google Chrome'i avama brauseri <ph name="ALTERNATIVE_BROWSER_NAME" />, et lehele <ph name="TARGET_URL_HOSTNAME" /> juurde pääseda.</translation>
 <translation id="7651907282515937834">Chrome Enterprise'i logo</translation>
 <translation id="7747138024166251722">Installija ei suutnud luua ajutist kataloogi. Palun kontrollige vaba kettaruumi ja tarkvara installimise loa olemasolu.</translation>

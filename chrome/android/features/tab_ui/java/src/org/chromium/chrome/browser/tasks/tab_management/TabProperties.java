@@ -80,12 +80,21 @@ public class TabProperties {
     public static final PropertyModel.ReadableIntPropertyKey TABSTRIP_FAVICON_BACKGROUND_COLOR_ID =
             new PropertyModel.ReadableIntPropertyKey();
 
+    public static final PropertyModel
+            .WritableObjectPropertyKey<ColorStateList> SELECTABLE_TAB_ACTION_BUTTON_BACKGROUND =
+            new PropertyModel.WritableObjectPropertyKey<>();
+
+    public static final PropertyModel.WritableObjectPropertyKey<ColorStateList>
+            SELECTABLE_TAB_ACTION_BUTTON_SELECTED_BACKGROUND =
+            new PropertyModel.WritableObjectPropertyKey<>();
+
     public static final PropertyKey[] ALL_KEYS_TAB_GRID = new PropertyKey[] {TAB_ID,
             TAB_SELECTED_LISTENER, TAB_CLOSED_LISTENER, FAVICON, THUMBNAIL_FETCHER, IPH_PROVIDER,
             TITLE, IS_SELECTED, CHECKED_DRAWABLE_STATE_LIST, CREATE_GROUP_LISTENER, ALPHA,
             CARD_ANIMATION_STATUS, SELECTABLE_TAB_CLICKED_LISTENER, TAB_SELECTION_DELEGATE,
-            IS_INCOGNITO, SELECTED_TAB_BACKGROUND_DRAWABLE_ID,
-            TABSTRIP_FAVICON_BACKGROUND_COLOR_ID};
+            IS_INCOGNITO, SELECTED_TAB_BACKGROUND_DRAWABLE_ID, TABSTRIP_FAVICON_BACKGROUND_COLOR_ID,
+            SELECTABLE_TAB_ACTION_BUTTON_BACKGROUND,
+            SELECTABLE_TAB_ACTION_BUTTON_SELECTED_BACKGROUND};
 
     public static final PropertyKey[] ALL_KEYS_TAB_STRIP =
             new PropertyKey[] {TAB_ID, TAB_SELECTED_LISTENER, TAB_CLOSED_LISTENER, FAVICON,

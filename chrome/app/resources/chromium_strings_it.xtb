@@ -90,6 +90,7 @@
 <translation id="4230135487732243613">Collegare i tuoi dati Chromium a questo account?</translation>
 <translation id="4271805377592243930">Ricevi assistenza per Chromium</translation>
 <translation id="4285930937574705105">Installazione non riuscita a causa di un errore imprecisato. Se Chromium è in esecuzione, chiudilo e riprova.</translation>
+<translation id="4371648796594901282">Per informazioni dettagliate su Chromium OS, visita la pagina <ph name="LINK_BEGIN" />Informazioni su Chromium OS<ph name="LINK_END" /></translation>
 <translation id="4407044323746248786">Vuoi uscire comunque da Chromium?</translation>
 <translation id="4415566066719264597">Lascia Chromium in esecuzione in background</translation>
 <translation id="4423735387467980091">Personalizza e controlla Chromium</translation>
@@ -122,6 +123,7 @@
 <translation id="5623402015214259806">{0,plural, =0{È disponibile un aggiornamento di Chromium}=1{È disponibile un aggiornamento di Chromium}other{È disponibile un aggiornamento di Chromium da # giorni}}</translation>
 <translation id="5631814766731275228">Nome e immagine di Chromium</translation>
 <translation id="5634636535844844681">Chromium richiede Windows 7 o versioni successive.</translation>
+<translation id="5653831366781983928">Riavvia subito Chromium</translation>
 <translation id="5680901439334282664">accedi a Chromium</translation>
 <translation id="5698481217667032250">Visualizza Chromium in questa lingua</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -164,6 +166,7 @@ Alcune funzioni potrebbero non essere disponibili. Specifica un'altra directory 
 <translation id="6734080038664603509">Aggiorna &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium è già installato per tutti gli utenti sul computer.</translation>
 <translation id="6810143991807788455">Contribuisci a migliorare Chromium indicando le impostazioni attuali</translation>
+<translation id="6847869444787758381">Chromium ti avvisa se le tue password vengono compromesse</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copiata in Chromium)</translation>
 <translation id="6868056391275687737">Sono in esecuzione altre copie di Chromium. Chiudile per eseguire l'aggiornamento.</translation>

@@ -242,11 +242,10 @@ class NET_EXPORT URLRequestJob {
   // from the remote party with the actual response headers recieved.
   virtual void SetResponseHeadersCallback(ResponseHeadersCallback callback) {}
 
-  // Given |policy|, |referrer|, |initiator|, and |destination|, returns the
+  // Given |policy|, |referrer|, and |destination|, returns the
   // referrer URL mandated by |request|'s referrer policy.
   static GURL ComputeReferrerForPolicy(URLRequest::ReferrerPolicy policy,
                                        const GURL& original_referrer,
-                                       const url::Origin& initiator,
                                        const GURL& destination);
 
  protected:

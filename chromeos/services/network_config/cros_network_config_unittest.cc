@@ -95,7 +95,7 @@ class CrosNetworkConfigTest : public testing::Test {
             base::HexEncode(user_policy_ssid.c_str(), user_policy_ssid.size())
                 .c_str())));
     base::ListValue user_policy_onc;
-    user_policy_onc.GetList().push_back(std::move(wifi2_onc));
+    user_policy_onc.Append(std::move(wifi2_onc));
     managed_network_configuration_handler_->SetPolicy(
         ::onc::ONC_SOURCE_USER_POLICY, helper().UserHash(), user_policy_onc,
         /*global_network_config=*/base::DictionaryValue());
@@ -832,8 +832,8 @@ TEST_F(CrosNetworkConfigTest, GetGlobalPolicy) {
   global_config.SetBoolKey(
       ::onc::global_network_config::kAllowOnlyPolicyNetworksToConnect, false);
   base::Value blocked(base::Value::Type::LIST);
-  blocked.GetList().push_back(base::Value("blocked_ssid1"));
-  blocked.GetList().push_back(base::Value("blocked_ssid2"));
+  blocked.Append(base::Value("blocked_ssid1"));
+  blocked.Append(base::Value("blocked_ssid2"));
   global_config.SetKey(::onc::global_network_config::kBlacklistedHexSSIDs,
                        std::move(blocked));
   managed_network_configuration_handler()->SetPolicy(

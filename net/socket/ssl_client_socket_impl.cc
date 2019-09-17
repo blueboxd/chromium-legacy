@@ -22,6 +22,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/rand_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
@@ -345,6 +346,7 @@ class SSLClientSocketImpl::SSLContext {
                                       NID_X9_62_prime256v1, NID_secp384r1};
         SSL_CTX_set1_curves(ssl_ctx_.get(), kCurves, base::size(kCurves));
       }
+      // The "Random" group is configured on the |SSL*|, below.
 
       if (send_signal) {
         SSL_CTX_enable_pq_experiment_signal(ssl_ctx_.get());
@@ -907,6 +909,36 @@ int SSLClientSocketImpl::Init() {
   SSL_set_renegotiate_mode(ssl_.get(), ssl_renegotiate_freely);
 
   SSL_set_shed_handshake_config(ssl_.get(), 1);
+
+#if defined(ARCH_CPU_X86_64) || defined(ARCH_CPU_ARM64)
+  // CECPQ2b is only optimised for x86-64 and aarch64, and is too slow on
+  // other CPUs to even experiment with.
+  const std::string post_quantum_group = kPostQuantumGroup.Get();
+  // The Random group does per-connection randomisation and so is configured
+  // on the |SSL*|. Other groups are configured on the |SSL_CTX*|, above.
+  if (post_quantum_group == "Random") {
+    uint8_t coins;
+    base::RandBytes(&coins, sizeof(coins));
+    switch (coins % 3) {
+      case 0: {
+        static const int kCurves[] = {NID_CECPQ2, NID_X25519,
+                                      NID_X9_62_prime256v1, NID_secp384r1};
+        SSL_set1_curves(ssl_.get(), kCurves, base::size(kCurves));
+        break;
+      }
+
+      case 1: {
+        static const int kCurves[] = {NID_CECPQ2b, NID_X25519,
+                                      NID_X9_62_prime256v1, NID_secp384r1};
+        SSL_set1_curves(ssl_.get(), kCurves, base::size(kCurves));
+        break;
+      }
+
+      case 2:
+        break;
+    }
+  }
+#endif
 
   // TODO(https://crbug.com/775438), if |ssl_config_.privacy_mode| is enabled,
   // this should always continue with no client certificate.

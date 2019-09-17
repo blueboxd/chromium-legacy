@@ -77,10 +77,6 @@ const base::Feature kAutofillEnableLocalCardMigrationForNonSyncUser{
 const base::Feature kAutofillEnableToolbarStatusChip{
     "AutofillEnableToolbarStatusChip", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When enabled, autofill can import credit cards from dynamic change form.
-const base::Feature kAutofillImportDynamicForms{
-    "AutofillImportDynamicForms", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether offering to migrate cards will consider data from the
 // Autofill strike database (new version).
 const base::Feature kAutofillLocalCardMigrationUsesStrikeSystemV2{

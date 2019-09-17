@@ -107,13 +107,7 @@ void Settings::SetForceDarkModeEnabled(bool enabled) {
   if (force_dark_mode_ == enabled)
     return;
   force_dark_mode_ = enabled;
-
-  if (force_dark_mode_) {
-    SetDarkMode(DarkMode::kInvertLightnessLAB);
-    SetDarkModeImagePolicy(DarkModeImagePolicy::kFilterSmart);
-  } else {
-    SetDarkMode(DarkMode::kOff);
-  }
+  SetDarkModeEnabled(force_dark_mode_);
   Invalidate(SettingsDelegate::kColorSchemeChange);
 }
 

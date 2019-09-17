@@ -200,6 +200,18 @@ TEST_F('CrElementsToolbarSearchFieldV3Test', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
+var CrElementsToastManagerV3Test = class extends CrElementsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test?module=cr_elements/cr_toast_manager_test.m.js';
+  }
+};
+
+TEST_F('CrElementsToastManagerV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
 var CrElementsViewManagerV3Test = class extends CrElementsV3BrowserTest {
   /** @override */
   get browsePreload() {

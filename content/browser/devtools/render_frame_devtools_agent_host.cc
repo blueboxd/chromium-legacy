@@ -41,7 +41,6 @@
 #include "content/browser/devtools/protocol/storage_handler.h"
 #include "content/browser/devtools/protocol/target_handler.h"
 #include "content/browser/devtools/protocol/tracing_handler.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -143,16 +142,16 @@ scoped_refptr<DevToolsAgentHost> RenderFrameDevToolsAgentHost::GetOrCreateFor(
 // static
 scoped_refptr<DevToolsAgentHost>
 RenderFrameDevToolsAgentHost::CreateForCrossProcessNavigation(
-    NavigationHandleImpl* handle) {
+    NavigationRequest* request) {
   // Note that this method does not use FrameTreeNode::current_frame_host(),
   // since it is used while the frame host may not be set as current yet,
   // for example right before commit time. Instead target frame from the
   // navigation handle is used. When this method is invoked it's already known
   // that the navigation will commit to the new frame host.
-  FrameTreeNode* frame_tree_node = handle->frame_tree_node();
+  FrameTreeNode* frame_tree_node = request->frame_tree_node();
   DCHECK(!FindAgentHost(frame_tree_node));
   return new RenderFrameDevToolsAgentHost(frame_tree_node,
-                                          handle->GetRenderFrameHost());
+                                          request->GetRenderFrameHost());
 }
 
 // static
@@ -389,17 +388,16 @@ RenderFrameDevToolsAgentHost::~RenderFrameDevToolsAgentHost() {
 
 void RenderFrameDevToolsAgentHost::ReadyToCommitNavigation(
     NavigationHandle* navigation_handle) {
-  NavigationHandleImpl* handle =
-      static_cast<NavigationHandleImpl*>(navigation_handle);
+  NavigationRequest* request = NavigationRequest::From(navigation_handle);
   for (auto* tracing : protocol::TracingHandler::ForAgentHost(this))
-    tracing->ReadyToCommitNavigation(handle);
+    tracing->ReadyToCommitNavigation(request);
 
-  if (handle->frame_tree_node() != frame_tree_node_) {
-    if (ShouldForceCreation() && handle->GetRenderFrameHost() &&
-        handle->GetRenderFrameHost()->IsCrossProcessSubframe()) {
+  if (request->frame_tree_node() != frame_tree_node_) {
+    if (ShouldForceCreation() && request->GetRenderFrameHost() &&
+        request->GetRenderFrameHost()->IsCrossProcessSubframe()) {
       // An agent may have been created earlier if auto attach is on.
-      if (!FindAgentHost(handle->frame_tree_node()))
-        CreateForCrossProcessNavigation(handle);
+      if (!FindAgentHost(request->frame_tree_node()))
+        CreateForCrossProcessNavigation(request);
     }
     return;
   }
@@ -408,25 +406,24 @@ void RenderFrameDevToolsAgentHost::ReadyToCommitNavigation(
   // renderer process. To ensure consistent view over protocol, disconnect them
   // right now.
   GetRendererChannel()->ForceDetachWorkerSessions();
-  UpdateFrameHost(handle->GetRenderFrameHost());
+  UpdateFrameHost(request->GetRenderFrameHost());
   // UpdateFrameHost may destruct |this|.
 }
 
 void RenderFrameDevToolsAgentHost::DidFinishNavigation(
     NavigationHandle* navigation_handle) {
-  NavigationHandleImpl* handle =
-      static_cast<NavigationHandleImpl*>(navigation_handle);
-  if (handle->frame_tree_node() != frame_tree_node_)
+  NavigationRequest* request = NavigationRequest::From(navigation_handle);
+  if (request->frame_tree_node() != frame_tree_node_)
     return;
-  navigation_handles_.erase(handle);
-  if (handle->HasCommitted())
+  navigation_requests_.erase(request);
+  if (request->HasCommitted())
     NotifyNavigated();
 
   // UpdateFrameHost may destruct |this|.
   scoped_refptr<RenderFrameDevToolsAgentHost> protect(this);
   UpdateFrameHost(frame_tree_node_->current_frame_host());
 
-  if (navigation_handles_.empty()) {
+  if (navigation_requests_.empty()) {
     for (DevToolsSession* session : sessions())
       session->ResumeSendingMessagesToAgent();
   }
@@ -476,15 +473,14 @@ void RenderFrameDevToolsAgentHost::UpdateFrameHost(
 
 void RenderFrameDevToolsAgentHost::DidStartNavigation(
     NavigationHandle* navigation_handle) {
-  NavigationHandleImpl* handle =
-      static_cast<NavigationHandleImpl*>(navigation_handle);
-  if (handle->frame_tree_node() != frame_tree_node_)
+  NavigationRequest* request = NavigationRequest::From(navigation_handle);
+  if (request->frame_tree_node() != frame_tree_node_)
     return;
-  if (navigation_handles_.empty()) {
+  if (navigation_requests_.empty()) {
     for (DevToolsSession* session : sessions())
       session->SuspendSendingMessagesToAgent();
   }
-  navigation_handles_.insert(handle);
+  navigation_requests_.insert(request);
 }
 
 void RenderFrameDevToolsAgentHost::RenderFrameHostChanged(
@@ -598,7 +594,7 @@ void RenderFrameDevToolsAgentHost::OnPageScaleFactorChanged(
 }
 
 void RenderFrameDevToolsAgentHost::DisconnectWebContents() {
-  navigation_handles_.clear();
+  navigation_requests_.clear();
   SetFrameTreeNode(nullptr);
   // UpdateFrameHost may destruct |this|.
   scoped_refptr<RenderFrameDevToolsAgentHost> protect(this);

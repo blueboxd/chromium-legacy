@@ -332,6 +332,9 @@ HEADLESS_PROTOCOL_COMPOSITOR_TEST(
 #endif
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(MAYBE_CompositorCssAnimation,
                                   "emulation/compositor-css-animation-test.js")
+HEADLESS_PROTOCOL_COMPOSITOR_TEST(
+    VirtualTimeCancelClientRedirect,
+    "emulation/virtual-time-cancel-client-redirect.js")
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(VirtualTimeControllerTest,
                                   "helpers/virtual-time-controller-test.js")
 HEADLESS_PROTOCOL_COMPOSITOR_TEST(RendererHelloWorld,

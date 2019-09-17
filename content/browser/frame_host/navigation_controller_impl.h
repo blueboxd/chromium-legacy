@@ -30,6 +30,7 @@ struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 
 namespace content {
 class FrameTreeNode;
+class NavigationRequest;
 class RenderFrameHostImpl;
 class SiteInstance;
 struct LoadCommittedDetails;
@@ -368,8 +369,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       bool is_history_navigation_in_new_child_frame);
 
   // Returns whether there is a pending NavigationEntry whose unique ID matches
-  // the given NavigationHandle's pending_nav_entry_id.
-  bool PendingEntryMatchesHandle(NavigationHandleImpl* handle) const;
+  // the given NavigationRequest's pending_nav_entry_id.
+  bool PendingEntryMatchesRequest(NavigationRequest* request) const;
 
   // Classifies the given renderer navigation (see the NavigationType enum).
   NavigationType ClassifyNavigation(
@@ -396,30 +397,30 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       bool is_same_document,
       bool replace_entry,
       bool previous_document_was_activated,
-      NavigationHandleImpl* handle);
+      NavigationRequest* request);
   void RendererDidNavigateToExistingPage(
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
       bool is_same_document,
       bool was_restored,
-      NavigationHandleImpl* handle,
+      NavigationRequest* request,
       bool keep_pending_entry);
   void RendererDidNavigateToSamePage(
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
       bool is_same_document,
-      NavigationHandleImpl* handle);
+      NavigationRequest* request);
   void RendererDidNavigateNewSubframe(
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
       bool is_same_document,
       bool replace_entry,
       bool previous_document_was_activated,
-      NavigationHandleImpl* handle);
+      NavigationRequest* request);
   bool RendererDidNavigateAutoSubframe(
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-      NavigationHandleImpl* handle);
+      NavigationRequest* request);
 
   // Allows the derived class to issue notifications that a load has been
   // committed. This will fill in the active entry to the details structure.

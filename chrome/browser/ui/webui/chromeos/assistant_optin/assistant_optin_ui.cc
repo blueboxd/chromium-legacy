@@ -27,6 +27,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_features.h"
 #include "net/base/url_util.h"
+#include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_animations.h"
 
@@ -80,6 +81,9 @@ AssistantOptInUI::AssistantOptInUI(content::WebUI* web_ui)
   source->AddResourcePath("assistant_logo.png", IDR_ASSISTANT_LOGO_PNG);
   source->AddBoolean("hotwordDspAvailable", chromeos::IsHotwordDspAvailable());
   source->SetDefaultResource(IDR_ASSISTANT_OPTIN_HTML);
+  source->AddResourcePath("voice_match_animation.json",
+                          IDR_ASSISTANT_VOICE_MATCH_ANIMATION);
+  source->OverrideContentSecurityPolicyWorkerSrc("worker-src blob: 'self';");
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 
   // Do not zoom for Assistant opt-in web contents.

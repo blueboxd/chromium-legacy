@@ -37,7 +37,6 @@ class WebDocumentLoader;
 class WebElement;
 class WebFormElement;
 class WebString;
-struct WebURLError;
 class WebWorkerFetchContext;
 }
 
@@ -109,7 +108,7 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // TODO(dgozman): replace next two methods with DidFinishNavigation.
   virtual void DidCommitProvisionalLoad(bool is_same_document_navigation,
                                         ui::PageTransition transition) {}
-  virtual void DidFailProvisionalLoad(const blink::WebURLError& error) {}
+  virtual void DidFailProvisionalLoad() {}
   virtual void DidFinishLoad() {}
   virtual void DidFinishDocumentLoad() {}
   virtual void DidHandleOnloadEvents() {}

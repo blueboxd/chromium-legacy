@@ -99,29 +99,19 @@ public class StartSurfaceCoordinator implements StartSurface {
             createAndSetStartSurface();
         }
 
-        StartSurfaceMediator.OverlayVisibilityHandler overlayVisibilityHandler =
-                new StartSurfaceMediator.OverlayVisibilityHandler() {
-                    @Override
-                    // TODO(crbug.com/982018): Consider moving this to LayoutManager.
-                    public void setContentOverlayVisibility(boolean isVisible) {
-                        if (mActivity.getTabModelSelector().getCurrentTab() == null) return;
-                        mActivity.getCompositorViewHolder().setContentOverlayVisibility(
-                                isVisible, true);
-                    }
-                };
         TabSwitcher.Controller controller =
                 mTabSwitcher != null ? mTabSwitcher.getController() : mTasksSurface.getController();
         mStartSurfaceMediator = new StartSurfaceMediator(controller,
-                mActivity.getTabModelSelector(), overlayVisibilityHandler, mPropertyModel,
+                mActivity.getTabModelSelector(), mPropertyModel,
                 mExploreSurfaceCoordinator == null
                         ? null
                         : mExploreSurfaceCoordinator.getFeedSurfaceCreator(),
                 mSurfaceMode == SurfaceMode.SINGLE_PANE ? this::initializeSecondaryTasksSurface
                                                         : null,
-                mSurfaceMode == SurfaceMode.SINGLE_PANE);
+                mSurfaceMode);
 
         // TODO(crbug.com/982018): Consider merging mSecondaryTasksSurfacePropertyModel with
-        // mPropertyModel, so mStartSurfaceMediator can set MORE_TABS_CLICK_LISTENER by itself.
+        //  mPropertyModel, so mStartSurfaceMediator can set MORE_TABS_CLICK_LISTENER by itself.
         if (mSurfaceMode == SurfaceMode.SINGLE_PANE) {
             mSecondaryTasksSurfacePropertyModel.set(
                     MORE_TABS_CLICK_LISTENER, mStartSurfaceMediator);
@@ -162,6 +152,13 @@ public class StartSurfaceCoordinator implements StartSurface {
         return mTabSwitcher.getTabListDelegate();
     }
 
+    @Override
+    public void destroy() {
+        if (mTasksSurface != null) {
+            mTasksSurface.destroy();
+        }
+    }
+
     private @SurfaceMode int computeSurfaceMode() {
         String feature = ChromeFeatureList.getFieldTrialParamByFeature(
                 ChromeFeatureList.START_SURFACE_ANDROID, "start_surface_variation");
@@ -174,7 +171,8 @@ public class StartSurfaceCoordinator implements StartSurface {
 
         if (feature.equals("single")) return SurfaceMode.SINGLE_PANE;
 
-        // TODO(crbug.com/982018): Add the task only surface variation.
+        if (feature.equals("tasksonly")) return SurfaceMode.TASKS_ONLY;
+
         return SurfaceMode.NO_START_SURFACE;
     }
 
@@ -186,16 +184,15 @@ public class StartSurfaceCoordinator implements StartSurface {
             mActivity.getCompositorViewHolder().addView(mTasksSurface.getContainerView());
         }
 
-        // There is nothing else to do for SurfaceMode.TASKS_ONLY for now.
-        if (mSurfaceMode != SurfaceMode.TWO_PANES && mSurfaceMode != SurfaceMode.SINGLE_PANE) {
-            return;
-        }
-
         mPropertyModel = new PropertyModel(StartSurfaceProperties.ALL_KEYS);
 
         if (mSurfaceMode == SurfaceMode.TWO_PANES) {
             mBottomBarCoordinator = new BottomBarCoordinator(
                     mActivity, mActivity.getCompositorViewHolder(), mPropertyModel);
+        }
+
+        if (mSurfaceMode == SurfaceMode.TASKS_ONLY) {
+            return;
         }
 
         int toolbarHeight =

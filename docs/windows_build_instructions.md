@@ -283,8 +283,8 @@ values? Have you asked on the chromium-dev mailing list to see if your build is
 slower than expected for your machine's specifications?
 
 The next step is to gather some data. If you set the ``NINJA_SUMMARIZE_BUILD``
-environment variable to 1 then ``autoninja`` will do a couple of things. First,
-it will set the [NINJA_STATUS](https://ninja-build.org/manual.html#_environment_variables)
+environment variable to 1 then ``autoninja`` will do three things. First, it
+will set the [NINJA_STATUS](https://ninja-build.org/manual.html#_environment_variables)
 environment variable so that ninja will print additional information while
 building Chrome. It will show how many build processes are running at any given
 time, how many build steps have completed, how many build steps have completed
@@ -325,20 +325,16 @@ You can also generate these reports by manually running the script after a build
 $ python depot_tools\post_build_ninja_summary.py -C out\Default
 ```
 
-You can also get a visual report of the build performance with
-[ninjatracing](https://github.com/nico/ninjatracing). This converts the
-.ninja_log file into a .json file which can be loaded into chrome://tracing:
+Finally, setting ``NINJA_SUMMARIZE_BUILD=1`` tells autoninja to tell Ninja to
+report on its own overhead by passing "-d stats". This can be helpful if, for
+instance, process creation (which shows up in the StartEdge metric) is making
+builds slow, perhaps due to antivirus interference due to clang-cl not being in
+an excluded directory:
 
 ```shell
-$ python ninjatracing out\Default\.ninja_log >build.json
-```
-
-Finally, Ninja can report on its own overhead which can be helpful if, for
-instance, process creation is making builds slow, perhaps due to antivirus
-interference due to clang-cl not being in an excluded directory:
-
-```shell
-$ autoninja -d stats -C out\Default base
+$ set NINJA_SUMMARIZE_BUILD=1
+$ autoninja -C out\Default base
+"c:\src\depot_tools\ninja.exe" -C out\Default base -j 10 -d stats
 metric                  count   avg (us)        total (ms)
 .ninja parse            3555    1539.4          5472.6
 canonicalize str        1383032 0.0             12.7
@@ -351,6 +347,14 @@ depfile load            2       1132.0          2.3
 StartEdge               88      3508.1          308.7
 FinishCommand           87      1670.9          145.4
 CLParser::Parse         45      1889.1          85.0
+```
+
+You can also get a visual report of the build performance with
+[ninjatracing](https://github.com/nico/ninjatracing). This converts the
+.ninja_log file into a .json file which can be loaded into chrome://tracing:
+
+```shell
+$ python ninjatracing out\Default\.ninja_log >build.json
 ```
 
 ## Build Chromium

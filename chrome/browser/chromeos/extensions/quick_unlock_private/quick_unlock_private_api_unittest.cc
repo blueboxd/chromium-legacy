@@ -229,7 +229,7 @@ class QuickUnlockPrivateUnitTest
         base::Bind(&CreateFakeAuthenticator));
 
     auto params = std::make_unique<base::ListValue>();
-    params->GetList().push_back(base::Value(password));
+    params->Append(base::Value(password));
     std::unique_ptr<base::Value> result = RunFunction(func, std::move(params));
     EXPECT_TRUE(result);
     auto token_info = quick_unlock_private::TokenInfo::FromValue(*result);
@@ -246,7 +246,7 @@ class QuickUnlockPrivateUnitTest
         base::Bind(&CreateFakeAuthenticator));
 
     auto params = std::make_unique<base::ListValue>();
-    params->GetList().push_back(base::Value(kInvalidPassword));
+    params->Append(base::Value(kInvalidPassword));
     return RunFunctionAndReturnError(func, std::move(params));
   }
 

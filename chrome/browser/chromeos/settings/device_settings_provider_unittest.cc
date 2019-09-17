@@ -715,7 +715,7 @@ TEST_F(DeviceSettingsProviderTest, DeviceAutoUpdateTimeRestrictionsExtra) {
   interval.SetPath({"end", "day_of_week"}, base::Value("Wednesday"));
   interval.SetPath({"end", "hours"}, base::Value(1));
   interval.SetPath({"end", "minutes"}, base::Value(20));
-  test_list.GetList().push_back(std::move(interval));
+  test_list.Append(std::move(interval));
   SetDeviceAutoUpdateTimeRestrictions(extra_field);
   VerifyPolicyValue(kDeviceAutoUpdateTimeRestrictions, &test_list);
 }

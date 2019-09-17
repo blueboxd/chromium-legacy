@@ -33,11 +33,6 @@
 
 namespace {
 
-// Icon sizes in DIP.
-constexpr int kPrimaryIconSize = 20;
-constexpr int kPrimaryIconBorderWidth = 8;
-constexpr int kHeaderImageHeight = 100;
-
 SkColor GetColorFromTheme() {
   const ui::NativeTheme* native_theme =
       ui::NativeTheme::GetInstanceForNativeUi();
@@ -48,12 +43,13 @@ SkColor GetColorFromTheme() {
 std::unique_ptr<views::ImageView> CreateIconView(const gfx::ImageSkia& icon) {
   auto icon_view = std::make_unique<views::ImageView>();
   icon_view->SetImage(icon);
-  icon_view->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(kPrimaryIconBorderWidth)));
+  constexpr auto kPrimaryIconBorder = gfx::Insets(8);
+  icon_view->SetBorder(views::CreateEmptyBorder(kPrimaryIconBorder));
   return icon_view;
 }
 
 gfx::ImageSkia CreateVectorIcon(const gfx::VectorIcon& vector_icon) {
+  constexpr int kPrimaryIconSize = 20;
   return gfx::CreateVectorIcon(vector_icon, kPrimaryIconSize,
                                GetColorFromTheme());
 }
@@ -224,6 +220,7 @@ void SharingDialogView::MaybeShowHeaderImage() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   const gfx::ImageSkia* image = rb.GetNativeImageNamed(image_id).ToImageSkia();
   gfx::Size image_size(image->width(), image->height());
+  constexpr int kHeaderImageHeight = 100;
   const int image_width = image->width() * kHeaderImageHeight / image->height();
   image_size.SetToMin(gfx::Size(image_width, kHeaderImageHeight));
 

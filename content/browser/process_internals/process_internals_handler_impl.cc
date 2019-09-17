@@ -4,6 +4,7 @@
 
 #include "content/browser/process_internals/process_internals_handler_impl.h"
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -13,6 +14,8 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace content {
 
@@ -76,8 +79,8 @@ std::string IsolatedOriginSourceToString(IsolatedOriginSource source) {
 
 ProcessInternalsHandlerImpl::ProcessInternalsHandlerImpl(
     BrowserContext* browser_context,
-    mojo::InterfaceRequest<::mojom::ProcessInternalsHandler> request)
-    : browser_context_(browser_context), binding_(this, std::move(request)) {}
+    mojo::PendingReceiver<::mojom::ProcessInternalsHandler> receiver)
+    : browser_context_(browser_context), receiver_(this, std::move(receiver)) {}
 
 ProcessInternalsHandlerImpl::~ProcessInternalsHandlerImpl() = default;
 

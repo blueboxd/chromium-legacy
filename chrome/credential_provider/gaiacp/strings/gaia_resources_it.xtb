@@ -4,13 +4,20 @@
 <translation id="1337821341856692531">Se continui senza inserire l'attuale password di Windows, potrebbe verificarsi una perdita irreversibile di informazioni.</translation>
 <translation id="1383286653814676580">Consente di eseguire la pagina di accesso Provider di credenziali Google.</translation>
 <translation id="1894475569413661128">Accedi con il tuo account di lavoro.</translation>
+<translation id="2329184763010379754">Solo l'utente che ha bloccato questo computer può accedere.</translation>
+<translation id="2398071111662077301">Impossibile caricare la schermata di accesso Google a causa di un problema con l'installazione di Chrome. Contatta l'amministratore.</translation>
 <translation id="2469311484561825731">Accesso all'account di lavoro non riuscito. Assicurati che il computer abbia una connessione a Internet e riprova.</translation>
+<translation id="2679096858700291438">Hai inserito una password Windows errata. Riprova.</translation>
+<translation id="2831078752570172210">Il tuo account è stato bloccato. Contatta l'amministratore di sistema.</translation>
+<translation id="2844349213149998955">Su questo dispositivo non è consentito l'accesso con un account personale. Accedi con un account di lavoro.</translation>
 <translation id="3306357053520292004">Su questo computer è stato già aggiunto un utente usando questo account. Accedi con un altro account.</translation>
 <translation id="3968372833844047539">Solo gli utenti di G Suite Enterprise sono autorizzati ad accedere.</translation>
 <translation id="4057329986137569701">Errore interno.</translation>
 <translation id="4267670563222825190">Nessun Dominio utente trovato per il tuo account. Contatta l'amministratore.</translation>
 <translation id="4300229033992784001">La password del tuo account è cambiata. Inserisci la tua attuale password Windows per sincronizzare l'account Windows con l'account di lavoro.</translation>
 <translation id="4706454071748629324">Aggiunta di un nuovo utente non riuscita. Su questo computer è possibile creare un solo utente con un account di lavoro.</translation>
+<translation id="6033715878377252112">Assistente Provider di credenziali Google per Windows</translation>
+<translation id="6149399665202317746">Provider di credenziali Google per Windows</translation>
 <translation id="6312494990035843744">L'accesso a questo dominio con un account di lavoro non è consentito. Prova con un altro account.</translation>
 <translation id="6463752215771576050">Impossibile registrare questo computer per la gestione aziendale.  Accedi con un altro account di lavoro.</translation>
 <translation id="6657585470893396449">Password</translation>
@@ -22,5 +29,7 @@
 <translation id="8639729688781680518">Password di Windows dimenticata</translation>
 <translation id="866458870819756755">Impossibile creare un utente.</translation>
 <translation id="8875753657315897487">Accedi con il tuo account di lavoro</translation>
+<translation id="8973975512230260387">La sessione è scaduta. Accedi con il tuo account di lavoro Google.</translation>
+<translation id="9055998212250844221">Account utente creato tramite Provider di credenziali Google per Windows</translation>
 <translation id="9135619837062629367">L'accesso con questo account non è consentito. Prova con un altro account.</translation>
 </translationbundle>

@@ -96,6 +96,7 @@
       Si no se asigna ningún valor a esta política, los GPO almacenados en la memoria caché pueden reutilizarse durante un periodo máximo de 25 horas.
 
       Si se le asigna el valor 0, se inhabilita el almacenamiento en caché de los GPO. Ten en cuenta que esto incrementa la carga de trabajo del servidor, ya que los GPO deberán descargarse cada vez que se recuperen datos de políticas, aunque no se hayan modificado.</translation>
+<translation id="1111470455889178048">Enviar subidas y descargas de usuario para analizarlas</translation>
 <translation id="1117462881884985156"><ph name="PRODUCT_NAME" /> omitirá cualquier proxy que se incluya en la lista de hosts especificada.
 
           Esta política solo tendrá validez si has seleccionado una configuración manual del proxy en la opción Seleccionar la forma de especificar la configuración del servidor proxy y si no se ha especificado la política <ph name="PROXY_SETTINGS_POLICY_NAME" />.
@@ -394,6 +395,7 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
       permitidos.</translation>
 <translation id="1634989431648355062">Permitir el complemento <ph name="FLASH_PLUGIN_NAME" /> en estos sitios web</translation>
 <translation id="1645793986494086629">Esquema:</translation>
+<translation id="1648816843164517573">Lista de nombres que omitirán la comprobación de la política de HSTS</translation>
 <translation id="1653229475925941921">Si se asigna un valor a esta política, permite controlar el tipo de lupa que se habilita. Si se le asigna el valor "None", se inhabilitará la lupa.
 
           Si asignas un valor a esta política, los usuarios no podrán cambiarla ni anularla.
@@ -900,6 +902,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="254653220329944566">Activa los informes en la nube de <ph name="PRODUCT_NAME" /></translation>
 <translation id="2548572254685798999">Recoger información sobre Navegación Segura</translation>
 <translation id="2550593661567988768">Solo impresión por una cara</translation>
+<translation id="2551520365302988324">Enviar subidas de usuario para analizarlas</translation>
 <translation id="2552966063069741410">Zona horaria</translation>
 <translation id="2562339630163277285">Especifica la URL del motor de búsqueda utilizada para proporcionar resultados instantáneos. La URL debe contener la cadena <ph name="SEARCH_TERM_MARKER" />, que se sustituirá en el momento de la consulta por el texto que el usuario haya introducido hasta el momento.
 
@@ -983,6 +986,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           Esta política es opcional. Si no se establece se usará el valor predeterminado, es decir, UTF-8.
 
           Para que se aplique esta política, se debe habilitar la política DefaultSearchProviderEnabled.</translation>
+<translation id="2679827548357140943">Lista de dominios en los que deberá comprobarse que el contenido subido no contiene software malicioso</translation>
 <translation id="268577405881275241">Habilitar la función del proxy de compresión de datos</translation>
 <translation id="2693108589792503178">Configura la URL de cambio de contraseñas.</translation>
 <translation id="2694143893026486692">Lupa fijada habilitada</translation>
@@ -1360,6 +1364,10 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="332771718998993005">Determina el nombre que se utiliza como destino de <ph name="PRODUCT_NAME" />.
 
           Si se asigna una cadena que no esté vacía a esta política, esa cadena se utilizará como nombre del destino de <ph name="PRODUCT_NAME" />. De lo contrario, el nombre del destino será el nombre del dispositivo. Si esta política no se establece, el nombre del destino será el nombre del dispositivo y su propietario (o un usuario del dominio que gestiona el dispositivo) podrá cambiarlo. El nombre tiene un límite de 24 caracteres.</translation>
+<translation id="3331950121151548952">Indica la lista de dominios en los que deberá comprobarse que el contenido subido no contiene software malicioso.  Esta política solo se utilizará si se le asigna a la política <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> un valor que permita o implemente obligatoriamente las comprobaciones de software malicioso en el contenido subido.
+
+      Si no se habilita esta política o se define con una lista vacía de dominios, no se comprobará si el contenido subido contiene software malicioso.
+      </translation>
 <translation id="3335468714959531450">Permite definir una lista de patrones de URL para especificar los sitios web que pueden establecer cookies.
 
           Si no se le asigna ningún valor a esta política, se usará para todos los sitios web el valor general predeterminado de la política "DefaultCookiesSetting" (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).
@@ -1429,6 +1437,15 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           Si esta política se establece en false o no se establece, los retrasos de administración de energía y el límite de duración de sesión se ejecutarán inmediatamente al iniciar la sesión.</translation>
 <translation id="3478024346823118645">Borrar los datos del usuario al cerrar sesión</translation>
 <translation id="3480961938508521469">Carga totalmente la batería a velocidad estándar.</translation>
+<translation id="3483729306380590354">Establece un porcentaje personalizado de inicio de carga de la batería.
+
+          La batería empezará a cargarse cuando alcance el valor personalizado de inicio de carga.
+
+          <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> debe tener un valor al menos cinco puntos porcentuales inferior al de <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />.
+
+          Esta política solo se utilizará si se le asigna el valor <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" /> a <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" />.
+
+          Si no se configura esta política o no se le asigna ningún valor, se aplicará el modo <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" /> de carga de la batería.</translation>
 <translation id="348495353354674884">Habilitar teclado virtual</translation>
 <translation id="3487623755010328395">Si se habilita la política, <ph name="PRODUCT_NAME" /> intentará registrarse y aplicar la política relativa a la nube asociada a todos los perfiles.
 
@@ -1876,6 +1893,15 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
           Si se asigna un valor a esta política, los usuarios no podrán cambiarla ni anularla.
 
           Si no le asignas ningún valor, el clic automático se inhabilitará al inicio, pero los usuarios podrán habilitarlo en cualquier momento.</translation>
+<translation id="4215197846797661927">Define la configuración diaria del modo avanzado de carga de la batería.
+
+          Esta política solo se utilizará si se le asigna el valor true a la política <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" />.
+
+          Si no se configura esta política o no se le asigna ningún valor, el modo avanzado de carga de la batería siempre estará inhabilitado.
+
+          Nota: <ph name="CHARGE_START_TIME_FIELD_NAME" /> debe ser inferior a <ph name="CHARGE_END_TIME_FIELD_NAME" />.
+
+          Nota: Los valores permitidos para el campo <ph name="MINUTE_FIELD_NAME" /> en <ph name="CHARGE_START_TIME_FIELD_NAME" /> y<ph name="CHARGE_END_TIME_FIELD_NAME" /> son 0, 15, 30 y 45.</translation>
 <translation id="4224610387358583899">Retrasos de bloqueo de pantalla</translation>
 <translation id="423797045246308574">Te permite establecer una lista de patrones de URL para especificar los sitios web que no pueden utilizar la generación de claves. Si un patrón de URL está en KeygenAllowedForUrls, se anularán estas excepciones.
 
@@ -1943,6 +1969,17 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
           El valor de esta política debe especificarse en milisegundos. Los valores deben ser inferiores o iguales al retraso de inactividad.
 
           El mensaje de advertencia solo se muestra si el modo de inactividad cierra la sesión o apaga el equipo.</translation>
+<translation id="4342827592971649626">Esta política controla el análisis profundo de las descargas de usuario con Navegación Segura. Si no se le asigna ningún valor o se selecciona el valor predeterminado "No analizar archivos", las descargas de usuario no se analizarán con Navegación Segura.
+
+      Si se selecciona "Prohibir el análisis de archivos", los usuarios no podrán analizar sus descargas. Este valor es distinto del predeterminado, ya que algunos usuarios, como los de Protección Avanzada, podrán enviar sus descargas para analizarlas si se asigna el valor predeterminado a esta política. Este ajuste impedirá que esos usuarios puedan analizar sus archivos.
+
+      Si se le selecciona "Enviar descargas de usuario para analizarlas", las descargas de usuario se enviarán a Navegación Segura a través de la red para realizar un análisis de software malicioso.
+
+      Si se selecciona "Enviar subidas de usuario para analizarlas", las subidas de usuario se enviarán a Navegación Segura a través de la red para realizar un análisis de software malicioso.
+
+      Si se selecciona "Enviar subidas y descargas de usuario para analizarlas", seguirá las reglas descritas en los valores "Enviar subidas de usuario para analizarlas" y "Enviar descargas de usuario para analizarlas".
+
+      Consulta las políticas <ph name="DELAY_DELIVER_UNTIL_VERDICT_POLICY_NAME" /> y <ph name="UNSAFE_EVENTS_REPORTING_ENABLED" /> para obtener más información sobre cómo se muestran los resultados del análisis al usuario y al administrador.</translation>
 <translation id="4344356660952451291">Lista de dominios en los que se comprobará el cumplimiento de las normas del contenido descargado.</translation>
 <translation id="4346674324214534449">Te permite decidir si se deberían bloquear los anuncios en los sitios web con anuncios invasivos.
 
@@ -2536,6 +2573,16 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si se asigna un valor a esta política, los usuarios no podrán cambiarlo ni anularlo.
 
       Si no se le asigna ninguno, los usuarios podrán elegir la imagen que se mostrará en el escritorio y en la pantalla de inicio de sesión.</translation>
+<translation id="5437214086679373363">Controla si se permite a los usuarios subir o descargar archivos protegidos con contraseña cuando sea necesario realizar un análisis de los ficheros.  Esta restricción solo se aplica a los archivos que deban analizarse según se establezca en las políticas <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> y en las políticas que controlan la lista de dominios en los que se hayan habilitado las comprobaciones.
+
+      Si se selecciona "Ninguno" en esta política, <ph name="PRODUCT_NAME" /> impide que el usuario suba o descargue archivos protegidos con contraseña.
+
+      Si se selecciona "Permitir descargas", <ph name="PRODUCT_NAME" /> permitirá al usuario la descarga de archivos protegidos con contraseña.
+
+      Si se selecciona "Permitir subidas", <ph name="PRODUCT_NAME" /> permitirá al usuario la subida de archivos protegidos con contraseña.
+
+      Si no se le asigna ningún valor a esta política o se selecciona "Permitir subidas y descargas", <ph name="PRODUCT_NAME" /> seguirá las reglas descritas en los valores "Permitir descargas" y "Permitir subidas".
+      </translation>
 <translation id="5437733496511628148">Si se habilita esta opción, no se podrán establecer cookies mediante elementos de página web que no pertenezcan al dominio que aparece en la barra de direcciones del navegador.
 
       Si se inhabilita esta opción, se podrán establecer cookies mediante elementos de página web que no pertenezcan al dominio que aparece en la barra de direcciones del navegador, y los usuarios no podrán modificar esta opción.
@@ -3458,13 +3505,32 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 
       Para obtener más información sobre la política <ph name="IEEM_SITELIST_POLICY" /> de Internet Explorer, consulta esta página web: https://docs.microsoft.com/es-es/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">URLs a las que se concederá acceso a dispositivos de captura de vídeo sin confirmación</translation>
+<translation id="713712866686796666">Define la configuración diaria de Peak Shift.
+
+          Esta política solo se utilizará si se le asigna el valor true a la política <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" />.
+
+          Si no se configura esta política o no se le asigna ningún valor, Peak Shift siempre estará inhabilitado.
+
+          Nota: Los valores permitidos para el campo <ph name="MINUTE_FIELD_NAME" /> en <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> y <ph name="CHARGE_START_TIME_FIELD_NAME" /> son 0, 15, 30 y 45.</translation>
 <translation id="7138678301420049075">Otro</translation>
+<translation id="7139809614375682935">Establece un porcentaje personalizado de parada de carga para la batería.
+
+          La batería dejará de cargarse cuando alcance el valor personalizado de parada de carga.
+
+          <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> debe tener un valor al menos cinco puntos porcentuales inferior al de <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />.
+
+          Esta política solo se utilizará si se le asigna el valor <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" /> a <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" />.
+
+          Si no se configura esta política o no se le asigna ningún valor, se aplicará el modo <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" /> de carga de la batería.</translation>
 <translation id="7140629953254369759">Indica a <ph name="PRODUCT_OS_NAME" /> que utilice la configuración del programador de tareas identificada por el nombre especificado.
 
       A esta política se le puede asignar el valor "Conservative" o "Performance", que selecciona las configuraciones del programador de tareas que están ajustadas para ofrecer estabilidad o rendimiento máximo, respectivamente.
 
       Si no se asigna ningún valor a esta política, el usuario podrá elegirlo.</translation>
 <translation id="7145335384492396213">Modo predeterminado de impresión con PIN</translation>
+<translation id="7149042336307555519"> Indica los tipos de conexiones que se pueden utilizar para actualizar el sistema operativo. Estas actualizaciones pueden constituir un lastre para la conexión debido a su tamaño y pueden suponer costes adicionales. Por tanto, están inhabilitadas de forma predeterminada en los tipos de conexión que se consideran más costosos (actualmente, solo las redes móviles).
+
+      Los identificadores de tipos de conexión reconocidos son <ph name="CONNECTION_TYPE_ETHERNET_NAME" />, <ph name="CONNECTION_TYPE_WIFI_NAME" /> y <ph name="CONNECTION_TYPE_CELLULAR_NAME" />.</translation>
 <translation id="7152605873936173525">Controla el modo de resolución de DNS sobre HTTPS. Ten en cuenta que esta política solo definirá el modo predeterminado de cada solicitud. El modo se puede anular en tipos de solicitudes especiales, como las que se usan para resolver el nombre de host de un servidor con el protocolo DNS sobre HTTPS.
 
       El modo <ph name="SECURE_DNS_MODE_OFF" /> inhabilitará DNS sobre HTTPS.
@@ -3496,6 +3562,17 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
           Si se le asigna el valor "False" a esta política, se disminuirá el nivel de las solicitudes de wake locks de pantalla y se convertirán en solicitudes de wake locks del sistema.</translation>
 <translation id="7177857088692019405">Desbloqueo rápido</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
+<translation id="7187447094921703950">Habilita la política de gestión de energía Peak Shift.
+
+          Peak Shift es una política de ahorro de energía que minimiza el uso de corriente alterna durante las horas de mayor uso de energía del día. Para ejecutar el modo de energía Peak Shift, se puede configurar una hora de inicio y de finalización para cada día de la semana. Durante ese tiempo, el sistema funcionará con la batería, incluso si la corriente alterna funciona, siempre que la batería se mantenga por encima del umbral especificado. Después del tiempo especificado, el sistema funcionará con corriente alterna, pero no cargará la batería. El sistema volverá a funcionar con normalidad usando la corriente alterna y cargando la batería después de la hora de inicio de carga especificada.
+
+          Si a esta política se le asigna el valor true y las políticas <ph name="DEVICE_POWER_PEAK_SHIFT_BATTERY_THRESHOLD_NAME" /> y <ph name="DEVICE_POWER_PEAK_SHIFT_DAY_CONFIG_NAME" /> están configuradas, Peak Shift siempre estará habilitado si el dispositivo lo permite.
+
+          Si se le asigna el valor false a esta política, Peak Shift siempre estará inhabilitado.
+
+          Además, los usuarios no podrán cambiarla ni anularla.
+
+          Si no le asignas ningún valor, Peak Shift estará inhabilitado inicialmente y el usuario no podrá habilitarlo.</translation>
 <translation id="718956142899066210">Tipos de conexión permitidos para realizar actualizaciones</translation>
 <translation id="7190286937411178540">Habilita la función de accesibilidad de elementos destacados</translation>
 <translation id="7194407337890404814">Nombre del proveedor de búsquedas predeterminadas</translation>
@@ -4133,6 +4210,17 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
 
           Si no se asigna ningún valor a esta política, se habilitará la opción.</translation>
 <translation id="8382184662529825177">Habilitar el uso de la confirmación remota para la protección del contenido del dispositivo</translation>
+<translation id="8382693763260501307">Habilita la política de gestión del modo avanzado de carga de la batería.
+
+          El modo avanzado de carga de la batería permite que el usuario maximice el estado de la batería. Cuando el sistema esté en modo de Carga avanzada, usará un algoritmo de carga estándar y otras técnicas fuera del horario laboral para mejorar el estado de la batería. En horas de trabajo, se usará la carga exprés. La carga exprés permite que la batería se cargue rápidamente, por tanto, la batería tardará menos tiempo en cargarse completamente. El periodo de tiempo en el que el sistema se usa de manera más frecuente se especifica para cada día mediante la hora de inicio y la duración.
+
+          Si se asigna el valor true a esta política y <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_DAY_CONFIG_NAME" /> está configurada, el modo avanzado de carga de la batería siempre estará habilitado si el dispositivo lo admite.
+
+          Si se le asigna el valor false, el modo avanzado de carga de la batería siempre estará inhabilitado.
+
+          Además, los usuarios no podrán cambiarla ni anularla.
+
+          Si no se le asigna ningún valor, el modo avanzado de carga de la batería está inhabilitado y el usuario no podrá habilitarlo.</translation>
 <translation id="838870586332499308">Habilitar la itinerancia de datos</translation>
 <translation id="8390049129576938611">Inhabilita el visor de PDF interno en <ph name="PRODUCT_NAME" />. En su lugar, trata el archivo PDF como una descarga y permite al usuario abrir archivos PDF con la aplicación predeterminada.
 
@@ -4331,9 +4419,15 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
       Si se configura esta política, el conjunto de aplicaciones es fijo y el usuario no podrá cambiarlo.
 
       Si no se configura, el usuario podrá cambiar la lista de aplicaciones fijadas en el menú de aplicaciones.</translation>
+<translation id="8779504970846195767">Establece el umbral del ahorro de batería de Peak Shift en forma de porcentaje.
+
+          Esta política solo se utilizará si se le asigna el valor true a la política <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" />.
+
+          Si no se configura esta política o no se le asigna ningún valor, Peak Shift siempre estará inhabilitado.</translation>
 <translation id="8798099450830957504">Predeterminado</translation>
 <translation id="8800453707696044281">Define un porcentaje personalizado de la parada de carga de la batería</translation>
 <translation id="8801680448782904838">Informar al usuario de que es necesario o recomendable reiniciar el navegador o el dispositivo</translation>
+<translation id="8802816494059596691">Los nombres de host que se especifican en esta lista quedarán exentos de la comprobación de la política de HSTS, que podría actualizar las solicitudes de http a https. Esta política solo admite nombres de host de una sola etiqueta. Los nombres de host deben seguir el canon de formato: cada IDN debe codificarse en su formato de etiqueta A y todas las letras ASCII deben ser minúsculas. Esta política solo se aplica a los nombres de host que se especifican en esta lista; no se aplica a sus subdominios.</translation>
 <translation id="8818173863808665831">Informa de la ubicación geográfica del dispositivo.
 
      Si no se establece esta política o se establece el valor "false", no se informará de la ubicación.</translation>
@@ -4495,6 +4589,17 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
       Si el valor de la política se establece en un token que se asocia a una versión Quick Fix, el dispositivo se actualizará a la versión Quick Fix correspondiente, a no ser que otra política bloquee la actualización.
 
       Si no se le asigna ningún valor a la política, o su valor no se asocia a ninguna versión Quick Fix, el dispositivo no se actualizará a ninguna versión Quick Fix. Si el dispositivo utiliza una versión Quick Fix y la política no está configurada o su valor no se asocia a una versión Quick Fix, el dispositivo se actualizará a una versión normal, a no ser que otra política bloquee la actualización.</translation>
+<translation id="9053158112041032237">Especifica la política de gestión del modo de carga de la batería.
+
+          Controla dinámicamente la carga de la batería para reducir su desgaste a causa de estrés y para prolongar su duración.
+
+          Si se ha seleccionado el modo personalizado de carga de la batería, se debe especificar un valor para <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> y <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />.
+
+          Si se configura esta política, se aplicará el modo de carga de la batería si el dispositivo lo admite.
+
+          Si no se le asigna ningún valor y el dispositivo admite esta política, se aplicará el modo estándar de carga de la batería y el usuario no podrá cambiarlo.
+
+          Nota: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> anula esta política si se especifica la anterior.</translation>
 <translation id="9054012305936267950">Esta política controla el comportamiento del navegador cuando se inicia sesión. Permite definir si los usuarios pueden iniciar sesión en <ph name="PRODUCT_NAME" /> con su cuenta y usar los servicios asociados a esta, como la función Sincronización de Chrome.
 
       Si se asigna el valor "Inhabilitar inicio de sesión en el navegador" a esta política, el usuario no podrá iniciar sesión en el navegador ni usar los servicios asociados a la cuenta. Además, las funciones del navegador, como Sincronización de Chrome, no se podrán usar ni estarán disponibles. Si el usuario había iniciado sesión y se establece el valor "Inhabilitar inicio de sesión en el navegador" para esta política, la próxima vez que ejecute Chrome se cerrará la sesión, pero se conservarán los datos de su perfil local, como los marcadores o las contraseñas. No obstante, podrá iniciar sesión y usar servicios web de Google como Gmail.

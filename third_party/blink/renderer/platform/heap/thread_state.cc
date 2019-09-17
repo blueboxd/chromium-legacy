@@ -103,6 +103,14 @@ namespace {
 constexpr base::TimeDelta kDefaultIncrementalMarkingStepDuration =
     base::TimeDelta::FromMilliseconds(2);
 
+// Concurrent marking should stop every once in a while to flush private
+// segments to v8 marking worklist. It should also stop to avoid priority
+// inversion.
+//
+// TODO(omerkatz): What is a good value to set here?
+constexpr base::TimeDelta kConcurrentMarkingStepDuration =
+    base::TimeDelta::FromMilliseconds(2);
+
 constexpr size_t kMaxTerminationGCLoops = 20;
 
 // Helper function to convert a byte count to a KB count, capping at
@@ -1647,7 +1655,10 @@ void ThreadState::PerformConcurrentMark(int concurrent_marker_id) {
           : std::make_unique<ConcurrentMarkingVisitor>(
                 this, GetMarkingMode(Heap().Compaction()->IsCompacting()),
                 task_id);
-  Heap().AdvanceConcurrentMarking(concurrent_visitor.get());
+
+  const bool finished = Heap().AdvanceConcurrentMarking(
+      concurrent_visitor.get(),
+      base::TimeTicks::Now() + kConcurrentMarkingStepDuration);
 
   concurrent_visitor->FlushWorklists();
   {
@@ -1655,8 +1666,16 @@ void ThreadState::PerformConcurrentMark(int concurrent_marker_id) {
     // When marking is done, flush visitor worklists and decrement number of
     // active markers so we know how many markers are left
     concurrently_marked_bytes_ += concurrent_visitor->marked_bytes();
-    --active_markers_;
+    if (finished) {
+      --active_markers_;
+      return;
+    }
   }
+
+  // Reschedule this marker
+  marker_scheduler_->ScheduleTask(WTF::CrossThreadBindOnce(
+      &ThreadState::PerformConcurrentMark, WTF::CrossThreadUnretained(this),
+      concurrent_marker_id));
 }
 
 }  // namespace blink

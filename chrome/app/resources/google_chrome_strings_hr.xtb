@@ -44,13 +44,16 @@
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome je zastario</translation>
 <translation id="1900795423379050516">Ako se postavka ne prikazuje na ovoj stranici, pogledajte <ph name="LINK_BEGIN" />
-      postavke svojeg preglednika Chrome<ph name="LINK_END" /></translation>
+      postavke preglednika Chrome<ph name="LINK_END" /></translation>
 <translation id="1915828456209461693">Dostupno je novo ažuriranje za Chrome i primijenit će se nakon ponovnog pokretanja.</translation>
 <translation id="1919130412786645364">Dopusti prijavu u Chrome</translation>
 <translation id="2063848847527508675">Potrebno je ponovo pokrenuti Chrome OS kako bi se ažuriranje primijenilo.</translation>
 <translation id="2094919256425865063">Želite li ipak zatvoriti Chrome?</translation>
 <translation id="2120620239521071941">Time će se izbrisati sljedeći broj stavki s uređaja: <ph name="ITEMS_COUNT" />. Da biste kasnije dohvatili svoje podatke, prijavite se na Chrome kao <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Pomognite poboljšati Chrome tako što ćete prijaviti <ph name="BEGIN_LINK" />trenutačne postavke<ph name="END_LINK" /></translation>
+<translation id="2128103434102193461">Pojedinosti o OS-u Chrome potražite u dijelu <ph name="LINK_BEGIN" />
+      O OS-u Chrome<ph name="LINK_END" /></translation>
+<translation id="2151406531797534936">Sada ponovo pokrenite Chrome</translation>
 <translation id="216054706567564023">Instalirajte Chrome na telefon. Poslat ćemo vam SMS na telefonski broj za oporavak računa.</translation>
 <translation id="2246246234298806438">Google Chrome ne može prikazati pregled ispisa ako nema ugrađeni preglednik PDF-a.</translation>
 <translation id="2252923619938421629">Pomognite poboljšati Google Chrome tako što ćete prijaviti trenutačne postavke</translation>
@@ -159,7 +162,7 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="556024056938947818">Google Chrome pokušava prikazati zaporke.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5657226924540934362">Ako se postavka ne prikazuje na ovoj stranici, pogledajte <ph name="LINK_BEGIN" />
-      postavke svojeg OS-a Chrome<ph name="LINK_END" /></translation>
+      postavke OS-a Chrome<ph name="LINK_END" /></translation>
 <translation id="565744775970812598">Datoteka <ph name="FILE_NAME" /> mogla bi biti opasna, pa ju je Chrome blokirao.</translation>
 <translation id="5686916850681061684">Prilagodite Google Chrome i upravljajte njime. Trebate obratiti pozornost na nešto – kliknite za pojedinosti.</translation>
 <translation id="5690427481109656848">Google LLC</translation>
@@ -219,6 +222,7 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="7589360514048265910">Ovo računalo više neće primati ažuriranja Google Chromea jer Mac OS X 10.9 više nije podržan.</translation>
 <translation id="7592736734348559088">Google Chrome nije mogao sinkronizirati vaše podatke jer su vaši podaci za prijavu na račun zastarjeli.</translation>
 <translation id="7626032353295482388">Dobro došli u Chrome</translation>
+<translation id="7629695634924605473">Chrome će vas obavijestiti ako vaše zaporke budu ugrožene</translation>
 <translation id="7641148173327520642">Vaš administrator sustava konfigurirao je Google Chrome da otvara <ph name="ALTERNATIVE_BROWSER_NAME" /> za pristup URL-u <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Logotip Chrome Enterprise</translation>
 <translation id="7747138024166251722">Program za instalaciju nije izradio privremeni direktorij. Provjerite ima li slobodnog prostora na disku i postoji li dopuštenje za instalaciju softvera.</translation>

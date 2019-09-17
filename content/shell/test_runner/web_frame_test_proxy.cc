@@ -67,7 +67,7 @@ class TestRenderFrameObserver : public content::RenderFrameObserver {
     }
   }
 
-  void DidFailProvisionalLoad(const blink::WebURLError& error) override {
+  void DidFailProvisionalLoad() override {
     if (test_runner()->ShouldDumpFrameLoadCallbacks()) {
       WebFrameTestClient::PrintFrameDescription(delegate(),
                                                 render_frame()->GetWebFrame());

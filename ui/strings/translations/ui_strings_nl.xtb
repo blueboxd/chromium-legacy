@@ -11,7 +11,7 @@
 <translation id="1266864766717917324">Kan <ph name="CONTENT_TYPE" /> niet delen</translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1290982764014248209"><ph name="DRAGGED_APP" /> verplaatsen naar map <ph name="FOLDER_NAME" />.</translation>
-<translation id="1291104554099683393">Probeer de tekst in kleinere gedeelten te delen.</translation>
+<translation id="1291104554099683393">Verdeel de tekst in kleinere stukken en deel in meerdere keren.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">AANBEVOLEN APPS</translation>
 <translation id="1368832886055348810">Links naar rechts</translation>
@@ -113,6 +113,7 @@
 <translation id="4788285488841504513">{MONTHS,plural, =1{Nog 1 maand}other{Nog # maanden}}</translation>
 <translation id="4841881773802181781">Invoeging</translation>
 <translation id="4881695831933465202">Openen</translation>
+<translation id="4888938634149558681">Bellen</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 seconde}other{# seconden}}</translation>
 <translation id="4971687151119236543">Vorige track voor media</translation>
 <translation id="5046499563572181734">Tik hier</translation>

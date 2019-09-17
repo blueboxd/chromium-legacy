@@ -71,6 +71,7 @@
 <translation id="1292701964462482250">"Phần mềm trên máy tính của bạn đang ngăn không cho Chrome kết nối an toàn với web" (chỉ trên máy tính Windows)</translation>
 <translation id="1294154142200295408">Các biến thể của dòng lệnh</translation>
 <translation id="129553762522093515">Các tab đã đóng gần đây</translation>
+<translation id="1298536327547837046">Quét tìm phần mềm độc hại</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Thử xóa các cookie của bạn<ph name="END_LINK" /></translation>
 <translation id="1307966114820526988">Tính năng sắp ngừng hoạt động</translation>
 <translation id="1320233736580025032">Prc1 (Phong bì)</translation>
@@ -167,6 +168,7 @@
 <translation id="1734878702283171397">Thử liên hệ với quản trị viên hệ thống.</translation>
 <translation id="1740951997222943430">Nhập tháng hết hạn hợp lệ</translation>
 <translation id="1743520634839655729">Để thanh toán nhanh hơn vào lần tới, hãy lưu địa chỉ thanh toán, tên và thẻ vào thiết bị này và Tài khoản Google của bạn.</translation>
+<translation id="1743570585616704562">Không nhận dạng được</translation>
 <translation id="1745880797583122200">Trình duyệt của bạn được quản lý</translation>
 <translation id="17513872634828108">Tab đang mở</translation>
 <translation id="1753706481035618306">Số trang</translation>
@@ -428,6 +430,7 @@
 <translation id="320323717674993345">Hủy thanh toán</translation>
 <translation id="3207960819495026254">Đã đánh dấu trang</translation>
 <translation id="3209034400446768650">Trang này có thể tính phí</translation>
+<translation id="3215092763954878852">Không thể dùng WebAuthn</translation>
 <translation id="3225919329040284222">Máy chủ đưa ra chứng chỉ không khớp với kỳ vọng được tích hợp sẵn. Các kỳ vọng này có trong một số trang web nhất định, có tính bảo mật cao với mục đích bảo vệ bạn.</translation>
 <translation id="3226128629678568754">Nhấn nút tải lại để gửi lại các dữ liệu cần thiết để tải trang.</translation>
 <translation id="3227137524299004712">Micrô</translation>
@@ -564,6 +567,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Không có}=1{Của 1 trang web }other{Của # trang web }}</translation>
 <translation id="397105322502079400">Đang tính...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> bị chặn</translation>
+<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> đã bật tính năng Bảo vệ khỏi mối đe dọa của Chrome Enterprise trên trình duyệt. Tính năng Bảo vệ khỏi mối đe dọa của Chrome Enterprise có quyền truy cập vào một số dữ liệu của bạn.</translation>
 <translation id="3987940399970879459">Dưới 1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 trang web lân cận}other{# trang web lân cận}}</translation>
 <translation id="4030383055268325496">&amp;Hoàn tác thêm</translation>
@@ -632,6 +636,7 @@
 <translation id="4277028893293644418">Đặt lại mật khẩu</translation>
 <translation id="4279811152705618813"><ph name="DEVICE_TYPE" /> của bạn do <ph name="ENROLLMENT_DOMAIN" /> quản lý</translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Đã lưu thẻ này vào Tài khoản Google của bạn}other{Đã lưu các thẻ này vào Tài khoản Google của bạn}}</translation>
+<translation id="428847186335018806">Quét các tệp mà bạn tải lên hoặc tải xuống trên Chrome.</translation>
 <translation id="42981349822642051">Mở rộng</translation>
 <translation id="4302965934281694568">Chou3 (Phong bì)</translation>
 <translation id="4305817255990598646">Chuyển</translation>
@@ -670,6 +675,7 @@
 <translation id="4506176782989081258">Lỗi xác thực: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4506599922270137252">Liên hệ với quản trị viên hệ thống</translation>
 <translation id="450710068430902550">Chia sẻ với quản trị viên</translation>
+<translation id="4508814173490746936">Không thể dùng Touch ID</translation>
 <translation id="4510487217173779431">Chou4 (Phong bì)</translation>
 <translation id="4515275063822566619">Thẻ và địa chỉ từ Chrome và Tài khoản Google của bạn (<ph name="ACCOUNT_EMAIL" />). Bạn có thể quản lý thẻ và địa chỉ trong <ph name="BEGIN_LINK" />Cài đặt<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (Phong bì)</translation>
@@ -765,6 +771,7 @@
 <translation id="5045550434625856497">Mật khẩu sai</translation>
 <translation id="5056549851600133418">Tin bài dành cho bạn</translation>
 <translation id="5068524481479508725">A10</translation>
+<translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 cookie đang được dùng)}other{(# cookie đang được dùng)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Kiểm tra địa chỉ proxy<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">Chứng chỉ của máy chủ không hợp lệ tại thời điểm này.</translation>
 <translation id="5087580092889165836">Thêm thẻ</translation>
@@ -994,6 +1001,7 @@
 <translation id="6302269476990306341">Trợ lý Google trong Chrome đang dừng</translation>
 <translation id="6305205051461490394">Không thể truy cập <ph name="URL" />.</translation>
 <translation id="6321917430147971392">Kiểm tra cài đặt DNS của bạn</translation>
+<translation id="6322182122604171028">Không thể dùng Windows Hello</translation>
 <translation id="6328639280570009161">Thử tắt dự đoán mạng</translation>
 <translation id="6328784461820205019">"Kết nối của bạn không phải là kết nối riêng tư" hoặc "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" hoặc "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" hoặc "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" hoặc "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" hoặc "Lỗi chứng chỉ SSL"</translation>
 <translation id="6328786501058569169">Đây là trang web lừa đảo</translation>
@@ -1017,6 +1025,7 @@
 <translation id="6433490469411711332">Chỉnh sửa thông tin liên hệ</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> đã từ chối kết nối.</translation>
 <translation id="6434309073475700221">Hủy</translation>
+<translation id="6435221585574090192">Chia sẻ với Quản trị viên các dữ liệu về những sự kiện bảo mật mà tính năng Bảo vệ khỏi mối đe dọa của Chrome Enterprise đã gắn cờ. Các dữ liệu này có thể bao gồm cả URL trang, tên tệp và siêu dữ liệu tệp, tên người dùng Chrome và tên người dùng thiết bị của bạn.</translation>
 <translation id="6440503408713884761">Bị bỏ qua</translation>
 <translation id="6446163441502663861">Kahu (Phong bì)</translation>
 <translation id="6446608382365791566">Thêm thông tin khác</translation>
@@ -1061,6 +1070,7 @@
 <translation id="6671697161687535275">Bạn muốn xóa đề xuất biểu mẫu khỏi Chromium?</translation>
 <translation id="6685834062052613830">Đăng xuất và hoàn thành quá trình thiết lập</translation>
 <translation id="6689271823431384964">Chrome đang đề xuất lưu thẻ của bạn vào Tài khoản Google vì bạn đã đăng nhập. Bạn có thể thay đổi hoạt động này trong phần cài đặt. Tên chủ thẻ được lấy từ tài khoản của bạn.</translation>
+<translation id="6707256370811247129">Quét nội dung trong bộ nhớ đệm và các tệp mà bạn tải lên hoặc tải xuống trên Chrome.</translation>
 <translation id="6710213216561001401">Trước đó</translation>
 <translation id="6710594484020273272">&lt;Nhập cụm từ tìm kiếm&gt;</translation>
 <translation id="671076103358959139">Mã đăng ký:</translation>
@@ -1079,6 +1089,7 @@
 <translation id="681021252041861472">Trường bắt buộc</translation>
 <translation id="6810899417690483278">ID tùy chỉnh</translation>
 <translation id="6825578344716086703">Bạn đã cố gắng truy cập vào <ph name="DOMAIN" /> nhưng máy chủ xuất trình một chứng chỉ được ký bằng một thuật toán chữ ký yếu (chẳng hạn như SHA-1). Điều này có nghĩa là thông tin đăng nhập bảo mật mà máy chủ xuất trình có thể đã bị giả mạo và máy chủ đó có thể không phải là máy chủ mà bạn mong đợi (bạn có thể đang kết nối với kẻ tấn công).</translation>
+<translation id="6826370046007623921">Ngăn chặn mất dữ liệu</translation>
 <translation id="6831043979455480757">Dịch</translation>
 <translation id="6839929833149231406">Vùng</translation>
 <translation id="6852204201400771460">Tải lại ứng dụng?</translation>
@@ -1225,6 +1236,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7542995811387359312">Tính năng tự động điền thẻ tín dụng đã bị vô hiệu hóa vì biểu mẫu này không sử dụng kết nối an toàn.</translation>
 <translation id="7548892272833184391">Khắc phục lỗi kết nối</translation>
 <translation id="7549584377607005141">Trang web này yêu cầu dữ liệu mà bạn đã nhập trước đó để được hiển thị đúng cách. Bạn có thể gửi lại dữ liệu này nhưng làm như vậy bạn sẽ lặp lại mọi hoạt động mà trang này đã thực hiện trước đó.</translation>
+<translation id="7550637293666041147">Tên người dùng Chrome và tên người dùng thiết bị của bạn</translation>
 <translation id="7552846755917812628">Thử các mẹo sau:</translation>
 <translation id="7554791636758816595">Tab mới</translation>
 <translation id="7564049878696755256">Bạn có thể mất quyền truy cập vào tài khoản <ph name="ORG_NAME" /> của mình hoặc bị đánh cắp danh tính. Chrome khuyên bạn nên thay đổi mật khẩu ngay bây giờ.</translation>
@@ -1239,6 +1251,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7610193165460212391">Giá trị nằm ngoài phạm vi <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Hết hạn: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Bạn đã có dữ liệu được mã hóa bằng mật khẩu khác của Tài khoản Google. Vui lòng nhập mật khẩu đó bên dưới.</translation>
+<translation id="7625784245512586808">Tính năng Bảo vệ khỏi mối đe dọa của Chrome Enterprise</translation>
 <translation id="7633909222644580952">Báo cáo sự cố và dữ liệu hiệu suất</translation>
 <translation id="7637571805876720304">Bạn muốn xóa thẻ tín dụng khỏi Chromium?</translation>
 <translation id="7638605456503525968">Cổng nối tiếp</translation>
@@ -1349,6 +1362,7 @@ Thông tin chi tiết bổ sung:
 <translation id="8211406090763984747">Kết nối an toàn</translation>
 <translation id="8218327578424803826">Vị trí được gán:</translation>
 <translation id="8220146938470311105">C7/C6 (Phong bì)</translation>
+<translation id="8220639454292072926">Báo cáo của Enterprise</translation>
 <translation id="8225771182978767009">Người thiết lập máy tính này đã chọn chặn trang web này.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Mở trang trong tab Ẩn danh mới</translation>
@@ -1432,6 +1446,7 @@ Thông tin chi tiết bổ sung:
 <translation id="8740359287975076522">Không thể tìm thấy &lt;abbr id="dnsDefinition"&gt;địa chỉ DNS&lt;/abbr&gt; của <ph name="HOST_NAME" />. Đang chẩn đoán sự cố.</translation>
 <translation id="874846938927089722">Thẻ tín dụng và thẻ trả trước được chấp nhận</translation>
 <translation id="874918643257405732">Đánh dấu tab này</translation>
+<translation id="8751426954251315517">Vui lòng thử lại vào lần tiếp theo</translation>
 <translation id="8759274551635299824">Thẻ này đã hết hạn</translation>
 <translation id="8761567432415473239">Gần đây, Duyệt web an toàn của Google <ph name="BEGIN_LINK" />tìm thấy chương trình độc hại<ph name="END_LINK" /> trên trang <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Thiết bị USB</translation>
@@ -1496,6 +1511,7 @@ Thông tin chi tiết bổ sung:
 <translation id="9080712759204168376">Tóm tắt đơn hàng</translation>
 <translation id="9089260154716455634">Chính sách về khoảng thời gian tắt:</translation>
 <translation id="9095388113577226029">Ngôn ngữ khác...</translation>
+<translation id="9098981495403789647">Quản trị viên đã bật tính năng Bảo vệ khỏi mối đe dọa của Chrome Enterprise trên trình duyệt. Tính năng Bảo vệ khỏi mối đe dọa của Chrome Enterprise có quyền truy cập vào một số dữ liệu của bạn.</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> thường sử dụng mã hóa để bảo vệ thông tin của bạn. Khi Chromium cố gắng kết nối với <ph name="SITE" /> tại thời điểm này, trang web đã gửi lại thông tin đăng nhập không chính xác và bất thường. Điều này có thể xảy ra khi kẻ tấn công đang cố gắng giả mạo là <ph name="SITE" /> hoặc màn hình đăng nhập Wi-Fi đã làm gián đoạn kết nối. Thông tin của bạn vẫn an toàn do Chromium đã ngừng kết nối trước khi bất kỳ dữ liệu nào được trao đổi.</translation>
 <translation id="9106062320799175032">Thêm địa chỉ thanh toán</translation>
 <translation id="9114524666733003316">Đang xác nhận thẻ...</translation>

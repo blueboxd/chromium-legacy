@@ -19,6 +19,7 @@
 <translation id="2501953888035679275">Toma fotos y graba videos con la cámara.</translation>
 <translation id="2549985041256363841">Comenzar grabación</translation>
 <translation id="2599796128805996109">Cámara posterior</translation>
+<translation id="2912439424121107408">Este dispositivo no admite el modo experto</translation>
 <translation id="2968794441791257519">Las fotos y los videos que tomes con la cámara se moverán a la carpeta "Descargas", que puedes abrir con la app de Archivos.
 
 Las apps que tengan permiso de almacenamiento podrán acceder a tus fotos y videos.</translation>
@@ -41,10 +42,12 @@ Las apps que tengan permiso de almacenamiento podrán acceder a tus fotos y vide
         Asegúrate de que esté conectada de forma correcta.</translation>
 <translation id="5152121255775685072">Ir a la galería</translation>
 <translation id="5671277269877808209">Cuadrado</translation>
+<translation id="5775960006311140197">Modo experto</translation>
 <translation id="5869546221129391014">Cuadrícula</translation>
 <translation id="6040143037577758943">Cerrar</translation>
 <translation id="6073451960410192870">Detener grabación</translation>
 <translation id="6165508094623778733">Más información</translation>
+<translation id="6197807149213783179">Guardar metadatos</translation>
 <translation id="6233780560267770709">3 por 3</translation>
 <translation id="6243827288366940320">Proporción áurea</translation>
 <translation id="6248749904681914629">Cámara externa</translation>
@@ -66,6 +69,7 @@ Las apps que tengan permiso de almacenamiento podrán acceder a tus fotos y vide
 <translation id="8261506727792406068">Borrar</translation>
 <translation id="8428213095426709021">Configuración</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" /> p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8732462232047530626">Obtener vista previa de metadatos</translation>
 <translation id="8815966864175525708">Cambiar al modo vertical para tomar fotos</translation>
 <translation id="8870695351537079478">No es posible comenzar a grabar</translation>
 <translation id="9045155556724273246">10 segundos</translation>

@@ -69,10 +69,10 @@ class DevicePermissionsManagerTest : public testing::Test {
     device3_ = fake_usb_manager_.CreateAndAddDevice(0, 0, "Test Manufacturer",
                                                     "Test Product", "");
 
-    device::mojom::HidManagerPtr hid_manager_ptr;
-    fake_hid_manager_.Bind(mojo::MakeRequest(&hid_manager_ptr));
+    mojo::PendingRemote<device::mojom::HidManager> hid_manager;
+    fake_hid_manager_.Bind(hid_manager.InitWithNewPipeAndPassReceiver());
     HidDeviceManager::Get(env_->profile())
-        ->SetFakeHidManagerForTesting(std::move(hid_manager_ptr));
+        ->SetFakeHidManagerForTesting(std::move(hid_manager));
     base::RunLoop().RunUntilIdle();
 
     device4_ = fake_hid_manager_.CreateAndAddDevice(

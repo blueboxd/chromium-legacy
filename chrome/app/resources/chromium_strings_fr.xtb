@@ -91,6 +91,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="4230135487732243613">Associer vos données Chromium à ce compte ?</translation>
 <translation id="4271805377592243930">Obtenir de l'aide avec Chromium</translation>
 <translation id="4285930937574705105">Échec de l'installation suite à une erreur non spécifiée. Si Chromium est en cours d'exécution, veuillez le fermer, puis réessayer.</translation>
+<translation id="4371648796594901282">Pour en savoir plus sur Chromium OS, consultez la section <ph name="LINK_BEGIN" />À propos de Chromium OS<ph name="LINK_END" /></translation>
 <translation id="4407044323746248786">Quitter Chromium quand même ?</translation>
 <translation id="4415566066719264597">Laisser Chromium s'exécuter en arrière-plan</translation>
 <translation id="4423735387467980091">Personnaliser et contrôler Chromium</translation>
@@ -123,6 +124,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="5623402015214259806">{0,plural, =0{Une mise à jour de Chromium est disponible}=1{Une mise à jour de Chromium est disponible}one{Une mise à jour de Chromium est disponible depuis # jour}other{Une mise à jour de Chromium est disponible depuis # jours}}</translation>
 <translation id="5631814766731275228">Nom et photo dans Chromium</translation>
 <translation id="5634636535844844681">Vous devez disposer de Windows 7 ou version ultérieure pour utiliser Chromium.</translation>
+<translation id="5653831366781983928">Veuillez redémarrer Chromium maintenant</translation>
 <translation id="5680901439334282664">connectez-vous à Chromium</translation>
 <translation id="5698481217667032250">Afficher Chromium dans cette langue</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
@@ -165,6 +167,7 @@ Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier 
 <translation id="6734080038664603509">Mettre à jour &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium est déjà installé pour tous les utilisateurs de votre ordinateur.</translation>
 <translation id="6810143991807788455">Aidez-nous à améliorer Chromium en nous signalant vos paramètres actuels.</translation>
+<translation id="6847869444787758381">Chromium vous indique si vos mots de passe ont été piratés</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copiée dans Chromium)</translation>
 <translation id="6868056391275687737">D'autres copies de Chromium sont en cours d'exécution. Fermez-les pour effectuer la mise à jour.</translation>

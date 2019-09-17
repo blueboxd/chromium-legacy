@@ -479,6 +479,7 @@
 <translation id="1698122934742150150">เซสชันไม่ระบุตัวตนปัจจุบันเท่านั้น</translation>
 <translation id="1698650002254827833">โหลดรายการแอปไม่ได้ โปรดลองใหม่</translation>
 <translation id="1701062906490865540">นำบุคคลนี้ออก</translation>
+<translation id="1703331064825191675">ไม่ต้องกังวลเกี่ยวกับรหัสผ่านอีกต่อไป</translation>
 <translation id="1706586824377653884">เพิ่มโดยผู้ดูแลระบบ</translation>
 <translation id="1706625117072057435">ระดับการซูม</translation>
 <translation id="1708338024780164500">(ไม่ใช้งาน)</translation>
@@ -528,6 +529,7 @@
 <translation id="1764226536771329714">เบต้า</translation>
 <translation id="176587472219019965">&amp;หน้าต่างใหม่</translation>
 <translation id="1766575458646819543">ออกจากโหมดเต็มหน้าจอแล้ว</translation>
+<translation id="1766957085594317166">บันทึกรหัสผ่านอย่างปลอดภัยในบัญชี Google แล้วไม่ต้องพิมพ์รหัสผ่านอีกต่อไป</translation>
 <translation id="1768278914020124551">อ๊ะ! เกิดปัญหาในการติดต่อเซิร์ฟเวอร์เข้าสู่ระบบ โปรดตรวจสอบการเชื่อมต่อเครือข่ายและชื่อโดเมนแล้วลองอีกครั้ง</translation>
 <translation id="1769104665586091481">เปิดลิงก์ใน&amp;หน้าต่างใหม่</translation>
 <translation id="1773212559869067373">ใบรับรองการตรวจสอบสิทธิ์ได้รับการปฏิเสธในท้องถิ่น</translation>
@@ -1875,6 +1877,7 @@
 <translation id="3748026146096797577">ไม่ได้เชื่อมต่อ</translation>
 <translation id="3752582316358263300">ตกลง...</translation>
 <translation id="3752673729237782832">อุปกรณ์ของฉัน</translation>
+<translation id="3753033997400164841">บันทึกครั้งเดียว แล้วใช้ได้ทุกที่</translation>
 <translation id="3755411799582650620">ขณะนี้ <ph name="PHONE_NAME" /> สามารถปลดล็อก <ph name="DEVICE_TYPE" /> ได้เช่นกัน</translation>
 <translation id="375636864092143889">เว็บไซต์กำลังใช้ไมโครโฟนของคุณ</translation>
 <translation id="3757733214359997190">ไม่พบเว็บไซต์</translation>
@@ -2167,7 +2170,6 @@
 <translation id="4146026355784316281">เปิดด้วยโปรแกรมดูของระบบทุกครั้ง</translation>
 <translation id="4146785383423576110">รีเซ็ตและล้างข้อมูล</translation>
 <translation id="4147911968024186208">โปรดลองอีกครั้ง หากพบข้อผิดพลาดนี้อีก ให้ติดต่อตัวแทนฝ่ายสนับสนุน</translation>
-<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">การแสดงผล</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 แท็บ}other{# แท็บ}}</translation>
 <translation id="4154664944169082762">ลายนิ้วมือ</translation>
@@ -2208,6 +2210,7 @@
 <translation id="4232375817808480934">กำหนดค่า Kerberos</translation>
 <translation id="4235200303672858594">ทั้งหน้าจอ</translation>
 <translation id="4235965441080806197">ยกเลิกการลงชื่อเข้าใช้</translation>
+<translation id="4242145785130247982">ไม่รองรับใบรับรองไคลเอ็นต์หลายฉบับ</translation>
 <translation id="4242533952199664413">เปิดการตั้งค่า</translation>
 <translation id="4242577469625748426">ไม่สามารถติดตั้งการตั้งค่านโยบายบนอุปกรณ์: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4244238649050961491">ค้นหาแอปสไตลัสเพิ่มเติม</translation>
@@ -2368,7 +2371,7 @@
 <translation id="451407183922382411">ขับเคลื่อนโดย <ph name="COMPANY_NAME" /></translation>
 <translation id="4514610446763173167">สลับปุ่มควบคุมวิดีโอเพื่อเล่นหรือหยุดชั่วคราว</translation>
 <translation id="451515744433878153">นำออก</translation>
-<translation id="4515872537870654449">ติดต่อ Dell เพื่อส่งซ่อม แท่นชาร์จจะดับหากพัดลมไม่ทำงาน</translation>
+<translation id="4515872537870654449">ติดต่อ Dell เพื่อส่งซ่อม แท่นชาร์จจะปิดหากพัดลมไม่ทำงาน</translation>
 <translation id="4519935350946509010">เกิดข้อผิดพลาดในการเชื่อมต่อ</translation>
 <translation id="4520385623207007473">คุกกี้ที่ใช้งานอยู่</translation>
 <translation id="452039078290142656">อุปกรณ์ที่ไม่รู้จักจาก <ph name="VENDOR_NAME" /></translation>
@@ -2651,7 +2654,7 @@
 <translation id="4932733599132424254">วันที่</translation>
 <translation id="4933484234309072027">ฝังตัวใน <ph name="URL" /></translation>
 <translation id="493571969993549666">เพิ่มผู้ใช้ภายใต้การดูแล</translation>
-<translation id="4939805055470675027">เชื่อมต่อ <ph name="CARRIER_NAME" /> ไม่ได้</translation>
+<translation id="4939805055470675027">เชื่อมต่อ <ph name="CARRIER_NAME" /> ไม่สำเร็จ</translation>
 <translation id="4941246025622441835">ใช้ข้อกำหนดของอุปกรณ์นี้เมื่อลงทะเบียนอุปกรณ์สำหรับการจัดการองค์กร:</translation>
 <translation id="4941627891654116707">ขนาดแบบอักษร</translation>
 <translation id="494286511941020793">ความช่วยเหลือในการกำหนดค่าพร็อกซี</translation>
@@ -2666,6 +2669,7 @@
 <translation id="4957949153200969297">เปิดใช้เฉพาะฟีเจอร์ที่เกี่ยวข้องกับการซิงค์ของ <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="4959262764292427323">เราจะบันทึกรหัสผ่านไว้ในบัญชี Google เพื่อให้คุณใช้ในอุปกรณ์เครื่องใดก็ได้</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> - <ph name="PROFILE_NAME" /></translation>
+<translation id="496185450405387901">ผู้ดูแลระบบเป็นคนติดตั้งแอปนี้</translation>
 <translation id="4964455510556214366">การจัดเรียง</translation>
 <translation id="4964673849688379040">กำลังตรวจสอบ...</translation>
 <translation id="4965808351167763748">คุณแน่ใจไหมว่าต้องการตั้งค่าอุปกรณ์นี้ให้เรียกใช้การประชุม Hangouts </translation>
@@ -2923,6 +2927,7 @@
 <translation id="5360150013186312835">แสดงในแถบเครื่องมือ</translation>
 <translation id="5362741141255528695">เลือกไฟล์กุญแจส่วนตัว</translation>
 <translation id="5363109466694494651">Powerwash และเปลี่ยนกลับ</translation>
+<translation id="5365716706805792666">Google จะตรวจสอบได้ว่ารหัสผ่านของคุณรวมอยู่ในการละเมิดข้อมูลหรือไม่ ฟีเจอร์นี้จะเปิดขึ้นเมื่อคุณลงชื่อเข้าใช้ด้วยบัญชี Google</translation>
 <translation id="5365881113273618889">โฟลเดอร์ที่คุณเลือกมีไฟล์ที่ละเอียดอ่อน แน่ใจไหมว่าต้องการให้สิทธิ์การเข้าถึงในการเขียนโฟลเดอร์นี้อย่างถาวรแก่ "<ph name="APP_NAME" />"</translation>
 <translation id="5367091008316207019">กำลังอ่านไฟล์..</translation>
 <translation id="5368720394188453070">โทรศัพท์ล็อกอยู่ โปรดปลดล็อกเพื่อเข้าใช้งาน</translation>
@@ -3519,7 +3524,6 @@
 <translation id="6212039847102026977">แสดงคุณสมบัติเครือข่ายขั้นสูง</translation>
 <translation id="6212168817037875041">ปิดจอแสดงผล</translation>
 <translation id="6212752530110374741">ส่งลิงก์ทางอีเมล</translation>
-<translation id="6214642087594370545">แสดงคำเตือนเมื่อคุณใช้รหัสผ่านที่ไม่ปลอดภัยซึ่งเป็นส่วนหนึ่งของการละเมิดข้อมูล พร้อมให้บริการสำหรับผู้ใช้ที่ลงชื่อเข้าใช้เท่านั้น</translation>
 <translation id="6216696360484424239">ลงชื่อเข้าใช้โดยอัตโนมัติ</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> ออฟไลน์อยู่ เชื่อมต่ออินเทอร์เน็ตแล้วลองอีกครั้ง</translation>
 <translation id="6220413761270491930">ข้อผิดพลาดในการโหลดส่วนขยาย</translation>
@@ -3876,6 +3880,7 @@
 <translation id="6769712124046837540">กำลังเพิ่มเครื่องพิมพ์...</translation>
 <translation id="6770664076092644100">ยืนยันผ่าน NFC</translation>
 <translation id="6771503742377376720">เป็นผู้ออกใบรับรอง</translation>
+<translation id="6775163072363532304">อุปกรณ์ที่ใช้ได้จะแสดงที่นี่</translation>
 <translation id="6777817260680419853">การเปลี่ยนเส้นทางถูกบล็อก</translation>
 <translation id="6778737459546443941">ผู้ปกครองยังไม่ได้อนุมัติเว็บไซต์นี้</translation>
 <translation id="677965093459947883">เล็กมาก</translation>
@@ -4336,6 +4341,7 @@
 <translation id="7441830548568730290">ผู้ใช้รายอื่น</translation>
 <translation id="7442465037756169001">พร้อมตั้งค่าชุดฮาร์ดแวร์ Hangouts Meet แล้ว</translation>
 <translation id="744341768939279100">สร้างโปรไฟล์ใหม่</translation>
+<translation id="7443806024147773267">เข้าถึงรหัสผ่านได้เมื่อใดก็ตามที่ลงชื่อเข้าใช้บัญชี Google อยู่</translation>
 <translation id="7444046173054089907">เว็บไซต์นี้ถูกบล็อก</translation>
 <translation id="7444983668544353857">ปิดการใช้งาน<ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">ติดตั้งแอปโดยอัตโนมัติ</translation>
@@ -4446,7 +4452,7 @@
 <translation id="7625568159987162309">ดูสิทธิ์และข้อมูลที่จัดเก็บในเว็บไซต์</translation>
 <translation id="7629827748548208700">แท็บ: <ph name="TAB_NAME" /></translation>
 <translation id="7631014249255418691">สำรองข้อมูลแอปและไฟล์ Linux เรียบร้อยแล้ว</translation>
-<translation id="7631205654593498032">เมื่อเชื่อมต่ออุปกรณ์ คุณยอมรับว่า <ph name="DEVICE_TYPE" /> ทำสิ่งต่อไปนี้ได้</translation>
+<translation id="7631205654593498032">เมื่อเชื่อมต่ออุปกรณ์ คุณยินยอมให้ <ph name="DEVICE_TYPE" /> ดำเนินการดังนี้</translation>
 <translation id="7631887513477658702">&amp;เปิดไฟล์ประเภทนี้เสมอ</translation>
 <translation id="7632948528260659758">แอปคีออสก์ต่อไปนี้ไม่สามารถอัปเดตได้:</translation>
 <translation id="763632859238619983">ไม่อนุญาตให้เว็บไซต์ใดก็ตามติดตั้งเครื่องจัดการการชำระเงิน</translation>
@@ -4749,6 +4755,7 @@
 <translation id="8014154204619229810">โปรแกรมอัปเดตกำลังทำงาน โปรดรีเฟรชในอีก 1 นาทีเพื่อตรวจสอบอีกครั้ง</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> ไม่สามารถเปลี่ยนกลับไปเป็นเวอร์ชันที่ติดตั้งไว้ก่อนหน้านี้ได้ โปรดลองอีกครั้งเพื่อ Powerwash อุปกรณ์ของคุณ</translation>
 <translation id="8014210335923519270">ปรับปรุง <ph name="IDS_SHORT_PRODUCT_NAME" /> และความปลอดภัยด้วยการส่งข้อมูลและการใช้งานไปยัง Google</translation>
+<translation id="8015780634880457457">Google จะตรวจสอบได้ว่ารหัสผ่านของคุณรวมอยู่ในการละเมิดข้อมูลหรือไม่</translation>
 <translation id="8016266267177410919">พื้นที่เก็บข้อมูลชั่วคราว</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">แก้ไขทางลัดแล้ว</translation>
@@ -4867,6 +4874,7 @@
 <translation id="8188389033983459049">ตรวจสอบการตั้งค่าอุปกรณ์และเปิดบลูทูธเพื่อดำเนินการต่อ</translation>
 <translation id="8190193592390505034">กำลังเชื่อมต่อกับ <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">จัดการแอปพลิเคชัน ส่วนขยาย และธีมของคุณ</translation>
+<translation id="819464600477418284">ถอนการติดตั้งแอปนี้ไม่ได้เพราะเป็นส่วนหนึ่งของ Chrome OS</translation>
 <translation id="8195027750202970175">ขนาดบนดิสก์</translation>
 <translation id="8198323535106903877">เราจะติดตั้งแอป <ph name="NUMBER_OF_APPS" /> แอปนั้นให้คุณ</translation>
 <translation id="8199300056570174101">เครือข่าย (บริการ) และคุณสมบัติอุปกรณ์</translation>
@@ -4927,6 +4935,7 @@
     <ph name="BEGIN_PARAGRAPH2" />การปิดฟีเจอร์นี้จะไม่ส่งผลต่อความสามารถของอุปกรณ์ในการส่งข้อมูลที่จำเป็นต้องใช้ในบริการสำคัญอย่างเช่น การอัปเดตระบบ และความปลอดภัย<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />เจ้าของจะควบคุมฟีเจอร์นี้ได้จากการตั้งค่า &gt; ขั้นสูง &gt; ส่งข้อมูลการวินิจฉัยและการใช้งานไปยัง Google โดยอัตโนมัติ<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />หากการตั้งค่ากิจกรรมเพิ่มเติมบนเว็บและแอปเปิดอยู่สำหรับบุตรหลาน ระบบอาจบันทึกข้อมูลนี้ไว้ในบัญชี Google ของบุตรหลาน ดูข้อมูลเพิ่มเติมเกี่ยวกับการตั้งค่าเหล่านี้และวิธีปรับการตั้งค่าได้ที่ families.google.com<ph name="END_PARAGRAPH4" /></translation>
+<translation id="826905130698769948">ใบรับรองไคลเอ็นต์ไม่ถูกต้อง</translation>
 <translation id="8270242299912238708">เอกสาร PDF</translation>
 <translation id="827097179112817503">แสดงปุ่มหน้าแรก</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{ลบบุ๊กมาร์ก 1 รายการแล้ว}other{ลบบุ๊กมาร์ก # รายการแล้ว}}</translation>
@@ -5340,6 +5349,7 @@
 <translation id="8874184842967597500">ไม่ได้เชื่อมต่อ</translation>
 <translation id="8876307312329369159">คุณเปลี่ยนการตั้งค่านี้ในเซสชันสาธิตไม่ได้</translation>
 <translation id="8877448029301136595">[ไดเรกทอรีหลัก]</translation>
+<translation id="8879220587046205278">แอปจาก Google Play อาจต้องมีสิทธิ์เข้าถึงระบบไฟล์โดยสมบูรณ์เพื่ออ่านและเขียนไฟล์ในอุปกรณ์เก็บข้อมูลภายนอก ไฟล์และโฟลเดอร์ที่สร้างขึ้นในอุปกรณ์จะแสดงแก่ทุกคนที่ใช้ไดรฟ์ภายนอก</translation>
 <translation id="8879284080359814990">แ&amp;สดงเป็นแถบ</translation>
 <translation id="8879921471468674457">จำข้อมูลการลงชื่อเข้าใช้</translation>
 <translation id="8881020143150461183">โปรดลองอีกครั้ง หรือติดต่อ <ph name="CARRIER_NAME" /> เพื่อรับการสนับสนุนด้านเทคนิค</translation>

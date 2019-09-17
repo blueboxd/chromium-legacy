@@ -11,6 +11,7 @@
 #include "ios/chrome/browser/overlays/public/web_content_area/java_script_dialog_source.h"
 #include "ios/chrome/browser/overlays/test/fake_overlay_user_data.h"
 #import "ios/chrome/browser/ui/alert_view_controller/test/fake_alert_consumer.h"
+#import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_dialog_overlay_mediator+subclassing.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/test/java_script_dialog_overlay_mediator_test.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -26,22 +27,26 @@
     : JavaScriptDialogOverlayMediator {
   web::TestWebState _webState;
   std::unique_ptr<JavaScriptDialogSource> _source;
+  std::string _message;
 }
 // Initializer for a mediator that has a JavaScriptDialogSource with |sourceURL|
-// and |isMainFrame|.
+// and |isMainFrame|.  |message| is the dialog's message text.
 - (instancetype)initWithRequest:(OverlayRequest*)request
                       sourceURL:(const GURL&)sourceURL
-                    isMainFrame:(BOOL)isMainFrame;
+                    isMainFrame:(BOOL)isMainFrame
+                        message:(const std::string&)message;
 @end
 
 @implementation FakeJavaScriptDialogOverlayMediator
 
 - (instancetype)initWithRequest:(OverlayRequest*)request
                       sourceURL:(const GURL&)sourceURL
-                    isMainFrame:(BOOL)isMainFrame {
+                    isMainFrame:(BOOL)isMainFrame
+                        message:(const std::string&)message {
   if (self = [super initWithRequest:request]) {
     _source = std::make_unique<JavaScriptDialogSource>(&_webState, sourceURL,
                                                        isMainFrame);
+    _message = message;
   }
   return self;
 }
@@ -50,8 +55,12 @@
 
 @implementation FakeJavaScriptDialogOverlayMediator (Subclassing)
 
-- (const JavaScriptDialogSource*)requestSource {
-  return _source.get();
+- (const JavaScriptDialogSource&)requestSource {
+  return *_source.get();
+}
+
+- (const std::string&)requestMessage {
+  return _message;
 }
 
 @end
@@ -59,34 +68,38 @@
 // Test fixture for JavaScriptDialogOverlayMediator.
 using JavaScriptDialogOverlayMediatorTest = JavaScriptDialogOverlayMediatorTest;
 
-// Tests the title for a JavaScript dialog from the main frame.
-TEST_F(JavaScriptDialogOverlayMediatorTest, MainFrameTitle) {
+// Tests the JavaScript dialog setup from the main frame.
+TEST_F(JavaScriptDialogOverlayMediatorTest, MainFrame) {
   std::unique_ptr<OverlayRequest> request =
       OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
   const GURL kUrl("https://chromium.org");
+  const std::string kMessage("Message");
   SetMediator([[FakeJavaScriptDialogOverlayMediator alloc]
       initWithRequest:request.get()
             sourceURL:kUrl
-          isMainFrame:YES]);
+          isMainFrame:YES
+              message:kMessage]);
 
-  base::string16 title = url_formatter::FormatUrlForSecurityDisplay(
-      kUrl, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
-  NSString* expected_title =
-      l10n_util::GetNSStringF(IDS_JAVASCRIPT_MESSAGEBOX_TITLE, title);
-  EXPECT_NSEQ(expected_title, consumer().title);
+  // For the main frame, the URL is already displayed in the location bar, so
+  // there is no need to add source information.  The message is used as the
+  // consumer's title in this case.
+  EXPECT_NSEQ(base::SysUTF8ToNSString(kMessage), consumer().title);
 }
 
-// Tests the title for a JavaScript dialog from the main frame.
-TEST_F(JavaScriptDialogOverlayMediatorTest, IFrameTitle) {
+// Tests the JavaScript dialog setup from an iframe.
+TEST_F(JavaScriptDialogOverlayMediatorTest, IFrameSetup) {
   std::unique_ptr<OverlayRequest> request =
       OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
   const GURL kUrl("https://chromium.org");
+  const std::string kMessage("Message");
   SetMediator([[FakeJavaScriptDialogOverlayMediator alloc]
       initWithRequest:request.get()
             sourceURL:kUrl
-          isMainFrame:NO]);
+          isMainFrame:NO
+              message:kMessage]);
 
   NSString* expected_title = l10n_util::GetNSString(
       IDS_JAVASCRIPT_MESSAGEBOX_TITLE_NONSTANDARD_URL_IFRAME);
   EXPECT_NSEQ(expected_title, consumer().title);
+  EXPECT_NSEQ(base::SysUTF8ToNSString(kMessage), consumer().message);
 }

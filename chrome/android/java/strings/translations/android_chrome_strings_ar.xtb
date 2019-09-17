@@ -66,6 +66,7 @@
 <translation id="1407135791313364759">فتح الكل</translation>
 <translation id="1409426117486808224">عرض مبسَّط لعلامات التبويب المفتوحة</translation>
 <translation id="1409879593029778104">مُنع تنزيل الملف <ph name="FILE_NAME" /> لأنه موجود بالفعل.</translation>
+<translation id="1413136574162415971">‏بإمكان Google التحقُّق مما إذا تم استخدام كلمات المرور في عملية اختراق البيانات. سيتم تفعيل هذه الميزة عند تسجيل الدخول باستخدام حسابك على Google وتفعيل المزامنة.</translation>
 <translation id="1414981605391750300">‏جارٍ الاتصال بـ Google. قد يستغرق ذلك دقيقة واحدة...</translation>
 <translation id="1416550906796893042">إصدار التطبيق</translation>
 <translation id="1430915738399379752">طباعة</translation>
@@ -160,6 +161,7 @@
 <translation id="2091887806945687916">الصوت</translation>
 <translation id="2096012225669085171">المزامنة والتخصيص على الأجهزة</translation>
 <translation id="2100273922101894616">تسجيل الدخول تلقائيًا</translation>
+<translation id="2100314319871056947">يُرجى تجربة مشاركة النص في مجموعات أصغر</translation>
 <translation id="2107397443965016585">السؤال أولاً قبل السماح لمواقع الويب بتشغيل المحتوى المَحمي (موصى به)</translation>
 <translation id="2111511281910874386">الانتقال إلى الصفحة</translation>
 <translation id="2122601567107267586">تعذر فتح التطبيق</translation>
@@ -253,6 +255,7 @@
 <translation id="2836148919159985482">المس زر الرجوع للخروج من وضع ملء الشاشة.</translation>
 <translation id="2842985007712546952">المجلد الرئيسي</translation>
 <translation id="2858138569776157458">أهم المواقع</translation>
+<translation id="2860954141821109167">يُرجى التأكُّد من تفعيل تطبيق الهاتف على هذا الجهاز</translation>
 <translation id="2870560284913253234">الموقع</translation>
 <translation id="2874939134665556319">المقطع الصوتي السابق</translation>
 <translation id="2876369937070532032">‏يتم إرسال عناوين URL لبعض الصفحات التي تزورها إلى Google، عندما يكون أمانك في خطر</translation>
@@ -277,6 +280,7 @@
 <translation id="2996291259634659425">إنشاء عبارة المرور</translation>
 <translation id="2996809686854298943">‏عنوان URL المطلوب</translation>
 <translation id="300526633675317032">سيؤدي هذا إلى محو مساحة التخزين البالغة <ph name="SIZE_IN_KB" /> بأكملها من مساحة تخزين مواقع الويب.</translation>
+<translation id="3016635187733453316">يُرجى التأكُّد من اتصال هذا الجهاز بالإنترنت</translation>
 <translation id="3029613699374795922">تم التنزيل بحجم <ph name="KBS" /> كيلوبايت</translation>
 <translation id="3029704984691124060">عبارات المرور غير متطابقة</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />الحصول على مساعدة<ph name="END_LINK" /></translation>
@@ -350,7 +354,7 @@
 <translation id="3599863153486145794">‏يمسح السجل من كل الأجهزة التي تم تسجيل الدخول عليها. وقد يتضمن حسابك في Google نماذج أخرى من سجل التصفح في <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">كتم صوت مواقع الويب التي تشغّل الصوت</translation>
 <translation id="3616113530831147358">المقاطع الصوتية</translation>
-<translation id="3631987586758005671">جارٍ المشاركة إلى الجهاز <ph name="DEVICE_NAME" /></translation>
+<translation id="3631987586758005671">جارٍ المشاركة مع <ph name="DEVICE_NAME" /></translation>
 <translation id="3632295766818638029">كشف كلمة المرور</translation>
 <translation id="363596933471559332">يمكنك تسجيل الدخول تلقائيًا إلى مواقع الويب باستخدام بيانات الاعتماد المخزّنة. وعندما تكون هذه الميزة غير مفعّلة، سيُطلب منك التحقّق من بيانات الاعتماد في كل مرة قبل تسجيل الدخول إلى موقع ويب.</translation>
 <translation id="3658159451045945436">تؤدي إعادة الضبط إلى محو سِجلّ البيانات المحفوظة، بما في ذلك قائمة المواقع الإلكترونية التي تمت زيارتها.</translation>
@@ -841,6 +845,7 @@
 <translation id="723171743924126238">تحديد الصور</translation>
 <translation id="7233236755231902816">‏للاطّلاع على الويب بلغتك، يمكنك الحصول على أحدث إصدار من Chrome.</translation>
 <translation id="7243308994586599757">الخيارات المتاحة بالقرب من الجزء السفلي من الشاشة</translation>
+<translation id="7248069434667874558">‏يُرجى التأكّد من تفعيل مزامنة الجهاز <ph name="TARGET_DEVICE_NAME" /> في Chrome</translation>
 <translation id="7250468141469952378">تم اختيار <ph name="ITEM_COUNT" /> عنصراً</translation>
 <translation id="7274013316676448362">الموقع المحظور</translation>
 <translation id="7290209999329137901">إعادة التسمية غير متوفرة</translation>
@@ -955,6 +960,7 @@
 <translation id="8007176423574883786">تم إيقافه لهذا الجهاز</translation>
 <translation id="8013372441983637696">‏محو بيانات Chrome من هذا الجهاز أيضًا</translation>
 <translation id="8015452622527143194">إعادة كل محتويات الصفحة إلى الحجم التلقائي</translation>
+<translation id="8015780634880457457">‏بإمكان Google التحقُّق مما إذا تم استخدام كلمات المرور في عملية اختراق البيانات.</translation>
 <translation id="802154636333426148">تعذّر التنزيل</translation>
 <translation id="8026334261755873520">محو بيانات التصفُّح</translation>
 <translation id="8035133914807600019">مجلد جديد...</translation>
@@ -1017,6 +1023,7 @@
 <translation id="8445448999790540984">يتعذّر تصدير كلمات المرور</translation>
 <translation id="8447861592752582886">إبطال إذن الجهاز</translation>
 <translation id="8461694314515752532">تشفير البيانات المتزامنة باستخدام عبارة مرور المزامنة الخاصة بك</translation>
+<translation id="8466613982764129868">يُرجى التأكُّد من اتصال الجهاز <ph name="TARGET_DEVICE_NAME" /> بالإنترنت</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">التوفر بلا إنترنت</translation>
 <translation id="8489271220582375723">فتح صفحة السجل</translation>
@@ -1107,6 +1114,7 @@
 <translation id="9188680907066685419">تسجيل الخروج من الحساب المُدار</translation>
 <translation id="9204836675896933765">ملف واحد متبقٍ</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9209888181064652401">تعذّر إجراء المكالمات</translation>
 <translation id="9219103736887031265">الصور</translation>
 <translation id="926205370408745186">‏إزالة نشاط Chrome من الرفاهية الرقمية</translation>
 <translation id="932327136139879170">الصفحة الرئيسية</translation>

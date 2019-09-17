@@ -147,7 +147,9 @@ class GeneratedCodeCache::PendingOperation {
   const std::string& key() const { return key_; }
   const scoped_refptr<net::IOBufferWithSize> data() const { return data_; }
   ReadDataCallback ReleaseReadCallback() { return std::move(read_callback_); }
-  GetBackendCallback ReleaseCallback() { return std::move(callback_); }
+  GetBackendCallback ReleaseBackendCallback() {
+    return std::move(backend_callback_);
+  }
 
  private:
   PendingOperation(Operation op,
@@ -160,7 +162,7 @@ class GeneratedCodeCache::PendingOperation {
   const std::string key_;
   const scoped_refptr<net::IOBufferWithSize> data_;
   ReadDataCallback read_callback_;
-  GetBackendCallback callback_;
+  GetBackendCallback backend_callback_;
 };
 
 std::unique_ptr<GeneratedCodeCache::PendingOperation>
@@ -178,7 +180,7 @@ GeneratedCodeCache::PendingOperation::CreateFetchPendingOp(
     const ReadDataCallback& read_callback) {
   return base::WrapUnique(new PendingOperation(
       Operation::kFetch, std::move(key), scoped_refptr<net::IOBufferWithSize>(),
-      read_callback, GetBackendCallback()));
+      std::move(read_callback), GetBackendCallback()));
 }
 
 std::unique_ptr<GeneratedCodeCache::PendingOperation>
@@ -191,11 +193,11 @@ GeneratedCodeCache::PendingOperation::CreateDeletePendingOp(std::string key) {
 
 std::unique_ptr<GeneratedCodeCache::PendingOperation>
 GeneratedCodeCache::PendingOperation::CreateGetBackendPendingOp(
-    GetBackendCallback callback) {
+    GetBackendCallback backend_callback) {
   return base::WrapUnique(
       new PendingOperation(Operation::kGetBackend, std::string(),
                            scoped_refptr<net::IOBufferWithSize>(),
-                           ReadDataCallback(), std::move(callback)));
+                           ReadDataCallback(), std::move(backend_callback)));
 }
 
 GeneratedCodeCache::PendingOperation::PendingOperation(
@@ -203,12 +205,12 @@ GeneratedCodeCache::PendingOperation::PendingOperation(
     std::string key,
     scoped_refptr<net::IOBufferWithSize> buffer,
     const ReadDataCallback& read_callback,
-    GetBackendCallback callback)
+    GetBackendCallback backend_callback)
     : op_(op),
       key_(std::move(key)),
       data_(buffer),
-      read_callback_(read_callback),
-      callback_(std::move(callback)) {}
+      read_callback_(std::move(read_callback)),
+      backend_callback_(std::move(backend_callback)) {}
 
 GeneratedCodeCache::PendingOperation::~PendingOperation() = default;
 
@@ -264,9 +266,10 @@ void GeneratedCodeCache::WriteData(const GURL& url,
   std::string key = GetCacheKey(url, origin_lock);
   // If there is an in progress operation corresponding to this key. Enqueue it
   // so we can issue once the in-progress operation finishes.
-  if (EnqueueAsPendingOperation(
-          key, GeneratedCodeCache::PendingOperation::CreateWritePendingOp(
-                   key, buffer))) {
+  if (!TryBeginOperation(key)) {
+    EnqueueAsPendingOperation(
+        key, GeneratedCodeCache::PendingOperation::CreateWritePendingOp(
+                 key, buffer));
     return;
   }
 
@@ -295,9 +298,10 @@ void GeneratedCodeCache::FetchEntry(const GURL& url,
   std::string key = GetCacheKey(url, origin_lock);
   // If there is an in progress operation corresponding to this key. Enqueue it
   // so we can issue once the in-progress operation finishes.
-  if (EnqueueAsPendingOperation(
-          key, GeneratedCodeCache::PendingOperation::CreateFetchPendingOp(
-                   key, read_data_callback))) {
+  if (!TryBeginOperation(key)) {
+    EnqueueAsPendingOperation(
+        key, GeneratedCodeCache::PendingOperation::CreateFetchPendingOp(
+                 key, read_data_callback));
     return;
   }
 
@@ -392,7 +396,7 @@ void GeneratedCodeCache::IssueOperation(PendingOperation* op) {
       DeleteEntryImpl(op->key());
       break;
     case kGetBackend:
-      DoPendingGetBackend(op->ReleaseCallback());
+      DoPendingGetBackend(op->ReleaseBackendCallback());
       break;
   }
 }
@@ -593,18 +597,22 @@ void GeneratedCodeCache::IssueQueuedOperationForEntry(const std::string& key) {
   IssueOperation(op.get());
 }
 
-bool GeneratedCodeCache::EnqueueAsPendingOperation(
+bool GeneratedCodeCache::TryBeginOperation(const std::string& key) {
+  auto it = active_entries_map_.find(key);
+  if (it != active_entries_map_.end())
+    return false;
+
+  // Create an entry to indicate there is a in-progress operation for this key.
+  active_entries_map_[key] = base::queue<std::unique_ptr<PendingOperation>>();
+  return true;
+}
+
+void GeneratedCodeCache::EnqueueAsPendingOperation(
     const std::string& key,
     std::unique_ptr<PendingOperation> op) {
   auto it = active_entries_map_.find(key);
-  if (it != active_entries_map_.end()) {
-    it->second.emplace(std::move(op));
-    return true;
-  }
-
-  // Create a entry to indicate there is a in-progress operation for this key.
-  active_entries_map_[key] = base::queue<std::unique_ptr<PendingOperation>>();
-  return false;
+  DCHECK(it != active_entries_map_.end());
+  it->second.emplace(std::move(op));
 }
 
 void GeneratedCodeCache::DoPendingGetBackend(GetBackendCallback user_callback) {

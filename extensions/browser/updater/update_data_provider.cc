@@ -99,6 +99,8 @@ UpdateDataProvider::GetData(bool install_immediately,
     crx_component->pk_hash.resize(crypto::kSHA256Length, 0);
     crypto::SHA256HashString(pubkey_bytes, crx_component->pk_hash.data(),
                              crx_component->pk_hash.size());
+    crx_component->app_id =
+        update_client::GetCrxIdFromPublicKeyHash(crx_component->pk_hash);
     crx_component->version = extension_data.is_corrupt_reinstall
                                  ? base::Version("0.0.0.0")
                                  : extension->version();

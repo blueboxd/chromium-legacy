@@ -195,6 +195,7 @@ class PrintBrowserTest : public InProcessBrowserTest {
     PrintPreviewObserver print_preview_observer;
 
     StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
+               /*print_renderer=*/nullptr,
                /*print_preview_disabled=*/false, print_only_selection);
 
     print_preview_observer.WaitUntilPreviewIsReady();
@@ -281,6 +282,7 @@ class PrintExtensionBrowserTest : public extensions::ExtensionBrowserTest {
     PrintPreviewObserver print_preview_observer;
 
     StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
+               /*print_renderer=*/nullptr,
                /*print_preview_disabled=*/false, print_only_selection);
 
     print_preview_observer.WaitUntilPreviewIsReady();

@@ -25,6 +25,7 @@ source_set("credit_card_scanner") {
     "credit_card_scanner_view_controller.mm",
   ]
   deps = [
+    "//components/autofill/core/browser",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/qr_scanner",

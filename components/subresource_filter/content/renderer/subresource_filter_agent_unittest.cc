@@ -419,8 +419,7 @@ TEST_F(SubresourceFilterAgentTest,
   state->measure_performance = true;
   agent()->ActivateForNextCommittedLoad(std::move(state),
                                         AdFrameType::kNonAd /* ad_type */);
-  agent_as_rfo()->DidFailProvisionalLoad(
-      blink::WebURLError(net::ERR_FAILED, blink::WebURL()));
+  agent_as_rfo()->DidFailProvisionalLoad();
   agent_as_rfo()->DidStartNavigation(GURL(), base::nullopt);
   agent_as_rfo()->ReadyToCommitNavigation(nullptr);
   agent_as_rfo()->DidCommitProvisionalLoad(

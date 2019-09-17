@@ -281,14 +281,12 @@ class CONTENT_EXPORT DownloadManagerImpl
   // Called when this object is considered initialized.
   void OnDownloadManagerInitialized();
 
-#if defined(OS_ANDROID)
-  // Check whether a download should be cleared from history. On Android,
-  // cancelled and non-resumable interrupted download will be cleaned up to
-  // save memory.
+  // Check whether a download should be cleared from history. Cancelled and
+  // non-resumable interrupted download will be cleaned up to save memory.
   bool ShouldClearDownloadFromDB(const GURL& url,
                                  download::DownloadItem::DownloadState state,
-                                 download::DownloadInterruptReason reason);
-#endif  // defined(OS_ANDROID)
+                                 download::DownloadInterruptReason reason,
+                                 const base::Time& start_time);
 
   // Factory for creation of downloads items.
   std::unique_ptr<download::DownloadItemFactory> item_factory_;

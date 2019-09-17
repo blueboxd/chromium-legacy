@@ -10,6 +10,8 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
+#include "components/bookmarks/browser/bookmark_model.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/sync/driver/frontend_data_type_controller.h"
 
@@ -60,9 +62,9 @@ class BookmarkDataTypeController : public syncer::FrontendDataTypeController,
   syncer::SyncApiComponentFactory* const component_factory_;
 
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
-      history_service_observer_;
-  ScopedObserver<bookmarks::BookmarkModel, BaseBookmarkModelObserver>
-      bookmark_model_observer_;
+      history_service_observer_{this};
+  ScopedObserver<bookmarks::BookmarkModel, bookmarks::BookmarkModelObserver>
+      bookmark_model_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkDataTypeController);
 };

@@ -46,9 +46,7 @@ class CORE_EXPORT FrameLoaderStateMachine {
  public:
   FrameLoaderStateMachine();
 
-  // Once a load has been committed, the state may alternate between
-  // CommittedFirstRealLoad and FirstLayoutDone. Otherwise, the states only go
-  // down the list.
+  // The states only go down the list.
   enum State {
     kCreatingInitialEmptyDocument,
     kDisplayingInitialEmptyDocument,

@@ -233,6 +233,7 @@
 <translation id="27527859628328957">Pomik na naslednji element, ki ga je mogoče izbrati</translation>
 <translation id="2770781857296573485">Vnos raziskovanja skupine</translation>
 <translation id="2777845298774924149">Izhod</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{+#}one{+#}two{+#}few{+#}other{+#}}</translation>
 <translation id="2784959586797362050">Povratne informacije nam lahko kot vedno pošljete neposredno tako, da pritisnete tipko za iskanje in tipko A, nato pa tipko I. Želimo slišati vaše mnenje.</translation>
 <translation id="2800204403141299078">Ni več različnih elementov.</translation>
 <translation id="2800780099804980316">Ni prejšnjega naslova na ravni 1.</translation>
@@ -715,6 +716,7 @@
 <translation id="5956928062748260866">Pogovorno okno</translation>
 <translation id="5963413905009737549">Razdelek</translation>
 <translation id="5968607524793740041">Prikaz kontekstnega menija</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{z # elementom}one{s/z # elementom}two{s/z # elementoma}few{s/z # elementi}other{s/z # elementi}}</translation>
 <translation id="5981446804259161541">Svetlo cianova</translation>
 <translation id="5983179082906765664">Povečanje razdrobljenosti krmarjenja</translation>
 <translation id="5992285135956208197">Grafični dokument</translation>

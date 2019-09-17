@@ -607,7 +607,7 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
                            base::Value(x509_authority_cert));
 
     base::ListValue onc_certificates;
-    onc_certificates.GetList().emplace_back(std::move(onc_certificate));
+    onc_certificates.Append(std::move(onc_certificate));
 
     base::DictionaryValue onc_dict;
     onc_dict.SetKey(onc::toplevel_config::kCertificates,

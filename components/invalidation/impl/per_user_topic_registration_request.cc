@@ -4,10 +4,11 @@
 
 #include "components/invalidation/impl/per_user_topic_registration_request.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
@@ -200,7 +201,7 @@ PerUserTopicRegistrationRequest::Builder::~Builder() = default;
 std::unique_ptr<PerUserTopicRegistrationRequest>
 PerUserTopicRegistrationRequest::Builder::Build() const {
   DCHECK(!scope_.empty());
-  auto request = base::WrapUnique(new PerUserTopicRegistrationRequest);
+  auto request = base::WrapUnique(new PerUserTopicRegistrationRequest());
 
   std::string url;
   switch (type_) {

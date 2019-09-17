@@ -205,14 +205,6 @@ public class SavePasswordsPreferencesTest {
         }
 
         @Override
-        public void changeSavedPasswordEntry(int index, String newUsername, String newPassword) {
-            mSavedPasswords.set(index,
-                    new SavedPasswordEntry(
-                            mSavedPasswords.get(index).getUrl(), newUsername, newPassword));
-            updatePasswordLists();
-        }
-
-        @Override
         public void removeSavedPasswordEntry(int index) {
             assert false : "Define this method before starting to use it in tests.";
         }
@@ -236,18 +228,22 @@ public class SavePasswordsPreferencesTest {
         }
     }
 
-    private final static SavedPasswordEntry ZEUS_ON_EARTH =
+    private static final SavedPasswordEntry ZEUS_ON_EARTH =
             new SavedPasswordEntry("http://www.phoenicia.gr", "Zeus", "Europa");
-    private final static SavedPasswordEntry ARES_AT_OLYMP =
+    private static final SavedPasswordEntry ARES_AT_OLYMP =
             new SavedPasswordEntry("https://1-of-12.olymp.gr", "Ares", "God-o'w@r");
-    private final static SavedPasswordEntry PHOBOS_AT_OLYMP =
+    private static final SavedPasswordEntry PHOBOS_AT_OLYMP =
             new SavedPasswordEntry("https://visitor.olymp.gr", "Phobos-son-of-ares", "G0d0fF34r");
-    private final static SavedPasswordEntry DEIMOS_AT_OLYMP =
+    private static final SavedPasswordEntry DEIMOS_AT_OLYMP =
             new SavedPasswordEntry("https://visitor.olymp.gr", "Deimops-Ares-son", "G0d0fT3rr0r");
-    private final static SavedPasswordEntry HADES_AT_UNDERWORLD =
+    private static final SavedPasswordEntry HADES_AT_UNDERWORLD =
             new SavedPasswordEntry("https://underworld.gr", "", "C3rb3rus");
-    private final static SavedPasswordEntry[] GREEK_GODS = {
-            ZEUS_ON_EARTH, ARES_AT_OLYMP, PHOBOS_AT_OLYMP, DEIMOS_AT_OLYMP, HADES_AT_UNDERWORLD,
+    private static final SavedPasswordEntry[] GREEK_GODS = {
+            ZEUS_ON_EARTH,
+            ARES_AT_OLYMP,
+            PHOBOS_AT_OLYMP,
+            DEIMOS_AT_OLYMP,
+            HADES_AT_UNDERWORLD,
     };
 
     // Used to provide fake lists of stored passwords. Tests which need it can use setPasswordSource

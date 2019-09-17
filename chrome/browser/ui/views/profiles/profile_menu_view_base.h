@@ -106,6 +106,9 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   void AddSelectableProfile(const gfx::Image& image,
                             const base::string16& name,
                             base::RepeatingClosure action);
+  void AddProfileFeatureButton(const gfx::ImageSkia& icon,
+                               const base::string16& text,
+                               base::RepeatingClosure action);
   // 0 < |icon_to_image_ratio| <= 1 is the size ratio of |icon| in the returned
   // image. E.g. a value of 0.8 means that |icon| only takes up 80% of the
   // returned image, with the rest being padding around it.
@@ -213,6 +216,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   views::View* shortcut_features_container_ = nullptr;
   views::View* account_features_container_ = nullptr;
   views::View* selectable_profiles_container_ = nullptr;
+  views::View* profile_features_container_ = nullptr;
 
   CloseBubbleOnTabActivationHelper close_bubble_helper_;
 

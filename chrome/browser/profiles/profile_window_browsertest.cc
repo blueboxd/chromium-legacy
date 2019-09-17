@@ -102,7 +102,8 @@ base::FilePath CreateTestingProfile(const std::string& name,
   base::FilePath profile_path =
       manager->user_data_dir().AppendASCII(relative_path);
   storage.AddProfile(profile_path, base::ASCIIToUTF16(name), std::string(),
-                     base::string16(), 0u, std::string(), EmptyAccountId());
+                     base::string16(), false, 0u, std::string(),
+                     EmptyAccountId());
 
   EXPECT_EQ(starting_number_of_profiles + 1u, storage.GetNumberOfProfiles());
   return profile_path;

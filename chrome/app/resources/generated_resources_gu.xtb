@@ -475,6 +475,7 @@
 <translation id="1698122934742150150">ફક્ત વર્તમાન છૂપું સત્ર</translation>
 <translation id="1698650002254827833">ઍપની સૂચિ લોડ કરી શકાતી નથી. કૃપા કરીને ફરી પ્રયાસ કરો.</translation>
 <translation id="1701062906490865540">આ વ્યક્તિને દૂર કરો</translation>
+<translation id="1703331064825191675">તમારા પાસવર્ડ વિશે ક્યારેય ચિંતા કરશો નહીં</translation>
 <translation id="1706586824377653884">તમારા વ્યવસ્થાપક દ્વારા ઉમેરાયેલ</translation>
 <translation id="1706625117072057435">ઝૂમના સ્તર</translation>
 <translation id="1708338024780164500">(નિષ્ક્રિય)</translation>
@@ -524,6 +525,7 @@
 <translation id="1764226536771329714">બીટા</translation>
 <translation id="176587472219019965">&amp;નવી વિંડો</translation>
 <translation id="1766575458646819543">પૂર્ણ-સ્ક્રીનથી બહાર નીકળ્યાં</translation>
+<translation id="1766957085594317166">તમારા Google એકાઉન્ટમાં પાસવર્ડને સુરક્ષિત રીતે સાચવો અને પછી તમારે તેને ક્યારેય ટાઇપ કરવા પડશે નહીં</translation>
 <translation id="1768278914020124551">અરેરે! લૉગઑન સર્વરનો સંપર્ક કરવામાં સમસ્યા આવી હતી. કૃપા કરીને તમારું નેટવર્ક કનેક્શન અને ડોમેન નામ તપાસો, ત્યાર બાદ ફરીથી પ્રયાસ કરો.</translation>
 <translation id="1769104665586091481">નવી &amp;વિંડોમાં લિંક ખોલો</translation>
 <translation id="1773212559869067373">પ્રમાણીકરણ પ્રમાણપત્રને સ્થાનિક રૂપે નકારવામાં આવ્યું છે</translation>
@@ -1871,6 +1873,7 @@
 <translation id="3748026146096797577">કનેક્ટેડ નથી</translation>
 <translation id="3752582316358263300">બરાબર, સમજાઇ ગયું...</translation>
 <translation id="3752673729237782832">મારા ઉપકરણો</translation>
+<translation id="3753033997400164841">એકવાર સ્ટોર કરો. ગમે ત્યાં ઉપયોગ કરો</translation>
 <translation id="3755411799582650620">તમારો <ph name="PHONE_NAME" /> હવે આ <ph name="DEVICE_TYPE" /> ને પણ અનલૉક કરી શકે છે.</translation>
 <translation id="375636864092143889">સાઇટ તમારા માઇક્રોફોનનો ઉપયોગ કરી રહી છે</translation>
 <translation id="3757733214359997190">કોઈ સાઇટ મળી નથી</translation>
@@ -2163,7 +2166,6 @@
 <translation id="4146026355784316281">હંમેશા સિસ્ટમ દર્શક સાથે ખોલો</translation>
 <translation id="4146785383423576110">રીસેટ કરો અને સાફ કરો</translation>
 <translation id="4147911968024186208">કૃપા કરીને ફરી પ્રયાસ કરો. જો તમને આ ભૂલ ફરી દેખાય તો કૃપા કરીને તમારા સપોર્ટ પ્રતિનિધિનો સંપર્ક કરો.</translation>
-<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">ડિસ્પ્લે</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 ટેબ}one{# ટેબ્સ}other{# ટેબ્સ}}</translation>
 <translation id="4154664944169082762">ફિંગરપ્રીંટ્સ</translation>
@@ -2204,6 +2206,7 @@
 <translation id="4232375817808480934">Kerberosની ગોઠવણી કરો</translation>
 <translation id="4235200303672858594">સમગ્ર સ્ક્રીન</translation>
 <translation id="4235965441080806197">સાઇન ઇન રદ કરો</translation>
+<translation id="4242145785130247982">એકથી વધુ ક્લાયન્ટ પ્રમાણપત્રોને સપોર્ટ આપવામાં આવતો નથી</translation>
 <translation id="4242533952199664413">સેટિંગ્સ ખોલો</translation>
 <translation id="4242577469625748426">આ ઉપકરણ પર નીતિ સેટિંગ્સ ઇન્સ્ટોલ કરવામાં નિષ્ફળ ગયું: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">વધુ સ્ટાઇલસ ઍપ મેમરીનો શોધો</translation>
@@ -2662,6 +2665,7 @@
 <translation id="4957949153200969297">માત્ર <ph name="IDS_SHORT_PRODUCT_NAME" /> સિંક સંબંધિત સુવિધાઓ ચાલુ કરો</translation>
 <translation id="4959262764292427323">પાસવર્ડ તમારા Google એકાઉન્ટમાં સાચવવામાં આવે છે, જેથી તમે કોઈપણ ઉપકરણ પર તેનો ઉપયોગ કરી શકો</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> - <ph name="PROFILE_NAME" /></translation>
+<translation id="496185450405387901">આ ઍપ તમારા વ્યવસ્થાપક દ્વારા બનાવવામાં આવી હતી.</translation>
 <translation id="4964455510556214366">ગોઠવણી</translation>
 <translation id="4964673849688379040">તપાસી રહ્યું છે...</translation>
 <translation id="4965808351167763748">શું તમે ખરેખર આ ઉપકરણને Hangouts Meet ચલાવવા માટે સેટ કરવા માગો છો?</translation>
@@ -2919,6 +2923,7 @@ VR મોડમાં દાખલ થતા પહેલા ખાતરી ક
 <translation id="5360150013186312835">ટુલબારમાં દર્શાવો</translation>
 <translation id="5362741141255528695">ખાનગી કી ફાઇલ પસંદ કરો.</translation>
 <translation id="5363109466694494651">Powerwash કરો અને ઉલટાવો</translation>
+<translation id="5365716706805792666">Google તમારા પાસવર્ડ ડેટા ઉલ્લંઘનનો ભાગ હતો કે નહીં તે ચેક કરી શકે છે. જ્યારે તમે તમારા Google એકાઉન્ટ વડે સાઇન ઇન કરશો ત્યારે આ ચાલુ થશે.</translation>
 <translation id="5365881113273618889">તમે પસંદ કરેલું ફોલ્ડર સંવેદનશીલ ફાઇલો ધરાવે છે. શું તમે ખરેખર "<ph name="APP_NAME" />"ને આ ફોલ્ડરની કાયમી લખવાનો ઍક્સેસ આપવા માંગો છો?</translation>
 <translation id="5367091008316207019">ફાઇલ વાંચી રહ્યાં છીએ..</translation>
 <translation id="5368720394188453070">તમારો ફોન લૉક કરેલો છે. દાખલ કરવા માટે તેને અનલૉક કરો.</translation>
@@ -3517,7 +3522,6 @@ USB ડિવાઇસ</translation>
 <translation id="6212039847102026977">વિગતવાર નેટવર્ક ગુણધર્મો બતાવો</translation>
 <translation id="6212168817037875041">ડિસ્પ્લે બંધ કરો</translation>
 <translation id="6212752530110374741">લિંક ઇમેઇલ કરો</translation>
-<translation id="6214642087594370545">જ્યારે તમે એવા કોઈ અસુરક્ષિત પાસવર્ડનો ઉપયોગ કરો કે જે ડેટા ઉલ્લંઘનનો ભાગ હતો, ત્યારે ચેતવણી બતાવે છે. આ માત્ર સાઇન ઇન કર્યું હોય એવા વપરાશકર્તાઓ માટે જ ઉપલબ્ધ છે.</translation>
 <translation id="6216696360484424239">ઑટોમેટિક રીતે સાઇન ઇન કરો</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" /> ઑફલાઇન છે. ઇન્ટરનેટથી કનેક્ટ કરો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="6220413761270491930">એક્સ્ટેન્શન લોડ કરવામાં ભૂલ</translation>
@@ -3874,6 +3878,7 @@ USB ડિવાઇસ</translation>
 <translation id="6769712124046837540">પ્રિન્ટર ઉમેરી રહ્યું છે...</translation>
 <translation id="6770664076092644100">NFC મારફતે ચકાસો</translation>
 <translation id="6771503742377376720">એ એક પ્રમાણન અધિકારી છે</translation>
+<translation id="6775163072363532304">ઉપલબ્ધ ડિવાઇસ અહીં દેખાશે.</translation>
 <translation id="6777817260680419853">રીડાયરેક્ટ કરવાનું બ્લૉક કર્યું</translation>
 <translation id="6778737459546443941">તમારા માતાપિતાએ હજી સુધી તેને મંજૂર કરેલ નથી</translation>
 <translation id="677965093459947883">ખૂબ નાનું</translation>
@@ -4334,6 +4339,7 @@ USB ડિવાઇસ</translation>
 <translation id="7441830548568730290">અન્ય વપરાશકર્તાઓ</translation>
 <translation id="7442465037756169001">તમારું Hangouts Meet hardware સેટ કરવા માટે તૈયાર છે.</translation>
 <translation id="744341768939279100">એક  નવી પ્રોફાઇલ બનાવો</translation>
+<translation id="7443806024147773267">તમે જ્યારે પણ તમારા Google એકાઉન્ટમાં સાઇન ઇન કરેલું હોય ત્યારે તમારા પાસવર્ડને ઍક્સેસ કરો</translation>
 <translation id="7444046173054089907">આ સાઇટ અવરોધિત છે</translation>
 <translation id="7444983668544353857"><ph name="NETWORKDEVICE" /> બંધ કરો</translation>
 <translation id="7448430327655618736">ઍપ ઑટોમૅટિક રીતે ઇન્સ્ટૉલ કરો</translation>
@@ -4741,6 +4747,7 @@ USB ડિવાઇસ</translation>
 <translation id="8014154204619229810">અપડેટ કરનાર હાલમાં ચાલી રહ્યું છે. ફરીથી તપાસવા માટે થોડીવારમાં રિફ્રેશ કરો.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" />, પૂર્વમાં ઇન્સ્ટૉલ કરેલ વર્ઝન પર પાછા ફરવામાં અસમર્થ છે. કૃપા કરીને તમારા ડિવાઇસને Powerwash કરવાનો ફરી પ્રયાસ કરો.</translation>
 <translation id="8014210335923519270">Googleને સિસ્ટમ માહિતી અને ઉપયોગ મોકલીને <ph name="IDS_SHORT_PRODUCT_NAME" />ને અને તેની સુરક્ષા બહેતર બનાવો</translation>
+<translation id="8015780634880457457">Google તમારા પાસવર્ડ ડેટા ઉલ્લંઘનનો ભાગ હતો કે નહીં તે ચેક કરી શકે છે</translation>
 <translation id="8016266267177410919">અસ્થાયી સ્ટોરેજ</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">શૉર્ટકટમાં ફેરફાર કર્યો</translation>
@@ -4859,6 +4866,7 @@ USB ડિવાઇસ</translation>
 <translation id="8188389033983459049">તમારા ઉપકરણની સેટિંગ તપાસો અને ચાલુ રાખવા માટે તેને ચાલુ કરો</translation>
 <translation id="8190193592390505034"><ph name="PROVIDER_NAME" /> થી કનેક્ટ કરે છે</translation>
 <translation id="8191230140820435481">તમારી ઍપ્લિકેશનો, એક્સ્ટેન્શન અને થીમ્સ મેનેજ કરો</translation>
+<translation id="819464600477418284">આ ઍપ Chrome OSનો ભાગ હોવાથી તેને અનઇન્સ્ટૉલ કરી શકાતી નથી.</translation>
 <translation id="8195027750202970175">ડિસ્ક પર કદ</translation>
 <translation id="8198323535106903877">અમે તમારા માટે તે <ph name="NUMBER_OF_APPS" /> ઍપ ઇન્સ્ટૉલ કરીશું</translation>
 <translation id="8199300056570174101">નેટવર્ક (સેવા) અને ઉપકરણના ગુણધર્મો</translation>
@@ -4919,6 +4927,7 @@ USB ડિવાઇસ</translation>
     <ph name="BEGIN_PARAGRAPH2" />આ સુવિધાને બંધ કરવાથી સિસ્ટમ અપડેટ અને સુરક્ષા જેવી આવશ્યક સેવાઓ માટે આવશ્યક માહિતી મોકલવાની આ ડિવાઇસની ક્ષમતાને અસર થતી નથી.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />સેટિંગ &gt; વિગતવાર &gt; 'Googleને ઑટોમૅટિક રીતે ડાયગ્નોસ્ટિક અને વપરાશ ડેટા મોકલો' પરથી ડિવાઇસના માલિક આ સુવિધાનું નિયંત્રણ કરી શકે છે.<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />જો તમારા બાળક માટે વધારાની વેબ અને ઍપ પ્રવૃત્તિ સેટિંગ ચાલુ કરવામાં આવી હોય, તો આ ડેટા તેમના Google એકાઉન્ટમાં સાચવવામાં આવી શકે છે. તમે આ સેટિંગ વિશે અને તેની કેવી રીતે ગોઠવણ કરવી તે family.google.com પર વધુ જાણો.<ph name="END_PARAGRAPH4" /></translation>
+<translation id="826905130698769948">અમાન્ય ક્લાયન્ટ પ્રમાણપત્ર</translation>
 <translation id="8270242299912238708">PDF દસ્તાવેજો</translation>
 <translation id="827097179112817503">હોમ બટન દર્શાવો</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 બુકમાર્ક કાઢી નાખ્યું}one{# બુકમાર્ક કાઢી નાખ્યા}other{# બુકમાર્ક કાઢી નાખ્યા}}</translation>
@@ -5332,6 +5341,7 @@ USB ડિવાઇસ</translation>
 <translation id="8874184842967597500">કનેક્ટેડ નથી</translation>
 <translation id="8876307312329369159">ડેમો સત્રમાં આ સેટિંગ બદલી શકાતી નથી.</translation>
 <translation id="8877448029301136595">[માતાપિતાની ડિરેક્ટરી]</translation>
+<translation id="8879220587046205278">Google Play પરની ઍપને બાહ્ય સ્ટોરેજ ડિવાઇસ પરની ફાઇલો તથા ફોલ્ડરો વાંચવા અને લખવા માટે ફાઇલ સિસ્ટમનો સંપૂર્ણ ઍક્સેસ હોવો જરૂરી હોઈ શકે છે. બાહ્ય ડ્રાઇવનો ઉપયોગ કરનાર કોઈપણ વ્યક્તિ ડિવાઇસ પર બનાવેલી ફાઇલો તથા ફોલ્ડરોને જોઈ શકે છે.</translation>
 <translation id="8879284080359814990">ટૅબ તરીકે &amp;બતાવો</translation>
 <translation id="8879921471468674457">સાઇન ઇન માહિતી યાદ રાખો</translation>
 <translation id="8881020143150461183">કૃપા કરીને ફરી પ્રયાસ કરો. ટેક્નિકલ સપોર્ટ માટે, <ph name="CARRIER_NAME" />નો સંપર્ક કરો.</translation>

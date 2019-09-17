@@ -4,13 +4,20 @@
 <translation id="1337821341856692531">Om du fortsätter utan att ange lösenordet för Windows kan du förlora information som inte går att återställa.</translation>
 <translation id="1383286653814676580">Används för att köra inloggningssidan för Google Credential Provider.</translation>
 <translation id="1894475569413661128">Logga in med ditt jobbkonto.</translation>
+<translation id="2329184763010379754">Bara den användare som låste datorn tillåts logga in.</translation>
+<translation id="2398071111662077301">Det gick inte att läsa in Googles inloggningsskärm på grund av ett problem med Chrome-installationen. Kontakta administratören.</translation>
 <translation id="2469311484561825731">Det gick inte att logga in på jobbkontot. Kontrollera att datorn är ansluten till internet och försök sedan igen.</translation>
+<translation id="2679096858700291438">Du angav fel lösenord för Windows. Försök igen.</translation>
+<translation id="2831078752570172210">Kontot är utelåst. Kontakta systemadministratören.</translation>
+<translation id="2844349213149998955">Det är inte tillåtet att logga in med ett personligt konto på den här enheten. Logga in med ett jobbkonto.</translation>
 <translation id="3306357053520292004">En användare på den här datorn har redan lagts till med det här kontot. Logga in med ett annat konto.</translation>
 <translation id="3968372833844047539">Endast G Suite Enterprise-användare får logga in.</translation>
 <translation id="4057329986137569701">Ett internt fel uppstod.</translation>
 <translation id="4267670563222825190">Ingen domänanvändare hittades för kontot. Kontakta administratören.</translation>
 <translation id="4300229033992784001">Kontots lösenord har ändrats Ange ditt nuvarande lösenord för Windows för att synkronisera Windows-kontot med jobbkontot.</translation>
 <translation id="4706454071748629324">Det gick inte att lägga till en ny användare. Datorn tillåter bara att en användare skapas med ett jobbkonto.</translation>
+<translation id="6033715878377252112">Hjälpprogram för Googles autentiseringsprovider för Windows</translation>
+<translation id="6149399665202317746">Googles autentiseringsprovider för Windows</translation>
 <translation id="6312494990035843744">Det är inte tillåtet att logga in med ett jobbkonto på den här domänen. Testa att logga in med ett annat konto.</translation>
 <translation id="6463752215771576050">Det går inte att registrera datorn för företagshantering.  Logga in med ett annat jobbkonto.</translation>
 <translation id="6657585470893396449">Lösenord</translation>
@@ -22,5 +29,7 @@
 <translation id="8639729688781680518">Jag har glömt lösenordet för Windows</translation>
 <translation id="866458870819756755">Det gick inte att skapa en användare.</translation>
 <translation id="8875753657315897487">Logga in med ditt jobbkonto</translation>
+<translation id="8973975512230260387">Sessionen har upphört. Logga in med ditt jobbkonto på Google.</translation>
+<translation id="9055998212250844221">Användarkonto skapat av Googles autentiseringsprovider för Windows</translation>
 <translation id="9135619837062629367">Det är inte tillåtet att logga in med det här kontot. Testa med ett annat konto.</translation>
 </translationbundle>

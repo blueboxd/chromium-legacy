@@ -19,6 +19,7 @@
 <translation id="2501953888035679275">Tire fotos e grave vídeos com a sua câmara.</translation>
 <translation id="2549985041256363841">Iniciar gravação</translation>
 <translation id="2599796128805996109">Câmara posterior</translation>
+<translation id="2912439424121107408">O modo Especialista não é suportado neste dispositivo.</translation>
 <translation id="2968794441791257519">As fotos e os vídeos realizados com a câmara serão movidos para a pasta Transferências. Pode aceder aos mesmos em Ficheiros.
 
         As aplicações com autorizações de armazenamento terão acesso aos seus vídeos e fotos.</translation>
@@ -41,10 +42,12 @@
         Verifique se a câmara está ligada corretamente.</translation>
 <translation id="5152121255775685072">Ir para a galeria</translation>
 <translation id="5671277269877808209">Quadrado</translation>
+<translation id="5775960006311140197">Modo Especialista</translation>
 <translation id="5869546221129391014">Grelha</translation>
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="6073451960410192870">Parar gravação</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
+<translation id="6197807149213783179">Guardar metadados</translation>
 <translation id="6233780560267770709">3 por 3</translation>
 <translation id="6243827288366940320">Divina proporção</translation>
 <translation id="6248749904681914629">Câmara posterior</translation>
@@ -66,6 +69,7 @@
 <translation id="8261506727792406068">Eliminar</translation>
 <translation id="8428213095426709021">Definições</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8732462232047530626">Pré-visualizar metadados</translation>
 <translation id="8815966864175525708">Mudar para tirar foto de retrato</translation>
 <translation id="8870695351537079478">Não é possível iniciar a gravação.</translation>
 <translation id="9045155556724273246">10 segundos</translation>

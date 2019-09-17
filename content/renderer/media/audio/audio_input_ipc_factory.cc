@@ -15,6 +15,7 @@
 #include "content/renderer/media/audio/mojo_audio_input_ipc.h"
 #include "content/renderer/render_frame_impl.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/audio/public/mojom/audio_processing.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
@@ -25,7 +26,7 @@ namespace {
 void CreateMojoAudioInputStreamOnMainThread(
     int frame_id,
     const media::AudioSourceParameters& source_params,
-    mojom::RendererAudioInputStreamFactoryClientPtr client,
+    mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client,
     mojo::PendingReceiver<audio::mojom::AudioProcessorControls>
         controls_receiver,
     const media::AudioParameters& params,
@@ -49,7 +50,7 @@ void CreateMojoAudioInputStream(
     scoped_refptr<base::SequencedTaskRunner> main_task_runner,
     int frame_id,
     const media::AudioSourceParameters& source_params,
-    mojom::RendererAudioInputStreamFactoryClientPtr client,
+    mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client,
     mojo::PendingReceiver<audio::mojom::AudioProcessorControls>
         controls_receiver,
     const media::AudioParameters& params,

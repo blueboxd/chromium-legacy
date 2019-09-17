@@ -15,6 +15,7 @@
 #include "base/task/task_traits.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/browser_dm_token_storage.h"
+#include "chrome/browser/policy/machine_level_user_cloud_policy_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/download_protection/check_client_download_request.h"
 #include "chrome/grit/generated_resources.h"
@@ -35,6 +36,11 @@ const base::Feature kDeepScanningOfUploadsUI{"DeepScanningOfUploadsUI",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace {
+
+std::string* GetDMTokenForTestingStorage() {
+  static std::string dm_token;
+  return &dm_token;
+}
 
 // Global pointer of factory function (RepeatingCallback) used to create
 // instances of DeepScanningDialogDelegate in tests.  !is_null() only in tests.
@@ -215,8 +221,8 @@ bool DeepScanningDialogDelegate::IsEnabled(Profile* profile,
   if (!base::FeatureList::IsEnabled(kDeepScanningOfUploads))
     return false;
 
-  // If there's no DM token, the upload will fail, so we can skip uploading now.
-  if (policy::BrowserDMTokenStorage::Get()->RetrieveDMToken().empty())
+  // If there's no DM token, the upload will fail.
+  if (GetDMToken().empty())
     return false;
 
   // See if content compliance checks are needed.
@@ -309,6 +315,11 @@ void DeepScanningDialogDelegate::SetFactoryForTesting(Factory factory) {
   *GetFactoryStorage() = factory;
 }
 
+// static
+void DeepScanningDialogDelegate::SetDMTokenForTesting(const char* dm_token) {
+  *GetDMTokenForTestingStorage() = dm_token;
+}
+
 DeepScanningDialogDelegate::DeepScanningDialogDelegate(
     content::WebContents* web_contents,
     Data data,
@@ -366,6 +377,25 @@ void DeepScanningDialogDelegate::FileRequestCallback(
   MaybeCompleteScanRequest();
 }
 
+// static
+std::string DeepScanningDialogDelegate::GetDMToken() {
+  std::string dm_token = *GetDMTokenForTestingStorage();
+
+#if !defined(OS_CHROMEOS)
+  // This is not compiled on chromeos because
+  // MachineLevelUserCloudPolicyController does not exist.  Also,
+  // policy::BrowserDMTokenStorage::Get()->RetrieveDMToken() does not return a
+  // valid token either.  Once these are fixed the #if !defined can be removed.
+
+  if (dm_token.empty() && policy::MachineLevelUserCloudPolicyController::
+                              IsMachineLevelUserCloudPolicyEnabled()) {
+    dm_token = policy::BrowserDMTokenStorage::Get()->RetrieveDMToken();
+  }
+#endif
+
+  return dm_token;
+}
+
 bool DeepScanningDialogDelegate::UploadData() {
   if (data_.do_dlp_scan) {
     // Create a string data source based on all the text.
@@ -418,8 +448,7 @@ void DeepScanningDialogDelegate::PrepareRequest(
     request->set_request_malware_scan(std::move(malware_request));
   }
 
-  request->set_dm_token(
-      policy::BrowserDMTokenStorage::Get()->RetrieveDMToken());
+  request->set_dm_token(GetDMToken());
 }
 
 void DeepScanningDialogDelegate::FillAllResultsWith(bool status) {
@@ -450,7 +479,8 @@ bool DeepScanningDialogDelegate::CloseTabModalDialog() {
   if (!dialog_)
     return false;
 
-  dialog_->AcceptTabModalDialog();
+  RunCallback();
+  dialog_->CancelTabModalDialog();
   return true;
 }
 

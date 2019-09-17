@@ -32,6 +32,7 @@
 #include "content/public/browser/web_contents_media_capture_id.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_parameters.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/audio/public/mojom/audio_processing.mojom.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
@@ -112,7 +113,7 @@ class RenderFrameAudioInputStreamFactory::Core final
 
   // mojom::RendererAudioInputStreamFactory implementation.
   void CreateStream(
-      mojom::RendererAudioInputStreamFactoryClientPtr client,
+      mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client,
       const base::UnguessableToken& session_id,
       const media::AudioParameters& audio_params,
       bool automatic_gain_control,
@@ -124,7 +125,7 @@ class RenderFrameAudioInputStreamFactory::Core final
       const std::string& output_device_id) final;
 
   void CreateLoopbackStream(
-      mojom::RendererAudioInputStreamFactoryClientPtr client,
+      mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client,
       const media::AudioParameters& audio_params,
       uint32_t shared_memory_count,
       bool disable_local_echo,
@@ -215,7 +216,7 @@ void RenderFrameAudioInputStreamFactory::Core::Init(
 }
 
 void RenderFrameAudioInputStreamFactory::Core::CreateStream(
-    mojom::RendererAudioInputStreamFactoryClientPtr client,
+    mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client,
     const base::UnguessableToken& session_id,
     const media::AudioParameters& audio_params,
     bool automatic_gain_control,
@@ -277,7 +278,7 @@ void RenderFrameAudioInputStreamFactory::Core::CreateStream(
 }
 
 void RenderFrameAudioInputStreamFactory::Core::CreateLoopbackStream(
-    mojom::RendererAudioInputStreamFactoryClientPtr client,
+    mojo::PendingRemote<mojom::RendererAudioInputStreamFactoryClient> client,
     const media::AudioParameters& audio_params,
     uint32_t shared_memory_count,
     bool disable_local_echo,

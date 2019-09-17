@@ -90,6 +90,8 @@
 <translation id="4230135487732243613">Bạn muốn liên kết dữ liệu Chromium của bạn với tài khoản này?</translation>
 <translation id="4271805377592243930">Nhận trợ giúp về Chromium</translation>
 <translation id="4285930937574705105">Không thể cài đặt do lỗi chưa xác định. Nếu Chromium hiện đang chạy, hãy đóng Chromium và thử lại.</translation>
+<translation id="4371648796594901282">Để biết thông tin chi tiết về Chromium OS, vui lòng xem phần <ph name="LINK_BEGIN" />
+      Giới thiệu về Chromium OS<ph name="LINK_END" /></translation>
 <translation id="4407044323746248786">Bạn vẫn muốn thoát khỏi Chromium?</translation>
 <translation id="4415566066719264597">Cho phép Chromium chạy trong nền</translation>
 <translation id="4423735387467980091">Tùy chỉnh và điều khiển Chromium</translation>
@@ -122,6 +124,7 @@
 <translation id="5623402015214259806">{0,plural, =0{Đã có bản cập nhật Chromium}=1{Đã có bản cập nhật Chromium}other{Đã có bản cập nhật Chromium từ # ngày trước}}</translation>
 <translation id="5631814766731275228">Tên và ảnh trên Chromium</translation>
 <translation id="5634636535844844681">Chromium yêu cầu Windows 7 trở lên.</translation>
+<translation id="5653831366781983928">Vui lòng khởi động lại Chromium ngay bây giờ</translation>
 <translation id="5680901439334282664">đăng nhập vào Chromium</translation>
 <translation id="5698481217667032250">Hiển thị Chromium bằng ngôn ngữ này</translation>
 <translation id="5820394555380036790">Hệ điều hành Chromium</translation>
@@ -164,6 +167,7 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="6734080038664603509">Cập nhật &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium đã được cài đặt cho tất cả người dùng trên máy tính của bạn.</translation>
 <translation id="6810143991807788455">Giúp cải thiện Chromium bằng cách báo cáo cài đặt hiện tại</translation>
+<translation id="6847869444787758381">Chromium cho bạn biết mật khẩu của bạn có bị đánh cắp hay không</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (đã sao chép vào Chromium)</translation>
 <translation id="6868056391275687737">Các bản sao khác của Chromium đang chạy. Để cập nhật, hãy đóng các bản sao này.</translation>

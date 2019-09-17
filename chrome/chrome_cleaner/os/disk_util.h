@@ -47,17 +47,6 @@ base::FilePath GetX86ProgramFilesPath(const base::FilePath& input_path);
 void CollectMatchingPaths(const base::FilePath& root_path,
                           std::vector<base::FilePath>* matches);
 
-// Collect files and folders under |file_path| and add them to |paths|.
-// |max_files| limits the number of files to be added to |pup|. Returns false if
-// a file is bigger than |max_filesize| a file has a greater size than
-// |max_filesize| or if a folder is found when |allow_folders| is false. |paths|
-// is left unchanged when this function returns false.
-bool CollectPathsRecursivelyWithLimits(const base::FilePath& file_path,
-                                       size_t max_files,
-                                       size_t max_filesize,
-                                       bool allow_folders,
-                                       FilePathSet* paths);
-
 // Return true when a file path contains the wild-card characters '*' or '?'.
 bool PathContainsWildcards(const base::FilePath& file_path);
 

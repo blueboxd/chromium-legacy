@@ -26,7 +26,7 @@ base::Value SerializeChallengeResponseKeysForKnownUser(
     base::Base64Encode(key.public_key_spki_der(), &spki_base64);
     base::Value key_representation(base::Value::Type::DICTIONARY);
     key_representation.SetKey(kPublicKeySpkiKey, base::Value(spki_base64));
-    pref_value.GetList().emplace_back(std::move(key_representation));
+    pref_value.Append(std::move(key_representation));
   }
   return pref_value;
 }

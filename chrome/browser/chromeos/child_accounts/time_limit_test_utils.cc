@@ -146,7 +146,7 @@ void AddTimeWindowLimit(base::Value* policy,
         kWindowLimitEntries, base::Value(base::Value::Type::LIST));
   }
 
-  window_limit_entries->GetList().push_back(
+  window_limit_entries->Append(
       CreateTimeWindow(day, start_time, end_time, last_updated));
 }
 
@@ -163,7 +163,7 @@ void AddOverride(base::Value* policy,
 
   usage_time_limit::TimeLimitOverride new_override(action, created_at,
                                                    base::nullopt);
-  overrides->GetList().push_back(new_override.ToDictionary());
+  overrides->Append(new_override.ToDictionary());
 }
 
 void AddOverrideWithDuration(base::Value* policy,
@@ -180,7 +180,7 @@ void AddOverrideWithDuration(base::Value* policy,
 
   usage_time_limit::TimeLimitOverride new_override(action, created_at,
                                                    duration);
-  overrides->GetList().push_back(new_override.ToDictionary());
+  overrides->Append(new_override.ToDictionary());
 }
 
 std::string PolicyToString(const base::Value& policy) {

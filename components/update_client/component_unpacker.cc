@@ -57,11 +57,13 @@ void ComponentUnpacker::Unpack(Callback callback) {
 
 bool ComponentUnpacker::Verify() {
   VLOG(1) << "Verifying component: " << path_.value();
-  if (pk_hash_.empty() || path_.empty()) {
+  if (path_.empty()) {
     error_ = UnpackerError::kInvalidParams;
     return false;
   }
-  const std::vector<std::vector<uint8_t>> required_keys = {pk_hash_};
+  std::vector<std::vector<uint8_t>> required_keys;
+  if (!pk_hash_.empty())
+    required_keys.push_back(pk_hash_);
   const crx_file::VerifierResult result =
       crx_file::Verify(path_, crx_format_, required_keys,
                        std::vector<uint8_t>(), &public_key_, nullptr);

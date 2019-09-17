@@ -97,6 +97,11 @@ void SetCurrentOrientation(int statusBarOrientation, int deviceOrientation);
 // values from 0 to 2).
 void SetCurrentHorizontalSizeClass(int horizontalSizeClass);
 
+// Sets a key in browser_state dictionary to store the device user interface
+// style. The values are from the UIKit UIUserInterfaceStyle enum (decimal
+// values from 0 to 2).
+void SetCurrentUserInterfaceStyle(int userInterfaceStyle);
+
 // Sets a key in browser_state dictionary to store the count of regular tabs.
 void SetRegularTabCount(int tabCount);
 

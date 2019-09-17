@@ -152,9 +152,6 @@ class DownloadItemView : public views::InkDropHostView,
   // dangerous download.
   static constexpr int kSaveDiscardButtonPadding = 5;
 
-  // The touchable space around the dropdown button's icon.
-  static constexpr int kDropdownBorderWidth = 10;
-
   // The space on the right side of the dangerous download label.
   static constexpr int kLabelPadding = 8;
 
@@ -163,10 +160,6 @@ class DownloadItemView : public views::InkDropHostView,
 
   // Height/width of the erro icon, also in dp.
   static constexpr int kErrorIconSize = 27;
-
-  // How long we keep the item disabled after the user clicked it to open the
-  // downloaded item.
-  static constexpr int kDisabledOnOpenDuration = 3000;
 
   void OpenDownload();
 

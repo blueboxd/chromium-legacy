@@ -19,3 +19,11 @@ imageset("incognito_small_badge") {
     "incognito_small_badge.imageset/incognito_small_badge@3x.png",
   ]
 }
+
+imageset("wrench_badge") {
+  sources = [
+    "wrench_badge.imageset/Contents.json",
+    "wrench_badge.imageset/wrench_badge@2x.png",
+    "wrench_badge.imageset/wrench_badge@3x.png",
+  ]
+}

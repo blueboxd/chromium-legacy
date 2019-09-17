@@ -93,6 +93,7 @@ Wenn die Richtlinie nicht festgelegt ist, gilt die Standardeinstellung: Vom Unte
       Wird diese Richtlinie nicht konfiguriert, können im Cache gespeicherte GPOs für maximal 25 Stunden wiederverwendet werden.
 
       Ist die Richtlinie auf 0 gesetzt, so ist die GPO-Speicherung deaktiviert. Dies erhöht die Serverlast, da GPOs bei jedem Richtlinienabruf heruntergeladen werden, auch wenn sie unverändert sind.</translation>
+<translation id="1111470455889178048">Nutzeruploads und -downloads zum Scannen senden</translation>
 <translation id="1117462881884985156">Für die hier angegebenen Hosts umgeht <ph name="PRODUCT_NAME" /> alle Proxys.
 
           Diese Richtlinie tritt nur dann in Kraft, wenn Sie bei "Auswählen, wie Proxyserver-Einstellungen angegeben werden" die Option für manuelle Proxyeinstellungen ausgewählt haben und die Richtlinie "<ph name="PROXY_SETTINGS_POLICY_NAME" />" nicht konfiguriert wurde.
@@ -397,6 +398,7 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
       sind nicht zulässig.</translation>
 <translation id="1634989431648355062">Das Plug-in "<ph name="FLASH_PLUGIN_NAME" />" für diese Websites zulassen</translation>
 <translation id="1645793986494086629">Schema:</translation>
+<translation id="1648816843164517573">Liste der Namen, die den HSTS-Richtliniencheck umgehen</translation>
 <translation id="1653229475925941921">Ist diese Richtlinie konfiguriert, wird damit der Lupentyp bestimmt, der aktiviert ist. Wenn Sie die Richtlinie auf "None" setzen, ist die Lupe deaktiviert.
 
           Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
@@ -892,6 +894,7 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 <translation id="254653220329944566">Cloud-Berichte für <ph name="PRODUCT_NAME" /> aktivieren</translation>
 <translation id="2548572254685798999">Safe Browsing-Daten erfassen</translation>
 <translation id="2550593661567988768">Nur Simplexdruck</translation>
+<translation id="2551520365302988324">Nutzeruploads zum Scannen senden</translation>
 <translation id="2552966063069741410">Zeitzone</translation>
 <translation id="2562339630163277285">Gibt die URL an, die die Suchmaschine für die Bereitstellung von Instant-Ergebnissen verwendet. Die URL sollte den String "<ph name="SEARCH_TERM_MARKER" />" enthalten, der bei der Abfrage durch den Text ersetzt wird, den der Nutzer bisher eingegeben hat.
 
@@ -966,6 +969,7 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 <translation id="2665422249821137126">Großen Cursor auf der Anmeldeseite aktivieren</translation>
 <translation id="2672012807430078509">Steuerung, durch die NTLM als Authentifizierungsprotokoll für SMB-Bereitstellungen aktiviert wird</translation>
 <translation id="267596348720209223">Gibt die vom Suchanbieter unterstützten Zeichencodierungen an. Codierungen sind Codepage-Namen wie UTF-8, GB2312 und ISO-8859-1. Sie werden in der Reihenfolge durchprobiert, in der sie angegeben werden. Diese Richtlinie ist optional. Ist sie nicht konfiguriert, so kommt der Standardwert UTF-8 zum Einsatz. Diese Richtlinie wird nur umgesetzt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
+<translation id="2679827548357140943">Liste der Domains, für die hochgeladene Inhalte auf Malware geprüft werden müssen</translation>
 <translation id="268577405881275241">Funktion für Datenkomprimierungs-Proxy aktivieren</translation>
 <translation id="2693108589792503178">Hiermit wird die URL zur Passwortänderung konfiguriert.</translation>
 <translation id="2694143893026486692">Angedockte Lupe aktiviert</translation>
@@ -1336,6 +1340,10 @@ Ist die Richtlinie deaktiviert oder nicht konfiguriert, kann WebDriver nicht kom
 <translation id="332771718998993005">Hiermit wird der Name von <ph name="PRODUCT_NAME" />-Zielen festgelegt.
 
           Wird für diese Richtlinie ein nicht-leerer String definiert, dann wird dieser als Name für das <ph name="PRODUCT_NAME" />-Ziel verwendet. Andernfalls wird der Gerätename als Zielname verwendet. Ist diese Richtlinie nicht definiert, wird der Gerätename als Zielname verwendet und der Geräteeigentümer oder ein Nutzer der Domain, von der das Gerät verwaltet wird, hat die Möglichkeit, den Namen zu ändern. Der Name darf maximal 24 Zeichen enthalten.</translation>
+<translation id="3331950121151548952">Liste der Domains, für die hochgeladene Inhalte auf Malware geprüft werden müssen.  Diese Richtlinie wird nur verwendet, wenn "<ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />" auf einen Wert gesetzt ist und Malwareprüfungen für Uploads zugelassen oder erzwungen werden.
+
+      Wenn diese Richtlinie nicht konfiguriert oder eine leere Liste festgelegt ist, werden hochgeladene Inhalte nicht auf Malware geprüft.
+      </translation>
 <translation id="3335468714959531450">Ermöglicht die Erstellung einer Liste mit URL-Mustern, die Websites angeben, denen das Speichern von Cookies gestattet ist.
 
           Ist diese Richtlinie nicht konfiguriert, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultCookiesSetting", sofern konfiguriert, oder die persönliche Konfiguration des Nutzers zum Einsatz.
@@ -1402,6 +1410,15 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
           Ist die Richtlinie auf "false" gesetzt oder nicht definiert, wird der Start der Sitzung als Ausgangspunkt für Verzögerungen beim Energiesparmodus und Begrenzungen der Sitzungslänge verwendet.</translation>
 <translation id="3478024346823118645">Nutzerdaten bei Abmeldung löschen</translation>
 <translation id="3480961938508521469">Lädt den Akku mit normaler Geschwindigkeit vollständig auf.</translation>
+<translation id="3483729306380590354">Legt den Akkuladestand (%) für benutzerdefiniertes Starten des Ladevorgangs fest.
+
+          Der Ladevorgang startet, wenn der Ladestand auf den Startwert für benutzerdefiniertes Laden gefallen ist.
+
+          "<ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" />" muss mindestens fünf Prozentpunkte unter "<ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />" liegen.
+
+          Diese Richtlinie wird nur verwendet, wenn "<ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" />" auf "<ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" />" gesetzt ist.
+
+          Wenn diese Richtlinie nicht konfiguriert oder festgelegt ist, wird der <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" />-Akkulademodus verwendet.</translation>
 <translation id="348495353354674884">Bildschirmtastatur aktivieren</translation>
 <translation id="3487623755010328395">
         Wenn diese Richtlinie festgelegt wird, versucht <ph name="PRODUCT_NAME" />, sich selbst zu registrieren und die zugehörige Cloud-Richtlinie für alle Profile anzuwenden.
@@ -1835,6 +1852,15 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
           Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
 
           Ist die Richtlinie nicht konfiguriert, ist "Automatisch klicken" anfangs deaktiviert, kann jedoch vom Nutzer jederzeit aktiviert werden.</translation>
+<translation id="4215197846797661927">Legt die Tageskonfiguration für den erweiterten Akkulademodus fest.
+
+          Diese Richtlinie wird nur verwendet, wenn "<ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" />" auf "true" gesetzt ist.
+
+          Ist diese Richtlinie nicht konfiguriert oder nicht eingestellt, dann bleibt der erweiterte Akkulademodus deaktiviert.
+
+          Hinweis: "<ph name="CHARGE_START_TIME_FIELD_NAME" />" muss kleiner sein als "<ph name="CHARGE_END_TIME_FIELD_NAME" />".
+
+          Hinweis: Zulässige Werte für das Feld "<ph name="MINUTE_FIELD_NAME" />" in "<ph name="CHARGE_START_TIME_FIELD_NAME" />" und "<ph name="CHARGE_END_TIME_FIELD_NAME" />" sind 0, 15, 30 und 45.</translation>
 <translation id="4224610387358583899">Verzögerungen für die Bildschirmsperre</translation>
 <translation id="423797045246308574">Ermöglicht Ihnen die Erstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Schlüsselgenerierung nicht gestattet ist. Wenn ein URL-Muster in "KeygenAllowedForUrls" angegeben ist, werden die Ausnahmen durch diese Richtlinien überschrieben.
 
@@ -1900,6 +1926,17 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
           Der Richtlinienwert sollte in Millisekunden angegeben werden. Werte müssen kleiner oder gleich dem Wert für die Inaktivitätsverzögerung sein.
 
           Die Warnung wird nur eingeblendet, wenn infolge der Inaktivität der Nutzer abgemeldet oder das Gerät heruntergefahren wird.</translation>
+<translation id="4342827592971649626">Mit dieser Richtlinie können Sie den Tiefenscan von Nutzerdownloads mit Safe Browsing verwalten. Wenn sie nicht konfiguriert oder auf die Standardeinstellung "Dateien nicht scannen" festgelegt wird, werden Downloads von Nutzern nicht von Safe Browsing gescannt.
+
+      Ist "Scannen von Dateien verbieten" festgelegt, können Nutzer ihre Downloads nicht scannen lassen. Das weicht von der Standardeinstellung ab, bei der bestimmte Nutzer, z. B. Nutzer des erweiterten Sicherheitsprogramms, ihre Downloads scannen lassen können. Mit dieser Einstellung wird auch das verhindert.
+
+      Wenn "Nutzerdownloads zum Scannen senden" festgelegt ist, werden die Downloads von Nutzern zum Scannen auf Malware an Safe Browsing gesendet.
+
+      Wenn "Nutzeruploads zum Scannen senden" festgelegt ist, werden die Uploads von Nutzern zum Scannen auf Malware an Safe Browsing gesendet.
+
+      Wenn "Nutzeruploads und -downloads zum Scannen senden" festgelegt ist, gelten die unter "Nutzeruploads zum Scannen senden" und "Nutzerdownloads zum Scannen senden" beschriebenen Regeln.
+
+      Weitere Informationen dazu, wie die Ergebnisse der Scans Nutzern und Administratoren angezeigt werden, finden Sie in den Richtlinien "<ph name="DELAY_DELIVER_UNTIL_VERDICT_POLICY_NAME" />" und "<ph name="UNSAFE_EVENTS_REPORTING_ENABLED" />".</translation>
 <translation id="4344356660952451291">Liste der Domains, für die heruntergeladene Inhalte auf Regeleinhaltung geprüft werden müssen</translation>
 <translation id="4346674324214534449">Hiermit kann festgelegt werden, ob die Werbung auf Websites mit aufdringlichen Werbeanzeigen blockiert wird.
 
@@ -2462,6 +2499,16 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
       Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
 
       Ist die Richtlinie nicht konfiguriert, kann der Nutzer ein Bild auswählen, das als Hintergrund auf dem Desktop und dem Anmeldebildschirm angezeigt wird.</translation>
+<translation id="5437214086679373363">Mit dieser Richtlinie wird festgelegt, ob Nutzer passwortgeschützte Dateien hoch- oder herunterladen dürfen, wenn Scans erforderlich sind.  Die Beschränkung gilt nur für Dateien, die gemäß den folgenden Richtlinien gescannt werden müssen: "<ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />", "<ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" />" und die Richtlinien, über die die Listen der Domains gesteuert werden, für die Überprüfungen aktiviert sind.
+
+      Ist die Richtlinie auf "Keine" gesetzt, hindert <ph name="PRODUCT_NAME" /> den Nutzer am Upload oder Download passwortgeschützter Dateien.
+
+      Ist sie auf "Download von passwortgeschützten Dateien zulassen" gesetzt, können Nutzer passwortgeschützte Dateien in <ph name="PRODUCT_NAME" /> herunterladen.
+
+      Ist sie auf "Upload von passwortgeschützten Dateien zulassen" gesetzt, können passwortgeschützte Dateien in <ph name="PRODUCT_NAME" /> hochgeladen werden.
+
+      Wenn diese Richtlinie nicht eingerichtet oder auf "Upload und Download zulassen" festgelegt ist, gelten in <ph name="PRODUCT_NAME" /> die unter "Download von passwortgeschützten Dateien zulassen" und "Upload von passwortgeschützten Dateien zulassen" beschriebenen Regeln.
+      </translation>
 <translation id="5437733496511628148">Durch Aktivieren dieser Einstellung wird verhindert, dass Webseitenelemente, die nicht von der Domain in der Adressleiste des Browser stammen, Cookies setzen.
 
       Wenn die Einstellung deaktiviert wird, dürfen Cookies von Webseitenelementen, die nicht von der Domain in der Adressleiste des Browsers stammen, gesetzt werden. Nutzer können diese Einstellung nicht ändern.
@@ -3340,13 +3387,32 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 
       Weitere Informationen zur Richtlinie "<ph name="IEEM_SITELIST_POLICY" />" von Internet Explorer: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">URLs, denen ohne Nachfrage Zugriff auf Videoaufnahmegeräte gestattet wird</translation>
+<translation id="713712866686796666">Hiermit kann die Tageskonfiguration für das Umschalten bei Leistungsspitzen festgelegt werden.
+
+          Diese Richtlinie wird nur verwendet, wenn "<ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" />" auf "true" gesetzt ist.
+
+          Wenn sie nicht konfiguriert oder festgelegt ist, bleibt das Umschalten bei Leistungsspitzen immer deaktiviert.
+
+          Hinweis: Zulässige Werte für das Feld "<ph name="MINUTE_FIELD_NAME" />" in "<ph name="START_TIME_FIELD_NAME" />", "<ph name="END_TIME_FIELD_NAME" />" und "<ph name="CHARGE_START_TIME_FIELD_NAME" />" sind 0, 15, 30 und 45.</translation>
 <translation id="7138678301420049075">Sonstiges</translation>
+<translation id="7139809614375682935">Legt den Akkuladestand (%) für benutzerdefiniertes Beenden des Ladevorgangs fest.
+
+          Wenn der benutzerdefinierte Endwert für die Akkuaufladung erreicht wird, endet der Ladevorgang.
+
+          "<ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" />" muss mindestens fünf Prozentpunkte unter "<ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />" liegen.
+
+          Diese Richtlinie wird nur verwendet, wenn "<ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" />" auf "<ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" />" gesetzt ist.
+
+          Wenn diese Richtlinie nicht konfiguriert oder festgelegt ist, wird der <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" />-Akkulademodus verwendet.</translation>
 <translation id="7140629953254369759"><ph name="PRODUCT_OS_NAME" /> wird angewiesen, die jeweils angegebene Konfiguration des Aufgabenplaners zu nutzen.
 
       Diese Richtlinie kann auf "Konservativ" und auf "Leistung" gesetzt werden. Dadurch wird entweder eine Aufgabenplaner-Konfiguration für optimale Stabilität oder für optimale Leistung ausgewählt.
 
       Wenn die Richtlinie nicht festgelegt ist, kann der Nutzer selbst wählen.</translation>
 <translation id="7145335384492396213">Standardmodus PIN-Druck</translation>
+<translation id="7149042336307555519"> Verbindungstypen, die für Betriebssystem-Updates verwendet werden können. Betriebssystem-Updates stellen für Verbindungen aufgrund ihrer Größe eine starke Belastung dar und können zusätzliche Kosten verursachen. Aus diesem Grund sind sie für teure Verbindungstypen (derzeit nur "cellular") standardmäßig nicht aktiviert.
+
+      Die unterstützten Verbindungstypen sind "<ph name="CONNECTION_TYPE_ETHERNET_NAME" />", "<ph name="CONNECTION_TYPE_WIFI_NAME" />" und "<ph name="CONNECTION_TYPE_CELLULAR_NAME" />".</translation>
 <translation id="7152605873936173525">Über diese Richtlinie wird der Modus des DoH-Resolvers gesteuert. Bei dieser Richtlinie wird nur der Standardmodus auf Anfrageebene festgelegt. Für bestimmte Anfragetypen kann der Modus überschrieben werden, etwa bei Anfragen zum Auflösen des Hostnamens eines DoH-Servers.
 
       Durch den Modus "<ph name="SECURE_DNS_MODE_OFF" />" wird DoH (DNS over HTTPS) deaktiviert.
@@ -3376,6 +3442,17 @@ Falls diese Richtlinie auf "true" gesetzt oder nicht festgelegt wird, werden Bil
 Falls die Richtlinie auf "false" gesetzt wird, werden Bildschirm-Wakelock-Anfragen auf den Status von System-Wakelocks zurückgestuft.</translation>
 <translation id="7177857088692019405">Schnelles Entsperren</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
+<translation id="7187447094921703950">Hiermit können Sie die Energieverwaltungsrichtlinie zum Umschalten bei Leistungsspitzen aktivieren.
+
+          Das Umschalten bei Leistungsspitzen ist eine Richtlinie, mit der Energie gespart werden kann. Dazu wird die Nutzung des Netzstroms während der Tageszeiten mit Spitzenlasten minimiert. Für jeden Wochentag kann eine Start- und eine Endzeit für den Modus zum Umschalten bei Leistungsspitzen festgelegt werden. Während dieser Zeiträume wird das System über den Akku mit Strom versorgt, solange der Ladezustand des Akkus einen bestimmten Schwellenwert nicht unterschreitet – auch dann, wenn das System an das Stromnetz angeschlossen ist. Nach der angegebenen Endzeit wird das System wieder über Netzstrom versorgt, der Akku jedoch nicht geladen. Das System wird wieder auf den normalen Betrieb mit Netzstrom umgestellt und der Akku aufgeladen, nachdem die festgelegte Startzeit zum Laden erreicht wurde.
+
+          Wenn diese Richtlinie auf "true" gesetzt ist und "<ph name="DEVICE_POWER_PEAK_SHIFT_BATTERY_THRESHOLD_NAME" />" und "<ph name="DEVICE_POWER_PEAK_SHIFT_DAY_CONFIG_NAME" />" festgelegt sind, ist das Umschalten bei Leistungsspitzen immer aktiviert, sofern die Funktion vom Gerät unterstützt wird.
+
+          Wenn die Richtlinie auf "false" festgelegt ist, ist das Umschalten bei Leistungsspitzen immer deaktiviert.
+
+          Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
+
+          Wird die Richtlinie nicht festgelegt, ist das Umschalten bei Leistungsspitzen zuerst deaktiviert und kann vom Nutzer nicht aktiviert werden.</translation>
 <translation id="718956142899066210">Für Updates zugelassene Verbindungstypen</translation>
 <translation id="7190286937411178540">Bedienungshilfe "Objekt mit Tastaturfokus hervorheben" aktivieren</translation>
 <translation id="7194407337890404814">Name der Standardsuchmaschine</translation>
@@ -4000,6 +4077,17 @@ Unter Windows ist es empfehlenswert, Richtlinien über Gruppenrichtlinienobjekte
 
           Wenn diese Richtlinie nicht konfiguriert ist, wird die Einstellung aktiviert.</translation>
 <translation id="8382184662529825177">Verwendung von Remote-Bescheinigung (Remote Attestation) zum Schutz von Inhalten für das Gerät aktivieren</translation>
+<translation id="8382693763260501307">Hiermit können Sie die Energieverwaltungsrichtlinie für den intelligenten Akkulademodus aktivieren.
+
+          Der intelligente Akkulademodus erlaubt eine Maximierung der Akkulebensdauer. Im intelligenten Akkulademodus verwendet das System außerhalb der Arbeitszeit den Standardladealgorithmus und weitere Verfahren, um die Lebensdauer des Akkus zu maximieren. Während der Arbeitszeit wird dagegen das Schnellladen verwendet. Beim Schnellladen wird der Akku in kürzerer Zeit aufgeladen und steht mit der gesamten Ladekapazität schneller wieder zur Verfügung. Für jeden Tag wird die Zeit, in der das System am intensivsten genutzt wird, durch einen Startzeitpunkt und eine Dauer angegeben.
+
+          Wenn diese Richtlinie auf "true" gesetzt und "<ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_DAY_CONFIG_NAME" />" ebenfalls eingestellt ist, ist der intelligente Akkulademodus immer aktiviert, sofern diese Funktion vom Gerät unterstützt wird.
+
+          Ist die Richtlinie auf "false" gesetzt, dann ist der Modus immer deaktiviert.
+
+          Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
+
+          Wird die Richtlinie nicht festgelegt, dann ist der intelligente Akkulademodus deaktiviert und kann vom Nutzer nicht aktiviert werden.</translation>
 <translation id="838870586332499308">Daten-Roaming aktivieren</translation>
 <translation id="8390049129576938611">Deaktiviert den internen PDF-Viewer in <ph name="PRODUCT_NAME" />. Stattdessen werden PDF-Dateien als Download behandelt und der Nutzer kann sie mit der Standard-Anwendung öffnen.
 
@@ -4186,9 +4274,15 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
       Wenn diese Richtlinie konfiguriert ist, werden diese Apps festgelegt und können von Nutzern nicht geändert werden.
 
       Ist diese Richtlinie nicht konfiguriert, können Nutzer die Liste der im Launcher angepinnten Apps ändern.</translation>
+<translation id="8779504970846195767">Hiermit wird der Schwellenwert des Akkus für das Umschalten bei Leistungsspitzen (%) festgelegt.
+
+          Diese Richtlinie wird nur verwendet, wenn "<ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" />" auf "true" gesetzt ist.
+
+          Wenn sie nicht konfiguriert oder festgelegt ist, bleibt das Umschalten bei Leistungsspitzen immer deaktiviert.</translation>
 <translation id="8798099450830957504">Standardeinstellung</translation>
 <translation id="8800453707696044281">Den Akkuladestand (%) für benutzerdefiniertes Beenden des Ladevorgangs festlegen</translation>
 <translation id="8801680448782904838">Nutzer benachrichtigen, dass ein Neustart des Browsers oder des Geräts empfohlen wird oder erforderlich ist</translation>
+<translation id="8802816494059596691">In dieser Liste aufgeführte Hostnamen sind vom HSTS-Richtliniencheck ausgenommen, der Anfragen von http auf https upgraden kann. Für diese Richtlinie sind nur Single-Label-Hostnamen zulässig. Hostnamen müssen kanonisiert werden: Alle IDNs müssen in ihr A-Label-Format konvertiert und alle ASCII-Buchstaben kleingeschrieben werden. Diese Richtlinie gilt nur für die angegebenen Hostnamen. Sie gilt nicht für Subdomains der angegebenen Namen.</translation>
 <translation id="8818173863808665831">Meldet den Standort des Geräts.
 
       Wenn die Richtlinie nicht oder auf "False" festgelegt wird, wird der Standort nicht gemeldet.</translation>
@@ -4350,6 +4444,17 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
       Wenn als Richtlinienwert ein Token festgelegt ist, das mit einem Quick-Fix-Build verknüpft ist, wird das Gerät auf den entsprechenden Build aktualisiert, sofern eine solche Aktualisierung nicht durch eine andere Richtlinie blockiert wird.
 
       Falls die Richtlinie nicht konfiguriert oder der Wert nicht mit einem Quick-Fix-Build verknüpft ist, wird das Gerät nicht auf einen Quick-Fix-Build aktualisiert. Wenn auf dem Gerät bereits ein Quick-Fix-Build installiert ist und die Richtlinie nicht mehr konfiguriert oder der Wert nicht mehr mit einem Quick-Fix-Build verknüpft ist, wird das Gerät auf einen regulären Build aktualisiert, sofern die Aktualisierung nicht durch eine andere Richtlinie blockiert wird.</translation>
+<translation id="9053158112041032237">Hiermit können Sie die Energieverwaltungsrichtlinie für den Akkulademodus aktivieren.
+
+          Mit dieser Richtlinie können Sie das Aufladen des Akkus dynamisch steuern und auf diese Weise den durch unnötige Belastung entstehenden Akkuverschleiß verringern und die Lebensdauer des Akkus verlängern.
+
+          Wenn der benutzerdefinierte Akkulademodus ausgewählt wird, müssen "<ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" />" und "<ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />" konfiguriert sein.
+
+          Wenn die Richtlinie konfiguriert ist, wird der Akkulademodus angewendet, sofern er auf dem Gerät unterstützt wird.
+
+          Wird die Richtlinie nicht konfiguriert, obwohl sie auf dem Gerät unterstützt wird, dann wird der Standardmodus für die Akkuaufladung angewendet und kann vom Nutzer nicht geändert werden.
+
+          Hinweis: Sofern konfiguriert, überschreibt "<ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" />" diese Richtlinie.</translation>
 <translation id="9054012305936267950">Diese Richtlinie steuert die Anmeldung bei diesem Browser. Sie können damit festlegen, ob sich der Nutzer bei <ph name="PRODUCT_NAME" /> über sein Konto anmelden und zugehörige Dienste nutzen kann, beispielsweise die Chrome-Synchronisierung.
 
 Wenn die Richtlinie auf "Browseranmeldung deaktivieren" gesetzt ist, kann der Nutzer sich nicht im Browser anmelden und keine kontobasierten Dienste nutzen. In diesem Fall können Funktionen auf Browserebene wie die Chrome-Synchronisierung nicht verwendet werden und sind auch nicht verfügbar. Falls ein Nutzer angemeldet ist, wenn die Richtlinie auf "Deaktiviert" gesetzt wird, wird er beim nächsten Ausführen von Chrome automatisch abgemeldet. Seine lokalen Profildaten wie Lesezeichen und Passwörter bleiben jedoch erhalten. Der Nutzer kann sich auch weiterhin bei Google-Webdiensten wie Gmail anmelden und diese verwenden.

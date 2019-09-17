@@ -16,6 +16,7 @@
     'chrome': {
       'chromeos-amd64-generic-google-rel': 'official_cros_chrome_sdk',
       'chromeos-betty-google-rel': 'official_cros_chrome_sdk_headless_ozone',
+      'chromeos-betty-pi-arc-google-rel': 'official_cros_chrome_sdk_headless_ozone',
       'chromeos-kevin-google-rel': 'official_cros_chrome_sdk_headless_ozone',
       'linux-chromeos-google-rel': 'official_goma_chromeos_minimal_symbols',
       'linux-google-rel': 'official_goma',
@@ -713,6 +714,7 @@
 
     'tryserver.chrome': {
       'chromeos-betty-chrome': 'official_cros_chrome_sdk_headless_ozone',
+      'chromeos-betty-pi-arc-chrome': 'official_cros_chrome_sdk_headless_ozone',
       'chromeos-kevin-chrome': 'official_cros_chrome_sdk_headless_ozone',
       'linux-chrome': 'official_goma',
       'linux-chromeos-chrome': 'official_goma_chromeos_minimal_symbols',

@@ -901,7 +901,7 @@ void OnSearchDriveFs(
     entry.SetKey(kAvailableOfflinePropertyName,
                  base::Value(item->metadata->available_offline));
     if (!filter_dirs || !is_dir) {
-      result->GetList().emplace_back(std::move(entry));
+      result->Append(std::move(entry));
     }
   }
 
@@ -1520,7 +1520,7 @@ void FileManagerPrivateSearchDriveMetadataFunction::OnSearchDriveFs(
     }
     dict.SetKey("entry", std::move(entry));
     dict.SetKey("highlightedBaseName", base::Value(highlight));
-    results_list->GetList().emplace_back(std::move(dict));
+    results_list->Append(std::move(dict));
   }
 
   UmaEmitSearchOutcome(true, !is_offline_, search_type_, operation_start_);

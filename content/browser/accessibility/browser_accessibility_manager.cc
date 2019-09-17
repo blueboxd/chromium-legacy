@@ -11,6 +11,7 @@
 
 #include "base/debug/crash_logging.h"
 #include "base/logging.h"
+#include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility.h"
@@ -634,6 +635,9 @@ void BrowserAccessibilityManager::SetFocus(const BrowserAccessibility& node) {
   if (!delegate_)
     return;
 
+  base::RecordAction(
+      base::UserMetricsAction("Accessibility.NativeApi.SetFocus"));
+
   ui::AXActionData action_data;
   action_data.action = ax::mojom::Action::kFocus;
   action_data.target_node_id = node.GetId();
@@ -690,6 +694,9 @@ void BrowserAccessibilityManager::DoDefaultAction(
   if (!delegate_)
     return;
 
+  base::RecordAction(
+      base::UserMetricsAction("Accessibility.NativeApi.DoDefault"));
+
   ui::AXActionData action_data;
   action_data.action = ax::mojom::Action::kDoDefault;
   action_data.target_node_id = node.GetId();
@@ -745,6 +752,9 @@ void BrowserAccessibilityManager::ScrollToMakeVisible(
     ax::mojom::ScrollAlignment vertical_scroll_alignment) {
   if (!delegate_)
     return;
+
+  base::RecordAction(
+      base::UserMetricsAction("Accessibility.NativeApi.ScrollToMakeVisible"));
 
   ui::AXActionData action_data;
   action_data.target_node_id = node.GetId();
@@ -850,6 +860,9 @@ void BrowserAccessibilityManager::ClearAccessibilityFocus(
 void BrowserAccessibilityManager::HitTest(const gfx::Point& point) {
   if (!delegate_)
     return;
+
+  base::RecordAction(
+      base::UserMetricsAction("Accessibility.NativeApi.HitTest"));
 
   ui::AXActionData action_data;
   action_data.action = ax::mojom::Action::kHitTest;

@@ -227,8 +227,7 @@ class GuestOsSharePathTest : public testing::Test {
                                 prefs::kGuestOSPathsSharedToVms);
     base::DictionaryValue* shared_paths = update.Get();
     base::Value termina(base::Value::Type::LIST);
-    termina.GetList().emplace_back(
-        base::Value(crostini::kCrostiniDefaultVmName));
+    termina.Append(base::Value(crostini::kCrostiniDefaultVmName));
     shared_paths->SetKey(shared_path_.value(), std::move(termina));
     volume_downloads_ = file_manager::Volume::CreateForDownloads(root_);
     guest_os_share_path_->RegisterSharedPath(crostini::kCrostiniDefaultVmName,
@@ -612,10 +611,10 @@ TEST_F(GuestOsSharePathTest, SharePersistedPaths) {
       crostini::kCrostiniDefaultVmName);
   base::Value shared_paths(base::Value::Type::DICTIONARY);
   base::Value vms(base::Value::Type::LIST);
-  vms.GetList().emplace_back(base::Value(crostini::kCrostiniDefaultVmName));
+  vms.Append(base::Value(crostini::kCrostiniDefaultVmName));
   shared_paths.SetKey(share_path_.value(), std::move(vms));
   base::Value vms2(base::Value::Type::LIST);
-  vms2.GetList().emplace_back(base::Value(crostini::kCrostiniDefaultVmName));
+  vms2.Append(base::Value(crostini::kCrostiniDefaultVmName));
   shared_paths.SetKey(share_path2_.value(), std::move(vms2));
   profile()->GetPrefs()->Set(prefs::kGuestOSPathsSharedToVms, shared_paths);
   guest_os_share_path_->SharePersistedPaths(
@@ -703,7 +702,7 @@ TEST_F(GuestOsSharePathTest, UnsharePathSuccess) {
                               prefs::kGuestOSPathsSharedToVms);
   base::DictionaryValue* shared_paths = update.Get();
   base::Value vms(base::Value::Type::LIST);
-  vms.GetList().emplace_back(base::Value("vm-running"));
+  vms.Append(base::Value("vm-running"));
   shared_paths->SetKey(shared_path_.value(), std::move(vms));
   guest_os_share_path_->UnsharePath(
       "vm-running", shared_path_, true,
@@ -730,7 +729,7 @@ TEST_F(GuestOsSharePathTest, UnsharePathVmNotRunning) {
                               prefs::kGuestOSPathsSharedToVms);
   base::DictionaryValue* shared_paths = update.Get();
   base::Value vms(base::Value::Type::LIST);
-  vms.GetList().emplace_back(base::Value("vm-not-running"));
+  vms.Append(base::Value("vm-not-running"));
   shared_paths->SetKey(shared_path_.value(), std::move(vms));
   guest_os_share_path_->UnsharePath(
       "vm-not-running", shared_path_, true,
@@ -747,7 +746,7 @@ TEST_F(GuestOsSharePathTest, UnsharePathPluginVmNotRunning) {
                               prefs::kGuestOSPathsSharedToVms);
   base::DictionaryValue* shared_paths = update.Get();
   base::Value vms(base::Value::Type::LIST);
-  vms.GetList().emplace_back(base::Value("PvmDefault"));
+  vms.Append(base::Value("PvmDefault"));
   shared_paths->SetKey(shared_path_.value(), std::move(vms));
   guest_os_share_path_->UnsharePath(
       "PvmDefault", shared_path_, true,
@@ -800,20 +799,20 @@ TEST_F(GuestOsSharePathTest, GetPersistedSharedPaths) {
 
   base::FilePath path1("/path1");
   base::Value path1vms(base::Value::Type::LIST);
-  path1vms.GetList().emplace_back(base::Value("vm1"));
+  path1vms.Append(base::Value("vm1"));
   shared_paths.SetKey(path1.value(), std::move(path1vms));
   base::FilePath path2("/path2");
   base::Value path2vms(base::Value::Type::LIST);
-  path2vms.GetList().emplace_back(base::Value("vm2"));
+  path2vms.Append(base::Value("vm2"));
   shared_paths.SetKey(path2.value(), std::move(path2vms));
   base::FilePath path3("/path3");
   base::Value path3vms(base::Value::Type::LIST);
-  path3vms.GetList().emplace_back(base::Value("vm3"));
+  path3vms.Append(base::Value("vm3"));
   shared_paths.SetKey(path3.value(), std::move(path3vms));
   base::FilePath path12("/path12");
   base::Value path12vms(base::Value::Type::LIST);
-  path12vms.GetList().emplace_back(base::Value("vm1"));
-  path12vms.GetList().emplace_back(base::Value("vm2"));
+  path12vms.Append(base::Value("vm1"));
+  path12vms.Append(base::Value("vm2"));
   shared_paths.SetKey(path12.value(), std::move(path12vms));
   profile()->GetPrefs()->Set(prefs::kGuestOSPathsSharedToVms, shared_paths);
 

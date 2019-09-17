@@ -99,7 +99,7 @@ class Coordinator : public mojom::Coordinator {
   void SendStopTracingWithNoOpRecorderToAgent(
       AgentRegistry::AgentEntry* agent_entry);
   void SendRecorder(base::WeakPtr<AgentRegistry::AgentEntry> agent_entry,
-                    mojom::RecorderPtr recorder);
+                    mojo::PendingRemote<mojom::Recorder> recorder);
   void OnFlushDone();
 
   void OnRequestBufferStatusResponse(AgentRegistry::AgentEntry* agent_entry,

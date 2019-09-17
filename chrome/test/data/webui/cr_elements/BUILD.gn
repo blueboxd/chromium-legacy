@@ -25,12 +25,14 @@ js_modulizer("modulize") {
     "cr_toolbar_search_field_tests.js",
     "cr_tabs_test.js",
     "cr_toast_test.js",
+    "cr_toast_manager_test.js",
     "cr_toggle_test.js",
     "cr_view_manager_test.js",
   ]
   namespace_rewrites = [
     "cr.isMac|isMac",
     "cr.isWindows|isWindows",
+    "cr.toastManager.getInstance|getInstance",
     "MockInteractions.blur|blur",
     "MockInteractions.downAndUp|downAndUp",
     "MockInteractions.keyDownOn|keyDownOn",

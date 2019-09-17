@@ -675,6 +675,12 @@ void FakeSessionManagerClient::GetArcStartTime(
       arc_available_ ? base::make_optional(arc_start_time_) : base::nullopt);
 }
 
+void FakeSessionManagerClient::EnableAdbSideload(
+    EnableAdbSideloadCallback callback) {}
+
+void FakeSessionManagerClient::QueryAdbSideload(
+    QueryAdbSideloadCallback callback) {}
+
 void FakeSessionManagerClient::NotifyArcInstanceStopped() {
   for (auto& observer : observers_)
     observer.ArcInstanceStopped();

@@ -198,6 +198,11 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   void OnFrameTokenChanged(const FrameSinkId& frame_sink_id,
                            uint32_t frame_token);
 
+  void DidBeginFrame(const FrameSinkId& frame_sink_id,
+                     const BeginFrameArgs& args);
+  void DidFinishFrame(const FrameSinkId& frame_sink_id,
+                      const BeginFrameArgs& args);
+
   void AddObserver(FrameSinkObserver* obs);
   void RemoveObserver(FrameSinkObserver* obs);
 

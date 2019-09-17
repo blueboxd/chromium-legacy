@@ -2165,7 +2165,6 @@
 <translation id="4146026355784316281">항상 시스템 뷰어로 열기</translation>
 <translation id="4146785383423576110">재설정 및 정리하기</translation>
 <translation id="4147911968024186208">다시 시도해 주세요. 이 오류가 다시 표시되면 지원 담당자에게 문의하시기 바랍니다.</translation>
-<translation id="4150125039112138020">|</translation>
 <translation id="4150201353443180367">디스플레이</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{탭 1개}other{탭 #개}}</translation>
 <translation id="4154664944169082762">지문</translation>
@@ -3517,7 +3516,6 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="6212039847102026977">고급 네트워크 속성 표시</translation>
 <translation id="6212168817037875041">디스플레이 사용 중지</translation>
 <translation id="6212752530110374741">이메일 링크</translation>
-<translation id="6214642087594370545">정보 유출에 포함된 안전하지 않은 비밀번호를 사용하는 경우 경고를 표시합니다. 로그인한 사용자만 사용할 수 있습니다.</translation>
 <translation id="6216696360484424239">자동으로 로그인</translation>
 <translation id="6218058416316985984"><ph name="DEVICE_TYPE" />이(가) 오프라인 상태입니다. 인터넷에 연결하고 다시 시도해 보세요.</translation>
 <translation id="6220413761270491930">확장 프로그램 로드 중 오류</translation>

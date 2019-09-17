@@ -94,8 +94,7 @@ constexpr int kMinimumVerticalPadding = 2 + kTopBottomPadding;
 constexpr int kDefaultDownloadItemHeight = 48;
 
 // Amount of time between accessible alert events.
-constexpr base::TimeDelta kAccessibleAlertInterval =
-    base::TimeDelta::FromSeconds(30);
+constexpr auto kAccessibleAlertInterval = base::TimeDelta::FromSeconds(30);
 
 // The separator is drawn as a border. It's one dp wide.
 class SeparatorBorder : public views::Border {
@@ -219,8 +218,7 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
   dropdown_button->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_DOWNLOAD_ITEM_DROPDOWN_BUTTON_ACCESSIBLE_TEXT));
 
-  dropdown_button->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(kDropdownBorderWidth)));
+  dropdown_button->SetBorder(views::CreateEmptyBorder(gfx::Insets(10)));
   dropdown_button->set_has_ink_drop_action_on_click(false);
   dropdown_button->SetFocusForPlatform();
   dropdown_button_ = AddChildView(std::move(dropdown_button));
@@ -244,8 +242,7 @@ void DownloadItemView::StartDownloadProgress() {
   if (progress_timer_.IsRunning())
     return;
   progress_start_time_ = base::TimeTicks::Now();
-  progress_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(
-                                       DownloadShelf::kProgressRateMs),
+  progress_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(30),
                         base::Bind(&DownloadItemView::ProgressTimerFired,
                                    base::Unretained(this)));
 }
@@ -391,7 +388,7 @@ void DownloadItemView::OnDownloadOpened() {
       FROM_HERE,
       base::BindOnce(&DownloadItemView::Reenable,
                      weak_ptr_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(kDisabledOnOpenDuration));
+      base::TimeDelta::FromSeconds(3));
 
   // Notify our parent.
   shelf_->OpenedDownload();
@@ -684,8 +681,10 @@ void DownloadItemView::DrawIcon(gfx::Canvas* canvas) {
     return;
 
   // Draw the icon image.
-  int icon_x = progress_x + DownloadShelf::kFiletypeIconOffset;
-  int icon_y = progress_y + DownloadShelf::kFiletypeIconOffset;
+  constexpr int kFiletypeIconOffset =
+      (DownloadShelf::kProgressIndicatorSize - 16) / 2;
+  int icon_x = progress_x + kFiletypeIconOffset;
+  int icon_y = progress_y + kFiletypeIconOffset;
   cc::PaintFlags flags;
   // Use an alpha to make the image look disabled.
   if (!GetEnabled())

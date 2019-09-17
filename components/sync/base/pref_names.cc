@@ -135,9 +135,11 @@ const char kSyncDemographics_GenderPath[] = "gender";
 
 // Stores a "secret" offset that is used to randomize the birth year for metrics
 // reporting. This value should not be logged to UMA directly; instead, it
-// should be summed with the kSyncDemographicsBirthYear. This value is both
-// generated and stored locally on the client and is not known outside of the
-// client. It is not synced.
+// should be summed with the kSyncDemographicsBirthYear. This value is generated
+// locally on the client the first time a user begins to merge birth year data
+// into their UMA reports. The value is synced to the user's other devices so
+// that the user consistently uses the same offset across login/logout events
+// and after clearing their other browser data.
 const char kSyncDemographicsBirthYearOffset[] =
     "sync.demographics_birth_year_offset";
 

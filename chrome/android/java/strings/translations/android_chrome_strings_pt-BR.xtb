@@ -66,6 +66,7 @@
 <translation id="1407135791313364759">Abrir todas</translation>
 <translation id="1409426117486808224">Versão simplificada das guias abertas</translation>
 <translation id="1409879593029778104">O download de <ph name="FILE_NAME" /> foi impedido porque o arquivo já existe.</translation>
+<translation id="1413136574162415971">O Google pode verificar se suas senhas estavam em uma violação de dados. Isso será ativado quando você fizer login com sua Conta Google e ativar a sincronização.</translation>
 <translation id="1414981605391750300">Entrando em contato com o Google. Isso pode levar um minuto…</translation>
 <translation id="1416550906796893042">Versão do aplicativo</translation>
 <translation id="1430915738399379752">Imprimir</translation>
@@ -160,6 +161,7 @@
 <translation id="2091887806945687916">Som</translation>
 <translation id="2096012225669085171">Sincronizar e personalizar entre dispositivos</translation>
 <translation id="2100273922101894616">Login automático</translation>
+<translation id="2100314319871056947">Tente compartilhar o texto em segmentos menores</translation>
 <translation id="2107397443965016585">Perguntar antes de permitir que sites reproduzam conteúdo protegido (recomendado)</translation>
 <translation id="2111511281910874386">Ir para a página</translation>
 <translation id="2122601567107267586">Não foi possível abrir o aplicativo</translation>
@@ -253,6 +255,7 @@
 <translation id="2836148919159985482">Toque no botão "Voltar" para sair da tela cheia.</translation>
 <translation id="2842985007712546952">Pasta mãe</translation>
 <translation id="2858138569776157458">Sites famosos</translation>
+<translation id="2860954141821109167">Verifique se há um aplicativo para telefones ativado neste dispositivo</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2874939134665556319">Faixa anterior</translation>
 <translation id="2876369937070532032">Quando há risco de segurança, envia para o Google os URLs de algumas páginas que você visita</translation>
@@ -277,6 +280,7 @@
 <translation id="2996291259634659425">Criar senha longa</translation>
 <translation id="2996809686854298943">O URL é obrigatório</translation>
 <translation id="300526633675317032">Essa ação limpará tudo, <ph name="SIZE_IN_KB" /> de dados de armazenamento de sites.</translation>
+<translation id="3016635187733453316">Verifique se o dispositivo está conectado à Internet</translation>
 <translation id="3029613699374795922"><ph name="KBS" /> KB transferido(s) por download</translation>
 <translation id="3029704984691124060">As senhas não correspondem</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Receber ajuda<ph name="END_LINK" /></translation>
@@ -842,6 +846,7 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="723171743924126238">Selecionar imagens</translation>
 <translation id="7233236755231902816">Para ver as páginas da Web no seu idioma, instale a versão mais recente do Chrome</translation>
 <translation id="7243308994586599757">Opções disponíveis perto da parte inferior da tela</translation>
+<translation id="7248069434667874558">Verifique se a sincronização do <ph name="TARGET_DEVICE_NAME" /> está ativada no Chrome</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> itens selecionados</translation>
 <translation id="7274013316676448362">Site bloqueado</translation>
 <translation id="7290209999329137901">Ação de renomear indisponível</translation>
@@ -881,7 +886,7 @@ O site NÃO terá acesso à câmera. As imagens da câmera são visíveis apenas
 <translation id="7493994139787901920"><ph name="VERSION" /> (atualizada <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">de dados economizados</translation>
 <translation id="7498271377022651285">Aguarde...</translation>
-<translation id="7510943789645525906">Avisa se uma senha que você usa for parte de uma violação de dados</translation>
+<translation id="7510943789645525906">Avisa se uma senha que você usa estava em uma violação de dados</translation>
 <translation id="7514365320538308">Fazer o download</translation>
 <translation id="751961395872307827">Não foi possível se conectar ao site</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -956,6 +961,7 @@ O site NÃO terá acesso à câmera. As imagens da câmera são visíveis apenas
 <translation id="8007176423574883786">Desativado neste dispositivo</translation>
 <translation id="8013372441983637696">Limpar também seus dados do Chrome deste dispositivo</translation>
 <translation id="8015452622527143194">Retornar tudo na página para o tamanho padrão</translation>
+<translation id="8015780634880457457">O Google pode verificar se suas senhas estavam em uma violação de dados</translation>
 <translation id="802154636333426148">Falha no download</translation>
 <translation id="8026334261755873520">Limpar dados de navegação</translation>
 <translation id="8035133914807600019">Nova pasta...</translation>
@@ -1018,6 +1024,7 @@ O site NÃO terá acesso à câmera. As imagens da câmera são visíveis apenas
 <translation id="8445448999790540984">Não é possível exportar senhas</translation>
 <translation id="8447861592752582886">Revogar permissão do dispositivo</translation>
 <translation id="8461694314515752532">Criptografar dados sincronizados com sua senha de sincronização</translation>
+<translation id="8466613982764129868">Verifique se o <ph name="TARGET_DEVICE_NAME" /> está conectado à Internet</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Disponível off-line</translation>
 <translation id="8489271220582375723">Abrir Histórico</translation>
@@ -1108,6 +1115,7 @@ O site NÃO terá acesso à câmera. As imagens da câmera são visíveis apenas
 <translation id="9188680907066685419">Sair da conta gerenciada</translation>
 <translation id="9204836675896933765">1 arquivo restante</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9209888181064652401">Não é possível fazer chamadas</translation>
 <translation id="9219103736887031265">Imagens</translation>
 <translation id="926205370408745186">Remover sua atividade do Chorme do Bem-estar digital</translation>
 <translation id="932327136139879170">Início</translation>

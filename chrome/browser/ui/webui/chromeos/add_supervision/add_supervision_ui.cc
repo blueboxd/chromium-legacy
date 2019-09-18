@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/no_destructor.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -36,11 +35,6 @@ namespace {
 
 constexpr int kDialogHeightPx = 608;
 constexpr int kDialogWidthPx = 768;
-// Id of System Dialog used to show the Add Supervision flow.
-std::string& GetDialogId() {
-  static base::NoDestructor<std::string> dialog_id;
-  return *dialog_id;
-}
 
 // Shows the dialog indicating that user has to sign out if supervision has been
 // enabled for their account.  Returns a boolean indicating whether the
@@ -78,8 +72,6 @@ void AddSupervisionDialog::Show(gfx::NativeView parent) {
   // SystemWebDialogDelegate::OnDialogClosed() is called.
   current_instance = new AddSupervisionDialog();
 
-  GetDialogId() = current_instance->Id();
-
   current_instance->ShowSystemDialogForBrowserContext(
       ProfileManager::GetPrimaryUserProfile(), parent);
 
@@ -89,11 +81,24 @@ void AddSupervisionDialog::Show(gfx::NativeView parent) {
 }
 
 // static
+SystemWebDialogDelegate* AddSupervisionDialog::GetInstance() {
+  return SystemWebDialogDelegate::FindInstance(
+      chrome::kChromeUIAddSupervisionURL);
+}
+
+// static
 void AddSupervisionDialog::Close() {
   SystemWebDialogDelegate* current_instance = GetInstance();
   if (current_instance) {
     current_instance->Close();
-    GetDialogId() = std::string();
+  }
+}
+
+void AddSupervisionDialog::CloseNowForTesting() {
+  SystemWebDialogDelegate* current_instance = GetInstance();
+  if (current_instance) {
+    DCHECK(dialog_window()) << "No dialog window instance currently set.";
+    views::Widget::GetWidgetForNativeWindow(dialog_window())->CloseNow();
   }
 }
 
@@ -122,11 +127,6 @@ AddSupervisionDialog::AddSupervisionDialog()
                               base::string16()) {}
 
 AddSupervisionDialog::~AddSupervisionDialog() = default;
-
-// static
-SystemWebDialogDelegate* AddSupervisionDialog::GetInstance() {
-  return SystemWebDialogDelegate::FindInstance(GetDialogId());
-}
 
 // AddSupervisionUI implementations.
 

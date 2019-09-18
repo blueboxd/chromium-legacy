@@ -24,6 +24,8 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -68,6 +70,10 @@ std::unique_ptr<TestingProfile> BuildTestingProfile(
 
   if (params.profile_is_supervised)
     profile_builder.SetSupervisedUserId("asdf");
+
+  profile_builder.AddTestingFactories(
+      IdentityTestEnvironmentProfileAdaptor::
+          GetIdentityTestEnvironmentFactories());
 
   profile_builder.SetPath(params.profile_path);
   return profile_builder.Build();

@@ -12,7 +12,7 @@ include_rules = [
   "+media/cdm",
   "+media/filters",
   "+mojo/core/embedder/embedder.h",
-  "+mojo/public/cpp/bindings/binding.h",
+  "+mojo/public/cpp/bindings",
   "+ui/gfx/geometry",
   "+ui/gfx/overlay_transform.h",
   "+services/service_manager/public",

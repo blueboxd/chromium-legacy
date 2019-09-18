@@ -13,21 +13,14 @@ select,
 select:-internal-list-box,
 textarea {
   background-color: #ffffff;
-  border-color: #cecece;
-}
-
-input:hover,
-select:hover,
-select:-internal-list-box:hover,
-textarea:hover {
-  border-color: #9d9d9d;
+  border-color: #767676;
 }
 
 input:disabled,
 select:disabled,
 textarea:disabled {
-  background-color: #ffffff;
-  border-color: #c5c5c5;
+  background-color: rgba(239, 239, 239, 0.3);
+  border-color: rgba(118, 118, 118, 0.3);
 }
 
 input[type="button" i],
@@ -37,7 +30,7 @@ input[type="color" i],
 input[type="file" i]::-webkit-file-upload-button,
 button {
   background-color: #efefef;
-  border-color: #cecece;
+  border-color: #767676;
 }
 
 input[type="button" i]:disabled,
@@ -46,7 +39,9 @@ input[type="reset" i]:disabled,
 input[type="color" i]:disabled,
 input[type="file" i]:disabled::-webkit-file-upload-button,
 button:disabled {
-  border-color: #c5c5c5;
+  background-color: rgba(239, 239, 239, 0.3);
+  border-color: rgba(118, 118, 118, 0.3);
+  color: rgba(16, 16, 16, 0.3);
 }
 
 input[type="password" i]::-internal-reveal {

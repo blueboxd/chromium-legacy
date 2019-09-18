@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/guid.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -26,6 +27,23 @@ namespace {
 // Maximum number of bytes to allow in a title (must match sync's internal
 // limits; see write_node.cc).
 const int kTitleLimitBytes = 255;
+
+// Used in metrics: "Sync.InvalidBookmarkSpecifics". These values are
+// persisted to logs. Entries should not be renumbered and numeric values
+// should never be reused.
+enum class InvalidBookmarkSpecificsError {
+  kEmptySpecifics = 0,
+  kInvalidURL = 1,
+  kIconURLWithoutFavicon = 2,
+  kInvalidIconURL = 3,
+  kNonUniqueMetaInfoKeys = 4,
+
+  kMaxValue = kNonUniqueMetaInfoKeys,
+};
+
+void LogInvalidSpecifics(InvalidBookmarkSpecificsError error) {
+  base::UmaHistogramEnumeration("Sync.InvalidBookmarkSpecifics", error);
+}
 
 base::string16 NodeTitleFromSpecificsTitle(const std::string& specifics_title) {
   // Adjust the title for backward compatibility with legacy clients.
@@ -218,24 +236,34 @@ void UpdateBookmarkNodeFromSpecifics(
 
 bool IsValidBookmarkSpecifics(const sync_pb::BookmarkSpecifics& specifics,
                               bool is_folder) {
+  bool is_valid = true;
   if (specifics.ByteSize() == 0) {
     DLOG(ERROR) << "Invalid bookmark: empty specifics.";
+    LogInvalidSpecifics(InvalidBookmarkSpecificsError::kEmptySpecifics);
+    is_valid = false;
+  }
+  if (!base::IsValidGUID(specifics.guid()) && !specifics.guid().empty()) {
+    DLOG(ERROR) << "Invalid bookmark: invalid GUID in the specifics.";
     return false;
   }
   if (!is_folder) {
     if (!GURL(specifics.url()).is_valid()) {
       DLOG(ERROR) << "Invalid bookmark: invalid url in the specifics.";
-      return false;
+      LogInvalidSpecifics(InvalidBookmarkSpecificsError::kInvalidURL);
+      is_valid = false;
     }
     if (specifics.favicon().empty() && !specifics.icon_url().empty()) {
       DLOG(ERROR) << "Invalid bookmark: specifics cannot have an icon_url "
                      "without having a favicon.";
-      return false;
+      LogInvalidSpecifics(
+          InvalidBookmarkSpecificsError::kIconURLWithoutFavicon);
+      is_valid = false;
     }
     if (!specifics.icon_url().empty() &&
         !GURL(specifics.icon_url()).is_valid()) {
       DLOG(ERROR) << "Invalid bookmark: invalid icon_url in specifics.";
-      return false;
+      LogInvalidSpecifics(InvalidBookmarkSpecificsError::kInvalidIconURL);
+      is_valid = false;
     }
   }
 
@@ -244,10 +272,12 @@ bool IsValidBookmarkSpecifics(const sync_pb::BookmarkSpecifics& specifics,
   for (const sync_pb::MetaInfo& meta_info : specifics.meta_info()) {
     if (!keys.insert(meta_info.key()).second) {
       DLOG(ERROR) << "Invalid bookmark: keys in meta_info aren't unique.";
-      return false;
+      LogInvalidSpecifics(
+          InvalidBookmarkSpecificsError::kNonUniqueMetaInfoKeys);
+      is_valid = false;
     }
   }
-  return true;
+  return is_valid;
 }
 
 }  // namespace sync_bookmarks

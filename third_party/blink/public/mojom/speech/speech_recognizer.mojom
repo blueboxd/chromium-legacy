@@ -18,7 +18,7 @@ struct StartSpeechRecognitionRequestParams {
 
   // Used by the browser to communicate with a SpeechRecognitionSessionClient
   // implementation created for the new session.
-  SpeechRecognitionSessionClient client;
+  pending_remote<SpeechRecognitionSessionClient> client;
 
   // Language to use for speech recognition.
   string language;

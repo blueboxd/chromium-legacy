@@ -1205,7 +1205,6 @@ if (!is_android) {
       "../browser/ui/find_bar/find_bar_platform_helper_mac_browsertest.mm",
       "../browser/ui/hats/hats_service_browsertest.cc",
       "../browser/ui/javascript_dialogs/javascript_dialog_browsertest.cc",
-      "../browser/ui/location_bar/location_bar_browsertest.cc",
       "../browser/ui/login/login_handler_browsertest.cc",
       "../browser/ui/native_window_tracker_browsertest.cc",
       "../browser/ui/passwords/manage_passwords_test.cc",
@@ -2665,6 +2664,9 @@ if (is_linux || is_mac || is_win) {
     data_deps = [
       "//chrome",
     ]
+    if (is_win) {
+      data_deps += [ "//chrome/installer/mini_installer" ]
+    }
   }
 }
 
@@ -5595,7 +5597,7 @@ if (!is_android) {
         "../browser/ui/views/keyboard_access_browsertest.cc",
         "../browser/ui/views/location_bar/location_icon_view_interactive_uitest.cc",
         "../browser/ui/views/location_bar/selected_keyword_view_interactive_uitest.cc",
-        "../browser/ui/views/location_bar/star_view_browsertest.cc",
+        "../browser/ui/views/location_bar/star_view_interactive_uitest.cc",
         "../browser/ui/views/menu_controller_interactive_uitest.cc",
         "../browser/ui/views/menu_interactive_uitest.cc",
         "../browser/ui/views/menu_item_view_interactive_uitest.cc",

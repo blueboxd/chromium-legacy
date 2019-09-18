@@ -158,6 +158,7 @@ android_library("cast_shell_java") {
     ":cast_shell_manifest",
     ":reactive_android_java",
     "//base:base_java",
+    "//base:jni_java",
     "//chromecast/base:base_java",
     "//chromecast/media/cma/backend/android:audio_track_java",
     "//components/crash/android:java",
@@ -174,6 +175,7 @@ android_library("cast_shell_java") {
     "//third_party/android_deps:com_android_support_support_core_utils_java",
     "//ui/android:ui_java",
   ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
   if (is_android_things_non_public) {
     deps += [ ":cast_shell_android_things_sys_info_java" ]

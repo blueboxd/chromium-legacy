@@ -13440,8 +13440,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Verify the feature where hidden tabs with crashed subframes are marked for
 // reload.  This avoids showing crashed subframes if a hidden tab is eventually
 // shown.  See https://crbug.com/841572.
+
+// TODO(crbug.com/1005049) Disabled due to test flake
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       ReloadHiddenTabWithCrashedSubframe) {
+                       DISABLED_ReloadHiddenTabWithCrashedSubframe) {
   base::test::ScopedFeatureList feature_list_;
   feature_list_.InitAndEnableFeature(
       features::kReloadHiddenTabsWithCrashedSubframes);

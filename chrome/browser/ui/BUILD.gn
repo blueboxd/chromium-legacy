@@ -961,7 +961,6 @@ jumbo_split_static_library("ui") {
       "intent_picker_tab_helper.h",
       "layout_constants.cc",
       "layout_constants.h",
-      "location_bar/location_bar.cc",
       "location_bar/location_bar.h",
       "managed_ui.cc",
       "managed_ui.h",

@@ -38,8 +38,8 @@ This documentation assumes familiarity with computer science
    dedicated task queue until Quit(). You should pretty much never be creating
    your own `base::Thread`'s.
  * **Thread pool**: A pool of physical threads with a shared task queue. In
-   Chrome, this is `base::ThreadPoolInstance`. There's exactly one instance per Chrome
-   process, it serves tasks posted through
+   Chrome, this is `base::ThreadPoolInstance`. There's exactly one instance per
+   Chrome process, it serves tasks posted through
    [`base/task/post_task.h`](https://cs.chromium.org/chromium/src/base/task/post_task.h)
    and as such you should rarely need to use the `base::ThreadPoolInstance` API
    directly (more on posting tasks later).
@@ -625,11 +625,14 @@ cancelable_task_tracker.TryCancelAll();
 
 ## Testing
 
+For more details see [Testing Components Which Post
+Tasks](threading_and_tasks_testing.md).
+
 To test code that uses `base::ThreadTaskRunnerHandle`,
 `base::SequencedTaskRunnerHandle` or a function in
 [`base/task/post_task.h`](https://cs.chromium.org/chromium/src/base/task/post_task.h),
 instantiate a
-[`base::test::TaskEnvironment`](https://cs.chromium.org/chromium/src/base/test/scoped_task_environment.h)
+[`base::test::TaskEnvironment`](https://cs.chromium.org/chromium/src/base/test/task_environment.h)
 for the scope of the test. If you need BrowserThreads, use
 `content::BrowserTaskEnvironment` instead of
 `base::test::TaskEnvironment`.

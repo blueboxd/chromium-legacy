@@ -44,8 +44,9 @@ class HidService : public content::FrameServiceBase<blink::mojom::HidService> {
                         std::vector<device::mojom::HidDeviceInfoPtr> devices);
   void FinishRequestDevice(RequestDeviceCallback callback,
                            device::mojom::HidDeviceInfoPtr device);
-  void FinishConnect(ConnectCallback callback,
-                     device::mojom::HidConnectionPtr connection);
+  void FinishConnect(
+      ConnectCallback callback,
+      mojo::PendingRemote<device::mojom::HidConnection> connection);
 
   // The last shown HID chooser UI.
   std::unique_ptr<HidChooser> chooser_;

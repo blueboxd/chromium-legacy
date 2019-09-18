@@ -219,8 +219,8 @@ std::unique_ptr<FormFetcher> FormFetcherImpl::Clone() {
   result->blacklisted_ = MakeCopies(blacklisted_);
   password_manager_util::FindBestMatches(
       MakeWeakCopies(result->non_federated_), form_digest_.scheme,
-      &result->non_federated_same_scheme_, &result->best_matches_,
-      &result->preferred_match_);
+      sort_matches_by_date_last_used_, &result->non_federated_same_scheme_,
+      &result->best_matches_, &result->preferred_match_);
 
   result->interactions_stats_ = this->interactions_stats_;
   result->state_ = this->state_;
@@ -237,7 +237,8 @@ void FormFetcherImpl::ProcessPasswordStoreResults(
 
   password_manager_util::FindBestMatches(
       MakeWeakCopies(non_federated_), form_digest_.scheme,
-      &non_federated_same_scheme_, &best_matches_, &preferred_match_);
+      sort_matches_by_date_last_used_, &non_federated_same_scheme_,
+      &best_matches_, &preferred_match_);
 
   for (auto* consumer : consumers_)
     consumer->OnFetchCompleted();

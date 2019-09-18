@@ -1779,7 +1779,7 @@ public class SavePasswordsPreferencesTest {
 
         // Retrieve the initial status and ensure that the help option is there at all.
         final AtomicReference<Boolean> helpInOverflowMenu = new AtomicReference<>(false);
-        Espresso.onView(withId(R.id.menu_id_general_help)).check((helpMenuItem, e) -> {
+        Espresso.onView(withId(R.id.menu_id_targeted_help)).check((helpMenuItem, e) -> {
             ActionMenuItemView view = (ActionMenuItemView) helpMenuItem;
             helpInOverflowMenu.set(view == null || !view.showsIcon());
         });
@@ -1789,7 +1789,7 @@ public class SavePasswordsPreferencesTest {
             Espresso.onView(withText(R.string.menu_help)).check(matches(isDisplayed()));
             Espresso.pressBack(); // to close the Overflow menu.
         } else {
-            Espresso.onView(withId(R.id.menu_id_general_help)).check(matches(isDisplayed()));
+            Espresso.onView(withId(R.id.menu_id_targeted_help)).check(matches(isDisplayed()));
         }
 
         // Trigger the search, close it and wait for UI to be restored.
@@ -1806,10 +1806,10 @@ public class SavePasswordsPreferencesTest {
             openActionBarOverflowOrOptionsMenu(
                     InstrumentationRegistry.getInstrumentation().getTargetContext());
             Espresso.onView(withText(R.string.menu_help)).check(matches(isDisplayed()));
-            Espresso.onView(withId(R.id.menu_id_general_help)).check(doesNotExist());
+            Espresso.onView(withId(R.id.menu_id_targeted_help)).check(doesNotExist());
         } else {
             Espresso.onView(withText(R.string.menu_help)).check(doesNotExist());
-            Espresso.onView(withId(R.id.menu_id_general_help)).check(matches(isDisplayed()));
+            Espresso.onView(withId(R.id.menu_id_targeted_help)).check(matches(isDisplayed()));
         }
     }
 

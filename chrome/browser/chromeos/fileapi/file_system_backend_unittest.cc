@@ -41,7 +41,6 @@ TEST(ChromeOSFileSystemBackendTest, DefaultMountPoints) {
   scoped_refptr<storage::ExternalMountPoints> mount_points(
       storage::ExternalMountPoints::CreateRefCounted());
   chromeos::FileSystemBackend backend(
-      nullptr,  // drive_delegate
       nullptr,  // file_system_provider_delegate
       nullptr,  // mtp_delegate
       nullptr,  // arc_content_delegate
@@ -70,7 +69,6 @@ TEST(ChromeOSFileSystemBackendTest, GetRootDirectories) {
       storage::ExternalMountPoints::CreateRefCounted());
 
   chromeos::FileSystemBackend backend(
-      nullptr,  // drive_delegate
       nullptr,  // file_system_provider_delegate
       nullptr,  // mtp_delegate
       nullptr,  // arc_content_delegate
@@ -117,7 +115,6 @@ TEST(ChromeOSFileSystemBackendTest, AccessPermissions) {
   scoped_refptr<storage::ExternalMountPoints> system_mount_points(
       storage::ExternalMountPoints::CreateRefCounted());
   chromeos::FileSystemBackend backend(
-      nullptr,  // drive_delegate
       nullptr,  // file_system_provider_delegate
       nullptr,  // mtp_delegate
       nullptr,  // arc_content_delegate
@@ -188,7 +185,6 @@ TEST(ChromeOSFileSystemBackendTest, GetVirtualPathConflictWithSystemPoints) {
   scoped_refptr<storage::ExternalMountPoints> system_mount_points(
       storage::ExternalMountPoints::CreateRefCounted());
   chromeos::FileSystemBackend backend(
-      nullptr,  // drive_delegate
       nullptr,  // file_system_provider_delegate
       nullptr,  // mtp_delegate
       nullptr,  // arc_content_delegate

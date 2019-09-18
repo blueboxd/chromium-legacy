@@ -747,6 +747,10 @@ junit_binary("chrome_junit_tests") {
     "//url/mojom:url_mojom_gurl_java",
   ]
 
+  data_deps = [
+    "//testing/buildbot/filters:chrome_junit_tests_filters",
+  ]
+
   srcjar_deps =
       [ "//components/module_installer/android:module_installer_build_config" ]
 

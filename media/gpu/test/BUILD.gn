@@ -19,6 +19,7 @@ source_set("helpers") {
     "//base:base",
     "//base/test:test_config",
     "//base/test:test_support",
+    "//gpu/ipc/common",
     "//media:test_support",
     "//media/gpu",
     "//mojo/core/embedder:embedder",

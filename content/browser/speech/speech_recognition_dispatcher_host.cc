@@ -199,11 +199,11 @@ void SpeechRecognitionDispatcherHost::StartSessionOnIO(
 // ---------------------- SpeechRecognizerSession -----------------------------
 
 SpeechRecognitionSession::SpeechRecognitionSession(
-    blink::mojom::SpeechRecognitionSessionClientPtrInfo client_ptr_info)
+    mojo::PendingRemote<blink::mojom::SpeechRecognitionSessionClient> client)
     : session_id_(SpeechRecognitionManager::kSessionIDInvalid),
-      client_(std::move(client_ptr_info)),
+      client_(std::move(client)),
       stopped_(false) {
-  client_.set_connection_error_handler(
+  client_.set_disconnect_handler(
       base::BindOnce(&SpeechRecognitionSession::ConnectionErrorHandler,
                      base::Unretained(this)));
 }

@@ -9,9 +9,9 @@
 #include <string>
 #include <vector>
 
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/device/public/mojom/hid.mojom.h"
 
 namespace device {
@@ -71,7 +71,7 @@ class FakeHidManager : public mojom::HidManager {
 
  private:
   std::map<std::string, mojom::HidDeviceInfoPtr> devices_;
-  mojo::AssociatedInterfacePtrSet<mojom::HidManagerClient> clients_;
+  mojo::AssociatedRemoteSet<mojom::HidManagerClient> clients_;
   mojo::ReceiverSet<mojom::HidManager> receivers_;
 };
 

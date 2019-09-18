@@ -40,7 +40,7 @@ void ProxyTabsDataTypeController::LoadModels(
     const syncer::ConfigureContext& configure_context,
     const ModelLoadCallback& model_load_callback) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(configure_context.storage_option, syncer::STORAGE_ON_DISK);
+  DCHECK_EQ(configure_context.sync_mode, syncer::SyncMode::kFull);
   state_ = MODEL_LOADED;
   state_changed_cb_.Run(state_);
   model_load_callback.Run(type(), syncer::SyncError());

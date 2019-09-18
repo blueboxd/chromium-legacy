@@ -2778,8 +2778,8 @@ class DownloadManagerWaiter : public content::DownloadManager::Observer {
 
 }  // namespace
 
-// TODO(crbug.com/994789): Flaky on MSan.
-#if defined(MEMORY_SANITIZER)
+// TODO(crbug.com/994789): Flaky on MSan, Linux, and Chrome OS.
+#if defined(MEMORY_SANITIZER) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_DownloadCookieIsolation DISABLED_DownloadCookieIsolation
 #else
 #define MAYBE_DownloadCookieIsolation DownloadCookieIsolation
@@ -2924,8 +2924,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
   content::EnsureCookiesFlushed(profile());
 }
 
-// TODO(crbug.com/994789): Flaky on ChromeOS. Fix and re-enable the test.
-#if defined(OS_CHROMEOS)
+// TODO(crbug.com/994789): Flaky on MSan, Linux, and ChromeOS.
+#if defined(MEMORY_SANITIZER) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_DownloadCookieIsolation_CrossSession \
   DISABLED_DownloadCookieIsolation_CrossSession
 #else

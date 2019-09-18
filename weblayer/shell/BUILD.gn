@@ -23,8 +23,12 @@ declare_args() {
 jumbo_static_library("weblayer_shell_lib") {
   testonly = true
   sources = [
+    "app/shell_main_params.cc",
+    "app/shell_main_params.h",
     "browser/shell.cc",
     "browser/shell.h",
+    "common/shell_switches.cc",
+    "common/shell_switches.h",
   ]
 
   configs += [
@@ -32,6 +36,11 @@ jumbo_static_library("weblayer_shell_lib") {
 
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
+  ]
+
+  defines = [
+    "WEBLAYER_SHELL_VERSION=\"$weblayer_shell_version\"",
+    "WEBLAYER_SHELL_MAJOR_VERSION=\"$weblayer_shell_major_version\"",
   ]
 
   public_deps = [
@@ -239,10 +248,7 @@ if (is_android) {
       sources += [ "app/shell.rc" ]
     }
 
-    defines = [
-      "WEBLAYER_SHELL_VERSION=\"$weblayer_shell_version\"",
-      "WEBLAYER_SHELL_MAJOR_VERSION=\"$weblayer_shell_major_version\"",
-    ]
+    defines = []
 
     deps = [
       ":pak",

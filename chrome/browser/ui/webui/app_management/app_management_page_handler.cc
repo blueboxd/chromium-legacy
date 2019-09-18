@@ -24,6 +24,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "components/arc/arc_prefs.h"
 #endif
 
@@ -45,6 +46,12 @@ constexpr char const* kAppIdsWithHiddenPinToShelf[] = {
   extension_misc::kChromeAppId,
 };
 
+#if defined(OS_CHROMEOS)
+constexpr char const* kAppIdsWithHiddenStoragePermission[] = {
+    arc::kPlayStoreAppId,
+};
+#endif  // OS_CHROMEOS
+
 app_management::mojom::ExtensionAppPermissionMessagePtr
 CreateExtensionAppPermissionMessage(
     const extensions::PermissionMessage& message) {
@@ -64,6 +71,13 @@ bool ShouldHidePinToShelf(const std::string app_id) {
   return base::Contains(kAppIdsWithHiddenPinToShelf, app_id);
 }
 
+bool ShouldHideStoragePermission(const std::string app_id) {
+#if defined(OS_CHROMEOS)
+  return base::Contains(kAppIdsWithHiddenStoragePermission, app_id);
+#else
+  return false;
+#endif
+}
 
 }  // namespace
 
@@ -216,6 +230,12 @@ app_management::mojom::AppPtr AppManagementPageHandler::CreateUIAppPtr(
     const apps::AppUpdate& update) {
   base::flat_map<uint32_t, apps::mojom::PermissionPtr> permissions;
   for (const auto& permission : update.Permissions()) {
+    if (static_cast<app_management::mojom::ArcPermissionType>(
+            permission->permission_id) ==
+            app_management::mojom::ArcPermissionType::STORAGE &&
+        ShouldHideStoragePermission(update.AppId())) {
+      continue;
+    }
     permissions[permission->permission_id] = permission->Clone();
   }
 

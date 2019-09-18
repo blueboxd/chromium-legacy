@@ -599,8 +599,7 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, SanitizeReferrer) {
                             ->GetMainFrame()
                             ->frame_tree_node();
   ASSERT_TRUE(root->navigation_request());
-  EXPECT_EQ(GURL(),
-            root->navigation_request()->navigation_handle()->GetReferrer().url);
+  EXPECT_EQ(GURL(), root->navigation_request()->GetReferrer().url);
 
   // The navigation should commit without being blocked.
   EXPECT_TRUE(manager.WaitForResponse());

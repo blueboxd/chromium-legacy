@@ -15,6 +15,8 @@
 #include "device/gamepad/gamepad_id_list.h"
 #include "device/gamepad/gamepad_standard_mappings.h"
 #include "device/gamepad/public/cpp/gamepad.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/hid.mojom.h"
 
 namespace device {
@@ -238,7 +240,7 @@ class NintendoController final : public AbstractHapticGamepad {
   void Connect(mojom::HidManager::ConnectCallback callback);
 
   // Completion callback for the HID connection request.
-  void OnConnect(mojom::HidConnectionPtr connection);
+  void OnConnect(mojo::PendingRemote<mojom::HidConnection> connection);
 
   // Initiate the sequence of exchanges to prepare the device to provide
   // controller data.
@@ -398,7 +400,7 @@ class NintendoController final : public AbstractHapticGamepad {
   mojom::HidManager* const hid_manager_;
 
   // The open connection to the underlying HID device.
-  mojom::HidConnectionPtr connection_;
+  mojo::Remote<mojom::HidConnection> connection_;
 
   // A closure, provided in the call to Open, to be called once the device
   // becomes ready.

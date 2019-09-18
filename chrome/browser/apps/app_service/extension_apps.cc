@@ -445,6 +445,7 @@ void ExtensionApps::OnExtensionLoaded(content::BrowserContext* browser_context,
   app->app_type = app_type_;
   app->app_id = extension->id();
   app->readiness = apps::mojom::Readiness::kReady;
+  app->name = extension->name();
   Publish(std::move(app));
 }
 

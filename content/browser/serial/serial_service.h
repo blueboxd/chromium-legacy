@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/device/public/mojom/serial.mojom.h"
 #include "third_party/blink/public/mojom/serial/serial.mojom.h"
 
@@ -26,7 +27,7 @@ class SerialService : public blink::mojom::SerialService,
   explicit SerialService(RenderFrameHost* render_frame_host);
   ~SerialService() override;
 
-  void Bind(blink::mojom::SerialServiceRequest request);
+  void Bind(mojo::PendingReceiver<blink::mojom::SerialService> receiver);
 
   // SerialService implementation
   void GetPorts(GetPortsCallback callback) override;
@@ -47,7 +48,7 @@ class SerialService : public blink::mojom::SerialService,
   // This raw pointer is safe because instances of this class are owned by
   // RenderFrameHostImpl.
   RenderFrameHost* const render_frame_host_;
-  mojo::BindingSet<blink::mojom::SerialService> bindings_;
+  mojo::ReceiverSet<blink::mojom::SerialService> receivers_;
 
   // The last shown serial port chooser UI.
   std::unique_ptr<SerialChooser> chooser_;

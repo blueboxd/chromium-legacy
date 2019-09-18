@@ -1147,9 +1147,10 @@ void NintendoController::Connect(mojom::HidManager::ConnectCallback callback) {
                         std::move(callback));
 }
 
-void NintendoController::OnConnect(mojom::HidConnectionPtr connection) {
+void NintendoController::OnConnect(
+    mojo::PendingRemote<mojom::HidConnection> connection) {
   if (connection) {
-    connection_ = std::move(connection);
+    connection_.Bind(std::move(connection));
     ReadInputReport();
     StartInitSequence();
   }

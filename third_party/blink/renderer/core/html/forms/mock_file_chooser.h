@@ -5,7 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_MOCK_FILE_CHOOSER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_FORMS_MOCK_FILE_CHOOSER_H_
 
+#include <utility>
+
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom-blink.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -14,7 +18,6 @@ namespace blink {
 
 class MockFileChooser : public mojom::blink::FileChooser {
   using FileChooser = mojom::blink::FileChooser;
-  using FileChooserFileInfoPtr = mojom::blink::FileChooserFileInfoPtr;
   using FileChooserParamsPtr = mojom::blink::FileChooserParamsPtr;
 
  public:

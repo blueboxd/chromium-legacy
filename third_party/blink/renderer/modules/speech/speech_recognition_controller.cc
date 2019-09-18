@@ -51,7 +51,8 @@ SpeechRecognitionController* SpeechRecognitionController::Create(
 
 void SpeechRecognitionController::Start(
     mojom::blink::SpeechRecognitionSessionRequest session_request,
-    mojom::blink::SpeechRecognitionSessionClientPtrInfo session_client,
+    mojo::PendingRemote<mojom::blink::SpeechRecognitionSessionClient>
+        session_client,
     const SpeechGrammarList& grammars,
     const String& lang,
     bool continuous,

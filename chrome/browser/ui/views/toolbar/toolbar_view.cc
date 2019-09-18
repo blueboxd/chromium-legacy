@@ -433,15 +433,16 @@ void ToolbarView::ShowBookmarkBubble(
     bool already_bookmarked,
     bookmarks::BookmarkBubbleObserver* observer) {
   views::View* const anchor_view = location_bar();
-  PageActionIconView* const star_view = location_bar()->star_view();
+  PageActionIconView* const bookmark_star_icon =
+      GetPageActionIconView(PageActionIconType::kBookmarkStar);
 
   std::unique_ptr<BubbleSyncPromoDelegate> delegate;
 #if !defined(OS_CHROMEOS)
   // ChromeOS does not show the signin promo.
   delegate.reset(new BookmarkBubbleSignInDelegate(browser_));
 #endif
-  BookmarkBubbleView::ShowBubble(anchor_view, star_view, gfx::Rect(), nullptr,
-                                 observer, std::move(delegate),
+  BookmarkBubbleView::ShowBubble(anchor_view, bookmark_star_icon, gfx::Rect(),
+                                 nullptr, observer, std::move(delegate),
                                  browser_->profile(), url, already_bookmarked);
 }
 

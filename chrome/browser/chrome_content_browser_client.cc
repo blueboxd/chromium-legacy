@@ -380,7 +380,6 @@
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
 #include "chrome/browser/chromeos/chrome_content_browser_client_chromeos_part.h"
 #include "chrome/browser/chromeos/drive/fileapi/drivefs_file_system_backend_delegate.h"
-#include "chrome/browser/chromeos/drive/fileapi/file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_system_provider/fileapi/backend_delegate.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_loader_factory.h"
@@ -3552,7 +3551,6 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
       content::BrowserContext::GetMountPoints(browser_context);
   DCHECK(external_mount_points);
   auto backend = std::make_unique<chromeos::FileSystemBackend>(
-      std::make_unique<drive::FileSystemBackendDelegate>(),
       std::make_unique<chromeos::file_system_provider::BackendDelegate>(),
       std::make_unique<chromeos::MTPFileSystemBackendDelegate>(
           storage_partition_path),

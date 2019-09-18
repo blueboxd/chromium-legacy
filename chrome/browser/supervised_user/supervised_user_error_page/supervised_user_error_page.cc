@@ -172,9 +172,8 @@ std::string BuildHtml(bool allow_access_requests,
   strings.SetString("requestFailedMessage", request_failed_message);
   webui::SetLoadTimeDataDefaults(app_locale, &strings);
   std::string html =
-      ui::ResourceBundle::GetSharedInstance()
-          .GetRawDataResource(IDR_SUPERVISED_USER_BLOCK_INTERSTITIAL_HTML)
-          .as_string();
+      ui::ResourceBundle::GetSharedInstance().DecompressDataResource(
+          IDR_SUPERVISED_USER_BLOCK_INTERSTITIAL_HTML);
   webui::AppendWebUiCssTextDefaults(&html);
   std::string error_html = webui::GetI18nTemplateHtml(html, &strings);
   return error_html;

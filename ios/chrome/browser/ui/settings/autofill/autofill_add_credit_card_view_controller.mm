@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/settings/autofill/features.h"
@@ -65,6 +66,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // The expiration year set from the CreditCardConsumer protocol, used to update
 // the UI.
 @property(nonatomic, strong) NSString* expirationYear;
+
+// The card number scanned using the credit card scanner.
+@property(nonatomic, strong) NSString* scannedCardNumber;
+
+// The expiration month scanned using the credit card scanner.
+@property(nonatomic, strong) NSString* scannedExpirationMonth;
+
+// The expiration year scanned using the credit card scanner.
+@property(nonatomic, strong) NSString* scannedExpirationYear;
 
 @end
 
@@ -252,18 +262,21 @@ typedef NS_ENUM(NSInteger, ItemType) {
             expirationMonth:(NSString*)expirationMonth
              expirationYear:(NSString*)expirationYear {
   if (cardNumber) {
+    self.scannedCardNumber = cardNumber;
     [self updateCellForItemType:ItemTypeCardNumber
             inSectionIdentifier:SectionIdentifierCreditCardDetails
                        withText:cardNumber];
   }
 
   if (expirationMonth) {
+    self.scannedExpirationMonth = expirationMonth;
     [self updateCellForItemType:ItemTypeExpirationMonth
             inSectionIdentifier:SectionIdentifierCreditCardDetails
                        withText:expirationMonth];
   }
 
   if (expirationYear) {
+    self.scannedExpirationYear = expirationYear;
     [self updateCellForItemType:ItemTypeExpirationYear
             inSectionIdentifier:SectionIdentifierCreditCardDetails
                        withText:expirationYear];
@@ -275,6 +288,23 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // Handles Add button to add a new credit card.
 - (void)didTapAddButton:(id)sender {
   [self updateCreditCardData];
+
+  // Metrics logged if the data scanned using the credit card scanner is
+  // modified by the user.
+  if (self.scannedCardNumber && self.cardNumber != self.scannedCardNumber) {
+    base::RecordAction(base::UserMetricsAction(
+        "MobileCreditCardScannerScannedCardNumberModified"));
+  }
+  if (self.scannedExpirationMonth &&
+      self.expirationMonth != self.scannedExpirationMonth) {
+    base::RecordAction(base::UserMetricsAction(
+        "MobileCreditCardScannerScannedExpiryMonthModified"));
+  }
+  if (self.scannedExpirationYear &&
+      self.expirationYear != self.scannedExpirationYear) {
+    base::RecordAction(base::UserMetricsAction(
+        "MobileCreditCardScannerScannedExpiryYearModified"));
+  }
 
   [self.delegate addCreditCardViewController:self
                  addCreditCardWithHolderName:self.cardHolderName
@@ -360,6 +390,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // Presents the credit card scanner camera screen.
 - (void)handleCameraButton {
+  base::RecordAction(
+      base::UserMetricsAction("MobileAddCreditCard.UseCameraButton"));
   [self.delegate addCreditCardViewControllerDidUseCamera:self];
 }
 

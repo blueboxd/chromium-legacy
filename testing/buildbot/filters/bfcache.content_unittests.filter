@@ -4,12 +4,6 @@
 # the BackForwardCache.
 -FrameServiceBaseTest.DidFinishNavigation
 
-# During WebContent destructor, in RenderFrameHost:
-# Check failed: !is_active().
-# https://crbug.com/1003744
--NavigationControllerTest.Back_NewPending
--NavigationControllerTest.CopyStateFromAndPruneSourcePending
-
 # Expects the process used by the previous document to exit.
 -RenderFrameHostManagerTest.DeleteFrameAfterSwapOutACK
 

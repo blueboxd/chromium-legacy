@@ -19,6 +19,8 @@
 #include "components/apdu/apdu_command.h"
 #include "components/apdu/apdu_response.h"
 #include "device/fido/fido_device.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/hid.mojom.h"
 
 namespace device {
@@ -92,7 +94,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
 
   // Open a connection to this device.
   void Connect(device::mojom::HidManager::ConnectCallback callback);
-  void OnConnect(device::mojom::HidConnectionPtr connection);
+  void OnConnect(mojo::PendingRemote<device::mojom::HidConnection> connection);
   void OnInitWriteComplete(std::vector<uint8_t> nonce, bool success);
   // Ask device to allocate a unique channel id for this connection.
   void OnAllocateChannel(std::vector<uint8_t> nonce,
@@ -145,7 +147,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
   // U2fRequest.
   device::mojom::HidManager* hid_manager_;
   device::mojom::HidDeviceInfoPtr device_info_;
-  device::mojom::HidConnectionPtr connection_;
+  mojo::Remote<device::mojom::HidConnection> connection_;
   base::WeakPtrFactory<FidoHidDevice> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FidoHidDevice);

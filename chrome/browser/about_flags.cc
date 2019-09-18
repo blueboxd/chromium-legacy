@@ -4197,7 +4197,8 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"enable-forbid-sync-xhr-in-page-dismissal",
      flag_descriptions::kForbidSyncXHRInPageDismissalName,
-     flag_descriptions::kForbidSyncXHRInPageDismissalDescription, kOsAll,
+     flag_descriptions::kForbidSyncXHRInPageDismissalDescription,
+     kOsAll | kDeprecated,
      FEATURE_VALUE_TYPE(blink::features::kForbidSyncXHRInPageDismissal)},
 
     {"form-controls-refresh", flag_descriptions::kFormControlsRefreshName,

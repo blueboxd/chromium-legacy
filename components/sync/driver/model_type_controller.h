@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/storage_option.h"
+#include "components/sync/base/sync_mode.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/model/model_error.h"
@@ -30,12 +30,12 @@ class ModelTypeController : public DataTypeController {
  public:
   ModelTypeController(
       ModelType type,
-      std::unique_ptr<ModelTypeControllerDelegate> delegate_on_disk);
+      std::unique_ptr<ModelTypeControllerDelegate> delegate_for_full_sync_mode);
   // For datatypes that have support for STORAGE_IN_MEMORY.
   ModelTypeController(
       ModelType type,
-      std::unique_ptr<ModelTypeControllerDelegate> delegate_on_disk,
-      std::unique_ptr<ModelTypeControllerDelegate> delegate_in_memory);
+      std::unique_ptr<ModelTypeControllerDelegate> delegate_for_full_sync_mode,
+      std::unique_ptr<ModelTypeControllerDelegate> delegate_for_transport_mode);
   ~ModelTypeController() override;
 
   // Steals the activation response, only used for Nigori.
@@ -71,7 +71,7 @@ class ModelTypeController : public DataTypeController {
       std::unique_ptr<DataTypeActivationResponse> activation_response);
   void TriggerCompletionCallbacks(const SyncError& error);
 
-  base::flat_map<StorageOption, std::unique_ptr<ModelTypeControllerDelegate>>
+  base::flat_map<SyncMode, std::unique_ptr<ModelTypeControllerDelegate>>
       delegate_map_;
 
   // State of this datatype controller.

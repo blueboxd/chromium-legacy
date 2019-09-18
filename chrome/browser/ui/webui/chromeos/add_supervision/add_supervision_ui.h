@@ -27,31 +27,30 @@ class AddSupervisionDialog : public SystemWebDialogDelegate {
   // no-op.
   static void Show(gfx::NativeView parent);
 
+  static SystemWebDialogDelegate* GetInstance();
+
   // Closes the dialog; if the dialog doesn't exist, this function is a
   // no-op.
   // This is only called when the user clicks "Cancel", not the "x" in the top
   // right.
   static void Close();
 
-  static SystemWebDialogDelegate* GetInstance();
+  // Deletes this dialog window.
+  // Currently only used by AddSupervisionMetricsRecorderTest browser test to
+  // simulate closing the dialog cleanly.
+  void CloseNowForTesting();
 
   // ui::WebDialogDelegate:
   ui::ModalType GetDialogModalType() const override;
   void GetDialogSize(gfx::Size* size) const override;
-  bool OnDialogCloseRequested() override;
   bool CanCloseDialog() const override;
+  bool OnDialogCloseRequested() override;
 
  protected:
   AddSupervisionDialog();
   ~AddSupervisionDialog() override;
 
  private:
-  friend class AddSupervisionMetricsRecorderTest;
-  FRIEND_TEST_ALL_PREFIXES(AddSupervisionMetricsRecorderTest, HistogramTest);
-  FRIEND_TEST_ALL_PREFIXES(AddSupervisionMetricsRecorderTest, UserActionTest);
-  FRIEND_TEST_ALL_PREFIXES(AddSupervisionMetricsRecorderTimeTest,
-                           UserTimingTest);
-
   DISALLOW_COPY_AND_ASSIGN(AddSupervisionDialog);
 };
 

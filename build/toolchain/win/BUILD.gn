@@ -130,17 +130,17 @@ template("msvc_toolchain") {
 
     # ninja does not have -t msvc other than windows, and lld doesn't depend on
     # mt.exe in PATH on non-Windows, so it's not needed there anyways.
-    if (defined(invoker.sys_lib_flags)) {
+    if (host_os != "win") {
       linker_wrapper = ""
       sys_lib_flags = "${invoker.sys_lib_flags} "  # Note trailing space
-    } else if (use_lld) {
+    } else if (defined(invoker.sys_lib_flags)) {
       # Invoke ninja as wrapper instead of tool wrapper, because python
       # invocation requires higher cpu usage compared to ninja invocation, and
       # the python wrapper is only needed to work around link.exe problems.
       # TODO(thakis): Remove wrapper once lld-link can merge manifests without
       # relying on mt.exe being in %PATH% on Windows, https://crbug.com/872740
       linker_wrapper = "ninja -t msvc -e $env -- "  # Note trailing space.
-      sys_lib_flags = ""
+      sys_lib_flags = "${invoker.sys_lib_flags} "  # Note trailing space
     } else {
       linker_wrapper =
           "$python_path $tool_wrapper_path link-wrapper $env False "  # Note trailing space.
@@ -356,21 +356,22 @@ template("win_toolchains") {
                                    ],
                                    "scope")
 
-  msvc_toolchain(target_name) {
-    environment = "environment." + toolchain_arch
-    cl = "${goma_prefix}\"${win_toolchain_data.vc_bin_dir}/cl.exe\""
-    if (host_os != "win") {
-      # For win cross build
-      sys_lib_flags = "${win_toolchain_data.libpath_flags}"
-    }
+  # The toolchain using MSVC only makes sense when not doing cross builds.
+  # Chromium exclusively uses the win_clang_ toolchain below, but V8 and
+  # WebRTC still use this MSVC toolchain in some cases.
+  if (host_os == "win") {
+    msvc_toolchain(target_name) {
+      environment = "environment." + toolchain_arch
+      cl = "${goma_prefix}\"${win_toolchain_data.vc_bin_dir}/cl.exe\""
 
-    toolchain_args = {
-      if (defined(invoker.toolchain_args)) {
-        forward_variables_from(invoker.toolchain_args, "*")
+      toolchain_args = {
+        if (defined(invoker.toolchain_args)) {
+          forward_variables_from(invoker.toolchain_args, "*")
+        }
+        is_clang = false
+        current_os = "win"
+        current_cpu = toolchain_arch
       }
-      is_clang = false
-      current_os = "win"
-      current_cpu = toolchain_arch
     }
   }
 
@@ -383,10 +384,7 @@ template("win_toolchains") {
       cl = string_replace(cl, "/", "\\")
     }
     sys_include_flags = "${win_toolchain_data.include_flags_imsvc}"
-    if (host_os != "win") {
-      # For win cross build
-      sys_lib_flags = "${win_toolchain_data.libpath_flags}"
-    }
+    sys_lib_flags = "${win_toolchain_data.libpath_flags}"
 
     toolchain_args = {
       if (defined(invoker.toolchain_args)) {

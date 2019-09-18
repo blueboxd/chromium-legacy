@@ -5304,6 +5304,9 @@ grit("resources") {
   # The .grd contains references to generated files.
   source_is_generated = true
 
+  # Allow compress="brotli". Used in supervised_user_error_page_resources.grdp.
+  use_brotli = enable_supervised_users
+
   defines = chrome_grit_defines
   if (enable_hangout_services_extension) {
     defines += [ "enable_hangout_services_extension" ]

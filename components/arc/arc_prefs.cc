@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "components/guest_os/guest_os_prefs.h"
 #include "components/prefs/pref_registry_simple.h"
 
 namespace arc {
@@ -105,25 +106,9 @@ const char kArcCompatibleFilesystemChosen[] =
 // Integer pref indicating the ecryptfs to ext4 migration strategy. One of
 // options: forbidden = 0, migrate = 1, wipe = 2 or minimal migrate = 4.
 const char kEcryptfsMigrationStrategy[] = "ecryptfs_migration_strategy";
-// A preference that persists total engagement time across sessions, which is
-// accumulated and sent to UMA once a day.
-const char kEngagementTimeTotal[] = "arc.metrics.engagement_time.total";
-// A preference that persists foreground engagement time across sessions, which
-// is accumulated and sent to UMA once a day.
-const char kEngagementTimeForeground[] =
-    "arc.metrics.engagement_time.foreground";
-// A preference that persists background engagement time across sessions, which
-// is accumulated and sent to UMA once a day.
-const char kEngagementTimeBackground[] =
-    "arc.metrics.engagement_time.background";
-// A preference that saves the OS version when engagement time was last
-// recorded. Old results will be discarded if a version change is detected.
-const char kEngagementTimeOsVersion[] =
-    "arc.metrics.engagement_time.os_version";
-// A preference that saves the day ID (number of days since origin of Time) when
-// engagement time was last recorded. Accumulated results are sent to UMA if day
-// ID has changed.
-const char kEngagementTimeDayId[] = "arc.metrics.engagement_time.day_id";
+// Preferences for storing engagement time data, as per
+// GuestOsEngagementMetrics.
+const char kEngagementPrefsPrefix[] = "arc.metrics";
 
 // ======== LOCAL STATE PREFS ========
 
@@ -159,6 +144,9 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
       kArcSupervisionTransition,
       static_cast<int>(ArcSupervisionTransition::NO_TRANSITION));
 
+  guest_os::prefs::RegisterEngagementProfilePrefs(registry,
+                                                  kEngagementPrefsPrefix);
+
   // Sorted in lexicographical order.
   registry->RegisterBooleanPref(kAlwaysOnVpnLockdown, false);
   registry->RegisterStringPref(kAlwaysOnVpnPackage, std::string());
@@ -176,11 +164,6 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kArcTermsAccepted, false);
   registry->RegisterBooleanPref(kArcTermsShownInOobe, false);
   registry->RegisterListPref(kArcVisibleExternalStorages);
-  registry->RegisterTimeDeltaPref(kEngagementTimeBackground, base::TimeDelta());
-  registry->RegisterIntegerPref(kEngagementTimeDayId, 0);
-  registry->RegisterTimeDeltaPref(kEngagementTimeForeground, base::TimeDelta());
-  registry->RegisterStringPref(kEngagementTimeOsVersion, "");
-  registry->RegisterTimeDeltaPref(kEngagementTimeTotal, base::TimeDelta());
 }
 
 }  // namespace prefs

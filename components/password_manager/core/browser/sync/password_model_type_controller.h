@@ -24,8 +24,10 @@ class PasswordModelTypeController : public syncer::ModelTypeController,
                                     public syncer::SyncServiceObserver {
  public:
   PasswordModelTypeController(
-      std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate_on_disk,
-      std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate_in_memory,
+      std::unique_ptr<syncer::ModelTypeControllerDelegate>
+          delegate_for_full_sync_mode,
+      std::unique_ptr<syncer::ModelTypeControllerDelegate>
+          delegate_for_transport_mode,
       syncer::SyncService* sync_service,
       const base::RepeatingClosure& state_changed_callback);
   ~PasswordModelTypeController() override;
@@ -44,7 +46,7 @@ class PasswordModelTypeController : public syncer::ModelTypeController,
   const base::RepeatingClosure state_changed_callback_;
 
   // Passed in to LoadModels(), and cached here for later use in Stop().
-  syncer::StorageOption storage_option_ = syncer::STORAGE_ON_DISK;
+  syncer::SyncMode sync_mode_ = syncer::SyncMode::kFull;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordModelTypeController);
 };

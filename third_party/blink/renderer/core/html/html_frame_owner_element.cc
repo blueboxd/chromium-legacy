@@ -356,17 +356,18 @@ void HTMLFrameOwnerElement::SetEmbeddedContentView(
     }
   }
 
-  if (embedded_content_view_) {
-    if (embedded_content_view_->IsAttached()) {
-      embedded_content_view_->DetachFromLayout();
-      if (embedded_content_view_->IsPluginView())
-        DisposePluginSoon(ToWebPluginContainerImpl(embedded_content_view_));
+  EmbeddedContentView* old_view = embedded_content_view_.Get();
+  embedded_content_view_ = embedded_content_view;
+  if (old_view) {
+    if (old_view->IsAttached()) {
+      old_view->DetachFromLayout();
+      if (old_view->IsPluginView())
+        DisposePluginSoon(ToWebPluginContainerImpl(old_view));
       else
-        embedded_content_view_->Dispose();
+        old_view->Dispose();
     }
   }
 
-  embedded_content_view_ = embedded_content_view;
   FrameOwnerPropertiesChanged();
 
   GetDocument().GetRootScrollerController().DidUpdateIFrameFrameView(*this);

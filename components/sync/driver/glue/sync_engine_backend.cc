@@ -696,8 +696,8 @@ void SyncEngineBackend::LoadAndConnectNigoriController() {
   configure_context.authenticated_account_id = authenticated_account_id_;
   configure_context.cache_guid = sync_manager_->cache_guid();
   // TODO(crbug.com/922900): investigate whether we want to use
-  // STORAGE_IN_MEMORY in Butter mode.
-  configure_context.storage_option = STORAGE_ON_DISK;
+  // kTransportOnly in Butter mode.
+  configure_context.sync_mode = SyncMode::kFull;
   configure_context.configuration_start_time = base::Time::Now();
   nigori_controller_->LoadModels(configure_context, base::DoNothing());
   DCHECK_EQ(nigori_controller_->state(), DataTypeController::MODEL_LOADED);

@@ -5460,6 +5460,25 @@
             ]
         }
     ],
+    "SharedClipboard": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SharedClipboardUI"
+                    ]
+                }
+            ]
+        }
+    ],
     "Show109ObsoleteInfobar": [
         {
             "platforms": [

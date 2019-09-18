@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 21
+// Next MinVersion: 22
 
 module arc.mojom;
 
@@ -12,7 +12,7 @@ enum ArcSignInStatus {
   // Negative values are reserved for internal use.
   // The values are shuffled to keep the backward compatibility and don't match
   // ProvisioningResult in arc_optin_uma.h
-  // Next value: 21.
+  // Next value: 22.
   UNKNOWN_ERROR = 0,
 
   // Mojo errors:
@@ -80,7 +80,7 @@ enum ArcSignInStatus {
   [MinVersion=16] UNSUPPORTED_ACCOUNT_TYPE = 20,
 
   // Account is not present in Chrome OS Account Manager.
-  [MinVersion=17] CHROME_ACCOUNT_NOT_FOUND = 21,
+  [MinVersion=21] CHROME_ACCOUNT_NOT_FOUND = 21,
 };
 
 // These values describe account check status.

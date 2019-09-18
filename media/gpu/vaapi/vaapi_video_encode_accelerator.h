@@ -24,7 +24,6 @@
 namespace media {
 
 class VaapiEncodeJob;
-class VaapiPictureFactory;
 
 // A VideoEncodeAccelerator implementation that uses VA-API
 // (https://01.org/vaapi) for HW-accelerated video encode.
@@ -171,9 +170,6 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
 
   // Encoder state. Encode tasks will only run in kEncoding state.
   State state_;
-
-  // Creates VaapiPictures to wrap incoming DmaBufs in |native_input_mode_|.
-  std::unique_ptr<VaapiPictureFactory> vaapi_picture_factory_;
 
   // Encoder instance managing video codec state and preparing encode jobs.
   std::unique_ptr<AcceleratedVideoEncoder> encoder_;

@@ -50,8 +50,9 @@ SerialService::~SerialService() {
     DecrementActiveFrameCount();
 }
 
-void SerialService::Bind(blink::mojom::SerialServiceRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void SerialService::Bind(
+    mojo::PendingReceiver<blink::mojom::SerialService> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void SerialService::GetPorts(GetPortsCallback callback) {

@@ -130,6 +130,7 @@ LatencyInfo::LatencyInfo(SourceEventType type)
       predicted_scroll_update_delta_(0) {}
 
 LatencyInfo::LatencyInfo(const LatencyInfo& other) = default;
+LatencyInfo::LatencyInfo(LatencyInfo&& other) = default;
 
 LatencyInfo::~LatencyInfo() {}
 
@@ -142,6 +143,8 @@ LatencyInfo::LatencyInfo(int64_t trace_id, bool terminated)
       source_event_type_(SourceEventType::UNKNOWN),
       scroll_update_delta_(0),
       predicted_scroll_update_delta_(0) {}
+
+LatencyInfo& LatencyInfo::operator=(const LatencyInfo& other) = default;
 
 bool LatencyInfo::Verify(const std::vector<LatencyInfo>& latency_info,
                          const char* referring_msg) {

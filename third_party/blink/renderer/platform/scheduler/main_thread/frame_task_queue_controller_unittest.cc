@@ -197,16 +197,7 @@ TEST_F(FrameTaskQueueControllerTest, CreateAllTaskQueues) {
     EXPECT_FALSE(it == all_task_queues.end());
     EXPECT_EQ(it->value, QueueCheckResult::kDidNotSeeQueue);
     all_task_queues.Set(task_queue_ptr, QueueCheckResult::kDidSeeQueue);
-    if (task_queue_ptr->queue_type() ==
-            MainThreadTaskQueue::QueueType::kFrameLoading ||
-        task_queue_ptr->queue_type() ==
-            MainThreadTaskQueue::QueueType::kFrameLoadingControl) {
-      EXPECT_NE(voter, nullptr);
-    } else if (task_queue_ptr->GetQueueTraits().can_be_paused) {
-      EXPECT_NE(voter, nullptr);
-    } else {
-      EXPECT_EQ(voter, nullptr);
-    }
+    EXPECT_NE(voter, nullptr);
   }
 }
 

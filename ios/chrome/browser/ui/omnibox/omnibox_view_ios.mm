@@ -438,24 +438,13 @@ bool OmniboxViewIOS::OnWillChange(NSRange range, NSString* new_text) {
     [field_ setClearingPreEditText:YES];
 
     // Exit the pre-editing state in OnWillChange() instead of OnDidChange(), as
-    // that allows IME to continue working.
+    // that allows IME to continue working.  The following code selects the text
+    // as if the pre-edit fake selection was real.
     [field_ exitPreEditState];
 
-    if (@available(iOS 13, *)) {
-      // Exit pre-edit completely by setting the text to an empty string.
-      // On iOS 13, swiping keyboard acquires a lock that UITextField attempts
-      // to acquire when setSelectedTextRange: is called, causing a deadlock.
-      // Therefore this workaround is introduced. This probably introduces small
-      // issues with third-party keyboards, like crbug.com/875918 and
-      // crbug.com/873544. See crbug.com/988431 for more context.
-      [field_ setText:@""];
-    } else {
-      // The following code selects the text
-      // as if the pre-edit fake selection was real.
-      field_.selectedTextRange =
-          [field_ textRangeFromPosition:field_.beginningOfDocument
-                             toPosition:field_.endOfDocument];
-    }
+    field_.selectedTextRange =
+        [field_ textRangeFromPosition:field_.beginningOfDocument
+                           toPosition:field_.endOfDocument];
 
     // Reset |range| to be of zero-length at location zero, as the field will be
     // now cleared.

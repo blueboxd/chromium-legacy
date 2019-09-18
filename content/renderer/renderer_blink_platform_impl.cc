@@ -47,10 +47,8 @@
 #include "content/renderer/media/audio/audio_device_factory.h"
 #include "content/renderer/media/audio_decoder.h"
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
-#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
-#include "content/renderer/p2p/port_allocator.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/storage_util.h"
@@ -96,6 +94,7 @@
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_user_media_request.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -116,7 +115,6 @@
 #include "base/win/windows_version.h"
 #endif
 
-#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/rtc_certificate_generator.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
 
@@ -554,7 +552,7 @@ RendererBlinkPlatformImpl::CreateRTCPeerConnectionHandler(
   // RTCPeerConnection.
   UpdateWebRTCMethodCount(blink::WebRTCAPIName::kRTCPeerConnection);
 
-  PeerConnectionDependencyFactory* rtc_dependency_factory =
+  blink::PeerConnectionDependencyFactory* rtc_dependency_factory =
       render_thread->GetPeerConnectionDependencyFactory();
   return std::make_unique<RTCPeerConnectionHandler>(
       client, rtc_dependency_factory, task_runner);
@@ -573,7 +571,7 @@ scoped_refptr<base::SingleThreadTaskRunner>
 RendererBlinkPlatformImpl::GetWebRtcWorkerThread() {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   DCHECK(render_thread);
-  PeerConnectionDependencyFactory* rtc_dependency_factory =
+  blink::PeerConnectionDependencyFactory* rtc_dependency_factory =
       render_thread->GetPeerConnectionDependencyFactory();
   rtc_dependency_factory->EnsureInitialized();
   return rtc_dependency_factory->GetWebRtcWorkerThread();
@@ -582,7 +580,7 @@ RendererBlinkPlatformImpl::GetWebRtcWorkerThread() {
 rtc::Thread* RendererBlinkPlatformImpl::GetWebRtcWorkerThreadRtcThread() {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   DCHECK(render_thread);
-  PeerConnectionDependencyFactory* rtc_dependency_factory =
+  blink::PeerConnectionDependencyFactory* rtc_dependency_factory =
       render_thread->GetPeerConnectionDependencyFactory();
   rtc_dependency_factory->EnsureInitialized();
   return rtc_dependency_factory->GetWebRtcWorkerThreadRtcThread();
@@ -592,7 +590,7 @@ scoped_refptr<base::SingleThreadTaskRunner>
 RendererBlinkPlatformImpl::GetWebRtcSignalingTaskRunner() {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   DCHECK(render_thread);
-  PeerConnectionDependencyFactory* rtc_dependency_factory =
+  blink::PeerConnectionDependencyFactory* rtc_dependency_factory =
       render_thread->GetPeerConnectionDependencyFactory();
   rtc_dependency_factory->EnsureInitialized();
   return rtc_dependency_factory->GetWebRtcSignalingThread();
@@ -603,7 +601,7 @@ RendererBlinkPlatformImpl::CreateWebRtcPortAllocator(
     blink::WebLocalFrame* frame) {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   DCHECK(render_thread);
-  PeerConnectionDependencyFactory* rtc_dependency_factory =
+  blink::PeerConnectionDependencyFactory* rtc_dependency_factory =
       render_thread->GetPeerConnectionDependencyFactory();
   rtc_dependency_factory->EnsureInitialized();
   return rtc_dependency_factory->CreatePortAllocator(frame);
@@ -613,7 +611,7 @@ std::unique_ptr<webrtc::AsyncResolverFactory>
 RendererBlinkPlatformImpl::CreateWebRtcAsyncResolverFactory() {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   DCHECK(render_thread);
-  PeerConnectionDependencyFactory* rtc_dependency_factory =
+  blink::PeerConnectionDependencyFactory* rtc_dependency_factory =
       render_thread->GetPeerConnectionDependencyFactory();
   rtc_dependency_factory->EnsureInitialized();
   return rtc_dependency_factory->CreateAsyncResolverFactory();
@@ -624,7 +622,7 @@ RendererBlinkPlatformImpl::CreateWebRtcAsyncResolverFactory() {
 std::unique_ptr<webrtc::RtpCapabilities>
 RendererBlinkPlatformImpl::GetRtpSenderCapabilities(
     const blink::WebString& kind) {
-  PeerConnectionDependencyFactory* pc_dependency_factory =
+  blink::PeerConnectionDependencyFactory* pc_dependency_factory =
       RenderThreadImpl::current()->GetPeerConnectionDependencyFactory();
   pc_dependency_factory->EnsureInitialized();
   return pc_dependency_factory->GetSenderCapabilities(kind.Utf8());
@@ -633,7 +631,7 @@ RendererBlinkPlatformImpl::GetRtpSenderCapabilities(
 std::unique_ptr<webrtc::RtpCapabilities>
 RendererBlinkPlatformImpl::GetRtpReceiverCapabilities(
     const blink::WebString& kind) {
-  PeerConnectionDependencyFactory* pc_dependency_factory =
+  blink::PeerConnectionDependencyFactory* pc_dependency_factory =
       RenderThreadImpl::current()->GetPeerConnectionDependencyFactory();
   pc_dependency_factory->EnsureInitialized();
   return pc_dependency_factory->GetReceiverCapabilities(kind.Utf8());
@@ -671,7 +669,7 @@ RendererBlinkPlatformImpl::GetAudioSourceLatencyType(
 
 blink::WebRtcAudioDeviceImpl*
 RendererBlinkPlatformImpl::GetWebRtcAudioDevice() {
-  PeerConnectionDependencyFactory* pc_dependency_factory =
+  blink::PeerConnectionDependencyFactory* pc_dependency_factory =
       RenderThreadImpl::current()->GetPeerConnectionDependencyFactory();
   return pc_dependency_factory->GetWebRtcAudioDevice();
 }
@@ -697,6 +695,11 @@ bool RendererBlinkPlatformImpl::UsesFakeCodecForPeerConnection() {
 bool RendererBlinkPlatformImpl::IsWebRtcEncryptionEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableWebRtcEncryption);
+}
+
+bool RendererBlinkPlatformImpl::IsWebRtcStunOriginEnabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableWebRtcStunOrigin);
 }
 
 base::Optional<std::string>

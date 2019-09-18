@@ -8,6 +8,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/cpp/test/fake_serial_port_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,10 +57,10 @@ class SerialTest : public RenderViewHostImplTestHarness {
 TEST_F(SerialTest, OpenAndClosePort) {
   NavigateAndCommit(GURL(kTestUrl));
 
-  blink::mojom::SerialServicePtr service;
+  mojo::Remote<blink::mojom::SerialService> service;
   contents()->GetMainFrame()->BinderRegistryForTesting().BindInterface(
       blink::mojom::SerialService::Name_,
-      mojo::MakeRequest(&service).PassMessagePipe());
+      service.BindNewPipeAndPassReceiver().PassPipe());
 
   auto token = base::UnguessableToken::Create();
   auto port_info = device::mojom::SerialPortInfo::New();
@@ -81,10 +82,10 @@ TEST_F(SerialTest, OpenAndClosePort) {
 TEST_F(SerialTest, OpenAndNavigateCrossOrigin) {
   NavigateAndCommit(GURL(kTestUrl));
 
-  blink::mojom::SerialServicePtr service;
+  mojo::Remote<blink::mojom::SerialService> service;
   contents()->GetMainFrame()->BinderRegistryForTesting().BindInterface(
       blink::mojom::SerialService::Name_,
-      mojo::MakeRequest(&service).PassMessagePipe());
+      service.BindNewPipeAndPassReceiver().PassPipe());
 
   auto token = base::UnguessableToken::Create();
   auto port_info = device::mojom::SerialPortInfo::New();

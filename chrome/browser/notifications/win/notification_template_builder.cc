@@ -390,12 +390,17 @@ base::string16 BuildNotificationTemplate(
   if (!notification.buttons().empty())
     AddActions(&xml_writer, image_retainer, notification, launch_id);
   EnsureReminderHasButton(&xml_writer, notification, launch_id);
-  if (context_menu_label_override) {
-    AddContextMenu(&xml_writer, launch_id, context_menu_label_override);
+  if (notification.should_show_settings_button()) {
+    if (context_menu_label_override) {
+      AddContextMenu(&xml_writer, launch_id, context_menu_label_override);
+    } else {
+      AddContextMenu(&xml_writer, launch_id,
+                     l10n_util::GetStringUTF8(
+                         IDS_WIN_NOTIFICATION_SETTINGS_CONTEXT_MENU_ITEM_NAME));
+    }
   } else {
-    AddContextMenu(&xml_writer, launch_id,
-                   l10n_util::GetStringUTF8(
-                       IDS_WIN_NOTIFICATION_SETTINGS_CONTEXT_MENU_ITEM_NAME));
+    DCHECK(!context_menu_label_override)
+        << "Must show custom settings button label";
   }
   EndActionsElement(&xml_writer);
 

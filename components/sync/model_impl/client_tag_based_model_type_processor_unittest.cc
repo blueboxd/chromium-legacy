@@ -17,7 +17,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/platform_thread.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/storage_option.h"
+#include "components/sync/base/sync_mode.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/model/data_type_activation_request.h"
@@ -234,14 +234,14 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
   void OnSyncStarting(
       const std::string& authenticated_account_id = "SomeAccountId",
       const std::string& cache_guid = "TestCacheGuid",
-      StorageOption storage_option = STORAGE_ON_DISK) {
+      SyncMode sync_mode = SyncMode::kFull) {
     DataTypeActivationRequest request;
     request.error_handler = base::BindRepeating(
         &ClientTagBasedModelTypeProcessorTest::ErrorReceived,
         base::Unretained(this));
     request.cache_guid = cache_guid;
     request.authenticated_account_id = authenticated_account_id;
-    request.storage_option = storage_option;
+    request.sync_mode = sync_mode;
     request.configuration_start_time = base::Time::Now();
     type_processor()->OnSyncStarting(
         request,
@@ -1793,12 +1793,12 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   EXPECT_EQ(0U, db()->data_count());
 }
 
-// Tests that initial updates for ephemeral storage result in reporting setup
-// duration.
+// Tests that initial updates for transport-only mode (called "ephemeral
+// storage" for historical reasons) result in reporting setup duration.
 TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldReportEphemeralConfigurationTime) {
   InitializeToMetadataLoaded(/*initial_sync_done=*/false);
-  OnSyncStarting("SomeAccountId", "TestCacheGuid", STORAGE_IN_MEMORY);
+  OnSyncStarting("SomeAccountId", "TestCacheGuid", SyncMode::kTransportOnly);
 
   base::HistogramTester histogram_tester;
 
@@ -1817,12 +1817,12 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
       /*count=*/0);
 }
 
-// Tests that initial updates for persistent storage do not result in reporting
-// setup duration.
+// Tests that initial updates for full-sync mode (called "persistent storage"
+// for historical reasons) do not result in reporting setup duration.
 TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldReportPersistentConfigurationTime) {
   InitializeToMetadataLoaded(/*initial_sync_done=*/false);
-  OnSyncStarting("SomeAccountId", "TestCacheGuid", STORAGE_ON_DISK);
+  OnSyncStarting("SomeAccountId", "TestCacheGuid", SyncMode::kFull);
 
   base::HistogramTester histogram_tester;
 
@@ -1886,13 +1886,12 @@ TEST_F(FullUpdateClientTagBasedModelTypeProcessorTest,
   EXPECT_EQ(0U, db()->metadata_count());
   EXPECT_EQ(0U, worker()->GetNumPendingCommits());
 }
-
-// Tests that full updates for ephemeral storage result in reporting setup
-// duration.
+// Tests that full updates for transport-only mode (called "ephemeral storage"
+// for historical reasons) result in reporting setup duration.
 TEST_F(FullUpdateClientTagBasedModelTypeProcessorTest,
        ShouldReportEphemeralConfigurationTimeOnlyForFirstFullUpdate) {
   InitializeToMetadataLoaded(/*initial_sync_done=*/false);
-  OnSyncStarting("SomeAccountId", "TestCacheGuid", STORAGE_IN_MEMORY);
+  OnSyncStarting("SomeAccountId", "TestCacheGuid", SyncMode::kTransportOnly);
 
   UpdateResponseDataList updates1;
   updates1.push_back(worker()->GenerateUpdateData(

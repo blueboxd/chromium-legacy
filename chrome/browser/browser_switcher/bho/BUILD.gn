@@ -83,6 +83,7 @@ test("browser_switcher_bho_unittests") {
   ]
   deps = [
     "//base",
+    "//base/test:test_support",
     "//testing/gtest",
   ]
 }

@@ -3,6 +3,7 @@ include_rules = [
   "+chromeos/constants",
   "+chromeos/cryptohome",
   "+chromeos/dbus",
+  "+components/guest_os",
   "+components/account_id",
   "+components/exo",
   "+components/keyed_service",

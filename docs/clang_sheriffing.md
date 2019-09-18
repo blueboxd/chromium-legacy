@@ -169,11 +169,9 @@ To use `ld.lld`'s `--reproduce` flag, follow these steps:
 
 1. Copy the link command that ninja prints, `cd out/gn`, paste it, and manually
    append `-Wl,--reproduce,repro.tar`. With `lld-link`, instead append
-   `/linkrepro:.`. (`ld.lld`'s `--reproduce` takes a filename and is invoked
-   through the `clang` driver, so it needs `-Wl` to pass the flag through to
-   the linker. `lld-link`'s `/linkrepro:` takes a directory name and creates
-   a file called `repro.tar` in that directory. It's called directly, so the
-   flag needs no prefix.)
+   `/linkrepro:repro.tar`. (`ld.lld` is invoked through the `clang` driver, so
+   it needs `-Wl` to pass the flag through to the linker. `lld-link` is called
+   directly, so the flag needs no prefix.)
 
 1. Zip up the tar file: `gzip repro.tar`. This will take a few minutes and
    produce a .tar.gz file that's 0.5-1 GB.

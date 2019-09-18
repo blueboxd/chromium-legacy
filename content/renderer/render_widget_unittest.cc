@@ -184,7 +184,6 @@ class InteractiveRenderWidget : public RenderWidget {
       : RenderWidget(++next_routing_id_,
                      compositor_deps,
                      page_properties,
-                     ScreenInfo(),
                      blink::kWebDisplayModeUndefined,
                      false,
                      false,
@@ -457,7 +456,6 @@ class PopupRenderWidget : public RenderWidget {
       : RenderWidget(routing_id_++,
                      compositor_deps,
                      page_properties,
-                     ScreenInfo(),
                      blink::kWebDisplayModeUndefined,
                      false,
                      false,
@@ -537,7 +535,7 @@ class StubRenderWidgetDelegate : public RenderWidgetDelegate {
   bool ShouldAckSyntheticInputImmediately() override { return true; }
   void CancelPagePopupForWidget() override {}
   void ApplyNewDisplayModeForWidget(
-      const blink::WebDisplayMode& new_display_mode) override {}
+      blink::WebDisplayMode new_display_mode) override {}
   void ApplyAutoResizeLimitsForWidget(const gfx::Size& min_size,
                                       const gfx::Size& max_size) override {}
   void DisableAutoResizeForWidget() override {}

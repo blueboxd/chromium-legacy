@@ -420,19 +420,18 @@ std::unique_ptr<RenderWidget> RenderWidget::CreateForFrame(
     int32_t widget_routing_id,
     CompositorDependencies* compositor_deps,
     PageProperties* page_properties,
-    const ScreenInfo& screen_info,
     blink::WebDisplayMode display_mode,
     bool is_undead,
     bool never_visible) {
   if (g_create_render_widget_for_frame) {
     return g_create_render_widget_for_frame(
-        widget_routing_id, compositor_deps, page_properties, screen_info,
-        display_mode, is_undead, never_visible, mojo::NullReceiver());
+        widget_routing_id, compositor_deps, page_properties, display_mode,
+        is_undead, never_visible, mojo::NullReceiver());
   }
 
   return std::make_unique<RenderWidget>(
-      widget_routing_id, compositor_deps, page_properties, screen_info,
-      display_mode, is_undead,
+      widget_routing_id, compositor_deps, page_properties, display_mode,
+      is_undead,
       /*hidden=*/true, never_visible, mojo::NullReceiver());
 }
 
@@ -440,20 +439,18 @@ RenderWidget* RenderWidget::CreateForPopup(
     int32_t widget_routing_id,
     CompositorDependencies* compositor_deps,
     PageProperties* page_properties,
-    const ScreenInfo& screen_info,
     blink::WebDisplayMode display_mode,
     bool hidden,
     bool never_visible,
     mojo::PendingReceiver<mojom::Widget> widget_receiver) {
   return new RenderWidget(widget_routing_id, compositor_deps, page_properties,
-                          screen_info, display_mode, /*is_undead=*/false,
-                          hidden, never_visible, std::move(widget_receiver));
+                          display_mode, /*is_undead=*/false, hidden,
+                          never_visible, std::move(widget_receiver));
 }
 
 RenderWidget::RenderWidget(int32_t widget_routing_id,
                            CompositorDependencies* compositor_deps,
                            PageProperties* page_properties,
-                           const ScreenInfo& screen_info,
                            blink::WebDisplayMode display_mode,
                            bool is_undead,
                            bool hidden,
@@ -467,7 +464,6 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
       display_mode_(display_mode),
       is_undead_(is_undead),
       next_previous_flags_(kInvalidNextPreviousFlagsValue),
-      screen_info_(screen_info),
       frame_swap_message_queue_(new FrameSwapMessageQueue(routing_id_)),
       widget_receiver_(this, std::move(widget_receiver)) {
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
@@ -835,7 +831,7 @@ void RenderWidget::OnSynchronizeVisualProperties(
     if (visual_properties.is_fullscreen_granted == is_fullscreen_granted_ &&
         visual_properties.display_mode == display_mode_ &&
         visual_properties.screen_info.device_scale_factor ==
-            screen_info_.device_scale_factor)
+            page_properties_->GetDeviceScaleFactor())
       ignore_resize_ipc = true;
   }
 
@@ -918,7 +914,7 @@ void RenderWidget::OnEnableDeviceEmulation(
     const blink::WebDeviceEmulationParams& params) {
   if (!screen_metrics_emulator_) {
     VisualProperties visual_properties;
-    visual_properties.screen_info = screen_info_;
+    visual_properties.screen_info = page_properties_->GetScreenInfo();
     visual_properties.new_size = size_;
     visual_properties.compositor_viewport_pixel_rect = CompositorViewportRect();
     visual_properties.local_surface_id_allocation =
@@ -1841,12 +1837,13 @@ LayerTreeView* RenderWidget::InitializeLayerTreeView() {
       compositor_deps_->GetWebMainThreadScheduler());
   layer_tree_view_->Initialize(
       GenerateLayerTreeSettings(compositor_deps_, for_child_local_root_frame_,
-                                screen_info_.rect.size(),
-                                screen_info_.device_scale_factor),
+                                page_properties_->GetScreenInfo().rect.size(),
+                                page_properties_->GetDeviceScaleFactor()),
       compositor_deps_->CreateUkmRecorderFactory());
 
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
-                             CompositorViewportRect(), screen_info_);
+                             CompositorViewportRect(),
+                             page_properties_->GetScreenInfo());
   // If the widget is hidden, delay starting the compositor until the user shows
   // it. Also if the RenderWidget is undead, we delay starting the compositor
   // until we expect to use the widget, which will be signaled through
@@ -1992,13 +1989,13 @@ void RenderWidget::UpdateWebViewWithDeviceScaleFactor() {
   if (webview) {
     if (compositor_deps_->IsUseZoomForDSFEnabled())
       webview->SetZoomFactorForDeviceScaleFactor(
-          GetWebScreenInfo().device_scale_factor);
+          page_properties_->GetDeviceScaleFactor());
     else
-      webview->SetDeviceScaleFactor(GetWebScreenInfo().device_scale_factor);
+      webview->SetDeviceScaleFactor(page_properties_->GetDeviceScaleFactor());
 
     webview->GetSettings()->SetPreferCompositingToLCDTextEnabled(
         PreferCompositingToLCDText(compositor_deps_,
-                                   GetWebScreenInfo().device_scale_factor));
+                                   page_properties_->GetDeviceScaleFactor()));
   }
 }
 
@@ -2225,14 +2222,18 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
     const gfx::Rect& compositor_viewport_pixel_rect,
     const ScreenInfo& new_screen_info) {
   bool orientation_changed =
-      screen_info_.orientation_angle != new_screen_info.orientation_angle ||
-      screen_info_.orientation_type != new_screen_info.orientation_type;
+      page_properties_->GetScreenInfo().orientation_angle !=
+          new_screen_info.orientation_angle ||
+      page_properties_->GetScreenInfo().orientation_type !=
+          new_screen_info.orientation_type;
   bool web_device_scale_factor_changed =
-      screen_info_.device_scale_factor != new_screen_info.device_scale_factor;
+      page_properties_->GetScreenInfo().device_scale_factor !=
+      new_screen_info.device_scale_factor;
   ScreenInfo previous_original_screen_info = GetOriginalScreenInfo();
 
   local_surface_id_allocation_from_parent_ = new_local_surface_id_allocation;
-  screen_info_ = new_screen_info;
+
+  page_properties_->SetScreenInfo(new_screen_info);
 
   // Note carefully that the DSF specified in |new_screen_info| is not the
   // DSF used by the compositor during device emulation!
@@ -2244,7 +2245,7 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
   // which is set above.
   layer_tree_view_->SetViewportVisibleRect(ViewportVisibleRect());
   layer_tree_view_->SetRasterColorSpace(
-      screen_info_.color_space.GetRasterColorSpace());
+      page_properties_->GetScreenInfo().color_space.GetRasterColorSpace());
 
   if (orientation_changed)
     OnOrientationChange();
@@ -2265,11 +2266,11 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
 void RenderWidget::SetWindowRectSynchronously(
     const gfx::Rect& new_window_rect) {
   VisualProperties visual_properties;
-  visual_properties.screen_info = screen_info_;
+  visual_properties.screen_info = page_properties_->GetScreenInfo();
   visual_properties.new_size = new_window_rect.size();
   visual_properties.compositor_viewport_pixel_rect =
-      gfx::Rect(gfx::ScaleToCeiledSize(new_window_rect.size(),
-                                       GetWebScreenInfo().device_scale_factor));
+      gfx::Rect(gfx::ScaleToCeiledSize(
+          new_window_rect.size(), page_properties_->GetDeviceScaleFactor()));
   visual_properties.visible_viewport_size = new_window_rect.size();
   visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
   visual_properties.display_mode = display_mode_;
@@ -2701,11 +2702,12 @@ void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
     // calculation of |new_compositor_viewport_pixel_rect| does not appear to
     // take into account device emulation.
     layer_tree_view_->RequestNewLocalSurfaceId();
-    gfx::Rect new_compositor_viewport_pixel_rect = gfx::Rect(
-        gfx::ScaleToCeiledSize(size_, GetWebScreenInfo().device_scale_factor));
+    gfx::Rect new_compositor_viewport_pixel_rect =
+        gfx::Rect(gfx::ScaleToCeiledSize(
+            size_, page_properties_->GetDeviceScaleFactor()));
     UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
                                new_compositor_viewport_pixel_rect,
-                               screen_info_);
+                               page_properties_->GetScreenInfo());
   }
 }
 
@@ -3655,14 +3657,10 @@ void RenderWidget::OnWaitNextFrameForTests(
       main_frame_thread_observer_routing_id));
 }
 
-const ScreenInfo& RenderWidget::GetWebScreenInfo() const {
-  return screen_info_;
-}
-
 const ScreenInfo& RenderWidget::GetOriginalScreenInfo() const {
   return screen_metrics_emulator_
              ? screen_metrics_emulator_->original_screen_info()
-             : screen_info_;
+             : page_properties_->GetScreenInfo();
 }
 
 gfx::PointF RenderWidget::ConvertWindowPointToViewport(
@@ -3765,7 +3763,7 @@ void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {
   // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
   layer_tree_view_->RequestNewLocalSurfaceId();
 
-  ScreenInfo info = screen_info_;
+  ScreenInfo info = page_properties_->GetScreenInfo();
   info.device_scale_factor = factor;
   gfx::Size viewport_pixel_size = gfx::ScaleToCeiledSize(size_, factor);
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
@@ -3795,7 +3793,7 @@ void RenderWidget::SetDeviceColorSpaceForTesting(
   // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
   layer_tree_view_->RequestNewLocalSurfaceId();
 
-  ScreenInfo info = screen_info_;
+  ScreenInfo info = page_properties_->GetScreenInfo();
   info.color_space = color_space;
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
                              CompositorViewportRect(), info);
@@ -3826,7 +3824,7 @@ void RenderWidget::DisableAutoResizeForTesting(const gfx::Size& new_size) {
 
   VisualProperties visual_properties;
   visual_properties.auto_resize_enabled = false;
-  visual_properties.screen_info = screen_info_;
+  visual_properties.screen_info = page_properties_->GetScreenInfo();
   visual_properties.new_size = new_size;
   visual_properties.compositor_viewport_pixel_rect = CompositorViewportRect();
   visual_properties.browser_controls_shrink_blink_size =

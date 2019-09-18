@@ -5586,6 +5586,17 @@ Unknown properties are collapsed to zero. -->
   <int value="24" label="From out-of-scope app window to popup."/>
 </enum>
 
+<enum name="BookmarkGUIDSource">
+  <summary>
+    Whether a GUID came from BookmarkSpecifics, or, in case it was missing,
+    whether an originator_client_item_id of valid GUID format replaced it or it
+    was left empty.
+  </summary>
+  <int value="0" label="Specifics have a GUID"/>
+  <int value="1" label="originator_client_item_id is a valid GUID"/>
+  <int value="2" label="GUID field left empty"/>
+</enum>
+
 <enum name="BookmarkLaunchLocation">
   <int value="0" label="Attached bookmark bar"/>
   <int value="1" label="Detached (floating) bookmark bar"/>
@@ -32369,6 +32380,14 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="7" label="Not started - No refresh token"/>
 </enum>
 
+<enum name="InvalidBookmarkSpecificsError">
+  <int value="0" label="Empty specifics"/>
+  <int value="1" label="Invalid URL"/>
+  <int value="2" label="icon_url with missing favicon"/>
+  <int value="3" label="Invalid icon_url"/>
+  <int value="4" label="Non-unique meta_info keys"/>
+</enum>
+
 <enum name="InvalidOriginReason">
   <int value="0" label="Opaque Origin"/>
   <int value="1" label="Empty URL"/>
@@ -33860,6 +33879,19 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="44" label="SBOX_ERROR_CREATE_APPCONTAINER_PROFILE"/>
   <int value="45" label="SBOX_ERROR_CREATE_APPCONTAINER_PROFILE_ACCESS_CHECK"/>
   <int value="46" label="SBOX_ERROR_CREATE_APPCONTAINER_PROFILE_CAPABILITY"/>
+  <int value="47" label="SBOX_ERROR_CANNOT_INIT_JOB"/>
+  <int value="48" label="SBOX_ERROR_INVALID_LOWBOX_SID"/>
+  <int value="49" label="SBOX_ERROR_CANNOT_CREATE_RESTRICTED_TOKEN"/>
+  <int value="50" label="SBOX_ERROR_CANNOT_SET_DESKTOP_INTEGRITY"/>
+  <int value="51" label="SBOX_ERROR_CANNOT_CREATE_LOWBOX_TOKEN"/>
+  <int value="52" label="SBOX_ERROR_CANNOT_MODIFY_LOWBOX_TOKEN_DACL"/>
+  <int value="53" label="SBOX_ERROR_CANNOT_CREATE_RESTRICTED_IMP_TOKEN"/>
+  <int value="54" label="SBOX_ERROR_CANNOT_DUPLICATE_PROCESS_HANDLE"/>
+  <int value="55" label="SBOX_ERROR_CANNOT_LOADLIBRARY_EXECUTABLE"/>
+  <int value="56" label="SBOX_ERROR_CANNOT_FIND_VARIABLE_ADDRESS"/>
+  <int value="57" label="SBOX_ERROR_CANNOT_WRITE_VARIABLE_VALUE"/>
+  <int value="58" label="SBOX_ERROR_INVALID_WRITE_VARIABLE_SIZE"/>
+  <int value="59" label="SBOX_ERROR_CANNOT_INIT_BROKERSERVICES"/>
   <int value="1002" label="LAUNCH_RESULT_SUCCESS"/>
   <int value="1003" label="LAUNCH_RESULT_FAILURE"/>
 </enum>
@@ -50293,6 +50325,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="12" label="Sign-out button"/>
   <int value="13" label="Switch to another profile button"/>
   <int value="14" label="Cookies cleared on exit link"/>
+  <int value="15" label="Add new profile button"/>
 </enum>
 
 <enum name="ProfileNetUserCount">

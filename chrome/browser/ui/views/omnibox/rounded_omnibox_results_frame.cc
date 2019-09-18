@@ -122,7 +122,7 @@ gfx::Insets GetContentInsets() {
 
 RoundedOmniboxResultsFrame::RoundedOmniboxResultsFrame(
     views::View* contents,
-    const LocationBarView* location_bar)
+    LocationBarView* location_bar)
     : contents_(contents) {
   // Host the contents in its own View to simplify layout and clipping.
   contents_host_ = new views::View();

@@ -521,7 +521,7 @@ void NativeThemeBase::PaintCheckbox(cc::PaintCanvas* canvas,
                                     const gfx::Rect& rect,
                                     const ButtonExtraParams& button,
                                     ColorScheme color_scheme) const {
-  SkRect skrect = PaintCheckboxRadioCommon(canvas, state, rect,
+  SkRect skrect = PaintCheckboxRadioCommon(canvas, state, rect, button, true,
                                            SkIntToScalar(2), color_scheme);
   if (!skrect.isEmpty()) {
     // Draw the checkmark / dash.
@@ -559,6 +559,8 @@ SkRect NativeThemeBase::PaintCheckboxRadioCommon(
     cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
+    const ButtonExtraParams& button,
+    bool is_checkbox,
     const SkScalar borderRadius,
     ColorScheme color_scheme) const {
   SkRect skrect = gfx::RectToSkRect(rect);
@@ -651,8 +653,8 @@ void NativeThemeBase::PaintRadio(cc::PaintCanvas* canvas,
   // square is a circle (i.e. border radius >= 100%).
   const SkScalar radius = SkFloatToScalar(
       static_cast<float>(std::max(rect.width(), rect.height())) / 2);
-  SkRect skrect =
-      PaintCheckboxRadioCommon(canvas, state, rect, radius, color_scheme);
+  SkRect skrect = PaintCheckboxRadioCommon(canvas, state, rect, button, false,
+                                           radius, color_scheme);
   if (!skrect.isEmpty() && button.checked) {
     // Draw the dot.
     cc::PaintFlags flags;

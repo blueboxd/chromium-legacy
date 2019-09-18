@@ -30,6 +30,7 @@
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
+#include "ui/views/controls/link.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/controls/styled_label.h"
@@ -228,6 +229,40 @@ void ProfileMenuViewBase::SetIdentityInfo(const gfx::Image& image,
   }
 }
 
+void ProfileMenuViewBase::SetSyncInfo(const base::string16& description,
+                                      const base::string16& link_text,
+                                      base::RepeatingClosure action) {
+  constexpr int kVerticalPadding = 8;
+
+  sync_info_container_->RemoveAllChildViews(/*delete_children=*/true);
+  sync_info_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
+
+  views::View* separator =
+      sync_info_container_->AddChildView(std::make_unique<views::Separator>());
+  separator->SetBorder(
+      views::CreateEmptyBorder(0, 0, /*bottom=*/kVerticalPadding, 0));
+
+  if (!description.empty()) {
+    views::Label* label = sync_info_container_->AddChildView(
+        std::make_unique<views::Label>(description));
+    label->SetMultiLine(true);
+    label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+    label->SetHandlesTooltips(false);
+    label->SetBorder(views::CreateEmptyBorder(gfx::Insets(0, kMenuEdgeMargin)));
+  }
+
+  views::Link* link = sync_info_container_->AddChildView(
+      std::make_unique<views::Link>(link_text));
+  link->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  link->set_listener(this);
+  link->SetBorder(views::CreateEmptyBorder(/*top=*/0, /*left=*/kMenuEdgeMargin,
+                                           /*bottom=*/kVerticalPadding,
+                                           /*right=*/kMenuEdgeMargin));
+
+  RegisterClickAction(link, std::move(action));
+}
+
 void ProfileMenuViewBase::AddShortcutFeatureButton(
     const gfx::VectorIcon& icon,
     const base::string16& text,
@@ -395,6 +430,10 @@ void ProfileMenuViewBase::ButtonPressed(views::Button* button,
   OnClick(button);
 }
 
+void ProfileMenuViewBase::LinkClicked(views::Link* link, int event_flags) {
+  OnClick(link);
+}
+
 void ProfileMenuViewBase::StyledLabelLinkClicked(views::StyledLabel* link,
                                                  const gfx::Range& range,
                                                  int event_flags) {
@@ -440,6 +479,8 @@ void ProfileMenuViewBase::Reset() {
   identity_info_container_ =
       bordered_box_container->AddChildView(std::make_unique<views::View>());
   shortcut_features_container_ =
+      bordered_box_container->AddChildView(std::make_unique<views::View>());
+  sync_info_container_ =
       bordered_box_container->AddChildView(std::make_unique<views::View>());
   account_features_container_ =
       bordered_box_container->AddChildView(std::make_unique<views::View>());

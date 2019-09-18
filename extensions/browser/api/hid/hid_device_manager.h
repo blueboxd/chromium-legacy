@@ -18,7 +18,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/common/api/hid.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/hid.mojom.h"
@@ -125,7 +125,7 @@ class HidDeviceManager : public BrowserContextKeyedAPI,
   EventRouter* event_router_ = nullptr;
   bool initialized_ = false;
   mojo::Remote<device::mojom::HidManager> hid_manager_;
-  mojo::AssociatedBinding<device::mojom::HidManagerClient> binding_;
+  mojo::AssociatedReceiver<device::mojom::HidManagerClient> receiver_{this};
   bool enumeration_ready_ = false;
   std::vector<std::unique_ptr<GetApiDevicesParams>> pending_enumerations_;
   int next_resource_id_ = 0;

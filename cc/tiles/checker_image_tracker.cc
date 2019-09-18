@@ -209,6 +209,7 @@ void CheckerImageTracker::ClearTracker(bool can_clear_decode_policy_tracking) {
   image_id_to_decode_.clear();
 
   if (can_clear_decode_policy_tracking) {
+    decoding_mode_map_.clear();
     image_async_decode_state_.clear();
   } else {
     // If we can't clear the decode policy, we need to make sure we still

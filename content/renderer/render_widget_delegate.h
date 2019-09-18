@@ -52,7 +52,7 @@ class CONTENT_EXPORT RenderWidgetDelegate {
   // display mode that will be applied to the RenderWidget. The display mode in
   // the RenderWidget is already changed when this method is called.
   virtual void ApplyNewDisplayModeForWidget(
-      const blink::WebDisplayMode& new_display_mode) = 0;
+      blink::WebDisplayMode new_display_mode) = 0;
   // Called during handling a SynchronizeVisualProperties message, if auto
   // resize is enabled, with the new auto size limits.
   virtual void ApplyAutoResizeLimitsForWidget(const gfx::Size& min_size,

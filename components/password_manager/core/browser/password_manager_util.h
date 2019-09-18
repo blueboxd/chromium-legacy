@@ -122,6 +122,7 @@ base::StringPiece GetSignonRealmWithProtocolExcluded(
 void FindBestMatches(
     const std::vector<const autofill::PasswordForm*>& non_federated_matches,
     autofill::PasswordForm::Scheme scheme,
+    bool sort_matches_by_date_last_used,
     std::vector<const autofill::PasswordForm*>* non_federated_same_scheme,
     std::map<base::string16, const autofill::PasswordForm*>* best_matches,
     const autofill::PasswordForm** preferred_match);

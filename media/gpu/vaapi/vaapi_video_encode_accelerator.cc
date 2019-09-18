@@ -35,7 +35,6 @@
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/h264_encoder.h"
 #include "media/gpu/vaapi/vaapi_common.h"
-#include "media/gpu/vaapi/vaapi_picture_factory.h"
 #include "media/gpu/vaapi/vp8_encoder.h"
 #include "media/gpu/vaapi/vp9_encoder.h"
 #include "media/gpu/vp8_reference_frame_vector.h"
@@ -85,7 +84,6 @@ class VaapiEncodeJob : public AcceleratedVideoEncoder::EncodeJob {
                  base::OnceClosure execute_cb,
                  scoped_refptr<VASurface> input_surface,
                  scoped_refptr<VASurface> reconstructed_surface,
-                 std::unique_ptr<VaapiPicture> va_picture,
                  VABufferID coded_buffer_id);
 
   VaapiEncodeJob* AsVaapiEncodeJob() override { return this; }
@@ -107,10 +105,6 @@ class VaapiEncodeJob : public AcceleratedVideoEncoder::EncodeJob {
   // Surface for the reconstructed picture, used for reference
   // for subsequent frames.
   const scoped_refptr<VASurface> reconstructed_surface_;
-
-  // VAPicture associated with |input_surface_|. This member value is to just
-  // keep VAPicture alive as long as input_surface_ is alive, but not used.
-  const std::unique_ptr<VaapiPicture> va_picture_;
 
   // Buffer that will contain the output bitstream data for this frame.
   VABufferID coded_buffer_id_;
@@ -284,12 +278,6 @@ bool VaapiVideoEncodeAccelerator::Initialize(const Config& config,
     VLOGF(1) << "Unsupported output profile "
              << GetProfileName(config.output_profile);
     return false;
-  }
-
-  if (native_input_mode_) {
-    VLOGF(2) << "DMABuf mode: VaapiVEA will accept DMABuf-backed VideoFrame on "
-             << "Encode()";
-    vaapi_picture_factory_ = std::make_unique<VaapiPictureFactory>();
   }
 
   if (config.input_visible_size.width() > profile->max_resolution.width() ||
@@ -522,8 +510,11 @@ scoped_refptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
     scoped_refptr<VideoFrame> frame,
     bool force_keyframe) {
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
-  if (native_input_mode_ != frame->HasDmaBufs()) {
-    NOTIFY_ERROR(kPlatformFailureError, "Unexpected storage");
+  if (native_input_mode_ &&
+      frame->storage_type() != VideoFrame::STORAGE_DMABUFS &&
+      frame->storage_type() != VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
+    NOTIFY_ERROR(kPlatformFailureError,
+                 "Unexpected storage: " << frame->storage_type());
     return nullptr;
   }
 
@@ -539,47 +530,25 @@ scoped_refptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
     return nullptr;
   }
 
-  VASurfaceID va_input_surface_id = VA_INVALID_ID;
-  std::unique_ptr<VaapiPicture> va_picture;
+  scoped_refptr<VASurface> input_surface;
   if (native_input_mode_) {
-    DCHECK(vaapi_picture_factory_);
     if (frame->format() != PIXEL_FORMAT_NV12) {
-      NOTIFY_ERROR(kPlatformFailureError, "Unexpected format, expected NV12");
-      return nullptr;
-    }
-    constexpr int32_t kDummyPictureBufferId = 0;
-    // Passing empty callbacks is ok, because given PictureBuffer doesn't have
-    // texture id and thus these callbacks will never called.
-    va_picture = vaapi_picture_factory_->Create(
-        vaapi_wrapper_, MakeGLContextCurrentCallback(), BindGLImageCallback(),
-        PictureBuffer(kDummyPictureBufferId, frame->coded_size()));
-    gfx::GpuMemoryBufferHandle gmb_handle =
-        CreateGpuMemoryBufferHandle(frame.get());
-    DCHECK(!gmb_handle.is_null());
-
-    auto buffer_format = VideoPixelFormatToGfxBufferFormat(frame->format());
-    if (!buffer_format) {
-      NOTIFY_ERROR(kInvalidArgumentError,
-                   "Unsupported format: " << frame->format());
-      return nullptr;
-    }
-    if (!va_picture->ImportGpuMemoryBufferHandle(*buffer_format,
-                                                 std::move(gmb_handle))) {
       NOTIFY_ERROR(kPlatformFailureError,
-                   "Failed in ImportGpuMemoryBufferHandle");
+                   "Expected NV12, got: " << frame->format());
       return nullptr;
     }
 
-    va_input_surface_id = va_picture->va_surface_id();
+    input_surface = vaapi_wrapper_->CreateVASurfaceForVideoFrame(frame.get());
+    if (!input_surface) {
+      NOTIFY_ERROR(kPlatformFailureError, "Failed to create VASurface");
+      return nullptr;
+    }
   } else {
-    va_input_surface_id = available_va_surface_ids_.back();
+    input_surface =
+        new VASurface(available_va_surface_ids_.back(), coded_size_,
+                      kVaSurfaceFormat, base::BindOnce(va_surface_release_cb_));
     available_va_surface_ids_.pop_back();
   }
-
-  scoped_refptr<VASurface> input_surface = new VASurface(
-      va_input_surface_id, coded_size_, kVaSurfaceFormat,
-      native_input_mode_ ? base::DoNothing()
-                         : base::BindOnce(va_surface_release_cb_));
 
   scoped_refptr<VASurface> reconstructed_surface =
       new VASurface(available_va_surface_ids_.back(), coded_size_,
@@ -590,8 +559,7 @@ scoped_refptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
       frame, force_keyframe,
       base::BindOnce(&VaapiVideoEncodeAccelerator::ExecuteEncode,
                      base::Unretained(this), input_surface->id()),
-      input_surface, reconstructed_surface, std::move(va_picture),
-      coded_buffer_id);
+      input_surface, std::move(reconstructed_surface), coded_buffer_id);
 
   if (!native_input_mode_) {
     job->AddSetupCallback(
@@ -809,12 +777,10 @@ VaapiEncodeJob::VaapiEncodeJob(scoped_refptr<VideoFrame> input_frame,
                                base::OnceClosure execute_cb,
                                scoped_refptr<VASurface> input_surface,
                                scoped_refptr<VASurface> reconstructed_surface,
-                               std::unique_ptr<VaapiPicture> va_picture,
                                VABufferID coded_buffer_id)
     : EncodeJob(input_frame, keyframe, std::move(execute_cb)),
       input_surface_(input_surface),
       reconstructed_surface_(reconstructed_surface),
-      va_picture_(std::move(va_picture)),
       coded_buffer_id_(coded_buffer_id) {
   DCHECK(input_surface_);
   DCHECK(reconstructed_surface_);

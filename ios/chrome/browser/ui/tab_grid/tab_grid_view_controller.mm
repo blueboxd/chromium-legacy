@@ -27,7 +27,6 @@
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_layout.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -1118,8 +1117,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     // No assumption is made as to the state of the UI. This method can be
     // called with an incognito view controller and a current page that is not
     // the incognito tabs.
-    if (IsClosingLastIncognitoTabEnabled() && count == 0 &&
-        self.currentPage == TabGridPageIncognitoTabs) {
+    if (count == 0 && self.currentPage == TabGridPageIncognitoTabs) {
       // Show the regular tabs to the user if the last incognito tab is closed.
       if (self.viewLoaded && self.view.window) {
         // Visibly scroll to the regular tabs panel after a slight delay when

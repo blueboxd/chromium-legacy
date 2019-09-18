@@ -1464,8 +1464,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   // RenderFrame.
   render_view->render_widget_ = RenderWidget::CreateForFrame(
       params->main_frame_widget_routing_id, compositor_deps,
-      render_view->page_properties(), params->visual_properties.screen_info,
-      params->visual_properties.display_mode,
+      render_view->page_properties(), params->visual_properties.display_mode,
       /*is_undead=*/params->main_frame_routing_id == MSG_ROUTING_NONE,
       params->never_visible);
   render_view->GetWidget()->set_delegate(render_view);
@@ -1677,18 +1676,12 @@ void RenderFrameImpl::CreateFrame(
     // and the main frame, thus its coordinate space etc is not known relative
     // to the main frame.
 
-    // TODO(crbug.com/419087): This is grabbing something off the view's
-    // widget but if the main frame is remote this widget would not be valid?
-    const ScreenInfo& screen_info_from_main_frame =
-        render_view->GetWidget()->GetWebScreenInfo();
-
     // Makes a new RenderWidget for the child local root. It provides the
     // local root with a new compositing, painting, and input coordinate
     // space/context.
     std::unique_ptr<RenderWidget> render_widget = RenderWidget::CreateForFrame(
         widget_params.routing_id, compositor_deps,
-        render_view->page_properties(), screen_info_from_main_frame,
-        blink::kWebDisplayModeUndefined,
+        render_view->page_properties(), blink::kWebDisplayModeUndefined,
         /*is_undead=*/false, /*never_visible=*/false);
 
     // Non-owning pointer that is self-referencing and destroyed by calling
@@ -2154,13 +2147,10 @@ RenderWidgetFullscreenPepper* RenderFrameImpl::CreatePepperFullscreenContainer(
       base::BindOnce(&RenderViewImpl::ShowCreatedFullscreenWidget,
                      render_view()->GetWeakPtr());
 
-  // TODO(fsamuel): It's not clear if we should be passing in the
-  // web ScreenInfo or the original ScreenInfo here.
   RenderWidgetFullscreenPepper* widget = RenderWidgetFullscreenPepper::Create(
       fullscreen_widget_routing_id, std::move(show_callback),
       GetLocalRootRenderWidget()->compositor_deps(),
       render_view()->page_properties(), plugin, std::move(main_frame_url),
-      GetLocalRootRenderWidget()->GetWebScreenInfo(),
       std::move(widget_channel_receiver));
   // TODO(nick): The show() handshake seems like unnecessary complexity here,
   // since there's no real delay between CreateFullscreenWidget and

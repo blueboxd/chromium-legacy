@@ -7,6 +7,10 @@
 #include <map>
 #include <utility>
 
+#if OS_LINUX
+#include <sys/stat.h>
+#endif
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -393,6 +397,11 @@ ExternalMojoBroker::ExternalMojoBroker(const std::string& broker_path) {
   mojo::PlatformChannelServerEndpoint server_endpoint =
       named_channel.TakeServerEndpoint();
   DCHECK(server_endpoint.is_valid());
+
+#if OS_LINUX
+  chmod(broker_path.c_str(), 0770);
+#endif
+
   read_watcher_ = std::make_unique<ReadWatcher>(
       connector_.get(), server_endpoint.TakePlatformHandle());
 }

@@ -14,10 +14,11 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "device/fido/fido_constants.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/device/public/mojom/hid.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -29,9 +30,10 @@ namespace device {
 
 class MockFidoHidConnection : public device::mojom::HidConnection {
  public:
-  explicit MockFidoHidConnection(device::mojom::HidDeviceInfoPtr device,
-                                 device::mojom::HidConnectionRequest request,
-                                 std::array<uint8_t, 4> connection_channel_id);
+  explicit MockFidoHidConnection(
+      device::mojom::HidDeviceInfoPtr device,
+      mojo::PendingReceiver<device::mojom::HidConnection> receiver,
+      std::array<uint8_t, 4> connection_channel_id);
 
   ~MockFidoHidConnection() override;
   MOCK_METHOD1(ReadPtr, void(ReadCallback* callback));
@@ -62,7 +64,7 @@ class MockFidoHidConnection : public device::mojom::HidConnection {
   const std::vector<uint8_t>& nonce() const { return nonce_; }
 
  private:
-  mojo::Binding<device::mojom::HidConnection> binding_;
+  mojo::Receiver<device::mojom::HidConnection> receiver_;
   device::mojom::HidDeviceInfoPtr device_;
   std::vector<uint8_t> nonce_;
   std::array<uint8_t, 4> connection_channel_id_;
@@ -115,14 +117,16 @@ class FakeFidoHidManager : public device::mojom::HidManager {
   void AddReceiver(mojo::ScopedMessagePipeHandle handle);
   void AddReceiver2(mojo::PendingReceiver<device::mojom::HidManager> receiver);
   void AddDevice(device::mojom::HidDeviceInfoPtr device);
-  void AddDeviceAndSetConnection(device::mojom::HidDeviceInfoPtr device,
-                                 device::mojom::HidConnectionPtr connection);
+  void AddDeviceAndSetConnection(
+      device::mojom::HidDeviceInfoPtr device,
+      mojo::PendingRemote<device::mojom::HidConnection> connection);
   void RemoveDevice(const std::string device_guid);
 
  private:
   std::map<std::string, device::mojom::HidDeviceInfoPtr> devices_;
-  std::map<std::string, device::mojom::HidConnectionPtr> connections_;
-  mojo::AssociatedInterfacePtrSet<device::mojom::HidManagerClient> clients_;
+  std::map<std::string, mojo::PendingRemote<device::mojom::HidConnection>>
+      connections_;
+  mojo::AssociatedRemoteSet<device::mojom::HidManagerClient> clients_;
   mojo::ReceiverSet<device::mojom::HidManager> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeFidoHidManager);

@@ -619,7 +619,7 @@ void RenderFrameHostManager::DidCreateNavigationRequest(
     request->set_associated_site_instance_type(
         NavigationRequest::AssociatedSiteInstanceType::CURRENT);
   } else {
-    RenderFrameHostImpl* dest_rfh = GetFrameHostForNavigation(*request);
+    RenderFrameHostImpl* dest_rfh = GetFrameHostForNavigation(request);
     DCHECK(dest_rfh);
     request->set_associated_site_instance_type(
         dest_rfh == render_frame_host_.get()
@@ -629,8 +629,8 @@ void RenderFrameHostManager::DidCreateNavigationRequest(
 }
 
 RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
-    const NavigationRequest& request) {
-  DCHECK(!request.common_params().url.SchemeIs(url::kJavaScriptScheme))
+    NavigationRequest* request) {
+  DCHECK(!request->common_params().url.SchemeIs(url::kJavaScriptScheme))
       << "Don't call this method for JavaScript URLs as those create a "
          "temporary  NavigationRequest and we don't want to reset an ongoing "
          "navigation's speculative RFH.";
@@ -639,7 +639,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
   // See https://crbug.com/926820 and https://crbug.com/927705.
   if (!current_frame_host()->is_active()) {
     NOTREACHED() << "Navigation in an inactive frame";
-    DEBUG_ALIAS_FOR_GURL(url, request.common_params().url);
+    DEBUG_ALIAS_FOR_GURL(url, request->common_params().url);
     base::debug::DumpWithoutCrashing();
   }
 
@@ -679,7 +679,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
       // don't know which of the entries is the pending one, we have to try them
       // all.
       // TODO(clamy): Clean this up.
-      if (request.from_begin_navigation()) {
+      if (request->from_begin_navigation()) {
         std::set<int> ids = speculative_render_frame_host_
                                 ->GetNavigationEntryIdsPendingCommit();
         for (int id : ids)
@@ -693,8 +693,8 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     // support it.
     // TODO(crbug.com/713313): Make WebUI objects always be per-frame instead.
     if (frame_tree_node_->IsMainFrame()) {
-      UpdatePendingWebUIOnCurrentFrameHost(request.common_params().url,
-                                           request.bindings());
+      UpdatePendingWebUIOnCurrentFrameHost(request->common_params().url,
+                                           request->bindings());
     }
 
     navigation_rfh = render_frame_host_.get();
@@ -724,7 +724,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
       // don't know which of the entries is the pending one, we have to try them
       // all.
       // TODO(clamy): Clean this up.
-      if (request.from_begin_navigation() && speculative_render_frame_host_) {
+      if (request->from_begin_navigation() && speculative_render_frame_host_) {
         std::set<int> ids = speculative_render_frame_host_
                                 ->GetNavigationEntryIdsPendingCommit();
         for (int id : ids)
@@ -747,7 +747,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     // TODO(crbug.com/713313): Make WebUI objects always be per-frame instead.
     if (frame_tree_node_->IsMainFrame()) {
       bool changed_web_ui = speculative_render_frame_host_->UpdatePendingWebUI(
-          request.common_params().url, request.bindings());
+          request->common_params().url, request->bindings());
       speculative_render_frame_host_->CommitPendingWebUI();
       DCHECK_EQ(GetNavigatingWebUI(), speculative_render_frame_host_->web_ui());
       notify_webui_of_rf_creation =
@@ -840,10 +840,10 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   const GURL& lock_url = navigation_rfh->GetSiteInstance()->lock_url();
   if (lock_url != GURL(kUnreachableWebDataURL) &&
-      request.common_params().url.IsStandard() &&
+      request->common_params().url.IsStandard() &&
       !policy->CanAccessDataForOrigin(navigation_rfh->GetProcess()->GetID(),
-                                      request.common_params().url) &&
-      !request.IsForMhtmlSubframe()) {
+                                      request->common_params().url) &&
+      !request->IsForMhtmlSubframe()) {
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("lock_url",
                                             base::debug::CrashKeySize::Size64),
@@ -851,7 +851,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("commit_origin",
                                             base::debug::CrashKeySize::Size64),
-        request.common_params().url.GetOrigin().spec());
+        request->common_params().url.GetOrigin().spec());
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("is_main_frame",
                                             base::debug::CrashKeySize::Size32),
@@ -861,7 +861,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
                                             base::debug::CrashKeySize::Size32),
         use_current_rfh ? "true" : "false");
     NOTREACHED() << "Picked an incompatible process for URL: " << lock_url
-                 << " lock vs " << request.common_params().url.GetOrigin();
+                 << " lock vs " << request->common_params().url.GetOrigin();
     base::debug::DumpWithoutCrashing();
   }
 
@@ -2218,34 +2218,33 @@ bool RenderFrameHostManager::InitRenderView(
 
 scoped_refptr<SiteInstance>
 RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
-    const NavigationRequest& request) {
+    NavigationRequest* request) {
   SiteInstance* current_site_instance = render_frame_host_->GetSiteInstance();
 
   // All children of MHTML documents must be MHTML documents. They all live in
   // the same process.
-  if (request.IsForMhtmlSubframe())
+  if (request->IsForMhtmlSubframe())
     return base::WrapRefCounted(current_site_instance);
 
   // Srcdoc documents are always in the same SiteInstance as their parent. They
   // load their content from the "srcdoc" iframe attribute which lives in the
   // parent's process.
   RenderFrameHostImpl* parent = render_frame_host_->GetParent();
-  if (parent && request.common_params().url.IsAboutSrcdoc())
+  if (parent && request->common_params().url.IsAboutSrcdoc())
     return base::WrapRefCounted(parent->GetSiteInstance());
 
   // First, check if the navigation can switch SiteInstances. If not, the
   // navigation should use the current SiteInstance.
   bool no_renderer_swap_allowed = false;
   bool should_swap_for_error_isolation = false;
-  bool was_server_redirect = request.navigation_handle() &&
-                             request.navigation_handle()->WasServerRedirect();
+  bool was_server_redirect = request->WasServerRedirect();
 
   // When error page isolation is enabled, each navigation that crosses
   // from a success to failure and vice versa needs to do a process swap.
   if (SiteIsolationPolicy::IsErrorPageIsolationEnabled(
           frame_tree_node_->IsMainFrame())) {
     should_swap_for_error_isolation =
-        (request.state() == NavigationRequest::FAILED) !=
+        (request->state() == NavigationRequest::FAILED) !=
         (current_site_instance->GetSiteURL() == GURL(kUnreachableWebDataURL));
   }
 
@@ -2258,17 +2257,17 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
     // mode, it is possible for renderer-intiated navigations to be allowed to
     // go cross-process. Check it first.
     bool can_renderer_initiate_transfer =
-        IsURLHandledByNetworkStack(request.common_params().url) &&
+        IsURLHandledByNetworkStack(request->common_params().url) &&
         IsRendererTransferNeededForNavigation(render_frame_host_.get(),
-                                              request.common_params().url);
+                                              request->common_params().url);
     no_renderer_swap_allowed |=
-        request.from_begin_navigation() && !can_renderer_initiate_transfer;
+        request->from_begin_navigation() && !can_renderer_initiate_transfer;
   } else {
     // Subframe navigations will use the current renderer, unless specifically
     // allowed to swap processes.
     no_renderer_swap_allowed |= !CanSubframeSwapProcess(
-        request.common_params().url, request.source_site_instance(),
-        request.dest_site_instance());
+        request->common_params().url, request->source_site_instance(),
+        request->dest_site_instance());
   }
 
   if (no_renderer_swap_allowed && !should_swap_for_error_isolation)
@@ -2284,11 +2283,11 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
           : nullptr;
 
   scoped_refptr<SiteInstance> dest_site_instance = GetSiteInstanceForNavigation(
-      request.common_params().url, request.source_site_instance(),
-      request.dest_site_instance(), candidate_site_instance,
-      request.common_params().transition,
-      request.state() == NavigationRequest::FAILED,
-      request.GetRestoreType() != RestoreType::NONE, request.is_view_source(),
+      request->common_params().url, request->source_site_instance(),
+      request->dest_site_instance(), candidate_site_instance,
+      request->common_params().transition,
+      request->state() == NavigationRequest::FAILED,
+      request->GetRestoreType() != RestoreType::NONE, request->is_view_source(),
       was_server_redirect);
 
   return dest_site_instance;

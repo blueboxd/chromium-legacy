@@ -131,6 +131,14 @@ public class PrefServiceBridge {
     }
 
     /**
+     * @param preference The name of the preference.
+     * @param value The value the specified preference will be set to.
+     */
+    public void setInteger(@Pref int preference, int value) {
+        PrefServiceBridgeJni.get().setInteger(PrefServiceBridge.this, preference, value);
+    }
+
+    /**
      * Migrates (synchronously) the preferences to the most recent version.
      */
     public void migratePreferences() {
@@ -1134,6 +1142,7 @@ public class PrefServiceBridge {
         void setContentSetting(PrefServiceBridge caller, int contentSettingType, int setting);
         boolean getBoolean(PrefServiceBridge caller, int preference);
         void setBoolean(PrefServiceBridge caller, int preference, boolean value);
+        void setInteger(PrefServiceBridge caller, int preference, int value);
         boolean getAcceptCookiesEnabled(PrefServiceBridge caller);
         boolean getAcceptCookiesUserModifiable(PrefServiceBridge caller);
         boolean getAcceptCookiesManagedByCustodian(PrefServiceBridge caller);

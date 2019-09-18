@@ -12,9 +12,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/media_buildflags.h"
+#include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
 #include "third_party/webrtc/rtc_base/rtc_certificate.h"
 #include "third_party/webrtc/rtc_base/rtc_certificate_generator.h"
@@ -108,7 +108,7 @@ void GenerateCertificateWithOptionalExpiration(
     blink::WebRTCCertificateCallback completion_callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(WebRTCKeyParamsToKeyParams(key_params).IsValid());
-  PeerConnectionDependencyFactory* pc_dependency_factory =
+  blink::PeerConnectionDependencyFactory* pc_dependency_factory =
       RenderThreadImpl::current()->GetPeerConnectionDependencyFactory();
   pc_dependency_factory->EnsureInitialized();
 

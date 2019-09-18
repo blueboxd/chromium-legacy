@@ -678,7 +678,7 @@
           'isolated_scripts': 'memory_infra_isolated_scripts',
         },
       },
-      'android-bfcache-rel': {
+      'android-bfcache-debug': {
         'mixins': [
           'kitkat',
           'hammerhead',
@@ -686,7 +686,7 @@
         'os_type': 'android',
         'test_suites': {
           'gtest_tests': 'bfcache_android_gtests',
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+          'junit_tests': 'bfcache_junit_tests',
         }
       },
       'android-marshmallow-x86-fyi-rel': {
@@ -1794,7 +1794,7 @@
           'gtest_tests': 'goma_gtests',
         },
       },
-      'linux-bfcache-rel': {
+      'linux-bfcache-debug': {
         'mixins': [
           'linux-xenial',
         ],

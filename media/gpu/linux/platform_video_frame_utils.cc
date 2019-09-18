@@ -121,22 +121,29 @@ gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferHandle(
   DCHECK(video_frame);
 
   gfx::GpuMemoryBufferHandle handle;
+  switch (video_frame->storage_type()) {
+    case VideoFrame::STORAGE_GPU_MEMORY_BUFFER:
+      handle = video_frame->GetGpuMemoryBuffer()->CloneHandle();
+      break;
 #if defined(OS_LINUX)
-  handle.type = gfx::NATIVE_PIXMAP;
-
-  std::vector<base::ScopedFD> duped_fds =
-      DuplicateFDs(video_frame->DmabufFds());
-  const size_t num_planes = VideoFrame::NumPlanes(video_frame->format());
-  DCHECK_EQ(video_frame->layout().planes().size(), num_planes);
-  handle.native_pixmap_handle.modifier = video_frame->layout().modifier();
-  for (size_t i = 0; i < num_planes; ++i) {
-    const auto& plane = video_frame->layout().planes()[i];
-    handle.native_pixmap_handle.planes.emplace_back(
-        plane.stride, plane.offset, plane.size, std::move(duped_fds[i]));
-  }
-#else
-  NOTREACHED();
+    case VideoFrame::STORAGE_DMABUFS: {
+      handle.type = gfx::NATIVE_PIXMAP;
+      std::vector<base::ScopedFD> duped_fds =
+          DuplicateFDs(video_frame->DmabufFds());
+      const size_t num_planes = VideoFrame::NumPlanes(video_frame->format());
+      DCHECK_EQ(video_frame->layout().planes().size(), num_planes);
+      handle.native_pixmap_handle.modifier = video_frame->layout().modifier();
+      for (size_t i = 0; i < num_planes; ++i) {
+        const auto& plane = video_frame->layout().planes()[i];
+        handle.native_pixmap_handle.planes.emplace_back(
+            plane.stride, plane.offset, plane.size, std::move(duped_fds[i]));
+      }
 #endif  // defined(OS_LINUX)
+    } break;
+    default:
+      NOTREACHED() << "Unsupported storage type: "
+                   << video_frame->storage_type();
+  }
   return handle;
 }
 
@@ -147,7 +154,11 @@ scoped_refptr<gfx::NativePixmapDmaBuf> CreateNativePixmapDmaBuf(
   // Create a native pixmap from the frame's memory buffer handle.
   gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle =
       CreateGpuMemoryBufferHandle(video_frame);
-  DCHECK(!gpu_memory_buffer_handle.is_null());
+  if (gpu_memory_buffer_handle.is_null() ||
+      gpu_memory_buffer_handle.type != gfx::NATIVE_PIXMAP) {
+    VLOGF(1) << "Failed to create native GpuMemoryBufferHandle";
+    return nullptr;
+  }
 
   auto buffer_format =
       VideoPixelFormatToGfxBufferFormat(video_frame->layout().format());

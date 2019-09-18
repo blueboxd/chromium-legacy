@@ -20,7 +20,9 @@ MultiStoreFormFetcher::MultiStoreFormFetcher(
     PasswordStore::FormDigest form_digest,
     const PasswordManagerClient* client,
     bool should_migrate_http_passwords)
-    : FormFetcherImpl(form_digest, client, should_migrate_http_passwords) {}
+    : FormFetcherImpl(form_digest, client, should_migrate_http_passwords) {
+  sort_matches_by_date_last_used_ = true;
+}
 
 MultiStoreFormFetcher::~MultiStoreFormFetcher() = default;
 
@@ -82,8 +84,6 @@ void MultiStoreFormFetcher::OnGetPasswordStoreResults(
   }
 
   // TODO(crbug.com/1002000): implement password store migration.
-
-  // TODO(crbug.com/1002000): implement sorting based on "last_time_used"
 
   ProcessPasswordStoreResults(std::move(partial_results_));
 }

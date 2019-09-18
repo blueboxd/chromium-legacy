@@ -33,6 +33,7 @@
 
 using message_center::ButtonInfo;
 using message_center::Notification;
+using message_center::SettingsButtonHandler;
 using testing::_;
 using testing::ByMove;
 using testing::Return;
@@ -55,7 +56,9 @@ class NotificationBuilder {
                       GURL(),
                       message_center::NotifierId(GURL()),
                       message_center::RichNotificationData(),
-                      new message_center::NotificationDelegate()) {}
+                      new message_center::NotificationDelegate()) {
+    notification_.set_settings_button_handler(SettingsButtonHandler::DELEGATE);
+  }
 
   Notification GetResult() { return notification_; }
 
@@ -87,6 +90,11 @@ class NotificationBuilder {
 
   NotificationBuilder& SetProgress(int progress) {
     notification_.set_progress(progress);
+    return *this;
+  }
+
+  NotificationBuilder& SetSettingsButtonHandler(SettingsButtonHandler handler) {
+    notification_.set_settings_button_handler(handler);
     return *this;
   }
 
@@ -769,6 +777,27 @@ TEST_F(NotificationPlatformBridgeLinuxTest,
   notification_bridge_linux_->Display(
       NotificationHandler::Type::WEB_PERSISTENT, profile(),
       NotificationBuilder("").GetResult(), nullptr);
+}
+
+TEST_F(NotificationPlatformBridgeLinuxTest, NoSettingsButton) {
+  EXPECT_CALL(*mock_notification_proxy_.get(),
+              CallMethodAndBlock(Calls("Notify"), _))
+      .WillOnce(OnNotify(
+          [](const NotificationRequest& request) {
+            ASSERT_EQ(1UL, request.actions.size());
+            EXPECT_EQ("default", request.actions[0].id);
+            EXPECT_EQ("Activate", request.actions[0].label);
+          },
+          1));
+
+  CreateNotificationBridgeLinux(
+      TestParams().SetServerName("cinnamon").SetServerVersion("3.8.0"));
+  notification_bridge_linux_->Display(
+      NotificationHandler::Type::WEB_PERSISTENT, profile(),
+      NotificationBuilder("")
+          .SetSettingsButtonHandler(SettingsButtonHandler::NONE)
+          .GetResult(),
+      nullptr);
 }
 
 TEST_F(NotificationPlatformBridgeLinuxTest, DefaultButtonForwards) {

@@ -83,8 +83,8 @@ interface HidService {
 
   // Opens a connection to the device with GUID matching |device_guid|. |client|
   // will be notified when an input report is received from the device.
-  // |connection| contains the opened connection, or nullptr if the device could
-  // not be opened.
+  // |connection| contains the opened connection, or a null remote if the
+  // device could not be opened.
   Connect(string device_guid, pending_remote<device.mojom.HidConnectionClient> client)
-      => (device.mojom.HidConnection? connection);
+      => (pending_remote<device.mojom.HidConnection>? connection);
 };

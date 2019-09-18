@@ -38,6 +38,8 @@
 
 NSString* const kAutofillCreditCardTableViewId = @"kAutofillTableViewId";
 NSString* const kAutofillCreditCardSwitchViewId = @"cardItem_switch";
+NSString* const kAutofillPaymentMethodsToolbarId =
+    @"kAutofillPaymentMethodsToolbarId";
 NSString* const kSettingsAddPaymentMethodButtonId =
     @"kSettingsAddPaymentMethodButtonId";
 
@@ -119,6 +121,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [super viewDidLoad];
   self.tableView.allowsMultipleSelectionDuringEditing = YES;
   self.tableView.accessibilityIdentifier = kAutofillCreditCardTableViewId;
+  self.navigationController.toolbar.accessibilityIdentifier =
+      kAutofillPaymentMethodsToolbarId;
 
   base::RecordAction(base::UserMetricsAction("AutofillCreditCardsViewed"));
   if (base::FeatureList::IsEnabled(kSettingsAddPaymentMethod)) {
@@ -386,6 +390,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _personalDataManager->RemoveByGUID(item.GUID);
   }
 
+  self.editing = NO;
   __weak AutofillCreditCardTableViewController* weakSelf = self;
   [self.tableView
       performBatchUpdates:^{

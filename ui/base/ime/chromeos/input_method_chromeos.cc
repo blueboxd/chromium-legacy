@@ -355,7 +355,7 @@ void InputMethodChromeOS::ResetContext(bool reset_engine) {
   if (!IsNonPasswordInputFieldFocused() || !GetTextInputClient())
     return;
 
-  composition_ = CompositionText();
+  pending_composition_ = CompositionText();
   result_text_.clear();
   composing_text_ = false;
   composition_changed_ = false;
@@ -500,13 +500,14 @@ void InputMethodChromeOS::ProcessInputMethodResult(ui::KeyEvent* event,
           pending_composition_range_->range,
           pending_composition_range_->text_spans);
     }
-    if (composition_.text.length()) {
+    if (pending_composition_.text.length()) {
       composing_text_ = true;
-      client->SetCompositionText(composition_);
+      client->SetCompositionText(pending_composition_);
     } else if (result_text_.empty() && !pending_composition_range_) {
       client->ClearCompositionText();
     }
 
+    pending_composition_ = CompositionText();
     pending_composition_range_.reset();
   }
 
@@ -584,22 +585,22 @@ void InputMethodChromeOS::UpdateCompositionText(const CompositionText& text,
     return;
   }
 
-  ExtractCompositionText(text, cursor_pos, &composition_);
+  ExtractCompositionText(text, cursor_pos, &pending_composition_);
 
   composition_changed_ = true;
 
   // In case OnShowPreeditText() is not called.
-  if (composition_.text.length())
+  if (pending_composition_.text.length())
     composing_text_ = true;
 
   if (!handling_key_event_) {
     // If we receive a composition text without pending key event, then we need
     // to send it to the focused text input client directly.
     if (!SendFakeProcessKeyEvent(true))
-      GetTextInputClient()->SetCompositionText(composition_);
+      GetTextInputClient()->SetCompositionText(pending_composition_);
     SendFakeProcessKeyEvent(false);
     composition_changed_ = false;
-    composition_ = CompositionText();
+    pending_composition_ = CompositionText();
   }
 }
 
@@ -609,7 +610,7 @@ void InputMethodChromeOS::HidePreeditText() {
 
   // Intentionally leaves |composing_text_| unchanged.
   composition_changed_ = true;
-  composition_ = CompositionText();
+  pending_composition_ = CompositionText();
 
   if (!handling_key_event_) {
     TextInputClient* client = GetTextInputClient();
@@ -624,13 +625,14 @@ void InputMethodChromeOS::HidePreeditText() {
 
 void InputMethodChromeOS::DeleteSurroundingText(int32_t offset,
                                                 uint32_t length) {
-  if (!composition_.text.empty())
-    return;  // do nothing if there is ongoing composition.
+  if (!GetTextInputClient())
+    return;
 
-  if (GetTextInputClient()) {
-    uint32_t before = offset >= 0 ? 0U : static_cast<uint32_t>(-1 * offset);
-    GetTextInputClient()->ExtendSelectionAndDelete(before, length - before);
-  }
+  if (GetTextInputClient()->HasCompositionText())
+    return;
+
+  uint32_t before = offset >= 0 ? 0U : static_cast<uint32_t>(-1 * offset);
+  GetTextInputClient()->ExtendSelectionAndDelete(before, length - before);
 }
 
 bool InputMethodChromeOS::ExecuteCharacterComposer(const ui::KeyEvent& event) {

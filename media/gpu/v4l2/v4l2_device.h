@@ -48,6 +48,10 @@
 #define V4L2_PIX_FMT_MM21 v4l2_fourcc('M', 'M', '2', '1')
 #endif
 
+namespace gfx {
+struct NativePixmapPlane;
+}  // namespace gfx
+
 namespace media {
 
 class V4L2Queue;
@@ -96,6 +100,15 @@ class MEDIA_GPU_EXPORT V4L2WritableBufferRef {
   // In case of error, false is returned and the buffer is returned to the free
   // list.
   bool QueueDMABuf(const std::vector<base::ScopedFD>& fds) &&;
+  // Queue a DMABUF buffer, assigning file descriptors of |planes| for planes.
+  // It is allowed the number of |planes| might be greater than the number of
+  // planes of this buffer. It happens when the v4l2 pixel format is single
+  // planar. The fd of the first plane of |planes| is only used in that case.
+  // If successful, true is returned and the reference to the buffer is dropped
+  // so this reference becomes invalid.
+  // In case of error, false is returned and the buffer is returned to the free
+  // list.
+  bool QueueDMABuf(const std::vector<gfx::NativePixmapPlane>& planes) &&;
 
   // Returns the number of planes in this buffer.
   size_t PlanesCount() const;

@@ -446,6 +446,7 @@ int WebRtcAudioRenderer::Render(base::TimeDelta delay,
                                 int prior_frames_skipped,
                                 media::AudioBus* audio_bus) {
   DCHECK(sink_->CurrentThreadIsRenderingThread());
+  DCHECK_LE(sink_params_.channels(), 8);
   base::AutoLock auto_lock(lock_);
   if (!source_)
     return 0;
@@ -699,9 +700,18 @@ void WebRtcAudioRenderer::PrepareSink() {
   // This sink is an AudioRendererSink which is implemented by an
   // AudioOutputDevice. Note that we used to use hard-coded settings for
   // stereo here but this has been changed since crbug.com/982276.
-  const int channels = device_info.output_params().channels();
-  const media::ChannelLayout channel_layout =
+  constexpr int kMaxChannels = 8;
+  int channels = device_info.output_params().channels();
+  media::ChannelLayout channel_layout =
       device_info.output_params().channel_layout();
+  if (channels > kMaxChannels) {
+    // WebRTC does not support channel remixing for more than 8 channels (7.1).
+    // This is an attempt to "support" more than 8 channels by falling back to
+    // stereo instead. See crbug.com/1003735.
+    LOG(WARNING) << "Falling back to stereo sink";
+    channels = 2;
+    channel_layout = media::CHANNEL_LAYOUT_STEREO;
+  }
   const int sink_frames_per_buffer = media::AudioLatency::GetRtcBufferSize(
       sample_rate, device_info.output_params().frames_per_buffer());
   new_sink_params.Reset(kFormat, channel_layout, sample_rate,
@@ -733,6 +743,7 @@ void WebRtcAudioRenderer::PrepareSink() {
                                        CrossThreadUnretained(this))));
     }
     sink_params_ = new_sink_params;
+    DVLOG(1) << "New sink parameters: " << sink_params_.AsHumanReadableString();
   }
 
   // Specify the latency info to be passed to the browser side.

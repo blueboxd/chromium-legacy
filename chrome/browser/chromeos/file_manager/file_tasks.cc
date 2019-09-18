@@ -124,13 +124,29 @@ bool ContainsGoogleDocument(const std::vector<extensions::EntryInfo>& entries) {
   return false;
 }
 
-// Leaves tasks handled by the file manger itself as is and removes all others.
+// Removes all tasks except tasks handled by file manager.
 void KeepOnlyFileManagerInternalTasks(std::vector<FullTaskDescriptor>* tasks) {
   std::vector<FullTaskDescriptor> filtered;
   for (size_t i = 0; i < tasks->size(); ++i) {
     if ((*tasks)[i].task_descriptor().app_id == kFileManagerAppId)
       filtered.push_back((*tasks)[i]);
   }
+  tasks->swap(filtered);
+}
+
+// Removes task |actions| handled by file manager.
+void RemoveFileManagerInternalActions(const std::set<std::string>& actions,
+                                      std::vector<FullTaskDescriptor>* tasks) {
+  std::vector<FullTaskDescriptor> filtered;
+  for (size_t i = 0; i < tasks->size(); ++i) {
+    const auto& action = (*tasks)[i].task_descriptor().action_id;
+    if ((*tasks)[i].task_descriptor().app_id != kFileManagerAppId) {
+      filtered.push_back((*tasks)[i]);
+    } else if (actions.find(action) == actions.end()) {
+      filtered.push_back((*tasks)[i]);
+    }
+  }
+
   tasks->swap(filtered);
 }
 
@@ -199,6 +215,16 @@ void PostProcessFoundTasks(
   // Google documents can only be handled by internal handlers.
   if (ContainsGoogleDocument(entries))
     KeepOnlyFileManagerInternalTasks(result_list.get());
+
+  // Remove file manager internal view-pdf and view-swf actions if needed.
+  std::set<std::string> disabled_actions;
+  if (!util::ShouldBeOpenedWithPlugin(profile, FILE_PATH_LITERAL(".pdf"), ""))
+    disabled_actions.emplace("view-pdf");
+  if (!util::ShouldBeOpenedWithPlugin(profile, FILE_PATH_LITERAL(".swf"), ""))
+    disabled_actions.emplace("view-swf");
+  if (!disabled_actions.empty())
+    RemoveFileManagerInternalActions(disabled_actions, result_list.get());
+
   ChooseAndSetDefaultTask(*profile->GetPrefs(), entries, result_list.get());
   std::move(callback).Run(std::move(result_list));
 }

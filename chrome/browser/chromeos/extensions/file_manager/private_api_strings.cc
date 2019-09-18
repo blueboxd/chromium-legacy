@@ -11,7 +11,6 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_string_util.h"
-#include "chrome/browser/chromeos/file_manager/open_with_browser.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -32,19 +31,10 @@ FileManagerPrivateGetStringsFunction::~FileManagerPrivateGetStringsFunction() =
 
 ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
   auto dict = GetFileManagerStrings();
-  const std::string empty;
 
   dict->SetBoolean("VIDEO_PLAYER_NATIVE_CONTROLS_ENABLED",
                    base::FeatureList::IsEnabled(
                        chromeos::features::kVideoPlayerNativeControls));
-  dict->SetBoolean("PDF_VIEW_ENABLED",
-                   file_manager::util::ShouldBeOpenedWithPlugin(
-                       Profile::FromBrowserContext(browser_context()),
-                       FILE_PATH_LITERAL(".pdf"), empty));
-  dict->SetBoolean("SWF_VIEW_ENABLED",
-                   file_manager::util::ShouldBeOpenedWithPlugin(
-                       Profile::FromBrowserContext(browser_context()),
-                       FILE_PATH_LITERAL(".swf"), empty));
   // TODO(crbug.com/868747): Find a better solution for demo mode.
   dict->SetBoolean("HIDE_SPACE_INFO",
                    chromeos::DemoSession::IsDeviceInDemoMode());
@@ -67,6 +57,7 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
                        Profile::FromBrowserContext(browser_context())));
   dict->SetBoolean("FILES_NG_ENABLED",
                    base::FeatureList::IsEnabled(chromeos::features::kFilesNG));
+
   dict->SetString("UI_LOCALE", extension_l10n_util::CurrentLocaleOrDefault());
 
   return RespondNow(OneArgument(std::move(dict)));

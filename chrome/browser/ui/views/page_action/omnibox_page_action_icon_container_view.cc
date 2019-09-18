@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/location_bar/cookie_controls_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/find_bar_icon.h"
 #include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
+#include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/native_file_system/native_file_system_access_icon_view.h"
 #include "chrome/browser/ui/views/page_action/pwa_install_view.h"
@@ -131,6 +132,11 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
             params.command_updater, params.page_action_icon_delegate);
         page_action_icons_.push_back(save_card_icon_view_);
         break;
+      case PageActionIconType::kBookmarkStar:
+        star_view_ = new StarView(params.command_updater, params.browser,
+                                  params.page_action_icon_delegate);
+        page_action_icons_.push_back(star_view_);
+        break;
     }
   }
 
@@ -152,9 +158,6 @@ OmniboxPageActionIconContainerView::~OmniboxPageActionIconContainerView() {}
 
 PageActionIconView* OmniboxPageActionIconContainerView::GetIconView(
     PageActionIconType type) {
-  // TODO(https://crbug.com/788051): Update page action icons here as update
-  // methods are migrated out of LocationBar to the PageActionIconContainer
-  // interface.
   switch (type) {
     case PageActionIconType::kFind:
       return find_bar_icon_;
@@ -184,6 +187,8 @@ PageActionIconView* OmniboxPageActionIconContainerView::GetIconView(
       return local_card_migration_icon_view_;
     case PageActionIconType::kSaveCard:
       return save_card_icon_view_;
+    case PageActionIconType::kBookmarkStar:
+      return star_view_;
   }
   return nullptr;
 }

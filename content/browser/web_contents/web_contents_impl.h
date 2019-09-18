@@ -753,7 +753,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void RenderWidgetGotFocus(RenderWidgetHostImpl* render_widget_host) override;
   void RenderWidgetLostFocus(RenderWidgetHostImpl* render_widget_host) override;
   void RenderWidgetWasResized(RenderWidgetHostImpl* render_widget_host,
-                              const ScreenInfo& screen_info,
                               bool width_changed) override;
   void ResizeDueToAutoResize(RenderWidgetHostImpl* render_widget_host,
                              const gfx::Size& new_size) override;

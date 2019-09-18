@@ -327,7 +327,7 @@ TEST_F(InfobarContainerCoordinatorTest,
 // TODO(crbug.com/1004514): This test fails due to
 // infobarBannerWasDismissed:forWebState:.
 TEST_F(InfobarContainerCoordinatorTest,
-       DISABLED_TestInfobarBannerDismissAtWebStateChange) {
+       TestInfobarBannerDismissAtWebStateChange) {
   AddInfobar();
   AddSecondWebstate();
 
@@ -429,7 +429,7 @@ TEST_F(InfobarContainerCoordinatorTest,
 // TODO(crbug.com/1004514): This test fails due to
 // infobarBannerWasDismissed:forWebState:.
 TEST_F(InfobarContainerCoordinatorTest,
-       DISABLED_TestInfobarBannerDismissedClosingWebstate) {
+       TestInfobarBannerDismissedClosingWebstate) {
   AddInfobar();
   // Close the Webstate without calling WaitUntilConditionOrTimeout.
   web_state_list_->CloseWebStateAt(0, 0);
@@ -445,8 +445,7 @@ TEST_F(InfobarContainerCoordinatorTest,
 // Tests that the Infobar is dismissed when both the VC and Webstate are closed.
 // TODO(crbug.com/1004514): This test fails due to
 // infobarBannerWasDismissed:forWebState:.
-TEST_F(InfobarContainerCoordinatorTest,
-       DISABLED_TestDismissingAndClosingWebstate) {
+TEST_F(InfobarContainerCoordinatorTest, TestDismissingAndClosingWebstate) {
   AddInfobar();
   ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForUIElementTimeout, ^bool {
@@ -473,7 +472,7 @@ TEST_F(InfobarContainerCoordinatorTest,
 // TODO(crbug.com/1004514): This test fails due to
 // infobarBannerWasDismissed:forWebState:.
 TEST_F(InfobarContainerCoordinatorTest,
-       DISABLED_TestDismissingAndClosingWebstateSecondWebstate) {
+       TestDismissingAndClosingWebstateSecondWebstate) {
   AddInfobar();
   AddSecondWebstate();
   EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(

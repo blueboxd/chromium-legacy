@@ -17,6 +17,7 @@
 #include "extensions/browser/api/hid/hid_device_manager.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/api/hid.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/hid.mojom.h"
 
 namespace extensions {
@@ -72,7 +73,8 @@ class HidConnectFunction : public ExtensionFunction {
   // ExtensionFunction:
   ResponseAction Run() override;
 
-  void OnConnectComplete(device::mojom::HidConnectionPtr connection);
+  void OnConnectComplete(
+      mojo::PendingRemote<device::mojom::HidConnection> connection);
 
   ApiResourceManager<HidConnectionResource>* connection_manager_;
 

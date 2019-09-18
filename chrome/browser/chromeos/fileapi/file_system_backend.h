@@ -73,7 +73,6 @@ class FileSystemBackend : public storage::ExternalFileSystemBackend {
 
   // |system_mount_points| should outlive FileSystemBackend instance.
   FileSystemBackend(
-      std::unique_ptr<FileSystemBackendDelegate> drive_delegate,
       std::unique_ptr<FileSystemBackendDelegate> file_system_provider_delegate,
       std::unique_ptr<FileSystemBackendDelegate> mtp_delegate,
       std::unique_ptr<FileSystemBackendDelegate> arc_content_delegate,
@@ -149,9 +148,6 @@ class FileSystemBackend : public storage::ExternalFileSystemBackend {
  private:
   std::unique_ptr<FileAccessPermissions> file_access_permissions_;
   std::unique_ptr<storage::AsyncFileUtil> local_file_util_;
-
-  // The delegate instance for the drive file system related operations.
-  std::unique_ptr<FileSystemBackendDelegate> drive_delegate_;
 
   // The delegate instance for the provided file system related operations.
   std::unique_ptr<FileSystemBackendDelegate> file_system_provider_delegate_;

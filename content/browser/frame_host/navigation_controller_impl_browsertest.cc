@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
@@ -19,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
@@ -10060,61 +10062,69 @@ IN_PROC_BROWSER_TEST_F(
               ElementsAre(1, 1, 2, 1));
 }
 
+namespace {
+
+class DidCommitNavigationCanceller : public DidCommitNavigationInterceptor {
+  using CallbackScriptRunner = base::OnceCallback<void()>;
+
+ public:
+  DidCommitNavigationCanceller(WebContents* web_contents,
+                               CallbackScriptRunner callback)
+      : DidCommitNavigationInterceptor(web_contents) {
+    callback_ = std::move(callback);
+  }
+
+  bool WillProcessDidCommitNavigation(
+      RenderFrameHost* render_frame_host,
+      NavigationRequest* navigation_request,
+      ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
+      mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params)
+      override {
+    std::move(callback_).Run();
+    return false;
+  }
+
+ private:
+  CallbackScriptRunner callback_;
+};
+
+}  //  namespace
+
 // When running OpenURL to an invalid URL on a frame proxy it should not spoof
 // the url by canceling a main frame navigation.
 // See https://crbug.com/966914.
-// Failing on Linux CFI. http://crbug.com/974319
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-#define MAYBE_CrossProcessIframeToInvalidURLCancelsRedirectSpoof \
-  DISABLED_CrossProcessIframeToInvalidURLCancelsRedirectSpoof
-#else
-#define MAYBE_CrossProcessIframeToInvalidURLCancelsRedirectSpoof \
-  CrossProcessIframeToInvalidURLCancelsRedirectSpoof
-#endif
-IN_PROC_BROWSER_TEST_F(
-    NavigationControllerBrowserTest,
-    MAYBE_CrossProcessIframeToInvalidURLCancelsRedirectSpoof) {
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       CrossProcessIframeToInvalidURLCancelsRedirectSpoof) {
+  // This tests something that can only happened with out of process iframes.
+  if (!AreAllSitesIsolatedForTesting())
+    return;
+
   const GURL main_frame_url(embedded_test_server()->GetURL(
-      "a.com",
-      "/cross_site_iframe_factory.html?a(b{sandbox-allow-scripts,sandbox-allow-"
-      "top-navigation}())"));
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
   const GURL main_frame_url_2(embedded_test_server()->GetURL("/title2.html"));
 
   // Load the initial page, containing a fully scriptable cross-site iframe.
   EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
 
-  // Setup the message trigger on the main frame and the handler on the iframe.
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
-  std::string script =
-      "var messageUnloadEventSent = false;"
-      "window.addEventListener('beforeunload', function "
-      "   onBeforeUnload(event) {"
-      "       if(messageUnloadEventSent) {"
-      "         return;"
-      "       }"
-      "       messageUnloadEventSent = true;"
-      "       var iframe = document.getElementById('child-0');"
-      "       iframe.contentWindow.postMessage('', '*');"
-      "   }"
-      ");";
-  EXPECT_TRUE(ExecJs(root, script));
+  FrameTreeNode* iframe = static_cast<WebContentsImpl*>(shell()->web_contents())
+                              ->GetFrameTree()
+                              ->root()
+                              ->child_at(0);
 
-  script =
-      "window.addEventListener('message', function (event) {"
-      "  parent.location.href = 'chrome-guest://1234';"
-      "});";
-  EXPECT_TRUE(ExecJs(root->child_at(0), script));
+  DidCommitNavigationCanceller canceller(
+      shell()->web_contents(), base::BindLambdaForTesting([iframe]() {
+        EXPECT_TRUE(
+            ExecJs(iframe, "parent.location.href = 'chrome-guest://1234';"));
+      }));
 
   // This navigation will be raced by a navigation started in the iframe.
-  // It should still be prevalent compared to a non user-initiated render frame
-  // navigation.
-  // TODO(ahemery): EXPECT_TRUE when https://crbug.com/973415 is fixed.
-  // The navigation started in the iframe sometimes has_user_gesture set to
-  // true. It should not be the case and is being investigated in the above bug.
-  // Here we simply care that no spoof happens, which is verified below anyway.
-  ignore_result(NavigateToURL(shell(), main_frame_url_2));
+  // The NavigationRequest for the first navigation will already be in the
+  // RenderFrameHost at this point, and the iframe proxy navigation will
+  // proceed because we don't have a FrameTreeNode ongoing navigation.
+  // So the main navigation will be cancelled first, by the iframe navigation
+  // taking precedence, and the iframe navigation will not get passed network
+  // because of the invalid url, getting cancelled as well.
+  EXPECT_FALSE(NavigateToURL(shell(), main_frame_url_2));
 
   // Check that no spoof happened.
   NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(

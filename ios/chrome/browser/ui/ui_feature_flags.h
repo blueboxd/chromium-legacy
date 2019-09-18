@@ -7,10 +7,6 @@
 
 #include "base/feature_list.h"
 
-// Feature to automatically switch to the regular tabs panel in tab grid after
-// closing the last incognito tab.
-extern const base::Feature kClosingLastIncognitoTab;
-
 // Feature to retain the contentView in the browser container.
 extern const base::Feature kBrowserContainerKeepsContentView;
 

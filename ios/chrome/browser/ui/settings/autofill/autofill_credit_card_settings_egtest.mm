@@ -7,12 +7,14 @@
 
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/autofill/features.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
@@ -54,6 +56,18 @@ id<GREYMatcher> NavigationBarEditButton() {
   return grey_allOf(
       ButtonWithAccessibilityLabelId(IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON),
       grey_not(grey_accessibilityTrait(UIAccessibilityTraitNotEnabled)), nil);
+}
+
+// Matcher for the Delete button in the list view, located at the bottom of the
+// screen.
+id<GREYMatcher> BottomToolbarDeleteButton() {
+  return grey_accessibilityID(kSettingsToolbarDeleteButtonId);
+}
+
+// Matcher for the Delete button in the list view, located at the bottom of the
+// screen.
+id<GREYMatcher> BottomToolbar() {
+  return grey_accessibilityID(kAutofillPaymentMethodsToolbarId);
 }
 
 }  // namespace
@@ -121,6 +135,15 @@ id<GREYMatcher> NavigationBarEditButton() {
   [self openCreditCardsSettings];
 
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(label)]
+      performAction:grey_tap()];
+}
+
+// Helper to open the settings page for the Autofill credit card list in edit
+// mode.
+- (void)openCreditCardListInEditMode {
+  [self openCreditCardsSettings];
+
+  [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
       performAction:grey_tap()];
 }
 
@@ -235,6 +258,134 @@ id<GREYMatcher> NavigationBarEditButton() {
       assertWithMatcher:grey_notNil()];
 
   [self exitSettingsMenu];
+}
+
+// Checks that the toolbar appears in edit mode once a card is selected and
+// disappears when a card is deselected.
+- (void)testToolbarInEditMode {
+  autofill::CreditCard creditCard = [self addCreditCard];
+  [self openCreditCardListInEditMode];
+
+  [[EarlGrey selectElementWithMatcher:BottomToolbar()]
+      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
+                                          [self creditCardLabel:creditCard])]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:BottomToolbar()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
+                                          [self creditCardLabel:creditCard])]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:BottomToolbar()]
+      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+}
+
+// Checks the toolbar buttons in the edit mode of the list of credit cards. The
+// delete button should appear on selecting a card and be removed when no card
+// is selected. There should be no 'Add payment method' button if the
+// kSettingsAddPaymentMethod flag is not enabled.
+- (void)testToolbarButtonsInEditMode {
+  autofill::CreditCard creditCard = [self addCreditCard];
+  [self openCreditCardListInEditMode];
+
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
+                                          [self creditCardLabel:creditCard])]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::AddPaymentMethodButton()]
+      assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:BottomToolbarDeleteButton()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
+                                          [self creditCardLabel:creditCard])]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::AddPaymentMethodButton()]
+      assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:BottomToolbarDeleteButton()]
+      assertWithMatcher:grey_nil()];
+}
+
+// Checks that the toolbar always appears in edit mode when the 'Add Payment
+// method' feature is enabled.
+- (void)testToolbarInEditModeAddPaymentMethodFeatureEnabled {
+  base::test::ScopedFeatureList featureList;
+  featureList.InitAndEnableFeature(kSettingsAddPaymentMethod);
+  autofill::CreditCard creditCard = [self addCreditCard];
+  [self openCreditCardListInEditMode];
+
+  [[EarlGrey selectElementWithMatcher:BottomToolbar()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
+                                          [self creditCardLabel:creditCard])]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:BottomToolbar()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
+                                          [self creditCardLabel:creditCard])]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:BottomToolbar()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Checks the 'Add Payment Method' button is always visible when the feature is
+// enabled and directs a user to the Add Payent method view.
+- (void)testToolbarAddPaymentMethodButtonFeatureEnabled {
+  base::test::ScopedFeatureList featureList;
+  featureList.InitAndEnableFeature(kSettingsAddPaymentMethod);
+  autofill::CreditCard creditCard = [self addCreditCard];
+  [self openCreditCardListInEditMode];
+
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::AddPaymentMethodButton()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::AddPaymentMethodButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::AddCreditCardView()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Checks the 'Delete' button is always visible when the feature is displayed.
+// The button is enabled when a card is selected and disabled when a card is not
+// selected.
+- (void)testToolbarDeleteButtonWithAddPaymentMethodFeatureEnabled {
+  base::test::ScopedFeatureList featureList;
+  featureList.InitAndEnableFeature(kSettingsAddPaymentMethod);
+
+  autofill::CreditCard creditCard = [self addCreditCard];
+  [[EarlGrey selectElementWithMatcher:BottomToolbarDeleteButton()]
+      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+  [self openCreditCardListInEditMode];
+
+  [[EarlGrey selectElementWithMatcher:BottomToolbarDeleteButton()]
+      assertWithMatcher:grey_not(grey_enabled())];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
+                                          [self creditCardLabel:creditCard])]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:BottomToolbarDeleteButton()]
+      assertWithMatcher:grey_enabled()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
+                                          [self creditCardLabel:creditCard])]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:BottomToolbarDeleteButton()]
+      assertWithMatcher:grey_not(grey_enabled())];
+}
+
+// Checks that deleting a card exits from edit mode.
+- (void)testDeletingCreditCard {
+  autofill::CreditCard creditCard = [self addCreditCard];
+  [self openCreditCardListInEditMode];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
+                                          [self creditCardLabel:creditCard])]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:BottomToolbarDeleteButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:BottomToolbarDeleteButton()]
+      assertWithMatcher:grey_nil()];
+  // If the done button is nil it is no longer in edit mode.
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      assertWithMatcher:grey_nil()];
 }
 
 @end

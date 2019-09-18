@@ -49,6 +49,17 @@ bool IsBetterMatch(const PasswordForm* lhs, const PasswordForm* rhs) {
          std::make_pair(!rhs->is_public_suffix_match, rhs->preferred);
 }
 
+// Return true if 1.|lhs| is non-PSL match, |rhs| is PSL match or 2.|lhs| and
+// |rhs| have the same value of |is_public_suffix_match|, and |lhs| is more
+// recently used than |rhs|.
+// TODO(crbug.com/1002000): Rename to IsBetterMatch when migration to
+// date_last_used is done.
+bool IsBetterMatchUsingLastUsed(const PasswordForm* lhs,
+                                const PasswordForm* rhs) {
+  return std::make_pair(!lhs->is_public_suffix_match, lhs->date_last_used) >
+         std::make_pair(!rhs->is_public_suffix_match, rhs->date_last_used);
+}
+
 }  // namespace
 
 // Update |credential| to reflect usage.
@@ -237,6 +248,7 @@ base::StringPiece GetSignonRealmWithProtocolExcluded(const PasswordForm& form) {
 void FindBestMatches(
     const std::vector<const PasswordForm*>& non_federated_matches,
     PasswordForm::Scheme scheme,
+    bool sort_matches_by_date_last_used,
     std::vector<const autofill::PasswordForm*>* non_federated_same_scheme,
     std::map<base::string16, const PasswordForm*>* best_matches,
     const PasswordForm** preferred_match) {
@@ -259,9 +271,12 @@ void FindBestMatches(
   if (non_federated_same_scheme->empty())
     return;
 
-  // Sort matches using IsBetterMatch predicate.
+  // Sort matches using IsBetterMatchUsingLastUsed or IsBetterMatch predicate.
   std::sort(non_federated_same_scheme->begin(),
-            non_federated_same_scheme->end(), IsBetterMatch);
+            non_federated_same_scheme->end(),
+            sort_matches_by_date_last_used ? IsBetterMatchUsingLastUsed
+                                           : IsBetterMatch);
+
   for (const auto* match : *non_federated_same_scheme) {
     const base::string16& username = match->username_value;
     // The first match for |username| in the sorted array is best match.

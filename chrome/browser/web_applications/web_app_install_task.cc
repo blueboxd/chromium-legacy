@@ -295,10 +295,11 @@ void WebAppInstallTask::CheckForPlayStoreIntentOrGetIcons(
     ForInstallableSite for_installable_site,
     bool skip_page_favicons) {
 #if defined(OS_CHROMEOS)
-  // If we have install options, this is not a user-triggered install, and thus
-  // cannot be sent to the store.
+  // Background installations are not a user-triggered installs, and thus cannot
+  // be sent to the store.
   if (base::FeatureList::IsEnabled(features::kApkWebAppInstalls) &&
-      for_installable_site == ForInstallableSite::kYes && !install_params_) {
+      for_installable_site == ForInstallableSite::kYes &&
+      !background_installation_) {
     for (const auto& application : manifest.related_applications) {
       std::string id = base::UTF16ToUTF8(application.id.string());
       if (!base::EqualsASCII(application.platform.string(),

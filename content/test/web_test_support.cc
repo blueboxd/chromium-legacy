@@ -18,7 +18,6 @@
 #include "content/common/renderer.mojom.h"
 #include "content/common/unique_name_helper.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/screen_info.h"
 #include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
 #include "content/renderer/loader/request_extra_data.h"
@@ -94,14 +93,12 @@ std::unique_ptr<RenderWidget> CreateRenderWidgetForFrame(
     int32_t routing_id,
     CompositorDependencies* compositor_deps,
     PageProperties* page_properties,
-    const ScreenInfo& screen_info,
     blink::WebDisplayMode display_mode,
     bool swapped_out,
     bool never_visible,
     mojo::PendingReceiver<mojom::Widget> widget_receiver) {
   return std::make_unique<test_runner::WebWidgetTestProxy>(
-      routing_id, compositor_deps, page_properties, screen_info, display_mode,
-      swapped_out,
+      routing_id, compositor_deps, page_properties, display_mode, swapped_out,
       /*hidden=*/true, never_visible, std::move(widget_receiver));
 }
 

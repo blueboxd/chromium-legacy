@@ -1188,6 +1188,12 @@ void TestingProfile::Builder::AddTestingFactory(
   testing_factories_.emplace_back(service_factory, std::move(testing_factory));
 }
 
+void TestingProfile::Builder::AddTestingFactories(
+    const TestingFactories& testing_factories) {
+  testing_factories_.insert(testing_factories_.end(), testing_factories.begin(),
+                            testing_factories.end());
+}
+
 std::unique_ptr<TestingProfile> TestingProfile::Builder::Build() {
   DCHECK(!build_called_);
   build_called_ = true;

@@ -381,6 +381,11 @@ TEST_F(CheckerImageTrackerTest, ClearsTracker) {
   // Now clear the decode tracking as well. The image will be re-checkered.
   can_clear_decode_policy_tracking = true;
   checker_image_tracker_->ClearTracker(can_clear_decode_policy_tracking);
+  // Re-initialize the decoding hint state. The decode policy tracking should
+  // only be done when all image state will be re-created, so is safe to purge.
+  checker_image_tracker_->UpdateImageDecodingHints(
+      {{checkerable_image.paint_image().stable_id(),
+        PaintImage::DecodingMode::kAsync}});
   image_decode_queue =
       BuildImageDecodeQueue({checkerable_image}, WhichTree::PENDING_TREE);
   EXPECT_EQ(image_decode_queue.size(), 1U);

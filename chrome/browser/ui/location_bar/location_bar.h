@@ -15,7 +15,6 @@
 
 class LocationBarTesting;
 class OmniboxView;
-class Profile;
 
 namespace content {
 class WebContents;
@@ -28,8 +27,6 @@ class WebContents;
 // location bar to be mocked for testing.
 class LocationBar {
  public:
-  explicit LocationBar(Profile* profile);
-
   // The details necessary to open the user's desired omnibox match.
   virtual GURL GetDestinationURL() const = 0;
   virtual WindowOpenDisposition GetWindowOpenDisposition() const = 0;
@@ -61,9 +58,6 @@ class LocationBar {
   // Updates the state of the images showing the content settings status.
   virtual void UpdateContentSettingsIcons() = 0;
 
-  // Updates the visibility of the bookmark star.
-  virtual void UpdateBookmarkStarVisibility() = 0;
-
   // Saves the state of the location bar to the specified WebContents, so that
   // it can be restored later. (Done when switching tabs).
   virtual void SaveStateToContents(content::WebContents* contents) = 0;
@@ -77,29 +71,12 @@ class LocationBar {
   // Returns a pointer to the testing interface.
   virtual LocationBarTesting* GetLocationBarForTesting() = 0;
 
-  Profile* profile() const { return profile_; }
-
  protected:
-  virtual ~LocationBar();
-
-  // Checks if any extension has requested that the bookmark star be hidden.
-  bool IsBookmarkStarHiddenByExtension() const;
-
- private:
-  class ExtensionLoadObserver;
-
-  Profile* profile_;
-
-  std::unique_ptr<ExtensionLoadObserver> extension_load_observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(LocationBar);
+  virtual ~LocationBar() = default;
 };
 
 class LocationBarTesting {
  public:
-  // Returns whether or not the bookmark star decoration is visible.
-  virtual bool GetBookmarkStarVisibility() = 0;
-
   // Invokes the content setting image at |index|, displaying the bubble.
   // Returns false if there is none.
   virtual bool TestContentSettingImagePressed(size_t index) = 0;
@@ -108,7 +85,7 @@ class LocationBarTesting {
   virtual bool IsContentSettingBubbleShowing(size_t index) = 0;
 
  protected:
-  virtual ~LocationBarTesting() {}
+  virtual ~LocationBarTesting() = default;
 };
 
 #endif  // CHROME_BROWSER_UI_LOCATION_BAR_LOCATION_BAR_H_

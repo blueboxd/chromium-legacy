@@ -75,15 +75,8 @@ class ScreenOrientationBrowserTest : public ContentBrowserTest  {
     }
 
     // This simulates what the browser process does when the screen orientation
-    // is changed:
-    // 1. RenderWidgetHostImpl is notified which sends a ViweMsg_Resize message
-    // to the top-level frame.
+    // is changed.
     main_frame_rwh->SetScreenOrientationForTesting(angle, type);
-
-    // 2. The WebContents sends a PageMsg_UpdateScreenInfo to all the renderers
-    // involved in the FrameTree.
-    web_contents()->GetFrameTree()->root()->render_manager()->SendPageMessage(
-        new PageMsg_UpdateScreenInfo(MSG_ROUTING_NONE, screen_info), nullptr);
   }
 
   int GetOrientationAngle() {

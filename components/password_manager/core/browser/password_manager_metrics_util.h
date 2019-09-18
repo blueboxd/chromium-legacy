@@ -87,6 +87,7 @@ enum class LeakDialogDismissalReason {
 //
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.password_manager
 enum class OnboardingState {
   // The onboarding wasn't shown to the user.
   kDoNotShow = 0,

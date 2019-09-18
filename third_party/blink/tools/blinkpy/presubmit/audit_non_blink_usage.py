@@ -839,8 +839,18 @@ _CONFIG = [
             'third_party/blink/renderer/bindings/modules/v8/serialization',
         ],
         'allowed': [
+            # TODO(crbug.com/787254): Remove base::BindOnce, base::Unretained,
+            # base::MessageLoopCurrent.
+            'base::BindOnce',
+            "base::MessageLoopCurrent",
+            'base::Unretained',
             'cricket::.*',
+            'jingle_glue::JingleThreadWrapper',
+            # TODO(crbug.com/787254): Remove GURL usage.
+            'GURL',
             'media::.+',
+            'net::NetworkTrafficAnnotationTag',
+            'net::DefineNetworkTrafficAnnotation',
             'rtc::.+',
             'webrtc::.+',
             'quic::.+',

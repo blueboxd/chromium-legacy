@@ -221,9 +221,21 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   if (isMainFrameNavigationAction) {
     web::NavigationContextImpl* context =
         [self contextForPendingMainFrameNavigationWithURL:requestURL];
-    if (context) {
-      DCHECK(!context->IsRendererInitiated() ||
-             (context->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK));
+    // Theoretically if |context| can be found here, the navigation should be
+    // either user-initiated or JS back/forward. The second part in the "if"
+    // condition used to be a DCHECK, but it would fail in this case:
+    // 1. Multiple render-initiated navigation with the same URL happens at the
+    //    same time;
+    // 2. One of these navigations gets the "didStartProvisonalNavigation"
+    //    callback and creates a NavigationContext;
+    // 3. Another navigation reaches here and retrieves that NavigationContext
+    //    by matching URL.
+    // The DCHECK is now turned into a "if" condition, but can be reverted if a
+    // more reliable way of matching NavigationContext with WKNavigationAction
+    // is found.
+    if (context &&
+        (!context->IsRendererInitiated() ||
+         (context->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK))) {
       transition = context->GetPageTransition();
       if (context->IsLoadingErrorPage()) {
         // loadHTMLString: navigation which loads error page into WKWebView.

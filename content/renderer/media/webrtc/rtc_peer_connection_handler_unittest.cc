@@ -279,7 +279,7 @@ class RTCPeerConnectionHandlerUnderTest : public RTCPeerConnectionHandler {
  public:
   RTCPeerConnectionHandlerUnderTest(
       WebRTCPeerConnectionHandlerClient* client,
-      PeerConnectionDependencyFactory* dependency_factory)
+      blink::PeerConnectionDependencyFactory* dependency_factory)
       : RTCPeerConnectionHandler(
             client,
             dependency_factory,

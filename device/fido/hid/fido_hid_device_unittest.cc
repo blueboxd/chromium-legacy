@@ -136,12 +136,13 @@ CreateHidConnectionWithHidInitExpectations(
     FakeFidoHidManager* fake_hid_manager,
     ::testing::Sequence sequence) {
   auto hid_device = TestHidDevice();
-  device::mojom::HidConnectionPtr connection_client;
+  mojo::PendingRemote<device::mojom::HidConnection> connection_client;
 
   // Replace device HID connection with custom client connection bound to mock
   // server-side mojo connection.
   auto mock_connection = std::make_unique<MockFidoHidConnection>(
-      hid_device.Clone(), mojo::MakeRequest(&connection_client), channel_id);
+      hid_device.Clone(), connection_client.InitWithNewPipeAndPassReceiver(),
+      channel_id);
 
   // Initial write for establishing channel ID.
   mock_connection->ExpectWriteHidInit();
@@ -283,9 +284,10 @@ TEST_F(FidoHidDeviceTest, TestRetryChannelAllocation) {
 
   // Replace device HID connection with custom client connection bound to mock
   // server-side mojo connection.
-  device::mojom::HidConnectionPtr connection_client;
+  mojo::PendingRemote<device::mojom::HidConnection> connection_client;
   MockFidoHidConnection mock_connection(
-      hid_device.Clone(), mojo::MakeRequest(&connection_client), kChannelId);
+      hid_device.Clone(), connection_client.InitWithNewPipeAndPassReceiver(),
+      kChannelId);
 
   // Initial write for establishing a channel ID.
   mock_connection.ExpectWriteHidInit();
@@ -883,9 +885,10 @@ TEST_F(FidoHidDeviceTest, TestWinkNotSupported) {
 
   // Replace device HID connection with custom client connection bound to mock
   // server-side mojo connection.
-  device::mojom::HidConnectionPtr connection_client;
+  mojo::PendingRemote<device::mojom::HidConnection> connection_client;
   MockFidoHidConnection mock_connection(
-      hid_device.Clone(), mojo::MakeRequest(&connection_client), kChannelId);
+      hid_device.Clone(), connection_client.InitWithNewPipeAndPassReceiver(),
+      kChannelId);
 
   // Initial write for establishing a channel ID.
   mock_connection.ExpectWriteHidInit();
@@ -943,9 +946,10 @@ TEST_F(FidoHidDeviceTest, TestCtap2DeviceShouldNotBlink) {
 
   // Replace device HID connection with custom client connection bound to mock
   // server-side mojo connection.
-  device::mojom::HidConnectionPtr connection_client;
+  mojo::PendingRemote<device::mojom::HidConnection> connection_client;
   MockFidoHidConnection mock_connection(
-      hid_device.Clone(), mojo::MakeRequest(&connection_client), kChannelId);
+      hid_device.Clone(), connection_client.InitWithNewPipeAndPassReceiver(),
+      kChannelId);
 
   // Initial write for establishing a channel ID.
   mock_connection.ExpectWriteHidInit();
@@ -998,9 +1002,10 @@ TEST_F(FidoHidDeviceTest, TestSuccessfulWink) {
 
   // Replace device HID connection with custom client connection bound to mock
   // server-side mojo connection.
-  device::mojom::HidConnectionPtr connection_client;
+  mojo::PendingRemote<device::mojom::HidConnection> connection_client;
   MockFidoHidConnection mock_connection(
-      hid_device.Clone(), mojo::MakeRequest(&connection_client), kChannelId);
+      hid_device.Clone(), connection_client.InitWithNewPipeAndPassReceiver(),
+      kChannelId);
 
   // Initial write for establishing a channel ID.
   mock_connection.ExpectWriteHidInit();

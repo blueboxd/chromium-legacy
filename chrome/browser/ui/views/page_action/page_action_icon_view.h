@@ -62,6 +62,10 @@ class PageActionIconView : public IconLabelBubbleView {
 
   void set_icon_size(int size) { icon_size_ = size; }
 
+  // Sets the active state of the icon. An active icon will be displayed in a
+  // "call to action" color.
+  void SetActive(bool active);
+
   // Updates the visibility of the icon based on the associated model state,
   // returns whether any change occurred.
   virtual bool Update() = 0;
@@ -133,10 +137,6 @@ class PageActionIconView : public IconLabelBubbleView {
 
   // Updates the icon image after some state has changed.
   virtual void UpdateIconImage();
-
-  // Sets the active state of the icon. An active icon will be displayed in a
-  // "call to action" color.
-  void SetActiveInternal(bool active);
 
   // Returns the associated web contents from the delegate.
   content::WebContents* GetWebContents() const;

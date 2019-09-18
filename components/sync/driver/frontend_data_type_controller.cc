@@ -31,7 +31,7 @@ void FrontendDataTypeController::LoadModels(
     const ConfigureContext& configure_context,
     const ModelLoadCallback& model_load_callback) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(configure_context.storage_option, STORAGE_ON_DISK);
+  DCHECK_EQ(configure_context.sync_mode, SyncMode::kFull);
 
   model_load_callback_ = model_load_callback;
 

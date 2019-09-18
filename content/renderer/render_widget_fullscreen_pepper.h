@@ -40,7 +40,6 @@ class RenderWidgetFullscreenPepper : public RenderWidget,
       PageProperties* page_properties,
       PepperPluginInstanceImpl* plugin,
       const blink::WebURL& local_main_frame_url,
-      const ScreenInfo& screen_info,
       mojo::PendingReceiver<mojom::Widget> widget_receiver);
 
   // pepper::FullscreenContainer API.
@@ -65,7 +64,6 @@ class RenderWidgetFullscreenPepper : public RenderWidget,
       CompositorDependencies* compositor_deps,
       PageProperties* page_properties,
       PepperPluginInstanceImpl* plugin,
-      const ScreenInfo& screen_info,
       mojo::PendingReceiver<mojom::Widget> widget_receiver);
   ~RenderWidgetFullscreenPepper() override;
 

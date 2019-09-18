@@ -22,6 +22,7 @@
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/generic_v4l2_device.h"
 #include "media/gpu/v4l2/v4l2_decode_surface.h"
+#include "ui/gfx/native_pixmap_handle.h"
 
 #if defined(ARCH_CPU_ARMEL)
 #include "media/gpu/v4l2/tegra_v4l2_device.h"
@@ -479,6 +480,31 @@ bool V4L2WritableBufferRef::QueueDMABuf(
   }
   for (size_t i = 0; i < num_planes; i++)
     self.buffer_data_->v4l2_buffer_.m.planes[i].m.fd = fds[i].get();
+
+  return std::move(self).DoQueue();
+}
+
+bool V4L2WritableBufferRef::QueueDMABuf(
+    const std::vector<gfx::NativePixmapPlane>& planes) && {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(IsValid());
+
+  // Move ourselves so our data gets freed no matter when we return
+  V4L2WritableBufferRef self(std::move(*this));
+
+  if (self.Memory() != V4L2_MEMORY_DMABUF) {
+    VLOGF(1) << "Called on invalid buffer type!";
+    return false;
+  }
+
+  size_t num_planes = self.PlanesCount();
+  // TODO(hiroh): Strengthen this check with v4l2 pixel format.
+  if (planes.size() < num_planes) {
+    VLOGF(1) << "The given number of fds is less than required one";
+    return false;
+  }
+  for (size_t i = 0; i < num_planes; i++)
+    self.buffer_data_->v4l2_buffer_.m.planes[i].m.fd = planes[i].fd.get();
 
   return std::move(self).DoQueue();
 }

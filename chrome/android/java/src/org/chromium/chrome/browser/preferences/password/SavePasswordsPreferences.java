@@ -27,6 +27,7 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ChromeBasePreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
@@ -34,6 +35,7 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.SearchUtils;
 import org.chromium.chrome.browser.preferences.TextMessagePreference;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.ui.text.SpanApplier;
 
 import java.util.Locale;
@@ -152,7 +154,7 @@ public class SavePasswordsPreferences
         menu.findItem(R.id.export_passwords).setEnabled(false);
         mSearchItem = menu.findItem(R.id.menu_id_search);
         mSearchItem.setVisible(true);
-        mHelpItem = menu.findItem(R.id.menu_id_general_help);
+        mHelpItem = menu.findItem(R.id.menu_id_targeted_help);
         SearchUtils.initializeSearchView(
                 mSearchItem, mSearchQuery, getActivity(), this::filterPasswords);
     }
@@ -172,6 +174,12 @@ public class SavePasswordsPreferences
         }
         if (SearchUtils.handleSearchNavigation(item, mSearchItem, mSearchQuery, getActivity())) {
             filterPasswords(null);
+            return true;
+        }
+        if (id == R.id.menu_id_targeted_help) {
+            HelpAndFeedback.getInstance(getActivity())
+                    .show(getActivity(), getString(R.string.help_context_passwords),
+                            Profile.getLastUsedProfile(), null);
             return true;
         }
         return super.onOptionsItemSelected(item);

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "components/sync/base/storage_option.h"
+#include "components/sync/base/sync_mode.h"
 #include "components/sync/engine/configure_reason.h"
 #include "google_apis/gaia/core_account_id.h"
 
@@ -22,7 +22,7 @@ namespace syncer {
 struct ConfigureContext {
   CoreAccountId authenticated_account_id;
   std::string cache_guid;
-  StorageOption storage_option = STORAGE_ON_DISK;
+  SyncMode sync_mode = SyncMode::kFull;
   ConfigureReason reason = CONFIGURE_REASON_UNKNOWN;
   base::Time configuration_start_time;
   // TODO(mastiz): Consider adding |requested_types| here, but currently there

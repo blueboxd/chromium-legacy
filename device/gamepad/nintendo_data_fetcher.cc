@@ -14,7 +14,7 @@
 
 namespace device {
 
-NintendoDataFetcher::NintendoDataFetcher() : binding_(this) {}
+NintendoDataFetcher::NintendoDataFetcher() = default;
 
 NintendoDataFetcher::~NintendoDataFetcher() {
   for (auto& entry : controllers_) {
@@ -32,11 +32,10 @@ void NintendoDataFetcher::OnAddedToProvider() {
   // OnGetDevices will be called with a list of connected HID devices.
   connector()->Connect(mojom::kServiceName,
                        hid_manager_.BindNewPipeAndPassReceiver());
-  mojom::HidManagerClientAssociatedPtrInfo client;
-  binding_.Bind(mojo::MakeRequest(&client));
   hid_manager_->GetDevicesAndSetClient(
-      std::move(client), base::BindOnce(&NintendoDataFetcher::OnGetDevices,
-                                        weak_factory_.GetWeakPtr()));
+      receiver_.BindNewEndpointAndPassRemote(),
+      base::BindOnce(&NintendoDataFetcher::OnGetDevices,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void NintendoDataFetcher::OnGetDevices(

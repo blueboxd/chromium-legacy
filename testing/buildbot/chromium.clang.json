@@ -1592,6 +1592,22 @@
               "cpu": "x86-64",
               "os": "Windows-10-15063"
             }
+          ]
+        },
+        "test": "browser_switcher_bho_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
           ],
           "shards": 10
         },
@@ -3224,6 +3240,22 @@
           ]
         },
         "test": "boringssl_ssl_tests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
+        "test": "browser_switcher_bho_unittests"
       },
       {
         "merge": {
@@ -23984,6 +24016,16 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "browser_switcher_bho_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 10
         },
@@ -25025,6 +25067,16 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "browser_switcher_bho_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 20
         },
@@ -26059,6 +26111,16 @@
           "can_use_on_swarming_builders": true
         },
         "test": "boringssl_ssl_tests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "browser_switcher_bho_unittests"
       },
       {
         "merge": {
@@ -27178,6 +27240,22 @@
           ]
         },
         "test": "boringssl_ssl_tests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
+        "test": "browser_switcher_bho_unittests"
       },
       {
         "merge": {
@@ -28820,6 +28898,22 @@
               "cpu": "x86-64",
               "os": "Windows-10-15063"
             }
+          ]
+        },
+        "test": "browser_switcher_bho_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
           ],
           "shards": 20
         },
@@ -30449,6 +30543,22 @@
               "cpu": "x86-64",
               "os": "Windows-10-15063"
             }
+          ]
+        },
+        "test": "browser_switcher_bho_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
           ],
           "shards": 10
         },
@@ -31994,6 +32104,16 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "browser_switcher_bho_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 10
         },
@@ -33028,6 +33148,16 @@
           "can_use_on_swarming_builders": true
         },
         "test": "boringssl_ssl_tests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "browser_switcher_bho_unittests"
       },
       {
         "merge": {
@@ -34076,6 +34206,16 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "browser_switcher_bho_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 10
         },
@@ -35117,6 +35257,16 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "browser_switcher_bho_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 10
         },
@@ -36151,6 +36301,16 @@
           "can_use_on_swarming_builders": true
         },
         "test": "boringssl_ssl_tests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "browser_switcher_bho_unittests"
       },
       {
         "merge": {
@@ -38654,6 +38814,21 @@
           ]
         },
         "test": "boringssl_ssl_tests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
+        "test": "browser_switcher_bho_unittests"
       },
       {
         "args": [

@@ -559,6 +559,49 @@
   };
 
   /**
+   * Tests that Quick View does not display a PDF file preview when that is
+   * disabled by system settings (preferences).
+   */
+  testcase.openQuickViewPdfPreviewsDisabled = async () => {
+    const caller = getCaller();
+
+    /**
+     * The #innerContentPanel resides in the #quick-view shadow DOM as a child
+     * of the #dialog element, and contains the file preview result.
+     */
+    const contentPanel = ['#quick-view', '#dialog[open] #innerContentPanel'];
+
+    // Disable PDF previews.
+    await sendTestMessage({name: 'setPdfPreviewEnabled', enabled: false});
+
+    // Open Files app on Downloads containing ENTRIES.tallPdf.
+    const appId =
+        await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.tallPdf], []);
+
+    // Open the file in Quick View.
+    await openQuickView(appId, ENTRIES.tallPdf.nameText);
+
+    // Wait for the innerContentPanel to load and display its content.
+    function checkInnerContentPanel(elements) {
+      let haveElements = Array.isArray(elements) && elements.length === 1;
+      if (!haveElements || elements[0].styles.display !== 'flex') {
+        return pending(caller, 'Waiting for inner content panel to load.');
+      }
+      // Check: the PDF preview should not be shown.
+      chrome.test.assertEq('No preview available', elements[0].text);
+      return;
+    }
+    await repeatUntil(async () => {
+      return checkInnerContentPanel(await remoteCall.callRemoteTestUtil(
+          'deepQueryAllElements', appId, [contentPanel, ['display']]));
+    });
+
+    // Check: the correct file mimeType should be displayed.
+    const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
+    chrome.test.assertEq('application/pdf', mimeType);
+  };
+
+  /**
    * Tests opening Quick View and scrolling its <webview> which contains a tall
    * html document.
    */

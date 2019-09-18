@@ -36,7 +36,7 @@ bool ReaderModeIconView::Update() {
   // TODO(gilmanmh): Display icon for only those pages that are likely to
   // render well in Reader Mode.
   SetVisible(true);
-  SetActiveInternal(IsDistilledPage(contents->GetLastCommittedURL()));
+  SetActive(IsDistilledPage(contents->GetLastCommittedURL()));
 
   // Notify the icon when navigation to and from a distilled page occurs so that
   // it can hide the inkdrop.

@@ -92,7 +92,7 @@
     self.personalDataManager->UpdateCreditCard(savedCreditCardCopy);
   } else {
     base::RecordAction(
-        base::UserMetricsAction("MobileAddCreditCard.CardSaved"));
+        base::UserMetricsAction("MobileAddCreditCard.CreditCardAdded"));
     self.personalDataManager->AddCreditCard(creditCard);
   }
 

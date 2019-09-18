@@ -120,11 +120,14 @@ class LatencyInfo {
 
   LatencyInfo();
   LatencyInfo(const LatencyInfo& other);
+  LatencyInfo(LatencyInfo&& other);
   LatencyInfo(SourceEventType type);
   ~LatencyInfo();
 
   // For test only.
   LatencyInfo(int64_t trace_id, bool terminated);
+
+  LatencyInfo& operator=(const LatencyInfo& other);
 
   // Returns true if the vector |latency_info| is valid. Returns false
   // if it is not valid and log the |referring_msg|.

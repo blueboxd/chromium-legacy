@@ -480,6 +480,16 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
   // expose the NavigationHandle when navigating to an InterstitialPage.
   NavigatorDelegate* GetDelegate() const;
 
+  blink::mojom::RequestContextType request_context_type() const {
+    DCHECK_GE(handle_state_, PROCESSING_WILL_START_REQUEST);
+    return begin_params_->request_context_type;
+  }
+
+  blink::WebMixedContentContextType mixed_content_context_type() const {
+    DCHECK_GE(handle_state_, PROCESSING_WILL_START_REQUEST);
+    return begin_params_->mixed_content_context_type;
+  }
+
  private:
   friend class NavigationRequestTest;
 

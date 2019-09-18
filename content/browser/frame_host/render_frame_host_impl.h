@@ -901,7 +901,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   service_manager::BinderRegistry& BinderRegistryForTesting() {
     return *registry_;
   }
-  blink::mojom::FileChooserPtr BindFileChooserForTesting();
+
+  mojo::Remote<blink::mojom::FileChooser> BindFileChooserForTesting();
 
   // Called when the WebAudio AudioContext given by |audio_context_id| has
   // started (or stopped) playing audible audio.
@@ -915,6 +916,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Called when this RenderFrameHostImpl leaves the BackForwardCache. This
   // occurs immediately before a restored document is committed.
   void LeaveBackForwardCache();
+
+  // Start a timer that will evict this RenderFrameHost from the
+  // BackForwardCache after time to live.
+  void StartBackForwardCacheEvictionTimer();
 
   bool is_in_back_forward_cache() { return is_in_back_forward_cache_; }
 
@@ -1542,7 +1547,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 #endif
 
 #if !defined(OS_ANDROID)
-  void BindSerialServiceRequest(blink::mojom::SerialServiceRequest request);
+  void BindSerialServiceReceiver(
+      mojo::PendingReceiver<blink::mojom::SerialService> receiver);
   void BindAuthenticatorRequest(
       mojo::PendingReceiver<blink::mojom::Authenticator> receiver);
 #endif
@@ -2324,6 +2330,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // BackForwardCache:
   bool is_in_back_forward_cache_ = false;
   bool is_evicted_from_back_forward_cache_ = false;
+  base::OneShotTimer back_forward_cache_eviction_timer_;
 
   blink::mojom::FrameVisibility visibility_ =
       blink::mojom::FrameVisibility::kRenderedInViewport;

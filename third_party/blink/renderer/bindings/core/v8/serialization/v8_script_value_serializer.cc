@@ -151,6 +151,16 @@ void V8ScriptValueSerializer::FinalizeTransfer(
   v8::Isolate* isolate = script_state_->GetIsolate();
 
   ArrayBufferArray array_buffers;
+  // The scope object to promptly free the backing store to avoid memory
+  // regressions.
+  // TODO(bikineev): Revisit after young generation is there.
+  struct PromptlyFreeArrayBuffers {
+    // The void* is to avoid blink-gc-plugin error.
+    void* buffer;
+    ~PromptlyFreeArrayBuffers() {
+      static_cast<ArrayBufferArray*>(buffer)->clear();
+    }
+  } promptly_free_array_buffers{&array_buffers};
   if (transferables_)
     array_buffers.AppendVector(transferables_->array_buffers);
 

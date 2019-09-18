@@ -48,50 +48,24 @@ const SkScalar kScrollRadius =
 
 const int kCheckboxBorderRadius = 2;
 const int kCheckboxAndRadioBorderWidth = 1;
-const SkColor kCheckboxAndRadioTinyColor = SK_ColorGRAY;
-const SkColor kCkeckboxAndRadioBackgroundColor =
-    SkColorSetRGB(0xFF, 0xFF, 0xFF);
-const SkColor kCheckboxAndRadioBorderColor = SkColorSetRGB(0xCE, 0xCE, 0xCE);
-const SkColor kCheckboxAndRadioBorderHoveredColor =
-    SkColorSetRGB(0x9D, 0x9D, 0x9D);
-const SkColor kCheckboxAndRadioBorderDisabledColor =
-    SkColorSetRGB(0xC5, 0xC5, 0xC5);
-const SkColor kCheckboxAndRadioStrokeColor = SkColorSetRGB(0x73, 0x73, 0x73);
-const SkColor kCheckboxAndRadioStrokeDisabledColor =
-    SkColorSetRGB(0xC5, 0xC5, 0xC5);
 
 const int kInputBorderRadius = 2;
 const int kInputBorderWidth = 1;
-const SkColor kInputBorderColor = SkColorSetRGB(0xCE, 0xCE, 0xCE);
-const SkColor kInputBorderHoveredColor = SkColorSetRGB(0x9D, 0x9D, 0x9D);
-const SkColor kInputBorderDisabledColor = SkColorSetRGB(0xC5, 0xC5, 0xC5);
-
 const SkScalar kButtonBorderRadius = 2.f;
 const SkScalar kButtonBorderWidth = 1.f;
-const SkColor kButtonBackgroundColor = SkColorSetRGB(0xEF, 0xEF, 0xEF);
-const SkColor kButtonBackgroundHoveredColor = SkColorSetRGB(0xF3, 0xF3, 0xF3);
-const SkColor kButtonBackgroundDisabledColor = SkColorSetRGB(0xEF, 0xEF, 0xEF);
-const SkColor kButtonBorderColor = SkColorSetRGB(0xCE, 0xCE, 0xCE);
-const SkColor kButtonBorderHoveredColor = SkColorSetRGB(0x9D, 0x9D, 0x9D);
-const SkColor kButtonBorderDisabledColor = SkColorSetRGB(0xC5, 0xC5, 0xC5);
 
 const SkScalar kSliderTrackRadius = 40.f;
-const SkColor kSliderTrackColor = SkColorSetRGB(0xCE, 0xCE, 0xCE);
-const SkColor kSliderTrackHoveredColor = SkColorSetRGB(0x9D, 0x9D, 0x9D);
-const SkColor kSliderTrackActiveColor = SkColorSetRGB(0xB5, 0xB5, 0xB5);
-const SkColor kSliderTrackDisabledColor = SkColorSetRGB(0xC5, 0xC5, 0xC5);
-const SkColor kSliderTrackValueColor = SkColorSetRGB(0x10, 0x10, 0x10);
 
 const int kSliderThumbWidth = 21;
 const int kSliderThumbHeight = 21;
-const SkColor kSliderThumbBackgroundColor = SkColorSetRGB(0xFF, 0xFF, 0xFF);
-const SkColor kSliderThumbBorderColor = SkColorSetRGB(0x10, 0x10, 0x10);
-const SkColor kSliderThumbBorderDisabledColor = SkColorSetRGB(0xC5, 0xC5, 0xC5);
 const SkScalar kSliderThumbBorderWidth = 2.f;
 const SkScalar kSliderThumbBorderHoveredWidth = 4.f;
 
 const SkScalar kMenuListArrowStrokeWidth = 1.f;
 
+// The "dash" is 8x2 px by default (the checkbox is 13x13 px).
+const SkScalar kIndeterminateInsetWidthRatio = (13 - 8) / 2.0f / 13;
+const SkScalar kIndeterminateInsetHeightRatio = (13 - 2) / 2.0f / 13;
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -150,23 +124,89 @@ NativeThemeAura* NativeThemeAura::web_instance() {
 
 SkColor NativeThemeAura::GetSystemColor(ColorId color_id,
                                         ColorScheme color_scheme) const {
-  if (UsesHighContrastColors() && features::IsFormControlsRefreshEnabled() &&
-      !system_colors_.empty()) {
+  return GetAuraColor(color_id, this, color_scheme);
+}
+
+SkColor NativeThemeAura::GetControlColor(ControlColorId color_id,
+                                         ColorScheme color_scheme) const {
+  if (UsesHighContrastColors())
+    return GetHighContrastControlColor(color_id, color_scheme);
+
+  switch (color_id) {
+    case kBorder:
+      return SkColorSetRGB(0x76, 0x76, 0x76);
+    case kHoveredBorder:
+      return SkColorSetRGB(0x4F, 0x4F, 0x4F);
+    case kDisabledBorder:
+      return SkColorSetARGB(0x4D, 0x76, 0x76, 0x76);
+    case kAccent:
+      return SkColorSetRGB(0x00, 0x75, 0xFF);
+    case kHoveredAccent:
+      return SkColorSetRGB(0x00, 0x5C, 0xC8);
+    case kDisabledAccent:
+      return SkColorSetARGB(0x4D, 0x76, 0x76, 0x76);
+    case kBackground:
+      return SK_ColorWHITE;
+    case kDisabledBackground:
+      return SkColorSetA(SK_ColorWHITE, 0x99);
+    case kFill:
+      return SkColorSetRGB(0xEF, 0xEF, 0xEF);
+    case kHoveredFill:
+      return SkColorSetRGB(0xE5, 0xE5, 0xE5);
+    case kDisabledFill:
+      return SkColorSetARGB(0x4D, 0xEF, 0xEF, 0xEF);
+    case kLightenLayer:
+      return SkColorSetARGB(0x33, 0xA9, 0xA9, 0xA9);
+  }
+  NOTREACHED();
+  return gfx::kPlaceholderColor;
+}
+
+SkColor NativeThemeAura::GetHighContrastControlColor(
+    ControlColorId color_id,
+    ColorScheme color_scheme) const {
+  if (!system_colors_.empty()) {
     switch (color_id) {
-      case kColorId_ButtonDisabledColor:
+      case kDisabledBorder:
+      case kDisabledAccent:
         return system_colors_[SystemThemeColor::kGrayText];
-      case kColorId_ButtonEnabledColor:
+      case kBorder:
+      case kHoveredBorder:
         return system_colors_[SystemThemeColor::kButtonText];
-      case kColorId_MenuBackgroundColor:
+      case kAccent:
+      case kHoveredAccent:
         return system_colors_[SystemThemeColor::kHighlight];
-      case kColorId_WindowBackground:
+      case kBackground:
+      case kDisabledBackground:
+      case kFill:
+      case kHoveredFill:
+      case kDisabledFill:
+      case kLightenLayer:
         return system_colors_[SystemThemeColor::kWindow];
-      default:
-        break;
+    }
+  } else {
+    // Default high contrast colors (used in web test mode)
+    switch (color_id) {
+      case kDisabledBorder:
+      case kDisabledAccent:
+        return SK_ColorGREEN;
+      case kBorder:
+      case kHoveredBorder:
+        return SK_ColorWHITE;
+      case kAccent:
+      case kHoveredAccent:
+        return SK_ColorCYAN;
+      case kBackground:
+      case kDisabledBackground:
+      case kFill:
+      case kHoveredFill:
+      case kDisabledFill:
+      case kLightenLayer:
+        return SK_ColorBLACK;
     }
   }
-
-  return GetAuraColor(color_id, this, color_scheme);
+  NOTREACHED();
+  return gfx::kPlaceholderColor;
 }
 
 void NativeThemeAura::PaintMenuPopupBackground(
@@ -403,6 +443,64 @@ void NativeThemeAura::PaintScrollbarCorner(cc::PaintCanvas* canvas,
   canvas->drawIRect(RectToSkIRect(rect), flags);
 }
 
+SkColor NativeThemeAura::ControlsAccentColorForState(
+    State state,
+    ColorScheme color_scheme) const {
+  ControlColorId color_id;
+  if (state == kHovered) {
+    color_id = kHoveredAccent;
+  } else if (state == kPressed) {
+    color_id = kHoveredAccent;
+  } else if (state == kDisabled) {
+    color_id = kDisabledAccent;
+  } else {
+    color_id = kAccent;
+  }
+  return GetControlColor(color_id, color_scheme);
+}
+
+SkColor NativeThemeAura::ControlsBorderColorForState(
+    State state,
+    ColorScheme color_scheme) const {
+  ControlColorId color_id;
+  if (state == kHovered) {
+    color_id = kHoveredBorder;
+  } else if (state == kDisabled) {
+    color_id = kDisabledBorder;
+  } else {
+    color_id = kBorder;
+  }
+  return GetControlColor(color_id, color_scheme);
+}
+
+SkColor NativeThemeAura::ControlsFillColorForState(
+    State state,
+    ColorScheme color_scheme) const {
+  ControlColorId color_id;
+  if (state == kHovered) {
+    color_id = kHoveredFill;
+  } else if (state == kPressed) {
+    color_id = kHoveredFill;
+  } else if (state == kDisabled) {
+    color_id = kDisabledFill;
+  } else {
+    color_id = kFill;
+  }
+  return GetControlColor(color_id, color_scheme);
+}
+
+SkColor NativeThemeAura::ControlsBackgroundColorForState(
+    State state,
+    ColorScheme color_scheme) const {
+  ControlColorId color_id;
+  if (state == kDisabled) {
+    color_id = kDisabledBackground;
+  } else {
+    color_id = kBackground;
+  }
+  return GetControlColor(color_id, color_scheme);
+}
+
 void NativeThemeAura::PaintCheckbox(cc::PaintCanvas* canvas,
                                     State state,
                                     const gfx::Rect& rect,
@@ -413,34 +511,31 @@ void NativeThemeAura::PaintCheckbox(cc::PaintCanvas* canvas,
                                           color_scheme);
   }
 
-  SkRect skrect = PaintCheckboxRadioCommon(
-      canvas, state, rect, SkIntToScalar(kCheckboxBorderRadius), color_scheme);
+  SkRect skrect = PaintCheckboxRadioCommon(canvas, state, rect, button, true,
+                                           SkIntToScalar(kCheckboxBorderRadius),
+                                           color_scheme);
 
   if (!skrect.isEmpty()) {
-    // Draw the checkmark / dash.
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
 
-    if (UsesHighContrastColors()) {
-      ColorId color_id = (state == kDisabled)
-                             ? NativeTheme::kColorId_ButtonDisabledColor
-                             : NativeTheme::kColorId_ButtonEnabledColor;
-      flags.setColor(GetSystemColor(color_id, color_scheme));
-    } else {
-      if (state == kDisabled) {
-        flags.setColor(kCheckboxAndRadioStrokeDisabledColor);
-      } else {
-        flags.setColor(kCheckboxAndRadioStrokeColor);
-      }
-    }
-
     if (button.indeterminate) {
+      // Draw the dash.
+      flags.setColor(ControlsBorderColorForState(state, color_scheme));
       const auto indeterminate =
-          skrect.makeInset(skrect.width() * 0.2, skrect.height() * 0.2);
+          skrect.makeInset(skrect.width() * kIndeterminateInsetWidthRatio,
+                           skrect.height() * kIndeterminateInsetHeightRatio);
       flags.setStyle(cc::PaintFlags::kFill_Style);
       canvas->drawRoundRect(indeterminate, SkIntToScalar(kCheckboxBorderRadius),
                             SkIntToScalar(kCheckboxBorderRadius), flags);
     } else if (button.checked) {
+      // Draw the accent background.
+      flags.setStyle(cc::PaintFlags::kFill_Style);
+      flags.setColor(ControlsAccentColorForState(state, color_scheme));
+      canvas->drawRoundRect(skrect, kCheckboxBorderRadius,
+                            kCheckboxBorderRadius, flags);
+
+      // Draw the checkmark.
       SkPath check;
       check.moveTo(skrect.x() + skrect.width() * 0.2, skrect.centerY());
       check.rLineTo(skrect.width() * 0.2, skrect.height() * 0.2);
@@ -448,6 +543,9 @@ void NativeThemeAura::PaintCheckbox(cc::PaintCanvas* canvas,
                    skrect.y() + skrect.height() * 0.2);
       flags.setStyle(cc::PaintFlags::kStroke_Style);
       flags.setStrokeWidth(SkFloatToScalar(skrect.height() * 0.16));
+      SkColor checkmark_color =
+          ControlsBackgroundColorForState(state, color_scheme);
+      flags.setColor(checkmark_color);
       canvas->drawPath(check, flags);
     }
   }
@@ -468,26 +566,14 @@ void NativeThemeAura::PaintRadio(cc::PaintCanvas* canvas,
   const SkScalar radius = SkFloatToScalar(
       static_cast<float>(std::max(rect.width(), rect.height())) * 0.5);
 
-  SkRect skrect =
-      PaintCheckboxRadioCommon(canvas, state, rect, radius, color_scheme);
+  SkRect skrect = PaintCheckboxRadioCommon(canvas, state, rect, button, false,
+                                           radius, color_scheme);
   if (!skrect.isEmpty() && button.checked) {
     // Draw the dot.
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
     flags.setStyle(cc::PaintFlags::kFill_Style);
-
-    if (UsesHighContrastColors()) {
-      ColorId color_id = (state == kDisabled)
-                             ? NativeTheme::kColorId_ButtonDisabledColor
-                             : NativeTheme::kColorId_ButtonEnabledColor;
-      flags.setColor(GetSystemColor(color_id, color_scheme));
-    } else {
-      if (state == kDisabled) {
-        flags.setColor(kCheckboxAndRadioStrokeDisabledColor);
-      } else {
-        flags.setColor(kCheckboxAndRadioStrokeColor);
-      }
-    }
+    flags.setColor(ControlsAccentColorForState(state, color_scheme));
 
     skrect.inset(skrect.width() * 0.2, skrect.height() * 0.2);
     // Use drawRoundedRect instead of drawOval to be completely consistent
@@ -503,6 +589,8 @@ SkRect NativeThemeAura::PaintCheckboxRadioCommon(
     cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
+    const ButtonExtraParams& button,
+    bool is_checkbox,
     const SkScalar borderRadius,
     ColorScheme color_scheme) const {
   SkRect skrect = gfx::RectToSkRect(rect);
@@ -520,14 +608,7 @@ SkRect NativeThemeAura::PaintCheckboxRadioCommon(
   // or underflow.
   if (skrect.width() <= 2) {
     cc::PaintFlags flags;
-
-    if (UsesHighContrastColors()) {
-      flags.setColor(GetSystemColor(NativeTheme::kColorId_ButtonEnabledColor,
-                                    color_scheme));
-    } else {
-      flags.setColor(kCheckboxAndRadioTinyColor);
-    }
-
+    flags.setColor(GetControlColor(kBorder, color_scheme));
     flags.setStyle(cc::PaintFlags::kFill_Style);
     canvas->drawRect(skrect, flags);
     // Too small to draw anything more.
@@ -540,37 +621,29 @@ SkRect NativeThemeAura::PaintCheckboxRadioCommon(
   const SkScalar borderWidth = SkIntToScalar(kCheckboxAndRadioBorderWidth);
 
   // Paint the background (is not visible behind the rounded corners).
-  skrect.inset(borderWidth / 2, borderWidth / 2);
-
-  if (UsesHighContrastColors()) {
-    flags.setColor(
-        GetSystemColor(NativeTheme::kColorId_WindowBackground, color_scheme));
-  } else {
-    flags.setColor(kCkeckboxAndRadioBackgroundColor);
-  }
-
+  // Note we need to shrink the rect for background a little bit so we don't see
+  // artifacts introduced by antialiasing between the border and the background
+  // near the rounded corners of checkbox.
+  const auto background_rect =
+      skrect.makeInset(borderWidth * 0.2f, borderWidth * 0.2f);
+  PaintLightenLayer(canvas, background_rect, state, borderRadius, color_scheme);
+  flags.setColor(ControlsBackgroundColorForState(state, color_scheme));
   flags.setStyle(cc::PaintFlags::kFill_Style);
-  canvas->drawRoundRect(skrect, borderRadius, borderRadius, flags);
+  canvas->drawRoundRect(background_rect, borderRadius, borderRadius, flags);
 
   // Draw the border.
-  if (UsesHighContrastColors()) {
-    ColorId color_id = (state == kDisabled)
-                           ? NativeTheme::kColorId_ButtonDisabledColor
-                           : NativeTheme::kColorId_ButtonEnabledColor;
-    flags.setColor(GetSystemColor(color_id, color_scheme));
-  } else {
-    if (state == kHovered) {
-      flags.setColor(kCheckboxAndRadioBorderHoveredColor);
-    } else if (state == kDisabled) {
-      flags.setColor(kCheckboxAndRadioBorderDisabledColor);
-    } else {
-      flags.setColor(kCheckboxAndRadioBorderColor);
-    }
+  if (!(is_checkbox && button.checked)) {
+    // Shrink half border width so the final pixels of the border will be within
+    // the rectangle.
+    const auto border_rect = skrect.makeInset(borderWidth / 2, borderWidth / 2);
+    SkColor border_color =
+        button.checked ? ControlsAccentColorForState(state, color_scheme)
+                       : ControlsBorderColorForState(state, color_scheme);
+    flags.setColor(border_color);
+    flags.setStyle(cc::PaintFlags::kStroke_Style);
+    flags.setStrokeWidth(borderWidth);
+    canvas->drawRoundRect(border_rect, borderRadius, borderRadius, flags);
   }
-
-  flags.setStyle(cc::PaintFlags::kStroke_Style);
-  flags.setStrokeWidth(borderWidth);
-  canvas->drawRoundRect(skrect, borderRadius, borderRadius, flags);
 
   // Return the rectangle for drawing any additional decorations.
   return skrect;
@@ -588,35 +661,40 @@ void NativeThemeAura::PaintTextField(cc::PaintCanvas* canvas,
 
   SkRect bounds = gfx::RectToSkRect(rect);
   const SkScalar borderWidth = SkIntToScalar(kInputBorderWidth);
+  const SkScalar borderRadius = SkIntToScalar(kInputBorderRadius);
 
   // Paint the background (is not visible behind the rounded corners).
   bounds.inset(borderWidth / 2, borderWidth / 2);
   cc::PaintFlags fill_flags;
   fill_flags.setStyle(cc::PaintFlags::kFill_Style);
-  fill_flags.setColor(text.background_color);
-  canvas->drawRoundRect(bounds, SkIntToScalar(kInputBorderRadius),
-                        SkIntToScalar(kInputBorderRadius), fill_flags);
+  if (text.background_color != 0) {
+    PaintLightenLayer(canvas, bounds, state, borderRadius, color_scheme);
+    fill_flags.setColor(ControlsBackgroundColorForState(state, color_scheme));
+    canvas->drawRoundRect(bounds, borderRadius, borderRadius, fill_flags);
+  }
 
   // Paint the border: 1px solid.
   cc::PaintFlags stroke_flags;
-  if (UsesHighContrastColors()) {
-    ColorId color_id = (state == kDisabled)
-                           ? NativeTheme::kColorId_ButtonDisabledColor
-                           : NativeTheme::kColorId_ButtonEnabledColor;
-    stroke_flags.setColor(GetSystemColor(color_id, color_scheme));
-  } else {
-    if (state == kHovered) {
-      stroke_flags.setColor(kInputBorderHoveredColor);
-    } else if (state == kDisabled) {
-      stroke_flags.setColor(kInputBorderDisabledColor);
-    } else {
-      stroke_flags.setColor(kInputBorderColor);
-    }
-  }
+  stroke_flags.setColor(ControlsBorderColorForState(state, color_scheme));
   stroke_flags.setStyle(cc::PaintFlags::kStroke_Style);
   stroke_flags.setStrokeWidth(borderWidth);
-  canvas->drawRoundRect(bounds, SkIntToScalar(kInputBorderRadius),
-                        SkIntToScalar(kInputBorderRadius), stroke_flags);
+  canvas->drawRoundRect(bounds, borderRadius, borderRadius, stroke_flags);
+}
+
+void NativeThemeAura::PaintLightenLayer(cc::PaintCanvas* canvas,
+                                        SkRect skrect,
+                                        State state,
+                                        SkScalar border_radius,
+                                        ColorScheme color_scheme) const {
+  if (state == kDisabled) {
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    // Draw the lighten layer to lighten the background so the translucent
+    // disabled color works regardless of what it's over.
+    flags.setColor(GetControlColor(kLightenLayer, color_scheme));
+    canvas->drawRoundRect(skrect, border_radius, border_radius, flags);
+  }
 }
 
 void NativeThemeAura::PaintButton(cc::PaintCanvas* canvas,
@@ -632,56 +710,28 @@ void NativeThemeAura::PaintButton(cc::PaintCanvas* canvas,
   cc::PaintFlags flags;
   SkRect skrect = gfx::RectToSkRect(rect);
 
-  SkColor background_color;
-  if (UsesHighContrastColors()) {
-    background_color =
-        GetSystemColor(NativeTheme::kColorId_WindowBackground, color_scheme);
-  } else {
-    if (state == kHovered) {
-      background_color = kButtonBackgroundHoveredColor;
-    } else if (state == kDisabled) {
-      background_color = kButtonBackgroundDisabledColor;
-    } else {
-      background_color = kButtonBackgroundColor;
-    }
-  }
-
   flags.setAntiAlias(true);
   flags.setStyle(cc::PaintFlags::kFill_Style);
-  flags.setColor(background_color);
 
   // If the button is too small, fallback to drawing a single, solid color.
   if (rect.width() < 5 || rect.height() < 5) {
+    flags.setColor(ControlsFillColorForState(state, color_scheme));
     canvas->drawRect(skrect, flags);
     return;
   }
 
   // Paint the background (is not visible behind the rounded corners).
   skrect.inset(kButtonBorderWidth / 2, kButtonBorderWidth / 2);
+  PaintLightenLayer(canvas, skrect, state, kButtonBorderRadius, color_scheme);
+  flags.setColor(ControlsFillColorForState(state, color_scheme));
   canvas->drawRoundRect(skrect, kButtonBorderRadius, kButtonBorderRadius,
                         flags);
 
   // Paint the border: 1px solid.
   if (button.has_border) {
-    SkColor border_color;
-    if (UsesHighContrastColors()) {
-      ColorId color_id = (state == kDisabled)
-                             ? NativeTheme::kColorId_ButtonDisabledColor
-                             : NativeTheme::kColorId_ButtonEnabledColor;
-      border_color = GetSystemColor(color_id, color_scheme);
-    } else {
-      if (state == kHovered) {
-        border_color = kButtonBorderHoveredColor;
-      } else if (state == kDisabled) {
-        border_color = kButtonBorderDisabledColor;
-      } else {
-        border_color = kButtonBorderColor;
-      }
-    }
-
     flags.setStyle(cc::PaintFlags::kStroke_Style);
     flags.setStrokeWidth(kButtonBorderWidth);
-    flags.setColor(border_color);
+    flags.setColor(ControlsBorderColorForState(state, color_scheme));
     canvas->drawRoundRect(skrect, kButtonBorderRadius, kButtonBorderRadius,
                           flags);
   }
@@ -725,44 +775,16 @@ void NativeThemeAura::PaintSliderTrack(cc::PaintCanvas* canvas,
   // Paint the entire slider track.
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  if (UsesHighContrastColors()) {
-    ColorId color_id = (state == kDisabled)
-                           ? NativeTheme::kColorId_ButtonDisabledColor
-                           : NativeTheme::kColorId_ButtonEnabledColor;
-    flags.setColor(GetSystemColor(color_id, color_scheme));
-  } else {
-    switch (state) {
-      case kHovered:
-        flags.setColor(kSliderTrackHoveredColor);
-        break;
-      case kDisabled:
-        flags.setColor(kSliderTrackDisabledColor);
-        break;
-      case kPressed:
-        flags.setColor(kSliderTrackActiveColor);
-        break;
-      default:
-        flags.setColor(kSliderTrackColor);
-        break;
-    }
-  }
-
+  flags.setColor(GetControlColor(kFill, color_scheme));
   SkRect track_rect = AlignSliderTrack(rect, slider, false);
   canvas->drawRoundRect(track_rect, kSliderTrackRadius, kSliderTrackRadius,
                         flags);
 
   // Paint the value slider track.
-  if (state != kDisabled) {
-    if (UsesHighContrastColors()) {
-      flags.setColor(GetSystemColor(NativeTheme::kColorId_MenuBackgroundColor,
-                                    color_scheme));
-    } else {
-      flags.setColor(kSliderTrackValueColor);
-    }
-    SkRect value_rect = AlignSliderTrack(rect, slider, true);
-    canvas->drawRoundRect(value_rect, kSliderTrackRadius, kSliderTrackRadius,
-                          flags);
-  }
+  flags.setColor(ControlsAccentColorForState(state, color_scheme));
+  SkRect value_rect = AlignSliderTrack(rect, slider, true);
+  canvas->drawRoundRect(value_rect, kSliderTrackRadius, kSliderTrackRadius,
+                        flags);
 }
 
 void NativeThemeAura::PaintSliderThumb(cc::PaintCanvas* canvas,
@@ -788,25 +810,12 @@ void NativeThemeAura::PaintSliderThumb(cc::PaintCanvas* canvas,
 
   // Paint the background (is not visible behind the rounded corners).
   thumb_rect.inset(border_width / 2, border_width / 2);
-  if (UsesHighContrastColors()) {
-    flags.setColor(
-        GetSystemColor(NativeTheme::kColorId_WindowBackground, color_scheme));
-  } else {
-    flags.setColor(kSliderThumbBackgroundColor);
-  }
+  flags.setColor(GetControlColor(kFill, color_scheme));
   flags.setStyle(cc::PaintFlags::kFill_Style);
   canvas->drawRoundRect(thumb_rect, radius, radius, flags);
 
   // Paint the border.
-  if (UsesHighContrastColors()) {
-    ColorId color_id = (state == kDisabled)
-                           ? NativeTheme::kColorId_ButtonDisabledColor
-                           : NativeTheme::kColorId_MenuBackgroundColor;
-    flags.setColor(GetSystemColor(color_id, color_scheme));
-  } else {
-    flags.setColor(state == kDisabled ? kSliderThumbBorderDisabledColor
-                                      : kSliderThumbBorderColor);
-  }
+  flags.setColor(ControlsBorderColorForState(state, color_scheme));
   flags.setStyle(cc::PaintFlags::kStroke_Style);
   flags.setStrokeWidth(border_width);
   canvas->drawRoundRect(thumb_rect, radius, radius, flags);

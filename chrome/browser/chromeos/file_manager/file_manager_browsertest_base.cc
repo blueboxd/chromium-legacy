@@ -53,6 +53,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/components/drivefs/drivefs_host.h"
 #include "chromeos/components/drivefs/fake_drivefs.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -2076,6 +2077,14 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     bool enabled;
     ASSERT_TRUE(value.GetBoolean("enabled", &enabled));
     profile()->GetPrefs()->SetBoolean(drive::prefs::kDisableDrive, !enabled);
+    return;
+  }
+
+  if (name == "setPdfPreviewEnabled") {
+    bool enabled;
+    ASSERT_TRUE(value.GetBoolean("enabled", &enabled));
+    profile()->GetPrefs()->SetBoolean(prefs::kPluginsAlwaysOpenPdfExternally,
+                                      !enabled);
     return;
   }
 

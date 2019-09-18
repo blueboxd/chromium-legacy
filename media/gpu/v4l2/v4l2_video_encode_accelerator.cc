@@ -33,6 +33,7 @@
 #include "media/base/video_types.h"
 #include "media/gpu/gpu_video_encode_accelerator_helpers.h"
 #include "media/gpu/image_processor_factory.h"
+#include "media/gpu/linux/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 #include "media/video/h264_level_limits.h"
 #include "media/video/h264_parser.h"
@@ -1047,6 +1048,18 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
   DCHECK_EQ(device_input_layout_->format(), frame->format());
   size_t num_planes = V4L2Device::GetNumPlanesOfV4L2PixFmt(
       V4L2Device::VideoFrameLayoutToV4L2PixFmt(*device_input_layout_));
+
+  // Create GpuMemoryBufferHandle for native_input_mode.
+  gfx::GpuMemoryBufferHandle gmb_handle;
+  if (input_buf.Memory() == V4L2_MEMORY_DMABUF) {
+    gmb_handle = CreateGpuMemoryBufferHandle(frame.get());
+    if (gmb_handle.is_null() || gmb_handle.type != gfx::NATIVE_PIXMAP) {
+      VLOGF(1) << "Failed to create native GpuMemoryBufferHandle";
+      NOTIFY_ERROR(kPlatformFailureError);
+      return false;
+    }
+  }
+
   for (size_t i = 0; i < num_planes; ++i) {
     // Single-buffer input format may have multiple color planes, so bytesused
     // of the single buffer should be sum of each color planes' size.
@@ -1068,7 +1081,8 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
         break;
 
       case V4L2_MEMORY_DMABUF: {
-        const auto& planes = frame->layout().planes();
+        const std::vector<gfx::NativePixmapPlane>& planes =
+            gmb_handle.native_pixmap_handle.planes;
         // TODO(crbug.com/901264): The way to pass an offset within a DMA-buf is
         // not defined in V4L2 specification, so we abuse data_offset for now.
         // Fix it when we have the right interface, including any necessary
@@ -1098,7 +1112,7 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
       break;
     }
     case V4L2_MEMORY_DMABUF: {
-      std::move(input_buf).QueueDMABuf(frame->DmabufFds());
+      std::move(input_buf).QueueDMABuf(gmb_handle.native_pixmap_handle.planes);
       break;
     }
     default:
@@ -1106,6 +1120,11 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
                    << static_cast<int>(input_buf.Memory());
       return false;
   }
+
+  // Keep |gmb_handle| alive as long as |frame| is alive so that fds passed
+  // to the driver are valid during encoding.
+  frame->AddDestructionObserver(
+      base::BindOnce([](gfx::GpuMemoryBufferHandle) {}, std::move(gmb_handle)));
 
   InputRecord& input_record = input_buffer_map_[buffer_id];
   input_record.frame = frame;

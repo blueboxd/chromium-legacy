@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
+#include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
 namespace content {
@@ -130,7 +130,7 @@ class MockMediaStream : public webrtc::MediaStreamInterface {
 // A mock factory for creating different objects for
 // RTC PeerConnections.
 class MockPeerConnectionDependencyFactory
-     : public PeerConnectionDependencyFactory {
+    : public blink::PeerConnectionDependencyFactory {
  public:
   MockPeerConnectionDependencyFactory();
   ~MockPeerConnectionDependencyFactory() override;

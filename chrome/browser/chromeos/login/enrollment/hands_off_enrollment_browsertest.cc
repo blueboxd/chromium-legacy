@@ -152,7 +152,10 @@ IN_PROC_BROWSER_TEST_F(HandsOffEnrollmentTest, EnrollmentError) {
   WizardController::default_controller()->AdvanceToScreen(
       WelcomeView::kScreenId);
 
-  OobeScreenWaiter(NetworkScreenView::kScreenId).Wait();
+  OobeScreenWaiter screen_waiter(NetworkScreenView::kScreenId);
+  // WebUI window is not visible until the screen animation finishes.
+  screen_waiter.set_no_check_native_window_visible();
+  screen_waiter.Wait();
 
   OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
 

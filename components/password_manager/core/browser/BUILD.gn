@@ -344,6 +344,7 @@ if (is_android) {
   java_cpp_enum("password_manager_java_enums_srcjar") {
     sources = [
       "manage_passwords_referrer.h",
+      "password_manager_metrics_util.h",
     ]
   }
 }

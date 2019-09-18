@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
+#include "third_party/blink/renderer/platform/loader/fetch/cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
@@ -1256,6 +1257,15 @@ bool Resource::IsLoadEventBlockingResourceType() const {
 // static
 void Resource::SetClockForTesting(const base::Clock* clock) {
   g_clock_for_testing = clock;
+}
+
+size_t Resource::CodeCacheSize() const {
+  return cache_handler_ ? cache_handler_->GetCodeCacheSize() : 0;
+}
+
+CachedMetadataHandler* Resource::CreateCachedMetadataHandler(
+    std::unique_ptr<CachedMetadataSender> send_callback) {
+  return nullptr;
 }
 
 }  // namespace blink

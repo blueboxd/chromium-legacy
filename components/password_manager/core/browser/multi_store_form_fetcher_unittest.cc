@@ -64,26 +64,31 @@ class FakePasswordManagerClient : public StubPasswordManagerClient {
 
 PasswordForm CreateHTMLForm(const std::string& origin_url,
                             const std::string& username_value,
-                            const std::string& password_value) {
+                            const std::string& password_value,
+                            base::Time date_last_used) {
   PasswordForm form;
   form.scheme = PasswordForm::Scheme::kHtml;
   form.origin = GURL(origin_url);
   form.signon_realm = origin_url;
   form.username_value = ASCIIToUTF16(username_value);
   form.password_value = ASCIIToUTF16(password_value);
+  form.date_last_used = date_last_used;
   return form;
 }
 
 // Creates a dummy non-federated form with some basic arbitrary values.
-PasswordForm CreateNonFederated(const std::string& username_value) {
-  PasswordForm form = CreateHTMLForm(kTestHttpsURL, username_value, "password");
+PasswordForm CreateNonFederated(const std::string& username_value,
+                                base::Time date_last_used) {
+  PasswordForm form =
+      CreateHTMLForm(kTestHttpsURL, username_value, "password", date_last_used);
   form.action = GURL(kTestHttpsActionURL);
   return form;
 }
 
 // Creates a dummy federated form with some basic arbitrary values.
-PasswordForm CreateFederated(const std::string& username_value) {
-  PasswordForm form = CreateNonFederated(username_value);
+PasswordForm CreateFederated(const std::string& username_value,
+                             base::Time date_last_used) {
+  PasswordForm form = CreateNonFederated(username_value, date_last_used);
   form.signon_realm = kTestFederatedRealm;
   form.password_value.clear();
   form.federation_origin = url::Origin::Create(GURL(kTestFederationURL));
@@ -91,9 +96,11 @@ PasswordForm CreateFederated(const std::string& username_value) {
 }
 
 // Creates an Android federated credential.
-PasswordForm CreateAndroidFederated(const std::string& username_value) {
+PasswordForm CreateAndroidFederated(const std::string& username_value,
+                                    base::Time date_last_used) {
   PasswordForm form =
-      CreateHTMLForm("android://hash@com.example.android/", username_value, "");
+      CreateHTMLForm("android://hash@com.example.android/", username_value,
+                     /*password_value=*/"", date_last_used);
   form.federation_origin = url::Origin::Create(GURL(kTestFederationURL));
   form.is_affiliation_based_match = true;
   return form;
@@ -101,7 +108,9 @@ PasswordForm CreateAndroidFederated(const std::string& username_value) {
 
 // Creates a dummy blacklisted form.
 PasswordForm CreateBlacklisted() {
-  PasswordForm form = CreateHTMLForm(kTestHttpsURL, "", "");
+  PasswordForm form = CreateHTMLForm(kTestHttpsURL, /*username_value=*/"",
+                                     /*password_value=*/"",
+                                     /*date_last_used=*/base::Time::Now());
   form.blacklisted_by_user = true;
   return form;
 }
@@ -190,13 +199,17 @@ TEST_F(MultiStoreFormFetcherTest, Empty) {
 
 // Check that results from both stores are merged.
 TEST_F(MultiStoreFormFetcherTest, MergeFromBothStores) {
+  const base::Time kLastUsedNow = base::Time::Now();
+  const base::Time kLastUsedYesterday =
+      kLastUsedNow - base::TimeDelta::FromDays(1);
   Fetch();
-  PasswordForm federated1 = CreateFederated("user");
-  PasswordForm federated2 = CreateFederated("user_B");
-  PasswordForm federated3 = CreateAndroidFederated("user_B");
-  PasswordForm non_federated1 = CreateNonFederated("user");
-  PasswordForm non_federated2 = CreateNonFederated("user_C");
-  PasswordForm non_federated3 = CreateNonFederated("user_D");
+  PasswordForm federated1 = CreateFederated("user", kLastUsedNow);
+  PasswordForm federated2 = CreateFederated("user_B", kLastUsedNow);
+  PasswordForm federated3 = CreateAndroidFederated("user_B", kLastUsedNow);
+  PasswordForm non_federated1 = CreateNonFederated("user", kLastUsedYesterday);
+  PasswordForm non_federated2 =
+      CreateNonFederated("user_C", kLastUsedYesterday);
+  PasswordForm non_federated3 = CreateNonFederated("user_D", kLastUsedNow);
   PasswordForm blacklisted = CreateBlacklisted();
 
   form_fetcher_->AddConsumer(&consumer_);
@@ -233,6 +246,7 @@ TEST_F(MultiStoreFormFetcherTest, MergeFromBothStores) {
                                    Pointee(federated3)));
   EXPECT_THAT(form_fetcher_->GetBlacklistedMatches(),
               UnorderedElementsAre(Pointee(blacklisted)));
+  EXPECT_THAT(form_fetcher_->GetPreferredMatch(), Pointee(non_federated3));
 }
 
 }  // namespace password_manager

@@ -28,6 +28,7 @@
 
 #include <memory>
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/speech/speech_recognizer.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -49,7 +50,8 @@ class SpeechRecognitionController final
   virtual ~SpeechRecognitionController();
 
   void Start(mojom::blink::SpeechRecognitionSessionRequest session_request,
-             mojom::blink::SpeechRecognitionSessionClientPtrInfo session_client,
+             mojo::PendingRemote<mojom::blink::SpeechRecognitionSessionClient>
+                 session_client,
              const SpeechGrammarList& grammars,
              const String& lang,
              bool continuous,

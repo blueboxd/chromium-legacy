@@ -182,6 +182,9 @@ void DocumentTimeline::ServiceAnimations(TimingUpdateReason reason) {
   for (const auto& animation : animations_needing_update_)
     DCHECK(!animation->Outdated());
 #endif
+  // Explicitly free the backing store to avoid memory regressions.
+  // TODO(bikineev): Revisit when young generation is done.
+  animations.clear();
 }
 
 void DocumentTimeline::ScheduleNextService() {

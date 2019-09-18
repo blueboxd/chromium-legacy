@@ -12,6 +12,7 @@
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_web_contents.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/device/public/cpp/hid/fake_hid_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -181,11 +182,12 @@ TEST_F(HidServiceTest, OpenAndCloseHidConnection) {
       hid_connection_client.InitWithNewPipeAndPassReceiver());
 
   base::RunLoop run_loop;
-  device::mojom::HidConnectionPtr connection;
+  mojo::PendingRemote<device::mojom::HidConnection> connection;
   service->Connect(
       kTestGuid, std::move(hid_connection_client),
       base::BindLambdaForTesting(
-          [&run_loop, &connection](device::mojom::HidConnectionPtr c) {
+          [&run_loop,
+           &connection](mojo::PendingRemote<device::mojom::HidConnection> c) {
             connection = std::move(c);
             run_loop.Quit();
           }));

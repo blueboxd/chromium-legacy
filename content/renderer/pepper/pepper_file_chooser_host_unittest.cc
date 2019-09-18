@@ -2,8 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/renderer/pepper/pepper_file_chooser_host.h"
+
 #include <stdint.h>
+
+#include <memory>
 #include <tuple>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -12,9 +17,9 @@
 #include "content/public/test/render_view_test.h"
 #include "content/public/test/test_utils.h"
 #include "content/renderer/pepper/mock_renderer_ppapi_host.h"
-#include "content/renderer/pepper/pepper_file_chooser_host.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/test/test_content_client.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/host/host_message_context.h"

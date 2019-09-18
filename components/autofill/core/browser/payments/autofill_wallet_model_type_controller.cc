@@ -18,10 +18,11 @@ namespace browser_sync {
 
 AutofillWalletModelTypeController::AutofillWalletModelTypeController(
     syncer::ModelType type,
-    std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate_on_disk,
+    std::unique_ptr<syncer::ModelTypeControllerDelegate>
+        delegate_for_full_sync_mode,
     PrefService* pref_service,
     syncer::SyncService* sync_service)
-    : ModelTypeController(type, std::move(delegate_on_disk)),
+    : ModelTypeController(type, std::move(delegate_for_full_sync_mode)),
       pref_service_(pref_service),
       sync_service_(sync_service) {
   DCHECK(type == syncer::AUTOFILL_WALLET_DATA ||
@@ -34,13 +35,15 @@ AutofillWalletModelTypeController::AutofillWalletModelTypeController(
 
 AutofillWalletModelTypeController::AutofillWalletModelTypeController(
     syncer::ModelType type,
-    std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate_on_disk,
-    std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate_in_memory,
+    std::unique_ptr<syncer::ModelTypeControllerDelegate>
+        delegate_for_full_sync_mode,
+    std::unique_ptr<syncer::ModelTypeControllerDelegate>
+        delegate_for_transport_mode,
     PrefService* pref_service,
     syncer::SyncService* sync_service)
     : ModelTypeController(type,
-                          std::move(delegate_on_disk),
-                          std::move(delegate_in_memory)),
+                          std::move(delegate_for_full_sync_mode),
+                          std::move(delegate_for_transport_mode)),
       pref_service_(pref_service),
       sync_service_(sync_service) {
   DCHECK(type == syncer::AUTOFILL_WALLET_DATA ||

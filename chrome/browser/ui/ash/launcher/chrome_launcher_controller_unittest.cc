@@ -312,11 +312,10 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     manifest.SetInteger(extensions::manifest_keys::kManifestVersion, 2);
     manifest.SetString(extensions::manifest_keys::kDescription,
                        "for testing pinned apps");
-
-    // AppService checks the app's type, so sets the type in manifest for
-    // extensions.
-    if (base::FeatureList::IsEnabled(features::kAppServiceShelf))
-      manifest.SetString(extensions::manifest_keys::kLaunchWebURL, kWebAppUrl);
+    // AppService checks the app's type. So set the
+    // manifest_keys::kLaunchWebURL, so that the extension can get the type
+    // from manifest value, and then AppService can get the extension's type.
+    manifest.SetString(extensions::manifest_keys::kLaunchWebURL, kWebAppUrl);
 
     base::DictionaryValue manifest_platform_app;
     manifest_platform_app.SetString(extensions::manifest_keys::kName,
@@ -431,6 +430,11 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     manifest_web_app.SetInteger(extensions::manifest_keys::kManifestVersion, 2);
     manifest_web_app.SetString(extensions::manifest_keys::kDescription,
                                "For testing");
+    // AppService checks the app's type. So set the
+    // manifest_keys::kLaunchWebURL, so that the extension can get the type
+    // from manifest value, and then AppService can get the extension's type.
+    manifest_web_app.SetString(extensions::manifest_keys::kLaunchWebURL,
+                               kWebAppUrl);
     web_app_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,
                                  manifest_web_app, Extension::FROM_BOOKMARK,
                                  kWebAppId, &error);
@@ -526,6 +530,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   // Create and initialize the controller, owned by the test shell delegate.
   void InitLauncherController() {
     CreateLauncherController()->Init();
+    FlushMojoCallsForAppService();
   }
 
   // Create and initialize the controller; create a tab and show the browser.
@@ -693,6 +698,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
       app_list_syncable_service_->ProcessSyncChanges(FROM_HERE,
                                                      combined_sync_list);
     }
+    FlushMojoCallsForAppService();
   }
 
   // Set the index at which the chrome icon should be.
@@ -765,15 +771,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
           } else if (app == extensionYoutubeApp_->id()) {
             result += "youtube";
           } else {
-            const auto* extension = extension_registry_->GetExtensionById(
-                app, extensions::ExtensionRegistry::COMPATIBILITY);
-            if (extension && !extension->name().empty()) {
-              std::string name = extension->name();
-              name[0] = std::tolower(name[0]);
-              result += name;
-            } else {
-              result += "unknown";
-            }
+            result += GetAppNameFromAppService(app);
           }
           break;
         }
@@ -818,15 +816,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
               }
             }
             if (!arc_app_found) {
-              const auto* extension = extension_registry_->GetExtensionById(
-                  app, extensions::ExtensionRegistry::COMPATIBILITY);
-              if (extension && !extension->name().empty()) {
-                std::string name = extension->name();
-                name[0] = std::toupper(name[0]);
-                result += name;
-              } else {
-                result += "Unknown";
-              }
+              result += GetAppNameFromAppService(app);
             }
           }
           break;
@@ -959,6 +949,12 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   // Allow AppService async callbacks to run.
   void WaitForAppService() { base::RunLoop().RunUntilIdle(); }
 
+  // Flush mojo calls to allow AppService async callbacks to run.
+  void FlushMojoCallsForAppService() {
+    if (app_service_proxy_)
+      app_service_proxy_->FlushMojoCallsForTesting();
+  }
+
   // Add extension and allow AppService async callbacks to run.
   void AddExtension(const Extension* extension) {
     extension_service_->AddExtension(extension);
@@ -970,6 +966,16 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
                        UnloadedExtensionReason reason) {
     extension_service_->UnloadExtension(extension_id, reason);
     WaitForAppService();
+  }
+
+  const std::string GetAppNameFromAppService(const std::string& app_id) {
+    std::string name = "Unknown";
+    if (!app_service_proxy_)
+      return name;
+    app_service_proxy_->AppRegistryCache().ForOneApp(
+        app_id,
+        [&name](const apps::AppUpdate& update) { name = update.Name(); });
+    return name;
   }
 
   // Needed for extension service & friends to work.
@@ -1064,13 +1070,16 @@ class ChromeLauncherControllerExtendedShelfTest
     manifest.SetInteger(extensions::manifest_keys::kManifestVersion, 2);
     manifest.SetString(extensions::manifest_keys::kDescription,
                        "for testing pinned apps");
+    // AppService checks the app's type. So set the
+    // manifest_keys::kLaunchWebURL, so that the extension can get the type
+    // from manifest value, and then AppService can get the extension's type.
+    manifest.SetString(extensions::manifest_keys::kLaunchWebURL, kWebAppUrl);
 
     const std::vector<std::pair<std::string, std::string>> extra_extensions = {
         {extension_misc::kCalendarAppId, "Calendar"},
         {extension_misc::kGoogleSheetsAppId, "Sheets"},
         {extension_misc::kGoogleSlidesAppId, "Slides"},
         {extension_misc::kFilesManagerAppId, "Files"},
-        {app_list::kInternalAppIdCamera, "Camera"},
         {extension_misc::kGooglePhotosAppId, "Photos"},
     };
 
@@ -3728,7 +3737,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
       multi_user_util::GetAccountIdFromProfile(profile2));
 
   const std::string app_id = extension1_->id();
-  extension_service_->AddExtension(extension1_.get());
+  AddExtension(extension1_.get());
 
   EXPECT_EQ(1, model_->item_count());
   EXPECT_FALSE(
@@ -3751,6 +3760,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
 
   // Switch to a new profile
   SwitchActiveUser(account_id2);
+  FlushMojoCallsForAppService();
   EXPECT_FALSE(launcher_controller_->IsAppPinned(app_id));
   EXPECT_EQ(1, model_->item_count());
   EXPECT_FALSE(
@@ -3758,6 +3768,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
 
   // Switch back
   SwitchActiveUser(account_id);
+  FlushMojoCallsForAppService();
   EXPECT_TRUE(launcher_controller_->IsAppPinned(app_id));
   EXPECT_EQ(2, model_->item_count());
   EXPECT_TRUE(
@@ -4284,6 +4295,8 @@ class ChromeLauncherControllerPlayStoreAvailabilityTest
   void SetUp() override {
     if (GetParam())
       arc::SetArcAlwaysStartWithoutPlayStoreForTesting();
+    // To prevent crash on test exit and pending decode request.
+    ArcAppIcon::DisableSafeDecodingForTesting();
     ArcDefaultAppList::UseTestAppsDirectory();
     ChromeLauncherControllerTest::SetUp();
   }
@@ -4633,6 +4646,8 @@ TEST_F(ChromeLauncherControllerDemoModeTest, PinnedAppsOnline) {
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kPolicyPinnedLauncherApps, policy_value.CreateDeepCopy());
 
+  FlushMojoCallsForAppService();
+
   // Since the device is online, all policy pinned apps are pinned.
   EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
   EXPECT_EQ(AppListControllerDelegate::PIN_FIXED,
@@ -4682,6 +4697,7 @@ TEST_F(ChromeLauncherControllerDemoModeTest, PinnedAppsOffline) {
 
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kPolicyPinnedLauncherApps, policy_value.CreateDeepCopy());
+  FlushMojoCallsForAppService();
 
   // Since the device is online, the policy pinned apps that shouldn't be pinned
   // in Demo Mode are unpinned.
@@ -4727,6 +4743,7 @@ TEST_F(ChromeLauncherControllerTest, CrostiniTerminalPinUnpin) {
 
   // Reload after allowing Crostini UI
   crostini::CrostiniTestHelper test_helper(profile());
+  test_helper.ReInitializeAppServiceIntegration();
   // TODO(crubug.com/918739): Fix pins are not refreshed on enabling Crostini.
   // As a workaround add any app that triggers pin update.
   AddExtension(extension1_.get());

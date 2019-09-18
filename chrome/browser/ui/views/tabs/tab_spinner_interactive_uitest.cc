@@ -6,6 +6,7 @@
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/test/base/perf/performance_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -59,8 +60,10 @@ class TabSpinnerTest : public UIPerformanceTest {
   DISALLOW_COPY_AND_ASSIGN(TabSpinnerTest);
 };
 
-// TODO(974349) This test is timing out on ChromeOS and Mac.
-#if (defined(OS_CHROMEOS) || defined(OS_MACOSX)) && !defined(NDEBUG)
+// TODO(crbug.com/974349) This test is timing out on ChromeOS, Mac, and Linux
+// debug builds.
+#if (defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_LINUX)) && \
+    !defined(NDEBUG)
 #define MAYBE_LoadTabsOneByOne DISABLED_LoadTabsOneByOne
 #else
 #define MAYBE_LoadTabsOneByOne LoadTabsOneByOne

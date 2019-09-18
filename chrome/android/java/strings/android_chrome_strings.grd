@@ -2204,8 +2204,14 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
 
       <!-- TalkBack upgrade -->
+      <message name="IDS_OLD_TALKBACK_TITLE" desc="Title of dialog notifying user that the version of TalkBack they're running is too old.">
+        You need to update TalkBack to a newer version.
+      </message>
       <message name="IDS_UPDATE_FROM_MARKET" desc="Title of button that will direct the user to update TalkBack from the market (Play Store)">
         Update
+      </message>
+      <message name="IDS_CANCEL_TALKBACK_ALERT" desc="Title of button that will cancel the TalkBack alert dialog dialog.">
+        Cancel
       </message>
 
       <!-- Android NFC Beam strings -->

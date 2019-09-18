@@ -14,7 +14,7 @@
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/gamepad/nintendo_controller.h"
 #include "device/gamepad/public/cpp/gamepads.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/hid.mojom.h"
 
@@ -112,7 +112,7 @@ class DEVICE_GAMEPAD_EXPORT NintendoDataFetcher : public GamepadDataFetcher,
   ControllerMap controllers_;
 
   mojo::Remote<mojom::HidManager> hid_manager_;
-  mojo::AssociatedBinding<mojom::HidManagerClient> binding_;
+  mojo::AssociatedReceiver<mojom::HidManagerClient> receiver_{this};
   base::WeakPtrFactory<NintendoDataFetcher> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NintendoDataFetcher);

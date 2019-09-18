@@ -42,7 +42,7 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
 }  // namespace
 
 NSString* const kSettingsToolbarDeleteButtonId =
-    @"PasswordsToolbarDeleteButtonId";
+    @"SettingsToolbarDeleteButtonId";
 
 @interface SettingsRootTableViewController ()
 

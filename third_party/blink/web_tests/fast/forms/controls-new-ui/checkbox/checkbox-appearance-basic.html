@@ -32,6 +32,9 @@
 <!-- indeterminate -->
 <input type="checkbox" id="indeterminateCheckbox">
 <input type="checkbox" id="indeterminateDisabledCheckbox" disabled> <br>
+<input type="checkbox" id="indeterminateCheckbox24px" style="width: 24px; height: 24px;">
+<input type="checkbox" id="indeterminateCheckboxZoom4" style="zoom: 4;">
+<input type="checkbox" id="indeterminateDisabledCheckboxZoom" style="zoom: 4;" disabled> <br>
 
 <!-- zoom -->
 <input type="checkbox" style="zoom: 1.5;">
@@ -40,9 +43,24 @@
 
 <div style="background-color: white">
   <input type="checkbox" disabled>
-  <input type="checkbox" disabled checked> <br>
+  <input type="checkbox" id="indeterminateDisabledWhiteBG" disabled>
+  <input type="checkbox" disabled checked>
+  <input type="checkbox" checked>
+  <input type="checkbox" id="hoverTarget" /> <br>
+  <input type="checkbox" id="indeterminateWhiteBG">
+  <input type="checkbox" checked style="zoom: 4;">
+  <input type="checkbox" checked style="zoom: 4;" disabled>
+  <input type="checkbox" id="indeterminateCheckboxZoom4WhiteBG" style="zoom: 4;" disabled>
+</div>
+<div style="background-color: black">
+  <input type="checkbox" disabled>
+  <input type="checkbox" id="indeterminateDisabledBlackBG" disabled>
+  <input type="checkbox" disabled checked>
   <input type="checkbox" checked> <br>
-  <input type="checkbox" id="hoverTarget"/>
+  <input type="checkbox" id="indeterminateBlackBG">
+  <input type="checkbox" checked style="zoom: 4;">
+  <input type="checkbox" checked style="zoom: 4;" disabled>
+  <input type="checkbox" id="indeterminateCheckboxZoom4BlackBG" style="zoom: 4;" disabled>
 </div>
 
 <script>
@@ -53,6 +71,15 @@ if (window.testRunner)
 runAfterLayoutAndPaint(function() {
   indeterminateCheckbox.indeterminate = true;
   indeterminateDisabledCheckbox.indeterminate = true;
+  indeterminateCheckbox24px.indeterminate = true;
+  indeterminateCheckboxZoom4.indeterminate = true;
+  indeterminateDisabledCheckboxZoom.indeterminate = true;
+  indeterminateDisabledWhiteBG.indeterminate = true;
+  indeterminateDisabledBlackBG.indeterminate = true;
+  indeterminateWhiteBG.indeterminate = true;
+  indeterminateBlackBG.indeterminate = true;
+  indeterminateCheckboxZoom4WhiteBG.indeterminate = true;
+  indeterminateCheckboxZoom4BlackBG.indeterminate = true;
 
   var target = document.getElementById('hoverTarget');
   hoverOverElement(target);

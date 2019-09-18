@@ -45,17 +45,19 @@ SyncStopMetadataFate TakeStrictestMetadataFate(SyncStopMetadataFate fate1,
 
 ModelTypeController::ModelTypeController(
     ModelType type,
-    std::unique_ptr<ModelTypeControllerDelegate> delegate_on_disk)
+    std::unique_ptr<ModelTypeControllerDelegate> delegate_for_full_sync_mode)
     : DataTypeController(type) {
-  delegate_map_.emplace(STORAGE_ON_DISK, std::move(delegate_on_disk));
+  delegate_map_.emplace(SyncMode::kFull,
+                        std::move(delegate_for_full_sync_mode));
 }
 
 ModelTypeController::ModelTypeController(
     ModelType type,
-    std::unique_ptr<ModelTypeControllerDelegate> delegate_on_disk,
-    std::unique_ptr<ModelTypeControllerDelegate> delegate_in_memory)
-    : ModelTypeController(type, std::move(delegate_on_disk)) {
-  delegate_map_.emplace(STORAGE_IN_MEMORY, std::move(delegate_in_memory));
+    std::unique_ptr<ModelTypeControllerDelegate> delegate_for_full_sync_mode,
+    std::unique_ptr<ModelTypeControllerDelegate> delegate_for_transport_mode)
+    : ModelTypeController(type, std::move(delegate_for_full_sync_mode)) {
+  delegate_map_.emplace(SyncMode::kTransportOnly,
+                        std::move(delegate_for_transport_mode));
 }
 
 ModelTypeController::~ModelTypeController() {}
@@ -84,7 +86,7 @@ void ModelTypeController::LoadModels(
   DCHECK(model_load_callback);
   DCHECK_EQ(NOT_RUNNING, state_);
 
-  auto it = delegate_map_.find(configure_context.storage_option);
+  auto it = delegate_map_.find(configure_context.sync_mode);
   DCHECK(it != delegate_map_.end());
   delegate_ = it->second.get();
   DCHECK(delegate_);
@@ -100,7 +102,7 @@ void ModelTypeController::LoadModels(
                           base::AsWeakPtr(this), SyncError::DATATYPE_ERROR));
   request.authenticated_account_id = configure_context.authenticated_account_id;
   request.cache_guid = configure_context.cache_guid;
-  request.storage_option = configure_context.storage_option;
+  request.sync_mode = configure_context.sync_mode;
   request.configuration_start_time = configure_context.configuration_start_time;
 
   // Note that |request.authenticated_account_id| may be empty for local sync.

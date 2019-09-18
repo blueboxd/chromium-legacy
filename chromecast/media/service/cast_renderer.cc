@@ -133,9 +133,9 @@ void CastRenderer::OnApplicationMediaInfoReceived(
                        chromecast::mojom::MultiroomInfo::New());
     return;
   }
-  connector_->BindInterface(chromecast::mojom::kChromecastServiceName,
-                            &multiroom_manager_);
-  multiroom_manager_.set_connection_error_handler(base::BindOnce(
+  connector_->Connect(chromecast::mojom::kChromecastServiceName,
+                      multiroom_manager_.BindNewPipeAndPassReceiver());
+  multiroom_manager_.set_disconnect_handler(base::BindOnce(
       &CastRenderer::OnGetMultiroomInfo, base::Unretained(this), media_resource,
       client, init_cb, application_media_info.Clone(),
       chromecast::mojom::MultiroomInfo::New()));

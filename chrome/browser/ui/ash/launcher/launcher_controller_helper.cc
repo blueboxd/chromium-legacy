@@ -170,34 +170,28 @@ std::string LauncherControllerHelper::GetAppID(content::WebContents* tab) {
 }
 
 bool LauncherControllerHelper::IsValidIDForCurrentUser(
-    const std::string& id) const {
-  const ArcAppListPrefs* arc_prefs = GetArcAppListPrefs();
-  if (arc_prefs && arc_prefs->IsRegistered(id))
+    const std::string& app_id) const {
+  if (IsValidIDForArcApp(app_id)) {
     return true;
+  }
+
+  if (base::FeatureList::IsEnabled(features::kAppServiceShelf)) {
+    return IsValidIDFromAppService(app_id);
+  }
 
   crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(profile_);
-  if (registry_service && registry_service->IsCrostiniShelfAppId(id)) {
+  if (registry_service && registry_service->IsCrostiniShelfAppId(app_id)) {
     return crostini::IsCrostiniUIAllowedForProfile(profile_) &&
-           registry_service->GetRegistration(id).has_value();
+           registry_service->GetRegistration(app_id).has_value();
   }
 
-  if (app_list::IsInternalApp(id))
+  if (app_list::IsInternalApp(app_id)) {
     return true;
+  }
 
-  if (!GetExtensionByID(profile_, id))
+  if (!GetExtensionByID(profile_, app_id)) {
     return false;
-  if (id == arc::kPlayStoreAppId) {
-    if (!arc::IsArcAllowedForProfile(profile()) || !arc::IsPlayStoreAvailable())
-      return false;
-    const arc::ArcSessionManager* arc_session_manager =
-        arc::ArcSessionManager::Get();
-    DCHECK(arc_session_manager);
-    if (!arc_session_manager->IsAllowed())
-      return false;
-    if (!arc::IsArcPlayStoreEnabledForProfile(profile()) &&
-        arc::IsArcPlayStoreEnabledPreferenceManagedForProfile(profile()))
-      return false;
   }
 
   return true;
@@ -294,4 +288,48 @@ void LauncherControllerHelper::ExtensionEnableFlowFinished() {
 
 void LauncherControllerHelper::ExtensionEnableFlowAborted(bool user_initiated) {
   extension_enable_flow_.reset();
+}
+
+bool LauncherControllerHelper::IsValidIDForArcApp(
+    const std::string& app_id) const {
+  const ArcAppListPrefs* arc_prefs = GetArcAppListPrefs();
+  if (arc_prefs && arc_prefs->IsRegistered(app_id)) {
+    return true;
+  }
+
+  if (app_id == arc::kPlayStoreAppId) {
+    if (!arc::IsArcAllowedForProfile(profile()) ||
+        !arc::IsPlayStoreAvailable()) {
+      return false;
+    }
+    const arc::ArcSessionManager* arc_session_manager =
+        arc::ArcSessionManager::Get();
+    DCHECK(arc_session_manager);
+    if (!arc_session_manager->IsAllowed()) {
+      return false;
+    }
+    if (!arc::IsArcPlayStoreEnabledForProfile(profile()) &&
+        arc::IsArcPlayStoreEnabledPreferenceManagedForProfile(profile())) {
+      return false;
+    }
+    return true;
+  }
+
+  return false;
+}
+
+bool LauncherControllerHelper::IsValidIDFromAppService(
+    const std::string& app_id) const {
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile_);
+  if (!proxy) {
+    return false;
+  }
+  apps::mojom::AppType app_type = proxy->AppRegistryCache().GetAppType(app_id);
+  if (app_type == apps::mojom::AppType::kUnknown ||
+      app_type == apps::mojom::AppType::kArc) {
+    return false;
+  }
+
+  return true;
 }

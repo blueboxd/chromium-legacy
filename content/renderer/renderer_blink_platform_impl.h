@@ -156,6 +156,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   bool ShouldEnforceWebRTCRoutingPreferences() override;
   bool UsesFakeCodecForPeerConnection() override;
   bool IsWebRtcEncryptionEnabled() override;
+  bool IsWebRtcStunOriginEnabled() override;
   base::Optional<std::string> WebRtcStunProbeTrialParameter() override;
   media::MediaPermission* GetWebRTCMediaPermission(
       blink::WebLocalFrame* web_frame) override;

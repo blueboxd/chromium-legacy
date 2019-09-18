@@ -596,4 +596,8 @@ junit_binary("content_junit_tests") {
     "//ui/android:ui_java",
     "//ui/gfx/geometry/mojom:mojom_java",
   ]
+
+  data_deps = [
+    "//testing/buildbot/filters:content_junit_tests_filters",
+  ]
 }

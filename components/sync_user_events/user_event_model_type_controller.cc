@@ -16,8 +16,9 @@ namespace syncer {
 
 UserEventModelTypeController::UserEventModelTypeController(
     SyncService* sync_service,
-    std::unique_ptr<ModelTypeControllerDelegate> delegate_on_disk)
-    : ModelTypeController(syncer::USER_EVENTS, std::move(delegate_on_disk)),
+    std::unique_ptr<ModelTypeControllerDelegate> delegate_for_full_sync_mode)
+    : ModelTypeController(syncer::USER_EVENTS,
+                          std::move(delegate_for_full_sync_mode)),
       sync_service_(sync_service) {
   DCHECK(sync_service_);
   sync_service_->AddObserver(this);

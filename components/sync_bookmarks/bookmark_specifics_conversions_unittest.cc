@@ -395,6 +395,24 @@ TEST(BookmarkSpecificsConversionsTest,
   EXPECT_FALSE(IsValidBookmarkSpecifics(*bm_specifics, /*is_folder=*/false));
 }
 
+TEST(BookmarkSpecificsConversionsTest,
+     ShouldBeInvalidBookmarkSpecificsWithInvalidGUID) {
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
+
+  // Add empty GUID.
+  bm_specifics->set_guid("");
+  EXPECT_TRUE(IsValidBookmarkSpecifics(*bm_specifics, /*is_folder=*/true));
+
+  // Add invalid GUID.
+  bm_specifics->set_guid("INVALID GUID");
+  EXPECT_FALSE(IsValidBookmarkSpecifics(*bm_specifics, /*is_folder=*/true));
+
+  // Add valid GUID.
+  bm_specifics->set_guid(base::GenerateGUID());
+  EXPECT_TRUE(IsValidBookmarkSpecifics(*bm_specifics, /*is_folder=*/true));
+}
+
 TEST(BookmarkSpecificsConversionsTest, ShouldBeInvalidBookmarkSpecifics) {
   sync_pb::EntitySpecifics specifics;
   sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();

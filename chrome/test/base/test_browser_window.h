@@ -195,8 +195,8 @@ class TestBrowserWindow : public BrowserWindow {
  private:
   class TestLocationBar : public LocationBar {
    public:
-    TestLocationBar() : LocationBar(NULL) {}
-    ~TestLocationBar() override {}
+    TestLocationBar() = default;
+    ~TestLocationBar() override = default;
 
     // LocationBar:
     GURL GetDestinationURL() const override;
@@ -208,7 +208,6 @@ class TestBrowserWindow : public BrowserWindow {
     void FocusLocation(bool select_all) override {}
     void FocusSearch() override {}
     void UpdateContentSettingsIcons() override {}
-    void UpdateBookmarkStarVisibility() override {}
     void SaveStateToContents(content::WebContents* contents) override {}
     void Revert() override {}
     const OmniboxView* GetOmniboxView() const override;

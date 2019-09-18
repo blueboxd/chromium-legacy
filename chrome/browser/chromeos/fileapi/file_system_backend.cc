@@ -62,7 +62,6 @@ bool FileSystemBackend::CanHandleURL(const storage::FileSystemURL& url) {
 }
 
 FileSystemBackend::FileSystemBackend(
-    std::unique_ptr<FileSystemBackendDelegate> drive_delegate,
     std::unique_ptr<FileSystemBackendDelegate> file_system_provider_delegate,
     std::unique_ptr<FileSystemBackendDelegate> mtp_delegate,
     std::unique_ptr<FileSystemBackendDelegate> arc_content_delegate,
@@ -72,7 +71,6 @@ FileSystemBackend::FileSystemBackend(
     storage::ExternalMountPoints* system_mount_points)
     : file_access_permissions_(new FileAccessPermissions()),
       local_file_util_(storage::AsyncFileUtil::CreateForLocalFileSystem()),
-      drive_delegate_(std::move(drive_delegate)),
       file_system_provider_delegate_(std::move(file_system_provider_delegate)),
       mtp_delegate_(std::move(mtp_delegate)),
       arc_content_delegate_(std::move(arc_content_delegate)),
@@ -278,8 +276,6 @@ std::vector<base::FilePath> FileSystemBackend::GetRootDirectories() const {
 storage::AsyncFileUtil* FileSystemBackend::GetAsyncFileUtil(
     storage::FileSystemType type) {
   switch (type) {
-    case storage::kFileSystemTypeDrive:
-      return drive_delegate_->GetAsyncFileUtil(type);
     case storage::kFileSystemTypeProvided:
       return file_system_provider_delegate_->GetAsyncFileUtil(type);
     case storage::kFileSystemTypeNativeLocal:
@@ -406,9 +402,6 @@ FileSystemBackend::CreateFileStreamReader(
     return std::unique_ptr<storage::FileStreamReader>();
 
   switch (url.type()) {
-    case storage::kFileSystemTypeDrive:
-      return drive_delegate_->CreateFileStreamReader(
-          url, offset, max_bytes_to_read, expected_modification_time, context);
     case storage::kFileSystemTypeProvided:
       return file_system_provider_delegate_->CreateFileStreamReader(
           url, offset, max_bytes_to_read, expected_modification_time, context);
@@ -447,8 +440,6 @@ FileSystemBackend::CreateFileStreamWriter(
     return std::unique_ptr<storage::FileStreamWriter>();
 
   switch (url.type()) {
-    case storage::kFileSystemTypeDrive:
-      return drive_delegate_->CreateFileStreamWriter(url, offset, context);
     case storage::kFileSystemTypeProvided:
       return file_system_provider_delegate_->CreateFileStreamWriter(
           url, offset, context);
@@ -489,9 +480,6 @@ void FileSystemBackend::GetRedirectURLForContents(
     return callback.Run(GURL());
 
   switch (url.type()) {
-    case storage::kFileSystemTypeDrive:
-      drive_delegate_->GetRedirectURLForContents(url, callback);
-      return;
     case storage::kFileSystemTypeProvided:
       file_system_provider_delegate_->GetRedirectURLForContents(url,
                                                                   callback);

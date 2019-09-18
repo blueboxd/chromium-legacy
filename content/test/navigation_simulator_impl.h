@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/common/content_security_policy/csp_disposition_enum.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_throttle.h"
@@ -171,9 +172,9 @@ class NavigationSimulatorImpl : public NavigationSimulator,
                           WebContentsImpl* web_contents,
                           TestRenderFrameHost* render_frame_host);
 
-  // Adds a test navigation throttle to |handle| which sanity checks various
+  // Adds a test navigation throttle to |request| which sanity checks various
   // callbacks have been properly called.
-  void RegisterTestThrottle(NavigationHandle* handle);
+  void RegisterTestThrottle(NavigationRequest* request);
 
   // Initializes a NavigationSimulator from an existing NavigationRequest. This
   // should only be needed if a navigation was started without a valid

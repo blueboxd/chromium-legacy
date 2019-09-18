@@ -56,7 +56,7 @@ void StopMessageLoop(base::OnceClosure quit_closure) {
 BrowserMainPartsImpl::BrowserMainPartsImpl(
     MainParams* params,
     const content::MainFunctionParams& main_function_params)
-    : params_(params) {}
+    : params_(params), main_function_params_(main_function_params) {}
 
 BrowserMainPartsImpl::~BrowserMainPartsImpl() = default;
 
@@ -83,6 +83,16 @@ int BrowserMainPartsImpl::PreEarlyInitialization() {
 void BrowserMainPartsImpl::PreMainMessageLoopRun() {
   ui::MaterialDesignController::Initialize();
   params_->delegate->PreMainMessageLoopRun();
+
+  if (main_function_params_.ui_task) {
+    main_function_params_.ui_task->Run();
+    delete main_function_params_.ui_task;
+    run_message_loop_ = false;
+  }
+}
+
+bool BrowserMainPartsImpl::MainMessageLoopRun(int* result_code) {
+  return !run_message_loop_;
 }
 
 void BrowserMainPartsImpl::PreDefaultMainMessageLoopRun(

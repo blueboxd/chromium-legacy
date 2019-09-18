@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
-#include "components/prefs/pref_member.h"
 #include "components/security_state/core/security_state.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -48,7 +47,6 @@ class OmniboxPopupView;
 class OmniboxPageActionIconContainerView;
 class Profile;
 class SelectedKeywordView;
-class StarView;
 
 namespace views {
 class ImageButton;
@@ -130,12 +128,6 @@ class LocationBarView : public LocationBar,
 
   // Returns the delegate.
   Delegate* delegate() const { return delegate_; }
-
-  // Toggles the star on or off.
-  void SetStarToggled(bool on);
-
-  // The star. It may not be visible.  It will be null when |browser_| is null.
-  StarView* star_view() { return star_view_; }
 
   OmniboxPageActionIconContainerView*
   omnibox_page_action_icon_container_view() {
@@ -219,6 +211,7 @@ class LocationBarView : public LocationBar,
   void OnOmniboxHovered(bool is_hovering);
 
   Browser* browser() { return browser_; }
+  Profile* profile() { return profile_; }
 
   // LocationIconView::Delegate
   bool IsEditingOrEmpty() const override;
@@ -290,13 +283,11 @@ class LocationBarView : public LocationBar,
   void AcceptInput(base::TimeTicks match_selection_timestamp) override;
   void FocusSearch() override;
   void UpdateContentSettingsIcons() override;
-  void UpdateBookmarkStarVisibility() override;
   void SaveStateToContents(content::WebContents* contents) override;
   const OmniboxView* GetOmniboxView() const override;
   LocationBarTesting* GetLocationBarForTesting() override;
 
   // LocationBarTesting:
-  bool GetBookmarkStarVisibility() override;
   bool TestContentSettingImagePressed(size_t index) override;
   bool IsContentSettingBubbleShowing(size_t index) override;
 
@@ -349,6 +340,9 @@ class LocationBarView : public LocationBar,
   // window, so this may be NULL.
   Browser* const browser_;
 
+  // May be nullptr in tests.
+  Profile* const profile_;
+
   OmniboxViewViews* omnibox_view_ = nullptr;
 
   // Our delegate.
@@ -383,9 +377,6 @@ class LocationBarView : public LocationBar,
   OmniboxPageActionIconContainerView* omnibox_page_action_icon_container_view_ =
       nullptr;
 
-  // The star for bookmarking.  It will be null when |browser_| is null.
-  StarView* star_view_ = nullptr;
-
   // An [x] that appears in touch mode (when the OSK is visible) and allows the
   // user to clear all text.
   views::ImageButton* clear_all_button_ = nullptr;
@@ -396,13 +387,6 @@ class LocationBarView : public LocationBar,
   // Whether we're in popup mode. This value also controls whether the location
   // bar is read-only.
   const bool is_popup_mode_;
-
-  // Tracks this preference to determine whether bookmark editing is allowed.
-  BooleanPrefMember edit_bookmarks_enabled_;
-
-  // A list of all page action icons that haven't yet migrated into the
-  // PageActionIconContainerView (https://crbug.com/788051), ordered by focus.
-  std::vector<PageActionIconView*> page_action_icons_;
 
   // The focus ring, if one is in use.
   std::unique_ptr<views::FocusRing> focus_ring_;

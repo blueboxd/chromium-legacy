@@ -196,6 +196,11 @@ group("gn_all") {
     deps += [ "//weblayer/shell:weblayer_shell" ]
   }
 
+  # TODO: enable this on Android.
+  if (is_win || (is_linux && !is_chromeos)) {
+    deps += [ "//weblayer/test:weblayer_browsertests" ]
+  }
+
   if (!is_ios && !is_android) {
     deps += [
       "//components/cronet:cronet_tests",

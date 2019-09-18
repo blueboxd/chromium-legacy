@@ -552,8 +552,7 @@ bool FrameTreeNode::StopLoading() {
     int expected_pending_nav_entry_id = navigation_request_->nav_entry_id();
     if (navigation_request_->navigation_handle()) {
       navigation_request_->set_net_error(net::ERR_ABORTED);
-      expected_pending_nav_entry_id =
-          navigation_request_->navigation_handle()->pending_nav_entry_id();
+      expected_pending_nav_entry_id = navigation_request_->nav_entry_id();
     }
     navigator_->DiscardPendingEntryIfNeeded(expected_pending_nav_entry_id);
   }

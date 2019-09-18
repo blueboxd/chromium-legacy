@@ -361,14 +361,14 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
                     .get())));
   }
 
-  // Forward both on-disk and in-memory storage modes to the same delegate,
+  // Forward both full-sync and transport-only modes to the same delegate,
   // since behavior for USER_CONSENTS does not differ (they are always
   // persisted).
   controllers.push_back(std::make_unique<ModelTypeController>(
       syncer::USER_CONSENTS,
-      /*delegate_on_disk=*/
+      /*delegate_for_full_sync_mode=*/
       CreateForwardingControllerDelegate(syncer::USER_CONSENTS),
-      /*delegate_in_memory=*/
+      /*delegate_for_transport_mode=*/
       CreateForwardingControllerDelegate(syncer::USER_CONSENTS)));
 
   return controllers;
@@ -459,12 +459,12 @@ std::unique_ptr<ModelTypeController> ProfileSyncComponentsFactoryImpl::
                 autofill::AutofillWebDataService*)>& delegate_from_web_data,
         syncer::SyncService* sync_service) {
   return std::make_unique<AutofillWalletModelTypeController>(
-      type, /*delegate_on_disk=*/
+      type, /*delegate_for_full_sync_mode=*/
       std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
           db_thread_,
           base::BindRepeating(delegate_from_web_data,
                               base::RetainedRef(web_data_service_on_disk_))),
-      /*delegate_in_memory=*/
+      /*delegate_for_transport_mode=*/
       std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
           db_thread_,
           base::BindRepeating(delegate_from_web_data,

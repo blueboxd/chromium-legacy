@@ -129,10 +129,8 @@ void FrameTaskQueueController::TaskQueueCreated(
     const scoped_refptr<MainThreadTaskQueue>& task_queue) {
   DCHECK(task_queue);
 
-  std::unique_ptr<QueueEnabledVoter> voter;
-  // Only create a voter for queues that can be disabled.
-  if (task_queue->CanBePaused() || task_queue->CanBeFrozen())
-    voter = task_queue->CreateQueueEnabledVoter();
+  std::unique_ptr<QueueEnabledVoter> voter =
+      task_queue->CreateQueueEnabledVoter();
 
   delegate_->OnTaskQueueCreated(task_queue.get(), voter.get());
 

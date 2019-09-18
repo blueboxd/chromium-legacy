@@ -66,9 +66,10 @@ const PasswordForm* FakeFormFetcher::GetPreferredMatch() const {
 void FakeFormFetcher::SetNonFederated(
     const std::vector<const PasswordForm*>& non_federated) {
   non_federated_ = non_federated;
-  password_manager_util::FindBestMatches(non_federated_, scheme_,
-                                         &non_federated_same_scheme_,
-                                         &best_matches_, &preferred_match_);
+  password_manager_util::FindBestMatches(
+      non_federated_, scheme_,
+      /*sort_matches_by_date_last_used=*/false, &non_federated_same_scheme_,
+      &best_matches_, &preferred_match_);
 }
 
 void FakeFormFetcher::SetBlacklisted(

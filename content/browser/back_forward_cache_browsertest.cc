@@ -6,6 +6,7 @@
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/time/time.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/frame_host/back_forward_cache.h"
@@ -2053,6 +2054,55 @@ IN_PROC_BROWSER_TEST_F(GeolocationBackForwardCacheBrowserTest,
       << "Geoposition when the page is restored from BFCache should be visible";
   EXPECT_EQ(0, EvalJs(rfh_a, "err_log.length"))
       << "watchPosition API should have reported no errors";
+}
+
+// Test that documents are evicted correctly from BackForwardCache after time to
+// live.
+// 1) Navigate to A.
+// 2) Navigate to B.
+// 3) Verify A not deleted before time to live.
+// 4) Verify A is deleted after time to live.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, TimedEviction) {
+  // Inject mock time task runner to be used in the eviction timer, so we can,
+  // check for the functionality we are interested before and after the time to
+  // live. We don't replace ThreadTaskRunnerHandle::Get to ensure that it
+  // doesn't affect other unrelated callsites.
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner =
+      base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+
+  web_contents()->GetController().back_forward_cache().SetTaskRunnerForTesting(
+      task_runner);
+
+  base::TimeDelta time_to_live_in_back_forward_cache =
+      BackForwardCache::GetTimeToLiveInBackForwardCache();
+
+  base::TimeDelta delta = base::TimeDelta::FromMilliseconds(1);
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  const GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  RenderFrameHostImpl* rfh_b = current_frame_host();
+
+  // 3) Check if A is in BackForwardCache before time to live.
+  ASSERT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+
+  // Fast forward by a small delta more than time to live.
+  task_runner->FastForwardBy(time_to_live_in_back_forward_cache + delta);
+
+  // 4) Check if A has been evicted or not from BackForwardCache after time to
+  // live.
+  EXPECT_TRUE(rfh_a->is_evicted_from_back_forward_cache());
+  delete_observer_rfh_a.WaitUntilDeleted();
+  EXPECT_EQ(current_frame_host(), rfh_b);
 }
 
 }  // namespace content

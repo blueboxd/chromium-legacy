@@ -275,6 +275,10 @@ void EventPath::RetargetRelatedTarget(const Node& related_target_node) {
     DCHECK(adjusted_related_target);
     tree_scope_event_context.Get()->SetRelatedTarget(*adjusted_related_target);
   }
+  // Explicitly clear the heap container to avoid memory regressions in the hot
+  // path.
+  // TODO(bikineev): Revisit after young generation is there.
+  related_node_map.clear();
 }
 
 namespace {
@@ -372,6 +376,10 @@ void EventPath::AdjustTouchList(
       adjusted_touch_list[j]->Append(touch.CloneWithNewTarget(
           FindRelatedNode(*tree_scopes[j], related_node_map)));
     }
+    // Explicitly clear the heap container to avoid memory regressions in the
+    // hot path.
+    // TODO(bikineev): Revisit after young generation is there.
+    related_node_map.clear();
   }
 }
 

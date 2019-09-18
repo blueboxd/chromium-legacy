@@ -194,6 +194,13 @@ void PageActionIconView::SetIconColor(SkColor icon_color) {
   UpdateIconImage();
 }
 
+void PageActionIconView::SetActive(bool active) {
+  if (active_ == active)
+    return;
+  active_ = active;
+  UpdateIconImage();
+}
+
 void PageActionIconView::UpdateIconImage() {
   const ui::NativeTheme* theme = GetNativeTheme();
   SkColor icon_color = active_
@@ -202,13 +209,6 @@ void PageActionIconView::UpdateIconImage() {
                            : icon_color_;
   SetImage(gfx::CreateVectorIconWithBadge(GetVectorIcon(), icon_size_,
                                           icon_color, GetVectorIconBadge()));
-}
-
-void PageActionIconView::SetActiveInternal(bool active) {
-  if (active_ == active)
-    return;
-  active_ = active;
-  UpdateIconImage();
 }
 
 content::WebContents* PageActionIconView::GetWebContents() const {

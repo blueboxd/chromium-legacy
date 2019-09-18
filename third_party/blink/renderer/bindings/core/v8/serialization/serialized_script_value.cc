@@ -704,6 +704,16 @@ SerializedScriptValue::TransferArrayBufferContents(
 
   contents.Grow(array_buffers.size());
   HeapHashSet<Member<DOMArrayBufferBase>> visited;
+  // The scope object to promptly free the backing store to avoid memory
+  // regressions.
+  // TODO(bikineev): Revisit after young generation is there.
+  struct PromptlyFreeSet {
+    // The void* is to avoid blink-gc-plugin error.
+    void* buffer;
+    ~PromptlyFreeSet() {
+      static_cast<HeapHashSet<Member<DOMArrayBufferBase>>*>(buffer)->clear();
+    }
+  } promptly_free_array_buffers{&visited};
   for (auto* it = array_buffers.begin(); it != array_buffers.end(); ++it) {
     DOMArrayBufferBase* array_buffer_base = *it;
     if (visited.Contains(array_buffer_base))

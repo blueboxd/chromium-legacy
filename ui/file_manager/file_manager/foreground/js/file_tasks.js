@@ -390,18 +390,10 @@ class FileTasks {
           task.title = loadTimeData.getString('TASK_IMPORT_CROSTINI_IMAGE');
           task.verb = undefined;
         } else if (taskParts[2] === 'view-swf') {
-          // Do not render this task if disabled.
-          if (!loadTimeData.getBoolean('SWF_VIEW_ENABLED')) {
-            continue;
-          }
           task.iconType = 'generic';
           task.title = loadTimeData.getString('TASK_VIEW');
           task.verb = undefined;
         } else if (taskParts[2] === 'view-pdf') {
-          // Do not render this task if disabled.
-          if (!loadTimeData.getBoolean('PDF_VIEW_ENABLED')) {
-            continue;
-          }
           task.iconType = 'pdf';
           task.title = loadTimeData.getString('TASK_VIEW');
           task.verb = undefined;

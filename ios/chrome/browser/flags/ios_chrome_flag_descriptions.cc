@@ -120,12 +120,6 @@ const char kBrowserContainerKeepsContentViewDescription[] =
     "When enable, the browser container keeps the content view in the view "
     "hierarchy, to avoid WKWebView from being unloaded from the process.";
 
-// TODO(crbug.com/893314) : Remove this flag.
-const char kClosingLastIncognitoTabName[] = "Closing Last Incognito Tab";
-const char kClosingLastIncognitoTabDescription[] =
-    "Automatically switches to the regular tabs panel in the tab grid after "
-    "closing the last incognito tab";
-
 const char kCollectionsCardPresentationStyleName[] =
     "Card style presentation for Collections.";
 const char kCollectionsCardPresentationStyleDescription[] =

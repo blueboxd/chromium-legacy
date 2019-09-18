@@ -650,6 +650,8 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   virtual bool IsWebRtcEncryptionEnabled() { return true; }
 
+  virtual bool IsWebRtcStunOriginEnabled() { return false; }
+
   virtual base::Optional<std::string> WebRtcStunProbeTrialParameter() {
     return base::nullopt;
   }

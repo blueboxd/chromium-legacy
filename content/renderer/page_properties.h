@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_PAGE_PROPERTIES_H_
 
 #include "content/common/content_export.h"
+#include "content/public/common/screen_info.h"
 
 namespace content {
 
@@ -21,6 +22,21 @@ class CONTENT_EXPORT PageProperties {
  public:
   PageProperties();
   ~PageProperties();
+
+  const ScreenInfo& GetScreenInfo() { return screen_info_; }
+  void SetScreenInfo(const ScreenInfo& screen_info) {
+    screen_info_ = screen_info;
+  }
+
+  // Convenience method for reading the device scale factor from
+  // ScreenInfo. This is probably the most commonly used field in ScreenInfo
+  // so having the added accessor clarifies information coupling and
+  // reduces boilerplate code.
+  float GetDeviceScaleFactor() { return screen_info_.device_scale_factor; }
+
+ private:
+  // Properties of the screen hosting the page.
+  ScreenInfo screen_info_;
 };
 
 }  // namespace content

@@ -2026,6 +2026,9 @@ void ResourceFetcher::UpdateAllImageResourcePriorities() {
   }
 
   not_loaded_image_resources_.RemoveAll(to_be_removed);
+  // Explicitly free the backing store to not regress memory.
+  // TODO(bikineev): Revisit when young generation is done.
+  to_be_removed.clear();
 }
 
 void ResourceFetcher::ReloadLoFiImages() {

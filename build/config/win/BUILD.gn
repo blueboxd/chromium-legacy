@@ -142,6 +142,9 @@ config("compiler") {
     # (link.exe also writes the current time, but it doesn't have a flag to
     # override that behavior.)
     ldflags += [ "/TIMESTAMP:" + build_timestamp ]
+
+    # Don't look for libpaths in %LIB%, similar to /X in cflags above.
+    ldflags += [ "/lldignoreenv" ]
   }
 
   if (!is_debug && !is_component_build) {

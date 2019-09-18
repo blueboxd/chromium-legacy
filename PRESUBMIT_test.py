@@ -1909,7 +1909,7 @@ class ServiceManifestOwnerTest(unittest.TestCase):
     self.assertEqual([], errors)
 
 
-class BannedFunctionCheckTest(unittest.TestCase):
+class BannedTypeCheckTest(unittest.TestCase):
 
   def testBannedIosObjcFunctions(self):
     input_api = MockInputApi()
@@ -1963,6 +1963,102 @@ class BannedFunctionCheckTest(unittest.TestCase):
     self.assertTrue('some/cpp/ok/file2.cc' not in results[1].message)
     self.assertTrue('third_party/blink/ok/file3.cc' not in results[0].message)
     self.assertTrue('content/renderer/ok/file3.cc' not in results[0].message)
+
+  def testDeprecatedMojoTypes(self):
+    ok_paths = ['some/cpp']
+    warning_paths = ['third_party/blink']
+    test_cases = [
+      {
+        'type': 'mojo::AssociatedBinding<>;',
+        'file': 'file1.c'
+      },
+      {
+        'type': 'mojo::AssociatedBindingSet<>;',
+        'file': 'file2.c'
+      },
+      {
+        'type': 'mojo::AssociatedInterfacePtr<>',
+        'file': 'file3.cc'
+      },
+      {
+        'type': 'mojo::AssociatedInterfacePtrInfo<>',
+        'file': 'file4.cc'
+      },
+      {
+        'type': 'mojo::AssociatedInterfaceRequest<>',
+        'file': 'file5.cc'
+      },
+      {
+        'type': 'mojo::Binding<>',
+        'file': 'file6.cc'
+      },
+      {
+        'type': 'mojo::BindingSet<>',
+        'file': 'file7.cc'
+      },
+      {
+        'type': 'mojo::InterfacePtr<>',
+        'file': 'file8.cc'
+      },
+      {
+        'type': 'mojo::InterfacePtrInfo<>',
+        'file': 'file9.cc'
+      },
+      {
+        'type': 'mojo::InterfaceRequest<>',
+        'file': 'file10.cc'
+      },
+      {
+        'type': 'mojo::MakeRequest()',
+        'file': 'file11.cc'
+      },
+      {
+        'type': 'mojo::MakeRequestAssociatedWithDedicatedPipe()',
+        'file': 'file12.cc'
+      },
+      {
+        'type': 'mojo::MakeStrongBinding()<>',
+        'file': 'file13.cc'
+      },
+      {
+        'type': 'mojo::MakeStrongAssociatedBinding()<>',
+        'file': 'file14.cc'
+      },
+      {
+        'type': 'mojo::StrongAssociatedBindingSet<>',
+        'file': 'file15.cc'
+      },
+      {
+        'type': 'mojo::StrongBindingSet<>',
+        'file': 'file16.cc'
+      },
+    ]
+
+    # Build the list of MockFiles considering paths that should trigger warnings
+    # as well as paths that should not trigger anything.
+    input_api = MockInputApi()
+    input_api.files = []
+    for test_case in test_cases:
+      for path in ok_paths:
+        input_api.files.append(MockFile(os.path.join(path, test_case['file']),
+                                        [test_case['type']]))
+      for path in warning_paths:
+        input_api.files.append(MockFile(os.path.join(path, test_case['file']),
+                                        [test_case['type']]))
+
+    results = PRESUBMIT._CheckNoDeprecatedMojoTypes(input_api, MockOutputApi())
+
+    # Only warnings for now for all deprecated Mojo types.
+    self.assertEqual(1, len(results))
+
+    for test_case in test_cases:
+      # Check that no warnings or errors have been triggered for these paths.
+      for path in ok_paths:
+        self.assertFalse(path in results[0].message)
+
+      # Check warnings have been triggered for these paths.
+      for path in warning_paths:
+        self.assertTrue(path in results[0].message)
 
 
 class NoProductionCodeUsingTestOnlyFunctionsTest(unittest.TestCase):

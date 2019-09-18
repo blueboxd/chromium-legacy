@@ -68,7 +68,7 @@ class PLATFORM_EXPORT WorkerScheduler : public FrameOrWorkerScheduler {
                              const SchedulingPolicy& policy) override;
 
   // FrameOrWorkerScheduler implementation:
-  void SetPausedForCooperativeScheduling(Paused) override {}
+  void SetPreemptedForCooperativeScheduling(Preempted) override {}
 
  protected:
   scoped_refptr<NonMainThreadTaskQueue> ThrottleableTaskQueue();

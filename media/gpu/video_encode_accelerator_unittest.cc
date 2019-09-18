@@ -2146,8 +2146,9 @@ scoped_refptr<VideoFrame> VEAClient::CreateFrame(off_t position) {
               current_framerate_));
   if (video_frame && g_native_input) {
 #if defined(OS_LINUX)
-    video_frame = test::CloneVideoFrame(
-        video_frame.get(), video_frame->layout(), VideoFrame::STORAGE_DMABUFS);
+    video_frame =
+        test::CloneVideoFrame(video_frame.get(), video_frame->layout(),
+                              VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
 #else
     video_frame = nullptr;
 #endif

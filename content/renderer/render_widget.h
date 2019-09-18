@@ -37,7 +37,6 @@
 #include "content/common/tab_switch_time_recorder.h"
 #include "content/common/widget.mojom.h"
 #include "content/public/common/drop_data.h"
-#include "content/public/common/screen_info.h"
 #include "content/renderer/compositor/layer_tree_view_delegate.h"
 #include "content/renderer/input/main_thread_event_queue.h"
 #include "content/renderer/input/render_widget_input_handler.h"
@@ -162,7 +161,6 @@ class CONTENT_EXPORT RenderWidget
   RenderWidget(int32_t widget_routing_id,
                CompositorDependencies* compositor_deps,
                PageProperties* page_properties,
-               const ScreenInfo& screen_info,
                blink::WebDisplayMode display_mode,
                bool is_undead,
                bool hidden,
@@ -188,7 +186,6 @@ class CONTENT_EXPORT RenderWidget
       int32_t,
       CompositorDependencies*,
       PageProperties*,
-      const ScreenInfo&,
       blink::WebDisplayMode display_mode,
       bool is_undead,
       bool never_visible,
@@ -205,7 +202,6 @@ class CONTENT_EXPORT RenderWidget
       int32_t widget_routing_id,
       CompositorDependencies* compositor_deps,
       PageProperties* page_properties,
-      const ScreenInfo& screen_info,
       blink::WebDisplayMode display_mode,
       bool is_undead,
       bool never_visible);
@@ -219,7 +215,6 @@ class CONTENT_EXPORT RenderWidget
       int32_t widget_routing_id,
       CompositorDependencies* compositor_deps,
       PageProperties* page_properties,
-      const ScreenInfo& screen_info,
       blink::WebDisplayMode display_mode,
       bool hidden,
       bool never_visible,
@@ -294,9 +289,6 @@ class CONTENT_EXPORT RenderWidget
   const gfx::Size& visible_viewport_size() const {
     return visible_viewport_size_;
   }
-
-  ScreenInfo screen_info() const { return screen_info_; }
-  void set_screen_info(const ScreenInfo& info) { screen_info_ = info; }
 
   // Sets whether this RenderWidget should be moved into or out of an undead
   // state. This state is used for the RenderWidget attached to a RenderViewImpl
@@ -593,10 +585,6 @@ class CONTENT_EXPORT RenderWidget
   MouseLockDispatcher* mouse_lock_dispatcher() const {
     return mouse_lock_dispatcher_.get();
   }
-
-  // Returns the ScreenInfo exposed to Blink. In device emulation, this
-  // may not match the compositor ScreenInfo.
-  const ScreenInfo& GetWebScreenInfo() const;
 
   // When emulated, this returns the original (non-emulated) ScreenInfo.
   const ScreenInfo& GetOriginalScreenInfo() const;
@@ -1100,9 +1088,6 @@ class CONTENT_EXPORT RenderWidget
 
   // The time spent in input handlers this frame. Used to throttle input acks.
   base::TimeDelta total_input_handling_time_this_frame_;
-
-  // Properties of the screen hosting this RenderWidget instance.
-  ScreenInfo screen_info_;
 
   // True if the IME requests updated composition info.
   bool monitor_composition_info_ = false;

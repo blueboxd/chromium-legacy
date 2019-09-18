@@ -80,7 +80,7 @@
       'Memory Infra Tester': 'android_release_thumb_bot',
       'android-marshmallow-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_resource_whitelisting',
       'android-pie-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86',
-      'android-bfcache-rel': 'android_release_bot_minimal_symbols',
+      'android-bfcache-debug': 'android_debug_bot',
     },
 
     'chromium.chromedriver': {
@@ -202,7 +202,7 @@
       'chromeos-amd64-generic-rel-vm-tests': 'cros_chrome_sdk_headless_ozone_dcheck_always_on',
       'chromeos-kevin-rel-hw-tests': 'cros_chrome_sdk_headless_ozone',
       'chromeos-vm-code-coverage': 'cros_chrome_sdk_headless_ozone_coverage',
-      'linux-bfcache-rel': 'release_bot_minimal_symbols',
+      'linux-bfcache-debug': 'debug_bot',
       'linux-oor-cors-rel': 'release_bot_minimal_symbols',
       'linux-chromeos-code-coverage': 'chromeos_with_codecs_release_bot_coverage',
       'linux-fieldtrial-rel': 'release_bot_minimal_symbols',

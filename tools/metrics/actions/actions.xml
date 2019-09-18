@@ -11550,16 +11550,23 @@ should be able to be added at any place in this file.
 <action name="MobileAddCreditCard.AddPaymentMethodButton">
   <owner>gambard@chromium.org</owner>
   <description>
-    The user tapped on &quot;Add Payment Method...&quot; in the Settings,
-    Payment Methods menu.
+    User tapped on &quot;Add Payment Method&quot; using the settings payment
+    methods screen.
   </description>
 </action>
 
-<action name="MobileAddCreditCard.CardSaved">
+<action name="MobileAddCreditCard.CreditCardAdded">
   <owner>gambard@chromium.org</owner>
   <description>
-    The user saved a new credit card by tapping on &quot;Add&quot; in the
-    Settings, Add Payment Methods menu.
+    User adds a valid credit card using the add credit card screen.
+  </description>
+</action>
+
+<action name="MobileAddCreditCard.UseCameraButton">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    User tapped on &quot;Use Camera&quot; from the settings add credit card
+    screen.
   </description>
 </action>
 
@@ -11981,24 +11988,48 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="MobileCreditCardScannerClose">
+<action name="MobileCreditCardScanner.Close">
   <owner>gambard@chromium.org</owner>
   <description>
     User closed the Credit Card Scanner without scanning a credit card.
   </description>
 </action>
 
-<action name="MobileCreditCardScannerError">
+<action name="MobileCreditCardScanner.Error">
   <owner>gambard@chromium.org</owner>
   <description>
     User closed the Credit Card Scanner from an error dialog.
   </description>
 </action>
 
-<action name="MobileCreditCardScannerScannedCard">
+<action name="MobileCreditCardScanner.ScannedCard">
   <owner>gambard@chromium.org</owner>
   <description>
     User scanned a credit card using the Credit Card Scanner.
+  </description>
+</action>
+
+<action name="MobileCreditCardScanner.ScannedCardNumberModified">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    User scanned a credit card using the Credit Card Scanner and scanned card
+    number was modified.
+  </description>
+</action>
+
+<action name="MobileCreditCardScanner.ScannedExpiryMonthModified">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    User scanned a credit card using the Credit Card Scanner and scanned card
+    expiry month was modified.
+  </description>
+</action>
+
+<action name="MobileCreditCardScanner.ScannedExpiryYearModified">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    User scanned a credit card using the Credit Card Scanner and scanned card
+    expiry year was modified.
   </description>
 </action>
 

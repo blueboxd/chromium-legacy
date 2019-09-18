@@ -43,6 +43,7 @@ class FetchParameters;
 class KURL;
 class ResourceFetcher;
 class ResponseBodyLoaderClient;
+class SingleCachedMetadataHandler;
 
 // ScriptResource is a resource representing a JavaScript script. It is only
 // used for "classic" scripts, i.e. not modules.

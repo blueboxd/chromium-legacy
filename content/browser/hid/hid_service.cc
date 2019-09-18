@@ -108,10 +108,11 @@ void HidService::FinishRequestDevice(RequestDeviceCallback callback,
   std::move(callback).Run(std::move(device));
 }
 
-void HidService::FinishConnect(ConnectCallback callback,
-                               device::mojom::HidConnectionPtr connection) {
+void HidService::FinishConnect(
+    ConnectCallback callback,
+    mojo::PendingRemote<device::mojom::HidConnection> connection) {
   if (!connection) {
-    std::move(callback).Run(nullptr);
+    std::move(callback).Run(mojo::NullRemote());
     return;
   }
 

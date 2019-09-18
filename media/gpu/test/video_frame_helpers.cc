@@ -7,11 +7,15 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind_helpers.h"
 #include "base/memory/scoped_refptr.h"
+#include "gpu/ipc/common/gpu_memory_buffer_support.h"
+#include "media/base/format_utils.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/buildflags.h"
 #include "media/gpu/test/image.h"
 #include "third_party/libyuv/include/libyuv.h"
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
@@ -209,11 +213,13 @@ scoped_refptr<VideoFrame> CloneVideoFrame(
   scoped_refptr<VideoFrame> dst_frame;
   switch (dst_storage_type) {
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+    case VideoFrame::STORAGE_GPU_MEMORY_BUFFER:
     case VideoFrame::STORAGE_DMABUFS:
       dst_frame = CreatePlatformVideoFrame(
           dst_layout.format(), dst_layout.coded_size(),
           src_frame->visible_rect(), src_frame->visible_rect().size(),
-          src_frame->timestamp(), gfx::BufferUsage::GPU_READ_CPU_READ_WRITE);
+          src_frame->timestamp(),
+          gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE);
       break;
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
     case VideoFrame::STORAGE_OWNED_MEMORY:
@@ -236,6 +242,43 @@ scoped_refptr<VideoFrame> CloneVideoFrame(
     LOG(ERROR) << "Failed to copy VideoFrame";
     return nullptr;
   }
+
+  if (dst_storage_type == VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
+    // Here, the content in |src_frame| is already copied to |dst_frame|, which
+    // is a DMABUF based VideoFrame.
+    // Create GpuMemoryBufferHandle from |dst_frame|.
+    gfx::GpuMemoryBufferHandle gmb_handle;
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+    gmb_handle = CreateGpuMemoryBufferHandle(dst_frame.get());
+#endif
+    if (gmb_handle.is_null() || gmb_handle.type != gfx::NATIVE_PIXMAP) {
+      LOG(ERROR) << "Failed to create native GpuMemoryBufferHandle";
+      return nullptr;
+    }
+
+    base::Optional<gfx::BufferFormat> buffer_format =
+        VideoPixelFormatToGfxBufferFormat(dst_layout.format());
+    if (!buffer_format) {
+      LOG(ERROR) << "Unexpected format: "
+                 << BufferFormatToString(*buffer_format);
+      return nullptr;
+    }
+
+    // Create GpuMemoryBuffer from GpuMemoryBufferHandle.
+    gpu::GpuMemoryBufferSupport support;
+    std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
+        support.CreateGpuMemoryBufferImplFromHandle(
+            std::move(gmb_handle), dst_layout.coded_size(), *buffer_format,
+            gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE,
+            base::DoNothing());
+    gpu::MailboxHolder dummy_mailbox[media::VideoFrame::kMaxPlanes];
+    dst_frame = media::VideoFrame::WrapExternalGpuMemoryBuffer(
+        src_frame->visible_rect(), src_frame->visible_rect().size(),
+        std::move(gpu_memory_buffer), dummy_mailbox /* mailbox_holders */,
+        base::DoNothing() /* mailbox_holder_release_cb_ */,
+        src_frame->timestamp());
+  }
+
   return dst_frame;
 }
 

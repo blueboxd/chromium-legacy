@@ -205,6 +205,8 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
   SkRect PaintCheckboxRadioCommon(cc::PaintCanvas* canvas,
                                   State state,
                                   const gfx::Rect& rect,
+                                  const ButtonExtraParams& button,
+                                  bool is_checkbox,
                                   const SkScalar borderRadius,
                                   ColorScheme color_scheme) const;
 

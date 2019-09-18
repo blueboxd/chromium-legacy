@@ -39,10 +39,6 @@ CGFloat CurrentScreenWidth();
 // Returns true if the device is an iPhone X.
 bool IsIPhoneX();
 
-// Returns whether the flag is enabled for switching to the regular tabs panel
-// in tab switcher when the last incognito tab is closed.
-bool IsClosingLastIncognitoTabEnabled();
-
 // Returns the approximate corner radius of the current device.
 CGFloat DeviceCornerRadius();
 

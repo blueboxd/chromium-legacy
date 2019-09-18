@@ -20,8 +20,7 @@
 #include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/browser/api/usb/usb_device_manager.h"
 #include "extensions/common/extension.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/cpp/hid/hid_device_filter.h"
 #include "services/device/public/cpp/hid/hid_usage_and_page.h"
@@ -195,8 +194,7 @@ class HidDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
       : Prompt(extension, context, multiple),
         initialized_(false),
         filters_(filters),
-        callback_(callback),
-        binding_(this) {}
+        callback_(callback) {}
 
  private:
   ~HidDevicePermissionsPrompt() override {}
@@ -221,11 +219,8 @@ class HidDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
     connector->Connect(device::mojom::kServiceName,
                        hid_manager_.BindNewPipeAndPassReceiver());
 
-    device::mojom::HidManagerClientAssociatedPtrInfo client;
-    binding_.Bind(mojo::MakeRequest(&client));
-
     hid_manager_->GetDevicesAndSetClient(
-        std::move(client),
+        receiver_.BindNewEndpointAndPassRemote(),
         base::BindOnce(&HidDevicePermissionsPrompt::OnDevicesEnumerated, this));
 
     initialized_ = true;
@@ -300,7 +295,7 @@ class HidDevicePermissionsPrompt : public DevicePermissionsPrompt::Prompt,
   std::vector<HidDeviceFilter> filters_;
   mojo::Remote<device::mojom::HidManager> hid_manager_;
   DevicePermissionsPrompt::HidDevicesCallback callback_;
-  mojo::AssociatedBinding<device::mojom::HidManagerClient> binding_;
+  mojo::AssociatedReceiver<device::mojom::HidManagerClient> receiver_{this};
 };
 
 }  // namespace

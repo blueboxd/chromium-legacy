@@ -1230,7 +1230,7 @@ void ProfileSyncService::ConfigureDataTypeManager(ConfigureReason reason) {
   configure_context.authenticated_account_id =
       GetAuthenticatedAccountInfo().account_id;
   configure_context.cache_guid = sync_prefs_.GetCacheGuid();
-  configure_context.storage_option = STORAGE_ON_DISK;
+  configure_context.sync_mode = SyncMode::kFull;
   configure_context.reason = reason;
   configure_context.configuration_start_time = base::Time::Now();
 
@@ -1283,7 +1283,7 @@ void ProfileSyncService::ConfigureDataTypeManager(ConfigureReason reason) {
     }
 
     types = Intersection(types, allowed_types);
-    configure_context.storage_option = STORAGE_IN_MEMORY;
+    configure_context.sync_mode = SyncMode::kTransportOnly;
   }
   data_type_manager_->Configure(types, configure_context);
 

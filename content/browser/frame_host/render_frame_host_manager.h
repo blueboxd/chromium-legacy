@@ -344,8 +344,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   // appropriate RenderFrameHost for the provided URL. The returned pointer will
   // be for the current or the speculative RenderFrameHost and the instance is
   // owned by this manager.
-  RenderFrameHostImpl* GetFrameHostForNavigation(
-      const NavigationRequest& request);
+  RenderFrameHostImpl* GetFrameHostForNavigation(NavigationRequest* request);
 
   // Clean up any state for any ongoing navigation.
   void CleanUpNavigation();
@@ -504,7 +503,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   // GetProcess() is called on the SiteInstance. In particular, calling this
   // function will never lead to a process being created for the navigation.
   scoped_refptr<SiteInstance> GetSiteInstanceForNavigationRequest(
-      const NavigationRequest& navigation_request);
+      NavigationRequest* navigation_request);
 
   // Helper to initialize the RenderFrame if it's not initialized.
   void InitializeRenderFrameIfNecessary(RenderFrameHostImpl* render_frame_host);

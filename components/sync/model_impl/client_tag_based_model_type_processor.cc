@@ -738,7 +738,7 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
     base::UmaHistogramCustomTimes(
         base::StringPrintf(
             "Sync.ModelTypeConfigurationTime.%s.%s",
-            (activation_request_.storage_option == STORAGE_IN_MEMORY)
+            (activation_request_.sync_mode == SyncMode::kTransportOnly)
                 ? "Ephemeral"
                 : "Persistent",
             ModelTypeToHistogramSuffix(type_)),

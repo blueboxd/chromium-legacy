@@ -24,6 +24,7 @@
 #include "cc/paint/skia_paint_canvas.h"
 #include "cc/trees/layer_tree_host.h"
 #include "content/common/input/actions_parser.h"
+#include "content/common/input/input_injector.mojom.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
 #include "content/common/input/synthetic_pointer_action_list_params.h"
@@ -44,6 +45,7 @@
 #include "gin/object_template_builder.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/ipc/common/gpu_messages.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/web/blink.h"
@@ -304,7 +306,7 @@ bool ThrowIfPointOutOfBounds(GpuBenchmarkingContext* context,
 
 bool BeginSmoothScroll(GpuBenchmarkingContext* context,
                        gin::Arguments* args,
-                       mojom::InputInjectorPtr& injector,
+                       const mojo::Remote<mojom::InputInjector>& injector,
                        float pixels_to_scroll,
                        v8::Local<v8::Function> callback,
                        int gesture_source_type,
@@ -408,7 +410,7 @@ bool BeginSmoothScroll(GpuBenchmarkingContext* context,
 
 bool BeginSmoothDrag(GpuBenchmarkingContext* context,
                      gin::Arguments* args,
-                     mojom::InputInjectorPtr& injector,
+                     const mojo::Remote<mojom::InputInjector>& injector,
                      float start_x,
                      float start_y,
                      float end_x,
@@ -557,9 +559,9 @@ GpuBenchmarking::~GpuBenchmarking() {}
 
 void GpuBenchmarking::EnsureRemoteInterface() {
   if (!input_injector_) {
-    render_frame_->GetRemoteInterfaces()->GetInterface(mojo::MakeRequest(
-        &input_injector_,
-        render_frame_->GetTaskRunner(blink::TaskType::kInternalDefault)));
+    render_frame_->GetRemoteInterfaces()->GetInterface(
+        input_injector_.BindNewPipeAndPassReceiver(
+            render_frame_->GetTaskRunner(blink::TaskType::kInternalDefault)));
   }
 }
 

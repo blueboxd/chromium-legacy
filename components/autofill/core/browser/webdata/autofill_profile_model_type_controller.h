@@ -24,7 +24,8 @@ namespace browser_sync {
 class AutofillProfileModelTypeController : public syncer::ModelTypeController {
  public:
   AutofillProfileModelTypeController(
-      std::unique_ptr<syncer::ModelTypeControllerDelegate> delegate_on_disk,
+      std::unique_ptr<syncer::ModelTypeControllerDelegate>
+          delegate_for_full_sync_mode,
       PrefService* pref_service,
       syncer::SyncService* sync_service);
   ~AutofillProfileModelTypeController() override;

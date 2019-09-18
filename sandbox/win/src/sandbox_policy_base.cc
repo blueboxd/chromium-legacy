@@ -300,7 +300,7 @@ ResultCode PolicyBase::SetLowBox(const wchar_t* sid) {
     return SBOX_ERROR_BAD_PARAMS;
 
   if (!ConvertStringSidToSid(sid, &lowbox_sid_))
-    return SBOX_ERROR_GENERIC;
+    return SBOX_ERROR_INVALID_LOWBOX_SID;
 
   return SBOX_ALL_OK;
 }
@@ -404,7 +404,7 @@ ResultCode PolicyBase::MakeJobObject(base::win::ScopedHandle* job) {
   DWORD result =
       job_obj.Init(job_level_, nullptr, ui_exceptions_, memory_limit_);
   if (ERROR_SUCCESS != result)
-    return SBOX_ERROR_GENERIC;
+    return SBOX_ERROR_CANNOT_INIT_JOB;
 
   *job = job_obj.Take();
   return SBOX_ALL_OK;
@@ -419,7 +419,7 @@ ResultCode PolicyBase::MakeTokens(base::win::ScopedHandle* initial,
       CreateRestrictedToken(effective_token_, lockdown_level_, integrity_level_,
                             PRIMARY, lockdown_default_dacl_, lockdown);
   if (ERROR_SUCCESS != result)
-    return SBOX_ERROR_GENERIC;
+    return SBOX_ERROR_CANNOT_CREATE_RESTRICTED_TOKEN;
 
   // If we're launching on the alternate desktop we need to make sure the
   // integrity label on the object is no higher than the sandboxed process's
@@ -445,7 +445,7 @@ ResultCode PolicyBase::MakeTokens(base::win::ScopedHandle* initial,
           SetObjectIntegrityLabel(desktop_handle, SE_WINDOW_OBJECT, L"",
                                   GetIntegrityLevelString(integrity_level_));
       if (ERROR_SUCCESS != result)
-        return SBOX_ERROR_GENERIC;
+        return SBOX_ERROR_CANNOT_SET_DESKTOP_INTEGRITY;
 
       if (use_alternate_winstation_) {
         alternate_desktop_integrity_level_label_ = integrity_level_;
@@ -472,12 +472,12 @@ ResultCode PolicyBase::MakeTokens(base::win::ScopedHandle* initial,
     SecurityCapabilities caps(package_sid);
     if (CreateLowBoxToken(lockdown->Get(), PRIMARY, &caps, saved_handles,
                           saved_handles_count, lowbox) != ERROR_SUCCESS) {
-      return SBOX_ERROR_GENERIC;
+      return SBOX_ERROR_CANNOT_CREATE_LOWBOX_TOKEN;
     }
 
     if (!ReplacePackageSidInDacl(lowbox->Get(), SE_KERNEL_OBJECT, package_sid,
                                  TOKEN_ALL_ACCESS)) {
-      return SBOX_ERROR_GENERIC;
+      return SBOX_ERROR_CANNOT_MODIFY_LOWBOX_TOKEN_DACL;
     }
   }
 
@@ -488,7 +488,7 @@ ResultCode PolicyBase::MakeTokens(base::win::ScopedHandle* initial,
       CreateRestrictedToken(effective_token_, initial_level_, integrity_level_,
                             IMPERSONATION, lockdown_default_dacl_, initial);
   if (ERROR_SUCCESS != result)
-    return SBOX_ERROR_GENERIC;
+    return SBOX_ERROR_CANNOT_CREATE_RESTRICTED_IMP_TOKEN;
 
   return SBOX_ALL_OK;
 }

@@ -107,6 +107,7 @@ source_set("eg_tests") {
   ]
   deps = [
     ":autofill",
+    ":feature_flags",
     "//components/autofill/core/browser",
     "//components/autofill/core/browser:test_support",
     "//components/strings",

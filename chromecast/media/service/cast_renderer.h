@@ -16,6 +16,7 @@
 #include "media/base/renderer.h"
 #include "media/base/waiting.h"
 #include "media/mojo/mojom/cast_application_media_info_manager.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace base {
@@ -113,7 +114,7 @@ class CastRenderer : public ::media::Renderer,
 
   ::media::mojom::CastApplicationMediaInfoManagerPtr
       application_media_info_manager_ptr_;
-  chromecast::mojom::MultiroomManagerPtr multiroom_manager_;
+  mojo::Remote<chromecast::mojom::MultiroomManager> multiroom_manager_;
 
   base::WeakPtrFactory<CastRenderer> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(CastRenderer);

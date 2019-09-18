@@ -118,12 +118,14 @@ void AudioProcessor::AnalyzePlayout(const AudioBus& audio,
 
   constexpr int kMaxChannels = 2;
   DCHECK_GE(parameters.channels(), 1);
-  DCHECK_LE(parameters.channels(), kMaxChannels);
   const float* channel_ptrs[kMaxChannels];
   channel_ptrs[0] = audio.channel(0);
   webrtc::AudioProcessing::ChannelLayout webrtc_layout =
       webrtc::AudioProcessing::ChannelLayout::kMono;
-  if (parameters.channels() == 2) {
+  // Limit the number of channels to two (stereo) even in a multi-channel case.
+  // TODO(crbug.com/982276): process all channels when multi-channel AEC is
+  // supported.
+  if (parameters.channels() > 1) {
     channel_ptrs[1] = audio.channel(1);
     webrtc_layout = webrtc::AudioProcessing::ChannelLayout::kStereo;
   }

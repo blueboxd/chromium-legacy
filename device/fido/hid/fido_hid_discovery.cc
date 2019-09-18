@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "device/fido/hid/fido_hid_device.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -16,8 +15,7 @@ namespace device {
 
 FidoHidDiscovery::FidoHidDiscovery(::service_manager::Connector* connector)
     : FidoDeviceDiscovery(FidoTransportProtocol::kUsbHumanInterfaceDevice),
-      connector_(connector),
-      binding_(this) {
+      connector_(connector) {
   // TODO(piperc@): Give this constant a name.
   filter_.SetUsagePage(0xf1d0);
 }
@@ -28,12 +26,11 @@ void FidoHidDiscovery::StartInternal() {
   DCHECK(connector_);
   connector_->Connect(device::mojom::kServiceName,
                       hid_manager_.BindNewPipeAndPassReceiver());
-  device::mojom::HidManagerClientAssociatedPtrInfo client;
-  binding_.Bind(mojo::MakeRequest(&client));
 
   hid_manager_->GetDevicesAndSetClient(
-      std::move(client), base::BindOnce(&FidoHidDiscovery::OnGetDevices,
-                                        weak_factory_.GetWeakPtr()));
+      receiver_.BindNewEndpointAndPassRemote(),
+      base::BindOnce(&FidoHidDiscovery::OnGetDevices,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void FidoHidDiscovery::DeviceAdded(

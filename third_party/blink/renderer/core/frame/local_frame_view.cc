@@ -2002,6 +2002,9 @@ void LocalFrameView::UpdateGeometriesIfNeeded() {
 
     view->UpdateGeometry();
   }
+  // Explicitly free the backing store to avoid memory regressions.
+  // TODO(bikineev): Revisit after young generation is there.
+  views.clear();
 }
 
 void LocalFrameView::UpdateAllLifecyclePhases(

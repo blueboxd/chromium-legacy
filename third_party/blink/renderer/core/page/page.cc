@@ -969,7 +969,7 @@ void Page::UpdateHasRelatedPages() {
     LocalFrame* local_main_frame = DynamicTo<LocalFrame>(main_frame_.Get());
     // We want to record this only for the pages which have local main frame,
     // which is fine as we are aggregating results across all processes.
-    if (!local_main_frame)
+    if (!local_main_frame || !local_main_frame->IsAttached())
       return;
     has_related_pages_ = local_main_frame->GetFrameScheduler()->RegisterFeature(
         SchedulingPolicy::Feature::kHasScriptableFramesInMultipleTabs,

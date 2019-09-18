@@ -178,6 +178,9 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -202,6 +205,7 @@
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
+#include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_host_test_interface.mojom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
@@ -1099,6 +1103,10 @@ void RenderFrameHostImpl::EnterBackForwardCache() {
   DCHECK(IsBackForwardCacheEnabled());
   DCHECK(!is_in_back_forward_cache_);
   is_in_back_forward_cache_ = true;
+  // Pages in the back-forward cache are automatically evicted after a certain
+  // time.
+  if (!GetParent())
+    StartBackForwardCacheEvictionTimer();
   for (auto& child : children_)
     child->current_frame_host()->EnterBackForwardCache();
 }
@@ -1108,8 +1116,26 @@ void RenderFrameHostImpl::LeaveBackForwardCache() {
   DCHECK(IsBackForwardCacheEnabled());
   DCHECK(is_in_back_forward_cache_);
   is_in_back_forward_cache_ = false;
+  if (back_forward_cache_eviction_timer_.IsRunning())
+    back_forward_cache_eviction_timer_.Stop();
   for (auto& child : children_)
     child->current_frame_host()->LeaveBackForwardCache();
+}
+
+void RenderFrameHostImpl::StartBackForwardCacheEvictionTimer() {
+  DCHECK(is_in_back_forward_cache_);
+  base::TimeDelta evict_after =
+      BackForwardCache::GetTimeToLiveInBackForwardCache();
+  NavigationControllerImpl* controller = static_cast<NavigationControllerImpl*>(
+      frame_tree_node_->navigator()->GetController());
+
+  back_forward_cache_eviction_timer_.SetTaskRunner(
+      controller->back_forward_cache().GetTaskRunner());
+
+  back_forward_cache_eviction_timer_.Start(
+      FROM_HERE, evict_after,
+      base::BindOnce(&RenderFrameHostImpl::EvictFromBackForwardCache,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void RenderFrameHostImpl::OnGrantedMediaStreamAccess() {
@@ -2151,13 +2177,9 @@ GURL RenderFrameHostImpl::ComputeSiteForCookiesForNavigation(
   const FrameTreeNode* current = frame_tree_node_->parent();
   bool ancestors_are_same_site = true;
   while (current && ancestors_are_same_site) {
-    // Skip over srcdoc documents, as they are always same-origin with their
-    // closest non-srcdoc parent.
-    while (current->current_url().IsAboutSrcdoc())
-      current = current->parent();
-
     if (!net::registry_controlled_domains::SameDomainOrHost(
-            top_document_url, current->current_url(),
+            top_document_url,
+            current->current_frame_host()->GetLastCommittedOrigin(),
             net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
       ancestors_are_same_site = false;
     }
@@ -3453,6 +3475,9 @@ void RenderFrameHostImpl::SendAccessibilityEventsToManager(
 void RenderFrameHostImpl::EvictFromBackForwardCache() {
   DCHECK(IsBackForwardCacheEnabled());
 
+  if (is_evicted_from_back_forward_cache_)
+    return;
+
   bool in_back_forward_cache = is_in_back_forward_cache();
 
   RenderFrameHostImpl* top_document = this;
@@ -4396,7 +4421,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   if (command_line->HasSwitch(
           switches::kEnableExperimentalWebPlatformFeatures)) {
     registry_->AddInterface(
-        base::BindRepeating(&RenderFrameHostImpl::BindSerialServiceRequest,
+        base::BindRepeating(&RenderFrameHostImpl::BindSerialServiceReceiver,
                             base::Unretained(this)));
     registry_->AddInterface(
         base::BindRepeating(&HidService::Create, base::Unretained(this)));
@@ -5309,8 +5334,7 @@ void RenderFrameHostImpl::CommitNavigation(
         std::move(common_params), std::move(commit_params),
         base::BindOnce(&RenderFrameHostImpl::OnSameDocumentCommitProcessed,
                        base::Unretained(this),
-                       same_document_navigation_request_->navigation_handle()
-                           ->GetNavigationId(),
+                       same_document_navigation_request_->GetNavigationId(),
                        should_replace_current_entry));
   } else {
     // Pass the controller service worker info if we have one.
@@ -5494,7 +5518,7 @@ void RenderFrameHostImpl::FailedNavigation(
   // An error page is expected to commit, hence why is_loading_ is set to true.
   is_loading_ = true;
   DCHECK(navigation_request && navigation_request->navigation_handle() &&
-         navigation_request->navigation_handle()->GetNetErrorCode() != net::OK);
+         navigation_request->GetNetErrorCode() != net::OK);
 }
 
 void RenderFrameHostImpl::HandleRendererDebugURL(const GURL& url) {
@@ -6308,8 +6332,8 @@ void RenderFrameHostImpl::BindNFCReceiver(
 #endif
 
 #if !defined(OS_ANDROID)
-void RenderFrameHostImpl::BindSerialServiceRequest(
-    blink::mojom::SerialServiceRequest request) {
+void RenderFrameHostImpl::BindSerialServiceReceiver(
+    mojo::PendingReceiver<blink::mojom::SerialService> receiver) {
   if (!IsFeatureEnabled(blink::mojom::FeaturePolicyFeature::kSerial)) {
     mojo::ReportBadMessage("Feature policy blocks access to Serial.");
     return;
@@ -6318,7 +6342,7 @@ void RenderFrameHostImpl::BindSerialServiceRequest(
   if (!serial_service_)
     serial_service_ = std::make_unique<SerialService>(this);
 
-  serial_service_->Bind(std::move(request));
+  serial_service_->Bind(std::move(receiver));
 }
 
 void RenderFrameHostImpl::BindAuthenticatorRequest(
@@ -6362,9 +6386,10 @@ void RenderFrameHostImpl::GetFileChooser(
   FileChooserImpl::Create(this, std::move(receiver));
 }
 
-blink::mojom::FileChooserPtr RenderFrameHostImpl::BindFileChooserForTesting() {
-  blink::mojom::FileChooserPtr chooser;
-  FileChooserImpl::Create(this, mojo::MakeRequest(&chooser));
+mojo::Remote<blink::mojom::FileChooser>
+RenderFrameHostImpl::BindFileChooserForTesting() {
+  mojo::Remote<blink::mojom::FileChooser> chooser;
+  FileChooserImpl::Create(this, chooser.BindNewPipeAndPassReceiver());
   return chooser;
 }
 
@@ -6686,8 +6711,7 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
     // commit in the old renderer process.  This may be true for subframe
     // navigations even when error page isolation is enabled for main frames.
     if (navigation_request &&
-        navigation_request->navigation_handle()->GetNetErrorCode() ==
-            net::ERR_BLOCKED_BY_CLIENT) {
+        navigation_request->GetNetErrorCode() == net::ERR_BLOCKED_BY_CLIENT) {
       bypass_checks_for_error_page = true;
     }
   }
@@ -6917,8 +6941,7 @@ void RenderFrameHostImpl::OnSameDocumentCommitProcessed(
   // If the NavigationRequest was deleted, another navigation commit started to
   // be processed. Let the latest commit go through and stop doing anything.
   if (!same_document_navigation_request_ ||
-      same_document_navigation_request_->navigation_handle()
-              ->GetNavigationId() != navigation_id) {
+      same_document_navigation_request_->GetNavigationId() != navigation_id) {
     return;
   }
 
@@ -7543,7 +7566,7 @@ void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
     // one at commit time.
     scoped_refptr<SiteInstance> dest_instance =
         frame_tree_node_->render_manager()->GetSiteInstanceForNavigationRequest(
-            *navigation_request);
+            navigation_request);
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString(
             "does_recomputed_site_instance_match",

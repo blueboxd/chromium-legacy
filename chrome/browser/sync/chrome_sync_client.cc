@@ -292,14 +292,14 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
         SecurityEventRecorderFactory::GetForProfile(profile_)
             ->GetControllerDelegate()
             .get();
-    // Forward both on-disk and in-memory storage modes to the same delegate,
+    // Forward both full-sync and transport-only modes to the same delegate,
     // since behavior for SECURITY_EVENTS does not differ.
     controllers.push_back(std::make_unique<syncer::ModelTypeController>(
         syncer::SECURITY_EVENTS,
-        /*delegate_on_disk=*/
+        /*delegate_for_full_sync_mode=*/
         std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
             delegate),
-        /*delegate_in_memory=*/
+        /*delegate_for_transport_mode=*/
         std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
             delegate)));
   }

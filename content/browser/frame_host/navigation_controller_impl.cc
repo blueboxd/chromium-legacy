@@ -2286,6 +2286,11 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
   if (!request)
     return;
 
+  // At this stage we are proceeding with this navigation. If this was renderer
+  // initiated with user gesture, we need to make sure we clear up potential
+  // remains of a cancelled browser initiated navigation to avoid URL spoofs.
+  DiscardNonCommittedEntries();
+
   node->navigator()->Navigate(std::move(request), ReloadType::NONE,
                               RestoreType::NONE);
 }

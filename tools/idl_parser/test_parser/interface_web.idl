@@ -152,17 +152,6 @@ interface MyIFaceWrongRecordKeyType {
 };
 
 /** TREE
- *Interface(MyIFaceBig)
- *  Const(setString)
- *    StringType(DOMString)
- *      NULLABLE: True
- *    Value() = "NULL"
- */
-interface MyIFaceBig {
-  const DOMString? setString = null;
-};
-
-/** TREE
  *Interface(MyIfaceDefalutValue)
  *  Operation(foo)
  *    Arguments()
@@ -235,11 +224,7 @@ interface MyIfaceWithRecords {
 };
 
 /** TREE
- *Interface(MyIFaceBig2)
- *  Const(nullValue)
- *    StringType(DOMString)
- *      NULLABLE: True
- *    Value() = "NULL"
+ *Interface(MyIFaceBig)
  *  Const(longValue)
  *    PrimitiveType(long)
  *    Value() = "123"
@@ -273,8 +258,7 @@ interface MyIfaceWithRecords {
  *    Type()
  *      PrimitiveType(void)
  */
-interface MyIFaceBig2 {
-  const DOMString? nullValue = null;
+interface MyIFaceBig {
   const long longValue = 123;
   const long long longValue2 = 123;
   attribute DOMString myString;
@@ -287,7 +271,6 @@ interface MyIFaceBig2 {
 /** TREE
  *Interface(MyIFaceSpecials)
  *  Operation(set)
- *    CREATOR: True
  *    SETTER: True
  *    Arguments()
  *      Argument(property)
@@ -305,7 +288,7 @@ interface MyIFaceBig2 {
  *      PrimitiveType(double)
  */
 interface MyIFaceSpecials {
-  setter creator void set(DOMString property);
+  setter void set(DOMString property);
   getter double (DOMString property);
 };
 

@@ -252,14 +252,9 @@ TEST_F(ServiceWorkerObjectHostTest,
   version_->SetTickClockForTesting(&tick_clock);
 
   // Make sure worker has a non-zero timeout.
-  bool called = false;
-  blink::ServiceWorkerStatusCode status =
-      blink::ServiceWorkerStatusCode::kErrorFailed;
-  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        base::BindOnce(&SaveStatusCallback, &called, &status));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(called);
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk, status);
+  ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk,
+            StartServiceWorker(version_.get()));
+
   version_->StartRequestWithCustomTimeout(
       ServiceWorkerMetrics::EventType::ACTIVATE, base::DoNothing(),
       base::TimeDelta::FromSeconds(10), ServiceWorkerVersion::KILL_ON_TIMEOUT);
@@ -286,8 +281,9 @@ TEST_F(ServiceWorkerObjectHostTest,
   // by calling DispatchExtendableMessageEvent on |object_host|.
   blink::TransferableMessage message;
   SetUpDummyMessagePort(&message.ports);
-  called = false;
-  status = blink::ServiceWorkerStatusCode::kErrorFailed;
+  bool called = false;
+  blink::ServiceWorkerStatusCode status =
+      blink::ServiceWorkerStatusCode::kErrorFailed;
   CallDispatchExtendableMessageEvent(
       object_host, std::move(message),
       base::BindOnce(&SaveStatusCallback, &called, &status));
@@ -310,9 +306,7 @@ TEST_F(ServiceWorkerObjectHostTest,
   // Timeout of message event should not have extended life of service worker.
   EXPECT_EQ(remaining_time, version_->remaining_timeout());
   // Clean up.
-  base::RunLoop stop_loop;
-  version_->StopWorker(stop_loop.QuitClosure());
-  stop_loop.Run();
+  StopServiceWorker(version_.get());
 }
 
 // Tests postMessage() from a page to a service worker.

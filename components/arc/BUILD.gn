@@ -103,6 +103,7 @@ static_library("arc") {
     "//components/account_id",
     "//components/exo",
     "//components/google/core/common",
+    "//components/guest_os",
     "//components/onc",
     "//components/prefs",
     "//components/session_manager/core",
@@ -143,6 +144,7 @@ static_library("prefs") {
 
   deps = [
     ":arc_base_enums",
+    "//components/guest_os:prefs",
     "//components/prefs",
   ]
 }

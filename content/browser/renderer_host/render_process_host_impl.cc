@@ -3446,7 +3446,6 @@ void RenderProcessHostImpl::Cleanup() {
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
   deleting_soon_ = true;
 
-  io_thread_host_impl_.reset();
   if (render_frame_message_filter_) {
     // RenderFrameMessageFilter is refcounted and can outlive the
     // ResourceContext. If the BrowserContext is shutting down, after
@@ -3473,8 +3472,6 @@ void RenderProcessHostImpl::Cleanup() {
   // Remove ourself from the list of renderer processes so that we can't be
   // reused in between now and when the Delete task runs.
   UnregisterHost(GetID());
-
-  instance_weak_factory_.emplace(this);
 }
 
 void RenderProcessHostImpl::PopulateTerminationInfoRendererFields(
@@ -4163,6 +4160,7 @@ void RenderProcessHostImpl::ResetIPC() {
   if (renderer_host_binding_.is_bound())
     renderer_host_binding_.Unbind();
 
+  io_thread_host_impl_.reset();
   route_provider_receiver_.reset();
   associated_interface_provider_receivers_.Clear();
   associated_interfaces_.reset();
@@ -4173,6 +4171,8 @@ void RenderProcessHostImpl::ResetIPC() {
   for (auto binding_id : storage_partition_binding_ids_) {
     storage_partition_impl_->Unbind(binding_id);
   }
+
+  instance_weak_factory_.emplace(this);
 
   // If RenderProcessHostImpl is reused, the next renderer will send a new
   // request for FrameSinkProvider so make sure frame_sink_provider_ is ready

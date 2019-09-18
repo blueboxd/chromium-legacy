@@ -51,8 +51,8 @@ void EventLoop::Disable() {
   loop_enabled_ = false;
 
   for (auto* scheduler : schedulers_) {
-    scheduler->SetPausedForCooperativeScheduling(
-        FrameOrWorkerScheduler::Paused(true));
+    scheduler->SetPreemptedForCooperativeScheduling(
+        FrameOrWorkerScheduler::Preempted(true));
   }
   // TODO(keishi): Disable microtaskqueue too.
 }
@@ -61,8 +61,8 @@ void EventLoop::Enable() {
   loop_enabled_ = true;
 
   for (auto* scheduler : schedulers_) {
-    scheduler->SetPausedForCooperativeScheduling(
-        FrameOrWorkerScheduler::Paused(false));
+    scheduler->SetPreemptedForCooperativeScheduling(
+        FrameOrWorkerScheduler::Preempted(false));
   }
   // TODO(keishi): Enable microtaskqueue too.
 }

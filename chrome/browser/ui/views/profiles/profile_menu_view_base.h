@@ -39,7 +39,8 @@ class DiceSigninButtonView;
 class ProfileMenuViewBase : public content::WebContentsDelegate,
                             public views::BubbleDialogDelegateView,
                             public views::ButtonListener,
-                            public views::StyledLabelListener {
+                            public views::StyledLabelListener,
+                            public views::LinkListener {
  public:
   // MenuItems struct keeps the menu items and meta data for a group of items in
   // a menu. It takes the ownership of views and passes it to the menu when menu
@@ -97,6 +98,9 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   void SetIdentityInfo(const gfx::Image& image,
                        const base::string16& title,
                        const base::string16& subtitle);
+  void SetSyncInfo(const base::string16& description,
+                   const base::string16& link_text,
+                   base::RepeatingClosure action);
   void AddShortcutFeatureButton(const gfx::VectorIcon& icon,
                                 const base::string16& text,
                                 base::RepeatingClosure action);
@@ -184,6 +188,9 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   // views::ButtonListener:
   void ButtonPressed(views::Button* button, const ui::Event& event) final;
 
+  // views::LinkListener:
+  void LinkClicked(views::Link* link, int event_flags) final;
+
   // views::StyledLabelListener:
   void StyledLabelLinkClicked(views::StyledLabel* link,
                               const gfx::Range& range,
@@ -213,6 +220,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
 
   // Component containers.
   views::View* identity_info_container_ = nullptr;
+  views::View* sync_info_container_ = nullptr;
   views::View* shortcut_features_container_ = nullptr;
   views::View* account_features_container_ = nullptr;
   views::View* selectable_profiles_container_ = nullptr;

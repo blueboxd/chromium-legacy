@@ -90,8 +90,12 @@ gfx::PresentationFeedback SanitizePresentationFeedback(
     UMA_HISTOGRAM_CUSTOM_TIMES(
         "Graphics.PresentationTimestamp.LargePresentationDelta", difference,
         base::TimeDelta::FromMinutes(3), base::TimeDelta::FromHours(1), 50);
-    // In debug builds, just crash immediately.
-    DCHECK(false);
+
+    // Ignore long presentation times for the tests that override time
+    if (!base::subtle::ScopedTimeClockOverrides::overrides_active()) {
+      // In debug builds, just crash immediately.
+      DCHECK(false);
+    }
   }
   return feedback;
 }

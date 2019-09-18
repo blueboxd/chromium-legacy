@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "content/common/input/input_injector.mojom.h"
 #include "gin/wrappable.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace gin {
 class Arguments;
@@ -99,7 +100,7 @@ class GpuBenchmarking : public gin::Wrappable<GpuBenchmarking> {
   bool AddSwapCompletionEventListener(gin::Arguments* args);
 
   RenderFrameImpl* render_frame_;
-  mojom::InputInjectorPtr input_injector_;
+  mojo::Remote<mojom::InputInjector> input_injector_;
   DISALLOW_COPY_AND_ASSIGN(GpuBenchmarking);
 };
 

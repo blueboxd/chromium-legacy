@@ -326,7 +326,8 @@ class MockIceCandidate : public IceCandidateInterface {
 };
 
 MockPeerConnectionDependencyFactory::MockPeerConnectionDependencyFactory()
-    : PeerConnectionDependencyFactory(/*create_p2p_socket_dispatcher =*/false),
+    : blink::PeerConnectionDependencyFactory(
+          /*create_p2p_socket_dispatcher =*/false),
       signaling_thread_("MockPCFactory WebRtc Signaling Thread") {
   EnsureWebRtcAudioDeviceImpl();
   CHECK(signaling_thread_.Start());

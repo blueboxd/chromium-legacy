@@ -29,7 +29,6 @@
 #include "base/unguessable_token.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
 #include "content/renderer/media/webrtc/webrtc_set_description_observer.h"
 #include "content/renderer/render_thread_impl.h"
@@ -53,6 +52,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
+#include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/webrtc/api/rtc_event_log_output.h"
 #include "third_party/webrtc/pc/media_session.h"
@@ -973,7 +973,7 @@ class RTCPeerConnectionHandler::Observer
 
 RTCPeerConnectionHandler::RTCPeerConnectionHandler(
     blink::WebRTCPeerConnectionHandlerClient* client,
-    PeerConnectionDependencyFactory* dependency_factory,
+    blink::PeerConnectionDependencyFactory* dependency_factory,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : initialize_called_(false),
       client_(client),

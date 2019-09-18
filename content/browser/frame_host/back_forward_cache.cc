@@ -25,6 +25,9 @@ using blink::scheduler::WebSchedulerTrackedFeature;
 // The number of pages the BackForwardCache can hold per tab.
 static constexpr size_t kBackForwardCacheLimit = 1;
 
+// The default time to live in seconds for documents in BackForwardCache.
+static constexpr int kDefaultTimeToLiveInBackForwardCacheInSeconds = 15;
+
 // Converts a WebSchedulerTrackedFeature to a bit for use in a bitmask.
 constexpr uint64_t ToFeatureBit(WebSchedulerTrackedFeature feature) {
   return 1 << static_cast<uint32_t>(feature);
@@ -138,6 +141,12 @@ uint64_t GetDisallowedFeatures() {
 
 BackForwardCache::BackForwardCache() : weak_factory_(this) {}
 BackForwardCache::~BackForwardCache() = default;
+
+base::TimeDelta BackForwardCache::GetTimeToLiveInBackForwardCache() {
+  return base::TimeDelta::FromSeconds(base::GetFieldTrialParamByFeatureAsInt(
+      features::kBackForwardCache, "TimeToLiveInBackForwardCacheInSeconds",
+      kDefaultTimeToLiveInBackForwardCacheInSeconds));
+}
 
 bool BackForwardCache::CanStoreDocument(RenderFrameHostImpl* rfh) {
   // Use the BackForwardCache only for the main frame.

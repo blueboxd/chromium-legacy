@@ -933,7 +933,7 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
         sandbox::Job job_obj;
         DWORD result = job_obj.Init(sandbox::JOB_UNPROTECTED, nullptr, 0, 0);
         if (result != ERROR_SUCCESS)
-          return sandbox::SBOX_ERROR_GENERIC;
+          return sandbox::SBOX_ERROR_CANNOT_INIT_JOB;
         g_job_object_handle = job_obj.Take().Take();
       }
       options.job_handle = g_job_object_handle;

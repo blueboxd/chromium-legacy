@@ -16,9 +16,11 @@
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 
-namespace content {
-
+namespace blink {
 class PeerConnectionDependencyFactory;
+}
+
+namespace content {
 
 // A map and owner of |WebRtcMediaStreamTrackAdapter|s. It takes care of
 // creating, initializing and disposing track adapters independently of media
@@ -72,7 +74,7 @@ class CONTENT_EXPORT WebRtcMediaStreamTrackAdapterMap
 
   // Must be invoked on the main thread.
   WebRtcMediaStreamTrackAdapterMap(
-      PeerConnectionDependencyFactory* const factory,
+      blink::PeerConnectionDependencyFactory* const factory,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread);
 
   // Gets a new reference to the local track adapter, or null if no such adapter
@@ -140,7 +142,7 @@ class CONTENT_EXPORT WebRtcMediaStreamTrackAdapterMap
 
   // Pointer to a |PeerConnectionDependencyFactory| owned by the |RenderThread|.
   // It's valid for the lifetime of |RenderThread|.
-  PeerConnectionDependencyFactory* const factory_;
+  blink::PeerConnectionDependencyFactory* const factory_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
 
   mutable base::Lock lock_;

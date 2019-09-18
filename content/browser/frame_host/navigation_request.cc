@@ -1081,7 +1081,7 @@ void NavigationRequest::BeginNavigation() {
 
     // Select an appropriate RenderFrameHost.
     render_frame_host_ =
-        frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
+        frame_tree_node_->render_manager()->GetFrameHostForNavigation(this);
     NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
         render_frame_host_, common_params_->url);
 
@@ -1417,7 +1417,7 @@ void NavigationRequest::OnRequestRedirected(
   // before the navigation is ready to commit.
   scoped_refptr<SiteInstance> site_instance =
       frame_tree_node_->render_manager()->GetSiteInstanceForNavigationRequest(
-          *this);
+          this);
   speculative_site_instance_ =
       site_instance->HasProcess() ? site_instance : nullptr;
 
@@ -1565,7 +1565,7 @@ void NavigationRequest::OnResponseStarted(
     CHECK(render_frame_host_);
   } else if (response_should_be_rendered_) {
     render_frame_host_ =
-        frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
+        frame_tree_node_->render_manager()->GetFrameHostForNavigation(this);
     NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
         render_frame_host_, common_params_->url);
   } else {
@@ -1779,13 +1779,13 @@ void NavigationRequest::OnRequestFailedInternal(
     // RenderFrameHost. See https://crbug.com/793127.
     ResetExpectedProcess();
     render_frame_host =
-        frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
+        frame_tree_node_->render_manager()->GetFrameHostForNavigation(this);
   } else {
     if (ShouldKeepErrorPageInCurrentProcess(status.error_code)) {
       render_frame_host = frame_tree_node_->current_frame_host();
     } else {
       render_frame_host =
-          frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
+          frame_tree_node_->render_manager()->GetFrameHostForNavigation(this);
     }
   }
 
@@ -3134,7 +3134,7 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
 
   // https://wicg.github.io/cors-rfc1918/#address-space
   commit_params_->ip_address_space = CalculateIPAddressSpace(
-      navigation_handle()->GetSocketAddress().address(),
+      GetSocketAddress().address(),
       response_head_ ? response_head_->head.headers.get() : nullptr);
 
   if (appcache_handle_) {

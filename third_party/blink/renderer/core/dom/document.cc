@@ -697,67 +697,65 @@ class Document::SecurityContextInit : public FeaturePolicyParserDelegate {
         frame ? frame->Loader().GetLastOriginDocumentCSP() : nullptr;
 
     KURL url;
-    if (initializer.ShouldSetURL()) {
-      url = initializer.Url();
-      if (url.IsEmpty())
-        url = BlankURL();
-    }
+    if (initializer.ShouldSetURL())
+      url = initializer.Url().IsEmpty() ? BlankURL() : initializer.Url();
 
-    if (initializer.HasSecurityContext() && !initializer.OriginToCommit() &&
-        initializer.OwnerDocument()) {
-      // Alias certain security properties from |owner_document|. Used for
-      // the case of about:blank pages inheriting the security properties of
-      //   their requestor context.
-      // Note that this is currently somewhat broken; Blink always inherits
-      // from the parent or opener, even though it should actually be
-      // inherited from the request initiator.
-      if (url.IsEmpty()) {
-        last_origin_document_csp =
-            initializer.OwnerDocument()->GetContentSecurityPolicy();
-      }
+    // Alias certain security properties from |owner_document|. Used for the
+    // case of about:blank pages inheriting the security properties of their
+    // requestor context.
+    //
+    // Note that this is currently somewhat broken; Blink always inherits from
+    // the parent or opener, even though it should actually be inherited from
+    // the request initiator.
+    if (url.IsEmpty() && initializer.HasSecurityContext() &&
+        !initializer.OriginToCommit() && initializer.OwnerDocument()) {
+      last_origin_document_csp =
+          initializer.OwnerDocument()->GetContentSecurityPolicy();
     }
 
     csp_ = initializer.GetContentSecurityPolicy();
 
-    if (!csp_ && initializer.ImportsController()) {
-      // If this document is an HTML import, grab a reference to its master
-      // document's Content Security Policy. We don't bind the CSP's delegate
-      // in 'InitSecurityPolicy' in this case, as we can't rebind the
-      // master document's policy object: The Content Security Policy's delegate
-      // needs to remain set to the master document.
-      csp_ =
-          initializer.ImportsController()->Master()->GetContentSecurityPolicy();
-    } else {
-      if (!csp_) {
-        csp_ = MakeGarbageCollected<ContentSecurityPolicy>();
-        bind_csp_immediately_ = true;
+    if (!csp_) {
+      if (initializer.ImportsController()) {
+        // If this document is an HTML import, grab a reference to its master
+        // document's Content Security Policy. We don't bind the CSP's delegate
+        // in 'InitSecurityPolicy' in this case, as we can't rebind the master
+        // document's policy object: The Content Security Policy's delegate
+        // needs to remain set to the master document.
+        csp_ = initializer.ImportsController()
+                   ->Master()
+                   ->GetContentSecurityPolicy();
+        return;
       }
 
-      // We should inherit the navigation initiator CSP if the document is
-      // loaded using a local-scheme url.
-      if (last_origin_document_csp &&
-          (url.IsEmpty() || url.ProtocolIsAbout() || url.ProtocolIsData() ||
-           url.ProtocolIs("blob") || url.ProtocolIs("filesystem"))) {
-        csp_->CopyStateFrom(last_origin_document_csp);
+      csp_ = MakeGarbageCollected<ContentSecurityPolicy>();
+      bind_csp_immediately_ = true;
+    }
+
+    // We should inherit the navigation initiator CSP if the document is loaded
+    // using a local-scheme url.
+    if (last_origin_document_csp &&
+        (url.IsEmpty() || url.ProtocolIsAbout() || url.ProtocolIsData() ||
+         url.ProtocolIs("blob") || url.ProtocolIs("filesystem"))) {
+      csp_->CopyStateFrom(last_origin_document_csp);
+    }
+
+    if (document_classes & kPluginDocumentClass) {
+      if (last_origin_document_csp) {
+        csp_->CopyPluginTypesFrom(last_origin_document_csp);
+        return;
       }
 
-      if (document_classes & kPluginDocumentClass) {
-        // TODO(andypaicu): This should inherit the origin document's plugin
-        // types but because this could be a OOPIF document it might not have
-        // access. In this situation we fallback on using the parent/opener.
-        if (last_origin_document_csp) {
-          csp_->CopyPluginTypesFrom(last_origin_document_csp);
-        } else if (frame) {
-          Frame* inherit_from = frame->Tree().Parent()
-                                    ? frame->Tree().Parent()
-                                    : frame->Client()->Opener();
-          if (inherit_from && frame != inherit_from) {
-            DCHECK(
-                inherit_from->GetSecurityContext() &&
-                inherit_from->GetSecurityContext()->GetContentSecurityPolicy());
-            csp_->CopyPluginTypesFrom(
-                inherit_from->GetSecurityContext()->GetContentSecurityPolicy());
-          }
+      // TODO(andypaicu): This should inherit the origin document's plugin types
+      // but because this could be a OOPIF document it might not have access. In
+      // this situation we fallback on using the parent/opener:
+      if (frame) {
+        Frame* inherit_from = frame->Tree().Parent()
+                                  ? frame->Tree().Parent()
+                                  : frame->Client()->Opener();
+        if (inherit_from && frame != inherit_from) {
+          csp_->CopyPluginTypesFrom(
+              inherit_from->GetSecurityContext()->GetContentSecurityPolicy());
         }
       }
     }

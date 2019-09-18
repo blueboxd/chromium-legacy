@@ -11,6 +11,9 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -64,6 +67,24 @@ class CONTENT_EXPORT BackForwardCache {
   // Posts a task to destroy all frames in the BackForwardCache that have been
   // marked as evicted.
   void PostTaskToDestroyEvictedFrames();
+
+  // Storing frames in back-forward cache is not supported indefinitely
+  // due to potential privacy issues and memory leaks. Instead we are evicting
+  // the frame from the cache after the time to live, which can be controlled
+  // via experiment.
+  static base::TimeDelta GetTimeToLiveInBackForwardCache();
+
+  // Returns the task runner that should be used by the eviction timer.
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() {
+    return task_runner_for_testing_ ? task_runner_for_testing_
+                                    : base::ThreadTaskRunnerHandle::Get();
+  }
+
+  // Inject task runner for precise timing control in browser tests.
+  void SetTaskRunnerForTesting(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    task_runner_for_testing_ = task_runner;
+  }
 
   // List of reasons the BackForwardCache was disabled for a specific test. If a
   // test needs to be disabled for a reason not covered below, please add to
@@ -141,6 +162,10 @@ class CONTENT_EXPORT BackForwardCache {
   // Only used in tests. If non-zero, this value will be used as the cache size
   // limit.
   size_t cache_size_limit_for_testing_ = 0;
+
+  // Only used for tests. This task runner is used for precise injection in
+  // browser tests and for timing control.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_testing_;
 
   base::WeakPtrFactory<BackForwardCache> weak_factory_;
 

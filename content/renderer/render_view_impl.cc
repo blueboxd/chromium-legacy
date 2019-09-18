@@ -74,7 +74,6 @@
 #include "content/renderer/internal_document_state_data.h"
 #include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/media/audio/audio_device_factory.h"
-#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_frame_proxy.h"
@@ -125,6 +124,7 @@
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/blink/public/web/modules/mediastream/web_media_stream_device_observer.h"
+#include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -481,6 +481,8 @@ void RenderViewImpl::Initialize(
   bool has_show_callback = !!show_callback;
 #endif
 
+  page_properties()->SetScreenInfo(params->visual_properties.screen_info);
+
   WebFrame* opener_frame =
       RenderFrameImpl::ResolveOpener(params->opener_frame_route_id);
 
@@ -509,8 +511,7 @@ void RenderViewImpl::Initialize(
     // RenderWidget for a remote main frame.
     render_widget_ = RenderWidget::CreateForFrame(
         params->main_frame_widget_routing_id, compositor_deps,
-        page_properties(), params->visual_properties.screen_info,
-        params->visual_properties.display_mode,
+        page_properties(), params->visual_properties.display_mode,
         /*is_undead=*/params->main_frame_routing_id == MSG_ROUTING_NONE,
         params->never_visible);
     GetWidget()->set_delegate(this);
@@ -1095,7 +1096,7 @@ void RenderViewImpl::CancelPagePopupForWidget() {
 }
 
 void RenderViewImpl::ApplyNewDisplayModeForWidget(
-    const blink::WebDisplayMode& new_display_mode) {
+    blink::WebDisplayMode new_display_mode) {
   webview()->SetDisplayMode(new_display_mode);
 }
 
@@ -1256,7 +1257,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PageMsg_SetHistoryOffsetAndLength,
                         OnSetHistoryOffsetAndLength)
     IPC_MESSAGE_HANDLER(PageMsg_AudioStateChanged, OnAudioStateChanged)
-    IPC_MESSAGE_HANDLER(PageMsg_UpdateScreenInfo, OnUpdateScreenInfo)
     IPC_MESSAGE_HANDLER(PageMsg_UpdatePageVisualProperties,
                         OnUpdatePageVisualProperties)
     IPC_MESSAGE_HANDLER(PageMsg_SetPageFrozen, SetPageFrozen)
@@ -1369,7 +1369,7 @@ WebView* RenderViewImpl::CreateView(
   bool never_visible = false;
 
   VisualProperties visual_properties = VisualProperties();
-  visual_properties.screen_info = GetWidget()->screen_info();
+  visual_properties.screen_info = page_properties()->GetScreenInfo();
 
   // The initial hidden state for the RenderViewImpl here has to match what the
   // browser will eventually decide for the given disposition. Since we have to
@@ -1453,8 +1453,7 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
 
   RenderWidget* popup_widget = RenderWidget::CreateForPopup(
       widget_routing_id, view_render_widget->compositor_deps(),
-      page_properties(), view_render_widget->screen_info(),
-      blink::kWebDisplayModeUndefined,
+      page_properties(), blink::kWebDisplayModeUndefined,
       /*hidden=*/false,
       /*never_visible=*/false, std::move(widget_channel_receiver));
 
@@ -1851,7 +1850,7 @@ gfx::Size RenderViewImpl::GetSize() {
 }
 
 float RenderViewImpl::GetDeviceScaleFactor() {
-  return GetWidget()->GetWebScreenInfo().device_scale_factor;
+  return page_properties()->GetDeviceScaleFactor();
 }
 
 float RenderViewImpl::GetZoomLevel() {
@@ -1998,15 +1997,6 @@ void RenderViewImpl::OnPageWasShown() {
   ApplyPageHidden(/*hidden=*/false, /*initial_setting=*/false);
 }
 
-void RenderViewImpl::OnUpdateScreenInfo(const ScreenInfo& screen_info) {
-  // This IPC only updates the screen info on RenderViews that have a remote
-  // main frame. For local main frames, the ScreenInfo is updated in
-  // ViewMsg_Resize.
-  // TODO(danakj): Move this message to RenderWidget?
-  if (!main_render_frame_)
-    GetWidget()->set_screen_info(screen_info);
-}
-
 void RenderViewImpl::OnUpdateLocalMainFramePageVisualProperties(
     const VisualProperties& visual_properties) {
   // TODO(https://crbug.com/998273): We should not forward visual properties to
@@ -2146,7 +2136,7 @@ void RenderViewImpl::DidFocus(blink::WebLocalFrame* calling_frame) {
 }
 
 blink::WebScreenInfo RenderViewImpl::GetScreenInfo() {
-  const ScreenInfo& info = GetWidget()->screen_info();
+  const ScreenInfo& info = page_properties()->GetScreenInfo();
 
   blink::WebScreenInfo web_screen_info;
   web_screen_info.device_scale_factor = info.device_scale_factor;

@@ -113,6 +113,7 @@ bindings_core_v8_files =
                     "core/v8/serialization/serialized_script_value.h",
                     "core/v8/serialization/serialized_script_value_factory.cc",
                     "core/v8/serialization/serialized_script_value_factory.h",
+                    "core/v8/serialization/transferables.cc",
                     "core/v8/serialization/transferables.h",
                     "core/v8/serialization/unpacked_serialized_script_value.cc",
                     "core/v8/serialization/unpacked_serialized_script_value.h",

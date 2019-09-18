@@ -20,6 +20,7 @@ enum class PageActionIconType {
   kNativeFileSystemAccess,
   kClickToCall,
   kCookieControls,
+  kBookmarkStar,
 };
 
 #endif  // CHROME_BROWSER_UI_PAGE_ACTION_PAGE_ACTION_ICON_TYPE_H_

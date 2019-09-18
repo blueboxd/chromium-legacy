@@ -295,7 +295,7 @@ Refer to README.md for content description and update process.
  <item id="web_push_message" hash_code="39886742" type="0" content_hash_code="110064650" os_list="linux,windows" file_path="components/gcm_driver/web_push_sender.cc"/>
  <item id="webrtc_event_log_uploader" hash_code="24186190" type="0" content_hash_code="11005245" os_list="linux,windows" file_path="chrome/browser/media/webrtc/webrtc_event_log_uploader.cc"/>
  <item id="webrtc_log_upload" hash_code="62443804" type="0" content_hash_code="33661169" os_list="linux,windows" file_path="chrome/browser/media/webrtc/webrtc_log_uploader.cc"/>
- <item id="webrtc_peer_connection" hash_code="63497370" type="0" content_hash_code="60553259" os_list="linux,windows" file_path="content/renderer/media/webrtc/peer_connection_dependency_factory.cc"/>
+ <item id="webrtc_peer_connection" hash_code="63497370" type="0" content_hash_code="60553259" os_list="linux,windows" file_path="third_party/blink/renderer/modules/peerconnection/peer_connection_dependency_factory.cc"/>
  <item id="websocket_basic_stream" hash_code="51586722" type="0" content_hash_code="68121427" os_list="linux,windows" file_path="net/websockets/websocket_basic_stream.cc"/>
  <item id="websocket_stream" hash_code="17188928" type="0" content_hash_code="7250776" os_list="linux,windows" file_path="net/websockets/websocket_stream.cc"/>
  <item id="webstore_data_fetcher" hash_code="26302604" type="0" content_hash_code="24000746" os_list="linux,windows" file_path="chrome/browser/extensions/webstore_data_fetcher.cc"/>

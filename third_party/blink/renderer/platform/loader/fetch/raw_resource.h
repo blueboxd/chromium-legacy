@@ -33,11 +33,13 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
+
 class BytesConsumer;
 class BufferingBytesConsumer;
 class FetchParameters;
 class RawResourceClient;
 class ResourceFetcher;
+class SingleCachedMetadataHandler;
 
 class PLATFORM_EXPORT RawResource final : public Resource {
  public:

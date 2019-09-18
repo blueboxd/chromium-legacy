@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -1029,7 +1030,13 @@ IN_PROC_BROWSER_TEST_P(MergeSessionTest, PageThrottle) {
   DVLOG(1) << "Loaded page at the end : " << title;
 }
 
-IN_PROC_BROWSER_TEST_P(MergeSessionTest, XHRThrottle) {
+// TODO(crbug.com/1005084) Disabled on Chrome OS due to timeouts
+#if defined(OS_CHROMEOS)
+#define MAYBE_XHRThrottle DISABLED_XHRThrottle
+#else
+#define MAYBE_XHRThrottle XHRThrottle
+#endif
+IN_PROC_BROWSER_TEST_P(MergeSessionTest, MAYBE_XHRThrottle) {
   StartNewUserSession(/*wait_for_merge=*/false,
                       /*is_under_advanced_protection=*/false);
 

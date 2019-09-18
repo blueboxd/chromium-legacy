@@ -213,7 +213,7 @@
         'swarming': {
           'shards': 10,
         },
-       'test': 'android_browsertests',
+        'test': 'android_browsertests',
       },
       'bf_cache_content_shell_test_apk': {
         'args': [
@@ -223,7 +223,7 @@
         'swarming': {
           'shards': 10,
         },
-       'test': 'content_shell_test_apk',
+        'test': 'content_shell_test_apk',
       },
       'bf_cache_chrome_public_test_apk': {
         'args': [
@@ -233,7 +233,7 @@
         'swarming': {
           'shards': 10,
         },
-       'test': 'chrome_public_test_apk',
+        'test': 'chrome_public_test_apk',
       },
     },
 
@@ -261,6 +261,23 @@
           'shards': 10,
         },
         'test': 'content_browsertests',
+      },
+    },
+
+    'bfcache_junit_tests': {
+      'bf_cache_chrome_junit_tests': {
+        'args': [
+          '--enable-features=BackForwardCache',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.chrome_junit_tests.filter'
+        ],
+        'test': 'chrome_junit_tests',
+      },
+      'bf_cache_content_junit_tests': {
+        'args': [
+          '--enable-features=BackForwardCache',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/bfcache.content_junit_tests.filter'
+        ],
+        'test': 'content_junit_tests',
       },
     },
 
@@ -4970,6 +4987,7 @@
     },
 
     'win_specific_chromium_gtests': {
+      'browser_switcher_bho_unittests': {},
       'chrome_cleaner_unittests': {},
       'chrome_elf_unittests': {},
       'courgette_unittests': {},

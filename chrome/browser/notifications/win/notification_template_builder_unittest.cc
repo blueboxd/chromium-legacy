@@ -70,6 +70,8 @@ class NotificationTemplateBuilderTest : public ::testing::Test {
         NotifierId(origin_url), RichNotificationData(), nullptr /* delegate */);
     // Set a fixed timestamp, to avoid having to test against current timestamp.
     notification.set_timestamp(FixedTime());
+    notification.set_settings_button_handler(
+        message_center::SettingsButtonHandler::DELEGATE);
     return notification;
   }
 
@@ -476,6 +478,31 @@ title4 - message4
  <actions>
   <action content="settings" placement="contextMenu" activationType="foreground" arguments="2|0|Default|0|https://example.com/|notification_id"/>
  </actions>
+</toast>
+)";
+
+  ASSERT_NO_FATAL_FAILURE(VerifyXml(notification, kExpectedXml));
+}
+
+TEST_F(NotificationTemplateBuilderTest, NoSettings) {
+  message_center::Notification notification = BuildNotification();
+
+  // Disable overriding context menu label.
+  SetContextMenuLabelForTesting(nullptr);
+
+  notification.set_settings_button_handler(
+      message_center::SettingsButtonHandler::NONE);
+
+  const wchar_t kExpectedXml[] =
+      LR"(<toast launch="0|0|Default|0|https://example.com/|notification_id" displayTimestamp="1998-09-04T01:02:03Z">
+ <visual>
+  <binding template="ToastGeneric">
+   <text>My Title</text>
+   <text>My Message</text>
+   <text placement="attribution">example.com</text>
+  </binding>
+ </visual>
+ <actions/>
 </toast>
 )";
 

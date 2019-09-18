@@ -20,6 +20,7 @@
 #include "media/audio/audio_io.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_timestamp_helper.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace chromecast {
@@ -148,7 +149,7 @@ class CastAudioOutputStream : public ::media::AudioOutputStream {
   // empty string if group_id is unused.
   const std::string group_id_;
   MixerServiceConnectionFactory* mixer_service_connection_factory_;
-  chromecast::mojom::MultiroomManagerPtr multiroom_manager_;
+  mojo::Remote<chromecast::mojom::MultiroomManager> multiroom_manager_;
   std::unique_ptr<CmaWrapper> cma_wrapper_;
   std::unique_ptr<MixerServiceWrapper> mixer_service_wrapper_;
 

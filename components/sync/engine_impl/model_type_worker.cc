@@ -15,6 +15,7 @@
 #include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -69,6 +70,25 @@ enum class SyncPositioningScheme {
   MISSING = 3,
   kMaxValue = MISSING
 };
+
+// Used in metrics: "Sync.BookmarkGUIDSource". These values are persisted to
+// logs. Entries should not be renumbered and numeric values should never be
+// reused.
+enum class BookmarkGUIDSource {
+  // GUID came from specifics.
+  kSpecifics = 0,
+  // GUID came from originator_client_item_id and is valid.
+  kValidOCII = 1,
+  // GUID not found in the specifics and originator_client_item_id is invalid,
+  // so field left empty.
+  kLeftEmpty = 2,
+
+  kMaxValue = kLeftEmpty,
+};
+
+inline void LogGUIDSource(BookmarkGUIDSource source) {
+  base::UmaHistogramEnumeration("Sync.BookmarkGUIDSource", source);
+}
 
 }  // namespace
 
@@ -342,11 +362,16 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
     // Legacy clients don't populate the guid field in the BookmarkSpecifics, so
     // we use the originator_client_item_id instead, if it is a valid GUID.
     // Otherwise, we leave the field empty.
-    if (model_type == BOOKMARKS && !update_entity.deleted() &&
-        !base::IsValidGUID(specifics.bookmark().guid()) &&
-        base::IsValidGUID(update_entity.originator_client_item_id())) {
-      data->specifics.mutable_bookmark()->set_guid(
-          update_entity.originator_client_item_id());
+    if (model_type == BOOKMARKS && !update_entity.deleted()) {
+      if (specifics.bookmark().has_guid()) {
+        LogGUIDSource(BookmarkGUIDSource::kSpecifics);
+      } else if (base::IsValidGUID(update_entity.originator_client_item_id())) {
+        data->specifics.mutable_bookmark()->set_guid(
+            update_entity.originator_client_item_id());
+        LogGUIDSource(BookmarkGUIDSource::kValidOCII);
+      } else {
+        LogGUIDSource(BookmarkGUIDSource::kLeftEmpty);
+      }
     }
     response_data->entity = std::move(data);
     return SUCCESS;

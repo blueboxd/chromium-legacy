@@ -623,11 +623,11 @@ ModelTypeSet DataTypeManagerImpl::PrepareConfigureParams(
   // response will be sent.
 
   ModelTypeSet types_to_purge;
-  // If we're using in-memory storage, don't clear any old data. The reason is
+  // If we're using transport-only mode, don't clear any old data. The reason is
   // that if a user temporarily disables Sync, we don't want to wipe (and later
   // redownload) all their data, just because Sync restarted in transport-only
   // mode.
-  if (last_requested_context_.storage_option == STORAGE_ON_DISK) {
+  if (last_requested_context_.sync_mode == SyncMode::kFull) {
     types_to_purge = Difference(ModelTypeSet::All(), downloaded_types_);
     // Include clean_types in types_to_purge, they are part of
     // |downloaded_types_|, but still need to be cleared.
@@ -663,7 +663,7 @@ ModelTypeSet DataTypeManagerImpl::PrepareConfigureParams(
       base::Bind(&DataTypeManagerImpl::DownloadReady,
                  weak_ptr_factory_.GetWeakPtr(), download_types_queue_.front());
   params->is_sync_feature_enabled =
-      last_requested_context_.storage_option == STORAGE_ON_DISK;
+      last_requested_context_.sync_mode == SyncMode::kFull;
 
   DCHECK(Intersection(active_types, types_to_purge).Empty());
   DCHECK(Intersection(active_types, fatal_types).Empty());

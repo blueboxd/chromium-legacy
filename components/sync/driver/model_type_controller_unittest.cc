@@ -132,8 +132,9 @@ class TestModelTypeConfigurer : public ModelTypeConfigurer {
 class TestModelTypeController : public ModelTypeController {
  public:
   explicit TestModelTypeController(
-      std::unique_ptr<ModelTypeControllerDelegate> delegate_on_disk)
-      : ModelTypeController(kTestModelType, std::move(delegate_on_disk)) {}
+      std::unique_ptr<ModelTypeControllerDelegate> delegate_for_full_sync_mode)
+      : ModelTypeController(kTestModelType,
+                            std::move(delegate_for_full_sync_mode)) {}
   ~TestModelTypeController() override {}
 
   using ModelTypeController::ReportModelError;
@@ -555,19 +556,19 @@ TEST_F(ModelTypeControllerTest, StopAndReportErrorWhileStarting) {
   EXPECT_EQ(DataTypeController::FAILED, controller()->state());
 }
 
-// Tests that StorageOption is honored when the controller has been constructed
+// Tests that SyncMode is honored when the controller has been constructed
 // with two delegates.
-TEST(ModelTypeControllerWithMultiDelegateTest, ToggleStorageOption) {
+TEST(ModelTypeControllerWithMultiDelegateTest, ToggleSyncMode) {
   base::test::SingleThreadTaskEnvironment task_environment;
-  NiceMock<MockDelegate> delegate_on_disk;
-  NiceMock<MockDelegate> delegate_in_memory;
+  NiceMock<MockDelegate> delegate_for_full_sync_mode;
+  NiceMock<MockDelegate> delegate_for_transport_mode;
 
   ModelTypeController controller(
       kTestModelType,
       std::make_unique<ForwardingModelTypeControllerDelegate>(
-          &delegate_on_disk),
+          &delegate_for_full_sync_mode),
       std::make_unique<ForwardingModelTypeControllerDelegate>(
-          &delegate_in_memory));
+          &delegate_for_transport_mode));
 
   ConfigureContext context;
   context.authenticated_account_id = kAccountId;
@@ -575,14 +576,14 @@ TEST(ModelTypeControllerWithMultiDelegateTest, ToggleStorageOption) {
 
   ModelTypeControllerDelegate::StartCallback start_callback;
 
-  // Start sync with STORAGE_IN_MEMORY.
-  EXPECT_CALL(delegate_on_disk, OnSyncStarting(_, _)).Times(0);
-  EXPECT_CALL(delegate_in_memory, OnSyncStarting(_, _))
+  // Start sync with SyncMode::kTransportOnly.
+  EXPECT_CALL(delegate_for_full_sync_mode, OnSyncStarting(_, _)).Times(0);
+  EXPECT_CALL(delegate_for_transport_mode, OnSyncStarting(_, _))
       .WillOnce([&](const DataTypeActivationRequest& request,
                     ModelTypeControllerDelegate::StartCallback callback) {
         start_callback = std::move(callback);
       });
-  context.storage_option = STORAGE_IN_MEMORY;
+  context.sync_mode = SyncMode::kTransportOnly;
   controller.LoadModels(context, base::DoNothing());
 
   ASSERT_EQ(DataTypeController::MODEL_STARTING, controller.state());
@@ -593,19 +594,19 @@ TEST(ModelTypeControllerWithMultiDelegateTest, ToggleStorageOption) {
   ASSERT_EQ(DataTypeController::MODEL_LOADED, controller.state());
 
   // Stop sync.
-  EXPECT_CALL(delegate_on_disk, OnSyncStopping(_)).Times(0);
-  EXPECT_CALL(delegate_in_memory, OnSyncStopping(_));
+  EXPECT_CALL(delegate_for_full_sync_mode, OnSyncStopping(_)).Times(0);
+  EXPECT_CALL(delegate_for_transport_mode, OnSyncStopping(_));
   controller.Stop(DISABLE_SYNC, base::DoNothing());
   ASSERT_EQ(DataTypeController::NOT_RUNNING, controller.state());
 
-  // Start sync with STORAGE_ON_DISK.
-  EXPECT_CALL(delegate_in_memory, OnSyncStarting(_, _)).Times(0);
-  EXPECT_CALL(delegate_on_disk, OnSyncStarting(_, _))
+  // Start sync with SyncMode::kFull.
+  EXPECT_CALL(delegate_for_transport_mode, OnSyncStarting(_, _)).Times(0);
+  EXPECT_CALL(delegate_for_full_sync_mode, OnSyncStarting(_, _))
       .WillOnce([&](const DataTypeActivationRequest& request,
                     ModelTypeControllerDelegate::StartCallback callback) {
         start_callback = std::move(callback);
       });
-  context.storage_option = STORAGE_ON_DISK;
+  context.sync_mode = SyncMode::kFull;
   controller.LoadModels(context, base::DoNothing());
 
   ASSERT_EQ(DataTypeController::MODEL_STARTING, controller.state());
@@ -616,8 +617,8 @@ TEST(ModelTypeControllerWithMultiDelegateTest, ToggleStorageOption) {
   ASSERT_EQ(DataTypeController::MODEL_LOADED, controller.state());
 
   // Stop sync.
-  EXPECT_CALL(delegate_in_memory, OnSyncStopping(_)).Times(0);
-  EXPECT_CALL(delegate_on_disk, OnSyncStopping(_));
+  EXPECT_CALL(delegate_for_transport_mode, OnSyncStopping(_)).Times(0);
+  EXPECT_CALL(delegate_for_full_sync_mode, OnSyncStopping(_));
   controller.Stop(DISABLE_SYNC, base::DoNothing());
   ASSERT_EQ(DataTypeController::NOT_RUNNING, controller.state());
 }

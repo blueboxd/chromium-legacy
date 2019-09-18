@@ -458,7 +458,7 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
     // And also simulates the 2nd and final call to GetFrameHostForNavigation
     // that determines the final frame that will commit the navigation.
     TestRenderFrameHost* frame_host = static_cast<TestRenderFrameHost*>(
-        manager->GetFrameHostForNavigation(*navigation_request));
+        manager->GetFrameHostForNavigation(navigation_request.get()));
     CHECK(frame_host);
     return frame_host;
   }
@@ -2937,7 +2937,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateFromDeadRendererToWebUI) {
   EXPECT_FALSE(GetPendingFrameHost(manager));
 
   // Prepare to commit, update the navigating RenderFrameHost.
-  EXPECT_EQ(host, manager->GetFrameHostForNavigation(*navigation_request));
+  EXPECT_EQ(host, manager->GetFrameHostForNavigation(navigation_request.get()));
 
   // There should be a pending WebUI set to reuse the current one.
   EXPECT_EQ(web_ui, host->web_ui());

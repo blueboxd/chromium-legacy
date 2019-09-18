@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/paint/largest_contentful_paint_calculator.h"
-
+#include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
 #include "third_party/blink/renderer/core/paint/image_element_timing.h"
 
 namespace blink {
@@ -189,6 +189,9 @@ LargestContentfulPaintCalculator::TextCandidateTraceData() {
   value->SetInteger("candidateIndex", ++count_candidates_);
   value->SetBoolean("isMainFrame",
                     window_performance_->GetFrame()->IsMainFrame());
+  auto* document = window_performance_->DomWindow()->document();
+  value->SetString("navigationId",
+                   IdentifiersFactory::LoaderId(document->Loader()));
   return value;
 }
 
@@ -201,6 +204,10 @@ LargestContentfulPaintCalculator::ImageCandidateTraceData() {
   value->SetInteger("candidateIndex", ++count_candidates_);
   value->SetBoolean("isMainFrame",
                     window_performance_->GetFrame()->IsMainFrame());
+  auto* document = window_performance_->DomWindow()->document();
+  value->SetString("navigationId",
+                   IdentifiersFactory::LoaderId(document->Loader()));
+
   return value;
 }
 
@@ -210,6 +217,10 @@ LargestContentfulPaintCalculator::InvalidationTraceData() {
   value->SetInteger("candidateIndex", ++count_candidates_);
   value->SetBoolean("isMainFrame",
                     window_performance_->GetFrame()->IsMainFrame());
+  auto* document = window_performance_->DomWindow()->document();
+  value->SetString("navigationId",
+                   IdentifiersFactory::LoaderId(document->Loader()));
+
   return value;
 }
 

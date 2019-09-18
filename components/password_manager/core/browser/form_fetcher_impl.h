@@ -88,6 +88,9 @@ class FormFetcherImpl : public FormFetcher,
   // password store returning results in the meantime.
   bool need_to_refetch_ = false;
 
+  // If false, matches are sorted using the "preferred" field.
+  bool sort_matches_by_date_last_used_ = false;
+
   // Processes password form results and forwards them to the |consumers_|.
   void ProcessPasswordStoreResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>> results);

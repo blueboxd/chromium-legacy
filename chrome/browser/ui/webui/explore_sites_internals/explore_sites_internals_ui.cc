@@ -9,10 +9,12 @@
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/explore_sites/explore_sites_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/explore_sites_internals/explore_sites_internals.mojom.h"
 #include "chrome/browser/ui/webui/explore_sites_internals/explore_sites_internals_page_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace explore_sites {
 
@@ -44,9 +46,11 @@ ExploreSitesInternalsUI::ExploreSitesInternalsUI(content::WebUI* web_ui)
 ExploreSitesInternalsUI::~ExploreSitesInternalsUI() {}
 
 void ExploreSitesInternalsUI::BindExploreSitesInternalsPageHandler(
-    explore_sites_internals::mojom::PageHandlerRequest request) {
+    mojo::PendingReceiver<explore_sites_internals::mojom::PageHandler>
+        receiver) {
   page_handler_ = std::make_unique<ExploreSitesInternalsPageHandler>(
-      std::move(request), explore_sites_service_, Profile::FromWebUI(web_ui()));
+      std::move(receiver), explore_sites_service_,
+      Profile::FromWebUI(web_ui()));
 }
 
 }  // namespace explore_sites

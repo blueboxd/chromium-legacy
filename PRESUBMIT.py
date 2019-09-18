@@ -1130,6 +1130,126 @@ _BANNED_CPP_FUNCTIONS = (
     ),
 )
 
+# Format: Sequence of tuples containing:
+# * String pattern or, if starting with a slash, a regular expression.
+# * Sequence of strings to show when the pattern matches.
+_DEPRECATED_MOJO_TYPES = (
+    (
+      r'/\bmojo::AssociatedBinding\b',
+      (
+        'mojo::AssociatedBinding<Interface> is deprecated.',
+        'Use mojo::AssociatedReceiver<Interface> instead.',
+      ),
+    ),
+    (
+      r'/\bmojo::AssociatedBindingSet\b',
+      (
+        'mojo::AssociatedBindingSet<Interface> is deprecated.',
+        'Use mojo::AssociatedReceiverSet<Interface> instead.',
+      ),
+    ),
+    (
+      r'/\bmojo::AssociatedInterfacePtr\b',
+      (
+        'mojo::AssociatedInterfacePtr<Interface> is deprecated.',
+        'Use mojo::AssociatedRemote<Interface> instead.',
+      ),
+    ),
+    (
+      r'/\bmojo::AssociatedInterfacePtrInfo\b',
+      (
+        'mojo::AssociatedInterfacePtrInfo<Interface> is deprecated.',
+        'Use mojo::PendingAssociatedRemote<Interface> instead.',
+      ),
+    ),
+    (
+      r'/\bmojo::AssociatedInterfaceRequest\b',
+      (
+        'mojo::AssociatedInterfaceRequest<Interface> is deprecated.',
+        'Use mojo::PendingAssociatedReceiver<Interface> instead.',
+      ),
+    ),
+    (
+      r'/\bmojo::Binding\b',
+      (
+        'mojo::Binding<Interface> is deprecated.',
+        'Use mojo::Receiver<Interface> instead.',
+      ),
+    ),
+    (
+      r'/\bmojo::BindingSet\b',
+      (
+        'mojo::BindingSet<Interface> is deprecated.',
+        'Use mojo::ReceiverSet<Interface> instead.',
+      ),
+    ),
+    (
+      r'/\bmojo::InterfacePtr\b',
+      (
+        'mojo::InterfacePtr<Interface> is deprecated.',
+        'Use mojo::Remote<Interface> instead.',
+      ),
+    ),
+    (
+      r'/\bmojo::InterfacePtrInfo\b',
+      (
+        'mojo::InterfacePtrInfo<Interface> is deprecated.',
+        'Use mojo::PendingRemote<Interface> instead.',
+      ),
+    ),
+    (
+      r'/\bmojo::InterfaceRequest\b',
+      (
+        'mojo::InterfaceRequest<Interface> is deprecated.',
+        'Use mojo::PendingReceiver<Interface> instead.',
+      ),
+    ),
+    (
+      r'/\bmojo::MakeRequest\b',
+      (
+        'mojo::MakeRequest is deprecated.',
+        'Use mojo::Remote::BindNewPipeAndPassReceiver() instead.',
+      ),
+    ),
+    (
+      r'/\bmojo::MakeRequestAssociatedWithDedicatedPipe\b',
+      (
+        'mojo::MakeRequest is deprecated.',
+        'Use mojo::AssociatedRemote::'
+        'BindNewEndpointAndPassDedicatedReceiverForTesting() instead.',
+      ),
+    ),
+    (
+      r'/\bmojo::MakeStrongBinding\b',
+      (
+        'mojo::MakeStrongBinding is deprecated.',
+        'Either migrate to mojo::UniqueReceiverSet, if possible, or use',
+        'mojo::MakeSelfOwnedReceiver() instead.',
+      ),
+    ),
+    (
+      r'/\bmojo::MakeStrongAssociatedBinding\b',
+      (
+        'mojo::MakeStrongAssociatedBinding is deprecated.',
+        'Either migrate to mojo::UniqueAssociatedReceiverSet, if possible, or',
+        'use mojo::MakeSelfOwnedAssociatedReceiver() instead.',
+      ),
+    ),
+    (
+      r'/\bmojo::StrongAssociatedBindingSet\b',
+      (
+        'mojo::StrongAssociatedBindingSet<Interface> is deprecated.',
+        'Use mojo::UniqueAssociatedReceiverSet<Interface> instead.',
+      ),
+    ),
+    (
+      r'/\bmojo::StrongBindingSet\b',
+      (
+        'mojo::StrongBindingSet<Interface> is deprecated.',
+        'Use mojo::UniqueReceiverSet<Interface> instead.',
+      ),
+    ),
+)
 
 _IPC_ENUM_TRAITS_DEPRECATED = (
     'You are using IPC_ENUM_TRAITS() in your code. It has been deprecated.\n'
@@ -1698,6 +1818,31 @@ def _CheckValidHostsInDEPS(input_api, output_api):
         long_text=error.output)]
 
 
+def _GetMessageForMatchingType(input_api, affected_file, line_number, line,
+                               type_name, message):
+  """Helper method for _CheckNoBannedFunctions and _CheckNoDeprecatedMojoTypes.
+
+  Returns an string composed of the name of the file, the line number where the
+  match has been found and the additional text passed as |message| in case the
+  target type name matches the text inside the line passed as parameter.
+  """
+  matched = False
+  if type_name[0:1] == '/':
+    regex = type_name[1:]
+    if input_api.re.search(regex, line):
+      matched = True
+  elif type_name in line:
+    matched = True
+
+  result = []
+  if matched:
+    result.append('    %s:%d:' % (affected_file.LocalPath(), line_number))
+    for message_line in message:
+      result.append('      %s' % message_line)
+
+  return result
+
+
 def _CheckNoBannedFunctions(input_api, output_api):
   """Make sure that banned functions are not used."""
   warnings = []
@@ -1723,20 +1868,13 @@ def _CheckNoBannedFunctions(input_api, output_api):
     return False
 
   def CheckForMatch(affected_file, line_num, line, func_name, message, error):
-    matched = False
-    if func_name[0:1] == '/':
-      regex = func_name[1:]
-      if input_api.re.search(regex, line):
-        matched = True
-    elif func_name in line:
-      matched = True
-    if matched:
-      problems = warnings
+    problems = _GetMessageForMatchingType(input_api, f, line_num, line,
+                                          func_name, message)
+    if problems:
       if error:
-        problems = errors
-      problems.append('    %s:%d:' % (affected_file.LocalPath(), line_num))
-      for message_line in message:
-        problems.append('      %s' % message_line)
+        errors.extend(problems)
+      else:
+        warnings.extend(problems)
 
   file_filter = lambda f: f.LocalPath().endswith(('.java'))
   for f in input_api.AffectedFiles(file_filter=file_filter):
@@ -1776,6 +1914,30 @@ def _CheckNoBannedFunctions(input_api, output_api):
   if (errors):
     result.append(output_api.PresubmitError(
         'Banned functions were used.\n' + '\n'.join(errors)))
+  return result
+
+
+def _CheckNoDeprecatedMojoTypes(input_api, output_api):
+  """Make sure that old Mojo types are not used."""
+  warnings = []
+
+  file_filter = lambda f: f.LocalPath().endswith(('.cc', '.mm', '.h'))
+  for f in input_api.AffectedFiles(file_filter=file_filter):
+    # Only need to check Blink for warnings for now.
+    if not f.LocalPath().startswith('third_party/blink'):
+      continue
+
+    for line_num, line in f.ChangedContents():
+      for func_name, message in _DEPRECATED_MOJO_TYPES:
+        problems = _GetMessageForMatchingType(input_api, f, line_num, line,
+                                              func_name, message)
+        if problems:
+            warnings.extend(problems)
+
+  result = []
+  if (warnings):
+    result.append(output_api.PresubmitPromptWarning(
+        'Banned Mojo types were used.\n' + '\n'.join(warnings)))
   return result
 
 
@@ -3868,6 +4030,7 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckNoNewWStrings(input_api, output_api))
   results.extend(_CheckNoDEPSGIT(input_api, output_api))
   results.extend(_CheckNoBannedFunctions(input_api, output_api))
+  results.extend(_CheckNoDeprecatedMojoTypes(input_api, output_api))
   results.extend(_CheckNoPragmaOnce(input_api, output_api))
   results.extend(_CheckNoTrinaryTrueFalse(input_api, output_api))
   results.extend(_CheckUnwantedDependencies(input_api, output_api))

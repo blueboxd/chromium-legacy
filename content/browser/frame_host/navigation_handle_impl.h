@@ -119,13 +119,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       mojom::TransferrableURLLoaderPtr transferrable_loader) override;
 
   blink::mojom::RequestContextType request_context_type() const {
-    DCHECK_GE(state(), NavigationRequest::PROCESSING_WILL_START_REQUEST);
-    return navigation_request_->begin_params()->request_context_type;
-  }
-
-  blink::WebMixedContentContextType mixed_content_context_type() const {
-    DCHECK_GE(state(), NavigationRequest::PROCESSING_WILL_START_REQUEST);
-    return navigation_request_->begin_params()->mixed_content_context_type;
+    return navigation_request_->request_context_type();
   }
 
   // Get the unique id from the NavigationEntry associated with this

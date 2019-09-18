@@ -18,7 +18,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -65,7 +64,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
-#include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/favicon/content/content_favicon_driver.h"
@@ -152,16 +150,12 @@ LocationBarView::LocationBarView(Browser* browser,
                                  CommandUpdater* command_updater,
                                  Delegate* delegate,
                                  bool is_popup_mode)
-    : LocationBar(profile),
-      AnimationDelegateViews(this),
+    : AnimationDelegateViews(this),
       ChromeOmniboxEditController(command_updater),
       browser_(browser),
+      profile_(profile),
       delegate_(delegate),
       is_popup_mode_(is_popup_mode) {
-  edit_bookmarks_enabled_.Init(
-      bookmarks::prefs::kEditBookmarksEnabled, profile->GetPrefs(),
-      base::Bind(&LocationBarView::UpdateWithoutTabRestore,
-                 base::Unretained(this)));
   md_observer_.Add(ui::MaterialDesignController::GetInstance());
 }
 
@@ -189,7 +183,7 @@ void LocationBarView::Init() {
 
   // Initialize the Omnibox view.
   auto omnibox_view = std::make_unique<OmniboxViewViews>(
-      this, std::make_unique<ChromeOmniboxClient>(this, profile()),
+      this, std::make_unique<ChromeOmniboxClient>(this, profile_),
       is_popup_mode_, this, font_list);
   omnibox_view->Init();
   omnibox_view_ = AddChildView(std::move(omnibox_view));
@@ -215,10 +209,10 @@ void LocationBarView::Init() {
       AddChildView(std::move(ime_inline_autocomplete_view));
 
   selected_keyword_view_ = AddChildView(
-      std::make_unique<SelectedKeywordView>(this, font_list, profile()));
+      std::make_unique<SelectedKeywordView>(this, font_list, profile_));
 
   keyword_hint_view_ =
-      AddChildView(std::make_unique<KeywordHintView>(this, profile()));
+      AddChildView(std::make_unique<KeywordHintView>(this, profile_));
 
   SkColor icon_color = GetColor(OmniboxPart::RESULTS_ICON);
 
@@ -277,6 +271,9 @@ void LocationBarView::Init() {
     params.types_enabled.push_back(PageActionIconType::kSaveCard);
     params.types_enabled.push_back(PageActionIconType::kLocalCardMigration);
   }
+  if (browser_ && !is_popup_mode_)
+    params.types_enabled.push_back(PageActionIconType::kBookmarkStar);
+
   params.icon_size = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
   params.icon_color = icon_color;
   params.between_icon_spacing = 0;
@@ -286,20 +283,6 @@ void LocationBarView::Init() {
   params.page_action_icon_delegate = this;
   omnibox_page_action_icon_container_view_ = AddChildView(
       std::make_unique<OmniboxPageActionIconContainerView>(params));
-
-  std::vector<std::unique_ptr<PageActionIconView>> page_action_icons;
-  if (browser_) {
-    auto star_view =
-        std::make_unique<StarView>(command_updater(), browser_, this);
-    star_view_ = star_view.get();
-    page_action_icons.push_back(std::move(star_view));
-  }
-
-  for (auto& icon_view : page_action_icons) {
-    icon_view->SetVisible(false);
-    icon_view->SetIconColor(icon_color);
-    page_action_icons_.push_back(AddChildView(std::move(icon_view)));
-  }
 
   auto clear_all_button = views::CreateVectorImageButton(this);
   clear_all_button->SetTooltipText(
@@ -321,7 +304,7 @@ bool LocationBarView::IsInitialized() const {
 }
 
 SkColor LocationBarView::GetColor(OmniboxPart part) const {
-  return GetOmniboxColor(&ThemeService::GetThemeProviderForProfile(profile()),
+  return GetOmniboxColor(&ThemeService::GetThemeProviderForProfile(profile_),
                          part);
 }
 
@@ -352,11 +335,6 @@ std::unique_ptr<views::Background> LocationBarView::CreateRoundRectBackground(
       CreateBackgroundFromPainter(std::move(painter));
   background->SetNativeControlColor(background_color);
   return background;
-}
-
-void LocationBarView::SetStarToggled(bool on) {
-  if (star_view_)
-    star_view_->SetToggled(on);
 }
 
 gfx::Point LocationBarView::GetOmniboxViewOrigin() const {
@@ -538,12 +516,12 @@ void LocationBarView::Layout() {
     if (selected_keyword_view_->keyword() != keyword) {
       selected_keyword_view_->SetKeyword(keyword);
       const TemplateURL* template_url =
-          TemplateURLServiceFactory::GetForProfile(profile())
+          TemplateURLServiceFactory::GetForProfile(profile_)
               ->GetTemplateURLForKeyword(keyword);
       if (template_url &&
           (template_url->type() == TemplateURL::OMNIBOX_API_EXTENSION)) {
         gfx::Image image =
-            extensions::OmniboxAPI::Get(profile())->GetOmniboxIcon(
+            extensions::OmniboxAPI::Get(profile_)->GetOmniboxIcon(
                 template_url->GetExtensionId());
         selected_keyword_view_->SetImage(image.AsImageSkia());
       } else if (template_url && template_url->type() == TemplateURL::NORMAL &&
@@ -581,8 +559,6 @@ void LocationBarView::Layout() {
     }
   };
 
-  if (star_view_)
-    add_trailing_decoration(star_view_);
   add_trailing_decoration(omnibox_page_action_icon_container_view_);
   for (ContentSettingViews::const_reverse_iterator i(
            content_setting_views_.rbegin());
@@ -653,8 +629,6 @@ void LocationBarView::OnThemeChanged() {
 
   SkColor icon_color = GetColor(OmniboxPart::RESULTS_ICON);
   omnibox_page_action_icon_container_view_->SetIconColor(icon_color);
-  for (PageActionIconView* icon_view : page_action_icons_)
-    icon_view->SetIconColor(icon_color);
   for (ContentSettingImageView* image_view : content_setting_views_)
     image_view->SetIconColor(icon_color);
 
@@ -679,11 +653,6 @@ void LocationBarView::Update(const WebContents* contents) {
   RefreshPageActionIconViews();
   location_icon_view_->Update(/*suppress_animations=*/contents);
 
-  if (star_view_) {
-    // TODO(calamity): Refactor Update to use PageActionIconView::Refresh.
-    UpdateBookmarkStarVisibility();
-  }
-
   if (contents)
     omnibox_view_->OnTabChanged(contents);
   else
@@ -703,25 +672,8 @@ void LocationBarView::ResetTabState(WebContents* contents) {
 }
 
 bool LocationBarView::ActivateFirstInactiveBubbleForAccessibility() {
-  if (omnibox_page_action_icon_container_view_
-          ->ActivateFirstInactiveBubbleForAccessibility()) {
-    return true;
-  }
-
-  auto result = std::find_if(
-      page_action_icons_.begin(), page_action_icons_.end(),
-      [](PageActionIconView* view) {
-        if (!view || !view->GetVisible() || !view->GetBubble())
-          return false;
-
-        views::Widget* widget = view->GetBubble()->GetWidget();
-        return widget && widget->IsVisible() && !widget->IsActive();
-      });
-
-  if (result != page_action_icons_.end())
-    (*result)->GetBubble()->GetWidget()->Show();
-
-  return result != page_action_icons_.end();
+  return omnibox_page_action_icon_container_view_
+      ->ActivateFirstInactiveBubbleForAccessibility();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -814,8 +766,7 @@ int LocationBarView::GetMinimumLeadingWidth() const {
 
 int LocationBarView::GetMinimumTrailingWidth() const {
   int trailing_width =
-      IncrementalMinimumWidth(omnibox_page_action_icon_container_view_) +
-      IncrementalMinimumWidth(star_view_);
+      IncrementalMinimumWidth(omnibox_page_action_icon_container_view_);
 
   for (auto* content_setting_view : content_setting_views_)
     trailing_width += IncrementalMinimumWidth(content_setting_view);
@@ -897,9 +848,6 @@ void LocationBarView::RefreshPageActionIconViews() {
   }
 
   omnibox_page_action_icon_container_view_->UpdateAll();
-
-  for (PageActionIconView* icon : page_action_icons_)
-    icon->Update();
 }
 
 void LocationBarView::ButtonPressed(views::Button* sender,
@@ -1023,16 +971,6 @@ void LocationBarView::UpdateContentSettingsIcons() {
   }
 }
 
-void LocationBarView::UpdateBookmarkStarVisibility() {
-  if (star_view_) {
-    star_view_->SetVisible(browser_defaults::bookmarks_enabled &&
-                           !is_popup_mode_ &&
-                           !IsLocationBarUserInputInProgress() &&
-                           edit_bookmarks_enabled_.GetValue() &&
-                           !IsBookmarkStarHiddenByExtension());
-  }
-}
-
 inline bool LocationBarView::UpdateSendTabToSelfIcon() {
   PageActionIconView* icon =
       omnibox_page_action_icon_container_view_->GetIconView(
@@ -1054,11 +992,6 @@ LocationBarTesting* LocationBarView::GetLocationBarForTesting() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, private LocationBarTesting implementation:
-
-bool LocationBarView::GetBookmarkStarVisibility() {
-  DCHECK(star_view_);
-  return star_view_->GetVisible();
-}
 
 bool LocationBarView::TestContentSettingImagePressed(size_t index) {
   if (index >= content_setting_views_.size())
@@ -1109,8 +1042,7 @@ void LocationBarView::OnPaintBorder(gfx::Canvas* canvas) {
     return;  // The border is painted by our Background.
 
   gfx::Rect bounds(GetContentsBounds());
-  const SkColor border_color =
-      GetOpaqueBorderColor(profile()->IsOffTheRecord());
+  const SkColor border_color = GetOpaqueBorderColor(profile_->IsOffTheRecord());
   BrowserView::Paint1pxHorizontalLine(canvas, border_color, bounds, false);
   BrowserView::Paint1pxHorizontalLine(canvas, border_color, bounds, true);
 }
@@ -1305,8 +1237,8 @@ bool LocationBarView::ShowPageInfoDialog() {
   DCHECK(GetWidget());
   views::BubbleDialogDelegateView* bubble =
       PageInfoBubbleView::CreatePageInfoBubble(
-          this, gfx::Rect(), GetWidget()->GetNativeWindow(), profile(),
-          contents, entry->GetVirtualURL(), helper->GetSecurityLevel(),
+          this, gfx::Rect(), GetWidget()->GetNativeWindow(), profile_, contents,
+          entry->GetVirtualURL(), helper->GetSecurityLevel(),
           *helper->GetVisibleSecurityState(),
           base::BindOnce(&LocationBarView::OnPageInfoBubbleClosed,
                          weak_factory_.GetWeakPtr()));

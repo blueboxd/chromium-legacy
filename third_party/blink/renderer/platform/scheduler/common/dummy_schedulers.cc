@@ -31,7 +31,7 @@ class DummyFrameScheduler : public FrameScheduler {
 
   PageScheduler* GetPageScheduler() const override { return page_scheduler_; }
 
-  void SetPausedForCooperativeScheduling(Paused) override {}
+  void SetPreemptedForCooperativeScheduling(Preempted) override {}
   void SetFrameVisible(bool) override {}
   bool IsFrameVisible() const override { return true; }
   bool IsPageVisible() const override { return true; }

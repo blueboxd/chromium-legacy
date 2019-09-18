@@ -902,10 +902,6 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
   visual_properties->scroll_focused_node_into_view =
       scroll_focused_node_into_view;
 
-  ScreenInfo screen_info = visual_properties->screen_info;
-  bool width_changed =
-      !old_visual_properties_ || old_visual_properties_->new_size.width() !=
-                                     visual_properties->new_size.width();
   bool visible_viewport_size_changed =
       !old_visual_properties_ ||
       old_visual_properties_->visible_viewport_size !=
@@ -932,6 +928,9 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
         visual_properties->visible_viewport_size);
   }
 
+  bool width_changed =
+      !old_visual_properties_ || old_visual_properties_->new_size.width() !=
+                                     visual_properties->new_size.width();
   if (sent_visual_properties) {
     TRACE_EVENT_WITH_FLOW2(
         TRACE_DISABLED_BY_DEFAULT("viz.surface_id_flow"),
@@ -944,11 +943,14 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
             .ToString());
     visual_properties_ack_pending_ =
         DoesVisualPropertiesNeedAck(old_visual_properties_, *visual_properties);
-    old_visual_properties_.swap(visual_properties);
+    old_visual_properties_ = std::move(visual_properties);
   }
 
-  if (delegate_)
-    delegate_->RenderWidgetWasResized(this, screen_info, width_changed);
+  // Warning: |visual_properties| invalid after this point.
+
+  if (delegate_) {
+    delegate_->RenderWidgetWasResized(this, width_changed);
+  }
 
   return sent_visual_properties;
 }

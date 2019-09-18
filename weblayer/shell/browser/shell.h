@@ -56,6 +56,9 @@ class Shell : public BrowserObserver {
                                 const GURL& url,
                                 const gfx::Size& initial_size);
 
+  // Returns the currently open windows.
+  static std::vector<Shell*>& windows() { return windows_; }
+
   // Closes all windows, pumps teardown tasks, then returns. The main message
   // loop will be signalled to quit, before the call returns.
   static void CloseAllWindows();
@@ -63,6 +66,8 @@ class Shell : public BrowserObserver {
   // Stores the supplied |quit_closure|, to be run when the last Shell
   // instance is destroyed.
   static void SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure);
+
+  BrowserController* browser_controller() { return browser_controller_.get(); }
 
   gfx::NativeWindow window() { return window_; }
 

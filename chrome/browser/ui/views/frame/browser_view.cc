@@ -803,7 +803,11 @@ void BrowserView::UpdateLoadingAnimations(bool should_animate) {
 }
 
 void BrowserView::SetStarredState(bool is_starred) {
-  GetLocationBarView()->SetStarToggled(is_starred);
+  PageActionIconView* star_icon =
+      toolbar_button_provider_->GetPageActionIconView(
+          PageActionIconType::kBookmarkStar);
+  if (star_icon)
+    star_icon->SetActive(is_starred);
 }
 
 void BrowserView::SetTranslateIconToggled(bool is_lit) {

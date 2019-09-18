@@ -103,6 +103,10 @@ class TestingProfile : public Profile {
         BrowserContextKeyedServiceFactory* service_factory,
         BrowserContextKeyedServiceFactory::TestingFactory testing_factory);
 
+    // Add multiple testing factories to the TestingProfile. These testing
+    // factories are applied before the ProfileKeyedServices are created.
+    void AddTestingFactories(const TestingFactories& testing_factories);
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     // Sets the ExtensionSpecialStoragePolicy to be returned by
     // GetExtensionSpecialStoragePolicy().

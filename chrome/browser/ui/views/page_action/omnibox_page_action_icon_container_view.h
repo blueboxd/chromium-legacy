@@ -25,6 +25,7 @@ class NativeFileSystemAccessIconView;
 class PwaInstallView;
 class ReaderModeIconView;
 class SharingIconView;
+class StarView;
 class TranslateIconView;
 class ZoomView;
 
@@ -104,6 +105,7 @@ class OmniboxPageActionIconContainerView
   autofill::LocalCardMigrationIconView* local_card_migration_icon_view_ =
       nullptr;
   autofill::SaveCardIconView* save_card_icon_view_ = nullptr;
+  StarView* star_view_ = nullptr;
 
   std::vector<PageActionIconView*> page_action_icons_;
 

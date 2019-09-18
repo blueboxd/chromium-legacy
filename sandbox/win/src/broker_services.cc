@@ -140,14 +140,14 @@ ResultCode BrokerServicesBase::Init() {
 
   job_port_.Set(::CreateIoCompletionPort(INVALID_HANDLE_VALUE, nullptr, 0, 0));
   if (!job_port_.IsValid())
-    return SBOX_ERROR_GENERIC;
+    return SBOX_ERROR_CANNOT_INIT_BROKERSERVICES;
 
   no_targets_.Set(::CreateEventW(nullptr, true, false, nullptr));
 
   job_thread_.Set(::CreateThread(nullptr, 0,  // Default security and stack.
                                  TargetEventsThread, this, 0, nullptr));
   if (!job_thread_.IsValid())
-    return SBOX_ERROR_GENERIC;
+    return SBOX_ERROR_CANNOT_INIT_BROKERSERVICES;
 
   return SBOX_ALL_OK;
 }
@@ -618,7 +618,7 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
       // This may fail in the same way as Job associated processes.
       // crbug.com/480639.
       SpawnCleanup(target);
-      return SBOX_ERROR_GENERIC;
+      return SBOX_ERROR_CANNOT_DUPLICATE_PROCESS_HANDLE;
     }
     base::win::ScopedHandle dup_process_handle(tmp_process_handle);
     ProcessTracker* tracker = new ProcessTracker(

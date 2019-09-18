@@ -92,11 +92,6 @@ extern const char kBreakpadNoDelayInitialUploadDescription[];
 extern const char kBrowserContainerKeepsContentViewName[];
 extern const char kBrowserContainerKeepsContentViewDescription[];
 
-// Title and description for the flag to enable automatically switching to the
-// regular tabs after closing the last incognito tab.
-extern const char kClosingLastIncognitoTabName[];
-extern const char kClosingLastIncognitoTabDescription[];
-
 // Title and description for the flag that controls whether Collections are
 // presented using the new iOS13 Card style or the custom legacy one.
 extern const char kCollectionsCardPresentationStyleName[];

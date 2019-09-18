@@ -398,7 +398,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   bool ShouldAckSyntheticInputImmediately() override;
   void CancelPagePopupForWidget() override;
   void ApplyNewDisplayModeForWidget(
-      const blink::WebDisplayMode& new_display_mode) override;
+      blink::WebDisplayMode new_display_mode) override;
   void ApplyAutoResizeLimitsForWidget(const gfx::Size& min_size,
                                       const gfx::Size& max_size) override;
   void DisableAutoResizeForWidget() override;

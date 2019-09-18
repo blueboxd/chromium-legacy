@@ -48,7 +48,6 @@ class RenderViewHostDelegateView;
 class TextInputManager;
 class WebContents;
 enum class KeyboardEventProcessingResult;
-struct ScreenInfo;
 struct NativeWebKeyboardEvent;
 
 //
@@ -86,7 +85,6 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
 
   // The RenderWidget was resized.
   virtual void RenderWidgetWasResized(RenderWidgetHostImpl* render_widget_host,
-                                      const ScreenInfo& screen_info,
                                       bool width_changed) {}
 
   // The contents auto-resized and the container should match it.

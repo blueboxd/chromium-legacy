@@ -1155,14 +1155,7 @@ void PrintRenderFrameHelper::ScriptedPrint(bool user_initiated) {
 }
 
 bool PrintRenderFrameHelper::OnMessageReceived(const IPC::Message& message) {
-  // The class is not designed to handle recursive messages. This is not
-  // expected during regular flow. However, during rendering of content for
-  // printing, lower level code may run nested run loop. E.g. PDF may has
-  // script to show message box http://crbug.com/502562. In that moment browser
-  // may receive updated printer capabilities and decide to restart print
-  // preview generation. When this happened message handling function may
-  // choose to ignore message or safely crash process.
-  ++ipc_nesting_level_;
+  IPCReceived();
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintRenderFrameHelper, message)
@@ -1179,9 +1172,7 @@ bool PrintRenderFrameHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
-  --ipc_nesting_level_;
-  if (ipc_nesting_level_ == 0 && render_frame_gone_)
-    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+  IPCProcessed();
   return handled;
 }
 
@@ -1202,6 +1193,8 @@ void PrintRenderFrameHelper::InitiatePrintPreview(
     mojom::PrintRendererAssociatedPtrInfo print_renderer,
     bool has_selection) {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  IPCReceived();
+
   if (ipc_nesting_level_ > 1)
     return;
 
@@ -1221,6 +1214,8 @@ void PrintRenderFrameHelper::InitiatePrintPreview(
   RequestPrintPreview(has_selection
                           ? PRINT_PREVIEW_USER_INITIATED_SELECTION
                           : PRINT_PREVIEW_USER_INITIATED_ENTIRE_FRAME);
+
+  IPCProcessed();
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 }
 
@@ -1908,6 +1903,23 @@ std::vector<int> PrintRenderFrameHelper::GetPrintedPages(
     }
   }
   return printed_pages;
+}
+
+void PrintRenderFrameHelper::IPCReceived() {
+  // The class is not designed to handle recursive messages. This is not
+  // expected during regular flow. However, during rendering of content for
+  // printing, lower level code may run a nested run loop. E.g. PDF may have a
+  // script to show message box (http://crbug.com/502562). In that moment, the
+  // browser may receive updated printer capabilities and decide to restart
+  // print preview generation. When this happens, message handling functions may
+  // choose to ignore messages or safely crash the process.
+  ++ipc_nesting_level_;
+}
+
+void PrintRenderFrameHelper::IPCProcessed() {
+  --ipc_nesting_level_;
+  if (ipc_nesting_level_ == 0 && render_frame_gone_)
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
 bool PrintRenderFrameHelper::InitPrintSettings(bool fit_to_paper_size) {

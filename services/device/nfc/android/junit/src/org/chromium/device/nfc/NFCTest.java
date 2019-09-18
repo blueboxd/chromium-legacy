@@ -18,7 +18,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 
 import android.app.Activity;
 import android.content.Context;
@@ -43,7 +42,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.device.mojom.NdefCompatibility;
 import org.chromium.device.mojom.NdefMessage;
 import org.chromium.device.mojom.NdefRecord;
 import org.chromium.device.mojom.NdefRecordTypeFilter;
@@ -459,78 +457,6 @@ public class NFCTest {
     }
 
     /**
-     * Test that compatibility is checked for Nfc.push() with NFC_FORUM device.
-     */
-    @Test
-    @Feature({"NFCTest"})
-    public void testPushCompatibilityMatchingNfcForum() {
-        TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
-        mDelegate.invokeCallback();
-        doReturn(NdefCompatibility.NFC_FORUM).when(mNfcTagHandler).compatibility();
-
-        // Should match, because |compatibility| is set to NdefCompatibility.ANY
-        // in createNfcPushOptions().
-        PushResponse mockCallback_1 = mock(PushResponse.class);
-        nfc.push(createMojoNdefMessage(), createNfcPushOptions(), mockCallback_1);
-        nfc.processPendingOperationsForTesting(mNfcTagHandler);
-        verify(mockCallback_1).call(mErrorCaptor.capture());
-        assertNull(mErrorCaptor.getValue());
-
-        // Should match.
-        PushResponse mockCallback_2 = mock(PushResponse.class);
-        NfcPushOptions options_2 = createNfcPushOptions();
-        options_2.compatibility = NdefCompatibility.NFC_FORUM;
-        nfc.push(createMojoNdefMessage(), options_2, mockCallback_2);
-        nfc.processPendingOperationsForTesting(mNfcTagHandler);
-        verify(mockCallback_2).call(mErrorCaptor.capture());
-        assertNull(mErrorCaptor.getValue());
-
-        // Should not match.
-        PushResponse mockCallback_3 = mock(PushResponse.class);
-        NfcPushOptions options_3 = createNfcPushOptions();
-        options_3.compatibility = NdefCompatibility.VENDOR;
-        nfc.push(createMojoNdefMessage(), options_3, mockCallback_3);
-        nfc.processPendingOperationsForTesting(mNfcTagHandler);
-        verifyZeroInteractions(mockCallback_3);
-    }
-
-    /**
-     * Test that compatibility is checked for Nfc.push() with VENDOR device.
-     */
-    @Test
-    @Feature({"NFCTest"})
-    public void testPushCompatibilityMatchingVendor() {
-        TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
-        mDelegate.invokeCallback();
-        doReturn(NdefCompatibility.VENDOR).when(mNfcTagHandler).compatibility();
-
-        // Should match, because |compatibility| is set to NdefCompatibility.ANY
-        // in createNfcPushOptions().
-        PushResponse mockCallback_1 = mock(PushResponse.class);
-        nfc.push(createMojoNdefMessage(), createNfcPushOptions(), mockCallback_1);
-        nfc.processPendingOperationsForTesting(mNfcTagHandler);
-        verify(mockCallback_1).call(mErrorCaptor.capture());
-        assertNull(mErrorCaptor.getValue());
-
-        // Should match for NdefCompatibility.VENDOR.
-        PushResponse mockCallback_2 = mock(PushResponse.class);
-        NfcPushOptions options_2 = createNfcPushOptions();
-        options_2.compatibility = NdefCompatibility.VENDOR;
-        nfc.push(createMojoNdefMessage(), options_2, mockCallback_2);
-        nfc.processPendingOperationsForTesting(mNfcTagHandler);
-        verify(mockCallback_2).call(mErrorCaptor.capture());
-        assertNull(mErrorCaptor.getValue());
-
-        // Should not match.
-        PushResponse mockCallback_3 = mock(PushResponse.class);
-        NfcPushOptions options_3 = createNfcPushOptions();
-        options_3.compatibility = NdefCompatibility.NFC_FORUM;
-        nfc.push(createMojoNdefMessage(), options_3, mockCallback_3);
-        nfc.processPendingOperationsForTesting(mNfcTagHandler);
-        verifyZeroInteractions(mockCallback_3);
-    }
-
-    /**
      * Test that Nfc.watch() works correctly and client is notified.
      */
     @Test
@@ -576,7 +502,6 @@ public class NFCTest {
 
         // Should match by WebNFC Id (exact match).
         NfcScanOptions options1 = createNfcScanOptions();
-        options1.compatibility = NdefCompatibility.NFC_FORUM;
         options1.url = TEST_URL;
         int watchId1 = mNextWatchId++;
         WatchResponse mockWatchCallback1 = mock(WatchResponse.class);
@@ -586,7 +511,6 @@ public class NFCTest {
 
         // Should match by media type.
         NfcScanOptions options2 = createNfcScanOptions();
-        options2.compatibility = NdefCompatibility.ANY;
         options2.mediaType = TEXT_MIME;
         int watchId2 = mNextWatchId++;
         WatchResponse mockWatchCallback2 = mock(WatchResponse.class);
@@ -596,7 +520,6 @@ public class NFCTest {
 
         // Should match by record type.
         NfcScanOptions options3 = createNfcScanOptions();
-        options3.compatibility = NdefCompatibility.ANY;
         NdefRecordTypeFilter typeFilter = new NdefRecordTypeFilter();
         typeFilter.recordType = NdefMessageUtils.RECORD_TYPE_URL;
         options3.recordFilter = typeFilter;
@@ -608,7 +531,6 @@ public class NFCTest {
 
         // Should not match
         NfcScanOptions options4 = createNfcScanOptions();
-        options4.compatibility = NdefCompatibility.NFC_FORUM;
         options4.url = AUTHOR_RECORD_DOMAIN;
         int watchId4 = mNextWatchId++;
         WatchResponse mockWatchCallback4 = mock(WatchResponse.class);
@@ -997,126 +919,6 @@ public class NFCTest {
     }
 
     /**
-     * Test that 'nfc-forum' tag messages can only be read by Nfc.watch() with 'nfc-forum' or 'any'
-     * option.
-     */
-    @Test
-    @Feature({"NFCTest"})
-    public void testWatchCompatibilityMatchingNfcForumTag() {
-        TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
-        mDelegate.invokeCallback();
-        nfc.setClient(mNfcClient);
-
-        // Should match.
-        int watchId1 = mNextWatchId++;
-        {
-            NfcScanOptions options = createNfcScanOptions();
-            options.compatibility = NdefCompatibility.NFC_FORUM;
-            options.url = TEST_URL;
-            WatchResponse mockWatchCallback = mock(WatchResponse.class);
-            nfc.watch(options, watchId1, mockWatchCallback);
-            verify(mockWatchCallback).call(mErrorCaptor.capture());
-            assertNull(mErrorCaptor.getValue());
-        }
-
-        // Should not match.
-        int watchId2 = mNextWatchId++;
-        {
-            NfcScanOptions options = createNfcScanOptions();
-            options.compatibility = NdefCompatibility.VENDOR;
-            options.url = TEST_URL;
-            WatchResponse mockWatchCallback = mock(WatchResponse.class);
-            nfc.watch(options, watchId2, mockWatchCallback);
-            verify(mockWatchCallback).call(mErrorCaptor.capture());
-            assertNull(mErrorCaptor.getValue());
-        }
-
-        // Should match.
-        int watchId3 = mNextWatchId++;
-        {
-            NfcScanOptions options = createNfcScanOptions();
-            options.compatibility = NdefCompatibility.ANY;
-            options.url = TEST_URL;
-            WatchResponse mockWatchCallback = mock(WatchResponse.class);
-            nfc.watch(options, watchId3, mockWatchCallback);
-            verify(mockWatchCallback).call(mErrorCaptor.capture());
-            assertNull(mErrorCaptor.getValue());
-        }
-
-        doReturn(NdefCompatibility.NFC_FORUM).when(mNfcTagHandler).compatibility();
-        nfc.processPendingOperationsForTesting(mNfcTagHandler);
-
-        // Check that client was notified and watch with 'nfc-forum' or 'any' compatibility was
-        // triggered.
-        verify(mNfcClient, times(1))
-                .onWatch(mOnWatchCallbackCaptor.capture(), nullable(String.class),
-                        any(NdefMessage.class));
-        assertEquals(2, mOnWatchCallbackCaptor.getValue().length);
-        assertEquals(watchId1, mOnWatchCallbackCaptor.getValue()[0]);
-        assertEquals(watchId3, mOnWatchCallbackCaptor.getValue()[1]);
-    }
-
-    /**
-     * Test that 'vendor' tag messages can only be read by Nfc.watch() with 'vendor' or 'any'
-     * option.
-     */
-    @Test
-    @Feature({"NFCTest"})
-    public void testWatchCompatibilityMatchingVendorTag() {
-        TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
-        mDelegate.invokeCallback();
-        nfc.setClient(mNfcClient);
-
-        // Should not match.
-        int watchId1 = mNextWatchId++;
-        {
-            NfcScanOptions options = createNfcScanOptions();
-            options.compatibility = NdefCompatibility.NFC_FORUM;
-            options.url = TEST_URL;
-            WatchResponse mockWatchCallback = mock(WatchResponse.class);
-            nfc.watch(options, watchId1, mockWatchCallback);
-            verify(mockWatchCallback).call(mErrorCaptor.capture());
-            assertNull(mErrorCaptor.getValue());
-        }
-
-        // Should match.
-        int watchId2 = mNextWatchId++;
-        {
-            NfcScanOptions options = createNfcScanOptions();
-            options.compatibility = NdefCompatibility.VENDOR;
-            options.url = TEST_URL;
-            WatchResponse mockWatchCallback = mock(WatchResponse.class);
-            nfc.watch(options, watchId2, mockWatchCallback);
-            verify(mockWatchCallback).call(mErrorCaptor.capture());
-            assertNull(mErrorCaptor.getValue());
-        }
-
-        // Should match.
-        int watchId3 = mNextWatchId++;
-        {
-            NfcScanOptions options = createNfcScanOptions();
-            options.compatibility = NdefCompatibility.ANY;
-            options.url = TEST_URL;
-            WatchResponse mockWatchCallback = mock(WatchResponse.class);
-            nfc.watch(options, watchId3, mockWatchCallback);
-            verify(mockWatchCallback).call(mErrorCaptor.capture());
-            assertNull(mErrorCaptor.getValue());
-        }
-
-        doReturn(NdefCompatibility.VENDOR).when(mNfcTagHandler).compatibility();
-        nfc.processPendingOperationsForTesting(mNfcTagHandler);
-
-        // Check that client was notified and watch with 'vendor' or 'any' compatibility was
-        // triggered.
-        verify(mNfcClient, times(1))
-                .onWatch(mOnWatchCallbackCaptor.capture(), nullable(String.class),
-                        any(NdefMessage.class));
-        assertEquals(2, mOnWatchCallbackCaptor.getValue().length);
-        assertEquals(watchId2, mOnWatchCallbackCaptor.getValue()[0]);
-        assertEquals(watchId3, mOnWatchCallbackCaptor.getValue()[1]);
-    }
-
-    /**
      * Test that Nfc.watch() WebNFC Id pattern matching works correctly.
      */
     @Test
@@ -1130,7 +932,6 @@ public class NFCTest {
         int watchId1 = mNextWatchId++;
         {
             NfcScanOptions options = createNfcScanOptions();
-            options.compatibility = NdefCompatibility.NFC_FORUM;
             options.url = "https://test.com/*";
             WatchResponse mockWatchCallback = mock(WatchResponse.class);
             nfc.watch(options, watchId1, mockWatchCallback);
@@ -1142,7 +943,6 @@ public class NFCTest {
         int watchId2 = mNextWatchId++;
         {
             NfcScanOptions options = createNfcScanOptions();
-            options.compatibility = NdefCompatibility.NFC_FORUM;
             options.url = "https://test.com/contact/42";
             WatchResponse mockWatchCallback = mock(WatchResponse.class);
             nfc.watch(options, watchId2, mockWatchCallback);
@@ -1154,7 +954,6 @@ public class NFCTest {
         int watchId3 = mNextWatchId++;
         {
             NfcScanOptions options = createNfcScanOptions();
-            options.compatibility = NdefCompatibility.NFC_FORUM;
             options.url = "https://subdomain.test.com/*";
             WatchResponse mockWatchCallback = mock(WatchResponse.class);
             nfc.watch(options, watchId3, mockWatchCallback);
@@ -1166,7 +965,6 @@ public class NFCTest {
         int watchId4 = mNextWatchId++;
         {
             NfcScanOptions options = createNfcScanOptions();
-            options.compatibility = NdefCompatibility.NFC_FORUM;
             options.url = "https://subdomain.test.com/contact";
             WatchResponse mockWatchCallback = mock(WatchResponse.class);
             nfc.watch(options, watchId4, mockWatchCallback);
@@ -1177,7 +975,6 @@ public class NFCTest {
         // Should not match.
         {
             NfcScanOptions options = createNfcScanOptions();
-            options.compatibility = NdefCompatibility.NFC_FORUM;
             options.url = "https://www.test.com/*";
             WatchResponse mockWatchCallback = mock(WatchResponse.class);
             nfc.watch(options, mNextWatchId++, mockWatchCallback);
@@ -1188,7 +985,6 @@ public class NFCTest {
         // Should not match.
         {
             NfcScanOptions options = createNfcScanOptions();
-            options.compatibility = NdefCompatibility.NFC_FORUM;
             options.url = "http://test.com/*";
             WatchResponse mockWatchCallback = mock(WatchResponse.class);
             nfc.watch(options, mNextWatchId++, mockWatchCallback);
@@ -1199,7 +995,6 @@ public class NFCTest {
         // Should not match.
         {
             NfcScanOptions options = createNfcScanOptions();
-            options.compatibility = NdefCompatibility.NFC_FORUM;
             options.url = "invalid pattern url";
             WatchResponse mockWatchCallback = mock(WatchResponse.class);
             nfc.watch(options, mNextWatchId++, mockWatchCallback);
@@ -1239,7 +1034,6 @@ public class NFCTest {
 
         // Should not match when invalid WebNFC Id is received.
         NfcScanOptions options = createNfcScanOptions();
-        options.compatibility = NdefCompatibility.NFC_FORUM;
         options.url = "https://test.com/*";
         WatchResponse mockWatchCallback = mock(WatchResponse.class);
         nfc.watch(options, mNextWatchId, mockWatchCallback);
@@ -1300,7 +1094,6 @@ public class NFCTest {
         pushOptions.target = NfcPushTarget.ANY;
         pushOptions.timeout = timeout;
         pushOptions.ignoreRead = false;
-        pushOptions.compatibility = NdefCompatibility.ANY;
         return pushOptions;
     }
 
@@ -1308,7 +1101,6 @@ public class NFCTest {
         NfcScanOptions options = new NfcScanOptions();
         options.url = "";
         options.mediaType = "";
-        options.compatibility = NdefCompatibility.ANY;
         options.recordFilter = null;
         return options;
     }

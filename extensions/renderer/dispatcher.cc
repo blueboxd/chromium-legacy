@@ -369,22 +369,19 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
   if (!script_url.SchemeIs(kExtensionScheme))
     return;
 
-  // If the extension is already loaded we don't have to suspend the service
-  // worker. The service worker will continue in
-  // Dispatcher::WillEvaluateServiceWorkerOnWorkerThread().
-  const Extension* extension =
-      RendererExtensionRegistry::Get()->GetExtensionOrAppByURL(script_url);
-  if (extension)
-    return;
-
-  // Suspend the service worker until loaded message of the extension comes. The
-  // service worker will be resumed in Dispatcher::OnLoaded().
-  context_proxy->PauseEvaluation();
-
-  std::string extension_id =
-      RendererExtensionRegistry::Get()->GetExtensionOrAppIDByURL(script_url);
   {
     base::AutoLock lock(service_workers_paused_for_on_loaded_message_lock_);
+    ExtensionId extension_id =
+        RendererExtensionRegistry::Get()->GetExtensionOrAppIDByURL(script_url);
+    // If the extension is already loaded we don't have to suspend the service
+    // worker. The service worker will continue in
+    // Dispatcher::WillEvaluateServiceWorkerOnWorkerThread().
+    if (RendererExtensionRegistry::Get()->GetByID(extension_id))
+      return;
+
+    // Suspend the service worker until loaded message of the extension comes.
+    // The service worker will be resumed in Dispatcher::OnLoaded().
+    context_proxy->PauseEvaluation();
     service_workers_paused_for_on_loaded_message_.emplace(
         extension_id, std::make_unique<PendingServiceWorker>(context_proxy));
   }

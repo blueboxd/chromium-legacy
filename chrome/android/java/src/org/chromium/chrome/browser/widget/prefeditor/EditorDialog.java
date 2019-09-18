@@ -50,7 +50,7 @@ import org.chromium.chrome.browser.preferences.autofill.CreditCardNumberFormatti
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.widget.AlwaysDismissedDialog;
 import org.chromium.chrome.browser.ui.widget.FadingEdgeScrollView;
-import org.chromium.chrome.browser.widget.TintedDrawable;
+import org.chromium.chrome.browser.ui.widget.TintedDrawable;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 
 import java.util.ArrayList;

@@ -193,6 +193,9 @@ repack("support_pak") {
     sources +=
         [ "$root_gen_dir/ui/views/resources/views_resources_100_percent.pak" ]
   }
+  if (is_android) {
+    deps += [ "//ui/android:ui_java_resources" ]
+  }
   output = "$root_out_dir/weblayer_support.pak"
 }
 

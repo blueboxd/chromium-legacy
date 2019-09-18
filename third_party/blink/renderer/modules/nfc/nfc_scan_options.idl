@@ -2,15 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
-// http://w3c.github.io/web-nfc/#dom-ndefcompatibility
-enum NDEFCompatibility { "nfc-forum", "vendor", "any" };
-
 // https://w3c.github.io/web-nfc/#the-nfcscanoptions-dictionary
 dictionary NFCScanOptions {
     AbortSignal? signal;
     USVString url = "";
     NDEFRecordType? recordType;
     USVString mediaType = "";
-    NDEFCompatibility compatibility = "nfc-forum";
 };

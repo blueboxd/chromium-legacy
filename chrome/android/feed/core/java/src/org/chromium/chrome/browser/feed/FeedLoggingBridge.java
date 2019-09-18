@@ -21,6 +21,7 @@ import com.google.android.libraries.feed.api.host.logging.ZeroStateShowReason;
 import com.google.search.now.ui.action.FeedActionProto;
 
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.ui.mojom.WindowOpenDisposition;
@@ -43,7 +44,7 @@ public class FeedLoggingBridge implements BasicLoggingApi {
      * @param profile {@link Profile} of the user we are rendering the Feed for.
      */
     public FeedLoggingBridge(Profile profile) {
-        mNativeFeedLoggingBridge = nativeInit(profile);
+        mNativeFeedLoggingBridge = FeedLoggingBridgeJni.get().init(FeedLoggingBridge.this, profile);
     }
 
     /** Cleans up native half of this bridge. */
@@ -52,7 +53,7 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         // See https://crbug.com/901414.
         if (mNativeFeedLoggingBridge == 0) return;
 
-        nativeDestroy(mNativeFeedLoggingBridge);
+        FeedLoggingBridgeJni.get().destroy(mNativeFeedLoggingBridge, FeedLoggingBridge.this);
         mNativeFeedLoggingBridge = 0;
     }
 
@@ -62,7 +63,8 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         // See https://crbug.com/901414.
         if (mNativeFeedLoggingBridge == 0) return;
 
-        nativeOnContentViewed(mNativeFeedLoggingBridge, data.getPositionInStream(),
+        FeedLoggingBridgeJni.get().onContentViewed(mNativeFeedLoggingBridge, FeedLoggingBridge.this,
+                data.getPositionInStream(),
                 TimeUnit.SECONDS.toMillis(data.getPublishedTimeSeconds()),
                 TimeUnit.SECONDS.toMillis(data.getTimeContentBecameAvailable()), data.getScore(),
                 data.isAvailableOffline());
@@ -74,8 +76,9 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         // See https://crbug.com/901414.
         if (mNativeFeedLoggingBridge == 0) return;
 
-        nativeOnContentDismissed(mNativeFeedLoggingBridge, data.getPositionInStream(),
-                data.getRepresentationUri(), wasCommitted);
+        FeedLoggingBridgeJni.get().onContentDismissed(mNativeFeedLoggingBridge,
+                FeedLoggingBridge.this, data.getPositionInStream(), data.getRepresentationUri(),
+                wasCommitted);
     }
 
     @Override
@@ -84,7 +87,8 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         // See https://crbug.com/901414.
         if (mNativeFeedLoggingBridge == 0) return;
 
-        nativeOnContentSwiped(mNativeFeedLoggingBridge);
+        FeedLoggingBridgeJni.get().onContentSwiped(
+                mNativeFeedLoggingBridge, FeedLoggingBridge.this);
     }
 
     @Override
@@ -102,7 +106,7 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         if (mNativeFeedLoggingBridge == 0) return;
 
         recordUserAction(actionType);
-        nativeOnClientAction(mNativeFeedLoggingBridge,
+        FeedLoggingBridgeJni.get().onClientAction(mNativeFeedLoggingBridge, FeedLoggingBridge.this,
                 feedActionToWindowOpenDisposition(actionType), data.getPositionInStream(),
                 TimeUnit.SECONDS.toMillis(data.getPublishedTimeSeconds()), data.getScore(),
                 data.isAvailableOffline());
@@ -114,7 +118,8 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         // See https://crbug.com/901414.
         if (mNativeFeedLoggingBridge == 0) return;
 
-        nativeOnContentContextMenuOpened(mNativeFeedLoggingBridge, data.getPositionInStream(),
+        FeedLoggingBridgeJni.get().onContentContextMenuOpened(mNativeFeedLoggingBridge,
+                FeedLoggingBridge.this, data.getPositionInStream(),
                 TimeUnit.SECONDS.toMillis(data.getPublishedTimeSeconds()), data.getScore());
     }
 
@@ -124,7 +129,8 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         // See https://crbug.com/901414.
         if (mNativeFeedLoggingBridge == 0) return;
 
-        nativeOnMoreButtonViewed(mNativeFeedLoggingBridge, position);
+        FeedLoggingBridgeJni.get().onMoreButtonViewed(
+                mNativeFeedLoggingBridge, FeedLoggingBridge.this, position);
     }
 
     @Override
@@ -133,7 +139,8 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         // See https://crbug.com/901414.
         if (mNativeFeedLoggingBridge == 0) return;
 
-        nativeOnMoreButtonClicked(mNativeFeedLoggingBridge, position);
+        FeedLoggingBridgeJni.get().onMoreButtonClicked(
+                mNativeFeedLoggingBridge, FeedLoggingBridge.this, position);
     }
 
     @Override
@@ -144,12 +151,12 @@ public class FeedLoggingBridge implements BasicLoggingApi {
 
         // TODO(crbug.com/935602): Fail to compile when new values are added to NotInterestedInData.
         if (interestType == FeedActionProto.NotInterestedInData.RecordedInterestType.TOPIC_VALUE) {
-            nativeOnNotInterestedInTopic(
-                    mNativeFeedLoggingBridge, data.getPositionInStream(), wasCommitted);
+            FeedLoggingBridgeJni.get().onNotInterestedInTopic(mNativeFeedLoggingBridge,
+                    FeedLoggingBridge.this, data.getPositionInStream(), wasCommitted);
         } else if (interestType
                 == FeedActionProto.NotInterestedInData.RecordedInterestType.SOURCE_VALUE) {
-            nativeOnNotInterestedInSource(
-                    mNativeFeedLoggingBridge, data.getPositionInStream(), wasCommitted);
+            FeedLoggingBridgeJni.get().onNotInterestedInSource(mNativeFeedLoggingBridge,
+                    FeedLoggingBridge.this, data.getPositionInStream(), wasCommitted);
         }
     }
 
@@ -159,7 +166,8 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         // See https://crbug.com/901414.
         if (mNativeFeedLoggingBridge == 0) return;
 
-        nativeOnOpenedWithContent(mNativeFeedLoggingBridge, timeToPopulateMs, contentCount);
+        FeedLoggingBridgeJni.get().onOpenedWithContent(
+                mNativeFeedLoggingBridge, FeedLoggingBridge.this, timeToPopulateMs, contentCount);
     }
 
     @Override
@@ -168,7 +176,8 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         // See https://crbug.com/901414.
         if (mNativeFeedLoggingBridge == 0) return;
 
-        nativeOnOpenedWithNoImmediateContent(mNativeFeedLoggingBridge);
+        FeedLoggingBridgeJni.get().onOpenedWithNoImmediateContent(
+                mNativeFeedLoggingBridge, FeedLoggingBridge.this);
     }
 
     @Override
@@ -177,7 +186,8 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         // See https://crbug.com/901414.
         if (mNativeFeedLoggingBridge == 0) return;
 
-        nativeOnOpenedWithNoContent(mNativeFeedLoggingBridge);
+        FeedLoggingBridgeJni.get().onOpenedWithNoContent(
+                mNativeFeedLoggingBridge, FeedLoggingBridge.this);
     }
 
     @Override
@@ -186,7 +196,8 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         // See https://crbug.com/901414.
         if (mNativeFeedLoggingBridge == 0) return;
 
-        nativeOnSpinnerStarted(mNativeFeedLoggingBridge, spinnerType);
+        FeedLoggingBridgeJni.get().onSpinnerStarted(
+                mNativeFeedLoggingBridge, FeedLoggingBridge.this, spinnerType);
     }
 
     @Override
@@ -195,7 +206,8 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         // See https://crbug.com/901414.
         if (mNativeFeedLoggingBridge == 0) return;
 
-        nativeOnSpinnerFinished(mNativeFeedLoggingBridge, timeShownMs, spinnerType);
+        FeedLoggingBridgeJni.get().onSpinnerFinished(
+                mNativeFeedLoggingBridge, FeedLoggingBridge.this, timeShownMs, spinnerType);
     }
 
     @Override
@@ -204,8 +216,8 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         // See https://crbug.com/901414.
         if (mNativeFeedLoggingBridge == 0) return;
 
-        nativeOnSpinnerDestroyedWithoutCompleting(
-                mNativeFeedLoggingBridge, timeShownMs, spinnerType);
+        FeedLoggingBridgeJni.get().onSpinnerDestroyedWithoutCompleting(
+                mNativeFeedLoggingBridge, FeedLoggingBridge.this, timeShownMs, spinnerType);
     }
 
     @Override
@@ -215,59 +227,66 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         for (int i = 0; i < pietErrorCodes.size(); ++i) {
             pietErrorCodesArray[i] = pietErrorCodes.get(i);
         }
-        nativeOnPietFrameRenderingEvent(mNativeFeedLoggingBridge, pietErrorCodesArray);
+        FeedLoggingBridgeJni.get().onPietFrameRenderingEvent(
+                mNativeFeedLoggingBridge, FeedLoggingBridge.this, pietErrorCodesArray);
     }
 
     @Override
     public void onVisualElementClicked(ElementLoggingData data, int elementType) {
         if (mNativeFeedLoggingBridge == 0) return;
-        nativeOnVisualElementClicked(mNativeFeedLoggingBridge, elementType,
-                data.getPositionInStream(),
+        FeedLoggingBridgeJni.get().onVisualElementClicked(mNativeFeedLoggingBridge,
+                FeedLoggingBridge.this, elementType, data.getPositionInStream(),
                 TimeUnit.SECONDS.toMillis(data.getTimeContentBecameAvailable()));
     }
 
     @Override
     public void onVisualElementViewed(ElementLoggingData data, int elementType) {
         if (mNativeFeedLoggingBridge == 0) return;
-        nativeOnVisualElementViewed(mNativeFeedLoggingBridge, elementType,
-                data.getPositionInStream(),
+        FeedLoggingBridgeJni.get().onVisualElementViewed(mNativeFeedLoggingBridge,
+                FeedLoggingBridge.this, elementType, data.getPositionInStream(),
                 TimeUnit.SECONDS.toMillis(data.getTimeContentBecameAvailable()));
     }
 
     @Override
     public void onInternalError(@InternalFeedError int internalError) {
         if (mNativeFeedLoggingBridge == 0) return;
-        nativeOnInternalError(mNativeFeedLoggingBridge, internalError);
+        FeedLoggingBridgeJni.get().onInternalError(
+                mNativeFeedLoggingBridge, FeedLoggingBridge.this, internalError);
     }
 
     @Override
     public void onTokenCompleted(boolean wasSynthetic, int contentCount, int tokenCount) {
         if (mNativeFeedLoggingBridge == 0) return;
-        nativeOnTokenCompleted(mNativeFeedLoggingBridge, wasSynthetic, contentCount, tokenCount);
+        FeedLoggingBridgeJni.get().onTokenCompleted(mNativeFeedLoggingBridge,
+                FeedLoggingBridge.this, wasSynthetic, contentCount, tokenCount);
     }
 
     @Override
     public void onTokenFailedToComplete(boolean wasSynthetic, int failureCount) {
         if (mNativeFeedLoggingBridge == 0) return;
-        nativeOnTokenFailedToComplete(mNativeFeedLoggingBridge, wasSynthetic, failureCount);
+        FeedLoggingBridgeJni.get().onTokenFailedToComplete(
+                mNativeFeedLoggingBridge, FeedLoggingBridge.this, wasSynthetic, failureCount);
     }
 
     @Override
     public void onServerRequest(@RequestReason int requestReason) {
         if (mNativeFeedLoggingBridge == 0) return;
-        nativeOnServerRequest(mNativeFeedLoggingBridge, requestReason);
+        FeedLoggingBridgeJni.get().onServerRequest(
+                mNativeFeedLoggingBridge, FeedLoggingBridge.this, requestReason);
     }
 
     @Override
     public void onZeroStateShown(@ZeroStateShowReason int zeroStateShowReason) {
         if (mNativeFeedLoggingBridge == 0) return;
-        nativeOnZeroStateShown(mNativeFeedLoggingBridge, zeroStateShowReason);
+        FeedLoggingBridgeJni.get().onZeroStateShown(
+                mNativeFeedLoggingBridge, FeedLoggingBridge.this, zeroStateShowReason);
     }
 
     @Override
     public void onZeroStateRefreshCompleted(int newContentCount, int newTokenCount) {
         if (mNativeFeedLoggingBridge == 0) return;
-        nativeOnZeroStateRefreshCompleted(mNativeFeedLoggingBridge, newContentCount, newTokenCount);
+        FeedLoggingBridgeJni.get().onZeroStateRefreshCompleted(
+                mNativeFeedLoggingBridge, FeedLoggingBridge.this, newContentCount, newTokenCount);
     }
 
     @Override
@@ -284,7 +303,8 @@ public class FeedLoggingBridge implements BasicLoggingApi {
     @Override
     public void onTaskFinished(@Task int task, int delayTime, int taskTime) {
         if (mNativeFeedLoggingBridge == 0) return;
-        nativeOnTaskFinished(mNativeFeedLoggingBridge, task, delayTime, taskTime);
+        FeedLoggingBridgeJni.get().onTaskFinished(
+                mNativeFeedLoggingBridge, FeedLoggingBridge.this, task, delayTime, taskTime);
     }
 
     /**
@@ -299,8 +319,8 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         // methods. This method is called by objects not controlled by Feed lifetimes, and destroy()
         // may have already been called if Feed is disabled by policy.
         if (mNativeFeedLoggingBridge != 0) {
-            nativeOnContentTargetVisited(
-                    mNativeFeedLoggingBridge, visitTimeMs, isOffline, returnToNtp);
+            FeedLoggingBridgeJni.get().onContentTargetVisited(mNativeFeedLoggingBridge,
+                    FeedLoggingBridge.this, visitTimeMs, isOffline, returnToNtp);
         }
     }
 
@@ -346,7 +366,8 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         // See https://crbug.com/901414.
         if (mNativeFeedLoggingBridge == 0) return;
 
-        nativeReportScrolledAfterOpen(mNativeFeedLoggingBridge);
+        FeedLoggingBridgeJni.get().reportScrolledAfterOpen(
+                mNativeFeedLoggingBridge, FeedLoggingBridge.this);
     }
 
     /**
@@ -374,53 +395,61 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         public void onScrolled(int dx, int dy) {}
     }
 
-    private native long nativeInit(Profile profile);
-    private native void nativeDestroy(long nativeFeedLoggingBridge);
-    private native void nativeOnContentViewed(long nativeFeedLoggingBridge, int position,
-            long publishedTimeMs, long timeContentBecameAvailableMs, float score,
-            boolean isAvailableOffline);
-    private native void nativeOnContentDismissed(
-            long nativeFeedLoggingBridge, int position, String uri, boolean wasCommitted);
-    private native void nativeOnContentSwiped(long nativeFeedLoggingBridge);
-    private native void nativeOnClientAction(long nativeFeedLoggingBridge,
-            int windowOpenDisposition, int position, long publishedTimeMs, float score,
-            boolean isAvailableOffline);
-    private native void nativeOnContentContextMenuOpened(
-            long nativeFeedLoggingBridge, int position, long publishedTimeMs, float score);
-    private native void nativeOnMoreButtonViewed(long nativeFeedLoggingBridge, int position);
-    private native void nativeOnMoreButtonClicked(long nativeFeedLoggingBridge, int position);
-    private native void nativeOnNotInterestedInSource(
-            long nativeFeedLoggingBridge, int position, boolean wasCommitted);
-    private native void nativeOnNotInterestedInTopic(
-            long nativeFeedLoggingBridge, int position, boolean wasCommitted);
-    private native void nativeOnOpenedWithContent(
-            long nativeFeedLoggingBridge, int timeToPopulateMs, int contentCount);
-    private native void nativeOnOpenedWithNoImmediateContent(long nativeFeedLoggingBridge);
-    private native void nativeOnOpenedWithNoContent(long nativeFeedLoggingBridge);
-    private native void nativeOnSpinnerStarted(long nativeFeedLoggingBridge, int spinnerType);
-    private native void nativeOnSpinnerFinished(
-            long nativeFeedLoggingBridge, long spinnerShownTimeMs, int spinnerType);
-    private native void nativeOnSpinnerDestroyedWithoutCompleting(
-            long nativeFeedLoggingBridge, long spinnerShownTimeMs, int spinnerType);
-    private native void nativeOnPietFrameRenderingEvent(
-            long nativeFeedLoggingBridge, int[] pietErrorCodes);
-    private native void nativeOnVisualElementClicked(long nativeFeedLoggingBridge, int elementType,
-            int position, long timeContentBecameAvailableMs);
-    private native void nativeOnVisualElementViewed(long nativeFeedLoggingBridge, int elementType,
-            int position, long timeContentBecameAvailableMs);
-    private native void nativeOnInternalError(long nativeFeedLoggingBridge, int internalError);
-    private native void nativeOnTokenCompleted(
-            long nativeFeedLoggingBridge, boolean wasSynthetic, int contentCount, int tokenCount);
-    private native void nativeOnTokenFailedToComplete(
-            long nativeFeedLoggingBridge, boolean wasSynthetic, int failureCount);
-    private native void nativeOnServerRequest(long nativeFeedLoggingBridge, int requestReason);
-    private native void nativeOnZeroStateShown(
-            long nativeFeedLoggingBridge, int zeroStateShowReason);
-    private native void nativeOnZeroStateRefreshCompleted(
-            long nativeFeedLoggingBridge, int newContentCount, int newTokenCount);
-    private native void nativeOnTaskFinished(
-            long nativeFeedLoggingBridge, int task, int delayTimeMs, int taskTimeMs);
-    private native void nativeOnContentTargetVisited(
-            long nativeFeedLoggingBridge, long visitTimeMs, boolean isOffline, boolean returnToNtp);
-    private native void nativeReportScrolledAfterOpen(long nativeFeedLoggingBridge);
+    @NativeMethods
+    interface Natives {
+        long init(FeedLoggingBridge caller, Profile profile);
+        void destroy(long nativeFeedLoggingBridge, FeedLoggingBridge caller);
+        void onContentViewed(long nativeFeedLoggingBridge, FeedLoggingBridge caller, int position,
+                long publishedTimeMs, long timeContentBecameAvailableMs, float score,
+                boolean isAvailableOffline);
+        void onContentDismissed(long nativeFeedLoggingBridge, FeedLoggingBridge caller,
+                int position, String uri, boolean wasCommitted);
+        void onContentSwiped(long nativeFeedLoggingBridge, FeedLoggingBridge caller);
+        void onClientAction(long nativeFeedLoggingBridge, FeedLoggingBridge caller,
+                int windowOpenDisposition, int position, long publishedTimeMs, float score,
+                boolean isAvailableOffline);
+        void onContentContextMenuOpened(long nativeFeedLoggingBridge, FeedLoggingBridge caller,
+                int position, long publishedTimeMs, float score);
+        void onMoreButtonViewed(
+                long nativeFeedLoggingBridge, FeedLoggingBridge caller, int position);
+        void onMoreButtonClicked(
+                long nativeFeedLoggingBridge, FeedLoggingBridge caller, int position);
+        void onNotInterestedInSource(long nativeFeedLoggingBridge, FeedLoggingBridge caller,
+                int position, boolean wasCommitted);
+        void onNotInterestedInTopic(long nativeFeedLoggingBridge, FeedLoggingBridge caller,
+                int position, boolean wasCommitted);
+        void onOpenedWithContent(long nativeFeedLoggingBridge, FeedLoggingBridge caller,
+                int timeToPopulateMs, int contentCount);
+        void onOpenedWithNoImmediateContent(long nativeFeedLoggingBridge, FeedLoggingBridge caller);
+        void onOpenedWithNoContent(long nativeFeedLoggingBridge, FeedLoggingBridge caller);
+        void onSpinnerStarted(
+                long nativeFeedLoggingBridge, FeedLoggingBridge caller, int spinnerType);
+        void onSpinnerFinished(long nativeFeedLoggingBridge, FeedLoggingBridge caller,
+                long spinnerShownTimeMs, int spinnerType);
+        void onSpinnerDestroyedWithoutCompleting(long nativeFeedLoggingBridge,
+                FeedLoggingBridge caller, long spinnerShownTimeMs, int spinnerType);
+        void onPietFrameRenderingEvent(
+                long nativeFeedLoggingBridge, FeedLoggingBridge caller, int[] pietErrorCodes);
+        void onVisualElementClicked(long nativeFeedLoggingBridge, FeedLoggingBridge caller,
+                int elementType, int position, long timeContentBecameAvailableMs);
+        void onVisualElementViewed(long nativeFeedLoggingBridge, FeedLoggingBridge caller,
+                int elementType, int position, long timeContentBecameAvailableMs);
+        void onInternalError(
+                long nativeFeedLoggingBridge, FeedLoggingBridge caller, int internalError);
+        void onTokenCompleted(long nativeFeedLoggingBridge, FeedLoggingBridge caller,
+                boolean wasSynthetic, int contentCount, int tokenCount);
+        void onTokenFailedToComplete(long nativeFeedLoggingBridge, FeedLoggingBridge caller,
+                boolean wasSynthetic, int failureCount);
+        void onServerRequest(
+                long nativeFeedLoggingBridge, FeedLoggingBridge caller, int requestReason);
+        void onZeroStateShown(
+                long nativeFeedLoggingBridge, FeedLoggingBridge caller, int zeroStateShowReason);
+        void onZeroStateRefreshCompleted(long nativeFeedLoggingBridge, FeedLoggingBridge caller,
+                int newContentCount, int newTokenCount);
+        void onTaskFinished(long nativeFeedLoggingBridge, FeedLoggingBridge caller, int task,
+                int delayTimeMs, int taskTimeMs);
+        void onContentTargetVisited(long nativeFeedLoggingBridge, FeedLoggingBridge caller,
+                long visitTimeMs, boolean isOffline, boolean returnToNtp);
+        void reportScrolledAfterOpen(long nativeFeedLoggingBridge, FeedLoggingBridge caller);
+    }
 }

@@ -65,7 +65,7 @@ constexpr char kOverviewWindowDragMaxLatencyHistogram[] =
 
 void UnpauseOcclusionTracker() {
   Shell::Get()->overview_controller()->UnpauseOcclusionTracker(
-      kOcclusionPauseDurationForDragMs);
+      kOcclusionPauseDurationForDrag);
 }
 
 // Returns the scaled-down size of the dragged item that should be used when

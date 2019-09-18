@@ -127,7 +127,7 @@ look as follows:
  * These need to exist in a separate class so that Android framework can successfully verify
  * classes without encountering the new APIs.
  */
-@DoNotInline
+@VerifiesOnOMR1
 @TargetApi(Build.VERSION_CODES.O_MR1)
 public class ApiHelperForOMR1 {
     private ApiHelperForOMR1() {}
@@ -136,8 +136,8 @@ public class ApiHelperForOMR1 {
 }
 ```
 
-* `@DoNotInline`: this is a chromium-defined annotation to tell proguard (and
-  similar tools) not to inline this class or its methods (since that would
+* `@VerifiesOnO_MR1`: this is a chromium-defined annotation to tell proguard
+  (and similar tools) not to inline this class or its methods (since that would
   defeat the point of out-of-lining!)
 * `@TargetApi(Build.VERSION_CODES.O_MR1)`: this tells Android Lint it's OK to
   use OMR1 APIs since this class is only used on OMR1 and above. Substitute

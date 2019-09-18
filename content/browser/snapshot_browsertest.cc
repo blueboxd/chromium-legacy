@@ -320,13 +320,6 @@ IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, MAYBE_SyncMultiWindowTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, MAYBE_AsyncMultiWindowTest) {
-  // TODO(jonross): Re-enable this once the root cause of the failure has been
-  // fixed. https://crbug.com/1003375
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kUseVulkan))
-    return;
-
   SetupTestServer();
 
   for (int i = 0; i < 3; ++i) {

@@ -257,12 +257,13 @@ void CheckClientDownloadRequest::MaybeUploadBinary(
     if (!profile)
       return;
 
+    const std::string& raw_digest_sha256 = item_->GetHash();
     auto request = std::make_unique<DownloadItemRequest>(
-        item_,
-        base::BindOnce(
-            &MaybeReportDownloadDeepScanningVerdict, profile, item_->GetURL(),
-            item_->GetTargetFilePath().AsUTF8Unsafe(),
-            base::HexEncode(item_->GetHash().data(), item_->GetHash().size())));
+        item_, base::BindOnce(&MaybeReportDownloadDeepScanningVerdict, profile,
+                              item_->GetURL(),
+                              item_->GetTargetFilePath().AsUTF8Unsafe(),
+                              base::HexEncode(raw_digest_sha256.data(),
+                                              raw_digest_sha256.size())));
 
     if (upload_for_dlp) {
       DlpDeepScanningClientRequest dlp_request;

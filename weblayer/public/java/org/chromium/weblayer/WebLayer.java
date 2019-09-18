@@ -8,8 +8,10 @@ import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.util.AndroidRuntimeException;
 import android.webkit.WebViewDelegate;
 import android.webkit.WebViewFactory;
 
@@ -29,6 +31,8 @@ public final class WebLayer {
     private static WebLayer sInstance;
     private IWebLayer mImpl;
 
+    private Application mApplication;
+
     public static WebLayer getInstance() {
         if (sInstance == null) {
             sInstance = new WebLayer();
@@ -39,6 +43,7 @@ public final class WebLayer {
     WebLayer() {}
 
     public void init(Application application) {
+        mApplication = application;
         try {
             // TODO: Make asset loading work on L, where WebViewDelegate doesn't exist.
             // WebViewDelegate.addWebViewAssetPath() accesses the currently loaded package info from
@@ -56,8 +61,7 @@ public final class WebLayer {
             WebViewDelegate delegate = (WebViewDelegate) constructor.newInstance();
             delegate.addWebViewAssetPath(application);
 
-            Context remoteContext = application.createPackageContext(
-                    PACKAGE_NAME, Context.CONTEXT_IGNORE_SECURITY | Context.CONTEXT_INCLUDE_CODE);
+            Context remoteContext = createRemoteContext();
             mImpl = IWebLayer.Stub.asInterface(
                     (IBinder) remoteContext.getClassLoader()
                             .loadClass("org.chromium.weblayer_private.WebLayerImpl")
@@ -86,6 +90,18 @@ public final class WebLayer {
             return new Profile(mImpl.createProfile(path == null ? "" : path.getPath()));
         } catch (RemoteException e) {
             throw new APICallException(e);
+        }
+    }
+
+    /**
+     * Creates a Context for the remote (weblayer implementation) side.
+     */
+    Context createRemoteContext() {
+        try {
+            return mApplication.createPackageContext(
+                    PACKAGE_NAME, Context.CONTEXT_IGNORE_SECURITY | Context.CONTEXT_INCLUDE_CODE);
+        } catch (NameNotFoundException e) {
+            throw new AndroidRuntimeException(e);
         }
     }
 }

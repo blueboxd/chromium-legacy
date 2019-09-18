@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.signin;
 
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.signin.InvestigatedScenario;
 
 /**
@@ -19,9 +20,11 @@ public final class SigninInvestigator {
      * @return int value that corresponds to enum InvestigatedScenario.
      */
     public static @InvestigatedScenario int investigate(String currentEmail) {
-        return nativeInvestigate(currentEmail);
+        return SigninInvestigatorJni.get().investigate(currentEmail);
     }
 
-    // Native methods
-    private static native int nativeInvestigate(String currentEmail);
+    @NativeMethods
+    interface Natives {
+        int investigate(String currentEmail);
+    }
 }

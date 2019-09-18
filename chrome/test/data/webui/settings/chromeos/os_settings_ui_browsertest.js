@@ -7,6 +7,11 @@ const BROWSER_SETTINGS_PATH = '../';
 
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
+// Only run in release builds because we frequently see test timeouts in debug.
+// We suspect this is because the settings page loads slowly in debug.
+// https://crbug.com/1003483
+GEN('#if defined(NDEBUG)');
+
 GEN('#include "chromeos/constants/chromeos_features.h"');
 
 // Test fixture for the top-level OS settings UI.
@@ -29,15 +34,7 @@ var OSSettingsUIBrowserTest = class extends PolymerTest {
   }
 };
 
-// Timeouts in debug because the page can be slow to load.
-// https://crbug.com/987512
-GEN('#if !defined(NDEBUG)');
-GEN('#define MAYBE_AllJsTests DISABLED_AllJsTests');
-GEN('#else');
-GEN('#define MAYBE_AllJsTests AllJsTests');
-GEN('#endif');
-
-TEST_F('OSSettingsUIBrowserTest', 'MAYBE_AllJsTests', () => {
+TEST_F('OSSettingsUIBrowserTest', 'AllJsTests', () => {
   suite('os-settings-ui', () => {
     let ui;
 
@@ -223,3 +220,5 @@ TEST_F('OSSettingsUIBrowserTest', 'MAYBE_AllJsTests', () => {
 
   mocha.run();
 });
+
+GEN('#endif  // defined(NDEBUG)');

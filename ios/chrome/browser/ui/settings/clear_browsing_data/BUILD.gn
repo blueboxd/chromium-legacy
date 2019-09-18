@@ -132,6 +132,7 @@ source_set("eg_tests") {
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/browsing_data:feature_flags",
+    "//ios/chrome/browser/ui/settings/cells",
     "//ios/chrome/test/earl_grey:test_support",
     "//ui/base",
   ]

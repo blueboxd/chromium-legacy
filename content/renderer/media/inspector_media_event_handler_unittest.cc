@@ -203,4 +203,26 @@ TEST_F(InspectorMediaEventHandlerTest, ConvertsEventsAndProperties) {
   handler_->SendQueuedMediaEvents(events);
 }
 
+TEST_F(InspectorMediaEventHandlerTest, PassesPlayAndPauseEvents) {
+  std::vector<media::MediaLogEvent> events = {
+      CreateEvent(media::MediaLogEvent::PLAY),
+      CreateEvent(media::MediaLogEvent::PAUSE)};
+
+  blink::InspectorPlayerEvents expected_events;
+  blink::InspectorPlayerEvent play = {
+      blink::InspectorPlayerEvent::PLAYBACK_EVENT, base::TimeTicks(),
+      blink::WebString::FromUTF8("Event"), blink::WebString::FromUTF8("PLAY")};
+  blink::InspectorPlayerEvent pause = {
+      blink::InspectorPlayerEvent::PLAYBACK_EVENT, base::TimeTicks(),
+      blink::WebString::FromUTF8("Event"), blink::WebString::FromUTF8("PAUSE")};
+  expected_events.emplace_back(play);
+  expected_events.emplace_back(pause);
+
+  EXPECT_CALL(*mock_context_,
+              MockNotifyPlayerEvents(EventsEqualTo(expected_events)))
+      .Times(1);
+
+  handler_->SendQueuedMediaEvents(events);
+}
+
 }  // namespace content

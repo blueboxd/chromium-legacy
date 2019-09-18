@@ -389,7 +389,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void BindCredentialManagerReceiver(
       content::RenderFrameHost* render_frame_host,
       mojo::PendingReceiver<blink::mojom::CredentialManager> receiver) override;
-  bool BindAssociatedInterfaceRequestFromFrame(
+  bool BindAssociatedReceiverFromFrame(
       content::RenderFrameHost* render_frame_host,
       const std::string& interface_name,
       mojo::ScopedInterfaceEndpointHandle* handle) override;
@@ -398,10 +398,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const url::Origin& origin,
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle interface_pipe) override;
-  void BindInterfaceRequest(
-      const service_manager::BindSourceInfo& source_info,
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle* interface_pipe) override;
+  void BindGpuHostReceiver(mojo::GenericPendingReceiver receiver) override;
   void BindHostReceiverForRenderer(
       content::RenderProcessHost* render_process_host,
       mojo::GenericPendingReceiver receiver) override;
@@ -685,8 +682,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   // Vector of additional ChromeContentBrowserClientParts.
   // Parts are deleted in the reverse order they are added.
   std::vector<ChromeContentBrowserClientParts*> extra_parts_;
-
-  service_manager::BinderRegistry gpu_binder_registry_;
 
   scoped_refptr<safe_browsing::SafeBrowsingService> safe_browsing_service_;
   scoped_refptr<safe_browsing::UrlCheckerDelegate>

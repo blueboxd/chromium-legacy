@@ -214,17 +214,14 @@ void PositionView(UIView* view, CGPoint point) {
 
   // When iOS 12 is dropped, only the next switch statement is needed for
   // styling.
-  // TODO (crbug.com/995746): New colors (|kGridThemeSelectionTintColor|
-  // and |kGridThemeDarkSelectionTintColor|), which are only used in tab
-  // grid, should be local colors instead of global.
   switch (theme) {
     case GridThemeLight:
       self.border.layer.borderColor =
-          [UIColor colorNamed:kGridThemeSelectionTintColor].CGColor;
+          [UIColor colorNamed:@"grid_theme_selection_tint_color"].CGColor;
       break;
     case GridThemeDark:
       self.border.layer.borderColor =
-          [UIColor colorNamed:kGridThemeDarkSelectionTintColor].CGColor;
+          [UIColor colorNamed:@"grid_theme_dark_selection_tint_color"].CGColor;
       break;
   }
   _theme = theme;

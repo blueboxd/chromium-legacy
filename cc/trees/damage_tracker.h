@@ -91,8 +91,6 @@ class CC_EXPORT DamageTracker {
     int bottom_ = 0;
   };
 
-  DamageAccumulator TrackDamageFromSurfaceMask(
-      LayerImpl* target_surface_mask_layer);
   DamageAccumulator TrackDamageFromLeftoverRects();
 
   // These helper functions are used only during UpdateDamageTracking().

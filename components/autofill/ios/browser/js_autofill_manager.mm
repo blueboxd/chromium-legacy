@@ -28,7 +28,7 @@
 
 @implementation JsAutofillManager {
   // The injection receiver used to evaluate JavaScript.
-  CRWJSInjectionReceiver* _receiver;
+  __weak CRWJSInjectionReceiver* _receiver;
 }
 
 - (instancetype)initWithReceiver:(CRWJSInjectionReceiver*)receiver {

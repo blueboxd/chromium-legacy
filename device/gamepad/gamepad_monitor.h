@@ -37,7 +37,12 @@ class DEVICE_GAMEPAD_EXPORT GamepadMonitor : public GamepadConsumer,
 
  private:
   mojo::Remote<mojom::GamepadObserver> gamepad_observer_remote_;
-  bool is_started_;
+
+  // True if this monitor is an active gamepad consumer.
+  bool is_started_ = false;
+
+  // True if this monitor has been registered with the gamepad service.
+  bool is_registered_consumer_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(GamepadMonitor);
 };

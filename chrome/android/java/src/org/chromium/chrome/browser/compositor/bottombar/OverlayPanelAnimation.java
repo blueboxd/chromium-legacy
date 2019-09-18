@@ -15,8 +15,8 @@ import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.chrome.browser.ui.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.chrome.browser.util.MathUtils;
-import org.chromium.chrome.browser.widget.animation.CancelAwareAnimatorListener;
 
 /**
  * Base abstract class for animating the Overlay Panel.

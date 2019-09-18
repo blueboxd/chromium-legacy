@@ -118,6 +118,8 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
             @Override
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
                     int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                if (sNativeOverlayWindowAndroid == 0) return;
+
                 PictureInPictureActivityJni.get().onViewSizeChanged(
                         sNativeOverlayWindowAndroid, right - left, bottom - top);
             }
@@ -167,7 +169,7 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
     @Override
     public void onStop() {
         super.onStop();
-        mCompositorView.destroy();
+        if (mCompositorView != null) mCompositorView.destroy();
     }
 
     @Override
@@ -254,8 +256,9 @@ public class PictureInPictureActivity extends AsyncInitializationActivity {
         Intent intent = new Intent(context, PictureInPictureActivity.class);
 
         // Dissociate OverlayWindowAndroid if there is one already.
-        if (sNativeOverlayWindowAndroid != 0)
+        if (sNativeOverlayWindowAndroid != 0) {
             PictureInPictureActivityJni.get().destroy(sNativeOverlayWindowAndroid);
+        }
 
         sNativeOverlayWindowAndroid = nativeOverlayWindowAndroid;
         sInitiatorTab = (Tab) initiatorTab;

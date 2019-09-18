@@ -90,6 +90,16 @@ class ReportUploader {
   DISALLOW_COPY_AND_ASSIGN(ReportUploader);
 };
 
+enum ReportResponseMetricsStatus {
+  kSuccess = 0,
+  kNetworkError = 1,
+  kTemporaryServerError = 2,
+  kDDSConcurrencyError = 3,
+  kRequestTooLargeError = 4,
+  kOtherError = 5,
+  kMaxValue = kOtherError,
+};
+
 }  // namespace enterprise_reporting
 
 #endif  // CHROME_BROWSER_ENTERPRISE_REPORTING_REPORT_UPLOADER_H_

@@ -59,6 +59,8 @@ class BrowserControllerImpl : public BrowserController,
   // content::WebContentsDelegate implementation:
   void LoadingStateChanged(content::WebContents* source,
                            bool to_different_document) override;
+  void LoadProgressChanged(content::WebContents* source,
+                           double progress) override;
   void DidNavigateMainFramePostCommit(
       content::WebContents* web_contents) override;
   int GetTopControlsHeight() override;

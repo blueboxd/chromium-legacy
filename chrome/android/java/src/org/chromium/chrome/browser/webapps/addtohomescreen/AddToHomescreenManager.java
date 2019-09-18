@@ -10,6 +10,7 @@ import android.os.Build;
 import android.text.TextUtils;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.WebContents;
 
@@ -38,7 +39,8 @@ public class AddToHomescreenManager implements AddToHomescreenView.Delegate {
         // Don't start if we've already started or if there is no visible URL to add.
         if (mNativeAddToHomescreenManager != 0 || TextUtils.isEmpty(mTab.getUrl())) return;
 
-        mNativeAddToHomescreenManager = nativeInitializeAndStart(mTab.getWebContents());
+        mNativeAddToHomescreenManager = AddToHomescreenManagerJni.get().initializeAndStart(
+                AddToHomescreenManager.this, mTab.getWebContents());
     }
 
     /**
@@ -48,7 +50,8 @@ public class AddToHomescreenManager implements AddToHomescreenView.Delegate {
         mDialog = null;
         if (mNativeAddToHomescreenManager == 0) return;
 
-        nativeDestroy(mNativeAddToHomescreenManager);
+        AddToHomescreenManagerJni.get().destroy(
+                mNativeAddToHomescreenManager, AddToHomescreenManager.this);
         mNativeAddToHomescreenManager = 0;
     }
 
@@ -60,7 +63,8 @@ public class AddToHomescreenManager implements AddToHomescreenView.Delegate {
     public void addToHomescreen(String userRequestedTitle) {
         assert mNativeAddToHomescreenManager != 0;
 
-        nativeAddToHomescreen(mNativeAddToHomescreenManager, userRequestedTitle);
+        AddToHomescreenManagerJni.get().addToHomescreen(
+                mNativeAddToHomescreenManager, AddToHomescreenManager.this, userRequestedTitle);
     }
 
     @Override
@@ -103,8 +107,11 @@ public class AddToHomescreenManager implements AddToHomescreenView.Delegate {
         }
     }
 
-    private native long nativeInitializeAndStart(WebContents webContents);
-    private native void nativeAddToHomescreen(
-            long nativeAddToHomescreenManager, String userRequestedTitle);
-    private native void nativeDestroy(long nativeAddToHomescreenManager);
+    @NativeMethods
+    interface Natives {
+        long initializeAndStart(AddToHomescreenManager caller, WebContents webContents);
+        void addToHomescreen(long nativeAddToHomescreenManager, AddToHomescreenManager caller,
+                String userRequestedTitle);
+        void destroy(long nativeAddToHomescreenManager, AddToHomescreenManager caller);
+    }
 }

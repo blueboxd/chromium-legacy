@@ -14,6 +14,8 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "chromecast/base/cast_features.h"
+#include "chromecast/base/chromecast_switches.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -29,17 +31,27 @@
   VlogEvent(event, __func__)
 
 namespace chromecast {
-namespace shell {
 
 namespace {
+// TODO(rmrossi): Unify with identical values in SideSwipeDetector.
+
+// The number of pixels from the very left or right of the screen to consider as
+// a valid origin for the left or right swipe gesture.
+constexpr int kDefaultSideGestureStartWidth = 35;
+
+// The number of pixels from the very top or bottom of the screen to consider as
+// a valid origin for the top or bottom swipe gesture.
+constexpr int kDefaultSideGestureStartHeight = 35;
+
+}  // namespace
+
+namespace shell {
 
 void SetTouchAccessibilityFlag(ui::Event* event) {
   // This flag is used to identify mouse move events that were generated from
   // touch exploration in Chrome code.
   event->set_flags(event->flags() | ui::EF_TOUCH_ACCESSIBILITY);
 }
-
-}  // namespace
 
 TouchExplorationController::TouchExplorationController(
     aura::Window* root_window,
@@ -52,7 +64,14 @@ TouchExplorationController::TouchExplorationController(
       anchor_point_state_(ANCHOR_POINT_NONE),
       gesture_provider_(new ui::GestureProviderAura(this, this)),
       prev_state_(NO_FINGERS_DOWN),
-      DVLOG_on_(true) {}
+      DVLOG_on_(true),
+      gesture_start_width_(GetSwitchValueInt(switches::kSystemGestureStartWidth,
+                                             kDefaultSideGestureStartWidth)),
+      gesture_start_height_(
+          GetSwitchValueInt(switches::kSystemGestureStartHeight,
+                            kDefaultSideGestureStartHeight)),
+      side_gesture_pass_through_(
+          chromecast::IsFeatureEnabled(kEnableSideGesturePassThrough)) {}
 
 TouchExplorationController::~TouchExplorationController() {}
 
@@ -172,10 +191,21 @@ ui::EventDispatchDetails TouchExplorationController::RewriteEvent(
   }
   DVLOG_EVENT(touch_event);
 
+  // Enter pass through mode when side gestures are set to pass-through.
+  if (side_gesture_pass_through_ && type == ui::ET_TOUCH_PRESSED &&
+      FindEdgesWithinInset(location, gesture_start_width_,
+                           gesture_start_height_) != NO_EDGE) {
+    SET_STATE(ONE_FINGER_PASSTHROUGH);
+    initial_press_ = std::make_unique<ui::TouchEvent>(touch_event);
+    last_unused_finger_event_.reset(new ui::TouchEvent(touch_event));
+    return SendEvent(continuation, &event);
+  }
+
   // In order to avoid accidentally double tapping when moving off the edge
   // of the screen, the state will be rewritten to NoFingersDown.
   if ((type == ui::ET_TOUCH_RELEASED || type == ui::ET_TOUCH_CANCELLED) &&
-      FindEdgesWithinInset(location, kLeavingScreenEdge) != NO_EDGE) {
+      FindEdgesWithinInset(location, kLeavingScreenEdge, kLeavingScreenEdge) !=
+          NO_EDGE) {
     if (DVLOG_on_)
       DVLOG(1) << "Leaving screen";
 
@@ -851,9 +881,10 @@ void TouchExplorationController::OnSwipeEvent(ui::GestureEvent* swipe_gesture) {
 }
 
 int TouchExplorationController::FindEdgesWithinInset(gfx::Point point_dip,
-                                                     float inset) {
+                                                     float horiz_inset,
+                                                     float vert_inset) {
   gfx::RectF inner_bounds_dip(root_window_->bounds());
-  inner_bounds_dip.Inset(inset, inset);
+  inner_bounds_dip.Inset(horiz_inset, vert_inset);
 
   // Bitwise manipulation in order to determine where on the screen the point
   // lies. If more than one bit is turned on, then it is a corner where the two

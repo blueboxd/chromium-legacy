@@ -115,6 +115,10 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableBackgroundBlur;
 // the UnifiedSystemTrayView.
 ASH_PUBLIC_EXPORT extern const base::Feature kUnifiedMessageCenterRefactor;
 
+// Enables going back to previous page while swiping from the left edge of the
+// display. Only for tablet mode.
+ASH_PUBLIC_EXPORT extern const base::Feature kSwipingFromLeftEdgeToGoBack;
+
 ASH_PUBLIC_EXPORT bool IsHideArcMediaNotificationsEnabled();
 
 ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerAppEnabled();
@@ -150,6 +154,8 @@ ASH_PUBLIC_EXPORT bool IsSwapSideVolumeButtonsForOrientationEnabled();
 ASH_PUBLIC_EXPORT bool IsUnifiedMessageCenterRefactorEnabled();
 
 ASH_PUBLIC_EXPORT bool IsBackgroundBlurEnabled();
+
+ASH_PUBLIC_EXPORT bool IsSwipingFromLeftEdgeToGoBackEnabled();
 
 }  // namespace features
 }  // namespace ash

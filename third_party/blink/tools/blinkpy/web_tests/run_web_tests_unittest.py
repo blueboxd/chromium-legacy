@@ -519,7 +519,26 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             ['--isolated-script-test-filter=passes/text.html::passes/image.html', 'passes/error.html'],
             host=host
         )
-        self.assertEqual(sorted(tests_run), ['passes/error.html', 'passes/image.html', 'passes/text.html'])
+        self.assertEqual(sorted(tests_run), [])
+
+        tests_run = get_tests_run(
+            ['--isolated-script-test-filter=passes/error.html::passes/image.html', 'passes/error.html'],
+            host=host
+        )
+        self.assertEqual(sorted(tests_run), ['passes/error.html'])
+
+        tests_run = get_tests_run(
+            ['--isolated-script-test-filter=passes/error.html::passes/image.html'],
+            host=host
+        )
+        self.assertEqual(sorted(tests_run), ['passes/error.html', 'passes/image.html'])
+
+        tests_run = get_tests_run(
+            ['--isolated-script-test-filter=passes/error.html::passes/image.html',
+             '--isolated-script-test-filter=passes/error.html'],
+            host=host
+        )
+        self.assertEqual(sorted(tests_run), ['passes/error.html'])
 
     def test_gtest_filter(self):
         host = MockHost()

@@ -13,6 +13,7 @@ import androidx.annotation.CallSuper;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.findinpage.FindMatchRectsDetails;
@@ -177,7 +178,9 @@ public abstract class TabWebContentsDelegateAndroid extends WebContentsDelegateA
     @Override
     public void rendererUnresponsive() {
         super.rendererUnresponsive();
-        if (mTab.getWebContents() != null) nativeOnRendererUnresponsive(mTab.getWebContents());
+        if (mTab.getWebContents() != null) {
+            TabWebContentsDelegateAndroidJni.get().onRendererUnresponsive(mTab.getWebContents());
+        }
         mTab.handleRendererResponsiveStateChanged(false);
     }
 
@@ -185,7 +188,9 @@ public abstract class TabWebContentsDelegateAndroid extends WebContentsDelegateA
     @Override
     public void rendererResponsive() {
         super.rendererResponsive();
-        if (mTab.getWebContents() != null) nativeOnRendererResponsive(mTab.getWebContents());
+        if (mTab.getWebContents() != null) {
+            TabWebContentsDelegateAndroidJni.get().onRendererResponsive(mTab.getWebContents());
+        }
         mTab.handleRendererResponsiveStateChanged(true);
     }
 
@@ -240,7 +245,8 @@ public abstract class TabWebContentsDelegateAndroid extends WebContentsDelegateA
     }
 
     public void showFramebustBlockInfobarForTesting(String url) {
-        nativeShowFramebustBlockInfoBar(mTab.getWebContents(), url);
+        TabWebContentsDelegateAndroidJni.get().showFramebustBlockInfoBar(
+                mTab.getWebContents(), url);
     }
 
     /**
@@ -278,7 +284,10 @@ public abstract class TabWebContentsDelegateAndroid extends WebContentsDelegateA
         return null;
     }
 
-    private static native void nativeOnRendererUnresponsive(WebContents webContents);
-    private static native void nativeOnRendererResponsive(WebContents webContents);
-    private static native void nativeShowFramebustBlockInfoBar(WebContents webContents, String url);
+    @NativeMethods
+    interface Natives {
+        void onRendererUnresponsive(WebContents webContents);
+        void onRendererResponsive(WebContents webContents);
+        void showFramebustBlockInfoBar(WebContents webContents, String url);
+    }
 }

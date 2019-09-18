@@ -289,15 +289,15 @@ TEST_F(AsyncLayerTreeFrameSinkSimpleTest, HitTestRegionListDuplicate) {
   quad3_root_1->SetNew(shared_quad_state3_root, /*rect=*/rect3_root,
                        /*visible_rect=*/rect3_root, /*render_pass_id=*/3,
                        /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
-                       /*mask_applies_to_backdrop=*/false, gfx::Vector2dF(1, 1),
-                       gfx::PointF(), gfx::RectF(), false, 1.0f);
+                       gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false,
+                       1.0f);
   auto* quad3_root_2 =
       pass3_root->quad_list.AllocateAndConstruct<viz::RenderPassDrawQuad>();
   quad3_root_2->SetNew(shared_quad_state3_root, /*rect=*/rect3_root,
                        /*visible_rect=*/rect3_root, /*render_pass_id=*/4,
                        /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
-                       /*mask_applies_to_backdrop=*/false, gfx::Vector2dF(1, 1),
-                       gfx::PointF(), gfx::RectF(), false, 1.0f);
+                       gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false,
+                       1.0f);
   pass_list.push_back(std::move(pass3_root));
 
   SendRenderPassList(&pass_list, /*hit_test_data_changed=*/false);
@@ -393,15 +393,15 @@ TEST_F(AsyncLayerTreeFrameSinkSimpleTest,
   quad2_root_1->SetNew(shared_quad_state2_root, /*rect=*/rect2_root,
                        /*visible_rect=*/rect2_root, /*render_pass_id=*/2,
                        /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
-                       /*mask_applies_to_backdrop=*/false, gfx::Vector2dF(1, 1),
-                       gfx::PointF(), gfx::RectF(), false, 1.0f);
+                       gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false,
+                       1.0f);
   auto* quad2_root_2 =
       pass2_root->quad_list.AllocateAndConstruct<viz::RenderPassDrawQuad>();
   quad2_root_2->SetNew(shared_quad_state2_root, /*rect=*/rect2_root,
                        /*visible_rect=*/rect2_root, /*render_pass_id=*/3,
                        /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
-                       /*mask_applies_to_backdrop=*/false, gfx::Vector2dF(1, 1),
-                       gfx::PointF(), gfx::RectF(), false, 1.0f);
+                       gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false,
+                       1.0f);
   pass_list.push_back(std::move(pass2_root));
 
   SendRenderPassList(&pass_list, /*hit_test_data_changed=*/true);

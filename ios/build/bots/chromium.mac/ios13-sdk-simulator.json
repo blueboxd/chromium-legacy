@@ -5,7 +5,7 @@
     "Note: This file exists only to support the trybot.",
     "It should be kept in sync with the CI configuration in ../chromium.fyi/."
   ],
-  "xcode build version": "11a419c",
+  "xcode build version": "11a420a",
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
     "is_component_build=false",

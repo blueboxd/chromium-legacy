@@ -19,22 +19,24 @@ android_library("monochrome_license_provider_java") {
   jacoco_never_instrument = true
 }
 
-group("monochrome_apk_checker") {
-  testonly = true
-  data_deps = [
-    "//chrome/android:chrome_modern_public_apk",
-    "//chrome/android:monochrome_public_apk",
-  ]
-  if (public_android_sdk) {
-    # system_webview_apk only defined for public sdk builds, so this dependency
-    # must be guarded.
-    data_deps += [ "//android_webview:system_webview_apk" ]
-  }
+if (public_android_sdk) {
+  group("monochrome_apk_checker") {
+    testonly = true
+    data_deps = [
+      "//chrome/android:chrome_modern_public_apk",
+      "//chrome/android:monochrome_public_apk",
+    ]
+    if (public_android_sdk) {
+      # system_webview_apk only defined for public sdk builds, so this dependency
+      # must be guarded.
+      data_deps += [ "//android_webview:system_webview_apk" ]
+    }
 
-  data = [
-    "./scripts/monochrome_apk_checker.py",
-    "//testing/scripts/monochrome_apk_checker_wrapper.py",
-    "//testing/scripts/common.py",
-    "//testing/xvfb.py",
-  ]
+    data = [
+      "./scripts/monochrome_apk_checker.py",
+      "//testing/scripts/monochrome_apk_checker_wrapper.py",
+      "//testing/scripts/common.py",
+      "//testing/xvfb.py",
+    ]
+  }
 }

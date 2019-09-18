@@ -353,7 +353,7 @@ cr.define('settings', function() {
         r.SITE_SETTINGS_PAYMENT_HANDLER =
             r.SITE_SETTINGS.createChild('paymentHandler');
       }
-      if (loadTimeData.getBoolean('enableBluetoothScanningContentSetting')) {
+      if (loadTimeData.getBoolean('enableExperimentalWebPlatformFeatures')) {
         r.SITE_SETTINGS_BLUETOOTH_SCANNING =
             r.SITE_SETTINGS.createChild('bluetoothScanning');
       }
@@ -465,8 +465,11 @@ cr.define('settings', function() {
         loadTimeData.getBoolean('showCrostini')) {
       r.CROSTINI = r.BASIC.createSection('/crostini', 'crostini');
       r.CROSTINI_DETAILS = r.CROSTINI.createChild('/crostini/details');
-      r.CROSTINI_EXPORT_IMPORT =
-          r.CROSTINI_DETAILS.createChild('/crostini/exportImport');
+      if (loadTimeData.valueExists('showCrostiniExportImport') &&
+          loadTimeData.getBoolean('showCrostiniExportImport')) {
+        r.CROSTINI_EXPORT_IMPORT =
+            r.CROSTINI_DETAILS.createChild('/crostini/exportImport');
+      }
       r.CROSTINI_SHARED_PATHS =
           r.CROSTINI_DETAILS.createChild('/crostini/sharedPaths');
       r.CROSTINI_SHARED_USB_DEVICES =

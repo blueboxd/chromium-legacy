@@ -545,22 +545,26 @@ void RequestCoordinator::AddRequestResultCallback(
     RequestAvailability availability,
     AddRequestResult result,
     const SavePageRequest& request) {
-  NotifyAdded(request);
-  // Inform the scheduler that we have an outstanding task.
-  scheduler_->Schedule(GetTriggerConditions(kUserRequest));
+  if (result == AddRequestResult::SUCCESS) {
+    NotifyAdded(request);
+    // Inform the scheduler that we have an outstanding task.
+    scheduler_->Schedule(GetTriggerConditions(kUserRequest));
 
-  if (availability == RequestAvailability::DISABLED_FOR_OFFLINER) {
-    // Mark attempt started (presuming it is disabled for background offliner
-    // because foreground offlining is happening).
-    queue_->MarkAttemptStarted(
-        request.request_id(),
-        base::BindOnce(&RequestCoordinator::MarkAttemptDone,
-                       weak_ptr_factory_.GetWeakPtr(), request.request_id(),
-                       request.client_id().name_space));
-  } else if (request.user_requested()) {
-    StartImmediatelyIfConnected();
+    if (availability == RequestAvailability::DISABLED_FOR_OFFLINER) {
+      // Mark attempt started (presuming it is disabled for background offliner
+      // because foreground offlining is happening).
+      queue_->MarkAttemptStarted(
+          request.request_id(),
+          base::BindOnce(&RequestCoordinator::MarkAttemptDone,
+                         weak_ptr_factory_.GetWeakPtr(), request.request_id(),
+                         request.client_id().name_space));
+    } else if (request.user_requested()) {
+      StartImmediatelyIfConnected();
+    }
+  } else {
+    event_logger_.RecordAddRequestFailed(request.client_id().name_space,
+                                         result);
   }
-
   std::move(save_page_later_callback).Run(result);
 }
 

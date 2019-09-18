@@ -7,6 +7,7 @@ package org.chromium.chrome.test.pagecontroller.tests;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
+import android.support.test.filters.LargeTest;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -56,6 +57,7 @@ public class NewTabPageControllerTest {
         assertNotEquals(isHidden, mController.areArticlesHidden());
     }
 
+    @LargeTest
     @Test
     public void testScrollPage() {
         mController.scrollToTop();

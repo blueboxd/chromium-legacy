@@ -11,7 +11,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "components/storage_monitor/storage_monitor.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "services/device/public/mojom/mtp_manager.mojom.h"
 
 namespace base {
@@ -62,7 +62,7 @@ class MtpManagerClientChromeOS : public device::mojom::MtpManagerClient {
   // manager outlives this object.
   device::mojom::MtpManager* const mtp_manager_;
 
-  mojo::AssociatedBinding<device::mojom::MtpManagerClient> binding_;
+  mojo::AssociatedReceiver<device::mojom::MtpManagerClient> receiver_{this};
 
   // The notifications object to use to signal newly attached devices.
   // Guaranteed to outlive this class.

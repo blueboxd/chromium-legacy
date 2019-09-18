@@ -282,7 +282,6 @@ class TouchExplorationController : public ui::EventRewriter,
 
   // Within this many dips of the screen edge, the release event generated will
   // reset the state to NoFingersDown.
-  // TODO(kpschoedel): Unify with identical value in SideSwipeDetector.
   const float kLeavingScreenEdge = 35;
 
   // Touch within this distance from a corner can invoke corner passthrough.
@@ -394,7 +393,9 @@ class TouchExplorationController : public ui::EventRewriter,
   // edge. If it is within the given inset of two edges, returns an int with
   // both bits that represent the respective edges turned on. Otherwise returns
   // SCREEN_CENTER.
-  int FindEdgesWithinInset(gfx::Point point, float inset);
+  int FindEdgesWithinInset(gfx::Point point,
+                           float horiz_inset,
+                           float vert_inset);
 
   // Set the state and modifies any variables related to the state change.
   // (e.g. resetting the gesture provider).
@@ -496,6 +497,14 @@ class TouchExplorationController : public ui::EventRewriter,
 
   // The maximum touch points seen in the current gesture.
   size_t max_gesture_touch_points_ = 0;
+
+  // The horizontal and vertical insets for side gesture detection.
+  const int gesture_start_width_;
+  const int gesture_start_height_;
+
+  // Whether or not to trigger pass through mode when touch events come
+  // in from the edges.
+  bool side_gesture_pass_through_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchExplorationController);
 };

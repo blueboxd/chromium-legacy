@@ -283,45 +283,30 @@ function AutomationRichEditableText(node) {
 
   this.updateIntraLineState_(this.line_);
 
-  /**
-   * @private {number|undefined}
-   */
+  /** @private {boolean} */
+  this.misspelled = false;
+  /** @private {boolean} */
+  this.grammarError = false;
+
+  /** @private {number|undefined} */
   this.fontSize_;
-  /**
-   * @private {string|undefined}
-   */
+  /** @private {string|undefined} */
   this.fontColor_;
-  /**
-   * @private {boolean|undefined}
-   */
+  /** @private {boolean|undefined} */
   this.linked_;
-  /**
-   * @private {boolean|undefined}
-   */
+  /** @private {boolean|undefined} */
   this.subscript_;
-  /**
-   * @private {boolean|undefined}
-   */
+  /** @private {boolean|undefined} */
   this.superscript_;
-  /**
-   * @private {boolean}
-   */
+  /** @private {boolean} */
   this.bold_ = false;
-  /**
-   * @private {boolean}
-   */
+  /** @private {boolean} */
   this.italic_ = false;
-  /**
-   * @private {boolean}
-   */
+  /** @private {boolean} */
   this.underline_ = false;
-  /**
-   * @private {boolean}
-   */
+  /** @private {boolean} */
   this.lineThrough_ = false;
-  /**
-   * @private {string|undefined}
-   */
+  /** @private {string|undefined} */
   this.fontFamily_;
 }
 
@@ -435,31 +420,8 @@ AutomationRichEditableText.prototype = {
       if (!container)
         return;
 
-      if (container.markerTypes) {
-        // Only consider markers that start or end at the selection bounds.
-        var markerStartIndex = -1, markerEndIndex = -1;
-        var localStartOffset = cur.localStartOffset;
-        for (var i = 0; i < container.markerStarts.length; i++) {
-          if (container.markerStarts[i] == localStartOffset) {
-            markerStartIndex = i;
-            break;
-          }
-        }
-
-        var localEndOffset = cur.localEndOffset;
-        for (var i = 0; i < container.markerEnds.length; i++) {
-          if (container.markerEnds[i] == localEndOffset) {
-            markerEndIndex = i;
-            break;
-          }
-        }
-
-        if (markerStartIndex > -1)
-          this.speakTextMarker_(container.markerTypes[markerStartIndex]);
-
-        if (markerEndIndex > -1)
-          this.speakTextMarker_(container.markerTypes[markerEndIndex], true);
-      }
+      this.speakTextMarker_(
+          container, cur.localStartOffset, cur.localEndOffset);
 
       if (localStorage['announceRichTextAttributes'] == 'true')
         this.speakTextStyle_(container);
@@ -607,21 +569,31 @@ AutomationRichEditableText.prototype = {
   },
 
   /**
-   * @param {number} markerType
-   * @param {boolean=} opt_end
+   * @param {AutomationNode!} container
+   * @param {number} selStart
+   * @param {number} selEnd
    * @private
    */
-  speakTextMarker_: function(markerType, opt_end) {
-    // TODO(dtseng): Plumb through constants to automation.
-    var msgs = [];
-    if (markerType & 1) {
-      if (localStorage['indicateMisspell'] == 'announce')
-        msgs.push(opt_end ? 'misspelling_end' : 'misspelling_start');
+  speakTextMarker_: function(container, selStart, selEnd) {
+    var markersWithinSelection = 0;
+    if (container.markerTypes) {
+      for (var i = 0; i < container.markerTypes.length; i++) {
+        // See if our selection intersects with this marker.
+        if (container.markerStarts[i] >= selStart ||
+            selEnd < container.markerEnds[i])
+          markersWithinSelection |= container.markerTypes[i];
+      }
     }
-    if (markerType & 2)
-      msgs.push(opt_end ? 'grammar_end' : 'grammar_start');
-    if (markerType & 4)
-      msgs.push(opt_end ? 'text_match_end' : 'text_match_start');
+
+    var msgs = [];
+    if (this.misspelled == !(markersWithinSelection & 1)) {
+      this.misspelled = !this.misspelled;
+      msgs.push(this.misspelled ? 'misspelling_start' : 'misspelling_end');
+    }
+    if (this.grammarError == !(markersWithinSelection & 2)) {
+      this.grammarError = !this.grammarError;
+      msgs.push(this.grammarError ? 'grammar_start' : 'grammar_end');
+    }
 
     if (msgs.length) {
       msgs.forEach(function(msg) {
@@ -912,6 +884,23 @@ editing.EditableLine = function(
   /** @private {!Cursor} */
   this.end_ = new Cursor(endNode, endIndex);
   this.end_ = this.end_.deepEquivalent || this.end_;
+
+  // Update |startIndex| and |endIndex| if the calls above to
+  // cursors.Cursor.deepEquivalent results in cursors to different container
+  // nodes. The cursors can point directly to inline text boxes, in which case
+  // we should not adjust the container start or end index.
+  if (startNode.role == RoleType.STATIC_TEXT && this.start_.node != startNode &&
+      this.start_.node.parent != startNode) {
+    startIndex = this.start_.index == cursors.NODE_INDEX ?
+        this.start_.node.name.length :
+        this.start_.index;
+  }
+  if (endNode.role == RoleType.STATIC_TEXT && this.end_.node != endNode &&
+      this.end_.node.parent != endNode) {
+    endIndex = this.end_.index == cursors.NODE_INDEX ?
+        this.end_.node.name.length :
+        this.end_.index;
+  }
 
   /** @private {number} */
   this.localContainerStartOffset_ = startIndex;

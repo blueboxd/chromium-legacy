@@ -89,6 +89,22 @@ const NetworkUI = (function() {
   };
 
   /**
+   * @param {string} key
+   * @param {number|string|undefined} value
+   * @return {string}
+   */
+  const getOncTypeString = function(key, value) {
+    if (value === undefined) {
+      return '';
+    }
+    if (key == 'type' && value == 'etherneteap') {
+      // Special case, not in production UI.
+      return 'EthernetEAP';
+    }
+    return /** @type {string}*/ (OncMojo.getTypeString(key, value));
+  };
+
+  /**
    * Returns the ONC data property for |state| associated with a key. Used
    * to access properties in the state by |key| which may may refer to a
    * nested property, e.g. 'WiFi.Security'. If any part of a nested key is
@@ -109,7 +125,7 @@ const NetworkUI = (function() {
         return undefined;
     }
     const k = keys.shift();
-    return OncMojo.getTypeString(k, dict[k]);
+    return getOncTypeString(k, dict[k]);
   };
 
   /**
@@ -238,7 +254,7 @@ const NetworkUI = (function() {
    * @return {string} A valid HTMLElement id.
    */
   const idFromType = function(type) {
-    return idFromTypeString(OncMojo.getNetworkTypeString(type));
+    return idFromTypeString(getOncTypeString('type', type));
   };
 
   /**
@@ -266,6 +282,12 @@ const NetworkUI = (function() {
    */
   const onDeviceStatesReceived = function(states) {
     createStateTable('device-state-table', DEVICE_STATE_FIELDS, states);
+  };
+
+  /** @return {string} */
+  const getSelectedFormat = function() {
+    const formatSelect = $('get-property-format');
+    return formatSelect.options[formatSelect.selectedIndex].value;
   };
 
   /**
@@ -309,12 +331,10 @@ const NetworkUI = (function() {
     detailCell.className = 'state-table-expanded-cell';
     detailCell.colSpan = baseRow.childNodes.length - 1;
     expandedRow.appendChild(detailCell);
-    const selected = $('get-property-format').selectedIndex;
-    const selectedId = $('get-property-format').options[selected].value;
     if (guid)
-      handleNetworkDetail(guid, selectedId, detailCell);
+      handleNetworkDetail(guid, getSelectedFormat(), detailCell);
     else
-      handleDeviceDetail(state, selectedId, detailCell);
+      handleDeviceDetail(state, getSelectedFormat(), detailCell);
     return expandedRow;
   };
 
@@ -450,6 +470,19 @@ const NetworkUI = (function() {
   };
 
   /**
+   * Callback invoked by Chrome after a getShillEthernetEAP call.
+   * @param {?Object} state The requested Shill properties. Will be null if no
+   *     EAP properties exist.
+   */
+  const getShillEthernetEAPResult = function(state) {
+    const states = [];
+    if (state) {
+      states.push(state);
+    }
+    createStateTable('ethernet-eap-state-table', FAVORITE_STATE_FIELDS, states);
+  };
+
+  /**
    * Callback invoked by Chrome after a openCellularActivationUi call.
    * @param {boolean} didOpenActivationUi Whether the activation UI was actually
    *     opened. If this value is false, it means that no cellular network was
@@ -500,6 +533,11 @@ const NetworkUI = (function() {
     networkConfig.getDeviceStateList().then((responseParams) => {
       onDeviceStatesReceived(responseParams.result);
     });
+
+    // Only request EthernetEAP properties when the 'shill' format is selected.
+    if (getSelectedFormat() == 'shill') {
+      chrome.send('getShillEthernetEAP');
+    }
   };
 
   /**
@@ -570,6 +608,7 @@ const NetworkUI = (function() {
     $('cellular-activation-button').onclick = openCellularActivationUi;
     $('add-new-wifi-button').onclick = showAddNewWifi;
     $('refresh').onclick = requestNetworks;
+    $('get-property-format').onchange = requestNetworks;
     init();
     requestNetworks();
     requestGlobalPolicy();
@@ -582,6 +621,7 @@ const NetworkUI = (function() {
   return {
     getShillNetworkPropertiesResult: getShillNetworkPropertiesResult,
     getShillDevicePropertiesResult: getShillDevicePropertiesResult,
+    getShillEthernetEAPResult: getShillEthernetEAPResult,
     openCellularActivationUiResult: openCellularActivationUiResult
   };
 })();

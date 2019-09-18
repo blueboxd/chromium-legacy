@@ -481,7 +481,6 @@ enum DBCookieSameSite {
 };
 
 DBCookieSameSite CookieSameSiteToDBCookieSameSite(CookieSameSite value) {
-  DCHECK(IsValidSameSiteValue(value));
   switch (value) {
     case CookieSameSite::NO_RESTRICTION:
       return kCookieSameSiteNoRestriction;
@@ -493,12 +492,7 @@ DBCookieSameSite CookieSameSiteToDBCookieSameSite(CookieSameSite value) {
       return kCookieSameSiteExtended;
     case CookieSameSite::UNSPECIFIED:
       return kCookieSameSiteUnspecified;
-    default:
-      break;
   }
-
-  NOTREACHED();
-  return kCookieSameSiteUnspecified;
 }
 
 CookieSameSite DBCookieSameSiteToCookieSameSite(DBCookieSameSite value) {
@@ -520,8 +514,6 @@ CookieSameSite DBCookieSameSiteToCookieSameSite(DBCookieSameSite value) {
       samesite = CookieSameSite::UNSPECIFIED;
       break;
   }
-
-  DCHECK(IsValidSameSiteValue(samesite));
   return samesite;
 }
 

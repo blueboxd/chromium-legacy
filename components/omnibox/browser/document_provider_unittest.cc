@@ -916,3 +916,29 @@ TEST_F(DocumentProviderTest, Caching) {
               testing::ElementsAre(ACMatchClassification{0, 2},
                                    ACMatchClassification{5, 0}));
 }
+
+TEST_F(DocumentProviderTest, MinQueryLength) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(omnibox::kDocumentProvider);
+  EXPECT_CALL(*client_.get(), SearchSuggestEnabled())
+      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsAuthenticated()).WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsSyncActive()).WillRepeatedly(Return(true));
+  EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillRepeatedly(Return(false));
+
+  // Expect document provider to ignore inputs shorter than min_query_length_.
+  AutocompleteInput short_input(base::ASCIIToUTF16("12"),
+                                metrics::OmniboxEventProto::OTHER,
+                                TestSchemeClassifier());
+  short_input.set_want_asynchronous_matches(false);
+  provider_->Start(short_input, false);
+  EXPECT_NE(short_input.text(), provider_->input_.text());
+
+  // Expect document provider to process inputs longer than min_query_length_.
+  AutocompleteInput long_input(base::ASCIIToUTF16("123456"),
+                               metrics::OmniboxEventProto::OTHER,
+                               TestSchemeClassifier());
+  long_input.set_want_asynchronous_matches(false);
+  provider_->Start(long_input, false);
+  EXPECT_EQ(long_input.text(), provider_->input_.text());
+}

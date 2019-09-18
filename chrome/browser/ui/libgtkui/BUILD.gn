@@ -23,6 +23,8 @@ jumbo_component("libgtkui") {
     "gtk_ui.h",
     "gtk_util.cc",
     "gtk_util.h",
+    "input_method_context_impl_gtk.cc",
+    "input_method_context_impl_gtk.h",
     "libgtkui_export.h",
     "menu_util.cc",
     "menu_util.h",
@@ -124,8 +126,6 @@ jumbo_component("libgtkui") {
     sources += [
       "gtk_event_loop_x11.cc",
       "gtk_event_loop_x11.h",
-      "x11_input_method_context_impl_gtk.cc",
-      "x11_input_method_context_impl_gtk.h",
     ]
 
     deps += [

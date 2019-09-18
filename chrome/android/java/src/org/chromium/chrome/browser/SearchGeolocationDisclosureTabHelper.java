@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.NativeMethods;
 
 /**
  * Helper that shows the search geolocation disclosure when required. This class currently is only
@@ -13,14 +14,17 @@ import org.chromium.base.VisibleForTesting;
 public class SearchGeolocationDisclosureTabHelper {
     @VisibleForTesting
     public static void setIgnoreUrlChecksForTesting() {
-        nativeSetIgnoreUrlChecksForTesting();
+        SearchGeolocationDisclosureTabHelperJni.get().setIgnoreUrlChecksForTesting();
     }
 
     @VisibleForTesting
     public static void setDayOffsetForTesting(int days) {
-        nativeSetDayOffsetForTesting(days);
+        SearchGeolocationDisclosureTabHelperJni.get().setDayOffsetForTesting(days);
     }
 
-    private static native void nativeSetIgnoreUrlChecksForTesting();
-    private static native void nativeSetDayOffsetForTesting(int days);
+    @NativeMethods
+    interface Natives {
+        void setIgnoreUrlChecksForTesting();
+        void setDayOffsetForTesting(int days);
+    }
 }

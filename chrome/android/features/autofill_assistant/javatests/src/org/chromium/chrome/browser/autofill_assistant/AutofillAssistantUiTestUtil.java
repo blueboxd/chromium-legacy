@@ -150,8 +150,7 @@ class AutofillAssistantUiTestUtil {
 
         return new BottomSheetController(activity, activity.getLifecycleDispatcher(),
                 activity.getActivityTabProvider(), activity.getScrim(), bottomSheet,
-                activity.getCompositorViewHolder().getLayoutManager().getOverlayPanelManager(),
-                /* suppressSheetForContextualSearch= */ false);
+                activity.getCompositorViewHolder().getLayoutManager().getOverlayPanelManager());
     }
 
     /**

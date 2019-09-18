@@ -19,6 +19,7 @@ cr.define('bluetooth_internals', function() {
   const AdapterPage = adapter_page.AdapterPage;
   const DeviceDetailsPage = device_details_page.DeviceDetailsPage;
   const DevicesPage = devices_page.DevicesPage;
+  const DebugLogPage = debug_log_page.DebugLogPage;
   const PageManager = cr.ui.pageManager.PageManager;
   const Snackbar = snackbar.Snackbar;
   const SnackbarType = snackbar.SnackbarType;
@@ -29,12 +30,17 @@ cr.define('bluetooth_internals', function() {
   let adapterPage = null;
   /** @type {devices_page.DevicesPage} */
   let devicesPage = null;
+  /** @type {debug_log_page.DebugLogPage} */
+  let debugLogPage = null;
 
   /** @type {bluetooth.mojom.DiscoverySessionRemote} */
   let discoverySession = null;
 
   /** @type {boolean} */
   let userRequestedScanStop = false;
+
+  /** @type {!mojom.BluetoothInternalsHandlerRemote} */
+  const bluetoothInternalsHandler = mojom.BluetoothInternalsHandler.getRemote();
 
   /**
    * Observer for page changes. Used to update page title header.
@@ -258,6 +264,8 @@ cr.define('bluetooth_internals', function() {
     PageManager.register(devicesPage);
     adapterPage = new AdapterPage();
     PageManager.register(adapterPage);
+    debugLogPage = new DebugLogPage(bluetoothInternalsHandler);
+    PageManager.register(debugLogPage);
 
     // Set up hash-based navigation.
     window.addEventListener('hashchange', function() {

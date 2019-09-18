@@ -13,6 +13,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.profiles.Profile;
 
 import java.util.ArrayList;
@@ -42,7 +43,7 @@ public class FeedOfflineBridge implements FeedOfflineIndicator, KnownContent.Lis
      * @param knownContent Interface to access information about the Feed's articles.
      */
     public FeedOfflineBridge(Profile profile, KnownContent knownContent) {
-        mNativeBridge = nativeInit(profile);
+        mNativeBridge = FeedOfflineBridgeJni.get().init(FeedOfflineBridge.this, profile);
         mKnownContentApi = knownContent;
         mKnownContentApi.addListener(this);
     }
@@ -50,7 +51,7 @@ public class FeedOfflineBridge implements FeedOfflineIndicator, KnownContent.Lis
     @Override
     public void destroy() {
         assert mNativeBridge != 0;
-        nativeDestroy(mNativeBridge);
+        FeedOfflineBridgeJni.get().destroy(mNativeBridge, FeedOfflineBridge.this);
         mNativeBridge = 0;
         mKnownContentApi.removeListener(this);
     }
@@ -60,7 +61,8 @@ public class FeedOfflineBridge implements FeedOfflineIndicator, KnownContent.Lis
         if (mNativeBridge == 0) {
             return 0L;
         } else {
-            return (Long) nativeGetOfflineId(mNativeBridge, url);
+            return (Long) FeedOfflineBridgeJni.get().getOfflineId(
+                    mNativeBridge, FeedOfflineBridge.this, url);
         }
     }
 
@@ -71,7 +73,8 @@ public class FeedOfflineBridge implements FeedOfflineIndicator, KnownContent.Lis
             urlListConsumer.accept(Collections.emptyList());
         } else {
             String[] urlsArray = urlsToRetrieve.toArray(new String[urlsToRetrieve.size()]);
-            nativeGetOfflineStatus(mNativeBridge, urlsArray,
+            FeedOfflineBridgeJni.get().getOfflineStatus(mNativeBridge, FeedOfflineBridge.this,
+                    urlsArray,
                     (String[] urlsAsArray) -> urlListConsumer.accept(Arrays.asList(urlsAsArray)));
         }
     }
@@ -88,7 +91,7 @@ public class FeedOfflineBridge implements FeedOfflineIndicator, KnownContent.Lis
         if (mNativeBridge != 0) {
             mListeners.remove(offlineStatusListener);
             if (mListeners.isEmpty()) {
-                nativeOnNoListeners(mNativeBridge);
+                FeedOfflineBridgeJni.get().onNoListeners(mNativeBridge, FeedOfflineBridge.this);
             }
         }
     }
@@ -98,7 +101,7 @@ public class FeedOfflineBridge implements FeedOfflineIndicator, KnownContent.Lis
         if (mNativeBridge != 0) {
             List<String> userDrivenRemovals = takeUserDriveRemovalsOnly(contentRemoved);
             if (!userDrivenRemovals.isEmpty()) {
-                nativeOnContentRemoved(mNativeBridge,
+                FeedOfflineBridgeJni.get().onContentRemoved(mNativeBridge, FeedOfflineBridge.this,
                         userDrivenRemovals.toArray(new String[userDrivenRemovals.size()]));
             }
         }
@@ -107,7 +110,7 @@ public class FeedOfflineBridge implements FeedOfflineIndicator, KnownContent.Lis
     @Override
     public void onNewContentReceived(boolean isNewRefresh, long contentCreationDateTimeMs) {
         if (mNativeBridge != 0) {
-            nativeOnNewContentReceived(mNativeBridge);
+            FeedOfflineBridgeJni.get().onNewContentReceived(mNativeBridge, FeedOfflineBridge.this);
         }
     }
 
@@ -141,11 +144,12 @@ public class FeedOfflineBridge implements FeedOfflineIndicator, KnownContent.Lis
 
             for (ContentMetadata metadata : metadataList) {
                 long time_published_ms = TimeUnit.SECONDS.toMillis(metadata.getTimePublished());
-                nativeAppendContentMetadata(mNativeBridge, metadata.getUrl(), metadata.getTitle(),
+                FeedOfflineBridgeJni.get().appendContentMetadata(mNativeBridge,
+                        FeedOfflineBridge.this, metadata.getUrl(), metadata.getTitle(),
                         time_published_ms, metadata.getImageUrl(), metadata.getPublisher(),
                         metadata.getFaviconUrl(), metadata.getSnippet());
             }
-            nativeOnGetKnownContentDone(mNativeBridge);
+            FeedOfflineBridgeJni.get().onGetKnownContentDone(mNativeBridge, FeedOfflineBridge.this);
         });
     }
 
@@ -156,16 +160,20 @@ public class FeedOfflineBridge implements FeedOfflineIndicator, KnownContent.Lis
         }
     }
 
-    private native long nativeInit(Profile profile);
-    private native void nativeDestroy(long nativeFeedOfflineBridge);
-    private native Object nativeGetOfflineId(long nativeFeedOfflineBridge, String url);
-    private native void nativeGetOfflineStatus(long nativeFeedOfflineBridge,
-            String[] urlsToRetrieve, Callback<String[]> urlListConsumer);
-    private native void nativeOnContentRemoved(long nativeFeedOfflineBridge, String[] urlsRemoved);
-    private native void nativeOnNewContentReceived(long nativeFeedOfflineBridge);
-    private native void nativeOnNoListeners(long nativeFeedOfflineBridge);
-    private native void nativeAppendContentMetadata(long nativeFeedOfflineBridge, String url,
-            String title, long timePublishedMs, String imageUrl, String publisher,
-            String faviconUrl, String snippet);
-    private native void nativeOnGetKnownContentDone(long nativeFeedOfflineBridge);
+    @NativeMethods
+    interface Natives {
+        long init(FeedOfflineBridge caller, Profile profile);
+        void destroy(long nativeFeedOfflineBridge, FeedOfflineBridge caller);
+        Object getOfflineId(long nativeFeedOfflineBridge, FeedOfflineBridge caller, String url);
+        void getOfflineStatus(long nativeFeedOfflineBridge, FeedOfflineBridge caller,
+                String[] urlsToRetrieve, Callback<String[]> urlListConsumer);
+        void onContentRemoved(
+                long nativeFeedOfflineBridge, FeedOfflineBridge caller, String[] urlsRemoved);
+        void onNewContentReceived(long nativeFeedOfflineBridge, FeedOfflineBridge caller);
+        void onNoListeners(long nativeFeedOfflineBridge, FeedOfflineBridge caller);
+        void appendContentMetadata(long nativeFeedOfflineBridge, FeedOfflineBridge caller,
+                String url, String title, long timePublishedMs, String imageUrl, String publisher,
+                String faviconUrl, String snippet);
+        void onGetKnownContentDone(long nativeFeedOfflineBridge, FeedOfflineBridge caller);
+    }
 }

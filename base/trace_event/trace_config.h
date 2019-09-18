@@ -242,6 +242,7 @@ class BASE_EXPORT TraceConfig {
   }
   void SetTraceBufferSizeInKb(size_t size) { trace_buffer_size_in_kb_ = size; }
   void EnableSystrace() { enable_systrace_ = true; }
+  void EnableSystraceEvent(const std::string& systrace_event);
   void EnableArgumentFilter() { enable_argument_filter_ = true; }
   void EnableHistogram(const std::string& histogram_name);
 
@@ -286,6 +287,10 @@ class BASE_EXPORT TraceConfig {
     event_filters_ = filter_configs;
   }
 
+  const std::unordered_set<std::string>& systrace_events() const {
+    return systrace_events_;
+  }
+
   const std::unordered_set<std::string>& histogram_names() const {
     return histogram_names_;
   }
@@ -294,6 +299,7 @@ class BASE_EXPORT TraceConfig {
   FRIEND_TEST_ALL_PREFIXES(TraceConfigTest, TraceConfigFromValidLegacyFormat);
   FRIEND_TEST_ALL_PREFIXES(TraceConfigTest,
                            TraceConfigFromInvalidLegacyStrings);
+  FRIEND_TEST_ALL_PREFIXES(TraceConfigTest, SystraceEventsSerialization);
 
   // The default trace config, used when none is provided.
   // Allows all non-disabled-by-default categories through, except if they end
@@ -332,6 +338,7 @@ class BASE_EXPORT TraceConfig {
 
   EventFilters event_filters_;
   std::unordered_set<std::string> histogram_names_;
+  std::unordered_set<std::string> systrace_events_;
 };
 
 }  // namespace trace_event

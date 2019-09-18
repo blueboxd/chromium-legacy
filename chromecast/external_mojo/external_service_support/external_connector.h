@@ -14,6 +14,7 @@
 #include "chromecast/external_mojo/public/mojom/connector.mojom.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace chromecast {
@@ -47,7 +48,8 @@ class ExternalConnector {
                                ExternalService* service) = 0;
   virtual void RegisterService(
       const std::string& service_name,
-      external_mojo::mojom::ExternalServicePtr service_ptr) = 0;
+      mojo::PendingRemote<external_mojo::mojom::ExternalService>
+          service_remote) = 0;
 
   // Asks the Mojo broker to bind to a matching interface on the service with
   // the given |service_name|. If the service does not yet exist, the binding

@@ -317,6 +317,13 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
                                 /* adjust_height_for_width */ true));
   AddChildView(title_label_);
 
+  alert_state_label_ = new views::Label(
+      base::string16(), CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_SECONDARY);
+  alert_state_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  alert_state_label_->SetMultiLine(false);
+  alert_state_label_->SetVisible(false);
+  AddChildView(alert_state_label_);
+
   domain_label_ = new views::Label(
       base::string16(), CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_SECONDARY,
       gfx::DirectionalityMode::DIRECTIONALITY_AS_URL);
@@ -353,6 +360,9 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
                             views::FlexSpecification::ForSizeRule(
                                 views::MinimumFlexSizeRule::kScaleToMinimum,
                                 views::MaximumFlexSizeRule::kPreferred));
+  alert_state_label_->SetProperty(views::kMarginsKey,
+                                  gfx::Insets(kLineSpacing, kVerticalMargin,
+                                              kLineSpacing, kVerticalMargin));
   domain_label_->SetProperty(views::kMarginsKey,
                              gfx::Insets(kLineSpacing, kVerticalMargin,
                                          kHorizontalMargin, kVerticalMargin));
@@ -543,6 +553,7 @@ void TabHoverCardBubbleView::FadeInToShow() {
 
 void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
   base::string16 title;
+  TabAlertState alert_state;
   GURL domain_url;
   // Use committed URL to determine if no page has yet loaded, since the title
   // can be blank for some web pages.
@@ -551,9 +562,11 @@ void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
     title = tab->data().IsCrashed()
                 ? l10n_util::GetStringUTF16(IDS_HOVER_CARD_CRASHED_TITLE)
                 : l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE);
+    alert_state = TabAlertState::NONE;
   } else {
     domain_url = tab->data().last_committed_url;
     title = tab->data().title;
+    alert_state = tab->data().alert_state;
   }
   base::string16 domain;
   if (domain_url.SchemeIsFile()) {
@@ -572,6 +585,14 @@ void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
         net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr);
   }
   title_label_->SetText(title);
+  // If there is no alert state do not show the label.
+  if (alert_state == TabAlertState::NONE) {
+    alert_state_label_->SetText(base::string16());
+    alert_state_label_->SetVisible(false);
+  } else {
+    alert_state_label_->SetText(chrome::GetTabAlertStateText(alert_state));
+    alert_state_label_->SetVisible(true);
+  }
   domain_label_->SetText(domain);
 
   // If the preview image feature is not enabled, |preview_image_| will be null.

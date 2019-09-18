@@ -121,8 +121,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.tableView.accessibilityIdentifier = kAutofillCreditCardTableViewId;
 
   base::RecordAction(base::UserMetricsAction("AutofillCreditCardsViewed"));
-  [self setToolbarItems:@[ [self flexibleSpace], self.addPaymentMethodButton ]
-               animated:YES];
+  if (base::FeatureList::IsEnabled(kSettingsAddPaymentMethod)) {
+    [self setToolbarItems:@[ [self flexibleSpace], self.addPaymentMethodButton ]
+                 animated:YES];
+  }
   [self updateUIForEditState];
   [self loadModel];
 }
@@ -493,15 +495,24 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // Adds delete button to the bottom toolbar.
 - (void)showDeleteButton {
-  NSArray* customToolbarItems =
-      @[ self.deleteButton, [self flexibleSpace], self.addPaymentMethodButton ];
+  NSArray* customToolbarItems;
+  if (base::FeatureList::IsEnabled(kSettingsAddPaymentMethod)) {
+    customToolbarItems = @[
+      self.deleteButton, [self flexibleSpace], self.addPaymentMethodButton
+    ];
+  } else {
+    customToolbarItems =
+        @[ [self flexibleSpace], self.deleteButton, [self flexibleSpace] ];
+  }
   [self setToolbarItems:customToolbarItems animated:YES];
 }
 
 // Removes delete button from the bottom toolbar.
 - (void)hideDeleteButton {
-  NSArray* customToolbarItems =
-      @[ [self flexibleSpace], self.addPaymentMethodButton ];
+  NSArray* customToolbarItems;
+  if (base::FeatureList::IsEnabled(kSettingsAddPaymentMethod)) {
+    customToolbarItems = @[ [self flexibleSpace], self.addPaymentMethodButton ];
+  }
   [self setToolbarItems:customToolbarItems animated:YES];
 }
 

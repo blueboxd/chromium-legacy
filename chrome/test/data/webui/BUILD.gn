@@ -190,7 +190,6 @@ js2gtest("browser_tests_js_mojo_lite_webui") {
   test_type = "mojo_lite_webui"
 
   sources = [
-    "app_management/app_management_browsertest.js",
     "bluetooth_internals_browsertest.js",
     "downloads/downloads_browsertest.js",
     "engagement/site_engagement_browsertest.js",

@@ -479,6 +479,7 @@
 <translation id="1698122934742150150">केवल वर्तमान गुप्त सत्र</translation>
 <translation id="1698650002254827833">ऐप्लिकेशन की सूची लोड नहीं हो सकी. कृपया फिर से कोशिश करें.</translation>
 <translation id="1701062906490865540">इस व्यक्ति को निकालें</translation>
+<translation id="1703331064825191675">अपने पासवर्ड की फ़िक्र छोड़ दें</translation>
 <translation id="1706586824377653884">आपके व्यवस्थापक ने जोड़ा</translation>
 <translation id="1706625117072057435">ज़ूम स्तर</translation>
 <translation id="1708338024780164500">(प्रयोग में नहीं)</translation>
@@ -528,6 +529,7 @@
 <translation id="1764226536771329714">बीटा</translation>
 <translation id="176587472219019965">&amp;नई विंडो</translation>
 <translation id="1766575458646819543">फ़ुल-स्क्रीन से बाहर निकलें</translation>
+<translation id="1766957085594317166">पासवर्ड को अपने Google खाते में सुरक्षित रूप से सेव करें. इसके बाद आपको कभी उन्हें दोबारा टाइप नहीं करना होगा</translation>
 <translation id="1768278914020124551">ओह!  लॉगऑन सर्वर से संपर्क करने में समस्या हुई. कृपया अपना नेटवर्क कनेक्शन और डोमेन नाम जाँचें, और दोबारा कोशिश करें.</translation>
 <translation id="1769104665586091481">नई &amp;विंडो में लिंक खोलें</translation>
 <translation id="1773212559869067373">प्रमाणीकरण प्रमाणपत्र को स्थानीय रूप से अस्वीकार कर दिया गया</translation>
@@ -1875,6 +1877,7 @@
 <translation id="3748026146096797577">कनेक्ट नहीं है</translation>
 <translation id="3752582316358263300">ठीक है...</translation>
 <translation id="3752673729237782832">मेरे डिवाइस</translation>
+<translation id="3753033997400164841">एक बार सेव करें. हर जगह इस्तेमाल करें</translation>
 <translation id="3755411799582650620">आपका <ph name="PHONE_NAME" /> अब इस <ph name="DEVICE_TYPE" /> को भी अनलॉक कर सकता है.</translation>
 <translation id="375636864092143889">साइट आपका माइक्रोफ़ोन इस्तेमाल कर रही है</translation>
 <translation id="3757733214359997190">कोई साइट नहीं मिली</translation>
@@ -2206,6 +2209,7 @@
 <translation id="4232375817808480934">Kerberos कॉन्फ़िगर करें</translation>
 <translation id="4235200303672858594">संपूर्ण स्क्रीन</translation>
 <translation id="4235965441080806197">साइन इन रद्द करें</translation>
+<translation id="4242145785130247982">एक से ज़्यादा क्लाइंट प्रमाणपत्र काम नहीं करते</translation>
 <translation id="4242533952199664413">सेटिंग खोलें</translation>
 <translation id="4242577469625748426">डिवाइस पर नीति सेटिंग इंस्टॉल करने में विफल रहा: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">और ज़्यादा स्टाइलस ऐप ढूंढें</translation>
@@ -2664,6 +2668,7 @@
 <translation id="4957949153200969297">सिर्फ़ उन्हीं सुविधाओं को चालू करें जो <ph name="IDS_SHORT_PRODUCT_NAME" /> सिंक से जुड़ी हैं</translation>
 <translation id="4959262764292427323">पासवर्ड आपके Google खाते में सेव किए जाते हैं ताकि आप किसी भी डिवाइस पर उनका इस्तेमाल कर सकें</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> - <ph name="PROFILE_NAME" /></translation>
+<translation id="496185450405387901">इस ऐप्लिकेशन को आपके एडमिन ने इंस्टॉल किया है.</translation>
 <translation id="4964455510556214366">व्यवस्था</translation>
 <translation id="4964673849688379040">जाँच कर रहा है...</translation>
 <translation id="4965808351167763748">क्या आप वाकई Hangouts Meet चलाने के लिए इस डिवाइस को सेट अप करना चाहते हैं?</translation>
@@ -2921,6 +2926,7 @@
 <translation id="5360150013186312835">टूलबार में दिखाएं</translation>
 <translation id="5362741141255528695">निजी कुंजी फ़ाइल को चुनें.</translation>
 <translation id="5363109466694494651">पावरवॉश करें और वापस लाएं</translation>
+<translation id="5365716706805792666">Google यह जांच कर सकता है कि आपके पासवर्ड डेटा का उल्लंघन कर रहे थे या नहीं. जब आप अपने Google खाते से साइन इन करेंगे, तब इसे चालू कर दिया जाएगा.</translation>
 <translation id="5365881113273618889">आपने जो फ़ोल्डर चुना है उसमें संवेदनशील फ़ाइलें हैं. क्या आप वाकई "<ph name="APP_NAME" />" को इस फ़ोल्डर में लिखने का ऐक्सेस हमेशा के लिए देना चाहते हैं?</translation>
 <translation id="5367091008316207019">फ़ाइल पढ़ी जा रही है..</translation>
 <translation id="5368720394188453070">आपका फ़ोन लॉक हो गया है. प्रवेश करने के लिए उसे अनलॉक करें.</translation>
@@ -3873,6 +3879,7 @@
 <translation id="6769712124046837540">प्रिंटर जोड़ा जा रहा है...</translation>
 <translation id="6770664076092644100">NFC के ज़रिए पुष्टि करें</translation>
 <translation id="6771503742377376720">एक प्रमाणन प्राधिकरण है</translation>
+<translation id="6775163072363532304">उपलब्ध डिवाइस यहां दिखाई देंगे.</translation>
 <translation id="6777817260680419853">रीडायरेक्ट ब्लॉक किया गया</translation>
 <translation id="6778737459546443941">आपके अभिभावक ने अभी तक इसकी अनुमति नहीं दी है</translation>
 <translation id="677965093459947883">बहुत छोटा</translation>
@@ -4292,7 +4299,6 @@
 <translation id="7371006317849674875">शुरू करने का समय</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">माउस कर्सर के हिलने पर उसे हाइलाइट करें</translation>
-<translation id="7377169924702866686">Caps Lock चालू है.</translation>
 <translation id="7377451353532943397">सेंसर का ऐक्सेस ब्लॉक करते रहें</translation>
 <translation id="7378627244592794276">नहीं</translation>
 <translation id="73786666777299047">Chrome वेब स्टोर खोलें</translation>
@@ -4333,6 +4339,7 @@
 <translation id="7441830548568730290">अन्य उपयोगकर्ता</translation>
 <translation id="7442465037756169001">आपका Hangouts Meet hardware सेट अप किए जाने के लिए तैयार है.</translation>
 <translation id="744341768939279100">नई प्रोफ़ाइल बनाएं</translation>
+<translation id="7443806024147773267">अपने Google खाते में साइन इन करके जब चाहें अपने पासवर्ड को ऐक्सेस करें</translation>
 <translation id="7444046173054089907">यह साइट अवरोधित है</translation>
 <translation id="7444983668544353857"><ph name="NETWORKDEVICE" /> बंद करें</translation>
 <translation id="7448430327655618736">ऐप्लिकेशन को अपने आप इंस्टॉल करें</translation>
@@ -4745,6 +4752,7 @@
 <translation id="8014154204619229810">अपडेटर वर्तमान में चल रहा है. फिर से देखने के लिए एक मिनट में रीफ्रेश करें.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" /> पूर्व में इंस्‍टॉल किए गए संस्‍करण को वापस लाने में समर्थ नहीं है. कृपया फिर से अपने डिवाइस को पावरवॉश करके देखें.</translation>
 <translation id="8014210335923519270">Google को सिस्टम जानकारी और इस्तेमाल का डेटा भेजकर <ph name="IDS_SHORT_PRODUCT_NAME" /> और उसकी सुरक्षा को बेहतर बनाएं</translation>
+<translation id="8015780634880457457">Google यह जांच कर सकता है कि आपके पासवर्ड डेटा का उल्लंघन कर रहे थे या नहीं</translation>
 <translation id="8016266267177410919">अस्थायी जगह</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">शॉर्टकट में बदलाव किया गया</translation>
@@ -4863,6 +4871,7 @@
 <translation id="8188389033983459049">अपनी डिवाइस सेटिंग जांचें और जारी रखने के लिए उसे चालू करें</translation>
 <translation id="8190193592390505034"><ph name="PROVIDER_NAME" /> से कनेक्‍ट हो रहा है</translation>
 <translation id="8191230140820435481">अपने ऐप्स , एक्सटेंशन, और थीम प्रबंधित करें</translation>
+<translation id="819464600477418284">इस ऐप्लिकेशन को अनइंस्टॉल नहीं किया जा सकता, क्योंकि यह Chrome OS का हिस्सा है.</translation>
 <translation id="8195027750202970175">डिस्क पर आकार</translation>
 <translation id="8198323535106903877">हम आपके लिए वे <ph name="NUMBER_OF_APPS" /> ऐप्लिकेशन इंस्टॉल करेंगे</translation>
 <translation id="8199300056570174101">नेटवर्क (सेवा) और डिवाइस प्रॉपर्टी</translation>
@@ -4923,6 +4932,7 @@
     <ph name="BEGIN_PARAGRAPH2" />इस सुविधा को बंद करने के बाद भी यह डिवाइस, सिस्टम अपडेट और सुरक्षा जैसी ज़रूरी सेवाएं पाने के लिए जानकारी भेज सकेगा.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />सेटिंग &gt; बेहतर &gt; Google को निदान और इस्तेमाल का डेटा अपने आप भेजें पर जाकर मालिक इस सुविधा को नियंत्रित कर सकता है.<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />अगर आपके बच्चे के लिए वेब और ऐप्लिकेशन की और भी गतिविधि सेटिंग चालू है, तो यह डेटा उसके Google खाते में सेव हो सकता है. families.google.com पर जाकर इन सेटिंग और इन्हें बदलने के तरीकों के बारे में ज़्यादा जानें.<ph name="END_PARAGRAPH4" /></translation>
+<translation id="826905130698769948">अमान्य क्लाइंट प्रमाणपत्र</translation>
 <translation id="8270242299912238708">PDF दस्तावेज़</translation>
 <translation id="827097179112817503">होम बटन दिखाएं</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 बुकमार्क हटाया गया}one{# बुकमार्क हटाए गए}other{# बुकमार्क हटाए गए}}</translation>
@@ -4994,7 +5004,6 @@
 <translation id="8390449457866780408">सर्वर अनुपलब्‍ध है.</translation>
 <translation id="8391218455464584335">विनाइल</translation>
 <translation id="8391712576156218334">इमेज उपलब्ध नहीं है. बाद में फिर से कोशिश करें.</translation>
-<translation id="8392234662362215700">कीबोर्ड लेआउट बदलने के लिए Control-Shift-Space दबाएं.</translation>
 <translation id="8392364544846746346">जब कोई वेबसाइट आपके डिवाइस की किसी फ़ाइल या फ़ोल्डर में बदलाव करना चाहे, तो इसके लिए पूछें</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> के लिए विकल्प मेन्यू</translation>
 <translation id="8393511274964623038">प्लग-इन रोकें</translation>
@@ -5165,7 +5174,6 @@
 <translation id="8656619792520327915">एक और ब्लूटूथ 'सुरक्षा चाबी' जोड़ें</translation>
 <translation id="8656768832129462377">जाँच न करें</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" />, <ph name="TAB_NAME" /> के साथ आपकी स्क्रीन और ऑडियो को शेयर कर रहा है.</translation>
-<translation id="8659875081143553823">बस एक सेकंड</translation>
 <translation id="8660174278198826384">अपने संगठन के डिवाइस एडमिन से संपर्क करें</translation>
 <translation id="8661290697478713397">लिंक को गुप्त&amp; विंडो में खोलें</translation>
 <translation id="8662671328352114214"><ph name="TYPE" /> नेटवर्क में शामिल हों</translation>
@@ -5336,6 +5344,7 @@
 <translation id="8874184842967597500">कनेक्ट नहीं है</translation>
 <translation id="8876307312329369159">यह सेटिंग किसी डेमो सत्र में बदली नहीं जा सकती है.</translation>
 <translation id="8877448029301136595">[मूल निर्देशिका]</translation>
+<translation id="8879220587046205278">Google Play के ऐप्लिकेशन को फ़ाइल सिस्टम के ऐक्सेस की ज़रूरत पड़ सकती है, ताकि वे बाहरी स्टोरेज वाले डिवाइस पर मौजूद फ़ाइलों पर लिख पाएं और उन्हें पढ़ पाएं. डिवाइस पर बनाई गई फ़ाइलों और फ़ोल्डर को बाहरी डिस्क का इस्तेमाल करने वाला कोई भी व्यक्ति देख सकता है.</translation>
 <translation id="8879284080359814990">टैब के रूप में &amp;दिखाएं</translation>
 <translation id="8879921471468674457">साइन इन की जानकारी याद रखें</translation>
 <translation id="8881020143150461183">कृपया फिर से कोशिश करें. तकनीकी सहायता के लिए <ph name="CARRIER_NAME" /> से संपर्क करें.</translation>

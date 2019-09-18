@@ -57,16 +57,15 @@ net::NetworkTrafficAnnotationTag CreateNetworkTrafficAnnotationTag() {
 
 GeneralAudienceBrowsingService::GeneralAudienceBrowsingService(
     scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory)
-    : shared_url_loader_factory_(shared_url_loader_factory),
-      general_audience_browsing_api_key_observer_binding_(this) {
-  mojom::GeneralAudienceBrowsingAPIKeyObserverPtr observer_ptr;
-  general_audience_browsing_api_key_observer_binding_.Bind(
-      mojo::MakeRequest(&observer_ptr));
-  content::GetSystemConnector()->BindInterface(
+    : shared_url_loader_factory_(shared_url_loader_factory) {
+  content::GetSystemConnector()->Connect(
       mojom::kChromecastServiceName,
-      &general_audience_browsing_api_key_subject_ptr_);
-  general_audience_browsing_api_key_subject_ptr_
-      ->AddGeneralAudienceBrowsingAPIKeyObserver(std::move(observer_ptr));
+      general_audience_browsing_api_key_subject_remote_
+          .BindNewPipeAndPassReceiver());
+  general_audience_browsing_api_key_subject_remote_
+      ->AddGeneralAudienceBrowsingAPIKeyObserver(
+          general_audience_browsing_api_key_observer_receiver_
+              .BindNewPipeAndPassRemote());
 }
 
 GeneralAudienceBrowsingService::~GeneralAudienceBrowsingService() = default;

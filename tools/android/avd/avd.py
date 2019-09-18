@@ -1,12 +1,16 @@
+#! /usr/bin/env vpython
 # Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import argparse
 import contextlib
+import json
 import logging
 import os
 import socket
 import stat
+import subprocess
 import sys
 import threading
 
@@ -23,8 +27,20 @@ from py_utils import tempfile_ext
 sys.path.append(
     os.path.join(_SRC_ROOT, 'third_party', 'catapult', 'devil'))
 from devil.android.sdk import adb_wrapper
+from devil.android.tools import script_common
 from devil.utils import cmd_helper
+from devil.utils import logging_common
 from devil.utils import timeout_retry
+
+sys.path.append(
+    os.path.join(_SRC_ROOT, 'build', 'android'))
+import devil_chromium
+
+
+_ALL_PACKAGES = object()
+_DEFAULT_AVDMANAGER_PATH = os.path.join(
+    _SRC_ROOT, 'third_party', 'android_sdk', 'public',
+    'tools', 'bin', 'avdmanager')
 
 
 class AvdException(Exception):
@@ -58,6 +74,92 @@ def _Load(avd_proto_path):
     return text_format.Merge(avd_proto_file.read(), avd_pb2.Avd())
 
 
+class _AvdManagerAgent(object):
+  """Private utility for interacting with avdmanager."""
+
+  def __init__(self, avd_home, sdk_root):
+    """Create an _AvdManagerAgent.
+
+    Args:
+      avd_home: path to ANDROID_AVD_HOME directory.
+        Typically something like /path/to/dir/.android/avd
+      sdk_root: path to SDK root directory.
+    """
+    self._avd_home = avd_home
+    self._sdk_root = sdk_root
+
+    self._env = dict(os.environ)
+
+    # avdmanager, like many tools that have evolved from `android`
+    # (http://bit.ly/2m9JiTx), uses toolsdir to find the SDK root.
+    # Pass avdmanager a fake directory under the directory in which
+    # we install the system images s.t. avdmanager can find the
+    # system images.
+    fake_tools_dir = os.path.join(
+        self._sdk_root,
+        'non-existent-tools')
+    self._env.update({
+        'ANDROID_AVD_HOME': self._avd_home,
+        'AVDMANAGER_OPTS':
+            '-Dcom.android.sdkmanager.toolsdir=%s' % fake_tools_dir,
+    })
+
+  def Create(self, avd_name, system_image, force=False):
+    """Call `avdmanager create`.
+
+    Args:
+      avd_name: name of the AVD to create.
+      system_image: system image to use for the AVD.
+      force: whether to force creation, overwriting any existing
+        AVD with the same name.
+    """
+    create_cmd = [
+        _DEFAULT_AVDMANAGER_PATH,
+        '-v',
+        'create',
+        'avd',
+        '-n', avd_name,
+        '-k', system_image,
+    ]
+    if force:
+      create_cmd += ['--force']
+
+    create_proc = cmd_helper.Popen(
+        create_cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE, env=self._env)
+    output, error = create_proc.communicate(input='\n')
+    if create_proc.returncode != 0:
+      raise AvdException(
+          'AVD creation failed',
+          command=create_cmd,
+          stdout=output,
+          stderr=error)
+
+    for line in output.splitlines():
+      logging.info('  %s', line)
+
+  def Delete(self, avd_name):
+    """Call `avdmanager delete`.
+
+    Args:
+      avd_name: name of the AVD to delete.
+    """
+    delete_cmd = [
+        _DEFAULT_AVDMANAGER_PATH,
+        '-v',
+        'delete',
+        'avd',
+        '-n', avd_name,
+    ]
+    try:
+      for line in cmd_helper.IterCmdOutputLines(delete_cmd, env=self._env):
+        logging.info('  %s', line)
+    except subprocess.CalledProcessError as e:
+      raise AvdException(
+          'AVD deletion failed: %s' % str(e),
+          command=delete_cmd)
+
+
 class AvdConfig(object):
   """Represents a particular AVD configuration.
 
@@ -84,16 +186,118 @@ class AvdConfig(object):
     self._initialized = False
     self._initializer_lock = threading.Lock()
 
-  def Install(self):
+  def Create(self, force=False, snapshot=False, keep=False,
+             cipd_json_output=None):
+    """Create an instance of the AVD CIPD package.
+
+    This method:
+     - installs the requisite system image
+     - creates the AVD
+     - modifies the AVD's ini files to support running chromium tests
+       in chromium infrastructure
+     - optionally starts & stops the AVD for snapshotting (default no)
+     - creates and uploads an instance of the AVD CIPD package
+     - optionally deletes the AVD (default yes)
+
+    Args:
+      force: bool indicating whether to force create the AVD.
+      snapshot: bool indicating whether to snapshot the AVD before creating
+        the CIPD package.
+      keep: bool indicating whether to keep the AVD after creating
+        the CIPD package.
+      cipd_json_output: string path to pass to `cipd create` via -json-output.
+    """
+    logging.info('Installing required packages.')
+    self.Install(packages=[self._config.system_image_package])
+
+    android_avd_home = os.path.join(self._emulator_home, 'avd')
+
+    if not os.path.exists(android_avd_home):
+      os.makedirs(android_avd_home)
+
+    avd_manager = _AvdManagerAgent(
+        avd_home=android_avd_home,
+        sdk_root=self._emulator_sdk_root)
+
+    logging.info('Creating AVD.')
+    avd_manager.Create(
+        avd_name=self._config.avd_name,
+        system_image=self._config.system_image_name,
+        force=force)
+
+    try:
+      logging.info('Modifying AVD configuration.')
+
+      root_ini = os.path.join(
+          android_avd_home, '%s.ini' % self._config.avd_name)
+      avd_dir = os.path.join(
+          android_avd_home, '%s.avd' % self._config.avd_name)
+      config_ini = os.path.join(avd_dir, 'config.ini')
+
+      with open(root_ini, 'a') as root_ini_file:
+        root_ini_file.write('path.rel=avd/%s.avd\n' % self._config.avd_name)
+
+      with open(config_ini, 'a') as config_ini_file:
+        config_ini_file.write('disk.dataPartition.size=4G\n')
+
+      # Start & stop the AVD.
+      if snapshot:
+        # TODO(crbug.com/922145): Implement support for snapshotting.
+        raise NotImplementedError('Snapshotting is not supported yet.')
+
+      package_def_content = {
+          'package': self._config.avd_package.package_name,
+          'root': self._emulator_home,
+          'install_mode': 'copy',
+          'data': [
+              {'dir': os.path.relpath(avd_dir, self._emulator_home)},
+              {'file': os.path.relpath(root_ini, self._emulator_home)},
+          ],
+      }
+
+      logging.info('Creating AVD CIPD package.')
+      logging.debug('ensure file content: %s',
+                    json.dumps(package_def_content, indent=2))
+
+      with tempfile_ext.TemporaryFileName(suffix='.json') as package_def_path:
+        with open(package_def_path, 'w') as package_def_file:
+          json.dump(package_def_content, package_def_file)
+
+        logging.info('  %s', self._config.avd_package.package_name)
+        cipd_create_cmd = [
+            'cipd', 'create', '-pkg-def', package_def_path,
+        ]
+        if cipd_json_output:
+          cipd_create_cmd.extend([
+              '-json-output', cipd_json_output,
+          ])
+        try:
+          for line in cmd_helper.IterCmdOutputLines(cipd_create_cmd):
+            logging.info('    %s', line)
+        except subprocess.CalledProcessError as e:
+          raise AvdException(
+              'CIPD package creation failed: %s' % str(e),
+              command=cipd_create_cmd)
+
+    finally:
+      if not keep:
+        logging.info('Deleting AVD.')
+        avd_manager.Delete(avd_name=self._config.avd_name)
+
+  def Install(self, packages=_ALL_PACKAGES):
     """Installs the requested CIPD packages.
 
     Returns: None
     Raises: AvdException on failure to install.
     """
     pkgs_by_dir = {}
-    for pkg in (self._config.emulator_package,
-                self._config.system_image_package,
-                self._config.avd_package):
+    if packages is _ALL_PACKAGES:
+      packages = [
+          self._config.avd_package,
+          self._config.emulator_package,
+          self._config.system_image_package,
+      ]
+    for pkg in packages:
       if not pkg.dest_path in pkgs_by_dir:
         pkgs_by_dir[pkg.dest_path] = []
       pkgs_by_dir[pkg.dest_path].append(pkg)
@@ -114,13 +318,14 @@ class AvdConfig(object):
       ensure_cmd = [
           'cipd', 'ensure', '-ensure-file', ensure_path, '-root', cipd_root,
       ]
-      status, output, error = cmd_helper.GetCmdStatusOutputAndError(ensure_cmd)
-      if status:
+      try:
+        for line in cmd_helper.IterCmdOutputLines(ensure_cmd):
+          logging.info('    %s', line)
+      except subprocess.CalledProcessError as e:
         raise AvdException(
-            'Failed to install CIPD package %s' % pkg.package_name,
-            command=ensure_cmd,
-            stdout=output,
-            stderr=error)
+            'Failed to install CIPD package %s: %s' % (
+                pkg.package_name, str(e)),
+            command=ensure_cmd)
 
     # The emulator requires that some files are writable.
     for dirname, _, filenames in os.walk(self._emulator_home):
@@ -247,3 +452,72 @@ class _AvdInstance(object):
   @property
   def serial(self):
     return self._emulator_serial
+
+
+def main(raw_args):
+
+  parser = argparse.ArgumentParser()
+
+  def add_common_arguments(parser):
+    logging_common.AddLoggingArguments(parser)
+    script_common.AddEnvironmentArguments(parser)
+    parser.add_argument(
+        '--avd-config',
+        type=os.path.realpath,
+        metavar='PATH',
+        required=True,
+        help='Path to an AVD config text protobuf.')
+
+  subparsers = parser.add_subparsers()
+  install_parser = subparsers.add_parser(
+      'install',
+      help='Install the CIPD packages specified in the given config.')
+  add_common_arguments(install_parser)
+
+  def install_cmd(args):
+    AvdConfig(args.avd_config).Install()
+    return 0
+
+  install_parser.set_defaults(func=install_cmd)
+
+  create_parser = subparsers.add_parser(
+      'create',
+      help='Create an AVD CIPD package according to the given config.')
+  add_common_arguments(create_parser)
+  create_parser.add_argument(
+      '--snapshot',
+      action='store_true',
+      help='Snapshot the AVD before creating the CIPD package.')
+  create_parser.add_argument(
+      '--force',
+      action='store_true',
+      help='Pass --force to AVD creation.')
+  create_parser.add_argument(
+      '--keep',
+      action='store_true',
+      help='Keep the AVD after creating the CIPD package.')
+  create_parser.add_argument(
+      '--cipd-json-output',
+      type=os.path.realpath,
+      metavar='PATH',
+      help='Path to which `cipd create` should dump json output '
+           'via -json-output.')
+
+  def create_cmd(args):
+    AvdConfig(args.avd_config).Create(
+        force=args.force, snapshot=args.snapshot, keep=args.keep,
+        cipd_json_output=args.cipd_json_output)
+    return 0
+
+  create_parser.set_defaults(func=create_cmd)
+
+  # TODO(jbudorick): Expose `start` as a subcommand.
+
+  args = parser.parse_args(raw_args)
+  logging_common.InitializeLogging(args)
+  devil_chromium.Initialize(adb_path=args.adb_path)
+  return args.func(args)
+
+
+if __name__ == '__main__':
+  sys.exit(main(sys.argv[1:]))

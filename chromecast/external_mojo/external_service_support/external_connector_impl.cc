@@ -50,21 +50,22 @@ void ExternalConnector::Connect(
         kConnectRetryDelay);
     return;
   }
-  external_mojo::mojom::ExternalConnectorPtr connector(
-      external_mojo::mojom::ExternalConnectorPtrInfo(std::move(pipe), 0));
+  mojo::Remote<external_mojo::mojom::ExternalConnector> connector(
+      mojo::PendingRemote<external_mojo::mojom::ExternalConnector>(
+          std::move(pipe), 0));
   std::move(callback).Run(
       std::make_unique<ExternalConnectorImpl>(std::move(connector)));
 }
 
 ExternalConnectorImpl::ExternalConnectorImpl(
-    external_mojo::mojom::ExternalConnectorPtr connector)
+    mojo::Remote<external_mojo::mojom::ExternalConnector> connector)
     : connector_(std::move(connector)) {
-  connector_.set_connection_error_handler(base::BindOnce(
-      &ExternalConnectorImpl::OnConnectionError, base::Unretained(this)));
+  connector_.set_disconnect_handler(base::BindOnce(
+      &ExternalConnectorImpl::OnMojoDisconnect, base::Unretained(this)));
 }
 
 ExternalConnectorImpl::ExternalConnectorImpl(
-    external_mojo::mojom::ExternalConnectorPtrInfo unbound_state)
+    mojo::PendingRemote<external_mojo::mojom::ExternalConnector> unbound_state)
     : unbound_state_(std::move(unbound_state)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
@@ -78,14 +79,15 @@ void ExternalConnectorImpl::SetConnectionErrorCallback(
 
 void ExternalConnectorImpl::RegisterService(const std::string& service_name,
                                             ExternalService* service) {
-  RegisterService(service_name, service->GetBinding());
+  RegisterService(service_name, service->GetReceiver());
 }
 
 void ExternalConnectorImpl::RegisterService(
     const std::string& service_name,
-    external_mojo::mojom::ExternalServicePtr service_ptr) {
+    mojo::PendingRemote<external_mojo::mojom::ExternalService> service_remote) {
   if (BindConnectorIfNecessary()) {
-    connector_->RegisterServiceInstance(service_name, std::move(service_ptr));
+    connector_->RegisterServiceInstance(service_name,
+                                        std::move(service_remote));
   }
 }
 
@@ -109,12 +111,12 @@ void ExternalConnectorImpl::BindInterface(
 }
 
 std::unique_ptr<ExternalConnector> ExternalConnectorImpl::Clone() {
-  external_mojo::mojom::ExternalConnectorPtrInfo connector_info;
-  auto request = mojo::MakeRequest(&connector_info);
+  mojo::PendingRemote<external_mojo::mojom::ExternalConnector> connector_remote;
+  auto receiver = connector_remote.InitWithNewPipeAndPassReceiver();
   if (BindConnectorIfNecessary()) {
-    connector_->Clone(std::move(request));
+    connector_->Clone(std::move(receiver));
   }
-  return std::make_unique<ExternalConnectorImpl>(std::move(connector_info));
+  return std::make_unique<ExternalConnectorImpl>(std::move(connector_remote));
 }
 
 void ExternalConnectorImpl::SendChromiumConnectorRequest(
@@ -124,7 +126,7 @@ void ExternalConnectorImpl::SendChromiumConnectorRequest(
   }
 }
 
-void ExternalConnectorImpl::OnConnectionError() {
+void ExternalConnectorImpl::OnMojoDisconnect() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   connector_.reset();
   if (connection_error_callback_) {
@@ -141,13 +143,13 @@ bool ExternalConnectorImpl::BindConnectorIfNecessary() {
   }
 
   if (!unbound_state_.is_valid()) {
-    // OnConnectionError was already called, but |this| was not destroyed.
+    // OnMojoDisconnect was already called, but |this| was not destroyed.
     return false;
   }
 
   connector_.Bind(std::move(unbound_state_));
-  connector_.set_connection_error_handler(base::BindOnce(
-      &ExternalConnectorImpl::OnConnectionError, base::Unretained(this)));
+  connector_.set_disconnect_handler(base::BindOnce(
+      &ExternalConnectorImpl::OnMojoDisconnect, base::Unretained(this)));
 
   return true;
 }

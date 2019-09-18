@@ -47,7 +47,8 @@ import org.chromium.base.PackageUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.DoNotInline;
+import org.chromium.base.annotations.VerifiesOnN;
+import org.chromium.base.annotations.VerifiesOnP;
 import org.chromium.base.library_loader.NativeLibraries;
 import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
@@ -78,7 +79,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
      * verification does not occur until it is actually used for N and above.
      */
     @TargetApi(Build.VERSION_CODES.N)
-    @DoNotInline
+    @VerifiesOnN
     private static class ObjectHolderForN {
         public ServiceWorkerController mServiceWorkerController;
     }
@@ -88,12 +89,12 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
      * verification does not occur until it is actually used for P and above.
      */
     @TargetApi(Build.VERSION_CODES.P)
-    @DoNotInline
+    @VerifiesOnP
     private static class ObjectHolderForP {
         public TracingController mTracingController;
     }
 
-    private final static Object sSingletonLock = new Object();
+    private static final Object sSingletonLock = new Object();
     private static WebViewChromiumFactoryProvider sSingleton;
 
     private final WebViewChromiumRunQueue mRunQueue = new WebViewChromiumRunQueue(

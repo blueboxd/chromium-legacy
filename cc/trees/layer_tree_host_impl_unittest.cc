@@ -11722,11 +11722,8 @@ TEST_F(LayerTreeHostImplTest, DidBecomeActive) {
   std::unique_ptr<FakePictureLayerImpl> mask_layer =
       FakePictureLayerImpl::Create(pending_tree, next_layer_id_++);
   FakePictureLayerImpl* raw_mask_layer = mask_layer.get();
-  pending_tree->AddMaskLayer(std::move(mask_layer));
-  GetEffectNode(pending_layer)->mask_layer_id = raw_mask_layer->id();
-  GetEffectNode(pending_layer)->is_masked = true;
-  GetPropertyTrees(pending_layer)
-      ->effect_tree.AddMaskLayerId(raw_mask_layer->id());
+  SetupMaskProperties(pending_layer, raw_mask_layer);
+  pending_tree->AddLayer(std::move(mask_layer));
 
   EXPECT_EQ(1u, pending_layer->did_become_active_call_count());
   EXPECT_EQ(0u, raw_mask_layer->did_become_active_call_count());

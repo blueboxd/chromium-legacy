@@ -27,7 +27,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
-import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountTrackerService;
@@ -459,8 +458,6 @@ public class SigninManager
         } else if (AccountIdProvider.getInstance().canBeUsed()) {
             mSignInState.mBlockedOnAccountSeeding = true;
         } else {
-            Activity activity = mSignInState.mActivity;
-            handleGooglePlayServicesUnavailability(activity, !isForceSigninEnabled());
             Log.w(TAG, "Cancelling the sign-in process as Google Play services is unavailable");
             abortSignIn();
         }
@@ -750,13 +747,6 @@ public class SigninManager
 
     public static String extractDomainName(String email) {
         return SigninManagerJni.get().extractDomainName(email);
-    }
-
-    private void handleGooglePlayServicesUnavailability(Activity activity, boolean cancelable) {
-        UserRecoverableErrorHandler errorHandler = activity != null
-                ? new UserRecoverableErrorHandler.ModalDialog(activity, cancelable)
-                : new UserRecoverableErrorHandler.SystemNotification();
-        ExternalAuthUtils.getInstance().canUseGooglePlayServices(errorHandler);
     }
 
     private boolean isGooglePlayServicesPresent(Context context) {

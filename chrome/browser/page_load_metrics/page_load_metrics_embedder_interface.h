@@ -30,6 +30,7 @@ class PageLoadMetricsEmbedderInterface {
   virtual void RegisterObservers(PageLoadTracker* metrics) = 0;
   virtual std::unique_ptr<base::OneShotTimer> CreateTimer() = 0;
   virtual bool IsPrerender(content::WebContents* web_contents) = 0;
+  virtual bool IsExtensionUrl(const GURL& url) = 0;
 };
 
 }  // namespace page_load_metrics

@@ -16,14 +16,13 @@ import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
-import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.ImageFetcher;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
-import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
+import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegateImpl;
 import org.chromium.chrome.browser.suggestions.tile.SuggestionsTileView;
 import org.chromium.chrome.browser.suggestions.tile.Tile;
 import org.chromium.chrome.browser.suggestions.tile.TileGroup;
@@ -38,44 +37,40 @@ import org.chromium.ui.base.PageTransition;
  *
  * TODO(mattsimmons): Finish MVC of this. The way the renderer builds the layout complicates things.
  */
-class MostVisitedListCoordinator
-        implements SuggestionsUiDelegate, TileGroup.Observer, TileGroup.TileSetupDelegate {
+class MostVisitedListCoordinator implements TileGroup.Observer, TileGroup.TileSetupDelegate {
     private static final int TITLE_LINES = 1;
 
     // There's a limit of 12 in {@link MostVisitedSitesBridge#setObserver}.
     private static final int MAX_RESULTS = 12;
-    private SuggestionsSource mSuggestionsSource;
-    private SuggestionsRanker mSuggestionsRanker;
-    private SuggestionsEventReporter mEventReporter;
-    private SnackbarManager mSnackbarManager;
     private TileGroup mTileGroup;
-    private ImageFetcher mImageFetcher;
-    private DiscardableReferencePool mReferencePool;
     private TileRenderer mRenderer;
     private ViewGroup mParent;
 
     public MostVisitedListCoordinator(ChromeActivity activity, ViewGroup parent) {
         mParent = parent;
         Profile profile = Profile.getLastUsedProfile();
-        mSuggestionsSource =
+        SuggestionsSource suggestionsSource =
                 SuggestionsDependencyFactory.getInstance().createSuggestionSource(profile);
-        mSuggestionsRanker = new SuggestionsRanker();
-        mEventReporter = SuggestionsDependencyFactory.getInstance().createEventReporter();
+        SuggestionsRanker suggestionsRanker = new SuggestionsRanker();
+        SuggestionsEventReporter eventReporter =
+                SuggestionsDependencyFactory.getInstance().createEventReporter();
 
-        mReferencePool = GlobalDiscardableReferencePool.getReferencePool();
-        mImageFetcher = new ImageFetcher(mSuggestionsSource, profile, mReferencePool);
-        mSnackbarManager = activity.getSnackbarManager();
+        DiscardableReferencePool referencePool = GlobalDiscardableReferencePool.getReferencePool();
+        ImageFetcher imageFetcher = new ImageFetcher(suggestionsSource, profile, referencePool);
+        SnackbarManager snackbarManager = activity.getSnackbarManager();
 
         mRenderer = new TileRenderer(
-                activity, SuggestionsConfig.TileStyle.MODERN, TITLE_LINES, mImageFetcher);
+                activity, SuggestionsConfig.TileStyle.MODERN, TITLE_LINES, imageFetcher);
 
         OfflinePageBridge offlinePageBridge =
                 SuggestionsDependencyFactory.getInstance().getOfflinePageBridge(profile);
 
         TileGroupDelegateImpl tileGroupDelegate =
-                new TileGroupDelegateImpl(activity, profile, null, mSnackbarManager);
-        mTileGroup =
-                new TileGroup(mRenderer, this, null, tileGroupDelegate, this, offlinePageBridge);
+                new TileGroupDelegateImpl(activity, profile, null, snackbarManager);
+        SuggestionsUiDelegate suggestionsUiDelegate = new MostVisitedSuggestionsUiDelegate(
+                suggestionsSource, eventReporter, profile, referencePool, snackbarManager);
+        mTileGroup = new TileGroup(
+                mRenderer, suggestionsUiDelegate, null, tileGroupDelegate, this, offlinePageBridge);
         mTileGroup.startObserving(MAX_RESULTS);
     }
 
@@ -93,52 +88,7 @@ class MostVisitedListCoordinator
         }
     }
 
-    /** SuggestionsUiDelegate Implementation. */
-    @Override
-    public SuggestionsSource getSuggestionsSource() {
-        return mSuggestionsSource;
-    }
-
-    @Override
-    public SuggestionsRanker getSuggestionsRanker() {
-        return mSuggestionsRanker;
-    }
-
-    @Override
-    public SuggestionsEventReporter getEventReporter() {
-        return mEventReporter;
-    }
-
-    @Override
-    public SuggestionsNavigationDelegate getNavigationDelegate() {
-        return null;
-    }
-
-    @Override
-    public ImageFetcher getImageFetcher() {
-        return mImageFetcher;
-    }
-
-    @Override
-    public SnackbarManager getSnackbarManager() {
-        return mSnackbarManager;
-    }
-
-    @Override
-    public DiscardableReferencePool getReferencePool() {
-        return mReferencePool;
-    }
-
-    @Override
-    public void addDestructionObserver(DestructionObserver destructionObserver) {}
-
-    @Override
-    public boolean isVisible() {
-        return false;
-    }
-
     /** TileGroup.Observer implementation. */
-
     @Override
     public void onTileDataChanged() {
         if (mTileGroup.getTileSections().size() < 1) return;
@@ -181,7 +131,8 @@ class MostVisitedListCoordinator
         return callback;
     }
 
-    private class MostVisitedTileInteractionDelegate implements TileInteractionDelegate {
+    /** Handle interactions with the Most Visited tiles. */
+    private static class MostVisitedTileInteractionDelegate implements TileInteractionDelegate {
         private Tile mTile;
 
         public MostVisitedTileInteractionDelegate(Tile tile) {
@@ -201,6 +152,21 @@ class MostVisitedListCoordinator
         public void onCreateContextMenu(
                 ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
             // TODO(mattsimmons): Handle this, likely not a blocker for MVP.
+        }
+    }
+
+    /** Suggestions UI Delegate for constructing the TileGroup. */
+    private static class MostVisitedSuggestionsUiDelegate extends SuggestionsUiDelegateImpl {
+        public MostVisitedSuggestionsUiDelegate(SuggestionsSource suggestionsSource,
+                SuggestionsEventReporter eventReporter, Profile profile,
+                DiscardableReferencePool referencePool, SnackbarManager snackbarManager) {
+            super(suggestionsSource, eventReporter, null, profile, null, referencePool,
+                    snackbarManager);
+        }
+
+        @Override
+        public boolean isVisible() {
+            return false;
         }
     }
 }

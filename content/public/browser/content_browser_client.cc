@@ -600,7 +600,7 @@ bool ContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs(
   return false;
 }
 
-bool ContentBrowserClient::BindAssociatedInterfaceRequestFromFrame(
+bool ContentBrowserClient::BindAssociatedReceiverFromFrame(
     RenderFrameHost* render_frame_host,
     const std::string& interface_name,
     mojo::ScopedInterfaceEndpointHandle* handle) {

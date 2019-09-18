@@ -505,6 +505,39 @@ TEST(ParsedCookieTest, SetSameSite) {
   EXPECT_TRUE(pc.IsValid());
 }
 
+// Test that the correct enum value is returned for the SameSite attribute
+// string.
+TEST(ParsedCookieTest, CookieSameSiteStringEnum) {
+  ParsedCookie pc("name=value; SameSite");
+  CookieSameSiteString actual = CookieSameSiteString::kLax;
+  EXPECT_EQ(CookieSameSite::UNSPECIFIED, pc.SameSite(&actual));
+  EXPECT_EQ(CookieSameSiteString::kEmptyString, actual);
+
+  pc.SetSameSite("Strict");
+  EXPECT_EQ(CookieSameSite::STRICT_MODE, pc.SameSite(&actual));
+  EXPECT_EQ(CookieSameSiteString::kStrict, actual);
+
+  pc.SetSameSite("Lax");
+  EXPECT_EQ(CookieSameSite::LAX_MODE, pc.SameSite(&actual));
+  EXPECT_EQ(CookieSameSiteString::kLax, actual);
+
+  pc.SetSameSite("None");
+  EXPECT_EQ(CookieSameSite::NO_RESTRICTION, pc.SameSite(&actual));
+  EXPECT_EQ(CookieSameSiteString::kNone, actual);
+
+  pc.SetSameSite("Extended");
+  EXPECT_EQ(CookieSameSite::EXTENDED_MODE, pc.SameSite(&actual));
+  EXPECT_EQ(CookieSameSiteString::kExtended, actual);
+
+  pc.SetSameSite("Bananas");
+  EXPECT_EQ(CookieSameSite::UNSPECIFIED, pc.SameSite(&actual));
+  EXPECT_EQ(CookieSameSiteString::kUnrecognized, actual);
+
+  ParsedCookie pc2("no_samesite=1");
+  EXPECT_EQ(CookieSameSite::UNSPECIFIED, pc2.SameSite(&actual));
+  EXPECT_EQ(CookieSameSiteString::kUnspecified, actual);
+}
+
 TEST(ParsedCookieTest, SettersInputValidation) {
   ParsedCookie pc("name=foobar");
   EXPECT_TRUE(pc.SetPath("baz"));

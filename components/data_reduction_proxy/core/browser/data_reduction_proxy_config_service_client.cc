@@ -501,7 +501,6 @@ void DataReductionProxyConfigServiceClient::InvalidateConfig() {
   config_storer_.Run(std::string());
   request_options_->Invalidate();
   config_values_->Invalidate();
-  service_->SetPingbackReportingFraction(0.0f);
   config_->OnNewClientConfigFetched();
 }
 
@@ -573,15 +572,6 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
 bool DataReductionProxyConfigServiceClient::ParseAndApplyProxyConfig(
     const ClientConfig& config) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  float reporting_fraction = 0.0f;
-  if (config.has_pageload_metrics_config() &&
-      config.pageload_metrics_config().has_reporting_fraction()) {
-    reporting_fraction = config.pageload_metrics_config().reporting_fraction();
-  }
-  DCHECK_LE(0.0f, reporting_fraction);
-  DCHECK_GE(1.0f, reporting_fraction);
-  service_->SetPingbackReportingFraction(reporting_fraction);
-
   if (!config.has_proxy_config())
     return false;
 

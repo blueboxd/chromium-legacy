@@ -189,14 +189,16 @@ RedirectAction CompositeMatcher::ShouldRedirectRequest(
 }
 
 uint8_t CompositeMatcher::GetRemoveHeadersMask(const RequestParams& params,
-                                               uint8_t current_mask) const {
-  uint8_t mask = current_mask;
+                                               uint8_t ignored_mask) const {
+  uint8_t mask = 0;
   for (const auto& matcher : matchers_) {
     // The allow rule will override lower priority remove header rules.
     if (HasMatchingAllowRule(matcher.get(), params))
       return mask;
-    mask |= matcher->GetRemoveHeadersMask(params, mask);
+    mask |= matcher->GetRemoveHeadersMask(params, mask | ignored_mask);
   }
+
+  DCHECK(!(mask & ignored_mask));
   return mask;
 }
 

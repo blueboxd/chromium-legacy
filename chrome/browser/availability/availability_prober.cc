@@ -43,6 +43,7 @@ namespace {
 const char kCachePrefKeyPrefix[] = "Availability.Prober.cache";
 
 const char kSuccessHistogram[] = "Availability.Prober.DidSucceed";
+const char kFinalResultHistogram[] = "Availability.Prober.FinalState";
 const char kTimeUntilSuccess[] = "Availability.Prober.TimeUntilSuccess";
 const char kTimeUntilFailure[] = "Availability.Prober.TimeUntilFailure";
 const char kAttemptsBeforeSuccessHistogram[] =
@@ -331,6 +332,23 @@ void AvailabilityProber::AddSelfAsNetworkConnectionObserver(
   network_connection_tracker_->AddNetworkConnectionObserver(this);
 }
 
+void AvailabilityProber::OnProbingEnd() {
+  base::Value* cache_entry =
+      cached_probe_results_->FindKey(GetCacheKeyForCurrentNetwork());
+  if (cache_entry) {
+    base::Optional<AvailabilityProberCacheEntry> entry =
+        DecodeCacheEntryValue(*cache_entry);
+    if (entry.has_value()) {
+      base::BooleanHistogram::FactoryGet(
+          AppendNameToHistogram(kFinalResultHistogram),
+          base::HistogramBase::kUmaTargetedHistogramFlag)
+          ->Add(entry.value().is_success());
+    }
+  }
+
+  ResetState();
+}
+
 void AvailabilityProber::ResetState() {
   time_when_set_active_ = base::nullopt;
   successive_retry_count_ = 0;
@@ -408,7 +426,7 @@ void AvailabilityProber::CreateAndStartURLLoader() {
   DCHECK(!url_loader_);
 
   if (!delegate_->ShouldSendNextProbe()) {
-    ResetState();
+    OnProbingEnd();
     return;
   }
 
@@ -531,7 +549,7 @@ void AvailabilityProber::ProcessProbeFailure() {
     return;
   }
 
-  ResetState();
+  OnProbingEnd();
 }
 
 void AvailabilityProber::ProcessProbeSuccess() {
@@ -561,7 +579,7 @@ void AvailabilityProber::ProcessProbeSuccess() {
   }
 
   RecordProbeResult(true);
-  ResetState();
+  OnProbingEnd();
 }
 
 base::Optional<bool> AvailabilityProber::LastProbeWasSuccessful() {

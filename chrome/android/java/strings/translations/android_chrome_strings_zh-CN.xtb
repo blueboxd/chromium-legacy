@@ -449,7 +449,6 @@
 <translation id="4440958355523780886">由 Google 提供的精简版网页。点按即可加载原始网页。</translation>
 <translation id="4452411734226507615">关闭“<ph name="TAB_TITLE" />”标签页</translation>
 <translation id="4452548195519783679">已将书签添加到“<ph name="FOLDER_NAME" />”</translation>
-<translation id="4453340223357552416">已在 <ph name="PRODUCT_NAME" /> 中下载 <ph name="FILE_NAME" /></translation>
 <translation id="445467742685312942">允许网站播放受保护内容。</translation>
 <translation id="4468959413250150279">将某个特定网站静音。</translation>
 <translation id="4472118726404937099">要在您的所有设备上保持同步并进行个性化设置，请登录您的帐号并开启同步功能</translation>
@@ -819,7 +818,6 @@
 <translation id="6992289844737586249">在允许网站使用您的麦克风前先询问（推荐）</translation>
 <translation id="7015203776128479407">初始同步设置未完成。同步功能处于关闭状态。</translation>
 <translation id="7016516562562142042">允许当前搜索引擎使用</translation>
-<translation id="7021515813996758557"><ph name="FILE_NAME" /> 已下载完毕</translation>
 <translation id="7022756207310403729">在浏览器中打开</translation>
 <translation id="702463548815491781">建议在开启 TalkBack 或“开关控制”时使用</translation>
 <translation id="7029809446516969842">密码</translation>
@@ -885,7 +883,7 @@
 <translation id="7493994139787901920"><ph name="VERSION" />（上次更新时间：<ph name="TIME_SINCE_UPDATE" />）</translation>
 <translation id="7494974237137038751">已节省的流量</translation>
 <translation id="7498271377022651285">请稍候…</translation>
-<translation id="7510943789645525906">如果您使用的某个密码属于已遭泄露的数据，就会向您发出警告</translation>
+<translation id="7510943789645525906">如有密码遭遇数据泄露就会向您发出警告</translation>
 <translation id="7514365320538308">下载</translation>
 <translation id="751961395872307827">无法连接到该网站</translation>
 <translation id="7521387064766892559">JavaScript</translation>

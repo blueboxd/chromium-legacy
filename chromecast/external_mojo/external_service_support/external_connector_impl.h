@@ -13,6 +13,8 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "chromecast/external_mojo/external_service_support/external_connector.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace chromecast {
 namespace external_service_support {
@@ -20,9 +22,10 @@ namespace external_service_support {
 class ExternalConnectorImpl : public ExternalConnector {
  public:
   explicit ExternalConnectorImpl(
-      external_mojo::mojom::ExternalConnectorPtr connector);
+      mojo::Remote<external_mojo::mojom::ExternalConnector> connector);
   explicit ExternalConnectorImpl(
-      external_mojo::mojom::ExternalConnectorPtrInfo unbound_state);
+      mojo::PendingRemote<external_mojo::mojom::ExternalConnector>
+          unbound_state);
   ~ExternalConnectorImpl() override;
 
   // ExternalConnector implementation:
@@ -31,7 +34,8 @@ class ExternalConnectorImpl : public ExternalConnector {
                        ExternalService* service) override;
   void RegisterService(
       const std::string& service_name,
-      external_mojo::mojom::ExternalServicePtr service_ptr) override;
+      mojo::PendingRemote<external_mojo::mojom::ExternalService> service_remote)
+      override;
   void BindInterface(const std::string& service_name,
                      const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe) override;
@@ -45,11 +49,11 @@ class ExternalConnectorImpl : public ExternalConnector {
           callback) override;
 
  private:
-  void OnConnectionError();
+  void OnMojoDisconnect();
   bool BindConnectorIfNecessary();
 
-  external_mojo::mojom::ExternalConnectorPtr connector_;
-  external_mojo::mojom::ExternalConnectorPtrInfo unbound_state_;
+  mojo::Remote<external_mojo::mojom::ExternalConnector> connector_;
+  mojo::PendingRemote<external_mojo::mojom::ExternalConnector> unbound_state_;
   base::OnceClosure connection_error_callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);

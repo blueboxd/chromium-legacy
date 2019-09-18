@@ -277,7 +277,9 @@ void CreditCardAccessManager::FIDOAuthOptChange(bool opt_in,
   return;
 #else
   if (opt_in) {
-    GetOrCreateFIDOAuthenticator()->Register(std::move(creation_options));
+    GetOrCreateFIDOAuthenticator()->Register(
+        /*card_authorization_token=*/std::string(),
+        std::move(creation_options));
   } else {
     GetOrCreateFIDOAuthenticator()->OptOut();
   }
@@ -338,23 +340,43 @@ void CreditCardAccessManager::OnCVCAuthenticationComplete(
                                  response.cvc);
   can_fetch_unmask_details_.Signal();
 
-  if (!response.did_succeed)
+  if (!response.did_succeed || response.card_authorization_token.empty())
     return;
 
 #if defined(OS_ANDROID)
-  // Now that unmask flow is complete, on Android, if GetRealPan includes
-  // |creation_options|, completely hand over registration flow to
-  // CreditCardFIDOAuthenticator.
+  // Opt-in was already offered at this point for Android.
+  bool should_offer_fido_auth = false;
+#elif !defined(OS_IOS)
+  bool should_offer_fido_auth = unmask_details_.offer_fido_opt_in;
+#endif
+
+#if !defined(OS_IOS)
+  // Now that unmask flow is complete and form is filled, the remaining flows
+  // will be completely handed over to CreditCardFIDOAuthenticator.
+  // If the GetRealPan response includes |creation_options| or
+  // |request_options|, that means the user showed intention to opt-in while
+  // unmasking (this can only happen on Android) and must complete the challenge
+  // before successfully opting-in. If UnmaskDetails contained
+  // |request_options|, that means the user is already opted-into FIDO auth, and
+  // this is the first time use of a new card, and must complete the challenge
+  // to successfully authorize the card. Otherwise, if on desktop and eligible,
+  // show the dialog that offers opting-in to FIDO authentication in the future.
   if (response.creation_options.has_value()) {
     DCHECK(response.creation_options->is_dict());
     GetOrCreateFIDOAuthenticator()->Register(
-        response.creation_options->Clone());
+        response.card_authorization_token, response.creation_options->Clone());
+  } else if (response.request_options.has_value()) {
+    DCHECK(response.request_options->is_dict());
+    GetOrCreateFIDOAuthenticator()->Authorize(
+        response.card_authorization_token, response.request_options->Clone());
+  } else if (should_offer_fido_auth) {
+    GetOrCreateFIDOAuthenticator()->ShowWebauthnOfferDialog(
+        response.card_authorization_token);
+  } else if (unmask_details_.fido_request_options.is_dict()) {
+    GetOrCreateFIDOAuthenticator()->Authorize(
+        response.card_authorization_token,
+        std::move(unmask_details_.fido_request_options));
   }
-#elif !defined(OS_IOS)
-  // CreditCardFIDOAuthenticator does not exist on iOS.
-  // On desktop, prompts dialog to show the authentication offer.
-  if (unmask_details_.offer_fido_opt_in)
-    GetOrCreateFIDOAuthenticator()->ShowWebauthnOfferDialog();
 #endif
 }
 

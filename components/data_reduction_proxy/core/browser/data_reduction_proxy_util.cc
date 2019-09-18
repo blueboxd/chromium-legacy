@@ -129,50 +129,6 @@ const char* GetSiteBreakdownOtherHostName() {
 
 namespace protobuf_parser {
 
-PageloadMetrics_EffectiveConnectionType
-ProtoEffectiveConnectionTypeFromEffectiveConnectionType(
-    net::EffectiveConnectionType effective_connection_type) {
-  switch (effective_connection_type) {
-    case net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN:
-      return PageloadMetrics_EffectiveConnectionType_EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
-    case net::EFFECTIVE_CONNECTION_TYPE_OFFLINE:
-      return PageloadMetrics_EffectiveConnectionType_EFFECTIVE_CONNECTION_TYPE_OFFLINE;
-    case net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G:
-      return PageloadMetrics_EffectiveConnectionType_EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
-    case net::EFFECTIVE_CONNECTION_TYPE_2G:
-      return PageloadMetrics_EffectiveConnectionType_EFFECTIVE_CONNECTION_TYPE_2G;
-    case net::EFFECTIVE_CONNECTION_TYPE_3G:
-      return PageloadMetrics_EffectiveConnectionType_EFFECTIVE_CONNECTION_TYPE_3G;
-    case net::EFFECTIVE_CONNECTION_TYPE_4G:
-      return PageloadMetrics_EffectiveConnectionType_EFFECTIVE_CONNECTION_TYPE_4G;
-    default:
-      NOTREACHED();
-      return PageloadMetrics_EffectiveConnectionType_EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
-  }
-}
-
-PageloadMetrics_ConnectionType ProtoConnectionTypeFromConnectionType(
-    net::NetworkChangeNotifier::ConnectionType connection_type) {
-  switch (connection_type) {
-    case net::NetworkChangeNotifier::CONNECTION_UNKNOWN:
-      return PageloadMetrics_ConnectionType_CONNECTION_UNKNOWN;
-    case net::NetworkChangeNotifier::CONNECTION_ETHERNET:
-      return PageloadMetrics_ConnectionType_CONNECTION_ETHERNET;
-    case net::NetworkChangeNotifier::CONNECTION_WIFI:
-      return PageloadMetrics_ConnectionType_CONNECTION_WIFI;
-    case net::NetworkChangeNotifier::CONNECTION_2G:
-      return PageloadMetrics_ConnectionType_CONNECTION_2G;
-    case net::NetworkChangeNotifier::CONNECTION_3G:
-      return PageloadMetrics_ConnectionType_CONNECTION_3G;
-    case net::NetworkChangeNotifier::CONNECTION_4G:
-      return PageloadMetrics_ConnectionType_CONNECTION_4G;
-    case net::NetworkChangeNotifier::CONNECTION_NONE:
-      return PageloadMetrics_ConnectionType_CONNECTION_NONE;
-    case net::NetworkChangeNotifier::CONNECTION_BLUETOOTH:
-      return PageloadMetrics_ConnectionType_CONNECTION_BLUETOOTH;
-  }
-}
-
 net::ProxyServer::Scheme SchemeFromProxyScheme(
     ProxyServer_ProxyScheme proxy_scheme) {
   switch (proxy_scheme) {

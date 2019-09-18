@@ -46,6 +46,21 @@ public final class BrowserFragmentImpl {
         }
     }
 
+    /**
+     * Control support for embedding use cases such as animations. This should be enabled when the
+     * container view of the fragment is animated in any way, needs to be rotated or blended, or
+     * need to control z-order with other views or other BrowserFragmentImpls. Note embedder should
+     * keep WebLayer in the default non-embedding mode when user is interacting with the web
+     * content.
+     */
+    public void setSupportsEmbedding(boolean enable) {
+        try {
+            getIBrowserController().setSupportsEmbedding(enable);
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
     public BrowserController getBrowserController() {
         return mBrowserController;
     }

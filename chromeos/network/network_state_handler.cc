@@ -1137,42 +1137,49 @@ void NetworkStateHandler::SetFastTransitionStatus(bool enabled) {
 }
 
 const NetworkState* NetworkStateHandler::GetEAPForEthernet(
-    const std::string& service_path) {
+    const std::string& service_path,
+    bool connected_only) {
   const NetworkState* network = GetNetworkState(service_path);
   if (!network) {
-    NET_LOG_ERROR("GetEAPForEthernet", "Unknown service path " + service_path);
+    NET_LOG(ERROR) << "GetEAPForEthernet: Unknown service: " << service_path;
     return nullptr;
   }
   if (network->type() != shill::kTypeEthernet) {
-    NET_LOG_ERROR("GetEAPForEthernet", "Not of type Ethernet: " + service_path);
+    NET_LOG(ERROR) << "GetEAPForEthernet: Not Ethernet: " << service_path;
     return nullptr;
   }
-  if (!network->IsConnectedState())
-    return nullptr;
+  if (connected_only) {
+    if (!network->IsConnectedState()) {
+      NET_LOG(DEBUG) << "GetEAPForEthernet: Not connected.";
+      return nullptr;
+    }
 
-  // The same EAP service is shared for all ethernet services/devices.
-  // However EAP is used/enabled per device and only if the connection was
-  // successfully established.
-  const DeviceState* device = GetDeviceState(network->device_path());
-  if (!device) {
-    NET_LOG(ERROR) << "GetEAPForEthernet: Unknown device "
-                   << network->device_path()
-                   << " for connected ethernet service: " << service_path;
-    return nullptr;
+    // The same EAP service is shared for all ethernet services/devices.
+    // However EAP is used/enabled per device and only if the connection was
+    // successfully established.
+    const DeviceState* device = GetDeviceState(network->device_path());
+    if (!device) {
+      NET_LOG(ERROR) << "GetEAPForEthernet: Unknown device "
+                     << network->device_path()
+                     << " for connected ethernet service: " << service_path;
+      return nullptr;
+    }
+    if (!device->eap_authentication_completed()) {
+      NET_LOG(DEBUG) << "GetEAPForEthernet: EAP Authenticaiton not completed.";
+      return nullptr;
+    }
   }
-  if (!device->eap_authentication_completed())
-    return nullptr;
 
   NetworkStateList list;
   GetNetworkListByType(NetworkTypePattern::Primitive(shill::kTypeEthernetEap),
                        true /* configured_only */, false /* visible_only */,
                        1 /* limit */, &list);
   if (list.empty()) {
-    NET_LOG_ERROR(
-        "GetEAPForEthernet",
-        base::StringPrintf("Ethernet service %s connected using EAP, but no "
-                           "EAP service found.",
-                           service_path.c_str()));
+    if (connected_only) {
+      NET_LOG(ERROR)
+          << "GetEAPForEthernet: Connected using EAP but no EAP service found: "
+          << service_path;
+    }
     return nullptr;
   }
   return list.front();

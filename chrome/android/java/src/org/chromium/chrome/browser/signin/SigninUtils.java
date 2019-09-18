@@ -15,6 +15,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.sync.AccountManagementFragment;
 import org.chromium.chrome.browser.profiles.ProfileAccountManagementMetrics;
@@ -153,9 +154,11 @@ public class SigninUtils {
      * @param gaiaServiceType A signin::GAIAServiceType.
      */
     public static void logEvent(int metric, int gaiaServiceType) {
-        nativeLogEvent(metric, gaiaServiceType);
+        SigninUtilsJni.get().logEvent(metric, gaiaServiceType);
     }
 
-    // Native methods.
-    private static native void nativeLogEvent(int metric, int gaiaServiceType);
+    @NativeMethods
+    interface Natives {
+        void logEvent(int metric, int gaiaServiceType);
+    }
 }

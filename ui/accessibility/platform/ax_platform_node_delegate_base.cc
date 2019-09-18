@@ -44,6 +44,11 @@ gfx::NativeViewAccessible AXPlatformNodeDelegateBase::GetNSWindow() {
   return nullptr;
 }
 
+gfx::NativeViewAccessible
+AXPlatformNodeDelegateBase::GetNativeViewAccessible() {
+  return nullptr;
+}
+
 gfx::NativeViewAccessible AXPlatformNodeDelegateBase::GetParent() {
   return nullptr;
 }

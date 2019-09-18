@@ -911,7 +911,9 @@
     "os": ["chromeos"],
     "test_policy": { "BuiltinCertificateVerifierEnabled": true },
     "pref_mappings": [
-      { "pref": "builtin_certificate_verifier_enabled" }
+      { "pref": "builtin_certificate_verifier_enabled",
+        "local_state": true
+      }
     ]
   },
 

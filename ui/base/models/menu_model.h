@@ -5,6 +5,7 @@
 #ifndef UI_BASE_MODELS_MENU_MODEL_H_
 #define UI_BASE_MODELS_MENU_MODEL_H_
 
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/base/models/menu_model_delegate.h"
 #include "ui/base/models/menu_separator_types.h"
@@ -24,7 +25,7 @@ class Accelerator;
 class ButtonMenuItemModel;
 
 // An interface implemented by an object that provides the content of a menu.
-class UI_BASE_EXPORT MenuModel {
+class UI_BASE_EXPORT MenuModel : public base::SupportsWeakPtr<MenuModel> {
  public:
   // The type of item.
   enum ItemType {

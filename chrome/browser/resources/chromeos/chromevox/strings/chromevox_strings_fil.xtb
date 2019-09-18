@@ -233,6 +233,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="27527859628328957">Lumaktaw sa susunod na napo-focus na item</translation>
 <translation id="2770781857296573485">Pumasok sa pag-explore ng pangkat</translation>
 <translation id="2777845298774924149">Lumabas</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{+#}one{+#}other{+#}}</translation>
 <translation id="2784959586797362050">Gaya ng nakasanayan, maaari kang direktang magpadala ng feedback sa amin sa pamamagitan ng pagpindot sa Paghahanap+a pagkatapos ay i. Nasasabik kaming may marinig mula sa iyo.</translation>
 <translation id="2800204403141299078">Wala nang mga naiibang elemento.</translation>
 <translation id="2800780099804980316">Walang nakaraang heading sa antas 1.</translation>
@@ -715,6 +716,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="5956928062748260866">Dialog</translation>
 <translation id="5963413905009737549">Seksyon</translation>
 <translation id="5968607524793740041">Ipakita ang menu ng konteksto</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{may # item}one{may # item}other{may # na item}}</translation>
 <translation id="5981446804259161541">Light Cyan</translation>
 <translation id="5983179082906765664">Paramihin ang granularity ng nabigasyon</translation>
 <translation id="5992285135956208197">Dokumento ng graphics</translation>

@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "chromecast/external_mojo/public/mojom/connector.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -44,7 +44,7 @@ class ChromiumServiceWrapper : public external_mojo::mojom::ExternalService {
   const service_manager::mojom::ServicePtr service_ptr_;
   const std::unique_ptr<service_manager::Service> chromium_service_;
 
-  mojo::Binding<external_mojo::mojom::ExternalService> service_binding_;
+  mojo::Receiver<external_mojo::mojom::ExternalService> service_receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChromiumServiceWrapper);
 };

@@ -59,21 +59,18 @@ void FullPanel::Layout() {
 
 }  // namespace
 
-LayoutExampleBase::ChildPanel::ChildPanel(LayoutExampleBase* example,
-                                          const gfx::Size& preferred_size)
-    : example_(example), preferred_size_(preferred_size) {
+LayoutExampleBase::ChildPanel::ChildPanel(LayoutExampleBase* example)
+    : example_(example) {
   SetBorder(CreateSolidBorder(1, SK_ColorGRAY));
-  for (size_t i = 0; i < base::size(margin_); ++i)
-    margin_[i] = CreateTextfield();
+  margin_.left = CreateTextfield();
+  margin_.top = CreateTextfield();
+  margin_.right = CreateTextfield();
+  margin_.bottom = CreateTextfield();
   flex_ = CreateTextfield();
   flex_->SetText(base::ASCIIToUTF16(""));
 }
 
 LayoutExampleBase::ChildPanel::~ChildPanel() = default;
-
-gfx::Size LayoutExampleBase::ChildPanel::CalculatePreferredSize() const {
-  return preferred_size_;
-}
 
 bool LayoutExampleBase::ChildPanel::OnMousePressed(
     const ui::MouseEvent& event) {
@@ -86,30 +83,16 @@ void LayoutExampleBase::ChildPanel::Layout() {
   const int kSpacing = 2;
   if (selected_) {
     gfx::Rect client = GetContentsBounds();
-    for (size_t i = 0; i < base::size(margin_); ++i) {
-      gfx::Point pos;
-      Textfield* textfield = margin_[i];
-      switch (i) {
-        case 0:
-          pos = gfx::Point((client.width() - textfield->width()) / 2, kSpacing);
-          break;
-        case 1:
-          pos =
-              gfx::Point(kSpacing, (client.height() - textfield->height()) / 2);
-          break;
-        case 2:
-          pos = gfx::Point((client.width() - textfield->width()) / 2,
-                           client.height() - textfield->height() - kSpacing);
-          break;
-        case 3:
-          pos = gfx::Point(client.width() - textfield->width() - kSpacing,
-                           (client.height() - textfield->height()) / 2);
-          break;
-        default:
-          NOTREACHED();
-      }
-      textfield->SetPosition(pos);
-    }
+    margin_.top->SetPosition(
+        gfx::Point((client.width() - margin_.top->width()) / 2, kSpacing));
+    margin_.left->SetPosition(
+        gfx::Point(kSpacing, (client.height() - margin_.left->height()) / 2));
+    margin_.bottom->SetPosition(
+        gfx::Point((client.width() - margin_.bottom->width()) / 2,
+                   client.height() - margin_.bottom->height() - kSpacing));
+    margin_.right->SetPosition(
+        gfx::Point(client.width() - margin_.right->width() - kSpacing,
+                   (client.height() - margin_.right->height()) / 2));
     flex_->SetPosition(gfx::Point((client.width() - flex_->width()) / 2,
                                   (client.height() - flex_->height()) / 2));
   }
@@ -125,8 +108,10 @@ void LayoutExampleBase::ChildPanel::SetSelected(bool value) {
           static_cast<ChildPanel*>(child)->SetSelected(false);
       }
     }
-    for (Textfield* textfield : margin_)
-      textfield->SetVisible(selected_);
+    margin_.left->SetVisible(selected_);
+    margin_.top->SetVisible(selected_);
+    margin_.right->SetVisible(selected_);
+    margin_.bottom->SetVisible(selected_);
     flex_->SetVisible(selected_);
     InvalidateLayout();
     example_->RefreshLayoutPanel(false);
@@ -237,6 +222,25 @@ void LayoutExampleBase::CreateMarginsTextFields(
                   kLayoutExampleVerticalSpacing;
 }
 
+void LayoutExampleBase::CreateMarginsTextFields(
+    const base::string16& label_text,
+    InsetTextfields* textfields,
+    int* vertical_pos) {
+  textfields->top = CreateTextfield(label_text, vertical_pos);
+  int center = textfields->top->x() + textfields->top->width() / 2;
+  int horizontal_pos = std::max(
+      0,
+      center - (textfields->top->width() + kLayoutExampleVerticalSpacing / 2));
+  textfields->left = CreateRawTextfield(*vertical_pos, true, &horizontal_pos);
+  textfields->right = CreateRawTextfield(*vertical_pos, true, &horizontal_pos);
+  *vertical_pos = textfields->left->y() + textfields->left->height() +
+                  kLayoutExampleVerticalSpacing;
+  horizontal_pos = textfields->top->x();
+  textfields->bottom = CreateRawTextfield(*vertical_pos, true, &horizontal_pos);
+  *vertical_pos = textfields->bottom->y() + textfields->bottom->height() +
+                  kLayoutExampleVerticalSpacing;
+}
+
 Checkbox* LayoutExampleBase::CreateCheckbox(const base::string16& label_text,
                                             int* vertical_pos) {
   Checkbox* checkbox = new Checkbox(label_text, this);
@@ -249,14 +253,14 @@ Checkbox* LayoutExampleBase::CreateCheckbox(const base::string16& label_text,
 
 void LayoutExampleBase::CreateExampleView(View* container) {
   container->SetLayoutManager(std::make_unique<FillLayout>());
-  full_panel_ = new FullPanel();
-  container->AddChildView(full_panel_);
+  View* full_panel = new FullPanel();
+  container->AddChildView(full_panel);
 
   layout_panel_ = new View();
   layout_panel_->SetBorder(CreateSolidBorder(1, SK_ColorLTGRAY));
-  full_panel_->AddChildView(layout_panel_);
+  full_panel->AddChildView(layout_panel_);
   control_panel_ = new View();
-  full_panel_->AddChildView(control_panel_);
+  full_panel->AddChildView(control_panel_);
 
   int vertical_pos = kLayoutExampleVerticalSpacing;
   int horizontal_pos = kLayoutExampleLeftPadding;
@@ -266,16 +270,21 @@ void LayoutExampleBase::CreateExampleView(View* container) {
   add_button->SizeToPreferredSize();
   add_button_ = control_panel_->AddChildView(std::move(add_button));
   horizontal_pos += add_button_->width() + kLayoutExampleVerticalSpacing;
-  for (size_t i = 0; i < base::size(child_panel_size_); ++i) {
-    child_panel_size_[i] =
-        CreateRawTextfield(vertical_pos, true, &horizontal_pos);
-    child_panel_size_[i]->SetY(
-        vertical_pos +
-        (add_button_->height() - child_panel_size_[i]->height()) / 2);
-  }
-  child_panel_size_[0]->SetText(
+
+  preferred_width_view_ =
+      CreateRawTextfield(vertical_pos, true, &horizontal_pos);
+  preferred_width_view_->SetY(
+      vertical_pos +
+      (add_button_->height() - preferred_width_view_->height()) / 2);
+  preferred_width_view_->SetText(
       base::NumberToString16(kLayoutExampleDefaultChildSize.width()));
-  child_panel_size_[1]->SetText(
+
+  preferred_height_view_ =
+      CreateRawTextfield(vertical_pos, true, &horizontal_pos);
+  preferred_height_view_->SetY(
+      vertical_pos +
+      (add_button_->height() - preferred_height_view_->height()) / 2);
+  preferred_height_view_->SetText(
       base::NumberToString16(kLayoutExampleDefaultChildSize.height()));
 
   CreateAdditionalControls(add_button_->y() + add_button_->height() +
@@ -283,21 +292,14 @@ void LayoutExampleBase::CreateExampleView(View* container) {
 }
 
 void LayoutExampleBase::ButtonPressed(Button* sender, const ui::Event& event) {
-  constexpr int kMaxPanels = 5;
   constexpr int kChildPanelGroup = 100;
 
   if (sender == add_button_) {
-    if (panel_count_ < kMaxPanels) {
-      ++panel_count_;
-      ChildPanel* panel = new ChildPanel(
-          this,
-          TextfieldsToSize(child_panel_size_, kLayoutExampleDefaultChildSize));
-      panel->SetGroup(kChildPanelGroup);
-      layout_panel_->AddChildView(panel);
-      RefreshLayoutPanel(false);
-    } else {
-      PrintStatus("Only %i panels may be added", kMaxPanels);
-    }
+    std::unique_ptr<ChildPanel> panel = std::make_unique<ChildPanel>(this);
+    panel->SetPreferredSize(GetNewChildPanelPreferredSize());
+    panel->SetGroup(kChildPanelGroup);
+    layout_panel_->AddChildView(std::move(panel));
+    RefreshLayoutPanel(false);
   } else {
     ButtonPressedImpl(sender);
   }
@@ -313,31 +315,32 @@ void LayoutExampleBase::RefreshLayoutPanel(bool update_layout) {
   layout_panel_->SchedulePaint();
 }
 
-gfx::Size LayoutExampleBase::TextfieldsToSize(Textfield* textfields[2],
-                                              const gfx::Size& default_size) {
+gfx::Size LayoutExampleBase::GetNewChildPanelPreferredSize() {
   int width;
+  if (!base::StringToInt(preferred_width_view_->GetText(), &width))
+    width = kLayoutExampleDefaultChildSize.width();
+
   int height;
-  if (!base::StringToInt(textfields[0]->GetText(), &width))
-    width = default_size.width();
-  if (!base::StringToInt(textfields[1]->GetText(), &height))
-    height = default_size.height();
+  if (!base::StringToInt(preferred_height_view_->GetText(), &height))
+    height = kLayoutExampleDefaultChildSize.height();
+
   return gfx::Size(std::max(0, width), std::max(0, height));
 }
 
 gfx::Insets LayoutExampleBase::TextfieldsToInsets(
-    Textfield* textfields[4],
+    const InsetTextfields& textfields,
     const gfx::Insets& default_insets) {
   int top;
   int left;
   int bottom;
   int right;
-  if (!base::StringToInt(textfields[0]->GetText(), &top))
+  if (!base::StringToInt(textfields.top->GetText(), &top))
     top = default_insets.top();
-  if (!base::StringToInt(textfields[1]->GetText(), &left))
+  if (!base::StringToInt(textfields.left->GetText(), &left))
     left = default_insets.left();
-  if (!base::StringToInt(textfields[2]->GetText(), &bottom))
+  if (!base::StringToInt(textfields.bottom->GetText(), &bottom))
     bottom = default_insets.bottom();
-  if (!base::StringToInt(textfields[3]->GetText(), &right))
+  if (!base::StringToInt(textfields.right->GetText(), &right))
     right = default_insets.right();
 
   return gfx::Insets(std::max(0, top), std::max(0, left), std::max(0, bottom),

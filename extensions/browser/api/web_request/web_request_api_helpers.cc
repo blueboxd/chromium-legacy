@@ -325,6 +325,40 @@ static_assert(static_cast<size_t>(ResponseHeaderType::kMaxValue) - 1 ==
 static_assert(ValidateHeaderEntries(kResponseHeaderEntries),
               "Invalid response header entries");
 
+bool HasMatchingRemovedDNRRequestHeader(
+    const extensions::WebRequestInfo& request,
+    const std::string& header) {
+  for (const auto& action : request.dnr_actions) {
+    if (std::find_if(action.request_headers_to_remove.begin(),
+                     action.request_headers_to_remove.end(),
+                     [&header](const char* header_to_remove) {
+                       return base::EqualsCaseInsensitiveASCII(header_to_remove,
+                                                               header);
+                     }) != action.request_headers_to_remove.end()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool HasMatchingRemovedDNRResponseHeader(
+    const extensions::WebRequestInfo& request,
+    const std::string& header) {
+  for (const auto& action : request.dnr_actions) {
+    if (std::find_if(action.response_headers_to_remove.begin(),
+                     action.response_headers_to_remove.end(),
+                     [&header](const char* header_to_remove) {
+                       return base::EqualsCaseInsensitiveASCII(
+                           header, header_to_remove);
+                     }) != action.response_headers_to_remove.end()) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 }  // namespace
 
 IgnoredAction::IgnoredAction(extensions::ExtensionId extension_id,
@@ -934,14 +968,8 @@ void MergeOnBeforeSendHeadersResponses(
 
         // Prevent extensions from adding any header removed by the Declarative
         // Net Request API.
-        DCHECK(request.dnr_action.has_value());
-        if (std::find_if(request.dnr_action->request_headers_to_remove.begin(),
-                         request.dnr_action->request_headers_to_remove.end(),
-                         [&key](const char* header_to_remove) {
-                           return base::EqualsCaseInsensitiveASCII(
-                               header_to_remove, key);
-                         }) !=
-            request.dnr_action->request_headers_to_remove.end()) {
+        DCHECK(!request.dnr_actions.empty());
+        if (HasMatchingRemovedDNRRequestHeader(request, key)) {
           extension_conflicts = true;
           break;
         }
@@ -1312,17 +1340,11 @@ void MergeOnHeadersReceivedResponses(
 
     // Prevent extensions from adding any response header which was removed by
     // the Declarative Net Request API.
-    DCHECK(request.dnr_action.has_value());
-    if (!extension_conflicts &&
-        !request.dnr_action->response_headers_to_remove.empty()) {
+    DCHECK(!request.dnr_actions.empty());
+
+    if (!extension_conflicts) {
       for (const ResponseHeader& header : delta.added_response_headers) {
-        if (std::find_if(request.dnr_action->response_headers_to_remove.begin(),
-                         request.dnr_action->response_headers_to_remove.end(),
-                         [&header](const char* header_to_remove) {
-                           return base::EqualsCaseInsensitiveASCII(
-                               header.first, header_to_remove);
-                         }) !=
-            request.dnr_action->response_headers_to_remove.end()) {
+        if (HasMatchingRemovedDNRResponseHeader(request, header.first)) {
           extension_conflicts = true;
           break;
         }

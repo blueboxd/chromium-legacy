@@ -193,25 +193,30 @@ TEST_F(RulesetMatcherTest, RemoveHeaders) {
   params.url = &example_url;
   params.element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
   params.is_third_party = true;
-  EXPECT_EQ(0u, matcher->GetRemoveHeadersMask(params, 0u /* current_mask */));
+  EXPECT_EQ(0u, matcher->GetRemoveHeadersMask(params, 0u /* ignored_mask */));
 
   rule.action->type = std::string("removeHeaders");
   rule.action->remove_headers_list =
-      std::vector<std::string>({"referer", "setCookie"});
+      std::vector<std::string>({"referer", "cookie", "setCookie"});
   ASSERT_TRUE(CreateVerifiedMatcher({rule}, CreateTemporarySource(), &matcher));
   EXPECT_TRUE(matcher->IsExtraHeadersMatcher());
-  EXPECT_EQ(kRemoveHeadersMask_Referer | kRemoveHeadersMask_SetCookie,
-            matcher->GetRemoveHeadersMask(params, 0u /* current_mask */));
+  EXPECT_EQ(kRemoveHeadersMask_Referer | kRemoveHeadersMask_Cookie |
+                kRemoveHeadersMask_SetCookie,
+            matcher->GetRemoveHeadersMask(params, 0u /* ignored_mask */));
 
   GURL google_url("http://google.com");
   params.url = &google_url;
-  EXPECT_EQ(0u, matcher->GetRemoveHeadersMask(params, 0u /* current_mask */));
+  EXPECT_EQ(0u, matcher->GetRemoveHeadersMask(params, 0u /* ignored_mask */));
 
-  // The current mask is ignored while matching and returned as part of the
-  // result.
-  uint8_t current_mask =
+  uint8_t ignored_mask =
       kRemoveHeadersMask_Referer | kRemoveHeadersMask_SetCookie;
-  EXPECT_EQ(current_mask, matcher->GetRemoveHeadersMask(params, current_mask));
+  EXPECT_EQ(0u, matcher->GetRemoveHeadersMask(params, ignored_mask));
+
+  // The current mask is ignored while matching and is not returned as part of
+  // the result.
+  params.url = &example_url;
+  EXPECT_EQ(kRemoveHeadersMask_Cookie,
+            matcher->GetRemoveHeadersMask(params, ignored_mask));
 }
 
 // Tests a rule to redirect to an extension path.

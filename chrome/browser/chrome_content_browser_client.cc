@@ -1123,9 +1123,6 @@ ChromeContentBrowserClient::ChromeContentBrowserClient(
 #endif
 
   extra_parts_.push_back(new ChromeContentBrowserClientPerformanceManagerPart);
-
-  gpu_binder_registry_.AddInterface(
-      base::Bind(&metrics::CallStackProfileCollector::Create));
 }
 
 ChromeContentBrowserClient::~ChromeContentBrowserClient() {
@@ -3839,7 +3836,7 @@ void ChromeContentBrowserClient::BindCredentialManagerReceiver(
                                                      render_frame_host);
 }
 
-bool ChromeContentBrowserClient::BindAssociatedInterfaceRequestFromFrame(
+bool ChromeContentBrowserClient::BindAssociatedReceiverFromFrame(
     content::RenderFrameHost* render_frame_host,
     const std::string& interface_name,
     mojo::ScopedInterfaceEndpointHandle* handle) {
@@ -3853,8 +3850,8 @@ bool ChromeContentBrowserClient::BindAssociatedInterfaceRequestFromFrame(
   if (interface_name == autofill::mojom::PasswordManagerDriver::Name_) {
     password_manager::ContentPasswordManagerDriverFactory::
         BindPasswordManagerDriver(
-            autofill::mojom::PasswordManagerDriverAssociatedRequest(
-                std::move(*handle)),
+            mojo::PendingAssociatedReceiver<
+                autofill::mojom::PasswordManagerDriver>(std::move(*handle)),
             render_frame_host);
     return true;
   }
@@ -3883,12 +3880,10 @@ void ChromeContentBrowserClient::BindInterfaceRequestFromWorker(
       interface_name, std::move(interface_pipe), render_process_host, origin);
 }
 
-void ChromeContentBrowserClient::BindInterfaceRequest(
-    const service_manager::BindSourceInfo& source_info,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle* interface_pipe) {
-  if (source_info.identity.name() == content::mojom::kGpuServiceName)
-    gpu_binder_registry_.TryBindInterface(interface_name, interface_pipe);
+void ChromeContentBrowserClient::BindGpuHostReceiver(
+    mojo::GenericPendingReceiver receiver) {
+  if (auto r = receiver.As<metrics::mojom::CallStackProfileCollector>())
+    metrics::CallStackProfileCollector::Create(std::move(r));
 }
 
 void ChromeContentBrowserClient::BindHostReceiverForRenderer(

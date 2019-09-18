@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/tracing/perfetto/producer_host.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/producer.h"
@@ -40,7 +41,7 @@ class ProducerHost : public tracing::mojom::ProducerHost,
   // Called by the ProducerService to register the
   // Producer with Perfetto and connect to the
   // corresponding remote ProducerClient.
-  void Initialize(mojom::ProducerClientPtr producer_client,
+  void Initialize(mojo::PendingRemote<mojom::ProducerClient> producer_client,
                   perfetto::TracingService* service,
                   const std::string& name);
 
@@ -88,7 +89,7 @@ class ProducerHost : public tracing::mojom::ProducerHost,
       on_commit_callback_for_testing_;
 
  private:
-  mojom::ProducerClientPtr producer_client_;
+  mojo::Remote<mojom::ProducerClient> producer_client_;
   bool is_in_process_ = false;
 
  protected:

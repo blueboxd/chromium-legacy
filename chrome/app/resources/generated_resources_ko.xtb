@@ -479,6 +479,7 @@
 <translation id="1698122934742150150">현재 시크릿 세션에만</translation>
 <translation id="1698650002254827833">앱 목록을 로드할 수 없습니다. 다시 시도해 주세요.</translation>
 <translation id="1701062906490865540">이 사용자 삭제</translation>
+<translation id="1703331064825191675">비밀번호 안심 관리</translation>
 <translation id="1706586824377653884">관리자가 추가함</translation>
 <translation id="1706625117072057435">확대/축소 수준</translation>
 <translation id="1708338024780164500">(비활성)</translation>
@@ -528,6 +529,7 @@
 <translation id="1764226536771329714">베타</translation>
 <translation id="176587472219019965">새 창(&amp;N)</translation>
 <translation id="1766575458646819543">전체 화면 종료됨</translation>
+<translation id="1766957085594317166">다시 입력할 필요가 없도록 비밀번호를 Google 계정에 안전하게 저장하세요.</translation>
 <translation id="1768278914020124551">로그온 서버에 연결하는 중에 문제가 발생했습니다. 네트워크 연결 및 도메인 이름을 확인한 다음 다시 시도하세요.</translation>
 <translation id="1769104665586091481">새 창에서 링크 열기(&amp;W)</translation>
 <translation id="1773212559869067373">인증서가 로컬로 거부됨</translation>
@@ -1875,6 +1877,7 @@
 <translation id="3748026146096797577">연결되어 있지 않음</translation>
 <translation id="3752582316358263300">확인...</translation>
 <translation id="3752673729237782832">내 기기</translation>
+<translation id="3753033997400164841">한 번만 저장하고 어디서나 사용하세요</translation>
 <translation id="3755411799582650620">이제 <ph name="PHONE_NAME" />에서도 이 <ph name="DEVICE_TYPE" />을(를) 잠금 해제할 수 있습니다.</translation>
 <translation id="375636864092143889">사이트에서 마이크를 사용하고 있습니다.</translation>
 <translation id="3757733214359997190">사이트를 찾을 수 없습니다.</translation>
@@ -2205,6 +2208,7 @@
 <translation id="4232375817808480934">Kerberos 설정</translation>
 <translation id="4235200303672858594">전체 화면</translation>
 <translation id="4235965441080806197">로그인 취소</translation>
+<translation id="4242145785130247982">여러 개의 클라이언트 인증서는 지원되지 않습니다.</translation>
 <translation id="4242533952199664413">설정 열기</translation>
 <translation id="4242577469625748426">기기에 정책 설정을 설치하지 못함: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">스타일러스 앱 더보기</translation>
@@ -2663,6 +2667,7 @@
 <translation id="4957949153200969297"><ph name="IDS_SHORT_PRODUCT_NAME" /> 동기화 관련 기능만 사용 설정</translation>
 <translation id="4959262764292427323">어느 기기에서나 사용할 수 있도록 비밀번호가 Google 계정에 저장됩니다.</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> - <ph name="PROFILE_NAME" /></translation>
+<translation id="496185450405387901">이 앱은 관리자가 설치했습니다.</translation>
 <translation id="4964455510556214366">배열</translation>
 <translation id="4964673849688379040">확인 중...</translation>
 <translation id="4965808351167763748">이 기기를 설정하여 행아웃 Meet를 실행하시겠습니까?</translation>
@@ -2920,6 +2925,7 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="5360150013186312835">툴바에서 보기</translation>
 <translation id="5362741141255528695">비공개 키 파일을 선택합니다.</translation>
 <translation id="5363109466694494651">Powerwash 및 되돌리기</translation>
+<translation id="5365716706805792666">비밀번호가 정보 유출에 포함되었는지 Google에서 확인할 수 있습니다. Google 계정으로 로그인하면 이 기능이 사용 설정됩니다.</translation>
 <translation id="5365881113273618889">선택한 폴더에 민감한 파일이 포함되어 있습니다. 이 폴더에 '<ph name="APP_NAME" />' 영구 쓰기 액세스 권한을 부여하시겠습니까?</translation>
 <translation id="5367091008316207019">파일 읽는 중..</translation>
 <translation id="5368720394188453070">휴대전화가 잠겨있습니다. 이용하려면 기기를 잠금 해제하세요.</translation>
@@ -3872,6 +3878,7 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="6769712124046837540">프린터 추가 중...</translation>
 <translation id="6770664076092644100">NFC를 통해 인증</translation>
 <translation id="6771503742377376720">인증 기관임</translation>
+<translation id="6775163072363532304">사용 가능한 기기가 여기에 표시됩니다.</translation>
 <translation id="6777817260680419853">리디렉션이 차단됨</translation>
 <translation id="6778737459546443941">부모님이 아직 승인하지 않았습니다.</translation>
 <translation id="677965093459947883">아주 작게</translation>
@@ -4291,7 +4298,6 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="7371006317849674875">시작 시간</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">이동 시 마우스 커서 강조표시</translation>
-<translation id="7377169924702866686">Caps Lock이 켜져 있습니다.</translation>
 <translation id="7377451353532943397">계속해서 센서 액세스 차단</translation>
 <translation id="7378627244592794276">안함</translation>
 <translation id="73786666777299047">Chrome 웹 스토어 열기</translation>
@@ -4332,6 +4338,7 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="7441830548568730290">다른 사용자</translation>
 <translation id="7442465037756169001">행아웃 미팅 하드웨어 설정 준비가 완료되었습니다.</translation>
 <translation id="744341768939279100">새 프로필 만들기</translation>
+<translation id="7443806024147773267">Google 계정에 로그인되어 있으면 어디서나 비밀번호에 액세스할 수 있습니다.</translation>
 <translation id="7444046173054089907">차단된 사이트</translation>
 <translation id="7444983668544353857"><ph name="NETWORKDEVICE" /> 사용 중지</translation>
 <translation id="7448430327655618736">앱 자동 설치</translation>
@@ -4745,6 +4752,7 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="8014154204619229810">업데이터가 현재 실행 중입니다. 잠시 후에 새로고침하여 다시 확인해 주세요.</translation>
 <translation id="8014206674403687691"><ph name="IDS_SHORT_PRODUCT_NAME" />을(를) 이전에 설치한 버전으로 되돌릴 수 없습니다. 대신 기기를 Powerwash해 보세요.</translation>
 <translation id="8014210335923519270">시스템 정보와 사용 기록을 Google에 전송하여 <ph name="IDS_SHORT_PRODUCT_NAME" /> 및 보안 개선</translation>
+<translation id="8015780634880457457">비밀번호가 정보 유출에 포함되었는지 Google에서 확인할 수 있습니다.</translation>
 <translation id="8016266267177410919">임시 저장소</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">바로가기 수정됨</translation>
@@ -4863,6 +4871,7 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="8188389033983459049">계속하려면 기기 설정을 확인하고 사용 설정하세요.</translation>
 <translation id="8190193592390505034"><ph name="PROVIDER_NAME" />에 연결 중</translation>
 <translation id="8191230140820435481">앱, 확장 프로그램 및 테마 관리</translation>
+<translation id="819464600477418284">이 앱은 Chrome OS의 일부이므로 제거할 수 없습니다.</translation>
 <translation id="8195027750202970175">디스크 크기</translation>
 <translation id="8198323535106903877">앱 <ph name="NUMBER_OF_APPS" />개는 자동으로 설치됩니다</translation>
 <translation id="8199300056570174101">네트워크(서비스) 및 기기 속성</translation>
@@ -4923,6 +4932,7 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
     <ph name="BEGIN_PARAGRAPH2" />이 기능을 사용 중지해도 기기에서 시스템 업데이트 및 보안과 같은 필수 서비스에 필요한 정보를 전송하는 데는 영향을 미치지 않습니다.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />소유자는 설정 &gt; 고급 &gt; 진단 및 사용 데이터를 Google에 자동 전송에서 이 기능을 제어할 수 있습니다.<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />자녀에게 추가 웹 및 앱 활동 설정이 사용 설정된 경우 이 데이터가 자녀의 Google 계정에 저장됩니다. families.google.com에서 이러한 설정 및 설정 조정 방법을 자세히 알아볼 수 있습니다.<ph name="END_PARAGRAPH4" /></translation>
+<translation id="826905130698769948">잘못된 클라이언트 인증서</translation>
 <translation id="8270242299912238708">PDF 문서</translation>
 <translation id="827097179112817503">홈 버튼 표시</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{북마크 1개가 삭제됨}other{북마크 #개가 삭제됨}}</translation>
@@ -4994,7 +5004,6 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="8390449457866780408">서버를 사용할 수 없습니다.</translation>
 <translation id="8391218455464584335">레코드판</translation>
 <translation id="8391712576156218334">이미지를 사용할 수 없습니다. 나중에 다시 시도하세요.</translation>
-<translation id="8392234662362215700">키보드 레이아웃을 전환하려면 Control-Shift-Space 키를 누르세요.</translation>
 <translation id="8392364544846746346">사이트에서 기기의 파일 또는 폴더를 수정하려는 경우 확인 메시지 표시</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" />의 옵션 메뉴</translation>
 <translation id="8393511274964623038">플러그인 중지</translation>
@@ -5165,7 +5174,6 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="8656619792520327915">다른 블루투스 보안 키 추가</translation>
 <translation id="8656768832129462377">확인 안 함</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" />에서 <ph name="TAB_NAME" />와(과) 내 화면 및 오디오를 공유 중입니다.</translation>
-<translation id="8659875081143553823">잠시 기다려 주세요.</translation>
 <translation id="8660174278198826384">조직의 기기 관리자에게 문의하세요.</translation>
 <translation id="8661290697478713397">시크릿 창에서 링크 열기(&amp;G)</translation>
 <translation id="8662671328352114214"><ph name="TYPE" /> 네트워크에 연결</translation>
@@ -5336,6 +5344,7 @@ VR로 들어가기 전에 이 사이트를 신뢰할 수 있는지 확인하세�
 <translation id="8874184842967597500">연결되지 않음</translation>
 <translation id="8876307312329369159">데모 세션에서는 이 설정을 변경할 수 없습니다.</translation>
 <translation id="8877448029301136595">[상위 디렉터리]</translation>
+<translation id="8879220587046205278">Google Play의 앱이 외부 저장장치에 있는 파일을 읽고 쓰기 위해 전체 파일 시스템 액세스 권한을 요구할 수도 있습니다. 이 기기에서 생성된 파일 및 폴더는 외장 드라이브를 사용하는 모든 사람이 볼 수 있습니다.</translation>
 <translation id="8879284080359814990">탭으로 표시(&amp;S)</translation>
 <translation id="8879921471468674457">로그인 정보 저장</translation>
 <translation id="8881020143150461183">다시 시도해 주세요. 기술 지원이 필요하면 <ph name="CARRIER_NAME" />에 문의하세요.</translation>

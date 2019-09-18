@@ -15,7 +15,7 @@ import org.chromium.chrome.browser.native_page.ContextMenuManager.ContextMenuIte
 import org.chromium.chrome.browser.ntp.cards.ActionItem;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
-import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
+import org.chromium.chrome.browser.ui.widget.displaystyle.UiConfig;
 import org.chromium.chrome.touchless.R;
 import org.chromium.ui.widget.ChromeImageView;
 import org.chromium.ui.widget.Toast;

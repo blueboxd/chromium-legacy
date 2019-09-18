@@ -44,6 +44,11 @@ suite('<app-management-dom-switch>', function() {
     domSwitch.route = '2';
     assertFalse(!!document.getElementById('child1'));
     assertTrue(!!document.getElementById('child2'));
+
+    // When no child is selected, the currently selected child is detached.
+    domSwitch.route = null;
+    assertFalse(!!document.getElementById('child1'));
+    assertFalse(!!document.getElementById('child2'));
   });
 
   test('binding to properties and paths works', function() {

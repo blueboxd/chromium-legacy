@@ -1098,7 +1098,7 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
   // Typed properties (compatible with NetworkStateProperties):
   result->connection_state =
       GetConnectionState(network_state, /*technology_enabled=*/true);
-  result->source = mojom::OncSource(network_state->onc_source());
+  result->source = GetMojoOncSource(network_state);
   result->type = type;
 
   // Unmanaged properties
@@ -1211,14 +1211,12 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       auto ethernet = mojom::ManagedEthernetProperties::New();
       const base::Value* ethernet_dict =
           GetDictionary(properties, ::onc::network_config::kEthernet);
-      if (!ethernet_dict) {
-        result->ethernet = std::move(ethernet);
-        break;
+      if (ethernet_dict) {
+        ethernet->authentication =
+            GetManagedString(ethernet_dict, ::onc::ethernet::kAuthentication);
+        ethernet->eap =
+            GetManagedEAPProperties(ethernet_dict, ::onc::ethernet::kEAP);
       }
-      ethernet->authentication =
-          GetManagedString(ethernet_dict, ::onc::ethernet::kAuthentication);
-      ethernet->eap =
-          GetManagedEAPProperties(ethernet_dict, ::onc::ethernet::kEAP);
       result->ethernet = std::move(ethernet);
       break;
     }
@@ -1490,8 +1488,84 @@ void CrosNetworkConfig::GetManagedPropertiesSuccess(
     std::move(iter->second).Run(nullptr);
     return;
   }
-  std::move(iter->second)
-      .Run(ManagedPropertiesToMojo(network_state, vpn_providers_, &properties));
+  mojom::ManagedPropertiesPtr managed_properties =
+      ManagedPropertiesToMojo(network_state, vpn_providers_, &properties);
+
+  // For Ethernet networks with no authentication, check for a separate
+  // EthernetEAP configuration.
+  const NetworkState* eap_state = nullptr;
+  if (managed_properties->type == mojom::NetworkType::kEthernet &&
+      (!managed_properties->ethernet->authentication ||
+       managed_properties->ethernet->authentication->active_value ==
+           ::onc::ethernet::kAuthenticationNone)) {
+    eap_state = network_state_handler_->GetEAPForEthernet(
+        network_state->path(), /*connected_only=*/false);
+  }
+  if (!eap_state) {
+    // No EAP properties, return the managed properties as-is.
+    std::move(iter->second).Run(std::move(managed_properties));
+    get_managed_properties_callbacks_.erase(iter);
+    return;
+  }
+
+  // Request the EAP state. On success the EAP state will be applied to
+  // |managed_properties| and returned. On failure |managed_properties| will
+  // be returned as-is.
+  NET_LOG(DEBUG) << "Requesting EAP state for: " + service_path
+                 << " from: " << eap_state->path();
+  managed_properties_[callback_id] = std::move(managed_properties);
+  network_configuration_handler_->GetManagedProperties(
+      chromeos::LoginState::Get()->primary_user_hash(), eap_state->path(),
+      base::Bind(&CrosNetworkConfig::GetManagedPropertiesSuccessEap,
+                 weak_factory_.GetWeakPtr(), callback_id),
+      base::Bind(&CrosNetworkConfig::GetManagedPropertiesSuccessNoEap,
+                 weak_factory_.GetWeakPtr(), callback_id));
+}
+
+void CrosNetworkConfig::GetManagedPropertiesSuccessEap(
+    int callback_id,
+    const std::string& service_path,
+    const base::DictionaryValue& eap_properties) {
+  auto iter = get_managed_properties_callbacks_.find(callback_id);
+  DCHECK(iter != get_managed_properties_callbacks_.end());
+
+  auto properties_iter = managed_properties_.find(callback_id);
+  DCHECK(properties_iter != managed_properties_.end());
+  mojom::ManagedPropertiesPtr managed_properties =
+      std::move(properties_iter->second);
+  managed_properties_.erase(properties_iter);
+
+  // Copy the EAP properties to |managed_properties_| before sending.
+  const base::Value* ethernet_dict =
+      GetDictionary(&eap_properties, ::onc::network_config::kEthernet);
+  if (ethernet_dict) {
+    auto ethernet = mojom::ManagedEthernetProperties::New();
+    ethernet->authentication =
+        GetManagedString(ethernet_dict, ::onc::ethernet::kAuthentication);
+    ethernet->eap =
+        GetManagedEAPProperties(ethernet_dict, ::onc::ethernet::kEAP);
+    managed_properties->ethernet = std::move(ethernet);
+  }
+
+  std::move(iter->second).Run(std::move(managed_properties));
+  get_managed_properties_callbacks_.erase(iter);
+}
+
+void CrosNetworkConfig::GetManagedPropertiesSuccessNoEap(
+    int callback_id,
+    const std::string& error_name,
+    std::unique_ptr<base::DictionaryValue> error_data) {
+  auto iter = get_managed_properties_callbacks_.find(callback_id);
+  DCHECK(iter != get_managed_properties_callbacks_.end());
+
+  auto properties_iter = managed_properties_.find(callback_id);
+  DCHECK(properties_iter != managed_properties_.end());
+  mojom::ManagedPropertiesPtr managed_properties =
+      std::move(properties_iter->second);
+  managed_properties_.erase(properties_iter);
+
+  // No EAP properties, send the unmodified managed_properties_.
+  std::move(iter->second).Run(std::move(managed_properties));
   get_managed_properties_callbacks_.erase(iter);
 }
 

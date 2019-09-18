@@ -146,6 +146,28 @@ ScrollNode& CreateScrollNodeInternal(LayerType* layer, int parent_id) {
   return *node;
 }
 
+template <typename LayerType, typename MaskLayerType>
+void SetupMaskPropertiesInternal(LayerType* masked_layer,
+                                 MaskLayerType* mask_layer) {
+  mask_layer->SetIsMask(true);
+  if (!GetEffectNode(masked_layer)->backdrop_filters.IsEmpty())
+    mask_layer->SetIsBackdropFilterMask(true);
+  mask_layer->SetBounds(masked_layer->bounds());
+  auto* masked_effect = GetEffectNode(masked_layer);
+  masked_effect->render_surface_reason = RenderSurfaceReason::kMask;
+  masked_effect->has_masking_child = true;
+  if (!masked_effect->backdrop_filters.IsEmpty()) {
+    if (!mask_layer->element_id())
+      mask_layer->SetElementId(LayerIdToElementIdForTesting(mask_layer->id()));
+    masked_effect->backdrop_mask_element_id = mask_layer->element_id();
+  }
+
+  CopyProperties(masked_layer, mask_layer);
+  mask_layer->SetOffsetToTransformParent(
+      masked_layer->offset_to_transform_parent());
+  CreateEffectNode(mask_layer).blend_mode = SkBlendMode::kDstIn;
+}
+
 template <typename LayerType>
 void SetScrollOffsetInternal(LayerType* layer,
                              const gfx::ScrollOffset& scroll_offset) {
@@ -251,6 +273,17 @@ ScrollNode& CreateScrollNode(Layer* layer, int parent_id) {
 
 ScrollNode& CreateScrollNode(LayerImpl* layer, int parent_id) {
   return CreateScrollNodeInternal(layer, parent_id);
+}
+
+void SetupMaskProperties(Layer* masked_layer, PictureLayer* mask_layer) {
+  mask_layer->SetIsDrawable(true);
+  SetupMaskPropertiesInternal(masked_layer, mask_layer);
+}
+
+void SetupMaskProperties(LayerImpl* masked_layer,
+                         PictureLayerImpl* mask_layer) {
+  mask_layer->SetDrawsContent(true);
+  SetupMaskPropertiesInternal(masked_layer, mask_layer);
 }
 
 void SetScrollOffset(Layer* layer, const gfx::ScrollOffset& scroll_offset) {

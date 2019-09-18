@@ -317,8 +317,8 @@ class AutofillPopupWarningView : public AutofillPopupRowView {
 /************** AutofillPopupItemView **************/
 
 void AutofillPopupItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  AutofillPopupController* controller = popup_view_->controller();
-  auto suggestion = controller->GetSuggestionAt(line_number_);
+  AutofillPopupController* controller = popup_view()->controller();
+  auto suggestion = controller->GetSuggestionAt(line_number());
   std::vector<base::string16> text;
   text.push_back(suggestion.value);
 
@@ -337,17 +337,17 @@ void AutofillPopupItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // Options are selectable.
   node_data->role = ax::mojom::Role::kMenuItem;
   node_data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected,
-                              is_selected_);
+                              is_selected());
 
   // Compute set size and position in set, by checking the frontend_id of each
   // row, summing the number of non-separator rows, and subtracting the number
   // of separators found before this row from its |pos_in_set|.
   int set_size = 0;
-  int pos_in_set = line_number_ + 1;
+  int pos_in_set = line_number() + 1;
   for (int i = 0; i < controller->GetLineCount(); ++i) {
     if (controller->GetSuggestionAt(i).frontend_id ==
         autofill::POPUP_ITEM_ID_SEPARATOR) {
-      if (i < line_number_)
+      if (i < line_number())
         --pos_in_set;
     } else {
       ++set_size;
@@ -358,27 +358,27 @@ void AutofillPopupItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void AutofillPopupItemView::OnMouseEntered(const ui::MouseEvent& event) {
-  AutofillPopupController* controller = popup_view_->controller();
+  AutofillPopupController* controller = popup_view()->controller();
   if (controller)
-    controller->SetSelectedLine(line_number_);
+    controller->SetSelectedLine(line_number());
 }
 
 void AutofillPopupItemView::OnMouseExited(const ui::MouseEvent& event) {
-  AutofillPopupController* controller = popup_view_->controller();
+  AutofillPopupController* controller = popup_view()->controller();
   if (controller)
     controller->SelectionCleared();
 }
 
 void AutofillPopupItemView::OnMouseReleased(const ui::MouseEvent& event) {
-  AutofillPopupController* controller = popup_view_->controller();
+  AutofillPopupController* controller = popup_view()->controller();
   if (controller && event.IsOnlyLeftMouseButton() &&
       HitTestPoint(event.location())) {
-    controller->AcceptSuggestion(line_number_);
+    controller->AcceptSuggestion(line_number());
   }
 }
 
 void AutofillPopupItemView::CreateContent() {
-  AutofillPopupController* controller = popup_view_->controller();
+  AutofillPopupController* controller = popup_view()->controller();
 
   auto* layout_manager = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal,
@@ -388,7 +388,7 @@ void AutofillPopupItemView::CreateContent() {
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
   const gfx::ImageSkia icon =
-      controller->layout_model().GetIconImage(line_number_);
+      controller->layout_model().GetIconImage(line_number());
 
   if (!icon.isNull()) {
     AddIcon(icon);
@@ -434,15 +434,15 @@ void AutofillPopupItemView::RefreshStyle() {
 std::unique_ptr<views::View> AutofillPopupItemView::CreateValueLabel() {
   // TODO(crbug.com/831603): Remove elision responsibilities from controller.
   base::string16 text =
-      popup_view_->controller()->GetElidedValueAt(line_number_);
-  if (popup_view_->controller()
-          ->GetSuggestionAt(line_number_)
+      popup_view()->controller()->GetElidedValueAt(line_number());
+  if (popup_view()->controller()
+          ->GetSuggestionAt(line_number())
           .is_value_secondary) {
     return CreateSecondaryLabel(text);
   }
 
   auto text_label = CreateLabelWithStyleAndContext(
-      popup_view_->controller()->GetElidedValueAt(line_number_),
+      popup_view()->controller()->GetElidedValueAt(line_number()),
       ChromeTextContext::CONTEXT_BODY_TEXT_LARGE, GetPrimaryTextStyle());
 
   const gfx::Font::Weight font_weight = GetPrimaryTextWeight();
@@ -512,8 +512,8 @@ AutofillPopupSuggestionView* AutofillPopupSuggestionView::Create(
 
 std::unique_ptr<views::Background>
 AutofillPopupSuggestionView::CreateBackground() {
-  return is_selected_ ? views::CreateSolidBackground(
-                            popup_view_->GetSelectedBackgroundColor())
+  return is_selected() ? views::CreateSolidBackground(
+                            popup_view()->GetSelectedBackgroundColor())
                       : nullptr;
 }
 
@@ -535,7 +535,7 @@ AutofillPopupSuggestionView::AutofillPopupSuggestionView(
 
 std::unique_ptr<views::View> AutofillPopupSuggestionView::CreateSubtextLabel() {
   base::string16 label_text =
-      popup_view_->controller()->GetSuggestionAt(line_number_).label;
+      popup_view()->controller()->GetSuggestionAt(line_number()).label;
   if (label_text.empty())
     return nullptr;
 
@@ -590,9 +590,9 @@ PasswordPopupSuggestionView::PasswordPopupSuggestionView(
     int line_number,
     int frontend_id)
     : AutofillPopupSuggestionView(popup_view, line_number, frontend_id) {
-  origin_ = popup_view_->controller()->GetElidedLabelAt(line_number_);
+  origin_ = popup_view->controller()->GetElidedLabelAt(line_number);
   masked_password_ =
-      popup_view_->controller()->GetSuggestionAt(line_number_).additional_label;
+      popup_view->controller()->GetSuggestionAt(line_number).additional_label;
 }
 
 /************** AutofillPopupFooterView **************/
@@ -614,9 +614,9 @@ void AutofillPopupFooterView::CreateContent() {
       /*left=*/0,
       /*bottom=*/0,
       /*right=*/0,
-      /*color=*/popup_view_->GetSeparatorColor()));
+      /*color=*/popup_view()->GetSeparatorColor()));
 
-  AutofillPopupController* controller = popup_view_->controller();
+  AutofillPopupController* controller = popup_view()->controller();
 
   views::BoxLayout* layout_manager =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -627,7 +627,7 @@ void AutofillPopupFooterView::CreateContent() {
       views::BoxLayout::CrossAxisAlignment::kStretch);
 
   const gfx::ImageSkia icon =
-      controller->layout_model().GetIconImage(line_number_);
+      controller->layout_model().GetIconImage(line_number());
 
   // A FooterView shows an icon, if any, on the trailing (right in LTR) side,
   // but the Show Account Cards context is an anomaly. Its icon is on the
@@ -660,8 +660,8 @@ void AutofillPopupFooterView::CreateContent() {
 }
 
 std::unique_ptr<views::Background> AutofillPopupFooterView::CreateBackground() {
-  return is_selected_ ? views::CreateSolidBackground(
-                            popup_view_->GetSelectedBackgroundColor())
+  return is_selected() ? views::CreateSolidBackground(
+                            popup_view()->GetSelectedBackgroundColor())
                       : nullptr;
 }
 
@@ -703,7 +703,7 @@ void AutofillPopupSeparatorView::CreateContent() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   views::Separator* separator = new views::Separator();
-  separator->SetColor(popup_view_->GetSeparatorColor());
+  separator->SetColor(popup_view()->GetSeparatorColor());
   // Add some spacing between the the previous item and the separator.
   separator->SetPreferredHeight(
       views::MenuConfig::instance().separator_thickness);
@@ -745,16 +745,16 @@ AutofillPopupWarningView* AutofillPopupWarningView::Create(
 
 void AutofillPopupWarningView::GetAccessibleNodeData(
     ui::AXNodeData* node_data) {
-  AutofillPopupController* controller = popup_view_->controller();
+  AutofillPopupController* controller = popup_view()->controller();
   if (!controller)
     return;
 
-  node_data->SetName(controller->GetSuggestionAt(line_number_).value);
+  node_data->SetName(controller->GetSuggestionAt(line_number()).value);
   node_data->role = ax::mojom::Role::kStaticText;
 }
 
 void AutofillPopupWarningView::CreateContent() {
-  AutofillPopupController* controller = popup_view_->controller();
+  AutofillPopupController* controller = popup_view()->controller();
 
   int horizontal_margin = GetHorizontalMargin();
   int vertical_margin = AutofillPopupBaseView::GetCornerRadius();
@@ -764,9 +764,9 @@ void AutofillPopupWarningView::CreateContent() {
       gfx::Insets(vertical_margin, horizontal_margin)));
 
   auto text_label = CreateLabelWithColorReadabilityDisabled(
-      controller->GetElidedValueAt(line_number_),
+      controller->GetElidedValueAt(line_number()),
       ChromeTextContext::CONTEXT_BODY_TEXT_LARGE, ChromeTextStyle::STYLE_RED);
-  text_label->SetEnabledColor(popup_view_->GetWarningColor());
+  text_label->SetEnabledColor(popup_view()->GetWarningColor());
   text_label->SetMultiLine(true);
   int max_width =
       std::min(kAutofillPopupMaxWidth,

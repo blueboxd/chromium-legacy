@@ -8,11 +8,7 @@ import android.accessibilityservice.AccessibilityServiceInfo;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Build;
-import android.support.v7.app.AlertDialog;
 import android.view.Gravity;
 import android.view.View;
 import android.view.accessibility.AccessibilityManager;
@@ -21,10 +17,7 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.PackageUtils;
 import org.chromium.base.TraceEvent;
-import org.chromium.chrome.R;
-import org.chromium.ui.UiUtils;
 import org.chromium.ui.widget.Toast;
 
 import java.util.List;
@@ -33,21 +26,6 @@ import java.util.List;
  * Exposes information about the current accessibility state
  */
 public class AccessibilityUtil {
-    // Whether we've already shown an alert that they have an old version of TalkBack running.
-    private static boolean sOldTalkBackVersionAlertShown;
-
-    // The link to download or update TalkBack from the Play Store.
-    private static final String TALKBACK_MARKET_LINK =
-            "market://search?q=pname:com.google.android.marvin.talkback";
-
-    // The package name for TalkBack, an Android accessibility service.
-    private static final String TALKBACK_PACKAGE_NAME =
-            "com.google.android.marvin.talkback";
-
-    // The minimum TalkBack version that we support. This is the version that shipped with
-    // KitKat, from fall 2013. Versions older than that should be updated.
-    private static final int MIN_TALKBACK_VERSION = 105;
-
     private static Boolean sIsAccessibilityEnabled;
     private static ActivityStateListener sActivityStateListener;
 
@@ -115,7 +93,7 @@ public class AccessibilityUtil {
     }
 
     /**
-     * Checks whether the given {@link AccesibilityServiceInfo} can perform gestures.
+     * Checks whether the given {@link AccessibilityServiceInfo} can perform gestures.
      * @param service The service to check.
      * @return Whether the {@code service} can perform gestures. On N+, this relies on the
      *         capabilities the service can perform. On L & M, this looks specifically for
@@ -131,69 +109,6 @@ public class AccessibilityUtil {
                     && service.getResolveInfo().toString().contains("switchaccess");
         }
         return false;
-    }
-
-    /**
-     * Checks to see if an old version of TalkBack is running that Chrome doesn't support,
-     * and if so, shows an alert dialog prompting the user to update the app.
-     * @param context A {@link Context} instance.
-     * @return        True if the dialog was shown.
-     */
-    public static boolean showWarningIfOldTalkbackRunning(Context context) {
-        AccessibilityManager manager = (AccessibilityManager)
-                context.getSystemService(Context.ACCESSIBILITY_SERVICE);
-        if (manager == null) return false;
-
-        boolean isTalkbackRunning = false;
-        try {
-            List<AccessibilityServiceInfo> services =
-                    manager.getEnabledAccessibilityServiceList(
-                            AccessibilityServiceInfo.FEEDBACK_SPOKEN);
-            for (AccessibilityServiceInfo service : services) {
-                if (service.getId().contains(TALKBACK_PACKAGE_NAME)) isTalkbackRunning = true;
-            }
-        } catch (NullPointerException e) {
-            // getEnabledAccessibilityServiceList() can throw an NPE due to a bad
-            // AccessibilityService.
-        }
-        if (!isTalkbackRunning) return false;
-
-        if (PackageUtils.getPackageVersion(context, TALKBACK_PACKAGE_NAME) < MIN_TALKBACK_VERSION
-                && !sOldTalkBackVersionAlertShown) {
-            showOldTalkbackVersionAlertOnce(context);
-            return true;
-        }
-
-        return false;
-    }
-
-    private static void showOldTalkbackVersionAlertOnce(final Context context) {
-        if (sOldTalkBackVersionAlertShown) return;
-        sOldTalkBackVersionAlertShown = true;
-
-        AlertDialog.Builder builder =
-                new UiUtils
-                        .CompatibleAlertDialogBuilder(context, R.style.Theme_Chromium_AlertDialog)
-                        .setTitle(R.string.old_talkback_title)
-                        .setPositiveButton(R.string.update_from_market,
-                                new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int id) {
-                                        Uri marketUri = Uri.parse(TALKBACK_MARKET_LINK);
-                                        Intent marketIntent =
-                                                new Intent(Intent.ACTION_VIEW, marketUri);
-                                        context.startActivity(marketIntent);
-                                    }
-                                })
-                        .setNegativeButton(R.string.cancel_talkback_alert,
-                                new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int id) {
-                                        // Do nothing, this alert is only shown once either way.
-                                    }
-                                });
-        AlertDialog dialog = builder.create();
-        dialog.show();
     }
 
     /**

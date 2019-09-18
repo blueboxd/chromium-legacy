@@ -498,6 +498,9 @@ action("cronet_combine_proguard_flags") {
   script = "//components/cronet/tools/generate_proguard_file.py"
   sources = [
     "//base/android/proguard/chromium_code.flags",
+
+    # Massage the proguard rules to work with AppReduce.
+    "//components/cronet/android/cronet_appreduce_workaround.patch",
     "//components/cronet/android/cronet_impl_native_proguard.cfg",
   ]
   outputs = [

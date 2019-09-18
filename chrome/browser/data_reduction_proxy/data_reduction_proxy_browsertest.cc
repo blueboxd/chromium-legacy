@@ -25,7 +25,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client_test_utils.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
@@ -82,18 +81,6 @@ std::unique_ptr<net::test_server::HttpResponse> BasicResponse(
   auto response = std::make_unique<net::test_server::BasicHttpResponse>();
   response->set_content(content);
   response->set_content_type("text/plain");
-  return response;
-}
-
-std::unique_ptr<net::test_server::HttpResponse> CreateDRPResponseWithHeader(
-    const net::test_server::HttpRequest& request) {
-  auto response = std::make_unique<net::test_server::BasicHttpResponse>();
-  const auto chrome_proxy_header = request.headers.find("chrome-proxy");
-  if (chrome_proxy_header != request.headers.end())
-    response->set_content(chrome_proxy_header->second);
-  response->set_content_type("text/html");
-  response->AddCustomHeader("chrome-proxy", "ofcl=10");
-  response->AddCustomHeader("via", "1.1 Chrome-Compression-Proxy");
   return response;
 }
 
@@ -202,9 +189,7 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
                                     config_server_.base_url().spec());
   }
 
-  void SetUp() override {
-    InProcessBrowserTest::SetUp();
-  }
+  void SetUp() override { InProcessBrowserTest::SetUp(); }
 
   void SetUpOnMainThread() override {
     // Make sure the favicon doesn't mess with the tests.
@@ -950,73 +935,6 @@ class DataReductionProxyFallbackBrowsertest
   net::EmbeddedTestServer primary_server_;
   net::EmbeddedTestServer secondary_server_;
 };
-
-class TestDataReductionProxyPingbackClient
-    : public DataReductionProxyPingbackClient {
- public:
-  bool received_valid_pingback() const { return received_valid_pingback_; }
-  uint64_t received_page_id() const { return received_page_id_; }
-
- private:
-  void SendPingback(const DataReductionProxyData& data,
-                    const DataReductionProxyPageLoadTiming& timing) override {
-    EXPECT_TRUE(data.used_data_reduction_proxy());
-    EXPECT_EQ(kSessionKey, data.session_key());
-    EXPECT_GT(*data.page_id(), 0U);
-    received_valid_pingback_ = true;
-    received_page_id_ = *data.page_id();
-  }
-
-  void SetPingbackReportingFraction(
-      float pingback_reporting_fraction) override {}
-
-  bool received_valid_pingback_ = false;
-  uint64_t received_page_id_ = 0;
-};
-
-IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, PingbackSent) {
-  net::EmbeddedTestServer primary_server;
-  primary_server.RegisterRequestHandler(
-      base::BindRepeating(&CreateDRPResponseWithHeader));
-  ASSERT_TRUE(primary_server.Start());
-  SetConfig(CreateConfigForServer(primary_server));
-  // A network change forces the config to be fetched.
-  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
-  WaitForConfig();
-
-  // Pingback client is owned by the DRP service.
-  TestDataReductionProxyPingbackClient* pingback_client =
-      new TestDataReductionProxyPingbackClient();
-  DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-      browser()->profile())
-      ->data_reduction_proxy_service()
-      ->SetPingbackClientForTesting(pingback_client);
-
-  // Proxy will be used, so it shouldn't matter if the host cannot be resolved.
-  ui_test_utils::NavigateToURL(
-      browser(), GURL("http://does.not.resolve.com/echo_chromeproxy_header"));
-  std::string body = GetBody();
-
-  // Navigate away for the metrics to be recorded.
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-
-  EXPECT_TRUE(pingback_client->received_valid_pingback());
-  EXPECT_THAT(body, HasSubstr(base::StringPrintf("s=%s,", kSessionKey)));
-  EXPECT_THAT(body, HasSubstr("pid="));
-
-  // Parse the page ID from chrom-proxy request header and compare with page ID
-  // sent in pingback.
-  uint64_t request_page_id = 0;
-  base::StringPairs kv_pairs;
-  EXPECT_TRUE(base::SplitStringIntoKeyValuePairs(body, '=', ',', &kv_pairs));
-  for (const auto& kv_pair : kv_pairs) {
-    if (kv_pair.first == "pid")
-      EXPECT_TRUE(base::HexStringToUInt64(kv_pair.second, &request_page_id));
-  }
-
-  EXPECT_NE(0u, request_page_id);
-  EXPECT_EQ(pingback_client->received_page_id(), request_page_id);
-}
 
 IN_PROC_BROWSER_TEST_F(DataReductionProxyFallbackBrowsertest,
                        FallbackProxyUsedOnNetError) {

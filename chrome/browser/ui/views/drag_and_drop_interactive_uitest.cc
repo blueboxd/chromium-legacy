@@ -26,13 +26,16 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/hit_test_region_observer.h"
 #include "content/public/test/test_frame_navigation_observer.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/escape.h"
 #include "net/dns/mock_host_resolver.h"
@@ -88,16 +91,26 @@ class DragAndDropSimulator {
   // into the specified |location| inside |web_contents|.
   // |location| is relative to |web_contents|.
   // Returns true upon success.
-  bool SimulateDragEnter(gfx::Point location, const std::string& text) {
+  bool SimulateDragEnter(const gfx::Point& location, const std::string& text) {
     os_exchange_data_ = std::make_unique<ui::OSExchangeData>();
     os_exchange_data_->SetString(base::UTF8ToUTF16(text));
+    return SimulateDragEnter(location, *os_exchange_data_);
+  }
+
+  // Simulates notification that |url| was dragged from outside of the browser,
+  // into the specified |location| inside |web_contents|.
+  // |location| is relative to |web_contents|.
+  // Returns true upon success.
+  bool SimulateDragEnter(const gfx::Point& location, const GURL& url) {
+    os_exchange_data_ = std::make_unique<ui::OSExchangeData>();
+    os_exchange_data_->SetURL(url, base::UTF8ToUTF16(url.spec()));
     return SimulateDragEnter(location, *os_exchange_data_);
   }
 
   // Simulates dropping of the drag-and-dropped item.
   // SimulateDragEnter needs to be called first.
   // Returns true upon success.
-  bool SimulateDrop(gfx::Point location) {
+  bool SimulateDrop(const gfx::Point& location) {
     if (!active_drag_event_) {
       ADD_FAILURE() << "Cannot drop a drag that hasn't started yet.";
       return false;
@@ -119,7 +132,8 @@ class DragAndDropSimulator {
   }
 
  private:
-  bool SimulateDragEnter(gfx::Point location, const ui::OSExchangeData& data) {
+  bool SimulateDragEnter(const gfx::Point& location,
+                         const ui::OSExchangeData& data) {
     if (active_drag_event_) {
       ADD_FAILURE() << "Cannot start a new drag when old one hasn't ended yet.";
       return false;
@@ -148,7 +162,7 @@ class DragAndDropSimulator {
     return delegate;
   }
 
-  void CalculateEventLocations(gfx::Point web_contents_relative_location,
+  void CalculateEventLocations(const gfx::Point& web_contents_relative_location,
                                gfx::PointF* out_event_location,
                                gfx::PointF* out_event_root_location) {
     gfx::NativeView view = web_contents_->GetNativeView();
@@ -664,6 +678,11 @@ class DragAndDropBrowserTest : public InProcessBrowserTest,
     return drag_simulator_->SimulateDragEnter(kMiddleOfRightFrame, text);
   }
 
+  bool SimulateDragEnterToRightFrame(const GURL& url) {
+    AssertTestPageIsLoaded();
+    return drag_simulator_->SimulateDragEnter(kMiddleOfRightFrame, url);
+  }
+
   bool SimulateDropInRightFrame() {
     AssertTestPageIsLoaded();
     return drag_simulator_->SimulateDrop(kMiddleOfRightFrame);
@@ -787,6 +806,83 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, MAYBE_DropTextFromOutside) {
     ASSERT_TRUE(drop_waiter.WaitForNextMatchingEvent(&drop_event));
     EXPECT_THAT(drop_event, expected_dom_event_data.Matches());
   }
+}
+
+#if defined(OS_WIN)
+// Flaky: https://crbug.com/988938
+#define MAYBE_DropValidUrlFromOutside DISABLED_DropValidUrlFromOutside
+#else
+#define MAYBE_DropValidUrlFromOutside DropValidUrlFromOutside
+#endif
+// Scenario: drag URL from outside the browser and drop to the right frame.
+// Mostly focuses on covering the navigation path (the dragover and/or drop DOM
+// events are already covered via the DropTextFromOutside test above).
+IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, MAYBE_DropValidUrlFromOutside) {
+  std::string frame_site = use_cross_site_subframe() ? "b.com" : "a.com";
+  ASSERT_TRUE(NavigateToTestPage("a.com"));
+  ASSERT_TRUE(NavigateRightFrame(frame_site, "title1.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::NavigationController& controller = web_contents->GetController();
+  int initial_history_count = controller.GetEntryCount();
+
+  // Drag a normal URL from outside the browser into/over the right frame.
+  GURL dragged_url = embedded_test_server()->GetURL("d.com", "/title2.html");
+  ASSERT_TRUE(SimulateDragEnterToRightFrame(dragged_url));
+
+  // Drop into the right frame - this should initiate navigating the main frame
+  // to |dragged_url|.
+  content::TestNavigationObserver nav_observer(web_contents, 1);
+  ASSERT_TRUE(SimulateDropInRightFrame());
+
+  // Verify that the main frame got navigated to |dragged_url|.
+  nav_observer.Wait();
+  EXPECT_EQ(dragged_url, web_contents->GetMainFrame()->GetLastCommittedURL());
+  EXPECT_EQ(initial_history_count + 1, controller.GetEntryCount());
+}
+
+#if defined(OS_WIN)
+// Flaky: https://crbug.com/988938
+#define MAYBE_DropForbiddenUrlFromOutside DISABLED_DropForbiddenUrlFromOutside
+#else
+#define MAYBE_DropForbiddenUrlFromOutside DropForbiddenUrlFromOutside
+#endif
+// Scenario: drag URL from outside the browser and drop to the right frame.
+// Mostly focuses on covering the navigation path (the dragover and/or drop DOM
+// events are already covered via the DropTextFromOutside test above).
+IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest,
+                       MAYBE_DropForbiddenUrlFromOutside) {
+  std::string frame_site = use_cross_site_subframe() ? "b.com" : "a.com";
+  ASSERT_TRUE(NavigateToTestPage("a.com"));
+  ASSERT_TRUE(NavigateRightFrame(frame_site, "title1.html"));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::NavigationController& controller = web_contents->GetController();
+  int initial_history_count = controller.GetEntryCount();
+
+  // Drag URL from outside the browser into/over the right frame.  The test uses
+  // a URL that:
+  // 1. Passes RenderWidgetHostImpl::FilterDropData checks.
+  // 2. Fails CanDisplay checks in Blink (e.g. in RemoteFrame::Navigate).
+  //    - This condition trigger the crash from https://crbug.com/1003169
+  // 3. Passes BeginNavigation checks
+  //    - This rules out "chrome-error://blah".
+  GURL dragged_url("blob:null/some-guid");
+  ASSERT_TRUE(SimulateDragEnterToRightFrame(dragged_url));
+
+  // Drop into the right frame - this should *not* initiate navigating the main
+  // frame to |dragged_url| (because this would be a forbidden, web->file
+  // navigation).
+  ASSERT_TRUE(SimulateDropInRightFrame());
+
+  // Verify that the right frame is still responsive (this is a regression test
+  // for https://crbug.com/1003169.
+  ASSERT_TRUE(right_frame()->GetProcess()->IsInitializedAndNotDead());
+  EXPECT_EQ(123, content::EvalJs(right_frame(), "123"));
+
+  // Verify that the history remains unchanged.
+  EXPECT_NE(dragged_url, web_contents->GetMainFrame()->GetLastCommittedURL());
+  EXPECT_EQ(initial_history_count, controller.GetEntryCount());
 }
 
 #if !defined(NDEBUG) || defined(OS_WIN)

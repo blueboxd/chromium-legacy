@@ -71,6 +71,7 @@
 <translation id="1292701964462482250">"आपके कंप्यूटर पर मौजूद सॉफ़्टवेयर Chrome को सुरक्षित रूप से वेब से कनेक्ट होने से रोक रहा है" (केवल Windows कंप्यूटर)</translation>
 <translation id="1294154142200295408">अलग-अलग तरह की कमांड-लाइन</translation>
 <translation id="129553762522093515">हाल ही में बंद किए गए</translation>
+<translation id="1298536327547837046">मैलवेयर स्कैनिंग</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />अपनी कुकी साफ़ करके देखें<ph name="END_LINK" /></translation>
 <translation id="1307966114820526988">बंद की गई सुविधाएं</translation>
 <translation id="1320233736580025032">पीआरसी1 (एन्वेलप)</translation>
@@ -426,6 +427,7 @@
 <translation id="320323717674993345">भुगतान रद्द करें</translation>
 <translation id="3207960819495026254">बुकमार्क किया गया</translation>
 <translation id="3209034400446768650">पेज पर शुल्क लिया जा सकता है</translation>
+<translation id="3215092763954878852">WebAuthn का इस्तेमाल नहीं किया जा सका</translation>
 <translation id="3225919329040284222">सर्वर द्वारा कोई प्रमाणपत्र प्रस्‍तुत किया गया, जो बिल्‍ट-इन अपेक्षाओं से मिलान नहीं करता. इन अपेक्षाओं को आपकी सुरक्षा करने के लिए कुछ, उच्‍च-सुरक्षा वेबसाइटों के लिए शामिल किया गया है.</translation>
 <translation id="3226128629678568754">पेज को लोड करने के लिए ज़रूरी डेटा फिर सबमिट करने के लिए 'फिर लोड करें' बटन दबाएं.</translation>
 <translation id="3227137524299004712">माइक्रोफ़ोन</translation>
@@ -562,6 +564,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{कुछ नहीं}=1{1 साइट से }one{# साइटों से }other{# साइटों से }}</translation>
 <translation id="397105322502079400">गणना की जा रही है...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> को ब्लॉक किया गया है</translation>
+<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> ने आपके ब्राउज़र पर Chrome Enterprise की खतरे से बचाने की सुविधा चालू की है. Chrome Enterprise की खतरे से बचाने की सुविधा आपका कुछ डेटा ऐक्सेस कर सकती है.</translation>
 <translation id="3987940399970879459">एक एमबी से कम</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{आस-पास 1 वेब पेज है}one{आस-पास # वेब पेज हैं}other{आस-पास # वेब पेज हैं}}</translation>
 <translation id="4030383055268325496">&amp;जोड़ना वापस लाएं</translation>
@@ -630,6 +633,7 @@
 <translation id="4277028893293644418">पासवर्ड रीसेट करें</translation>
 <translation id="4279811152705618813">आपके <ph name="DEVICE_TYPE" /> का प्रबंधन <ph name="ENROLLMENT_DOMAIN" /> करता है</translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{यह कार्ड आपके Google खाते में सेव कर लिया गया है}one{ये कार्ड आपके Google खाते में सेव कर लिए गए हैं}other{ये कार्ड आपके Google खाते में सेव कर लिए गए हैं}}</translation>
+<translation id="428847186335018806">Chrome में डाउनलोड या अपलोड किए जाने वाली फ़ाइलों को स्कैन करें.</translation>
 <translation id="42981349822642051">विस्तृत करें</translation>
 <translation id="4302965934281694568">शू3 (एन्वेलप)</translation>
 <translation id="4305817255990598646">बदलें</translation>
@@ -668,6 +672,7 @@
 <translation id="4506176782989081258">सत्‍यापन गड़बड़ी: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">सिस्टम व्यवस्थापक से संपर्क करें</translation>
 <translation id="450710068430902550">व्यवस्थापक के साथ शेयर करना</translation>
+<translation id="4508814173490746936">टच आईडी का इस्तेमाल नहीं किया जा सका</translation>
 <translation id="4510487217173779431">शू4 (एन्वेलप)</translation>
 <translation id="4515275063822566619">कार्ड और पते की जानकारी Chrome और आपके Google खाते (<ph name="ACCOUNT_EMAIL" />) से ली जाती है. आप उन्हें <ph name="BEGIN_LINK" />सेटिंग<ph name="END_LINK" /> में जाकर प्रबंधित कर सकते हैं.</translation>
 <translation id="4517607026994743406">कॉम-10 (एन्वेलप)</translation>
@@ -763,6 +768,7 @@
 <translation id="5045550434625856497">ग़लत पासवर्ड</translation>
 <translation id="5056549851600133418">आपके लिए लेख</translation>
 <translation id="5068524481479508725">ए10</translation>
+<translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 कुकी इस्तेमाल में है)}one{(# कुकी इस्तेमाल में हैं)}other{(# कुकी इस्तेमाल में हैं)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />प्रॉक्सी पते की जाँच करें<ph name="END_LINK" /></translation>
 <translation id="5087286274860437796">सर्वर का प्रमाण पत्र इस समय मान्य नहीं है.</translation>
 <translation id="5087580092889165836">कार्ड जोड़ें</translation>
@@ -991,6 +997,7 @@
 <translation id="6302269476990306341">'Chrome में Google Assistant' को रोका जा रहा है</translation>
 <translation id="6305205051461490394"><ph name="URL" /> तक नहीं पहुंचा जा सकता.</translation>
 <translation id="6321917430147971392">अपनी DNS सेटिंग जांचे</translation>
+<translation id="6322182122604171028">Windows Hello का इस्तेमाल नहीं किया जा सका</translation>
 <translation id="6328639280570009161">नेटवर्क पूर्वानुमान को अक्षम करके देखें</translation>
 <translation id="6328784461820205019">"आपका कनेक्शन निजी नहीं है" या "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" या "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" या "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" या "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" या "एसएसएल प्रमाणपत्र गड़बड़ी"</translation>
 <translation id="6328786501058569169">यह साइट भ्रामक है</translation>
@@ -1014,6 +1021,7 @@
 <translation id="6433490469411711332">संपर्क जानकारी में बदलाव करें</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> ने कनेक्ट करने से मना कर दिया है.</translation>
 <translation id="6434309073475700221">खारिज करें</translation>
+<translation id="6435221585574090192">सुरक्षा से जुड़ी उन गतिविधियों के बारे में डेटा शेयर करें जिन्हें Chrome Enterprise की खतरे से बचाने वाली सुविधा ने आपके एडमिन को फ़्लैग किया है. इनमें पेज के यूआरएल, फ़ाइल का नाम, और फ़ाइल का मेटाडेटा, आपके डिवाइस का उपयोगकर्ता नाम और Chrome उपयोगकर्ता नाम शामिल हो सकते हैं.</translation>
 <translation id="6440503408713884761">अनदेखा किया गया</translation>
 <translation id="6446163441502663861">काहू (एन्वेलप)</translation>
 <translation id="6446608382365791566">और जानकारी जोड़ें</translation>
@@ -1058,6 +1066,7 @@
 <translation id="6671697161687535275">क्रोमियम से फ़ॉर्म सुझाव निकालें?</translation>
 <translation id="6685834062052613830">प्रस्थान करें और सेटअप पूरा करें</translation>
 <translation id="6689271823431384964">आपके साइन इन किए होने की वजह से, Chrome आपको Google खाते में कार्ड सेव करने की सुविधा देता है. आप 'सेटिंग' में जाकर इसे बदल सकते हैं. कार्डधारक का नाम आपके खाते से लिया जाता है.</translation>
+<translation id="6707256370811247129">कैश मेमोरी की सामग्री और फ़ाइलों को स्कैन करें जिन्हें आप Chrome में डाउनलोड या अपलोड करते हैं.</translation>
 <translation id="6710213216561001401">पिछला</translation>
 <translation id="6710594484020273272">&lt;खोज शब्द लिखें&gt;</translation>
 <translation id="671076103358959139">नाम दर्ज करने का टोकन:</translation>
@@ -1076,6 +1085,7 @@
 <translation id="681021252041861472">ज़रूरी फ़ील्ड</translation>
 <translation id="6810899417690483278">कस्टमाइज़ेशन आईडी</translation>
 <translation id="6825578344716086703">आपने <ph name="DOMAIN" /> तक पहुंचने की कोशिश की थी, लेकिन सर्वर ने कमज़ोर हस्ताक्षर एल्गोरिद्म (जैसे कि SHA-1) वाला प्रमाणपत्र प्रस्तुत किया. इसका मतलब है कि सर्वर की ओर से प्रस्तुत किए गए सुरक्षा क्रेडेंशियल नकली हो सकते हैं और हो सकता है कि सर्वर आपका अपेक्षित सर्वर न हो (हो सकता है कि आप किसी हमलावर से बातचीत कर रहे हों).</translation>
+<translation id="6826370046007623921">डेटा लीक होने की रोकथाम</translation>
 <translation id="6831043979455480757">अनुवाद करें</translation>
 <translation id="6839929833149231406">क्षेत्र</translation>
 <translation id="6852204201400771460">ऐप्लिकेशन फिर लोड करें?</translation>
@@ -1222,6 +1232,7 @@
 <translation id="7542995811387359312">अपने आप क्रेडिट कार्ड भरना अक्षम किया गया है क्योंकि यह फ़ॉर्म किसी सुरक्षित कनेक्शन का उपयोग नहीं करता है.</translation>
 <translation id="7548892272833184391">कनेक्शन गड़बड़ियां ठीक करना</translation>
 <translation id="7549584377607005141">इस वेबपेज को उस डेटा की ज़रुरत है जो आपने पहले दर्ज की थी ताकि इसे सही रूप में डिस्प्ले किया जा सके. आप यह डेटा फिर से भेज सकते हैं, लेकिन ऐसा करके आप इस पेज की इससे पहले की जा चुकी कोई कार्रवाई दोहराएंगे.</translation>
+<translation id="7550637293666041147">आपके डिवाइस का उपयोगकर्ता नाम और Chrome उपयोगकर्ता नाम</translation>
 <translation id="7552846755917812628">ये टिप्स आज़माएं:</translation>
 <translation id="7554791636758816595">नया टैब</translation>
 <translation id="7564049878696755256">आपके <ph name="ORG_NAME" /> खाते का एक्सेस खो सकता है या पहचान चोरी हो सकती है. Chrome आपको अभी अपना पासवर्ड बदलने का सुझाव देता है.</translation>
@@ -1236,6 +1247,7 @@
 <translation id="7610193165460212391"><ph name="VALUE" /> मान सीमा से बाहर है.</translation>
 <translation id="7613889955535752492">समय-सीमा खत्म: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">आपके पास पहले से ऐसा डेटा है, जिसे आपके Google खाते के पासवर्ड के किसी अलग वर्शन का इस्तेमाल करके सुरक्षित किया गया है. कृपया उसे नीचे लिखें.</translation>
+<translation id="7625784245512586808">Chrome Enterprise की खतरे से बचाने की सुविधा</translation>
 <translation id="7633909222644580952">परफ़ॉर्मेंस डेटा और क्रैश रिपोर्ट</translation>
 <translation id="7637571805876720304">क्रोमियम से क्रेडिट कार्ड निकालें?</translation>
 <translation id="7638605456503525968">सीरियल पोर्ट</translation>
@@ -1346,6 +1358,7 @@
 <translation id="8211406090763984747">कनेक्शन सुरक्षित है</translation>
 <translation id="8218327578424803826">सौंपा गया स्‍थान:</translation>
 <translation id="8220146938470311105">सी7/सी6 (एन्वेलप)</translation>
+<translation id="8220639454292072926">एंटरप्राइज़ रिपोर्टिंग</translation>
 <translation id="8225771182978767009">जिस व्यक्ति ने इस कंप्यूटर को सेट किया है, उसने इस साइट को ब्लॉक करना चुना है.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">पेज को नए गुप्त टैब में खोलें</translation>
@@ -1429,6 +1442,7 @@
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> का &lt;abbr id="dnsDefinition"&gt;DNS पता&lt;/abbr&gt; नहीं पाया जा सका. समस्या का निदान किया जा रहा है.</translation>
 <translation id="874846938927089722">स्वीकार किए जाने वाले क्रेडिट और प्रीपेड कार्ड</translation>
 <translation id="874918643257405732">इस टैब को बुकमार्क करें</translation>
+<translation id="8751426954251315517">कृपया बाद में कोशिश करें</translation>
 <translation id="8759274551635299824">इस कार्ड की अवधि खत्म हो चुकी है</translation>
 <translation id="8761567432415473239">Google सुरक्षित ब्राउज़िंग को <ph name="SITE" /> पर हाल ही में <ph name="BEGIN_LINK" />हानिकारक प्रोग्राम मिले हैं<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB डिवाइस</translation>
@@ -1493,6 +1507,7 @@
 <translation id="9080712759204168376">ऑर्डर की जानकारी</translation>
 <translation id="9089260154716455634">बंद रहने के समय के लिए नीति:</translation>
 <translation id="9095388113577226029">और भाषाएं...</translation>
+<translation id="9098981495403789647">एडमिन ने आपके ब्राउज़र पर Chrome Enterprise की खतरे से बचाने की सुविधा चालू की है. Chrome Enterprise की खतरे से बचाने की सुविधा आपका कुछ डेटा ऐक्सेस कर सकती है.</translation>
 <translation id="9103872766612412690">आपकी जानकारी की सुरक्षा करने के लिए <ph name="SITE" /> आम तौर पर, सुरक्षित करने के तरीके (एन्क्रिप्शन) का उपयोग करती है. जब 'क्रोमियम' ने इस बार <ph name="SITE" /> से कनेक्ट करने की कोशिश की तो, वेबसाइट ने असामान्य और गलत क्रेडेंशियल वापस भेजे. ऐसा तब हो सकता है जब कोई हमलावर <ph name="SITE" /> होने का दावा करने की कोशिश कर रहा हो या किसी वाई-फ़ाई 'साइन इन स्क्रीन' की वजह से कनेक्शन में खराबी आ गई हो. आपकी जानकारी अभी भी सुरक्षित है क्योंकि किसी भी डेटा को एक्सचेंज करने से पहले ही 'क्रोमियम' ने कनेक्शन रोक दिया था.</translation>
 <translation id="9106062320799175032">बिलिंग पता जोड़ें</translation>
 <translation id="9114524666733003316">कार्ड की पुष्टि की जा रही है...</translation>

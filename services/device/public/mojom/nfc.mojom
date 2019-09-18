@@ -30,16 +30,6 @@ enum NFCPushTarget {
   ANY
 };
 
-enum NDEFCompatibility {
-  // Allows all active and passive NFC devices, supported by the NFC standard.
-  NFC_FORUM,
-  // Allows vendor specific NFC tags (passive device) that require specific
-  // reader chips.
-  VENDOR,
-  // Allows all NDEF compatible devices that the reader chip can read.
-  ANY
-};
-
 struct NFCError {
   NFCErrorType error_type;
 };
@@ -78,9 +68,6 @@ struct NFCPushOptions {
   // If the property is true, the push operation will suspend active watchers
   // until its completion.
   bool ignore_read;
-
-  // Defines the accepted kinds of NFC devices.
-  NDEFCompatibility compatibility;
 };
 
 struct NDEFRecordTypeFilter {
@@ -96,9 +83,6 @@ struct NFCScanOptions {
 
   // Defines media type filtering constraint.
   string? media_type;
-
-  // Defines the accepted kinds of NFC devices.
-  NDEFCompatibility compatibility;
 };
 
 interface NFC {

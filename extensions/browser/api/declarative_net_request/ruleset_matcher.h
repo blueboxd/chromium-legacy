@@ -53,8 +53,7 @@ struct RequestParams {
 // RulesetMatcher encapsulates the Declarative Net Request API ruleset
 // corresponding to a single RulesetSource. This uses the url_pattern_index
 // component to achieve fast matching of network requests against declarative
-// rules. Since this class is immutable, it is thread-safe. In practice it is
-// accessed on the IO thread but created on a sequence where file IO is allowed.
+// rules. Since this class is immutable, it is thread-safe.
 class RulesetMatcher {
  public:
   // Describes the result of creating a RulesetMatcher instance.
@@ -105,10 +104,10 @@ class RulesetMatcher {
   }
 
   // Returns the bitmask of headers to remove from the request. The bitmask
-  // corresponds to RemoveHeadersMask type. |current_mask| denotes the current
-  // mask of headers to be removed and is included in the return value.
+  // corresponds to RemoveHeadersMask type. |ignored_mask| denotes the mask of
+  // headers to be skipped for evaluation and is excluded in the return value.
   uint8_t GetRemoveHeadersMask(const RequestParams& params,
-                               uint8_t current_mask) const;
+                               uint8_t ignored_mask) const;
 
   // Returns the ruleset's matching redirect rule and populates
   // |redirect_url| if there is a matching redirect rule, otherwise returns

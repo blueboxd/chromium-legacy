@@ -294,11 +294,6 @@ class PasswordFormManager : public PasswordFormManagerInterface,
   // API.
   base::Optional<PasswordStore::FormDigest> observed_not_web_form_digest_;
 
-  // Set of nonblacklisted PasswordForms from the DB that best match the form
-  // being managed by |this|, indexed by username. The PasswordForms are owned
-  // by |form_fetcher_|.
-  std::map<base::string16, const autofill::PasswordForm*> best_matches_;
-
   // Set of blacklisted forms from the PasswordStore that best match the current
   // form. They are owned by |form_fetcher_|.
   std::vector<const autofill::PasswordForm*> blacklisted_matches_;
@@ -311,12 +306,6 @@ class PasswordFormManager : public PasswordFormManagerInterface,
   // it (unlike the rest of forms being pointed to in |blacklisted_matches_|,
   // which are owned by |form_fetcher_|).
   std::unique_ptr<autofill::PasswordForm> new_blacklisted_;
-
-  // Convenience pointer to entry in best_matches_ that is marked
-  // as preferred. This is only allowed to be null if there are no best matches
-  // at all, since there will always be one preferred login when there are
-  // multiple matches (when first saved, a login is marked preferred).
-  const autofill::PasswordForm* preferred_match_ = nullptr;
 
   // Takes care of recording metrics and events for |*this|.
   scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder_;

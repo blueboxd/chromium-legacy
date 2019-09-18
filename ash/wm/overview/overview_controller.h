@@ -63,7 +63,7 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   // Pause or unpause the occlusion tracker. Resets the unpause delay if we were
   // already in the process of unpausing.
   void PauseOcclusionTracker();
-  void UnpauseOcclusionTracker(int delay);
+  void UnpauseOcclusionTracker(base::TimeDelta delay);
 
   void AddObserver(OverviewObserver* observer);
   void RemoveObserver(OverviewObserver* observer);
@@ -93,8 +93,8 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
 
   OverviewSession* overview_session() { return overview_session_.get(); }
 
-  void set_occlusion_pause_duration_for_end_ms_for_test(int duration) {
-    occlusion_pause_duration_for_end_ms_ = duration;
+  void set_occlusion_pause_duration_for_end_for_test(base::TimeDelta duration) {
+    occlusion_pause_duration_for_end_ = duration;
   }
   void set_delayed_animation_task_delay_for_test(base::TimeDelta delta) {
     delayed_animation_task_delay_ = delta;
@@ -154,7 +154,7 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   std::unique_ptr<OverviewSession> overview_session_;
   base::Time last_overview_session_time_;
 
-  int occlusion_pause_duration_for_end_ms_;
+  base::TimeDelta occlusion_pause_duration_for_end_;
 
   // Handles blurring and dimming of the wallpaper when entering or exiting
   // overview mode. Animates the blurring and dimming if necessary.

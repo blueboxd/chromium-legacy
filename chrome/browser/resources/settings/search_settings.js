@@ -153,7 +153,7 @@ cr.define('settings', function() {
       parent = parent.nodeType == Node.DOCUMENT_FRAGMENT_NODE ?
           parent.host :
           parent.parentNode;
-      if (parent.nodeName == 'SETTINGS-SUBPAGE') {
+      if (parent && parent.nodeName == 'SETTINGS-SUBPAGE') {
         // TODO(dpapad): Cast to SettingsSubpageElement here.
         associatedControl = assert(
             parent.associatedControl,

@@ -51,12 +51,17 @@
 #include "chrome/browser/search/search.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/buildflags/buildflags.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/page_load_metrics/observers/android_page_load_metrics_observer.h"
 #else
 #include "chrome/browser/page_load_metrics/observers/session_restore_page_load_metrics_observer.h"
+#endif
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/common/constants.h"
 #endif
 
 namespace chrome {
@@ -74,6 +79,7 @@ class PageLoadMetricsEmbedder
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override;
   std::unique_ptr<base::OneShotTimer> CreateTimer() override;
   bool IsPrerender(content::WebContents* web_contents) override;
+  bool IsExtensionUrl(const GURL& url) override;
 
  private:
   bool IsPrerendering() const;
@@ -192,6 +198,14 @@ bool PageLoadMetricsEmbedder::IsNewTabPageUrl(const GURL& url) {
 
 bool PageLoadMetricsEmbedder::IsPrerender(content::WebContents* web_contents) {
   return prerender::PrerenderContents::FromWebContents(web_contents);
+}
+
+bool PageLoadMetricsEmbedder::IsExtensionUrl(const GURL& url) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  return url.SchemeIs(extensions::kExtensionScheme);
+#else
+  return false;
+#endif
 }
 
 }  // namespace

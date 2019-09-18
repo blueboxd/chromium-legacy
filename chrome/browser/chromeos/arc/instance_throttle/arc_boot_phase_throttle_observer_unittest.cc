@@ -45,7 +45,7 @@ class ArcBootPhaseThrottleObserverTest : public testing::Test {
 
     ArcBootPhaseMonitorBridge::GetForBrowserContextForTesting(profile());
     observer()->StartObserving(
-        nullptr, profile(),
+        profile(),
         ArcBootPhaseThrottleObserver::ObserverStateChangedCallback());
   }
 

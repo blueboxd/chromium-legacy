@@ -52,6 +52,7 @@ class PerformanceManagerTabHelper
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void TitleWasSet(content::NavigationEntry* entry) override;
+  void WebContentsDestroyed() override;
   void DidUpdateFaviconURL(
       const std::vector<content::FaviconURL>& candidates) override;
   void OnInterfaceRequestFromFrame(
@@ -70,6 +71,7 @@ class PerformanceManagerTabHelper
   friend class WebContentsProxyImpl;
 
   explicit PerformanceManagerTabHelper(content::WebContents* web_contents);
+  void TearDown();
 
   // Post a task to run in the performance manager sequence. The |node| will be
   // passed as unretained, and the closure will be created with BindOnce.

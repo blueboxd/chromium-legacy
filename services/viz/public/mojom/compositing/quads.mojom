@@ -35,10 +35,6 @@ struct RenderPassQuadState {
   gfx.mojom.RectF mask_uv_rect;
   gfx.mojom.Size mask_texture_size;
 
-  // If true, the mask described by mask_resource_id should be applied to only
-  // the backdrop-filtered image.
-  bool mask_applies_to_backdrop;
-
   // The scale from layer space of the root layer of the render pass to
   // the render pass physical pixels. This scale is applied to the filter
   // parameters for pixel-moving filters. This scale should include

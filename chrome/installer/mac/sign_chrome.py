@@ -27,14 +27,18 @@ def create_config(config_args, development):
     Returns:
         An instance of |model.CodeSignConfig|.
     """
-    config_class = config.CodeSignConfig
+    # First look up the processed Chromium config.
+    from signing.chromium_config import ChromiumCodeSignConfig
+    config_class = ChromiumCodeSignConfig
+
+    # Then search for the internal config for Google Chrome.
     try:
-        import signing.internal_config
-        config_class = signing.internal_config.InternalCodeSignConfig
+        from signing.internal_config import InternalCodeSignConfig
+        config_class = InternalCodeSignConfig
     except ImportError as e:
         # If the build specified Google Chrome as the product, then the
         # internal config has to be available.
-        if config_class(identity, keychain).product == 'Google Chrome':
+        if config_class(*config_args).product == 'Google Chrome':
             raise e
 
     if development:

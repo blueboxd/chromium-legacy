@@ -260,7 +260,8 @@ class Manager(object):
 
     def _collect_tests(self, args):
         return self._finder.find_tests(args, test_list=self._options.test_list,
-                                       fastest_percentile=self._options.fastest)
+                                       fastest_percentile=self._options.fastest,
+                                       filters=self._options.isolated_script_test_filter)
 
     def _is_http_test(self, test):
         return (

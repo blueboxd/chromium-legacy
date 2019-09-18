@@ -21,10 +21,11 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "build/branding_buildflags.h"
-#include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/events/event_constants.h"
+#include "ui/events/event.h"
+#include "ui/events/event_utils.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/linux_ui/linux_ui.h"
@@ -33,6 +34,7 @@
 #include <gdk/gdkx.h>
 
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"  // nogncheck
+#include "ui/gfx/x/x11_types.h"                             // nogncheck
 #endif
 
 namespace {
@@ -70,6 +72,57 @@ void CommonInitFromCommandLine(const base::CommandLine& command_line) {
     free(argv[i]);
   }
 #endif
+}
+
+GdkModifierType GetIbusFlags(const ui::KeyEvent& key_event) {
+  auto* properties = key_event.properties();
+  if (!properties)
+    return static_cast<GdkModifierType>(0);
+  auto it = properties->find(ui::kPropertyKeyboardIBusFlag);
+  DCHECK(it == properties->end() || it->second.size() == 1);
+  uint8_t flags = (it != properties->end()) ? it->second[0] : 0;
+  return static_cast<GdkModifierType>(flags
+                                      << ui::kPropertyKeyboardIBusFlagOffset);
+}
+
+GdkModifierType ExtractGdkEventStateFromKeyEvent(
+    const ui::KeyEvent& key_event) {
+  auto event_flags = static_cast<ui::EventFlags>(key_event.flags());
+  static const struct {
+    ui::EventFlags event_flag;
+    GdkModifierType gdk_modifier;
+  } mapping[] = {
+      {ui::EF_SHIFT_DOWN, GDK_SHIFT_MASK},
+      {ui::EF_CAPS_LOCK_ON, GDK_LOCK_MASK},
+      {ui::EF_CONTROL_DOWN, GDK_CONTROL_MASK},
+      {ui::EF_ALT_DOWN, GDK_MOD1_MASK},
+      {ui::EF_NUM_LOCK_ON, GDK_MOD2_MASK},
+      {ui::EF_MOD3_DOWN, GDK_META_MASK},
+      {ui::EF_COMMAND_DOWN, GDK_MOD4_MASK},
+      {ui::EF_ALTGR_DOWN, GDK_MOD5_MASK},
+      {ui::EF_LEFT_MOUSE_BUTTON, GDK_BUTTON1_MASK},
+      {ui::EF_MIDDLE_MOUSE_BUTTON, GDK_BUTTON2_MASK},
+      {ui::EF_RIGHT_MOUSE_BUTTON, GDK_BUTTON3_MASK},
+      {ui::EF_BACK_MOUSE_BUTTON, GDK_BUTTON4_MASK},
+      {ui::EF_FORWARD_MOUSE_BUTTON, GDK_BUTTON5_MASK},
+  };
+  unsigned int gdk_modifier_type = 0;
+  for (const auto& map : mapping) {
+    if (event_flags & map.event_flag) {
+      gdk_modifier_type = gdk_modifier_type | map.gdk_modifier;
+    }
+  }
+  return static_cast<GdkModifierType>(gdk_modifier_type |
+                                      GetIbusFlags(key_event));
+}
+
+int GetKeyboardGroup(const ui::KeyEvent& key_event) {
+  auto* properties = key_event.properties();
+  if (!properties)
+    return 0;
+  auto it = properties->find(ui::kPropertyKeyboardGroup);
+  DCHECK(it == properties->end() || it->second.size() == 1);
+  return (it != properties->end()) ? it->second[0] : 0;
 }
 
 }  // namespace
@@ -616,5 +669,52 @@ guint GetGdkKeyCodeForAccelerator(const ui::Accelerator& accelerator) {
   return XKeysymForWindowsKeyCode(accelerator.key_code(), false);
 }
 #endif
+
+GdkDisplay* GetGdkDisplay() {
+  GdkDisplay* display = nullptr;
+  // TODO(crbug.com/1002674): Remove once GtkIM-based LinuxInputMethodContext
+  // implementation is moved out of libgtkui.
+#if defined(USE_X11)
+  display = gdk_x11_lookup_xdisplay(gfx::GetXDisplay());
+#endif
+  if (!display)  // Fall back to the default display.
+    display = gdk_display_get_default();
+  return display;
+}
+
+GdkEvent* GdkEventFromKeyEvent(const ui::KeyEvent& key_event) {
+  GdkEventType event_type =
+      key_event.type() == ui::ET_KEY_PRESSED ? GDK_KEY_PRESS : GDK_KEY_RELEASE;
+  int hw_code = ui::KeycodeConverter::DomCodeToNativeKeycode(key_event.code());
+  auto event_time = key_event.time_stamp() - base::TimeTicks();
+  int group = GetKeyboardGroup(key_event);
+
+  // Get GdkKeymap
+  GdkKeymap* keymap = gdk_keymap_get_for_display(GetGdkDisplay());
+
+  // Get keyval and state
+  GdkModifierType state = ExtractGdkEventStateFromKeyEvent(key_event);
+  guint keyval = GDK_KEY_VoidSymbol;
+  GdkModifierType consumed;
+  gdk_keymap_translate_keyboard_state(keymap, hw_code, state, group, &keyval,
+                                      nullptr, nullptr, &consumed);
+  gdk_keymap_add_virtual_modifiers(keymap, &state);
+  DCHECK(keyval != GDK_KEY_VoidSymbol);
+
+  // Build GdkEvent
+  GdkEvent* gdk_event = gdk_event_new(event_type);
+  gdk_event->type = event_type;
+  gdk_event->key.time = event_time.InMilliseconds();
+  gdk_event->key.hardware_keycode = hw_code;
+  gdk_event->key.keyval = keyval;
+  gdk_event->key.state = state;
+  gdk_event->key.group = group;
+  gdk_event->key.send_event = key_event.flags() & ui::EF_FINAL;
+  gdk_event->key.is_modifier = state & GDK_MODIFIER_MASK;
+  gdk_event->key.length = 0;
+  gdk_event->key.string = nullptr;
+
+  return gdk_event;
+}
 
 }  // namespace libgtkui

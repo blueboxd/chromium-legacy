@@ -20,7 +20,6 @@ browser_sources = [
   "data_reduction_proxy_metrics.h",
   "data_reduction_proxy_mutable_config_values.cc",
   "data_reduction_proxy_mutable_config_values.h",
-  "data_reduction_proxy_pingback_client.h",
   "data_reduction_proxy_prefs.cc",
   "data_reduction_proxy_prefs.h",
   "data_reduction_proxy_request_options.cc",

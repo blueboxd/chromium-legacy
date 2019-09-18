@@ -203,7 +203,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // for each matching pixel.
   // This is for layer tree mode only.
   void SetMaskLayer(scoped_refptr<PictureLayer> mask_layer);
-  PictureLayer* mask_layer() { return inputs_.mask_layer.get(); }
+  bool IsMaskedByChild() const { return !!inputs_.mask_layer; }
 
   // Marks the |dirty_rect| as being changed, which will cause a commit and
   // the compositor to submit a new frame with a damage rect that includes the
@@ -293,10 +293,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void ClearBackdropFilterBounds();
   const base::Optional<gfx::RRectF>& backdrop_filter_bounds() const {
     return inputs_.backdrop_filter_bounds;
-  }
-
-  const ElementId backdrop_mask_element_id() const {
-    return inputs_.backdrop_mask_element_id;
   }
 
   void SetBackdropFilterQuality(const float quality);
@@ -837,7 +833,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetParent(Layer* layer);
 
   // This should only be called from RemoveFromParent().
-  void RemoveChildOrDependent(Layer* child);
+  void RemoveChild(Layer* child);
 
   // When we detach or attach layer to new LayerTreeHost, all property trees'
   // indices becomes invalid.
@@ -867,7 +863,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     gfx::Size bounds;
     gfx::Rect clip_rect;
 
-    scoped_refptr<PictureLayer> mask_layer;
+    // If not null, points to one of child layers which is set as mask layer
+    // by SetMaskLayer().
+    Layer* mask_layer;
 
     int layer_id;
 
@@ -925,7 +923,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     FilterOperations filters;
     FilterOperations backdrop_filters;
     base::Optional<gfx::RRectF> backdrop_filter_bounds;
-    ElementId backdrop_mask_element_id;
     gfx::PointF filters_origin;
     float backdrop_filter_quality;
 

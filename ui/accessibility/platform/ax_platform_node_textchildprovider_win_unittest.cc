@@ -71,6 +71,8 @@ class AXPlatformNodeTextChildProviderTest : public ui::AXPlatformNodeWinTest {
 
     AXNode* root_node = GetRootNode();
     AXNodePosition::SetTree(tree_.get());
+    AXTreeManagerMap::GetInstance().AddTreeManager(update.tree_data.tree_id,
+                                                   this);
     AXNode* nontext_child_of_root_node = root_node->children()[0];
     AXNode* text_child_of_root_node = root_node->children()[1];
     AXNode* nontext_child_of_nontext_node =

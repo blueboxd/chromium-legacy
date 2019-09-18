@@ -304,11 +304,16 @@ void MultibufferDataSource::MediaPlaybackRateChanged(double playback_rate) {
 
 void MultibufferDataSource::MediaIsPlaying() {
   DCHECK(render_task_runner_->BelongsToCurrentThread());
+
+  // Always clear this since it can be set by OnBufferingHaveEnough() calls at
+  // any point in time.
+  cancel_on_defer_ = false;
+
   if (media_has_played_)
     return;
 
   media_has_played_ = true;
-  cancel_on_defer_ = false;
+
   // Once we start playing, we need preloading.
   preload_ = AUTO;
   UpdateBufferSizes();

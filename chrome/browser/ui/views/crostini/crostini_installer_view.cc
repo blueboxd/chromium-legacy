@@ -16,6 +16,8 @@
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_dialog.h"
+#include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_ui.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
@@ -106,6 +108,8 @@ base::string16 GetErrorMessage(Error error) {
 
 }  // namespace
 
+// TODO(lxj): |CrostiniInstallerView| will be removed at some point. We will
+// wait until then to find a better place for this function.
 void crostini::ShowCrostiniInstallerView(
     Profile* profile,
     crostini::CrostiniUISurface ui_surface) {
@@ -116,8 +120,13 @@ void crostini::ShowCrostiniInstallerView(
   }
   base::UmaHistogramEnumeration(kCrostiniSetupSourceHistogram, ui_surface,
                                 crostini::CrostiniUISurface::kCount);
-  return CrostiniInstallerView::Show(
-      profile, crostini::CrostiniInstaller::GetForProfile(profile));
+
+  if (chromeos::CrostiniInstallerUI::IsEnabled()) {
+    return chromeos::CrostiniInstallerDialog::Show(profile);
+  } else {
+    return CrostiniInstallerView::Show(
+        profile, crostini::CrostiniInstaller::GetForProfile(profile));
+  }
 }
 
 // static
@@ -126,6 +135,8 @@ void CrostiniInstallerView::Show(
     crostini::CrostiniInstallerUIDelegate* delegate) {
   DCHECK(crostini::IsCrostiniUIAllowedForProfile(profile));
   if (!g_crostini_installer_view) {
+    DCHECK(!crostini::CrostiniManager::GetForProfile(profile)
+                ->GetInstallerViewStatus());
     g_crostini_installer_view = new CrostiniInstallerView(profile, delegate);
     views::DialogDelegate::CreateDialogWidget(g_crostini_installer_view,
                                               nullptr, nullptr);
@@ -141,7 +152,6 @@ void CrostiniInstallerView::Show(
     g_crostini_installer_view->big_message_label_->SetText(
         l10n_util::GetStringFUTF16(IDS_CROSTINI_INSTALLER_TITLE, device_type));
 
-    // TODO(lxj): Move installer status tracking into the CrostiniInstaller.
     crostini::CrostiniManager::GetForProfile(profile)->SetInstallerViewStatus(
         true);
   }

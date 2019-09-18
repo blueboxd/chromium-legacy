@@ -59,7 +59,7 @@ class BASE_EXPORT DependentList {
 
   // Align Node on an 8-byte boundary to ensure the first 3 bits are 0 and can
   // be used to store additional state (see static_asserts below).
-  class BASE_EXPORT alignas(8) Node {
+  class BASE_EXPORT ALIGNAS(8) Node {
    public:
     Node();
     explicit Node(Node&& other) noexcept;

@@ -575,7 +575,7 @@ ParsedInputState MixedRealityInputHelper::ParseWindowsSourceState(
     // This makes it clear that the controller actually has a grip button and
     // touchpad and thumbstick input. Otherwise, it's ambiguous whether slots
     // like the touchpad buttons + axes are hooked up vs just placeholders.
-    description->profiles.push_back("grip-touchpad-thumbstick-controller");
+    description->profiles.push_back("generic-trigger-grip-touchpad-thumbstick");
 
     source_state->gamepad = GetWebXRGamepad(input_state);
   } else {

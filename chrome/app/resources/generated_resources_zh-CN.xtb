@@ -302,7 +302,7 @@
 <translation id="1444628761356461360">此设置由设备所有者<ph name="OWNER_EMAIL" />管理。</translation>
 <translation id="144518587530125858">无法加载主题背景的路径“<ph name="IMAGE_PATH" />”。</translation>
 <translation id="1445693676523799095">该过程可能需要一点时间</translation>
-<translation id="1450011005989029586">您使用的某个网站或应用发生了数据泄露，导致您的密码被外泄。Chrome 建议您立即在 <ph name="ORIGIN" /> 上<ph name="BOLD" />。</translation>
+<translation id="1450011005989029586">您使用的某个网站或应用发生了数据泄露，导致您的密码外泄。Chrome 建议您立即在 <ph name="ORIGIN" /> 上<ph name="BOLD" />。</translation>
 <translation id="1451375123200651445">网页（单个文件）</translation>
 <translation id="1451917004835509682">添加受监管用户</translation>
 <translation id="1454223536435069390">屏幕截图(&amp;A)</translation>
@@ -4295,7 +4295,6 @@
 <translation id="7371006317849674875">开始时间</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">在移动鼠标光标时突出显示光标</translation>
-<translation id="7377169924702866686">大写锁定已打开。</translation>
 <translation id="7377451353532943397">继续禁止使用传感器</translation>
 <translation id="7378627244592794276">否</translation>
 <translation id="73786666777299047">打开 Chrome 网上应用店</translation>
@@ -4381,7 +4380,7 @@
 <translation id="7506541170099744506">您的 <ph name="DEVICE_TYPE" /> 已成功注册企业管理服务。</translation>
 <translation id="7507930499305566459">状态响应程序证书</translation>
 <translation id="7508054832109420082">授予对打印机的使用期限</translation>
-<translation id="7510943789645525906">如果您使用的某个密码属于已遭泄露的数据，就会向您发出警告</translation>
+<translation id="7510943789645525906">如有密码遭遇数据泄露就会向您发出警告</translation>
 <translation id="7513029293694390567">使用存储的凭据自动登录网站。停用该功能后，系统会在您每次登录网站时要求您进行确认。</translation>
 <translation id="7514365320538308">下载</translation>
 <translation id="7521387064766892559">JavaScript</translation>
@@ -5001,7 +5000,6 @@
 <translation id="8390449457866780408">服务器无法使用。</translation>
 <translation id="8391218455464584335">黑胶唱片</translation>
 <translation id="8391712576156218334">图片不可用。请稍后重试。</translation>
-<translation id="8392234662362215700">按 Ctrl+Shift+空格键可切换键盘布局。</translation>
 <translation id="8392364544846746346">在网站想要修改您设备上的文件或文件夹时要先询问您</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> 的“选项”菜单</translation>
 <translation id="8393511274964623038">停止使用插件</translation>
@@ -5172,7 +5170,6 @@
 <translation id="8656619792520327915">添加其他蓝牙安全密钥</translation>
 <translation id="8656768832129462377">不检查</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> 正在与 <ph name="TAB_NAME" /> 共享您的屏幕和音频。</translation>
-<translation id="8659875081143553823">请稍候</translation>
 <translation id="8660174278198826384">请与贵组织的设备管理员联系</translation>
 <translation id="8661290697478713397">在隐身窗口中打开链接(&amp;G)</translation>
 <translation id="8662671328352114214">加入<ph name="TYPE" />网络</translation>

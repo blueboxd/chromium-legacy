@@ -10,7 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "chromecast/browser/general_audience_browsing/mojom/general_audience_browsing.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -54,10 +55,10 @@ class GeneralAudienceBrowsingService
 
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
 
-  mojo::Binding<mojom::GeneralAudienceBrowsingAPIKeyObserver>
-      general_audience_browsing_api_key_observer_binding_;
-  mojom::GeneralAudienceBrowsingAPIKeySubjectPtr
-      general_audience_browsing_api_key_subject_ptr_;
+  mojo::Receiver<mojom::GeneralAudienceBrowsingAPIKeyObserver>
+      general_audience_browsing_api_key_observer_receiver_{this};
+  mojo::Remote<mojom::GeneralAudienceBrowsingAPIKeySubject>
+      general_audience_browsing_api_key_subject_remote_;
 
   DISALLOW_COPY_AND_ASSIGN(GeneralAudienceBrowsingService);
 };

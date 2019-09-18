@@ -5,6 +5,7 @@
 #include "ash/wm/toplevel_window_event_handler.h"
 
 #include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -36,6 +37,10 @@ namespace {
 // How many pixels are reserved for gesture events to start dragging the app
 // window from the top of the screen in tablet mode.
 constexpr int kDragStartTopEdgeInset = 8;
+
+// How many dips are reserved for gesture events to start swiping to previous
+// page from the left edge of the screen in tablet mode.
+constexpr int kStartGoingBackLeftEdgeInset = 16;
 
 // Returns whether |window| can be moved via a two finger drag given
 // the hittest results of the two fingers.
@@ -92,6 +97,35 @@ void OnDragCompleted(
     ToplevelWindowEventHandler::DragResult result) {
   *result_return_value = result;
   run_loop->Quit();
+}
+
+// True if we can start swiping from left edge to go to previous page.
+bool CanStartGoingBack() {
+  if (!features::IsSwipingFromLeftEdgeToGoBackEnabled())
+    return false;
+
+  if (!Shell::Get()->tablet_mode_controller()->InTabletMode())
+    return false;
+
+  return true;
+}
+
+// True if |event| is scrolling away from the restricted left area of the
+// display.
+bool StartedAwayFromLeftArea(ui::GestureEvent* event) {
+  if (event->details().scroll_x_hint() < 0)
+    return false;
+
+  const gfx::Point location_in_screen =
+      event->target()->GetScreenLocation(*event);
+  const gfx::Rect work_area_bounds =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(static_cast<aura::Window*>(event->target()))
+          .work_area();
+
+  gfx::Rect hit_bounds_in_screen(work_area_bounds);
+  hit_bounds_in_screen.set_width(kStartGoingBackLeftEdgeInset);
+  return hit_bounds_in_screen.Contains(location_in_screen);
 }
 
 }  // namespace
@@ -264,6 +298,11 @@ void ToplevelWindowEventHandler::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
+  if (HandleGoingBackFromLeftEdge(event)) {
+    event->StopPropagation();
+    return;
+  }
+
   aura::Window* target = static_cast<aura::Window*>(event->target());
   int component = window_util::GetNonClientComponent(target, event->location());
   gfx::Point event_location = event->location();
@@ -794,6 +833,49 @@ void ToplevelWindowEventHandler::UpdateGestureTarget(
   gesture_target_ = target;
   if (gesture_target_)
     gesture_target_->AddObserver(this);
+}
+
+bool ToplevelWindowEventHandler::HandleGoingBackFromLeftEdge(
+    ui::GestureEvent* event) {
+  if (!CanStartGoingBack())
+    return false;
+
+  switch (event->type()) {
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+      going_back_started_ = StartedAwayFromLeftArea(event);
+      if (going_back_started_)
+        return true;
+      break;
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      if (!going_back_started_)
+        break;
+      // TODO(crbug.com/1002733): Update the arrow animation.
+      return true;
+    case ui::ET_GESTURE_SCROLL_END:
+      if (!going_back_started_)
+        break;
+      if (event->location().x() >= kSwipingDistanceForGoingBack) {
+        aura::Window* root_window =
+            window_util::GetRootWindowAt(event->location());
+        ui::KeyEvent press_key_event(ui::ET_KEY_PRESSED, ui::VKEY_BROWSER_BACK,
+                                     ui::EF_NONE);
+        ignore_result(
+            root_window->GetHost()->SendEventToSink(&press_key_event));
+        ui::KeyEvent release_key_event(ui::ET_KEY_RELEASED,
+                                       ui::VKEY_BROWSER_BACK, ui::EF_NONE);
+        ignore_result(
+            root_window->GetHost()->SendEventToSink(&release_key_event));
+      } else {
+        // TODO(crbug.com/1002733): Revert going back animation.
+      }
+      going_back_started_ = false;
+      return true;
+    // TODO(crbug.com/1002733): Add support for fling event.
+    default:
+      break;
+  }
+
+  return false;
 }
 
 }  // namespace ash

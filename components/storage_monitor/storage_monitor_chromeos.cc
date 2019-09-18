@@ -121,8 +121,8 @@ void StorageMonitorCros::Init() {
   if (!mtp_device_manager_) {
     // Set up the connection with mojofied MtpManager.
     DCHECK(GetConnector());
-    GetConnector()->BindInterface(device::mojom::kServiceName,
-                                  mojo::MakeRequest(&mtp_device_manager_));
+    GetConnector()->Connect(device::mojom::kServiceName,
+                            mtp_device_manager_.BindNewPipeAndPassReceiver());
   }
   // |mtp_manager_client_| needs to be initialized for both tests and
   // production code, so keep it out of the if condition.
@@ -237,9 +237,9 @@ void StorageMonitorCros::OnMountEvent(
 }
 
 void StorageMonitorCros::SetMediaTransferProtocolManagerForTest(
-    device::mojom::MtpManagerPtr test_manager) {
+    mojo::PendingRemote<device::mojom::MtpManager> test_manager) {
   DCHECK(!mtp_device_manager_);
-  mtp_device_manager_ = std::move(test_manager);
+  mtp_device_manager_.Bind(std::move(test_manager));
 }
 
 bool StorageMonitorCros::GetStorageInfoForPath(

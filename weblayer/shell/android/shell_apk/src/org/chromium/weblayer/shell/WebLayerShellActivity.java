@@ -58,6 +58,10 @@ public class WebLayerShellActivity extends FragmentActivity {
         return mBrowserController;
     }
 
+    public BrowserFragmentImpl getBrowserFragmentImpl() {
+        return mBrowserFragment;
+    }
+
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         // Only call init for main process.

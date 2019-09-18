@@ -43,6 +43,7 @@ void PopulateFixedWebPreferences(WebPreferences* web_prefs) {
   web_prefs->viewport_meta_enabled = true;
   web_prefs->picture_in_picture_enabled = false;
   web_prefs->disable_features_depending_on_viz = true;
+  web_prefs->disable_accelerated_small_canvases = true;
 }
 
 const void* const kAwSettingsUserDataKey = &kAwSettingsUserDataKey;

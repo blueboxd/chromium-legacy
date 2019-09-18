@@ -43,8 +43,16 @@ class CC_EXPORT PictureLayerImpl
 
   PictureLayerImpl& operator=(const PictureLayerImpl&) = delete;
 
-  void SetIsMask(bool is_mask);
+  // TODO(crbug.com/1003414): Remove this flag when we tile mask layers (except
+  // for backdrop filter masks) normally.
+  void SetIsMask(bool is_mask) { is_mask_ = is_mask; }
   bool is_mask() const { return is_mask_; }
+
+  void SetIsBackdropFilterMask(bool is_backdrop_filter_mask) {
+    DCHECK(!is_backdrop_filter_mask || is_mask_);
+    is_backdrop_filter_mask_ = is_backdrop_filter_mask;
+  }
+  bool is_backdrop_filter_mask() const { return is_backdrop_filter_mask_; }
 
   // LayerImpl overrides.
   const char* LayerTypeAsString() const override;
@@ -222,6 +230,7 @@ class CC_EXPORT PictureLayerImpl
   float low_res_raster_contents_scale_;
 
   bool is_mask_ : 1;
+  bool is_backdrop_filter_mask_ : 1;
 
   bool was_screen_space_transform_animating_ : 1;
   bool only_used_low_res_last_append_quads_ : 1;

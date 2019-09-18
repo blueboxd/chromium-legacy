@@ -15,9 +15,11 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/usb/usb_tab_helper.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace chrome {
 
@@ -75,6 +77,44 @@ TabAlertState GetTabAlertStateForContents(content::WebContents* contents) {
   }
 
   return TabAlertState::NONE;
+}
+
+base::string16 GetTabAlertStateText(const TabAlertState alert_state) {
+  switch (alert_state) {
+    case TabAlertState::AUDIO_PLAYING:
+      return l10n_util::GetStringUTF16(
+          IDS_TOOLTIP_TAB_ALERT_STATE_AUDIO_PLAYING);
+    case TabAlertState::AUDIO_MUTING:
+      return l10n_util::GetStringUTF16(
+          IDS_TOOLTIP_TAB_ALERT_STATE_AUDIO_MUTING);
+    case TabAlertState::MEDIA_RECORDING:
+      return l10n_util::GetStringUTF16(
+          IDS_TOOLTIP_TAB_ALERT_STATE_MEDIA_RECORDING);
+    case TabAlertState::TAB_CAPTURING:
+      return l10n_util::GetStringUTF16(
+          IDS_TOOLTIP_TAB_ALERT_STATE_TAB_CAPTURING);
+    case TabAlertState::BLUETOOTH_CONNECTED:
+      return l10n_util::GetStringUTF16(
+          IDS_TOOLTIP_TAB_ALERT_STATE_BLUETOOTH_CONNECTED);
+    case TabAlertState::USB_CONNECTED:
+      return l10n_util::GetStringUTF16(
+          IDS_TOOLTIP_TAB_ALERT_STATE_USB_CONNECTED);
+    case TabAlertState::SERIAL_CONNECTED:
+      return l10n_util::GetStringUTF16(
+          IDS_TOOLTIP_TAB_ALERT_STATE_SERIAL_CONNECTED);
+    case TabAlertState::PIP_PLAYING:
+      return l10n_util::GetStringUTF16(IDS_TOOLTIP_TAB_ALERT_STATE_PIP_PLAYING);
+    case TabAlertState::DESKTOP_CAPTURING:
+      return l10n_util::GetStringUTF16(
+          IDS_TOOLTIP_TAB_ALERT_STATE_DESKTOP_CAPTURING);
+    case TabAlertState::VR_PRESENTING_IN_HEADSET:
+      return l10n_util::GetStringUTF16(
+          IDS_TOOLTIP_TAB_ALERT_STATE_VR_PRESENTING);
+    case TabAlertState::NONE:
+      return base::string16();
+  }
+  NOTREACHED();
+  return base::string16();
 }
 
 bool CanToggleAudioMute(content::WebContents* contents) {

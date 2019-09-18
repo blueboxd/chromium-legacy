@@ -5,6 +5,7 @@
 #include "net/cookies/cookie_constants.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 
 namespace net {
@@ -53,7 +54,6 @@ CookiePriority StringToCookiePriority(const std::string& priority) {
 }
 
 std::string CookieSameSiteToString(CookieSameSite same_site) {
-  DCHECK(IsValidSameSiteValue(same_site));
   switch (same_site) {
     case CookieSameSite::LAX_MODE:
       return kSameSiteLax;
@@ -65,54 +65,40 @@ std::string CookieSameSiteToString(CookieSameSite same_site) {
       return kSameSiteExtended;
     case CookieSameSite::UNSPECIFIED:
       return kSameSiteUnspecified;
-    default:
-      NOTREACHED();
-      return "INVALID";
   }
 }
 
-CookieSameSite StringToCookieSameSite(const std::string& same_site) {
+CookieSameSite StringToCookieSameSite(const std::string& same_site,
+                                      CookieSameSiteString* samesite_string) {
+  // Put a value on the stack so that we can assign to |*samesite_string|
+  // instead of having to null-check it all the time.
+  CookieSameSiteString ignored = CookieSameSiteString::kUnspecified;
+  if (!samesite_string)
+    samesite_string = &ignored;
+
+  *samesite_string = CookieSameSiteString::kUnrecognized;
   CookieSameSite samesite = CookieSameSite::UNSPECIFIED;
-  if (base::EqualsCaseInsensitiveASCII(same_site, kSameSiteNone))
+
+  if (base::EqualsCaseInsensitiveASCII(same_site, kSameSiteNone)) {
     samesite = CookieSameSite::NO_RESTRICTION;
-  if (base::EqualsCaseInsensitiveASCII(same_site, kSameSiteLax))
+    *samesite_string = CookieSameSiteString::kNone;
+  } else if (base::EqualsCaseInsensitiveASCII(same_site, kSameSiteLax)) {
     samesite = CookieSameSite::LAX_MODE;
-  if (base::EqualsCaseInsensitiveASCII(same_site, kSameSiteStrict))
+    *samesite_string = CookieSameSiteString::kLax;
+  } else if (base::EqualsCaseInsensitiveASCII(same_site, kSameSiteStrict)) {
     samesite = CookieSameSite::STRICT_MODE;
-  if (base::EqualsCaseInsensitiveASCII(same_site, kSameSiteExtended))
+    *samesite_string = CookieSameSiteString::kStrict;
+  } else if (base::EqualsCaseInsensitiveASCII(same_site, kSameSiteExtended)) {
     samesite = CookieSameSite::EXTENDED_MODE;
-  DCHECK(IsValidSameSiteValue(samesite));
+    *samesite_string = CookieSameSiteString::kExtended;
+  } else if (same_site == "") {
+    *samesite_string = CookieSameSiteString::kEmptyString;
+  }
   return samesite;
 }
 
-bool IsValidSameSiteValue(CookieSameSite value) {
-  switch (value) {
-    case CookieSameSite::UNSPECIFIED:
-    case CookieSameSite::NO_RESTRICTION:
-    case CookieSameSite::LAX_MODE:
-    case CookieSameSite::STRICT_MODE:
-    case CookieSameSite::EXTENDED_MODE:
-      return true;
-    case CookieSameSite::LAX_MODE_ALLOW_UNSAFE:
-      return false;
-  }
-  NOTREACHED();
-  return false;
-}
-
-bool IsValidEffectiveSameSiteValue(CookieSameSite value) {
-  switch (value) {
-    case CookieSameSite::NO_RESTRICTION:
-    case CookieSameSite::LAX_MODE:
-    case CookieSameSite::LAX_MODE_ALLOW_UNSAFE:
-    case CookieSameSite::STRICT_MODE:
-      return true;
-    case CookieSameSite::UNSPECIFIED:
-    case CookieSameSite::EXTENDED_MODE:
-      return false;
-  }
-  NOTREACHED();
-  return false;
+void RecordCookieSameSiteAttributeValueHistogram(CookieSameSiteString value) {
+  UMA_HISTOGRAM_ENUMERATION("Cookie.SameSiteAttributeValue", value);
 }
 
 }  // namespace net

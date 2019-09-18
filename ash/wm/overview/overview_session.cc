@@ -977,7 +977,7 @@ void OverviewSession::OnSplitViewDividerPositionChanged() {
     grid->SetBoundsAndUpdatePositions(
         GetGridBoundsInScreen(const_cast<aura::Window*>(grid->root_window()),
                               /*divider_changed=*/true),
-        /*ignored_items=*/{});
+        /*ignored_items=*/{}, /*animate=*/true);
   }
   PositionWindows(/*animate=*/false);
   UpdateNoWindowsWidget();
@@ -1063,9 +1063,8 @@ void OverviewSession::OnDisplayBoundsChanged() {
     grid->SetBoundsAndUpdatePositions(
         GetGridBoundsInScreen(const_cast<aura::Window*>(grid->root_window()),
                               /*divider_changed=*/false),
-        /*ignored_items=*/{});
+        /*ignored_items=*/{}, /*animate=*/false);
   }
-  PositionWindows(/*animate=*/false);
   UpdateNoWindowsWidget();
   if (split_view_drag_indicators_)
     split_view_drag_indicators_->OnDisplayBoundsChanged();

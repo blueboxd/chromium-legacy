@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -261,9 +261,9 @@ void WilcoDtcSupportdBridge::PerformWebRequest(
   // Extract a GURL value from a ScopedHandle.
   GURL gurl;
   if (url.is_valid()) {
-    std::unique_ptr<base::SharedMemory> shared_memory;
+    base::ReadOnlySharedMemoryMapping shared_memory;
     gurl = GURL(GetStringPieceFromMojoHandle(std::move(url), &shared_memory));
-    if (!shared_memory) {
+    if (!shared_memory.IsValid()) {
       LOG(ERROR) << "Failed to read data from mojo handle";
       std::move(callback).Run(
           wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::
@@ -275,16 +275,16 @@ void WilcoDtcSupportdBridge::PerformWebRequest(
 
   // Extract headers from ScopedHandle's.
   std::vector<base::StringPiece> header_contents;
-  std::vector<std::unique_ptr<base::SharedMemory>> shared_memories;
+  std::vector<base::ReadOnlySharedMemoryMapping> shared_memories;
   for (auto& header : headers) {
     if (!header.is_valid()) {
       header_contents.push_back("");
       continue;
     }
-    shared_memories.push_back(nullptr);
+    shared_memories.emplace_back();
     header_contents.push_back(GetStringPieceFromMojoHandle(
         std::move(header), &shared_memories.back()));
-    if (!shared_memories.back()) {
+    if (!shared_memories.back().IsValid()) {
       LOG(ERROR) << "Failed to read data from mojo handle";
       std::move(callback).Run(
           wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::
@@ -297,10 +297,10 @@ void WilcoDtcSupportdBridge::PerformWebRequest(
   // Extract a string value from a ScopedHandle.
   std::string request_body_content;
   if (request_body.is_valid()) {
-    std::unique_ptr<base::SharedMemory> shared_memory;
+    base::ReadOnlySharedMemoryMapping shared_memory;
     request_body_content = std::string(
         GetStringPieceFromMojoHandle(std::move(request_body), &shared_memory));
-    if (!shared_memory) {
+    if (!shared_memory.IsValid()) {
       LOG(ERROR) << "Failed to read data from mojo handle";
       std::move(callback).Run(
           wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::
@@ -350,7 +350,7 @@ void WilcoDtcSupportdBridge::SendWilcoDtcMessageToUi(
     SendWilcoDtcMessageToUiCallback callback) {
   // Extract the string value of the received message.
   DCHECK(json_message);
-  std::unique_ptr<base::SharedMemory> json_message_shared_memory;
+  base::ReadOnlySharedMemoryMapping json_message_shared_memory;
   base::StringPiece json_message_string = GetStringPieceFromMojoHandle(
       std::move(json_message), &json_message_shared_memory);
   if (json_message_string.empty()) {

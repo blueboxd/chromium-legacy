@@ -126,6 +126,7 @@ class TabStripControllerTest : public PlatformTest {
       return;
 
     [tab_model_ browserStateDestroyed];
+    [controller_ disconnect];
   }
 
   web::WebTaskEnvironment task_environment_;

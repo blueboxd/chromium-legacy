@@ -41,6 +41,7 @@ class FuchsiaStreamDecryptorBase : public StreamProcessorHelper::Client {
   void OnWriterCreated(std::unique_ptr<SysmemBufferWriter> writer);
   void SendInputPacket(const DecoderBuffer* buffer,
                        StreamProcessorHelper::IoPacket packet);
+  void ProcessEndOfStream();
 
   SysmemBufferWriterQueue input_writer_queue_;
   std::unique_ptr<SysmemBufferPool::Creator> input_pool_creator_;
@@ -49,7 +50,8 @@ class FuchsiaStreamDecryptorBase : public StreamProcessorHelper::Client {
   DISALLOW_COPY_AND_ASSIGN(FuchsiaStreamDecryptorBase);
 };
 
-// Stream decryptor used by FuchsiaDecryptor for audio streams.
+// Stream decryptor that copies output to clear DecodeBuffer's. Used for audio
+// streams.
 class FuchsiaClearStreamDecryptor : public FuchsiaStreamDecryptorBase {
  public:
   static std::unique_ptr<FuchsiaClearStreamDecryptor> Create(
@@ -73,7 +75,8 @@ class FuchsiaClearStreamDecryptor : public FuchsiaStreamDecryptorBase {
   void OnNoKey() override;
   void OnError() override;
 
-  void OnOutputBufferPoolCreated(size_t max_used_output_buffers,
+  void OnOutputBufferPoolCreated(size_t num_buffers_for_client,
+                                 size_t num_buffers_for_server,
                                  std::unique_ptr<SysmemBufferPool> pool);
   void OnOutputBufferPoolReaderCreated(
       std::unique_ptr<SysmemBufferReader> reader);
@@ -90,6 +93,55 @@ class FuchsiaClearStreamDecryptor : public FuchsiaStreamDecryptorBase {
   std::vector<uint8_t> output_data_;
 
   DISALLOW_COPY_AND_ASSIGN(FuchsiaClearStreamDecryptor);
+};
+
+// Stream decryptor that decrypts data to secure sysmem buffers. Used for video
+// stream.
+class FuchsiaSecureStreamDecryptor : public FuchsiaStreamDecryptorBase {
+ public:
+  class Client {
+   public:
+    virtual void OnDecryptorOutputPacket(
+        StreamProcessorHelper::IoPacket packet) = 0;
+    virtual void OnDecryptorEndOfStreamPacket() = 0;
+    virtual void OnDecryptorError() = 0;
+    virtual void OnDecryptorNoKey() = 0;
+
+   protected:
+    virtual ~Client() = default;
+  };
+
+  static std::unique_ptr<FuchsiaSecureStreamDecryptor> Create(
+      fuchsia::media::drm::ContentDecryptionModule* cdm,
+      Client* client);
+
+  FuchsiaSecureStreamDecryptor(fuchsia::media::StreamProcessorPtr processor,
+                               Client* client);
+  ~FuchsiaSecureStreamDecryptor() override;
+
+  void SetOutputBufferCollectionToken(
+      fuchsia::sysmem::BufferCollectionTokenPtr token,
+      size_t num_buffers_for_decryptor,
+      size_t num_buffers_for_codec);
+
+  void Decrypt(scoped_refptr<DecoderBuffer> encrypted);
+
+ private:
+  // StreamProcessorHelper::Client overrides.
+  void AllocateOutputBuffers(const fuchsia::media::StreamBufferConstraints&
+                                 stream_constraints) override;
+  void OnProcessEos() override;
+  void OnOutputFormat(fuchsia::media::StreamOutputFormat format) override;
+  void OnOutputPacket(StreamProcessorHelper::IoPacket packet) override;
+  void OnNoKey() override;
+  void OnError() override;
+
+  Client* const client_;
+
+  bool waiting_output_buffers_ = false;
+  base::OnceClosure complete_buffer_allocation_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(FuchsiaSecureStreamDecryptor);
 };
 
 }  // namespace media

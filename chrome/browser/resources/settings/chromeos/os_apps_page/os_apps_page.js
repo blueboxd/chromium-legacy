@@ -44,6 +44,9 @@ Polymer({
    * @private
    */
   iconUrlFromId_: function(app) {
+    if (!app) {
+      return '';
+    }
     return app_management.util.getAppIcon(app);
   },
 

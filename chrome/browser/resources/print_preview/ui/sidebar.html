@@ -48,6 +48,11 @@
         flex-direction: column;
       }
 
+      :host([new-print-preview-layout]) {
+        border-inline-end: none;
+        border-inline-start: var(--print-preview-settings-border);
+      }
+
       @media (prefers-color-scheme: dark) {
         :host {
           background-color: rgba(255, 255, 255, .04);

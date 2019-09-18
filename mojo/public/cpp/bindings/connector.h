@@ -18,6 +18,7 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
+#include "mojo/public/c/system/quota.h"
 #include "mojo/public/cpp/bindings/connection_group.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/sequence_local_sync_event_watcher.h"
@@ -306,6 +307,11 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) Connector : public MessageReceiver {
   size_t sync_handle_watcher_callback_count_ = 0;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  // If this instance was selected for unread message measurement, contains
+  // the max send quota usage seen so far. If this instance was not selected
+  // contains MOJO_QUOTA_LIMIT_NONE as a sentinel value.
+  uint64_t max_unread_message_quota_used_ = MOJO_QUOTA_LIMIT_NONE;
 
   base::Lock connected_lock_;
   bool connected_ = true;

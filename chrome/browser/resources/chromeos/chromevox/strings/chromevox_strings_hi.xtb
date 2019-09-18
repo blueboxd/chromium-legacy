@@ -233,6 +233,7 @@
 <translation id="27527859628328957">अगले फ़ोकस करने लायक आइटम पर जंप करें</translation>
 <translation id="2770781857296573485">समूह अन्‍वेषण डालें</translation>
 <translation id="2777845298774924149">बाहर हो गया</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{+#}one{+#}other{+#}}</translation>
 <translation id="2784959586797362050">आप हमेशा की तरह Search+a और उसके बाद i दबाकर हमें सीधे फ़ीडबैक भेज सकते हैं. हम आपके विचार जानने के लिए बेताब हैं.</translation>
 <translation id="2800204403141299078">कोई और भिन्‍न तत्‍व नहीं.</translation>
 <translation id="2800780099804980316">कोई पिछला लेवल 1 का शीर्षक नहीं.</translation>
@@ -715,6 +716,7 @@
 <translation id="5956928062748260866">डॉयलॉग</translation>
 <translation id="5963413905009737549">अनुभाग</translation>
 <translation id="5968607524793740041">संदर्भ मेन्यू दिखाएं</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{# आइटम के साथ}one{# आइटम के साथ}other{# आइटम के साथ}}</translation>
 <translation id="5981446804259161541">हल्का हरा नीला</translation>
 <translation id="5983179082906765664">मार्गदर्शक विवरण का स्‍तर बढ़ाएं</translation>
 <translation id="5992285135956208197">ग्राफ़िक्स दस्तावेज़</translation>

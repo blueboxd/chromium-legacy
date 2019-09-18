@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -44,7 +45,8 @@ PasswordAutoSignInView::PasswordAutoSignInView(
       form.username_value, kButtonHoverColor, &form,
       content::BrowserContext::GetDefaultStoragePartition(model()->GetProfile())
           ->GetURLLoaderFactoryForBrowserProcess()
-          .get());
+          .get(),
+      STYLE_HINT, views::style::STYLE_PRIMARY);
   credential->SetEnabled(false);
   AddChildView(credential);
 

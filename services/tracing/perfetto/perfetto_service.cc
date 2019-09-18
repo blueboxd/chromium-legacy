@@ -78,7 +78,7 @@ void PerfettoService::BindReceiver(
 }
 
 void PerfettoService::ConnectToProducerHost(
-    mojom::ProducerClientPtr producer_client,
+    mojo::PendingRemote<mojom::ProducerClient> producer_client,
     mojom::ProducerHostRequest producer_host_request) {
   auto new_producer = std::make_unique<ProducerHost>();
   uint32_t producer_pid = receivers_.current_context();

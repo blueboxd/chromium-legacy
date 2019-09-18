@@ -17,7 +17,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/core/browser/db_data_owner.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy.mojom.h"
@@ -35,12 +34,12 @@ class PrefService;
 namespace base {
 class SequencedTaskRunner;
 class TimeDelta;
-}
+}  // namespace base
 
 namespace net {
 class HttpRequestHeaders;
 class ProxyList;
-}
+}  // namespace net
 
 namespace data_reduction_proxy {
 
@@ -73,7 +72,6 @@ class DataReductionProxyService
       PrefService* prefs,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::unique_ptr<DataStore> store,
-      std::unique_ptr<DataReductionProxyPingbackClient> pingback_client,
       network::NetworkQualityTracker* network_quality_tracker,
       network::NetworkConnectionTracker* network_connection_tracker,
       data_use_measurement::DataUseMeasurement* data_use_measurement,
@@ -126,15 +124,6 @@ class DataReductionProxyService
   void DeleteHistoricalDataUsage();
   void DeleteBrowsingHistory(const base::Time& start, const base::Time& end);
 
-  // Sets the reporting fraction in the pingback client. Virtual for testing.
-  virtual void SetPingbackReportingFraction(float pingback_reporting_fraction);
-
-  // Sets |pingback_client_| to be used for testing purposes.
-  void SetPingbackClientForTesting(
-      DataReductionProxyPingbackClient* pingback_client) {
-    pingback_client_.reset(pingback_client);
-  }
-
   void SetSettingsForTesting(DataReductionProxySettings* settings) {
     settings_ = settings;
   }
@@ -180,10 +169,6 @@ class DataReductionProxyService
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info()
       const {
     return url_loader_factory_->Clone();
-  }
-
-  DataReductionProxyPingbackClient* pingback_client() const {
-    return pingback_client_.get();
   }
 
   DataReductionProxyConfigurator* configurator() const {
@@ -270,8 +255,6 @@ class DataReductionProxyService
 
   // Tracks compression statistics to be displayed to the user.
   std::unique_ptr<DataReductionProxyCompressionStats> compression_stats_;
-
-  std::unique_ptr<DataReductionProxyPingbackClient> pingback_client_;
 
   DataReductionProxySettings* settings_;
 

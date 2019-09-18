@@ -44,6 +44,10 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   // See comments in AXPlatformNodeDelegate.
   gfx::NativeViewAccessible GetNSWindow() override;
 
+  // Get the node for this delegate, which may be an AXPlatformNode or it may
+  // be a native accessible object implemented by another class.
+  gfx::NativeViewAccessible GetNativeViewAccessible() override;
+
   // Get the parent of the node, which may be an AXPlatformNode or it may
   // be a native accessible object implemented by another class.
   gfx::NativeViewAccessible GetParent() override;

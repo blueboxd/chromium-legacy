@@ -293,6 +293,44 @@ void SafeBrowsingPrivateEventRouter::OnLargeUnscannedFileEvent(
   }
 }
 
+void SafeBrowsingPrivateEventRouter::OnDangerousDownloadWarning(
+    const GURL& url,
+    const std::string& file_name,
+    const std::string& download_digest_sha256,
+    const std::string& threat_type) {
+  if (!client_)
+    return;
+
+  // Create a real-time event dictionary and report it.
+  base::Value event(base::Value::Type::DICTIONARY);
+  event.SetStringKey(kKeyUrl, url.spec());
+  event.SetStringKey(kKeyFileName, file_name);
+  event.SetStringKey(kKeyDownloadDigestSha256, download_digest_sha256);
+  event.SetStringKey(kKeyProfileUserName, GetProfileUserName());
+  event.SetStringKey(kKeyThreatType, threat_type);
+  event.SetBoolKey(kKeyClickedThrough, false);
+  ReportRealtimeEvent(kKeyDangerousDownloadEvent, std::move(event));
+}
+
+void SafeBrowsingPrivateEventRouter::OnDangerousDownloadWarningBypassed(
+    const GURL& url,
+    const std::string& file_name,
+    const std::string& download_digest_sha256,
+    const std::string& threat_type) {
+  if (!client_)
+    return;
+
+  // Create a real-time event dictionary and report it.
+  base::Value event(base::Value::Type::DICTIONARY);
+  event.SetStringKey(kKeyUrl, url.spec());
+  event.SetStringKey(kKeyFileName, file_name);
+  event.SetStringKey(kKeyDownloadDigestSha256, download_digest_sha256);
+  event.SetStringKey(kKeyProfileUserName, GetProfileUserName());
+  event.SetStringKey(kKeyThreatType, threat_type);
+  event.SetBoolKey(kKeyClickedThrough, true);
+  ReportRealtimeEvent(kKeyDangerousDownloadEvent, std::move(event));
+}
+
 void SafeBrowsingPrivateEventRouter::SetCloudPolicyClientForTesting(
     std::unique_ptr<policy::CloudPolicyClient> client) {
   DCHECK_EQ(nullptr, client_.get());

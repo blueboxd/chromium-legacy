@@ -51,13 +51,20 @@ class AutofillPopupRowView : public views::View {
   // method which calls Init before returning.
   void Init();
 
+  AutofillPopupViewNativeViews* popup_view() { return popup_view_; }
+  int line_number() const { return line_number_; }
+  bool is_selected() const { return is_selected_; }
+
   virtual void CreateContent() = 0;
   virtual void RefreshStyle() = 0;
   virtual std::unique_ptr<views::Background> CreateBackground() = 0;
 
+ private:
   AutofillPopupViewNativeViews* popup_view_;
   const int line_number_;
   bool is_selected_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(AutofillPopupRowView);
 };
 
 // Views implementation for the autofill and password suggestion.

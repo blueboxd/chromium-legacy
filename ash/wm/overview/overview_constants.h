@@ -37,7 +37,8 @@ constexpr float kWallpaperClearBlurSigma = 0.f;
 
 // Amount of time we wait to unpause the occlusion tracker after a overview item
 // is finished dragging. Waits a bit longer than the overview item animation.
-constexpr int kOcclusionPauseDurationForDragMs = 300;
+constexpr base::TimeDelta kOcclusionPauseDurationForDrag =
+    base::TimeDelta::FromMilliseconds(300);
 
 }  // namespace ash
 

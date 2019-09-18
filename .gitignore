@@ -166,7 +166,8 @@ vs-chromium-project.txt
 /chromecast/internal
 /chromeos/assistant/internal
 /chromeos/profiles/chromeos.orderfile.txt
-/chromeos/profiles/orderfile.local.txt
+/chromeos/profiles/*.local.txt
+/chromeos/profiles/*.afdo.prof
 /cipd_cache/
 /clank
 /cloud_print/cloud_print_version_resources.xml

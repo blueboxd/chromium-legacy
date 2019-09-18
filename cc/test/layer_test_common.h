@@ -85,27 +85,6 @@ class LayerTestCommon {
                                  std::forward<Args>(args)...);
     }
 
-    template <typename T, typename... Args>
-    T* AddMaskLayer(LayerImpl* origin, Args&&... args) {
-      static_assert(std::is_base_of<PictureLayerImpl, T>::value, "");
-      std::unique_ptr<T> layer =
-          T::Create(host_impl()->active_tree(), layer_impl_id_++,
-                    std::forward<Args>(args)...);
-      layer->SetBounds(origin->bounds());
-      layer->SetIsMask(true);
-      T* ptr = layer.get();
-      host_impl()->active_tree()->AddMaskLayer(std::move(layer));
-      if (host_impl()->active_tree()->settings().use_layer_lists) {
-        auto* origin_effect = GetEffectNode(origin);
-        origin_effect->render_surface_reason = RenderSurfaceReason::kMask;
-        origin_effect->is_masked = true;
-        origin_effect->mask_layer_id = ptr->id();
-        ptr->SetOffsetToTransformParent(origin->offset_to_transform_parent());
-        CopyProperties(origin, ptr);
-      }
-      return ptr;
-    }
-
     void CalcDrawProps(const gfx::Size& viewport_size);
     void AppendQuadsWithOcclusion(LayerImpl* layer_impl,
                                   const gfx::Rect& occluded);

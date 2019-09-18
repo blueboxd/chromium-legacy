@@ -247,6 +247,11 @@ def main():
   for annotation in annotation_definitions:
     print(annotation.clang_tool_output_string())
 
+  # If all files were successfully checked for annotations but none of them had
+  # any, print something so that the traffic_annotation_auditor knows there was
+  # no error so that the files get checked for deleted annotations.
+  if not annotation_definitions:
+      print('No annotations in these files.')
   return 0
 
 

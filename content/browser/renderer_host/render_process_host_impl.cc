@@ -2240,9 +2240,9 @@ void RenderProcessHostImpl::BindFrameSinkProvider(
 }
 
 void RenderProcessHostImpl::BindCompositingModeReporter(
-    viz::mojom::CompositingModeReporterRequest request) {
+    mojo::PendingReceiver<viz::mojom::CompositingModeReporter> receiver) {
   BrowserMainLoop::GetInstance()->GetCompositingModeReporter(
-      std::move(request));
+      std::move(receiver));
 }
 
 void RenderProcessHostImpl::CreateStoragePartitionService(
@@ -2975,7 +2975,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableUseZoomForDSF,
     switches::kEnableViewport,
     switches::kEnableVtune,
-    switches::kEnableWebBluetoothScanning,
     switches::kEnableWebGL2ComputeContext,
     switches::kEnableWebGLDraftExtensions,
     switches::kEnableWebGLImageChromium,

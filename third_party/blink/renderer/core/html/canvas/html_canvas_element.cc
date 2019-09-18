@@ -104,6 +104,7 @@ constexpr int kDefaultCanvasHeight = 150;
 // It is in an invalid range (outside 0.0 - 1.0) so that it will not be
 // misinterpreted as a user-input value
 constexpr int kUndefinedQualityValue = -1.0;
+constexpr int kMinimumAccelerated2dCanvasSize = 128 * 129;
 
 }  // namespace
 
@@ -1019,6 +1020,18 @@ bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
   // The command line flag --disable-accelerated-2d-canvas toggles this option
   if (!RuntimeEnabledFeatures::Accelerated2dCanvasEnabled()) {
     return false;
+  }
+
+  // Webview crashes with accelerated small canvases TODO(crbug.com/1004304)
+  if (!RuntimeEnabledFeatures::AcceleratedSmallCanvasesEnabled()) {
+    base::CheckedNumeric<int> checked_canvas_pixel_count =
+        Size().Width() * Size().Height();
+    if (!checked_canvas_pixel_count.IsValid())
+      return false;
+    int canvas_pixel_count = checked_canvas_pixel_count.ValueOrDie();
+
+    if (canvas_pixel_count < kMinimumAccelerated2dCanvasSize)
+      return false;
   }
 
   // The following is necessary for handling the special case of canvases in

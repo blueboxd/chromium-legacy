@@ -438,9 +438,10 @@ def parse_args(args):
                 help='read list of tests to run from file'),
             optparse.make_option(
                 '--isolated-script-test-filter',
+                action='append',
                 type='string',
-                help='A list of tests to run separated by TWO colons, e.g. fast::css/test.html, '
-                     'same as listing them as positional arguments'),
+                help='A list of test globs to run or skip, separated by TWO colons, e.g. fast::css/test.html; '
+                     'prefix the glob with "-" to skip it'),
             # TODO(crbug.com/893235): Remove gtest_filter when FindIt no longer uses it.
             optparse.make_option(
                 '--gtest_filter',
@@ -593,9 +594,6 @@ def _set_up_derived_options(port, options, args):
 
     if not options.skipped:
         options.skipped = 'default'
-
-    if options.isolated_script_test_filter:
-        args.extend(options.isolated_script_test_filter.split('::'))
 
     if options.gtest_filter:
         args.extend(options.gtest_filter.split(':'))

@@ -18,6 +18,10 @@ class CdmProxyContext;
 class Decryptor;
 class MediaCryptoContext;
 
+#if defined(OS_FUCHSIA)
+class FuchsiaCdmContext;
+#endif
+
 // An interface representing the context that a media player needs from a
 // content decryption module (CDM) to decrypt (and decode) encrypted buffers.
 // Typically this will be passed to the media player (e.g. using SetCdm()).
@@ -88,6 +92,12 @@ class MEDIA_EXPORT CdmContext {
 #if defined(OS_ANDROID)
   // Returns a MediaCryptoContext that can be used by MediaCodec based decoders.
   virtual MediaCryptoContext* GetMediaCryptoContext();
+#endif
+
+#if defined(OS_FUCHSIA)
+  // Returns FuchsiaCdmContext interface when the context is backed by Fuchsia
+  // CDM. Otherwise returns nullptr.
+  virtual FuchsiaCdmContext* GetFuchsiaCdmContext();
 #endif
 
  protected:

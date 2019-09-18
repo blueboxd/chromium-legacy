@@ -36,8 +36,8 @@ class ElfHeaderTest(unittest.TestCase):
     self.assertEqual(elf.e_shentsize, 64)
     self.assertEqual(elf.e_shnum, 26)
     self.assertEqual(elf.e_shstrndx, 25)
-    # Validating types and amounts of all segments excluding GNU specific ones.
-    phdrs = elf.GetPhdrs()
+    # Validating types and amount of all segments excluding GNU specific ones.
+    phdrs = elf.GetProgramHeaders()
     self.assertEqual(len(phdrs), 8)
 
     phdr_types = [
@@ -46,9 +46,9 @@ class ElfHeaderTest(unittest.TestCase):
         elf_headers.ProgramHeader.Type.PT_LOAD,
         elf_headers.ProgramHeader.Type.PT_LOAD,
         elf_headers.ProgramHeader.Type.PT_DYNAMIC,
-        None,
-        None,
-        None,
+        None,  # Non-standard segment: GNU_EH_FRAME
+        None,  # Non-standard segment: GNU_STACK
+        None,  # Non-standard segment: GNU_RELRO
     ]
     for i in range(0, len(phdrs)):
       if phdr_types[i] is not None:
@@ -69,6 +69,102 @@ class ElfHeaderTest(unittest.TestCase):
     self.assertEqual(load_phdr.p_vaddr, 0x1000)
     self.assertEqual(load_phdr.p_paddr, 0x1000)
 
+    # Validating types and amount of sections excluding GNU ones.
+    shdrs = elf.GetSectionHeaders()
+    self.assertEqual(len(shdrs), 26)
+
+    shdr_types = [
+        elf_headers.SectionHeader.Type.SHT_NULL,
+        elf_headers.SectionHeader.Type.SHT_HASH,
+        None,  # Non-standard section: GNU_HASH
+        elf_headers.SectionHeader.Type.SHT_DYNSYM,
+        elf_headers.SectionHeader.Type.SHT_STRTAB,
+        None,  # Non-standard section: VERSYM
+        None,  # Non-standard section: VERNEED
+        elf_headers.SectionHeader.Type.SHT_RELA,
+        elf_headers.SectionHeader.Type.SHT_PROGBITS,
+        elf_headers.SectionHeader.Type.SHT_PROGBITS,
+        elf_headers.SectionHeader.Type.SHT_PROGBITS,
+        elf_headers.SectionHeader.Type.SHT_PROGBITS,
+        elf_headers.SectionHeader.Type.SHT_PROGBITS,
+        elf_headers.SectionHeader.Type.SHT_PROGBITS,
+        elf_headers.SectionHeader.Type.SHT_PROGBITS,
+        None,  # Non-standard section: INIT_ARRAY
+        None,  # Non-standard section: FINI_ARRAY
+        elf_headers.SectionHeader.Type.SHT_DYNAMIC,
+        elf_headers.SectionHeader.Type.SHT_PROGBITS,
+        elf_headers.SectionHeader.Type.SHT_PROGBITS,
+        elf_headers.SectionHeader.Type.SHT_PROGBITS,
+        elf_headers.SectionHeader.Type.SHT_NOBITS,
+        elf_headers.SectionHeader.Type.SHT_PROGBITS,
+        elf_headers.SectionHeader.Type.SHT_SYMTAB,
+        elf_headers.SectionHeader.Type.SHT_STRTAB,
+        elf_headers.SectionHeader.Type.SHT_STRTAB,
+    ]
+    for i in range(0, len(shdrs)):
+      if shdr_types[i] is not None:
+        self.assertEqual(shdrs[i].sh_type, shdr_types[i])
+
+    # Validate all fields of the first and second section, since the first one
+    # is NULL section.
+    shdr = shdrs[0]
+    self.assertEqual(shdr.sh_flags, 0)
+    self.assertEqual(shdr.sh_addr, 0x0)
+    self.assertEqual(shdr.sh_offset, 0x0)
+    self.assertEqual(shdr.sh_size, 0x0)
+    self.assertEqual(shdr.sh_link, 0)
+    self.assertEqual(shdr.sh_info, 0)
+    self.assertEqual(shdr.sh_addralign, 0)
+    self.assertEqual(shdr.sh_entsize, 0)
+
+    shdr = shdrs[1]
+    self.assertEqual(shdr.sh_flags, 2)
+    self.assertEqual(shdr.sh_addr, 0x200)
+    self.assertEqual(shdr.sh_offset, 0x200)
+    self.assertEqual(shdr.sh_size, 0x30)
+    self.assertEqual(shdr.sh_link, 3)
+    self.assertEqual(shdr.sh_info, 0)
+    self.assertEqual(shdr.sh_addralign, 8)
+    self.assertEqual(shdr.sh_entsize, 4)
+
+  def testElfHeaderSectionNames(self):
+    """Test that the section names are correctly resolved"""
+    with open(self.library_path, 'rb') as f:
+      data = f.read()
+    elf = elf_headers.ElfHeader(data)
+
+    section_names = [
+        '',
+        '.hash',
+        '.gnu.hash',
+        '.dynsym',
+        '.dynstr',
+        '.gnu.version',
+        '.gnu.version_r',
+        '.rela.dyn',
+        '.init',
+        '.plt',
+        '.plt.got',
+        '.text',
+        '.fini',
+        '.eh_frame_hdr',
+        '.eh_frame',
+        '.init_array',
+        '.fini_array',
+        '.dynamic',
+        '.got',
+        '.got.plt',
+        '.data',
+        '.bss',
+        '.comment',
+        '.symtab',
+        '.strtab',
+        '.shstrtab',
+    ]
+    shdrs = elf.GetSectionHeaders()
+    for i in range(0, len(shdrs)):
+      self.assertEqual(shdrs[i].GetStrName(), section_names[i])
+
   def testElfHeaderNoopPatching(self):
     """Patching the ELF without any changes."""
     with open(self.library_path, 'rb') as f:
@@ -85,8 +181,8 @@ class ElfHeaderTest(unittest.TestCase):
     elf = elf_headers.ElfHeader(data)
     # Changing some values.
     elf.e_ehsize = 42
-    elf.GetPhdrs()[0].p_align = 1
-    elf.GetPhdrs()[0].p_filesz = 10
+    elf.GetProgramHeaders()[0].p_align = 1
+    elf.GetProgramHeaders()[0].p_filesz = 10
     elf.PatchData(data)
 
     updated_elf = elf_headers.ElfHeader(data)
@@ -104,8 +200,8 @@ class ElfHeaderTest(unittest.TestCase):
     self.assertEqual(updated_elf.e_shstrndx, elf.e_shstrndx)
 
     # Validating all of the fields of the first segment.
-    load_phdr = elf.GetPhdrs()[0]
-    updated_load_phdr = updated_elf.GetPhdrs()[0]
+    load_phdr = elf.GetProgramHeaders()[0]
+    updated_load_phdr = updated_elf.GetProgramHeaders()[0]
 
     self.assertEqual(updated_load_phdr.p_offset, load_phdr.p_offset)
     self.assertEqual(updated_load_phdr.p_vaddr, load_phdr.p_vaddr)

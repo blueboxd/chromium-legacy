@@ -56,7 +56,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   ax::mojom::Role DetermineAccessibilityRole() override;
   ax::mojom::Role NativeRoleIgnoringAria() const override;
 
-  // If this is an anonymous block, returns the node of its containing layout
+  // If this is an anonymous node, returns the node of its containing layout
   // block, otherwise returns the node of this layout object.
   Node* GetNodeOrContainingBlockNode() const;
 

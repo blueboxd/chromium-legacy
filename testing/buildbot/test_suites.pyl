@@ -3340,6 +3340,7 @@
           '--driver-logging',
           '--test-list=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_blink_web_tests.filter',
           '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-features=UseSkiaRenderer',
+          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/enable-gpu-rasterization',
           '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/use-vulkan=native',
         ],
         'isolate_name': 'blink_web_tests_exparchive',

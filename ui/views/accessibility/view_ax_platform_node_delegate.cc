@@ -16,6 +16,7 @@
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/accessibility/platform/ax_platform_node_base.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
+#include "ui/base/layout.h"
 #include "ui/events/event_utils.h"
 #include "ui/views/accessibility/view_accessibility_utils.h"
 #include "ui/views/controls/native/native_view_host.h"
@@ -284,6 +285,11 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetNSWindow() {
   return nullptr;
 }
 
+gfx::NativeViewAccessible
+ViewAXPlatformNodeDelegate::GetNativeViewAccessible() {
+  return GetNativeObject();
+}
+
 gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetParent() {
   if (view()->parent())
     return view()->parent()->GetNativeViewAccessible();
@@ -319,6 +325,15 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::HitTestSync(int x,
 
   if (IsLeaf())
     return GetNativeObject();
+
+  gfx::NativeView native_view = view()->GetWidget()->GetNativeView();
+  float scale_factor = 1.0;
+  if (native_view) {
+    scale_factor = ui::GetScaleFactorForNativeView(native_view);
+    scale_factor = scale_factor <= 0 ? 1.0 : scale_factor;
+  }
+  x /= scale_factor;
+  y /= scale_factor;
 
   // Search child widgets first, since they're on top in the z-order.
   for (Widget* child_widget : GetChildWidgets().child_widgets) {

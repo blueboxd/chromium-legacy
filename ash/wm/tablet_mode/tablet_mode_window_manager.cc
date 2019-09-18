@@ -42,7 +42,7 @@ namespace {
 // This function is called to check if window[i] is eligible to be carried over
 // to split view mode during clamshell <-> tablet mode transition or multi-user
 // switch transition. Returns true if windows[i] exists, can snap in split view,
-// is not showing in overview, and is not ARC window.
+// and is not an ARC window.
 // TODO(xdai): Make it work for ARC windows. (see
 // https://crbug.com/922282 and
 // https://buganizer.corp.google.com/issues/123432223).
@@ -50,7 +50,6 @@ bool IsCarryOverCandidateForSplitView(
     const MruWindowTracker::WindowList& windows,
     size_t i) {
   return windows.size() > i && CanSnapInSplitview(windows[i]) &&
-         !windows[i]->GetProperty(kIsShowingInOverviewKey) &&
          static_cast<ash::AppType>(windows[i]->GetProperty(
              aura::client::kAppType)) != AppType::ARC_APP;
 }
@@ -61,11 +60,17 @@ bool IsCarryOverCandidateForSplitView(
 base::flat_map<aura::Window*, WindowStateType>
 GetCarryOverWindowsInSplitView() {
   base::flat_map<aura::Window*, WindowStateType> windows;
-  // Check the topmost window and the second topmost's window state to see if
-  // they are eligible to be carried over to splitscreen. A window must meet
+  // Check the states of the topmost two non-overview windows to see if they are
+  // eligible to be carried over to splitscreen. A window must meet
   // IsCarryOverCandidateForSplitView() to be carried over to splitscreen.
   MruWindowTracker::WindowList mru_windows =
       Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
+  mru_windows.erase(
+      std::remove_if(mru_windows.begin(), mru_windows.end(),
+                     [](aura::Window* window) {
+                       return window->GetProperty(kIsShowingInOverviewKey);
+                     }),
+      mru_windows.end());
   if (IsCarryOverCandidateForSplitView(mru_windows, 0u)) {
     if (WindowState::Get(mru_windows[0])->GetStateType() ==
         WindowStateType::kLeftSnapped) {

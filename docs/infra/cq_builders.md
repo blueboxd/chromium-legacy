@@ -91,18 +91,24 @@ builder.
 * [android_compile_x64_dbg](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/android_compile_x64_dbg) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/android_compile_x64_dbg)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+android_compile_x64_dbg))
 
   Path regular expressions:
+    * [`//chrome/android/java/src/org/chromium/chrome/browser/vr/.+`](https://cs.chromium.org/chromium/src/chrome/android/java/src/org/chromium/chrome/browser/vr/)
+    * [`//chrome/browser/vr/.+`](https://cs.chromium.org/chromium/src/chrome/browser/vr/)
     * [`//sandbox/linux/seccomp-bpf/.+`](https://cs.chromium.org/chromium/src/sandbox/linux/seccomp-bpf/)
     * [`//sandbox/linux/seccomp-bpf-helpers/.+`](https://cs.chromium.org/chromium/src/sandbox/linux/seccomp-bpf-helpers/)
     * [`//sandbox/linux/system_headers/.+`](https://cs.chromium.org/chromium/src/sandbox/linux/system_headers/)
     * [`//sandbox/linux/tests/.+`](https://cs.chromium.org/chromium/src/sandbox/linux/tests/)
+    * [`//third_party/gvr-android-sdk/.+`](https://cs.chromium.org/chromium/src/third_party/gvr-android-sdk/)
 
 * [android_compile_x86_dbg](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/android_compile_x86_dbg) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/android_compile_x86_dbg)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+android_compile_x86_dbg))
 
   Path regular expressions:
+    * [`//chrome/android/java/src/org/chromium/chrome/browser/vr/.+`](https://cs.chromium.org/chromium/src/chrome/android/java/src/org/chromium/chrome/browser/vr/)
+    * [`//chrome/browser/vr/.+`](https://cs.chromium.org/chromium/src/chrome/browser/vr/)
     * [`//sandbox/linux/seccomp-bpf/.+`](https://cs.chromium.org/chromium/src/sandbox/linux/seccomp-bpf/)
     * [`//sandbox/linux/seccomp-bpf-helpers/.+`](https://cs.chromium.org/chromium/src/sandbox/linux/seccomp-bpf-helpers/)
     * [`//sandbox/linux/system_headers/.+`](https://cs.chromium.org/chromium/src/sandbox/linux/system_headers/)
     * [`//sandbox/linux/tests/.+`](https://cs.chromium.org/chromium/src/sandbox/linux/tests/)
+    * [`//third_party/gvr-android-sdk/.+`](https://cs.chromium.org/chromium/src/third_party/gvr-android-sdk/)
 
 * [android_optional_gpu_tests_rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/android_optional_gpu_tests_rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/android_optional_gpu_tests_rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+android_optional_gpu_tests_rel))
 
@@ -309,6 +315,10 @@ as required builders.
   * Experimental percentage: 2
 
 * [chromeos-kevin-experimental-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/chromeos-kevin-experimental-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/chromeos-kevin-experimental-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+chromeos-kevin-experimental-rel))
+
+  * Experimental percentage: 5
+
+* [fuchsia-compile-x64-dbg](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/fuchsia-compile-x64-dbg) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/fuchsia-compile-x64-dbg)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+fuchsia-compile-x64-dbg))
 
   * Experimental percentage: 5
 

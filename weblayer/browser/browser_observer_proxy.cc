@@ -37,9 +37,11 @@ void BrowserObserverProxy::DisplayedURLChanged(const GURL& url) {
 void BrowserObserverProxy::LoadingStateChanged(bool is_loading,
                                                bool to_different_document) {}
 
+void BrowserObserverProxy::LoadProgressChanged(double progress) {}
+
 void BrowserObserverProxy::FirstContentfulPaint() {}
 
-static jlong JNI_BrowserObserverProxy_CreateBrowserObsererProxy(
+static jlong JNI_BrowserObserverProxy_CreateBrowserObserverProxy(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& proxy,
     jlong browser_controller) {

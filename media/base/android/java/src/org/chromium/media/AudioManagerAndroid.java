@@ -33,6 +33,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -1118,8 +1119,9 @@ class AudioManagerAndroid {
                     // slider all the way down in communication mode but the callback
                     // implementation can ensure that the volume is completely muted.
                     int volume = mAudioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
-                    if (DEBUG) logd("nativeSetMute: " + (volume == 0));
-                    nativeSetMute(mNativeAudioManagerAndroid, (volume == 0));
+                    if (DEBUG) logd("AudioManagerAndroidJni.get().setMute: " + (volume == 0));
+                    AudioManagerAndroidJni.get().setMute(
+                            mNativeAudioManagerAndroid, AudioManagerAndroid.this, (volume == 0));
                 }
         };
 
@@ -1234,5 +1236,8 @@ class AudioManagerAndroid {
         mUsbAudioReceiver = null;
     }
 
-    private native void nativeSetMute(long nativeAudioManagerAndroid, boolean muted);
+    @NativeMethods
+    interface Natives {
+        void setMute(long nativeAudioManagerAndroid, AudioManagerAndroid caller, boolean muted);
+    }
 }

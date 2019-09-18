@@ -329,6 +329,12 @@ class PrintRenderFrameHelper
       const MetafileSkia& metafile,
       PrintHostMsg_DidPrintContent_Params* params);
 
+  // Increments the IPC nesting level when an IPC message is received.
+  void IPCReceived();
+
+  // Decrements the IPC nesting level once an IPC message has been processed.
+  void IPCProcessed();
+
   // Helper method to get page layout in points and fit to page if needed.
   static void ComputePageLayoutInPointsForCss(
       blink::WebLocalFrame* frame,

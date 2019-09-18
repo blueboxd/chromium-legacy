@@ -28,6 +28,8 @@ const char kRecordContinuously[] = "record-continuously";
 const char kRecordAsMuchAsPossible[] = "record-as-much-as-possible";
 const char kTraceToConsole[] = "trace-to-console";
 const char kEnableSystrace[] = "enable-systrace";
+constexpr int kEnableSystraceLength = sizeof(kEnableSystrace) - 1;
+
 const char kEnableArgumentFilter[] = "enable-argument-filter";
 
 // String parameters that can be used to parse the trace config string.
@@ -35,6 +37,7 @@ const char kRecordModeParam[] = "record_mode";
 const char kTraceBufferSizeInEvents[] = "trace_buffer_size_in_events";
 const char kTraceBufferSizeInKb[] = "trace_buffer_size_in_kb";
 const char kEnableSystraceParam[] = "enable_systrace";
+const char kSystraceEventsParam[] = "enable_systrace_events";
 const char kEnableArgumentFilterParam[] = "enable_argument_filter";
 
 // String parameters that is used to parse memory dump config in trace config
@@ -298,6 +301,7 @@ TraceConfig& TraceConfig::operator=(const TraceConfig& rhs) {
   memory_dump_config_ = rhs.memory_dump_config_;
   event_filters_ = rhs.event_filters_;
   histogram_names_ = rhs.histogram_names_;
+  systrace_events_ = rhs.systrace_events_;
   return *this;
 }
 
@@ -355,6 +359,7 @@ void TraceConfig::Clear() {
   process_filter_config_.Clear();
   event_filters_.clear();
   histogram_names_.clear();
+  systrace_events_.clear();
 }
 
 void TraceConfig::InitializeDefault() {
@@ -406,6 +411,15 @@ void TraceConfig::InitializeFromConfigDict(const Value& dict) {
     else
       SetDefaultMemoryDumpConfig();
   }
+
+  systrace_events_.clear();
+  if (enable_systrace_) {
+    const Value* systrace_events = dict.FindListKey(kSystraceEventsParam);
+    if (systrace_events) {
+      for (const Value& value : systrace_events->GetList())
+        systrace_events_.insert(value.GetString());
+    }
+  }
 }
 
 void TraceConfig::InitializeFromConfigString(StringPiece config_string) {
@@ -425,6 +439,7 @@ void TraceConfig::InitializeFromStrings(StringPiece category_filter_string,
   trace_buffer_size_in_events_ = 0;
   trace_buffer_size_in_kb_ = 0;
   enable_systrace_ = false;
+  systrace_events_.clear();
   enable_argument_filter_ = false;
   if (!trace_options_string.empty()) {
     std::vector<std::string> split =
@@ -438,8 +453,27 @@ void TraceConfig::InitializeFromStrings(StringPiece category_filter_string,
         record_mode_ = ECHO_TO_CONSOLE;
       } else if (token == kRecordAsMuchAsPossible) {
         record_mode_ = RECORD_AS_MUCH_AS_POSSIBLE;
-      } else if (token == kEnableSystrace) {
+      } else if (token.find(kEnableSystrace) == 0) {
+        // Find optional events list.
+        const size_t length = token.length();
+        if (length == kEnableSystraceLength) {
+          // Use all predefined categories.
+          enable_systrace_ = true;
+          continue;
+        }
+        const auto system_events_not_trimmed =
+            token.substr(kEnableSystraceLength);
+        const auto system_events =
+            TrimString(system_events_not_trimmed, kWhitespaceASCII, TRIM_ALL);
+        if (system_events[0] != '=') {
+          LOG(ERROR) << "Failed to parse " << token;
+          continue;
+        }
         enable_systrace_ = true;
+        const std::vector<std::string> split_systrace_events = SplitString(
+            system_events.substr(1), " ", TRIM_WHITESPACE, SPLIT_WANT_NONEMPTY);
+        for (const std::string& systrace_event : split_systrace_events)
+          systrace_events_.insert(systrace_event);
       } else if (token == kEnableArgumentFilter) {
         enable_argument_filter_ = true;
       }
@@ -622,7 +656,20 @@ Value TraceConfig::ToValue() const {
     dict.SetKey(kHistogramNamesParam, Value(std::move(histogram_names)));
   }
 
+  if (enable_systrace_) {
+    if (!systrace_events_.empty()) {
+      std::vector<Value> systrace_events;
+      for (const std::string& systrace_event : systrace_events_)
+        systrace_events.emplace_back(systrace_event);
+      dict.SetKey(kSystraceEventsParam, Value(std::move(systrace_events)));
+    }
+  }
+
   return dict;
+}
+
+void TraceConfig::EnableSystraceEvent(const std::string& systrace_event) {
+  systrace_events_.insert(systrace_event);
 }
 
 void TraceConfig::EnableHistogram(const std::string& histogram_name) {
@@ -647,10 +694,24 @@ std::string TraceConfig::ToTraceOptionsString() const {
     default:
       NOTREACHED();
   }
-  if (enable_systrace_)
-    ret = ret + "," + kEnableSystrace;
-  if (enable_argument_filter_)
-    ret = ret + "," + kEnableArgumentFilter;
+  if (enable_systrace_) {
+    ret += ",";
+    ret += kEnableSystrace;
+    bool first_param = true;
+    for (const std::string& systrace_event : systrace_events_) {
+      if (first_param) {
+        ret += "=";
+        first_param = false;
+      } else {
+        ret += " ";
+      }
+      ret = ret + systrace_event;
+    }
+  }
+  if (enable_argument_filter_) {
+    ret += ",";
+    ret += kEnableArgumentFilter;
+  }
   return ret;
 }
 

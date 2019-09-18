@@ -56,6 +56,7 @@ GTEST_CONVERSION_WHITELIST = [
   'angle_perftests',
   'cc_perftests',
   'gpu_perftests',
+  'latency_perftests',
   'media_perftests',
   'views_perftests',
   'xr.vr.common_perftests',

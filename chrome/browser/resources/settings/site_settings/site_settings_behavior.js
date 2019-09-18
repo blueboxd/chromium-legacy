@@ -196,14 +196,14 @@ const SiteSettingsBehaviorImpl = {
         settings.ContentSettingsTypes.SERIAL_PORTS,
         'enableExperimentalWebPlatformFeatures');
     addOrRemoveSettingWithFlag(
+        settings.ContentSettingsTypes.BLUETOOTH_SCANNING,
+        'enableExperimentalWebPlatformFeatures');
+    addOrRemoveSettingWithFlag(
         settings.ContentSettingsTypes.ADS,
         'enableSafeBrowsingSubresourceFilter');
     addOrRemoveSettingWithFlag(
         settings.ContentSettingsTypes.PAYMENT_HANDLER,
         'enablePaymentHandlerContentSetting');
-    addOrRemoveSettingWithFlag(
-        settings.ContentSettingsTypes.BLUETOOTH_SCANNING,
-        'enableBluetoothScanningContentSetting');
     addOrRemoveSettingWithFlag(
         settings.ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE,
         'enableNativeFileSystemWriteContentSetting');

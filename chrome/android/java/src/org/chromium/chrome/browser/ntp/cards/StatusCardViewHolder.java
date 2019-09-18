@@ -17,7 +17,7 @@ import org.chromium.chrome.browser.metrics.ImpressionTracker.Listener;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
-import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
+import org.chromium.chrome.browser.ui.widget.displaystyle.UiConfig;
 
 /**
  * ViewHolder for Status and Promo cards.

@@ -244,6 +244,11 @@ FuchsiaCdm::FuchsiaCdm(fuchsia::media::drm::ContentDecryptionModulePtr cdm,
 
 FuchsiaCdm::~FuchsiaCdm() = default;
 
+std::unique_ptr<FuchsiaSecureStreamDecryptor> FuchsiaCdm::CreateSecureDecryptor(
+    FuchsiaSecureStreamDecryptor::Client* client) {
+  return FuchsiaSecureStreamDecryptor::Create(cdm_.get(), client);
+}
+
 void FuchsiaCdm::SetServerCertificate(
     const std::vector<uint8_t>& certificate,
     std::unique_ptr<SimpleCdmPromise> promise) {
@@ -420,6 +425,10 @@ Decryptor* FuchsiaCdm::GetDecryptor() {
 
 int FuchsiaCdm::GetCdmId() const {
   return kInvalidCdmId;
+}
+
+FuchsiaCdmContext* FuchsiaCdm::GetFuchsiaCdmContext() {
+  return this;
 }
 
 }  // namespace media

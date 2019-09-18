@@ -10,5 +10,5 @@ interface GeneralAudienceBrowsingAPIKeyObserver {
 
 interface GeneralAudienceBrowsingAPIKeySubject {
   AddGeneralAudienceBrowsingAPIKeyObserver(
-      GeneralAudienceBrowsingAPIKeyObserver observer);
+      pending_remote<GeneralAudienceBrowsingAPIKeyObserver> observer);
 };

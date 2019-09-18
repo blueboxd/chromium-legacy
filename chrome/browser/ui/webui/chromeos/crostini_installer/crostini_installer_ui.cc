@@ -13,6 +13,7 @@
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "ui/web_dialogs/web_dialog_ui.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 
 namespace chromeos {
@@ -23,7 +24,7 @@ bool CrostiniInstallerUI::IsEnabled() {
 }
 
 CrostiniInstallerUI::CrostiniInstallerUI(content::WebUI* web_ui)
-    : ui::MojoWebUIController{web_ui} {
+    : ui::MojoWebDialogUI{web_ui} {
   // TODO(lxj): We might want to make sure there is only one instance of this
   // class.
 

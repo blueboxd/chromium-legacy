@@ -351,8 +351,8 @@ RulesetMatcher::LoadRulesetResult RulesetMatcher::CreateVerifiedMatcher(
 RulesetMatcher::~RulesetMatcher() = default;
 
 uint8_t RulesetMatcher::GetRemoveHeadersMask(const RequestParams& params,
-                                             uint8_t current_mask) const {
-  uint8_t mask = current_mask;
+                                             uint8_t ignored_mask) const {
+  uint8_t mask = 0;
 
   static_assert(kRemoveHeadersMask_Max <= std::numeric_limits<uint8_t>::max(),
                 "RemoveHeadersMask can't fit in a uint8_t");
@@ -365,21 +365,21 @@ uint8_t RulesetMatcher::GetRemoveHeadersMask(const RequestParams& params,
         break;
       case dnr_api::REMOVE_HEADER_TYPE_COOKIE:
         bit = kRemoveHeadersMask_Cookie;
-        if (mask & bit)
+        if (ignored_mask & bit)
           break;
         if (GetMatchingRule(params, flat::ActionIndex_remove_cookie_header))
           mask |= bit;
         break;
       case dnr_api::REMOVE_HEADER_TYPE_REFERER:
         bit = kRemoveHeadersMask_Referer;
-        if (mask & bit)
+        if (ignored_mask & bit)
           break;
         if (GetMatchingRule(params, flat::ActionIndex_remove_referer_header))
           mask |= bit;
         break;
       case dnr_api::REMOVE_HEADER_TYPE_SETCOOKIE:
         bit = kRemoveHeadersMask_SetCookie;
-        if (mask & bit)
+        if (ignored_mask & bit)
           break;
         if (GetMatchingRule(params, flat::ActionIndex_remove_set_cookie_header))
           mask |= bit;
@@ -387,6 +387,7 @@ uint8_t RulesetMatcher::GetRemoveHeadersMask(const RequestParams& params,
     }
   }
 
+  DCHECK(!(mask & ignored_mask));
   return mask;
 }
 

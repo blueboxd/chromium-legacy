@@ -95,6 +95,10 @@
       status: "stable",
     },
     {
+      name: "AcceleratedSmallCanvases",
+      status: "stable",
+    },
+    {
       name: "AccessibilityObjectModel",
       status: "experimental",
     },
@@ -1736,7 +1740,7 @@
     },
     {
       name: "WebBluetoothScanning",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "WebGL2ComputeContext",

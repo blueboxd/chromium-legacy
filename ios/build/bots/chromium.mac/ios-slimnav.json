@@ -2,7 +2,7 @@
   "comments": [
     "Test the SlimNavigationManager feature."
   ],
-  "xcode build version": "11a419c",
+  "xcode build version": "11a420a",
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
     "is_component_build=false",

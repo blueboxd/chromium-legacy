@@ -714,4 +714,8 @@ void WebRuntimeFeatures::EnableSurfaceEmbeddingFeatures(bool enable) {
   RuntimeEnabledFeatures::SetSurfaceEmbeddingFeaturesEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableAcceleratedSmallCanvases(bool enable) {
+  RuntimeEnabledFeatures::SetAcceleratedSmallCanvasesEnabled(enable);
+}
+
 }  // namespace blink

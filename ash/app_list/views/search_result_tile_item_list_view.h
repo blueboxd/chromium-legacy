@@ -62,6 +62,10 @@ class APP_LIST_EXPORT SearchResultTileItemListView
 
   void OnPlayStoreImpressionTimer();
 
+  // Cleans up when the view is hid due to closing the suggestion widow
+  // or closing the launcher.
+  void CleanUpOnViewHide();
+
   std::vector<SearchResultTileItemView*> tile_views_;
 
   std::vector<views::Separator*> separator_views_;

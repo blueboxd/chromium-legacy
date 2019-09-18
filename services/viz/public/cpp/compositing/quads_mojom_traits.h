@@ -224,12 +224,6 @@ struct StructTraits<viz::mojom::RenderPassQuadStateDataView, viz::DrawQuad> {
     return quad->mask_texture_size;
   }
 
-  static bool mask_applies_to_backdrop(const viz::DrawQuad& input) {
-    const viz::RenderPassDrawQuad* quad =
-        viz::RenderPassDrawQuad::MaterialCast(&input);
-    return quad->mask_applies_to_backdrop;
-  }
-
   static const gfx::Vector2dF& filters_scale(const viz::DrawQuad& input) {
     const viz::RenderPassDrawQuad* quad =
         viz::RenderPassDrawQuad::MaterialCast(&input);

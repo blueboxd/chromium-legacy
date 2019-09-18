@@ -36,13 +36,14 @@ ProducerHost::~ProducerHost() {
   producer_endpoint_.reset();
 }
 
-void ProducerHost::Initialize(mojom::ProducerClientPtr producer_client,
-                              perfetto::TracingService* service,
-                              const std::string& name) {
+void ProducerHost::Initialize(
+    mojo::PendingRemote<mojom::ProducerClient> producer_client,
+    perfetto::TracingService* service,
+    const std::string& name) {
   DCHECK(service);
   DCHECK(!producer_endpoint_);
 
-  producer_client_ = std::move(producer_client);
+  producer_client_.Bind(std::move(producer_client));
 
   // Attempt to parse the PID out of the producer name.
   // If the Producer is in-process, we:

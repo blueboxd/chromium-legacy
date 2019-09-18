@@ -963,6 +963,13 @@ void AppsGridView::Layout() {
   if (bounds_animator_->IsAnimating())
     bounds_animator_->Cancel();
 
+  if (GetContentsBounds().IsEmpty())
+    return;
+
+  // Update cached tile padding first, as grid size calculations depend on the
+  // cached padding value.
+  UpdateTilePadding();
+
   // Prepare |page_size| * number-of-pages for |items_container_|, and sets the
   // origin properly to show the correct page.
   const gfx::Size page_size = GetTileGridSize();
@@ -983,13 +990,9 @@ void AppsGridView::Layout() {
                                               page_height * pages));
   }
 
-  if (GetContentsBounds().IsEmpty())
-    return;
-
   if (fadeout_layer_delegate_)
     fadeout_layer_delegate_->layer()->SetBounds(layer()->bounds());
 
-  UpdateTilePadding();
   CalculateIdealBoundsForFolder();
   for (int i = 0; i < view_model_.view_size(); ++i) {
     AppListItemView* view = GetItemViewAt(i);

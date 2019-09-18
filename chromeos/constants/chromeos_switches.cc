@@ -557,6 +557,9 @@ bool ShouldShowShelfHoverPreviews() {
 }
 
 bool ShouldShowScrollableShelf() {
+  // If we're showing the new shelf design, also enable scrollable shelf.
+  if (ShouldShowShelfHotseat())
+    return true;
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kShelfScrollable);
 }
 

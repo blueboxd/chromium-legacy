@@ -10,16 +10,15 @@ const BROWSER_SETTINGS_PATH = '../';
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
+// Only run in release builds because we frequently see test timeouts in debug.
+// We suspect this is because the settings page loads slowly in debug.
+// https://crbug.com/1003483
+GEN('#if defined(NDEBUG)');
+
 GEN('#include "ash/public/cpp/ash_features.h"');
 GEN('#include "build/branding_buildflags.h"');
 GEN('#include "chrome/common/chrome_features.h"');
 GEN('#include "chromeos/constants/chromeos_features.h"');
-
-GEN('#if !defined(NDEBUG)');
-GEN('#define MAYBE_AllJsTests DISABLED_AllJsTests');
-GEN('#else');
-GEN('#define MAYBE_AllJsTests AllJsTests');
-GEN('#endif');
 
 // Generic test fixture for CrOS Polymer Settings elements to be overridden by
 // individual element tests.
@@ -95,7 +94,7 @@ var OSSettingsAddUsersTest = class extends OSSettingsBrowserTest {
   }
 };
 
-TEST_F('OSSettingsAddUsersTest', 'MAYBE_AllJsTests', () => {
+TEST_F('OSSettingsAddUsersTest', 'AllJsTests', () => {
   mocha.run();
 });
 
@@ -111,9 +110,6 @@ var OSSettingsAdvancedPageBrowserTest = class extends OSSettingsBrowserTest {
   }
 };
 
-// Times out on debug builders because the Settings page can take several
-// seconds to load in a Release build and several times that in a Debug build.
-// See https://crbug.com/558434.
 // Disabled due to flakiness on linux-chromeos-rel. https://crbug.com/992116
 TEST_F('OSSettingsAdvancedPageBrowserTest', 'DISABLED_AllJsTests', () => {
   // Run all registered tests.
@@ -175,6 +171,27 @@ const OSSettingsAppManagementBrowserTest = class extends OSSettingsBrowserTest {
   }
 };
 
+// Text fixture for the app management dom switch element.
+// eslint-disable-next-line no-var
+var OSSettingsAppManagementDomSwitchTest =
+    class extends OSSettingsAppManagementBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'app_management/dom_switch.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'app_management/dom_switch_test.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsAppManagementDomSwitchTest', 'All', function() {
+  mocha.run();
+});
+
 // Test fixture for the app management settings page.
 // eslint-disable-next-line no-var
 var OSSettingsAppManagementPageTest =
@@ -192,8 +209,7 @@ var OSSettingsAppManagementPageTest =
   }
 };
 
-// Flaky in debug. https://crbug.com/1003483
-TEST_F('OSSettingsAppManagementPageTest', 'MAYBE_AllJsTests', () => {
+TEST_F('OSSettingsAppManagementPageTest', 'AllJsTests', () => {
   mocha.run();
 });
 
@@ -260,8 +276,7 @@ var OSSettingsAppManagementManagedAppTest =
   }
 };
 
-// Flaky in debug. https://crbug.com/1003483
-TEST_F('OSSettingsAppManagementManagedAppTest', 'MAYBE_AllJsTests', () => {
+TEST_F('OSSettingsAppManagementManagedAppTest', 'AllJsTests', () => {
   mocha.run();
 });
 
@@ -548,7 +563,7 @@ var OSSettingsMainTest = class extends OSSettingsBrowserTest {
   }
 };
 
-TEST_F('OSSettingsMainTest', 'MAYBE_AllJsTests', () => {
+TEST_F('OSSettingsMainTest', 'AllJsTests', () => {
   mocha.run();
 });
 
@@ -564,7 +579,7 @@ var OSSettingsMenuTest = class extends OSSettingsBrowserTest {
   }
 };
 
-TEST_F('OSSettingsMenuTest', 'MAYBE_AllJsTests', () => {
+TEST_F('OSSettingsMenuTest', 'AllJsTests', () => {
   mocha.run();
 });
 
@@ -855,8 +870,7 @@ var OSSettingsPersonalizationPageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-// Flaky in debug. https://crbug.com/1003483
-TEST_F('OSSettingsPersonalizationPageTest', 'MAYBE_AllJsTests', () => {
+TEST_F('OSSettingsPersonalizationPageTest', 'AllJsTests', () => {
   mocha.run();
 });
 
@@ -1012,8 +1026,7 @@ var OSSettingsResetPageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-// Flaky in debug. https://crbug.com/1003483
-TEST_F('OSSettingsResetPageTest', 'MAYBE_AllJsTests', () => {
+TEST_F('OSSettingsResetPageTest', 'AllJsTests', () => {
   mocha.run();
 });
 
@@ -1035,8 +1048,7 @@ var OSSettingsSearchPageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-// Settings tests are flaky on debug. See https://crbug.com/968608.
-TEST_F('OSSettingsSearchPageTest', 'MAYBE_AllJsTests', () => {
+TEST_F('OSSettingsSearchPageTest', 'AllJsTests', () => {
   mocha.run();
 });
 
@@ -1058,7 +1070,8 @@ var OSSettingsSmbPageTest = class extends OSSettingsBrowserTest {
   }
 };
 
-// Settings tests are flaky on debug. See https://crbug.com/968608.
-TEST_F('OSSettingsSmbPageTest', 'MAYBE_AllJsTests', () => {
+TEST_F('OSSettingsSmbPageTest', 'AllJsTests', () => {
   mocha.run();
 });
+
+GEN('#endif  // defined(NDEBUG)');

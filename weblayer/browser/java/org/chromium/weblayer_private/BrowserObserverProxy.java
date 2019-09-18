@@ -23,7 +23,7 @@ public final class BrowserObserverProxy {
 
     BrowserObserverProxy(long browserController, IBrowserControllerClient client) {
         mClient = client;
-        mNativeBrowserObserverProxy = nativeCreateBrowserObsererProxy(this, browserController);
+        mNativeBrowserObserverProxy = nativeCreateBrowserObserverProxy(this, browserController);
     }
 
     public void destroy() {
@@ -40,7 +40,7 @@ public final class BrowserObserverProxy {
         }
     }
 
-    private static native long nativeCreateBrowserObsererProxy(
+    private static native long nativeCreateBrowserObserverProxy(
             BrowserObserverProxy proxy, long browserController);
     private static native void nativeDeleteBrowserObserverProxy(long proxy);
 }

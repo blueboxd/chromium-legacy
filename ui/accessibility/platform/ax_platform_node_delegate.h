@@ -77,6 +77,10 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // method is only meaningful on macOS.
   virtual gfx::NativeViewAccessible GetNSWindow() = 0;
 
+  // Get the node for this delegate, which may be an AXPlatformNode or it may
+  // be a native accessible object implemented by another class.
+  virtual gfx::NativeViewAccessible GetNativeViewAccessible() = 0;
+
   // Get the parent of the node, which may be an AXPlatformNode or it may
   // be a native accessible object implemented by another class.
   virtual gfx::NativeViewAccessible GetParent() = 0;

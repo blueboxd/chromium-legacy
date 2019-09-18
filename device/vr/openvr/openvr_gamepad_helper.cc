@@ -351,18 +351,18 @@ class OpenVRGamepadBuilder : public XRStandardGamepadBuilder {
     profiles_.push_back(name);
 
     // Also record information about what this controller actually does in a
-    // more general sense.
-    std::string capabilities = "";
+    // more general sense. The controller is guaranteed to at least have a
+    // trigger if we get here.
+    std::string capabilities = "generic-trigger";
     if (HasSecondaryButton()) {
-      capabilities += "grip-";
+      capabilities += "-grip";
     }
     if (HasTouchpad()) {
-      capabilities += "touchpad-";
+      capabilities += "-touchpad";
     }
     if (HasThumbstick()) {
-      capabilities += "thumbstick-";
+      capabilities += "-thumbstick";
     }
-    capabilities += "controller";
     profiles_.push_back(capabilities);
   }
 

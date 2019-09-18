@@ -20,6 +20,7 @@ import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.AsyncTask;
 
 import java.io.ByteArrayInputStream;
@@ -236,7 +237,8 @@ public class MediaPlayerBridge {
 
             deleteFile();
             assert (mNativeMediaPlayerBridge != 0);
-            nativeOnDidSetDataUriDataSource(mNativeMediaPlayerBridge, result);
+            MediaPlayerBridgeJni.get().onDidSetDataUriDataSource(
+                    mNativeMediaPlayerBridge, MediaPlayerBridge.this, result);
         }
 
         private void deleteFile() {
@@ -328,13 +330,16 @@ public class MediaPlayerBridge {
         return new AllowedOperations(canSeekForward, canSeekBackward);
     }
 
-    private native void nativeOnDidSetDataUriDataSource(long nativeMediaPlayerBridge,
-                                                        boolean success);
-
     private void cancelLoadDataUriTask() {
         if (mLoadDataUriTask != null) {
             mLoadDataUriTask.cancel(true);
             mLoadDataUriTask = null;
         }
+    }
+
+    @NativeMethods
+    interface Natives {
+        void onDidSetDataUriDataSource(
+                long nativeMediaPlayerBridge, MediaPlayerBridge caller, boolean success);
     }
 }

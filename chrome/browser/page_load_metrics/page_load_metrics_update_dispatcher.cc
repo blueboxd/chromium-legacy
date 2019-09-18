@@ -17,7 +17,6 @@
 #include "components/page_load_metrics/common/page_load_metrics_constants.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
-#include "extensions/common/constants.h"
 #include "url/gurl.h"
 
 namespace page_load_metrics {
@@ -405,6 +404,7 @@ PageLoadMetricsUpdateDispatcher::PageLoadMetricsUpdateDispatcher(
     content::NavigationHandle* navigation_handle,
     PageLoadMetricsEmbedderInterface* embedder_interface)
     : client_(client),
+      embedder_interface_(embedder_interface),
       timer_(embedder_interface->CreateTimer()),
       navigation_start_(navigation_handle->NavigationStart()),
       current_merged_page_timing_(CreatePageLoadTiming()),
@@ -438,8 +438,8 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
     mojom::FrameRenderDataUpdatePtr render_data,
     mojom::CpuTimingPtr new_cpu_timing,
     mojom::DeferredResourceCountsPtr new_deferred_resource_data) {
-  if (render_frame_host->GetLastCommittedURL().SchemeIs(
-          extensions::kExtensionScheme)) {
+  if (embedder_interface_->IsExtensionUrl(
+          render_frame_host->GetLastCommittedURL())) {
     // Extensions can inject child frames into a page. We don't want to track
     // these as they could skew metrics. See http://crbug.com/761037
     return;
@@ -476,8 +476,8 @@ void PageLoadMetricsUpdateDispatcher::UpdateMetrics(
 void PageLoadMetricsUpdateDispatcher::UpdateFeatures(
     content::RenderFrameHost* render_frame_host,
     const mojom::PageLoadFeatures& new_features) {
-  if (render_frame_host->GetLastCommittedURL().SchemeIs(
-          extensions::kExtensionScheme)) {
+  if (embedder_interface_->IsExtensionUrl(
+          render_frame_host->GetLastCommittedURL())) {
     // Extensions can inject child frames into a page. We don't want to track
     // these as they could skew metrics. See http://crbug.com/761037
     return;

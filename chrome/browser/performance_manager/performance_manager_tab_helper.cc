@@ -27,8 +27,16 @@ PerformanceManagerTabHelper* PerformanceManagerTabHelper::first_ = nullptr;
 
 // static
 void PerformanceManagerTabHelper::DetachAndDestroyAll() {
-  while (first_)
-    first_->web_contents()->RemoveUserData(UserDataKey());
+  while (first_) {
+    PerformanceManagerTabHelper* helper = first_;
+    // Tear it down and detach it from the WebContents, which will
+    // delete it.
+    content::WebContents* web_contents = helper->web_contents();
+    DCHECK(web_contents);
+    helper->TearDown();
+    DCHECK(!helper->web_contents());
+    web_contents->RemoveUserData(UserDataKey());
+  }
 }
 
 PerformanceManagerTabHelper::PerformanceManagerTabHelper(
@@ -72,6 +80,19 @@ PerformanceManagerTabHelper::PerformanceManagerTabHelper(
 }
 
 PerformanceManagerTabHelper::~PerformanceManagerTabHelper() {
+  DCHECK(!page_node_);
+  DCHECK(frames_.empty());
+  DCHECK_NE(this, first_);
+  DCHECK(!prev_);
+  DCHECK(!next_);
+}
+
+void PerformanceManagerTabHelper::TearDown() {
+  // Validate that this instance is in list of tab helpers.
+  DCHECK(first_ == this || next_ || prev_);
+  DCHECK_NE(this, next_);
+  DCHECK_NE(this, prev_);
+
   // Ship our page and frame nodes to the PerformanceManagerImpl for
   // incineration.
   std::vector<std::unique_ptr<NodeBase>> nodes;
@@ -84,17 +105,25 @@ PerformanceManagerTabHelper::~PerformanceManagerTabHelper() {
   // Delete the page and its entire frame tree from the graph.
   performance_manager_->BatchDeleteNodes(std::move(nodes));
 
-  if (first_ == this)
+  if (first_ == this) {
+    DCHECK(!prev_);
     first_ = next_;
+  }
 
   if (prev_) {
     DCHECK_EQ(prev_->next_, this);
     prev_->next_ = next_;
   }
+
   if (next_) {
     DCHECK_EQ(next_->prev_, this);
     next_->prev_ = prev_;
   }
+  prev_ = nullptr;
+  next_ = nullptr;
+
+  // Unsubscribe from the associated WebContents.
+  Observe(nullptr);
 }
 
 void PerformanceManagerTabHelper::RenderFrameCreated(
@@ -277,6 +306,10 @@ void PerformanceManagerTabHelper::TitleWasSet(content::NavigationEntry* entry) {
     return;
   }
   PostToGraph(FROM_HERE, &PageNodeImpl::OnTitleUpdated, page_node_.get());
+}
+
+void PerformanceManagerTabHelper::WebContentsDestroyed() {
+  TearDown();
 }
 
 void PerformanceManagerTabHelper::DidUpdateFaviconURL(

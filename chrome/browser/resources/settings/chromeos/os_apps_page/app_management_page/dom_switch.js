@@ -101,10 +101,16 @@ Polymer({
   },
 
   /**
-   * @param {string} newRouteId
+   * @param {?string} newRouteId
    */
   onRouteChanged_: function(newRouteId) {
     if (!this.instance_) {
+      return;
+    }
+
+    if (newRouteId === null) {
+      this.parentNode.removeChild(this.selectedChild_);
+      this.selectedChild_ = null;
       return;
     }
 

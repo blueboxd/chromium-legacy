@@ -1332,6 +1332,17 @@ const FeatureEntry::FeatureVariation kQuietNotificationPromptsVariations[] = {
 };
 #endif  // !OS_ANDROID
 
+// TODO(crbug.com/991082): Remove after proper service worker support for
+// back-forward cache is implemented.
+const FeatureEntry::FeatureParam kBackForwardCache_ServiceWorkerSupport[] = {
+    {"service_worker_supported", "true"},
+};
+
+const FeatureEntry::FeatureVariation kBackForwardCacheVariations[] = {
+    {" even for ServiceWorker-controlled pages",
+     kBackForwardCache_ServiceWorkerSupport, 1, nullptr},
+};
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -4537,7 +4548,9 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"back-forward-cache", flag_descriptions::kBackForwardCacheName,
      flag_descriptions::kBackForwardCacheDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kBackForwardCache)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kBackForwardCache,
+                                    kBackForwardCacheVariations,
+                                    "BackForwardCache")},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

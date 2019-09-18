@@ -39,7 +39,7 @@ class AX_EXPORT AXFragmentRootWin : public ui::AXPlatformNodeDelegateBase {
       gfx::AcceleratedWidget widget);
 
   // Returns the NativeViewAccessible for this fragment root.
-  gfx::NativeViewAccessible GetNativeViewAccessible();
+  gfx::NativeViewAccessible GetNativeViewAccessible() override;
 
   // Assistive technologies will typically use UI Automation's control or
   // content view rather than the raw view.

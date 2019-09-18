@@ -12,7 +12,8 @@
 #include "base/strings/string16.h"
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/autofill/core/common/password_form.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class FakeMojoPasswordManagerDriver
@@ -22,8 +23,9 @@ class FakeMojoPasswordManagerDriver
 
   ~FakeMojoPasswordManagerDriver() override;
 
-  void BindRequest(
-      autofill::mojom::PasswordManagerDriverAssociatedRequest request);
+  void BindReceiver(
+      mojo::PendingAssociatedReceiver<autofill::mojom::PasswordManagerDriver>
+          receiver);
 
   // Flushes all pending messages from the associated binding.
   void Flush();
@@ -219,7 +221,8 @@ class FakeMojoPasswordManagerDriver
   autofill::mojom::FocusedFieldType last_focused_field_type_ =
       autofill::mojom::FocusedFieldType::kUnknown;
 
-  mojo::AssociatedBinding<autofill::mojom::PasswordManagerDriver> binding_;
+  mojo::AssociatedReceiver<autofill::mojom::PasswordManagerDriver> receiver_{
+      this};
 };
 
 #endif  // CHROME_RENDERER_AUTOFILL_FAKE_MOJO_PASSWORD_MANAGER_DRIVER_H_

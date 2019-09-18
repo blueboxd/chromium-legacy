@@ -90,6 +90,9 @@ const base::Feature kUnifiedMessageCenterRefactor{
 const base::Feature kEnableBackgroundBlur{"EnableBackgroundBlur",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kSwipingFromLeftEdgeToGoBack{
+    "SwipingFromLeftEdgeToGoBack", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsHideArcMediaNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kMediaSessionNotification) &&
          base::FeatureList::IsEnabled(kHideArcMediaNotifications);
@@ -165,6 +168,10 @@ bool IsUnifiedMessageCenterRefactorEnabled() {
 
 bool IsBackgroundBlurEnabled() {
   return base::FeatureList::IsEnabled(kEnableBackgroundBlur);
+}
+
+bool IsSwipingFromLeftEdgeToGoBackEnabled() {
+  return base::FeatureList::IsEnabled(kSwipingFromLeftEdgeToGoBack);
 }
 
 }  // namespace features

@@ -34,7 +34,6 @@ class VIZ_COMMON_EXPORT RenderPassDrawQuad : public DrawQuad {
               ResourceId mask_resource_id,
               const gfx::RectF& mask_uv_rect,
               const gfx::Size& mask_texture_size,
-              bool mask_applies_to_backdrop,
               const gfx::Vector2dF& filters_scale,
               const gfx::PointF& filters_origin,
               const gfx::RectF& tex_coord_rect,
@@ -49,7 +48,6 @@ class VIZ_COMMON_EXPORT RenderPassDrawQuad : public DrawQuad {
               ResourceId mask_resource_id,
               const gfx::RectF& mask_uv_rect,
               const gfx::Size& mask_texture_size,
-              bool mask_applies_to_backdrop,
               const gfx::Vector2dF& filters_scale,
               const gfx::PointF& filters_origin,
               const gfx::RectF& tex_coord_rect,
@@ -75,7 +73,6 @@ class VIZ_COMMON_EXPORT RenderPassDrawQuad : public DrawQuad {
   float backdrop_filter_quality;
 
   bool force_anti_aliasing_off;
-  bool mask_applies_to_backdrop;
 
   ResourceId mask_resource_id() const {
     return resources.ids[kMaskResourceIdIndex];

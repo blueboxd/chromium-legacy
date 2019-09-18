@@ -11,14 +11,14 @@ import android.os.Build;
 import android.view.Display;
 import android.view.View;
 
-import org.chromium.base.annotations.DoNotInline;
+import org.chromium.base.annotations.VerifiesOnO;
 
 /**
  * Utility class to use new APIs that were added in O (API level 26). These need to exist in a
  * separate class so that Android framework can successfully verify classes without
  * encountering the new APIs.
  */
-@DoNotInline
+@VerifiesOnO
 @TargetApi(Build.VERSION_CODES.O)
 public final class ApiHelperForO {
     private ApiHelperForO() {}

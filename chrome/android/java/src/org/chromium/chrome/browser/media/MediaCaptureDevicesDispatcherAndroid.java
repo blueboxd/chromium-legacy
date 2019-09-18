@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.media;
 
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -13,26 +14,29 @@ import org.chromium.content_public.browser.WebContents;
 public class MediaCaptureDevicesDispatcherAndroid {
     public static boolean isCapturingAudio(WebContents webContents) {
         if (webContents == null) return false;
-        return nativeIsCapturingAudio(webContents);
+        return MediaCaptureDevicesDispatcherAndroidJni.get().isCapturingAudio(webContents);
     }
 
     public static boolean isCapturingVideo(WebContents webContents) {
         if (webContents == null) return false;
-        return nativeIsCapturingVideo(webContents);
+        return MediaCaptureDevicesDispatcherAndroidJni.get().isCapturingVideo(webContents);
     }
 
     public static boolean isCapturingScreen(WebContents webContents) {
         if (webContents == null) return false;
-        return nativeIsCapturingScreen(webContents);
+        return MediaCaptureDevicesDispatcherAndroidJni.get().isCapturingScreen(webContents);
     }
 
     public static void notifyStopped(WebContents webContents) {
         if (webContents == null) return;
-        nativeNotifyStopped(webContents);
+        MediaCaptureDevicesDispatcherAndroidJni.get().notifyStopped(webContents);
     }
 
-    private static native boolean nativeIsCapturingAudio(WebContents webContents);
-    private static native boolean nativeIsCapturingVideo(WebContents webContents);
-    private static native boolean nativeIsCapturingScreen(WebContents webContents);
-    private static native void nativeNotifyStopped(WebContents webContents);
+    @NativeMethods
+    interface Natives {
+        boolean isCapturingAudio(WebContents webContents);
+        boolean isCapturingVideo(WebContents webContents);
+        boolean isCapturingScreen(WebContents webContents);
+        void notifyStopped(WebContents webContents);
+    }
 }

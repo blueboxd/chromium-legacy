@@ -87,12 +87,10 @@ static std::unique_ptr<viz::RenderPass> DoAppendQuadsWithScaledMask(
   CreateTransformNode(surface).local = scale;
   CreateEffectNode(surface).render_surface_reason = RenderSurfaceReason::kTest;
 
-  auto* mask_layer =
-      impl.AddMaskLayer<FakeMaskLayerImpl>(surface, raster_source);
+  auto* mask_layer = impl.AddLayer<FakeMaskLayerImpl>(raster_source);
   mask_layer->set_resource_size(
       gfx::ScaleToCeiledSize(layer_size, scale_factor));
-  mask_layer->SetDrawsContent(true);
-  mask_layer->SetBounds(layer_size);
+  SetupMaskProperties(surface, mask_layer);
 
   auto* child = impl.AddLayer<LayerImpl>();
   child->SetDrawsContent(true);
@@ -118,8 +116,10 @@ TEST(RenderSurfaceLayerImplTest, AppendQuadsWithScaledMask) {
   DCHECK(render_pass->quad_list.front());
   const viz::RenderPassDrawQuad* quad =
       viz::RenderPassDrawQuad::MaterialCast(render_pass->quad_list.front());
-  EXPECT_EQ(gfx::RectF(0, 0, 1, 1), quad->mask_uv_rect);
+  // Mask layers don't use quad's mask functionality.
+  EXPECT_EQ(gfx::RectF(), quad->mask_uv_rect);
   EXPECT_EQ(gfx::Vector2dF(2.f, 2.f), quad->filters_scale);
+  EXPECT_EQ(0u, quad->mask_resource_id());
 }
 
 TEST(RenderSurfaceLayerImplTest, ResourcelessAppendQuadsSkipMask) {

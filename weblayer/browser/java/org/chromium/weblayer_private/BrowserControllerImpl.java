@@ -5,6 +5,8 @@
 package org.chromium.weblayer_private;
 
 import android.content.Context;
+import android.content.ContextWrapper;
+import android.content.res.Resources;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -60,9 +62,16 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
         public void onScrollChanged(int lPix, int tPix, int oldlPix, int oldtPix) {}
     }
 
-    public BrowserControllerImpl(Context context, ProfileImpl profile) {
+    public BrowserControllerImpl(Context clientContext, Context implContext, ProfileImpl profile) {
         mProfile = profile;
 
+        Context context = new ContextWrapper(clientContext) {
+            @Override
+            public Resources getResources() {
+                // Always use resources from the implementation APK.
+                return implContext.getResources();
+            }
+        };
         mWindowAndroid = new ActivityWindowAndroid(context);
         mContentViewRenderView = new ContentViewRenderView(context);
 
@@ -139,6 +148,12 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
     @Override
     public IObjectWrapper onCreateView() {
         return ObjectWrapper.wrap(mContentViewRenderView);
+    }
+
+    @Override
+    public void setSupportsEmbedding(boolean enable) {
+        mContentViewRenderView.requestMode(enable ? ContentViewRenderView.MODE_TEXTURE_VIEW
+                                                  : ContentViewRenderView.MODE_SURFACE_VIEW);
     }
 
     private static native long nativeCreateBrowserController(long profile);

@@ -368,7 +368,7 @@ device::mojom::XRInputSourceStatePtr OculusRenderLoop::GetTouchData(
   // The absence of "touchpad" in this string indicates that the slots in the
   // button and axes arrays are placeholders required by the xr-standard mapping
   // but not actually updated with any input.
-  desc->profiles.push_back("grip-thumbstick-controller");
+  desc->profiles.push_back("generic-trigger-grip-thumbstick");
 
   state->description = std::move(desc);
 

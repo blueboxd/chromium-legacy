@@ -52,7 +52,7 @@ void BoxLayoutExample::CreateAdditionalControls(int vertical_pos) {
   min_cross_axis_size_ =
       CreateTextfield(base::ASCIIToUTF16("Min cross axis"), &vertical_pos);
 
-  CreateMarginsTextFields(base::ASCIIToUTF16("Insets"), border_insets_,
+  CreateMarginsTextFields(base::ASCIIToUTF16("Insets"), &border_insets_,
                           &vertical_pos);
 
   collapse_margins_ =
@@ -93,8 +93,10 @@ void BoxLayoutExample::ContentsChanged(Textfield* textfield,
     int min_cross_size;
     base::StringToInt(min_cross_axis_size_->GetText(), &min_cross_size);
     layout_->set_minimum_cross_axis_size(min_cross_size);
-  } else if (textfield == border_insets_[0] || textfield == border_insets_[1] ||
-             textfield == border_insets_[2] || textfield == border_insets_[3]) {
+  } else if (textfield == border_insets_.left ||
+             textfield == border_insets_.top ||
+             textfield == border_insets_.right ||
+             textfield == border_insets_.bottom) {
     UpdateBorderInsets();
   }
   RefreshLayoutPanel(false);

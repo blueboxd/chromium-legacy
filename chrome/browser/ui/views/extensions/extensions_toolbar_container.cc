@@ -11,7 +11,10 @@
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
+#include "chrome/browser/ui/views/layout/animating_layout_manager.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
+#include "ui/views/layout/flex_layout.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget_observer.h"
 
 struct ExtensionsToolbarContainer::DropInfo {
@@ -35,6 +38,15 @@ ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser)
       model_(ToolbarActionsModel::Get(browser_->profile())),
       model_observer_(this),
       extensions_button_(new ExtensionsToolbarButton(browser_, this)) {
+  animating_layout_ =
+      SetLayoutManager(std::make_unique<AnimatingLayoutManager>());
+  animating_layout_->SetShouldAnimateBounds(true);
+  auto* flex_layout = animating_layout_->SetTargetLayoutManager(
+      std::make_unique<views::FlexLayout>());
+  flex_layout->SetCollapseMargins(true)
+      .SetIgnoreDefaultMainAxisMargins(true)
+      .SetDefault(views::kMarginsKey,
+                  gfx::Insets(0, GetLayoutConstant(TOOLBAR_ELEMENT_PADDING)));
   model_observer_.Add(model_);
   AddMainButton(extensions_button_);
   CreateActions();
@@ -121,19 +133,16 @@ void ExtensionsToolbarContainer::PopOutAction(
     ToolbarActionViewController* action,
     bool is_sticky,
     const base::Closure& closure) {
-  // TODO(pbos): Animate popout.
   // TODO(pbos): Highlight popout differently.
   DCHECK(!popped_out_action_);
   popped_out_action_ = action;
   icons_[popped_out_action_->GetId()]->SetVisible(true);
   ReorderViews();
-  closure.Run();
+  animating_layout_->RunOrQueueAction(closure);
 }
 
 void ExtensionsToolbarContainer::ShowToolbarActionBubble(
     std::unique_ptr<ToolbarActionsBarBubbleDelegate> controller) {
-  // TODO(pbos): Make sure we finish animations before showing the bubble.
-
   auto iter = icons_.find(controller->GetAnchorActionId());
 
   views::View* const anchor_view = iter != icons_.end()
@@ -142,11 +151,10 @@ void ExtensionsToolbarContainer::ShowToolbarActionBubble(
 
   anchor_view->SetVisible(true);
 
-  active_bubble_ = new ToolbarActionsBarBubbleViews(
-      anchor_view, anchor_view != extensions_button_, std::move(controller));
-  views::BubbleDialogDelegateView::CreateBubble(active_bubble_)
-      ->AddObserver(this);
-  active_bubble_->Show();
+  animating_layout_->RunOrQueueAction(
+      base::BindOnce(&ExtensionsToolbarContainer::ShowActiveBubble,
+                     weak_ptr_factory_.GetWeakPtr(), anchor_view,
+                     base::Passed(std::move(controller))));
 }
 
 void ExtensionsToolbarContainer::ShowToolbarActionBubbleAsync(
@@ -412,4 +420,14 @@ size_t ExtensionsToolbarContainer::WidthToIconCount(int x_offset) {
                    (GetToolbarActionSize().width() + element_padding),
                0);
   return std::min(unclamped_count, actions_.size());
+}
+
+void ExtensionsToolbarContainer::ShowActiveBubble(
+    views::View* anchor_view,
+    std::unique_ptr<ToolbarActionsBarBubbleDelegate> controller) {
+  active_bubble_ = new ToolbarActionsBarBubbleViews(
+      anchor_view, anchor_view != extensions_button_, std::move(controller));
+  views::BubbleDialogDelegateView::CreateBubble(active_bubble_)
+      ->AddObserver(this);
+  active_bubble_->Show();
 }

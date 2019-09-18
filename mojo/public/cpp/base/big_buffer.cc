@@ -81,7 +81,15 @@ constexpr size_t BigBuffer::kMaxInlineBytes;
 
 BigBuffer::BigBuffer() : storage_type_(StorageType::kBytes), bytes_size_(0) {}
 
-BigBuffer::BigBuffer(BigBuffer&& other) = default;
+BigBuffer::BigBuffer(BigBuffer&& other)
+    : storage_type_(other.storage_type_),
+      bytes_(std::move(other.bytes_)),
+      bytes_size_(other.bytes_size_),
+      shared_memory_(std::move(other.shared_memory_)) {
+  // Make sure |other| looks empty.
+  other.storage_type_ = StorageType::kInvalidBuffer;
+  other.bytes_size_ = 0;
+}
 
 BigBuffer::BigBuffer(base::span<const uint8_t> data) {
   *this = BigBufferView::ToBigBuffer(BigBufferView(data));
@@ -106,7 +114,16 @@ BigBuffer::BigBuffer(size_t size) {
 
 BigBuffer::~BigBuffer() = default;
 
-BigBuffer& BigBuffer::operator=(BigBuffer&& other) = default;
+BigBuffer& BigBuffer::operator=(BigBuffer&& other) {
+  storage_type_ = other.storage_type_;
+  bytes_ = std::move(other.bytes_);
+  bytes_size_ = other.bytes_size_;
+  shared_memory_ = std::move(other.shared_memory_);
+  // Make sure |other| looks empty.
+  other.storage_type_ = StorageType::kInvalidBuffer;
+  other.bytes_size_ = 0;
+  return *this;
+}
 
 uint8_t* BigBuffer::data() {
   return const_cast<uint8_t*>(const_cast<const BigBuffer*>(this)->data());

@@ -140,7 +140,9 @@ if (is_android) {
     java_files = device_sensors_jni_sources
     deps = [
       "//base:base_java",
+      "//base:jni_java",
       "//services/device/public/mojom:generic_sensor_java",
     ]
+    annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   }
 }

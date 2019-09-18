@@ -161,11 +161,11 @@ void CompareDrawQuad(DrawQuad* quad, DrawQuad* copy) {
   }                                                                           \
   SETUP_AND_COPY_QUAD_ALL_RP(Type, quad_all, copy_a);
 
-#define CREATE_QUAD_NEW_RP(Type, a, b, c, d, e, f, g, h, i, j, k, copy_a)    \
+#define CREATE_QUAD_NEW_RP(Type, a, b, c, d, e, f, g, h, i, j, copy_a)       \
   Type* quad_new = render_pass->CreateAndAppendDrawQuad<Type>();             \
   {                                                                          \
     QUAD_DATA quad_new->SetNew(shared_state, quad_rect, a, b, c, d, e, f, g, \
-                               h, i, j, k);                                  \
+                               h, i, j);                                     \
   }                                                                          \
   SETUP_AND_COPY_QUAD_NEW_RP(Type, quad_new, copy_a);
 
@@ -193,7 +193,6 @@ TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
   ResourceId mask_resource_id = 78;
   gfx::RectF mask_uv_rect(0, 0, 33.f, 19.f);
   gfx::Size mask_texture_size(128, 134);
-  bool mask_applies_to_backdrop = false;
   gfx::Vector2dF filters_scale;
   gfx::PointF filters_origin;
   gfx::RectF tex_coord_rect(1, 1, 255, 254);
@@ -205,9 +204,9 @@ TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
 
   CREATE_QUAD_NEW_RP(RenderPassDrawQuad, visible_rect, render_pass_id,
                      mask_resource_id, mask_uv_rect, mask_texture_size,
-                     mask_applies_to_backdrop, filters_scale, filters_origin,
-                     tex_coord_rect, force_anti_aliasing_off,
-                     backdrop_filter_quality, copied_render_pass_id);
+                     filters_scale, filters_origin, tex_coord_rect,
+                     force_anti_aliasing_off, backdrop_filter_quality,
+                     copied_render_pass_id);
   EXPECT_EQ(DrawQuad::Material::kRenderPass, copy_quad->material);
   EXPECT_EQ(visible_rect, copy_quad->visible_rect);
   EXPECT_EQ(copied_render_pass_id, copy_quad->render_pass_id);
@@ -215,24 +214,6 @@ TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
   EXPECT_EQ(mask_uv_rect.ToString(), copy_quad->mask_uv_rect.ToString());
   EXPECT_EQ(mask_texture_size.ToString(),
             copy_quad->mask_texture_size.ToString());
-  EXPECT_EQ(mask_applies_to_backdrop, copy_quad->mask_applies_to_backdrop);
-  EXPECT_EQ(filters_scale, copy_quad->filters_scale);
-  EXPECT_EQ(filters_origin, copy_quad->filters_origin);
-  EXPECT_EQ(tex_coord_rect.ToString(), copy_quad->tex_coord_rect.ToString());
-
-  mask_applies_to_backdrop = true;
-  CREATE_QUAD_ALL_RP(RenderPassDrawQuad, render_pass_id, mask_resource_id,
-                     mask_uv_rect, mask_texture_size, mask_applies_to_backdrop,
-                     filters_scale, filters_origin, tex_coord_rect,
-                     force_anti_aliasing_off, backdrop_filter_quality,
-                     copied_render_pass_id);
-  EXPECT_EQ(DrawQuad::Material::kRenderPass, copy_quad->material);
-  EXPECT_EQ(copied_render_pass_id, copy_quad->render_pass_id);
-  EXPECT_EQ(mask_resource_id, copy_quad->mask_resource_id());
-  EXPECT_EQ(mask_uv_rect.ToString(), copy_quad->mask_uv_rect.ToString());
-  EXPECT_EQ(mask_texture_size.ToString(),
-            copy_quad->mask_texture_size.ToString());
-  EXPECT_EQ(mask_applies_to_backdrop, copy_quad->mask_applies_to_backdrop);
   EXPECT_EQ(filters_scale, copy_quad->filters_scale);
   EXPECT_EQ(filters_origin, copy_quad->filters_origin);
   EXPECT_EQ(tex_coord_rect.ToString(), copy_quad->tex_coord_rect.ToString());
@@ -548,7 +529,6 @@ TEST_F(DrawQuadIteratorTest, RenderPassDrawQuad) {
   ResourceId mask_resource_id = 78;
   gfx::RectF mask_uv_rect(0.f, 0.f, 33.f, 19.f);
   gfx::Size mask_texture_size(128, 134);
-  bool mask_applies_to_backdrop = false;
   gfx::Vector2dF filters_scale(2.f, 3.f);
   gfx::PointF filters_origin(0.f, 0.f);
   gfx::RectF tex_coord_rect(1.f, 1.f, 33.f, 19.f);
@@ -560,33 +540,19 @@ TEST_F(DrawQuadIteratorTest, RenderPassDrawQuad) {
   CREATE_SHARED_STATE();
   CREATE_QUAD_NEW_RP(RenderPassDrawQuad, visible_rect, render_pass_id,
                      mask_resource_id, mask_uv_rect, mask_texture_size,
-                     mask_applies_to_backdrop, filters_scale, filters_origin,
-                     tex_coord_rect, force_anti_aliasing_off,
-                     backdrop_filter_quality, copied_render_pass_id);
+                     filters_scale, filters_origin, tex_coord_rect,
+                     force_anti_aliasing_off, backdrop_filter_quality,
+                     copied_render_pass_id);
   EXPECT_EQ(mask_resource_id, quad_new->mask_resource_id());
   EXPECT_EQ(1, IterateAndCount(quad_new));
   EXPECT_EQ(mask_resource_id + 1, quad_new->mask_resource_id());
-  EXPECT_EQ(mask_applies_to_backdrop, quad_new->mask_applies_to_backdrop);
 
-  mask_applies_to_backdrop = true;
-  quad_new->SetNew(shared_state, visible_rect, visible_rect, render_pass_id,
-                   mask_resource_id, mask_uv_rect, mask_texture_size,
-                   mask_applies_to_backdrop, filters_scale, filters_origin,
-                   tex_coord_rect, force_anti_aliasing_off,
-                   backdrop_filter_quality);
-  EXPECT_EQ(mask_resource_id, quad_new->mask_resource_id());
-  EXPECT_EQ(1, IterateAndCount(quad_new));
-  EXPECT_EQ(mask_resource_id + 1, quad_new->mask_resource_id());
-  EXPECT_EQ(mask_applies_to_backdrop, quad_new->mask_applies_to_backdrop);
-
-  mask_applies_to_backdrop = false;
   ResourceId new_mask_resource_id = 0;
   gfx::Rect quad_rect(30, 40, 50, 60);
   quad_new->SetNew(shared_state, quad_rect, visible_rect, render_pass_id,
                    new_mask_resource_id, mask_uv_rect, mask_texture_size,
-                   mask_applies_to_backdrop, filters_scale, filters_origin,
-                   tex_coord_rect, force_anti_aliasing_off,
-                   backdrop_filter_quality);
+                   filters_scale, filters_origin, tex_coord_rect,
+                   force_anti_aliasing_off, backdrop_filter_quality);
   EXPECT_EQ(0, IterateAndCount(quad_new));
   EXPECT_EQ(0u, quad_new->mask_resource_id());
 }

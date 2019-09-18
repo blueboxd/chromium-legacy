@@ -27,8 +27,6 @@ group("resources") {
     ":grey_700_color",
     ":grey_800_color",
     ":grey_900_color",
-    ":grid_theme_dark_selection_tint_color",
-    ":grid_theme_selection_tint_color",
     ":mdc_ink_color",
     ":mdc_secondary_ink_color",
     ":placeholder_image_tint_color",
@@ -170,18 +168,6 @@ colorset("grey_700_color") {
 colorset("grey_800_color") {
   sources = [
     "grey_800_color.colorset/Contents.json",
-  ]
-}
-
-colorset("grid_theme_selection_tint_color") {
-  sources = [
-    "grid_theme_selection_tint_color.colorset/Contents.json",
-  ]
-}
-
-colorset("grid_theme_dark_selection_tint_color") {
-  sources = [
-    "grid_theme_dark_selection_tint_color.colorset/Contents.json",
   ]
 }
 

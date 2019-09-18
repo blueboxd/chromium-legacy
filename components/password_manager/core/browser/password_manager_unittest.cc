@@ -3097,7 +3097,7 @@ TEST_F(PasswordManagerTest, CreatePasswordFormManagerOnSaving) {
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
 
-  // The form disappeared, so the submission is condered to be successful.
+  // The form disappeared, so the submission is considered to be successful.
   manager()->OnPasswordFormsRendered(&driver_, {}, true);
   ASSERT_TRUE(form_manager_to_save);
   EXPECT_THAT(form_manager_to_save->GetPendingCredentials(),

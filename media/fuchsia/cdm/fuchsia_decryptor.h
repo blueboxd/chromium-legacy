@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "media/base/decryptor.h"
+#include "media/fuchsia/cdm/fuchsia_stream_decryptor.h"
 
 namespace fuchsia {
 namespace media {

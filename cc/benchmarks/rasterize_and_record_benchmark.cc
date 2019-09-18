@@ -86,9 +86,8 @@ RasterizeAndRecordBenchmark::~RasterizeAndRecordBenchmark() {
 void RasterizeAndRecordBenchmark::DidUpdateLayers(
     LayerTreeHost* layer_tree_host) {
   layer_tree_host_ = layer_tree_host;
-  LayerTreeHostCommon::CallFunctionForEveryLayer(
-      layer_tree_host_,
-      [this](Layer* layer) { layer->RunMicroBenchmark(this); });
+  for (auto* layer : *layer_tree_host)
+    layer->RunMicroBenchmark(this);
 
   DCHECK(!results_.get());
   results_ = base::WrapUnique(new base::DictionaryValue);

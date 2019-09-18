@@ -920,7 +920,7 @@ void OverviewItem::OnWindowDestroying(aura::Window* window) {
 
   if (is_being_dragged_) {
     Shell::Get()->overview_controller()->UnpauseOcclusionTracker(
-        kOcclusionPauseDurationForDragMs);
+        kOcclusionPauseDurationForDrag);
   }
 }
 

@@ -94,17 +94,6 @@ std::string ComputeAcceptLanguageFromPref(const std::string& language_pref) {
 }
 
 #if defined(OS_CHROMEOS)
-Profile* GetPrimaryProfile() {
-  // Obtains the primary profile.
-  if (!user_manager::UserManager::IsInitialized())
-    return nullptr;
-  const user_manager::User* primary_user =
-      user_manager::UserManager::Get()->GetPrimaryUser();
-  if (!primary_user)
-    return nullptr;
-  return chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user);
-}
-
 bool ShouldUseBuiltinCertVerifier(Profile* profile) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(chromeos::switches::kForceCertVerifierBuiltin))
@@ -115,41 +104,12 @@ bool ShouldUseBuiltinCertVerifier(Profile* profile) {
     return true;
   }
 
-  // TODO(https://crbug.com/982936): Instead of evaluating the primary profile
-  // prefs explicitly, register the pref with LocalState and evaluate the pref
-  // there. Note that currently that is not possible because the LocalState
-  // prefs may not reflect the primary profile policy state at the time this
-  // function is executed.
-
-  // Explicitly check if |profile| is the primary profile. GetPrimaryProfile
-  // only returns non-null pretty late in the primary profile initialization
-  // stage, and the NetworkContext is created before that.
-  Profile* primary_profile = nullptr;
-  if (chromeos::ProfileHelper::Get()->IsPrimaryProfile(profile))
-    primary_profile = profile;
-
-  if (!primary_profile)
-    primary_profile = GetPrimaryProfile();
-  if (!primary_profile) {
-    NOTREACHED();
-    return base::FeatureList::IsEnabled(
-        net::features::kCertVerifierBuiltinFeature);
-  }
-
-  // The policy evaluated through the pref is not updatable dynamically, so
-  // assert that the pref system is already initialized at the time this is
-  // called.
-  DCHECK_NE(PrefService::INITIALIZATION_STATUS_WAITING,
-            primary_profile->GetPrefs()->GetInitializationStatus());
   const PrefService::Preference* builtin_cert_verifier_enabled_pref =
-      primary_profile->GetPrefs()->FindPreference(
+      g_browser_process->local_state()->FindPreference(
           prefs::kBuiltinCertificateVerifierEnabled);
   if (builtin_cert_verifier_enabled_pref->IsManaged())
     return builtin_cert_verifier_enabled_pref->GetValue()->GetBool();
 
-  // TODO(https://crbug.com/939344): Also evaluate whether there are
-  // extension-specific certificates to be used, and if yes, enable the built-in
-  // cert verifier.
   return base::FeatureList::IsEnabled(
       net::features::kCertVerifierBuiltinFeature);
 }
@@ -274,18 +234,18 @@ void ProfileNetworkContextService::UpdateAdditionalCertificates() {
 void ProfileNetworkContextService::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kQuicAllowed, true);
-#if defined(OS_CHROMEOS)
-  // Note that the default value is not relevant because the pref is only
-  // evaluated when it is managed.
-  registry->RegisterBooleanPref(prefs::kBuiltinCertificateVerifierEnabled,
-                                false);
-#endif
 }
 
 // static
 void ProfileNetworkContextService::RegisterLocalStatePrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kHSTSPolicyBypassList);
+#if defined(OS_CHROMEOS)
+  // Note that the default value is not relevant because the pref is only
+  // evaluated when it is managed.
+  registry->RegisterBooleanPref(prefs::kBuiltinCertificateVerifierEnabled,
+                                false);
+#endif
 }
 
 void ProfileNetworkContextService::DisableQuicIfNotAllowed() {

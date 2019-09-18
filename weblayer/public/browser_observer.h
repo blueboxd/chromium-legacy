@@ -23,6 +23,11 @@ class BrowserObserver {
   virtual void LoadingStateChanged(bool is_loading,
                                    bool to_different_document) {}
 
+  // Indicates that the load progress of the WebContents has changed. This
+  // corresponds to WebContentsDelegate::LoadProgressChanged, meaning |progress|
+  // ranges from 0.0 to 1.0.
+  virtual void LoadProgressChanged(double progress) {}
+
   // This is fired after each navigation has completed, to indicate that the
   // first paint after a non-empty layout has finished.
   virtual void FirstContentfulPaint() {}

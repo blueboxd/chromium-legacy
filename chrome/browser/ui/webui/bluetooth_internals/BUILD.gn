@@ -24,6 +24,10 @@ source_set("bluetooth_internals") {
     "//device/bluetooth",
     "//ui/webui",
   ]
+
+  if (is_chromeos) {
+    deps += [ "//chrome/browser/chromeos" ]
+  }
 }
 
 mojom("mojo_bindings") {

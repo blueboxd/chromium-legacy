@@ -116,8 +116,6 @@ struct CC_EXPORT EffectNode {
   bool is_currently_animating_opacity : 1;
   // Whether this node has a child node with kDstIn blend mode.
   bool has_masking_child : 1;
-  // Whether this node has a mask. This bit is not used when using layer lists.
-  bool is_masked : 1;
   // Whether this node's effect has been changed since the last
   // frame. Needed in order to compute damage rect.
   bool effect_changed : 1;
@@ -138,9 +136,6 @@ struct CC_EXPORT EffectNode {
   // This is the id of the ancestor effect node that induces a
   // RenderSurfaceImpl.
   int target_id;
-  // The layer id of the mask layer, if any, to apply to this effect
-  // node's content when rendering to a surface.
-  int mask_layer_id;
   int closest_ancestor_with_cached_render_surface_id;
   int closest_ancestor_with_copy_request_id;
 

@@ -417,7 +417,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // Gets the text offsets where new lines start.
   std::vector<int> GetLineStartOffsets() const;
 
-  virtual gfx::NativeViewAccessible GetNativeViewAccessible();
+  gfx::NativeViewAccessible GetNativeViewAccessible() override;
 
   // AXPosition Support
 

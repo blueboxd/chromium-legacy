@@ -26,6 +26,7 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -153,7 +154,7 @@ public class FeatureUtilities {
      * @param visible Whether a custom tab is visible.
      */
     public static void setCustomTabVisible(boolean visible) {
-        nativeSetCustomTabVisible(visible);
+        FeatureUtilitiesJni.get().setCustomTabVisible(visible);
     }
 
     /**
@@ -161,7 +162,7 @@ public class FeatureUtilities {
      * @param isInMultiWindowMode Whether the activity is in Android N multi-window mode.
      */
     public static void setIsInMultiWindowMode(boolean isInMultiWindowMode) {
-        nativeSetIsInMultiWindowMode(isInMultiWindowMode);
+        FeatureUtilitiesJni.get().setIsInMultiWindowMode(isInMultiWindowMode);
     }
 
     /**
@@ -648,7 +649,7 @@ public class FeatureUtilities {
     private static void cacheNetworkServiceWarmUpEnabled() {
         ChromePreferenceManager.getInstance().writeBoolean(
                 ChromePreferenceManager.NETWORK_SERVICE_WARM_UP_ENABLED_KEY,
-                nativeIsNetworkServiceWarmUpEnabled());
+                FeatureUtilitiesJni.get().isNetworkServiceWarmUpEnabled());
     }
 
     /**
@@ -786,7 +787,10 @@ public class FeatureUtilities {
         }
     }
 
-    private static native void nativeSetCustomTabVisible(boolean visible);
-    private static native void nativeSetIsInMultiWindowMode(boolean isInMultiWindowMode);
-    private static native boolean nativeIsNetworkServiceWarmUpEnabled();
+    @NativeMethods
+    interface Natives {
+        void setCustomTabVisible(boolean visible);
+        void setIsInMultiWindowMode(boolean isInMultiWindowMode);
+        boolean isNetworkServiceWarmUpEnabled();
+    }
 }

@@ -28,8 +28,8 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ui.widget.TintedDrawable;
 import org.chromium.chrome.browser.widget.ChromeTextInputLayout;
-import org.chromium.chrome.browser.widget.TintedDrawable;
 
 /** Handles validation and display of one field from the {@link EditorFieldModel}. */
 @VisibleForTesting

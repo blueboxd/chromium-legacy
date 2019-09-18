@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "chromecast/external_mojo/public/mojom/connector.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace service_manager {
 class Connector;
@@ -35,7 +36,7 @@ class ExternalMojoBroker {
       std::unique_ptr<service_manager::Connector> connector,
       const std::vector<std::string>& external_services_to_proxy);
 
-  mojom::ExternalConnectorPtr CreateConnector();
+  mojo::PendingRemote<mojom::ExternalConnector> CreateConnector();
 
  private:
   class ConnectorImpl;

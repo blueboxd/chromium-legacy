@@ -334,6 +334,12 @@
   }
 }
 
+#pragma mark - SettingsRootTableViewController
+
+- (BOOL)shouldDismissViewControllerBySwipeDown {
+  return !self.chromeActivityOverlayCoordinator.started;
+}
+
 #pragma mark - TableViewTextLinkCellDelegate
 
 - (void)tableViewTextLinkCell:(TableViewTextLinkCell*)cell
@@ -432,6 +438,11 @@
     (UIPresentationController*)presentationController {
   // Call dismiss to clean up state and  stop the Coordinator.
   [self dismiss];
+}
+
+- (BOOL)presentationControllerShouldDismiss:
+    (UIPresentationController*)presentationController {
+  return !self.chromeActivityOverlayCoordinator.started;
 }
 
 #pragma mark - Private Helpers

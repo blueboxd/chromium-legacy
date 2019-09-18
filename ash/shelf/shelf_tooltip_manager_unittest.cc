@@ -183,6 +183,7 @@ TEST_F(ShelfTooltipManagerTest, HideForEvents) {
   generator->MoveMouseTo(shelf_bounds.CenterPoint());
   generator->PressLeftButton();
   EXPECT_FALSE(tooltip_manager_->IsVisible());
+  generator->ReleaseLeftButton();
 
   // Should hide for touch events in the shelf.
   ShowTooltipForFirstAppIcon();

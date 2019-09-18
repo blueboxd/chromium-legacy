@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -70,7 +71,7 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
      * Handle any initialization that must occur after native has been initialized.
      */
     public void initializeWithNative() {
-        mNativeLocationBarModelAndroid = nativeInit();
+        mNativeLocationBarModelAndroid = LocationBarModelJni.get().init(LocationBarModel.this);
     }
 
     /**
@@ -78,7 +79,7 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
      */
     public void destroy() {
         if (mNativeLocationBarModelAndroid == 0) return;
-        nativeDestroy(mNativeLocationBarModelAndroid);
+        LocationBarModelJni.get().destroy(mNativeLocationBarModelAndroid, LocationBarModel.this);
         mNativeLocationBarModelAndroid = 0;
     }
 
@@ -354,7 +355,8 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
     @Override
     public int getPageClassification(boolean isFocusedFromFakebox) {
         if (mNativeLocationBarModelAndroid == 0) return 0;
-        return nativeGetPageClassification(mNativeLocationBarModelAndroid, isFocusedFromFakebox);
+        return LocationBarModelJni.get().getPageClassification(
+                mNativeLocationBarModelAndroid, LocationBarModel.this, isFocusedFromFakebox);
     }
 
     @Override
@@ -465,26 +467,32 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
         if (mNativeLocationBarModelAndroid == 0) return null;
         if (mTab != null && !(mTab.getActivity() instanceof ChromeTabbedActivity)) return null;
         if (isPreview()) return null;
-        return nativeGetDisplaySearchTerms(mNativeLocationBarModelAndroid);
+        return LocationBarModelJni.get().getDisplaySearchTerms(
+                mNativeLocationBarModelAndroid, LocationBarModel.this);
     }
 
     /** @return The formatted URL suitable for editing. */
     public String getFormattedFullUrl() {
         if (mNativeLocationBarModelAndroid == 0) return "";
-        return nativeGetFormattedFullURL(mNativeLocationBarModelAndroid);
+        return LocationBarModelJni.get().getFormattedFullURL(
+                mNativeLocationBarModelAndroid, LocationBarModel.this);
     }
 
     /** @return The formatted URL suitable for display only. */
     public String getUrlForDisplay() {
         if (mNativeLocationBarModelAndroid == 0) return "";
-        return nativeGetURLForDisplay(mNativeLocationBarModelAndroid);
+        return LocationBarModelJni.get().getURLForDisplay(
+                mNativeLocationBarModelAndroid, LocationBarModel.this);
     }
 
-    private native long nativeInit();
-    private native void nativeDestroy(long nativeLocationBarModelAndroid);
-    private native String nativeGetFormattedFullURL(long nativeLocationBarModelAndroid);
-    private native String nativeGetURLForDisplay(long nativeLocationBarModelAndroid);
-    private native String nativeGetDisplaySearchTerms(long nativeLocationBarModelAndroid);
-    private native int nativeGetPageClassification(
-            long nativeLocationBarModelAndroid, boolean isFocusedFromFakebox);
+    @NativeMethods
+    interface Natives {
+        long init(LocationBarModel caller);
+        void destroy(long nativeLocationBarModelAndroid, LocationBarModel caller);
+        String getFormattedFullURL(long nativeLocationBarModelAndroid, LocationBarModel caller);
+        String getURLForDisplay(long nativeLocationBarModelAndroid, LocationBarModel caller);
+        String getDisplaySearchTerms(long nativeLocationBarModelAndroid, LocationBarModel caller);
+        int getPageClassification(long nativeLocationBarModelAndroid, LocationBarModel caller,
+                boolean isFocusedFromFakebox);
+    }
 }

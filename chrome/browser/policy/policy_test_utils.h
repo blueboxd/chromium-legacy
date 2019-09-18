@@ -7,17 +7,12 @@
 
 #include "ash/public/cpp/keyboard/keyboard_types.h"
 #include "base/files/file_path.h"
-#include "chrome/browser/extensions/updater/extension_cache_fake.h"
-#include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/security_interstitials/core/controller_client.h"
-#include "extensions/browser/scoped_ignore_content_verifier_for_test.h"
 
 namespace extensions {
 class Extension;
-class ExtensionRegistry;
-class ExtensionService;
 }  // namespace extensions
 
 namespace policy {
@@ -45,21 +40,8 @@ class PolicyTest : public InProcessBrowserTest {
 
   void SetShouldRequireCTForTesting(bool* required);
 
-  extensions::ExtensionService* extension_service();
-
-  extensions::ExtensionRegistry* extension_registry();
-
-  const extensions::Extension* InstallExtension(
-      const base::FilePath::StringType& name);
-
-  const extensions::Extension* InstallBookmarkApp();
-
   scoped_refptr<const extensions::Extension> LoadUnpackedExtension(
       const base::FilePath::StringType& name);
-
-  void UninstallExtension(const std::string& id, bool expect_success);
-
-  void DisableExtension(const std::string& id);
 
   void UpdateProviderPolicy(const PolicyMap& policy);
 
@@ -113,10 +95,6 @@ class PolicyTest : public InProcessBrowserTest {
       security_interstitials::SecurityInterstitialCommand command);
 
   MockConfigurationPolicyProvider provider_;
-  std::unique_ptr<extensions::ExtensionCacheFake> test_extension_cache_;
-  extensions::ScopedIgnoreContentVerifierForTest ignore_content_verifier_;
-  extensions::ExtensionUpdater::ScopedSkipScheduledCheckForTest
-      skip_scheduled_extension_checks_;
 };
 
 }  // namespace policy

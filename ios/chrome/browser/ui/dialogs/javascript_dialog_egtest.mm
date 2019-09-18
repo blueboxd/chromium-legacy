@@ -575,11 +575,6 @@ void TapSuppressDialogsButton() {
 
 // Tests that an alert is presented after a new tab animation is finished.
 - (void)testShowJavaScriptAfterNewTabAnimation {
-  // TODO(crbug.com/989550) Disable broken context menu tests on Xc11b5.
-  if (@available(iOS 13, *)) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS13.");
-  }
-
   // Load the test page with a link to kOnLoadAlertURL and long tap on the link.
   [self loadPageWithLink];
 

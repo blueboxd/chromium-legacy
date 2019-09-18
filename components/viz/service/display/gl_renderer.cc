@@ -982,72 +982,6 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
     paint.setImageFilter(
         SkiaHelper::BuildOpacityFilter(quad->shared_quad_state->opacity));
   }
-  // Apply the mask image, if present, to filtered backdrop content. Note that
-  // this needs to be performed here, in addition to elsewhere, because of the
-  // order of operations:
-  //   1. Render the child render pass (containing backdrop-filtered element),
-  //      including any masks, typically built as child DstIn layers.
-  //   2. Render the parent render pass (containing the "backdrop image" to be
-  //      filtered).
-  //   3. Run this code, to filter, and possibly mask, the backdrop image.
-  sk_sp<const SkImage> mask_image = nullptr;
-  base::Optional<DisplayResourceProvider::ScopedReadLockSkImage>
-      backdrop_image_lock_sk;
-  base::Optional<DisplayResourceProvider::ScopedSamplerGL>
-      backdrop_image_lock_gl;
-  if (quad->mask_applies_to_backdrop && quad->mask_resource_id()) {
-    if (resource_provider_->GetResourceTextureTarget(
-            quad->mask_resource_id()) == GL_TEXTURE_RECTANGLE_ARB) {
-      // On some platforms, Skia doesn't know that the hardware supports
-      // GL_TEXTURE_RECTANGLE. So for texture rectangles, fall back to using
-      // CopyTextureCHROMIUM to copy from the mask resource to a newly-created
-      // texture, and then wrap that texture with an SkImage.
-      backdrop_image_lock_gl.emplace(resource_provider_,
-                                     quad->mask_resource_id(), GL_LINEAR);
-      GLenum source_id = backdrop_image_lock_gl->texture_id();
-      GLint internalformat = GLInternalFormat(
-          resource_provider_->GetResourceFormat(quad->mask_resource_id()));
-      GLuint dest_id;
-      gl_->GenTextures(1, &dest_id);
-      gl_->BindTexture(GL_TEXTURE_2D, dest_id);
-      // Format is the same as internalformat for the formats being considered.
-      GLint format = internalformat;
-      gl_->TexImage2D(GL_TEXTURE_2D, 0, internalformat,
-                      quad->mask_texture_size.width(),
-                      quad->mask_texture_size.height(), 0, format,
-                      GL_UNSIGNED_BYTE, nullptr);
-      gl_->CopyTextureCHROMIUM(source_id, 0, GL_TEXTURE_2D, dest_id, 0,
-                               internalformat, GL_UNSIGNED_BYTE,
-                               /*unpack_flip_y=*/false,
-                               /*unpack_premultiply_alpha=*/false,
-                               /*unpack_unmultiply_alpha=*/false);
-      mask_image = WrapTexture(dest_id, GL_TEXTURE_2D, quad->mask_texture_size,
-                               use_gr_context->context(),
-                               /*flip_texture=*/!FlippedFramebuffer(),
-                               GlFormatToSkFormat(internalformat),
-                               /*adopt_texture=*/true);
-    } else {
-      backdrop_image_lock_sk.emplace(
-          resource_provider_, quad->mask_resource_id(), kPremul_SkAlphaType,
-          kTopLeft_GrSurfaceOrigin);
-      mask_image = backdrop_image_lock_sk->TakeSkImage();
-    }
-    DCHECK(mask_image);
-  }
-  if (mask_image) {
-    // Scale normalized uv rect into absolute texel coordinates.
-    SkRect mask_rect = gfx::RectFToSkRect(
-        gfx::ScaleRect(quad->mask_uv_rect, quad->mask_texture_size.width(),
-                       quad->mask_texture_size.height()));
-    // Map to full quad rect so that mask coordinates don't change with
-    // clipping.
-    SkMatrix mask_to_quad_matrix = SkMatrix::MakeRectToRect(
-        mask_rect, gfx::RectToSkRect(quad->rect), SkMatrix::kFill_ScaleToFit);
-    paint.setMaskFilter(
-        SkShaderMaskFilter::Make(mask_image->makeShader(&mask_to_quad_matrix)));
-    DCHECK(paint.getMaskFilter());
-  }
-
   // Now paint the pre-filtered image onto the canvas (possibly with mask
   // applied).
   surface->getCanvas()->drawImageRect(filtered_image, subset, dest_rect,
@@ -1246,9 +1180,8 @@ void GLRenderer::UpdateRPDQShadersForBlending(
         }
       }
       if (params->background_image_id) {
-        // Reset original background texture if there is not any mask, or if the
-        // mask was used for backdrop filter only.
-        if (!quad->mask_resource_id() || quad->mask_applies_to_backdrop) {
+        // Reset original background texture if there is not any mask.
+        if (!quad->mask_resource_id()) {
           gl_->DeleteTextures(1, &params->background_texture);
           params->background_texture = 0;
         }
@@ -1276,7 +1209,6 @@ void GLRenderer::UpdateRPDQShadersForBlending(
   if (params->background_texture && params->background_image_id) {
     DCHECK(params->mask_for_background);
     DCHECK(quad->mask_resource_id());
-    DCHECK(!quad->mask_applies_to_backdrop);
   }
 
   DCHECK_EQ(params->background_texture || params->background_image_id,
@@ -1377,8 +1309,7 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
 
 void GLRenderer::UpdateRPDQTexturesForSampling(
     DrawRenderPassDrawQuadParams* params) {
-  if (!params->quad->mask_applies_to_backdrop &&
-      params->quad->mask_resource_id()) {
+  if (params->quad->mask_resource_id()) {
     params->mask_resource_lock.reset(
         new DisplayResourceProvider::ScopedSamplerGL(
             resource_provider_, params->quad->mask_resource_id(), GL_TEXTURE1,

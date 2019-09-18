@@ -53,11 +53,6 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
 
   PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
 
-  // This is before Layer::PushPropertiesTo() because PictureLayerImpl requires
-  // that is_mask flag can change only when the layer is just created before
-  // any property tree state is assigned.
-  layer_impl->SetIsMask(is_mask());
-
   Layer::PushPropertiesTo(base_layer);
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "PictureLayer::PushPropertiesTo");
@@ -68,6 +63,9 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
       ShouldUseTransformedRasterization());
   layer_impl->set_gpu_raster_max_texture_size(
       layer_tree_host()->device_viewport_rect().size());
+
+  layer_impl->SetIsMask(is_mask());
+  layer_impl->SetIsBackdropFilterMask(is_backdrop_filter_mask());
 
   // TODO(enne): http://crbug.com/918126 debugging
   CHECK(this);
@@ -232,6 +230,23 @@ void PictureLayer::SetTransformedRasterizationAllowed(bool allowed) {
 
 bool PictureLayer::HasDrawableContent() const {
   return picture_layer_inputs_.client && Layer::HasDrawableContent();
+}
+
+void PictureLayer::SetIsMask(bool is_mask) {
+  if (picture_layer_inputs_.is_mask == is_mask)
+    return;
+
+  picture_layer_inputs_.is_mask = is_mask;
+  SetNeedsCommit();
+}
+
+void PictureLayer::SetIsBackdropFilterMask(bool is_backdrop_filter_mask) {
+  if (picture_layer_inputs_.is_backdrop_filter_mask == is_backdrop_filter_mask)
+    return;
+
+  DCHECK(!is_backdrop_filter_mask || is_mask());
+  picture_layer_inputs_.is_backdrop_filter_mask = is_backdrop_filter_mask;
+  SetNeedsCommit();
 }
 
 void PictureLayer::RunMicroBenchmark(MicroBenchmark* benchmark) {

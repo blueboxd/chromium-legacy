@@ -175,7 +175,6 @@ class PreviewsBrowserTest : public InProcessBrowserTest,
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&PreviewsBrowserTest::MonitorResourceRequestOnUIThread,
                        base::Unretained(this), request));
-    base::RunLoop().RunUntilIdle();
   }
 
   void MonitorResourceRequestOnUIThread(
@@ -312,12 +311,17 @@ INSTANTIATE_TEST_SUITE_P(OptimizationGuideKeyedServiceImplementation,
                          PreviewsNoScriptBrowserTest,
                          testing::Bool());
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#define DISABLE_ON_WIN_MAC_CHROMESOS(x) DISABLED_##x
+#else
+#define DISABLE_ON_WIN_MAC_CHROMESOS(x) x
+#endif
+
 // Loads a webpage that has both script and noscript tags and also requests
 // a script resource. Verifies that the noscript tag is evaluated and the
 // script resource is not loaded.
-// TODO(crbug.com/1004245): Fix and re-enable the test.
 IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
-                       DISABLED_NoScriptPreviewsEnabled) {
+                       DISABLE_ON_WIN_MAC_CHROMESOS(NoScriptPreviewsEnabled)) {
   GURL url = https_url();
 
   // Whitelist NoScript for https_hint_setup_url()'s' host.
@@ -335,9 +339,9 @@ IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
                                      "Previews.PreviewShown.NoScript", 1);
 }
 
-// TODO(crbug.com/1004245): Fix and re-enable the test.
-IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
-                       DISABLED_NoScriptPreviewsEnabledButHttpRequest) {
+IN_PROC_BROWSER_TEST_P(
+    PreviewsNoScriptBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(NoScriptPreviewsEnabledButHttpRequest)) {
   GURL url = http_url();
 
   // Whitelist NoScript for http_hint_setup_url() host.
@@ -350,10 +354,9 @@ IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
   EXPECT_FALSE(noscript_css_requested());
 }
 
-// TODO(crbug.com/1004245): Fix and re-enable the test.
-IN_PROC_BROWSER_TEST_P(
-    PreviewsNoScriptBrowserTest,
-    DISABLED_NoScriptPreviewsEnabledButNoTransformDirective) {
+IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMESOS(
+                           NoScriptPreviewsEnabledButNoTransformDirective)) {
   GURL url = https_no_transform_url();
 
   // Whitelist NoScript for https_hint_setup_url()'s' host.
@@ -370,9 +373,9 @@ IN_PROC_BROWSER_TEST_P(
       "Previews.CacheControlNoTransform.BlockedPreview", 5 /* NoScript */, 1);
 }
 
-// TODO(crbug.com/1004245): Fix and re-enable the test.
-IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
-                       DISABLED_NoScriptPreviewsEnabledHttpRedirectToHttps) {
+IN_PROC_BROWSER_TEST_P(
+    PreviewsNoScriptBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(NoScriptPreviewsEnabledHttpRedirectToHttps)) {
   GURL url = redirect_url();
 
   // Whitelist NoScript for http_hint_setup_url() host.
@@ -390,9 +393,9 @@ IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
                                      "Previews.PreviewShown.NoScript", 1);
 }
 
-// TODO(crbug.com/1004245): Fix and re-enable the test.
-IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
-                       DISABLED_NoScriptPreviewsRecordsOptOut) {
+IN_PROC_BROWSER_TEST_P(
+    PreviewsNoScriptBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(NoScriptPreviewsRecordsOptOut)) {
   GURL url = redirect_url();
 
   // Whitelist NoScript for http_hint_setup_url()'s' host.
@@ -417,9 +420,9 @@ IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
                                      1);
 }
 
-// TODO(crbug.com/1004245): Fix and re-enable the test.
-IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
-                       DISABLED_NoScriptPreviewsEnabledByWhitelist) {
+IN_PROC_BROWSER_TEST_P(
+    PreviewsNoScriptBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(NoScriptPreviewsEnabledByWhitelist)) {
   GURL url = https_url();
 
   // Whitelist NoScript for https_hint_setup_url()'s' host.
@@ -432,9 +435,9 @@ IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
   EXPECT_FALSE(noscript_js_requested());
 }
 
-// TODO(crbug.com/1004245): Fix and re-enable the test.
-IN_PROC_BROWSER_TEST_P(PreviewsNoScriptBrowserTest,
-                       DISABLED_NoScriptPreviewsNotEnabledByWhitelist) {
+IN_PROC_BROWSER_TEST_P(
+    PreviewsNoScriptBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMESOS(NoScriptPreviewsNotEnabledByWhitelist)) {
   GURL url = https_url();
 
   // Whitelist random site for NoScript.

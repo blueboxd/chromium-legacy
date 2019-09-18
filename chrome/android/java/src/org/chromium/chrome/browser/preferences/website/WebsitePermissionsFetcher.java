@@ -129,7 +129,7 @@ public class WebsitePermissionsFetcher {
         // Sensors permission is per-origin.
         queue.add(new PermissionInfoFetcher(PermissionInfo.Type.SENSORS));
         CommandLine commandLine = CommandLine.getInstance();
-        if (commandLine.hasSwitch(ContentSwitches.ENABLE_WEB_BLUETOOTH_SCANNING)) {
+        if (commandLine.hasSwitch(ContentSwitches.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES)) {
             // Bluetooth scanning permission is per-origin.
             queue.add(new ExceptionInfoFetcher(
                     ContentSettingsType.CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING));
@@ -218,7 +218,7 @@ public class WebsitePermissionsFetcher {
             queue.add(new PermissionInfoFetcher(PermissionInfo.Type.SENSORS));
         } else if (category.showSites(SiteSettingsCategory.Type.BLUETOOTH_SCANNING)) {
             CommandLine commandLine = CommandLine.getInstance();
-            if (commandLine.hasSwitch(ContentSwitches.ENABLE_WEB_BLUETOOTH_SCANNING)) {
+            if (commandLine.hasSwitch(ContentSwitches.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES)) {
                 // Bluetooth scanning permission is per-origin.
                 queue.add(new ExceptionInfoFetcher(
                         ContentSettingsType.CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING));
@@ -253,8 +253,9 @@ public class WebsitePermissionsFetcher {
         for (exceptionType = 0; exceptionType < ContentSettingException.Type.NUM_ENTRIES;
                 exceptionType++) {
             if (contentSettingsType
-                    == ContentSettingException.getContentSettingsType(exceptionType))
+                    == ContentSettingException.getContentSettingsType(exceptionType)) {
                 break;
+            }
         }
         assert contentSettingsType
                 == ContentSettingException.getContentSettingsType(exceptionType)

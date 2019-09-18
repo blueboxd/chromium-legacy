@@ -62,10 +62,9 @@ class RulesetManager {
     // Valid iff |type| is |REDIRECT|.
     base::Optional<GURL> redirect_url;
 
-    // The ids of the extensions the action is attributed to.
-    // TODO(crbug.com/991420): This is not exactly correct for attributing
-    // an Action to the extension(s) for |REMOVE_HEADERS| rules.
-    std::vector<ExtensionId> extension_ids;
+    // The id of the extension the action is attributed to. Valid iff |type| is
+    // not |NONE|.
+    base::Optional<ExtensionId> extension_id;
 
     // Valid iff |type| is |REMOVE_HEADERS|. The vectors point to strings of
     // static storage duration.
@@ -113,8 +112,8 @@ class RulesetManager {
   // Precedence order: Allow > Blocking > Redirect rules.
   // For redirect rules, most recently installed extensions are given
   // preference.
-  const Action& EvaluateRequest(const WebRequestInfo& request,
-                                bool is_incognito_context) const;
+  const std::vector<Action>& EvaluateRequest(const WebRequestInfo& request,
+                                             bool is_incognito_context) const;
 
   // Returns true if there is an active matcher which modifies "extraHeaders".
   bool HasAnyExtraHeadersMatcher() const;
@@ -162,13 +161,13 @@ class RulesetManager {
       const int tab_id,
       const bool crosses_incognito,
       const RequestParams& params) const;
-  base::Optional<Action> GetRemoveHeadersAction(
+  std::vector<Action> GetRemoveHeadersActions(
       const std::vector<const ExtensionRulesetData*>& rulesets,
       const RequestParams& params) const;
 
   // Helper for EvaluateRequest.
-  Action EvaluateRequestInternal(const WebRequestInfo& request,
-                                 bool is_incognito_context) const;
+  std::vector<Action> EvaluateRequestInternal(const WebRequestInfo& request,
+                                              bool is_incognito_context) const;
 
   // Returns true if the given |request| should be evaluated for
   // blocking/redirection.

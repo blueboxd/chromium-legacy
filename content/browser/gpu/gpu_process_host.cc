@@ -487,10 +487,7 @@ class GpuProcessHost::ConnectionFilterImpl : public ConnectionFilter {
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle* interface_pipe,
                        service_manager::Connector* connector) override {
-    if (!registry_.TryBindInterface(interface_name, interface_pipe)) {
-      GetContentClient()->browser()->BindInterfaceRequest(
-          source_info, interface_name, interface_pipe);
-    }
+    registry_.TryBindInterface(interface_name, interface_pipe);
   }
 
   service_manager::BinderRegistry registry_;
@@ -619,7 +616,11 @@ void GpuProcessHost::BindHostReceiver(
     base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&FieldTrialRecorder::Create, std::move(receiver)));
+    return;
   }
+
+  GetContentClient()->browser()->BindGpuHostReceiver(
+      std::move(generic_receiver));
 }
 
 void GpuProcessHost::RunService(

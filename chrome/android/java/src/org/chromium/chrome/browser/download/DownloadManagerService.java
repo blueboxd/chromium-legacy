@@ -71,7 +71,6 @@ import java.io.File;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -116,18 +115,6 @@ public class DownloadManagerService
     public static final long UNKNOWN_BYTES_RECEIVED = -1;
     private static final String PREF_IS_DOWNLOAD_HOME_ENABLED =
             "org.chromium.chrome.browser.download.IS_DOWNLOAD_HOME_ENABLED";
-
-    // Set will be more expensive to initialize, so use an ArrayList here.
-    private static final List<String> MIME_TYPES_TO_OPEN = new ArrayList<String>(Arrays.asList(
-            OMADownloadHandler.OMA_DOWNLOAD_DESCRIPTOR_MIME,
-            "application/pdf",
-            "application/x-x509-ca-cert",
-            "application/x-x509-user-cert",
-            "application/x-x509-server-cert",
-            "application/x-pkcs12",
-            "application/application/x-pem-file",
-            "application/pkix-cert",
-            "application/x-wifi-config"));
 
     private static final Set<String> sFirstSeenDownloadIds = new HashSet<String>();
     private static final Set<String> sBackgroundDownloadIds = new HashSet<String>();

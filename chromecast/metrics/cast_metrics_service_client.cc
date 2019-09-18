@@ -49,7 +49,9 @@ const char kMetricsOldClientID[] = "user_experience_metrics.client_id";
 
 #if defined(OS_ANDROID)
 const char kClientIdName[] = "Client ID";
-#else
+#endif  // defined(OS_ANDROID)
+
+#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
 const struct ChannelMap {
   const char* chromecast_channel;
@@ -76,7 +78,7 @@ const struct ChannelMap {
   // Any non-empty channel name is considered beta channel
   return ::metrics::SystemProfileProto::CHANNEL_BETA;
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
 }  // namespace
 
@@ -157,7 +159,7 @@ bool CastMetricsServiceClient::GetBrand(std::string* brand_code) {
 ::metrics::SystemProfileProto::Channel CastMetricsServiceClient::GetChannel() {
   std::unique_ptr<CastSysInfo> sys_info = CreateSysInfo();
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
   switch (sys_info->GetBuildType()) {
     case CastSysInfo::BUILD_ENG:
       return ::metrics::SystemProfileProto::CHANNEL_UNKNOWN;
@@ -174,7 +176,7 @@ bool CastMetricsServiceClient::GetBrand(std::string* brand_code) {
   // arbitrary.
   return GetReleaseChannelFromUpdateChannelName(
       sys_info->GetSystemReleaseChannel());
-#endif  // defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID) || defined(OS_FUCHSIA)
 }
 
 std::string CastMetricsServiceClient::GetVersionString() {

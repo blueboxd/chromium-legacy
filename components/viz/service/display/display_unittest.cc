@@ -2569,7 +2569,7 @@ TEST_F(DisplayTest, CompositorFrameWithCoveredRenderPass) {
                                SkBlendMode::kSrcOver, 0);
     quad->SetNew(shared_quad_state, rect1, rect1, SK_ColorBLACK, false);
     quad1->SetNew(shared_quad_state2, rect1, rect1, render_pass_id,
-                  mask_resource_id, gfx::RectF(), gfx::Size(), false,
+                  mask_resource_id, gfx::RectF(), gfx::Size(),
                   gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false,
                   1.0f);
     EXPECT_EQ(1u, frame.render_pass_list.front()->quad_list.size());
@@ -2815,10 +2815,10 @@ TEST_F(DisplayTest, CompositorFrameWithRenderPass) {
                                rect4, is_clipped, opaque_content, opacity,
                                SkBlendMode::kSrcOver, 0);
     R1->SetNew(shared_quad_state, rect1, rect1, render_pass_id,
-               mask_resource_id, gfx::RectF(), gfx::Size(), false,
+               mask_resource_id, gfx::RectF(), gfx::Size(),
                gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false, 1.0f);
     R2->SetNew(shared_quad_state, rect2, rect2, render_pass_id,
-               mask_resource_id, gfx::RectF(), gfx::Size(), false,
+               mask_resource_id, gfx::RectF(), gfx::Size(),
                gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false, 1.0f);
     D1->SetNew(shared_quad_state3, rect3, rect3, SK_ColorBLACK, false);
     D2->SetNew(shared_quad_state4, rect4, rect4, SK_ColorBLACK, false);
@@ -2863,10 +2863,10 @@ TEST_F(DisplayTest, CompositorFrameWithRenderPass) {
                                rect6, is_clipped, opaque_content, opacity,
                                SkBlendMode::kSrcOver, 0);
     R1->SetNew(shared_quad_state, rect5, rect5, render_pass_id,
-               mask_resource_id, gfx::RectF(), gfx::Size(), false,
+               mask_resource_id, gfx::RectF(), gfx::Size(),
                gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false, 1.0f);
     R2->SetNew(shared_quad_state, rect1, rect1, render_pass_id,
-               mask_resource_id, gfx::RectF(), gfx::Size(), false,
+               mask_resource_id, gfx::RectF(), gfx::Size(),
                gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false, 1.0f);
     D1->SetNew(shared_quad_state3, rect3, rect3, SK_ColorBLACK, false);
     D2->SetNew(shared_quad_state4, rect6, rect6, SK_ColorBLACK, false);
@@ -2910,10 +2910,10 @@ TEST_F(DisplayTest, CompositorFrameWithRenderPass) {
                                rect7, is_clipped, opaque_content, opacity,
                                SkBlendMode::kSrcOver, 0);
     R1->SetNew(shared_quad_state, rect5, rect5, render_pass_id,
-               mask_resource_id, gfx::RectF(), gfx::Size(), false,
+               mask_resource_id, gfx::RectF(), gfx::Size(),
                gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false, 1.0f);
     R2->SetNew(shared_quad_state, rect1, rect1, render_pass_id,
-               mask_resource_id, gfx::RectF(), gfx::Size(), false,
+               mask_resource_id, gfx::RectF(), gfx::Size(),
                gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false, 1.0f);
     D1->SetNew(shared_quad_state3, rect3, rect3, SK_ColorBLACK, false);
     D2->SetNew(shared_quad_state4, rect7, rect7, SK_ColorBLACK, false);

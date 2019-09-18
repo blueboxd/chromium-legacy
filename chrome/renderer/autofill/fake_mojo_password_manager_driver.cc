@@ -8,18 +8,18 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-FakeMojoPasswordManagerDriver::FakeMojoPasswordManagerDriver()
-    : binding_(this) {}
+FakeMojoPasswordManagerDriver::FakeMojoPasswordManagerDriver() = default;
 
-FakeMojoPasswordManagerDriver::~FakeMojoPasswordManagerDriver() {}
+FakeMojoPasswordManagerDriver::~FakeMojoPasswordManagerDriver() = default;
 
-void FakeMojoPasswordManagerDriver::BindRequest(
-    autofill::mojom::PasswordManagerDriverAssociatedRequest request) {
-  binding_.Bind(std::move(request));
+void FakeMojoPasswordManagerDriver::BindReceiver(
+    mojo::PendingAssociatedReceiver<autofill::mojom::PasswordManagerDriver>
+        receiver) {
+  receiver_.Bind(std::move(receiver));
 }
 
 void FakeMojoPasswordManagerDriver::Flush() {
-  binding_.FlushForTesting();
+  receiver_.FlushForTesting();
 }
 
 // mojom::PasswordManagerDriver:

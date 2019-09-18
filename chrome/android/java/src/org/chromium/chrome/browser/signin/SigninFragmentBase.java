@@ -587,7 +587,8 @@ public abstract class SigninFragmentBase
 
         mAccountNames = getAccountNames(maybeAccountNames);
         mHasGmsError = mAccountNames == null;
-        if (mAccountNames == null) return;
+        mView.getAcceptButton().setEnabled(!mHasGmsError);
+        if (mHasGmsError) return;
 
         if (mAccountNames.isEmpty()) {
             mSelectedAccountName = null;

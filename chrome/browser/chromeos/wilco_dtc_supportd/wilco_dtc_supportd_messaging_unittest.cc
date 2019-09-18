@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/mojo_utils.h"
@@ -52,7 +52,7 @@ class MockNativeMessageHostClient
 std::string AssertGetStringFromMojoHandle(mojo::ScopedHandle handle) {
   if (!handle)
     return std::string();
-  std::unique_ptr<base::SharedMemory> shared_memory;
+  base::ReadOnlySharedMemoryMapping shared_memory;
   std::string contents =
       GetStringPieceFromMojoHandle(std::move(handle), &shared_memory)
           .as_string();

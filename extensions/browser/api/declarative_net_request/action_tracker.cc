@@ -22,21 +22,18 @@ ActionTracker::~ActionTracker() {
   DCHECK(actions_matched_.empty());
 }
 
-void ActionTracker::OnRuleMatched(const std::vector<ExtensionId>& extension_ids,
-                                  int tab_id) {
+void ActionTracker::OnRuleMatched(const ExtensionId& extension_id, int tab_id) {
   if (tab_id == extension_misc::kUnknownTabId)
     return;
 
-  for (const auto& extension_id : extension_ids) {
-    auto key = std::make_pair(extension_id, tab_id);
-    int action_count = ++actions_matched_[key];
+  auto key = std::make_pair(extension_id, tab_id);
+  int action_count = ++actions_matched_[key];
 
-    if (extension_prefs_->GetDNRUseActionCountAsBadgeText(extension_id)) {
-      DCHECK(ExtensionsAPIClient::Get());
-      ExtensionsAPIClient::Get()->UpdateActionCount(
-          browser_context_, extension_id, tab_id, action_count,
-          false /* clear_badge_text */);
-    }
+  if (extension_prefs_->GetDNRUseActionCountAsBadgeText(extension_id)) {
+    DCHECK(ExtensionsAPIClient::Get());
+    ExtensionsAPIClient::Get()->UpdateActionCount(
+        browser_context_, extension_id, tab_id, action_count,
+        false /* clear_badge_text */);
   }
 }
 

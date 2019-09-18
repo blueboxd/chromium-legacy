@@ -54,6 +54,14 @@ void InspectorMediaEventHandler::SendQueuedMediaEvents(
           event.type == media::MediaLogEvent::MEDIA_DEBUG_LOG_ENTRY) {
         event_type = blink::InspectorPlayerEvent::MESSAGE_EVENT;
       }
+      if (event.params.size() == 0) {
+        blink::InspectorPlayerEvent ev = {
+            blink::InspectorPlayerEvent::PLAYBACK_EVENT, event.time,
+            blink::WebString::FromUTF8("Event"),
+            blink::WebString::FromUTF8(
+                media::MediaLog::EventTypeToString(event.type))};
+        events.emplace_back(ev);
+      }
       for (auto&& itr : event.params.DictItems()) {
         blink::InspectorPlayerEvent ev = {event_type, event.time,
                                           blink::WebString::FromUTF8(itr.first),

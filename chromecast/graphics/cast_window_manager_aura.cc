@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
+#include "chromecast/base/cast_features.h"
 #include "chromecast/graphics/cast_focus_client_aura.h"
 #include "chromecast/graphics/cast_touch_activity_observer.h"
 #include "chromecast/graphics/cast_touch_event_gate.h"
@@ -280,8 +281,11 @@ void CastWindowManagerAura::Setup() {
   system_gesture_event_handler_ =
       std::make_unique<CastSystemGestureEventHandler>(
           system_gesture_dispatcher_.get(), root_window);
-  side_swipe_detector_ = std::make_unique<SideSwipeDetector>(
-      system_gesture_dispatcher_.get(), root_window);
+  // No need for the edge swipe detector when side gestures are pass-through.
+  if (!chromecast::IsFeatureEnabled(kEnableSideGesturePassThrough)) {
+    side_swipe_detector_ = std::make_unique<SideSwipeDetector>(
+        system_gesture_dispatcher_.get(), root_window);
+  }
 }
 
 void CastWindowManagerAura::OnWindowOrderChanged(

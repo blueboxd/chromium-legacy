@@ -257,6 +257,9 @@ UIColor* BackgroundColor() {
 @property(nonatomic, readonly, retain) TabStripView* tabStripView;
 @property(nonatomic, readonly, retain) UIButton* buttonNewTab;
 
+// YES if the controller has been disconnected.
+@property(nonatomic) BOOL disconnected;
+
 // Initializes the tab array based on the the entries in the TabModel.  Creates
 // one TabView per Tab and adds it to the tabstrip.  A later call to
 // |-layoutTabs| is needed to properly place the tabs in the correct positions.
@@ -510,10 +513,16 @@ UIColor* BackgroundColor() {
 }
 
 - (void)dealloc {
+  DCHECK(_disconnected);
+}
+
+- (void)disconnect {
   [_tabStripView setDelegate:nil];
   [_tabStripView setLayoutDelegate:nil];
   _allWebStateObservationForwarder.reset();
+  _webStateListFaviconObserver.reset();
   _tabModel.webStateList->RemoveObserver(_webStateListObserver.get());
+  self.disconnected = YES;
 }
 
 - (void)hideTabStrip:(BOOL)hidden {

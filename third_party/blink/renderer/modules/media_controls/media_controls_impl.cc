@@ -1905,6 +1905,9 @@ void MediaControlsImpl::NotifyElementSizeChanged(DOMRectReadOnly* new_size) {
 }
 
 void MediaControlsImpl::ElementSizeChangedTimerFired(TimerBase*) {
+  if (!MediaElement().isConnected())
+    return;
+
   ComputeWhichControlsFit();
 
   // Rerender timeline bar segments when size changed.

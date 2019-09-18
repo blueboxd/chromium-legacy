@@ -21,12 +21,9 @@
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
-#include "components/data_reduction_proxy/content/browser/data_reduction_proxy_page_load_timing.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
-#include "components/data_reduction_proxy/proto/pageload_metrics.pb.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "components/previews/content/previews_user_data.h"
 #include "content/public/browser/browser_context.h"
@@ -45,32 +42,6 @@
 namespace data_reduction_proxy {
 
 namespace {
-
-PageloadMetrics_PageEndReason ConvertPLMPageEndReasonToProto(
-    page_load_metrics::PageEndReason reason) {
-  switch (reason) {
-    case page_load_metrics::END_NONE:
-      return PageloadMetrics_PageEndReason_END_NONE;
-    case page_load_metrics::END_RELOAD:
-      return PageloadMetrics_PageEndReason_END_RELOAD;
-    case page_load_metrics::END_FORWARD_BACK:
-      return PageloadMetrics_PageEndReason_END_FORWARD_BACK;
-    case page_load_metrics::END_CLIENT_REDIRECT:
-      return PageloadMetrics_PageEndReason_END_CLIENT_REDIRECT;
-    case page_load_metrics::END_NEW_NAVIGATION:
-      return PageloadMetrics_PageEndReason_END_NEW_NAVIGATION;
-    case page_load_metrics::END_STOP:
-      return PageloadMetrics_PageEndReason_END_STOP;
-    case page_load_metrics::END_CLOSE:
-      return PageloadMetrics_PageEndReason_END_CLOSE;
-    case page_load_metrics::END_PROVISIONAL_LOAD_FAILED:
-      return PageloadMetrics_PageEndReason_END_PROVISIONAL_LOAD_FAILED;
-    case page_load_metrics::END_RENDER_PROCESS_GONE:
-      return PageloadMetrics_PageEndReason_END_RENDER_PROCESS_GONE;
-    default:
-      return PageloadMetrics_PageEndReason_END_OTHER;
-  }
-}
 
 uint64_t ComputeDataReductionProxyUUID(
     data_reduction_proxy::DataReductionProxyData* data) {
@@ -107,13 +78,7 @@ DataReductionProxyMetricsObserverBase::DataReductionProxyMetricsObserverBase()
       insecure_network_bytes_(0),
       secure_network_bytes_(0),
       insecure_cached_bytes_(0),
-      secure_cached_bytes_(0),
-      process_id_(base::kNullProcessId),
-      renderer_memory_usage_kb_(0),
-      render_process_host_id_(content::ChildProcessHost::kInvalidUniqueID),
-      touch_count_(0),
-      scroll_count_(0),
-      redirect_count_(0) {}
+      secure_cached_bytes_(0) {}
 
 DataReductionProxyMetricsObserverBase::
     ~DataReductionProxyMetricsObserverBase() {}
@@ -133,24 +98,7 @@ DataReductionProxyMetricsObserverBase::OnCommit(
   // called in WebContents destructor.
   browser_context_ = navigation_handle->GetWebContents()->GetBrowserContext();
 
-  process_id_ = navigation_handle->GetWebContents()
-                    ->GetMainFrame()
-                    ->GetProcess()
-                    ->GetProcess()
-                    .Pid();
-  render_process_host_id_ = navigation_handle->GetWebContents()
-                                ->GetMainFrame()
-                                ->GetProcess()
-                                ->GetID();
-
   return OnCommitCalled(navigation_handle, source_id);
-}
-
-page_load_metrics::PageLoadMetricsObserver::ObservePolicy
-DataReductionProxyMetricsObserverBase::OnRedirect(
-    content::NavigationHandle* navigation_handle) {
-  redirect_count_++;
-  return CONTINUE_OBSERVING;
 }
 
 // Check if the NavigationData indicates anything about the DataReductionProxy.
@@ -209,9 +157,8 @@ DataReductionProxyMetricsObserverBase::FlushMetricsOnAppEnterBackground(
   // FlushMetricsOnAppEnterBackground is invoked on Android in cases where the
   // app is about to be backgrounded, as part of the Activity.onPause()
   // flow. After this method is invoked, Chrome may be killed without further
-  // notification, so we send a pingback with data collected up to this point.
+  // notification, so we record UKM with data collected up to this point.
   if (GetDelegate().DidCommit()) {
-    SendPingback(timing, true /* app_background_occurred */);
     RecordUKM();
   }
   return STOP_OBSERVING;
@@ -220,7 +167,6 @@ DataReductionProxyMetricsObserverBase::FlushMetricsOnAppEnterBackground(
 void DataReductionProxyMetricsObserverBase::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  SendPingback(timing, false /* app_background_occurred */);
   RecordUKM();
 }
 
@@ -252,146 +198,6 @@ void DataReductionProxyMetricsObserverBase::RecordUKM() const {
   builder.SetDataSaverPageUUID(uuid);
 
   builder.Record(ukm::UkmRecorder::Get());
-}
-
-void DataReductionProxyMetricsObserverBase::SendPingback(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    bool app_background_occurred) {
-  // TODO(ryansturm): Move to OnFirstBackgroundEvent to handle some fast
-  // shutdown cases. crbug.com/618072
-  if (!browser_context_ || !data_)
-    return;
-  // Only consider timing events that happened before the first background
-  // event.
-  base::Optional<base::TimeDelta> response_start;
-  base::Optional<base::TimeDelta> load_event_start;
-  base::Optional<base::TimeDelta> first_image_paint;
-  base::Optional<base::TimeDelta> first_contentful_paint;
-  base::Optional<base::TimeDelta> experimental_first_meaningful_paint;
-  base::Optional<base::TimeDelta> first_input_delay;
-  base::Optional<base::TimeDelta> parse_blocked_on_script_load_duration;
-  base::Optional<base::TimeDelta> parse_stop;
-  base::Optional<base::TimeDelta> page_end_time;
-  base::Optional<base::TimeDelta> main_frame_fetch_start;
-
-  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
-          timing.response_start, GetDelegate())) {
-    response_start = timing.response_start;
-  }
-  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
-          timing.document_timing->load_event_start, GetDelegate())) {
-    load_event_start = timing.document_timing->load_event_start;
-  }
-  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_image_paint, GetDelegate())) {
-    first_image_paint = timing.paint_timing->first_image_paint;
-  }
-  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_contentful_paint, GetDelegate())) {
-    first_contentful_paint = timing.paint_timing->first_contentful_paint;
-  }
-  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_meaningful_paint, GetDelegate())) {
-    experimental_first_meaningful_paint =
-        timing.paint_timing->first_meaningful_paint;
-  }
-  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
-          timing.interactive_timing->first_input_delay, GetDelegate())) {
-    first_input_delay = timing.interactive_timing->first_input_delay;
-  }
-  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
-          timing.parse_timing->parse_blocked_on_script_load_duration,
-          GetDelegate())) {
-    parse_blocked_on_script_load_duration =
-        timing.parse_timing->parse_blocked_on_script_load_duration;
-  }
-  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
-          timing.parse_timing->parse_stop, GetDelegate())) {
-    parse_stop = timing.parse_timing->parse_stop;
-  }
-  if (GetDelegate().DidCommit() && main_frame_fetch_start_) {
-    main_frame_fetch_start =
-        main_frame_fetch_start_.value() - GetDelegate().GetNavigationStart();
-  }
-  if (GetDelegate().StartedInForeground() &&
-      GetDelegate().GetPageEndTime().has_value()) {
-    // This should be reported even when the app goes into the background which
-    // is excluded in
-    // |page_load_metrics::WasStartedInForegroundOptionalEventInForeground|.
-    page_end_time = GetDelegate().GetPageEndTime();
-  } else if (GetDelegate().StartedInForeground()) {
-    page_end_time = base::TimeTicks::Now() - GetDelegate().GetNavigationStart();
-  }
-
-  // If a crash happens, report the host |render_process_host_id_| to the
-  // pingback client. Otherwise report kInvalidUniqueID.
-  int host_id = content::ChildProcessHost::kInvalidUniqueID;
-  if (GetDelegate().GetPageEndReason() ==
-      page_load_metrics::PageEndReason::END_RENDER_PROCESS_GONE) {
-    host_id = render_process_host_id_;
-  }
-
-  const int64_t original_network_bytes =
-      insecure_original_network_bytes_ +
-      ExponentiallyBucketBytes(secure_original_network_bytes_);
-  const int64_t network_bytes =
-      insecure_network_bytes_ + ExponentiallyBucketBytes(secure_network_bytes_);
-  const int64_t total_page_size_bytes =
-      insecure_network_bytes_ + insecure_cached_bytes_ +
-      ExponentiallyBucketBytes(secure_network_bytes_ + secure_cached_bytes_);
-
-  // Recording cached bytes can be done with raw data, but the end result must
-  // be bucketed in 50 linear buckets between 0% - 100%.
-  const int64_t cached_bytes = insecure_cached_bytes_ + secure_cached_bytes_;
-  const int64_t total_bytes =
-      cached_bytes + insecure_network_bytes_ + secure_network_bytes_;
-  int cached_percentage;
-  if (total_bytes <= 0) {
-    cached_percentage = 0;
-  } else {
-    cached_percentage =
-        static_cast<int>(std::lround(static_cast<float>(cached_bytes) /
-                                     static_cast<float>(total_bytes) * 100.0));
-  }
-  DCHECK_GE(cached_percentage, 0);
-  DCHECK_LE(cached_percentage, 100);
-  cached_percentage = cached_percentage - (cached_percentage % 2);
-  const float cached_fraction = static_cast<float>(cached_percentage) / 100.0;
-
-  DataReductionProxyPageLoadTiming data_reduction_proxy_timing(
-      timing.navigation_start, response_start, load_event_start,
-      first_image_paint, first_contentful_paint,
-      experimental_first_meaningful_paint, first_input_delay,
-      parse_blocked_on_script_load_duration, parse_stop, page_end_time,
-      lite_page_redirect_penalty_, lite_page_redirect_status_,
-      main_frame_fetch_start, network_bytes, original_network_bytes,
-      total_page_size_bytes, cached_fraction, app_background_occurred,
-      opted_out_, renderer_memory_usage_kb_, host_id,
-      ConvertPLMPageEndReasonToProto(GetDelegate().GetPageEndReason()),
-      touch_count_, scroll_count_, redirect_count_);
-  GetPingbackClient()->SendPingback(*data_, data_reduction_proxy_timing);
-}
-
-void DataReductionProxyMetricsObserverBase::OnLoadEventStart(
-    const page_load_metrics::mojom::PageLoadTiming& timing) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (process_id_ != base::kNullProcessId) {
-    auto callback = base::BindRepeating(
-        &DataReductionProxyMetricsObserverBase::ProcessMemoryDump,
-        weak_ptr_factory_.GetWeakPtr());
-    RequestProcessDump(process_id_, callback);
-  }
-}
-
-void DataReductionProxyMetricsObserverBase::OnLoadedResource(
-    const page_load_metrics::ExtraRequestCompleteInfo&
-        extra_request_complete_info) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (extra_request_complete_info.resource_type ==
-      content::ResourceType::kMainFrame) {
-    main_frame_fetch_start_ =
-        extra_request_complete_info.load_timing_info->request_start;
-  }
 }
 
 void DataReductionProxyMetricsObserverBase::OnResourceDataUseObserved(
@@ -437,63 +243,11 @@ void DataReductionProxyMetricsObserverBase::OnResourceDataUseObserved(
   }
 }
 
-DataReductionProxyPingbackClient*
-DataReductionProxyMetricsObserverBase::GetPingbackClient() const {
-  return DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-             browser_context_)
-      ->data_reduction_proxy_service()
-      ->pingback_client();
-}
-
 void DataReductionProxyMetricsObserverBase::OnEventOccurred(
     const void* const event_key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (event_key == PreviewsUITabHelper::OptOutEventKey())
     opted_out_ = true;
-}
-
-void DataReductionProxyMetricsObserverBase::OnUserInput(
-    const blink::WebInputEvent& event,
-    const page_load_metrics::mojom::PageLoadTiming& timing) {
-  if (event.GetType() == blink::WebInputEvent::kMouseDown ||
-      event.GetType() == blink::WebInputEvent::kGestureTap) {
-    touch_count_++;
-  }
-
-  if (event.GetType() == blink::WebInputEvent::kMouseWheel ||
-      event.GetType() == blink::WebInputEvent::kGestureScrollUpdate ||
-      event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
-    scroll_count_++;
-  }
-}
-
-void DataReductionProxyMetricsObserverBase::ProcessMemoryDump(
-    bool success,
-    std::unique_ptr<memory_instrumentation::GlobalMemoryDump> memory_dump) {
-  if (!success || !memory_dump)
-    return;
-  // There should only be one process in the dump.
-  DCHECK_EQ(1, std::distance(memory_dump->process_dumps().begin(),
-                             memory_dump->process_dumps().end()));
-
-  auto process_dump_it = memory_dump->process_dumps().begin();
-  if (process_dump_it == memory_dump->process_dumps().end())
-    return;
-
-  // We want to catch this in debug but not crash in release.
-  DCHECK_EQ(process_id_, process_dump_it->pid());
-  if (process_dump_it->pid() != process_id_)
-    return;
-  renderer_memory_usage_kb_ =
-      static_cast<int64_t>(process_dump_it->os_dump().private_footprint_kb);
-}
-
-void DataReductionProxyMetricsObserverBase::RequestProcessDump(
-    base::ProcessId pid,
-    memory_instrumentation::MemoryInstrumentation::RequestGlobalDumpCallback
-        callback) {
-  memory_instrumentation::MemoryInstrumentation::GetInstance()
-      ->RequestPrivateMemoryFootprint(pid, std::move(callback));
 }
 
 }  // namespace data_reduction_proxy

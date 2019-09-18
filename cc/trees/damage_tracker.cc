@@ -170,8 +170,6 @@ void DamageTracker::ComputeSurfaceDamage(RenderSurfaceImpl* render_surface) {
   // These functions cannot be bypassed with early-exits, even if we know what
   // the damage will be for this frame, because we need to update the damage
   // tracker state to correctly track the next frame.
-  DamageAccumulator damage_from_surface_mask =
-      TrackDamageFromSurfaceMask(render_surface->MaskLayer());
   DamageAccumulator damage_from_leftover_rects = TrackDamageFromLeftoverRects();
   // True if any layer is removed.
   has_damage_from_contributing_content_ |=
@@ -185,7 +183,6 @@ void DamageTracker::ComputeSurfaceDamage(RenderSurfaceImpl* render_surface) {
   } else {
     // TODO(shawnsingh): can we clamp this damage to the surface's content rect?
     // (affects performance, but not correctness)
-    damage_for_this_update_.Union(damage_from_surface_mask);
     damage_for_this_update_.Union(damage_from_leftover_rects);
 
     gfx::Rect damage_rect;
@@ -237,24 +234,6 @@ DamageTracker::SurfaceRectMapData& DamageTracker::RectDataForSurface(
   }
 
   return *it;
-}
-
-DamageTracker::DamageAccumulator DamageTracker::TrackDamageFromSurfaceMask(
-    LayerImpl* target_surface_mask_layer) {
-  DamageAccumulator damage;
-
-  if (!target_surface_mask_layer)
-    return damage;
-
-  // Currently, if there is any change to the mask, we choose to damage the
-  // entire surface. This could potentially be optimized later, but it is not
-  // expected to be a common case.
-  if (target_surface_mask_layer->LayerPropertyChanged() ||
-      !target_surface_mask_layer->update_rect().IsEmpty()) {
-    damage.Union(gfx::Rect(target_surface_mask_layer->bounds()));
-  }
-
-  return damage;
 }
 
 void DamageTracker::PrepareForUpdate() {

@@ -5,6 +5,7 @@
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/background/background_contents_service.h"
+#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -12,11 +13,14 @@
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
+#include "chrome/browser/extensions/updater/extension_cache_fake.h"
+#include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "chrome/common/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/policy/policy_constants.h"
 #include "components/version_info/channel.h"
@@ -27,7 +31,9 @@
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
+#include "extensions/browser/scoped_ignore_content_verifier_for_test.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
@@ -93,9 +99,103 @@ void RegisterURLReplacingHandler(net::EmbeddedTestServer* test_server,
       base::Unretained(test_server), match_path, template_file));
 }
 
+class ExtensionPolicyTest : public PolicyTest {
+ protected:
+  void SetUp() override {
+    PolicyTest::SetUp();
+    test_extension_cache_ = std::make_unique<extensions::ExtensionCacheFake>();
+  }
+
+  void SetUpOnMainThread() override {
+    PolicyTest::SetUpOnMainThread();
+    if (extension_service()->updater()) {
+      extension_service()->updater()->SetExtensionCacheForTesting(
+          test_extension_cache_.get());
+    }
+  }
+
+  extensions::ExtensionService* extension_service() {
+    extensions::ExtensionSystem* system =
+        extensions::ExtensionSystem::Get(browser()->profile());
+    return system->extension_service();
+  }
+
+  extensions::ExtensionRegistry* extension_registry() {
+    return extensions::ExtensionRegistry::Get(browser()->profile());
+  }
+
+  const extensions::Extension* InstallExtension(
+      const base::FilePath::StringType& name) {
+    base::FilePath extension_path(ui_test_utils::GetTestFilePath(
+        base::FilePath(kTestExtensionsDir), base::FilePath(name)));
+    scoped_refptr<extensions::CrxInstaller> installer =
+        extensions::CrxInstaller::CreateSilent(extension_service());
+    installer->set_allow_silent_install(true);
+    installer->set_install_cause(extension_misc::INSTALL_CAUSE_UPDATE);
+    installer->set_creation_flags(extensions::Extension::FROM_WEBSTORE);
+    installer->set_off_store_install_allow_reason(
+        extensions::CrxInstaller::OffStoreInstallAllowReason::
+            OffStoreInstallAllowedInTest);
+
+    content::WindowedNotificationObserver observer(
+        extensions::NOTIFICATION_CRX_INSTALLER_DONE,
+        content::NotificationService::AllSources());
+    installer->InstallCrx(extension_path);
+    observer.Wait();
+    content::Details<const extensions::Extension> details = observer.details();
+    return details.ptr();
+  }
+
+  const extensions::Extension* InstallBookmarkApp() {
+    WebApplicationInfo web_app;
+    web_app.title = base::ASCIIToUTF16("Bookmark App");
+    web_app.app_url = GURL("http://www.google.com");
+
+    scoped_refptr<extensions::CrxInstaller> installer =
+        extensions::CrxInstaller::CreateSilent(extension_service());
+
+    content::WindowedNotificationObserver observer(
+        extensions::NOTIFICATION_CRX_INSTALLER_DONE,
+        content::NotificationService::AllSources());
+    installer->InstallWebApp(web_app);
+    observer.Wait();
+    content::Details<const extensions::Extension> details = observer.details();
+    return details.ptr();
+  }
+
+  void UninstallExtension(const std::string& id, bool expect_success) {
+    if (expect_success) {
+      extensions::TestExtensionRegistryObserver observer(extension_registry());
+      extension_service()->UninstallExtension(
+          id, extensions::UNINSTALL_REASON_FOR_TESTING, nullptr);
+      observer.WaitForExtensionUninstalled();
+    } else {
+      content::WindowedNotificationObserver observer(
+          extensions::NOTIFICATION_EXTENSION_UNINSTALL_NOT_ALLOWED,
+          content::NotificationService::AllSources());
+      extension_service()->UninstallExtension(
+          id, extensions::UNINSTALL_REASON_FOR_TESTING, nullptr);
+      observer.Wait();
+    }
+  }
+
+  void DisableExtension(const std::string& id) {
+    extensions::TestExtensionRegistryObserver observer(extension_registry());
+    extension_service()->DisableExtension(
+        id, extensions::disable_reason::DISABLE_USER_ACTION);
+    observer.WaitForExtensionUnloaded();
+  }
+
+  std::unique_ptr<extensions::ExtensionCacheFake> test_extension_cache_;
+  extensions::ScopedIgnoreContentVerifierForTest ignore_content_verifier_;
+  extensions::ExtensionUpdater::ScopedSkipScheduledCheckForTest
+      skip_scheduled_extension_checks_;
+};
+
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklistSelective) {
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
+                       ExtensionInstallBlacklistSelective) {
   // Verifies that blacklisted extensions can't be installed.
   extensions::ExtensionRegistry* registry = extension_registry();
   ASSERT_FALSE(registry->GetExtensionById(
@@ -128,7 +228,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklistSelective) {
 
 // Ensure that bookmark apps are not blocked by the ExtensionInstallBlacklist
 // policy.
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklist_BookmarkApp) {
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
+                       ExtensionInstallBlacklist_BookmarkApp) {
   const extensions::Extension* bookmark_app = InstallBookmarkApp();
   ASSERT_TRUE(bookmark_app);
   EXPECT_TRUE(InstallExtension(kGoodCrxName));
@@ -151,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklist_BookmarkApp) {
 
 // Ensure that when INSTALLATION_REMOVED is set
 // that blacklisted extensions are removed from the device.
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallRemovedPolicy) {
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionInstallRemovedPolicy) {
   EXPECT_TRUE(InstallExtension(kGoodCrxName));
 
   extensions::ExtensionService* service = extension_service();
@@ -175,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallRemovedPolicy) {
 
 // Ensure that when INSTALLATION_REMOVED is set for wildcard
 // that blacklisted extensions are removed from the device.
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionWildcardRemovedPolicy) {
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionWildcardRemovedPolicy) {
   EXPECT_TRUE(InstallExtension(kGoodCrxName));
 
   extensions::ExtensionService* service = extension_service();
@@ -199,7 +300,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionWildcardRemovedPolicy) {
 
 // Ensure that bookmark apps are not blocked by the ExtensionAllowedTypes
 // policy.
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionAllowedTypes_BookmarkApp) {
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionAllowedTypes_BookmarkApp) {
   const extensions::Extension* bookmark_app = InstallBookmarkApp();
   ASSERT_TRUE(bookmark_app);
   EXPECT_TRUE(InstallExtension(kGoodCrxName));
@@ -223,7 +324,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionAllowedTypes_BookmarkApp) {
 
 // Ensure that bookmark apps are not blocked by the ExtensionSettings
 // policy.
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionSettings_BookmarkApp) {
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionSettings_BookmarkApp) {
   const extensions::Extension* bookmark_app = InstallBookmarkApp();
   ASSERT_TRUE(bookmark_app);
   EXPECT_TRUE(InstallExtension(kGoodCrxName));
@@ -282,7 +383,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionSettings_BookmarkApp) {
 #define MAYBE_ExtensionInstallBlacklistWildcard \
   ExtensionInstallBlacklistWildcard
 #endif
-IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallBlacklistWildcard) {
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
+                       MAYBE_ExtensionInstallBlacklistWildcard) {
   // Verify that a wildcard blacklist takes effect.
   EXPECT_TRUE(InstallExtension(kSimpleWithIconCrxName));
   extensions::ExtensionService* service = extension_service();
@@ -315,7 +417,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallBlacklistWildcard) {
       kGoodCrxId, extensions::ExtensionRegistry::COMPATIBILITY));
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklistSharedModules) {
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
+                       ExtensionInstallBlacklistSharedModules) {
   // Verifies that shared_modules are not affected by the blacklist.
 
   base::FilePath base_path;
@@ -400,7 +503,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallBlacklistSharedModules) {
   EXPECT_EQ(kSharedModuleId, imports[0].extension_id);
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallWhitelist) {
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionInstallWhitelist) {
   // Verifies that the whitelist can open exceptions to the blacklist.
   extensions::ExtensionRegistry* registry = extension_registry();
   ASSERT_FALSE(registry->GetExtensionById(
@@ -518,7 +621,7 @@ class MockedInstallationReporterObserver
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionInstallForcelist) {
   // Verifies that extensions that are force-installed by policies are
   // installed and can't be uninstalled.
 
@@ -688,7 +791,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionInstallForcelist) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest,
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
                        ExtensionInstallForcelist_DefaultedUpdateUrl) {
   // Verifies the ExtensionInstallForcelist policy with an empty (defaulted)
   // "update" URL.
@@ -714,7 +817,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
       kGoodCrxId, extensions::ExtensionRegistry::COMPATIBILITY));
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionRecommendedInstallationMode) {
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
+                       ExtensionRecommendedInstallationMode) {
   // Verifies that extensions that are recommended-installed by policies are
   // installed, can be disabled but not uninstalled.
 
@@ -768,7 +872,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionRecommendedInstallationMode) {
   EXPECT_FALSE(service->IsExtensionEnabled(kGoodCrxId));
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionAllowedTypes) {
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionAllowedTypes) {
   // Verifies that extensions are blocked if policy specifies an allowed types
   // list and the extension's type is not on that list.
   extensions::ExtensionRegistry* registry = extension_registry();
@@ -811,7 +915,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionAllowedTypes) {
 #else
 #define MAYBE_ExtensionInstallSources ExtensionInstallSources
 #endif
-IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallSources) {
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, MAYBE_ExtensionInstallSources) {
   extensions::ScopedTestDialogAutoConfirm auto_confirm(
       extensions::ScopedTestDialogAutoConfirm::ACCEPT);
   extensions::ScopedInstallVerifierBypassForTest install_verifier_bypass;
@@ -860,7 +964,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallSources) {
 // Verifies that extensions with version older than the minimum version required
 // by policy will get disabled, and will be auto-updated and/or re-enabled upon
 // policy changes as well as regular auto-updater scheduled updates.
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequired) {
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionMinimumVersionRequired) {
   ExtensionRequestInterceptor interceptor;
 
   base::AtomicRefCount update_extension_count;
@@ -938,7 +1042,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequired) {
 
 // Similar to ExtensionMinimumVersionRequired test, but with different settings
 // and orders.
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequiredAlt) {
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
+                       ExtensionMinimumVersionRequiredAlt) {
   ExtensionRequestInterceptor interceptor;
 
   base::AtomicRefCount update_extension_count;
@@ -1012,7 +1117,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionRequiredAlt) {
 
 // Verifies that a force-installed extension which does not meet a subsequently
 // set minimum version requirement is handled well.
-IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionForceInstalled) {
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
+                       ExtensionMinimumVersionForceInstalled) {
   ExtensionRequestInterceptor interceptor;
 
 // Mark as enterprise managed.
@@ -1055,15 +1161,15 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionForceInstalled) {
             extension_prefs->GetDisableReasons(kGoodCrxId));
 }
 
-// Similar to PolicyTest but sets the WebAppInstallForceList policy before the
-// browser is started.
-class WebAppInstallForceListPolicyTest : public PolicyTest {
+// Similar to ExtensionPolicyTest but sets the WebAppInstallForceList policy
+// before the browser is started.
+class WebAppInstallForceListPolicyTest : public ExtensionPolicyTest {
  public:
   WebAppInstallForceListPolicyTest() {}
   ~WebAppInstallForceListPolicyTest() override {}
 
   void SetUpInProcessBrowserTestFixture() override {
-    PolicyTest::SetUpInProcessBrowserTestFixture();
+    ExtensionPolicyTest::SetUpInProcessBrowserTestFixture();
     ASSERT_TRUE(embedded_test_server()->Start());
 
     policy_app_url_ =

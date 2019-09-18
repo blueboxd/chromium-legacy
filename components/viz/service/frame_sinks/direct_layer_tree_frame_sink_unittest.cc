@@ -280,22 +280,22 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionList) {
   quad5_root_1->SetNew(shared_quad_state5_root, /*rect=*/rect5_root,
                        /*visible_rect=*/rect5_root, /*render_pass_id=*/2,
                        /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
-                       /*mask_applies_to_backdrop=*/false, gfx::Vector2dF(1, 1),
-                       gfx::PointF(), gfx::RectF(), false, 1.0f);
+                       gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false,
+                       1.0f);
   auto* quad5_root_2 =
       pass5_root->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
   quad5_root_2->SetNew(shared_quad_state5_root, /*rect=*/rect5_root,
                        /*visible_rect=*/rect5_root, /*render_pass_id=*/3,
                        /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
-                       /*mask_applies_to_backdrop=*/false, gfx::Vector2dF(1, 1),
-                       gfx::PointF(), gfx::RectF(), false, 1.0f);
+                       gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false,
+                       1.0f);
   auto* quad5_root_3 =
       pass5_root->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
   quad5_root_3->SetNew(shared_quad_state5_root, /*rect=*/rect5_root,
                        /*visible_rect=*/rect5_root, /*render_pass_id=*/4,
                        /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
-                       /*mask_applies_to_backdrop=*/false, gfx::Vector2dF(1, 1),
-                       gfx::PointF(), gfx::RectF(), false, 1.0f);
+                       gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false,
+                       1.0f);
   pass_list.push_back(std::move(pass5_root));
 
   SendRenderPassList(&pass_list);
@@ -439,7 +439,6 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
     quad3_root_1->SetNew(shared_quad_state3_root, /*rect=*/rect3_root,
                          /*visible_rect=*/rect3_root, /*render_pass_id=*/3,
                          /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
-                         /*mask_applies_to_backdrop=*/false,
                          gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(),
                          false, 1.0f);
     auto* quad3_root_2 =
@@ -447,7 +446,6 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
     quad3_root_2->SetNew(shared_quad_state3_root, /*rect=*/rect3_root,
                          /*visible_rect=*/rect3_root, /*render_pass_id=*/4,
                          /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
-                         /*mask_applies_to_backdrop=*/false,
                          gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(),
                          false, 1.0f);
     pass_list.push_back(std::move(pass3_root));
@@ -516,7 +514,6 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
     quad4_root_1->SetNew(shared_quad_state4_root, /*rect=*/rect4_root,
                          /*visible_rect=*/rect4_root, /*render_pass_id=*/5,
                          /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
-                         /*mask_applies_to_backdrop=*/false,
                          gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(),
                          false, 1.0f);
     auto* quad4_root_2 =
@@ -524,7 +521,6 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
     quad4_root_2->SetNew(shared_quad_state4_root, /*rect=*/rect4_root,
                          /*visible_rect=*/rect4_root, /*render_pass_id=*/6,
                          /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
-                         /*mask_applies_to_backdrop=*/false,
                          gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(),
                          false, 1.0f);
     pass_list.push_back(std::move(pass4_root));
@@ -595,7 +591,6 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
     quad5_root_1->SetNew(shared_quad_state5_root, /*rect=*/rect5_root,
                          /*visible_rect=*/rect5_root, /*render_pass_id=*/7,
                          /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
-                         /*mask_applies_to_backdrop=*/false,
                          gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(),
                          false, 1.0f);
     auto* quad5_root_2 =
@@ -603,7 +598,6 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
     quad5_root_2->SetNew(shared_quad_state5_root, /*rect=*/rect5_root,
                          /*visible_rect=*/rect5_root, /*render_pass_id=*/8,
                          /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
-                         /*mask_applies_to_backdrop=*/false,
                          gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(),
                          false, 1.0f);
     pass_list.push_back(std::move(pass5_root));
@@ -675,7 +669,6 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
     quad6_root_1->SetNew(shared_quad_state6_root, /*rect=*/rect6_root,
                          /*visible_rect=*/rect6_root, /*render_pass_id=*/9,
                          /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
-                         /*mask_applies_to_backdrop=*/false,
                          gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(),
                          false, 1.0f);
     auto* quad6_root_2 =
@@ -683,7 +676,6 @@ TEST_F(DirectLayerTreeFrameSinkTest, HitTestRegionListDuplicate) {
     quad6_root_2->SetNew(shared_quad_state6_root, /*rect=*/rect6_root,
                          /*visible_rect=*/rect6_root, /*render_pass_id=*/10,
                          /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
-                         /*mask_applies_to_backdrop=*/false,
                          gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(),
                          false, 1.0f);
     pass_list.push_back(std::move(pass6_root));

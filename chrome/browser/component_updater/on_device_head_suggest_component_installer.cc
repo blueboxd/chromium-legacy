@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/files/file_util.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
@@ -31,12 +32,18 @@ const uint8_t kOnDeviceHeadSuggestPublicKeySHA256[32] = {
 // letters and removes all hyphens and underscores in the locale string,
 // e.g. "en-US" -> "ENUS".
 std::string GetNormalizedLocale() {
-  std::string locale = g_browser_process->GetApplicationLocale();
+  std::string locale = base::GetFieldTrialParamValueByFeature(
+      omnibox::kOnDeviceHeadProvider, "ForceModelLocaleConstraint");
+  if (locale.empty())
+    locale = g_browser_process->GetApplicationLocale();
+
   for (const auto c : "-_")
     locale.erase(std::remove(locale.begin(), locale.end(), c), locale.end());
 
   std::transform(locale.begin(), locale.end(), locale.begin(),
                  [](char c) -> char { return base::ToUpperASCII(c); });
+  VLOG(1) << "On Device Head Component will fetch model for locale: " << locale;
+
   return locale;
 }
 

@@ -220,7 +220,7 @@ class NET_EXPORT CanonicalCookie {
   // SameSite restrictions).
   bool IsEffectivelySameSiteNone() const;
 
-  CookieSameSite GetEffectiveSameSiteForTesting() const;
+  CookieEffectiveSameSite GetEffectiveSameSiteForTesting() const;
 
   // Returns the cookie line (e.g. "cookie1=value1; cookie2=value2") represented
   // by |cookies|. The string is built in the same order as the given list.
@@ -269,7 +269,7 @@ class NET_EXPORT CanonicalCookie {
   // are considering using this method, consider whether you should use
   // IncludeForRequestURL() or IsSetPermittedInContext() instead of doing the
   // SameSite computation yourself.
-  CookieSameSite GetEffectiveSameSite() const;
+  CookieEffectiveSameSite GetEffectiveSameSite() const;
 
   // Returns whether the cookie was created at most |age_threshold| ago.
   bool IsRecentlyCreated(base::TimeDelta age_threshold) const;

@@ -221,6 +221,8 @@ TEST_F(AvailabilityProberTest, OK) {
   histogram_tester.ExpectUniqueSample(
       "Availability.Prober.DidSucceed.Litepages", true, 1);
   histogram_tester.ExpectUniqueSample(
+      "Availability.Prober.FinalState.Litepages", true, 1);
+  histogram_tester.ExpectUniqueSample(
       "Availability.Prober.NumAttemptsBeforeSuccess.Litepages", 1, 1);
   histogram_tester.ExpectUniqueSample(
       "Availability.Prober.ResponseCode.Litepages", net::HTTP_OK, 1);
@@ -245,6 +247,8 @@ TEST_F(AvailabilityProberTest, OK_Callback) {
 
   histogram_tester.ExpectUniqueSample(
       "Availability.Prober.DidSucceed.Litepages", true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Availability.Prober.FinalState.Litepages", true, 1);
   histogram_tester.ExpectUniqueSample(
       "Availability.Prober.ResponseCode.Litepages", net::HTTP_OK, 1);
   histogram_tester.ExpectUniqueSample("Availability.Prober.NetError.Litepages",
@@ -395,6 +399,8 @@ TEST_F(AvailabilityProberTest, PersistentCache) {
   histogram_tester.ExpectUniqueSample(
       "Availability.Prober.DidSucceed.Litepages", true, 1);
   histogram_tester.ExpectUniqueSample(
+      "Availability.Prober.FinalState.Litepages", true, 1);
+  histogram_tester.ExpectUniqueSample(
       "Availability.Prober.ResponseCode.Litepages", net::HTTP_OK, 1);
   histogram_tester.ExpectUniqueSample("Availability.Prober.NetError.Litepages",
                                       std::abs(net::OK), 1);
@@ -435,6 +441,8 @@ TEST_F(AvailabilityProberTest, NetError) {
 
   histogram_tester.ExpectUniqueSample(
       "Availability.Prober.DidSucceed.Litepages", false, 4);
+  histogram_tester.ExpectUniqueSample(
+      "Availability.Prober.FinalState.Litepages", false, 1);
   histogram_tester.ExpectTotalCount(
       "Availability.Prober.ResponseCode.Litepages", 0);
   histogram_tester.ExpectUniqueSample("Availability.Prober.NetError.Litepages",
@@ -458,6 +466,8 @@ TEST_F(AvailabilityProberTest, NetError_Callback) {
 
   histogram_tester.ExpectUniqueSample(
       "Availability.Prober.DidSucceed.Litepages", false, 4);
+  histogram_tester.ExpectUniqueSample(
+      "Availability.Prober.FinalState.Litepages", false, 1);
   histogram_tester.ExpectTotalCount(
       "Availability.Prober.ResponseCode.Litepages", 0);
   histogram_tester.ExpectUniqueSample("Availability.Prober.NetError.Litepages",
@@ -478,6 +488,8 @@ TEST_F(AvailabilityProberTest, HttpError) {
 
   histogram_tester.ExpectUniqueSample(
       "Availability.Prober.DidSucceed.Litepages", false, 4);
+  histogram_tester.ExpectUniqueSample(
+      "Availability.Prober.FinalState.Litepages", false, 1);
   histogram_tester.ExpectUniqueSample(
       "Availability.Prober.ResponseCode.Litepages", net::HTTP_NOT_FOUND, 4);
   histogram_tester.ExpectUniqueSample("Availability.Prober.NetError.Litepages",
@@ -563,6 +575,11 @@ TEST_F(AvailabilityProberTest, RetryLinear) {
   EXPECT_FALSE(prober->LastProbeWasSuccessful().value());
   EXPECT_TRUE(prober->is_active());
 
+  histogram_tester.ExpectUniqueSample(
+      "Availability.Prober.DidSucceed.Litepages", false, 1);
+  histogram_tester.ExpectTotalCount("Availability.Prober.FinalState.Litepages",
+                                    0);
+
   // First retry.
   FastForward(base::TimeDelta::FromMilliseconds(999));
   VerifyNoRequests();
@@ -571,6 +588,11 @@ TEST_F(AvailabilityProberTest, RetryLinear) {
   MakeResponseAndWait(net::HTTP_OK, net::ERR_FAILED);
   EXPECT_FALSE(prober->LastProbeWasSuccessful().value());
   EXPECT_TRUE(prober->is_active());
+
+  histogram_tester.ExpectUniqueSample(
+      "Availability.Prober.DidSucceed.Litepages", false, 2);
+  histogram_tester.ExpectTotalCount("Availability.Prober.FinalState.Litepages",
+                                    0);
 
   // Second retry should be another 1000ms later and be the final one.
   FastForward(base::TimeDelta::FromMilliseconds(999));
@@ -583,6 +605,8 @@ TEST_F(AvailabilityProberTest, RetryLinear) {
 
   histogram_tester.ExpectUniqueSample(
       "Availability.Prober.DidSucceed.Litepages", false, 3);
+  histogram_tester.ExpectUniqueSample(
+      "Availability.Prober.FinalState.Litepages", false, 1);
   histogram_tester.ExpectTotalCount(
       "Availability.Prober.ResponseCode.Litepages", 0);
   histogram_tester.ExpectUniqueSample("Availability.Prober.NetError.Litepages",
@@ -608,6 +632,11 @@ TEST_F(AvailabilityProberTest, RetryThenSucceed) {
   EXPECT_FALSE(prober->LastProbeWasSuccessful().value());
   EXPECT_TRUE(prober->is_active());
 
+  histogram_tester.ExpectUniqueSample(
+      "Availability.Prober.DidSucceed.Litepages", false, 1);
+  histogram_tester.ExpectTotalCount("Availability.Prober.FinalState.Litepages",
+                                    0);
+
   // First retry.
   FastForward(base::TimeDelta::FromMilliseconds(999));
   VerifyNoRequests();
@@ -616,6 +645,11 @@ TEST_F(AvailabilityProberTest, RetryThenSucceed) {
   MakeResponseAndWait(net::HTTP_OK, net::ERR_FAILED);
   EXPECT_FALSE(prober->LastProbeWasSuccessful().value());
   EXPECT_TRUE(prober->is_active());
+
+  histogram_tester.ExpectUniqueSample(
+      "Availability.Prober.DidSucceed.Litepages", false, 2);
+  histogram_tester.ExpectTotalCount("Availability.Prober.FinalState.Litepages",
+                                    0);
 
   // Second retry should be another 1000ms later and be the final one.
   FastForward(base::TimeDelta::FromMilliseconds(999));
@@ -630,6 +664,8 @@ TEST_F(AvailabilityProberTest, RetryThenSucceed) {
                                      false, 2);
   histogram_tester.ExpectBucketCount("Availability.Prober.DidSucceed.Litepages",
                                      true, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Availability.Prober.FinalState.Litepages", true, 1);
   histogram_tester.ExpectUniqueSample(
       "Availability.Prober.NumAttemptsBeforeSuccess.Litepages", 3, 1);
   histogram_tester.ExpectUniqueSample(
@@ -793,6 +829,8 @@ TEST_F(AvailabilityProberTest, DelegateStopsFirstProbe) {
   VerifyNoRequests();
 
   histogram_tester.ExpectTotalCount("Availability.Prober.DidSucceed.Litepages",
+                                    0);
+  histogram_tester.ExpectTotalCount("Availability.Prober.FinalState.Litepages",
                                     0);
 }
 

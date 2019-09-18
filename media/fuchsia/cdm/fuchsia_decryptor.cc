@@ -29,7 +29,6 @@ void FuchsiaDecryptor::Decrypt(StreamType stream_type,
                                scoped_refptr<DecoderBuffer> encrypted,
                                const DecryptCB& decrypt_cb) {
   if (stream_type != StreamType::kAudio) {
-    NOTREACHED();
     decrypt_cb.Run(Status::kError, nullptr);
     return;
   }
@@ -41,26 +40,26 @@ void FuchsiaDecryptor::Decrypt(StreamType stream_type,
 }
 
 void FuchsiaDecryptor::CancelDecrypt(StreamType stream_type) {
-  DCHECK_EQ(stream_type, StreamType::kAudio);
-  audio_decryptor_->CancelDecrypt();
+  if (stream_type == StreamType::kAudio) {
+    audio_decryptor_->CancelDecrypt();
+  }
 }
 
 void FuchsiaDecryptor::InitializeAudioDecoder(const AudioDecoderConfig& config,
                                               const DecoderInitCB& init_cb) {
-  // Only supports decrypt for audio stream.
-  NOTREACHED();
+  // Only decryption is supported.
   init_cb.Run(false);
 }
 
 void FuchsiaDecryptor::InitializeVideoDecoder(const VideoDecoderConfig& config,
                                               const DecoderInitCB& init_cb) {
+  // Only decryption is supported.
   init_cb.Run(false);
 }
 
 void FuchsiaDecryptor::DecryptAndDecodeAudio(
     scoped_refptr<DecoderBuffer> encrypted,
     const AudioDecodeCB& audio_decode_cb) {
-  // Only supports decrypt for audio stream.
   NOTREACHED();
   audio_decode_cb.Run(Status::kError, AudioFrames());
 }

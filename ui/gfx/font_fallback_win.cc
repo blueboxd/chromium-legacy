@@ -4,15 +4,9 @@
 
 #include "ui/gfx/font_fallback_win.h"
 
-#include <dwrite_2.h>
-#include <usp10.h>
-#include <wrl.h>
-#include <wrl/client.h>
-
 #include <algorithm>
 #include <map>
 
-#include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop_current.h"
@@ -23,7 +17,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/registry.h"
-#include "base/win/scoped_gdi_object.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_fallback.h"
 #include "ui/gfx/font_fallback_skia_impl.h"

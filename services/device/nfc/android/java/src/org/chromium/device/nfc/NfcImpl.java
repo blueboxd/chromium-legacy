@@ -23,7 +23,6 @@ import android.util.SparseArray;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.device.mojom.NdefCompatibility;
 import org.chromium.device.mojom.NdefMessage;
 import org.chromium.device.mojom.Nfc;
 import org.chromium.device.mojom.NfcClient;
@@ -341,22 +340,6 @@ public class NfcImpl implements Nfc {
         }
 
         /**
-         * Check if the NFC device matches the |compatibility| field in |options|.
-         *
-         * @param compatibility denotes the compatibility kind of the found NFC device.
-         * @return boolean true if NFC the compatibility matches.
-         */
-        boolean checkCompatibility(int compatibility) {
-            // 'nfc-forum' option can only push messages to NFC standard devices and 'vendor'
-            // option can only push to vendor specific ones.
-            if (nfcPushOptions.compatibility == NdefCompatibility.ANY
-                    || nfcPushOptions.compatibility == compatibility) {
-                return true;
-            }
-            return false;
-        }
-
-        /**
          * Completes pending push operation.
          *
          * @param error should be null when operation is completed successfully, otherwise,
@@ -519,10 +502,6 @@ public class NfcImpl implements Nfc {
             return;
         }
 
-        if (!mPendingPushOperation.checkCompatibility(mTagHandler.compatibility())) {
-            return;
-        }
-
         try {
             mTagHandler.connect();
             mTagHandler.write(NdefMessageUtils.toNdefMessage(mPendingPushOperation.ndefMessage));
@@ -568,7 +547,7 @@ public class NfcImpl implements Nfc {
                 Log.w(TAG, "Cannot read data from NFC tag. NdefMessage exceeds allowed size.");
                 return;
             }
-            notifyMatchingWatchers(message, mTagHandler.compatibility());
+            notifyMatchingWatchers(message);
         } catch (TagLostException e) {
             Log.w(TAG, "Cannot read data from NFC tag. Tag is lost.");
         } catch (FormatException | IllegalStateException | IOException e) {
@@ -580,13 +559,13 @@ public class NfcImpl implements Nfc {
      * Iterates through active watchers and if any of those match NfcScanOptions criteria,
      * delivers NdefMessage to the client.
      */
-    private void notifyMatchingWatchers(android.nfc.NdefMessage message, int compatibility) {
+    private void notifyMatchingWatchers(android.nfc.NdefMessage message) {
         try {
             NdefMessage ndefMessage = NdefMessageUtils.toNdefMessage(message);
             List<Integer> watchIds = new ArrayList<Integer>();
             for (int i = 0; i < mWatchers.size(); i++) {
                 NfcScanOptions options = mWatchers.valueAt(i);
-                if (matchesWatchOptions(ndefMessage, compatibility, options)) {
+                if (matchesWatchOptions(ndefMessage, options)) {
                     watchIds.add(mWatchers.keyAt(i));
                 }
             }
@@ -606,15 +585,7 @@ public class NfcImpl implements Nfc {
     /**
      * Implements matching algorithm.
      */
-    private boolean matchesWatchOptions(
-            NdefMessage message, int compatibility, NfcScanOptions options) {
-        // 'nfc-forum' option can only read messages from NFC standard devices and 'vendor' option
-        // can only read from vendor specific ones.
-        if (options.compatibility != NdefCompatibility.ANY
-                && options.compatibility != compatibility) {
-            return false;
-        }
-
+    private boolean matchesWatchOptions(NdefMessage message, NfcScanOptions options) {
         // Filter by WebNfc watch Id.
         if (!matchesWebNfcId(message.url, options.url)) return false;
 

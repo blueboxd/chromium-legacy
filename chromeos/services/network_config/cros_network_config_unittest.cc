@@ -150,6 +150,15 @@ class CrosNetworkConfigTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  void SetupEthernetEAP() {
+    std::string eap_path = helper().ConfigureService(
+        R"({"GUID": "eth_eap_guid", "Type": "etherneteap",
+            "State": "online", "EAP.EAP": "TTLS", "EAP.Identity": "user1"})");
+    helper().profile_test()->AddService(
+        NetworkProfileHandler::GetSharedProfilePath(), eap_path);
+    base::RunLoop().RunUntilIdle();
+  }
+
   void SetupObserver() {
     observer_ = std::make_unique<CrosNetworkConfigTestObserver>();
     cros_network_config_->AddObserver(observer_->GenerateInterfacePtr());
@@ -596,6 +605,22 @@ TEST_F(CrosNetworkConfigTest, GetManagedPropertiesPolicy) {
   EXPECT_EQ(mojom::PolicySource::kUserPolicyEnforced,
             properties->priority->policy_source);
   EXPECT_EQ(0, properties->priority->policy_value);
+}
+
+// Test managed EAP properties which are merged from a separate EthernetEAP
+// Shill service.
+TEST_F(CrosNetworkConfigTest, GetManagedPropertiesEAP) {
+  SetupEthernetEAP();
+  mojom::ManagedPropertiesPtr properties = GetManagedProperties("eth_guid");
+  ASSERT_TRUE(properties);
+  EXPECT_EQ("eth_guid", properties->guid);
+  EXPECT_EQ(mojom::NetworkType::kEthernet, properties->type);
+  ASSERT_TRUE(properties->ethernet);
+  ASSERT_TRUE(properties->ethernet->authentication);
+  EXPECT_EQ("8021X", properties->ethernet->authentication->active_value);
+  ASSERT_TRUE(properties->ethernet->eap);
+  ASSERT_TRUE(properties->ethernet->eap->identity);
+  EXPECT_EQ("user1", properties->ethernet->eap->identity->active_value);
 }
 
 TEST_F(CrosNetworkConfigTest, SetProperties) {

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
 
 import java.util.Map;
@@ -52,7 +53,7 @@ public abstract class ChromeFeatureList {
         //
         // The FeatureList is however guaranteed to be initialized by the time
         // AsyncInitializationActivity#finishNativeInitialization is called.
-        return nativeIsInitialized();
+        return ChromeFeatureListJni.get().isInitialized();
     }
 
     /**
@@ -72,7 +73,7 @@ public abstract class ChromeFeatureList {
         }
 
         assert isInitialized();
-        return nativeIsEnabled(featureName);
+        return ChromeFeatureListJni.get().isEnabled(featureName);
     }
 
     /**
@@ -89,7 +90,7 @@ public abstract class ChromeFeatureList {
     public static String getFieldTrialParamByFeature(String featureName, String paramName) {
         if (sTestFeatures != null) return "";
         assert isInitialized();
-        return nativeGetFieldTrialParamByFeature(featureName, paramName);
+        return ChromeFeatureListJni.get().getFieldTrialParamByFeature(featureName, paramName);
     }
 
     /**
@@ -108,7 +109,8 @@ public abstract class ChromeFeatureList {
             String featureName, String paramName, int defaultValue) {
         if (sTestFeatures != null) return defaultValue;
         assert isInitialized();
-        return nativeGetFieldTrialParamByFeatureAsInt(featureName, paramName, defaultValue);
+        return ChromeFeatureListJni.get().getFieldTrialParamByFeatureAsInt(
+                featureName, paramName, defaultValue);
     }
 
     /**
@@ -127,7 +129,8 @@ public abstract class ChromeFeatureList {
             String featureName, String paramName, double defaultValue) {
         if (sTestFeatures != null) return defaultValue;
         assert isInitialized();
-        return nativeGetFieldTrialParamByFeatureAsDouble(featureName, paramName, defaultValue);
+        return ChromeFeatureListJni.get().getFieldTrialParamByFeatureAsDouble(
+                featureName, paramName, defaultValue);
     }
 
     /**
@@ -146,7 +149,8 @@ public abstract class ChromeFeatureList {
             String featureName, String paramName, boolean defaultValue) {
         if (sTestFeatures != null) return defaultValue;
         assert isInitialized();
-        return nativeGetFieldTrialParamByFeatureAsBoolean(featureName, paramName, defaultValue);
+        return ChromeFeatureListJni.get().getFieldTrialParamByFeatureAsBoolean(
+                featureName, paramName, defaultValue);
     }
 
     // Alphabetical:
@@ -360,14 +364,16 @@ public abstract class ChromeFeatureList {
     public static final String SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH =
             "ServiceManagerForBackgroundPrefetch";
 
-    private static native boolean nativeIsInitialized();
-    private static native boolean nativeIsEnabled(String featureName);
-    private static native String nativeGetFieldTrialParamByFeature(
-            String featureName, String paramName);
-    private static native int nativeGetFieldTrialParamByFeatureAsInt(
-            String featureName, String paramName, int defaultValue);
-    private static native double nativeGetFieldTrialParamByFeatureAsDouble(
-            String featureName, String paramName, double defaultValue);
-    private static native boolean nativeGetFieldTrialParamByFeatureAsBoolean(
-            String featureName, String paramName, boolean defaultValue);
+    @NativeMethods
+    interface Natives {
+        boolean isInitialized();
+        boolean isEnabled(String featureName);
+        String getFieldTrialParamByFeature(String featureName, String paramName);
+        int getFieldTrialParamByFeatureAsInt(
+                String featureName, String paramName, int defaultValue);
+        double getFieldTrialParamByFeatureAsDouble(
+                String featureName, String paramName, double defaultValue);
+        boolean getFieldTrialParamByFeatureAsBoolean(
+                String featureName, String paramName, boolean defaultValue);
+    }
 }

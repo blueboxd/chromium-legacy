@@ -72,3 +72,12 @@
 # https://crbug.com/1003744
 -NavigationBaseBrowserTest.BackForwardInOldDocumentCancelPendingNavigation/1
 -NavigationBaseBrowserTest.BackForwardInOldDocumentCancelPendingNavigation/0
+
+# The BackForwardCache evicts page asynchronously. The test expects the
+# RenderFrameHostImpl to be removed immediately.
+-SitePerProcessBrowserTest.RenderViewHostIsNotReusedAfterDelayedSwapOutACK
+
+# Android-only test. Timeout.
+# https://crbug.com/1004786
+-SitePerProcessBrowserTest.TestChildProcessImportance
+

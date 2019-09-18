@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/auto_reset.h"
 #include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/win/atl.h"
@@ -445,7 +446,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleDetachedObject) {
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleHitTest) {
   AXNodeData root;
   root.id = 1;
-  root.relative_bounds.bounds = gfx::RectF(0, 0, 30, 30);
+  root.relative_bounds.bounds = gfx::RectF(0, 0, 40, 40);
 
   AXNodeData node1;
   node1.id = 2;
@@ -455,7 +456,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleHitTest) {
 
   AXNodeData node2;
   node2.id = 3;
-  node2.relative_bounds.bounds = gfx::RectF(20, 20, 10, 10);
+  node2.relative_bounds.bounds = gfx::RectF(20, 20, 20, 20);
   node2.SetName("Name2");
   root.child_ids.push_back(node2.id);
 
@@ -463,17 +464,23 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleHitTest) {
 
   ComPtr<IAccessible> root_obj(GetRootIAccessible());
 
-  ScopedVariant obj;
+  // This is way outside of the root node.
+  ScopedVariant obj_1;
+  EXPECT_EQ(S_FALSE, root_obj->accHitTest(50, 50, obj_1.Receive()));
+  EXPECT_EQ(VT_EMPTY, obj_1.type());
 
-  // This is way outside of the root node
-  EXPECT_EQ(S_FALSE, root_obj->accHitTest(50, 50, obj.Receive()));
-  EXPECT_EQ(VT_EMPTY, obj.type());
+  // This is directly on node 1.
+  EXPECT_EQ(S_OK, root_obj->accHitTest(5, 5, obj_1.Receive()));
+  ASSERT_NE(nullptr, obj_1.ptr());
+  CheckVariantHasName(obj_1, L"Name1");
 
-  // this is directly on node 1.
-  EXPECT_EQ(S_OK, root_obj->accHitTest(5, 5, obj.Receive()));
-  ASSERT_NE(nullptr, obj.ptr());
-
-  CheckVariantHasName(obj, L"Name1");
+  // This is directly on node 2 with a scale factor of 1.5.
+  ScopedVariant obj_2;
+  std::unique_ptr<base::AutoReset<float>> scale_factor_reset =
+      TestAXNodeWrapper::SetScaleFactor(1.5);
+  EXPECT_EQ(S_OK, root_obj->accHitTest(38, 38, obj_2.Receive()));
+  ASSERT_NE(nullptr, obj_2.ptr());
+  CheckVariantHasName(obj_2, L"Name2");
 }
 
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleName) {

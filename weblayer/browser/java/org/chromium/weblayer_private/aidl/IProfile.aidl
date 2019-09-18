@@ -12,5 +12,11 @@ interface IProfile {
 
   void clearBrowsingData() = 1;
 
-  IBrowserController createBrowserController(in IObjectWrapper context) = 2;
+  /**
+   * Creates a new IBrowserController.
+   * @param clientContext Context from the client
+   * @param implContext Context that refers to the weblayer implementation
+   */
+  IBrowserController createBrowserController(in IObjectWrapper clientContext,
+                                             in IObjectWrapper implContext) = 2;
 }

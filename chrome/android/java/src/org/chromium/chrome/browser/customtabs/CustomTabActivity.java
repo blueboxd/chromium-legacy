@@ -604,11 +604,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
         return component;
     }
 
-    @Override
-    protected boolean shouldInitializeBottomSheet() {
-        return super.shouldInitializeBottomSheet() || isAutofillAssistantEnabled();
-    }
-
     private boolean isAutofillAssistantEnabled() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT)
                 && AutofillAssistantFacade.isConfigured(getInitialIntent().getExtras());

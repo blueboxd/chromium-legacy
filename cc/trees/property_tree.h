@@ -325,9 +325,6 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
   // surface.
   int LowestCommonAncestorWithRenderSurface(int id_1, int id_2) const;
 
-  void AddMaskLayerId(int id);
-  const std::vector<int>& mask_layer_ids() const { return mask_layer_ids_; }
-
   RenderSurfaceImpl* GetRenderSurface(int id) {
     return render_surfaces_[id].get();
   }
@@ -370,9 +367,6 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
   // Stores copy requests, keyed by node id.
   std::unordered_multimap<int, std::unique_ptr<viz::CopyOutputRequest>>
       copy_requests_;
-
-  // Unsorted list of all mask layer ids that effect nodes refer to.
-  std::vector<int> mask_layer_ids_;
 
   // Indexed by node id.
   std::vector<std::unique_ptr<RenderSurfaceImpl>> render_surfaces_;

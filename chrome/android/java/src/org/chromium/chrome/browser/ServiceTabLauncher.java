@@ -17,6 +17,7 @@ import androidx.browser.customtabs.CustomTabsIntent;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browserservices.BrowserServicesMetrics;
@@ -214,9 +215,11 @@ public class ServiceTabLauncher {
      */
     public static void onWebContentsForRequestAvailable(
             int requestId, @Nullable WebContents webContents) {
-        nativeOnWebContentsForRequestAvailable(requestId, webContents);
+        ServiceTabLauncherJni.get().onWebContentsForRequestAvailable(requestId, webContents);
     }
 
-    private static native void nativeOnWebContentsForRequestAvailable(
-            int requestId, WebContents webContents);
+    @NativeMethods
+    interface Natives {
+        void onWebContentsForRequestAvailable(int requestId, WebContents webContents);
+    }
 }

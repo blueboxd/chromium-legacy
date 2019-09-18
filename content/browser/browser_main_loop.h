@@ -217,9 +217,9 @@ class CONTENT_EXPORT BrowserMainLoop {
   viz::ServerSharedBitmapManager* GetServerSharedBitmapManager() const;
 #endif
 
-  // Fulfills a mojo pointer to the singleton CompositingModeReporter.
+  // Binds a receiver to the singleton CompositingModeReporter.
   void GetCompositingModeReporter(
-      viz::mojom::CompositingModeReporterRequest request);
+      mojo::PendingReceiver<viz::mojom::CompositingModeReporter> receiver);
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   media::DeviceMonitorMac* device_monitor_mac() const {

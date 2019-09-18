@@ -1305,6 +1305,7 @@ TEST_F(MultibufferDataSourceTest,
 
   // Marking the media as playing should prevent deferral. It also tells the
   // data source to start buffering beyond the initial load.
+  EXPECT_FALSE(data_source_->cancel_on_defer_for_testing());
   data_source_->MediaIsPlaying();
   data_source_->OnBufferingHaveEnough(false);
   CheckCapacityDefer();
@@ -1316,6 +1317,7 @@ TEST_F(MultibufferDataSourceTest,
   ReceiveData(kDataSize);
   ASSERT_TRUE(active_loader());
   data_source_->OnBufferingHaveEnough(true);
+  EXPECT_TRUE(data_source_->cancel_on_defer_for_testing());
   ASSERT_TRUE(active_loader());
   ASSERT_FALSE(data_provider()->deferred());
 
@@ -1329,6 +1331,26 @@ TEST_F(MultibufferDataSourceTest,
   EXPECT_GT(bytes_received, 0);
   EXPECT_LT(bytes_received + kDataSize, kFileSize);
   EXPECT_FALSE(active_loader_allownull());
+
+  // Verify playback resumes correctly too.
+  data_source_->MediaIsPlaying();
+  EXPECT_FALSE(data_source_->cancel_on_defer_for_testing());
+
+  // A read from a previously buffered range won't create a new loader yet.
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+  ReadAt(kDataSize);
+  EXPECT_FALSE(active_loader_allownull());
+
+  // Reads from an unbuffered range will though...
+  EXPECT_CALL(*this, ReadCallback(kDataSize));
+  ReadAt(kFarReadPosition);
+
+  // Receive enough data to exhaust current capacity which would destroy the
+  // loader upon deferral if the flag hasn't been cleared properly.
+  for (int i = 0; i <= (preload_high() / kDataSize) + 1; ++i) {
+    ReceiveData(kDataSize);
+    ASSERT_TRUE(active_loader());
+  }
 }
 
 TEST_F(MultibufferDataSourceTest, SeekPastEOF) {

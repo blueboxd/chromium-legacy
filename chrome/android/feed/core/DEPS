@@ -1,5 +1,6 @@
 include_rules = [
   "+chrome/lib/lifecycle/public",
+  "+chrome/browser/ui/android/widget",
   "+components/background_task_scheduler",
   "+components/feature_engagement",
   "+components/feed",

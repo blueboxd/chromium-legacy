@@ -474,7 +474,6 @@ void GraphicsLayer::SetupContentsLayer(cc::Layer* contents_layer) {
   // SetDrawsContent() and SetContentsVisible().
   contents_layer_->SetIsDrawable(contents_visible_);
   contents_layer_->SetHitTestable(contents_visible_);
-  contents_layer_->SetMaskLayer(nullptr);
   contents_layer_->Set3dSortingContextId(rendering_context3d_);
 }
 

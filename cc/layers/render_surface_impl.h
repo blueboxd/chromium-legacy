@@ -154,8 +154,6 @@ class CC_EXPORT RenderSurfaceImpl {
 
   uint64_t id() const { return stable_id_; }
 
-  LayerImpl* MaskLayer();
-  bool HasMask() const;
   bool HasMaskingContributingSurface() const;
 
   const FilterOperations& Filters() const;

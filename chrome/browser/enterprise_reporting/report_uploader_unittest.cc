@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -20,6 +21,8 @@ using ::testing::WithArgs;
 namespace enterprise_reporting {
 namespace {
 constexpr const char* kOsUserNames[] = {"name1", "name2"};
+constexpr char kResponseMetricsName[] = "Enterprise.CloudReportingResponse";
+
 }  // namespace
 
 class ReportUploaderTest : public ::testing::Test {
@@ -82,6 +85,7 @@ class ReportUploaderTest : public ::testing::Test {
   std::unique_ptr<ReportUploader> uploader_;
   policy::MockCloudPolicyClient client_;
   bool has_responded_ = false;
+  base::HistogramTester histogram_tester_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ReportUploaderTest);
@@ -98,6 +102,8 @@ TEST_F(ReportUploaderTest, Success) {
                                 ReportUploader::kSuccess);
   RunNextTask();
   EXPECT_TRUE(has_responded_);
+  histogram_tester_.ExpectUniqueSample(
+      kResponseMetricsName, ReportResponseMetricsStatus::kSuccess, 1);
   ::testing::Mock::VerifyAndClearExpectations(&client_);
 }
 
@@ -110,6 +116,8 @@ TEST_F(ReportUploaderTest, PersistentError) {
                                 ReportUploader::kPersistentError);
   RunNextTask();
   EXPECT_TRUE(has_responded_);
+  histogram_tester_.ExpectUniqueSample(
+      kResponseMetricsName, ReportResponseMetricsStatus::kOtherError, 1);
   ::testing::Mock::VerifyAndClearExpectations(&client_);
 }
 
@@ -124,6 +132,9 @@ TEST_F(ReportUploaderTest, RequestTooBigError) {
                                 ReportUploader::kSuccess);
   RunNextTask();
   EXPECT_TRUE(has_responded_);
+  histogram_tester_.ExpectUniqueSample(
+      kResponseMetricsName, ReportResponseMetricsStatus::kRequestTooLargeError,
+      2);
   ::testing::Mock::VerifyAndClearExpectations(&client_);
 }
 
@@ -143,6 +154,12 @@ TEST_F(ReportUploaderTest, RetryAndSuccess) {
   RunNextTask();
   EXPECT_TRUE(has_responded_);
   ::testing::Mock::VerifyAndClearExpectations(&client_);
+  histogram_tester_.ExpectTotalCount(kResponseMetricsName, 2);
+  histogram_tester_.ExpectBucketCount(kResponseMetricsName,
+                                      ReportResponseMetricsStatus::kSuccess, 1);
+  histogram_tester_.ExpectBucketCount(
+      kResponseMetricsName, ReportResponseMetricsStatus::kTemporaryServerError,
+      1);
 }
 
 TEST_F(ReportUploaderTest, RetryAndFailedWithPersistentError) {
@@ -155,6 +172,10 @@ TEST_F(ReportUploaderTest, RetryAndFailedWithPersistentError) {
                                 ReportUploader::kPersistentError);
   RunNextTask();
 
+  histogram_tester_.ExpectUniqueSample(
+      kResponseMetricsName, ReportResponseMetricsStatus::kTemporaryServerError,
+      1);
+
   // No response, request is retried.
   EXPECT_FALSE(has_responded_);
   // Error is changed.
@@ -162,6 +183,9 @@ TEST_F(ReportUploaderTest, RetryAndFailedWithPersistentError) {
   RunNextTask();
   EXPECT_TRUE(has_responded_);
   ::testing::Mock::VerifyAndClearExpectations(&client_);
+  histogram_tester_.ExpectTotalCount(kResponseMetricsName, 2);
+  histogram_tester_.ExpectBucketCount(
+      kResponseMetricsName, ReportResponseMetricsStatus::kOtherError, 1);
 }
 
 TEST_F(ReportUploaderTest, RetryAndFailedWithTransientError) {
@@ -174,10 +198,17 @@ TEST_F(ReportUploaderTest, RetryAndFailedWithTransientError) {
                                 ReportUploader::kTransientError);
   RunNextTask();
 
+  histogram_tester_.ExpectUniqueSample(
+      kResponseMetricsName, ReportResponseMetricsStatus::kTemporaryServerError,
+      1);
+
   // No response, request is retried.
   EXPECT_FALSE(has_responded_);
   RunNextTask();
   EXPECT_TRUE(has_responded_);
+  histogram_tester_.ExpectUniqueSample(
+      kResponseMetricsName, ReportResponseMetricsStatus::kTemporaryServerError,
+      2);
   ::testing::Mock::VerifyAndClearExpectations(&client_);
 }
 

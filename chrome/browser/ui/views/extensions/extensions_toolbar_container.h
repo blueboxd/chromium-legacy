@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_icon_container_view.h"
 
+class AnimatingLayoutManager;
 class Browser;
 class ExtensionsToolbarButton;
 class ToolbarActionViewController;
@@ -45,10 +46,18 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
     return active_bubble_;
   }
 
+  AnimatingLayoutManager* animating_layout_for_testing() {
+    return animating_layout_;
+  }
+
   // ToolbarIconContainerView:
   void UpdateAllIcons() override;
 
   ToolbarActionView* GetViewForId(const std::string& id);
+
+  void ShowActiveBubble(
+      views::View* anchor_view,
+      std::unique_ptr<ToolbarActionsBarBubbleDelegate> controller);
 
  private:
   // A struct representing the position and action being dragged.
@@ -157,6 +166,8 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   // The DropInfo for the current drag-and-drop operation, or a null pointer if
   // there is none.
   std::unique_ptr<DropInfo> drop_info_;
+
+  AnimatingLayoutManager* animating_layout_ = nullptr;
 
   base::WeakPtrFactory<ExtensionsToolbarContainer> weak_ptr_factory_{this};
 

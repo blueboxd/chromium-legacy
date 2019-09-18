@@ -5,10 +5,12 @@
 #include "ui/accessibility/platform/ax_fragment_root_win.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 #include "ui/accessibility/platform/ax_platform_node_win_unittest.h"
+#include "ui/accessibility/platform/test_ax_node_wrapper.h"
 
 #include <UIAutomationClient.h>
 #include <UIAutomationCoreApi.h>
 
+#include "base/auto_reset.h"
 #include "base/win/scoped_safearray.h"
 #include "base/win/scoped_variant.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -77,6 +79,13 @@ TEST_F(AXFragmentRootTest, TestUIAElementProviderFromPoint) {
   EXPECT_HRESULT_SUCCEEDED(fragment_root_prov->ElementProviderFromPoint(
       47, 67, &provider_from_point));
   EXPECT_EQ(root_provider.Get(), provider_from_point.Get());
+
+  // This is on node 1 with scale factor of 1.5.
+  std::unique_ptr<base::AutoReset<float>> scale_factor_reset =
+      TestAXNodeWrapper::SetScaleFactor(1.5);
+  EXPECT_HRESULT_SUCCEEDED(fragment_root_prov->ElementProviderFromPoint(
+      60, 60, &provider_from_point));
+  EXPECT_EQ(element1_provider.Get(), provider_from_point.Get());
 }
 
 TEST_F(AXFragmentRootTest, TestUIAGetFocus) {

@@ -15,7 +15,6 @@
 #include "chrome/browser/page_load_metrics/observers/data_reduction_proxy_metrics_observer_test_utils.h"
 #include "chrome/browser/page_load_metrics/observers/histogram_suffixes.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
-#include "components/data_reduction_proxy/content/browser/data_reduction_proxy_pingback_client_impl.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/previews/content/previews_user_data.h"
 #include "content/public/browser/web_contents.h"
@@ -23,19 +22,16 @@
 namespace data_reduction_proxy {
 
 // DataReductionProxyMetricsObserver responsible for modifying data about the
-// navigation in OnCommit. It is also responsible for using a passed in
-// DataReductionProxyPingbackClient instead of the default.
+// navigation in OnCommit.
 class TestDataReductionProxyMetricsObserver
     : public DataReductionProxyMetricsObserver {
  public:
   TestDataReductionProxyMetricsObserver(content::WebContents* web_contents,
-                                        TestPingbackClient* pingback_client,
                                         bool data_reduction_proxy_used,
                                         bool cached_data_reduction_proxy_used,
                                         bool lite_page_used,
                                         bool black_listed)
       : web_contents_(web_contents),
-        pingback_client_(pingback_client),
         data_reduction_proxy_used_(data_reduction_proxy_used),
         cached_data_reduction_proxy_used_(cached_data_reduction_proxy_used),
         lite_page_used_(lite_page_used),
@@ -65,33 +61,8 @@ class TestDataReductionProxyMetricsObserver
                                                              source_id);
   }
 
-  DataReductionProxyPingbackClient* GetPingbackClient() const override {
-    return pingback_client_;
-  }
-
-  void RequestProcessDump(
-      base::ProcessId pid,
-      memory_instrumentation::MemoryInstrumentation::RequestGlobalDumpCallback
-          callback) override {
-    memory_instrumentation::mojom::GlobalMemoryDumpPtr global_dump(
-        memory_instrumentation::mojom::GlobalMemoryDump::New());
-
-    memory_instrumentation::mojom::ProcessMemoryDumpPtr pmd(
-        memory_instrumentation::mojom::ProcessMemoryDump::New());
-    pmd->pid = pid;
-    pmd->process_type = memory_instrumentation::mojom::ProcessType::RENDERER;
-    pmd->os_dump = memory_instrumentation::mojom::OSMemDump::New();
-    pmd->os_dump->private_footprint_kb = kMemoryKb;
-
-    global_dump->process_dumps.push_back(std::move(pmd));
-    std::move(callback).Run(true,
-                            memory_instrumentation::GlobalMemoryDump::MoveFrom(
-                                std::move(global_dump)));
-  }
-
  private:
   content::WebContents* web_contents_;
-  TestPingbackClient* pingback_client_;
   bool data_reduction_proxy_used_;
   bool cached_data_reduction_proxy_used_;
   bool lite_page_used_;
@@ -238,7 +209,7 @@ class DataReductionProxyMetricsObserverTest
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     tracker->AddObserver(
         std::make_unique<TestDataReductionProxyMetricsObserver>(
-            web_contents(), pingback_client(), data_reduction_proxy_used(),
+            web_contents(), data_reduction_proxy_used(),
             cached_data_reduction_proxy_used(), is_using_lite_page(),
             black_listed()));
   }

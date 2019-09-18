@@ -62,7 +62,7 @@ class AuraLinuxApplication : public ui::AXPlatformNodeDelegateBase,
     window->AddObserver(this);
   }
 
-  gfx::NativeViewAccessible GetNativeViewAccessible() {
+  gfx::NativeViewAccessible GetNativeViewAccessible() override {
     return platform_node_->GetNativeViewAccessible();
   }
 

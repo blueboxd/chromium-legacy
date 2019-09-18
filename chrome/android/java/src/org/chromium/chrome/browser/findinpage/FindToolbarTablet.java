@@ -16,7 +16,7 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.animation.CancelAwareAnimatorListener;
+import org.chromium.chrome.browser.ui.widget.animation.CancelAwareAnimatorListener;
 
 /**
  * A tablet specific version of the {@link FindToolbar}.

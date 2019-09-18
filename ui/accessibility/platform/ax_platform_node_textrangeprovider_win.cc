@@ -453,17 +453,22 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetEnclosingElement(
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_GETENCLOSINGELEMENT);
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
 
-  AXPositionInstance common_ancestor = start_->LowestCommonAncestor(*end_);
-  AXPlatformNode* node = GetDelegate(common_ancestor.get())
-                             ->GetFromNodeID(common_ancestor->anchor_id());
-  DCHECK(node);
-  while (ui::IsIgnored(node->GetDelegate()->GetData())) {
-    node = static_cast<AXPlatformNodeWin*>(
-        AXPlatformNode::FromNativeViewAccessible(
-            node->GetDelegate()->GetParent()));
-    DCHECK(node);
+  AXNode* common_anchor = start_->LowestCommonAnchor(*end_);
+  DCHECK(common_anchor);
+  if (!common_anchor)
+    return UIA_E_ELEMENTNOTAVAILABLE;
+
+  const AXTreeID tree_id = common_anchor->tree()->GetAXTreeID();
+  const AXNode::AXID node_id = common_anchor->id();
+  AXPlatformNodeDelegate* delegate = GetDelegate(tree_id, node_id);
+  DCHECK(delegate);
+  while (ui::IsIgnored(delegate->GetData())) {
+    AXPlatformNodeWin* parent = static_cast<AXPlatformNodeWin*>(
+        AXPlatformNode::FromNativeViewAccessible(delegate->GetParent()));
+    DCHECK(parent);
+    delegate = parent->GetDelegate();
   }
-  node->GetNativeViewAccessible()->QueryInterface(IID_PPV_ARGS(element));
+  delegate->GetNativeViewAccessible()->QueryInterface(IID_PPV_ARGS(element));
 
   DCHECK(*element);
   return S_OK;
@@ -812,11 +817,15 @@ AXPlatformNodeWin* AXPlatformNodeTextRangeProviderWin::owner() const {
 
 AXPlatformNodeDelegate* AXPlatformNodeTextRangeProviderWin::GetDelegate(
     const AXPositionInstanceType* position) const {
-  AXTreeManager* manager =
-      AXTreeManagerMap::GetInstance().GetManager(position->tree_id());
-  return manager
-             ? manager->GetDelegate(position->tree_id(), position->anchor_id())
-             : owner()->GetDelegate();
+  return GetDelegate(position->tree_id(), position->anchor_id());
+}
+
+AXPlatformNodeDelegate* AXPlatformNodeTextRangeProviderWin::GetDelegate(
+    const AXTreeID tree_id,
+    const AXNode::AXID node_id) const {
+  AXTreeManager* manager = AXTreeManagerMap::GetInstance().GetManager(tree_id);
+  return manager ? manager->GetDelegate(tree_id, node_id)
+                 : owner()->GetDelegate();
 }
 
 AXPlatformNodeTextRangeProviderWin::AXPositionInstance

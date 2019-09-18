@@ -226,7 +226,7 @@ const GURL& PasswordFormManager::GetOrigin() const {
 
 const std::map<base::string16, const PasswordForm*>&
 PasswordFormManager::GetBestMatches() const {
-  return best_matches_;
+  return form_fetcher_->GetBestMatches();
 }
 
 std::vector<const autofill::PasswordForm*>
@@ -280,7 +280,8 @@ void PasswordFormManager::Save() {
     SanitizePossibleUsernames(&pending_credentials_);
     pending_credentials_.date_created = base::Time::Now();
     votes_uploader_.SendVotesOnSave(observed_form_, *parsed_submitted_form_,
-                                    best_matches_, &pending_credentials_);
+                                    form_fetcher_->GetBestMatches(),
+                                    &pending_credentials_);
     SavePendingToStore(false /*update*/);
   } else {
     ProcessUpdate();
@@ -594,8 +595,6 @@ PasswordFormManager::PasswordFormManager(
 
 void PasswordFormManager::OnFetchCompleted() {
   received_stored_credentials_time_ = TimeTicks::Now();
-  best_matches_ = form_fetcher_->GetBestMatches();
-  preferred_match_ = form_fetcher_->GetPreferredMatch();
 
   // Copy out blacklisted matches.
   new_blacklisted_.reset();
@@ -750,10 +749,10 @@ void PasswordFormManager::Fill() {
     return;
 #endif
 
-  SendFillInformationToRenderer(client_, driver_.get(),
-                                *observed_password_form.get(), best_matches_,
-                                form_fetcher_->GetFederatedMatches(),
-                                preferred_match_, metrics_recorder_.get());
+  SendFillInformationToRenderer(
+      client_, driver_.get(), *observed_password_form.get(),
+      form_fetcher_->GetBestMatches(), form_fetcher_->GetFederatedMatches(),
+      form_fetcher_->GetPreferredMatch(), metrics_recorder_.get());
 }
 
 void PasswordFormManager::FillForm(const FormData& observed_form) {
@@ -858,7 +857,7 @@ void PasswordFormManager::CreatePendingCredentials() {
 
   // Calculate the user's action based on existing matches and the submitted
   // form.
-  metrics_recorder_->CalculateUserAction(best_matches_,
+  metrics_recorder_->CalculateUserAction(form_fetcher_->GetBestMatches(),
                                          *parsed_submitted_form_);
 
   // This function might be called multiple times so set variables that are
@@ -870,7 +869,7 @@ void PasswordFormManager::CreatePendingCredentials() {
   // Look for the actually submitted credentials in the list of previously saved
   // credentials that were available to autofilling.
   const PasswordForm* saved_form = password_manager_util::GetMatchForUpdating(
-      *parsed_submitted_form_, best_matches_);
+      *parsed_submitted_form_, form_fetcher_->GetBestMatches());
   if (saved_form) {
     // A similar credential exists in the store already.
     pending_credentials_ = *saved_form;
@@ -978,7 +977,8 @@ void PasswordFormManager::CreatePendingCredentialsForNewCredentials(
 
 void PasswordFormManager::ProcessUpdate() {
   DCHECK_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
-  DCHECK(preferred_match_ || pending_credentials_.IsFederatedCredential());
+  DCHECK(form_fetcher_->GetPreferredMatch() ||
+         pending_credentials_.IsFederatedCredential());
   // If we're doing an Update, we either autofilled correctly and need to
   // update the stats, or the user typed in a new password for autofilled
   // username, or the user selected one of the non-preferred matches,
@@ -1008,16 +1008,17 @@ void PasswordFormManager::ProcessUpdate() {
   }
 
   if (pending_credentials_.times_used == 1) {
-    votes_uploader_.UploadFirstLoginVotes(best_matches_, pending_credentials_,
+    votes_uploader_.UploadFirstLoginVotes(form_fetcher_->GetBestMatches(),
+                                          pending_credentials_,
                                           *parsed_submitted_form_);
   }
 }
 
 void PasswordFormManager::FillHttpAuth() {
   DCHECK(IsHttpAuth());
-  if (!preferred_match_)
+  if (!form_fetcher_->GetPreferredMatch())
     return;
-  client_->AutofillHttpAuth(*preferred_match_, this);
+  client_->AutofillHttpAuth(*form_fetcher_->GetPreferredMatch(), this);
 }
 
 std::unique_ptr<PasswordForm> PasswordFormManager::ParseFormAndMakeLogging(
@@ -1102,7 +1103,7 @@ void PasswordFormManager::CalculateFillingAssistanceMetric(
 
 void PasswordFormManager::SavePendingToStore(bool update) {
   const PasswordForm* saved_form = password_manager_util::GetMatchForUpdating(
-      *parsed_submitted_form_, best_matches_);
+      *parsed_submitted_form_, form_fetcher_->GetBestMatches());
   if ((update || password_overridden_) &&
       !pending_credentials_.IsFederatedCredential()) {
     DCHECK(saved_form);

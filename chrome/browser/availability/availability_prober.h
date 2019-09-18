@@ -217,6 +217,11 @@ class AvailabilityProber
   void OnApplicationStateChange(base::android::ApplicationState new_state);
 #endif
 
+  // This is called whenever the prober goes inactive. This is caused whenever
+  // the probe succeeds, fails and there are no more retries, or the delegate
+  // stops the probing.
+  void OnProbingEnd();
+
   // Must outlive |this|.
   Delegate* delegate_;
 

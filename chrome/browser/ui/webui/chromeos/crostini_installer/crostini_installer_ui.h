@@ -10,7 +10,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "ui/webui/mojo_web_ui_controller.h"
+#include "ui/web_dialogs/web_dialog_ui.h"
 
 namespace chromeos {
 
@@ -18,7 +18,7 @@ class CrostiniInstallerPageHandler;
 
 // The WebUI for chrome://crostini-installer
 class CrostiniInstallerUI
-    : public ui::MojoWebUIController,
+    : public ui::MojoWebDialogUI,
       public chromeos::crostini_installer::mojom::PageHandlerFactory {
  public:
   static bool IsEnabled();

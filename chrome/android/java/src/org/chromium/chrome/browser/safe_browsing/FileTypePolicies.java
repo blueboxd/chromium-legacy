@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.safe_browsing;
 
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 
 /**
  * This class reports UMA values based on files' extensions.
@@ -16,8 +17,11 @@ public final class FileTypePolicies {
      * @return The UMA value for the file.
      */
     public static int umaValueForFile(String path) {
-        return nativeUmaValueForFile(path);
+        return FileTypePoliciesJni.get().umaValueForFile(path);
     }
 
-    private static native int nativeUmaValueForFile(String path);
+    @NativeMethods
+    interface Natives {
+        int umaValueForFile(String path);
+    }
 }

@@ -46,10 +46,10 @@ void FlexLayoutExample::CreateAdditionalControls(int vertical_pos) {
                                          cross_axis_values, 4, &vertical_pos);
 
   CreateMarginsTextFields(base::ASCIIToUTF16("Interior margin"),
-                          interior_margin_, &vertical_pos);
+                          &interior_margin_, &vertical_pos);
 
   CreateMarginsTextFields(base::ASCIIToUTF16("Default margins"),
-                          default_child_margins_, &vertical_pos);
+                          &default_child_margins_, &vertical_pos);
 
   collapse_margins_ =
       CreateCheckbox(base::ASCIIToUTF16("Collapse margins"), &vertical_pos);

@@ -380,6 +380,8 @@ source_set("material_components_ios") {
     "src/components/private/Application/src/MaterialApplication.h",
     "src/components/private/Application/src/UIApplication+AppExtensions.h",
     "src/components/private/Application/src/UIApplication+AppExtensions.m",
+    "src/components/private/Color/src/UIColor+MaterialBlending.h",
+    "src/components/private/Color/src/UIColor+MaterialBlending.m",
     "src/components/private/Color/src/UIColor+MaterialDynamic.h",
     "src/components/private/Color/src/UIColor+MaterialDynamic.m",
     "src/components/private/Icons/icons/ic_arrow_back/src/MaterialIcons+ic_arrow_back.h",

@@ -11,8 +11,8 @@ import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.widget.Button;
 
+import org.chromium.chrome.browser.ui.widget.TintedDrawable;
 import org.chromium.chrome.browser.widget.NumberRollView;
-import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 import org.chromium.chrome.tab_ui.R;
 

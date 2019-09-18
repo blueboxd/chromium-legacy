@@ -18,7 +18,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.ui.widget.ListMenuButton;
 import org.chromium.chrome.browser.ui.widget.ListMenuButton.Item;
-import org.chromium.chrome.browser.widget.TintedDrawable;
+import org.chromium.chrome.browser.ui.widget.TintedDrawable;
 
 import java.util.ArrayList;
 

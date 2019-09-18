@@ -52,6 +52,7 @@ BluetoothInternalsTest.prototype = {
       constructor(handle) {
         super([
           'getAdapter',
+          'getDebugLogsChangeHandler',
         ]);
 
         this.receiver_ = new mojom.BluetoothInternalsHandlerReceiver(this);
@@ -61,6 +62,11 @@ BluetoothInternalsTest.prototype = {
       async getAdapter() {
         this.methodCalled('getAdapter');
         return {adapter: this.adapter.receiver.$.bindNewPipeAndPassRemote()};
+      }
+
+      async getDebugLogsChangeHandler() {
+        this.methodCalled('getDebugLogsChangeHandler');
+        return {handler: null, initialToggleValue: false};
       }
 
       setAdapterForTesting(adapter) {

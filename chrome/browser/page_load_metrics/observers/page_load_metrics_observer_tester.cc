@@ -20,10 +20,15 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/resource_load_info.mojom.h"
 #include "content/public/common/resource_type.h"
+#include "extensions/buildflags/buildflags.h"
 #include "net/base/ip_endpoint.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "url/gurl.h"
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/common/constants.h"
+#endif
 
 namespace page_load_metrics {
 
@@ -52,6 +57,14 @@ class TestPageLoadMetricsEmbedderInterface
 
   bool IsPrerender(content::WebContents* web_contents) override {
     return prerender::PrerenderContents::FromWebContents(web_contents);
+  }
+
+  bool IsExtensionUrl(const GURL& url) override {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    return url.SchemeIs(extensions::kExtensionScheme);
+#else
+    return false;
+#endif
   }
 
  private:

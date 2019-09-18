@@ -28,6 +28,7 @@
 
 #if defined(USE_X11)
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"  // nogncheck
+#include "ui/events/x/events_x_utils.h"                     // nogncheck
 #include "ui/gfx/x/x11.h"                                   // nogncheck
 #elif defined(USE_OZONE)
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"  // nogncheck
@@ -49,6 +50,22 @@ bool X11EventHasNonStandardState(const PlatformEvent& event) {
       LockMask | ControlMask | AnyModifier;
 
   return event && (event->xkey.state & ~kAllStateMask) != 0;
+}
+
+Event::Properties GetKeyEventPropertiesFromXKeyEvent(const XKeyEvent& xev) {
+  using Values = std::vector<uint8_t>;
+  Event::Properties properties;
+
+  // Keyboard group
+  uint8_t group = XkbGroupForCoreState(xev.state);
+  properties.emplace(kPropertyKeyboardGroup, Values{group});
+
+  // IBus-gtk specific flags
+  uint8_t ibus_flags = (xev.state >> kPropertyKeyboardIBusFlagOffset) &
+                       kPropertyKeyboardIBusFlagMask;
+  properties.emplace(kPropertyKeyboardIBusFlag, Values{ibus_flags});
+
+  return properties;
 }
 #endif
 
@@ -890,6 +907,7 @@ KeyEvent::KeyEvent(const PlatformEvent& native_event, int event_flags)
 
 #if defined(USE_X11)
   NormalizeFlags();
+  SetProperties(GetKeyEventPropertiesFromXKeyEvent(native_event->xkey));
 #endif
 #if defined(OS_WIN)
   // Only Windows has native character events.

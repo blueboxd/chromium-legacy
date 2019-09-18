@@ -139,7 +139,7 @@ interface ProducerClient {
 // tracing system. A client that wishes to provide tracing data when requested,
 // should implement ProducerClient for callbacks and pass along.
 interface PerfettoService {
-  ConnectToProducerHost(ProducerClient producer_client,
+  ConnectToProducerHost(pending_remote<ProducerClient> producer_client,
                         ProducerHost& producer_host);
 };
 

@@ -11,7 +11,7 @@
 #include "base/test/task_environment.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
-#include "chrome/browser/chromeos/arc/instance_throttle/arc_throttle_observer.h"
+#include "chrome/browser/chromeos/throttle_observer.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_service_manager.h"
@@ -67,8 +67,10 @@ class ArcInstanceThrottleTest : public testing::Test {
     return enable_cpu_restriction_counter_;
   }
 
-  ArcThrottleObserver* critical_observer() { return &critical_observer_; }
-  ArcThrottleObserver* low_observer() { return &low_observer_; }
+  chromeos::ThrottleObserver* critical_observer() {
+    return &critical_observer_;
+  }
+  chromeos::ThrottleObserver* low_observer() { return &low_observer_; }
   const std::string& last_recorded_observer_name() const {
     return last_recorded_observer_name_;
   }
@@ -102,10 +104,10 @@ class ArcInstanceThrottleTest : public testing::Test {
   ArcInstanceThrottle* arc_instance_throttle_;
   size_t disable_cpu_restriction_counter_;
   size_t enable_cpu_restriction_counter_;
-  ArcThrottleObserver critical_observer_{
-      ArcThrottleObserver::PriorityLevel::CRITICAL, "CriticalObserver"};
-  ArcThrottleObserver low_observer_{ArcThrottleObserver::PriorityLevel::LOW,
-                                    "LowObserver"};
+  chromeos::ThrottleObserver critical_observer_{
+      chromeos::ThrottleObserver::PriorityLevel::CRITICAL, "CriticalObserver"};
+  chromeos::ThrottleObserver low_observer_{
+      chromeos::ThrottleObserver::PriorityLevel::LOW, "LowObserver"};
   std::string last_recorded_observer_name_;
   size_t record_uma_counter_;
 
@@ -120,8 +122,8 @@ TEST_F(ArcInstanceThrottleTest, TestConstructDestruct) {}
 // a change in observers, but skips adjusting throttle if the new level is same
 // as before.
 TEST_F(ArcInstanceThrottleTest, TestOnObserverStateChanged) {
-  std::vector<ArcThrottleObserver*> observers = {critical_observer(),
-                                                 low_observer()};
+  std::vector<chromeos::ThrottleObserver*> observers = {critical_observer(),
+                                                        low_observer()};
   arc_instance_throttle()->SetObserversForTesting(observers);
   EXPECT_EQ(0U, disable_cpu_restriction_counter());
   EXPECT_EQ(0U, enable_cpu_restriction_counter());
@@ -149,8 +151,8 @@ TEST_F(ArcInstanceThrottleTest, TestOnObserverStateChanged) {
 // Tests that ArcInstanceThrottle records the duration that the effective
 // observer is active.
 TEST_F(ArcInstanceThrottleTest, RecordCpuRestrictionDisabledUMA) {
-  std::vector<ArcThrottleObserver*> observers = {critical_observer(),
-                                                 low_observer()};
+  std::vector<chromeos::ThrottleObserver*> observers = {critical_observer(),
+                                                        low_observer()};
   arc_instance_throttle()->SetObserversForTesting(observers);
   EXPECT_EQ(0U, uma_count());
 

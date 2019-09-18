@@ -27,9 +27,9 @@ class ServiceConnectionImpl : public ServiceConnection {
 
  private:
   // ServiceConnection overrides:
-  void ProbeNonRemovableBlockDeviceInfo(
-      mojom::CrosHealthdService::ProbeNonRemovableBlockDeviceInfoCallback
-          callback) override;
+  void ProbeTelemetryInfo(
+      const std::vector<mojom::ProbeCategoryEnum>& categories_to_test,
+      mojom::CrosHealthdService::ProbeTelemetryInfoCallback callback) override;
 
   // Binds the top level interface |cros_healthd_service_| to an
   // implementation in the cros_healthd daemon, if it is not already bound. The
@@ -50,12 +50,13 @@ class ServiceConnectionImpl : public ServiceConnection {
   DISALLOW_COPY_AND_ASSIGN(ServiceConnectionImpl);
 };
 
-void ServiceConnectionImpl::ProbeNonRemovableBlockDeviceInfo(
-    mojom::CrosHealthdService::ProbeNonRemovableBlockDeviceInfoCallback
-        callback) {
+void ServiceConnectionImpl::ProbeTelemetryInfo(
+    const std::vector<mojom::ProbeCategoryEnum>& categories_to_test,
+    mojom::CrosHealthdService::ProbeTelemetryInfoCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BindCrosHealthdServiceIfNeeded();
-  cros_healthd_service_->ProbeNonRemovableBlockDeviceInfo(std::move(callback));
+  cros_healthd_service_->ProbeTelemetryInfo(categories_to_test,
+                                            std::move(callback));
 }
 
 void ServiceConnectionImpl::BindCrosHealthdServiceIfNeeded() {

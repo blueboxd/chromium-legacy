@@ -28,6 +28,7 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_config.h"
 #include "chromeos/dbus/pipe_reader.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -283,7 +284,17 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
         debugd::kDebugdInterface,
         debugd::kSystraceStart);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString("all");  // TODO(sleffler) parameterize category list
+    if (trace_config.systrace_events().empty()) {
+      writer.AppendString("all");  // TODO(sleffler) parameterize category list
+    } else {
+      std::string events;
+      for (const std::string event : trace_config.systrace_events()) {
+        if (!events.empty())
+          events += " ";
+        events += event;
+      }
+      writer.AppendString(events);
+    }
 
     DVLOG(1) << "Requesting a systrace start";
     debugdaemon_proxy_->CallMethod(

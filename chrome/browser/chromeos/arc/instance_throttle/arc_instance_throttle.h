@@ -14,7 +14,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/instance_throttle/arc_active_window_throttle_observer.h"
 #include "chrome/browser/chromeos/arc/instance_throttle/arc_boot_phase_throttle_observer.h"
-#include "chrome/browser/chromeos/arc/instance_throttle/arc_throttle_observer.h"
+#include "chrome/browser/chromeos/throttle_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
@@ -60,24 +60,23 @@ class ArcInstanceThrottle : public KeyedService {
   // Functions for testing
   void NotifyObserverStateChangedForTesting();
   void SetObserversForTesting(
-      const std::vector<ArcThrottleObserver*>& observers);
+      const std::vector<chromeos::ThrottleObserver*>& observers);
 
   void set_delegate_for_testing(std::unique_ptr<Delegate> delegate) {
     delegate_ = std::move(delegate);
   }
 
  private:
-  std::vector<ArcThrottleObserver*> GetAllObservers();
+  std::vector<chromeos::ThrottleObserver*> GetAllObservers();
   void OnObserverStateChanged();
-  void ThrottleInstance(ArcThrottleObserver::PriorityLevel level);
+  void ThrottleInstance(chromeos::ThrottleObserver::PriorityLevel level);
 
-  ArcBridgeService* arc_bridge_service_;
   content::BrowserContext* context_;
-  std::vector<ArcThrottleObserver*> observers_for_testing_;
+  std::vector<chromeos::ThrottleObserver*> observers_for_testing_;
   std::unique_ptr<Delegate> delegate_;
-  ArcThrottleObserver::PriorityLevel level_{
-      ArcThrottleObserver::PriorityLevel::UNKNOWN};
-  ArcThrottleObserver* last_effective_observer_ = nullptr;
+  chromeos::ThrottleObserver::PriorityLevel level_{
+      chromeos::ThrottleObserver::PriorityLevel::UNKNOWN};
+  chromeos::ThrottleObserver* last_effective_observer_ = nullptr;
   base::TimeTicks last_throttle_transition_;
 
   // Throttle Observers

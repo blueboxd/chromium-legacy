@@ -109,13 +109,19 @@ void OAuthMultiloginResult::TryParseCookiesFromValue(base::Value* json_value) {
       // there must be something wrong with the received cookie.
       cookie_domain = cookie_host;
     }
+    net::CookieSameSite samesite_mode = net::CookieSameSite::UNSPECIFIED;
+    net::CookieSameSiteString samesite_string =
+        net::CookieSameSiteString::kUnspecified;
+    if (same_site) {
+      samesite_mode = net::StringToCookieSameSite(*same_site, &samesite_string);
+    }
+    net::RecordCookieSameSiteAttributeValueHistogram(samesite_string);
     net::CanonicalCookie new_cookie(
         name ? *name : "", value ? *value : "", cookie_domain,
         path ? *path : "", /*creation=*/base::Time::Now(),
         base::Time::Now() + before_expiration,
         /*last_access=*/base::Time::Now(), is_secure.value_or(true),
-        is_http_only.value_or(true),
-        net::StringToCookieSameSite(same_site ? *same_site : ""),
+        is_http_only.value_or(true), samesite_mode,
         net::StringToCookiePriority(priority ? *priority : "medium"));
     if (new_cookie.IsCanonical()) {
       cookies_.push_back(std::move(new_cookie));

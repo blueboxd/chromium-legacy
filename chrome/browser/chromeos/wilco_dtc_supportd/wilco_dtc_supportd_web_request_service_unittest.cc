@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
@@ -53,10 +53,10 @@ class WilcoDtcSupportdWebRequestServiceTest : public testing::Test {
         response_body = "";
         return;
       }
-      std::unique_ptr<base::SharedMemory> shared_memory;
+      base::ReadOnlySharedMemoryMapping shared_memory;
       response_body = std::string(GetStringPieceFromMojoHandle(
           std::move(response_body_handle), &shared_memory));
-      if (!shared_memory) {
+      if (!shared_memory.IsValid()) {
         response_body = "";
         return;
       }

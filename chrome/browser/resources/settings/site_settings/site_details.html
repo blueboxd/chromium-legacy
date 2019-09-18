@@ -207,7 +207,7 @@
           icon="settings:payment-handler" id="paymentHandler"
           label="$i18n{siteSettingsPaymentHandler}">
       </site-details-permission>
-      <template is="dom-if" if="[[enableBluetoothScanningContentSetting_]]">
+      <template is="dom-if" if="[[enableExperimentalWebPlatformFeatures_]]">
         <site-details-permission
             category="{{ContentSettingsTypes.BLUETOOTH_SCANNING}}"
             icon="settings:bluetooth-scanning" id="bluetoothScanning"

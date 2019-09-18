@@ -146,6 +146,7 @@ android_library("java") {
     "//chrome/android/features/start_surface/internal:java",
     "//chrome/android/public/profiles:java",
     "//chrome/app:java_strings_grd",
+    "//chrome/browser/ui/android/widget:java",
     "//chrome/lib/lifecycle/public/android:java",
     "//chrome/lib/util/public/android:java",
     "//components/embedder_support/android:web_contents_delegate_java",

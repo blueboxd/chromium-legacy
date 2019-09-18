@@ -36,6 +36,7 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
@@ -235,7 +236,9 @@ public class ShortcutHelper {
                 // download.
                 WebappRegistry.getInstance().register(id, storage -> {
                     storage.updateFromShortcutIntent(resultIntent);
-                    if (callbackPointer != 0) nativeOnWebappDataStored(callbackPointer);
+                    if (callbackPointer != 0) {
+                        ShortcutHelperJni.get().onWebappDataStored(callbackPointer);
+                    }
                 });
                 if (shouldShowToastWhenAddingShortcut()) {
                     showAddedToHomescreenToast(userTitle);
@@ -783,5 +786,8 @@ public class ShortcutHelper {
         }
     }
 
-    private static native void nativeOnWebappDataStored(long callbackPointer);
+    @NativeMethods
+    interface Natives {
+        void onWebappDataStored(long callbackPointer);
+    }
 }

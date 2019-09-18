@@ -52,13 +52,10 @@ TypeConverter<NFCPushOptionsPtr, const blink::NFCPushOptions*>::Convert(
     const blink::NFCPushOptions* pushOptions) {
   // https://w3c.github.io/web-nfc/#the-nfcpushoptions-dictionary
   // Default values for NFCPushOptions dictionary are:
-  // target = 'any', timeout = Infinity, ignoreRead = true,
-  // compatibility = "nfc-forum"
+  // target = 'any', timeout = Infinity, ignoreRead = true
   NFCPushOptionsPtr pushOptionsPtr = NFCPushOptions::New();
   pushOptionsPtr->target = blink::StringToNFCPushTarget(pushOptions->target());
   pushOptionsPtr->ignore_read = pushOptions->ignoreRead();
-  pushOptionsPtr->compatibility =
-      blink::StringToNDEFCompatibility(pushOptions->compatibility());
 
   if (pushOptions->hasTimeout())
     pushOptionsPtr->timeout = pushOptions->timeout();
@@ -73,12 +70,10 @@ TypeConverter<NFCScanOptionsPtr, const blink::NFCScanOptions*>::Convert(
     const blink::NFCScanOptions* scanOptions) {
   // https://w3c.github.io/web-nfc/#dom-nfcscanoptions
   // Default values for NFCScanOptions dictionary are:
-  // url = "", recordType = null, mediaType = "", compatibility = "nfc-forum"
+  // url = "", recordType = null, mediaType = ""
   NFCScanOptionsPtr scanOptionsPtr = NFCScanOptions::New();
   scanOptionsPtr->url = scanOptions->url();
   scanOptionsPtr->media_type = scanOptions->mediaType();
-  scanOptionsPtr->compatibility =
-      blink::StringToNDEFCompatibility(scanOptions->compatibility());
 
   if (scanOptions->hasRecordType()) {
     scanOptionsPtr->record_filter = NDEFRecordTypeFilter::New();

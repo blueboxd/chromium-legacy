@@ -218,7 +218,8 @@ class CreditCardAccessManagerTest : public testing::Test {
   // Returns true if full card request was sent from CVC auth.
   bool GetRealPanForCVCAuth(AutofillClient::PaymentsRpcResult result,
                             const std::string& real_pan,
-                            bool fido_opt_in = false) {
+                            bool fido_opt_in = false,
+                            bool follow_with_fido_auth = false) {
     payments::FullCardRequest* full_card_request =
         GetCVCAuthenticator()->full_card_request_.get();
 
@@ -227,8 +228,12 @@ class CreditCardAccessManagerTest : public testing::Test {
 
     payments::PaymentsClient::UnmaskResponseDetails response;
 #if !defined(OS_IOS)
+    response.card_authorization_token = "dummy_card_authorization_token";
     if (fido_opt_in) {
       response.fido_creation_options = GetTestCreationOptions();
+    }
+    if (follow_with_fido_auth) {
+      response.fido_request_options = GetTestRequestOptions();
     }
 #endif
     full_card_request->OnDidGetRealPan(result,
@@ -296,6 +301,11 @@ class CreditCardAccessManagerTest : public testing::Test {
       response.fido_request_options = GetTestRequestOptions();
     }
     GetFIDOAuthenticator()->OnDidGetOptChangeResult(result, response);
+  }
+
+  // Mocks user response for the offer dialog.
+  void AcceptWebauthnOfferDialog(bool did_accept) {
+    GetFIDOAuthenticator()->OnWebauthnOfferDialogUserResponse(did_accept);
   }
 
   TestCreditCardFIDOAuthenticator* GetFIDOAuthenticator() {
@@ -587,14 +597,10 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardFIDOTimeoutCVCFallback) {
   EXPECT_TRUE(accessor_->did_succeed());
   EXPECT_EQ(ASCIIToUTF16(kTestNumber), accessor_->number());
 }
-#endif
 
-// TODO(crbug.com/991037): Add tests for desktop separately after the
-// WebauthnOfferDelegate functions are implemented since the flows are different
-// on desktop and Android.
 #if defined(OS_ANDROID)
 // Ensures that the WebAuthn enrollment prompt is invoked after user opts in.
-TEST_F(CreditCardAccessManagerTest, FIDOEnrollmentSuccess) {
+TEST_F(CreditCardAccessManagerTest, FIDOEnrollmentSuccess_Android) {
   CreateServerCard(kTestGUID, kTestNumber);
   CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
   GetFIDOAuthenticator()->SetUserVerifiable(true);
@@ -663,7 +669,117 @@ TEST_F(CreditCardAccessManagerTest, FIDOEnrollmentServerFailure) {
 
   EXPECT_FALSE(GetFIDOAuthenticator()->IsUserOptedIn());
 }
-#endif
+
+// Ensures that use of new card invokes authorization flow when user is
+// opted-in.
+TEST_F(CreditCardAccessManagerTest, FIDONewCardAuthorization) {
+  CreateServerCard(kTestGUID, kTestNumber);
+  CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
+  // Opt the user in, but don't include the card above.
+  std::string other_server_id = "00000000-0000-0000-0000-000000000034";
+  payments_client_->AddFidoEligibleCard(other_server_id, kCredentialId,
+                                        kGooglePaymentsRpid);
+  GetFIDOAuthenticator()->SetUserVerifiable(true);
+  SetUserOptedIn(true);
+
+  credit_card_access_manager_->PrepareToFetchCreditCard();
+  WaitForCallbacks();
+
+  credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
+  InvokeUnmaskDetailsTimeout();
+  WaitForCallbacks();
+
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber,
+                                   /*fido_opt_in=*/false,
+                                   /*follow_with_fido_auth=*/true));
+
+  // Mock user response and OptChange payments call.
+  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::FOLLOWUP_AFTER_CVC_AUTH_FLOW,
+            GetFIDOAuthenticator()->current_flow());
+  TestCreditCardFIDOAuthenticator::GetAssertion(GetFIDOAuthenticator(),
+                                                /*did_succeed=*/true);
+  OptChange(AutofillClient::SUCCESS, true);
+
+  EXPECT_TRUE(GetFIDOAuthenticator()->IsUserOptedIn());
+}
+#else  // defined(OS_ANDROID)
+// Ensures that the WebAuthn enrollment prompt is invoked after user opts in. In
+// this case, the user is not yet enrolled server-side, and thus receives
+// |creation_options|.
+TEST_F(CreditCardAccessManagerTest,
+       FIDOEnrollmentSuccess_CreationOptions_Desktop) {
+  CreateServerCard(kTestGUID, kTestNumber);
+  CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
+  GetFIDOAuthenticator()->SetUserVerifiable(true);
+  SetUserOptedIn(false);
+  payments_client_->AllowFidoRegistration(true);
+
+  credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
+  InvokeUnmaskDetailsTimeout();
+  WaitForCallbacks();
+
+  // Mock user and payments response.
+  AcceptWebauthnOfferDialog(/*did_accept=*/true);
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber,
+                                   /*fido_opt_in=*/false));
+  WaitForCallbacks();
+
+  OptChange(AutofillClient::SUCCESS, /*user_is_opted_in=*/false,
+            /*include_creation_options=*/true);
+
+  // Mock user response and OptChange payments call.
+  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::OPT_IN_WITH_CHALLENGE_FLOW,
+            GetFIDOAuthenticator()->current_flow());
+  TestCreditCardFIDOAuthenticator::MakeCredential(GetFIDOAuthenticator(),
+                                                  /*did_succeed=*/true);
+  OptChange(AutofillClient::SUCCESS, /*user_is_opted_in=*/true);
+
+  EXPECT_EQ(kGooglePaymentsRpid, GetFIDOAuthenticator()->GetRelyingPartyId());
+  EXPECT_EQ(kTestChallenge,
+            BytesToBase64(GetFIDOAuthenticator()->GetChallenge()));
+  EXPECT_TRUE(GetFIDOAuthenticator()->IsUserOptedIn());
+}
+
+// Ensures that the WebAuthn enrollment prompt is invoked after user opts in. In
+// this case, the user is already enrolled server-side, and thus receives
+// |request_options|.
+TEST_F(CreditCardAccessManagerTest,
+       FIDOEnrollmentSuccess_RequestOptions_Desktop) {
+  CreateServerCard(kTestGUID, kTestNumber);
+  CreditCard* card = credit_card_access_manager_->GetCreditCard(kTestGUID);
+  GetFIDOAuthenticator()->SetUserVerifiable(true);
+  SetUserOptedIn(false);
+  payments_client_->AllowFidoRegistration(true);
+
+  credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
+  InvokeUnmaskDetailsTimeout();
+  WaitForCallbacks();
+
+  // Mock user and payments response.
+  AcceptWebauthnOfferDialog(/*did_accept=*/true);
+  EXPECT_TRUE(GetRealPanForCVCAuth(AutofillClient::SUCCESS, kTestNumber,
+                                   /*fido_opt_in=*/false));
+  WaitForCallbacks();
+
+  OptChange(AutofillClient::SUCCESS, /*user_is_opted_in=*/false,
+            /*include_creation_options=*/false,
+            /*include_request_options=*/true);
+
+  // Mock user response and OptChange payments call.
+  EXPECT_EQ(CreditCardFIDOAuthenticator::Flow::OPT_IN_WITH_CHALLENGE_FLOW,
+            GetFIDOAuthenticator()->current_flow());
+  TestCreditCardFIDOAuthenticator::GetAssertion(GetFIDOAuthenticator(),
+                                                /*did_succeed=*/true);
+  OptChange(AutofillClient::SUCCESS, /*user_is_opted_in=*/true);
+
+  EXPECT_EQ(kGooglePaymentsRpid, GetFIDOAuthenticator()->GetRelyingPartyId());
+  EXPECT_EQ(kTestChallenge,
+            BytesToBase64(GetFIDOAuthenticator()->GetChallenge()));
+  EXPECT_TRUE(GetFIDOAuthenticator()->IsUserOptedIn());
+}
+
+#endif  // defined(OS_ANDROID)
+#endif  // !defined(OS_IOS)
 
 // Ensures that |is_authentication_in_progress_| is set correctly.
 TEST_F(CreditCardAccessManagerTest, AuthenticationInProgress) {

@@ -147,12 +147,6 @@ class CONTENT_EXPORT BackForwardCache {
   DISALLOW_COPY_AND_ASSIGN(BackForwardCache);
 };
 
-// TODO(crbug.com/991082): We need to implement frozen frame enumeration
-// before we can properly support pages with ServiceWorker in back-forward
-// cache. This flag allows to bypass this restriction for local testing.
-// Remove after ServiceWorker support is implemented.
-CONTENT_EXPORT extern const base::Feature kBackForwardCacheWithServiceWorker;
-
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_FRAME_HOST_BACK_FORWARD_CACHE_H_

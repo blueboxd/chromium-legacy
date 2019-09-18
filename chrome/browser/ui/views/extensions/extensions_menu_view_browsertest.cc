@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/hover_button_controller.h"
+#include "chrome/browser/ui/views/layout/animating_layout_manager.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/chrome_paths.h"
@@ -28,6 +29,33 @@
 #include "net/dns/mock_host_resolver.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/window/dialog_client_view.h"
+
+// Helper to wait until the hover card widget is visible.
+class AnimatingLayoutWaiter : public AnimatingLayoutManager::Observer {
+ public:
+  explicit AnimatingLayoutWaiter(AnimatingLayoutManager* animating_layout)
+      : animating_layout_(animating_layout) {
+    animating_layout_->AddObserver(this);
+  }
+  ~AnimatingLayoutWaiter() override { animating_layout_->RemoveObserver(this); }
+
+  void Wait() {
+    if (!animating_layout_->is_animating())
+      return;
+    run_loop_.Run();
+  }
+
+  // AnimatingLayoutManager overrides:
+  void OnLayoutIsAnimatingChanged(AnimatingLayoutManager* source,
+                                  bool is_animating) override {
+    if (!is_animating)
+      run_loop_.Quit();
+  }
+
+ private:
+  AnimatingLayoutManager* const animating_layout_;
+  base::RunLoop run_loop_;
+};
 
 class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
  protected:
@@ -91,6 +119,12 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
         ->primary_action_button_for_testing()
         ->button_controller()
         ->OnMouseReleased(click_event);
+    AnimatingLayoutWaiter waiter(
+        BrowserView::GetBrowserViewForBrowser(browser())
+            ->toolbar()
+            ->extensions_container()
+            ->animating_layout_for_testing());
+    waiter.Wait();
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;

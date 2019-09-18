@@ -13,11 +13,14 @@
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_promise_adapter.h"
 #include "media/base/content_decryption_module.h"
+#include "media/fuchsia/cdm/fuchsia_cdm_context.h"
 
 namespace media {
 class FuchsiaDecryptor;
 
-class FuchsiaCdm : public ContentDecryptionModule, public CdmContext {
+class FuchsiaCdm : public ContentDecryptionModule,
+                   public CdmContext,
+                   public FuchsiaCdmContext {
  public:
   struct SessionCallbacks {
     SessionCallbacks();
@@ -62,6 +65,11 @@ class FuchsiaCdm : public ContentDecryptionModule, public CdmContext {
       EventCB event_cb) override;
   Decryptor* GetDecryptor() override;
   int GetCdmId() const override;
+  FuchsiaCdmContext* GetFuchsiaCdmContext() override;
+
+  // FuchsiaCdmContext implementation:
+  std::unique_ptr<FuchsiaSecureStreamDecryptor> CreateSecureDecryptor(
+      FuchsiaSecureStreamDecryptor::Client* client) override;
 
  private:
   class CdmSession;

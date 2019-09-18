@@ -168,8 +168,10 @@ struct WebRequestInfo {
 
   // The Declarative Net Request action associated with this request. Mutable
   // since this is lazily computed. Cached to avoid redundant computations.
-  mutable base::Optional<declarative_net_request::RulesetManager::Action>
-      dnr_action;
+  // Valid when non-empty. In case no action is taken, populated with
+  // Action::Type::NONE.
+  mutable std::vector<declarative_net_request::RulesetManager::Action>
+      dnr_actions;
 
   const bool is_service_worker_script;
 

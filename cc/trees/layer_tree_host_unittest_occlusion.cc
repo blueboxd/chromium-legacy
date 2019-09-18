@@ -148,10 +148,10 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnMask
     make_surface_bigger->SetIsDrawable(true);
     child_->AddChild(make_surface_bigger);
 
-    scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client_);
-    mask->SetBounds(gfx::Size(30, 40));
-    mask->SetIsDrawable(true);
-    child_->SetMaskLayer(mask);
+    mask_ = PictureLayer::Create(&client_);
+    mask_->SetBounds(gfx::Size(30, 40));
+    mask_->SetIsDrawable(true);
+    child_->SetMaskLayer(mask_);
 
     scoped_refptr<Layer> child2 = Layer::Create();
     child2->SetBounds(gfx::Size(10, 12));
@@ -170,28 +170,42 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnMask
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     LayerImpl* root = impl->active_tree()->root_layer_for_testing();
     LayerImpl* child = impl->active_tree()->LayerById(child_->id());
-    RenderSurfaceImpl* surface = GetRenderSurface(child);
-    LayerImpl* mask = surface->MaskLayer();
+    RenderSurfaceImpl* child_surface = GetRenderSurface(child);
+    LayerImpl* mask = impl->active_tree()->LayerById(mask_->id());
+    RenderSurfaceImpl* mask_surface = GetRenderSurface(mask);
 
     // Verify the draw properties are valid.
     EXPECT_TRUE(root->contributes_to_drawn_render_surface());
     EXPECT_TRUE(child->contributes_to_drawn_render_surface());
-    EXPECT_TRUE(GetRenderSurface(child));
-    EXPECT_EQ(GetRenderSurface(child), child->render_target());
+    EXPECT_TRUE(mask->contributes_to_drawn_render_surface());
+    EXPECT_TRUE(child_surface);
+    EXPECT_EQ(child_surface, child->render_target());
 
-    gfx::Transform transform = surface->draw_transform();
+    gfx::Transform transform = child_surface->draw_transform();
     transform.PreconcatTransform(child->DrawTransform());
-
     EXPECT_OCCLUSION_EQ(
         Occlusion(transform, SimpleEnclosedRegion(),
                   SimpleEnclosedRegion(gfx::Rect(13, 9, 10, 11))),
-        mask->draw_properties().occlusion_in_content_space);
+        child_surface->occlusion_in_content_space());
+
+    // Mask layer has its own transform and render surface in layer tree mode.
+    EXPECT_NE(child_surface, mask_surface);
+    EXPECT_OCCLUSION_EQ(
+        Occlusion(transform, SimpleEnclosedRegion(),
+                  SimpleEnclosedRegion(gfx::Rect(13, 9, 10, 11))),
+        mask_surface->occlusion_in_content_space());
+
+    EXPECT_OCCLUSION_EQ(Occlusion(gfx::Transform(),
+                                  SimpleEnclosedRegion(gfx::Rect(3, 4, 10, 10)),
+                                  SimpleEnclosedRegion()),
+                        mask->draw_properties().occlusion_in_content_space);
     EndTest();
   }
 
  private:
   FakeContentLayerClient client_;
   scoped_refptr<Layer> child_;
+  scoped_refptr<PictureLayer> mask_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostOcclusionTestDrawPropertiesOnMask);
@@ -208,21 +222,21 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnScaledMask
     gfx::Transform scale;
     scale.Scale(2, 2);
 
-    child_ = Layer::Create();
-    child_->SetBounds(gfx::Size(30, 40));
-    child_->SetTransform(scale);
-    root->AddChild(child_);
+    scoped_refptr<Layer> child = Layer::Create();
+    child->SetBounds(gfx::Size(30, 40));
+    child->SetTransform(scale);
+    root->AddChild(child);
 
     scoped_refptr<Layer> grand_child = Layer::Create();
     grand_child->SetBounds(gfx::Size(100, 100));
     grand_child->SetPosition(gfx::PointF(-10.f, -15.f));
     grand_child->SetIsDrawable(true);
-    child_->AddChild(grand_child);
+    child->AddChild(grand_child);
 
-    scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client_);
-    mask->SetBounds(gfx::Size(30, 40));
-    mask->SetIsDrawable(true);
-    child_->SetMaskLayer(mask);
+    mask_ = PictureLayer::Create(&client_);
+    mask_->SetBounds(gfx::Size(30, 40));
+    mask_->SetIsDrawable(true);
+    child->SetMaskLayer(mask_);
 
     scoped_refptr<Layer> child2 = Layer::Create();
     child2->SetBounds(gfx::Size(10, 11));
@@ -239,22 +253,21 @@ class LayerTreeHostOcclusionTestDrawPropertiesOnScaledMask
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    LayerImpl* child = impl->active_tree()->LayerById(child_->id());
-    LayerImpl* mask = GetRenderSurface(child)->MaskLayer();
+    LayerImpl* mask = impl->active_tree()->LayerById(mask_->id());
 
     gfx::Transform scale;
     scale.Scale(2, 2);
 
     EXPECT_OCCLUSION_EQ(
-        Occlusion(scale, SimpleEnclosedRegion(),
-                  SimpleEnclosedRegion(gfx::Rect(13, 15, 10, 11))),
+        Occlusion(scale, SimpleEnclosedRegion(gfx::Rect(13, 15, 10, 11)),
+                  SimpleEnclosedRegion()),
         mask->draw_properties().occlusion_in_content_space);
     EndTest();
   }
 
  private:
   FakeContentLayerClient client_;
-  scoped_refptr<Layer> child_;
+  scoped_refptr<PictureLayer> mask_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(

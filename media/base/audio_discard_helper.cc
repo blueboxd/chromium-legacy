@@ -178,8 +178,10 @@ bool AudioDiscardHelper::ProcessBuffers(const DecoderBuffer& encoded_buffer,
     // If everything would be discarded, indicate a new buffer is required.
     if (frames_to_discard == decoded_frames) {
       // The buffer should not have been marked with end discard if the front
-      // discard removes everything.
-      DCHECK(current_discard_padding.second.is_zero());
+      // discard removes everything, though incorrect or imprecise duration
+      // metadata, combined with various trimming operations, might still have
+      // end discard marked here. For simplicity, we do not carry over any such
+      // end discard for handling later.
       return false;
     }
 

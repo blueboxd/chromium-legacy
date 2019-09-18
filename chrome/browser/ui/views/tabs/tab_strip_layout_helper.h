@@ -208,7 +208,7 @@ class TabStripLayoutHelper {
   // When in tab closing mode, if we want the next tab to the right to end up
   // under the cursor, each tab needs to stay the same size. When defined,
   // this specifies that size.
-  base::Optional<TabSizer> tab_width_override_;
+  base::Optional<TabWidthOverride> tab_width_override_;
 
   // When in tab closing mode, if we want the next tab to the left to end up
   // under the cursor, the overall space taken by tabs needs to stay the same.

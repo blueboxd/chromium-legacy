@@ -2001,30 +2001,54 @@ void RenderTextHarfBuzz::ShapeRuns(
     }
   }
 
-  std::string preferred_fallback_family;
+  // Keep a set of fonts already tried for shaping runs.
+  std::set<Font, CaseInsensitiveCompare> fallback_fonts_already_tried;
+  fallback_fonts_already_tried.insert(primary_font);
 
-  Font fallback_font(primary_font);
-  bool fallback_found;
-  {
-    SCOPED_UMA_HISTOGRAM_LONG_TIMER("RenderTextHarfBuzz.GetFallbackFontTime");
-    TRACE_EVENT1("ui", "RenderTextHarfBuzz::GetFallbackFont", "script",
-                 TRACE_STR_COPY(uscript_getShortName(font_params.script)));
-    const base::StringPiece16 run_text(&text[runs.front()->range.start()],
-                                       runs.front()->range.length());
-    fallback_found =
-        GetFallbackFont(primary_font, locale_, run_text, &fallback_font);
+  // Find fallback fonts for the remaining runs using a worklist algorithm. Try
+  // to shape the first run by using GetFallbackFont(...) and then try shaping
+  // other runs with the same font. If the first font can't be shaped, remove it
+  // and continue with the remaining runs until the worklist is empty. The
+  // fallback font returned by GetFallbackFont(...) depends on the text of the
+  // run and the results may differ between runs.
+  std::vector<internal::TextRunHarfBuzz*> remaining_unshaped_runs;
+  while (!runs.empty()) {
+    Font fallback_font(primary_font);
+    bool fallback_found;
+    internal::TextRunHarfBuzz* current_run = *runs.begin();
+    {
+      SCOPED_UMA_HISTOGRAM_LONG_TIMER("RenderTextHarfBuzz.GetFallbackFontTime");
+      TRACE_EVENT1("ui", "RenderTextHarfBuzz::GetFallbackFont", "script",
+                   TRACE_STR_COPY(uscript_getShortName(font_params.script)));
+      const base::StringPiece16 run_text(&text[current_run->range.start()],
+                                         current_run->range.length());
+      fallback_found =
+          GetFallbackFont(primary_font, locale_, run_text, &fallback_font);
+    }
+
+    if (fallback_found) {
+      const bool fallback_font_is_untried =
+          fallback_fonts_already_tried.insert(fallback_font).second;
+      if (fallback_font_is_untried) {
+        internal::TextRunHarfBuzz::FontParams test_font_params = font_params;
+        if (test_font_params.SetFontAndRenderParams(
+                fallback_font, fallback_font.GetFontRenderParams())) {
+          ShapeRunsWithFont(text, test_font_params, &runs);
+        }
+      }
+    }
+
+    // Remove the first run if not fully shaped with its associated fallback
+    // font.
+    if (!runs.empty() && runs[0] == current_run) {
+      remaining_unshaped_runs.push_back(current_run);
+      runs.erase(runs.begin());
+    }
   }
-  if (fallback_found) {
-    preferred_fallback_family = fallback_font.GetFontName();
-    internal::TextRunHarfBuzz::FontParams test_font_params = font_params;
-    if (test_font_params.SetFontAndRenderParams(
-            fallback_font, fallback_font.GetFontRenderParams())) {
-      ShapeRunsWithFont(text, test_font_params, &runs);
-    }
-    if (runs.empty()) {
-      RecordShapeRunsFallback(ShapeRunFallback::FALLBACK);
-      return;
-    }
+  runs.swap(remaining_unshaped_runs);
+  if (runs.empty()) {
+    RecordShapeRunsFallback(ShapeRunFallback::FALLBACK);
+    return;
   }
 
   std::vector<Font> fallback_font_list;
@@ -2035,10 +2059,10 @@ void RenderTextHarfBuzz::ShapeRuns(
     fallback_font_list = GetFallbackFonts(primary_font);
 
 #if defined(OS_WIN)
-    // Append fonts in the fallback list of the preferred fallback font.
+    // Append fonts in the fallback list of the fallback fonts.
     // TODO(tapted): Investigate whether there's a case that benefits from this
     // on Mac.
-    if (!preferred_fallback_family.empty()) {
+    for (const auto& fallback_font : fallback_fonts_already_tried) {
       std::vector<Font> fallback_fonts = GetFallbackFonts(fallback_font);
       fallback_font_list.insert(fallback_font_list.end(),
                                 fallback_fonts.begin(), fallback_fonts.end());
@@ -2049,10 +2073,9 @@ void RenderTextHarfBuzz::ShapeRuns(
     // http://crbug.com/467459. On some Windows configurations the default font
     // could be a raster font like System, which would not give us a reasonable
     // fallback font list.
-    if (!base::LowerCaseEqualsASCII(primary_font.GetFontName(), "segoe ui") &&
-        !base::LowerCaseEqualsASCII(preferred_fallback_family, "segoe ui")) {
-      std::vector<Font> default_fallback_families =
-          GetFallbackFonts(Font("Segoe UI", 13));
+    Font segoe("Segoe UI", 13);
+    if (!fallback_fonts_already_tried.count(segoe)) {
+      std::vector<Font> default_fallback_families = GetFallbackFonts(segoe);
       fallback_font_list.insert(fallback_font_list.end(),
                                 default_fallback_families.begin(),
                                 default_fallback_families.end());
@@ -2065,18 +2088,15 @@ void RenderTextHarfBuzz::ShapeRuns(
       "RenderTextHarfBuzz.ShapeRunsWithFallbackFontsTime");
   TRACE_EVENT1("ui", "RenderTextHarfBuzz::ShapeRunsWithFallbackFonts",
                "fonts_count", fallback_font_list.size());
-  std::set<Font, CaseInsensitiveCompare> fallback_fonts;
 
   // Try shaping with the fallback fonts.
   for (const auto& font : fallback_font_list) {
     std::string font_name = font.GetFontName();
 
-    if (font_name == primary_font.GetFontName() ||
-        font_name == preferred_fallback_family || fallback_fonts.count(font)) {
+    const bool fallback_font_is_untried =
+        fallback_fonts_already_tried.insert(font).second;
+    if (!fallback_font_is_untried)
       continue;
-    }
-
-    fallback_fonts.insert(font);
 
     FontRenderParamsQuery query;
     query.families.push_back(font_name);

@@ -61,6 +61,9 @@ namespace chrome {
 // relevant to user privacy concerns is selected.
 TabAlertState GetTabAlertStateForContents(content::WebContents* contents);
 
+// Returns a localized string describing the |alert_state|.
+base::string16 GetTabAlertStateText(const TabAlertState alert_state);
+
 // Returns true if audio mute can be activated/deactivated for the given
 // |contents|.
 bool CanToggleAudioMute(content::WebContents* contents);

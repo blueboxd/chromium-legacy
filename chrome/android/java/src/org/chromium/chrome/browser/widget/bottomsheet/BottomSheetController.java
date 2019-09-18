@@ -11,7 +11,6 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserver;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager.OverlayPanelManagerObserver;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
@@ -64,9 +63,6 @@ public class BottomSheetController implements Destroyable {
     /** The manager for overlay panels to attach listeners to. */
     private OverlayPanelManager mOverlayPanelManager;
 
-    /** Whether the bottom sheet should be suppressed when Contextual Search is showing. */
-    private boolean mSuppressSheetForContextualSearch;
-
     /** A means for getting the activity's current tab and observing change events. */
     private ActivityTabProvider mTabProvider;
 
@@ -81,18 +77,14 @@ public class BottomSheetController implements Destroyable {
      * @param scrim The scrim that shows when the bottom sheet is opened.
      * @param bottomSheet The bottom sheet that this class will be controlling.
      * @param overlayManager The manager for overlay panels to attach listeners to.
-     * @param suppressSheetForContextualSearch Whether the bottom sheet should be suppressed when
-     *                                         Contextual Search is showing.
      */
     public BottomSheetController(final Activity activity,
             final ActivityLifecycleDispatcher lifecycleDispatcher,
             final ActivityTabProvider activityTabProvider, final ScrimView scrim,
-            BottomSheet bottomSheet, OverlayPanelManager overlayManager,
-            boolean suppressSheetForContextualSearch) {
+            BottomSheet bottomSheet, OverlayPanelManager overlayManager) {
         mBottomSheet = bottomSheet;
         mTabProvider = activityTabProvider;
         mOverlayPanelManager = overlayManager;
-        mSuppressSheetForContextualSearch = suppressSheetForContextualSearch;
         mSnackbarManager = new SnackbarManager(
                 activity, mBottomSheet.findViewById(R.id.bottom_sheet_snackbar_container));
 
@@ -216,20 +208,6 @@ public class BottomSheetController implements Destroyable {
                 mSnackbarManager.dismissAllSnackbars();
             }
         });
-
-        if (mSuppressSheetForContextualSearch) {
-            mOverlayPanelManager.addObserver(new OverlayPanelManagerObserver() {
-                @Override
-                public void onOverlayPanelShown() {
-                    suppressSheet(StateChangeReason.COMPOSITED_UI);
-                }
-
-                @Override
-                public void onOverlayPanelHidden() {
-                    unsuppressSheet();
-                }
-            });
-        }
     }
 
     // Destroyable implementation.

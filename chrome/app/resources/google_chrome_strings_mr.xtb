@@ -13,7 +13,7 @@
 <translation id="110877069173485804">हा तुमचा Chrome आहे</translation>
 <translation id="1142745911746664600">Chrome अपडेट करू शकत नाही</translation>
 <translation id="1154147086299354128">Chrome मध्‍ये &amp;उघडा</translation>
-<translation id="123620459398936149">Chrome OS तुमचा डेटा सिंक करू शकले नाही. कृपया तुमचा सिंक सांकेतिक पासफ्रेझ अपडेट करा.</translation>
+<translation id="123620459398936149">Chrome OS तुमचा डेटा सिंक करू शकले नाही. कृपया तुमचा सिंक सांकेतिक पासफ्रेज अपडेट करा.</translation>
 <translation id="127345590676626841">Chrome आपोआप अपडेट होते जेणेकरून तुमच्याकडे नेहमी सर्वात नवीन आवृत्ती असते. जेव्हा हे डाउनलोड पूर्ण होते, तेव्हा Chrome रीस्टार्ट होईल आणि तुम्ही तुमच्या मार्गावर असाल.</translation>
 <translation id="1302523850133262269">कृपया Chrome नवीनतम सिस्टम अपडेट इंस्टॉल करताना प्रतीक्षा करा.</translation>
 <translation id="137466361146087520">Google Chrome बीटा</translation>
@@ -46,6 +46,8 @@
 <translation id="1873233029667955273">Google Chrome तुमचा डीफॉल्ट ब्राउझर नाही</translation>
 <translation id="1874309113135274312">Google Chrome बीटा (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome कालबाह्य आहे</translation>
+<translation id="1900795423379050516">या पेजवर सेटिंग दिसत नसल्यास, तुमच्या <ph name="LINK_BEGIN" />
+      Chrome ब्राउझर सेटिंग्ज<ph name="LINK_END" /> मध्ये पाहा</translation>
 <translation id="1915828456209461693">Chrome साठी नवीन अपडेट उपलब्ध आहे आणि तुम्ही रीलाँच करताच ते लागू केले जाईल.</translation>
 <translation id="1919130412786645364">Chrome मध्ये साइन इन करण्यासाठी अनुमती द्या</translation>
 <translation id="2063848847527508675">अपडेट लागू करण्यासाठी Chrome OS रीस्टार्ट करणे आवश्यक आहे.</translation>
@@ -53,7 +55,7 @@
 <translation id="2120620239521071941">हे या डिव्‍हाइस मधून <ph name="ITEMS_COUNT" /> आयटम हटवेल. नंतर तुमचा डेटा पुनर्प्राप्त करण्‍यासाठी Chrome मध्ये <ph name="USER_EMAIL" /> म्हणून साइन इन करा.</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />वर्तमान सेटिंग्ज<ph name="END_LINK" /> चा अहवाल देऊन Chrome ला आणखी चांगले बनविण्यात मदत करा</translation>
 <translation id="216054706567564023">Chrome तुमच्या फोनवर इंस्टॉल करा. आम्ही तुमच्या खाते रिकव्हरी फोन नंबरवर एक SMS पाठवू.</translation>
-<translation id="2246246234298806438">बिल्ट-इन PDF व्ह्यूअर गहाळ असताना Google Chrome प्रिंट पूर्वावलोकन दर्शवू शकत नाही.</translation>
+<translation id="2246246234298806438">बिल्ट-इन पीडीएफ व्ह्यूअर गहाळ असताना Google Chrome प्रिंट पूर्वावलोकन दाखवू शकत नाही.</translation>
 <translation id="2252923619938421629">वर्तमान सेटिंग्जचा अहवाल देऊन Google Chrome उत्कृष्ट बनविण्यास मदत करा</translation>
 <translation id="2286950485307333924">तुम्ही आता Chrome वर साइन इन केले आहे</translation>
 <translation id="2290014774651636340">Google API की गहाळ आहेत. Google Chrome ची काही कार्यक्षमता अक्षम केली जाईल.</translation>
@@ -145,7 +147,7 @@
 <translation id="4953650215774548573">तुमचा डीफॉल्ट ब्राउझर म्हणून Google Chrome सेट करा</translation>
 <translation id="495931528404527476">Chrome मध्ये</translation>
 <translation id="4990567037958725628">Google Chrome कॅनरी</translation>
-<translation id="5028489144783860647">Google Chrome तुमचा डेटा सिंक करू शकले नाही. कृपया तुमचा सिंक पासफ्रेझ अपडेट करा.</translation>
+<translation id="5028489144783860647">Google Chrome तुमचा डेटा सिंक करू शकले नाही. कृपया तुमची सिंक पासफ्रेज अपडेट करा.</translation>
 <translation id="5062123544085870375">Chrome OS रीस्टार्ट करा</translation>
 <translation id="5132929315877954718">Google Chrome साठी उत्कृष्ट ॲप, खेळ, विस्तार आणि थीम शोधा.</translation>
 <translation id="5170938038195470297">तुमचे प्रोफाइल वापरले जाणे शक्य नाही कारण ते Google Chrome च्या नवीनतम आवृत्तीमधील आहे.
@@ -162,6 +164,8 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="5543953544073077331">Chrome च्या इतर प्रती रन होत आहेत. अपडेट करण्यासाठी, त्या बंद करा.</translation>
 <translation id="556024056938947818">Google Chrome पासवर्ड दर्शवण्याचा प्रयत्न करत आहे.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-मध्ये)</translation>
+<translation id="5657226924540934362">या पेजवर सेटिंग दिसत नसल्यास, तुमच्या <ph name="LINK_BEGIN" />
+      Chrome OS सेटिंग्ज<ph name="LINK_END" /> मध्ये पाहा</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> धोकादायक असू शकते, त्यामुळे Chrom ने ते अवरोधित केले आहे.</translation>
 <translation id="5686916850681061684">Google Chrome कस्टमाइझ करा आणि नियंत्रित करा. एका गोष्टीवर तुम्ही लक्ष द्यायला हवे - तपशिलांसाठी क्लिक करा.</translation>
 <translation id="5690427481109656848">Google LLC</translation>
@@ -188,7 +192,7 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="6368958679917195344"> Chrome OS अतिरिक्त <ph name="BEGIN_LINK_CROS_OSS" />मुक्त स्रोत सॉफ्टवेअर<ph name="END_LINK_CROS_OSS" /> द्वारे शक्य झाले आहे.</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome डेव्हलपर</translation>
 <translation id="6566149418543181476">Google Chrome अपडेट करीत आहे (<ph name="PROGRESS_PERCENT" />)</translation>
-<translation id="6598387184982954187">तुम्ही तुमची Chrome सामग्री सिंक करण्यासाठी <ph name="PROFILE_EMAIL" /> वापरत आहात. तुमचे सिंक प्राधान्य अपडेट करण्यासाठी किंवा Google खात्याशिवाय Chrome वापरण्यासाठी, <ph name="SETTINGS_LINK" /> ला भेट द्या.</translation>
+<translation id="6598387184982954187">तुम्ही तुमचा Chrome आशय सिंक करण्यासाठी <ph name="PROFILE_EMAIL" /> वापरत आहात. तुमचे सिंक प्राधान्य अपडेट करण्यासाठी किंवा Google खात्याशिवाय Chrome वापरण्यासाठी, <ph name="SETTINGS_LINK" /> ला भेट द्या.</translation>
 <translation id="6600954340915313787">Chrome वर कॉपी केले</translation>
 <translation id="6634887557811630702">Google Chrome अद्ययावत आहे.</translation>
 <translation id="6676384891291319759">इंटरनेट अॅक्सेस करा</translation>
@@ -265,7 +269,7 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="8679801911857917785">तुम्ही Chrome सुरू करता तेव्हा कोणते पृष्ठ दर्शविले जाते हे देखील हे नियंत्रित करते.</translation>
 <translation id="870251953148363156">&amp;Google Chrome अपडेट करा</translation>
 <translation id="873133009373065397">Google Chrome डीफॉल्ट ब्राउझर निर्धारित करू शकत नाही किंवा सेट करू शकत नाही</translation>
-<translation id="8736674169840206667">तुमच्या अॅडमिनिस्ट्रेटरला अपडेट लागू करता यावी यासाठी तुम्ही Chrome पुन्हा लाँच करण्याची आवश्यकता आहे</translation>
+<translation id="8736674169840206667">तुमच्या अॅडमिनिस्ट्रेटरला अपडेट लागू करता यावी यासाठी तुम्ही Chrome पुन्हा लाँच करणे अावश्यक आहे</translation>
 <translation id="8823341990149967727">Chrome कालबाह्य आहे</translation>
 <translation id="884296878221830158">तुम्ही Chrome सुरू करता किंवा होम बटण क्लिक करता तेव्हा कोणते पेज दर्शविले जाते ते देखील हे नियंत्रित करते.</translation>
 <translation id="8862326446509486874">तुमच्याकडे सिस्टम स्तरावरील इंस्टॉलसाठी योग्य अधिकार नाहीत. अॅडमिनिस्ट्रेटर म्हणून पुन्हा इंस्टॉलर चालविण्याचा प्रयत्न करा.</translation>

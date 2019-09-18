@@ -110,7 +110,7 @@ uint32_t GetBitmask(
 
 void ApplySameSiteCookieWarningToStatus(
     CookieSameSite samesite,
-    CookieSameSite effective_samesite,
+    CookieEffectiveSameSite effective_samesite,
     bool is_secure,
     CookieOptions::SameSiteCookieContext context,
     CanonicalCookie::CookieInclusionStatus* status) {
@@ -121,7 +121,7 @@ void ApplySameSiteCookieWarningToStatus(
   }
   // This will overwrite the previous warning but it is more specific so that
   // is ok.
-  if (effective_samesite == CookieSameSite::LAX_MODE_ALLOW_UNSAFE &&
+  if (effective_samesite == CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE &&
       context ==
           CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE) {
     status->set_warning(CanonicalCookie::CookieInclusionStatus::
@@ -288,11 +288,14 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
   if (!status->IsInclude())
     return nullptr;
 
+  CookieSameSiteString samesite_string = CookieSameSiteString::kUnspecified;
+  CookieSameSite samesite = parsed_cookie.SameSite(&samesite_string);
+  RecordCookieSameSiteAttributeValueHistogram(samesite_string);
+
   std::unique_ptr<CanonicalCookie> cc(std::make_unique<CanonicalCookie>(
       parsed_cookie.Name(), parsed_cookie.Value(), cookie_domain, cookie_path,
       creation_time, cookie_expires, creation_time, parsed_cookie.IsSecure(),
-      parsed_cookie.IsHttpOnly(), parsed_cookie.SameSite(),
-      parsed_cookie.Priority()));
+      parsed_cookie.IsHttpOnly(), samesite, parsed_cookie.Priority()));
 
   DCHECK(cc->IsCanonical());
 
@@ -430,16 +433,16 @@ CanonicalCookie::CookieInclusionStatus CanonicalCookie::IncludeForRequestURL(
   if (!IsOnPath(url.path()))
     status.AddExclusionReason(CookieInclusionStatus::EXCLUDE_NOT_ON_PATH);
   // Don't include same-site cookies for cross-site requests.
-  CookieSameSite effective_same_site = GetEffectiveSameSite();
+  CookieEffectiveSameSite effective_same_site = GetEffectiveSameSite();
   switch (effective_same_site) {
-    case CookieSameSite::STRICT_MODE:
+    case CookieEffectiveSameSite::STRICT_MODE:
       if (options.same_site_cookie_context() <
           CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT) {
         status.AddExclusionReason(
             CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT);
       }
       break;
-    case CookieSameSite::LAX_MODE:
+    case CookieEffectiveSameSite::LAX_MODE:
       if (options.same_site_cookie_context() <
           CookieOptions::SameSiteCookieContext::SAME_SITE_LAX) {
         // Log metrics for a cookie that would have been included under the
@@ -461,7 +464,7 @@ CanonicalCookie::CookieInclusionStatus CanonicalCookie::IncludeForRequestURL(
       }
       break;
     // TODO(crbug.com/990439): Add a browsertest for this behavior.
-    case CookieSameSite::LAX_MODE_ALLOW_UNSAFE:
+    case CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE:
       DCHECK(SameSite() == CookieSameSite::UNSPECIFIED);
       if (options.same_site_cookie_context() <
           CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE) {
@@ -510,9 +513,9 @@ CanonicalCookie::CookieInclusionStatus CanonicalCookie::IsSetPermittedInContext(
     status.AddExclusionReason(CookieInclusionStatus::EXCLUDE_HTTP_ONLY);
   }
 
-  CookieSameSite effective_same_site = GetEffectiveSameSite();
+  CookieEffectiveSameSite effective_same_site = GetEffectiveSameSite();
   switch (effective_same_site) {
-    case CookieSameSite::STRICT_MODE:
+    case CookieEffectiveSameSite::STRICT_MODE:
       // This intentionally checks for `< SAME_SITE_LAX`, as we allow
       // `SameSite=Strict` cookies to be set for top-level navigations that
       // qualify for receipt of `SameSite=Lax` cookies.
@@ -525,8 +528,8 @@ CanonicalCookie::CookieInclusionStatus CanonicalCookie::IsSetPermittedInContext(
             CookieInclusionStatus::EXCLUDE_SAMESITE_STRICT);
       }
       break;
-    case CookieSameSite::LAX_MODE:
-    case CookieSameSite::LAX_MODE_ALLOW_UNSAFE:
+    case CookieEffectiveSameSite::LAX_MODE:
+    case CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE:
       if (options.same_site_cookie_context() <
           CookieOptions::SameSiteCookieContext::SAME_SITE_LAX) {
         if (SameSite() == CookieSameSite::UNSPECIFIED) {
@@ -608,17 +611,15 @@ bool CanonicalCookie::IsCanonical() const {
       break;
   }
 
-  if (!IsValidSameSiteValue(same_site_))
-    return false;
-
   return true;
 }
 
 bool CanonicalCookie::IsEffectivelySameSiteNone() const {
-  return GetEffectiveSameSite() == CookieSameSite::NO_RESTRICTION;
+  return GetEffectiveSameSite() == CookieEffectiveSameSite::NO_RESTRICTION;
 }
 
-CookieSameSite CanonicalCookie::GetEffectiveSameSiteForTesting() const {
+CookieEffectiveSameSite CanonicalCookie::GetEffectiveSameSiteForTesting()
+    const {
   return GetEffectiveSameSite();
 }
 
@@ -697,25 +698,27 @@ bool CanonicalCookie::IsCookiePrefixValid(CanonicalCookie::CookiePrefix prefix,
   return true;
 }
 
-CookieSameSite CanonicalCookie::GetEffectiveSameSite() const {
-  CookieSameSite effective_same_site = SameSite();
-  // If a cookie does not have a SameSite attribute, the effective SameSite
-  // mode depends on the SameSiteByDefaultCookies setting and whether the cookie
-  // is short-lived.
-  if (SameSite() == CookieSameSite::UNSPECIFIED) {
-    effective_same_site = cookie_util::IsSameSiteByDefaultCookiesEnabled()
-                              ? (IsRecentlyCreated(kLaxAllowUnsafeMaxAge)
-                                     ? CookieSameSite::LAX_MODE_ALLOW_UNSAFE
-                                     : CookieSameSite::LAX_MODE)
-                              : CookieSameSite::NO_RESTRICTION;
+CookieEffectiveSameSite CanonicalCookie::GetEffectiveSameSite() const {
+  switch (SameSite()) {
+    // If a cookie does not have a SameSite attribute, the effective SameSite
+    // mode depends on the SameSiteByDefaultCookies setting and whether the
+    // cookie is recently-created.
+    case CookieSameSite::UNSPECIFIED:
+      return cookie_util::IsSameSiteByDefaultCookiesEnabled()
+                 ? (IsRecentlyCreated(kLaxAllowUnsafeMaxAge)
+                        ? CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE
+                        : CookieEffectiveSameSite::LAX_MODE)
+                 : CookieEffectiveSameSite::NO_RESTRICTION;
+    case CookieSameSite::NO_RESTRICTION:
+      return CookieEffectiveSameSite::NO_RESTRICTION;
+    case CookieSameSite::LAX_MODE:
+      return CookieEffectiveSameSite::LAX_MODE;
+    case CookieSameSite::STRICT_MODE:
+      return CookieEffectiveSameSite::STRICT_MODE;
+    // TODO(crbug.com/989171): Replace this with FirstParty{Lax,Strict}.
+    case CookieSameSite::EXTENDED_MODE:
+      return CookieEffectiveSameSite::LAX_MODE;
   }
-
-  // TODO(crbug.com/989171): Replace this with FirstParty{Lax,Strict}.
-  if (SameSite() == CookieSameSite::EXTENDED_MODE)
-    effective_same_site = CookieSameSite::LAX_MODE;
-
-  DCHECK(IsValidEffectiveSameSiteValue(effective_same_site));
-  return effective_same_site;
 }
 
 bool CanonicalCookie::IsRecentlyCreated(base::TimeDelta age_threshold) const {

@@ -212,6 +212,7 @@ jumbo_source_set("filters") {
       "//gpu/command_buffer/client",
       "//gpu/command_buffer/common",
       "//gpu/ipc/common",
+      "//media/fuchsia/cdm",
       "//media/fuchsia/common",
       "//third_party/fuchsia-sdk/sdk:media",
       "//third_party/fuchsia-sdk/sdk:mediacodec",

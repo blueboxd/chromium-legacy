@@ -3058,10 +3058,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
       cmd.HasSwitch(::switches::kEnableExperimentalWebPlatformFeatures));
 
   html_source->AddBoolean(
-      "enableBluetoothScanningContentSetting",
-      cmd.HasSwitch(::switches::kEnableWebBluetoothScanning));
-
-  html_source->AddBoolean(
       "enableNativeFileSystemWriteContentSetting",
       base::FeatureList::IsEnabled(::blink::features::kNativeFileSystemAPI));
 

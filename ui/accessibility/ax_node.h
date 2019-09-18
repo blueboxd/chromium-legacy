@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_tree_id.h"
 
 namespace ui {
 
@@ -48,6 +49,8 @@ class AX_EXPORT AXNode final {
       ax::mojom::TextAffinity focus_affinity;
     };
 
+    // See AXTree.
+    virtual AXTreeID GetAXTreeID() const = 0;
     // See AXTree.
     virtual AXTableInfo* GetTableInfo(const AXNode* table_node) const = 0;
     // See AXTree.

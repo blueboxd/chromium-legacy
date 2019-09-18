@@ -120,7 +120,8 @@ def _FileRangeToVirtualAddressRange(data, l, r):
   segments is required here.
   """
   elf = elf_headers.ElfHeader(data)
-  for phdr in elf.GetPhdrsByType(elf_headers.ProgramHeader.Type.PT_LOAD):
+  for phdr in elf.GetProgramHeadersByType(
+      elf_headers.ProgramHeader.Type.PT_LOAD):
     # Current version of the prototype only supports ranges which are fully
     # contained inside one LOAD segment. It should cover most of the common
     # cases.
@@ -191,14 +192,15 @@ def _MovePhdrToTheEnd(data):
   old_phoff = elf_hdr.e_phoff
   new_phoff = elf_hdr.e_phoff = len(data)
 
-  unaligned_new_vaddr = _FindNewVaddr(elf_hdr.GetPhdrs())
+  unaligned_new_vaddr = _FindNewVaddr(elf_hdr.GetProgramHeaders())
   new_vaddr = MatchVaddrAlignment(unaligned_new_vaddr, new_phoff)
   # Since we moved the PHDR section to the end of the file, we need to create a
   # new LOAD segment to load it in.
   current_filesize = elf_hdr.e_phnum * elf_hdr.e_phentsize
   # We are using current_filesize while adding new program header due to
-  # AddPhdr handling the increase of size due to addition of new header.
-  elf_hdr.AddPhdr(
+  # AddProgramHeader handling the increase of size due to addition of new
+  # header.
+  elf_hdr.AddProgramHeader(
       elf_headers.ProgramHeader.Create(
           elf_hdr.byte_order,
           p_type=elf_headers.ProgramHeader.Type.PT_LOAD,
@@ -212,7 +214,8 @@ def _MovePhdrToTheEnd(data):
       ))
 
   # PHDR segment if it exists should point to the new location.
-  for phdr in elf_hdr.GetPhdrsByType(elf_headers.ProgramHeader.Type.PT_PHDR):
+  for phdr in elf_hdr.GetProgramHeadersByType(
+      elf_headers.ProgramHeader.Type.PT_PHDR):
     phdr.p_offset = new_phoff
     phdr.p_vaddr = new_vaddr
     phdr.p_paddr = new_vaddr
@@ -224,6 +227,38 @@ def _MovePhdrToTheEnd(data):
   data[old_phoff:old_phoff + previous_phdr_size] = [0] * previous_phdr_size
 
   # Updating ELF header to point to the new location.
+  elf_hdr.PatchData(data)
+
+
+def _CreateLoadForCompressedSection(data):
+  """Creates a LOAD segment to previously created COMPRESSED_SECTION_NAME."""
+  elf_hdr = elf_headers.ElfHeader(data)
+
+  section_offset = None
+  section_size = None
+  for shdr in elf_hdr.GetSectionHeaders():
+    if shdr.GetStrName() == COMPRESSED_SECTION_NAME:
+      section_offset = shdr.sh_offset
+      section_size = shdr.sh_size
+      break
+  if section_offset is None:
+    raise RuntimeError(
+        'Failed to locate {} section in file'.format(COMPRESSED_SECTION_NAME))
+
+  unaligned_new_vaddr = _FindNewVaddr(elf_hdr.GetProgramHeaders())
+  new_vaddr = MatchVaddrAlignment(unaligned_new_vaddr, section_offset)
+  elf_hdr.AddProgramHeader(
+      elf_headers.ProgramHeader.Create(
+          elf_hdr.byte_order,
+          p_type=elf_headers.ProgramHeader.Type.PT_LOAD,
+          p_flags=elf_headers.ProgramHeader.Flags.PF_R,
+          p_offset=section_offset,
+          p_vaddr=new_vaddr,
+          p_paddr=new_vaddr,
+          p_filesz=section_size,
+          p_memsz=section_size,
+          p_align=ADDRESS_ALIGN,
+      ))
   elf_hdr.PatchData(data)
 
 
@@ -240,7 +275,8 @@ def _SplitLoadSegmentAndNullifyRange(data, l, r):
   elf_hdr = elf_headers.ElfHeader(data)
 
   range_phdr = None
-  for phdr in elf_hdr.GetPhdrsByType(elf_headers.ProgramHeader.Type.PT_LOAD):
+  for phdr in elf_hdr.GetProgramHeadersByType(
+      elf_headers.ProgramHeader.Type.PT_LOAD):
     if phdr.p_offset <= l and phdr.FilePositionEnd() >= r:
       range_phdr = phdr
       break
@@ -252,7 +288,7 @@ def _SplitLoadSegmentAndNullifyRange(data, l, r):
   left_segment_size = l - range_phdr.p_offset
   if left_segment_size > 0:
     # Creating LOAD segment containing the [phdr.p_offset, l) part.
-    elf_hdr.AddPhdr(
+    elf_hdr.AddProgramHeader(
         elf_headers.ProgramHeader.Create(
             elf_hdr.byte_order,
             p_type=range_phdr.p_type,
@@ -270,7 +306,7 @@ def _SplitLoadSegmentAndNullifyRange(data, l, r):
     right_segment_address = range_phdr.p_vaddr + right_segment_delta
     right_segment_filesize = max(range_phdr.p_filesz - right_segment_delta, 0)
     right_segment_memsize = range_phdr.p_memsz - right_segment_delta
-    elf_hdr.AddPhdr(
+    elf_hdr.AddProgramHeader(
         elf_headers.ProgramHeader.Create(
             elf_hdr.byte_order,
             p_type=range_phdr.p_type,
@@ -317,6 +353,8 @@ def main():
 
   _CopyRangeIntoCompressedSection(data, left_range, right_range)
   _MovePhdrToTheEnd(data)
+
+  _CreateLoadForCompressedSection(data)
   _SplitLoadSegmentAndNullifyRange(data, left_range, right_range)
 
   with open(args.output, 'wb') as f:

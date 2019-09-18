@@ -105,6 +105,10 @@ void Shell::LoadingStateChanged(bool is_loading, bool to_different_document) {
   PlatformEnableUIControl(STOP_BUTTON, to_different_document && is_loading);
 }
 
+void Shell::LoadProgressChanged(double progress) {
+  PlatformSetLoadProgress(progress);
+}
+
 void Shell::DisplayedURLChanged(const GURL& url) {
   PlatformSetAddressBarURL(url);
 }

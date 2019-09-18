@@ -534,9 +534,7 @@ void RenderViewImpl::Initialize(
   if (params->window_was_created_with_opener)
     webview()->SetOpenedByDOM();
 
-  GetWidget()->UpdateWebViewWithDeviceScaleFactor();
   OnSetRendererPrefs(*params->renderer_preferences);
-  GetWidget()->OnSynchronizeVisualProperties(params->visual_properties);
 
   GetContentClient()->renderer()->RenderViewCreated(this);
   page_zoom_level_ = 0;
@@ -867,6 +865,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       prefs.scroll_top_left_interop_enabled);
   WebRuntimeFeatures::EnableSurfaceEmbeddingFeatures(
       !prefs.disable_features_depending_on_viz);
+  WebRuntimeFeatures::EnableAcceleratedSmallCanvases(
+      !prefs.disable_accelerated_small_canvases);
 #endif  // defined(OS_ANDROID)
 
   settings->SetForceDarkModeEnabled(prefs.force_dark_mode_enabled);

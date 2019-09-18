@@ -49,7 +49,9 @@ if (is_android) {
   android_library("midi_java") {
     deps = [
       "//base:base_java",
+      "//base:jni_java",
     ]
+    annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
     java_files = [
       "java/src/org/chromium/midi/MidiDeviceAndroid.java",

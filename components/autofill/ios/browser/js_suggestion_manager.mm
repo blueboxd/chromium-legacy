@@ -24,7 +24,7 @@
 
 @implementation JsSuggestionManager {
   // The injection receiver used to evaluate JavaScript.
-  CRWJSInjectionReceiver* _receiver;
+  __weak CRWJSInjectionReceiver* _receiver;
   web::WebFramesManager* _webFramesManager;
 }
 

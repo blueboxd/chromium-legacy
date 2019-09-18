@@ -152,7 +152,7 @@ TEST_F(ShelfWidgetTest, LauncherInitiallySized) {
   const int nav_width =
       shelf_widget->navigation_widget()->GetWindowBoundsInScreen().width();
   const int hotseat_width =
-      GetPrimaryShelf()->GetShelfViewForTesting()->width();
+      shelf_widget->hotseat_widget()->GetWindowBoundsInScreen().width();
   const int margins = ShelfConfig::Get()->home_button_edge_spacing() +
                       ShelfConfig::Get()->app_icon_group_margin();
   EXPECT_EQ(status_width, total_width - nav_width - hotseat_width - margins);

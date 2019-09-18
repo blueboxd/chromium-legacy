@@ -948,8 +948,11 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
        TestITextRangeProviderExpandToEnclosingCharacter) {
-  Init(BuildTextDocument({"some text", "more text"}));
+  ui::AXTreeUpdate update = BuildTextDocument({"some text", "more text"});
+  Init(update);
   AXNodePosition::SetTree(tree_.get());
+  AXTreeManagerMap::GetInstance().AddTreeManager(update.tree_data.tree_id,
+                                                 this);
   AXNode* root_node = GetRootNode();
 
   ComPtr<ITextRangeProvider> text_range_provider;

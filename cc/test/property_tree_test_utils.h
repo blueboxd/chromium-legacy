@@ -17,6 +17,8 @@ namespace cc {
 
 class Layer;
 class LayerImpl;
+class PictureLayer;
+class PictureLayerImpl;
 
 // Sets up properties that apply to the root layer.
 void SetupRootProperties(Layer* root);
@@ -49,6 +51,9 @@ ScrollNode& CreateScrollNode(Layer*,
                              int parent_id = ScrollTree::kInvalidNodeId);
 ScrollNode& CreateScrollNode(LayerImpl*,
                              int parent_id = ScrollTree::kInvalidNodeId);
+
+void SetupMaskProperties(LayerImpl* masked_layer, PictureLayerImpl* mask_layer);
+void SetupMaskProperties(Layer* masked_layer, PictureLayer* mask_layer);
 
 template <typename LayerType>
 TransformNode* GetTransformNode(const LayerType* layer) {

@@ -6,14 +6,14 @@
 #define CHROME_BROWSER_CHROMEOS_ARC_INSTANCE_THROTTLE_ARC_ACTIVE_WINDOW_THROTTLE_OBSERVER_H_
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/arc/instance_throttle/arc_throttle_observer.h"
-#include "chrome/browser/chromeos/arc/instance_throttle/window_throttle_observer_base.h"
+#include "chrome/browser/chromeos/window_throttle_observer_base.h"
 
 namespace arc {
 
 // This class observes window activations and sets the state to active if the
 // currently active window is an ARC window.
-class ArcActiveWindowThrottleObserver : public WindowThrottleObserverBase {
+class ArcActiveWindowThrottleObserver
+    : public chromeos::WindowThrottleObserverBase {
  public:
   ArcActiveWindowThrottleObserver();
   ~ArcActiveWindowThrottleObserver() override = default;

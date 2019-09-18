@@ -46,9 +46,9 @@ import org.chromium.chrome.browser.ntp.snippets.SectionHeaderView;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.ui.widget.displaystyle.UiConfig;
+import org.chromium.chrome.browser.ui.widget.displaystyle.ViewResizer;
 import org.chromium.chrome.browser.util.ViewUtils;
-import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
-import org.chromium.chrome.browser.widget.displaystyle.ViewResizer;
 import org.chromium.ui.UiUtils;
 
 import java.util.Arrays;
@@ -290,8 +290,9 @@ public class FeedSurfaceCoordinator {
 
         mRootView = new RootView(mActivity);
         mRootView.setPadding(0, resources.getDimensionPixelOffset(R.dimen.tab_strip_height), 0, 0);
-        if (historyNavigationDelegate != null)
+        if (historyNavigationDelegate != null) {
             mRootView.setNavigationDelegate(historyNavigationDelegate);
+        }
         mUiConfig = new UiConfig(mRootView);
 
         // Mediator should be created before any Stream changes.

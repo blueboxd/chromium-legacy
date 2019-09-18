@@ -28,7 +28,6 @@
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
-#include "components/data_reduction_proxy/content/browser/data_reduction_proxy_pingback_client_impl.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
@@ -188,8 +187,7 @@ DataReductionProxyChromeSettings::MigrateDataReductionProxyOffProxyPrefsHelper(
 }
 
 DataReductionProxyChromeSettings::DataReductionProxyChromeSettings()
-    : data_reduction_proxy::DataReductionProxySettings(),
-      profile_(nullptr) {}
+    : data_reduction_proxy::DataReductionProxySettings(), profile_(nullptr) {}
 
 DataReductionProxyChromeSettings::~DataReductionProxyChromeSettings() {}
 
@@ -228,10 +226,6 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
   std::unique_ptr<data_reduction_proxy::DataReductionProxyService> service =
       std::make_unique<data_reduction_proxy::DataReductionProxyService>(
           this, profile_prefs, url_loader_factory, std::move(store),
-          std::make_unique<
-              data_reduction_proxy::DataReductionProxyPingbackClientImpl>(
-              url_loader_factory,
-              version_info::GetChannelString(chrome::GetChannel())),
           g_browser_process->network_quality_tracker(),
           content::GetNetworkConnectionTracker(),
           data_use_measurement::ChromeDataUseMeasurement::GetInstance(),

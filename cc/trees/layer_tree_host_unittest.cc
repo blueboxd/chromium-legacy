@@ -2151,10 +2151,12 @@ class LayerTreeHostTestSwitchMaskLayer : public LayerTreeHostTest {
   void SetupTree() override {
     scoped_refptr<Layer> root = Layer::Create();
     root->SetBounds(gfx::Size(10, 10));
+    // child_layer_ is not drawable.
     child_layer_ = base::MakeRefCounted<UpdateCountingLayer>(&client_);
     child_layer_->SetBounds(gfx::Size(10, 10));
     mask_layer_ = base::MakeRefCounted<UpdateCountingLayer>(&client_);
     mask_layer_->SetBounds(gfx::Size(10, 10));
+    mask_layer_->SetIsDrawable(true);
     child_layer_->SetMaskLayer(mask_layer_);
     root->AddChild(child_layer_);
     layer_tree_host()->SetRootLayer(root);
@@ -2170,8 +2172,8 @@ class LayerTreeHostTestSwitchMaskLayer : public LayerTreeHostTest {
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         // Root and mask layer should have the same source frame number as they
-        // will be in the layer update list but the child is not as it has empty
-        // bounds.
+        // will be in the layer update list but the child is not as it doesn't
+        // draw content.
         EXPECT_EQ(mask_layer_->update_count(), 1);
         EXPECT_EQ(child_layer_->update_count(), 0);
 
@@ -2182,17 +2184,22 @@ class LayerTreeHostTestSwitchMaskLayer : public LayerTreeHostTest {
   }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
+    auto* mask_surface =
+        GetRenderSurface(impl->sync_tree()->LayerById(mask_layer_->id()));
+    auto* root_surface =
+        GetRenderSurface(impl->sync_tree()->root_layer_for_testing());
+    ASSERT_TRUE(mask_surface);
     switch (index_) {
-      case 0:
+      case 0: {
         index_++;
-        EXPECT_FALSE(
-            GetRenderSurface(impl->sync_tree()->root_layer_for_testing())
-                ->MaskLayer());
+        auto* child_surface =
+            GetRenderSurface(impl->sync_tree()->LayerById(child_layer_->id()));
+        EXPECT_EQ(child_surface, mask_surface->render_target());
+        EXPECT_NE(child_surface, root_surface);
         break;
+      }
       case 1:
-        EXPECT_TRUE(
-            GetRenderSurface(impl->sync_tree()->root_layer_for_testing())
-                ->MaskLayer());
+        EXPECT_EQ(mask_surface->render_target(), root_surface);
         EndTest();
         break;
     }
@@ -7554,14 +7561,12 @@ class LayerTreeTestPageScaleFlags : public LayerTreeTest {
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
-    LayerTreeHostCommon::CallFunctionForEveryLayer(
-        host_impl->sync_tree(), [this](LayerImpl* layer) {
-          const std::vector<int>& list =
-              layer->IsAffectedByPageScale()
-                  ? this->affected_by_page_scale_
-                  : this->not_affected_by_page_scale_;
-          EXPECT_TRUE(base::Contains(list, layer->id()));
-        });
+    for (auto* layer : *host_impl->sync_tree()) {
+      const std::vector<int>& list = layer->IsAffectedByPageScale()
+                                         ? this->affected_by_page_scale_
+                                         : this->not_affected_by_page_scale_;
+      EXPECT_TRUE(base::Contains(list, layer->id()));
+    }
 
     EndTest();
   }

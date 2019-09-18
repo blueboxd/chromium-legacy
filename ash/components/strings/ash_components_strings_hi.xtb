@@ -23,6 +23,7 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">पता बार में अपने इनपुट में www. और .com जोड़ें, फिर पेज खोलें</translation>
+<translation id="1872219238824176091">मौजूदा डेस्क को हटाएं</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, फिर <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> या <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">अगले टैब पर जाएं</translation>
 <translation id="2010818616644390445">विंडो में आखिरी टैब पर जाएंं</translation>
@@ -42,6 +43,7 @@
 <translation id="2441202986792279177">अलग-अलग विंडो के बीच तेज़ी से स्विच करें</translation>
 <translation id="2454251766545114447">'ज़ूम घटाएं' दिखाएं</translation>
 <translation id="2478303094958140141">ChromeVox (कंप्यूटर का बोलकर दिया गया जवाब) चालू या बंद करें</translation>
+<translation id="2488661730534396940">बाईं ओर मौजूद डेस्क को चालू करें</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">वेबपेज में नीचे स्क्रोल करें</translation>
 <translation id="2574014812750545982">पेज पर ज़ूम लेवल को रीसेट करें</translation>
@@ -49,6 +51,7 @@
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, फिर <ph name="TAB" /> या <ph name="RIGHT" /></translation>
 <translation id="2750942583782703988">अपना मौजूदा पेज फिर से लोड करें</translation>
 <translation id="2764005613199379871">खोज पता बार में फ़ोकस रखें</translation>
+<translation id="2774822903829597107">एक नया डेस्क बनाएं</translation>
 <translation id="2789868185375229787">पेज पर ज़ूम घटाएं</translation>
 <translation id="2804480015716812239"><ph name="ALT" /> दबाएं और किसी लिंक पर क्लिक करें</translation>
 <translation id="2830827904629746450">विंडो दाईं ओर डॉक करें</translation>
@@ -100,6 +103,7 @@
 <translation id="4642092649622328492">आंशिक स्क्रीनशॉट लें</translation>
 <translation id="4698850295812410683">स्टाइलस टूल दिखाएं</translation>
 <translation id="4801989101741319327">अगले शब्द के आखिर में ले जाएं</translation>
+<translation id="4866066940972151697">दाईं ओर मौजूद डेस्क को चालू करें</translation>
 <translation id="4916163929714267752">लिंक को नई विंडो में खोलें</translation>
 <translation id="5030659775136592441">बुकमार्क मैनेजर दिखाएं</translation>
 <translation id="5034421018520995080">पेज के सबसे ऊपर जाएं</translation>

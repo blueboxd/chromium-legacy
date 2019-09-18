@@ -4296,7 +4296,6 @@ Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translati
 <translation id="7371006317849674875">Startzeit</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Mauszeiger bei Bewegung hervorheben</translation>
-<translation id="7377169924702866686">Feststelltaste An</translation>
 <translation id="7377451353532943397">Zugriff auf den Sensor weiterhin blockieren</translation>
 <translation id="7378627244592794276">Nein</translation>
 <translation id="73786666777299047">Chrome Web Store öffnen</translation>
@@ -5002,7 +5001,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8390449457866780408">Der Server ist nicht verfügbar.</translation>
 <translation id="8391218455464584335">Schallplatte</translation>
 <translation id="8391712576156218334">Bild ist nicht verfügbar. Versuchen Sie es später noch einmal.</translation>
-<translation id="8392234662362215700">Drücken Sie Strg + Umschalttaste + Leertaste, um das Tastaturlayout zu ändern.</translation>
 <translation id="8392364544846746346">Nachfragen, wenn eine Website Dateien oder Ordner auf meinem Gerät bearbeiten möchte</translation>
 <translation id="8392451568018454956">Optionsmenü für <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8393511274964623038">Plug-in anhalten</translation>
@@ -5173,7 +5171,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8656619792520327915">Weiteren Sicherheitsschlüssel hinzufügen</translation>
 <translation id="8656768832129462377">Nicht überprüfen</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> teilt Bildschirm und Audio mit <ph name="TAB_NAME" />.</translation>
-<translation id="8659875081143553823">Bitte warten</translation>
 <translation id="8660174278198826384">Wenden Sie sich an den Geräteadministrator Ihrer Organisation</translation>
 <translation id="8661290697478713397">Link in Inko&amp;gnito-Fenster öffnen</translation>
 <translation id="8662671328352114214">In <ph name="TYPE" />-Netzwerk einwählen</translation>

@@ -381,7 +381,9 @@ const CGFloat kbadgeViewAnimationDuration = 0.2;
     // label. Thus, there should be at least one object alreading in
     // |accessibleElements|.
     DCHECK([self.accessibleElements count] > 0);
-    [self.accessibleElements insertObject:self.badgeView atIndex:1];
+    if ([self.accessibleElements indexOfObject:self.badgeView] == NSNotFound) {
+      [self.accessibleElements insertObject:self.badgeView atIndex:1];
+    }
   } else {
     [self.accessibleElements removeObject:self.badgeView];
   }

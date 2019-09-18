@@ -293,7 +293,8 @@ TEST_F(OverviewControllerTest, OcclusionTest) {
 
   Shell::Get()
       ->overview_controller()
-      ->set_occlusion_pause_duration_for_end_ms_for_test(100);
+      ->set_occlusion_pause_duration_for_end_for_test(
+          base::TimeDelta::FromMilliseconds(100));
   TestOverviewObserver observer(/*should_monitor_animation_state = */ true);
   ui::ScopedAnimationDurationScaleMode non_zero(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);

@@ -60,14 +60,6 @@ Polymer({
     },
 
     /** @private */
-    enableBluetoothScanningContentSetting_: {
-      type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('enableBluetoothScanningContentSetting');
-      }
-    },
-
-    /** @private */
     enableNativeFileSystemWriteContentSetting_: {
       type: Boolean,
       value: function() {
@@ -130,7 +122,7 @@ Polymer({
       pairs.push([R.SITE_SETTINGS_SERIAL_PORTS, 'serial-ports']);
     }
 
-    if (this.enableBluetoothScanningContentSetting_) {
+    if (this.enableExperimentalWebPlatformFeatures_) {
       pairs.push([R.SITE_SETTINGS_BLUETOOTH_SCANNING, 'bluetooth-scanning']);
     }
 

@@ -8,8 +8,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
-#include "chrome/browser/extensions/crx_installer.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber_test_observer.h"
@@ -19,7 +17,6 @@
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/net/safe_search_util.h"
-#include "chrome/common/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -37,10 +34,6 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/browser/notification_types.h"
-#include "extensions/browser/test_extension_registry_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/transport_security_state.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
@@ -68,7 +61,6 @@ PolicyTest::PolicyTest() = default;
 PolicyTest::~PolicyTest() = default;
 
 void PolicyTest::SetUp() {
-  test_extension_cache_.reset(new extensions::ExtensionCacheFake());
   InProcessBrowserTest::SetUp();
 }
 
@@ -81,10 +73,6 @@ void PolicyTest::SetUpInProcessBrowserTestFixture() {
 
 void PolicyTest::SetUpOnMainThread() {
   host_resolver()->AddRule("*", "127.0.0.1");
-  if (extension_service()->updater()) {
-    extension_service()->updater()->SetExtensionCacheForTesting(
-        test_extension_cache_.get());
-  }
 }
 
 void PolicyTest::SetUpCommandLine(base::CommandLine* command_line) {
@@ -160,85 +148,12 @@ void PolicyTest::TestScreenshotFile(bool enabled) {
 }
 #endif  // defined(OS_CHROMEOS)
 
-extensions::ExtensionService* PolicyTest::extension_service() {
-  extensions::ExtensionSystem* system =
-      extensions::ExtensionSystem::Get(browser()->profile());
-  return system->extension_service();
-}
-
-extensions::ExtensionRegistry* PolicyTest::extension_registry() {
-  return extensions::ExtensionRegistry::Get(browser()->profile());
-}
-
-const extensions::Extension* PolicyTest::InstallExtension(
-    const base::FilePath::StringType& name) {
-  base::FilePath extension_path(ui_test_utils::GetTestFilePath(
-      base::FilePath(kTestExtensionsDir), base::FilePath(name)));
-  scoped_refptr<extensions::CrxInstaller> installer =
-      extensions::CrxInstaller::CreateSilent(extension_service());
-  installer->set_allow_silent_install(true);
-  installer->set_install_cause(extension_misc::INSTALL_CAUSE_UPDATE);
-  installer->set_creation_flags(extensions::Extension::FROM_WEBSTORE);
-  installer->set_off_store_install_allow_reason(
-      extensions::CrxInstaller::OffStoreInstallAllowReason::
-          OffStoreInstallAllowedInTest);
-
-  content::WindowedNotificationObserver observer(
-      extensions::NOTIFICATION_CRX_INSTALLER_DONE,
-      content::NotificationService::AllSources());
-  installer->InstallCrx(extension_path);
-  observer.Wait();
-  content::Details<const extensions::Extension> details = observer.details();
-  return details.ptr();
-}
-
-const extensions::Extension* PolicyTest::InstallBookmarkApp() {
-  WebApplicationInfo web_app;
-  web_app.title = base::ASCIIToUTF16("Bookmark App");
-  web_app.app_url = GURL("http://www.google.com");
-
-  scoped_refptr<extensions::CrxInstaller> installer =
-      extensions::CrxInstaller::CreateSilent(extension_service());
-
-  content::WindowedNotificationObserver observer(
-      extensions::NOTIFICATION_CRX_INSTALLER_DONE,
-      content::NotificationService::AllSources());
-  installer->InstallWebApp(web_app);
-  observer.Wait();
-  content::Details<const extensions::Extension> details = observer.details();
-  return details.ptr();
-}
-
 scoped_refptr<const extensions::Extension> PolicyTest::LoadUnpackedExtension(
     const base::FilePath::StringType& name) {
   base::FilePath extension_path(ui_test_utils::GetTestFilePath(
       base::FilePath(kTestExtensionsDir), base::FilePath(name)));
   extensions::ChromeTestExtensionLoader loader(browser()->profile());
   return loader.LoadExtension(extension_path);
-}
-
-void PolicyTest::UninstallExtension(const std::string& id,
-                                    bool expect_success) {
-  if (expect_success) {
-    extensions::TestExtensionRegistryObserver observer(extension_registry());
-    extension_service()->UninstallExtension(
-        id, extensions::UNINSTALL_REASON_FOR_TESTING, nullptr);
-    observer.WaitForExtensionUninstalled();
-  } else {
-    content::WindowedNotificationObserver observer(
-        extensions::NOTIFICATION_EXTENSION_UNINSTALL_NOT_ALLOWED,
-        content::NotificationService::AllSources());
-    extension_service()->UninstallExtension(
-        id, extensions::UNINSTALL_REASON_FOR_TESTING, nullptr);
-    observer.Wait();
-  }
-}
-
-void PolicyTest::DisableExtension(const std::string& id) {
-  extensions::TestExtensionRegistryObserver observer(extension_registry());
-  extension_service()->DisableExtension(
-      id, extensions::disable_reason::DISABLE_USER_ACTION);
-  observer.WaitForExtensionUnloaded();
 }
 
 void PolicyTest::UpdateProviderPolicy(const PolicyMap& policy) {

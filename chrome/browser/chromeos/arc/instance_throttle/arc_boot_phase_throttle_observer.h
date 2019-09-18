@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
-#include "chrome/browser/chromeos/arc/instance_throttle/arc_throttle_observer.h"
+#include "chrome/browser/chromeos/throttle_observer.h"
 #include "chrome/browser/sessions/session_restore_observer.h"
 
 namespace content {
@@ -17,11 +17,9 @@ class BrowserContext;
 
 namespace arc {
 
-class ArcBridgeService;
-
 // This class observes phases of ARC boot and unthrottles the container
 // when ARC is booting or restarting.
-class ArcBootPhaseThrottleObserver : public ArcThrottleObserver,
+class ArcBootPhaseThrottleObserver : public chromeos::ThrottleObserver,
                                      public ArcSessionManager::Observer,
                                      public ArcBootPhaseMonitorBridge::Observer,
                                      public SessionRestoreObserver {
@@ -29,9 +27,8 @@ class ArcBootPhaseThrottleObserver : public ArcThrottleObserver,
   ArcBootPhaseThrottleObserver();
   ~ArcBootPhaseThrottleObserver() override = default;
 
-  // ArcThrottleObserver:
-  void StartObserving(ArcBridgeService* arc_bridge_service,
-                      content::BrowserContext* context,
+  // chromeos::ThrottleObserver:
+  void StartObserving(content::BrowserContext* context,
                       const ObserverStateChangedCallback& callback) override;
   void StopObserving() override;
 
@@ -53,7 +50,6 @@ class ArcBootPhaseThrottleObserver : public ArcThrottleObserver,
   // enable since in these cases ARC should always be unthrottled during boot.
   void MaybeSetActive();
 
-  content::BrowserContext* context_ = nullptr;
   ArcBootPhaseMonitorBridge* boot_phase_monitor_ = nullptr;
   bool session_restore_loading_ = false;
   bool arc_is_booting_ = false;

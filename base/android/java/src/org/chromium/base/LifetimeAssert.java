@@ -6,6 +6,8 @@ package org.chromium.base;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.annotations.CheckDiscard;
+
 import java.lang.ref.PhantomReference;
 import java.lang.ref.ReferenceQueue;
 import java.util.Collections;
@@ -26,6 +28,7 @@ import java.util.Set;
  *     }
  * }
  */
+@CheckDiscard
 public class LifetimeAssert {
     interface TestHook {
         void onCleaned(WrappedReference ref, String msg);

@@ -1236,6 +1236,36 @@ TEST_F(AccessibilityTest, PositionInCSSContent) {
   EXPECT_EQ(12, position_after.GetPosition().OffsetInContainerNode());
 }
 
+TEST_F(AccessibilityTest, PositionInCSSImageContent) {
+  constexpr char css_content_no_text[] = R"HTML(
+   <style>
+   .heading::before {
+    content: url(data:image/gif;base64,);
+   }
+   </style>
+   <h1 id="heading" class="heading">Heading</h1>)HTML";
+  SetBodyInnerHTML(css_content_no_text);
+
+  const Node* heading = GetElementById("heading");
+  ASSERT_NE(nullptr, heading);
+
+  const AXObject* ax_heading = GetAXObjectByElementId("heading");
+  ASSERT_NE(nullptr, ax_heading);
+  ASSERT_EQ(ax::mojom::Role::kHeading, ax_heading->RoleValue());
+  ASSERT_EQ(2, ax_heading->ChildCount());
+
+  const AXObject* ax_css_before = ax_heading->FirstChild();
+  ASSERT_NE(nullptr, ax_css_before);
+  ASSERT_EQ(ax::mojom::Role::kImage, ax_css_before->RoleValue());
+
+  const auto ax_position_before =
+      AXPosition::CreateFirstPositionInObject(*ax_css_before);
+  const auto position = ax_position_before.ToPositionWithAffinity(
+      AXPositionAdjustmentBehavior::kMoveLeft);
+  EXPECT_EQ(GetDocument().body(), position.AnchorNode());
+  EXPECT_EQ(3, position.GetPosition().OffsetInContainerNode());
+}
+
 TEST_F(AccessibilityTest, PositionInTableWithCSSContent) {
   SetBodyInnerHTML(kHTMLTable);
 

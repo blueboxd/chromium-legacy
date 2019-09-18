@@ -10,6 +10,8 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/paint/filter_operation.h"
 #include "cc/paint/filter_operations.h"
+#include "cc/test/fake_picture_layer_impl.h"
+#include "cc/test/fake_raster_source.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_test_common.h"
 #include "cc/trees/layer_tree_host_common.h"
@@ -73,6 +75,7 @@ class DamageTrackerTest : public LayerTestCommon::LayerImplTest,
 
     LayerImpl* root = root_layer();
     root->SetBounds(gfx::Size(500, 500));
+    root->layer_tree_impl()->SetDeviceViewportRect(gfx::Rect(root->bounds()));
     root->SetDrawsContent(true);
     SetupRootProperties(root);
 
@@ -99,6 +102,7 @@ class DamageTrackerTest : public LayerTestCommon::LayerImplTest,
 
     LayerImpl* root = root_layer();
     root->SetBounds(gfx::Size(500, 500));
+    root->layer_tree_impl()->SetDeviceViewportRect(gfx::Rect(root->bounds()));
     root->SetDrawsContent(true);
     SetupRootProperties(root);
 
@@ -165,10 +169,13 @@ class DamageTrackerTest : public LayerTestCommon::LayerImplTest,
     //   3. resetting all update_rects and property_changed flags for all layers
     //      and surfaces.
 
-    ExecuteCalculateDrawProperties(root, device_scale_factor);
+    root->layer_tree_impl()->SetDeviceScaleFactor(device_scale_factor);
+    root->layer_tree_impl()->set_needs_update_draw_properties();
+    UpdateDrawProperties(root->layer_tree_impl());
 
-    DamageTracker::UpdateDamageTracking(root->layer_tree_impl(),
-                                        *render_surface_list_impl());
+    DamageTracker::UpdateDamageTracking(
+        root->layer_tree_impl(),
+        root->layer_tree_impl()->GetRenderSurfaceList());
 
     root->layer_tree_impl()->ResetAllChangeTracking();
   }
@@ -1561,7 +1568,12 @@ TEST_F(DamageTrackerTest, VerifyDamageForMask) {
 
   // Set up the mask layer.
   CreateEffectNode(child);
-  LayerImpl* mask_layer = AddMaskLayer<PictureLayerImpl>(child);
+  auto* mask_layer = AddLayer<FakePictureLayerImpl>();
+  SetupMaskProperties(child, mask_layer);
+  Region empty_invalidation;
+  mask_layer->UpdateRasterSource(
+      FakeRasterSource::CreateFilled(child->bounds()), &empty_invalidation,
+      nullptr, nullptr);
 
   // Add opacity and a grand_child so that the render surface persists even
   // after we remove the mask.
@@ -1572,22 +1584,28 @@ TEST_F(DamageTrackerTest, VerifyDamageForMask) {
   grand_child->SetOffsetToTransformParent(gfx::Vector2dF(2.f, 2.f));
   EmulateDrawingOneFrame(root);
 
-  // CASE 1: the update_rect on a mask layer should damage the entire target
-  //         surface.
+  EXPECT_EQ(2, GetRenderSurface(root)->num_contributors());
+  EXPECT_TRUE(root->contributes_to_drawn_render_surface());
+  EXPECT_EQ(3, GetRenderSurface(child)->num_contributors());
+  EXPECT_TRUE(child->contributes_to_drawn_render_surface());
+  EXPECT_EQ(GetRenderSurface(child), GetRenderSurface(mask_layer));
+  EXPECT_TRUE(mask_layer->contributes_to_drawn_render_surface());
+
+  // CASE 1: the update_rect on a mask layer should damage the rect.
   ClearDamageForAllSurfaces(root);
   mask_layer->SetUpdateRect(gfx::Rect(1, 2, 3, 4));
   EmulateDrawingOneFrame(root);
   gfx::Rect child_damage_rect;
   EXPECT_TRUE(GetRenderSurface(child)->damage_tracker()->GetDamageRectIfValid(
       &child_damage_rect));
-  EXPECT_EQ(gfx::Rect(30, 30).ToString(), child_damage_rect.ToString());
+  EXPECT_EQ(gfx::Rect(1, 2, 3, 4), child_damage_rect);
 
   EXPECT_TRUE(GetRenderSurface(root)
                   ->damage_tracker()
                   ->has_damage_from_contributing_content());
-  EXPECT_FALSE(GetRenderSurface(child)
-                   ->damage_tracker()
-                   ->has_damage_from_contributing_content());
+  EXPECT_TRUE(GetRenderSurface(child)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
 
   // CASE 2: a property change on the mask layer should damage the entire
   //         target surface.
@@ -1607,14 +1625,14 @@ TEST_F(DamageTrackerTest, VerifyDamageForMask) {
   EmulateDrawingOneFrame(root);
   EXPECT_TRUE(GetRenderSurface(child)->damage_tracker()->GetDamageRectIfValid(
       &child_damage_rect));
-  EXPECT_EQ(gfx::Rect(30, 30).ToString(), child_damage_rect.ToString());
+  EXPECT_EQ(gfx::Rect(30, 30), child_damage_rect);
 
   EXPECT_TRUE(GetRenderSurface(root)
                   ->damage_tracker()
                   ->has_damage_from_contributing_content());
-  EXPECT_FALSE(GetRenderSurface(child)
-                   ->damage_tracker()
-                   ->has_damage_from_contributing_content());
+  EXPECT_TRUE(GetRenderSurface(child)
+                  ->damage_tracker()
+                  ->has_damage_from_contributing_content());
 
   // CASE 3: removing the mask also damages the entire target surface.
   //
@@ -1629,9 +1647,17 @@ TEST_F(DamageTrackerTest, VerifyDamageForMask) {
 
   // Then test mask removal.
   ClearDamageForAllSurfaces(root);
-  GetEffectNode(child)->is_masked = false;
-  GetEffectNode(child)->mask_layer_id = -1;
-  child->NoteLayerPropertyChanged();
+  auto layers =
+      root->layer_tree_impl()->DetachLayersKeepingRootLayerForTesting();
+  ASSERT_EQ(layers[1].get(), child);
+  root->layer_tree_impl()->AddLayer(std::move(layers[1]));
+  ASSERT_EQ(layers[2].get(), mask_layer);
+  ASSERT_EQ(layers[3].get(), grand_child);
+  root->layer_tree_impl()->AddLayer(std::move(layers[3]));
+  CopyProperties(root, child);
+  CreateEffectNode(child).render_surface_reason = RenderSurfaceReason::kTest;
+  CopyProperties(child, grand_child);
+
   EmulateDrawingOneFrame(root);
 
   // Sanity check that a render surface still exists.
@@ -1639,7 +1665,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForMask) {
 
   EXPECT_TRUE(GetRenderSurface(child)->damage_tracker()->GetDamageRectIfValid(
       &child_damage_rect));
-  EXPECT_EQ(gfx::Rect(30, 30).ToString(), child_damage_rect.ToString());
+  EXPECT_EQ(gfx::Rect(30, 30), child_damage_rect);
 
   EXPECT_TRUE(GetRenderSurface(root)
                   ->damage_tracker()

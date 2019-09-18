@@ -2326,11 +2326,11 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
   TRACE_EVENT_IS_NEW_TRACE(&is_new_trace);
   if (is_new_trace) {
     if (pending_tree_) {
-      LayerTreeHostCommon::CallFunctionForEveryLayer(
-          pending_tree(), [](LayerImpl* layer) { layer->DidBeginTracing(); });
+      for (auto* layer : *pending_tree_)
+        layer->DidBeginTracing();
     }
-    LayerTreeHostCommon::CallFunctionForEveryLayer(
-        active_tree(), [](LayerImpl* layer) { layer->DidBeginTracing(); });
+    for (auto* layer : *active_tree_)
+      layer->DidBeginTracing();
   }
 
   {

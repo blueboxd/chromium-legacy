@@ -332,6 +332,7 @@ SystemNetworkContextManager::GetURLLoaderFactory() {
       network::mojom::URLLoaderFactoryParams::New();
   params->process_id = network::mojom::kBrowserProcessId;
   params->is_corb_enabled = false;
+  params->is_trusted = true;
   GetContext()->CreateURLLoaderFactory(mojo::MakeRequest(&url_loader_factory_),
                                        std::move(params));
   return url_loader_factory_.get();

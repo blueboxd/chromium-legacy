@@ -317,10 +317,11 @@ void StreamProcessorHelper::CompleteInputBuffersAllocation(
 }
 
 void StreamProcessorHelper::CompleteOutputBuffersAllocation(
-    size_t max_used_output_buffers,
+    size_t num_buffers_for_client,
+    size_t num_buffers_for_server,
     fuchsia::sysmem::BufferCollectionTokenPtr collection_token) {
   DCHECK(!output_buffer_constraints_.IsEmpty());
-  DCHECK_LE(max_used_output_buffers,
+  DCHECK_LE(num_buffers_for_client,
             output_buffer_constraints_.packet_count_for_client_max());
 
   // Pass new output buffer settings to the stream processor.
@@ -328,9 +329,8 @@ void StreamProcessorHelper::CompleteOutputBuffersAllocation(
   settings.set_buffer_lifetime_ordinal(output_buffer_lifetime_ordinal_);
   settings.set_buffer_constraints_version_ordinal(
       output_buffer_constraints_.buffer_constraints_version_ordinal());
-  settings.set_packet_count_for_client(max_used_output_buffers);
-  settings.set_packet_count_for_server(
-      output_buffer_constraints_.packet_count_for_server_recommended());
+  settings.set_packet_count_for_client(num_buffers_for_client);
+  settings.set_packet_count_for_server(num_buffers_for_server);
   settings.set_sysmem_token(std::move(collection_token));
   processor_->SetOutputBufferPartialSettings(std::move(settings));
   processor_->CompleteOutputBufferPartialSettings(

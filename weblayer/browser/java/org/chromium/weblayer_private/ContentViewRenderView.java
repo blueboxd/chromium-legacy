@@ -127,7 +127,6 @@ public class ContentViewRenderView extends FrameLayout {
         mSurfaceView = new SurfaceView(getContext());
         mSurfaceView.setZOrderMediaOverlay(true);
         mSurfaceView.setBackgroundColor(mBackgroundColor);
-        mWindowAndroid.setAnimationPlaceholderView(mSurfaceView);
 
         mSurfaceCallback = new SurfaceHolder.Callback() {
             @Override
@@ -171,7 +170,6 @@ public class ContentViewRenderView extends FrameLayout {
     private void uninitializeSurfaceView() {
         if (mSurfaceView == null) return;
         removeView(mSurfaceView);
-        mWindowAndroid.setAnimationPlaceholderView(null);
         mSurfaceView.getHolder().removeCallback(mSurfaceCallback);
         mSurfaceCallback = null;
         mSurfaceView = null;

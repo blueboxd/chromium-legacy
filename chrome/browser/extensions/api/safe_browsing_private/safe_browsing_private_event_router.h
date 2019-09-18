@@ -112,6 +112,27 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
                                  const std::string& file_name,
                                  const std::string& download_digest_sha256);
 
+  // Notifies listeners that the user saw a download warning.
+  // - |url| is the download URL
+  // - |file_name| is the path on disk
+  // - |download_digest_sha256| is the hex-encoded SHA256
+  // - |threat_type| is the danger type of the download.
+  void OnDangerousDownloadWarning(const GURL& url,
+                                  const std::string& file_name,
+                                  const std::string& download_digest_sha256,
+                                  const std::string& threat_type);
+
+  // Notifies listeners that the user bypassed a download warning.
+  // - |url| is the download URL
+  // - |file_name| is the path on disk
+  // - |download_digest_sha256| is the hex-encoded SHA256
+  // - |threat_type| is the danger type of the download.
+  void OnDangerousDownloadWarningBypassed(
+      const GURL& url,
+      const std::string& file_name,
+      const std::string& download_digest_sha256,
+      const std::string& threat_type);
+
   void SetCloudPolicyClientForTesting(
       std::unique_ptr<policy::CloudPolicyClient> client);
 

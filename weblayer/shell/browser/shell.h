@@ -76,6 +76,7 @@ class Shell : public BrowserObserver {
   // BrowserObserver implementation:
   void LoadingStateChanged(bool is_loading,
                            bool to_different_document) override;
+  void LoadProgressChanged(double progress) override;
   void DisplayedURLChanged(const GURL& url) override;
 
   // Helper to create a new Shell.
@@ -113,8 +114,8 @@ class Shell : public BrowserObserver {
   // Updates the url in the url bar.
   void PlatformSetAddressBarURL(const GURL& url);
 
-  // Sets whether the spinner is spinning.
-  void PlatformSetIsLoading(bool loading);
+  // Sets the load progress indicator in the UI.
+  void PlatformSetLoadProgress(double progress);
 
   // Set the title of shell window
   void PlatformSetTitle(const base::string16& title);

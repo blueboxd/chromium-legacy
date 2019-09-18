@@ -3,7 +3,7 @@
     "Runs tests on 64-bit iOS 11 and 12 tests on iPad, iPhone,",
     "@3x, and @2x on main waterfall ios-simulator-full-configs."
   ],
-  "xcode build version": "11a419c",
+  "xcode build version": "11a420a",
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
     "is_component_build=false",

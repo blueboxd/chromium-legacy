@@ -8,7 +8,7 @@
 #include "base/containers/span.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
@@ -69,7 +69,8 @@ class XRSession final
   };
 
   XRSession(XR* xr,
-            device::mojom::blink::XRSessionClientRequest client_request,
+            mojo::PendingReceiver<device::mojom::blink::XRSessionClient>
+                client_receiver,
             SessionMode mode,
             EnvironmentBlendMode environment_blend_mode,
             bool uses_input_eventing,
@@ -305,7 +306,7 @@ class XRSession final
   unsigned int stage_parameters_id_ = 0;
   device::mojom::blink::VRDisplayInfoPtr display_info_;
 
-  mojo::Binding<device::mojom::blink::XRSessionClient> client_binding_;
+  mojo::Receiver<device::mojom::blink::XRSessionClient> client_receiver_;
   mojo::AssociatedBinding<device::mojom::blink::XRInputSourceButtonListener>
       input_binding_;
 

@@ -95,7 +95,6 @@ FuchsiaStreamDecryptorBase::~FuchsiaStreamDecryptorBase() = default;
 
 void FuchsiaStreamDecryptorBase::DecryptInternal(
     scoped_refptr<DecoderBuffer> encrypted) {
-  DCHECK(!encrypted->end_of_stream()) << "EOS frame is always clear.";
   input_writer_queue_.EnqueueBuffer(std::move(encrypted));
 }
 
@@ -156,7 +155,8 @@ void FuchsiaStreamDecryptorBase::OnWriterCreated(
       std::move(writer),
       base::BindRepeating(&FuchsiaStreamDecryptorBase::SendInputPacket,
                           base::Unretained(this)),
-      SysmemBufferWriterQueue::EndOfStreamCB());
+      base::BindRepeating(&FuchsiaStreamDecryptorBase::ProcessEndOfStream,
+                          base::Unretained(this)));
 }
 
 void FuchsiaStreamDecryptorBase::SendInputPacket(
@@ -174,6 +174,10 @@ void FuchsiaStreamDecryptorBase::SendInputPacket(
 
   packet.set_format(GetFormatDetails(buffer->decrypt_config()));
   processor_.Process(std::move(packet));
+}
+
+void FuchsiaStreamDecryptorBase::ProcessEndOfStream() {
+  processor_.ProcessEos();
 }
 
 std::unique_ptr<FuchsiaClearStreamDecryptor>
@@ -223,17 +227,19 @@ void FuchsiaClearStreamDecryptor::AllocateOutputBuffers(
     return;
   }
 
-  size_t max_used_output_buffers = std::max(
+  size_t num_buffers_for_client = std::max(
       kMinClearStreamOutputFrames,
       static_cast<size_t>(stream_constraints.packet_count_for_client_min()));
+  size_t num_buffers_for_server =
+      stream_constraints.default_settings().packet_count_for_server();
 
   output_pool_creator_ =
       allocator_.MakeBufferPoolCreator(1 /* num_shared_token */);
-
   output_pool_creator_->Create(
-      SysmemBufferReader::GetRecommendedConstraints(max_used_output_buffers),
+      SysmemBufferReader::GetRecommendedConstraints(num_buffers_for_client),
       base::BindOnce(&FuchsiaClearStreamDecryptor::OnOutputBufferPoolCreated,
-                     base::Unretained(this), max_used_output_buffers));
+                     base::Unretained(this), num_buffers_for_client,
+                     num_buffers_for_server));
 }
 
 void FuchsiaClearStreamDecryptor::OnProcessEos() {
@@ -316,7 +322,8 @@ void FuchsiaClearStreamDecryptor::OnError() {
 }
 
 void FuchsiaClearStreamDecryptor::OnOutputBufferPoolCreated(
-    size_t max_used_output_buffers,
+    size_t num_buffers_for_client,
+    size_t num_buffers_for_server,
     std::unique_ptr<SysmemBufferPool> pool) {
   if (!pool) {
     LOG(ERROR) << "Fail to allocate output buffer.";
@@ -328,7 +335,8 @@ void FuchsiaClearStreamDecryptor::OnOutputBufferPoolCreated(
 
   // Provide token before enabling reader. Tokens must be provided to
   // StreamProcessor before getting the allocated buffers.
-  processor_.CompleteOutputBuffersAllocation(max_used_output_buffers,
+  processor_.CompleteOutputBuffersAllocation(num_buffers_for_client,
+                                             num_buffers_for_server,
                                              output_pool_->TakeToken());
 
   output_pool_->CreateReader(base::BindOnce(
@@ -346,6 +354,83 @@ void FuchsiaClearStreamDecryptor::OnOutputBufferPoolReaderCreated(
 
   DCHECK(!output_reader_);
   output_reader_ = std::move(reader);
+}
+
+// static
+std::unique_ptr<FuchsiaSecureStreamDecryptor>
+FuchsiaSecureStreamDecryptor::Create(
+    fuchsia::media::drm::ContentDecryptionModule* cdm,
+    Client* client) {
+  DCHECK(cdm);
+
+  fuchsia::media::drm::DecryptorParams params;
+
+  // TODO(crbug.com/997853): Enable secure mode when it's implemented in sysmem.
+  params.set_require_secure_mode(false);
+
+  params.mutable_input_details()->set_format_details_version_ordinal(0);
+  fuchsia::media::StreamProcessorPtr stream_processor;
+  cdm->CreateDecryptor(std::move(params), stream_processor.NewRequest());
+
+  return std::make_unique<FuchsiaSecureStreamDecryptor>(
+      std::move(stream_processor), client);
+}
+
+FuchsiaSecureStreamDecryptor::FuchsiaSecureStreamDecryptor(
+    fuchsia::media::StreamProcessorPtr processor,
+    Client* client)
+    : FuchsiaStreamDecryptorBase(std::move(processor)), client_(client) {}
+
+FuchsiaSecureStreamDecryptor::~FuchsiaSecureStreamDecryptor() = default;
+
+void FuchsiaSecureStreamDecryptor::SetOutputBufferCollectionToken(
+    fuchsia::sysmem::BufferCollectionTokenPtr token,
+    size_t num_buffers_for_decryptor,
+    size_t num_buffers_for_codec) {
+  DCHECK(!complete_buffer_allocation_callback_);
+  complete_buffer_allocation_callback_ =
+      base::BindOnce(&StreamProcessorHelper::CompleteOutputBuffersAllocation,
+                     base::Unretained(&processor_), num_buffers_for_decryptor,
+                     num_buffers_for_codec, std::move(token));
+  if (waiting_output_buffers_) {
+    std::move(complete_buffer_allocation_callback_).Run();
+    waiting_output_buffers_ = false;
+  }
+}
+
+void FuchsiaSecureStreamDecryptor::Decrypt(
+    scoped_refptr<DecoderBuffer> encrypted) {
+  DecryptInternal(std::move(encrypted));
+}
+
+void FuchsiaSecureStreamDecryptor::AllocateOutputBuffers(
+    const fuchsia::media::StreamBufferConstraints& stream_constraints) {
+  if (complete_buffer_allocation_callback_) {
+    std::move(complete_buffer_allocation_callback_).Run();
+  } else {
+    waiting_output_buffers_ = true;
+  }
+}
+
+void FuchsiaSecureStreamDecryptor::OnProcessEos() {
+  client_->OnDecryptorEndOfStreamPacket();
+}
+
+void FuchsiaSecureStreamDecryptor::OnOutputFormat(
+    fuchsia::media::StreamOutputFormat format) {}
+
+void FuchsiaSecureStreamDecryptor::OnOutputPacket(
+    StreamProcessorHelper::IoPacket packet) {
+  client_->OnDecryptorOutputPacket(std::move(packet));
+}
+
+void FuchsiaSecureStreamDecryptor::OnNoKey() {
+  client_->OnDecryptorNoKey();
+}
+
+void FuchsiaSecureStreamDecryptor::OnError() {
+  ResetStream();
+  client_->OnDecryptorError();
 }
 
 }  // namespace media

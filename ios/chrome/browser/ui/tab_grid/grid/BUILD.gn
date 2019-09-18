@@ -34,6 +34,8 @@ source_set("grid_ui") {
   deps = [
     ":grid_ui_constants",
     "resources:grid_cell_close_button",
+    "resources:grid_theme_dark_selection_tint_color",
+    "resources:grid_theme_selection_tint_color",
     "//base",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",

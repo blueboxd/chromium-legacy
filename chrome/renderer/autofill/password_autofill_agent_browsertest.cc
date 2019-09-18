@@ -35,6 +35,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/test/browser_test_utils.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -705,8 +706,9 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   }
 
   void BindPasswordManagerDriver(mojo::ScopedInterfaceEndpointHandle handle) {
-    fake_driver_.BindRequest(
-        mojom::PasswordManagerDriverAssociatedRequest(std::move(handle)));
+    fake_driver_.BindReceiver(
+        mojo::PendingAssociatedReceiver<mojom::PasswordManagerDriver>(
+            std::move(handle)));
   }
 
   void BindPasswordManagerClient(mojo::ScopedInterfaceEndpointHandle handle) {

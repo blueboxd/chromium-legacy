@@ -23,6 +23,7 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">Idagdag ang www. at .com sa iyong input sa address bar, pagkatapos ay buksan ang page</translation>
+<translation id="1872219238824176091">Alisin ang kasalukuyang desk</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, pagkatapos ay <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> o <ph name="LEFT" /></translation>
 <translation id="1996162290124031907">Pumunta sa susunod na tab</translation>
 <translation id="2010818616644390445">Pumunta sa huling tab sa window</translation>
@@ -42,6 +43,7 @@
 <translation id="2441202986792279177">Magpalipat-lipat nang mabilis sa mga window</translation>
 <translation id="2454251766545114447">Ipakita ang Pag-zoom out</translation>
 <translation id="2478303094958140141">I-on o i-off ang ChromeVox (pasalitang feedback)</translation>
+<translation id="2488661730534396940">I-activate ang desk sa kaliwa</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Mag-scroll pababa sa web page</translation>
 <translation id="2574014812750545982">I-reset ang antas ng pag-zoom sa page</translation>
@@ -49,6 +51,7 @@
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, pagkatapos ay <ph name="TAB" /> o <ph name="RIGHT" /></translation>
 <translation id="2750942583782703988">I-reload ang iyong kasalukuyang page</translation>
 <translation id="2764005613199379871">Nagfo-focus sa search address bar</translation>
+<translation id="2774822903829597107">Gumawa ng bagong desk</translation>
 <translation id="2789868185375229787">Mag-zoom out sa page</translation>
 <translation id="2804480015716812239">Pindutin ang <ph name="ALT" /> at mag-click ng link</translation>
 <translation id="2830827904629746450">Mag-dock ng window sa kanan</translation>
@@ -100,6 +103,7 @@
 <translation id="4642092649622328492">Kumuha ng screenshot ng bahagi ng screen</translation>
 <translation id="4698850295812410683">Ipakita ang mga tool ng stylus</translation>
 <translation id="4801989101741319327">Lumipat sa dulo ng kasunod na salita</translation>
+<translation id="4866066940972151697">I-activate ang desk sa kanan</translation>
 <translation id="4916163929714267752">Buksan ang link sa isang bagong window</translation>
 <translation id="5030659775136592441">Ipakita ang manager ng bookmark</translation>
 <translation id="5034421018520995080">Pumunta sa pinakataas ng page</translation>

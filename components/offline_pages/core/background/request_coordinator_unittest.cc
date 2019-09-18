@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/system/sys_info.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -80,17 +81,11 @@ class BoolCallbackResult {
 
 class ObserverStub : public RequestCoordinator::Observer {
  public:
-  ObserverStub()
-      : added_called_(false),
-        completed_called_(false),
-        changed_called_(false),
-        network_progress_called_(false),
-        network_progress_bytes_(0),
-        last_status_(RequestCoordinator::BackgroundSavePageResult::SUCCESS),
-        state_(SavePageRequest::RequestState::OFFLINING) {}
+  ObserverStub() { Clear(); }
 
   void Clear() {
     added_called_ = false;
+    added_call_count_ = 0;
     completed_called_ = false;
     changed_called_ = false;
     network_progress_called_ = false;
@@ -101,6 +96,7 @@ class ObserverStub : public RequestCoordinator::Observer {
 
   void OnAdded(const SavePageRequest& request) override {
     added_called_ = true;
+    ++added_call_count_;
     state_ = request.request_state();
     pending_state_ = request.pending_state();
   }
@@ -125,6 +121,7 @@ class ObserverStub : public RequestCoordinator::Observer {
   }
 
   bool added_called() { return added_called_; }
+  int added_call_count() const { return added_call_count_; }
   bool completed_called() { return completed_called_; }
   bool changed_called() { return changed_called_; }
   bool network_progress_called() { return network_progress_called_; }
@@ -137,6 +134,7 @@ class ObserverStub : public RequestCoordinator::Observer {
 
  private:
   bool added_called_;
+  int added_call_count_;
   bool completed_called_;
   bool changed_called_;
   bool network_progress_called_;
@@ -1877,6 +1875,30 @@ TEST_F(RequestCoordinatorTest,
   EXPECT_TRUE(observer().added_called());
   EXPECT_EQ(SavePageRequest::RequestState::AVAILABLE, observer().state());
   EXPECT_EQ(PendingState::PENDING_ANOTHER_DOWNLOAD, observer().pending_state());
+}
+
+TEST_F(RequestCoordinatorTest, SavePageLaterRejectedDuplicateUrl) {
+  // Request the same URL twice using the 'disallow_duplicate_requests' option,
+  // and verify the second request is rejected.
+  EnableOfflinerCallback(false);
+
+  RequestCoordinator::SavePageLaterParams params;
+  params.url = kUrl1;
+  params.client_id = kClientId1;
+  params.add_options.disallow_duplicate_requests = true;
+  std::vector<AddRequestResult> results;
+  auto callback = base::BindLambdaForTesting(
+      [&](AddRequestResult result) { results.push_back(result); });
+
+  EXPECT_NE(0, coordinator()->SavePageLater(params, callback));
+  EXPECT_NE(0, coordinator()->SavePageLater(params, callback));
+  PumpLoop();
+
+  // Only one is added.
+  EXPECT_EQ(1, observer().added_call_count());
+  EXPECT_EQ(std::vector<AddRequestResult>(
+                {AddRequestResult::SUCCESS, AddRequestResult::DUPLICATE_URL}),
+            results);
 }
 
 }  // namespace offline_pages

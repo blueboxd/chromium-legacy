@@ -53,9 +53,11 @@ class CreditCardFIDOAuthenticator
     // Registration flow, including a challenge to sign.
     OPT_IN_WITH_CHALLENGE_FLOW,
     // Opt-in attempt flow, no challenge to sign.
-    OPT_IN_WITHOUT_CHALLENGE_FLOW,
+    OPT_IN_FETCH_CHALLENGE_FLOW,
     // Opt-out flow.
     OPT_OUT_FLOW,
+    // Authorization of a new card.
+    FOLLOWUP_AFTER_CVC_AUTH_FLOW,
   };
   class Requester {
    public:
@@ -68,16 +70,25 @@ class CreditCardFIDOAuthenticator
   ~CreditCardFIDOAuthenticator() override;
 
   // Offer the option to use WebAuthn for authenticating future card unmasking.
-  void ShowWebauthnOfferDialog();
+  void ShowWebauthnOfferDialog(std::string card_authorization_token);
 
-  // Authentication
+  // Invokes Authentication flow. Responds to |accessor_| with full pan.
   void Authenticate(const CreditCard* card,
                     base::WeakPtr<Requester> requester,
                     base::TimeTicks form_parsed_timestamp,
                     base::Value request_options);
 
-  // Registration
-  void Register(base::Value creation_options = base::Value());
+  // Invokes Registration flow. Sends credentials created from
+  // |creation_options| along with the |card_authorization_token| to Payments in
+  // order to enroll the user and authorize the corresponding card.
+  void Register(std::string card_authorization_token = std::string(),
+                base::Value creation_options = base::Value());
+
+  // Invokes an Authorization flow. Sends signature created from
+  // |request_options| along with the |card_authorization_token| to Payments in
+  // order to authorize the corresponding card.
+  void Authorize(std::string card_authorization_token,
+                 base::Value request_options);
 
   // Opts the user out.
   void OptOut();
@@ -124,7 +135,8 @@ class CreditCardFIDOAuthenticator
       PublicKeyCredentialCreationOptionsPtr creation_options);
 
   // Makes a request to payments to either opt-in or opt-out the user.
-  void OptChange(bool opt_in, base::Value attestation_response = base::Value());
+  void OptChange(bool opt_in,
+                 base::Value authenticator_response = base::Value());
 
   // The callback invoked from the WebAuthn prompt including the
   // |assertion_response|, which will be sent to Google Payments to retrieve
@@ -192,6 +204,10 @@ class CreditCardFIDOAuthenticator
 
   // The current flow in progress.
   Flow current_flow_ = NONE_FLOW;
+
+  // Token used for authorizing new cards. Helps tie CVC auth and FIDO calls
+  // together in order to support FIDO-only unmasking on future attempts.
+  std::string card_authorization_token_;
 
   // Meant for histograms recorded in FullCardRequest.
   base::TimeTicks form_parsed_timestamp_;

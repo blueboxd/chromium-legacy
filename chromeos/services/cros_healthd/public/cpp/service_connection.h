@@ -17,10 +17,12 @@ class ServiceConnection {
  public:
   static ServiceConnection* GetInstance();
 
-  // Gather various info on non-removeable block devices.
-  virtual void ProbeNonRemovableBlockDeviceInfo(
-      mojom::CrosHealthdService::ProbeNonRemovableBlockDeviceInfoCallback
-          callback) = 0;
+  // Gather pieces of information about the platform. See
+  // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void ProbeTelemetryInfo(
+      const std::vector<mojom::ProbeCategoryEnum>& categories_to_test,
+      mojom::CrosHealthdService::ProbeTelemetryInfoCallback callback) = 0;
 
  protected:
   ServiceConnection() = default;

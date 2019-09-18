@@ -14,10 +14,10 @@
 
 namespace device {
 
-GamepadMonitor::GamepadMonitor() : is_started_(false) {}
+GamepadMonitor::GamepadMonitor() = default;
 
 GamepadMonitor::~GamepadMonitor() {
-  if (is_started_)
+  if (is_registered_consumer_)
     GamepadService::GetInstance()->RemoveConsumer(this);
 }
 
@@ -49,6 +49,7 @@ void GamepadMonitor::OnGamepadButtonOrAxisChanged(uint32_t index,
 void GamepadMonitor::GamepadStartPolling(GamepadStartPollingCallback callback) {
   DCHECK(!is_started_);
   is_started_ = true;
+  is_registered_consumer_ = true;
 
   GamepadService* service = GamepadService::GetInstance();
   service->ConsumerBecameActive(this);

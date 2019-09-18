@@ -17,4 +17,6 @@ interface IBrowserController {
   void destroy() = 3;
 
   IObjectWrapper onCreateView() = 4;
+
+  void setSupportsEmbedding(in boolean enable) = 5;
 }

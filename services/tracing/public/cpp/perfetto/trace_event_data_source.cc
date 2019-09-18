@@ -361,6 +361,11 @@ void TraceEventDataSource::OnFlushFinished(
     return;
   }
 
+  // Increment the session id to make sure that once tracing starts the events
+  // are added to a new trace writer that comes from perfetto producer, instead
+  // of holding on to the startup registry's writers.
+  session_id_.fetch_add(1u, std::memory_order_relaxed);
+
   // Clear the pending task on the tracing service thread.
   DCHECK_CALLED_ON_VALID_SEQUENCE(perfetto_sequence_checker_);
   base::OnceClosure task;

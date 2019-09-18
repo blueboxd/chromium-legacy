@@ -1159,10 +1159,9 @@ TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
 
   // Mask layers dont create low res since they always fit on one tile.
   CreateEffectNode(pending_layer());
-  auto* mask = AddMaskLayer<FakePictureLayerImpl>(
-      host_impl()->pending_tree(), pending_layer(), pending_raster_source);
-  mask->SetBounds(layer_bounds);
-  mask->SetDrawsContent(true);
+  auto* mask = AddLayer<FakePictureLayerImpl>(host_impl()->pending_tree(),
+                                              pending_raster_source);
+  SetupMaskProperties(pending_layer(), mask);
 
   UpdateDrawProperties(host_impl()->pending_tree());
 
@@ -1188,10 +1187,9 @@ TEST_F(PictureLayerImplTest, HugeMasksGetScaledDown) {
   SetupPendingTree(valid_raster_source);
 
   CreateEffectNode(pending_layer());
-  auto* pending_mask = AddMaskLayer<FakePictureLayerImpl>(
-      host_impl()->pending_tree(), pending_layer(), valid_raster_source);
-  pending_mask->SetBounds(layer_bounds);
-  pending_mask->SetDrawsContent(true);
+  auto* pending_mask = AddLayer<FakePictureLayerImpl>(
+      host_impl()->pending_tree(), valid_raster_source);
+  SetupMaskProperties(pending_layer(), pending_mask);
 
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
   UpdateDrawProperties(host_impl()->pending_tree());
@@ -1315,10 +1313,9 @@ TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
   SetupPendingTree(valid_raster_source);
 
   CreateEffectNode(pending_layer());
-  auto* pending_mask = AddMaskLayer<FakePictureLayerImpl>(
-      host_impl()->pending_tree(), pending_layer(), valid_raster_source);
-  pending_mask->SetBounds(layer_bounds);
-  pending_mask->SetDrawsContent(true);
+  auto* pending_mask = AddLayer<FakePictureLayerImpl>(
+      host_impl()->pending_tree(), valid_raster_source);
+  SetupMaskProperties(pending_layer(), pending_mask);
 
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
   UpdateDrawProperties(host_impl()->pending_tree());

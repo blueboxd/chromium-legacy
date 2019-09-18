@@ -366,9 +366,10 @@ void CastWebContentsImpl::RenderFrameCreated(
         render_frame_host->GetRemoteAssociatedInterfaces());
   }
 
-  chromecast::shell::mojom::FeatureManagerPtr feature_manager_ptr;
-  render_frame_host->GetRemoteInterfaces()->GetInterface(&feature_manager_ptr);
-  feature_manager_ptr->ConfigureFeatures(GetRendererFeatures());
+  mojo::Remote<chromecast::shell::mojom::FeatureManager> feature_manager_remote;
+  render_frame_host->GetRemoteInterfaces()->GetInterface(
+      feature_manager_remote.BindNewPipeAndPassReceiver());
+  feature_manager_remote->ConfigureFeatures(GetRendererFeatures());
 
   chromecast::shell::mojom::MediaPlaybackOptionsAssociatedPtr
       media_playback_options;

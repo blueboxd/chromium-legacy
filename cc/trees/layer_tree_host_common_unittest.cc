@@ -3043,13 +3043,17 @@ TEST_F(LayerTreeHostCommonTestWithLayerTree, OcclusionBySiblingOfTarget) {
   // surface_child's contents.
   Occlusion actual_occlusion =
       GetRenderSurfaceImpl(surface_child)->occlusion_in_content_space();
-  Occlusion expected_occlusion(translate, SimpleEnclosedRegion(gfx::Rect()),
+  Occlusion expected_occlusion(translate, SimpleEnclosedRegion(),
                                SimpleEnclosedRegion(gfx::Rect(200, 200)));
   EXPECT_TRUE(expected_occlusion.IsEqual(actual_occlusion));
 
-  // Mask layer should have the same occlusion.
+  // Mask layer's occlusion is different because we create transform and render
+  // surface for it in layer tree mode.
   actual_occlusion =
       ImplOf(surface_child_mask)->draw_properties().occlusion_in_content_space;
+  expected_occlusion = Occlusion(
+      gfx::Transform(), SimpleEnclosedRegion(gfx::Rect(-20, -20, 200, 200)),
+      SimpleEnclosedRegion());
   EXPECT_TRUE(expected_occlusion.IsEqual(actual_occlusion));
 }
 
@@ -3795,10 +3799,10 @@ TEST_F(LayerTreeHostCommonTestWithLayerTree, BackFaceCullingWithPreserves3d) {
   // the preserve-3d transform style. Instead, an example of when a surface
   // would be created with preserve-3d is when there is a mask layer.
   FakeContentLayerClient client;
-  auto dummy_mask_layer1 = PictureLayer::Create(&client);
-  front_facing_surface->SetMaskLayer(dummy_mask_layer1);
-  auto dummy_mask_layer2 = PictureLayer::Create(&client);
-  back_facing_surface->SetMaskLayer(dummy_mask_layer2);
+  auto front_facing_mask = PictureLayer::Create(&client);
+  front_facing_surface->SetMaskLayer(front_facing_mask);
+  auto back_facing_mask = PictureLayer::Create(&client);
+  back_facing_surface->SetMaskLayer(back_facing_mask);
 
   // Nothing is double-sided
   front_facing_child->SetDoubleSided(false);
@@ -3819,8 +3823,8 @@ TEST_F(LayerTreeHostCommonTestWithLayerTree, BackFaceCullingWithPreserves3d) {
   back_facing_child_of_front_facing_surface->SetIsDrawable(true);
   front_facing_child_of_back_facing_surface->SetIsDrawable(true);
   back_facing_child_of_back_facing_surface->SetIsDrawable(true);
-  dummy_mask_layer1->SetIsDrawable(true);
-  dummy_mask_layer2->SetIsDrawable(true);
+  front_facing_mask->SetIsDrawable(true);
+  back_facing_mask->SetIsDrawable(true);
 
   gfx::Transform backface_matrix;
   backface_matrix.Translate(50.0, 50.0);
@@ -3836,8 +3840,8 @@ TEST_F(LayerTreeHostCommonTestWithLayerTree, BackFaceCullingWithPreserves3d) {
   back_facing_child_of_front_facing_surface->SetBounds(gfx::Size(100, 100));
   front_facing_child_of_back_facing_surface->SetBounds(gfx::Size(100, 100));
   back_facing_child_of_back_facing_surface->SetBounds(gfx::Size(100, 100));
-  dummy_mask_layer1->SetBounds(gfx::Size(100, 100));
-  dummy_mask_layer2->SetBounds(gfx::Size(100, 100));
+  front_facing_mask->SetBounds(gfx::Size(100, 100));
+  back_facing_mask->SetBounds(gfx::Size(100, 100));
 
   back_facing_child->SetTransform(backface_matrix);
   back_facing_surface->SetTransform(backface_matrix);
@@ -3881,10 +3885,11 @@ TEST_F(LayerTreeHostCommonTestWithLayerTree, BackFaceCullingWithPreserves3d) {
   EXPECT_EQ(GetRenderSurfaceImpl(back_facing_child_of_back_facing_surface),
             GetRenderSurfaceImpl(back_facing_surface));
 
-  EXPECT_EQ(3u, update_layer_impl_list().size());
+  EXPECT_EQ(4u, update_layer_impl_list().size());
 
   EXPECT_TRUE(UpdateLayerImplListContains(front_facing_child->id()));
   EXPECT_TRUE(UpdateLayerImplListContains(front_facing_surface->id()));
+  EXPECT_TRUE(UpdateLayerImplListContains(front_facing_mask->id()));
   EXPECT_TRUE(UpdateLayerImplListContains(
       front_facing_child_of_front_facing_surface->id()));
 }
@@ -6826,9 +6831,6 @@ static void GatherDrawnLayers(LayerTreeImpl* tree_impl,
 
     if (it.state() != EffectTreeLayerListIterator::State::CONTRIBUTING_SURFACE)
       continue;
-
-    if (it.current_render_surface()->MaskLayer())
-      drawn_layers->insert(it.current_render_surface()->MaskLayer());
   }
 }
 
@@ -6975,11 +6977,13 @@ TEST_F(LayerTreeHostCommonTestWithLayerTree, RenderSurfaceLayerListMembership) {
   EXPECT_FALSE(ImplOf(grand_parent)->contributes_to_drawn_render_surface());
   EXPECT_FALSE(ImplOf(parent)->contributes_to_drawn_render_surface());
   EXPECT_FALSE(ImplOf(child)->contributes_to_drawn_render_surface());
-  EXPECT_FALSE(ImplOf(mask)->contributes_to_drawn_render_surface());
+  // Mask layer has its own render surface in layer tree mode.
+  EXPECT_TRUE(ImplOf(mask)->contributes_to_drawn_render_surface());
   EXPECT_FALSE(ImplOf(grand_child1)->contributes_to_drawn_render_surface());
   EXPECT_FALSE(ImplOf(grand_child2)->contributes_to_drawn_render_surface());
 
   expected.clear();
+  expected.insert(ImplOf(mask));
   actual.clear();
   GatherDrawnLayers(host_impl()->active_tree(), &actual);
   EXPECT_EQ(expected, actual);
@@ -8643,7 +8647,8 @@ TEST_F(LayerTreeHostCommonTestWithLayerTree, MaskLayerDrawProperties) {
   root->SetIsDrawable(true);
   child->SetTransform(transform);
   child->SetBounds(gfx::Size(30, 30));
-  child->SetIsDrawable(false);
+  child->SetIsDrawable(true);
+  child->SetOpacity(0.f);
   mask->SetBounds(gfx::Size(30, 30));
 
   CommitAndActivate();
@@ -8652,13 +8657,14 @@ TEST_F(LayerTreeHostCommonTestWithLayerTree, MaskLayerDrawProperties) {
   // mask doesn't contribute to a drawn render surface. This means it has an
   // empty visible rect, but its screen space transform can still be computed
   // correctly on-demand.
+  EXPECT_FALSE(ImplOf(child)->contributes_to_drawn_render_surface());
   EXPECT_FALSE(ImplOf(mask)->contributes_to_drawn_render_surface());
   EXPECT_EQ(gfx::Rect(), ImplOf(mask)->visible_layer_rect());
   EXPECT_TRANSFORMATION_MATRIX_EQ(transform,
                                   ImplOf(mask)->ScreenSpaceTransform());
 
   // Make the child's render surface have contributing content.
-  child->SetIsDrawable(true);
+  child->SetOpacity(1.f);
   CommitAndActivate();
   EXPECT_TRUE(ImplOf(mask)->contributes_to_drawn_render_surface());
   EXPECT_EQ(gfx::Rect(30, 30), ImplOf(mask)->visible_layer_rect());
@@ -8671,6 +8677,17 @@ TEST_F(LayerTreeHostCommonTestWithLayerTree, MaskLayerDrawProperties) {
   EXPECT_TRANSFORMATION_MATRIX_EQ(transform,
                                   ImplOf(mask)->ScreenSpaceTransform());
   EXPECT_EQ(gfx::Rect(20, 20), ImplOf(mask)->visible_layer_rect());
+
+  // For now SetIsDrawable of masked layer doesn't affect draw properties of
+  // the mask layer because it doesn't affect property trees.
+  child->SetIsDrawable(false);
+  CommitAndActivate();
+  EXPECT_TRUE(ImplOf(mask)->contributes_to_drawn_render_surface());
+
+  // SetIsDrawable of mask layer itself affects its draw properties.
+  mask->SetIsDrawable(false);
+  CommitAndActivate();
+  EXPECT_FALSE(ImplOf(mask)->contributes_to_drawn_render_surface());
 }
 
 TEST_F(LayerTreeHostCommonTest,

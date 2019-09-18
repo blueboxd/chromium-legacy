@@ -873,9 +873,15 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, Cache) {
 
   // Make a request whose response should be cached.
   GURL request_url = embedded_test_server()->GetURL("/cachetime");
+  url::Origin request_origin =
+      url::Origin::Create(embedded_test_server()->base_url());
   std::unique_ptr<network::ResourceRequest> request =
       std::make_unique<network::ResourceRequest>();
   request->url = request_url;
+  request->trusted_params = network::ResourceRequest::TrustedParams();
+  request->trusted_params->network_isolation_key =
+      net::NetworkIsolationKey(request_origin, request_origin);
+
   content::SimpleURLLoaderTestHelper simple_loader_helper;
   std::unique_ptr<network::SimpleURLLoader> simple_loader =
       network::SimpleURLLoader::Create(std::move(request),
@@ -896,6 +902,10 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, Cache) {
   std::unique_ptr<network::ResourceRequest> request2 =
       std::make_unique<network::ResourceRequest>();
   request2->url = request_url;
+  request2->trusted_params = network::ResourceRequest::TrustedParams();
+  request2->trusted_params->network_isolation_key =
+      net::NetworkIsolationKey(request_origin, request_origin);
+
   content::SimpleURLLoaderTestHelper simple_loader_helper2;
   std::unique_ptr<network::SimpleURLLoader> simple_loader2 =
       network::SimpleURLLoader::Create(std::move(request2),
@@ -972,6 +982,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_DiskCache) {
   // cache in the next test). The profile directory is preserved between the
   // PRE_DiskCache and DiskCache run, so can just keep a file there.
   GURL test_url = embedded_test_server()->GetURL(kCacheRandomPath);
+  url::Origin test_origin = url::Origin::Create(test_url);
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath save_url_file_path = browser()->profile()->GetPath().Append(
       FILE_PATH_LITERAL("url_for_test.txt"));
@@ -980,6 +991,9 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_DiskCache) {
   std::unique_ptr<network::ResourceRequest> request =
       std::make_unique<network::ResourceRequest>();
   request->url = test_url;
+  request->trusted_params = network::ResourceRequest::TrustedParams();
+  request->trusted_params->network_isolation_key =
+      net::NetworkIsolationKey(test_origin, test_origin);
 
   content::SimpleURLLoaderTestHelper simple_loader_helper;
   std::unique_ptr<network::SimpleURLLoader> simple_loader =
@@ -1027,6 +1041,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DiskCache) {
 
   GURL test_url = GURL(file_data.substr(0, newline_pos));
   ASSERT_TRUE(test_url.is_valid()) << test_url.possibly_invalid_spec();
+  url::Origin test_origin = url::Origin::Create(test_url);
 
   std::string original_response = file_data.substr(newline_pos + 1);
 
@@ -1034,6 +1049,10 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DiskCache) {
   std::unique_ptr<network::ResourceRequest> request =
       std::make_unique<network::ResourceRequest>();
   request->url = test_url;
+  request->trusted_params = network::ResourceRequest::TrustedParams();
+  request->trusted_params->network_isolation_key =
+      net::NetworkIsolationKey(test_origin, test_origin);
+
   content::SimpleURLLoaderTestHelper simple_loader_helper;
   request->load_flags = net::LOAD_ONLY_FROM_CACHE;
   std::unique_ptr<network::SimpleURLLoader> simple_loader =

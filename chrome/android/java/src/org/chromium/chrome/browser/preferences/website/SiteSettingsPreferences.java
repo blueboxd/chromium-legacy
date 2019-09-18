@@ -92,7 +92,7 @@ public class SiteSettingsPreferences
                 getPreferenceScreen().removePreference(findPreference(Type.CLIPBOARD));
             }
             CommandLine commandLine = CommandLine.getInstance();
-            if (!commandLine.hasSwitch(ContentSwitches.ENABLE_WEB_BLUETOOTH_SCANNING)) {
+            if (!commandLine.hasSwitch(ContentSwitches.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES)) {
                 getPreferenceScreen().removePreference(findPreference(Type.BLUETOOTH_SCANNING));
             }
         }
@@ -113,7 +113,7 @@ public class SiteSettingsPreferences
             websitePrefs.add(Type.AUTOMATIC_DOWNLOADS);
             websitePrefs.add(Type.BACKGROUND_SYNC);
             CommandLine commandLine = CommandLine.getInstance();
-            if (commandLine.hasSwitch(ContentSwitches.ENABLE_WEB_BLUETOOTH_SCANNING)) {
+            if (commandLine.hasSwitch(ContentSwitches.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES)) {
                 websitePrefs.add(Type.BLUETOOTH_SCANNING);
             }
             websitePrefs.add(Type.CAMERA);

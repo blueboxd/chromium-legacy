@@ -107,9 +107,11 @@ PhysicalRect NGPhysicalLineBoxFragment::ScrollableOverflow(
       }
     }
 
-    // If child has the same style as parent, parent will compute relative
-    // offset.
-    if (&child->Style() != container_style) {
+    // For implementation reasons, text nodes inherit computed style from their
+    // container, including everything, also non-inherited properties. So, if
+    // the container has a relative offset, this will be falsely reflected on
+    // text children. We need to guard against this.
+    if (!child->IsText()) {
       child_scroll_overflow.offset +=
           ComputeRelativeOffset(child->Style(), container_writing_mode,
                                 container_direction, container_physical_size);

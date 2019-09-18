@@ -592,7 +592,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void BindFrameSinkProvider(
       mojo::PendingReceiver<mojom::FrameSinkProvider> receiver);
   void BindCompositingModeReporter(
-      viz::mojom::CompositingModeReporterRequest request);
+      mojo::PendingReceiver<viz::mojom::CompositingModeReporter> receiver);
   void CreateStoragePartitionService(
       mojo::PendingReceiver<blink::mojom::StoragePartitionService> receiver);
   void CreateBroadcastChannelProvider(

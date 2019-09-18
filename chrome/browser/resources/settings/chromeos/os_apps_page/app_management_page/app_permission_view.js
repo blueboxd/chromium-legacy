@@ -30,11 +30,13 @@ Polymer({
   },
 
   /**
+   * @param {App} app
+   * @return {?string}
    * @private
    */
   getSelectedRouteId_: function(app) {
     if (!app) {
-      return;
+      return null;
     }
 
     const selectedAppType = app.type;

@@ -151,7 +151,8 @@ class XRSession::XRSessionResizeObserverDelegate final
 
 XRSession::XRSession(
     XR* xr,
-    device::mojom::blink::XRSessionClientRequest client_request,
+    mojo::PendingReceiver<device::mojom::blink::XRSessionClient>
+        client_receiver,
     XRSession::SessionMode mode,
     EnvironmentBlendMode environment_blend_mode,
     bool uses_input_eventing,
@@ -164,7 +165,7 @@ XRSession::XRSession(
       world_information_(MakeGarbageCollected<XRWorldInformation>(this)),
       enabled_features_(std::move(enabled_features)),
       input_sources_(MakeGarbageCollected<XRInputSourceArray>()),
-      client_binding_(this, std::move(client_request)),
+      client_receiver_(this, std::move(client_receiver)),
       input_binding_(this),
       callback_collection_(
           MakeGarbageCollected<XRFrameRequestCallbackCollection>(

@@ -224,7 +224,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DebugDaemonClient
   // A callback to handle the result of StartConcierge/StopConcierge.
   using ConciergeCallback = base::OnceCallback<void(bool success)>;
   // Calls debugd::kStartVmConcierge, which starts the Concierge service.
-  // |callback| is called when the method finishes.
+  // |callback| is called when the method finishes. If the |callback| is called
+  // with true, it is guaranteed that the service is ready to accept requests.
+  // It is not necessary for ConciergeClient to use WaitForServiceToBeAvailable.
   virtual void StartConcierge(ConciergeCallback callback) = 0;
   // Calls debugd::kStopVmConcierge, which stops the Concierge service.
   // |callback| is called when the method finishes.

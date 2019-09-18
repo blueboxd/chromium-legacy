@@ -29,7 +29,7 @@ crbug.com/653538 [ win amd-0x6613 ] Pixel_GpuRasterization_BlueBox [ RetryOnFail
 [ android ] Pixel_Canvas2DTabSwitch_SoftwareCompositing [ Skip ]
 
 # Skip tab switching tests on Android webview since it doesn't have tabs
-[ android-webview-instrumentation ] Pixel_Canvas2DTabSwitch [ Skip ]
+[ android android-webview-instrumentation ] Pixel_Canvas2DTabSwitch [ Skip ]
 
 # Tests running with SwiftShader are skipped on platforms where SwiftShader
 # isn't supported.
@@ -186,6 +186,13 @@ crbug.com/974383 [ linux skia-renderer use-vulkan intel ] Pixel_CanvasDisplayLin
 
 # Fails on Intel
 crbug.com/991289 [ linux skia-renderer intel ] Pixel_CSS3DBlueBox [ Skip ]
+
+# Fails when the browser features SkiaRenderer & Vulkan are enabled on Intel
+crbug.com/1004837 [ linux skia-renderer use-vulkan intel ] Pixel_Canvas2DRedBox [ Skip ]
+crbug.com/1004837 [ linux skia-renderer use-vulkan intel ] Pixel_Canvas2DTabSwitch [ Skip ]
+crbug.com/1004840 [ linux skia-renderer use-vulkan intel ] Pixel_WebGLGreenTriangle_AA_Alpha [ Skip ]
+crbug.com/1004840 [ linux skia-renderer use-vulkan intel ] Pixel_WebGLGreenTriangle_AA_NoAlpha [ Skip ]
+crbug.com/1004840 [ linux skia-renderer use-vulkan intel ] Pixel_WebGLGreenTriangle_NoAA_NoAlpha [ Skip ]
 
 # Fails when the browser features SkiaRenderer & Vulkan are enabled on Android
 crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_2DCanvasWebGL [ Failure ]

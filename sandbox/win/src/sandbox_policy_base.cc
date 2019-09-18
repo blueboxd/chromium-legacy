@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
+#include "sandbox/win/src/acl.h"
 #include "sandbox/win/src/filesystem_policy.h"
 #include "sandbox/win/src/interception.h"
 #include "sandbox/win/src/job.h"
@@ -471,6 +472,11 @@ ResultCode PolicyBase::MakeTokens(base::win::ScopedHandle* initial,
     SecurityCapabilities caps(package_sid);
     if (CreateLowBoxToken(lockdown->Get(), PRIMARY, &caps, saved_handles,
                           saved_handles_count, lowbox) != ERROR_SUCCESS) {
+      return SBOX_ERROR_GENERIC;
+    }
+
+    if (!ReplacePackageSidInDacl(lowbox->Get(), SE_KERNEL_OBJECT, package_sid,
+                                 TOKEN_ALL_ACCESS)) {
       return SBOX_ERROR_GENERIC;
     }
   }

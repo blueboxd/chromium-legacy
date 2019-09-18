@@ -17,6 +17,7 @@ js_library("bluetooth_internals") {
     "adapter_page.js",
     "bluetooth_internals.js",
     "characteristic_list.js",
+    "debug_log_page.js",
     "descriptor_list.js",
     "device_broker.js",
     "device_collection.js",
@@ -33,6 +34,7 @@ js_library("bluetooth_internals") {
 
   deps = [
     "//chrome/browser/ui/webui/bluetooth_internals:mojo_bindings_js_library_for_compile",
+    "//ui/webui/resources/cr_elements/cr_toggle:cr_toggle",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:util",
     "//ui/webui/resources/js/cr/ui:array_data_model",

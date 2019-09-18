@@ -633,14 +633,17 @@ class BBJSONGenerator(object):
 
   def generate_junit_test(self, waterfall, tester_name, tester_config,
                           test_name, test_config):
-    del tester_config
     if not self.should_run_on_tester(waterfall, tester_name, test_name,
                                      test_config):
       return None
-    result = {
+    result = copy.deepcopy(test_config)
+    result.update({
       'name': test_name,
       'test': test_config.get('test', test_name),
-    }
+    })
+    self.initialize_args_for_test(result, tester_config)
+    result = self.update_and_cleanup_test(
+        result, test_name, tester_name, tester_config, waterfall)
     return result
 
   def generate_instrumentation_test(self, waterfall, tester_name, tester_config,

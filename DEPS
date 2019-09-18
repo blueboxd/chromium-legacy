@@ -162,7 +162,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '747b3409bc2d99f9cba9c9349eaae53e0da5e21b',
+  'skia_revision': 'f3c4a829c64f6ef2177f86603366c6df9fe801e1',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -174,11 +174,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '65a5036eb0419047789d5ee66c02577ef251e07b',
+  'angle_revision': 'a7003d5fc30680e2bd3dbe3a9393d74d89a48c17',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '860369fc431e8510f974799961083b42d01cfa8b',
+  'swiftshader_revision': '61a2765940a72891baa108e2815da6c21f7f3218',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -213,7 +213,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '99f23d6ff2203966d210bccd49eacc62a20328f9',
+  'freetype_revision': '04ebb2a000ee40df2a9900198ec62d79af745b1f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling HarfBuzz
   # and whatever else without interference from each other.
@@ -853,7 +853,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '08a7e90d730a745faa146a02217cd3e0d0968e6e',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '20791fdb3e9190969440d82a4fb730055425fcfa',
       'condition': 'checkout_linux',
   },
 
@@ -878,7 +878,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '2c210a490857380a93f8308dd504aeb1ef759d38',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '6f9a0238ce40b6af186aac520c3b87ffa9a8be3b',
 
   'src/third_party/devtools-node-modules':
     Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision'),
@@ -1257,7 +1257,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '263def0ec958d997bfb35fbdfb2eb3092f8eac7e',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '5b12fdd2a7ac6d8a9a61013b855ace3766393934',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1425,7 +1425,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + 'abaae129d9a0c6e1e092067e0b105475df43352e',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '4a822f4b3c64a0d06528b09c36ba2def80721b0f',
+    Var('webrtc_git') + '/src.git' + '@' + '86314cfb5dc09bba15a1607585e9ddd544078ac5',
 
   'src/third_party/xdg-utils': {
       'url': Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',
@@ -1487,7 +1487,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@56bc26904935ab1dae460ae48ef2121a93b85434',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@8e462ce33b7bf88ad4bb96c3eeaa95333b81c7a3',
     'condition': 'checkout_src_internal',
   },
 
@@ -3679,6 +3679,43 @@ hooks = [
                 '--local_state=src/chromeos/profiles/orderfile.local.txt',
                 '--output_name=src/chromeos/profiles/chromeos.orderfile.txt',
                 '--gs_url_base=chromeos-prebuilt/afdo-job/orderfiles/vetted',
+    ],
+  },
+  # Download AFDO profiles for Chrome OS for each architecture.
+  {
+    'name': 'Fetch Chrome OS AFDO profiles (silvermont)',
+    'pattern': '.',
+    'condition': 'checkout_chromeos or checkout_simplechrome',
+    'action': [ 'vpython',
+                'src/tools/download_cros_provided_profile.py',
+                '--newest_state=src/chromeos/profiles/silvermont.afdo.newest.txt',
+                '--local_state=src/chromeos/profiles/silvermont.afdo.local.txt',
+                '--output_name=src/chromeos/profiles/silvermont.afdo.prof',
+                '--gs_url_base=chromeos-prebuilt/afdo-job/vetted/release',
+    ],
+  },
+  {
+    'name': 'Fetch Chrome OS AFDO profiles (airmont)',
+    'pattern': '.',
+    'condition': 'checkout_chromeos or checkout_simplechrome',
+    'action': [ 'vpython',
+                'src/tools/download_cros_provided_profile.py',
+                '--newest_state=src/chromeos/profiles/airmont.afdo.newest.txt',
+                '--local_state=src/chromeos/profiles/airmont.afdo.local.txt',
+                '--output_name=src/chromeos/profiles/airmont.afdo.prof',
+                '--gs_url_base=chromeos-prebuilt/afdo-job/vetted/release',
+    ],
+  },
+  {
+    'name': 'Fetch Chrome OS AFDO profiles (broadwell)',
+    'pattern': '.',
+    'condition': 'checkout_chromeos or checkout_simplechrome',
+    'action': [ 'vpython',
+                'src/tools/download_cros_provided_profile.py',
+                '--newest_state=src/chromeos/profiles/broadwell.afdo.newest.txt',
+                '--local_state=src/chromeos/profiles/broadwell.afdo.local.txt',
+                '--output_name=src/chromeos/profiles/broadwell.afdo.prof',
+                '--gs_url_base=chromeos-prebuilt/afdo-job/vetted/release',
     ],
   },
   {

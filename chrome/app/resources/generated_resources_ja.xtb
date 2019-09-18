@@ -4300,8 +4300,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="7371006317849674875">開始時間</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">移動時にマウスカーソルを強調表示する</translation>
-<translation id="7377169924702866686">CapsLock 
-がオンになっています。</translation>
 <translation id="7377451353532943397">センサーへのアクセスを引き続きブロックする</translation>
 <translation id="7378627244592794276">いいえ</translation>
 <translation id="73786666777299047">Chrome ウェブストアを開きます</translation>
@@ -5008,7 +5006,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="8390449457866780408">サーバーを使用できません。</translation>
 <translation id="8391218455464584335">レコード</translation>
 <translation id="8391712576156218334">画像を利用できません。しばらくしてからもう一度お試しください。</translation>
-<translation id="8392234662362215700">キーボードのレイアウトを切り替えるには Ctrl+Shift+Space を押してください。</translation>
 <translation id="8392364544846746346">サイトがデバイスのファイルやフォルダを編集しようとしたときに確認する</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> のオプション メニュー</translation>
 <translation id="8393511274964623038">プラグインを停止</translation>
@@ -5179,7 +5176,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="8656619792520327915">別の Bluetooth セキュリティ キーを追加</translation>
 <translation id="8656768832129462377">確認しない</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> が <ph name="TAB_NAME" /> の画面と音声を共有しています。</translation>
-<translation id="8659875081143553823">少々お待ちください</translation>
 <translation id="8660174278198826384">あなたの組織のデバイスの管理者にお問い合わせください</translation>
 <translation id="8661290697478713397">シークレット ウインドウでリンクを開く(&amp;G)</translation>
 <translation id="8662671328352114214"><ph name="TYPE" /> ネットワークへの接続</translation>

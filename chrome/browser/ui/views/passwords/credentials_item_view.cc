@@ -62,17 +62,15 @@ CredentialsItemView::CredentialsItemView(
     const base::string16& lower_text,
     SkColor hover_color,
     const autofill::PasswordForm* form,
-    network::mojom::URLLoaderFactory* loader_factory)
-    : Button(button_listener),
-      form_(form),
-      upper_label_(nullptr),
-      lower_label_(nullptr),
-      info_icon_(nullptr),
-      hover_color_(hover_color) {
+    network::mojom::URLLoaderFactory* loader_factory,
+    int upper_text_style,
+    int lower_text_style)
+    : Button(button_listener), form_(form), hover_color_(hover_color) {
   set_notify_enter_exit_on_child(true);
   // Create an image-view for the avatar. Make sure it ignores events so that
   // the parent can receive the events instead.
-  image_view_ = new CircularImageView;
+  auto image_view = std::make_unique<CircularImageView>();
+  image_view_ = image_view.get();
   image_view_->set_can_process_events_within_subtree(false);
   gfx::Image image = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
       IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE);
@@ -85,31 +83,30 @@ CredentialsItemView::CredentialsItemView(
         form_->icon_url, weak_ptr_factory_.GetWeakPtr());
     fetcher->Start(loader_factory);
   }
-  AddChildView(image_view_);
+  AddChildView(std::move(image_view));
 
   // TODO(tapted): Check these (and the STYLE_ values below) against the spec on
   // http://crbug.com/651681.
   const int kLabelContext = CONTEXT_BODY_TEXT_SMALL;
 
   if (!upper_text.empty()) {
-    upper_label_ = new views::Label(upper_text, kLabelContext,
-                                    views::style::STYLE_PRIMARY);
-    upper_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    AddChildView(upper_label_);
+    auto upper_label = std::make_unique<views::Label>(upper_text, kLabelContext,
+                                                      upper_text_style);
+    upper_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    upper_label_ = AddChildView(std::move(upper_label));
   }
 
   if (!lower_text.empty()) {
-    lower_label_ = new views::Label(lower_text, kLabelContext,
-                                    views::style::STYLE_SECONDARY);
-    lower_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    lower_label_->SetMultiLine(true);
-    AddChildView(lower_label_);
+    auto lower_label = std::make_unique<views::Label>(lower_text, kLabelContext,
+                                                      lower_text_style);
+    lower_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    lower_label->SetMultiLine(true);
+    lower_label_ = AddChildView(std::move(lower_label));
   }
 
   if (form_->is_public_suffix_match) {
-    info_icon_ = new views::TooltipIcon(
-        base::UTF8ToUTF16(form_->origin.GetOrigin().spec()));
-    AddChildView(info_icon_);
+    info_icon_ = AddChildView(std::make_unique<views::TooltipIcon>(
+        base::UTF8ToUTF16(form_->origin.GetOrigin().spec())));
   }
 
   if (!upper_text.empty() && !lower_text.empty())

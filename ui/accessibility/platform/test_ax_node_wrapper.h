@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "build/build_config.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_tree.h"
@@ -40,6 +41,9 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   // called from for testing.
   static const AXNode* GetNodeFromLastDefaultAction();
 
+  // Set a global scale factor for testing.
+  static std::unique_ptr<base::AutoReset<float>> SetScaleFactor(float value);
+
   ~TestAXNodeWrapper() override;
 
   AXPlatformNode* ax_platform_node() const { return platform_node_; }
@@ -55,6 +59,7 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   const AXTree::Selection GetUnignoredSelection() const override;
   AXNodePosition::AXPositionInstance CreateTextPositionAt(
       int offset) const override;
+  gfx::NativeViewAccessible GetNativeViewAccessible() override;
   gfx::NativeViewAccessible GetParent() override;
   int GetChildCount() override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;

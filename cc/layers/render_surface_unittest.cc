@@ -221,16 +221,15 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceIgnoreMaskLayerOcclusion) {
   CopyProperties(root, layer);
   CreateEffectNode(layer);
 
-  auto* mask_layer =
-      impl.AddMaskLayer<FakePictureLayerImplForRenderSurfaceTest>(layer);
+  auto* mask_layer = impl.AddLayer<FakePictureLayerImplForRenderSurfaceTest>();
   scoped_refptr<FakeRasterSource> raster_source(
       FakeRasterSource::CreateFilled(mask_layer->bounds()));
   mask_layer->SetRasterSourceOnActive(raster_source, Region());
-  mask_layer->SetDrawsContent(true);
   std::vector<gfx::Rect> quad_rects;
   quad_rects.push_back(gfx::Rect(0, 0, 100, 100));
   quad_rects.push_back(gfx::Rect(100, 0, 100, 100));
   mask_layer->SetQuadRectsForTesting(quad_rects);
+  SetupMaskProperties(layer, mask_layer);
 
   UpdateDrawProperties(impl.host_impl()->active_tree());
 

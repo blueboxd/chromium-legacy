@@ -2543,6 +2543,7 @@ if (!is_android) {
     }
     if (enable_print_preview) {
       sources += [
+        "../browser/printing/pdf_nup_converter_client_browsertest.cc",
         "../browser/printing/print_browsertest.cc",
         "../browser/printing/print_preview_dialog_controller_browsertest.cc",
         "../browser/printing/print_preview_pdf_generated_browsertest.cc",
@@ -3048,7 +3049,6 @@ test("unit_tests") {
     "../browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h",
     "../browser/page_load_metrics/observers/page_load_metrics_observer_tester.cc",
     "../browser/page_load_metrics/observers/page_load_metrics_observer_tester.h",
-    "../browser/page_load_metrics/observers/previews_lite_page_redirect_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/previews_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/previews_ukm_observer_unittest.cc",
     "../browser/page_load_metrics/observers/protocol_page_load_metrics_observer_unittest.cc",

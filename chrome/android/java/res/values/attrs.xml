@@ -7,8 +7,6 @@
     <declare-styleable name="HyperlinkPreference">
         <!-- The URL to load when the preference is clicked -->
         <attr name="url" format="string" />
-        <!-- True if the hyperlink should look like an <a> element. Default is false. -->
-        <attr name="imitateWebLink" format="boolean" />
     </declare-styleable>
 
     <declare-styleable name="LearnMorePreference">

@@ -245,6 +245,10 @@ gfx::NativeViewAccessible AXVirtualView::GetNSWindow() {
   return nullptr;
 }
 
+gfx::NativeViewAccessible AXVirtualView::GetNativeViewAccessible() {
+  return GetNativeObject();
+}
+
 gfx::NativeViewAccessible AXVirtualView::GetParent() {
   if (parent_view_)
     return parent_view_->GetNativeObject();

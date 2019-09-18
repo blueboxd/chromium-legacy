@@ -31,9 +31,9 @@ import org.chromium.chrome.browser.toolbar.IncognitoToggleTabLayout;
 import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.NewTabButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
+import org.chromium.chrome.browser.ui.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
-import org.chromium.chrome.browser.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.widget.OptimizedFrameLayout;
 
@@ -269,8 +269,9 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
         mIncognitoStateProvider = provider;
         mIncognitoStateProvider.addIncognitoStateObserverAndTrigger(this);
 
-        if (mNewTabImageButton != null)
+        if (mNewTabImageButton != null) {
             mNewTabImageButton.setIncognitoStateProvider(mIncognitoStateProvider);
+        }
     }
 
     @Override

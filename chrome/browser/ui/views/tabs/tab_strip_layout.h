@@ -39,23 +39,29 @@ class TabSizer {
   float space_fraction_available_;
 };
 
-// Solve layout constraints to determine how much space is available for tabs
-// to use relative to how much they want to use.
-TabSizer CalculateSpaceFractionAvailable(
+// Contains the information needed to freeze the width of each tab.
+struct TabWidthOverride {
+  TabSizer sizer;
+
+  // The number of pixels of extra width that should be distributed.
+  int extra_space;
+};
+
+TabWidthOverride CalculateTabWidthOverride(
     const TabLayoutConstants& layout_constants,
     const std::vector<TabWidthConstraints>& tabs,
-    base::Optional<int> width);
+    int width);
 
 // Calculates and returns the bounds of the tabs. |width| is the available
 // width to use for tab layout. This never sizes the tabs smaller then the
 // minimum widths in TabSizeInfo, and as a result the calculated bounds may go
-// beyond |width|. If |override_tab_sizer| has a value, it is used to calculate
-// bounds; otherwise, a new sizer is calculated based on the other constraints.
+// beyond |width|. If |tab_width_override| has a value, it is used to calculate
+// bounds; otherwise, they are calculated based on the other constraints.
 std::vector<gfx::Rect> CalculateTabBounds(
     const TabLayoutConstants& layout_constants,
     const std::vector<TabWidthConstraints>& tabs,
     base::Optional<int> width,
-    base::Optional<TabSizer> override_tab_sizer);
+    base::Optional<TabWidthOverride> tab_width_override);
 
 std::vector<gfx::Rect> CalculatePinnedTabBounds(
     const TabLayoutConstants& layout_constants,

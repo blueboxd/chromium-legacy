@@ -72,25 +72,6 @@ class TestLayerTreeHostBase : public testing::Test {
     return result;
   }
 
-  template <typename T, typename... Args>
-  T* AddMaskLayer(LayerTreeImpl* layer_tree_impl,
-                  LayerImpl* masked_layer,
-                  Args&&... args) {
-    static_assert(std::is_base_of<PictureLayerImpl, T>::value, "");
-    std::unique_ptr<T> mask = T::Create(layer_tree_impl, next_layer_id_++,
-                                        std::forward<Args>(args)...);
-    T* result = mask.get();
-    layer_tree_impl->AddMaskLayer(std::move(mask));
-    result->SetIsMask(true);
-    CopyProperties(masked_layer, result);
-    auto* masked_effect = GetEffectNode(masked_layer);
-    masked_effect->render_surface_reason = RenderSurfaceReason::kMask;
-    masked_effect->mask_layer_id = result->id();
-    masked_effect->is_masked = true;
-    GetPropertyTrees(masked_layer)->effect_tree.AddMaskLayerId(result->id());
-    return result;
-  }
-
   int root_id() const { return root_id_; }
 
  private:

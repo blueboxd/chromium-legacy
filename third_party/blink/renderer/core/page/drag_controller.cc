@@ -284,8 +284,6 @@ void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
     return;
   }
 
-  document_under_mouse_ = nullptr;
-
   if (OperationForLoad(drag_data, local_root) != kDragOperationNone) {
     if (page_->GetSettings().GetNavigateOnDragDrop()) {
       ResourceRequest resource_request(drag_data->AsURL());
@@ -315,6 +313,8 @@ void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
     // be sending these events. crbug.com/748243.
     local_root.GetEventHandler().ClearDragState();
   }
+
+  document_under_mouse_ = nullptr;
 }
 
 void DragController::MouseMovedIntoDocument(Document* new_document) {

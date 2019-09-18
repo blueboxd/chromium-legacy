@@ -30,6 +30,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.UserDataHost;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -406,7 +407,8 @@ public class Tab {
     public int loadUrl(LoadUrlParams params) {
         try {
             TraceEvent.begin("Tab.loadUrl");
-            // TODO(tedchoc): When showing the android NTP, delay the call to nativeLoadUrl until
+            // TODO(tedchoc): When showing the android NTP, delay the call to TabJni.get().loadUrl
+            // until
             //                the android view has entirely rendered.
             if (!mIsNativePageCommitPending) {
                 mIsNativePageCommitPending = maybeShowNativePage(params.getUrl(), false);
@@ -425,7 +427,7 @@ public class Tab {
 
             // We load the URL from the tab rather than directly from the ContentView so the tab has
             // a chance of using a prerenderer page is any.
-            int loadType = nativeLoadUrl(mNativeTabAndroid, params.getUrl(),
+            int loadType = TabJni.get().loadUrl(mNativeTabAndroid, Tab.this, params.getUrl(),
                     params.getInitiatorOrigin(), params.getVerbatimHeaders(), params.getPostData(),
                     params.getTransitionType(),
                     params.getReferrer() != null ? params.getReferrer().getUrl() : null,
@@ -467,7 +469,7 @@ public class Tab {
      * Load the original image (uncompressed by spdy proxy) in this tab.
      */
     void loadOriginalImage() {
-        if (mNativeTabAndroid != 0) nativeLoadOriginalImage(mNativeTabAndroid);
+        if (mNativeTabAndroid != 0) TabJni.get().loadOriginalImage(mNativeTabAndroid, Tab.this);
     }
 
     /**
@@ -628,7 +630,7 @@ public class Tab {
      */
     public Profile getProfile() {
         if (mNativeTabAndroid == 0) return null;
-        return nativeGetProfileAndroid(mNativeTabAndroid);
+        return TabJni.get().getProfileAndroid(mNativeTabAndroid, Tab.this);
     }
 
     /**
@@ -1017,10 +1019,10 @@ public class Tab {
         // activity.
         maybeShowNativePage(getUrl(), true);
 
-        nativeAttachDetachedTab(mNativeTabAndroid);
+        TabJni.get().attachDetachedTab(mNativeTabAndroid, Tab.this);
 
         if (getWebContents() != null) {
-            nativeUpdateDelegates(mNativeTabAndroid, mWebContentsDelegate,
+            TabJni.get().updateDelegates(mNativeTabAndroid, Tab.this, mWebContentsDelegate,
                     new TabContextMenuPopulator(
                             mDelegateFactory.createContextMenuPopulator(this), this));
         }
@@ -1135,7 +1137,7 @@ public class Tab {
      * TODO(dfalcantara): Make this function harder to access.
      */
     public void initializeNative() {
-        if (mNativeTabAndroid == 0) nativeInit();
+        if (mNativeTabAndroid == 0) TabJni.get().init(Tab.this);
         assert mNativeTabAndroid != 0;
         mIsInitialized = true;
     }
@@ -1182,8 +1184,8 @@ public class Tab {
             mWebContentsDelegate = mDelegateFactory.createWebContentsDelegate(this);
 
             assert mNativeTabAndroid != 0;
-            nativeInitWebContents(mNativeTabAndroid, mIncognito, isDetached(), webContents,
-                    mSourceTabId, mWebContentsDelegate,
+            TabJni.get().initWebContents(mNativeTabAndroid, Tab.this, mIncognito, isDetached(),
+                    webContents, mSourceTabId, mWebContentsDelegate,
                     new TabContextMenuPopulator(
                             mDelegateFactory.createContextMenuPopulator(this), this));
 
@@ -1273,7 +1275,7 @@ public class Tab {
         // destroying the native tab cleanups up any remaining infobars. The infobar container
         // expects all infobars to be cleaned up before its own destruction.
         assert mNativeTabAndroid != 0;
-        nativeDestroy(mNativeTabAndroid);
+        TabJni.get().destroy(mNativeTabAndroid, Tab.this);
         assert mNativeTabAndroid == 0;
     }
 
@@ -1580,9 +1582,9 @@ public class Tab {
         if (deleteNativeWebContents) {
             // Destruction of the native WebContents will call back into Java to destroy the Java
             // WebContents.
-            nativeDestroyWebContents(mNativeTabAndroid);
+            TabJni.get().destroyWebContents(mNativeTabAndroid, Tab.this);
         } else {
-            nativeReleaseWebContents(mNativeTabAndroid);
+            TabJni.get().releaseWebContents(mNativeTabAndroid, Tab.this);
             // Since the native WebContents is still alive, we need to clear its reference to the
             // Java WebContents. While doing so, it will also call back into Java to destroy the
             // Java WebContents.
@@ -1661,8 +1663,8 @@ public class Tab {
         webContents.setSize(originalWidth, originalHeight);
 
         if (!bounds.isEmpty()) {
-            nativeOnPhysicalBackingSizeChanged(
-                    mNativeTabAndroid, webContents, bounds.right, bounds.bottom);
+            TabJni.get().onPhysicalBackingSizeChanged(
+                    mNativeTabAndroid, Tab.this, webContents, bounds.right, bounds.bottom);
         }
         webContents.onShow();
         initWebContents(webContents);
@@ -1740,7 +1742,7 @@ public class Tab {
      */
     public void createHistoricalTab() {
         if (!isFrozen()) {
-            nativeCreateHistoricalTab(mNativeTabAndroid);
+            TabJni.get().createHistoricalTab(mNativeTabAndroid, Tab.this);
         } else if (mFrozenContentsState != null) {
             mFrozenContentsState.createHistoricalTab();
         }
@@ -1818,8 +1820,8 @@ public class Tab {
      */
     void pushNativePageStateToNavigationEntry() {
         assert mNativeTabAndroid != 0 && getNativePage() != null;
-        nativeSetActiveNavigationEntryTitleForUrl(mNativeTabAndroid, getNativePage().getUrl(),
-                getNativePage().getTitle());
+        TabJni.get().setActiveNavigationEntryTitleForUrl(
+                mNativeTabAndroid, Tab.this, getNativePage().getUrl(), getNativePage().getTitle());
     }
 
     /**
@@ -1827,7 +1829,8 @@ public class Tab {
      *         {@link #INVALID_BOOKMARK_ID} if no such bookmark exists.
      */
     public long getBookmarkId() {
-        return isFrozen() ? INVALID_BOOKMARK_ID : nativeGetBookmarkId(mNativeTabAndroid, false);
+        return isFrozen() ? INVALID_BOOKMARK_ID
+                          : TabJni.get().getBookmarkId(mNativeTabAndroid, Tab.this, false);
     }
 
     /**
@@ -1835,7 +1838,8 @@ public class Tab {
      * that can't be edited by the user.
      */
     public long getUserBookmarkId() {
-        return isFrozen() ? INVALID_BOOKMARK_ID : nativeGetBookmarkId(mNativeTabAndroid, true);
+        return isFrozen() ? INVALID_BOOKMARK_ID
+                          : TabJni.get().getBookmarkId(mNativeTabAndroid, Tab.this, true);
     }
 
     /**
@@ -1856,7 +1860,7 @@ public class Tab {
 
     @VisibleForTesting
     public boolean hasPrerenderedUrl(String url) {
-        return nativeHasPrerenderedUrl(mNativeTabAndroid, url);
+        return TabJni.get().hasPrerenderedUrl(mNativeTabAndroid, Tab.this, url);
     }
 
     /**
@@ -1908,32 +1912,36 @@ public class Tab {
      * @return Whether input events from the renderer are ignored on the browser side.
      */
     public boolean areRendererInputEventsIgnored() {
-        return nativeAreRendererInputEventsIgnored(mNativeTabAndroid);
+        return TabJni.get().areRendererInputEventsIgnored(mNativeTabAndroid, Tab.this);
     }
 
-    private native void nativeInit();
-    private native void nativeDestroy(long nativeTabAndroid);
-    private native void nativeInitWebContents(long nativeTabAndroid, boolean incognito,
-            boolean isBackgroundTab, WebContents webContents, int parentTabId,
-            TabWebContentsDelegateAndroid delegate, ContextMenuPopulator contextMenuPopulator);
-    private native void nativeUpdateDelegates(long nativeTabAndroid,
-            TabWebContentsDelegateAndroid delegate, ContextMenuPopulator contextMenuPopulator);
-    private native void nativeDestroyWebContents(long nativeTabAndroid);
-    private native void nativeReleaseWebContents(long nativeTabAndroid);
-    private native void nativeOnPhysicalBackingSizeChanged(
-            long nativeTabAndroid, WebContents webContents, int width, int height);
-    private native Profile nativeGetProfileAndroid(long nativeTabAndroid);
-    private native int nativeLoadUrl(long nativeTabAndroid, String url, String initiatorOrigin,
-            String extraHeaders, ResourceRequestBody postData, int transition, String referrerUrl,
-            int referrerPolicy, boolean isRendererInitiated, boolean shoulReplaceCurrentEntry,
-            boolean hasUserGesture, boolean shouldClearHistoryList, long inputStartTimestamp,
-            long intentReceivedTimestamp);
-    private native void nativeSetActiveNavigationEntryTitleForUrl(long nativeTabAndroid, String url,
-            String title);
-    private native void nativeCreateHistoricalTab(long nativeTabAndroid);
-    private native void nativeLoadOriginalImage(long nativeTabAndroid);
-    private native long nativeGetBookmarkId(long nativeTabAndroid, boolean onlyEditable);
-    private native boolean nativeHasPrerenderedUrl(long nativeTabAndroid, String url);
-    private native void nativeAttachDetachedTab(long nativeTabAndroid);
-    private native boolean nativeAreRendererInputEventsIgnored(long nativeTabAndroid);
+    @NativeMethods
+    interface Natives {
+        void init(Tab caller);
+        void destroy(long nativeTabAndroid, Tab caller);
+        void initWebContents(long nativeTabAndroid, Tab caller, boolean incognito,
+                boolean isBackgroundTab, WebContents webContents, int parentTabId,
+                TabWebContentsDelegateAndroid delegate, ContextMenuPopulator contextMenuPopulator);
+        void updateDelegates(long nativeTabAndroid, Tab caller,
+                TabWebContentsDelegateAndroid delegate, ContextMenuPopulator contextMenuPopulator);
+        void destroyWebContents(long nativeTabAndroid, Tab caller);
+        void releaseWebContents(long nativeTabAndroid, Tab caller);
+        void onPhysicalBackingSizeChanged(
+                long nativeTabAndroid, Tab caller, WebContents webContents, int width, int height);
+        Profile getProfileAndroid(long nativeTabAndroid, Tab caller);
+        int loadUrl(long nativeTabAndroid, Tab caller, String url, String initiatorOrigin,
+                String extraHeaders, ResourceRequestBody postData, int transition,
+                String referrerUrl, int referrerPolicy, boolean isRendererInitiated,
+                boolean shoulReplaceCurrentEntry, boolean hasUserGesture,
+                boolean shouldClearHistoryList, long inputStartTimestamp,
+                long intentReceivedTimestamp);
+        void setActiveNavigationEntryTitleForUrl(
+                long nativeTabAndroid, Tab caller, String url, String title);
+        void createHistoricalTab(long nativeTabAndroid, Tab caller);
+        void loadOriginalImage(long nativeTabAndroid, Tab caller);
+        long getBookmarkId(long nativeTabAndroid, Tab caller, boolean onlyEditable);
+        boolean hasPrerenderedUrl(long nativeTabAndroid, Tab caller, String url);
+        void attachDetachedTab(long nativeTabAndroid, Tab caller);
+        boolean areRendererInputEventsIgnored(long nativeTabAndroid, Tab caller);
+    }
 }

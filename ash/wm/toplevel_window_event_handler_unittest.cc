@@ -4,9 +4,11 @@
 
 #include "ash/wm/toplevel_window_event_handler.h"
 
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -29,6 +31,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
@@ -37,6 +40,8 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/accelerators/accelerator.h"
+#include "ui/base/accelerators/test_accelerator_target.h"
 #include "ui/base/hit_test.h"
 #include "ui/display/display_layout_builder.h"
 #include "ui/display/manager/display_manager.h"
@@ -1004,6 +1009,51 @@ TEST_F(ToplevelWindowEventHandlerTest, RunMoveLoopFailsDuringInProgressDrag) {
 
   generator.ReleaseLeftButton();
   EXPECT_EQ("10,11 100x100", window1->bounds().ToString());
+}
+
+TEST_F(ToplevelWindowEventHandlerTest, SwipingFromLeftEdgeToGoBack) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      ash::features::kSwipingFromLeftEdgeToGoBack);
+  std::unique_ptr<aura::Window> w1 = CreateTestWindow();
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  AcceleratorControllerImpl* controller =
+      Shell::Get()->accelerator_controller();
+
+  // Register an accelerator that looks for back presses.
+  ui::Accelerator accelerator_back_press(ui::VKEY_BROWSER_BACK, ui::EF_NONE);
+  accelerator_back_press.set_key_state(ui::Accelerator::KeyState::PRESSED);
+  ui::TestAcceleratorTarget target_back_press;
+  controller->Register({accelerator_back_press}, &target_back_press);
+
+  // Register an accelerator that looks for back releases.
+  ui::Accelerator accelerator_back_release(ui::VKEY_BROWSER_BACK, ui::EF_NONE);
+  accelerator_back_release.set_key_state(ui::Accelerator::KeyState::RELEASED);
+  ui::TestAcceleratorTarget target_back_release;
+  controller->Register({accelerator_back_release}, &target_back_release);
+
+  // Tests that swiping from the left less than |kSwipingDistanceForGoingBack|
+  // should not go to previous page.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  const gfx::Point start(0, 100);
+  generator->GestureScrollSequence(
+      start,
+      gfx::Point(ToplevelWindowEventHandler::kSwipingDistanceForGoingBack - 10,
+                 100),
+      base::TimeDelta::FromMilliseconds(100), 3);
+  EXPECT_EQ(0, target_back_press.accelerator_count());
+  EXPECT_EQ(0, target_back_release.accelerator_count());
+
+  // Tests that swiping from the left more than |kSwipingDistanceForGoingBack|
+  // should go to previous page.
+  generator->GestureScrollSequence(
+      start,
+      gfx::Point(ToplevelWindowEventHandler::kSwipingDistanceForGoingBack + 10,
+                 100),
+      base::TimeDelta::FromMilliseconds(100), 3);
+  EXPECT_EQ(1, target_back_press.accelerator_count());
+  EXPECT_EQ(1, target_back_release.accelerator_count());
 }
 
 namespace {

@@ -78,6 +78,14 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
   void GetManagedPropertiesSuccess(int callback_id,
                                    const std::string& service_path,
                                    const base::DictionaryValue& properties);
+  void GetManagedPropertiesSuccessEap(
+      int callback_id,
+      const std::string& service_path,
+      const base::DictionaryValue& eap_properties);
+  void GetManagedPropertiesSuccessNoEap(
+      int callback_id,
+      const std::string& error_name,
+      std::unique_ptr<base::DictionaryValue> error_data);
   void GetManagedPropertiesFailure(
       std::string guid,
       int callback_id,
@@ -125,6 +133,7 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
   ManagedNetworkConfigurationHandler*
       network_configuration_handler_;                     // Unowned
   NetworkConnectionHandler* network_connection_handler_;  // Unowned
+
   mojo::InterfacePtrSet<mojom::CrosNetworkConfigObserver> observers_;
   mojo::BindingSet<mojom::CrosNetworkConfig> bindings_;
 
@@ -140,6 +149,10 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
   base::flat_map<int, StartDisconnectCallback> start_disconnect_callbacks_;
 
   std::vector<mojom::VpnProviderPtr> vpn_providers_;
+
+  // GetManagedProperties may require multiple async calls so we need to store
+  // an owned copy of the mojo properties by callback id.
+  base::flat_map<int, mojom::ManagedPropertiesPtr> managed_properties_;
 
   base::WeakPtrFactory<CrosNetworkConfig> weak_factory_{this};
 

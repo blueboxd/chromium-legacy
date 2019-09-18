@@ -126,7 +126,8 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // except windows in |ignored_items|.
   void SetBoundsAndUpdatePositions(
       const gfx::Rect& bounds_in_screen,
-      const base::flat_set<OverviewItem*>& ignored_items);
+      const base::flat_set<OverviewItem*>& ignored_items,
+      bool animate);
 
   // Updates overview bounds and hides the drop target when a preview area is
   // shown.

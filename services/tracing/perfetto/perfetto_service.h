@@ -40,8 +40,9 @@ class PerfettoService : public mojom::PerfettoService {
                     uint32_t pid);
 
   // mojom::PerfettoService implementation.
-  void ConnectToProducerHost(mojom::ProducerClientPtr producer_client,
-                             mojom::ProducerHostRequest producer_host) override;
+  void ConnectToProducerHost(
+      mojo::PendingRemote<mojom::ProducerClient> producer_client,
+      mojom::ProducerHostRequest producer_host) override;
 
   perfetto::TracingService* GetService() const;
 

@@ -98,7 +98,9 @@ Polymer({
     if (!this.$.pin.validate()) {
       return;
     }
+    this.confirmButtonDisabled_ = true;
     this.browserProxy_.providePIN(this.$.pin.value).then((retries) => {
+      this.confirmButtonDisabled_ = false;
       if (retries != null) {
         this.$.pin.showIncorrectPINError(retries);
         this.collectPin_();
@@ -258,9 +260,11 @@ Polymer({
     assert(this.credentials_ && this.credentials_.length > 0);
     assert(this.checkedCredentialIds_.size > 0);
 
+    this.confirmButtonDisabled_ = true;
     this.deleteInProgress_ = true;
     this.browserProxy_.deleteCredentials(Array.from(this.checkedCredentialIds_))
         .then((err) => {
+          this.confirmButtonDisabled_ = false;
           this.deleteInProgress_ = false;
           this.onError_(err);
         });

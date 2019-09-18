@@ -212,7 +212,7 @@ int SearchResultTileItemListView::DoUpdate() {
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(kPlayStoreImpressionDelayInMs), this,
         &SearchResultTileItemListView::OnPlayStoreImpressionTimer);
-  } else {
+  } else if (!found_playstore_results) {
     playstore_impression_timer_.Stop();
   }
 
@@ -347,6 +347,11 @@ void SearchResultTileItemListView::OnPlayStoreImpressionTimer() {
                              playstore_app_num, max_search_result_tiles_);
 }
 
+void SearchResultTileItemListView::CleanUpOnViewHide() {
+  playstore_impression_timer_.Stop();
+  recent_playstore_query_.clear();
+}
+
 bool SearchResultTileItemListView::OnKeyPressed(const ui::KeyEvent& event) {
   // Let the FocusManager handle Left/Right keys.
   if (!IsUnhandledUpDownKeyEvent(event))
@@ -397,8 +402,6 @@ void SearchResultTileItemListView::OnShownChanged() {
       view_delegate()->OnSearchResultVisibilityChanged(result->id(), shown());
     }
   }
-  if (!shown())
-    playstore_impression_timer_.Stop();
 }
 
 void SearchResultTileItemListView::VisibilityChanged(View* starting_from,
@@ -410,7 +413,7 @@ void SearchResultTileItemListView::VisibilityChanged(View* starting_from,
     return;
   }
 
-  playstore_impression_timer_.Stop();
+  CleanUpOnViewHide();
 
   for (const auto* tile_view : tile_views_) {
     SearchResult* result = tile_view->result();

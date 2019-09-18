@@ -186,7 +186,7 @@ device::mojom::XRInputSourceStatePtr GvrInputDelegate::GetInputSourceState() {
     controller_->GetRelativePointerTransform(&pointer);
     state->description->pointer_offset = pointer;
 
-    state->description->profiles.push_back("daydream-controller");
+    state->description->profiles.push_back("google-daydream");
 
     // This Gamepad data is used to expose touchpad position to WebXR.
     state->gamepad = CreateGamepad(controller_->GetGamepadData());

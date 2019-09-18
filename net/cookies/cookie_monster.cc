@@ -1170,6 +1170,10 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
     status.AddExclusionReason(
         CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_NONE_INSECURE);
   }
+  // Log whether a SameSite=None cookie is Secure or not.
+  if (cc->SameSite() == CookieSameSite::NO_RESTRICTION) {
+    UMA_HISTOGRAM_BOOLEAN("Cookie.SameSiteNoneIsSecure", cc->IsSecure());
+  }
 
   const std::string key(GetKey(cc->Domain()));
 

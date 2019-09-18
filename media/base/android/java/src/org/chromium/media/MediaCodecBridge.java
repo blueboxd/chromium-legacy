@@ -22,6 +22,7 @@ import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
+import org.chromium.base.annotations.NativeMethods;
 
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
@@ -280,12 +281,16 @@ class MediaCodecBridge {
         mNativeMediaCodecBridge = nativeMediaCodecBridge;
 
         // If any buffers or errors occurred before this, trigger the callback now.
-        if (!mPendingInputBuffers.isEmpty() || !mPendingOutputBuffers.isEmpty() || mPendingError)
+        if (!mPendingInputBuffers.isEmpty() || !mPendingOutputBuffers.isEmpty() || mPendingError) {
             notifyBuffersAvailable();
+        }
     }
 
     private synchronized void notifyBuffersAvailable() {
-        if (mNativeMediaCodecBridge != 0) nativeOnBuffersAvailable(mNativeMediaCodecBridge);
+        if (mNativeMediaCodecBridge != 0) {
+            MediaCodecBridgeJni.get().onBuffersAvailable(
+                    mNativeMediaCodecBridge, MediaCodecBridge.this);
+        }
     }
 
     public synchronized void onError(MediaCodec.CodecException e) {
@@ -396,8 +401,9 @@ class MediaCodecBridge {
         if (mUseAsyncApi) {
             synchronized (this) {
                 if (mPendingError) return new DequeueInputResult(MediaCodecStatus.ERROR, -1);
-                if (mPendingStart || mPendingInputBuffers.isEmpty())
+                if (mPendingStart || mPendingInputBuffers.isEmpty()) {
                     return new DequeueInputResult(MediaCodecStatus.TRY_AGAIN_LATER, -1);
+                }
                 return mPendingInputBuffers.remove();
             }
         }
@@ -631,8 +637,9 @@ class MediaCodecBridge {
     private DequeueOutputResult dequeueOutputBuffer(long timeoutUs) {
         if (mUseAsyncApi) {
             synchronized (this) {
-                if (mPendingError)
+                if (mPendingError) {
                     return new DequeueOutputResult(MediaCodecStatus.ERROR, -1, 0, 0, 0, 0);
+                }
                 if (mPendingOutputBuffers.isEmpty()) {
                     return new DequeueOutputResult(
                             MediaCodecStatus.TRY_AGAIN_LATER, -1, 0, 0, 0, 0);
@@ -757,5 +764,8 @@ class MediaCodecBridge {
         sCallbackHandler = new Handler(sCallbackHandlerThread.getLooper());
     }
 
-    private native void nativeOnBuffersAvailable(long nativeMediaCodecBridge);
+    @NativeMethods
+    interface Natives {
+        void onBuffersAvailable(long nativeMediaCodecBridge, MediaCodecBridge caller);
+    }
 }

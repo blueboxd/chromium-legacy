@@ -26,7 +26,6 @@ void RenderPassDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                                 ResourceId mask_resource_id,
                                 const gfx::RectF& mask_uv_rect,
                                 const gfx::Size& mask_texture_size,
-                                bool mask_applies_to_backdrop,
                                 const gfx::Vector2dF& filters_scale,
                                 const gfx::PointF& filters_origin,
                                 const gfx::RectF& tex_coord_rect,
@@ -36,9 +35,9 @@ void RenderPassDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
 
   bool needs_blending = true;
   SetAll(shared_quad_state, rect, visible_rect, needs_blending, render_pass_id,
-         mask_resource_id, mask_uv_rect, mask_texture_size,
-         mask_applies_to_backdrop, filters_scale, filters_origin,
-         tex_coord_rect, force_anti_aliasing_off, backdrop_filter_quality);
+         mask_resource_id, mask_uv_rect, mask_texture_size, filters_scale,
+         filters_origin, tex_coord_rect, force_anti_aliasing_off,
+         backdrop_filter_quality);
 }
 
 void RenderPassDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
@@ -49,7 +48,6 @@ void RenderPassDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                                 ResourceId mask_resource_id,
                                 const gfx::RectF& mask_uv_rect,
                                 const gfx::Size& mask_texture_size,
-                                bool mask_applies_to_backdrop,
                                 const gfx::Vector2dF& filters_scale,
                                 const gfx::PointF& filters_origin,
                                 const gfx::RectF& tex_coord_rect,
@@ -64,7 +62,6 @@ void RenderPassDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   resources.count = mask_resource_id ? 1 : 0;
   this->mask_uv_rect = mask_uv_rect;
   this->mask_texture_size = mask_texture_size;
-  this->mask_applies_to_backdrop = mask_applies_to_backdrop;
   this->filters_scale = filters_scale;
   this->filters_origin = filters_origin;
   this->tex_coord_rect = tex_coord_rect;
@@ -85,7 +82,6 @@ void RenderPassDrawQuad::ExtendValue(
   value->SetInteger("mask_resource_id", resources.ids[kMaskResourceIdIndex]);
   cc::MathUtil::AddToTracedValue("mask_texture_size", mask_texture_size, value);
   cc::MathUtil::AddToTracedValue("mask_uv_rect", mask_uv_rect, value);
-  value->SetBoolean("mask_applies_to_backdrop", mask_applies_to_backdrop);
   cc::MathUtil::AddToTracedValue("tex_coord_rect", tex_coord_rect, value);
   value->SetBoolean("force_anti_aliasing_off", force_anti_aliasing_off);
   value->SetDouble("backdrop_filter_quality", backdrop_filter_quality);

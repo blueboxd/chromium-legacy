@@ -4,13 +4,20 @@
 <translation id="1337821341856692531">Kapag nagpatuloy nang hindi inilalagay ang kasalukuyan mong password sa Windows, puwedeng magdulot ng pagkawala ng impormasyon na hindi na maibabalik.</translation>
 <translation id="1383286653814676580">Ginagamit para paganahin ang page sa pag-sign in ng Google Credential Provider.</translation>
 <translation id="1894475569413661128">Mag-sign in gamit ang iyong account sa trabaho.</translation>
+<translation id="2329184763010379754">Ang user lang na nag-lock sa computer na ito ang pinapayagang mag-sign in.</translation>
+<translation id="2398071111662077301">Hindi ma-load ang screen sa pag-sign in ng Google dahil sa isang isyu sa pag-install mo ng Chrome. Makipag-uganayan sa iyong administrator.</translation>
 <translation id="2469311484561825731">Hindi nakapag-sign in sa iyong account sa trabaho. Tiyaking may koneksyon sa internet ang computer, pagkatapos ay subukang muli.</translation>
+<translation id="2679096858700291438">Naglagay ka ng maling password sa Windows. Pakisubukang muli.</translation>
+<translation id="2831078752570172210">Na-lock out ang iyong account. Makipag-ugnayan sa administrator ng iyong system.</translation>
+<translation id="2844349213149998955">Hindi pinapayagan ang pag-sign in gamit ang isang personal na account sa device na ito. Mag-log in gamit ang isang account sa trabaho.</translation>
 <translation id="3306357053520292004">May naidagdag nang user sa computer na ito gamit ang account na ito. Mag-sign in gamit ang ibang account.</translation>
 <translation id="3968372833844047539">Mga user lang ng Gsuite Enterprise ang pinapayagang mag-log in.</translation>
 <translation id="4057329986137569701">Nagkaroon ng internal na error.</translation>
 <translation id="4267670563222825190">Walang makitang user ng Domain para sa iyong account. Makipag-ugnayan sa iyong administrator.</translation>
 <translation id="4300229033992784001">Nagbago ang password ng iyong account. Pakilagay ang iyong kasalukuyang password sa Windows para i-sync ang Windows account mo sa iyong account sa trabaho.</translation>
 <translation id="4706454071748629324">Hindi nakapagdagdag ng bagong user. Isang user lang ang pinapahintulutang magawa ng computer na ito gamit ang isang account sa trabaho.</translation>
+<translation id="6033715878377252112">Helper ng Credential Provider ng Google para sa Windows</translation>
+<translation id="6149399665202317746">Credential Provider ng Google para sa Windows</translation>
 <translation id="6312494990035843744">Hindi pinapayagan ang pag-sign in gamit ang account sa trabaho sa domain na ito. Sumubok ng ibang account.</translation>
 <translation id="6463752215771576050">Hindi ma-enroll ang computer na ito para sa pamamahala ng enterprise.  Mag-sign in gamit ang ibang account sa trabaho.</translation>
 <translation id="6657585470893396449">Password</translation>
@@ -22,5 +29,7 @@
 <translation id="8639729688781680518">Nakalimutan ang Password sa Windows</translation>
 <translation id="866458870819756755">Hindi makagawa ng user.</translation>
 <translation id="8875753657315897487">Mag-sign in gamit ang iyong account sa trabaho</translation>
+<translation id="8973975512230260387">Nag-expire na ang iyong session. Mag-sign in gamit ang iyong account sa trabaho ng Google.</translation>
+<translation id="9055998212250844221">Ginawa ng Credential Provider ng Google para sa Windows ang user account</translation>
 <translation id="9135619837062629367">Hindi pinapayagan ang pag-sign in gamit ang account na ito. Sumubok ng ibang account.</translation>
 </translationbundle>

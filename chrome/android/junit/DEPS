@@ -1,6 +1,7 @@
 include_rules = [
   "!clank/java/src/org/chromium/chrome/browser/AppHooksImpl.java",
   "+chrome/lib/lifecycle/public",
+  "+chrome/browser/ui/android/widget",
   "+components/autofill/android/java/src/org/chromium/components/autofill",
   "+components/background_task_scheduler/android",
   "+components/bookmarks/common/android",

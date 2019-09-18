@@ -282,6 +282,8 @@ struct CONTENT_EXPORT WebPreferences {
   // architecture of surface embedding. Android WebView does not support this
   // architecture yet.
   bool disable_features_depending_on_viz;
+  // Don't accelerate small canvases to avoid crashes TODO(crbug.com/1004304)
+  bool disable_accelerated_small_canvases;
 #endif  // defined(OS_ANDROID)
 
   // Enable forcibly modifying content rendering to result in a light on dark

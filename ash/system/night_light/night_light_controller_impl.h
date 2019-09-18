@@ -159,7 +159,10 @@ class ASH_EXPORT NightLightControllerImpl
   // being able to retrieve a valid geoposition.
   void StoreCachedGeoposition(const SimpleGeoposition& position);
 
-  void RefreshLayersTemperature();
+  // Refreshes the displays color transforms based on the given
+  // |color_temperature|, which will be overridden to a value of 0 if NightLight
+  // is turned off.
+  void RefreshDisplaysTemperature(float color_temperature);
 
   void StartWatchingPrefsChanges();
 

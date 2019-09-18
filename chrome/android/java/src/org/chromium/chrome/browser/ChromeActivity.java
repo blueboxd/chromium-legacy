@@ -1425,13 +1425,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         getCompositorViewHolder().addCompositorViewResizer(
                 mManualFillingComponent.getKeyboardExtensionViewResizer());
 
-        if (mBottomSheet == null && shouldInitializeBottomSheet()) {
-            // TODO(yusufo): Unify initialization.
-            initializeBottomSheet(true);
-        }
-
-        if (mBottomSheet != null) {
-            mEphemeralTabCoordinator = new EphemeralTabCoordinator(this, mBottomSheetController);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.EPHEMERAL_TAB_USING_BOTTOM_SHEET)) {
+            mEphemeralTabCoordinator =
+                    new EphemeralTabCoordinator(this, getBottomSheetController());
         }
 
         // TODO(crbug.com/959841): Once crrev.com/c/1669360 is submitted, make the code below
@@ -1452,7 +1448,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     protected void registerDirectActions() {
         mDirectActionInitializer.registerCommonChromeActions(this, getActivityType(), this,
-                this::onBackPressed, mTabModelSelector, mBottomSheetController, mScrimView);
+                this::onBackPressed, mTabModelSelector,
+                AutofillAssistantFacade.areDirectActionsAvailable(getActivityType()) ?
+                        getBottomSheetController() : null,
+                mScrimView);
     }
 
     /**
@@ -1472,18 +1471,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /**
-     * @return Whether this Activity should initialize the BottomSheet and BottomSheetController.
-     */
-    protected boolean shouldInitializeBottomSheet() {
-        return AutofillAssistantFacade.areDirectActionsAvailable(getActivityType());
-    }
-
-    /**
      * Initializes the {@link BottomSheet} and {@link BottomSheetController} for use.
-     * @param suppressSheetForContextualSearch Whether the sheet should be suppressed when
-     *                                         Contextual search is showing.
      */
-    protected void initializeBottomSheet(boolean suppressSheetForContextualSearch) {
+    protected void initializeBottomSheet() {
         ViewGroup coordinator = findViewById(R.id.coordinator);
         getLayoutInflater().inflate(R.layout.bottom_sheet, coordinator);
         mBottomSheet = coordinator.findViewById(R.id.bottom_sheet);
@@ -1493,8 +1483,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         mBottomSheetController = new BottomSheetController(this, getLifecycleDispatcher(),
                 mActivityTabProvider, mScrimView, mBottomSheet,
-                getCompositorViewHolder().getLayoutManager().getOverlayPanelManager(),
-                suppressSheetForContextualSearch);
+                getCompositorViewHolder().getLayoutManager().getOverlayPanelManager());
     }
 
     /**
@@ -2550,9 +2539,12 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         return toPropagate == null || super.dispatchKeyEvent(toPropagate);
     }
 
-    /** Returns {@link BottomSheetController}, if present. */
-    @Nullable
+    /**
+     * @return A lazily created {@link BottomSheetController}. The first time this method is called,
+     *         a new controller is created.
+     */
     public BottomSheetController getBottomSheetController() {
+        if (mBottomSheetController == null) initializeBottomSheet();
         return mBottomSheetController;
     }
 

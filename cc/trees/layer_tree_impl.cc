@@ -151,7 +151,6 @@ LayerTreeImpl::~LayerTreeImpl() {
   // Need to explicitly clear the tree prior to destroying this so that
   // the LayerTreeImpl pointer is still valid in the LayerImpl dtor.
   DCHECK(LayerListIsEmpty());
-  DCHECK(layers_.empty());
 }
 
 void LayerTreeImpl::Shutdown() {
@@ -159,26 +158,25 @@ void LayerTreeImpl::Shutdown() {
   BreakSwapPromises(IsActiveTree() ? SwapPromise::SWAP_FAILS
                                    : SwapPromise::ACTIVATION_FAILS);
   DCHECK(LayerListIsEmpty());
-  DCHECK(layers_.empty());
 }
 
 void LayerTreeImpl::ReleaseResources() {
-  for (auto& layer : layers_)
+  for (auto* layer : *this)
     layer->ReleaseResources();
 }
 
 void LayerTreeImpl::OnPurgeMemory() {
-  for (auto& layer : layers_)
+  for (auto* layer : *this)
     layer->OnPurgeMemory();
 }
 
 void LayerTreeImpl::ReleaseTileResources() {
-  for (auto& layer : layers_)
+  for (auto* layer : *this)
     layer->ReleaseTileResources();
 }
 
 void LayerTreeImpl::RecreateTileResources() {
-  for (auto& layer : layers_)
+  for (auto* layer : *this)
     layer->RecreateTileResources();
 }
 
@@ -436,7 +434,7 @@ void LayerTreeImpl::UpdateViewportContainerSizes() {
 }
 
 bool LayerTreeImpl::IsRootLayer(const LayerImpl* layer) const {
-  return layer_list_.empty() ? false : layer_list_[0] == layer;
+  return !layer_list_.empty() && layer_list_[0].get() == layer;
 }
 
 gfx::ScrollOffset LayerTreeImpl::TotalScrollOffset() const {
@@ -468,10 +466,9 @@ gfx::ScrollOffset LayerTreeImpl::TotalMaxScrollOffset() const {
 }
 
 OwnedLayerImplList LayerTreeImpl::DetachLayers() {
-  layer_list_.clear();
   render_surface_list_.clear();
   set_needs_update_draw_properties();
-  return std::move(layers_);
+  return std::move(layer_list_);
 }
 
 OwnedLayerImplList LayerTreeImpl::DetachLayersKeepingRootLayerForTesting() {
@@ -647,10 +644,9 @@ void LayerTreeImpl::HandleTickmarksVisibilityChange() {
 }
 
 void LayerTreeImpl::HandleScrollbarShowRequestsFromMain() {
-  LayerTreeHostCommon::CallFunctionForEveryLayer(this, [this](
-                                                           LayerImpl* layer) {
+  for (auto* layer : *this) {
     if (!layer->needs_show_scrollbars())
-      return;
+      continue;
     ScrollbarAnimationController* controller =
         host_impl_->ScrollbarAnimationControllerForElementId(
             layer->element_id());
@@ -658,7 +654,7 @@ void LayerTreeImpl::HandleScrollbarShowRequestsFromMain() {
       controller->DidRequestShowFromMainThread();
       layer->set_needs_show_scrollbars(false);
     }
-  });
+  }
 }
 
 void LayerTreeImpl::MoveChangeTrackingToLayers() {
@@ -681,30 +677,6 @@ void LayerTreeImpl::MoveChangeTrackingToLayers() {
 void LayerTreeImpl::ForceRecalculateRasterScales() {
   for (auto* layer : picture_layers_)
     layer->ResetRasterScale();
-}
-
-LayerImplList::const_iterator LayerTreeImpl::begin() const {
-  return layer_list_.cbegin();
-}
-
-LayerImplList::const_iterator LayerTreeImpl::end() const {
-  return layer_list_.cend();
-}
-
-LayerImplList::const_reverse_iterator LayerTreeImpl::rbegin() const {
-  return layer_list_.crbegin();
-}
-
-LayerImplList::const_reverse_iterator LayerTreeImpl::rend() const {
-  return layer_list_.crend();
-}
-
-LayerImplList::reverse_iterator LayerTreeImpl::rbegin() {
-  return layer_list_.rbegin();
-}
-
-LayerImplList::reverse_iterator LayerTreeImpl::rend() {
-  return layer_list_.rend();
 }
 
 bool LayerTreeImpl::IsElementInPropertyTree(ElementId element_id) const {
@@ -1300,7 +1272,7 @@ const ScrollNode* LayerTreeImpl::OuterViewportScrollNode() const {
 
 // For unit tests, we use the layer's id as its element id.
 void LayerTreeImpl::SetElementIdsForTesting() {
-  for (auto& layer : layers_) {
+  for (auto* layer : *this) {
     if (!layer->element_id())
       layer->SetElementId(LayerIdToElementIdForTesting(layer->id()));
   }
@@ -1344,7 +1316,7 @@ bool LayerTreeImpl::UpdateDrawProperties(
     // calculations except when this function is explicitly passed a flag asking
     // us to skip it.
     LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
-        layer_list_[0], GetDeviceViewport(), host_impl_->DrawTransform(),
+        layer_list_[0].get(), GetDeviceViewport(), host_impl_->DrawTransform(),
         device_scale_factor(), current_page_scale_factor(), PageScaleLayer(),
         InnerViewportScrollLayer(), OuterViewportScrollLayer(),
         elastic_overscroll()->Current(IsActiveTree()),
@@ -1405,14 +1377,6 @@ bool LayerTreeImpl::UpdateDrawProperties(
             occlusion_tracker.GetCurrentOcclusionForContributingSurface(
                 draw_transform);
         render_surface->set_occlusion_in_content_space(occlusion);
-        // Masks are used to draw the contributing surface, so should have
-        // the same occlusion as the surface (nothing inside the surface
-        // occludes them).
-        if (LayerImpl* mask = render_surface->MaskLayer()) {
-          mask->draw_properties().occlusion_in_content_space =
-              occlusion_tracker.GetCurrentOcclusionForContributingSurface(
-                  draw_transform * render_surface->SurfaceScale());
-        }
       }
 
       occlusion_tracker.LeaveLayer(it);
@@ -1501,11 +1465,11 @@ LayerImpl* LayerTreeImpl::LayerById(int id) const {
 // TODO(masonfreed): If this shows up on profiles, this could use
 // a layer_element_map_ approach similar to LayerById().
 LayerImpl* LayerTreeImpl::LayerByElementId(ElementId element_id) const {
-  auto it = std::find_if(layer_list_.rbegin(), layer_list_.rend(),
-                         [&element_id](LayerImpl* layer_impl) {
-                           return layer_impl->element_id() == element_id;
-                         });
-  if (it == layer_list_.rend())
+  auto it =
+      std::find_if(rbegin(), rend(), [&element_id](LayerImpl* layer_impl) {
+        return layer_impl->element_id() == element_id;
+      });
+  if (it == rend())
     return nullptr;
   return *it;
 }
@@ -1556,19 +1520,9 @@ void LayerTreeImpl::UnregisterLayer(LayerImpl* layer) {
 }
 
 void LayerTreeImpl::AddLayer(std::unique_ptr<LayerImpl> layer) {
-  DCHECK(!base::Contains(layer_list_, layer.get()));
-  layer_list_.push_back(layer.get());
-  AddOwnedLayer(std::move(layer));
-}
-
-void LayerTreeImpl::AddMaskLayer(std::unique_ptr<LayerImpl> layer) {
-  AddOwnedLayer(std::move(layer));
-}
-
-void LayerTreeImpl::AddOwnedLayer(std::unique_ptr<LayerImpl> layer) {
-  DCHECK(!base::Contains(layers_, layer));
   DCHECK(layer);
-  layers_.push_back(std::move(layer));
+  DCHECK(!base::Contains(layer_list_, layer));
+  layer_list_.push_back(std::move(layer));
   set_needs_update_draw_properties();
 }
 
@@ -1586,7 +1540,7 @@ void LayerTreeImpl::DidBecomeActive() {
   // if we were in a good state.
   host_impl_->ResetRequiresHighResToDraw();
 
-  for (auto& layer : layers_)
+  for (auto* layer : *this)
     layer->DidBecomeActive();
 
   for (const auto& swap_promise : swap_promise_list_)
@@ -1752,11 +1706,10 @@ void LayerTreeImpl::SetNeedsRedraw() {
 
 void LayerTreeImpl::GetAllPrioritizedTilesForTracing(
     std::vector<PrioritizedTile>* prioritized_tiles) const {
-  for (auto it = layer_list_.rbegin(); it != layer_list_.rend(); ++it) {
-    LayerImpl* layer_impl = *it;
-    if (!layer_impl->contributes_to_drawn_render_surface())
+  for (auto* layer : base::Reversed(*this)) {
+    if (!layer->contributes_to_drawn_render_surface())
       continue;
-    layer_impl->GetAllPrioritizedTilesForTracing(prioritized_tiles);
+    layer->GetAllPrioritizedTilesForTracing(prioritized_tiles);
   }
 }
 
@@ -1766,10 +1719,10 @@ void LayerTreeImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   state->SetInteger("source_frame_number", source_frame_number_);
 
   state->BeginArray("render_surface_layer_list");
-  for (auto it = layer_list_.rbegin(); it != layer_list_.rend(); ++it) {
-    if (!(*it)->contributes_to_drawn_render_surface())
+  for (auto* layer : base::Reversed(*this)) {
+    if (layer->contributes_to_drawn_render_surface())
       continue;
-    viz::TracedValue::AppendIDRef(*it, state);
+    viz::TracedValue::AppendIDRef(layer, state);
   }
   state->EndArray();
 
@@ -2177,11 +2130,12 @@ static void FindClosestMatchingLayer(const gfx::PointF& screen_space_point,
 
     float distance_to_intersection = 0.f;
     bool hit = false;
-    if (layer->Is3dSorted())
+    if (layer->Is3dSorted()) {
       hit =
           PointHitsLayer(layer, screen_space_point, &distance_to_intersection);
-    else
+    } else {
       hit = PointHitsLayer(layer, screen_space_point, nullptr);
+    }
 
     if (!hit)
       continue;
@@ -2219,7 +2173,7 @@ LayerImpl* LayerTreeImpl::FindFirstScrollingLayerOrScrollbarThatIsHitByPoint(
     return nullptr;
 
   FindClosestMatchingLayerState state;
-  LayerImpl* root_layer = layer_list_[0];
+  LayerImpl* root_layer = layer_list_[0].get();
   FindClosestMatchingLayer(screen_space_point, root_layer,
                            HitTestScrollingLayerOrScrollbarFunctor(), &state);
   return state.closest_match;
@@ -2236,7 +2190,7 @@ LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPoint(
   if (!UpdateDrawProperties())
     return nullptr;
   FindClosestMatchingLayerState state;
-  FindClosestMatchingLayer(screen_space_point, layer_list_[0],
+  FindClosestMatchingLayer(screen_space_point, layer_list_[0].get(),
                            HitTestVisibleScrollableOrTouchableFunctor(),
                            &state);
   return state.closest_match;
@@ -2269,7 +2223,8 @@ LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPointInEventHandlerRegion(
   if (!UpdateDrawProperties())
     return nullptr;
   FindClosestMatchingLayerState state;
-  FindClosestMatchingLayer(screen_space_point, layer_list_[0], func, &state);
+  FindClosestMatchingLayer(screen_space_point, layer_list_[0].get(), func,
+                           &state);
   return state.closest_match;
 }
 
@@ -2438,7 +2393,7 @@ bool LayerTreeImpl::TakeForceSendMetadataRequest() {
 void LayerTreeImpl::ResetAllChangeTracking() {
   layers_that_should_push_properties_.clear();
   // Iterate over all layers, including masks.
-  for (auto& layer : layers_)
+  for (auto* layer : *this)
     layer->ResetChangeTracking();
   property_trees_.ResetAllChangeTracking();
 }

@@ -300,9 +300,12 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
         "var oldSendScriptingMessage = "
         "    PDFViewer.prototype.sendScriptingMessage_;"
         "PDFViewer.prototype.sendScriptingMessage_ = function(message) {"
-        "  oldSendScriptingMessage.bind(this)(message);"
-        "  if (message.type == 'getSelectedTextReply')"
-        "    this.parentWindow_.postMessage('flush', '*');"
+        "  try {"
+        "    oldSendScriptingMessage.bind(this)(message);"
+        "  } finally {"
+        "    if (message.type == 'getSelectedTextReply')"
+        "      this.parentWindow_.postMessage('flush', '*');"
+        "  }"
         "}"));
 
     // Add an event listener for flush messages and request the selected text.
@@ -754,6 +757,12 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, EnsureCrossOriginRepliesBlocked) {
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, EnsureSameOriginRepliesAllowed) {
   TestGetSelectedTextReply(embedded_test_server()->GetURL("/pdf/test.pdf"),
                            true);
+}
+
+// TODO(crbug.com/1004425): Should be allowed?
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, EnsureOpaqueOriginRepliesBlocked) {
+  TestGetSelectedTextReply(
+      embedded_test_server()->GetURL("/pdf/data_url_rectangles.html"), false);
 }
 
 // Ensure that the PDF component extension cannot be loaded directly.

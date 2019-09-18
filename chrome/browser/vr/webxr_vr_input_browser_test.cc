@@ -557,10 +557,12 @@ IN_PROC_MULTI_CLASS_BROWSER_TEST_F2(WebXrVrOpenVrBrowserTest,
     // only supports that type of controller and fills in default values if
     // those inputs don't exist.
     VerifyInputSourceProfilesArray(
-        t, {"windows-mixed-reality", "grip-touchpad-thumbstick-controller"});
+        t,
+        {"windows-mixed-reality", "generic-trigger-grip-touchpad-thumbstick"});
   } else if (t->GetRuntimeType() ==
              XrBrowserTestBase::RuntimeType::RUNTIME_OPENVR) {
-    VerifyInputSourceProfilesArray(t, {"test-value-test-value", "controller"});
+    VerifyInputSourceProfilesArray(
+        t, {"test-value-test-value", "generic-trigger"});
   }
 
   t->RunJavaScriptOrFail("done()");
@@ -631,10 +633,12 @@ IN_PROC_MULTI_CLASS_BROWSER_TEST_F2(WebXrVrOpenVrBrowserTest,
     // only supports that type of controller and fills in default values if
     // those inputs don't exist.
     VerifyInputSourceProfilesArray(
-        t, {"windows-mixed-reality", "grip-touchpad-thumbstick-controller"});
+        t,
+        {"windows-mixed-reality", "generic-trigger-grip-touchpad-thumbstick"});
   } else if (t->GetRuntimeType() ==
              XrBrowserTestBase::RuntimeType::RUNTIME_OPENVR) {
-    VerifyInputSourceProfilesArray(t, {"test-value-test-value", "controller"});
+    VerifyInputSourceProfilesArray(
+        t, {"test-value-test-value", "generic-trigger"});
   }
 
   t->RunJavaScriptOrFail("done()");
@@ -734,11 +738,13 @@ IN_PROC_MULTI_CLASS_BROWSER_TEST_F2(WebXrVrOpenVrBrowserTest,
     // only supports that type of controller and fills in default values if
     // those inputs don't exist.
     VerifyInputSourceProfilesArray(
-        t, {"windows-mixed-reality", "grip-touchpad-thumbstick-controller"});
+        t,
+        {"windows-mixed-reality", "generic-trigger-grip-touchpad-thumbstick"});
   } else if (t->GetRuntimeType() ==
              XrBrowserTestBase::RuntimeType::RUNTIME_OPENVR) {
     VerifyInputSourceProfilesArray(
-        t, {"test-value-test-value", "grip-touchpad-thumbstick-controller"});
+        t,
+        {"test-value-test-value", "generic-trigger-grip-touchpad-thumbstick"});
   }
 
   t->RunJavaScriptOrFail("done()");
@@ -854,7 +860,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrOpenVrBrowserTest, TestGamepadReservedData) {
                               kPollTimeoutShort);
 
   VerifyInputSourceProfilesArray(
-      this, {"test-value-test-value", "touchpad-controller"});
+      this, {"test-value-test-value", "generic-trigger-touchpad"});
 
   RunJavaScriptOrFail("done()");
   EndTest();
@@ -897,7 +903,7 @@ IN_PROC_BROWSER_TEST_F(WebXrVrOpenVrBrowserTest, TestGamepadOptionalData) {
   PollJavaScriptBooleanOrFail("isButtonCountEqualTo(3)", kPollTimeoutShort);
 
   VerifyInputSourceProfilesArray(
-      this, {"test-value-test-value", "grip-touchpad-controller"});
+      this, {"test-value-test-value", "generic-trigger-grip-touchpad"});
 
   RunJavaScriptOrFail("done()");
   EndTest();

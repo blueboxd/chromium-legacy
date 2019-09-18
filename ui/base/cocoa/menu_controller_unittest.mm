@@ -281,7 +281,6 @@ TEST_F(MenuControllerTest, BasicCreation) {
   NSString* title = [itemTwo title];
   EXPECT_EQ(ASCIIToUTF16("three"), base::SysNSStringToUTF16(title));
   EXPECT_EQ(2, [itemTwo tag]);
-  EXPECT_EQ([[itemTwo representedObject] pointerValue], &model);
 
   EXPECT_TRUE([[[menu menu] itemAtIndex:3] isSeparatorItem]);
 }
@@ -315,7 +314,6 @@ TEST_F(MenuControllerTest, Submenus) {
   NSString* title = [submenuItem title];
   EXPECT_EQ(ASCIIToUTF16("sub-two"), base::SysNSStringToUTF16(title));
   EXPECT_EQ(1, [submenuItem tag]);
-  EXPECT_EQ([[submenuItem representedObject] pointerValue], &submodel);
 
   // Make sure the item after the submenu is correct and its represented
   // object is back to the top model.
@@ -323,7 +321,6 @@ TEST_F(MenuControllerTest, Submenus) {
   title = [item title];
   EXPECT_EQ(ASCIIToUTF16("three"), base::SysNSStringToUTF16(title));
   EXPECT_EQ(2, [item tag]);
-  EXPECT_EQ([[item representedObject] pointerValue], &model);
 }
 
 TEST_F(MenuControllerTest, EmptySubmenu) {

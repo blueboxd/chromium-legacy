@@ -169,23 +169,6 @@ ScrollAndScaleSet::ScrollAndScaleSet()
 
 ScrollAndScaleSet::~ScrollAndScaleSet() = default;
 
-static inline void SetMaskLayersContributeToDrawnRenderSurface(
-    RenderSurfaceImpl* surface,
-    PropertyTrees* property_trees) {
-  LayerImpl* mask_layer = surface->MaskLayer();
-  if (mask_layer) {
-    mask_layer->set_contributes_to_drawn_render_surface(true);
-    draw_property_utils::ComputeMaskDrawProperties(mask_layer, property_trees);
-  }
-}
-
-static inline void ClearMaskLayersContributeToDrawnRenderSurface(
-    RenderSurfaceImpl* surface) {
-  LayerImpl* mask_layer = surface->MaskLayer();
-  if (mask_layer)
-    mask_layer->set_contributes_to_drawn_render_surface(false);
-}
-
 static float TranslationFromActiveTreeLayerScreenSpaceTransform(
     LayerImpl* pending_tree_layer) {
   LayerTreeImpl* layer_tree_impl = pending_tree_layer->layer_tree_impl();
@@ -329,7 +312,6 @@ static void ComputeInitialRenderSurfaceList(
     if (RenderSurfaceImpl* render_surface = effect_tree.GetRenderSurface(i)) {
       render_surface->set_is_render_surface_list_member(false);
       render_surface->reset_num_contributors();
-      ClearMaskLayersContributeToDrawnRenderSurface(render_surface);
     }
   }
 
@@ -434,7 +416,6 @@ static void ComputeListOfNonEmptySurfaces(
       target_surface->decrement_num_contributors();
       continue;
     }
-    SetMaskLayersContributeToDrawnRenderSurface(surface, property_trees);
     final_surface_list->push_back(surface);
   }
   if (removed_surface) {

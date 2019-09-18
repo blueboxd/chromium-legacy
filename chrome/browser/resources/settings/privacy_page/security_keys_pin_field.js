@@ -18,7 +18,10 @@ Polymer({
     label: String,
 
     /** The validation error label of the input field. */
-    error: String,
+    error: {
+      type: String,
+      observer: 'errorChanged_',
+    },
 
     /** The value of the input field. */
     value: String,
@@ -32,6 +35,10 @@ Polymer({
 
   /** @override */
   attached: function() {
+    Polymer.RenderStatus.afterNextRender(this, function() {
+      Polymer.IronA11yAnnouncer.requestAvailability();
+    });
+
     this.inputVisible_ = false;
   },
 
@@ -157,5 +164,12 @@ Polymer({
     }
 
     return '';
+  },
+
+  /** @private */
+  errorChanged_: function() {
+    // Make screen readers announce changes to the PIN validation error
+    // label.
+    this.fire('iron-announce', {text: this.error});
   },
 });

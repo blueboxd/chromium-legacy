@@ -332,7 +332,6 @@ void FuzzedCompositorFrameBuilder::TryAddRenderPassDrawQuad(
                /*mask_resource_id=*/ResourceId(),
                /*mask_uv_rect=*/gfx::RectF(),
                /*mask_texture_size=*/gfx::Size(),
-               /*mask_applies_to_backdrop=*/false,
                /*filters_scale=*/gfx::Vector2dF(),
                /*filters_origin=*/gfx::PointF(),
                /*tex_coord_rect=*/tex_coord_rect,

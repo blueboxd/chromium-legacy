@@ -10,6 +10,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 
 import java.util.concurrent.FutureTask;
 
@@ -76,20 +77,24 @@ public class LocationProviderAdapter {
     }
 
     public static void onNewLocationAvailable(Location location) {
-        nativeNewLocationAvailable(location.getLatitude(), location.getLongitude(),
-                location.getTime() / 1000.0, location.hasAltitude(), location.getAltitude(),
-                location.hasAccuracy(), location.getAccuracy(), location.hasBearing(),
-                location.getBearing(), location.hasSpeed(), location.getSpeed());
+        LocationProviderAdapterJni.get().newLocationAvailable(location.getLatitude(),
+                location.getLongitude(), location.getTime() / 1000.0, location.hasAltitude(),
+                location.getAltitude(), location.hasAccuracy(), location.getAccuracy(),
+                location.hasBearing(), location.getBearing(), location.hasSpeed(),
+                location.getSpeed());
     }
 
     public static void newErrorAvailable(String message) {
         Log.e(TAG, "newErrorAvailable %s", message);
-        nativeNewErrorAvailable(message);
+        LocationProviderAdapterJni.get().newErrorAvailable(message);
     }
 
-    // Native functions
-    private static native void nativeNewLocationAvailable(double latitude, double longitude,
-            double timeStamp, boolean hasAltitude, double altitude, boolean hasAccuracy,
-            double accuracy, boolean hasHeading, double heading, boolean hasSpeed, double speed);
-    private static native void nativeNewErrorAvailable(String message);
+    @NativeMethods
+    interface Natives {
+        void newLocationAvailable(double latitude, double longitude, double timeStamp,
+                boolean hasAltitude, double altitude, boolean hasAccuracy, double accuracy,
+                boolean hasHeading, double heading, boolean hasSpeed, double speed);
+
+        void newErrorAvailable(String message);
+    }
 }

@@ -11,23 +11,21 @@
 namespace arc {
 
 ArcBootPhaseThrottleObserver::ArcBootPhaseThrottleObserver()
-    : ArcThrottleObserver(ArcThrottleObserver::PriorityLevel::CRITICAL,
-                          "ArcIsBooting") {}
+    : ThrottleObserver(ThrottleObserver::PriorityLevel::CRITICAL,
+                       "ArcIsBooting") {}
 
 void ArcBootPhaseThrottleObserver::StartObserving(
-    ArcBridgeService* arc_bridge_service,
     content::BrowserContext* context,
     const ObserverStateChangedCallback& callback) {
-  DCHECK(!context_ && !boot_phase_monitor_);
-  ArcThrottleObserver::StartObserving(arc_bridge_service, context, callback);
-  context_ = context;
+  DCHECK(!boot_phase_monitor_);
+  ThrottleObserver::StartObserving(context, callback);
 
   auto* session_manager = ArcSessionManager::Get();
   DCHECK(session_manager);
   session_manager->AddObserver(this);
 
   boot_phase_monitor_ =
-      ArcBootPhaseMonitorBridge::GetForBrowserContext(context_);
+      ArcBootPhaseMonitorBridge::GetForBrowserContext(context);
   DCHECK(boot_phase_monitor_);
   boot_phase_monitor_->AddObserver(this);
 
@@ -44,8 +42,7 @@ void ArcBootPhaseThrottleObserver::StopObserving() {
   DCHECK(session_manager);
   session_manager->RemoveObserver(this);
 
-  context_ = nullptr;
-  ArcThrottleObserver::StopObserving();
+  ThrottleObserver::StopObserving();
 }
 
 void ArcBootPhaseThrottleObserver::OnArcStarted() {
@@ -85,7 +82,7 @@ void ArcBootPhaseThrottleObserver::MaybeSetActive() {
     SetActive(false);
     return;
   }
-  auto* profile = Profile::FromBrowserContext(context_);
+  auto* profile = Profile::FromBrowserContext(context());
   const bool enabled_by_policy =
       IsArcPlayStoreEnabledForProfile(profile) &&
       IsArcPlayStoreEnabledPreferenceManagedForProfile(profile);

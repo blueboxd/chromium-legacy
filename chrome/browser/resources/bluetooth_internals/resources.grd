@@ -29,6 +29,10 @@
                file="adapter_page.js"
                type="BINDATA"
                compress="gzip" />
+      <include name="IDR_BLUETOOTH_INTERNALS_DEBUG_LOG_PAGE_JS"
+               file="debug_log_page.js"
+               type="BINDATA"
+               compress="gzip" />
       <include name="IDR_BLUETOOTH_INTERNALS_CHARACTERISTIC_LIST_JS"
                file="characteristic_list.js"
                type="BINDATA"

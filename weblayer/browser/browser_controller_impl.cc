@@ -98,6 +98,12 @@ void BrowserControllerImpl::LoadingStateChanged(content::WebContents* source,
     observer.LoadingStateChanged(is_loading, to_different_document);
 }
 
+void BrowserControllerImpl::LoadProgressChanged(content::WebContents* source,
+                                                double progress) {
+  for (auto& observer : observers_)
+    observer.LoadProgressChanged(progress);
+}
+
 void BrowserControllerImpl::DidNavigateMainFramePostCommit(
     content::WebContents* web_contents) {
   for (auto& observer : observers_)

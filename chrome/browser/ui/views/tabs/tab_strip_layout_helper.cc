@@ -169,7 +169,7 @@ void TabStripLayoutHelper::RemoveTab(int model_index, Tab* tab) {
       if (!tab_width_override_.has_value()) {
         // We are currently constrained by tabstrip_width_override_. Express
         // the equivalent constraint with tab_width_override_.
-        tab_width_override_ = CalculateSpaceFractionAvailable(
+        tab_width_override_ = CalculateTabWidthOverride(
             GetTabLayoutConstants(), GetCurrentTabWidthConstraints(),
             tabstrip_width_override_.value());
       }
@@ -182,7 +182,7 @@ void TabStripLayoutHelper::RemoveTab(int model_index, Tab* tab) {
 
 void TabStripLayoutHelper::EnterTabClosingMode(int available_width) {
   if (!WidthsConstrainedForClosingMode()) {
-    tab_width_override_ = CalculateSpaceFractionAvailable(
+    tab_width_override_ = CalculateTabWidthOverride(
         GetTabLayoutConstants(), GetCurrentTabWidthConstraints(),
         available_width);
     tabstrip_width_override_ = available_width;

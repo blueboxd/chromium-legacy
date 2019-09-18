@@ -90,6 +90,7 @@
 #include "content/public/common/web_preferences.h"
 #include "media/mojo/buildflags.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/android/network_library.h"
 #include "net/http/http_util.h"
@@ -215,7 +216,7 @@ void AwContentsMessageFilter::OnSubFrameCreated(int parent_render_frame_id,
 
 // A dummy binder for mojo interface autofill::mojom::PasswordManagerDriver.
 void DummyBindPasswordManagerDriver(
-    autofill::mojom::PasswordManagerDriverRequest request,
+    mojo::PendingReceiver<autofill::mojom::PasswordManagerDriver> receiver,
     content::RenderFrameHost* render_frame_host) {}
 
 void PassMojoCookieManagerToAwCookieManager(
@@ -694,7 +695,7 @@ void AwContentBrowserClient::BindInterfaceRequestFromFrame(
                                      render_frame_host);
 }
 
-bool AwContentBrowserClient::BindAssociatedInterfaceRequestFromFrame(
+bool AwContentBrowserClient::BindAssociatedReceiverFromFrame(
     content::RenderFrameHost* render_frame_host,
     const std::string& interface_name,
     mojo::ScopedInterfaceEndpointHandle* handle) {

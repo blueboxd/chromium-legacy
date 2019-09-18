@@ -1730,10 +1730,12 @@ bool CompositedLayerMapping::UpdateMaskLayer(bool needs_mask_layer) {
       mask_layer_ = CreateGraphicsLayer(CompositingReason::kLayerForMask);
       mask_layer_->SetPaintingPhase(kGraphicsLayerPaintMask);
       CompositorElementId element_id = CompositorElementIdFromUniqueObjectId(
-          owning_layer_.GetLayoutObject().UniqueId(),
+          GetLayoutObject().UniqueId(),
           CompositorElementIdNamespace::kEffectMask);
       mask_layer_->SetElementId(element_id);
-      mask_layer_->CcLayer()->set_is_mask();
+      mask_layer_->CcLayer()->SetIsMask(true);
+      if (GetLayoutObject().HasBackdropFilter())
+        mask_layer_->CcLayer()->SetIsBackdropFilterMask(true);
       layer_changed = true;
     }
   } else if (mask_layer_) {

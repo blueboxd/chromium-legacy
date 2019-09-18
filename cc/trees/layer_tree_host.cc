@@ -443,8 +443,8 @@ void LayerTreeHost::WillCommit() {
       // PushPropertiesTo() propagates layer debug info to the impl side --
       // otherwise this won't happen for the layers that remain unchanged since
       // tracing started.
-      LayerTreeHostCommon::CallFunctionForEveryLayer(
-          this, [](Layer* layer) { layer->SetNeedsPushProperties(); });
+      for (auto* layer : *this)
+        layer->SetNeedsPushProperties();
     }
 
     for (Layer* layer : LayersThatShouldPushProperties())
@@ -1162,8 +1162,8 @@ void LayerTreeHost::SetEventListenerProperties(
         old_properties == EventListenerProperties::kBlockingAndPassive;
 
     if (old_property_is_blocking != new_property_is_blocking) {
-      LayerTreeHostCommon::CallFunctionForEveryLayer(
-          this, [](Layer* layer) { layer->SetNeedsPushProperties(); });
+      for (auto* layer : *this)
+        layer->SetNeedsPushProperties();
     }
   }
 
@@ -1311,8 +1311,8 @@ void LayerTreeHost::SetRasterColorSpace(
     return;
   raster_color_space_id_ = gfx::ColorSpace::GetNextId();
   raster_color_space_ = raster_color_space;
-  LayerTreeHostCommon::CallFunctionForEveryLayer(
-      this, [](Layer* layer) { layer->SetNeedsDisplay(); });
+  for (auto* layer : *this)
+    layer->SetNeedsDisplay();
 }
 
 void LayerTreeHost::SetExternalPageScaleFactor(
@@ -1674,12 +1674,9 @@ void LayerTreeHost::UpdateActiveElements() {
   mutator_host_->UpdateRegisteredElementIds(ElementListType::ACTIVE);
 }
 
-static void SetElementIdForTesting(Layer* layer) {
-  layer->SetElementId(LayerIdToElementIdForTesting(layer->id()));
-}
-
 void LayerTreeHost::SetElementIdsForTesting() {
-  LayerTreeHostCommon::CallFunctionForEveryLayer(this, SetElementIdForTesting);
+  for (auto* layer : *this)
+    layer->SetElementId(LayerIdToElementIdForTesting(layer->id()));
 }
 
 void LayerTreeHost::BuildPropertyTreesForTesting() {

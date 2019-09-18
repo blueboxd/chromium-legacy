@@ -674,5 +674,25 @@ TEST(TraceConfigTest, LegacyStringToMemoryDumpConfig) {
       tc.memory_dump_config().heap_profiler_options.breakdown_threshold_bytes);
 }
 
+TEST(TraceConfigTest, SystraceEventsSerialization) {
+  TraceConfig tc(MemoryDumpManager::kTraceCategory, "");
+  tc.EnableSystrace();
+  EXPECT_EQ(0U, tc.systrace_events().size());
+  tc.EnableSystraceEvent("power");            // As a events category
+  tc.EnableSystraceEvent("timer:tick_stop");  // As an event
+  EXPECT_EQ(2U, tc.systrace_events().size());
+
+  const TraceConfig tc1(MemoryDumpManager::kTraceCategory,
+                        tc.ToTraceOptionsString());
+  EXPECT_EQ(2U, tc1.systrace_events().size());
+  EXPECT_TRUE(tc1.systrace_events().count("power"));
+  EXPECT_TRUE(tc1.systrace_events().count("timer:tick_stop"));
+
+  const TraceConfig tc2(tc.ToString());
+  EXPECT_EQ(2U, tc2.systrace_events().size());
+  EXPECT_TRUE(tc2.systrace_events().count("power"));
+  EXPECT_TRUE(tc2.systrace_events().count("timer:tick_stop"));
+}
+
 }  // namespace trace_event
 }  // namespace base

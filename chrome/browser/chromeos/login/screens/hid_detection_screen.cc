@@ -59,8 +59,7 @@ HIDDetectionScreen::HIDDetectionScreen(
     const base::RepeatingClosure& exit_callback)
     : BaseScreen(HIDDetectionView::kScreenId),
       view_(view),
-      exit_callback_(exit_callback),
-      binding_(this) {
+      exit_callback_(exit_callback) {
   if (view_)
     view_->Bind(this);
 
@@ -486,8 +485,8 @@ void HIDDetectionScreen::ConnectToInputDeviceManager() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   service_manager::Connector* connector = content::GetSystemConnector();
   DCHECK(connector);
-  connector->BindInterface(device::mojom::kServiceName,
-                           mojo::MakeRequest(&input_device_manager_));
+  connector->Connect(device::mojom::kServiceName,
+                     input_device_manager_.BindNewPipeAndPassReceiver());
 }
 
 void HIDDetectionScreen::OnGetInputDevicesListForCheck(
@@ -524,12 +523,9 @@ void HIDDetectionScreen::OnGetInputDevicesList(
 }
 
 void HIDDetectionScreen::GetInputDevicesList() {
-  device::mojom::InputDeviceManagerClientAssociatedPtrInfo client;
-  binding_.Bind(mojo::MakeRequest(&client));
-
   DCHECK(input_device_manager_);
   input_device_manager_->GetDevicesAndSetClient(
-      std::move(client),
+      receiver_.BindNewEndpointAndPassRemote(),
       base::BindOnce(&HIDDetectionScreen::OnGetInputDevicesList,
                      weak_ptr_factory_.GetWeakPtr()));
 }

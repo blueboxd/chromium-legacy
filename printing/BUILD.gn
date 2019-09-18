@@ -382,6 +382,7 @@ if (is_android) {
   android_library("printing_java") {
     deps = [
       "//base:base_java",
+      "//base:jni_java",
       "//ui/android:ui_java",
     ]
     java_files = [
@@ -393,5 +394,6 @@ if (is_android) {
       "android/java/src/org/chromium/printing/PrintingController.java",
       "android/java/src/org/chromium/printing/PrintingControllerImpl.java",
     ]
+    annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   }
 }

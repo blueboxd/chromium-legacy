@@ -2169,61 +2169,41 @@ enum class EnterTabSwitcherSnapshotResult {
     disableWebUsageDuringRemoval = NO;
   }
 
-  ProceduralBlock removeBrowsingDataBlock = ^{
-    if (disableWebUsageDuringRemoval) {
-      // Disables browsing and purges web views.
-      // Must be called only on the main thread.
-      DCHECK([NSThread isMainThread]);
-      self.interfaceProvider.mainInterface.userInteractionEnabled = NO;
-      self.interfaceProvider.incognitoInterface.userInteractionEnabled = NO;
-    } else if (showActivityIndicator) {
-      // Show activity overlay so users know that clear browsing data is in
-      // progress.
-      [self.mainBVC.dispatcher showActivityOverlay:YES];
-    }
-
-    BrowsingDataRemoverFactory::GetForBrowserState(browserState)
-        ->Remove(timePeriod, removeMask, base::BindOnce(^{
-                   // Activates browsing and enables web views.
-                   // Must be called only on the main thread.
-                   DCHECK([NSThread isMainThread]);
-                   if (showActivityIndicator) {
-                     // User interaction still needs to be disabled as a way to
-                     // force reload all the web states and to reset NTPs.
-                     self.interfaceProvider.mainInterface
-                         .userInteractionEnabled = NO;
-                     self.interfaceProvider.incognitoInterface
-                         .userInteractionEnabled = NO;
-
-                     [self.mainBVC.dispatcher showActivityOverlay:NO];
-                   }
-                   self.interfaceProvider.mainInterface.userInteractionEnabled =
-                       YES;
-                   self.interfaceProvider.incognitoInterface
-                       .userInteractionEnabled = YES;
-                   [self.currentBVC setPrimary:YES];
-
-                   if (completionBlock)
-                     completionBlock();
-                 }));
-  };
-
-  // Removing browsing data triggers session restore in navigation manager. If
-  // there is an in-progress session restore, wait for it to finish before
-  // attempting to clear browsing data again.
-  web::WebState* webState =
-      self.currentBVC.tabModel
-          ? self.currentBVC.tabModel.webStateList->GetActiveWebState()
-          : nullptr;
-  if (webState && webState->GetNavigationManager()) {
-    webState->GetNavigationManager()->AddRestoreCompletionCallback(
-        base::BindOnce(^{
-          removeBrowsingDataBlock();
-        }));
-    return;
+  if (disableWebUsageDuringRemoval) {
+    // Disables browsing and purges web views.
+    // Must be called only on the main thread.
+    DCHECK([NSThread isMainThread]);
+    self.interfaceProvider.mainInterface.userInteractionEnabled = NO;
+    self.interfaceProvider.incognitoInterface.userInteractionEnabled = NO;
+  } else if (showActivityIndicator) {
+    // Show activity overlay so users know that clear browsing data is in
+    // progress.
+    [self.mainBVC.dispatcher showActivityOverlay:YES];
   }
 
-  removeBrowsingDataBlock();
+  BrowsingDataRemoverFactory::GetForBrowserState(browserState)
+      ->Remove(
+          timePeriod, removeMask, base::BindOnce(^{
+            // Activates browsing and enables web views.
+            // Must be called only on the main thread.
+            DCHECK([NSThread isMainThread]);
+            if (showActivityIndicator) {
+              // User interaction still needs to be disabled as a way to
+              // force reload all the web states and to reset NTPs.
+              self.interfaceProvider.mainInterface.userInteractionEnabled = NO;
+              self.interfaceProvider.incognitoInterface.userInteractionEnabled =
+                  NO;
+
+              [self.mainBVC.dispatcher showActivityOverlay:NO];
+            }
+            self.interfaceProvider.mainInterface.userInteractionEnabled = YES;
+            self.interfaceProvider.incognitoInterface.userInteractionEnabled =
+                YES;
+            [self.currentBVC setPrimary:YES];
+
+            if (completionBlock)
+              completionBlock();
+          }));
 }
 
 #pragma mark - Navigation Controllers

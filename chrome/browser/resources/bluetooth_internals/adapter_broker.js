@@ -154,15 +154,18 @@ cr.define('adapter_broker', function() {
 
   /**
    * Initializes an AdapterBroker if one doesn't exist.
+   * @param {!mojom.BluetoothInternalsHandlerRemote=}
+   *     opt_bluetoothInternalsHandler
    * @return {!Promise<!adapter_broker.AdapterBroker>} resolves with
    *     AdapterBroker, rejects if Bluetooth is not supported.
    */
-  function getAdapterBroker() {
+  function getAdapterBroker(opt_bluetoothInternalsHandler) {
     if (adapterBroker) {
       return Promise.resolve(adapterBroker);
     }
 
-    const bluetoothInternalsHandler =
+    const bluetoothInternalsHandler = opt_bluetoothInternalsHandler ?
+        opt_bluetoothInternalsHandler :
         mojom.BluetoothInternalsHandler.getRemote();
 
     // Get an Adapter service.

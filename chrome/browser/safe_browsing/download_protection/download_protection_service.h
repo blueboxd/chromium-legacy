@@ -26,6 +26,7 @@
 #include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/safe_browsing/download_protection/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
+#include "chrome/browser/safe_browsing/download_protection/download_reporter.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 #include "chrome/browser/safe_browsing/services_delegate.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
@@ -304,6 +305,9 @@ class DownloadProtectionService {
 
   // Rate of whitelisted downloads we sample to send out download ping.
   double whitelist_sample_rate_;
+
+  // DownloadReporter to send real time reports for dangerous download events.
+  DownloadReporter download_reporter_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadProtectionService);
 };

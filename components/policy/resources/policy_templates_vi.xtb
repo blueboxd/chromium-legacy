@@ -98,6 +98,7 @@
       Nếu bạn không đặt chính sách này, thì GPO đã lưu vào bộ nhớ đệm có thể được sử dụng lại trong tối đa 25 giờ.
 
       Nếu đặt chính sách thành 0, thì tùy chọn lưu GPO vào bộ nhớ đệm sẽ bị tắt. Lưu ý rằng điều này sẽ làm tăng tải của máy chủ vì GPO được tải lại xuống mỗi lần tìm nạp chính sách, ngay cả khi chúng không thay đổi.</translation>
+<translation id="1111470455889178048">Gửi tệp người dùng đã tải lên và tải xuống để quét</translation>
 <translation id="1117462881884985156"><ph name="PRODUCT_NAME" /> sẽ bỏ qua mọi proxy của danh sách máy chủ được cung cấp ở đây.
 
           Chính sách này chỉ có hiệu lực nếu bạn đã chọn các tùy chọn cài đặt proxy thủ công tại phần 'Chọn cách chỉ định cài đặt máy chủ proxy' và nếu bạn chưa chỉ định chính sách <ph name="PROXY_SETTINGS_POLICY_NAME" />.
@@ -403,6 +404,7 @@
       phù hợp, quyền truy cập sẽ tự động bị từ chối.  Các mẫu ký tự đại diện không được phép.</translation>
 <translation id="1634989431648355062">Cho phép plugin <ph name="FLASH_PLUGIN_NAME" /> trên các trang web này</translation>
 <translation id="1645793986494086629">Lược đồ:</translation>
+<translation id="1648816843164517573">Danh sách các tên sẽ được miễn kiểm tra chính sách Bảo mật truyền tải nghiêm ngặt HTTP (HSTS)</translation>
 <translation id="1653229475925941921">Nếu bạn đặt chính sách này, chính sách sẽ kiểm soát loại kính lúp được bật. Đặt chính sách thành ''None'' sẽ tắt kính lúp.
 
           Nếu bạn đặt chính sách này, người dùng sẽ không thể thay đổi hay ghi đè chính sách.
@@ -902,6 +904,7 @@
 <translation id="254653220329944566">Bật tính năng báo cáo đám mây của <ph name="PRODUCT_NAME" /></translation>
 <translation id="2548572254685798999">Báo cáo thông tin Duyệt web an toàn</translation>
 <translation id="2550593661567988768">Chỉ in một mặt</translation>
+<translation id="2551520365302988324">Gửi tệp người dùng đã tải lên để quét</translation>
 <translation id="2552966063069741410">Múi giờ</translation>
 <translation id="2562339630163277285">Chỉ định URL của công cụ tìm kiếm được sử dụng để cung cấp kết quả tức thì. URL phải chứa chuỗi <ph name="SEARCH_TERM_MARKER" />. Chuỗi này sẽ được thay thế tại thời điểm truy vấn bằng văn bản mà người dùng đã nhập từ trước tới nay.
 
@@ -982,6 +985,7 @@
           Chính sách này là tùy chọn. Nếu không thiết lập, mặc định được sử dụng sẽ là UTF-8.
 
           Chính sách này chỉ được áp dụng nếu chính sách 'DefaultSearchProviderEnabled' được bật.</translation>
+<translation id="2679827548357140943">Cần phải kiểm tra danh sách miền của nội dung đã tải lên để xem có chứa phần mềm độc hại hay không</translation>
 <translation id="268577405881275241">Bật tính năng proxy nén dữ liệu</translation>
 <translation id="2693108589792503178">Định cấu hình URL thay đổi mật khẩu.</translation>
 <translation id="2694143893026486692">Đã bật tùy chọn phóng to ở vị trí cố định</translation>
@@ -1359,6 +1363,10 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="332771718998993005">Xác định tên được quảng cáo là đích <ph name="PRODUCT_NAME" />.
 
           Nếu bạn đặt chính sách này thành một chuỗi không phải là chuỗi trống, thì chuỗi đó sẽ được sử dụng làm tên của đích <ph name="PRODUCT_NAME" />. Nếu không, tên đích sẽ là tên thiết bị. Nếu bạn không đặt chính sách này, thì tên đích sẽ là tên thiết bị và chủ sở hữu thiết bị (hoặc người dùng từ miền quản lý thiết bị) sẽ được phép thay đổi tên đó. Tên có độ dài tối đa là 24 ký tự.</translation>
+<translation id="3331950121151548952">Cần phải kiểm tra danh sách miền của nội dung đã tải lên để xem có chứa phần mềm độc hại hay không.  Chỉ dùng chính sách này nếu bạn đặt <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> thành giá trị cho phép hoặc thực thi quá trình kiểm tra phần mềm độc hại đối với nội dung đã tải lên.
+
+      Nếu bạn không đặt hoặc đặt chính sách này thành danh sách miền trống, thì sẽ không cần kiểm tra nội dung đã tải lên xem có chứa phần mềm độc hại hay không.
+      </translation>
 <translation id="3335468714959531450">Cho phép bạn đặt danh sách các mẫu url chỉ định những trang web được phép đặt cookie.
 
           Nếu không đặt chính sách này, thì giá trị mặc định chung sẽ được sử dụng cho tất cả các trang web từ chính sách 'DefaultCookiesSetting', nếu chính sách đó được đặt, hoặc từ cấu hình cá nhân của người dùng.
@@ -1428,6 +1436,15 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu chính sách này bị đặt thành Sai hoặc không được đặt, độ trễ quản lý nguồn và giới hạn thời lượng phiên sẽ bắt đầu chạy ngay lập tức khi bắt đầu phiên.</translation>
 <translation id="3478024346823118645">Xóa dữ liệu người dùng khi đăng xuất</translation>
 <translation id="3480961938508521469">Sạc đầy pin ở tốc độ tiêu chuẩn.</translation>
+<translation id="3483729306380590354">Đặt mức phần trăm bắt đầu sạc pin tùy chỉnh.
+
+          Pin bắt đầu sạc khi lượng pin còn lại thấp hơn giá trị bắt đầu sạc pin tùy chỉnh này.
+
+          <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> phải thấp hơn <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" /> tối thiểu là 5%.
+
+          Chỉ dùng chính sách này nếu bạn đặt <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" /> thành <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" />.
+
+          Nếu bạn không định cấu hình hoặc không đặt chính sách này, thì chế độ sạc pin <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" /> sẽ được áp dụng.</translation>
 <translation id="348495353354674884">Bật bàn phím ảo</translation>
 <translation id="3487623755010328395">
         Nếu bạn đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ tìm cách tự đăng ký và áp dụng chính sách đám mây được liên kết cho tất cả hồ sơ.
@@ -1875,6 +1892,15 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hay ghi đè chính sách.
 
           Nếu bạn không đặt chính sách này, thì ban đầu, tính năng tự động nhấp sẽ tắt nhưng người dùng có thể bật bất cứ lúc nào.</translation>
+<translation id="4215197846797661927">Đặt cấu hình ngày cho chế độ sạc pin nâng cao.
+
+          Chỉ dùng chính sách này nếu bạn đặt <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> thành true.
+
+          Nếu bạn không định cấu hình hoặc không đặt chính sách này, thì chế độ sạc pin nâng cao sẽ luôn tắt.
+
+          Lưu ý: <ph name="CHARGE_START_TIME_FIELD_NAME" /> phải nhỏ hơn <ph name="CHARGE_END_TIME_FIELD_NAME" />.
+
+          Lưu ý: các giá trị được phép của trường <ph name="MINUTE_FIELD_NAME" /> trong <ph name="CHARGE_START_TIME_FIELD_NAME" /> và <ph name="CHARGE_END_TIME_FIELD_NAME" /> là 0, 15, 30, 45.</translation>
 <translation id="4224610387358583899">Độ trễ khóa màn hình</translation>
 <translation id="423797045246308574">Cho phép bạn thiết lập danh sách các mẫu URL chỉ định những trang web không được phép sử dụng tạo khóa. Nếu một mẫu URL nằm trong 'KeygenAllowedForUrls', chính sách này sẽ ghi đè các ngoại lệ này.
 
@@ -1940,6 +1966,17 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Phải chỉ định giá trị của chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn hoặc bằng thời gian chờ khi ở chế độ không sử dụng.
 
           Thông báo cảnh báo chỉ hiển thị nếu hành động ở chế độ không sử dụng là hành động đăng xuất hoặc tắt nguồn.</translation>
+<translation id="4342827592971649626">Chính sách này kiểm soát quá trình tính năng Duyệt web an toàn quét sâu các tệp người dùng đã tải xuống. Nếu bạn không đặt hoặc đặt chính sách này thành mặc định là "Không quét tệp", thì tính năng Duyệt web an toàn sẽ không quét các tệp người dùng đã tải xuống.
+
+      Nếu bạn đặt chính sách này thành "Cấm quét tệp", thì người dùng sẽ không được phép quét các tệp họ đã tải xuống. Tùy chọn này khác với tùy chọn mặc định, vì một số người dùng (chẳng hạn như người dùng Chương trình Bảo vệ nâng cao) có thể gửi các tệp họ đã tải xuống để quét. Tùy chọn cài đặt này sẽ ngăn những người dùng này quét tệp.
+
+      Nếu bạn đặt chính sách này thành "Gửi tệp người dùng đã tải xuống để quét", thì các tệp người dùng đã tải xuống sẽ được gửi qua mạng đến tính năng Duyệt web an toàn để quét tìm phần mềm độc hại.
+
+      Nếu bạn đặt chính sách này thành "Gửi tệp người dùng đã tải lên để quét", thì các tệp người dùng đã tải lên sẽ được gửi qua mạng đến tính năng Duyệt web an toàn để quét tìm phần mềm độc hại.
+
+      Nếu bạn đặt chính sách này thành "Gửi tệp người dùng đã tải lên và tải xuống để quét", thì sản phẩm sẽ hoạt động theo các quy tắc nêu trong phần "Gửi tệp người dùng đã tải lên để quét" và "Gửi tệp người dùng đã tải xuống để quét".
+
+      Vui lòng xem chính sách <ph name="DELAY_DELIVER_UNTIL_VERDICT_POLICY_NAME" /> và <ph name="UNSAFE_EVENTS_REPORTING_ENABLED" /> để biết thông tin chi tiết về cách kết quả quét xuất hiện đối với người dùng và quản trị viên.</translation>
 <translation id="4344356660952451291">Cần phải kiểm tra danh sách miền của nội dung tải xuống xem có tuân thủ hay không</translation>
 <translation id="4346674324214534449">Cho phép bạn thiết lập xem có chặn quảng cáo trên các trang web chứa quảng cáo xâm nhập hay không.
 
@@ -2529,6 +2566,16 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bạn đặt chính sách này, người dùng sẽ không thể thay đổi hoặc ghi đè chính sách.
 
       Nếu bạn không đặt chính sách này, thì người dùng có thể chọn một hình ảnh để hiển thị trên màn hình và trên nền màn hình đăng nhập.</translation>
+<translation id="5437214086679373363">Kiểm soát xem người dùng có được phép tải lên hoặc tải xuống các tệp được bảo vệ bằng mật khẩu hay không khi bắt buộc phải thực hiện quá trình quét.  Hạn chế này chỉ áp dụng với các tệp cần quét theo yêu cầu của <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> và các chính sách kiểm soát danh sách miền được phép thực hiện quá trình kiểm tra.
+
+      Nếu bạn đặt chính sách này thành "None", thì <ph name="PRODUCT_NAME" /> sẽ chặn người dùng tải lên hoặc tải xuống các tệp được bảo vệ bằng mật khẩu.
+
+      Nếu bạn đặt chính sách này thành "Cho phép tải tệp xuống", thì <ph name="PRODUCT_NAME" /> sẽ cho phép người dùng tải các tệp được bảo vệ bằng mật khẩu xuống.
+
+      Nếu bạn đặt chính sách này thành "Cho phép tải tệp lên", thì <ph name="PRODUCT_NAME" /> sẽ cho phép người dùng tải các tệp được bảo vệ bằng mật khẩu lên.
+
+      Nếu bạn không đặt hoặc đặt chính sách này thành "Cho phép tải tệp lên và tải tệp xuống", thì <ph name="PRODUCT_NAME" /> sẽ hoạt động theo các quy tắc nêu trong phần "Cho phép tải tệp xuống" và "Cho phép tải tệp lên".
+      </translation>
 <translation id="5437733496511628148">Việc bật tùy chọn cài đặt này sẽ ngăn các phần tử trang web không thuộc miền trong thanh địa chỉ của trình duyệt thiết lập cookie.
 
       Việc tắt tùy chọn cài đặt này sẽ cho phép các phần tử trang web không thuộc miền trong thanh địa chỉ của trình duyệt thiết lập cookie và ngăn người dùng thay đổi tùy chọn cài đặt này.
@@ -3451,13 +3498,32 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
       Để biết thêm thông tin về chính sách <ph name="IEEM_SITELIST_POLICY" /> của Internet Explorer, hãy truy cập vào trang web: https://docs.microsoft.com/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">Các URL sẽ được cấp quyền truy cập thiết bị quay video mà không cần phải hiển thị lời nhắc</translation>
+<translation id="713712866686796666">Đặt cấu hình ngày cho chế độ chuyển đổi điện năng cao điểm.
+
+          Chỉ dùng chính sách này nếu bạn đặt <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> thành true.
+
+          Nếu bạn không định cấu hình hoặc không đặt chính sách này, thì chế độ chuyển đổi điện năng cao điểm sẽ luôn tắt.
+
+          Lưu ý: các giá trị được phép của trường <ph name="MINUTE_FIELD_NAME" /> trong <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> và <ph name="CHARGE_START_TIME_FIELD_NAME" /> là 0, 15, 30, 45.</translation>
 <translation id="7138678301420049075">Khác</translation>
+<translation id="7139809614375682935">Đặt mức phần trăm ngừng sạc pin tùy chỉnh.
+
+          Pin sẽ ngừng sạc khi đạt đến giá trị ngừng sạc pin tùy chỉnh.
+
+          <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> phải thấp hơn <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" /> tối thiểu là 5%.
+
+          Chỉ dùng chính sách này nếu bạn đặt <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" /> thành <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" />.
+
+          Nếu bạn không định cấu hình hoặc không đặt chính sách này, thì chế độ sạc pin <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" /> sẽ được áp dụng.</translation>
 <translation id="7140629953254369759">Hướng dẫn <ph name="PRODUCT_OS_NAME" /> sử dụng cấu hình bộ lập lịch tác vụ dựa trên tên được chỉ định.
 
       Bạn có thể đặt chính sách này là "conservative" (duy trì) và "performance" (hiệu suất), tương ứng với cấu hình thiên về sự ổn định và cấu hình thiên về hiệu suất tối đa.
 
       Nếu bạn không đặt chính sách này, thì người dùng có thể tùy ý lựa chọn.</translation>
 <translation id="7145335384492396213">Chế độ in mã PIN mặc định</translation>
+<translation id="7149042336307555519"> Các loại kết nối được phép dùng để cập nhật hệ điều hành. Quá trình cập nhật hệ điều hành có thể khiến kết nối bị quá tải do kích thước liên quan, đồng thời có thể phát sinh thêm chi phí. Do đó, tùy chọn cập nhật hệ điều hành sẽ bị tắt theo mặc định đối với các loại kết nối được coi là tốn chi phí (hiện chỉ có "cellular").
+
+      Các mã nhận dạng loại kết nối được ghi nhận là <ph name="CONNECTION_TYPE_ETHERNET_NAME" />, <ph name="CONNECTION_TYPE_WIFI_NAME" /> và <ph name="CONNECTION_TYPE_CELLULAR_NAME" />.</translation>
 <translation id="7152605873936173525">Kiểm soát chế độ trình phân giải DNS qua HTTPS. Xin lưu ý rằng chính sách này sẽ chỉ đặt chế độ mặc định cho mỗi truy vấn. Chế độ này có thể bị ghi đè đối với các loại truy vấn đặc biệt, chẳng hạn như yêu cầu phân giải tên máy chủ DNS qua HTTPS.
 
       Chế độ <ph name="SECURE_DNS_MODE_OFF" /> sẽ tắt giao thức DNS qua HTTPS.
@@ -3490,6 +3556,17 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
           Nếu bạn đặt chính sách này thành false, thì các yêu cầu khóa chế độ thức của màn hình sẽ hạ cấp xuống thành các yêu cầu khóa chế độ thức của hệ thống.</translation>
 <translation id="7177857088692019405">Mở khóa nhanh</translation>
 <translation id="7185078796915954712">TLS 1.3</translation>
+<translation id="7187447094921703950">Bật chính sách quản lý điện năng cho chế độ chuyển đổi điện năng cao điểm.
+
+          Chuyển đổi cao điểm là một chính sách tiết kiệm điện năng giúp giảm thiểu việc sử dụng dòng điện xoay chiều trong những thời điểm có mức sử dụng cao điểm trong ngày. Bạn có thể đặt thời gian bắt đầu và thời gian kết thúc để chạy trong chế độ Chuyển đổi điện năng cao điểm cho từng ngày trong tuần. Trong các khoảng thời gian này, hệ thống sẽ chạy bằng pin ngay cả khi được kết nối với dòng điện xoay chiều, miễn là pin ở trên ngưỡng được chỉ định. Sau thời gian kết thúc được chỉ định, hệ thống sẽ chạy bằng dòng điện xoay chiều nếu được kết nối nhưng sẽ không sạc pin. Hệ thống sẽ hoạt động bình thường trở lại bằng dòng điện xoay chiều và sạc lại pin sau Thời gian bắt đầu sạc được chỉ định.
+
+          Nếu bạn đặt chính sách này thành true và đặt <ph name="DEVICE_POWER_PEAK_SHIFT_BATTERY_THRESHOLD_NAME" />, <ph name="DEVICE_POWER_PEAK_SHIFT_DAY_CONFIG_NAME" />, thì chế độ chuyển đổi điện năng cao điểm sẽ luôn bật (với điều kiện thiết bị phải hỗ trợ).
+
+          Nếu bạn đặt chính sách này thành false, thì chế độ chuyển đổi điện năng cao điểm sẽ luôn tắt.
+
+          Nếu bạn đặt chính sách này, người dùng sẽ không thể thay đổi hay ghi đè chính sách.
+
+          Nếu bạn không đặt chính sách này, thì chế độ chuyển đổi điện năng cao điểm sẽ tắt ngay từ đầu và người dùng không thể bật được.</translation>
 <translation id="718956142899066210">Các loại kết nối được cho phép để cập nhật</translation>
 <translation id="7190286937411178540">Bật tính năng hỗ trợ tiếp cận về làm nổi bật tiêu điểm bằng bàn phím</translation>
 <translation id="7194407337890404814">Tên nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
@@ -4119,6 +4196,17 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
           Nếu bạn không đặt chính sách này, tùy chọn cài đặt nói trên sẽ được bật.</translation>
 <translation id="8382184662529825177">Cho phép sử dụng chứng thực từ xa để bảo vệ nội dung cho thiết bị</translation>
+<translation id="8382693763260501307">Bật chính sách quản lý nguồn của chế độ sạc pin nâng cao.
+
+          Chế độ sạc pin nâng cao cho phép người dùng tăng tối đa độ bền của pin. Ở chế độ Sạc nâng cao, hệ thống sẽ sử dụng thuật toán sạc tiêu chuẩn và các kỹ thuật khác ngoài giờ làm việc để tăng tối đa độ bền của pin. Trong giờ làm việc, chế độ sạc nhanh được sử dụng. Chế độ sạc nhanh này cho phép sạc pin nhanh hơn. Nhờ đó, pin sẽ sạc đầy nhanh hơn. Mỗi ngày, thời gian hệ thống được dùng nhiều nhất sẽ được chỉ định bằng thời gian bắt đầu và lượng thời gian.
+
+          Nếu bạn đặt chính sách này thành true và đặt <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_DAY_CONFIG_NAME" />, thì chế độ sạc pin nâng cao sẽ luôn bật (với điều kiện thiết bị phải hỗ trợ).
+
+          Nếu bạn đặt chính sách này thành false, thì chế độ sạc pin nâng cao sẽ luôn tắt.
+
+          Nếu bạn đặt chính sách này, người dùng sẽ không thể thay đổi hay ghi đè chính sách.
+
+          Nếu bạn không đặt chính sách này, thì chế độ sạc pin nâng cao sẽ tắt và người dùng không thể bật được.</translation>
 <translation id="838870586332499308">Bật chuyển vùng dữ liệu</translation>
 <translation id="8390049129576938611">Tắt trình xem PDF nội bộ trong <ph name="PRODUCT_NAME" />. Thay vào đó, thiết bị sẽ coi các tệp PDF là nội dung tải xuống và cho phép người dùng mở các tệp PDF này bằng ứng dụng mặc định.
 
@@ -4329,9 +4417,15 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu bạn định cấu hình chính sách này, thì nhóm ứng dụng sẽ được cố định và người dùng không thể thay đổi.
 
       Nếu bạn không đặt chính sách này, thì người dùng có thể thay đổi danh sách các ứng dụng được ghim trong trình chạy.</translation>
+<translation id="8779504970846195767">Đặt ngưỡng pin cho chế độ chuyển đổi điện năng cao điểm theo phần trăm.
+
+          Chỉ dùng chính sách này nếu bạn đặt <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" /> thành true.
+
+          Nếu bạn không định cấu hình hoặc không đặt chính sách này, thì chế độ chuyển đổi điện năng cao điểm sẽ luôn tắt.</translation>
 <translation id="8798099450830957504">Mặc định</translation>
 <translation id="8800453707696044281">Đặt mức phần trăm ngừng sạc pin tùy chỉnh</translation>
 <translation id="8801680448782904838">Thông báo cho người dùng biết họ cần hoặc bắt buộc phải chạy lại trình duyệt hoặc khởi động lại thiết bị</translation>
+<translation id="8802816494059596691">Các tên máy chủ đã chỉ định trong danh sách này sẽ được miễn kiểm tra chính sách HSTS (có thể nâng cấp yêu cầu từ http lên https). Chính sách này chỉ cho phép tên máy chủ một nhãn. Cần phải chuẩn hóa tên máy chủ: mọi IDN phải được chuyển sang định dạng nhãn A và tất cả chữ cái ASCII phải là chữ thường. Chính sách này chỉ áp dụng với các tên máy chủ cụ thể đã chỉ định, chứ không áp dụng với các miền con của tên máy chủ đã chỉ định.</translation>
 <translation id="8818173863808665831">Báo cáo vị trí địa lý của thiết bị.
 
       Nếu chính sách này không được đặt hoặc được đặt thành false, vị trí sẽ không được báo cáo.</translation>
@@ -4494,6 +4588,17 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu bạn đặt giá trị của chính sách thành một mã thông báo tương ứng với Bản dựng Quick Fix, thì thiết bị sẽ được cập nhật lên Bản dựng Quick Fix tương ứng nếu không có chính sách nào khác chặn quá trình cập nhật này.
 
       Nếu bạn không đặt chính sách này hoặc giá trị của chính sách không tương ứng với Bản dựng Quick Fix, thì thiết bị sẽ không được cập nhật lên Bản dựng Quick Fix. Nếu thiết bị đang chạy Bản dựng Quick Fix và bạn không đặt chính sách này nữa hoặc giá trị của chính sách không còn tương ứng với Bản dựng Quick Fix, thì thiết bị sẽ được cập nhật lên bản dựng thông thường nếu không có chính sách nào khác chặn quá trình cập nhật này.</translation>
+<translation id="9053158112041032237">Chỉ định chính sách quản lý nguồn của chế độ sạc pin.
+
+          Chủ động kiểm soát việc sạc pin để giảm thiểu tình trạng hao mòn pin do ứng suất pin, từ đó tăng tuổi thọ pin.
+
+          Nếu chọn chế độ sạc pin tùy chỉnh, thì bạn phải chỉ định <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> và <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />.
+
+          Nếu bạn đặt chính sách này, thì chế độ sạc pin sẽ được áp dụng (với điều kiện thiết bị phải hỗ trợ).
+
+          Nếu bạn không đặt chính sách này và chính sách được thiết bị hỗ trợ, thì chế độ sạc pin tiêu chuẩn sẽ được áp dụng và người dùng không thể thay đổi được.
+
+          Lưu ý: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> (nếu đã được chỉ định) sẽ ghi đè chính sách này.</translation>
 <translation id="9054012305936267950">Chính sách này kiểm soát hành vi đăng nhập của trình duyệt. Chính sách cho phép bạn chỉ định xem người dùng có thể đăng nhập vào <ph name="PRODUCT_NAME" /> bằng tài khoản của họ và sử dụng các dịch vụ liên quan đến tài khoản như tính năng đồng bộ hóa trên Chrome hay không.
 
       Nếu bạn đặt chính sách này thành "Vô hiệu hóa đăng nhập vào trình duyệt", thì người dùng sẽ không thể đăng nhập vào trình duyệt và sử dụng các dịch vụ dựa trên tài khoản. Trong trường hợp này, các tính năng ở cấp trình duyệt như tính năng đồng bộ hóa trên Chrome sẽ không sử dụng được và không có sẵn. Nếu người dùng đã đăng nhập và bạn đặt chính sách này thành "Tắt", thì họ sẽ bị đăng xuất khi chạy Chrome vào lần sau. Tuy nhiên, các dữ liệu hồ sơ trên máy của họ như dấu trang, mật khẩu, v.v. sẽ vẫn giữ nguyên. Người dùng vẫn có thể đăng nhập và sử dụng các dịch vụ web của Google như Gmail.

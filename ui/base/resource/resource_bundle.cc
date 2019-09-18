@@ -632,19 +632,20 @@ base::StringPiece ResourceBundle::GetRawDataResourceForScale(
   return base::StringPiece();
 }
 
-std::string ResourceBundle::DecompressDataResource(int resource_id) {
+std::string ResourceBundle::DecompressDataResource(int resource_id) const {
   return DecompressDataResourceScaled(resource_id, ui::SCALE_FACTOR_NONE);
 }
 
 std::string ResourceBundle::DecompressDataResourceScaled(
     int resource_id,
-    ScaleFactor scaling_factor) {
+    ScaleFactor scaling_factor) const {
   std::string output;
   Decompress(GetRawDataResourceForScale(resource_id, scaling_factor), &output);
   return output;
 }
 
-std::string ResourceBundle::DecompressLocalizedDataResource(int resource_id) {
+std::string ResourceBundle::DecompressLocalizedDataResource(
+    int resource_id) const {
   base::AutoLock lock_scope(*locale_resources_data_lock_);
   base::StringPiece data;
   if (!(locale_resources_data_.get() &&

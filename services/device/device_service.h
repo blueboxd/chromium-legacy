@@ -147,7 +147,8 @@ class DeviceService : public service_manager::Service {
       mojo::PendingReceiver<mojom::GeolocationControl> receiver);
 
 #if defined(OS_LINUX) && defined(USE_UDEV)
-  void BindInputDeviceManagerRequest(mojom::InputDeviceManagerRequest request);
+  void BindInputDeviceManagerReceiver(
+      mojo::PendingReceiver<mojom::InputDeviceManager> receiver);
 #endif
 
 #if !defined(OS_ANDROID)
@@ -163,7 +164,8 @@ class DeviceService : public service_manager::Service {
 #if defined(OS_CHROMEOS)
   void BindBluetoothSystemFactoryReceiver(
       mojo::PendingReceiver<mojom::BluetoothSystemFactory> receiver);
-  void BindMtpManagerRequest(mojom::MtpManagerRequest request);
+  void BindMtpManagerReceiver(
+      mojo::PendingReceiver<mojom::MtpManager> receiver);
 #endif
 
   void BindPowerMonitorRequest(mojom::PowerMonitorRequest request);

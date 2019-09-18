@@ -763,6 +763,24 @@
             ]
         }
     ],
+    "AutofillEnableToolbarStatusChip": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillCreditCardUploadFeedback",
+                        "AutofillEnableToolbarStatusChip"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillFieldMetadata": [
         {
             "platforms": [
@@ -1494,6 +1512,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "CertDualVerificationTrial"
+                    ]
+                }
+            ]
+        }
+    ],
+    "CertVerifierBuiltin": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CertVerifierBuiltin"
                     ]
                 }
             ]
@@ -5245,6 +5278,27 @@
                     },
                     "enable_features": [
                         "SafeBrowsingUseLocalBlacklistsV2"
+                    ]
+                }
+            ]
+        }
+    ],
+    "SameSiteCookieMessages": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledLaunch",
+                    "enable_features": [
+                        "CookieDeprecationMessages"
                     ]
                 }
             ]

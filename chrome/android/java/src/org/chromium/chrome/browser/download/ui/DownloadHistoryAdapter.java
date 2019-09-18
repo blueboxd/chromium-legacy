@@ -30,8 +30,8 @@ import org.chromium.chrome.browser.download.home.storage.StorageSummaryProvider;
 import org.chromium.chrome.browser.download.ui.BackendProvider.DownloadDelegate;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.DownloadItemWrapper;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.OfflineItemWrapper;
+import org.chromium.chrome.browser.ui.widget.displaystyle.UiConfig;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
-import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.chrome.download.R;
 import org.chromium.components.download.DownloadState;
@@ -293,8 +293,9 @@ public class DownloadHistoryAdapter
                     && wrapper.isVisibleToUser(DownloadFilter.Type.ALL)) {
                 itemCounts[wrapper.getFilterType()]++;
 
-                if (DownloadUtils.isDownloadViewed(wrapper.getItem()))
+                if (DownloadUtils.isDownloadViewed(wrapper.getItem())) {
                     viewedItemCounts[wrapper.getFilterType()]++;
+                }
                 if (!isOffTheRecord && wrapper.getFilterType() == DownloadFilter.Type.OTHER) {
                     RecordHistogram.recordEnumeratedHistogram(
                             "Android.DownloadManager.OtherExtensions.InitialCount",

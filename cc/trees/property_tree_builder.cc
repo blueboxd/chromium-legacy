@@ -167,7 +167,7 @@ bool HasAnyAnimationTargetingProperty(const MutatorHost& host,
 // -------------------------------------------------------------------
 
 bool LayerClipsSubtreeToItsBounds(Layer* layer) {
-  return layer->masks_to_bounds() || layer->mask_layer();
+  return layer->masks_to_bounds() || layer->IsMaskedByChild();
 }
 
 bool LayerClipsSubtree(Layer* layer) {
@@ -350,22 +350,18 @@ RenderSurfaceReason ComputeRenderSurfaceReason(const MutatorHost& mutator_host,
   if (is_root)
     return RenderSurfaceReason::kRoot;
 
-  // If the layer uses a mask.
-  if (layer->mask_layer()) {
+  if (layer->IsMaskedByChild()) {
     return RenderSurfaceReason::kMask;
   }
 
-  // If the layer uses trilinear filtering.
   if (layer->trilinear_filtering()) {
     return RenderSurfaceReason::kTrilinearFiltering;
   }
 
-  // If the layer uses a CSS filter.
   if (!layer->filters().IsEmpty()) {
     return RenderSurfaceReason::kFilter;
   }
 
-  // If the layer uses a CSS backdrop-filter.
   if (!layer->backdrop_filters().IsEmpty()) {
     return RenderSurfaceReason::kBackdropFilter;
   }
@@ -521,7 +517,6 @@ bool PropertyTreeBuilderContext::AddEffectNodeIfNeeded(
   node->backdrop_filters = layer->backdrop_filters();
   node->backdrop_filter_bounds = layer->backdrop_filter_bounds();
   node->backdrop_filter_quality = layer->backdrop_filter_quality();
-  node->backdrop_mask_element_id = layer->backdrop_mask_element_id();
   node->filters_origin = layer->filters_origin();
   node->trilinear_filtering = layer->trilinear_filtering();
   node->has_potential_opacity_animation = has_potential_opacity_animation;
@@ -542,12 +537,6 @@ bool PropertyTreeBuilderContext::AddEffectNodeIfNeeded(
       layer->HasCopyRequest()
           ? node_id
           : data_from_ancestor.closest_ancestor_with_copy_request;
-
-  if (layer->mask_layer()) {
-    node->mask_layer_id = layer->mask_layer()->id();
-    effect_tree_.AddMaskLayerId(node->mask_layer_id);
-    node->is_masked = true;
-  }
 
   if (layer->HasRoundedCorner()) {
     // This is currently in the local space of the layer and hence in an invalid
@@ -786,17 +775,6 @@ void PropertyTreeBuilderContext::BuildPropertyTreesInternal(
   created_render_surface = UpdateRenderSurfaceIfNeeded(
       data_from_parent.effect_tree_parent, &data_for_children,
       subtree_has_rounded_corner, created_transform_node);
-
-  if (layer->mask_layer()) {
-    layer->mask_layer()->set_property_tree_sequence_number(
-        property_trees_.sequence_number);
-    layer->mask_layer()->SetOffsetToTransformParent(
-        layer->offset_to_transform_parent());
-    layer->mask_layer()->SetTransformTreeIndex(layer->transform_tree_index());
-    layer->mask_layer()->SetClipTreeIndex(layer->clip_tree_index());
-    layer->mask_layer()->SetEffectTreeIndex(layer->effect_tree_index());
-    layer->mask_layer()->SetScrollTreeIndex(layer->scroll_tree_index());
-  }
 }
 
 void PropertyTreeBuilderContext::BuildPropertyTrees() {

@@ -11,10 +11,6 @@
 #include "cc/trees/layer_tree_host.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-namespace {
-static constexpr int kMaxScrollbarDimension = 8192;
-}
-
 namespace cc {
 
 std::unique_ptr<LayerImpl> PaintedScrollbarLayer::CreateLayerImpl(
@@ -239,13 +235,23 @@ UIResourceBitmap PaintedScrollbarLayer::RasterizeScrollbarPart(
   // Pages can end up requesting arbitrarily large scrollbars.  Prevent this
   // from crashing due to OOM and try something smaller.
   SkBitmap skbitmap;
-  if (!skbitmap.tryAllocN32Pixels(content_rect.width(),
-                                  content_rect.height())) {
-    content_rect.Intersect(
-        gfx::Rect(requested_content_rect.x(), requested_content_rect.y(),
-                  kMaxScrollbarDimension, kMaxScrollbarDimension));
-    skbitmap.allocN32Pixels(content_rect.width(), content_rect.height());
+  bool allocation_succeeded =
+      skbitmap.tryAllocN32Pixels(content_rect.width(), content_rect.height());
+  // Assuming 4bpp, caps at 4M.
+  constexpr int kMinScrollbarDimension = 1024;
+  int dimension = std::max(content_rect.width(), content_rect.height()) / 2;
+  while (!allocation_succeeded && dimension >= kMinScrollbarDimension) {
+    content_rect.Intersect(gfx::Rect(requested_content_rect.x(),
+                                     requested_content_rect.y(), dimension,
+                                     dimension));
+    allocation_succeeded =
+        skbitmap.tryAllocN32Pixels(content_rect.width(), content_rect.height());
+    if (!allocation_succeeded)
+      dimension = dimension / 2;
   }
+  CHECK(allocation_succeeded)
+      << "Failed to allocate memory for scrollbar at dimension : " << dimension;
+
   SkiaPaintCanvas canvas(skbitmap);
   canvas.clear(SK_ColorTRANSPARENT);
 

@@ -708,7 +708,6 @@ int EffectTree::Insert(const EffectNode& tree_node, int parent_id) {
 
 void EffectTree::clear() {
   PropertyTree<EffectNode>::clear();
-  mask_layer_ids_.clear();
   render_surfaces_.clear();
   render_surfaces_.push_back(nullptr);
 
@@ -1024,10 +1023,6 @@ int EffectTree::LowestCommonAncestorWithRenderSurface(int id_1,
   return id_1;
 }
 
-void EffectTree::AddMaskLayerId(int id) {
-  mask_layer_ids_.push_back(id);
-}
-
 bool EffectTree::ContributesToDrawnSurface(int id) {
   // All drawn nodes contribute to drawn surface.
   // Exception : Nodes that are hidden and are drawn only for the sake of
@@ -1138,7 +1133,7 @@ bool EffectTree::HitTestMayBeAffectedByMask(int effect_id) const {
   for (; effect_node->id != kContentsRootNodeId;
        effect_node = Node(effect_node->parent_id)) {
     if (!effect_node->rounded_corner_bounds.IsEmpty() ||
-        effect_node->has_masking_child || effect_node->is_masked)
+        effect_node->has_masking_child)
       return true;
   }
   return false;
@@ -1176,7 +1171,6 @@ bool ClipTree::operator==(const ClipTree& other) const {
 EffectTree& EffectTree::operator=(const EffectTree& from) {
   PropertyTree::operator=(from);
   render_surfaces_.resize(size());
-  mask_layer_ids_ = from.mask_layer_ids_;
   // copy_requests_ are omitted here, since these need to be moved rather
   // than copied or assigned.
 
@@ -1184,8 +1178,7 @@ EffectTree& EffectTree::operator=(const EffectTree& from) {
 }
 
 bool EffectTree::operator==(const EffectTree& other) const {
-  return PropertyTree::operator==(other) &&
-         mask_layer_ids_ == other.mask_layer_ids_;
+  return PropertyTree::operator==(other);
 }
 
 ScrollTree::ScrollTree()

@@ -19,6 +19,7 @@
 <translation id="2501953888035679275">카메라로 사진을 찍고 동영상을 녹화합니다.</translation>
 <translation id="2549985041256363841">녹화 시작</translation>
 <translation id="2599796128805996109">후면 카메라</translation>
+<translation id="2912439424121107408">이 기기에서는 전문가 모드가 지원되지 않습니다.</translation>
 <translation id="2968794441791257519">카메라로 촬영된 사진 및 동영상은 다운로드 폴더로 이동됩니다. 파일 앱에서 이러한 사진 및 동영상에 액세스할 수 있습니다.
 
         저장용량 권한이 있는 앱은 사진 및 동영상에 액세스할 수 있습니다.</translation>
@@ -41,10 +42,12 @@
         카메라가 제대로 연결되어 있는지 확인하세요.</translation>
 <translation id="5152121255775685072">갤러리로 이동</translation>
 <translation id="5671277269877808209">정사각형</translation>
+<translation id="5775960006311140197">전문가 모드</translation>
 <translation id="5869546221129391014">격자</translation>
 <translation id="6040143037577758943">닫기</translation>
 <translation id="6073451960410192870">녹화 중지</translation>
 <translation id="6165508094623778733">자세히 알아보기</translation>
+<translation id="6197807149213783179">메타데이터 저장</translation>
 <translation id="6233780560267770709">3x3</translation>
 <translation id="6243827288366940320">황금 비율</translation>
 <translation id="6248749904681914629">외장 카메라</translation>
@@ -66,6 +69,7 @@
 <translation id="8261506727792406068">삭제</translation>
 <translation id="8428213095426709021">설정</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p(<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8732462232047530626">메타데이터 미리보기</translation>
 <translation id="8815966864175525708">세로 모드 사진 촬영으로 전환</translation>
 <translation id="8870695351537079478">녹화를 시작할 수 없습니다.</translation>
 <translation id="9045155556724273246">10초</translation>

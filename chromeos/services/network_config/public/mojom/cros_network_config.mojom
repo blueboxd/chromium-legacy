@@ -196,6 +196,9 @@ struct CellularStateProperties {
 };
 
 struct EthernetStateProperties {
+  // This represents the actual authentication type for a connected Ethernet
+  // network. Note: An EAP configuration may exist but not be applied (e.g. if
+  // no certificate is installed), in which case the value will be kNone.
   AuthenticationType authentication;
 };
 
@@ -556,6 +559,10 @@ struct ManagedCellularProperties {
 };
 
 struct ManagedEthernetProperties {
+  // This represents the configured authentication type for an Ethernet network.
+  // Note: This might not match the State value (which uses an enum instead of
+  // a managed string) if the EAP configuration can not be applied (e.g. when
+  // no certificate is installed).
   ManagedString? authentication;
   ManagedEAPProperties? eap;
 };

@@ -326,7 +326,7 @@ void RulesetManager::UpdateAllowedPages(const ExtensionId& extension_id,
   ClearRendererCacheOnNavigation();
 }
 
-const RulesetManager::Action& RulesetManager::EvaluateRequest(
+const std::vector<RulesetManager::Action>& RulesetManager::EvaluateRequest(
     const WebRequestInfo& request,
     bool is_incognito_context) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -337,10 +337,12 @@ const RulesetManager::Action& RulesetManager::EvaluateRequest(
   // |is_incognito_context| will stay the same for a given |request|. This also
   // assumes that the core state of the WebRequestInfo isn't changed between the
   // different EvaluateRequest invocations.
-  if (!request.dnr_action)
-    request.dnr_action = EvaluateRequestInternal(request, is_incognito_context);
+  if (request.dnr_actions.empty()) {
+    request.dnr_actions =
+        EvaluateRequestInternal(request, is_incognito_context);
+  }
 
-  return *request.dnr_action;
+  return request.dnr_actions;
 }
 
 bool RulesetManager::HasAnyExtraHeadersMatcher() const {
@@ -357,7 +359,8 @@ bool RulesetManager::HasAnyExtraHeadersMatcher() const {
 bool RulesetManager::HasExtraHeadersMatcherForRequest(
     const WebRequestInfo& request,
     bool is_incognito_context) const {
-  const Action& action = EvaluateRequest(request, is_incognito_context);
+  const std::vector<Action>& actions =
+      EvaluateRequest(request, is_incognito_context);
 
   // We only support removing a subset of extra headers currently. If that
   // changes, the implementation here should change as well.
@@ -365,7 +368,12 @@ bool RulesetManager::HasExtraHeadersMatcherForRequest(
                 "Modify this method to ensure HasExtraHeadersMatcherForRequest "
                 "is updated as new actions are added.");
 
-  return action.type == Action::Type::REMOVE_HEADERS;
+  for (const auto& action : actions) {
+    if (action.type == Action::Type::REMOVE_HEADERS)
+      return true;
+  }
+
+  return false;
 }
 
 void RulesetManager::SetObserverForTest(TestObserver* observer) {
@@ -404,7 +412,7 @@ base::Optional<RulesetManager::Action> RulesetManager::GetBlockOrCollapseAction(
       Action action = ShouldCollapseResourceType(params.element_type)
                           ? Action(Action::Type::COLLAPSE)
                           : Action(Action::Type::BLOCK);
-      action.extension_ids.push_back(ruleset->extension_id);
+      action.extension_id = ruleset->extension_id;
       return action;
     }
   }
@@ -451,48 +459,59 @@ RulesetManager::GetRedirectOrUpgradeAction(
 
     Action action(Action::Type::REDIRECT);
     action.redirect_url = std::move(redirect_action.redirect_url);
-    action.extension_ids.push_back(ruleset->extension_id);
+    action.extension_id = ruleset->extension_id;
     return action;
   }
 
   return base::nullopt;
 }
 
-base::Optional<RulesetManager::Action> RulesetManager::GetRemoveHeadersAction(
+std::vector<RulesetManager::Action> RulesetManager::GetRemoveHeadersActions(
     const std::vector<const ExtensionRulesetData*>& rulesets,
     const RequestParams& params) const {
-  Action action(Action::Type::REMOVE_HEADERS);
-  uint8_t mask = 0;
-  for (const ExtensionRulesetData* ruleset : rulesets) {
-    uint8_t ruleset_mask = ruleset->matcher->GetRemoveHeadersMask(params, mask);
-    if (ruleset_mask)
-      action.extension_ids.push_back(ruleset->extension_id);
+  std::vector<Action> remove_headers_actions;
 
-    mask |= ruleset_mask;
+  // Keep a combined mask of all headers to be removed to be passed into
+  // GetRemoveHeadersMask. This is done to ensure the ruleset matchers will skip
+  // matching rules for headers already slated to be removed.
+  uint8_t combined_mask = 0;
+  for (const ExtensionRulesetData* ruleset : rulesets) {
+    uint8_t ruleset_mask = ruleset->matcher->GetRemoveHeadersMask(
+        params, combined_mask /* ignored_mask */);
+    if (!ruleset_mask)
+      continue;
+
+    Action action(Action::Type::REMOVE_HEADERS);
+    PopulateHeadersFromMask(ruleset_mask, &action.request_headers_to_remove,
+                            &action.response_headers_to_remove);
+    action.extension_id = ruleset->extension_id;
+    remove_headers_actions.push_back(std::move(action));
+    combined_mask |= ruleset_mask;
   }
 
-  if (!mask)
-    return base::nullopt;
-
-  PopulateHeadersFromMask(mask, &action.request_headers_to_remove,
-                          &action.response_headers_to_remove);
-  return action;
+  return remove_headers_actions;
 }
 
-RulesetManager::Action RulesetManager::EvaluateRequestInternal(
+std::vector<RulesetManager::Action> RulesetManager::EvaluateRequestInternal(
     const WebRequestInfo& request,
     bool is_incognito_context) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!request.dnr_action);
+  DCHECK(request.dnr_actions.empty());
 
-  if (!ShouldEvaluateRequest(request))
-    return Action(Action::Type::NONE);
+  std::vector<Action> actions;
+
+  if (!ShouldEvaluateRequest(request)) {
+    actions.emplace_back(Action::Type::NONE);
+    return actions;
+  }
 
   if (test_observer_)
     test_observer_->OnEvaluateRequest(request, is_incognito_context);
 
-  if (rulesets_.empty())
-    return Action(Action::Type::NONE);
+  if (rulesets_.empty()) {
+    actions.emplace_back(Action::Type::NONE);
+    return actions;
+  }
 
   SCOPED_UMA_HISTOGRAM_TIMER(
       "Extensions.DeclarativeNetRequest.EvaluateRequestTime.AllExtensions2");
@@ -532,24 +551,31 @@ RulesetManager::Action RulesetManager::EvaluateRequestInternal(
   // If the request is blocked, no further modifications can happen.
   base::Optional<Action> action =
       GetBlockOrCollapseAction(rulesets_to_evaluate, params);
-  if (action)
-    return std::move(*action);
+  if (action) {
+    actions.push_back(std::move(std::move(*action)));
+    return actions;
+  }
 
   // If the request is redirected, no further modifications can happen. A new
   // request will be created and subsequently evaluated.
   action = GetRedirectOrUpgradeAction(rulesets_to_evaluate, request, tab_id,
                                       crosses_incognito, params);
-  if (action)
-    return std::move(*action);
+  if (action) {
+    actions.push_back(std::move(std::move(*action)));
+    return actions;
+  }
 
   // Removing headers doesn't require host permissions.
   // Note: If we add other "non-destructive" actions (i.e., actions that don't
   // end the request), we should combine them with the remove-headers action.
-  action = GetRemoveHeadersAction(rulesets_to_evaluate, params);
-  if (action)
-    return std::move(*action);
+  std::vector<Action> remove_headers_actions =
+      GetRemoveHeadersActions(rulesets_to_evaluate, params);
 
-  return Action(Action::Type::NONE);
+  if (!remove_headers_actions.empty())
+    return remove_headers_actions;
+
+  actions.emplace_back(Action::Type::NONE);
+  return actions;
 }
 
 bool RulesetManager::ShouldEvaluateRequest(

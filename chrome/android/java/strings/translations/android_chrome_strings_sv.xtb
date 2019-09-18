@@ -449,7 +449,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill finju
 <translation id="4440958355523780886">Lite-sida tillhandahållen av Google. Tryck för att läsa in originalet.</translation>
 <translation id="4452411734226507615">Stäng fliken <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Bokmärkt i <ph name="FOLDER_NAME" /></translation>
-<translation id="4453340223357552416"><ph name="FILE_NAME" /> har laddats ned i <ph name="PRODUCT_NAME" /></translation>
 <translation id="445467742685312942">Tillåt att webbplatser spelar upp skyddat innehåll</translation>
 <translation id="4468959413250150279">Stäng av ljudet för en webbplats.</translation>
 <translation id="4472118726404937099">Logga in och aktivera synkronisering om du vill synkronisera och anpassa alla dina enheter</translation>
@@ -819,7 +818,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6992289844737586249">Fråga innan webbplatser tillåts att använda mikrofonen (rekommenderas)</translation>
 <translation id="7015203776128479407">Den initiala synkroniseringskonfigureringen avslutades inte. Synkroniseringen är inaktiverad.</translation>
 <translation id="7016516562562142042">Tillåt för den nuvarande sökmotorn</translation>
-<translation id="7021515813996758557"><ph name="FILE_NAME" /> har laddats ned</translation>
 <translation id="7022756207310403729">Öppna i webbläsaren</translation>
 <translation id="702463548815491781">Rekommenderas när TalkBack eller brytarstyrning är aktiverat</translation>
 <translation id="7029809446516969842">Lösenord</translation>

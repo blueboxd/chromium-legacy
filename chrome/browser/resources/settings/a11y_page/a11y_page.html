@@ -19,43 +19,24 @@
 <dom-module id="settings-a11y-page">
   <template>
     <style include="settings-shared"></style>
-    <template is="dom-if" if="[[showCaptionSettings_]]">
-      <cr-link-row class="hr" id="captions" label="$i18n{captionsTitle}"
-          on-click="onCaptionsClick_">
-      </cr-link-row>
-    </template>
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="a11y" focus-config="[[focusConfig_]]">
-<if expr="not chromeos">
       <div route-path="default">
-      <settings-toggle-button
-          id="a11yImageLabels"
-          hidden$="[[!showAccessibilityLabelsSetting_]]"
-          pref="{{prefs.settings.a11y.enable_accessibility_image_labels}}"
-          on-change="onToggleAccessibilityImageLabels_"
-          label="$i18n{accessibleImageLabelsTitle}"
-          sub-label="$i18n{accessibleImageLabelsSubtitle}">
-      </settings-toggle-button>
-      <cr-link-row class="hr" label="$i18n{moreFeaturesLink}"
-          on-click="onMoreFeaturesLinkClick_" sub-label="$i18n{a11yWebStore}"
-          external>
-      </cr-link-row>
-      </div>
-</if>
-<if expr="chromeos or is_linux or is_win">
-      <template is="dom-if" if="[[showCaptionSettings_]]">
-        <template is="dom-if" route-path="/captions">
-          <settings-subpage
-              associated-control="[[$$('#captions')]]"
-              page-title="$i18n{captionsTitle}">
-            <settings-captions prefs="{{prefs}}"></settings-captions>
-          </settings-subpage>
-        </template>
-      </template>
+        <cr-link-row class="hr" id="captions" label="$i18n{captionsTitle}"
+            on-click="onCaptionsClick_" external$="[[captionSettingsOpensExternally_]]">
+        </cr-link-row>
+<if expr="not chromeos">
+        <settings-toggle-button
+            id="a11yImageLabels"
+            hidden$="[[!showAccessibilityLabelsSetting_]]"
+            pref="{{prefs.settings.a11y.enable_accessibility_image_labels}}"
+            on-change="onToggleAccessibilityImageLabels_"
+            label="$i18n{accessibleImageLabelsTitle}"
+            sub-label="$i18n{accessibleImageLabelsSubtitle}">
+        </settings-toggle-button>
 </if>
 <if expr="chromeos">
-      <template is="dom-if" if="[[pageVisibility.webstoreLink]]">
-        <div route-path="default">
+        <template is="dom-if" if="[[pageVisibility.webstoreLink]]">
           <settings-toggle-button
               id="a11yImageLabels"
               hidden$="[[!showAccessibilityLabelsSetting_]]"
@@ -73,7 +54,26 @@
               on-click="onManageAccessibilityFeaturesTap_"
               sub-label="$i18n{moreFeaturesLinkDescription}">
           </cr-link-row>
-        </div>
+        </template>
+</if>
+        <cr-link-row class="hr" label="$i18n{moreFeaturesLink}"
+            on-click="onMoreFeaturesLinkClick_" sub-label="$i18n{a11yWebStore}"
+            hidden="[[pageVisibility.webstoreLink]]" external>
+        </cr-link-row>
+      </div>
+<if expr="not is_macosx">
+      <template is="dom-if" if="[[showCaptionSettings_]]">
+        <template is="dom-if" route-path="/captions">
+          <settings-subpage
+              associated-control="[[$$('#captions')]]"
+              page-title="$i18n{captionsTitle}">
+            <settings-captions prefs="{{prefs}}"></settings-captions>
+          </settings-subpage>
+        </template>
+      </template>
+</if>
+<if expr="chromeos">
+      <template is="dom-if" if="[[pageVisibility.webstoreLink]]">
         <template is="dom-if" route-path="/manageAccessibility">
           <settings-subpage
               associated-control="[[$$('#subpage-trigger')]]"
@@ -86,8 +86,7 @@
           <settings-subpage
               associated-control="[[$$('#subpage-trigger')]]"
               page-title="$i18n{manageTtsSettings}">
-            <settings-tts-subpage prefs="{{prefs}}">
-            </settings-tts-subpage>
+            <settings-tts-subpage prefs="{{prefs}}"></settings-tts-subpage>
           </settings-subpage>
         </template>
         <template is="dom-if" route-path="/manageAccessibility/switchAccess">
@@ -100,12 +99,6 @@
       </template>
 </if>
     </settings-animated-pages>
-<if expr="chromeos">
-    <cr-link-row class="hr" label="$i18n{moreFeaturesLink}"
-        on-click="onMoreFeaturesLinkClick_" sub-label="$i18n{a11yWebStore}"
-        hidden="[[pageVisibility.webstoreLink]]" external>
-    </cr-link-row>
-</if>
   </template>
   <script src="a11y_page.js"></script>
 </dom-module>

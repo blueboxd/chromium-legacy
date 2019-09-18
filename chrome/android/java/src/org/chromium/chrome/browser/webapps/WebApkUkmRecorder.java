@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 package org.chromium.chrome.browser.webapps;
+import org.chromium.base.annotations.NativeMethods;
 
 /**
  * A class to record User Keyed Metrics relevant to WebAPKs. This
@@ -15,7 +16,8 @@ public class WebApkUkmRecorder {
      */
     public static void recordWebApkSessionDuration(String manifestUrl,
             @WebApkDistributor int distributor, int versionCode, long duration) {
-        nativeRecordSessionDuration(manifestUrl, distributor, versionCode, duration);
+        WebApkUkmRecorderJni.get().recordSessionDuration(
+                manifestUrl, distributor, versionCode, duration);
     }
 
     /**
@@ -23,11 +25,13 @@ public class WebApkUkmRecorder {
      */
     public static void recordWebApkLaunch(
             String manifestUrl, @WebApkDistributor int distributor, int versionCode, int source) {
-        nativeRecordVisit(manifestUrl, distributor, versionCode, source);
+        WebApkUkmRecorderJni.get().recordVisit(manifestUrl, distributor, versionCode, source);
     }
 
-    private static native void nativeRecordSessionDuration(
-            String manifestUrl, int distributor, int versionCode, long duration);
-    private static native void nativeRecordVisit(
-            String manifestUrl, int distributor, int versionCode, int source);
+    @NativeMethods
+    interface Natives {
+        void recordSessionDuration(
+                String manifestUrl, int distributor, int versionCode, long duration);
+        void recordVisit(String manifestUrl, int distributor, int versionCode, int source);
+    }
 }

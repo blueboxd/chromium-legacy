@@ -125,7 +125,7 @@ void PageInfoControllerAndroid::SetPermissionInfo(
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_AUTOPLAY);
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_SOUND);
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-  if (cmd->HasSwitch(switches::kEnableWebBluetoothScanning))
+  if (cmd->HasSwitch(switches::kEnableExperimentalWebPlatformFeatures))
     permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_BLUETOOTH_SCANNING);
 
   std::map<ContentSettingsType, ContentSetting>

@@ -163,13 +163,16 @@ void VP8Encoder::InitializeFrameHeader() {
   current_frame_hdr_.show_frame = true;
   // TODO(sprang): Make this dynamic. Value based on reference implementation
   // in libyami (https://github.com/intel/libyami).
-  current_frame_hdr_.loopfilter_hdr.level = 19;
 
-  // b/138840822: Set mb_no_skip_coeff and loop_filter_adj_enable to 1 as a
-  // workaround of color artifacts issue with a kepler device hw decoder and
-  // ffmpeg sw decoder.
-  current_frame_hdr_.mb_no_skip_coeff = 1;
+  // A VA-API driver recommends to set forced_lf_adjustment on keyframe.
+  // Set loop_filter_adj_enable to 1 here because forced_lf_adjustment is read
+  // only when a macroblock level loop filter adjustment.
   current_frame_hdr_.loopfilter_hdr.loop_filter_adj_enable = 1;
+
+  // Set mb_no_skip_coeff to 1 that some decoders (e.g. kepler) could not decode
+  // correctly a stream encoded with mb_no_skip_coeff=0. It also enables an
+  // encoder to produce a more optimized stream than when mb_no_skip_coeff=0.
+  current_frame_hdr_.mb_no_skip_coeff = 1;
 }
 
 void VP8Encoder::UpdateFrameHeader(bool keyframe) {

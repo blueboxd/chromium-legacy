@@ -1319,6 +1319,102 @@ TEST_F(TextFragmentAnchorTest, NoMatchFoundFallsBackToElementFragment) {
       << LayoutViewport()->GetScrollOffset().ToString();
 }
 
+// Test that we don't match partial words at the beginning or end of the text.
+TEST_F(TextFragmentAnchorTest, CheckForWordBoundary) {
+  SimRequest request(
+      "https://example.com/"
+      "test.html#targetText=This%20is%20a%20te&tagetText=st%20page",
+      "text/html");
+  LoadURL(
+      "https://example.com/"
+      "test.html#targetText=This%20is%20a%20te&tagetText=st%20page");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <p id="text">This is a test page</p>
+  )HTML");
+  Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(ScrollOffset(), LayoutViewport()->GetScrollOffset());
+  EXPECT_TRUE(GetDocument().Markers().Markers().IsEmpty());
+}
+
+// Test that we don't match partial words with context
+TEST_F(TextFragmentAnchorTest, CheckForWordBoundaryWithContext) {
+  SimRequest request("https://example.com/test.html#targetText=est-,page",
+                     "text/html");
+  LoadURL("https://example.com/test.html#targetText=est-,page");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <p id="text">This is a test page</p>
+  )HTML");
+  Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(ScrollOffset(), LayoutViewport()->GetScrollOffset());
+  EXPECT_TRUE(GetDocument().Markers().Markers().IsEmpty());
+}
+
+// Test that we correctly match a whole word when it appears as a partial word
+// earlier in the page.
+TEST_F(TextFragmentAnchorTest, CheckForWordBoundaryWithPartialWord) {
+  SimRequest request("https://example.com/test.html#targetText=tes,age",
+                     "text/html");
+  LoadURL("https://example.com/test.html#targetText=tes,age");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      #first {
+        position: absolute;
+        top: 1000px;
+      }
+      #second {
+        position: absolute;
+        top: 2000px;
+      }
+    </style>
+    <p id="first">This is a test page</p>
+    <p id="second">This is a tes age</p>
+  )HTML");
+  Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
+
+  Element& p = *GetDocument().getElementById("second");
+
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(p)))
+      << "Should have scrolled <p> into view but didn't, scroll offset: "
+      << LayoutViewport()->GetScrollOffset().ToString();
+
+  // Expect marker on only "tes age"
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+  DocumentMarkerVector markers = GetDocument().Markers().MarkersFor(
+      *To<Text>(p.firstChild()), DocumentMarker::MarkerTypes::TextMatch());
+  ASSERT_EQ(1u, markers.size());
+  EXPECT_EQ(10u, markers.at(0)->StartOffset());
+  EXPECT_EQ(17u, markers.at(0)->EndOffset());
+}
+
 }  // namespace
 
 }  // namespace blink

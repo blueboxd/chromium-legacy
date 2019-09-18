@@ -15,6 +15,7 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/arc/arc_features.h"
 #include "components/exo/shell_surface_util.h"
@@ -61,10 +62,15 @@ void OnSetArcVmCpuRestriction(
     LOG(ERROR) << "SetVmCpuRestriction for ARCVM failed";
 }
 
-void SetArcVmCpuRestriction(bool do_restrict) {
+void DoSetArcVmCpuRestriction(bool do_restrict, bool concierge_started) {
+  if (!concierge_started) {
+    LOG(ERROR) << "Concierge D-Bus service is not available";
+    return;
+  }
+
   auto* client = chromeos::DBusThreadManager::Get()->GetConciergeClient();
   if (!client) {
-    LOG(WARNING) << "ConciergeClient is not available";
+    LOG(ERROR) << "ConciergeClient is not available";
     return;
   }
 
@@ -76,6 +82,17 @@ void SetArcVmCpuRestriction(bool do_restrict) {
 
   client->SetVmCpuRestriction(request,
                               base::BindOnce(&OnSetArcVmCpuRestriction));
+}
+
+void SetArcVmCpuRestriction(bool do_restrict) {
+  auto* client = chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
+  if (!client) {
+    LOG(WARNING) << "DebugDaemonClient is not available";
+    return;
+  }
+  // TODO(wvk): Call StartConcierge() only when the service is not running.
+  client->StartConcierge(
+      base::BindOnce(&DoSetArcVmCpuRestriction, do_restrict));
 }
 
 void SetArcContainerCpuRestriction(bool do_restrict) {

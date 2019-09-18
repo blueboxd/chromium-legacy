@@ -181,29 +181,29 @@ TEST(HitTestDataProviderDrawQuad, HitTestDataSkipQuads) {
   quad4_root_1->SetNew(shared_quad_state4_root, /*rect=*/rect4_root,
                        /*visible_rect=*/rect4_root, /*render_pass_id=*/1,
                        /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
-                       /*mask_applies_to_backdrop=*/false, gfx::Vector2dF(1, 1),
-                       gfx::PointF(), gfx::RectF(), false, 1.0f);
+                       gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false,
+                       1.0f);
   auto* quad4_root_2 =
       pass4_root->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
   quad4_root_2->SetNew(shared_quad_state4_root, /*rect=*/rect4_root,
                        /*visible_rect=*/rect4_root, /*render_pass_id=*/2,
                        /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
-                       /*mask_applies_to_backdrop=*/false, gfx::Vector2dF(1, 1),
-                       gfx::PointF(), gfx::RectF(), false, 1.0f);
+                       gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false,
+                       1.0f);
   auto* quad4_root_3 =
       pass4_root->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
   quad4_root_3->SetNew(shared_quad_state4_root, /*rect=*/rect4_root,
                        /*visible_rect=*/rect4_root, /*render_pass_id=*/3,
                        /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
-                       /*mask_applies_to_backdrop=*/false, gfx::Vector2dF(1, 1),
-                       gfx::PointF(), gfx::RectF(), false, 1.0f);
+                       gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false,
+                       1.0f);
   auto* quad4_root_4 =
       pass4_root->quad_list.AllocateAndConstruct<RenderPassDrawQuad>();
   quad4_root_4->SetNew(shared_quad_state4_root, /*rect=*/rect4_root,
                        /*visible_rect=*/rect4_root, /*render_pass_id=*/4,
                        /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
-                       /*mask_applies_to_backdrop=*/false, gfx::Vector2dF(1, 1),
-                       gfx::PointF(), gfx::RectF(), false, 1.0f);
+                       gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false,
+                       1.0f);
   pass_list.push_back(std::move(pass4_root));
 
   auto compositor_frame =
@@ -460,8 +460,7 @@ TEST(HitTestDataProviderDrawQuad, HitTestDataRenderPassListCache) {
   render_pass_quad_1->SetNew(
       pass2->shared_quad_state_list.back(), child_rect, child_rect,
       /*render_pass_id=*/1, /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
-      /*mask_applies_to_backdrop=*/false, gfx::Vector2dF(1, 1), gfx::PointF(),
-      gfx::RectF(), false, 1.0f);
+      gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false, 1.0f);
   SurfaceId child_surface_id3 = CreateChildSurfaceId(4);
   gfx::Rect child_rect3(500, 500, 100, 100);
   auto* surface_quad_3 = pass2->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
@@ -474,8 +473,7 @@ TEST(HitTestDataProviderDrawQuad, HitTestDataRenderPassListCache) {
   render_pass_quad_2->SetNew(
       pass2->shared_quad_state_list.back(), child_rect2, child_rect2,
       /*render_pass_id=*/1, /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
-      /*mask_applies_to_backdrop=*/false, gfx::Vector2dF(1, 1), gfx::PointF(),
-      gfx::RectF(), false, 1.0f);
+      gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false, 1.0f);
   pass_list.push_back(std::move(pass2));
 
   // The root RenderPass that has three RenderPassDrawQuad point to pass2.
@@ -490,22 +488,19 @@ TEST(HitTestDataProviderDrawQuad, HitTestDataRenderPassListCache) {
   render_pass_quad_3->SetNew(
       pass_root->shared_quad_state_list.back(), child_rect, child_rect,
       /*render_pass_id=*/4, /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
-      /*mask_applies_to_backdrop=*/false, gfx::Vector2dF(1, 1), gfx::PointF(),
-      gfx::RectF(), false, 1.0f);
+      gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false, 1.0f);
   auto* render_pass_quad_4 =
       pass_root->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   render_pass_quad_4->SetNew(
       pass_root->shared_quad_state_list.back(), child_rect2, child_rect2,
       /*render_pass_id=*/4, /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
-      /*mask_applies_to_backdrop=*/false, gfx::Vector2dF(1, 1), gfx::PointF(),
-      gfx::RectF(), false, 1.0f);
+      gfx::Vector2dF(1, 1), gfx::PointF(), gfx::RectF(), false, 1.0f);
   auto* render_pass_quad_5 =
       pass_root->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   render_pass_quad_5->SetNew(
       pass_root->shared_quad_state_list.back(), child_rect, child_rect,
       /*render_pass_id=*/4, /*mask_resource_id=*/0, gfx::RectF(), gfx::Size(),
-      /*mask_applies_to_backdrop=*/false, gfx::Vector2dF(1, 10), gfx::PointF(),
-      gfx::RectF(), false, 1.0f);
+      gfx::Vector2dF(1, 10), gfx::PointF(), gfx::RectF(), false, 1.0f);
   pass_list.push_back(std::move(pass_root));
 
   CompositorFrame compositor_frame =

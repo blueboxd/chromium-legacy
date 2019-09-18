@@ -288,6 +288,7 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   EXPECT_SET_NEEDS_COMMIT(1, top->SetBounds(arbitrary_size));
   EXPECT_SET_NEEDS_COMMIT(0, mask_layer1->SetBounds(arbitrary_size));
   EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(1);
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AtLeast(1));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(top->SetMaskLayer(mask_layer1));
 
   // Set up the impl layers after the full tree is constructed, including the
@@ -495,6 +496,69 @@ TEST_F(LayerTest, AddAndRemoveChild) {
   EXPECT_EQ(parent.get(), child->RootLayer());
 
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(AtLeast(1), child->RemoveFromParent());
+}
+
+TEST_F(LayerTest, SetMaskLayer) {
+  scoped_refptr<Layer> parent = Layer::Create();
+  FakeContentLayerClient client;
+  scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
+
+  parent->SetMaskLayer(mask);
+  ASSERT_EQ(1u, parent->children().size());
+  EXPECT_EQ(parent.get(), mask->parent());
+  EXPECT_EQ(mask.get(), parent->children()[0]);
+  EXPECT_TRUE(parent->IsMaskedByChild());
+
+  parent->SetMaskLayer(mask);
+  ASSERT_EQ(1u, parent->children().size());
+  EXPECT_EQ(parent.get(), mask->parent());
+  EXPECT_EQ(mask.get(), parent->children()[0]);
+  EXPECT_TRUE(parent->IsMaskedByChild());
+
+  scoped_refptr<PictureLayer> mask2 = PictureLayer::Create(&client);
+  parent->SetMaskLayer(mask2);
+  EXPECT_FALSE(mask->parent());
+  ASSERT_EQ(1u, parent->children().size());
+  EXPECT_EQ(parent.get(), mask2->parent());
+  EXPECT_EQ(mask2.get(), parent->children()[0]);
+  EXPECT_TRUE(parent->IsMaskedByChild());
+
+  parent->SetMaskLayer(nullptr);
+  EXPECT_EQ(0u, parent->children().size());
+  EXPECT_FALSE(mask2->parent());
+  EXPECT_FALSE(parent->IsMaskedByChild());
+}
+
+TEST_F(LayerTest, RemoveMaskLayerFromParent) {
+  scoped_refptr<Layer> parent = Layer::Create();
+  FakeContentLayerClient client;
+  scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
+
+  parent->SetMaskLayer(mask);
+  mask->RemoveFromParent();
+  EXPECT_EQ(0u, parent->children().size());
+  EXPECT_FALSE(mask->parent());
+  EXPECT_FALSE(parent->IsMaskedByChild());
+
+  scoped_refptr<PictureLayer> mask2 = PictureLayer::Create(&client);
+  parent->SetMaskLayer(mask2);
+  EXPECT_TRUE(parent->IsMaskedByChild());
+}
+
+TEST_F(LayerTest, AddChildAfterSetMaskLayer) {
+  scoped_refptr<Layer> parent = Layer::Create();
+  FakeContentLayerClient client;
+  scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
+  parent->SetMaskLayer(mask);
+  EXPECT_TRUE(parent->IsMaskedByChild());
+
+  parent->AddChild(Layer::Create());
+  EXPECT_EQ(mask.get(), parent->children().back().get());
+  EXPECT_TRUE(parent->IsMaskedByChild());
+
+  parent->InsertChild(Layer::Create(), parent->children().size());
+  EXPECT_EQ(mask.get(), parent->children().back().get());
+  EXPECT_TRUE(parent->IsMaskedByChild());
 }
 
 TEST_F(LayerTest, AddSameChildTwice) {
@@ -948,6 +1012,7 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetHideLayerAndSubtree(true));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetElementId(ElementId(2)));
 
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, test_layer->SetMaskLayer(mask_layer1));
 
   // The above tests should not have caused a change to the needs_display flag.
@@ -1096,9 +1161,6 @@ void AssertLayerTreeHostMatchesForSubtree(Layer* layer, LayerTreeHost* host) {
 
   for (size_t i = 0; i < layer->children().size(); ++i)
     AssertLayerTreeHostMatchesForSubtree(layer->children()[i].get(), host);
-
-  if (layer->mask_layer())
-    AssertLayerTreeHostMatchesForSubtree(layer->mask_layer(), host);
 }
 
 class LayerLayerTreeHostTest : public testing::Test {};
@@ -1939,10 +2001,6 @@ TEST_F(LayerTestWithLayerLists, SetElementIdUsingLayerLists) {
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(0);
   EXPECT_EQ(nullptr, layer_tree_host_->LayerByElementId(element_id));
-}
-
-TEST(A, B) {
-  LOG(ERROR) << sizeof(Layer);
 }
 
 }  // namespace

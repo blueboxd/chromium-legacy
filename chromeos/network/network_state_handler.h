@@ -371,11 +371,12 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandler
     return check_portal_list_;
   }
 
-  // Returns the NetworkState of the EthernetEAP service, which contains the
-  // EAP parameters used by the ethernet with |service_path|. If |service_path|
-  // doesn't refer to an ethernet service or if the ethernet service is not
-  // connected using EAP, returns NULL.
-  const NetworkState* GetEAPForEthernet(const std::string& service_path);
+  // Returns the NetworkState for the EthernetEAP service, which contains the
+  // EAP parameters used by the Ethernet network matching |service_path|, if it
+  // exists. If |connected_only| is true, only returns the EthernetEAP state
+  // if the Ethernet network is connected using EAP. Otherwise returns null.
+  const NetworkState* GetEAPForEthernet(const std::string& service_path,
+                                        bool connected_only);
 
   const std::string& default_network_path() const {
     return default_network_path_;

@@ -578,6 +578,10 @@ void AXTree::RemoveObserver(const AXTreeObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+AXTreeID AXTree::GetAXTreeID() const {
+  return data().tree_id;
+}
+
 AXNode* AXTree::GetFromId(int32_t id) const {
   auto iter = id_map_.find(id);
   return iter != id_map_.end() ? iter->second : nullptr;

@@ -19,6 +19,7 @@
 <translation id="2501953888035679275">Kumuha ng mga larawan at mag-record ng mga video gamit ang iyong camera.</translation>
 <translation id="2549985041256363841">Simulang mag-record</translation>
 <translation id="2599796128805996109">Camera sa likod</translation>
+<translation id="2912439424121107408">Hindi sinusuportahan sa device na ito ang Expert mode</translation>
 <translation id="2968794441791257519">Ililipat sa folder na Mga Download ang mga larawan at video na kinunan gamit ang camera. Maa-access mo ang mga ito sa Mga File.
 
         Magkakaroon ng access sa iyong mga larawan at video ang mga app na may mga pahintulot sa storage.</translation>
@@ -41,10 +42,12 @@
         Pakitingnan kung maayos na nakakonekta ang camera.</translation>
 <translation id="5152121255775685072">Pumunta sa gallery</translation>
 <translation id="5671277269877808209">Parisukat</translation>
+<translation id="5775960006311140197">Expert mode</translation>
 <translation id="5869546221129391014">Grid</translation>
 <translation id="6040143037577758943">Isara</translation>
 <translation id="6073451960410192870">Ihinto ang pag-record</translation>
 <translation id="6165508094623778733">Matuto pa</translation>
+<translation id="6197807149213783179">I-save ang metadata</translation>
 <translation id="6233780560267770709">3 by 3</translation>
 <translation id="6243827288366940320">Golden ratio</translation>
 <translation id="6248749904681914629">External na camera</translation>
@@ -66,6 +69,7 @@
 <translation id="8261506727792406068">I-delete</translation>
 <translation id="8428213095426709021">Mga Setting</translation>
 <translation id="8687491812650032292">HD <ph name="HEIGHT" />p (<ph name="WIDTH" />:<ph name="HEIGHT" />)</translation>
+<translation id="8732462232047530626">I-preview ang metadata</translation>
 <translation id="8815966864175525708">Lumipat para kumuha ng portrait na larawan</translation>
 <translation id="8870695351537079478">Hindi masimulan ang pag-record</translation>
 <translation id="9045155556724273246">10 segundo</translation>

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tab;
 
 import org.chromium.base.UserData;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
@@ -115,7 +116,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
             setExternalNavigationHandler(
                     mTab.getDelegateFactory().createExternalNavigationHandler(mTab));
         }
-        nativeAssociateWithWebContents(this, mWebContents);
+        InterceptNavigationDelegateImplJni.get().associateWithWebContents(this, mWebContents);
     }
 
     public boolean shouldIgnoreNewTab(String url, boolean incognito) {
@@ -346,7 +347,10 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
         tab.getUserDataHost().setUserData(USER_DATA_KEY, delegate);
     }
 
-    private static native void nativeAssociateWithWebContents(
-            InterceptNavigationDelegateImpl nativeInterceptNavigationDelegateImpl,
-            WebContents webContents);
+    @NativeMethods
+    interface Natives {
+        void associateWithWebContents(
+                InterceptNavigationDelegateImpl nativeInterceptNavigationDelegateImpl,
+                WebContents webContents);
+    }
 }

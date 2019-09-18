@@ -51,14 +51,13 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
         switches::kUseFakeUIForMediaStream);
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kIgnoreCertificateErrors);
-    feature_list_.InitWithFeatures(FeaturesToEnable(), {});
+    feature_list_.InitAndEnableFeatureWithParameters(
+        features::kBackForwardCache, GetFeatureParams());
 
     ContentBrowserTest::SetUpCommandLine(command_line);
   }
 
-  virtual std::vector<base::Feature> FeaturesToEnable() {
-    return std::vector<base::Feature>({features::kBackForwardCache});
-  }
+  virtual base::FieldTrialParams GetFeatureParams() { return {}; }
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -1828,11 +1827,8 @@ class BackForwardCacheBrowserTestWithServiceWorkerEnabled
   ~BackForwardCacheBrowserTestWithServiceWorkerEnabled() override {}
 
  protected:
-  std::vector<base::Feature> FeaturesToEnable() override {
-    std::vector<base::Feature> result =
-        BackForwardCacheBrowserTest::FeaturesToEnable();
-    result.push_back(kBackForwardCacheWithServiceWorker);
-    return result;
+  base::FieldTrialParams GetFeatureParams() override {
+    return {{"service_worker_supported", "true"}};
   }
 };
 

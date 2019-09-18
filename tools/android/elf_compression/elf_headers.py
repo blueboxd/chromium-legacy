@@ -103,6 +103,86 @@ class ElfEntry(object):
     return obj
 
 
+class SectionHeader(ElfEntry):
+  """This class represents SectionEntry from ELF standard."""
+
+  class Type(enum.IntEnum):
+    SHT_NULL = 0
+    SHT_PROGBITS = 1
+    SHT_SYMTAB = 2
+    SHT_STRTAB = 3
+    SHT_RELA = 4
+    SHT_HASH = 5
+    SHT_DYNAMIC = 6
+    SHT_NOTE = 7
+    SHT_NOBITS = 8
+    SHT_REL = 9
+    SHT_SHLIB = 10
+    SHT_DYNSYM = 11
+
+  def __init__(self, byte_order):
+    self.sh_name = None
+    self.sh_type = None
+    self.sh_flags = None
+    self.sh_addr = None
+    self.sh_offset = None
+    self.sh_size = None
+    self.sh_link = None
+    self.sh_info = None
+    self.sh_addralign = None
+    self.sh_entsize = None
+    fields = [
+        ('sh_name', 4),
+        ('sh_type', 4),
+        ('sh_flags', 8),
+        ('sh_addr', 8),
+        ('sh_offset', 8),
+        ('sh_size', 8),
+        ('sh_link', 4),
+        ('sh_info', 4),
+        ('sh_addralign', 8),
+        ('sh_entsize', 8),
+    ]
+    super(SectionHeader, self).__init__(byte_order, fields)
+    # This is readonly version of section name in string form. We can't set it
+    # in constructor since to actually get it we need to instantiate
+    # StringTableHeader so it is set by SetStrName method later on.
+    self._str_name = ''
+
+  def SetStrName(self, name):
+    """Sets the resolved sh_name to provided str.
+
+    Changes made by this method WILL NOT propagate into data after PatchData
+    call.
+
+    Args:
+      name: str. Name to set.
+    """
+    self._str_name = name
+
+  def GetStrName(self):
+    """Returns the sh_name as resolved string."""
+    return self._str_name
+
+
+class StringTableHeader(SectionHeader):
+  """This class represents a StringTableHeader header entry."""
+
+  def GetName(self, data, string_index):
+    """Returns the name located on string_index table's offset.
+
+    Args:
+      data: bytearray. The file's data.
+      string_index: int. Offset from the beginning of the string table to the
+        required name.
+    """
+    begin = self.sh_offset + string_index
+    end = data.find(0, begin)
+    if end == -1:
+      raise RuntimeError('Failed to find null terminator for StringTable entry')
+    return data[begin:end].decode('ascii')
+
+
 class ProgramHeader(ElfEntry):
   """This class represent PhdrEntry from ELF standard."""
 
@@ -198,12 +278,29 @@ class ElfHeader(ElfEntry):
       return 'big'
     raise RuntimeError('Failed to parse ei_data')
 
-  def _ParsePhdrs(self, data):
+  def _ParseProgramHeaders(self, data):
     current_offset = self.e_phoff
     for _ in range(0, self.e_phnum):
       self.phdrs.append(
           ProgramHeader.FromBytes(self.byte_order, data, current_offset))
       current_offset += self.e_phentsize
+
+  def _ParseSectionHeaders(self, data):
+    current_offset = self.e_shoff
+    string_table = None
+    for _ in range(0, self.e_shnum):
+      shdr = SectionHeader.FromBytes(self.byte_order, data, current_offset)
+      self.shdrs.append(shdr)
+      current_offset += self.e_shentsize
+
+    if self.e_shstrndx != 0:
+      string_table_offset = self.e_shoff + self.e_shstrndx * self.e_shentsize
+      string_table = StringTableHeader.FromBytes(self.byte_order, data,
+                                                 string_table_offset)
+
+      for shdr in self.shdrs:
+        shdr.SetStrName(string_table.GetName(data, shdr.sh_name))
+
 
   def __init__(self, data):
     """ElfHeader constructor.
@@ -264,17 +361,24 @@ class ElfHeader(ElfEntry):
       raise RuntimeError('Only shared libraries are supported')
 
     self.phdrs = []
-    self._ParsePhdrs(data)
+    self._ParseProgramHeaders(data)
 
-  def GetPhdrs(self):
+    self.shdrs = []
+    self._ParseSectionHeaders(data)
+
+  def GetProgramHeaders(self):
     """Returns the list of file's program headers."""
     return self.phdrs
 
-  def GetPhdrsByType(self, phdr_type):
+  def GetProgramHeadersByType(self, phdr_type):
     """Yields program headers of the given type."""
     return (phdr for phdr in self.phdrs if phdr.p_type == phdr_type)
 
-  def AddPhdr(self, phdr):
+  def GetSectionHeaders(self):
+    """Returns the list of file's section headers."""
+    return self.shdrs
+
+  def AddProgramHeader(self, phdr):
     """Adds a new ProgramHeader entry correcting the e_phnum variable.
 
     This method will increase the size of LOAD segment containing the program
@@ -291,7 +395,7 @@ class ElfHeader(ElfEntry):
     # We need to locate the LOAD segment containing program headers and
     # increase its size.
     phdr_found = False
-    for phdr in self.GetPhdrsByType(ProgramHeader.Type.PT_LOAD):
+    for phdr in self.GetProgramHeadersByType(ProgramHeader.Type.PT_LOAD):
       if phdr.p_offset > self.e_phoff:
         continue
       if phdr.FilePositionEnd() < self.e_phoff + phdrs_size:
@@ -304,12 +408,12 @@ class ElfHeader(ElfEntry):
       raise RuntimeError('Failed to increase program headers LOAD segment')
 
     # If PHDR segment exists it needs to be corrected as well.
-    for phdr in self.GetPhdrsByType(ProgramHeader.Type.PT_PHDR):
+    for phdr in self.GetProgramHeadersByType(ProgramHeader.Type.PT_PHDR):
       phdr.p_filesz += self.e_phentsize
       phdr.p_memsz += self.e_phentsize
     self.e_phnum += 1
 
-  def _OrderPhdrs(self):
+  def _OrderProgramHeaders(self):
     """Orders program LOAD headers by p_vaddr to comply with standard."""
 
     def HeaderToKey(phdr):
@@ -320,6 +424,15 @@ class ElfHeader(ElfEntry):
         return (1, 0)
 
     self.phdrs.sort(key=HeaderToKey)
+
+  def _PatchProgramHeaders(self, data):
+    """Patch all program headers."""
+    current_offset = self.e_phoff
+    self._OrderProgramHeaders()
+    for phdr in self.GetProgramHeaders():
+      phdr_bytes = phdr.ToBytes()
+      data[current_offset:current_offset + len(phdr_bytes)] = phdr_bytes
+      current_offset += self.e_phentsize
 
   def PatchData(self, data):
     """Patches the given data array to reflect all changes made to the header.
@@ -339,9 +452,4 @@ class ElfHeader(ElfEntry):
     """
     elf_bytes = self.ToBytes()
     data[:len(elf_bytes)] = elf_bytes
-    current_offset = self.e_phoff
-    self._OrderPhdrs()
-    for phdr in self.GetPhdrs():
-      phdr_bytes = phdr.ToBytes()
-      data[current_offset:current_offset + len(phdr_bytes)] = phdr_bytes
-      current_offset += self.e_phentsize
+    self._PatchProgramHeaders(data)

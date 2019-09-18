@@ -10,9 +10,9 @@ CompositingModeReporterImpl::CompositingModeReporterImpl() = default;
 
 CompositingModeReporterImpl::~CompositingModeReporterImpl() = default;
 
-void CompositingModeReporterImpl::BindRequest(
-    mojom::CompositingModeReporterRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void CompositingModeReporterImpl::BindReceiver(
+    mojo::PendingReceiver<mojom::CompositingModeReporter> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void CompositingModeReporterImpl::SetUsingSoftwareCompositing() {

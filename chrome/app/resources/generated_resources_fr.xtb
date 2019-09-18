@@ -4301,7 +4301,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7371006317849674875">Heure de début</translation>
 <translation id="7375053625150546623">EAP</translation>
 <translation id="7376553024552204454">Mettre en surbrillance le curseur de la souris lorsqu'il se déplace</translation>
-<translation id="7377169924702866686">La touche de verrouillage des majuscules est activée</translation>
 <translation id="7377451353532943397">Continuer de bloquer l'accès aux capteurs</translation>
 <translation id="7378627244592794276">Non</translation>
 <translation id="73786666777299047">Ouvrir le Chrome Web Store</translation>
@@ -5008,7 +5007,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8390449457866780408">Serveur indisponible.</translation>
 <translation id="8391218455464584335">Vinyle</translation>
 <translation id="8391712576156218334">L'image n'est pas disponible. Réessayez plus tard.</translation>
-<translation id="8392234662362215700">Appuyez sur Ctrl+Maj+Espace pour changer la disposition du clavier.</translation>
 <translation id="8392364544846746346">Vous demander lorsqu'un site souhaite modifier des fichiers ou des dossiers sur votre appareil</translation>
 <translation id="8392451568018454956">Menu "Options" de l'adresse e-mail <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8393511274964623038">Arrêter le plug-in</translation>
@@ -5179,7 +5177,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8656619792520327915">Ajouter une clé de sécurité Bluetooth</translation>
 <translation id="8656768832129462377">Ne pas vérifier</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> partage votre écran et un contenu audio avec <ph name="TAB_NAME" />.</translation>
-<translation id="8659875081143553823">Une petite seconde…</translation>
 <translation id="8660174278198826384">Contactez l'administrateur de l'appareil au sein de votre organisation</translation>
 <translation id="8661290697478713397">Ouvrir le lien dans la fenêtre de navi&amp;gation privée</translation>
 <translation id="8662671328352114214">Rejoindre le réseau <ph name="TYPE" /></translation>

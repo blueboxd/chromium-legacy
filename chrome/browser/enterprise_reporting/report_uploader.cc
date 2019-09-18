@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 
@@ -24,6 +25,10 @@ const net::BackoffEntry::Policy kDefaultReportUploadBackoffPolicy = {
     -1,     // It's up to the caller to reset the backoff time.
     false   // Do not always use initial delay.
 };
+
+void RecordReportResponseMetrics(ReportResponseMetricsStatus status) {
+  base::UmaHistogramEnumeration("Enterprise.CloudReportingResponse", status);
+}
 
 }  // namespace
 
@@ -51,27 +56,40 @@ void ReportUploader::Upload() {
 void ReportUploader::OnRequestFinished(bool status) {
   if (status) {
     NextRequest();
+    RecordReportResponseMetrics(ReportResponseMetricsStatus::kSuccess);
     return;
   }
 
   switch (client_->status()) {
     case policy::DM_STATUS_REQUEST_FAILED:         // network error
+      RecordReportResponseMetrics(ReportResponseMetricsStatus::kNetworkError);
+      Retry();
+      break;
     case policy::DM_STATUS_TEMPORARY_UNAVAILABLE:  // 5xx server error
+      RecordReportResponseMetrics(
+          ReportResponseMetricsStatus::kTemporaryServerError);
+      Retry();
+      break;
     // DM_STATUS_SERVICE_DEVICE_ID_CONFLICT is caused by 409 conflict. It can
     // be caused by either device id conflict or DDS concur error which is
     // a database error. We only want to retry for the second case. However,
     // there is no way for us to tell difference right now so we will retry
     // regardless.
     case policy::DM_STATUS_SERVICE_DEVICE_ID_CONFLICT:
+      RecordReportResponseMetrics(
+          ReportResponseMetricsStatus::kDDSConcurrencyError);
       Retry();
       break;
     case policy::DM_STATUS_REQUEST_TOO_LARGE:
       // Treats the REQUEST_TOO_LARGE error as a success upload. It's likely
       // a calculation error during request generating and there is nothing
       // can be done here.
+      RecordReportResponseMetrics(
+          ReportResponseMetricsStatus::kRequestTooLargeError);
       NextRequest();
       break;
     default:
+      RecordReportResponseMetrics(ReportResponseMetricsStatus::kOtherError);
       SendResponse(ReportStatus::kPersistentError);
       break;
   }

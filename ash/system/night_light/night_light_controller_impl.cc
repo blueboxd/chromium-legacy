@@ -19,6 +19,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
 #include "base/time/time.h"
+#include "cc/base/math_util.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "third_party/icu/source/i18n/astro.h"
@@ -115,9 +116,9 @@ class NightLightControllerDelegateImpl
 // 1 => Range [20 : 40).
 // 2 => Range [40 : 60).
 // 3 => Range [60 : 80).
-// 4 => Range [80 : 100) (most warm).
+// 4 => Range [80 : 100] (most warm).
 int GetTemperatureRange(float temperature) {
-  return std::floor(5 * temperature);
+  return base::ClampToRange(std::floor(5 * temperature), 0.0f, 4.0f);
 }
 
 // Returns the color matrix that corresponds to the given |temperature|.
@@ -257,6 +258,11 @@ class ColorTemperatureAnimation : public gfx::LinearAnimation,
   // given |new_target_temperature| in the given |duration|.
   void AnimateToNewValue(float new_target_temperature,
                          base::TimeDelta duration) {
+    if (cc::MathUtil::IsWithinEpsilon(current_temperature_,
+                                      new_target_temperature)) {
+      return;
+    }
+
     start_temperature_ = current_temperature_;
     target_temperature_ =
         base::ClampToRange(new_target_temperature, 0.0f, 1.0f);
@@ -287,8 +293,8 @@ class ColorTemperatureAnimation : public gfx::LinearAnimation,
   void AnimationProgressed(const Animation* animation) override {
     DCHECK_EQ(animation, this);
 
-    if (std::abs(current_temperature_ - target_temperature_) <=
-        std::numeric_limits<float>::epsilon()) {
+    if (cc::MathUtil::IsWithinEpsilon(current_temperature_,
+                                      target_temperature_)) {
       current_temperature_ = target_temperature_;
       Stop();
     }
@@ -538,16 +544,13 @@ void NightLightControllerImpl::StoreCachedGeoposition(
   }
 }
 
-void NightLightControllerImpl::RefreshLayersTemperature() {
-  const float new_temperature = GetEnabled() ? GetColorTemperature() : 0.0f;
+void NightLightControllerImpl::RefreshDisplaysTemperature(
+    float color_temperature) {
+  const float new_temperature = GetEnabled() ? color_temperature : 0.0f;
   temperature_animation_->AnimateToNewValue(
       new_temperature, animation_duration_ == AnimationDuration::kShort
                            ? kManualAnimationDuration
                            : kAutomaticAnimationDuration);
-
-  UMA_HISTOGRAM_EXACT_LINEAR(
-      "Ash.NightLight.Temperature", GetTemperatureRange(new_temperature),
-      5 /* number of buckets defined in GetTemperatureRange() */);
 
   // Reset the animation type back to manual to consume any automatically set
   // animations.
@@ -616,7 +619,11 @@ void NightLightControllerImpl::OnEnabledPrefChanged() {
 
 void NightLightControllerImpl::OnColorTemperaturePrefChanged() {
   DCHECK(active_user_pref_service_);
-  RefreshLayersTemperature();
+  const float color_temperature = GetColorTemperature();
+  UMA_HISTOGRAM_EXACT_LINEAR(
+      "Ash.NightLight.Temperature", GetTemperatureRange(color_temperature),
+      5 /* number of buckets defined in GetTemperatureRange() */);
+  RefreshDisplaysTemperature(color_temperature);
 }
 
 void NightLightControllerImpl::OnScheduleTypePrefChanged() {
@@ -633,7 +640,7 @@ void NightLightControllerImpl::OnCustomSchedulePrefsChanged() {
 }
 
 void NightLightControllerImpl::Refresh(bool did_schedule_change) {
-  RefreshLayersTemperature();
+  RefreshDisplaysTemperature(GetColorTemperature());
 
   const ScheduleType type = GetScheduleType();
   switch (type) {

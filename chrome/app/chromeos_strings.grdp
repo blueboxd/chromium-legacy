@@ -2664,7 +2664,8 @@
     <ph name="LICENSE_TYPE">$1<ex>Perpetual</ex></ph> (<ph name="LICENSE_COUNT">$2<ex>10</ex></ph> rem.)
   </message>
 
-  <!-- About network UI display strings -->
+  <!-- About network UI (chrome://network) display strings (for developer
+       debugging) -->
   <message name="IDS_NETWORK_UI_TITLE" desc="Title of the page">
     Network
   </message>
@@ -2703,6 +2704,9 @@
   </message>
   <message name="IDS_NETWORK_UI_FAVORITE_NETWORKS" desc="Label for list of favorite networks">
     Favorite Networks:
+  </message>
+  <message name="IDS_NETWORK_UI_ETHERNET_EAP" desc="Label for section with the EthernetEAP network">
+    Ethernet EAP:
   </message>
   <message name="IDS_NETWORK_UI_DEVICES" desc="Label for list of network devices, e.g. wifi or cellular">
     Devices:

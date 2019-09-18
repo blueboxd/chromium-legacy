@@ -1520,7 +1520,6 @@ customize.richerPicker_applyCustomization = function() {
 customize.init = function(showErrorNotification, hideCustomLinkNotification) {
   ntpApiHandle = window.chrome.embeddedSearch.newTabPage;
   const editDialog = $(customize.IDS.EDIT_BG_DIALOG);
-  const menu = $(customize.IDS.MENU);
 
   $(customize.IDS.OPTIONS_TITLE).textContent =
       configData.translatedStrings.customizeThisPage;
@@ -1555,6 +1554,8 @@ customize.init = function(showErrorNotification, hideCustomLinkNotification) {
     }
   };
   $(customize.IDS.EDIT_BG).onclick = function(event) {
+    $(customize.IDS.CUSTOMIZATION_MENU)
+        .classList.add(customize.CLASSES.MOUSE_NAV);
     editDialog.classList.add(customize.CLASSES.MOUSE_NAV);
     editBackgroundInteraction();
   };

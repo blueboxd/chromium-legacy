@@ -36,7 +36,7 @@ namespace network {
 class SharedURLLoaderFactory;
 class TestNetworkQualityTracker;
 class TestURLLoaderFactory;
-}
+}  // namespace network
 
 namespace data_reduction_proxy {
 
@@ -205,23 +205,13 @@ class TestDataReductionProxyService : public DataReductionProxyService {
       const scoped_refptr<base::SequencedTaskRunner>& db_task_runner);
   ~TestDataReductionProxyService() override;
 
-  // Records the reporting fraction that was set by parsing a config.
-  void SetPingbackReportingFraction(float pingback_reporting_fraction) override;
-
   // Records |ignore_long_term_black_list_rules| as |ignore_blacklist_|.
   void SetIgnoreLongTermBlackListRules(
       bool ignore_long_term_black_list_rules) override;
 
-  float pingback_reporting_fraction() const {
-    return pingback_reporting_fraction_;
-  }
-
   bool ignore_blacklist() const { return ignore_blacklist_; }
 
  private:
-  // Reporting fraction last set via SetPingbackReportingFraction.
-  float pingback_reporting_fraction_ = 0.0f;
-
   // Whether the long term blacklist rules should be ignored.
   bool ignore_blacklist_ = false;
 };
@@ -398,13 +388,9 @@ class DataReductionProxyTestContext {
     return settings_->data_reduction_proxy_service()->configurator();
   }
 
-  DataReductionProxySettings* settings() const {
-    return settings_.get();
-  }
+  DataReductionProxySettings* settings() const { return settings_.get(); }
 
-  TestDataReductionProxyParams* test_params() const {
-    return params_;
-  }
+  TestDataReductionProxyParams* test_params() const { return params_; }
 
   network::TestNetworkQualityTracker* test_network_quality_tracker() const {
     return test_network_quality_tracker_.get();

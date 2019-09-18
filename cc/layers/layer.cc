@@ -62,7 +62,6 @@ struct SameSizeAsLayer : public base::RefCounted<SameSizeAsLayer> {
     SkColor background_color;
     FilterOperations filters[2];
     base::Optional<gfx::RRectF> backdrop_filter_bounds;
-    ElementId backdrop_mask_element_id;
     gfx::PointF filters_origin;
     float backdrop_filter_quality;
     gfx::RoundedCornersF corner_radii;
@@ -164,10 +163,6 @@ Layer::~Layer() {
 
   // Remove the parent reference from all children and dependents.
   RemoveAllChildren();
-  if (inputs_.mask_layer.get()) {
-    DCHECK_EQ(this, inputs_.mask_layer->parent());
-    inputs_.mask_layer->RemoveFromParent();
-  }
 }
 
 void Layer::SetLayerTreeHost(LayerTreeHost* host) {
@@ -211,9 +206,6 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
 
   for (size_t i = 0; i < inputs_.children.size(); ++i)
     inputs_.children[i]->SetLayerTreeHost(host);
-
-  if (inputs_.mask_layer.get())
-    inputs_.mask_layer->SetLayerTreeHost(host);
 
   if (host && !host->IsUsingLayerLists() &&
       host->mutator_host()->IsElementAnimating(element_id())) {
@@ -288,6 +280,11 @@ void Layer::InsertChild(scoped_refptr<Layer> child, size_t index) {
   child->SetSubtreePropertyChanged();
 
   index = std::min(index, inputs_.children.size());
+  if (inputs_.mask_layer && index && index == inputs_.children.size()) {
+    // Ensure that the mask layer is always the last child.
+    DCHECK_EQ(inputs_.mask_layer, inputs_.children.back().get());
+    index--;
+  }
   inputs_.children.insert(inputs_.children.begin() + index, child);
   SetNeedsFullTreeSync();
 }
@@ -295,16 +292,12 @@ void Layer::InsertChild(scoped_refptr<Layer> child, size_t index) {
 void Layer::RemoveFromParent() {
   DCHECK(IsPropertyChangeAllowed());
   if (parent_)
-    parent_->RemoveChildOrDependent(this);
+    parent_->RemoveChild(this);
 }
 
-void Layer::RemoveChildOrDependent(Layer* child) {
-  if (inputs_.mask_layer.get() == child) {
-    inputs_.mask_layer->SetParent(nullptr);
+void Layer::RemoveChild(Layer* child) {
+  if (child == inputs_.mask_layer)
     inputs_.mask_layer = nullptr;
-    SetNeedsFullTreeSync();
-    return;
-  }
 
   for (auto iter = inputs_.children.begin(); iter != inputs_.children.end();
        ++iter) {
@@ -377,7 +370,7 @@ void Layer::SetBounds(const gfx::Size& size) {
   // Rounded corner clipping, bounds clipping and mask clipping can result in
   // new areas of subtrees being exposed on a bounds change. Ensure the damaged
   // areas are updated.
-  if (masks_to_bounds() || inputs_.mask_layer.get() || HasRoundedCorner()) {
+  if (masks_to_bounds() || IsMaskedByChild() || HasRoundedCorner()) {
     SetSubtreePropertyChanged();
     SetPropertyTreesNeedRebuild();
   }
@@ -588,7 +581,8 @@ gfx::RectF Layer::EffectiveClipRect() {
 
   // Layer needs to clip to its bounds as well apply a clip rect. Intersect the
   // two to get the effective clip.
-  if (masks_to_bounds() || mask_layer() || filters().HasFilterThatMovesPixels())
+  if (masks_to_bounds() || IsMaskedByChild() ||
+      filters().HasFilterThatMovesPixels())
     return gfx::IntersectRects(layer_bounds, clip_rect_f);
 
   // Clip rect is the only clip effecting the layer.
@@ -597,25 +591,27 @@ gfx::RectF Layer::EffectiveClipRect() {
 
 void Layer::SetMaskLayer(scoped_refptr<PictureLayer> mask_layer) {
   DCHECK(IsPropertyChangeAllowed());
-  if (inputs_.mask_layer.get() == mask_layer)
-    return;
   DCHECK(!layer_tree_host_ || !layer_tree_host_->IsUsingLayerLists());
-  if (inputs_.mask_layer.get()) {
+  if (inputs_.mask_layer == mask_layer)
+    return;
+  if (inputs_.mask_layer) {
     DCHECK_EQ(this, inputs_.mask_layer->parent());
     inputs_.mask_layer->RemoveFromParent();
   }
-  inputs_.mask_layer = mask_layer;
-  if (inputs_.mask_layer.get()) {
+  // Clear mask_layer first and set it later because InsertChild() checks it to
+  // ensure the mask layer is the last child.
+  inputs_.mask_layer = nullptr;
+  if (mask_layer) {
     // The mask layer should not have any children.
-    DCHECK(inputs_.mask_layer->children().empty());
+    DCHECK(mask_layer->children().empty());
 
-    inputs_.mask_layer->RemoveFromParent();
-    DCHECK(!inputs_.mask_layer->parent());
-    inputs_.mask_layer->SetParent(this);
-    inputs_.mask_layer->set_is_mask();
+    mask_layer->SetIsDrawable(true);
+    mask_layer->SetBlendMode(SkBlendMode::kDstIn);
+    mask_layer->SetIsMask(true);
+    AddChild(mask_layer);
   }
+  inputs_.mask_layer = mask_layer.get();
   SetSubtreePropertyChanged();
-  SetNeedsFullTreeSync();
 }
 
 void Layer::SetFilters(const FilterOperations& filters) {
@@ -1391,6 +1387,9 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
                "Layer::PushPropertiesTo");
   DCHECK(layer_tree_host_);
 
+  if (inputs_.mask_layer)
+    DCHECK_EQ(bounds(), inputs_.mask_layer->bounds());
+
   // The element id should be set first because other setters may
   // depend on it. Referencing element id on a layer is
   // deprecated. http://crbug.com/709137
@@ -1469,9 +1468,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   needs_show_scrollbars_ = false;
   subtree_property_changed_ = false;
   inputs_.update_rect = gfx::Rect();
-
-  if (mask_layer())
-    DCHECK_EQ(bounds().ToString(), mask_layer()->bounds().ToString());
 }
 
 void Layer::TakeCopyRequests(

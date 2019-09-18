@@ -31,7 +31,11 @@ cr.define('app_management', function() {
    * @return {AppMap}
    */
   AppState.changeApp = function(apps, action) {
-    assert(apps[action.app.id]);
+    // If the app doesn't exist, that means that the app that has been changed
+    // does not need to be shown in App Management.
+    if (!apps[action.app.id]) {
+      return apps;
+    }
 
     const changedAppEntry = {};
     changedAppEntry[action.app.id] = action.app;

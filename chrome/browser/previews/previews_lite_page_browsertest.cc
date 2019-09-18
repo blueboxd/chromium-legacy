@@ -48,7 +48,6 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
@@ -191,7 +190,6 @@ class BasePreviewsLitePageServerBrowserTest
     cmd->AppendSwitchASCII("force-effective-connection-type", "Slow-2G");
     cmd->AppendSwitchASCII("force-variation-ids", "42");
     cmd->AppendSwitchASCII("host-rules", "MAP * 127.0.0.1");
-    cmd->AppendSwitch("enable-data-reduction-proxy-force-pingback");
     cmd->AppendSwitch("ignore-litepage-redirect-optimization-blacklist");
   }
 
@@ -290,14 +288,6 @@ class BasePreviewsLitePageServerBrowserTest
     slow_http_url_ = slow_http_server_->GetURL(kOriginHost, "/");
     ASSERT_TRUE(slow_http_url_.SchemeIs(url::kHttpScheme));
 
-    pingback_server_ = std::make_unique<net::EmbeddedTestServer>(
-        net::EmbeddedTestServer::TYPE_HTTPS);
-
-    pingback_server_->RegisterRequestHandler(base::BindRepeating(
-        &BasePreviewsLitePageServerBrowserTest::HandlePingbackRequest,
-        base::Unretained(this)));
-    ASSERT_TRUE(pingback_server_->Start());
-
     std::map<std::string, std::string> feature_parameters = {
         {"previews_host", previews_server_url().spec()},
         {"full_probe_url", previews_server_url().spec()},
@@ -312,9 +302,6 @@ class BasePreviewsLitePageServerBrowserTest
         {"should_probe_origin", "true"},
         {"origin_probe_timeout_ms", "500"},
     };
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        "data-reduction-proxy-pingback-url",
-        pingback_server_->GetURL("pingback.com", "/").spec());
 
     scoped_parameterized_feature_list_.InitAndEnableFeatureWithParameters(
         previews::features::kLitePageServerPreviews, feature_parameters);
@@ -675,12 +662,6 @@ class BasePreviewsLitePageServerBrowserTest
     return previews_server_connections_.size();
   }
 
-  void WaitForPingback() {
-    base::RunLoop run_loop;
-    waiting_for_pingback_closure_ = run_loop.QuitClosure();
-    run_loop.Run();
-  }
-
   void WaitForInterventionReport() {
     if (!intervention_report_content_.empty())
       return;
@@ -762,19 +743,6 @@ class BasePreviewsLitePageServerBrowserTest
             base::TimeDelta::FromMilliseconds(500));
     response->set_code(net::HttpStatusCode::HTTP_OK);
     return std::move(response);
-  }
-
-  std::unique_ptr<net::test_server::HttpResponse> HandlePingbackRequest(
-      const net::test_server::HttpRequest& request) {
-    std::unique_ptr<net::test_server::BasicHttpResponse> response =
-        std::make_unique<net::test_server::BasicHttpResponse>();
-    response->set_code(net::HTTP_OK);
-
-    if (!waiting_for_pingback_closure_.is_null()) {
-      std::move(waiting_for_pingback_closure_).Run();
-    }
-
-    return response;
   }
 
   std::unique_ptr<net::test_server::HttpResponse> HandleResourceRequest(
@@ -974,7 +942,6 @@ class BasePreviewsLitePageServerBrowserTest
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
   std::unique_ptr<net::EmbeddedTestServer> slow_http_server_;
-  std::unique_ptr<net::EmbeddedTestServer> pingback_server_;
   GURL https_url_;
   GURL blacklisted_https_url_;
   GURL base_https_lite_page_url_;
@@ -995,7 +962,6 @@ class BasePreviewsLitePageServerBrowserTest
   int subresources_requested_ = 0;
   std::unordered_set<std::string> previews_server_connections_;
   std::string intervention_report_content_;
-  base::OnceClosure waiting_for_pingback_closure_;
   base::OnceClosure waiting_for_report_closure_;
 };
 
@@ -1666,16 +1632,6 @@ IN_PROC_BROWSER_TEST_P(
   }
 }
 
-IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMESOS(LitePageCreatesPingback)) {
-  ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
-  VerifyPreviewLoaded();
-
-  // Starting a new page load will send a pingback for the previous page load.
-  GetWebContents()->GetController().Reload(content::ReloadType::NORMAL, false);
-  WaitForPingback();
-}
-
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageServerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(LitePageSendsInterventionReport)) {
@@ -1704,81 +1660,6 @@ IN_PROC_BROWSER_TEST_P(
           .c_str()));
 
   EXPECT_EQ(expected, ParsedInterventionReport());
-}
-
-class TestDataReductionProxyPingbackClient
-    : public data_reduction_proxy::DataReductionProxyPingbackClient {
- public:
-  void WaitForPingback() {
-    base::RunLoop run_loop;
-    wait_for_pingback_closure_ = run_loop.QuitClosure();
-    run_loop.Run();
-  }
-
-  data_reduction_proxy::DataReductionProxyData* data() { return data_.get(); }
-
- private:
-  void SendPingback(
-      const data_reduction_proxy::DataReductionProxyData& data,
-      const data_reduction_proxy::DataReductionProxyPageLoadTiming& timing)
-      override {
-    data_ = data.DeepCopy();
-    if (wait_for_pingback_closure_)
-      std::move(wait_for_pingback_closure_).Run();
-  }
-
-  void SetPingbackReportingFraction(
-      float pingback_reporting_fraction) override {}
-
-  base::OnceClosure wait_for_pingback_closure_;
-  std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data_;
-};
-
-IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
-                       DISABLE_ON_WIN_MAC_CHROMESOS(PingbackContent)) {
-  TestDataReductionProxyPingbackClient* pingback_client =
-      new TestDataReductionProxyPingbackClient();
-  DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-      browser()->profile())
-      ->data_reduction_proxy_service()
-      ->SetPingbackClientForTesting(pingback_client);
-
-  // This test should pass whether or not
-  // |kDataReductionProxyPopulatePreviewsPageIDToPingback| is enabled.
-  for (const bool drp_pageid_feature_enabled : {false, true}) {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitWithFeatureState(
-        data_reduction_proxy::features::
-            kDataReductionProxyPopulatePreviewsPageIDToPingback,
-        drp_pageid_feature_enabled);
-
-    ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
-    VerifyPreviewLoaded();
-
-    PreviewsUITabHelper* ui_tab_helper =
-        PreviewsUITabHelper::FromWebContents(GetWebContents());
-    previews::PreviewsUserData* previews_data =
-        ui_tab_helper->previews_user_data();
-    // Grab the page id and session now because they may change after the
-    // reload.
-    uint64_t expected_page_id = previews_data->server_lite_page_info()->page_id;
-    std::string expected_session_key =
-        previews_data->server_lite_page_info()->drp_session_key;
-
-    // Starting a new page load will send a pingback for the previous page load.
-    GetWebContents()->GetController().Reload(content::ReloadType::NORMAL,
-                                             false);
-    pingback_client->WaitForPingback();
-
-    data_reduction_proxy::DataReductionProxyData* data =
-        pingback_client->data();
-    EXPECT_TRUE(data->used_data_reduction_proxy());
-    EXPECT_TRUE(data->lite_page_received());
-    EXPECT_FALSE(data->was_cached_data_reduction_proxy_response());
-    EXPECT_EQ(data->page_id().value(), expected_page_id);
-    EXPECT_EQ(data->page_id().value(), got_page_id());
-    EXPECT_EQ(data->session_key(), expected_session_key);
-  }
 }
 
 class PreviewsLitePageServerTimeoutBrowserTest

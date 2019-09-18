@@ -109,11 +109,6 @@ const char kDisableBackgroundTimerThrottling[] =
 // features.
 const char kDisableBlinkFeatures[]          = "disable-blink-features";
 
-// Enable Web Bluetooth Scanning
-// This switch enables Web Bluetooth Scanning without any
-// permission prompt for testing.
-const char kEnableWebBluetoothScanning[] = "enable-web-bluetooth-scanning";
-
 // Disables HTML5 DB support.
 const char kDisableDatabases[]              = "disable-databases";
 

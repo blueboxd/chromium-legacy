@@ -15,6 +15,7 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.tab.Tab;
 
 /**
@@ -76,20 +77,23 @@ public class ArCoreJavaUtils {
     public void onDrawingSurfaceReady(Surface surface, int rotation, int width, int height) {
         if (DEBUG_LOGS) Log.i(TAG, "onDrawingSurfaceReady");
         if (mNativeArCoreJavaUtils == 0) return;
-        nativeOnDrawingSurfaceReady(mNativeArCoreJavaUtils, surface, rotation, width, height);
+        ArCoreJavaUtilsJni.get().onDrawingSurfaceReady(
+                mNativeArCoreJavaUtils, ArCoreJavaUtils.this, surface, rotation, width, height);
     }
 
     public void onDrawingSurfaceTouch(boolean isTouching, float x, float y) {
         if (DEBUG_LOGS) Log.i(TAG, "onDrawingSurfaceTouch");
         if (mNativeArCoreJavaUtils == 0) return;
-        nativeOnDrawingSurfaceTouch(mNativeArCoreJavaUtils, isTouching, x, y);
+        ArCoreJavaUtilsJni.get().onDrawingSurfaceTouch(
+                mNativeArCoreJavaUtils, ArCoreJavaUtils.this, isTouching, x, y);
     }
 
     public void onDrawingSurfaceDestroyed() {
         if (DEBUG_LOGS) Log.i(TAG, "onDrawingSurfaceDestroyed");
         if (mNativeArCoreJavaUtils == 0) return;
         mArImmersiveOverlay = null;
-        nativeOnDrawingSurfaceDestroyed(mNativeArCoreJavaUtils);
+        ArCoreJavaUtilsJni.get().onDrawingSurfaceDestroyed(
+                mNativeArCoreJavaUtils, ArCoreJavaUtils.this);
     }
 
     @CalledByNative
@@ -97,9 +101,12 @@ public class ArCoreJavaUtils {
         mNativeArCoreJavaUtils = 0;
     }
 
-    private native void nativeOnDrawingSurfaceReady(
-            long nativeArCoreJavaUtils, Surface surface, int rotation, int width, int height);
-    private native void nativeOnDrawingSurfaceTouch(
-            long nativeArCoreJavaUtils, boolean touching, float x, float y);
-    private native void nativeOnDrawingSurfaceDestroyed(long nativeArCoreJavaUtils);
+    @NativeMethods
+    interface Natives {
+        void onDrawingSurfaceReady(long nativeArCoreJavaUtils, ArCoreJavaUtils caller,
+                Surface surface, int rotation, int width, int height);
+        void onDrawingSurfaceTouch(long nativeArCoreJavaUtils, ArCoreJavaUtils caller,
+                boolean touching, float x, float y);
+        void onDrawingSurfaceDestroyed(long nativeArCoreJavaUtils, ArCoreJavaUtils caller);
+    }
 }

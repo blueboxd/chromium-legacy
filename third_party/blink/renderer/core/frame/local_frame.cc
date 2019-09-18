@@ -497,55 +497,57 @@ void LocalFrame::DidChangeVisibilityState() {
 }
 
 void LocalFrame::DidFreeze() {
-  if (GetDocument()) {
-    if (GetDocument()->GetResourceCoordinator() &&
-        !RuntimeEnabledFeatures::BackForwardCacheEnabled()) {
-      // TODO(yuzus): Skip this block if DidFreeze is triggered by bfcache.
+  DCHECK(IsAttached());
+  auto* document_resource_coordinator = GetDocument()->GetResourceCoordinator();
+  if (document_resource_coordinator &&
+      !RuntimeEnabledFeatures::BackForwardCacheEnabled()) {
+    // TODO(yuzus): Skip this block if DidFreeze is triggered by bfcache.
 
-      // Determine if there is a beforeunload handler by dispatching a
-      // beforeunload that will *not* launch a user dialog. If
-      // |proceed| is false then there is a non-empty beforeunload
-      // handler indicating potentially unsaved user state.
-      bool unused_did_allow_navigation = false;
-      bool proceed = GetDocument()->DispatchBeforeUnloadEvent(
-          nullptr, false /* is_reload */, unused_did_allow_navigation);
-      // Running the beforeunload event may invalidate the
-      // DocumentResourceCoordinator. Because of that, it can't be stored in a
-      // local variable that is reused throughout the method.
-      // https://crbug.com/991380.
-      auto* document_resource_coordinator =
-          GetDocument()->GetResourceCoordinator();
-      if (document_resource_coordinator)
-        document_resource_coordinator->SetHasNonEmptyBeforeUnload(!proceed);
-    }
+    // Determine if there is a beforeunload handler by dispatching a
+    // beforeunload that will *not* launch a user dialog. If
+    // |proceed| is false then there is a non-empty beforeunload
+    // handler indicating potentially unsaved user state.
+    bool unused_did_allow_navigation = false;
+    bool proceed = GetDocument()->DispatchBeforeUnloadEvent(
+        nullptr, false /* is_reload */, unused_did_allow_navigation);
 
-    GetDocument()->DispatchFreezeEvent();
-    // TODO(fmeawad): Move the following logic to the page once we have a
-    // PageResourceCoordinator in Blink. http://crbug.com/838415
-    if (auto* document_resource_coordinator =
-            GetDocument()->GetResourceCoordinator()) {
-      document_resource_coordinator->SetLifecycleState(
-          resource_coordinator::mojom::LifecycleState::kFrozen);
-    }
+    // DispatchBeforeUnloadEvent dispatches JS events, which may detatch |this|.
+    if (!IsAttached())
+      return;
+    document_resource_coordinator->SetHasNonEmptyBeforeUnload(!proceed);
+  }
+
+  GetDocument()->DispatchFreezeEvent();
+  // DispatchFreezeEvent dispatches JS events, which may detatch |this|.
+  if (!IsAttached())
+    return;
+  // TODO(fmeawad): Move the following logic to the page once we have a
+  // PageResourceCoordinator in Blink. http://crbug.com/838415
+  if (document_resource_coordinator) {
+    document_resource_coordinator->SetLifecycleState(
+        resource_coordinator::mojom::LifecycleState::kFrozen);
   }
 }
 
 void LocalFrame::DidResume() {
-  if (GetDocument()) {
-    const base::TimeTicks resume_event_start = base::TimeTicks::Now();
-    GetDocument()->DispatchEvent(*Event::Create(event_type_names::kResume));
-    const base::TimeTicks resume_event_end = base::TimeTicks::Now();
-    DEFINE_STATIC_LOCAL(
-        CustomCountHistogram, resume_histogram,
-        ("DocumentEventTiming.ResumeDuration", 0, 10000000, 50));
-    resume_histogram.CountMicroseconds(resume_event_end - resume_event_start);
-    // TODO(fmeawad): Move the following logic to the page once we have a
-    // PageResourceCoordinator in Blink
-    if (auto* document_resource_coordinator =
-            GetDocument()->GetResourceCoordinator()) {
-      document_resource_coordinator->SetLifecycleState(
-          resource_coordinator::mojom::LifecycleState::kRunning);
-    }
+  DCHECK(IsAttached());
+  const base::TimeTicks resume_event_start = base::TimeTicks::Now();
+  GetDocument()->DispatchEvent(*Event::Create(event_type_names::kResume));
+  const base::TimeTicks resume_event_end = base::TimeTicks::Now();
+  DEFINE_STATIC_LOCAL(CustomCountHistogram, resume_histogram,
+                      ("DocumentEventTiming.ResumeDuration", 0, 10000000, 50));
+  resume_histogram.CountMicroseconds(resume_event_end - resume_event_start);
+
+  // DispatchEvent dispatchs JS events, which may detatch |this|.
+  if (!IsAttached())
+    return;
+
+  // TODO(fmeawad): Move the following logic to the page once we have a
+  // PageResourceCoordinator in Blink
+  if (auto* document_resource_coordinator =
+          GetDocument()->GetResourceCoordinator()) {
+    document_resource_coordinator->SetLifecycleState(
+        resource_coordinator::mojom::LifecycleState::kRunning);
   }
 }
 
@@ -1700,19 +1702,15 @@ void LocalFrame::ForciblyPurgeV8Memory() {
 }
 
 void LocalFrame::PauseContext() {
-  if (Document* document = GetDocument()) {
-    document->Fetcher()->SetDefersLoading(true);
-    document->SetLifecycleState(lifecycle_state_);
-  }
+  GetDocument()->Fetcher()->SetDefersLoading(true);
+  GetDocument()->SetLifecycleState(lifecycle_state_);
   Loader().SetDefersLoading(true);
   GetFrameScheduler()->SetPaused(true);
 }
 
 void LocalFrame::UnpauseContext() {
-  if (Document* document = GetDocument()) {
-    document->Fetcher()->SetDefersLoading(false);
-    document->SetLifecycleState(mojom::FrameLifecycleState::kRunning);
-  }
+  GetDocument()->Fetcher()->SetDefersLoading(false);
+  GetDocument()->SetLifecycleState(mojom::FrameLifecycleState::kRunning);
   Loader().SetDefersLoading(false);
   GetFrameScheduler()->SetPaused(false);
 }
@@ -1750,7 +1748,7 @@ void LocalFrame::SetLifecycleState(mojom::FrameLifecycleState state) {
   if (freeze) {
     if (lifecycle_state_ != mojom::FrameLifecycleState::kPaused) {
       DidFreeze();
-      // DidFreeze can dispatch JS events, causing |this| to be detached.
+      // DidFreeze can dispatch JS events, which may detatch |this|.
       if (!IsAttached())
         return;
     }
@@ -1759,13 +1757,12 @@ void LocalFrame::SetLifecycleState(mojom::FrameLifecycleState state) {
     UnpauseContext();
     if (old_state != mojom::FrameLifecycleState::kPaused) {
       DidResume();
-      // DidResume can dispatch JS events, causing |this| to be detached.
+      // DidResume can dispatch JS events, which may detatch |this|.
       if (!IsAttached())
         return;
     }
   }
-  if (Client())
-    Client()->LifecycleStateChanged(state);
+  Client()->LifecycleStateChanged(state);
 }
 
 void LocalFrame::MaybeLogAdClickNavigation() {

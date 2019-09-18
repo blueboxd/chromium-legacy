@@ -195,6 +195,9 @@ class PageLoadMetricsUpdateDispatcher {
   // The client is guaranteed to outlive this object.
   Client* const client_;
 
+  // Interface to chrome features. Must outlive the class.
+  PageLoadMetricsEmbedderInterface* const embedder_interface_;
+
   std::unique_ptr<base::OneShotTimer> timer_;
 
   // Time the navigation for this page load was initiated.

@@ -57,15 +57,9 @@ PreviewsLitePageRedirectMetricsObserver::OnCommitCalled(
   data->set_used_data_reduction_proxy(true);
   data->set_was_cached_data_reduction_proxy_response(false);
 
-  base::TimeDelta penalty =
-      handle->NavigationStart() - info->original_navigation_start;
-  // If this preview was attempted, we always expect that the navigation was
-  // canceled and restarted, so there should be a penalty.
-  DCHECK_GE(penalty, base::TimeDelta::FromSeconds(0));
   DCHECK_NE(info->status, previews::ServerLitePageStatus::kUnknown);
 
   set_data(std::move(data));
-  set_lite_page_redirect_penalty(penalty);
   set_lite_page_redirect_status(info->status);
 
   return CONTINUE_OBSERVING;

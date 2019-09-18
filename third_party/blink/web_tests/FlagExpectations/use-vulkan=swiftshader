@@ -1,16 +1,3 @@
-# SwiftShader Unimplemented Blend Mode
-crbug.com/972096 compositing/reflections/animation-inside-reflection.html [ Skip ]
-crbug.com/972096 compositing/reflections/nested-reflection-anchor-point.html [ Skip ]
-crbug.com/972096 compositing/reflections/nested-reflection-animated.html [ Skip ]
-crbug.com/972096 compositing/reflections/nested-reflection-on-overflow.html [ Skip ]
-crbug.com/972096 compositing/reflections/nested-reflection-opacity.html [ Skip ]
-crbug.com/972096 compositing/reflections/nested-reflection-transformed.html [ Skip ]
-crbug.com/972096 compositing/reflections/nested-reflection-transformed2.html [ Skip ]
-crbug.com/972096 compositing/reflections/nested-reflection.html [ Skip ]
-crbug.com/972096 compositing/reflections/transform-inside-reflection.html [ Skip ]
-crbug.com/972096 css3/filters/composited-reflected.html [ Skip ]
-crbug.com/972096 media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Skip ]
-
 # Test consistently hitting default timeout.
 Bug(none) css3/filters/effect-reference-subregion.html [ Skip ]
 

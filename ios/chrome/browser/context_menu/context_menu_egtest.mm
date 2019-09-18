@@ -162,13 +162,6 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 
 @implementation ContextMenuTestCase
 
-// TODO(crbug.com/989550) Disable broken context menu tests on Xcode 11 beta 5.
-+ (NSArray*)testInvocations {
-  if (@available(iOS 13, *))
-    return @[];
-  return [super testInvocations];
-}
-
 + (void)setUp {
   [super setUp];
   [ChromeEarlGrey setContentSettings:CONTENT_SETTING_ALLOW];
@@ -263,9 +256,10 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
       CGRectGetMidX([chrome_test_util::GetActiveViewController() view].bounds),
       topInset + 20.0);
 
+  // Duration should match |kContextMenuLongPressDuration| as defined in
+  // web_view_actions.mm.
   [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
-      performAction:grey_longPressAtPointWithDuration(
-                        point, kGREYLongPressDefaultDuration)];
+      performAction:grey_longPressAtPointWithDuration(point, 1.0)];
 
   TapOnContextMenuButton(OpenImageInNewTabButton());
   [ChromeEarlGrey waitForMainTabCount:2];

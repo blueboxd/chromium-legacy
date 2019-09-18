@@ -2,7 +2,7 @@
   "comments": [
     "Cronet tests 64-bit iOS 12 and 13 simulators."
   ],
-  "xcode build version": "11a419c",
+  "xcode build version": "11a420a",
   "gn_args": [
     "additional_target_cpus=[\"x86\"]",
     "disable_brotli_filter=false",

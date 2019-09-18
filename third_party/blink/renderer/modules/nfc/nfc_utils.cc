@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
-using device::mojom::blink::NDEFCompatibility;
 using device::mojom::blink::NFCPushTarget;
 
 namespace blink {
@@ -37,20 +36,6 @@ bool SetNDEFMessageURL(const String& origin,
 
   message->url = origin_url;
   return origin_url.IsValid();
-}
-
-NDEFCompatibility StringToNDEFCompatibility(const String& compatibility) {
-  if (compatibility == "nfc-forum")
-    return NDEFCompatibility::NFC_FORUM;
-
-  if (compatibility == "vendor")
-    return NDEFCompatibility::VENDOR;
-
-  if (compatibility == "any")
-    return NDEFCompatibility::ANY;
-
-  NOTREACHED();
-  return NDEFCompatibility::NFC_FORUM;
 }
 
 NFCPushTarget StringToNFCPushTarget(const String& target) {

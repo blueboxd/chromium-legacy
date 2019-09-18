@@ -12,6 +12,8 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/window/frame_buttons.h"
 
+typedef union _GdkEvent GdkEvent;
+
 namespace aura {
 class Window;
 }
@@ -27,6 +29,7 @@ struct HSL;
 
 namespace ui {
 class Accelerator;
+class KeyEvent;
 }
 
 namespace libgtkui {
@@ -190,6 +193,17 @@ std::string GetGtkSettingsStringProperty(GtkSettings* settings,
 // TODO(thomasanderson): Remove this once GtkStatusIcon is removed.
 guint GetGdkKeyCodeForAccelerator(const ui::Accelerator& accelerator);
 #endif
+
+// Get current GdkDisplay instance
+GdkDisplay* GetGdkDisplay();
+
+// Translates |key_event| into a GdkEvent. GdkEvent::key::window is the only
+// field not set by this function, callers must set it, as the way for
+// retrieving it may vary depending on the event being processed. E.g: for IME
+// Context impl, X11 window XID is obtained through Event::target() which is
+// root aura::Window targeted by that key event.
+GdkEvent* GdkEventFromKeyEvent(const ui::KeyEvent& key_event);
+
 }  // namespace libgtkui
 
 #endif  // CHROME_BROWSER_UI_LIBGTKUI_GTK_UTIL_H_

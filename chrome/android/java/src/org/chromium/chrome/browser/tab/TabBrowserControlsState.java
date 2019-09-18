@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tab;
 
 import org.chromium.base.ObserverList.RewindableIterator;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.ImeEventObserver;
 import org.chromium.content_public.browser.WebContents;
@@ -161,7 +162,10 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
 
     @Override
     public void destroyInternal() {
-        if (mNativeTabBrowserControlsState != 0) nativeOnDestroyed(mNativeTabBrowserControlsState);
+        if (mNativeTabBrowserControlsState != 0) {
+            TabBrowserControlsStateJni.get().onDestroyed(
+                    mNativeTabBrowserControlsState, TabBrowserControlsState.this);
+        }
     }
 
     @Override
@@ -196,9 +200,12 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
                         && current == BrowserControlsState.HIDDEN)) {
             return;
         }
-        if (mNativeTabBrowserControlsState == 0) mNativeTabBrowserControlsState = nativeInit();
-        nativeUpdateState(mNativeTabBrowserControlsState, mTab.getWebContents(), constraints,
-                current, animate);
+        if (mNativeTabBrowserControlsState == 0) {
+            mNativeTabBrowserControlsState =
+                    TabBrowserControlsStateJni.get().init(TabBrowserControlsState.this);
+        }
+        TabBrowserControlsStateJni.get().updateState(mNativeTabBrowserControlsState,
+                TabBrowserControlsState.this, mTab.getWebContents(), constraints, current, animate);
         if (constraints == mConstraints) return;
 
         mConstraints = constraints;
@@ -262,8 +269,11 @@ public class TabBrowserControlsState extends TabWebContentsUserData implements I
         updateEnabledState();
     }
 
-    private native long nativeInit();
-    private native void nativeOnDestroyed(long nativeTabBrowserControlsState);
-    private native void nativeUpdateState(long nativeTabBrowserControlsState,
-            WebContents webContents, int contraints, int current, boolean animate);
+    @NativeMethods
+    interface Natives {
+        long init(TabBrowserControlsState caller);
+        void onDestroyed(long nativeTabBrowserControlsState, TabBrowserControlsState caller);
+        void updateState(long nativeTabBrowserControlsState, TabBrowserControlsState caller,
+                WebContents webContents, int contraints, int current, boolean animate);
+    }
 }

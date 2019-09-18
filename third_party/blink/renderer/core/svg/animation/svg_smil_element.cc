@@ -888,38 +888,18 @@ SMILTime SVGSMILElement::NextInterestingTime(SMILTime presentation_time) const {
   if (interval_.BeginsAfter(presentation_time)) {
     next_interesting_interval_time = interval_.begin;
   } else if (interval_.EndsAfter(presentation_time)) {
-    next_interesting_interval_time = interval_.end;
-    SMILTime simple_duration = SimpleDuration();
-    if (simple_duration) {
+    if (SMILTime simple_duration = SimpleDuration()) {
       SMILTime next_repeat_time = ComputeNextRepeatTime(
           interval_.begin, simple_duration, presentation_time);
       DCHECK(next_repeat_time.IsFinite());
-      // Because of floating point issues we can end up getting a
-      // |next_repeat_time| == |presentation_time|, which would fail our
-      // requirement, meaning we wouldn't make progress. Integers FTW!
-      if (presentation_time < next_repeat_time) {
-        next_interesting_interval_time =
-            std::min(next_interesting_interval_time, next_repeat_time);
-      }
+      next_interesting_interval_time =
+          std::min(next_repeat_time, interval_.end);
+    } else {
+      next_interesting_interval_time = interval_.end;
     }
   }
-  // TODO(edvardt): This is a vile hack.
-  // Removing 0.5ms, which is less than the minimum precision time.
-  //
-  // Removing this will break most repeatn-* tests, and
-  // most tests with onmouse syncbases. These are a few:
-  //    svg/animations/reapeatn-*
-  //    external/wpt/svg/animations/scripted/onhover-syncbases.html
-  //    external/wpt/svg/animations/slider-switch.html
-  // These break because the updates land ON THE SAME TIMES as the
-  // instance times. And the animation cannot then get a new interval
-  // from that instance time.
-  const SMILTime half_ms = SMILTime::FromSecondsD(0.0005);
-  const SMILTime instance_time =
-      FindInstanceTime(kBegin, presentation_time, false) - half_ms;
-  if (presentation_time < instance_time)
-    return std::min(next_interesting_interval_time, instance_time);
-  return next_interesting_interval_time;
+  return std::min(next_interesting_interval_time,
+                  FindInstanceTime(kBegin, presentation_time, false));
 }
 
 void SVGSMILElement::BeginListChanged(SMILTime event_time) {

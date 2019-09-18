@@ -174,6 +174,7 @@
 <translation id="2154484045852737596">Edit card</translation>
 <translation id="2154710561487035718">Copy URL</translation>
 <translation id="2156074688469523661">Remaining sites (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="2157851137955077194">To share something from your phone to another device, turn on sync in Chrome settings on both devices</translation>
 <translation id="2170088579611075216">Allow and enter VR</translation>
 <translation id="218608176142494674">Sharing</translation>
 <translation id="2227444325776770048">Continue as <ph name="USER_FULL_NAME" /></translation>
@@ -449,7 +450,6 @@ To adjust your search term, long-press to select. To refine your search, slide t
 <translation id="4440958355523780886">Lite page provided by Google. Tap to load the original.</translation>
 <translation id="4452411734226507615">Close <ph name="TAB_TITLE" /> tab</translation>
 <translation id="4452548195519783679">Bookmarked to <ph name="FOLDER_NAME" /></translation>
-<translation id="4453340223357552416"><ph name="FILE_NAME" /> downloaded in <ph name="PRODUCT_NAME" /></translation>
 <translation id="445467742685312942">Allow sites to play protected content</translation>
 <translation id="4468959413250150279">Mute sound for a specific site.</translation>
 <translation id="4472118726404937099">To sync and personalise across devices, sign in and turn on sync</translation>
@@ -819,7 +819,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6992289844737586249">Ask first before allowing sites to use your microphone (recommended)</translation>
 <translation id="7015203776128479407">Initial sync setup was not finished. Sync is off.</translation>
 <translation id="7016516562562142042">Allowed for current search engine</translation>
-<translation id="7021515813996758557"><ph name="FILE_NAME" /> downloaded</translation>
 <translation id="7022756207310403729">Open in browser</translation>
 <translation id="702463548815491781">Recommended when TalkBack or Switch Access are on</translation>
 <translation id="7029809446516969842">Passwords</translation>
@@ -1075,6 +1074,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, tab</translation>
 <translation id="885701979325669005">Storage</translation>
+<translation id="889338405075704026">Go to Chrome settings</translation>
 <translation id="8901170036886848654">No bookmarks found</translation>
 <translation id="8909135823018751308">Share…</translation>
 <translation id="8912362522468806198">Google Account</translation>
@@ -1093,6 +1093,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="8993760627012879038">Open a new tab in Incognito mode</translation>
 <translation id="8998729206196772491">You are signing in with an account managed by <ph name="MANAGED_DOMAIN" /> and giving its administrator control over your Chrome data. Your data will become permanently tied to this account. Signing out of Chrome will delete your data from this device, but it will remain stored in your Google Account.</translation>
 <translation id="9019902583201351841">Managed by your parents</translation>
+<translation id="9028914725102941583">Turn on sync to share across devices</translation>
 <translation id="9029323097866369874">Allow <ph name="DOMAIN" /> to enter VR?</translation>
 <translation id="9040142327097499898">Notifications are allowed. Location is off for this device.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# Video}other{# Videos}}</translation>

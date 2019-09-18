@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tabmodel;
 import android.os.SystemClock;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
@@ -44,7 +45,8 @@ public abstract class TabModelJniBridge implements TabModel {
     /** Initializes the native-side counterpart to this class. */
     protected void initializeNative() {
         assert mNativeTabModelJniBridge == 0;
-        mNativeTabModelJniBridge = nativeInit(mIsIncognito, mIsTabbedActivityForSync);
+        mNativeTabModelJniBridge = TabModelJniBridgeJni.get().init(
+                TabModelJniBridge.this, mIsIncognito, mIsTabbedActivityForSync);
     }
 
     /** @return Whether the native-side pointer has been initialized. */
@@ -56,7 +58,7 @@ public abstract class TabModelJniBridge implements TabModel {
     public void destroy() {
         if (isNativeInitialized()) {
             // This will invalidate all other native references to this object in child classes.
-            nativeDestroy(mNativeTabModelJniBridge);
+            TabModelJniBridgeJni.get().destroy(mNativeTabModelJniBridge, TabModelJniBridge.this);
             mNativeTabModelJniBridge = 0;
         }
     }
@@ -68,13 +70,15 @@ public abstract class TabModelJniBridge implements TabModel {
 
     @Override
     public Profile getProfile() {
-        return nativeGetProfileAndroid(mNativeTabModelJniBridge);
+        return TabModelJniBridgeJni.get().getProfileAndroid(
+                mNativeTabModelJniBridge, TabModelJniBridge.this);
     }
 
     /** Broadcast a native-side notification that all tabs are now loaded from storage. */
     public void broadcastSessionRestoreComplete() {
         assert isNativeInitialized();
-        nativeBroadcastSessionRestoreComplete(mNativeTabModelJniBridge);
+        TabModelJniBridgeJni.get().broadcastSessionRestoreComplete(
+                mNativeTabModelJniBridge, TabModelJniBridge.this);
     }
 
     /**
@@ -82,7 +86,10 @@ public abstract class TabModelJniBridge implements TabModel {
      * @param tab Tab being added to the model.
      */
     protected void tabAddedToModel(Tab tab) {
-        if (isNativeInitialized()) nativeTabAddedToModel(mNativeTabModelJniBridge, tab);
+        if (isNativeInitialized()) {
+            TabModelJniBridgeJni.get().tabAddedToModel(
+                    mNativeTabModelJniBridge, TabModelJniBridge.this, tab);
+        }
     }
 
     /**
@@ -204,28 +211,33 @@ public abstract class TabModelJniBridge implements TabModel {
         final long ms = SystemClock.uptimeMillis() - sTabSwitchStartTime;
         switch (sTabSelectionType) {
             case TabSelectionType.FROM_CLOSE:
-                nativeLogFromCloseMetric(ms, perceived);
+                TabModelJniBridgeJni.get().logFromCloseMetric(ms, perceived);
                 break;
             case TabSelectionType.FROM_EXIT:
-                nativeLogFromExitMetric(ms, perceived);
+                TabModelJniBridgeJni.get().logFromExitMetric(ms, perceived);
                 break;
             case TabSelectionType.FROM_NEW:
-                nativeLogFromNewMetric(ms, perceived);
+                TabModelJniBridgeJni.get().logFromNewMetric(ms, perceived);
                 break;
             case TabSelectionType.FROM_USER:
-                nativeLogFromUserMetric(ms, perceived);
+                TabModelJniBridgeJni.get().logFromUserMetric(ms, perceived);
                 break;
         }
     }
 
-    private native long nativeInit(boolean isIncognito, boolean isTabbedActivity);
-    private native Profile nativeGetProfileAndroid(long nativeTabModelJniBridge);
-    private native void nativeBroadcastSessionRestoreComplete(long nativeTabModelJniBridge);
-    private native void nativeDestroy(long nativeTabModelJniBridge);
-    private native void nativeTabAddedToModel(long nativeTabModelJniBridge, Tab tab);
-    // Native methods for tab switch latency metrics.
-    private static native void nativeLogFromCloseMetric(long ms, boolean perceived);
-    private static native void nativeLogFromExitMetric(long ms, boolean perceived);
-    private static native void nativeLogFromNewMetric(long ms, boolean perceived);
-    private static native void nativeLogFromUserMetric(long ms, boolean perceived);
+    @NativeMethods
+    interface Natives {
+        long init(TabModelJniBridge caller, boolean isIncognito, boolean isTabbedActivity);
+        Profile getProfileAndroid(long nativeTabModelJniBridge, TabModelJniBridge caller);
+        void broadcastSessionRestoreComplete(
+                long nativeTabModelJniBridge, TabModelJniBridge caller);
+        void destroy(long nativeTabModelJniBridge, TabModelJniBridge caller);
+        void tabAddedToModel(long nativeTabModelJniBridge, TabModelJniBridge caller, Tab tab);
+
+        // Methods for tab switch latency metrics.
+        void logFromCloseMetric(long ms, boolean perceived);
+        void logFromExitMetric(long ms, boolean perceived);
+        void logFromNewMetric(long ms, boolean perceived);
+        void logFromUserMetric(long ms, boolean perceived);
+    }
 }

@@ -36,6 +36,7 @@ const char* const kWebViewCrashKeyWhiteList[] = {
     "gpu-gl-vendor__1",
     "gpu-gl-vendor__2",
     "gpu-gl-renderer",
+    "oop_read_failure",
 
     // content/:
     "bad_message_reason",

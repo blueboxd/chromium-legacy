@@ -80,7 +80,11 @@ constexpr float kMinimumScrollDistanceDp = 5.f;
 
 // Wait a while before unpausing the occlusion tracker after a scroll has
 // completed as the user may start another scroll.
-constexpr int kOcclusionUnpauseDurationForScrollMs = 500;
+constexpr base::TimeDelta kOcclusionUnpauseDurationForScroll =
+    base::TimeDelta::FromMilliseconds(500);
+
+constexpr base::TimeDelta kOcclusionUnpauseDurationForRotation =
+    base::TimeDelta::FromMilliseconds(300);
 
 // Histogram names for overview enter/exit smoothness in clamshell,
 // tablet mode and splitview.
@@ -630,10 +634,11 @@ void OverviewGrid::RemoveDropTarget() {
 
 void OverviewGrid::SetBoundsAndUpdatePositions(
     const gfx::Rect& bounds_in_screen,
-    const base::flat_set<OverviewItem*>& ignored_items) {
+    const base::flat_set<OverviewItem*>& ignored_items,
+    bool animate) {
   bounds_ = bounds_in_screen;
   MaybeUpdateDesksWidgetBounds();
-  PositionWindows(/*animate=*/true, ignored_items);
+  PositionWindows(animate, ignored_items);
 }
 
 void OverviewGrid::RearrangeDuringDrag(aura::Window* dragged_window,
@@ -662,7 +667,8 @@ void OverviewGrid::RearrangeDuringDrag(aura::Window* dragged_window,
       ignored_items.insert(dragged_item);
     if (drop_target && !wanted_drop_target_visibility)
       ignored_items.insert(drop_target);
-    SetBoundsAndUpdatePositions(wanted_grid_bounds, ignored_items);
+    SetBoundsAndUpdatePositions(wanted_grid_bounds, ignored_items,
+                                /*animate=*/true);
   }
 }
 
@@ -803,7 +809,8 @@ void OverviewGrid::OnWindowDragEnded(aura::Window* dragged_window,
   // be updated based on the preview area during drag, but the window finally
   // didn't be snapped to the preview area.
   SetBoundsAndUpdatePositions(
-      GetGridBoundsInScreenAfterDragging(dragged_window), /*ignored_items=*/{});
+      GetGridBoundsInScreenAfterDragging(dragged_window), /*ignored_items=*/{},
+      /*animate=*/true);
 }
 
 bool OverviewGrid::IsDropTargetWindow(aura::Window* window) const {
@@ -914,6 +921,8 @@ void OverviewGrid::OnPostWindowStateTypeChange(WindowState* window_state,
 }
 
 void OverviewGrid::OnScreenCopiedBeforeRotation() {
+  Shell::Get()->overview_controller()->PauseOcclusionTracker();
+
   for (auto& window : window_list()) {
     window->set_disable_mask(true);
     window->UpdateRoundedCornersAndShadow();
@@ -927,6 +936,8 @@ void OverviewGrid::OnScreenRotationAnimationFinished(
   for (auto& window : window_list())
     window->set_disable_mask(false);
   Shell::Get()->overview_controller()->DelayedUpdateRoundedCornersAndShadow();
+  Shell::Get()->overview_controller()->UnpauseOcclusionTracker(
+      kOcclusionUnpauseDurationForRotation);
 }
 
 void OverviewGrid::OnWallpaperChanging() {
@@ -1417,7 +1428,7 @@ bool OverviewGrid::UpdateScrollOffset(float delta) {
 
 void OverviewGrid::EndScroll() {
   Shell::Get()->overview_controller()->UnpauseOcclusionTracker(
-      kOcclusionUnpauseDurationForScrollMs);
+      kOcclusionUnpauseDurationForScroll);
   items_scrolling_bounds_.clear();
   presentation_time_recorder_.reset();
 

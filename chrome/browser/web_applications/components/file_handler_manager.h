@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_FILE_HANDLER_MANAGER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_FILE_HANDLER_MANAGER_H_
 
+#include <set>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -48,6 +50,10 @@ class FileHandlerManager : public AppRegistrarObserver {
 
   DISALLOW_COPY_AND_ASSIGN(FileHandlerManager);
 };
+
+// Compute the set of file extensions specified in |file_handlers|.
+std::set<std::string> GetFileExtensionsFromFileHandlers(
+    const std::vector<apps::FileHandlerInfo>& file_handlers);
 
 }  // namespace web_app
 

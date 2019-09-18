@@ -26,6 +26,7 @@
 #include "components/storage_monitor/test_media_transfer_protocol_manager_chromeos.h"
 #include "components/storage_monitor/test_storage_monitor.h"
 #include "content/public/test/browser_task_environment.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace storage_monitor {
@@ -71,11 +72,12 @@ class TestStorageMonitorCros : public StorageMonitorCros {
   ~TestStorageMonitorCros() override {}
 
   void Init() override {
-    device::mojom::MtpManagerPtr fake_mtp_manager_ptr;
+    mojo::PendingRemote<device::mojom::MtpManager> pending_fake_mtp_manager;
     auto* fake_mtp_manager =
         TestMediaTransferProtocolManagerChromeOS::GetFakeMtpManager();
-    fake_mtp_manager->AddBinding(mojo::MakeRequest(&fake_mtp_manager_ptr));
-    SetMediaTransferProtocolManagerForTest(std::move(fake_mtp_manager_ptr));
+    fake_mtp_manager->AddReceiver(
+        pending_fake_mtp_manager.InitWithNewPipeAndPassReceiver());
+    SetMediaTransferProtocolManagerForTest(std::move(pending_fake_mtp_manager));
 
     StorageMonitorCros::Init();
   }

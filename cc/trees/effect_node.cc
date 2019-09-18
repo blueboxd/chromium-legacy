@@ -31,7 +31,6 @@ EffectNode::EffectNode()
       is_currently_animating_backdrop_filter(false),
       is_currently_animating_opacity(false),
       has_masking_child(false),
-      is_masked(false),
       effect_changed(false),
       subtree_has_copy_request(false),
       is_fast_rounded_corner(false),
@@ -39,7 +38,6 @@ EffectNode::EffectNode()
       transform_id(0),
       clip_id(0),
       target_id(1),
-      mask_layer_id(Layer::INVALID_ID),
       closest_ancestor_with_cached_render_surface_id(-1),
       closest_ancestor_with_copy_request_id(-1) {}
 
@@ -82,11 +80,10 @@ bool EffectNode::operator==(const EffectNode& other) const {
          is_currently_animating_opacity ==
              other.is_currently_animating_opacity &&
          has_masking_child == other.has_masking_child &&
-         is_masked == other.is_masked &&
          effect_changed == other.effect_changed &&
          subtree_has_copy_request == other.subtree_has_copy_request &&
          transform_id == other.transform_id && clip_id == other.clip_id &&
-         target_id == other.target_id && mask_layer_id == other.mask_layer_id &&
+         target_id == other.target_id &&
          closest_ancestor_with_cached_render_surface_id ==
              other.closest_ancestor_with_cached_render_surface_id &&
          closest_ancestor_with_copy_request_id ==
@@ -170,7 +167,6 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetBoolean("has_potential_opacity_animation",
                     has_potential_opacity_animation);
   value->SetBoolean("has_masking_child", has_masking_child);
-  value->SetBoolean("is_masked", is_masked);
   value->SetBoolean("effect_changed", effect_changed);
   value->SetBoolean("subtree_has_copy_request", subtree_has_copy_request);
   value->SetString("render_surface_reason",
@@ -178,7 +174,6 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetInteger("transform_id", transform_id);
   value->SetInteger("clip_id", clip_id);
   value->SetInteger("target_id", target_id);
-  value->SetInteger("mask_layer_id", mask_layer_id);
   value->SetInteger("closest_ancestor_with_cached_render_surface_id",
                     closest_ancestor_with_cached_render_surface_id);
   value->SetInteger("closest_ancestor_with_copy_request_id",

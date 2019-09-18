@@ -185,6 +185,11 @@ void CodecImage::NotifyPromotionHint(bool promotion_hint,
                                      int display_y,
                                      int display_width,
                                      int display_height) {
+  // TODO(crbug.com/1004859): Add back early skip due to suspecting affecting
+  // video smoothness.
+  if (promotion_hint && !codec_buffer_wait_coordinator_)
+    return;
+
   NotifyOverlayPromotion(
       promotion_hint,
       gfx::Rect(display_x, display_y, display_width, display_height));

@@ -155,6 +155,9 @@ const base::Feature kEnableGeneralAudienceBrowsing{
 const base::Feature kUseQueryableDataBackend{"use_queryable_data_backend",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kEnableSideGesturePassThrough{
+    "enable_side_gesture_pass_through", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // End Chromecast Feature definitions.
 const base::Feature* kFeatures[] = {
     &kAllowUserMediaAccess,
@@ -164,6 +167,7 @@ const base::Feature* kFeatures[] = {
     &kDisableIdleSocketsCloseOnMemoryPressure,
     &kEnableGeneralAudienceBrowsing,
     &kUseQueryableDataBackend,
+    &kEnableSideGesturePassThrough,
 };
 
 // An iterator for a base::DictionaryValue. Use an alias for brevity in loops.

@@ -40,14 +40,12 @@ ChromiumServiceWrapper::ChromiumServiceWrapper(
     std::unique_ptr<service_manager::Service> chromium_service,
     const std::string& service_name)
     : service_ptr_(std::move(service_ptr)),
-      chromium_service_(std::move(chromium_service)),
-      service_binding_(this) {
+      chromium_service_(std::move(chromium_service)) {
   DCHECK(connector);
   DCHECK(chromium_service_);
 
-  external_mojo::mojom::ExternalServicePtr ptr;
-  service_binding_.Bind(mojo::MakeRequest(&ptr));
-  connector->RegisterService(service_name, std::move(ptr));
+  connector->RegisterService(service_name,
+                             service_receiver_.BindNewPipeAndPassRemote());
 }
 
 ChromiumServiceWrapper::~ChromiumServiceWrapper() = default;

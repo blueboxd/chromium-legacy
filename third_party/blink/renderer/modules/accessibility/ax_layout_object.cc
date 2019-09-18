@@ -297,7 +297,7 @@ Node* AXLayoutObject::GetNodeOrContainingBlockNode() const {
     return nullptr;
   }
 
-  if (layout_object_->IsAnonymousBlock() && layout_object_->ContainingBlock()) {
+  if (layout_object_->IsAnonymous() && layout_object_->ContainingBlock()) {
     return layout_object_->ContainingBlock()->GetNode();
   }
 

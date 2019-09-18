@@ -3319,7 +3319,7 @@ crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/font-family-name-025.html [ 
 crbug.com/626703 [ Mac10.11 ] external/wpt/shape-detection/detection-HTMLVideoElement-invalid-state.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/webaudio/the-audio-api/the-mediaelementaudiosourcenode-interface/mediaElementAudioSourceToScriptProcessorTest.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-mode.html [ Timeout ]
-crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay-hidden.optional.html [ Timeout ]
+crbug.com/1004760 [ Mac ] external/wpt/html/semantics/embedded-content/media-elements/ready-states/autoplay-hidden.optional.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/semantics/embedded-content/media-elements/track/track-element/track-cue-negative-timestamp-events.html [ Timeout ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/bidi/start_alignment.html [ Failure ]
 crbug.com/626703 [ Retina ] external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-top-left.html [ Timeout ]
@@ -6208,3 +6208,8 @@ crbug.com/731018 [ Mac10.13 Debug ] external/wpt/accelerometer/Accelerometer.htt
 crbug.com/731018 [ Mac10.13 Debug ] external/wpt/gyroscope/Gyroscope.https.html [ Pass Failure ]
 crbug.com/731018 [ Mac10.13 Debug ] external/wpt/orientation-sensor/AbsoluteOrientationSensor.https.html [ Pass Failure ]
 crbug.com/731018 [ Mac10.13 Debug ] external/wpt/orientation-sensor/RelativeOrientationSensor.https.html [ Pass Failure ]
+
+# TODO (csmartdalton): Remove after Skia roll and rebaseline
+crbug.com/630695 css3/filters/effect-blur-hw.html [ Pass Failure ]
+crbug.com/630695 css3/filters/effect-drop-shadow-hw.html [ Pass Failure ]
+crbug.com/630695 virtual/scalefactor200/css3/filters/effect-drop-shadow-hw.html [ Pass Failure ]

@@ -213,12 +213,12 @@ void DeviceService::OnStart() {
       base::BindRepeating(&DeviceService::BindBluetoothSystemFactoryReceiver,
                           base::Unretained(this)));
   registry_.AddInterface<mojom::MtpManager>(base::BindRepeating(
-      &DeviceService::BindMtpManagerRequest, base::Unretained(this)));
+      &DeviceService::BindMtpManagerReceiver, base::Unretained(this)));
 #endif
 
 #if defined(OS_LINUX) && defined(USE_UDEV)
   registry_.AddInterface<mojom::InputDeviceManager>(base::Bind(
-      &DeviceService::BindInputDeviceManagerRequest, base::Unretained(this)));
+      &DeviceService::BindInputDeviceManagerReceiver, base::Unretained(this)));
 #endif
 }
 
@@ -260,19 +260,20 @@ void DeviceService::BindBluetoothSystemFactoryReceiver(
   BluetoothSystemFactory::CreateFactory(std::move(receiver));
 }
 
-void DeviceService::BindMtpManagerRequest(mojom::MtpManagerRequest request) {
+void DeviceService::BindMtpManagerReceiver(
+    mojo::PendingReceiver<mojom::MtpManager> receiver) {
   if (!mtp_device_manager_)
     mtp_device_manager_ = MtpDeviceManager::Initialize();
-  mtp_device_manager_->AddBinding(std::move(request));
+  mtp_device_manager_->AddReceiver(std::move(receiver));
 }
 #endif
 
 #if defined(OS_LINUX) && defined(USE_UDEV)
-void DeviceService::BindInputDeviceManagerRequest(
-    mojom::InputDeviceManagerRequest request) {
+void DeviceService::BindInputDeviceManagerReceiver(
+    mojo::PendingReceiver<mojom::InputDeviceManager> receiver) {
   file_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&InputServiceLinux::BindRequest, std::move(request)));
+      base::BindOnce(&InputServiceLinux::BindReceiver, std::move(receiver)));
 }
 #endif
 

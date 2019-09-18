@@ -1,1 +1,8 @@
 # These tests currently fail when run with --enable-features=BackForwardCache
+
+# Not a real problem. The bfcache_chrome_public_test_apk bot adds the
+# --enable-features=BackForwardCache switch, which increases the number of
+# features by one and make those tests to fail:
+-org.chromium.chrome.browser.FeaturesAnnotationsTest.testFeaturesAddToExistingFlags
+-org.chromium.chrome.browser.FeaturesAnnotationsTest.testFeaturesSetExistingFlags
+-org.chromium.chrome.browser.FeaturesAnnotationsTest.testFeaturesDoNotRemoveExistingFlags

@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1मि}other{#मि}}</translation>
 <translation id="1181037720776840403">काढून टाका</translation>
 <translation id="1243314992276662751">अपलोड करा</translation>
+<translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> शेअर करू शकलो नाही</translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1290982764014248209"><ph name="DRAGGED_APP" /> फोल्डर <ph name="FOLDER_NAME" /> वर हलवा.</translation>
+<translation id="1291104554099683393">मजकूर लहान भागांमध्ये शेअर करून पाहा.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">शिफारस केलेले अ‍ॅप्स</translation>
 <translation id="1368832886055348810">डावीकडून उजवीकडे</translation>
 <translation id="1383876407941801731">शोधा</translation>
 <translation id="1398853756734560583">वाढवा</translation>
 <translation id="1409544243779336081">ॲप शिफारस</translation>
+<translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> शेअर करू शकत नाही</translation>
 <translation id="1498028757988366001">तुम्ही यापूर्वी याचा शोध घेतला होता. तुमच्या इतिहासामधून "<ph name="QUERY" />" हटवल्याने ती तुमच्या संपूर्ण डिव्हाइसवरील सर्व खात्यामधून कायमची काढून टाकली जाईल.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 मिनिट आणि }other{# मिनिटे आणि }}</translation>
 <translation id="1643823602425662293">सूचना</translation>
@@ -35,6 +38,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;सर्व निवडा</translation>
 <translation id="1938451708255335766">विंडो डिस्प्ले घनता अ‍ॅडजस्ट करण्यासाठी, अ‍ॅप रीस्टार्ट करा.</translation>
+<translation id="2006524834898217237">हे डिव्हाइस इंटरनेटशी कनेक्ट केलेले असल्याची खात्री करा.</translation>
 <translation id="208586643495776849">कृपया पुन्हा प्रयत्न करा</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1दि}other{#दि}}</translation>
 <translation id="2148716181193084225">आज</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 दिवस}other{# दिवस}}</translation>
 <translation id="3295886253693811851">यावरून कॉल करा</translation>
 <translation id="335581015389089642">भाषण</translation>
+<translation id="3389286852084373014">मजकूर खूप मोठा आहे</translation>
 <translation id="3443810440409579745">टॅब मिळाला.</translation>
 <translation id="3479552764303398839">सध्या नाही</translation>
 <translation id="348799646910989694">शेल्फ आपोआप लपवले</translation>
@@ -151,11 +156,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 सेकंदापूर्वी}other{# सेकंदांपूर्वी}}</translation>
 <translation id="6430678249303439055">या अ‍ॅपच्या सर्व सूचना ब्‍लॉक करा</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 सेकंदापूर्वी}other{# सेकंदांपूर्वी}}</translation>
+<translation id="6539092367496845964">काहीतरी चूक झाली. पुन्हा प्रयत्न करा.</translation>
 <translation id="654149438358937226">सर्व सूचना ब्लॉक करा</translation>
 <translation id="6567071839949112727">पूर्वजवर क्लिक करा</translation>
 <translation id="6578407462441924264">नाव नसलेले</translation>
 <translation id="6612467943526193239">कॅलिब्रेशनमधून बाहेर पडण्‍यासाठी Esc दाबा.</translation>
 <translation id="6620110761915583480">फाइल सेव्ह करा</translation>
+<translation id="6656912866303152668">Chrome मध्ये <ph name="TARGET_DEVICE_NAME" /> चे सिंक सुरू केले असल्याची खात्री करा आणि त्यानंतर पाठवण्याचा पुन्हा प्रयत्न करा.</translation>
 <translation id="6699343763173986273">मीडिया पुढील ट्रॅक</translation>
 <translation id="673773751041746814">हटवणे</translation>
 <translation id="6779314412797872738">येथून तुमच्या Android फोनवर नंबर पाठवण्यासाठी, सेटिंग्जमध्ये दोन्ही डिव्हाइससाठी <ph name="TROUBLESHOOT_LINK" />.</translation>
@@ -221,6 +228,7 @@
 <translation id="8876215549894133151">स्वरूप:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">शेल्फ नेहमी लपवलेले आहे</translation>
+<translation id="8996630695507351249"><ph name="TARGET_DEVICE_NAME" />इंटरनेटशी कनेक्ट केलेली असल्याची खात्री करा.</translation>
 <translation id="9002566407876343676">उघडा</translation>
 <translation id="9039076430527029379">पेज <ph name="PAGE_NUMBER" />, पंक्ती <ph name="ROW_NUMBER" />, स्तंभ <ph name="COLUMN_NUMBER" /> वर हलवा.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 से}other{# से}}</translation>

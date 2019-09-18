@@ -92,6 +92,7 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
       raster_contents_scale_(0.f),
       low_res_raster_contents_scale_(0.f),
       is_mask_(false),
+      is_backdrop_filter_mask_(false),
       was_screen_space_transform_animating_(false),
       only_used_low_res_last_append_quads_(false),
       nearest_neighbor_(false),
@@ -125,15 +126,6 @@ PictureLayerImpl::~PictureLayerImpl() {
   UnregisterAnimatedImages();
 }
 
-void PictureLayerImpl::SetIsMask(bool is_mask) {
-  if (is_mask_ == is_mask)
-    return;
-
-  // This flag can't be set after property trees have been updated.
-  DCHECK_EQ(effect_tree_index(), EffectTree::kInvalidNodeId);
-  is_mask_ = is_mask;
-}
-
 const char* PictureLayerImpl::LayerTypeAsString() const {
   return "cc::PictureLayerImpl";
 }
@@ -146,10 +138,6 @@ std::unique_ptr<LayerImpl> PictureLayerImpl::CreateLayerImpl(
 void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
 
-  // This is before LayerImpl::PushPropertiesTo() because PictureLayerImpl
-  // requires that is_mask flag can change only when the layer is just created
-  // before any property tree state is assigned.
-  layer_impl->SetIsMask(is_mask());
 
   LayerImpl::PushPropertiesTo(base_layer);
 
@@ -165,6 +153,8 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
 
   layer_impl->SetNearestNeighbor(nearest_neighbor_);
   layer_impl->SetUseTransformedRasterization(use_transformed_rasterization_);
+  layer_impl->SetIsMask(is_mask_);
+  layer_impl->SetIsBackdropFilterMask(is_backdrop_filter_mask_);
 
   // Solid color layers have no tilings.
   DCHECK(!raster_source_->IsSolidColor() || tilings_->num_tilings() == 0);
@@ -197,6 +187,13 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
 
 void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
                                    AppendQuadsData* append_quads_data) {
+  // RenderSurfaceImpl::AppendQuads sets mask properties in the DrawQuad for
+  // the masked surface, which will apply to both the backdrop filter and the
+  // contents of the masked surface, so we should not quad of the mask layer
+  // in DstIn blend mode.
+  if (is_backdrop_filter_mask_)
+    return;
+
   // The bounds and the pile size may differ if the pile wasn't updated (ie.
   // PictureLayer::Update didn't happen). In that case the pile will be empty.
   DCHECK(raster_source_->GetSize().IsEmpty() ||

@@ -195,6 +195,14 @@ class TestPageLoadMetricsEmbedderInterface
   bool IsPrerender(content::WebContents* web_contents) override {
     return prerender::PrerenderContents::FromWebContents(web_contents);
   }
+  bool IsExtensionUrl(const GURL& url) override {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    return url.SchemeIs(extensions::kExtensionScheme);
+#else
+    return false;
+#endif
+  }
+
   const std::vector<mojom::PageLoadTimingPtr>& updated_timings() const {
     return updated_timings_;
   }

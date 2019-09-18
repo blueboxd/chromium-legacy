@@ -316,8 +316,9 @@ void PasswordGenerationAgentTest::SelectGenerationFallbackAndExpect(
 
 void PasswordGenerationAgentTest::BindPasswordManagerDriver(
     mojo::ScopedInterfaceEndpointHandle handle) {
-  fake_driver_.BindRequest(
-      mojom::PasswordManagerDriverAssociatedRequest(std::move(handle)));
+  fake_driver_.BindReceiver(
+      mojo::PendingAssociatedReceiver<mojom::PasswordManagerDriver>(
+          std::move(handle)));
 }
 
 void PasswordGenerationAgentTest::BindPasswordManagerClient(

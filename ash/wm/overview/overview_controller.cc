@@ -54,11 +54,13 @@ constexpr int kBlurSlideDurationMs = 250;
 // It can take up to two frames until the frame created in the UI thread that
 // triggered animation observer is drawn. Wait 50ms in attempt to let its draw
 // and swap finish.
-constexpr int kOcclusionPauseDurationForStartMs = 50;
+constexpr base::TimeDelta kOcclusionPauseDurationForStart =
+    base::TimeDelta::FromMilliseconds(50);
 
 // Wait longer when exiting overview mode in case when a user may re-enter
 // overview mode immediately, contents are ready.
-constexpr int kOcclusionPauseDurationForEndMs = 500;
+constexpr base::TimeDelta kOcclusionPauseDurationForEnd =
+    base::TimeDelta::FromMilliseconds(500);
 
 bool IsWallpaperChangeAllowed() {
   return !g_disable_wallpaper_change_for_tests &&
@@ -255,7 +257,7 @@ class OverviewController::OverviewWallpaperController
 };
 
 OverviewController::OverviewController()
-    : occlusion_pause_duration_for_end_ms_(kOcclusionPauseDurationForEndMs),
+    : occlusion_pause_duration_for_end_(kOcclusionPauseDurationForEnd),
       overview_wallpaper_controller_(
           std::make_unique<OverviewWallpaperController>()),
       delayed_animation_task_delay_(kTransition) {
@@ -426,12 +428,11 @@ void OverviewController::PauseOcclusionTracker() {
       std::make_unique<aura::WindowOcclusionTracker::ScopedPause>();
 }
 
-void OverviewController::UnpauseOcclusionTracker(int delay) {
+void OverviewController::UnpauseOcclusionTracker(base::TimeDelta delay) {
   reset_pauser_task_.Reset(base::BindOnce(&OverviewController::ResetPauser,
                                           weak_ptr_factory_.GetWeakPtr()));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, reset_pauser_task_.callback(),
-      base::TimeDelta::FromMilliseconds(delay));
+      FROM_HERE, reset_pauser_task_.callback(), delay);
 }
 
 void OverviewController::AddObserver(OverviewObserver* observer) {
@@ -738,7 +739,7 @@ void OverviewController::OnStartingAnimationComplete(bool canceled) {
     overview_session_->OnStartingAnimationComplete(canceled,
                                                    should_focus_overview_);
   }
-  UnpauseOcclusionTracker(kOcclusionPauseDurationForStartMs);
+  UnpauseOcclusionTracker(kOcclusionPauseDurationForStart);
   TRACE_EVENT_ASYNC_END1("ui", "OverviewController::EnterOverview", this,
                          "canceled", canceled);
 }
@@ -752,7 +753,7 @@ void OverviewController::OnEndingAnimationComplete(bool canceled) {
 
   for (auto& observer : observers_)
     observer.OnOverviewModeEndingAnimationComplete(canceled);
-  UnpauseOcclusionTracker(occlusion_pause_duration_for_end_ms_);
+  UnpauseOcclusionTracker(occlusion_pause_duration_for_end_);
   TRACE_EVENT_ASYNC_END1("ui", "OverviewController::ExitOverview", this,
                          "canceled", canceled);
 }

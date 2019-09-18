@@ -59,6 +59,73 @@ android_apk("weblayer_shell_apk") {
   native_lib_placeholders = [ "libdummy.so" ]
 }
 
+generate_wrapper("run_weblayer_shell") {
+  testonly = true
+  wrapper_script = "$root_out_dir/bin/run_weblayer_shell"
+  executable = "//weblayer/tools/run_weblayer_shell.py"
+  executable_args = [
+    "--shell-apk-path",
+    "@WrappedPath(apks/WebLayerShell.apk)",
+    "--support-apk-path",
+    "@WrappedPath(apks/WebLayerSupport.apk)",
+  ]
+
+  deps = [
+    ":weblayer_shell_apk",
+    ":weblayer_support_apk",
+  ]
+}
+
+demo_apk_manifest = "$target_gen_dir/demo_apk_manifest/AndroidManifest.xml"
+
+jinja_template("demo_apk_manifest") {
+  input = "demo_apk/AndroidManifest.xml"
+  output = demo_apk_manifest
+}
+
+android_assets("demo_apk_assets") {
+  testonly = true
+
+  sources = [
+    "$root_out_dir/weblayer_shell.pak",
+  ]
+  disable_compression = true
+  deps = [
+    "//weblayer/shell:shell_pak",
+  ]
+}
+
+android_library("demo_apk_java") {
+  testonly = true
+
+  deps = [
+    ":demo_apk_manifest",
+    "//third_party/android_deps:android_support_v4_java",
+    "//weblayer/public/java",
+  ]
+  java_files = [ "demo_apk/src/org/chromium/weblayer/demo/WebLayerAnimationDemoActivity.java" ]
+
+  android_manifest_for_lint = demo_apk_manifest
+}
+
+android_apk("weblayer_demo_apk") {
+  testonly = true
+
+  deps = [
+    ":demo_apk_assets",
+    ":demo_apk_java",
+    ":demo_apk_manifest",
+  ]
+  apk_name = "WebLayerDemo"
+  android_manifest = demo_apk_manifest
+  min_sdk_version = 21
+  target_sdk_version = 28
+  android_manifest_dep = ":demo_apk_manifest"
+
+  # Add a native lib so the ABI is compatible with the implementation APK.
+  native_lib_placeholders = [ "libdummy.so" ]
+}
+
 weblayer_support_manifest =
     "$target_gen_dir/weblayer_support_manifest/AndroidManifest.xml"
 
@@ -117,23 +184,6 @@ android_apk("weblayer_support_apk") {
   shared_libraries = [ "//weblayer:libweblayer" ]
 }
 
-generate_wrapper("run_weblayer_shell") {
-  testonly = true
-  wrapper_script = "$root_out_dir/bin/run_weblayer_shell"
-  executable = "//weblayer/tools/run_weblayer_shell.py"
-  executable_args = [
-    "--shell-apk-path",
-    "@WrappedPath(apks/WebLayerShell.apk)",
-    "--support-apk-path",
-    "@WrappedPath(apks/WebLayerSupport.apk)",
-  ]
-
-  deps = [
-    ":weblayer_shell_apk",
-    ":weblayer_support_apk",
-  ]
-}
-
 instrumentation_test_apk("weblayer_instrumentation_test_apk") {
   apk_name = "WebLayerInstrumentationTest"
   apk_under_test = "//weblayer/shell/android:weblayer_shell_apk"
@@ -146,6 +196,7 @@ instrumentation_test_apk("weblayer_instrumentation_test_apk") {
   ]
   java_files = [
     "javatests/src/org/chromium/weblayer/test/NavigationTest.java",
+    "javatests/src/org/chromium/weblayer/test/SmokeTest.java",
     "javatests/src/org/chromium/weblayer/test/WebLayerShellActivityTestRule.java",
     "shell_apk/src/org/chromium/weblayer/shell/WebLayerShellActivity.java",
   ]

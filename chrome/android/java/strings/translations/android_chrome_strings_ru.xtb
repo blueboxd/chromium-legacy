@@ -449,7 +449,6 @@
 <translation id="4440958355523780886">Lite-версия страницы получена с помощью Google. Нажмите, чтобы загрузить оригинал.</translation>
 <translation id="4452411734226507615">Закрыть вкладку "<ph name="TAB_TITLE" />"</translation>
 <translation id="4452548195519783679">Закладка добавлена в папку "<ph name="FOLDER_NAME" />"</translation>
-<translation id="4453340223357552416"><ph name="PRODUCT_NAME" />: скачан файл <ph name="FILE_NAME" /></translation>
 <translation id="445467742685312942">Разрешить сайтам воспроизводить защищенный контент</translation>
 <translation id="4468959413250150279">Отключить звуки на определенном сайте.</translation>
 <translation id="4472118726404937099">Чтобы синхронизировать и персонализировать данные на всех устройствах, войдите в аккаунт и включите синхронизацию.</translation>
@@ -819,7 +818,6 @@
 <translation id="6992289844737586249">Запрашивать разрешение на доступ к микрофону (рекомендуется)</translation>
 <translation id="7015203776128479407">Первоначальная настройка синхронизации не завершена. Синхронизация выключена.</translation>
 <translation id="7016516562562142042">Открыт доступ для текущей поисковой системы</translation>
-<translation id="7021515813996758557">Файл <ph name="FILE_NAME" /> скачан.</translation>
 <translation id="7022756207310403729">Открыть в браузере</translation>
 <translation id="702463548815491781">Рекомендовано при включенных функциях TalkBack и Switch Access</translation>
 <translation id="7029809446516969842">Пароли</translation>

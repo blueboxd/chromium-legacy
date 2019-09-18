@@ -18,7 +18,6 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_configurator.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/browser/data_store.h"
@@ -77,8 +76,7 @@ TestDataReductionProxyRequestOptions::TestDataReductionProxyRequestOptions(
     Client client,
     const std::string& version,
     DataReductionProxyConfig* config)
-    : DataReductionProxyRequestOptions(client, version, config) {
-}
+    : DataReductionProxyRequestOptions(client, version, config) {}
 
 std::string TestDataReductionProxyRequestOptions::GetDefaultKey() const {
   return kTestKey;
@@ -89,8 +87,7 @@ MockDataReductionProxyRequestOptions::MockDataReductionProxyRequestOptions(
     DataReductionProxyConfig* config)
     : TestDataReductionProxyRequestOptions(client, "1.2.3.4", config) {}
 
-MockDataReductionProxyRequestOptions::~MockDataReductionProxyRequestOptions() {
-}
+MockDataReductionProxyRequestOptions::~MockDataReductionProxyRequestOptions() {}
 
 TestDataReductionProxyConfigServiceClient::
     TestDataReductionProxyConfigServiceClient(
@@ -117,8 +114,7 @@ TestDataReductionProxyConfigServiceClient::
 }
 
 TestDataReductionProxyConfigServiceClient::
-    ~TestDataReductionProxyConfigServiceClient() {
-}
+    ~TestDataReductionProxyConfigServiceClient() {}
 
 void TestDataReductionProxyConfigServiceClient::SetNow(const base::Time& time) {
   tick_clock_.SetTime(time);
@@ -164,8 +160,7 @@ TestDataReductionProxyConfigServiceClient::GetBackoffEntry() {
 
 TestDataReductionProxyConfigServiceClient::TestTickClock::TestTickClock(
     const base::Time& initial_time)
-    : time_(initial_time) {
-}
+    : time_(initial_time) {}
 
 base::TimeTicks
 TestDataReductionProxyConfigServiceClient::TestTickClock::NowTicks() const {
@@ -218,7 +213,6 @@ MockDataReductionProxyService::MockDataReductionProxyService(
           prefs,
           std::move(url_loader_factory),
           std::make_unique<TestDataStore>(),
-          nullptr,
           test_network_quality_tracker,
           network::TestNetworkConnectionTracker::GetInstance(),
           nullptr,
@@ -228,8 +222,7 @@ MockDataReductionProxyService::MockDataReductionProxyService(
           std::string(),
           std::string()) {}
 
-MockDataReductionProxyService::~MockDataReductionProxyService() {
-}
+MockDataReductionProxyService::~MockDataReductionProxyService() {}
 
 TestDataReductionProxyService::TestDataReductionProxyService(
     DataReductionProxySettings* settings,
@@ -242,7 +235,6 @@ TestDataReductionProxyService::TestDataReductionProxyService(
           prefs,
           url_loader_factory,
           std::make_unique<TestDataStore>(),
-          nullptr,
           network_quality_tracker,
           network::TestNetworkConnectionTracker::GetInstance(),
           nullptr,
@@ -250,15 +242,9 @@ TestDataReductionProxyService::TestDataReductionProxyService(
           base::TimeDelta(),
           Client::UNKNOWN,
           std::string(),
-          std::string()),
-      pingback_reporting_fraction_(0.0f) {}
+          std::string()) {}
 
 TestDataReductionProxyService::~TestDataReductionProxyService() {}
-
-void TestDataReductionProxyService::SetPingbackReportingFraction(
-    float pingback_reporting_fraction) {
-  pingback_reporting_fraction_ = pingback_reporting_fraction;
-}
 
 void TestDataReductionProxyService::SetIgnoreLongTermBlackListRules(
     bool ignore_long_term_black_list_rules) {
@@ -639,8 +625,7 @@ DataReductionProxyTestContext::test_data_reduction_proxy_service() const {
 }
 
 MockDataReductionProxyService*
-DataReductionProxyTestContext::mock_data_reduction_proxy_service()
-    const {
+DataReductionProxyTestContext::mock_data_reduction_proxy_service() const {
   DCHECK(!(test_context_flags_ & SKIP_SETTINGS_INITIALIZATION));
   DCHECK(test_context_flags_ & USE_MOCK_SERVICE);
   return reinterpret_cast<MockDataReductionProxyService*>(

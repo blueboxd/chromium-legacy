@@ -15,6 +15,7 @@
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/magnifier/docked_magnifier_controller_impl.h"
 #include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/fps_counter.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/window_properties.h"
@@ -49,6 +50,7 @@
 #include "ash/wm/wm_event.h"
 #include "base/stl_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -4139,6 +4141,57 @@ TEST_F(SplitViewTabDraggingTest, IgnoreActivatedTabDraggingWindow) {
   EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(left_window.get()));
   EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(right_window.get()));
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
+}
+
+class SplitViewTabDraggingTestWithClamshellSupport
+    : public SplitViewTabDraggingTest {
+ public:
+  SplitViewTabDraggingTestWithClamshellSupport() = default;
+  ~SplitViewTabDraggingTestWithClamshellSupport() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        ash::features::kDragToSnapInClamshellMode);
+    SplitViewTabDraggingTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(SplitViewTabDraggingTestWithClamshellSupport);
+};
+
+TEST_F(SplitViewTabDraggingTestWithClamshellSupport,
+       DragTabFromSnappedWindowToOverviewAndThenExitTablet) {
+  // Snap a browser window in split view.
+  std::unique_ptr<aura::Window> snapped_window(
+      CreateWindowWithType(gfx::Rect(), AppType::BROWSER));
+  ToggleOverview();
+  split_view_controller()->SnapWindow(snapped_window.get(),
+                                      SplitViewController::LEFT);
+
+  // Drag a tab out of the browser window and into overview.
+  std::unique_ptr<aura::Window> dragged_tab(
+      CreateWindowWithType(gfx::Rect(), AppType::BROWSER));
+  std::unique_ptr<WindowResizer> resizer =
+      StartDrag(dragged_tab.get(), snapped_window.get());
+  DragWindowTo(resizer.get(),
+               gfx::ToEnclosingRect(
+                   Shell::Get()
+                       ->overview_controller()
+                       ->overview_session()
+                       ->GetGridWithRootWindow(snapped_window->GetRootWindow())
+                       ->GetDropTarget()
+                       ->target_bounds())
+                   .CenterPoint());
+  CompleteDrag(std::move(resizer));
+  EXPECT_TRUE(dragged_tab->GetProperty(kIsShowingInOverviewKey));
+
+  // Switch to clamshell mode and check that |snapped_window| keeps its snapped
+  // window state.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(false);
+  EXPECT_EQ(WindowStateType::kLeftSnapped,
+            WindowState::Get(snapped_window.get())->GetStateType());
 }
 
 class TestWindowDelegateWithWidget : public views::WidgetDelegate {

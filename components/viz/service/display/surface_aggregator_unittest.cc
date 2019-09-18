@@ -383,8 +383,8 @@ class SurfaceAggregatorTest : public testing::Test, public DisplayTimeSource {
                          0);
     auto* quad = pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
     quad->SetNew(shared_state, output_rect, output_rect, render_pass_id, 0,
-                 gfx::RectF(), gfx::Size(), false, gfx::Vector2dF(),
-                 gfx::PointF(), gfx::RectF(), false, 1.0f);
+                 gfx::RectF(), gfx::Size(), gfx::Vector2dF(), gfx::PointF(),
+                 gfx::RectF(), false, 1.0f);
   }
 
   static void AddYUVVideoQuad(RenderPass* pass, const gfx::Rect& output_rect) {

@@ -14,6 +14,18 @@ import zipfile
 from util import build_utils
 from util import diff_utils
 
+_API_LEVEL_VERSION_CODE = [
+    (21, 'L'),
+    (22, 'LolliopoMR1'),
+    (23, 'M'),
+    (24, 'N'),
+    (25, 'NMR1'),
+    (26, 'O'),
+    (27, 'OMR1'),
+    (28, 'P'),
+    (29, 'Q'),
+]
+
 
 class _ProguardOutputFilter(object):
   """ProGuard outputs boring stuff to stdout (ProGuard version, jar path, etc)
@@ -322,6 +334,20 @@ def _CreateDynamicConfig(options):
     ret.append("-applymapping '%s'" % options.apply_mapping)
   if options.repackage_classes:
     ret.append("-repackageclasses '%s'" % options.repackage_classes)
+
+  _min_api = int(options.min_api) if options.min_api else 0
+  for api_level, version_code in _API_LEVEL_VERSION_CODE:
+    annotation_name = 'org.chromium.base.annotations.VerifiesOn' + version_code
+    if api_level > _min_api:
+      ret.append('-keep @interface %s' % annotation_name)
+      ret.append("""\
+-keep,allowobfuscation,allowoptimization @%s class ** {
+  <methods>;
+}""" % annotation_name)
+      ret.append("""\
+-keepclassmembers,allowobfuscation,allowoptimization class ** {
+  @%s <methods>;
+}""" % annotation_name)
   return '\n'.join(ret)
 
 

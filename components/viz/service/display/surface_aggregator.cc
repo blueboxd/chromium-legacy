@@ -668,8 +668,7 @@ void SurfaceAggregator::EmitSurfaceContent(
     RenderPassId remapped_pass_id = RemapPassId(last_pass.id, surface_id);
     quad->SetNew(shared_quad_state, scaled_rect, scaled_visible_rect,
                  remapped_pass_id, 0, gfx::RectF(), gfx::Size(),
-                 /*mask_applies_to_backdrop=*/false, gfx::Vector2dF(),
-                 gfx::PointF(), gfx::RectF(scaled_rect),
+                 gfx::Vector2dF(), gfx::PointF(), gfx::RectF(scaled_rect),
                  /*force_anti_aliasing_off=*/false,
                  /* backdrop_filter_quality*/ 1.0f);
   }
@@ -800,8 +799,7 @@ void SurfaceAggregator::AddColorConversionPass() {
       color_conversion_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   quad->SetNew(shared_quad_state, output_rect, output_rect,
                root_render_pass->id, 0, gfx::RectF(), gfx::Size(),
-               /*mask_applies_to_backdrop=*/false, gfx::Vector2dF(),
-               gfx::PointF(), gfx::RectF(output_rect),
+               gfx::Vector2dF(), gfx::PointF(), gfx::RectF(output_rect),
                /*force_anti_aliasing_off=*/false,
                /*backdrop_filter_quality*/ 1.0f);
   dest_pass_list_->push_back(std::move(color_conversion_pass));
@@ -851,8 +849,7 @@ void SurfaceAggregator::AddDisplayTransformPass() {
       display_transform_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   quad->SetNew(shared_quad_state, output_rect, output_rect,
                root_render_pass->id, 0, gfx::RectF(), gfx::Size(),
-               /*mask_applies_to_backdrop=*/false, gfx::Vector2dF(),
-               gfx::PointF(), gfx::RectF(output_rect),
+               gfx::Vector2dF(), gfx::PointF(), gfx::RectF(output_rect),
                /*force_anti_aliasing_off=*/false,
                /*backdrop_filter_quality*/ 1.0f);
   dest_pass_list_->push_back(std::move(display_transform_pass));

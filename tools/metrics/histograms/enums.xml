@@ -2850,7 +2850,7 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="[20 to 40)"/>
   <int value="2" label="[40 to 60)"/>
   <int value="3" label="[60 to 80)"/>
-  <int value="4" label="[80 to 100) (warmest)"/>
+  <int value="4" label="[80 to 100] (warmest)"/>
 </enum>
 
 <enum name="AshPipEvents">
@@ -10680,6 +10680,16 @@ Called by update_net_error_codes.py.-->
   <int value="2" label="Host prefix"/>
 </enum>
 
+<enum name="CookieSameSiteString">
+  <int value="0" label="No SameSite attribute is present."/>
+  <int value="1" label="SameSite attribute is specified but has no value."/>
+  <int value="2" label="SameSite attribute value is unrecognized."/>
+  <int value="3" label="Lax"/>
+  <int value="4" label="Strict"/>
+  <int value="5" label="None"/>
+  <int value="6" label="Extended"/>
+</enum>
+
 <enum name="CookieSourceScheme">
   <int value="0" label="Secure cookie, source scheme is cryptographic"/>
   <int value="1" label="Secure cookie, source scheme is not cryptographic"/>
@@ -17117,6 +17127,16 @@ Called by update_net_error_codes.py.-->
   </summary>
   <int value="0" label="Cound not get net join info."/>
   <int value="1" label="Cound not bind to domain controller."/>
+</enum>
+
+<enum name="EnterpriseCloudReportingResponse">
+  <summary>Result of uploading an enterprise report.</summary>
+  <int value="0" label="Success"/>
+  <int value="1" label="Network error"/>
+  <int value="2" label="Temporary server error"/>
+  <int value="3" label="DDS concurrency error"/>
+  <int value="4" label="Request too large error"/>
+  <int value="5" label="Other error"/>
 </enum>
 
 <enum name="EnterpriseDeviceManagementStatus">

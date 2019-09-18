@@ -163,7 +163,7 @@ class CC_EXPORT LayerTreeImpl {
   // Other public methods
   // ---------------------------------------------------------------------------
   LayerImpl* root_layer_for_testing() {
-    return layer_list_.empty() ? nullptr : layer_list_[0];
+    return layer_list_.empty() ? nullptr : layer_list_[0].get();
   }
   const RenderSurfaceImpl* RootRenderSurface() const;
   bool LayerListIsEmpty() const;
@@ -191,12 +191,35 @@ class CC_EXPORT LayerTreeImpl {
 
   void ForceRecalculateRasterScales();
 
-  LayerImplList::const_iterator begin() const;
-  LayerImplList::const_iterator end() const;
-  LayerImplList::const_reverse_iterator rbegin() const;
-  LayerImplList::const_reverse_iterator rend() const;
-  LayerImplList::reverse_iterator rbegin();
-  LayerImplList::reverse_iterator rend();
+  // Adapts an iterator of std::unique_ptr<LayerImpl> to an iterator of
+  // LayerImpl*.
+  template <typename Iterator>
+  class IteratorAdapter {
+   public:
+    explicit IteratorAdapter(Iterator it) : it_(it) {}
+    bool operator==(IteratorAdapter o) const { return it_ == o.it_; }
+    bool operator!=(IteratorAdapter o) const { return !(*this == o); }
+    LayerImpl* operator*() const { return it_->get(); }
+    LayerImpl* operator->() const { return it_->get(); }
+    IteratorAdapter& operator++() {
+      ++it_;
+      return *this;
+    }
+
+   private:
+    Iterator it_;
+  };
+  using const_iterator = IteratorAdapter<OwnedLayerImplList::const_iterator>;
+  using const_reverse_iterator =
+      IteratorAdapter<OwnedLayerImplList::const_reverse_iterator>;
+  const_iterator begin() const { return const_iterator(layer_list_.cbegin()); }
+  const_iterator end() const { return const_iterator(layer_list_.cend()); }
+  const_reverse_iterator rbegin() const {
+    return const_reverse_iterator(layer_list_.crbegin());
+  }
+  const_reverse_iterator rend() const {
+    return const_reverse_iterator(layer_list_.crend());
+  }
 
   void SetTransformMutated(ElementId element_id,
                            const gfx::Transform& transform);
@@ -485,11 +508,6 @@ class CC_EXPORT LayerTreeImpl {
   // Append a layer to the list.
   void AddLayer(std::unique_ptr<LayerImpl> layer);
 
-  // Mask layer is special: it's managed by LayerTreeImpl (in layers_), but
-  // not in layer_list_. TODO(wangxianzhu): Remove this when we switch ui
-  // compositor to property based masks.
-  void AddMaskLayer(std::unique_ptr<LayerImpl> mask_layer);
-
   size_t NumLayers();
 
   void DidBecomeActive();
@@ -678,8 +696,6 @@ class CC_EXPORT LayerTreeImpl {
  private:
   friend class LayerTreeHost;
 
-  void AddOwnedLayer(std::unique_ptr<LayerImpl> layer);
-
   TransformNode* PageScaleTransformNode();
   void UpdatePageScaleNode();
 
@@ -725,13 +741,9 @@ class CC_EXPORT LayerTreeImpl {
   // TODO(wangxianzhu): Combine layers_ and layer_list_ when we remove
   // support of mask layers.
 
-  // Contains all managed layers, including layers in layer_list_ and mask
-  // layers.
-  OwnedLayerImplList layers_;
-  // Maps from layer id to layer (for each layer in layers_).
+  OwnedLayerImplList layer_list_;
+  // Maps from layer id to layer.
   LayerImplMap layer_id_map_;
-  // Contains non-mask layers, sorted in draw order.
-  LayerImplList layer_list_;
 
   // Set of layers that need to push properties.
   base::flat_set<LayerImpl*> layers_that_should_push_properties_;

@@ -218,6 +218,7 @@ void DevToolsSession::Detach() {
   agent_->sessions_.erase(this);
   binding_.Close();
   host_ptr_.reset();
+  CHECK(io_session_);
   io_session_->DeleteSoon();
   io_session_ = nullptr;
   agent_->probe_sink_->RemoveDevToolsSession(this);

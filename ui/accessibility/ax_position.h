@@ -670,17 +670,12 @@ class AXPosition {
     return CreateNextAnchorPosition()->IsNullPosition() && AtEndOfAnchor();
   }
 
-  // This method returns a position instead of a node because this allows us to
-  // return the corresponding text offset or child index in the ancestor that
-  // relates to the current position.
-  // Also, this method uses position instead of tree logic to traverse the tree,
-  // because positions can handle moving across multiple trees, while trees
-  // cannot.
-  AXPositionInstance LowestCommonAncestor(const AXPosition& second) const {
+  // This method finds the lowest common AXNodeType of |this| and |second|.
+  AXNodeType* LowestCommonAnchor(const AXPosition& second) const {
     if (IsNullPosition() || second.IsNullPosition())
-      return CreateNullPosition();
+      return nullptr;
     if (GetAnchor() == second.GetAnchor())
-      return Clone();
+      return GetAnchor();
 
     base::stack<AXNodeType*> our_ancestors = GetAncestorAnchors();
     base::stack<AXNodeType*> other_ancestors = second.GetAncestorAnchors();
@@ -692,6 +687,17 @@ class AXPosition {
       our_ancestors.pop();
       other_ancestors.pop();
     }
+    return common_anchor;
+  }
+
+  // This method returns a position instead of a node because this allows us to
+  // return the corresponding text offset or child index in the ancestor that
+  // relates to the current position.
+  // Also, this method uses position instead of tree logic to traverse the tree,
+  // because positions can handle moving across multiple trees, while trees
+  // cannot.
+  AXPositionInstance LowestCommonAncestor(const AXPosition& second) const {
+    AXNodeType* common_anchor = LowestCommonAnchor(second);
     if (!common_anchor)
       return CreateNullPosition();
 

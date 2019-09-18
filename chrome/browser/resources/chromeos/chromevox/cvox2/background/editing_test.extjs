@@ -1178,3 +1178,47 @@ TEST_F('ChromeVoxEditingTest', 'BackwardWordDeleteAcrossParagraphs', function() 
     input.focus();
   });
 });
+
+TEST_F('ChromeVoxEditingTest', 'GrammarErrors', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+    <div contenteditable="true" role="textbox">
+      This <span aria-invalid="grammar">are</span> a test
+    </div>
+    <button id="go">Go</button>
+
+    <script>
+      document.getElementById('go').addEventListener('click', function() {
+        var sel = getSelection();
+        sel.modify('move', 'forward', 'character');
+      }, true);
+    </script>
+  */}, function(root) {
+    var input = root.find({role: RoleType.TEXT_FIELD});
+    var go = root.find({role: RoleType.BUTTON});
+    var moveByChar = go.doDefault.bind(go);
+
+    this.listenOnce(input, 'focus', function() {
+      mockFeedback.call(moveByChar)
+          .expectSpeech('h')
+          .call(moveByChar)
+          .expectSpeech('i')
+          .call(moveByChar)
+          .expectSpeech('s')
+          .call(moveByChar)
+          .expectSpeech(' ')
+
+          .call(moveByChar)
+          .expectSpeech('a', 'Grammar error')
+          .call(moveByChar)
+          .expectSpeech('r')
+          .call(moveByChar)
+          .expectSpeech('e')
+          .call(moveByChar)
+          .expectSpeech(' ', 'Leaving grammar error')
+
+          .replay();
+    });
+    input.focus();
+  });
+});

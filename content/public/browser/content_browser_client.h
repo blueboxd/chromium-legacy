@@ -115,7 +115,6 @@ class SharedURLLoaderFactory;
 namespace service_manager {
 class Identity;
 class Service;
-struct BindSourceInfo;
 }
 
 namespace net {
@@ -950,10 +949,10 @@ class CONTENT_EXPORT ContentBrowserClient {
       RenderFrameHost* render_frame_host,
       mojo::PendingReceiver<blink::mojom::CredentialManager> receiver) {}
 
-  // Content was unable to bind a request for this associated interface, so the
+  // Content was unable to bind a receiver for this associated interface, so the
   // embedder should try. Returns true if the |handle| was actually taken and
   // bound; false otherwise.
-  virtual bool BindAssociatedInterfaceRequestFromFrame(
+  virtual bool BindAssociatedReceiverFromFrame(
       RenderFrameHost* render_frame_host,
       const std::string& interface_name,
       mojo::ScopedInterfaceEndpointHandle* handle);
@@ -967,14 +966,9 @@ class CONTENT_EXPORT ContentBrowserClient {
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle interface_pipe) {}
 
-  // (Currently called only from GPUProcessHost, move somewhere more central).
-  // Called when a request to bind |interface_name| on |interface_pipe| is
-  // received from |source_info.identity|. If the request is bound,
-  // |interface_pipe| will become invalid (taken by the client).
-  virtual void BindInterfaceRequest(
-      const service_manager::BindSourceInfo& source_info,
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle* interface_pipe) {}
+  // Handles an unhandled incoming interface binding request from the GPU
+  // process. Called on the IO thread.
+  virtual void BindGpuHostReceiver(mojo::GenericPendingReceiver receiver) {}
 
   // Called on the main thread to handle an unhandled interface receiver binding
   // request from a render process. See |RenderThread::BindHostReceiver()|.

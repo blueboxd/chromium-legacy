@@ -74,11 +74,10 @@ def UninstallWebViewUpdates(device):
 def CheckWebViewIsUninstalled(device):
   """Throws if WebView is still installed."""
   for webview_package in WEBVIEW_PACKAGES:
-    paths = device.GetApplicationPaths(webview_package)
-    if paths:
+    if device.IsApplicationInstalled(webview_package):
       raise device_errors.CommandFailedError(
-          '{} is still installed on the device at {}'.format(
-              webview_package, paths), device)
+          '{} is still installed on the device'.format(webview_package),
+          device)
 
 
 def RemovePreinstalledWebViews(device):

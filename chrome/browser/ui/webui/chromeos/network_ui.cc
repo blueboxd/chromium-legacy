@@ -44,6 +44,7 @@ namespace {
 constexpr char kAddNetwork[] = "addNetwork";
 constexpr char kGetNetworkProperties[] = "getShillNetworkProperties";
 constexpr char kGetDeviceProperties[] = "getShillDeviceProperties";
+constexpr char kGetEthernetEAP[] = "getShillEthernetEAP";
 constexpr char kOpenCellularActivationUi[] = "openCellularActivationUi";
 constexpr char kShowNetworkDetails[] = "showNetworkDetails";
 constexpr char kShowNetworkConfig[] = "showNetworkConfig";
@@ -106,6 +107,10 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
         base::BindRepeating(
             &NetworkConfigMessageHandler::GetShillDeviceProperties,
             base::Unretained(this)));
+    web_ui()->RegisterMessageCallback(
+        kGetEthernetEAP,
+        base::BindRepeating(&NetworkConfigMessageHandler::GetShillEthernetEAP,
+                            base::Unretained(this)));
     web_ui()->RegisterMessageCallback(
         kOpenCellularActivationUi,
         base::BindRepeating(
@@ -189,6 +194,28 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
             weak_ptr_factory_.GetWeakPtr()),
         base::Bind(&NetworkConfigMessageHandler::ErrorCallback,
                    weak_ptr_factory_.GetWeakPtr(), type, kGetDeviceProperties));
+  }
+
+  void GetShillEthernetEAP(const base::ListValue* arg_list) {
+    NetworkStateHandler::NetworkStateList list;
+    NetworkHandler::Get()->network_state_handler()->GetNetworkListByType(
+        NetworkTypePattern::Primitive(shill::kTypeEthernetEap),
+        true /* configured_only */, false /* visible_only */, 1 /* limit */,
+        &list);
+
+    AllowJavascript();
+    if (list.empty()) {
+      CallJavascriptFunction(
+          base::StringPrintf("NetworkUI.%sResult", kGetEthernetEAP));
+      return;
+    }
+    const NetworkState* eap = list.front();
+    base::Value properties(base::Value::Type::DICTIONARY);
+    properties.SetStringKey("guid", eap->guid());
+    properties.SetStringKey("name", eap->name());
+    properties.SetStringKey("type", eap->type());
+    CallJavascriptFunction(
+        base::StringPrintf("NetworkUI.%sResult", kGetEthernetEAP), properties);
   }
 
   void OpenCellularActivationUi(const base::ListValue* arg_list) {
@@ -324,6 +351,9 @@ void NetworkUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   localized_strings->SetString(
       "favoriteNetworksLabel",
       l10n_util::GetStringUTF16(IDS_NETWORK_UI_FAVORITE_NETWORKS));
+  localized_strings->SetString(
+      "ethernetEapNetworkLabel",
+      l10n_util::GetStringUTF16(IDS_NETWORK_UI_ETHERNET_EAP));
   localized_strings->SetString(
       "devicesLabel", l10n_util::GetStringUTF16(IDS_NETWORK_UI_DEVICES));
 

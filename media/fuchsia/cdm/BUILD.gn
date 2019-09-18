@@ -8,6 +8,7 @@ source_set("cdm") {
   sources = [
     "fuchsia_cdm.cc",
     "fuchsia_cdm.h",
+    "fuchsia_cdm_context.h",
     "fuchsia_cdm_factory.cc",
     "fuchsia_cdm_factory.h",
     "fuchsia_cdm_provider.h",

@@ -1479,12 +1479,14 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
       render_view->GetWidget(), web_frame);
 
   render_widget->Init(std::move(show_callback), web_frame_widget);
-
   render_view->AttachWebFrameWidget(web_frame_widget);
-  // TODO(crbug.com/419087): This was added in 6ccadf770766e89c3 to prevent an
-  // empty ScreenInfo, but the WebView has already been created and initialized
-  // by RenderViewImpl, so this is surely redundant?
+
+  // This call makes sure the page zoom is propagated to the provisional frame
+  // since it has to go through the WebViewImpl, and it may not be be changed
+  // in OnSynchronizeVisualProperties(), which would pass it along if it did
+  // change.
   render_widget->UpdateWebViewWithDeviceScaleFactor();
+  render_widget->OnSynchronizeVisualProperties(params->visual_properties);
 
   // The WebFrame created here was already attached to the Page as its
   // main frame, and the WebFrameWidget has been initialized, so we can call

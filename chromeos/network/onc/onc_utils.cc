@@ -571,11 +571,11 @@ const base::DictionaryValue* GetNetworkConfigForNetworkFromOnc(
   // the respective ONC policy. The EthernetEAP service itself is however never
   // in state "connected". An EthernetEAP policy must be applied, if an Ethernet
   // service is connected using the EAP parameters.
-  const NetworkState* ethernet_eap = NULL;
+  const NetworkState* ethernet_eap = nullptr;
   if (NetworkHandler::IsInitialized()) {
     ethernet_eap =
         NetworkHandler::Get()->network_state_handler()->GetEAPForEthernet(
-            network.path());
+            network.path(), /*connected_only=*/true);
   }
 
   // The GUID associated with the EthernetEAP service refers to the ONC policy

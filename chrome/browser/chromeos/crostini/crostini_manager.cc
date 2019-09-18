@@ -71,19 +71,6 @@ chromeos::ConciergeClient* GetConciergeClient() {
   return chromeos::DBusThreadManager::Get()->GetConciergeClient();
 }
 
-void OnConciergeServiceAvailable(CrostiniManager::BoolCallback callback,
-                                 bool success) {
-  if (!success) {
-    LOG(ERROR) << "Concierge service did not become available";
-    std::move(callback).Run(success);
-    return;
-  }
-  VLOG(1) << "Concierge service announced availability";
-  VLOG(1) << "Waiting for Cicerone to announce availability.";
-
-  GetCiceroneClient()->WaitForServiceToBeAvailable(std::move(callback));
-}
-
 // Find any callbacks for the specified |vm_name|, invoke them with
 // |arguments|... and erase them from the map.
 template <typename... Parameters, typename... Arguments>
@@ -849,10 +836,9 @@ void CrostiniManager::OnStartConcierge(BoolCallback callback, bool success) {
     return;
   }
   VLOG(1) << "Concierge service started";
-  VLOG(1) << "Waiting for Concierge to announce availability.";
+  VLOG(1) << "Waiting for Cicerone to announce availability.";
 
-  GetConciergeClient()->WaitForServiceToBeAvailable(
-      base::BindOnce(&OnConciergeServiceAvailable, std::move(callback)));
+  GetCiceroneClient()->WaitForServiceToBeAvailable(std::move(callback));
 }
 
 void CrostiniManager::StopConcierge(BoolCallback callback) {
@@ -1127,7 +1113,6 @@ void CrostiniManager::StartLxdContainer(std::string vm_name,
   request.set_vm_name(std::move(vm_name));
   request.set_container_name(std::move(container_name));
   request.set_owner_id(owner_id_);
-  request.set_async(true);
   if (auto* integration_service =
           drive::DriveIntegrationServiceFactory::GetForProfile(profile_)) {
     request.set_drivefs_mount_path(

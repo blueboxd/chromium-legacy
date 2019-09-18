@@ -47,6 +47,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
+#include "net/cookies/cookie_constants.h"
 #include "net/http/http_util.h"
 
 namespace {
@@ -153,10 +154,16 @@ bool ParsedCookie::IsValid() const {
   return !pairs_.empty();
 }
 
-CookieSameSite ParsedCookie::SameSite() const {
-  return (same_site_index_ == 0)
-             ? CookieSameSite::UNSPECIFIED
-             : StringToCookieSameSite(pairs_[same_site_index_].second);
+CookieSameSite ParsedCookie::SameSite(
+    CookieSameSiteString* samesite_string) const {
+  CookieSameSite samesite = CookieSameSite::UNSPECIFIED;
+  if (same_site_index_ != 0) {
+    samesite = StringToCookieSameSite(pairs_[same_site_index_].second,
+                                      samesite_string);
+  } else if (samesite_string) {
+    *samesite_string = CookieSameSiteString::kUnspecified;
+  }
+  return samesite;
 }
 
 CookiePriority ParsedCookie::Priority() const {

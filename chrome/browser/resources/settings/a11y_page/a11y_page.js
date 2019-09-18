@@ -67,6 +67,26 @@ Polymer({
       },
     },
 
+    /**
+     * Whether the caption settings link opens externally.
+     * @private {boolean}
+     */
+    captionSettingsOpensExternally_: {
+      type: Boolean,
+      value: function() {
+        let opensExternally = false;
+        // <if expr="is_macosx">
+        opensExternally = true;
+        // </if>
+
+        // <if expr="is_win">
+        opensExternally = loadTimeData.getBoolean('isWindows10OrNewer');
+        // </if>
+
+        return opensExternally;
+      },
+    },
+
     // <if expr="chromeos">
     /**
      * Whether to show experimental accessibility features.

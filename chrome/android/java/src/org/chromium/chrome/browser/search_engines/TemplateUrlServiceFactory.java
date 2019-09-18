@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.search_engines;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.search_engines.TemplateUrlService;
 
 /**
@@ -23,7 +24,7 @@ public class TemplateUrlServiceFactory {
     public static TemplateUrlService get() {
         ThreadUtils.assertOnUiThread();
         if (sTemplateUrlService == null) {
-            sTemplateUrlService = nativeGetTemplateUrlService();
+            sTemplateUrlService = TemplateUrlServiceFactoryJni.get().getTemplateUrlService();
         }
         return sTemplateUrlService;
     }
@@ -37,9 +38,12 @@ public class TemplateUrlServiceFactory {
      * TODO(crbug.com/968156): Move to TemplateUrlServiceHelper.
      */
     public static boolean doesDefaultSearchEngineHaveLogo() {
-        return nativeDoesDefaultSearchEngineHaveLogo();
+        return TemplateUrlServiceFactoryJni.get().doesDefaultSearchEngineHaveLogo();
     }
 
-    private static native TemplateUrlService nativeGetTemplateUrlService();
-    private static native boolean nativeDoesDefaultSearchEngineHaveLogo();
+    @NativeMethods
+    interface Natives {
+        TemplateUrlService getTemplateUrlService();
+        boolean doesDefaultSearchEngineHaveLogo();
+    }
 }

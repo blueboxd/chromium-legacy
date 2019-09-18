@@ -22,8 +22,8 @@ import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.suggestions.SuggestionsOfflineModelObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
-import org.chromium.chrome.browser.widget.displaystyle.DisplayStyleObserverAdapter;
-import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
+import org.chromium.chrome.browser.ui.widget.displaystyle.DisplayStyleObserverAdapter;
+import org.chromium.chrome.browser.ui.widget.displaystyle.UiConfig;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 /**

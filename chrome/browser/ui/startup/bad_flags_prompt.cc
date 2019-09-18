@@ -126,11 +126,6 @@ static const char* kBadFlags[] = {
     // updating components won't be performed until shutdown.
     switches::kDisableBestEffortTasks,
 
-    // The UI for Web Bluetooth scanning is not yet implemented. Without the
-    // UI websites can scan for bluetooth without user intervention. Show a
-    // warning until the UI is complete.
-    switches::kEnableWebBluetoothScanning,
-
     // Enables save data feature which can cause user traffic to be proxied via
     // Google's data reduction proxy servers.
     data_reduction_proxy::switches::kEnableDataReductionProxy,

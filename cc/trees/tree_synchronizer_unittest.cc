@@ -109,16 +109,6 @@ void ExpectTreesAreIdentical(Layer* root_layer,
 
     EXPECT_EQ(layer->non_fast_scrollable_region(),
               layer_impl->non_fast_scrollable_region());
-
-    const EffectTree& effect_tree = tree_impl->property_trees()->effect_tree;
-    if (layer->mask_layer()) {
-      SCOPED_TRACE("mask_layer");
-      int mask_layer_id = layer->mask_layer()->id();
-      EXPECT_TRUE(tree_impl->LayerById(mask_layer_id));
-      EXPECT_EQ(
-          mask_layer_id,
-          effect_tree.Node(layer_impl->effect_tree_index())->mask_layer_id);
-    }
   }
 }
 

@@ -55,6 +55,10 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   const AXTreeData& data() const { return data_; }
 
   // AXNode::OwnerTree override.
+  // Returns the globally unique ID of this accessibility tree.
+  AXTreeID GetAXTreeID() const override;
+
+  // AXNode::OwnerTree override.
   // Returns the AXNode with the given |id| if it is part of this AXTree.
   AXNode* GetFromId(int32_t id) const override;
 

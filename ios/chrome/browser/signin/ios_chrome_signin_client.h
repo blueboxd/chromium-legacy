@@ -31,7 +31,6 @@ class IOSChromeSigninClient : public SigninClient {
   void Shutdown() override;
 
   // SigninClient implementation.
-  std::string GetProductVersion() override;
   std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(
       GaiaAuthConsumer* consumer,
       gaia::GaiaSource source) override;

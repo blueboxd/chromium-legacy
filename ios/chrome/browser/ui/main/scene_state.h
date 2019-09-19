@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+@class SceneState;
+
 // Describes the possible scene states.
 // This is an iOS 12 compatible version of UISceneActivationState enum.
 typedef NS_ENUM(NSUInteger, SceneActivationLevel) {
@@ -23,6 +25,17 @@ typedef NS_ENUM(NSUInteger, SceneActivationLevel) {
   SceneActivationLevelForegroundActive
 };
 
+@protocol SceneStateObserver <NSObject>
+
+@optional
+
+// Called whenever the scene state transitions between different activity
+// states.
+- (void)sceneState:(SceneState*)sceneState
+    transitionedToActivationLevel:(SceneActivationLevel)level;
+
+@end
+
 // An object containing the state of a UIWindowScene. One state object
 // corresponds to one scene.
 @interface SceneState : NSObject
@@ -32,6 +45,13 @@ typedef NS_ENUM(NSUInteger, SceneActivationLevel) {
 
 // Window for the associated scene, if any.
 @property(nonatomic, weak) UIWindow* window;
+
+// Adds an observer to this scene state. The observers will be notified about
+// scene state changes per SceneStateObserver protocol.
+- (void)addObserver:(id<SceneStateObserver>)observer;
+// Removes the observer. It's safe to call this at any time, including from
+// SceneStateObserver callbacks.
+- (void)removeObserver:(id<SceneStateObserver>)observer;
 
 @end
 

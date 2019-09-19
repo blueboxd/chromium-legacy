@@ -18,6 +18,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/notifications/notification_resources.h"
+#include "third_party/blink/public/mojom/notifications/notification.mojom.h"
 #include "third_party/blink/public/platform/modules/notifications/web_notification_constants.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 

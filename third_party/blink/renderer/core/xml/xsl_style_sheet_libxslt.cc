@@ -23,6 +23,7 @@
 
 #include <libxml/uri.h>
 #include <libxslt/xsltutils.h>
+#include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/transform_source.h"

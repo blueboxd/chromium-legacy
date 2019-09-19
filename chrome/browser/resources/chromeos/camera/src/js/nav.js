@@ -17,11 +17,6 @@ cca.nav = cca.nav || {};
 cca.App = cca.App || {};
 
 /**
- * @type {!function(): !cca.mojo.MojoConnector}
- */
-cca.App.getMojoConnector;
-
-/**
  * All views stacked in ascending z-order (DOM order) for navigation, and only
  * the topmost visible view is active (clickable/focusable).
  * @type {Array<cca.views.View>}
@@ -223,9 +218,7 @@ cca.nav.onKeyPressed = function(event) {
       break;
     case 'Ctrl-Shift-E':
       (async () => {
-        const deviceOperator =
-            await cca.App.getMojoConnector().getDeviceOperator();
-        if (!deviceOperator) {
+        if (!await cca.mojo.DeviceOperator.isSupported()) {
           cca.toast.show('error_msg_expert_mode_not_supported');
           return;
         }

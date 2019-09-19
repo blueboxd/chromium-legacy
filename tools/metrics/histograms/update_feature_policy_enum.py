@@ -21,7 +21,7 @@ if __name__ == '__main__':
     sys.exit(1)
 
   source_file = 'third_party/blink/public/mojom/feature_policy/' \
-                'feature_policy.mojom'
+                'feature_policy_feature.mojom'
   UpdateHistogramEnum(histogram_enum_name='FeaturePolicyFeature',
                       source_enum_path=source_file,
                       start_marker='^enum FeaturePolicyFeature {',

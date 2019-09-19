@@ -8,6 +8,7 @@
 #include "chrome/browser/media/router/test/mock_media_router.h"
 #include "chrome/common/media_router/media_route_provider_helper.h"
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media_router {
@@ -75,17 +76,23 @@ class MockMojoMediaRouter : public MockMediaRouter, public mojom::MediaRouter {
       GetMediaSinkServiceStatusInternal,
       void(mojom::MediaRouter::GetMediaSinkServiceStatusCallback& callback));
   MOCK_METHOD0(GetMediaSinkServiceStatus, std::string());
-  MOCK_METHOD2(GetMirroringServiceHostForTab,
-               void(int32_t target_tab_id,
-                    mirroring::mojom::MirroringServiceHostRequest request));
-  MOCK_METHOD3(GetMirroringServiceHostForDesktop,
-               void(int32_t initiator_tab_id,
-                    const std::string& desktop_stream_id,
-                    mirroring::mojom::MirroringServiceHostRequest request));
-  MOCK_METHOD3(GetMirroringServiceHostForOffscreenTab,
-               void(const GURL& presentation_url,
-                    const std::string& presentation_id,
-                    mirroring::mojom::MirroringServiceHostRequest request));
+  MOCK_METHOD2(
+      GetMirroringServiceHostForTab,
+      void(int32_t target_tab_id,
+           mojo::PendingReceiver<mirroring::mojom::MirroringServiceHost>
+               receiver));
+  MOCK_METHOD3(
+      GetMirroringServiceHostForDesktop,
+      void(int32_t initiator_tab_id,
+           const std::string& desktop_stream_id,
+           mojo::PendingReceiver<mirroring::mojom::MirroringServiceHost>
+               receiver));
+  MOCK_METHOD3(
+      GetMirroringServiceHostForOffscreenTab,
+      void(const GURL& presentation_url,
+           const std::string& presentation_id,
+           mojo::PendingReceiver<mirroring::mojom::MirroringServiceHost>
+               receiver));
 };
 
 }  // namespace media_router

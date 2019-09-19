@@ -33,12 +33,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "services/network/public/cpp/cors/cors.h"
-#include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_response.h"
-#include "third_party/blink/renderer/platform/blob/blob_data.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_load_info.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_load_timing.h"
 #include "third_party/blink/renderer/platform/network/http_header_map.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -49,6 +44,9 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
+
+class ResourceLoadTiming;
+struct ResourceLoadInfo;
 
 // A ResourceResponse is a "response" object used in blink. Conceptually
 // it is https://fetch.spec.whatwg.org/#concept-response, but it contains
@@ -163,6 +161,7 @@ class PLATFORM_EXPORT ResourceResponse final {
   explicit ResourceResponse(const KURL& current_request_url);
   ResourceResponse(const ResourceResponse&);
   ResourceResponse& operator=(const ResourceResponse&);
+  ~ResourceResponse();
 
   bool IsNull() const { return is_null_; }
   bool IsHTTP() const;
@@ -334,13 +333,9 @@ class PLATFORM_EXPORT ResourceResponse final {
     response_type_ = value;
   }
   // https://html.spec.whatwg.org/C/#cors-same-origin
-  bool IsCorsSameOrigin() const {
-    return network::cors::IsCorsSameOriginResponseType(response_type_);
-  }
+  bool IsCorsSameOrigin() const;
   // https://html.spec.whatwg.org/C/#cors-cross-origin
-  bool IsCorsCrossOrigin() const {
-    return network::cors::IsCorsCrossOriginResponseType(response_type_);
-  }
+  bool IsCorsCrossOrigin() const;
 
   // See network::ResourceResponseInfo::url_list_via_service_worker.
   const Vector<KURL>& UrlListViaServiceWorker() const {
@@ -529,8 +524,7 @@ class PLATFORM_EXPORT ResourceResponse final {
   bool from_archive_ = false;
 
   // https://fetch.spec.whatwg.org/#concept-response-type
-  network::mojom::FetchResponseType response_type_ =
-      network::mojom::FetchResponseType::kDefault;
+  network::mojom::FetchResponseType response_type_;
 
   // HTTP version used in the response, if known.
   HTTPVersion http_version_ = kHTTPVersionUnknown;

@@ -6,6 +6,8 @@
 #define CONTENT_BROWSER_NATIVE_FILE_SYSTEM_NATIVE_FILE_SYSTEM_TRANSFER_TOKEN_IMPL_H_
 
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/fileapi/isolated_context.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_transfer_token.mojom.h"
@@ -24,9 +26,14 @@ class NativeFileSystemTransferTokenImpl
 
   enum class HandleType { kFile, kDirectory };
 
-  NativeFileSystemTransferTokenImpl(const storage::FileSystemURL& url,
-                                    const SharedHandleState& handle_state,
-                                    HandleType type);
+  NativeFileSystemTransferTokenImpl(
+      const storage::FileSystemURL& url,
+      const SharedHandleState& handle_state,
+      HandleType type,
+      NativeFileSystemManagerImpl* manager,
+      mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
+          receiver);
+  ~NativeFileSystemTransferTokenImpl() override;
 
   const base::UnguessableToken& token() const { return token_; }
   const storage::FileSystemURL& url() const { return url_; }
@@ -36,10 +43,15 @@ class NativeFileSystemTransferTokenImpl
   void GetInternalID(GetInternalIDCallback callback) override;
 
  private:
+  void OnMojoDisconnect();
+
   const base::UnguessableToken token_;
   const storage::FileSystemURL url_;
   const SharedHandleState handle_state_;
   const HandleType type_;
+  // Raw pointer since NativeFileSystemManagerImpl owns |this|.
+  NativeFileSystemManagerImpl* const manager_;
+  mojo::Receiver<blink::mojom::NativeFileSystemTransferToken> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeFileSystemTransferTokenImpl);
 };

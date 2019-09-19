@@ -262,8 +262,8 @@ const base::Feature kFileHandlingAPI{"FileHandlingAPI",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Allows for synchronous XHR requests during page dismissal
-const base::Feature kForbidSyncXHRInPageDismissal{
-    "ForbidSyncXHRInPageDismissal", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kAllowSyncXHRInPageDismissal{
+    "AllowSyncXHRInPageDismissal", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Prefetch request properties are updated to be privacy-preserving. See
 // crbug.com/988956.

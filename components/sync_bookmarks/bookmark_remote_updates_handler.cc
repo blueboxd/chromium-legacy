@@ -128,6 +128,17 @@ void ApplyRemoteUpdate(
     LogProblematicBookmark(RemoteBookmarkUpdateError::kConflictingTypes);
     return;
   }
+
+  // If there is a different GUID in the specifics and it is valid, we must
+  // replace the entire node in order to use it, as GUIDs are immutable. Further
+  // updates are then applied to the new node instead.
+  if (update_entity.specifics.bookmark().guid() != node->guid() &&
+      base::IsValidGUID(update_entity.specifics.bookmark().guid())) {
+    const bookmarks::BookmarkNode* old_node = node;
+    node = ReplaceBookmarkNodeGUID(
+        node, update_entity.specifics.bookmark().guid(), model);
+    tracker->UpdateBookmarkNodePointer(old_node, node);
+  }
   UpdateBookmarkNodeFromSpecifics(update_entity.specifics.bookmark(), node,
                                   model, favicon_service);
   // Compute index information before updating the |tracker|.

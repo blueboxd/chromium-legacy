@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "crypto/scoped_nss_types.h"
 
 namespace net {
@@ -26,13 +27,18 @@ namespace chromeos {
 // ShutDown() has been called, but must be outlived by this object.
 //
 // All of the methods must be called on the UI thread.
-class SystemTokenCertDBInitializer final {
+class SystemTokenCertDBInitializer final : public CryptohomeClient::Observer {
  public:
   SystemTokenCertDBInitializer();
-  ~SystemTokenCertDBInitializer();
+  ~SystemTokenCertDBInitializer() override;
 
   // Stops making new requests to D-Bus services.
   void ShutDown();
+
+  // CryptohomeClient::Observer:
+  void TpmInitStatusUpdated(bool ready,
+                            bool owned,
+                            bool was_owned_this_boot) override;
 
  private:
   // Called once the cryptohome service is available.
@@ -40,12 +46,19 @@ class SystemTokenCertDBInitializer final {
 
   // This is a callback for the cryptohome TpmIsReady query. Note that this is
   // not a listener which would be called once TPM becomes ready if it was not
-  // ready on startup (e.g. after device enrollment), see crbug.com/725500.
+  // ready on startup - that event is observed by TpmInitStatusUpdated().
   void OnGotTpmIsReady(base::Optional<bool> tpm_is_ready);
+
+  // Starts loading the system slot and initializing the corresponding NSS cert
+  // database, unless it was already started before.
+  void MaybeStartInitializingDatabase();
 
   // Initializes the global system token NSSCertDatabase with |system_slot|.
   // Also starts NetworkCertLoader with the system token database.
   void InitializeDatabase(crypto::ScopedPK11Slot system_slot);
+
+  // Whether the database initialization was started.
+  bool started_initializing_ = false;
 
   // Global NSSCertDatabase which sees the system token.
   std::unique_ptr<net::NSSCertDatabase> system_token_cert_database_;

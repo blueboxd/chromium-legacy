@@ -44,4 +44,8 @@ void CameraAppDeviceProviderImpl::GetCameraAppDeviceWithDeviceId(
   bridge_->GetCameraAppDevice(*device_id, std::move(callback));
 }
 
+void CameraAppDeviceProviderImpl::IsSupported(IsSupportedCallback callback) {
+  bridge_->IsSupported(std::move(callback));
+}
+
 }  // namespace media

@@ -57,7 +57,7 @@ class CORE_EXPORT InertEffect final : public AnimationEffect {
 
  protected:
   void UpdateChildrenAndEffects() const override {}
-  double CalculateTimeToEffectChange(
+  AnimationTimeDelta CalculateTimeToEffectChange(
       bool forwards,
       double inherited_time,
       double time_to_next_iteration) const override;

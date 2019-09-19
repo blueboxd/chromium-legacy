@@ -13,6 +13,7 @@
 #include "media/base/media_switches.h"
 #include "media/gpu/buildflags.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
+#include "media/gpu/macros.h"
 #include "media/gpu/media_gpu_export.h"
 
 #if defined(OS_WIN)
@@ -124,8 +125,21 @@ GpuVideoDecodeAcceleratorFactory::GetDecoderCapabilities(
   // change between calls.
   // TODO(sandersd): Move cache to GpuMojoMediaClient once
   // |video_decode_accelerator_capabilities| is removed from GPUInfo.
-  static const gpu::VideoDecodeAcceleratorCapabilities capabilities =
+  static gpu::VideoDecodeAcceleratorCapabilities capabilities =
       GetDecoderCapabilitiesInternal(gpu_preferences, workarounds);
+
+#if BUILDFLAG(USE_V4L2_CODEC)
+  // V4L2-only: the decoder devices may not be visible at the time the GPU
+  // process is starting. If the capabilities vector is empty, try to query the
+  // devices again in the hope that they will have appeared in the meantime.
+  // TODO(crbug.com/948147): trigger query when an device add/remove event
+  // (e.g. via udev) has happened instead.
+  if (capabilities.supported_profiles.empty()) {
+    VLOGF(1) << "Capabilities empty, querying again...";
+    capabilities = GetDecoderCapabilitiesInternal(gpu_preferences, workarounds);
+  }
+#endif
+
   return capabilities;
 }
 

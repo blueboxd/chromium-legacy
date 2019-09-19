@@ -10,7 +10,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
-#include "components/unified_consent/feature.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
@@ -103,34 +102,7 @@
                     (SigninInteractionControllerCompletionCallback)completion {
   signin_metrics::LogSigninAccessPointStarted(accessPoint_, promoAction_);
   completionCallback_ = [completion copy];
-  ios::ChromeIdentityService* identityService =
-      ios::GetChromeBrowserProvider()->GetChromeIdentityService();
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    [self showSigninViewControllerWithIdentity:identity identityAdded:NO];
-  } else if (identity) {
-    DCHECK(identityService->IsValidIdentity(identity));
-    DCHECK(!signinViewController_);
-    [self showSigninViewControllerWithIdentity:identity identityAdded:NO];
-  } else if (identityService->HasIdentities()) {
-    DCHECK(!signinViewController_);
-    [self showSigninViewControllerWithIdentity:nil identityAdded:NO];
-  } else {
-    identityInteractionManager_ =
-        identityService->CreateChromeIdentityInteractionManager(browserState_,
-                                                                self);
-    if (!identityInteractionManager_) {
-      // Abort sign-in if the ChromeIdentityInteractionManager returned is
-      // nil (this can happen when the iOS internal provider is not used).
-      [self runCompletionCallbackWithSigninResult:SigninResultCanceled];
-      return;
-    }
-
-    __weak SigninInteractionController* weakSelf = self;
-    [identityInteractionManager_
-        addAccountWithCompletion:^(ChromeIdentity* identity, NSError* error) {
-          [weakSelf handleIdentityAdded:identity error:error shouldSignIn:YES];
-        }];
-  }
+  [self showSigninViewControllerWithIdentity:identity identityAdded:NO];
 }
 
 - (void)reAuthenticateWithCompletion:

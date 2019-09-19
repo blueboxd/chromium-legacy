@@ -111,6 +111,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/extensions/login_screen/login_state/session_state_changed_event_dispatcher.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_engagement_metrics_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_token_forwarder_factory.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
@@ -352,6 +353,9 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
 #if BUILDFLAG(ENABLE_PLUGINS)
   PluginPrefsFactory::GetInstance();
+#endif
+#if defined(OS_CHROMEOS)
+  plugin_vm::PluginVmEngagementMetricsService::Factory::GetInstance();
 #endif
   PrefsTabHelper::GetServiceInstance();
 #if defined(OS_CHROMEOS)

@@ -37,12 +37,16 @@
 #include "base/time/time.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/http/http_response_info.h"
-#include "services/network/public/mojom/fetch_api.mojom-shared.h"
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_security_style.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
+
+namespace network {
+namespace mojom {
+enum class FetchResponseType : int32_t;
+}
+}  // namespace network
 
 namespace blink {
 

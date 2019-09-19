@@ -99,3 +99,8 @@ FakeOAuth2AccessTokenManager*
 FakeProfileOAuth2TokenService::GetFakeAccessTokenManager() {
   return static_cast<FakeOAuth2AccessTokenManager*>(GetAccessTokenManager());
 }
+
+bool FakeProfileOAuth2TokenService::IsFakeProfileOAuth2TokenServiceForTesting()
+    const {
+  return true;
+}

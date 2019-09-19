@@ -3619,6 +3619,14 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="Not changed &amp; Failure"/>
 </enum>
 
+<enum name="AutofillAssistantPaymentRequestMandatoryPostalCode">
+  <int value="0" label="Required &amp; initially wrong &amp; success"/>
+  <int value="1" label="Required &amp; initially wrong &amp; failure"/>
+  <int value="2" label="Required &amp; initially right &amp; success"/>
+  <int value="3" label="Required &amp; initially right &amp; failure"/>
+  <int value="4" label="Not required"/>
+</enum>
+
 <enum name="AutofillAssistantPaymentRequestPrefilled">
   <int value="0" label="Initially complete &amp; Success"/>
   <int value="1" label="Initially incomplete &amp; Success"/>
@@ -10607,6 +10615,13 @@ Called by update_net_error_codes.py.-->
     The cookie deletion occurred because the server overwrote it with an already
     expired cookie (this is a common idiom for server deletions of cookies).
   </int>
+</enum>
+
+<enum name="CookieEffectiveSameSite">
+  <int value="0" label="No restriction"/>
+  <int value="1" label="Lax mode"/>
+  <int value="2" label="Strict mode"/>
+  <int value="3" label="Lax mode allow unsafe"/>
 </enum>
 
 <enum name="CookieLoadProblem">
@@ -24709,7 +24724,7 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="FeaturePolicyFeature">
-<!-- Generated from third_party/blink/public/mojom/feature_policy/feature_policy.mojom.-->
+<!-- Generated from third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom.-->
 
 <!-- Obsolete / deprecated features in this enum should be prefixed with
 "Deprecated: " -->
@@ -32388,6 +32403,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="icon_url with missing favicon"/>
   <int value="3" label="Invalid icon_url"/>
   <int value="4" label="Non-unique meta_info keys"/>
+  <int value="5" label="Invalid GUID"/>
 </enum>
 
 <enum name="InvalidOriginReason">
@@ -34749,6 +34765,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2075725205" label="disable-new-zip-unpacker"/>
   <int value="-2074080173" label="NightLight:disabled"/>
   <int value="-2073617042" label="CrostiniWebUIInstaller:enabled"/>
+  <int value="-2071515296" label="allow-sync-xhr-in-page-dismissal"/>
   <int value="-2067166422" label="enable-slimming-paint-v2"/>
   <int value="-2066541315" label="Mus:enabled"/>
   <int value="-2064164557" label="DownloadsForeground:disabled"/>
@@ -36812,6 +36829,7 @@ from previous Chrome versions.
   <int value="651421878" label="VideoRotateToFullscreen:enabled"/>
   <int value="651844675" label="EasyUnlockPromotions:enabled"/>
   <int value="652561231" label="CustomContextMenu:enabled"/>
+  <int value="654199907" label="AllowSyncXHRInPageDismissal:disabled"/>
   <int value="656864700" label="FillOnAccountSelectHttp:disabled"/>
   <int value="659086147" label="OverlayScrollbarFlashWhenMouseEnter:enabled"/>
   <int value="661020875" label="AutofillSaveCardShowNoThanks:disabled"/>
@@ -37182,6 +37200,7 @@ from previous Chrome versions.
   <int value="1182356056" label="MacV2GPUSandbox:enabled"/>
   <int value="1183260592" label="WebAssemblyBaseline:enabled"/>
   <int value="1183431946" label="v8-cache-options"/>
+  <int value="1184225265" label="AllowSyncXHRInPageDismissal:enabled"/>
   <int value="1185424279" label="enable-media-router"/>
   <int value="1190035852" label="MediaRemoting:enabled"/>
   <int value="1192302892" label="gesture-typing"/>
@@ -64618,26 +64637,52 @@ Full version information for the fingerprint enum values:
 
   <int value="0" label="Invalid Patch Level"/>
   <int value="170393600" label="Windows XP (Build 2600.0)"/>
+  <int value="170417534" label="Windows XP (Build 2600.23934)"/>
+  <int value="170418111" label="Windows XP (Build 2600.24511)"/>
   <int value="393216000" label="Windows Vista (Build 6000.0)"/>
   <int value="393216615" label="Windows Vista (Build 6000.615)"/>
   <int value="393239964" label="Windows Vista (Build 6000.23964)"/>
+  <int value="393240180" label="Windows Vista (Build 6000.24180)"/>
+  <int value="393306030"
+      label="Windows Vista Service Pack 1 (Build 6001.24494)"/>
   <int value="393347072" label="Windows Vista Service Pack 2 (Build 6002.0)"/>
+  <int value="393347339" label="Windows Vista Service Pack 2 (Build 6002.267)"/>
   <int value="393347957" label="Windows Vista Service Pack 2 (Build 6002.885)"/>
+  <int value="393348022" label="Windows Vista Service Pack 2 (Build 6002.950)"/>
+  <int value="393348159"
+      label="Windows Vista Service Pack 2 (Build 6002.1087)"/>
   <int value="393371006"
       label="Windows Vista Service Pack 2 (Build 6002.23934)"/>
   <int value="498073600" label="Windows 7 (Build 7600.0)"/>
+  <int value="498073615" label="Windows 7 (Build 7600.15)"/>
   <int value="498073839" label="Windows 7 (Build 7600.239)"/>
   <int value="498073867" label="Windows 7 (Build 7600.267)"/>
+  <int value="498073895" label="Windows 7 (Build 7600.295)"/>
+  <int value="498073929" label="Windows 7 (Build 7600.329)"/>
+  <int value="498073956" label="Windows 7 (Build 7600.356)"/>
   <int value="498074215" label="Windows 7 (Build 7600.615)"/>
+  <int value="498074278" label="Windows 7 (Build 7600.678)"/>
+  <int value="498074320" label="Windows 7 (Build 7600.720)"/>
+  <int value="498074337" label="Windows 7 (Build 7600.737)"/>
   <int value="498074485" label="Windows 7 (Build 7600.885)"/>
+  <int value="498074550" label="Windows 7 (Build 7600.950)"/>
+  <int value="498074606" label="Windows 7 (Build 7600.1006)"/>
+  <int value="498074868" label="Windows 7 (Build 7600.1268)"/>
+  <int value="498074931" label="Windows 7 (Build 7600.1331)"/>
   <int value="498075814" label="Windows 7 (Build 7600.2214)"/>
   <int value="498083606" label="Windows 7 (Build 7600.10006)"/>
+  <int value="498092782" label="Windows 7 (Build 7600.19182)"/>
   <int value="498097242" label="Windows 7 (Build 7600.23642)"/>
   <int value="498097889" label="Windows 7 (Build 7600.24289)"/>
+  <int value="498097934" label="Windows 7 (Build 7600.24334)"/>
   <int value="498097985" label="Windows 7 (Build 7600.24385)"/>
+  <int value="498098005" label="Windows 7 (Build 7600.24405)"/>
+  <int value="498098043" label="Windows 7 (Build 7600.24443)"/>
   <int value="498098068" label="Windows 7 (Build 7600.24468)"/>
   <int value="498098094" label="Windows 7 (Build 7600.24494)"/>
   <int value="498098096" label="Windows 7 (Build 7600.24496)"/>
+  <int value="498098111" label="Windows 7 (Build 7600.24511)"/>
+  <int value="498098119" label="Windows 7 (Build 7600.24519)"/>
   <int value="498139136" label="Windows 7 Service Pack 1 (Build 7601.0)"/>
   <int value="498162751" label="Windows 7 Service Pack 1 (Build 7601.23615)"/>
   <int value="498162778" label="Windows 7 Service Pack 1 (Build 7601.23642)"/>
@@ -64669,6 +64714,7 @@ Full version information for the fingerprint enum values:
   <int value="498163242" label="Windows 7 Service Pack 1 (Build 7601.24106)"/>
   <int value="498163266" label="Windows 7 Service Pack 1 (Build 7601.24130)"/>
   <int value="498163272" label="Windows 7 Service Pack 1 (Build 7601.24136)"/>
+  <int value="498163273" label="Windows 7 Service Pack 1 (Build 7601.24137)"/>
   <int value="498163285" label="Windows 7 Service Pack 1 (Build 7601.24149)"/>
   <int value="498163286" label="Windows 7 Service Pack 1 (Build 7601.24150)"/>
   <int value="498163316" label="Windows 7 Service Pack 1 (Build 7601.24180)"/>
@@ -64696,29 +64742,48 @@ Full version information for the fingerprint enum values:
   <int value="498163627" label="Windows 7 Service Pack 1 (Build 7601.24491)"/>
   <int value="498163630" label="Windows 7 Service Pack 1 (Build 7601.24494)"/>
   <int value="498163632" label="Windows 7 Service Pack 1 (Build 7601.24496)"/>
+  <int value="498163647" label="Windows 7 Service Pack 1 (Build 7601.24511)"/>
+  <int value="498163651" label="Windows 7 Service Pack 1 (Build 7601.24515)"/>
+  <int value="498163655" label="Windows 7 Service Pack 1 (Build 7601.24519)"/>
   <int value="550502400" label="Windows 8 Preview (Build 8400.0)"/>
   <int value="602931200" label="Windows 8 (Build 9200.0)"/>
+  <int value="602931201" label="Windows 8 (Build 9200.1)"/>
   <int value="602931251" label="Windows 8 (Build 9200.51)"/>
   <int value="602931439" label="Windows 8 (Build 9200.239)"/>
   <int value="602931467" label="Windows 8 (Build 9200.267)"/>
+  <int value="602931495" label="Windows 8 (Build 9200.295)"/>
+  <int value="602931529" label="Windows 8 (Build 9200.329)"/>
+  <int value="602931556" label="Windows 8 (Build 9200.356)"/>
   <int value="602931607" label="Windows 8 (Build 9200.407)"/>
   <int value="602931703" label="Windows 8 (Build 9200.503)"/>
+  <int value="602931790" label="Windows 8 (Build 9200.590)"/>
   <int value="602931815" label="Windows 8 (Build 9200.615)"/>
   <int value="602931852" label="Windows 8 (Build 9200.652)"/>
+  <int value="602931878" label="Windows 8 (Build 9200.678)"/>
+  <int value="602931937" label="Windows 8 (Build 9200.737)"/>
   <int value="602932029" label="Windows 8 (Build 9200.829)"/>
   <int value="602932085" label="Windows 8 (Build 9200.885)"/>
+  <int value="602932115" label="Windows 8 (Build 9200.915)"/>
   <int value="602932116" label="Windows 8 (Build 9200.916)"/>
+  <int value="602932150" label="Windows 8 (Build 9200.950)"/>
+  <int value="602932200" label="Windows 8 (Build 9200.1000)"/>
+  <int value="602932205" label="Windows 8 (Build 9200.1005)"/>
+  <int value="602932206" label="Windows 8 (Build 9200.1006)"/>
   <int value="602932287" label="Windows 8 (Build 9200.1087)"/>
   <int value="602932618" label="Windows 8 (Build 9200.1418)"/>
   <int value="602941206" label="Windows 8 (Build 9200.10006)"/>
   <int value="602947584" label="Windows 8 (Build 9200.16384)"/>
   <int value="602950601" label="Windows 8 (Build 9200.19401)"/>
+  <int value="602950631" label="Windows 8 (Build 9200.19431)"/>
+  <int value="602950663" label="Windows 8 (Build 9200.19463)"/>
   <int value="602953820" label="Windows 8 (Build 9200.22620)"/>
+  <int value="602953872" label="Windows 8 (Build 9200.22672)"/>
   <int value="602954001" label="Windows 8 (Build 9200.22801)"/>
   <int value="629145600" label="Windows 8.1 (Build 9600.0)"/>
   <int value="629164143" label="Windows 8.1 (Build 9600.18543)"/>
   <int value="629164219" label="Windows 8.1 (Build 9600.18619)"/>
   <int value="629164221" label="Windows 8.1 (Build 9600.18621)"/>
+  <int value="629164254" label="Windows 8.1 (Build 9600.18654)"/>
   <int value="629164284" label="Windows 8.1 (Build 9600.18684)"/>
   <int value="629164287" label="Windows 8.1 (Build 9600.18687)"/>
   <int value="629164320" label="Windows 8.1 (Build 9600.18720)"/>
@@ -64761,6 +64826,9 @@ Full version information for the fingerprint enum values:
   <int value="629164999" label="Windows 8.1 (Build 9600.19399)"/>
   <int value="629165001" label="Windows 8.1 (Build 9600.19401)"/>
   <int value="629165004" label="Windows 8.1 (Build 9600.19404)"/>
+  <int value="629165031" label="Windows 8.1 (Build 9600.19431)"/>
+  <int value="629165060" label="Windows 8.1 (Build 9600.19460)"/>
+  <int value="629165063" label="Windows 8.1 (Build 9600.19463)"/>
   <int value="671090283" label="Windows 10 1507 (Build 10240.1643)"/>
   <int value="671090292" label="Windows 10 1507 (Build 10240.1652)"/>
   <int value="671090299" label="Windows 10 1507 (Build 10240.1659)"/>
@@ -64775,12 +64843,15 @@ Full version information for the fingerprint enum values:
   <int value="671105085" label="Windows 10 1507 (Build 10240.16445)"/>
   <int value="671105103" label="Windows 10 1507 (Build 10240.16463)"/>
   <int value="671105127" label="Windows 10 1507 (Build 10240.16487)"/>
+  <int value="671105160" label="Windows 10 1507 (Build 10240.16520)"/>
   <int value="671105189" label="Windows 10 1507 (Build 10240.16549)"/>
   <int value="671105206" label="Windows 10 1507 (Build 10240.16566)"/>
+  <int value="671105230" label="Windows 10 1507 (Build 10240.16590)"/>
   <int value="671105241" label="Windows 10 1507 (Build 10240.16601)"/>
   <int value="671105284" label="Windows 10 1507 (Build 10240.16644)"/>
   <int value="671105323" label="Windows 10 1507 (Build 10240.16683)"/>
   <int value="671105365" label="Windows 10 1507 (Build 10240.16725)"/>
+  <int value="671105372" label="Windows 10 1507 (Build 10240.16732)"/>
   <int value="671105411" label="Windows 10 1507 (Build 10240.16771)"/>
   <int value="671105494" label="Windows 10 1507 (Build 10240.16854)"/>
   <int value="671105582" label="Windows 10 1507 (Build 10240.16942)"/>
@@ -64826,6 +64897,8 @@ Full version information for the fingerprint enum values:
   <int value="671106858" label="Windows 10 1507 (Build 10240.18218)"/>
   <int value="671106884" label="Windows 10 1507 (Build 10240.18244)"/>
   <int value="671106915" label="Windows 10 1507 (Build 10240.18275)"/>
+  <int value="671106945" label="Windows 10 1507 (Build 10240.18305)"/>
+  <int value="671106973" label="Windows 10 1507 (Build 10240.18333)"/>
   <int value="693764096" label="Windows 10 1511 (Build 10586.0)"/>
   <int value="693764099" label="Windows 10 1511 (Build 10586.3)"/>
   <int value="693764107" label="Windows 10 1511 (Build 10586.11)"/>
@@ -64960,6 +65033,9 @@ Full version information for the fingerprint enum values:
   <int value="943262704" label="Windows 10 1607 (Build 14393.3056)"/>
   <int value="943262733" label="Windows 10 1607 (Build 14393.3085)"/>
   <int value="943262763" label="Windows 10 1607 (Build 14393.3115)"/>
+  <int value="943262792" label="Windows 10 1607 (Build 14393.3144)"/>
+  <int value="943262829" label="Windows 10 1607 (Build 14393.3181)"/>
+  <int value="943262852" label="Windows 10 1607 (Build 14393.3204)"/>
   <int value="987168768" label="Windows 10 1703 (Build 15063.0)"/>
   <int value="987168779" label="Windows 10 1703 (Build 15063.11)"/>
   <int value="987168781" label="Windows 10 1703 (Build 15063.13)"/>
@@ -65025,6 +65101,10 @@ Full version information for the fingerprint enum values:
   <int value="987170666" label="Windows 10 1703 (Build 15063.1898)"/>
   <int value="987170696" label="Windows 10 1703 (Build 15063.1928)"/>
   <int value="987170723" label="Windows 10 1703 (Build 15063.1955)"/>
+  <int value="987170755" label="Windows 10 1703 (Build 15063.1987)"/>
+  <int value="987170756" label="Windows 10 1703 (Build 15063.1988)"/>
+  <int value="987170789" label="Windows 10 1703 (Build 15063.2021)"/>
+  <int value="987170813" label="Windows 10 1703 (Build 15063.2045)"/>
   <int value="1068171279" label="Windows 10 1709 (Build 16299.15)"/>
   <int value="1068171283" label="Windows 10 1709 (Build 16299.19)"/>
   <int value="1068171328" label="Windows 10 1709 (Build 16299.64)"/>
@@ -65076,6 +65156,9 @@ Full version information for the fingerprint enum values:
   <int value="1068172503" label="Windows 10 1709 (Build 16299.1239)"/>
   <int value="1068172532" label="Windows 10 1709 (Build 16299.1268)"/>
   <int value="1068172560" label="Windows 10 1709 (Build 16299.1296)"/>
+  <int value="1068172595" label="Windows 10 1709 (Build 16299.1331)"/>
+  <int value="1068172629" label="Windows 10 1709 (Build 16299.1365)"/>
+  <int value="1068172651" label="Windows 10 1709 (Build 16299.1387)"/>
   <int value="1122893825" label="Windows 10 1803 (Build 17134.1)"/>
   <int value="1122893829" label="Windows 10 1803 (Build 17134.5)"/>
   <int value="1122893856" label="Windows 10 1803 (Build 17134.32)"/>
@@ -65117,6 +65200,9 @@ Full version information for the fingerprint enum values:
   <int value="1122894684" label="Windows 10 1803 (Build 17134.860)"/>
   <int value="1122894709" label="Windows 10 1803 (Build 17134.885)"/>
   <int value="1122894739" label="Windows 10 1803 (Build 17134.915)"/>
+  <int value="1122894774" label="Windows 10 1803 (Build 17134.950)"/>
+  <int value="1122894808" label="Windows 10 1803 (Build 17134.984)"/>
+  <int value="1122894830" label="Windows 10 1803 (Build 17134.1006)"/>
   <int value="1164115969" label="Windows 10 1809 (Build 17763.1)"/>
   <int value="1164115985" label="Windows 10 1809 (Build 17763.17)"/>
   <int value="1164116023" label="Windows 10 1809 (Build 17763.55)"/>
@@ -65146,6 +65232,9 @@ Full version information for the fingerprint enum values:
   <int value="1164116561" label="Windows 10 1809 (Build 17763.593)"/>
   <int value="1164116583" label="Windows 10 1809 (Build 17763.615)"/>
   <int value="1164116620" label="Windows 10 1809 (Build 17763.652)"/>
+  <int value="1164116646" label="Windows 10 1809 (Build 17763.678)"/>
+  <int value="1164116688" label="Windows 10 1809 (Build 17763.720)"/>
+  <int value="1164116705" label="Windows 10 1809 (Build 17763.737)"/>
   <int value="1203372033" label="Windows 10 1903 (Build 18362.1)"/>
   <int value="1203372062" label="Windows 10 1903 (Build 18362.30)"/>
   <int value="1203372085" label="Windows 10 1903 (Build 18362.53)"/>
@@ -65160,9 +65249,19 @@ Full version information for the fingerprint enum values:
   <int value="1203372296" label="Windows 10 1903 (Build 18362.264)"/>
   <int value="1203372298" label="Windows 10 1903 (Build 18362.266)"/>
   <int value="1203372299" label="Windows 10 1903 (Build 18362.267)"/>
+  <int value="1203372327" label="Windows 10 1903 (Build 18362.295)"/>
+  <int value="1203372357" label="Windows 10 1903 (Build 18362.325)"/>
+  <int value="1203372359" label="Windows 10 1903 (Build 18362.327)"/>
+  <int value="1203372361" label="Windows 10 1903 (Build 18362.329)"/>
+  <int value="1203372388" label="Windows 10 1903 (Build 18362.356)"/>
   <int value="1203382032" label="Windows 10 1903 (Build 18362.10000)"/>
   <int value="1203382037" label="Windows 10 1903 (Build 18362.10005)"/>
   <int value="1203382038" label="Windows 10 1903 (Build 18362.10006)"/>
+  <int value="1203382044" label="Windows 10 1903 (Build 18362.10012)"/>
+  <int value="1203382045" label="Windows 10 1903 (Build 18362.10013)"/>
+  <int value="1203382046" label="Windows 10 1903 (Build 18362.10014)"/>
+  <int value="1203382047" label="Windows 10 1903 (Build 18362.10015)"/>
+  <int value="1203382051" label="Windows 10 1903 (Build 18362.10019)"/>
   <int value="1239155688" label="Windows 10 Insider (Build 18908.1000)"/>
   <int value="1240073192" label="Windows 10 Insider (Build 18922.1000)"/>
   <int value="1240728552" label="Windows 10 Insider (Build 18932.1000)"/>

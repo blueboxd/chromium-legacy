@@ -14,8 +14,9 @@
 #include "components/autofill/core/common/mojom/test_autofill_types.mojom.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/autofill/core/common/signatures_util.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
@@ -196,10 +197,10 @@ class AutofillTypeTraitsTestImpl : public testing::Test,
  public:
   AutofillTypeTraitsTestImpl() {}
 
-  mojom::TypeTraitsTestPtr GetTypeTraitsTestProxy() {
-    mojom::TypeTraitsTestPtr proxy;
-    bindings_.AddBinding(this, mojo::MakeRequest(&proxy));
-    return proxy;
+  mojo::PendingRemote<mojom::TypeTraitsTest> GetTypeTraitsTestRemote() {
+    mojo::PendingRemote<mojom::TypeTraitsTest> remote;
+    receivers_.Add(this, remote.InitWithNewPipeAndPassReceiver());
+    return remote;
   }
 
   // mojom::TypeTraitsTest:
@@ -256,7 +257,7 @@ class AutofillTypeTraitsTestImpl : public testing::Test,
  private:
   base::test::TaskEnvironment task_environment_;
 
-  mojo::BindingSet<TypeTraitsTest> bindings_;
+  mojo::ReceiverSet<TypeTraitsTest> receivers_;
 };
 
 void ExpectFormFieldData(const FormFieldData& expected,
@@ -350,8 +351,8 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormFieldData) {
   input.typed_value = base::ASCIIToUTF16("TestTypedValue");
 
   base::RunLoop loop;
-  mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
-  proxy->PassFormFieldData(
+  mojo::Remote<mojom::TypeTraitsTest> remote(GetTypeTraitsTestRemote());
+  remote->PassFormFieldData(
       input, base::BindOnce(&ExpectFormFieldData, input, loop.QuitClosure()));
   loop.Run();
 }
@@ -365,8 +366,8 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormData) {
                      mojom::ButtonTitleType::BUTTON_ELEMENT_SUBMIT_TYPE));
 
   base::RunLoop loop;
-  mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
-  proxy->PassFormData(
+  mojo::Remote<mojom::TypeTraitsTest> remote(GetTypeTraitsTestRemote());
+  remote->PassFormData(
       input, base::BindOnce(&ExpectFormData, input, loop.QuitClosure()));
   loop.Run();
 }
@@ -376,8 +377,8 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormFieldDataPredictions) {
   CreateTestFieldDataPredictions("TestSignature", &input);
 
   base::RunLoop loop;
-  mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
-  proxy->PassFormFieldDataPredictions(
+  mojo::Remote<mojom::TypeTraitsTest> remote(GetTypeTraitsTestRemote());
+  remote->PassFormFieldDataPredictions(
       input, base::BindOnce(&ExpectFormFieldDataPredictions, input,
                             loop.QuitClosure()));
   loop.Run();
@@ -397,8 +398,8 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormDataPredictions) {
   input.fields.push_back(field_predict);
 
   base::RunLoop loop;
-  mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
-  proxy->PassFormDataPredictions(
+  mojo::Remote<mojom::TypeTraitsTest> remote(GetTypeTraitsTestRemote());
+  remote->PassFormDataPredictions(
       input,
       base::BindOnce(&ExpectFormDataPredictions, input, loop.QuitClosure()));
   loop.Run();
@@ -409,8 +410,8 @@ TEST_F(AutofillTypeTraitsTestImpl, PassPasswordFormFillData) {
   CreateTestPasswordFormFillData(&input);
 
   base::RunLoop loop;
-  mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
-  proxy->PassPasswordFormFillData(
+  mojo::Remote<mojom::TypeTraitsTest> remote(GetTypeTraitsTestRemote());
+  remote->PassPasswordFormFillData(
       input,
       base::BindOnce(&ExpectPasswordFormFillData, input, loop.QuitClosure()));
   loop.Run();
@@ -422,8 +423,8 @@ TEST_F(AutofillTypeTraitsTestImpl, PasswordFormGenerationData) {
   input.confirmation_password_renderer_id = 5789u;
 
   base::RunLoop loop;
-  mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
-  proxy->PassPasswordFormGenerationData(
+  mojo::Remote<mojom::TypeTraitsTest> remote(GetTypeTraitsTestRemote());
+  remote->PassPasswordFormGenerationData(
       input, base::BindOnce(&ExpectPasswordFormGenerationData, input,
                             loop.QuitClosure()));
   loop.Run();
@@ -434,8 +435,8 @@ TEST_F(AutofillTypeTraitsTestImpl, PassPasswordGenerationUIData) {
   CreatePasswordGenerationUIData(&input);
 
   base::RunLoop loop;
-  mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
-  proxy->PassPasswordGenerationUIData(
+  mojo::Remote<mojom::TypeTraitsTest> remote(GetTypeTraitsTestRemote());
+  remote->PassPasswordGenerationUIData(
       input, base::BindOnce(&ExpectPasswordGenerationUIData, input,
                             loop.QuitClosure()));
   loop.Run();
@@ -446,8 +447,8 @@ TEST_F(AutofillTypeTraitsTestImpl, PassPasswordForm) {
   CreateTestPasswordForm(&input);
 
   base::RunLoop loop;
-  mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
-  proxy->PassPasswordForm(
+  mojo::Remote<mojom::TypeTraitsTest> remote(GetTypeTraitsTestRemote());
+  remote->PassPasswordForm(
       input, base::BindOnce(&ExpectPasswordForm, input, loop.QuitClosure()));
   loop.Run();
 }
@@ -457,8 +458,8 @@ TEST_F(AutofillTypeTraitsTestImpl, PassFormsPredictionsMap) {
   CreateTestFormsPredictionsMap(&input);
 
   base::RunLoop loop;
-  mojom::TypeTraitsTestPtr proxy = GetTypeTraitsTestProxy();
-  proxy->PassFormsPredictionsMap(
+  mojo::Remote<mojom::TypeTraitsTest> remote(GetTypeTraitsTestRemote());
+  remote->PassFormsPredictionsMap(
       input,
       base::BindOnce(&ExpectFormsPredictionsMap, input, loop.QuitClosure()));
   loop.Run();

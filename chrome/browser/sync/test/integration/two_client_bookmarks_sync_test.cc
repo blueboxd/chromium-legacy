@@ -1779,25 +1779,35 @@ IN_PROC_BROWSER_TEST_P(TwoClientBookmarksSyncTestIncludingUssTests,
     }
   }
 
+  ASSERT_EQ(2, GetBookmarkBarNode(1)->GetIndexOf(folderA[1]));
+  ASSERT_EQ(1, GetBookmarkBarNode(1)->GetIndexOf(folderB[1]));
+  ASSERT_EQ(0, GetBookmarkBarNode(1)->GetIndexOf(folderC[1]));
+
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 
-  // Simultaneously rename folder A on both clients.
-  SetTitle(0, folderA[0], "Folder A++");
-  SetTitle(1, folderA[1], "Folder A--");
+  // Simultaneously rename folder A on both clients. We must retrieve the nodes
+  // directly from the model as one of them will have been replaced during merge
+  // for GUID reassignment.
+  SetTitle(0, GetBookmarkBarNode(0)->children()[2].get(), "Folder A++");
+  SetTitle(1, GetBookmarkBarNode(1)->children()[2].get(), "Folder A--");
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 
-  // Simultaneously rename folder B on both clients.
-  SetTitle(0, folderB[0], "Folder B++");
-  SetTitle(1, folderB[1], "Folder B--");
+  // Simultaneously rename folder B on both clients. We must retrieve the nodes
+  // directly from the model as one of them will have been replaced during merge
+  // for GUID reassignment.
+  SetTitle(0, GetBookmarkBarNode(0)->children()[1].get(), "Folder B++");
+  SetTitle(1, GetBookmarkBarNode(1)->children()[1].get(), "Folder B--");
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 
-  // Simultaneously rename folder C on both clients.
-  SetTitle(0, folderC[0], "Folder C++");
-  SetTitle(1, folderC[1], "Folder C--");
+  // Simultaneously rename folder C on both clients. We must retrieve the nodes
+  // directly from the model as one of them will have been replaced during merge
+  // for GUID reassignment.
+  SetTitle(0, GetBookmarkBarNode(0)->children()[0].get(), "Folder C++");
+  SetTitle(1, GetBookmarkBarNode(1)->children()[0].get(), "Folder C--");
   ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_FALSE(ContainsDuplicateBookmarks(0));
 }

@@ -71,8 +71,9 @@ gfx::ImageSkia ColorImage(const gfx::ImageSkia& image, SkColor color) {
 
 std::unique_ptr<views::BoxLayout> CreateBoxLayout(
     views::BoxLayout::Orientation orientation,
-    views::BoxLayout::CrossAxisAlignment cross_axis_alignment) {
-  auto layout = std::make_unique<views::BoxLayout>(orientation);
+    views::BoxLayout::CrossAxisAlignment cross_axis_alignment,
+    gfx::Insets insets = gfx::Insets()) {
+  auto layout = std::make_unique<views::BoxLayout>(orientation, insets);
   layout->set_cross_axis_alignment(cross_axis_alignment);
   return layout;
 }
@@ -366,6 +367,29 @@ void ProfileMenuViewBase::AddSelectableProfile(const gfx::Image& image,
   RegisterClickAction(button, std::move(action));
 }
 
+void ProfileMenuViewBase::AddProfileShortcutFeatureButton(
+    const gfx::ImageSkia& icon,
+    const base::string16& text,
+    base::RepeatingClosure action) {
+  constexpr int kIconSize = 28;
+
+  // Initialize layout if this is the first time a button is added.
+  if (!profile_shortcut_features_container_->GetLayoutManager()) {
+    profile_shortcut_features_container_->SetLayoutManager(
+        CreateBoxLayout(views::BoxLayout::Orientation::kHorizontal,
+                        views::BoxLayout::CrossAxisAlignment::kCenter,
+                        gfx::Insets(0, 0, 0, /*right=*/kMenuEdgeMargin)));
+  }
+
+  views::Button* button = profile_shortcut_features_container_->AddChildView(
+      std::make_unique<HoverButton>(this, SizeImage(icon, kIconSize),
+                                    base::string16()));
+  button->SetTooltipText(text);
+  button->SetBorder(nullptr);
+
+  RegisterClickAction(button, std::move(action));
+}
+
 void ProfileMenuViewBase::AddProfileFeatureButton(
     const gfx::ImageSkia& icon,
     const base::string16& text,
@@ -488,6 +512,7 @@ void ProfileMenuViewBase::Reset() {
       views::BoxLayout::Orientation::kVertical));
 
   // Create and add new component containers in the correct order.
+  // First, add the bordered box with the identity and feature buttons.
   auto bordered_box_container = std::make_unique<views::View>();
   identity_info_container_ =
       bordered_box_container->AddChildView(std::make_unique<views::View>());
@@ -499,9 +524,20 @@ void ProfileMenuViewBase::Reset() {
       bordered_box_container->AddChildView(std::make_unique<views::View>());
   components->AddChildView(
       CreateBorderedBoxView(std::move(bordered_box_container)));
-
+  // Second, add the profile header.
+  auto profile_header = std::make_unique<views::View>();
+  views::BoxLayout* profile_header_layout =
+      profile_header->SetLayoutManager(std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kHorizontal));
   profile_heading_container_ =
-      components->AddChildView(std::make_unique<views::View>());
+      profile_header->AddChildView(std::make_unique<views::View>());
+  profile_header_layout->SetFlexForView(profile_heading_container_, 1);
+  profile_shortcut_features_container_ =
+      profile_header->AddChildView(std::make_unique<views::View>());
+  profile_header_layout->SetFlexForView(profile_shortcut_features_container_,
+                                        0);
+  components->AddChildView(std::move(profile_header));
+  // Third, add the profile buttons at the bottom.
   selectable_profiles_container_ =
       components->AddChildView(std::make_unique<views::View>());
   profile_features_container_ =

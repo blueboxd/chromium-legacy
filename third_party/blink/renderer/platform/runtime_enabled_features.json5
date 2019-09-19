@@ -120,6 +120,11 @@
       status: "stable",
     },
     {
+      name: "AllowSyncXHRInPageDismissal",
+      origin_trial_feature_name: "AllowSyncXHRInPageDismissal",
+      status: "experimental",
+    },
+    {
       name: "AnimationWorklet",
       origin_trial_feature_name: "AnimationWorklet",
       status: "experimental",
@@ -698,10 +703,6 @@
       // a Chromium level feature.
     },
     // For simulating Android's overlay fullscreen video in web tests on Linux.
-    {
-      name: "ForbidSyncXHRInPageDismissal",
-      status: "experimental",
-    },
     {
       name: "ForcedColors",
     },

@@ -49,13 +49,11 @@ struct UserData {
   ~UserData();
 
   bool succeed = false;
+  std::unique_ptr<autofill::AutofillProfile> contact_profile;
   std::unique_ptr<autofill::CreditCard> card;
   std::unique_ptr<autofill::AutofillProfile> shipping_address;
   std::unique_ptr<autofill::AutofillProfile> billing_address;
   std::string login_choice_identifier;
-  std::string payer_name;
-  std::string payer_phone;
-  std::string payer_email;
   TermsAndConditionsState terms_and_conditions = NOT_SELECTED;
 };
 

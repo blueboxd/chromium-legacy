@@ -14,8 +14,8 @@ namespace chromeos {
 namespace machine_learning {
 
 MachineLearningInternalsPageHandler::MachineLearningInternalsPageHandler(
-    mojom::PageHandlerRequest request)
-    : binding_(this, std::move(request)) {}
+    mojo::PendingReceiver<mojom::PageHandler> receiver)
+    : receiver_(this, std::move(receiver)) {}
 
 MachineLearningInternalsPageHandler::~MachineLearningInternalsPageHandler() =
     default;

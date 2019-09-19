@@ -319,6 +319,7 @@ void ImeAdapterAndroid::CommitText(JNIEnv* env,
 
   rwhi->ImeCommitText(text16, ime_text_spans, gfx::Range::InvalidRange(),
                       relative_cursor_pos);
+  rwhi->OnImeTextCommittedEvent(text16);
 }
 
 void ImeAdapterAndroid::FinishComposingText(JNIEnv* env,

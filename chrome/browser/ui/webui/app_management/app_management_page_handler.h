@@ -10,7 +10,10 @@
 #include "chrome/browser/ui/webui/app_management/app_management.mojom.h"
 #include "chrome/browser/ui/webui/app_management/app_management_shelf_delegate_chromeos.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -26,9 +29,10 @@ class AppManagementPageHandler : public app_management::mojom::PageHandler,
 #endif  // OS_CHROMEOS
 {
  public:
-  AppManagementPageHandler(app_management::mojom::PageHandlerRequest request,
-                           app_management::mojom::PagePtr page,
-                           Profile* profile);
+  AppManagementPageHandler(
+      mojo::PendingReceiver<app_management::mojom::PageHandler> receiver,
+      mojo::PendingRemote<app_management::mojom::Page> page,
+      Profile* profile);
   ~AppManagementPageHandler() override;
 
 #if defined(OS_CHROMEOS)
@@ -68,9 +72,9 @@ class AppManagementPageHandler : public app_management::mojom::PageHandler,
       const arc::mojom::ArcPackageInfo& package_info) override;
 #endif  // OS_CHROMEOS
 
-  mojo::Binding<app_management::mojom::PageHandler> binding_;
+  mojo::Receiver<app_management::mojom::PageHandler> receiver_;
 
-  app_management::mojom::PagePtr page_;
+  mojo::Remote<app_management::mojom::Page> page_;
 
   Profile* profile_;
 

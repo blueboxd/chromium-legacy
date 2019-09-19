@@ -7,9 +7,9 @@ window.onunload = function () {
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url, false);
         xhr.send(null);
-        window.parent.completed("FAIL: sync XHR completed successfully");
+        window.parent.completed("PASS: sync XHR completed successfully");
     } catch (e) {
-        window.parent.completed("PASS: sync XHR during unload failed: " + e.message);
+        window.parent.completed("FAIL: sync XHR during unload failed: " + e.message);
     }
 };
 window.onload = function () {

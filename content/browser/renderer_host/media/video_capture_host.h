@@ -37,9 +37,10 @@ class CONTENT_EXPORT VideoCaptureHost
                    MediaStreamManager* media_stream_manager);
   ~VideoCaptureHost() override;
 
-  static void Create(uint32_t render_process_id,
-                     MediaStreamManager* media_stream_manager,
-                     media::mojom::VideoCaptureHostRequest request);
+  static void Create(
+      uint32_t render_process_id,
+      MediaStreamManager* media_stream_manager,
+      mojo::PendingReceiver<media::mojom::VideoCaptureHost> receiver);
 
   // Interface for notifying RenderProcessHost instance about active video
   // capture stream changes.

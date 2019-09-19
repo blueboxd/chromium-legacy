@@ -23,6 +23,8 @@
 #error "This file requires ARC support."
 #endif
 
+NSString* const kMaskedPasswordTitle = @"••••••••";
+
 @interface ManualFillCredentialItem ()
 
 // The credential for this item.
@@ -210,7 +212,8 @@ static const CGFloat NoMultiplier = 1.0;
   [verticalLeadViews addObject:self.usernameButton];
 
   if (credential.password.length) {
-    [self.passwordButton setTitle:@"••••••••" forState:UIControlStateNormal];
+    [self.passwordButton setTitle:kMaskedPasswordTitle
+                         forState:UIControlStateNormal];
     self.passwordButton.accessibilityLabel =
         l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_HIDDEN_LABEL);
     [verticalLeadViews addObject:self.passwordButton];

@@ -188,6 +188,9 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     // Non-standard APIs
     [MeasureAs=DocumentCaretRangeFromPoint] Range caretRangeFromPoint([DefaultValue=Undefined] optional long x, [DefaultValue=Undefined] optional long y);
 
+    // Storage Access API
+    [CallWith=ScriptState, NewObject, RuntimeEnabled=StorageAccessAPI] Promise<boolean> hasStorageAccess();
+    [CallWith=ScriptState, NewObject, RuntimeEnabled=StorageAccessAPI] Promise<void> requestStorageAccess();
 
     // https://w3c.github.io/webappsec-feature-policy/#the-policy-object
     [RuntimeEnabled=FeaturePolicyJavaScriptInterface] readonly attribute FeaturePolicy featurePolicy;

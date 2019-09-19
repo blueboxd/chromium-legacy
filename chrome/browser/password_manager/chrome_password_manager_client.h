@@ -178,6 +178,8 @@ class ChromePasswordManagerClient
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
       std::unique_ptr<password_manager::SavingFlowMetricsRecorder>
           saving_flow_recorder);
+
+  void OnImeTextCommittedEvent(const base::string16& text_str) override;
 #endif  // defined(OS_ANDROID)
 
 #if defined(ON_FOCUS_PING_ENABLED)
@@ -250,9 +252,10 @@ class ChromePasswordManagerClient
   void OnPaste() override;
 #endif
 
+  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
+
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if !defined(OS_ANDROID)
-  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
   // content::RenderWidgetHost::InputEventObserver overrides.
   void OnInputEvent(const blink::WebInputEvent&) override;
 #endif

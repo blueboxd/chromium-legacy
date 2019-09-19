@@ -29,8 +29,7 @@ enum StreamType {
 // Status code for getting camera app device.
 enum GetCameraAppDeviceStatus {
   SUCCESS = 0,
-  ERROR_NON_V3 = 1,
-  ERROR_INVALID_ID = 2,
+  ERROR_INVALID_ID = 1,
 };
 
 // The purpose of this capture is to help the camera device decide optimal
@@ -45,11 +44,15 @@ enum CaptureIntent {
 // Chrome (Receiver).
 interface CameraAppDeviceProvider {
   // Gets the interface to communicate with specific camera device given by
-  // |source_id|. If the |status| is not success, the |device| would be
-  // null.
+  // |source_id|. If the |status| is not success, the |device| would be null.
   GetCameraAppDevice(string source_id)
       => (GetCameraAppDeviceStatus status,
           pending_remote<CameraAppDevice>? device);
+
+  // Checks if the device supports direct communication between camera devices
+  // and camera app. Currently only devices running camera HAL v3 support this
+  // feature.
+  IsSupported() => (bool is_supported);
 };
 
 // Interface for communication between Chrome Camera App (Remote) and Chrome
@@ -66,18 +69,24 @@ interface CameraAppHelper {
   // as a byte array.
   OnIntentHandled(uint32 intent_id, bool is_success,
                   array<uint8> captured_data);
+
+  // Checks if device is under tablet mode currently.
+  IsTabletMode() => (bool is_tablet_mode);
 };
 
 // Inner interface that used to communicate between browser process (Remote) and
 // the Video Capture service (Receiver).
 interface CameraAppDeviceBridge {
-  // Gets the interface to communicate with corresponding camera device given by
-  // |device_id|. Note that it only succeeds when running on Camera HAL v3
-  // stack. The |status| contains the result and the |device| interface
-  // is passed when it succeeds. Otherwise, the |device| would be null.
+  // Gets the interface to communicate with specific camera device given by
+  // |device_id|. If the |status| is not success, the |device| would be null.
   GetCameraAppDevice(string device_id)
       => (GetCameraAppDeviceStatus status,
           pending_remote<CameraAppDevice>? device);
+
+  // Checks if the device supports direct communication between camera devices
+  // and camera app. Currently only devices running camera HAL v3 support this
+  // feature.
+  IsSupported() => (bool is_supported);
 };
 
 // Interface for communication between Chrome Camera App (Remote) and camera

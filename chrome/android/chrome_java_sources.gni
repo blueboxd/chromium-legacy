@@ -1355,6 +1355,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/preferences/password/PasswordManagerHandlerProvider.java",
   "java/src/org/chromium/chrome/browser/preferences/password/PasswordReauthenticationFragment.java",
   "java/src/org/chromium/chrome/browser/preferences/password/PasswordEditingBridge.java",
+  "java/src/org/chromium/chrome/browser/preferences/password/PasswordEditingDelegate.java",
+  "java/src/org/chromium/chrome/browser/preferences/password/PasswordEditingDelegateProvider.java",
   "java/src/org/chromium/chrome/browser/preferences/password/PasswordUIView.java",
   "java/src/org/chromium/chrome/browser/preferences/password/ProgressBarDialogFragment.java",
   "java/src/org/chromium/chrome/browser/preferences/password/ReauthenticationManager.java",

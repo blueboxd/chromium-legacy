@@ -33,9 +33,6 @@
 
 #include <unicode/locid.h>
 #include <unicode/uscript.h>
-#include <usp10.h>
-#include <wchar.h>
-#include <windows.h>
 
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/dwrite_font_proxy/dwrite_font_proxy.mojom-blink.h"

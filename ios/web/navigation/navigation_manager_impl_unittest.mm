@@ -2633,6 +2633,19 @@ TEST_P(NavigationManagerTest, CommitNilPendingItem) {
             navigation_manager()->GetLastCommittedItem()->GetURL());
 }
 
+// Tests that NavigationManagerImpl::CommitPendingItem() for an invalid URL
+// doesn't crash.
+TEST_P(NavigationManagerTest, CommitEmptyPendingItem) {
+  [mock_wk_list_ setCurrentURL:@"http://www.url.com/1"
+                  backListURLs:nil
+               forwardListURLs:nil];
+
+  // Call CommitPendingItem() with a valid pending item.
+  auto item = std::make_unique<web::NavigationItemImpl>();
+  item->SetURL(GURL::EmptyGURL());
+  navigation_manager()->CommitPendingItem(std::move(item));
+}
+
 // Tests NavigationManagerImpl::CommitPendingItem() with a valid pending item.
 TEST_P(NavigationManagerTest, CommitNonNilPendingItem) {
   // Create navigation manager with a single forward item and no back items.

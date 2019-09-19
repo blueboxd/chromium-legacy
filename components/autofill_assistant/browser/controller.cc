@@ -15,6 +15,7 @@
 #include "base/task/post_task.h"
 #include "base/time/tick_clock.h"
 #include "base/values.h"
+#include "components/autofill_assistant/browser/actions/collect_user_data_action.h"
 #include "components/autofill_assistant/browser/controller_observer.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/metrics.h"
@@ -979,27 +980,12 @@ void Controller::SetShippingAddress(
   UpdateCollectUserDataActions();
 }
 
-void Controller::SetBillingAddress(
-    std::unique_ptr<autofill::AutofillProfile> address) {
+void Controller::SetContactInfo(
+    std::unique_ptr<autofill::AutofillProfile> profile) {
   if (!user_data_)
     return;
 
-  user_data_->billing_address = std::move(address);
-  for (ControllerObserver& observer : observers_) {
-    observer.OnUserDataChanged(user_data_.get());
-  }
-  UpdateCollectUserDataActions();
-}
-
-void Controller::SetContactInfo(std::string name,
-                                std::string phone,
-                                std::string email) {
-  if (!user_data_)
-    return;
-
-  user_data_->payer_name = name;
-  user_data_->payer_phone = phone;
-  user_data_->payer_email = email;
+  user_data_->contact_profile = std::move(profile);
   for (ControllerObserver& observer : observers_) {
     observer.OnUserDataChanged(user_data_.get());
   }
@@ -1009,6 +995,19 @@ void Controller::SetContactInfo(std::string name,
 void Controller::SetCreditCard(std::unique_ptr<autofill::CreditCard> card) {
   if (!user_data_)
     return;
+
+  autofill::AutofillProfile* billing_profile =
+      !card || card->billing_address_id().empty()
+          ? nullptr
+          : GetPersonalDataManager()->GetProfileByGUID(
+                card->billing_address_id());
+  if (billing_profile) {
+    auto billing_address =
+        std::make_unique<autofill::AutofillProfile>(*billing_profile);
+    user_data_->billing_address = std::move(billing_address);
+  } else {
+    user_data_->billing_address.reset();
+  }
 
   user_data_->card = std::move(card);
   for (ControllerObserver& observer : observers_) {
@@ -1050,35 +1049,8 @@ void Controller::UpdateCollectUserDataActions() {
     return;
   }
 
-  bool contact_info_ok = (!collect_user_data_options_->request_payer_name ||
-                          !user_data_->payer_name.empty()) &&
-                         (!collect_user_data_options_->request_payer_email ||
-                          !user_data_->payer_email.empty()) &&
-                         (!collect_user_data_options_->request_payer_phone ||
-                          !user_data_->payer_phone.empty());
-
-  bool shipping_address_ok = !collect_user_data_options_->request_shipping ||
-                             user_data_->shipping_address;
-
-  bool payment_method_ok =
-      !collect_user_data_options_->request_payment_method || user_data_->card;
-
-  bool billing_address_ok =
-      !collect_user_data_options_->require_billing_postal_code ||
-      (user_data_->billing_address &&
-       !user_data_->billing_address->GetRawInfo(autofill::ADDRESS_HOME_ZIP)
-            .empty());
-
-  bool terms_ok =
-      user_data_->terms_and_conditions != NOT_SELECTED ||
-      collect_user_data_options_->accept_terms_and_conditions_text.empty();
-
-  bool login_ok = !collect_user_data_options_->request_login_choice ||
-                  !user_data_->login_choice_identifier.empty();
-
-  bool confirm_button_enabled = contact_info_ok && shipping_address_ok &&
-                                payment_method_ok && billing_address_ok &&
-                                terms_ok && login_ok;
+  bool confirm_button_enabled = CollectUserDataAction::IsUserDataComplete(
+      GetPersonalDataManager(), *user_data_, *collect_user_data_options_);
 
   UserAction confirm(collect_user_data_options_->confirm_action);
   confirm.SetEnabled(confirm_button_enabled);

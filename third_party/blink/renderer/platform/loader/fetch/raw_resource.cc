@@ -236,6 +236,10 @@ SingleCachedMetadataHandler* RawResource::ScriptCacheHandler() {
   return static_cast<SingleCachedMetadataHandler*>(Resource::CacheHandler());
 }
 
+scoped_refptr<BlobDataHandle> RawResource::DownloadedBlob() const {
+  return downloaded_blob_;
+}
+
 void RawResource::Trace(Visitor* visitor) {
   visitor->Trace(bytes_consumer_for_preload_);
   Resource::Trace(visitor);
@@ -402,6 +406,9 @@ Resource::MatchStatus RawResource::CanReuse(
 
   return Resource::CanReuse(new_fetch_parameters);
 }
+
+void RawResourceClient::DidDownloadToBlob(Resource*,
+                                          scoped_refptr<BlobDataHandle>) {}
 
 RawResourceClientStateChecker::RawResourceClientStateChecker()
     : state_(kNotAddedAsClient) {}

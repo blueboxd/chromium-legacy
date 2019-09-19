@@ -21,17 +21,10 @@ cca.views.camera = cca.views.camera || {};
 
 /**
  * Creates a controller for the video preview of Camera view.
- * @param {cca.mojo.MojoConnector} mojoConnector
  * @param {function()} onNewStreamNeeded Callback to request new stream.
  * @constructor
  */
-cca.views.camera.Preview = function(mojoConnector, onNewStreamNeeded) {
-  /**
-   * @type {cca.mojo.MojoConnector}
-   * @private
-   */
-  this.mojoConnector_ = mojoConnector;
-
+cca.views.camera.Preview = function(onNewStreamNeeded) {
   /**
    * @type {function()}
    * @private
@@ -332,7 +325,7 @@ cca.views.camera.Preview.prototype.enableShowMetadata_ = async function() {
     }
   };
 
-  const deviceOperator = await this.mojoConnector_.getDeviceOperator();
+  const deviceOperator = await cca.mojo.DeviceOperator.getInstance();
   if (!deviceOperator) {
     return;
   }
@@ -352,7 +345,7 @@ cca.views.camera.Preview.prototype.disableShowMetadata_ = async function() {
     return;
   }
 
-  const deviceOperator = await this.mojoConnector_.getDeviceOperator();
+  const deviceOperator = await cca.mojo.DeviceOperator.getInstance();
   if (!deviceOperator) {
     return;
   }

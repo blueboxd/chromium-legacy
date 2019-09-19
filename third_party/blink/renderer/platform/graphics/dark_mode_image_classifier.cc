@@ -39,12 +39,13 @@ DarkModeImageClassifier::DarkModeImageClassifier()
 
 DarkModeClassification DarkModeImageClassifier::Classify(
     Image* image,
-    const FloatRect& src_rect) {
+    const FloatRect& src_rect,
+    const FloatRect& dest_rect) {
   DarkModeClassification result = image->GetDarkModeClassification(src_rect);
   if (result != DarkModeClassification::kNotClassified)
     return result;
 
-  result = image->CheckTypeSpecificConditionsForDarkMode(src_rect, this);
+  result = image->CheckTypeSpecificConditionsForDarkMode(dest_rect, this);
   if (result != DarkModeClassification::kNotClassified) {
     image->AddDarkModeClassification(src_rect, result);
     return result;

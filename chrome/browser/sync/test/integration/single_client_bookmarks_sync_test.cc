@@ -991,6 +991,94 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
                                             originator_client_item_id));
 }
 
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
+                       ApplyRemoteUpdateWithValidGUID) {
+  // This test is only relevant for USS code path and when BookmarkNode GUID
+  // replacement is enabled.
+  if (!base::FeatureList::IsEnabled(switches::kSyncUSSBookmarks))
+    return;
+
+  // Create a bookmark.
+  const GURL url = GURL("https://foo.com");
+  fake_server::EntityBuilderFactory entity_builder_factory;
+  fake_server::BookmarkEntityBuilder bookmark_builder =
+      entity_builder_factory.NewBookmarkEntityBuilder("Seattle Sounders FC");
+
+  // Issue remote creation.
+  std::unique_ptr<syncer::LoopbackServerEntity> bookmark =
+      bookmark_builder.BuildBookmark(url, /*is_legacy=*/false);
+  const std::string old_guid = bookmark.get()->GetSpecifics().bookmark().guid();
+  fake_server_->InjectEntity(std::move(bookmark));
+
+  // Start syncing.
+  DisableVerifier();
+  ASSERT_TRUE(SetupSync());
+
+  // Created bookmark should be in the model.
+  ASSERT_TRUE(BookmarksUrlChecker(kSingleProfileIndex, url, 1).Wait());
+  ASSERT_EQ(1u, GetBookmarkBarNode(kSingleProfileIndex)->children().size());
+  ASSERT_EQ(
+      old_guid,
+      GetBookmarkBarNode(kSingleProfileIndex)->children()[0].get()->guid());
+
+  // Change bookmark GUID in the server to simulate an update from another
+  // client that has a differente GUID assigned to this bookmark. This can
+  // happen because every client assigns GUIDs independently when the GUID is
+  // missing, and the values should eventually be consistent across clients.
+  std::vector<sync_pb::SyncEntity> server_bookmarks =
+      GetFakeServer()->GetSyncEntitiesByModelType(syncer::BOOKMARKS);
+  ASSERT_EQ(1ul, server_bookmarks.size());
+  sync_pb::EntitySpecifics specifics = server_bookmarks[0].specifics();
+  const std::string new_guid = base::GenerateGUID();
+  specifics.mutable_bookmark()->set_guid(new_guid);
+  ASSERT_TRUE(GetFakeServer()->ModifyEntitySpecifics(
+      /*entity_id=*/server_bookmarks[0].id_string(), specifics));
+
+  // The bookmark GUID should have been updated with the corresponding value.
+  EXPECT_TRUE(BookmarksGUIDChecker(kSingleProfileIndex, new_guid).Wait());
+  EXPECT_EQ(1u, GetBookmarkBarNode(kSingleProfileIndex)->children().size());
+  EXPECT_EQ(
+      new_guid,
+      GetBookmarkBarNode(kSingleProfileIndex)->children()[0].get()->guid());
+}
+
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
+                       MergeRemoteUpdateWithValidGUID) {
+  // This test is only relevant for USS code path.
+  if (!base::FeatureList::IsEnabled(switches::kSyncUSSBookmarks))
+    return;
+
+  DisableVerifier();
+  ASSERT_TRUE(SetupClients());
+
+  // Create a local bookmark folder.
+  const std::string title = "Seattle Sounders FC";
+  const BookmarkNode* local_folder = AddFolder(
+      kSingleProfileIndex, GetBookmarkBarNode(kSingleProfileIndex), 0, title);
+  const std::string old_guid = local_folder->guid();
+  ASSERT_TRUE(local_folder);
+  ASSERT_TRUE(BookmarksGUIDChecker(kSingleProfileIndex, old_guid).Wait());
+  ASSERT_EQ(1u, CountFoldersWithTitlesMatching(kSingleProfileIndex, title));
+
+  // Create an equivalent remote folder.
+  fake_server::EntityBuilderFactory entity_builder_factory;
+  fake_server::BookmarkEntityBuilder bookmark_builder =
+      entity_builder_factory.NewBookmarkEntityBuilder(title);
+  std::unique_ptr<syncer::LoopbackServerEntity> remote_folder =
+      bookmark_builder.BuildFolder(/*is_legacy=*/false);
+  const std::string new_guid = remote_folder->GetSpecifics().bookmark().guid();
+  fake_server_->InjectEntity(std::move(remote_folder));
+
+  // Start syncing.
+  ASSERT_EQ(1u, GetBookmarkBarNode(kSingleProfileIndex)->children().size());
+  ASSERT_TRUE(SetupSync());
+
+  // The folder GUID should have been updated with the corresponding value.
+  EXPECT_TRUE(BookmarksGUIDChecker(kSingleProfileIndex, new_guid).Wait());
+  EXPECT_FALSE(ContainsBookmarkNodeWithGUID(kSingleProfileIndex, old_guid));
+  EXPECT_EQ(1u, GetBookmarkBarNode(kSingleProfileIndex)->children().size());
+}
+
 INSTANTIATE_TEST_SUITE_P(USS,
                          SingleClientBookmarksSyncTest,
                          ::testing::Values(false, true));

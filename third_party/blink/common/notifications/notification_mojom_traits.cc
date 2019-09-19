@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/public/common/notifications/notification_mojom_traits.h"
+#include "third_party/blink/public/mojom/notifications/notification.mojom.h"
 
 namespace {
 

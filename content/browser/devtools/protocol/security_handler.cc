@@ -12,8 +12,10 @@
 #include "base/base64.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/security_style_explanations.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
@@ -192,8 +194,15 @@ void SecurityHandler::DidChangeVisibleSecurityState() {
 }
 
 void SecurityHandler::DidFinishNavigation(NavigationHandle* navigation_handle) {
-  if (cert_error_override_mode_ == CertErrorOverrideMode::kHandleEvents)
+  if (cert_error_override_mode_ == CertErrorOverrideMode::kHandleEvents) {
+    web_contents()
+        ->GetController()
+        .GetBackForwardCache()
+        .DisableForRenderFrameHost(
+            navigation_handle->GetPreviousRenderFrameHostId(),
+            "content::protocol::SecurityHandler");
     FlushPendingCertificateErrorNotifications();
+  }
 }
 
 void SecurityHandler::FlushPendingCertificateErrorNotifications() {

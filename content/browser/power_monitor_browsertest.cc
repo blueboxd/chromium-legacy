@@ -21,8 +21,9 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/common/power_monitor_test.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -64,8 +65,8 @@ class MockPowerMonitorMessageBroadcaster : public device::mojom::PowerMonitor {
   MockPowerMonitorMessageBroadcaster() = default;
   ~MockPowerMonitorMessageBroadcaster() override = default;
 
-  void Bind(device::mojom::PowerMonitorRequest request) {
-    bindings_.AddBinding(this, std::move(request));
+  void Bind(mojo::PendingReceiver<device::mojom::PowerMonitor> receiver) {
+    receivers_.Add(this, std::move(receiver));
   }
 
   // device::mojom::PowerMonitor:
@@ -86,7 +87,7 @@ class MockPowerMonitorMessageBroadcaster : public device::mojom::PowerMonitor {
  private:
   bool on_battery_power_ = false;
 
-  mojo::BindingSet<device::mojom::PowerMonitor> bindings_;
+  mojo::ReceiverSet<device::mojom::PowerMonitor> receivers_;
   mojo::RemoteSet<device::mojom::PowerMonitorClient> clients_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPowerMonitorMessageBroadcaster);

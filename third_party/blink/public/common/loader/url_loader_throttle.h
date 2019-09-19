@@ -10,7 +10,7 @@
 
 #include "base/strings/string_piece.h"
 #include "net/base/request_priority.h"
-#include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_loader.mojom-forward.h"
 #include "third_party/blink/public/common/common_export.h"
 
 class GURL;

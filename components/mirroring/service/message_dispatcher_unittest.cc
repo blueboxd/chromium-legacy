@@ -11,6 +11,9 @@
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -57,11 +60,12 @@ void CloneResponse(const ReceiverResponse& response,
 class MessageDispatcherTest : public mojom::CastMessageChannel,
                               public ::testing::Test {
  public:
-  MessageDispatcherTest() : binding_(this) {
-    mojom::CastMessageChannelPtr outbound_channel;
-    binding_.Bind(mojo::MakeRequest(&outbound_channel));
+  MessageDispatcherTest() {
+    mojo::PendingRemote<mojom::CastMessageChannel> outbound_channel;
+    receiver_.Bind(outbound_channel.InitWithNewPipeAndPassReceiver());
     message_dispatcher_ = std::make_unique<MessageDispatcher>(
-        std::move(outbound_channel), mojo::MakeRequest(&inbound_channel_),
+        std::move(outbound_channel),
+        inbound_channel_.BindNewPipeAndPassReceiver(),
         base::BindRepeating(&MessageDispatcherTest::OnParsingError,
                             base::Unretained(this)));
     message_dispatcher_->Subscribe(
@@ -111,8 +115,8 @@ class MessageDispatcherTest : public mojom::CastMessageChannel,
   std::unique_ptr<ReceiverResponse> last_status_response_;
 
  private:
-  mojo::Binding<mojom::CastMessageChannel> binding_;
-  mojom::CastMessageChannelPtr inbound_channel_;
+  mojo::Receiver<mojom::CastMessageChannel> receiver_{this};
+  mojo::Remote<mojom::CastMessageChannel> inbound_channel_;
   DISALLOW_COPY_AND_ASSIGN(MessageDispatcherTest);
 };
 

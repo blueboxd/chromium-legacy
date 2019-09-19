@@ -39,6 +39,7 @@ class RefCountedString;
 
 namespace content {
 
+class BackForwardCache;
 class BrowserContext;
 class NavigationEntry;
 class RenderFrameHost;
@@ -512,6 +513,9 @@ class NavigationController {
   // such that the user is not able to use the back button to go to the previous
   // page they interacted with.
   virtual bool IsEntryMarkedToBeSkipped(int index) = 0;
+
+  // Gets the BackForwardCache for this NavigationController.
+  virtual BackForwardCache& GetBackForwardCache() = 0;
 
  private:
   // This interface should only be implemented inside content.

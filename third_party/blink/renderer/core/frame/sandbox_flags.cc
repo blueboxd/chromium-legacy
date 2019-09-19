@@ -111,6 +111,10 @@ WebSandboxFlags ParseSandboxPolicy(const SpaceSplitString& policy,
     } else if (EqualIgnoringASCIICase(
                    sandbox_token, "allow-downloads-without-user-activation")) {
       flags = flags & ~WebSandboxFlags::kDownloads;
+    } else if (RuntimeEnabledFeatures::StorageAccessAPIEnabled() &&
+               EqualIgnoringASCIICase(
+                   sandbox_token, "allow-storage-access-by-user-activation")) {
+      flags = flags & ~WebSandboxFlags::kStorageAccessByUserActivation;
     } else {
       token_errors.Append(token_errors.IsEmpty() ? "'" : ", '");
       token_errors.Append(sandbox_token);

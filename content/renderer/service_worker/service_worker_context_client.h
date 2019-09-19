@@ -49,6 +49,7 @@ class SingleThreadTaskRunner;
 namespace blink {
 class WebServiceWorkerContextProxy;
 class WebURLResponse;
+struct WebServiceWorkerInstalledScriptsManagerParams;
 }
 
 namespace content {
@@ -114,7 +115,9 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // Called on the initiator thread.
   void StartWorkerContextOnInitiatorThread(
       std::unique_ptr<blink::WebEmbeddedWorker> worker,
-      const blink::WebEmbeddedWorkerStartData& start_data);
+      const blink::WebEmbeddedWorkerStartData& start_data,
+      std::unique_ptr<blink::WebServiceWorkerInstalledScriptsManagerParams>,
+      mojo::ScopedMessagePipeHandle content_settings_handle);
   // Called on the initiator thread.
   blink::WebEmbeddedWorker& worker();
 

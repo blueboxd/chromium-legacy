@@ -4974,10 +4974,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       baseViewController:self];
 }
 
-- (void)showSyncSettings {
-  [self.dispatcher showGoogleServicesSettingsFromViewController:self];
-}
-
 - (void)showSyncPassphraseSettings {
   [self.dispatcher showSyncPassphraseSettingsFromViewController:self];
 }

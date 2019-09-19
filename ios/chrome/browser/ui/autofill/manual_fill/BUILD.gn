@@ -193,6 +193,7 @@ source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "address_view_controller_egtest.mm",
     "card_view_controller_egtest.mm",
     "fallback_coordinator_egtest.mm",
     "fallback_view_controller_egtest.mm",
@@ -210,6 +211,7 @@ source_set("eg_tests") {
     "//components/autofill/ios/browser",
     "//components/keyed_service/core",
     "//components/password_manager/core/browser",
+    "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser",
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/passwords",

@@ -4,10 +4,14 @@
 
 #include "chrome/browser/ui/webui/reset_password/reset_password_ui.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/reset_password/reset_password.mojom.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
@@ -21,7 +25,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using safe_browsing::LoginReputationClientResponse;
@@ -46,9 +50,8 @@ class ResetPasswordHandlerImpl : public mojom::ResetPasswordHandler {
  public:
   ResetPasswordHandlerImpl(
       content::WebContents* web_contents,
-      mojo::InterfaceRequest<mojom::ResetPasswordHandler> request)
-      : web_contents_(web_contents),
-        binding_(this, std::move(request)) {
+      mojo::PendingReceiver<mojom::ResetPasswordHandler> receiver)
+      : web_contents_(web_contents), receiver_(this, std::move(receiver)) {
     DCHECK(web_contents);
   }
 
@@ -73,7 +76,7 @@ class ResetPasswordHandlerImpl : public mojom::ResetPasswordHandler {
 
  private:
   content::WebContents* web_contents_;
-  mojo::Binding<mojom::ResetPasswordHandler> binding_;
+  mojo::Receiver<mojom::ResetPasswordHandler> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(ResetPasswordHandlerImpl);
 };
@@ -126,9 +129,9 @@ ResetPasswordUI::ResetPasswordUI(content::WebUI* web_ui)
 ResetPasswordUI::~ResetPasswordUI() {}
 
 void ResetPasswordUI::BindResetPasswordHandler(
-    mojom::ResetPasswordHandlerRequest request) {
+    mojo::PendingReceiver<mojom::ResetPasswordHandler> receiver) {
   ui_handler_ = std::make_unique<ResetPasswordHandlerImpl>(
-      web_ui()->GetWebContents(), std::move(request));
+      web_ui()->GetWebContents(), std::move(receiver));
 }
 
 base::DictionaryValue ResetPasswordUI::PopulateStrings() const {

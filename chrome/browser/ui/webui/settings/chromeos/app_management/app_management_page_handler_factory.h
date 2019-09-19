@@ -9,7 +9,9 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/app_management/app_management.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 class Profile;
 
@@ -21,21 +23,20 @@ class AppManagementPageHandlerFactory
   explicit AppManagementPageHandlerFactory(Profile* profile);
   ~AppManagementPageHandlerFactory() override;
 
-  void Bind(app_management::mojom::PageHandlerFactoryRequest request);
+  void Bind(mojo::PendingReceiver<app_management::mojom::PageHandlerFactory>
+                receiver);
 
  private:
-  void BindPageHandlerFactory(
-      app_management::mojom::PageHandlerFactoryRequest request);
-
   // app_management::mojom::PageHandlerFactory:
   void CreatePageHandler(
-      app_management::mojom::PagePtr page,
-      app_management::mojom::PageHandlerRequest request) override;
+      mojo::PendingRemote<app_management::mojom::Page> page,
+      mojo::PendingReceiver<app_management::mojom::PageHandler> receiver)
+      override;
 
   std::unique_ptr<AppManagementPageHandler> page_handler_;
 
-  mojo::Binding<app_management::mojom::PageHandlerFactory>
-      page_factory_binding_;
+  mojo::Receiver<app_management::mojom::PageHandlerFactory>
+      page_factory_receiver_{this};
 
   Profile* profile_;
 

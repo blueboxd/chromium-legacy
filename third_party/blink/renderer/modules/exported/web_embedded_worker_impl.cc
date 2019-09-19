@@ -73,19 +73,11 @@ namespace blink {
 // static
 std::unique_ptr<WebEmbeddedWorker> WebEmbeddedWorker::Create(
     WebServiceWorkerContextClient* client,
-    std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>
-        installed_scripts_manager_params,
-    mojo::ScopedMessagePipeHandle content_settings_handle,
     mojo::ScopedMessagePipeHandle cache_storage,
     mojo::ScopedMessagePipeHandle interface_provider,
     mojo::ScopedMessagePipeHandle browser_interface_broker) {
   return std::make_unique<WebEmbeddedWorkerImpl>(
-      std::move(client), std::move(installed_scripts_manager_params),
-      std::make_unique<ServiceWorkerContentSettingsProxy>(
-          // Chrome doesn't use interface versioning.
-          // TODO(falken): Is that comment about versioning correct?
-          mojo::PendingRemote<mojom::blink::WorkerContentSettingsProxy>(
-              std::move(content_settings_handle), 0u)),
+      std::move(client),
       mojo::PendingRemote<mojom::blink::CacheStorage>(
           std::move(cache_storage), mojom::blink::CacheStorage::Version_),
       service_manager::mojom::blink::InterfaceProviderPtrInfo(
@@ -98,36 +90,42 @@ std::unique_ptr<WebEmbeddedWorker> WebEmbeddedWorker::Create(
 
 // static
 std::unique_ptr<WebEmbeddedWorkerImpl> WebEmbeddedWorkerImpl::CreateForTesting(
-    WebServiceWorkerContextClient* client,
-    std::unique_ptr<ServiceWorkerInstalledScriptsManager>
-        installed_scripts_manager) {
+    WebServiceWorkerContextClient* client) {
   auto worker_impl = std::make_unique<WebEmbeddedWorkerImpl>(
-      client, nullptr /* installed_scripts_manager_params */,
-      std::make_unique<ServiceWorkerContentSettingsProxy>(
-          mojo::NullRemote() /* host_info */),
-      mojo::NullRemote() /* cache_storage */,
+      client, mojo::NullRemote() /* cache_storage */,
       nullptr /* interface_provider_info */,
       mojo::NullRemote() /* browser_interface_broker */);
-  worker_impl->installed_scripts_manager_ =
-      std::move(installed_scripts_manager);
   return worker_impl;
 }
 
 WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
     WebServiceWorkerContextClient* client,
-    std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>
-        installed_scripts_manager_params,
-    std::unique_ptr<ServiceWorkerContentSettingsProxy> content_settings_client,
     mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote,
     service_manager::mojom::blink::InterfaceProviderPtrInfo
         interface_provider_info,
     mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>
         browser_interface_broker)
     : worker_context_client_(client),
-      content_settings_client_(std::move(content_settings_client)),
       cache_storage_remote_(std::move(cache_storage_remote)),
       interface_provider_info_(std::move(interface_provider_info)),
-      browser_interface_broker_(std::move(browser_interface_broker)) {
+      browser_interface_broker_(std::move(browser_interface_broker)) {}
+
+WebEmbeddedWorkerImpl::~WebEmbeddedWorkerImpl() {
+  // TerminateWorkerContext() must be called before the destructor.
+  DCHECK(asked_to_terminate_);
+}
+
+void WebEmbeddedWorkerImpl::StartWorkerContext(
+    const WebEmbeddedWorkerStartData& data,
+    std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>
+        installed_scripts_manager_params,
+    mojo::ScopedMessagePipeHandle content_settings_handle,
+    scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner) {
+  DCHECK(!asked_to_terminate_);
+  worker_start_data_ = data;
+
+  std::unique_ptr<ServiceWorkerInstalledScriptsManager>
+      installed_scripts_manager;
   if (installed_scripts_manager_params) {
     DCHECK(installed_scripts_manager_params->manager_receiver.is_valid());
     DCHECK(installed_scripts_manager_params->manager_host_remote.is_valid());
@@ -135,7 +133,7 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
     installed_scripts_urls.AppendRange(
         installed_scripts_manager_params->installed_scripts_urls.begin(),
         installed_scripts_manager_params->installed_scripts_urls.end());
-    installed_scripts_manager_ = std::make_unique<
+    installed_scripts_manager = std::make_unique<
         ServiceWorkerInstalledScriptsManager>(
         installed_scripts_urls,
         mojo::PendingReceiver<
@@ -147,18 +145,6 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
             mojom::blink::ServiceWorkerInstalledScriptsManagerHost::Version_),
         Platform::Current()->GetIOTaskRunner());
   }
-}
-
-WebEmbeddedWorkerImpl::~WebEmbeddedWorkerImpl() {
-  // TerminateWorkerContext() must be called before the destructor.
-  DCHECK(asked_to_terminate_);
-}
-
-void WebEmbeddedWorkerImpl::StartWorkerContext(
-    const WebEmbeddedWorkerStartData& data,
-    scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner) {
-  DCHECK(!asked_to_terminate_);
-  worker_start_data_ = data;
 
   // TODO(mkwst): This really needs to be piped through from the requesting
   // document, like we're doing for SharedWorkers. That turns out to be
@@ -177,7 +163,14 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
 
   devtools_worker_token_ = data.devtools_worker_token;
   wait_for_debugger_mode_ = worker_start_data_.wait_for_debugger_mode;
-  StartWorkerThread(std::move(initiator_thread_task_runner));
+  StartWorkerThread(
+      std::move(installed_scripts_manager),
+      std::make_unique<ServiceWorkerContentSettingsProxy>(
+          // Chrome doesn't use interface versioning.
+          // TODO(falken): Is that comment about versioning correct?
+          mojo::PendingRemote<mojom::blink::WorkerContentSettingsProxy>(
+              std::move(content_settings_handle), 0u)),
+      std::move(initiator_thread_task_runner));
 }
 
 void WebEmbeddedWorkerImpl::TerminateWorkerContext() {
@@ -202,6 +195,9 @@ void WebEmbeddedWorkerImpl::ResumeAfterDownload() {
 }
 
 void WebEmbeddedWorkerImpl::StartWorkerThread(
+    std::unique_ptr<ServiceWorkerInstalledScriptsManager>
+        installed_scripts_manager,
+    std::unique_ptr<ServiceWorkerContentSettingsProxy> content_settings_proxy,
     scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner) {
   DCHECK(!asked_to_terminate_);
 
@@ -242,9 +238,9 @@ void WebEmbeddedWorkerImpl::StartWorkerThread(
   String source_code;
   std::unique_ptr<Vector<uint8_t>> cached_meta_data;
 
-  bool is_script_installed = installed_scripts_manager_ &&
-                             installed_scripts_manager_->IsScriptInstalled(
-                                 worker_start_data_.script_url);
+  bool is_script_installed =
+      installed_scripts_manager && installed_scripts_manager->IsScriptInstalled(
+                                       worker_start_data_.script_url);
 
   // We don't have to set ContentSecurityPolicy and ReferrerPolicy. They're
   // served by the worker script loader or the installed scripts manager on the
@@ -255,7 +251,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread(
       worker_start_data_.user_agent, std::move(web_worker_fetch_context),
       Vector<CSPHeaderAndType>(), network::mojom::ReferrerPolicy::kDefault,
       starter_origin.get(), starter_secure_context, starter_https_state,
-      nullptr /* worker_clients */, std::move(content_settings_client_),
+      nullptr /* worker_clients */, std::move(content_settings_proxy),
       base::nullopt /* response_address_space */,
       nullptr /* OriginTrialTokens */, devtools_worker_token_,
       std::move(worker_settings),
@@ -272,7 +268,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread(
   worker_thread_ = std::make_unique<ServiceWorkerThread>(
       std::make_unique<ServiceWorkerGlobalScopeProxy>(
           *this, *worker_context_client_, initiator_thread_task_runner),
-      std::move(installed_scripts_manager_), std::move(cache_storage_remote_),
+      std::move(installed_scripts_manager), std::move(cache_storage_remote_),
       initiator_thread_task_runner);
 
   auto devtools_params = std::make_unique<WorkerDevToolsParams>();

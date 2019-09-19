@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_ui.h"
 
+#include <memory>
 #include <utility>
 
 #include "chrome/browser/profiles/profile.h"
@@ -56,9 +57,9 @@ MachineLearningInternalsUI::MachineLearningInternalsUI(
 MachineLearningInternalsUI::~MachineLearningInternalsUI() = default;
 
 void MachineLearningInternalsUI::BindMachineLearningInternalsPageHandler(
-    mojom::PageHandlerRequest request) {
-  page_handler_.reset(
-      new MachineLearningInternalsPageHandler(std::move(request)));
+    mojo::PendingReceiver<mojom::PageHandler> receiver) {
+  page_handler_ = std::make_unique<MachineLearningInternalsPageHandler>(
+      std::move(receiver));
 }
 
 }  // namespace machine_learning

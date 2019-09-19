@@ -15,6 +15,7 @@
 #include "base/threading/thread.h"
 #include "media/audio/audio_output_ipc.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -42,7 +43,8 @@ class FakeRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
   ~FakeRemoteFactory() override {}
 
   void RequestDeviceAuthorization(
-      media::mojom::AudioOutputStreamProviderRequest stream_provider,
+      mojo::PendingReceiver<media::mojom::AudioOutputStreamProvider>
+          stream_provider,
       const base::Optional<base::UnguessableToken>& session_id,
       const std::string& device_id,
       RequestDeviceAuthorizationCallback callback) override {

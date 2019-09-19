@@ -133,10 +133,6 @@ network::mojom::CookieManager* ChromeSigninClient::GetCookieManager() {
       ->GetCookieManagerForBrowserProcess();
 }
 
-std::string ChromeSigninClient::GetProductVersion() {
-  return chrome::GetVersionString();
-}
-
 bool ChromeSigninClient::AreSigninCookiesAllowed() {
   return ProfileAllowsSigninCookies(profile_);
 }

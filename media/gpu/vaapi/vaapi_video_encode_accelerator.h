@@ -144,9 +144,7 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   // and will free them on destruction.
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
 
-  // Input profile and sizes.
-  VideoCodec codec_;
-  gfx::Size visible_size_;
+  // The coded size of an input buffer.
   gfx::Size coded_size_;
 
   // Size in bytes required for output bitstream buffers.

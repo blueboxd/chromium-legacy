@@ -15,6 +15,7 @@
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/sync/base/unique_position.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync_bookmarks/synced_bookmark_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -584,6 +585,85 @@ TEST(BookmarkModelMergerTest, ShouldMergeRemoteCreationWithoutGUID) {
   EXPECT_EQ(bookmark_model->bookmark_bar_node()->children().size(), 1u);
   EXPECT_TRUE(base::IsValidGUID(
       bookmark_model->bookmark_bar_node()->children()[0].get()->guid()));
+}
+
+TEST(BookmarkModelMergerTest, ShouldMergeAndUseRemoteGUID) {
+  const std::string kId = "Id";
+  const std::string kTitle = "Title";
+  const std::string kRemoteGuid = base::GenerateGUID();
+
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model =
+      bookmarks::TestBookmarkClient::CreateModel();
+
+  // -------- The local model --------
+  const bookmarks::BookmarkNode* bookmark_bar_node =
+      bookmark_model->bookmark_bar_node();
+  const bookmarks::BookmarkNode* folder = bookmark_model->AddFolder(
+      /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16(kTitle));
+  ASSERT_TRUE(folder);
+
+  // -------- The remote model --------
+  const std::string suffix = syncer::UniquePosition::RandomSuffix();
+  syncer::UpdateResponseDataList updates;
+  updates.push_back(CreateBookmarkBarNodeUpdateData());
+  updates.push_back(CreateUpdateResponseData(
+      /*server_id=*/kId, /*parent_id=*/kBookmarkBarId, kTitle,
+      /*url=*/std::string(),
+      /*is_folder=*/true, syncer::UniquePosition::InitialPosition(suffix)));
+  updates[1]->entity->specifics.mutable_bookmark()->set_guid(kRemoteGuid);
+
+  SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
+                                std::make_unique<sync_pb::ModelTypeState>());
+  testing::NiceMock<favicon::MockFaviconService> favicon_service;
+  BookmarkModelMerger(&updates, bookmark_model.get(), &favicon_service,
+                      &tracker)
+      .Merge();
+
+  // Node should have been replaced and GUID should be set to that stored in the
+  // specifics.
+  EXPECT_EQ(bookmark_bar_node->children().size(), 1u);
+  EXPECT_EQ(bookmark_bar_node->children()[0].get()->guid(), kRemoteGuid);
+}
+
+TEST(BookmarkModelMergerTest,
+     ShouldMergeAndKeepOldGUIDWhenRemoteGUIDIsInvalid) {
+  const std::string kId = "Id";
+  const std::string kTitle = "Title";
+
+  std::unique_ptr<bookmarks::BookmarkModel> bookmark_model =
+      bookmarks::TestBookmarkClient::CreateModel();
+
+  // -------- The local model --------
+  const bookmarks::BookmarkNode* bookmark_bar_node =
+      bookmark_model->bookmark_bar_node();
+  const bookmarks::BookmarkNode* folder = bookmark_model->AddFolder(
+      /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16(kTitle));
+  ASSERT_TRUE(folder);
+  const std::string old_guid = folder->guid();
+
+  // -------- The remote model --------
+  const std::string suffix = syncer::UniquePosition::RandomSuffix();
+  syncer::UpdateResponseDataList updates;
+  updates.push_back(CreateBookmarkBarNodeUpdateData());
+  updates.push_back(CreateUpdateResponseData(
+      /*server_id=*/kId, /*parent_id=*/kBookmarkBarId, kTitle,
+      /*url=*/std::string(),
+      /*is_folder=*/true,
+      /*unique_position=*/syncer::UniquePosition::InitialPosition(suffix)));
+  // Set invalid GUID.
+  updates[1]->entity->specifics.mutable_bookmark()->set_guid("");
+
+  SyncedBookmarkTracker tracker(std::vector<NodeMetadataPair>(),
+                                std::make_unique<sync_pb::ModelTypeState>());
+  testing::NiceMock<favicon::MockFaviconService> favicon_service;
+  BookmarkModelMerger(&updates, bookmark_model.get(), &favicon_service,
+                      &tracker)
+      .Merge();
+
+  // Node should not have been replaced and GUID should not have been set to
+  // that stored in the specifics, as it was invalid.
+  EXPECT_EQ(bookmark_bar_node->children().size(), 1u);
+  EXPECT_EQ(bookmark_bar_node->children()[0].get()->guid(), old_guid);
 }
 
 }  // namespace sync_bookmarks

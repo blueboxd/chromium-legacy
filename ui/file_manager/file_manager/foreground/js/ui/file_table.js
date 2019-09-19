@@ -323,7 +323,6 @@ FileTableColumnModel.ColumnSnapshot = class {
   }
 };
 
-
 /**
  * File list Table View.
  */
@@ -345,9 +344,6 @@ class FileTable extends cr.ui.Table {
 
     /** @private {?MetadataModel} */
     this.metadataModel_ = null;
-
-    /** @private {?cr.ui.table.TableList} */
-    this.list_ = null;
 
     /** @private {?FileMetadataFormatter} */
     this.formatter_ = null;

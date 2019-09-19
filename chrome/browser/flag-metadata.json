@@ -78,6 +78,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "allow-sync-xhr-in-page-dismissal",
+    "owners": [ "kdillon@chromium.org" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "android-files-in-files-app",
     "owners": [ "fukino" ],
     "expiry_milestone": 76
@@ -1226,11 +1231,6 @@
     "name": "enable-filtering-scroll-events",
     "owners": [ "axantoine", "eirage", "nzolghadr", "input-dev" ],
     "expiry_milestone": 80
-  },
-  {
-    "name": "enable-forbid-sync-xhr-in-page-dismissal",
-    "owners": [ "kdillon@chromium.org" ],
-    "expiry_milestone": 82
   },
   {
     "name": "enable-force-dark",

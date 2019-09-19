@@ -559,7 +559,7 @@ bool IsAppContainerEnabled() {
     return false;
 
   return base::FeatureList::IsEnabled(
-      {"RendererAppContainer", base::FEATURE_DISABLED_BY_DEFAULT});
+      {"RendererAppContainer", base::FEATURE_ENABLED_BY_DEFAULT});
 }
 
 sandbox::ResultCode SetJobMemoryLimit(const base::CommandLine& cmd_line,

@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/main/scene_controller.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 
 // An object acting as a scene delegate for UIKit. Updates the scene state.
@@ -16,6 +17,9 @@
 
 // The object that holds the state of the scene associated with this delegate.
 @property(nonatomic, strong) SceneState* sceneState;
+
+// The controller created and owned by this object.
+@property(nonatomic, strong) SceneController* sceneController;
 
 @end
 

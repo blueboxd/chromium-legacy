@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "content/browser/native_file_system/native_file_system_handle_base.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_directory_handle.mojom.h"
 
@@ -47,7 +48,8 @@ class NativeFileSystemDirectoryHandleImpl
                    bool recurse,
                    RemoveEntryCallback callback) override;
   void Transfer(
-      blink::mojom::NativeFileSystemTransferTokenRequest token) override;
+      mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken> token)
+      override;
 
  private:
   // State that is kept for the duration of a GetEntries/ReadDirectory call.

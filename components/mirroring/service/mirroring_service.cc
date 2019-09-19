@@ -19,12 +19,13 @@ MirroringService::MirroringService(
 
 MirroringService::~MirroringService() = default;
 
-void MirroringService::Start(mojom::SessionParametersPtr params,
-                             const gfx::Size& max_resolution,
-                             mojom::SessionObserverPtr observer,
-                             mojom::ResourceProviderPtr resource_provider,
-                             mojom::CastMessageChannelPtr outbound_channel,
-                             mojom::CastMessageChannelRequest inbound_channel) {
+void MirroringService::Start(
+    mojom::SessionParametersPtr params,
+    const gfx::Size& max_resolution,
+    mojo::PendingRemote<mojom::SessionObserver> observer,
+    mojo::PendingRemote<mojom::ResourceProvider> resource_provider,
+    mojo::PendingRemote<mojom::CastMessageChannel> outbound_channel,
+    mojo::PendingReceiver<mojom::CastMessageChannel> inbound_channel) {
   session_.reset();  // Stops the current session if active.
   session_ = std::make_unique<Session>(
       std::move(params), max_resolution, std::move(observer),

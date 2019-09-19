@@ -109,6 +109,18 @@ ScriptResource* ScriptResource::Fetch(FetchParameters& params,
   return resource;
 }
 
+ScriptResource* ScriptResource::CreateForTest(
+    const KURL& url,
+    const WTF::TextEncoding& encoding) {
+  ResourceRequest request(url);
+  request.SetCredentialsMode(network::mojom::CredentialsMode::kOmit);
+  ResourceLoaderOptions options;
+  TextResourceDecoderOptions decoder_options(
+      TextResourceDecoderOptions::kPlainTextContent, encoding);
+  return MakeGarbageCollected<ScriptResource>(request, options,
+                                              decoder_options);
+}
+
 ScriptResource::ScriptResource(
     const ResourceRequest& resource_request,
     const ResourceLoaderOptions& options,

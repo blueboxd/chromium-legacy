@@ -141,10 +141,10 @@ struct CORE_EXPORT Timing {
     bool is_in_effect = false;
     bool is_in_play = false;
     double local_time = NullValue();
-    double time_to_forwards_effect_change =
-        std::numeric_limits<double>::infinity();
-    double time_to_reverse_effect_change =
-        std::numeric_limits<double>::infinity();
+    AnimationTimeDelta time_to_forwards_effect_change =
+        AnimationTimeDelta::Max();
+    AnimationTimeDelta time_to_reverse_effect_change =
+        AnimationTimeDelta::Max();
     double time_to_next_iteration = std::numeric_limits<double>::infinity();
   };
 

@@ -23,12 +23,11 @@ struct NetworkTrafficAnnotationTag;
 
 // An URLDataSource implementation that handles devtools://devtools/
 // requests. Three types of requests could be handled based on the URL path:
-// 1. /bundled/: bundled DevTools frontend is served.
-//    when built with debug_devtools=true, the path can be provided via
-//    --custom-devtools-frontend.
+// 1. /bundled/: bundled DevTools frontend is served. The path can be provided
+//    via --custom-devtools-frontend as file:// URL.
 // 2. /remote/: remote DevTools frontend is served from App Engine.
 // 3. /custom/: custom DevTools frontend is served from the server as specified
-//    by the --custom-devtools-frontend flag.
+//    via --custom-devtools-frontend as http:// URL.
 class DevToolsDataSource : public content::URLDataSource {
  public:
   using GotDataCallback = content::URLDataSource::GotDataCallback;
@@ -75,10 +74,8 @@ class DevToolsDataSource : public content::URLDataSource {
       int load_flags,
       const GotDataCallback& callback);
 
-#if BUILDFLAG(DEBUG_DEVTOOLS)
-  void StartFileRequestForDebugDevtools(const std::string& path,
-                                        const GotDataCallback& callback);
-#endif
+  virtual void StartFileRequest(const std::string& path,
+                                const GotDataCallback& callback);
 
   struct PendingRequest {
     PendingRequest();

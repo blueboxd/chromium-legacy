@@ -8,8 +8,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -98,7 +100,8 @@ class StubReadWritePermission final
 class MockVideoCaptureObserver final
     : public media::mojom::VideoCaptureObserver {
  public:
-  explicit MockVideoCaptureObserver(media::mojom::VideoCaptureHostPtr host)
+  explicit MockVideoCaptureObserver(
+      mojo::PendingRemote<media::mojom::VideoCaptureHost> host)
       : host_(std::move(host)) {}
   MOCK_METHOD1(OnBufferCreatedCall, void(int buffer_id));
   void OnNewBuffer(int32_t buffer_id,
@@ -148,7 +151,7 @@ class MockVideoCaptureObserver final
  private:
   const base::UnguessableToken device_id_ = base::UnguessableToken::Create();
   const base::UnguessableToken session_id_ = base::UnguessableToken::Create();
-  media::mojom::VideoCaptureHostPtr host_;
+  mojo::Remote<media::mojom::VideoCaptureHost> host_;
   mojo::Receiver<media::mojom::VideoCaptureObserver> receiver_{this};
   base::flat_map<int, media::mojom::VideoBufferHandlePtr> buffers_;
   base::flat_map<int, media::mojom::VideoFrameInfoPtr> frame_infos_;
@@ -173,8 +176,9 @@ class SingleClientVideoCaptureHostTest : public ::testing::Test {
         base::BindRepeating(
             &SingleClientVideoCaptureHostTest::CreateDeviceLauncher,
             base::Unretained(this)));
-    media::mojom::VideoCaptureHostPtr host;
-    mojo::MakeStrongBinding(std::move(host_impl), mojo::MakeRequest(&host));
+    mojo::PendingRemote<media::mojom::VideoCaptureHost> host;
+    mojo::MakeSelfOwnedReceiver(std::move(host_impl),
+                                host.InitWithNewPipeAndPassReceiver());
     consumer_ = std::make_unique<MockVideoCaptureObserver>(std::move(host));
     base::RunLoop run_loop;
     EXPECT_CALL(*this, OnDeviceLaunchedCall())

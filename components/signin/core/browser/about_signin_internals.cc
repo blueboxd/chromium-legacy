@@ -606,8 +606,6 @@ AboutSigninInternals::SigninStatus::ToValue(
   // A summary of signin related info first.
   base::ListValue* basic_info =
       AddSection(signin_info.get(), "Basic Information");
-  AddSectionEntry(basic_info, "Chrome Version",
-                  signin_client->GetProductVersion());
   AddSectionEntry(basic_info, "Account Consistency",
                   GetAccountConsistencyDescription(account_consistency));
   AddSectionEntry(

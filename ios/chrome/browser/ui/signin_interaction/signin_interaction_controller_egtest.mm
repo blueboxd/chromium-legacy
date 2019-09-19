@@ -9,7 +9,6 @@
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "components/unified_consent/feature.h"
 #import "ios/chrome/app/main_controller.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
@@ -164,13 +163,8 @@ void RemoveBrowsingData() {
   // Wait until the next screen appears.
   [SigninEarlGreyUI tapSettingsLink];
 
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    [[EarlGrey selectElementWithMatcher:SyncSettingsConfirmButton()]
-        performAction:grey_tap()];
-  } else {
-    [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
-        performAction:grey_tap()];
-  }
+  [[EarlGrey selectElementWithMatcher:SyncSettingsConfirmButton()]
+      performAction:grey_tap()];
 
   // All Settings should be gone and user signed in.
   id<GREYMatcher> settings_matcher =
@@ -205,8 +199,7 @@ void RemoveBrowsingData() {
   // this will fail.
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SecondarySignInButton()];
-  if (unified_consent::IsUnifiedConsentFeatureEnabled())
-    [SigninEarlGreyUI selectIdentityWithEmail:identity.userEmail];
+  [SigninEarlGreyUI selectIdentityWithEmail:identity.userEmail];
 
   VerifyChromeSigninViewVisible();
 
@@ -242,12 +235,10 @@ void RemoveBrowsingData() {
   [[EarlGrey selectElementWithMatcher:SecondarySignInButton()]
       performAction:grey_tap()];
   [SigninEarlGreyUI selectIdentityWithEmail:identity1.userEmail];
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    // With unified consent, the authentication flow is only created when the
-    // confirm button is selected. Note that authentication flow actually
-    /// blocks as the "Clear Browsing Before Syncing" dialog is presented.
-    [SigninEarlGreyUI confirmSigninConfirmationDialog];
-  }
+  // The authentication flow is only created when the confirm button is
+  // selected. Note that authentication flow actually blocks as the
+  // "Clear Browsing Before Syncing" dialog is presented.
+  [SigninEarlGreyUI confirmSigninConfirmationDialog];
 
   // Open new tab to cancel sign-in.
   OpenNewTabCommand* command =
@@ -261,8 +252,7 @@ void RemoveBrowsingData() {
   // this will fail.
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SecondarySignInButton()];
-  if (unified_consent::IsUnifiedConsentFeatureEnabled())
-    [SigninEarlGreyUI selectIdentityWithEmail:identity1.userEmail];
+  [SigninEarlGreyUI selectIdentityWithEmail:identity1.userEmail];
   VerifyChromeSigninViewVisible();
 
   // Close sign-in screen and Settings.
@@ -286,8 +276,7 @@ void RemoveBrowsingData() {
   [ChromeEarlGreyUI tapSettingsMenuButton:SecondarySignInButton()];
 
   // Assert sign-in screen was shown.
-  if (unified_consent::IsUnifiedConsentFeatureEnabled())
-    [SigninEarlGreyUI selectIdentityWithEmail:identity.userEmail];
+  [SigninEarlGreyUI selectIdentityWithEmail:identity.userEmail];
   VerifyChromeSigninViewVisible();
 
   // Open new tab to cancel sign-in.
@@ -303,8 +292,7 @@ void RemoveBrowsingData() {
   [ChromeEarlGreyUI openToolsMenu];
   [ChromeEarlGreyUI tapToolsMenuButton:chrome_test_util::BookmarksMenuButton()];
   [ChromeEarlGreyUI tapSettingsMenuButton:SecondarySignInButton()];
-  if (unified_consent::IsUnifiedConsentFeatureEnabled())
-    [SigninEarlGreyUI selectIdentityWithEmail:identity.userEmail];
+  [SigninEarlGreyUI selectIdentityWithEmail:identity.userEmail];
   VerifyChromeSigninViewVisible();
 
   // Close sign-in screen and Bookmarks.

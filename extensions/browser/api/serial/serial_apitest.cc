@@ -20,8 +20,9 @@
 #include "extensions/common/api/serial.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/result_catcher.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -289,8 +290,8 @@ class FakeSerialPortManager : public device::mojom::SerialPortManager {
 
   ~FakeSerialPortManager() override = default;
 
-  void Bind(device::mojom::SerialPortManagerRequest request) {
-    bindings_.AddBinding(this, std::move(request));
+  void Bind(mojo::PendingReceiver<device::mojom::SerialPortManager> receiver) {
+    receivers_.Add(this, std::move(receiver));
   }
 
  private:
@@ -321,7 +322,7 @@ class FakeSerialPortManager : public device::mojom::SerialPortManager {
         token, std::make_unique<FakeSerialPort>(std::move(port))));
   }
 
-  mojo::BindingSet<device::mojom::SerialPortManager> bindings_;
+  mojo::ReceiverSet<device::mojom::SerialPortManager> receivers_;
   std::map<base::UnguessableToken, std::unique_ptr<FakeSerialPort>> ports_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSerialPortManager);

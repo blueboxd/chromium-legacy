@@ -158,7 +158,8 @@ class DeviceService : public service_manager::Service {
       mojo::PendingReceiver<mojom::HidManager> receiver);
   void BindNFCProviderReceiver(
       mojo::PendingReceiver<mojom::NFCProvider> receiver);
-  void BindVibrationManagerRequest(mojom::VibrationManagerRequest request);
+  void BindVibrationManagerReceiver(
+      mojo::PendingReceiver<mojom::VibrationManager> receiver);
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -168,7 +169,8 @@ class DeviceService : public service_manager::Service {
       mojo::PendingReceiver<mojom::MtpManager> receiver);
 #endif
 
-  void BindPowerMonitorRequest(mojom::PowerMonitorRequest request);
+  void BindPowerMonitorReceiver(
+      mojo::PendingReceiver<mojom::PowerMonitor> receiver);
 
   void BindPublicIpAddressGeolocationProviderReceiver(
       mojo::PendingReceiver<mojom::PublicIpAddressGeolocationProvider>
@@ -179,7 +181,8 @@ class DeviceService : public service_manager::Service {
 
   void BindSensorProviderRequest(mojom::SensorProviderRequest request);
 
-  void BindTimeZoneMonitorRequest(mojom::TimeZoneMonitorRequest request);
+  void BindTimeZoneMonitorReceiver(
+      mojo::PendingReceiver<mojom::TimeZoneMonitor> receiver);
 
   void BindWakeLockProviderReceiver(
       mojo::PendingReceiver<mojom::WakeLockProvider> receiver);

@@ -5,7 +5,7 @@
 #include "services/device/power_monitor/power_monitor_message_broadcaster.h"
 
 #include "base/power_monitor/power_monitor.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace device {
 
@@ -19,8 +19,8 @@ PowerMonitorMessageBroadcaster::~PowerMonitorMessageBroadcaster() {
 
 // static
 void PowerMonitorMessageBroadcaster::Bind(
-    device::mojom::PowerMonitorRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+    mojo::PendingReceiver<device::mojom::PowerMonitor> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void PowerMonitorMessageBroadcaster::AddClient(

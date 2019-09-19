@@ -29,6 +29,7 @@ class CAPTURE_EXPORT CameraAppDeviceProviderImpl
   // cros::mojom::CameraAppDeviceProvider implementations.
   void GetCameraAppDevice(const std::string& source_id,
                           GetCameraAppDeviceCallback callback) override;
+  void IsSupported(IsSupportedCallback callback) override;
 
  private:
   void GetCameraAppDeviceWithDeviceId(

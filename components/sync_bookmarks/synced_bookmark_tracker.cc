@@ -509,6 +509,18 @@ void SyncedBookmarkTracker::UpdateSyncForLocalCreationIfNeeded(
   sync_id_to_entities_map_.erase(old_id);
 }
 
+void SyncedBookmarkTracker::UpdateBookmarkNodePointer(
+    const bookmarks::BookmarkNode* old_node,
+    const bookmarks::BookmarkNode* new_node) {
+  if (old_node == new_node) {
+    return;
+  }
+  bookmark_node_to_entities_map_[new_node] =
+      std::move(bookmark_node_to_entities_map_[old_node]);
+  bookmark_node_to_entities_map_[new_node]->set_bookmark_node(new_node);
+  bookmark_node_to_entities_map_.erase(old_node);
+}
+
 void SyncedBookmarkTracker::AckSequenceNumber(const std::string& sync_id) {
   auto it = sync_id_to_entities_map_.find(sync_id);
   Entity* entity =

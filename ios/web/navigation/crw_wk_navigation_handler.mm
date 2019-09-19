@@ -1767,15 +1767,15 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 - (void)handleCancelledError:(NSError*)error
                forNavigation:(WKNavigation*)navigation
              provisionalLoad:(BOOL)provisionalLoad {
-  web::NavigationContextImpl* navigationContext =
-      [self.navigationStates contextForNavigation:navigation];
   if ([self shouldCancelLoadForCancelledError:error
                               provisionalLoad:provisionalLoad]) {
+    std::unique_ptr<web::NavigationContextImpl> navigationContext =
+        [self.navigationStates removeNavigation:navigation];
     [self loadCancelled];
     self.navigationManagerImpl->DiscardNonCommittedItems();
 
     [self.legacyNativeContentController
-        handleCancelledErrorForContext:navigationContext];
+        handleCancelledErrorForContext:navigationContext.get()];
 
     if (provisionalLoad) {
       if (!navigationContext &&
@@ -1788,10 +1788,12 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
         UMA_HISTOGRAM_BOOLEAN(
             "Navigation.IOSNullContextInDidFailProvisionalNavigation", true);
       } else {
-        self.webStateImpl->OnNavigationFinished(navigationContext);
+        self.webStateImpl->OnNavigationFinished(navigationContext.get());
       }
     }
   } else if (!provisionalLoad) {
+    web::NavigationContextImpl* navigationContext =
+        [self.navigationStates contextForNavigation:navigation];
     web::NavigationItemImpl* item =
         web::GetItemWithUniqueID(self.navigationManagerImpl, navigationContext);
     if (item) {

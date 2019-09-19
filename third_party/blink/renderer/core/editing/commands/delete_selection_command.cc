@@ -1036,6 +1036,8 @@ void DeleteSelectionCommand::ClearTransientState() {
 void DeleteSelectionCommand::RemoveRedundantBlocks(
     EditingState* editing_state) {
   Node* node = ending_position_.ComputeContainerNode();
+  if (!node)
+    return;
   Element* root_element = RootEditableElement(*node);
 
   while (node != root_element) {

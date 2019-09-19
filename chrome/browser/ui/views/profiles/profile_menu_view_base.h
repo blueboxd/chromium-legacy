@@ -111,6 +111,9 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   void AddSelectableProfile(const gfx::Image& image,
                             const base::string16& name,
                             base::RepeatingClosure action);
+  void AddProfileShortcutFeatureButton(const gfx::ImageSkia& icon,
+                                       const base::string16& text,
+                                       base::RepeatingClosure action);
   void AddProfileFeatureButton(const gfx::ImageSkia& icon,
                                const base::string16& text,
                                base::RepeatingClosure action);
@@ -226,6 +229,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   views::View* account_features_container_ = nullptr;
   views::View* profile_heading_container_ = nullptr;
   views::View* selectable_profiles_container_ = nullptr;
+  views::View* profile_shortcut_features_container_ = nullptr;
   views::View* profile_features_container_ = nullptr;
 
   CloseBubbleOnTabActivationHelper close_bubble_helper_;

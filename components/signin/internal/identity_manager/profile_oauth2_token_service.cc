@@ -355,6 +355,11 @@ void ProfileOAuth2TokenService::OverrideAccessTokenManagerForTesting(
   token_manager_ = std::move(token_manager);
 }
 
+bool ProfileOAuth2TokenService::IsFakeProfileOAuth2TokenServiceForTesting()
+    const {
+  return false;
+}
+
 OAuth2AccessTokenManager* ProfileOAuth2TokenService::GetAccessTokenManager() {
   return token_manager_.get();
 }

@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_NATIVE_FILE_SYSTEM_NATIVE_FILE_SYSTEM_HANDLE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_NATIVE_FILE_SYSTEM_NATIVE_FILE_SYSTEM_HANDLE_H_
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_directory_handle.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_error.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_transfer_token.mojom-blink-forward.h"
@@ -37,7 +38,8 @@ class NativeFileSystemHandle : public ScriptWrappable {
   ScriptPromise requestPermission(ScriptState*,
                                   const FileSystemHandlePermissionDescriptor*);
 
-  virtual mojom::blink::NativeFileSystemTransferTokenPtr Transfer() = 0;
+  virtual mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken>
+  Transfer() = 0;
 
  private:
   virtual void QueryPermissionImpl(

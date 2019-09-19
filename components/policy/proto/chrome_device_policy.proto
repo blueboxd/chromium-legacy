@@ -8,54 +8,7 @@ option optimize_for = LITE_RUNTIME;
 
 package enterprise_management;
 
-// This message should be kept in sync with StringList message definition in the
-// user policy proto.
-message DeviceStringList {
-  repeated string entries = 1;
-}
-
-// TODO(http://crbug.com/552439) move all of these common proto definitions of
-// user and device policies into a common proto file. This message should be
-// kept in sync with PolicyOptions message definition in the user policy proto.
-message DevicePolicyOptions {
-  enum PolicyMode {
-    // The given settings are applied regardless of user choice.
-    MANDATORY = 0;
-    // The user may choose to override the given settings.
-    RECOMMENDED = 1;
-    // No policy value is present and the policy should be ignored.
-    UNSET = 2;
-  }
-  optional PolicyMode mode = 1 [default = MANDATORY];
-}
-
-// This message should be kept in sync with BooleanPolicyProto message
-// definition in the user policy proto.
-message DeviceBooleanPolicyProto {
-  optional DevicePolicyOptions policy_options = 1;
-  optional bool value = 2;
-}
-
-// This message should be kept in sync with IntegerPolicyProto message
-// definition in the user policy proto.
-message DeviceIntegerPolicyProto {
-  optional DevicePolicyOptions policy_options = 1;
-  optional int64 value = 2;
-}
-
-// This message should be kept in sync with StringPolicyProto message
-// definition in the user policy proto.
-message DeviceStringPolicyProto {
-  optional DevicePolicyOptions policy_options = 1;
-  optional string value = 2;
-}
-
-// This message should be kept in sync with StringListPolicyProto message
-// definition in the user policy proto.
-message DeviceStringListPolicyProto {
-  optional DevicePolicyOptions policy_options = 1;
-  optional DeviceStringList value = 2;
-}
+import "policy_common_definitions.proto";
 
 message DevicePolicyRefreshRateProto {
   // In milliseconds.
@@ -633,8 +586,8 @@ message AccessibilitySettingsProto {
   // screen. If this policy is set to true, the large cursor will be enabled
   // when the login screen is shown. If this policy is set to false, the large
   // cursor will be disabled when the login screen is shown. If the
-  // DevicePolicyOptions mode was being mandatory then the user won't be able to
-  // change these settings. Only if DevicePolicyOptions was being set as
+  // PolicyOptions mode was being mandatory then the user won't be able to
+  // change these settings. Only if PolicyOptions was being set as
   // recommended users can temporarily override this setting by enabling or
   // disabling the large cursor. However, the user's choice is not persistent
   // and the default is restored whenever the login screen is shown anew or the
@@ -643,7 +596,7 @@ message AccessibilitySettingsProto {
   // Users can enable or disable the large cursor anytime and its status on the
   // login screen is persisted between users.
   optional bool login_screen_large_cursor_enabled = 6;
-  optional DevicePolicyOptions login_screen_large_cursor_enabled_options = 7;
+  optional PolicyOptions login_screen_large_cursor_enabled_options = 7;
 }
 
 message SupervisedUsersSettingsProto {

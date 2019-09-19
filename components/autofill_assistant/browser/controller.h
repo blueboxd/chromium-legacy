@@ -150,11 +150,8 @@ class Controller : public ScriptExecutorDelegate,
   const UserData* GetUserData() const override;
   void SetShippingAddress(
       std::unique_ptr<autofill::AutofillProfile> address) override;
-  void SetBillingAddress(
-      std::unique_ptr<autofill::AutofillProfile> address) override;
-  void SetContactInfo(std::string name,
-                      std::string phone,
-                      std::string email) override;
+  void SetContactInfo(
+      std::unique_ptr<autofill::AutofillProfile> profile) override;
   void SetCreditCard(std::unique_ptr<autofill::CreditCard> card) override;
   void SetTermsAndConditions(
       TermsAndConditionsState terms_and_conditions) override;

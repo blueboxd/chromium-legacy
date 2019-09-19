@@ -13,7 +13,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/device/public/cpp/test/fake_serial_port_manager.h"
 #include "services/device/public/mojom/serial.mojom.h"
@@ -33,10 +33,10 @@ class SerialTest : public InProcessBrowserTest {
     embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
     ASSERT_TRUE(embedded_test_server()->Start());
 
-    device::mojom::SerialPortManagerPtr port_manager_ptr;
-    port_manager_.AddBinding(mojo::MakeRequest(&port_manager_ptr));
+    mojo::PendingRemote<device::mojom::SerialPortManager> port_manager;
+    port_manager_.AddReceiver(port_manager.InitWithNewPipeAndPassReceiver());
     SerialChooserContextFactory::GetForProfile(browser()->profile())
-        ->SetPortManagerForTesting(std::move(port_manager_ptr));
+        ->SetPortManagerForTesting(std::move(port_manager));
 
     GURL url = embedded_test_server()->GetURL("localhost", "/simple_page.html");
     ui_test_utils::NavigateToURL(browser(), url);

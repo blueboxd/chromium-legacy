@@ -31,8 +31,20 @@ void SecurityTokenPinDialogHostAshImpl::ShowSecurityTokenPinDialog(
     SecurityTokenPinDialogClosedCallback pin_dialog_closed_callback) {
   DCHECK(!enable_user_input || attempts_left);
   DCHECK_GE(attempts_left, -1);
+  // There must be either no active PIN request, or the active request for which
+  // the PIN has already been entered.
   DCHECK(!pin_entered_callback_);
-  DCHECK(!pin_dialog_closed_callback_);
+
+  if (is_request_running() || !enable_user_input) {
+    // Don't allow re-requesting the PIN in the same dialog after an error,
+    // since the UI doesn't currently handle this in a user-friendly way.
+    // TODO(crbug.com/1001288): Remove this after the proper UI error feedback
+    // gets implemented in Ash.
+    if (is_request_running())
+      CloseSecurityTokenPinDialog();
+    std::move(pin_dialog_closed_callback).Run();
+    return;
+  }
 
   Reset();
 
@@ -63,17 +75,23 @@ void SecurityTokenPinDialogHostAshImpl::ShowSecurityTokenPinDialog(
 }
 
 void SecurityTokenPinDialogHostAshImpl::CloseSecurityTokenPinDialog() {
+  DCHECK(is_request_running());
+
   Reset();
   ash::LoginScreen::Get()->ClearSecurityTokenPinRequest();
 }
 
 void SecurityTokenPinDialogHostAshImpl::OnUserInputReceived(
     const std::string& user_input) {
+  DCHECK(is_request_running());
   DCHECK(!user_input.empty());
+
   std::move(pin_entered_callback_).Run(user_input);
 }
 
 void SecurityTokenPinDialogHostAshImpl::OnClosed() {
+  DCHECK(is_request_running());
+
   auto closed_callback = std::move(pin_dialog_closed_callback_);
   Reset();
   std::move(closed_callback).Run();

@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/app_management/app_management_page_handler_factory.h"
 #include "chrome/browser/ui/webui/webui_load_timer.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 
 namespace content {
@@ -33,7 +34,8 @@ class OSSettingsUI : public ui::MojoWebUIController {
   void BindCrosNetworkConfig(
       network_config::mojom::CrosNetworkConfigRequest request);
   void BindAppManagementPageHandlerFactory(
-      app_management::mojom::PageHandlerFactoryRequest request);
+      mojo::PendingReceiver<app_management::mojom::PageHandlerFactory>
+          receiver);
 
   WebuiLoadTimer webui_load_timer_;
 

@@ -241,7 +241,7 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   // need to be checked before the classification algorithms are applied
   // on the image.
   virtual DarkModeClassification CheckTypeSpecificConditionsForDarkMode(
-      const FloatRect& src_rect,
+      const FloatRect& dest_rect,
       DarkModeImageClassifier* classifier) {
     return DarkModeClassification::kDoNotApplyFilter;
   }

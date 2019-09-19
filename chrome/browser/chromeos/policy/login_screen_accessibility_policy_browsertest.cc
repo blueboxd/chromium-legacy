@@ -197,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
       true);
   proto.mutable_accessibility_settings()
       ->mutable_login_screen_large_cursor_enabled_options()
-      ->set_mode(em::DevicePolicyOptions::RECOMMENDED);
+      ->set_mode(em::PolicyOptions::RECOMMENDED);
   proto.mutable_accessibility_settings()
       ->set_login_screen_default_large_cursor_enabled(false);
   RefreshDevicePolicyAndWaitForPrefChange(
@@ -216,7 +216,7 @@ IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
       false);
   proto.mutable_accessibility_settings()
       ->mutable_login_screen_large_cursor_enabled_options()
-      ->set_mode(em::DevicePolicyOptions::RECOMMENDED);
+      ->set_mode(em::PolicyOptions::RECOMMENDED);
   proto.mutable_accessibility_settings()
       ->set_login_screen_default_large_cursor_enabled(true);
   RefreshDevicePolicyAndWaitForPrefChange(

@@ -89,7 +89,7 @@ void NativeFileSystemFileHandleImpl::CreateFileWriter(
 }
 
 void NativeFileSystemFileHandleImpl::Transfer(
-    blink::mojom::NativeFileSystemTransferTokenRequest token) {
+    mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken> token) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   manager()->CreateTransferToken(*this, std::move(token));

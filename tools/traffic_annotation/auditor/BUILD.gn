@@ -18,6 +18,8 @@ proto_library("chrome_settings_full_runtime") {
         "/components/policy/proto/cloud_policy_full_runtime.proto",
     "$root_gen_dir" +
         "/components/policy/proto/chrome_settings_full_runtime.proto",
+    "$root_gen_dir" +
+        "/components/policy/proto/policy_common_definitions_full_runtime.proto",
   ]
 
   use_protobuf_full = true

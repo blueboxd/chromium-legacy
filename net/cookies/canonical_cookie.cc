@@ -434,6 +434,13 @@ CanonicalCookie::CookieInclusionStatus CanonicalCookie::IncludeForRequestURL(
     status.AddExclusionReason(CookieInclusionStatus::EXCLUDE_NOT_ON_PATH);
   // Don't include same-site cookies for cross-site requests.
   CookieEffectiveSameSite effective_same_site = GetEffectiveSameSite();
+  // Log the effective SameSite mode that is applied to the cookie on this
+  // request, if its SameSite was not specified.
+  if (SameSite() == CookieSameSite::UNSPECIFIED) {
+    UMA_HISTOGRAM_ENUMERATION("Cookie.SameSiteUnspecifiedEffective",
+                              effective_same_site,
+                              CookieEffectiveSameSite::COUNT);
+  }
   switch (effective_same_site) {
     case CookieEffectiveSameSite::STRICT_MODE:
       if (options.same_site_cookie_context() <

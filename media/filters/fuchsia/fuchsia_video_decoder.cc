@@ -165,6 +165,7 @@ class FuchsiaVideoDecoder : public VideoDecoder,
 
   // VideoDecoder implementation.
   std::string GetDisplayName() const override;
+  bool IsPlatformDecoder() const override;
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
                   CdmContext* cdm_context,
@@ -301,6 +302,10 @@ FuchsiaVideoDecoder::~FuchsiaVideoDecoder() {
 
 std::string FuchsiaVideoDecoder::GetDisplayName() const {
   return "FuchsiaVideoDecoder";
+}
+
+bool FuchsiaVideoDecoder::IsPlatformDecoder() const {
+  return true;
 }
 
 void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,

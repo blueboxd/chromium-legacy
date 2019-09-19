@@ -30,13 +30,13 @@
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
 #include "chromeos/services/media_perception/public/mojom/media_perception.mojom.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/chromeos_camera/camera_app_helper_impl.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/media_device_id.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/media_perception_private/media_perception_api_delegate.h"
 #include "media/capture/video/chromeos/camera_app_device_provider_impl.h"
-#include "media/capture/video/chromeos/camera_app_helper_impl.h"
 #include "media/capture/video/chromeos/mojom/camera_app.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -120,7 +120,8 @@ void ConnectToCameraAppHelper(cros::mojom::CameraAppHelperRequest request,
   auto intent_callback = base::BindRepeating(
       &TriggerCameraIntent, source->GetProcess()->GetBrowserContext());
   auto camera_app_helper =
-      std::make_unique<media::CameraAppHelperImpl>(std::move(intent_callback));
+      std::make_unique<chromeos_camera::CameraAppHelperImpl>(
+          std::move(intent_callback));
   mojo::MakeStrongBinding(std::move(camera_app_helper), std::move(request));
 }
 #endif

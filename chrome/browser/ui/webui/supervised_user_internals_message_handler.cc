@@ -193,8 +193,6 @@ void SupervisedUserInternalsMessageHandler::SendBasicInfo() {
   std::unique_ptr<base::ListValue> section_list(new base::ListValue);
 
   base::ListValue* section_general = AddSection(section_list.get(), "General");
-  AddSectionEntry(section_general, "Chrome version",
-                  chrome::GetVersionString());
   AddSectionEntry(section_general, "Child detection enabled",
                   ChildAccountService::IsChildAccountDetectionEnabled());
 

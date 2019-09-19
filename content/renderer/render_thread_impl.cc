@@ -91,7 +91,9 @@
 #include "content/renderer/media/audio/audio_renderer_mixer_manager.h"
 #include "content/renderer/media/gpu/gpu_video_accelerator_factories_impl.h"
 #include "content/renderer/media/render_media_client.h"
+#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
+#include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "content/renderer/net_info_helper.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process_impl.h"
@@ -743,6 +745,9 @@ void RenderThreadImpl::Init() {
   peer_connection_tracker_.reset(
       new PeerConnectionTracker(main_thread_runner()));
   AddObserver(peer_connection_tracker_.get());
+
+  peer_connection_factory_.reset(new PeerConnectionDependencyFactory(
+      /*create_p2p_socket_dispatcher =*/true));
 
   unfreezable_message_filter_ = new UnfreezableMessageFilter(this);
   AddFilter(unfreezable_message_filter_.get());
@@ -1992,6 +1997,11 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
 blink::AssociatedInterfaceRegistry*
 RenderThreadImpl::GetAssociatedInterfaceRegistry() {
   return &associated_interfaces_;
+}
+
+PeerConnectionDependencyFactory*
+RenderThreadImpl::GetPeerConnectionDependencyFactory() {
+  return peer_connection_factory_.get();
 }
 
 mojom::RenderMessageFilter* RenderThreadImpl::render_message_filter() {

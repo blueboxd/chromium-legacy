@@ -33,6 +33,7 @@ extern const base::Feature kSyncUSSBookmarks;
 extern const base::Feature kSyncUSSPasswords;
 extern const base::Feature kSyncUSSNigori;
 extern const base::Feature kSyncWifiConfigurations;
+extern const base::Feature kUpdateBookmarkGUIDWithNodeReplacement;
 
 }  // namespace switches
 

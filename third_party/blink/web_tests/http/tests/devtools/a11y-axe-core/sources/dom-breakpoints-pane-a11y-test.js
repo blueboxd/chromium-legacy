@@ -5,14 +5,17 @@
 (async function() {
   await TestRunner.loadModule('axe_core_test_runner');
   await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('elements');
   await TestRunner.showPanel('sources');
   await TestRunner.navigatePromise(
-      '../../sources/debugger-breakpoints/resources/dom-breakpoints.html');
+    '../../sources/debugger-breakpoints/resources/dom-breakpoints.html');
 
   TestRunner.addResult('Testing accessibility in the DOM breakpoints pane.');
-  await UI.viewManager.showView('sources.domBreakpoints');
-  const domBreakpointsPane =
-      self.runtime.sharedInstance(BrowserDebugger.DOMBreakpointsSidebarPane);
+
+  // Expand the DOM Breakpoints container
+  const domBreakpointContainer = UI.panels.sources._sidebarPaneStack._expandableContainers.get('sources.domBreakpoints');
+  await domBreakpointContainer._expand();
 
   TestRunner.addResult('Setting DOM breakpoints.');
   const rootElement = await ElementsTestRunner.nodeWithIdPromise('rootElement');
@@ -24,10 +27,15 @@
       hostElement, SDK.DOMDebuggerModel.DOMBreakpoint.Type.NodeRemoved);
   TestRunner.domDebuggerModel.toggleDOMBreakpoint(breakpoint, false);
 
+  const domBreakpointsPane =
+    self.runtime.sharedInstance(BrowserDebugger.DOMBreakpointsSidebarPane);
+
+  TestRunner.addResult(`DOM breakpoints container text content: ${domBreakpointContainer.contentElement.deepTextContent()}`);
   TestRunner.addResult(`DOM breakpoints pane text content: ${domBreakpointsPane.contentElement.deepTextContent()}`);
+
   TestRunner.addResult(
       'Running the axe-core linter on the DOM breakpoints pane.');
-  await AxeCoreTestRunner.runValidation(domBreakpointsPane.contentElement);
 
+  await AxeCoreTestRunner.runValidation(domBreakpointContainer.element);
   TestRunner.completeTest();
 })();

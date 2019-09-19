@@ -56,7 +56,8 @@ RendererAudioOutputStreamFactoryContextImpl::CreateDelegate(
     int render_frame_id,
     int stream_id,
     const media::AudioParameters& params,
-    media::mojom::AudioOutputStreamObserverPtr stream_observer,
+    mojo::PendingRemote<media::mojom::AudioOutputStreamObserver>
+        stream_observer,
     media::AudioOutputDelegate::EventHandler* handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   MediaObserver* const media_observer =

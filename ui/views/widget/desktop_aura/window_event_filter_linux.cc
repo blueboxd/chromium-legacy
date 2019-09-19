@@ -25,9 +25,7 @@ namespace views {
 WindowEventFilterLinux::WindowEventFilterLinux(
     DesktopWindowTreeHost* window_tree_host,
     ui::WmMoveResizeHandler* handler)
-    : window_tree_host_(window_tree_host), handler_(handler) {
-  DCHECK(handler_);
-}
+    : window_tree_host_(window_tree_host), handler_(handler) {}
 
 WindowEventFilterLinux::~WindowEventFilterLinux() = default;
 
@@ -154,7 +152,8 @@ void WindowEventFilterLinux::LowerWindow() {}
 void WindowEventFilterLinux::MaybeDispatchHostWindowDragMovement(
     int hittest,
     ui::MouseEvent* event) {
-  if (event->IsLeftMouseButton() && ui::CanPerformDragOrResize(hittest)) {
+  if (handler_ && event->IsLeftMouseButton() &&
+      ui::CanPerformDragOrResize(hittest)) {
     // Some platforms (eg X11) may require last pointer location not in the
     // local surface coordinates, but rather in the screen coordinates for
     // interactive move/resize.

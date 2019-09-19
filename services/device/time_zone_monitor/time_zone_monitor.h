@@ -9,9 +9,10 @@
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/device/public/mojom/time_zone_monitor.mojom.h"
 
 template <class T>
@@ -50,7 +51,7 @@ class TimeZoneMonitor : public device::mojom::TimeZoneMonitor {
 
   ~TimeZoneMonitor() override;
 
-  void Bind(device::mojom::TimeZoneMonitorRequest request);
+  void Bind(mojo::PendingReceiver<device::mojom::TimeZoneMonitor> receiver);
 
  protected:
   TimeZoneMonitor();
@@ -65,8 +66,8 @@ class TimeZoneMonitor : public device::mojom::TimeZoneMonitor {
   void AddClient(mojo::PendingRemote<device::mojom::TimeZoneMonitorClient>
                      client) override;
 
-  mojo::BindingSet<device::mojom::TimeZoneMonitor> bindings_;
-  mojo::InterfacePtrSet<device::mojom::TimeZoneMonitorClient> clients_;
+  mojo::ReceiverSet<device::mojom::TimeZoneMonitor> receivers_;
+  mojo::RemoteSet<device::mojom::TimeZoneMonitorClient> clients_;
   DISALLOW_COPY_AND_ASSIGN(TimeZoneMonitor);
 };
 

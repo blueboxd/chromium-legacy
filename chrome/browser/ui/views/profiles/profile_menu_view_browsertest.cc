@@ -674,10 +674,10 @@ class ProfileMenuClickTest_MultipleProfiles : public ProfileMenuClickTest {
        ProfileMenuView::ActionableItem::kCreditCardsButton,
        ProfileMenuView::ActionableItem::kAddressesButton,
        ProfileMenuView::ActionableItem::kSigninButton,
+       ProfileMenuView::ActionableItem::kManageProfilesButton,
        ProfileMenuView::ActionableItem::kOtherProfileButton,
        ProfileMenuView::ActionableItem::kOtherProfileButton,
        ProfileMenuView::ActionableItem::kGuestProfileButton,
-       ProfileMenuView::ActionableItem::kManageProfilesButton,
        ProfileMenuView::ActionableItem::kAddNewProfileButton,
        ProfileMenuView::ActionableItem::kExitProfileButton,
        // The first button is added again to finish the cycle and test that
@@ -722,8 +722,8 @@ class ProfileMenuClickTest_WithPrimaryAccount : public ProfileMenuClickTest {
        ProfileMenuView::ActionableItem::kCreditCardsButton,
        ProfileMenuView::ActionableItem::kAddressesButton,
        ProfileMenuView::ActionableItem::kManageGoogleAccountButton,
-       ProfileMenuView::ActionableItem::kGuestProfileButton,
        ProfileMenuView::ActionableItem::kManageProfilesButton,
+       ProfileMenuView::ActionableItem::kGuestProfileButton,
        ProfileMenuView::ActionableItem::kAddNewProfileButton,
        ProfileMenuView::ActionableItem::kExitProfileButton,
        // The first button is added again to finish the cycle and test that
@@ -774,8 +774,8 @@ class ProfileMenuClickTest_WithUnconsentedPrimaryAccount
        ProfileMenuView::ActionableItem::kSigninAccountButton,
        ProfileMenuView::ActionableItem::kManageGoogleAccountButton,
        ProfileMenuView::ActionableItem::kSignoutButton,
-       ProfileMenuView::ActionableItem::kGuestProfileButton,
        ProfileMenuView::ActionableItem::kManageProfilesButton,
+       ProfileMenuView::ActionableItem::kGuestProfileButton,
        ProfileMenuView::ActionableItem::kAddNewProfileButton,
        ProfileMenuView::ActionableItem::kExitProfileButton,
        // The first button is added again to finish the cycle and test that

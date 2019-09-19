@@ -14,6 +14,7 @@
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/common/api/serial.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/serial.mojom.h"
 
 namespace content {
@@ -80,7 +81,7 @@ class SerialPortManager : public BrowserContextKeyedAPI {
       std::vector<device::mojom::SerialPortInfoPtr> devices);
   void OnPortManagerConnectionError();
 
-  device::mojom::SerialPortManagerPtr port_manager_;
+  mojo::Remote<device::mojom::SerialPortManager> port_manager_;
   content::BrowserThread::ID thread_id_;
   scoped_refptr<ConnectionData> connections_;
   content::BrowserContext* const context_;

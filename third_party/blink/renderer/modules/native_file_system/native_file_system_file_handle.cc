@@ -76,10 +76,10 @@ ScriptPromise NativeFileSystemFileHandle::getFile(ScriptState* script_state) {
   return result;
 }
 
-mojom::blink::NativeFileSystemTransferTokenPtr
+mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken>
 NativeFileSystemFileHandle::Transfer() {
-  mojom::blink::NativeFileSystemTransferTokenPtr result;
-  mojo_ptr_->Transfer(mojo::MakeRequest(&result));
+  mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken> result;
+  mojo_ptr_->Transfer(result.InitWithNewPipeAndPassReceiver());
   return result;
 }
 

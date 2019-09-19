@@ -100,10 +100,31 @@ class Metrics {
     kMaxValue = NOTCHANGED_FAILURE
   };
 
+  // Whether a billing postal code was required and whether the user ultimately
+  // succeeded or not.
+  //
+  // This enum is used in histograms, do not remove/renumber entries. Only add
+  // at the end and update kMaxValue. Also remember to update the
+  // AutofillAssistantPaymentRequestMandatoryPostalCode enum listing
+  // in tools/metrics/histograms/enums.xml.
+  enum class PaymentRequestMandatoryPostalCode {
+    REQUIRED_INITIALLY_WRONG_SUCCESS = 0,
+    REQUIRED_INITIALLY_WRONG_FAILURE = 1,
+    REQUIRED_INITIALLY_RIGHT_SUCCESS = 2,
+    REQUIRED_INITIALLY_RIGHT_FAILURE = 3,
+    NOT_REQUIRED = 4,
+
+    kMaxValue = NOT_REQUIRED
+  };
+
   static void RecordDropOut(DropOutReason reason);
   static void RecordPaymentRequestPrefilledSuccess(bool initially_complete,
                                                    bool success);
   static void RecordPaymentRequestAutofillChanged(bool changed, bool success);
+  static void RecordPaymentRequestFirstNameOnly(bool first_name_only);
+  static void RecordPaymentRequestMandatoryPostalCode(bool required,
+                                                      bool initially_right,
+                                                      bool success);
 
   // Intended for debugging: writes string representation of |reason| to |out|.
   friend std::ostream& operator<<(std::ostream& out,

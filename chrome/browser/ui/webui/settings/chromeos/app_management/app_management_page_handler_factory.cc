@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "chrome/browser/apps/app_service/app_icon_source.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/app_management/app_management.mojom.h"
 #include "chrome/browser/ui/webui/app_management/app_management_page_handler.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chromium_strings.h"
@@ -19,37 +20,29 @@
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/base/resource/resource_bundle.h"
 
 AppManagementPageHandlerFactory::AppManagementPageHandlerFactory(
     Profile* profile)
-    : page_factory_binding_(this), profile_(profile) {}
+    : profile_(profile) {}
 
 AppManagementPageHandlerFactory::~AppManagementPageHandlerFactory() = default;
 
 void AppManagementPageHandlerFactory::Bind(
-    app_management::mojom::PageHandlerFactoryRequest request) {
-  if (page_factory_binding_.is_bound()) {
-    page_factory_binding_.Unbind();
-  }
+    mojo::PendingReceiver<app_management::mojom::PageHandlerFactory> receiver) {
+  page_factory_receiver_.reset();
 
-  page_factory_binding_.Bind(std::move(request));
-}
-
-void AppManagementPageHandlerFactory::BindPageHandlerFactory(
-    app_management::mojom::PageHandlerFactoryRequest request) {
-  if (page_factory_binding_.is_bound()) {
-    page_factory_binding_.Unbind();
-  }
-
-  page_factory_binding_.Bind(std::move(request));
+  page_factory_receiver_.Bind(std::move(receiver));
 }
 
 void AppManagementPageHandlerFactory::CreatePageHandler(
-    app_management::mojom::PagePtr page,
-    app_management::mojom::PageHandlerRequest request) {
+    mojo::PendingRemote<app_management::mojom::Page> page,
+    mojo::PendingReceiver<app_management::mojom::PageHandler> receiver) {
   DCHECK(page);
 
   page_handler_ = std::make_unique<AppManagementPageHandler>(
-      std::move(request), std::move(page), profile_);
+      std::move(receiver), std::move(page), profile_);
 }

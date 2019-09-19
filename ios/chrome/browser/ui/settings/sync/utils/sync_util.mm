@@ -7,7 +7,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/unified_consent/feature.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"

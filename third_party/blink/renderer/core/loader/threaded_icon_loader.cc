@@ -8,6 +8,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "skia/ext/image_operations.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_frame.h"

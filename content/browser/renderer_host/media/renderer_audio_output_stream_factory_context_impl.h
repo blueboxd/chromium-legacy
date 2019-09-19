@@ -12,6 +12,7 @@
 #include "content/browser/renderer_host/media/old_render_frame_audio_output_stream_factory.h"
 #include "content/browser/renderer_host/media/renderer_audio_output_stream_factory_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace media {
 class AudioManager;
@@ -68,7 +69,8 @@ class CONTENT_EXPORT RendererAudioOutputStreamFactoryContextImpl
       int render_frame_id,
       int stream_id,
       const media::AudioParameters& params,
-      media::mojom::AudioOutputStreamObserverPtr stream_observer,
+      mojo::PendingRemote<media::mojom::AudioOutputStreamObserver>
+          stream_observer,
       media::AudioOutputDelegate::EventHandler* handler) override;
 
  private:

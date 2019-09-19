@@ -171,6 +171,10 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FilesToast) {
   RunTestURL("foreground/elements/files_toast_unittest_gen.html");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, FilesDisplayPanel) {
+  RunTestURL("foreground/elements/files_xf_elements_unittest_gen.html");
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, SpinnerController) {
   RunTestURL("foreground/js/spinner_controller_unittest_gen.html");
 }

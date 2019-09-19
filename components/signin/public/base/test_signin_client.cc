@@ -70,10 +70,6 @@ void TestSigninClient::OverrideTestUrlLoaderFactory(
   test_url_loader_factory_ = factory;
 }
 
-std::string TestSigninClient::GetProductVersion() {
-  return "";
-}
-
 void TestSigninClient::SetNetworkCallsDelayed(bool value) {
   network_calls_delayed_ = value;
 

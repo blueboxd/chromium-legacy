@@ -2219,6 +2219,7 @@ TEST_P(WebStateObserverTest, DisallowResponse) {
                                                       &context, &nav_id));
   test::LoadUrl(web_state(), test_server_->GetURL("/echo"));
   ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));
+  EXPECT_EQ("", web_state()->GetVisibleURL());
 }
 
 // Tests stopping a navigation. Did FinishLoading and PageLoaded are never

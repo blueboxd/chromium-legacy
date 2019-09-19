@@ -34,7 +34,7 @@
 #include "content/public/browser/service_process_host.h"
 #include "content/public/browser/video_capture_device_launcher.h"
 #include "content/public/browser/web_contents.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/viz/public/mojom/gpu.mojom.h"
 #include "ui/display/display.h"
@@ -49,22 +49,23 @@ constexpr gfx::Size kMaxResolution(1920, 1080);
 
 namespace {
 
-void CreateVideoCaptureHostOnIO(const std::string& device_id,
-                                blink::mojom::MediaStreamType type,
-                                media::mojom::VideoCaptureHostRequest request) {
+void CreateVideoCaptureHostOnIO(
+    const std::string& device_id,
+    blink::mojom::MediaStreamType type,
+    mojo::PendingReceiver<media::mojom::VideoCaptureHost> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scoped_refptr<base::SingleThreadTaskRunner> device_task_runner =
       base::CreateSingleThreadTaskRunner(
           {base::ThreadPool(), base::TaskPriority::USER_BLOCKING,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
           base::SingleThreadTaskRunnerThreadMode::DEDICATED);
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<SingleClientVideoCaptureHost>(
           device_id, type,
           base::BindRepeating(&content::VideoCaptureDeviceLauncher::
                                   CreateInProcessVideoCaptureDeviceLauncher,
                               std::move(device_task_runner))),
-      std::move(request));
+      std::move(receiver));
 }
 
 blink::mojom::MediaStreamType ConvertVideoStreamType(
@@ -120,13 +121,13 @@ base::Optional<gfx::Size> GetScreenResolution() {
 // static
 void CastMirroringServiceHost::GetForTab(
     content::WebContents* target_contents,
-    mojom::MirroringServiceHostRequest request) {
+    mojo::PendingReceiver<mojom::MirroringServiceHost> receiver) {
   if (target_contents) {
     const content::DesktopMediaID media_id =
         BuildMediaIdForWebContents(target_contents);
-    mojo::MakeStrongBinding(
+    mojo::MakeSelfOwnedReceiver(
         std::make_unique<CastMirroringServiceHost>(media_id),
-        std::move(request));
+        std::move(receiver));
   }
 }
 
@@ -134,7 +135,7 @@ void CastMirroringServiceHost::GetForTab(
 void CastMirroringServiceHost::GetForDesktop(
     content::WebContents* initiator_contents,
     const std::string& desktop_stream_id,
-    mojom::MirroringServiceHostRequest request) {
+    mojo::PendingReceiver<mojom::MirroringServiceHost> receiver) {
   DCHECK(!desktop_stream_id.empty());
   if (initiator_contents) {
     std::string original_extension_name;
@@ -145,9 +146,9 @@ void CastMirroringServiceHost::GetForDesktop(
             initiator_contents->GetMainFrame()->GetRoutingID(),
             initiator_contents->GetVisibleURL().GetOrigin(),
             &original_extension_name, content::kRegistryStreamTypeDesktop);
-    mojo::MakeStrongBinding(
+    mojo::MakeSelfOwnedReceiver(
         std::make_unique<CastMirroringServiceHost>(media_id),
-        std::move(request));
+        std::move(receiver));
   }
 }
 
@@ -156,19 +157,18 @@ void CastMirroringServiceHost::GetForOffscreenTab(
     content::BrowserContext* context,
     const GURL& presentation_url,
     const std::string& presentation_id,
-    mojom::MirroringServiceHostRequest request) {
+    mojo::PendingReceiver<mojom::MirroringServiceHost> receiver) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   auto host =
       std::make_unique<CastMirroringServiceHost>(content::DesktopMediaID());
   host->OpenOffscreenTab(context, presentation_url, presentation_id);
-  mojo::MakeStrongBinding(std::move(host), std::move(request));
+  mojo::MakeSelfOwnedReceiver(std::move(host), std::move(receiver));
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 }
 
 CastMirroringServiceHost::CastMirroringServiceHost(
     content::DesktopMediaID source_media_id)
     : source_media_id_(source_media_id),
-      resource_provider_binding_(this),
       gpu_client_(nullptr, base::OnTaskRunnerDeleter(nullptr)) {
   // Observe the target WebContents for Tab mirroring.
   if (source_media_id_.type == content::DesktopMediaID::TYPE_WEB_CONTENTS)
@@ -179,9 +179,9 @@ CastMirroringServiceHost::~CastMirroringServiceHost() {}
 
 void CastMirroringServiceHost::Start(
     mojom::SessionParametersPtr session_params,
-    mojom::SessionObserverPtr observer,
-    mojom::CastMessageChannelPtr outbound_channel,
-    mojom::CastMessageChannelRequest inbound_channel) {
+    mojo::PendingRemote<mojom::SessionObserver> observer,
+    mojo::PendingRemote<mojom::CastMessageChannel> outbound_channel,
+    mojo::PendingReceiver<mojom::CastMessageChannel> inbound_channel) {
   // Start() should not be called in the middle of a mirroring session.
   if (mirroring_service_) {
     LOG(WARNING) << "Unexpected Start() call during an active"
@@ -197,8 +197,8 @@ void CastMirroringServiceHost::Start(
           .WithDisplayName("Mirroring Service")
           .WithSandboxType(service_manager::SANDBOX_TYPE_UTILITY)
           .Pass());
-  mojom::ResourceProviderPtr provider;
-  resource_provider_binding_.Bind(mojo::MakeRequest(&provider));
+  mojo::PendingRemote<mojom::ResourceProvider> provider;
+  resource_provider_receiver.Bind(provider.InitWithNewPipeAndPassReceiver());
   mirroring_service_->Start(
       std::move(session_params), GetCaptureResolutionConstraint(),
       std::move(observer), std::move(provider), std::move(outbound_channel),
@@ -254,12 +254,12 @@ void CastMirroringServiceHost::BindGpu(
 }
 
 void CastMirroringServiceHost::GetVideoCaptureHost(
-    media::mojom::VideoCaptureHostRequest request) {
+    mojo::PendingReceiver<media::mojom::VideoCaptureHost> receiver) {
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&CreateVideoCaptureHostOnIO, source_media_id_.ToString(),
                      ConvertVideoStreamType(source_media_id_.type),
-                     std::move(request)));
+                     std::move(receiver)));
 }
 
 void CastMirroringServiceHost::GetNetworkContext(

@@ -169,6 +169,7 @@ class SVGUseElement;
 class Text;
 class TrustedHTML;
 class ScriptElementBase;
+class ScriptPromise;
 class ScriptRunner;
 class ScriptableDocumentParser;
 class ScriptedAnimationController;
@@ -1000,6 +1001,11 @@ class CORE_EXPORT Document : public ContainerNode,
   scoped_refptr<const SecurityOrigin> TopFrameOrigin() const;
 
   const KURL SiteForCookies() const;
+
+  // Storage Access API methods to check for or request access to storage that
+  // may otherwise be blocked.
+  ScriptPromise hasStorageAccess(ScriptState* script_state) const;
+  ScriptPromise requestStorageAccess(ScriptState* script_state) const;
 
   // The following implements the rule from HTML 4 for what valid names are.
   // To get this right for all the XML cases, we probably have to improve this

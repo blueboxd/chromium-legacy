@@ -9,8 +9,9 @@
 
 #include "base/macros.h"
 #include "base/unguessable_token.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/device/public/mojom/serial.mojom.h"
 
 namespace device {
@@ -20,7 +21,7 @@ class FakeSerialPortManager : public mojom::SerialPortManager {
   FakeSerialPortManager();
   ~FakeSerialPortManager() override;
 
-  void AddBinding(mojom::SerialPortManagerRequest request);
+  void AddReceiver(mojo::PendingReceiver<mojom::SerialPortManager> receiver);
   void AddPort(mojom::SerialPortInfoPtr port);
 
   // mojom::SerialPortManager
@@ -32,7 +33,7 @@ class FakeSerialPortManager : public mojom::SerialPortManager {
 
  private:
   std::map<base::UnguessableToken, mojom::SerialPortInfoPtr> ports_;
-  mojo::BindingSet<mojom::SerialPortManager> bindings_;
+  mojo::ReceiverSet<mojom::SerialPortManager> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSerialPortManager);
 };

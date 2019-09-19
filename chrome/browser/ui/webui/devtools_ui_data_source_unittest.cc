@@ -50,8 +50,14 @@ class TestDevToolsDataSource : public DevToolsDataSource {
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       int load_flags,
       const GotDataCallback& callback) override {
-    std::string copy_of_url = url.spec();
-    callback.Run(base::RefCountedString::TakeString(&copy_of_url));
+    std::string result = "url: " + url.spec();
+    callback.Run(base::RefCountedString::TakeString(&result));
+  }
+
+  void StartFileRequest(const std::string& path,
+                        const GotDataCallback& callback) override {
+    std::string result = "file: " + path;
+    callback.Run(base::RefCountedString::TakeString(&result));
   }
 };
 
@@ -120,12 +126,23 @@ TEST_F(DevToolsUIDataSourceTest, TestDevToolsBundledURLWithQueryParam) {
   EXPECT_FALSE(data().empty());
 }
 
+TEST_F(DevToolsUIDataSourceTest, TestDevToolsBundledURLWithSwitch) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kCustomDevtoolsFrontend, "file://tmp/");
+  const GURL path =
+      DevToolsUrl().Resolve(DevToolsBundledPath(kDevToolsUITestFrontEndUrl));
+  StartRequest(path.path());
+  EXPECT_TRUE(data_received());
+  EXPECT_EQ(data(), "file: devtools_app.html");
+}
+
 TEST_F(DevToolsUIDataSourceTest, TestDevToolsInvalidBundledURL) {
   const GURL path =
       DevToolsUrl().Resolve(DevToolsBundledPath("invalid_devtools_app.html"));
   StartRequest(path.path());
   EXPECT_TRUE(data_received());
-  EXPECT_TRUE(data().empty());
+  ASSERT_TRUE(base::StartsWith(data(), kDevToolsUITest404Response,
+                               base::CompareCase::SENSITIVE));
 }
 
 TEST_F(DevToolsUIDataSourceTest, TestDevToolsInvalidBundledURLWithQueryParam) {
@@ -133,7 +150,8 @@ TEST_F(DevToolsUIDataSourceTest, TestDevToolsInvalidBundledURLWithQueryParam) {
       DevToolsUrl().Resolve(DevToolsBundledPath("invalid_devtools_app.html"));
   StartRequest(path.path() + "?foo");
   EXPECT_TRUE(data_received());
-  EXPECT_TRUE(data().empty());
+  ASSERT_TRUE(base::StartsWith(data(), kDevToolsUITest404Response,
+                               base::CompareCase::SENSITIVE));
 }
 
 // devtools/blank path
@@ -159,8 +177,9 @@ TEST_F(DevToolsUIDataSourceTest, TestDevToolsRemoteURL) {
       DevToolsUrl().Resolve(DevToolsRemotePath(kDevToolsUITestFrontEndUrl));
   StartRequest(path.path());
   EXPECT_TRUE(data_received());
-  EXPECT_EQ(data(),
-            "https://chrome-devtools-frontend.appspot.com/devtools_app.html");
+  EXPECT_EQ(
+      data(),
+      "url: https://chrome-devtools-frontend.appspot.com/devtools_app.html");
 }
 
 TEST_F(DevToolsUIDataSourceTest, TestDevToolsRemoteURLWithQueryParam) {
@@ -179,7 +198,8 @@ TEST_F(DevToolsUIDataSourceTest, TestDevToolsCustomURLWithNoSwitch) {
       DevToolsUrl().Resolve(DevToolsCustomPath(kDevToolsUITestFrontEndUrl));
   StartRequest(path.path());
   EXPECT_TRUE(data_received());
-  EXPECT_TRUE(data().empty());
+  ASSERT_TRUE(base::StartsWith(data(), kDevToolsUITest404Response,
+                               base::CompareCase::SENSITIVE));
 }
 
 TEST_F(DevToolsUIDataSourceTest, TestDevToolsCustomURLWithSwitch) {
@@ -189,7 +209,7 @@ TEST_F(DevToolsUIDataSourceTest, TestDevToolsCustomURLWithSwitch) {
       DevToolsUrl().Resolve(DevToolsCustomPath(kDevToolsUITestFrontEndUrl));
   StartRequest(path.path());
   EXPECT_TRUE(data_received());
-  EXPECT_EQ(data(), "http://localhost:8090/front_end/devtools_app.html");
+  EXPECT_EQ(data(), "url: http://localhost:8090/front_end/devtools_app.html");
 }
 
 TEST_F(DevToolsUIDataSourceTest, TestDevToolsCustomURLWithSwitchAndQueryParam) {
@@ -199,7 +219,8 @@ TEST_F(DevToolsUIDataSourceTest, TestDevToolsCustomURLWithSwitchAndQueryParam) {
       DevToolsUrl().Resolve(DevToolsCustomPath(kDevToolsUITestFrontEndUrl));
   StartRequest(path.path() + "?foo");
   EXPECT_TRUE(data_received());
-  EXPECT_EQ(data(), "http://localhost:8090/front_end/devtools_app.html?foo");
+  EXPECT_EQ(data(),
+            "url: http://localhost:8090/front_end/devtools_app.html?foo");
 }
 
 #if !DCHECK_IS_ON()
@@ -222,7 +243,8 @@ TEST_F(DevToolsUIDataSourceTest, TestDevToolsNoRoute) {
   const GURL path = DevToolsUrl().Resolve(kDevToolsUITestFrontEndUrl);
   StartRequest(path.path());
   EXPECT_TRUE(data_received());
-  EXPECT_TRUE(data().empty());
+  ASSERT_TRUE(base::StartsWith(data(), kDevToolsUITest404Response,
+                               base::CompareCase::SENSITIVE));
 }
 
 TEST_F(DevToolsUIDataSourceTest, TestDevToolsNoRouteWithSwitch) {
@@ -231,5 +253,6 @@ TEST_F(DevToolsUIDataSourceTest, TestDevToolsNoRouteWithSwitch) {
   const GURL path = DevToolsUrl().Resolve(kDevToolsUITestFrontEndUrl);
   StartRequest(path.path());
   EXPECT_TRUE(data_received());
-  EXPECT_TRUE(data().empty());
+  ASSERT_TRUE(base::StartsWith(data(), kDevToolsUITest404Response,
+                               base::CompareCase::SENSITIVE));
 }

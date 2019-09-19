@@ -35,7 +35,7 @@ class DisplayPanel extends HTMLElement {
      * @type {boolean}
      * @private
      */
-    this.collapsed_ = false;
+    this.collapsed_ = true;
 
     /**
      * Collection of PanelItems hosted in this DisplayPanel.
@@ -145,7 +145,10 @@ class DisplayPanel extends HTMLElement {
                 overflow: hidden;
               }
               .expandfinished {
+                max-height: calc(192px + 28px);
+                opacity: 1;
                 overflow-y: auto;
+                width: 400px;
               }
               xf-panel-item:not(:only-child) {
                 --multi-progress-height: 92px;
@@ -180,6 +183,18 @@ class DisplayPanel extends HTMLElement {
   }
 
   /**
+   * Set attributes and style for expanded summary panel.
+   * @private
+   */
+  setSummaryExpandedState(expandButton) {
+    expandButton.setAttribute('data-category', 'collapse');
+    expandButton.setAttribute('aria-label', '$i18n{FEEDBACK_COLLAPSE_LABEL}');
+    expandButton.setAttribute('aria-expanded', 'true');
+    this.panels_.hidden = false;
+    this.separator_.hidden = false;
+  }
+
+  /**
    * Event handler to toggle the visible state of panel items.
    * @private
    */
@@ -190,11 +205,7 @@ class DisplayPanel extends HTMLElement {
         summaryPanel.shadowRoot.querySelector('#primary-action');
     if (panel.collapsed_) {
       panel.collapsed_ = false;
-      expandButton.setAttribute('data-category', 'collapse');
-      expandButton.setAttribute('aria-label', '$i18n{FEEDBACK_COLLAPSE_LABEL}');
-      expandButton.setAttribute('aria-expanded', 'true');
-      panel.panels_.hidden = false;
-      panel.separator_.hidden = false;
+      panel.setSummaryExpandedState(expandButton);
       panel.panels_.listener_ = panel.panelExpandFinished;
       panel.panels_.addEventListener('animationend', panel.panelExpandFinished);
       panel.panels_.setAttribute('class', 'expanded expanding');
@@ -222,7 +233,12 @@ class DisplayPanel extends HTMLElement {
       return;
     }
     for (let i = 0; i < this.items_.length; ++i) {
-      total += Number(this.items_[i].progress);
+      let panel = this.items_[i];
+      // Only sum progress for attached progress panels.
+      if ((panel.panelType === panel.panelTypeProgress) &&
+          panel.parentNode !== null) {
+        total += Number(panel.progress);
+      }
     }
     total /= this.items_.length;
     const summaryPanel = this.summary_.querySelector('xf-panel-item');
@@ -244,7 +260,9 @@ class DisplayPanel extends HTMLElement {
     // Work out how many progress panels are being shown.
     let count = 0;
     for (let i = 0; i < this.items_.length; ++i) {
-      if (this.items_[i].panelType == this.items_[i].panelTypeProgress) {
+      let panel = this.items_[i];
+      if ((panel.panelType === panel.panelTypeProgress) &&
+          panel.parentNode !== null) {
         count++;
       }
     }
@@ -271,13 +289,46 @@ class DisplayPanel extends HTMLElement {
         button.addEventListener('click', this.toggleSummary);
       }
       summaryHost.appendChild(summaryPanel);
-      this.panels_.hidden = true;
-      this.collapsed_ = true;
+      // Setup the panels based on expand/collapse state of the summary panel.
+      if (this.collapsed_) {
+        this.panels_.hidden = true;
+      } else {
+        this.setSummaryExpandedState(button);
+        this.panels_.classList.add('expandfinished');
+      }
     }
     if (summaryPanel) {
       summaryPanel.setAttribute('count', count);
       this.updateProgress();
     }
+  }
+
+  /**
+   * Create a panel item suitable for attaching to our display panel.
+   * @param {string} id The identifier attached to this panel.
+   * @return {PanelItem}
+   * @public
+   */
+  createPanelItem(id) {
+    const panel = document.createElement('xf-panel-item');
+    panel.id = id;
+    // Set the containing parent so the child panel can
+    // trigger updates in the parent (e.g. progress summary %).
+    panel.parent = this;
+    panel.setAttribute('indicator', 'progress');
+    this.items_.push(/** @type {!PanelItem} */ (panel));
+    return /** @type {!PanelItem} */ (panel);
+  }
+
+  /**
+   * Attach a panel item element inside our display panel.
+   * @param {PanelItem} panel The panel item to attach.
+   * @public
+   */
+  attachPanelItem(panel) {
+    const displayPanel = panel.parent;
+    displayPanel.panels_.appendChild(panel);
+    displayPanel.updateSummaryPanel();
   }
 
   /**
@@ -287,15 +338,8 @@ class DisplayPanel extends HTMLElement {
    * @public
    */
   addPanelItem(id) {
-    const panel = document.createElement('xf-panel-item');
-    panel.id = id;
-    // Set the containing parent so the child panel can
-    // trigger updates in the parent (e.g. progress summary %).
-    panel.parent = this;
-    panel.setAttribute('indicator', 'progress');
-    this.panels_.appendChild(panel);
-    this.items_.push(/** @type {!PanelItem} */ (panel));
-    this.updateSummaryPanel();
+    const panel = this.createPanelItem(id);
+    this.attachPanelItem(panel);
     return /** @type {!PanelItem} */ (panel);
   }
 
@@ -319,8 +363,12 @@ class DisplayPanel extends HTMLElement {
    * @public
    */
   findPanelItemById(id) {
-    const panel = this.shadowRoot.querySelector('xf-panel-item[id=' + id + ']');
-    return panel || null;
+    for (let item of this.items_) {
+      if (item.getAttribute('id') === id) {
+        return item;
+      }
+    }
+    return null;
   }
 }
 

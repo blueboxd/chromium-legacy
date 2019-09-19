@@ -90,7 +90,7 @@
     "includes": [11930],
     "structures": [11990],
   },
-  "chrome/browser/resources/chromeos/camera/strings/camera_strings.grd": {
+  "chrome/browser/resources/chromeos/camera/src/strings/camera_strings.grd": {
     "messages": [12030],
   },
   "chrome/browser/resources/chromeos/cellular_setup/cellular_setup_resources.grd": {
@@ -152,9 +152,6 @@
   "chrome/browser/resources/tab_strip/tab_strip_resources.grd": {
     "structures": [13880],
   },
-  "chrome/browser/resources/translate_internals/translate_internals_resources.grd": {
-    "includes": [13900],
-  },
   "chrome/browser/resources/webapks/webapks_ui_resources.grd": {
     "includes": [13910],
   },
@@ -194,10 +191,6 @@
   # END chromeos/ section.
 
   # START components/ section.
-  "components/chrome_apps/chrome_apps_resources.grd": {
-    "includes": [15020],
-  },
-
   # Chromium strings and Google Chrome strings must start at the same id.
   # We only use one file depending on whether we're building Chromium or
   # Google Chrome.
@@ -227,7 +220,7 @@
   "components/resources/components_scaled_resources.grd": {
     "structures": [17400],
   },
-  "components/embedder_suppport/android/java/strings/web_contents_delegate_android_strings.grd": {
+  "components/embedder_support/android/java/strings/web_contents_delegate_android_strings.grd": {
     "messages": [17600],
   },
   "components/autofill/core/browser/autofill_address_rewriter_resources.grd":{
@@ -303,9 +296,6 @@
   "ios/web/ios_web_resources.grd": {
     "includes": [20000],
   },
-  "ios/web/shell/shell_resources.grd": {
-    "includes": [21500],
-  },
   "ios/web/test/test_resources.grd": {
     "includes": [22000],
   },
@@ -340,13 +330,6 @@
   },
   "ash/public/cpp/resources/ash_public_unscaled_resources.grd": {
     "includes": [24070],
-  },
-  "ash/shell/ash_shell_resources.grd": {
-    "includes": [24080],
-  },
-
-  "chromecast/browser/cast_browser_resources.grd": {
-    "includes": [24100],
   },
   "chromecast/renderer/resources/extensions_renderer_resources.grd": {
     "includes": [24110],
@@ -436,9 +419,6 @@
   },
   "ui/file_manager/file_manager_resources.grd": {
     "includes": [26550],
-  },
-  "ui/login/login_resources.grd": {
-    "includes": [26900],
   },
   "ui/resources/ui_resources.grd": {
     "structures": [27000],

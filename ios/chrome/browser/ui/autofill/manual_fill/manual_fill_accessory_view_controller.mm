@@ -46,6 +46,16 @@ constexpr CGFloat ManualFillIconsSpacing = 10;
 // iPad override for the icons' spacing.
 constexpr CGFloat ManualFillIconsIPadSpacing = 15;
 
+// Color to use for the buttons while enabled.
+UIColor* IconActiveTintColor() {
+  return [UIColor colorNamed:kToolbarButtonColor];
+}
+
+// Color to use for the buttons while highlighted.
+UIColor* IconHighlightTintColor() {
+  return [UIColor colorNamed:kBlueColor];
+}
+
 }  // namespace
 
 static NSTimeInterval MFAnimationDuration = 0.2;
@@ -87,7 +97,7 @@ static NSTimeInterval MFAnimationDuration = 0.2;
 - (void)resetAnimated:(BOOL)animated {
   [UIView animateWithDuration:animated ? MFAnimationDuration : 0
                    animations:^{
-                     [self resetTintColors];
+                     [self resetIcons];
                    }];
   if (!self.keyboardButton.hidden) {
     [self setKeyboardButtonHidden:YES animated:animated];
@@ -131,7 +141,7 @@ static NSTimeInterval MFAnimationDuration = 0.2;
   UIButton* button = [UIButton buttonWithType:UIButtonTypeSystem];
   UIImage* image = [UIImage imageNamed:imageName];
   [button setImage:image forState:UIControlStateNormal];
-  button.tintColor = [self activeTintColor];
+  button.tintColor = IconActiveTintColor();
   button.translatesAutoresizingMaskIntoConstraints = NO;
   [button addTarget:self
                 action:selector
@@ -220,16 +230,15 @@ static NSTimeInterval MFAnimationDuration = 0.2;
   ]];
 }
 
-// Resets the colors of all the icons to the active color.
-- (void)resetTintColors {
-  UIColor* activeTintColor = [self activeTintColor];
-  [self.accountButton setTintColor:activeTintColor];
-  [self.passwordButton setTintColor:activeTintColor];
-  [self.cardsButton setTintColor:activeTintColor];
-}
+// Resets the icon's color and userInteractionEnabled.
+- (void)resetIcons {
+  self.accountButton.userInteractionEnabled = YES;
+  self.cardsButton.userInteractionEnabled = YES;
+  self.passwordButton.userInteractionEnabled = YES;
 
-- (UIColor*)activeTintColor {
-  return [UIColor colorNamed:kToolbarButtonColor];
+  [self.accountButton setTintColor:IconActiveTintColor()];
+  [self.passwordButton setTintColor:IconActiveTintColor()];
+  [self.cardsButton setTintColor:IconActiveTintColor()];
 }
 
 - (void)setKeyboardButtonHidden:(BOOL)hidden animated:(BOOL)animated {
@@ -258,24 +267,27 @@ static NSTimeInterval MFAnimationDuration = 0.2;
 - (void)passwordButtonPressed:(UIButton*)sender {
   base::RecordAction(base::UserMetricsAction("ManualFallback_OpenPassword"));
   [self setKeyboardButtonHidden:NO animated:YES];
-  [self resetTintColors];
-  [self.passwordButton setTintColor:[UIColor colorNamed:kBlueColor]];
+  [self resetIcons];
+  self.passwordButton.userInteractionEnabled = NO;
+  self.passwordButton.tintColor = IconHighlightTintColor();
   [self.delegate passwordButtonPressed:sender];
 }
 
 - (void)cardButtonPressed:(UIButton*)sender {
   base::RecordAction(base::UserMetricsAction("ManualFallback_OpenCreditCard"));
   [self setKeyboardButtonHidden:NO animated:YES];
-  [self resetTintColors];
-  [self.cardsButton setTintColor:[UIColor colorNamed:kBlueColor]];
+  [self resetIcons];
+  self.cardsButton.userInteractionEnabled = NO;
+  self.cardsButton.tintColor = IconHighlightTintColor();
   [self.delegate cardButtonPressed:sender];
 }
 
 - (void)accountButtonPressed:(UIButton*)sender {
   base::RecordAction(base::UserMetricsAction("ManualFallback_OpenProfile"));
   [self setKeyboardButtonHidden:NO animated:YES];
-  [self resetTintColors];
-  [self.accountButton setTintColor:[UIColor colorNamed:kBlueColor]];
+  [self resetIcons];
+  self.accountButton.userInteractionEnabled = NO;
+  self.accountButton.tintColor = IconHighlightTintColor();
   [self.delegate accountButtonPressed:sender];
 }
 

@@ -57,8 +57,10 @@ void InertEffect::Sample(HeapVector<Member<Interpolation>>& result) const {
                  SpecifiedTiming().IterationDuration(), result);
 }
 
-double InertEffect::CalculateTimeToEffectChange(bool, double, double) const {
-  return std::numeric_limits<double>::infinity();
+AnimationTimeDelta InertEffect::CalculateTimeToEffectChange(bool,
+                                                            double,
+                                                            double) const {
+  return AnimationTimeDelta::Max();
 }
 
 void InertEffect::Trace(blink::Visitor* visitor) {

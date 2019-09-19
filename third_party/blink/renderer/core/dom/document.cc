@@ -62,6 +62,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/html_script_element_or_svg_script_element.h"
 #include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_element_creation_options.h"
@@ -6111,6 +6112,30 @@ const KURL Document::SiteForCookies() const {
   }
 
   return top_document_url;
+}
+
+ScriptPromise Document::hasStorageAccess(ScriptState* script_state) const {
+  const bool has_access =
+      GetSecurityOrigin()->IsSameSchemeHostPort(TopFrameOrigin().get());
+  ScriptPromiseResolver* resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+
+  // TODO (http://crbug.com/989663)
+  // Hookup actual logic to Resolve/Reject this request properly.
+  ScriptPromise promise = resolver->Promise();
+  resolver->Resolve(has_access);
+  return promise;
+}
+
+ScriptPromise Document::requestStorageAccess(ScriptState* script_state) const {
+  ScriptPromiseResolver* resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+
+  // TODO (http://crbug.com/989663)
+  // Hookup actual logic to Resolve/Reject this request properly.
+  ScriptPromise promise = resolver->Promise();
+  resolver->Reject();
+  return promise;
 }
 
 static bool IsValidNameNonASCII(const LChar* characters, unsigned length) {

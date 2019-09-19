@@ -13,7 +13,6 @@ source_set("signin_interaction") {
   ]
   deps = [
     "//base",
-    "//components//unified_consent",
     "//components/prefs",
     "//components/signin/public/identity_manager",
     "//ios/chrome/browser",
@@ -22,7 +21,6 @@ source_set("signin_interaction") {
     "//ios/chrome/browser/ui/alert_coordinator",
     "//ios/chrome/browser/ui/authentication",
     "//ios/chrome/browser/ui/commands",
-    "//ios/chrome/browser/unified_consent",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/signin",
   ]
@@ -39,7 +37,6 @@ source_set("eg_test_support") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//components/unified_consent",
     "//ios/chrome/app/strings",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
@@ -59,7 +56,6 @@ source_set("eg_tests") {
     ":eg_test_support",
     "//base",
     "//base/test:test_support",
-    "//components/unified_consent",
     "//ios/chrome/app:app_internal",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",

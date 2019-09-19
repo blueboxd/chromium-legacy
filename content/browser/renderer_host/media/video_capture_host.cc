@@ -15,7 +15,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace content {
 
@@ -73,14 +73,15 @@ VideoCaptureHost::VideoCaptureHost(
 }
 
 // static
-void VideoCaptureHost::Create(uint32_t render_process_id,
-                              MediaStreamManager* media_stream_manager,
-                              media::mojom::VideoCaptureHostRequest request) {
+void VideoCaptureHost::Create(
+    uint32_t render_process_id,
+    MediaStreamManager* media_stream_manager,
+    mojo::PendingReceiver<media::mojom::VideoCaptureHost> receiver) {
   DVLOG(1) << __func__;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  mojo::MakeStrongBinding(std::make_unique<VideoCaptureHost>(
-                              render_process_id, media_stream_manager),
-                          std::move(request));
+  mojo::MakeSelfOwnedReceiver(std::make_unique<VideoCaptureHost>(
+                                  render_process_id, media_stream_manager),
+                              std::move(receiver));
 }
 
 VideoCaptureHost::~VideoCaptureHost() {

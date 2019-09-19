@@ -1770,6 +1770,7 @@ interface Document : Node
     method getElementsByTagNameNS
     method getSelection
     method hasFocus
+    method hasStorageAccess
     method importNode
     method open
     method prepend
@@ -1782,6 +1783,7 @@ interface Document : Node
     method querySelectorAll
     method registerElement
     method releaseEvents
+    method requestStorageAccess
     method webkitCancelFullScreen
     method webkitExitFullscreen
     method write

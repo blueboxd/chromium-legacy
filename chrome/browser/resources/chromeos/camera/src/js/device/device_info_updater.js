@@ -22,10 +22,9 @@ cca.device.DeviceInfoUpdater = class {
   /**
    * @param {cca.device.PhotoResolPreferrer} photoPreferrer
    * @param {cca.device.VideoConstraintsPreferrer} videoPreferrer
-   * @param {cca.mojo.MojoConnector} mojoConnector
    * @public
    * */
-  constructor(photoPreferrer, videoPreferrer, mojoConnector) {
+  constructor(photoPreferrer, videoPreferrer) {
     /**
      * @type {cca.device.PhotoResolPreferrer}
      * @private
@@ -37,12 +36,6 @@ cca.device.DeviceInfoUpdater = class {
      * @private
      */
     this.videoPreferrer_ = videoPreferrer;
-
-    /**
-     * @type {cca.mojo.MojoConnector}
-     * @private
-     */
-    this.mojoConnector_ = mojoConnector;
 
     /**
      * Listeners to be called after new camera information is available.
@@ -165,16 +158,12 @@ cca.device.DeviceInfoUpdater = class {
    * @private
    */
   async queryMojoDevicesInfo_() {
-    const deviceOperator = await this.mojoConnector_.getDeviceOperator();
-    if (!deviceOperator) {
+    if (!await cca.mojo.DeviceOperator.isSupported()) {
       return null;
     }
-    // Non-null version for the Closure Compiler.
-    const nonNullDeviceOperator = deviceOperator;
-
     const deviceInfos = await this.devicesInfo_;
-    return await Promise.all(deviceInfos.map(
-        (d) => cca.device.Camera3DeviceInfo.create(d, nonNullDeviceOperator)));
+    return Promise.all(
+        deviceInfos.map((d) => cca.device.Camera3DeviceInfo.create(d)));
   }
 
   /**

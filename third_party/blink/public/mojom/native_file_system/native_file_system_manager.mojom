@@ -49,6 +49,6 @@ interface NativeFileSystemManager {
        array<NativeFileSystemEntry> entries);
 
   // TODO(mek): Add this method when it is needed for transferability of handles.
-  // GetHandleFromToken(NativeFileSystemTransferToken token) =>
+  // GetHandleFromToken(pending_remote<NativeFileSystemTransferToken> token) =>
   //     (NativeFileSystemError result, NativeFileSystemHandle? entry_handle);
 };

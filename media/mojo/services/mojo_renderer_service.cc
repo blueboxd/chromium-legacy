@@ -127,13 +127,16 @@ void MojoRendererService::SetCdm(int32_t cdm_id, SetCdmCallback callback) {
     return;
   }
 
-  cdm_context_ref_ = mojo_cdm_service_context_->GetCdmContextRef(cdm_id);
-  if (!cdm_context_ref_) {
+  auto cdm_context_ref = mojo_cdm_service_context_->GetCdmContextRef(cdm_id);
+  if (!cdm_context_ref) {
     DVLOG(1) << "CdmContextRef not found for CDM ID: " << cdm_id;
     std::move(callback).Run(false);
     return;
   }
 
+  // |cdm_context_ref_| must be kept as long as |cdm_context| is used by the
+  // |renderer_|.
+  cdm_context_ref_ = std::move(cdm_context_ref);
   auto* cdm_context = cdm_context_ref_->GetCdmContext();
   DCHECK(cdm_context);
 

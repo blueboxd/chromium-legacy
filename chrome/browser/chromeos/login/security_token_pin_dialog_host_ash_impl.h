@@ -35,6 +35,10 @@ class SecurityTokenPinDialogHostAshImpl final
   void CloseSecurityTokenPinDialog() override;
 
  private:
+  bool is_request_running() const {
+    return !pin_dialog_closed_callback_.is_null();
+  }
+
   // Called when the PIN entered by the user is received from the Ash Login/Lock
   // Screen UI.
   void OnUserInputReceived(const std::string& user_input);
@@ -45,7 +49,12 @@ class SecurityTokenPinDialogHostAshImpl final
   // started requests.
   void Reset();
 
+  // The callback to run when the user submits a non-empty input to the security
+  // token PIN dialog.
+  // Is non-empty iff the dialog is active and the input wasn't sent yet.
   SecurityTokenPinEnteredCallback pin_entered_callback_;
+  // The callback to run when the security token PIN dialog gets closed.
+  // Is non-empty iff the dialog is active.
   SecurityTokenPinDialogClosedCallback pin_dialog_closed_callback_;
 
   base::WeakPtrFactory<SecurityTokenPinDialogHostAshImpl> weak_ptr_factory_{

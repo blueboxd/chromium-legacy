@@ -2057,6 +2057,10 @@ bool NavigationControllerImpl::IsEntryMarkedToBeSkipped(int index) {
   return entry && entry->should_skip_on_back_forward_ui();
 }
 
+BackForwardCacheImpl& NavigationControllerImpl::GetBackForwardCache() {
+  return back_forward_cache_;
+}
+
 void NavigationControllerImpl::DiscardPendingEntry(bool was_failure) {
   // It is not safe to call DiscardPendingEntry while NavigateToEntry is in
   // progress, since this will cause a use-after-free.  (We only allow this

@@ -27,8 +27,9 @@ class MockControllerObserver : public ControllerObserver {
   MOCK_METHOD1(OnStateChanged, void(AutofillAssistantState));
   MOCK_METHOD1(OnUserActionsChanged,
                void(const std::vector<UserAction>& user_actions));
-  MOCK_METHOD1(OnPaymentRequestChanged,
+  MOCK_METHOD1(OnCollectUserDataOptionsChanged,
                void(const CollectUserDataOptions* options));
+  MOCK_METHOD1(OnUserDataChanged, void(const UserData* user_data));
   MOCK_METHOD1(OnDetailsChanged, void(const Details* details));
   MOCK_METHOD1(OnInfoBoxChanged, void(const InfoBox* info_box));
   MOCK_METHOD1(OnProgressChanged, void(int progress));
@@ -43,6 +44,8 @@ class MockControllerObserver : public ControllerObserver {
   MOCK_METHOD1(OnPeekModeChanged,
                void(ConfigureBottomSheetProto::PeekMode peek_mode));
   MOCK_METHOD1(OnFormChanged, void(const FormProto* form));
+
+  // TODO(b/141163294): add missing methods and unit tests.
 };
 
 }  // namespace autofill_assistant

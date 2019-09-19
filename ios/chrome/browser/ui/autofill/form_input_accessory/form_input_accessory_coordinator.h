@@ -57,6 +57,9 @@ class WebStateList;
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser NS_UNAVAILABLE;
 
+// This resets the input accessory to a clean state.
+- (void)reset;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTOFILL_FORM_INPUT_ACCESSORY_FORM_INPUT_ACCESSORY_COORDINATOR_H_

@@ -637,8 +637,8 @@ void WebRuntimeFeatures::EnableGetDisplayMedia(bool enable) {
   RuntimeEnabledFeatures::SetGetDisplayMediaEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableForbidSyncXHRInPageDismissal(bool enable) {
-  RuntimeEnabledFeatures::SetForbidSyncXHRInPageDismissalEnabled(enable);
+void WebRuntimeFeatures::EnableAllowSyncXHRInPageDismissal(bool enable) {
+  RuntimeEnabledFeatures::SetAllowSyncXHRInPageDismissalEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableShadowDOMV0(bool enable) {

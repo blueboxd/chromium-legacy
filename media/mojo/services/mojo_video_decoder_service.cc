@@ -178,13 +178,16 @@ void MojoVideoDecoderService::Initialize(const VideoDecoderConfig& config,
   // Get CdmContext from cdm_id if the stream is encrypted.
   CdmContext* cdm_context = nullptr;
   if (cdm_id != CdmContext::kInvalidCdmId) {
-    cdm_context_ref_ = mojo_cdm_service_context_->GetCdmContextRef(cdm_id);
-    if (!cdm_context_ref_) {
+    auto cdm_context_ref = mojo_cdm_service_context_->GetCdmContextRef(cdm_id);
+    if (!cdm_context_ref) {
       DVLOG(1) << "CdmContextRef not found for CDM id: " << cdm_id;
       OnDecoderInitialized(false);
       return;
     }
 
+    // |cdm_context_ref_| must be kept as long as |cdm_context| is used by the
+    // |decoder_|.
+    cdm_context_ref_ = std::move(cdm_context_ref);
     cdm_context = cdm_context_ref_->GetCdmContext();
     DCHECK(cdm_context);
   }

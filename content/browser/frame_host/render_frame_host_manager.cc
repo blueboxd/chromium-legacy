@@ -499,8 +499,8 @@ void RenderFrameHostManager::SwapOutOldFrame(
   // If the old RenderFrameHost can be stored in the BackForwardCache, return
   // early without swapping out and running unload handlers, as the document may
   // be restored later.
-  BackForwardCache& back_forward_cache =
-      delegate_->GetControllerForRenderManager().back_forward_cache();
+  BackForwardCacheImpl& back_forward_cache =
+      delegate_->GetControllerForRenderManager().GetBackForwardCache();
   if (back_forward_cache.CanStoreDocument(old_render_frame_host.get())) {
     back_forward_cache.Freeze(old_render_frame_host.get());
     back_forward_cache.StoreDocument(std::move(old_render_frame_host));
@@ -589,7 +589,7 @@ void RenderFrameHostManager::RestoreFromBackForwardCache(
 }
 
 void RenderFrameHostManager::UnfreezeCurrentFrameHost() {
-  delegate_->GetControllerForRenderManager().back_forward_cache().Resume(
+  delegate_->GetControllerForRenderManager().GetBackForwardCache().Resume(
       current_frame_host());
 }
 

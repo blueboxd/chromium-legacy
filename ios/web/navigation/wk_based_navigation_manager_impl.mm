@@ -335,10 +335,12 @@ void WKBasedNavigationManagerImpl::CommitPendingItem(
       // URL is correctly updated. This is a bug in WKWebView. Check to see if
       // the next or previous item matches, and update that item instead. If
       // nothing matches, still update the the currentItem.
-      if (item_url == net::GURLWithNSURL(back_forward_list.backItem.URL)) {
+      if (back_forward_list.backItem &&
+          item_url == net::GURLWithNSURL(back_forward_list.backItem.URL)) {
         SetNavigationItemInWKItem(back_forward_list.backItem, std::move(item));
-      } else if (item_url ==
-                 net::GURLWithNSURL(back_forward_list.forwardItem.URL)) {
+      } else if (back_forward_list.forwardItem &&
+                 item_url ==
+                     net::GURLWithNSURL(back_forward_list.forwardItem.URL)) {
         SetNavigationItemInWKItem(back_forward_list.forwardItem,
                                   std::move(item));
       } else {

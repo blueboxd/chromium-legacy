@@ -7,11 +7,14 @@
 #include <memory>
 #include <utility>
 
+#include "base/guid.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/mock_controller_observer.h"
+#include "components/autofill_assistant/browser/mock_personal_data_manager.h"
 #include "components/autofill_assistant/browser/mock_service.h"
 #include "components/autofill_assistant/browser/service.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
@@ -57,8 +60,8 @@ class FakeClient : public Client {
   // Implements Client
   std::string GetApiKey() override { return ""; }
   AccessTokenFetcher* GetAccessTokenFetcher() override { return nullptr; }
-  autofill::PersonalDataManager* GetPersonalDataManager() override {
-    return nullptr;
+  MockPersonalDataManager* GetPersonalDataManager() override {
+    return &mock_personal_data_manager_;
   }
   WebsiteLoginFetcher* GetWebsiteLoginFetcher() override { return nullptr; }
   std::string GetServerUrl() override { return ""; }
@@ -68,6 +71,22 @@ class FakeClient : public Client {
   MOCK_METHOD1(Shutdown, void(Metrics::DropOutReason reason));
   MOCK_METHOD0(AttachUI, void());
   MOCK_METHOD0(DestroyUI, void());
+
+ private:
+  MockPersonalDataManager mock_personal_data_manager_;
+};
+
+// Same as non-mock, but provides default mock callbacks.
+struct MockCollectUserDataOptions : public CollectUserDataOptions {
+  MockCollectUserDataOptions() {
+    base::MockOnceCallback<void(std::unique_ptr<UserData>)>
+        mock_confirm_callback;
+    confirm_callback = std::move(mock_confirm_callback.Get());
+    base::MockOnceCallback<void(int)> mock_actions_callback;
+    additional_actions_callback = std::move(mock_actions_callback.Get());
+    base::MockOnceCallback<void(int)> mock_terms_callback;
+    terms_link_callback = std::move(mock_terms_callback.Get());
+  }
 };
 
 }  // namespace
@@ -1392,6 +1411,167 @@ TEST_F(ControllerTest, UnexpectedNavigationDuringPromptAction) {
                                    AutofillAssistantState::RUNNING,
                                    AutofillAssistantState::PROMPT,
                                    AutofillAssistantState::STOPPED));
+}
+
+TEST_F(ControllerTest, UserDataFormEmpty) {
+  auto options = std::make_unique<MockCollectUserDataOptions>();
+  auto user_data = std::make_unique<UserData>();
+
+  // Request nothing, expect continue button to be enabled.
+  EXPECT_CALL(mock_observer_, OnUserActionsChanged(UnorderedElementsAre(
+                                  Property(&UserAction::enabled, Eq(true)))))
+      .Times(1);
+  EXPECT_CALL(mock_observer_, OnCollectUserDataOptionsChanged(Not(nullptr)))
+      .Times(1);
+  EXPECT_CALL(mock_observer_, OnUserDataChanged(Not(nullptr))).Times(1);
+  controller_->SetCollectUserDataOptions(std::move(options),
+                                         std::move(user_data));
+}
+
+TEST_F(ControllerTest, UserDataFormContactInfo) {
+  auto options = std::make_unique<MockCollectUserDataOptions>();
+  auto user_data = std::make_unique<UserData>();
+
+  options->request_payer_name = true;
+  options->request_payer_email = true;
+  options->request_payer_phone = true;
+
+  testing::InSequence seq;
+  EXPECT_CALL(mock_observer_, OnUserActionsChanged(UnorderedElementsAre(
+                                  Property(&UserAction::enabled, Eq(false)))))
+      .Times(1);
+  controller_->SetCollectUserDataOptions(std::move(options),
+                                         std::move(user_data));
+
+  EXPECT_CALL(mock_observer_, OnUserActionsChanged(UnorderedElementsAre(
+                                  Property(&UserAction::enabled, Eq(true)))))
+      .Times(1);
+
+  autofill::AutofillProfile contact_profile;
+  contact_profile.SetRawInfo(autofill::ServerFieldType::EMAIL_ADDRESS,
+                             base::UTF8ToUTF16("joedoe@example.com"));
+  contact_profile.SetRawInfo(autofill::ServerFieldType::NAME_FULL,
+                             base::UTF8ToUTF16("Joe Doe"));
+  contact_profile.SetRawInfo(autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER,
+                             base::UTF8ToUTF16("+1 23 456 789 01"));
+  controller_->SetContactInfo(
+      std::make_unique<autofill::AutofillProfile>(contact_profile));
+  EXPECT_THAT(
+      controller_->GetUserData()->contact_profile->Compare(contact_profile),
+      Eq(0));
+}
+
+TEST_F(ControllerTest, UserDataFormCreditCard) {
+  auto options = std::make_unique<MockCollectUserDataOptions>();
+  auto user_data = std::make_unique<UserData>();
+
+  options->request_payment_method = true;
+  testing::InSequence seq;
+  EXPECT_CALL(mock_observer_, OnUserActionsChanged(UnorderedElementsAre(
+                                  Property(&UserAction::enabled, Eq(false)))))
+      .Times(1);
+  controller_->SetCollectUserDataOptions(std::move(options),
+                                         std::move(user_data));
+
+  // Credit card without billing address is invalid.
+  auto credit_card = std::make_unique<autofill::CreditCard>(
+      base::GenerateGUID(), "https://www.example.com");
+  autofill::test::SetCreditCardInfo(credit_card.get(), "Marion Mitchell",
+                                    "4111 1111 1111 1111", "01", "2020",
+                                    /* billing_address_id = */ "");
+  EXPECT_CALL(mock_observer_, OnUserActionsChanged(UnorderedElementsAre(
+                                  Property(&UserAction::enabled, Eq(false)))))
+      .Times(1);
+  controller_->SetCreditCard(
+      std::make_unique<autofill::CreditCard>(*credit_card));
+
+  // Credit card with valid billing address is ok.
+  auto billing_address = std::make_unique<autofill::AutofillProfile>(
+      base::GenerateGUID(), "https://www.example.com");
+  autofill::test::SetProfileInfo(billing_address.get(), "Marion", "Mitchell",
+                                 "Morrison", "marion@me.xyz", "Fox",
+                                 "123 Zoo St.", "unit 5", "Hollywood", "CA",
+                                 "91601", "US", "16505678910");
+  credit_card->set_billing_address_id(billing_address->guid());
+  ON_CALL(*fake_client_.GetPersonalDataManager(),
+          GetProfileByGUID(billing_address->guid()))
+      .WillByDefault(Return(billing_address.get()));
+  EXPECT_CALL(mock_observer_, OnUserActionsChanged(UnorderedElementsAre(
+                                  Property(&UserAction::enabled, Eq(true)))))
+      .Times(1);
+  controller_->SetCreditCard(
+      std::make_unique<autofill::CreditCard>(*credit_card));
+  EXPECT_THAT(controller_->GetUserData()->card->Compare(*credit_card), Eq(0));
+}
+
+TEST_F(ControllerTest, SetTermsAndConditions) {
+  auto options = std::make_unique<MockCollectUserDataOptions>();
+  auto user_data = std::make_unique<UserData>();
+
+  options->accept_terms_and_conditions_text.assign("Accept T&C");
+  testing::InSequence seq;
+  EXPECT_CALL(mock_observer_, OnUserActionsChanged(UnorderedElementsAre(
+                                  Property(&UserAction::enabled, Eq(false)))))
+      .Times(1);
+  controller_->SetCollectUserDataOptions(std::move(options),
+                                         std::move(user_data));
+
+  EXPECT_CALL(mock_observer_, OnUserActionsChanged(UnorderedElementsAre(
+                                  Property(&UserAction::enabled, Eq(true)))))
+      .Times(1);
+  controller_->SetTermsAndConditions(TermsAndConditionsState::ACCEPTED);
+  EXPECT_THAT(controller_->GetUserData()->terms_and_conditions,
+              Eq(TermsAndConditionsState::ACCEPTED));
+}
+
+TEST_F(ControllerTest, SetLoginOption) {
+  auto options = std::make_unique<MockCollectUserDataOptions>();
+  auto user_data = std::make_unique<UserData>();
+
+  options->request_login_choice = true;
+  testing::InSequence seq;
+  EXPECT_CALL(mock_observer_, OnUserActionsChanged(UnorderedElementsAre(
+                                  Property(&UserAction::enabled, Eq(false)))))
+      .Times(1);
+  controller_->SetCollectUserDataOptions(std::move(options),
+                                         std::move(user_data));
+
+  EXPECT_CALL(mock_observer_, OnUserActionsChanged(UnorderedElementsAre(
+                                  Property(&UserAction::enabled, Eq(true)))))
+      .Times(1);
+  controller_->SetLoginOption("1");
+  EXPECT_THAT(controller_->GetUserData()->login_choice_identifier, Eq("1"));
+}
+
+TEST_F(ControllerTest, SetShippingAddress) {
+  auto options = std::make_unique<MockCollectUserDataOptions>();
+  auto user_data = std::make_unique<UserData>();
+
+  options->request_shipping = true;
+  testing::InSequence seq;
+  EXPECT_CALL(mock_observer_, OnUserActionsChanged(UnorderedElementsAre(
+                                  Property(&UserAction::enabled, Eq(false)))))
+      .Times(1);
+  controller_->SetCollectUserDataOptions(std::move(options),
+                                         std::move(user_data));
+
+  auto shipping_address = std::make_unique<autofill::AutofillProfile>(
+      base::GenerateGUID(), "https://www.example.com");
+  autofill::test::SetProfileInfo(shipping_address.get(), "Marion", "Mitchell",
+                                 "Morrison", "marion@me.xyz", "Fox",
+                                 "123 Zoo St.", "unit 5", "Hollywood", "CA",
+                                 "91601", "US", "16505678910");
+  ON_CALL(*fake_client_.GetPersonalDataManager(),
+          GetProfileByGUID(shipping_address->guid()))
+      .WillByDefault(Return(shipping_address.get()));
+  EXPECT_CALL(mock_observer_, OnUserActionsChanged(UnorderedElementsAre(
+                                  Property(&UserAction::enabled, Eq(true)))))
+      .Times(1);
+  controller_->SetShippingAddress(
+      std::make_unique<autofill::AutofillProfile>(*shipping_address));
+  EXPECT_THAT(
+      controller_->GetUserData()->shipping_address->Compare(*shipping_address),
+      Eq(0));
 }
 
 }  // namespace autofill_assistant

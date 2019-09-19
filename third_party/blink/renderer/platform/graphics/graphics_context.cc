@@ -928,7 +928,7 @@ void GraphicsContext::DrawImage(
   image_flags.setColor(SK_ColorBLACK);
   image_flags.setFilterQuality(ComputeFilterQuality(image, dest, src));
 
-  dark_mode_filter_.ApplyToImageFlagsIfNeeded(src, image, &image_flags);
+  dark_mode_filter_.ApplyToImageFlagsIfNeeded(src, dest, image, &image_flags);
 
   image->Draw(canvas_, image_flags, dest, src, should_respect_image_orientation,
               Image::kClampImageToSourceRect, decode_mode);
@@ -964,7 +964,8 @@ void GraphicsContext::DrawImageRRect(
   image_flags.setFilterQuality(
       ComputeFilterQuality(image, dest.Rect(), src_rect));
 
-  dark_mode_filter_.ApplyToImageFlagsIfNeeded(src_rect, image, &image_flags);
+  dark_mode_filter_.ApplyToImageFlagsIfNeeded(src_rect, dest.Rect(), image,
+                                              &image_flags);
 
   bool use_shader = (visible_src == src_rect) &&
                     (respect_orientation == kDoNotRespectImageOrientation);

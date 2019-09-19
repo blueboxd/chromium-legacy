@@ -28,14 +28,13 @@ cca.mojo.PhotoCapabilities.prototype.supportedEffects;
  * Creates the wrapper of JS image-capture and Mojo image-capture.
  * @param {!MediaStreamTrack} videoTrack A video track whose still images will
  *     be taken.
- * @param {!cca.mojo.MojoConnector} mojoConnector A mojo connector that could
- *     used to communicate with video capture device.
  * @constructor
  */
-cca.mojo.ImageCapture = function(videoTrack, mojoConnector) {
+cca.mojo.ImageCapture = function(videoTrack) {
   /**
    * The id of target media device.
    * @type {string}
+   * @private
    */
   this.deviceId_ = videoTrack.getSettings().deviceId;
 
@@ -46,13 +45,6 @@ cca.mojo.ImageCapture = function(videoTrack, mojoConnector) {
    */
   this.capture_ = new ImageCapture(videoTrack);
 
-  /**
-   * The mojo connector that we used to negotiate with the video capture device.
-   * @type {cca.mojo.MojoConnector}
-   * @private
-   */
-  this.mojoConnector_ = mojoConnector;
-
   // End of properties, seal the object.
   Object.seal(this);
 };
@@ -60,9 +52,13 @@ cca.mojo.ImageCapture = function(videoTrack, mojoConnector) {
 /**
  * Gets the photo capabilities with the available options/effects.
  * @return {!Promise<!cca.mojo.PhotoCapabilities>} Promise for the result.
+ * @throws {Error} Thrown when the device operation is not supported.
  */
 cca.mojo.ImageCapture.prototype.getPhotoCapabilities = async function() {
-  const deviceOperator = await this.mojoConnector_.getDeviceOperator();
+  const deviceOperator = await cca.mojo.DeviceOperator.getInstance();
+  if (!deviceOperator) {
+    throw new Error('Device operation is not supported');
+  }
   const supportedEffects = [cros.mojom.Effect.NO_EFFECT];
   const isPortraitModeSupported =
       await deviceOperator.isPortraitModeSupported(this.deviceId_);
@@ -93,13 +89,12 @@ cca.mojo.ImageCapture.prototype.takePhoto = function(
   if (photoEffects) {
     for (const effect of photoEffects) {
       const take = (async () => {
-        const deviceOperator = await this.mojoConnector_.getDeviceOperator();
-        const device = deviceOperator.getDevice(this.deviceId_);
-        const {status, blob} = await device.setReprocessOption(effect);
-        if (status !== 0) {
-          throw new Error('Mojo image capture error: ' + status);
+        const deviceOperator = await cca.mojo.DeviceOperator.getInstance();
+        if (!deviceOperator) {
+          throw new Error('Device operation is not supported');
         }
-        const {data, mimeType} = blob;
+        const {data, mimeType} =
+            await deviceOperator.setReprocessOption(this.deviceId_, effect);
         return new Blob([new Uint8Array(data)], {type: mimeType});
       })();
       takes.push(take);

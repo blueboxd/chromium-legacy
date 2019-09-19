@@ -37,6 +37,8 @@
 #error "This file requires ARC support."
 #endif
 
+using manual_fill::AccessoryKeyboardAccessibilityIdentifier;
+
 namespace {
 
 constexpr char kFormElementName[] = "name";
@@ -82,6 +84,11 @@ id<GREYMatcher> ProfilesTableViewWindowMatcher() {
 id<GREYMatcher> ProfileTableViewButtonMatcher() {
   // The company name for autofill::test::GetFullProfile() is "Underworld".
   return grey_buttonTitle(@"Underworld");
+}
+
+// Matcher for the Keyboard icon in the accessory bar.
+id<GREYMatcher> KeyboardIconMatcher() {
+  return grey_accessibilityID(AccessoryKeyboardAccessibilityIdentifier);
 }
 
 // Saves an example profile in the store.
@@ -461,6 +468,22 @@ void DockKeyboard() {
   // Verify the profiles controller table view is not visible.
   [[EarlGrey selectElementWithMatcher:ProfilesTableViewMatcher()]
       assertWithMatcher:grey_notVisible()];
+
+  // Verify the status of the icons.
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    // Hidden on iPad.
+    [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+        assertWithMatcher:grey_notVisible()];
+    [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
+        assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+  } else {
+    [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+        assertWithMatcher:grey_sufficientlyVisible()];
+    [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+        assertWithMatcher:grey_userInteractionEnabled()];
+    [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
+        assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+  }
 }
 
 // Tests that the input accessory view continues working after a picker is
@@ -515,8 +538,13 @@ void DockKeyboard() {
   // bar.
   [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
+  // Verify the status of the icons.
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+      assertWithMatcher:grey_userInteractionEnabled()];
+  [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
+      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
 }
 
 // Same as before but with the keyboard undocked the re-docked.
@@ -586,8 +614,15 @@ void DockKeyboard() {
 
   // Verify the profiles icon is visible, and therefore also the input accessory
   // bar.
+  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
+  // Verify the status of the icons.
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+      assertWithMatcher:grey_userInteractionEnabled()];
+  [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
+      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
 }
 
 // Test the input accessory bar is present when undocking then docking the
@@ -625,8 +660,15 @@ void DockKeyboard() {
 
   // Verify the profiles icon is visible, and therefore also the input accessory
   // bar.
+  [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeRight)];
+  // Verify the status of the icons.
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
+      assertWithMatcher:grey_userInteractionEnabled()];
+  [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
+      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
 }
 
 // Tests that the manual fallback view is present in incognito.

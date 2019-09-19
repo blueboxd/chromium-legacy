@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_page_handler.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 
 namespace chromeos {
@@ -24,7 +25,7 @@ class MachineLearningInternalsUI : public ui::MojoWebUIController {
 
  private:
   void BindMachineLearningInternalsPageHandler(
-      mojom::PageHandlerRequest request);
+      mojo::PendingReceiver<mojom::PageHandler> receiver);
 
   std::unique_ptr<MachineLearningInternalsPageHandler> page_handler_;
 

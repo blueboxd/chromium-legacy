@@ -72,22 +72,22 @@ void SetJsonDevicePolicy(
 
 // Returns true and sets |level| to a PolicyLevel if the policy has been set
 // at that level. Returns false if the policy has been set at the level of
-// DevicePolicyOptions::UNSET.
+// PolicyOptions::UNSET.
 bool GetPolicyLevel(bool has_policy_options,
-                    const em::DevicePolicyOptions& policy_option_proto,
+                    const em::PolicyOptions& policy_option_proto,
                     PolicyLevel* level) {
   if (!has_policy_options) {
     *level = POLICY_LEVEL_MANDATORY;
     return true;
   }
   switch (policy_option_proto.mode()) {
-    case em::DevicePolicyOptions::MANDATORY:
+    case em::PolicyOptions::MANDATORY:
       *level = POLICY_LEVEL_MANDATORY;
       return true;
-    case em::DevicePolicyOptions::RECOMMENDED:
+    case em::PolicyOptions::RECOMMENDED:
       *level = POLICY_LEVEL_RECOMMENDED;
       return true;
-    case em::DevicePolicyOptions::UNSET:
+    case em::PolicyOptions::UNSET:
       return false;
   }
 }

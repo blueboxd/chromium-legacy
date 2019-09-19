@@ -257,6 +257,8 @@ class ProfileOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
   void OverrideAccessTokenManagerForTesting(
       std::unique_ptr<OAuth2AccessTokenManager> token_manager);
 
+  virtual bool IsFakeProfileOAuth2TokenServiceForTesting() const;
+
  protected:
   OAuth2AccessTokenManager* GetAccessTokenManager();
 

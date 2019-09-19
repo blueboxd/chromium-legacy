@@ -11,7 +11,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
-#include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/public/web/modules/webrtc/webrtc_audio_renderer.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -33,7 +32,7 @@ namespace {
 // will not be able to pick an appropriate device and return 0.
 base::UnguessableToken GetSessionIdForWebRtcAudioRenderer() {
   WebRtcAudioDeviceImpl* audio_device =
-      PeerConnectionDependencyFactory::GetInstance()->GetWebRtcAudioDevice();
+      Platform::Current()->GetWebRtcAudioDevice();
   return audio_device
              ? audio_device->GetAuthorizedDeviceSessionIdForAudioRenderer()
              : base::UnguessableToken();
@@ -118,7 +117,7 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
 
   // This is a remote WebRTC media stream.
   WebRtcAudioDeviceImpl* audio_device =
-      PeerConnectionDependencyFactory::GetInstance()->GetWebRtcAudioDevice();
+      Platform::Current()->GetWebRtcAudioDevice();
   DCHECK(audio_device);
 
   // Share the existing renderer if any, otherwise create a new one.

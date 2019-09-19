@@ -247,8 +247,6 @@ jumbo_component("capture_lib") {
       "video/chromeos/camera_app_device_impl.h",
       "video/chromeos/camera_app_device_provider_impl.cc",
       "video/chromeos/camera_app_device_provider_impl.h",
-      "video/chromeos/camera_app_helper_impl.cc",
-      "video/chromeos/camera_app_helper_impl.h",
       "video/chromeos/camera_buffer_factory.cc",
       "video/chromeos/camera_buffer_factory.h",
       "video/chromeos/camera_device_context.cc",

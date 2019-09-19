@@ -158,12 +158,10 @@ bool MojoAudioOutputIPC::StreamCreationRequested() const {
   return binding_.is_bound();
 }
 
-media::mojom::AudioOutputStreamProviderRequest
-MojoAudioOutputIPC::MakeProviderRequest() {
+mojo::PendingReceiver<media::mojom::AudioOutputStreamProvider>
+MojoAudioOutputIPC::MakeProviderReceiver() {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!AuthorizationRequested());
-  media::mojom::AudioOutputStreamProviderRequest request =
-      mojo::MakeRequest(&stream_provider_);
 
   // Don't set a connection error handler.
   // There are three possible reasons for a connection error.
@@ -176,7 +174,7 @@ MojoAudioOutputIPC::MakeProviderRequest() {
   // 3. The connection was broken after authorization succeeded. This is because
   //    of the frame owning this stream being destructed, and this object will
   //    be cleaned up soon.
-  return request;
+  return stream_provider_.BindNewPipeAndPassReceiver();
 }
 
 void MojoAudioOutputIPC::DoRequestDeviceAuthorization(
@@ -188,8 +186,8 @@ void MojoAudioOutputIPC::DoRequestDeviceAuthorization(
   if (!factory) {
     LOG(ERROR) << "MojoAudioOutputIPC failed to acquire factory";
 
-    // Create a provider request for consistency with the normal case.
-    MakeProviderRequest();
+    // Create a provider receiver for consistency with the normal case.
+    MakeProviderReceiver();
     // Resetting the callback asynchronously ensures consistent behaviour with
     // when the factory is destroyed before reply, i.e. calling
     // OnDeviceAuthorized with ERROR_INTERNAL in the normal case.
@@ -203,7 +201,7 @@ void MojoAudioOutputIPC::DoRequestDeviceAuthorization(
   static_assert(sizeof(int) == sizeof(int32_t),
                 "sizeof(int) == sizeof(int32_t)");
   factory->RequestDeviceAuthorization(
-      MakeProviderRequest(),
+      MakeProviderReceiver(),
       session_id.is_empty() ? base::Optional<base::UnguessableToken>()
                             : session_id,
       device_id, std::move(callback));

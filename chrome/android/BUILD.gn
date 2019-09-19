@@ -510,6 +510,7 @@ java_group("chrome_all_java") {
     "//chrome/android/features/keyboard_accessory:internal_java",
     "//chrome/android/features/media_router:java",
     "//chrome/android/features/test_dummy/internal:base_module_java",
+    "//chrome/browser/touch_to_fill/android/internal:java",
   ]
 
   if (disable_autofill_assistant_dfm) {
@@ -535,6 +536,7 @@ group("jni_headers") {
     "//chrome/android/features/media_router:jni_headers",
     "//chrome/android/public/profiles:jni_headers",
     "//chrome/browser/image_fetcher:jni_headers",
+    "//chrome/browser/touch_to_fill/android:jni_headers",
     "//chrome/lib/util/public/android:jni_headers",
   ]
 }
@@ -2217,6 +2219,18 @@ if (public_android_sdk) {
       ]
     }
   }
+}
+
+group("chrome_public_wpt") {
+  testonly = true
+  data_deps = [
+    ":chrome_public_apk",
+    "//build/android:test_runner_py",
+  ]
+  set_sources_assignment_filter([ "#*" ])
+  sources = read_file("//testing/scripts/run_android_wpt.pydeps", "list lines")
+  data = sources
+  data += [ "//third_party/blink/web_tests/external/" ]
 }
 
 chrome_bundle("chrome_modern_public_bundle") {

@@ -14,7 +14,6 @@
 #include "base/callback.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
-#include "chrome/browser/apps/app_service/launch_util.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"

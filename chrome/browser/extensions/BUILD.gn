@@ -993,6 +993,7 @@ jumbo_static_library("extensions") {
       "//chromeos/system",
       "//chromeos/tpm",
       "//components/arc",
+      "//components/chromeos_camera:camera_app_helper",
       "//components/constrained_window",
       "//components/drive",
       "//components/user_manager",

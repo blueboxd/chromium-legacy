@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/loader/allowed_by_nosniff.h"
 
+#include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"

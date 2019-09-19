@@ -584,13 +584,13 @@ interface MediaRouter {
   // TODO(http://crbug.com/809249): Remove these APIs when native Cast MRP with
   // mirroring support is rolled out.
   GetMirroringServiceHostForTab(int32 target_tab_id,
-                                mirroring.mojom.MirroringServiceHost& request);
+      pending_receiver<mirroring.mojom.MirroringServiceHost> receiver);
   GetMirroringServiceHostForDesktop(
       int32 initiator_tab_id,  // The tab used to register the stream.
       string desktop_stream_id,
-      mirroring.mojom.MirroringServiceHost& request);
+      pending_receiver<mirroring.mojom.MirroringServiceHost> receiver);
   GetMirroringServiceHostForOffscreenTab(
       url.mojom.Url presentation_url,
       string presentation_id,
-      mirroring.mojom.MirroringServiceHost& request);
+      pending_receiver<mirroring.mojom.MirroringServiceHost> receiver);
 };

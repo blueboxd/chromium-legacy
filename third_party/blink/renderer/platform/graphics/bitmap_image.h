@@ -102,7 +102,7 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   }
 
   DarkModeClassification CheckTypeSpecificConditionsForDarkMode(
-      const FloatRect& src_rect,
+      const FloatRect& dest_rect,
       DarkModeImageClassifier* classifier) override;
 
  protected:

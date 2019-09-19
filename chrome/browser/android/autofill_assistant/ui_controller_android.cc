@@ -700,15 +700,9 @@ void UiControllerAndroid::OnShippingAddressChanged(
   ui_delegate_->SetShippingAddress(std::move(address));
 }
 
-void UiControllerAndroid::OnBillingAddressChanged(
-    std::unique_ptr<autofill::AutofillProfile> address) {
-  ui_delegate_->SetBillingAddress(std::move(address));
-}
-
-void UiControllerAndroid::OnContactInfoChanged(std::string name,
-                                               std::string phone,
-                                               std::string email) {
-  ui_delegate_->SetContactInfo(name, phone, email);
+void UiControllerAndroid::OnContactInfoChanged(
+    std::unique_ptr<autofill::AutofillProfile> profile) {
+  ui_delegate_->SetContactInfo(std::move(profile));
 }
 
 void UiControllerAndroid::OnCreditCardChanged(

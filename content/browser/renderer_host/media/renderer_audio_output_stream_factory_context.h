@@ -12,6 +12,7 @@
 #include "content/common/content_export.h"
 #include "media/audio/audio_output_delegate.h"
 #include "media/mojo/mojom/audio_output_stream.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace media {
 class AudioParameters;
@@ -44,7 +45,8 @@ class CONTENT_EXPORT RendererAudioOutputStreamFactoryContext {
       int render_frame_id,
       int stream_id,
       const media::AudioParameters& params,
-      media::mojom::AudioOutputStreamObserverPtr stream_observer,
+      mojo::PendingRemote<media::mojom::AudioOutputStreamObserver>
+          stream_observer,
       media::AudioOutputDelegate::EventHandler* handler) = 0;
 };
 

@@ -53,6 +53,7 @@ jumbo_source_set("browser_sources") {
     "authenticator_request_client_delegate.h",
     "ax_event_notification_details.cc",
     "ax_event_notification_details.h",
+    "back_forward_cache.h",
     "background_fetch_delegate.cc",
     "background_fetch_delegate.h",
     "background_fetch_description.cc",

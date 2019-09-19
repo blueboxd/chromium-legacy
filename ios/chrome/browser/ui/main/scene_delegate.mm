@@ -13,6 +13,7 @@
 - (SceneState*)sceneState {
   if (!_sceneState) {
     _sceneState = [[SceneState alloc] init];
+    _sceneController = [[SceneController alloc] initWithSceneState:_sceneState];
   }
   return _sceneState;
 }

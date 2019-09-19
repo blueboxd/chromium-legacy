@@ -107,6 +107,10 @@
   [self.formInputAccessoryMediator disconnect];
 }
 
+- (void)reset {
+  [self.formInputAccessoryViewController reset];
+}
+
 #pragma mark - Presenting Children
 
 - (void)stopChildren {

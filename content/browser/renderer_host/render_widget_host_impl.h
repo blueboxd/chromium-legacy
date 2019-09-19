@@ -347,6 +347,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // RenderProcessHost which aggregates importance of all of its widgets.
   void SetImportance(ChildProcessImportance importance);
   ChildProcessImportance importance() const { return importance_; }
+
+  void OnImeTextCommittedEvent(const base::string16& text_str);
+  void AddImeTextCommittedEventObserver(
+      RenderWidgetHost::InputEventObserver* observer) override;
+  void RemoveImeTextCommittedEventObserver(
+      RenderWidgetHost::InputEventObserver* observer) override;
 #endif
 
   // Returns true if the RenderWidget is hidden.
@@ -1100,6 +1106,14 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Input event callbacks.
   base::ObserverList<RenderWidgetHost::InputEventObserver>::Unchecked
       input_event_observers_;
+
+#if defined(OS_ANDROID)
+  // Ime Text Committed callbacks. This is separated from
+  // input_event_observers_, because text events are not triggered by input
+  // events on Android.
+  base::ObserverList<RenderWidgetHost::InputEventObserver>::Unchecked
+      ime_text_committed_observers_;
+#endif
 
   // The observers watching us.
   base::ObserverList<RenderWidgetHostObserver> observers_;

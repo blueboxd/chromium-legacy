@@ -935,36 +935,36 @@ void MediaRouterMojoImpl::GetMediaSinkServiceStatus(
 
 void MediaRouterMojoImpl::GetMirroringServiceHostForTab(
     int32_t target_tab_id,
-    mirroring::mojom::MirroringServiceHostRequest request) {
+    mojo::PendingReceiver<mirroring::mojom::MirroringServiceHost> receiver) {
   if (ShouldUseMirroringService()) {
     mirroring::CastMirroringServiceHost::GetForTab(
         GetWebContentsFromId(target_tab_id, context_,
                              true /* include_incognito */),
-        std::move(request));
+        std::move(receiver));
   }
 }
 
 void MediaRouterMojoImpl::GetMirroringServiceHostForDesktop(
     int32_t initiator_tab_id,
     const std::string& desktop_stream_id,
-    mirroring::mojom::MirroringServiceHostRequest request) {
+    mojo::PendingReceiver<mirroring::mojom::MirroringServiceHost> receiver) {
   if (ShouldUseMirroringService()) {
     // TODO(crbug.com/974335): Remove this code once we fully launch the native
     // Cast Media Route Provider.
     mirroring::CastMirroringServiceHost::GetForDesktop(
         EventPageRequestManagerFactory::GetApiForBrowserContext(context_)
             ->GetEventPageWebContents(),
-        desktop_stream_id, std::move(request));
+        desktop_stream_id, std::move(receiver));
   }
 }
 
 void MediaRouterMojoImpl::GetMirroringServiceHostForOffscreenTab(
     const GURL& presentation_url,
     const std::string& presentation_id,
-    mirroring::mojom::MirroringServiceHostRequest request) {
+    mojo::PendingReceiver<mirroring::mojom::MirroringServiceHost> receiver) {
   if (ShouldUseMirroringService() && IsValidPresentationUrl(presentation_url)) {
     mirroring::CastMirroringServiceHost::GetForOffscreenTab(
-        context_, presentation_url, presentation_id, std::move(request));
+        context_, presentation_url, presentation_id, std::move(receiver));
   }
 }
 

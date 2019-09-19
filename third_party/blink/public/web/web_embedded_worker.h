@@ -64,8 +64,6 @@ class BLINK_EXPORT WebEmbeddedWorker {
   // instance of WebEmbeddedWorker.
   static std::unique_ptr<WebEmbeddedWorker> Create(
       WebServiceWorkerContextClient*,
-      std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>,
-      mojo::ScopedMessagePipeHandle content_settings_handle,
       mojo::ScopedMessagePipeHandle cache_storage,
       mojo::ScopedMessagePipeHandle interface_provider,
       mojo::ScopedMessagePipeHandle browser_interface_broker);
@@ -73,9 +71,12 @@ class BLINK_EXPORT WebEmbeddedWorker {
   virtual ~WebEmbeddedWorker() = default;
 
   // Starts and terminates WorkerThread and WorkerGlobalScope.
-  virtual void StartWorkerContext(const WebEmbeddedWorkerStartData&,
-                                  scoped_refptr<base::SingleThreadTaskRunner>
-                                      initiator_thread_task_runner) = 0;
+  virtual void StartWorkerContext(
+      const WebEmbeddedWorkerStartData&,
+      std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>,
+      mojo::ScopedMessagePipeHandle content_settings_handle,
+      scoped_refptr<base::SingleThreadTaskRunner>
+          initiator_thread_task_runner) = 0;
   virtual void TerminateWorkerContext() = 0;
 
   // Resumes starting a worker startup that was paused via

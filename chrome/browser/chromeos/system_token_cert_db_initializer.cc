@@ -15,7 +15,6 @@
 #include "build/branding_buildflags.h"
 #include "build/buildflag.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/tpm/tpm_token_loader.h"
@@ -86,7 +85,21 @@ SystemTokenCertDBInitializer::SystemTokenCertDBInitializer() {
 
 SystemTokenCertDBInitializer::~SystemTokenCertDBInitializer() = default;
 
-void SystemTokenCertDBInitializer::ShutDown() {}
+void SystemTokenCertDBInitializer::ShutDown() {
+  // Note that the observer could potentially not be added yet, but
+  // RemoveObserver() is a no-op in that case.
+  CryptohomeClient::Get()->RemoveObserver(this);
+}
+
+void SystemTokenCertDBInitializer::TpmInitStatusUpdated(
+    bool ready,
+    bool owned,
+    bool was_owned_this_boot) {
+  if (ready) {
+    // The TPM "ready" means that it's available && owned && not being owned.
+    MaybeStartInitializingDatabase();
+  }
+}
 
 void SystemTokenCertDBInitializer::OnCryptohomeAvailable(bool available) {
   if (!available) {
@@ -96,6 +109,7 @@ void SystemTokenCertDBInitializer::OnCryptohomeAvailable(bool available) {
   }
 
   VLOG(1) << "SystemTokenCertDBInitializer: Cryptohome available.";
+  CryptohomeClient::Get()->AddObserver(this);
   CryptohomeClient::Get()->TpmIsReady(
       base::BindOnce(&SystemTokenCertDBInitializer::OnGotTpmIsReady,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -118,6 +132,13 @@ void SystemTokenCertDBInitializer::OnGotTpmIsReady(
 
     return;
   }
+  MaybeStartInitializingDatabase();
+}
+
+void SystemTokenCertDBInitializer::MaybeStartInitializingDatabase() {
+  if (started_initializing_)
+    return;
+  started_initializing_ = true;
   VLOG(1)
       << "SystemTokenCertDBInitializer: TPM is ready, loading system token.";
   TPMTokenLoader::Get()->EnsureStarted();

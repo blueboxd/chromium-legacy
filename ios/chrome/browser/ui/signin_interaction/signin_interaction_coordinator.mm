@@ -6,7 +6,6 @@
 
 #import "base/ios/block_types.h"
 #include "base/logging.h"
-#include "components/unified_consent/feature.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -261,31 +260,14 @@
   self.topViewController = nil;
   self.alertCoordinator = nil;
   if (signinResult == SigninResultSignedInnAndOpennSettings) {
-    [self showAccountsSettings];
+    [self showAdvancedSigninSettings];
   } else {
     [self signinDoneWithSuccess:signinResult != SigninResultCanceled];
   }
 }
 
-// Shows the accounts settings UI.
-- (void)showAccountsSettings {
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    [self showAdvancedSigninSettings];
-  } else {
-    // The presenting view controller needs to be saved before calling
-    // -[SigninInteractionCoordinator signinDoneWithSuccess:].
-    // That method finishes the sign-in and cleans up the coordinator (and
-    // removes presenting view controller).
-    UIViewController* presentingViewController = self.presentingViewController;
-    [self signinDoneWithSuccess:YES];
-    [self.dispatcher
-        showAccountsSettingsFromViewController:presentingViewController];
-  }
-}
-
 // Shows the advanced sign-in settings UI.
 - (void)showAdvancedSigninSettings {
-  DCHECK(unified_consent::IsUnifiedConsentFeatureEnabled());
   DCHECK(!self.advancedSigninSettingsCoordinator);
   DCHECK(self.presentingViewController);
   self.advancedSigninSettingsCoordinator =

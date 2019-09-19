@@ -451,14 +451,14 @@ void BitmapImage::SetAnimationPolicy(ImageAnimationPolicy policy) {
 }
 
 DarkModeClassification BitmapImage::CheckTypeSpecificConditionsForDarkMode(
-    const FloatRect& src_rect,
+    const FloatRect& dest_rect,
     DarkModeImageClassifier* classifier) {
-  if (src_rect.Width() < kMinImageSizeForClassification1D ||
-      src_rect.Height() < kMinImageSizeForClassification1D)
+  if (dest_rect.Width() < kMinImageSizeForClassification1D ||
+      dest_rect.Height() < kMinImageSizeForClassification1D)
     return DarkModeClassification::kApplyFilter;
 
-  if (src_rect.Width() > kMaxImageSizeForClassification1D ||
-      src_rect.Height() > kMaxImageSizeForClassification1D) {
+  if (dest_rect.Width() > kMaxImageSizeForClassification1D ||
+      dest_rect.Height() > kMaxImageSizeForClassification1D) {
     return DarkModeClassification::kDoNotApplyFilter;
   }
 

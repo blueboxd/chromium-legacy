@@ -50,6 +50,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_client_walker.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_finish_observer.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_timing.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
@@ -392,6 +393,8 @@ bool Resource::MustRefetchDueToIntegrityMetadata(
 const scoped_refptr<const SecurityOrigin>& Resource::GetOrigin() const {
   return LastResourceRequest().RequestorOrigin();
 }
+
+void Resource::DidDownloadToBlob(scoped_refptr<BlobDataHandle>) {}
 
 static base::TimeDelta CurrentAge(const ResourceResponse& response,
                                   base::Time response_timestamp) {

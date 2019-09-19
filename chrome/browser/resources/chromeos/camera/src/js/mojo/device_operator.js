@@ -20,28 +20,42 @@ cca.mojo = cca.mojo || {};
 cca.mojo.DeviceOperator = class {
   /**
    * @public
-   * @param {!Map<string, !cros.mojom.CameraAppDeviceRemote>} devices Map of
-   *     device remotes.
    */
-  constructor(devices) {
+  constructor() {
     /**
-     * A map that stores the device remotes that could be used to communicate
-     * with camera device through mojo interface.
-     * @type {!Map<string, !cros.mojom.CameraAppDeviceRemote>}
+     * An interface remote that is used to construct the mojo interface.
+     * @type {cros.mojom.CameraAppDeviceProviderRemote}
+     * @private
      */
-    this.devices_ = devices;
+    this.deviceProvider_ = cros.mojom.CameraAppDeviceProvider.getRemote();
+
+    /**
+     * Flag that indicates if the direct communication between camera app and
+     * video capture devices is supported.
+     * @type {!Promise<boolean>}
+     * @private
+     */
+    this.isSupported_ =
+        this.deviceProvider_.isSupported().then(({isSupported}) => {
+          return isSupported;
+        });
   }
 
   /**
    * Gets corresponding device remote by given id.
-   * @param {string} deviceId The id for target camera device.
-   * @return {!cros.mojom.CameraAppDeviceRemote} Corresponding device remote.
-   * @throws {Error} Thrown when the given deviceId does not found in the map.
+   * @param {string} deviceId The id of target camera device.
+   * @return {!Promise<!cros.mojom.CameraAppDeviceRemote>} Corresponding device
+   *     remote.
+   * @throws {Error} Thrown when given device id is invalid.
    */
-  getDevice(deviceId) {
-    const device = this.devices_.get(deviceId);
-    if (device === undefined) {
-      throw new Error('Invalid deviceId: ', deviceId);
+  async getDevice_(deviceId) {
+    const {device, status} =
+        await this.deviceProvider_.getCameraAppDevice(deviceId);
+    if (status === cros.mojom.GetCameraAppDeviceStatus.ERROR_INVALID_ID) {
+      throw new Error('Invalid device id: ', deviceId);
+    }
+    if (device === null) {
+      throw new Error('Unknown error');
     }
     return device;
   }
@@ -52,14 +66,15 @@ cca.mojo.DeviceOperator = class {
    *     which could be retrieved from MediaDeviceInfo.deviceId.
    * @return {!Promise<!Array<!Array<number>>>} Promise of supported
    *     resolutions. Each photo resolution is represented as [width, height].
-   * @throws {Error} Thrown when fail to parse the metadata.
+   * @throws {Error} Thrown when fail to parse the metadata or the device
+   *     operation is not supported.
    */
   async getPhotoResolutions(deviceId) {
     const formatBlob = 33;
     const typeOutputStream = 0;
     const numElementPerEntry = 4;
 
-    const device = this.getDevice(deviceId);
+    const device = await this.getDevice_(deviceId);
     const {cameraInfo} = await device.getCameraInfo();
     const staticMetadata = cameraInfo.staticCameraCharacteristics;
     const streamConfigs = cca.mojo.getMetadataData_(
@@ -91,7 +106,8 @@ cca.mojo.DeviceOperator = class {
    * @return {!Promise<!Array<!Array<number>>>} Promise of supported video
    *     configurations. Each configuration is represented as [width, height,
    *     maxFps].
-   * @throws {Error} Thrown when fail to parse the metadata.
+   * @throws {Error} Thrown when fail to parse the metadata or the device
+   *     operation is not supported.
    */
   async getVideoConfigs(deviceId) {
     // Currently we use YUV format for both recording and previewing on Chrome.
@@ -99,7 +115,7 @@ cca.mojo.DeviceOperator = class {
     const oneSecondInNs = 1e9;
     const numElementPerEntry = 4;
 
-    const device = this.getDevice(deviceId);
+    const device = await this.getDevice_(deviceId);
     const {cameraInfo} = await device.getCameraInfo();
     const staticMetadata = cameraInfo.staticCameraCharacteristics;
     const minFrameDurationConfigs = cca.mojo.getMetadataData_(
@@ -132,9 +148,10 @@ cca.mojo.DeviceOperator = class {
    * @param {string} deviceId The renderer-facing device id of the target camera
    *     which could be retrieved from MediaDeviceInfo.deviceId.
    * @return {!Promise<!cros.mojom.CameraFacing>} Promise of device facing.
+   * @throws {Error} Thrown when the device operation is not supported.
    */
   async getCameraFacing(deviceId) {
-    const device = this.getDevice(deviceId);
+    const device = await this.getDevice_(deviceId);
     const {cameraInfo} = await device.getCameraInfo();
     return cameraInfo.facing;
   }
@@ -145,12 +162,13 @@ cca.mojo.DeviceOperator = class {
    *     which could be retrieved from MediaDeviceInfo.deviceId.
    * @return {!Promise<!Array<Array<number>>>} Promise of supported fps ranges.
    *     Each range is represented as [min, max].
-   * @throws {Error} Thrown when fail to parse the metadata.
+   * @throws {Error} Thrown when fail to parse the metadata or the device
+   *     operation is not supported.
    */
   async getSupportedFpsRanges(deviceId) {
     const numElementPerEntry = 2;
 
-    const device = this.getDevice(deviceId);
+    const device = await this.getDevice_(deviceId);
     const {cameraInfo} = await device.getCameraInfo();
     const staticMetadata = cameraInfo.staticCameraCharacteristics;
     const availableFpsRanges = cca.mojo.getMetadataData_(
@@ -175,12 +193,14 @@ cca.mojo.DeviceOperator = class {
 
   /**
    * Sets the fps range for target device.
-   * @param {string} deviceId
+   * @param {string} deviceId The renderer-facing device id of the target camera
+   *     which could be retrieved from MediaDeviceInfo.deviceId.
    * @param {MediaStreamConstraints} constraints The constraints including fps
    *     range and the resolution. If frame rate range negotiation is needed,
    *     the caller should either set exact field or set both min and max fields
    *     for frame rate property.
-   * @throws {Error} Thrown when the input contains invalid values.
+   * @throws {Error} Thrown when the input contains invalid values or the device
+   *     operation is not supported.
    */
   async setFpsRange(deviceId, constraints) {
     let /** number */ streamWidth = 0;
@@ -224,7 +244,7 @@ cca.mojo.DeviceOperator = class {
     // |constraints| , we assume the app wants to use default frame rate range.
     // We set the frame rate range to an invalid range (e.g. 0 fps) so that it
     // will fallback to use the default one.
-    const device = this.getDevice(deviceId);
+    const device = await this.getDevice_(deviceId);
     const {isSuccess} = await device.setFpsRange(
         {'width': streamWidth, 'height': streamHeight},
         {'start': minFrameRate, 'end': maxFrameRate});
@@ -243,14 +263,16 @@ cca.mojo.DeviceOperator = class {
    * @return {!Promise} Promise for the operation.
    */
   async setCaptureIntent(deviceId, captureIntent) {
-    const device = this.getDevice(deviceId);
+    const device = await this.getDevice_(deviceId);
     await device.setCaptureIntent(captureIntent);
   }
 
   /**
    * Checks if portrait mode is supported.
-   * @param {string} deviceId The id for target device.
+   * @param {string} deviceId The renderer-facing device id of the target camera
+   *     which could be retrieved from MediaDeviceInfo.deviceId.
    * @return {!Promise<boolean>} Promise of the boolean result.
+   * @throws {Error} Thrown when the device operation is not supported.
    */
   async isPortraitModeSupported(deviceId) {
     // TODO(wtlee): Change to portrait mode tag.
@@ -259,7 +281,7 @@ cca.mojo.DeviceOperator = class {
     const portraitModeTag =
         /** @type{cros.mojom.CameraMetadataTag} */ (-0x80000000);
 
-    const device = this.getDevice(deviceId);
+    const device = await this.getDevice_(deviceId);
     const {cameraInfo} = await device.getCameraInfo();
     return cca.mojo
                .getMetadataData_(
@@ -283,7 +305,7 @@ cca.mojo.DeviceOperator = class {
         new cros.mojom.ResultMetadataObserverCallbackRouter();
     observerCallbackRouter.onMetadataAvailable.addListener(callback);
 
-    const device = this.getDevice(deviceId);
+    const device = await this.getDevice_(deviceId);
     const {id} = await device.addResultMetadataObserver(
         observerCallbackRouter.$.bindNewPipeAndPassRemote(), streamType);
     return id;
@@ -299,11 +321,62 @@ cca.mojo.DeviceOperator = class {
    * @throws {Error} if fails to construct device connection.
    */
   async removeMetadataObserver(deviceId, observerId) {
-    const device = this.getDevice(deviceId);
+    const device = await this.getDevice_(deviceId);
     const {isSuccess} = await device.removeResultMetadataObserver(observerId);
     return isSuccess;
   }
+
+  /**
+   * Sets reprocess option which is normally an effect to the video capture
+   * device before taking picture.
+   * @param {string} deviceId The renderer-facing device id of the target camera
+   *     which could be retrieved from MediaDeviceInfo.deviceId.
+   * @param {!cros.mojom.Effect} effect The target reprocess option (effect)
+   *     that would be applied on the result.
+   * @return {!Promise<!media.mojom.Blob>} The captured
+   *     result with given effect.
+   * @throws {Error} Thrown when the reprocess is failed or the device operation
+   *     is not supported.
+   */
+  async setReprocessOption(deviceId, effect) {
+    const device = await this.getDevice_(deviceId);
+    const {status, blob} = await device.setReprocessOption(effect);
+    if (blob === null) {
+      throw new Error('Set reprocess failed: ' + status);
+    }
+    return blob;
+  }
+
+  /**
+   * Creates a new instance of DeviceOperator if it is not set. Returns the
+   *     exist instance.
+   * @return {!Promise<?cca.mojo.DeviceOperator>} The singleton instance.
+   */
+  static async getInstance() {
+    if (this.instance_ === null) {
+      this.instance_ = new cca.mojo.DeviceOperator();
+    }
+    if (!await this.instance_.isSupported_) {
+      return null;
+    }
+    return this.instance_;
+  }
+
+  /**
+   * Gets if DeviceOperator is supported.
+   * @return {!Promise<boolean>} True if the DeviceOperator is supported.
+   */
+  static async isSupported() {
+    return await this.getInstance() != null;
+  }
 };
+
+/**
+ * The singleton instance of DeviceOperator. Initialized by the first
+ * invocation of getInstance().
+ * @type {?cca.mojo.DeviceOperator}
+ */
+cca.mojo.DeviceOperator.instance_ = null;
 
 /**
  * Gets the data from Camera metadata by its tag.

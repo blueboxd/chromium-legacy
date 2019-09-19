@@ -56,10 +56,6 @@ class SigninClient : public KeyedService {
   // Returns the CookieManager for the client.
   virtual network::mojom::CookieManager* GetCookieManager() = 0;
 
-  // Returns a string containing the version info of the product in which the
-  // Signin component is being used.
-  virtual std::string GetProductVersion() = 0;
-
   // Called before Google sign-out started. Implementers must run the
   // |on_signout_decision_reached|, passing a SignoutDecision to allow/disallow
   // sign-out to continue. When to disallow sign-out is implementation specific.

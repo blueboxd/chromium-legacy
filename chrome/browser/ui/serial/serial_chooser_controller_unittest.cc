@@ -9,7 +9,7 @@
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/cpp/test/fake_serial_port_manager.h"
 #include "services/device/public/mojom/serial.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -21,10 +21,10 @@ class SerialChooserControllerTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    device::mojom::SerialPortManagerPtr port_manager_ptr;
-    port_manager_.AddBinding(mojo::MakeRequest(&port_manager_ptr));
+    mojo::PendingRemote<device::mojom::SerialPortManager> port_manager;
+    port_manager_.AddReceiver(port_manager.InitWithNewPipeAndPassReceiver());
     SerialChooserContextFactory::GetForProfile(profile())
-        ->SetPortManagerForTesting(std::move(port_manager_ptr));
+        ->SetPortManagerForTesting(std::move(port_manager));
   }
 
  private:

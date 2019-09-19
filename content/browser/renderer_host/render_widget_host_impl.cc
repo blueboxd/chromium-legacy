@@ -762,6 +762,25 @@ void RenderWidgetHostImpl::SetImportance(ChildProcessImportance importance) {
   importance_ = importance;
   process_->UpdateClientPriority(this);
 }
+
+void RenderWidgetHostImpl::OnImeTextCommittedEvent(
+    const base::string16& text_str) {
+  for (auto& observer : ime_text_committed_observers_) {
+    observer.OnImeTextCommittedEvent(text_str);
+  }
+}
+
+void RenderWidgetHostImpl::AddImeTextCommittedEventObserver(
+    RenderWidgetHost::InputEventObserver* observer) {
+  if (!ime_text_committed_observers_.HasObserver(observer)) {
+    ime_text_committed_observers_.AddObserver(observer);
+  }
+}
+
+void RenderWidgetHostImpl::RemoveImeTextCommittedEventObserver(
+    RenderWidgetHost::InputEventObserver* observer) {
+  ime_text_committed_observers_.RemoveObserver(observer);
+}
 #endif
 
 VisualProperties RenderWidgetHostImpl::GetVisualProperties() {

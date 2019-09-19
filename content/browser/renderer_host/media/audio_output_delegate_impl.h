@@ -15,6 +15,8 @@
 #include "media/audio/audio_output_delegate.h"
 #include "media/mojo/mojom/audio_logging.mojom.h"
 #include "media/mojo/mojom/audio_output_stream.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace content {
 class MediaObserver;
@@ -43,7 +45,8 @@ class CONTENT_EXPORT AudioOutputDelegateImpl
       int render_frame_id,
       int render_process_id,
       const media::AudioParameters& params,
-      media::mojom::AudioOutputStreamObserverPtr observer,
+      mojo::PendingRemote<media::mojom::AudioOutputStreamObserver>
+          pending_observer,
       const std::string& output_device_id);
 
   AudioOutputDelegateImpl(
@@ -57,7 +60,8 @@ class CONTENT_EXPORT AudioOutputDelegateImpl
       int render_frame_id,
       int render_process_id,
       const media::AudioParameters& params,
-      media::mojom::AudioOutputStreamObserverPtr observer,
+      mojo::PendingRemote<media::mojom::AudioOutputStreamObserver>
+          pending_observer,
       const std::string& output_device_id);
 
   ~AudioOutputDelegateImpl() override;
@@ -100,7 +104,7 @@ class CONTENT_EXPORT AudioOutputDelegateImpl
   base::RepeatingTimer poll_timer_;
   bool is_audible_ = false;
   // |observer_| is notified about changes in the audible state of the stream.
-  media::mojom::AudioOutputStreamObserverPtr observer_;
+  mojo::Remote<media::mojom::AudioOutputStreamObserver> observer_;
 
   base::WeakPtrFactory<AudioOutputDelegateImpl> weak_factory_{this};
 

@@ -30,8 +30,9 @@ const base::UnguessableToken& SessionId() {
 
 }  // namespace
 
-VideoCaptureClient::VideoCaptureClient(const media::VideoCaptureParams& params,
-                                       media::mojom::VideoCaptureHostPtr host)
+VideoCaptureClient::VideoCaptureClient(
+    const media::VideoCaptureParams& params,
+    mojo::PendingRemote<media::mojom::VideoCaptureHost> host)
     : params_(params), video_capture_host_(std::move(host)) {
   DCHECK(video_capture_host_);
 }

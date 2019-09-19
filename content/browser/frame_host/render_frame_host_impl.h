@@ -206,6 +206,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // this happens more than this many times, kill the renderer.
   static const int kMaxAccessibilityResets = 5;
 
+  static RenderFrameHostImpl* FromID(GlobalFrameRoutingId id);
   static RenderFrameHostImpl* FromID(int process_id, int routing_id);
   static RenderFrameHostImpl* FromAXTreeID(ui::AXTreeID ax_tree_id);
   static RenderFrameHostImpl* FromOverlayRoutingToken(
@@ -922,6 +923,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void StartBackForwardCacheEvictionTimer();
 
   bool is_in_back_forward_cache() { return is_in_back_forward_cache_; }
+
+  bool is_back_forward_cache_disallowed() const {
+    return is_back_forward_cache_disallowed_;
+  }
+
+  // Prevents this frame (along with its parents/children) from being added to
+  // the BackForwardCache. If the frame is already in the cache an eviction is
+  // triggered.
+  void DisallowBackForwardCache();
 
   bool is_evicted_from_back_forward_cache() {
     return is_evicted_from_back_forward_cache_;
@@ -2330,6 +2340,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // BackForwardCache:
   bool is_in_back_forward_cache_ = false;
   bool is_evicted_from_back_forward_cache_ = false;
+  bool is_back_forward_cache_disallowed_ = false;
   base::OneShotTimer back_forward_cache_eviction_timer_;
 
   blink::mojom::FrameVisibility visibility_ =

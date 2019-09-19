@@ -43,6 +43,8 @@ class CAPTURE_EXPORT CameraAppDeviceBridgeImpl
   void GetCameraAppDevice(const std::string& device_id,
                           GetCameraAppDeviceCallback callback) override;
 
+  void IsSupported(IsSupportedCallback callback) override;
+
  private:
   CameraAppDeviceImpl* CreateCameraAppDevice(const std::string& device_id);
 

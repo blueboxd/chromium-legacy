@@ -1147,10 +1147,6 @@ const int kRecentlyClosedTabsSectionIndex = 0;
       baseViewController:self];
 }
 
-- (void)showSyncSettings {
-  [self.dispatcher showGoogleServicesSettingsFromViewController:self];
-}
-
 - (void)showSyncPassphraseSettings {
   [self.dispatcher showSyncPassphraseSettingsFromViewController:self];
 }
@@ -1187,7 +1183,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   if (ShouldShowSyncSignin(syncState)) {
     [self showReauthenticateSignin];
   } else if (ShouldShowSyncSettings(syncState)) {
-    [self showSyncSettings];
+    [self showGoogleServicesSettings];
   } else if (ShouldShowSyncPassphraseSettings(syncState)) {
     [self showSyncPassphraseSettings];
   }

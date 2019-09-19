@@ -228,10 +228,10 @@ class RenderFrameHostManagerTest : public ContentBrowserTest {
   }
 
   void DisableBackForwardCache(
-      BackForwardCache::DisableForTestingReason reason) const {
+      BackForwardCacheImpl::DisableForTestingReason reason) const {
     return static_cast<WebContentsImpl*>(shell()->web_contents())
         ->GetController()
-        .back_forward_cache()
+        .GetBackForwardCache()
         .DisableForTesting(reason);
   }
 
@@ -3805,7 +3805,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, LastCommittedOrigin) {
 
   // Disable the back-forward cache so that documents are always deleted when
   // navigating.
-  DisableBackForwardCache(BackForwardCache::TEST_ASSUMES_NO_CACHING);
+  DisableBackForwardCache(BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
 
   GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
@@ -5526,7 +5526,7 @@ class RenderFrameHostManagerUnloadBrowserTest
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerUnloadBrowserTest,
                        SubframeTerminationPing_SendBeacon) {
   // See BackForwardCache::DisableForTestingReason for explanation.
-  DisableBackForwardCache(BackForwardCache::TEST_USES_UNLOAD_EVENT);
+  DisableBackForwardCache(BackForwardCacheImpl::TEST_USES_UNLOAD_EVENT);
 
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -5559,7 +5559,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerUnloadBrowserTest,
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerUnloadBrowserTest,
                        SubframeTerminationPing_Image) {
   // See BackForwardCache::DisableForTestingReason for explanation.
-  DisableBackForwardCache(BackForwardCache::TEST_USES_UNLOAD_EVENT);
+  DisableBackForwardCache(BackForwardCacheImpl::TEST_USES_UNLOAD_EVENT);
 
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -5633,7 +5633,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerUnloadBrowserTest,
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerUnloadBrowserTest,
                        SubframeProcessGoesAwayAfterUnloadTimeout) {
   // See BackForwardCache::DisableForTestingReason for explanation.
-  DisableBackForwardCache(BackForwardCache::TEST_USES_UNLOAD_EVENT);
+  DisableBackForwardCache(BackForwardCacheImpl::TEST_USES_UNLOAD_EVENT);
 
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));

@@ -4203,11 +4203,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(printing::kAdvancedPpdAttributes)},
 #endif  // defined(OS_CHROMEOS)
 
-    {"enable-forbid-sync-xhr-in-page-dismissal",
-     flag_descriptions::kForbidSyncXHRInPageDismissalName,
-     flag_descriptions::kForbidSyncXHRInPageDismissalDescription,
-     kOsAll | kDeprecated,
-     FEATURE_VALUE_TYPE(blink::features::kForbidSyncXHRInPageDismissal)},
+    {"allow-sync-xhr-in-page-dismissal",
+     flag_descriptions::kAllowSyncXHRInPageDismissalName,
+     flag_descriptions::kAllowSyncXHRInPageDismissalDescription, kOsAll,
+     FEATURE_VALUE_TYPE(blink::features::kAllowSyncXHRInPageDismissal)},
 
     {"form-controls-refresh", flag_descriptions::kFormControlsRefreshName,
      flag_descriptions::kFormControlsRefreshDescription, kOsAll,

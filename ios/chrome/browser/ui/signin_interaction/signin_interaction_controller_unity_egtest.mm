@@ -7,7 +7,6 @@
 
 #include "base/auto_reset.h"
 #import "base/test/ios/wait_util.h"
-#include "components/unified_consent/feature.h"
 #import "ios/chrome/browser/ui/authentication/chrome_signin_view_controller.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
@@ -52,13 +51,6 @@ id<GREYMatcher> identityChooserButtonMatcherWithEmail(NSString* userEmail) {
 @end
 
 @implementation SigninInteractionControllerUnityEnabledTestCase
-
-- (void)setUp {
-  [super setUp];
-
-  CHECK(unified_consent::IsUnifiedConsentFeatureEnabled())
-      << "This test suite must be run with Unified Consent feature enabled.";
-}
 
 // Tests the "ADD ACCOUNT" button in the identity chooser view controller.
 - (void)testAddAccountAutomatically {
@@ -209,9 +201,7 @@ id<GREYMatcher> identityChooserButtonMatcherWithEmail(NSString* userEmail) {
   // Open Add Account screen.
   id<GREYMatcher> add_account_matcher =
       chrome_test_util::StaticTextWithAccessibilityLabelId(
-          unified_consent::IsUnifiedConsentFeatureEnabled()
-              ? IDS_IOS_ACCOUNT_IDENTITY_CHOOSER_ADD_ACCOUNT
-              : IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_ADD_ACCOUNT_BUTTON);
+          IDS_IOS_ACCOUNT_IDENTITY_CHOOSER_ADD_ACCOUNT);
   [[EarlGrey selectElementWithMatcher:add_account_matcher]
       performAction:grey_tap()];
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
@@ -228,8 +218,7 @@ id<GREYMatcher> identityChooserButtonMatcherWithEmail(NSString* userEmail) {
   // this will fail.
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SecondarySignInButton()];
-  if (unified_consent::IsUnifiedConsentFeatureEnabled())
-    [SigninEarlGreyUI selectIdentityWithEmail:identity.userEmail];
+  [SigninEarlGreyUI selectIdentityWithEmail:identity.userEmail];
   VerifyChromeSigninViewVisible();
 
   // Close sign-in screen and Settings.

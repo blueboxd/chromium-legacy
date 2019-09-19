@@ -1723,7 +1723,12 @@ void LocalFrame::SetLifecycleState(mojom::FrameLifecycleState state) {
   // load event has fired.
   if ((state == mojom::FrameLifecycleState::kFrozen ||
        state == mojom::FrameLifecycleState::kFrozenAutoResumeMedia) &&
-      IsLoading()) {
+      IsLoading() && !RuntimeEnabledFeatures::BackForwardCacheEnabled()) {
+    // TODO(yuzus): We violate the spec and when bfcache is enabled,
+    // |pending_lifecycle_state_| is not set.
+    // With bfcache, the decision as to whether the frame gets frozen or not is
+    // already made on the browser side and should not be overridden here.
+    // https://wicg.github.io/page-lifecycle/#update-document-frozenness-steps
     pending_lifecycle_state_ = state;
     return;
   }

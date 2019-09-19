@@ -13,6 +13,9 @@
 #include "base/values.h"
 #include "components/mirroring/service/message_dispatcher.h"
 #include "components/mirroring/service/value_util.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -53,9 +56,8 @@ class WifiStatusMonitorTest : public mojom::CastMessageChannel,
                               public ::testing::Test {
  public:
   WifiStatusMonitorTest()
-      : binding_(this),
-        message_dispatcher_(CreateInterfacePtrAndBind(),
-                            mojo::MakeRequest(&inbound_channel_),
+      : message_dispatcher_(receiver_.BindNewPipeAndPassRemote(),
+                            inbound_channel_.BindNewPipeAndPassReceiver(),
                             error_callback_.Get()) {}
 
   ~WifiStatusMonitorTest() override {}
@@ -122,15 +124,9 @@ class WifiStatusMonitorTest : public mojom::CastMessageChannel,
   void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
  private:
-  mojom::CastMessageChannelPtr CreateInterfacePtrAndBind() {
-    mojom::CastMessageChannelPtr outbound_channel_ptr;
-    binding_.Bind(mojo::MakeRequest(&outbound_channel_ptr));
-    return outbound_channel_ptr;
-  }
-
   base::test::TaskEnvironment task_environment_;
-  mojo::Binding<mojom::CastMessageChannel> binding_;
-  mojom::CastMessageChannelPtr inbound_channel_;
+  mojo::Receiver<mojom::CastMessageChannel> receiver_{this};
+  mojo::Remote<mojom::CastMessageChannel> inbound_channel_;
   base::MockCallback<MessageDispatcher::ErrorCallback> error_callback_;
   MessageDispatcher message_dispatcher_;
   CastMessage last_outbound_message_;

@@ -5,6 +5,7 @@
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 #include "base/logging.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace blink {
 

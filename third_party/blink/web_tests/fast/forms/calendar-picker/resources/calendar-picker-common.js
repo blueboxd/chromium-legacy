@@ -123,28 +123,29 @@ function clickYearListCell(year) {
     eventSender.mouseUp();
 }
 
-function skipAnimationAndGetPositionOfMonthButton(year, month) {
+function skipAnimationAndGetPositionOfMonthButton(year, month, inMonthPicker) {
+    let yearListView = inMonthPicker ? popupWindow.global.picker.yearListView_
+                                     : popupWindow.global.picker.monthPopupView.yearListView;
     skipAnimation();
     var row = year - 1;
-    var rowCell = popupWindow.global.picker.monthPopupView.yearListView.cellAtRow(row);
-
-    var rowScrollOffset = popupWindow.global.picker.monthPopupView.yearListView.scrollOffsetForRow(row);
-    var scrollOffset = popupWindow.global.picker.monthPopupView.yearListView.scrollView.contentOffset();
+    var rowCell = yearListView.cellAtRow(row);
+    var rowScrollOffset = yearListView.scrollOffsetForRow(row);
+    var scrollOffset = yearListView.scrollView.contentOffset();
     var rowOffsetFromViewportTop = rowScrollOffset - scrollOffset;
 
-    var button = popupWindow.global.picker.monthPopupView.yearListView.buttonForMonth(new popupWindow.Month(year, month));
+    var button = yearListView.buttonForMonth(new popupWindow.Month(year, month));
     var buttonOffset = cumulativeOffset(button);
     var rowCellOffset = cumulativeOffset(rowCell.element);
     var buttonOffsetRelativeToRowCell = [buttonOffset[0] - rowCellOffset[0], buttonOffset[1] - rowCellOffset[1]];
 
-    var scrollViewOffset = cumulativeOffset(popupWindow.global.picker.monthPopupView.yearListView.scrollView.element);
+    var scrollViewOffset = cumulativeOffset(yearListView.scrollView.element);
     var buttonCenterX = scrollViewOffset[0] + buttonOffsetRelativeToRowCell[0] + button.offsetWidth / 2;
     var buttonCenterY = scrollViewOffset[1] + buttonOffsetRelativeToRowCell[1] + rowOffsetFromViewportTop + button.offsetHeight / 2;
     return {x: buttonCenterX, y: buttonCenterY};
 }
 
 function hoverOverMonthButton(year, month) {
-    var position = skipAnimationAndGetPositionOfMonthButton(year, month);
+    var position = skipAnimationAndGetPositionOfMonthButton(year, month, false);
     eventSender.mouseMoveTo(position.x, position.y);
 }
 
@@ -152,6 +153,11 @@ function clickMonthButton(year, month) {
     hoverOverMonthButton(year, month);
     eventSender.mouseDown();
     eventSender.mouseUp();
+}
+
+function hoverOverMonthButtonForMonthPicker(year, month) {
+    var position = skipAnimationAndGetPositionOfMonthButton(year, month, true);
+    eventSender.mouseMoveTo(position.x, position.y);
 }
 
 var lastYearListViewScrollOffset = NaN;

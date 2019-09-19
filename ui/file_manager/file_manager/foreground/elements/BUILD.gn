@@ -130,11 +130,24 @@ js_unittest("files_toast_unittest") {
   ]
 }
 
+js_unittest("files_xf_elements_unittest") {
+  deps = [
+    ":xf_activity_complete",
+    ":xf_button",
+    ":xf_circular_progress",
+    ":xf_display_panel",
+    ":xf_panel_item",
+    "//ui/webui/resources/js:assert",
+    "//ui/webui/resources/js:webui_resource_test",
+  ]
+}
+
 js_test_gen_html("js_test_gen_html") {
   deps = [
     ":files_message_unittest",
     ":files_toast_unittest",
     ":files_tooltip_unittest",
+    ":files_xf_elements_unittest",
   ]
   html_import = true
 }

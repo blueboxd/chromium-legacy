@@ -150,10 +150,32 @@ class _IRBuilder(object):
             debug_info=self._build_debug_info(node))
 
     def _build_namespace(self, node):
-        # TODO(peria): Build members and register them in |namespace|
+        child_nodes = list(node.GetChildren())
+        extended_attributes = self._take_extended_attributes(child_nodes)
+
+        members = map(self._build_interface_or_namespace_member, child_nodes)
+        attributes = []
+        constants = []
+        operations = []
+        for member in members:
+            if isinstance(member, Attribute.IR):
+                member.is_static = True
+                attributes.append(member)
+            elif isinstance(member, Constant.IR):
+                constants.append(member)
+            elif isinstance(member, Operation.IR):
+                member.is_static = True
+                operations.append(member)
+            else:
+                assert False
+
         return Namespace.IR(
             identifier=Identifier(node.GetName()),
             is_partial=bool(node.GetProperty('PARTIAL')),
+            attributes=attributes,
+            constants=constants,
+            operations=operations,
+            extended_attributes=extended_attributes,
             component=self._component,
             debug_info=self._build_debug_info(node))
 

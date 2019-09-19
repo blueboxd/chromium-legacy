@@ -135,7 +135,7 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
   void Detach() override;
   void AttachTarget(Animation*);
   void DetachTarget(Animation*);
-  double CalculateTimeToEffectChange(
+  AnimationTimeDelta CalculateTimeToEffectChange(
       bool forwards,
       double inherited_time,
       double time_to_next_iteration) const override;

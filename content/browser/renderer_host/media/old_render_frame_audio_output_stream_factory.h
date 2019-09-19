@@ -43,7 +43,8 @@ class CONTENT_EXPORT OldRenderFrameAudioOutputStreamFactory
 
   // mojom::RendererAudioOutputStreamFactory implementation.
   void RequestDeviceAuthorization(
-      media::mojom::AudioOutputStreamProviderRequest stream_provider,
+      mojo::PendingReceiver<media::mojom::AudioOutputStreamProvider>
+          stream_provider,
       const base::Optional<base::UnguessableToken>& session_id,
       const std::string& device_id,
       RequestDeviceAuthorizationCallback callback) override;
@@ -54,7 +55,7 @@ class CONTENT_EXPORT OldRenderFrameAudioOutputStreamFactory
   // chosen. This id is hashed.
   void AuthorizationCompleted(
       base::TimeTicks auth_start_time,
-      media::mojom::AudioOutputStreamProviderRequest request,
+      mojo::PendingReceiver<media::mojom::AudioOutputStreamProvider> receiver,
       RequestDeviceAuthorizationCallback callback,
       media::OutputDeviceStatus status,
       const media::AudioParameters& params,

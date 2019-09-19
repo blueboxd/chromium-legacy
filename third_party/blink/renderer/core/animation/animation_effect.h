@@ -90,10 +90,10 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   base::Optional<double> Progress() const {
     return EnsureCalculated().progress;
   }
-  double TimeToForwardsEffectChange() const {
+  AnimationTimeDelta TimeToForwardsEffectChange() const {
     return EnsureCalculated().time_to_forwards_effect_change;
   }
-  double TimeToReverseEffectChange() const {
+  AnimationTimeDelta TimeToReverseEffectChange() const {
     return EnsureCalculated().time_to_reverse_effect_change;
   }
   double LocalTime() const { return EnsureCalculated().local_time; }
@@ -142,7 +142,7 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
     return AnimationTimeDelta();
   }
 
-  virtual double CalculateTimeToEffectChange(
+  virtual AnimationTimeDelta CalculateTimeToEffectChange(
       bool forwards,
       double local_time,
       double time_to_next_iteration) const = 0;

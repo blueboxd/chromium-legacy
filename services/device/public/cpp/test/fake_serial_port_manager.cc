@@ -88,9 +88,9 @@ FakeSerialPortManager::FakeSerialPortManager() = default;
 
 FakeSerialPortManager::~FakeSerialPortManager() = default;
 
-void FakeSerialPortManager::AddBinding(
-    mojom::SerialPortManagerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void FakeSerialPortManager::AddReceiver(
+    mojo::PendingReceiver<mojom::SerialPortManager> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void FakeSerialPortManager::AddPort(mojom::SerialPortInfoPtr port) {

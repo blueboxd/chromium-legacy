@@ -63,11 +63,6 @@ class ChromeSigninClient
       gaia::GaiaSource source) override;
   bool IsNonEnterpriseUser(const std::string& username) override;
 
-  // Returns a string describing the chrome version environment. Version format:
-  // <Build Info> <OS> <Version number> (<Last change>)<channel or "-devel">
-  // If version information is unavailable, returns "invalid."
-  std::string GetProductVersion() override;
-
   // gaia::GaiaOAuthClient::Delegate implementation.
   void OnGetTokenInfoResponse(
       std::unique_ptr<base::DictionaryValue> token_info) override;

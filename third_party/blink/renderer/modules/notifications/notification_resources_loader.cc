@@ -8,6 +8,7 @@
 
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/notifications/web_notification_constants.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"

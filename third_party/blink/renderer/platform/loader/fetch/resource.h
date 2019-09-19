@@ -349,7 +349,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
   virtual void DidSendData(uint64_t /* bytesSent */,
                            uint64_t /* totalBytesToBeSent */) {}
   virtual void DidDownloadData(uint64_t) {}
-  virtual void DidDownloadToBlob(scoped_refptr<BlobDataHandle>) {}
+  virtual void DidDownloadToBlob(scoped_refptr<BlobDataHandle>);
 
   base::TimeTicks LoadResponseEnd() const { return load_response_end_; }
 

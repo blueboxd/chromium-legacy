@@ -23,8 +23,9 @@ SerialPortManagerImpl::SerialPortManagerImpl(
 
 SerialPortManagerImpl::~SerialPortManagerImpl() = default;
 
-void SerialPortManagerImpl::Bind(mojom::SerialPortManagerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void SerialPortManagerImpl::Bind(
+    mojo::PendingReceiver<mojom::SerialPortManager> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void SerialPortManagerImpl::SetSerialEnumeratorForTesting(

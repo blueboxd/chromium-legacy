@@ -33,11 +33,6 @@ void IOSWebViewSigninClient::Shutdown() {
   network_callback_helper_.reset();
 }
 
-std::string IOSWebViewSigninClient::GetProductVersion() {
-  // TODO(crbug.com/768689): Implement this method with appropriate values.
-  return "";
-}
-
 PrefService* IOSWebViewSigninClient::GetPrefs() {
   return pref_service_;
 }

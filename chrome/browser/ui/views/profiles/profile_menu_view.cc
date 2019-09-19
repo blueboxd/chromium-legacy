@@ -511,18 +511,17 @@ void ProfileMenuView::BuildSelectableProfiles() {
 }
 
 void ProfileMenuView::BuildProfileFeatureButtons() {
-  constexpr float kIconToImageRatio = 0.75;
+  AddProfileShortcutFeatureButton(
+      ImageForMenu(vector_icons::kSettingsIcon, /*icon_to_image_ratio=*/0.625),
+      l10n_util::GetStringUTF16(IDS_PROFILES_MANAGE_USERS_BUTTON),
+      base::BindRepeating(&ProfileMenuView::OnManageProfilesButtonClicked,
+                          base::Unretained(this)));
 
+  constexpr float kIconToImageRatio = 0.75;
   AddProfileFeatureButton(
       ImageForMenu(kUserMenuGuestIcon, kIconToImageRatio),
       l10n_util::GetStringUTF16(IDS_PROFILES_OPEN_GUEST_PROFILE_BUTTON),
       base::BindRepeating(&ProfileMenuView::OnGuestProfileButtonClicked,
-                          base::Unretained(this)));
-
-  AddProfileFeatureButton(
-      ImageForMenu(vector_icons::kSettingsIcon, kIconToImageRatio),
-      l10n_util::GetStringUTF16(IDS_PROFILES_MANAGE_USERS_BUTTON),
-      base::BindRepeating(&ProfileMenuView::OnManageProfilesButtonClicked,
                           base::Unretained(this)));
 
   AddProfileFeatureButton(

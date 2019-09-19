@@ -32,6 +32,5 @@ js_library("device_info_updater") {
     ":camera3_device_info",
     ":constraints_preferrer",
     "..:state",
-    "../mojo:mojo_connector",
   ]
 }

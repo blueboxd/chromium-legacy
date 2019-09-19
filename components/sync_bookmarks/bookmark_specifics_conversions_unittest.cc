@@ -17,6 +17,7 @@
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -275,7 +276,6 @@ TEST(BookmarkSpecificsConversionsTest,
 
 TEST(BookmarkSpecificsConversionsTest, ShouldUpdateBookmarkNodeFromSpecifics) {
   const GURL kUrl("http://www.url.com");
-  const std::string kGuid = base::GenerateGUID();
   const std::string kTitle = "Title";
   const base::Time kTime = base::Time::Now();
   const std::string kKey1 = "key1";
@@ -303,7 +303,7 @@ TEST(BookmarkSpecificsConversionsTest, ShouldUpdateBookmarkNodeFromSpecifics) {
   sync_pb::EntitySpecifics specifics;
   sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
   bm_specifics->set_url(kNewUrl.spec());
-  bm_specifics->set_guid(kGuid);
+  bm_specifics->set_guid(node->guid());
   bm_specifics->set_icon_url(kNewIconUrl.spec());
   bm_specifics->set_favicon("PNG");
   bm_specifics->set_title(kNewTitle);
@@ -352,6 +352,7 @@ TEST(BookmarkSpecificsConversionsTest,
   sync_pb::EntitySpecifics specifics;
   sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
   bm_specifics->set_url(kNewUrl.spec());
+  bm_specifics->set_guid(node->guid());
   bm_specifics->set_favicon("PNG");
 
   testing::NiceMock<favicon::MockFaviconService> favicon_service;
@@ -436,6 +437,77 @@ TEST(BookmarkSpecificsConversionsTest, ShouldBeInvalidBookmarkSpecifics) {
   meta_info2->set_value("value2");
   EXPECT_FALSE(IsValidBookmarkSpecifics(*bm_specifics, /*is_folder=*/false));
   EXPECT_FALSE(IsValidBookmarkSpecifics(*bm_specifics, /*is_folder=*/true));
+}
+
+TEST(BookmarkSpecificsConversionsTest, ReplaceUrlNodeWithUpdatedGUID) {
+  std::unique_ptr<bookmarks::BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModel();
+  const bookmarks::BookmarkNode* bookmark_bar_node = model->bookmark_bar_node();
+  const std::string kGuid = base::GenerateGUID();
+  const base::string16 kTitle = base::ASCIIToUTF16("bar");
+  const GURL kUrl = GURL("http://foo.com");
+  const base::Time kCreationTime = base::Time::Now();
+
+  auto meta_info_map = std::make_unique<bookmarks::BookmarkNode::MetaInfoMap>();
+  const std::string kKey = "key";
+  const std::string kValue = "value";
+  (*meta_info_map)[kKey] = kValue;
+
+  // Add a bookmark URL.
+  const bookmarks::BookmarkNode* original_url = model->AddURL(
+      bookmark_bar_node, 0, kTitle, kUrl, meta_info_map.get(), kCreationTime);
+
+  // Replace url1.
+  const bookmarks::BookmarkNode* new_url =
+      ReplaceBookmarkNodeGUID(original_url, kGuid, model.get());
+
+  // All data except for the GUID should be the same.
+  EXPECT_EQ(kGuid, new_url->guid());
+  EXPECT_EQ(kTitle, new_url->GetTitle());
+  EXPECT_EQ(bookmark_bar_node, new_url->parent());
+  EXPECT_EQ(0, bookmark_bar_node->GetIndexOf(new_url));
+  EXPECT_EQ(kUrl, new_url->url());
+  EXPECT_EQ(kCreationTime, new_url->date_added());
+  std::string out_value_url;
+  EXPECT_TRUE(new_url->GetMetaInfo(kKey, &out_value_url));
+  EXPECT_EQ(kValue, out_value_url);
+}
+
+TEST(BookmarkSpecificsConversionsTest, ReplaceFolderNodeWithUpdatedGUID) {
+  std::unique_ptr<bookmarks::BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModel();
+  const bookmarks::BookmarkNode* bookmark_bar_node = model->bookmark_bar_node();
+  const std::string kGuid = base::GenerateGUID();
+  const base::string16 kTitle = base::ASCIIToUTF16("foobar");
+
+  auto meta_info_map = std::make_unique<bookmarks::BookmarkNode::MetaInfoMap>();
+  const std::string kKey = "key";
+  const std::string kValue = "value";
+  (*meta_info_map)[kKey] = kValue;
+
+  // Add a folder with child URLs.
+  const bookmarks::BookmarkNode* original_folder =
+      model->AddFolder(bookmark_bar_node, 0, kTitle, meta_info_map.get());
+  const bookmarks::BookmarkNode* url1 = model->AddURL(
+      original_folder, 0, base::ASCIIToUTF16("bar"), GURL("http://bar.com"));
+  const bookmarks::BookmarkNode* url2 = model->AddURL(
+      original_folder, 1, base::ASCIIToUTF16("foo"), GURL("http://foo.com"));
+
+  // Replace folder1.
+  const bookmarks::BookmarkNode* new_folder =
+      ReplaceBookmarkNodeGUID(original_folder, kGuid, model.get());
+
+  // All data except for the GUID should be the same.
+  EXPECT_EQ(kGuid, new_folder->guid());
+  EXPECT_EQ(kTitle, new_folder->GetTitle());
+  EXPECT_EQ(bookmark_bar_node, new_folder->parent());
+  EXPECT_EQ(0, bookmark_bar_node->GetIndexOf(new_folder));
+  std::string out_value_folder;
+  EXPECT_TRUE(new_folder->GetMetaInfo(kKey, &out_value_folder));
+  EXPECT_EQ(kValue, out_value_folder);
+  EXPECT_EQ(2u, new_folder->children().size());
+  EXPECT_EQ(0, new_folder->GetIndexOf(url1));
+  EXPECT_EQ(1, new_folder->GetIndexOf(url2));
 }
 
 }  // namespace

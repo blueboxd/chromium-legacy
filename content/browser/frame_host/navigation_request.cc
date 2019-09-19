@@ -604,7 +604,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
         static_cast<NavigationControllerImpl*>(
             frame_tree_node->navigator()->GetController());
     rfh_restored_from_back_forward_cache =
-        controller->back_forward_cache().GetDocument(entry->GetUniqueID());
+        controller->GetBackForwardCache().GetDocument(entry->GetUniqueID());
   }
 
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
@@ -1554,7 +1554,7 @@ void NavigationRequest::OnResponseStarted(
         static_cast<NavigationControllerImpl*>(
             frame_tree_node_->navigator()->GetController());
     render_frame_host_ =
-        controller->back_forward_cache().GetDocument(nav_entry_id_);
+        controller->GetBackForwardCache().GetDocument(nav_entry_id_);
 
     // The only time GetDocument can return nullptr here, is if the document was
     // evicted from the BackForwardCache since this navigation started.
@@ -2249,7 +2249,7 @@ void NavigationRequest::CommitNavigation() {
             frame_tree_node_->navigator()->GetController());
 
     std::unique_ptr<RenderFrameHostImpl> restored_rfh =
-        controller->back_forward_cache().RestoreDocument(nav_entry_id_);
+        controller->GetBackForwardCache().RestoreDocument(nav_entry_id_);
 
     // The only time restored_rfh can be nullptr here, is if the
     // document was evicted from the BackForwardCache since this navigation
@@ -3325,39 +3325,39 @@ const net::HttpResponseHeaders* NavigationRequest::GetResponseHeaders() {
 
 std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
 NavigationRequest::MakeDidCommitProvisionalLoadParamsForBFCache() {
-  // TODO(lowell): Review all of these parameters for completeness.
   std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params =
       std::make_unique<FrameHostMsg_DidCommitProvisionalLoad_Params>();
+
   params->http_status_code = net::HTTP_OK;
-  params->method = common_params().method;
+  params->url_is_unreachable = false;
   params->intended_as_new_entry = commit_params().intended_as_new_entry;
   params->should_replace_current_entry =
       common_params().should_replace_current_entry;
   params->post_id = -1;
   params->nav_entry_id = commit_params().nav_entry_id;
   params->navigation_token = commit_params().navigation_token;
-  params->transition = common_params().transition;
-
-  // TODO(lowell): Is there a way to get access to the the values needed to set
-  // the insecure_request_policy, etc?
-
-  params->url = common_params().url;
-  params->gesture = common_params().has_user_gesture ? NavigationGestureUser
-                                                     : NavigationGestureAuto;
-  params->page_state = commit_params().page_state;
-
-  params->should_update_history = true;
-
+  params->did_create_new_entry = false;
+  // TODO(crbug.com/1005718): Is origin ever unset?
   if (commit_params().origin_to_commit.has_value()) {
     params->origin = commit_params().origin_to_commit.value();
   }
-
+  // TODO(crbug.com/1005718): Set insecure_request_policy.
+  // TODO(crbug.com/1005718): Set insecure_navigations_set.
+  // TODO(crbug.com/1005718): Set has_potentially_trustworthy_unique_origin.
+  params->url = common_params().url;
+  params->should_update_history = true;
+  params->gesture = common_params().has_user_gesture ? NavigationGestureUser
+                                                     : NavigationGestureAuto;
+  params->page_state = commit_params().page_state;
+  params->method = common_params().method;
   params->item_sequence_number = frame_entry_item_sequence_number_;
   params->document_sequence_number = frame_entry_document_sequence_number_;
-
-  // TODO(lowell): Set the actual response mime type from FrameNavigationEntry.
+  // TODO(crbug.com/1005718): Set the actual mime type.
   params->contents_mime_type = "text/html";
-
+  params->transition = common_params().transition;
+  // TODO(crbug.com/1005718): Set is_overriding_user_agent.
+  // TODO(crbug.com/1005718): Set original_request_url.
+  params->history_list_was_cleared = false;
   params->request_id = GetGlobalRequestID().request_id;
 
   return params;

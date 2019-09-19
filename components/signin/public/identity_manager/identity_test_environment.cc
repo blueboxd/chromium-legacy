@@ -128,6 +128,11 @@ void IdentityTestEnvironment::Initialize() {
          "If your test has an existing one, move it to be initialized before "
          "IdentityTestEnvironment. Otherwise, use "
          "base::test::TaskEnvironment.";
+  DCHECK(identity_manager()
+             ->GetTokenService()
+             ->IsFakeProfileOAuth2TokenServiceForTesting())
+      << "IdentityTestEnvironment requires the ProfileOAuth2TokenService used "
+         "to subclass FakeProfileOAuth2TokenServiceForTesting.";
   test_identity_manager_observer_ =
       std::make_unique<TestIdentityManagerObserver>(this->identity_manager());
   this->identity_manager()->AddDiagnosticsObserver(this);

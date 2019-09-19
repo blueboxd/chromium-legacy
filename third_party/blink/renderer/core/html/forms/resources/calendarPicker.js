@@ -2160,6 +2160,8 @@ YearListCell.ClassNameMonthChooser = 'month-chooser';
 YearListCell.ClassNameMonthButtonsRow = 'month-buttons-row';
 YearListCell.ClassNameMonthButton = 'month-button';
 YearListCell.ClassNameHighlighted = 'highlighted';
+YearListCell.ClassNameSelected = 'selected';
+YearListCell.ClassNameToday = 'today';
 
 YearListCell._recycleBin = [];
 
@@ -2214,6 +2216,10 @@ function YearListView(minimumMonth, maximumMonth) {
    * @type {?Month}
    */
   this.highlightedMonth = null;
+  /**
+   * @type {?Month}
+   */
+  this._selectedMonth = null;
   /**
    * @type {!Month}
    * @const
@@ -2483,6 +2489,16 @@ YearListView.prototype.prepareNewCell = function(row) {
       element.setAttribute('aria-activedescendant', monthButton.id);
     }, 0);
   }
+  if (this._selectedMonth && (this._selectedMonth.year - 1) === row) {
+    var monthButton = cell.monthButtons[this._selectedMonth.month];
+    monthButton.classList.add(YearListCell.ClassNameSelected);
+  }
+  const todayMonth = Month.createFromToday();
+  if ((todayMonth.year - 1) === row) {
+    var monthButton = cell.monthButtons[todayMonth.month];
+    monthButton.classList.add(YearListCell.ClassNameToday);
+  }
+
   var animator = this._runningAnimators[row];
   if (animator)
     cell.setHeight(animator.currentValue);
@@ -2627,6 +2643,17 @@ YearListView.prototype.highlightMonth = function(month) {
   }
 };
 
+YearListView.prototype.setSelectedMonth = function(month) {
+  this._selectedMonth = month;
+}
+
+YearListView.prototype.showSelectedMonth = function() {
+  var monthButton = this.buttonForMonth(this._selectedMonth);
+  if (monthButton) {
+    monthButton.classList.add(YearListCell.ClassNameSelected);
+  }
+}
+
 /**
  * @param {!Month} month
  */
@@ -2636,6 +2663,7 @@ YearListView.prototype.show = function(month) {
   this.scrollToRow(month.year - 1, false);
   this.selectWithoutAnimating(month.year - 1);
   this.highlightMonth(month);
+  this.showSelectedMonth();
 };
 
 YearListView.prototype.hide = function() {
@@ -4033,6 +4061,7 @@ CalendarPicker.prototype.setSelection = function(dayOrWeekOrMonth) {
   if (!this.isValid(dayOrWeekOrMonth))
     return;
   this._selection = dayOrWeekOrMonth;
+  this.monthPopupView.yearListView.setSelectedMonth(Month.createFromDay(dayOrWeekOrMonth.middleDay()));
   this.calendarTableView.setNeedsUpdateCells(true);
 };
 

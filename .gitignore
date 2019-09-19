@@ -165,6 +165,7 @@ vs-chromium-project.txt
 /chrome/web_ui_mojo_bindings.xml
 /chromecast/internal
 /chromeos/assistant/internal
+/chromeos/components/media_app_ui/resources/app
 /chromeos/profiles/chromeos.orderfile.txt
 /chromeos/profiles/*.local.txt
 /chromeos/profiles/*.afdo.prof

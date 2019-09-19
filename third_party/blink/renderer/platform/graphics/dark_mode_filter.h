@@ -45,6 +45,7 @@ class PLATFORM_EXPORT DarkModeFilter {
 
   // |image| and |flags| must not be null.
   void ApplyToImageFlagsIfNeeded(const FloatRect& src_rect,
+                                 const FloatRect& dest_rect,
                                  Image* image,
                                  cc::PaintFlags* flags);
 

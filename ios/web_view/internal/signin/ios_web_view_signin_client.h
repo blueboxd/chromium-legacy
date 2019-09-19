@@ -36,7 +36,6 @@ class IOSWebViewSigninClient : public SigninClient {
   void Shutdown() override;
 
   // SigninClient implementation.
-  std::string GetProductVersion() override;
   PrefService* GetPrefs() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   network::mojom::CookieManager* GetCookieManager() override;

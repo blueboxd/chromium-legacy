@@ -14,7 +14,7 @@
 #include "media/base/video_frame_metadata.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -44,9 +44,9 @@ class VideoCaptureClientTest : public ::testing::Test,
                                public ::testing::WithParamInterface<bool> {
  public:
   VideoCaptureClientTest() {
-    media::mojom::VideoCaptureHostPtr host;
-    host_impl_ =
-        std::make_unique<FakeVideoCaptureHost>(mojo::MakeRequest(&host));
+    mojo::PendingRemote<media::mojom::VideoCaptureHost> host;
+    host_impl_ = std::make_unique<FakeVideoCaptureHost>(
+        host.InitWithNewPipeAndPassReceiver());
     client_ = std::make_unique<VideoCaptureClient>(media::VideoCaptureParams(),
                                                    std::move(host));
   }

@@ -53,7 +53,8 @@ struct BookmarkInfo {
 std::unique_ptr<syncer::UpdateResponseData> CreateUpdateResponseData(
     const BookmarkInfo& bookmark_info,
     const syncer::UniquePosition& unique_position,
-    int response_version) {
+    int response_version,
+    const std::string& guid) {
   auto data = std::make_unique<syncer::EntityData>();
   data->id = bookmark_info.server_id;
   data->parent_id = bookmark_info.parent_id;
@@ -62,7 +63,7 @@ std::unique_ptr<syncer::UpdateResponseData> CreateUpdateResponseData(
 
   sync_pb::BookmarkSpecifics* bookmark_specifics =
       data->specifics.mutable_bookmark();
-  bookmark_specifics->set_guid(base::GenerateGUID());
+  bookmark_specifics->set_guid(guid);
   bookmark_specifics->set_title(bookmark_info.title);
   if (bookmark_info.url.empty()) {
     data->is_folder = true;
@@ -74,6 +75,14 @@ std::unique_ptr<syncer::UpdateResponseData> CreateUpdateResponseData(
   response_data->entity = std::move(data);
   response_data->response_version = response_version;
   return response_data;
+}
+
+std::unique_ptr<syncer::UpdateResponseData> CreateUpdateResponseData(
+    const BookmarkInfo& bookmark_info,
+    const syncer::UniquePosition& unique_position,
+    int response_version) {
+  return CreateUpdateResponseData(bookmark_info, unique_position,
+                                  response_version, base::GenerateGUID());
 }
 
 sync_pb::ModelTypeState CreateDummyModelTypeState() {
@@ -252,10 +261,10 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteUpdate) {
   const std::string kNewTitle = "new-title";
   const std::string kNewUrl = "http://www.new-url.com";
   syncer::UpdateResponseDataList updates;
-  updates.push_back(
-      CreateUpdateResponseData({kNodeId, kNewTitle, kNewUrl, kBookmarkBarId,
-                                /*server_tag=*/std::string()},
-                               kRandomPosition, /*response_version=*/1));
+  updates.push_back(CreateUpdateResponseData(
+      {kNodeId, kNewTitle, kNewUrl, kBookmarkBarId,
+       /*server_tag=*/std::string()},
+      kRandomPosition, /*response_version=*/1, bookmark_node->guid()));
 
   processor()->OnUpdateReceived(CreateDummyModelTypeState(),
                                 std::move(updates));

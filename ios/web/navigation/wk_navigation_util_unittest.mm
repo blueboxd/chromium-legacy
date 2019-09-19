@@ -92,6 +92,33 @@ TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrl) {
             session_json);
 }
 
+// In the past the math within CreateRestoreSessionUrl has had some edge case
+// crashes.  Ensure that nothing crashes.
+TEST_F(WKNavigationUtilTest, CreateRestoreSessionBruteForce) {
+  std::vector<std::unique_ptr<NavigationItem>> items;
+  int first_index = 0;
+  GURL restore_session_url;
+  for (int num_items = 70; num_items < 80; num_items++) {
+    std::vector<std::unique_ptr<NavigationItem>> items;
+    CreateTestNavigationItems(num_items, items);
+    for (int last_committed_index = 0; last_committed_index < num_items;
+         last_committed_index++) {
+      CreateRestoreSessionUrl(last_committed_index, items, &restore_session_url,
+                              &first_index);
+      // Extract session JSON from restoration URL.
+      base::JSONReader::ValueWithError value_with_error =
+          ExtractSessionDict(restore_session_url);
+
+      base::Value* urls_value = value_with_error.value->FindKey("urls");
+      if (num_items > kMaxSessionSize) {
+        ASSERT_EQ(kMaxSessionSize, (int)urls_value->GetList().size());
+      } else {
+        ASSERT_EQ(num_items, (int)urls_value->GetList().size());
+      }
+    }
+  }
+}
+
 // Verifies that large session can be stored in NSURL. GURL is converted to
 // NSURL, because NSURL is passed to WKWebView during the session restoration.
 TEST_F(WKNavigationUtilTest, CreateRestoreSessionUrlForLargeSession) {

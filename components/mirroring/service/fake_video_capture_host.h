@@ -8,6 +8,7 @@
 #include <string>
 
 #include "media/capture/mojom/video_capture.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -17,7 +18,8 @@ namespace mirroring {
 
 class FakeVideoCaptureHost final : public media::mojom::VideoCaptureHost {
  public:
-  explicit FakeVideoCaptureHost(media::mojom::VideoCaptureHostRequest request);
+  explicit FakeVideoCaptureHost(
+      mojo::PendingReceiver<media::mojom::VideoCaptureHost> receiver);
   ~FakeVideoCaptureHost() override;
 
   // mojom::VideoCaptureHost implementations

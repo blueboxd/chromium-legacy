@@ -86,7 +86,7 @@ VibrationController::VibrationController(LocalFrame& frame)
       is_calling_cancel_(false),
       is_calling_vibrate_(false) {
   frame.GetInterfaceProvider().GetInterface(
-      mojo::MakeRequest(&vibration_manager_));
+      vibration_manager_.BindNewPipeAndPassReceiver());
 }
 
 VibrationController::~VibrationController() = default;

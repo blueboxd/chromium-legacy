@@ -460,6 +460,8 @@ crbug.com/663601 [ mac amd ] deqp/functional/gles3/textureshadow/* [ RetryOnFail
 crbug.com/679058 [ mac amd ] deqp/functional/gles3/texturespecification/teximage2d_unpack_params.html [ RetryOnFailure ]
 crbug.com/642822 [ mac amd ] conformance2/rendering/clipping-wide-points.html [ Failure ]
 
+crbug.com/1005593 [ mac amd ] deqp/functional/gles3/shaderstruct.html [ RetryOnFailure ]
+
 # Mac Intel
 crbug.com/886970 [ mac intel-0xa2e ] conformance/rendering/canvas-alpha-bug.html [ Failure ]
 crbug.com/678526 [ mac intel ] conformance2/rendering/framebuffer-texture-level1.html [ Failure ]

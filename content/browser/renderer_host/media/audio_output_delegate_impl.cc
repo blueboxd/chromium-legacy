@@ -103,7 +103,8 @@ std::unique_ptr<media::AudioOutputDelegate> AudioOutputDelegateImpl::Create(
     int render_frame_id,
     int render_process_id,
     const media::AudioParameters& params,
-    media::mojom::AudioOutputStreamObserverPtr observer,
+    mojo::PendingRemote<media::mojom::AudioOutputStreamObserver>
+        pending_observer,
     const std::string& output_device_id) {
   auto socket = std::make_unique<base::CancelableSyncSocket>();
   auto reader = media::AudioSyncReader::Create(
@@ -115,7 +116,7 @@ std::unique_ptr<media::AudioOutputDelegate> AudioOutputDelegateImpl::Create(
   return std::make_unique<AudioOutputDelegateImpl>(
       std::move(reader), std::move(socket), handler, audio_manager,
       std::move(audio_log), media_observer, stream_id, render_frame_id,
-      render_process_id, params, std::move(observer), output_device_id);
+      render_process_id, params, std::move(pending_observer), output_device_id);
 }
 
 AudioOutputDelegateImpl::AudioOutputDelegateImpl(
@@ -129,14 +130,15 @@ AudioOutputDelegateImpl::AudioOutputDelegateImpl(
     int render_frame_id,
     int render_process_id,
     const media::AudioParameters& params,
-    media::mojom::AudioOutputStreamObserverPtr observer,
+    mojo::PendingRemote<media::mojom::AudioOutputStreamObserver>
+        pending_observer,
     const std::string& output_device_id)
     : subscriber_(handler),
       audio_log_(std::move(audio_log)),
       reader_(std::move(reader)),
       foreign_socket_(std::move(foreign_socket)),
       stream_id_(stream_id),
-      observer_(std::move(observer)) {
+      observer_(std::move(pending_observer)) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(subscriber_);
   DCHECK(audio_manager);

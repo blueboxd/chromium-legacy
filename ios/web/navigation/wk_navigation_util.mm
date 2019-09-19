@@ -60,7 +60,7 @@ int GetSafeItemIterators(
     return last_committed_item_index;
   }
 
-  if (items.size() - last_committed_item_index < kMaxSessionSize / 2) {
+  if (items.size() - last_committed_item_index <= kMaxSessionSize / 2) {
     // Items which are the furthest to |last_committed_item_index| are located
     // on the left side of the vector. Trim those.
     *begin = items.end() - kMaxSessionSize;

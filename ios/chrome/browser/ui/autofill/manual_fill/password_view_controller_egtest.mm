@@ -18,10 +18,12 @@
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/all_password_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_cell.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_password_mediator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/password_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_controller.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
+#include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_actions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -35,6 +37,10 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using chrome_test_util::CancelButton;
+using chrome_test_util::NavigationBarDoneButton;
+using chrome_test_util::StaticTextWithAccessibilityLabelId;
 
 namespace {
 
@@ -93,6 +99,11 @@ id<GREYMatcher> UsernameButtonMatcher() {
   return grey_buttonTitle(base::SysUTF8ToNSString(kExampleUsername));
 }
 
+// Returns a matcher for the example password in the list.
+id<GREYMatcher> PasswordButtonMatcher() {
+  return grey_buttonTitle(kMaskedPasswordTitle);
+}
+
 // Returns a matcher for the password settings collection view.
 id<GREYMatcher> PasswordSettingsMatcher() {
   return grey_accessibilityID(kPasswordsTableViewId);
@@ -103,11 +114,24 @@ id<GREYMatcher> PasswordSettingsSearchMatcher() {
   return grey_accessibilityID(kPasswordsSearchBarId);
 }
 
+// Matcher for the not secure website alert.
+id<GREYMatcher> NotSecureWebsiteAlert() {
+  return StaticTextWithAccessibilityLabelId(
+      IDS_IOS_MANUAL_FALLBACK_NOT_SECURE_TITLE);
+}
+
 // Returns a matcher for the PasswordTableView window.
 id<GREYMatcher> PasswordTableViewWindowMatcher() {
   id<GREYMatcher> classMatcher = grey_kindOfClass([UIWindow class]);
   id<GREYMatcher> parentMatcher = grey_descendant(PasswordTableViewMatcher());
   return grey_allOf(classMatcher, parentMatcher, nil);
+}
+
+// Returns the matcher for an enabled cancel button in a navigation bar.
+id<GREYMatcher> NavigationBarCancelMatcher() {
+  return grey_allOf(
+      grey_ancestor(grey_kindOfClass([UINavigationBar class])), CancelButton(),
+      grey_not(grey_accessibilityTrait(UIAccessibilityTraitNotEnabled)), nil);
 }
 
 // Gets the current password store.
@@ -303,6 +327,42 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
+// Tests that returning from "Manage Passwords..." leaves the icons in the right
+// state.
+- (void)testPasswordsButtonStateAfterPresentingManagePasswords {
+  // Bring up the keyboard.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+
+  // Tap on the passwords icon.
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      performAction:grey_tap()];
+
+  // Verify the status of the icon.
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      assertWithMatcher:grey_not(grey_userInteractionEnabled())];
+
+  // Tap the "Manage Passwords..." action.
+  [[EarlGrey selectElementWithMatcher:ManagePasswordsMatcher()]
+      performAction:grey_tap()];
+
+  // Verify the password settings opened.
+  [[EarlGrey selectElementWithMatcher:PasswordSettingsMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Tap Cancel Button.
+  [[EarlGrey selectElementWithMatcher:NavigationBarCancelMatcher()]
+      performAction:grey_tap()];
+
+  // Verify the status of the icons.
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      assertWithMatcher:grey_userInteractionEnabled()];
+  [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
+      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+}
+
 // Tests that the "Use Other Password..." action works.
 - (void)testUseOtherPasswordActionOpens {
   // Bring up the keyboard.
@@ -320,6 +380,42 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
   // Verify the use other passwords opened.
   [[EarlGrey selectElementWithMatcher:OtherPasswordsDismissMatcher()]
       assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that returning from "Use Other Password..." leaves the icons in the
+// right state.
+- (void)testPasswordsButtonStateAfterPresentingUseOtherPassword {
+  // Bring up the keyboard.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+
+  // Tap on the passwords icon.
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      performAction:grey_tap()];
+
+  // Verify the status of the icon.
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      assertWithMatcher:grey_not(grey_userInteractionEnabled())];
+
+  // Tap the "Manage Passwords..." action.
+  [[EarlGrey selectElementWithMatcher:OtherPasswordsMatcher()]
+      performAction:grey_tap()];
+
+  // Verify the use other passwords opened.
+  [[EarlGrey selectElementWithMatcher:OtherPasswordsDismissMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Tap Cancel Button.
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
+
+  // Verify the status of the icons.
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      assertWithMatcher:grey_userInteractionEnabled()];
+  [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
+      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
 }
 
 // Tests that the Password View Controller is not present when presenting UI.
@@ -476,12 +572,15 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
   [[EarlGrey selectElementWithMatcher:PasswordTableViewWindowMatcher()]
       performAction:grey_tapAtPoint(CGPointMake(0, 0))];
 
-  // Verify the password controller table view and the password icon is NOT
-  // visible.
+  // Verify the password controller table view is not visible and the password
+  // icon is visible.
   [[EarlGrey selectElementWithMatcher:PasswordTableViewMatcher()]
       assertWithMatcher:grey_notVisible()];
-  [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
-      assertWithMatcher:grey_notVisible()];
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      assertWithMatcher:grey_interactable()];
+  // Verify the interaction status of the password icon.
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      assertWithMatcher:grey_userInteractionEnabled()];
 }
 
 // Tests that the Password View Controller is dismissed when tapping the
@@ -603,6 +702,36 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
           @"window.frames[0].document.getElementById('%s').value === '%s'",
           kFormElementUsername, kExampleUsername];
   XCTAssertTrue(WaitForJavaScriptCondition(javaScriptCondition));
+}
+
+// Tests that an alert is shown when trying to fill a password in an unsecure
+// field.
+- (void)testPasswordControllerPresentsUnsecureAlert {
+  const GURL URL = self.testServer->GetURL(kFormHTMLFile);
+  SaveLocalPasswordForm(URL);
+
+  // Bring up the keyboard.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+
+  // Wait for the accessory icon to appear.
+  [GREYKeyboard waitForKeyboardToAppear];
+
+  // Tap on the passwords icon.
+  [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
+      performAction:grey_tap()];
+
+  // Verify the password controller table view is visible.
+  [[EarlGrey selectElementWithMatcher:PasswordTableViewMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Select a password.
+  [[EarlGrey selectElementWithMatcher:PasswordButtonMatcher()]
+      performAction:grey_tap()];
+
+  // Look for the alert.
+  [[EarlGrey selectElementWithMatcher:NotSecureWebsiteAlert()]
+      assertWithMatcher:grey_not(grey_nil())];
 }
 
 // Tests that the password icon is hidden when no passwords are available.

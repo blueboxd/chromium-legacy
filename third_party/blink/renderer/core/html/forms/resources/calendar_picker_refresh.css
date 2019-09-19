@@ -96,33 +96,39 @@ body {
   color: #101010;
 }
 
-.week-number-cell.highlighted,
-.day-cell.highlighted {
+.day-cell.highlighted,
+.month-button.highlighted,
+.week-number-cell.highlighted {
   background-color: #E5E5E5;
 }
 
-.week-number-cell.selected,
-.day-cell.selected {
+.day-cell.selected,
+.month-button.selected,
+.week-number-cell.selected {
   background-color: #CECECE;
   font-weight: bold;
 }
 
-.week-number-cell.disabled,
-.day-cell.disabled {
-  background-color: #FFFFFF;
-  color: rgba(16, 16, 16, 0.3);
-}
-
 .day-cell.highlighted.today,
-.day-cell.today {
+.day-cell.today,
+.month-button.today {
   background-color: #6E6E6E;
   border: 0;
   color: #FFFFFF;
   font-weight: bold;
 }
 
-.day-cell.selected.today {
+.day-cell.selected.today,
+.month-button.selected.today {
   border: 2px solid #CECECE !important;
+}
+
+.day-cell.disabled,
+.day-cell.disabled.today,
+.month-button[aria-disabled="true"],
+.week-number-cell.disabled {
+  background-color: #FFFFFF;
+  color: rgba(16, 16, 16, 0.3);
 }
 
 .today-button-refresh {
@@ -170,13 +176,4 @@ body {
 .month-button {
   border-radius: 2px;
   color: #101010;
-}
-
-.month-button.highlighted {
-  background-color: #E5E5E5;
-}
-
-.month-button[aria-disabled="true"] {
-  background-color: #FFFFFF;
-  color: rgba(16, 16, 16, 0.3);
 }

@@ -10,4 +10,19 @@
 
 @implementation SceneController
 
+- (instancetype)initWithSceneState:(SceneState*)sceneState {
+  self = [super init];
+  if (self) {
+    _sceneState = sceneState;
+    [_sceneState addObserver:self];
+  }
+  return self;
+}
+
+#pragma mark - SceneStateObserver
+
+- (void)sceneState:(SceneState*)sceneState
+    transitionedToActivationLevel:(SceneActivationLevel)level {
+}
+
 @end

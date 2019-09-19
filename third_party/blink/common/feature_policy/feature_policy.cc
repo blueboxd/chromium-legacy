@@ -351,6 +351,7 @@ mojom::FeaturePolicyFeature FeaturePolicy::FeatureForSandboxFlag(
     case WebSandboxFlags::kPlugins:
     case WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts:
     case WebSandboxFlags::kTopNavigationByUserActivation:
+    case WebSandboxFlags::kStorageAccessByUserActivation:
       break;
   }
   return mojom::FeaturePolicyFeature::kNotFound;

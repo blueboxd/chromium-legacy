@@ -47,9 +47,6 @@ class TestSigninClient : public SigninClient {
       base::OnceCallback<void(SignoutDecision)> on_signout_decision_reached,
       signin_metrics::ProfileSignout signout_source_metric) override;
 
-  // Returns the empty string.
-  std::string GetProductVersion() override;
-
   // Wraps the test_url_loader_factory().
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
 

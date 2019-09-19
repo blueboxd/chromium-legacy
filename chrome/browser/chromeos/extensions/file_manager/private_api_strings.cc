@@ -35,7 +35,6 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
   dict->SetBoolean("VIDEO_PLAYER_NATIVE_CONTROLS_ENABLED",
                    base::FeatureList::IsEnabled(
                        chromeos::features::kVideoPlayerNativeControls));
-  // TODO(crbug.com/868747): Find a better solution for demo mode.
   dict->SetBoolean("HIDE_SPACE_INFO",
                    chromeos::DemoSession::IsDeviceInDemoMode());
   dict->SetBoolean("ARC_USB_STORAGE_UI_ENABLED",

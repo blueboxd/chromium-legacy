@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/system_connector.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -175,7 +176,7 @@ device::mojom::SerialPortManager* SerialChooserContext::GetPortManager() {
 }
 
 void SerialChooserContext::SetPortManagerForTesting(
-    device::mojom::SerialPortManagerPtr manager) {
+    mojo::PendingRemote<device::mojom::SerialPortManager> manager) {
   SetUpPortManagerConnection(std::move(manager));
 }
 
@@ -187,16 +188,16 @@ void SerialChooserContext::EnsurePortManagerConnection() {
   if (port_manager_)
     return;
 
-  device::mojom::SerialPortManagerPtr manager;
-  content::GetSystemConnector()->BindInterface(device::mojom::kServiceName,
-                                               mojo::MakeRequest(&manager));
+  mojo::PendingRemote<device::mojom::SerialPortManager> manager;
+  content::GetSystemConnector()->Connect(
+      device::mojom::kServiceName, manager.InitWithNewPipeAndPassReceiver());
   SetUpPortManagerConnection(std::move(manager));
 }
 
 void SerialChooserContext::SetUpPortManagerConnection(
-    device::mojom::SerialPortManagerPtr manager) {
-  port_manager_ = std::move(manager);
-  port_manager_.set_connection_error_handler(
+    mojo::PendingRemote<device::mojom::SerialPortManager> manager) {
+  port_manager_.Bind(std::move(manager));
+  port_manager_.set_disconnect_handler(
       base::BindOnce(&SerialChooserContext::OnPortManagerConnectionError,
                      base::Unretained(this)));
 }

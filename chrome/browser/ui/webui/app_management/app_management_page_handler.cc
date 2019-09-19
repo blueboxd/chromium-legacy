@@ -14,6 +14,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/app_management/app_management.mojom.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "extensions/browser/extension_registry.h"
@@ -21,6 +22,10 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -82,10 +87,10 @@ bool ShouldHideStoragePermission(const std::string app_id) {
 }  // namespace
 
 AppManagementPageHandler::AppManagementPageHandler(
-    app_management::mojom::PageHandlerRequest request,
-    app_management::mojom::PagePtr page,
+    mojo::PendingReceiver<app_management::mojom::PageHandler> receiver,
+    mojo::PendingRemote<app_management::mojom::Page> page,
     Profile* profile)
-    : binding_(this, std::move(request)),
+    : receiver_(this, std::move(receiver)),
       page_(std::move(page)),
       profile_(profile)
 #if defined(OS_CHROMEOS)

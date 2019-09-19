@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_engagement_metrics_service.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_files.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
@@ -182,6 +183,14 @@ void PluginVmManager::OnVmStateChanged(
     seneschal_server_handle_ = 0;
 
     ChromeLauncherController::instance()->Close(ash::ShelfID(kPluginVmAppId));
+  }
+
+  auto* engagement_metrics_service =
+      PluginVmEngagementMetricsService::Factory::GetForProfile(profile_);
+  // This is null in unit tests.
+  if (engagement_metrics_service) {
+    engagement_metrics_service->SetBackgroundActive(
+        vm_state_ == vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING);
   }
 }
 

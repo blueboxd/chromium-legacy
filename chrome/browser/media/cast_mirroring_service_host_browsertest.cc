@@ -24,8 +24,9 @@
 #include "media/capture/video_capture_types.h"
 #include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "media/mojo/mojom/audio_input_stream.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
@@ -65,7 +66,8 @@ content::DesktopMediaID BuildMediaIdForTabMirroring(
 class MockVideoCaptureObserver final
     : public media::mojom::VideoCaptureObserver {
  public:
-  explicit MockVideoCaptureObserver(media::mojom::VideoCaptureHostPtr host)
+  explicit MockVideoCaptureObserver(
+      mojo::PendingRemote<media::mojom::VideoCaptureHost> host)
       : host_(std::move(host)) {}
   MOCK_METHOD1(OnBufferCreatedCall, void(int buffer_id));
   MOCK_METHOD1(OnBufferReadyCall, void(int buffer_id));
@@ -109,7 +111,7 @@ class MockVideoCaptureObserver final
   void RequestRefreshFrame() { host_->RequestRefreshFrame(device_id_); }
 
  private:
-  media::mojom::VideoCaptureHostPtr host_;
+  mojo::Remote<media::mojom::VideoCaptureHost> host_;
   mojo::Receiver<media::mojom::VideoCaptureObserver> receiver_{this};
   base::flat_map<int, media::mojom::VideoBufferHandlePtr> buffers_;
   base::flat_map<int, media::mojom::VideoFrameInfoPtr> frame_infos_;
@@ -127,9 +129,8 @@ class CastMirroringServiceHostBrowserTest
       public mojom::CastMessageChannel,
       public mojom::AudioStreamCreatorClient {
  public:
-  CastMirroringServiceHostBrowserTest()
-      : observer_binding_(this), outbound_channel_binding_(this) {}
-  ~CastMirroringServiceHostBrowserTest() override {}
+  CastMirroringServiceHostBrowserTest() = default;
+  ~CastMirroringServiceHostBrowserTest() override = default;
 
  protected:
   // Starts a tab mirroring session.
@@ -139,19 +140,21 @@ class CastMirroringServiceHostBrowserTest
     ASSERT_TRUE(web_contents);
     host_ = std::make_unique<CastMirroringServiceHost>(
         BuildMediaIdForTabMirroring(web_contents));
-    mojom::SessionObserverPtr observer;
-    observer_binding_.Bind(mojo::MakeRequest(&observer));
-    mojom::CastMessageChannelPtr outbound_channel;
-    outbound_channel_binding_.Bind(mojo::MakeRequest(&outbound_channel));
+    mojo::PendingRemote<mojom::SessionObserver> observer;
+    observer_receiver_.Bind(observer.InitWithNewPipeAndPassReceiver());
+    mojo::PendingRemote<mojom::CastMessageChannel> outbound_channel;
+    outbound_channel_receiver_.Bind(
+        outbound_channel.InitWithNewPipeAndPassReceiver());
     host_->Start(mojom::SessionParameters::New(), std::move(observer),
                  std::move(outbound_channel),
-                 mojo::MakeRequest(&inbound_channel_));
+                 inbound_channel_.BindNewPipeAndPassReceiver());
   }
 
   void GetVideoCaptureHost() {
-    media::mojom::VideoCaptureHostPtr video_capture_host;
+    mojo::PendingRemote<media::mojom::VideoCaptureHost> video_capture_host;
     static_cast<mojom::ResourceProvider*>(host_.get())
-        ->GetVideoCaptureHost(mojo::MakeRequest(&video_capture_host));
+        ->GetVideoCaptureHost(
+            video_capture_host.InitWithNewPipeAndPassReceiver());
     video_frame_receiver_ = std::make_unique<MockVideoCaptureObserver>(
         std::move(video_capture_host));
   }
@@ -226,10 +229,10 @@ class CastMirroringServiceHostBrowserTest
     OnAudioStreamCreated();
   }
 
-  mojo::Binding<mojom::SessionObserver> observer_binding_;
-  mojo::Binding<mojom::CastMessageChannel> outbound_channel_binding_;
+  mojo::Receiver<mojom::SessionObserver> observer_receiver_{this};
+  mojo::Receiver<mojom::CastMessageChannel> outbound_channel_receiver_{this};
   mojo::Receiver<mojom::AudioStreamCreatorClient> audio_client_receiver_{this};
-  mojom::CastMessageChannelPtr inbound_channel_;
+  mojo::Remote<mojom::CastMessageChannel> inbound_channel_;
 
   std::unique_ptr<CastMirroringServiceHost> host_;
   std::unique_ptr<MockVideoCaptureObserver> video_frame_receiver_;

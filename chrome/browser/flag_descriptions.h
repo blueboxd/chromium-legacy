@@ -65,6 +65,9 @@ extern const char kAllowPopupsDuringPageUnloadDescription[];
 extern const char kAllowSignedHTTPExchangeCertsWithoutExtensionName[];
 extern const char kAllowSignedHTTPExchangeCertsWithoutExtensionDescription[];
 
+extern const char kAllowSyncXHRInPageDismissalName[];
+extern const char kAllowSyncXHRInPageDismissalDescription[];
+
 extern const char kEnableSignedExchangeSubresourcePrefetchName[];
 extern const char kEnableSignedExchangeSubresourcePrefetchDescription[];
 
@@ -651,9 +654,6 @@ extern const char kFillOnAccountSelectHttpDescription[];
 
 extern const char kFocusMode[];
 extern const char kFocusModeDescription[];
-
-extern const char kForbidSyncXHRInPageDismissalName[];
-extern const char kForbidSyncXHRInPageDismissalDescription[];
 
 extern const char kForceTextDirectionName[];
 extern const char kForceTextDirectionDescription[];

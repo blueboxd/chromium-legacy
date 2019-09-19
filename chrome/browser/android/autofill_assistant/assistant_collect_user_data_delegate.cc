@@ -13,9 +13,23 @@
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "components/autofill/core/browser/autofill_data_util.h"
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
+
+namespace {
+// Converts a java string to native. Returns an empty string if input is null.
+std::string SafeConvertJavaStringToNative(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jstring>& jstring) {
+  std::string native_string;
+  if (jstring) {
+    base::android::ConvertJavaStringToUTF8(env, jstring, &native_string);
+  }
+  return native_string;
+}
+}  // namespace
 
 namespace autofill_assistant {
 
@@ -38,23 +52,27 @@ void AssistantCollectUserDataDelegate::OnContactInfoChanged(
     const base::android::JavaParamRef<jstring>& jpayer_name,
     const base::android::JavaParamRef<jstring>& jpayer_phone,
     const base::android::JavaParamRef<jstring>& jpayer_email) {
-  std::string name;
-  std::string phone;
-  std::string email;
+  std::string name = SafeConvertJavaStringToNative(env, jpayer_name);
+  std::string phone = SafeConvertJavaStringToNative(env, jpayer_phone);
+  std::string email = SafeConvertJavaStringToNative(env, jpayer_email);
 
-  if (jpayer_name) {
-    base::android::ConvertJavaStringToUTF8(env, jpayer_name, &name);
-  }
-
-  if (jpayer_phone) {
-    base::android::ConvertJavaStringToUTF8(env, jpayer_phone, &phone);
-  }
-
-  if (jpayer_email) {
-    base::android::ConvertJavaStringToUTF8(env, jpayer_email, &email);
-  }
-
-  ui_controller_->OnContactInfoChanged(name, phone, email);
+  auto contact_profile = std::make_unique<autofill::AutofillProfile>();
+  contact_profile->SetRawInfo(autofill::ServerFieldType::NAME_FULL,
+                              base::UTF8ToUTF16(name));
+  autofill::data_util::NameParts parts =
+      autofill::data_util::SplitName(base::UTF8ToUTF16(name));
+  contact_profile->SetRawInfo(autofill::ServerFieldType::NAME_FIRST,
+                              parts.given);
+  contact_profile->SetRawInfo(autofill::ServerFieldType::NAME_MIDDLE,
+                              parts.middle);
+  contact_profile->SetRawInfo(autofill::ServerFieldType::NAME_LAST,
+                              parts.family);
+  contact_profile->SetRawInfo(autofill::ServerFieldType::EMAIL_ADDRESS,
+                              base::UTF8ToUTF16(email));
+  contact_profile->SetRawInfo(
+      autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER,
+      base::UTF8ToUTF16(phone));
+  ui_controller_->OnContactInfoChanged(std::move(contact_profile));
 }
 
 void AssistantCollectUserDataDelegate::OnShippingAddressChanged(
@@ -85,19 +103,6 @@ void AssistantCollectUserDataDelegate::OnCreditCardChanged(
   autofill::PersonalDataManagerAndroid::PopulateNativeCreditCardFromJava(
       jcard, env, card.get());
 
-  auto guid = card->billing_address_id();
-  if (!guid.empty()) {
-    autofill::AutofillProfile* profile =
-        autofill::PersonalDataManagerFactory::GetForProfile(
-            ProfileManager::GetLastUsedProfile())
-            ->GetProfileByGUID(guid);
-    if (profile != nullptr) {
-      auto billing_address =
-          std::make_unique<autofill::AutofillProfile>(*profile);
-      ui_controller_->OnBillingAddressChanged(std::move(billing_address));
-    }
-  }
-
   ui_controller_->OnCreditCardChanged(std::move(card));
 }
 
@@ -120,10 +125,7 @@ void AssistantCollectUserDataDelegate::OnLoginChoiceChanged(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     const base::android::JavaParamRef<jstring>& jidentifier) {
-  std::string identifier;
-  if (jidentifier) {
-    base::android::ConvertJavaStringToUTF8(env, jidentifier, &identifier);
-  }
+  std::string identifier = SafeConvertJavaStringToNative(env, jidentifier);
   ui_controller_->OnLoginChoiceChanged(identifier);
 }
 

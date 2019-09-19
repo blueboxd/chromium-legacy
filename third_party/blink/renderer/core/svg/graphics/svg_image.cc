@@ -852,7 +852,7 @@ String SVGImage::FilenameExtension() const {
 }
 
 DarkModeClassification SVGImage::CheckTypeSpecificConditionsForDarkMode(
-    const FloatRect& src_rect,
+    const FloatRect& dest_rect,
     DarkModeImageClassifier* classifier) {
   classifier->SetImageType(DarkModeImageClassifier::ImageType::kSvg);
   return DarkModeClassification::kNotClassified;

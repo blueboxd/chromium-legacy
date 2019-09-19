@@ -40,13 +40,6 @@ void IOSChromeSigninClient::Shutdown() {
   network_callback_helper_.reset();
 }
 
-// Returns a string describing the chrome version environment. Version format:
-// <Build Info> <OS> <Version number> (<Last change>)<channel or "-devel">
-// If version information is unavailable, returns "invalid."
-std::string IOSChromeSigninClient::GetProductVersion() {
-  return GetVersionString();
-}
-
 PrefService* IOSChromeSigninClient::GetPrefs() {
   return browser_state_->GetPrefs();
 }

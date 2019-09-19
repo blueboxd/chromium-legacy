@@ -13,8 +13,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/native_file_system_entry_factory.h"
 #include "content/public/browser/native_file_system_permission_context.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -136,10 +139,12 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   // Create a transfer token for a specific file or directory.
   void CreateTransferToken(
       const NativeFileSystemFileHandleImpl& file,
-      blink::mojom::NativeFileSystemTransferTokenRequest request);
+      mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
+          receiver);
   void CreateTransferToken(
       const NativeFileSystemDirectoryHandleImpl& directory,
-      blink::mojom::NativeFileSystemTransferTokenRequest request);
+      mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
+          receiver);
 
   // Given a mojom transfer token, looks up the token in our internal list of
   // valid tokens. Calls the callback with the found token, or nullptr if no
@@ -147,7 +152,7 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   using ResolvedTokenCallback =
       base::OnceCallback<void(NativeFileSystemTransferTokenImpl*)>;
   void ResolveTransferToken(
-      blink::mojom::NativeFileSystemTransferTokenPtr token,
+      mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken> token,
       ResolvedTokenCallback callback);
 
   storage::FileSystemContext* context() {
@@ -169,6 +174,10 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
       NativeFileSystemPermissionContext* permission_context) {
     permission_context_ = permission_context;
   }
+
+  // Remove |token| from |transfer_tokens_|. It is an error to try to remove a
+  // token that doesn't exist.
+  void RemoveToken(const base::UnguessableToken& token);
 
  private:
   friend class NativeFileSystemFileHandleImpl;
@@ -205,11 +214,12 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
       const storage::FileSystemURL& url,
       const SharedHandleState& handle_state,
       bool is_directory,
-      blink::mojom::NativeFileSystemTransferTokenRequest request);
-  void TransferTokenConnectionErrorHandler(const base::UnguessableToken& token);
-  void DoResolveTransferToken(blink::mojom::NativeFileSystemTransferTokenPtr,
-                              ResolvedTokenCallback callback,
-                              const base::UnguessableToken& token);
+      mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
+          receiver);
+  void DoResolveTransferToken(
+      mojo::Remote<blink::mojom::NativeFileSystemTransferToken>,
+      ResolvedTokenCallback callback,
+      const base::UnguessableToken& token);
 
   // Creates a FileSystemURL which corresponds to a FilePath and Origin.
   struct FileSystemURLAndFSHandle {
@@ -258,14 +268,11 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
 
   bool off_the_record_;
 
-  // Transfer token bindings are stored in what is effectively a
-  // StrongBindingMap. The Binding instances own the implementation, and tokens
-  // are removed from this map when the mojo connection is closed.
-  using TransferTokenBinding =
-      mojo::Binding<blink::mojom::NativeFileSystemTransferToken,
-                    mojo::UniquePtrImplRefTraits<
-                        blink::mojom::NativeFileSystemTransferToken>>;
-  std::map<base::UnguessableToken, TransferTokenBinding> transfer_tokens_;
+  // NativeFileSystemTransferTokenImpl owns a Transfer token receiver and is
+  // removed from this map when the mojo connection is closed.
+  std::map<base::UnguessableToken,
+           std::unique_ptr<NativeFileSystemTransferTokenImpl>>
+      transfer_tokens_;
 
   base::WeakPtrFactory<NativeFileSystemManagerImpl> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(NativeFileSystemManagerImpl);

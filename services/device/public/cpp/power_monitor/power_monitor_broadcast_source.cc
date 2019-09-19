@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -51,9 +52,9 @@ void PowerMonitorBroadcastSource::Client::Init(
   if (is_shutdown_)
     return;
   connector_ = std::move(connector);
-  device::mojom::PowerMonitorPtr power_monitor;
-  connector_->BindInterface(device::mojom::kServiceName,
-                            mojo::MakeRequest(&power_monitor));
+  mojo::Remote<device::mojom::PowerMonitor> power_monitor;
+  connector_->Connect(device::mojom::kServiceName,
+                      power_monitor.BindNewPipeAndPassReceiver());
   power_monitor->AddClient(receiver_.BindNewPipeAndPassRemote());
 }
 

@@ -23,6 +23,13 @@ ContentSettingPatternSource CreateSetting(ContentSetting setting) {
       false);
 }
 
+ContentSettingPatternSource CreateThirdPartySetting(ContentSetting setting) {
+  return ContentSettingPatternSource(
+      ContentSettingsPattern::Wildcard(),
+      ContentSettingsPattern::FromString(kDomain), base::Value(setting),
+      std::string(), false);
+}
+
 class CallbackCookieSettings : public CookieSettingsBase {
  public:
   explicit CallbackCookieSettings(GetSettingCallback callback)
@@ -73,6 +80,13 @@ TEST(CookieSettingsBaseTest, ShouldDeleteDomainSettingSessionOnly) {
       {CreateSetting(CONTENT_SETTING_SESSION_ONLY)}, kDomain, false));
 }
 
+TEST(CookieSettingsBaseTest, ShouldDeleteDomainThirdPartySettingSessionOnly) {
+  CallbackCookieSettings settings(
+      base::BindRepeating([](const GURL&) { return CONTENT_SETTING_BLOCK; }));
+  EXPECT_TRUE(settings.ShouldDeleteCookieOnExit(
+      {CreateThirdPartySetting(CONTENT_SETTING_SESSION_ONLY)}, kDomain, false));
+}
+
 TEST(CookieSettingsBaseTest, ShouldNotDeleteDomainSettingAllow) {
   CallbackCookieSettings settings(
       base::BindRepeating([](const GURL&) { return CONTENT_SETTING_BLOCK; }));
@@ -102,6 +116,14 @@ TEST(CookieSettingsBaseTest, ShouldNotDeleteNoDomainMatch) {
       base::BindRepeating([](const GURL&) { return CONTENT_SETTING_BLOCK; }));
   EXPECT_FALSE(settings.ShouldDeleteCookieOnExit(
       {CreateSetting(CONTENT_SETTING_SESSION_ONLY)}, "other.com", false));
+}
+
+TEST(CookieSettingsBaseTest, ShouldNotDeleteNoThirdPartyDomainMatch) {
+  CallbackCookieSettings settings(
+      base::BindRepeating([](const GURL&) { return CONTENT_SETTING_BLOCK; }));
+  EXPECT_FALSE(settings.ShouldDeleteCookieOnExit(
+      {CreateThirdPartySetting(CONTENT_SETTING_SESSION_ONLY)}, "other.com",
+      false));
 }
 
 TEST(CookieSettingsBaseTest, CookieAccessNotAllowedWithBlockedSetting) {

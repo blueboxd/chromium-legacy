@@ -34,7 +34,6 @@
 #include "third_party/webrtc/api/stats/rtc_stats_collector_callback.h"
 
 namespace blink {
-class PeerConnectionDependencyFactory;
 class WebLocalFrame;
 class WebRTCAnswerOptions;
 class WebRTCLegacyStats;
@@ -44,6 +43,7 @@ class WebRTCPeerConnectionHandlerClient;
 
 namespace content {
 
+class PeerConnectionDependencyFactory;
 class PeerConnectionTracker;
 class SetLocalDescriptionRequest;
 
@@ -95,7 +95,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
  public:
   RTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient* client,
-      blink::PeerConnectionDependencyFactory* dependency_factory,
+      PeerConnectionDependencyFactory* dependency_factory,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~RTCPeerConnectionHandler() override;
 
@@ -352,7 +352,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
 
   // |dependency_factory_| is a raw pointer, and is valid for the lifetime of
   // RenderThreadImpl.
-  blink::PeerConnectionDependencyFactory* const dependency_factory_;
+  PeerConnectionDependencyFactory* const dependency_factory_;
 
   blink::WebLocalFrame* frame_ = nullptr;
 

@@ -116,12 +116,12 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
   }
 
   auto worker = blink::WebEmbeddedWorker::Create(
-      service_worker_context_client_.get(),
-      std::move(installed_scripts_manager_params),
-      params->content_settings_proxy.PassHandle(), cache_storage.PassPipe(),
+      service_worker_context_client_.get(), cache_storage.PassPipe(),
       interface_provider.PassHandle(), browser_interface_broker.PassPipe());
   service_worker_context_client_->StartWorkerContextOnInitiatorThread(
-      std::move(worker), start_data);
+      std::move(worker), start_data,
+      std::move(installed_scripts_manager_params),
+      params->content_settings_proxy.PassHandle());
 }
 
 void EmbeddedWorkerInstanceClientImpl::StopWorker() {

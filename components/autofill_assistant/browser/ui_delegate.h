@@ -104,14 +104,9 @@ class UiDelegate {
   virtual void SetShippingAddress(
       std::unique_ptr<autofill::AutofillProfile> address) = 0;
 
-  // Sets billing address, in response to the current collect user data options.
-  virtual void SetBillingAddress(
-      std::unique_ptr<autofill::AutofillProfile> address) = 0;
-
   // Sets contact info, in response to the current collect user data options.
-  virtual void SetContactInfo(std::string name,
-                              std::string phone,
-                              std::string email) = 0;
+  virtual void SetContactInfo(
+      std::unique_ptr<autofill::AutofillProfile> profile) = 0;
 
   // Sets credit card, in response to the current collect user data options.
   virtual void SetCreditCard(std::unique_ptr<autofill::CreditCard> card) = 0;

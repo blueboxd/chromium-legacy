@@ -351,27 +351,31 @@ NativeFileSystemManagerImpl::CreateFileWriter(
 
 void NativeFileSystemManagerImpl::CreateTransferToken(
     const NativeFileSystemFileHandleImpl& file,
-    blink::mojom::NativeFileSystemTransferTokenRequest request) {
+    mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
+        receiver) {
   return CreateTransferTokenImpl(file.url(), file.handle_state(),
-                                 /*is_directory=*/false, std::move(request));
+                                 /*is_directory=*/false, std::move(receiver));
 }
 
 void NativeFileSystemManagerImpl::CreateTransferToken(
     const NativeFileSystemDirectoryHandleImpl& directory,
-    blink::mojom::NativeFileSystemTransferTokenRequest request) {
+    mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
+        receiver) {
   return CreateTransferTokenImpl(directory.url(), directory.handle_state(),
-                                 /*is_directory=*/true, std::move(request));
+                                 /*is_directory=*/true, std::move(receiver));
 }
 
 void NativeFileSystemManagerImpl::ResolveTransferToken(
-    blink::mojom::NativeFileSystemTransferTokenPtr token,
+    mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken> token,
     ResolvedTokenCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  auto* raw_token = token.get();
+  mojo::Remote<blink::mojom::NativeFileSystemTransferToken> token_remote(
+      std::move(token));
+  auto* raw_token = token_remote.get();
   raw_token->GetInternalID(mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       base::BindOnce(&NativeFileSystemManagerImpl::DoResolveTransferToken,
-                     weak_factory_.GetWeakPtr(), std::move(token),
+                     weak_factory_.GetWeakPtr(), std::move(token_remote),
                      std::move(callback)),
       base::UnguessableToken()));
 }
@@ -554,25 +558,20 @@ void NativeFileSystemManagerImpl::CreateTransferTokenImpl(
     const storage::FileSystemURL& url,
     const SharedHandleState& handle_state,
     bool is_directory,
-    blink::mojom::NativeFileSystemTransferTokenRequest request) {
+    mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
+        receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   auto token_impl = std::make_unique<NativeFileSystemTransferTokenImpl>(
       url, handle_state,
       is_directory ? NativeFileSystemTransferTokenImpl::HandleType::kDirectory
-                   : NativeFileSystemTransferTokenImpl::HandleType::kFile);
+                   : NativeFileSystemTransferTokenImpl::HandleType::kFile,
+      this, std::move(receiver));
   auto token = token_impl->token();
-  blink::mojom::NativeFileSystemTransferTokenPtr result;
-  auto emplace_result = transfer_tokens_.emplace(
-      std::piecewise_construct, std::forward_as_tuple(token),
-      std::forward_as_tuple(std::move(token_impl), std::move(request)));
-  DCHECK(emplace_result.second);
-  emplace_result.first->second.set_connection_error_handler(base::BindOnce(
-      &NativeFileSystemManagerImpl::TransferTokenConnectionErrorHandler,
-      base::Unretained(this), token));
+  transfer_tokens_.emplace(token, std::move(token_impl));
 }
 
-void NativeFileSystemManagerImpl::TransferTokenConnectionErrorHandler(
+void NativeFileSystemManagerImpl::RemoveToken(
     const base::UnguessableToken& token) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -581,7 +580,7 @@ void NativeFileSystemManagerImpl::TransferTokenConnectionErrorHandler(
 }
 
 void NativeFileSystemManagerImpl::DoResolveTransferToken(
-    blink::mojom::NativeFileSystemTransferTokenPtr,
+    mojo::Remote<blink::mojom::NativeFileSystemTransferToken>,
     ResolvedTokenCallback callback,
     const base::UnguessableToken& token) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -590,8 +589,7 @@ void NativeFileSystemManagerImpl::DoResolveTransferToken(
   if (it == transfer_tokens_.end()) {
     std::move(callback).Run(nullptr);
   } else {
-    std::move(callback).Run(
-        static_cast<NativeFileSystemTransferTokenImpl*>(it->second.impl()));
+    std::move(callback).Run(it->second.get());
   }
 }
 

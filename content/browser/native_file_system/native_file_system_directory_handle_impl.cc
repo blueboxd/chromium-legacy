@@ -22,8 +22,7 @@ using blink::mojom::NativeFileSystemEntry;
 using blink::mojom::NativeFileSystemEntryPtr;
 using blink::mojom::NativeFileSystemHandle;
 using blink::mojom::NativeFileSystemStatus;
-using blink::mojom::NativeFileSystemTransferTokenPtr;
-using blink::mojom::NativeFileSystemTransferTokenRequest;
+using blink::mojom::NativeFileSystemTransferToken;
 
 namespace content {
 
@@ -205,7 +204,7 @@ void NativeFileSystemDirectoryHandleImpl::RemoveEntry(
 }
 
 void NativeFileSystemDirectoryHandleImpl::Transfer(
-    NativeFileSystemTransferTokenRequest token) {
+    mojo::PendingReceiver<NativeFileSystemTransferToken> token) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   manager()->CreateTransferToken(*this, std::move(token));

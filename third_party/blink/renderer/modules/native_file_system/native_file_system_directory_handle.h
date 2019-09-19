@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_NATIVE_FILE_SYSTEM_NATIVE_FILE_SYSTEM_DIRECTORY_HANDLE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_NATIVE_FILE_SYSTEM_NATIVE_FILE_SYSTEM_DIRECTORY_HANDLE_H_
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_directory_handle.mojom-blink.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_handle.h"
 #include "third_party/blink/renderer/platform/mojo/revocable_interface_ptr.h"
@@ -39,7 +40,8 @@ class NativeFileSystemDirectoryHandle final : public NativeFileSystemHandle {
   static ScriptPromise getSystemDirectory(ScriptState*,
                                           const GetSystemDirectoryOptions*);
 
-  mojom::blink::NativeFileSystemTransferTokenPtr Transfer() override;
+  mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken> Transfer()
+      override;
 
   mojom::blink::NativeFileSystemDirectoryHandle* MojoHandle() {
     return mojo_ptr_.get();

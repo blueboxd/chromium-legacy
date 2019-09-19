@@ -275,7 +275,6 @@ void GLSurfacePresentationHelper::CheckPendingFrames() {
     return;
   }
 
-  bool need_update_vsync = false;
   bool disjoint_occurred =
       gpu_timing_client_ && gpu_timing_client_->CheckAndResetTimerErrors();
   if (disjoint_occurred ||
@@ -299,13 +298,6 @@ void GLSurfacePresentationHelper::CheckPendingFrames() {
         std::move(frame.callback).Run(gfx::PresentationFeedback::Failure());
     }
     pending_frames_.clear();
-    // We want to update VSync, if we can not get VSync parameters
-    // synchronously. Otherwise we will update the VSync parameters with the
-    // next SwapBuffers.
-    if (vsync_provider_ &&
-        !vsync_provider_->SupportGetVSyncParametersIfAvailable()) {
-      need_update_vsync = true;
-    }
   }
 
   while (!pending_frames_.empty()) {
@@ -337,9 +329,8 @@ void GLSurfacePresentationHelper::CheckPendingFrames() {
         gfx::PresentationFeedback(timestamp, interval, flags));
   }
 
-  if (pending_frames_.empty() && !need_update_vsync)
-    return;
-  ScheduleCheckPendingFrames(true /* align_with_next_vsync */);
+  if (!pending_frames_.empty())
+    ScheduleCheckPendingFrames(true /* align_with_next_vsync */);
 }
 
 void GLSurfacePresentationHelper::CheckPendingFramesCallback() {
@@ -349,36 +340,47 @@ void GLSurfacePresentationHelper::CheckPendingFramesCallback() {
 }
 
 void GLSurfacePresentationHelper::UpdateVSyncCallback(
+    bool should_check_pending_frames,
     const base::TimeTicks timebase,
     const base::TimeDelta interval) {
-  DCHECK(check_pending_frame_scheduled_);
-  check_pending_frame_scheduled_ = false;
+  DCHECK(update_vsync_pending_);
+  update_vsync_pending_ = false;
   vsync_timebase_ = timebase;
   vsync_interval_ = interval;
-  CheckPendingFrames();
+  if (should_check_pending_frames) {
+    DCHECK(check_pending_frame_scheduled_);
+    check_pending_frame_scheduled_ = false;
+    CheckPendingFrames();
+  }
 }
 
 void GLSurfacePresentationHelper::ScheduleCheckPendingFrames(
     bool align_with_next_vsync) {
+  // Always GetVSyncParameters to minimize clock-skew in vsync_timebase_.
+  bool vsync_provider_schedules_check = false;
+  if (vsync_provider_ &&
+      !vsync_provider_->SupportGetVSyncParametersIfAvailable() &&
+      !update_vsync_pending_) {
+    update_vsync_pending_ = true;
+    vsync_provider_schedules_check =
+        !check_pending_frame_scheduled_ && !align_with_next_vsync;
+    vsync_provider_->GetVSyncParameters(base::BindOnce(
+        &GLSurfacePresentationHelper::UpdateVSyncCallback,
+        weak_ptr_factory_.GetWeakPtr(), vsync_provider_schedules_check));
+  }
+
   if (check_pending_frame_scheduled_)
     return;
   check_pending_frame_scheduled_ = true;
+
+  if (vsync_provider_schedules_check)
+    return;
 
   if (!align_with_next_vsync) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&GLSurfacePresentationHelper::CheckPendingFramesCallback,
                        weak_ptr_factory_.GetWeakPtr()));
-    return;
-  }
-
-  if (vsync_provider_ &&
-      !vsync_provider_->SupportGetVSyncParametersIfAvailable()) {
-    // In this case, the |vsync_provider_| will call the callback when the next
-    // VSync is received.
-    vsync_provider_->GetVSyncParameters(
-        base::BindRepeating(&GLSurfacePresentationHelper::UpdateVSyncCallback,
-                            weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 

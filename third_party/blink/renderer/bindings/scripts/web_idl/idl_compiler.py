@@ -16,6 +16,7 @@ from .ir_map import IRMap
 from .idl_type import IdlTypeFactory
 from .interface import Interface
 from .make_copy import make_copy
+from .namespace import Namespace
 from .operation import OperationGroup
 from .reference import RefByIdFactory
 from .typedef import Typedef
@@ -79,7 +80,7 @@ class IdlCompiler(object):
 
         # Merge partial definitions.
         self._propagate_extattrs_per_idl_fragment()
-        self._merge_partial_interfaces()
+        self._merge_partial_interface_likes()
         self._merge_partial_dictionaries()
         # Merge mixins.
         self._merge_interface_mixins()
@@ -183,18 +184,22 @@ class IdlCompiler(object):
 
         map(process_interface_like, old_irs)
 
-    def _merge_partial_interfaces(self):
-        old_interfaces = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE)
-        partial_interfaces = self._ir_map.find_by_kind(
-            IRMap.IR.Kind.PARTIAL_INTERFACE)
-        old_mixins = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE_MIXIN)
-        partial_mixins = self._ir_map.find_by_kind(
-            IRMap.IR.Kind.PARTIAL_INTERFACE_MIXIN)
+    def _merge_partial_interface_likes(self):
+        irs = self._ir_map.irs_of_kinds(IRMap.IR.Kind.INTERFACE,
+                                        IRMap.IR.Kind.INTERFACE_MIXIN,
+                                        IRMap.IR.Kind.NAMESPACE)
+        partial_irs = self._ir_map.irs_of_kinds(
+            IRMap.IR.Kind.PARTIAL_INTERFACE,
+            IRMap.IR.Kind.PARTIAL_INTERFACE_MIXIN,
+            IRMap.IR.Kind.PARTIAL_NAMESPACE)
 
         self._ir_map.move_to_new_phase()
 
-        self._merge_interfaces(old_interfaces, partial_interfaces)
-        self._merge_interfaces(old_mixins, partial_mixins)
+        ir_sets_to_merge = [(ir, [
+            partial_ir for partial_ir in partial_irs
+            if partial_ir.identifier == ir.identifier
+        ]) for ir in irs]
+        self._merge_interface_like_irs(ir_sets_to_merge)
 
     def _merge_partial_dictionaries(self):
         old_dictionaries = self._ir_map.find_by_kind(IRMap.IR.Kind.DICTIONARY)
@@ -216,36 +221,30 @@ class IdlCompiler(object):
 
     def _merge_interface_mixins(self):
         interfaces = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE)
-        interface_mixins = self._ir_map.find_by_kind(
-            IRMap.IR.Kind.INTERFACE_MIXIN)
+        mixins = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE_MIXIN)
+        includes = self._ir_map.find_by_kind(IRMap.IR.Kind.INCLUDES)
 
-        identifier_to_mixin_map = {
-            identifier: [
-                interface_mixins[include.mixin_identifier]
-                for include in includes
-            ]
-            for identifier, includes in self._ir_map.find_by_kind(
-                IRMap.IR.Kind.INCLUDES).iteritems()
-        }
+        ir_sets_to_merge = [(interface, [
+            mixins[include.mixin_identifier]
+            for include in includes.get(identifier, [])
+        ]) for identifier, interface in interfaces.iteritems()]
 
         self._ir_map.move_to_new_phase()
 
-        self._merge_interfaces(interfaces, identifier_to_mixin_map)
+        self._merge_interface_like_irs(ir_sets_to_merge)
 
-    def _merge_interfaces(self, old_interfaces, interfaces_to_be_merged):
-        for identifier, old_interface in old_interfaces.iteritems():
-            new_interface = make_copy(old_interface)
-            for to_be_merged in interfaces_to_be_merged.get(identifier, []):
-                new_interface.add_components(to_be_merged.components)
-                new_interface.debug_info.add_locations(
+    def _merge_interface_like_irs(self, old_irs_to_merge):
+        for old_ir, irs_to_be_merged in old_irs_to_merge:
+            new_ir = make_copy(old_ir)
+            for ir in irs_to_be_merged:
+                to_be_merged = make_copy(ir)
+                new_ir.add_components(to_be_merged.components)
+                new_ir.debug_info.add_locations(
                     to_be_merged.debug_info.all_locations)
-                new_interface.attributes.extend(
-                    make_copy(to_be_merged.attributes))
-                new_interface.constants.extend(
-                    make_copy(to_be_merged.constants))
-                new_interface.operations.extend(
-                    make_copy(to_be_merged.operations))
-            self._ir_map.add(new_interface)
+                new_ir.attributes.extend(to_be_merged.attributes)
+                new_ir.constants.extend(to_be_merged.constants)
+                new_ir.operations.extend(to_be_merged.operations)
+            self._ir_map.add(new_ir)
 
     def _process_interface_inheritances(self):
         def is_own_member(member):
@@ -277,23 +276,22 @@ class IdlCompiler(object):
             self._ir_map.add(new_interface)
 
     def _group_overloaded_functions(self):
-        old_interfaces = self._ir_map.irs_of_kind(IRMap.IR.Kind.INTERFACE)
+        old_irs = self._ir_map.irs_of_kinds(IRMap.IR.Kind.INTERFACE,
+                                            IRMap.IR.Kind.NAMESPACE)
 
         self._ir_map.move_to_new_phase()
 
-        for old_interface in old_interfaces:
-            assert not old_interface.operation_groups
-            new_interface = make_copy(old_interface)
-
+        for old_ir in old_irs:
+            assert not old_ir.operation_groups
+            new_ir = make_copy(old_ir)
             sort_key = lambda x: x.identifier
-            sorted_operations = sorted(new_interface.operations, key=sort_key)
-            new_interface.operation_groups = [
+            new_ir.operation_groups = [
                 OperationGroup.IR(operations=list(operations))
                 for identifier, operations in itertools.groupby(
-                    sorted_operations, key=sort_key) if identifier
+                    sorted(old_ir.operations, key=sort_key), key=sort_key)
+                if identifier
             ]
-
-            self._ir_map.add(new_interface)
+            self._ir_map.add(new_ir)
 
     def _create_public_objects(self):
         """Creates public representations of compiled objects."""
@@ -302,6 +300,9 @@ class IdlCompiler(object):
 
         for ir in self._ir_map.irs_of_kind(IRMap.IR.Kind.INTERFACE_MIXIN):
             self._db.register(DatabaseBody.Kind.INTERFACE_MIXIN, Interface(ir))
+
+        for ir in self._ir_map.irs_of_kind(IRMap.IR.Kind.NAMESPACE):
+            self._db.register(DatabaseBody.Kind.NAMESPACE, Namespace(ir))
 
         for ir in self._ir_map.irs_of_kind(IRMap.IR.Kind.DICTIONARY):
             self._db.register(DatabaseBody.Kind.DICTIONARY, Dictionary(ir))

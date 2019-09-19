@@ -39,10 +39,8 @@ using favicon_base::GoogleFaviconServerRequestStatus;
 const char kImageFetcherUmaClient[] = "LargeIconService";
 
 const char kGoogleServerV2RequestFormat[] =
-    "https://t0.gstatic.com/faviconV2?client=chrome&nfrp=2&%s"
+    "https://t0.gstatic.com/faviconV2?client=%s&nfrp=2&%s"
     "size=%d&min_size=%d&max_size=%d&fallback_opts=TYPE,SIZE,URL&url=%s";
-
-const char kClientParam[] = "client=chrome";
 
 const char kCheckSeenParam[] = "check_seen=true&";
 
@@ -82,13 +80,10 @@ GURL GetRequestUrlForGoogleServerV2(
       std::max(max_size_in_pixel, kGoogleServerV2MinimumMaxSizeInPixel);
 
   std::string request_url = base::StringPrintf(
-      kGoogleServerV2RequestFormat,
+      kGoogleServerV2RequestFormat, google_server_client_param.c_str(),
       may_page_url_be_private ? kCheckSeenParam : "", desired_size_in_pixel,
       kGoogleServerV2EnforcedMinSizeInPixel, max_size_in_pixel,
       page_url.spec().c_str());
-  base::ReplaceFirstSubstringAfterOffset(
-      &request_url, 0, std::string(kClientParam),
-      "client=" + google_server_client_param);
   return GURL(request_url);
 }
 

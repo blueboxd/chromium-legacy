@@ -9,7 +9,8 @@
 #include "chrome/browser/ui/webui/chromeos/machine_learning/machine_learning_internals_page_handler.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace chromeos {
 namespace machine_learning {
@@ -19,7 +20,7 @@ namespace machine_learning {
 class MachineLearningInternalsPageHandler : public mojom::PageHandler {
  public:
   explicit MachineLearningInternalsPageHandler(
-      mojom::PageHandlerRequest request);
+      mojo::PendingReceiver<mojom::PageHandler> receiver);
   ~MachineLearningInternalsPageHandler() override;
 
  private:
@@ -28,7 +29,7 @@ class MachineLearningInternalsPageHandler : public mojom::PageHandler {
                  mojom::ModelRequest request,
                  LoadModelCallback callback) override;
 
-  mojo::Binding<mojom::PageHandler> binding_;
+  mojo::Receiver<mojom::PageHandler> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(MachineLearningInternalsPageHandler);
 };

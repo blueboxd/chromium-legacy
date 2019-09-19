@@ -17,7 +17,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/browser/frame_host/back_forward_cache.h"
+#include "content/browser/frame_host/back_forward_cache_impl.h"
 #include "content/browser/frame_host/navigation_controller_delegate.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/ssl/ssl_manager.h"
@@ -98,6 +98,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   void DeleteNavigationEntries(
       const DeletionPredicate& deletionPredicate) override;
   bool IsEntryMarkedToBeSkipped(int index) override;
+  BackForwardCacheImpl& GetBackForwardCache() override;
 
   // Starts a navigation in a newly created subframe as part of a history
   // navigation. Returns true if the history navigation could start, false
@@ -256,8 +257,6 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // Sets a flag on the pending NavigationEntryImpl instance if any that the
   // navigation failed due to an SSL error.
   void SetPendingNavigationSSLError(bool error);
-
-  BackForwardCache& back_forward_cache() { return back_forward_cache_; }
 
 // Returns true if the string corresponds to a valid data URL, false
 // otherwise.
@@ -584,7 +583,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   //
   // Stores frozen RenderFrameHost. Restores them on history navigation.
   // See BackForwardCache class documentation.
-  BackForwardCache back_forward_cache_;
+  BackForwardCacheImpl back_forward_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationControllerImpl);
 };

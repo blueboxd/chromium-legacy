@@ -18,6 +18,9 @@
 #include "components/mirroring/service/wifi_status_monitor.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/test/utility/net_utility.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/ip_endpoint.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -87,9 +90,8 @@ class SessionMonitorTest : public mojom::CastMessageChannel,
  public:
   SessionMonitorTest()
       : receiver_address_(media::cast::test::GetFreeLocalPort().address()),
-        binding_(this),
-        message_dispatcher_(CreateInterfacePtrAndBind(),
-                            mojo::MakeRequest(&inbound_channel_),
+        message_dispatcher_(receiver_.BindNewPipeAndPassRemote(),
+                            inbound_channel_.BindNewPipeAndPassReceiver(),
                             error_callback_.Get()) {}
   ~SessionMonitorTest() override {}
 
@@ -213,16 +215,10 @@ class SessionMonitorTest : public mojom::CastMessageChannel,
   }
 
  private:
-  mojom::CastMessageChannelPtr CreateInterfacePtrAndBind() {
-    mojom::CastMessageChannelPtr outbound_channel_ptr;
-    binding_.Bind(mojo::MakeRequest(&outbound_channel_ptr));
-    return outbound_channel_ptr;
-  }
-
   base::test::TaskEnvironment task_environment_;
   const net::IPAddress receiver_address_;
-  mojo::Binding<mojom::CastMessageChannel> binding_;
-  mojom::CastMessageChannelPtr inbound_channel_;
+  mojo::Receiver<mojom::CastMessageChannel> receiver_{this};
+  mojo::Remote<mojom::CastMessageChannel> inbound_channel_;
   base::MockCallback<MessageDispatcher::ErrorCallback> error_callback_;
   MessageDispatcher message_dispatcher_;
   network::TestURLLoaderFactory* url_loader_factory_ = nullptr;

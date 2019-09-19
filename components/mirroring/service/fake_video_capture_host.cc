@@ -12,8 +12,8 @@
 namespace mirroring {
 
 FakeVideoCaptureHost::FakeVideoCaptureHost(
-    media::mojom::VideoCaptureHostRequest request)
-    : receiver_(this, std::move(request)) {}
+    mojo::PendingReceiver<media::mojom::VideoCaptureHost> receiver)
+    : receiver_(this, std::move(receiver)) {}
 FakeVideoCaptureHost::~FakeVideoCaptureHost() {}
 
 void FakeVideoCaptureHost::Start(

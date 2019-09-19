@@ -63,28 +63,31 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final : public WebEmbeddedWorker {
  public:
   WebEmbeddedWorkerImpl(
       WebServiceWorkerContextClient*,
-      std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>,
-      std::unique_ptr<ServiceWorkerContentSettingsProxy>,
       mojo::PendingRemote<mojom::blink::CacheStorage>,
       service_manager::mojom::blink::InterfaceProviderPtrInfo,
       mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>);
   ~WebEmbeddedWorkerImpl() override;
 
   // WebEmbeddedWorker overrides.
-  void StartWorkerContext(const WebEmbeddedWorkerStartData&,
-                          scoped_refptr<base::SingleThreadTaskRunner>
-                              initiator_thread_task_runner) override;
+  void StartWorkerContext(
+      const WebEmbeddedWorkerStartData&,
+      std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>,
+      mojo::ScopedMessagePipeHandle content_settings_handle,
+      scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner)
+      override;
   void TerminateWorkerContext() override;
   void ResumeAfterDownload() override;
 
   static std::unique_ptr<WebEmbeddedWorkerImpl> CreateForTesting(
-      WebServiceWorkerContextClient*,
-      std::unique_ptr<ServiceWorkerInstalledScriptsManager>);
+      WebServiceWorkerContextClient*);
 
   void WaitForShutdownForTesting();
 
  private:
-  void StartWorkerThread(scoped_refptr<base::SingleThreadTaskRunner>);
+  void StartWorkerThread(
+      std::unique_ptr<ServiceWorkerInstalledScriptsManager>,
+      std::unique_ptr<ServiceWorkerContentSettingsProxy>,
+      scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner);
 
   // Creates a cross-thread copyable outside settings object for top-level
   // worker script fetch.
@@ -95,12 +98,6 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final : public WebEmbeddedWorker {
 
   // Client must remain valid through the entire life time of the worker.
   WebServiceWorkerContextClient* const worker_context_client_;
-
-  // These are valid until StartWorkerThread() is called. After the worker
-  // thread is created, these are passed to the worker thread.
-  std::unique_ptr<ServiceWorkerInstalledScriptsManager>
-      installed_scripts_manager_;
-  std::unique_ptr<ServiceWorkerContentSettingsProxy> content_settings_client_;
 
   std::unique_ptr<ServiceWorkerThread> worker_thread_;
 

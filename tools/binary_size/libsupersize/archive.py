@@ -114,6 +114,9 @@ class SectionSizeKnobs(object):
       'META-INF/MANIFEST.MF',
     }
 
+    self.analyze_java = True
+    self.analyze_native = True
+
     self.src_root = path_util.SRC_ROOT
 
 
@@ -1365,10 +1368,12 @@ def CreateSectionSizesAndSymbols(map_path=None,
       elf_object_paths = None
       known_inputs = None
       # When we don't know which elf file is used, just search all paths.
-      thin_archives = set(
-          p for p in source_mapper.IterAllPaths()
-          if p.endswith('.a') and ar.IsThinArchive(
-              os.path.join(output_directory, p)))
+      if knobs.analyze_native:
+        thin_archives = set(
+            p for p in source_mapper.IterAllPaths() if p.endswith('.a')
+            and ar.IsThinArchive(os.path.join(output_directory, p)))
+      else:
+        thin_archives = None
 
     outdir_context = _OutputDirectoryContext(
         elf_object_paths=elf_object_paths,
@@ -1377,13 +1382,17 @@ def CreateSectionSizesAndSymbols(map_path=None,
         source_mapper=source_mapper,
         thin_archives=thin_archives)
 
-  section_sizes, raw_symbols, object_paths_by_name = _ParseElfInfo(
-       map_path,
-       elf_path,
-       tool_prefix,
-       track_string_literals,
-       outdir_context=outdir_context,
-       linker_name=linker_name)
+  if knobs.analyze_native:
+    section_sizes, raw_symbols, object_paths_by_name = _ParseElfInfo(
+        map_path,
+        elf_path,
+        tool_prefix,
+        track_string_literals,
+        outdir_context=outdir_context,
+        linker_name=linker_name)
+  else:
+    section_sizes, raw_symbols, object_paths_by_name = {}, [], None
+
   elf_overhead_size = _CalculateElfOverhead(section_sizes, elf_path)
 
   pak_symbols_by_id = None
@@ -1393,22 +1402,28 @@ def CreateSectionSizesAndSymbols(map_path=None,
           section_sizes, metadata, apk_elf_result)
     pak_symbols_by_id = _FindPakSymbolsFromApk(
         section_sizes, apk_path, size_info_prefix, knobs)
-    dex_symbols = apkanalyzer.CreateDexSymbols(
-        apk_path, mapping_path, size_info_prefix, output_directory)
-    raw_symbols.extend(dex_symbols)
+
     dex_size, other_symbols = _ParseApkOtherSymbols(
         section_sizes, apk_path, apk_so_path, resources_pathmap_path,
         size_info_prefix, knobs)
+
+    if knobs.analyze_java:
+      dex_symbols = apkanalyzer.CreateDexSymbols(
+          apk_path, mapping_path, size_info_prefix, output_directory)
+      raw_symbols.extend(dex_symbols)
+
+      # We can't meaningfully track section size of dex methods vs other, so
+      # just fake the size of dex methods as the sum of symbols, and make
+      # "dex other" responsible for any unattributed bytes.
+      dex_method_size = int(
+          round(
+              sum(s.pss for s in dex_symbols
+                  if s.section_name == models.SECTION_DEX_METHOD)))
+      section_sizes[models.SECTION_DEX_METHOD] = dex_method_size
+      section_sizes[models.SECTION_DEX] = dex_size - dex_method_size
+
     raw_symbols.extend(other_symbols)
 
-    # We can't meaningfully track section size of dex methods vs other, so just
-    # fake the size of dex methods as the sum of symbols, and make "dex other"
-    # responsible for any unattributed bytes.
-    dex_method_size = int(round(sum(
-        s.pss for s in dex_symbols
-        if s.section_name == models.SECTION_DEX_METHOD)))
-    section_sizes[models.SECTION_DEX_METHOD] = dex_method_size
-    section_sizes[models.SECTION_DEX] = dex_size - dex_method_size
   elif pak_files and pak_info_file:
     pak_symbols_by_id = _FindPakSymbolsFromFiles(
         section_sizes, pak_files, pak_info_file, output_directory)
@@ -1422,7 +1437,9 @@ def CreateSectionSizesAndSymbols(map_path=None,
 
   if pak_symbols_by_id:
     logging.debug('Extracting pak IDs from symbol names, and creating symbols')
-    object_paths_by_pak_id = _CreatePakObjectMap(object_paths_by_name)
+    object_paths_by_pak_id = {}
+    if knobs.analyze_native:
+      object_paths_by_pak_id = _CreatePakObjectMap(object_paths_by_name)
     pak_raw_symbols = _ParsePakSymbols(
         pak_symbols_by_id, object_paths_by_pak_id)
     raw_symbols.extend(pak_raw_symbols)
@@ -1612,6 +1629,14 @@ def AddArguments(parser):
                            'granular symbols.')
   parser.add_argument('--source-directory',
                       help='Custom path to the root source directory.')
+  parser.add_argument(
+      '--java-only', action='store_true', help='Run on only Java symbols')
+  parser.add_argument(
+      '--native-only', action='store_true', help='Run on only native symbols')
+  parser.add_argument(
+      '--no-java', action='store_true', help='Do not run on Java symbols')
+  parser.add_argument(
+      '--no-native', action='store_true', help='Do not run on native symbols')
   AddMainPathsArguments(parser)
 
 
@@ -1742,13 +1767,29 @@ def _RunInternal(args, parser, extracted_minimal_apk_path):
    linker_name, size_info_prefix) = _DeduceMainPaths(
        args, parser, extracted_minimal_apk_path)
 
-  metadata = CreateMetadata(map_path, elf_path, args.apk_file,
-                            args.minimal_apks_file, tool_prefix,
-                            output_directory, linker_name)
-
   knobs = SectionSizeKnobs(is_bundle=bool(extracted_minimal_apk_path))
   if args.source_directory:
     knobs.src_root = args.source_directory
+
+  if args.java_only:
+    knobs.analyze_java = True
+    knobs.analyze_native = False
+  if args.native_only:
+    knobs.analyze_java = False
+    knobs.analyze_native = True
+  if args.no_java:
+    knobs.analyze_java = False
+  if args.no_native:
+    knobs.analyze_native = False
+
+  if not knobs.analyze_native:
+    map_path = None
+    elf_path = None
+    apk_so_path = None
+
+  metadata = CreateMetadata(map_path, elf_path, args.apk_file,
+                            args.minimal_apks_file, tool_prefix,
+                            output_directory, linker_name)
 
   section_sizes, raw_symbols = CreateSectionSizesAndSymbols(
       map_path=map_path,

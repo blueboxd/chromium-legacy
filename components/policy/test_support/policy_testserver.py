@@ -99,6 +99,7 @@ import testserver_base
 
 import device_management_backend_pb2 as dm
 import cloud_policy_pb2 as cp
+import policy_common_definitions_pb2 as cd
 
 # Policy for extensions is not supported on Android.
 try:
@@ -1031,16 +1032,16 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 
       # Look for this policy's value in the mandatory or recommended dicts.
       if field.name in policies.get('mandatory', {}):
-        mode = cp.PolicyOptions.MANDATORY
+        mode = cd.PolicyOptions.MANDATORY
         value = policies['mandatory'][field.name]
       elif field.name in policies.get('recommended', {}):
-        mode = cp.PolicyOptions.RECOMMENDED
+        mode = cd.PolicyOptions.RECOMMENDED
         value = policies['recommended'][field.name]
       else:
         continue
 
       # Create protobuf message for this policy.
-      policy_message = eval('cp.' + field.message_type.name + '()')
+      policy_message = eval('cd.' + field.message_type.name + '()')
       policy_message.policy_options.mode = mode
       field_descriptor = policy_message.DESCRIPTOR.fields_by_name['value']
       self.SetProtobufMessageField(policy_message, field_descriptor, value)

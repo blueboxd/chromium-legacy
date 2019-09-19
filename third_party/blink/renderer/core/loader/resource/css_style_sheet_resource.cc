@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
 
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"

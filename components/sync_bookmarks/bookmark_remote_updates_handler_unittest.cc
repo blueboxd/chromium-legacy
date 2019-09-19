@@ -18,6 +18,7 @@
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/unique_position.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/model/conflict_resolution.h"
 #include "components/sync/protocol/unique_position.pb.h"
 #include "components/sync_bookmarks/bookmark_model_merger.h"
@@ -381,6 +382,103 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   // New local GUID should have been assigned.
   EXPECT_TRUE(base::IsValidGUID(
       tracker()->GetEntityForSyncId(kId)->bookmark_node()->guid()));
+}
+
+TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
+       ShouldUpdateGUIDValueUponRemoteUpdate) {
+  const std::string kId = "id";
+  const std::string kTitle = "title";
+  const std::string kOldGuid = base::GenerateGUID();
+  const std::string kNewGuid = base::GenerateGUID();
+  const syncer::UniquePosition kPosition =
+      syncer::UniquePosition::InitialPosition(
+          syncer::UniquePosition::RandomSuffix());
+
+  syncer::UpdateResponseDataList updates;
+
+  // Create update with GUID.
+  updates.push_back(CreateUpdateResponseData(
+      /*server_id=*/kId,
+      /*parent_id=*/kBookmarkBarId,
+      /*guid=*/kOldGuid,
+      /*title=*/kTitle,
+      /*is_deletion=*/false,
+      /*version=*/0,
+      /*unique_position=*/kPosition));
+
+  updates_handler()->Process(updates,
+                             /*got_new_encryption_requirements=*/false);
+  ASSERT_THAT(tracker()->GetEntityForSyncId(kId), NotNull());
+
+  // Push an update for the same entity with a new GUID.
+  updates.clear();
+  updates.push_back(CreateUpdateResponseData(
+      /*server_id=*/kId,
+      /*parent_id=*/kBookmarkBarId,
+      /*guid=*/kNewGuid,
+      /*title=*/kTitle,
+      /*is_deletion=*/false,
+      /*version=*/1,
+      /*unique_position=*/
+      syncer::UniquePosition::InitialPosition(
+          syncer::UniquePosition::RandomSuffix())));
+
+  updates_handler()->Process(updates,
+                             /*got_new_encryption_requirements=*/false);
+
+  // The GUID should have been updated.
+  const bookmarks::BookmarkNode* bookmark_bar_node =
+      bookmark_model()->bookmark_bar_node();
+  ASSERT_THAT(bookmark_bar_node->children().size(), Eq(1u));
+  EXPECT_THAT(bookmark_bar_node->children().front()->guid(), Eq(kNewGuid));
+}
+
+TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
+       ShouldKeepOldGUIDUponRemoteUpdate) {
+  const std::string kId = "id";
+  const std::string kTitle = "title";
+  const std::string kGuid = base::GenerateGUID();
+  const syncer::UniquePosition kPosition =
+      syncer::UniquePosition::InitialPosition(
+          syncer::UniquePosition::RandomSuffix());
+
+  syncer::UpdateResponseDataList updates;
+
+  // Create update with GUID.
+  updates.push_back(CreateUpdateResponseData(
+      /*server_id=*/kId,
+      /*parent_id=*/kBookmarkBarId,
+      /*guid=*/kGuid,
+      /*title=*/kTitle,
+      /*is_deletion=*/false,
+      /*version=*/0,
+      /*unique_position=*/kPosition));
+
+  updates_handler()->Process(updates,
+                             /*got_new_encryption_requirements=*/false);
+  ASSERT_THAT(tracker()->GetEntityForSyncId(kId), NotNull());
+
+  // Push an update for the same entity with a new GUID.
+  updates.clear();
+  updates.push_back(CreateUpdateResponseData(
+      /*server_id=*/kId,
+      /*parent_id=*/kBookmarkBarId,
+      /*guid=*/"",
+      /*title=*/kTitle,
+      /*is_deletion=*/false,
+      /*version=*/1,
+      /*unique_position=*/
+      syncer::UniquePosition::InitialPosition(
+          syncer::UniquePosition::RandomSuffix())));
+
+  updates_handler()->Process(updates,
+                             /*got_new_encryption_requirements=*/false);
+
+  // The GUID should not have been updated.
+  const bookmarks::BookmarkNode* bookmark_bar_node =
+      bookmark_model()->bookmark_bar_node();
+  ASSERT_THAT(bookmark_bar_node->children().size(), Eq(1u));
+  EXPECT_THAT(bookmark_bar_node->children().front()->guid(), Eq(kGuid));
 }
 
 TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,

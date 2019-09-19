@@ -57,6 +57,7 @@ group("policy_testserver_pyproto") {
   data = [
     "$root_out_dir/pyproto/components/policy/proto/device_management_backend_pb2.py",
     "$root_out_dir/pyproto/components/policy/proto/cloud_policy_pb2.py",
+    "$root_out_dir/pyproto/components/policy/proto/policy_common_definitions_pb2.py",
   ]
 
   if (!is_android) {

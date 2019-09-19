@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/drop_data.h"
@@ -240,11 +241,24 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
     virtual void OnInputEventAck(InputEventAckSource source,
                                  InputEventAckState state,
                                  const blink::WebInputEvent&) {}
+    // Key events are not triggered through InputEvent on Android.
+    // This function is triggered by IME commitText.
+#if defined(OS_ANDROID)
+    virtual void OnImeTextCommittedEvent(const base::string16& text_str) {}
+#endif
   };
 
   // Add/remove an input event observer.
   virtual void AddInputEventObserver(InputEventObserver* observer) = 0;
   virtual void RemoveInputEventObserver(InputEventObserver* observer) = 0;
+
+#if defined(OS_ANDROID)
+  // Add/remove an Ime text committed event observer.
+  virtual void AddImeTextCommittedEventObserver(
+      RenderWidgetHost::InputEventObserver* observer) = 0;
+  virtual void RemoveImeTextCommittedEventObserver(
+      InputEventObserver* observer) = 0;
+#endif
 
   // Add and remove observers for widget host events. The order in which
   // notifications are sent to observers is undefined. Observers must be sure to

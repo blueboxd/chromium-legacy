@@ -50,6 +50,7 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/unified_consent/feature.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace chromeos {
 namespace settings {
@@ -190,13 +191,13 @@ void OSSettingsUI::BindCrosNetworkConfig(
 }
 
 void OSSettingsUI::BindAppManagementPageHandlerFactory(
-    app_management::mojom::PageHandlerFactoryRequest request) {
+    mojo::PendingReceiver<app_management::mojom::PageHandlerFactory> receiver) {
   if (!app_management_page_handler_factory_) {
     app_management_page_handler_factory_ =
         std::make_unique<AppManagementPageHandlerFactory>(
             Profile::FromWebUI(web_ui()));
   }
-  app_management_page_handler_factory_->Bind(std::move(request));
+  app_management_page_handler_factory_->Bind(std::move(receiver));
 }
 
 }  // namespace settings

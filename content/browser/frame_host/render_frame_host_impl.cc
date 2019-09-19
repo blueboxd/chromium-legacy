@@ -48,6 +48,7 @@
 #include "content/browser/file_url_loader_factory.h"
 #include "content/browser/fileapi/file_system_manager_impl.h"
 #include "content/browser/fileapi/file_system_url_loader_factory.h"
+#include "content/browser/frame_host/back_forward_cache_impl.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -747,7 +748,8 @@ class FileChooserImpl : public blink::mojom::FileChooser,
 // static
 RenderFrameHost* RenderFrameHost::FromID(int render_process_id,
                                          int render_frame_id) {
-  return RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
+  return RenderFrameHostImpl::FromID(
+      GlobalFrameRoutingId(render_process_id, render_frame_id));
 }
 
 #if defined(OS_ANDROID) || defined(OS_FUCHSIA) || defined(IS_CHROMECAST)
@@ -758,11 +760,17 @@ void RenderFrameHost::AllowInjectingJavaScript() {
 #endif  // defined(OS_ANDROID) || defined(OS_FUCHSIA) || defined(IS_CHROMECAST)
 
 // static
-RenderFrameHostImpl* RenderFrameHostImpl::FromID(int process_id,
-                                                 int routing_id) {
+RenderFrameHostImpl* RenderFrameHostImpl::FromID(int render_process_id,
+                                                 int render_frame_id) {
+  return RenderFrameHostImpl::FromID(
+      GlobalFrameRoutingId(render_process_id, render_frame_id));
+}
+
+// static
+RenderFrameHostImpl* RenderFrameHostImpl::FromID(GlobalFrameRoutingId id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RoutingIDFrameMap* frames = g_routing_id_frame_map.Pointer();
-  auto it = frames->find(GlobalFrameRoutingId(process_id, routing_id));
+  auto it = frames->find(id);
   return it == frames->end() ? NULL : it->second;
 }
 
@@ -1125,17 +1133,23 @@ void RenderFrameHostImpl::LeaveBackForwardCache() {
 void RenderFrameHostImpl::StartBackForwardCacheEvictionTimer() {
   DCHECK(is_in_back_forward_cache_);
   base::TimeDelta evict_after =
-      BackForwardCache::GetTimeToLiveInBackForwardCache();
+      BackForwardCacheImpl::GetTimeToLiveInBackForwardCache();
   NavigationControllerImpl* controller = static_cast<NavigationControllerImpl*>(
       frame_tree_node_->navigator()->GetController());
 
   back_forward_cache_eviction_timer_.SetTaskRunner(
-      controller->back_forward_cache().GetTaskRunner());
+      controller->GetBackForwardCache().GetTaskRunner());
 
   back_forward_cache_eviction_timer_.Start(
       FROM_HERE, evict_after,
       base::BindOnce(&RenderFrameHostImpl::EvictFromBackForwardCache,
                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+void RenderFrameHostImpl::DisallowBackForwardCache() {
+  is_back_forward_cache_disallowed_ = true;
+  if (is_in_back_forward_cache())
+    EvictFromBackForwardCache();
 }
 
 void RenderFrameHostImpl::OnGrantedMediaStreamAccess() {
@@ -3507,7 +3521,7 @@ void RenderFrameHostImpl::EvictFromBackForwardCache() {
   // immediately, but destruction is delayed, so that callers don't have to
   // worry about use-after-free of |this|.
   top_document->is_evicted_from_back_forward_cache_ = true;
-  controller->back_forward_cache().PostTaskToDestroyEvictedFrames();
+  controller->GetBackForwardCache().PostTaskToDestroyEvictedFrames();
 
   if (!is_navigation_to_evicted_frame_in_flight)
     return;
@@ -3963,8 +3977,8 @@ base::WeakPtr<RenderFrameHostImpl> RenderFrameHostImpl::GetWeakPtr() {
 
 void RenderFrameHostImpl::TransferUserActivationFrom(
     int32_t source_routing_id) {
-  RenderFrameHostImpl* source_rfh =
-      RenderFrameHostImpl::FromID(GetProcess()->GetID(), source_routing_id);
+  RenderFrameHostImpl* source_rfh = RenderFrameHostImpl::FromID(
+      GlobalFrameRoutingId(GetProcess()->GetID(), source_routing_id));
   if (source_rfh &&
       source_rfh->frame_tree_node()->HasTransientUserActivation()) {
     frame_tree_node()->TransferUserActivationFrom(source_rfh);
@@ -4096,8 +4110,8 @@ void RenderFrameHostImpl::CreateNewWindow(
 
   // The view, widget, and frame should all be routable now.
   DCHECK(RenderViewHost::FromID(render_process_id, render_view_route_id));
-  RenderFrameHostImpl* rfh =
-      RenderFrameHostImpl::FromID(GetProcess()->GetID(), main_frame_route_id);
+  RenderFrameHostImpl* rfh = RenderFrameHostImpl::FromID(
+      GlobalFrameRoutingId(GetProcess()->GetID(), main_frame_route_id));
   DCHECK(rfh);
 
   // When the popup is created, it hasn't committed any navigation yet - its
@@ -7577,7 +7591,7 @@ void RenderFrameHostImpl::MaybeEvictFromBackForwardCache() {
 
   NavigationControllerImpl* controller = static_cast<NavigationControllerImpl*>(
       frame_tree_node_->navigator()->GetController());
-  if (controller->back_forward_cache().CanStoreDocument(this))
+  if (controller->GetBackForwardCache().CanStoreDocument(this))
     return;
 
   EvictFromBackForwardCache();

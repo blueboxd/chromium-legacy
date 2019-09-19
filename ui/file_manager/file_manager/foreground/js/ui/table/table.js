@@ -7,25 +7,30 @@
  */
 
 cr.define('cr.ui', function() {
-  /** @const */ const ListSelectionModel = cr.ui.ListSelectionModel;
-  /** @const */ const ListSelectionController = cr.ui.ListSelectionController;
-  /** @const */ const ArrayDataModel = cr.ui.ArrayDataModel;
-  /** @const */ const TableColumnModel = cr.ui.table.TableColumnModel;
-  /** @const */ const TableList = cr.ui.table.TableList;
-  /** @const */ const TableHeader = cr.ui.table.TableHeader;
-
   /**
    * Creates a new table element.
-   * @param {Object=} opt_propertyBag Optional properties.
-   * @constructor
    * @extends {HTMLDivElement}
    */
-  const Table = cr.ui.define('div');
+  class Table {
+    constructor() {
+      /** @private {cr.ui.table.TableColumnModel} */
+      this.columnModel_;
 
-  Table.prototype = {
-    __proto__: HTMLDivElement.prototype,
+      /** @protected {?cr.ui.table.TableList} */
+      this.list_;
 
-    columnModel_: new TableColumnModel([]),
+      /** @private {cr.ui.table.TableHeader} */
+      this.header_;
+
+      /** @private {function((Event|null))} */
+      this.boundHandleChangeList_;
+
+      /** @private {function((Event|null))} */
+      this.boundHandleSorted_;
+
+      /** @private {function((Event|null))} */
+      this.boundResize_;
+    }
 
     /**
      * The table data model.
@@ -34,7 +39,7 @@ cr.define('cr.ui', function() {
      */
     get dataModel() {
       return this.list_.dataModel;
-    },
+    }
     set dataModel(dataModel) {
       if (this.list_.dataModel != dataModel) {
         if (this.list_.dataModel) {
@@ -56,7 +61,7 @@ cr.define('cr.ui', function() {
         }
         this.header_.redraw();
       }
-    },
+    }
 
     /**
      * The list of table.
@@ -65,7 +70,7 @@ cr.define('cr.ui', function() {
      */
     get list() {
       return this.list_;
-    },
+    }
 
     /**
      * The table column model.
@@ -74,7 +79,7 @@ cr.define('cr.ui', function() {
      */
     get columnModel() {
       return this.columnModel_;
-    },
+    }
     set columnModel(columnModel) {
       if (this.columnModel_ != columnModel) {
         if (this.columnModel_) {
@@ -88,7 +93,7 @@ cr.define('cr.ui', function() {
         this.list_.invalidate();
         this.redraw();
       }
-    },
+    }
 
     /**
      * The table selection model.
@@ -98,7 +103,7 @@ cr.define('cr.ui', function() {
      */
     get selectionModel() {
       return this.list_.selectionModel;
-    },
+    }
     set selectionModel(selectionModel) {
       if (this.list_.selectionModel != selectionModel) {
         if (this.dataModel) {
@@ -106,7 +111,7 @@ cr.define('cr.ui', function() {
         }
         this.list_.selectionModel = selectionModel;
       }
-    },
+    }
 
     /**
      * The accessor to "autoExpands" property of the list.
@@ -115,30 +120,30 @@ cr.define('cr.ui', function() {
      */
     get autoExpands() {
       return this.list_.autoExpands;
-    },
+    }
     set autoExpands(autoExpands) {
       this.list_.autoExpands = autoExpands;
-    },
+    }
 
     get fixedHeight() {
       return this.list_.fixedHeight;
-    },
+    }
     set fixedHeight(fixedHeight) {
       this.list_.fixedHeight = fixedHeight;
-    },
+    }
 
     /**
      * Returns render function for row.
      * @return {function(*, cr.ui.Table): HTMLElement} Render function.
      */
-    getRenderFunction: function() {
+    getRenderFunction() {
       return this.renderFunction_;
-    },
+    }
 
     /**
      * @private
      */
-    renderFunction_: function(dataItem, table) {
+    renderFunction_(dataItem, table) {
       // `This` must not be accessed here, since it may be anything, especially
       // not a pointer to this object.
 
@@ -162,21 +167,21 @@ cr.define('cr.ui', function() {
       listItem.style.width = cm.totalWidth + 'px';
 
       return listItem;
-    },
+    }
 
     /**
      * Sets render function for row.
      * @param {function(*, cr.ui.Table): HTMLElement} renderFunction Render
      *     function.
      */
-    setRenderFunction: function(renderFunction) {
+    setRenderFunction(renderFunction) {
       if (renderFunction === this.renderFunction_) {
         return;
       }
 
       this.renderFunction_ = renderFunction;
       cr.dispatchSimpleEvent(this, 'change');
-    },
+    }
 
     /**
      * The header of the table.
@@ -185,94 +190,103 @@ cr.define('cr.ui', function() {
      */
     get header() {
       return this.header_;
-    },
+    }
 
     /**
      * Initializes the element.
+     * @param {Element} element
      */
-    decorate: function() {
-      this.header_ = this.ownerDocument.createElement('div');
-      this.list_ = this.ownerDocument.createElement('list');
+    static decorate(element) {
+      element.__proto__ = Table.prototype;
+      element = /** @type {cr.ui.Table} */ (element);
 
-      this.appendChild(this.header_);
-      this.appendChild(this.list_);
+      element.columnModel_ = new cr.ui.table.TableColumnModel([]);
+      element.header_ = /** @type {cr.ui.table.TableHeader} */ (
+          element.ownerDocument.createElement('div'));
+      element.list_ = /** @type {cr.ui.table.TableList} */ (
+          element.ownerDocument.createElement('list'));
 
-      TableList.decorate(this.list_);
-      this.list_.selectionModel = new ListSelectionModel();
-      this.list_.table = this;
-      this.list_.addEventListener('scroll', this.handleScroll_.bind(this));
+      element.appendChild(element.header_);
+      element.appendChild(element.list_);
 
-      TableHeader.decorate(this.header_);
-      this.header_.table = this;
+      cr.ui.table.TableList.decorate(element.list_);
+      element.list_.selectionModel = new cr.ui.ListSelectionModel();
+      element.list_.table = element;
+      element.list_.addEventListener(
+          'scroll', element.handleScroll_.bind(element));
 
-      this.classList.add('table');
+      cr.ui.table.TableHeader.decorate(element.header_);
+      element.header_.table = element;
 
-      this.boundResize_ = this.resize.bind(this);
-      this.boundHandleSorted_ = this.handleSorted_.bind(this);
-      this.boundHandleChangeList_ = this.handleChangeList_.bind(this);
+      element.classList.add('table');
+
+      element.boundResize_ = element.resize.bind(element);
+      element.boundHandleSorted_ = element.handleSorted_.bind(element);
+      element.boundHandleChangeList_ = element.handleChangeList_.bind(element);
 
       // The contained list should be focusable, not the table itself.
-      if (this.hasAttribute('tabindex')) {
-        this.list_.setAttribute('tabindex', this.getAttribute('tabindex'));
-        this.removeAttribute('tabindex');
+      if (element.hasAttribute('tabindex')) {
+        element.list_.setAttribute(
+            'tabindex', element.getAttribute('tabindex'));
+        element.removeAttribute('tabindex');
       }
 
-      this.addEventListener('focus', this.handleElementFocus_, true);
-      this.addEventListener('blur', this.handleElementBlur_, true);
-    },
+      element.addEventListener('focus', element.handleElementFocus_, true);
+      element.addEventListener('blur', element.handleElementBlur_, true);
+    }
 
     /**
      * Redraws the table.
      */
-    redraw: function() {
+    redraw() {
       this.list_.redraw();
       this.header_.redraw();
-    },
+    }
 
-    startBatchUpdates: function() {
+    startBatchUpdates() {
       this.list_.startBatchUpdates();
       this.header_.startBatchUpdates();
-    },
+    }
 
-    endBatchUpdates: function() {
+    endBatchUpdates() {
       this.list_.endBatchUpdates();
       this.header_.endBatchUpdates();
-    },
+    }
 
     /**
      * Resize the table columns.
      */
-    resize: function() {
+    resize() {
       // We resize columns only instead of full redraw.
       this.list_.resize();
       this.header_.resize();
-    },
+    }
 
     /**
      * Ensures that a given index is inside the viewport.
      * @param {number} i The index of the item to scroll into view.
      */
-    scrollIndexIntoView: function(i) {
+    scrollIndexIntoView(i) {
       this.list_.scrollIndexIntoView(i);
-    },
+    }
 
     /**
      * Find the list item element at the given index.
      * @param {number} index The index of the list item to get.
      * @return {cr.ui.ListItem} The found list item or null if not found.
      */
-    getListItemByIndex: function(index) {
+    getListItemByIndex(index) {
       return this.list_.getListItemByIndex(index);
-    },
+    }
 
     /**
      * This handles data model 'sorted' event.
      * After sorting we need to redraw header
      * @param {Event} e The 'sorted' event.
      */
-    handleSorted_: function(e) {
+    handleSorted_(e) {
       this.header_.redraw();
-    },
+    }
 
     /**
      * This handles data model 'change' and 'splice' events.
@@ -280,23 +294,23 @@ cr.define('cr.ui', function() {
      * re-calculation the width of column headers.
      * @param {Event} e The 'change' or 'splice' event.
      */
-    handleChangeList_: function(e) {
+    handleChangeList_(e) {
       requestAnimationFrame(this.header_.updateWidth.bind(this.header_));
-    },
+    }
 
     /**
      * This handles list 'scroll' events. Scrolls the header accordingly.
      * @param {Event} e Scroll event.
      */
-    handleScroll_: function(e) {
+    handleScroll_(e) {
       this.header_.style.marginLeft = -this.list_.scrollLeft + 'px';
-    },
+    }
 
     /**
      * Sort data by the given column.
      * @param {number} i The index of the column to sort by.
      */
-    sort: function(i) {
+    sort(i) {
       const cm = this.columnModel_;
       const sortStatus = this.list_.dataModel.sortStatus;
       if (sortStatus.field == cm.getId(i)) {
@@ -308,7 +322,7 @@ cr.define('cr.ui', function() {
       if (this.selectionModel.selectedIndex == -1) {
         this.list_.scrollTop = 0;
       }
-    },
+    }
 
     /**
      * Called when an element in the table is focused. Marks the table as having
@@ -316,13 +330,13 @@ cr.define('cr.ui', function() {
      * @param {Event} e The focus event.
      * @private
      */
-    handleElementFocus_: function(e) {
+    handleElementFocus_(e) {
       if (!this.hasElementFocus) {
         this.hasElementFocus = true;
         // Force styles based on hasElementFocus to take effect.
         this.list_.redraw();
       }
-    },
+    }
 
     /**
      * Called when an element in the table is blurred. If focus moves outside
@@ -331,7 +345,7 @@ cr.define('cr.ui', function() {
      * @param {Event} e The blur event.
      * @private
      */
-    handleElementBlur_: function(e) {
+    handleElementBlur_(e) {
       // When the blur event happens we do not know who is getting focus so we
       // delay this a bit until we know if the new focus node is outside the
       // table.
@@ -346,13 +360,13 @@ cr.define('cr.ui', function() {
           list.redraw();
         }
       }, 0);
-    },
+    }
 
     /**
      * Adjust column width to fit its content.
      * @param {number} index Index of the column to adjust width.
      */
-    fitColumn: function(index) {
+    fitColumn(index) {
       const list = this.list_;
       const listHeight = list.clientHeight;
 
@@ -392,12 +406,15 @@ cr.define('cr.ui', function() {
         list.removeChild(container);
         cm.setWidth(index, width);
       });
-    },
+    }
 
-    normalizeColumns: function() {
+    normalizeColumns() {
       this.columnModel.normalizeWidths(this.clientWidth);
     }
-  };
+  }
+
+  Table.prototype.__proto__ = HTMLDivElement.prototype;
+
 
   /**
    * Whether the table or one of its descendents has focus. This is necessary

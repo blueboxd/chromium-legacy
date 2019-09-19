@@ -159,9 +159,9 @@ void SerialPortManager::EnsureConnection() {
     return;
 
   DCHECK(content::GetSystemConnector());
-  content::GetSystemConnector()->BindInterface(
-      device::mojom::kServiceName, mojo::MakeRequest(&port_manager_));
-  port_manager_.set_connection_error_handler(
+  content::GetSystemConnector()->Connect(
+      device::mojom::kServiceName, port_manager_.BindNewPipeAndPassReceiver());
+  port_manager_.set_disconnect_handler(
       base::BindOnce(&SerialPortManager::OnPortManagerConnectionError,
                      weak_factory_.GetWeakPtr()));
 }

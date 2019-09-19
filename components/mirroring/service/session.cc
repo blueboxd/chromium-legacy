@@ -41,7 +41,7 @@
 #include "media/mojo/clients/mojo_video_encode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/ip_endpoint.h"
 #include "services/viz/public/cpp/gpu/gpu.h"
@@ -373,13 +373,14 @@ class Session::AudioCapturingCallback final
   DISALLOW_COPY_AND_ASSIGN(AudioCapturingCallback);
 };
 
-Session::Session(mojom::SessionParametersPtr session_params,
-                 const gfx::Size& max_resolution,
-                 mojom::SessionObserverPtr observer,
-                 mojom::ResourceProviderPtr resource_provider,
-                 mojom::CastMessageChannelPtr outbound_channel,
-                 mojom::CastMessageChannelRequest inbound_channel,
-                 scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
+Session::Session(
+    mojom::SessionParametersPtr session_params,
+    const gfx::Size& max_resolution,
+    mojo::PendingRemote<mojom::SessionObserver> observer,
+    mojo::PendingRemote<mojom::ResourceProvider> resource_provider,
+    mojo::PendingRemote<mojom::CastMessageChannel> outbound_channel,
+    mojo::PendingReceiver<mojom::CastMessageChannel> inbound_channel,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : session_params_(*session_params),
       state_(MIRRORING),
       observer_(std::move(observer)),
@@ -738,8 +739,9 @@ void Session::OnAnswer(const std::vector<FrameSenderConfig>& audio_configs,
       video_stream_ = std::make_unique<VideoRtpStream>(
           std::move(video_sender), weak_factory_.GetWeakPtr());
       if (!video_capture_client_) {
-        media::mojom::VideoCaptureHostPtr video_host;
-        resource_provider_->GetVideoCaptureHost(mojo::MakeRequest(&video_host));
+        mojo::PendingRemote<media::mojom::VideoCaptureHost> video_host;
+        resource_provider_->GetVideoCaptureHost(
+            video_host.InitWithNewPipeAndPassReceiver());
         video_capture_client_ = std::make_unique<VideoCaptureClient>(
             mirror_settings_.GetVideoCaptureParams(), std::move(video_host));
         video_capture_client_->Start(

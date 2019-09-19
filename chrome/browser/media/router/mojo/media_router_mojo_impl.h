@@ -27,8 +27,8 @@
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/common/media_router/route_request_result.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 
 namespace content {
@@ -345,15 +345,18 @@ class MediaRouterMojoImpl : public MediaRouterBase, public mojom::MediaRouter {
       mojom::MediaRouter::GetMediaSinkServiceStatusCallback callback) override;
   void GetMirroringServiceHostForTab(
       int32_t target_tab_id,
-      mirroring::mojom::MirroringServiceHostRequest request) override;
+      mojo::PendingReceiver<mirroring::mojom::MirroringServiceHost> receiver)
+      override;
   void GetMirroringServiceHostForDesktop(
       int32_t initiator_tab_id,
       const std::string& desktop_stream_id,
-      mirroring::mojom::MirroringServiceHostRequest request) override;
+      mojo::PendingReceiver<mirroring::mojom::MirroringServiceHost> receiver)
+      override;
   void GetMirroringServiceHostForOffscreenTab(
       const GURL& presentation_url,
       const std::string& presentation_id,
-      mirroring::mojom::MirroringServiceHostRequest request) override;
+      mojo::PendingReceiver<mirroring::mojom::MirroringServiceHost> receiver)
+      override;
 
   // Result callback when Mojo TerminateRoute is invoked.
   // |route_id|: ID of MediaRoute passed to the TerminateRoute request.

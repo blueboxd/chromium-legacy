@@ -60,8 +60,14 @@ class SyncedBookmarkTracker {
       return bookmark_node_;
     }
 
-    // Used in local deletions to mark and entity as a tommstone.
+    // Used in local deletions to mark and entity as a tombstone.
     void clear_bookmark_node() { bookmark_node_ = nullptr; }
+
+    // Used when replacing a node in order to update its otherwise immutable
+    // GUID.
+    void set_bookmark_node(const bookmarks::BookmarkNode* bookmark_node) {
+      bookmark_node_ = bookmark_node;
+    }
 
     const sync_pb::EntityMetadata* metadata() const {
       // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
@@ -193,6 +199,11 @@ class SyncedBookmarkTracker {
   // the internal state of the tracker accordingly.
   void UpdateSyncForLocalCreationIfNeeded(const std::string& old_id,
                                           const std::string& new_id);
+
+  // Informs the tracker that a BookmarkNode has been replaced. It updates
+  // the internal state of the tracker accordingly.
+  void UpdateBookmarkNodePointer(const bookmarks::BookmarkNode* old_node,
+                                 const bookmarks::BookmarkNode* new_node);
 
   // Set the value of |EntityMetadata.acked_sequence_number| in the entity with
   // |sync_id| to be equal to |EntityMetadata.sequence_number| such that it is

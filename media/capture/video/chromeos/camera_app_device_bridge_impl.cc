@@ -54,11 +54,7 @@ CameraAppDeviceImpl* CameraAppDeviceBridgeImpl::GetCameraAppDevice(
 void CameraAppDeviceBridgeImpl::GetCameraAppDevice(
     const std::string& device_id,
     GetCameraAppDeviceCallback callback) {
-  if (!is_supported_) {
-    std::move(callback).Run(cros::mojom::GetCameraAppDeviceStatus::ERROR_NON_V3,
-                            mojo::NullRemote());
-    return;
-  }
+  DCHECK(is_supported_);
 
   mojo::PendingRemote<cros::mojom::CameraAppDevice> device;
   GetCameraAppDevice(device_id)->BindReceiver(
@@ -75,6 +71,10 @@ media::CameraAppDeviceImpl* CameraAppDeviceBridgeImpl::CreateCameraAppDevice(
       device_id, std::move(device_info));
   auto result = camera_app_devices_.emplace(device_id, std::move(device_impl));
   return result.first->second.get();
+}
+
+void CameraAppDeviceBridgeImpl::IsSupported(IsSupportedCallback callback) {
+  std::move(callback).Run(is_supported_);
 }
 
 }  // namespace media

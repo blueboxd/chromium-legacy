@@ -8,6 +8,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string_view>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -27,8 +28,10 @@
 #include "components/safe_browsing/db/hit_report.h"
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
@@ -307,6 +310,18 @@ void TrimElements(const std::set<int> target_ids,
     }
   }
 }
+
+void DisableBackForwardCache(content::RenderFrameHost* rfh,
+                             std::string_view reason) {
+  content::WebContents::FromRenderFrameHost(rfh)
+      ->GetController()
+      .GetBackForwardCache()
+      .DisableForRenderFrameHost(
+          content::GlobalFrameRoutingId(rfh->GetProcess()->GetID(),
+                                        rfh->GetRoutingID()),
+          reason);
+}
+
 }  // namespace
 
 // The default ThreatDetailsFactory.  Global, made a singleton so we
@@ -637,6 +652,7 @@ void ThreatDetails::StartCollection() {
 }
 
 void ThreatDetails::RequestThreatDOMDetails(content::RenderFrameHost* frame) {
+  DisableBackForwardCache(frame, "safe_browsing::ThreatDetails");
   safe_browsing::mojom::ThreatReporterPtr threat_reporter;
   frame->GetRemoteInterfaces()->GetInterface(&threat_reporter);
   safe_browsing::mojom::ThreatReporter* raw_threat_report =

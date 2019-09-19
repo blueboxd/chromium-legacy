@@ -81,6 +81,8 @@ class FakeProfileOAuth2TokenService : public ProfileOAuth2TokenService {
 
   void set_auto_post_fetch_response_on_message_loop(bool auto_post_response);
 
+  bool IsFakeProfileOAuth2TokenServiceForTesting() const override;
+
  private:
   FakeOAuth2AccessTokenManager* GetFakeAccessTokenManager();
 

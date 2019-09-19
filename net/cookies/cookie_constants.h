@@ -39,6 +39,7 @@ enum class CookieSameSite {
 
 // These are the enforcement modes that may be applied to a cookie when deciding
 // inclusion/exclusion. They mostly correspond to CookieSameSite values.
+// Keep in sync with enums.xml.
 enum class CookieEffectiveSameSite {
   NO_RESTRICTION = 0,
   LAX_MODE = 1,

@@ -62,10 +62,10 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) Session final
  public:
   Session(mojom::SessionParametersPtr session_params,
           const gfx::Size& max_resolution,
-          mojom::SessionObserverPtr observer,
-          mojom::ResourceProviderPtr resource_provider,
-          mojom::CastMessageChannelPtr outbound_channel,
-          mojom::CastMessageChannelRequest inbound_channel,
+          mojo::PendingRemote<mojom::SessionObserver> observer,
+          mojo::PendingRemote<mojom::ResourceProvider> resource_provider,
+          mojo::PendingRemote<mojom::CastMessageChannel> outbound_channel,
+          mojo::PendingReceiver<mojom::CastMessageChannel> inbound_channel,
           scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 
   ~Session() override;
@@ -157,8 +157,8 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) Session final
     STOPPED,    // The session is stopped due to user's request or errors.
   } state_;
 
-  mojom::SessionObserverPtr observer_;
-  mojom::ResourceProviderPtr resource_provider_;
+  mojo::Remote<mojom::SessionObserver> observer_;
+  mojo::Remote<mojom::ResourceProvider> resource_provider_;
   MirrorSettings mirror_settings_;
 
   MessageDispatcher message_dispatcher_;

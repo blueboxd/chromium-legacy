@@ -151,7 +151,7 @@ void DeviceService::OnStart() {
   registry_.AddInterface<mojom::GeolocationControl>(base::Bind(
       &DeviceService::BindGeolocationControlReceiver, base::Unretained(this)));
   registry_.AddInterface<mojom::PowerMonitor>(base::Bind(
-      &DeviceService::BindPowerMonitorRequest, base::Unretained(this)));
+      &DeviceService::BindPowerMonitorReceiver, base::Unretained(this)));
   registry_.AddInterface<mojom::PublicIpAddressGeolocationProvider>(
       base::Bind(&DeviceService::BindPublicIpAddressGeolocationProviderReceiver,
                  base::Unretained(this)));
@@ -161,7 +161,7 @@ void DeviceService::OnStart() {
   registry_.AddInterface<mojom::SensorProvider>(base::Bind(
       &DeviceService::BindSensorProviderRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::TimeZoneMonitor>(base::Bind(
-      &DeviceService::BindTimeZoneMonitorRequest, base::Unretained(this)));
+      &DeviceService::BindTimeZoneMonitorReceiver, base::Unretained(this)));
   registry_.AddInterface<mojom::WakeLockProvider>(base::Bind(
       &DeviceService::BindWakeLockProviderReceiver, base::Unretained(this)));
   registry_.AddInterface<mojom::UsbDeviceManager>(base::Bind(
@@ -186,7 +186,7 @@ void DeviceService::OnStart() {
   registry_.AddInterface<mojom::NFCProvider>(base::Bind(
       &DeviceService::BindNFCProviderReceiver, base::Unretained(this)));
   registry_.AddInterface<mojom::VibrationManager>(base::Bind(
-      &DeviceService::BindVibrationManagerRequest, base::Unretained(this)));
+      &DeviceService::BindVibrationManagerReceiver, base::Unretained(this)));
 #endif
 
 #if (defined(OS_LINUX) && defined(USE_UDEV)) || defined(OS_WIN) || \
@@ -248,9 +248,9 @@ void DeviceService::BindNFCProviderReceiver(
   NOTREACHED();
 }
 
-void DeviceService::BindVibrationManagerRequest(
-    mojom::VibrationManagerRequest request) {
-  VibrationManagerImpl::Create(std::move(request));
+void DeviceService::BindVibrationManagerReceiver(
+    mojo::PendingReceiver<mojom::VibrationManager> receiver) {
+  VibrationManagerImpl::Create(std::move(receiver));
 }
 #endif
 
@@ -298,13 +298,13 @@ void DeviceService::BindGeolocationControlReceiver(
       std::move(receiver));
 }
 
-void DeviceService::BindPowerMonitorRequest(
-    mojom::PowerMonitorRequest request) {
+void DeviceService::BindPowerMonitorReceiver(
+    mojo::PendingReceiver<mojom::PowerMonitor> receiver) {
   if (!power_monitor_message_broadcaster_) {
     power_monitor_message_broadcaster_ =
         std::make_unique<PowerMonitorMessageBroadcaster>();
   }
-  power_monitor_message_broadcaster_->Bind(std::move(request));
+  power_monitor_message_broadcaster_->Bind(std::move(receiver));
 }
 
 void DeviceService::BindPublicIpAddressGeolocationProviderReceiver(
@@ -341,11 +341,11 @@ void DeviceService::BindSensorProviderRequest(
   sensor_provider_->Bind(std::move(request));
 }
 
-void DeviceService::BindTimeZoneMonitorRequest(
-    mojom::TimeZoneMonitorRequest request) {
+void DeviceService::BindTimeZoneMonitorReceiver(
+    mojo::PendingReceiver<mojom::TimeZoneMonitor> receiver) {
   if (!time_zone_monitor_)
     time_zone_monitor_ = TimeZoneMonitor::Create(file_task_runner_);
-  time_zone_monitor_->Bind(std::move(request));
+  time_zone_monitor_->Bind(std::move(receiver));
 }
 
 void DeviceService::BindWakeLockProviderReceiver(

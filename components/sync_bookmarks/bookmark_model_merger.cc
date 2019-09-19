@@ -238,6 +238,14 @@ void BookmarkModelMerger::MergeSubtree(
     const bookmarks::BookmarkNode* local_node,
     const UpdateResponseData* remote_update) {
   const EntityData& remote_update_entity = *remote_update->entity;
+  const sync_pb::BookmarkSpecifics remote_node =
+      remote_update_entity.specifics.bookmark();
+  if (!GetPermanentFolder(remote_update_entity) &&
+      remote_node.guid() != local_node->guid() &&
+      base::IsValidGUID(remote_update_entity.specifics.bookmark().guid())) {
+    local_node = ReplaceBookmarkNodeGUID(local_node, remote_node.guid(),
+                                         bookmark_model_);
+  }
   bookmark_tracker_->Add(
       remote_update_entity.id, local_node, remote_update->response_version,
       remote_update_entity.creation_time, remote_update_entity.unique_position,

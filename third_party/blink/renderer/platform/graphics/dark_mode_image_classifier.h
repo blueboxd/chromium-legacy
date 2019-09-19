@@ -22,7 +22,9 @@ class PLATFORM_EXPORT DarkModeImageClassifier {
   DarkModeImageClassifier();
   ~DarkModeImageClassifier() = default;
 
-  DarkModeClassification Classify(Image* image, const FloatRect& src_rect);
+  DarkModeClassification Classify(Image* image,
+                                  const FloatRect& src_rect,
+                                  const FloatRect& dest_rect);
 
   struct Features {
     // True if the image is in color, false if it is grayscale.

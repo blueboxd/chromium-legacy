@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
+#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 
 namespace content {
 
@@ -72,7 +72,7 @@ void WebRtcMediaStreamTrackAdapterMap::AdapterRef::InitializeOnMainThread() {
 }
 
 WebRtcMediaStreamTrackAdapterMap::WebRtcMediaStreamTrackAdapterMap(
-    blink::PeerConnectionDependencyFactory* const factory,
+    PeerConnectionDependencyFactory* const factory,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread)
     : factory_(factory), main_thread_(std::move(main_thread)) {
   DCHECK(factory_);

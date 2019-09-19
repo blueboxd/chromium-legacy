@@ -115,11 +115,7 @@ class UiControllerAndroid : public ControllerObserver {
   // Called by AssistantCollectUserDataDelegate:
   void OnShippingAddressChanged(
       std::unique_ptr<autofill::AutofillProfile> address);
-  void OnBillingAddressChanged(
-      std::unique_ptr<autofill::AutofillProfile> address);
-  void OnContactInfoChanged(std::string name,
-                            std::string phone,
-                            std::string email);
+  void OnContactInfoChanged(std::unique_ptr<autofill::AutofillProfile> profile);
   void OnCreditCardChanged(std::unique_ptr<autofill::CreditCard> card);
   void OnTermsAndConditionsChanged(TermsAndConditionsState state);
   void OnLoginChoiceChanged(std::string identifier);

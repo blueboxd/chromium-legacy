@@ -475,13 +475,17 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
 }
 
 // No state keys on the server. Auto enrollment check should proceed to login.
-IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, AutoEnrollmentCheck) {
+// Flaky: crbug.com/992022
+IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer,
+                       DISABLED_AutoEnrollmentCheck) {
   host()->StartWizard(AutoEnrollmentCheckScreenView::kScreenId);
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
 }
 
 // State keys are present but restore mode is not requested.
-IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, ReenrollmentNone) {
+// Flaky: crbug.com/992022
+IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer,
+                       DISABLED_ReenrollmentNone) {
   EXPECT_TRUE(policy_server_.SetDeviceStateRetrievalResponse(
       state_keys_broker(),
       enterprise_management::DeviceStateRetrievalResponse::RESTORE_MODE_NONE,
@@ -491,7 +495,9 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, ReenrollmentNone) {
 }
 
 // Reenrollment requested. User can skip.
-IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, ReenrollmentRequested) {
+// Flaky: crbug.com/992022
+IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer,
+                       DISABLED_ReenrollmentRequested) {
   EXPECT_TRUE(policy_server_.SetDeviceStateRetrievalResponse(
       state_keys_broker(),
       enterprise_management::DeviceStateRetrievalResponse::
@@ -504,7 +510,9 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, ReenrollmentRequested) {
 }
 
 // Reenrollment forced. User can not skip.
-IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, ReenrollmentForced) {
+// Flaky: crbug.com/992022
+IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer,
+                       DISABLED_ReenrollmentForced) {
   EXPECT_TRUE(policy_server_.SetDeviceStateRetrievalResponse(
       state_keys_broker(),
       enterprise_management::DeviceStateRetrievalResponse::
@@ -529,7 +537,8 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, DeviceDisabled) {
 }
 
 // Attestation enrollment.
-IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, Attestation) {
+// Flaky: crbug.com/992022
+IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, DISABLED_Attestation) {
   policy_server_.SetFakeAttestationFlow();
   EXPECT_TRUE(policy_server_.SetDeviceStateRetrievalResponse(
       state_keys_broker(),

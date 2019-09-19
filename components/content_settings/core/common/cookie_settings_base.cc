@@ -41,7 +41,12 @@ bool CookieSettingsBase::ShouldDeleteCookieOnExit(
   // Check if there is a more precise rule that "domain matches" this cookie.
   bool matches_session_only_rule = false;
   for (const auto& entry : cookie_settings) {
-    const std::string& host = entry.primary_pattern.GetHost();
+    // While we don't know on which top-frame-origin a cookie was set, we still
+    // use exceptions that only specify a secondary pattern to handle cookies
+    // that match this pattern.
+    const std::string& host = entry.primary_pattern.MatchesAllHosts()
+                                  ? entry.secondary_pattern.GetHost()
+                                  : entry.primary_pattern.GetHost();
     if (net::cookie_util::IsDomainMatch(domain, host)) {
       if (entry.GetContentSetting() == CONTENT_SETTING_ALLOW) {
         return false;

@@ -145,7 +145,7 @@ void AnsibleManagementService::ApplyAnsiblePlaybookToDefaultContainer(
 
   vm_tools::cicerone::ApplyAnsiblePlaybookRequest request;
   request.set_owner_id(CryptohomeIdForProfile(profile_));
-  request.set_vm_name(std::move(kCrostiniDefaultContainerName));
+  request.set_vm_name(std::move(kCrostiniDefaultVmName));
   request.set_container_name(std::move(kCrostiniDefaultContainerName));
   request.set_playbook(std::move(playbook));
 

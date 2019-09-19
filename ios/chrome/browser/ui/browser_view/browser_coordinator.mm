@@ -439,6 +439,7 @@
 }
 
 - (void)showAddCreditCard {
+  [self.formInputAccessoryCoordinator reset];
   [self.addCreditCardCoordinator start];
 }
 

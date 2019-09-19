@@ -210,8 +210,7 @@ class VaapiVideoEncodeAccelerator::VP9Accelerator
 };
 
 VaapiVideoEncodeAccelerator::VaapiVideoEncodeAccelerator()
-    : codec_(kUnknownVideoCodec),
-      output_buffer_byte_size_(0),
+    : output_buffer_byte_size_(0),
       state_(kUninitialized),
       encoder_thread_("VAVEAEncoderThread"),
       child_task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -236,8 +235,8 @@ bool VaapiVideoEncodeAccelerator::Initialize(const Config& config,
   client_ptr_factory_.reset(new base::WeakPtrFactory<Client>(client));
   client_ = client_ptr_factory_->GetWeakPtr();
 
-  codec_ = VideoCodecProfileToVideoCodec(config.output_profile);
-  if (codec_ != kCodecH264 && codec_ != kCodecVP8 && codec_ != kCodecVP9) {
+  VideoCodec codec = VideoCodecProfileToVideoCodec(config.output_profile);
+  if (codec != kCodecH264 && codec != kCodecVP8 && codec != kCodecVP9) {
     VLOGF(1) << "Unsupported profile: "
              << GetProfileName(config.output_profile);
     return false;
@@ -317,7 +316,8 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
 
   weak_this_ = weak_this_ptr_factory_.GetWeakPtr();
 
-  switch (codec_) {
+  VideoCodec codec = VideoCodecProfileToVideoCodec(config.output_profile);
+  switch (codec) {
     case kCodecH264:
       encoder_ = std::make_unique<H264Encoder>(
           std::make_unique<H264Accelerator>(this));
@@ -334,7 +334,7 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
       break;
 
     default:
-      NOTREACHED() << "Unsupported codec type " << GetCodecName(codec_);
+      NOTREACHED() << "Unsupported codec type " << GetCodecName(codec);
       return;
   }
 

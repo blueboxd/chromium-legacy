@@ -148,10 +148,8 @@ VideoCaptureImpl::VideoCaptureImpl(media::VideoCaptureSessionId session_id)
   CHECK(!session_id.is_empty());
   DETACH_FROM_THREAD(io_thread_checker_);
 
-  media::mojom::blink::VideoCaptureHostPtr temp_video_capture_host;
   Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
-      mojo::MakeRequest(&temp_video_capture_host));
-  video_capture_host_info_ = temp_video_capture_host.PassInterface();
+      pending_video_capture_host_.InitWithNewPipeAndPassReceiver());
 }
 
 VideoCaptureImpl::~VideoCaptureImpl() {
@@ -588,8 +586,8 @@ media::mojom::blink::VideoCaptureHost* VideoCaptureImpl::GetVideoCaptureHost() {
   if (video_capture_host_for_testing_)
     return video_capture_host_for_testing_;
 
-  if (!video_capture_host_.get())
-    video_capture_host_.Bind(std::move(video_capture_host_info_));
+  if (!video_capture_host_.is_bound())
+    video_capture_host_.Bind(std::move(pending_video_capture_host_));
   return video_capture_host_.get();
 }
 

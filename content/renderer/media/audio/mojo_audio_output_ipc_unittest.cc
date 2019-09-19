@@ -16,7 +16,7 @@
 #include "base/test/task_environment.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_parameters.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -102,7 +102,8 @@ class TestRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
   ~TestRemoteFactory() override {}
 
   void RequestDeviceAuthorization(
-      media::mojom::AudioOutputStreamProviderRequest stream_provider_request,
+      mojo::PendingReceiver<media::mojom::AudioOutputStreamProvider>
+          stream_provider_receiver,
       const base::Optional<base::UnguessableToken>& session_id,
       const std::string& device_id,
       RequestDeviceAuthorizationCallback callback) override {
@@ -113,8 +114,8 @@ class TestRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
       std::move(callback).Run(
           media::OutputDeviceStatus::OUTPUT_DEVICE_STATUS_OK, Params(),
           std::string(kReturnedDeviceId));
-      provider_binding_.emplace(provider_.get(),
-                                std::move(stream_provider_request));
+      provider_receiver_.emplace(provider_.get(),
+                                 std::move(stream_provider_receiver));
     } else {
       std::move(callback).Run(
           media::OutputDeviceStatus::OUTPUT_DEVICE_STATUS_ERROR_NOT_AUTHORIZED,
@@ -133,7 +134,7 @@ class TestRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
                                ? base::Optional<base::UnguessableToken>()
                                : session_id;
     expected_device_id_ = device_id;
-    provider_binding_.reset();
+    provider_receiver_.reset();
     std::swap(provider_, provider);
   }
 
@@ -153,7 +154,7 @@ class TestRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
     receiver_.reset();
     this_remote_.reset();
     receiver_.Bind(this_remote_.BindNewPipeAndPassReceiver());
-    provider_binding_.reset();
+    provider_receiver_.reset();
     provider_.reset();
     expect_request_ = false;
   }
@@ -172,8 +173,8 @@ class TestRemoteFactory : public mojom::RendererAudioOutputStreamFactory {
   mojo::Remote<mojom::RendererAudioOutputStreamFactory> this_remote_;
   mojo::Receiver<mojom::RendererAudioOutputStreamFactory> receiver_{this};
   std::unique_ptr<TestStreamProvider> provider_;
-  base::Optional<mojo::Binding<media::mojom::AudioOutputStreamProvider>>
-      provider_binding_;
+  base::Optional<mojo::Receiver<media::mojom::AudioOutputStreamProvider>>
+      provider_receiver_;
 };
 
 class MockStream : public media::mojom::AudioOutputStream {

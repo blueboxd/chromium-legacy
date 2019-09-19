@@ -19,11 +19,12 @@ class SingleThreadTaskRunner;
 
 namespace blink {
 class MediaStreamVideoTrack;
-class PeerConnectionDependencyFactory;
 class WebRtcVideoTrackSource;
 }
 
 namespace content {
+
+class PeerConnectionDependencyFactory;
 
 // MediaStreamVideoWebRtcSink is an adapter between a
 // blink::MediaStreamVideoTrack object and a webrtc VideoTrack that is
@@ -39,7 +40,7 @@ class CONTENT_EXPORT MediaStreamVideoWebRtcSink
  public:
   MediaStreamVideoWebRtcSink(
       const blink::WebMediaStreamTrack& track,
-      blink::PeerConnectionDependencyFactory* factory,
+      PeerConnectionDependencyFactory* factory,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~MediaStreamVideoWebRtcSink() override;
 

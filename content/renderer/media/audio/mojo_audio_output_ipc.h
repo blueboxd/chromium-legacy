@@ -19,6 +19,7 @@
 #include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "media/mojo/mojom/audio_output_stream.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -72,7 +73,8 @@ class CONTENT_EXPORT MojoAudioOutputIPC
   void ProviderClientBindingDisconnected(uint32_t disconnect_reason,
                                          const std::string& description);
 
-  media::mojom::AudioOutputStreamProviderRequest MakeProviderRequest();
+  mojo::PendingReceiver<media::mojom::AudioOutputStreamProvider>
+  MakeProviderReceiver();
 
   // Tries to acquire a RendererAudioOutputStreamFactory and requests device
   // authorization. On failure to aquire a factory, |callback| is destructed
@@ -94,7 +96,7 @@ class CONTENT_EXPORT MojoAudioOutputIPC
   base::Optional<double> volume_;
 
   mojo::Binding<media::mojom::AudioOutputStreamProviderClient> binding_;
-  media::mojom::AudioOutputStreamProviderPtr stream_provider_;
+  mojo::Remote<media::mojom::AudioOutputStreamProvider> stream_provider_;
   mojo::Remote<media::mojom::AudioOutputStream> stream_;
   media::AudioOutputIPCDelegate* delegate_ = nullptr;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;

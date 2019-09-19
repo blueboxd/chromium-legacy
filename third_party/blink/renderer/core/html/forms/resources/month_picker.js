@@ -45,12 +45,14 @@ class MonthPicker extends HTMLElement {
     const initialSelection = parseDateString(config.currentValue);
     const initialSelectedMonth = initialSelection ? Month.createFromDay(initialSelection.middleDay())
                                            : Month.createFromToday();
+    this.initialValidSelection_ = false;
     if (initialSelectedMonth < this.minimumMonth_) {
       this.selectedMonth_ = this.minimumMonth_;
     } else if (initialSelectedMonth > this.maximumMonth_) {
       this.selectedMonth_ = this.maximumMonth_;
     } else {
       this.selectedMonth_ = initialSelectedMonth;
+      this.initialValidSelection_ = initialSelection != null;
     }
   }
 
@@ -65,6 +67,9 @@ class MonthPicker extends HTMLElement {
       this.yearListView_.scrubbyScrollBar.element.style.left = MonthPicker.YearWidth + 'px';
     }
     this.yearListView_.element.style.top = MonthPicker.YearPadding + 'px';
+    if (this.initialValidSelection_) {
+      this.yearListView_.setSelectedMonth(this.selectedMonth_);
+    }
     this.yearListView_.show(this.selectedMonth_)
     this.yearListView_.on(YearListView.EventTypeYearListViewDidSelectMonth, this.onYearListViewDidSelectMonth_);
     this.yearListView_.on(YearListView.EventTypeYearListViewDidHide, this.onYearListViewDidHide_);

@@ -18,7 +18,6 @@
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker_mode.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom-blink.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
@@ -29,8 +28,6 @@
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_proxy.h"
 #include "third_party/blink/public/web/web_embedded_worker_start_data.h"
 #include "third_party/blink/public/web/web_settings.h"
-#include "third_party/blink/renderer/modules/service_worker/service_worker_installed_scripts_manager.h"
-#include "third_party/blink/renderer/modules/service_worker/thread_safe_script_container.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
@@ -194,41 +191,11 @@ class MockServiceWorkerContextClient final
   base::WaitableEvent classic_script_load_failure_event_;
 };
 
-class MockServiceWorkerInstalledScriptsManager
-    : public ServiceWorkerInstalledScriptsManager {
- public:
-  MockServiceWorkerInstalledScriptsManager()
-      : ServiceWorkerInstalledScriptsManager(
-            Vector<KURL>() /* installed_urls */,
-            mojo::PendingReceiver<
-                mojom::blink::ServiceWorkerInstalledScriptsManager>(
-                mojo::MessagePipe().handle1),
-            mojo::PendingRemote<
-                mojom::blink::ServiceWorkerInstalledScriptsManagerHost>(
-                mojo::MessagePipe().handle0,
-                mojom::blink::ServiceWorkerInstalledScriptsManagerHost::
-                    Version_),
-            // Pass a temporary task runner to ensure
-            // ServiceWorkerInstalledScriptsManager construction succeeds.
-            Platform::Current()
-                ->CreateThread(ThreadCreationParams(WebThreadType::kTestThread)
-                                   .SetThreadNameForTest("io thread"))
-                ->GetTaskRunner()) {}
-  MOCK_CONST_METHOD1(IsScriptInstalled, bool(const KURL& script_url));
-  MOCK_METHOD1(GetRawScriptData,
-               std::unique_ptr<ThreadSafeScriptContainer::RawScriptData>(
-                   const KURL& script_url));
-};
-
 class WebEmbeddedWorkerImplTest : public testing::Test {
  protected:
   void SetUp() override {
-    auto installed_scripts_manager =
-        std::make_unique<MockServiceWorkerInstalledScriptsManager>();
-    mock_installed_scripts_manager_ = installed_scripts_manager.get();
     mock_client_ = std::make_unique<MockServiceWorkerContextClient>();
-    worker_ = WebEmbeddedWorkerImpl::CreateForTesting(
-        mock_client_.get(), std::move(installed_scripts_manager));
+    worker_ = WebEmbeddedWorkerImpl::CreateForTesting(mock_client_.get());
 
     WebURL script_url =
         url_test_helpers::ToKURL("https://www.example.com/sw.js");
@@ -254,14 +221,17 @@ class WebEmbeddedWorkerImplTest : public testing::Test {
 
   WebEmbeddedWorkerStartData start_data_;
   std::unique_ptr<MockServiceWorkerContextClient> mock_client_;
-  MockServiceWorkerInstalledScriptsManager* mock_installed_scripts_manager_;
   std::unique_ptr<WebEmbeddedWorkerImpl> worker_;
 };
 
 }  // namespace
 
 TEST_F(WebEmbeddedWorkerImplTest, TerminateSoonAfterStart) {
-  worker_->StartWorkerContext(start_data_, Thread::Current()->GetTaskRunner());
+  worker_->StartWorkerContext(
+      start_data_,
+      /*installed_scripts_manager_params=*/nullptr,
+      /*content_settings_proxy=*/mojo::ScopedMessagePipeHandle(),
+      Thread::Current()->GetTaskRunner());
   testing::Mock::VerifyAndClearExpectations(mock_client_.get());
 
   worker_->TerminateWorkerContext();
@@ -272,7 +242,11 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateSoonAfterStart) {
 TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileWaitingForDebugger) {
   start_data_.wait_for_debugger_mode =
       WebEmbeddedWorkerStartData::kWaitForDebugger;
-  worker_->StartWorkerContext(start_data_, Thread::Current()->GetTaskRunner());
+  worker_->StartWorkerContext(
+      start_data_,
+      /*installed_scripts_manager_params=*/nullptr,
+      /*content_settings_proxy=*/mojo::ScopedMessagePipeHandle(),
+      Thread::Current()->GetTaskRunner());
   testing::Mock::VerifyAndClearExpectations(mock_client_.get());
 
   worker_->TerminateWorkerContext();
@@ -281,13 +255,12 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileWaitingForDebugger) {
 
 TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileLoadingScript) {
   // Load the shadow page.
-  EXPECT_CALL(*mock_installed_scripts_manager_,
-              IsScriptInstalled(KURL(start_data_.script_url)))
-      .Times(testing::AtLeast(1))
-      .WillRepeatedly(testing::Return(false));
-  worker_->StartWorkerContext(start_data_, Thread::Current()->GetTaskRunner());
+  worker_->StartWorkerContext(
+      start_data_,
+      /*installed_scripts_manager_params=*/nullptr,
+      /*content_settings_proxy=*/mojo::ScopedMessagePipeHandle(),
+      Thread::Current()->GetTaskRunner());
   testing::Mock::VerifyAndClearExpectations(mock_client_.get());
-  testing::Mock::VerifyAndClearExpectations(mock_installed_scripts_manager_);
 
   // Terminate before finishing the script load.
   worker_->TerminateWorkerContext();
@@ -305,14 +278,14 @@ TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound) {
   Platform::Current()->GetURLLoaderMockFactory()->RegisterErrorURL(
       script_url, response, error);
   start_data_.script_url = script_url;
-  EXPECT_CALL(*mock_installed_scripts_manager_,
-              IsScriptInstalled(KURL(start_data_.script_url)))
-      .Times(testing::AtLeast(1))
-      .WillRepeatedly(testing::Return(false));
+
   // Start worker and load the script.
-  worker_->StartWorkerContext(start_data_, Thread::Current()->GetTaskRunner());
+  worker_->StartWorkerContext(
+      start_data_,
+      /*installed_scripts_manager_params=*/nullptr,
+      /*content_settings_proxy=*/mojo::ScopedMessagePipeHandle(),
+      Thread::Current()->GetTaskRunner());
   testing::Mock::VerifyAndClearExpectations(mock_client_.get());
-  testing::Mock::VerifyAndClearExpectations(mock_installed_scripts_manager_);
 
   mock_client_->WaitUntilFailedToLoadClassicScript();
 

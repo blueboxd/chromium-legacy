@@ -57,14 +57,13 @@ namespace {
 
 class InfoBarManagerObserverBridge : infobars::InfoBarManager::Observer {
  public:
-  InfoBarManagerObserverBridge(
-      infobars::InfoBarManager* infoBarManager,
-      id<InfoBarManagerObserverBridgeProtocol> observer)
+  InfoBarManagerObserverBridge(infobars::InfoBarManager* infoBarManager,
+                               id<InfoBarManagerObserverBridgeProtocol> owner)
       : infobars::InfoBarManager::Observer(),
         manager_(infoBarManager),
-        observer_(observer) {
+        owner_(owner) {
     DCHECK(infoBarManager);
-    DCHECK(observer);
+    DCHECK(owner);
     manager_->AddObserver(this);
   }
 
@@ -74,12 +73,12 @@ class InfoBarManagerObserverBridge : infobars::InfoBarManager::Observer {
   }
 
   void OnInfoBarRemoved(infobars::InfoBar* infobar, bool animate) override {
-    [observer_ infoBarRemoved:infobar];
+    [owner_ infoBarRemoved:infobar];
   }
 
   void OnInfoBarReplaced(infobars::InfoBar* old_infobar,
                          infobars::InfoBar* new_infobar) override {
-    [observer_ infoBarRemoved:old_infobar];
+    [owner_ infoBarRemoved:old_infobar];
   }
 
   void OnManagerShuttingDown(infobars::InfoBarManager* manager) override {
@@ -89,7 +88,7 @@ class InfoBarManagerObserverBridge : infobars::InfoBarManager::Observer {
 
  private:
   infobars::InfoBarManager* manager_;
-  id<InfoBarManagerObserverBridgeProtocol> observer_;
+  __weak id<InfoBarManagerObserverBridgeProtocol> owner_;
 };
 
 // SessionCrashedInfoBarDelegate ----------------------------------------------

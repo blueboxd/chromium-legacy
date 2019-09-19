@@ -471,7 +471,7 @@ void KeyframeEffect::DetachTarget(Animation* animation) {
   ClearEffects();
 }
 
-double KeyframeEffect::CalculateTimeToEffectChange(
+AnimationTimeDelta KeyframeEffect::CalculateTimeToEffectChange(
     bool forwards,
     double local_time,
     double time_to_next_iteration) const {
@@ -484,34 +484,37 @@ double KeyframeEffect::CalculateTimeToEffectChange(
 
   switch (GetPhase()) {
     case Timing::kPhaseNone:
-      return std::numeric_limits<double>::infinity();
+      return AnimationTimeDelta::Max();
     case Timing::kPhaseBefore:
       DCHECK_GE(start_time, local_time);
-      return forwards ? start_time - local_time
-                      : std::numeric_limits<double>::infinity();
+      return forwards
+                 ? AnimationTimeDelta::FromSecondsD(start_time - local_time)
+                 : AnimationTimeDelta::Max();
     case Timing::kPhaseActive:
       if (forwards) {
         // Need service to apply fill / fire events.
         const double time_to_end = after_time - local_time;
         if (RequiresIterationEvents()) {
-          return std::min(time_to_end, time_to_next_iteration);
+          return AnimationTimeDelta::FromSecondsD(
+              std::min(time_to_end, time_to_next_iteration));
         }
-        return time_to_end;
+        return AnimationTimeDelta::FromSecondsD(time_to_end);
       }
-      return 0;
+      return {};
     case Timing::kPhaseAfter:
       DCHECK_GE(local_time, after_time);
       if (forwards) {
         // If an animation has a positive-valued end delay, we need an
         // additional tick at the end time to ensure that the finished event is
         // delivered.
-        return end_time > local_time ? end_time - local_time
-                                     : std::numeric_limits<double>::infinity();
+        return end_time > local_time
+                   ? AnimationTimeDelta::FromSecondsD(end_time - local_time)
+                   : AnimationTimeDelta::Max();
       }
-      return local_time - after_time;
+      return AnimationTimeDelta::FromSecondsD(local_time - after_time);
     default:
       NOTREACHED();
-      return std::numeric_limits<double>::infinity();
+      return AnimationTimeDelta::Max();
   }
 }
 

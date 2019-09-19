@@ -14,7 +14,9 @@
 #include "media/base/video_frame.h"
 #include "media/capture/mojom/video_capture.mojom-blink.h"
 #include "media/capture/video_capture_types.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/media/video_capture.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
@@ -130,11 +132,12 @@ class PLATFORM_EXPORT VideoCaptureImpl
   const base::UnguessableToken device_id_;
   const base::UnguessableToken session_id_;
 
-  // |video_capture_host_| is an IO-thread InterfacePtr to a remote service
-  // implementation and is created by binding |video_capture_host_info_|,
+  // |video_capture_host_| is an IO-thread mojo::Remote to a remote service
+  // implementation and is created by binding |pending_video_capture_host_|,
   // unless a |video_capture_host_for_testing_| has been injected.
-  media::mojom::blink::VideoCaptureHostPtrInfo video_capture_host_info_;
-  media::mojom::blink::VideoCaptureHostPtr video_capture_host_;
+  mojo::PendingRemote<media::mojom::blink::VideoCaptureHost>
+      pending_video_capture_host_;
+  mojo::Remote<media::mojom::blink::VideoCaptureHost> video_capture_host_;
   media::mojom::blink::VideoCaptureHost* video_capture_host_for_testing_;
 
   mojo::Receiver<media::mojom::blink::VideoCaptureObserver> observer_receiver_{

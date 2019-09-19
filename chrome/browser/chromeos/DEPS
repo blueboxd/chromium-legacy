@@ -6,6 +6,7 @@ include_rules = [
 
   "+chrome/services/app_service/public",
   "+chrome/services/wilco_dtc_supportd/public",
+  "+components/guest_os",
   "+cros",
   "+dbus",
   "+device/bluetooth",

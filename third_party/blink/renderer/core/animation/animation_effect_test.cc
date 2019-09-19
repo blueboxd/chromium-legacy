@@ -93,13 +93,13 @@ class TestAnimationEffect : public AnimationEffect {
   TestAnimationEffectEventDelegate* EventDelegate() {
     return event_delegate_.Get();
   }
-  double CalculateTimeToEffectChange(
+  AnimationTimeDelta CalculateTimeToEffectChange(
       bool forwards,
       double local_time,
       double time_to_next_iteration) const override {
     local_time_ = local_time;
     time_to_next_iteration_ = time_to_next_iteration;
-    return -1;
+    return AnimationTimeDelta::FromSecondsD(-1);
   }
   double TakeLocalTime() {
     const double result = local_time_;

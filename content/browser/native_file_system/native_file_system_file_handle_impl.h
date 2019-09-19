@@ -10,6 +10,7 @@
 #include "content/browser/native_file_system/native_file_system_handle_base.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_file_handle.mojom.h"
 
@@ -46,7 +47,8 @@ class CONTENT_EXPORT NativeFileSystemFileHandleImpl
   void CreateFileWriter(bool keep_existing_data,
                         CreateFileWriterCallback callback) override;
   void Transfer(
-      blink::mojom::NativeFileSystemTransferTokenRequest token) override;
+      mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken> token)
+      override;
 
   void set_max_swap_files_for_testing(int max) { max_swap_files_ = max; }
 

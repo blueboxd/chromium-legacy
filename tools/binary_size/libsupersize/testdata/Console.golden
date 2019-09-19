@@ -12,7 +12,7 @@ DeltaSymbolGroup (extends SymbolGroup): CountsByDiffStatus, WhereDiffStatusIs, d
 
 canned_queries: CategorizeByChromeComponent, CategorizeGenerated, LargeFiles, PakByPath, StaticInitializers, TemplatesByName
 
-Functions: Csv(), Diff(), Disassemble(), ExpandRegex(), Print(), ReadStringLiterals(), ShowExamples(), SizeStats()
+Functions: Csv(), Diff(), Disassemble(), ExpandRegex(), Print(), ReadStringLiterals(), SaveNdjson(), ShowExamples(), SizeStats()
 Variables:
   printed: List of objects passed to Print().
   size_info: Loaded from {redacted}
@@ -48,6 +48,10 @@ Print(print_syms - print_syms.WherePathMatches(r"^components/"))
 
 # Diff two .size files and save result to a file:
 Print(Diff(size_info1, size_info2), to_file="output.txt")
+
+# Save a .ndjson containing only the filtered symbols
+filtered_symbols = size_info.raw_symbols.Filter(lambda l: l.IsPak())
+SaveNdjson(filtered_symbols, size_info, to_file="oneoff_paks.ndjson")
 
 # View per-component breakdowns, then drill into the last entry.
 c = canned_queries.CategorizeByChromeComponent()

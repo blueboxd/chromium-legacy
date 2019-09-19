@@ -405,11 +405,10 @@ class ProgressCenterPanel {
     let panelItem = this.feedbackHost_.findPanelItemById(item.id);
     if (newItem) {
       if (!panelItem) {
-        panelItem = this.feedbackHost_.addPanelItem(item.id);
-        panelItem.hidden = true;
+        panelItem = this.feedbackHost_.createPanelItem(item.id);
         // Show the panel only for long running operations.
         setTimeout(() => {
-          panelItem.hidden = false;
+          this.feedbackHost_.attachPanelItem(panelItem);
         }, this.PENDING_TIME_MS_);
         panelItem.panelType = panelItem.panelTypeProgress;
         panelItem.userData = {

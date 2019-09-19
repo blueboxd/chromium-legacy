@@ -31,7 +31,11 @@
 #include <memory>
 #include <string>
 
+#include "services/network/public/cpp/cors/cors.h"
+#include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_response.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_info.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_timing.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -76,14 +80,20 @@ ResourceResponse::SignedCertificateTimestamp::IsolatedCopy() const {
       signature_data_.IsolatedCopy());
 }
 
-ResourceResponse::ResourceResponse() : is_null_(true) {}
+ResourceResponse::ResourceResponse()
+    : is_null_(true),
+      response_type_(network::mojom::FetchResponseType::kDefault) {}
 
 ResourceResponse::ResourceResponse(const KURL& current_request_url)
-    : current_request_url_(current_request_url), is_null_(false) {}
+    : current_request_url_(current_request_url),
+      is_null_(false),
+      response_type_(network::mojom::FetchResponseType::kDefault) {}
 
 ResourceResponse::ResourceResponse(const ResourceResponse&) = default;
 ResourceResponse& ResourceResponse::operator=(const ResourceResponse&) =
     default;
+
+ResourceResponse::~ResourceResponse() = default;
 
 bool ResourceResponse::IsHTTP() const {
   return current_request_url_.ProtocolIsInHTTPFamily();
@@ -227,6 +237,14 @@ void ResourceResponse::SetSecurityDetails(
   security_details_ = SecurityDetails(
       protocol, key_exchange, key_exchange_group, cipher, mac, subject_name,
       san_list, issuer, valid_from, valid_to, certificate, sct_list);
+}
+
+bool ResourceResponse::IsCorsSameOrigin() const {
+  return network::cors::IsCorsSameOriginResponseType(response_type_);
+}
+
+bool ResourceResponse::IsCorsCrossOrigin() const {
+  return network::cors::IsCorsCrossOriginResponseType(response_type_);
 }
 
 void ResourceResponse::SetHttpHeaderField(const AtomicString& name,

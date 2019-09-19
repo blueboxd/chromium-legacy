@@ -51,6 +51,7 @@ include_rules = [
   "+components/certificate_transparency",
   "+components/chrome_cleaner/public",
   "+components/chrome_cleaner/test",
+  "+components/chromeos_camera",
   "+components/cloud_devices/common",
   "+components/component_updater",
   "+components/consent_auditor",

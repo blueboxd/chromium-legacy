@@ -15,18 +15,35 @@ will be shown instead (i.e. by changing the focus).
 
 ## Folder Structure
 
-#### /
+#### java/
 
 The root folder contains the public interface of this component and data that is
 used to fill it with content, e.g. Crendentials. This folder also contains the
-code to instantiate the component.
+factory to instantiate the component. The factory has two implementations:
+
+* an auto-generated one returning null which is used in tests and targets that
+  don't directly depend on this component
+* one that provides the actual implementation
+
+Add `chrome/browser/touch_to_fill/android:public_java` as dependency to use the
+interface and classes defined here.
+
+#### java/internal/
+
+Contains the actual implementation. Don't try to use any class defined here
+outside of this package. If you need access to any method, consider making it
+part of the public interface as defined in `TouchToFillComponent`
+
+This folder contains a separate [README](internal/README.md) that explains in
+detail how the architecture looks like and how to extend the component further.
+
 
 ## Example usage
 
 ``` java
 
-// Use factory to instantiate the component:
-TouchToFillComponent component = TouchToFillComponentFactory.createComponent();
+// Currently, you need access to internal/ to instantiate the component:
+TouchToFillComponent component = new TouchToFillCoordinator(/*...*/);
 
 component.initialize(activity, activity.getBottomSheetController(), () -> {
   // Things to do when the component is dismissed.

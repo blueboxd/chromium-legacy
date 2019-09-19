@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/manifest/manifest_fetcher.h"
 
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"

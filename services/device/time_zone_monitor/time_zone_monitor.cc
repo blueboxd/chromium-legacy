@@ -23,8 +23,9 @@ TimeZoneMonitor::~TimeZoneMonitor() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void TimeZoneMonitor::Bind(device::mojom::TimeZoneMonitorRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void TimeZoneMonitor::Bind(
+    mojo::PendingReceiver<device::mojom::TimeZoneMonitor> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void TimeZoneMonitor::NotifyClients() {
@@ -60,16 +61,13 @@ void TimeZoneMonitor::NotifyClients() {
   icu::TimeZone::adoptDefault(new_zone.release());
 #endif
 
-  clients_.ForAllPtrs(
-      [&zone_id_str](device::mojom::TimeZoneMonitorClient* client) {
-        client->OnTimeZoneChange(zone_id_str);
-      });
+  for (auto& client : clients_)
+    client->OnTimeZoneChange(zone_id_str);
 }
 
 void TimeZoneMonitor::AddClient(
     mojo::PendingRemote<device::mojom::TimeZoneMonitorClient> client) {
-  clients_.AddPtr(mojo::InterfacePtr<device::mojom::TimeZoneMonitorClient>(
-      std::move(client)));
+  clients_.Add(std::move(client));
 }
 
 }  // namespace device

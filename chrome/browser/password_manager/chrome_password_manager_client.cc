@@ -150,7 +150,6 @@ const syncer::SyncService* GetSyncService(Profile* profile) {
   return nullptr;
 }
 
-#if !defined(OS_ANDROID)
 // Adds |observer| to the input observers of |widget_host|.
 void AddToWidgetInputEventObservers(
     content::RenderWidgetHost* widget_host,
@@ -158,10 +157,14 @@ void AddToWidgetInputEventObservers(
   // Since Widget API doesn't allow to check whether the observer is already
   // added, the observer is removed and added again, to ensure that it is added
   // only once.
+#if defined(OS_ANDROID)
+  widget_host->RemoveImeTextCommittedEventObserver(observer);
+  widget_host->AddImeTextCommittedEventObserver(observer);
+#else
   widget_host->RemoveInputEventObserver(observer);
   widget_host->AddInputEventObserver(observer);
-}
 #endif
+}
 
 #if defined(OS_ANDROID)
 void HideSavePasswordInfobar(content::WebContents* web_contents) {
@@ -641,14 +644,14 @@ void ChromePasswordManagerClient::DidFinishNavigation(
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if !defined(OS_ANDROID)
   password_reuse_detection_manager_.DidNavigateMainFrame(GetMainFrameURL());
+#endif  // !defined(OS_ANDROID)
   AddToWidgetInputEventObservers(
       web_contents()->GetRenderViewHost()->GetWidget(), this);
-#else   // defined(OS_ANDROID)
+#if defined(OS_ANDROID)
   credential_cache_.ClearCredentials();
 #endif  // defined(OS_ANDROID)
 }
 
-#if !defined(OS_ANDROID)
 void ChromePasswordManagerClient::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
   // TODO(drubery): We should handle input events on subframes separately, so
@@ -657,6 +660,13 @@ void ChromePasswordManagerClient::RenderFrameCreated(
   // reuse on the main frame URL.
   AddToWidgetInputEventObservers(
       render_frame_host->GetView()->GetRenderWidgetHost(), this);
+}
+
+#if defined(OS_ANDROID)
+void ChromePasswordManagerClient::OnImeTextCommittedEvent(
+    const base::string16& text_str) {
+  // TODO(crbug.com/1004842): Enable password reuse detection
+  // password_reuse_detection_manager_.OnKeyPressed(text_str);
 }
 #endif
 

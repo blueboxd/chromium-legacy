@@ -28,6 +28,7 @@ enum WebSandboxFlags {
   kPresentationController                =  8192, // 1 << 13
   kTopNavigationByUserActivation         = 16384, // 1 << 14
   kDownloads                             = 32768, // 1 << 15
+  kStorageAccessByUserActivation         = 65536, // 1 << 16
 };
 
 // This enum is used to distinguish between report-only directives and enforcing

@@ -323,8 +323,9 @@ void PasswordGenerationAgentTest::BindPasswordManagerDriver(
 
 void PasswordGenerationAgentTest::BindPasswordManagerClient(
     mojo::ScopedInterfaceEndpointHandle handle) {
-  fake_pw_client_.BindRequest(
-      mojom::PasswordGenerationDriverAssociatedRequest(std::move(handle)));
+  fake_pw_client_.BindReceiver(
+      mojo::PendingAssociatedReceiver<mojom::PasswordGenerationDriver>(
+          std::move(handle)));
 }
 
 class PasswordGenerationAgentTestForHtmlAnnotation

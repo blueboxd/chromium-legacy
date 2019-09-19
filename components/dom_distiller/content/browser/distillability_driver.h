@@ -10,11 +10,12 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "components/dom_distiller/content/browser/distillable_page_utils.h"
 #include "components/dom_distiller/content/common/mojom/distillability_service.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace dom_distiller {
@@ -25,9 +26,13 @@ class DistillabilityDriver
       public content::WebContentsUserData<DistillabilityDriver> {
  public:
   ~DistillabilityDriver() override;
-  void CreateDistillabilityService(mojom::DistillabilityServiceRequest request);
+  void CreateDistillabilityService(
+      mojo::PendingReceiver<mojom::DistillabilityService> receiver);
 
   void AddObserver(DistillabilityObserver* observer);
+  base::Optional<DistillabilityResult> GetLatestResult() const {
+    return latest_result_;
+  }
 
   // content::WebContentsObserver implementation.
   void OnInterfaceRequestFromFrame(
@@ -43,6 +48,12 @@ class DistillabilityDriver
   void OnDistillability(const DistillabilityResult& result);
 
   base::ObserverList<DistillabilityObserver> observers_;
+
+  // The most recently received result from the distillability service.
+  //
+  // TODO(https://crbug.com/952042): Set this to nullopt when navigating to a
+  // new page, accounting for same-document navigation.
+  base::Optional<DistillabilityResult> latest_result_;
 
   service_manager::BinderRegistry frame_interfaces_;
 

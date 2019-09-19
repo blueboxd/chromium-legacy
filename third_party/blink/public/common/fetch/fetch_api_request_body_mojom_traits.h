@@ -11,7 +11,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
-#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-forward.h"
 
 namespace mojo {
 

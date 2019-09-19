@@ -14,7 +14,6 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "components/url_formatter/elide_url.h"
-#include "content/app/strings/grit/content_strings.h"
 #include "content/browser/media/session/audio_focus_delegate.h"
 #include "content/browser/media/session/media_session_controller.h"
 #include "content/browser/media/session/media_session_player_observer.h"
@@ -30,6 +29,7 @@
 #include "media/base/media_content_type.h"
 #include "services/media_session/public/cpp/media_image_manager.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "ui/gfx/favicon_size.h"
 
 #if defined(OS_ANDROID)

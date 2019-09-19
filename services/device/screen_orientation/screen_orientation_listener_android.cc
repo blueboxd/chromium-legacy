@@ -6,17 +6,17 @@
 
 #include "base/android/jni_android.h"
 #include "base/message_loop/message_loop_current.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/device/screen_orientation/screen_orientation_jni_headers/ScreenOrientationListener_jni.h"
 
 namespace device {
 
 // static
 void ScreenOrientationListenerAndroid::Create(
-    mojom::ScreenOrientationListenerRequest request) {
-  mojo::MakeStrongBinding(
+    mojo::PendingReceiver<mojom::ScreenOrientationListener> receiver) {
+  mojo::MakeSelfOwnedReceiver(
       base::WrapUnique(new ScreenOrientationListenerAndroid()),
-      std::move(request));
+      std::move(receiver));
 }
 
 ScreenOrientationListenerAndroid::ScreenOrientationListenerAndroid() = default;

@@ -18,7 +18,7 @@ class WorkletModuleResponsesMap;
 
 // A proxy for LayoutWorklet to talk to LayoutWorkletGlobalScope.
 class CORE_EXPORT LayoutWorkletGlobalScopeProxy
-    : public GarbageCollectedFinalized<LayoutWorkletGlobalScopeProxy>,
+    : public GarbageCollected<LayoutWorkletGlobalScopeProxy>,
       public WorkletGlobalScopeProxy {
   USING_GARBAGE_COLLECTED_MIXIN(LayoutWorkletGlobalScopeProxy);
 

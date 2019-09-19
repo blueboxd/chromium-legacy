@@ -63,6 +63,8 @@ below it the dashboard shows graphs of all the alerts checked in that table.
     * If one of the alerts already has a bug id, click "existing bug" and use
       that bug id.
     * Otherwise click "new bug".
+    * Only add a description if you have additional context. Otherwise a default
+      description will be automatically added when left blank.
 5. **Look at the revision range** for the regression. You can see it in the
    tooltip on the graph. If you see any likely culprits, cc the authors on the
    bug.

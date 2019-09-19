@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/browser.h"
@@ -30,6 +31,7 @@ using ::testing::_;
 using ::testing::AllOf;
 using ::testing::Field;
 using ::testing::Not;
+using ::testing::Optional;
 
 // This is essentially an "enum" with human-readable strings (e.g. "adaboost",
 // "none") as values.
@@ -138,6 +140,8 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAlways,
         .WillOnce(testing::InvokeWithoutArgs(
             this, &DistillablePageUtilsBrowserTestOption::QuitSoon));
     NavigateAndWait(kAllPaths[i], base::TimeDelta());
+    EXPECT_THAT(GetLatestResult(web_contents_),
+                Optional(AllOf(IsDistillable(), IsLast())));
   }
 }
 
@@ -145,6 +149,7 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAlways,
                        LocalUrlsDoNotCallObserver) {
   EXPECT_CALL(holder_, OnResult(_)).Times(0);
   NavigateAndWait("about:blank", kWaitNoExpectedCall);
+  EXPECT_EQ(GetLatestResult(web_contents_), base::nullopt);
 }
 
 using DistillablePageUtilsBrowserTestNone =
@@ -153,6 +158,7 @@ using DistillablePageUtilsBrowserTestNone =
 IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestNone, NeverCallObserver) {
   EXPECT_CALL(holder_, OnResult(_)).Times(0);
   NavigateAndWait(kSimpleArticlePath, kWaitNoExpectedCall);
+  EXPECT_EQ(GetLatestResult(web_contents_), base::nullopt);
 }
 
 using DistillablePageUtilsBrowserTestOGArticle =
@@ -164,6 +170,8 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestOGArticle,
       .WillOnce(testing::InvokeWithoutArgs(
           this, &DistillablePageUtilsBrowserTestOption::QuitSoon));
   NavigateAndWait(kArticlePath, base::TimeDelta());
+  EXPECT_THAT(GetLatestResult(web_contents_),
+              Optional(AllOf(IsDistillable(), IsLast())));
 }
 
 IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestOGArticle,
@@ -172,6 +180,8 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestOGArticle,
       .WillOnce(testing::InvokeWithoutArgs(
           this, &DistillablePageUtilsBrowserTestOption::QuitSoon));
   NavigateAndWait(kNonArticlePath, base::TimeDelta());
+  EXPECT_THAT(GetLatestResult(web_contents_),
+              Optional(AllOf(Not(IsDistillable()), IsLast())));
 }
 
 using DistillablePageUtilsBrowserTestAdaboost =
@@ -190,6 +200,10 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAdaboost,
         .WillOnce(testing::InvokeWithoutArgs(
             this, &DistillablePageUtilsBrowserTestOption::QuitSoon));
     NavigateAndWait(paths[i], base::TimeDelta());
+
+    EXPECT_THAT(
+        GetLatestResult(web_contents_),
+        Optional(AllOf(IsDistillable(), IsLast(), Not(IsMobileFriendly()))));
   }
 }
 
@@ -204,6 +218,9 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAdaboost,
       .WillOnce(testing::InvokeWithoutArgs(
           this, &DistillablePageUtilsBrowserTestOption::QuitSoon));
   NavigateAndWait(kNonArticlePath, base::TimeDelta());
+  EXPECT_THAT(
+      GetLatestResult(web_contents_),
+      Optional(AllOf(Not(IsDistillable()), IsLast(), Not(IsMobileFriendly()))));
 }
 
 using DistillablePageUtilsBrowserTestAllArticles =
@@ -222,6 +239,9 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAllArticles,
         .WillOnce(testing::InvokeWithoutArgs(
             this, &DistillablePageUtilsBrowserTestOption::QuitSoon));
     NavigateAndWait(paths[i], base::TimeDelta());
+    EXPECT_THAT(
+        GetLatestResult(web_contents_),
+        Optional(AllOf(IsDistillable(), IsLast(), Not(IsMobileFriendly()))));
   }
 }
 
@@ -236,6 +256,9 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAllArticles,
       .WillOnce(testing::InvokeWithoutArgs(
           this, &DistillablePageUtilsBrowserTestOption::QuitSoon));
   NavigateAndWait(kNonArticlePath, base::TimeDelta());
+  EXPECT_THAT(
+      GetLatestResult(web_contents_),
+      Optional(AllOf(Not(IsDistillable()), IsLast(), Not(IsMobileFriendly()))));
 }
 
 }  // namespace dom_distiller

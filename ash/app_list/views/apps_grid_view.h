@@ -259,7 +259,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void OnFolderItemRemoved();
 
   // Updates the opacity of all the items in the grid during dragging.
-  void UpdateOpacity();
+  void UpdateOpacity(bool restore_opacity);
 
   // Passes scroll information from AppListView to the PaginationController,
   // returns true if this scroll would change pages.

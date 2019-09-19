@@ -877,6 +877,10 @@ bool LayoutTheme::ShouldOpenPickerWithF4Key() const {
 
 bool LayoutTheme::SupportsCalendarPicker(const AtomicString& type) const {
   DCHECK(RuntimeEnabledFeatures::InputMultipleFieldsUIEnabled());
+  if (RuntimeEnabledFeatures::FormControlsRefreshEnabled() &&
+      type == input_type_names::kTime)
+    return true;
+
   return type == input_type_names::kDate ||
          type == input_type_names::kDatetime ||
          type == input_type_names::kDatetimeLocal ||

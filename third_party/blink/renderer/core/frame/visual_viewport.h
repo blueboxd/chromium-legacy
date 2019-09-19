@@ -100,7 +100,7 @@ struct PaintPropertyTreeBuilderFragmentContext;
 //  +- vertical_scrollbar_effect_node_
 //
 class CORE_EXPORT VisualViewport final
-    : public GarbageCollectedFinalized<VisualViewport>,
+    : public GarbageCollected<VisualViewport>,
       public GraphicsLayerClient,
       public ScrollableArea {
   USING_GARBAGE_COLLECTED_MIXIN(VisualViewport);

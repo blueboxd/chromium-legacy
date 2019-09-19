@@ -97,14 +97,15 @@ TEST_F(DocumentLayoutTest, DefaultConstructor) {
 }
 
 TEST_F(DocumentLayoutTest, SetOptionsDoesNotRecomputeLayout) {
-  layout_.set_size(pp::Size(1, 2));
+  layout_.ComputeSingleViewLayout({pp::Size(100, 200)});
+  EXPECT_PRED2(PpSizeEq, layout_.size(), pp::Size(100, 200));
 
   DocumentLayout::Options options;
   options.RotatePagesClockwise();
   layout_.set_options(options);
   EXPECT_EQ(layout_.options().default_page_orientation(),
             PageOrientation::kClockwise90);
-  EXPECT_PRED2(PpSizeEq, layout_.size(), pp::Size(1, 2));
+  EXPECT_PRED2(PpSizeEq, layout_.size(), pp::Size(100, 200));
 }
 
 TEST_F(DocumentLayoutTest, ComputeSingleViewLayout) {

@@ -34,7 +34,7 @@ constexpr const char* kRGBA8ImagePixelFormatName = "uint8";
 constexpr const char* kRGBA16ImagePixelFormatName = "uint16";
 
 class CORE_EXPORT CanvasAsyncBlobCreator
-    : public GarbageCollectedFinalized<CanvasAsyncBlobCreator> {
+    : public GarbageCollected<CanvasAsyncBlobCreator> {
  public:
   // This enum is used to back an UMA histogram, and should therefore be treated
   // as append-only. Idle tasks are not implemented for some image types.

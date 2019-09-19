@@ -44,6 +44,7 @@ class NewTabButton;
 class StackedTabStripLayout;
 class Tab;
 class TabGroupHeader;
+class TabGroupUnderline;
 class TabGroupId;
 class TabHoverCardBubbleView;
 class TabStripController;
@@ -196,6 +197,9 @@ class TabStrip : public views::AccessiblePaneView,
   // Returns the Tab at |index|.
   // TODO(pkasting): Make const correct
   Tab* tab_at(int index) const { return tabs_.view_at(index); }
+
+  // Returns the TabGroupHeader with ID |id|.
+  TabGroupHeader* group_header(TabGroupId id) { return GetGroupHeaders()[id]; }
 
   // Returns the NewTabButton.
   NewTabButton* new_tab_button() { return new_tab_button_; }
@@ -582,6 +586,9 @@ class TabStrip : public views::AccessiblePaneView,
 
   // Map associating each group to its TabGroupHeader instance.
   std::map<TabGroupId, std::unique_ptr<TabGroupHeader>> group_headers_;
+
+  // Map associating each group to its TabGroupUnderline instance.
+  std::map<TabGroupId, std::unique_ptr<TabGroupUnderline>> group_underlines_;
 
   // The view tracker is used to keep track of if the hover card has been
   // destroyed by its widget.

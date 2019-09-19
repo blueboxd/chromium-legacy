@@ -24,7 +24,7 @@ class HTMLAnchorElement;
 // AnchorElementMetricsSender is responsible to send anchor element metrics to
 // the browser process for a given document.
 class CORE_EXPORT AnchorElementMetricsSender final
-    : public GarbageCollectedFinalized<AnchorElementMetricsSender>,
+    : public GarbageCollected<AnchorElementMetricsSender>,
       public LocalFrameView::LifecycleNotificationObserver,
       public Supplement<Document> {
   USING_GARBAGE_COLLECTED_MIXIN(AnchorElementMetricsSender);

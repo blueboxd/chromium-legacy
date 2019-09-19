@@ -15,6 +15,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.ViewEventSink;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ActivityWindowAndroid;
@@ -72,14 +73,19 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
                 return implContext.getResources();
             }
         };
-        mWindowAndroid = new ActivityWindowAndroid(context);
+        // Use false to disable listening to activity state.
+        // TODO: this should *not* use ActivityWindowAndroid as that relies on Activity, and this
+        // code should not assume it is supplied an Activity.
+        mWindowAndroid = new ActivityWindowAndroid(context, false);
         mContentViewRenderView = new ContentViewRenderView(context);
 
         mContentViewRenderView.onNativeLibraryLoaded(
                 mWindowAndroid, ContentViewRenderView.MODE_SURFACE_VIEW);
 
-        mNativeBrowserController = nativeCreateBrowserController(profile.getNativeProfile());
-        mWebContents = nativeGetWebContents(mNativeBrowserController);
+        mNativeBrowserController =
+                BrowserControllerImplJni.get().createBrowserController(profile.getNativeProfile());
+        mWebContents = BrowserControllerImplJni.get().getWebContents(
+                mNativeBrowserController, BrowserControllerImpl.this);
         mTopControlsContainerView =
                 new TopControlsContainerView(context, mWebContents, mContentViewRenderView);
         mContentView = ContentView.createContentView(
@@ -100,8 +106,8 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
                 new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.UNSPECIFIED_GRAVITY));
 
-        nativeSetTopControlsContainerView(
-                mNativeBrowserController, mTopControlsContainerView.getNativeHandle());
+        BrowserControllerImplJni.get().setTopControlsContainerView(mNativeBrowserController,
+                BrowserControllerImpl.this, mTopControlsContainerView.getNativeHandle());
         mContentView.addView(mTopControlsContainerView,
                 new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT,
                         Gravity.FILL_HORIZONTAL | Gravity.TOP));
@@ -129,13 +135,14 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
 
     @Override
     public void destroy() {
-        nativeSetTopControlsContainerView(mNativeBrowserController, 0);
+        BrowserControllerImplJni.get().setTopControlsContainerView(
+                mNativeBrowserController, BrowserControllerImpl.this, 0);
         mContentViewRenderView.destroy();
         mTopControlsContainerView.destroy();
         if (mBrowserObserverProxy != null) mBrowserObserverProxy.destroy();
         mBrowserObserverProxy = null;
         mNavigationController = null;
-        nativeDeleteBrowserController(mNativeBrowserController);
+        BrowserControllerImplJni.get().deleteBrowserController(mNativeBrowserController);
         mNativeBrowserController = 0;
     }
 
@@ -156,9 +163,12 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
                                                   : ContentViewRenderView.MODE_SURFACE_VIEW);
     }
 
-    private static native long nativeCreateBrowserController(long profile);
-    private native void nativeSetTopControlsContainerView(
-            long nativeBrowserControllerImpl, long nativeTopControlsContainerView);
-    private static native void nativeDeleteBrowserController(long browserController);
-    private native WebContents nativeGetWebContents(long nativeBrowserControllerImpl);
+    @NativeMethods
+    interface Natives {
+        long createBrowserController(long profile);
+        void setTopControlsContainerView(long nativeBrowserControllerImpl,
+                BrowserControllerImpl caller, long nativeTopControlsContainerView);
+        void deleteBrowserController(long browserController);
+        WebContents getWebContents(long nativeBrowserControllerImpl, BrowserControllerImpl caller);
+    }
 }

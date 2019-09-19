@@ -57,6 +57,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "ui/base/device_form_factor.h"
 #include "url/gurl.h"
 
@@ -685,7 +686,7 @@ void VariationsService::OnSimpleLoaderComplete(
 
 void VariationsService::OnSimpleLoaderRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& response_head,
+    const network::mojom::URLResponseHead& response_head,
     std::vector<std::string>* to_be_removed_headers) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   OnSimpleLoaderCompleteOrRedirect(nullptr, true);
@@ -716,7 +717,7 @@ void VariationsService::OnSimpleLoaderCompleteOrRedirect(
   if (!was_redirect) {
     final_url_was_https =
         pending_seed_request_->GetFinalURL().SchemeIs(url::kHttpsScheme);
-    const network::ResourceResponseHead* response_info =
+    const network::mojom::URLResponseHead* response_info =
         pending_seed_request_->ResponseInfo();
     if (response_info && response_info->headers) {
       headers = response_info->headers;

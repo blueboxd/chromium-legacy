@@ -102,8 +102,7 @@ class CORE_EXPORT CSSAnimations final {
   void Trace(blink::Visitor*);
 
  private:
-  class RunningAnimation final
-      : public GarbageCollectedFinalized<RunningAnimation> {
+  class RunningAnimation final : public GarbageCollected<RunningAnimation> {
    public:
     RunningAnimation(Animation* animation, NewCSSAnimation new_animation)
         : animation(animation),

@@ -72,7 +72,7 @@ class InspectorOverlayAgent;
 
 using OverlayFrontend = protocol::Overlay::Metainfo::FrontendClass;
 
-class CORE_EXPORT InspectTool : public GarbageCollectedFinalized<InspectTool> {
+class CORE_EXPORT InspectTool : public GarbageCollected<InspectTool> {
  public:
   virtual ~InspectTool() = default;
   void Init(InspectorOverlayAgent* overlay, OverlayFrontend* frontend);

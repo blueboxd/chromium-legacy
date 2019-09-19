@@ -22,7 +22,6 @@ import org.chromium.base.test.BaseTestResult.PreTestHook;
 import org.chromium.base.test.util.RestrictionSkipCheck;
 import org.chromium.base.test.util.SkipCheck;
 import org.chromium.chrome.browser.ChromeVersionInfo;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
@@ -207,9 +206,6 @@ public class ChromeJUnit4ClassRunner extends ContentJUnit4ClassRunner {
             if (TextUtils.equals(
                         restriction, ChromeRestriction.RESTRICTION_TYPE_VR_SETTINGS_SERVICE)) {
                 return !isVrSettingsServiceEnabled();
-            }
-            if (TextUtils.equals(restriction, ChromeRestriction.RESTRICTION_TYPE_REQUIRES_TOUCH)) {
-                return FeatureUtilities.isNoTouchModeEnabled();
             }
             return false;
         }

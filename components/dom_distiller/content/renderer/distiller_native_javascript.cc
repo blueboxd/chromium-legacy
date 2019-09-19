@@ -65,8 +65,9 @@ void DistillerNativeJavaScript::BindFunctionToObject(
 }
 
 void DistillerNativeJavaScript::EnsureServiceConnected() {
-  if (!distiller_js_service_ || !distiller_js_service_.is_bound()) {
-    render_frame_->GetRemoteInterfaces()->GetInterface(&distiller_js_service_);
+  if (!distiller_js_service_) {
+    render_frame_->GetRemoteInterfaces()->GetInterface(
+        distiller_js_service_.BindNewPipeAndPassReceiver());
   }
 }
 

@@ -77,7 +77,7 @@ class CORE_EXPORT MutationObserver final
     kCharacterDataOldValue = 1 << 6,
   };
 
-  class CORE_EXPORT Delegate : public GarbageCollectedFinalized<Delegate>,
+  class CORE_EXPORT Delegate : public GarbageCollected<Delegate>,
                                public NameClient {
    public:
     virtual ~Delegate() = default;

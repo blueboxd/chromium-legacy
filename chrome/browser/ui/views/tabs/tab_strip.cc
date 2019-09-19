@@ -42,6 +42,7 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
+#include "chrome/browser/ui/views/tabs/tab_group_underline.h"
 #include "chrome/browser/ui/views/tabs/tab_hover_card_bubble_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_layout_helper.h"
@@ -1143,6 +1144,12 @@ void TabStrip::ChangeTabGroup(int model_index,
         base::BindOnce(&TabStrip::OnGroupCloseAnimationCompleted,
                        base::Unretained(this), new_group.value()));
     group_headers_[new_group.value()] = std::move(header);
+
+    auto underline =
+        std::make_unique<TabGroupUnderline>(this, new_group.value());
+    underline->set_owned_by_client();
+    AddChildView(underline.get());
+    group_underlines_[new_group.value()] = std::move(underline);
   }
   if (old_group.has_value()) {
     if (controller_->ListTabsInGroup(old_group.value()).size() == 0) {
@@ -1159,8 +1166,6 @@ void TabStrip::ChangeTabGroup(int model_index,
 
 void TabStrip::GroupVisualsChanged(TabGroupId group) {
   group_headers_[group]->VisualsChanged();
-  for (int i : controller_->ListTabsInGroup(group))
-    tabs_.view_at(i)->GroupColorChanged();
   // The group title may have changed size.
   UpdateIdealBounds();
   AnimateToIdealBounds();
@@ -1832,6 +1837,10 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
   for (const auto& header_pair : group_headers_)
     header_pair.second->Paint(paint_info);
 
+  // Paint group underlines.
+  for (const auto& underline_pair : group_underlines_)
+    underline_pair.second->Paint(paint_info);
+
   // Always paint the active tab over all the inactive tabs.
   if (active_tab && !is_dragging)
     active_tab->Paint(paint_info);
@@ -2410,6 +2419,7 @@ void TabStrip::OnTabCloseAnimationCompleted(Tab* tab) {
 
 void TabStrip::OnGroupCloseAnimationCompleted(TabGroupId group) {
   group_headers_.erase(group);
+  group_underlines_.erase(group);
   // TODO(crbug.com/905491): We might want to simulate a mouse move here, like
   // we do in OnTabCloseAnimationCompleted.
 }

@@ -33,6 +33,7 @@
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_grid_event_handler.h"
 #include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_test_util.h"
@@ -48,6 +49,7 @@
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_browser_window_drag_delegate.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_drag_controller.h"
 #include "ash/wm/window_preview_view.h"
 #include "ash/wm/window_state.h"
@@ -69,6 +71,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"
@@ -2819,9 +2822,6 @@ class OverviewSessionNewLayoutTest : public OverviewSessionTest {
     return windows;
   }
 
-  // TODO(sammiequon): Investigate simulating fling event for testing inertial
-  // scrolling.
-
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -2987,6 +2987,74 @@ TEST_F(OverviewSessionNewLayoutTest, HorizontalScrollingOnOverviewItem) {
 
   GenerateScrollSequence(topleft_window_center, gfx::Point(-500, 50));
   EXPECT_LT(leftmost_window->target_bounds(), left_bounds);
+}
+
+// A unique test class for testing flings in overview as those rely on observing
+// compositior animations which require a mock time task environment.
+class OverviewSessionNewLayoutFlingTest : public AshTestBase {
+ public:
+  OverviewSessionNewLayoutFlingTest()
+      : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+  ~OverviewSessionNewLayoutFlingTest() override = default;
+
+  // AshTestBase:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kNewOverviewLayout);
+    AshTestBase::SetUp();
+
+    // Overview flinging is only available in tablet mode.
+    base::RunLoop().RunUntilIdle();
+    TabletModeControllerTestApi().EnterTabletMode();
+    base::RunLoop().RunUntilIdle();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  DISALLOW_COPY_AND_ASSIGN(OverviewSessionNewLayoutFlingTest);
+};
+
+TEST_F(OverviewSessionNewLayoutFlingTest, BasicFling) {
+  std::vector<std::unique_ptr<aura::Window>> windows(16);
+  for (int i = 15; i >= 0; --i)
+    windows[i] = CreateTestWindow();
+
+  ToggleOverview();
+  OverviewGrid* grid = GetOverviewSession()->grid_list()[0].get();
+  OverviewGridEventHandler* grid_event_handler = grid->grid_event_handler();
+
+  OverviewItem* item = GetOverviewItemForWindow(windows[2].get());
+  const gfx::Point item_center =
+      gfx::ToRoundedPoint(item->target_bounds().CenterPoint());
+
+  // Create a scroll sequence which results in a fling.
+  const gfx::Vector2d shift(-200, 0);
+  GetEventGenerator()->GestureScrollSequence(
+      item_center, item_center + shift, base::TimeDelta::FromMilliseconds(10),
+      10);
+
+  ui::DrawWaiterForTest::WaitForCompositingStarted(
+      windows[0]->GetRootWindow()->layer()->GetCompositor());
+  ASSERT_TRUE(grid_event_handler->IsFlingInProgressForTesting());
+
+  // Test that the scroll offset decreases as we advance the clock. Check the
+  // scroll offset instead of the item bounds as there is an optimization which
+  // does not update the item bounds of invisible elements. On some iterations,
+  // there may not be enough time passed to decay the velocity so the scroll
+  // offset will not change, but the overall change should be substantial.
+  constexpr int kMaxLoops = 10;
+  const float initial_scroll_offset = grid->scroll_offset();
+  float previous_scroll_offset = initial_scroll_offset;
+  for (int i = 0;
+       i < kMaxLoops && grid_event_handler->IsFlingInProgressForTesting();
+       ++i) {
+    task_environment_->FastForwardBy(base::TimeDelta::FromMilliseconds(50));
+
+    float scroll_offset = grid->scroll_offset();
+    EXPECT_LE(scroll_offset, previous_scroll_offset);
+    previous_scroll_offset = scroll_offset;
+  }
+
+  EXPECT_LT(grid->scroll_offset(), initial_scroll_offset - 100.f);
 }
 
 // Tests that a vertical scroll sequence will close the window it is scrolled

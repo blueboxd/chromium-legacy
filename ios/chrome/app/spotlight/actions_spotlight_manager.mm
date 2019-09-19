@@ -147,13 +147,13 @@ BOOL SetStartupParametersForSpotlightAction(
           NSString* voiceSearchAction =
               base::SysUTF8ToNSString(spotlight::kSpotlightActionVoiceSearch);
 
-          NSString* newTabTitle =
-              l10n_util::GetNSString(IDS_IOS_APPLICATION_SHORTCUT_NEWTAB_TITLE);
+          NSString* newTabTitle = l10n_util::GetNSString(
+              IDS_IOS_APPLICATION_SHORTCUT_NEWSEARCH_TITLE);
           NSString* newTabAction =
               base::SysUTF8ToNSString(spotlight::kSpotlightActionNewTab);
 
           NSString* incognitoTitle = l10n_util::GetNSString(
-              IDS_IOS_APPLICATION_SHORTCUT_NEWINCOGNITOTAB_TITLE);
+              IDS_IOS_APPLICATION_SHORTCUT_INCOGNITOSEARCH_TITLE);
           NSString* incognitoAction = base::SysUTF8ToNSString(
               spotlight::kSpotlightActionNewIncognitoTab);
 

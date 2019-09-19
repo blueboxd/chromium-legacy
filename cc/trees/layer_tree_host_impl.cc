@@ -79,12 +79,12 @@
 #include "cc/trees/image_animation_controller.h"
 #include "cc/trees/latency_info_swap_promise_monitor.h"
 #include "cc/trees/layer_tree_frame_sink.h"
-#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/presentation_time_callback_buffer.h"
 #include "cc/trees/render_frame_metadata.h"
 #include "cc/trees/render_frame_metadata_observer.h"
+#include "cc/trees/scroll_and_scale_set.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/transform_node.h"
@@ -202,25 +202,6 @@ void RecordCompositorSlowScrollMetric(InputHandler::ScrollInputType type,
   }
 }
 
-ui::FrameMetricsSettings LTHI_FrameMetricsSettings(
-    const LayerTreeSettings& settings) {
-  ui::FrameMetricsSource source =
-      settings.commit_to_active_tree
-          ? ui::FrameMetricsSource::UiCompositor
-          : ui::FrameMetricsSource::RendererCompositor;
-  ui::FrameMetricsSourceThread source_thread =
-      settings.commit_to_active_tree
-          ? ui::FrameMetricsSourceThread::UiCompositor
-          : ui::FrameMetricsSourceThread::RendererCompositor;
-  ui::FrameMetricsCompileTarget compile_target =
-      settings.using_synchronous_renderer_compositor
-          ? ui::FrameMetricsCompileTarget::SynchronousCompositor
-          : settings.wait_for_all_pipeline_stages_before_draw
-                ? ui::FrameMetricsCompileTarget::Headless
-                : ui::FrameMetricsCompileTarget::Chromium;
-  return ui::FrameMetricsSettings(source, source_thread, compile_target);
-}
-
 class ScopedPostAnimationEventsToMainThread {
  public:
   ScopedPostAnimationEventsToMainThread(MutatorHost* animation_host,
@@ -314,12 +295,11 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       image_animation_controller_(GetTaskRunner(),
                                   this,
                                   settings_.enable_image_animation_resync),
-      frame_metrics_(LTHI_FrameMetricsSettings(settings_)),
-      skipped_frame_tracker_(&frame_metrics_),
       is_animating_for_snap_(false),
       paint_image_generator_client_id_(PaintImage::GetNextGeneratorClientId()),
       scrollbar_controller_(std::make_unique<ScrollbarController>(this)),
-      frame_trackers_(compositor_frame_reporting_controller_.get()),
+      frame_trackers_(settings.single_thread_proxy_scheduler,
+                      compositor_frame_reporting_controller_.get()),
       scroll_gesture_did_end_(false) {
   DCHECK(mutator_host_);
   mutator_host_->SetMutatorHostClient(this);
@@ -1163,8 +1143,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
   // must compute all damage tracking before drawing anything, so that we know
   // the root damage rect. The root damage rect is then used to scissor each
   // surface.
-  DamageTracker::UpdateDamageTracking(active_tree_.get(),
-                                      active_tree_->GetRenderSurfaceList());
+  DamageTracker::UpdateDamageTracking(active_tree_.get());
 
   if (HasDamage()) {
     consecutive_frame_with_damage_count_++;
@@ -1469,7 +1448,6 @@ void LayerTreeHostImpl::InvalidateLayerTreeFrameSink(bool needs_redraw) {
   DCHECK(layer_tree_frame_sink());
 
   layer_tree_frame_sink()->Invalidate(needs_redraw);
-  skipped_frame_tracker_.DidProduceFrame();
 }
 
 DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
@@ -2011,13 +1989,6 @@ void LayerTreeHostImpl::DidPresentCompositorFrame(
   PresentationTimeCallbackBuffer::PendingCallbacks activated =
       presentation_time_callbacks_.PopPendingCallbacks(frame_token);
 
-  // Update compositor frame latency and smoothness stats only for frames
-  // that caused on-screen damage.
-  if (!activated.frame_time.is_null()) {
-    frame_metrics_.AddFrameDisplayed(activated.frame_time,
-                                     details.presentation_feedback.timestamp);
-  }
-
   // Send all the main-thread callbacks to the client in one batch. The client
   // is in charge of posting them to the main thread.
   client_->DidPresentCompositorFrameOnImplThread(
@@ -2025,7 +1996,6 @@ void LayerTreeHostImpl::DidPresentCompositorFrame(
 }
 
 void LayerTreeHostImpl::DidNotNeedBeginFrame() {
-  skipped_frame_tracker_.WillNotProduceFrame();
   frame_trackers_.NotifyPauseFrameProduction();
 }
 
@@ -2245,7 +2215,6 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   DCHECK(CanDraw());
   DCHECK_EQ(frame->has_no_damage, frame->render_passes.empty());
   ResetRequiresHighResToDraw();
-  skipped_frame_tracker_.DidProduceFrame();
 
   if (frame->has_no_damage) {
     DCHECK(!resourceless_software_draw_);
@@ -2651,8 +2620,6 @@ bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   for (auto* it : video_frame_controllers_)
     it->OnBeginFrame(args);
 
-  skipped_frame_tracker_.BeginFrame(args.frame_time, args.interval);
-
   bool recent_frame_had_no_damage =
       consecutive_frame_with_damage_count_ < settings_.damaged_frame_limit;
   // Check damage early if the setting is enabled and a recent frame had no
@@ -2662,8 +2629,7 @@ bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
       CanDraw()) {
     bool ok = active_tree()->UpdateDrawProperties();
     DCHECK(ok);
-    DamageTracker::UpdateDamageTracking(active_tree_.get(),
-                                        active_tree_->GetRenderSurfaceList());
+    DamageTracker::UpdateDamageTracking(active_tree_.get());
     bool has_damage = HasDamage();
     // Animations are updated after we attempt to draw. If the frame is aborted,
     // update animations now.
@@ -2688,7 +2654,6 @@ void LayerTreeHostImpl::DidFinishImplFrame() {
     frame_trackers_.NotifyMainFrameCausedNoDamage(
         current_begin_frame_tracker_.Current());
   }
-  skipped_frame_tracker_.FinishFrame();
   impl_thread_phase_ = ImplThreadPhase::IDLE;
   current_begin_frame_tracker_.Finish();
 }
@@ -3171,8 +3136,6 @@ void LayerTreeHostImpl::SetNeedsOneBeginImplFrame() {
 void LayerTreeHostImpl::SetNeedsRedraw() {
   NotifySwapPromiseMonitorsOfSetNeedsRedraw();
   client_->SetNeedsRedrawOnImplThread();
-  if (CurrentlyScrollingNode())
-    skipped_frame_tracker_.WillProduceFrame();
 }
 
 ManagedMemoryPolicy LayerTreeHostImpl::ActualManagedMemoryPolicy() const {
@@ -5152,8 +5115,8 @@ void LayerTreeHostImpl::CollectScrollbarUpdates(
     ScrollAndScaleSet* scroll_info) const {
   scroll_info->scrollbars.reserve(scrollbar_animation_controllers_.size());
   for (auto& pair : scrollbar_animation_controllers_) {
-    scroll_info->scrollbars.push_back(LayerTreeHostCommon::ScrollbarsUpdateInfo(
-        pair.first, pair.second->ScrollbarsHidden()));
+    scroll_info->scrollbars.push_back(
+        {pair.first, pair.second->ScrollbarsHidden()});
   }
 }
 

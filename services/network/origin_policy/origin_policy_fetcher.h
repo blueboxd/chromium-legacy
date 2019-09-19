@@ -14,12 +14,12 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/origin_policy_manager.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/origin.h"
 
 namespace network {
 
 class OriginPolicyManager;
-struct ResourceResponseHead;
 
 class COMPONENT_EXPORT(NETWORK_SERVICE) OriginPolicyFetcher {
  public:
@@ -54,12 +54,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) OriginPolicyFetcher {
   using FetchCallback = base::OnceCallback<void(std::unique_ptr<std::string>)>;
   using RedirectCallback =
       base::RepeatingCallback<void(const net::RedirectInfo&,
-                                   const ResourceResponseHead&,
+                                   const mojom::URLResponseHead&,
                                    std::vector<std::string>*)>;
 
   void OnPolicyHasArrived(std::unique_ptr<std::string> policy_content);
   void OnPolicyRedirect(const net::RedirectInfo& redirect_info,
-                        const network::ResourceResponseHead& response_head,
+                        const mojom::URLResponseHead& response_head,
                         std::vector<std::string>* to_be_removed_headers);
   void FetchPolicy(mojom::URLLoaderFactory* factory);
 

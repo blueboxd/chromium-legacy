@@ -16,7 +16,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.locale.LocaleManager;
@@ -282,7 +281,7 @@ public abstract class FirstRunFlowSequencer  {
 
         Log.d(TAG, "Redirecting user through FRE.");
         if ((fromIntent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0) {
-            FreIntentCreator intentCreator = AppHooks.get().createFreIntentCreator();
+            FreIntentCreator intentCreator = new FreIntentCreator();
             Intent freIntent = intentCreator.create(
                     caller, fromIntent, requiresBroadcast, preferLightweightFre);
 

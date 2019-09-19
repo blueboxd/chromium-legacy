@@ -26,7 +26,7 @@ class PLATFORM_EXPORT MemoryPressureListener : public GarbageCollectedMixin {
 // MemoryPressureListenerRegistry listens to some events which could be
 // opportunities for reducing memory consumption and notifies its clients.
 class PLATFORM_EXPORT MemoryPressureListenerRegistry final
-    : public GarbageCollectedFinalized<MemoryPressureListenerRegistry> {
+    : public GarbageCollected<MemoryPressureListenerRegistry> {
  public:
   static MemoryPressureListenerRegistry& Instance();
 

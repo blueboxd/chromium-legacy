@@ -44,7 +44,7 @@ enum class CSSValueID;
 enum class SecureContextMode;
 
 class CORE_EXPORT CSSPropertyValueSet
-    : public GarbageCollectedFinalized<CSSPropertyValueSet> {
+    : public GarbageCollected<CSSPropertyValueSet> {
   friend class PropertyReference;
 
  public:
@@ -166,8 +166,7 @@ class CORE_EXPORT CSSPropertyValueSet
 };
 
 // Used for lazily parsing properties.
-class CSSLazyPropertyParser
-    : public GarbageCollectedFinalized<CSSLazyPropertyParser> {
+class CSSLazyPropertyParser : public GarbageCollected<CSSLazyPropertyParser> {
  public:
   CSSLazyPropertyParser() = default;
   virtual ~CSSLazyPropertyParser() = default;

@@ -89,23 +89,21 @@ class OmniboxPageActionIconContainerView
   // Updates the view for the zoom icon when default zoom levels change.
   void OnDefaultZoomLevelChanged() override;
 
-  ZoomView* zoom_view_ = nullptr;
-  FindBarIcon* find_bar_icon_ = nullptr;
+  StarView* bookmark_star_icon_ = nullptr;
+  SharingIconView* click_to_call_icon_ = nullptr;
+  CookieControlsIconView* cookie_controls_icon_ = nullptr;
+  FindBarIcon* find_icon_ = nullptr;
+  IntentPickerView* intent_picker_icon_ = nullptr;
+  autofill::LocalCardMigrationIconView* local_card_migration_icon_ = nullptr;
   ManagePasswordsIconViews* manage_passwords_icon_ = nullptr;
-  IntentPickerView* intent_picker_view_ = nullptr;
-  PwaInstallView* pwa_install_view_ = nullptr;
-  CookieControlsIconView* cookie_view_ = nullptr;
-  send_tab_to_self::SendTabToSelfIconView* send_tab_to_self_icon_view_ =
-      nullptr;
-  TranslateIconView* translate_icon_ = nullptr;
-  NativeFileSystemAccessIconView* native_file_system_icon_ = nullptr;
+  NativeFileSystemAccessIconView* native_file_system_access_icon_ = nullptr;
+  PwaInstallView* pwa_install_icon_ = nullptr;
   ReaderModeIconView* reader_mode_icon_ = nullptr;
-  SharingIconView* click_to_call_icon_view_ = nullptr;
-  SharingIconView* shared_clipboard_icon_view_ = nullptr;
-  autofill::LocalCardMigrationIconView* local_card_migration_icon_view_ =
-      nullptr;
-  autofill::SaveCardIconView* save_card_icon_view_ = nullptr;
-  StarView* star_view_ = nullptr;
+  autofill::SaveCardIconView* save_card_icon_ = nullptr;
+  send_tab_to_self::SendTabToSelfIconView* send_tab_to_self_icon_ = nullptr;
+  SharingIconView* shared_clipboard_icon_ = nullptr;
+  TranslateIconView* translate_icon_ = nullptr;
+  ZoomView* zoom_icon_ = nullptr;
 
   std::vector<PageActionIconView*> page_action_icons_;
 

@@ -264,7 +264,7 @@ UserMediaRequestInfo::UserMediaRequestInfo(
 
 // Class for storing state of the the processing of getUserMedia requests.
 class UserMediaProcessor::RequestInfo final
-    : public GarbageCollectedFinalized<UserMediaProcessor::RequestInfo> {
+    : public GarbageCollected<UserMediaProcessor::RequestInfo> {
  public:
   using ResourcesReady =
       base::OnceCallback<void(RequestInfo* request_info,

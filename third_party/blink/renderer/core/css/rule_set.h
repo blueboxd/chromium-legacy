@@ -175,7 +175,7 @@ static_assert(sizeof(RuleData) == sizeof(SameSizeAsRuleData),
 // specific group are appended to the "universal" rules. The grouping is done to
 // optimize finding what rules apply to an element under consideration by
 // ElementRuleCollector::CollectMatchingRules.
-class CORE_EXPORT RuleSet final : public GarbageCollectedFinalized<RuleSet> {
+class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
  public:
   RuleSet() : rule_count_(0) {}
 

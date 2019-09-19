@@ -17,6 +17,7 @@
 
 namespace chromeos {
 namespace assistant {
+class AssistantCommunicationErrorObserver;
 
 // Interface class that defines all assistant functionalities.
 class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerService
@@ -60,6 +61,13 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerService
 
   // Returns a pointer of AssistantSettingsManager.
   virtual AssistantSettingsManager* GetAssistantSettingsManager() = 0;
+
+  // Add/Remove an observer that is invoked when there is a communucation error
+  // with the Assistant service.
+  virtual void AddCommunicationErrorObserver(
+      AssistantCommunicationErrorObserver* observer) = 0;
+  virtual void RemoveCommunicationErrorObserver(
+      AssistantCommunicationErrorObserver* observer) = 0;
 };
 
 }  // namespace assistant

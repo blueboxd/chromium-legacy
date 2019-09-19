@@ -21,13 +21,13 @@ class ImageResourceObserver;
 // Produces a PaintGeneratedImage from a CSS Paint API callback.
 // https://drafts.css-houdini.org/css-paint-api/
 class CORE_EXPORT CSSPaintImageGenerator
-    : public GarbageCollectedFinalized<CSSPaintImageGenerator> {
+    : public GarbageCollected<CSSPaintImageGenerator> {
  public:
   // This observer is used if the paint worklet doesn't have a javascript
   // class registered with the correct name yet.
   // paintImageGeneratorReady is called when the javascript class is
   // registered and ready to use.
-  class Observer : public GarbageCollectedFinalized<Observer> {
+  class Observer : public GarbageCollected<Observer> {
    public:
     virtual ~Observer() = default;
 

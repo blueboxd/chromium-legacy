@@ -276,9 +276,6 @@ class FuchsiaVideoDecoder : public VideoDecoder,
   int num_used_output_buffers_ = 0;
   int max_used_output_buffers_ = 0;
 
-  // Non-null when flush is pending.
-  VideoDecoder::DecodeCB pending_flush_cb_;
-
   base::WeakPtr<FuchsiaVideoDecoder> weak_this_;
   base::WeakPtrFactory<FuchsiaVideoDecoder> weak_factory_;
 
@@ -591,13 +588,6 @@ void FuchsiaVideoDecoder::ProcessEndOfStream() {
   active_stream_ = true;
   codec_->QueueInputEndOfStream(stream_lifetime_ordinal_);
   codec_->FlushEndOfStreamAndCloseStream(stream_lifetime_ordinal_);
-
-  DCHECK(!decode_callbacks_.empty());
-  pending_flush_cb_ = std::move(decode_callbacks_.front());
-  decode_callbacks_.pop_front();
-
-  // Decode() is not supposed to be called after EOF.
-  DCHECK(decode_callbacks_.empty());
 }
 
 void FuchsiaVideoDecoder::OnFreeInputPacket(
@@ -865,7 +855,12 @@ void FuchsiaVideoDecoder::OnOutputEndOfStream(uint64_t stream_lifetime_ordinal,
   stream_lifetime_ordinal_ += 2;
   active_stream_ = false;
 
-  std::move(pending_flush_cb_).Run(DecodeStatus::OK);
+  // Decode() is not supposed to be called after EOF.
+  DCHECK_EQ(decode_callbacks_.size(), 1U);
+  auto flush_cb = std::move(decode_callbacks_.front());
+  decode_callbacks_.pop_front();
+
+  std::move(flush_cb).Run(DecodeStatus::OK);
 }
 
 void FuchsiaVideoDecoder::OnError() {

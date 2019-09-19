@@ -13,8 +13,7 @@ namespace blink {
 
 class ScrollState;
 
-class ScrollStateCallback
-    : public GarbageCollectedFinalized<ScrollStateCallback> {
+class ScrollStateCallback : public GarbageCollected<ScrollStateCallback> {
  public:
   virtual ~ScrollStateCallback() = default;
 

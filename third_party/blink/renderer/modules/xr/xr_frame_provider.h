@@ -21,8 +21,7 @@ class XRWebGLLayer;
 
 // This class manages requesting and dispatching frame updates, which includes
 // pose information for a given XRDevice.
-class XRFrameProvider final
-    : public GarbageCollectedFinalized<XRFrameProvider> {
+class XRFrameProvider final : public GarbageCollected<XRFrameProvider> {
  public:
   explicit XRFrameProvider(XR*);
 

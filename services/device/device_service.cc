@@ -156,7 +156,7 @@ void DeviceService::OnStart() {
       base::Bind(&DeviceService::BindPublicIpAddressGeolocationProviderReceiver,
                  base::Unretained(this)));
   registry_.AddInterface<mojom::ScreenOrientationListener>(
-      base::Bind(&DeviceService::BindScreenOrientationListenerRequest,
+      base::Bind(&DeviceService::BindScreenOrientationListenerReceiver,
                  base::Unretained(this)));
   registry_.AddInterface<mojom::SensorProvider>(base::Bind(
       &DeviceService::BindSensorProviderRequest, base::Unretained(this)));
@@ -318,13 +318,13 @@ void DeviceService::BindPublicIpAddressGeolocationProviderReceiver(
   public_ip_address_geolocation_provider_->Bind(std::move(receiver));
 }
 
-void DeviceService::BindScreenOrientationListenerRequest(
-    mojom::ScreenOrientationListenerRequest request) {
+void DeviceService::BindScreenOrientationListenerReceiver(
+    mojo::PendingReceiver<mojom::ScreenOrientationListener> receiver) {
 #if defined(OS_ANDROID)
   if (io_task_runner_) {
     io_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&ScreenOrientationListenerAndroid::Create,
-                                  std::move(request)));
+                                  std::move(receiver)));
   }
 #endif
 }

@@ -46,7 +46,7 @@
 namespace blink {
 
 class CORE_EXPORT HttpRefreshScheduler final
-    : public GarbageCollectedFinalized<HttpRefreshScheduler> {
+    : public GarbageCollected<HttpRefreshScheduler> {
  public:
   explicit HttpRefreshScheduler(Document*);
   ~HttpRefreshScheduler() = default;

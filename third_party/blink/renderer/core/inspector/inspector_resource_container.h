@@ -20,7 +20,7 @@ class InspectedFrames;
 class LocalFrame;
 
 class CORE_EXPORT InspectorResourceContainer final
-    : public GarbageCollectedFinalized<InspectorResourceContainer> {
+    : public GarbageCollected<InspectorResourceContainer> {
  public:
   explicit InspectorResourceContainer(InspectedFrames*);
   ~InspectorResourceContainer();

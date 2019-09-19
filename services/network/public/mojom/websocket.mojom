@@ -131,7 +131,9 @@ interface WebSocket {
   //   the first message. If |type| is WebSocketMessageType.TEXT, then the
   //   concatenation of the |data| from every frame in the message must be valid
   //   UTF-8. If |fin| is not set, |data| must be non-empty.
-  SendFrame(bool fin, WebSocketMessageType type, array<uint8> data);
+  SendFrame(bool fin,
+            WebSocketMessageType type,
+            mojo_base.mojom.ReadOnlyBuffer data);
 
   // Let browser to start receiving WebSocket data frames from network stream.
   // TODO(yoichio): Remove this by move Connect() after checking throttle at

@@ -22,6 +22,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/image_annotation/image_annotation_metrics.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "url/gurl.h"
 
@@ -624,7 +625,7 @@ void Annotator::OnServerResponseReceived(
     const std::unique_ptr<std::string> json_response) {
   ReportServerNetError(server_request_it->get()->NetError());
 
-  if (const network::ResourceResponseInfo* const response_info =
+  if (const network::mojom::URLResponseHead* const response_info =
           server_request_it->get()->ResponseInfo()) {
     ReportServerResponseCode(response_info->headers->response_code());
     ReportServerLatency(response_info->response_time -

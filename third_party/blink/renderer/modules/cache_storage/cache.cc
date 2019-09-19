@@ -204,7 +204,7 @@ class Cache::FetchResolvedForAdd final : public ScriptFunction {
 };
 
 class Cache::BarrierCallbackForPut final
-    : public GarbageCollectedFinalized<BarrierCallbackForPut> {
+    : public GarbageCollected<BarrierCallbackForPut> {
  public:
   BarrierCallbackForPut(wtf_size_t number_of_operations,
                         Cache* cache,
@@ -354,7 +354,7 @@ class Cache::BarrierCallbackForPut final
 };
 
 class Cache::BlobHandleCallbackForPut final
-    : public GarbageCollectedFinalized<BlobHandleCallbackForPut>,
+    : public GarbageCollected<BlobHandleCallbackForPut>,
       public FetchDataLoader::Client {
   USING_GARBAGE_COLLECTED_MIXIN(BlobHandleCallbackForPut);
 
@@ -400,7 +400,7 @@ class Cache::BlobHandleCallbackForPut final
 };
 
 class Cache::CodeCacheHandleCallbackForPut final
-    : public GarbageCollectedFinalized<CodeCacheHandleCallbackForPut>,
+    : public GarbageCollected<CodeCacheHandleCallbackForPut>,
       public FetchDataLoader::Client {
   USING_GARBAGE_COLLECTED_MIXIN(CodeCacheHandleCallbackForPut);
 

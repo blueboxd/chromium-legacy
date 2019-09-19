@@ -11,17 +11,14 @@ import static org.hamcrest.Matchers.instanceOf;
 import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.SystemClock;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.filters.SmallTest;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.view.View;
 
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -40,7 +37,6 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.night_mode.NightModeTestUtils;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
@@ -226,39 +222,6 @@ public class ExploreSitesPageTest {
 
     @Test
     @SmallTest
-    @Feature({"ExploreSites", "RenderTest"})
-    @Features.EnableFeatures(ChromeFeatureList.EXPLORE_SITES)
-    @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
-    public void testFocusRetention_WithBack(boolean nightModeEnabled) throws Exception {
-        Assume.assumeTrue(FeatureUtilities.isNoTouchModeEnabled());
-
-        InstrumentationRegistry.getInstrumentation().setInTouchMode(false);
-
-        final int defaultScrollPosition = mEsp.initialScrollPositionForTests();
-        Assert.assertEquals(defaultScrollPosition, getFocusedCategoryPosition());
-        Assert.assertEquals(0, getFocusedTileIndex());
-
-        // Change the focus from default so that we can verify it stays the same after navigation.
-        focusDifferentCard();
-
-        int focusedCategory = getFocusedCategoryPosition();
-        int focusedTile = getFocusedTileIndex();
-        Assert.assertNotEquals(defaultScrollPosition, focusedCategory);
-        Assert.assertNotEquals(0, focusedTile);
-
-        mRenderTestRule.render(mRecyclerView, "recycler_layout_focus");
-
-        mActivityTestRule.loadUrl("about:blank");
-
-        navigateBackToESP();
-
-        mRenderTestRule.render(mRecyclerView, "recycler_layout_focus_back");
-        Assert.assertEquals(focusedCategory, getFocusedCategoryPosition());
-        Assert.assertEquals(focusedTile, getFocusedTileIndex());
-    }
-
-    @Test
-    @SmallTest
     @Feature({"ExploreSites"})
     @Features.EnableFeatures(ChromeFeatureList.EXPLORE_SITES)
     public void testRecordTimestamp() throws Exception {
@@ -274,36 +237,12 @@ public class ExploreSitesPageTest {
         Assert.assertEquals(histogramCount + 1, newHistogramCount);
     }
 
-    private void focusDifferentCard() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            ExploreSitesCategoryCardView cardView = null;
-            for (int i = 0; i < mRecyclerView.getChildCount(); i++) {
-                cardView = (ExploreSitesCategoryCardView) mRecyclerView.getChildAt(i);
-                if (!cardView.hasFocus()) {
-                    cardView.getTileViewAt(2).requestFocus();
-                    break;
-                }
-            }
-        });
-    }
-
     private void navigateBackToESP() {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mActivityTestRule.getActivity().onBackPressed());
         waitForEspLoaded(mTab);
         mEsp = (ExploreSitesPage) mTab.getNativePage();
         mRecyclerView = mEsp.getView().findViewById(R.id.explore_sites_category_recycler);
-    }
-
-    private int getFocusedCategoryPosition() {
-        View focusedView = mRecyclerView.getFocusedChild();
-        return mRecyclerView.getLayoutManager().getPosition(focusedView);
-    }
-
-    private int getFocusedTileIndex() {
-        ExploreSitesCategoryCardView focusedView =
-                (ExploreSitesCategoryCardView) mRecyclerView.getFocusedChild();
-        return focusedView.getFocusedTileIndex(-1);
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)

@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/badges/badge_button.h"
 #import "ios/chrome/browser/ui/badges/badge_button_action_handler.h"
 #import "ios/chrome/browser/ui/badges/badge_constants.h"
+#import "ios/chrome/common/colors/dynamic_color_util.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -89,7 +90,9 @@
                   renderingMode:UIImageRenderingModeAlwaysOriginal];
   button.fullScreenImage = [[UIImage imageNamed:@"incognito_small_badge"]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-  button.tintColor = [UIColor colorNamed:kTextPrimaryColor];
+  button.tintColor = color::DarkModeDynamicColor(
+      [UIColor colorNamed:kTextPrimaryColor], self.incognito,
+      [UIColor colorNamed:kTextPrimaryDarkColor]);
   button.accessibilityTraits &= ~UIAccessibilityTraitButton;
   button.enabled = NO;
   button.accessibilityIdentifier = kBadgeButtonIncognitoAccessibilityIdentifier;

@@ -1419,7 +1419,8 @@ void ShelfLayoutManager::CalculateTargetBounds(
 
   // This needs to happen after calling UpdateTargetBoundsForGesture(), because
   // that can change the size of the shelf.
-  if (chromeos::switches::ShouldShowScrollableShelf()) {
+  const bool showing_login_shelf = !state.IsActiveSessionState();
+  if (chromeos::switches::ShouldShowScrollableShelf() && !showing_login_shelf) {
     target_bounds->shelf_bounds_in_shelf = SelectValueForShelfAlignment(
         gfx::Rect(target_bounds->nav_bounds_in_shelf.right(), 0,
                   shelf_width - status_size.width() -
@@ -1718,9 +1719,12 @@ bool ShelfLayoutManager::IsShelfWindow(aura::Window* window) {
   if (!window)
     return false;
   const aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
+  const aura::Window* navigation_window =
+      shelf_widget_->navigation_widget()->GetNativeWindow();
   const aura::Window* hotseat_window =
       shelf_widget_->hotseat_widget()->GetNativeWindow();
   return (shelf_window && shelf_window->Contains(window)) ||
+         (navigation_window && navigation_window->Contains(window)) ||
          (hotseat_window && hotseat_window->Contains(window));
 }
 

@@ -90,7 +90,7 @@ class WebVector;
 
 // Implementation of WebFrame, note that this is a reference counted object.
 class CORE_EXPORT WebLocalFrameImpl final
-    : public GarbageCollectedFinalized<WebLocalFrameImpl>,
+    : public GarbageCollected<WebLocalFrameImpl>,
       public WebNavigationControl {
  public:
   // WebFrame methods:

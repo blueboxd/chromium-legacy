@@ -17,7 +17,7 @@ class files and runtime **.exec** files. Then we need to process them using the
 
   ```gn
   target_os = "android"
-  jacoco_coverage = true
+  use_jacoco_coverage = true
   ```
 
    Now when building, pre-instrumented files will be created in the build directory.

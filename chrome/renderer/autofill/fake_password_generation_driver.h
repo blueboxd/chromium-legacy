@@ -13,7 +13,8 @@
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 class FakePasswordGenerationDriver
@@ -23,8 +24,9 @@ class FakePasswordGenerationDriver
 
   ~FakePasswordGenerationDriver() override;
 
-  void BindRequest(
-      autofill::mojom::PasswordGenerationDriverAssociatedRequest request);
+  void BindReceiver(
+      mojo::PendingAssociatedReceiver<autofill::mojom::PasswordGenerationDriver>
+          receiver);
 
   void Flush();
 
@@ -47,7 +49,8 @@ class FakePasswordGenerationDriver
   MOCK_METHOD0(GenerationElementLostFocus, void());
 
  private:
-  mojo::AssociatedBinding<autofill::mojom::PasswordGenerationDriver> binding_;
+  mojo::AssociatedReceiver<autofill::mojom::PasswordGenerationDriver> receiver_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(FakePasswordGenerationDriver);
 };

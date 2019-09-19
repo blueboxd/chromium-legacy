@@ -16,6 +16,7 @@
 #include "chromeos/assistant/internal/action/cros_action_module.h"
 #include "chromeos/assistant/internal/cros_display_connection.h"
 #include "chromeos/assistant/internal/internal_util.h"
+#include "chromeos/services/assistant/assistant_communication_error_observer.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/assistant_settings_manager_impl.h"
 #include "chromeos/services/assistant/chromium_api_delegate.h"
@@ -35,6 +36,10 @@
 #include "ui/accessibility/ax_assistant_structure.h"
 #include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
 
+namespace ash {
+class AssistantStateBase;
+}  // namespace ash
+
 namespace assistant_client {
 class AssistantManager;
 class AssistantManagerInternal;
@@ -47,8 +52,8 @@ class SharedURLLoaderFactoryInfo;
 namespace chromeos {
 namespace assistant {
 
-class Service;
 class AssistantMediaSession;
+class ServiceContext;
 
 // Enumeration of Assistant query response type, also recorded in histograms.
 // These values are persisted to logs. Entries should not be renumbered and
@@ -93,9 +98,10 @@ class AssistantManagerServiceImpl
   AssistantManagerServiceImpl(
       mojom::Client* client,
       mojo::PendingRemote<device::mojom::BatteryMonitor> battery_monitor,
-      Service* service,
+      ServiceContext* context,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
-          url_loader_factory_info);
+          url_loader_factory_info,
+      bool is_signed_out_mode);
 
   ~AssistantManagerServiceImpl() override;
 
@@ -110,6 +116,10 @@ class AssistantManagerServiceImpl
   void EnableHotword(bool enable) override;
   void SetArcPlayStoreEnabled(bool enable) override;
   AssistantSettingsManager* GetAssistantSettingsManager() override;
+  void AddCommunicationErrorObserver(
+      AssistantCommunicationErrorObserver* observer) override;
+  void RemoveCommunicationErrorObserver(
+      AssistantCommunicationErrorObserver* observer) override;
 
   // mojom::Assistant overrides:
   void StartCachedScreenContextInteraction() override;
@@ -290,6 +300,15 @@ class AssistantManagerServiceImpl
 
   void UpdateMediaState();
 
+  ash::mojom::AssistantAlarmTimerController* assistant_alarm_timer_controller();
+  ash::mojom::AssistantNotificationController*
+  assistant_notification_controller();
+  ash::mojom::AssistantScreenContextController*
+  assistant_screen_context_controller();
+  ash::AssistantStateBase* assistant_state();
+  mojom::DeviceActions* device_actions();
+  scoped_refptr<base::SequencedTaskRunner> main_task_runner();
+
   mojom::Client* const client_;
   State state_ = State::STOPPED;
   std::unique_ptr<AssistantMediaSession> media_session_;
@@ -312,7 +331,8 @@ class AssistantManagerServiceImpl
       interaction_subscribers_;
   media_session::mojom::MediaControllerPtr media_controller_;
 
-  Service* service_;  // unowned.
+  // Owned by the parent |Service| which will destroy |this| before |context_|.
+  ServiceContext* const context_;
 
   bool spoken_feedback_enabled_ = false;
 
@@ -334,6 +354,7 @@ class AssistantManagerServiceImpl
   std::string receive_url_response_;
 
   bool is_first_client_discourse_context_query_ = true;
+  bool is_signed_out_mode_;
 
   mojo::Receiver<media_session::mojom::MediaControllerObserver>
       media_controller_observer_receiver_{this};
@@ -350,6 +371,8 @@ class AssistantManagerServiceImpl
   bool start_finished_ = false;
 
   mojo::Binding<mojom::AppListEventSubscriber> app_list_subscriber_binding_;
+
+  base::ObserverList<AssistantCommunicationErrorObserver> error_observers_;
 
   base::WeakPtrFactory<AssistantManagerServiceImpl> weak_factory_;
 

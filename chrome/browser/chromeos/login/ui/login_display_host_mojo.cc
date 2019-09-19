@@ -78,7 +78,6 @@ LoginDisplayHostMojo::~LoginDisplayHostMojo() {
   LoginScreenClient::Get()->SetDelegate(nullptr);
   if (dialog_) {
     dialog_->GetOobeUI()->signin_screen_handler()->SetDelegate(nullptr);
-    StopObservingOobeUI();
     dialog_->Close();
   }
 }
@@ -86,7 +85,6 @@ LoginDisplayHostMojo::~LoginDisplayHostMojo() {
 void LoginDisplayHostMojo::OnDialogDestroyed(
     const OobeUIDialogDelegate* dialog) {
   if (dialog == dialog_) {
-    StopObservingOobeUI();
     dialog_ = nullptr;
     wizard_controller_.reset();
   }
@@ -103,25 +101,25 @@ void LoginDisplayHostMojo::ShowPasswordChangedDialog(bool show_password_error,
   DCHECK(GetOobeUI());
   GetOobeUI()->signin_screen_handler()->ShowPasswordChangedDialog(
       show_password_error, email);
-  ShowDialog();
+  dialog_->Show();
 }
 
 void LoginDisplayHostMojo::ShowWhitelistCheckFailedError() {
   DCHECK(GetOobeUI());
   GetOobeUI()->signin_screen_handler()->ShowWhitelistCheckFailedError();
-  ShowDialog();
+  dialog_->Show();
 }
 
 void LoginDisplayHostMojo::ShowErrorScreen(LoginDisplay::SigninError error_id) {
   DCHECK(GetOobeUI());
   GetOobeUI()->signin_screen_handler()->ShowErrorScreen(error_id);
-  ShowDialog();
+  dialog_->Show();
 }
 
 void LoginDisplayHostMojo::ShowSigninUI(const std::string& email) {
   DCHECK(GetOobeUI());
   GetOobeUI()->signin_screen_handler()->ShowSigninUI(email);
-  ShowDialog();
+  dialog_->Show();
 }
 
 void LoginDisplayHostMojo::HandleDisplayCaptivePortal() {
@@ -176,15 +174,12 @@ void LoginDisplayHostMojo::SetStatusAreaVisible(bool visible) {
 }
 
 void LoginDisplayHostMojo::StartWizard(OobeScreenId first_screen) {
-  OobeUI* oobe_ui = GetOobeUI();
-  DCHECK(oobe_ui);
-  // Dialog is not shown immediately, and will be shown only when a screen
-  // change occurs. This prevents the dialog from showing when there are no
-  // screens to show.
-  ObserveOobeUI();
+  DCHECK(GetOobeUI());
 
   wizard_controller_ = std::make_unique<WizardController>();
   wizard_controller_->Init(first_screen);
+
+  dialog_->Show();
 }
 
 WizardController* LoginDisplayHostMojo::GetWizardController() {
@@ -246,11 +241,11 @@ void LoginDisplayHostMojo::OnPreferencesChanged() {
 }
 
 void LoginDisplayHostMojo::OnStartAppLaunch() {
-  ShowFullScreen();
+  dialog_->ShowFullScreen();
 }
 
 void LoginDisplayHostMojo::OnStartArcKiosk() {
-  ShowFullScreen();
+  dialog_->ShowFullScreen();
 }
 
 void LoginDisplayHostMojo::OnBrowserCreated() {
@@ -269,7 +264,7 @@ void LoginDisplayHostMojo::ShowGaiaDialog(bool can_close,
 
   ShowGaiaDialogCommon(prefilled_account);
 
-  ShowDialog();
+  dialog_->Show();
 }
 
 void LoginDisplayHostMojo::HideOobeDialog() {
@@ -285,7 +280,7 @@ void LoginDisplayHostMojo::HideOobeDialog() {
   }
 
   LoadWallpaper(focused_pod_account_id_);
-  HideDialog();
+  dialog_->Hide();
 }
 
 void LoginDisplayHostMojo::UpdateOobeDialogSize(int width, int height) {
@@ -456,17 +451,6 @@ void LoginDisplayHostMojo::OnOldEncryptionDetected(
     const UserContext& user_context,
     bool has_incomplete_migration) {}
 
-void LoginDisplayHostMojo::OnCurrentScreenChanged(OobeScreenId current_screen,
-                                                  OobeScreenId new_screen) {
-  DCHECK(dialog_);
-  if (!dialog_->IsVisible())
-    ShowDialog();
-}
-
-void LoginDisplayHostMojo::OnDestroyingOobeUI() {
-  StopObservingOobeUI();
-}
-
 void LoginDisplayHostMojo::LoadOobeDialog() {
   if (dialog_)
     return;
@@ -498,47 +482,6 @@ void LoginDisplayHostMojo::OnChallengeResponseKeysPrepared(
       std::move(challenge_response_keys);
 
   existing_user_controller_->Login(user_context, chromeos::SigninSpecifics());
-}
-
-void LoginDisplayHostMojo::ShowDialog() {
-  ObserveOobeUI();
-  dialog_->Show();
-}
-
-void LoginDisplayHostMojo::ShowFullScreen() {
-  ObserveOobeUI();
-  dialog_->ShowFullScreen();
-}
-
-void LoginDisplayHostMojo::HideDialog() {
-  // Stop observing so that dialog will not be shown when a screen change
-  // occurs. Screen changes can occur even when the dialog is not shown (e.g.
-  // with hidden error screens).
-  StopObservingOobeUI();
-  dialog_->Hide();
-}
-
-void LoginDisplayHostMojo::ObserveOobeUI() {
-  if (added_as_oobe_observer_)
-    return;
-
-  OobeUI* oobe_ui = GetOobeUI();
-  if (!oobe_ui)
-    return;
-
-  oobe_ui->AddObserver(this);
-  added_as_oobe_observer_ = true;
-}
-
-void LoginDisplayHostMojo::StopObservingOobeUI() {
-  if (!added_as_oobe_observer_)
-    return;
-
-  added_as_oobe_observer_ = false;
-
-  OobeUI* oobe_ui = GetOobeUI();
-  if (oobe_ui)
-    oobe_ui->RemoveObserver(this);
 }
 
 }  // namespace chromeos

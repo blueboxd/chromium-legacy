@@ -29,7 +29,7 @@ class ScriptState;
 // whose global object owns the CredentialsContainer instance on which the
 // method was called.
 class MODULES_EXPORT CredentialManagerProxy
-    : public GarbageCollectedFinalized<CredentialManagerProxy>,
+    : public GarbageCollected<CredentialManagerProxy>,
       public Supplement<Document> {
   USING_GARBAGE_COLLECTED_MIXIN(CredentialManagerProxy);
 

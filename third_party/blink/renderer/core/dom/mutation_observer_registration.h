@@ -44,7 +44,7 @@ namespace blink {
 class QualifiedName;
 
 class CORE_EXPORT MutationObserverRegistration final
-    : public GarbageCollectedFinalized<MutationObserverRegistration>,
+    : public GarbageCollected<MutationObserverRegistration>,
       public NameClient {
  public:
   static MutationObserverRegistration* Create(

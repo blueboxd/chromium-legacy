@@ -399,34 +399,32 @@ class MetaBuildWrapper(object):
       return self._RunLocallyIsolated(self.args.path, self.args.target)
 
   def CmdZip(self):
-      ret = self.CmdIsolate()
-      if ret:
-          return ret
+    ret = self.CmdIsolate()
+    if ret:
+      return ret
 
-      zip_dir = None
-      try:
-          zip_dir = self.TempDir()
-          remap_cmd = [
-            self.executable,
-            self.PathJoin(self.chromium_src_dir, 'tools', 'swarming_client',
-                          'isolate.py'),
-            'remap',
-            '--collapse_symlinks',
-            '-s', self.PathJoin(self.args.path, self.args.target + '.isolated'),
-            '-o', zip_dir
-          ]
-          self.Run(remap_cmd)
+    zip_dir = None
+    try:
+      zip_dir = self.TempDir()
+      remap_cmd = [
+          self.executable,
+          self.PathJoin(self.chromium_src_dir, 'tools', 'swarming_client',
+                        'isolate.py'), 'remap', '--collapse_symlinks', '-s',
+          self.PathJoin(self.args.path, self.args.target + '.isolated'), '-o',
+          zip_dir
+      ]
+      self.Run(remap_cmd)
 
-          zip_path = self.args.zip_path
-          with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED,
-                               allowZip64=True) as fp:
-              for root, _, files in os.walk(zip_dir):
-                  for filename in files:
-                      path = self.PathJoin(root, filename)
-                      fp.write(path, self.RelPath(path, zip_dir))
-      finally:
-          if zip_dir:
-              self.RemoveDirectory(zip_dir)
+      zip_path = self.args.zip_path
+      with zipfile.ZipFile(
+          zip_path, 'w', zipfile.ZIP_DEFLATED, allowZip64=True) as fp:
+        for root, _, files in os.walk(zip_dir):
+          for filename in files:
+            path = self.PathJoin(root, filename)
+            fp.write(path, self.RelPath(path, zip_dir))
+    finally:
+      if zip_dir:
+        self.RemoveDirectory(zip_dir)
 
   @staticmethod
   def _AddBaseSoftware(cmd):
@@ -806,8 +804,8 @@ class MetaBuildWrapper(object):
         vals['cros_passthrough'] = mixin_vals['cros_passthrough']
       if 'args_file' in mixin_vals:
         if vals['args_file']:
-            raise MBErr('args_file specified multiple times in mixins '
-                        'for %s on %s' % (self.args.builder, self.args.master))
+          raise MBErr('args_file specified multiple times in mixins '
+                      'for %s on %s' % (self.args.builder, self.args.master))
         vals['args_file'] = mixin_vals['args_file']
       if 'gn_args' in mixin_vals:
         if vals['gn_args']:
@@ -888,10 +886,10 @@ class MetaBuildWrapper(object):
     ret, output, _ = self.Run(self.GNCmd('ls', build_dir),
                               force_verbose=False)
     if ret:
-        # If `gn ls` failed, we should exit early rather than trying to
-        # generate isolates.
-        self.Print('GN ls failed: %d' % ret)
-        return ret
+      # If `gn ls` failed, we should exit early rather than trying to
+      # generate isolates.
+      self.Print('GN ls failed: %d' % ret)
+      return ret
 
     # Create a reverse map from isolate label to isolate dict.
     isolate_map = self.ReadIsolateMap()
@@ -1307,7 +1305,7 @@ class MetaBuildWrapper(object):
     msan = 'is_msan=true' in vals['gn_args']
     tsan = 'is_tsan=true' in vals['gn_args']
     cfi_diag = 'use_cfi_diag=true' in vals['gn_args']
-    java_coverage = 'jacoco_coverage=true' in vals['gn_args']
+    java_coverage = 'use_jacoco_coverage=true' in vals['gn_args']
 
     test_type = isolate_map[target]['type']
     use_python3 = isolate_map[target].get('use_python3', False)

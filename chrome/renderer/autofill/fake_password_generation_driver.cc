@@ -6,16 +6,17 @@
 
 #include <utility>
 
-FakePasswordGenerationDriver::FakePasswordGenerationDriver() : binding_(this) {}
+FakePasswordGenerationDriver::FakePasswordGenerationDriver() = default;
 
 FakePasswordGenerationDriver::~FakePasswordGenerationDriver() = default;
 
-void FakePasswordGenerationDriver::BindRequest(
-    autofill::mojom::PasswordGenerationDriverAssociatedRequest request) {
-  binding_.Bind(std::move(request));
+void FakePasswordGenerationDriver::BindReceiver(
+    mojo::PendingAssociatedReceiver<autofill::mojom::PasswordGenerationDriver>
+        receiver) {
+  receiver_.Bind(std::move(receiver));
 }
 
 void FakePasswordGenerationDriver::Flush() {
-  if (binding_.is_bound())
-    binding_.FlushForTesting();
+  if (receiver_.is_bound())
+    receiver_.FlushForTesting();
 }

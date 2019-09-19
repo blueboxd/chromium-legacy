@@ -63,6 +63,13 @@ export class TabsApiProxy {
       });
     });
   }
+
+  /**
+   * @param {number} tabId
+   */
+  trackThumbnailForTab(tabId) {
+    chrome.send('addTrackedTab', [tabId]);
+  }
 }
 
 addSingletonGetter(TabsApiProxy);

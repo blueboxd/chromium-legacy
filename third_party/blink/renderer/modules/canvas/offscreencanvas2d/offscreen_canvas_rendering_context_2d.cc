@@ -182,8 +182,13 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::TransferToImageBitmap(
   if (image->IsTextureBacked()) {
     // Before discarding the image resource, we need to flush pending render ops
     // to fully resolve the snapshot.
-    image->PaintImageForCurrentFrame().GetSkImage()->getBackendTexture(
-        true);  // Flush pending ops.
+    // We can only do this if the skImage is not null
+    if (auto skImage = image->PaintImageForCurrentFrame().GetSkImage()) {
+      skImage->getBackendTexture(true);  // Flush pending ops.
+    } else {
+      // If the SkImage was null, we better return a null ImageBitmap
+      return nullptr;
+    }
   }
   Host()->DiscardResourceProvider();  // "Transfer" means no retained buffer.
   return ImageBitmap::Create(std::move(image));

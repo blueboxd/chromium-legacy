@@ -4,15 +4,12 @@
 
 package org.chromium.chrome.browser;
 
-import android.app.Activity;
 import android.app.Notification;
 import android.app.Service;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.os.Bundle;
 import android.view.View;
-import android.view.inputmethod.InputConnection;
 
 import androidx.annotation.Nullable;
 
@@ -20,7 +17,6 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
 import org.chromium.base.Callback;
-import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -34,7 +30,6 @@ import org.chromium.chrome.browser.feedback.FeedbackCollector;
 import org.chromium.chrome.browser.feedback.FeedbackReporter;
 import org.chromium.chrome.browser.feedback.FeedbackSource;
 import org.chromium.chrome.browser.feedback.FeedbackSourceProvider;
-import org.chromium.chrome.browser.firstrun.FreIntentCreator;
 import org.chromium.chrome.browser.gsa.GSAHelper;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.historyreport.AppIndexingReporter;
@@ -57,9 +52,6 @@ import org.chromium.chrome.browser.signin.GoogleActivityController;
 import org.chromium.chrome.browser.survey.SurveyController;
 import org.chromium.chrome.browser.tab.AuthenticatorNavigationInterceptor;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.touchless.TouchlessDelegate;
-import org.chromium.chrome.browser.touchless.TouchlessModelCoordinator;
-import org.chromium.chrome.browser.touchless.TouchlessUiCoordinator;
 import org.chromium.chrome.browser.ui.ImmersiveModeManager;
 import org.chromium.chrome.browser.usage_stats.DigitalWellbeingClient;
 import org.chromium.chrome.browser.webapps.GooglePlayWebApkInstallDelegate;
@@ -68,12 +60,9 @@ import org.chromium.chrome.browser.widget.FeatureHighlightProvider;
 import org.chromium.components.download.DownloadCollectionBridge;
 import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.SystemAccountManagerDelegate;
-import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.policy.AppRestrictionsProvider;
 import org.chromium.policy.CombinedPolicyProvider;
-import org.chromium.services.service_manager.InterfaceRegistry;
 
 import java.util.Collections;
 import java.util.List;
@@ -107,19 +96,6 @@ public abstract class AppHooks {
     public void checkIsAndroidEduDevice(final AndroidEduOwnerCheckCallback callback) {
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> callback.onSchoolCheckDone(false));
     }
-
-    /**
-     * Perform platform-specific command line initialization.
-     * @param instance CommandLine instance to be updated.
-     */
-    public void initCommandLine(CommandLine instance) {}
-
-    /**
-     * Inform platform of current display mode.
-     * @param displayMode the new display mode (see WebDisplayMode)
-     * @param activity the affected activity.
-     */
-    public void setDisplayModeForActivity(int displayMode, Activity activity) {}
 
     /**
      * Creates a new {@link AccountManagerDelegate}.
@@ -392,22 +368,6 @@ public abstract class AppHooks {
     }
 
     /**
-     * @param activity An activity for access to different features.
-     * @return A new {@link TouchlessModelCoordinator} instance.
-     */
-    public TouchlessModelCoordinator createTouchlessModelCoordinator(Activity activity) {
-        return null;
-    }
-
-    /**
-     * @param activity An activity for access to different features.
-     * @return A new {@link TouchlessUiCoordinator} instance.
-     */
-    public TouchlessUiCoordinator createTouchlessUiCoordinator(ChromeActivity activity) {
-        return TouchlessDelegate.getTouchlessUiCoordinator(activity);
-    }
-
-    /**
      * Checks the Google Play services availability on the this device.
      *
      * This is a workaround for the
@@ -433,55 +393,10 @@ public abstract class AppHooks {
     }
 
     /**
-     * Returns a new {@link FreIntentCreator} instance.
-     */
-    public FreIntentCreator createFreIntentCreator() {
-        return new FreIntentCreator();
-    }
-
-    /**
-     * @return true if the webAppIntent has been intercepted.
-     */
-    public boolean interceptWebAppIntent(Intent intent, ChromeActivity activity) {
-        return false;
-    }
-
-    /**
-     * @see InputConnection#performPrivateCommand(java.lang.String, android.os.Bundle)
-     * @param webcontents The WebContents receiving the private IME command.
-     */
-    public void performPrivateImeCommand(WebContents webContents, String action, Bundle data) {}
-
-    /**
-     * Called when the Search Context Menu Item is clicked.
-     */
-    public void onSearchContextMenuClick() {}
-
-    /**
-     * @param registry The Chrome interface registry for the RenderFrameHost.
-     * @param renderFrameHost The RenderFrameHost the Interface Registry is for.
-     */
-    public void registerChromeRenderFrameHostInterfaces(
-            InterfaceRegistry registry, RenderFrameHost renderFrameHost) {}
-
-    /**
-     * @param registry The Chrome interface registry for the WebContents.
-     * @param webContents The WebContents the Interface Registry is for.
-     */
-    public void registerChromeWebContentsInterfaces(
-            InterfaceRegistry registry, WebContents webContents) {}
-
-    /**
      * @param contentView The root content view for the containing activity.
      * @return A new {@link ImmersiveModeManager} or null if there isn't one.
      */
     public @Nullable ImmersiveModeManager createImmersiveModeManager(View contentView) {
         return null;
     }
-
-    /**
-     * Starts the observer for listening to system settings changes. Must be called on
-     * ChromeActivity initialization.
-     */
-    public void startSystemSettingsObserver() {}
 }

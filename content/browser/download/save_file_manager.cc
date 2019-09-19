@@ -36,6 +36,7 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -95,7 +96,7 @@ class SaveFileManager::SimpleURLLoaderHelper
                          int render_process_id,
                          int render_frame_routing_id,
                          const GURL& final_url,
-                         const network::ResourceResponseHead& response_head) {
+                         const network::mojom::URLResponseHead& response_head) {
     std::string content_disposition;
     if (response_head.headers) {
       response_head.headers->GetNormalizedHeader("Content-Disposition",

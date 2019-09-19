@@ -102,10 +102,9 @@ enum class CommitResult : int32_t;
 enum class GlobalObjectReusePolicy { kCreateNew, kUseExisting };
 
 // The DocumentLoader fetches a main resource and handles the result.
-class CORE_EXPORT DocumentLoader
-    : public GarbageCollectedFinalized<DocumentLoader>,
-      public UseCounter,
-      public WebNavigationBodyLoader::Client {
+class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
+                                   public UseCounter,
+                                   public WebNavigationBodyLoader::Client {
   USING_GARBAGE_COLLECTED_MIXIN(DocumentLoader);
 
  public:

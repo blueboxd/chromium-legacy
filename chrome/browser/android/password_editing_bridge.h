@@ -17,7 +17,8 @@ namespace autofill {
 struct PasswordForm;
 }
 
-class PasswordChangeDelegate;
+class PasswordEditDelegate;
+class Profile;
 
 // A bridge that allows communication between Android UI and the native
 // side. It can be used to launch the password editing activity from the
@@ -36,15 +37,21 @@ class PasswordEditingBridge {
   static void LaunchPasswordEntryEditor(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& context,
-      password_manager::PasswordStore* store,
+      Profile* profile,
       const autofill::PasswordForm& password_form);
+
+  void HandleEditSavedPasswordEntry(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& object,
+      const base::android::JavaParamRef<jstring>& new_username,
+      const base::android::JavaParamRef<jstring>& new_password);
 
  private:
   // The corresponding java object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 
   // The delegate belonging to the bridge.
-  std::unique_ptr<PasswordChangeDelegate> password_change_delegate_;
+  std::unique_ptr<PasswordEditDelegate> password_edit_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordEditingBridge);
 };

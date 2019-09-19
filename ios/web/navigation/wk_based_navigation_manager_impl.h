@@ -94,7 +94,7 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   void InitializeSession() override;
   void OnNavigationItemsPruned(size_t pruned_item_count) override;
   void OnNavigationItemCommitted() override;
-  void OnRendererInitiatedNavigationStarted(const GURL& url) override;
+  void OnNavigationStarted(const GURL& url) override;
   void DetachFromWebView() override;
   CRWSessionController* GetSessionController() const override;
   void AddTransientItem(const GURL& url) override;

@@ -21,7 +21,7 @@ namespace blink {
 // As the signatures of callback interface's operations vary, this class does
 // not implement any operation. Subclasses will implement it.
 class PLATFORM_EXPORT CallbackInterfaceBase
-    : public GarbageCollectedFinalized<CallbackInterfaceBase>,
+    : public GarbageCollected<CallbackInterfaceBase>,
       public NameClient {
  public:
   // Whether the callback interface is a "single operation callback interface"

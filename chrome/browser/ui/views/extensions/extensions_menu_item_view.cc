@@ -25,6 +25,15 @@
 namespace {
 constexpr int EXTENSION_CONTEXT_MENU = 13;
 constexpr int EXTENSION_PINNING = 14;
+
+std::unique_ptr<views::ImageButton> CreateButton(
+    int id,
+    views::ButtonListener* listener) {
+  auto button = views::CreateVectorImageButton(listener);
+  button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+  button->SetID(id);
+  return button;
+}
 }  // namespace
 
 ExtensionsMenuItemView::ExtensionsMenuItemView(
@@ -56,16 +65,15 @@ ExtensionsMenuItemView::ExtensionsMenuItemView(
       ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
           ui::NativeTheme::kColorId_DefaultIconColor);
 
-  auto pin_button = views::CreateVectorImageButton(this);
-  pin_button->SetID(EXTENSION_PINNING);
+  auto pin_button = CreateButton(EXTENSION_PINNING, this);
   pin_button->set_ink_drop_base_color(icon_color);
+
   pin_button_ = pin_button.get();
   AddChildView(std::move(pin_button));
 
-  auto context_menu_button = views::CreateVectorImageButton(nullptr);
+  auto context_menu_button = CreateButton(EXTENSION_CONTEXT_MENU, nullptr);
   views::SetImageFromVectorIcon(context_menu_button.get(), kBrowserToolsIcon,
                                 kSecondaryIconSizeDp, icon_color);
-  context_menu_button->SetID(EXTENSION_CONTEXT_MENU);
   context_menu_button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_MENU_CONTEXT_MENU_TOOLTIP));
   context_menu_button->SetButtonController(

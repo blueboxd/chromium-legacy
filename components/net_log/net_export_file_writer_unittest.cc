@@ -738,7 +738,7 @@ TEST_F(NetExportFileWriterTest, StartWithNetworkContextActive) {
   simple_loader->SetOnRedirectCallback(base::BindRepeating(
       [](base::RepeatingClosure notify_log,
          const net::RedirectInfo& redirect_info,
-         const network::ResourceResponseHead& response_head,
+         const network::mojom::URLResponseHead& response_head,
          std::vector<std::string>* to_be_removed_headers) { notify_log.Run(); },
       run_loop.QuitClosure()));
   simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(

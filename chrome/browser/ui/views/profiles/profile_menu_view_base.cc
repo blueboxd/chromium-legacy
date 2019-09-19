@@ -331,6 +331,19 @@ void ProfileMenuViewBase::AddAccountFeatureButton(
   RegisterClickAction(button, std::move(action));
 }
 
+void ProfileMenuViewBase::SetProfileHeading(const base::string16& heading) {
+  profile_heading_container_->RemoveAllChildViews(/*delete_children=*/true);
+  profile_heading_container_->SetLayoutManager(
+      std::make_unique<views::FillLayout>());
+
+  views::Label* label =
+      profile_heading_container_->AddChildView(std::make_unique<views::Label>(
+          heading, views::style::CONTEXT_LABEL, STYLE_HINT));
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label->SetHandlesTooltips(false);
+  label->SetBorder(views::CreateEmptyBorder(gfx::Insets(0, kMenuEdgeMargin)));
+}
+
 void ProfileMenuViewBase::AddSelectableProfile(const gfx::Image& image,
                                                const base::string16& name,
                                                base::RepeatingClosure action) {
@@ -487,6 +500,8 @@ void ProfileMenuViewBase::Reset() {
   components->AddChildView(
       CreateBorderedBoxView(std::move(bordered_box_container)));
 
+  profile_heading_container_ =
+      components->AddChildView(std::make_unique<views::View>());
   selectable_profiles_container_ =
       components->AddChildView(std::make_unique<views::View>());
   profile_features_container_ =

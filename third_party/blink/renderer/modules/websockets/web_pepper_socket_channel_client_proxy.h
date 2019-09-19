@@ -21,7 +21,7 @@ namespace blink {
 // WebPepperSocketImpl cannot be on Oilpan's heap. Thus we need to introduce a
 // proxy class to decouple WebPepperSocketImpl from WebSocketChannelClient.
 class WebPepperSocketChannelClientProxy final
-    : public GarbageCollectedFinalized<WebPepperSocketChannelClientProxy>,
+    : public GarbageCollected<WebPepperSocketChannelClientProxy>,
       public WebSocketChannelClient {
   USING_GARBAGE_COLLECTED_MIXIN(WebPepperSocketChannelClientProxy);
 

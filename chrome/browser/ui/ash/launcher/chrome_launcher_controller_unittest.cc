@@ -4806,3 +4806,92 @@ TEST_F(ChromeLauncherControllerTest, UnpinnableComponentApps) {
               GetPinnableForAppID(id, profile()));
   }
 }
+
+TEST_F(ChromeLauncherControllerWithArcTest, ReplacePinnedItem) {
+  InitLauncherController();
+  SendListOfArcApps();
+
+  const std::string arc_app_id1 =
+      ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
+  const std::string arc_app_id2 =
+      ArcAppTest::GetAppId(arc_test_.fake_apps()[1]);
+
+  extension_service_->AddExtension(extension1_.get());
+  extension_service_->AddExtension(extension2_.get());
+
+  launcher_controller_->PinAppWithID(extension1_->id());
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(arc_app_id1));
+
+  // Replace pin extension to ARC app
+  launcher_controller_->ReplacePinnedItem(extension1_->id(), arc_app_id1);
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(arc_app_id1));
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
+
+  // Replace pin ARC app to ARC app
+  launcher_controller_->ReplacePinnedItem(arc_app_id1, arc_app_id2);
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(arc_app_id2));
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(arc_app_id1));
+
+  // Replace pin ARC app to extension app
+  launcher_controller_->ReplacePinnedItem(arc_app_id2, extension1_->id());
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(arc_app_id2));
+
+  // Replace pin extension app to extension app
+  launcher_controller_->ReplacePinnedItem(extension1_->id(), extension2_->id());
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(extension2_->id()));
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
+
+  // Try to replace item that is not pinned.
+  launcher_controller_->ReplacePinnedItem(arc_app_id2, extension1_->id());
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension1_->id()));
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(arc_app_id2));
+
+  // Try to replace item with item that is already pinned.
+  launcher_controller_->PinAppWithID(extension1_->id());
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
+  launcher_controller_->ReplacePinnedItem(extension2_->id(), extension1_->id());
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(extension2_->id()));
+}
+
+TEST_F(ChromeLauncherControllerWithArcTest, PinAtIndex) {
+  InitLauncherController();
+  SendListOfArcApps();
+
+  const std::string arc_app_id1 =
+      ArcAppTest::GetAppId(arc_test_.fake_apps()[0]);
+  const std::string arc_app_id2 =
+      ArcAppTest::GetAppId(arc_test_.fake_apps()[1]);
+
+  extension_service_->AddExtension(extension1_.get());
+  extension_service_->AddExtension(extension2_.get());
+
+  int index = 0;
+  launcher_controller_->PinAppAtIndex(extension1_->id(), index);
+  EXPECT_EQ(index,
+            launcher_controller_->PinnedItemIndexByAppID(extension1_->id()));
+
+  launcher_controller_->PinAppAtIndex(extension2_->id(), index);
+  EXPECT_EQ(index,
+            launcher_controller_->PinnedItemIndexByAppID(extension2_->id()));
+  EXPECT_NE(index,
+            launcher_controller_->PinnedItemIndexByAppID(extension1_->id()));
+
+  index = 3;
+  launcher_controller_->PinAppAtIndex(arc_app_id1, index);
+  EXPECT_EQ(index, launcher_controller_->PinnedItemIndexByAppID(arc_app_id1));
+
+  // Test pinning at invalid index.
+  index = -100;
+  launcher_controller_->PinAppAtIndex(arc_app_id2, index);
+  EXPECT_NE(index, launcher_controller_->PinnedItemIndexByAppID(arc_app_id2));
+  EXPECT_EQ(-1, launcher_controller_->PinnedItemIndexByAppID(arc_app_id2));
+
+  // Test pinning already pinned app.
+  index = 0;
+  launcher_controller_->PinAppAtIndex(arc_app_id1, index);
+  EXPECT_NE(index, launcher_controller_->PinnedItemIndexByAppID(arc_app_id1));
+  EXPECT_EQ(3, launcher_controller_->PinnedItemIndexByAppID(arc_app_id1));
+}

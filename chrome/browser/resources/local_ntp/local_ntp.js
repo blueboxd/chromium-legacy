@@ -72,8 +72,6 @@ const CLASSES = {
   CLOCK_ICON: 'clock-icon',
   // Applies styles to dialogs used in customization.
   CUSTOMIZE_DIALOG: 'customize-dialog',
-  DARK: 'dark',
-  DEFAULT_THEME: 'default-theme',
   DELAYED_HIDE_NOTIFICATION: 'mv-notice-delayed-hide',
   // Extended and elevated style for customization entry point.
   ENTRY_POINT_ENHANCED: 'ep-enhanced',
@@ -98,8 +96,6 @@ const CLASSES = {
   SHOW_ELEMENT: 'show-element',
   // When the realbox has matches to show.
   SHOW_MATCHES: 'show-matches',
-  // Applied when the fakebox placeholder text should not be hidden on focus.
-  SHOW_PLACEHOLDER: 'show-placeholder',
   URL_ICON: 'url-icon',  // Global/favicon/url icon.
   // Applied when the doodle notifier should be shown instead of the doodle.
   USE_NOTIFIER: 'use-notifier',
@@ -747,8 +743,6 @@ function init() {
     if (configData.realboxEnabled) {
       const realboxEl = $(IDS.REALBOX);
       realboxEl.placeholder = configData.translatedStrings.searchboxPlaceholder;
-      realboxEl.classList.toggle(
-          CLASSES.SHOW_PLACEHOLDER, configData.showPlaceholderOnFocus);
       realboxEl.addEventListener('copy', onRealboxCutCopy);
       realboxEl.addEventListener('cut', onRealboxCutCopy);
       realboxEl.addEventListener('input', onRealboxInput);
@@ -767,10 +761,6 @@ function init() {
 
       utils.disableOutlineOnMouseClick($(IDS.REALBOX_MICROPHONE));
     } else {
-      if (configData.showPlaceholderOnFocus) {
-        $(IDS.FAKEBOX_TEXT).classList.add(CLASSES.SHOW_PLACEHOLDER);
-      }
-
       // Set up the fakebox (which only exists on the Google NTP).
       ntpApiHandle.oninputstart = onInputStart;
       ntpApiHandle.oninputcancel = onInputCancel;
@@ -1398,8 +1388,6 @@ function renderTheme() {
     return;
   }
 
-  $(IDS.NTP_CONTENTS).classList.toggle(CLASSES.DARK, info.isNtpBackgroundDark);
-
   // Update dark mode styling.
   isDarkModeEnabled = window.matchMedia('(prefers-color-scheme: dark)').matches;
   document.body.classList.toggle('light-chip', !getUseDarkChips(info));
@@ -1592,9 +1580,6 @@ function setCustomThemeStyle(themeInfo) {
     textColorLight = convertToRGBAColor(themeInfo.textColorLightRgba);
     mvxFilter = 'drop-shadow(0 0 0 ' + textColor + ')';
   }
-
-  $(IDS.NTP_CONTENTS)
-      .classList.toggle(CLASSES.DEFAULT_THEME, themeInfo.usingDefaultTheme);
 
   document.body.style.setProperty('--text-color', textColor);
   document.body.style.setProperty('--text-color-light', textColorLight);

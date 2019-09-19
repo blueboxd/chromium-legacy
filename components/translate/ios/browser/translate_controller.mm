@@ -24,7 +24,7 @@
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -258,7 +258,7 @@ void TranslateController::OnRequestFetchComplete(
   // |ResponseInfo()| may be a nullptr if response is incomplete.
   int response_code = 0;
   std::string status_text;
-  const network::ResourceResponseHead* response_head =
+  const network::mojom::URLResponseHead* response_head =
       url_loader->ResponseInfo();
   if (response_head && response_head->headers) {
     net::HttpResponseHeaders* headers = response_head->headers.get();

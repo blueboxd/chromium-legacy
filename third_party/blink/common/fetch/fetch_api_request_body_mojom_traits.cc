@@ -5,6 +5,7 @@
 #include "third_party/blink/public/common/fetch/fetch_api_request_body_mojom_traits.h"
 
 #include "services/network/public/cpp/url_request_mojom_traits.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 
 namespace mojo {
 

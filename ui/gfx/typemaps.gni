@@ -14,8 +14,9 @@ typemaps = [
   "//ui/gfx/mojom/overlay_transform.typemap",
   "//ui/gfx/mojom/presentation_feedback.typemap",
   "//ui/gfx/mojom/rrect_f.typemap",
-  "//ui/gfx/mojom/swap_result.typemap",
   "//ui/gfx/mojom/selection_bound.typemap",
+  "//ui/gfx/mojom/swap_result.typemap",
+  "//ui/gfx/mojom/swap_timings.typemap",
   "//ui/gfx/mojom/transform.typemap",
   "//ui/gfx/range/mojom/range.typemap",
 ]

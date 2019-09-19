@@ -11,6 +11,7 @@ include_rules = [
   "+net",
   "+services/metrics/public",
   "+services/network/public/cpp",
+  "+services/network/public/mojom",
   "+services/network/test",
   "+third_party/libaddressinput",
   "+third_party/re2",

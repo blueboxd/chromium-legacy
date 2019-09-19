@@ -256,9 +256,11 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
   display_->DrawAndSwap();
   // SkiaRenderer generates DidReceiveSwapBuffersAck calls.
   if (!features::IsUsingSkiaRenderer()) {
-    // TODO(dlibby): Consider sending real swap timings here for webview (or
-    // prove why it is not needed).
-    display_->DidReceiveSwapBuffersAck(gfx::SwapTimings());
+    // Metrics tracking in CompositorFrameReporter expects that every frame
+    // has non-null SwapTimings. We don't know the exact swap start/end times
+    // here so we use Now() as a filler.
+    base::TimeTicks now = base::TimeTicks::Now();
+    display_->DidReceiveSwapBuffersAck({now, now});
   }
   gl_surface_->MaybeDidPresent(gfx::PresentationFeedback(
       base::TimeTicks::Now(), base::TimeDelta(), 0 /* flags */));

@@ -29,7 +29,7 @@ class ExecutionContext;
 // Worklets have their own agent.
 // While an WindowAgentFactory is shared across a group of reachable frames,
 // Agent is shared across a group of reachable and same-site frames.
-class CORE_EXPORT Agent : public GarbageCollectedFinalized<Agent> {
+class CORE_EXPORT Agent : public GarbageCollected<Agent> {
  public:
   static Agent* CreateForWorkerOrWorklet(
       v8::Isolate* isolate,

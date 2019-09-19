@@ -119,8 +119,7 @@ PresentAddPassesDialogResult GetUmaResult(
       InfoBarManagerImpl::FromWebState(_webState),
       infobars::InfoBarDelegate::SHOW_PASSKIT_ERROR_INFOBAR_DELEGATE_IOS,
       /*vector_icon=*/nullptr,
-      l10n_util::GetStringUTF16(IDS_IOS_GENERIC_PASSKIT_ERROR),
-      /*auto_expire=*/true);
+      l10n_util::GetStringUTF16(IDS_IOS_GENERIC_PASSKIT_ERROR));
 
   // Infobar does not provide callback on dismissal.
   [self stop];

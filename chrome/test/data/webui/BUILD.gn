@@ -63,6 +63,7 @@ js2gtest("browser_tests_js_webui") {
     "bookmarks/bookmarks_browsertest.js",
     "chrome_send_browsertest.js",
     "cr_components/cr_components_browsertest.js",
+    "cr_components/cr_components_v3_browsertest.js",
     "cr_elements/cr_elements_browsertest.js",
     "cr_elements/cr_elements_v3_browsertest.js",
     "find_shortcut_behavior_browsertest.js",
@@ -164,6 +165,7 @@ js2gtest("browser_tests_js_webui") {
     "//skia",
   ]
   data = [
+    "$root_gen_dir/chrome/test/data/webui/cr_components/managed_footnote_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_button_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_container_shadow_behavior_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_dialog_test.m.js",
@@ -262,6 +264,7 @@ js2gtest("unit_tests_js") {
 group("modulize") {
   deps = [
     ":modulize_local",
+    "./cr_components:modulize",
     "./cr_elements:modulize",
   ]
 }

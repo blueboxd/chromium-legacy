@@ -19,7 +19,7 @@ namespace blink {
 class Document;
 
 class IntersectionObserverController
-    : public GarbageCollectedFinalized<IntersectionObserverController>,
+    : public GarbageCollected<IntersectionObserverController>,
       public ContextClient,
       public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(IntersectionObserverController);

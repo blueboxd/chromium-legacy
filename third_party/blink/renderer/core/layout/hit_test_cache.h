@@ -44,8 +44,7 @@ struct HitTestCacheEntry {
   void CacheValues(const HitTestCacheEntry&);
 };
 
-class CORE_EXPORT HitTestCache final
-    : public GarbageCollectedFinalized<HitTestCache> {
+class CORE_EXPORT HitTestCache final : public GarbageCollected<HitTestCache> {
  public:
   HitTestCache() : update_index_(0), dom_tree_version_(0) {}
 

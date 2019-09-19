@@ -59,7 +59,7 @@ class PaintArtifactCompositor;
 // with compositor animations when both classes of CSS Animations are triggered
 // by the same recalc.
 class CORE_EXPORT PendingAnimations final
-    : public GarbageCollectedFinalized<PendingAnimations> {
+    : public GarbageCollected<PendingAnimations> {
  public:
   explicit PendingAnimations(Document& document)
       : timer_(document.GetTaskRunner(TaskType::kInternalDefault),

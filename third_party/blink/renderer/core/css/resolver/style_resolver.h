@@ -60,9 +60,7 @@ enum ApplyMask { kApplyMaskRegular = 1 << 0, kApplyMaskVisited = 1 << 1 };
 // This class selects a ComputedStyle for a given element in a document based on
 // the document's collection of stylesheets (user styles, author styles, UA
 // style). There is a 1-1 relationship of StyleResolver and Document.
-class CORE_EXPORT StyleResolver final
-    : public GarbageCollectedFinalized<StyleResolver> {
-
+class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
  public:
   explicit StyleResolver(Document&);
   ~StyleResolver();

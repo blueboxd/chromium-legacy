@@ -62,7 +62,7 @@ static bool operator!=(const PresentationAttributeCacheKey& a,
 }
 
 struct PresentationAttributeCacheEntry final
-    : public GarbageCollectedFinalized<PresentationAttributeCacheEntry> {
+    : public GarbageCollected<PresentationAttributeCacheEntry> {
  public:
   void Trace(Visitor* visitor) { visitor->Trace(value); }
 

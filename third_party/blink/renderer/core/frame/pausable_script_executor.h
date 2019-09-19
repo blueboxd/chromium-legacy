@@ -22,7 +22,7 @@ class ScriptState;
 class WebScriptExecutionCallback;
 
 class CORE_EXPORT PausableScriptExecutor final
-    : public GarbageCollectedFinalized<PausableScriptExecutor>,
+    : public GarbageCollected<PausableScriptExecutor>,
       public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(PausableScriptExecutor);
 
@@ -38,7 +38,7 @@ class CORE_EXPORT PausableScriptExecutor final
                            v8::Local<v8::Value> argv[],
                            WebScriptExecutionCallback*);
 
-  class Executor : public GarbageCollectedFinalized<Executor> {
+  class Executor : public GarbageCollected<Executor> {
    public:
     virtual ~Executor() = default;
 

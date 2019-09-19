@@ -83,20 +83,12 @@ ACTION_TEMPLATE(SaveArgPointeeMove,
 }
 
 // Test blink::Platform implementation that overrides the known methods needed
-// by the tests, including creation of WebRtcAudioDevice and
-// AudioCapturerSource instances.
+// by the tests, including creation of AudioCapturerSource instances.
 //
 // TODO(crbug.com/704136): When this test moves to blink/renderer/ it should
 // inherit from TestingPlatformSupport and use ScopedTestingPlatformSupport.
-class WebRtcAudioDeviceTestingPlatformSupport : public blink::Platform {
+class AudioCapturerSourceTestingPlatformSupport : public blink::Platform {
  public:
-  WebRtcAudioDeviceTestingPlatformSupport(
-      MockPeerConnectionDependencyFactory* pc_factory)
-      : pc_factory_(pc_factory) {}
-  blink::WebRtcAudioDeviceImpl* GetWebRtcAudioDevice() override {
-    return pc_factory_->GetWebRtcAudioDevice();
-  }
-
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() const override {
     return ChildProcess::current() ? ChildProcess::current()->io_task_runner()
                                    : nullptr;
@@ -109,9 +101,6 @@ class WebRtcAudioDeviceTestingPlatformSupport : public blink::Platform {
     EXPECT_EQ(nullptr, web_frame);
     return AudioDeviceFactory::NewAudioCapturerSource(MSG_ROUTING_NONE, params);
   }
-
- private:
-  MockPeerConnectionDependencyFactory* pc_factory_;
 };
 
 class MockRTCStatsResponse : public LocalRTCStatsResponse {
@@ -304,9 +293,8 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
     mock_dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
 
     platform_original_ = blink::Platform::Current();
-    webrtc_audio_device_platform_support_.reset(
-        new WebRtcAudioDeviceTestingPlatformSupport(
-            mock_dependency_factory_.get()));
+    webrtc_audio_device_platform_support_ =
+        std::make_unique<AudioCapturerSourceTestingPlatformSupport>();
     blink::Platform::SetCurrentPlatformForTesting(
         webrtc_audio_device_platform_support_.get());
 
@@ -596,7 +584,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
   // ThreadPool.
   base::test::TaskEnvironment task_environment_;
   ChildProcess child_process_;
-  std::unique_ptr<WebRtcAudioDeviceTestingPlatformSupport>
+  std::unique_ptr<AudioCapturerSourceTestingPlatformSupport>
       webrtc_audio_device_platform_support_;
   blink::Platform* platform_original_ = nullptr;
   std::unique_ptr<MockWebRTCPeerConnectionHandlerClient> mock_client_;

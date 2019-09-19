@@ -77,10 +77,8 @@ class FakePictureLayerImpl : public PictureLayerImpl {
 
   PictureLayerTilingSet* tilings() { return tilings_.get(); }
   RasterSource* raster_source() { return raster_source_.get(); }
-  void SetRasterSourceOnPending(scoped_refptr<RasterSource> raster_source,
-                                const Region& invalidation);
-  void SetRasterSourceOnActive(scoped_refptr<RasterSource> raster_source,
-                               const Region& invalidation);
+  void SetRasterSource(scoped_refptr<RasterSource> raster_source,
+                       const Region& invalidation);
   size_t append_quads_count() { return append_quads_count_; }
 
   const Region& invalidation() const { return invalidation_; }

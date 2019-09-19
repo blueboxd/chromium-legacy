@@ -10,6 +10,7 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/test/ash_test_base.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "ui/display/manager/display_manager.h"
 
 namespace ash {
 
@@ -76,6 +77,57 @@ class ScrollableShelfViewTest : public AshTestBase {
  private:
   DISALLOW_COPY_AND_ASSIGN(ScrollableShelfViewTest);
 };
+
+// Verifies that the display rotation should not break the scrollable shelf's
+// UI behavior (https://crbug.com/1000764).
+TEST_F(ScrollableShelfViewTest, CorrectUIAfterDisplayRotation) {
+  // Changes the display setting in order that the display's height is greater
+  // than the width.
+  UpdateDisplay("600x800");
+
+  display::Display display = GetPrimaryDisplay();
+
+  // Adds enough app icons so that after display rotation the scrollable
+  // shelf is still in overflow mode.
+  const int num = display.bounds().height() / ShelfConfig::Get()->button_size();
+  for (int i = 0; i < num; i++)
+    AddAppShortcut();
+
+  // Because the display's height is greater than the display's width,
+  // the scrollable shelf is in overflow mode before display rotation.
+  ASSERT_EQ(ScrollableShelfView::kShowRightArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+
+  // Presses the right arrow until reaching the last page of shelf icons.
+  const views::View* right_arrow = scrollable_shelf_view_->right_arrow();
+  const gfx::Point center_point =
+      right_arrow->GetBoundsInScreen().CenterPoint();
+  while (right_arrow->GetVisible()) {
+    GetEventGenerator()->MoveMouseTo(center_point);
+    GetEventGenerator()->PressLeftButton();
+    GetEventGenerator()->ReleaseLeftButton();
+  }
+  ASSERT_EQ(ScrollableShelfView::kShowLeftArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+
+  // Rotates the display by 90 degrees.
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  display_manager->SetDisplayRotation(display.id(), display::Display::ROTATE_90,
+                                      display::Display::RotationSource::ACTIVE);
+
+  // After rotation, checks the following things:
+  // (1) The scrollable shelf has the correct layout strategy.
+  // (2) The last app icon has the correct bounds.
+  EXPECT_EQ(ScrollableShelfView::kShowLeftArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+  views::ViewModel* view_model = shelf_view_->view_model();
+  const views::View* last_visible_icon =
+      view_model->view_at(scrollable_shelf_view_->last_tappable_app_index());
+  const gfx::Rect icon_bounds = last_visible_icon->GetBoundsInScreen();
+  const gfx::Rect shelf_container_bounds =
+      scrollable_shelf_view_->shelf_container_view()->GetBoundsInScreen();
+  EXPECT_EQ(icon_bounds.right(), shelf_container_bounds.right());
+}
 
 // When hovering mouse on a shelf icon, the tooltip only shows for the visible
 // icon (see https://crbug.com/997807).

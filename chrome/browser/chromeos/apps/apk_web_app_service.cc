@@ -400,6 +400,7 @@ void ApkWebAppService::OnDidFinishInstall(const std::string& package_name,
   // when the container starts up again.
   dict_update->SetPath({web_app_id, kShouldRemoveKey}, base::Value(false));
 
+  // For testing.
   if (web_app_installed_callback_)
     std::move(web_app_installed_callback_).Run(package_name, web_app_id);
 }

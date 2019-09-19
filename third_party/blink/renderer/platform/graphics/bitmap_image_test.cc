@@ -116,7 +116,7 @@ class TestingPlatformSupportWithMaxDecodedBytes
 
 class BitmapImageTest : public testing::Test {
  public:
-  class FakeImageObserver : public GarbageCollectedFinalized<FakeImageObserver>,
+  class FakeImageObserver : public GarbageCollected<FakeImageObserver>,
                             public ImageObserver {
     USING_GARBAGE_COLLECTED_MIXIN(FakeImageObserver);
 

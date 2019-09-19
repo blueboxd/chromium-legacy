@@ -113,7 +113,7 @@ class ManagementUIHandler : public content::WebUIMessageHandler,
   static void InitializeInternal(content::WebUI* web_ui,
                                  content::WebUIDataSource* source,
                                  Profile* profile);
-  void AddExtensionReportingInfo(base::Value* report_sources);
+  void AddReportingInfo(base::Value* report_sources);
 
   base::DictionaryValue GetContextualManagedData(Profile* profile);
   base::Value GetThreatProtectionInfo(Profile* profile) const;

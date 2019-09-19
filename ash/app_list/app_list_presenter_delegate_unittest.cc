@@ -19,6 +19,7 @@
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/expand_arrow_view.h"
 #include "ash/app_list/views/search_box_view.h"
+#include "ash/app_list/views/search_result_page_view.h"
 #include "ash/app_list/views/test/apps_grid_view_test_api.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
@@ -1814,6 +1815,458 @@ TEST_F(AppListPresenterDelegateTest,
 
   EXPECT_EQ(gfx::RoundedCornersF(background_radius, background_radius, 0, 0),
             background_shield->layer()->rounded_corner_radii());
+}
+
+// Tests for variety of app list behavior with kScalableAppList feature enabled
+// or disabled, depending on the parameter value.
+class AppListPresenterDelegateScalableAppListTest
+    : public AppListPresenterDelegateTest {
+ public:
+  AppListPresenterDelegateScalableAppListTest() {
+    if (GetParam()) {
+      scoped_feature_list_.InitWithFeatures(
+          {app_list_features::kScalableAppList}, {});
+    } else {
+      scoped_feature_list_.InitWithFeatures(
+          {}, {app_list_features::kScalableAppList});
+    }
+  }
+
+  void SetUp() override {
+    AppListPresenterDelegateTest::SetUp();
+
+    UpdateDisplay("1080x900");
+    GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  }
+
+  bool ScalableAppListEnabled() const { return GetParam(); }
+
+  // Calculates expected suggestion chip top based on the search box in-screen
+  // bounds.
+  int ExpectedSuggestionChipContainerTop(const gfx::Rect& search_box_bounds) {
+    return search_box_bounds.bottom() +
+           24 /*suggesion chip container top margin*/;
+  }
+
+  // Calculates expected apps grid position based on display height and the
+  // search box in-screen bounds.
+  // NOTE: This assumes that the display size is such that the preferred apps
+  // grid size is within min and max apps grid height (in which case the margin
+  // when scalable app list is not enabled is 1 / 16 of the available height).
+  int ExpectedAppsGridTop(const app_list::AppListConfig& config,
+                          int display_height,
+                          const gfx::Rect& search_box_bounds) {
+    if (ScalableAppListEnabled()) {
+      return ExpectedSuggestionChipContainerTop(search_box_bounds) +
+             32 /*suggestion chip container height*/ +
+             config.grid_fadeout_zone_height() -
+             config.grid_fadeout_mask_height();
+    }
+
+    int top_with_margin =
+        ExpectedSuggestionChipContainerTop(search_box_bounds) +
+        32 /*suggestion chip container height*/;
+    const int available_height =
+        display_height - config.shelf_height() -
+        config.search_box_fullscreen_top_padding() -
+        search_box_bounds.height() - 32 /*suggestion chip container height*/
+        - 24 /*margin between suggestion chip and search box*/;
+    return top_with_margin + (available_height) / 16 -
+           config.grid_fadeout_zone_height();
+  }
+
+  app_list::AppsGridView* apps_grid_view() {
+    return GetAppListView()
+        ->app_list_main_view()
+        ->contents_view()
+        ->GetAppsContainerView()
+        ->apps_grid_view();
+  }
+
+  app_list::SearchResultPageView* search_result_page() {
+    return GetAppListView()
+        ->app_list_main_view()
+        ->contents_view()
+        ->search_results_page_view();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppListPresenterDelegateScalableAppListTest);
+};
+
+// The parameter indicates whether the kScalableAppList feature is enabled.
+INSTANTIATE_TEST_SUITE_P(ScalableAppListEnabled,
+                         AppListPresenterDelegateScalableAppListTest,
+                         testing::Bool());
+
+// Tests that the app list contents top margin is gradually updated during drag
+// between peeking and fullscreen view state while showing apps page.
+TEST_P(AppListPresenterDelegateScalableAppListTest,
+       AppsPagePositionDuringDrag) {
+  const app_list::AppListConfig& config = GetAppListView()->GetAppListConfig();
+  const int shelf_height = config.shelf_height();
+  const int fullscreen_y = 0;
+  const int closed_y = 900 - shelf_height;
+  const int fullscreen_search_box_padding =
+      ScalableAppListEnabled() ? (900 - shelf_height) / 16
+                               : config.search_box_fullscreen_top_padding();
+
+  GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
+  const gfx::Point peeking_top =
+      GetAppListView()->GetBoundsInScreen().top_center();
+
+  // Drag AppListView upwards half way to the top of the screen, and check the
+  // search box padding has been updated to a value half-way between peeking and
+  // fullscreen values.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveTouch(peeking_top);
+  generator->PressTouch();
+  generator->MoveTouch(
+      gfx::Point(peeking_top.x(), (peeking_top.y() + fullscreen_y) / 2));
+  GetAppListTestHelper()->WaitUntilIdle();
+
+  EXPECT_LE(std::abs(GetAppListView()->GetAppListTransitionProgress(
+                         app_list::AppListView::kProgressFlagNone) -
+                     1.5f),
+            0.01f);
+
+  gfx::Rect search_box_bounds =
+      GetAppListView()->search_box_view()->GetBoundsInScreen();
+  search_box_bounds.Inset(GetAppListView()->search_box_view()->GetInsets());
+
+  EXPECT_EQ((peeking_top.y() + fullscreen_y) / 2 +
+                (config.search_box_peeking_top_padding() +
+                 fullscreen_search_box_padding) /
+                    2,
+            search_box_bounds.y());
+  EXPECT_EQ(ExpectedAppsGridTop(config, 900, search_box_bounds),
+            apps_grid_view()->GetBoundsInScreen().y());
+  // In apps state, search results page should be hidden behind the search
+  // box.
+  EXPECT_EQ(search_box_bounds, search_result_page()->GetBoundsInScreen());
+
+  // Move to the fullscreen position, and verify the search box padding is
+  // equal to the expected fullscreen value.
+  generator->MoveTouch(gfx::Point(peeking_top.x(), fullscreen_y));
+  GetAppListTestHelper()->WaitUntilIdle();
+
+  EXPECT_EQ(2.0f, GetAppListView()->GetAppListTransitionProgress(
+                      app_list::AppListView::kProgressFlagNone));
+
+  search_box_bounds = GetAppListView()->search_box_view()->GetBoundsInScreen();
+  search_box_bounds.Inset(GetAppListView()->search_box_view()->GetInsets());
+
+  EXPECT_EQ(fullscreen_search_box_padding, search_box_bounds.y());
+  EXPECT_EQ(ExpectedAppsGridTop(config, 900, search_box_bounds),
+            apps_grid_view()->GetBoundsInScreen().y());
+  EXPECT_EQ(search_box_bounds, search_result_page()->GetBoundsInScreen());
+
+  // Move half way between peeking and closed state - the search box padding
+  // should be half distance between closed and peeking padding.
+  generator->MoveTouch(
+      gfx::Point(peeking_top.x(), (peeking_top.y() + closed_y) / 2));
+  GetAppListTestHelper()->WaitUntilIdle();
+
+  EXPECT_LE(std::abs(GetAppListView()->GetAppListTransitionProgress(
+                         app_list::AppListView::kProgressFlagNone) -
+                     0.5f),
+            0.01f);
+
+  search_box_bounds = GetAppListView()->search_box_view()->GetBoundsInScreen();
+  search_box_bounds.Inset(GetAppListView()->search_box_view()->GetInsets());
+
+  EXPECT_EQ((peeking_top.y() + closed_y) / 2 +
+                (config.search_box_peeking_top_padding() +
+                 config.search_box_closed_top_padding()) /
+                    2,
+            search_box_bounds.y());
+  EXPECT_EQ(ExpectedAppsGridTop(config, 900, search_box_bounds),
+            apps_grid_view()->GetBoundsInScreen().y());
+  EXPECT_EQ(search_box_bounds, search_result_page()->GetBoundsInScreen());
+
+  // Move to the closed state height, and verify the search box padding matches
+  // the state.
+  generator->MoveTouch(gfx::Point(peeking_top.x(), closed_y));
+  GetAppListTestHelper()->WaitUntilIdle();
+  EXPECT_EQ(0.0f, GetAppListView()->GetAppListTransitionProgress(
+                      app_list::AppListView::kProgressFlagNone));
+
+  search_box_bounds = GetAppListView()->search_box_view()->GetBoundsInScreen();
+  search_box_bounds.Inset(GetAppListView()->search_box_view()->GetInsets());
+
+  EXPECT_EQ(closed_y + config.search_box_closed_top_padding(),
+            search_box_bounds.y());
+  EXPECT_EQ(ExpectedAppsGridTop(config, 900, search_box_bounds),
+            apps_grid_view()->GetBoundsInScreen().y());
+  EXPECT_EQ(search_box_bounds, search_result_page()->GetBoundsInScreen());
+}
+
+// Tests that the app list contents top margin is gradually updated during drag
+// between half and fullscreen state while showing search results.
+TEST_P(AppListPresenterDelegateScalableAppListTest,
+       SearchResultsPagePositionDuringDrag) {
+  GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
+
+  // Enter text in the search box to transition to half app list.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(ui::KeyboardCode::VKEY_0, 0);
+  GetAppListTestHelper()->CheckState(AppListViewState::kHalf);
+
+  const app_list::AppListConfig& config = GetAppListView()->GetAppListConfig();
+  const int shelf_height = config.shelf_height();
+  const int search_results_height = 440;
+  const int fullscreen_y = 0;
+  const int closed_y = 900 - shelf_height;
+  const int fullscreen_search_box_padding =
+      ScalableAppListEnabled() ? (900 - shelf_height) / 16
+                               : config.search_box_fullscreen_top_padding();
+
+  const gfx::Point half_top =
+      GetAppListView()->GetBoundsInScreen().top_center();
+
+  // Drag AppListView upwards half way to the top of the screen, and check the
+  // search box padding has been updated to a value half-way between peeking and
+  // fullscreen values.
+  generator->MoveTouch(half_top);
+  generator->PressTouch();
+  generator->MoveTouch(
+      gfx::Point(half_top.x(), (half_top.y() + fullscreen_y) / 2));
+  GetAppListTestHelper()->WaitUntilIdle();
+
+  EXPECT_LE(std::abs(GetAppListView()->GetAppListTransitionProgress(
+                         app_list::AppListView::kProgressFlagSearchResults) -
+                     1.5f),
+            0.01f);
+
+  gfx::Rect search_box_bounds =
+      GetAppListView()->search_box_view()->GetBoundsInScreen();
+  search_box_bounds.Inset(GetAppListView()->search_box_view()->GetInsets());
+
+  EXPECT_EQ((half_top.y() + fullscreen_y) / 2 +
+                (config.search_box_fullscreen_top_padding() +
+                 fullscreen_search_box_padding) /
+                    2,
+            search_box_bounds.y());
+  EXPECT_EQ(search_box_bounds.y(),
+            search_result_page()->GetBoundsInScreen().y());
+  EXPECT_EQ(search_results_height,
+            search_result_page()->GetBoundsInScreen().height());
+  // Apps grid should be off screen.
+  EXPECT_GT(apps_grid_view()->GetBoundsInScreen().y(), 900);
+
+  // Move to the fullscreen position, and verify the search box padding is
+  // equal to the expected fullscreen value.
+  generator->MoveTouch(gfx::Point(half_top.x(), fullscreen_y));
+  GetAppListTestHelper()->WaitUntilIdle();
+  EXPECT_EQ(2.0f, GetAppListView()->GetAppListTransitionProgress(
+                      app_list::AppListView::kProgressFlagSearchResults));
+
+  search_box_bounds = GetAppListView()->search_box_view()->GetBoundsInScreen();
+  search_box_bounds.Inset(GetAppListView()->search_box_view()->GetInsets());
+
+  EXPECT_EQ(fullscreen_search_box_padding, search_box_bounds.y());
+  EXPECT_EQ(search_box_bounds.y(),
+            search_result_page()->GetBoundsInScreen().y());
+  EXPECT_EQ(search_results_height,
+            search_result_page()->GetBoundsInScreen().height());
+  // Apps grid should be off screen.
+  EXPECT_GT(apps_grid_view()->GetBoundsInScreen().y(), 900);
+
+  // Move half way between peeking and closed state - the search box padding
+  // should be half distance between closed and peeking padding.
+  generator->MoveTouch(gfx::Point(half_top.x(), (half_top.y() + closed_y) / 2));
+  GetAppListTestHelper()->WaitUntilIdle();
+  EXPECT_LE(std::abs(GetAppListView()->GetAppListTransitionProgress(
+                         app_list::AppListView::kProgressFlagSearchResults) -
+                     0.5f),
+            0.01f);
+
+  search_box_bounds = GetAppListView()->search_box_view()->GetBoundsInScreen();
+  search_box_bounds.Inset(GetAppListView()->search_box_view()->GetInsets());
+
+  EXPECT_EQ((half_top.y() + closed_y) / 2 +
+                (config.search_box_fullscreen_top_padding() +
+                 config.search_box_closed_top_padding()) /
+                    2,
+            search_box_bounds.y());
+  EXPECT_EQ(search_box_bounds.y(),
+            search_result_page()->GetBoundsInScreen().y());
+  EXPECT_EQ(search_results_height,
+            search_result_page()->GetBoundsInScreen().height());
+  // Apps grid should be off screen.
+  EXPECT_GT(apps_grid_view()->GetBoundsInScreen().y(), 900);
+
+  // Move to the closed state height, and verify the search box padding matches
+  // the state.
+  generator->MoveTouch(gfx::Point(half_top.x(), closed_y));
+  GetAppListTestHelper()->WaitUntilIdle();
+  EXPECT_EQ(0.0f, GetAppListView()->GetAppListTransitionProgress(
+                      app_list::AppListView::kProgressFlagSearchResults));
+
+  search_box_bounds = GetAppListView()->search_box_view()->GetBoundsInScreen();
+  search_box_bounds.Inset(GetAppListView()->search_box_view()->GetInsets());
+
+  EXPECT_EQ(closed_y + config.search_box_closed_top_padding(),
+            search_box_bounds.y());
+  EXPECT_EQ(search_box_bounds.y(),
+            search_result_page()->GetBoundsInScreen().y());
+  EXPECT_EQ(search_results_height,
+            search_result_page()->GetBoundsInScreen().height());
+  // Apps grid should be off screen.
+  EXPECT_GT(apps_grid_view()->GetBoundsInScreen().y(), 900);
+}
+
+// Tests changing the active app list page while drag is in progress.
+TEST_P(AppListPresenterDelegateScalableAppListTest, SwitchPageDuringDrag) {
+  GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
+  const gfx::Point peeking_top =
+      GetAppListView()->GetBoundsInScreen().top_center();
+
+  // Enter text in the search box to transition to half app list.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(ui::KeyboardCode::VKEY_0, 0);
+  GetAppListTestHelper()->CheckState(AppListViewState::kHalf);
+
+  const gfx::Point half_top =
+      GetAppListView()->GetBoundsInScreen().top_center();
+
+  const app_list::AppListConfig& config = GetAppListView()->GetAppListConfig();
+  const int shelf_height = config.shelf_height();
+  const int search_results_height = 440;
+  const int fullscreen_y = 0;
+  const int fullscreen_search_box_padding =
+      ScalableAppListEnabled() ? (900 - shelf_height) / 16
+                               : config.search_box_fullscreen_top_padding();
+
+  // Drag AppListView upwards half way to the top of the screen, and check the
+  // search box padding has been updated to a value half-way between peeking and
+  // fullscreen values.
+  generator->MoveTouch(half_top);
+  generator->PressTouch();
+  generator->MoveTouch(
+      gfx::Point(half_top.x(), (half_top.y() + fullscreen_y) / 2));
+  GetAppListTestHelper()->WaitUntilIdle();
+
+  gfx::Rect search_box_bounds =
+      GetAppListView()->search_box_view()->GetBoundsInScreen();
+  search_box_bounds.Inset(GetAppListView()->search_box_view()->GetInsets());
+
+  EXPECT_EQ((half_top.y() + fullscreen_y) / 2 +
+                (config.search_box_fullscreen_top_padding() +
+                 fullscreen_search_box_padding) /
+                    2,
+            search_box_bounds.y());
+  EXPECT_EQ(search_box_bounds.y(),
+            search_result_page()->GetBoundsInScreen().y());
+  EXPECT_EQ(search_results_height,
+            search_result_page()->GetBoundsInScreen().height());
+  // Apps grid should be off screen.
+  EXPECT_GT(apps_grid_view()->GetBoundsInScreen().y(), 900);
+
+  const gfx::Rect app_list_bounds = GetAppListView()->GetBoundsInScreen();
+
+  // Press ESC key - this should move the UI back to the app list.
+  generator->PressKey(ui::KeyboardCode::VKEY_ESCAPE, 0);
+  GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
+
+  // The app list position should remain the same.
+  EXPECT_EQ(app_list_bounds, GetAppListView()->GetBoundsInScreen());
+
+  // The search box should be moved so drag progress for peeking state matches
+  // the current height.
+  float new_progress = (0.5 * half_top.y()) / peeking_top.y();
+  int expected_search_box_top =
+      new_progress * peeking_top.y() +
+      (1 - new_progress) * fullscreen_search_box_padding +
+      new_progress * config.search_box_peeking_top_padding();
+
+  search_box_bounds = GetAppListView()->search_box_view()->GetBoundsInScreen();
+  search_box_bounds.Inset(GetAppListView()->search_box_view()->GetInsets());
+
+  EXPECT_EQ(expected_search_box_top, search_box_bounds.y());
+  EXPECT_EQ(ExpectedAppsGridTop(config, 900, search_box_bounds),
+            apps_grid_view()->GetBoundsInScreen().y());
+  EXPECT_EQ(search_box_bounds, search_result_page()->GetBoundsInScreen());
+
+  // Enter text in the search box to transition back to search results page.
+  generator->PressKey(ui::KeyboardCode::VKEY_0, 0);
+  GetAppListTestHelper()->CheckState(AppListViewState::kHalf);
+
+  search_box_bounds = GetAppListView()->search_box_view()->GetBoundsInScreen();
+  search_box_bounds.Inset(GetAppListView()->search_box_view()->GetInsets());
+
+  EXPECT_EQ((half_top.y() + fullscreen_y) / 2 +
+                (config.search_box_fullscreen_top_padding() +
+                 fullscreen_search_box_padding) /
+                    2,
+            search_box_bounds.y());
+  EXPECT_EQ(search_box_bounds.y(),
+            search_result_page()->GetBoundsInScreen().y());
+  EXPECT_EQ(search_results_height,
+            search_result_page()->GetBoundsInScreen().height());
+  // Apps grid should be off screen.
+  EXPECT_GT(apps_grid_view()->GetBoundsInScreen().y(), 900);
+}
+
+// Tests changing the active app list page in fullscreen state.
+TEST_P(AppListPresenterDelegateScalableAppListTest, SwitchPageInFullscreen) {
+  GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
+  FlingUpOrDown(GetEventGenerator(), GetAppListView(), true);
+  GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
+
+  const app_list::AppListConfig& config = GetAppListView()->GetAppListConfig();
+  const int shelf_height = config.shelf_height();
+  const int search_results_height = 440;
+  const int fullscreen_y = 0;
+  const int fullscreen_search_box_padding =
+      ScalableAppListEnabled() ? (900 - shelf_height) / 16
+                               : config.search_box_fullscreen_top_padding();
+
+  gfx::Rect search_box_bounds =
+      GetAppListView()->search_box_view()->GetBoundsInScreen();
+  search_box_bounds.Inset(GetAppListView()->search_box_view()->GetInsets());
+
+  EXPECT_EQ(fullscreen_y + fullscreen_search_box_padding,
+            search_box_bounds.y());
+  EXPECT_EQ(ExpectedAppsGridTop(config, 900, search_box_bounds),
+            apps_grid_view()->GetBoundsInScreen().y());
+  EXPECT_EQ(search_box_bounds, search_result_page()->GetBoundsInScreen());
+
+  const gfx::Rect app_list_bounds = GetAppListView()->GetBoundsInScreen();
+
+  // Enter text in the search box to transition to half app list.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(ui::KeyboardCode::VKEY_0, 0);
+  GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenSearch);
+
+  search_box_bounds = GetAppListView()->search_box_view()->GetBoundsInScreen();
+  search_box_bounds.Inset(GetAppListView()->search_box_view()->GetInsets());
+
+  EXPECT_EQ(app_list_bounds, GetAppListView()->GetBoundsInScreen());
+  EXPECT_EQ(fullscreen_y + fullscreen_search_box_padding,
+            search_box_bounds.y());
+  EXPECT_EQ(search_box_bounds.y(),
+            search_result_page()->GetBoundsInScreen().y());
+  EXPECT_EQ(search_results_height,
+            search_result_page()->GetBoundsInScreen().height());
+  // Apps grid should be off screen.
+  EXPECT_GT(apps_grid_view()->GetBoundsInScreen().y(), 900);
+
+  // Press ESC key - this should move the UI back to the app list.
+  generator->PressKey(ui::KeyboardCode::VKEY_ESCAPE, 0);
+  GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
+
+  search_box_bounds = GetAppListView()->search_box_view()->GetBoundsInScreen();
+  search_box_bounds.Inset(GetAppListView()->search_box_view()->GetInsets());
+
+  EXPECT_EQ(app_list_bounds, GetAppListView()->GetBoundsInScreen());
+  EXPECT_EQ(fullscreen_y + fullscreen_search_box_padding,
+            search_box_bounds.y());
+  EXPECT_EQ(ExpectedAppsGridTop(config, 900, search_box_bounds),
+            apps_grid_view()->GetBoundsInScreen().y());
+  EXPECT_EQ(search_box_bounds, search_result_page()->GetBoundsInScreen());
 }
 
 // Test a variety of behaviors for home launcher (app list in tablet mode).

@@ -40,7 +40,7 @@ namespace blink {
 class LayoutBlock;
 struct PaintInvalidatorContext;
 
-class DragCaret final : public GarbageCollectedFinalized<DragCaret>,
+class DragCaret final : public GarbageCollected<DragCaret>,
                         public SynchronousMutationObserver {
   USING_GARBAGE_COLLECTED_MIXIN(DragCaret);
 

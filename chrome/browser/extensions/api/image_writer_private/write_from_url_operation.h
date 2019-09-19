@@ -9,10 +9,10 @@
 
 #include "chrome/browser/extensions/api/image_writer_private/operation.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/gurl.h"
 
 namespace network {
-struct ResourceResponseHead;
 class SimpleURLLoader;
 }  // namespace network
 
@@ -53,7 +53,7 @@ class WriteFromUrlOperation : public Operation {
  private:
   void DestroySimpleURLLoader();
   void OnResponseStarted(const GURL& final_url,
-                         const network::ResourceResponseHead& response_head);
+                         const network::mojom::URLResponseHead& response_head);
   void OnDataDownloaded(uint64_t current);
   void OnSimpleLoaderComplete(base::FilePath file_path);
   void VerifyDownloadCompare(base::OnceClosure continuation,

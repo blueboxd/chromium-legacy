@@ -14,13 +14,11 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.permissions.PermissionTestRule.PermissionUpdateWaiter;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.device.geolocation.LocationProviderOverrider;
 import org.chromium.device.geolocation.MockLocationProvider;
@@ -69,7 +67,6 @@ public class GeolocationTest {
      */
     @Test
     @MediumTest
-    @Restriction({ChromeRestriction.RESTRICTION_TYPE_REQUIRES_TOUCH})
     @Feature({"Location", "Main"})
     @DisabledTest(message = "Modals are now enabled and test needs to be reworked crbug.com/935900")
     public void testGeolocationPlumbingAllowedInfoBar() throws Exception {
@@ -105,7 +102,6 @@ public class GeolocationTest {
      */
     @Test
     @MediumTest
-    @Restriction({ChromeRestriction.RESTRICTION_TYPE_REQUIRES_TOUCH})
     @Feature({"Location"})
     @DisabledTest(message = "Modals are now enabled and test needs to be reworked crbug.com/935900")
     public void testGeolocationWatchInfoBar() throws Exception {

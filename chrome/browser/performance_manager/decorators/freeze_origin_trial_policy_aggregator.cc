@@ -129,7 +129,7 @@ void FreezeOriginTrialPolicyAggregator::OnIsCurrentChanged(
 
 void FreezeOriginTrialPolicyAggregator::OnOriginTrialFreezePolicyChanged(
     const FrameNode* frame_node,
-    InterventionPolicy previous_value) {
+    const InterventionPolicy& previous_value) {
   if (frame_node->IsCurrent()) {
     auto* page_node = PageNodeImpl::FromNode(frame_node->GetPageNode());
     Data* data = Data::Get(page_node);

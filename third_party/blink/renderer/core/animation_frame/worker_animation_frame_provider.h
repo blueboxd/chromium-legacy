@@ -26,7 +26,7 @@ class OffscreenCanvas;
 // OffscreenCanvas that is connected to a Canvas, and this class signals
 // OffscreenCanvases when it's time to dispatch frames.
 class CORE_EXPORT WorkerAnimationFrameProvider
-    : public GarbageCollectedFinalized<WorkerAnimationFrameProvider>,
+    : public GarbageCollected<WorkerAnimationFrameProvider>,
       public BeginFrameProviderClient {
  public:
   WorkerAnimationFrameProvider(

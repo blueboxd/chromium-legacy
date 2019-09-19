@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
@@ -51,28 +52,37 @@ class DEVICE_GAMEPAD_EXPORT GamepadService
 
   // Increments the number of users of the provider. The Provider is running
   // when there's > 0 users, and is paused when the count drops to 0.
-  // consumer is registered to listen for gamepad connections. If this is the
+  // |consumer| is registered to listen for gamepad connections. If this is the
   // first time it is added to the set of consumers it will be treated
   // specially: it will not be informed about connections before a new user
   // gesture is observed at which point it will be notified for every connected
   // gamepads.
   //
-  // Must be called on the I/O thread.
-  void ConsumerBecameActive(GamepadConsumer* consumer);
-
-  // Decrements the number of users of the provider. consumer will not be
-  // informed about connections until it's added back via ConsumerBecameActive.
-  // Must be matched with a ConsumerBecameActive call.
+  // Returns true on success. If |consumer| is already active, returns false and
+  // exits without modifying the consumer set.
   //
   // Must be called on the I/O thread.
-  void ConsumerBecameInactive(GamepadConsumer* consumer);
+  bool ConsumerBecameActive(GamepadConsumer* consumer);
 
-  // Decrements the number of users of the provider and removes consumer from
+  // Decrements the number of users of the provider. |consumer| will not be
+  // informed about connections until it's added back via ConsumerBecameActive.
+  //
+  // Returns true on success. If |consumer| is not in the consumer set or is
+  // already inactive, returns false and exits without modifying the consumer
+  // set.
+  //
+  // Must be called on the I/O thread.
+  bool ConsumerBecameInactive(GamepadConsumer* consumer);
+
+  // Decrements the number of users of the provider and removes |consumer| from
   // the set of consumers. Should be matched with a a ConsumerBecameActive
   // call.
   //
+  // Returns true on success, or false if |consumer| was not in the consumer
+  // set.
+  //
   // Must be called on the I/O thread.
-  void RemoveConsumer(GamepadConsumer* consumer);
+  bool RemoveConsumer(GamepadConsumer* consumer);
 
   // Registers the given closure for calling when the user has interacted with
   // the device. This callback will only be issued once. Should only be called
@@ -151,6 +161,7 @@ class DEVICE_GAMEPAD_EXPORT GamepadService
 
   ConsumerConnectedStateMap inactive_consumer_state_;
 
+  // The number of active consumers in |consumers_|.
   int num_active_consumers_ = 0;
 
   bool gesture_callback_pending_ = false;

@@ -24,7 +24,7 @@ class GraphicsContext;
 class LocalFrameView;
 class RemoteFrame;
 
-class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
+class RemoteFrameView final : public GarbageCollected<RemoteFrameView>,
                               public FrameView {
   USING_GARBAGE_COLLECTED_MIXIN(RemoteFrameView);
 

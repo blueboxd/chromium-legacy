@@ -125,9 +125,8 @@ bool IsClientRequest(network::mojom::RequestContextFrameType frame_type,
 // Notifies the result of FetchDataLoader to |callback_|, the other endpoint
 // for which is passed to the browser process via
 // blink.mojom.ServiceWorkerFetchResponseCallback.OnResponseStream().
-class FetchLoaderClient final
-    : public GarbageCollectedFinalized<FetchLoaderClient>,
-      public FetchDataLoader::Client {
+class FetchLoaderClient final : public GarbageCollected<FetchLoaderClient>,
+                                public FetchDataLoader::Client {
   USING_GARBAGE_COLLECTED_MIXIN(FetchLoaderClient);
 
  public:

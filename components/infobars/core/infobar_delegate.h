@@ -225,6 +225,10 @@ class InfoBarDelegate {
   // Returns true if the InfoBar has a close button; true by default.
   virtual bool IsCloseable() const;
 
+  // Returns true if the InfoBar should animate when showing or hiding; true by
+  // default.
+  virtual bool ShouldAnimate() const;
+
   // Type-checking downcast routines:
   virtual ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate();
   virtual HungRendererInfoBarDelegate* AsHungRendererInfoBarDelegate();

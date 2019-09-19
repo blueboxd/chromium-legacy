@@ -20,7 +20,7 @@ namespace blink {
 using mojom::blink::ScreenAvailability;
 
 class MockPresentationAvailabilityObserver
-    : public GarbageCollectedFinalized<MockPresentationAvailabilityObserver>,
+    : public GarbageCollected<MockPresentationAvailabilityObserver>,
       public PresentationAvailabilityObserver {
   USING_GARBAGE_COLLECTED_MIXIN(MockPresentationAvailabilityObserver);
 

@@ -119,7 +119,7 @@ class TabStripModel {
     NEW_TAB_COMMAND = 1,
 
     // New tab was opened through the context menu on the tab strip.
-    // NEW_TAB_CONTEXT_MENU = 2,
+    NEW_TAB_CONTEXT_MENU = 2,
 
     // Number of enum entries, used for UMA histogram reporting macros.
     NEW_TAB_ENUM_COUNT = 3,
@@ -457,6 +457,7 @@ class TabStripModel {
   // for entries in the 'Add to existing group' submenu.
   enum ContextMenuCommand {
     CommandFirst,
+    CommandNewTabToRight,
     CommandReload,
     CommandDuplicate,
     CommandCloseTab,

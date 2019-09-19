@@ -106,7 +106,10 @@ static char** g_argv;
 // the device log that is retrieved from the device by the host.
 - (BOOL)shouldRedirectOutputToFile {
 #if !TARGET_IPHONE_SIMULATOR
-  return !base::debug::BeingDebugged();
+  // Tests in XCTest mode don't need to redirect output to a file because the
+  // test result parser analyzes console output.
+  return !base::ShouldRunIOSUnittestsWithXCTest() &&
+         !base::debug::BeingDebugged();
 #endif  // TARGET_IPHONE_SIMULATOR
   return NO;
 }

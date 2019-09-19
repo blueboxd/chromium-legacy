@@ -160,6 +160,9 @@ void CrostiniExportImport::Start(
     ContainerId container_id,
     base::FilePath path,
     CrostiniManager::CrostiniResultCallback callback) {
+  if (!IsCrostiniExportImportUIAllowedForProfile(profile_)) {
+    return std::move(callback).Run(CrostiniResult::NOT_ALLOWED);
+  }
   auto* notification = CrostiniExportImportNotification::Create(
       profile_, type, GetUniqueNotificationId(), path, container_id);
 

@@ -48,7 +48,7 @@ class StyleSheetContents;
 // broken down by what kind of scope they apply to (e.g. shadow host,
 // tree-boundary-crossing, etc).
 class CORE_EXPORT ScopedStyleResolver final
-    : public GarbageCollectedFinalized<ScopedStyleResolver> {
+    : public GarbageCollected<ScopedStyleResolver> {
  public:
   explicit ScopedStyleResolver(TreeScope& scope) : scope_(scope) {}
 

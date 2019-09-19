@@ -73,8 +73,7 @@ class V8PerContextData;
 // ScriptState is created when v8::Context is created.
 // ScriptState is destroyed when v8::Context is garbage-collected and
 // all V8 proxy objects that have references to the ScriptState are destructed.
-class PLATFORM_EXPORT ScriptState final
-    : public GarbageCollectedFinalized<ScriptState> {
+class PLATFORM_EXPORT ScriptState final : public GarbageCollected<ScriptState> {
  public:
   class Scope {
     STACK_ALLOCATED();
@@ -205,7 +204,7 @@ class PLATFORM_EXPORT ScriptState final
 // ScriptState alive.  You need to call Clear() once you no longer need the
 // context. Otherwise, the context will leak.
 class ScriptStateProtectingContext final
-    : public GarbageCollectedFinalized<ScriptStateProtectingContext> {
+    : public GarbageCollected<ScriptStateProtectingContext> {
  public:
   explicit ScriptStateProtectingContext(ScriptState* script_state)
       : script_state_(script_state) {

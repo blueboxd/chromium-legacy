@@ -159,11 +159,6 @@ base::TimeDelta LitePagePreviewsNavigationTimeoutDuration() {
                                              30 * 1000));
 }
 
-size_t LitePageRedirectPreviewMaxNavigationRestarts() {
-  return base::GetFieldTrialParamByFeatureAsInt(
-      features::kLitePageServerPreviews, "max_navigation_restart", 5);
-}
-
 int PreviewServerLoadshedMaxSeconds() {
   return base::GetFieldTrialParamByFeatureAsInt(
       features::kLitePageServerPreviews, "loadshed_max_seconds",

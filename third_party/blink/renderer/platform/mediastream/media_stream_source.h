@@ -50,7 +50,7 @@
 namespace blink {
 
 class PLATFORM_EXPORT MediaStreamSource final
-    : public GarbageCollectedFinalized<MediaStreamSource> {
+    : public GarbageCollected<MediaStreamSource> {
   USING_PRE_FINALIZER(MediaStreamSource, Dispose);
 
  public:

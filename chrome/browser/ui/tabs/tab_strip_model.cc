@@ -52,6 +52,11 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/text_elider.h"
 
+#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
+#include "chrome/browser/feature_engagement/new_tab/new_tab_tracker.h"
+#include "chrome/browser/feature_engagement/new_tab/new_tab_tracker_factory.h"
+#endif
+
 using base::UserMetricsAction;
 using content::WebContents;
 
@@ -1167,6 +1172,7 @@ bool TabStripModel::IsContextMenuCommandEnabled(
     ContextMenuCommand command_id) const {
   DCHECK(command_id > CommandFirst && command_id < CommandLast);
   switch (command_id) {
+    case CommandNewTabToRight:
     case CommandCloseTab:
       return true;
 
@@ -1235,6 +1241,23 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
                                               ContextMenuCommand command_id) {
   DCHECK(command_id > CommandFirst && command_id < CommandLast);
   switch (command_id) {
+    case CommandNewTabToRight: {
+      base::RecordAction(UserMetricsAction("TabContextMenu_NewTab"));
+      UMA_HISTOGRAM_ENUMERATION("Tab.NewTab",
+                                TabStripModel::NEW_TAB_CONTEXT_MENU,
+                                TabStripModel::NEW_TAB_ENUM_COUNT);
+      delegate()->AddTabAt(GURL(), context_index + 1, true,
+                           GetTabGroupForTab(context_index));
+#if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
+      auto* new_tab_tracker =
+          feature_engagement::NewTabTrackerFactory::GetInstance()
+              ->GetForProfile(profile_);
+      new_tab_tracker->OnNewTabOpened();
+      new_tab_tracker->CloseBubble();
+#endif
+      break;
+    }
+
     case CommandReload: {
       base::RecordAction(UserMetricsAction("TabContextMenu_Reload"));
       std::vector<int> indices = GetIndicesForCommand(context_index);

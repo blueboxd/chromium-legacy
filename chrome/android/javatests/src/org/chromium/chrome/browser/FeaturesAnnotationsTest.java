@@ -33,7 +33,7 @@ import java.util.List;
 public class FeaturesAnnotationsTest {
     @Rule
     public ChromeActivityTestRule<? extends ChromeActivity> mActivityRule =
-            ChromeActivityTestRule.forMainActivity();
+            new ChromeActivityTestRule(ChromeTabbedActivity.class);
 
     /**
      * Tests that {@link EnableFeatures} and {@link DisableFeatures} can alter the flags registered

@@ -96,9 +96,7 @@ class GpuSharedImageVideoFactory
   // A helper for creating textures. Only valid while |stub_| is valid.
   std::unique_ptr<GLES2DecoderHelper> decoder_helper_;
 
-  // Sampler conversion information which is used in vulkan context. This is
-  // constant for all the frames in a video and hence we cache it.
-  base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info_;
+  bool is_vulkan_ = false;
 
   THREAD_CHECKER(thread_checker_);
 

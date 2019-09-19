@@ -422,7 +422,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   // Animation delegate; use a separate 'holder' on-heap object to accomplish
   // that.
   class CompositorAnimationHolder final
-      : public GarbageCollectedFinalized<CompositorAnimationHolder> {
+      : public GarbageCollected<CompositorAnimationHolder> {
     USING_PRE_FINALIZER(CompositorAnimationHolder, Dispose);
 
    public:

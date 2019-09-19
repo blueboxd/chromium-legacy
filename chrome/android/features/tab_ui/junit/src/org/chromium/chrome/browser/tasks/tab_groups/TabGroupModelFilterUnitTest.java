@@ -272,6 +272,23 @@ public class TabGroupModelFilterUnitTest {
     }
 
     @Test
+    // TODO(mattsimmons): This is actually testing behavior of the superclass but there's no unit
+    //  tests for the superclass today. If one ever exists, this should move to that test.
+    public void isTabModelRestored() {
+        setupTabGroupModelFilter(false, false);
+        assertThat(mTabGroupModelFilter.isTabModelRestored(), equalTo(false));
+
+        setupTabGroupModelFilter(true, false);
+        assertThat(mTabGroupModelFilter.isTabModelRestored(), equalTo(true));
+
+        setupTabGroupModelFilter(false, true);
+        assertThat(mTabGroupModelFilter.isTabModelRestored(), equalTo(true));
+
+        setupTabGroupModelFilter(true, true);
+        assertThat(mTabGroupModelFilter.isTabModelRestored(), equalTo(true));
+    }
+
+    @Test
     public void addTab_ToExistingGroup() {
         Tab newTab = prepareTab(NEW_TAB_ID, NEW_TAB_ID, TAB1_ID);
         doReturn(TabLaunchType.FROM_CHROME_UI).when(newTab).getLaunchType();

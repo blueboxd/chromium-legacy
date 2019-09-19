@@ -111,7 +111,7 @@ class NodeRareDataBase {
   NodeRenderingData* node_layout_data_;
 };
 
-class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
+class NodeRareData : public GarbageCollected<NodeRareData>,
                      public NodeRareDataBase {
  public:
   explicit NodeRareData(NodeRenderingData* node_layout_data)

@@ -23,8 +23,7 @@ namespace content {
 class BrowserContext;
 }
 
-// This class may only be used from the UI thread. It self-deletes when finished
-// reading.
+// This class may only be used from the UI thread.
 class BlobReader : public blink::mojom::BlobReaderClient,
                    public mojo::DataPipeDrainer::Client {
  public:
@@ -35,18 +34,32 @@ class BlobReader : public blink::mojom::BlobReaderClient,
                                   int64_t blob_total_size)>
       BlobReadCallback;
 
-  BlobReader(content::BrowserContext* browser_context,
-             const std::string& blob_uuid,
-             BlobReadCallback callback);
-  BlobReader(mojo::PendingRemote<blink::mojom::Blob> blob,
-             BlobReadCallback callback);
+  static void Read(content::BrowserContext* browser_context,
+                   const std::string& blob_uuid,
+                   BlobReadCallback callback,
+                   int64_t offset,
+                   int64_t length);
+  static void Read(content::BrowserContext* browser_context,
+                   const std::string& blob_uuid,
+                   BlobReadCallback callback);
+
   ~BlobReader() override;
 
-  void SetByteRange(int64_t offset, int64_t length);
-
-  void Start();
-
  private:
+  struct Range {
+    uint64_t offset;
+    uint64_t length;
+  };
+
+  static void Read(content::BrowserContext* browser_context,
+                   const std::string& blob_uuid,
+                   BlobReadCallback callback,
+                   base::Optional<BlobReader::Range> range);
+
+  BlobReader(mojo::PendingRemote<blink::mojom::Blob> blob,
+             base::Optional<Range> range);
+  void Start(base::OnceClosure callback);
+
   // blink::mojom::BlobReaderClient:
   void OnCalculatedSize(uint64_t total_size,
                         uint64_t expected_content_size) override;
@@ -59,12 +72,8 @@ class BlobReader : public blink::mojom::BlobReaderClient,
   void Failed();
   void Succeeded();
 
-  BlobReadCallback callback_;
+  base::OnceClosure callback_;
   mojo::Remote<blink::mojom::Blob> blob_;
-  struct Range {
-    uint64_t offset;
-    uint64_t length;
-  };
   base::Optional<Range> read_range_;
 
   mojo::Receiver<blink::mojom::BlobReaderClient> receiver_{this};

@@ -23,11 +23,9 @@ import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.webapps.WebappActivityTestRule;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -81,10 +79,6 @@ public class DirectActionAvailabilityTest {
     public void testCoreDirectActionInCustomTabActivity() throws Exception {
         Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(
                 InstrumentationRegistry.getTargetContext(), "about:blank");
-        if (FeatureUtilities.isNoTouchModeEnabled()) {
-            // NoTouchMode only allows CCT for 1p use-cases.
-            IntentHandler.addTrustedIntentExtras(intent);
-        }
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
         assertThat(setupActivityAndGetDirectAction(mCustomTabActivityTestRule),

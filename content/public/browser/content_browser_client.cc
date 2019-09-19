@@ -326,6 +326,11 @@ bool ContentBrowserClient::AllowSharedWorker(
   return true;
 }
 
+bool ContentBrowserClient::DoesSchemeAllowCrossOriginSharedWorker(
+    const std::string& scheme) {
+  return false;
+}
+
 bool ContentBrowserClient::AllowSignedExchange(BrowserContext* context) {
   return true;
 }

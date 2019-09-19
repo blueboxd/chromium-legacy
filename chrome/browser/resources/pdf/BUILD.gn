@@ -88,17 +88,36 @@ js_library("navigator") {
 
 js_library("toolbar_manager") {
   deps = [
-    "elements/viewer-pdf-toolbar:viewer-pdf-toolbar",
-    "elements/viewer-zoom-toolbar:viewer-zoom-toolbar",
+    "elements/viewer-pdf-toolbar",
+    "elements/viewer-zoom-toolbar",
   ]
 }
 
 js_library("controller") {
   deps = [
     ":viewport",
+    "elements/viewer-pdf-toolbar",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js/cr:event_target",
   ]
+}
+
+js_library("pdf_viewer") {
+  deps = [
+    ":controller",
+    ":navigator",
+    ":toolbar_manager",
+    ":viewport",
+    "elements/viewer-bookmark",
+    "elements/viewer-error-screen",
+    "elements/viewer-page-indicator",
+    "elements/viewer-password-screen",
+    "elements/viewer-pdf-toolbar",
+    "elements/viewer-zoom-toolbar",
+    "//ui/webui/resources/js:event_tracker",
+    "//ui/webui/resources/js:load_time_data",
+  ]
+  externs_list = [ "$externs_path/resources_private.js" ]
 }
 
 js_type_check("pdf_resources") {
@@ -111,6 +130,7 @@ js_type_check("pdf_resources") {
     ":open_pdf_params_parser",
     ":pdf_fitting_type",
     ":pdf_scripting_api",
+    ":pdf_viewer",
     ":toolbar_manager",
     ":viewport",
     ":viewport_scroller",

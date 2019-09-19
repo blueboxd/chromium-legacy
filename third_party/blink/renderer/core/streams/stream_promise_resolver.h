@@ -22,7 +22,7 @@ class Visitor;
 // v8::Local<v8::Promise>, or ScriptPromise if they are to be returned to the
 // bindings code.
 class CORE_EXPORT StreamPromiseResolver final
-    : public GarbageCollectedFinalized<StreamPromiseResolver> {
+    : public GarbageCollected<StreamPromiseResolver> {
  public:
   // Implements "a promise rejected with" from the INFRA standard.
   // https://www.w3.org/2001/tag/doc/promises-guide/#a-promise-rejected-with

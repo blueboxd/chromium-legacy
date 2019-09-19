@@ -33,6 +33,15 @@ void TestDataSource::StartDataRequest(
     const std::string& path,
     const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
+  if (path == "strings.m.js") {
+    std::string output = "import {loadTimeData} from ";
+    output.append("'chrome://resources/js/load_time_data.m.js';\n");
+    output.append("loadTimeData.data = {};");
+    scoped_refptr<base::RefCountedString> response =
+        base::RefCountedString::TakeString(&output);
+    callback.Run(response.get());
+    return;
+  }
   base::PostTask(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},

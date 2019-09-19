@@ -44,7 +44,7 @@ namespace blink {
 // are used.
 // For example, see SVGFEDropShadowElement::stdDeviation{X,Y}()
 class SVGAnimatedNumberOptionalNumber
-    : public GarbageCollectedFinalized<SVGAnimatedNumberOptionalNumber>,
+    : public GarbageCollected<SVGAnimatedNumberOptionalNumber>,
       public SVGAnimatedPropertyCommon<SVGNumberOptionalNumber> {
   USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedNumberOptionalNumber);
 

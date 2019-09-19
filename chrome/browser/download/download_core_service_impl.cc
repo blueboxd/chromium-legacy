@@ -72,11 +72,6 @@ DownloadCoreServiceImpl::GetDownloadManagerDelegate() {
                      new DownloadHistory::HistoryAdapter(history))));
   }
 
-  DownloadOfflineContentProvider* download_provider =
-      DownloadOfflineContentProviderFactory::GetForKey(
-          profile_->GetProfileKey());
-  download_provider->SetSimpleDownloadManagerCoordinator(coordinator);
-
   // Pass an empty delegate when constructing the DownloadUIController. The
   // default delegate does all the notifications we need.
   download_ui_.reset(new DownloadUIController(

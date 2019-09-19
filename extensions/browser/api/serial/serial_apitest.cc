@@ -21,6 +21,7 @@
 #include "extensions/common/switches.h"
 #include "extensions/test/result_catcher.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -303,7 +304,8 @@ class FakeSerialPortManager : public device::mojom::SerialPortManager {
 
   void GetPort(const base::UnguessableToken& token,
                device::mojom::SerialPortRequest request,
-               device::mojom::SerialPortConnectionWatcherPtr watcher) override {
+               mojo::PendingRemote<device::mojom::SerialPortConnectionWatcher>
+                   watcher) override {
     DCHECK(!watcher);
     auto it = ports_.find(token);
     DCHECK(it != ports_.end());

@@ -587,8 +587,8 @@ TEST_F(UserActivityHandlerTest, PerformActionForShortcutItemWithRealShortcut) {
   [fakeStartupInformation setIsPresentingFirstRunUI:NO];
 
   NSArray* parametersToTest = @[
-    @[ @"OpenNewTab", @NO, @(NO_ACTION) ],
-    @[ @"OpenIncognitoTab", @YES, @(NO_ACTION) ],
+    @[ @"OpenNewSearch", @NO, @(FOCUS_OMNIBOX) ],
+    @[ @"OpenIncognitoSearch", @YES, @(FOCUS_OMNIBOX) ],
     @[ @"OpenVoiceSearch", @NO, @(START_VOICE_SEARCH) ],
     @[ @"OpenQRScanner", @NO, @(START_QR_CODE_SCANNER) ]
   ];
@@ -636,7 +636,7 @@ TEST_F(UserActivityHandlerTest, PerformActionForShortcutItemWithFirstRunUI) {
   [[[startupInformationMock stub] andReturnValue:@YES] isPresentingFirstRunUI];
 
   UIApplicationShortcutItem* shortcut =
-      [[UIApplicationShortcutItem alloc] initWithType:@"OpenNewTab"
+      [[UIApplicationShortcutItem alloc] initWithType:@"OpenNewSearch"
                                        localizedTitle:@""];
 
   swizzleHandleStartupParameters();

@@ -17,10 +17,6 @@ namespace content {
 class WebContents;
 }
 
-namespace gfx {
-class ImageSkia;
-}
-
 // State of the send tab to self option in the context menu.
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -51,9 +47,6 @@ void CreateNewEntry(content::WebContents* tab,
 // device. Will be called when GetValidDeviceCount() == 1.
 void ShareToSingleTarget(content::WebContents* tab,
                          const GURL& link_url = GURL());
-
-// Gets the icon for send tab to self menu item.
-gfx::ImageSkia* GetImageSkia();
 
 // Records whether the user click to send a tab or link when send tab to self
 // entry point is shown.

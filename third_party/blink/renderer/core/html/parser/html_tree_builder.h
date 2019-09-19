@@ -45,8 +45,7 @@ class Element;
 class HTMLDocument;
 class HTMLDocumentParser;
 
-class HTMLTreeBuilder final
-    : public GarbageCollectedFinalized<HTMLTreeBuilder> {
+class HTMLTreeBuilder final : public GarbageCollected<HTMLTreeBuilder> {
  public:
   // HTMLTreeBuilder can be created for non-HTMLDocument (XHTMLDocument) from
   // editing code.

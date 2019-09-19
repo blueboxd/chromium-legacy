@@ -67,7 +67,7 @@ class ThreadableLoaderClient;
 // the constructor.
 // In either case, Start() must be called to actaully begin the request.
 class CORE_EXPORT ThreadableLoader final
-    : public GarbageCollectedFinalized<ThreadableLoader>,
+    : public GarbageCollected<ThreadableLoader>,
       private RawResourceClient {
   USING_GARBAGE_COLLECTED_MIXIN(ThreadableLoader);
 

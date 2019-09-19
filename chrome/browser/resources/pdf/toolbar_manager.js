@@ -49,14 +49,14 @@ function isMouseNearSideToolbar(e, window, reverse) {
 class ToolbarManager {
   /**
    * @param {!Window} window The window containing the UI.
-   * @param {!ViewerPdfToolbarElement} toolbar
+   * @param {?ViewerPdfToolbarElement} toolbar
    * @param {!ViewerZoomToolbarElement} zoomToolbar
    */
   constructor(window, toolbar, zoomToolbar) {
     /** @private {!Window} */
     this.window_ = window;
 
-    /** @private {!ViewerPdfToolbarElement} */
+    /** @private {?ViewerPdfToolbarElement} */
     this.toolbar_ = toolbar;
 
     /** @private {!ViewerZoomToolbarElement} */
@@ -98,7 +98,7 @@ class ToolbarManager {
 
   /** @param {!MouseEvent} e */
   handleMouseMove(e) {
-    this.isMouseNearTopToolbar_ = this.toolbar_ && isMouseNearTopToolbar(e);
+    this.isMouseNearTopToolbar_ = !!this.toolbar_ && isMouseNearTopToolbar(e);
     this.isMouseNearSideToolbar_ =
         isMouseNearSideToolbar(e, this.window_, this.reverseSideToolbar_);
 

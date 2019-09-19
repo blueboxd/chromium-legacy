@@ -463,6 +463,12 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadResumed(
 COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadConnectionInfo(
     net::HttpResponseInfo::ConnectionInfo connection_info);
 
+COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadManagerCreationTimeSinceStartup(
+    base::TimeDelta elapsed_time);
+
+COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadManagerMemoryUsage(
+    size_t bytes_used);
+
 #if defined(OS_ANDROID)
 // Records the download interrupt reason for the first background download.
 // If |download_started| is true, this records the last interrupt reason

@@ -27,7 +27,7 @@ class Touch;
 // This class takes care of dispatching all touch events and
 // maintaining related states.
 class CORE_EXPORT TouchEventManager final
-    : public GarbageCollectedFinalized<TouchEventManager> {
+    : public GarbageCollected<TouchEventManager> {
  public:
 
   explicit TouchEventManager(LocalFrame&);
@@ -49,7 +49,7 @@ class CORE_EXPORT TouchEventManager final
   // Class represending one touch point event with its coalesced events and
   // related attributes.
   class TouchPointAttributes final
-      : public GarbageCollectedFinalized<TouchPointAttributes> {
+      : public GarbageCollected<TouchPointAttributes> {
    public:
     void Trace(blink::Visitor* visitor) { visitor->Trace(target_); }
 

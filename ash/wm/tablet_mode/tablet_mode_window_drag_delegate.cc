@@ -294,12 +294,14 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
 }
 
 void TabletModeWindowDragDelegate::FlingOrSwipe(ui::GestureEvent* event) {
-  if (ShouldFlingIntoOverview(event)) {
-    DCHECK(Shell::Get()->overview_controller()->InOverviewSession());
-    Shell::Get()->overview_controller()->overview_session()->AddItem(
-        dragged_window_, /*reposition=*/true, /*animate=*/false);
+  if (event->type() == ui::ET_SCROLL_FLING_START) {
+    if (ShouldFlingIntoOverview(event)) {
+      DCHECK(Shell::Get()->overview_controller()->InOverviewSession());
+      Shell::Get()->overview_controller()->overview_session()->AddItem(
+          dragged_window_, /*reposition=*/true, /*animate=*/false);
+    }
+    StartFling(event);
   }
-  StartFling(event);
   EndWindowDrag(ToplevelWindowEventHandler::DragResult::SUCCESS,
                 GetEventLocationInScreen(event));
 }
@@ -453,9 +455,6 @@ bool TabletModeWindowDragDelegate::ShouldDropWindowIntoOverview(
 
 bool TabletModeWindowDragDelegate::ShouldFlingIntoOverview(
     const ui::GestureEvent* event) const {
-  if (event->type() != ui::ET_SCROLL_FLING_START)
-    return false;
-
   // Only fling into overview if overview is currently open. In some case,
   // overview is not opened when drag starts (if it's tab-dragging and the
   // dragged window is not the same with the source window), we should not fling

@@ -24,7 +24,7 @@ namespace blink {
 using device::FakeSensorProvider;
 
 class MockDeviceMotionController final
-    : public GarbageCollectedFinalized<MockDeviceMotionController>,
+    : public GarbageCollected<MockDeviceMotionController>,
       public PlatformEventController {
   USING_GARBAGE_COLLECTED_MIXIN(MockDeviceMotionController);
 

@@ -41,7 +41,7 @@ namespace blink {
 class SVGElement;
 class SVGAnimationElement;
 
-class SVGPropertyBase : public GarbageCollectedFinalized<SVGPropertyBase> {
+class SVGPropertyBase : public GarbageCollected<SVGPropertyBase> {
  public:
   // Properties do not have a primitive type by default
   typedef void PrimitiveType;

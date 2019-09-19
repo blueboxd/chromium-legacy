@@ -34,7 +34,6 @@ import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.firstrun.FirstRunUtils;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
-import org.chromium.chrome.browser.touchless.TouchlessDelegate;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -608,14 +607,6 @@ public class FeatureUtilities {
     public static boolean isAndroidGo() {
         return SysUtils.isLowEndDevice()
                 && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O;
-    }
-
-    /**
-     * @return Whether no-touch-mode is enabled.
-     */
-    @CalledByNative
-    public static boolean isNoTouchModeEnabled() {
-        return TouchlessDelegate.TOUCHLESS_MODE_ENABLED;
     }
 
     /**

@@ -28,9 +28,8 @@ class SecurityOrigin;
 // Sends messages via mojo to the blink::mojom::FileSystemManager service
 // running in the browser process. It is owned by ExecutionContext, and
 // instances are created lazily by calling FileSystemDispatcher::From().
-class FileSystemDispatcher
-    : public GarbageCollectedFinalized<FileSystemDispatcher>,
-      public Supplement<ExecutionContext> {
+class FileSystemDispatcher : public GarbageCollected<FileSystemDispatcher>,
+                             public Supplement<ExecutionContext> {
   USING_GARBAGE_COLLECTED_MIXIN(FileSystemDispatcher);
   USING_PRE_FINALIZER(FileSystemDispatcher, Prefinalize);
 

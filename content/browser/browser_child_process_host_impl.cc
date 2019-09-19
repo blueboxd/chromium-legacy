@@ -43,6 +43,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/resource_coordinator_service.h"
 #include "content/public/common/connection_filter.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -98,6 +99,24 @@ void NotifyProcessKilled(const ChildProcessData& data,
                          const ChildProcessTerminationInfo& info) {
   for (auto& observer : g_browser_child_process_observers.Get())
     observer.BrowserChildProcessKilled(data, info);
+}
+
+memory_instrumentation::mojom::ProcessType GetCoordinatorClientProcessType(
+    ProcessType process_type) {
+  switch (process_type) {
+    case PROCESS_TYPE_RENDERER:
+      return memory_instrumentation::mojom::ProcessType::RENDERER;
+    case PROCESS_TYPE_UTILITY:
+      return memory_instrumentation::mojom::ProcessType::UTILITY;
+    case PROCESS_TYPE_GPU:
+      return memory_instrumentation::mojom::ProcessType::GPU;
+    case PROCESS_TYPE_PPAPI_PLUGIN:
+    case PROCESS_TYPE_PPAPI_BROKER:
+      return memory_instrumentation::mojom::ProcessType::PLUGIN;
+    default:
+      NOTREACHED();
+      return memory_instrumentation::mojom::ProcessType::OTHER;
+  }
 }
 
 }  // namespace
@@ -371,6 +390,14 @@ void BrowserChildProcessHostImpl::BindInterface(
 
 void BrowserChildProcessHostImpl::BindHostReceiver(
     mojo::GenericPendingReceiver receiver) {
+  if (auto connector_receiver =
+          receiver.As<memory_instrumentation::mojom::CoordinatorConnector>()) {
+    // Well-behaved child processes do not bind this interface more than once.
+    if (!coordinator_connector_receiver_.is_bound())
+      coordinator_connector_receiver_.Bind(std::move(connector_receiver));
+    return;
+  }
+
   delegate_->BindHostReceiver(std::move(receiver));
 }
 
@@ -650,6 +677,31 @@ void BrowserChildProcessHostImpl::OnProcessLaunched() {
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&NotifyProcessLaunchedAndConnected, data_.Duplicate()));
   }
+}
+
+void BrowserChildProcessHostImpl::RegisterCoordinatorClient(
+    mojo::PendingReceiver<memory_instrumentation::mojom::Coordinator> receiver,
+    mojo::PendingRemote<memory_instrumentation::mojom::ClientProcess>
+        client_process) {
+  base::PostTask(
+      FROM_HERE, BrowserThread::UI,
+      base::BindOnce(
+          [](mojo::PendingReceiver<memory_instrumentation::mojom::Coordinator>
+                 receiver,
+             mojo::PendingRemote<memory_instrumentation::mojom::ClientProcess>
+                 client_process,
+             memory_instrumentation::mojom::ProcessType process_type,
+             base::ProcessId process_id,
+             base::Optional<std::string> service_name) {
+            GetMemoryInstrumentationCoordinatorController()
+                ->RegisterClientProcess(std::move(receiver),
+                                        std::move(client_process), process_type,
+                                        process_id, std::move(service_name));
+          },
+          std::move(receiver), std::move(client_process),
+          GetCoordinatorClientProcessType(
+              static_cast<ProcessType>(data_.process_type)),
+          child_process_->GetProcess().Pid(), delegate_->GetServiceName()));
 }
 
 bool BrowserChildProcessHostImpl::IsProcessLaunched() const {

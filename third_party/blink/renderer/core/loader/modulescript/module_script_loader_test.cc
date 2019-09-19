@@ -43,7 +43,7 @@ namespace blink {
 namespace {
 
 class TestModuleScriptLoaderClient final
-    : public GarbageCollectedFinalized<TestModuleScriptLoaderClient>,
+    : public GarbageCollected<TestModuleScriptLoaderClient>,
       public ModuleScriptLoaderClient {
   USING_GARBAGE_COLLECTED_MIXIN(TestModuleScriptLoaderClient);
 

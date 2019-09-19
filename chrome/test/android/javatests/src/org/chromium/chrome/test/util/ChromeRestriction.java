@@ -32,6 +32,4 @@ public final class ChromeRestriction {
     public static final String RESTRICTION_TYPE_SVR = "Smartphone_VR";
     /** Specifies the test is only valid if the VR settings service is enabled */
     public static final String RESTRICTION_TYPE_VR_SETTINGS_SERVICE = "VR_Settings_Service";
-    /** Specifies the test is not valid on touchless devices. */
-    public static final String RESTRICTION_TYPE_REQUIRES_TOUCH = "Not_Touchless";
 }

@@ -16,10 +16,9 @@
 
 namespace blink {
 
-class NullExecutionContext
-    : public GarbageCollectedFinalized<NullExecutionContext>,
-      public SecurityContext,
-      public ExecutionContext {
+class NullExecutionContext : public GarbageCollected<NullExecutionContext>,
+                             public SecurityContext,
+                             public ExecutionContext {
   USING_GARBAGE_COLLECTED_MIXIN(NullExecutionContext);
 
  public:

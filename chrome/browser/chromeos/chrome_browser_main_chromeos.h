@@ -60,6 +60,7 @@ class RendererFreezer;
 class SchedulerConfigurationManager;
 class SessionTerminationManager;
 class ShutdownPolicyForwarder;
+class SystemTokenCertDBInitializer;
 class WakeOnWifiManager;
 class WilcoDtcSupportdManager;
 
@@ -69,7 +70,6 @@ class ExternalLoader;
 
 namespace internal {
 class DBusServices;
-class SystemTokenCertDBInitializer;
 }  // namespace internal
 
 namespace power {
@@ -124,7 +124,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
   std::unique_ptr<internal::DBusServices> dbus_services_;
 
-  std::unique_ptr<internal::SystemTokenCertDBInitializer>
+  std::unique_ptr<SystemTokenCertDBInitializer>
       system_token_certdb_initializer_;
 
   std::unique_ptr<ShutdownPolicyForwarder> shutdown_policy_forwarder_;

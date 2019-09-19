@@ -27,11 +27,10 @@ class DocumentLoader;
 class InspectorAgent;
 class LocalFrame;
 
-class CORE_EXPORT DevToolsSession
-    : public GarbageCollectedFinalized<DevToolsSession>,
-      public mojom::blink::DevToolsSession,
-      public protocol::FrontendChannel,
-      public v8_inspector::V8Inspector::Channel {
+class CORE_EXPORT DevToolsSession : public GarbageCollected<DevToolsSession>,
+                                    public mojom::blink::DevToolsSession,
+                                    public protocol::FrontendChannel,
+                                    public v8_inspector::V8Inspector::Channel {
  public:
   DevToolsSession(
       DevToolsAgent*,

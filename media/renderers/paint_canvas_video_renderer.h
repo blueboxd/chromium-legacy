@@ -226,14 +226,6 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
     // Whether |source_mailbox| directly points to a texture of the VideoFrame
     // (if true), or to an allocated shared image (if false).
     bool wraps_video_frame_texture = false;
-
-    // Whether the texture pointed by |paint_image| is owned by skia or not.
-    bool texture_ownership_in_skia = false;
-
-    // Used to allow recycling of the previous shared image. This requires that
-    // no external users have access to this resource via SkImage. Returns true
-    // if the existing resource can be recycled.
-    bool Recycle();
   };
 
   // Update the cache holding the most-recently-painted frame. Returns false

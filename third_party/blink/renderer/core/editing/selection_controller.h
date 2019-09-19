@@ -43,7 +43,7 @@ class HitTestResult;
 class LocalFrame;
 
 class CORE_EXPORT SelectionController final
-    : public GarbageCollectedFinalized<SelectionController>,
+    : public GarbageCollected<SelectionController>,
       public DocumentShutdownObserver {
   USING_GARBAGE_COLLECTED_MIXIN(SelectionController);
 

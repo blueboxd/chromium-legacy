@@ -17,7 +17,7 @@ namespace blink {
 class Frame;
 enum class FrameDetachType;
 
-class CORE_EXPORT FrameClient : public GarbageCollectedFinalized<FrameClient> {
+class CORE_EXPORT FrameClient : public GarbageCollected<FrameClient> {
  public:
   virtual bool InShadowTree() const = 0;
 

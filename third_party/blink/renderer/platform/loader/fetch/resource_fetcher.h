@@ -77,12 +77,12 @@ struct ResourceLoaderOptions;
 // keep a ResourceFetcher alive past detach if scripts still reference the
 // Document.
 class PLATFORM_EXPORT ResourceFetcher
-    : public GarbageCollectedFinalized<ResourceFetcher> {
+    : public GarbageCollected<ResourceFetcher> {
   USING_PRE_FINALIZER(ResourceFetcher, ClearPreloads);
 
  public:
   // An abstract interface for creating loaders.
-  class LoaderFactory : public GarbageCollectedFinalized<LoaderFactory> {
+  class LoaderFactory : public GarbageCollected<LoaderFactory> {
    public:
     virtual ~LoaderFactory() = default;
 

@@ -3357,6 +3357,18 @@
       "features": [
           "disable_half_float_for_gmb"
       ]
+    },
+    {
+      "id": 312,
+      "cr_bugs": [991869],
+      "description": "Crash on Mali-T8x when using glTexImage2D",
+      "os": {
+        "type": "android"
+      },
+      "gl_renderer": ".*Mali-T8.*",
+      "features": [
+        "prefer_draw_to_copy"
+      ]
     }
   ]
 }

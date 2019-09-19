@@ -23,7 +23,7 @@ namespace blink {
 // |Invoke| member function that performs "invoke" steps. Subclasses will
 // implement it.
 class PLATFORM_EXPORT CallbackFunctionBase
-    : public GarbageCollectedFinalized<CallbackFunctionBase>,
+    : public GarbageCollected<CallbackFunctionBase>,
       public NameClient {
  public:
   virtual ~CallbackFunctionBase() = default;

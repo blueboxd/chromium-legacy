@@ -42,7 +42,7 @@ class SecurityContext;
 // TODO(hiroshige): Rename local variables of type ImageResourceContent to
 // e.g. |imageContent|. Currently they have Resource-like names.
 class CORE_EXPORT ImageResourceContent final
-    : public GarbageCollectedFinalized<ImageResourceContent>,
+    : public GarbageCollected<ImageResourceContent>,
       public ImageObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ImageResourceContent);
 

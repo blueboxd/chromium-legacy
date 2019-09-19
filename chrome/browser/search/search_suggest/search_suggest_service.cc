@@ -8,12 +8,14 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search/search_suggest/search_suggest_loader.h"
 #include "chrome/common/pref_names.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -92,6 +94,14 @@ class SearchSuggestService::SigninObserver
   signin::IdentityManager* const identity_manager_;
   SigninStatusChangedCallback callback_;
 };
+
+// static
+bool SearchSuggestService::IsEnabled() {
+  // Search suggestions should be disabled when on-focus zero-prefix suggestions
+  // are displaying in the NTP.
+  return !base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTP) &&
+         !base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTPRealbox);
+}
 
 SearchSuggestService::SearchSuggestService(
     Profile* profile,

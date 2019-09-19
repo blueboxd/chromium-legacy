@@ -190,14 +190,15 @@ void AudioInputImpl::HotwordStateManager::RecreateAudioInputStream() {
   input_->RecreateAudioInputStream(/*use_dsp=*/false);
 }
 
-AudioInputImpl::AudioInputImpl(
-    mojom::Client* client,
-    chromeos::PowerManagerClient* power_manager_client,
-    const std::string& device_id,
-    const std::string& hotword_device_id)
+AudioInputImpl::AudioInputImpl(mojom::Client* client,
+                               PowerManagerClient* power_manager_client,
+                               CrasAudioHandler* cras_audio_handler,
+                               const std::string& device_id,
+                               const std::string& hotword_device_id)
     : client_(client),
       power_manager_client_(power_manager_client),
       power_manager_client_observer_(this),
+      cras_audio_handler_(cras_audio_handler),
       task_runner_(base::SequencedTaskRunnerHandle::Get()),
       device_id_(device_id),
       hotword_device_id_(hotword_device_id),
@@ -425,7 +426,7 @@ void AudioInputImpl::SetDspHotwordLocale(std::string pref_locale) {
 
   uint64_t dsp_node_id;
   base::StringToUint64(hotword_device_id_, &dsp_node_id);
-  chromeos::CrasAudioHandler::Get()->SetHotwordModel(
+  cras_audio_handler_->SetHotwordModel(
       dsp_node_id, /* hotword_model */ base::ToLowerASCII(pref_locale),
       base::BindOnce(&AudioInputImpl::SetDspHotwordLocaleCallback,
                      weak_factory_.GetWeakPtr()));
@@ -440,8 +441,8 @@ void AudioInputImpl::SetDspHotwordLocaleCallback(bool success) {
   // the locale stored in user's pref.
   uint64_t dsp_node_id;
   base::StringToUint64(hotword_device_id_, &dsp_node_id);
-  chromeos::CrasAudioHandler::Get()->SetHotwordModel(
-      dsp_node_id, "en_us", base::BindOnce([](bool success) {}));
+  cras_audio_handler_->SetHotwordModel(dsp_node_id, "en_us",
+                                       base::BindOnce([](bool success) {}));
 }
 
 void AudioInputImpl::RecreateAudioInputStream(bool use_dsp) {

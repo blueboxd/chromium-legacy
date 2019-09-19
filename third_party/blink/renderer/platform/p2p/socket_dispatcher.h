@@ -35,7 +35,7 @@
 #include "net/base/network_interfaces.h"
 #include "services/network/public/cpp/p2p_socket_type.h"
 #include "services/network/public/mojom/p2p.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/p2p/network_list_manager.h"
+#include "third_party/blink/renderer/platform/p2p/network_list_manager.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -85,6 +85,8 @@ class PLATFORM_EXPORT P2PSocketDispatcher
 
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
+  // TODO(crbug.com/787254): When moving NetworkListObserver to Oilpan,
+  // thread-safety needs to be taken into account.
   scoped_refptr<base::ObserverListThreadSafe<blink::NetworkListObserver>>
       network_list_observers_;
 

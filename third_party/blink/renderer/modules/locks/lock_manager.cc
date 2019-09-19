@@ -54,7 +54,7 @@ HeapVector<Member<LockInfo>> ToLockInfos(
 }  // namespace
 
 class LockManager::LockRequestImpl final
-    : public GarbageCollectedFinalized<LockRequestImpl>,
+    : public GarbageCollected<LockRequestImpl>,
       public NameClient,
       public mojom::blink::LockRequest {
   USING_PRE_FINALIZER(LockManager::LockRequestImpl, Dispose);

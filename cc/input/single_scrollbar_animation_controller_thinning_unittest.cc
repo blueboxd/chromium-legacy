@@ -6,7 +6,7 @@
 
 #include "cc/layers/solid_color_scrollbar_layer_impl.h"
 #include "cc/test/geometry_test_utils.h"
-#include "cc/test/layer_test_common.h"
+#include "cc/test/layer_tree_impl_test_base.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,7 +50,7 @@ class MockSingleScrollbarAnimationControllerClient
 };
 
 class SingleScrollbarAnimationControllerThinningTest
-    : public LayerTestCommon::LayerImplTest,
+    : public LayerTreeImplTestBase,
       public testing::Test {
  public:
   SingleScrollbarAnimationControllerThinningTest() : client_(host_impl()) {}
@@ -86,7 +86,7 @@ class SingleScrollbarAnimationControllerThinningTest
     scrollbar_layer_->SetOffsetToTransformParent(gfx::Vector2dF(90, 0));
     CreateEffectNode(scrollbar_layer_).has_potential_opacity_animation = true;
 
-    UpdateDrawProperties(host_impl()->active_tree());
+    UpdateActiveTreeDrawProperties();
 
     scrollbar_controller_ = SingleScrollbarAnimationControllerThinning::Create(
         scroll_layer->element_id(), HORIZONTAL, &client_, kThinningDuration);

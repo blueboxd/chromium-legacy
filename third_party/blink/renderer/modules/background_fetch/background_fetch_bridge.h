@@ -25,7 +25,7 @@ class BackgroundFetchRegistration;
 // connection to the BackgroundFetchService. It's keyed on an active Service
 // Worker Registration.
 class BackgroundFetchBridge final
-    : public GarbageCollectedFinalized<BackgroundFetchBridge>,
+    : public GarbageCollected<BackgroundFetchBridge>,
       public Supplement<ServiceWorkerRegistration> {
   USING_GARBAGE_COLLECTED_MIXIN(BackgroundFetchBridge);
 

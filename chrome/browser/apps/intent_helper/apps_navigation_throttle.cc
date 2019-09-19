@@ -293,6 +293,8 @@ AppsNavigationThrottle::Platform AppsNavigationThrottle::GetDestinationPlatform(
     case PickerAction::CHROME_PRESSED:
     case PickerAction::CHROME_PREFERRED_PRESSED:
       return Platform::CHROME;
+    case PickerAction::DEVICE_PRESSED:
+      return Platform::DEVICE;
     case PickerAction::PREFERRED_ACTIVITY_FOUND:
     case PickerAction::OBSOLETE_ALWAYS_PRESSED:
     case PickerAction::OBSOLETE_JUST_ONCE_PRESSED:
@@ -439,6 +441,7 @@ AppsNavigationThrottle::PickerAction AppsNavigationThrottle::GetPickerAction(
     case IntentPickerCloseReason::OPEN_APP:
       switch (entry_type) {
         case PickerEntryType::kUnknown:
+          NOTREACHED();
           return PickerAction::INVALID;
         case PickerEntryType::kArc:
           return should_persist ? PickerAction::ARC_APP_PREFERRED_PRESSED
@@ -446,7 +449,7 @@ AppsNavigationThrottle::PickerAction AppsNavigationThrottle::GetPickerAction(
         case PickerEntryType::kWeb:
           return PickerAction::PWA_APP_PRESSED;
         case PickerEntryType::kDevice:
-          NOTREACHED();
+          return PickerAction::DEVICE_PRESSED;
       }
   }
 

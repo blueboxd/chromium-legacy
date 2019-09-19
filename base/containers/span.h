@@ -224,8 +224,8 @@ class span : public internal::ExtentStorage<Extent> {
   using difference_type = ptrdiff_t;
   using pointer = T*;
   using reference = T&;
-  using iterator = CheckedRandomAccessIterator<T>;
-  using const_iterator = CheckedRandomAccessConstIterator<T>;
+  using iterator = CheckedContiguousIterator<T>;
+  using const_iterator = CheckedContiguousConstIterator<T>;
   using reverse_iterator = std::reverse_iterator<iterator>;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
   static constexpr index_type extent = Extent;

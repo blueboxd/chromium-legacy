@@ -14,6 +14,8 @@ namespace features {
 
 extern const base::Feature kLoadingOnlyLearnHighPriorityResources;
 
+extern const base::Feature kLoadingPreconnectToRedirectTarget;
+
 }  // namespace features
 
 #endif  // CHROME_BROWSER_PREDICTORS_PREDICTORS_FEATURES_H_

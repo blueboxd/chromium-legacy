@@ -34,9 +34,7 @@ class CC_EXPORT DamageTracker {
 
   DamageTracker& operator=(const DamageTracker&) = delete;
 
-  static void UpdateDamageTracking(
-      LayerTreeImpl* layer_tree_impl,
-      const RenderSurfaceList& render_surface_list);
+  static void UpdateDamageTracking(LayerTreeImpl* layer_tree_impl);
 
   void DidDrawDamagedArea() {
     current_damage_ = DamageAccumulator();

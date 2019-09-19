@@ -17,7 +17,7 @@ class SyncManager;
 class ServiceWorkerRegistration;
 
 class ServiceWorkerRegistrationSync final
-    : public GarbageCollectedFinalized<ServiceWorkerRegistrationSync>,
+    : public GarbageCollected<ServiceWorkerRegistrationSync>,
       public Supplement<ServiceWorkerRegistration> {
   USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistrationSync);
 

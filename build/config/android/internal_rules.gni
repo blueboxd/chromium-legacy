@@ -6,6 +6,7 @@
 # Some projects (e.g. V8) do not have non-build directories DEPS'ed in.
 import("//build/config/android/config.gni")
 import("//build/config/android/copy_ex.gni")
+import("//build/config/coverage/coverage.gni")
 import("//build/config/dcheck_always_on.gni")
 import("//build/config/python.gni")
 import("//build/config/sanitizers/sanitizers.gni")
@@ -697,7 +698,7 @@ template("test_runner_script") {
       if (defined(invoker.proguard_enabled) && invoker.proguard_enabled) {
         executable_args += [ "--enable-java-deobfuscation" ]
       }
-      if (jacoco_coverage) {
+      if (use_jacoco_coverage) {
         # Set a default coverage output directory (can be overridden by user
         # passing the same flag).
         _rebased_coverage_dir =
@@ -729,7 +730,7 @@ template("test_runner_script") {
         "--robolectric-runtime-deps-dir",
         "@WrappedPath(${_rebased_robolectric_runtime_deps_dir})",
       ]
-      if (jacoco_coverage) {
+      if (use_jacoco_coverage) {
         # Set a default coverage output directory (can be overridden by user
         # passing the same flag).
         _rebased_coverage_dir =
@@ -1092,7 +1093,7 @@ if (enable_java_templates) {
       }
       args += [ "--classpath=@FileArg($_rebased_build_config:deps_info:java_runtime_classpath)" ]
 
-      if (jacoco_coverage) {
+      if (use_jacoco_coverage) {
         args += [
           "--classpath",
           rebase_path("//third_party/jacoco/lib/jacocoagent.jar",
@@ -1434,6 +1435,8 @@ if (enable_java_templates) {
         rebase_path(invoker.java_sources_file, root_build_dir),
         "--jacococli-jar",
         rebase_path(_jacococli_jar, root_build_dir),
+        "--files-to-instrument",
+        rebase_path(coverage_instrumentation_input_file, root_build_dir),
       ]
     }
   }
@@ -3084,7 +3087,7 @@ if (enable_java_templates) {
   #    Chromium-specific unless it is in a 'chromium' sub-directory).
   #  jacoco_never_instrument: Optional. If provided, whether to forbid
   #    instrumentation with the Jacoco coverage processor. If not provided,
-  #    this is controlled by the global jacoco_coverage build arg variable
+  #    this is controlled by the global use_jacoco_coverage build arg variable
   #    and only used for non-test Chromium code.
   #  include_android_sdk: Optional. Whether or not the android SDK dep
   #    should be added to deps. Defaults to true for non-system libraries
@@ -3304,7 +3307,7 @@ if (enable_java_templates) {
 
     if (defined(_final_jar_path)) {
       _jacoco_instrument =
-          jacoco_coverage && _chromium_code && _java_files != [] &&
+          use_jacoco_coverage && _chromium_code && _java_files != [] &&
           !_is_java_binary && !_is_annotation_processor &&
           (!defined(invoker.testonly) || !invoker.testonly)
       if (defined(invoker.jacoco_never_instrument)) {

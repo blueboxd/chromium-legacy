@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/proxy_server.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 
 class GURL;
 
@@ -24,7 +25,6 @@ struct RedirectInfo;
 }  // namespace net
 
 namespace network {
-struct ResourceResponseHead;
 class SimpleURLLoader;
 }  // namespace network
 
@@ -86,11 +86,11 @@ class WarmupURLFetcher {
   // URL loader callback when response starts.
   void OnURLLoadResponseStarted(
       const GURL& final_url,
-      const network::ResourceResponseHead& response_head);
+      const network::mojom::URLResponseHead& response_head);
 
   // URL loader callback for redirections.
   void OnURLLoaderRedirect(const net::RedirectInfo& redirect_info,
-                           const network::ResourceResponseHead& response_head,
+                           const network::mojom::URLResponseHead& response_head,
                            std::vector<std::string>* to_be_removed_headers);
 
   // URL loader completion callback.

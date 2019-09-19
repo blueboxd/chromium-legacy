@@ -792,7 +792,7 @@ void ChromeLauncherController::UnpinAppWithID(const std::string& app_id) {
 void ChromeLauncherController::ReplacePinnedItem(
     const std::string& old_app_id,
     const std::string& new_app_id) {
-  if (!model_->IsAppPinned(old_app_id))
+  if (!model_->IsAppPinned(old_app_id) || model_->IsAppPinned(new_app_id))
     return;
   const int index = model_->ItemIndexByAppID(old_app_id);
 
@@ -808,7 +808,7 @@ void ChromeLauncherController::ReplacePinnedItem(
 
 void ChromeLauncherController::PinAppAtIndex(const std::string& app_id,
                                              int target_index) {
-  if (target_index < 0)
+  if (target_index < 0 || model_->IsAppPinned(app_id))
     return;
 
   const ash::ShelfID new_shelf_id(app_id);

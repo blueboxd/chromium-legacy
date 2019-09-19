@@ -424,10 +424,9 @@ void GpuHostImpl::DidInitialize(
     if (oopd_enabled)
       CreateChannelCache(gpu::kInProcessCommandBufferClientId);
 
-    bool use_gr_shader_cache =
-        base::FeatureList::IsEnabled(
-            features::kDefaultEnableOopRasterization) ||
-        base::FeatureList::IsEnabled(features::kUseSkiaRenderer);
+    bool use_gr_shader_cache = base::FeatureList::IsEnabled(
+                                   features::kDefaultEnableOopRasterization) ||
+                               features::IsUsingSkiaRenderer();
     if (use_gr_shader_cache)
       CreateChannelCache(gpu::kGrShaderCacheClientId);
   }

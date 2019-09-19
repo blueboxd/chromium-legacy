@@ -15,7 +15,7 @@ namespace blink {
 class ExternalDateTimeChooserTest : public testing::Test {};
 
 class TestDateTimeChooserClient final
-    : public GarbageCollectedFinalized<TestDateTimeChooserClient>,
+    : public GarbageCollected<TestDateTimeChooserClient>,
       public DateTimeChooserClient {
   USING_GARBAGE_COLLECTED_MIXIN(TestDateTimeChooserClient);
 

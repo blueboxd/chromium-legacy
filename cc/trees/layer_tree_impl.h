@@ -162,7 +162,7 @@ class CC_EXPORT LayerTreeImpl {
 
   // Other public methods
   // ---------------------------------------------------------------------------
-  LayerImpl* root_layer_for_testing() {
+  LayerImpl* root_layer() {
     return layer_list_.empty() ? nullptr : layer_list_[0].get();
   }
   const RenderSurfaceImpl* RootRenderSurface() const;
@@ -433,13 +433,18 @@ class CC_EXPORT LayerTreeImpl {
   const SyncedBrowserControls* top_controls_shown_ratio() const {
     return top_controls_shown_ratio_.get();
   }
+  gfx::Vector2dF current_elastic_overscroll() const {
+    return elastic_overscroll()->Current(IsActiveTree());
+  }
 
   void SetElementIdsForTesting();
 
   // Updates draw properties and render surface layer list, as well as tile
   // priorities. Returns false if it was unable to update.  Updating lcd
   // text may cause invalidations, so should only be done after a commit.
-  bool UpdateDrawProperties(bool update_image_animation_controller = true);
+  bool UpdateDrawProperties(
+      bool update_image_animation_controller = true,
+      LayerImplList* output_update_layer_list_for_testing = nullptr);
   void UpdateCanUseLCDText();
 
   void set_needs_update_draw_properties() {
@@ -682,6 +687,12 @@ class CC_EXPORT LayerTreeImpl {
     return host_impl_->paint_worklet_tracker();
   }
 
+  const gfx::Transform& DrawTransform() const {
+    return host_impl_->DrawTransform();
+  }
+
+  TransformNode* PageScaleTransformNode();
+
  protected:
   float ClampPageScaleFactorToLimits(float page_scale_factor) const;
   void PushPageScaleFactorAndLimits(const float* page_scale_factor,
@@ -696,7 +707,6 @@ class CC_EXPORT LayerTreeImpl {
  private:
   friend class LayerTreeHost;
 
-  TransformNode* PageScaleTransformNode();
   void UpdatePageScaleNode();
 
   ElementListType GetElementTypeForAnimation() const;

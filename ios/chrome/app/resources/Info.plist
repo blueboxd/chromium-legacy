@@ -92,19 +92,19 @@
 	<array>
 		<dict>
 			<key>UIApplicationShortcutItemIconFile</key>
-			<string>quick_action_new_tab</string>
+			<string>quick_action_new_search</string>
 			<key>UIApplicationShortcutItemTitle</key>
-			<string>IDS_IOS_APPLICATION_SHORTCUT_NEWTAB_TITLE</string>
+			<string>IDS_IOS_APPLICATION_SHORTCUT_NEWSEARCH_TITLE</string>
 			<key>UIApplicationShortcutItemType</key>
-			<string>OpenNewTab</string>
+			<string>OpenNewSearch</string>
 		</dict>
 		<dict>
 			<key>UIApplicationShortcutItemIconFile</key>
-			<string>quick_action_new_incognito_tab</string>
+			<string>quick_action_incognito_search</string>
 			<key>UIApplicationShortcutItemTitle</key>
-			<string>IDS_IOS_APPLICATION_SHORTCUT_NEWINCOGNITOTAB_TITLE</string>
+			<string>IDS_IOS_APPLICATION_SHORTCUT_INCOGNITOSEARCH_TITLE</string>
 			<key>UIApplicationShortcutItemType</key>
-			<string>OpenIncognitoTab</string>
+			<string>OpenIncognitoSearch</string>
 		</dict>
 		<dict>
 			<key>UIApplicationShortcutItemIconFile</key>

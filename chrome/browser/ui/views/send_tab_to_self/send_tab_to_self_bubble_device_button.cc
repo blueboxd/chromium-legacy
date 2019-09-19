@@ -23,9 +23,8 @@ namespace send_tab_to_self {
 namespace {
 
 enum class DeviceIconType {
-  DESKTOP = 0,
-  PHONE = 1,
-  TOTAL_COUNT = 2  // Add new types above this line.
+  kDesktop = 0,
+  kPhone = 1,
 };
 
 SkColor GetColorfromTheme() {
@@ -38,14 +37,12 @@ SkColor GetColorfromTheme() {
 gfx::ImageSkia CreateDeviceIcon(DeviceIconType icon_type) {
   const gfx::VectorIcon* vector_icon;
   switch (icon_type) {
-    case DeviceIconType::DESKTOP:
+    case DeviceIconType::kDesktop:
       vector_icon = &kHardwareComputerIcon;
       break;
-    case DeviceIconType::PHONE:
+    case DeviceIconType::kPhone:
       vector_icon = &kHardwareSmartphoneIcon;
       break;
-    default:
-      vector_icon = &kSendTabToSelfIcon;
   }
 
   constexpr int kPrimaryIconSize = 20;
@@ -55,12 +52,9 @@ gfx::ImageSkia CreateDeviceIcon(DeviceIconType icon_type) {
 
 std::unique_ptr<views::ImageView> CreateIconView(
     const sync_pb::SyncEnums::DeviceType device_type) {
-  gfx::ImageSkia image;
-  if (device_type == sync_pb::SyncEnums::TYPE_PHONE) {
-    image = CreateDeviceIcon(DeviceIconType::PHONE);
-  } else {
-    image = CreateDeviceIcon(DeviceIconType::DESKTOP);
-  }
+  gfx::ImageSkia image = CreateDeviceIcon(
+      device_type == sync_pb::SyncEnums::TYPE_PHONE ? DeviceIconType::kPhone
+                                                    : DeviceIconType::kDesktop);
   auto icon_view = std::make_unique<views::ImageView>();
   icon_view->SetImage(image);
   constexpr auto kPrimaryIconBorder = gfx::Insets(6);

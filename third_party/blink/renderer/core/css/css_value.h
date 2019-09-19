@@ -31,7 +31,7 @@ namespace blink {
 class Document;
 class Length;
 
-class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
+class CORE_EXPORT CSSValue : public GarbageCollected<CSSValue> {
  public:
   static void* AllocateObject(size_t size) {
     ThreadState* state =

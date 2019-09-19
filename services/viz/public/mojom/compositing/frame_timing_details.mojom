@@ -6,10 +6,12 @@ module viz.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/mojom/presentation_feedback.mojom";
+import "ui/gfx/mojom/swap_timings.mojom";
 
 // viz::FrameTimingDetails
 struct FrameTimingDetails {
-  gfx.mojom.PresentationFeedback presentation_feedback;
   mojo_base.mojom.TimeTicks received_compositor_frame_timestamp;
   mojo_base.mojom.TimeTicks draw_start_timestamp;
+  gfx.mojom.SwapTimings swap_timings;
+  gfx.mojom.PresentationFeedback presentation_feedback;
 };

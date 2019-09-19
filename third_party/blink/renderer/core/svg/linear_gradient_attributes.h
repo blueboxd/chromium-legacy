@@ -93,7 +93,7 @@ struct LinearGradientAttributes : GradientAttributes {
 
 // Wrapper object for the LinearGradientAttributes part object.
 class LinearGradientAttributesWrapper final
-    : public GarbageCollectedFinalized<LinearGradientAttributesWrapper> {
+    : public GarbageCollected<LinearGradientAttributesWrapper> {
  public:
   LinearGradientAttributesWrapper() = default;
 

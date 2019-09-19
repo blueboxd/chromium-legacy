@@ -21,7 +21,7 @@ namespace blink {
 class Document;
 class HTMLMediaElement;
 
-struct MediaPlayer final : public GarbageCollectedFinalized<MediaPlayer> {
+struct MediaPlayer final : public GarbageCollected<MediaPlayer> {
   void Trace(blink::Visitor*) {}
 
   WebString player_id;
@@ -30,7 +30,7 @@ struct MediaPlayer final : public GarbageCollectedFinalized<MediaPlayer> {
 };
 
 class CORE_EXPORT MediaInspectorContextImpl final
-    : public GarbageCollectedFinalized<MediaInspectorContextImpl>,
+    : public GarbageCollected<MediaInspectorContextImpl>,
       public Supplement<LocalFrame>,
       public MediaInspectorContext {
   USING_GARBAGE_COLLECTED_MIXIN(MediaInspectorContextImpl);
@@ -54,7 +54,7 @@ class CORE_EXPORT MediaInspectorContextImpl final
   void NotifyPlayerEvents(WebString, InspectorPlayerEvents) override;
   void SetPlayerProperties(WebString, InspectorPlayerProperties) override;
 
-  // GarbageCollectedFinalized methods.
+  // GarbageCollected methods.
   void Trace(blink::Visitor*) override;
 
   Vector<WebString> GetAllPlayerIds();

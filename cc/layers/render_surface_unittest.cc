@@ -10,7 +10,7 @@
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/geometry_test_utils.h"
-#include "cc/test/layer_test_common.h"
+#include "cc/test/layer_tree_impl_test_base.h"
 #include "cc/test/mock_occlusion_tracker.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -86,7 +86,7 @@ TEST(RenderSurfaceTest, VerifySurfaceChangesAreTrackedProperly) {
   // This test checks that SurfacePropertyChanged() has the correct behavior.
   //
 
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
   LayerImpl* root = impl.root_layer();
   LayerTreeImpl* active_tree = impl.host_impl()->active_tree();
 
@@ -134,7 +134,7 @@ TEST(RenderSurfaceTest, VerifySurfaceChangesAreTrackedProperly) {
 }
 
 TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
   LayerImpl* root = impl.root_layer();
 
   LayerImpl* layer = impl.AddLayer<LayerImpl>();
@@ -182,7 +182,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
 }
 
 TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectRenderPass) {
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
   LayerImpl* root = impl.root_layer();
 
   LayerImpl* layer = impl.AddLayer<LayerImpl>();
@@ -210,7 +210,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectRenderPass) {
 }
 
 TEST(RenderSurfaceTest, SanityCheckSurfaceIgnoreMaskLayerOcclusion) {
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
   LayerImpl* root = impl.root_layer();
   // Set a big enough viewport to show the entire render pass.
   impl.host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(1000, 1000));
@@ -224,7 +224,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceIgnoreMaskLayerOcclusion) {
   auto* mask_layer = impl.AddLayer<FakePictureLayerImplForRenderSurfaceTest>();
   scoped_refptr<FakeRasterSource> raster_source(
       FakeRasterSource::CreateFilled(mask_layer->bounds()));
-  mask_layer->SetRasterSourceOnActive(raster_source, Region());
+  mask_layer->SetRasterSource(raster_source, Region());
   std::vector<gfx::Rect> quad_rects;
   quad_rects.push_back(gfx::Rect(0, 0, 100, 100));
   quad_rects.push_back(gfx::Rect(100, 0, 100, 100));

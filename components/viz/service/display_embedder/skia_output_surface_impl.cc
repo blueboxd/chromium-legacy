@@ -18,6 +18,7 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_util.h"
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "components/viz/service/display/dc_layer_overlay.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display_embedder/image_context_impl.h"
@@ -127,6 +128,10 @@ SkiaOutputSurfaceImpl::~SkiaOutputSurfaceImpl() {
 
   // Delete task sequence.
   task_sequence_ = nullptr;
+}
+
+gpu::SurfaceHandle SkiaOutputSurfaceImpl::GetSurfaceHandle() const {
+  return dependency_->GetSurfaceHandle();
 }
 
 void SkiaOutputSurfaceImpl::BindToClient(OutputSurfaceClient* client) {
@@ -357,21 +362,34 @@ SkiaOutputSurfaceImpl::CreateImageContext(const gpu::MailboxHolder& holder,
                                             std::move(color_space));
 }
 
-void SkiaOutputSurfaceImpl::SkiaSwapBuffers(OutputSurfaceFrame frame) {
+gpu::SyncToken SkiaOutputSurfaceImpl::SkiaSwapBuffers(OutputSurfaceFrame frame,
+                                                      bool wants_sync_token) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!current_paint_);
+
+  gpu::SyncToken sync_token;
+  if (wants_sync_token) {
+    sync_token = gpu::SyncToken(
+        gpu::CommandBufferNamespace::VIZ_SKIA_OUTPUT_SURFACE,
+        impl_on_gpu_->command_buffer_id(), ++sync_fence_release_);
+    sync_token.SetVerifyFlush();
+  }
+
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
   auto callback =
       base::BindOnce(&SkiaOutputSurfaceImplOnGpu::SwapBuffers,
                      base::Unretained(impl_on_gpu_.get()), std::move(frame),
-                     std::move(deferred_framebuffer_draw_closure_));
+                     std::move(deferred_framebuffer_draw_closure_),
+                     sync_token.release_count());
   ScheduleGpuTask(std::move(callback), std::move(resource_sync_tokens_));
 
   // Recreate |root_recorder_| after SwapBuffers has been scheduled on GPU
   // thread to save some time in BeginPaintCurrentFrame
   // TODO(vasilyt): reuse root recorder
   RecreateRootRecorder();
+
+  return sync_token;
 }
 
 void SkiaOutputSurfaceImpl::ScheduleOutputSurfaceAsOverlay(
@@ -534,6 +552,20 @@ void SkiaOutputSurfaceImpl::CopyOutput(
                                  geometry, color_space, std::move(request),
                                  std::move(deferred_framebuffer_draw_closure_));
   ScheduleGpuTask(std::move(callback), std::move(resource_sync_tokens_));
+}
+
+void SkiaOutputSurfaceImpl::SetEnableDCLayers(bool enable) {
+  auto task = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::SetEnableDCLayers,
+                             base::Unretained(impl_on_gpu_.get()), enable);
+  ScheduleGpuTask(std::move(task), {});
+}
+
+void SkiaOutputSurfaceImpl::ScheduleDCLayers(
+    std::vector<DCLayerOverlay> overlays) {
+  auto task =
+      base::BindOnce(&SkiaOutputSurfaceImplOnGpu::ScheduleDCLayers,
+                     base::Unretained(impl_on_gpu_.get()), std::move(overlays));
+  ScheduleGpuTask(std::move(task), {});
 }
 
 void SkiaOutputSurfaceImpl::SetCapabilitiesForTesting(

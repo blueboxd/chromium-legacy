@@ -98,9 +98,8 @@ TEST_F(CreateWindowTest, CreateWindowFromPausedPage) {
                          FeaturePolicy::FeatureState(), ""));
 }
 
-class FakeColorChooserClient
-    : public GarbageCollectedFinalized<FakeColorChooserClient>,
-      public ColorChooserClient {
+class FakeColorChooserClient : public GarbageCollected<FakeColorChooserClient>,
+                               public ColorChooserClient {
  public:
   FakeColorChooserClient(Element* owner_element)
       : owner_element_(owner_element) {}
@@ -129,7 +128,7 @@ class FakeColorChooserClient
 };
 
 class FakeDateTimeChooserClient
-    : public GarbageCollectedFinalized<FakeDateTimeChooserClient>,
+    : public GarbageCollected<FakeDateTimeChooserClient>,
       public DateTimeChooserClient {
  public:
   FakeDateTimeChooserClient(Element* owner_element)
@@ -231,9 +230,8 @@ TEST_F(PagePopupSuppressionTest, SuppressDateTimeChooser) {
 }
 
 // A FileChooserClient which makes FileChooser::OpenFileChooser() success.
-class MockFileChooserClient
-    : public GarbageCollectedFinalized<MockFileChooserClient>,
-      public FileChooserClient {
+class MockFileChooserClient : public GarbageCollected<MockFileChooserClient>,
+                              public FileChooserClient {
   USING_GARBAGE_COLLECTED_MIXIN(MockFileChooserClient);
 
  public:

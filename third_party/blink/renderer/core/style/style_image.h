@@ -45,7 +45,7 @@ typedef void* WrappedImagePtr;
 // This class represents a CSS <image> value in ComputedStyle. The underlying
 // object can be an image, a gradient or anything else defined as an <image>
 // value.
-class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
+class CORE_EXPORT StyleImage : public GarbageCollected<StyleImage> {
  public:
   virtual ~StyleImage() = default;
 

@@ -28,8 +28,6 @@ import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
-import org.chromium.chrome.browser.touchless.TouchlessDelegate;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -207,9 +205,7 @@ public final class WebApkActivityTest {
         WebApkActivity webApkActivity = mActivityTestRule.startWebApkActivity(createWebApkInfo(
                 getTestServerUrl("manifest_test_page.html"), getTestServerUrl("/")));
 
-        Class<? extends ChromeActivity> mainClass = FeatureUtilities.isNoTouchModeEnabled()
-                ? TouchlessDelegate.getNoTouchActivityClass()
-                : ChromeTabbedActivity.class;
+        Class<? extends ChromeActivity> mainClass = ChromeTabbedActivity.class;
 
         // Move WebAPK to the background by launching Chrome.
         Intent intent = new Intent(InstrumentationRegistry.getTargetContext(), mainClass);

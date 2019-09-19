@@ -47,10 +47,9 @@ class HTMLImportsController;
 // Owning imported Document lifetime. It also implements RawResourceClient
 // to feed fetched bytes to the DocumentParser of the imported
 // document.  HTMLImportLoader is owned by HTMLImportsController.
-class HTMLImportLoader final
-    : public GarbageCollectedFinalized<HTMLImportLoader>,
-      public RawResourceClient,
-      public DocumentParserClient {
+class HTMLImportLoader final : public GarbageCollected<HTMLImportLoader>,
+                               public RawResourceClient,
+                               public DocumentParserClient {
   USING_GARBAGE_COLLECTED_MIXIN(HTMLImportLoader);
 
  public:

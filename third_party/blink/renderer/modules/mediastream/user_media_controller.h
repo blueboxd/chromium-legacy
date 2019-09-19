@@ -37,10 +37,9 @@ class ApplyConstraintsRequest;
 class MediaStreamComponent;
 class UserMediaRequest;
 
-class UserMediaController final
-    : public GarbageCollectedFinalized<UserMediaController>,
-      public Supplement<LocalFrame>,
-      public ContextLifecycleObserver {
+class UserMediaController final : public GarbageCollected<UserMediaController>,
+                                  public Supplement<LocalFrame>,
+                                  public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(UserMediaController);
 
  public:

@@ -221,9 +221,9 @@ void QueuedRequestDispatcher::SetUpAndDispatch(
       continue;
     }
 
-    request->responses[client].process_id = client_info.pid;
-    request->responses[client].process_type = client_info.process_type;
-    request->responses[client].service_names = client_info.service_names;
+    request->responses[client_info.pid].process_id = client_info.pid;
+    request->responses[client_info.pid].process_type = client_info.process_type;
+    request->responses[client_info.pid].service_name = client_info.service_name;
 
     // Don't request a chrome memory dump at all if the client only wants the
     // a memory footprint.
@@ -234,19 +234,20 @@ void QueuedRequestDispatcher::SetUpAndDispatch(
     // https://bugs.chromium.org/p/chromium/issues/detail?id=812346#c16 for more
     // details.
     if (!request->args.memory_footprint_only) {
-      request->pending_responses.insert({client, ResponseType::kChromeDump});
+      request->pending_responses.insert(
+          {client_info.pid, ResponseType::kChromeDump});
       client->RequestChromeMemoryDump(
           request->GetRequestArgs(),
-          base::BindOnce(std::move(chrome_callback), client));
+          base::BindOnce(std::move(chrome_callback), client_info.pid));
     }
 
 // On most platforms each process can dump data about their own process
 // so ask each process to do so Linux is special see below.
 #if !defined(OS_LINUX)
-    request->pending_responses.insert({client, ResponseType::kOSDump});
+    request->pending_responses.insert({client_info.pid, ResponseType::kOSDump});
     client->RequestOSMemoryDump(request->memory_map_option(),
                                 {base::kNullProcessId},
-                                base::BindOnce(os_callback, client));
+                                base::BindOnce(os_callback, client_info.pid));
 #endif  // !defined(OS_LINUX)
 
     // If we are in the single pid case, then we've already found the only
@@ -260,6 +261,7 @@ void QueuedRequestDispatcher::SetUpAndDispatch(
 #if defined(OS_LINUX)
   std::vector<base::ProcessId> pids;
   mojom::ClientProcess* browser_client = nullptr;
+  base::ProcessId browser_client_pid = base::kNullProcessId;
   pids.reserve(request->args.pid == base::kNullProcessId ? clients.size() : 1);
   for (const auto& client_info : clients) {
     if (request->args.pid == base::kNullProcessId ||
@@ -268,14 +270,16 @@ void QueuedRequestDispatcher::SetUpAndDispatch(
     }
     if (client_info.process_type == mojom::ProcessType::BROWSER) {
       browser_client = client_info.client;
+      browser_client_pid = client_info.pid;
     }
   }
   if (clients.size() > 0) {
     DCHECK(browser_client);
   }
   if (browser_client && pids.size() > 0) {
-    request->pending_responses.insert({browser_client, ResponseType::kOSDump});
-    auto callback = base::BindOnce(os_callback, browser_client);
+    request->pending_responses.insert(
+        {browser_client_pid, ResponseType::kOSDump});
+    auto callback = base::BindOnce(os_callback, browser_client_pid);
     browser_client->RequestOSMemoryDump(request->memory_map_option(), pids,
                                         std::move(callback));
   }
@@ -314,9 +318,9 @@ void QueuedRequestDispatcher::SetUpAndDispatchVmRegionRequest(
     return;
   }
 
-  request->pending_responses.insert(browser_client);
-  request->responses[browser_client].process_id = browser_client_pid;
-  auto callback = base::BindOnce(os_callback, browser_client);
+  request->pending_responses.insert(browser_client_pid);
+  request->responses[browser_client_pid].process_id = browser_client_pid;
+  auto callback = base::BindOnce(os_callback, browser_client_pid);
   browser_client->RequestOSMemoryDump(mojom::MemoryMapOption::MODULES,
                                       desired_pids, std::move(callback));
 #else
@@ -324,11 +328,13 @@ void QueuedRequestDispatcher::SetUpAndDispatchVmRegionRequest(
     if (std::find(desired_pids.begin(), desired_pids.end(), client_info.pid) !=
         desired_pids.end()) {
       mojom::ClientProcess* client = client_info.client;
-      request->pending_responses.insert(client);
-      request->responses[client].process_id = client_info.pid;
+      request->pending_responses.insert(client_info.pid);
+      request->responses[client_info.pid].process_id = client_info.pid;
+      request->responses[client_info.pid].service_name =
+          client_info.service_name;
       client->RequestOSMemoryDump(mojom::MemoryMapOption::MODULES,
                                   {base::kNullProcessId},
-                                  base::BindOnce(os_callback, client));
+                                  base::BindOnce(os_callback, client_info.pid));
     }
   }
 #endif  // defined(OS_LINUX)
@@ -388,19 +394,12 @@ void QueuedRequestDispatcher::Finalize(QueuedRequest* request,
   // All the pointers in the maps will continue to be owned by |request|
   // which outlives these containers.
   std::map<base::ProcessId, mojom::ProcessType> pid_to_process_type;
-  std::map<base::ProcessId, std::vector<std::string>> pid_to_service_names;
   std::map<base::ProcessId, const base::trace_event::ProcessMemoryDump*>
       pid_to_pmd;
   std::map<base::ProcessId, mojom::RawOSMemDump*> pid_to_os_dump;
   for (auto& response : request->responses) {
     const base::ProcessId& original_pid = response.second.process_id;
     pid_to_process_type[original_pid] = response.second.process_type;
-
-    std::vector<std::string>& service_names_for_pid =
-        pid_to_service_names[original_pid];
-    service_names_for_pid.insert(service_names_for_pid.begin(),
-                                 response.second.service_names.begin(),
-                                 response.second.service_names.end());
 
     // |chrome_dump| can be nullptr if this was a OS-counters only response.
     pid_to_pmd[original_pid] = response.second.chrome_dump.get();
@@ -534,8 +533,8 @@ void QueuedRequestDispatcher::Finalize(QueuedRequest* request,
     mojom::ProcessMemoryDumpPtr pmd = mojom::ProcessMemoryDump::New();
     pmd->pid = pid;
     pmd->process_type = pid_to_process_type[pid];
-    pmd->service_names = pid_to_service_names[pid];
     pmd->os_dump = std::move(os_dump);
+    pmd->service_name = response.second.service_name;
 
     // If we have to return a summary, add all entries for the requested
     // allocator dumps.
@@ -623,12 +622,14 @@ QueuedRequestDispatcher::ClientInfo::ClientInfo(
     mojom::ClientProcess* client,
     base::ProcessId pid,
     mojom::ProcessType process_type,
-    std::vector<std::string> service_names)
+    base::Optional<std::string> service_name)
     : client(client),
       pid(pid),
       process_type(process_type),
-      service_names(std::move(service_names)) {}
+      service_name(std::move(service_name)) {}
+
 QueuedRequestDispatcher::ClientInfo::ClientInfo(ClientInfo&& other) = default;
-QueuedRequestDispatcher::ClientInfo::~ClientInfo() {}
+
+QueuedRequestDispatcher::ClientInfo::~ClientInfo() = default;
 
 }  // namespace memory_instrumentation

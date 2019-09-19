@@ -9,7 +9,7 @@
 #include "cc/layers/append_quads_data.h"
 #include "cc/test/fake_mask_layer_impl.h"
 #include "cc/test/fake_raster_source.h"
-#include "cc/test/layer_test_common.h"
+#include "cc/test/layer_tree_impl_test_base.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,7 +20,7 @@ TEST(RenderSurfaceLayerImplTest, Occlusion) {
   gfx::Size layer_size(1000, 1000);
   gfx::Size viewport_size(1000, 1000);
 
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
 
   LayerImpl* owning_layer_impl = impl.AddLayer<LayerImpl>();
   owning_layer_impl->SetBounds(layer_size);
@@ -39,8 +39,7 @@ TEST(RenderSurfaceLayerImplTest, Occlusion) {
     gfx::Rect occluded;
     impl.AppendSurfaceQuadsWithOcclusion(render_surface_impl, occluded);
 
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(),
-                                                 gfx::Rect(layer_size));
+    VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect(layer_size));
     EXPECT_EQ(1u, impl.quad_list().size());
   }
 
@@ -49,7 +48,7 @@ TEST(RenderSurfaceLayerImplTest, Occlusion) {
     gfx::Rect occluded(owning_layer_impl->visible_layer_rect());
     impl.AppendSurfaceQuadsWithOcclusion(render_surface_impl, occluded);
 
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());
+    VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());
     EXPECT_EQ(impl.quad_list().size(), 0u);
   }
 
@@ -59,8 +58,8 @@ TEST(RenderSurfaceLayerImplTest, Occlusion) {
     impl.AppendSurfaceQuadsWithOcclusion(render_surface_impl, occluded);
 
     size_t partially_occluded_count = 0;
-    LayerTestCommon::VerifyQuadsAreOccluded(
-        impl.quad_list(), occluded, &partially_occluded_count);
+    VerifyQuadsAreOccluded(impl.quad_list(), occluded,
+                           &partially_occluded_count);
     // The layer outputs one quad, which is partially occluded.
     EXPECT_EQ(1u, impl.quad_list().size());
     EXPECT_EQ(1u, partially_occluded_count);
@@ -76,7 +75,7 @@ static std::unique_ptr<viz::RenderPass> DoAppendQuadsWithScaledMask(
   scoped_refptr<FakeRasterSource> raster_source =
       FakeRasterSource::CreateFilledSolidColor(layer_size);
 
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
   auto* root = impl.root_layer();
 
   auto* surface = impl.AddLayer<LayerImpl>();
@@ -143,8 +142,8 @@ TEST(RenderSurfaceLayerImplTest,
   // With tiled mask layer, we only generate mask quads for visible rect. In
   // this case |quad_layer_rect| is not fully covered, but
   // |visible_quad_layer_rect| is fully covered.
-  LayerTestCommon::VerifyQuadsExactlyCoverRect(
-      render_pass->quad_list, quad->shared_quad_state->visible_quad_layer_rect);
+  VerifyQuadsExactlyCoverRect(render_pass->quad_list,
+                              quad->shared_quad_state->visible_quad_layer_rect);
 }
 
 }  // namespace

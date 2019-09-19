@@ -12,6 +12,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "services/device/public/mojom/serial.mojom.h"
@@ -33,14 +35,15 @@ class SerialPortImpl : public mojom::SerialPort {
   static void Create(
       const base::FilePath& path,
       mojom::SerialPortRequest request,
-      mojom::SerialPortConnectionWatcherPtrInfo watcher,
+      mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
  private:
-  SerialPortImpl(const base::FilePath& path,
-                 mojom::SerialPortRequest request,
-                 mojom::SerialPortConnectionWatcherPtrInfo watcher,
-                 scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
+  SerialPortImpl(
+      const base::FilePath& path,
+      mojom::SerialPortRequest request,
+      mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   ~SerialPortImpl() override;
 
   // mojom::SerialPort methods:
@@ -76,7 +79,7 @@ class SerialPortImpl : public mojom::SerialPort {
 
   // Client interfaces.
   mojom::SerialPortClientPtr client_;
-  mojom::SerialPortConnectionWatcherPtr watcher_;
+  mojo::Remote<mojom::SerialPortConnectionWatcher> watcher_;
 
   // Data pipes for input and output.
   mojo::ScopedDataPipeConsumerHandle in_stream_;

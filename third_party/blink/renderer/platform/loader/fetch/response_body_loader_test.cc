@@ -24,7 +24,7 @@ class ResponseBodyLoaderTest : public testing::Test {
   using Command = ReplayingBytesConsumer::Command;
   using PublicState = BytesConsumer::PublicState;
   using Result = BytesConsumer::Result;
-  class TestClient final : public GarbageCollectedFinalized<TestClient>,
+  class TestClient final : public GarbageCollected<TestClient>,
                            public ResponseBodyLoaderClient {
     USING_GARBAGE_COLLECTED_MIXIN(TestClient);
 
@@ -87,7 +87,7 @@ class ResponseBodyLoaderTest : public testing::Test {
     bool cancelled_ = false;
   };
 
-  class ReadingClient final : public GarbageCollectedFinalized<ReadingClient>,
+  class ReadingClient final : public GarbageCollected<ReadingClient>,
                               public BytesConsumer::Client {
     USING_GARBAGE_COLLECTED_MIXIN(ReadingClient);
 

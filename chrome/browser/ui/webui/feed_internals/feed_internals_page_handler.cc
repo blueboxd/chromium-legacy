@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/android/feed/feed_debugging_bridge.h"
 #include "chrome/browser/android/feed/feed_lifecycle_bridge.h"
+#include "chrome/browser/ui/webui/feed_internals/feed_internals.mojom.h"
 #include "components/feed/content/feed_host_service.h"
 #include "components/feed/content/feed_offline_host.h"
 #include "components/feed/core/feed_scheduler_host.h"
@@ -21,6 +22,8 @@
 #include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "components/offline_pages/core/prefetch/suggestions_provider.h"
 #include "components/prefs/pref_service.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace {
 
@@ -47,10 +50,10 @@ std::string TriggerTypeToString(feed::FeedSchedulerHost::TriggerType* trigger) {
 }  // namespace
 
 FeedInternalsPageHandler::FeedInternalsPageHandler(
-    feed_internals::mojom::PageHandlerRequest request,
+    mojo::PendingReceiver<feed_internals::mojom::PageHandler> receiver,
     feed::FeedHostService* feed_host_service,
     PrefService* pref_service)
-    : binding_(this, std::move(request)),
+    : receiver_(this, std::move(receiver)),
       feed_scheduler_host_(feed_host_service->GetSchedulerHost()),
       feed_offline_host_(feed_host_service->GetOfflineHost()),
       pref_service_(pref_service) {}

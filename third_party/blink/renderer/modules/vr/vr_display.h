@@ -45,9 +45,8 @@ class WebGLRenderingContextBase;
 
 // Wrapper class to allow the VRDisplay to distinguish between immersive and
 // non-immersive XRSession events.
-class SessionClientBinding
-    : public GarbageCollectedFinalized<SessionClientBinding>,
-      public device::mojom::blink::XRSessionClient {
+class SessionClientBinding : public GarbageCollected<SessionClientBinding>,
+                             public device::mojom::blink::XRSessionClient {
  public:
   enum class SessionBindingType {
     kImmersive = 0,

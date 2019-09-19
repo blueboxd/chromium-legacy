@@ -8,7 +8,10 @@
 // Native side of DownloadStartupUtils.java.
 class DownloadStartupUtils {
  public:
-  static void EnsureDownloadSystemInitialized(bool is_full_browser_started);
+  // Ensures that the download system is initialized for the targeted profile.
+  // If the corresponding profile is not created, this method will do nothing.
+  static void EnsureDownloadSystemInitialized(bool is_full_browser_started,
+                                              bool is_incognito);
 };
 
 #endif  // CHROME_BROWSER_ANDROID_DOWNLOAD_DOWNLOAD_STARTUP_UTILS_H_

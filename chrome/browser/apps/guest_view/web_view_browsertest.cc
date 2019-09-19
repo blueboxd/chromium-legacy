@@ -3531,6 +3531,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, LoadWebviewAccessibleResource) {
              "web_view/load_webview_accessible_resource", NEEDS_TEST_SERVER);
 }
 
+// Tests that a WebView can be navigated to a WebView accessible resource.
+IN_PROC_BROWSER_TEST_F(WebViewTest, NavigateGuestToWebviewAccessibleResource) {
+  TestHelper("testNavigateGuestToWebviewAccessibleResource",
+             "web_view/load_webview_accessible_resource", NO_TEST_SERVER);
+}
+
 // Tests that a WebView can reload a WebView accessible resource. See
 // https://crbug.com/691941.
 IN_PROC_BROWSER_TEST_F(WebViewTest, ReloadWebviewAccessibleResource) {

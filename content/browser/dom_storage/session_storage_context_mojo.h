@@ -253,7 +253,7 @@ class CONTENT_EXPORT SessionStorageContextMojo
   } connection_state_ = NO_CONNECTION;
   bool database_initialized_ = false;
 
-  file::mojom::FileSystemPtr file_system_;
+  mojo::Remote<file::mojom::FileSystem> file_system_;
   filesystem::mojom::DirectoryPtr partition_directory_;
 
   base::trace_event::MemoryAllocatorDumpGuid memory_dump_id_;

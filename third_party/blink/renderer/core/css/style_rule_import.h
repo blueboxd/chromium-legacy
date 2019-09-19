@@ -65,7 +65,7 @@ class StyleRuleImport : public StyleRuleBase {
   // NOTE: We put the ResourceClient in a member instead of inheriting
   // from it to avoid adding a vptr to StyleRuleImport.
   class ImportedStyleSheetClient final
-      : public GarbageCollectedFinalized<ImportedStyleSheetClient>,
+      : public GarbageCollected<ImportedStyleSheetClient>,
         public ResourceClient {
     USING_GARBAGE_COLLECTED_MIXIN(ImportedStyleSheetClient);
 

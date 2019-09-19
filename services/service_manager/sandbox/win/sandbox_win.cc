@@ -776,13 +776,16 @@ sandbox::ResultCode SandboxWin::AddWin32kLockdownPolicy(
   if (!service_manager::IsWin32kLockdownEnabled())
     return sandbox::SBOX_ALL_OK;
 
-  // Enable win32k lockdown if not already.
   sandbox::MitigationFlags flags = policy->GetProcessMitigations();
-  if ((flags & sandbox::MITIGATION_WIN32K_DISABLE) ==
-      sandbox::MITIGATION_WIN32K_DISABLE)
-    return sandbox::SBOX_ALL_OK;
+  // Check not enabling twice. Should not happen.
+  DCHECK_EQ(0U, flags & sandbox::MITIGATION_WIN32K_DISABLE);
 
-  sandbox::ResultCode result =
+  flags |= sandbox::MITIGATION_WIN32K_DISABLE;
+  sandbox::ResultCode result = policy->SetProcessMitigations(flags);
+  if (result != sandbox::SBOX_ALL_OK)
+    return result;
+
+  result =
       policy->AddRule(sandbox::TargetPolicy::SUBSYS_WIN32K_LOCKDOWN,
                       enable_opm ? sandbox::TargetPolicy::IMPLEMENT_OPM_APIS
                                  : sandbox::TargetPolicy::FAKE_USER_GDI_INIT,
@@ -792,8 +795,7 @@ sandbox::ResultCode SandboxWin::AddWin32kLockdownPolicy(
   if (enable_opm)
     policy->SetEnableOPMRedirection();
 
-  flags |= sandbox::MITIGATION_WIN32K_DISABLE;
-  return policy->SetProcessMitigations(flags);
+  return result;
 #else
   return sandbox::SBOX_ALL_OK;
 #endif

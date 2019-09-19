@@ -101,7 +101,7 @@ TEST_F(LiveNodeListRegistryTest, ExplicitRemove) {
 // claims that there are no GC pointers on the stack. For this to be valid, the
 // tracker itself must live on the heap, not on the stack.
 struct LiveNodeListRegistryWrapper final
-    : public GarbageCollectedFinalized<LiveNodeListRegistryWrapper> {
+    : public GarbageCollected<LiveNodeListRegistryWrapper> {
   LiveNodeListRegistry registry;
   void Trace(Visitor* visitor) { visitor->Trace(registry); }
 };

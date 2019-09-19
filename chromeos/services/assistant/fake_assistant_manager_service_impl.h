@@ -40,6 +40,10 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) FakeAssistantManagerServiceImpl
   void SetArcPlayStoreEnabled(bool enabled) override;
   State GetState() const override;
   AssistantSettingsManager* GetAssistantSettingsManager() override;
+  void AddCommunicationErrorObserver(
+      AssistantCommunicationErrorObserver* observer) override {}
+  void RemoveCommunicationErrorObserver(
+      AssistantCommunicationErrorObserver* observer) override {}
 
   // mojom::Assistant overrides:
   void StartCachedScreenContextInteraction() override;

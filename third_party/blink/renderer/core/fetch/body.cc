@@ -30,7 +30,7 @@ namespace blink {
 
 namespace {
 
-class BodyConsumerBase : public GarbageCollectedFinalized<BodyConsumerBase>,
+class BodyConsumerBase : public GarbageCollected<BodyConsumerBase>,
                          public FetchDataLoader::Client {
   USING_GARBAGE_COLLECTED_MIXIN(BodyConsumerBase);
 

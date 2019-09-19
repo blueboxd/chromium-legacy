@@ -144,8 +144,9 @@ class FrameNodeImpl
 
     void Reset(FrameNodeImpl* frame_node, const GURL& url_in);
 
-    ObservedProperty::NotifiesOnlyOnChanges<GURL,
-                                            &FrameNodeObserver::OnURLChanged>
+    ObservedProperty::NotifiesOnlyOnChangesWithPreviousValue<
+        GURL,
+        &FrameNodeObserver::OnURLChanged>
         url;
     bool has_nonempty_beforeunload = false;
 

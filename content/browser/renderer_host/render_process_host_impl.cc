@@ -160,6 +160,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/browser/resource_coordinator_service.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/browser/webrtc_log.h"
@@ -203,6 +204,7 @@
 #include "services/network/cross_origin_read_blocking.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -2020,6 +2022,22 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       base::BindRepeating(&RenderProcessHostImpl::BindWebDatabaseHostImpl,
                           base::Unretained(this)));
 
+  AddUIThreadInterface(
+      registry.get(),
+      base::BindRepeating(
+          [](RenderProcessHostImpl* host,
+             memory_instrumentation::mojom::CoordinatorConnectorRequest
+                 request) {
+            host->coordinator_connector_receiver_.reset();
+            host->coordinator_connector_receiver_.Bind(std::move(request));
+            if (!host->GetProcess().IsValid()) {
+              // We only want to accept messages from this interface once we
+              // have a known PID.
+              host->coordinator_connector_receiver_.Pause();
+            }
+          },
+          base::Unretained(this)));
+
   registry->AddInterface(base::BindRepeating(&MimeRegistryImpl::Create),
                          base::CreateSequencedTaskRunner(
                              {base::ThreadPool(), base::MayBlock(),
@@ -2282,6 +2300,23 @@ void RenderProcessHostImpl::BindWebDatabaseHostImpl(
       FROM_HERE,
       base::BindOnce(&WebDatabaseHostImpl::Create, GetID(),
                      base::WrapRefCounted(db_tracker), std::move(receiver)));
+}
+
+void RenderProcessHostImpl::RegisterCoordinatorClient(
+    mojo::PendingReceiver<memory_instrumentation::mojom::Coordinator> receiver,
+    mojo::PendingRemote<memory_instrumentation::mojom::ClientProcess>
+        client_process) {
+  if (!GetProcess().IsValid()) {
+    // If the process dies before we get this message. we have no valid PID and
+    // there's nothing to register.
+    return;
+  }
+
+  GetMemoryInstrumentationCoordinatorController()->RegisterClientProcess(
+      std::move(receiver), std::move(client_process),
+      memory_instrumentation::mojom::ProcessType::RENDERER, GetProcess().Pid(),
+      /*service_name=*/base::nullopt);
+  coordinator_connector_receiver_.reset();
 }
 
 void RenderProcessHostImpl::CreateRendererHost(
@@ -4164,6 +4199,7 @@ void RenderProcessHostImpl::ResetIPC() {
   route_provider_receiver_.reset();
   associated_interface_provider_receivers_.Clear();
   associated_interfaces_.reset();
+  coordinator_connector_receiver_.reset();
 
   // Destroy all embedded CompositorFrameSinks.
   embedded_frame_sink_provider_.reset();
@@ -4396,6 +4432,9 @@ void RenderProcessHostImpl::OnProcessLaunched() {
       child_connection_->SetProcess(
           child_process_launcher_->GetProcess().Duplicate());
     }
+
+    if (coordinator_connector_receiver_.is_bound())
+      coordinator_connector_receiver_.Resume();
 
 // Not all platforms launch processes in the same backgrounded state. Make
 // sure |priority_.visible| reflects this platform's initial process

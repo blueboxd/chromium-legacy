@@ -23,7 +23,7 @@ class TextRecord;
 // TextElementTiming is responsible for tracking the paint timings for groups of
 // text nodes associated with elements of a given window.
 class CORE_EXPORT TextElementTiming final
-    : public GarbageCollectedFinalized<TextElementTiming>,
+    : public GarbageCollected<TextElementTiming>,
       public Supplement<LocalDOMWindow> {
   USING_GARBAGE_COLLECTED_MIXIN(TextElementTiming);
 

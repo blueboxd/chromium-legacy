@@ -16,7 +16,7 @@ namespace blink {
 class ContentIndex;
 
 class ServiceWorkerRegistrationContentIndex final
-    : public GarbageCollectedFinalized<ServiceWorkerRegistrationContentIndex>,
+    : public GarbageCollected<ServiceWorkerRegistrationContentIndex>,
       public Supplement<ServiceWorkerRegistration> {
   USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerRegistrationContentIndex);
 

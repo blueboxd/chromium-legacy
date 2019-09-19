@@ -43,9 +43,8 @@ namespace blink {
 
 namespace {
 
-class TestResourceClient final
-    : public GarbageCollectedFinalized<TestResourceClient>,
-      public ResourceClient {
+class TestResourceClient final : public GarbageCollected<TestResourceClient>,
+                                 public ResourceClient {
   USING_GARBAGE_COLLECTED_MIXIN(TestResourceClient);
 
  public:

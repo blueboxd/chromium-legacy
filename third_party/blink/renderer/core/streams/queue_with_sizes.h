@@ -22,7 +22,7 @@ class Visitor;
 // container, but require it to have a QueueWithSizes member.
 // https://streams.spec.whatwg.org/#queue-with-sizes
 class CORE_EXPORT QueueWithSizes final
-    : public GarbageCollectedFinalized<QueueWithSizes> {
+    : public GarbageCollected<QueueWithSizes> {
  public:
   QueueWithSizes();
   ~QueueWithSizes();

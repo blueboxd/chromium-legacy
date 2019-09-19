@@ -47,9 +47,8 @@ class LayoutRect;
 class LineLayoutItem;
 class LocalFrameView;
 
-class CORE_EXPORT AXObjectCache
-    : public GarbageCollectedFinalized<AXObjectCache>,
-      public ContextLifecycleObserver {
+class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache>,
+                                  public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(AXObjectCache);
 
  public:

@@ -23,6 +23,8 @@
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace chromeos {
+class CrasAudioHandler;
+
 namespace assistant {
 
 class COMPONENT_EXPORT(ASSISTANT_SERVICE) AudioInputImpl
@@ -31,7 +33,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AudioInputImpl
       public chromeos::PowerManagerClient::Observer {
  public:
   AudioInputImpl(mojom::Client* client,
-                 chromeos::PowerManagerClient* power_manager_client,
+                 PowerManagerClient* power_manager_client,
+                 CrasAudioHandler* cras_audio_handler,
                  const std::string& device_id,
                  const std::string& hotword_device_id);
   ~AudioInputImpl() override;
@@ -132,6 +135,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AudioInputImpl
   ScopedObserver<chromeos::PowerManagerClient,
                  chromeos::PowerManagerClient::Observer>
       power_manager_client_observer_;
+
+  CrasAudioHandler* const cras_audio_handler_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

@@ -41,7 +41,7 @@ namespace blink {
 class ExecutionContext;
 class ScheduledAction;
 
-class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
+class CORE_EXPORT DOMTimer final : public GarbageCollected<DOMTimer>,
                                    public ContextLifecycleObserver,
                                    public TimerBase,
                                    public NameClient {

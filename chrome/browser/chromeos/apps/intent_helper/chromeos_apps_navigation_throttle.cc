@@ -164,6 +164,7 @@ ChromeOsAppsNavigationThrottle::GetDestinationPlatform(
     case PickerAction::OBSOLETE_ALWAYS_PRESSED:
     case PickerAction::OBSOLETE_JUST_ONCE_PRESSED:
     case PickerAction::INVALID:
+    case PickerAction::DEVICE_PRESSED:
       break;
   }
   return apps::AppsNavigationThrottle::GetDestinationPlatform(

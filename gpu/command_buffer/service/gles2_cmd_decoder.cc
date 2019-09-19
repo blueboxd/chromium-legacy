@@ -18092,6 +18092,12 @@ void GLES2DecoderImpl::CopySubTextureHelper(const char* function_name,
   }
 #endif
 
+  // Use DRAW instead of COPY if the workaround is enabled.
+  if (method == CopyTextureMethod::DIRECT_COPY &&
+      workarounds().prefer_draw_to_copy) {
+    method = CopyTextureMethod::DIRECT_DRAW;
+  }
+
   copy_texture_chromium_->DoCopySubTexture(
       this, source_target, source_texture->service_id(), source_level,
       source_internal_format, dest_target, dest_texture->service_id(),

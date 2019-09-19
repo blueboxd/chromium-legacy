@@ -238,6 +238,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                          content::BrowserContext* context,
                          int render_process_id,
                          int render_frame_id) override;
+  bool DoesSchemeAllowCrossOriginSharedWorker(
+      const std::string& scheme) override;
   bool AllowSignedExchange(content::BrowserContext* browser_context) override;
   void AllowWorkerFileSystem(
       const GURL& url,

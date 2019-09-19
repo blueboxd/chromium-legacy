@@ -91,7 +91,7 @@ void QuotedPrintableDecode(const char* data,
 
 // This class is a limited MIME parser used to parse the MIME headers of MHTML
 // files.
-class MIMEHeader final : public GarbageCollectedFinalized<MIMEHeader> {
+class MIMEHeader final : public GarbageCollected<MIMEHeader> {
  public:
   MIMEHeader();
 

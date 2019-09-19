@@ -39,7 +39,7 @@ namespace blink {
 class TestingObserver;
 
 class DummyContext final
-    : public GarbageCollectedFinalized<DummyContext>,
+    : public GarbageCollected<DummyContext>,
       public LifecycleNotifier<DummyContext, TestingObserver> {
   USING_GARBAGE_COLLECTED_MIXIN(DummyContext);
 

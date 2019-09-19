@@ -763,6 +763,13 @@ const base::Feature kWebUIPolymer2Exceptions{"WebUIPolymer2Exceptions",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_WIN)
+// Enables the use of a touch fling curve that is based on the behavior of
+// native apps on Windows.
+const base::Feature kExperimentalFlingAnimation{
+    "ExperimentalFlingAnimation", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_WIN)
+
 #if defined(OS_MACOSX)
 // Enables caching of media devices for the purpose of enumerating them.
 const base::Feature kDeviceMonitorMac{"DeviceMonitorMac",

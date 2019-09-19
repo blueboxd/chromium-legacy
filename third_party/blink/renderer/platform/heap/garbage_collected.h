@@ -179,22 +179,10 @@ class PLATFORM_EXPORT GarbageCollectedMixin {
 
 // Base class for objects allocated in the Blink garbage-collected heap.
 //
-// Defines a 'new' operator that allocates the memory in the heap.  'delete'
-// should not be called on objects that inherit from GarbageCollected.
-//
 // Instances of GarbageCollected will be finalized if they are non-trivially
 // destructible.
 template <typename T>
 class GarbageCollected;
-
-// TODO(bikineev): Remove this class after the clang plugin is updated.
-template <typename T>
-class GarbageCollectedFinalized : public GarbageCollected<T> {
- protected:
-  GarbageCollectedFinalized() = default;
-
-  DISALLOW_COPY_AND_ASSIGN(GarbageCollectedFinalized);
-};
 
 template <typename T,
           bool = WTF::IsSubclassOfTemplate<typename std::remove_const<T>::type,

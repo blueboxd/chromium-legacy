@@ -111,7 +111,7 @@ class XR final : public EventTargetWithInlineData,
   // ScriptPromiseResolver that allows us to add additional logic as certain
   // things related to promise's life cycle happen.
   class PendingRequestSessionQuery final
-      : public GarbageCollectedFinalized<PendingRequestSessionQuery> {
+      : public GarbageCollected<PendingRequestSessionQuery> {
    public:
     PendingRequestSessionQuery(int64_t ukm_source_id,
                                ScriptPromiseResolver* resolver,

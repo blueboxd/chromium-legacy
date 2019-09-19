@@ -7,6 +7,7 @@
 
 #include "cc/cc_export.h"
 #include "cc/input/browser_controls_state.h"
+#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/proxy.h"
 #include "cc/trees/proxy_common.h"
 

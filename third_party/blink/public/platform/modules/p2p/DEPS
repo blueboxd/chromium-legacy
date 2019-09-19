@@ -1,4 +1,0 @@
-include_rules = [
-    "+net/base/ip_endpoint.h",
-    "+services/network/public/cpp/p2p_socket_type.h",
-]

@@ -43,7 +43,7 @@ class FontFace;
 class SegmentedFontData;
 
 class CSSSegmentedFontFace final
-    : public GarbageCollectedFinalized<CSSSegmentedFontFace> {
+    : public GarbageCollected<CSSSegmentedFontFace> {
  public:
   CSSSegmentedFontFace(FontSelectionCapabilities);
   ~CSSSegmentedFontFace();

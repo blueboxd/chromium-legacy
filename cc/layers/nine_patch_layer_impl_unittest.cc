@@ -12,7 +12,7 @@
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/fake_ui_resource_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
-#include "cc/test/layer_test_common.h"
+#include "cc/test/layer_tree_impl_test_base.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -70,8 +70,7 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
   UpdateDrawProperties(host_impl.active_tree());
 
   AppendQuadsData data;
-  host_impl.active_tree()->root_layer_for_testing()->AppendQuads(
-      render_pass.get(), &data);
+  host_impl.active_tree()->root_layer()->AppendQuads(render_pass.get(), &data);
 
   // Verify quad rects
   const auto& quads = render_pass->quad_list;
@@ -183,8 +182,7 @@ void NinePatchLayerLayoutTestWithOcclusion(const gfx::Size& bitmap_size,
   UpdateDrawProperties(host_impl.active_tree());
 
   AppendQuadsData data;
-  host_impl.active_tree()->root_layer_for_testing()->AppendQuads(
-      render_pass.get(), &data);
+  host_impl.active_tree()->root_layer()->AppendQuads(render_pass.get(), &data);
 
   // Verify quad rects
   const auto& quads = render_pass->quad_list;
@@ -350,7 +348,7 @@ TEST(NinePatchLayerImplTest, Occlusion) {
   gfx::Size layer_size(1000, 1000);
   gfx::Size viewport_size(1000, 1000);
 
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
 
   SkBitmap sk_bitmap;
   sk_bitmap.allocN32Pixels(10, 10);
@@ -378,8 +376,7 @@ TEST(NinePatchLayerImplTest, Occlusion) {
     gfx::Rect occluded;
     impl.AppendQuadsWithOcclusion(nine_patch_layer_impl, occluded);
 
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(),
-                                                 gfx::Rect(layer_size));
+    VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect(layer_size));
     EXPECT_EQ(9u, impl.quad_list().size());
   }
 
@@ -388,7 +385,7 @@ TEST(NinePatchLayerImplTest, Occlusion) {
     gfx::Rect occluded(nine_patch_layer_impl->visible_layer_rect());
     impl.AppendQuadsWithOcclusion(nine_patch_layer_impl, occluded);
 
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());
+    VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());
     EXPECT_EQ(impl.quad_list().size(), 0u);
   }
 
@@ -398,8 +395,8 @@ TEST(NinePatchLayerImplTest, Occlusion) {
     impl.AppendQuadsWithOcclusion(nine_patch_layer_impl, occluded);
 
     size_t partially_occluded_count = 0;
-    LayerTestCommon::VerifyQuadsAreOccluded(
-        impl.quad_list(), occluded, &partially_occluded_count);
+    VerifyQuadsAreOccluded(impl.quad_list(), occluded,
+                           &partially_occluded_count);
     // The layer outputs nine quads, three of which are partially occluded, and
     // three fully occluded.
     EXPECT_EQ(6u, impl.quad_list().size());
@@ -411,7 +408,7 @@ TEST(NinePatchLayerImplTest, OpaqueRect) {
   gfx::Size layer_size(1000, 1000);
   gfx::Size viewport_size(1000, 1000);
 
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
 
   SkBitmap sk_bitmap_opaque;
   sk_bitmap_opaque.allocN32Pixels(10, 10);

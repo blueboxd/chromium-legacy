@@ -9,7 +9,7 @@
 #include "base/bind_helpers.h"
 #include "cc/layers/video_frame_provider_client_impl.h"
 #include "cc/test/fake_video_frame_provider.h"
-#include "cc/test/layer_test_common.h"
+#include "cc/test/layer_tree_impl_test_base.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/draw_quad.h"
@@ -38,7 +38,7 @@ TEST(VideoLayerImplTest, Occlusion) {
   gfx::Size layer_size(1000, 1000);
   gfx::Size viewport_size(1000, 1000);
 
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
   DebugSetImplThreadAndMainThreadBlocked(impl.task_runner_provider());
 
   scoped_refptr<media::VideoFrame> video_frame = media::VideoFrame::CreateFrame(
@@ -61,10 +61,9 @@ TEST(VideoLayerImplTest, Occlusion) {
     gfx::Rect occluded;
     impl.AppendQuadsWithOcclusion(video_layer_impl, occluded);
 
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(),
-                                                 gfx::Rect(layer_size));
+    VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect(layer_size));
 
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(
+    VerifyQuadsExactlyCoverRect(
         impl.quad_list(),
         impl.quad_list().cbegin()->shared_quad_state->visible_quad_layer_rect);
     EXPECT_EQ(1u, impl.quad_list().size());
@@ -75,7 +74,7 @@ TEST(VideoLayerImplTest, Occlusion) {
     gfx::Rect occluded(video_layer_impl->visible_layer_rect());
     impl.AppendQuadsWithOcclusion(video_layer_impl, occluded);
 
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());
+    VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());
     EXPECT_EQ(impl.quad_list().size(), 0u);
   }
 
@@ -85,9 +84,9 @@ TEST(VideoLayerImplTest, Occlusion) {
     impl.AppendQuadsWithOcclusion(video_layer_impl, occluded);
 
     size_t partially_occluded_count = 0;
-    LayerTestCommon::VerifyQuadsAreOccluded(
-        impl.quad_list(), occluded, &partially_occluded_count);
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(
+    VerifyQuadsAreOccluded(impl.quad_list(), occluded,
+                           &partially_occluded_count);
+    VerifyQuadsExactlyCoverRect(
         impl.quad_list(),
         impl.quad_list().cbegin()->shared_quad_state->visible_quad_layer_rect);
     // The layer outputs one quad, which is partially occluded.
@@ -100,7 +99,7 @@ TEST(VideoLayerImplTest, OccludesOtherLayers) {
   gfx::Size layer_size(1000, 1000);
   gfx::Rect visible(layer_size);
 
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
   impl.host_impl()->active_tree()->SetDeviceViewportRect(visible);
   DebugSetImplThreadAndMainThreadBlocked(impl.task_runner_provider());
   auto* active_tree = impl.host_impl()->active_tree();
@@ -136,7 +135,7 @@ TEST(VideoLayerImplTest, OccludesOtherLayers) {
 }
 
 TEST(VideoLayerImplTest, DidBecomeActiveShouldSetActiveVideoLayer) {
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
   DebugSetImplThreadAndMainThreadBlocked(impl.task_runner_provider());
 
   FakeVideoFrameProvider provider;
@@ -157,7 +156,7 @@ TEST(VideoLayerImplTest, Rotated0) {
   gfx::Size layer_size(100, 50);
   gfx::Size viewport_size(1000, 500);
 
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
   DebugSetImplThreadAndMainThreadBlocked(impl.task_runner_provider());
 
   scoped_refptr<media::VideoFrame> video_frame = media::VideoFrame::CreateFrame(
@@ -194,7 +193,7 @@ TEST(VideoLayerImplTest, Rotated90) {
   gfx::Size layer_size(100, 50);
   gfx::Size viewport_size(1000, 500);
 
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
   DebugSetImplThreadAndMainThreadBlocked(impl.task_runner_provider());
 
   scoped_refptr<media::VideoFrame> video_frame = media::VideoFrame::CreateFrame(
@@ -231,7 +230,7 @@ TEST(VideoLayerImplTest, Rotated180) {
   gfx::Size layer_size(100, 50);
   gfx::Size viewport_size(1000, 500);
 
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
   DebugSetImplThreadAndMainThreadBlocked(impl.task_runner_provider());
 
   scoped_refptr<media::VideoFrame> video_frame = media::VideoFrame::CreateFrame(
@@ -268,7 +267,7 @@ TEST(VideoLayerImplTest, Rotated270) {
   gfx::Size layer_size(100, 50);
   gfx::Size viewport_size(1000, 500);
 
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
   DebugSetImplThreadAndMainThreadBlocked(impl.task_runner_provider());
 
   scoped_refptr<media::VideoFrame> video_frame = media::VideoFrame::CreateFrame(
@@ -304,7 +303,7 @@ TEST(VideoLayerImplTest, Rotated270) {
 TEST(VideoLayerImplTest, SoftwareVideoFrameGeneratesYUVQuad) {
   gfx::Size layer_size(1000, 1000);
 
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
   DebugSetImplThreadAndMainThreadBlocked(impl.task_runner_provider());
 
   gpu::MailboxHolder mailbox_holder;
@@ -344,7 +343,7 @@ TEST(VideoLayerImplTest, SoftwareVideoFrameGeneratesYUVQuad) {
 TEST(VideoLayerImplTest, HibitSoftwareVideoFrameGeneratesYUVQuad) {
   gfx::Size layer_size(1000, 1000);
 
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
   DebugSetImplThreadAndMainThreadBlocked(impl.task_runner_provider());
 
   gpu::MailboxHolder mailbox_holder;
@@ -382,7 +381,7 @@ TEST(VideoLayerImplTest, HibitSoftwareVideoFrameGeneratesYUVQuad) {
 TEST(VideoLayerImplTest, NativeYUVFrameGeneratesYUVQuad) {
   gfx::Size layer_size(1000, 1000);
 
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
   DebugSetImplThreadAndMainThreadBlocked(impl.task_runner_provider());
 
   gpu::MailboxHolder mailbox_holders[media::VideoFrame::kMaxPlanes];
@@ -427,7 +426,7 @@ TEST(VideoLayerImplTest, NativeYUVFrameGeneratesYUVQuad) {
 TEST(VideoLayerImplTest, NativeARGBFrameGeneratesTextureQuad) {
   gfx::Size layer_size(1000, 1000);
 
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
   DebugSetImplThreadAndMainThreadBlocked(impl.task_runner_provider());
 
   gpu::MailboxHolder mailbox_holders[media::VideoFrame::kMaxPlanes];

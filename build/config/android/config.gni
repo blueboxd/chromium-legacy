@@ -182,10 +182,6 @@ if (is_android || is_chromeos) {
     # Set to false to disable the Errorprone compiler
     use_errorprone_java_compiler = true
 
-    # Enables Jacoco Java code coverage. Instruments classes during build to
-    # produce .exec files during runtime
-    jacoco_coverage = false
-
     # Disables process isolation when building _incremental targets.
     # Required for Android M+ due to SELinux policies (stronger sandboxing).
     disable_incremental_isolated_processes = false

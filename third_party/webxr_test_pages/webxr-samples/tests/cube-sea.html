@@ -267,7 +267,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         if (navigator.xr) {
           // Set up "magic window" mode.
           if (appSettings.magicWindow) {
-            navigator.xr.requestSession('inline', {optionalFeatures: ['local']}).then(onSessionStarted);
+            requestInlineSession()
+            .then((session) => {
+              gl.canvas.addEventListener('touchend', () => {
+                session.end().then(() => {
+                  requestInlineSession({ optionalFeatures: ['local'] });
+                }, { once: true });
+              })
+            });
           }
         } else {
           initFallback();
@@ -303,6 +310,14 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         scene.inputRenderer.setControllerMesh(new Gltf2Node({url: '../media/gltf/controller/controller.gltf'}));
       }
 
+      function requestInlineSession(options) {
+        return navigator.xr.requestSession('inline', options)
+          .then((session) => {
+            session.mode = 'inline';
+            return onSessionStarted(session);
+          });
+      }
+
       function onRequestSession() {
         let xrMode = appSettings.arMode ? 'immersive-ar' : 'immersive-vr';
         navigator.xr.requestSession(xrMode).then((session) => {
@@ -313,8 +328,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       function onSessionStarted(session) {
-        if (!session.mode)
-          session.mode = 'inline';
         session.addEventListener('end', onSessionEnded);
 
         initGL();
@@ -342,6 +355,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
           }
           session.requestAnimationFrame(onXRFrame);
         });
+
+        return session;
       }
 
       function onEndSession(session) {

@@ -21,7 +21,7 @@
 namespace blink {
 namespace {
 
-class MockPaymentRequest : public GarbageCollectedFinalized<MockPaymentRequest>,
+class MockPaymentRequest : public GarbageCollected<MockPaymentRequest>,
                            public PaymentRequestDelegate {
   USING_GARBAGE_COLLECTED_MIXIN(MockPaymentRequest);
 

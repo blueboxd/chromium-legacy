@@ -32,7 +32,7 @@ class Thread;
 // which lives an AudioTrackEncoder with its own threading subtleties, see the
 // implementation file.
 class MODULES_EXPORT AudioTrackRecorder
-    : public GarbageCollectedFinalized<AudioTrackRecorder>,
+    : public GarbageCollected<AudioTrackRecorder>,
       public WebMediaStreamAudioSink {
   USING_PRE_FINALIZER(AudioTrackRecorder, Prefinalize);
 

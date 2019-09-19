@@ -185,7 +185,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   enum IntervalSelector { kFirstInterval, kNextInterval };
 
   SMILInterval ResolveInterval(IntervalSelector) const;
-  void ResolveFirstInterval();
+  bool ResolveFirstInterval();
   base::Optional<SMILInterval> ResolveNextInterval();
   SMILTime ResolveActiveEnd(SMILTime resolved_begin,
                             SMILTime resolved_end) const;
@@ -198,7 +198,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   // This represents conditions on elements begin or end list that need to be
   // resolved on runtime, for example
   // <animate begin="otherElement.begin + 8s; button.click" ... />
-  class Condition final : public GarbageCollectedFinalized<Condition> {
+  class Condition final : public GarbageCollected<Condition> {
    public:
     enum Type { kEventBase, kSyncBase, kAccessKey };
 

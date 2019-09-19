@@ -31,6 +31,8 @@ static blink::WebSourceBufferClient::ParseWarning ParseWarningToBlink(
     CHROMIUM_PARSE_WARNING_TO_BLINK_ENUM_CASE(
         kKeyframeTimeGreaterThanDependant);
     CHROMIUM_PARSE_WARNING_TO_BLINK_ENUM_CASE(kMuxedSequenceMode);
+    CHROMIUM_PARSE_WARNING_TO_BLINK_ENUM_CASE(
+        kGroupEndTimestampDecreaseWithinMediaSegment);
   }
 
   NOTREACHED();

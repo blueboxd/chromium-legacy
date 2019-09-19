@@ -472,7 +472,6 @@ public class IntentHandler {
 
         if (isIntentForMhtmlFileOrContent(intent) && tabOpenType == TabOpenType.OPEN_NEW_TAB
                 && referrerUrl == null && extraHeaders == null) {
-            // TODO(https://crbug.com/963233): should MHTML intent be handled on touchless someday?
             if (!OfflinePageUtils.isEnabled()) {
                 return false;
             }

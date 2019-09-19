@@ -155,7 +155,7 @@ class CanvasRenderingContext2DTest : public ::testing::Test {
   Persistent<MemoryCache> global_memory_cache_;
   std::unique_ptr<ScopedAccelerated2dCanvasForTest> allow_accelerated_;
 
-  class WrapGradients final : public GarbageCollectedFinalized<WrapGradients> {
+  class WrapGradients final : public GarbageCollected<WrapGradients> {
    public:
     void Trace(blink::Visitor* visitor) {
       visitor->Trace(opaque_gradient_);

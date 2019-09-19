@@ -82,7 +82,7 @@ LinkLoader* LinkLoader::Create(LinkLoaderClient* client) {
 }
 
 class LinkLoader::FinishObserver final
-    : public GarbageCollectedFinalized<LinkLoader::FinishObserver>,
+    : public GarbageCollected<LinkLoader::FinishObserver>,
       public ResourceFinishObserver {
   USING_GARBAGE_COLLECTED_MIXIN(FinishObserver);
   USING_PRE_FINALIZER(FinishObserver, ClearResource);

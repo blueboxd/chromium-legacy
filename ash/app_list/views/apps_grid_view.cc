@@ -1982,7 +1982,7 @@ void AppsGridView::OnFolderItemRemoved() {
   item_list_ = nullptr;
 }
 
-void AppsGridView::UpdateOpacity() {
+void AppsGridView::UpdateOpacity(bool restore_opacity) {
   if (view_structure_.pages().empty())
     return;
 
@@ -1991,9 +1991,6 @@ void AppsGridView::UpdateOpacity() {
   // above the bottom of work area and transitioning to 1.0f by the time the
   // centerline reaches |kAllAppsOpacityEndPx| above the work area bottom.
   AppListView* app_list_view = contents_view_->app_list_view();
-  const bool should_restore_opacity =
-      !app_list_view->is_in_drag() &&
-      (app_list_view->app_list_state() != ash::AppListViewState::kClosed);
   const int selected_page = pagination_model_.selected_page();
   auto current_page = view_structure_.pages()[selected_page];
 
@@ -2002,7 +1999,7 @@ void AppsGridView::UpdateOpacity() {
   // unnecessary. Do not dynamically ensure/destroy layers of individual items
   // since the creation/destruction of the layer requires to repaint the parent
   // view (i.e. this class).
-  if (should_restore_opacity) {
+  if (restore_opacity) {
     // Layers are not necessary. Destroy them, and return. No need to update
     // opacity. This needs to be done on all views within |view_model_| because
     // some item view might have been moved out from the current page. See also

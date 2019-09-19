@@ -1882,6 +1882,39 @@ TEST_P(FrameProcessorTest,
   CheckReadsThenReadStalls(audio_.get(), "0 10 20 30");
 }
 
+TEST_P(FrameProcessorTest,
+       GroupEndTimestampDecreaseWithinMediaSegmentShouldWarn) {
+  // This parse warning requires:
+  // 1) a decode time discontinuity within the set of frames being processed,
+  // 2) the highest frame end time of any frame successfully processed
+  //    before that discontinuity is higher than the highest frame end time of
+  //    all frames processed after that discontinuity.
+  // TODO(wolenetz): Adjust this case once direction on spec is informed by
+  // data. See https://crbug.com/920853 and
+  // https://github.com/w3c/media-source/issues/203.
+  if (use_sequence_mode_) {
+    // Sequence mode modifies the presentation timestamps following a decode
+    // discontinuity such that this scenario should not repro with that mode.
+    DVLOG(1) << "Skipping segments mode variant; inapplicable to this case.";
+    return;
+  }
+
+  InSequence s;
+  AddTestTracks(HAS_VIDEO);
+
+  EXPECT_CALL(callbacks_,
+              OnParseWarning(SourceBufferParseWarning::
+                                 kGroupEndTimestampDecreaseWithinMediaSegment));
+
+  frame_duration_ = Milliseconds(10);
+  EXPECT_CALL(callbacks_, PossibleDurationIncrease(Milliseconds(15)));
+  EXPECT_TRUE(ProcessFrames("", "0K 10K 5|40K"));
+  EXPECT_EQ(Milliseconds(0), timestamp_offset_);
+
+  CheckExpectedRangesByTimestamp(video_.get(), "{ [0,15) }");
+  CheckReadsThenReadStalls(video_.get(), "0 5");
+}
+
 INSTANTIATE_TEST_SUITE_P(SequenceMode, FrameProcessorTest, Values(true));
 INSTANTIATE_TEST_SUITE_P(SegmentsMode, FrameProcessorTest, Values(false));
 

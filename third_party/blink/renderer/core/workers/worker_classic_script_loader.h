@@ -53,7 +53,7 @@ class ExecutionContext;
 class TextResourceDecoder;
 
 class CORE_EXPORT WorkerClassicScriptLoader final
-    : public GarbageCollectedFinalized<WorkerClassicScriptLoader>,
+    : public GarbageCollected<WorkerClassicScriptLoader>,
       public ThreadableLoaderClient {
   USING_GARBAGE_COLLECTED_MIXIN(WorkerClassicScriptLoader);
 

@@ -235,49 +235,6 @@ void PreviewsLitePageDecider::RegisterProfilePrefs(
 }
 
 // static
-std::unique_ptr<content::NavigationThrottle>
-PreviewsLitePageDecider::MaybeCreateThrottleFor(
-    content::NavigationHandle* handle) {
-  DCHECK(handle);
-  DCHECK(handle->GetWebContents());
-  DCHECK(handle->GetWebContents()->GetBrowserContext());
-
-  if (!handle->IsInMainFrame())
-    return nullptr;
-
-  if (base::FeatureList::IsEnabled(
-          previews::features::kHTTPSServerPreviewsUsingURLLoader)) {
-    return nullptr;
-  }
-
-  content::BrowserContext* browser_context =
-      handle->GetWebContents()->GetBrowserContext();
-
-  PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
-      Profile::FromBrowserContext(browser_context));
-  if (!previews_service)
-    return nullptr;
-  DCHECK(!browser_context->IsOffTheRecord());
-
-  PreviewsLitePageDecider* decider =
-      previews_service->previews_lite_page_decider();
-  DCHECK(decider);
-
-  bool drp_enabled = decider->drp_settings_->IsDataReductionProxyEnabled();
-  bool preview_enabled = previews::params::ArePreviewsAllowed() &&
-                         previews::params::IsLitePageServerPreviewsEnabled();
-
-  // Always create a navigation throttle if the feature is enabled. The throttle
-  // itself will check the PreviewsState bit for triggering.
-  if (drp_enabled && preview_enabled) {
-    return std::make_unique<PreviewsLitePageNavigationThrottle>(handle,
-                                                                decider);
-  }
-
-  return nullptr;
-}
-
-// static
 uint64_t PreviewsLitePageDecider::GeneratePageIdForWebContents(
     content::WebContents* web_contents) {
   return PreviewsLitePageDecider::GeneratePageIdForProfile(
@@ -495,7 +452,7 @@ bool PreviewsLitePageDecider::ShouldSendNextProbe() {
 
 bool PreviewsLitePageDecider::IsResponseSuccess(
     net::Error net_error,
-    const network::ResourceResponseHead* head,
+    const network::mojom::URLResponseHead* head,
     std::unique_ptr<std::string> body) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Any HTTP response is fine, so long as we got it.

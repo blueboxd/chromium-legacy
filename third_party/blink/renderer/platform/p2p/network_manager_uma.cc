@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/platform/modules/p2p/network_manager_uma.h"
+#include "third_party/blink/renderer/platform/p2p/network_manager_uma.h"
 
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"

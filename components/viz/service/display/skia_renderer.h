@@ -160,6 +160,9 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   void DrawYUVVideoQuad(const YUVVideoDrawQuad* quad, DrawQuadParams* params);
   void DrawUnsupportedQuad(const DrawQuad* quad, DrawQuadParams* params);
 
+  // Schedule overlay candidates for presentation at next SwapBuffers().
+  void ScheduleDCLayers();
+
   const TileDrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass) override;
 
   // Get corresponding GrContext. Returns nullptr when there is no GrContext.
@@ -252,6 +255,8 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   // It is only used with DDL.
   base::Optional<DisplayResourceProvider::LockSetForExternalUse>
       lock_set_for_external_use_;
+
+  bool has_locked_overlay_resources_ = false;
 
   // Specific for SkPRecord.
   std::unique_ptr<SkPictureRecorder> root_recorder_;

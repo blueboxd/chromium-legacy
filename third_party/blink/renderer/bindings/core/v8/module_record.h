@@ -28,7 +28,7 @@ class ScriptValue;
 // ModuleRecordProduceCacheData is a parameter object for
 // ModuleRecord::ProduceCache().
 class CORE_EXPORT ModuleRecordProduceCacheData final
-    : public GarbageCollectedFinalized<ModuleRecordProduceCacheData> {
+    : public GarbageCollected<ModuleRecordProduceCacheData> {
  public:
   ModuleRecordProduceCacheData(v8::Isolate*,
                                SingleCachedMetadataHandler*,

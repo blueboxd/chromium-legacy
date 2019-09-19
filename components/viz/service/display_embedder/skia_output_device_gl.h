@@ -6,17 +6,20 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_DEVICE_GL_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
+#include "gpu/command_buffer/common/mailbox.h"
 
 class GrContext;
 
 namespace gl {
 class GLContext;
+class GLImage;
 class GLSurface;
 }  // namespace gl
 
@@ -25,6 +28,8 @@ class GpuFence;
 }  // namespace gfx
 
 namespace gpu {
+class MailboxManager;
+
 namespace gles2 {
 class FeatureInfo;
 }  // namespace gles2
@@ -35,6 +40,7 @@ namespace viz {
 class SkiaOutputDeviceGL final : public SkiaOutputDevice {
  public:
   SkiaOutputDeviceGL(
+      gpu::MailboxManager* mailbox_manager,
       scoped_refptr<gl::GLSurface> gl_surface,
       scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
       const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback);
@@ -58,12 +64,18 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice {
                      BufferPresentedCallback feedback,
                      std::vector<ui::LatencyInfo> latency_info) override;
   void SetDrawRectangle(const gfx::Rect& draw_rectangle) override;
+  void SetEnableDCLayers(bool enable) override;
+  void ScheduleDCLayers(std::vector<DCLayerOverlay> dc_layers) override;
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
   SkSurface* BeginPaint() override;
   void EndPaint(const GrBackendSemaphore& semaphore) override;
 
  private:
+  scoped_refptr<gl::GLImage> GetGLImageForMailbox(const gpu::Mailbox& mailbox);
+
+  gpu::MailboxManager* const mailbox_manager_;
+
   scoped_refptr<gl::GLSurface> gl_surface_;
   GrContext* gr_context_ = nullptr;
 

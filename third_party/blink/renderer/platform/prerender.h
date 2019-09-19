@@ -47,8 +47,7 @@ namespace blink {
 
 class PrerenderClient;
 
-class PLATFORM_EXPORT Prerender final
-    : public GarbageCollectedFinalized<Prerender> {
+class PLATFORM_EXPORT Prerender final : public GarbageCollected<Prerender> {
   DISALLOW_COPY_AND_ASSIGN(Prerender);
 
  public:

@@ -8,8 +8,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "services/network/public/cpp/p2p_param_traits.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
-#include "third_party/blink/public/platform/modules/p2p/network_list_observer.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/p2p/network_list_observer.h"
 #include "third_party/blink/renderer/platform/p2p/socket_client_impl.h"
 
 namespace blink {

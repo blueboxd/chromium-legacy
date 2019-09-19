@@ -28,7 +28,7 @@ class FetchHeaderList;
 class ScriptState;
 
 class CORE_EXPORT FetchResponseData final
-    : public GarbageCollectedFinalized<FetchResponseData> {
+    : public GarbageCollected<FetchResponseData> {
  public:
   // "A response can have an associated termination reason which is one of
   // end-user abort, fatal, and timeout."

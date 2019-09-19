@@ -64,8 +64,7 @@ class WebScopedVirtualTimePauser;
 // Any processing that depends on components outside platform/loader/fetch/
 // should be implemented on a subclass of this interface, and then exposed to
 // the ResourceFetcher via this interface.
-class PLATFORM_EXPORT FetchContext
-    : public GarbageCollectedFinalized<FetchContext> {
+class PLATFORM_EXPORT FetchContext : public GarbageCollected<FetchContext> {
  public:
   FetchContext() = default;
 

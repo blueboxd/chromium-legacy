@@ -15,7 +15,6 @@
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/raster/playback_image_provider.h"
 #include "cc/raster/raster_buffer_provider.h"
-#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "ui/gfx/geometry/axis_transform2d.h"

@@ -578,6 +578,11 @@ class CONTENT_EXPORT ContentBrowserClient {
                                  int render_process_id,
                                  int render_frame_id);
 
+  // Allow the embedder to control if a page/worker with |scheme| URL can create
+  // a cross-origin shared workers.
+  virtual bool DoesSchemeAllowCrossOriginSharedWorker(
+      const std::string& scheme);
+
   // Allows the embedder to control whether Signed HTTP Exchanges (SXG) can be
   // loaded. This is called on the UI thread.
   virtual bool AllowSignedExchange(BrowserContext* context);

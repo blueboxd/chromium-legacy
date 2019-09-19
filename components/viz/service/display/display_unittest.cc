@@ -116,6 +116,11 @@ void CopyCallback(bool* called, std::unique_ptr<CopyOutputResult> result) {
   *called = true;
 }
 
+gfx::SwapTimings GetTestSwapTimings() {
+  base::TimeTicks now = base::TimeTicks::Now();
+  return gfx::SwapTimings{now, now};
+}
+
 }  // namespace
 
 class DisplayTest : public testing::Test {
@@ -3637,6 +3642,7 @@ TEST_F(DisplayTest, InvalidPresentationTimestamps) {
             .Build();
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
     display_->DrawAndSwap();
+    display_->DidReceiveSwapBuffersAck(GetTestSwapTimings());
     display_->DidReceivePresentationFeedback({base::TimeTicks::Now(), {}, 0});
     EXPECT_THAT(histograms.GetAllSamples(
                     "Graphics.PresentationTimestamp.InvalidBeforeSwap"),
@@ -3655,6 +3661,7 @@ TEST_F(DisplayTest, InvalidPresentationTimestamps) {
             .Build();
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
     display_->DrawAndSwap();
+    display_->DidReceiveSwapBuffersAck(GetTestSwapTimings());
     display_->DidReceivePresentationFeedback(
         {base::TimeTicks::Now() - base::TimeDelta::FromSeconds(1), {}, 0});
     EXPECT_THAT(histograms.GetAllSamples(
@@ -3677,6 +3684,7 @@ TEST_F(DisplayTest, InvalidPresentationTimestamps) {
             .Build();
     support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
     display_->DrawAndSwap();
+    display_->DidReceiveSwapBuffersAck(GetTestSwapTimings());
     display_->DidReceivePresentationFeedback(
         {base::TimeTicks::Now() + base::TimeDelta::FromSeconds(1), {}, 0});
     EXPECT_THAT(histograms.GetAllSamples(

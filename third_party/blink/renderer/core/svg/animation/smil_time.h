@@ -190,8 +190,12 @@ struct SMILInterval {
   SMILTime end;
 };
 
+inline bool operator==(const SMILInterval& a, const SMILInterval& b) {
+  return a.begin == b.begin && a.end == b.end;
+}
+
 inline bool operator!=(const SMILInterval& a, const SMILInterval& b) {
-  return a.begin != b.begin || a.end != b.end;
+  return !(a == b);
 }
 
 struct SMILTimeHash {

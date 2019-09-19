@@ -32,7 +32,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserverRegistrar;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -112,9 +111,7 @@ public class CustomTabToolbarCoordinator implements InflationObserver {
         ToolbarManager manager = mToolbarManager.get();
         assert manager != null : "Toolbar manager not initialized";
 
-        manager.setCloseButtonDrawable(FeatureUtilities.isNoTouchModeEnabled()
-                ? null
-                : mIntentDataProvider.getCloseButtonDrawable());
+        manager.setCloseButtonDrawable(mIntentDataProvider.getCloseButtonDrawable());
         manager.setShowTitle(
                 mIntentDataProvider.getTitleVisibilityState() == CustomTabsIntent.SHOW_PAGE_TITLE);
         if (mConnection.shouldHideDomainForSession(mIntentDataProvider.getSession())) {

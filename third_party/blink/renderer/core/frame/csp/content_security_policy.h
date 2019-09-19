@@ -129,7 +129,7 @@ class CORE_EXPORT ContentSecurityPolicyDelegate : public GarbageCollectedMixin {
 };
 
 class CORE_EXPORT ContentSecurityPolicy final
-    : public GarbageCollectedFinalized<ContentSecurityPolicy> {
+    : public GarbageCollected<ContentSecurityPolicy> {
  public:
   enum ExceptionStatus { kWillThrowException, kWillNotThrowException };
 

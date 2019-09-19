@@ -7,6 +7,8 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
+#include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
@@ -15,6 +17,7 @@
 #include "chromeos/dbus/fake_cicerone_client.h"
 #include "chromeos/dbus/fake_seneschal_client.h"
 #include "chromeos/dbus/seneschal/seneschal_service.pb.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -86,8 +89,12 @@ class CrostiniExportImportTest : public testing::Test {
   void SetUp() override {
     profile_ = std::make_unique<TestingProfile>();
     crostini_export_import_ = std::make_unique<CrostiniExportImport>(profile());
+    test_helper_ = std::make_unique<CrostiniTestHelper>(profile_.get());
     CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
         kCrostiniDefaultVmName);
+    CrostiniManager::GetForProfile(profile())->set_skip_restart_for_testing();
+    profile()->GetPrefs()->SetBoolean(
+        crostini::prefs::kUserCrostiniExportImportUIAllowedByPolicy, true);
     container_id_ =
         ContainerId(kCrostiniDefaultVmName, kCrostiniDefaultContainerName);
 
@@ -109,6 +116,7 @@ class CrostiniExportImportTest : public testing::Test {
     guest_os::GuestOsSharePath::GetForProfile(profile())->Shutdown();
     task_environment_.RunUntilIdle();
     base::DeleteFile(tarball_, false);
+    test_helper_.reset();
     profile_.reset();
   }
 
@@ -121,6 +129,8 @@ class CrostiniExportImportTest : public testing::Test {
 
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<CrostiniExportImport> crostini_export_import_;
+  std::unique_ptr<CrostiniTestHelper> test_helper_;
+
   ContainerId container_id_;
   base::FilePath tarball_;
 
@@ -129,6 +139,19 @@ class CrostiniExportImportTest : public testing::Test {
  private:
   DISALLOW_COPY_AND_ASSIGN(CrostiniExportImportTest);
 };
+
+TEST_F(CrostiniExportImportTest, TestNotAllowed) {
+  profile()->GetPrefs()->SetBoolean(
+      crostini::prefs::kUserCrostiniExportImportUIAllowedByPolicy, false);
+  crostini_export_import_->ExportContainer(
+      container_id_, tarball_, base::BindOnce([](CrostiniResult result) {
+        EXPECT_EQ(result, CrostiniResult::NOT_ALLOWED);
+      }));
+  crostini_export_import_->ImportContainer(
+      container_id_, tarball_, base::BindOnce([](CrostiniResult result) {
+        EXPECT_EQ(result, CrostiniResult::NOT_ALLOWED);
+      }));
+}
 
 // TODO(juwa): remove this once tremplin has been shipped.
 TEST_F(CrostiniExportImportTest, TestDeprecatedExportSuccess) {

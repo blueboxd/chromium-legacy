@@ -39,7 +39,7 @@
 namespace blink {
 
 class MockContextLifecycleStateObserver final
-    : public GarbageCollectedFinalized<MockContextLifecycleStateObserver>,
+    : public GarbageCollected<MockContextLifecycleStateObserver>,
       public ContextLifecycleStateObserver {
   USING_GARBAGE_COLLECTED_MIXIN(MockContextLifecycleStateObserver);
 

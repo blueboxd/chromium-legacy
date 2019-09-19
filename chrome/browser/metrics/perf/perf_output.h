@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/pipe_reader.h"
@@ -98,7 +98,7 @@ class PerfOutputCall {
   bool pending_stop_;
   base::Optional<uint64_t> perf_session_id_;
 
-  THREAD_CHECKER(thread_checker_);
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // To pass around the "this" pointer across threads safely.
   base::WeakPtrFactory<PerfOutputCall> weak_factory_{this};

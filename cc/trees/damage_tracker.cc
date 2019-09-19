@@ -15,7 +15,6 @@
 #include "cc/layers/render_surface_impl.h"
 #include "cc/paint/filter_operations.h"
 #include "cc/trees/effect_node.h"
-#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
@@ -28,9 +27,7 @@ std::unique_ptr<DamageTracker> DamageTracker::Create() {
 DamageTracker::DamageTracker() = default;
 DamageTracker::~DamageTracker() = default;
 
-void DamageTracker::UpdateDamageTracking(
-    LayerTreeImpl* layer_tree_impl,
-    const RenderSurfaceList& render_surface_list) {
+void DamageTracker::UpdateDamageTracking(LayerTreeImpl* layer_tree_impl) {
   //
   // This function computes the "damage rect" of each target surface, and
   // updates the state that is used to correctly track damage across frames. The
@@ -104,7 +101,7 @@ void DamageTracker::UpdateDamageTracking(
   //         erased from map.
   //
 
-  for (RenderSurfaceImpl* render_surface : render_surface_list) {
+  for (auto* render_surface : layer_tree_impl->GetRenderSurfaceList()) {
     render_surface->damage_tracker()->PrepareForUpdate();
   }
 

@@ -44,7 +44,7 @@ class TextTrackLoaderClient : public GarbageCollectedMixin {
   virtual void CueLoadingCompleted(TextTrackLoader*, bool loading_failed) = 0;
 };
 
-class TextTrackLoader final : public GarbageCollectedFinalized<TextTrackLoader>,
+class TextTrackLoader final : public GarbageCollected<TextTrackLoader>,
                               public RawResourceClient,
                               private VTTParserClient {
   USING_GARBAGE_COLLECTED_MIXIN(TextTrackLoader);

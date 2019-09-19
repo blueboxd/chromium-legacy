@@ -50,7 +50,7 @@ class GamepadList;
 class Navigator;
 
 class MODULES_EXPORT NavigatorGamepad final
-    : public GarbageCollectedFinalized<NavigatorGamepad>,
+    : public GarbageCollected<NavigatorGamepad>,
       public Supplement<Navigator>,
       public DOMWindowClient,
       public PlatformEventController,

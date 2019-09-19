@@ -122,6 +122,8 @@ void GpuSharedImageVideoFactory::Initialize(
     return;
   }
 
+  is_vulkan_ = shared_context->GrContextIsVulkan();
+
   // Make the shared context current.
   auto scoped_current = std::make_unique<ui::ScopedMakeCurrent>(
       shared_context->context(), shared_context->surface());
@@ -172,7 +174,8 @@ void GpuSharedImageVideoFactory::CreateImage(
   SharedImageVideoProvider::ImageRecord record;
   record.mailbox = mailbox;
   record.release_cb = std::move(release_cb);
-  record.ycbcr_info = ycbcr_info_;
+  record.is_vulkan = is_vulkan_;
+
   // Since |codec_image|'s ref holders can be destroyed by stub destruction, we
   // create a ref to it for the MaybeRenderEarlyManager.  This is a hack; we
   // should not be sending the CodecImage at all.  The MaybeRenderEarlyManager
@@ -242,9 +245,6 @@ bool GpuSharedImageVideoFactory::CreateImageInternal(
       mailbox, size, gfx::ColorSpace::CreateSRGB(), std::move(image),
       std::move(texture), std::move(shared_context),
       false /* is_thread_safe */);
-
-  if (!ycbcr_info_)
-    ycbcr_info_ = shared_image->GetYcbcrInfo();
 
   // Register it with shared image mailbox as well as legacy mailbox. This
   // keeps |shared_image| around until its destruction cb is called.

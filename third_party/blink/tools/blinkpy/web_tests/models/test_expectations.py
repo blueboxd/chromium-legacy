@@ -73,7 +73,7 @@ _PLATFORM_TOKENS_LIST = [
     'Fuchsia',
     'IOS', 'IOS12.2', 'IOS13.0',
     'Linux',
-    'Mac', 'Retina', 'Mac10.10', 'Mac10.11', 'Mac10.12', 'Mac10.13', 'Mac10.14', 'Mac10.15',
+    'Mac', 'Mac10.10', 'Mac10.11', 'Retina', 'Mac10.12', 'Mac10.13',
     'Win', 'Win7', 'Win10'
 ]
 

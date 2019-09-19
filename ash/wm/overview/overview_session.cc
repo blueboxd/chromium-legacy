@@ -70,8 +70,8 @@ constexpr SkColor kNoItemsIndicatorTextColor = SK_ColorWHITE;
 
 // Values for scrolling the grid by using the keyboard.
 // TODO(sammiequon): See if we can use the same values used for web scrolling.
-constexpr int kKeyboardPressScrollingDp = 25;
-constexpr int kKeyboardHoldScrollingDp = 5;
+constexpr int kKeyboardPressScrollingDp = 75;
+constexpr int kKeyboardHoldScrollingDp = 15;
 
 // Returns the bounds for the overview window grid according to the split view
 // state. If split view mode is active, the overview window should open on the

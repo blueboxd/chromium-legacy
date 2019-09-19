@@ -50,11 +50,17 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.chromium.base.annotations.VerifiesOnLollipop;
+
 import java.io.UnsupportedEncodingException;
 
 /**
  * Utility class to use new APIs that were added after KitKat (API level 19).
+ *
+ * Do not inline because we use many new APIs, and if they are inlined, they could cause dex
+ * validation errors on low Android versions.
  */
+@VerifiesOnLollipop
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class ApiCompatibilityUtils {
     private ApiCompatibilityUtils() {

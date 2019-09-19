@@ -20,6 +20,7 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 
 class GURL;
 
@@ -207,12 +208,12 @@ class InMemoryDownloadImpl : public network::SimpleURLLoaderStreamConsumer,
 
   // Called when the server redirects to another URL.
   void OnRedirect(const net::RedirectInfo& redirect_info,
-                  const network::ResourceResponseHead& response_head,
+                  const network::mojom::URLResponseHead& response_head,
                   std::vector<std::string>* to_be_removed_headers);
 
   // Called when the response of the final URL is received.
   void OnResponseStarted(const GURL& final_url,
-                         const network::ResourceResponseHead& response_head);
+                         const network::mojom::URLResponseHead& response_head);
 
   void OnUploadProgress(uint64_t position, uint64_t total);
 

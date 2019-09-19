@@ -168,14 +168,6 @@ goog.provide('{{module.namespace}}.{{interface.name}}{{primitives_names.pending_
   {% endif %}
 };
 
-{#--- Enums #}
-{% from "lite/enum_definition.tmpl" import enum_def with context %}
-{%- for enum in interface.enums %}
-{{ enum_def("%s.%s"|format(module.namespace, interface.name),
-            "%s.%s"|format(module.namespace, interface.name),
-            enum) }}
-{%-  endfor %}
-
 {% if not use_old_names -%}
 
 /**
@@ -206,6 +198,14 @@ goog.provide('{{module.namespace}}.{{interface.name}}{{primitives_names.pending_
 };
 
 {% endif %}
+
+{#--- Enums #}
+{% from "lite/enum_definition.tmpl" import enum_def with context %}
+{%- for enum in interface.enums %}
+{{ enum_def("%s.%s"|format(module.namespace, interface.name),
+            "%s.%s"|format(module.namespace, interface.name),
+            enum) }}
+{%-  endfor %}
 
 /**
  * An object which receives request messages for the {{interface.name}}

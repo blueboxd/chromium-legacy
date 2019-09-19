@@ -91,7 +91,6 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
       raster_source_scale_(0.f),
       raster_contents_scale_(0.f),
       low_res_raster_contents_scale_(0.f),
-      is_mask_(false),
       is_backdrop_filter_mask_(false),
       was_screen_space_transform_animating_(false),
       only_used_low_res_last_append_quads_(false),
@@ -153,7 +152,6 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
 
   layer_impl->SetNearestNeighbor(nearest_neighbor_);
   layer_impl->SetUseTransformedRasterization(use_transformed_rasterization_);
-  layer_impl->SetIsMask(is_mask_);
   layer_impl->SetIsBackdropFilterMask(is_backdrop_filter_mask_);
 
   // Solid color layers have no tilings.
@@ -189,8 +187,8 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
                                    AppendQuadsData* append_quads_data) {
   // RenderSurfaceImpl::AppendQuads sets mask properties in the DrawQuad for
   // the masked surface, which will apply to both the backdrop filter and the
-  // contents of the masked surface, so we should not quad of the mask layer
-  // in DstIn blend mode.
+  // contents of the masked surface, so we should not append quads of the mask
+  // layer in DstIn blend mode which would apply the mask in another codepath.
   if (is_backdrop_filter_mask_)
     return;
 
@@ -224,11 +222,7 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
 
     gfx::Rect scaled_visible_layer_rect =
         shared_quad_state->visible_quad_layer_rect;
-    Occlusion occlusion;
-    // TODO(sunxd): Compute the correct occlusion for mask layers.
-    if (!is_mask_) {
-      occlusion = draw_properties().occlusion_in_content_space;
-    }
+    Occlusion occlusion = draw_properties().occlusion_in_content_space;
 
     EffectNode* effect_node = GetEffectTree().Node(effect_tree_index());
     SolidColorLayerImpl::AppendSolidQuads(
@@ -247,13 +241,10 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
       tilings_->num_tilings() ? MaximumTilingContentsScale() : 1.f;
   PopulateScaledSharedQuadState(shared_quad_state, max_contents_scale,
                                 contents_opaque());
-  Occlusion scaled_occlusion;
-  if (!is_mask_) {
-    scaled_occlusion =
-        draw_properties()
-            .occlusion_in_content_space.GetOcclusionWithGivenDrawTransform(
-                shared_quad_state->quad_to_target_transform);
-  }
+  Occlusion scaled_occlusion =
+      draw_properties()
+          .occlusion_in_content_space.GetOcclusionWithGivenDrawTransform(
+              shared_quad_state->quad_to_target_transform);
 
   if (current_draw_mode_ == DRAW_MODE_RESOURCELESS_SOFTWARE) {
     DCHECK(shared_quad_state->quad_layer_rect.origin() == gfx::Point(0, 0));
@@ -442,7 +433,7 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
           float alpha =
               (SkColorGetA(draw_info.solid_color()) * (1.0f / 255.0f)) *
               shared_quad_state->opacity;
-          if (is_mask_ || alpha >= std::numeric_limits<float>::epsilon()) {
+          if (alpha >= std::numeric_limits<float>::epsilon()) {
             auto* quad =
                 render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
             quad->SetNew(
@@ -462,7 +453,7 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
     if (!has_draw_quad) {
       // Checkerboard.
       SkColor color = SafeOpaqueBackgroundColor();
-      if (!is_mask_ && ShowDebugBorders(DebugBorderType::LAYER)) {
+      if (ShowDebugBorders(DebugBorderType::LAYER)) {
         // Fill the whole tile with the missing tile color.
         color = DebugColors::DefaultCheckerboardColor();
       }
@@ -813,11 +804,10 @@ std::unique_ptr<Tile> PictureLayerImpl::CreateTile(
     const Tile::CreateInfo& info) {
   int flags = 0;
 
-  // We don't handle solid color masks if mask tiling is disabled, we also don't
-  // handle solid color single texture masks if the flag is enabled, so we
-  // shouldn't bother analyzing those.
+  // We don't handle solid color single texture masks for backdrop filters,
+  // so we shouldn't bother analyzing those.
   // Otherwise, always analyze to maximize memory savings.
-  if (!is_mask_)
+  if (!is_backdrop_filter_mask_)
     flags = Tile::USE_PICTURE_ANALYSIS;
 
   if (contents_opaque())
@@ -907,6 +897,12 @@ void PictureLayerImpl::GetContentsResourceId(
     viz::ResourceId* resource_id,
     gfx::Size* resource_size,
     gfx::SizeF* resource_uv_size) const {
+  // We need contents resource for backdrop filter masks only.
+  if (!is_backdrop_filter_mask()) {
+    *resource_id = 0;
+    return;
+  }
+
   // The bounds and the pile size may differ if the pile wasn't updated (ie.
   // PictureLayer::Update didn't happen). In that case the pile will be empty.
   DCHECK(raster_source_->GetSize().IsEmpty() ||
@@ -1349,9 +1345,9 @@ float PictureLayerImpl::MaximumContentsScale() const {
   // have tilings that would become larger than the max_texture_size since they
   // use a single tile for the entire tiling. Other layers can have tilings such
   // that dimension * scale does not overflow.
-  float max_dimension =
-      static_cast<float>(is_mask_ ? layer_tree_impl()->max_texture_size()
-                                  : std::numeric_limits<int>::max());
+  float max_dimension = static_cast<float>(
+      is_backdrop_filter_mask_ ? layer_tree_impl()->max_texture_size()
+                               : std::numeric_limits<int>::max());
   int higher_dimension = std::max(bounds().width(), bounds().height());
   float max_scale = max_dimension / higher_dimension;
 

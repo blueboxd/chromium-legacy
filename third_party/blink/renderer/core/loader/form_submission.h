@@ -47,7 +47,7 @@ class Event;
 class HTMLFormControlElement;
 class HTMLFormElement;
 
-class FormSubmission final : public GarbageCollectedFinalized<FormSubmission> {
+class FormSubmission final : public GarbageCollected<FormSubmission> {
  public:
   enum SubmitMethod { kGetMethod, kPostMethod, kDialogMethod };
 

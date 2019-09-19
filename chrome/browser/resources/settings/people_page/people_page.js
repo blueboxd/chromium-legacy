@@ -98,8 +98,16 @@ Polymer({
     isProfileActionable_: {
       type: Boolean,
       value: function() {
-        // On Chrome OS, only allow when SplitSettings is disabled.
-        return cr.isChromeOS ? loadTimeData.getBoolean('showOSSettings') : true;
+        if (!cr.isChromeOS) {
+          // Opens profile manager.
+          return true;
+        }
+        if (loadTimeData.getBoolean('showOSSettings')) {
+          // Pre-SplitSettings opens change picture.
+          return true;
+        }
+        // Post-SplitSettings links out to account manager if it is available.
+        return loadTimeData.getBoolean('isAccountManagerEnabled');
       },
       readOnly: true,
     },
@@ -109,6 +117,40 @@ Polymer({
      * @private
      */
     profileName_: String,
+
+    // <if expr="chromeos">
+    /** @private {string} */
+    profileRowIconClass_: {
+      type: String,
+      value: function() {
+        if (loadTimeData.getBoolean('showOSSettings')) {
+          // Pre-SplitSettings links internally to the change picture subpage.
+          return 'subpage-arrow';
+        } else {
+          // Post-SplitSettings links externally to account manager. If account
+          // manager isn't available the icon will be hidden.
+          return 'icon-external';
+        }
+      },
+      readOnly: true,
+    },
+
+    /** @private {string} */
+    profileRowIconAriaLabel_: {
+      type: String,
+      value: function() {
+        if (loadTimeData.getBoolean('showOSSettings')) {
+          // Pre-SplitSettings.
+          return this.i18n('changePictureTitle');
+        } else {
+          // Post-SplitSettings. If account manager isn't available the icon
+          // will be hidden so the label doesn't matter.
+          return this.i18n('accountManagerSubMenuLabel');
+        }
+      },
+      readOnly: true,
+    },
+    // </if>
 
     // <if expr="not chromeos">
     /** @private {boolean} */
@@ -379,10 +421,13 @@ Polymer({
   /** @private */
   onProfileTap_: function() {
     // <if expr="chromeos">
-    if (this.isProfileActionable_) {
-      // Testing isProfileActionable_ is simpler than conditionally removing
-      // on-click handlers in the HTML.
+    if (loadTimeData.getBoolean('showOSSettings')) {
+      // Pre-SplitSettings.
       settings.navigateTo(settings.routes.CHANGE_PICTURE);
+    } else if (loadTimeData.getBoolean('isAccountManagerEnabled')) {
+      // Post-SplitSettings. The browser C++ code loads OS settings in a window.
+      // Don't use window.open() because that creates an extra empty tab.
+      window.location.href = 'chrome://os-settings/accountManager';
     }
     // </if>
     // <if expr="not chromeos">

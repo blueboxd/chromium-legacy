@@ -15,7 +15,6 @@
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/resource_coordinator/memory_instrumentation/process_map.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -62,48 +61,31 @@ namespace memory_instrumentation {
 
 class FakeCoordinatorImpl : public CoordinatorImpl {
  public:
-  FakeCoordinatorImpl() : CoordinatorImpl(nullptr) {}
-  ~FakeCoordinatorImpl() override {}
+  FakeCoordinatorImpl() = default;
+  ~FakeCoordinatorImpl() override = default;
 
-  MOCK_CONST_METHOD0(GetClientIdentityForCurrentRequest,
-                     service_manager::Identity());
-  MOCK_CONST_METHOD1(GetProcessIdForClientIdentity,
-                     base::ProcessId(service_manager::Identity));
   MOCK_CONST_METHOD0(ComputePidToServiceNamesMap,
                      std::map<base::ProcessId, std::vector<std::string>>());
 };
 
 class CoordinatorImplTest : public testing::Test {
  public:
-  CoordinatorImplTest() {}
+  CoordinatorImplTest() = default;
+
   void SetUp() override {
     coordinator_.reset(new NiceMock<FakeCoordinatorImpl>);
   }
 
   void TearDown() override { coordinator_.reset(); }
 
-  void RegisterClientProcess(mojom::ClientProcessPtr client_process,
-                             base::ProcessId pid,
-                             mojom::ProcessType process_type) {
-    service_manager::Identity identity(base::NumberToString(pid),
-                                       base::Token{1, 1}, base::Token{},
-                                       base::Token{1, 1});
-
-    ON_CALL(*coordinator_, GetClientIdentityForCurrentRequest())
-        .WillByDefault(Return(identity));
-
-    ON_CALL(*coordinator_, GetProcessIdForClientIdentity(identity))
-        .WillByDefault(Return(pid));
-
-    ON_CALL(*coordinator_, ComputePidToServiceNamesMap())
-        .WillByDefault(
-            Return(std::map<base::ProcessId, std::vector<std::string>>(
-                {{1, {"bootup_helper", "1"}},
-                 {2, {"bootup_helper", "2"}},
-                 {3, {"bootup_helper", "3"}}})));
-
-    coordinator_->RegisterClientProcess(std::move(client_process),
-                                        process_type);
+  void RegisterClientProcess(
+      mojo::PendingReceiver<mojom::Coordinator> receiver,
+      mojo::PendingRemote<mojom::ClientProcess> client_process,
+      mojom::ProcessType process_type,
+      base::ProcessId pid) {
+    coordinator_->RegisterClientProcess(
+        std::move(receiver), std::move(client_process), process_type, pid,
+        /*service_name=*/base::nullopt);
   }
 
   void RequestGlobalMemoryDump(RequestGlobalMemoryDumpCallback callback) {
@@ -163,13 +145,14 @@ class MockClientProcess : public mojom::ClientProcess {
 
   MockClientProcess(CoordinatorImplTest* test_coordinator,
                     base::ProcessId pid,
-                    mojom::ProcessType process_type)
-      : binding_(this) {
+                    mojom::ProcessType process_type) {
     // Register to the coordinator.
-    mojom::ClientProcessPtr client_process;
-    binding_.Bind(mojo::MakeRequest(&client_process));
-    test_coordinator->RegisterClientProcess(std::move(client_process), pid,
-                                            process_type);
+    mojo::Remote<mojom::Coordinator> remote_coordinator;
+    mojo::PendingRemote<mojom::ClientProcess> client_process;
+    receiver_.Bind(client_process.InitWithNewPipeAndPassReceiver());
+    test_coordinator->RegisterClientProcess(
+        remote_coordinator.BindNewPipeAndPassReceiver(),
+        std::move(client_process), process_type, pid);
 
     ON_CALL(*this, RequestChromeMemoryDumpMock(_, _))
         .WillByDefault(Invoke([pid](const MemoryDumpRequestArgs& args,
@@ -193,7 +176,7 @@ class MockClientProcess : public mojom::ClientProcess {
         }));
   }
 
-  ~MockClientProcess() override {}
+  ~MockClientProcess() override = default;
 
   // TODO(crbug.com/729950): Remove non const reference here once GMock is
   // updated to support move-only types.
@@ -217,7 +200,7 @@ class MockClientProcess : public mojom::ClientProcess {
   }
 
  private:
-  mojo::Binding<mojom::ClientProcess> binding_;
+  mojo::Receiver<mojom::ClientProcess> receiver_{this};
 };
 
 class MockGlobalMemoryDumpCallback {
@@ -691,11 +674,6 @@ TEST_F(CoordinatorImplTest, GlobalMemoryDumpStruct) {
         mojom::ProcessMemoryDumpPtr browser_dump = nullptr;
         mojom::ProcessMemoryDumpPtr renderer_dump = nullptr;
         for (mojom::ProcessMemoryDumpPtr& dump : global_dump->process_dumps) {
-          // Service names should match what ComputePidToServiceNamesMap
-          // provides.
-          EXPECT_THAT(dump->service_names,
-                      UnorderedElementsAre("bootup_helper",
-                                           base::NumberToString(dump->pid)));
           if (dump->process_type == mojom::ProcessType::BROWSER) {
             browser_dump = std::move(dump);
           } else if (dump->process_type == mojom::ProcessType::RENDERER) {
@@ -948,24 +926,15 @@ TEST_F(CoordinatorImplTest, DumpByPidSuccess) {
       .WillOnce(Invoke([](bool success, GlobalMemoryDump* global_dump) {
         EXPECT_EQ(1U, global_dump->process_dumps.size());
         EXPECT_EQ(global_dump->process_dumps[0]->pid, kBrowserPid);
-        EXPECT_THAT(global_dump->process_dumps[0]->service_names,
-                    UnorderedElementsAre("bootup_helper",
-                                         base::NumberToString(kBrowserPid)));
       }))
       .WillOnce(Invoke([](bool success, GlobalMemoryDump* global_dump) {
         EXPECT_EQ(1U, global_dump->process_dumps.size());
         EXPECT_EQ(global_dump->process_dumps[0]->pid, kRendererPid);
-        EXPECT_THAT(global_dump->process_dumps[0]->service_names,
-                    UnorderedElementsAre("bootup_helper",
-                                         base::NumberToString(kRendererPid)));
       }))
       .WillOnce(
           Invoke([&run_loop](bool success, GlobalMemoryDump* global_dump) {
             EXPECT_EQ(1U, global_dump->process_dumps.size());
             EXPECT_EQ(global_dump->process_dumps[0]->pid, kGpuPid);
-            EXPECT_THAT(global_dump->process_dumps[0]->service_names,
-                        UnorderedElementsAre("bootup_helper",
-                                             base::NumberToString(kGpuPid)));
             run_loop.Quit();
           }));
 

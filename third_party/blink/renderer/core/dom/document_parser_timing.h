@@ -15,7 +15,7 @@ namespace blink {
 // DocumentParserTiming is responsible for tracking parser-related timings for a
 // given document.
 class DocumentParserTiming final
-    : public GarbageCollectedFinalized<DocumentParserTiming>,
+    : public GarbageCollected<DocumentParserTiming>,
       public Supplement<Document> {
   USING_GARBAGE_COLLECTED_MIXIN(DocumentParserTiming);
 

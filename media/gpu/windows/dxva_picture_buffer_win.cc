@@ -21,7 +21,7 @@ namespace media {
 namespace {
 
 void LogDXVAError(int line) {
-  LOG(ERROR) << "Error in dxva_picture_buffer_win.cc on line " << line;
+  PLOG(ERROR) << "Error in dxva_picture_buffer_win.cc on line " << line;
   base::UmaHistogramSparse("Media.DXVAVDA.PictureBufferErrorLine", line);
 }
 

@@ -37,14 +37,12 @@ import org.chromium.chrome.browser.notifications.NotificationPlatformBridge;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.searchwidget.SearchActivity;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.webapps.ActivityAssigner;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.ui.widget.Toast;
-import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -67,9 +65,6 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
             "com.google.android.apps.chrome.EXTRA_LAUNCH_MODE";
 
     private static final String TAG = "ActivitiyDispatcher";
-
-    private static final String NO_TOUCH_ACTIVITY_NAME =
-            "org.chromium.chrome.browser.touchless.NoTouchActivity";
 
     /**
      * Timeout in ms for reading PartnerBrowserCustomizations provider. We do not trust third party
@@ -194,19 +189,6 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
             return Action.FINISH_ACTIVITY;
         }
 
-        // Check if we should launch a WebApk to handle the intent.
-        // For NoTouchMode, prefer to launch PWAs instead of the browser on view intents.
-        if (!mIsCustomTabIntent && FeatureUtilities.isNoTouchModeEnabled() && url != null
-                && Intent.ACTION_VIEW.equals(mIntent.getAction())) {
-            String packageName = WebApkValidator.queryFirstWebApkPackage(
-                    ContextUtils.getApplicationContext(), url);
-            if (packageName != null) {
-                mActivity.startActivity(WebApkValidator.createWebApkIntentForUrlAndOptionalPackage(
-                        url, packageName));
-                return Action.FINISH_ACTIVITY;
-            }
-        }
-
         // Check if we should push the user through First Run.
         if (FirstRunFlowSequencer.launch(mActivity, mIntent, false /* requiresBroadcast */,
                     false /* preferLightweightFre */)) {
@@ -269,11 +251,6 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
      */
     public static boolean isCustomTabIntent(Intent intent) {
         if (intent == null) return false;
-        // CCT is disabled in noTouch mode except for some Chrome-internal exceptions.
-        if (FeatureUtilities.isNoTouchModeEnabled()
-                && !IntentHandler.wasIntentSenderChrome(intent)) {
-            return false;
-        }
         if (CustomTabsIntent.shouldAlwaysUseBrowserUI(intent)
                 || !intent.hasExtra(CustomTabsIntent.EXTRA_SESSION)) {
             return false;
@@ -438,18 +415,9 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         maybePrefetchDnsInBackground();
 
         Intent newIntent = new Intent(mIntent);
-        String targetActivityClassName = null;
-        if (FeatureUtilities.isNoTouchModeEnabled()) {
-            // When in No Touch Mode we don't support tabs, and replace the TabbedActivity with the
-            // NoTouchActivity.
-            // We can't depend on NoTouchActivity directly as it's not always compiled in, so
-            // refer to it by string.
-            targetActivityClassName = NO_TOUCH_ACTIVITY_NAME;
-        } else {
-            targetActivityClassName = MultiWindowUtils.getInstance()
-                                              .getTabbedActivityForIntent(newIntent, mActivity)
-                                              .getName();
-        }
+        String targetActivityClassName = MultiWindowUtils.getInstance()
+                                                 .getTabbedActivityForIntent(newIntent, mActivity)
+                                                 .getName();
         newIntent.setClassName(
                 mActivity.getApplicationContext().getPackageName(), targetActivityClassName);
         newIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);

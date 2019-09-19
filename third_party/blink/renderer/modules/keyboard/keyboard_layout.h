@@ -17,7 +17,7 @@ namespace blink {
 
 class ScriptPromiseResolver;
 
-class KeyboardLayout final : public GarbageCollectedFinalized<KeyboardLayout>,
+class KeyboardLayout final : public GarbageCollected<KeyboardLayout>,
                              public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(KeyboardLayout);
 

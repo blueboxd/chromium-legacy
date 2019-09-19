@@ -64,6 +64,11 @@ const base::Feature kTabHoverCardImages{"TabHoverCardImages",
 const base::Feature kTabOutlinesInLowContrastThemes{
     "TabOutlinesInLowContrastThemes", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables a more prominent active tab title in dark mode to aid with
+// accessibility.
+const base::Feature kProminentDarkModeActiveTabTitle{
+    "ProminentDarkModeActiveTabTitle", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables a web-based separator that's only used for performance testing. See
 // https://crbug.com/993502.
 const base::Feature kWebFooterExperiment{"WebFooterExperiment",

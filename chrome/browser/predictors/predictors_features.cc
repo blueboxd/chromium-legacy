@@ -11,4 +11,9 @@ namespace features {
 const base::Feature kLoadingOnlyLearnHighPriorityResources{
     "LoadingOnlyLearnHighPriorityResources", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Modifies loading predictor so that the predictions also contain origins of
+// the redirect target of the navigation.
+const base::Feature kLoadingPreconnectToRedirectTarget{
+    "LoadingPreconnectToRedirectTarget", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features

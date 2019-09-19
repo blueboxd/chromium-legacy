@@ -15,7 +15,7 @@
 
 namespace blink {
 
-class HitRegion final : public GarbageCollectedFinalized<HitRegion> {
+class HitRegion final : public GarbageCollected<HitRegion> {
  public:
   HitRegion(const Path&, const HitRegionOptions*);
   virtual ~HitRegion() = default;
@@ -37,8 +37,7 @@ class HitRegion final : public GarbageCollectedFinalized<HitRegion> {
   WindRule fill_rule_;
 };
 
-class HitRegionManager final
-    : public GarbageCollectedFinalized<HitRegionManager> {
+class HitRegionManager final : public GarbageCollected<HitRegionManager> {
  public:
   HitRegionManager() = default;
   ~HitRegionManager() {}

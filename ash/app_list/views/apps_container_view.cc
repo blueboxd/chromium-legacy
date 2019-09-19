@@ -216,15 +216,13 @@ void AppsContainerView::UpdateControlVisibility(
       app_list_state == ash::AppListViewState::kPeeking || is_in_drag);
 }
 
-void AppsContainerView::UpdateYPositionAndOpacity() {
-  apps_grid_view_->UpdateOpacity();
+void AppsContainerView::UpdateYPositionAndOpacity(float progress,
+                                                  bool restore_opacity) {
+  apps_grid_view_->UpdateOpacity(restore_opacity);
 
   // Updates the opacity of page switcher buttons. The same rule as all apps in
   // AppsGridView.
   AppListView* app_list_view = contents_view_->app_list_view();
-  bool should_restore_opacity =
-      !app_list_view->is_in_drag() &&
-      (app_list_view->app_list_state() != ash::AppListViewState::kClosed);
   int screen_bottom = app_list_view->GetScreenBottom();
   gfx::Rect switcher_bounds = page_switcher_->GetBoundsInScreen();
   float centerline_above_work_area =
@@ -236,10 +234,8 @@ void AppsContainerView::UpdateYPositionAndOpacity() {
               (AppListConfig::instance().all_apps_opacity_end_px() - start_px),
           0.f),
       1.0f);
-  page_switcher_->layer()->SetOpacity(should_restore_opacity ? 1.0f : opacity);
+  page_switcher_->layer()->SetOpacity(restore_opacity ? 1.0f : opacity);
 
-  const float progress =
-      contents_view_->app_list_view()->GetAppListTransitionProgress();
   // Changes the opacity of suggestion chips between 0 and 1 when app list
   // transition progress changes between |kSuggestionChipOpacityStartProgress|
   // and |kSuggestionChipOpacityEndProgress|.
@@ -250,10 +246,9 @@ void AppsContainerView::UpdateYPositionAndOpacity() {
                         0.f),
                1.0f);
   suggestion_chip_container_view_->layer()->SetOpacity(
-      should_restore_opacity ? 1.0f : chips_opacity);
+      restore_opacity ? 1.0 : chips_opacity);
 
-  suggestion_chip_container_view_->SetY(GetExpectedSuggestionChipY(
-      contents_view_->app_list_view()->GetAppListTransitionProgress()));
+  suggestion_chip_container_view_->SetY(GetExpectedSuggestionChipY(progress));
 
   apps_grid_view_->SetY(suggestion_chip_container_view_->y() +
                         chip_grid_y_distance_);
@@ -278,7 +273,8 @@ void AppsContainerView::Layout() {
       // Layout suggestion chips.
       gfx::Rect chip_container_rect = rect;
       chip_container_rect.set_y(GetExpectedSuggestionChipY(
-          contents_view_->app_list_view()->GetAppListTransitionProgress()));
+          contents_view_->app_list_view()->GetAppListTransitionProgress(
+              AppListView::kProgressFlagNone)));
       chip_container_rect.set_height(kSuggestionChipContainerHeight);
       suggestion_chip_container_view_->SetBoundsRect(chip_container_rect);
 
@@ -586,7 +582,8 @@ int AppsContainerView::GetSuggestionChipContainerTopMargin(
 
 int AppsContainerView::GetExpectedSuggestionChipY(float progress) {
   const gfx::Rect search_box_bounds =
-      contents_view_->GetSearchBoxExpectedBoundsForProgress(progress);
+      contents_view_->GetSearchBoxExpectedBoundsForProgress(
+          ash::AppListState::kStateApps, progress);
   return search_box_bounds.bottom() +
          GetSuggestionChipContainerTopMargin(progress);
 }

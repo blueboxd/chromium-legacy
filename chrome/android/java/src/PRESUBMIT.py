@@ -100,14 +100,11 @@ def _CheckAlertDialogBuilder(input_api, output_api):
   below.
 
   We recommend you use ModalDialogProperties to show a dialog whenever possible
-  to support VR mode and Touchless mode. You could only keep the AlertDialog if
-  you are certain that
-    1) Your new AlertDialog is not used in VR mode (e.g. pereference, FRE)
-    2) You have handled Touchless display if Touchless mode is relevant
+  to support VR mode. You could only keep the AlertDialog if you are certain
+  that your new AlertDialog is not used in VR mode (e.g. pereference, FRE)
 
   If you are in doubt, contact
   //src/chrome/android/java/src/org/chromium/chrome/browser/vr/VR_JAVA_OWNERS
-  //src/chrome/android/touchless/OWNERS
   '''
   error_files = []
   result = _CheckReIgnoreComment(input_api, output_api, error_msg, blacklist,
@@ -160,14 +157,11 @@ def _CheckCompatibleAlertDialogBuilder(input_api, output_api):
   constructors, listed below.
 
   We recommend you use ModalDialogProperties to show a dialog whenever possible
-  to support VR mode and Touchless mode. You could only keep the AlertDialog if
-  you are certain that
-    1) Your new AlertDialog is not used in VR mode (e.g. pereference, FRE)
-    2) You have handled Touchless display if Touchless mode is relevant
+  to support VR mode. You could only keep the AlertDialog if you are certain
+  that your new AlertDialog is not used in VR mode (e.g. pereference, FRE)
 
   If you are in doubt, contact
   //src/chrome/android/java/src/org/chromium/chrome/browser/vr/VR_JAVA_OWNERS
-  //src/chrome/android/touchless/OWNERS
   '''
   return _CheckReIgnoreComment(input_api, output_api, error_msg, blacklist,
                                NEW_COMPATIBLE_ALERTDIALOG_BUILDER_RE)

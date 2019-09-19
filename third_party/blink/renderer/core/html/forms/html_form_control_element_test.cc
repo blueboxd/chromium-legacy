@@ -18,7 +18,7 @@ namespace blink {
 
 namespace {
 class MockFormValidationMessageClient
-    : public GarbageCollectedFinalized<MockFormValidationMessageClient>,
+    : public GarbageCollected<MockFormValidationMessageClient>,
       public ValidationMessageClient {
   USING_GARBAGE_COLLECTED_MIXIN(MockFormValidationMessageClient);
 

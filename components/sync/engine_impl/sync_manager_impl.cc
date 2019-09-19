@@ -886,11 +886,6 @@ void SyncManagerImpl::NudgeForCommit(ModelType type) {
   RequestNudgeForDataTypes(FROM_HERE, ModelTypeSet(type));
 }
 
-void SyncManagerImpl::NudgeForRefresh(ModelType type) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RefreshTypes(ModelTypeSet(type));
-}
-
 void SyncManagerImpl::OnSyncCycleEvent(const SyncCycleEvent& event) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Only send an event if this is due to a cycle ending and this cycle

@@ -4648,6 +4648,9 @@
         'args': [
           '--site-per-process'
         ],
+        'swarming': {
+          'shards': 10,
+        },
         'test': 'unit_tests',
       },
     },

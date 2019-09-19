@@ -28,7 +28,7 @@ class GpuMemoryBufferImageCopy;
 class Image;
 
 class PLATFORM_EXPORT XRFrameTransport final
-    : public GarbageCollectedFinalized<XRFrameTransport>,
+    : public GarbageCollected<XRFrameTransport>,
       public device::mojom::blink::XRPresentationClient {
  public:
   explicit XRFrameTransport();

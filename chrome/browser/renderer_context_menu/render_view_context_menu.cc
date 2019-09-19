@@ -24,6 +24,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/apps/platform_apps/app_load_service.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
@@ -1287,7 +1288,7 @@ void RenderViewContextMenu::AppendLinkItems() {
                 IDS_LINK_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
                 send_tab_to_self::GetSingleTargetDeviceName(
                     GetBrowser()->profile())),
-            *send_tab_to_self::GetImageSkia());
+            kSendTabToSelfIcon);
 #endif
         send_tab_to_self::RecordSendTabToSelfClickResult(
             send_tab_to_self::kLinkMenu,
@@ -1307,8 +1308,7 @@ void RenderViewContextMenu::AppendLinkItems() {
 #else
         menu_model_.AddSubMenuWithStringIdAndIcon(
             IDC_CONTENT_LINK_SEND_TAB_TO_SELF, IDS_LINK_MENU_SEND_TAB_TO_SELF,
-            send_tab_to_self_sub_menu_model_.get(),
-            *send_tab_to_self::GetImageSkia());
+            send_tab_to_self_sub_menu_model_.get(), kSendTabToSelfIcon);
 #endif
       }
     }
@@ -1511,7 +1511,7 @@ void RenderViewContextMenu::AppendPageItems() {
               IDS_CONTEXT_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
               send_tab_to_self::GetSingleTargetDeviceName(
                   GetBrowser()->profile())),
-          *send_tab_to_self::GetImageSkia());
+          kSendTabToSelfIcon);
 #endif
       send_tab_to_self::RecordSendTabToSelfClickResult(
           send_tab_to_self::kContentMenu,
@@ -1530,8 +1530,7 @@ void RenderViewContextMenu::AppendPageItems() {
 #else
       menu_model_.AddSubMenuWithStringIdAndIcon(
           IDC_SEND_TAB_TO_SELF, IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
-          send_tab_to_self_sub_menu_model_.get(),
-          *send_tab_to_self::GetImageSkia());
+          send_tab_to_self_sub_menu_model_.get(), kSendTabToSelfIcon);
 #endif
     }
 

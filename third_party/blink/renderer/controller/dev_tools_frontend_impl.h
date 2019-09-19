@@ -49,7 +49,7 @@ class LocalFrame;
 // This class lives as long as a frame (being a supplement), or until
 // it's host (mojom.DevToolsFrontendHost) is destroyed.
 class DevToolsFrontendImpl final
-    : public GarbageCollectedFinalized<DevToolsFrontendImpl>,
+    : public GarbageCollected<DevToolsFrontendImpl>,
       public Supplement<LocalFrame>,
       public mojom::blink::DevToolsFrontend,
       public InspectorFrontendClient {

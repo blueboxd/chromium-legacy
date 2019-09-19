@@ -234,7 +234,7 @@ base::Value ProxyConfig::ToValue() const {
         AddProxyListToValue("https", proxy_rules_.proxies_for_https, &dict2);
         AddProxyListToValue("ftp", proxy_rules_.proxies_for_ftp, &dict2);
         AddProxyListToValue("fallback", proxy_rules_.fallback_proxies, &dict2);
-        dict2.SetKey("proxy_per_scheme", std::move(dict2));
+        dict.SetKey("proxy_per_scheme", std::move(dict2));
         break;
       }
       default:

@@ -102,7 +102,7 @@ class IgnoredReason {
 };
 
 class NameSourceRelatedObject final
-    : public GarbageCollectedFinalized<NameSourceRelatedObject> {
+    : public GarbageCollected<NameSourceRelatedObject> {
  public:
   WeakMember<AXObject> object;
   String text;
@@ -168,14 +168,14 @@ WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::DescriptionSource)
 
 namespace blink {
 
-class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
+class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
  public:
   typedef HeapVector<Member<AXObject>> AXObjectVector;
 
   // Iterator for doing an in-order traversal of the accessibility tree.
   // Includes ignored objects in the traversal.
   class MODULES_EXPORT InOrderTraversalIterator final
-      : public GarbageCollectedFinalized<InOrderTraversalIterator> {
+      : public GarbageCollected<InOrderTraversalIterator> {
    public:
     ~InOrderTraversalIterator() = default;
 
@@ -266,7 +266,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // Walks through all the unignored parents of the object up to the root.
   // Does not include the object itself in the list of ancestors.
   class MODULES_EXPORT AncestorsIterator final
-      : public GarbageCollectedFinalized<AncestorsIterator> {
+      : public GarbageCollected<AncestorsIterator> {
    public:
     ~AncestorsIterator() = default;
 

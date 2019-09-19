@@ -11,7 +11,6 @@
 #include "media/media_buildflags.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/platform/modules/peerconnection/rtc_video_encoder_factory_util.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_video_encoder.h"
 #include "third_party/webrtc/api/video_codecs/sdp_video_format.h"
 #include "third_party/webrtc/api/video_codecs/video_encoder.h"
@@ -103,11 +102,6 @@ bool IsSameFormat(const webrtc::SdpVideoFormat& format1,
 }
 
 }  // anonymous namespace
-
-std::unique_ptr<webrtc::VideoEncoderFactory> CreateRTCVideoEncoderFactory(
-    media::GpuVideoAcceleratorFactories* gpu_factories) {
-  return std::make_unique<RTCVideoEncoderFactory>(gpu_factories);
-}
 
 RTCVideoEncoderFactory::RTCVideoEncoderFactory(
     media::GpuVideoAcceleratorFactories* gpu_factories)

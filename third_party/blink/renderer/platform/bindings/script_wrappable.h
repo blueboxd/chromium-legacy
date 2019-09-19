@@ -50,7 +50,7 @@ namespace blink {
 // The wrapper object for the main world is stored in ScriptWrappable.  Wrapper
 // objects for other worlds are stored in DOMWrapperMap.
 class PLATFORM_EXPORT ScriptWrappable
-    : public GarbageCollectedFinalized<ScriptWrappable>,
+    : public GarbageCollected<ScriptWrappable>,
       public NameClient {
  public:
   virtual ~ScriptWrappable() = default;

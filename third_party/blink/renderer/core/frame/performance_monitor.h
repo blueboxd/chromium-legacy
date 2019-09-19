@@ -39,7 +39,7 @@ class SourceLocation;
 // Long task notifications are delivered to observing WindowPerformance*
 // instances (in the local frame tree) in m_webPerformanceObservers.
 class CORE_EXPORT PerformanceMonitor final
-    : public GarbageCollectedFinalized<PerformanceMonitor>,
+    : public GarbageCollected<PerformanceMonitor>,
       public base::sequence_manager::TaskTimeObserver {
  public:
   enum Violation : size_t {

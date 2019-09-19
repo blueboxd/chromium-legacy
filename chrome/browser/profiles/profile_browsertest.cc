@@ -90,6 +90,13 @@ class SimpleURLLoaderHelper {
     auto request = std::make_unique<network::ResourceRequest>();
     request->url = url;
     request->load_flags = load_flags;
+
+    // Populate Network Isolation Key so that the request is cacheable.
+    url::Origin origin = url::Origin::Create(url);
+    request->trusted_params = network::ResourceRequest::TrustedParams();
+    request->trusted_params->network_isolation_key =
+        net::NetworkIsolationKey(origin, origin);
+
     loader_ = network::SimpleURLLoader::Create(std::move(request),
                                                TRAFFIC_ANNOTATION_FOR_TESTS);
 

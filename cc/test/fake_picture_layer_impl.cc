@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "cc/test/fake_raster_source.h"
 #include "cc/tiles/tile.h"
 #include "cc/trees/layer_tree_impl.h"
 
@@ -21,7 +22,10 @@ FakePictureLayerImpl::FakePictureLayerImpl(
     : PictureLayerImpl(tree_impl, id) {
   if (raster_source) {
     SetBounds(raster_source->GetSize());
-    SetRasterSourceOnPending(raster_source, Region());
+    SetRasterSource(raster_source, Region());
+  } else {
+    // Just to avoid crash on null RasterSource when updating tilings.
+    SetRasterSource(FakeRasterSource::CreateEmpty(gfx::Size()), Region());
   }
 }
 
@@ -78,23 +82,9 @@ PictureLayerTiling* FakePictureLayerImpl::LowResTiling() const {
   return result;
 }
 
-void FakePictureLayerImpl::SetRasterSourceOnPending(
+void FakePictureLayerImpl::SetRasterSource(
     scoped_refptr<RasterSource> raster_source,
     const Region& invalidation) {
-  DCHECK(layer_tree_impl()->IsPendingTree());
-  Region invalidation_temp = invalidation;
-  const PictureLayerTilingSet* pending_set = nullptr;
-  const PaintWorkletRecordMap* pending_paint_worklet_records = nullptr;
-  set_gpu_raster_max_texture_size(
-      layer_tree_impl()->GetDeviceViewport().size());
-  UpdateRasterSource(raster_source, &invalidation_temp, pending_set,
-                     pending_paint_worklet_records);
-}
-
-void FakePictureLayerImpl::SetRasterSourceOnActive(
-    scoped_refptr<RasterSource> raster_source,
-    const Region& invalidation) {
-  DCHECK(layer_tree_impl()->IsActiveTree());
   Region invalidation_temp = invalidation;
   const PictureLayerTilingSet* pending_set = nullptr;
   const PaintWorkletRecordMap* pending_paint_worklet_records = nullptr;

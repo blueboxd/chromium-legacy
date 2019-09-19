@@ -15,6 +15,7 @@ group("closure_compile") {
 
 group("modulize") {
   deps = [
+    "cr_components:polymer3_elements",
     "cr_elements:polymer3_elements",
     "js:modulize",
   ]

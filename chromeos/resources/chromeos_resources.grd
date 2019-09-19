@@ -18,6 +18,7 @@
       <if expr="enable_cros_libassistant">
         <part file="assistant_resources.grdp" />
       </if>
+      <part file="media_app_resources.grdp" />
     </includes>
   </release>
 </grit>

@@ -75,7 +75,9 @@ struct CreateViewParams {
   // Whether or not the frame has previously committed a real load.
   bool has_committed_real_load;
 
-  // The initial renderer size.
+  // Initial state for the RenderWidget and RenderView.
+  // TODO(danakj): The RenderView properties should be sent separately when
+  // there is not main_frame_routing_id, and this field should not be included.
   VisualProperties visual_properties;
 
   // Whether lookup of frames in the created RenderView (e.g. lookup via
@@ -89,12 +91,10 @@ struct CreateViewParams {
 
 struct CreateFrameWidgetParams {
   // Gives the routing ID for the RenderWidget that will be attached to the
-  // new RenderFrame. If the RenderFrame does not need a RenderWidget, this
-  // is MSG_ROUTING_NONE and the other parameters are not read.
+  // new RenderFrame.
   int32 routing_id;
 
-  // The initial visual properties of the widget, when the routing_id is not
-  // MSG_ROUTING_NONE.
+  // The initial visual properties of the widget.
   VisualProperties visual_properties;
 };
 
@@ -145,7 +145,7 @@ struct CreateFrameParams {
 
   // Specifies properties for a new RenderWidget that will be attached to the
   // new RenderFrame (if one is needed).
-  CreateFrameWidgetParams widget_params;
+  CreateFrameWidgetParams? widget_params;
 
   // Whether or not the frame has previously committed a real load.
   bool has_committed_real_load;

@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.webapps;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 /**
@@ -70,11 +69,6 @@ public class WebappDisclosureSnackbarController implements SnackbarManager.Snack
     private boolean shouldShowDisclosure(WebappActivity activity, WebappDataStorage storage) {
         // Show only if the correct flag is set.
         if (!storage.shouldShowDisclosure()) {
-            return false;
-        }
-
-        // This UI isn't great for no-touch and will be handled a different way.
-        if (FeatureUtilities.isNoTouchModeEnabled()) {
             return false;
         }
 

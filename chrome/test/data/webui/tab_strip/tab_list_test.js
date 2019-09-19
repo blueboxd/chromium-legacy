@@ -6,6 +6,43 @@ import 'chrome://tab-strip/tab_list.js';
 import {TabsApiProxy} from 'chrome://tab-strip/tabs_api_proxy.js';
 import {TestTabsApiProxy} from './test_tabs_api_proxy.js';
 
+class MockDataTransfer extends DataTransfer {
+  constructor() {
+    super();
+
+    this.dragImageData = {
+      image: undefined,
+      offsetX: undefined,
+      offsetY: undefined,
+    };
+
+    this.dropEffect_ = 'none';
+    this.effectAllowed_ = 'none';
+  }
+
+  get dropEffect() {
+    return this.dropEffect_;
+  }
+
+  set dropEffect(effect) {
+    this.dropEffect_ = effect;
+  }
+
+  get effectAllowed() {
+    return this.effectAllowed_;
+  }
+
+  set effectAllowed(effect) {
+    this.effectAllowed_ = effect;
+  }
+
+  setDragImage(image, offsetX, offsetY) {
+    this.dragImageData.image = image;
+    this.dragImageData.offsetX = offsetX;
+    this.dragImageData.offsetY = offsetY;
+  }
+}
+
 suite('TabList', () => {
   let callbackRouter;
   let optionsCalled;
@@ -293,5 +330,55 @@ suite('TabList', () => {
     activeTab = getUnpinnedTabs()[0];
     await tabList.animationPromises;
     assertEquals(fakeScroller.scrollLeft, activeTab.offsetLeft - scrollPadding);
+  });
+
+  test('dragstart sets a drag image offset by the event coordinates', () => {
+    const draggedTab = getUnpinnedTabs()[0];
+    const mockDataTransfer = new MockDataTransfer();
+    const dragStartEvent = new DragEvent('dragstart', {
+      bubbles: true,
+      composed: true,
+      clientX: 100,
+      clientY: 150,
+      dataTransfer: mockDataTransfer,
+    });
+    draggedTab.dispatchEvent(dragStartEvent);
+    assertEquals(dragStartEvent.dataTransfer.effectAllowed, 'move');
+    assertEquals(
+        mockDataTransfer.dragImageData.image, draggedTab.getDragImage());
+    assertEquals(
+        mockDataTransfer.dragImageData.offsetX, 100 - draggedTab.offsetLeft);
+    assertEquals(
+        mockDataTransfer.dragImageData.offsetY, 150 - draggedTab.offsetTop);
+  });
+
+  test('dragover moves tabs', async () => {
+    const draggedIndex = 0;
+    const dragOverIndex = 1;
+    const draggedTab = getUnpinnedTabs()[draggedIndex];
+    const dragOverTab = getUnpinnedTabs()[dragOverIndex];
+    const mockDataTransfer = new MockDataTransfer();
+
+    // Dispatch a dragstart event to start the drag process
+    const dragStartEvent = new DragEvent('dragstart', {
+      bubbles: true,
+      composed: true,
+      clientX: 100,
+      clientY: 150,
+      dataTransfer: mockDataTransfer,
+    });
+    draggedTab.dispatchEvent(dragStartEvent);
+
+    // Move the draggedTab over the 2nd tab
+    const dragOverEvent = new DragEvent('dragover', {
+      bubbles: true,
+      composed: true,
+      dataTransfer: mockDataTransfer,
+    });
+    dragOverTab.dispatchEvent(dragOverEvent);
+    assertEquals(dragOverEvent.dataTransfer.dropEffect, 'move');
+    const [tabId, newIndex] = await testTabsApiProxy.whenCalled('moveTab');
+    assertEquals(tabId, currentWindow.tabs[draggedIndex].id);
+    assertEquals(newIndex, dragOverIndex);
   });
 });

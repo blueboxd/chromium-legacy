@@ -15,6 +15,7 @@
 #include "content/public/browser/serial_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 
 namespace content {
@@ -40,7 +41,7 @@ SerialService::SerialService(RenderFrameHost* render_frame_host)
     : render_frame_host_(render_frame_host) {
   DCHECK(render_frame_host_->IsFeatureEnabled(
       blink::mojom::FeaturePolicyFeature::kSerial));
-  watchers_.set_connection_error_handler(base::BindRepeating(
+  watchers_.set_disconnect_handler(base::BindRepeating(
       &SerialService::OnWatcherConnectionError, base::Unretained(this)));
 }
 
@@ -101,8 +102,8 @@ void SerialService::GetPort(
     web_contents_impl->IncrementSerialActiveFrameCount();
   }
 
-  device::mojom::SerialPortConnectionWatcherPtr watcher;
-  watchers_.AddBinding(this, mojo::MakeRequest(&watcher));
+  mojo::PendingRemote<device::mojom::SerialPortConnectionWatcher> watcher;
+  watchers_.Add(this, watcher.InitWithNewPipeAndPassReceiver());
   delegate->GetPortManager(render_frame_host_)
       ->GetPort(token, std::move(receiver), std::move(watcher));
 }

@@ -10,13 +10,13 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 
 import org.chromium.base.Callback;
+import org.chromium.base.Supplier;
 import org.chromium.base.metrics.CachedMetrics;
 
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 /**
  * Reports available direct actions and executes them.

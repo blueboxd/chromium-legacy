@@ -15,9 +15,9 @@
 #include "cc/layers/layer_impl.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/effect_node.h"
-#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/property_tree.h"
+#include "cc/trees/scroll_and_scale_set.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -1471,10 +1471,7 @@ void ScrollTree::CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
         scroll_info->inner_viewport_scroll.element_id = id;
         scroll_info->inner_viewport_scroll.scroll_delta = scroll_delta;
       } else {
-        LayerTreeHostCommon::ScrollUpdateInfo scroll;
-        scroll.element_id = id;
-        scroll.scroll_delta = scroll_delta;
-        scroll_info->scrolls.push_back(scroll);
+        scroll_info->scrolls.push_back({id, scroll_delta});
       }
     }
   }

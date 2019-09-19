@@ -26,7 +26,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
@@ -65,7 +65,7 @@ class AvailabilityProber
     // delegate returns true, no more probes would be attempted until there is a
     // change in the network or |SendNowIfInactive| is called.
     virtual bool IsResponseSuccess(net::Error net_error,
-                                   const network::ResourceResponseHead* head,
+                                   const network::mojom::URLResponseHead* head,
                                    std::unique_ptr<std::string> body) = 0;
   };
 

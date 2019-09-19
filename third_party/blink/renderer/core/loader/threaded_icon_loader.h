@@ -23,7 +23,7 @@ class SegmentReader;
 // Utility class for loading, decoding, and potentially rescaling an icon on a
 // background thread. Note that icons are only downscaled and never upscaled.
 class CORE_EXPORT ThreadedIconLoader final
-    : public GarbageCollectedFinalized<ThreadedIconLoader>,
+    : public GarbageCollected<ThreadedIconLoader>,
       public ThreadableLoaderClient {
   USING_GARBAGE_COLLECTED_MIXIN(ThreadedIconLoader);
 

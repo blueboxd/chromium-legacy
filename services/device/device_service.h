@@ -174,8 +174,8 @@ class DeviceService : public service_manager::Service {
       mojo::PendingReceiver<mojom::PublicIpAddressGeolocationProvider>
           receiver);
 
-  void BindScreenOrientationListenerRequest(
-      mojom::ScreenOrientationListenerRequest request);
+  void BindScreenOrientationListenerReceiver(
+      mojo::PendingReceiver<mojom::ScreenOrientationListener> receiver);
 
   void BindSensorProviderRequest(mojom::SensorProviderRequest request);
 

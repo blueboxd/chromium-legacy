@@ -28,6 +28,8 @@ class IdentityManager;
 // user signs in or out, the cached value is cleared.
 class SearchSuggestService : public KeyedService {
  public:
+  static bool IsEnabled();
+
   SearchSuggestService(Profile* profile,
                        signin::IdentityManager* identity_manager,
                        std::unique_ptr<SearchSuggestLoader> loader);

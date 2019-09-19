@@ -21,8 +21,9 @@
 #include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_config_memory_test_util.h"
 #include "base/trace_event/trace_log.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
-#include "services/resource_coordinator/public/cpp/memory_instrumentation/coordinator.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -97,20 +98,14 @@ class MockMemoryDumpProvider : public MemoryDumpProvider {
 
 class MemoryTracingIntegrationTest;
 
-class MockCoordinator : public Coordinator, public mojom::Coordinator {
+class MockCoordinator : public mojom::Coordinator {
  public:
-  MockCoordinator(MemoryTracingIntegrationTest* client) : client_(client) {}
+  explicit MockCoordinator(MemoryTracingIntegrationTest* client)
+      : client_(client) {}
 
-  void BindCoordinatorReceiver(
-      mojo::PendingReceiver<mojom::Coordinator> receiver,
-      const service_manager::BindSourceInfo& source_info) override {
+  void BindReceiver(mojo::PendingReceiver<mojom::Coordinator> receiver) {
     receivers_.Add(this, std::move(receiver));
   }
-
-  void RegisterClientProcess(mojom::ClientProcessPtr,
-                             mojom::ProcessType) override {}
-
-  void RegisterHeapProfiler(mojom::HeapProfilerPtr heap_profiler) override {}
 
   void RequestGlobalMemoryDump(
       MemoryDumpType dump_type,
@@ -147,10 +142,15 @@ class MemoryTracingIntegrationTest : public testing::Test {
   void InitializeClientProcess(mojom::ProcessType process_type) {
     mdm_ = MemoryDumpManager::CreateInstanceForTesting();
     mdm_->set_dumper_registrations_ignored_for_testing(true);
-    const char* kServiceName = "TestServiceName";
-    ClientProcessImpl::Config config(nullptr, kServiceName, process_type);
-    config.coordinator_for_testing = coordinator_.get();
-    client_process_.reset(new ClientProcessImpl(config));
+
+    mojo::PendingRemote<mojom::Coordinator> coordinator;
+    mojo::PendingRemote<mojom::ClientProcess> process;
+    auto process_receiver = process.InitWithNewPipeAndPassReceiver();
+    coordinator_->BindReceiver(coordinator.InitWithNewPipeAndPassReceiver());
+    client_process_.reset(new ClientProcessImpl(
+        std::move(process_receiver), std::move(coordinator),
+        process_type == mojom::ProcessType::BROWSER,
+        /*initialize_memory_instrumentation=*/false));
   }
 
   void TearDown() override {

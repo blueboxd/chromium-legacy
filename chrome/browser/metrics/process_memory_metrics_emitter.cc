@@ -774,8 +774,7 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
           EmitAudioServiceMemoryMetrics(
               pmd, ukm::UkmRecorder::GetNewSourceID(), GetUkmRecorder(),
               GetProcessUptime(now, pmd.pid()), emit_metrics_for_all_processes);
-        } else if (base::Contains(pmd.service_names(),
-                                  content::mojom::kNetworkServiceName)) {
+        } else if (pmd.service_name() == content::mojom::kNetworkServiceName) {
           EmitNetworkServiceMemoryMetrics(
               pmd, ukm::UkmRecorder::GetNewSourceID(), GetUkmRecorder(),
               GetProcessUptime(now, pmd.pid()), emit_metrics_for_all_processes);

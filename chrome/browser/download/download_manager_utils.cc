@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/download_offline_content_provider.h"
+#include "chrome/browser/download/download_offline_content_provider_factory.h"
 #include "chrome/browser/download/simple_download_manager_coordinator_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,7 +21,10 @@
 #include "content/public/browser/system_connector.h"
 
 #if defined(OS_ANDROID)
+#include "base/android/path_utils.h"
+#include "chrome/browser/android/download/download_controller.h"
 #include "chrome/browser/android/download/download_manager_service.h"
+#include "chrome/browser/download/download_target_determiner.h"
 #endif
 
 namespace {
@@ -88,17 +93,29 @@ DownloadManagerUtils::GetInProgressDownloadManager(ProfileKey* key) {
     auto in_progress_manager =
         std::make_unique<download::InProgressDownloadManager>(
             nullptr, key->IsOffTheRecord() ? base::FilePath() : key->GetPath(),
-            key->GetProtoDatabaseProvider(),
+            key->IsOffTheRecord() ? nullptr : key->GetProtoDatabaseProvider(),
             base::BindRepeating(&IgnoreOriginSecurityCheck),
             base::BindRepeating(&content::DownloadRequestUtils::IsURLSafe),
             connector);
     download::SimpleDownloadManagerCoordinator* coordinator =
         SimpleDownloadManagerCoordinatorFactory::GetForKey(key);
-    coordinator->SetSimpleDownloadManager(in_progress_manager.get(),
-                                          key->IsOffTheRecord());
+    coordinator->SetSimpleDownloadManager(
+        in_progress_manager.get(), false /* manages_all_history_downloads */);
     scoped_refptr<network::SharedURLLoaderFactory> factory =
         SystemNetworkContextManager::GetInstance()->GetSharedURLLoaderFactory();
     in_progress_manager->set_url_loader_factory(std::move(factory));
+#if defined(OS_ANDROID)
+    in_progress_manager->set_download_start_observer(
+        DownloadControllerBase::Get());
+    in_progress_manager->set_intermediate_path_cb(
+        base::BindRepeating(&DownloadTargetDeterminer::GetCrDownloadPath));
+    base::FilePath download_dir;
+    base::android::GetDownloadsDirectory(&download_dir);
+    in_progress_manager->set_default_download_dir(download_dir);
+#endif  // defined(OS_ANDROID)
+    auto* download_provider =
+        DownloadOfflineContentProviderFactory::GetForKey(key);
+    download_provider->SetSimpleDownloadManagerCoordinator(coordinator);
     map[key] = std::move(in_progress_manager);
   }
   return map[key].get();

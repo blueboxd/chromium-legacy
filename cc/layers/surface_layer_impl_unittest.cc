@@ -7,8 +7,7 @@
 #include <stddef.h>
 
 #include "cc/layers/append_quads_data.h"
-#include "cc/test/layer_test_common.h"
-#include "cc/trees/layer_tree_host_common.h"
+#include "cc/test/layer_tree_impl_test_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,7 +24,7 @@ TEST(SurfaceLayerImplTest, Occlusion) {
   const viz::LocalSurfaceId kArbitraryLocalSurfaceId(
       9, base::UnguessableToken::Create());
 
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
 
   SurfaceLayerImpl* surface_layer_impl = impl.AddLayer<SurfaceLayerImpl>();
   surface_layer_impl->SetBounds(layer_size);
@@ -42,8 +41,7 @@ TEST(SurfaceLayerImplTest, Occlusion) {
     gfx::Rect occluded;
     impl.AppendQuadsWithOcclusion(surface_layer_impl, occluded);
 
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(),
-                                                 gfx::Rect(layer_size));
+    VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect(layer_size));
     EXPECT_EQ(1u, impl.quad_list().size());
     EXPECT_TRUE(surface_layer_impl->WillDraw(DRAW_MODE_HARDWARE, nullptr));
   }
@@ -53,7 +51,7 @@ TEST(SurfaceLayerImplTest, Occlusion) {
     gfx::Rect occluded(surface_layer_impl->visible_layer_rect());
     impl.AppendQuadsWithOcclusion(surface_layer_impl, occluded);
 
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());
+    VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());
     EXPECT_EQ(impl.quad_list().size(), 0u);
     EXPECT_FALSE(surface_layer_impl->WillDraw(DRAW_MODE_HARDWARE, nullptr));
   }
@@ -64,8 +62,8 @@ TEST(SurfaceLayerImplTest, Occlusion) {
     impl.AppendQuadsWithOcclusion(surface_layer_impl, occluded);
 
     size_t partially_occluded_count = 0;
-    LayerTestCommon::VerifyQuadsAreOccluded(
-        impl.quad_list(), occluded, &partially_occluded_count);
+    VerifyQuadsAreOccluded(impl.quad_list(), occluded,
+                           &partially_occluded_count);
     // The layer outputs one quad, which is partially occluded.
     EXPECT_EQ(1u, impl.quad_list().size());
     EXPECT_EQ(1u, partially_occluded_count);
@@ -76,7 +74,7 @@ TEST(SurfaceLayerImplTest, Occlusion) {
 // This test verifies that activation_dependencies and the fallback_surface_id
 // are populated correctly if primary and fallback surfaces differ.
 TEST(SurfaceLayerImplTest, SurfaceLayerImplWithTwoDifferentSurfaces) {
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
   SurfaceLayerImpl* surface_layer_impl = impl.AddLayer<SurfaceLayerImpl>();
 
   // Populate the primary viz::SurfaceInfo.
@@ -174,7 +172,7 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithTwoDifferentSurfaces) {
 // and the other uses the default then AppendQuadsData is populated
 // correctly.
 TEST(SurfaceLayerImplTest, SurfaceLayerImplsWithDeadlines) {
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
   SurfaceLayerImpl* surface_layer_impl = impl.AddLayer<SurfaceLayerImpl>();
   CopyProperties(impl.root_layer(), surface_layer_impl);
 
@@ -218,7 +216,7 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplsWithDeadlines) {
 // SurfaceLayerImpl holds the same surface ID for both the primary
 // and fallback viz::SurfaceInfo.
 TEST(SurfaceLayerImplTest, SurfaceLayerImplWithMatchingPrimaryAndFallback) {
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
   SurfaceLayerImpl* surface_layer_impl = impl.AddLayer<SurfaceLayerImpl>();
 
   // Populate the primary viz::SurfaceId.
@@ -259,7 +257,7 @@ TEST(SurfaceLayerImplTest, SurfaceLayerImplWithMatchingPrimaryAndFallback) {
 TEST(SurfaceLayerImplTest, GetEnclosingRectInTargetSpace) {
   gfx::Size layer_size(902, 1000);
   gfx::Size viewport_size(902, 1000);
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
   SurfaceLayerImpl* surface_layer_impl = impl.AddLayer<SurfaceLayerImpl>();
   surface_layer_impl->SetBounds(layer_size);
   surface_layer_impl->SetDrawsContent(true);

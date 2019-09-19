@@ -27,7 +27,7 @@ class CORE_EXPORT LongTaskObserver : public GarbageCollectedMixin {
 // of LongTaskObservers drop to zero it automatically removes itself as a
 // TaskTimeObserver.
 class CORE_EXPORT LongTaskDetector final
-    : public GarbageCollectedFinalized<LongTaskDetector>,
+    : public GarbageCollected<LongTaskDetector>,
       public base::sequence_manager::TaskTimeObserver {
  public:
   static LongTaskDetector& Instance();

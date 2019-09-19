@@ -443,15 +443,19 @@ bool Canvas2DLayerBridge::WritePixels(const SkImageInfo& orig_info,
       return false;
   }
 
-  // WritePixels is not supported by deferral. Since we are directly rendering,
-  // we can't do deferral on top of the canvas. Disable deferral completely.
-  last_recording_ = nullptr;
-  is_deferral_enabled_ = false;
-  have_recorded_draw_commands_ = false;
-  recorder_.reset();
-  // install the current matrix/clip stack onto the immediate canvas
-  if (GetOrCreateResourceProvider()) {
-    resource_host_->RestoreCanvasMatrixClipStack(ResourceProvider()->Canvas());
+  if (is_deferral_enabled_) {
+    // WritePixels is not supported by deferral. Since we are directly
+    // rendering, we can't do deferral on top of the canvas. Disable deferral
+    // completely.
+    last_recording_ = nullptr;
+    is_deferral_enabled_ = false;
+    have_recorded_draw_commands_ = false;
+    recorder_.reset();
+    // install the current matrix/clip stack onto the immediate canvas
+    if (GetOrCreateResourceProvider()) {
+      resource_host_->RestoreCanvasMatrixClipStack(
+          ResourceProvider()->Canvas());
+    }
   }
 
   ResourceProvider()->WritePixels(orig_info, pixels, row_bytes, x, y);

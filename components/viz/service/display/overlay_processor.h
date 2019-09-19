@@ -133,7 +133,8 @@ class VIZ_SERVICE_EXPORT OverlayProcessor {
   OutputSurfaceOverlayPlane ProcessOutputSurfaceAsOverlay(
       const gfx::Size& viewport_size,
       const gfx::BufferFormat& buffer_format,
-      const gfx::ColorSpace& color_space) const;
+      const gfx::ColorSpace& color_space,
+      bool has_alpha) const;
 
   // For Mac, if we successfully generated a candidate list for CALayerOverlay,
   // we no longer need the |output_surface_plane|. This function takes a pointer

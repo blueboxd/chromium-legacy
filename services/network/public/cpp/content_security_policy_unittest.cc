@@ -232,6 +232,73 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
     EXPECT_EQ(frame_ancestors->sources[0]->is_port_wildcard, false);
     EXPECT_EQ(frame_ancestors->sources[0]->allow_self, false);
   }
+
+  // Multiple CSP headers with multiple frame-ancestors directives present. Only
+  // the first one is considered.
+  {
+    scoped_refptr<net::HttpResponseHeaders> headers(
+        new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
+    headers->AddHeader("Content-Security-Policy: frame-ancestors example.com");
+    headers->AddHeader("Content-Security-Policy: frame-ancestors example.org");
+    ContentSecurityPolicy policy;
+    policy.Parse(*headers);
+
+    auto& frame_ancestors =
+        policy.content_security_policy_ptr()->frame_ancestors;
+    EXPECT_EQ(frame_ancestors->sources.size(), 1U);
+    EXPECT_EQ(frame_ancestors->sources[0]->scheme, "");
+    EXPECT_EQ(frame_ancestors->sources[0]->host, "example.com");
+    EXPECT_EQ(frame_ancestors->sources[0]->port, url::PORT_UNSPECIFIED);
+    EXPECT_EQ(frame_ancestors->sources[0]->path, "");
+    EXPECT_EQ(frame_ancestors->sources[0]->is_host_wildcard, false);
+    EXPECT_EQ(frame_ancestors->sources[0]->is_port_wildcard, false);
+    EXPECT_EQ(frame_ancestors->sources[0]->allow_self, false);
+  }
+
+  // Multiple CSP headers separated by ',' (RFC2616 section 4.2).
+  {
+    scoped_refptr<net::HttpResponseHeaders> headers(
+        new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
+    headers->AddHeader(
+        "Content-Security-Policy: other_directive value, frame-ancestors "
+        "example.org");
+    ContentSecurityPolicy policy;
+    policy.Parse(*headers);
+
+    auto& frame_ancestors =
+        policy.content_security_policy_ptr()->frame_ancestors;
+    EXPECT_EQ(frame_ancestors->sources.size(), 1U);
+    EXPECT_EQ(frame_ancestors->sources[0]->scheme, "");
+    EXPECT_EQ(frame_ancestors->sources[0]->host, "example.org");
+    EXPECT_EQ(frame_ancestors->sources[0]->port, url::PORT_UNSPECIFIED);
+    EXPECT_EQ(frame_ancestors->sources[0]->path, "");
+    EXPECT_EQ(frame_ancestors->sources[0]->is_host_wildcard, false);
+    EXPECT_EQ(frame_ancestors->sources[0]->is_port_wildcard, false);
+    EXPECT_EQ(frame_ancestors->sources[0]->allow_self, false);
+  }
+
+  // Multiple CSP headers separated by ',', with multiple frame-ancestors
+  // directives present. Only the first one is considered.
+  {
+    scoped_refptr<net::HttpResponseHeaders> headers(
+        new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
+    headers->AddHeader(
+        "Content-Security-Policy: frame-ancestors example.com, frame-ancestors "
+        "example.org");
+    ContentSecurityPolicy policy;
+    policy.Parse(*headers);
+
+    auto& frame_ancestors =
+        policy.content_security_policy_ptr()->frame_ancestors;
+    EXPECT_EQ(frame_ancestors->sources.size(), 1U);
+    EXPECT_EQ(frame_ancestors->sources[0]->scheme, "");
+    EXPECT_EQ(frame_ancestors->sources[0]->host, "example.com");
+    EXPECT_EQ(frame_ancestors->sources[0]->port, url::PORT_UNSPECIFIED);
+    EXPECT_EQ(frame_ancestors->sources[0]->path, "");
+    EXPECT_EQ(frame_ancestors->sources[0]->is_host_wildcard, false);
+    EXPECT_EQ(frame_ancestors->sources[0]->is_port_wildcard, false);
+    EXPECT_EQ(frame_ancestors->sources[0]->allow_self, false);
+  }
 }
 
 }  // namespace network

@@ -11,7 +11,7 @@
 #include "components/dom_distiller/content/common/mojom/distiller_page_notifier_service.mojom.h"
 #include "components/dom_distiller/content/renderer/distiller_page_notifier_service_impl.h"
 #include "content/public/renderer/render_frame.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "v8/include/v8.h"
 
@@ -57,12 +57,12 @@ void DistillerJsRenderFrameObserver::DidCreateScriptContext(
 }
 
 void DistillerJsRenderFrameObserver::CreateDistillerPageNotifierService(
-    mojom::DistillerPageNotifierServiceRequest request) {
+    mojo::PendingReceiver<mojom::DistillerPageNotifierService> receiver) {
   if (!load_active_)
     return;
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<DistillerPageNotifierServiceImpl>(this),
-      std::move(request));
+      std::move(receiver));
 }
 
 void DistillerJsRenderFrameObserver::SetIsDistillerPage() {

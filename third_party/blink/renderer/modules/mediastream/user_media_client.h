@@ -34,7 +34,7 @@ class LocalFrame;
 // object. This includes getUserMedia and enumerateDevices. It must be created,
 // called and destroyed on the render thread.
 class MODULES_EXPORT UserMediaClient
-    : public GarbageCollectedFinalized<UserMediaClient> {
+    : public GarbageCollected<UserMediaClient> {
  public:
   // TODO(guidou): Make all constructors private and replace with Create methods
   // that return a std::unique_ptr. This class is intended for instantiation on
@@ -62,7 +62,7 @@ class MODULES_EXPORT UserMediaClient
           media_devices_dispatcher);
 
  private:
-  class Request final : public GarbageCollectedFinalized<Request> {
+  class Request final : public GarbageCollected<Request> {
    public:
     explicit Request(std::unique_ptr<UserMediaRequestInfo> request);
     explicit Request(blink::ApplyConstraintsRequest* request);

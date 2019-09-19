@@ -23,7 +23,7 @@ namespace blink {
 class {{ agent | agent_name_to_class }};
 {% endfor %}
 
-class {{export_symbol}} {{sink_class}} final : public GarbageCollectedFinalized<{{sink_class}}> {
+class {{export_symbol}} {{sink_class}} final : public GarbageCollected<{{sink_class}}> {
 
  public:
   enum AgentType : unsigned {

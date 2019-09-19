@@ -41,9 +41,8 @@ class Document;
 class PendingScript;
 class ScriptLoader;
 
-class CORE_EXPORT ScriptRunner final
-    : public GarbageCollectedFinalized<ScriptRunner>,
-      public NameClient {
+class CORE_EXPORT ScriptRunner final : public GarbageCollected<ScriptRunner>,
+                                       public NameClient {
  public:
   explicit ScriptRunner(Document*);
 

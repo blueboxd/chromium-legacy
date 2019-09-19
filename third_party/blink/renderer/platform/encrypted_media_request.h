@@ -18,8 +18,7 @@ class WebString;
 template <typename T>
 class WebVector;
 
-class EncryptedMediaRequest
-    : public GarbageCollectedFinalized<EncryptedMediaRequest> {
+class EncryptedMediaRequest : public GarbageCollected<EncryptedMediaRequest> {
  public:
   virtual ~EncryptedMediaRequest() = default;
 

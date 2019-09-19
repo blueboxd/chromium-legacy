@@ -56,8 +56,7 @@ class SQLTransaction final : public ScriptWrappable,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  class OnProcessCallback
-      : public GarbageCollectedFinalized<OnProcessCallback> {
+  class OnProcessCallback : public GarbageCollected<OnProcessCallback> {
    public:
     virtual ~OnProcessCallback() = default;
     virtual void Trace(blink::Visitor*) {}
@@ -84,8 +83,7 @@ class SQLTransaction final : public ScriptWrappable,
     Member<V8SQLTransactionCallback> callback_;
   };
 
-  class OnSuccessCallback
-      : public GarbageCollectedFinalized<OnSuccessCallback> {
+  class OnSuccessCallback : public GarbageCollected<OnSuccessCallback> {
    public:
     virtual ~OnSuccessCallback() = default;
     virtual void Trace(blink::Visitor*) {}
@@ -111,7 +109,7 @@ class SQLTransaction final : public ScriptWrappable,
     Member<V8VoidCallback> callback_;
   };
 
-  class OnErrorCallback : public GarbageCollectedFinalized<OnErrorCallback> {
+  class OnErrorCallback : public GarbageCollected<OnErrorCallback> {
    public:
     virtual ~OnErrorCallback() = default;
     virtual void Trace(blink::Visitor*) {}

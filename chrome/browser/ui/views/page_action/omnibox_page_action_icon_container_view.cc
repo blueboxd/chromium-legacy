@@ -45,10 +45,42 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
 
   for (PageActionIconType type : params.types_enabled) {
     switch (type) {
+      case PageActionIconType::kBookmarkStar:
+        bookmark_star_icon_ =
+            new StarView(params.command_updater, params.browser,
+                         params.page_action_icon_delegate);
+        page_action_icons_.push_back(bookmark_star_icon_);
+        break;
+      case PageActionIconType::kClickToCall:
+        click_to_call_icon_ = new SharingIconView(
+            params.page_action_icon_delegate,
+            base::BindRepeating([](content::WebContents* contents) {
+              return static_cast<SharingUiController*>(
+                  ClickToCallUiController::GetOrCreateFromWebContents(
+                      contents));
+            }),
+            base::BindRepeating(SharingDialogView::GetAsBubble));
+        page_action_icons_.push_back(click_to_call_icon_);
+        break;
+      case PageActionIconType::kCookieControls:
+        cookie_controls_icon_ =
+            new CookieControlsIconView(params.page_action_icon_delegate);
+        page_action_icons_.push_back(cookie_controls_icon_);
+        break;
       case PageActionIconType::kFind:
-        find_bar_icon_ =
+        find_icon_ =
             new FindBarIcon(params.browser, params.page_action_icon_delegate);
-        page_action_icons_.push_back(find_bar_icon_);
+        page_action_icons_.push_back(find_icon_);
+        break;
+      case PageActionIconType::kIntentPicker:
+        intent_picker_icon_ = new IntentPickerView(
+            params.browser, params.page_action_icon_delegate);
+        page_action_icons_.push_back(intent_picker_icon_);
+        break;
+      case PageActionIconType::kLocalCardMigration:
+        local_card_migration_icon_ = new autofill::LocalCardMigrationIconView(
+            params.command_updater, params.page_action_icon_delegate);
+        page_action_icons_.push_back(local_card_migration_icon_);
         break;
       case PageActionIconType::kManagePasswords:
         DCHECK(params.command_updater);
@@ -56,22 +88,43 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
             params.command_updater, params.page_action_icon_delegate);
         page_action_icons_.push_back(manage_passwords_icon_);
         break;
-      case PageActionIconType::kIntentPicker:
-        intent_picker_view_ = new IntentPickerView(
-            params.browser, params.page_action_icon_delegate);
-        page_action_icons_.push_back(intent_picker_view_);
+      case PageActionIconType::kNativeFileSystemAccess:
+        native_file_system_access_icon_ = new NativeFileSystemAccessIconView(
+            params.page_action_icon_delegate);
+        page_action_icons_.push_back(native_file_system_access_icon_);
         break;
       case PageActionIconType::kPwaInstall:
         DCHECK(params.command_updater);
-        pwa_install_view_ = new PwaInstallView(
+        pwa_install_icon_ = new PwaInstallView(
             params.command_updater, params.page_action_icon_delegate);
-        page_action_icons_.push_back(pwa_install_view_);
+        page_action_icons_.push_back(pwa_install_icon_);
         break;
       case PageActionIconType::kReaderMode:
         DCHECK(params.command_updater);
         reader_mode_icon_ = new ReaderModeIconView(
             params.command_updater, params.page_action_icon_delegate);
         page_action_icons_.push_back(reader_mode_icon_);
+        break;
+      case PageActionIconType::kSaveCard:
+        save_card_icon_ = new autofill::SaveCardIconView(
+            params.command_updater, params.page_action_icon_delegate);
+        page_action_icons_.push_back(save_card_icon_);
+        break;
+      case PageActionIconType::kSendTabToSelf:
+        send_tab_to_self_icon_ = new send_tab_to_self::SendTabToSelfIconView(
+            params.command_updater, params.page_action_icon_delegate);
+        page_action_icons_.push_back(send_tab_to_self_icon_);
+        break;
+      case PageActionIconType::kSharedClipboard:
+        shared_clipboard_icon_ = new SharingIconView(
+            params.page_action_icon_delegate,
+            base::BindRepeating([](content::WebContents* contents) {
+              return static_cast<SharingUiController*>(
+                  SharedClipboardUiController::GetOrCreateFromWebContents(
+                      contents));
+            }),
+            base::BindRepeating(SharingDialogView::GetAsBubble));
+        page_action_icons_.push_back(shared_clipboard_icon_);
         break;
       case PageActionIconType::kTranslate:
         DCHECK(params.command_updater);
@@ -80,62 +133,8 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
         page_action_icons_.push_back(translate_icon_);
         break;
       case PageActionIconType::kZoom:
-        zoom_view_ = new ZoomView(params.page_action_icon_delegate);
-        page_action_icons_.push_back(zoom_view_);
-        break;
-      case PageActionIconType::kCookieControls:
-        cookie_view_ =
-            new CookieControlsIconView(params.page_action_icon_delegate);
-        page_action_icons_.push_back(cookie_view_);
-        break;
-      case PageActionIconType::kSendTabToSelf:
-        send_tab_to_self_icon_view_ =
-            new send_tab_to_self::SendTabToSelfIconView(
-                params.command_updater, params.page_action_icon_delegate);
-        page_action_icons_.push_back(send_tab_to_self_icon_view_);
-        break;
-      case PageActionIconType::kNativeFileSystemAccess:
-        native_file_system_icon_ = new NativeFileSystemAccessIconView(
-            params.page_action_icon_delegate);
-        page_action_icons_.push_back(native_file_system_icon_);
-        break;
-      case PageActionIconType::kClickToCall:
-        click_to_call_icon_view_ = new SharingIconView(
-            params.page_action_icon_delegate,
-            base::BindRepeating([](content::WebContents* contents) {
-              return static_cast<SharingUiController*>(
-                  ClickToCallUiController::GetOrCreateFromWebContents(
-                      contents));
-            }),
-            base::BindRepeating(SharingDialogView::GetAsBubble));
-        page_action_icons_.push_back(click_to_call_icon_view_);
-        break;
-      case PageActionIconType::kSharedClipboard:
-        shared_clipboard_icon_view_ = new SharingIconView(
-            params.page_action_icon_delegate,
-            base::BindRepeating([](content::WebContents* contents) {
-              return static_cast<SharingUiController*>(
-                  SharedClipboardUiController::GetOrCreateFromWebContents(
-                      contents));
-            }),
-            base::BindRepeating(SharingDialogView::GetAsBubble));
-        page_action_icons_.push_back(shared_clipboard_icon_view_);
-        break;
-      case PageActionIconType::kLocalCardMigration:
-        local_card_migration_icon_view_ =
-            new autofill::LocalCardMigrationIconView(
-                params.command_updater, params.page_action_icon_delegate);
-        page_action_icons_.push_back(local_card_migration_icon_view_);
-        break;
-      case PageActionIconType::kSaveCard:
-        save_card_icon_view_ = new autofill::SaveCardIconView(
-            params.command_updater, params.page_action_icon_delegate);
-        page_action_icons_.push_back(save_card_icon_view_);
-        break;
-      case PageActionIconType::kBookmarkStar:
-        star_view_ = new StarView(params.command_updater, params.browser,
-                                  params.page_action_icon_delegate);
-        page_action_icons_.push_back(star_view_);
+        zoom_icon_ = new ZoomView(params.page_action_icon_delegate);
+        page_action_icons_.push_back(zoom_icon_);
         break;
     }
   }
@@ -159,36 +158,36 @@ OmniboxPageActionIconContainerView::~OmniboxPageActionIconContainerView() {}
 PageActionIconView* OmniboxPageActionIconContainerView::GetIconView(
     PageActionIconType type) {
   switch (type) {
+    case PageActionIconType::kBookmarkStar:
+      return bookmark_star_icon_;
+    case PageActionIconType::kClickToCall:
+      return click_to_call_icon_;
+    case PageActionIconType::kCookieControls:
+      return cookie_controls_icon_;
     case PageActionIconType::kFind:
-      return find_bar_icon_;
+      return find_icon_;
+    case PageActionIconType::kIntentPicker:
+      return intent_picker_icon_;
+    case PageActionIconType::kLocalCardMigration:
+      return local_card_migration_icon_;
     case PageActionIconType::kManagePasswords:
       return manage_passwords_icon_;
-    case PageActionIconType::kIntentPicker:
-      return intent_picker_view_;
+    case PageActionIconType::kNativeFileSystemAccess:
+      return native_file_system_access_icon_;
     case PageActionIconType::kPwaInstall:
-      return pwa_install_view_;
+      return pwa_install_icon_;
     case PageActionIconType::kReaderMode:
       return reader_mode_icon_;
+    case PageActionIconType::kSaveCard:
+      return save_card_icon_;
+    case PageActionIconType::kSendTabToSelf:
+      return send_tab_to_self_icon_;
+    case PageActionIconType::kSharedClipboard:
+      return shared_clipboard_icon_;
     case PageActionIconType::kTranslate:
       return translate_icon_;
     case PageActionIconType::kZoom:
-      return zoom_view_;
-    case PageActionIconType::kCookieControls:
-      return cookie_view_;
-    case PageActionIconType::kSendTabToSelf:
-      return send_tab_to_self_icon_view_;
-    case PageActionIconType::kNativeFileSystemAccess:
-      return native_file_system_icon_;
-    case PageActionIconType::kClickToCall:
-      return click_to_call_icon_view_;
-    case PageActionIconType::kSharedClipboard:
-      return shared_clipboard_icon_view_;
-    case PageActionIconType::kLocalCardMigration:
-      return local_card_migration_icon_view_;
-    case PageActionIconType::kSaveCard:
-      return save_card_icon_view_;
-    case PageActionIconType::kBookmarkStar:
-      return star_view_;
+      return zoom_icon_;
   }
   return nullptr;
 }
@@ -226,8 +225,8 @@ void OmniboxPageActionIconContainerView::SetFontList(
 
 void OmniboxPageActionIconContainerView::ZoomChangedForActiveTab(
     bool can_show_bubble) {
-  if (zoom_view_)
-    zoom_view_->ZoomChangedForActiveTab(can_show_bubble);
+  if (zoom_icon_)
+    zoom_icon_->ZoomChangedForActiveTab(can_show_bubble);
 }
 
 void OmniboxPageActionIconContainerView::ChildPreferredSizeChanged(

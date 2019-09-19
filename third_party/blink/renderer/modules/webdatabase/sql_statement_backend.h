@@ -42,8 +42,7 @@ class SQLErrorData;
 class SQLResultSet;
 class SQLStatement;
 
-class SQLStatementBackend final
-    : public GarbageCollectedFinalized<SQLStatementBackend> {
+class SQLStatementBackend final : public GarbageCollected<SQLStatementBackend> {
  public:
   SQLStatementBackend(SQLStatement*,
                       const String& statement,

@@ -14,6 +14,7 @@
 #include "components/dom_distiller/core/page_features.h"
 #include "components/dom_distiller/core/url_utils.h"
 #include "content/public/renderer/render_frame.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/web_distillability.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -258,9 +259,9 @@ void DistillabilityAgent::DidMeaningfulLayout(WebMeaningfulLayout layout_type) {
 
   bool is_last = IsLast(is_loaded);
   // Connect to Mojo service on browser to notify page distillability.
-  mojom::DistillabilityServicePtr distillability_service;
-  render_frame()->GetRemoteInterfaces()->GetInterface(&distillability_service);
-  DCHECK(distillability_service);
+  mojo::Remote<mojom::DistillabilityService> distillability_service;
+  render_frame()->GetRemoteInterfaces()->GetInterface(
+      distillability_service.BindNewPipeAndPassReceiver());
   if (!distillability_service.is_bound())
     return;
   bool is_mobile_friendly = false;

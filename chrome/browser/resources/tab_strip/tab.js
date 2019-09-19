@@ -22,6 +22,11 @@ export class TabElement extends CustomElement {
         /** @type {!HTMLElement} */ (this.shadowRoot.querySelector('#close'));
 
     /** @private {!HTMLElement} */
+    this.dragImage_ =
+        /** @type {!HTMLElement} */ (
+            this.shadowRoot.querySelector('#dragImage'));
+
+    /** @private {!HTMLElement} */
     this.faviconEl_ =
         /** @type {!HTMLElement} */ (this.shadowRoot.querySelector('#favicon'));
 
@@ -46,6 +51,10 @@ export class TabElement extends CustomElement {
 
     this.addEventListener('click', this.onClick_.bind(this));
     this.closeButtonEl_.addEventListener('click', this.onClose_.bind(this));
+  }
+
+  connectedCallback() {
+    this.setAttribute('draggable', 'true');
   }
 
   /** @return {!Tab} */
@@ -74,11 +83,17 @@ export class TabElement extends CustomElement {
     this.setAttribute('data-tab-id', tab.id);
 
     if (!this.tab_ || this.tab_.id !== tab.id) {
-      // Request thumbnail updates
-      chrome.send('addTrackedTab', [tab.id]);
+      this.tabsApi_.trackThumbnailForTab(tab.id);
     }
 
     this.tab_ = Object.freeze(tab);
+  }
+
+  /**
+   * @return {!HTMLElement}
+   */
+  getDragImage() {
+    return this.dragImage_;
   }
 
   /**
@@ -108,6 +123,13 @@ export class TabElement extends CustomElement {
 
     event.stopPropagation();
     this.tabsApi_.closeTab(this.tab_.id);
+  }
+
+  /**
+   * @param {boolean} dragging
+   */
+  setDragging(dragging) {
+    this.toggleAttribute('dragging', dragging);
   }
 
   /**

@@ -63,7 +63,7 @@ using ScrollbarId = uint64_t;
 // compositor, as well as creating and managing scrollbar layers.
 
 class CORE_EXPORT ScrollingCoordinator final
-    : public GarbageCollectedFinalized<ScrollingCoordinator> {
+    : public GarbageCollected<ScrollingCoordinator> {
  public:
   struct ScrollbarLayerGroup {
     // The compositor layer for the scrollbar. It can be one of a few

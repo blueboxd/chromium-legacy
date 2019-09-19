@@ -39,7 +39,7 @@ namespace blink {
 class SpeechGrammarList;
 
 class SpeechRecognitionController final
-    : public GarbageCollectedFinalized<SpeechRecognitionController>,
+    : public GarbageCollected<SpeechRecognitionController>,
       public Supplement<LocalFrame> {
   USING_GARBAGE_COLLECTED_MIXIN(SpeechRecognitionController);
 

@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/power_monitor/power_monitor_source.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/device/public/mojom/power_monitor.mojom.h"
 
 namespace base {
@@ -70,7 +70,7 @@ class PowerMonitorBroadcastSource : public base::PowerMonitorSource {
 
    private:
     std::unique_ptr<service_manager::Connector> connector_;
-    mojo::Binding<device::mojom::PowerMonitorClient> binding_;
+    mojo::Receiver<device::mojom::PowerMonitorClient> receiver_{this};
 
     base::Lock is_shutdown_lock_;
     bool is_shutdown_ = false;

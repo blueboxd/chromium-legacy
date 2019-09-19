@@ -215,29 +215,39 @@ class FuchsiaVideoDecoderTest : public testing::Test {
     while (output_frames_.size() > frames_to_keep_) {
       output_frames_.pop_front();
     }
-    if (on_frame_)
-      on_frame_.Run();
+    if (run_loop_)
+      run_loop_->Quit();
   }
 
-  DecodeStatus DecodeBuffer(scoped_refptr<DecoderBuffer> buffer) {
-    base::RunLoop run_loop;
-    DecodeStatus status;
-    decoder_->Decode(buffer,
-                     base::BindRepeating(
-                         [](DecodeStatus* status, base::RunLoop* run_loop,
-                            DecodeStatus result) {
-                           *status = result;
-                           run_loop->Quit();
-                         },
-                         &status, &run_loop));
-
-    run_loop.Run();
-
-    return status;
+  void DecodeBuffer(scoped_refptr<DecoderBuffer> buffer) {
+    decoder_->Decode(buffer, base::BindRepeating(
+                                 &FuchsiaVideoDecoderTest::OnFrameDecoded,
+                                 base::Unretained(this), num_input_buffers_));
+    num_input_buffers_ += 1;
   }
 
-  DecodeStatus ReadAndDecodeFrame(const std::string& name) {
-    return DecodeBuffer(ReadTestDataFile(name));
+  void ReadAndDecodeFrame(const std::string& name) {
+    DecodeBuffer(ReadTestDataFile(name));
+  }
+
+  void OnFrameDecoded(size_t frame_pos, DecodeStatus status) {
+    EXPECT_EQ(frame_pos, num_decoded_buffers_);
+    num_decoded_buffers_ += 1;
+    last_decode_status_ = status;
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+  // Waits until all pending decode requests are finished.
+  void WaitDecodeDone() {
+    size_t target_pos = num_input_buffers_;
+    while (num_decoded_buffers_ < target_pos) {
+      base::RunLoop run_loop;
+      run_loop_ = &run_loop;
+      run_loop.Run();
+      run_loop_ = nullptr;
+      ASSERT_EQ(last_decode_status_, DecodeStatus::OK);
+    }
   }
 
  protected:
@@ -249,13 +259,20 @@ class FuchsiaVideoDecoderTest : public testing::Test {
 
   std::unique_ptr<VideoDecoder> decoder_;
 
+  size_t num_input_buffers_ = 0;
+
+  // Number of frames for which DecodeCB has been called. That doesn't mean
+  // we've received corresponding output frames.
+  size_t num_decoded_buffers_ = 0;
+
   std::list<scoped_refptr<VideoFrame>> output_frames_;
-  int num_output_frames_ = 0;
+  size_t num_output_frames_ = 0;
+
+  DecodeStatus last_decode_status_ = DecodeStatus::OK;
+  base::RunLoop* run_loop_ = nullptr;
 
   // Number of frames that OnVideoFrame() should keep in |output_frames_|.
   size_t frames_to_keep_ = 2;
-
-  base::RepeatingClosure on_frame_;
 };
 
 TEST_F(FuchsiaVideoDecoderTest, CreateAndDestroy) {}
@@ -267,24 +284,26 @@ TEST_F(FuchsiaVideoDecoderTest, CreateInitDestroy) {
 TEST_F(FuchsiaVideoDecoderTest, DISABLED_VP9) {
   ASSERT_TRUE(Initialize(TestVideoConfig::Normal(kCodecVP9)));
 
-  ASSERT_TRUE(ReadAndDecodeFrame("vp9-I-frame-320x240") == DecodeStatus::OK);
-  ASSERT_TRUE(DecodeBuffer(DecoderBuffer::CreateEOSBuffer()) ==
-              DecodeStatus::OK);
+  ReadAndDecodeFrame("vp9-I-frame-320x240");
+  DecodeBuffer(DecoderBuffer::CreateEOSBuffer());
+  ASSERT_NO_FATAL_FAILURE(WaitDecodeDone());
 
-  EXPECT_EQ(num_output_frames_, 1);
+  EXPECT_EQ(num_output_frames_, 1U);
 }
 
 TEST_F(FuchsiaVideoDecoderTest, H264) {
   ASSERT_TRUE(Initialize(TestVideoConfig::NormalH264()));
 
-  ASSERT_TRUE(ReadAndDecodeFrame("h264-320x180-frame-0") == DecodeStatus::OK);
-  ASSERT_TRUE(ReadAndDecodeFrame("h264-320x180-frame-1") == DecodeStatus::OK);
-  ASSERT_TRUE(ReadAndDecodeFrame("h264-320x180-frame-2") == DecodeStatus::OK);
-  ASSERT_TRUE(ReadAndDecodeFrame("h264-320x180-frame-3") == DecodeStatus::OK);
-  ASSERT_TRUE(DecodeBuffer(DecoderBuffer::CreateEOSBuffer()) ==
-              DecodeStatus::OK);
+  ReadAndDecodeFrame("h264-320x180-frame-0");
+  ReadAndDecodeFrame("h264-320x180-frame-1");
+  ASSERT_NO_FATAL_FAILURE(WaitDecodeDone());
 
-  EXPECT_EQ(num_output_frames_, 4);
+  ReadAndDecodeFrame("h264-320x180-frame-2");
+  ReadAndDecodeFrame("h264-320x180-frame-3");
+  DecodeBuffer(DecoderBuffer::CreateEOSBuffer());
+  ASSERT_NO_FATAL_FAILURE(WaitDecodeDone());
+
+  EXPECT_EQ(num_output_frames_, 4U);
 }
 
 }  // namespace media

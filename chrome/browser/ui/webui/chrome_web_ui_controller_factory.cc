@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/webui/autofill_and_password_manager_internals/autofill_internals_ui.h"
 #include "chrome/browser/ui/webui/autofill_and_password_manager_internals/password_manager_internals_ui.h"
 #include "chrome/browser/ui/webui/bluetooth_internals/bluetooth_internals_ui.h"
+#include "chrome/browser/ui/webui/chromeos/account_manager_error_ui.h"
 #include "chrome/browser/ui/webui/chromeos/account_manager_welcome_ui.h"
 #include "chrome/browser/ui/webui/chromeos/account_migration_welcome_ui.h"
 #include "chrome/browser/ui/webui/chromeos/camera/camera_ui.h"
@@ -182,6 +183,9 @@
 #include "chrome/browser/ui/webui/chromeos/terminal/terminal_ui.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_ui.h"
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
+#include "chromeos/components/media_app_ui/media_app_guest_ui.h"
+#include "chromeos/components/media_app_ui/media_app_ui.h"
+#include "chromeos/components/media_app_ui/url_constants.h"
 #include "chromeos/components/multidevice/debug_webui/proximity_auth_ui.h"
 #include "chromeos/components/multidevice/debug_webui/url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -519,6 +523,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     }
     return &NewWebUI<chromeos::UrgentPasswordExpiryNotificationUI>;
   }
+  if (url.host_piece() == chrome::kChromeUIAccountManagerErrorHost)
+    return &NewWebUI<chromeos::AccountManagerErrorUI>;
   if (url.host_piece() == chrome::kChromeUIAccountManagerWelcomeHost)
     return &NewWebUI<chromeos::AccountManagerWelcomeUI>;
   if (url.host_piece() == chrome::kChromeUIAccountMigrationWelcomeHost)
@@ -556,6 +562,12 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<chromeos::settings::OSSettingsUI>;
   if (url.host_piece() == chrome::kChromeUIPowerHost)
     return &NewWebUI<chromeos::PowerUI>;
+  if (base::FeatureList::IsEnabled(chromeos::features::kMediaApp)) {
+    if (url.host_piece() == chromeos::kChromeUIMediaAppHost)
+      return &NewWebUI<chromeos::MediaAppUI>;
+    if (url.host_piece() == chromeos::kChromeUIMediaAppGuestHost)
+      return &NewWebUI<chromeos::MediaAppGuestUI>;
+  }
   if (url.host_piece() == chromeos::multidevice::kChromeUIProximityAuthHost)
     return &NewWebUI<chromeos::multidevice::ProximityAuthUI>;
   if (url.host_piece() == chrome::kChromeUIInternetConfigDialogHost)

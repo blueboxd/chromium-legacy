@@ -42,7 +42,7 @@ class FontDescription;
 class SimpleFontData;
 
 class CORE_EXPORT CSSFontFaceSource
-    : public GarbageCollectedFinalized<CSSFontFaceSource> {
+    : public GarbageCollected<CSSFontFaceSource> {
  public:
   virtual ~CSSFontFaceSource();
 

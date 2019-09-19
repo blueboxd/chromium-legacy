@@ -258,7 +258,6 @@ jumbo_source_set("renderer") {
     "//components/guest_view/renderer",
     "//components/version_info",
     "//content:resources",
-    "//content/app/strings:strings",
     "//content/public/renderer",
     "//extensions:extensions_resources",
     "//extensions/common",
@@ -268,6 +267,7 @@ jumbo_source_set("renderer") {
     "//skia",
     "//storage/common",
     "//third_party/blink/public:blink",
+    "//third_party/blink/public/strings:strings",
     "//third_party/cld_3/src/src:cld_3",
     "//third_party/zlib/google:compression_utils",
   ]

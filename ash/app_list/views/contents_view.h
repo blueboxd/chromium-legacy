@@ -191,7 +191,8 @@ class APP_LIST_EXPORT ContentsView : public views::View,
 
   // Returns the expected search box bounds based on the app list transition
   // progress.
-  gfx::Rect GetSearchBoxExpectedBoundsForProgress(float progress) const;
+  gfx::Rect GetSearchBoxExpectedBoundsForProgress(ash::AppListState state,
+                                                  float progress) const;
 
   // Performs the 'back' action for the active page. Returns whether the action
   // was handled.

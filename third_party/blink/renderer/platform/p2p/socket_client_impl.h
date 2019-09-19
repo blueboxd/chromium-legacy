@@ -7,8 +7,6 @@
 
 #include <stdint.h>
 
-#include <vector>
-
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
@@ -17,7 +15,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/p2p_socket_type.h"
 #include "services/network/public/mojom/p2p.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/p2p/socket_client.h"
+#include "third_party/blink/renderer/platform/p2p/socket_client.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace base {
@@ -52,7 +50,7 @@ class P2PSocketClientImpl : public blink::P2PSocketClient,
   // Send the |data| to the |address| using Differentiated Services Code Point
   // |dscp|. Return value is the unique packet_id for this packet.
   uint64_t Send(const net::IPEndPoint& address,
-                const std::vector<int8_t>& data,
+                const Vector<int8_t>& data,
                 const rtc::PacketOptions& options) override;
 
   // Setting socket options.
@@ -80,7 +78,7 @@ class P2PSocketClientImpl : public blink::P2PSocketClient,
   // Helper function to be called by Send to handle different threading
   // condition.
   void SendWithPacketId(const net::IPEndPoint& address,
-                        const std::vector<int8_t>& data,
+                        const Vector<int8_t>& data,
                         const rtc::PacketOptions& options,
                         uint64_t packet_id);
 

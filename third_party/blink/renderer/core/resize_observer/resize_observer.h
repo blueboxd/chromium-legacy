@@ -31,7 +31,7 @@ class CORE_EXPORT ResizeObserver final
 
  public:
   // This delegate is an internal (non-web-exposed) version of ResizeCallback.
-  class Delegate : public GarbageCollectedFinalized<Delegate> {
+  class Delegate : public GarbageCollected<Delegate> {
    public:
     virtual ~Delegate() = default;
     virtual void OnResize(

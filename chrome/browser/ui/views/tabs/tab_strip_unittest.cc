@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_animation.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
+#include "chrome/browser/ui/views/tabs/tab_group_underline.h"
 #include "chrome/browser/ui/views/tabs/tab_icon.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
@@ -220,6 +221,13 @@ class TabStripTest : public ChromeViewsTestBase,
     std::vector<TabGroupHeader*> result;
     for (auto const& header_pair : tab_strip_->group_headers_)
       result.push_back(header_pair.second.get());
+    return result;
+  }
+
+  std::vector<TabGroupUnderline*> ListGroupUnderlines() const {
+    std::vector<TabGroupUnderline*> result;
+    for (auto const& underline_pair : tab_strip_->group_underlines_)
+      result.push_back(underline_pair.second.get());
     return result;
   }
 
@@ -1169,6 +1177,43 @@ TEST_P(TabStripTest, DeleteTabGroupHeaderWhenEmpty) {
   EXPECT_EQ(1u, ListGroupHeaders().size());
   controller_->MoveTabIntoGroup(1, base::nullopt);
   EXPECT_EQ(0u, ListGroupHeaders().size());
+}
+
+TEST_P(TabStripTest, GroupUnderlineBasics) {
+  tab_strip_->SetBounds(0, 0, 1000, 100);
+  bounds_animator()->SetAnimationDuration(base::TimeDelta());
+  tab_strip_->AddTabAt(0, TabRendererData(), false);
+  tab_strip_->AddTabAt(1, TabRendererData(), false);
+
+  base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
+  controller_->MoveTabIntoGroup(0, group);
+  CompleteAnimationAndLayout();
+
+  std::vector<TabGroupUnderline*> underlines = ListGroupUnderlines();
+  EXPECT_EQ(1u, underlines.size());
+  TabGroupUnderline* underline = underlines[0];
+  // Update underline manually in the absence of a real Paint cycle.
+  underline->UpdateVisuals();
+  constexpr int kInset = 20;
+  constexpr int kStrokeWidth = 2;
+  EXPECT_EQ(underline->x(), kInset);
+  EXPECT_GT(underline->width(), 0);
+  EXPECT_EQ(underline->bounds().right(),
+            tab_strip_->tab_at(0)->bounds().right() - kInset);
+  EXPECT_EQ(underline->height(), kStrokeWidth);
+}
+
+TEST_P(TabStripTest, DeleteTabGroupUnderlineWhenEmpty) {
+  tab_strip_->AddTabAt(0, TabRendererData(), false);
+  tab_strip_->AddTabAt(1, TabRendererData(), false);
+  base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
+  controller_->MoveTabIntoGroup(0, group);
+  controller_->MoveTabIntoGroup(1, group);
+  controller_->MoveTabIntoGroup(0, base::nullopt);
+
+  EXPECT_EQ(1u, ListGroupUnderlines().size());
+  controller_->MoveTabIntoGroup(1, base::nullopt);
+  EXPECT_EQ(0u, ListGroupUnderlines().size());
 }
 
 TEST_P(TabStripTest, ChangingLayoutTypeResizesTabs) {

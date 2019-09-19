@@ -57,7 +57,7 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
     return frame_;
   }
 
-  // GarbageCollectedFinalized overrides:
+  // GarbageCollected overrides:
   void Trace(blink::Visitor*) override;
 
   virtual bool IsLocalDOMWindow() const = 0;

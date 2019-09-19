@@ -67,7 +67,7 @@ void P2PSocketClientImpl::Init(
 }
 
 uint64_t P2PSocketClientImpl::Send(const net::IPEndPoint& address,
-                                   const std::vector<int8_t>& data,
+                                   const Vector<int8_t>& data,
                                    const rtc::PacketOptions& options) {
   uint64_t unique_id = GetUniqueId(random_socket_id_, ++next_packet_id_);
 
@@ -81,19 +81,12 @@ uint64_t P2PSocketClientImpl::Send(const net::IPEndPoint& address,
 }
 
 void P2PSocketClientImpl::SendWithPacketId(const net::IPEndPoint& address,
-                                           const std::vector<int8_t>& data,
+                                           const Vector<int8_t>& data,
                                            const rtc::PacketOptions& options,
                                            uint64_t packet_id) {
   TRACE_EVENT_ASYNC_BEGIN0("p2p", "Send", packet_id);
 
-  // TODO(crbug.com/787254): Remove this helper when socket_client.h gets moved
-  // from blink/public to blink/renderer, and operates over WTF::Vector.
-  Vector<int8_t> copy(data.size());
-  for (size_t i = 0; i < data.size(); i++)
-    copy[i] = data[i];
-
-  socket_->Send(std::move(copy),
-                network::P2PPacketInfo(address, options, packet_id),
+  socket_->Send(data, network::P2PPacketInfo(address, options, packet_id),
                 net::MutableNetworkTrafficAnnotationTag(traffic_annotation_));
 }
 

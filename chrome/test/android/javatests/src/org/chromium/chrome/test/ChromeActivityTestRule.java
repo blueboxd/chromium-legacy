@@ -49,8 +49,6 @@ import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabSelectionType;
-import org.chromium.chrome.browser.touchless.TouchlessDelegate;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
@@ -99,14 +97,6 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
 
     @Rule
     private EmbeddedTestServerRule mTestServerRule = new EmbeddedTestServerRule();
-
-    public static ChromeActivityTestRule forMainActivity() {
-        if (FeatureUtilities.isNoTouchModeEnabled()) {
-            return new ChromeActivityTestRule(TouchlessDelegate.getNoTouchActivityClass());
-        } else {
-            return new ChromeActivityTestRule(ChromeTabbedActivity.class);
-        }
-    }
 
     public ChromeActivityTestRule(Class<T> activityClass) {
         this(activityClass, false);

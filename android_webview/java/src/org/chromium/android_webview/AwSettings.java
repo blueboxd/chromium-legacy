@@ -17,7 +17,7 @@ import android.webkit.WebSettings;
 
 import androidx.annotation.IntDef;
 
-import org.chromium.android_webview.settings.DarkModePreferences;
+import org.chromium.android_webview.settings.ForceDarkBehavior;
 import org.chromium.android_webview.settings.ForceDarkMode;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
@@ -64,14 +64,14 @@ public class AwSettings {
     @ForceDarkMode
     private int mForceDarkMode = ForceDarkMode.FORCE_DARK_AUTO;
 
-    public static final int FORCE_DARK_ONLY = DarkModePreferences.FORCE_DARK_ONLY;
-    public static final int MEDIA_QUERY_ONLY = DarkModePreferences.MEDIA_QUERY_ONLY;
+    public static final int FORCE_DARK_ONLY = ForceDarkBehavior.FORCE_DARK_ONLY;
+    public static final int MEDIA_QUERY_ONLY = ForceDarkBehavior.MEDIA_QUERY_ONLY;
     // This option requires RuntimeEnabledFeatures::MetaColorSchemeEnabled()
     public static final int PREFER_MEDIA_QUERY_OVER_FORCE_DARK =
-            DarkModePreferences.PREFER_MEDIA_QUERY_OVER_FORCE_DARK;
+            ForceDarkBehavior.PREFER_MEDIA_QUERY_OVER_FORCE_DARK;
 
-    @DarkModePreferences
-    private int mDarkModePreferences = DarkModePreferences.PREFER_MEDIA_QUERY_OVER_FORCE_DARK;
+    @ForceDarkBehavior
+    private int mForceDarkBehavior = ForceDarkBehavior.PREFER_MEDIA_QUERY_OVER_FORCE_DARK;
 
     // This class must be created on the UI thread. Afterwards, it can be
     // used from any thread. Internally, the class uses a message queue
@@ -1723,24 +1723,24 @@ public class AwSettings {
         }
     }
 
-    @DarkModePreferences
-    public int getDarkModePreferences() {
+    @ForceDarkBehavior
+    public int getForceDarkBehavior() {
         synchronized (mAwSettingsLock) {
-            return getDarkModePreferencesLocked();
+            return getForceDarkBehaviorLocked();
         }
     }
 
     @CalledByNative
-    @DarkModePreferences
-    public int getDarkModePreferencesLocked() {
+    @ForceDarkBehavior
+    public int getForceDarkBehaviorLocked() {
         assert Thread.holdsLock(mAwSettingsLock);
-        return mDarkModePreferences;
+        return mForceDarkBehavior;
     }
 
-    public void setDarkModePreferences(@DarkModePreferences int darkModePreferences) {
+    public void setForceDarkBehavior(@ForceDarkBehavior int forceDarkBehavior) {
         synchronized (mAwSettingsLock) {
-            if (mDarkModePreferences != darkModePreferences) {
-                mDarkModePreferences = darkModePreferences;
+            if (mForceDarkBehavior != forceDarkBehavior) {
+                mForceDarkBehavior = forceDarkBehavior;
                 mEventHandler.updateWebkitPreferencesLocked();
             }
         }

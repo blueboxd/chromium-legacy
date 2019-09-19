@@ -102,7 +102,7 @@ class PLATFORM_EXPORT V8PerIsolateData {
   // Pointers to core/ objects that are garbage collected. Receives callback
   // when V8PerIsolateData will be destroyed.
   class PLATFORM_EXPORT GarbageCollectedData
-      : public GarbageCollectedFinalized<GarbageCollectedData> {
+      : public GarbageCollected<GarbageCollectedData> {
    public:
     virtual ~GarbageCollectedData() = default;
     virtual void WillBeDestroyed() {}

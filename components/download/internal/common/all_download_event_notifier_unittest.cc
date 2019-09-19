@@ -45,7 +45,7 @@ class MockNotifierObserver : public AllDownloadEventNotifier::Observer {
 
 class AllDownloadEventNotifierTest : public testing::Test {
  public:
-  AllDownloadEventNotifierTest() : coordinator_(base::NullCallback()) {}
+  AllDownloadEventNotifierTest() : coordinator_(base::NullCallback(), false) {}
 
   ~AllDownloadEventNotifierTest() override = default;
 

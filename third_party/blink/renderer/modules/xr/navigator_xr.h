@@ -15,9 +15,8 @@ namespace blink {
 class Document;
 class XR;
 
-class MODULES_EXPORT NavigatorXR final
-    : public GarbageCollectedFinalized<NavigatorXR>,
-      public Supplement<Navigator> {
+class MODULES_EXPORT NavigatorXR final : public GarbageCollected<NavigatorXR>,
+                                         public Supplement<Navigator> {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorXR);
 
  public:

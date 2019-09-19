@@ -68,4 +68,15 @@ void AddObserver(content::WebContents* web_contents,
   driver->AddObserver(observer);
 }
 
+base::Optional<DistillabilityResult> GetLatestResult(
+    content::WebContents* web_contents) {
+  CHECK(web_contents);
+  DistillabilityDriver::CreateForWebContents(web_contents);
+
+  DistillabilityDriver* driver =
+      DistillabilityDriver::FromWebContents(web_contents);
+  CHECK(driver);
+  return driver->GetLatestResult();
+}
+
 }  // namespace dom_distiller

@@ -148,6 +148,8 @@ class SupervisedUserSettingsService : public KeyedService,
   void OnPrefValueChanged(const std::string& key) override;
   void OnInitializationCompleted(bool success) override;
 
+  const base::DictionaryValue* LocalSettingsForTest() const;
+
  private:
   base::DictionaryValue* GetOrCreateDictionary(const std::string& key) const;
   base::DictionaryValue* GetAtomicSettings() const;

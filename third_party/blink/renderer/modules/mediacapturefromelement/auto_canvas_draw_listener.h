@@ -12,9 +12,8 @@
 
 namespace blink {
 
-class AutoCanvasDrawListener
-    : public GarbageCollectedFinalized<AutoCanvasDrawListener>,
-      public CanvasDrawListener {
+class AutoCanvasDrawListener : public GarbageCollected<AutoCanvasDrawListener>,
+                               public CanvasDrawListener {
   USING_GARBAGE_COLLECTED_MIXIN(AutoCanvasDrawListener);
 
  public:

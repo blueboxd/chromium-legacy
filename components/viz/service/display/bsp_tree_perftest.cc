@@ -20,7 +20,6 @@
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/layer_tree_json_parser.h"
 #include "cc/test/layer_tree_test.h"
-#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/transform_node.h"
 #include "components/viz/service/display/bsp_tree.h"
@@ -72,11 +71,10 @@ class BspTreePerfTest : public cc::LayerTreeTest {
     cc::LayerTreeImpl* active_tree = host_impl->active_tree();
     // First build the tree and then we'll start running tests on layersorter
     // itself
-    int max_texture_size = 8096;
-    DoCalcDrawPropertiesImpl(max_texture_size, active_tree, host_impl);
+    host_impl->active_tree()->UpdateDrawProperties();
 
     cc::LayerImplList base_list;
-    BuildLayerImplList(active_tree->root_layer_for_testing(), &base_list);
+    BuildLayerImplList(active_tree->root_layer(), &base_list);
 
     int polygon_counter = 0;
     std::vector<std::unique_ptr<DrawPolygon>> polygon_list;
@@ -100,26 +98,6 @@ class BspTreePerfTest : public cc::LayerTreeTest {
     } while (!timer_.HasTimeLimitExpired());
 
     EndTest();
-  }
-
-  void DoCalcDrawPropertiesImpl(int max_texture_size,
-                                cc::LayerTreeImpl* active_tree,
-                                cc::LayerTreeHostImpl* host_impl) {
-    cc::RenderSurfaceList update_list;
-    cc::LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
-        active_tree->root_layer_for_testing(), active_tree->GetDeviceViewport(),
-        host_impl->DrawTransform(), active_tree->device_scale_factor(),
-        active_tree->current_page_scale_factor(),
-        active_tree->InnerViewportContainerLayer(),
-        active_tree->InnerViewportScrollLayer(),
-        active_tree->OuterViewportScrollLayer(),
-        active_tree->elastic_overscroll()->Current(active_tree->IsActiveTree()),
-        active_tree->OverscrollElasticityElementId(), max_texture_size,
-        &update_list, active_tree->property_trees(),
-        active_tree->property_trees()->transform_tree.Node(
-            active_tree->InnerViewportContainerLayer()
-                ->transform_tree_index()));
-    cc::LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   }
 
   void BuildLayerImplList(cc::LayerImpl* layer, cc::LayerImplList* list) {

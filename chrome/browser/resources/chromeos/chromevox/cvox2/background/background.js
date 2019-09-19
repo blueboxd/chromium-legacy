@@ -30,6 +30,7 @@ goog.require('Notifications');
 goog.require('Output');
 goog.require('Output.EventType');
 goog.require('PanelCommand');
+goog.require('PhoneticData');
 goog.require('constants');
 goog.require('cursors.Cursor');
 goog.require('cvox.BrailleKeyCommand');
@@ -153,6 +154,7 @@ Background = function() {
   FindHandler.init();
   DownloadHandler.init();
   LanguageSwitching.init();
+  PhoneticData.init();
 
   Notifications.onStartup();
 

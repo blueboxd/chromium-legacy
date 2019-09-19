@@ -37,7 +37,7 @@ class IDBDatabase;
 class IDBObservation;
 
 class MODULES_EXPORT IDBDatabaseCallbacks
-    : public GarbageCollectedFinalized<IDBDatabaseCallbacks> {
+    : public GarbageCollected<IDBDatabaseCallbacks> {
  public:
   IDBDatabaseCallbacks();
   virtual ~IDBDatabaseCallbacks();

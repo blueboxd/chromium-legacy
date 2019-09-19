@@ -93,7 +93,7 @@ LayerImpl* FakeLayerTreeHost::CommitAndCreateLayerImplTree() {
     ids.outer_viewport_scroll = outer_viewport_scroll_layer()->id();
   active_tree()->SetViewportLayersFromIds(ids);
 
-  return active_tree()->root_layer_for_testing();
+  return active_tree()->root_layer();
 }
 
 LayerImpl* FakeLayerTreeHost::CommitAndCreatePendingTree() {
@@ -105,7 +105,7 @@ LayerImpl* FakeLayerTreeHost::CommitAndCreatePendingTree() {
 
   pending_tree()->property_trees()->scroll_tree.PushScrollUpdatesFromMainThread(
       property_trees(), pending_tree());
-  return pending_tree()->root_layer_for_testing();
+  return pending_tree()->root_layer();
 }
 
 }  // namespace cc

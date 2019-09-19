@@ -16,9 +16,6 @@ const base::Feature kWebAuthUseNativeWinApi{"WebAuthenticationUseNativeWinApi",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
 
-extern const base::Feature kWebAuthResidentKeys{
-    "WebAuthenticationResidentKeys", base::FEATURE_ENABLED_BY_DEFAULT};
-
 extern const base::Feature kWebAuthBiometricEnrollment{
     "WebAuthenticationBiometricEnrollment", base::FEATURE_DISABLED_BY_DEFAULT};
 

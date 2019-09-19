@@ -42,7 +42,7 @@ class FrameOverlay;
 class ValidationMessageOverlayDelegate;
 
 class CORE_EXPORT ValidationMessageClientImpl final
-    : public GarbageCollectedFinalized<ValidationMessageClientImpl>,
+    : public GarbageCollected<ValidationMessageClientImpl>,
       public ValidationMessageClient,
       private PopupOpeningObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ValidationMessageClientImpl);

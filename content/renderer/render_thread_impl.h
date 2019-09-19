@@ -72,7 +72,6 @@
 class SkBitmap;
 
 namespace blink {
-class PeerConnectionDependencyFactory;
 class WebVideoCaptureImplManager;
 }
 
@@ -307,9 +306,6 @@ class CONTENT_EXPORT RenderThreadImpl
   BrowserPluginManager* browser_plugin_manager() const {
     return browser_plugin_manager_.get();
   }
-
-  // Returns a factory used for creating RTC PeerConnection objects.
-  blink::PeerConnectionDependencyFactory* GetPeerConnectionDependencyFactory();
 
   PeerConnectionTracker* peer_connection_tracker() {
     return peer_connection_tracker_.get();
@@ -576,9 +572,6 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<URLLoaderThrottleProvider> url_loader_throttle_provider_;
 
   std::unique_ptr<BrowserPluginManager> browser_plugin_manager_;
-
-  std::unique_ptr<blink::PeerConnectionDependencyFactory>
-      peer_connection_factory_;
 
   // This is used to communicate to the browser process the status
   // of all the peer connections created in the renderer.

@@ -180,6 +180,7 @@ Tab::Tab(TabController* controller)
   title_->SetHandlesTooltips(false);
   title_->SetAutoColorReadabilityEnabled(false);
   title_->SetText(CoreTabHelper::GetDefaultTitle());
+  title_->SetFontList(tab_style_->GetFontList());
   AddChildView(title_);
 
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
@@ -684,7 +685,7 @@ void Tab::SetGroup(base::Optional<TabGroupId> group) {
   if (group_ == group)
     return;
   group_ = group;
-  GroupColorChanged();
+  SchedulePaint();
 }
 
 base::Optional<SkColor> Tab::GetGroupColor() const {
@@ -692,11 +693,6 @@ base::Optional<SkColor> Tab::GetGroupColor() const {
              ? base::make_optional(
                    controller_->GetVisualDataForGroup(group_.value())->color())
              : base::nullopt;
-}
-
-void Tab::GroupColorChanged() {
-  UpdateForegroundColors();
-  SchedulePaint();
 }
 
 SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {
@@ -738,6 +734,7 @@ bool Tab::IsActive() const {
 void Tab::ActiveStateChanged() {
   UpdateTabIconNeedsAttentionBlocked();
   UpdateForegroundColors();
+  title_->SetFontList(tab_style_->GetFontList());
   Layout();
 }
 

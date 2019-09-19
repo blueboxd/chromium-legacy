@@ -25,7 +25,7 @@ struct PhysicalRect;
 // way, e.g. keyboard arrows. We use the term "interest" to specify which
 // element the user is currently on.
 class CORE_EXPORT SpatialNavigationController final
-    : public GarbageCollectedFinalized<SpatialNavigationController> {
+    : public GarbageCollected<SpatialNavigationController> {
  public:
   explicit SpatialNavigationController(Page& page);
 

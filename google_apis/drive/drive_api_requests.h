@@ -24,6 +24,7 @@
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/drive_api_url_generator.h"
 #include "google_apis/drive/drive_common_callbacks.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 
 namespace google_apis {
 
@@ -151,7 +152,7 @@ class DriveApiDataRequest : public DriveApiPartialFieldRequest {
  protected:
   // UrlFetchRequestBase overrides.
   void ProcessURLFetchResults(
-      const network::ResourceResponseHead* response_head,
+      const network::mojom::URLResponseHead* response_head,
       base::FilePath response_file,
       std::string response_body) override {
     DriveApiErrorCode error = GetErrorCode();
@@ -1159,7 +1160,7 @@ class SingleBatchableDelegateRequest : public UrlFetchRequestBase {
                       std::string* upload_content) override;
   void RunCallbackOnPrematureFailure(DriveApiErrorCode code) override;
   void ProcessURLFetchResults(
-      const network::ResourceResponseHead* response_head,
+      const network::mojom::URLResponseHead* response_head,
       base::FilePath response_file,
       std::string response_body) override;
   void OnUploadProgress(int64_t current, int64_t total);
@@ -1222,7 +1223,7 @@ class BatchUploadRequest : public UrlFetchRequestBase {
   bool GetContentData(std::string* upload_content_type,
                       std::string* upload_content) override;
   void ProcessURLFetchResults(
-      const network::ResourceResponseHead* response_head,
+      const network::mojom::URLResponseHead* response_head,
       base::FilePath response_file,
       std::string response_body) override;
   void RunCallbackOnPrematureFailure(DriveApiErrorCode code) override;

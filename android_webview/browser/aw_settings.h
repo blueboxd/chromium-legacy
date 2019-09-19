@@ -29,7 +29,7 @@ class AwSettings : public content::WebContentsObserver {
   };
 
   // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.android_webview.settings
-  enum DarkModePreferences {
+  enum ForceDarkBehavior {
     FORCE_DARK_ONLY = 0,
     MEDIA_QUERY_ONLY = 1,
     PREFER_MEDIA_QUERY_OVER_FORCE_DARK = 2,

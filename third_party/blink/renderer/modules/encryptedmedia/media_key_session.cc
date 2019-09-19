@@ -133,7 +133,7 @@ static ScriptPromise CreateRejectedPromiseAlreadyInitialized(
 
 // A class holding a pending action.
 class MediaKeySession::PendingAction final
-    : public GarbageCollectedFinalized<MediaKeySession::PendingAction> {
+    : public GarbageCollected<MediaKeySession::PendingAction> {
  public:
   enum Type { kGenerateRequest, kLoad, kUpdate, kClose, kRemove };
 

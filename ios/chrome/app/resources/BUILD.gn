@@ -151,19 +151,19 @@ generate_localizable_strings("system_strings") {
   ]
 }
 
-imageset("quick_action_new_incognito_tab") {
+imageset("quick_action_incognito_search") {
   sources = [
-    "quick_action_new_incognito_tab.imageset/Contents.json",
-    "quick_action_new_incognito_tab.imageset/quick_action_new_incognito_tab@2x.png",
-    "quick_action_new_incognito_tab.imageset/quick_action_new_incognito_tab@3x.png",
+    "quick_action_incognito_search.imageset/Contents.json",
+    "quick_action_incognito_search.imageset/quick_action_incognito_search@2x.png",
+    "quick_action_incognito_search.imageset/quick_action_incognito_search@3x.png",
   ]
 }
 
-imageset("quick_action_new_tab") {
+imageset("quick_action_new_search") {
   sources = [
-    "quick_action_new_tab.imageset/Contents.json",
-    "quick_action_new_tab.imageset/quick_action_new_tab@2x.png",
-    "quick_action_new_tab.imageset/quick_action_new_tab@3x.png",
+    "quick_action_new_search.imageset/Contents.json",
+    "quick_action_new_search.imageset/quick_action_new_search@2x.png",
+    "quick_action_new_search.imageset/quick_action_new_search@3x.png",
   ]
 }
 
@@ -185,8 +185,8 @@ imageset("quick_action_voice_search") {
 
 group("quick_action_icons") {
   public_deps = [
-    ":quick_action_new_incognito_tab",
-    ":quick_action_new_tab",
+    ":quick_action_incognito_search",
+    ":quick_action_new_search",
     ":quick_action_qr_scanner",
     ":quick_action_voice_search",
   ]

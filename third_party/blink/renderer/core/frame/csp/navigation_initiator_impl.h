@@ -14,7 +14,7 @@ namespace blink {
 class Document;
 
 class NavigationInitiatorImpl
-    : public GarbageCollectedFinalized<NavigationInitiatorImpl>,
+    : public GarbageCollected<NavigationInitiatorImpl>,
       public mojom::blink::NavigationInitiator {
   USING_PRE_FINALIZER(NavigationInitiatorImpl, Dispose);
 

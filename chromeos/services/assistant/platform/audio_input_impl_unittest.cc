@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/services/assistant/fake_client.h"
 #include "chromeos/services/assistant/public/features.h"
@@ -48,10 +49,12 @@ class AudioInputImplTest : public testing::Test,
     // Enable DSP feature flag.
     scoped_feature_list_.InitAndEnableFeature(features::kEnableDspHotword);
 
-    chromeos::PowerManagerClient::InitializeFake();
+    PowerManagerClient::InitializeFake();
+    CrasAudioHandler::InitializeForTesting();
+
     audio_input_impl_ = std::make_unique<AudioInputImpl>(
         &fake_assistant_client_, FakePowerManagerClient::Get(),
-        "fake-device-id", "fake-hotword-device-id");
+        CrasAudioHandler::Get(), "fake-device-id", "fake-hotword-device-id");
 
     audio_input_impl_->AddObserver(this);
   }

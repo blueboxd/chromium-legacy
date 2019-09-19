@@ -75,7 +75,6 @@
 #include "services/device/public/cpp/power_monitor/power_monitor_broadcast_source.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/client_process_impl.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
-#include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -641,25 +640,15 @@ void ChildThreadImpl::Init(const Options& options) {
   // In single process mode, browser-side tracing and memory will cover the
   // whole process including renderers.
   if (!IsInBrowserProcess()) {
-    if (service_manager_connection_) {
-      std::string process_type_str =
-          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-              switches::kProcessType);
-      auto process_type = memory_instrumentation::mojom::ProcessType::OTHER;
-      if (process_type_str == switches::kRendererProcess)
-        process_type = memory_instrumentation::mojom::ProcessType::RENDERER;
-      else if (process_type_str == switches::kGpuProcess)
-        process_type = memory_instrumentation::mojom::ProcessType::GPU;
-      else if (process_type_str == switches::kUtilityProcess)
-        process_type = memory_instrumentation::mojom::ProcessType::UTILITY;
-      else if (process_type_str == switches::kPpapiPluginProcess)
-        process_type = memory_instrumentation::mojom::ProcessType::PLUGIN;
-
-      memory_instrumentation::ClientProcessImpl::Config config(
-          GetConnector(), resource_coordinator::mojom::kServiceName,
-          process_type);
-      memory_instrumentation::ClientProcessImpl::CreateInstance(config);
-    }
+    mojo::PendingRemote<memory_instrumentation::mojom::Coordinator> coordinator;
+    mojo::PendingRemote<memory_instrumentation::mojom::ClientProcess> process;
+    auto process_receiver = process.InitWithNewPipeAndPassReceiver();
+    mojo::Remote<memory_instrumentation::mojom::CoordinatorConnector> connector;
+    BindHostReceiver(connector.BindNewPipeAndPassReceiver());
+    connector->RegisterCoordinatorClient(
+        coordinator.InitWithNewPipeAndPassReceiver(), std::move(process));
+    memory_instrumentation::ClientProcessImpl::CreateInstance(
+        std::move(process_receiver), std::move(coordinator));
   }
 
   // In single process mode we may already have initialized the power monitor,

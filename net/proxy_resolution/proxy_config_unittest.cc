@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "net/proxy_resolution/proxy_config.h"
+#include "base/json/json_writer.h"
 #include "base/stl_util.h"
+#include "base/values.h"
 #include "net/proxy_resolution/proxy_config_service_common_unittest.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -95,6 +97,128 @@ TEST(ProxyConfigTest, Equals) {
   EXPECT_TRUE(config1.Equals(config2));
   EXPECT_TRUE(config2.Equals(config1));
 }
+
+struct ProxyConfigToValueTestCase {
+  ProxyConfig config;
+  const char* expected_value_json;
+};
+
+class ProxyConfigToValueTest
+    : public ::testing::TestWithParam<ProxyConfigToValueTestCase> {};
+
+TEST_P(ProxyConfigToValueTest, ToValueJSON) {
+  const ProxyConfigToValueTestCase& test_case = GetParam();
+
+  base::Value value = test_case.config.ToValue();
+
+  std::string json_string;
+  ASSERT_TRUE(base::JSONWriter::Write(value, &json_string));
+
+  EXPECT_EQ(std::string(test_case.expected_value_json), json_string);
+}
+
+ProxyConfigToValueTestCase GetTestCaseDirect() {
+  return {ProxyConfig::CreateDirect(), "{}"};
+}
+
+ProxyConfigToValueTestCase GetTestCaseAutoDetect() {
+  return {ProxyConfig::CreateAutoDetect(), "{\"auto_detect\":true}"};
+}
+
+ProxyConfigToValueTestCase GetTestCasePacUrl() {
+  ProxyConfig config;
+  config.set_pac_url(GURL("http://www.example.com/test.pac"));
+
+  return {std::move(config),
+          "{\"pac_url\":\"http://www.example.com/test.pac\"}"};
+}
+
+ProxyConfigToValueTestCase GetTestCasePacUrlMandatory() {
+  ProxyConfig config;
+  config.set_pac_url(GURL("http://www.example.com/test.pac"));
+  config.set_pac_mandatory(true);
+
+  return {std::move(config),
+          "{\"pac_mandatory\":true,\"pac_url\":\"http://www.example.com/"
+          "test.pac\"}"};
+}
+
+ProxyConfigToValueTestCase GetTestCasePacUrlAndAutoDetect() {
+  ProxyConfig config = ProxyConfig::CreateAutoDetect();
+  config.set_pac_url(GURL("http://www.example.com/test.pac"));
+
+  return {
+      std::move(config),
+      "{\"auto_detect\":true,\"pac_url\":\"http://www.example.com/test.pac\"}"};
+}
+
+ProxyConfigToValueTestCase GetTestCaseSingleProxy() {
+  ProxyConfig config;
+  config.proxy_rules().ParseFromString("https://proxy1:8080");
+
+  return {std::move(config), "{\"single_proxy\":[\"https://proxy1:8080\"]}"};
+}
+
+ProxyConfigToValueTestCase GetTestCaseSingleProxyWithBypass() {
+  ProxyConfig config;
+  config.proxy_rules().ParseFromString("https://proxy1:8080");
+  config.proxy_rules().bypass_rules.AddRuleFromString("*.google.com");
+  config.proxy_rules().bypass_rules.AddRuleFromString("192.168.0.1/16");
+
+  return {std::move(config),
+          "{\"bypass_list\":[\"*.google.com\",\"192.168.0.1/"
+          "16\"],\"single_proxy\":[\"https://proxy1:8080\"]}"};
+}
+
+ProxyConfigToValueTestCase GetTestCaseSingleProxyWithReversedBypass() {
+  ProxyConfig config;
+  config.proxy_rules().ParseFromString("https://proxy1:8080");
+  config.proxy_rules().bypass_rules.AddRuleFromString("*.google.com");
+  config.proxy_rules().reverse_bypass = true;
+
+  return {std::move(config),
+          "{\"bypass_list\":[\"*.google.com\"],\"reverse_bypass\":true,"
+          "\"single_proxy\":[\"https://proxy1:8080\"]}"};
+}
+
+ProxyConfigToValueTestCase GetTestCaseProxyPerScheme() {
+  ProxyConfig config;
+  config.proxy_rules().ParseFromString(
+      "http=https://proxy1:8080;https=socks5://proxy2");
+  config.proxy_rules().bypass_rules.AddRuleFromString("*.google.com");
+  config.set_pac_url(GURL("http://wpad/wpad.dat"));
+  config.set_auto_detect(true);
+
+  return {
+      std::move(config),
+      "{\"auto_detect\":true,\"bypass_list\":[\"*.google.com\"],\"pac_url\":"
+      "\"http://wpad/wpad.dat\",\"proxy_per_scheme\":{\"http\":[\"https://"
+      "proxy1:8080\"],\"https\":[\"socks5://proxy2:1080\"]}}"};
+}
+
+ProxyConfigToValueTestCase GetTestCaseSingleProxyList() {
+  ProxyConfig config;
+  config.proxy_rules().ParseFromString(
+      "https://proxy1:8080,http://proxy2,direct://");
+
+  return {std::move(config),
+          "{\"single_proxy\":[\"https://proxy1:8080\",\"proxy2:80\",\"direct://"
+          "\"]}"};
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    ProxyConfigToValueTest,
+    testing::Values(GetTestCaseDirect(),
+                    GetTestCaseAutoDetect(),
+                    GetTestCasePacUrl(),
+                    GetTestCasePacUrlMandatory(),
+                    GetTestCasePacUrlAndAutoDetect(),
+                    GetTestCaseSingleProxy(),
+                    GetTestCaseSingleProxyWithBypass(),
+                    GetTestCaseSingleProxyWithReversedBypass(),
+                    GetTestCaseProxyPerScheme(),
+                    GetTestCaseSingleProxyList()));
 
 TEST(ProxyConfigTest, ParseProxyRules) {
   const struct {

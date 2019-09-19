@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 
 namespace net {
 struct NetworkTrafficAnnotationTag;
@@ -19,7 +20,6 @@ struct RedirectInfo;
 
 namespace network {
 struct ResourceRequest;
-struct ResourceResponseHead;
 class SimpleURLLoader;
 }  // namespace network
 
@@ -61,7 +61,7 @@ bool AppendVariationsHeaderUnknownSignedIn(const GURL& url,
 // URL occurs.
 void RemoveVariationsHeaderIfNeeded(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& response_head,
+    const network::mojom::URLResponseHead& response_head,
     std::vector<std::string>* to_be_removed_headers);
 
 // Creates a SimpleURLLoader that will include the variations header for

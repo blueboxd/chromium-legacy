@@ -144,6 +144,9 @@ class MockNavigationHandle : public NavigationHandle {
   void set_proxy_server(const net::ProxyServer& proxy_server) {
     proxy_server_ = proxy_server;
   }
+  void set_initiator_origin(const url::Origin& initiator_origin) {
+    initiator_origin_ = initiator_origin;
+  }
   void set_reload_type(ReloadType reload_type) { reload_type_ = reload_type; }
 
  private:

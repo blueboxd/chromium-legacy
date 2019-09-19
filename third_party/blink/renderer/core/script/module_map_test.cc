@@ -103,7 +103,7 @@ class ModuleMapTestModulator final : public DummyModulator {
   ScriptState* GetScriptState() override { return script_state_; }
 
   class TestModuleScriptFetcher final
-      : public GarbageCollectedFinalized<TestModuleScriptFetcher>,
+      : public GarbageCollected<TestModuleScriptFetcher>,
         public ModuleScriptFetcher {
     USING_GARBAGE_COLLECTED_MIXIN(TestModuleScriptFetcher);
 
@@ -148,7 +148,7 @@ class ModuleMapTestModulator final : public DummyModulator {
     return Thread::Current()->GetTaskRunner().get();
   }
 
-  struct TestRequest final : public GarbageCollectedFinalized<TestRequest> {
+  struct TestRequest final : public GarbageCollected<TestRequest> {
     TestRequest(const ModuleScriptCreationParams& params,
                 ModuleScriptFetcher::Client* client)
         : params_(params), client_(client) {}

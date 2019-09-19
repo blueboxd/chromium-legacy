@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -888,8 +889,10 @@ TEST_F(TabLifecycleUnitTest, DisableHeuristicsFlag) {
   decision_details.Clear();
 
   // Disable the heuristics and check that the tab can now be safely discarded.
-  GetMutableStaticProactiveTabFreezeAndDiscardParamsForTesting()
-      ->disable_heuristics_protections = true;
+  base::AutoReset<bool> disable_heuristics_protections(
+      &GetMutableStaticProactiveTabFreezeAndDiscardParamsForTesting()
+           ->disable_heuristics_protections,
+      true);
 
   EXPECT_TRUE(tab_lifecycle_unit.CanFreeze(&decision_details));
   EXPECT_TRUE(decision_details.IsPositive());
@@ -901,9 +904,7 @@ TEST_F(TabLifecycleUnitTest, DisableHeuristicsFlag) {
   decision_details.Clear();
 }
 
-// TODO(crbug.com/1004578) Disabled due to flake
-TEST_F(TabLifecycleUnitTest,
-       DISABLED_CannotFreezeOrDiscardIfConnectedToBluetooth) {
+TEST_F(TabLifecycleUnitTest, CannotFreezeOrDiscardIfConnectedToBluetooth) {
   TabLifecycleUnit tab_lifecycle_unit(GetTabLifecycleUnitSource(), &observers_,
                                       usage_clock_.get(), web_contents_,
                                       tab_strip_model_.get());

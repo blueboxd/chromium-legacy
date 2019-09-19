@@ -61,7 +61,7 @@ class TestManagementUIHandler : public ManagementUIHandler {
 
   base::Value GetExtensionReportingInfo() {
     base::Value report_sources(base::Value::Type::LIST);
-    AddExtensionReportingInfo(&report_sources);
+    AddReportingInfo(&report_sources);
     return report_sources;
   }
 
@@ -565,6 +565,31 @@ TEST_F(ManagementUIHandlerTests,
   EXPECT_EQ(reporting_info.GetList().size(), expected_messages.size());
 }
 
+TEST_F(ManagementUIHandlerTests, CloudReportingPolicy) {
+  handler_.EnableCloudReportingExtension(false);
+
+  policy::PolicyMap chrome_policies;
+  const policy::PolicyNamespace chrome_policies_namespace =
+      policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string());
+  EXPECT_CALL(policy_service_, GetPolicies(_))
+      .WillRepeatedly(ReturnRef(chrome_policies));
+  SetPolicyValue(policy::key::kCloudReportingEnabled, chrome_policies, true);
+
+  std::set<std::string> expected_messages = {
+      kManagementExtensionReportMachineName, kManagementExtensionReportUsername,
+      kManagementExtensionReportVersion,
+      kManagementExtensionReportExtensionsPlugin};
+
+  auto reporting_info = handler_.GetExtensionReportingInfo();
+  const auto& reporting_info_list = reporting_info.GetList();
+
+  for (const base::Value& info : reporting_info_list) {
+    const std::string* messageId = info.FindStringKey("messageId");
+    EXPECT_TRUE(expected_messages.find(*messageId) != expected_messages.end());
+  }
+  EXPECT_EQ(reporting_info.GetList().size(), expected_messages.size());
+}
+
 TEST_F(ManagementUIHandlerTests, ExtensionReportingInfoPoliciesMerge) {
   policy::PolicyMap on_prem_reporting_extension_beta_policies;
   policy::PolicyMap on_prem_reporting_extension_stable_policies;
@@ -603,6 +628,11 @@ TEST_F(ManagementUIHandlerTests, ExtensionReportingInfoPoliciesMerge) {
   EXPECT_CALL(policy_service_,
               GetPolicies(on_prem_reporting_extension_beta_policy_namespace))
       .WillOnce(ReturnRef(on_prem_reporting_extension_beta_policies));
+  policy::PolicyMap empty_policy_map;
+  EXPECT_CALL(policy_service_,
+              GetPolicies(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
+                                                  std::string())))
+      .WillOnce(ReturnRef(empty_policy_map));
 
   handler_.EnableCloudReportingExtension(true);
 

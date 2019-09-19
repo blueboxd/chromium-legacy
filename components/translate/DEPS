@@ -13,6 +13,7 @@ include_rules = [
   "+google_apis",
   "+net",
   "+services/network/public/cpp",
+  "+services/network/public/mojom",
   "+ui",
   "+third_party/metrics_proto",
 

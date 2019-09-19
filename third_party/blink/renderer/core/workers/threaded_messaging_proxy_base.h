@@ -42,7 +42,7 @@ struct GlobalScopeCreationParams;
 // living on the worker thread (e.g., WorkerGlobalScope) but the parent object
 // can be destroyed before the completion of worker thread termination.
 class CORE_EXPORT ThreadedMessagingProxyBase
-    : public GarbageCollectedFinalized<ThreadedMessagingProxyBase> {
+    : public GarbageCollected<ThreadedMessagingProxyBase> {
  public:
   virtual ~ThreadedMessagingProxyBase();
 

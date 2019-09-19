@@ -53,7 +53,7 @@ class ScriptLoader;
 //
 // An HTMLParserScriptRunner is owned by its host, an HTMLDocumentParser.
 class HTMLParserScriptRunner final
-    : public GarbageCollectedFinalized<HTMLParserScriptRunner>,
+    : public GarbageCollected<HTMLParserScriptRunner>,
       public PendingScriptClient,
       public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(HTMLParserScriptRunner);

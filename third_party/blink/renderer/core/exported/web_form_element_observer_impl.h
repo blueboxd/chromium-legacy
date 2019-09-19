@@ -17,7 +17,7 @@ namespace blink {
 class HTMLElement;
 
 class CORE_EXPORT WebFormElementObserverImpl final
-    : public GarbageCollectedFinalized<WebFormElementObserverImpl>,
+    : public GarbageCollected<WebFormElementObserverImpl>,
       public WebFormElementObserver {
  public:
   WebFormElementObserverImpl(HTMLElement&, base::OnceClosure);

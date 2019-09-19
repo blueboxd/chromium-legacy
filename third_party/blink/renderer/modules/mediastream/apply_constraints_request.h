@@ -16,7 +16,7 @@ namespace blink {
 class ScriptPromiseResolver;
 
 class MODULES_EXPORT ApplyConstraintsRequest final
-    : public GarbageCollectedFinalized<ApplyConstraintsRequest> {
+    : public GarbageCollected<ApplyConstraintsRequest> {
  public:
   static ApplyConstraintsRequest* CreateForTesting(const WebMediaStreamTrack&,
                                                    const WebMediaConstraints&);

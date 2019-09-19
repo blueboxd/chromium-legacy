@@ -205,9 +205,13 @@ void DownloadManagerService::Init(JNIEnv* env,
                                   bool is_full_browser_started) {
   java_ref_.Reset(env, obj);
   if (is_full_browser_started) {
+    DownloadStartupUtils::EnsureDownloadSystemInitialized(
+        true /* is_full_browser_started */, false /* is_incognito */);
     OnFullBrowserStarted(env, obj);
   } else {
-    DownloadStartupUtils::EnsureDownloadSystemInitialized(false);
+    // In reduced mode, only non-incognito downloads should be loaded.
+    DownloadStartupUtils::EnsureDownloadSystemInitialized(
+        false /* is_full_browser_started */, false /* is_incognito */);
     ResetCoordinatorIfNeeded(
         ProfileKeyStartupAccessor::GetInstance()->profile_key());
   }

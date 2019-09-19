@@ -67,7 +67,7 @@ class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   friend class EffectStack;
 
  public:
-  class EventDelegate : public GarbageCollectedFinalized<EventDelegate> {
+  class EventDelegate : public GarbageCollected<EventDelegate> {
    public:
     virtual ~EventDelegate() = default;
     virtual bool RequiresIterationEvents(const AnimationEffect&) = 0;

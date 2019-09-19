@@ -30,7 +30,7 @@ class WorkletGlobalScope;
 // This class is constructed on the main thread but it is used in the worklet
 // backing thread. The entire class is used for off-thread CSS Paint.
 class MODULES_EXPORT PaintWorkletProxyClient
-    : public GarbageCollectedFinalized<PaintWorkletProxyClient>,
+    : public GarbageCollected<PaintWorkletProxyClient>,
       public Supplement<WorkerClients>,
       public PaintWorkletPainter {
   USING_GARBAGE_COLLECTED_MIXIN(PaintWorkletProxyClient);

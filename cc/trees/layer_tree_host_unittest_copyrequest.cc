@@ -1319,7 +1319,7 @@ class LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest
   DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
                                    LayerTreeHostImpl::FrameData* frame_data,
                                    DrawResult draw_result) override {
-    LayerImpl* root = host_impl->active_tree()->root_layer_for_testing();
+    LayerImpl* root = host_impl->active_tree()->root_layer();
     LayerImpl* child = host_impl->active_tree()->LayerById(child_->id());
 
     bool saw_root = false;

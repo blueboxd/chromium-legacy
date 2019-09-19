@@ -16,7 +16,7 @@ namespace blink {
 // workers. We should rename this to something like ModuleScriptFetcherImpl that
 // doesn't relate to Document.
 class CORE_EXPORT DocumentModuleScriptFetcher final
-    : public GarbageCollectedFinalized<DocumentModuleScriptFetcher>,
+    : public GarbageCollected<DocumentModuleScriptFetcher>,
       public ModuleScriptFetcher {
   USING_GARBAGE_COLLECTED_MIXIN(DocumentModuleScriptFetcher);
 

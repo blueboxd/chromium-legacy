@@ -44,7 +44,7 @@ class Page;
 struct WebContextMenuData;
 
 class CORE_EXPORT ContextMenuController final
-    : public GarbageCollectedFinalized<ContextMenuController> {
+    : public GarbageCollected<ContextMenuController> {
  public:
   explicit ContextMenuController(Page*);
   ~ContextMenuController();

@@ -27,6 +27,7 @@
 #include "google_apis/drive/time_util.h"
 #include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace google_apis {
 namespace drive {
@@ -1138,7 +1139,7 @@ bool SingleBatchableDelegateRequest::GetContentData(
 }
 
 void SingleBatchableDelegateRequest::ProcessURLFetchResults(
-    const network::ResourceResponseHead* response_head,
+    const network::mojom::URLResponseHead* response_head,
     base::FilePath response_file,
     std::string response_body) {
   delegate_->NotifyResult(
@@ -1319,7 +1320,7 @@ std::vector<std::string> BatchUploadRequest::GetExtraRequestHeaders() const {
 }
 
 void BatchUploadRequest::ProcessURLFetchResults(
-    const network::ResourceResponseHead* response_head,
+    const network::mojom::URLResponseHead* response_head,
     base::FilePath response_file,
     std::string response_body) {
   if (!IsSuccessfulDriveApiErrorCode(GetErrorCode())) {

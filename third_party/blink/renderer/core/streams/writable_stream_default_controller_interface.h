@@ -16,8 +16,7 @@ namespace blink {
 class Visitor;
 
 class CORE_EXPORT WritableStreamDefaultControllerInterface
-    : public GarbageCollectedFinalized<
-          WritableStreamDefaultControllerInterface> {
+    : public GarbageCollected<WritableStreamDefaultControllerInterface> {
  public:
   WritableStreamDefaultControllerInterface();
   virtual ~WritableStreamDefaultControllerInterface();

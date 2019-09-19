@@ -31,6 +31,7 @@ using OfflineContentAggregator =
 using UpdateDelta = offline_items_collection::UpdateDelta;
 using LaunchLocation = offline_items_collection::LaunchLocation;
 
+class Profile;
 class SkBitmap;
 
 // This class handles the task of observing the downloads associated with a
@@ -91,6 +92,8 @@ class DownloadOfflineContentProvider
   void OnDownloadUpdated(DownloadItem* item) override;
   void OnDownloadRemoved(DownloadItem* item) override;
 
+  void OnProfileCreated(Profile* profile);
+
  private:
   enum class State {
     // Download system is not yet initialized.
@@ -123,6 +126,9 @@ class DownloadOfflineContentProvider
                        const base::Optional<UpdateDelta>& update_delta);
   void CheckForExternallyRemovedDownloads();
 
+  // Ensure that download core service is started.
+  void EnsureDownloadCoreServiceStarted();
+
   base::ObserverList<OfflineContentProvider::Observer>::Unchecked observers_;
   OfflineContentAggregator* aggregator_;
   std::string name_space_;
@@ -134,6 +140,8 @@ class DownloadOfflineContentProvider
   State state_;
   base::circular_deque<base::OnceClosure> pending_actions_for_reduced_mode_;
   base::circular_deque<base::OnceClosure> pending_actions_for_full_browser_;
+
+  Profile* profile_;
 
   base::WeakPtrFactory<DownloadOfflineContentProvider> weak_ptr_factory_{this};
 

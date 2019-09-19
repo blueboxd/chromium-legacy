@@ -167,7 +167,14 @@ void DistillerImpl::OnPageDistillationFinished(
   }
 
   DCHECK(distiller_result);
+  CHECK_LT(started_pages_index_[page_num], pages_.size())
+      << "started_pages_index_[" << page_num
+      << "] (=" << started_pages_index_[page_num] << ") is out of range.";
   DistilledPageData* page_data = GetPageAtIndex(started_pages_index_[page_num]);
+  CHECK(page_data) << "GetPageAtIndex(started_pages_index_[" << page_num
+                   << "] (=" << started_pages_index_[page_num]
+                   << ")) returns nullptr. pages_.size() = " << pages_.size()
+                   << ".";
   page_data->distilled_page_proto =
       new base::RefCountedData<DistilledPageProto>();
   page_data->page_num = page_num;

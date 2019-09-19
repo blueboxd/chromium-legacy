@@ -11,7 +11,7 @@
 #include "cc/paint/filter_operations.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/geometry_test_utils.h"
-#include "cc/test/layer_test_common.h"
+#include "cc/test/layer_tree_impl_test_base.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/tree_synchronizer.h"
@@ -74,10 +74,9 @@ static gfx::Vector2dF ScrollDelta(LayerImpl* layer_impl) {
   return gfx::Vector2dF(delta.x(), delta.y());
 }
 
-class LayerImplTest : public LayerTestCommon::LayerImplTest,
-                      public ::testing::Test {
+class LayerImplTest : public LayerTreeImplTestBase, public ::testing::Test {
  public:
-  using LayerTestCommon::LayerImplTest::LayerImplTest;
+  using LayerTreeImplTestBase::LayerTreeImplTestBase;
 };
 
 TEST_F(LayerImplTest, VerifyPendingLayerChangesAreTrackedProperly) {
@@ -98,7 +97,7 @@ TEST_F(LayerImplTest, VerifyPendingLayerChangesAreTrackedProperly) {
   LayerImpl* grand_child = AddLayerInPendingTree<LayerImpl>();
   CopyProperties(child, grand_child);
 
-  UpdateDrawProperties(host_impl()->pending_tree());
+  UpdatePendingTreeDrawProperties();
 
   // Creating children is an internal operation and should not mark layers as
   // changed.
@@ -122,7 +121,7 @@ TEST_F(LayerImplTest, VerifyPendingLayerChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
       root->SetUpdateRect(arbitrary_rect));
   EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(root->SetBounds(arbitrary_size));
-  UpdateDrawProperties(host_impl()->pending_tree());
+  UpdatePendingTreeDrawProperties();
 
   // Changing these properties affects the entire subtree of layers.
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(
@@ -168,7 +167,7 @@ TEST_F(LayerImplTest, VerifyActiveLayerChangesAreTrackedProperly) {
   LayerImpl* child = AddLayer<LayerImpl>();
   CopyProperties(scroll, child);
 
-  UpdateDrawProperties(host_impl()->active_tree());
+  UpdateActiveTreeDrawProperties();
 
   // Make |scroll| the outer viewport container layer. This ensures the later
   // call to |SetViewportBoundsDelta| will be on a viewport layer.
@@ -179,7 +178,7 @@ TEST_F(LayerImplTest, VerifyActiveLayerChangesAreTrackedProperly) {
   scroll->SetMasksToBounds(true);
   CreateClipNode(scroll);
   child->SetClipTreeIndex(scroll->clip_tree_index());
-  UpdateDrawProperties(host_impl()->active_tree());
+  UpdateActiveTreeDrawProperties();
   root->layer_tree_impl()->ResetAllChangeTracking();
 
   // SetViewportBoundsDelta changes subtree only when masks_to_bounds is true.
@@ -192,7 +191,7 @@ TEST_F(LayerImplTest, VerifyActiveLayerChangesAreTrackedProperly) {
   scroll->SetMasksToBounds(false);
   scroll->SetClipTreeIndex(root->clip_tree_index());
   child->SetClipTreeIndex(root->clip_tree_index());
-  UpdateDrawProperties(host_impl()->active_tree());
+  UpdateActiveTreeDrawProperties();
   root->layer_tree_impl()->ResetAllChangeTracking();
 
   // SetViewportBoundsDelta does not change the subtree without masks_to_bounds.
@@ -202,7 +201,7 @@ TEST_F(LayerImplTest, VerifyActiveLayerChangesAreTrackedProperly) {
   EXPECT_TRUE(scroll->LayerPropertyChangedNotFromPropertyTrees());
   EXPECT_FALSE(host_impl()->active_tree()->property_trees()->full_tree_damaged);
 
-  UpdateDrawProperties(host_impl()->active_tree());
+  UpdateActiveTreeDrawProperties();
   root->layer_tree_impl()->ResetAllChangeTracking();
 
   // Ensure some node is affected by the outer viewport bounds delta. This
@@ -216,7 +215,7 @@ TEST_F(LayerImplTest, VerifyActiveLayerChangesAreTrackedProperly) {
   scroll->SetViewportBoundsDelta(gfx::Vector2d(111, 222));
   EXPECT_TRUE(transform_tree.needs_update());
 
-  UpdateDrawProperties(host_impl()->active_tree());
+  UpdateActiveTreeDrawProperties();
   root->layer_tree_impl()->ResetAllChangeTracking();
 
   // Ensure scrolling changes the transform tree but does not damage all trees.
@@ -242,7 +241,7 @@ TEST_F(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   CopyProperties(root, layer2);
 
   DCHECK(host_impl()->CanDraw());
-  UpdateDrawProperties(host_impl()->active_tree());
+  UpdateActiveTreeDrawProperties();
 
   float arbitrary_number = 0.352f;
   gfx::Size arbitrary_size = gfx::Size(111, 222);
@@ -262,7 +261,7 @@ TEST_F(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   // Create a render surface, because we must have a render surface if we have
   // filters.
   CreateEffectNode(layer).render_surface_reason = RenderSurfaceReason::kTest;
-  UpdateDrawProperties(host_impl()->active_tree());
+  UpdateActiveTreeDrawProperties();
 
   // Related filter functions.
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
@@ -282,7 +281,7 @@ TEST_F(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetBounds(large_size));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetBounds(large_size));
   host_impl()->active_tree()->set_needs_update_draw_properties();
-  UpdateDrawProperties(host_impl()->active_tree());
+  UpdateActiveTreeDrawProperties();
 
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->ScrollBy(arbitrary_vector2d));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(layer->ScrollBy(gfx::Vector2d()));
@@ -299,7 +298,7 @@ TEST_F(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
 
   // Unrelated functions, always set to new values, always set needs update.
   host_impl()->active_tree()->set_needs_update_draw_properties();
-  UpdateDrawProperties(host_impl()->active_tree());
+  UpdateActiveTreeDrawProperties();
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(layer->SetMasksToBounds(true);
                                       layer->NoteLayerPropertyChanged());
   CreateClipNode(layer);
@@ -318,7 +317,7 @@ TEST_F(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
 
   // Unrelated functions, set to the same values, no needs update.
   GetEffectNode(layer)->filters = arbitrary_filters;
-  UpdateDrawProperties(host_impl()->active_tree());
+  UpdateActiveTreeDrawProperties();
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
       host_impl()->active_tree()->SetFilterMutated(layer->element_id(),
                                                    arbitrary_filters));
@@ -398,7 +397,7 @@ class LayerImplScrollTest : public LayerImplTest {
     CopyProperties(root, layer_);
     CreateTransformNode(layer_);
     CreateScrollNode(layer_);
-    UpdateDrawProperties(host_impl()->active_tree());
+    UpdateActiveTreeDrawProperties();
   }
 
   LayerImpl* layer() { return layer_; }
@@ -578,6 +577,52 @@ TEST_F(CommitToPendingTreeLayerImplScrollTest,
   EXPECT_VECTOR_EQ(gfx::Vector2dF(22, 23), layer()->CurrentScrollOffset());
   EXPECT_VECTOR_EQ(layer()->CurrentScrollOffset(),
                    pending_layer->CurrentScrollOffset());
+}
+
+TEST_F(LayerImplTest, JitterTest) {
+  host_impl()->CreatePendingTree();
+  auto* root_layer = EnsureRootLayerInPendingTree();
+  root_layer->SetBounds(gfx::Size(50, 50));
+  SetupViewport(root_layer, gfx::Size(100, 100), gfx::Size(100, 100));
+  auto* scroll_layer = host_impl()->pending_tree()->InnerViewportScrollLayer();
+  auto* content_layer = AddLayerInPendingTree<LayerImpl>();
+  content_layer->SetBounds(gfx::Size(100, 100));
+  content_layer->SetDrawsContent(true);
+  CopyProperties(host_impl()->pending_tree()->OuterViewportScrollLayer(),
+                 content_layer);
+  UpdatePendingTreeDrawProperties();
+
+  host_impl()->pending_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
+  const int scroll = 5;
+  int accumulated_scroll = 0;
+  for (int i = 0; i < LayerTreeImpl::kFixedPointHitsThreshold + 1; ++i) {
+    host_impl()->ActivateSyncTree();
+    accumulated_scroll += scroll;
+    SetScrollOffset(host_impl()->InnerViewportScrollLayer(),
+                    gfx::ScrollOffset(0, accumulated_scroll));
+    UpdateActiveTreeDrawProperties();
+
+    host_impl()->CreatePendingTree();
+    LayerTreeImpl* pending_tree = host_impl()->pending_tree();
+    pending_tree->set_source_frame_number(i + 1);
+    pending_tree->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
+    // Simulate scroll offset pushed from the main thread.
+    SetScrollOffset(scroll_layer, gfx::ScrollOffset(0, accumulated_scroll));
+    // The scroll done on the active tree is undone on the pending tree.
+    content_layer->SetOffsetToTransformParent(
+        gfx::Vector2dF(0, accumulated_scroll));
+    content_layer->SetNeedsPushProperties();
+    UpdateDrawProperties(pending_tree);
+
+    float jitter = content_layer->CalculateJitter();
+    // There should not be any jitter measured till we hit the fixed point hits
+    // threshold. 250 is sqrt(50 * 50) * 5. 50x50 is the visible bounds of
+    // content (clipped by the viewport). 5 is the distance between the
+    // locations of the content in the pending tree and the active tree.
+    float expected_jitter =
+        (i == pending_tree->kFixedPointHitsThreshold) ? 250 : 0;
+    EXPECT_EQ(jitter, expected_jitter);
+  }
 }
 
 }  // namespace

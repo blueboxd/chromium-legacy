@@ -24,7 +24,7 @@ class IdleRequestOptions;
 class ThreadScheduler;
 
 class CORE_EXPORT ScriptedIdleTaskController
-    : public GarbageCollectedFinalized<ScriptedIdleTaskController>,
+    : public GarbageCollected<ScriptedIdleTaskController>,
       public ContextLifecycleStateObserver,
       public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(ScriptedIdleTaskController);
@@ -49,8 +49,7 @@ class CORE_EXPORT ScriptedIdleTaskController
 
   // |IdleTask| is an interface type which generalizes tasks which are invoked
   // on idle. The tasks need to define what to do on idle in |invoke|.
-  class IdleTask : public GarbageCollectedFinalized<IdleTask>,
-                   public NameClient {
+  class IdleTask : public GarbageCollected<IdleTask>, public NameClient {
    public:
     virtual void Trace(Visitor* visitor) {}
     const char* NameInHeapSnapshot() const override { return "IdleTask"; }
@@ -92,7 +91,7 @@ class CORE_EXPORT ScriptedIdleTaskController
                      IdleDeadline::CallbackType);
 
  private:
-  class QueuedIdleTask : public GarbageCollectedFinalized<QueuedIdleTask> {
+  class QueuedIdleTask : public GarbageCollected<QueuedIdleTask> {
    public:
     QueuedIdleTask(IdleTask*,
                    base::TimeTicks queue_timestamp,

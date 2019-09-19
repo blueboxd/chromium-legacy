@@ -14,6 +14,7 @@
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/tiles/tile_priority.h"
 #include "cc/trees/layer_tree_frame_sink.h"
+#include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 

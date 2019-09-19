@@ -433,6 +433,11 @@ void SupervisedUserSettingsService::OnInitializationCompleted(bool success) {
   InformSubscribers();
 }
 
+const base::DictionaryValue*
+SupervisedUserSettingsService::LocalSettingsForTest() const {
+  return local_settings_.get();
+}
+
 base::DictionaryValue* SupervisedUserSettingsService::GetOrCreateDictionary(
     const std::string& key) const {
   base::Value* value = nullptr;

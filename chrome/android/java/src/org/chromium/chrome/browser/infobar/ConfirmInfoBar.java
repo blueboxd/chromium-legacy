@@ -5,20 +5,11 @@
 package org.chromium.chrome.browser.infobar;
 
 import android.graphics.Bitmap;
-import android.text.TextUtils;
 
 import androidx.annotation.ColorRes;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
-import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties;
-import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.DialogListItemProperties;
-import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.ListItemType;
-import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
-import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
-import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * An infobar that presents the user with several buttons.
@@ -67,49 +58,6 @@ public class ConfirmInfoBar extends InfoBar {
     public void onButtonClicked(final boolean isPrimaryButton) {
         int action = isPrimaryButton ? ActionType.OK : ActionType.CANCEL;
         onButtonClicked(action);
-    }
-
-    @Override
-    public boolean supportsTouchlessMode() {
-        // Only allow whitelisted implementations of the confirm infobar.
-        @InfoBarIdentifier
-        int infobarId = getInfoBarIdentifier();
-        return infobarId == InfoBarIdentifier.POPUP_BLOCKED_INFOBAR_DELEGATE_MOBILE
-                || infobarId == InfoBarIdentifier.DANGEROUS_DOWNLOAD_INFOBAR_DELEGATE_ANDROID;
-    }
-
-    @Override
-    public PropertyModel createModel() {
-        PropertyModel model = super.createModel();
-
-        ModelList options = new ModelList();
-        if (!TextUtils.isEmpty(mPrimaryButtonText)) {
-            options.add(new ListItem(ListItemType.DEFAULT,
-                    new PropertyModel.Builder(DialogListItemProperties.ALL_KEYS)
-                            .with(DialogListItemProperties.TEXT, mPrimaryButtonText)
-                            .with(DialogListItemProperties.CLICK_LISTENER,
-                                    (v) -> onButtonClicked(true))
-                            .with(DialogListItemProperties.ICON,
-                                    ApiCompatibilityUtils.getDrawable(getContext().getResources(),
-                                            R.drawable.ic_check_circle))
-                            .build()));
-        }
-
-        if (!TextUtils.isEmpty(mSecondaryButtonText)) {
-            options.add(new ListItem(ListItemType.DEFAULT,
-                    new PropertyModel.Builder(DialogListItemProperties.ALL_KEYS)
-                            .with(DialogListItemProperties.TEXT, mSecondaryButtonText)
-                            .with(DialogListItemProperties.CLICK_LISTENER,
-                                    (v) -> onButtonClicked(false))
-                            .with(DialogListItemProperties.ICON,
-                                    ApiCompatibilityUtils.getDrawable(getContext().getResources(),
-                                            R.drawable.ic_cancel_circle))
-                            .build()));
-        }
-
-        model.set(TouchlessDialogProperties.LIST_MODELS, options);
-
-        return model;
     }
 
     /**

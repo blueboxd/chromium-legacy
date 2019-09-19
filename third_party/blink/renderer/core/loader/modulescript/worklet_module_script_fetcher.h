@@ -23,7 +23,7 @@ class ResourceFetcher;
 // WorkletModuleResponsesMap, or defers to ModuleScriptFetcher and
 // stores the result in WorkletModuleResponsesMap on fetch completion.
 class CORE_EXPORT WorkletModuleScriptFetcher final
-    : public GarbageCollectedFinalized<WorkletModuleScriptFetcher>,
+    : public GarbageCollected<WorkletModuleScriptFetcher>,
       public ModuleScriptFetcher {
   USING_GARBAGE_COLLECTED_MIXIN(WorkletModuleScriptFetcher);
 

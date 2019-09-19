@@ -27,7 +27,7 @@ class FreezeOriginTrialPolicyAggregator : public FrameNode::ObserverDefaultImpl,
   void OnIsCurrentChanged(const FrameNode* frame_node) override;
   void OnOriginTrialFreezePolicyChanged(
       const FrameNode* frame_node,
-      InterventionPolicy previous_value) override;
+      const InterventionPolicy& previous_value) override;
 
   // GraphOwned implementation:
   void OnPassedToGraph(Graph* graph) override;

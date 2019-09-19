@@ -31,7 +31,7 @@ namespace blink {
 // used together with them.
 // https://html.spec.whatwg.org/C/#fetch-a-module-worker-script-tree
 class PLATFORM_EXPORT FetchClientSettingsObject
-    : public GarbageCollectedFinalized<FetchClientSettingsObject> {
+    : public GarbageCollected<FetchClientSettingsObject> {
  public:
   virtual ~FetchClientSettingsObject() = default;
 

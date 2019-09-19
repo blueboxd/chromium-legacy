@@ -19,7 +19,7 @@ class SentNodes;
 // This class is used to create the NodeHolder, and start the ContentCaptureTask
 // when necessary. The ContentCaptureManager is owned by main frame.
 class CORE_EXPORT ContentCaptureManager
-    : public GarbageCollectedFinalized<ContentCaptureManager> {
+    : public GarbageCollected<ContentCaptureManager> {
  public:
   explicit ContentCaptureManager(LocalFrame& local_frame_root);
   virtual ~ContentCaptureManager();

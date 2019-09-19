@@ -126,7 +126,6 @@ class WebLocalFrame;
 class WebMediaCapabilitiesClient;
 class WebPrescientNetworking;
 class WebPublicSuffixList;
-class WebRtcAudioDeviceImpl;
 class WebRTCCertificateGenerator;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
@@ -629,10 +628,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual media::AudioLatency::LatencyType GetAudioSourceLatencyType(
       blink::WebAudioDeviceSourceType source_type) {
     return media::AudioLatency::LATENCY_PLAYBACK;
-  }
-
-  virtual blink::WebRtcAudioDeviceImpl* GetWebRtcAudioDevice() {
-    return nullptr;
   }
 
   virtual base::Optional<std::string> GetWebRTCAudioProcessingConfiguration() {

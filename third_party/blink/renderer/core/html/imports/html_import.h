@@ -43,7 +43,7 @@ class HTMLImportLoader;
 
 // The superclass of HTMLImportTreeRoot and HTMLImportChild
 // This represents the import tree data structure.
-class HTMLImport : public GarbageCollectedFinalized<HTMLImport>,
+class HTMLImport : public GarbageCollected<HTMLImport>,
                    public TreeNode<HTMLImport> {
  public:
   enum SyncMode { kSync = 0, kAsync = 1 };

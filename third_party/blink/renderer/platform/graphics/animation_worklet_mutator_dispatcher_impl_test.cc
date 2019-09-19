@@ -43,7 +43,7 @@ std::unique_ptr<Thread> CreateThread(const char* name) {
 }
 
 class MockAnimationWorkletMutator
-    : public GarbageCollectedFinalized<MockAnimationWorkletMutator>,
+    : public GarbageCollected<MockAnimationWorkletMutator>,
       public AnimationWorkletMutator {
   USING_GARBAGE_COLLECTED_MIXIN(MockAnimationWorkletMutator);
 

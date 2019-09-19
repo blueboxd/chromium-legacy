@@ -50,10 +50,30 @@ class SupervisedUserNavigationThrottleTest
     SupervisedUserSettingsService* settings_service =
         SupervisedUserSettingsServiceFactory::GetForKey(
             profile->GetProfileKey());
-    auto dict = std::make_unique<base::DictionaryValue>();
-    dict->SetKey(host, base::Value(false));
+
+    const base::DictionaryValue* local_settings =
+        settings_service->LocalSettingsForTest();
+    std::unique_ptr<base::DictionaryValue> dict_to_insert;
+
+    if (local_settings->HasKey(
+            supervised_users::kContentPackManualBehaviorHosts)) {
+      const base::DictionaryValue* dict_value;
+
+      local_settings->GetDictionary(
+          supervised_users::kContentPackManualBehaviorHosts, &dict_value);
+
+      std::unique_ptr<base::Value> clone =
+          std::make_unique<base::Value>(dict_value->Clone());
+
+      dict_to_insert = base::DictionaryValue::From(std::move(clone));
+    } else {
+      dict_to_insert = std::make_unique<base::DictionaryValue>();
+    }
+
+    dict_to_insert->SetKey(host, base::Value(false));
     settings_service->SetLocalSetting(
-        supervised_users::kContentPackManualBehaviorHosts, std::move(dict));
+        supervised_users::kContentPackManualBehaviorHosts,
+        std::move(dict_to_insert));
   }
 
   bool IsInterstitialBeingShown(Browser* browser);

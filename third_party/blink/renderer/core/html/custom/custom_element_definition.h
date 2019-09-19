@@ -33,7 +33,7 @@ enum class FormAssociationFlag {
 };
 
 class CORE_EXPORT CustomElementDefinition
-    : public GarbageCollectedFinalized<CustomElementDefinition>,
+    : public GarbageCollected<CustomElementDefinition>,
       public NameClient {
  public:
   // Each definition has an ID that is unique within the

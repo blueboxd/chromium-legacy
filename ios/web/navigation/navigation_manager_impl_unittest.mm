@@ -1881,8 +1881,7 @@ TEST_P(NavigationManagerTest, ReloadWithUserAgentTypeOnIntenalUrl) {
       ->GetPendingItemInCurrentOrRestoredSession()
       ->SetVirtualURL(virtual_url);
   [mock_wk_list_ setCurrentURL:base::SysUTF8ToNSString(url.spec())];
-  navigation_manager()->OnRendererInitiatedNavigationStarted(
-      GURL("http://www.1.com/virtual"));
+  navigation_manager()->OnNavigationStarted(GURL("http://www.1.com/virtual"));
 
   navigation_manager()->ReloadWithUserAgentType(UserAgentType::DESKTOP);
 
@@ -2089,14 +2088,14 @@ TEST_P(NavigationManagerTest, Restore) {
     EXPECT_TRUE(pending_url.SchemeIsFile());
     EXPECT_EQ("restore_session.html", pending_url.ExtractFileName());
     EXPECT_EQ("http://www.url.com/0", pending_item->GetVirtualURL());
+    navigation_manager()->OnNavigationStarted(pending_url);
 
     // Simulate the end effect of loading the restore session URL in web view.
     pending_item->SetURL(urls[1]);
     [mock_wk_list_ setCurrentURL:@"http://www.url.com/1"
                     backListURLs:@[ @"http://www.url.com/0" ]
                  forwardListURLs:@[ @"http://www.url.com/2" ]];
-    navigation_manager()->OnRendererInitiatedNavigationStarted(
-        GURL("http://www.url.com/2"));
+    navigation_manager()->OnNavigationStarted(GURL("http://www.url.com/2"));
   }
 
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{

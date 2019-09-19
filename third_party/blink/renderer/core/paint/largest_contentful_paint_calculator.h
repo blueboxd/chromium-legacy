@@ -15,7 +15,7 @@ namespace blink {
 // image paint and the largest text paint and notifying WindowPerformance
 // whenever a new LatestLargestContentfulPaint entry should be dispatched.
 class CORE_EXPORT LargestContentfulPaintCalculator final
-    : public GarbageCollectedFinalized<LargestContentfulPaintCalculator> {
+    : public GarbageCollected<LargestContentfulPaintCalculator> {
  public:
   explicit LargestContentfulPaintCalculator(WindowPerformance*);
 

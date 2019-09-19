@@ -103,8 +103,8 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
 
  protected:
   // These enums are used to define the buckets for an enumerated UMA histogram
-  // and need to be synced with histograms.xml. This enum class should also be
-  // treated as append-only.
+  // and need to be synced with the ArcIntentHandlerAction enum in enums.xml.
+  // This enum class should also be treated as append-only.
   enum class PickerAction : int {
     // Picker errors occurring after the picker is shown.
     ERROR_AFTER_PICKER = 0,
@@ -130,17 +130,20 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
     // Picker errors occurring before the picker is shown.
     ERROR_BEFORE_PICKER = 10,
     INVALID = 11,
-    kMaxValue = INVALID,
+    DEVICE_PRESSED = 12,
+    kMaxValue = DEVICE_PRESSED,
   };
 
   // As for PickerAction, these define the buckets for an UMA histogram, so this
   // must be treated in an append-only fashion. This helps especify where a
-  // navigation will continue.
+  // navigation will continue. Must be kept in sync with the
+  // ArcIntentHandlerDestinationPlatform enum in enums.xml.
   enum class Platform : int {
     ARC = 0,
     CHROME = 1,
     PWA = 2,
-    kMaxValue = PWA,
+    DEVICE = 3,
+    kMaxValue = DEVICE,
   };
 
   // These enums are used to define the intent picker show state, whether the

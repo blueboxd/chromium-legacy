@@ -13,6 +13,7 @@
 #include "gpu/command_buffer/service/mock_texture_owner.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/config/gpu_preferences.h"
+#include "media/base/android/test_destruction_observable.h"
 #include "media/base/limits.h"
 #include "media/gpu/android/codec_buffer_wait_coordinator.h"
 #include "media/gpu/android/maybe_render_early_manager.h"
@@ -64,22 +65,42 @@ class MockSharedImageVideoProvider : public SharedImageVideoProvider {
   scoped_refptr<gpu::TextureOwner> texture_owner_;
 };
 
+class MockYCbCrHelper : public YCbCrHelper, public DestructionObservable {
+ public:
+  MockYCbCrHelper(MockYCbCrHelper** thiz) { *thiz = this; }
+
+  void GetYCbCrInfo(
+      scoped_refptr<CodecImageHolder> codec_image_holder,
+      base::OnceCallback<void(OptionalInfo ycbcr_info)> cb) override {
+    MockGetYCbCrInfo(codec_image_holder);
+    cb_ = std::move(cb);
+  }
+
+  MOCK_METHOD1(MockGetYCbCrInfo,
+               void(scoped_refptr<CodecImageHolder> codec_image_holder));
+
+  base::OnceCallback<void(OptionalInfo ycbcr_info)> cb_;
+};
+
 class VideoFrameFactoryImplTest : public testing::Test {
  public:
   VideoFrameFactoryImplTest()
       : task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-    auto get_stub_cb = base::BindRepeating(
-        []() -> gpu::CommandBufferStub* { return nullptr; });
-
     auto image_provider = std::make_unique<MockSharedImageVideoProvider>();
     image_provider_raw_ = image_provider.get();
 
     auto mre_manager = std::make_unique<MockMaybeRenderEarlyManager>();
     mre_manager_raw_ = mre_manager.get();
 
+    auto ycbcr_helper =
+        base::SequenceBound<MockYCbCrHelper>(task_runner_, &ycbcr_helper_raw_);
+    base::RunLoop().RunUntilIdle();  // Init |ycbcr_helper_raw_|.
+    ycbcr_destruction_observer_ =
+        ycbcr_helper_raw_->CreateDestructionObserver();
+
     impl_ = std::make_unique<VideoFrameFactoryImpl>(
         task_runner_, gpu_preferences_, std::move(image_provider),
-        std::move(mre_manager));
+        std::move(mre_manager), std::move(ycbcr_helper));
     auto texture_owner = base::MakeRefCounted<NiceMock<gpu::MockTextureOwner>>(
         0, nullptr, nullptr, true);
     auto codec_buffer_wait_coordinator =
@@ -90,6 +111,7 @@ class VideoFrameFactoryImplTest : public testing::Test {
     impl_->SetCodecBufferWaitCorrdinatorForTesting(
         std::move(codec_buffer_wait_coordinator));
   }
+
   ~VideoFrameFactoryImplTest() override = default;
 
   void RequestVideoFrame() {
@@ -114,6 +136,25 @@ class VideoFrameFactoryImplTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  // |release_cb_called_flag| will be set when the record's |release_cb| runs.
+  SharedImageVideoProvider::ImageRecord MakeImageRecord(
+      bool* release_cb_called_flag = nullptr) {
+    SharedImageVideoProvider::ImageRecord record;
+    record.mailbox = gpu::Mailbox::Generate();
+    if (release_cb_called_flag)
+      *release_cb_called_flag = false;
+    record.release_cb = base::BindOnce(
+        [](bool* flag, const gpu::SyncToken&) {
+          if (flag)
+            *flag = true;
+        },
+        base::Unretained(release_cb_called_flag));
+    auto codec_image = base::MakeRefCounted<MockCodecImage>();
+    record.codec_image_holder =
+        base::MakeRefCounted<CodecImageHolder>(task_runner_, codec_image);
+    return record;
+  }
+
   base::test::TaskEnvironment task_environment_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
@@ -127,6 +168,9 @@ class VideoFrameFactoryImplTest : public testing::Test {
 
   // Sent to |impl_| by RequestVideoFrame..
   base::MockCallback<VideoFrameFactory::OnceOutputCb> output_cb_;
+
+  MockYCbCrHelper* ycbcr_helper_raw_ = nullptr;
+  std::unique_ptr<DestructionObserver> ycbcr_destruction_observer_;
 
   gpu::GpuPreferences gpu_preferences_;
 };
@@ -193,15 +237,10 @@ TEST_F(VideoFrameFactoryImplTest, CreateVideoFrameSucceeds) {
   // Call the ImageReadyCB.
   scoped_refptr<VideoFrame> frame;
   EXPECT_CALL(output_cb_, Run(_)).WillOnce(SaveArg<0>(&frame));
-  SharedImageVideoProvider::ImageRecord record;
-  record.mailbox = gpu::Mailbox::Generate();
   bool release_cb_called_flag = false;
-  record.release_cb =
-      base::BindOnce([](bool* flag, const gpu::SyncToken&) { *flag = true; },
-                     base::Unretained(&release_cb_called_flag));
-  auto codec_image = base::MakeRefCounted<MockCodecImage>();
-  record.codec_image_holder =
-      base::MakeRefCounted<CodecImageHolder>(task_runner_, codec_image);
+  auto record = MakeImageRecord(&release_cb_called_flag);
+  scoped_refptr<CodecImage> codec_image(
+      record.codec_image_holder->codec_image_raw());
   std::move(image_provider_raw_->cb_).Run(std::move(record));
   base::RunLoop().RunUntilIdle();
   EXPECT_NE(frame, nullptr);
@@ -224,6 +263,51 @@ TEST_F(VideoFrameFactoryImplTest,
   // nothing bad should happen.
   RequestVideoFrame();
   impl_ = nullptr;
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(VideoFrameFactoryImplTest, DoesNotCallYCbCrHelperIfNotVulkan) {
+  EXPECT_CALL(*ycbcr_helper_raw_, MockGetYCbCrInfo(_)).Times(0);
+  RequestVideoFrame();
+  auto image_record = MakeImageRecord();
+  image_record.is_vulkan = false;
+  std::move(image_provider_raw_->cb_).Run(std::move(image_record));
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(VideoFrameFactoryImplTest, DoesCallYCbCrHelperIfVulkan) {
+  RequestVideoFrame();
+  auto image_record = MakeImageRecord();
+  base::OnceCallback<void(YCbCrHelper::OptionalInfo)> cb;
+  EXPECT_CALL(*ycbcr_helper_raw_,
+              MockGetYCbCrInfo(image_record.codec_image_holder))
+      .Times(1);
+  image_record.is_vulkan = true;
+  std::move(image_provider_raw_->cb_).Run(std::move(image_record));
+  base::RunLoop().RunUntilIdle();
+
+  // Provide YCbCrInfo.  It should provide the VideoFrame too.
+  EXPECT_CALL(output_cb_, Run(_)).Times(1);
+  gpu::VulkanYCbCrInfo ycbcr;
+  std::move(ycbcr_helper_raw_->cb_).Run(ycbcr);
+  base::RunLoop().RunUntilIdle();
+  // It's okay if the ycbcr helper is destroyed.  If not, then verify
+  // expectations explicitly now.
+  if (ycbcr_destruction_observer_->destructed())
+    ycbcr_helper_raw_ = nullptr;
+  else
+    testing::Mock::VerifyAndClearExpectations(ycbcr_helper_raw_);
+
+  // Verify that no more calls happen, since we don't want thread hops on every
+  // frame.  Note that multiple could be dispatched before now.  It should still
+  // send along a VideoFrame, though.
+  RequestVideoFrame();
+  auto other_image_record = MakeImageRecord();
+  // If the helper hasn't been destroyed, then we don't expect it to be called.
+  if (ycbcr_helper_raw_)
+    EXPECT_CALL(*ycbcr_helper_raw_, MockGetYCbCrInfo(_)).Times(0);
+  EXPECT_CALL(output_cb_, Run(_)).Times(1);
+  std::move(image_provider_raw_->cb_).Run(std::move(other_image_record));
   base::RunLoop().RunUntilIdle();
 }
 

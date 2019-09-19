@@ -131,8 +131,6 @@
           <structure type="chrome_scaled_image" name="IDR_FOLDER_CLOSED" file="common/folder_closed.png" />
           <structure type="chrome_scaled_image" name="IDR_FOLDER_OPEN" file="common/folder_open.png" />
         </if>
-        <structure type="chrome_scaled_image" name="IDR_SEND_TAB_TO_SELF_ICON_LIGHT" file="common/send_tab_to_self_light_mode_icon.png" />
-        <structure type="chrome_scaled_image" name="IDR_SEND_TAB_TO_SELF_ICON_DARK" file="common/send_tab_to_self_dark_mode_icon.png" />
       </if>
       <if expr="toolkit_views and not is_macosx">
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_SETTINGS" file="common/notification_settings.png"/>

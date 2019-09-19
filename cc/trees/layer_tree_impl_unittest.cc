@@ -8,10 +8,9 @@
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_raster_source.h"
 #include "cc/test/geometry_test_utils.h"
-#include "cc/test/layer_test_common.h"
+#include "cc/test/layer_tree_impl_test_base.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/draw_property_utils.h"
-#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,12 +18,11 @@
 namespace cc {
 namespace {
 
-class LayerTreeImplTest : public LayerTestCommon::LayerImplTest,
-                          public testing::Test {
+class LayerTreeImplTest : public LayerTreeImplTestBase, public testing::Test {
  public:
   LayerTreeImplTest() = default;
   explicit LayerTreeImplTest(const LayerTreeSettings& settings)
-      : LayerImplTest(settings) {}
+      : LayerTreeImplTestBase(settings) {}
 
   void SetUp() override {
     root_layer()->SetBounds(gfx::Size(100, 100));
@@ -32,7 +30,7 @@ class LayerTreeImplTest : public LayerTestCommon::LayerImplTest,
   }
 
   FakeLayerTreeHostImpl& host_impl() const {
-    return *LayerImplTest::host_impl();
+    return *LayerTreeImplTestBase::host_impl();
   }
 
   const RenderSurfaceList& GetRenderSurfaceList() const {
@@ -2349,7 +2347,7 @@ TEST_F(CommitToPendingTreeLayerTreeImplTest,
   // active tree (as they are only used on the sync tree).
   LayerTreeImpl* active_tree = host_impl().active_tree();
   UpdateDrawProperties(active_tree);
-  LayerImpl* active_root = active_tree->root_layer_for_testing();
+  LayerImpl* active_root = active_tree->root_layer();
 
   auto& active_opacity_map =
       active_tree->element_id_to_opacity_animations_for_testing();
@@ -2441,7 +2439,7 @@ TEST_F(LayerTreeImplTest, ElementIdToAnimationMapsTrackOnlyOnSyncTree) {
   // they are used on the sync tree).
   LayerTreeImpl* active_tree = host_impl().active_tree();
   UpdateDrawProperties(active_tree);
-  LayerImpl* root = active_tree->root_layer_for_testing();
+  LayerImpl* root = active_tree->root_layer();
 
   auto& opacity_map =
       active_tree->element_id_to_opacity_animations_for_testing();

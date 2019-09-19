@@ -25,7 +25,7 @@ GURL GetAppURL(const MediaSinkInternal& sink, const std::string& app_name) {
 // Returns the Application Instance URL from the POST response headers given by
 // |response_info|.
 GURL GetApplicationInstanceURL(
-    const network::ResourceResponseHead& response_info) {
+    const network::mojom::URLResponseHead& response_info) {
   if (!response_info.headers)
     return GURL();
 
@@ -264,7 +264,7 @@ void DialActivityManager::OnLaunchSuccess(const MediaRoute::Id& route_id,
     return;
 
   auto& record = record_it->second;
-  const network::ResourceResponseHead* response_info =
+  const network::mojom::URLResponseHead* response_info =
       record->pending_launch_request->fetcher->GetResponseHead();
 
   DCHECK(response_info);

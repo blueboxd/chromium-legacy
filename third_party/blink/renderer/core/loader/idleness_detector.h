@@ -23,7 +23,7 @@ class ResourceFetcher;
 // seconds, and a network idle signal when there are 0 network connections
 // active in 0.5 seconds.
 class CORE_EXPORT IdlenessDetector
-    : public GarbageCollectedFinalized<IdlenessDetector>,
+    : public GarbageCollected<IdlenessDetector>,
       public base::sequence_manager::TaskTimeObserver {
  public:
   IdlenessDetector(

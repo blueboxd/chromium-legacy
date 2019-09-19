@@ -8,7 +8,7 @@ namespace blink {
 // |ChromeClient::NotifySwapTime()|'s swap-time queueing and invoking for
 // unit-tests. Find more details in |PaintTimingCallbackManager|.
 class MockPaintTimingCallbackManager final
-    : public GarbageCollectedFinalized<MockPaintTimingCallbackManager>,
+    : public GarbageCollected<MockPaintTimingCallbackManager>,
       public PaintTimingCallbackManager {
   USING_GARBAGE_COLLECTED_MIXIN(MockPaintTimingCallbackManager);
 

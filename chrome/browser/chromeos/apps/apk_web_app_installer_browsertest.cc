@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/shelf_model.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "components/arc/arc_util.h"
@@ -36,6 +38,10 @@ const char kPackageName[] = "com.google.maps";
 const char kAppTitle[] = "Google Maps";
 const char kAppUrl[] = "https://www.google.com/maps/";
 const char kAppScope[] = "https://www.google.com/";
+constexpr char kLastAppId[] = "last_app_id";
+const char kAppActivity[] = "test.app.activity";
+const char kAppActivity1[] = "test.app1.activity";
+const char kPackageName1[] = "com.test.app";
 
 const std::vector<uint8_t> GetFakeIconBytes() {
   auto fake_app_instance =
@@ -181,6 +187,23 @@ class ApkWebAppInstallerDelayedArcStartBrowserTest
 
   // Don't tear down ARC.
   void TearDownOnMainThread() override {}
+};
+
+class ApkWebAppInstallerWithLauncherControllerBrowserTest
+    : public ApkWebAppInstallerBrowserTest {
+ public:
+  // ApkWebAppInstallerBrowserTest
+  void SetUpOnMainThread() override {
+    EnableArc();
+    launcher_controller_ = ChromeLauncherController::instance();
+    ASSERT_TRUE(launcher_controller_);
+  }
+
+  // ApkWebAppInstallerBrowserTest
+  void TearDownOnMainThread() override { DisableArc(); }
+
+ protected:
+  ChromeLauncherController* launcher_controller_;
 };
 
 // Test the full installation and uninstallation flow.
@@ -367,6 +390,92 @@ IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerBrowserTest,
         }));
 
     app_instance_->SendPackageAdded(GetWebAppPackage(kPackageName, kAppTitle));
+    run_loop.Run();
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(ApkWebAppInstallerWithLauncherControllerBrowserTest,
+                       CheckPinStateAfterUpdate) {
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
+      observer(this);
+  observer.Add(extensions::ExtensionRegistry::Get(browser()->profile()));
+  ApkWebAppService* service = apk_web_app_service();
+  service->SetArcAppListPrefsForTesting(arc_app_list_prefs_);
+  app_instance_->SendPackageAdded(GetArcAppPackage(kPackageName, kAppTitle));
+  const std::string arc_app_id =
+      ArcAppListPrefs::GetAppId(kPackageName, kAppActivity);
+
+  /// Create an app and add to the package.
+  arc::mojom::AppInfo app;
+  app.name = kAppTitle;
+  app.package_name = kPackageName;
+  app.activity = kAppActivity;
+  app.sticky = true;
+  app_instance_->SendPackageAppListRefreshed(kPackageName, {app});
+
+  EXPECT_FALSE(installed_extension_);
+  EXPECT_TRUE(uninstalled_extension_id_.empty());
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(arc_app_id));
+
+  // Pin the app to the shelf.
+  launcher_controller_->PinAppWithID(arc_app_id);
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(arc_app_id));
+
+  int pin_index = launcher_controller_->PinnedItemIndexByAppID(arc_app_id);
+
+  arc_app_list_prefs_->SetPackagePrefs(kPackageName, kLastAppId,
+                                       base::Value(arc_app_id));
+
+  std::string keep_web_app_id;
+  // Update ARC app to web app and check that the pinned app has
+  // been updated.
+  {
+    base::RunLoop run_loop;
+    service->SetWebAppInstalledCallbackForTesting(base::BindLambdaForTesting(
+        [&](const std::string& package_name, const web_app::AppId& web_app_id) {
+          keep_web_app_id = web_app_id;
+          EXPECT_TRUE(installed_extension_);
+          EXPECT_FALSE(launcher_controller_->IsAppPinned(arc_app_id));
+          EXPECT_TRUE(launcher_controller_->IsAppPinned(keep_web_app_id));
+          int new_index =
+              launcher_controller_->PinnedItemIndexByAppID(keep_web_app_id);
+          EXPECT_EQ(pin_index, new_index);
+          run_loop.Quit();
+        }));
+
+    app_instance_->SendPackageAdded(GetWebAppPackage(kPackageName, kAppTitle));
+    run_loop.Run();
+  }
+
+  // Move the pin location of the app.
+  app_instance_->SendPackageAdded(GetArcAppPackage(kPackageName1, kAppTitle));
+  const std::string arc_app_id1 =
+      ArcAppListPrefs::GetAppId(kPackageName1, kAppActivity1);
+  launcher_controller_->PinAppAtIndex(arc_app_id1, pin_index);
+  EXPECT_EQ(pin_index,
+            launcher_controller_->PinnedItemIndexByAppID(arc_app_id1));
+
+  // The app that was previously pinned will be shifted one to the right.
+  pin_index += 1;
+  EXPECT_EQ(pin_index,
+            launcher_controller_->PinnedItemIndexByAppID(keep_web_app_id));
+
+  // Update to ARC app and check the pinned app has updated.
+  {
+    base::RunLoop run_loop;
+    service->SetWebAppUninstalledCallbackForTesting(base::BindLambdaForTesting(
+        [&](const std::string& package_name, const web_app::AppId& web_app_id) {
+          EXPECT_FALSE(uninstalled_extension_id_.empty());
+          EXPECT_FALSE(launcher_controller_->IsAppPinned(web_app_id));
+          EXPECT_TRUE(launcher_controller_->IsAppPinned(arc_app_id));
+          int new_index =
+              launcher_controller_->PinnedItemIndexByAppID(arc_app_id);
+          EXPECT_EQ(pin_index, new_index);
+          EXPECT_FALSE(launcher_controller_->IsAppPinned(keep_web_app_id));
+          run_loop.Quit();
+        }));
+    app_instance_->SendPackageAdded(GetArcAppPackage(kPackageName, kAppTitle));
     run_loop.Run();
   }
 }

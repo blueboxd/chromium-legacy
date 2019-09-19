@@ -2446,6 +2446,17 @@ bool ChromeContentBrowserClient::AllowSharedWorker(
   return allow;
 }
 
+bool ChromeContentBrowserClient::DoesSchemeAllowCrossOriginSharedWorker(
+    const std::string& scheme) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  // Extensions are allowed to start cross-origin shared workers.
+  if (scheme == extensions::kExtensionScheme)
+    return true;
+#endif
+
+  return false;
+}
+
 bool ChromeContentBrowserClient::AllowSignedExchange(
     content::BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -4227,10 +4238,6 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
     throttles.push_back(std::move(google_password_manager_throttle));
 #endif
 
-  std::unique_ptr<content::NavigationThrottle> previews_lite_page_throttle =
-      PreviewsLitePageDecider::MaybeCreateThrottleFor(handle);
-  if (previews_lite_page_throttle)
-    throttles.push_back(std::move(previews_lite_page_throttle));
   if (base::FeatureList::IsEnabled(safe_browsing::kCommittedSBInterstitials)) {
     throttles.push_back(
         std::make_unique<safe_browsing::SafeBrowsingNavigationThrottle>(
@@ -4240,7 +4247,7 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   std::unique_ptr<content::NavigationThrottle> browser_switcher_throttle =
-      browser_switcher::BrowserSwitcherNavigationThrottle ::
+      browser_switcher::BrowserSwitcherNavigationThrottle::
           MaybeCreateThrottleFor(handle);
   if (browser_switcher_throttle)
     throttles.push_back(std::move(browser_switcher_throttle));

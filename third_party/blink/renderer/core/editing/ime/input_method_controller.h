@@ -47,7 +47,7 @@ class Range;
 enum class TypingContinuation;
 
 class CORE_EXPORT InputMethodController final
-    : public GarbageCollectedFinalized<InputMethodController>,
+    : public GarbageCollected<InputMethodController>,
       public DocumentShutdownObserver {
   USING_GARBAGE_COLLECTED_MIXIN(InputMethodController);
 

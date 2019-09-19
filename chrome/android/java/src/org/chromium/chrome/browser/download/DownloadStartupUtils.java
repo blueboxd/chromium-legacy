@@ -14,13 +14,16 @@ public class DownloadStartupUtils {
     /**
      * Initializes the downloads system if not already initialized.
      * @param isFullBrowserStarted Whether full browser process has been started.
+     * @param isIncognito Whether the system is for incognito profile.
      */
-    public static void ensureDownloadSystemInitialized(boolean isFullBrowserStarted) {
-        DownloadStartupUtilsJni.get().ensureDownloadSystemInitialized(isFullBrowserStarted);
+    public static void ensureDownloadSystemInitialized(
+            boolean isFullBrowserStarted, boolean isIncognito) {
+        DownloadStartupUtilsJni.get().ensureDownloadSystemInitialized(
+                isFullBrowserStarted, isIncognito);
     }
 
     @NativeMethods
     interface Natives {
-        void ensureDownloadSystemInitialized(boolean isFullBrowserStarted);
+        void ensureDownloadSystemInitialized(boolean isFullBrowserStarted, boolean isInCognito);
     }
 }

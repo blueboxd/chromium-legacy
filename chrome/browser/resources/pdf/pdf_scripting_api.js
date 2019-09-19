@@ -6,7 +6,7 @@
  * Turn a dictionary received from postMessage into a key event.
  *
  * @param {Object} dict A dictionary representing the key event.
- * @return {Event} A key event.
+ * @return {!Event} A key event.
  */
 function DeserializeKeyEvent(dict) {
   const e = document.createEvent('Event');

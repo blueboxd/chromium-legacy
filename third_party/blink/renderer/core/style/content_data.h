@@ -40,7 +40,7 @@ class LayoutObject;
 enum class LegacyLayout;
 class PseudoElement;
 
-class ContentData : public GarbageCollectedFinalized<ContentData> {
+class ContentData : public GarbageCollected<ContentData> {
  public:
   static ContentData* Create(StyleImage*);
   static ContentData* Create(const String&);

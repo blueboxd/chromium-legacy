@@ -17,6 +17,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.common.crash.CrashInfo;
+import org.chromium.android_webview.common.crash.SystemWideCrashDirectories;
 import org.chromium.android_webview.services.CrashReceiverService;
 import org.chromium.android_webview.test.AwJUnit4ClassRunner;
 import org.chromium.android_webview.test.OnlyRunIn;
@@ -60,7 +61,7 @@ public class CrashReceiverServiceTest {
     @Test
     @MediumTest
     public void testDeleteFilesInDir() throws IOException {
-        File webviewTmpDir = CrashReceiverService.getWebViewTmpCrashDir();
+        File webviewTmpDir = SystemWideCrashDirectories.getWebViewTmpCrashDir();
         if (!webviewTmpDir.isDirectory()) {
             Assert.assertTrue(webviewTmpDir.mkdir());
         }

@@ -96,6 +96,7 @@ jumbo_source_set("common") {
     "//net",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/network/public/cpp:cpp",
+    "//third_party/blink/public/mojom:mojom_platform_blink_headers",
   ]
 
   # iOS doesn't use and must not depend on //media

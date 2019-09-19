@@ -26,7 +26,7 @@ class WebURLRequest;
 // prefetched signed exchange info and will returns loaders for matching
 // requests.
 class PrefetchedSignedExchangeManager final
-    : public GarbageCollectedFinalized<PrefetchedSignedExchangeManager> {
+    : public GarbageCollected<PrefetchedSignedExchangeManager> {
  public:
   // If threre are no "allowed-alt-sxg" link headers in |inner_link_header|,
   // or |prefetched_signed_exchanges| is empty, returns null.

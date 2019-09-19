@@ -572,7 +572,7 @@ uint64_t Document::global_tree_version_ = 0;
 static bool g_threaded_parsing_enabled_for_testing = true;
 
 class Document::NetworkStateObserver final
-    : public GarbageCollectedFinalized<Document::NetworkStateObserver>,
+    : public GarbageCollected<Document::NetworkStateObserver>,
       public NetworkStateNotifier::NetworkStateObserver,
       public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(Document::NetworkStateObserver);

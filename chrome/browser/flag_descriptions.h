@@ -873,9 +873,6 @@ extern const char kOmniboxOnDeviceHeadSuggestionsDescription[];
 extern const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateName[];
 extern const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateDescription[];
 
-extern const char kOmniboxUIShowPlaceholderWhenCaretShowingName[];
-extern const char kOmniboxUIShowPlaceholderWhenCaretShowingDescription[];
-
 extern const char kOmniboxUIShowSuggestionFaviconsName[];
 extern const char kOmniboxUIShowSuggestionFaviconsDescription[];
 
@@ -972,6 +969,9 @@ extern const char kPrintPdfAsImageDescription[];
 
 extern const char kPrintPreviewRegisterPromosName[];
 extern const char kPrintPreviewRegisterPromosDescription[];
+
+extern const char kProminentDarkModeActiveTabTitleName[];
+extern const char kProminentDarkModeActiveTabTitleDescription[];
 
 extern const char kPullToRefreshName[];
 extern const char kPullToRefreshDescription[];
@@ -1323,6 +1323,9 @@ extern const char kWebXrPlaneDetectionDescription[];
 
 extern const char kZeroCopyName[];
 extern const char kZeroCopyDescription[];
+
+extern const char kEnableVulkanName[];
+extern const char kEnableVulkanDescription[];
 
 // Android --------------------------------------------------------------------
 
@@ -1745,6 +1748,9 @@ extern const char kD3D11VideoDecoderDescription[];
 
 extern const char kEnableGpuAppcontainerName[];
 extern const char kEnableGpuAppcontainerDescription[];
+
+extern const char kExperimentalFlingAnimationName[];
+extern const char kExperimentalFlingAnimationDescription[];
 
 extern const char kGdiTextPrinting[];
 extern const char kGdiTextPrintingDescription[];

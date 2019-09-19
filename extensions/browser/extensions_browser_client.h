@@ -335,6 +335,12 @@ class ExtensionsBrowserClient {
   // Returns the user agent used by the content module.
   virtual std::string GetUserAgent() const;
 
+  // Returns whether |scheme| should bypass extension-specific navigation checks
+  // (e.g. whether the |scheme| is allowed to initiate navigations to extension
+  // resources that are not declared as web accessible).
+  virtual bool ShouldSchemeBypassNavigationChecks(
+      const std::string& scheme) const;
+
  private:
   std::vector<std::unique_ptr<ExtensionsBrowserAPIProvider>> providers_;
 

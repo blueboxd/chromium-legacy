@@ -54,8 +54,7 @@ class SpeculationsPumpSession : public NestingLevelIncrementer {
   size_t processed_element_tokens_;
 };
 
-class HTMLParserScheduler final
-    : public GarbageCollectedFinalized<HTMLParserScheduler> {
+class HTMLParserScheduler final : public GarbageCollected<HTMLParserScheduler> {
  public:
   HTMLParserScheduler(HTMLDocumentParser*,
                       scoped_refptr<base::SingleThreadTaskRunner>);

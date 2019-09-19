@@ -7,7 +7,6 @@
 
 #include "cc/trees/clip_node.h"
 #include "cc/trees/effect_node.h"
-#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/property_tree.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
@@ -54,6 +53,9 @@ ScrollNode& CreateScrollNode(LayerImpl*,
 
 void SetupMaskProperties(LayerImpl* masked_layer, PictureLayerImpl* mask_layer);
 void SetupMaskProperties(Layer* masked_layer, PictureLayer* mask_layer);
+
+PropertyTrees* GetPropertyTrees(const Layer* layer);
+PropertyTrees* GetPropertyTrees(const LayerImpl* layer);
 
 template <typename LayerType>
 TransformNode* GetTransformNode(const LayerType* layer) {
@@ -169,12 +171,7 @@ void SetupViewport(LayerImpl* root,
                    const gfx::Size& content_size);
 
 // Returns the RenderSurfaceImpl into which the given layer draws.
-inline RenderSurfaceImpl* GetRenderSurface(const LayerImpl* layer) {
-  auto& effect_tree = GetPropertyTrees(layer)->effect_tree;
-  if (auto* surface = effect_tree.GetRenderSurface(layer->effect_tree_index()))
-    return surface;
-  return effect_tree.GetRenderSurface(GetEffectNode(layer)->target_id);
-}
+RenderSurfaceImpl* GetRenderSurface(const LayerImpl* layer);
 
 // TODO(wangxianzhu): Add functions to create property nodes not based on
 // layers when needed.

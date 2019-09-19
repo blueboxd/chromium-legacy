@@ -82,7 +82,7 @@ class PLATFORM_EXPORT ResourceLoadSchedulerClient
 //     minutes, all throttleable resource loading requests are throttled
 //     indefinitely (i.e., threshold is zero in such a circumstance).
 class PLATFORM_EXPORT ResourceLoadScheduler final
-    : public GarbageCollectedFinalized<ResourceLoadScheduler>,
+    : public GarbageCollected<ResourceLoadScheduler>,
       public FrameScheduler::Observer {
  public:
   // An option to use in calling Request(). If kCanNotBeStoppedOrThrottled is

@@ -1859,6 +1859,8 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"accountListHeader", IDS_SETTINGS_ACCOUNT_MANAGER_LIST_HEADER},
     {"addAccountLabel", IDS_SETTINGS_ACCOUNT_MANAGER_ADD_ACCOUNT_LABEL},
     {"removeAccountLabel", IDS_SETTINGS_ACCOUNT_MANAGER_REMOVE_ACCOUNT_LABEL},
+    {"accountManagerPrimaryAccountTooltip",
+     IDS_SETTINGS_ACCOUNT_MANAGER_PRIMARY_ACCOUNT_TOOLTIP},
     {"accountManagerSignedOutAccountName",
      IDS_SETTINGS_ACCOUNT_MANAGER_SIGNED_OUT_ACCOUNT_PLACEHOLDER},
     {"accountManagerUnmigratedAccountName",

@@ -17,7 +17,7 @@ class LocalFrame;
 
 // Mojo interface to set CSS environment variables for display cutout.
 class CORE_EXPORT DisplayCutoutClientImpl final
-    : public GarbageCollectedFinalized<DisplayCutoutClientImpl>,
+    : public GarbageCollected<DisplayCutoutClientImpl>,
       public mojom::blink::DisplayCutoutClient {
  public:
   static void BindMojoRequest(

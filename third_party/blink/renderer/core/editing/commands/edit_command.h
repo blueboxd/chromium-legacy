@@ -37,7 +37,7 @@ class CompositeEditCommand;
 class Document;
 class EditingState;
 
-class CORE_EXPORT EditCommand : public GarbageCollectedFinalized<EditCommand> {
+class CORE_EXPORT EditCommand : public GarbageCollected<EditCommand> {
  public:
   virtual ~EditCommand();
 

@@ -200,7 +200,7 @@ class CORE_EXPORT ImageRecordsManager {
 // See also:
 // https://docs.google.com/document/d/1DRVd4a2VU8-yyWftgOparZF-sf16daf0vfbsHuz2rws/edit#heading=h.1k2rnrs6mdmt
 class CORE_EXPORT ImagePaintTimingDetector final
-    : public GarbageCollectedFinalized<ImagePaintTimingDetector> {
+    : public GarbageCollected<ImagePaintTimingDetector> {
   friend class ImagePaintTimingDetectorTest;
 
  public:

@@ -48,12 +48,13 @@
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host_client.h"
-#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
+#include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/property_tree_builder.h"
 #include "cc/trees/proxy_main.h"
 #include "cc/trees/render_frame_metadata_observer.h"
+#include "cc/trees/scroll_and_scale_set.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/swap_promise_manager.h"
@@ -843,11 +844,10 @@ bool LayerTreeHost::DoUpdateLayers() {
   CHECK(property_trees_.effect_tree.Node(root_layer_->effect_tree_index()));
 #endif
 
-  draw_property_utils::UpdatePropertyTrees(this, &property_trees_);
+  draw_property_utils::UpdatePropertyTrees(this);
 
   LayerList update_layer_list;
-  draw_property_utils::FindLayersThatNeedUpdates(this, &property_trees_,
-                                                 &update_layer_list);
+  draw_property_utils::FindLayersThatNeedUpdates(this, &update_layer_list);
 
   bool painted_content_has_slow_paths = false;
   bool painted_content_has_non_aa_paint = false;

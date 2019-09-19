@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_lite_page_redirect.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/common/previews_state.h"
@@ -116,7 +117,7 @@ bool PreviewsLitePageRedirectURLLoader::ShouldSendNextProbe() {
 
 bool PreviewsLitePageRedirectURLLoader::IsResponseSuccess(
     net::Error net_error,
-    const network::ResourceResponseHead* head,
+    const network::mojom::URLResponseHead* head,
     std::unique_ptr<std::string> body) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Any HTTP response is fine, so long as we got it.

@@ -104,6 +104,7 @@ class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
   void BuildAutofillButtons();
   void BuildSyncInfo();
   void BuildAccountFeatureButtons();
+  void BuildProfileHeading();
   void BuildSelectableProfiles();
   void BuildProfileFeatureButtons();
 

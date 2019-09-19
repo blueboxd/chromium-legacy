@@ -53,7 +53,7 @@ struct CORE_EXPORT EvaluationContext {
   bool had_type_conversion_error;
 };
 
-class CORE_EXPORT ParseNode : public GarbageCollectedFinalized<ParseNode> {
+class CORE_EXPORT ParseNode : public GarbageCollected<ParseNode> {
  public:
   virtual ~ParseNode() = default;
   virtual void Trace(blink::Visitor* visitor) {}

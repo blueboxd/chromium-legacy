@@ -5,6 +5,7 @@
 #include "services/network/websocket.h"
 
 #include <inttypes.h>
+#include <string.h>
 
 #include <utility>
 
@@ -419,7 +420,7 @@ const void* const WebSocket::kUserDataKey = &WebSocket::kUserDataKey;
 
 void WebSocket::SendFrame(bool fin,
                           mojom::WebSocketMessageType type,
-                          const std::vector<uint8_t>& data) {
+                          base::span<const uint8_t> data) {
   DVLOG(3) << "WebSocket::SendFrame @" << reinterpret_cast<void*>(this)
            << " fin=" << fin << " type=" << type << " data is " << data.size()
            << " bytes";
@@ -435,7 +436,7 @@ void WebSocket::SendFrame(bool fin,
 
   // TODO(darin): Avoid this copy.
   auto data_to_pass = base::MakeRefCounted<net::IOBuffer>(data.size());
-  std::copy(data.begin(), data.end(), data_to_pass->data());
+  memcpy(data_to_pass->data(), data.data(), data.size());
 
   channel_->SendFrame(fin, MessageTypeToOpCode(type), std::move(data_to_pass),
                       data.size());

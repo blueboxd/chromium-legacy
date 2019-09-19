@@ -92,7 +92,7 @@ void DocumentTest::SetHtmlInnerHTML(const char* html_content) {
 namespace {
 
 class TestSynchronousMutationObserver
-    : public GarbageCollectedFinalized<TestSynchronousMutationObserver>,
+    : public GarbageCollected<TestSynchronousMutationObserver>,
       public SynchronousMutationObserver {
   USING_GARBAGE_COLLECTED_MIXIN(TestSynchronousMutationObserver);
 
@@ -262,7 +262,7 @@ void TestSynchronousMutationObserver::Trace(Visitor* visitor) {
 }
 
 class TestDocumentShutdownObserver
-    : public GarbageCollectedFinalized<TestDocumentShutdownObserver>,
+    : public GarbageCollected<TestDocumentShutdownObserver>,
       public DocumentShutdownObserver {
   USING_GARBAGE_COLLECTED_MIXIN(TestDocumentShutdownObserver);
 
@@ -298,7 +298,7 @@ void TestDocumentShutdownObserver::Trace(Visitor* visitor) {
 }
 
 class MockDocumentValidationMessageClient
-    : public GarbageCollectedFinalized<MockDocumentValidationMessageClient>,
+    : public GarbageCollected<MockDocumentValidationMessageClient>,
       public ValidationMessageClient {
   USING_GARBAGE_COLLECTED_MIXIN(MockDocumentValidationMessageClient);
 

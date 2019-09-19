@@ -32,7 +32,7 @@ class ScriptValue;
 // Note: Currently we only support inline import maps and PendingImportMap is
 // always ready.
 class CORE_EXPORT PendingImportMap final
-    : public GarbageCollectedFinalized<PendingImportMap> {
+    : public GarbageCollected<PendingImportMap> {
  public:
   // https://wicg.github.io/import-maps/#create-an-import-map-parse-result
   // for inline import maps.

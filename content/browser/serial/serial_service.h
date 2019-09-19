@@ -55,7 +55,7 @@ class SerialService : public blink::mojom::SerialService,
 
   // Each pipe here watches a connection created by GetPort() in order to notify
   // the WebContentsImpl when an active connection indicator should be shown.
-  mojo::BindingSet<device::mojom::SerialPortConnectionWatcher> watchers_;
+  mojo::ReceiverSet<device::mojom::SerialPortConnectionWatcher> watchers_;
 
   base::WeakPtrFactory<SerialService> weak_factory_{this};
 

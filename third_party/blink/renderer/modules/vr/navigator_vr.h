@@ -21,7 +21,7 @@ class Document;
 class VRController;
 
 class MODULES_EXPORT NavigatorVR final
-    : public GarbageCollectedFinalized<NavigatorVR>,
+    : public GarbageCollected<NavigatorVR>,
       public Supplement<Navigator>,
       public LocalDOMWindow::EventListenerObserver,
       public FocusChangedObserver {

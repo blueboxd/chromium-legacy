@@ -10,8 +10,8 @@
 #include "net/http/http_util.h"
 #include "services/network/origin_policy/origin_policy_manager.h"
 #include "services/network/origin_policy/origin_policy_parser.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace network {
 
@@ -82,7 +82,7 @@ void OriginPolicyFetcher::OnPolicyHasArrived(
 
 void OriginPolicyFetcher::OnPolicyRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& response_head,
+    const mojom::URLResponseHead& response_head,
     std::vector<std::string>* to_be_removed_headers) {
   if (IsValidRedirect(redirect_info)) {
     must_redirect_ = false;

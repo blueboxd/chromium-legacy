@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/views/layout/layout_manager.h"
 
 class BookmarkBarView;
@@ -22,14 +23,13 @@ class TabStrip;
 
 namespace gfx {
 class Point;
-class Size;
-}
+}  // namespace gfx
 
 namespace views {
 class ClientView;
 class View;
 class Widget;
-}
+}  // namespace views
 
 namespace web_modal {
 class WebContentsModalDialogHost;
@@ -38,6 +38,15 @@ class WebContentsModalDialogHost;
 // The layout manager used in chrome browser.
 class BrowserViewLayout : public views::LayoutManager {
  public:
+  // The minimum width for the normal (tabbed) browser window's contents area.
+  // This should be wide enough that WebUI pages (e.g. chrome://settings) and
+  // the various associated WebUI dialogs (e.g. Import Bookmarks) can still be
+  // functional. This value provides a trade-off between browser usability and
+  // privacy - specifically, the ability to browse in a very small window, even
+  // on large monitors (which is why a minimum height is not specified). This
+  // value is used for the main browser window only, not for popups.
+  static constexpr int kMainBrowserContentsMinimumWidth = 500;
+
   // |browser_view| may be null in tests.
   BrowserViewLayout(std::unique_ptr<BrowserViewLayoutDelegate> delegate,
                     Browser* browser,
@@ -55,9 +64,7 @@ class BrowserViewLayout : public views::LayoutManager {
   ~BrowserViewLayout() override;
 
   // Sets or updates views that are not available when |this| is initialized.
-  void set_tab_strip(TabStrip* tab_strip) {
-    tab_strip_ = tab_strip;
-  }
+  void set_tab_strip(TabStrip* tab_strip) { tab_strip_ = tab_strip; }
   void set_bookmark_bar(BookmarkBarView* bookmark_bar) {
     bookmark_bar_ = bookmark_bar;
   }

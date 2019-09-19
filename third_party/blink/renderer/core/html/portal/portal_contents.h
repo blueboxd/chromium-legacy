@@ -35,7 +35,7 @@ struct BlinkTransferableMessage;
 // connection to the browser-side portal state alive (so that the reply can be
 // received), but this should not prevent the <portal> element from being reused
 // in the meantime.
-class PortalContents : public GarbageCollectedFinalized<PortalContents>,
+class PortalContents : public GarbageCollected<PortalContents>,
                        public mojom::blink::PortalClient {
  public:
   PortalContents(

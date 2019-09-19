@@ -24,8 +24,7 @@ class KURL;
 // can implement, allowing fragments to specify different kinds of anchors.
 // Callers should use the TryCreate static method to create and return the
 // appropriate type of base class.
-class CORE_EXPORT FragmentAnchor
-    : public GarbageCollectedFinalized<FragmentAnchor> {
+class CORE_EXPORT FragmentAnchor : public GarbageCollected<FragmentAnchor> {
  public:
   // Parses the fragment string and tries to create a FragmentAnchor object of
   // the appropriate derived type. If no anchor could be created from the given

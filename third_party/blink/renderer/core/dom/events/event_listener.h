@@ -44,9 +44,8 @@ class ExecutionContext;
 //   - once
 //   - removed
 // EventListener represents 'callback' part.
-class CORE_EXPORT EventListener
-    : public GarbageCollectedFinalized<EventListener>,
-      public NameClient {
+class CORE_EXPORT EventListener : public GarbageCollected<EventListener>,
+                                  public NameClient {
  public:
   virtual ~EventListener() = default;
 

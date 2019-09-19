@@ -76,8 +76,11 @@ void CSSFontSelector::DispatchInvalidationCallbacks() {
 
   HeapVector<Member<FontSelectorClient>> clients;
   CopyToVector(clients_, clients);
-  for (auto& client : clients)
-    client->FontsNeedUpdate(this);
+  for (auto& client : clients) {
+    if (client) {
+      client->FontsNeedUpdate(this);
+    }
+  }
 }
 
 void CSSFontSelector::FontFaceInvalidated() {

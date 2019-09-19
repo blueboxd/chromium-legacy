@@ -30,7 +30,7 @@ import java.io.IOException;
 public class ExampleUiCaptureTest {
     @Rule
     public ChromeActivityTestRule<? extends ChromeActivity> mActivityTestRule =
-            ChromeActivityTestRule.forMainActivity();
+            new ChromeActivityTestRule(ChromeTabbedActivity.class);
 
     @Rule
     public ScreenShooter mScreenShooter = new ScreenShooter();

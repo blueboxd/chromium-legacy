@@ -29,7 +29,7 @@ using Checkpoint = StrictMock<testing::MockFunction<void(int)>>;
 using Result = BytesConsumer::Result;
 using PublicState = BytesConsumer::PublicState;
 
-class MockClient : public GarbageCollectedFinalized<MockClient>,
+class MockClient : public GarbageCollected<MockClient>,
                    public BytesConsumer::Client {
   USING_GARBAGE_COLLECTED_MIXIN(MockClient);
 

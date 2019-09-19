@@ -1065,7 +1065,7 @@ class AutocompleteMediator
         mAutocomplete = controller;
     }
 
-    private static abstract class DeferredOnSelectionRunnable implements Runnable {
+    private abstract static class DeferredOnSelectionRunnable implements Runnable {
         protected final OmniboxSuggestion mSuggestion;
         protected final int mPosition;
         protected boolean mShouldLog;

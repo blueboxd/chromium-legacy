@@ -23,17 +23,21 @@
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 
 namespace chromeos {
+class PowerManagerClient;
+
 namespace assistant {
 
 class AssistantMediaSession;
 
 // Platform API required by the voice assistant.
 class PlatformApiImpl : public assistant_client::PlatformApi,
-                        chromeos::CrasAudioHandler::AudioObserver {
+                        CrasAudioHandler::AudioObserver {
  public:
   PlatformApiImpl(
       mojom::Client* client,
       AssistantMediaSession* media_session,
+      PowerManagerClient* power_manager_client,
+      CrasAudioHandler* cras_audio_handler,
       mojo::PendingRemote<device::mojom::BatteryMonitor> battery_monitor,
       scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> background_task_runner,
@@ -97,6 +101,8 @@ class PlatformApiImpl : public assistant_client::PlatformApi,
   NetworkProviderImpl network_provider_;
   std::unique_ptr<SystemProviderImpl> system_provider_;
   std::string pref_locale_;
+
+  CrasAudioHandler* const cras_audio_handler_;
 
   chromeos::network_config::mojom::CrosNetworkConfigPtr
       cros_network_config_ptr_;

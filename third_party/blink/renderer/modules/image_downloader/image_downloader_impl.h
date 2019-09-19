@@ -16,11 +16,10 @@ class KURL;
 class LocalFrame;
 class MultiResolutionImageResourceFetcher;
 
-class ImageDownloaderImpl final
-    : public GarbageCollectedFinalized<ImageDownloaderImpl>,
-      public Supplement<LocalFrame>,
-      public ContextLifecycleObserver,
-      public mojom::blink::ImageDownloader {
+class ImageDownloaderImpl final : public GarbageCollected<ImageDownloaderImpl>,
+                                  public Supplement<LocalFrame>,
+                                  public ContextLifecycleObserver,
+                                  public mojom::blink::ImageDownloader {
   USING_PRE_FINALIZER(ImageDownloaderImpl, Dispose);
   USING_GARBAGE_COLLECTED_MIXIN(ImageDownloaderImpl);
 

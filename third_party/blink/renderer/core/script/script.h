@@ -19,7 +19,7 @@ class SecurityOrigin;
 class WorkerGlobalScope;
 
 // https://html.spec.whatwg.org/C/#concept-script
-class CORE_EXPORT Script : public GarbageCollectedFinalized<Script> {
+class CORE_EXPORT Script : public GarbageCollected<Script> {
  public:
   virtual void Trace(Visitor* visitor) {}
 

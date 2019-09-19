@@ -9,6 +9,7 @@ import android.net.ConnectivityManager;
 
 import org.chromium.android_webview.common.CommandLineUtil;
 import org.chromium.android_webview.common.PlatformServiceBridge;
+import org.chromium.android_webview.common.crash.SystemWideCrashDirectories;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
@@ -36,7 +37,7 @@ public class AwMinidumpUploaderDelegate implements MinidumpUploaderDelegate {
 
     @Override
     public File getCrashParentDir() {
-        return CrashReceiverService.getWebViewCrashDir();
+        return SystemWideCrashDirectories.getWebViewCrashDir();
     }
 
     @Override

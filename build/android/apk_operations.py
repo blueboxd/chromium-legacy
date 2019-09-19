@@ -227,17 +227,7 @@ def _InstallBundle(devices, bundle_apks, package_name, command_line_flags_file,
         print(_Colorize(msg, colorama.Fore.YELLOW + colorama.Style.BRIGHT))
 
     InstallFakeModules(device)
-
-    # NOTE: For now, installation requires running 'bundletool install-apks'.
-    # TODO(digit): Add proper support for bundles to devil instead, then use it.
-    install_cmd_args = [
-        'install-apks', '--apks=' + bundle_apks, '--allow-downgrade',
-        '--adb=' + adb_wrapper.AdbWrapper.GetAdbPath(),
-        '--device-id=' + device.serial
-    ]
-    if modules:
-      install_cmd_args += ['--modules=' + ','.join(modules)]
-    bundletool.RunBundleTool(install_cmd_args)
+    device.Install(bundle_apks, modules=modules, allow_downgrade=True)
 
   # Basic checks for |modules| and |fake_modules|.
   # * |fake_modules| cannot include 'base'.

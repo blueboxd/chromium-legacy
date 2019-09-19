@@ -17,7 +17,7 @@ namespace blink {
 class LocalFrame;
 
 class MODULES_EXPORT ManifestChangeNotifier
-    : public GarbageCollectedFinalized<ManifestChangeNotifier> {
+    : public GarbageCollected<ManifestChangeNotifier> {
  public:
   explicit ManifestChangeNotifier(LocalFrame& frame);
   virtual ~ManifestChangeNotifier();

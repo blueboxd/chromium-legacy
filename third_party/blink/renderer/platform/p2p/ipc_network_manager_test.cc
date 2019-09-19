@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/platform/modules/p2p/ipc_network_manager.h"
+#include "third_party/blink/renderer/platform/p2p/ipc_network_manager.h"
 
 #include <algorithm>
 #include <memory>
@@ -11,7 +11,7 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/modules/p2p/network_list_manager.h"
+#include "third_party/blink/renderer/platform/p2p/network_list_manager.h"
 #include "third_party/webrtc/rtc_base/mdns_responder_interface.h"
 
 namespace blink {

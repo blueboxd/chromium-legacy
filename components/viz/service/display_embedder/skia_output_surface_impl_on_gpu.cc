@@ -18,6 +18,7 @@
 #include "components/viz/common/frame_sinks/copy_output_util.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/skia_helper.h"
+#include "components/viz/service/display/dc_layer_overlay.h"
 #include "components/viz/service/display/gl_renderer_copier.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display/texture_deleter.h"
@@ -802,7 +803,8 @@ void SkiaOutputSurfaceImplOnGpu::ScheduleOutputSurfaceAsOverlay(
 
 void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
     OutputSurfaceFrame frame,
-    base::OnceClosure deferred_framebuffer_draw_closure) {
+    base::OnceClosure deferred_framebuffer_draw_closure,
+    uint64_t sync_fence_release) {
   TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::SwapBuffers");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -813,15 +815,14 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
     if (!MakeCurrent(!dependency_->IsOffscreen() /* need_fbo0 */))
       return;
   }
-  DCHECK(scoped_output_device_paint_);
   DCHECK(output_device_);
 
   scoped_output_device_paint_.reset();
 
   if (frame.sub_buffer_rect && frame.sub_buffer_rect->IsEmpty()) {
-    // TODO(https://crbug.com/898680): Maybe do something for overlays here.
-    // This codepath was added in https://codereview.chromium.org/1489153002
-    // to support updating overlays without changing the framebuffer contents.
+    // Call SwapBuffers() to present overlays.
+    output_device_->SwapBuffers(buffer_presented_callback_,
+                                std::move(frame.latency_info));
   } else if (capabilities().supports_post_sub_buffer && frame.sub_buffer_rect) {
     if (!capabilities().flipped_output_surface)
       frame.sub_buffer_rect->set_y(size_.height() - frame.sub_buffer_rect->y() -
@@ -833,6 +834,9 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
     output_device_->SwapBuffers(buffer_presented_callback_,
                                 std::move(frame.latency_info));
   }
+
+  if (sync_fence_release)
+    ReleaseFenceSyncAndPushTextureUpdates(sync_fence_release);
 
   destroy_after_swap_.clear();
 }
@@ -1186,6 +1190,15 @@ void SkiaOutputSurfaceImplOnGpu::ReleaseImageContexts(
   // |image_contexts| goes out of scope here.
 }
 
+void SkiaOutputSurfaceImplOnGpu::SetEnableDCLayers(bool enable) {
+  output_device_->SetEnableDCLayers(enable);
+}
+
+void SkiaOutputSurfaceImplOnGpu::ScheduleDCLayers(
+    std::vector<DCLayerOverlay> dc_layers) {
+  output_device_->ScheduleDCLayers(std::move(dc_layers));
+}
+
 void SkiaOutputSurfaceImplOnGpu::SetCapabilitiesForTesting(
     const OutputSurface::Capabilities& capabilities) {
   MakeCurrent(false /* need_fbo0 */);
@@ -1254,7 +1267,8 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
       } else {
         std::unique_ptr<SkiaOutputDeviceGL> onscreen_device =
             std::make_unique<SkiaOutputDeviceGL>(
-                gl_surface_, feature_info_, did_swap_buffer_complete_callback_);
+                dependency_->GetMailboxManager(), gl_surface_, feature_info_,
+                did_swap_buffer_complete_callback_);
 
         onscreen_device->Initialize(gr_context(), context);
         supports_alpha_ = onscreen_device->supports_alpha();

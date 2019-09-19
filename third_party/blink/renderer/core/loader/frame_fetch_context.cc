@@ -184,8 +184,7 @@ mojom::FetchCacheMode DetermineFrameCacheMode(Frame* frame) {
 
 }  // namespace
 
-struct FrameFetchContext::FrozenState final
-    : GarbageCollectedFinalized<FrozenState> {
+struct FrameFetchContext::FrozenState final : GarbageCollected<FrozenState> {
   FrozenState(const KURL& url,
               scoped_refptr<const SecurityOrigin> parent_security_origin,
               const ContentSecurityPolicy* content_security_policy,

@@ -23,7 +23,7 @@ class ModuleScript;
 // ModuleRecordResolver, given a referrer and specifier, can look up the
 // descendant.
 class CORE_EXPORT ModuleRecordResolver
-    : public GarbageCollectedFinalized<ModuleRecordResolver> {
+    : public GarbageCollected<ModuleRecordResolver> {
  public:
   virtual ~ModuleRecordResolver() = default;
   virtual void Trace(Visitor* visitor) {}

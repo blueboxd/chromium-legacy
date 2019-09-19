@@ -712,7 +712,9 @@ void LocalStorageContextMojo::InitiateConnection(bool in_memory_only) {
   if (!subdirectory_.empty() && !in_memory_only) {
     // We were given a subdirectory to write to. Get it and use a disk backed
     // database.
-    connector_->BindInterface(file::mojom::kServiceName, &file_system_);
+    file_system_.reset();
+    connector_->Connect(file::mojom::kServiceName,
+                        file_system_.BindNewPipeAndPassReceiver());
     file_system_->GetSubDirectory(
         subdirectory_.AsUTF8Unsafe(), MakeRequest(&directory_),
         base::BindOnce(&LocalStorageContextMojo::OnDirectoryOpened,

@@ -20,7 +20,7 @@ class ScriptPromiseResolver;
 // This class owns the BarcodeDetectionProvider connection used to create the
 // BarcodeDetector instances for this ExecutionContext.
 class BarcodeDetectorStatics final
-    : public GarbageCollectedFinalized<BarcodeDetectorStatics>,
+    : public GarbageCollected<BarcodeDetectorStatics>,
       public Supplement<ExecutionContext> {
   USING_GARBAGE_COLLECTED_MIXIN(BarcodeDetectorStatics);
 

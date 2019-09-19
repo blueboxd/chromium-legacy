@@ -210,6 +210,7 @@ source_set("unit_tests") {
     "//chromeos/dbus/biod:test_support",
     "//chromeos/dbus/cryptohome",
     "//chromeos/dbus/cryptohome:attestation_proto",
+    "//chromeos/dbus/dlcservice:test_support",
     "//chromeos/dbus/power:power_manager_proto",
     "//chromeos/dbus/power:test_support",
     "//chromeos/dbus/session_manager",

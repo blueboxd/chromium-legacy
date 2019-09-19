@@ -50,8 +50,9 @@
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/tablet_mode.h"
-#include "ash/public/cpp/window_properties.h"               // nogncheck
-#include "ash/public/cpp/window_state_type.h"               // nogncheck
+#include "ash/public/cpp/window_properties.h"  // nogncheck
+#include "ash/public/cpp/window_state_type.h"  // nogncheck
+#include "ui/aura/window_delegate.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #endif
 
@@ -102,13 +103,18 @@ bool IsSnapped(const TabDragContext* context) {
 }
 
 // In Chrome OS tablet mode, when dragging a tab/tabs around, the desired
-// browser bounds during dragging is one-fourth of the workspace bounds.
+// browser size during dragging is one-fourth of the workspace size or the
+// window's minimum size.
 gfx::Rect GetDraggedBrowserBoundsInTabletMode(aura::Window* window) {
   const gfx::Rect work_area =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window).work_area();
+  gfx::Size mininum_size;
+  if (window->delegate())
+    mininum_size = window->delegate()->GetMinimumSize();
+
   gfx::Rect bounds(window->GetBoundsInScreen());
-  bounds.set_width(work_area.width() / 2);
-  bounds.set_height(work_area.height() / 2);
+  bounds.set_width(std::max(work_area.width() / 2, mininum_size.width()));
+  bounds.set_height(std::max(work_area.height() / 2, mininum_size.height()));
   return bounds;
 }
 

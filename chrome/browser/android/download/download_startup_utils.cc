@@ -7,46 +7,39 @@
 #include <jni.h>
 #include <utility>
 
-#include "base/android/path_utils.h"
 #include "chrome/android/chrome_jni_headers/DownloadStartupUtils_jni.h"
-#include "chrome/browser/android/chrome_feature_list.h"
-#include "chrome/browser/android/download/download_controller.h"
 #include "chrome/browser/android/profile_key_startup_accessor.h"
 #include "chrome/browser/download/download_manager_utils.h"
-#include "chrome/browser/download/download_offline_content_provider.h"
-#include "chrome/browser/download/download_offline_content_provider_factory.h"
-#include "chrome/browser/download/download_target_determiner.h"
-#include "chrome/browser/download/simple_download_manager_coordinator_factory.h"
-#include "chrome/browser/profiles/profile_key.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "components/download/public/common/in_progress_download_manager.h"
-#include "components/download/public/common/simple_download_manager_coordinator.h"
 
 static void JNI_DownloadStartupUtils_EnsureDownloadSystemInitialized(
     JNIEnv* env,
-    jboolean is_full_browser_started) {
-  DownloadStartupUtils::EnsureDownloadSystemInitialized(
-      is_full_browser_started);
+    jboolean is_full_browser_started,
+    jboolean is_incognito) {
+  DownloadStartupUtils::EnsureDownloadSystemInitialized(is_full_browser_started,
+                                                        is_incognito);
 }
 
 // static
 void DownloadStartupUtils::EnsureDownloadSystemInitialized(
-    bool is_full_browser_started) {
-  if (is_full_browser_started)
-    return;
-
-  auto* profile_key = ProfileKeyStartupAccessor::GetInstance()->profile_key();
-  download::InProgressDownloadManager* in_progress_manager =
-      DownloadManagerUtils::GetInProgressDownloadManager(profile_key);
-  in_progress_manager->set_download_start_observer(
-      DownloadControllerBase::Get());
-  in_progress_manager->set_intermediate_path_cb(
-      base::BindRepeating(&DownloadTargetDeterminer::GetCrDownloadPath));
-  base::FilePath download_dir;
-  base::android::GetDownloadsDirectory(&download_dir);
-  in_progress_manager->set_default_download_dir(download_dir);
-  download::SimpleDownloadManagerCoordinator* coordinator =
-      SimpleDownloadManagerCoordinatorFactory::GetForKey(profile_key);
-  auto* download_provider =
-      DownloadOfflineContentProviderFactory::GetForKey(profile_key);
-  download_provider->SetSimpleDownloadManagerCoordinator(coordinator);
+    bool is_full_browser_started,
+    bool is_incognito) {
+  DCHECK(is_full_browser_started || !is_incognito)
+      << "Incognito mode must load full browser.";
+  ProfileKey* profile_key = nullptr;
+  if (is_full_browser_started) {
+    Profile* profile =
+        ProfileManager::GetActiveUserProfile()->GetOriginalProfile();
+    if (is_incognito) {
+      if (profile->HasOffTheRecordProfile())
+        profile = profile->GetOffTheRecordProfile();
+      else
+        return;
+    }
+    profile_key = profile->GetProfileKey();
+  } else {
+    profile_key = ProfileKeyStartupAccessor::GetInstance()->profile_key();
+  }
+  DownloadManagerUtils::GetInProgressDownloadManager(profile_key);
 }

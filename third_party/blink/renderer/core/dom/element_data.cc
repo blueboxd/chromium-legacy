@@ -37,7 +37,7 @@
 namespace blink {
 
 struct SameSizeAsElementData final
-    : public GarbageCollectedFinalized<SameSizeAsElementData> {
+    : public GarbageCollected<SameSizeAsElementData> {
   unsigned bitfield;
   Member<void*> willbe_member;
   void* pointers[2];

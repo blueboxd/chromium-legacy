@@ -13,6 +13,7 @@
 
 #include "base/component_export.h"
 #include "base/containers/queue.h"
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -67,7 +68,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   // mojom::WebSocket methods:
   void SendFrame(bool fin,
                  mojom::WebSocketMessageType type,
-                 const std::vector<uint8_t>& data) override;
+                 base::span<const uint8_t> data) override;
   void StartReceiving() override;
   void StartClosingHandshake(uint16_t code, const std::string& reason) override;
 

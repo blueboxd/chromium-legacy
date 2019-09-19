@@ -18,6 +18,7 @@ import androidx.annotation.IntDef;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.resources.ResourceManager;
@@ -86,7 +87,8 @@ public class ContentViewRenderView extends FrameLayout {
      */
     public void onNativeLibraryLoaded(WindowAndroid rootWindow, @Mode int mode) {
         assert rootWindow != null;
-        mNativeContentViewRenderView = nativeInit(rootWindow);
+        mNativeContentViewRenderView =
+                ContentViewRenderViewJni.get().init(ContentViewRenderView.this, rootWindow);
         assert mNativeContentViewRenderView != 0;
         mWindowAndroid = rootWindow;
         requestMode(mode);
@@ -286,7 +288,8 @@ public class ContentViewRenderView extends FrameLayout {
         uninitializeSurfaceView();
         uninitializeTextureView();
         mWindowAndroid = null;
-        nativeDestroy(mNativeContentViewRenderView);
+        ContentViewRenderViewJni.get().destroy(
+                mNativeContentViewRenderView, ContentViewRenderView.this);
         mNativeContentViewRenderView = 0;
     }
 
@@ -296,35 +299,41 @@ public class ContentViewRenderView extends FrameLayout {
 
         if (webContents != null) {
             webContents.setSize(mWidth, mHeight);
-            nativeOnPhysicalBackingSizeChanged(
-                    mNativeContentViewRenderView, webContents, mWidth, mHeight);
+            ContentViewRenderViewJni.get().onPhysicalBackingSizeChanged(
+                    mNativeContentViewRenderView, ContentViewRenderView.this, webContents, mWidth,
+                    mHeight);
         }
-        nativeSetCurrentWebContents(mNativeContentViewRenderView, webContents);
+        ContentViewRenderViewJni.get().setCurrentWebContents(
+                mNativeContentViewRenderView, ContentViewRenderView.this, webContents);
     }
 
     public ResourceManager getResourceManager() {
-        return nativeGetResourceManager(mNativeContentViewRenderView);
+        return ContentViewRenderViewJni.get().getResourceManager(
+                mNativeContentViewRenderView, ContentViewRenderView.this);
     }
 
     private void surfaceCreated() {
         assert mNativeContentViewRenderView != 0;
-        nativeSurfaceCreated(mNativeContentViewRenderView);
+        ContentViewRenderViewJni.get().surfaceCreated(
+                mNativeContentViewRenderView, ContentViewRenderView.this);
     }
 
     private void surfaceChanged(
             Surface surface, boolean canBeUsedWithSurfaceControl, int width, int height) {
         assert mNativeContentViewRenderView != 0;
-        nativeSurfaceChanged(
-                mNativeContentViewRenderView, canBeUsedWithSurfaceControl, width, height, surface);
+        ContentViewRenderViewJni.get().surfaceChanged(mNativeContentViewRenderView,
+                ContentViewRenderView.this, canBeUsedWithSurfaceControl, width, height, surface);
         if (mWebContents != null) {
-            nativeOnPhysicalBackingSizeChanged(
-                    mNativeContentViewRenderView, mWebContents, width, height);
+            ContentViewRenderViewJni.get().onPhysicalBackingSizeChanged(
+                    mNativeContentViewRenderView, ContentViewRenderView.this, mWebContents, width,
+                    height);
         }
     }
 
     private void surfaceDestroyed() {
         assert mNativeContentViewRenderView != 0;
-        nativeSurfaceDestroyed(mNativeContentViewRenderView);
+        ContentViewRenderViewJni.get().surfaceDestroyed(
+                mNativeContentViewRenderView, ContentViewRenderView.this);
     }
 
     @CalledByNative
@@ -343,15 +352,19 @@ public class ContentViewRenderView extends FrameLayout {
         return mNativeContentViewRenderView;
     }
 
-    private native long nativeInit(WindowAndroid rootWindow);
-    private native void nativeDestroy(long nativeContentViewRenderView);
-    private native void nativeSetCurrentWebContents(
-            long nativeContentViewRenderView, WebContents webContents);
-    private native void nativeOnPhysicalBackingSizeChanged(
-            long nativeContentViewRenderView, WebContents webContents, int width, int height);
-    private native void nativeSurfaceCreated(long nativeContentViewRenderView);
-    private native void nativeSurfaceDestroyed(long nativeContentViewRenderView);
-    private native void nativeSurfaceChanged(long nativeContentViewRenderView,
-            boolean canBeUsedWithSurfaceControl, int width, int height, Surface surface);
-    private native ResourceManager nativeGetResourceManager(long nativeContentViewRenderView);
+    @NativeMethods
+    interface Natives {
+        long init(ContentViewRenderView caller, WindowAndroid rootWindow);
+        void destroy(long nativeContentViewRenderView, ContentViewRenderView caller);
+        void setCurrentWebContents(long nativeContentViewRenderView, ContentViewRenderView caller,
+                WebContents webContents);
+        void onPhysicalBackingSizeChanged(long nativeContentViewRenderView,
+                ContentViewRenderView caller, WebContents webContents, int width, int height);
+        void surfaceCreated(long nativeContentViewRenderView, ContentViewRenderView caller);
+        void surfaceDestroyed(long nativeContentViewRenderView, ContentViewRenderView caller);
+        void surfaceChanged(long nativeContentViewRenderView, ContentViewRenderView caller,
+                boolean canBeUsedWithSurfaceControl, int width, int height, Surface surface);
+        ResourceManager getResourceManager(
+                long nativeContentViewRenderView, ContentViewRenderView caller);
+    }
 }

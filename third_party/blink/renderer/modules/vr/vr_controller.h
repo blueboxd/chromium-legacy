@@ -22,7 +22,7 @@ namespace blink {
 
 class NavigatorVR;
 
-class VRController final : public GarbageCollectedFinalized<VRController>,
+class VRController final : public GarbageCollected<VRController>,
                            public device::mojom::blink::VRServiceClient,
                            public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(VRController);

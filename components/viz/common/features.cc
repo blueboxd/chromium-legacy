@@ -7,10 +7,7 @@
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "components/viz/common/switches.h"
-
-#if defined(OS_ANDROID)
-#include "gpu/config/gpu_finch_features.h"  // nogncheck
-#endif
+#include "gpu/config/gpu_finch_features.h"
 
 namespace features {
 
@@ -75,7 +72,8 @@ bool IsUsingSkiaForGLReadback() {
 
 bool IsUsingSkiaRenderer() {
   // We require OOP-D everywhere but WebView.
-  bool enabled = base::FeatureList::IsEnabled(kUseSkiaRenderer);
+  bool enabled = base::FeatureList::IsEnabled(kUseSkiaRenderer) ||
+                 base::FeatureList::IsEnabled(kVulkan);
 #if !defined(OS_ANDROID)
   if (enabled && !IsVizDisplayCompositorEnabled()) {
     DLOG(ERROR) << "UseSkiaRenderer requires VizDisplayCompositor.";

@@ -40,7 +40,7 @@
 namespace blink {
 
 class MockAnimationEffectOwner
-    : public GarbageCollectedFinalized<MockAnimationEffectOwner>,
+    : public GarbageCollected<MockAnimationEffectOwner>,
       public AnimationEffectOwner {
   USING_GARBAGE_COLLECTED_MIXIN(MockAnimationEffectOwner);
 

@@ -441,6 +441,11 @@ def _DoApkAnalysis(apk_filename, apks_path, tool_prefix, out_dir, report_func):
   # file size. Also gets rid of compression.
   normalized_apk_size -= native_code.ComputeZippedSize()
   normalized_apk_size += native_code_unaligned_size
+  # Normalized dex size: Size within the zip + size on disk for Android Go
+  # devices running Android O (which ~= uncompressed dex size).
+  # Use a constant compression factor to account for fluctuations.
+  normalized_apk_size -= java_code.ComputeZippedSize()
+  normalized_apk_size += int(java_code.ComputeUncompressedSize() * 1.5)
   # Unaligned size should be ~= uncompressed size or something is wrong.
   # As of now, padding_fraction ~= .007
   padding_fraction = -_PercentageDifference(
@@ -450,9 +455,6 @@ def _DoApkAnalysis(apk_filename, apks_path, tool_prefix, out_dir, report_func):
           padding_fraction, native_code.ComputeUncompressedSize(),
           native_code_unaligned_size))
 
-  # Normalized dex size: size within the zip + size on disk for Android Go
-  # devices (which ~= uncompressed dex size).
-  normalized_apk_size += java_code.ComputeUncompressedSize()
   if apks_path:
     # Locale normalization not needed when measuring only one locale.
     # E.g. a change that adds 300 chars of unstranslated strings would cause the

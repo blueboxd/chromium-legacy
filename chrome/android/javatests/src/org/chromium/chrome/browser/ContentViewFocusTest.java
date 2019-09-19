@@ -55,7 +55,7 @@ public class ContentViewFocusTest {
 
     @Rule
     public ChromeActivityTestRule<? extends ChromeActivity> mActivityTestRule =
-            ChromeActivityTestRule.forMainActivity();
+            new ChromeActivityTestRule(ChromeTabbedActivity.class);
 
     private static final int WAIT_RESPONSE_MS = 2000;
 

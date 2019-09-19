@@ -19,7 +19,7 @@ namespace {
 
 template <typename T>
 class NavigatorScreenManagerImpl final
-    : public GarbageCollectedFinalized<NavigatorScreenManagerImpl<T>>,
+    : public GarbageCollected<NavigatorScreenManagerImpl<T>>,
       public Supplement<T> {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorScreenManagerImpl<T>);
 

@@ -33,7 +33,7 @@ namespace blink {
 // and any data passed in or read out is copied to ensure that this object's
 // internal state can be safely destructed from the main thread.
 class CORE_EXPORT WorkletModuleResponsesMap final
-    : public GarbageCollectedFinalized<WorkletModuleResponsesMap> {
+    : public GarbageCollected<WorkletModuleResponsesMap> {
  public:
   WorkletModuleResponsesMap() = default;
 

@@ -93,7 +93,7 @@ class SVGImageTest : public testing::Test {
 
  private:
   class PauseControlImageObserver
-      : public GarbageCollectedFinalized<PauseControlImageObserver>,
+      : public GarbageCollected<PauseControlImageObserver>,
         public ImageObserver {
     USING_GARBAGE_COLLECTED_MIXIN(PauseControlImageObserver);
 

@@ -19,6 +19,7 @@ if (closure_compile) {
         "bluetooth_internals:closure_compile",
         "bookmarks:closure_compile",
         "discards:closure_compile",
+        "download_internals:closure_compile",
         "downloads:closure_compile",
         "history:closure_compile",
         "local_ntp:closure_compile",

@@ -966,11 +966,11 @@ bool CaptivePortalBrowserTest::OnIntercept(
       net::HttpResponseInfo info;
       info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
           net::HttpUtil::AssembleRawHeaders(headers));
-      network::ResourceResponseHead response;
-      response.headers = info.headers;
-      response.headers->GetMimeType(&response.mime_type);
-      response.encoded_data_length = 0;
-      params->client->OnReceiveRedirect(redirect_info, response);
+      auto response = network::mojom::URLResponseHead::New();
+      response->headers = info.headers;
+      response->headers->GetMimeType(&response->mime_type);
+      response->encoded_data_length = 0;
+      params->client->OnReceiveRedirect(redirect_info, std::move(response));
     }
 
     if (behind_captive_portal_) {

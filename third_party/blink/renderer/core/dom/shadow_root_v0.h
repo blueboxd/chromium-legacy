@@ -37,8 +37,7 @@
 
 namespace blink {
 
-class CORE_EXPORT ShadowRootV0 final
-    : public GarbageCollectedFinalized<ShadowRootV0> {
+class CORE_EXPORT ShadowRootV0 final : public GarbageCollected<ShadowRootV0> {
  public:
   using NodeToDestinationInsertionPoints =
       HeapHashMap<Member<const Node>, Member<DestinationInsertionPoints>>;

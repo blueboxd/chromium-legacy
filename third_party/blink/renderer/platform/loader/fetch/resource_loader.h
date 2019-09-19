@@ -62,7 +62,7 @@ class ResponseBodyLoader;
 // WebURLLoader and loads the resource using it. Any per-load logic should be
 // implemented in this class basically.
 class PLATFORM_EXPORT ResourceLoader final
-    : public GarbageCollectedFinalized<ResourceLoader>,
+    : public GarbageCollected<ResourceLoader>,
       public ResourceLoadSchedulerClient,
       protected WebURLLoaderClient,
       protected mojom::blink::ProgressClient,

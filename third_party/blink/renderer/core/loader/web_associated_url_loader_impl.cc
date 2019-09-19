@@ -95,7 +95,7 @@ void HTTPRequestHeaderValidator::VisitHeader(const WebString& name,
 // It forwards its ThreadableLoaderClient notifications to a
 // WebAssociatedURLLoaderClient.
 class WebAssociatedURLLoaderImpl::ClientAdapter final
-    : public GarbageCollectedFinalized<ClientAdapter>,
+    : public GarbageCollected<ClientAdapter>,
       public ThreadableLoaderClient {
   USING_GARBAGE_COLLECTED_MIXIN(ClientAdapter);
 

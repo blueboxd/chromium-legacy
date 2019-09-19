@@ -1006,7 +1006,8 @@
               "device_type": "bullhead",
               "os": "Android"
             }
-          ]
+          ],
+          "shards": 10
         },
         "test": "unit_tests"
       }

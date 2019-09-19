@@ -100,7 +100,7 @@ void ThrowPresentationDisconnectedError(ExceptionState& exception_state) {
 }  // namespace
 
 class PresentationConnection::Message final
-    : public GarbageCollectedFinalized<PresentationConnection::Message> {
+    : public GarbageCollected<PresentationConnection::Message> {
  public:
   Message(const String& text) : type(kMessageTypeText), text(text) {}
 
@@ -119,7 +119,7 @@ class PresentationConnection::Message final
 };
 
 class PresentationConnection::BlobLoader final
-    : public GarbageCollectedFinalized<PresentationConnection::BlobLoader>,
+    : public GarbageCollected<PresentationConnection::BlobLoader>,
       public FileReaderLoaderClient {
  public:
   BlobLoader(scoped_refptr<BlobDataHandle> blob_data_handle,

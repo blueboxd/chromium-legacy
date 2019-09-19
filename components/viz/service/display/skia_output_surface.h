@@ -26,6 +26,7 @@ namespace viz {
 
 class ContextLostObserver;
 class CopyOutputRequest;
+class DCLayerOverlay;
 
 namespace copy_output {
 struct RenderPassGeometry;
@@ -73,8 +74,11 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
       sk_sp<SkColorSpace> dst_color_space,
       bool has_alpha) = 0;
 
-  // Swaps the current backbuffer to the screen.
-  virtual void SkiaSwapBuffers(OutputSurfaceFrame frame) = 0;
+  // Swaps the current backbuffer to the screen. This method returns a non-empty
+  // sync token which can be waited on to ensure swap is complete if
+  // |wants_sync_token| is true.
+  virtual gpu::SyncToken SkiaSwapBuffers(OutputSurfaceFrame frame,
+                                         bool wants_sync_token) = 0;
 
   // TODO(weiliangc): This API should move to OverlayProcessor.
   // Schedule |output_surface_plane| as an overlay plane to be displayed.
@@ -124,6 +128,13 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
                           const copy_output::RenderPassGeometry& geometry,
                           const gfx::ColorSpace& color_space,
                           std::unique_ptr<CopyOutputRequest> request) = 0;
+
+  // Enables/disables drawing with DC layers. Should be enabled before
+  // ScheduleDCLayers() will be called.
+  virtual void SetEnableDCLayers(bool enable) = 0;
+
+  // Schedule drawing DC layer overlays at next SkiaSwapBuffers() call.
+  virtual void ScheduleDCLayers(std::vector<DCLayerOverlay> dc_layers) = 0;
 
   // Add context lost observer.
   virtual void AddContextLostObserver(ContextLostObserver* observer) = 0;

@@ -29,7 +29,7 @@ class ResponseBodyLoaderClient;
 // ClassicPendingScript are destroyed while the streaming is in progress, and
 // ScriptStreamer handles it gracefully.
 class CORE_EXPORT ScriptStreamer final
-    : public GarbageCollectedFinalized<ScriptStreamer> {
+    : public GarbageCollected<ScriptStreamer> {
   USING_PRE_FINALIZER(ScriptStreamer, Prefinalize);
 
  public:

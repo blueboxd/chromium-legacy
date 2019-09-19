@@ -17,6 +17,7 @@ mojom("mojom") {
     "rrect_f.mojom",
     "selection_bound.mojom",
     "swap_result.mojom",
+    "swap_timings.mojom",
     "transform.mojom",
   ]
 

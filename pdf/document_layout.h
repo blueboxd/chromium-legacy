@@ -69,11 +69,6 @@ class DocumentLayout final {
   // Returns the layout's total size.
   const pp::Size& size() const { return size_; }
 
-  // Sets the layout's total size.
-  //
-  // TODO(kmoon): Get rid of this method.
-  void set_size(const pp::Size& size) { size_ = size; }
-
   size_t page_count() const { return page_layouts_.size(); }
 
   // Gets the layout rectangle for a page. Only valid after computing a layout.

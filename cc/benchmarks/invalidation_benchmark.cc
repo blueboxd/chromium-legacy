@@ -15,7 +15,6 @@
 #include "cc/layers/picture_layer.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/layer_tree_host.h"
-#include "cc/trees/layer_tree_host_common.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {

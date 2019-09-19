@@ -48,9 +48,9 @@ class UniqueElementData;
 
 // ElementData represents very common, but not necessarily unique to an element,
 // data such as attributes, inline style, and parsed class names and ids.
-class ElementData : public GarbageCollectedFinalized<ElementData> {
+class ElementData : public GarbageCollected<ElementData> {
  public:
-  // Override GarbageCollectedFinalized's finalizeGarbageCollectedObject to
+  // Override GarbageCollected's finalizeGarbageCollectedObject to
   // dispatch to the correct subclass destructor.
   void FinalizeGarbageCollectedObject();
 

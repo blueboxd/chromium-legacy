@@ -6554,10 +6554,7 @@ void WebContentsImpl::CreateRenderWidgetHostViewForRenderManager(
     RenderViewHost* render_view_host) {
   RenderWidgetHostViewBase* rwh_view =
       view_->CreateViewForWidget(render_view_host->GetWidget(), false);
-
-  // Now that the RenderView has been created, we need to tell it its size.
-  if (rwh_view)
-    rwh_view->SetSize(GetSizeForNewRenderView(true));
+  rwh_view->SetSize(GetSizeForNewRenderView(true));
 }
 
 bool WebContentsImpl::CreateRenderViewForRenderManager(

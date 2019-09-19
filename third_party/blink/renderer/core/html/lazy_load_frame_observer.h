@@ -21,7 +21,7 @@ class ResourceRequest;
 class Visitor;
 
 class LazyLoadFrameObserver final
-    : public GarbageCollectedFinalized<LazyLoadFrameObserver> {
+    : public GarbageCollected<LazyLoadFrameObserver> {
  public:
   // This enum is logged to histograms, so values should not be reordered or
   // reused, and it must match the corresponding enum

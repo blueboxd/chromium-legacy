@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "chrome/browser/android/android_theme_resources.h"
-#include "chrome/browser/android/feature_utilities.h"
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -94,8 +93,6 @@ int PopupBlockedInfoBarDelegate::GetButtons() const {
     return 0;
 
   int buttons = BUTTON_OK;
-  if (chrome::android::IsNoTouchModeEnabled())
-    buttons |= BUTTON_CANCEL;
 
   return buttons;
 }

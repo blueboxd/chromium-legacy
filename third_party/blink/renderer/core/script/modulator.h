@@ -40,7 +40,7 @@ class ScriptValue;
 // module tree graph) load is complete and its corresponding entry is created in
 // module map.
 class CORE_EXPORT SingleModuleClient
-    : public GarbageCollectedFinalized<SingleModuleClient>,
+    : public GarbageCollected<SingleModuleClient>,
       public NameClient {
  public:
   virtual ~SingleModuleClient() = default;
@@ -54,9 +54,8 @@ class CORE_EXPORT SingleModuleClient
 
 // A ModuleTreeClient is notified when a module script and its whole descendent
 // tree load is complete.
-class CORE_EXPORT ModuleTreeClient
-    : public GarbageCollectedFinalized<ModuleTreeClient>,
-      public NameClient {
+class CORE_EXPORT ModuleTreeClient : public GarbageCollected<ModuleTreeClient>,
+                                     public NameClient {
  public:
   virtual ~ModuleTreeClient() = default;
   virtual void Trace(Visitor* visitor) {}
@@ -95,7 +94,7 @@ enum class ModuleScriptCustomFetchType {
 // https://html.spec.whatwg.org/C/#environment-settings-object
 //
 // A Modulator also serves as an entry point for various module spec algorithms.
-class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
+class CORE_EXPORT Modulator : public GarbageCollected<Modulator>,
                               public V8PerContextData::Data,
                               public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(Modulator);

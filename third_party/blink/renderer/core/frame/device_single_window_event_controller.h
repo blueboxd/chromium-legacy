@@ -16,7 +16,7 @@ class Document;
 class Event;
 
 class CORE_EXPORT DeviceSingleWindowEventController
-    : public GarbageCollectedFinalized<DeviceSingleWindowEventController>,
+    : public GarbageCollected<DeviceSingleWindowEventController>,
       public PlatformEventController,
       public LocalDOMWindow::EventListenerObserver {
  public:

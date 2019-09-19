@@ -614,10 +614,6 @@ class LocalNtpSource::SearchConfigurationProvider
           "enableShortcutsGrid",
           base::FeatureList::IsEnabled(features::kGridLayoutForNtpShortcuts));
       config_data.SetBoolean(
-          "showPlaceholderOnFocus",
-          base::FeatureList::IsEnabled(
-              omnibox::kUIExperimentShowPlaceholderWhenCaretShowing));
-      config_data.SetBoolean(
           "richerPicker",
           base::FeatureList::IsEnabled(features::kNtpCustomizationMenuV2));
       config_data.SetBoolean("chromeColors", base::FeatureList::IsEnabled(

@@ -169,9 +169,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // Sets the zoom level and notifies observers.
   void SetZoomLevel(double zoom_level);
 
-  double page_zoom_level() {
-    return page_zoom_level_;
-  }
+  double page_zoom_level() { return page_zoom_level_; }
 
   // Sets page-level focus in this view and notifies plugins and Blink's
   // FocusController.

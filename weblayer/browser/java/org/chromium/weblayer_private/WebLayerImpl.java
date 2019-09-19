@@ -11,7 +11,6 @@ import android.content.res.Resources;
 import android.os.IBinder;
 import android.util.AndroidRuntimeException;
 
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -52,7 +51,6 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         });
         ResourceBundle.setNoAvailableLocalePaks();
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
-        ApplicationStatus.initialize(application);
 
         ChildProcessCreationParams.set(implContext.getPackageName(), true /* isExternalService */,
                 LibraryProcessType.PROCESS_CHILD, true /* bindToCaller */,

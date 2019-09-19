@@ -23,6 +23,7 @@
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/presentation_feedback.h"
+#include "ui/gfx/swap_result.h"
 
 namespace viz {
 
@@ -34,14 +35,19 @@ Surface::PresentationHelper::PresentationHelper(
 Surface::PresentationHelper::~PresentationHelper() {
   // The class that called TakePresentationHelperForPresentNotification
   // should have called present on this helper. If not, give a Failure feedback
-  // to the appropriate surface.
-  DidPresent(gfx::PresentationFeedback::Failure());
+  // to the appropriate surface client.
+  DidPresent(base::TimeTicks(), gfx::SwapTimings(),
+             gfx::PresentationFeedback::Failure());
 }
 
 void Surface::PresentationHelper::DidPresent(
+    base::TimeTicks draw_start_timestamp,
+    const gfx::SwapTimings& swap_timings,
     const gfx::PresentationFeedback& feedback) {
-  if (surface_client_ && frame_token_)
-    surface_client_->OnSurfacePresented(frame_token_, feedback);
+  if (surface_client_ && frame_token_) {
+    surface_client_->OnSurfacePresented(frame_token_, draw_start_timestamp,
+                                        swap_timings, feedback);
+  }
 
   surface_client_ = nullptr;
 }
@@ -641,6 +647,7 @@ void Surface::UnrefFrameResourcesAndRunCallbacks(
   // when the frame is unref'd.
   if (!frame_data->will_be_notified_of_presentation && surface_client_)
     surface_client_->OnSurfacePresented(frame_data->frame.metadata.frame_token,
+                                        base::TimeTicks(), gfx::SwapTimings(),
                                         gfx::PresentationFeedback::Failure());
 }
 
@@ -710,14 +717,6 @@ void Surface::OnWillBeDrawn() {
   }
   surface_manager_->SurfaceWillBeDrawn(this);
   MarkAsDrawn();
-}
-
-void Surface::OnWasDrawn(uint32_t frame_token,
-                         base::TimeTicks draw_start_timestamp) {
-  if (!surface_client_)
-    return;
-
-  surface_client_->OnSurfaceWasDrawn(frame_token, draw_start_timestamp);
 }
 
 void Surface::ActivatePendingFrameForInheritedDeadline() {

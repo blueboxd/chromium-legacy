@@ -27,8 +27,6 @@ class Profile;
 
 namespace content {
 class BrowserContext;
-class NavigationHandle;
-class NavigationThrottle;
 class WebContents;
 
 }  // namespace content
@@ -51,12 +49,6 @@ class PreviewsLitePageDecider
 
   // Registers the prefs used in this class.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-
-  // Checks if the feature is enabled and if so, returns a
-  // |PreviewsLitePageNavigationThrottle| that handles the rest of the decision
-  // making.
-  static std::unique_ptr<content::NavigationThrottle> MaybeCreateThrottleFor(
-      content::NavigationHandle* handle);
 
   // Helpers to generate page ID.
   static uint64_t GeneratePageIdForWebContents(
@@ -112,7 +104,7 @@ class PreviewsLitePageDecider
   // AvailabilityProber::Delegate:
   bool ShouldSendNextProbe() override;
   bool IsResponseSuccess(net::Error net_error,
-                         const network::ResourceResponseHead* head,
+                         const network::mojom::URLResponseHead* head,
                          std::unique_ptr<std::string> body) override;
 
   // The time after which it is ok to send the server more preview requests.

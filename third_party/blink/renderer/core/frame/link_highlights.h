@@ -30,7 +30,7 @@ class LayoutObject;
 // LinkHighlightPainter. This will be convenient to do when we remove
 // GraphicsLayer for CompositeAfterPaint.
 class CORE_EXPORT LinkHighlights final
-    : public GarbageCollectedFinalized<LinkHighlights> {
+    : public GarbageCollected<LinkHighlights> {
  public:
   explicit LinkHighlights(Page&);
   virtual ~LinkHighlights();

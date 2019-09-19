@@ -25,7 +25,7 @@ class CSSValue;
 class Element;
 
 class CanvasRenderingContext2DState final
-    : public GarbageCollectedFinalized<CanvasRenderingContext2DState>,
+    : public GarbageCollected<CanvasRenderingContext2DState>,
       public FontSelectorClient {
   USING_GARBAGE_COLLECTED_MIXIN(CanvasRenderingContext2DState);
 

@@ -180,20 +180,22 @@ void SharedImageVideo::OnContextLost() {
   context_state_ = nullptr;
 }
 
-base::Optional<VulkanYCbCrInfo> SharedImageVideo::GetYcbcrInfo() {
+base::Optional<VulkanYCbCrInfo> SharedImageVideo::GetYcbcrInfo(
+    StreamTextureSharedImageInterface* stream_texture_sii,
+    scoped_refptr<SharedContextState> context_state) {
   // For non-vulkan context, return null.
-  if (!context_state_->GrContextIsVulkan())
+  if (!context_state->GrContextIsVulkan())
     return base::nullopt;
 
   // GetAHardwareBuffer() renders the latest image and gets AHardwareBuffer
   // from it.
-  auto scoped_hardware_buffer = stream_texture_sii_->GetAHardwareBuffer();
+  auto scoped_hardware_buffer = stream_texture_sii->GetAHardwareBuffer();
   if (!scoped_hardware_buffer) {
     return base::nullopt;
   }
 
   DCHECK(scoped_hardware_buffer->buffer());
-  auto* context_provider = context_state_->vk_context_provider();
+  auto* context_provider = context_state->vk_context_provider();
   VulkanImplementation* vk_implementation =
       context_provider->GetVulkanImplementation();
   VkDevice vk_device = context_provider->GetDeviceQueue()->GetVulkanDevice();

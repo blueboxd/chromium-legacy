@@ -37,9 +37,8 @@ class WebGestureEvent;
 // This class takes care of scrolling and resizing and the related states. The
 // user action that causes scrolling or resizing is determined in other *Manager
 // classes and they call into this class for doing the work.
-class CORE_EXPORT ScrollManager
-    : public GarbageCollectedFinalized<ScrollManager>,
-      public cc::SnapFlingClient {
+class CORE_EXPORT ScrollManager : public GarbageCollected<ScrollManager>,
+                                  public cc::SnapFlingClient {
  public:
   explicit ScrollManager(LocalFrame&);
   virtual ~ScrollManager() = default;

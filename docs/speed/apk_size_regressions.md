@@ -184,6 +184,9 @@ Close the bug as "Won't Fix".
 
 # For Binary Size Sheriffs
 
+Here is the [rotation](https://rota-ng.appspot.com/oncall?name=Binary%20Size%20Sheriff)
+and [calendar](https://calendar.google.com/calendar/embed?src=c_188b8oq5puj67tl346uj3q4qosaio4gactnmuprcckn66rrd%40group.calendar.google.com&ctz=America%2FToronto).
+
 ## Step 1: Check Work Queue Daily
 
  * Bugs requiring sheriffs to take a look at are labeled `Performance-Sheriff`

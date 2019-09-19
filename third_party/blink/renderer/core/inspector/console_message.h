@@ -21,7 +21,7 @@ class WorkerThread;
 struct WebConsoleMessage;
 
 class CORE_EXPORT ConsoleMessage final
-    : public GarbageCollectedFinalized<ConsoleMessage> {
+    : public GarbageCollected<ConsoleMessage> {
  public:
   // Location must be non-null.
   static ConsoleMessage* Create(mojom::ConsoleMessageSource,

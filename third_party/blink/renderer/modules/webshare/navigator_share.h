@@ -24,7 +24,7 @@ class Navigator;
 class ShareData;
 
 class MODULES_EXPORT NavigatorShare final
-    : public GarbageCollectedFinalized<NavigatorShare>,
+    : public GarbageCollected<NavigatorShare>,
       public Supplement<Navigator> {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorShare);
 

@@ -133,6 +133,8 @@ component("gpu") {
       "android/video_frame_factory.h",
       "android/video_frame_factory_impl.cc",
       "android/video_frame_factory_impl.h",
+      "android/ycbcr_helper.cc",
+      "android/ycbcr_helper.h",
     ]
     libs += [ "android" ]
     deps += [

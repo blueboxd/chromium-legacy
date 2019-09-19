@@ -9,9 +9,8 @@
 #include "base/memory/ptr_util.h"
 #include "cc/layers/layer.h"
 #include "cc/test/fake_layer_tree_host.h"
-#include "cc/test/layer_test_common.h"
+#include "cc/test/layer_tree_impl_test_base.h"
 #include "cc/test/test_task_graph_runner.h"
-#include "cc/trees/layer_tree_host_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/transform.h"
@@ -44,7 +43,7 @@ class TestLayerImpl : public LayerImpl {
   }                                                                       \
   EXPECT_EQ(itself, layer->count_);
 
-class EffectTreeLayerListIteratorTest : public LayerTestCommon::LayerImplTest,
+class EffectTreeLayerListIteratorTest : public LayerTreeImplTestBase,
                                         public testing::Test {
  public:
   void SetUp() override {
@@ -102,7 +101,7 @@ TEST_F(EffectTreeLayerListIteratorTest, TreeWithNoDrawnLayers) {
   auto* root = static_cast<TestLayerImpl*>(root_layer());
   root->SetDrawsContent(false);
 
-  UpdateDrawProperties(host_impl()->active_tree());
+  UpdateActiveTreeDrawProperties();
 
   IterateFrontToBack();
   EXPECT_COUNT(root, 0, -1, -1);
@@ -119,7 +118,7 @@ TEST_F(EffectTreeLayerListIteratorTest, SimpleTree) {
   auto* fourth = AddLayer<TestLayerImpl>();
   CopyProperties(root, fourth);
 
-  UpdateDrawProperties(host_impl()->active_tree());
+  UpdateActiveTreeDrawProperties();
 
   IterateFrontToBack();
   EXPECT_COUNT(root, 5, -1, 4);
@@ -157,7 +156,7 @@ TEST_F(EffectTreeLayerListIteratorTest, ComplexTreeMultiSurface) {
   auto* root3 = AddLayer<TestLayerImpl>();
   CopyProperties(root, root3);
 
-  UpdateDrawProperties(host_impl()->active_tree());
+  UpdateActiveTreeDrawProperties();
 
   IterateFrontToBack();
   EXPECT_COUNT(root, 14, -1, 13);

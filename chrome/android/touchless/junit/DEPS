@@ -1,4 +1,0 @@
-include_rules = [
-  "+components/feature_engagement/public",
-  "+content/public/android/java/src/org/chromium/content_public",
-]

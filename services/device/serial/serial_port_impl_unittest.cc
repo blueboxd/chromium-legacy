@@ -6,7 +6,8 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/device/device_service_test_base.h"
 #include "services/device/public/mojom/serial.mojom.h"
 
@@ -25,48 +26,48 @@ class SerialPortImplTest : public DeviceServiceTestBase {
 
 TEST_F(SerialPortImplTest, WatcherClosedWhenPortClosed) {
   mojom::SerialPortPtr serial_port;
-  mojom::SerialPortConnectionWatcherPtrInfo watcher_ptr;
-  auto watcher_binding = mojo::MakeStrongBinding(
+  mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher;
+  auto watcher_receiver = mojo::MakeSelfOwnedReceiver(
       std::make_unique<mojom::SerialPortConnectionWatcher>(),
-      mojo::MakeRequest(&watcher_ptr));
+      watcher.InitWithNewPipeAndPassReceiver());
   SerialPortImpl::Create(base::FilePath(), mojo::MakeRequest(&serial_port),
-                         std::move(watcher_ptr),
+                         std::move(watcher),
                          base::ThreadTaskRunnerHandle::Get());
 
   // To start with both the serial port connection and the connection watcher
   // connection should remain open.
   serial_port.FlushForTesting();
   EXPECT_FALSE(serial_port.encountered_error());
-  watcher_binding->FlushForTesting();
-  EXPECT_TRUE(watcher_binding);
+  watcher_receiver->FlushForTesting();
+  EXPECT_TRUE(watcher_receiver);
 
   // When the serial port connection is closed the watcher connection should be
   // closed.
   serial_port.reset();
-  watcher_binding->FlushForTesting();
-  EXPECT_FALSE(watcher_binding);
+  watcher_receiver->FlushForTesting();
+  EXPECT_FALSE(watcher_receiver);
 }
 
 TEST_F(SerialPortImplTest, PortClosedWhenWatcherClosed) {
   mojom::SerialPortPtr serial_port;
-  mojom::SerialPortConnectionWatcherPtrInfo watcher_ptr;
-  auto watcher_binding = mojo::MakeStrongBinding(
+  mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher;
+  auto watcher_receiver = mojo::MakeSelfOwnedReceiver(
       std::make_unique<mojom::SerialPortConnectionWatcher>(),
-      mojo::MakeRequest(&watcher_ptr));
+      watcher.InitWithNewPipeAndPassReceiver());
   SerialPortImpl::Create(base::FilePath(), mojo::MakeRequest(&serial_port),
-                         std::move(watcher_ptr),
+                         std::move(watcher),
                          base::ThreadTaskRunnerHandle::Get());
 
   // To start with both the serial port connection and the connection watcher
   // connection should remain open.
   serial_port.FlushForTesting();
   EXPECT_FALSE(serial_port.encountered_error());
-  watcher_binding->FlushForTesting();
-  EXPECT_TRUE(watcher_binding);
+  watcher_receiver->FlushForTesting();
+  EXPECT_TRUE(watcher_receiver);
 
   // When the watcher connection is closed, for safety, the serial port
   // connection should also be closed.
-  watcher_binding->Close();
+  watcher_receiver->Close();
   serial_port.FlushForTesting();
   EXPECT_TRUE(serial_port.encountered_error());
 }

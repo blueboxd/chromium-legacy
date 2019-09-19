@@ -47,7 +47,7 @@ class ScrollbarTheme;
 class WebGestureEvent;
 class WebMouseEvent;
 
-class CORE_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
+class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
                               public DisplayItemClient {
  public:
   // Theme object ownership remains with the caller and it must outlive the

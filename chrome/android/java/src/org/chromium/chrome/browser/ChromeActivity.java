@@ -23,7 +23,6 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.util.Pair;
 import android.util.TypedValue;
-import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -144,7 +143,6 @@ import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.top.Toolbar;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
-import org.chromium.chrome.browser.touchless.TouchlessUiCoordinator;
 import org.chromium.chrome.browser.translate.TranslateBridge;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController;
@@ -210,16 +208,13 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     /**
      * The different types of activities extending ChromeActivity.
      */
-    @IntDef({ActivityType.BASE, ActivityType.TABBED, ActivityType.CUSTOM_TAB, ActivityType.WEBAPP,
-            ActivityType.NO_TOUCH, ActivityType.DINO})
+    @IntDef({ActivityType.BASE, ActivityType.TABBED, ActivityType.CUSTOM_TAB, ActivityType.WEBAPP})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ActivityType {
         int BASE = 0;
         int TABBED = 1;
         int CUSTOM_TAB = 2;
         int WEBAPP = 3;
-        int NO_TOUCH = 4;
-        int DINO = 5;
     }
 
     /**
@@ -338,11 +333,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     private RootUiCoordinator mRootUiCoordinator;
 
-    /**
-     * Coordinates Touchless UI across ChromeActivity-derived classes.
-     */
-    private TouchlessUiCoordinator mTouchlessUiCoordinator;
-
     // TODO(972867): Pull MenuOrKeyboardActionController out of ChromeActivity.
     private List<MenuOrKeyboardActionController.MenuOrKeyboardActionHandler> mMenuActionHandlers =
             new ArrayList<>();
@@ -361,9 +351,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         super.performPreInflationStartup();
 
         mRootUiCoordinator = createRootUiCoordinator();
-
-        // See comments on #getTouchlessUiCoordinator for why we're doing this here.
-        getTouchlessUiCoordinator();
 
         VrModuleProvider.getDelegate().doPreInflationStartup(this, getSavedInstanceState());
 
@@ -1352,9 +1339,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     @Override
     public SnackbarManager getSnackbarManager() {
-        if (getTouchlessUiCoordinator() != null) {
-            return getTouchlessUiCoordinator().getSnackbarManager();
-        }
         boolean useBottomSheetContainer = mBottomSheetController != null
                 && mBottomSheetController.getBottomSheet().isSheetOpen()
                 && !mBottomSheetController.getBottomSheet().isHiding();
@@ -1364,9 +1348,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     @Override
     protected ModalDialogManager createModalDialogManager() {
-        if (getTouchlessUiCoordinator() != null) {
-            return getTouchlessUiCoordinator().createModalDialogManager();
-        }
         return new ModalDialogManager(
                 new AppModalPresenter(this), ModalDialogManager.ModalDialogType.APP);
     }
@@ -1436,8 +1417,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (mDirectActionInitializer != null) {
             registerDirectActions();
         }
-
-        AppHooks.get().startSystemSettingsObserver();
     }
 
     /**
@@ -2500,8 +2479,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * @return Whether this Activity supports the App Menu.
      */
     public boolean supportsAppMenu() {
-        if (FeatureUtilities.isNoTouchModeEnabled()) return false;
-
         // Derived classes that disable the toolbar should also have the Menu disabled without
         // having to explicitly disable the Menu as well.
         return getToolbarLayoutId() != NO_TOOLBAR_LAYOUT;
@@ -2512,31 +2489,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     public boolean supportsFindInPage() {
         return true;
-    }
-
-    /**
-     * TODO(mthiesse): Figure out a way to clean this up. The problem is that the
-     * TouchlessUiCoordinator has an implementation of the ModalDialogManager, which is created in
-     * AsyncInitializationActivity#onCreateInternal, before any ChromeActivity init functions are
-     * called, and making AsyncInitializationActivity aware of the TouchlessUiCoordinator would be
-     * wrong. Hence, we create the UiCoordinator as soon as somebody tries to use it, but we also
-     * need to make sure it gets initialized early on regardless of whether somebody tries to use it
-     * as it monitors Lifecycles, etc.
-     */
-    public TouchlessUiCoordinator getTouchlessUiCoordinator() {
-        if (mTouchlessUiCoordinator == null && FeatureUtilities.isNoTouchModeEnabled()) {
-            mTouchlessUiCoordinator = AppHooks.get().createTouchlessUiCoordinator(this);
-        }
-        return mTouchlessUiCoordinator;
-    }
-
-    @Override
-    public boolean dispatchKeyEvent(KeyEvent event) {
-        KeyEvent toPropagate = getTouchlessUiCoordinator() != null
-                ? getTouchlessUiCoordinator().processKeyEvent(event)
-                : event;
-
-        return toPropagate == null || super.dispatchKeyEvent(toPropagate);
     }
 
     /**

@@ -10,7 +10,7 @@
 #include "base/metrics/user_metrics.h"
 #include "components/dom_distiller/content/browser/distiller_ui_handle.h"
 #include "components/dom_distiller/core/feedback_reporter.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace dom_distiller {
 
@@ -33,11 +33,11 @@ void DistillerJavaScriptServiceImpl::HandleDistillerOpenSettingsCall() {
 
 void CreateDistillerJavaScriptService(
     DistillerUIHandle* distiller_ui_handle,
-    mojom::DistillerJavaScriptServiceRequest request,
+    mojo::PendingReceiver<mojom::DistillerJavaScriptService> receiver,
     content::RenderFrameHost* render_frame_host) {
-  mojo::MakeStrongBinding(std::make_unique<DistillerJavaScriptServiceImpl>(
-                              render_frame_host, distiller_ui_handle),
-                          std::move(request));
+  mojo::MakeSelfOwnedReceiver(std::make_unique<DistillerJavaScriptServiceImpl>(
+                                  render_frame_host, distiller_ui_handle),
+                              std::move(receiver));
 }
 
 }  // namespace dom_distiller

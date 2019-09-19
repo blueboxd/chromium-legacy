@@ -24,6 +24,7 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "native_client/src/public/nonsfi/irt_random.h"
 #include "ppapi/nacl_irt/irt_manifest.h"
 #include "ppapi/nacl_irt/plugin_startup.h"
@@ -106,10 +107,10 @@ void NonSfiListener::OnStart(const nacl::NaClStartParams& params) {
   ppapi::StartUpPlugin();
 
   trusted_listener_ = std::make_unique<NaClTrustedListener>(
-      mojo::MakeProxy(nacl::mojom::NaClRendererHostPtrInfo(
+      mojo::PendingRemote<nacl::mojom::NaClRendererHost>(
           mojo::ScopedMessagePipeHandle(
               params.trusted_service_channel_handle.mojo_handle),
-          nacl::mojom::NaClRendererHost::Version_)),
+          nacl::mojom::NaClRendererHost::Version_),
       io_thread_.task_runner().get());
 
   // Ensure that the validation cache key (used as an extra input to the

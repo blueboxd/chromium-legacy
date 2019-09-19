@@ -74,6 +74,7 @@ class ExtensionNavigationThrottleUnitTest
       const GURL& extension_url,
       NavigationThrottle::ThrottleAction expected_will_start_result) {
     content::MockNavigationHandle test_handle(extension_url, host);
+    test_handle.set_initiator_origin(host->GetLastCommittedOrigin());
     test_handle.set_starting_site_instance(host->GetSiteInstance());
     auto throttle = std::make_unique<ExtensionNavigationThrottle>(&test_handle);
 
@@ -165,29 +166,6 @@ TEST_F(ExtensionNavigationThrottleUnitTest, SameExtension) {
   CheckTestCase(child, extension()->GetResourceURL(kAccessible),
                 NavigationThrottle::PROCEED);
   CheckTestCase(child, extension()->GetResourceURL(kAccessibleDirResource),
-                NavigationThrottle::PROCEED);
-}
-
-// Tests that if any of the ancestors are an external web page, we restrict
-// the resources.
-TEST_F(ExtensionNavigationThrottleUnitTest, WebPageAncestor) {
-  web_contents_tester()->NavigateAndCommit(GURL("http://example.com"));
-  content::RenderFrameHost* child =
-      render_frame_host_tester(main_rfh())->AppendChild("subframe1");
-  GURL url = extension()->GetResourceURL(kAccessible);
-  child =
-      content::NavigationSimulator::NavigateAndCommitFromDocument(url, child);
-  content::RenderFrameHost* grand_child =
-      render_frame_host_tester(child)->AppendChild("grandchild");
-
-  // Even though the immediate parent is a trusted frame, we should restrict
-  // to web_accessible_resources since the grand parent is external.
-  CheckTestCase(grand_child, extension()->GetResourceURL(kPrivate),
-                NavigationThrottle::BLOCK_REQUEST);
-  CheckTestCase(grand_child, extension()->GetResourceURL(kAccessible),
-                NavigationThrottle::PROCEED);
-  CheckTestCase(grand_child,
-                extension()->GetResourceURL(kAccessibleDirResource),
                 NavigationThrottle::PROCEED);
 }
 

@@ -1278,6 +1278,17 @@ void RecordDownloadConnectionInfo(
       net::HttpResponseInfo::ConnectionInfo::NUM_OF_CONNECTION_INFOS);
 }
 
+void RecordDownloadManagerCreationTimeSinceStartup(
+    base::TimeDelta elapsed_time) {
+  base::UmaHistogramLongTimes("Download.DownloadManager.CreationDelay",
+                              elapsed_time);
+}
+
+void RecordDownloadManagerMemoryUsage(size_t bytes_used) {
+  base::UmaHistogramMemoryKB("Download.DownloadManager.MemoryUsage",
+                             bytes_used / 1000);
+}
+
 #if defined(OS_ANDROID)
 void RecordFirstBackgroundDownloadInterruptReason(
     DownloadInterruptReason reason,

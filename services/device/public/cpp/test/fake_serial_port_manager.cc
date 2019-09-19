@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 
 namespace device {
@@ -17,12 +18,13 @@ namespace {
 
 class FakeSerialPort : public mojom::SerialPort {
  public:
-  FakeSerialPort(mojom::SerialPortRequest request,
-                 mojom::SerialPortConnectionWatcherPtr watcher)
+  FakeSerialPort(
+      mojom::SerialPortRequest request,
+      mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher)
       : binding_(this, std::move(request)), watcher_(std::move(watcher)) {
     binding_.set_connection_error_handler(base::BindOnce(
         [](FakeSerialPort* self) { delete self; }, base::Unretained(this)));
-    watcher_.set_connection_error_handler(base::BindOnce(
+    watcher_.set_disconnect_handler(base::BindOnce(
         [](FakeSerialPort* self) { delete self; }, base::Unretained(this)));
   }
 
@@ -70,7 +72,7 @@ class FakeSerialPort : public mojom::SerialPort {
 
  private:
   mojo::Binding<mojom::SerialPort> binding_;
-  mojom::SerialPortConnectionWatcherPtr watcher_;
+  mojo::Remote<mojom::SerialPortConnectionWatcher> watcher_;
 
   // Mojo handles to keep open in order to simulate an active connection.
   mojo::ScopedDataPipeConsumerHandle in_stream_;
@@ -106,7 +108,7 @@ void FakeSerialPortManager::GetDevices(GetDevicesCallback callback) {
 void FakeSerialPortManager::GetPort(
     const base::UnguessableToken& token,
     mojom::SerialPortRequest request,
-    mojom::SerialPortConnectionWatcherPtr watcher) {
+    mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher) {
   // The new FakeSerialPort instance is owned by the |request| and |watcher|
   // pipes.
   new FakeSerialPort(std::move(request), std::move(watcher));

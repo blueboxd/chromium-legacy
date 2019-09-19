@@ -33,9 +33,20 @@ enum class ControllerType {
 // Base class for tests of user interface support for web applications.
 // ControllerType selects between use of WebAppBrowserController and
 // HostedAppBrowserController.
-class WebAppControllerBrowserTest
+class WebAppControllerBrowserTestBase
     : public extensions::ExtensionBrowserTest,
       public ::testing::WithParamInterface<ControllerType> {
+ public:
+  WebAppControllerBrowserTestBase();
+  ~WebAppControllerBrowserTestBase() = 0;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebAppControllerBrowserTestBase);
+};
+
+class WebAppControllerBrowserTest : public WebAppControllerBrowserTestBase {
  public:
   WebAppControllerBrowserTest();
   ~WebAppControllerBrowserTest() = 0;

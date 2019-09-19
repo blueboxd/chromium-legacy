@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/serial.mojom.h"
 
 namespace base {
@@ -38,9 +39,10 @@ class SerialPortManagerImpl : public mojom::SerialPortManager {
  private:
   // mojom::SerialPortManager methods:
   void GetDevices(GetDevicesCallback callback) override;
-  void GetPort(const base::UnguessableToken& token,
-               mojom::SerialPortRequest request,
-               mojom::SerialPortConnectionWatcherPtr watcher) override;
+  void GetPort(
+      const base::UnguessableToken& token,
+      mojom::SerialPortRequest request,
+      mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher) override;
 
   std::unique_ptr<SerialDeviceEnumerator> enumerator_;
 

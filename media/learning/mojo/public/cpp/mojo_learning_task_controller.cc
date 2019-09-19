@@ -12,8 +12,9 @@ namespace media {
 namespace learning {
 
 MojoLearningTaskController::MojoLearningTaskController(
+    const LearningTask& task,
     mojom::LearningTaskControllerPtr controller_ptr)
-    : controller_ptr_(std::move(controller_ptr)) {}
+    : task_(task), controller_ptr_(std::move(controller_ptr)) {}
 
 MojoLearningTaskController::~MojoLearningTaskController() = default;
 
@@ -36,7 +37,7 @@ void MojoLearningTaskController::CancelObservation(base::UnguessableToken id) {
 }
 
 const LearningTask& MojoLearningTaskController::GetLearningTask() {
-  return LearningTask::Empty();
+  return task_;
 }
 
 }  // namespace learning

@@ -38,7 +38,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_request.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -149,9 +149,9 @@ void DomDistillerViewerSource::RequestViewerHandle::DidFinishNavigation(
       CHECK_EQ(0, render_frame_host->GetEnabledBindings());
 
       // Tell the renderer that this is currently a distilled page.
-      mojom::DistillerPageNotifierServicePtr page_notifier_service;
+      mojo::Remote<mojom::DistillerPageNotifierService> page_notifier_service;
       render_frame_host->GetRemoteInterfaces()->GetInterface(
-          &page_notifier_service);
+          page_notifier_service.BindNewPipeAndPassReceiver());
       DCHECK(page_notifier_service);
       page_notifier_service->NotifyIsDistillerPage();
     }

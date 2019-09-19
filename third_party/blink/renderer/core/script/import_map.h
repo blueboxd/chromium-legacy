@@ -23,8 +23,7 @@ class ScriptValue;
 // Import maps.
 // https://wicg.github.io/import-maps/
 // https://github.com/WICG/import-maps/blob/master/spec.md
-class CORE_EXPORT ImportMap final
-    : public GarbageCollectedFinalized<ImportMap> {
+class CORE_EXPORT ImportMap final : public GarbageCollected<ImportMap> {
  public:
   static ImportMap* Parse(const Modulator&,
                           const String& text,

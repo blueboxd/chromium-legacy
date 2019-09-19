@@ -111,7 +111,7 @@ void RawResource::AppendData(const char* data, size_t length) {
 }
 
 class RawResource::PreloadBytesConsumerClient final
-    : public GarbageCollectedFinalized<PreloadBytesConsumerClient>,
+    : public GarbageCollected<PreloadBytesConsumerClient>,
       public BytesConsumer::Client {
   USING_GARBAGE_COLLECTED_MIXIN(PreloadBytesConsumerClient);
 

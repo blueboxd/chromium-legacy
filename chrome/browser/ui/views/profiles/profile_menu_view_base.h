@@ -107,6 +107,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   void AddAccountFeatureButton(const gfx::ImageSkia& icon,
                                const base::string16& text,
                                base::RepeatingClosure action);
+  void SetProfileHeading(const base::string16& heading);
   void AddSelectableProfile(const gfx::Image& image,
                             const base::string16& name,
                             base::RepeatingClosure action);
@@ -223,6 +224,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   views::View* sync_info_container_ = nullptr;
   views::View* shortcut_features_container_ = nullptr;
   views::View* account_features_container_ = nullptr;
+  views::View* profile_heading_container_ = nullptr;
   views::View* selectable_profiles_container_ = nullptr;
   views::View* profile_features_container_ = nullptr;
 

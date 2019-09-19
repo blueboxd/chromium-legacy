@@ -52,7 +52,7 @@ class InputTypeView;
 // An InputType object represents the type-specific part of an HTMLInputElement.
 // Do not expose instances of InputType and classes derived from it to classes
 // other than HTMLInputElement.
-class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType> {
+class CORE_EXPORT InputType : public GarbageCollected<InputType> {
  public:
   static InputType* Create(HTMLInputElement&, const AtomicString&);
   static const AtomicString& NormalizeTypeName(const AtomicString&);

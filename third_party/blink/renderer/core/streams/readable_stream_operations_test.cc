@@ -53,7 +53,7 @@ ScriptValue ReadableStreamOperationsTestNotReached::Call(ScriptValue) {
   return ScriptValue();
 }
 
-class Iteration final : public GarbageCollectedFinalized<Iteration> {
+class Iteration final : public GarbageCollected<Iteration> {
  public:
   Iteration() : is_set_(false), is_done_(false), is_valid_(true) {}
 

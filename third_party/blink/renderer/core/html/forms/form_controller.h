@@ -78,8 +78,7 @@ inline void FormControlState::Append(const String& value) {
 using SavedFormStateMap =
     HashMap<AtomicString, std::unique_ptr<SavedFormState>>;
 
-class CORE_EXPORT DocumentState final
-    : public GarbageCollectedFinalized<DocumentState> {
+class CORE_EXPORT DocumentState final : public GarbageCollected<DocumentState> {
  public:
   DocumentState(Document& document);
   void Trace(Visitor*);
@@ -95,7 +94,7 @@ class CORE_EXPORT DocumentState final
 };
 
 class CORE_EXPORT FormController final
-    : public GarbageCollectedFinalized<FormController> {
+    : public GarbageCollected<FormController> {
  public:
   FormController(Document& document);
   ~FormController();

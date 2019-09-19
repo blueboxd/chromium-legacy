@@ -128,14 +128,6 @@
           'shards': 20,
         },
       },
-      'mac-dummy-rel': {
-        # A subset of tests seem to cause WindowServer deaths on VMs.
-        # crbug.com/828031 et al.
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
-          '--gtest_shuffle',
-        ],
-      },
       'mac-osxbeta-rel': {
         # A subset of tests seem to cause WindowServer deaths on VMs.
         # crbug.com/828031 et al.
@@ -1187,9 +1179,6 @@
       # chromium.linux
       # TODO(dpranke): Should we be running this step on Linux Tests (dbg)(1)?
       'Linux Tests (dbg)(1)',
-
-      # chromium.mac. TODO(https://crbug.com/944117): Remove this.
-      'mac-dummy-rel',
     ],
     'modifications': {
       'Linux Tests': {
@@ -1738,9 +1727,6 @@
       # chromium.win
       'Win 7 Tests x64 (1)',  # 64-bit win is unsupported by the layout tests.
       'Win10 Tests x64 (dbg)',
-
-      # chromium.mac. TODO(https://crbug.com/944117): Remove this.
-      'mac-dummy-rel',
     ],
     'modifications': {
       # chromium.fyi

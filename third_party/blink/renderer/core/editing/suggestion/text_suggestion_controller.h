@@ -26,7 +26,7 @@ struct TextSuggestionInfo;
 // suggestions (e.g. from spellcheck), and performing actions relating to those
 // suggestions. Android is currently the only platform that has such a menu.
 class CORE_EXPORT TextSuggestionController final
-    : public GarbageCollectedFinalized<TextSuggestionController>,
+    : public GarbageCollected<TextSuggestionController>,
       public DocumentShutdownObserver {
   USING_GARBAGE_COLLECTED_MIXIN(TextSuggestionController);
 

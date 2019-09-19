@@ -252,6 +252,7 @@ viz_component("common") {
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/client:raster",
     "//gpu/command_buffer/client:raster_interface",
+    "//gpu/config",
     "//gpu/ipc/common:common",
     "//gpu/vulkan:buildflags",
     "//mojo/public/cpp/base",

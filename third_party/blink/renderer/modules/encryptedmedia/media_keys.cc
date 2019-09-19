@@ -52,7 +52,7 @@ namespace blink {
 
 // A class holding a pending action.
 class MediaKeys::PendingAction final
-    : public GarbageCollectedFinalized<MediaKeys::PendingAction> {
+    : public GarbageCollected<MediaKeys::PendingAction> {
  public:
   enum class Type { kSetServerCertificate, kGetStatusForPolicy };
 

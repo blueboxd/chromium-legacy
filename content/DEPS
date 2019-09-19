@@ -29,7 +29,6 @@ include_rules = [
 
   "+crypto",
   "+grit/blink_resources.h",
-  "+grit/content_strings.h",
 
   "+dbus",
   "+gpu",

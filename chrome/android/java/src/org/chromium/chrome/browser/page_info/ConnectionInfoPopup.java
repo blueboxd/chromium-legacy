@@ -42,7 +42,7 @@ public class ConnectionInfoPopup implements OnClickListener, ModalDialogProperti
     private static final String TAG = "ConnectionInfoPopup";
 
     private static final String HELP_URL =
-            "https://support.google.com/chrome/answer/95617";
+            "https://support.google.com/chrome?p=android_connection_info";
 
     private final Context mContext;
     private final ModalDialogManager mModalDialogManager;

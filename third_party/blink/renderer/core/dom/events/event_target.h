@@ -77,7 +77,7 @@ struct FiringEventIterator {
 using FiringEventIteratorVector = Vector<FiringEventIterator, 1>;
 
 class CORE_EXPORT EventTargetData final
-    : public GarbageCollectedFinalized<EventTargetData> {
+    : public GarbageCollected<EventTargetData> {
  public:
   EventTargetData();
   ~EventTargetData();

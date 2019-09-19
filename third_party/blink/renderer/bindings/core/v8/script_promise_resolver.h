@@ -36,7 +36,7 @@ namespace blink {
 // There are cases where promises cannot work (e.g., where the thread is being
 // terminated). In such cases operations will silently fail.
 class CORE_EXPORT ScriptPromiseResolver
-    : public GarbageCollectedFinalized<ScriptPromiseResolver>,
+    : public GarbageCollected<ScriptPromiseResolver>,
       public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ScriptPromiseResolver);
   USING_PRE_FINALIZER(ScriptPromiseResolver, Dispose);

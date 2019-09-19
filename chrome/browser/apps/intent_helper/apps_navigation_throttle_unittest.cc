@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/apps/intent_helper/apps_navigation_throttle.h"
+#include "base/test/gtest_util.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -230,24 +231,27 @@ TEST(AppsNavigationThrottleTest, TestGetPickerAction) {
 
   // Expect PREFERRED depending on the value of |should_persist|, and
   // INVALID/ARC to be chosen if reason is OPEN_APP.
-  EXPECT_EQ(AppsNavigationThrottle::PickerAction::INVALID,
-            AppsNavigationThrottle::GetPickerAction(
-                PickerEntryType::kUnknown, IntentPickerCloseReason::OPEN_APP,
-                /*should_persist=*/true));
+  EXPECT_DCHECK_DEATH(AppsNavigationThrottle::GetPickerAction(
+      PickerEntryType::kUnknown, IntentPickerCloseReason::OPEN_APP,
+      /*should_persist=*/true));
 
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::ARC_APP_PREFERRED_PRESSED,
             AppsNavigationThrottle::GetPickerAction(
                 PickerEntryType::kArc, IntentPickerCloseReason::OPEN_APP,
                 /*should_persist=*/true));
 
-  EXPECT_EQ(AppsNavigationThrottle::PickerAction::INVALID,
-            AppsNavigationThrottle::GetPickerAction(
-                PickerEntryType::kUnknown, IntentPickerCloseReason::OPEN_APP,
-                /*should_persist=*/false));
+  EXPECT_DCHECK_DEATH(AppsNavigationThrottle::GetPickerAction(
+      PickerEntryType::kUnknown, IntentPickerCloseReason::OPEN_APP,
+      /*should_persist=*/false));
 
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::ARC_APP_PRESSED,
             AppsNavigationThrottle::GetPickerAction(
                 PickerEntryType::kArc, IntentPickerCloseReason::OPEN_APP,
+                /*should_persist=*/false));
+
+  EXPECT_EQ(AppsNavigationThrottle::PickerAction::DEVICE_PRESSED,
+            AppsNavigationThrottle::GetPickerAction(
+                PickerEntryType::kDevice, IntentPickerCloseReason::OPEN_APP,
                 /*should_persist=*/false));
 }
 

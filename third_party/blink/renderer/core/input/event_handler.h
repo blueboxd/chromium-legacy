@@ -79,8 +79,7 @@ class WebMouseEvent;
 class WebMouseWheelEvent;
 
 // Handles events for Pointers (Mouse/Touch), HitTests, DragAndDrop, etc.
-class CORE_EXPORT EventHandler final
-    : public GarbageCollectedFinalized<EventHandler> {
+class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
  public:
   explicit EventHandler(LocalFrame&);
   void Trace(blink::Visitor*);

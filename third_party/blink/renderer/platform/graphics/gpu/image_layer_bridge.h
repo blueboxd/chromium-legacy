@@ -30,9 +30,8 @@ class Size;
 namespace blink {
 
 class PLATFORM_EXPORT ImageLayerBridge
-    : public GarbageCollectedFinalized<ImageLayerBridge>,
+    : public GarbageCollected<ImageLayerBridge>,
       public cc::TextureLayerClient {
-
  public:
   ImageLayerBridge(OpacityMode);
   ~ImageLayerBridge() override;

@@ -33,7 +33,7 @@ class ExecutionContext;
 //
 // For more information, see https://github.com/jpchase/OriginTrials.
 class CORE_EXPORT OriginTrialContext final
-    : public GarbageCollectedFinalized<OriginTrialContext> {
+    : public GarbageCollected<OriginTrialContext> {
  public:
   OriginTrialContext();
   explicit OriginTrialContext(std::unique_ptr<TrialTokenValidator> validator);

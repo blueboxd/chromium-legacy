@@ -27,7 +27,7 @@ class DownloadManagerServiceTest : public testing::Test {
  public:
   DownloadManagerServiceTest()
       : service_(new DownloadManagerService()),
-        coordinator_(base::NullCallback()),
+        coordinator_(base::NullCallback(), false),
         finished_(false),
         success_(false) {
     ON_CALL(manager_, GetDownloadByGuid(_))

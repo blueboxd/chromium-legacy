@@ -8,7 +8,6 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/send_tab_to_self/desktop_notification_handler.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
@@ -17,9 +16,6 @@
 #include "components/send_tab_to_self/target_device_info.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/native_theme/native_theme.h"
-#include "ui/resources/grit/ui_resources.h"
 #include "url/gurl.h"
 
 namespace send_tab_to_self {
@@ -81,15 +77,6 @@ void ShareToSingleTarget(content::WebContents* tab, const GURL& link_url) {
           ->GetTargetDeviceInfoSortedList();
   CreateNewEntry(tab, devices.begin()->device_name, devices.begin()->cache_guid,
                  link_url);
-}
-
-gfx::ImageSkia* GetImageSkia() {
-  const ui::NativeTheme* native_theme =
-      ui::NativeTheme::GetInstanceForNativeUi();
-  bool is_dark = native_theme && native_theme->ShouldUseDarkColors();
-  int resource_id = is_dark ? IDR_SEND_TAB_TO_SELF_ICON_DARK
-                            : IDR_SEND_TAB_TO_SELF_ICON_LIGHT;
-  return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id);
 }
 
 void RecordSendTabToSelfClickResult(const std::string& entry_point,

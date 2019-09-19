@@ -17,7 +17,7 @@ namespace blink {
 
 class ScriptPromiseResolver;
 
-class KeyboardLock final : public GarbageCollectedFinalized<KeyboardLock>,
+class KeyboardLock final : public GarbageCollected<KeyboardLock>,
                            public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(KeyboardLock);
 

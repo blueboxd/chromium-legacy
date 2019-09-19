@@ -17,8 +17,6 @@ import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.touchless.TouchlessDelegate;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.webapps.WebApkActivity;
 import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
@@ -212,24 +210,17 @@ public class AndroidPermissionRequester {
                 }
             }
         };
-        PropertyModel dialogModel;
-        if (FeatureUtilities.isNoTouchModeEnabled()) {
-            dialogModel = TouchlessDelegate.getMissingPermissionDialogModel(
-                    activity, controller, messageId);
-        } else {
-            View view =
-                    activity.getLayoutInflater().inflate(R.layout.update_permissions_dialog, null);
-            TextView dialogText = view.findViewById(R.id.text);
-            dialogText.setText(messageId);
-            dialogModel = new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
-                                  .with(ModalDialogProperties.CUSTOM_VIEW, view)
-                                  .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, true)
-                                  .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT,
-                                          activity.getString(
-                                                  R.string.infobar_update_permissions_button_text))
-                                  .with(ModalDialogProperties.CONTROLLER, controller)
-                                  .build();
-        }
+        View view = activity.getLayoutInflater().inflate(R.layout.update_permissions_dialog, null);
+        TextView dialogText = view.findViewById(R.id.text);
+        dialogText.setText(messageId);
+        PropertyModel dialogModel =
+                new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                        .with(ModalDialogProperties.CUSTOM_VIEW, view)
+                        .with(ModalDialogProperties.CANCEL_ON_TOUCH_OUTSIDE, true)
+                        .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT,
+                                activity.getString(R.string.infobar_update_permissions_button_text))
+                        .with(ModalDialogProperties.CONTROLLER, controller)
+                        .build();
         modalDialogManager.showDialog(dialogModel, ModalDialogManager.ModalDialogType.APP);
     }
 }

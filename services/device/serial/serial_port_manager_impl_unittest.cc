@@ -18,6 +18,7 @@
 #include "base/threading/thread.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/device/device_service_test_base.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -77,7 +78,7 @@ TEST_F(SerialPortManagerImplTest, SimpleConnectTest) {
         for (auto& device : results) {
           mojom::SerialPortPtr serial_port;
           port_manager->GetPort(device->token, mojo::MakeRequest(&serial_port),
-                                /*watcher=*/nullptr);
+                                /*watcher=*/mojo::NullRemote());
           // Send a message on the pipe and wait for the response to make sure
           // that the interface request was bound successfully.
           serial_port.FlushForTesting();
@@ -119,7 +120,7 @@ TEST_F(SerialPortManagerImplTest, GetPort) {
         mojom::SerialPortPtr serial_port;
         port_manager->GetPort(results[0]->token,
                               mojo::MakeRequest(&serial_port),
-                              /*watcher=*/nullptr);
+                              /*watcher=*/mojo::NullRemote());
         // Send a message on the pipe and wait for the response to make sure
         // that the interface request was bound successfully.
         serial_port.FlushForTesting();

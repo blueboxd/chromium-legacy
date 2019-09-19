@@ -31,6 +31,7 @@
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
 #include "ui/gfx/color_space.h"
+#include "ui/gfx/swap_result.h"
 #include "ui/latency/latency_info.h"
 
 namespace gfx {
@@ -178,6 +179,39 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   bool IsRootFrameMissing() const;
 
  private:
+  // PresentationGroupTiming stores rendering pipeline stage timings associated
+  // with a call to Display::DrawAndSwap along with a list of
+  // Surface::PresentationHelper's for each aggregated Surface that will be
+  // presented.
+  class PresentationGroupTiming {
+   public:
+    explicit PresentationGroupTiming(base::TimeTicks swap_triggered_timestamp);
+    PresentationGroupTiming(PresentationGroupTiming&& other);
+    ~PresentationGroupTiming();
+
+    void AddPresentationHelper(
+        std::unique_ptr<Surface::PresentationHelper> helper);
+    void OnDraw(base::TimeTicks draw_start_timestamp);
+    void OnSwap(gfx::SwapTimings timings);
+    bool HasSwapped() const { return !swap_timings_.is_null(); }
+    void OnPresent(const gfx::PresentationFeedback& feedback);
+
+    base::TimeTicks draw_and_swap_triggered_timestamp() const {
+      return draw_and_swap_triggered_timestamp_;
+    }
+
+   private:
+    // Not currently tracked by metrics but is used for
+    // SanitizePresentationFeedback()
+    base::TimeTicks draw_and_swap_triggered_timestamp_;
+    base::TimeTicks draw_start_timestamp_;
+    gfx::SwapTimings swap_timings_;
+    std::vector<std::unique_ptr<Surface::PresentationHelper>>
+        presentation_helpers_;
+
+    DISALLOW_COPY_AND_ASSIGN(PresentationGroupTiming);
+  };
+
   // TODO(cblume, crbug.com/900973): |enable_shared_images| is a temporary
   // solution that unblocks us until SharedImages are threadsafe in WebView.
   void InitializeRenderer(bool enable_shared_images = true);
@@ -220,14 +254,11 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   std::vector<ui::LatencyInfo> stored_latency_info_;
   std::vector<SurfaceId> surfaces_to_ack_on_next_draw_;
 
-  // |pending_surfaces_with_presentation_helpers_| is a list of lists of
-  // Surface::PresentationHelpers. The lists are grouped by swap (each surface
-  // involved in an individual Swap is added to the list. These are then
-  // notified of presentation after the appropriate Swap is completed.
-  base::circular_deque<
-      std::pair<base::TimeTicks,
-                std::vector<std::unique_ptr<Surface::PresentationHelper>>>>
-      pending_surfaces_with_presentation_helpers_;
+  // |pending_presentation_group_timings_| stores a
+  // Display::PresentationGroupTiming for each group currently waiting for
+  // Display::DidReceivePresentationFeedack()
+  base::circular_deque<Display::PresentationGroupTiming>
+      pending_presentation_group_timings_;
 
   // Callback that will be run after all pending swaps have acked.
   base::OnceClosure no_pending_swaps_callback_;
@@ -235,6 +266,8 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   int64_t swapped_trace_id_ = 0;
   int64_t last_presented_trace_id_ = 0;
 
+  // TODO(nazabris, crbug.com/1003892): remove this member now that
+  // PresentationGroupTiming stores the same info.
   base::circular_deque<base::TimeTicks> draw_start_times_pending_swap_ack_;
 
   DISALLOW_COPY_AND_ASSIGN(Display);

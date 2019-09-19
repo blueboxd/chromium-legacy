@@ -25,7 +25,7 @@ blink::ScrollbarThemeMock scrollbar_theme_;
 
 namespace blink {
 
-class ScrollableAreaStub : public GarbageCollectedFinalized<ScrollableAreaStub>,
+class ScrollableAreaStub : public GarbageCollected<ScrollableAreaStub>,
                            public ScrollableArea {
   USING_GARBAGE_COLLECTED_MIXIN(ScrollableAreaStub);
 

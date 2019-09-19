@@ -41,8 +41,6 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabThemeColorHelper;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.chrome.browser.webapps.WebappAuthenticator;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
@@ -50,7 +48,6 @@ import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.content_public.common.ScreenOrientationConstants;
-import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.ui.widget.Toast;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
@@ -200,16 +197,14 @@ public class ShortcutHelper {
             final String userTitle, final String name, final String shortName, final String iconUrl,
             final Bitmap icon, boolean isIconAdaptive, @WebDisplayMode final int displayMode,
             final int orientation, final int source, final long themeColor,
-            final long backgroundColor, final long callbackPointer,
-            final boolean isShortcutAsWebapp) {
+            final long backgroundColor, final long callbackPointer) {
         new AsyncTask<Intent>() {
             @Override
             protected Intent doInBackground() {
                 // Encoding {@link icon} as a string and computing the mac are expensive.
 
                 // Shortcuts as Webapps on O+ launch into a non-exported component for verification.
-                boolean usesMacForVerification =
-                        !isShortcutAsWebapp || Build.VERSION.SDK_INT < Build.VERSION_CODES.O;
+                boolean usesMacForVerification = Build.VERSION.SDK_INT < Build.VERSION_CODES.O;
 
                 // Encode the icon as a base64 string (Launcher drops Bitmaps in the Intent).
                 String encodedIcon = encodeBitmapAsString(icon);
@@ -255,17 +250,6 @@ public class ShortcutHelper {
     @CalledByNative
     public static void addShortcut(@Nullable Tab tab, String id, String url, String userTitle,
             Bitmap icon, boolean isIconAdaptive, int source, String iconUrl) {
-        if (FeatureUtilities.isNoTouchModeEnabled()) {
-            // There are no tabs in NoTouchMode, so we want to give shortcuts a more app-like
-            // experience.
-            long themeColor = (tab == null) ? MANIFEST_COLOR_INVALID_OR_MISSING
-                                            : TabThemeColorHelper.getColor(tab);
-            addWebapp(id, url, getScopeFromUrl(url), userTitle, userTitle, userTitle, iconUrl, icon,
-                    isIconAdaptive, WebDisplayMode.STANDALONE, ScreenOrientationValues.DEFAULT,
-                    source, themeColor, MANIFEST_COLOR_INVALID_OR_MISSING, 0 /* callbackPointer */,
-                    true /* isShortcutAsWebapp */);
-            return;
-        }
         Intent shortcutIntent = createShortcutIntent(url);
         shortcutIntent.putExtra(EXTRA_ID, id);
         shortcutIntent.putExtra(EXTRA_SOURCE, source);
@@ -309,12 +293,7 @@ public class ShortcutHelper {
      */
     private static void showAddedToHomescreenToast(final String title) {
         Context applicationContext = ContextUtils.getApplicationContext();
-        String toastText;
-        if (FeatureUtilities.isNoTouchModeEnabled()) {
-            toastText = applicationContext.getString(R.string.added_to_apps, title);
-        } else {
-            toastText = applicationContext.getString(R.string.added_to_homescreen, title);
-        }
+        String toastText = applicationContext.getString(R.string.added_to_homescreen, title);
         showToast(toastText);
     }
 
@@ -740,7 +719,7 @@ public class ShortcutHelper {
     }
 
     private static boolean shouldShowToastWhenAddingShortcut() {
-        return !isRequestPinShortcutSupported() || FeatureUtilities.isNoTouchModeEnabled();
+        return !isRequestPinShortcutSupported();
     }
 
     private static boolean isRequestPinShortcutSupported() {

@@ -45,9 +45,7 @@ class FontDescription;
 class RemoteFontFaceSource;
 class SimpleFontData;
 
-class CORE_EXPORT CSSFontFace final
-    : public GarbageCollectedFinalized<CSSFontFace> {
-
+class CORE_EXPORT CSSFontFace final : public GarbageCollected<CSSFontFace> {
  public:
   CSSFontFace(FontFace* font_face, Vector<UnicodeRange>& ranges)
       : ranges_(base::AdoptRef(new UnicodeRangeSet(ranges))),

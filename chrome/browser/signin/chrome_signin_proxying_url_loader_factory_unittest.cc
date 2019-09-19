@@ -272,7 +272,8 @@ TEST_F(ChromeSigninProxyingURLLoaderFactoryTest, ModifyHeaders) {
   // Wait for the request to complete and check the response.
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(net::OK, loader()->NetError());
-  const network::ResourceResponseHead* response_head = loader()->ResponseInfo();
+  const network::mojom::URLResponseHead* response_head =
+      loader()->ResponseInfo();
   ASSERT_TRUE(response_head && response_head->headers);
   EXPECT_FALSE(response_head->headers->HasHeader("X-Response-3"));
   EXPECT_TRUE(response_head->headers->HasHeader("X-Response-4"));

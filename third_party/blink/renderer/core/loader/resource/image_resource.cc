@@ -67,7 +67,7 @@ constexpr auto kFlushDelay = base::TimeDelta::FromSeconds(1);
 }  // namespace
 
 class ImageResource::ImageResourceInfoImpl final
-    : public GarbageCollectedFinalized<ImageResourceInfoImpl>,
+    : public GarbageCollected<ImageResourceInfoImpl>,
       public ImageResourceInfo {
   USING_GARBAGE_COLLECTED_MIXIN(ImageResourceInfoImpl);
 

@@ -44,6 +44,7 @@
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/test/animation_test_common.h"
+#include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_mask_layer_impl.h"
@@ -62,11 +63,11 @@
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/latency_info_swap_promise.h"
-#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/render_frame_metadata.h"
 #include "cc/trees/render_frame_metadata_observer.h"
+#include "cc/trees/scroll_and_scale_set.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/transform_node.h"
@@ -294,11 +295,11 @@ class LayerTreeHostImplTest : public testing::Test,
                     const gfx::Size& viewport_size,
                     Args&&... args) {
     const int kRootLayerId = 1;
-    DCHECK(!layer_tree_impl->root_layer_for_testing());
+    DCHECK(!layer_tree_impl->root_layer());
     DCHECK(!layer_tree_impl->LayerById(kRootLayerId));
     layer_tree_impl->SetRootLayerForTesting(
         T::Create(layer_tree_impl, kRootLayerId, std::forward<Args>(args)...));
-    auto* root = layer_tree_impl->root_layer_for_testing();
+    auto* root = layer_tree_impl->root_layer();
     root->SetBounds(viewport_size);
     layer_tree_impl->SetDeviceViewportRect(
         gfx::Rect(DipSizeToPixelSize(viewport_size)));
@@ -310,9 +311,7 @@ class LayerTreeHostImplTest : public testing::Test,
     return SetupRootLayer<LayerImpl>(host_impl_->active_tree(), viewport_size);
   }
 
-  LayerImpl* root_layer() {
-    return host_impl_->active_tree()->root_layer_for_testing();
-  }
+  LayerImpl* root_layer() { return host_impl_->active_tree()->root_layer(); }
 
   gfx::Size DipSizeToPixelSize(const gfx::Size& size) {
     return gfx::ScaleToRoundedSize(
@@ -393,7 +392,7 @@ class LayerTreeHostImplTest : public testing::Test,
                            const gfx::Size& inner_viewport_size,
                            const gfx::Size& outer_viewport_size,
                            const gfx::Size& content_size) {
-    DCHECK(!layer_tree_impl->root_layer_for_testing());
+    DCHECK(!layer_tree_impl->root_layer());
     auto* root =
         SetupRootLayer<LayerImpl>(layer_tree_impl, inner_viewport_size);
     SetupViewport(root, outer_viewport_size, content_size);
@@ -550,15 +549,8 @@ class LayerTreeHostImplTest : public testing::Test,
     return scroll_state;
   }
 
-  void UpdateDrawProperties(LayerTreeImpl* layer_tree_impl) {
-    LayerTreeHostCommon::PrepareForUpdateDrawPropertiesForTesting(
-        layer_tree_impl);
-    layer_tree_impl->UpdateDrawProperties();
-  }
-
   void DrawFrame() {
-    LayerTreeHostCommon::PrepareForUpdateDrawPropertiesForTesting(
-        host_impl_->active_tree());
+    PrepareForUpdateDrawProperties(host_impl_->active_tree());
     TestFrameData frame;
     EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
     host_impl_->DrawLayers(&frame);
@@ -694,8 +686,7 @@ class LayerTreeHostImplTest : public testing::Test,
   }
 
   void DrawOneFrame() {
-    LayerTreeHostCommon::PrepareForUpdateDrawPropertiesForTesting(
-        host_impl_->active_tree());
+    PrepareForUpdateDrawProperties(host_impl_->active_tree());
     TestFrameData frame_data;
     host_impl_->PrepareToDraw(&frame_data);
     host_impl_->DidDrawAllLayers(frame_data);
@@ -1999,10 +1990,7 @@ TEST_F(LayerTreeHostImplTest, AnimationSchedulingCommitToActiveTree) {
 
   // Set up the property trees so that UpdateDrawProperties will work in
   // CommitComplete below.
-  RenderSurfaceList list;
-  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root, gfx::Rect(50, 50), &list);
-  LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
+  UpdateDrawProperties(host_impl_->active_tree());
 
   EXPECT_FALSE(did_request_next_frame_);
   EXPECT_FALSE(did_request_redraw_);
@@ -5614,7 +5602,7 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
   EXPECT_EQ(viewport_size_, inner_clip->bounds());
   EXPECT_EQ(0.f, host_impl_->browser_controls_manager()->ContentTopOffset());
 
-  host_impl_->sync_tree()->root_layer_for_testing()->SetBounds(gfx::Size(
+  host_impl_->sync_tree()->root_layer()->SetBounds(gfx::Size(
       inner_clip->bounds().width(), inner_clip->bounds().height() - 50.f));
 
   host_impl_->ActivateSyncTree();
@@ -8471,8 +8459,8 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
   }
 
   void VerifyQuadsExactlyCoverViewport(const viz::QuadList& quad_list) {
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(
-        quad_list, gfx::Rect(DipSizeToPixelSize(viewport_size_)));
+    VerifyQuadsExactlyCoverRect(quad_list,
+                                gfx::Rect(DipSizeToPixelSize(viewport_size_)));
   }
 
   // Make sure that the texture coordinates match their expectations.
@@ -8992,7 +8980,7 @@ TEST_F(LayerTreeHostImplTest,
                      resourceless_software_draw, false);
 
   EXPECT_EQ(1u, last_on_draw_frame_->will_draw_layers.size());
-  EXPECT_EQ(host_impl_->active_tree()->root_layer_for_testing(),
+  EXPECT_EQ(host_impl_->active_tree()->root_layer(),
             last_on_draw_frame_->will_draw_layers[0]);
 }
 
@@ -10717,9 +10705,7 @@ TEST_F(CommitToPendingTreeLayerTreeHostImplTest,
   CreatePendingTree();
   SetupRootLayer<LayerImpl>(host_impl_->pending_tree(), layer_size);
   UpdateDrawProperties(host_impl_->pending_tree());
-  host_impl_->pending_tree()
-      ->root_layer_for_testing()
-      ->SetNeedsPushProperties();
+  host_impl_->pending_tree()->root_layer()->SetNeedsPushProperties();
 
   host_impl_->ActivateSyncTree();
   UpdateDrawProperties(host_impl_->active_tree());
@@ -12337,53 +12323,6 @@ TEST_F(LayerTreeHostImplTest, SubLayerScaleForNodeInSubtreeOfPageScaleLayer) {
   EXPECT_EQ(node->surface_contents_scale, gfx::Vector2dF(2.f, 2.f));
 }
 
-TEST_F(LayerTreeHostImplTest, JitterTest) {
-  host_impl_->active_tree()->SetDeviceViewportRect(gfx::Rect(100, 100));
-
-  CreatePendingTree();
-  SetupViewportLayers(host_impl_->pending_tree(), gfx::Size(50, 50),
-                      gfx::Size(100, 100), gfx::Size(100, 100));
-  auto* scroll_layer = host_impl_->pending_tree()->InnerViewportScrollLayer();
-  auto* content_layer = AddLayer<LayerImpl>(host_impl_->pending_tree());
-  content_layer->SetBounds(gfx::Size(100, 100));
-  content_layer->SetDrawsContent(true);
-  CopyProperties(host_impl_->pending_tree()->OuterViewportScrollLayer(),
-                 content_layer);
-  UpdateDrawProperties(host_impl_->pending_tree());
-
-  host_impl_->pending_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
-  const int scroll = 5;
-  int accumulated_scroll = 0;
-  for (int i = 0; i < LayerTreeImpl::kFixedPointHitsThreshold + 1; ++i) {
-    host_impl_->ActivateSyncTree();
-    accumulated_scroll += scroll;
-    SetScrollOffset(host_impl_->InnerViewportScrollLayer(),
-                    gfx::ScrollOffset(0, accumulated_scroll));
-    UpdateDrawProperties(host_impl_->active_tree());
-
-    CreatePendingTree();
-    LayerTreeImpl* pending_tree = host_impl_->pending_tree();
-    pending_tree->set_source_frame_number(i + 1);
-    pending_tree->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
-    // Simulate scroll offset pushed from the main thread.
-    SetScrollOffset(scroll_layer, gfx::ScrollOffset(0, accumulated_scroll));
-    // The scroll done on the active tree is undone on the pending tree.
-    content_layer->SetOffsetToTransformParent(
-        gfx::Vector2dF(0, accumulated_scroll));
-    content_layer->SetNeedsPushProperties();
-    pending_tree->UpdateDrawProperties();
-
-    float jitter = LayerTreeHostCommon::CalculateLayerJitter(content_layer);
-    // There should not be any jitter measured till we hit the fixed point hits
-    // threshold. 250 is sqrt(50 * 50) * 5. 50x50 is the visible bounds of
-    // content (clipped by the viewport). 5 is the distance between the
-    // locations of the content in the pending tree and the active tree.
-    float expected_jitter =
-        (i == pending_tree->kFixedPointHitsThreshold) ? 250 : 0;
-    EXPECT_EQ(jitter, expected_jitter);
-  }
-}
-
 // Checks that if we lose a GPU raster enabled LayerTreeFrameSink and replace
 // it with a software LayerTreeFrameSink, LayerTreeHostImpl correctly
 // re-computes GPU rasterization status.
@@ -12714,8 +12653,7 @@ TEST_F(LayerTreeHostImplTest, CheckerImagingTileInvalidation) {
   // invalidated on the pending tree.
   host_impl_->InvalidateContentOnImplSide();
   pending_tree = host_impl_->pending_tree();
-  root = static_cast<FakePictureLayerImpl*>(
-      pending_tree->root_layer_for_testing());
+  root = static_cast<FakePictureLayerImpl*>(pending_tree->root_layer());
   for (auto* tile : root->tilings()->tiling_at(0)->AllTilesForTesting()) {
     if (tile->tiling_i_index() < 2 && tile->tiling_j_index() < 2)
       EXPECT_TRUE(tile->HasRasterTask());

@@ -71,7 +71,7 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
                                bool is_in_drag);
 
   // Updates y position and opacity of the items in this view during dragging.
-  void UpdateYPositionAndOpacity();
+  void UpdateYPositionAndOpacity(float progress, bool restore_opacity);
 
   // Called when tablet mode starts and ends.
   void OnTabletModeChanged(bool started);

@@ -48,7 +48,7 @@ void DeviceDescriptionFetcher::ProcessResponse(const std::string& response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(fetcher_);
 
-  const network::ResourceResponseHead* response_info =
+  const network::mojom::URLResponseHead* response_info =
       fetcher_->GetResponseHead();
   DCHECK(response_info);
 

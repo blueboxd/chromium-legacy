@@ -7,35 +7,43 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
+#include "components/viz/service/display/dc_layer_overlay.h"
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/command_buffer/service/mailbox_manager.h"
+#include "gpu/command_buffer/service/texture_base.h"
+#include "gpu/command_buffer/service/texture_manager.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSurfaceProps.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "ui/gl/color_space_utils.h"
+#include "ui/gl/dc_renderer_layer_params.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_version_info.h"
+
 namespace viz {
 
 SkiaOutputDeviceGL::SkiaOutputDeviceGL(
+    gpu::MailboxManager* mailbox_manager,
     scoped_refptr<gl::GLSurface> gl_surface,
     scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
     const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback)
     : SkiaOutputDevice(false /*need_swap_semaphore */,
                        did_swap_buffer_complete_callback),
-      gl_surface_(gl_surface) {
+      mailbox_manager_(mailbox_manager),
+      gl_surface_(std::move(gl_surface)) {
   capabilities_.flipped_output_surface = gl_surface_->FlipsVertically();
   capabilities_.supports_post_sub_buffer = gl_surface_->SupportsPostSubBuffer();
   if (feature_info->workarounds()
           .disable_post_sub_buffers_for_onscreen_surfaces)
     capabilities_.supports_post_sub_buffer = false;
-  capabilities_.max_frames_pending = gl_surface->GetBufferCount() - 1;
-  capabilities_.supports_dc_layers = gl_surface->SupportsDCLayers();
+  capabilities_.max_frames_pending = gl_surface_->GetBufferCount() - 1;
+  capabilities_.supports_dc_layers = gl_surface_->SupportsDCLayers();
 }
 
 void SkiaOutputDeviceGL::Initialize(GrContext* gr_context,
@@ -154,6 +162,51 @@ void SkiaOutputDeviceGL::SetDrawRectangle(const gfx::Rect& draw_rectangle) {
   gl_surface_->SetDrawRectangle(draw_rectangle);
 }
 
+void SkiaOutputDeviceGL::SetEnableDCLayers(bool enable) {
+  gl_surface_->SetEnableDCLayers(enable);
+}
+
+void SkiaOutputDeviceGL::ScheduleDCLayers(
+    std::vector<DCLayerOverlay> dc_layers) {
+  for (auto& dc_layer : dc_layers) {
+    ui::DCRendererLayerParams params;
+
+    // Get GLImages for DC layer textures.
+    bool success = true;
+    for (size_t i = 0; i < DCLayerOverlay::kNumResources; ++i) {
+      if (i > 0 && dc_layer.mailbox[i].IsZero())
+        break;
+
+      auto image = GetGLImageForMailbox(dc_layer.mailbox[i]);
+      if (!image) {
+        success = false;
+        break;
+      }
+
+      image->SetColorSpace(dc_layer.color_space);
+      params.images[i] = std::move(image);
+    }
+
+    if (!success) {
+      DLOG(ERROR) << "Failed to get GLImage for DC layer.";
+      continue;
+    }
+
+    params.z_order = dc_layer.z_order;
+    params.content_rect = dc_layer.content_rect;
+    params.quad_rect = dc_layer.quad_rect;
+    DCHECK(dc_layer.transform.IsFlat());
+    params.transform = dc_layer.transform;
+    params.is_clipped = dc_layer.is_clipped;
+    params.clip_rect = dc_layer.clip_rect;
+    params.protected_video_type = dc_layer.protected_video_type;
+
+    // Schedule DC layer overlay to be presented at next SwapBuffers().
+    if (!gl_surface_->ScheduleDCLayer(params))
+      DLOG(ERROR) << "ScheduleDCLayer failed";
+  }
+}
+
 void SkiaOutputDeviceGL::EnsureBackbuffer() {
   gl_surface_->SetBackbufferAllocation(true);
 }
@@ -168,5 +221,25 @@ SkSurface* SkiaOutputDeviceGL::BeginPaint() {
 }
 
 void SkiaOutputDeviceGL::EndPaint(const GrBackendSemaphore& semaphore) {}
+
+scoped_refptr<gl::GLImage> SkiaOutputDeviceGL::GetGLImageForMailbox(
+    const gpu::Mailbox& mailbox) {
+  // TODO(crbug.com/1005306): Use SharedImageManager to get textures here once
+  // all clients are using SharedImageInterface to create textures.
+  auto* texture_base = mailbox_manager_->ConsumeTexture(mailbox);
+  if (!texture_base)
+    return nullptr;
+
+  if (texture_base->GetType() == gpu::TextureBase::Type::kPassthrough) {
+    gpu::gles2::TexturePassthrough* texture =
+        static_cast<gpu::gles2::TexturePassthrough*>(texture_base);
+    return texture->GetLevelImage(texture->target(), 0);
+  } else {
+    DCHECK_EQ(texture_base->GetType(), gpu::TextureBase::Type::kValidated);
+    gpu::gles2::Texture* texture =
+        static_cast<gpu::gles2::Texture*>(texture_base);
+    return texture->GetLevelImage(texture->target(), 0);
+  }
+}
 
 }  // namespace viz

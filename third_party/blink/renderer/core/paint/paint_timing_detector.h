@@ -54,10 +54,10 @@ class PaintTimingCallbackManager : public GarbageCollectedMixin {
 // An extra benefit of this design is that |LargestContentfulPaintCalculator|
 // can thus hook to the end of the LIP and LTP's record assignments.
 //
-// |GarbageCollectedFinalized| inheritance is required by the swap-time callback
+// |GarbageCollected| inheritance is required by the swap-time callback
 // registration.
 class PaintTimingCallbackManagerImpl final
-    : public GarbageCollectedFinalized<PaintTimingCallbackManagerImpl>,
+    : public GarbageCollected<PaintTimingCallbackManagerImpl>,
       public PaintTimingCallbackManager {
   USING_GARBAGE_COLLECTED_MIXIN(PaintTimingCallbackManagerImpl);
 

@@ -27,7 +27,7 @@ using PublicState = BytesConsumer::PublicState;
 using Result = BytesConsumer::Result;
 
 class BlobBytesConsumerTestClient final
-    : public GarbageCollectedFinalized<BlobBytesConsumerTestClient>,
+    : public GarbageCollected<BlobBytesConsumerTestClient>,
       public BytesConsumer::Client {
   USING_GARBAGE_COLLECTED_MIXIN(BlobBytesConsumerTestClient);
 

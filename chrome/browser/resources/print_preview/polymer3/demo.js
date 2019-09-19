@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_components/managed_footnote/managed_footnote.m.js';
 import 'chrome://resources/cr_elements/action_link_css.m.js';
 import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
@@ -25,6 +26,7 @@ import 'chrome://resources/cr_elements/md_select_css.m.js';
 import 'chrome://resources/cr_elements/policy/cr_tooltip_icon.m.js';
 import 'chrome://resources/js/action_link.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
+import '../strings.m.js';
 
 import * as crToastManager from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -155,6 +157,10 @@ class HelloPolymer3Element extends PolymerElement {
         <cr-button on-click="showToastWithManager_">
           Show toast for 2s
         </cr-button>
+      </div>
+
+      <div>
+        <managed-footnote></managed-footnote>
       </div>
     `;
   }

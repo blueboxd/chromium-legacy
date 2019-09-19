@@ -172,6 +172,7 @@ void ProfileMenuView::BuildMenu() {
   BuildSyncInfo();
   BuildAutofillButtons();
   BuildAccountFeatureButtons();
+  BuildProfileHeading();
   BuildSelectableProfiles();
   BuildProfileFeatureButtons();
 }
@@ -485,6 +486,12 @@ void ProfileMenuView::BuildAccountFeatureButtons() {
         base::BindRepeating(&ProfileMenuView::OnSignoutButtonClicked,
                             base::Unretained(this)));
   }
+}
+
+void ProfileMenuView::BuildProfileHeading() {
+  // TODO(crbug.com/995720): Update this string after approval from UX.
+  SetProfileHeading(
+      l10n_util::GetStringUTF16(IDS_PROFILES_MANAGE_USERS_BUTTON));
 }
 
 void ProfileMenuView::BuildSelectableProfiles() {

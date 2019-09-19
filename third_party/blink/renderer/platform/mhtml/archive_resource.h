@@ -38,7 +38,7 @@
 namespace blink {
 
 class PLATFORM_EXPORT ArchiveResource final
-    : public GarbageCollectedFinalized<ArchiveResource> {
+    : public GarbageCollected<ArchiveResource> {
  public:
   ArchiveResource(scoped_refptr<SharedBuffer>,
                   const KURL&,

@@ -2632,10 +2632,39 @@ TEST_F(ShelfLayoutManagerTest, HomeLauncherGestureHandlerAutoHideShelf) {
   TestHomeLauncherGestureHandler(/*autohide_shelf=*/true);
 }
 
+TEST_F(ShelfLayoutManagerTest, PressHomeButtonOnAutoHideShelf) {
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  // Create a widget to hide the shelf in auto-hide mode.
+  views::Widget* widget = CreateTestWidget();
+  Shelf* shelf = GetPrimaryShelf();
+  const display::Display display =
+      display::Screen::GetScreen()->GetPrimaryDisplay();
+
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
+  layout_manager->LayoutShelf();
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+
+  SwipeUpToShowShelf();
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+
+  // Press the home button with touch.
+  views::View* home_button = GetPrimaryShelf()->shelf_widget()->GetHomeButton();
+  GetEventGenerator()->GestureTapAt(
+      home_button->GetBoundsInScreen().CenterPoint());
+
+  // The app list should now be visible, and the window we created should hide.
+  GetAppListTestHelper()->CheckVisibility(true);
+  aura::Window* window = widget->GetNativeWindow();
+  EXPECT_FALSE(window->IsVisible());
+}
+
 // Tests that the auto-hide shelf has expected behavior when pressing the
 // AppList button while the shelf is being dragged by gesture (see
 // https://crbug.com/953877).
-TEST_F(ShelfLayoutManagerTest, PressAppListBtnWhenAutoHideShelfBeingDragged) {
+TEST_F(ShelfLayoutManagerTest, PressHomeBtnWhenAutoHideShelfBeingDragged) {
   // Create a widget to hide the shelf in auto-hide mode.
   CreateTestWidget();
   GetPrimaryShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
@@ -2758,14 +2787,7 @@ TEST_F(ShelfLayoutManagerTest, TapOutsideOfAutoHideShownShelf) {
 
   aura::Window* window = widget->GetNativeWindow();
   gfx::Rect window_bounds = window->GetBoundsInScreen();
-  gfx::Rect display_bounds =
-      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
-  const gfx::Point start(display_bounds.bottom_center());
-  const gfx::Point end(start + gfx::Vector2d(0, -80));
-  const base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(100);
-  const int kNumScrollSteps = 4;
-  // Swipe up to show the auto-hide shelf.
-  generator->GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
+  SwipeUpToShowShelf();
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 
   // Tap outside the window and AUTO_HIDE_SHOWN shelf should hide the shelf.
@@ -2774,9 +2796,7 @@ TEST_F(ShelfLayoutManagerTest, TapOutsideOfAutoHideShownShelf) {
   generator->GestureTapAt(tap_location);
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
-  // Swipe up to show the auto-hide shelf again.
-  generator->GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
-  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+  SwipeUpToShowShelf();
 
   // Tap inside the AUTO_HIDE_SHOWN shelf should not hide the shelf.
   gfx::Rect shelf_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
@@ -2789,9 +2809,7 @@ TEST_F(ShelfLayoutManagerTest, TapOutsideOfAutoHideShownShelf) {
   generator->GestureTapAt(tap_location);
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
-  // Swipe up to show the auto-hide shelf again.
-  generator->GestureScrollSequence(start, end, kTimeDelta, kNumScrollSteps);
-  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+  SwipeUpToShowShelf();
 
   // Tap the system tray that inside the status area should not hide the shelf
   // but open the systrem tray bubble.
@@ -2861,7 +2879,6 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnMouseMove) {
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
-  // Swipe up to show the shelf.
   SwipeUpToShowShelf();
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 
@@ -2944,7 +2961,6 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnMouseEvents) {
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
-  // Swipe up to show the auto-hide shelf.
   SwipeUpToShowShelf();
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 

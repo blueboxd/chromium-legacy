@@ -59,6 +59,9 @@ class MojoLearningTaskControllerTest : public ::testing::Test {
   ~MojoLearningTaskControllerTest() override = default;
 
   void SetUp() override {
+    // Create a LearningTask.
+    task_.name = "MyLearningTask";
+
     // Create a fake learner provider mojo impl.
     mojom::LearningTaskControllerPtr learning_controller_ptr;
     learning_controller_binding_.Bind(
@@ -66,18 +69,23 @@ class MojoLearningTaskControllerTest : public ::testing::Test {
 
     // Tell |learning_controller_| to forward to the fake learner impl.
     learning_controller_ = std::make_unique<MojoLearningTaskController>(
-        std::move(learning_controller_ptr));
+        task_, std::move(learning_controller_ptr));
   }
 
   // Mojo stuff.
   base::test::TaskEnvironment task_environment_;
 
+  LearningTask task_;
   FakeMojoLearningTaskController fake_learning_controller_;
   mojo::Binding<mojom::LearningTaskController> learning_controller_binding_;
 
   // The learner under test.
   std::unique_ptr<MojoLearningTaskController> learning_controller_;
 };
+
+TEST_F(MojoLearningTaskControllerTest, GetLearningTask) {
+  EXPECT_EQ(learning_controller_->GetLearningTask().name, task_.name);
+}
 
 TEST_F(MojoLearningTaskControllerTest, Begin) {
   base::UnguessableToken id = base::UnguessableToken::Create();

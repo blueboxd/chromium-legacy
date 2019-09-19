@@ -79,7 +79,7 @@ class RenderWidgetFullscreenPepper : public RenderWidget,
   // The plugin instance this widget wraps.
   PepperPluginInstanceImpl* plugin_;
 
-  cc::Layer* layer_;
+  cc::Layer* layer_ = nullptr;
 
   std::unique_ptr<MouseLockDispatcher> mouse_lock_dispatcher_;
 

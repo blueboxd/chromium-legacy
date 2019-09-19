@@ -209,7 +209,13 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
           &GetCommandBufferStub, gpu_task_runner_, media_gpu_channel_manager_,
           command_buffer_id->channel_token, command_buffer_id->route_id);
       auto image_provider = std::make_unique<DirectSharedImageVideoProvider>(
-          gpu_task_runner_, std::move(get_stub_cb));
+          gpu_task_runner_, get_stub_cb);
+      // TODO(liberato): Create this only if we're using Vulkan, else it's
+      // ignored.  If we can tell that here, then VideoFrameFactory can use it
+      // as a signal about whether it's supposed to get YCbCrInfo rather than
+      // requiring the provider to set |is_vulkan| in the ImageRecord.
+      auto ycbcr_helper =
+          YCbCrHelper::Create(gpu_task_runner_, std::move(get_stub_cb));
       video_decoder = std::make_unique<MediaCodecVideoDecoder>(
           gpu_preferences_, gpu_feature_info_, DeviceInfo::GetInstance(),
           CodecAllocator::GetInstance(gpu_task_runner_),
@@ -218,7 +224,8 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
           android_overlay_factory_cb_, std::move(request_overlay_info_cb),
           std::make_unique<VideoFrameFactoryImpl>(
               gpu_task_runner_, gpu_preferences_, std::move(image_provider),
-              MaybeRenderEarlyManager::Create(gpu_task_runner_)));
+              MaybeRenderEarlyManager::Create(gpu_task_runner_),
+              std::move(ycbcr_helper)));
 
 #elif defined(OS_CHROMEOS)
       if (base::FeatureList::IsEnabled(kChromeosVideoDecoder)) {

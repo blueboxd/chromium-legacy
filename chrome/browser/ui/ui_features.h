@@ -42,6 +42,8 @@ extern const base::Feature kTabHoverCardImages;
 
 extern const base::Feature kTabOutlinesInLowContrastThemes;
 
+extern const base::Feature kProminentDarkModeActiveTabTitle;
+
 extern const base::Feature kWebFooterExperiment;
 
 extern const base::Feature kWebUITabStrip;

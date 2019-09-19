@@ -88,7 +88,6 @@
 #include "chrome/browser/android/download/download_manager_service.h"
 #include "chrome/browser/android/download/download_open_source.h"
 #include "chrome/browser/android/download/download_utils.h"
-#include "chrome/browser/android/feature_utilities.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #else
 #include "chrome/browser/ui/browser.h"
@@ -875,8 +874,7 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
 #if defined(OS_ANDROID)
   content::WebContents* web_contents =
       content::DownloadItemUtils::GetWebContents(download);
-  if (!chrome::android::IsNoTouchModeEnabled() &&
-      base::FeatureList::IsEnabled(features::kDownloadsLocationChange)) {
+  if (base::FeatureList::IsEnabled(features::kDownloadsLocationChange)) {
     if (reason == DownloadConfirmationReason::SAVE_AS) {
       // If this is a 'Save As' download, just run without confirmation.
       callback.Run(DownloadConfirmationResult::CONTINUE_WITHOUT_CONFIRMATION,

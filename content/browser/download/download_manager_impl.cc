@@ -288,6 +288,7 @@ DownloadManagerImpl::DownloadManagerImpl(BrowserContext* browser_context)
       cancelled_download_cleared_from_history_(0),
       interrupted_download_cleared_from_history_(0) {
   DCHECK(browser_context);
+
   download::SetIOTaskRunner(
       base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
 
@@ -1035,6 +1036,11 @@ void DownloadManagerImpl::OnDownloadManagerInitialized() {
   in_progress_manager_->OnAllInprogressDownloadsLoaded();
   for (auto& observer : observers_)
     observer.OnManagerInitialized();
+  size_t size = 0;
+  for (const auto& it : downloads_)
+    size += it.second->GetApproximateMemoryUsage();
+  if (!IsOffTheRecord() && size > 0)
+    download::RecordDownloadManagerMemoryUsage(size);
 }
 
 bool DownloadManagerImpl::IsManagerInitialized() {

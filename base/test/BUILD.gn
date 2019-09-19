@@ -435,7 +435,7 @@ if (is_linux) {
       ]
       args = []
       outputs = [
-        "$root_out_dir/fontconfig_caches/df1acc8c-39d5-4a8b-8507-b1a7396ac3ac-le64.cache-7",
+        "$root_out_dir/fontconfig_caches/fb5c91b2895aa445d23aebf7f9e2189c-le64.cache-7",
         "$root_out_dir/test_fonts/.uuid",
       ]
     }

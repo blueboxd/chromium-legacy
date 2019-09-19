@@ -18,9 +18,8 @@ class SensorProxy;
 
 // This class wraps 'SensorProvider' mojo interface and it manages
 // 'SensorProxy' instances.
-class SensorProviderProxy final
-    : public GarbageCollectedFinalized<SensorProviderProxy>,
-      public Supplement<Document> {
+class SensorProviderProxy final : public GarbageCollected<SensorProviderProxy>,
+                                  public Supplement<Document> {
   USING_GARBAGE_COLLECTED_MIXIN(SensorProviderProxy);
 
  public:

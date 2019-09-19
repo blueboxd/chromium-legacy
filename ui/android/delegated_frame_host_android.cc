@@ -127,10 +127,8 @@ bool DelegatedFrameHostAndroid::CanCopyFromCompositingSurface() const {
 }
 
 void DelegatedFrameHostAndroid::EvictDelegatedFrame() {
-  if (content_layer_) {
-    content_layer_->SetSurfaceId(viz::SurfaceId(),
-                                 cc::DeadlinePolicy::UseDefaultDeadline());
-  }
+  content_layer_->SetSurfaceId(viz::SurfaceId(),
+                               cc::DeadlinePolicy::UseDefaultDeadline());
   if (!HasSavedFrame() || frame_evictor_->visible())
     return;
   std::vector<viz::SurfaceId> surface_ids = {
@@ -146,8 +144,6 @@ void DelegatedFrameHostAndroid::EvictDelegatedFrame() {
 }
 
 void DelegatedFrameHostAndroid::ResetFallbackToFirstNavigationSurface() {
-  if (!content_layer_)
-    return;
   // Don't update the fallback if it's already newer than the first id after
   // navigation.
   if (content_layer_->oldest_acceptable_fallback() &&
@@ -163,7 +159,7 @@ void DelegatedFrameHostAndroid::ResetFallbackToFirstNavigationSurface() {
 }
 
 bool DelegatedFrameHostAndroid::HasDelegatedContent() const {
-  return content_layer_ && content_layer_->surface_id().is_valid();
+  return content_layer_->surface_id().is_valid();
 }
 
 void DelegatedFrameHostAndroid::CompositorFrameSinkChanged() {
@@ -188,7 +184,7 @@ void DelegatedFrameHostAndroid::DetachFromCompositor() {
 }
 
 bool DelegatedFrameHostAndroid::IsPrimarySurfaceEvicted() const {
-  return !content_layer_ || !content_layer_->surface_id().is_valid();
+  return !content_layer_->surface_id().is_valid();
 }
 
 bool DelegatedFrameHostAndroid::HasSavedFrame() const {
@@ -277,11 +273,11 @@ viz::SurfaceId DelegatedFrameHostAndroid::SurfaceId() const {
 }
 
 bool DelegatedFrameHostAndroid::HasPrimarySurface() const {
-  return content_layer_ && content_layer_->surface_id().is_valid();
+  return content_layer_->surface_id().is_valid();
 }
 
 bool DelegatedFrameHostAndroid::HasFallbackSurface() const {
-  return content_layer_ && content_layer_->oldest_acceptable_fallback() &&
+  return content_layer_->oldest_acceptable_fallback() &&
          content_layer_->oldest_acceptable_fallback()->is_valid();
 }
 

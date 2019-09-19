@@ -46,7 +46,7 @@ class ExternalPolicyDataFetcher::Job
              int64_t max_size);
   void Cancel();
   void OnResponseStarted(const GURL& final_url,
-                         const network::ResourceResponseHead& response_head);
+                         const network::mojom::URLResponseHead& response_head);
 
   // network::SimpleURLLoaderStreamConsumer implementation
   void OnDataReceived(base::StringPiece string_piece,
@@ -134,7 +134,7 @@ void ExternalPolicyDataFetcher::Job::Cancel() {
 
 void ExternalPolicyDataFetcher::Job::OnResponseStarted(
     const GURL& /* final_url */,
-    const network::ResourceResponseHead& response_head) {
+    const network::mojom::URLResponseHead& response_head) {
   if (response_head.content_length != -1 &&
       response_head.content_length > max_size_) {
     url_loader_.reset();

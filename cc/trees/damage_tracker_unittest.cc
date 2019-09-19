@@ -13,8 +13,7 @@
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_raster_source.h"
 #include "cc/test/geometry_test_utils.h"
-#include "cc/test/layer_test_common.h"
-#include "cc/trees/layer_tree_host_common.h"
+#include "cc/test/layer_tree_impl_test_base.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/transform_node.h"
@@ -67,8 +66,7 @@ void ClearDamageForAllSurfaces(LayerImpl* root) {
   }
 }
 
-class DamageTrackerTest : public LayerTestCommon::LayerImplTest,
-                          public testing::Test {
+class DamageTrackerTest : public LayerTreeImplTestBase, public testing::Test {
  public:
   LayerImpl* CreateTestTreeWithOneSurface(int number_of_children) {
     ClearLayersAndProperties();
@@ -173,9 +171,7 @@ class DamageTrackerTest : public LayerTestCommon::LayerImplTest,
     root->layer_tree_impl()->set_needs_update_draw_properties();
     UpdateDrawProperties(root->layer_tree_impl());
 
-    DamageTracker::UpdateDamageTracking(
-        root->layer_tree_impl(),
-        root->layer_tree_impl()->GetRenderSurfaceList());
+    DamageTracker::UpdateDamageTracking(root->layer_tree_impl());
 
     root->layer_tree_impl()->ResetAllChangeTracking();
   }
@@ -1903,12 +1899,11 @@ TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurface) {
   grand_child2_->SetBounds(gfx::Size(1, 1));
   grand_child2_->SetDrawsContent(true);
 
-  ExecuteCalculateDrawProperties(root);
+  UpdateDrawProperties(host_impl()->active_tree());
   // Avoid the descendant-only property change path that skips unioning damage
   // from descendant layers.
   GetRenderSurface(child1_)->NoteAncestorPropertyChanged();
-  DamageTracker::UpdateDamageTracking(host_impl()->active_tree(),
-                                      *render_surface_list_impl());
+  DamageTracker::UpdateDamageTracking(host_impl()->active_tree());
 
   // The expected damage would be too large to store in a gfx::Rect, so we
   // should damage everything on child1_.
@@ -1942,9 +1937,8 @@ TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurface) {
   grand_child2_->AddDamageRect(gfx::Rect(grand_child1_->bounds()));
 
   // Recompute all damage / properties.
-  ExecuteCalculateDrawProperties(root);
-  DamageTracker::UpdateDamageTracking(host_impl()->active_tree(),
-                                      *render_surface_list_impl());
+  UpdateDrawProperties(host_impl()->active_tree());
+  DamageTracker::UpdateDamageTracking(host_impl()->active_tree());
 
   // Child1 should still not have a valid rect, since the union of the damage of
   // its children is not representable by a single rect.
@@ -1992,12 +1986,11 @@ TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurfaceWithFilter) {
   grand_child2_->SetBounds(gfx::Size(1, 1));
   grand_child2_->SetDrawsContent(true);
 
-  ExecuteCalculateDrawProperties(root);
+  UpdateDrawProperties(host_impl()->active_tree());
   // Avoid the descendant-only property change path that skips unioning damage
   // from descendant layers.
   GetRenderSurface(child1_)->NoteAncestorPropertyChanged();
-  DamageTracker::UpdateDamageTracking(host_impl()->active_tree(),
-                                      *render_surface_list_impl());
+  DamageTracker::UpdateDamageTracking(host_impl()->active_tree());
 
   // The expected damage would be too large to store in a gfx::Rect, so we
   // should damage everything on child1_.
@@ -2031,9 +2024,8 @@ TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurfaceWithFilter) {
   grand_child2_->AddDamageRect(gfx::Rect(grand_child1_->bounds()));
 
   // Recompute all damage / properties.
-  ExecuteCalculateDrawProperties(root);
-  DamageTracker::UpdateDamageTracking(host_impl()->active_tree(),
-                                      *render_surface_list_impl());
+  UpdateDrawProperties(host_impl()->active_tree());
+  DamageTracker::UpdateDamageTracking(host_impl()->active_tree());
 
   // Child1 should still not have a valid rect, since the union of the damage of
   // its children is not representable by a single rect.

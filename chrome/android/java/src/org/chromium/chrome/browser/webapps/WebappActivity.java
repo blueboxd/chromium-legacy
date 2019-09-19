@@ -31,7 +31,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.SingleTabActivity;
@@ -158,8 +157,6 @@ public class WebappActivity extends SingleTabActivity {
     @Override
     protected void onNewIntent(Intent intent) {
         if (intent == null) return;
-
-        if (AppHooks.get().interceptWebAppIntent(intent, this)) return;
 
         super.onNewIntent(intent);
 

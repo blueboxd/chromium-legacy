@@ -45,9 +45,7 @@ class SVGResourceClient;
 
 // CSS Filters
 
-class CORE_EXPORT FilterOperation
-    : public GarbageCollectedFinalized<FilterOperation> {
-
+class CORE_EXPORT FilterOperation : public GarbageCollected<FilterOperation> {
  public:
   enum OperationType {
     REFERENCE,  // url(#somefilter)

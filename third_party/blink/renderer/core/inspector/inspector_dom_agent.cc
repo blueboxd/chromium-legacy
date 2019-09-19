@@ -102,7 +102,7 @@ const UChar kEllipsisUChar[] = {0x2026, 0};
 }  // namespace
 
 class InspectorRevalidateDOMTask final
-    : public GarbageCollectedFinalized<InspectorRevalidateDOMTask> {
+    : public GarbageCollected<InspectorRevalidateDOMTask> {
  public:
   explicit InspectorRevalidateDOMTask(InspectorDOMAgent*);
   void ScheduleStyleAttrRevalidationFor(Element*);

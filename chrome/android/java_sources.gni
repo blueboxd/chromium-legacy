@@ -11,7 +11,6 @@ import(
     "//chrome/android/features/start_surface/internal/javatests/start_surface_test_java_sources.gni")
 import("//chrome/android/features/tab_ui/tab_management_java_sources.gni")
 import("//chrome/android/feed/feed_java_sources.gni")
-import("//chrome/android/touchless/touchless_java_sources.gni")
 import("//components/feed/features.gni")
 import("//components/offline_pages/buildflags/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
@@ -20,14 +19,6 @@ chrome_java_sources += public_autofill_assistant_java_sources
 
 if (enable_vr) {
   chrome_java_sources += [ "java/src/org/chromium/chrome/browser/component_updater/VrAssetsComponentInstaller.java" ]
-}
-
-if (notouch_build) {
-  chrome_java_sources += touchless_java_sources
-  chrome_test_java_sources += touchless_test_java_sources
-  chrome_junit_test_java_sources += touchless_junit_test_java_sources
-} else {
-  chrome_java_sources += touchess_fallback_java_sources
 }
 
 # Only used for testing, should not be shipped to end users.

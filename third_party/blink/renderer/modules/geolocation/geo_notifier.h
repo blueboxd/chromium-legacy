@@ -19,7 +19,7 @@ class Geolocation;
 class GeolocationPositionError;
 class Geoposition;
 
-class GeoNotifier final : public GarbageCollectedFinalized<GeoNotifier>,
+class GeoNotifier final : public GarbageCollected<GeoNotifier>,
                           public NameClient {
  public:
   GeoNotifier(Geolocation*,
@@ -54,7 +54,7 @@ class GeoNotifier final : public GarbageCollectedFinalized<GeoNotifier>,
   // notifier and the Geolocation. The timer should run only when the notifier
   // is owned by the Geolocation. When the Geolocation removes a notifier, the
   // timer should be stopped beforehand.
-  class Timer final : public GarbageCollectedFinalized<Timer> {
+  class Timer final : public GarbageCollected<Timer> {
    public:
     explicit Timer(scoped_refptr<base::SingleThreadTaskRunner> web_task_runner,
                    GeoNotifier* notifier,

@@ -16,7 +16,7 @@ namespace blink {
 
 // Associates the results of sampling an EffectModel with metadata used for
 // effect ordering and managing composited animations.
-class SampledEffect final : public GarbageCollectedFinalized<SampledEffect> {
+class SampledEffect final : public GarbageCollected<SampledEffect> {
  public:
   SampledEffect(KeyframeEffect*, unsigned sequence_number);
 

@@ -14,6 +14,13 @@ Run audits: enabled visible
 URL: http://127.0.0.1:8000/devtools/audits/resources/audits-emulate-pass.html
 Version: 5.2.0
 TestedAsMobileDevice: true
+ViewportDimensions: {
+  "innerWidth": 412,
+  "innerHeight": 660,
+  "outerWidth": 412,
+  "outerHeight": 660,
+  "devicePixelRatio": 2.625
+}
 
 
 content-width: pass 

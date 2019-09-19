@@ -1049,8 +1049,6 @@ class BBJSONGenerator(object):
       'win32-dbg',
       'win-archive-dbg',
       'win32-archive-dbg',
-      # chromium.mac, see https://crbug.com/943804
-      'mac-dummy-rel',
       # Defined in internal configs.
       'chromeos-amd64-generic-google-rel',
       'chromeos-betty-google-rel',

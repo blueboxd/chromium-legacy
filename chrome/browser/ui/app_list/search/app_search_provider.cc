@@ -479,7 +479,10 @@ class AppIconDataSource : public AppIconLoaderDelegate {
     }
   }
 
-  void RemoveIcon(const std::string& app_id) { icon_map_.erase(app_id); }
+  void RemoveIcon(const std::string& app_id) {
+    icon_map_.erase(app_id);
+    icon_loader_->ClearImage(app_id);
+  }
 
  private:
   int IconSize(bool for_chip) const {

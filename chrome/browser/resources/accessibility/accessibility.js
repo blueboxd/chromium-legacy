@@ -57,10 +57,12 @@ cr.define('accessibility', function() {
     const tree = $(id + ':tree');
     // If the tree is visible, request a new tree with the updated mode.
     const shouldRequestTree = !!tree && tree.style.display != 'none';
-    chrome.send('toggleAccessibility', [
-      String(data.processId), String(data.routeId), mode,
-      String(shouldRequestTree)
-    ]);
+    chrome.send('toggleAccessibility', [{
+                  'processId': data.processId,
+                  'routeId': data.routeId,
+                  'modeId': mode,
+                  'shouldRequestTree': shouldRequestTree
+                }]);
   }
 
   function requestTree(data, element) {
@@ -78,13 +80,17 @@ cr.define('accessibility', function() {
       const delay = $('native_ui_delay').value;
       setTimeout(() => {
         chrome.send(
-            'requestNativeUITree', [String(data.sessionId), requestType]);
+            'requestNativeUITree',
+            [{'sessionId': data.sessionId, 'requestType': requestType}]);
       }, delay);
     } else {
-      chrome.send('requestWebContentsTree', [
-        String(data.processId), String(data.routeId), requestType, allow,
-        allowEmpty, deny
-      ]);
+      chrome.send(
+          'requestWebContentsTree', [{
+            'processId': data.processId,
+            'routeId': data.routeId,
+            'requestType': requestType,
+            'filters': {'allow': allow, 'allowEmpty': allowEmpty, 'deny': deny}
+          }]);
     }
   }
 
@@ -97,7 +103,7 @@ cr.define('accessibility', function() {
     bindCheckbox('text', data['text']);
     bindCheckbox('screenreader', data['screenreader']);
     bindCheckbox('html', data['html']);
-    bindCheckbox('label_images', data['label_images']);
+    bindCheckbox('label_images', data['labelImages']);
     bindCheckbox('internal', data['internal']);
 
     $('pages').textContent = '';
@@ -128,7 +134,8 @@ cr.define('accessibility', function() {
       $(name).labels[0].classList.add('disabled');
     }
     $(name).addEventListener('change', function() {
-      chrome.send('setGlobalFlag', [name, $(name).checked]);
+      chrome.send(
+          'setGlobalFlag', [{'flagName': name, 'enabled': $(name).checked}]);
       document.location.reload();
     });
   }
@@ -169,7 +176,7 @@ cr.define('accessibility', function() {
 
     if (data.type == 'page') {
       const siteInfo = document.createElement('div');
-      const properties = ['favicon_url', 'name', 'url'];
+      const properties = ['faviconUrl', 'name', 'url'];
       for (let j = 0; j < properties.length; j++) {
         siteInfo.appendChild(formatValue(data, properties[j]));
       }
@@ -181,7 +188,7 @@ cr.define('accessibility', function() {
       row.appendChild(createModeElement(AXMode.kScreenReader, data, 'web'));
       row.appendChild(createModeElement(AXMode.kHTML, data, 'web'));
       row.appendChild(
-          createModeElement(AXMode.kLabelImages, data, 'label_images'));
+          createModeElement(AXMode.kLabelImages, data, 'labelImages'));
     } else {
       const siteInfo = document.createElement('span');
       siteInfo.appendChild(formatValue(data, 'name'));
@@ -212,7 +219,7 @@ cr.define('accessibility', function() {
   function formatValue(data, property) {
     const value = data[property];
 
-    if (property == 'favicon_url') {
+    if (property == 'faviconUrl') {
       const faviconElement = document.createElement('img');
       if (value) {
         faviconElement.src = value;
@@ -257,7 +264,7 @@ cr.define('accessibility', function() {
   }
 
   function createModeElement(mode, data, globalStateName) {
-    const currentMode = data['a11y_mode'];
+    const currentMode = data['a11yMode'];
     const link = document.createElement('a', 'action-link');
     link.setAttribute('role', 'button');
 

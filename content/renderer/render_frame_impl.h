@@ -215,6 +215,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // owner FrameTreeNode. It can only be used for tagging requests and calls
   // for context frame attribution. It should never be passed back to the
   // browser as a frame identifier in the control flows calls.
+  // The |widget_params| is not null if the frame is to be a local root, which
+  // means it will own a RenderWidget, in which case the |widget_params| hold
+  // the routing id and initialization properties for the RenderWidget.
   //
   // Note: This is called only when RenderFrame is being created in response
   // to IPC message from the browser process. All other frame creation is driven
@@ -235,7 +238,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const base::UnguessableToken& devtools_frame_token,
       const FrameReplicationState& replicated_state,
       CompositorDependencies* compositor_deps,
-      const mojom::CreateFrameWidgetParams& params,
+      const mojom::CreateFrameWidgetParams* widget_params,
       const FrameOwnerProperties& frame_owner_properties,
       bool has_committed_real_load);
 

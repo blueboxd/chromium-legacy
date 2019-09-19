@@ -111,7 +111,8 @@ void ExpandArrowView::PaintButtonContents(gfx::Canvas* canvas) {
   for (size_t i = 0; i < kPointCount; ++i)
     arrow_points[i] = kPeekingPoints[i];
   SkColor circle_color = kBackgroundColor;
-  const float progress = app_list_view_->GetAppListTransitionProgress();
+  const float progress = app_list_view_->GetAppListTransitionProgress(
+      AppListView::kProgressFlagNone);
   if (progress <= 1) {
     // Currently transition progress is between closed and peeking state.
     // Change the y positions of arrow and circle.

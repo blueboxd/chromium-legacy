@@ -117,11 +117,23 @@ void SharedWorkerServiceImpl::ConnectToWorker(
     return;
   }
 
+  // Enforce same-origin policy.
+  // data: URLs are not considered a different origin.
+  url::Origin constructor_origin = render_frame_host->GetLastCommittedOrigin();
+  bool is_cross_origin = !info->url.SchemeIs(url::kDataScheme) &&
+                         url::Origin::Create(info->url) != constructor_origin;
+  if (is_cross_origin &&
+      !GetContentClient()->browser()->DoesSchemeAllowCrossOriginSharedWorker(
+          constructor_origin.scheme())) {
+    ScriptLoadFailed(std::move(client));
+    return;
+  }
+
   RenderFrameHost* main_frame =
       render_frame_host->frame_tree_node()->frame_tree()->GetMainFrame();
   if (!GetContentClient()->browser()->AllowSharedWorker(
           info->url, main_frame->GetLastCommittedURL(), info->name,
-          render_frame_host->GetLastCommittedOrigin(),
+          constructor_origin,
           WebContentsImpl::FromRenderFrameHostID(client_process_id, frame_id)
               ->GetBrowserContext(),
           client_process_id, frame_id)) {
@@ -130,9 +142,9 @@ void SharedWorkerServiceImpl::ConnectToWorker(
   }
 
   SharedWorkerInstance instance(
-      info->url, info->name, render_frame_host->GetLastCommittedOrigin(),
-      info->content_security_policy, info->content_security_policy_type,
-      info->creation_address_space, creation_context_type);
+      info->url, info->name, constructor_origin, info->content_security_policy,
+      info->content_security_policy_type, info->creation_address_space,
+      creation_context_type);
 
   SharedWorkerHost* host = FindMatchingSharedWorkerHost(
       instance.url(), instance.name(), instance.constructor_origin());

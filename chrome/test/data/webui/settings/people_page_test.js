@@ -692,30 +692,81 @@ cr.define('settings_people_page', function() {
             peoplePage.$$('#profile-name').textContent.trim());
       });
 
-      test('clicking profile row does not open change picture page', () => {
+      test('profile row is actionable', () => {
         // Simulate a signed-in user.
         sync_test_util.simulateSyncStatus({
           signedIn: true,
         });
 
-        // Profile row items aren't actionable.
+        // Profile row opens account manager, so the row is actionable.
         const profileIcon = assert(peoplePage.$$('#profile-icon'));
-        assertFalse(profileIcon.hasAttribute('actionable'));
+        assertTrue(profileIcon.hasAttribute('actionable'));
         const profileRow = assert(peoplePage.$$('#profile-row'));
-        assertFalse(profileRow.hasAttribute('actionable'));
+        assertTrue(profileRow.hasAttribute('actionable'));
         const subpageArrow = assert(peoplePage.$$('#profile-subpage-arrow'));
-        assertFalse(subpageArrow.hasAttribute('actionable'));
-
-        // Clicking on profile icon doesn't navigate to a new route.
-        const oldRoute = settings.getCurrentRoute();
-        profileIcon.click();
-        assertEquals(oldRoute, settings.getCurrentRoute());
+        assertFalse(subpageArrow.hidden);
       });
 
       test('parental controls page is shown when enabled', () => {
         // Setup button is shown and enabled.
         const parentalControlsItem =
             assert(peoplePage.$$('settings-parental-controls-page'));
+      });
+    });
+
+    suite('Chrome OS with account manager disabled', function() {
+      let peoplePage = null;
+      let syncBrowserProxy = null;
+      let profileInfoBrowserProxy = null;
+
+      suiteSetup(function() {
+        loadTimeData.overrideValues({
+          // Simulate SplitSettings (OS settings in their own surface).
+          showOSSettings: false,
+          // Disable ChromeOSAccountManager (Google Accounts support).
+          isAccountManagerEnabled: false,
+        });
+      });
+
+      setup(async function() {
+        syncBrowserProxy = new TestSyncBrowserProxy();
+        settings.SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
+
+        profileInfoBrowserProxy = new TestProfileInfoBrowserProxy();
+        settings.ProfileInfoBrowserProxyImpl.instance_ =
+            profileInfoBrowserProxy;
+
+        PolymerTest.clearBody();
+        peoplePage = document.createElement('settings-people-page');
+        peoplePage.pageVisibility = settings.pageVisibility;
+        document.body.appendChild(peoplePage);
+
+        await syncBrowserProxy.whenCalled('getSyncStatus');
+        Polymer.dom.flush();
+      });
+
+      teardown(function() {
+        peoplePage.remove();
+      });
+
+      test('profile row is not actionable', () => {
+        // Simulate a signed-in user.
+        sync_test_util.simulateSyncStatus({
+          signedIn: true,
+        });
+
+        // Account manager isn't available, so the row isn't actionable.
+        const profileIcon = assert(peoplePage.$$('#profile-icon'));
+        assertFalse(profileIcon.hasAttribute('actionable'));
+        const profileRow = assert(peoplePage.$$('#profile-row'));
+        assertFalse(profileRow.hasAttribute('actionable'));
+        const subpageArrow = assert(peoplePage.$$('#profile-subpage-arrow'));
+        assertTrue(subpageArrow.hidden);
+
+        // Clicking on profile icon doesn't navigate to a new route.
+        const oldRoute = settings.getCurrentRoute();
+        profileIcon.click();
+        assertEquals(oldRoute, settings.getCurrentRoute());
       });
     });
 

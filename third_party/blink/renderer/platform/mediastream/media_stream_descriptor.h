@@ -55,7 +55,7 @@ class PLATFORM_EXPORT MediaStreamDescriptorClient
 };
 
 class PLATFORM_EXPORT MediaStreamDescriptor final
-    : public GarbageCollectedFinalized<MediaStreamDescriptor> {
+    : public GarbageCollected<MediaStreamDescriptor> {
  private:
   static int GenerateUniqueId();
 

@@ -107,14 +107,14 @@ void TestLayerTreeHostBase::SetupPendingTree(
       host_impl()->active_tree()->device_scale_factor());
 
   // Steal from the recycled tree if possible.
-  LayerImpl* pending_root = pending_tree->root_layer_for_testing();
+  LayerImpl* pending_root = pending_tree->root_layer();
   DCHECK(!pending_layer_);
   DCHECK(!pending_root || pending_root->id() == root_id_);
 
   if (!pending_root) {
     pending_tree->SetRootLayerForTesting(
         LayerImpl::Create(pending_tree, root_id_));
-    pending_root = pending_tree->root_layer_for_testing();
+    pending_root = pending_tree->root_layer();
 
     auto* page_scale_layer = AddLayer<LayerImpl>(pending_tree);
     pending_layer_ = AddLayer<FakePictureLayerImpl>(pending_tree);
@@ -143,7 +143,7 @@ void TestLayerTreeHostBase::SetupPendingTree(
   // The bounds() just mirror the raster source size.
   if (raster_source) {
     pending_layer_->SetBounds(raster_source->GetSize());
-    pending_layer_->SetRasterSourceOnPending(raster_source, invalidation);
+    pending_layer_->SetRasterSource(raster_source, invalidation);
   }
 
   host_impl()->pending_tree()->set_needs_update_draw_properties();

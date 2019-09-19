@@ -142,17 +142,6 @@ if (enable_feed_in_chrome) {
   }
 }
 
-if (notouch_build) {
-  android_resources("chrome_touchless_java_resources") {
-    resource_dirs = [ "//chrome/android/touchless/java/res" ]
-    deps = [
-      ":chrome_app_java_resources",
-      "//chrome/android/touchless:touchless_strings_grd",
-    ]
-    custom_package = "org.chromium.chrome.touchless"
-  }
-}
-
 android_resources("chrome_download_java_resources") {
   resource_dirs = [ "//chrome/android/java/res_download" ]
   deps = [
@@ -289,9 +278,9 @@ android_library("chrome_java") {
     "//chrome/android/webapk/libs/runtime_library:webapk_service_aidl_java",
     "//chrome/browser/android/thin_webview:factory_java",
     "//chrome/browser/android/thin_webview:java",
+    "//chrome/browser/image_fetcher:java",
     "//chrome/browser/ui/android/widget:java",
     "//chrome/browser/util/android:java",
-    "//chrome/lib/image_fetcher/public/android:java",
     "//chrome/lib/lifecycle/public/android:java",
     "//chrome/lib/util/public/android:java",
     "//components/autofill/android:autofill_java",
@@ -475,9 +464,6 @@ android_library("chrome_java") {
   if (enable_feed_in_chrome) {
     deps += [ ":chrome_feed_java_resources" ]
   }
-  if (notouch_build) {
-    deps += [ ":chrome_touchless_java_resources" ]
-  }
 
   # Add the actual implementation where necessary so that downstream targets
   # can provide their own implementations.
@@ -548,7 +534,7 @@ group("jni_headers") {
     "//chrome/android/features/keyboard_accessory:jni_headers",
     "//chrome/android/features/media_router:jni_headers",
     "//chrome/android/public/profiles:jni_headers",
-    "//chrome/lib/image_fetcher/public/android:jni_headers",
+    "//chrome/browser/image_fetcher:jni_headers",
     "//chrome/lib/util/public/android:jni_headers",
   ]
 }
@@ -1784,11 +1770,9 @@ template("monochrome_public_apk_or_module_tmpl") {
   }
 }
 
+# Public webview targets don't work with non-public sdks.
+# https://crbug.com/1000763
 if (public_android_sdk) {
-  # Can't defined monochrome_public_apk without public_android_sdk or else the
-  # shared_resources_whitelist_target will not be applied, and R8 -checkdiscards
-  # will fail.
-  # https://crbug.com/1000763
   monochrome_public_apk_or_module_tmpl("monochrome_public_apk") {
     version_code = monochrome_version_code
     version_name = chrome_version_name
@@ -2148,6 +2132,8 @@ instrumentation_test_runner("chrome_modern_public_smoke_test") {
   android_test_apk_name = "ChromeSmokeTest"
 }
 
+# Public webview targets don't work with non-public sdks.
+# https://crbug.com/1000763
 if (public_android_sdk) {
   instrumentation_test_runner("monochrome_public_smoke_test") {
     apk_under_test = ":monochrome_public_apk"
@@ -2197,35 +2183,39 @@ instrumentation_test_runner("chrome_modern_public_bundle_smoke_test") {
   extra_args = _bundle_smoke_test_extra_args
 }
 
-instrumentation_test_runner("monochrome_public_bundle_smoke_test") {
-  apk_under_test = "//chrome/android:monochrome_public_bundle_apks"
-  android_test_apk = ":chrome_bundle_smoke_test_apk"
-  android_test_apk_name = "ChromeBundleSmokeTest"
-  never_incremental = true
-  modules = [ "test_dummy" ]
-  extra_args = _bundle_smoke_test_extra_args
-}
+# Public webview targets don't work with non-public sdks.
+# https://crbug.com/1000763
+if (public_android_sdk) {
+  instrumentation_test_runner("monochrome_public_bundle_smoke_test") {
+    apk_under_test = "//chrome/android:monochrome_public_bundle_apks"
+    android_test_apk = ":chrome_bundle_smoke_test_apk"
+    android_test_apk_name = "ChromeBundleSmokeTest"
+    never_incremental = true
+    modules = [ "test_dummy" ]
+    extra_args = _bundle_smoke_test_extra_args
+  }
 
-if (public_android_sdk && defined(expected_static_initializer_count)) {
-  action_with_pydeps("monochrome_static_initializers") {
-    script = "//build/android/gyp/assert_static_initializers.py"
-    inputs = [
-      "$root_build_dir/apks/MonochromePublic.apk",
-    ]
-    outputs = [
-      "$target_gen_dir/$target_name.stamp",
-    ]
-    deps = [
-      ":monochrome_public_apk",
-    ]
-    args = [
-      "--expected-count=$expected_static_initializer_count",
-      "--tool-prefix",
-      rebase_path(android_tool_prefix, root_build_dir),
-      "--touch",
-      rebase_path(outputs[0], root_build_dir),
-      rebase_path(inputs[0], root_build_dir),
-    ]
+  if (defined(expected_static_initializer_count)) {
+    action_with_pydeps("monochrome_static_initializers") {
+      script = "//build/android/gyp/assert_static_initializers.py"
+      inputs = [
+        "$root_build_dir/apks/MonochromePublic.apk",
+      ]
+      outputs = [
+        "$target_gen_dir/$target_name.stamp",
+      ]
+      deps = [
+        ":monochrome_public_apk",
+      ]
+      args = [
+        "--expected-count=$expected_static_initializer_count",
+        "--tool-prefix",
+        rebase_path(android_tool_prefix, root_build_dir),
+        "--touch",
+        rebase_path(outputs[0], root_build_dir),
+        rebase_path(inputs[0], root_build_dir),
+      ]
+    }
   }
 }
 
@@ -2345,70 +2335,77 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
   }
 }
 
-monochrome_or_trichrome_public_bundle_tmpl("monochrome_public_bundle") {
-  bundle_suffix = ""
+# Public webview targets don't work with non-public sdks.
+# https://crbug.com/1000763
+if (public_android_sdk) {
+  monochrome_or_trichrome_public_bundle_tmpl("monochrome_public_bundle") {
+    bundle_suffix = ""
 
-  # Having //clank present causes different flags because of how play services
-  # is wired up.
-  # The channel is required because manifest entries vary based on channel.
-  if (!enable_chrome_android_internal && android_channel == "stable") {
-    verify_android_configuration = true
-  }
-}
-
-if (is_official_build) {
-  # Used for binary size monitoring.
-  create_app_bundle_minimal_apks("monochrome_public_minimal_apks") {
-    deps = [
-      ":monochrome_public_bundle",
-    ]
-    bundle_path = "$root_build_dir/apks/MonochromePublic.aab"
-  }
-  android_resource_sizes_test("resource_sizes_monochrome_public_minimal_apks") {
-    file_path = "$root_build_dir/apks/MonochromePublic.minimal.apks"
-    data_deps = [
-      ":monochrome_public_minimal_apks",
-    ]
-  }
-}
-
-monochrome_or_trichrome_public_bundle_tmpl("trichrome_chrome_bundle") {
-  bundle_suffix = ""
-  use_trichrome_library = true
-}
-
-if (android_64bit_target_cpu) {
-  monochrome_or_trichrome_public_bundle_tmpl("monochrome_64_public_bundle") {
-    bundle_suffix = "64"
-    is_64_bit_browser = true
-    if (build_apk_secondary_abi) {
-      include_32_bit_webview = false
+    # Having //clank present causes different flags because of how play services
+    # is wired up.
+    # The channel is required because manifest entries vary based on channel.
+    if (!enable_chrome_android_internal && android_channel == "stable") {
+      verify_android_configuration = true
     }
   }
 
-  monochrome_or_trichrome_public_bundle_tmpl("monochrome_64_32_public_bundle") {
-    bundle_suffix = "6432"
-    is_64_bit_browser = true
-    if (build_apk_secondary_abi) {
-      include_32_bit_webview = true
+  if (is_official_build) {
+    # Used for binary size monitoring.
+    create_app_bundle_minimal_apks("monochrome_public_minimal_apks") {
+      deps = [
+        ":monochrome_public_bundle",
+      ]
+      bundle_path = "$root_build_dir/apks/MonochromePublic.aab"
+    }
+    android_resource_sizes_test(
+        "resource_sizes_monochrome_public_minimal_apks") {
+      file_path = "$root_build_dir/apks/MonochromePublic.minimal.apks"
+      data_deps = [
+        ":monochrome_public_minimal_apks",
+      ]
     }
   }
 
-  monochrome_or_trichrome_public_bundle_tmpl("trichrome_chrome_64_bundle") {
-    bundle_suffix = "64"
-    is_64_bit_browser = true
+  monochrome_or_trichrome_public_bundle_tmpl("trichrome_chrome_bundle") {
+    bundle_suffix = ""
     use_trichrome_library = true
-    if (build_apk_secondary_abi) {
-      include_32_bit_webview = false
-    }
   }
 
-  monochrome_or_trichrome_public_bundle_tmpl("trichrome_chrome_64_32_bundle") {
-    bundle_suffix = "6432"
-    is_64_bit_browser = true
-    use_trichrome_library = true
-    if (build_apk_secondary_abi) {
-      include_32_bit_webview = true
+  if (android_64bit_target_cpu) {
+    monochrome_or_trichrome_public_bundle_tmpl("monochrome_64_public_bundle") {
+      bundle_suffix = "64"
+      is_64_bit_browser = true
+      if (build_apk_secondary_abi) {
+        include_32_bit_webview = false
+      }
+    }
+
+    monochrome_or_trichrome_public_bundle_tmpl(
+        "monochrome_64_32_public_bundle") {
+      bundle_suffix = "6432"
+      is_64_bit_browser = true
+      if (build_apk_secondary_abi) {
+        include_32_bit_webview = true
+      }
+    }
+
+    monochrome_or_trichrome_public_bundle_tmpl("trichrome_chrome_64_bundle") {
+      bundle_suffix = "64"
+      is_64_bit_browser = true
+      use_trichrome_library = true
+      if (build_apk_secondary_abi) {
+        include_32_bit_webview = false
+      }
+    }
+
+    monochrome_or_trichrome_public_bundle_tmpl(
+        "trichrome_chrome_64_32_bundle") {
+      bundle_suffix = "6432"
+      is_64_bit_browser = true
+      use_trichrome_library = true
+      if (build_apk_secondary_abi) {
+        include_32_bit_webview = true
+      }
     }
   }
 }

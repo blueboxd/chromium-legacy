@@ -5,7 +5,7 @@ package org.chromium.android_webview.ui.util;
 
 import org.chromium.android_webview.common.crash.CrashInfo;
 import org.chromium.android_webview.common.crash.CrashInfo.UploadState;
-import org.chromium.android_webview.services.CrashReceiverService;
+import org.chromium.android_webview.common.crash.SystemWideCrashDirectories;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 
@@ -24,13 +24,13 @@ public class WebViewCrashInfoCollector {
 
     public WebViewCrashInfoCollector() {
         CrashFileManager crashFileManager =
-                new CrashFileManager(CrashReceiverService.getOrCreateWebViewCrashDir());
+                new CrashFileManager(SystemWideCrashDirectories.getOrCreateWebViewCrashDir());
 
         mCrashInfoLoaders = new CrashInfoLoader[] {
                 new UploadedCrashesInfoLoader(crashFileManager.getCrashUploadLogFile()),
                 new UnuploadedFilesStateLoader(crashFileManager),
 
-                new WebViewCrashLogParser(CrashReceiverService.getWebViewCrashLogDir())};
+                new WebViewCrashLogParser(SystemWideCrashDirectories.getWebViewCrashLogDir())};
     }
 
     /**

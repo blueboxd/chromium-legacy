@@ -190,6 +190,8 @@ extern const char kChromeUIWebApksHost[];
 #if defined(OS_CHROMEOS)
 // NOTE: If you add a URL/host please check if it should be added to
 // IsSystemWebUIHost().
+extern const char kChromeUIAccountManagerErrorHost[];
+extern const char kChromeUIAccountManagerErrorURL[];
 extern const char kChromeUIAccountManagerWelcomeHost[];
 extern const char kChromeUIAccountManagerWelcomeURL[];
 extern const char kChromeUIAccountMigrationWelcomeHost[];

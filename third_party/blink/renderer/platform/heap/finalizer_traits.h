@@ -31,7 +31,7 @@ struct HasFinalizeGarbageCollectedObject<
     : std::true_type {};
 
 // The FinalizerTraitImpl specifies how to finalize objects.
-template <typename T, bool isGarbageCollectedFinalized>
+template <typename T, bool isFinalized>
 struct FinalizerTraitImpl;
 
 template <typename T>

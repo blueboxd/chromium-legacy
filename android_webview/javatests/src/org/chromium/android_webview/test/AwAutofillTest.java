@@ -79,11 +79,11 @@ public class AwAutofillTest {
     public static final String FILE = "/login.html";
     public static final String FILE_URL = "file:///android_asset/autofill.html";
 
-    public final static int AUTOFILL_VIEW_ENTERED = 1;
-    public final static int AUTOFILL_VIEW_EXITED = 2;
-    public final static int AUTOFILL_VALUE_CHANGED = 3;
-    public final static int AUTOFILL_COMMIT = 4;
-    public final static int AUTOFILL_CANCEL = 5;
+    public static final int AUTOFILL_VIEW_ENTERED = 1;
+    public static final int AUTOFILL_VIEW_EXITED = 2;
+    public static final int AUTOFILL_VALUE_CHANGED = 3;
+    public static final int AUTOFILL_COMMIT = 4;
+    public static final int AUTOFILL_CANCEL = 5;
 
     /**
      * This class only implements the necessary methods of ViewStructure for testing.
@@ -509,7 +509,7 @@ public class AwAutofillTest {
     }
 
     private static class AwAutofillSessionUMATestHelper {
-        private final static String DATA =
+        private static final String DATA =
                 "<html><head></head><body><form action='a.html' name='formname' id='formid'>"
                 + "<label>User Name:</label>"
                 + "<input type='text' id='text1' name='username'"
@@ -518,9 +518,9 @@ public class AwAutofillTest {
                 + "</form>"
                 + "<form><input type='text' id='text2'/></form></body></html>";
 
-        private final static int TOTAL_CONTROLS = 1; // text1
+        private static final int TOTAL_CONTROLS = 1; // text1
 
-        public final static int NO_FORM_SUBMISSION = -1;
+        public static final int NO_FORM_SUBMISSION = -1;
 
         public AwAutofillSessionUMATestHelper(AwAutofillTest test) {
             mTest = test;
@@ -1437,7 +1437,19 @@ public class AwAutofillTest {
         try {
             final String url = webServer.setResponse(FILE, data, null);
             loadUrlSync(url);
-            waitForCallbackAndVerifyTypes(cnt, new Integer[] {});
+            // There is no good way to verify no callback occurred, we just simulate user trigger
+            // the autofill and verify autofill is only triggered once, then this proves javascript
+            // didn't trigger the autofill, since
+            // testUserInitiatedJavascriptSelectControlChangeNotification verified user's triggering
+            // work.
+            dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_DPAD_CENTER);
+            cnt += waitForCallbackAndVerifyTypes(cnt,
+                    new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED, AUTOFILL_VIEW_EXITED,
+                            AUTOFILL_VIEW_ENTERED, AUTOFILL_VALUE_CHANGED});
+            ArrayList<Pair<Integer, AutofillValue>> values = getChangedValues();
+            assertEquals(1, values.size());
+            assertTrue(values.get(0).second.isList());
+            assertEquals(1, values.get(0).second.getListValue());
         } finally {
             webServer.shutdown();
         }

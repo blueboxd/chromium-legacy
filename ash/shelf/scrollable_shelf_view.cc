@@ -61,9 +61,14 @@ int GetGestureDragThreshold() {
 
 // Returns the padding between the app icon and the end of the ScrollableShelf.
 int GetAppIconEndPadding() {
-  if (Shell::Get()->tablet_mode_controller()->InTabletMode())
-    return 4;
-  return 0;
+  TabletModeController* tablet_mode_controller =
+      Shell::Get()->tablet_mode_controller();
+
+  // TabletModeController is destructed before ScrollableShelfView.
+  if (!tablet_mode_controller || !tablet_mode_controller->InTabletMode())
+    return 0;
+
+  return 4;
 }
 
 // Calculates the padding for overflow.
@@ -360,20 +365,15 @@ void ScrollableShelfView::StartShelfScrollAnimation(float scroll_distance) {
   shelf_view_->layer()->SetTransform(current_transform);
 }
 
-void ScrollableShelfView::UpdateLayoutStrategy(int available_length) {
-  gfx::Size preferred_size = GetPreferredSize();
-  int preferred_length = GetShelf()->IsHorizontalAlignment()
-                             ? preferred_size.width()
-                             : preferred_size.height();
-  preferred_length += 2 * GetAppIconEndPadding();
+void ScrollableShelfView::UpdateLayoutStrategy() {
+  if (CanFitAllAppsWithoutScrolling()) {
+    layout_strategy_ = kNotShowArrowButtons;
+    return;
+  }
 
   int scroll_length = GetShelf()->IsHorizontalAlignment() ? scroll_offset_.x()
                                                           : scroll_offset_.y();
-
-  if (preferred_length <= available_length) {
-    // Enough space to accommodate all of shelf buttons. So hide arrow buttons.
-    layout_strategy_ = kNotShowArrowButtons;
-  } else if (scroll_length == 0) {
+  if (scroll_length == 0) {
     // No invisible shelf buttons at the left side. So hide the left button.
     layout_strategy_ = kShowRightArrowButton;
   } else if (scroll_length == CalculateScrollUpperBound()) {
@@ -391,7 +391,7 @@ bool ScrollableShelfView::ShouldAdaptToRTL() const {
 }
 
 bool ScrollableShelfView::ShouldApplyDisplayCentering() const {
-  if (layout_strategy_ != kNotShowArrowButtons)
+  if (!CanFitAllAppsWithoutScrolling())
     return false;
 
   const gfx::Rect display_bounds =
@@ -431,14 +431,20 @@ gfx::Size ScrollableShelfView::CalculatePreferredSize() const {
 
 void ScrollableShelfView::Layout() {
   const bool is_horizontal = GetShelf()->IsHorizontalAlignment();
-  const int adjusted_length = (is_horizontal ? width() : height()) -
-                              2 * ShelfConfig::Get()->app_icon_group_margin();
-  UpdateLayoutStrategy(adjusted_length);
 
   // |padding_insets| includes the app icon group margin.
   const gfx::Insets padding_insets = CalculateEdgePadding();
   available_space_ = GetLocalBounds();
   available_space_.Inset(padding_insets);
+
+  // The upper bound of scrolling offset may vary due to display rotation.
+  // Ensures that |scroll_offset_| is within the legal range.
+  if (is_horizontal)
+    scroll_offset_.set_x(CalculateClampedScrollOffset(scroll_offset_.x()));
+  else
+    scroll_offset_.set_y(CalculateClampedScrollOffset(scroll_offset_.y()));
+
+  UpdateLayoutStrategy();
 
   gfx::Size arrow_button_size(kArrowButtonSize, kArrowButtonSize);
   gfx::Rect shelf_container_bounds = gfx::Rect(size());
@@ -974,6 +980,20 @@ views::View* ScrollableShelfView::FindLastFocusableChild() {
 int ScrollableShelfView::GetSpaceForIcons() const {
   return GetShelf()->IsHorizontalAlignment() ? available_space_.width()
                                              : available_space_.height();
+}
+
+bool ScrollableShelfView::CanFitAllAppsWithoutScrolling() const {
+  const int available_length =
+      (GetShelf()->IsHorizontalAlignment() ? width() : height()) -
+      2 * ShelfConfig::Get()->app_icon_group_margin();
+
+  gfx::Size preferred_size = GetPreferredSize();
+  int preferred_length = GetShelf()->IsHorizontalAlignment()
+                             ? preferred_size.width()
+                             : preferred_size.height();
+  preferred_length += 2 * GetAppIconEndPadding();
+
+  return available_length >= preferred_length;
 }
 
 }  // namespace ash

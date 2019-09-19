@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/browser/apps/intent_helper/page_transition_util.h"
 #include "chrome/browser/chromeos/apps/intent_helper/chromeos_apps_navigation_throttle.h"
 #include "chrome/browser/chromeos/arc/arc_web_contents_data.h"
@@ -481,10 +480,14 @@ void OnIntentPickerClosed(int render_process_host_id,
     IntentPickerTabHelper::SetShouldShowIcon(web_contents, false);
 
   if (entry_type == apps::PickerEntryType::kDevice) {
+    DCHECK_EQ(apps::IntentPickerCloseReason::OPEN_APP, reason);
+    DCHECK(!should_persist);
     HandleDeviceSelection(web_contents, selected_app_package, url);
-    bool protocol_accepted =
-        (reason == apps::IntentPickerCloseReason::OPEN_APP) ? true : false;
-    RecordUmaDialogAction(Scheme::TEL, protocol_accepted, should_persist);
+    RecordUmaDialogAction(Scheme::TEL, entry_type, /*accepted=*/true,
+                          should_persist);
+    chromeos::ChromeOsAppsNavigationThrottle::RecordUma(
+        selected_app_package, entry_type, reason,
+        apps::Source::kExternalProtocol, should_persist);
     return;
   }
 
@@ -575,7 +578,8 @@ void OnIntentPickerClosed(int render_process_host_id,
   auto scheme_it = string_to_scheme.find(scheme);
   if (scheme_it != string_to_scheme.end())
     url_scheme = scheme_it->second;
-  RecordUmaDialogAction(url_scheme, protocol_accepted, should_persist);
+  RecordUmaDialogAction(url_scheme, entry_type, protocol_accepted,
+                        should_persist);
 
   chromeos::ChromeOsAppsNavigationThrottle::RecordUma(
       selected_app_package, entry_type, reason, apps::Source::kExternalProtocol,
@@ -785,8 +789,12 @@ bool IsChromeAnAppCandidateForTesting(
   return IsChromeAnAppCandidate(handlers);
 }
 
-void RecordUmaDialogAction(Scheme scheme, bool accepted, bool persisted) {
-  ProtocolAction action = GetProtocolAction(scheme, accepted, persisted);
+void RecordUmaDialogAction(Scheme scheme,
+                           apps::PickerEntryType entry_type,
+                           bool accepted,
+                           bool persisted) {
+  ProtocolAction action =
+      GetProtocolAction(scheme, entry_type, accepted, persisted);
   if (accepted) {
     base::UmaHistogramEnumeration(
         "ChromeOS.Apps.ExternalProtocolDialog.Accepted", action,
@@ -798,7 +806,16 @@ void RecordUmaDialogAction(Scheme scheme, bool accepted, bool persisted) {
   }
 }
 
-ProtocolAction GetProtocolAction(Scheme scheme, bool accepted, bool persisted) {
+ProtocolAction GetProtocolAction(Scheme scheme,
+                                 apps::PickerEntryType entry_type,
+                                 bool accepted,
+                                 bool persisted) {
+  if (entry_type == apps::PickerEntryType::kDevice) {
+    DCHECK_EQ(Scheme::TEL, scheme);
+    DCHECK(accepted);
+    DCHECK(!persisted);
+    return ProtocolAction::TEL_DEVICE_SELECTED;
+  }
   switch (scheme) {
     case Scheme::OTHER:
       if (!accepted)

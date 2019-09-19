@@ -1890,6 +1890,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kZeroCopyDescription, kOsAll,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableZeroCopy,
                                switches::kDisableZeroCopy)},
+    {"enable-vulkan", flag_descriptions::kEnableVulkanName,
+     flag_descriptions::kEnableVulkanDescription, kOsLinux | kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kVulkan)},
 #if defined(OS_MACOSX)
     {"disable-hosted-app-shim-creation",
      flag_descriptions::kHostedAppShimCreationName,
@@ -2517,6 +2520,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPassiveEventListenersDueToFlingName,
      flag_descriptions::kPassiveEventListenersDueToFlingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kPassiveEventListenersDueToFling)},
+#if defined(OS_WIN)
+    {"enable-experimental-fling-animation",
+     flag_descriptions::kExperimentalFlingAnimationName,
+     flag_descriptions::kExperimentalFlingAnimationDescription, kOsWin,
+     FEATURE_VALUE_TYPE(features::kExperimentalFlingAnimation)},
+#endif
     {"per-method-can-make-payment-quota",
      flag_descriptions::kPerMethodCanMakePaymentQuotaName,
      flag_descriptions::kPerMethodCanMakePaymentQuotaDescription, kOsAll,
@@ -3002,6 +3011,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTabOutlinesInLowContrastThemesName,
      flag_descriptions::kTabOutlinesInLowContrastThemesDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kTabOutlinesInLowContrastThemes)},
+
+    {"prominent-dark-mode-active-tab-title",
+     flag_descriptions::kProminentDarkModeActiveTabTitleName,
+     flag_descriptions::kProminentDarkModeActiveTabTitleDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kProminentDarkModeActiveTabTitle)},
 
 #if defined(OS_ANDROID)
     {"enable-reader-mode-in-cct", flag_descriptions::kReaderModeInCCTName,
@@ -4142,12 +4156,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCookiesWithoutSameSiteMustBeSecureName,
      flag_descriptions::kCookiesWithoutSameSiteMustBeSecureDescription, kOsAll,
      FEATURE_VALUE_TYPE(net::features::kCookiesWithoutSameSiteMustBeSecure)},
-
-    {"omnibox-ui-show-placeholder-when-caret-showing",
-     flag_descriptions::kOmniboxUIShowPlaceholderWhenCaretShowingName,
-     flag_descriptions::kOmniboxUIShowPlaceholderWhenCaretShowingDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kUIExperimentShowPlaceholderWhenCaretShowing)},
 
 #if !defined(OS_ANDROID)
     {"enterprise-reporting-in-browser",

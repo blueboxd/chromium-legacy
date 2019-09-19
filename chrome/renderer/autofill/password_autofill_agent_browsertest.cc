@@ -288,14 +288,12 @@ namespace autofill {
 
 class PasswordAutofillAgentTest : public ChromeRenderViewTest {
  public:
-  PasswordAutofillAgentTest() {
-  }
+  PasswordAutofillAgentTest() {}
 
   // Simulates the fill password form message being sent to the renderer.
   // We use that so we don't have to make RenderView::OnFillPasswordForm()
   // protected.
-  void SimulateOnFillPasswordForm(
-      const PasswordFormFillData& fill_data) {
+  void SimulateOnFillPasswordForm(const PasswordFormFillData& fill_data) {
     password_autofill_agent_->FillPasswordForm(fill_data);
   }
 
@@ -712,8 +710,9 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
   }
 
   void BindPasswordManagerClient(mojo::ScopedInterfaceEndpointHandle handle) {
-    fake_pw_client_.BindRequest(
-        mojom::PasswordGenerationDriverAssociatedRequest(std::move(handle)));
+    fake_pw_client_.BindReceiver(
+        mojo::PendingAssociatedReceiver<mojom::PasswordGenerationDriver>(
+            std::move(handle)));
   }
 
   void SaveAndSubmitForm() { SaveAndSubmitForm(username_element_.Form()); }

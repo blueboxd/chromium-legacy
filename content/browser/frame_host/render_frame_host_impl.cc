@@ -1877,16 +1877,12 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
   params->has_committed_real_load =
       frame_tree_node()->has_committed_real_load();
 
-  params->widget_params = mojom::CreateFrameWidgetParams::New();
   if (GetLocalRenderWidgetHost()) {
+    params->widget_params = mojom::CreateFrameWidgetParams::New();
     params->widget_params->routing_id =
         GetLocalRenderWidgetHost()->GetRoutingID();
     params->widget_params->visual_properties =
         GetLocalRenderWidgetHost()->GetVisualProperties();
-  } else {
-    // MSG_ROUTING_NONE will prevent a new RenderWidget from being created in
-    // the renderer process.
-    params->widget_params->routing_id = MSG_ROUTING_NONE;
   }
 
   GetProcess()->GetRendererInterface()->CreateFrame(std::move(params));

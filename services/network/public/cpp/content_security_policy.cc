@@ -289,17 +289,32 @@ bool ContentSecurityPolicy::Parse(base::StringPiece header_value) {
 
 bool ContentSecurityPolicy::ParseFrameAncestors(
     base::StringPiece header_value) {
-  // Parse the CSP directives.
-  // https://www.w3.org/TR/CSP3/#parse-serialized-policy
-  if (auto frame_ancestors_value = ParseHeaderValue(header_value)) {
-    // TODO(lfg): Emit a warning to the user when parsing an invalid
-    // expression.
-    if (auto parsed_frame_ancestors =
-            ParseFrameAncestorsDirective(*frame_ancestors_value)) {
-      content_security_policy_ptr_ = mojom::ContentSecurityPolicy::New();
-      content_security_policy_ptr_->frame_ancestors =
-          std::move(*parsed_frame_ancestors);
-      return true;
+  // A frame-ancestors directive has already been parsed. Skip further
+  // frame-ancestors directives per
+  // https://www.w3.org/TR/CSP3/#parse-serialized-policy.
+  if (content_security_policy_ptr_ &&
+      content_security_policy_ptr_->frame_ancestors) {
+    return true;
+  }
+
+  // RFC7230, section 3.2.2 specifies that headers appearing multiple times can
+  // be combined with a comma. Walk the header string, and parse each comma
+  // separated chunk as a separate header.
+  for (const auto& header :
+       base::SplitStringPiece(header_value, ",", base::TRIM_WHITESPACE,
+                              base::SPLIT_WANT_NONEMPTY)) {
+    // Parse the CSP directives.
+    // https://www.w3.org/TR/CSP3/#parse-serialized-policy
+    if (auto frame_ancestors_value = ParseHeaderValue(header)) {
+      // TODO(lfg): Emit a warning to the user when parsing an invalid
+      // expression.
+      if (auto parsed_frame_ancestors =
+              ParseFrameAncestorsDirective(*frame_ancestors_value)) {
+        content_security_policy_ptr_ = mojom::ContentSecurityPolicy::New();
+        content_security_policy_ptr_->frame_ancestors =
+            std::move(*parsed_frame_ancestors);
+        return true;
+      }
     }
   }
   return false;

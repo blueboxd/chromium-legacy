@@ -937,7 +937,9 @@ public class LocationBarLayout extends FrameLayout
         // side is initialized
         assert mNativeInitialized : "Loading URL before native side initialized";
 
-        if (ReturnToChromeExperimentsUtil.willHandleLoadUrlFromLocationBar(url, transition)) return;
+        if (ReturnToChromeExperimentsUtil.willHandleLoadUrlFromStartSurface(url, transition)) {
+            return;
+        }
 
         if (currentTab != null
                 && (currentTab.isNativePage() || NewTabPage.isNTPUrl(currentTab.getUrl()))) {

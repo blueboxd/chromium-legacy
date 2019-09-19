@@ -98,8 +98,8 @@ namespace {
 
 class LenientMockObserver : public FrameNodeImpl::Observer {
  public:
-  LenientMockObserver() {}
-  ~LenientMockObserver() override {}
+  LenientMockObserver() = default;
+  ~LenientMockObserver() override = default;
 
   MOCK_METHOD1(OnFrameNodeAdded, void(const FrameNode*));
   MOCK_METHOD1(OnBeforeFrameNodeRemoved, void(const FrameNode*));
@@ -108,24 +108,20 @@ class LenientMockObserver : public FrameNodeImpl::Observer {
   MOCK_METHOD1(OnFrameLifecycleStateChanged, void(const FrameNode*));
   MOCK_METHOD2(OnOriginTrialFreezePolicyChanged,
                void(const FrameNode*,
-                    resource_coordinator::mojom::InterventionPolicy));
-  MOCK_METHOD1(OnURLChanged, void(const FrameNode*));
+                    const resource_coordinator::mojom::InterventionPolicy&));
+  MOCK_METHOD2(OnURLChanged, void(const FrameNode*, const GURL&));
   MOCK_METHOD1(OnIsAdFrameChanged, void(const FrameNode*));
   MOCK_METHOD1(OnNonPersistentNotificationCreated, void(const FrameNode*));
   MOCK_METHOD1(OnPriorityAndReasonChanged, void(const FrameNode*));
 
-  void SetNotifiedFrameNode(const FrameNode* frame_node) {
-    notified_frame_node_ = frame_node;
+  void SetCreatedFrameNode(const FrameNode* frame_node) {
+    created_frame_node_ = frame_node;
   }
 
-  const FrameNode* TakeNotifiedFrameNode() {
-    const FrameNode* node = notified_frame_node_;
-    notified_frame_node_ = nullptr;
-    return node;
-  }
+  const FrameNode* created_frame_node() { return created_frame_node_; }
 
  private:
-  const FrameNode* notified_frame_node_ = nullptr;
+  const FrameNode* created_frame_node_ = nullptr;
 };
 
 using MockObserver = ::testing::StrictMock<LenientMockObserver>;
@@ -144,50 +140,46 @@ TEST_F(FrameNodeImplTest, ObserverWorks) {
 
   // Create a frame node and expect a matching call to "OnFrameNodeAdded".
   EXPECT_CALL(obs, OnFrameNodeAdded(_))
-      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedFrameNode));
+      .WillOnce(Invoke(&obs, &MockObserver::SetCreatedFrameNode));
   auto frame_node = CreateNode<FrameNodeImpl>(process.get(), page.get());
+  testing::Mock::VerifyAndClear(&obs);
+
   const FrameNode* raw_frame_node = frame_node.get();
-  EXPECT_EQ(raw_frame_node, obs.TakeNotifiedFrameNode());
+  EXPECT_EQ(raw_frame_node, obs.created_frame_node());
 
   // Invoke "SetIsCurrent" and expect a "OnIsCurrentChanged" callback.
-  EXPECT_CALL(obs, OnIsCurrentChanged(_))
-      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedFrameNode));
+  EXPECT_CALL(obs, OnIsCurrentChanged(raw_frame_node));
   frame_node->SetIsCurrent(true);
-  EXPECT_EQ(raw_frame_node, obs.TakeNotifiedFrameNode());
+  testing::Mock::VerifyAndClear(&obs);
 
   // Invoke "SetNetworkAlmostIdle" and expect an "OnNetworkAlmostIdleChanged"
   // callback.
-  EXPECT_CALL(obs, OnNetworkAlmostIdleChanged(_))
-      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedFrameNode));
+  EXPECT_CALL(obs, OnNetworkAlmostIdleChanged(raw_frame_node));
   frame_node->SetNetworkAlmostIdle();
-  EXPECT_EQ(raw_frame_node, obs.TakeNotifiedFrameNode());
+  testing::Mock::VerifyAndClear(&obs);
 
   // Invoke "SetLifecycleState" and expect an "OnFrameLifecycleStateChanged"
   // callback.
-  EXPECT_CALL(obs, OnFrameLifecycleStateChanged(_))
-      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedFrameNode));
+  EXPECT_CALL(obs, OnFrameLifecycleStateChanged(raw_frame_node));
   frame_node->SetLifecycleState(
       resource_coordinator::mojom::LifecycleState::kFrozen);
-  EXPECT_EQ(raw_frame_node, obs.TakeNotifiedFrameNode());
+  testing::Mock::VerifyAndClear(&obs);
 
   // Invoke "OnNonPersistentNotificationCreated" and expect an
   // "OnNonPersistentNotificationCreated" callback.
-  EXPECT_CALL(obs, OnNonPersistentNotificationCreated(_))
-      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedFrameNode));
+  EXPECT_CALL(obs, OnNonPersistentNotificationCreated(raw_frame_node));
   frame_node->OnNonPersistentNotificationCreated();
-  EXPECT_EQ(raw_frame_node, obs.TakeNotifiedFrameNode());
+  testing::Mock::VerifyAndClear(&obs);
 
   // Invoke "OnNavigationCommitted" and expect an "OnURLChanged" callback.
-  EXPECT_CALL(obs, OnURLChanged(_))
-      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedFrameNode));
+  EXPECT_CALL(obs, OnURLChanged(raw_frame_node, _));
   frame_node->OnNavigationCommitted(GURL("https://foo.com/"), true);
-  EXPECT_EQ(raw_frame_node, obs.TakeNotifiedFrameNode());
+  testing::Mock::VerifyAndClear(&obs);
 
   // Release the frame node and expect a call to "OnBeforeFrameNodeRemoved".
-  EXPECT_CALL(obs, OnBeforeFrameNodeRemoved(_))
-      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedFrameNode));
+  EXPECT_CALL(obs, OnBeforeFrameNodeRemoved(raw_frame_node));
   frame_node.reset();
-  EXPECT_EQ(raw_frame_node, obs.TakeNotifiedFrameNode());
+  testing::Mock::VerifyAndClear(&obs);
 
   graph()->RemoveFrameNodeObserver(&obs);
 }

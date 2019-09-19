@@ -6,7 +6,7 @@
 
 #include "base/android/jni_string.h"
 #include "chrome/android/chrome_jni_headers/PasswordEditingBridge_jni.h"
-#include "chrome/browser/android/password_change_delegate.h"
+#include "chrome/browser/android/password_edit_delegate.h"
 #include "chrome/browser/android/password_update_delegate.h"
 
 using base::android::ConvertUTF16ToJavaString;
@@ -28,17 +28,27 @@ void PasswordEditingBridge::Destroy(JNIEnv* env,
 void PasswordEditingBridge::LaunchPasswordEntryEditor(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& context,
-    password_manager::PasswordStore* store,
+    Profile* profile,
     const autofill::PasswordForm& password_form) {
   // PasswordEditingBridge will destroy itself when the UI is gone on the Java
   // side.
   PasswordEditingBridge* password_editing_bridge = new PasswordEditingBridge();
-  password_editing_bridge->password_change_delegate_ =
-      std::make_unique<PasswordUpdateDelegate>(store, password_form);
+  password_editing_bridge->password_edit_delegate_ =
+      std::make_unique<PasswordUpdateDelegate>(profile, password_form);
   Java_PasswordEditingBridge_showEditingUI(
       base::android::AttachCurrentThread(),
       password_editing_bridge->java_object_, context,
       ConvertUTF8ToJavaString(env, password_form.signon_realm),
       ConvertUTF16ToJavaString(env, password_form.username_value),
       ConvertUTF16ToJavaString(env, password_form.password_value));
+}
+
+void PasswordEditingBridge::HandleEditSavedPasswordEntry(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& object,
+    const JavaParamRef<jstring>& new_username,
+    const JavaParamRef<jstring>& new_password) {
+  password_edit_delegate_->EditSavedPassword(
+      ConvertJavaStringToUTF16(env, new_username),
+      ConvertJavaStringToUTF16(env, new_password));
 }

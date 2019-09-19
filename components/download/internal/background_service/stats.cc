@@ -330,10 +330,6 @@ void LogHasUploadData(DownloadClient client, bool has_upload_data) {
   base::UmaHistogramBoolean(name, has_upload_data);
 }
 
-void LogHashPresence(bool hash_exists) {
-  UMA_HISTOGRAM_BOOLEAN("Download.Service.Finish.ReportedHash", hash_exists);
-}
-
 void LogDownloadClientInflatedFullBrowser(DownloadClient client) {
   std::string client_name(ClientToHistogramSuffix(client));
   base::UmaHistogramBoolean(

@@ -54,7 +54,9 @@ class GPU_GLES2_EXPORT SharedImageVideo
 
   // Returns ycbcr information. This is only valid in vulkan context and
   // nullopt for other context.
-  base::Optional<VulkanYCbCrInfo> GetYcbcrInfo();
+  static base::Optional<VulkanYCbCrInfo> GetYcbcrInfo(
+      StreamTextureSharedImageInterface* stream_texture_sii,
+      scoped_refptr<SharedContextState> context_state);
 
  protected:
   std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(

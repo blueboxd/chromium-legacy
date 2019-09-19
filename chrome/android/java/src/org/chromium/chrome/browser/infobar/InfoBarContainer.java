@@ -21,15 +21,12 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.KeyboardVisibilityDelegate.KeyboardVisibilityListener;
-import org.chromium.ui.modaldialog.DialogDismissalCause;
-import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
 
 import java.util.ArrayList;
 
@@ -296,15 +293,6 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener {
         infoBar.setContext(mInfoBarContainerView.getContext());
         infoBar.setInfoBarContainer(this);
 
-        // TODO(957153): In touchless we will be needlessly logging show/close events. We should
-        //               clean this up to avoid skewing the metrics.
-        if (FeatureUtilities.isNoTouchModeEnabled() && !infoBar.supportsTouchlessMode()) {
-            // Pose the closing of the infobar as the native container does not handle closing the
-            // infobar during the show process well (native will crash).
-            mTab.getView().post(() -> infoBar.onCloseButtonClicked());
-            return;
-        }
-
         // We notify observers immediately (before the animation starts).
         for (InfoBarContainerObserver observer : mObservers) {
             observer.onAddInfoBar(this, infoBar, mInfoBars.isEmpty());
@@ -317,12 +305,7 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener {
         // to be available when they get the notification.
         mInfoBars.add(infoBar);
 
-        if (FeatureUtilities.isNoTouchModeEnabled() && infoBar.supportsTouchlessMode()) {
-            mTab.getActivity().getModalDialogManager().showDialog(
-                    infoBar.createModel(), ModalDialogType.APP);
-        } else {
-            mInfoBarContainerView.addInfoBar(infoBar);
-        }
+        mInfoBarContainerView.addInfoBar(infoBar);
     }
 
     /**
@@ -367,17 +350,8 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener {
         assert !mDestroyed;
 
         if (!mInfoBars.remove(infoBar)) {
-            // In touchless mode, an infobar can be removed without technically being added. This
-            // is allowed to support whitelisted infobars (while easily blocking the rest).
-            if (FeatureUtilities.isNoTouchModeEnabled()) return;
             assert false : "Trying to remove an InfoBar that is not in this container.";
             return;
-        }
-
-        if (infoBar.supportsTouchlessMode() && FeatureUtilities.isNoTouchModeEnabled()
-                && infoBar.getModel() != null) {
-            mTab.getActivity().getModalDialogManager().dismissDialog(
-                    infoBar.getModel(), DialogDismissalCause.UNKNOWN);
         }
 
         // Notify observers immediately, before any animations begin.
@@ -385,11 +359,9 @@ public class InfoBarContainer implements UserData, KeyboardVisibilityListener {
             observer.onRemoveInfoBar(this, infoBar, mInfoBars.isEmpty());
         }
 
-        if (!FeatureUtilities.isNoTouchModeEnabled()) {
-            assert mInfoBarContainerView
-                    != null : "The container view is null when removing an InfoBar.";
-            mInfoBarContainerView.removeInfoBar(infoBar);
-        }
+        assert mInfoBarContainerView
+                != null : "The container view is null when removing an InfoBar.";
+        mInfoBarContainerView.removeInfoBar(infoBar);
     }
 
     /**

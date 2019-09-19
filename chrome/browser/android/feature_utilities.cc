@@ -40,11 +40,6 @@ bool IsDownloadAutoResumptionEnabledInNative() {
   return Java_FeatureUtilities_isDownloadAutoResumptionEnabledInNative(env);
 }
 
-bool IsNoTouchModeEnabled() {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_FeatureUtilities_isNoTouchModeEnabled(env);
-}
-
 std::string GetReachedCodeProfilerTrialGroup() {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> group =

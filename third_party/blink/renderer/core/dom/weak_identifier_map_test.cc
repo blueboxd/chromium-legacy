@@ -11,7 +11,7 @@ namespace blink {
 
 class WeakIdentifierMapTest : public ::testing::Test {
  public:
-  class TestClass final : public GarbageCollectedFinalized<TestClass> {
+  class TestClass final : public GarbageCollected<TestClass> {
    public:
     virtual void Trace(Visitor*) {}
   };

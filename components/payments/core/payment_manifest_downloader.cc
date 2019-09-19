@@ -27,6 +27,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/url_constants.h"
 
 namespace payments {
@@ -181,7 +182,7 @@ PaymentManifestDownloader::Download::~Download() {}
 void PaymentManifestDownloader::OnURLLoaderRedirect(
     network::SimpleURLLoader* url_loader,
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& response_head,
+    const network::mojom::URLResponseHead& response_head,
     std::vector<std::string>* to_be_removed_headers) {
   auto download_it = downloads_.find(url_loader);
   DCHECK(download_it != downloads_.end());

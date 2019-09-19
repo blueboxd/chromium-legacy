@@ -12,7 +12,7 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/effective_connection_type_observer.h"
 #include "net/nqe/rtt_throughput_estimates_observer.h"
@@ -46,7 +46,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkQualityEstimatorManager
 
   // mojom::NetworkQualityEstimatorManager implementation:
   void RequestNotifications(
-      mojom::NetworkQualityEstimatorManagerClientPtr client_ptr) override;
+      mojo::PendingRemote<mojom::NetworkQualityEstimatorManagerClient> client)
+      override;
 
   net::NetworkQualityEstimator* GetNetworkQualityEstimator() const;
 
@@ -62,7 +63,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkQualityEstimatorManager
 
   std::unique_ptr<net::NetworkQualityEstimator> network_quality_estimator_;
   mojo::BindingSet<mojom::NetworkQualityEstimatorManager> bindings_;
-  mojo::InterfacePtrSet<mojom::NetworkQualityEstimatorManagerClient> clients_;
+  mojo::RemoteSet<mojom::NetworkQualityEstimatorManagerClient> clients_;
   net::EffectiveConnectionType effective_connection_type_;
   base::TimeDelta http_rtt_;
   base::TimeDelta transport_rtt_;

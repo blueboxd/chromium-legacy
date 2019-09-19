@@ -25,7 +25,7 @@ namespace blink {
 // - If MultipartParser::cancel() is called, Client's methods will not be
 //   called anymore.
 class CORE_EXPORT MultipartParser final
-    : public GarbageCollectedFinalized<MultipartParser> {
+    : public GarbageCollected<MultipartParser> {
  public:
   // Client recieves parsed part header fields and data.
   class CORE_EXPORT Client : public GarbageCollectedMixin {

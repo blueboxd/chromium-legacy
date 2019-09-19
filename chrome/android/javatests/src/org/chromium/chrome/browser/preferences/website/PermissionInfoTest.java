@@ -17,7 +17,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
@@ -87,17 +86,13 @@ public class PermissionInfoTest {
         Assert.assertEquals(
                 ContentSettingValues.ALLOW, getGeolocation(DSE_ORIGIN, null, incognito));
 
-        // Incognito is not available in touchless mode.
-        if (!FeatureUtilities.isNoTouchModeEnabled()) {
-            // Resetting in incognito should not have the same behavior.
-            incognito = true;
-            setGeolocation(DSE_ORIGIN, null, ContentSettingValues.BLOCK, incognito);
-            Assert.assertEquals(
-                    ContentSettingValues.BLOCK, getGeolocation(DSE_ORIGIN, null, incognito));
-            setGeolocation(DSE_ORIGIN, null, ContentSettingValues.DEFAULT, incognito);
-            Assert.assertEquals(
-                    ContentSettingValues.ASK, getGeolocation(DSE_ORIGIN, null, incognito));
-        }
+        // Resetting in incognito should not have the same behavior.
+        incognito = true;
+        setGeolocation(DSE_ORIGIN, null, ContentSettingValues.BLOCK, incognito);
+        Assert.assertEquals(
+                ContentSettingValues.BLOCK, getGeolocation(DSE_ORIGIN, null, incognito));
+        setGeolocation(DSE_ORIGIN, null, ContentSettingValues.DEFAULT, incognito);
+        Assert.assertEquals(ContentSettingValues.ASK, getGeolocation(DSE_ORIGIN, null, incognito));
 
         // Resetting a different top level origin should not have the same behavior
         incognito = false;
@@ -145,19 +140,16 @@ public class PermissionInfoTest {
         Assert.assertEquals(
                 ContentSettingValues.ALLOW, getNotifications(DSE_ORIGIN, null, incognito));
 
-        // Incognito is not available in touchless mode.
-        if (!FeatureUtilities.isNoTouchModeEnabled()) {
-            // Resetting in incognito should not have the same behavior.
-            TestThreadUtils.runOnUiThreadBlocking(
-                    () -> WebsitePreferenceBridgeJni.get().resetNotificationsSettingsForTest());
-            incognito = true;
-            setNotifications(DSE_ORIGIN, null, ContentSettingValues.BLOCK, incognito);
-            Assert.assertEquals(
-                    ContentSettingValues.BLOCK, getNotifications(DSE_ORIGIN, null, incognito));
-            setNotifications(DSE_ORIGIN, null, ContentSettingValues.DEFAULT, incognito);
-            Assert.assertEquals(
-                    ContentSettingValues.ASK, getNotifications(DSE_ORIGIN, null, incognito));
-        }
+        // Resetting in incognito should not have the same behavior.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> WebsitePreferenceBridgeJni.get().resetNotificationsSettingsForTest());
+        incognito = true;
+        setNotifications(DSE_ORIGIN, null, ContentSettingValues.BLOCK, incognito);
+        Assert.assertEquals(
+                ContentSettingValues.BLOCK, getNotifications(DSE_ORIGIN, null, incognito));
+        setNotifications(DSE_ORIGIN, null, ContentSettingValues.DEFAULT, incognito);
+        Assert.assertEquals(
+                ContentSettingValues.ASK, getNotifications(DSE_ORIGIN, null, incognito));
 
         // // Resetting a different top level origin should not have the same behavior
         TestThreadUtils.runOnUiThreadBlocking(

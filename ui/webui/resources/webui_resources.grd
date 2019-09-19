@@ -126,6 +126,7 @@ without changes to the corresponding grd file. -->
       </if>
 
       <if expr="not is_android and not is_ios">
+        <part file="cr_components/cr_components_resources_v3.grdp" />
         <part file="cr_elements_resources_v3.grdp" />
         <part file="cr_polymer_resources_v3.grdp" />
       </if>

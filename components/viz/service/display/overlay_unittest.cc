@@ -1930,7 +1930,8 @@ TEST_F(UnderlayTest, PrimaryPlaneOverlayIsTransparentWithUnderlay) {
   pass_list.push_back(std::move(pass));
 
   auto output_surface_plane = overlay_processor_->ProcessOutputSurfaceAsOverlay(
-      kDisplaySize, kDefaultBufferFormat, gfx::ColorSpace());
+      kDisplaySize, kDefaultBufferFormat, gfx::ColorSpace(),
+      false /* has_alpha */);
   OverlayProcessor::OutputSurfaceOverlayPlane* primary_plane =
       &output_surface_plane;
 

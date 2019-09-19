@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/simple_download_manager.h"
@@ -46,7 +47,8 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManagerCoordinator
   using DownloadWhenFullManagerStartsCallBack =
       base::RepeatingCallback<void(std::unique_ptr<DownloadUrlParameters>)>;
   SimpleDownloadManagerCoordinator(const DownloadWhenFullManagerStartsCallBack&
-                                       download_when_full_manager_starts_cb);
+                                       download_when_full_manager_starts_cb,
+                                   bool record_full_download_manager_delay);
   ~SimpleDownloadManagerCoordinator() override;
 
   void AddObserver(Observer* observer);
@@ -106,6 +108,9 @@ class COMPONENTS_DOWNLOAD_EXPORT SimpleDownloadManagerCoordinator
 
   // Observers that want to be notified of changes to the set of downloads.
   base::ObserverList<Observer>::Unchecked observers_;
+
+  // Time when this object was created.
+  base::TimeTicks creation_time_ticks_;
 
   base::WeakPtrFactory<SimpleDownloadManagerCoordinator> weak_factory_{this};
 

@@ -20,7 +20,7 @@ namespace device {
 void SerialPortImpl::Create(
     const base::FilePath& path,
     mojom::SerialPortRequest request,
-    mojom::SerialPortConnectionWatcherPtrInfo watcher,
+    mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   // This SerialPortImpl is owned by |request| and |watcher|.
   new SerialPortImpl(path, std::move(request), std::move(watcher),
@@ -30,7 +30,7 @@ void SerialPortImpl::Create(
 SerialPortImpl::SerialPortImpl(
     const base::FilePath& path,
     mojom::SerialPortRequest request,
-    mojom::SerialPortConnectionWatcherPtrInfo watcher,
+    mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
     : binding_(this, std::move(request)),
       io_handler_(device::SerialIoHandler::Create(path, ui_task_runner)),
@@ -41,7 +41,7 @@ SerialPortImpl::SerialPortImpl(
   binding_.set_connection_error_handler(base::BindOnce(
       [](SerialPortImpl* self) { delete self; }, base::Unretained(this)));
   if (watcher_.is_bound()) {
-    watcher_.set_connection_error_handler(base::BindOnce(
+    watcher_.set_disconnect_handler(base::BindOnce(
         [](SerialPortImpl* self) { delete self; }, base::Unretained(this)));
   }
 }

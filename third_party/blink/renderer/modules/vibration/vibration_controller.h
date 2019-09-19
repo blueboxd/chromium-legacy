@@ -36,7 +36,7 @@ class LocalFrame;
 class UnsignedLongOrUnsignedLongSequence;
 
 class MODULES_EXPORT VibrationController final
-    : public GarbageCollectedFinalized<VibrationController>,
+    : public GarbageCollected<VibrationController>,
       public ContextLifecycleObserver,
       public PageVisibilityObserver {
   USING_GARBAGE_COLLECTED_MIXIN(VibrationController);

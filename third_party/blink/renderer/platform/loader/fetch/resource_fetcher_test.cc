@@ -353,7 +353,7 @@ TEST_F(ResourceFetcherTest, VaryResource) {
 }
 
 class RequestSameResourceOnComplete
-    : public GarbageCollectedFinalized<RequestSameResourceOnComplete>,
+    : public GarbageCollected<RequestSameResourceOnComplete>,
       public RawResourceClient {
   USING_GARBAGE_COLLECTED_MIXIN(RequestSameResourceOnComplete);
 
@@ -440,7 +440,7 @@ TEST_F(ResourceFetcherTest, MAYBE_DontReuseMediaDataUrl) {
 }
 
 class ServeRequestsOnCompleteClient final
-    : public GarbageCollectedFinalized<ServeRequestsOnCompleteClient>,
+    : public GarbageCollected<ServeRequestsOnCompleteClient>,
       public RawResourceClient {
   USING_GARBAGE_COLLECTED_MIXIN(ServeRequestsOnCompleteClient);
 

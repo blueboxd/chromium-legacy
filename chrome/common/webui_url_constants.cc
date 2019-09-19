@@ -189,6 +189,8 @@ const char kChromeUIWebApksHost[] = "webapks";
 
 #if defined(OS_CHROMEOS)
 // Keep alphabetized.
+const char kChromeUIAccountManagerErrorHost[] = "account-manager-error";
+const char kChromeUIAccountManagerErrorURL[] = "chrome://account-manager-error";
 const char kChromeUIAccountManagerWelcomeHost[] = "account-manager-welcome";
 const char kChromeUIAccountManagerWelcomeURL[] =
     "chrome://account-manager-welcome";
@@ -269,6 +271,7 @@ bool IsSystemWebUIHost(base::StringPiece host) {
   // Compares host instead of full URL for performance (the strings are
   // shorter).
   static const char* const kHosts[] = {
+      kChromeUIAccountManagerErrorHost,
       kChromeUIAccountManagerWelcomeHost,
       kChromeUIAccountMigrationWelcomeHost,
       kChromeUIActivationMessageHost,

@@ -6,24 +6,16 @@ package org.chromium.chrome.browser.infobar;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.widget.TextView;
 
-import androidx.annotation.CallSuper;
 import androidx.annotation.ColorRes;
 import androidx.annotation.Nullable;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
-import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties;
-import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.ActionNames;
-import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.Priority;
-import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -124,61 +116,11 @@ public abstract class InfoBar implements InfoBarView {
     }
 
     /**
-     * Create a property model for view systems that use this rather than a custom view.
-     * @return A new property model.
-     */
-    @CallSuper
-    protected PropertyModel createModel() {
-        Drawable icon;
-        if (mIconBitmap != null) {
-            icon = new BitmapDrawable(mIconBitmap);
-        } else {
-            icon = ApiCompatibilityUtils.getDrawable(getContext().getResources(), mIconDrawableId);
-        }
-
-        ActionNames names = new ActionNames();
-        names.cancel = R.string.cancel;
-        names.select = R.string.select;
-        names.alt = 0;
-        PropertyModel model =
-                new PropertyModel.Builder(TouchlessDialogProperties.ALL_DIALOG_KEYS)
-                        .with(TouchlessDialogProperties.IS_FULLSCREEN, false)
-                        .with(TouchlessDialogProperties.PRIORITY, Priority.HIGH)
-                        .with(TouchlessDialogProperties.ACTION_NAMES, names)
-                        .with(TouchlessDialogProperties.CANCEL_ACTION,
-                                view -> onCloseButtonClicked())
-                        .with(TouchlessDialogProperties.ALT_ACTION, null)
-                        .with(ModalDialogProperties.TITLE,
-                                mMessage != null ? mMessage.toString() : "")
-                        .with(ModalDialogProperties.TITLE_ICON, icon)
-                        .with(ModalDialogProperties.CONTROLLER,
-                                new ModalDialogProperties.Controller() {
-                                    @Override
-                                    public void onClick(PropertyModel model, int buttonType) {}
-
-                                    @Override
-                                    public void onDismiss(PropertyModel model, int dismissalCause) {
-                                        mContainer.removeInfoBar(InfoBar.this);
-                                    }
-                                })
-                        .build();
-        mModel = model;
-        return model;
-    }
-
-    /**
      * @return The model for this infobar if one was created.
      */
     @Nullable
     PropertyModel getModel() {
         return mModel;
-    }
-
-    /**
-     * @return Whether this InfoBar is supported in touchless mode.
-     */
-    protected boolean supportsTouchlessMode() {
-        return false;
     }
 
     /**

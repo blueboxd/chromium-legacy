@@ -285,7 +285,7 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
 
   // |delta| is used for updating |scroll_offset_| with new scroll values so
   // that windows in tablet overview mode get positioned accordingly. Returns
-  // true if the grid was scrolled.
+  // true if the grid was moved to the edge.
   bool UpdateScrollOffset(float delta);
 
   void EndScroll();
@@ -316,6 +316,8 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   void set_suspend_reposition(bool value) { suspend_reposition_ = value; }
 
   views::Widget* drop_target_widget() { return drop_target_widget_.get(); }
+
+  float scroll_offset() const { return scroll_offset_; }
 
   OverviewGridEventHandler* grid_event_handler() {
     return grid_event_handler_.get();
@@ -451,6 +453,10 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // Value to clamp |scroll_offset| so scrolling stays limited to windows that
   // are visible in tablet overview mode.
   float scroll_offset_min_ = 0;
+
+  // Sum of the deltas passed by |UpdateScrollOffset|, this is so we can ignore
+  // deltas that are too small for performance reasons.
+  float scroll_current_delta_ = 0.f;
 
   // Cached values of the item bounds so that they do not have to be calculated
   // on each scroll update.

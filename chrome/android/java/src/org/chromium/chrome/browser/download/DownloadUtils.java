@@ -60,7 +60,6 @@ import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.ChromeIntentUtil;
 import org.chromium.chrome.browser.util.ConversionUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.components.download.DownloadState;
@@ -172,7 +171,6 @@ public class DownloadUtils {
     @CalledByNative
     public static boolean showDownloadManager(@Nullable Activity activity, @Nullable Tab tab,
             @DownloadOpenSource int source, boolean showPrefetchedContent) {
-        if (FeatureUtilities.isNoTouchModeEnabled()) return false;
         // Figure out what tab was last being viewed by the user.
         if (activity == null) activity = ApplicationStatus.getLastTrackedFocusedActivity();
         Context appContext = ContextUtils.getApplicationContext();

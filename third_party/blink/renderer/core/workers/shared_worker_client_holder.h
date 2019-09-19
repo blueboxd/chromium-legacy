@@ -61,7 +61,7 @@ class SharedWorker;
 // SharedWorkerClientHolder is a per-Document object and owned by Document via
 // Supplement<Document>.
 class CORE_EXPORT SharedWorkerClientHolder final
-    : public GarbageCollectedFinalized<SharedWorkerClientHolder>,
+    : public GarbageCollected<SharedWorkerClientHolder>,
       public Supplement<Document>,
       public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(SharedWorkerClientHolder);

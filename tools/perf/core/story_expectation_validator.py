@@ -91,7 +91,7 @@ def main():
   if ret:
     logging.error(msg)
     return ret
-  validate_tag_declaration_lists(test_expectations.tag_sets)
+  #validate_tag_declaration_lists(test_expectations.tag_sets)
   validate_story_names(benchmarks, test_expectations)
   validate_expectations_component_tags(test_expectations)
   return 0

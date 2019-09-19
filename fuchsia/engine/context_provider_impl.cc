@@ -227,6 +227,10 @@ void ContextProviderImpl::Create(
                                      gl::kGLImplementationStubName);
   }
 
+  if (enable_protected_graphics) {
+    launch_command.AppendSwitch(switches::kEnforceVulkanProtectedMemory);
+  }
+
   if (enable_widevine) {
     launch_command.AppendSwitch(switches::kEnableWidevine);
   }

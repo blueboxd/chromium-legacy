@@ -316,9 +316,7 @@ Vector<String> SavedFormState::GetReferencedFilePaths() const {
 
 // ----------------------------------------------------------------------------
 
-class FormKeyGenerator final
-    : public GarbageCollectedFinalized<FormKeyGenerator> {
-
+class FormKeyGenerator final : public GarbageCollected<FormKeyGenerator> {
  public:
   FormKeyGenerator() = default;
 

@@ -22,7 +22,7 @@ String ToString(const Vector<char>& data) {
   return String(data.data(), data.size());
 }
 
-class MockClient final : public GarbageCollectedFinalized<MockClient>,
+class MockClient final : public GarbageCollected<MockClient>,
                          public MultipartImageResourceParser::Client {
   USING_GARBAGE_COLLECTED_MIXIN(MockClient);
 

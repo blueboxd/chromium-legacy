@@ -9,7 +9,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.share.ShareActivity;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.printing.PrintingController;
 import org.chromium.printing.PrintingControllerImpl;
 
@@ -23,9 +22,6 @@ public class PrintShareActivity extends ShareActivity {
     }
 
     public static boolean featureIsAvailable(Tab currentTab) {
-        // TODO(https://crbug.com/981065): The Share Sheet printing item gets disabled while the
-        // share sheet is still active in NoTouch mode. Remove this restriction once fixed.
-        if (FeatureUtilities.isNoTouchModeEnabled()) return false;
         PrintingController printingController = PrintingControllerImpl.getInstance();
         return (printingController != null && !currentTab.isNativePage()
                 && !currentTab.isShowingInterstitialPage() && !printingController.isBusy()

@@ -31,7 +31,7 @@ import org.chromium.network.mojom.ReferrerPolicy;
 public class HTTPSTabsOpenedFromExternalAppTest {
     @Rule
     public ChromeActivityTestRule<? extends ChromeActivity> mActivityTestRule =
-            ChromeActivityTestRule.forMainActivity();
+            new ChromeActivityTestRule(ChromeTabbedActivity.class);
 
     private EmbeddedTestServer mTestServer;
 

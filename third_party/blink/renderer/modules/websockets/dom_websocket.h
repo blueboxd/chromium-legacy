@@ -152,7 +152,7 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
 
  private:
   // FIXME: This should inherit blink::EventQueue.
-  class EventQueue final : public GarbageCollectedFinalized<EventQueue> {
+  class EventQueue final : public GarbageCollected<EventQueue> {
    public:
     static EventQueue* Create(EventTarget* target) {
       return MakeGarbageCollected<EventQueue>(target);

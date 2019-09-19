@@ -81,7 +81,7 @@ class CORE_EXPORT InspectorDOMAgent final
   };
 
   class CORE_EXPORT InspectorSourceLocation final
-      : public GarbageCollectedFinalized<InspectorSourceLocation> {
+      : public GarbageCollected<InspectorSourceLocation> {
    public:
     InspectorSourceLocation(std::unique_ptr<SourceLocation> source_location)
         : source_location_(std::move(source_location)) {}

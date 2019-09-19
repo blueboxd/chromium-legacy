@@ -119,8 +119,7 @@ class CORE_EXPORT FormData final
 // Represents entry, which is a pair of a name and a value.
 // https://xhr.spec.whatwg.org/#concept-formdata-entry
 // Entry objects are immutable.
-class FormData::Entry final
-    : public GarbageCollectedFinalized<FormData::Entry> {
+class FormData::Entry final : public GarbageCollected<FormData::Entry> {
  public:
   Entry(const String& name, const String& value);
   Entry(const String& name, Blob* blob, const String& filename);

@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 
+@protocol NSObject;
 @class NSNotification;
 
 namespace web {
@@ -21,7 +22,10 @@ class CookieNotificationBridge {
 
  private:
   static void OnNotificationReceived(NSNotification* notification);
-  id observer_;
+
+  // Token returned by NSNotificationCenter upon registration. Owned by the
+  // bridge and used to unregister from NSNotificationCenter in destructor.
+  __strong id<NSObject> registration_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieNotificationBridge);
 };

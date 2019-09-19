@@ -20,7 +20,7 @@ class V8RemotePlaybackAvailabilityCallback;
 // Wraps either a base::OnceClosure or RemotePlaybackAvailabilityCallback object
 // to be kept in the RemotePlayback's |availability_callbacks_| map.
 class AvailabilityCallbackWrapper final
-    : public GarbageCollectedFinalized<AvailabilityCallbackWrapper>,
+    : public GarbageCollected<AvailabilityCallbackWrapper>,
       public NameClient {
  public:
   explicit AvailabilityCallbackWrapper(V8RemotePlaybackAvailabilityCallback*);

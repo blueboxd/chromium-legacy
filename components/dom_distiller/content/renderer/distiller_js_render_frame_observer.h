@@ -11,6 +11,7 @@
 #include "components/dom_distiller/content/renderer/distiller_page_notifier_service_impl.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "v8/include/v8.h"
 
@@ -40,7 +41,7 @@ class DistillerJsRenderFrameObserver : public content::RenderFrameObserver {
 
  private:
   void CreateDistillerPageNotifierService(
-      mojom::DistillerPageNotifierServiceRequest request);
+      mojo::PendingReceiver<mojom::DistillerPageNotifierService> receiver);
 
   // RenderFrameObserver implementation.
   void OnDestruct() override;

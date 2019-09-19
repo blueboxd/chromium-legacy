@@ -67,8 +67,10 @@ std::string GetFrameSequenceLengthHistogramName(FrameSequenceTrackerType type) {
 // FrameSequenceTrackerCollection
 
 FrameSequenceTrackerCollection::FrameSequenceTrackerCollection(
+    bool is_single_threaded,
     CompositorFrameReportingController* compositor_frame_reporting_controller)
-    : compositor_frame_reporting_controller_(
+    : is_single_threaded_(is_single_threaded),
+      compositor_frame_reporting_controller_(
           compositor_frame_reporting_controller) {
   StartSequence(FrameSequenceTrackerType::kUniversal);
 }
@@ -80,6 +82,8 @@ FrameSequenceTrackerCollection::~FrameSequenceTrackerCollection() {
 
 void FrameSequenceTrackerCollection::StartSequence(
     FrameSequenceTrackerType type) {
+  if (is_single_threaded_)
+    return;
   if (frame_trackers_.contains(type))
     return;
   auto tracker = base::WrapUnique(new FrameSequenceTracker(type));

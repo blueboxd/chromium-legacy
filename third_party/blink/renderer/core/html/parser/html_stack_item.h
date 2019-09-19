@@ -37,7 +37,7 @@ namespace blink {
 
 class ContainerNode;
 
-class HTMLStackItem final : public GarbageCollectedFinalized<HTMLStackItem> {
+class HTMLStackItem final : public GarbageCollected<HTMLStackItem> {
  public:
   enum ItemType { kItemForContextElement, kItemForDocumentFragmentNode };
 

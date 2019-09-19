@@ -53,7 +53,7 @@ DocumentLayout::~DocumentLayout() = default;
 
 void DocumentLayout::ComputeSingleViewLayout(
     const std::vector<pp::Size>& page_sizes) {
-  set_size({GetWidestPageWidth(page_sizes), 0});
+  size_ = {GetWidestPageWidth(page_sizes), 0};
 
   page_layouts_.resize(page_sizes.size());
   for (size_t i = 0; i < page_sizes.size(); ++i) {
@@ -73,7 +73,7 @@ void DocumentLayout::ComputeSingleViewLayout(
 
 void DocumentLayout::ComputeTwoUpViewLayout(
     const std::vector<pp::Size>& page_sizes) {
-  set_size({GetWidestPageWidth(page_sizes), 0});
+  size_ = {GetWidestPageWidth(page_sizes), 0};
 
   page_layouts_.resize(page_sizes.size());
   for (size_t i = 0; i < page_sizes.size(); ++i) {

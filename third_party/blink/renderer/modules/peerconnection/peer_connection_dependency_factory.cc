@@ -24,11 +24,7 @@
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/peerconnection/webrtc_ip_handling_policy.h"
-#include "third_party/blink/public/platform/modules/p2p/empty_network_manager.h"
-#include "third_party/blink/public/platform/modules/p2p/filtering_network_manager.h"
-#include "third_party/blink/public/platform/modules/p2p/ipc_network_manager.h"
 #include "third_party/blink/public/platform/modules/peerconnection/audio_codec_factory.h"
-#include "third_party/blink/public/platform/modules/peerconnection/video_codec_factory.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
@@ -42,10 +38,15 @@
 #include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/renderer/platform/p2p/empty_network_manager.h"
+#include "third_party/blink/renderer/platform/p2p/filtering_network_manager.h"
+#include "third_party/blink/renderer/platform/p2p/ipc_network_manager.h"
 #include "third_party/blink/renderer/platform/p2p/ipc_socket_factory.h"
 #include "third_party/blink/renderer/platform/p2p/mdns_responder_adapter.h"
 #include "third_party/blink/renderer/platform/p2p/port_allocator.h"
 #include "third_party/blink/renderer/platform/p2p/socket_dispatcher.h"
+#include "third_party/blink/renderer/platform/peerconnection/stun_field_trial.h"
+#include "third_party/blink/renderer/platform/peerconnection/video_codec_factory.h"
 #include "third_party/webrtc/api/call/call_factory_interface.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/rtc_event_log/rtc_event_log_factory.h"
@@ -123,6 +124,13 @@ PeerConnectionDependencyFactory::~PeerConnectionDependencyFactory() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(1) << "~PeerConnectionDependencyFactory()";
   DCHECK(!pc_factory_);
+}
+
+PeerConnectionDependencyFactory*
+PeerConnectionDependencyFactory::GetInstance() {
+  DEFINE_STATIC_LOCAL(PeerConnectionDependencyFactory, instance,
+                      (/*create_p2p_socket_dispatcher= */ true));
+  return &instance;
 }
 
 std::unique_ptr<blink::WebRTCPeerConnectionHandler>

@@ -14,10 +14,15 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/flag_descriptions.h"
+#include "chrome/browser/ui/webui/interventions_internals/interventions_internals.mojom.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_switches.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/features.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
@@ -123,10 +128,10 @@ std::string GetEnabledStateForSwitch(const std::string& switch_name) {
 }  // namespace
 
 InterventionsInternalsPageHandler::InterventionsInternalsPageHandler(
-    mojom::InterventionsInternalsPageHandlerRequest request,
+    mojo::PendingReceiver<mojom::InterventionsInternalsPageHandler> receiver,
     previews::PreviewsUIService* previews_ui_service,
     network::NetworkQualityTracker* network_quality_tracker)
-    : binding_(this, std::move(request)),
+    : receiver_(this, std::move(receiver)),
       previews_ui_service_(previews_ui_service),
       network_quality_tracker_(network_quality_tracker),
       current_estimated_ect_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
@@ -143,8 +148,8 @@ InterventionsInternalsPageHandler::~InterventionsInternalsPageHandler() {
 }
 
 void InterventionsInternalsPageHandler::SetClientPage(
-    mojom::InterventionsInternalsPagePtr page) {
-  page_ = std::move(page);
+    mojo::PendingRemote<mojom::InterventionsInternalsPage> page) {
+  page_.Bind(std::move(page));
   DCHECK(page_);
   logger_->AddAndNotifyObserver(this);
   (network_quality_tracker_ ? network_quality_tracker_

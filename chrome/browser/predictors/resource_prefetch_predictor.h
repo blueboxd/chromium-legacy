@@ -192,8 +192,11 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
                            PopulatePrefetcherRequest);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, GetRedirectOrigin);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, GetPrefetchData);
+  FRIEND_TEST_ALL_PREFIXES(
+      ResourcePrefetchPredictorPreconnectToRedirectTargetTest,
+      TestPredictPreconnectOrigins);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
-                           TestPredictPreconnectOrigins);
+                           TestPredictPreconnectOrigins_RedirectsToNewOrigin);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
                            TestPrecisionRecallHistograms);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
@@ -216,6 +219,13 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
   static bool GetRedirectOrigin(const url::Origin& entry_origin,
                                 const RedirectDataMap& redirect_data,
                                 url::Origin* redirect_origin);
+
+  // Returns true if a redirect endpoint is available. Appends the redirect
+  // domains to |prediction->requests|. Sets |prediction->host| if it's empty.
+  bool GetRedirectEndpointsForPreconnect(
+      const url::Origin& entry_origin,
+      const RedirectDataMap& redirect_data,
+      PreconnectPrediction* prediction) const;
 
   // Callback for the task to read the predictor database. Takes ownership of
   // all arguments.

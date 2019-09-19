@@ -19,8 +19,10 @@ namespace learning {
 class COMPONENT_EXPORT(MEDIA_LEARNING_MOJO) MojoLearningTaskController
     : public LearningTaskController {
  public:
-  explicit MojoLearningTaskController(
-      mojom::LearningTaskControllerPtr controller_ptr);
+  // |task| will be provided by GetLearningTask().  Hopefully, it matches
+  // whatever |controller_ptr| uses.
+  MojoLearningTaskController(const LearningTask& task,
+                             mojom::LearningTaskControllerPtr controller_ptr);
   ~MojoLearningTaskController() override;
 
   // LearningTaskController
@@ -32,6 +34,7 @@ class COMPONENT_EXPORT(MEDIA_LEARNING_MOJO) MojoLearningTaskController
   const LearningTask& GetLearningTask() override;
 
  private:
+  LearningTask task_;
   mojom::LearningTaskControllerPtr controller_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoLearningTaskController);

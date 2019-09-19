@@ -20,7 +20,7 @@ class ScriptPromiseResolver;
 // for a video element in Blink outside of modules/ module. It
 // is an interface that the module will implement and add a provider for.
 class CORE_EXPORT PictureInPictureController
-    : public GarbageCollectedFinalized<PictureInPictureController>,
+    : public GarbageCollected<PictureInPictureController>,
       public Supplement<Document> {
   USING_GARBAGE_COLLECTED_MIXIN(PictureInPictureController);
 

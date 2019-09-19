@@ -43,7 +43,7 @@ namespace blink {
 class StyleSheet;
 
 class CORE_EXPORT StyleSheetCollection
-    : public GarbageCollectedFinalized<StyleSheetCollection>,
+    : public GarbageCollected<StyleSheetCollection>,
       public NameClient {
  public:
   friend class ActiveDocumentStyleSheetCollector;

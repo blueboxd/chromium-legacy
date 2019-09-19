@@ -3,6 +3,16 @@
 // found in the LICENSE file.
 
 /** @fileoverview Suite of tests for managed-footnote. */
+
+// clang-format off
+// #import 'chrome://resources/cr_components/managed_footnote/managed_footnote.m.js';
+//
+// #import '../strings.m.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// clang-format on
+
 cr.define('managed_footnote_test', function() {
   /** @enum {string} */
   const TestNames = {
@@ -69,20 +79,23 @@ cr.define('managed_footnote_test', function() {
       assertNotEquals('none', getComputedStyle(footnote).display);
     });
 
-    test('Reads Attributes From loadTimeData device message', function() {
-      const browserMessage = 'the quick brown fox jumps over the lazy dog';
-      const deviceMessage = 'the lazy dog jumps over the quick brown fox';
-      const footnote =
-          setupTestElement(true, browserMessage, deviceMessage, '');
+    if (cr.isChromeOS) {
+      test('Reads Attributes From loadTimeData device message', function() {
+        const browserMessage = 'the quick brown fox jumps over the lazy dog';
+        const deviceMessage = 'the lazy dog jumps over the quick brown fox';
+        const footnote =
+            setupTestElement(true, browserMessage, deviceMessage, '');
 
-      assertNotEquals('none', getComputedStyle(footnote).display);
-      assertTrue(footnote.shadowRoot.textContent.includes(browserMessage));
+        assertNotEquals('none', getComputedStyle(footnote).display);
+        assertTrue(footnote.shadowRoot.textContent.includes(browserMessage));
 
-      footnote.showDeviceInfo = true;
-      assertTrue(footnote.shadowRoot.textContent.includes(deviceMessage));
-    });
+        footnote.showDeviceInfo = true;
+        assertTrue(footnote.shadowRoot.textContent.includes(deviceMessage));
+      });
+    }
   });
 
+  // #cr_define_end
   return {
     suiteName: suiteName,
     TestNames: TestNames,

@@ -65,7 +65,7 @@ class WebViewClient;
 // The StorageNamespace for SessioStorage supplement the Page. |GetCachedArea|
 // is used to get the storage area for an origin.
 class MODULES_EXPORT StorageNamespace final
-    : public GarbageCollectedFinalized<StorageNamespace>,
+    : public GarbageCollected<StorageNamespace>,
       public Supplement<Page>,
       public CachedStorageArea::InspectorEventListener {
   USING_GARBAGE_COLLECTED_MIXIN(StorageNamespace);

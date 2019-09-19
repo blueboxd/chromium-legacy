@@ -30,7 +30,7 @@ class LayoutBox;
 //
 // For more information see spec: https://drafts.csswg.org/css-snappoints/
 class CORE_EXPORT SnapCoordinator final
-    : public GarbageCollectedFinalized<SnapCoordinator> {
+    : public GarbageCollected<SnapCoordinator> {
  public:
   explicit SnapCoordinator();
   ~SnapCoordinator();

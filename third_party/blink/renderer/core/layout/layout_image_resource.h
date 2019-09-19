@@ -37,7 +37,7 @@ namespace blink {
 class LayoutObject;
 
 class CORE_EXPORT LayoutImageResource
-    : public GarbageCollectedFinalized<LayoutImageResource> {
+    : public GarbageCollected<LayoutImageResource> {
  public:
   LayoutImageResource();
   virtual ~LayoutImageResource();

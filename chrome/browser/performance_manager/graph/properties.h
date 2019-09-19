@@ -29,15 +29,18 @@ class ObservedPropertyImpl {
             void (ObserverType::*NotifyFunctionPtr)(const NodeType*)>
   class NotifiesAlways {
    public:
-    NotifiesAlways() {}
-    explicit NotifiesAlways(PropertyType initial_value)
-        : value_(initial_value) {}
+    NotifiesAlways() = default;
 
-    ~NotifiesAlways() {}
+    template <typename U = PropertyType>
+    explicit NotifiesAlways(U&& initial_value)
+        : value_(std::forward<U>(initial_value)) {}
+
+    ~NotifiesAlways() = default;
 
     // Sets the property and sends a notification.
-    void SetAndNotify(NodeImplType* node, PropertyType value) {
-      value_ = std::forward<PropertyType>(value);
+    template <typename U = PropertyType>
+    void SetAndNotify(NodeImplType* node, U&& value) {
+      value_ = std::forward<U>(value);
       for (auto* observer : node->GetObservers())
         ((observer)->*(NotifyFunctionPtr))(node);
     }
@@ -56,18 +59,21 @@ class ObservedPropertyImpl {
             void (ObserverType::*NotifyFunctionPtr)(const NodeType*)>
   class NotifiesOnlyOnChanges {
    public:
-    NotifiesOnlyOnChanges() {}
-    explicit NotifiesOnlyOnChanges(PropertyType initial_value)
-        : value_(initial_value) {}
+    NotifiesOnlyOnChanges() = default;
 
-    ~NotifiesOnlyOnChanges() {}
+    template <typename U = PropertyType>
+    explicit NotifiesOnlyOnChanges(U&& initial_value)
+        : value_(std::forward<U>(initial_value)) {}
+
+    ~NotifiesOnlyOnChanges() = default;
 
     // Sets the property and sends a notification if needed. Returns true if a
     // notification was sent, false otherwise.
-    bool SetAndMaybeNotify(NodeImplType* node, PropertyType value) {
+    template <typename U = PropertyType>
+    bool SetAndMaybeNotify(NodeImplType* node, U&& value) {
       if (value_ == value)
         return false;
-      value_ = std::forward<PropertyType>(value);
+      value_ = std::forward<U>(value);
       for (auto* observer : node->GetObservers())
         ((observer)->*(NotifyFunctionPtr))(node);
       return true;
@@ -83,23 +89,26 @@ class ObservedPropertyImpl {
   // notifying observers.
   template <typename PropertyType,
             void (ObserverType::*NotifyFunctionPtr)(
-                const NodeType*,
-                PropertyType previous_value)>
+                const NodeType* node,
+                const PropertyType& previous_value)>
   class NotifiesOnlyOnChangesWithPreviousValue {
    public:
-    NotifiesOnlyOnChangesWithPreviousValue() {}
-    explicit NotifiesOnlyOnChangesWithPreviousValue(PropertyType initial_value)
-        : value_(initial_value) {}
+    NotifiesOnlyOnChangesWithPreviousValue() = default;
 
-    ~NotifiesOnlyOnChangesWithPreviousValue() {}
+    template <typename U = PropertyType>
+    explicit NotifiesOnlyOnChangesWithPreviousValue(U&& initial_value)
+        : value_(std::forward<U>(initial_value)) {}
+
+    ~NotifiesOnlyOnChangesWithPreviousValue() = default;
 
     // Sets the property and sends a notification if needed. Returns true if a
     // notification was sent, false otherwise.
-    bool SetAndMaybeNotify(NodeImplType* node, PropertyType value) {
+    template <typename U = PropertyType>
+    bool SetAndMaybeNotify(NodeImplType* node, U&& value) {
       if (value_ == value)
         return false;
-      PropertyType previous_value = value_;
-      value_ = std::forward<PropertyType>(value);
+      PropertyType previous_value = std::move(value_);
+      value_ = std::forward<U>(value);
       for (auto* observer : node->GetObservers())
         ((observer)->*(NotifyFunctionPtr))(node, previous_value);
       return true;

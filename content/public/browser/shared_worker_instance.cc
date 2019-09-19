@@ -7,6 +7,8 @@
 #include <tuple>
 
 #include "base/logging.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 
 namespace content {
 
@@ -24,7 +26,13 @@ SharedWorkerInstance::SharedWorkerInstance(
       content_security_policy_(content_security_policy),
       content_security_policy_type_(security_policy_type),
       creation_address_space_(creation_address_space),
-      creation_context_type_(creation_context_type) {}
+      creation_context_type_(creation_context_type) {
+  // Ensure the same-origin policy is enforced correctly.
+  DCHECK(url.SchemeIs(url::kDataScheme) ||
+         GetContentClient()->browser()->DoesSchemeAllowCrossOriginSharedWorker(
+             constructor_origin.scheme()) ||
+         url::Origin::Create(url).IsSameOriginWith(constructor_origin));
+}
 
 SharedWorkerInstance::SharedWorkerInstance(const SharedWorkerInstance& other) =
     default;
@@ -44,11 +52,6 @@ bool SharedWorkerInstance::Matches(
     const GURL& url,
     const std::string& name,
     const url::Origin& constructor_origin) const {
-  // |url| and |constructor_origin| should be in the same origin, or |url|
-  // should be a data: URL.
-  DCHECK(url::Origin::Create(url).IsSameOriginWith(constructor_origin) ||
-         url.SchemeIs(url::kDataScheme));
-
   // Step 11.2: "If there exists a SharedWorkerGlobalScope object whose closing
   // flag is false, constructor origin is same origin with outside settings's
   // origin, constructor url equals urlRecord, and name equals the value of

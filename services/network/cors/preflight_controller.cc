@@ -19,6 +19,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -125,7 +126,7 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
 
 std::unique_ptr<PreflightResult> CreatePreflightResult(
     const GURL& final_url,
-    const ResourceResponseHead& head,
+    const mojom::URLResponseHead& head,
     const ResourceRequest& original_request,
     bool tainted,
     base::Optional<CorsErrorStatus>* detected_error_status) {
@@ -218,7 +219,7 @@ class PreflightController::PreflightLoader final {
 
  private:
   void HandleRedirect(const net::RedirectInfo& redirect_info,
-                      const network::ResourceResponseHead& response_head,
+                      const network::mojom::URLResponseHead& response_head,
                       std::vector<std::string>* to_be_removed_headers) {
     // Preflight should not allow any redirect.
     FinalizeLoader();
@@ -232,7 +233,7 @@ class PreflightController::PreflightLoader final {
   }
 
   void HandleResponseHeader(const GURL& final_url,
-                            const ResourceResponseHead& head) {
+                            const mojom::URLResponseHead& head) {
     FinalizeLoader();
 
     base::Optional<CorsErrorStatus> detected_error_status;
@@ -310,7 +311,7 @@ PreflightController::CreatePreflightRequestForTesting(
 std::unique_ptr<PreflightResult>
 PreflightController::CreatePreflightResultForTesting(
     const GURL& final_url,
-    const ResourceResponseHead& head,
+    const mojom::URLResponseHead& head,
     const ResourceRequest& original_request,
     bool tainted,
     base::Optional<CorsErrorStatus>* detected_error_status) {

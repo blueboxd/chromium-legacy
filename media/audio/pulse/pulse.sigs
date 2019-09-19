@@ -30,6 +30,7 @@ pa_operation* pa_context_set_source_volume_by_index(pa_context* c, uint32_t idx,
 void pa_context_set_state_callback(pa_context* c, pa_context_notify_cb_t cb, void* userdata);
 pa_operation_state_t pa_operation_get_state(pa_operation* o);
 void pa_context_unref(pa_context* c);
+void pa_operation_cancel(pa_operation* o)
 void pa_operation_unref(pa_operation* o);
 int pa_stream_begin_write(pa_stream* p, void** data, size_t* nbytes);
 int pa_stream_connect_playback(pa_stream* s, const char* dev, const pa_buffer_attr* attr, pa_stream_flags_t flags, const pa_cvolume* volume,pa_stream* sync_stream);

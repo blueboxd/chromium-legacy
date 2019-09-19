@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
-#include "cc/test/layer_test_common.h"
+#include "cc/test/layer_tree_impl_test_base.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/draw_quad.h"
@@ -26,7 +26,7 @@ TEST(TextureLayerImplTest, VisibleOpaqueRegion) {
   const gfx::Rect layer_rect(layer_bounds);
   const Region layer_region(layer_rect);
 
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
 
   TextureLayerImpl* layer = impl.AddLayer<TextureLayerImpl>();
   layer->SetBounds(layer_bounds);
@@ -52,7 +52,7 @@ TEST(TextureLayerImplTest, Occlusion) {
   gfx::Size layer_size(1000, 1000);
   gfx::Size viewport_size(1000, 1000);
 
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
 
   auto resource = viz::TransferableResource::MakeGL(
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D,
@@ -75,8 +75,7 @@ TEST(TextureLayerImplTest, Occlusion) {
     gfx::Rect occluded;
     impl.AppendQuadsWithOcclusion(texture_layer_impl, occluded);
 
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(),
-                                                 gfx::Rect(layer_size));
+    VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect(layer_size));
     EXPECT_EQ(1u, impl.quad_list().size());
   }
 
@@ -85,7 +84,7 @@ TEST(TextureLayerImplTest, Occlusion) {
     gfx::Rect occluded(texture_layer_impl->visible_layer_rect());
     impl.AppendQuadsWithOcclusion(texture_layer_impl, occluded);
 
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());
+    VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());
     EXPECT_EQ(impl.quad_list().size(), 0u);
   }
 
@@ -95,8 +94,8 @@ TEST(TextureLayerImplTest, Occlusion) {
     impl.AppendQuadsWithOcclusion(texture_layer_impl, occluded);
 
     size_t partially_occluded_count = 0;
-    LayerTestCommon::VerifyQuadsAreOccluded(
-        impl.quad_list(), occluded, &partially_occluded_count);
+    VerifyQuadsAreOccluded(impl.quad_list(), occluded,
+                           &partially_occluded_count);
     // The layer outputs one quad, which is partially occluded.
     EXPECT_EQ(1u, impl.quad_list().size());
     EXPECT_EQ(1u, partially_occluded_count);
@@ -105,7 +104,7 @@ TEST(TextureLayerImplTest, Occlusion) {
 
 TEST(TextureLayerImplTest, ResourceNotFreedOnGpuRasterToggle) {
   bool released = false;
-  LayerTestCommon::LayerImplTest impl(
+  LayerTreeImplTestBase impl(
       FakeLayerTreeFrameSink::Create3dForGpuRasterization());
   impl.host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
 

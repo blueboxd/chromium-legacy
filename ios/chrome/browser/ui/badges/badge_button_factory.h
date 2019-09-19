@@ -20,6 +20,9 @@
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
+// Yes if in Incognito mode.
+@property(nonatomic, assign) BOOL incognito;
+
 // Returns a properly configured BadgButton associated with |badgeType|.
 - (BadgeButton*)getBadgeButtonForBadgeType:(BadgeType)badgeType;
 

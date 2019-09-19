@@ -38,8 +38,6 @@ class LanguageModelManager : public KeyedService {
   void SetPrimaryModel(ModelType type);
   LanguageModel* GetPrimaryModel() const;
 
-  LanguageModel* GetModel(ModelType type) const;
-
  private:
   std::unique_ptr<LanguageModel> default_model_;
   std::map<ModelType, std::unique_ptr<LanguageModel>> models_;

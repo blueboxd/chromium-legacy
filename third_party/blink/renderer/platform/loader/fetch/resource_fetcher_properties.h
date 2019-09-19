@@ -33,7 +33,7 @@ class FetchClientSettingsObject;
 // FetchClientSettingsObject when the property is clearly defined in the spec.
 // Otherwise, put it to this class.
 class PLATFORM_EXPORT ResourceFetcherProperties
-    : public GarbageCollectedFinalized<ResourceFetcherProperties> {
+    : public GarbageCollected<ResourceFetcherProperties> {
  public:
   using ControllerServiceWorkerMode = mojom::ControllerServiceWorkerMode;
 

@@ -52,7 +52,7 @@ using Checkpoint = testing::StrictMock<testing::MockFunction<void(int)>>;
 constexpr char kFileName[] = "fox-null-terminated.html";
 
 class MockThreadableLoaderClient final
-    : public GarbageCollectedFinalized<MockThreadableLoaderClient>,
+    : public GarbageCollected<MockThreadableLoaderClient>,
       public ThreadableLoaderClient {
   USING_GARBAGE_COLLECTED_MIXIN(MockThreadableLoaderClient);
 

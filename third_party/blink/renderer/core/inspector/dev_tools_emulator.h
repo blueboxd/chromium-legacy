@@ -22,7 +22,7 @@ class IntRect;
 class WebViewImpl;
 
 class CORE_EXPORT DevToolsEmulator final
-    : public GarbageCollectedFinalized<DevToolsEmulator> {
+    : public GarbageCollected<DevToolsEmulator> {
  public:
   explicit DevToolsEmulator(WebViewImpl*);
   ~DevToolsEmulator();

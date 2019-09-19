@@ -28,7 +28,7 @@
 namespace blink {
 
 class BodyStreamBuffer::LoaderClient final
-    : public GarbageCollectedFinalized<LoaderClient>,
+    : public GarbageCollected<LoaderClient>,
       public ContextLifecycleObserver,
       public FetchDataLoader::Client {
   USING_GARBAGE_COLLECTED_MIXIN(LoaderClient);

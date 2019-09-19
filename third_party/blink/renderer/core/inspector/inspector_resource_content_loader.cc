@@ -28,8 +28,7 @@ namespace blink {
 // resources. Stylesheets can only safely use a RawResourceClient because it has
 // no custom interface and simply uses the base ResourceClient.
 class InspectorResourceContentLoader::ResourceClient final
-    : public GarbageCollectedFinalized<
-          InspectorResourceContentLoader::ResourceClient>,
+    : public GarbageCollected<InspectorResourceContentLoader::ResourceClient>,
       private RawResourceClient {
   USING_GARBAGE_COLLECTED_MIXIN(ResourceClient);
 

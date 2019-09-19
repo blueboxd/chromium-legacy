@@ -37,6 +37,17 @@ WebGPUImplementation::~WebGPUImplementation() {
   // commands are still in flight.
   Flush();
   helper_->Finish();
+
+#if BUILDFLAG(USE_DAWN)
+  // Now that commands are finished, free the wire client.
+  wire_client_.reset();
+
+  // All client-side Dawn objects are now destroyed.
+  // Shared memory allocations for buffers that were still mapped at the time
+  // of destruction can now be safely freed.
+  memory_transfer_service_->FreeHandlesPendingToken(helper_->InsertToken());
+  helper_->Finish();
+#endif
 }
 
 gpu::ContextResult WebGPUImplementation::Initialize(

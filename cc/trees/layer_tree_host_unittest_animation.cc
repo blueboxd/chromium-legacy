@@ -352,7 +352,7 @@ class LayerTreeHostAnimationTestAddKeyframeModelWithTimingFunction
                      base::TimeTicks monotonic_time) override {
     // TODO(ajuma): This test only checks the active tree. Add checks for
     // pending tree too.
-    if (!host_impl->active_tree()->root_layer_for_testing())
+    if (!host_impl->active_tree()->root_layer())
       return;
 
     // Wait for the commit with the animation to happen.
@@ -1155,7 +1155,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
     if (!host_impl->pending_tree())
       return false;
 
-    if (!host_impl->active_tree()->root_layer_for_testing())
+    if (!host_impl->active_tree()->root_layer())
       return false;
 
     scoped_refptr<AnimationTimeline> timeline_impl =
@@ -2349,11 +2349,11 @@ class LayerTreeHostAnimationTestSetPotentiallyAnimatingOnLacDestruction
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     if (host_impl->pending_tree()->source_frame_number() <= 1) {
       EXPECT_TRUE(host_impl->pending_tree()
-                      ->root_layer_for_testing()
+                      ->root_layer()
                       ->screen_space_transform_is_animating());
     } else {
       EXPECT_FALSE(host_impl->pending_tree()
-                       ->root_layer_for_testing()
+                       ->root_layer()
                        ->screen_space_transform_is_animating());
     }
   }
@@ -2373,7 +2373,7 @@ class LayerTreeHostAnimationTestSetPotentiallyAnimatingOnLacDestruction
                                    DrawResult draw_result) override {
     const bool screen_space_transform_is_animating =
         host_impl->active_tree()
-            ->root_layer_for_testing()
+            ->root_layer()
             ->screen_space_transform_is_animating();
 
     // Check that screen_space_transform_is_animating changes only once.

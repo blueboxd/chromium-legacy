@@ -11,6 +11,7 @@
 goog.provide('cvox.TtsBackground');
 
 goog.require('PanelCommand');
+goog.require('PhoneticData');
 goog.require('cvox.AbstractTts');
 goog.require('cvox.ChromeTtsBase');
 goog.require('cvox.ChromeVox');
@@ -101,18 +102,6 @@ cvox.TtsBackground = function() {
    * @type {number|undefined}
    */
   this.timeoutId_;
-
-  try {
-    /**
-     * @type {Object<string>}
-     * @private
-     * @const
-     */
-    this.PHONETIC_MAP_ =
-        /** @type {Object<string>} */ (JSON.parse(Msgs.getMsg('phonetic_map')));
-  } catch (e) {
-    console.log('Error; unable to parse phonetic map msg.');
-  }
 
   /**
    * Capturing tts event listeners.
@@ -589,7 +578,7 @@ cvox.TtsBackground.prototype.preprocess = function(text, properties) {
   // to pronouncePhonetically_ if we fail to pronounce on this invokation or if
   // this text is math which should never be pronounced phonetically.
   if (properties.math || !properties['phoneticCharacters'] ||
-      !this.pronouncePhonetically_(text)) {
+      !this.pronouncePhonetically_(text, properties)) {
     this.clearTimeout_();
   }
 
@@ -679,20 +668,22 @@ cvox.TtsBackground.prototype.createPunctuationReplace_ = function(clear) {
 /**
  * Pronounces single letters phonetically after some timeout.
  * @param {string} text The text.
+ * @param {Object} properties Speech properties to use for this utterance.
  * @return {boolean} True if the text resulted in speech.
  * @private
  */
-cvox.TtsBackground.prototype.pronouncePhonetically_ = function(text) {
-  if (!this.PHONETIC_MAP_) {
-    return false;
-  }
+cvox.TtsBackground.prototype.pronouncePhonetically_ = function(
+    text, properties) {
   text = text.toLowerCase();
-  text = this.PHONETIC_MAP_[text];
+  // If undefined language, use the UI language of the browser as a best guess.
+  if (!properties['lang'])
+    properties['lang'] = chrome.i18n.getUILanguage();
+  text = PhoneticData.getPhoneticDisambiguation(properties['lang'], text);
   if (text) {
     this.clearTimeout_();
     var self = this;
     this.timeoutId_ = setTimeout(function() {
-      self.speak(text, cvox.QueueMode.QUEUE);
+      self.speak(text, cvox.QueueMode.QUEUE, properties);
     }, cvox.TtsBackground.PHONETIC_DELAY_MS_);
     return true;
   }

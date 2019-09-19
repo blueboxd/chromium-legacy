@@ -6,10 +6,14 @@
 #define CHROME_BROWSER_UI_PAGE_ACTION_PAGE_ACTION_ICON_TYPE_H_
 
 enum class PageActionIconType {
+  kBookmarkStar,
+  kClickToCall,
+  kCookieControls,
   kFind,
+  kIntentPicker,
   kLocalCardMigration,
   kManagePasswords,
-  kIntentPicker,
+  kNativeFileSystemAccess,
   kPwaInstall,
   kReaderMode,
   kSaveCard,
@@ -17,10 +21,6 @@ enum class PageActionIconType {
   kSharedClipboard,
   kTranslate,
   kZoom,
-  kNativeFileSystemAccess,
-  kClickToCall,
-  kCookieControls,
-  kBookmarkStar,
 };
 
 #endif  // CHROME_BROWSER_UI_PAGE_ACTION_PAGE_ACTION_ICON_TYPE_H_

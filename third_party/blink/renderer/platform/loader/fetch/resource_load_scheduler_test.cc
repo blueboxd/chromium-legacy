@@ -18,7 +18,7 @@
 namespace blink {
 namespace {
 
-class MockClient final : public GarbageCollectedFinalized<MockClient>,
+class MockClient final : public GarbageCollected<MockClient>,
                          public ResourceLoadSchedulerClient {
   USING_GARBAGE_COLLECTED_MIXIN(MockClient);
 
@@ -70,9 +70,8 @@ class MockClient final : public GarbageCollectedFinalized<MockClient>,
 
 class ResourceLoadSchedulerTest : public testing::Test {
  public:
-  class MockConsoleLogger final
-      : public GarbageCollectedFinalized<MockConsoleLogger>,
-        public ConsoleLogger {
+  class MockConsoleLogger final : public GarbageCollected<MockConsoleLogger>,
+                                  public ConsoleLogger {
     USING_GARBAGE_COLLECTED_MIXIN(MockConsoleLogger);
 
    public:

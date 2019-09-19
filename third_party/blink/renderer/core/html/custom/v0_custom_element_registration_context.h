@@ -43,7 +43,7 @@ namespace blink {
 class CustomElementRegistry;
 
 class V0CustomElementRegistrationContext final
-    : public GarbageCollectedFinalized<V0CustomElementRegistrationContext> {
+    : public GarbageCollected<V0CustomElementRegistrationContext> {
  public:
   V0CustomElementRegistrationContext();
   ~V0CustomElementRegistrationContext() = default;

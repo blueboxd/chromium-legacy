@@ -114,7 +114,7 @@ struct LifecycleData {
 };
 
 class CORE_EXPORT LocalFrameView final
-    : public GarbageCollectedFinalized<LocalFrameView>,
+    : public GarbageCollected<LocalFrameView>,
       public FrameView {
   USING_GARBAGE_COLLECTED_MIXIN(LocalFrameView);
 

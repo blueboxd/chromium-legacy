@@ -502,12 +502,18 @@ TEST_F(LayerTest, SetMaskLayer) {
   scoped_refptr<Layer> parent = Layer::Create();
   FakeContentLayerClient client;
   scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
+  mask->SetPosition(gfx::PointF(88, 99));
 
   parent->SetMaskLayer(mask);
   ASSERT_EQ(1u, parent->children().size());
   EXPECT_EQ(parent.get(), mask->parent());
   EXPECT_EQ(mask.get(), parent->children()[0]);
   EXPECT_TRUE(parent->IsMaskedByChild());
+
+  // Should ignore mask layer's position.
+  EXPECT_TRUE(mask->position().IsOrigin());
+  mask->SetPosition(gfx::PointF(11, 22));
+  EXPECT_TRUE(mask->position().IsOrigin());
 
   parent->SetMaskLayer(mask);
   ASSERT_EQ(1u, parent->children().size());

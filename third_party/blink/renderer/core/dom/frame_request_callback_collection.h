@@ -27,9 +27,8 @@ class GC_PLUGIN_IGNORE("crbug.com/841830")
 
   // |FrameCallback| is an interface type which generalizes callbacks which are
   // invoked when a script-based animation needs to be resampled.
-  class CORE_EXPORT FrameCallback
-      : public GarbageCollectedFinalized<FrameCallback>,
-        public NameClient {
+  class CORE_EXPORT FrameCallback : public GarbageCollected<FrameCallback>,
+                                    public NameClient {
    public:
     virtual void Trace(Visitor* visitor) {}
     const char* NameInHeapSnapshot() const override { return "FrameCallback"; }

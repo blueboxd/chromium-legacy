@@ -12,7 +12,7 @@
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_ui_resource_layer_tree_host_impl.h"
-#include "cc/test/layer_test_common.h"
+#include "cc/test/layer_tree_impl_test_base.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "components/viz/common/quads/draw_quad.h"
@@ -55,8 +55,7 @@ void QuadSizeTest(FakeUIResourceLayerTreeHostImpl* host_impl,
   std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
 
   AppendQuadsData data;
-  host_impl->active_tree()->root_layer_for_testing()->AppendQuads(
-      render_pass.get(), &data);
+  host_impl->active_tree()->root_layer()->AppendQuads(render_pass.get(), &data);
 
   // Verify quad rects
   const viz::QuadList& quads = render_pass->quad_list;
@@ -104,8 +103,7 @@ void NeedsBlendingTest(FakeUIResourceLayerTreeHostImpl* host_impl,
   std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
 
   AppendQuadsData data;
-  host_impl->active_tree()->root_layer_for_testing()->AppendQuads(
-      render_pass.get(), &data);
+  host_impl->active_tree()->root_layer()->AppendQuads(render_pass.get(), &data);
 
   // Verify needs_blending is set appropriately.
   const viz::QuadList& quads = render_pass->quad_list;
@@ -179,7 +177,7 @@ TEST(UIResourceLayerImplTest, Occlusion) {
   gfx::Size layer_size(1000, 1000);
   gfx::Size viewport_size(1000, 1000);
 
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
 
   SkBitmap sk_bitmap;
   sk_bitmap.allocN32Pixels(10, 10);
@@ -202,8 +200,7 @@ TEST(UIResourceLayerImplTest, Occlusion) {
     gfx::Rect occluded;
     impl.AppendQuadsWithOcclusion(ui_resource_layer_impl, occluded);
 
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(),
-                                                 gfx::Rect(layer_size));
+    VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect(layer_size));
     EXPECT_EQ(1u, impl.quad_list().size());
   }
 
@@ -212,7 +209,7 @@ TEST(UIResourceLayerImplTest, Occlusion) {
     gfx::Rect occluded(ui_resource_layer_impl->visible_layer_rect());
     impl.AppendQuadsWithOcclusion(ui_resource_layer_impl, occluded);
 
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());
+    VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());
     EXPECT_EQ(impl.quad_list().size(), 0u);
   }
 
@@ -222,8 +219,8 @@ TEST(UIResourceLayerImplTest, Occlusion) {
     impl.AppendQuadsWithOcclusion(ui_resource_layer_impl, occluded);
 
     size_t partially_occluded_count = 0;
-    LayerTestCommon::VerifyQuadsAreOccluded(
-        impl.quad_list(), occluded, &partially_occluded_count);
+    VerifyQuadsAreOccluded(impl.quad_list(), occluded,
+                           &partially_occluded_count);
     // The layer outputs one quad, which is partially occluded.
     EXPECT_EQ(1u, impl.quad_list().size());
     EXPECT_EQ(1u, partially_occluded_count);

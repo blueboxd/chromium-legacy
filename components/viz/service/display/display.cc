@@ -131,6 +131,37 @@ gfx::RectF GetOccludingRectForRRectF(const gfx::RRectF& bounds) {
 constexpr base::TimeDelta Display::kDrawToSwapMin;
 constexpr base::TimeDelta Display::kDrawToSwapMax;
 
+Display::PresentationGroupTiming::PresentationGroupTiming(
+    base::TimeTicks draw_and_swap_triggered_timestamp)
+    : draw_and_swap_triggered_timestamp_(draw_and_swap_triggered_timestamp) {}
+
+Display::PresentationGroupTiming::PresentationGroupTiming(
+    Display::PresentationGroupTiming&& other) = default;
+
+Display::PresentationGroupTiming::~PresentationGroupTiming() = default;
+
+void Display::PresentationGroupTiming::AddPresentationHelper(
+    std::unique_ptr<Surface::PresentationHelper> helper) {
+  presentation_helpers_.push_back(std::move(helper));
+}
+
+void Display::PresentationGroupTiming::OnDraw(
+    base::TimeTicks draw_start_timestamp) {
+  draw_start_timestamp_ = draw_start_timestamp;
+}
+
+void Display::PresentationGroupTiming::OnSwap(gfx::SwapTimings timings) {
+  swap_timings_ = timings;
+}
+
+void Display::PresentationGroupTiming::OnPresent(
+    const gfx::PresentationFeedback& feedback) {
+  for (auto& presentation_helper : presentation_helpers_) {
+    presentation_helper->DidPresent(draw_start_timestamp_, swap_timings_,
+                                    feedback);
+  }
+}
+
 Display::Display(
     SharedBitmapManager* bitmap_manager,
     const RendererSettings& settings,
@@ -177,7 +208,7 @@ Display::~Display() {
 
   // Send gfx::PresentationFeedback::Failure() to any surfaces expecting
   // feedback.
-  pending_surfaces_with_presentation_helpers_.clear();
+  pending_presentation_group_timings_.clear();
 
   // Only do this if Initialize() happened.
   if (client_) {
@@ -549,21 +580,21 @@ bool Display::DrawAndSwap() {
                               draw_timer->Elapsed().InMicroseconds());
     }
 
-    std::vector<std::unique_ptr<Surface::PresentationHelper>>
-        presentation_helper_list;
+    PresentationGroupTiming presentation_group_timing(now_time);
+    presentation_group_timing.OnDraw(draw_timer->Begin());
+
     for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
       Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
       if (surface) {
         std::unique_ptr<Surface::PresentationHelper> helper =
             surface->TakePresentationHelperForPresentNotification();
         if (helper) {
-          surface->OnWasDrawn(helper->frame_token(), draw_timer->Begin());
-          presentation_helper_list.push_back(std::move(helper));
+          presentation_group_timing.AddPresentationHelper(std::move(helper));
         }
       }
     }
-    pending_surfaces_with_presentation_helpers_.emplace_back(
-        std::make_pair(now_time, std::move(presentation_helper_list)));
+    pending_presentation_group_timings_.emplace_back(
+        std::move(presentation_group_timing));
   } else {
     TRACE_EVENT_INSTANT0("viz", "Draw skipped.", TRACE_EVENT_SCOPE_THREAD);
   }
@@ -645,19 +676,32 @@ void Display::DidReceiveSwapBuffersAck(const gfx::SwapTimings& timings) {
   if (renderer_)
     renderer_->SwapBuffersComplete();
 
-  // Adding to pending_presented_callbacks_ must have been done in DrawAndSwap,
-  // and should not be popped until DidReceivePresentationFeedback. Therefore
-  // we must not have an empty list when getting the SwapBuffers ACK (this is
-  // required to happen between those two events).
-  DCHECK(!pending_surfaces_with_presentation_helpers_.empty());
+  // Adding to |pending_presentation_group_timings_| must
+  // have been done in DrawAndSwap(), and should not be popped until
+  // DidReceiveSwapBuffersAck.
+  DCHECK(!pending_presentation_group_timings_.empty());
+
+  // It's possible to receive multiple calls to DidReceiveSwapBuffersAck()
+  // before DidReceivePresentationFeedback(). Ensure that we're not setting
+  // |swap_timings_| for the same PresentationGroupTiming multiple times.
+  base::TimeTicks draw_and_swap_triggered_timestamp;
+  for (auto& group_timing : pending_presentation_group_timings_) {
+    if (!group_timing.HasSwapped()) {
+      group_timing.OnSwap(timings);
+      draw_and_swap_triggered_timestamp =
+          group_timing.draw_and_swap_triggered_timestamp();
+      break;
+    }
+  }
+
+  // We should have at least one group that hasn't received a SwapBuffersAck
+  DCHECK(!draw_and_swap_triggered_timestamp.is_null());
 
   // Check that the swap timings correspond with the timestamp from when
   // the swap was triggered. Note that not all output surfaces provide timing
   // information, hence the check for a valid swap_start.
-  const auto swap_time =
-      pending_surfaces_with_presentation_helpers_.front().first;
   if (!timings.swap_start.is_null()) {
-    DCHECK_LE(swap_time, timings.swap_start);
+    DCHECK_LE(draw_and_swap_triggered_timestamp, timings.swap_start);
     base::TimeDelta delta =
         timings.swap_start - draw_start_times_pending_swap_ack_.front();
     UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
@@ -686,7 +730,7 @@ void Display::DidSwapWithSize(const gfx::Size& pixel_size) {
 
 void Display::DidReceivePresentationFeedback(
     const gfx::PresentationFeedback& feedback) {
-  if (pending_surfaces_with_presentation_helpers_.empty()) {
+  if (pending_presentation_group_timings_.empty()) {
     DLOG(ERROR) << "Received unexpected PresentationFeedback";
     return;
   }
@@ -694,18 +738,14 @@ void Display::DidReceivePresentationFeedback(
   TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP0(
       "viz,benchmark", "Graphics.Pipeline.DrawAndSwap",
       last_presented_trace_id_, feedback.timestamp);
-  auto& presentation_helper_list =
-      pending_surfaces_with_presentation_helpers_.front().second;
-  const auto swap_time =
-      pending_surfaces_with_presentation_helpers_.front().first;
-  auto copy_feedback = SanitizePresentationFeedback(feedback, swap_time);
+  auto& presentation_group_timing = pending_presentation_group_timings_.front();
+  auto copy_feedback = SanitizePresentationFeedback(
+      feedback, presentation_group_timing.draw_and_swap_triggered_timestamp());
   TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(
       "benchmark,viz", "Display::FrameDisplayed", TRACE_EVENT_SCOPE_THREAD,
       copy_feedback.timestamp);
-  for (auto& presentation_helper : presentation_helper_list) {
-    presentation_helper->DidPresent(feedback);
-  }
-  pending_surfaces_with_presentation_helpers_.pop_front();
+  presentation_group_timing.OnPresent(copy_feedback);
+  pending_presentation_group_timings_.pop_front();
 }
 
 void Display::DidFinishLatencyInfo(

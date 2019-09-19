@@ -8,6 +8,7 @@ import android.os.RemoteException;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.weblayer_private.aidl.APICallException;
 import org.chromium.weblayer_private.aidl.IBrowserControllerClient;
 
@@ -23,11 +24,12 @@ public final class BrowserObserverProxy {
 
     BrowserObserverProxy(long browserController, IBrowserControllerClient client) {
         mClient = client;
-        mNativeBrowserObserverProxy = nativeCreateBrowserObserverProxy(this, browserController);
+        mNativeBrowserObserverProxy =
+                BrowserObserverProxyJni.get().createBrowserObserverProxy(this, browserController);
     }
 
     public void destroy() {
-        nativeDeleteBrowserObserverProxy(mNativeBrowserObserverProxy);
+        BrowserObserverProxyJni.get().deleteBrowserObserverProxy(mNativeBrowserObserverProxy);
         mNativeBrowserObserverProxy = 0;
     }
 
@@ -40,7 +42,9 @@ public final class BrowserObserverProxy {
         }
     }
 
-    private static native long nativeCreateBrowserObserverProxy(
-            BrowserObserverProxy proxy, long browserController);
-    private static native void nativeDeleteBrowserObserverProxy(long proxy);
+    @NativeMethods
+    interface Natives {
+        long createBrowserObserverProxy(BrowserObserverProxy proxy, long browserController);
+        void deleteBrowserObserverProxy(long proxy);
+    }
 }

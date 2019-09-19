@@ -30,7 +30,7 @@ class PresentationAvailabilityState;
 // Implements the PresentationController interface from the Presentation API
 // from which websites can implement the controlling side of a presentation.
 class MODULES_EXPORT PresentationController
-    : public GarbageCollectedFinalized<PresentationController>,
+    : public GarbageCollected<PresentationController>,
       public Supplement<LocalFrame>,
       public ContextLifecycleObserver,
       public mojom::blink::PresentationController {

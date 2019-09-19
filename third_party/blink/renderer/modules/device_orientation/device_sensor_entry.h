@@ -20,7 +20,7 @@ namespace blink {
 
 class DeviceSensorEventPump;
 
-class DeviceSensorEntry : public GarbageCollectedFinalized<DeviceSensorEntry>,
+class DeviceSensorEntry : public GarbageCollected<DeviceSensorEntry>,
                           public device::mojom::blink::SensorClient {
   USING_PRE_FINALIZER(DeviceSensorEntry, Dispose);
 

@@ -30,7 +30,7 @@ class V8PaintCallback;
 // the author. It will store the properties for invalidation and input argument
 // types as well.
 class MODULES_EXPORT CSSPaintDefinition final
-    : public GarbageCollectedFinalized<CSSPaintDefinition>,
+    : public GarbageCollected<CSSPaintDefinition>,
       public NameClient {
  public:
   CSSPaintDefinition(

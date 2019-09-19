@@ -31,7 +31,7 @@ class CORE_EXPORT ReadableStream : public ScriptWrappable {
   // directly.
   //
   // TODO(ricea): Remove this when the V8 Extras implementation is removed.
-  class ReadHandle : public GarbageCollectedFinalized<ReadHandle> {
+  class ReadHandle : public GarbageCollected<ReadHandle> {
    public:
     ReadHandle() = default;
     virtual ~ReadHandle() = default;

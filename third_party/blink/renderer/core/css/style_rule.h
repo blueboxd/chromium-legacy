@@ -37,8 +37,7 @@ class CSSRule;
 class CSSStyleSheet;
 class CSSValueList;
 
-class CORE_EXPORT StyleRuleBase
-    : public GarbageCollectedFinalized<StyleRuleBase> {
+class CORE_EXPORT StyleRuleBase : public GarbageCollected<StyleRuleBase> {
  public:
   enum RuleType {
     kCharset,

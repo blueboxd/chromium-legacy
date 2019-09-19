@@ -38,6 +38,8 @@ class OverviewGridEventHandler : public ui::EventHandler,
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
+  bool IsFlingInProgressForTesting() const { return !!fling_curve_; }
+
  private:
   // ui::CompositorAnimationObserver:
   void OnAnimationStep(base::TimeTicks timestamp) override;

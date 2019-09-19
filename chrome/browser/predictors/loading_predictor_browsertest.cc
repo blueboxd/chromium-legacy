@@ -388,8 +388,10 @@ class TestPreconnectManagerObserver : public PreconnectManager::Observer {
 class LoadingPredictorBrowserTest : public InProcessBrowserTest {
  public:
   LoadingPredictorBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kLoadingOnlyLearnHighPriorityResources);
+    scoped_feature_list_.InitWithFeatures(
+        {features::kLoadingOnlyLearnHighPriorityResources,
+         features::kLoadingPreconnectToRedirectTarget},
+        {});
   }
   ~LoadingPredictorBrowserTest() override {}
 
@@ -399,6 +401,10 @@ class LoadingPredictorBrowserTest : public InProcessBrowserTest {
         &LoadingPredictorBrowserTest::HandleFaviconRequest));
     embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
         &LoadingPredictorBrowserTest::HandleCacheRedirectRequest));
+
+    ASSERT_TRUE(preconnecting_test_server_.InitializeAndListen());
+    preconnecting_test_server_.AddDefaultHandlers(GetChromeTestDataDir());
+
     InProcessBrowserTest::SetUp();
   }
 
@@ -408,8 +414,19 @@ class LoadingPredictorBrowserTest : public InProcessBrowserTest {
     connection_tracker_ = std::make_unique<ConnectionTracker>();
     connection_listener_ =
         std::make_unique<ConnectionListener>(connection_tracker_.get());
+    preconnecting_server_connection_tracker_ =
+        std::make_unique<ConnectionTracker>();
+    preconnecting_server_connection_listener_ =
+        std::make_unique<ConnectionListener>(
+            preconnecting_server_connection_tracker_.get());
+
     embedded_test_server()->SetConnectionListener(connection_listener_.get());
     embedded_test_server()->StartAcceptingConnections();
+
+    preconnecting_test_server_.SetConnectionListener(
+        preconnecting_server_connection_listener());
+    EXPECT_TRUE(preconnecting_test_server_.Started());
+    preconnecting_test_server_.StartAcceptingConnections();
 
     loading_predictor_ =
         LoadingPredictorFactory::GetForProfile(browser()->profile());
@@ -453,6 +470,7 @@ class LoadingPredictorBrowserTest : public InProcessBrowserTest {
     close_all_connections_loop.Run();
 
     connection_tracker()->ResetCounts();
+    preconnecting_server_connection_tracker_->ResetCounts();
   }
 
   void ResetPredictorState() {
@@ -476,6 +494,14 @@ class LoadingPredictorBrowserTest : public InProcessBrowserTest {
   }
 
   ConnectionTracker* connection_tracker() { return connection_tracker_.get(); }
+
+  ConnectionTracker* preconnecting_server_connection_tracker() const {
+    return preconnecting_server_connection_tracker_.get();
+  }
+
+  ConnectionListener* preconnecting_server_connection_listener() const {
+    return preconnecting_server_connection_listener_.get();
+  }
 
   static std::unique_ptr<net::test_server::HttpResponse> HandleFaviconRequest(
       const net::test_server::HttpRequest& request) {
@@ -512,10 +538,17 @@ class LoadingPredictorBrowserTest : public InProcessBrowserTest {
     return http_response;
   }
 
+ protected:
+  // Test server that initiates preconnect. Separate server from the one being
+  // preconnected to separate preconnected connection count.
+  net::EmbeddedTestServer preconnecting_test_server_;
+
  private:
   LoadingPredictor* loading_predictor_ = nullptr;
   std::unique_ptr<ConnectionListener> connection_listener_;
   std::unique_ptr<ConnectionTracker> connection_tracker_;
+  std::unique_ptr<ConnectionListener> preconnecting_server_connection_listener_;
+  std::unique_ptr<ConnectionTracker> preconnecting_server_connection_tracker_;
   std::unique_ptr<TestPreconnectManagerObserver> preconnect_manager_observer_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -707,10 +740,10 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
       "redirect.com",
       base::StringPrintf("/server-redirect?%s", redirect_url.spec().c_str()));
   url::Origin origin = url::Origin::Create(redirect_url);
-  std::vector<PreconnectRequest> requests;
+  std::vector<PreconnectRequest> expected_requests;
   for (auto* const host : kHtmlSubresourcesHosts) {
-    requests.emplace_back(embedded_test_server()->GetURL(host, "/"), 1,
-                          net::NetworkIsolationKey(origin, origin));
+    expected_requests.emplace_back(embedded_test_server()->GetURL(host, "/"), 1,
+                                   net::NetworkIsolationKey(origin, origin));
   }
 
   ui_test_utils::NavigateToURL(browser(), original_url);
@@ -720,20 +753,34 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTest,
   EXPECT_EQ(prediction->is_redirected, false);
   EXPECT_EQ(prediction->host, redirect_url.host());
   EXPECT_THAT(prediction->requests,
-              testing::UnorderedElementsAreArray(requests));
+              testing::UnorderedElementsAreArray(expected_requests));
   // The predictor needs minimum two redirect hits to be confident in the
-  // redirect.
+  // redirect to generate the origins for subresources. However, after the
+  // first redirect, the predictor should learn the redirect origin for
+  // preconnect.
   prediction = GetPreconnectPrediction(original_url);
-  EXPECT_FALSE(prediction);
+  ASSERT_TRUE(prediction);
+  EXPECT_FALSE(prediction->is_redirected);
+  EXPECT_EQ(prediction->host, original_url.host());
+  std::vector<PreconnectRequest> expected_requests_1;
+  expected_requests_1.emplace_back(
+      embedded_test_server()->GetURL(redirect_url.host(), "/"), 1,
+      net::NetworkIsolationKey(origin, origin));
+  EXPECT_THAT(prediction->requests,
+              testing::UnorderedElementsAreArray(expected_requests_1));
 
-  // The predictor will start predict a redirect after the second navigation.
+  // The predictor will start predict for origins of subresources (based on
+  // redirect) after the second navigation.
   ui_test_utils::NavigateToURL(browser(), original_url);
   prediction = GetPreconnectPrediction(original_url);
+  expected_requests.emplace_back(
+      embedded_test_server()->GetURL(redirect_url.host(), "/"), 1,
+      net::NetworkIsolationKey(origin, origin));
   ASSERT_TRUE(prediction);
   EXPECT_EQ(prediction->is_redirected, true);
   EXPECT_EQ(prediction->host, redirect_url.host());
   EXPECT_THAT(prediction->requests,
-              testing::UnorderedElementsAreArray(requests));
+              testing::UnorderedElementsAreArray(expected_requests));
 }
 
 // Tests that the LoadingPredictor performs preresolving/preconnecting for a
@@ -901,9 +948,6 @@ class LoadingPredictorNetworkIsolationKeyBrowserTest
       public testing::WithParamInterface<NetworkIsolationKeyMode> {
  public:
   LoadingPredictorNetworkIsolationKeyBrowserTest() {
-    preconnecting_test_server_.AddDefaultHandlers(GetChromeTestDataDir());
-    EXPECT_TRUE(preconnecting_test_server_.Start());
-
     switch (GetParam()) {
       case NetworkIsolationKeyMode::kNone:
         break;
@@ -915,7 +959,8 @@ class LoadingPredictorNetworkIsolationKeyBrowserTest
              // some depend on cache behavior, and it would be
              // unfortunate if splitting the cache by the key as well broke
              // them.
-             net::features::kSplitCacheByNetworkIsolationKey},
+             net::features::kSplitCacheByNetworkIsolationKey,
+             features::kLoadingPreconnectToRedirectTarget},
             // disabled_features
             {net::features::kAppendFrameOriginToNetworkIsolationKey});
         break;
@@ -924,7 +969,8 @@ class LoadingPredictorNetworkIsolationKeyBrowserTest
             // enabled_features
             {net::features::kPartitionConnectionsByNetworkIsolationKey,
              net::features::kSplitCacheByNetworkIsolationKey,
-             net::features::kAppendFrameOriginToNetworkIsolationKey},
+             net::features::kAppendFrameOriginToNetworkIsolationKey,
+             features::kLoadingPreconnectToRedirectTarget},
             // disabled_features
             {});
         break;
@@ -974,10 +1020,6 @@ class LoadingPredictorNetworkIsolationKeyBrowserTest
 
  private:
   base::test::ScopedFeatureList scoped_feature_list2_;
-
-  // Test server that initiates preconnect. Separate server from the one being
-  // preconnected to separate preconnected connection count.
-  net::EmbeddedTestServer preconnecting_test_server_;
 };
 
 INSTANTIATE_TEST_SUITE_P(
@@ -1100,10 +1142,16 @@ IN_PROC_BROWSER_TEST_P(LoadingPredictorNetworkIsolationKeyBrowserTest,
     connection_tracker()->WaitForAcceptedConnections(2);
     EXPECT_EQ(0u, connection_tracker()->GetReadSocketCount());
 
-    // Verify that the preconnects were made using the |redirecting_url|'s
-    // NetworkIsolationKey. To do this, make a request using the tracked
-    // server's NetworkIsolationKey, and verify it used one of the existing
-    // sockets.
+    // Verify that the redirect from |redirecting_url| to |destination_url| was
+    // learned and preconnected to.
+    if (i == 1) {
+      preconnecting_server_connection_tracker()->WaitForAcceptedConnections(1);
+    }
+
+    // Verify that the preconnects to |embedded_test_server| were made using
+    // the |redirecting_url|'s NetworkIsolationKey. To do this, make a request
+    // using the tracked server's NetworkIsolationKey, and verify it used one
+    // of the existing sockets.
     auto request = std::make_unique<network::ResourceRequest>();
     request->url = embedded_test_server()->GetURL("/echo");
     content::SimpleURLLoaderTestHelper simple_loader_helper;

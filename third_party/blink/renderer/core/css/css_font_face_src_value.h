@@ -107,9 +107,8 @@ class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
   const ContentSecurityPolicyDisposition should_check_content_security_policy_;
   const OriginClean origin_clean_;
 
-  class FontResourceHelper
-      : public GarbageCollectedFinalized<FontResourceHelper>,
-        public FontResourceClient {
+  class FontResourceHelper : public GarbageCollected<FontResourceHelper>,
+                             public FontResourceClient {
     USING_GARBAGE_COLLECTED_MIXIN(FontResourceHelper);
 
    public:

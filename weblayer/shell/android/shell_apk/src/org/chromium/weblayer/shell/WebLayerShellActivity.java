@@ -64,10 +64,10 @@ public class WebLayerShellActivity extends FragmentActivity {
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
         // Only call init for main process.
         WebLayer.getInstance().init(getApplication());
-
-        super.onCreate(savedInstanceState);
 
         LinearLayout mainView = new LinearLayout(this);
         int viewId = View.generateViewId();

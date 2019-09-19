@@ -10,7 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/webui/feed_internals/feed_internals.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 class PrefService;
 
@@ -27,9 +28,10 @@ struct PrefetchSuggestion;
 // Concrete implementation of feed_internals::mojom::PageHandler.
 class FeedInternalsPageHandler : public feed_internals::mojom::PageHandler {
  public:
-  FeedInternalsPageHandler(feed_internals::mojom::PageHandlerRequest request,
-                           feed::FeedHostService* feed_host_service,
-                           PrefService* pref_service);
+  FeedInternalsPageHandler(
+      mojo::PendingReceiver<feed_internals::mojom::PageHandler> receiver,
+      feed::FeedHostService* feed_host_service,
+      PrefService* pref_service);
   ~FeedInternalsPageHandler() override;
 
   // feed_internals::mojom::PageHandler
@@ -45,8 +47,7 @@ class FeedInternalsPageHandler : public feed_internals::mojom::PageHandler {
   void GetFeedHistograms(GetFeedHistogramsCallback) override;
 
  private:
-  // Binding from the mojo interface to concrete implementation.
-  mojo::Binding<feed_internals::mojom::PageHandler> binding_;
+  mojo::Receiver<feed_internals::mojom::PageHandler> receiver_;
 
   void OnGetCurrentArticleSuggestionsDone(
       GetCurrentContentCallback callback,

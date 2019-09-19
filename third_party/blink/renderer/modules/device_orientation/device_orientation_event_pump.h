@@ -17,7 +17,7 @@ class DeviceSensorEntry;
 class PlatformEventController;
 
 class MODULES_EXPORT DeviceOrientationEventPump
-    : public GarbageCollectedFinalized<DeviceOrientationEventPump>,
+    : public GarbageCollected<DeviceOrientationEventPump>,
       public DeviceSensorEventPump {
   USING_GARBAGE_COLLECTED_MIXIN(DeviceOrientationEventPump);
 

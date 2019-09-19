@@ -61,9 +61,8 @@ class CORE_EXPORT PendingScriptClient : public GarbageCollectedMixin {
 // When "script is ready"
 // https://html.spec.whatwg.org/C/#the-script-is-ready,
 // PendingScriptClient is notified.
-class CORE_EXPORT PendingScript
-    : public GarbageCollectedFinalized<PendingScript>,
-      public NameClient {
+class CORE_EXPORT PendingScript : public GarbageCollected<PendingScript>,
+                                  public NameClient {
  public:
   virtual ~PendingScript();
 

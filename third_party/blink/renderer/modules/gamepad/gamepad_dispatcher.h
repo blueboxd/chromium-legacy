@@ -22,10 +22,9 @@ namespace blink {
 
 class GamepadSharedMemoryReader;
 
-class GamepadDispatcher final
-    : public GarbageCollectedFinalized<GamepadDispatcher>,
-      public PlatformEventDispatcher,
-      public WebGamepadListener {
+class GamepadDispatcher final : public GarbageCollected<GamepadDispatcher>,
+                                public PlatformEventDispatcher,
+                                public WebGamepadListener {
   USING_GARBAGE_COLLECTED_MIXIN(GamepadDispatcher);
 
  public:

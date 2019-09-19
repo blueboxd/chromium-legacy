@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.common.PlatformServiceBridge;
+import org.chromium.android_webview.common.crash.SystemWideCrashDirectories;
 import org.chromium.android_webview.services.AwMinidumpUploaderDelegate;
 import org.chromium.android_webview.services.CrashReceiverService;
 import org.chromium.android_webview.test.AwJUnit4ClassRunner;
@@ -48,7 +49,7 @@ public class MinidumpUploaderTest {
     public CrashTestRule mTestRule = new CrashTestRule() {
         @Override
         public File getExistingCacheDir() {
-            return CrashReceiverService.getOrCreateWebViewCrashDir();
+            return SystemWideCrashDirectories.getOrCreateWebViewCrashDir();
         }
     };
 
@@ -114,7 +115,7 @@ public class MinidumpUploaderTest {
     @MediumTest
     public void testCopyAndUploadWebViewMinidump() throws IOException {
         final CrashFileManager fileManager =
-                new CrashFileManager(CrashReceiverService.getWebViewCrashDir());
+                new CrashFileManager(SystemWideCrashDirectories.getWebViewCrashDir());
         // Note that these minidump files are set up directly in the cache dir - not in the WebView
         // crash dir. This is to ensure the CrashFileManager doesn't see these minidumps without us
         // first copying them.
@@ -133,7 +134,7 @@ public class MinidumpUploaderTest {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        File webviewTmpDir = CrashReceiverService.getWebViewTmpCrashDir();
+        File webviewTmpDir = SystemWideCrashDirectories.getWebViewTmpCrashDir();
         Assert.assertEquals(0, webviewTmpDir.listFiles().length);
     }
 
@@ -229,7 +230,7 @@ public class MinidumpUploaderTest {
     @MediumTest
     public void testCopyAndUploadSeveralMinidumpBatches() throws IOException {
         final CrashFileManager fileManager =
-                new CrashFileManager(CrashReceiverService.getWebViewCrashDir());
+                new CrashFileManager(SystemWideCrashDirectories.getWebViewCrashDir());
         // Note that these minidump files are set up directly in the cache dir - not in the WebView
         // crash dir. This is to ensure the CrashFileManager doesn't see these minidumps without us
         // first copying them.

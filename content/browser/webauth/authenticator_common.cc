@@ -770,9 +770,7 @@ void AuthenticatorCommon::MakeCredential(
 
   bool resident_key = options->authenticator_selection &&
                       options->authenticator_selection->require_resident_key();
-  if (resident_key &&
-      (!base::FeatureList::IsEnabled(device::kWebAuthResidentKeys) ||
-       !request_delegate_->SupportsResidentKeys())) {
+  if (resident_key && !request_delegate_->SupportsResidentKeys()) {
     // Disallow the creation of resident credentials.
     InvokeCallbackAndCleanup(
         std::move(callback),
@@ -962,8 +960,7 @@ void AuthenticatorCommon::GetAssertion(
   }
 
   if (options->allow_credentials.empty()) {
-    if (!base::FeatureList::IsEnabled(device::kWebAuthResidentKeys) ||
-        !request_delegate_->SupportsResidentKeys()) {
+    if (!request_delegate_->SupportsResidentKeys()) {
       InvokeCallbackAndCleanup(
           std::move(callback),
           blink::mojom::AuthenticatorStatus::RESIDENT_CREDENTIALS_UNSUPPORTED);

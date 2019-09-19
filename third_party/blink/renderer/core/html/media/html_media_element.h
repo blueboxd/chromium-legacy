@@ -686,9 +686,8 @@ class CORE_EXPORT HTMLMediaElement
 
   // AudioClientImpl wraps an AudioSourceProviderClient.
   // When the audio format is known, Chromium calls setFormat().
-  class AudioClientImpl final
-      : public GarbageCollectedFinalized<AudioClientImpl>,
-        public WebAudioSourceProviderClient {
+  class AudioClientImpl final : public GarbageCollected<AudioClientImpl>,
+                                public WebAudioSourceProviderClient {
    public:
     explicit AudioClientImpl(AudioSourceProviderClient* client)
         : client_(client) {}

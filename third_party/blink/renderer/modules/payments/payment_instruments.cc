@@ -98,7 +98,7 @@ ScriptPromise RejectNotAllowedToUsePaymentFeatures(ScriptState* script_state) {
 // can be prematurely destroyed.
 // TODO(keishi): Remove this conversion if IDLDictionaryBase situation changes.
 class PaymentInstrumentParameter final
-    : public GarbageCollectedFinalized<PaymentInstrumentParameter> {
+    : public GarbageCollected<PaymentInstrumentParameter> {
  public:
   explicit PaymentInstrumentParameter(const PaymentInstrument* instrument)
       : has_icons_(instrument->hasIcons()),

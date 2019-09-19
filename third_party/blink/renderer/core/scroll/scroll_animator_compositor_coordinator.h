@@ -31,7 +31,7 @@ class CompositorKeyframeModel;
 // See ScrollAnimator.h for more information about scroll animations.
 
 class CORE_EXPORT ScrollAnimatorCompositorCoordinator
-    : public GarbageCollectedFinalized<ScrollAnimatorCompositorCoordinator>,
+    : public GarbageCollected<ScrollAnimatorCompositorCoordinator>,
       private CompositorAnimationClient,
       CompositorAnimationDelegate {
   DISALLOW_COPY_AND_ASSIGN(ScrollAnimatorCompositorCoordinator);

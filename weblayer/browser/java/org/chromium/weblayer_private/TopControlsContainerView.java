@@ -13,6 +13,7 @@ import android.view.ViewParent;
 import android.widget.FrameLayout;
 
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
 
@@ -50,7 +51,8 @@ class TopControlsContainerView extends FrameLayout {
 
     // Used to  delay updating the image for the layer.
     private final Runnable mRefreshResourceIdRunnable = () -> {
-        nativeUpdateTopControlsResource(mNativeTopControlsContainerView);
+        TopControlsContainerViewJni.get().updateTopControlsResource(
+                mNativeTopControlsContainerView, TopControlsContainerView.this);
     };
 
     TopControlsContainerView(
@@ -70,13 +72,15 @@ class TopControlsContainerView extends FrameLayout {
                         mWebContents.getEventForwarder().setCurrentTouchEventOffsets(0, top);
                     }
                 });
-        mNativeTopControlsContainerView = nativeCreateTopControlsContainerView(
-                webContents, contentViewRenderView.getNativeHandle());
+        mNativeTopControlsContainerView =
+                TopControlsContainerViewJni.get().createTopControlsContainerView(
+                        webContents, contentViewRenderView.getNativeHandle());
     }
 
     public void destroy() {
         setView(null);
-        nativeDeleteTopControlsContainerView(mNativeTopControlsContainerView);
+        TopControlsContainerViewJni.get().deleteTopControlsContainerView(
+                mNativeTopControlsContainerView, TopControlsContainerView.this);
     }
 
     public long getNativeHandle() {
@@ -96,7 +100,8 @@ class TopControlsContainerView extends FrameLayout {
             if (mView.getParent() == this) removeView(mView);
             // TODO: need some sort of destroy to drop reference.
             mViewResourceAdapter = null;
-            nativeDeleteTopControlsLayer(mNativeTopControlsContainerView);
+            TopControlsContainerViewJni.get().deleteTopControlsLayer(
+                    mNativeTopControlsContainerView, TopControlsContainerView.this);
             mContentViewRenderView.getResourceManager()
                     .getDynamicResourceLoader()
                     .unregisterResource(TOP_CONTROLS_ID);
@@ -154,8 +159,9 @@ class TopControlsContainerView extends FrameLayout {
                 if (mViewResourceAdapter == null) {
                     createAdapterAndLayer();
                 } else {
-                    nativeSetTopControlsSize(
-                            mNativeTopControlsContainerView, mLastWidth, mLastHeight);
+                    TopControlsContainerViewJni.get().setTopControlsSize(
+                            mNativeTopControlsContainerView, TopControlsContainerView.this,
+                            mLastWidth, mLastHeight);
                 }
             }
         }
@@ -183,10 +189,12 @@ class TopControlsContainerView extends FrameLayout {
         // It's important that the layer is created immediately and always kept in sync with the
         // View. Creating the layer only when needed results in a noticeable delay between when
         // the layer is created and actually shown. Chrome for Android does the same thing.
-        nativeCreateTopControlsLayer(mNativeTopControlsContainerView, TOP_CONTROLS_ID);
+        TopControlsContainerViewJni.get().createTopControlsLayer(
+                mNativeTopControlsContainerView, TopControlsContainerView.this, TOP_CONTROLS_ID);
         mLastWidth = getWidth();
         mLastHeight = getHeight();
-        nativeSetTopControlsSize(mNativeTopControlsContainerView, mLastWidth, mLastHeight);
+        TopControlsContainerViewJni.get().setTopControlsSize(mNativeTopControlsContainerView,
+                TopControlsContainerView.this, mLastWidth, mLastHeight);
     }
 
     private void finishTopControlsScroll(int topContentOffsetY) {
@@ -197,8 +205,8 @@ class TopControlsContainerView extends FrameLayout {
 
     private void setTopControlsOffset(int topControlsOffsetY, int topContentOffsetY) {
         mTopContentOffset = topContentOffsetY;
-        nativeSetTopControlsOffset(
-                mNativeTopControlsContainerView, topControlsOffsetY, topContentOffsetY);
+        TopControlsContainerViewJni.get().setTopControlsOffset(mNativeTopControlsContainerView,
+                TopControlsContainerView.this, topControlsOffsetY, topContentOffsetY);
     }
 
     private void prepareForTopControlsScroll() {
@@ -214,14 +222,21 @@ class TopControlsContainerView extends FrameLayout {
         if (mView != null) mView.setVisibility(View.VISIBLE);
     }
 
-    private static native long nativeCreateTopControlsContainerView(
-            WebContents webContents, long nativeContentViewRenderView);
-    private native void nativeDeleteTopControlsContainerView(long nativeTopControlsContainerView);
-    private native void nativeCreateTopControlsLayer(long nativeTopControlsContainerView, int id);
-    private native void nativeDeleteTopControlsLayer(long nativeTopControlsContainerView);
-    private native void nativeSetTopControlsOffset(
-            long nativeTopControlsContainerView, int topControlsOffsetY, int topContentOffsetY);
-    private native void nativeSetTopControlsSize(
-            long nativeTopControlsContainerView, int width, int height);
-    private native void nativeUpdateTopControlsResource(long nativeTopControlsContainerView);
+    @NativeMethods
+    interface Natives {
+        long createTopControlsContainerView(
+                WebContents webContents, long nativeContentViewRenderView);
+        void deleteTopControlsContainerView(
+                long nativeTopControlsContainerView, TopControlsContainerView caller);
+        void createTopControlsLayer(
+                long nativeTopControlsContainerView, TopControlsContainerView caller, int id);
+        void deleteTopControlsLayer(
+                long nativeTopControlsContainerView, TopControlsContainerView caller);
+        void setTopControlsOffset(long nativeTopControlsContainerView,
+                TopControlsContainerView caller, int topControlsOffsetY, int topContentOffsetY);
+        void setTopControlsSize(long nativeTopControlsContainerView,
+                TopControlsContainerView caller, int width, int height);
+        void updateTopControlsResource(
+                long nativeTopControlsContainerView, TopControlsContainerView caller);
+    }
 }

@@ -48,7 +48,7 @@ class Resource;
 class ResourceResponse;
 class TextResourceDecoder;
 
-class XHRReplayData final : public GarbageCollectedFinalized<XHRReplayData> {
+class XHRReplayData final : public GarbageCollected<XHRReplayData> {
  public:
   static XHRReplayData* Create(ExecutionContext*,
                                const AtomicString& method,
@@ -92,9 +92,9 @@ class XHRReplayData final : public GarbageCollectedFinalized<XHRReplayData> {
 };
 
 class NetworkResourcesData final
-    : public GarbageCollectedFinalized<NetworkResourcesData> {
+    : public GarbageCollected<NetworkResourcesData> {
  public:
-  class ResourceData final : public GarbageCollectedFinalized<ResourceData> {
+  class ResourceData final : public GarbageCollected<ResourceData> {
     friend class NetworkResourcesData;
 
    public:

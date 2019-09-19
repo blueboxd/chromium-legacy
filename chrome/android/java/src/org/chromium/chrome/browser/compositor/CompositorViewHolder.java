@@ -32,6 +32,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.compat.ApiHelperForN;
 import org.chromium.base.compat.ApiHelperForO;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.InsetObserverView;
@@ -203,7 +204,7 @@ public class CompositorViewHolder extends FrameLayout
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return null;
         View activeView = getContentView();
         if (activeView == null || !ViewCompat.isAttachedToWindow(activeView)) return null;
-        return activeView.onResolvePointerIcon(event, pointerIndex);
+        return ApiHelperForN.onResolvePointerIcon(activeView, event, pointerIndex);
     }
 
     /**

@@ -17,7 +17,7 @@ class XRFrame;
 class XRSession;
 
 class XRFrameRequestCallbackCollection final
-    : public GarbageCollectedFinalized<XRFrameRequestCallbackCollection>,
+    : public GarbageCollected<XRFrameRequestCallbackCollection>,
       public NameClient {
  public:
   explicit XRFrameRequestCallbackCollection(ExecutionContext*);

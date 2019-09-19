@@ -41,7 +41,7 @@ namespace blink {
 typedef testing::StrictMock<testing::MockFunction<void(int)>> Checkpoint;
 
 class MockWebSocketChannelClient
-    : public GarbageCollectedFinalized<MockWebSocketChannelClient>,
+    : public GarbageCollected<MockWebSocketChannelClient>,
       public WebSocketChannelClient {
   USING_GARBAGE_COLLECTED_MIXIN(MockWebSocketChannelClient);
 
@@ -112,8 +112,10 @@ class WebSocketChannelImplTest : public PageTestBase {
 
     void SendFrame(bool fin,
                    WebSocketMessageType type,
-                   const Vector<uint8_t>& data) override {
-      frames_.push_back(Frame{fin, type, data});
+                   base::span<const uint8_t> data) override {
+      Vector<uint8_t> data_to_pass;
+      data_to_pass.AppendRange(data.begin(), data.end());
+      frames_.push_back(Frame{fin, type, std::move(data_to_pass)});
     }
     void StartReceiving() override {
       DCHECK(!is_start_receiving_called_);

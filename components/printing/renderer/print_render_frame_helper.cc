@@ -1195,8 +1195,10 @@ void PrintRenderFrameHelper::InitiatePrintPreview(
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   IPCReceived();
 
-  if (ipc_nesting_level_ > 1)
+  if (ipc_nesting_level_ > 1) {
+    IPCProcessed();
     return;
+  }
 
   if (print_renderer)
     print_renderer_.Bind(std::move(print_renderer));
@@ -1208,13 +1210,13 @@ void PrintRenderFrameHelper::InitiatePrintPreview(
   auto plugin = delegate_->GetPdfElement(frame);
   if (!plugin.IsNull()) {
     PrintNode(plugin);
+    IPCProcessed();
     return;
   }
   print_preview_context_.InitWithFrame(frame);
   RequestPrintPreview(has_selection
                           ? PRINT_PREVIEW_USER_INITIATED_SELECTION
                           : PRINT_PREVIEW_USER_INITIATED_ENTIRE_FRAME);
-
   IPCProcessed();
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 }

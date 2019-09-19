@@ -513,6 +513,12 @@ void UtilityProcessHost::OnProcessCrashed(int exit_code) {
   client->OnProcessCrashed();
 }
 
+base::Optional<std::string> UtilityProcessHost::GetServiceName() {
+  if (!service_identity_)
+    return base::nullopt;
+  return service_identity_->name();
+}
+
 void UtilityProcessHost::BindHostReceiver(
     mojo::GenericPendingReceiver receiver) {
 #if defined(OS_LINUX)

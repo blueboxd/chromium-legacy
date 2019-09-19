@@ -18,8 +18,8 @@
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_network_connection_tracker.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
@@ -38,7 +38,7 @@ class TestDelegate : public AvailabilityProber::Delegate {
   bool ShouldSendNextProbe() override { return should_send_next_probe_; }
 
   bool IsResponseSuccess(net::Error net_error,
-                         const network::ResourceResponseHead* head,
+                         const network::mojom::URLResponseHead* head,
                          std::unique_ptr<std::string> body) override {
     return net_error == net::OK && head &&
            head->headers->response_code() == net::HTTP_OK;

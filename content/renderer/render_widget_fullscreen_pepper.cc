@@ -284,8 +284,8 @@ RenderWidgetFullscreenPepper* RenderWidgetFullscreenPepper::Create(
   RenderWidgetFullscreenPepper* widget = new RenderWidgetFullscreenPepper(
       routing_id, compositor_deps, page_properties, plugin,
       std::move(widget_receiver));
-  widget->Init(std::move(show_callback),
-               new PepperWidget(widget, local_main_frame_url));
+  widget->InitForPepperFullscreen(
+      std::move(show_callback), new PepperWidget(widget, local_main_frame_url));
   return widget;
 }
 
@@ -298,16 +298,14 @@ RenderWidgetFullscreenPepper::RenderWidgetFullscreenPepper(
     : RenderWidget(routing_id,
                    compositor_deps,
                    page_properties,
-                   blink::kWebDisplayModeUndefined,
-                   false,
-                   false,
-                   false,
+                   /*display_mode=*/blink::kWebDisplayModeUndefined,
+                   /*is_undead=*/false,
+                   /*hidden=*/false,
+                   /*never_visible=*/false,
                    std::move(widget_receiver)),
       plugin_(plugin),
-      layer_(nullptr),
-      mouse_lock_dispatcher_(new FullscreenMouseLockDispatcher(this)) {
-  pepper_fullscreen_ = true;
-}
+      mouse_lock_dispatcher_(
+          std::make_unique<FullscreenMouseLockDispatcher>(this)) {}
 
 RenderWidgetFullscreenPepper::~RenderWidgetFullscreenPepper() {
 }

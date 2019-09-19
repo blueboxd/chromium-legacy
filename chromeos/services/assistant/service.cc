@@ -29,6 +29,7 @@
 #include "chromeos/services/assistant/fake_assistant_settings_manager_impl.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/features.h"
+#include "chromeos/services/assistant/service_context.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -65,17 +66,69 @@ AssistantSettingsManager* g_settings_manager_override = nullptr;
 
 }  // namespace
 
+class Service::Context : public ServiceContext {
+ public:
+  Context(Service* parent) : parent_(parent) {}
+  ~Context() override = default;
+
+  // ServiceContext:
+  ash::mojom::AssistantAlarmTimerController* assistant_alarm_timer_controller()
+      override {
+    return parent_->assistant_alarm_timer_controller_.get();
+  }
+
+  mojom::AssistantController* assistant_controller() override {
+    return parent_->assistant_controller_.get();
+  }
+
+  ash::mojom::AssistantNotificationController*
+  assistant_notification_controller() override {
+    return parent_->assistant_notification_controller_.get();
+  }
+
+  ash::mojom::AssistantScreenContextController*
+  assistant_screen_context_controller() override {
+    return parent_->assistant_screen_context_controller_.get();
+  }
+
+  ash::AssistantStateBase* assistant_state() override {
+    return &parent_->assistant_state_;
+  }
+
+  CrasAudioHandler* cras_audio_handler() override {
+    return CrasAudioHandler::Get();
+  }
+
+  mojom::DeviceActions* device_actions() override {
+    return parent_->device_actions_.get();
+  }
+
+  scoped_refptr<base::SequencedTaskRunner> main_task_runner() override {
+    return parent_->main_task_runner_;
+  }
+
+  PowerManagerClient* power_manager_client() override {
+    return PowerManagerClient::Get();
+  }
+
+ private:
+  Service* const parent_;  // |this| is owned by |parent_|.
+
+  DISALLOW_COPY_AND_ASSIGN(Context);
+};
+
 Service::Service(mojo::PendingReceiver<mojom::AssistantService> receiver,
                  std::unique_ptr<network::SharedURLLoaderFactoryInfo>
                      url_loader_factory_info)
     : receiver_(this, std::move(receiver)),
       token_refresh_timer_(std::make_unique<base::OneShotTimer>()),
       main_task_runner_(base::SequencedTaskRunnerHandle::Get()),
+      context_(std::make_unique<Context>(this)),
       url_loader_factory_info_(std::move(url_loader_factory_info)) {
   // TODO(xiaohuic): in MASH we will need to setup the dbus client if assistant
   // service runs in its own process.
   chromeos::PowerManagerClient* power_manager_client =
-      chromeos::PowerManagerClient::Get();
+      context_->power_manager_client();
   power_manager_observer_.Add(power_manager_client);
   power_manager_client->RequestStatusUpdate();
 }
@@ -94,33 +147,6 @@ Service::~Service() {
 void Service::OverrideSettingsManagerForTesting(
     AssistantSettingsManager* manager) {
   g_settings_manager_override = manager;
-}
-
-void Service::RequestAccessToken() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // Bypass access token fetching under signed out mode.
-  if (is_signed_out_mode_)
-    return;
-
-  VLOG(1) << "Start requesting access token.";
-  GetIdentityAccessor()->GetPrimaryAccountInfo(base::BindOnce(
-      &Service::GetPrimaryAccountInfoCallback, base::Unretained(this)));
-}
-
-bool Service::ShouldEnableHotword() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  bool dsp_available = chromeos::CrasAudioHandler::Get()->HasHotwordDevice();
-
-  // Disable hotword if hotword is not set to always on and power source is not
-  // connected.
-  if (!dsp_available && !assistant_state_.hotword_always_on().value_or(false) &&
-      !power_source_connected_) {
-    return false;
-  }
-
-  return assistant_state_.hotword_enabled().value();
 }
 
 void Service::SetIdentityAccessorForTesting(
@@ -250,6 +276,11 @@ void Service::OnLockedFullScreenStateChanged(bool enabled) {
   UpdateListeningState();
 }
 
+void Service::OnCommunicationError(CommunicationErrorType error_type) {
+  if (error_type == CommunicationErrorType::AuthenticationError)
+    RequestAccessToken();
+}
+
 void Service::UpdateAssistantManagerState() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -312,6 +343,18 @@ identity::mojom::IdentityAccessor* Service::GetIdentityAccessor() {
   if (!identity_accessor_)
     client_->RequestIdentityAccessor(mojo::MakeRequest(&identity_accessor_));
   return identity_accessor_.get();
+}
+
+void Service::RequestAccessToken() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Bypass access token fetching under signed out mode.
+  if (is_signed_out_mode_)
+    return;
+
+  VLOG(1) << "Start requesting access token.";
+  GetIdentityAccessor()->GetPrimaryAccountInfo(base::BindOnce(
+      &Service::GetPrimaryAccountInfoCallback, base::Unretained(this)));
 }
 
 void Service::GetPrimaryAccountInfoCallback(
@@ -394,12 +437,14 @@ void Service::CreateAssistantManagerService() {
   // |assistant_manager_service_| is only created once.
   DCHECK(url_loader_factory_info_);
   assistant_manager_service_ = std::make_unique<AssistantManagerServiceImpl>(
-      client_.get(), std::move(battery_monitor), this,
-      std::move(url_loader_factory_info_));
+      client_.get(), std::move(battery_monitor), context(),
+      std::move(url_loader_factory_info_), is_signed_out_mode_);
 #else
   assistant_manager_service_ =
       std::make_unique<FakeAssistantManagerServiceImpl>();
 #endif
+
+  assistant_manager_service_->AddCommunicationErrorObserver(this);
 }
 
 void Service::FinalizeAssistantManagerService() {
@@ -472,6 +517,23 @@ void Service::UpdateListeningState() {
       session_active_;
   DVLOG(1) << "Update assistant listening state: " << should_listen;
   assistant_manager_service_->EnableListening(should_listen);
+  assistant_manager_service_->EnableHotword(should_listen &&
+                                            ShouldEnableHotword());
+}
+
+bool Service::ShouldEnableHotword() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  bool dsp_available = context()->cras_audio_handler()->HasHotwordDevice();
+
+  // Disable hotword if hotword is not set to always on and power source is not
+  // connected.
+  if (!dsp_available && !assistant_state_.hotword_always_on().value_or(false) &&
+      !power_source_connected_) {
+    return false;
+  }
+
+  return assistant_state_.hotword_enabled().value();
 }
 
 }  // namespace assistant

@@ -184,7 +184,7 @@ class CONTENT_EXPORT LocalStorageContextMojo
   bool force_keep_session_state_ = false;
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
 
-  file::mojom::FileSystemPtr file_system_;
+  mojo::Remote<file::mojom::FileSystem> file_system_;
   filesystem::mojom::DirectoryPtr directory_;
 
   base::trace_event::MemoryAllocatorDumpGuid memory_dump_id_;

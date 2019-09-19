@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.media;
 
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.PictureInPictureParams;
 import android.content.pm.ActivityInfo;
@@ -19,6 +19,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
+import org.chromium.base.annotations.VerifiesOnO;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -41,8 +42,11 @@ import java.util.List;
 
 /**
  * A controller for entering Android O Picture in Picture mode with fullscreen videos.
+ *
+ * Do not inline to prevent class verification errors on pre-O runtimes.
  */
-@SuppressLint({"NewApi"})
+@VerifiesOnO
+@TargetApi(Build.VERSION_CODES.O)
 public class PictureInPictureController {
     private static final String TAG = "VideoPersist";
 

@@ -18,6 +18,7 @@ class TargetImpl {
   poke() { this.numPokes++; }
   ping() { return Promise.resolve(); }
   repeat(message, numbers) { return {message: message, numbers: numbers}; }
+  echo(nested) { return Promise.resolve({nested: nested}); }
   flatten(values) {}
   flattenUnions(unions) {}
   requestSubinterface(request, client) {}
@@ -41,6 +42,14 @@ promise_test(() => {
         assert_array_equals(reply.numbers, kTestNumbers);
       });
 }, 'implementations can reply with multiple reply arguments');
+
+promise_test(() => {
+  let impl = new TargetImpl;
+  let remote = impl.target.$.bindNewPipeAndPassRemote();
+  const enumValue = liteJsTest.mojom.TestMessageTarget_NestedEnum.kFoo;
+  return remote.echo(enumValue)
+      .then(({nested}) => assert_equals(nested, enumValue));
+}, 'nested enums are usable as arguments and responses.');
 
 promise_test(async (t) => {
   const impl = new TargetImpl;

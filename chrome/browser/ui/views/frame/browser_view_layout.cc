@@ -63,6 +63,8 @@ bool ConvertedHitTest(views::View* src, views::View* dst, gfx::Point* point) {
 
 }  // namespace
 
+constexpr int BrowserViewLayout::kMainBrowserContentsMinimumWidth;
+
 class BrowserViewLayout::WebContentsModalDialogHostViews
     : public WebContentsModalDialogHost {
  public:
@@ -169,13 +171,8 @@ gfx::Size BrowserViewLayout::GetMinimumSize(const views::View* host) const {
   // https://crbug.com/847179.
   constexpr gfx::Size kContentsMinimumSize(1, 1);
 
-  // This should be wide enough that WebUI pages (e.g. chrome://settings) and
-  // the various associated WebUI dialogs (e.g. Import Bookmarks) can still be
-  // functional. This value provides a trade-off between browser usability and
-  // privacy - specifically, the ability to browse in a very small window, even
-  // on large monitors (which is why a minimum height is not specified). This
-  // value is used for the main browser window only, not for popups.
-  constexpr gfx::Size kMainBrowserContentsMinimumSize(500, 1);
+  // The minimum height for the normal (tabbed) browser window's contents area.
+  constexpr int kMainBrowserContentsMinimumHeight = 1;
 
   const bool has_tabstrip =
       browser()->SupportsWindowFeature(Browser::FEATURE_TABSTRIP);
@@ -202,7 +199,8 @@ gfx::Size BrowserViewLayout::GetMinimumSize(const views::View* host) const {
 
   gfx::Size contents_size(contents_container_->GetMinimumSize());
   contents_size.SetToMax(browser()->is_type_normal()
-                             ? kMainBrowserContentsMinimumSize
+                             ? gfx::Size(kMainBrowserContentsMinimumWidth,
+                                         kMainBrowserContentsMinimumHeight)
                              : kContentsMinimumSize);
 
   const int min_height =

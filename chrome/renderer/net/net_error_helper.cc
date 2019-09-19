@@ -25,7 +25,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/chrome_render_thread_observer.h"
 #include "chrome/renderer/security_interstitials/security_interstitial_page_controller.h"
-#include "chrome/renderer/supervised_user/supervised_user_error_page_controller.h"
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/error_page_params.h"
 #include "components/error_page/common/localized_error.h"
@@ -110,7 +109,6 @@ bool IsOfflineContentOnNetErrorFeatureEnabled() {
 
 #if defined(OS_ANDROID)
 bool IsAutoFetchFeatureEnabled() {
-  // Disabled for touchless builds.
   return base::FeatureList::IsEnabled(features::kAutoFetchOnNetErrorPage) &&
          offline_pages::IsOfflinePagesEnabled();
 }
@@ -275,22 +273,6 @@ void NetErrorHelper::SendCommand(
   }
 }
 
-void NetErrorHelper::GoBack() {
-  if (supervised_user_interface_)
-    supervised_user_interface_->GoBack();
-}
-
-void NetErrorHelper::RequestPermission(
-    base::OnceCallback<void(bool)> callback) {
-  if (supervised_user_interface_)
-    supervised_user_interface_->RequestPermission(std::move(callback));
-}
-
-void NetErrorHelper::Feedback() {
-  if (supervised_user_interface_)
-    supervised_user_interface_->Feedback();
-}
-
 void NetErrorHelper::DidStartNavigation(
     const GURL& url,
     base::Optional<blink::WebNavigationType> navigation_type) {
@@ -309,7 +291,6 @@ void NetErrorHelper::DidCommitProvisionalLoad(bool is_same_document_navigation,
   // it.
   weak_controller_delegate_factory_.InvalidateWeakPtrs();
   weak_security_interstitial_controller_delegate_factory_.InvalidateWeakPtrs();
-  weak_supervised_user_error_controller_delegate_factory_.InvalidateWeakPtrs();
 
   core_->OnCommitLoad(GetFrameType(render_frame()),
                       render_frame()->GetWebFrame()->GetDocument().Url());
@@ -436,14 +417,6 @@ void NetErrorHelper::EnablePageHelperFunctions() {
       weak_security_interstitial_controller_delegate_factory_.GetWeakPtr());
   NetErrorPageController::Install(
       render_frame(), weak_controller_delegate_factory_.GetWeakPtr());
-
-  if (!supervised_user_interface_) {
-    render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
-        &supervised_user_interface_);
-  }
-  SupervisedUserErrorPageController::Install(
-      render_frame(),
-      weak_supervised_user_error_controller_delegate_factory_.GetWeakPtr());
 }
 
 LocalizedError::PageState NetErrorHelper::UpdateErrorPage(

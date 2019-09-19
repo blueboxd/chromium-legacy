@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
@@ -36,6 +37,8 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
           ? tab_strip->selection_model().selected_indices()
           : std::vector<int>{index};
   int num_affected_tabs = affected_indices.size();
+  AddItemWithStringId(TabStripModel::CommandNewTabToRight,
+                      IDS_TAB_CXMENU_NEWTABTORIGHT);
   if (base::FeatureList::IsEnabled(features::kTabGroups)) {
     AddItemWithStringId(TabStripModel::CommandAddToNewGroup,
                         IDS_TAB_CXMENU_ADD_TAB_TO_NEW_GROUP);
@@ -56,9 +59,8 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
         break;
       }
     }
-
-    AddSeparator(ui::NORMAL_SEPARATOR);
   }
+  AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(TabStripModel::CommandReload, IDS_TAB_CXMENU_RELOAD);
   AddItemWithStringId(TabStripModel::CommandDuplicate,
                       IDS_TAB_CXMENU_DUPLICATE);
@@ -99,7 +101,7 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
                           IDS_CONTEXT_MENU_SEND_TAB_TO_SELF_SINGLE_TARGET,
                           (send_tab_to_self::GetSingleTargetDeviceName(
                               tab_strip->profile()))),
-                      *send_tab_to_self::GetImageSkia());
+                      kSendTabToSelfIcon);
 #endif
       send_tab_to_self::RecordSendTabToSelfClickResult(
           send_tab_to_self::kTabMenu,
@@ -119,7 +121,7 @@ void TabMenuModel::Build(TabStripModel* tab_strip, int index) {
       AddSubMenuWithStringIdAndIcon(TabStripModel::CommandSendTabToSelf,
                                     IDS_CONTEXT_MENU_SEND_TAB_TO_SELF,
                                     send_tab_to_self_sub_menu_model_.get(),
-                                    *send_tab_to_self::GetImageSkia());
+                                    kSendTabToSelfIcon);
 #endif
     }
   }

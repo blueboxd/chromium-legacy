@@ -15,7 +15,7 @@
 #include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 class GURL;
 
@@ -115,14 +115,14 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
   // removed for requests when a redirect to a non-Google URL occurs.
   using OnRedirectCallback =
       base::RepeatingCallback<void(const net::RedirectInfo& redirect_info,
-                                   const ResourceResponseHead& response_head,
+                                   const mojom::URLResponseHead& response_head,
                                    std::vector<std::string>* removed_headers)>;
 
   // Callback used when a response is received. It is safe to delete the
   // SimpleURLLoader during the callback.
   using OnResponseStartedCallback =
       base::OnceCallback<void(const GURL& final_url,
-                              const ResourceResponseHead& response_head)>;
+                              const mojom::URLResponseHead& response_head)>;
 
   // Callback used when an upload progress is reported. It is safe to
   // delete the SimpleURLLoader during the callback.
@@ -331,10 +331,10 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
   // only be called once the loader has informed the caller of completion.
   virtual int NetError() const = 0;
 
-  // The ResourceResponseHead for the request. Will be nullptr if ResponseInfo
+  // The URLResponseHead for the request. Will be nullptr if ResponseInfo
   // was never received. May only be called once the loader has informed the
   // caller of completion.
-  virtual const ResourceResponseHead* ResponseInfo() const = 0;
+  virtual const mojom::URLResponseHead* ResponseInfo() const = 0;
 
   // Returns the URL that this loader is processing. May only be called once the
   // loader has informed the caller of completion.

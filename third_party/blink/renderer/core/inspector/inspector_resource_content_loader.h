@@ -20,7 +20,7 @@ class LocalFrame;
 class Resource;
 
 class CORE_EXPORT InspectorResourceContentLoader final
-    : public GarbageCollectedFinalized<InspectorResourceContentLoader> {
+    : public GarbageCollected<InspectorResourceContentLoader> {
  public:
   explicit InspectorResourceContentLoader(LocalFrame*);
   ~InspectorResourceContentLoader();

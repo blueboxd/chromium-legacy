@@ -120,7 +120,7 @@ scoped_refptr<EncodedFormData> DataPipeFormData() {
   return body;
 }
 
-class NoopClient final : public GarbageCollectedFinalized<NoopClient>,
+class NoopClient final : public GarbageCollected<NoopClient>,
                          public BytesConsumer::Client {
   USING_GARBAGE_COLLECTED_MIXIN(NoopClient);
 

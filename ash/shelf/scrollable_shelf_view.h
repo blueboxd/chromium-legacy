@@ -66,6 +66,9 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   views::View* GetShelfContainerViewForTest();
 
   ShelfView* shelf_view() { return shelf_view_; }
+  ShelfContainerView* shelf_container_view() { return shelf_container_view_; }
+  ScrollArrowView* left_arrow() { return left_arrow_; }
+  ScrollArrowView* right_arrow() { return right_arrow_; }
 
   LayoutStrategy layout_strategy_for_test() const { return layout_strategy_; }
   gfx::Vector2dF scroll_offset_for_test() const { return scroll_offset_; }
@@ -110,8 +113,8 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // Creates the animation for scrolling shelf by |scroll_distance|.
   void StartShelfScrollAnimation(float scroll_distance);
 
-  // Update the layout strategy based on the available space.
-  void UpdateLayoutStrategy(int available_length);
+  // Updates the layout strategy based on the available space.
+  void UpdateLayoutStrategy();
 
   // Returns whether the view should adapt to RTL.
   bool ShouldAdaptToRTL() const;
@@ -206,6 +209,9 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
 
   // Returns the available space on the main axis for shelf icons.
   int GetSpaceForIcons() const;
+
+  // Returns whether there is available space to accommodate all shelf icons.
+  bool CanFitAllAppsWithoutScrolling() const;
 
   LayoutStrategy layout_strategy_ = kNotShowArrowButtons;
 

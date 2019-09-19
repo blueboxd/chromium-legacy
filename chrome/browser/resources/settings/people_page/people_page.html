@@ -181,10 +181,10 @@
                     aria-describedby="profile-name"></cr-icon-button>
 </if>
 <if expr="chromeos">
-                <cr-icon-button class="subpage-arrow"
+                <cr-icon-button class$="[[profileRowIconClass_]]"
                     id="profile-subpage-arrow"
                     hidden="[[!isProfileActionable_]]"
-                    aria-label="$i18n{changePictureTitle}"
+                    aria-label$="[[profileRowIconAriaLabel_]]"
                     aria-describedby="profile-name"></cr-icon-button>
 </if>
               </div>

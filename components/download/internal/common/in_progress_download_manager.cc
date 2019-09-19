@@ -211,7 +211,6 @@ InProgressDownloadManager::InProgressDownloadManager(
       download_start_observer_(nullptr),
       is_origin_secure_cb_(is_origin_secure_cb),
       url_security_policy_(url_security_policy),
-      use_empty_db_(in_progress_db_dir.empty()),
       connector_(connector) {
   Initialize(in_progress_db_dir, db_provider);
 }
@@ -345,7 +344,7 @@ void InProgressDownloadManager::Initialize(
     leveldb_proto::ProtoDatabaseProvider* db_provider) {
   std::unique_ptr<DownloadDB> download_db;
 
-  if (use_empty_db_) {
+  if (in_progress_db_dir.empty()) {
     download_db = std::make_unique<DownloadDB>();
   } else {
     download_db = std::make_unique<DownloadDBImpl>(
@@ -549,7 +548,7 @@ void InProgressDownloadManager::OnDBInitialized(
     bool success,
     std::unique_ptr<std::vector<DownloadDBEntry>> entries) {
 #if defined(OS_ANDROID)
-  if (!use_empty_db_ &&
+  if (entries->size() > 0 &&
       DownloadCollectionBridge::NeedToRetrieveDisplayNames()) {
     DownloadCollectionBridge::GetDisplayNamesCallback callback =
         base::BindOnce(&InProgressDownloadManager::OnDownloadNamesRetrieved,

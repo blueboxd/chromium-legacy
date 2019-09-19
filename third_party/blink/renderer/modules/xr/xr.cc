@@ -248,7 +248,11 @@ void XR::PendingSupportsSessionQuery::RejectWithDOMException(
   DCHECK_NE(exception_code, DOMExceptionCode::kSecurityError);
 
   if (exception_state) {
+    // The generated bindings will reject the returned promise for us.
+    // Detaching the resolver prevents it from thinking we abandoned
+    // the promise.
     exception_state->ThrowDOMException(exception_code, message);
+    resolver_->Detach();
   } else {
     resolver_->Reject(
         MakeGarbageCollected<DOMException>(exception_code, message));
@@ -259,7 +263,11 @@ void XR::PendingSupportsSessionQuery::RejectWithSecurityError(
     const String& sanitized_message,
     ExceptionState* exception_state) {
   if (exception_state) {
+    // The generated V8 bindings will reject the returned promise for us.
+    // Detaching the resolver prevents it from thinking we abandoned
+    // the promise.
     exception_state->ThrowSecurityError(sanitized_message);
+    resolver_->Detach();
   } else {
     resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kSecurityError, sanitized_message));
@@ -270,7 +278,11 @@ void XR::PendingSupportsSessionQuery::RejectWithTypeError(
     const String& message,
     ExceptionState* exception_state) {
   if (exception_state) {
+    // The generated bindings will reject the returned promise for us.
+    // Detaching the resolver prevents it from thinking we abandoned
+    // the promise.
     exception_state->ThrowTypeError(message);
+    resolver_->Detach();
   } else {
     resolver_->Reject(V8ThrowException::CreateTypeError(
         resolver_->GetScriptState()->GetIsolate(), message));
@@ -306,6 +318,7 @@ void XR::PendingRequestSessionQuery::RejectWithDOMException(
 
   if (exception_state) {
     exception_state->ThrowDOMException(exception_code, message);
+    resolver_->Detach();
   } else {
     resolver_->Reject(
         MakeGarbageCollected<DOMException>(exception_code, message));
@@ -319,6 +332,7 @@ void XR::PendingRequestSessionQuery::RejectWithSecurityError(
     ExceptionState* exception_state) {
   if (exception_state) {
     exception_state->ThrowSecurityError(sanitized_message);
+    resolver_->Detach();
   } else {
     resolver_->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kSecurityError, sanitized_message));
@@ -332,6 +346,7 @@ void XR::PendingRequestSessionQuery::RejectWithTypeError(
     ExceptionState* exception_state) {
   if (exception_state) {
     exception_state->ThrowTypeError(message);
+    resolver_->Detach();
   } else {
     resolver_->Reject(V8ThrowException::CreateTypeError(
         GetScriptState()->GetIsolate(), message));
@@ -470,17 +485,17 @@ void XR::ExitPresent() {
 ScriptPromise XR::supportsSession(ScriptState* script_state,
                                   const String& mode,
                                   ExceptionState& exception_state) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
-
   LocalFrame* frame = GetFrame();
   Document* doc = frame ? frame->GetDocument() : nullptr;
   if (!doc) {
     // Reject if the frame or document is inaccessible.
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kNavigatorDetachedError);
-    return promise;
+    return ScriptPromise();  // Will be rejected by generated bindings
   }
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
 
   XRSession::SessionMode session_mode = stringToSessionMode(mode);
   PendingSupportsSessionQuery* query =
@@ -640,9 +655,6 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
                                  ExceptionState& exception_state) {
   // TODO(https://crbug.com/968622): Make sure we don't forget to call
   // metrics-related methods when the promise gets resolved/rejected.
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
-
   LocalFrame* frame = GetFrame();
   Document* doc = frame ? frame->GetDocument() : nullptr;
   if (!doc) {
@@ -652,7 +664,7 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
     // Document to get UkmRecorder anyway).
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kNavigatorDetachedError);
-    return promise;
+    return ScriptPromise();  // Will be rejected by generated bindings
   }
 
   XRSession::SessionMode session_mode = stringToSessionMode(mode);
@@ -696,6 +708,9 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
           device::mojom::XRSessionFeature::REF_SPACE_VIEWER);
       break;
   }
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
 
   PendingRequestSessionQuery* query =
       MakeGarbageCollected<PendingRequestSessionQuery>(

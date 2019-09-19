@@ -15,7 +15,7 @@ namespace {
 class TestLongTaskObserver :
     // This has to be garbage collected since LongTaskObserver uses
     // GarbageCollectedMixin.
-    public GarbageCollectedFinalized<TestLongTaskObserver>,
+    public GarbageCollected<TestLongTaskObserver>,
     public LongTaskObserver {
   USING_GARBAGE_COLLECTED_MIXIN(TestLongTaskObserver);
 

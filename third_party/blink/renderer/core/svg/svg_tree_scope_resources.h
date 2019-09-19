@@ -19,7 +19,7 @@ class TreeScope;
 // TreeScope. It's per-TreeScope because that matches the lookup scope of an
 // element's id (which is used to identify a resource.)
 class SVGTreeScopeResources final
-    : public GarbageCollectedFinalized<SVGTreeScopeResources> {
+    : public GarbageCollected<SVGTreeScopeResources> {
  public:
   explicit SVGTreeScopeResources(TreeScope*);
   ~SVGTreeScopeResources();

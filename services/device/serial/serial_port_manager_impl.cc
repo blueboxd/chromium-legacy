@@ -42,7 +42,7 @@ void SerialPortManagerImpl::GetDevices(GetDevicesCallback callback) {
 void SerialPortManagerImpl::GetPort(
     const base::UnguessableToken& token,
     mojom::SerialPortRequest request,
-    mojom::SerialPortConnectionWatcherPtr watcher) {
+    mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher) {
   if (!enumerator_)
     enumerator_ = SerialDeviceEnumerator::Create();
   base::Optional<base::FilePath> path = enumerator_->GetPathFromToken(token);
@@ -50,7 +50,7 @@ void SerialPortManagerImpl::GetPort(
     io_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&SerialPortImpl::Create, *path, std::move(request),
-                       watcher.PassInterface(), ui_task_runner_));
+                       std::move(watcher), ui_task_runner_));
   }
 }
 

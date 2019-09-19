@@ -34,7 +34,7 @@ class MockPlatformChromeClient : public EmptyChromeClient {
   bool is_popup_;
 };
 
-class MockScrollableArea : public GarbageCollectedFinalized<MockScrollableArea>,
+class MockScrollableArea : public GarbageCollected<MockScrollableArea>,
                            public ScrollableArea {
   USING_GARBAGE_COLLECTED_MIXIN(MockScrollableArea);
 

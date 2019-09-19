@@ -25,6 +25,8 @@ struct SwapTimings {
   // TODO(brianderson): Differentiate the concepts without introducing
   // dicontinuities in associated UMA data.
   base::TimeTicks swap_end;
+
+  bool is_null() const { return swap_start.is_null() && swap_end.is_null(); }
 };
 
 // Sent by ImageTransportSurfaces to their clients in response to a SwapBuffers.

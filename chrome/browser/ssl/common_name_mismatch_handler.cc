@@ -19,6 +19,7 @@
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 CommonNameMismatchHandler::CommonNameMismatchHandler(
     const GURL& request_url,
@@ -125,7 +126,7 @@ void CommonNameMismatchHandler::Cancel() {
 
 void CommonNameMismatchHandler::OnSimpleLoaderHandler(
     const GURL& final_url,
-    const network::ResourceResponseHead* head) {
+    const network::mojom::URLResponseHead* head) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsCheckingSuggestedUrl());
   DCHECK(!check_url_callback_.is_null());
@@ -149,14 +150,14 @@ void CommonNameMismatchHandler::OnSimpleLoaderHandler(
 
 void CommonNameMismatchHandler::OnSimpleLoaderRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& response_head,
+    const network::mojom::URLResponseHead& response_head,
     std::vector<std::string>* to_be_removed_headers) {
   OnSimpleLoaderHandler(redirect_info.new_url, &response_head);
 }
 
 void CommonNameMismatchHandler::OnSimpleLoaderResponseStarted(
     const GURL& final_url,
-    const network::ResourceResponseHead& response_head) {
+    const network::mojom::URLResponseHead& response_head) {
   OnSimpleLoaderHandler(final_url, &response_head);
 }
 

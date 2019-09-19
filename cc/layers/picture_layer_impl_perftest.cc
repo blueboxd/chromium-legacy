@@ -8,7 +8,7 @@
 #include "base/timer/lap_timer.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_raster_source.h"
-#include "cc/test/layer_test_common.h"
+#include "cc/test/layer_tree_impl_test_base.h"
 #include "cc/tiles/tiling_set_raster_queue_all.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,7 +34,7 @@ void AddTiling(float scale,
       tiling_tiles.begin(), tiling_tiles.end(), std::back_inserter(*all_tiles));
 }
 
-class PictureLayerImplPerfTest : public LayerTestCommon::LayerImplTest,
+class PictureLayerImplPerfTest : public LayerTreeImplTestBase,
                                  public testing::Test {
  public:
   PictureLayerImplPerfTest()
@@ -60,7 +60,7 @@ class PictureLayerImplPerfTest : public LayerTestCommon::LayerImplTest,
     SetupRootProperties(pending_layer_);
     pending_tree->SetRootLayerForTesting(std::move(pending_layer));
 
-    LayerTreeHostCommon::PrepareForUpdateDrawPropertiesForTesting(pending_tree);
+    PrepareForUpdateDrawProperties(pending_tree);
     // Don't update draw properties because the tilings will conflict with the
     // tilings that will be added in the tests.
   }

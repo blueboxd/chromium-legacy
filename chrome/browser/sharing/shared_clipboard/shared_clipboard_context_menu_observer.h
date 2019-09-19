@@ -15,10 +15,6 @@
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
 #include "ui/base/models/simple_menu_model.h"
 
-namespace gfx {
-class ImageSkia;
-}  // namespace gfx
-
 class RenderViewContextMenuProxy;
 class SharedClipboardUiController;
 
@@ -60,8 +56,6 @@ class SharedClipboardContextMenuObserver
   void BuildSubMenu();
 
   void SendSharedClipboardMessage(int chosen_device_index);
-
-  gfx::ImageSkia GetContextMenuIcon() const;
 
   RenderViewContextMenuProxy* proxy_ = nullptr;
 

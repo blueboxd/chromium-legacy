@@ -196,10 +196,7 @@ void PasswordUIViewAndroid::HandleShowPasswordEntryEditingView(
     const JavaParamRef<jobject>& context,
     int index) {
   PasswordEditingBridge::LaunchPasswordEntryEditor(
-      env, context,
-      PasswordStoreFactory::GetForProfile(GetProfile(),
-                                          ServiceAccessType::EXPLICIT_ACCESS)
-          .get(),
+      env, context, GetProfile(),
       *password_manager_presenter_.GetPassword(index));
 }
 

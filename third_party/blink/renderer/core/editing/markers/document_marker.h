@@ -36,8 +36,7 @@ namespace blink {
 // A range of a node within a document that is "marked", such as the range of a
 // misspelled word. It optionally includes a description that could be displayed
 // in the user interface.
-class CORE_EXPORT DocumentMarker
-    : public GarbageCollectedFinalized<DocumentMarker> {
+class CORE_EXPORT DocumentMarker : public GarbageCollected<DocumentMarker> {
  public:
   enum MarkerTypeIndex {
     kSpellingMarkerIndex = 0,

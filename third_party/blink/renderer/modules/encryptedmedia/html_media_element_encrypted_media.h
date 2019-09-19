@@ -27,7 +27,7 @@ class ScriptState;
 class WebContentDecryptionModule;
 
 class MODULES_EXPORT HTMLMediaElementEncryptedMedia final
-    : public GarbageCollectedFinalized<HTMLMediaElementEncryptedMedia>,
+    : public GarbageCollected<HTMLMediaElementEncryptedMedia>,
       public Supplement<HTMLMediaElement>,
       public WebMediaPlayerEncryptedMediaClient {
   USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElementEncryptedMedia);

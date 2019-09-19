@@ -25,9 +25,8 @@ class ScriptState;
 // connecting and communicating with the Mojo notification service.
 //
 // TODO(peter): Make the NotificationManager responsible for resource loading.
-class NotificationManager final
-    : public GarbageCollectedFinalized<NotificationManager>,
-      public Supplement<ExecutionContext> {
+class NotificationManager final : public GarbageCollected<NotificationManager>,
+                                  public Supplement<ExecutionContext> {
   USING_GARBAGE_COLLECTED_MIXIN(NotificationManager);
 
  public:

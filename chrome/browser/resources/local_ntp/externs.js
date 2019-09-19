@@ -33,7 +33,6 @@ let MostVisitedData;
  *            isGooglePage: boolean,
  *            realboxEnabled: boolean,
  *            richerPicker: boolean,
- *            showPlaceholderOnFocus: boolean,
  *            translatedStrings: Array<string>}}
  */
 let configData;

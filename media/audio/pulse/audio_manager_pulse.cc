@@ -31,6 +31,7 @@ constexpr int kMinimumOutputBufferSize = 512;
 constexpr int kMaximumOutputBufferSize = 8192;
 constexpr int kDefaultInputBufferSize = 1024;
 constexpr int kDefaultSampleRate = 48000;
+constexpr int kDefaultChannelCount = 2;
 
 AudioManagerPulse::AudioManagerPulse(std::unique_ptr<AudioThread> audio_thread,
                                      AudioLogFactory* audio_log_factory,
@@ -39,9 +40,9 @@ AudioManagerPulse::AudioManagerPulse(std::unique_ptr<AudioThread> audio_thread,
     : AudioManagerBase(std::move(audio_thread), audio_log_factory),
       input_mainloop_(pa_mainloop),
       input_context_(pa_context),
-      devices_(NULL),
-      native_input_sample_rate_(0),
-      native_channel_count_(0),
+      devices_(nullptr),
+      native_input_sample_rate_(kDefaultSampleRate),
+      native_channel_count_(kDefaultChannelCount),
       default_source_is_monitor_(false) {
   DCHECK(input_mainloop_);
   DCHECK(input_context_);
@@ -84,7 +85,7 @@ void AudioManagerPulse::GetAudioDeviceNames(
     operation = pa_context_get_sink_info_list(
         input_context_, OutputDevicesInfoCallback, this);
   }
-  WaitForOperationCompletion(input_mainloop_, operation);
+  WaitForOperationCompletion(input_mainloop_, operation, input_context_);
 
   // Prepend the default device if the list is not empty.
   if (!device_names->empty())
@@ -111,7 +112,7 @@ AudioParameters AudioManagerPulse::GetInputStreamParameters(
   auto* operation = pa_context_get_source_info_by_name(
       input_context_, default_source_name_.c_str(), DefaultSourceInfoCallback,
       this);
-  WaitForOperationCompletion(input_mainloop_, operation);
+  WaitForOperationCompletion(input_mainloop_, operation, input_context_);
 
   // We don't want to accidentally open a monitor device, so return invalid
   // parameters for those.
@@ -252,18 +253,9 @@ void AudioManagerPulse::UpdateNativeAudioHardwareInfo() {
   DCHECK(input_mainloop_);
   DCHECK(input_context_);
   AutoPulseLock auto_lock(input_mainloop_);
-
-  // Ensure the context hasn't gone bad after creation.
-  pa_context_state_t context_state = pa_context_get_state(input_context_);
-  if (!PA_CONTEXT_IS_GOOD(context_state)) {
-    LOG(ERROR) << "Can't retrieve hardware parameters. pa_context is bad: "
-               << context_state;
-    return;
-  }
-
   pa_operation* operation = pa_context_get_server_info(
       input_context_, AudioHardwareInfoCallback, this);
-  WaitForOperationCompletion(input_mainloop_, operation);
+  WaitForOperationCompletion(input_mainloop_, operation, input_context_);
 
   // Be careful about adding OS calls to this method.
   // GetPreferredOutputStreamParameters() calls this method on a critical path.

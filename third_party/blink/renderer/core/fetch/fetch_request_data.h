@@ -30,7 +30,7 @@ class SecurityOrigin;
 class ScriptState;
 
 class CORE_EXPORT FetchRequestData final
-    : public GarbageCollectedFinalized<FetchRequestData> {
+    : public GarbageCollected<FetchRequestData> {
  public:
   enum Tainting { kBasicTainting, kCorsTainting, kOpaqueTainting };
   enum class ForServiceWorkerFetchEvent { kFalse, kTrue };

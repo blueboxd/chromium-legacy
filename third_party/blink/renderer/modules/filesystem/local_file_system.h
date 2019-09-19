@@ -52,7 +52,7 @@ class FileSystemCallbacks;
 class KURL;
 class ResolveURICallbacks;
 
-class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
+class LocalFileSystem final : public GarbageCollected<LocalFileSystem>,
                               public Supplement<LocalFrame>,
                               public Supplement<WorkerClients>,
                               public NameClient {

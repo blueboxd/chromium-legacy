@@ -203,6 +203,10 @@ void AvatarToolbarButton::UpdateText() {
       text = l10n_util::GetStringUTF16(IDS_AVATAR_BUTTON_SYNC_PAUSED);
       break;
     case State::kGuestSession:
+      if (base::FeatureList::IsEnabled(features::kAnimatedAvatarButton)) {
+        text = l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME);
+      }
+      break;
     case State::kGenericProfile:
     case State::kNormal:
       // Default treatment -- no text, no color.
@@ -391,6 +395,10 @@ gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon(
     case State::kIncognitoProfile:
       return gfx::CreateVectorIcon(kIncognitoIcon, icon_size, icon_color);
     case State::kGuestSession:
+      if (base::FeatureList::IsEnabled(features::kAnimatedAvatarButton)) {
+        return gfx::CreateVectorIcon(kUserAccountAvatarIcon, icon_size,
+                                     icon_color);
+      }
       return gfx::CreateVectorIcon(kUserMenuGuestIcon, icon_size, icon_color);
     case State::kGenericProfile:
       return gfx::CreateVectorIcon(kUserAccountAvatarIcon, icon_size,

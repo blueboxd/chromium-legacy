@@ -723,7 +723,15 @@ FileManagerPrivateInternalImportCrostiniImageFunction::Run() {
   crostini::CrostiniExportImport::GetForProfile(profile)->ImportContainer(
       crostini::ContainerId{crostini::kCrostiniDefaultVmName,
                             crostini::kCrostiniDefaultContainerName},
-      path, base::DoNothing());
+      path,
+      base::BindOnce(
+          [](base::FilePath path, crostini::CrostiniResult result) {
+            if (result != crostini::CrostiniResult::SUCCESS) {
+              LOG(ERROR) << "Error importing crostini image " << path.value()
+                         << ": " << (int)result;
+            }
+          },
+          path));
   return RespondNow(NoArguments());
 }
 

@@ -216,6 +216,10 @@
 #endif  // BUILDFLAG(HAS_SPELLCHECK_PANEL)
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "chrome/renderer/supervised_user/supervised_user_error_page_controller_delegate_impl.h"
+#endif
+
 using autofill::AutofillAgent;
 using autofill::PasswordAutofillAgent;
 using autofill::PasswordGenerationAgent;
@@ -501,6 +505,10 @@ void ChromeContentRendererClient::RenderFrameCreated(
 #endif
 
   new NetErrorHelper(render_frame);
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  new SupervisedUserErrorPageControllerDelegateImpl(render_frame);
+#endif
 
   if (!render_frame->IsMainFrame()) {
     auto* prerender_helper = prerender::PrerenderHelper::Get(
@@ -1176,6 +1184,11 @@ void ChromeContentRendererClient::PrepareErrorPage(
           error_page::Error::NetError(web_error.url(), web_error.reason(),
                                       web_error.has_copy_in_cache()),
           http_method == "POST", error_html);
+
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  SupervisedUserErrorPageControllerDelegateImpl::Get(render_frame)
+      ->PrepareForErrorPage();
+#endif
 }
 
 void ChromeContentRendererClient::PrepareErrorPageForHttpStatusError(

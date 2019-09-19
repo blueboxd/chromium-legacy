@@ -29,9 +29,8 @@ class InspectorTaskRunner;
 class WorkerThread;
 struct WorkerDevToolsParams;
 
-class CORE_EXPORT DevToolsAgent
-    : public GarbageCollectedFinalized<DevToolsAgent>,
-      public mojom::blink::DevToolsAgent {
+class CORE_EXPORT DevToolsAgent : public GarbageCollected<DevToolsAgent>,
+                                  public mojom::blink::DevToolsAgent {
  public:
   class Client {
    public:

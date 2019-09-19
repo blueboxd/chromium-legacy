@@ -409,12 +409,6 @@ public class ChromePreferenceManager {
     public static final String IMMERSIVE_UI_MODE_ENABLED = "immersive_ui_mode_enabled";
 
     /**
-     * The total number of browsing sessions in touchless mode.
-     */
-    public static final String TOUCHLESS_BROWSING_SESSION_COUNT =
-            "touchless_browsing_session_count";
-
-    /**
      * Key to cache whether offline indicator v2 (persistent offline indicator) is enabled.
      */
     public static final String OFFLINE_INDICATOR_V2_ENABLED_KEY = "offline_indicator_v2_enabled";

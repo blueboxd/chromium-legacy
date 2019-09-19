@@ -43,7 +43,7 @@ struct WebMediaConfiguration;
 // i.e. the Main Render thread. (Note that a BindToCurrentLoop is used to
 // guarantee this, since VideoTrackRecorder sends back frames on IO thread.)
 class MODULES_EXPORT MediaRecorderHandler final
-    : public GarbageCollectedFinalized<MediaRecorderHandler> {
+    : public GarbageCollected<MediaRecorderHandler> {
  public:
   static MediaRecorderHandler* Create(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);

@@ -16,10 +16,6 @@ COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::Feature kWebAuthUseNativeWinApi;
 #endif  // defined(OS_WIN)
 
-// Enable support for resident keys.
-COMPONENT_EXPORT(DEVICE_FIDO)
-extern const base::Feature kWebAuthResidentKeys;
-
 // Enable biometric enrollment in the security keys settings UI.
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const base::Feature kWebAuthBiometricEnrollment;

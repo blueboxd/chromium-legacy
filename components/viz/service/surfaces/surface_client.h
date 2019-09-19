@@ -18,6 +18,7 @@ class TimeTicks;
 namespace gfx {
 struct PresentationFeedback;
 class Rect;
+struct SwapTimings;
 }  // namespace gfx
 
 namespace viz {
@@ -42,10 +43,6 @@ class VIZ_SERVICE_EXPORT SurfaceClient {
 
   // Called when a |surface| is about to be drawn.
   virtual void OnSurfaceWillDraw(Surface* surface) = 0;
-
-  // Called when a |surface| has been successfully drawn.
-  virtual void OnSurfaceWasDrawn(uint32_t frame_token,
-                                 base::TimeTicks draw_start_timestamp) = 0;
 
   // Increments the reference count on resources specified by |resources|.
   virtual void RefResources(
@@ -80,6 +77,8 @@ class VIZ_SERVICE_EXPORT SurfaceClient {
   // Notifies the client that a frame with |token| has been presented.
   virtual void OnSurfacePresented(
       uint32_t frame_token,
+      base::TimeTicks draw_start_timestamp,
+      const gfx::SwapTimings& swap_timings,
       const gfx::PresentationFeedback& feedback) = 0;
 
   // This is called when |surface| or one of its descendents is determined to be

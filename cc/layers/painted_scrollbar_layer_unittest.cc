@@ -8,8 +8,8 @@
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_scrollbar.h"
+#include "cc/test/layer_test_common.h"
 #include "cc/test/test_task_graph_runner.h"
-#include "cc/trees/layer_tree_host_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using ::testing::Mock;
@@ -44,10 +44,7 @@ TEST(PaintedScrollbarLayerTest, NeedsPaint) {
   scrollbar_layer->SetBounds(gfx::Size(100, 100));
 
   layer_tree_host->SetRootLayer(scrollbar_layer);
-
-  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      scrollbar_layer.get(), gfx::Rect(scrollbar_layer->bounds()));
-  LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
+  UpdateDrawProperties(layer_tree_host.get());
 
   EXPECT_EQ(scrollbar_layer->layer_tree_host(), layer_tree_host.get());
 

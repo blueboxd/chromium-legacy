@@ -28,8 +28,6 @@ import org.chromium.chrome.browser.ntp.RecentTabsPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.touchless.TouchlessDelegate;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
 
@@ -54,10 +52,6 @@ public class NativePageFactory {
                 return new IncognitoNewTabPage(activity, new TabShim(tab));
             }
 
-            if (FeatureUtilities.isNoTouchModeEnabled()) {
-                return TouchlessDelegate.createTouchlessNewTabPage(activity, new TabShim(tab));
-            }
-
             if (ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS)) {
                 return new FeedNewTabPage(activity, new TabShim(tab), tabModelSelector,
                         activityTabProvider, activityLifecycleDispatcher);
@@ -76,10 +70,6 @@ public class NativePageFactory {
         }
 
         protected NativePage buildExploreSitesPage(ChromeActivity activity, Tab tab) {
-            if (FeatureUtilities.isNoTouchModeEnabled()) {
-                return TouchlessDelegate.createTouchlessExploreSitesPage(
-                        activity, new TabShim(tab));
-            }
             return new ExploreSitesPage(activity, new TabShim(tab));
         }
 

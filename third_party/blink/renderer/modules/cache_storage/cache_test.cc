@@ -51,7 +51,7 @@ const char kNotImplementedString[] =
     "NotSupportedError: Method is not implemented.";
 
 class ScopedFetcherForTests final
-    : public GarbageCollectedFinalized<ScopedFetcherForTests>,
+    : public GarbageCollected<ScopedFetcherForTests>,
       public GlobalFetch::ScopedFetcher {
   USING_GARBAGE_COLLECTED_MIXIN(ScopedFetcherForTests);
 

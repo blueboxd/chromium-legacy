@@ -485,8 +485,10 @@ void WindowOcclusionTracker::SetWindowAndDescendantsAreOccluded(
     Window* window,
     bool is_occluded,
     bool is_parent_visible) {
-  const bool is_visible = WindowIsForcedVisible(window) ||
-                          (is_parent_visible && window->layer()->visible());
+  const bool force_visible = WindowIsForcedVisible(window);
+  const bool is_visible =
+      force_visible || (is_parent_visible && window->layer()->visible());
+  is_occluded = is_occluded && !force_visible;
   SetOccluded(window, is_occluded, is_visible, SkRegion());
   for (Window* child_window : window->children())
     SetWindowAndDescendantsAreOccluded(child_window, is_occluded, is_visible);

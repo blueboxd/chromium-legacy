@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/sequence_bound.h"
 #include "gpu/config/gpu_preferences.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/android/codec_buffer_wait_coordinator.h"
@@ -18,6 +19,7 @@
 #include "media/gpu/android/maybe_render_early_manager.h"
 #include "media/gpu/android/shared_image_video_provider.h"
 #include "media/gpu/android/video_frame_factory.h"
+#include "media/gpu/android/ycbcr_helper.h"
 #include "media/gpu/media_gpu_export.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -44,7 +46,8 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
       scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
       const gpu::GpuPreferences& gpu_preferences,
       std::unique_ptr<SharedImageVideoProvider> image_provider,
-      std::unique_ptr<MaybeRenderEarlyManager> mre_manager);
+      std::unique_ptr<MaybeRenderEarlyManager> mre_manager,
+      base::SequenceBound<YCbCrHelper> ycbcr_helper);
   ~VideoFrameFactoryImpl() override;
 
   void Initialize(OverlayMode overlay_mode, InitCb init_cb) override;
@@ -76,7 +79,7 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
   //
   // Second, this way we don't care about the lifetime of |this|; |output_cb|
   // can worry about it.
-  static void OnImageReady(
+  static void CreateVideoFrame_OnImageReady(
       base::WeakPtr<VideoFrameFactoryImpl> thiz,
       OnceOutputCb output_cb,
       base::TimeDelta timestamp,
@@ -89,6 +92,23 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
       OverlayMode overlay_mode,
       bool enable_threaded_texture_mailboxes,
       scoped_refptr<base::SequencedTaskRunner> gpu_task_runner,
+      SharedImageVideoProvider::ImageRecord record);
+
+  // Callback to receive YCbCrInfo from |provider_| while creating a VideoFrame.
+  void CreateVideoFrame_OnYCbCrInfo(base::OnceClosure completion_cb,
+                                    YCbCrHelper::OptionalInfo ycbcr_info);
+
+  // Really create the VideoFrame, once we've tried to get the YCbCrInfo if it's
+  // needed for it.
+  void CreateVideoFrame_Finish(
+      OnceOutputCb output_cb,
+      base::TimeDelta timestamp,
+      gfx::Size coded_size,
+      gfx::Size natural_size,
+      scoped_refptr<CodecBufferWaitCoordinator> codec_buffer_wait_coordinator,
+      VideoPixelFormat pixel_format,
+      OverlayMode overlay_mode,
+      bool enable_threaded_texture_mailboxes,
       SharedImageVideoProvider::ImageRecord record);
 
   MaybeRenderEarlyManager* mre_manager() const { return mre_manager_.get(); }
@@ -110,6 +130,12 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
   scoped_refptr<CodecImageGroup> image_group_;
 
   std::unique_ptr<MaybeRenderEarlyManager> mre_manager_;
+
+  // Sampler conversion information which is used in vulkan context.
+  YCbCrHelper::OptionalInfo ycbcr_info_;
+
+  // Optional helper to get the Vulkan YCbCrInfo.
+  base::SequenceBound<YCbCrHelper> ycbcr_helper_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

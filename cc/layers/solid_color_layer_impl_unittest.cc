@@ -11,8 +11,7 @@
 #include "cc/animation/animation_host.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/solid_color_layer.h"
-#include "cc/test/layer_test_common.h"
-#include "cc/trees/layer_tree_host_common.h"
+#include "cc/test/layer_tree_impl_test_base.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,7 +19,7 @@
 namespace cc {
 namespace {
 
-class SolidColorLayerImplTest : public LayerTestCommon::LayerImplTest,
+class SolidColorLayerImplTest : public LayerTreeImplTestBase,
                                 public ::testing::Test {};
 
 TEST_F(SolidColorLayerImplTest, VerifyTilingCompleteAndNoOverlap) {
@@ -28,6 +27,7 @@ TEST_F(SolidColorLayerImplTest, VerifyTilingCompleteAndNoOverlap) {
 
   gfx::Size layer_size = gfx::Size(800, 600);
   gfx::Rect visible_layer_rect = gfx::Rect(layer_size);
+  root_layer()->SetBounds(layer_size);
 
   auto* layer = AddLayer<SolidColorLayerImpl>();
   layer->SetBounds(layer_size);
@@ -35,12 +35,11 @@ TEST_F(SolidColorLayerImplTest, VerifyTilingCompleteAndNoOverlap) {
   layer->SetBackgroundColor(SK_ColorRED);
   CopyProperties(root_layer(), layer);
   CreateEffectNode(layer).render_surface_reason = RenderSurfaceReason::kTest;
-  UpdateDrawProperties(host_impl()->active_tree());
+  UpdateActiveTreeDrawProperties();
   AppendQuadsData data;
   layer->AppendQuads(render_pass.get(), &data);
 
-  LayerTestCommon::VerifyQuadsExactlyCoverRect(render_pass->quad_list,
-                                               visible_layer_rect);
+  VerifyQuadsExactlyCoverRect(render_pass->quad_list, visible_layer_rect);
 }
 
 TEST_F(SolidColorLayerImplTest, VerifyCorrectBackgroundColorInQuad) {
@@ -48,6 +47,7 @@ TEST_F(SolidColorLayerImplTest, VerifyCorrectBackgroundColorInQuad) {
   std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
   gfx::Size layer_size = gfx::Size(100, 100);
   gfx::Rect visible_layer_rect = gfx::Rect(layer_size);
+  root_layer()->SetBounds(layer_size);
 
   auto* layer = AddLayer<SolidColorLayerImpl>();
   layer->SetBounds(layer_size);
@@ -55,7 +55,7 @@ TEST_F(SolidColorLayerImplTest, VerifyCorrectBackgroundColorInQuad) {
   layer->SetBackgroundColor(test_color);
   CopyProperties(root_layer(), layer);
   CreateEffectNode(layer).render_surface_reason = RenderSurfaceReason::kTest;
-  UpdateDrawProperties(host_impl()->active_tree());
+  UpdateActiveTreeDrawProperties();
 
   EXPECT_EQ(visible_layer_rect, layer->draw_properties().visible_layer_rect);
 
@@ -81,7 +81,7 @@ TEST_F(SolidColorLayerImplTest, VerifyCorrectOpacityInQuad) {
   CopyProperties(root_layer(), layer);
   auto& effect_node = CreateEffectNode(layer);
   effect_node.opacity = opacity;
-  UpdateDrawProperties(host_impl()->active_tree());
+  UpdateActiveTreeDrawProperties();
 
   EXPECT_EQ(opacity, layer->draw_properties().opacity);
 
@@ -108,7 +108,7 @@ TEST_F(SolidColorLayerImplTest, VerifyCorrectRenderSurfaceOpacityInQuad) {
   auto& effect_node = CreateEffectNode(layer);
   effect_node.render_surface_reason = RenderSurfaceReason::kTest;
   effect_node.opacity = opacity;
-  UpdateDrawProperties(host_impl()->active_tree());
+  UpdateActiveTreeDrawProperties();
 
   // Opacity is applied on render surface, so the layer doesn't have opacity.
   EXPECT_EQ(1.f, layer->draw_properties().opacity);
@@ -135,7 +135,7 @@ TEST_F(SolidColorLayerImplTest, VerifyEliminateTransparentAlpha) {
   layer->SetBackgroundColor(test_color);
   CopyProperties(root_layer(), layer);
   CreateEffectNode(layer).render_surface_reason = RenderSurfaceReason::kTest;
-  UpdateDrawProperties(host_impl()->active_tree());
+  UpdateActiveTreeDrawProperties();
 
   AppendQuadsData data;
   layer->AppendQuads(render_pass.get(), &data);
@@ -155,7 +155,7 @@ TEST_F(SolidColorLayerImplTest, VerifyEliminateTransparentOpacity) {
   auto& effect_node = CreateEffectNode(layer);
   effect_node.render_surface_reason = RenderSurfaceReason::kTest;
   effect_node.opacity = 0.f;
-  UpdateDrawProperties(host_impl()->active_tree());
+  UpdateActiveTreeDrawProperties();
 
   AppendQuadsData data;
   layer->AppendQuads(render_pass.get(), &data);
@@ -179,9 +179,7 @@ TEST_F(SolidColorLayerImplTest, VerifyNeedsBlending) {
       &client, &task_graph_runner, animation_host.get());
   host->SetRootLayer(root);
 
-  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
-      root.get(), gfx::Rect(500, 500));
-  LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
+  UpdateDrawProperties(host.get());
 
   EXPECT_FALSE(layer->contents_opaque());
   layer->SetBackgroundColor(SkColorSetARGB(255, 10, 20, 30));
@@ -255,8 +253,7 @@ TEST_F(SolidColorLayerImplTest, Occlusion) {
     gfx::Rect occluded;
     AppendQuadsWithOcclusion(solid_color_layer_impl, occluded);
 
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(quad_list(),
-                                                 gfx::Rect(layer_size));
+    VerifyQuadsExactlyCoverRect(quad_list(), gfx::Rect(layer_size));
     EXPECT_EQ(1u, quad_list().size());
   }
 
@@ -265,7 +262,7 @@ TEST_F(SolidColorLayerImplTest, Occlusion) {
     gfx::Rect occluded(solid_color_layer_impl->visible_layer_rect());
     AppendQuadsWithOcclusion(solid_color_layer_impl, occluded);
 
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(quad_list(), gfx::Rect());
+    VerifyQuadsExactlyCoverRect(quad_list(), gfx::Rect());
     EXPECT_EQ(quad_list().size(), 0u);
   }
 
@@ -275,8 +272,7 @@ TEST_F(SolidColorLayerImplTest, Occlusion) {
     AppendQuadsWithOcclusion(solid_color_layer_impl, occluded);
 
     size_t partially_occluded_count = 0;
-    LayerTestCommon::VerifyQuadsAreOccluded(quad_list(), occluded,
-                                            &partially_occluded_count);
+    VerifyQuadsAreOccluded(quad_list(), occluded, &partially_occluded_count);
     // 4 quads are completely occluded, 8 are partially occluded.
     EXPECT_EQ(1u, quad_list().size());
     EXPECT_EQ(1u, partially_occluded_count);

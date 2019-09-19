@@ -26,7 +26,7 @@ class PaintTiming;
 // seconds), and computes the layout-based First Meaningful Paint.
 // See https://goo.gl/vpaxv6 and http://goo.gl/TEiMi4 for more details.
 class CORE_EXPORT FirstMeaningfulPaintDetector
-    : public GarbageCollectedFinalized<FirstMeaningfulPaintDetector> {
+    : public GarbageCollected<FirstMeaningfulPaintDetector> {
  public:
   static FirstMeaningfulPaintDetector& From(Document&);
 

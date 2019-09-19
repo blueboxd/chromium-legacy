@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.preferences.website;
 
-import android.app.Activity;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.support.v7.preference.Preference;
@@ -19,26 +18,21 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ContentSettingsType;
-import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -116,7 +110,6 @@ public class SiteSettingsPreferencesTest {
      */
     @Test
     @SmallTest
-    @Restriction({ChromeRestriction.RESTRICTION_TYPE_REQUIRES_TOUCH})
     @Feature({"Preferences"})
     @DisabledTest(message = "Modals are now enabled and test needs to be reworked crbug.com/935900")
     public void testSetAllowLocationEnabled() throws Exception {
@@ -138,7 +131,6 @@ public class SiteSettingsPreferencesTest {
      */
     @Test
     @SmallTest
-    @Restriction({ChromeRestriction.RESTRICTION_TYPE_REQUIRES_TOUCH})
     @Feature({"Preferences"})
     @DisabledTest(message = "Modals are now enabled and test needs to be reworked crbug.com/935900")
     public void testSetAllowLocationNotEnabled() throws Exception {
@@ -276,7 +268,6 @@ public class SiteSettingsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @Restriction({ChromeRestriction.RESTRICTION_TYPE_REQUIRES_TOUCH})
     public void testThirdPartyCookieToggleGetsDisabled() throws Exception {
         Preferences preferenceActivity =
                 SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
@@ -411,16 +402,7 @@ public class SiteSettingsPreferencesTest {
         mActivityTestRule.loadUrl(mTestServer.getURL("/chrome/test/data/android/popup.html"));
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
-        if (FeatureUtilities.isNoTouchModeEnabled()) {
-            // Popups open in a CustomTabActivity in touchless mode.
-            for (Activity activity : ApplicationStatus.getRunningActivities()) {
-                Assert.assertFalse(
-                        "Popup was not blocked, an instance of CustomTabActivity is running",
-                        activity instanceof CustomTabActivity);
-            }
-        } else {
-            Assert.assertEquals(1, getTabCount());
-        }
+        Assert.assertEquals(1, getTabCount());
     }
 
     /**
@@ -437,15 +419,7 @@ public class SiteSettingsPreferencesTest {
         mActivityTestRule.loadUrl(mTestServer.getURL("/chrome/test/data/android/popup.html"));
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
-        if (FeatureUtilities.isNoTouchModeEnabled()) {
-            // Popups open in a CustomTabActivity in touchless mode.
-            for (Activity activity : ApplicationStatus.getRunningActivities()) {
-                if (activity instanceof CustomTabActivity) return;
-            }
-            Assert.fail("Popup was blocked, no instance of CustomTabActivity is running");
-        } else {
-            Assert.assertEquals(2, getTabCount());
-        }
+        Assert.assertEquals(2, getTabCount());
     }
 
     /**
@@ -640,7 +614,6 @@ public class SiteSettingsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @Restriction({ChromeRestriction.RESTRICTION_TYPE_REQUIRES_TOUCH})
     @CommandLineFlags.Add({ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM})
     @DisabledTest(message = "Modals are now enabled and test needs to be reworked crbug.com/935900")
     public void testCameraNotBlocked() throws Exception {
@@ -667,7 +640,6 @@ public class SiteSettingsPreferencesTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @Restriction({ChromeRestriction.RESTRICTION_TYPE_REQUIRES_TOUCH})
     @CommandLineFlags.Add({ContentSwitches.USE_FAKE_DEVICE_FOR_MEDIA_STREAM})
     @DisabledTest(message = "Modals are now enabled and test needs to be reworked crbug.com/935900")
     public void testMicNotBlocked() throws Exception {

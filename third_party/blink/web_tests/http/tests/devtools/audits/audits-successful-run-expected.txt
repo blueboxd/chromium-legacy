@@ -284,6 +284,13 @@ Generating results...
 URL: http://127.0.0.1:8000/devtools/resources/inspected-page.html
 Version: 5.2.0
 TestedAsMobileDevice: true
+ViewportDimensions: {
+  "innerWidth": 981,
+  "innerHeight": 1570,
+  "outerWidth": 412,
+  "outerHeight": 660,
+  "devicePixelRatio": 2.625
+}
 
 
 accesskeys: notApplicable

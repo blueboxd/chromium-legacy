@@ -18,10 +18,9 @@ NetworkQualityTracker::NetworkQualityTracker(
     : get_network_service_callback_(callback),
       effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       downlink_bandwidth_kbps_(std::numeric_limits<int32_t>::max()),
-      network_quality_overridden_for_testing_(false),
-      binding_(this) {
+      network_quality_overridden_for_testing_(false) {
   InitializeMojoChannel();
-  DCHECK(binding_.is_bound());
+  DCHECK(receiver_.is_bound());
 }
 
 NetworkQualityTracker::~NetworkQualityTracker() {}
@@ -106,8 +105,7 @@ void NetworkQualityTracker::ReportRTTsAndThroughputForTesting(
 // For testing only.
 NetworkQualityTracker::NetworkQualityTracker()
     : effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
-      downlink_bandwidth_kbps_(std::numeric_limits<int32_t>::max()),
-      binding_(this) {}
+      downlink_bandwidth_kbps_(std::numeric_limits<int32_t>::max()) {}
 
 void NetworkQualityTracker::OnNetworkQualityChanged(
     net::EffectiveConnectionType effective_connection_type,
@@ -151,7 +149,7 @@ void NetworkQualityTracker::OnNetworkQualityChanged(
 
 void NetworkQualityTracker::InitializeMojoChannel() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!binding_.is_bound());
+  DCHECK(!receiver_.is_bound());
 
   network::mojom::NetworkService* network_service =
       get_network_service_callback_.Run();
@@ -163,23 +161,18 @@ void NetworkQualityTracker::InitializeMojoChannel() {
       mojo::MakeRequest(&manager_ptr));
   network_service->GetNetworkQualityEstimatorManager(std::move(request));
 
-  // Request notification from NetworkQualityEstimatorManagerClientPtr.
-  network::mojom::NetworkQualityEstimatorManagerClientPtr client_ptr;
-  network::mojom::NetworkQualityEstimatorManagerClientRequest client_request(
-      mojo::MakeRequest(&client_ptr));
-  binding_.Bind(std::move(client_request));
-  manager_ptr->RequestNotifications(std::move(client_ptr));
+  manager_ptr->RequestNotifications(receiver_.BindNewPipeAndPassRemote());
 
   // base::Unretained is safe as destruction of the
-  // NetworkQualityTracker will also destroy the |binding_|.
-  binding_.set_connection_error_handler(base::BindRepeating(
+  // NetworkQualityTracker will also destroy the |receiver_|.
+  receiver_.set_disconnect_handler(base::BindRepeating(
       &NetworkQualityTracker::HandleNetworkServicePipeBroken,
       base::Unretained(this)));
 }
 
 void NetworkQualityTracker::HandleNetworkServicePipeBroken() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  binding_.Close();
+  receiver_.reset();
   InitializeMojoChannel();
 }
 

@@ -24,7 +24,7 @@ class StyleRuleKeyframe;
 class StyleSheetContents;
 
 class CORE_EXPORT CSSParserContext final
-    : public GarbageCollectedFinalized<CSSParserContext> {
+    : public GarbageCollected<CSSParserContext> {
  public:
   // https://drafts.csswg.org/selectors/#profiles
   enum SelectorProfile : uint8_t { kLiveProfile, kSnapshotProfile };

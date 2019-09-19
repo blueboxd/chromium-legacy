@@ -98,14 +98,17 @@ void WKBasedNavigationManagerImpl::OnNavigationItemCommitted() {
   }
 }
 
-void WKBasedNavigationManagerImpl::OnRendererInitiatedNavigationStarted(
-    const GURL& url) {
-  if (!wk_navigation_util::IsRestoreSessionUrl(url) &&
-      is_restore_session_in_progress_) {
-    // Session restoration navigations are rendered-initiated.
+void WKBasedNavigationManagerImpl::OnNavigationStarted(const GURL& url) {
+  if (!is_restore_session_in_progress_)
+    return;
 
+  GURL target_url;
+  if (wk_navigation_util::IsRestoreSessionUrl(url) &&
+      !web::wk_navigation_util::ExtractTargetURL(url, &target_url)) {
+    restoration_timer_ = std::make_unique<base::ElapsedTimer>();
+  } else if (!wk_navigation_util::IsRestoreSessionUrl(url)) {
     is_restore_session_in_progress_ = false;
-
+    DCHECK(restoration_timer_);
     UMA_HISTOGRAM_TIMES(kRestoreNavigationTime, restoration_timer_->Elapsed());
     restoration_timer_.reset();
 
@@ -715,7 +718,6 @@ void WKBasedNavigationManagerImpl::UnsafeRestore(
   // committed item, because a restored session has no pending or transient
   // item.
   is_restore_session_in_progress_ = true;
-  restoration_timer_ = std::make_unique<base::ElapsedTimer>();
   if (last_committed_item_index > -1)
     restored_visible_item_ = std::move(items[last_committed_item_index]);
 

@@ -28,7 +28,7 @@ class MediaStreamVideoTrack;
 // ApplyConstraintsProcessor must be created, called and destroyed on the main
 // render thread. There should be only one ApplyConstraintsProcessor per frame.
 class MODULES_EXPORT ApplyConstraintsProcessor final
-    : public GarbageCollectedFinalized<ApplyConstraintsProcessor> {
+    : public GarbageCollected<ApplyConstraintsProcessor> {
  public:
   using MediaDevicesDispatcherCallback = base::RepeatingCallback<
       blink::mojom::blink::MediaDevicesDispatcherHost*()>;

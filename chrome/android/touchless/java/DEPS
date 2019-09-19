@@ -1,7 +1,0 @@
-include_rules = [
-  "+chrome/lib/lifecycle/public",
-  "+chrome/browser/ui/android/widget",
-  "+components/feature_engagement/public",
-  "+components/offline_items_collection/core/android/java",
-  "+content/public/android/java/src/org/chromium/content_public",
-]

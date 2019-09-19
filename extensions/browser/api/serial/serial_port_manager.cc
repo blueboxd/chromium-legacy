@@ -14,6 +14,7 @@
 #include "extensions/browser/api/serial/serial_connection.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -174,7 +175,7 @@ void SerialPortManager::OnGotDevicesToGetPort(
   for (auto& device : devices) {
     if (device->path.AsUTF8Unsafe() == path) {
       port_manager_->GetPort(device->token, std::move(request),
-                             /*watcher=*/nullptr);
+                             /*watcher=*/mojo::NullRemote());
       return;
     }
   }

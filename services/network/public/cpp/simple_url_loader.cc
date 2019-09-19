@@ -37,11 +37,11 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/data_element.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace network {
 
@@ -230,7 +230,7 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
   void SetTimeoutDuration(base::TimeDelta timeout_duration) override;
 
   int NetError() const override;
-  const ResourceResponseHead* ResponseInfo() const override;
+  const mojom::URLResponseHead* ResponseInfo() const override;
   const GURL& GetFinalURL() const override;
   bool LoadedFromCache() const override;
   int64_t GetContentSize() const override;
@@ -281,7 +281,7 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
 
     bool loaded_from_cache = false;
 
-    std::unique_ptr<ResourceResponseHead> response_info;
+    mojom::URLResponseHeadPtr response_info;
   };
 
   // Prepares internal state to start a request, and then calls StartRequest().
@@ -1389,7 +1389,7 @@ int64_t SimpleURLLoaderImpl::GetContentSize() const {
   return request_state_->received_body_size;
 }
 
-const ResourceResponseHead* SimpleURLLoaderImpl::ResponseInfo() const {
+const mojom::URLResponseHead* SimpleURLLoaderImpl::ResponseInfo() const {
   // Should only be called once the request is compelete.
   DCHECK(request_state_->finished);
   return request_state_->response_info.get();
@@ -1576,14 +1576,13 @@ void SimpleURLLoaderImpl::OnReceiveResponse(
     // Copy |final_url_| to a stack allocated GURL so it remains valid even if
     // the callback deletes |this|.
     GURL final_url = final_url_;
-    std::move(on_response_started_callback_).Run(final_url, response_head);
+    std::move(on_response_started_callback_).Run(final_url, *response_head);
     // If deleted by the callback, bail now.
     if (!weak_this)
       return;
   }
 
-  request_state_->response_info =
-      std::make_unique<ResourceResponseHead>(response_head);
+  request_state_->response_info = std::move(response_head);
   if (!allow_http_error_results_ && response_code / 100 != 2)
     FinishWithResult(net::ERR_HTTP_RESPONSE_CODE_FAILURE);
 }
@@ -1604,7 +1603,7 @@ void SimpleURLLoaderImpl::OnReceiveRedirect(
     if (callback) {
       base::WeakPtr<SimpleURLLoaderImpl> weak_this =
           weak_ptr_factory_.GetWeakPtr();
-      callback.Run(redirect_info, response_head, &removed_headers);
+      callback.Run(redirect_info, *response_head, &removed_headers);
       // If deleted by the callback, bail now.
       if (!weak_this)
         return;

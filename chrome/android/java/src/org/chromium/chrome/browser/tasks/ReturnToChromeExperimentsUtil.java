@@ -88,9 +88,7 @@ public final class ReturnToChromeExperimentsUtil {
      * @param transition The page transition type.
      * @return true if we have handled the navigation, false otherwise.
      */
-    // TODO(mattsimmons): This needs to be updated for MV tiles to record the correct metrics.
-    // TODO(mattsimmons): Rename/Refactor since it's not just location bar now.
-    public static boolean willHandleLoadUrlFromLocationBar(
+    public static boolean willHandleLoadUrlFromStartSurface(
             String url, @PageTransition int transition) {
         ChromeActivity chromeActivity = getActivityPresentingOverviewWithOmnibox();
         if (chromeActivity == null) return false;
@@ -102,11 +100,15 @@ public final class ReturnToChromeExperimentsUtil {
         chromeActivity.getTabCreator(model.isIncognito())
                 .createNewTab(params, TabLaunchType.FROM_CHROME_UI, null);
 
-        RecordUserAction.record("MobileOmniboxUse.GridTabSwitcher");
+        if (transition == PageTransition.AUTO_BOOKMARK) {
+            RecordUserAction.record("Suggestions.Tile.Tapped.GridTabSwitcher");
+        } else {
+            RecordUserAction.record("MobileOmniboxUse.GridTabSwitcher");
 
-        // These are duplicated here but would have been recorded by LocationBarLayout#loadUrl.
-        RecordUserAction.record("MobileOmniboxUse");
-        LocaleManager.getInstance().recordLocaleBasedSearchMetrics(false, url, transition);
+            // These are duplicated here but would have been recorded by LocationBarLayout#loadUrl.
+            RecordUserAction.record("MobileOmniboxUse");
+            LocaleManager.getInstance().recordLocaleBasedSearchMetrics(false, url, transition);
+        }
 
         return true;
     }

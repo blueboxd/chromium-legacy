@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/logging.h"
+#include "components/viz/service/display/dc_layer_overlay.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/presentation_feedback.h"
@@ -31,6 +33,14 @@ void SkiaOutputDevice::PostSubBuffer(
 }
 
 void SkiaOutputDevice::SetDrawRectangle(const gfx::Rect& draw_rectangle) {}
+
+void SkiaOutputDevice::SetEnableDCLayers(bool enable) {
+  NOTIMPLEMENTED();
+}
+
+void SkiaOutputDevice::ScheduleDCLayers(std::vector<DCLayerOverlay> dc_layers) {
+  NOTIMPLEMENTED();
+}
 
 void SkiaOutputDevice::StartSwapBuffers(
     base::Optional<BufferPresentedCallback> feedback) {

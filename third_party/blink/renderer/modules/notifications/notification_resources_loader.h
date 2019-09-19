@@ -26,7 +26,7 @@ struct WebSize;
 // Fetches the resources specified in a given NotificationData. Uses a
 // callback to notify the caller when all fetches have finished.
 class MODULES_EXPORT NotificationResourcesLoader final
-    : public GarbageCollectedFinalized<NotificationResourcesLoader> {
+    : public GarbageCollected<NotificationResourcesLoader> {
   USING_PRE_FINALIZER(NotificationResourcesLoader, Stop);
 
  public:

@@ -1386,6 +1386,7 @@ void OverviewGrid::StartScroll() {
   // |scroll_offset_| is added to adjust for that.
   rightmost_window_right -= scroll_offset_;
   scroll_offset_min_ = total_bounds.right() - rightmost_window_right;
+  scroll_current_delta_ = 0.f;
 
   presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
       const_cast<ui::Compositor*>(root_window()->layer()->GetCompositor()),
@@ -1393,18 +1394,24 @@ void OverviewGrid::StartScroll() {
 }
 
 bool OverviewGrid::UpdateScrollOffset(float delta) {
+  scroll_current_delta_ += delta;
   float new_scroll_offset = scroll_offset_;
-  new_scroll_offset += delta;
+  new_scroll_offset += scroll_current_delta_;
   new_scroll_offset =
       base::ClampToRange(new_scroll_offset, scroll_offset_min_, 0.f);
+
+  // For flings, we want to return false if we hit one of the edges, which is
+  // when |new_scroll_offset| is exactly 0.f or |scroll_offset_min_|.
+  const bool in_range =
+      new_scroll_offset < 0.f && new_scroll_offset > scroll_offset_min_;
   if (new_scroll_offset == scroll_offset_)
-    return false;
+    return in_range;
 
   // Do not process scrolls that haven't moved much, unless we are at the
   // edges.
   if (std::abs(scroll_offset_ - new_scroll_offset) < kMinimumScrollDistanceDp &&
-      scroll_offset_ > scroll_offset_min_ && scroll_offset_ < 0) {
-    return false;
+      in_range) {
+    return true;
   }
 
   // Update the bounds of the items which are currently visible on screen.
@@ -1419,11 +1426,12 @@ bool OverviewGrid::UpdateScrollOffset(float delta) {
     }
   }
 
+  scroll_current_delta_ = 0.f;
   scroll_offset_ = new_scroll_offset;
 
   DCHECK(presentation_time_recorder_);
   presentation_time_recorder_->RequestNext();
-  return true;
+  return in_range;
 }
 
 void OverviewGrid::EndScroll() {

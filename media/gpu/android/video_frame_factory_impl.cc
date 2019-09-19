@@ -81,12 +81,14 @@ VideoFrameFactoryImpl::VideoFrameFactoryImpl(
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
     const gpu::GpuPreferences& gpu_preferences,
     std::unique_ptr<SharedImageVideoProvider> image_provider,
-    std::unique_ptr<MaybeRenderEarlyManager> mre_manager)
+    std::unique_ptr<MaybeRenderEarlyManager> mre_manager,
+    base::SequenceBound<YCbCrHelper> ycbcr_helper)
     : image_provider_(std::move(image_provider)),
       gpu_task_runner_(std::move(gpu_task_runner)),
       enable_threaded_texture_mailboxes_(
           gpu_preferences.enable_threaded_texture_mailboxes),
-      mre_manager_(std::move(mre_manager)) {}
+      mre_manager_(std::move(mre_manager)),
+      ycbcr_helper_(std::move(ycbcr_helper)) {}
 
 VideoFrameFactoryImpl::~VideoFrameFactoryImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -155,9 +157,9 @@ void VideoFrameFactoryImpl::CreateVideoFrame(
   SharedImageVideoProvider::ImageSpec spec(coded_size);
 
   auto image_ready_cb = base::BindOnce(
-      &VideoFrameFactoryImpl::OnImageReady, weak_factory_.GetWeakPtr(),
-      std::move(output_cb), timestamp, coded_size, natural_size,
-      std::move(output_buffer), codec_buffer_wait_coordinator_,
+      &VideoFrameFactoryImpl::CreateVideoFrame_OnImageReady,
+      weak_factory_.GetWeakPtr(), std::move(output_cb), timestamp, coded_size,
+      natural_size, std::move(output_buffer), codec_buffer_wait_coordinator_,
       std::move(promotion_hint_cb), pixel_format, overlay_mode_,
       enable_threaded_texture_mailboxes_, gpu_task_runner_);
 
@@ -169,7 +171,7 @@ void VideoFrameFactoryImpl::CreateVideoFrame(
 }
 
 // static
-void VideoFrameFactoryImpl::OnImageReady(
+void VideoFrameFactoryImpl::CreateVideoFrame_OnImageReady(
     base::WeakPtr<VideoFrameFactoryImpl> thiz,
     OnceOutputCb output_cb,
     base::TimeDelta timestamp,
@@ -198,8 +200,63 @@ void VideoFrameFactoryImpl::OnImageReady(
 
   // Send the CodecImage (via holder, since we can't touch the refcount here) to
   // the MaybeRenderEarlyManager.
-  thiz->mre_manager()->AddCodecImage(std::move(record.codec_image_holder));
+  thiz->mre_manager()->AddCodecImage(record.codec_image_holder);
 
+  // In case we need to get the YCbCr info, take the image holder out of the
+  // record before we move it into |completion_cb|.
+  auto codec_image_holder = std::move(record.codec_image_holder);
+
+  // Doesn't need to be weak-ptr'd, since we're either calling it inline, or
+  // calling it from the YCbCr callback which is, itself weak-ptr'd.
+  auto completion_cb = base::BindOnce(
+      &VideoFrameFactoryImpl::CreateVideoFrame_Finish, thiz,
+      std::move(output_cb), timestamp, coded_size, natural_size,
+      std::move(codec_buffer_wait_coordinator), pixel_format, overlay_mode,
+      enable_threaded_texture_mailboxes, std::move(record));
+
+  // TODO(liberato): Use |ycbcr_helper_| as a signal about whether we're
+  // supposed to get YCbCr info or not, rather than requiring the provider to
+  // tell us.  Note that right now, we do have the helper even if we don't
+  // need it.  See GpuMojoMediaClient.
+  if (!thiz->ycbcr_info_ && record.is_vulkan) {
+    // We need YCbCr info to create the frame.  Post back to the gpu thread to
+    // do it.  Note that we might post multiple times before succeeding once,
+    // both because of failures and because we might get multiple requests to
+    // create frames on the mcvd thread, before the gpu thread returns one ycbcr
+    // info to us.  Either way, it's fine, since the helper also caches the
+    // info locally.  It won't render more frames than needed.
+    auto ycbcr_cb = BindToCurrentLoop(base::BindOnce(
+        &VideoFrameFactoryImpl::CreateVideoFrame_OnYCbCrInfo,
+        thiz->weak_factory_.GetWeakPtr(), std::move(completion_cb)));
+    thiz->ycbcr_helper_.Post(FROM_HERE, &YCbCrHelper::GetYCbCrInfo,
+                             std::move(codec_image_holder),
+                             std::move(ycbcr_cb));
+    return;
+  }
+
+  std::move(completion_cb).Run();
+}
+
+void VideoFrameFactoryImpl::CreateVideoFrame_OnYCbCrInfo(
+    base::OnceClosure completion_cb,
+    YCbCrHelper::OptionalInfo ycbcr_info) {
+  ycbcr_info_ = std::move(ycbcr_info);
+  // Clear the helper just to free it up, though we might continue to get
+  // callbacks from it if we've posted multiple requests.
+  ycbcr_helper_.Reset();
+  std::move(completion_cb).Run();
+}
+
+void VideoFrameFactoryImpl::CreateVideoFrame_Finish(
+    OnceOutputCb output_cb,
+    base::TimeDelta timestamp,
+    gfx::Size coded_size,
+    gfx::Size natural_size,
+    scoped_refptr<CodecBufferWaitCoordinator> codec_buffer_wait_coordinator,
+    VideoPixelFormat pixel_format,
+    OverlayMode overlay_mode,
+    bool enable_threaded_texture_mailboxes,
+    SharedImageVideoProvider::ImageRecord record) {
   gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes];
   mailbox_holders[0] = gpu::MailboxHolder(record.mailbox, gpu::SyncToken(),
                                           GL_TEXTURE_EXTERNAL_OES);
@@ -222,7 +279,9 @@ void VideoFrameFactoryImpl::OnImageReady(
       pixel_format, mailbox_holders, VideoFrame::ReleaseMailboxCB(), coded_size,
       visible_rect, natural_size, timestamp);
 
-  frame->set_ycbcr_info(record.ycbcr_info);
+  // For Vulkan.
+  frame->set_ycbcr_info(ycbcr_info_);
+
   // If, for some reason, we failed to create a frame, then fail.  Note that we
   // don't need to call |release_cb|; dropping it is okay since the api says so.
   if (!frame) {

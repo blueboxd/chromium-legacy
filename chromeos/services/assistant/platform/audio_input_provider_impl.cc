@@ -11,11 +11,13 @@ namespace assistant {
 
 AudioInputProviderImpl::AudioInputProviderImpl(
     mojom::Client* client,
-    chromeos::PowerManagerClient* power_manager_client,
+    PowerManagerClient* power_manager_client,
+    CrasAudioHandler* cras_audio_handler,
     const std::string& input_device_id,
     const std::string& hotword_device_id)
     : audio_input_(client,
                    power_manager_client,
+                   cras_audio_handler,
                    input_device_id,
                    hotword_device_id) {}
 

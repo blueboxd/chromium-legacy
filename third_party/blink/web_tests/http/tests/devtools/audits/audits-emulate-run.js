@@ -17,6 +17,7 @@
   TestRunner.addResult(`URL: ${lhr.finalUrl}`);
   TestRunner.addResult(`Version: ${lhr.lighthouseVersion}`);
   TestRunner.addResult(`TestedAsMobileDevice: ${artifacts.TestedAsMobileDevice}`);
+  TestRunner.addResult(`ViewportDimensions: ${JSON.stringify(artifacts.ViewportDimensions, null, 2)}`);
   TestRunner.addResult('\n');
 
   const auditName = 'content-width';

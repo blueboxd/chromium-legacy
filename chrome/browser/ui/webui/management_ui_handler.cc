@@ -410,8 +410,7 @@ void ManagementUIHandler::OnJavascriptDisallowed() {
   RemoveObservers();
 }
 
-void ManagementUIHandler::AddExtensionReportingInfo(
-    base::Value* report_sources) {
+void ManagementUIHandler::AddReportingInfo(base::Value* report_sources) {
   const extensions::Extension* cloud_reporting_extension =
       GetEnabledExtension(kCloudReportingExtensionId);
 
@@ -439,6 +438,15 @@ void ManagementUIHandler::AddExtensionReportingInfo(
 
   const bool cloud_reporting_extension_installed =
       cloud_reporting_extension != nullptr;
+  const auto* cloud_reporting_policy_value =
+      GetPolicyService()
+          ->GetPolicies(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
+                                                std::string()))
+          .GetValue(policy::key::kCloudReportingEnabled);
+  const bool cloud_reporting_policy_enabled =
+      cloud_reporting_policy_value && cloud_reporting_policy_value->is_bool() &&
+      cloud_reporting_policy_value->GetBool();
+
   const struct {
     const char* policy_key;
     const char* message;
@@ -446,22 +454,25 @@ void ManagementUIHandler::AddExtensionReportingInfo(
     const bool enabled_by_default;
   } report_definitions[] = {
       {kPolicyKeyReportMachineIdData, kManagementExtensionReportMachineName,
-       ReportingType::kDevice, cloud_reporting_extension_installed},
+       ReportingType::kDevice,
+       cloud_reporting_extension_installed || cloud_reporting_policy_enabled},
       {kPolicyKeyReportMachineIdData,
        kManagementExtensionReportMachineNameAddress, ReportingType::kDevice,
        false},
       {kPolicyKeyReportVersionData, kManagementExtensionReportVersion,
-       ReportingType::kDevice, cloud_reporting_extension_installed},
+       ReportingType::kDevice,
+       cloud_reporting_extension_installed || cloud_reporting_policy_enabled},
       {kPolicyKeyReportSystemTelemetryData, kManagementExtensionReportPerfCrash,
        ReportingType::kDevice, false},
       {kPolicyKeyReportUserIdData, kManagementExtensionReportUsername,
-       ReportingType::kUser, cloud_reporting_extension_installed},
+       ReportingType::kUser,
+       cloud_reporting_extension_installed || cloud_reporting_policy_enabled},
       {kPolicyKeyReportSafeBrowsingData,
        kManagementExtensionReportSafeBrowsingWarnings, ReportingType::kSecurity,
        cloud_reporting_extension_installed},
       {kPolicyKeyReportExtensionsData,
        kManagementExtensionReportExtensionsPlugin, ReportingType::kExtensions,
-       cloud_reporting_extension_installed},
+       cloud_reporting_extension_installed || cloud_reporting_policy_enabled},
       {kPolicyKeyReportUserBrowsingData,
        kManagementExtensionReportUserBrowsingData, ReportingType::kUserActivity,
        false},
@@ -825,14 +836,14 @@ void ManagementUIHandler::HandleInitBrowserReportingInfo(
     const base::ListValue* args) {
   base::Value report_sources(base::Value::Type::LIST);
   AllowJavascript();
-  AddExtensionReportingInfo(&report_sources);
+  AddReportingInfo(&report_sources);
   ResolveJavascriptCallback(args->GetList()[0] /* callback_id */,
                             report_sources);
 }
 
 void ManagementUIHandler::NotifyBrowserReportingInfoUpdated() {
   base::Value report_sources(base::Value::Type::LIST);
-  AddExtensionReportingInfo(&report_sources);
+  AddReportingInfo(&report_sources);
   FireWebUIListener("browser-reporting-info-updated", report_sources);
 }
 

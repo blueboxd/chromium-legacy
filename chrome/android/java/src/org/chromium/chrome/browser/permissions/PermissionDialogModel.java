@@ -12,8 +12,6 @@ import android.view.View;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.touchless.TouchlessDelegate;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -23,10 +21,6 @@ import org.chromium.ui.modelutil.PropertyModel;
 class PermissionDialogModel {
     public static PropertyModel getModel(
             ModalDialogProperties.Controller controller, PermissionDialogDelegate delegate) {
-        if (FeatureUtilities.isNoTouchModeEnabled()) {
-            return TouchlessDelegate.getPermissionDialogModel(controller, delegate);
-        }
-
         Context context = delegate.getTab().getActivity();
         LayoutInflater inflater = LayoutInflater.from(context);
         View customView = inflater.inflate(R.layout.permission_dialog, null);

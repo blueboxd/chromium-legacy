@@ -38,7 +38,7 @@ struct FetchInitiatorInfo;
 // All functions except for the destructor and the trace method must be pure
 // virtual, and must not be called when the associated fetcher is detached.
 class PLATFORM_EXPORT ResourceLoadObserver
-    : public GarbageCollectedFinalized<ResourceLoadObserver> {
+    : public GarbageCollected<ResourceLoadObserver> {
  public:
   virtual ~ResourceLoadObserver() = default;
 

@@ -30,12 +30,14 @@
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/skia_helper.h"
+#include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display/renderer_utils.h"
 #include "components/viz/service/display/resource_fence.h"
 #include "components/viz/service/display/skia_output_surface.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "skia/ext/opacity_filter_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -704,9 +706,13 @@ void SkiaRenderer::FinishDrawingFrame() {
     swap_content_bounds_ = current_frame()->root_content_bounds;
 
   // TODO(weiliangc): Remove this once OverlayProcessor schedules overlays.
-  if (current_frame()->output_surface_plane)
+  if (current_frame()->output_surface_plane) {
     skia_output_surface_->ScheduleOutputSurfaceAsOverlay(
         current_frame()->output_surface_plane.value());
+  }
+
+  // Schedule overlay planes to be presented before SwapBuffers().
+  ScheduleDCLayers();
 }
 
 void SkiaRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
@@ -726,7 +732,10 @@ void SkiaRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
 
   switch (draw_mode_) {
     case DrawMode::DDL: {
-      skia_output_surface_->SkiaSwapBuffers(std::move(output_frame));
+      gpu::SyncToken sync_token = skia_output_surface_->SkiaSwapBuffers(
+          std::move(output_frame), has_locked_overlay_resources_);
+      if (has_locked_overlay_resources_)
+        lock_set_for_external_use_->UnlockResources(sync_token);
       break;
     }
     case DrawMode::SKPRECORD: {
@@ -1522,6 +1531,29 @@ void SkiaRenderer::DrawUnsupportedQuad(const DrawQuad* quad,
 #endif
 }
 
+void SkiaRenderer::ScheduleDCLayers() {
+  if (current_frame()->dc_layer_overlay_list.empty())
+    return;
+
+  for (auto& dc_layer_overlay : current_frame()->dc_layer_overlay_list) {
+    for (size_t i = 0; i < DCLayerOverlay::kNumResources; ++i) {
+      ResourceId resource_id = dc_layer_overlay.resources[i];
+      if (resource_id == kInvalidResourceId)
+        break;
+
+      // Resources will be unlocked after the next call to SwapBuffers().
+      auto* image_context =
+          lock_set_for_external_use_->LockResource(resource_id, true);
+      dc_layer_overlay.mailbox[i] = image_context->mailbox_holder().mailbox;
+    }
+    DCHECK(!dc_layer_overlay.mailbox[0].IsZero());
+  }
+
+  has_locked_overlay_resources_ = true;
+  skia_output_surface_->ScheduleDCLayers(
+      std::move(current_frame()->dc_layer_overlay_list));
+}
+
 sk_sp<SkColorFilter> SkiaRenderer::GetColorFilter(const gfx::ColorSpace& src,
                                                   const gfx::ColorSpace& dst,
                                                   float resource_offset,
@@ -1913,8 +1945,7 @@ void SkiaRenderer::CopyDrawnRenderPass(
 }
 
 void SkiaRenderer::SetEnableDCLayers(bool enable) {
-  // TODO(crbug.com/678800): Part of surport overlay on Windows.
-  NOTIMPLEMENTED();
+  skia_output_surface_->SetEnableDCLayers(enable);
 }
 
 void SkiaRenderer::DidChangeVisibility() {

@@ -353,9 +353,7 @@ public class TranslateCompactInfoBar extends InfoBar
 
     @Override
     public void onCloseButtonClicked() {
-        // TODO(https://crbug.com/965058): If the infobar was not properly initialized (in touchless
-        //                                 mode for example), mTabLayout will be null.
-        if (mTabLayout != null) mTabLayout.endScrollingAnimationIfPlaying();
+        mTabLayout.endScrollingAnimationIfPlaying();
         closeInfobar(true);
     }
 

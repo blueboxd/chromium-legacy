@@ -18,7 +18,7 @@ class WebSharedWorkerImpl;
 // and owned by WebSharedWorkerImpl on the main thread, accessed from a worker
 // thread, and destroyed on the main thread.
 class SharedWorkerReportingProxy final
-    : public GarbageCollectedFinalized<SharedWorkerReportingProxy>,
+    : public GarbageCollected<SharedWorkerReportingProxy>,
       public WorkerReportingProxy {
  public:
   SharedWorkerReportingProxy(WebSharedWorkerImpl*,

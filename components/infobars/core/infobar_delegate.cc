@@ -76,6 +76,10 @@ bool InfoBarDelegate::IsCloseable() const {
   return true;
 }
 
+bool InfoBarDelegate::ShouldAnimate() const {
+  return true;
+}
+
 ConfirmInfoBarDelegate* InfoBarDelegate::AsConfirmInfoBarDelegate() {
   return nullptr;
 }

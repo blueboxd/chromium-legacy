@@ -24,7 +24,7 @@ typedef HashCountedSet<UntracedMember<EventTarget>> EventTargetSet;
 // event targets for a frame may only be registered with the
 // EventHandlerRegistry of its corresponding local root.
 class CORE_EXPORT EventHandlerRegistry final
-    : public GarbageCollectedFinalized<EventHandlerRegistry> {
+    : public GarbageCollected<EventHandlerRegistry> {
  public:
   explicit EventHandlerRegistry(LocalFrame&);
   virtual ~EventHandlerRegistry();

@@ -98,7 +98,7 @@ enum class ResourceType : uint8_t {
 // should derive from ResourceClient, to get the function calls in case the
 // requested data has arrived. This class also does the actual communication
 // with the loader to obtain the resource from the network.
-class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
+class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
                                  public MemoryPressureListener {
   USING_GARBAGE_COLLECTED_MIXIN(Resource);
 

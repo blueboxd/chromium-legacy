@@ -3229,7 +3229,7 @@ void NavigationRequest::OnCommitTimeout() {
   // reports.
   // TODO(http://crbug.com/934317): Remove this once done debugging renderer
   // hangs.
-  if (base::RandDouble() < 0.1) {
+  if (base::RandDouble() < 0.001) {
     static base::debug::CrashKeyString* url_key =
         base::debug::AllocateCrashKeyString("commit_timeout_url",
                                             base::debug::CrashKeySize::Size256);

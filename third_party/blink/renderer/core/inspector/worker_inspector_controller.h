@@ -53,7 +53,7 @@ class WorkerThreadDebugger;
 struct WorkerDevToolsParams;
 
 class WorkerInspectorController final
-    : public GarbageCollectedFinalized<WorkerInspectorController>,
+    : public GarbageCollected<WorkerInspectorController>,
       public trace_event::EnabledStateObserver,
       public DevToolsAgent::Client,
       private Thread::TaskObserver {

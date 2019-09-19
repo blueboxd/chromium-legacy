@@ -67,7 +67,7 @@ struct WebPrintParams;
 struct WebPrintPresetOptions;
 
 class CORE_EXPORT WebPluginContainerImpl final
-    : public GarbageCollectedFinalized<WebPluginContainerImpl>,
+    : public GarbageCollected<WebPluginContainerImpl>,
       public EmbeddedContentView,
       public WebPluginContainer,
       public ContextClient {

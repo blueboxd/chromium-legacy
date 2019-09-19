@@ -54,7 +54,7 @@ double NowTicksInSeconds(const base::TestMockTimeTaskRunner* task_runner) {
 }
 
 class MockScrollableAreaForAnimatorTest
-    : public GarbageCollectedFinalized<MockScrollableAreaForAnimatorTest>,
+    : public GarbageCollected<MockScrollableAreaForAnimatorTest>,
       public ScrollableArea {
   USING_GARBAGE_COLLECTED_MIXIN(MockScrollableAreaForAnimatorTest);
 

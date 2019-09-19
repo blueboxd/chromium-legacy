@@ -5,11 +5,14 @@
 #ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_DC_LAYER_OVERLAY_H_
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_DC_LAYER_OVERLAY_H_
 
+#include <vector>
+
 #include "base/containers/flat_map.h"
 #include "base/memory/ref_counted.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/viz_service_export.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -41,6 +44,10 @@ class VIZ_SERVICE_EXPORT DCLayerOverlay {
   // chain image. See DirectCompositionSurfaceWin for details.
   enum : size_t { kNumResources = 2 };
   ResourceId resources[kNumResources] = {kInvalidResourceId};
+
+  // Mailboxes corresponding to |resources|. This is populated in SkiaRenderer
+  // for accessing the textures on the GPU thread.
+  gpu::Mailbox mailbox[kNumResources];
 
   // Stacking order relative to backbuffer which has z-order 0.
   int z_order = 1;

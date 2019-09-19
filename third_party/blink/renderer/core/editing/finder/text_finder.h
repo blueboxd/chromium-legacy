@@ -51,8 +51,7 @@ struct WebFloatPoint;
 struct WebFloatRect;
 struct WebRect;
 
-class CORE_EXPORT TextFinder final
-    : public GarbageCollectedFinalized<TextFinder> {
+class CORE_EXPORT TextFinder final : public GarbageCollected<TextFinder> {
  public:
   bool Find(int identifier,
             const WebString& search_text,

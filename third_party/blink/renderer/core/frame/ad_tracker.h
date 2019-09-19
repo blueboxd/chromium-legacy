@@ -32,7 +32,7 @@ CORE_EXPORT extern const base::Feature kAsyncStackAdTagging;
 
 // Tracker for tagging resources as ads based on the call stack scripts.
 // The tracker is maintained per local root.
-class CORE_EXPORT AdTracker : public GarbageCollectedFinalized<AdTracker> {
+class CORE_EXPORT AdTracker : public GarbageCollected<AdTracker> {
  public:
   // Finds an AdTracker for a given ExecutionContext.
   static AdTracker* FromExecutionContext(ExecutionContext*);

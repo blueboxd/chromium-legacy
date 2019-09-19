@@ -34,7 +34,7 @@ namespace blink {
 // The PendingAbortRequest type corresponds to the Record {[[promise]],
 // [[reason]], [[wasAlreadyErroring]]} from the standard.
 class WritableStreamNative::PendingAbortRequest final
-    : public GarbageCollectedFinalized<PendingAbortRequest> {
+    : public GarbageCollected<PendingAbortRequest> {
  public:
   PendingAbortRequest(v8::Isolate* isolate,
                       StreamPromiseResolver* promise,

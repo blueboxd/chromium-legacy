@@ -1482,9 +1482,6 @@ void SAMLPasswordAttributesTest::SetUpOnMainThread() {
 // Verifies that password attributes are extracted and stored during a
 // successful log in - but only if the appropriate policy is enabled.
 IN_PROC_BROWSER_TEST_P(SAMLPasswordAttributesTest, LoginSucceeded) {
-  // LoginDisplayHostMojo does not show Oobe dialog by default.
-  LoginDisplayHost::default_host()->ShowGaiaDialog(true, EmptyAccountId());
-
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   fake_saml_idp()->SetSamlResponseFile("saml_with_password_attributes.xml");
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
@@ -1516,9 +1513,6 @@ IN_PROC_BROWSER_TEST_P(SAMLPasswordAttributesTest, LoginSucceeded) {
 
 // Verify that no password attributes are stored when login fails.
 IN_PROC_BROWSER_TEST_P(SAMLPasswordAttributesTest, LoginFailed) {
-  // LoginDisplayHostMojo does not show Oobe dialog by default.
-  LoginDisplayHost::default_host()->ShowGaiaDialog(true, EmptyAccountId());
-
   fake_saml_idp()->SetLoginHTMLTemplate("saml_login.html");
   fake_saml_idp()->SetSamlResponseFile("saml_with_password_attributes.xml");
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);

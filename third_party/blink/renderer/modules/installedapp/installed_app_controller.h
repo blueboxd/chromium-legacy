@@ -29,7 +29,7 @@ using AppInstalledCallbacks =
     CallbackPromiseAdapter<HeapVector<Member<RelatedApplication>>, void>;
 
 class MODULES_EXPORT InstalledAppController final
-    : public GarbageCollectedFinalized<InstalledAppController>,
+    : public GarbageCollected<InstalledAppController>,
       public Supplement<LocalFrame>,
       public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(InstalledAppController);

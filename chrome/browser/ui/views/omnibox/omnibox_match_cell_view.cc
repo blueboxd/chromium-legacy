@@ -153,12 +153,14 @@ class RoundedCornerImageView : public views::ImageView {
  public:
   RoundedCornerImageView() = default;
 
+  // views::ImageView:
   bool CanProcessEventsWithinSubtree() const override { return false; }
 
- private:
+ protected:
   // views::ImageView:
   void OnPaint(gfx::Canvas* canvas) override;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(RoundedCornerImageView);
 };
 
@@ -193,41 +195,6 @@ OmniboxMatchCellView::OmniboxMatchCellView(OmniboxResultView* result_view) {
 }
 
 OmniboxMatchCellView::~OmniboxMatchCellView() = default;
-
-gfx::Size OmniboxMatchCellView::CalculatePreferredSize() const {
-  int height = 0;
-  switch (layout_style_) {
-    case LayoutStyle::OLD_ANSWER: {
-      int icon_width = icon_view_->width();
-      int answer_image_size =
-          answer_image_view_->GetImage().isNull()
-              ? 0
-              : answer_image_view_->height() + kAnswerIconToTextPadding;
-      int deduction =
-          icon_width + (HorizontalPadding() * 3) + answer_image_size;
-      int description_width = std::max(width() - deduction, 0);
-      height = content_view_->GetLineHeight() +
-               description_view_->GetHeightForWidth(description_width);
-      break;
-    }
-    case LayoutStyle::ONE_LINE_SUGGESTION: {
-      height = content_view_->GetLineHeight();
-      break;
-    }
-    case LayoutStyle::TWO_LINE_SUGGESTION: {
-      height = content_view_->GetLineHeight() +
-               description_view_->GetHeightForWidth(width() - GetTextIndent());
-      break;
-    }
-  }
-  height += GetInsets().height();
-  // Width is not calculated because it's not needed by current callers.
-  return gfx::Size(0, height);
-}
-
-bool OmniboxMatchCellView::CanProcessEventsWithinSubtree() const {
-  return false;
-}
 
 // static
 int OmniboxMatchCellView::GetTextIndent() {
@@ -373,6 +340,41 @@ void OmniboxMatchCellView::Layout() {
       LayoutNewStyleTwoLineSuggestion();
       break;
   }
+}
+
+bool OmniboxMatchCellView::CanProcessEventsWithinSubtree() const {
+  return false;
+}
+
+gfx::Size OmniboxMatchCellView::CalculatePreferredSize() const {
+  int height = 0;
+  switch (layout_style_) {
+    case LayoutStyle::OLD_ANSWER: {
+      int icon_width = icon_view_->width();
+      int answer_image_size =
+          answer_image_view_->GetImage().isNull()
+              ? 0
+              : answer_image_view_->height() + kAnswerIconToTextPadding;
+      int deduction =
+          icon_width + (HorizontalPadding() * 3) + answer_image_size;
+      int description_width = std::max(width() - deduction, 0);
+      height = content_view_->GetLineHeight() +
+               description_view_->GetHeightForWidth(description_width);
+      break;
+    }
+    case LayoutStyle::ONE_LINE_SUGGESTION: {
+      height = content_view_->GetLineHeight();
+      break;
+    }
+    case LayoutStyle::TWO_LINE_SUGGESTION: {
+      height = content_view_->GetLineHeight() +
+               description_view_->GetHeightForWidth(width() - GetTextIndent());
+      break;
+    }
+  }
+  height += GetInsets().height();
+  // Width is not calculated because it's not needed by current callers.
+  return gfx::Size(0, height);
 }
 
 void OmniboxMatchCellView::LayoutOldStyleAnswer(int icon_view_width,

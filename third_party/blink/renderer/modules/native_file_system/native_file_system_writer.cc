@@ -81,7 +81,7 @@ ScriptPromise NativeFileSystemWriter::WriteBlob(ScriptState* script_state,
 }
 
 class NativeFileSystemWriter::StreamWriterClient
-    : public GarbageCollectedFinalized<StreamWriterClient>,
+    : public GarbageCollected<StreamWriterClient>,
       public FetchDataLoader::Client {
   USING_GARBAGE_COLLECTED_MIXIN(StreamWriterClient);
 

@@ -139,8 +139,6 @@ class BasePreviewsLitePageServerBrowserTest
 
   ~BasePreviewsLitePageServerBrowserTest() override {}
 
-  virtual bool UseURLLoaderImplementation() const = 0;
-
   virtual bool UseOptimizationGuideKeyedServiceImplementation() const = 0;
 
   enum PreviewsServerAction {
@@ -308,6 +306,7 @@ class BasePreviewsLitePageServerBrowserTest
 
     scoped_feature_list_.InitWithFeatures(
         {previews::features::kPreviews,
+         previews::features::kHTTPSServerPreviewsUsingURLLoader,
          optimization_guide::features::kOptimizationHints,
          previews::features::kResourceLoadingHints,
          data_reduction_proxy::features::
@@ -315,10 +314,6 @@ class BasePreviewsLitePageServerBrowserTest
          network::features::kReporting},
         {network::features::kNetworkErrorLogging});
 
-    if (UseURLLoaderImplementation()) {
-      url_loader_feature_list_.InitWithFeatures(
-          {previews::features::kHTTPSServerPreviewsUsingURLLoader}, {});
-    }
     if (UseOptimizationGuideKeyedServiceImplementation()) {
       opt_guide_keyed_service_feature_list_.InitWithFeatures(
           {optimization_guide::features::kOptimizationGuideKeyedService}, {});
@@ -410,30 +405,6 @@ class BasePreviewsLitePageServerBrowserTest
     return GetWebContents()->GetController().GetVisibleEntry()->GetURL();
   }
 
-  void VerifyInfoStatus(base::HistogramTester* histogram_tester,
-                        previews::ServerLitePageStatus status) {
-    PreviewsUITabHelper* ui_tab_helper =
-        PreviewsUITabHelper::FromWebContents(GetWebContents());
-    previews::PreviewsUserData* previews_data =
-        ui_tab_helper->previews_user_data();
-    if (!UseURLLoaderImplementation()) {
-      EXPECT_TRUE(previews_data->server_lite_page_info());
-      EXPECT_EQ(previews_data->server_lite_page_info()->status, status);
-    }
-    // This UMA is not recorded for an unknown or control group status
-    if (status == previews::ServerLitePageStatus::kUnknown ||
-        status == previews::ServerLitePageStatus::kControl) {
-      return;
-    }
-
-    if (!UseURLLoaderImplementation()) {
-      histogram_tester->ExpectTotalCount(
-          "Previews.ServerLitePage.Penalty." +
-              previews::ServerLitePageStatusToString(status),
-          1);
-    }
-  }
-
   void VerifyPreviewLoaded() const {
     // The Virtual URL is set in a WebContentsObserver::OnFinishNavigation.
     // Since |ui_test_utils::NavigationToURL| uses the same signal to stop
@@ -460,18 +431,6 @@ class BasePreviewsLitePageServerBrowserTest
 
     content::NavigationEntry* entry =
         GetWebContents()->GetController().GetVisibleEntry();
-
-    if (!UseURLLoaderImplementation()) {
-      // server_lite_page_info does not exist on forward/back navigations.
-      if (!(entry->GetTransitionType() & ui::PAGE_TRANSITION_FORWARD_BACK)) {
-        EXPECT_TRUE(previews_data->server_lite_page_info());
-        EXPECT_NE(
-            previews_data->server_lite_page_info()->original_navigation_start,
-            base::TimeTicks());
-        EXPECT_NE(previews_data->server_lite_page_info()->page_id, 0U);
-        EXPECT_NE(previews_data->server_lite_page_info()->drp_session_key, "");
-      }
-    }
 
     EXPECT_EQ(content::PAGE_TYPE_NORMAL, entry->GetPageType());
     const GURL virtual_url = entry->GetVirtualURL();
@@ -965,28 +924,23 @@ class BasePreviewsLitePageServerBrowserTest
   base::OnceClosure waiting_for_report_closure_;
 };
 
-// First param is true if testing using the URLLoader Interceptor implementation
-// and the second param is true if testing using the
-// OptimizationGuideKeyedService implementation.
+// Param is true if testing using the OptimizationGuideKeyedService
+// implementation.
 class PreviewsLitePageServerBrowserTest
     : public BasePreviewsLitePageServerBrowserTest,
-      public testing::WithParamInterface<std::tuple<bool, bool>> {
+      public testing::WithParamInterface<bool> {
  public:
-  bool UseURLLoaderImplementation() const override {
-    return std::get<0>(GetParam());
-  }
   bool UseOptimizationGuideKeyedServiceImplementation() const override {
-    return std::get<1>(GetParam());
+    return GetParam();
   }
 };
 
-// First param is true if testing using the URLLoader Interceptor implementation
-// and the second param is true if testing using the
-// OptimizationGuideKeyedService implementation.
+// Param is true if testing using the OptimizationGuideKeyedService
+// implementation.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     PreviewsLitePageServerBrowserTest,
-    testing::Combine(testing::Bool(), testing::Bool()));
+    testing::Bool());
 
 // Previews InfoBar (which these tests trigger) does not work on Mac.
 // See https://crbug.com/782322 for detail.
@@ -1019,8 +973,6 @@ IN_PROC_BROWSER_TEST_P(
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
     VerifyPreviewLoaded();
-    VerifyInfoStatus(&histogram_tester,
-                     previews::ServerLitePageStatus::kSuccess);
   }
 
   {
@@ -1168,17 +1120,6 @@ IN_PROC_BROWSER_TEST_P(
 
     VerifyPreviewNotLoaded();
     ClearDeciderState();
-
-    if (!UseURLLoaderImplementation()) {
-      // It takes a few redirects to reach the end case. Just make sure at least
-      // one sample has been recorded in the correct bucket.
-      histogram_tester.ExpectBucketCount(
-          "Previews.ServerLitePage.IneligibleReasons",
-          static_cast<int>(
-              PreviewsLitePageNavigationThrottle::IneligibleReason::
-                  kExceededMaxNavigationRestarts),
-          1);
-    }
   }
 
   {
@@ -1203,10 +1144,6 @@ IN_PROC_BROWSER_TEST_P(
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageServerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsOriginProbe_Success)) {
-  // This behavior is not implemented for the nav throttle.
-  if (!UseURLLoaderImplementation())
-    return;
-
   set_origin_probe_success(true);
 
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
@@ -1217,10 +1154,6 @@ IN_PROC_BROWSER_TEST_P(
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageServerBrowserTest,
     DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsOriginProbe_Fail)) {
-  // This behavior is not implemented for the nav throttle.
-  if (!UseURLLoaderImplementation())
-    return;
-
   set_origin_probe_success(false);
 
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
@@ -1299,7 +1232,6 @@ IN_PROC_BROWSER_TEST_P(
   base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewLoaded();
-  VerifyInfoStatus(&histogram_tester, previews::ServerLitePageStatus::kSuccess);
 
   PreviewsServiceFactory::GetForProfile(
       Profile::FromBrowserContext(browser()
@@ -1322,8 +1254,6 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), http_to_https_redirect_url());
     VerifyPreviewLoaded();
-    VerifyInfoStatus(&histogram_tester,
-                     previews::ServerLitePageStatus::kSuccess);
   }
 
   {
@@ -1331,8 +1261,6 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), https_to_https_redirect_url());
     VerifyPreviewLoaded();
-    VerifyInfoStatus(&histogram_tester,
-                     previews::ServerLitePageStatus::kSuccess);
   }
 
   {
@@ -1342,8 +1270,6 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
     ui_test_utils::NavigateToURL(browser(),
                                  HttpsLitePageURL(kRedirectNonPreview));
     VerifyPreviewNotLoaded();
-    VerifyInfoStatus(&histogram_tester,
-                     previews::ServerLitePageStatus::kRedirect);
     ClearDeciderState();
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.ServerResponse",
@@ -1356,8 +1282,6 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kRedirectPreview));
     VerifyPreviewLoaded();
-    VerifyInfoStatus(&histogram_tester,
-                     previews::ServerLitePageStatus::kSuccess);
     ClearDeciderState();
 
     histogram_tester.ExpectBucketCount(
@@ -1377,8 +1301,6 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kBypass));
     VerifyPreviewNotLoaded();
-    VerifyInfoStatus(&histogram_tester,
-                     previews::ServerLitePageStatus::kBypass);
     ClearDeciderState();
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.ServerResponse",
@@ -1396,8 +1318,6 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
     ui_test_utils::NavigateToURL(
         browser(), HttpsLitePageURL(kBypassAndBlacklistOriginHost));
     VerifyPreviewNotLoaded();
-    VerifyInfoStatus(&histogram_tester,
-                     previews::ServerLitePageStatus::kBypass);
 
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.ServerResponse",
@@ -1424,8 +1344,6 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kAuthFailure));
     VerifyPreviewNotLoaded();
-    VerifyInfoStatus(&histogram_tester,
-                     previews::ServerLitePageStatus::kFailure);
     ClearDeciderState();
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.ServerResponse",
@@ -1437,8 +1355,6 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kLoadshed));
     VerifyPreviewNotLoaded();
-    VerifyInfoStatus(&histogram_tester,
-                     previews::ServerLitePageStatus::kFailure);
     ClearDeciderState();
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.ServerResponse",
@@ -1611,11 +1527,7 @@ IN_PROC_BROWSER_TEST_P(
   {
     SCOPED_TRACE("Navigate back");
     GetWebContents()->GetController().GoBack();
-    if (UseURLLoaderImplementation()) {
-      VerifyPreviewNotLoaded();
-    } else {
-      VerifyPreviewLoaded();
-    }
+    VerifyPreviewNotLoaded();
   }
 
   {
@@ -1676,13 +1588,12 @@ class PreviewsLitePageServerTimeoutBrowserTest
   }
 };
 
-// First param is true if testing using the URLLoader Interceptor implementation
-// and the second param is true if testing using the
-// OptimizationGuideKeyedService implementation.
+// Param is true if testing using the OptimizationGuideKeyedService
+// implementation.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     PreviewsLitePageServerTimeoutBrowserTest,
-    testing::Combine(testing::Bool(), testing::Bool()));
+    testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerTimeoutBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMESOS(LitePagePreviewsTimeout)) {
@@ -1693,8 +1604,6 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerTimeoutBrowserTest,
     ui_test_utils::NavigateToURL(browser(),
                                  HttpsLitePageURL(kSuccess, nullptr, -1));
     VerifyPreviewNotLoaded();
-    VerifyInfoStatus(&histogram_tester,
-                     previews::ServerLitePageStatus::kFailure);
     ClearDeciderState();
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.ServerResponse",
@@ -1725,13 +1634,12 @@ class PreviewsLitePageServerBadServerBrowserTest
   }
 };
 
-// First param is true if testing using the URLLoader Interceptor implementation
-// and the second param is true if testing using the
-// OptimizationGuideKeyedService implementation.
+// Param is true if testing using the OptimizationGuideKeyedService
+// implementation.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     PreviewsLitePageServerBadServerBrowserTest,
-    testing::Combine(testing::Bool(), testing::Bool()));
+    testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageServerBadServerBrowserTest,
@@ -1776,13 +1684,12 @@ class PreviewsLitePageServerDataSaverBrowserTest
   }
 };
 
-// First param is true if testing using the URLLoader Interceptor implementation
-// and the second param is true if testing using the
-// OptimizationGuideKeyedService implementation.
+// Param is true if testing using the OptimizationGuideKeyedService
+// implementation.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     PreviewsLitePageServerDataSaverBrowserTest,
-    testing::Combine(testing::Bool(), testing::Bool()));
+    testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageServerDataSaverBrowserTest,
@@ -1814,13 +1721,12 @@ class PreviewsLitePageServerNoDataSaverHeaderBrowserTest
   }
 };
 
-// First param is true if testing using the URLLoader Interceptor implementation
-// and the second param is true if testing using the
-// OptimizationGuideKeyedService implementation.
+// Param is true if testing using the OptimizationGuideKeyedService
+// implementation.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     PreviewsLitePageServerNoDataSaverHeaderBrowserTest,
-    testing::Combine(testing::Bool(), testing::Bool()));
+    testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageServerNoDataSaverHeaderBrowserTest,
@@ -1856,13 +1762,12 @@ class PreviewsLitePageNotificationDSEnabledBrowserTest
   }
 };
 
-// First param is true if testing using the URLLoader Interceptor implementation
-// and the second param is true if testing using the
-// OptimizationGuideKeyedService implementation.
+// Param is true if testing using the OptimizationGuideKeyedService
+// implementation.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     PreviewsLitePageNotificationDSEnabledBrowserTest,
-    testing::Combine(testing::Bool(), testing::Bool()));
+    testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageNotificationDSEnabledBrowserTest,
@@ -1918,13 +1823,12 @@ class PreviewsLitePageDSDisabledBrowserTest
   }
 };
 
-// First param is true if testing using the URLLoader Interceptor implementation
-// and the second param is true if testing using the
-// OptimizationGuideKeyedService implementation.
+// Param is true if testing using the OptimizationGuideKeyedService
+// implementation.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     PreviewsLitePageDSDisabledBrowserTest,
-    testing::Combine(testing::Bool(), testing::Bool()));
+    testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageDSDisabledBrowserTest,
@@ -1952,13 +1856,12 @@ class PreviewsLitePageControlBrowserTest
   }
 };
 
-// First param is true if testing using the URLLoader Interceptor implementation
-// and the second param is true if testing using the
-// OptimizationGuideKeyedService implementation.
+// Param is true if testing using the OptimizationGuideKeyedService
+// implementation.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     PreviewsLitePageControlBrowserTest,
-    testing::Combine(testing::Bool(), testing::Bool()));
+    testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(
     PreviewsLitePageControlBrowserTest,
@@ -1966,7 +1869,6 @@ IN_PROC_BROWSER_TEST_P(
   base::HistogramTester histogram_tester;
   ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
   VerifyPreviewNotLoaded();
-  VerifyInfoStatus(&histogram_tester, previews::ServerLitePageStatus::kControl);
   ClearDeciderState();
 }
 
@@ -2009,8 +1911,6 @@ class PreviewsLitePageServerNetworkIsolationBrowserTest
         break;
     }
   }
-
-  bool UseURLLoaderImplementation() const override { return true; }
 
   bool UseOptimizationGuideKeyedServiceImplementation() const override {
     return false;
@@ -2091,13 +1991,12 @@ class PreviewsLitePageAndPageHintsBrowserTest
   }
 };
 
-// First param is true if testing using the URLLoader Interceptor implementation
-// and the second param is true if testing using the
-// OptimizationGuideKeyedService implementation.
+// Param is true if testing using the OptimizationGuideKeyedService
+// implementation.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     PreviewsLitePageAndPageHintsBrowserTest,
-    testing::Combine(testing::Bool(), testing::Bool()));
+    testing::Bool());
 
 // Regression test for crbug.com/954554.
 IN_PROC_BROWSER_TEST_P(
@@ -2168,10 +2067,6 @@ class CoinFlipHoldbackExperimentBrowserTest
   CoinFlipHoldbackExperimentBrowserTest() = default;
 
   ~CoinFlipHoldbackExperimentBrowserTest() override = default;
-
-  // Doesn't work with the NavThrottle impl since the coin flip event is
-  // recorded multiple times.
-  bool UseURLLoaderImplementation() const override { return true; }
 
   void SetUp() override {
     PreviewsLitePageAndPageHintsBrowserTest::SetUp();
@@ -2320,13 +2215,12 @@ class CoinFlipHoldbackExperimentBrowserTest
   base::test::ScopedFeatureList ukm_feature_list_;
 };
 
-// First param is true if testing using the URLLoader Interceptor implementation
-// and the second param is true if testing using the
-// OptimizationGuideKeyedService implementation.
+// Param is true if testing using the OptimizationGuideKeyedService
+// implementation.
 INSTANTIATE_TEST_SUITE_P(
     /* no prefix */,
     CoinFlipHoldbackExperimentBrowserTest,
-    testing::Combine(testing::Bool(), testing::Bool()));
+    testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(CoinFlipHoldbackExperimentBrowserTest,
                        DISABLE_ON_WIN_MAC_CHROMESOS(NoPreviews_NoCoinFlip)) {

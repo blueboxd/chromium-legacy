@@ -104,7 +104,7 @@ AtomicString CreateAccessControlRequestHeadersHeader(
 // ThreadableLoader. It's for fetch requests with keepalive set, so
 // it keeps itself alive during loading.
 class ThreadableLoader::DetachedClient final
-    : public GarbageCollectedFinalized<DetachedClient>,
+    : public GarbageCollected<DetachedClient>,
       public ThreadableLoaderClient {
   USING_GARBAGE_COLLECTED_MIXIN(DetachedClient);
 

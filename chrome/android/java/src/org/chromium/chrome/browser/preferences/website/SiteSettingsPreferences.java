@@ -14,7 +14,6 @@ import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.preferences.website.SiteSettingsCategory.Type;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.content_public.common.ContentSwitches;
 
 import java.util.ArrayList;
@@ -87,10 +86,6 @@ public class SiteSettingsPreferences
             if (!SiteSettingsCategory.adsCategoryEnabled()) {
                 getPreferenceScreen().removePreference(findPreference(Type.ADS));
             }
-            // We don't have clipboard support in touchless mode (crbug/963515).
-            if (FeatureUtilities.isNoTouchModeEnabled()) {
-                getPreferenceScreen().removePreference(findPreference(Type.CLIPBOARD));
-            }
             CommandLine commandLine = CommandLine.getInstance();
             if (!commandLine.hasSwitch(ContentSwitches.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES)) {
                 getPreferenceScreen().removePreference(findPreference(Type.BLUETOOTH_SCANNING));
@@ -117,9 +112,7 @@ public class SiteSettingsPreferences
                 websitePrefs.add(Type.BLUETOOTH_SCANNING);
             }
             websitePrefs.add(Type.CAMERA);
-            if (!FeatureUtilities.isNoTouchModeEnabled()) {
-                websitePrefs.add(Type.CLIPBOARD);
-            }
+            websitePrefs.add(Type.CLIPBOARD);
             websitePrefs.add(Type.COOKIES);
             websitePrefs.add(Type.JAVASCRIPT);
             websitePrefs.add(Type.DEVICE_LOCATION);

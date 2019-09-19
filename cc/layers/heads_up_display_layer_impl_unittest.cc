@@ -9,7 +9,7 @@
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
-#include "cc/test/layer_test_common.h"
+#include "cc/test/layer_tree_impl_test_base.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -40,7 +40,7 @@ void CheckDrawLayer(HeadsUpDisplayLayerImpl* layer,
   EXPECT_EQ(0u, data.num_incomplete_tiles);
 }
 
-class HeadsUpDisplayLayerImplTest : public LayerTestCommon::LayerImplTest,
+class HeadsUpDisplayLayerImplTest : public LayerTreeImplTestBase,
                                     public ::testing::Test {};
 
 TEST_F(HeadsUpDisplayLayerImplTest, ResourcelessSoftwareDrawAfterResourceLoss) {
@@ -51,7 +51,7 @@ TEST_F(HeadsUpDisplayLayerImplTest, ResourcelessSoftwareDrawAfterResourceLoss) {
   layer->set_visible_layer_rect(gfx::Rect(100, 100));
   CopyProperties(root, layer);
 
-  UpdateDrawProperties(host_impl()->pending_tree());
+  UpdatePendingTreeDrawProperties();
 
   // Check regular hardware draw is ok.
   CheckDrawLayer(layer, layer_tree_frame_sink(), resource_provider(),
@@ -74,7 +74,7 @@ TEST_F(HeadsUpDisplayLayerImplTest, CPUAndGPURasterCanvas) {
   layer->SetBounds(gfx::Size(100, 100));
   CopyProperties(root, layer);
 
-  UpdateDrawProperties(host_impl()->pending_tree());
+  UpdatePendingTreeDrawProperties();
 
   // Check Ganesh canvas drawing is ok.
   CheckDrawLayer(layer, layer_tree_frame_sink(), resource_provider(),

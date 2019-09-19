@@ -38,7 +38,6 @@
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_frame_sink.h"
-#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/occlusion_tracker.h"
@@ -1279,7 +1278,8 @@ void LayerTreeImpl::SetElementIdsForTesting() {
 }
 
 bool LayerTreeImpl::UpdateDrawProperties(
-    bool update_image_animation_controller) {
+    bool update_image_animation_controller,
+    LayerImplList* output_update_layer_list_for_testing) {
   if (!needs_update_draw_properties_)
     return true;
 
@@ -1315,14 +1315,9 @@ bool LayerTreeImpl::UpdateDrawProperties(
     // We verify visible rect calculations whenever we verify clip tree
     // calculations except when this function is explicitly passed a flag asking
     // us to skip it.
-    LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
-        layer_list_[0].get(), GetDeviceViewport(), host_impl_->DrawTransform(),
-        device_scale_factor(), current_page_scale_factor(), PageScaleLayer(),
-        InnerViewportScrollLayer(), OuterViewportScrollLayer(),
-        elastic_overscroll()->Current(IsActiveTree()),
-        OverscrollElasticityElementId(), max_texture_size(),
-        &render_surface_list_, &property_trees_, PageScaleTransformNode());
-    LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+    draw_property_utils::CalculateDrawProperties(
+        this, &render_surface_list_, output_update_layer_list_for_testing);
+
     if (const char* client_name = GetClientNameForMetrics()) {
       UMA_HISTOGRAM_COUNTS_1M(
           base::StringPrintf(

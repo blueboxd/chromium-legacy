@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "components/dom_distiller/content/browser/distiller_ui_handle.h"
 #include "components/dom_distiller/content/common/mojom/distiller_javascript_service.mojom.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace dom_distiller {
 
@@ -35,7 +35,7 @@ class DistillerJavaScriptServiceImpl
 // static
 void CreateDistillerJavaScriptService(
     DistillerUIHandle* distiller_ui_handle,
-    mojom::DistillerJavaScriptServiceRequest request,
+    mojo::PendingReceiver<mojom::DistillerJavaScriptService> receiver,
     content::RenderFrameHost* render_frame_host);
 
 }  // namespace dom_distiller

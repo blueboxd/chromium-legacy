@@ -69,7 +69,7 @@ void GamepadService::StartUp(
   GamepadDataFetcherManager::GetInstance();
 }
 
-void GamepadService::ConsumerBecameActive(GamepadConsumer* consumer) {
+bool GamepadService::ConsumerBecameActive(GamepadConsumer* consumer) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
   if (!provider_) {
@@ -80,6 +80,8 @@ void GamepadService::ConsumerBecameActive(GamepadConsumer* consumer) {
   std::pair<ConsumerSet::iterator, bool> insert_result =
       consumers_.insert(consumer);
   const ConsumerInfo& info = *insert_result.first;
+  if (info.is_active)
+    return false;
   info.is_active = true;
   if (info.did_observe_user_gesture) {
     auto consumer_state_it = inactive_consumer_state_.find(consumer);
@@ -105,15 +107,18 @@ void GamepadService::ConsumerBecameActive(GamepadConsumer* consumer) {
 
   if (num_active_consumers_++ == 0)
     provider_->Resume();
+  return true;
 }
 
-void GamepadService::ConsumerBecameInactive(GamepadConsumer* consumer) {
+bool GamepadService::ConsumerBecameInactive(GamepadConsumer* consumer) {
   DCHECK(provider_);
-  DCHECK(num_active_consumers_ > 0);
   auto consumer_it = consumers_.find(consumer);
-  DCHECK(consumer_it != consumers_.end());
+  if (consumer_it == consumers_.end())
+    return false;
   const ConsumerInfo& info = *consumer_it;
-  DCHECK(info.is_active);
+  if (!info.is_active)
+    return false;
+  DCHECK_GT(num_active_consumers_, 0);
 
   info.is_active = false;
   if (--num_active_consumers_ == 0)
@@ -128,16 +133,21 @@ void GamepadService::ConsumerBecameInactive(GamepadConsumer* consumer) {
       connected_state[i] = gamepads.items[i].connected;
     inactive_consumer_state_[consumer] = connected_state;
   }
+  return true;
 }
 
-void GamepadService::RemoveConsumer(GamepadConsumer* consumer) {
+bool GamepadService::RemoveConsumer(GamepadConsumer* consumer) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
   auto it = consumers_.find(consumer);
+  if (it == consumers_.end())
+    return false;
+  DCHECK_GT(num_active_consumers_, 0);
   if (it->is_active && --num_active_consumers_ == 0)
     provider_->Pause();
   consumers_.erase(it);
   inactive_consumer_state_.erase(consumer);
+  return true;
 }
 
 void GamepadService::RegisterForUserGesture(const base::Closure& closure) {

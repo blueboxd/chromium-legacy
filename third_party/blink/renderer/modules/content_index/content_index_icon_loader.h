@@ -17,7 +17,7 @@ namespace blink {
 class ExecutionContext;
 
 class MODULES_EXPORT ContentIndexIconLoader final
-    : public GarbageCollectedFinalized<ContentIndexIconLoader> {
+    : public GarbageCollected<ContentIndexIconLoader> {
  public:
   using IconsCallback =
       base::OnceCallback<void(mojom::blink::ContentDescriptionPtr description,

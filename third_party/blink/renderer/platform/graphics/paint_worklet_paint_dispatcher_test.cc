@@ -49,7 +49,7 @@ class PaintWorkletPaintDispatcherAsyncTest : public ::testing::Test {
 };
 
 class MockPaintWorkletPainter
-    : public GarbageCollectedFinalized<MockPaintWorkletPainter>,
+    : public GarbageCollected<MockPaintWorkletPainter>,
       public PaintWorkletPainter {
   USING_GARBAGE_COLLECTED_MIXIN(MockPaintWorkletPainter);
 

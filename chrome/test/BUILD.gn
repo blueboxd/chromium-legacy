@@ -1434,6 +1434,9 @@ if (!is_android) {
         "//chrome/test/data/webui:browser_tests_js_mojo_lite_webui",
         "//chrome/test/data/webui:browser_tests_js_webui",
       ]
+      if (is_chromeos) {
+        deps += [ "//chromeos/components/media_app_ui:browser_tests_js" ]
+      }
     }
 
     if (!is_fuchsia) {
@@ -2848,6 +2851,7 @@ test("unit_tests") {
     "../browser/android/oom_intervention/near_oom_monitor_unittest.cc",
     "../browser/android/oom_intervention/oom_intervention_decider_unittest.cc",
     "../browser/android/password_ui_view_android_unittest.cc",
+    "../browser/android/password_update_delegate_unittest.cc",
     "../browser/android/preferences/pref_service_bridge_unittest.cc",
     "../browser/android/preferences/prefs_unittest.cc",
     "../browser/android/shortcut_info_unittest.cc",

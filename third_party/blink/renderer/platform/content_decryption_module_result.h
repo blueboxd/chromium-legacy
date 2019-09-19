@@ -17,7 +17,7 @@ class WebString;
 
 // Used to notify completion of a CDM operation.
 class ContentDecryptionModuleResult
-    : public GarbageCollectedFinalized<ContentDecryptionModuleResult> {
+    : public GarbageCollected<ContentDecryptionModuleResult> {
  public:
   virtual ~ContentDecryptionModuleResult() = default;
 

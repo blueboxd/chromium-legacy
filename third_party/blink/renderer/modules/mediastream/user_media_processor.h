@@ -57,7 +57,7 @@ struct UserMediaRequestInfo {
 // UserMediaProcessor must be created, called and destroyed on the main
 // render thread. There should be only one UserMediaProcessor per frame.
 class MODULES_EXPORT UserMediaProcessor
-    : public GarbageCollectedFinalized<UserMediaProcessor> {
+    : public GarbageCollected<UserMediaProcessor> {
  public:
   using MediaDevicesDispatcherCallback = base::RepeatingCallback<
       blink::mojom::blink::MediaDevicesDispatcherHost*()>;

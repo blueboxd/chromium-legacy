@@ -26,10 +26,8 @@ class WebLocalFrameImpl;
 class WebString;
 struct WebFloatRect;
 
-class CORE_EXPORT FindInPage final
-    : public GarbageCollectedFinalized<FindInPage>,
-      public mojom::blink::FindInPage {
-
+class CORE_EXPORT FindInPage final : public GarbageCollected<FindInPage>,
+                                     public mojom::blink::FindInPage {
  public:
   FindInPage(WebLocalFrameImpl& frame, InterfaceRegistry* interface_registry);
 

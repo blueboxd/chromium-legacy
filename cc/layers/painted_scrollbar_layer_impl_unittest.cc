@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "cc/resources/ui_resource_bitmap.h"
-#include "cc/test/layer_test_common.h"
+#include "cc/test/layer_tree_impl_test_base.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,7 +22,7 @@ TEST(PaintedScrollbarLayerImplTest, Occlusion) {
   gfx::Size viewport_size(1000, 1000);
   float thumb_opacity = 0.2f;
 
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
 
   SkBitmap thumb_sk_bitmap;
   thumb_sk_bitmap.allocN32Pixels(10, 10);
@@ -70,8 +70,8 @@ TEST(PaintedScrollbarLayerImplTest, Occlusion) {
     impl.AppendQuadsWithOcclusion(scrollbar_layer_impl, occluded);
 
     size_t partially_occluded_count = 0;
-    LayerTestCommon::VerifyQuadsAreOccluded(
-        impl.quad_list(), occluded, &partially_occluded_count);
+    VerifyQuadsAreOccluded(impl.quad_list(), occluded,
+                           &partially_occluded_count);
     EXPECT_EQ(2u, impl.quad_list().size());
     EXPECT_EQ(0u, partially_occluded_count);
 
@@ -116,7 +116,7 @@ TEST(PaintedScrollbarLayerImplTest, Occlusion) {
     gfx::Rect occluded(scrollbar_layer_impl->visible_layer_rect());
     impl.AppendQuadsWithOcclusion(scrollbar_layer_impl, occluded);
 
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());
+    VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());
     EXPECT_EQ(impl.quad_list().size(), 0u);
   }
 
@@ -126,8 +126,8 @@ TEST(PaintedScrollbarLayerImplTest, Occlusion) {
     impl.AppendQuadsWithOcclusion(scrollbar_layer_impl, occluded);
 
     size_t partially_occluded_count = 0;
-    LayerTestCommon::VerifyQuadsAreOccluded(
-        impl.quad_list(), occluded, &partially_occluded_count);
+    VerifyQuadsAreOccluded(impl.quad_list(), occluded,
+                           &partially_occluded_count);
     // The layer outputs two quads, which is partially occluded.
     EXPECT_EQ(2u, impl.quad_list().size());
     EXPECT_EQ(2u, partially_occluded_count);

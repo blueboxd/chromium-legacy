@@ -22,7 +22,7 @@ using MimeTypeCheck = AllowedByNosniff::MimeTypeCheck;
 using WebFeature = mojom::WebFeature;
 using ::testing::_;
 
-class MockUseCounter : public GarbageCollectedFinalized<MockUseCounter>,
+class MockUseCounter : public GarbageCollected<MockUseCounter>,
                        public UseCounter {
   USING_GARBAGE_COLLECTED_MIXIN(MockUseCounter);
 
@@ -35,7 +35,7 @@ class MockUseCounter : public GarbageCollectedFinalized<MockUseCounter>,
   MOCK_METHOD1(CountDeprecation, void(mojom::WebFeature));
 };
 
-class MockConsoleLogger : public GarbageCollectedFinalized<MockConsoleLogger>,
+class MockConsoleLogger : public GarbageCollected<MockConsoleLogger>,
                           public ConsoleLogger {
   USING_GARBAGE_COLLECTED_MIXIN(MockConsoleLogger);
 

@@ -4,10 +4,8 @@
 
 package org.chromium.chrome.browser.tab;
 
-import android.os.Bundle;
 import android.view.ViewGroup;
 
-import org.chromium.chrome.browser.AppHooks;
 import org.chromium.content_public.browser.RenderWidgetHostView;
 import org.chromium.ui.base.ViewAndroidDelegate;
 
@@ -41,11 +39,6 @@ public class TabViewAndroidDelegate extends ViewAndroidDelegate {
     @Override
     public void onBottomControlsChanged(int bottomControlsOffsetY, int bottomContentOffsetY) {
         TabBrowserControlsState.get(mTab).setBottomOffset(bottomControlsOffsetY);
-    }
-
-    @Override
-    public void performPrivateImeCommand(String action, Bundle data) {
-        AppHooks.get().performPrivateImeCommand(mTab.getWebContents(), action, data);
     }
 
     /**

@@ -12,8 +12,16 @@
 #include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/profile_key.h"
+#include "chrome/browser/transition_manager/full_browser_transition_manager.h"
 #include "components/keyed_service/core/simple_dependency_manager.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
+
+namespace {
+void OnProfileCreated(DownloadOfflineContentProvider* provider,
+                      Profile* profile) {
+  provider->OnProfileCreated(profile);
+}
+}  // namespace
 
 // static
 DownloadOfflineContentProviderFactory*
@@ -43,8 +51,13 @@ DownloadOfflineContentProviderFactory::BuildServiceInstanceFor(
   std::string name_space = OfflineContentAggregator::CreateUniqueNameSpace(
       OfflineItemUtils::GetDownloadNamespacePrefix(key->IsOffTheRecord()),
       key->IsOffTheRecord());
-  return std::make_unique<DownloadOfflineContentProvider>(aggregator,
-                                                          name_space);
+
+  auto provider =
+      std::make_unique<DownloadOfflineContentProvider>(aggregator, name_space);
+  auto callback = base::BindOnce(&OnProfileCreated, provider.get());
+  FullBrowserTransitionManager::Get()->RegisterCallbackOnProfileCreation(
+      key, std::move(callback));
+  return provider;
 }
 
 SimpleFactoryKey* DownloadOfflineContentProviderFactory::GetKeyToUse(

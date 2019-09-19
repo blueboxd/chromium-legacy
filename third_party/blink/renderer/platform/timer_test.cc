@@ -87,8 +87,7 @@ class TimerTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
 };
 
-class OnHeapTimerOwner final
-    : public GarbageCollectedFinalized<OnHeapTimerOwner> {
+class OnHeapTimerOwner final : public GarbageCollected<OnHeapTimerOwner> {
  public:
   class Record final : public RefCounted<Record> {
    public:

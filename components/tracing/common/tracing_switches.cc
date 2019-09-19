@@ -72,7 +72,8 @@ const char kEnablePerfetto[] = "enable-perfetto";
 const char kPerfettoDisableInterning[] = "perfetto-disable-interning";
 
 // If supplied, will enable Perfetto startup tracing and stream the
-// output to the given file.
+// output to the given file. On Android, if no file is provided, automatically
+// generate a file to write the output to.
 // TODO(oysteine): Remove once Perfetto starts early enough after
 // process startup to be able to replace the legacy startup tracing.
 const char kPerfettoOutputFile[] = "perfetto-output-file";

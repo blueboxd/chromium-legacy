@@ -16,8 +16,8 @@ import android.os.StrictMode;
 
 import org.chromium.android_webview.common.CommandLineUtil;
 import org.chromium.android_webview.common.PlatformServiceBridge;
+import org.chromium.android_webview.common.ServiceNames;
 import org.chromium.android_webview.policy.AwPolicyProvider;
-import org.chromium.android_webview.services.CrashReceiverService;
 import org.chromium.android_webview.services.ICrashReceiverService;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
@@ -297,7 +297,7 @@ public final class AwBrowserProcess {
             }
 
             final Intent intent = new Intent();
-            intent.setClassName(getWebViewPackageName(), CrashReceiverService.class.getName());
+            intent.setClassName(getWebViewPackageName(), ServiceNames.CRASH_RECEIVER_SERVICE);
 
             ServiceConnection connection = new ServiceConnection() {
                 @Override

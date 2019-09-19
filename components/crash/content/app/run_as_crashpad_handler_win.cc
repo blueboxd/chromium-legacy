@@ -15,6 +15,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/platform_thread.h"
 #include "components/browser_watcher/stability_report_user_stream_data_source.h"
 #include "components/gwp_asan/buildflags/buildflags.h"
 #include "third_party/crashpad/crashpad/client/crashpad_info.h"
@@ -35,6 +36,8 @@ int RunAsCrashpadHandler(const base::CommandLine& command_line,
   // Make sure this process terminates on OOM in the same mode as other Chrome
   // processes.
   base::EnableTerminationOnOutOfMemory();
+
+  base::PlatformThread::SetName("CrashpadMainThread");
 
   // If the handler is started with --monitor-self, it'll need a ptype
   // annotation set. It'll normally set one itself by being invoked with

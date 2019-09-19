@@ -15,7 +15,7 @@ class KURL;
 class WebLocalFrameImpl;
 
 class MODULES_EXPORT NavigatorContentUtilsClient
-    : public GarbageCollectedFinalized<NavigatorContentUtilsClient> {
+    : public GarbageCollected<NavigatorContentUtilsClient> {
  public:
   explicit NavigatorContentUtilsClient(WebLocalFrameImpl*);
   virtual ~NavigatorContentUtilsClient() = default;

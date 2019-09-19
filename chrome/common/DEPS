@@ -58,6 +58,7 @@ include_rules = [
   "+rlz/buildflags/buildflags.h",
   "+sandbox/linux/services/credentials.h",
   "+services/network/public/cpp",
+  "+services/network/public/mojom",
   "+third_party/blink/public/mojom",
   "+third_party/boringssl/src/include",
   "+third_party/metrics_proto",  # For heap profiler test.

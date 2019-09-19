@@ -8,6 +8,7 @@ import android.os.RemoteException;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.weblayer_private.aidl.APICallException;
 import org.chromium.weblayer_private.aidl.IClientNavigation;
 import org.chromium.weblayer_private.aidl.INavigation;
@@ -28,7 +29,7 @@ public final class NavigationImpl extends INavigation.Stub {
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
-        nativeSetJavaNavigation(mNativeNavigationImpl);
+        NavigationImplJni.get().setJavaNavigation(mNativeNavigationImpl, NavigationImpl.this);
     }
 
     public IClientNavigation getClientNavigation() {
@@ -38,19 +39,19 @@ public final class NavigationImpl extends INavigation.Stub {
     @Override
     public int getState() {
         throwIfNativeDestroyed();
-        return nativeGetState(mNativeNavigationImpl);
+        return NavigationImplJni.get().getState(mNativeNavigationImpl, NavigationImpl.this);
     }
 
     @Override
     public String getUri() {
         throwIfNativeDestroyed();
-        return nativeGetUri(mNativeNavigationImpl);
+        return NavigationImplJni.get().getUri(mNativeNavigationImpl, NavigationImpl.this);
     }
 
     @Override
     public List<String> getRedirectChain() {
         throwIfNativeDestroyed();
-        return nativeGetRedirectChain(mNativeNavigationImpl);
+        return NavigationImplJni.get().getRedirectChain(mNativeNavigationImpl, NavigationImpl.this);
     }
 
     private void throwIfNativeDestroyed() {
@@ -65,8 +66,11 @@ public final class NavigationImpl extends INavigation.Stub {
         // TODO: this should likely notify delegate in some way.
     }
 
-    private native void nativeSetJavaNavigation(long nativeNavigationImpl);
-    private native int nativeGetState(long nativeNavigationImpl);
-    private native String nativeGetUri(long nativeNavigationImpl);
-    private native List<String> nativeGetRedirectChain(long nativeNavigationImpl);
+    @NativeMethods
+    interface Natives {
+        void setJavaNavigation(long nativeNavigationImpl, NavigationImpl caller);
+        int getState(long nativeNavigationImpl, NavigationImpl caller);
+        String getUri(long nativeNavigationImpl, NavigationImpl caller);
+        List<String> getRedirectChain(long nativeNavigationImpl, NavigationImpl caller);
+    }
 }

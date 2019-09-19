@@ -599,6 +599,22 @@ void AppListView::ExcludeWindowFromEventHandling(aura::Window* window) {
 }
 
 // static
+float AppListView::GetTransitionProgressForState(ash::AppListViewState state) {
+  switch (state) {
+    case ash::AppListViewState::kClosed:
+      return 0.0f;
+    case ash::AppListViewState::kPeeking:
+    case ash::AppListViewState::kHalf:
+      return 1.0f;
+    case ash::AppListViewState::kFullscreenAllApps:
+    case ash::AppListViewState::kFullscreenSearch:
+      return 2.0f;
+  }
+  NOTREACHED();
+  return 0.0f;
+}
+
+// static
 void AppListView::SetShortAnimationForTesting(bool enabled) {
   short_animations_for_testing = enabled;
 }
@@ -1076,6 +1092,7 @@ void AppListView::SetChildViewsForStateTransition(
     ash::AppListViewState target_state) {
   if (target_state != ash::AppListViewState::kPeeking &&
       target_state != ash::AppListViewState::kFullscreenAllApps &&
+      target_state != ash::AppListViewState::kFullscreenSearch &&
       target_state != ash::AppListViewState::kHalf &&
       target_state != ash::AppListViewState::kClosed) {
     return;
@@ -1084,8 +1101,10 @@ void AppListView::SetChildViewsForStateTransition(
   app_list_main_view_->contents_view()->OnAppListViewTargetStateChanged(
       target_state);
 
-  if (target_state == ash::AppListViewState::kHalf)
+  if (target_state == ash::AppListViewState::kHalf ||
+      target_state == ash::AppListViewState::kFullscreenSearch) {
     return;
+  }
 
   if (GetAppsContainerView()->IsInFolderView())
     GetAppsContainerView()->ResetForShowApps();
@@ -1734,17 +1753,11 @@ void AppListView::SetStateFromSearchBoxView(bool search_box_is_empty,
       break;
     case ash::AppListViewState::kFullscreenSearch:
       if (app_list_features::IsZeroStateSuggestionsEnabled()) {
-        if (search_box_is_empty && !triggered_by_contents_change) {
+        if (search_box_is_empty && !triggered_by_contents_change)
           SetState(ash::AppListViewState::kFullscreenAllApps);
-          app_list_main_view()->contents_view()->SetActiveState(
-              ash::AppListState::kStateApps);
-        }
       } else {
-        if (search_box_is_empty) {
+        if (search_box_is_empty)
           SetState(ash::AppListViewState::kFullscreenAllApps);
-          app_list_main_view()->contents_view()->SetActiveState(
-              ash::AppListState::kStateApps);
-        }
       }
       break;
     case ash::AppListViewState::kFullscreenAllApps:
@@ -1857,11 +1870,25 @@ int AppListView::GetCurrentAppListHeight() const {
   return GetScreenBottom() - GetWidget()->GetWindowBoundsInScreen().y();
 }
 
-float AppListView::GetAppListTransitionProgress() const {
-  const float current_height = GetCurrentAppListHeight();
-  const float peeking_height =
-      AppListConfig::instance().peeking_app_list_height();
-  if (current_height <= peeking_height) {
+float AppListView::GetAppListTransitionProgress(int flags) const {
+  const int current_height = GetCurrentAppListHeight();
+  const int fullscreen_height = GetFullscreenStateHeight();
+  const int baseline_height =
+      std::min(fullscreen_height,
+               (flags & kProgressFlagSearchResults)
+                   ? kHalfAppListHeight
+                   : AppListConfig::instance().peeking_app_list_height());
+
+  // If vertical space is limited, the baseline and fullscreen height might be
+  // the same. To handle this case, if the height has reached the
+  // baseline/fullscreen height, return either 1.0 or 2.0 progress, depending on
+  // the current target state.
+  if (baseline_height == fullscreen_height &&
+      current_height >= fullscreen_height) {
+    return GetTransitionProgressForState(app_list_state_);
+  }
+
+  if (current_height <= baseline_height) {
     // Currently transition progress is between closed and peeking state.
     // Calculate the progress of this transition.
     const float shelf_height =
@@ -1871,17 +1898,17 @@ float AppListView::GetAppListTransitionProgress() const {
     // height for just one moment, which results in negative progress. So force
     // the progress to be non-negative.
     return std::max(0.0f, (current_height - shelf_height) /
-                              (peeking_height - shelf_height));
+                              (baseline_height - shelf_height));
   }
 
   // Currently transition progress is between peeking and fullscreen state.
   // Calculate the progress of this transition.
-  const float fullscreen_height_above_peeking =
-      GetFullscreenStateHeight() - peeking_height;
-  const float current_height_above_peeking = current_height - peeking_height;
-  DCHECK_GT(fullscreen_height_above_peeking, 0);
-  DCHECK_LE(current_height_above_peeking, fullscreen_height_above_peeking);
-  return 1 + current_height_above_peeking / fullscreen_height_above_peeking;
+  const float fullscreen_height_above_baseline =
+      fullscreen_height - baseline_height;
+  const float current_height_above_baseline = current_height - baseline_height;
+  DCHECK_GT(fullscreen_height_above_baseline, 0);
+  DCHECK_LE(current_height_above_baseline, fullscreen_height_above_baseline);
+  return 1 + current_height_above_baseline / fullscreen_height_above_baseline;
 }
 
 int AppListView::GetFullscreenStateHeight() const {
@@ -2228,7 +2255,8 @@ void AppListView::UpdateAppListBackgroundYPosition(
   // Update the y position of the background shield.
   gfx::Transform transform;
   if (is_in_drag_) {
-    float app_list_transition_progress = GetAppListTransitionProgress();
+    float app_list_transition_progress =
+        GetAppListTransitionProgress(kProgressFlagNone);
     if (app_list_transition_progress < 1 && !shelf_has_rounded_corners()) {
       const float shelf_height =
           GetScreenBottom() - GetDisplayNearestView().work_area().bottom();

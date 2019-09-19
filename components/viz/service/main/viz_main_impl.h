@@ -44,12 +44,6 @@ class MojoUkmRecorder;
 namespace viz {
 class GpuServiceImpl;
 
-#if defined(OS_ANDROID)
-using CompositorThreadType = base::android::JavaHandlerThread;
-#else
-using CompositorThreadType = base::Thread;
-#endif
-
 class VizMainImpl : public mojom::VizMain {
  public:
   struct LogMessage {

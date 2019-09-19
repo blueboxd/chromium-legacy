@@ -113,11 +113,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         xrButton.addToHeader();
 
         if (navigator.xr) {
-          const mode = 'inline';
-          navigator.xr.requestSession(mode, {optionalFeatures: ['local-floor']})
+          requestInlineSession()
           .then((session) => {
-            session.mode = mode;
-            onSessionStarted(session);
+            gl.canvas.addEventListener('touchend', () => {
+              session.end().then(() => {
+                requestInlineSession({ optionalFeatures: ['local-floor'] });
+              }, { once: true });
+            })
           });
         } else {
           // Still render the initial scene if WebXR is not available.
@@ -209,10 +211,15 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         });
       }
 
+      function requestInlineSession(options) {
+        return navigator.xr.requestSession('inline', options)
+          .then((session) => {
+            session.mode = 'inline';
+            return onSessionStarted(session);
+          });
+      }
+
       function onSessionStarted(session) {
-        if (!session.mode) {
-          session.mode = 'inline';
-        }
 
         session.addEventListener('end', onSessionEnded);
 
@@ -260,6 +267,8 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             session.requestAnimationFrame(onXRFrame);
           });
         });
+
+        return session;
       }
 
       // Used for updating the origin offset.

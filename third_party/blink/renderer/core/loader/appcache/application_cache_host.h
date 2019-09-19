@@ -51,7 +51,7 @@
 namespace blink {
 
 class CORE_EXPORT ApplicationCacheHost
-    : public GarbageCollectedFinalized<ApplicationCacheHost>,
+    : public GarbageCollected<ApplicationCacheHost>,
       public mojom::blink::AppCacheFrontend {
  public:
   ApplicationCacheHost(

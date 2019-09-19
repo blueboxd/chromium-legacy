@@ -241,9 +241,6 @@
   "content/app/resources/content_resources.grd": {
     "structures": [20000],
   },
-  "content/app/strings/content_strings.grd": {
-    "messages": [20100],
-  },
   "content/content_resources.grd": {
     "includes": [20400],
   },
@@ -317,106 +314,109 @@
   # START "everything else" section.
   # Everything but chrome/, components/, content/, and ios/
   "android_webview/ui/aw_resources.grd": {
-    "includes": [23500],
+    "includes": [23100],
   },
   "android_webview/ui/aw_strings.grd": {
-    "messages": [23510],
+    "messages": [23110],
   },
 
   "ash/app_list/resources/app_list_resources.grd": {
-    "structures": [23520],
+    "structures": [23120],
   },
   "ash/ash_strings.grd": {
-    "messages": [23525],
+    "messages": [23125],
   },
   "ash/components/ash_components_strings.grd": {
-    "messages": [24130],
+    "messages": [23730],
   },
   "ash/components/resources/ash_components_resources.grd": {
-    "structures": [24350],
+    "structures": [23950],
   },
   "ash/keyboard/ui/keyboard_resources.grd": {
-    "includes": [26800],
+    "includes": [23960],
   },
   "ash/login/resources/login_resources.grd": {
-    "structures": [24360],
+    "structures": [24060],
   },
   "ash/public/cpp/resources/ash_public_unscaled_resources.grd": {
-    "includes": [24370],
+    "includes": [24070],
   },
   "ash/shell/ash_shell_resources.grd": {
-    "includes": [24380],
+    "includes": [24080],
   },
 
   "chromecast/browser/cast_browser_resources.grd": {
-    "includes": [24400],
+    "includes": [24100],
   },
   "chromecast/renderer/resources/extensions_renderer_resources.grd": {
-    "includes": [24410],
+    "includes": [24110],
   },
 
   "cloud_print/virtual_driver/win/install/virtual_driver_setup_resources.grd": {
-    "includes": [24450],
-    "messages": [24460],
+    "includes": [24150],
+    "messages": [24160],
   },
 
   "device/bluetooth/bluetooth_strings.grd": {
-    "messages": [24500],
+    "messages": [24200],
   },
 
   "device/fido/fido_strings.grd": {
-    "messages": [24540],
+    "messages": [24240],
   },
 
   "extensions/browser/resources/extensions_browser_resources.grd": {
-    "structures": [24550],
+    "structures": [24250],
   },
   "extensions/extensions_resources.grd": {
-    "includes": [24560],
+    "includes": [24260],
   },
   "extensions/renderer/resources/extensions_renderer_resources.grd": {
-    "includes": [24570],
-    "structures": [24700],
+    "includes": [24270],
+    "structures": [24400],
   },
   "extensions/shell/app_shell_resources.grd": {
-    "includes": [24710],
+    "includes": [24410],
   },
   "extensions/strings/extensions_strings.grd": {
-    "messages": [24720],
+    "messages": [24420],
   },
 
   "headless/lib/resources/headless_lib_resources.grd": {
-    "includes": [24800],
+    "includes": [24500],
   },
 
   "mojo/public/js/mojo_bindings_resources.grd": {
-    "includes": [24850],
+    "includes": [24550],
   },
 
   "net/base/net_resources.grd": {
-    "includes": [24890],
+    "includes": [24590],
   },
 
   "remoting/resources/remoting_strings.grd": {
-    "messages": [24900],
+    "messages": [24600],
   },
 
   "services/services_strings.grd": {
-    "messages": [25300],
+    "messages": [25000],
   },
 
   "third_party/blink/public/blink_image_resources.grd": {
-    "structures": [25400],
+    "structures": [25100],
   },
   "third_party/blink/public/blink_resources.grd": {
-    "includes": [25500],
+    "includes": [25200],
   },
   "third_party/blink/renderer/modules/media_controls/touchless/resources/media_controls_touchless_resources.grd": {
-    "structures": [25590],
+    "structures": [25290],
   },
   "third_party/blink/renderer/modules/media_controls/resources/media_controls_resources.grd": {
-    "includes": [25600],
-    "structures": [25700],
+    "includes": [25300],
+    "structures": [25400],
+  },
+  "third_party/blink/public/strings/blink_strings.grd": {
+    "messages": [25600],
   },
   "third_party/ink/ink_resources.grd": {
     "includes": [25900],

@@ -1443,12 +1443,6 @@ const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateDescription[] =
     "updated right when the user presses Enter, the user may go to a "
     "surprising destination.";
 
-const char kOmniboxUIShowPlaceholderWhenCaretShowingName[] =
-    "Omnibox UI Show Placeholder When Caret Showing";
-const char kOmniboxUIShowPlaceholderWhenCaretShowingDescription[] =
-    "Shows the \"Search Google or type a URL\" placeholder text in the "
-    "omnibox when it's focused / the caret cursor is showing.";
-
 const char kOmniboxUIShowSuggestionFaviconsName[] =
     "Omnibox UI Show Suggestion Favicons";
 const char kOmniboxUIShowSuggestionFaviconsDescription[] =
@@ -1621,6 +1615,13 @@ const char kPrintPreviewRegisterPromosName[] =
     "Print Preview Registration Promos";
 const char kPrintPreviewRegisterPromosDescription[] =
     "Enable registering unregistered cloud printers from print preview.";
+
+const char kProminentDarkModeActiveTabTitleName[] =
+    "Prominent Dark Mode Active Tab Titles";
+const char kProminentDarkModeActiveTabTitleDescription[] =
+    "Makes the active tab title in dark mode bolder so the active tab is "
+    "easier "
+    "to identify.";
 
 const char kPullToRefreshName[] = "Pull-to-refresh gesture";
 const char kPullToRefreshDescription[] =
@@ -2243,6 +2244,9 @@ const char kWebXrPlaneDetectionDescription[] =
 const char kZeroCopyName[] = "Zero-copy rasterizer";
 const char kZeroCopyDescription[] =
     "Raster threads write directly to GPU memory associated with tiles.";
+
+const char kEnableVulkanName[] = "Vulkan";
+const char kEnableVulkanDescription[] = "Use vulkan as the graphocs backend.";
 
 // Android ---------------------------------------------------------------------
 
@@ -2978,6 +2982,12 @@ const char kEnableGpuAppcontainerName[] = "Enable GPU AppContainer Lockdown.";
 const char kEnableGpuAppcontainerDescription[] =
     "Enables the use of an AppContainer for the GPU sandboxed processes to "
     "improve security.";
+
+const char kExperimentalFlingAnimationName[] =
+    "Enable experimental fling animation";
+const char kExperimentalFlingAnimationDescription[] =
+    "Enables the use of a touch fling curve that is based on the behavior of "
+    "native apps on Windows.";
 
 const char kGdiTextPrinting[] = "GDI Text Printing";
 const char kGdiTextPrintingDescription[] =

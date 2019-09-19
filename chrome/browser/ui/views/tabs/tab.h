@@ -127,10 +127,6 @@ class Tab : public gfx::AnimationDelegate,
   // Returns the color for the tab's group, if any.
   base::Optional<SkColor> GetGroupColor() const;
 
-  // Should be called when the result of
-  // |TabController::GetVisualDataForGroup()| changes.
-  void GroupColorChanged();
-
   // Returns the color used for the alert indicator icon.
   SkColor GetAlertIndicatorColor(TabAlertState state) const;
 

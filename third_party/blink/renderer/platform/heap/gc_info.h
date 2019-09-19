@@ -25,7 +25,7 @@
 namespace blink {
 
 // GCInfo contains metadata for objects that are instantiated from classes that
-// inherit for GarbageCollected or GarbageCollectedFinalized.
+// inherit from GarbageCollected.
 struct GCInfo {
   const TraceCallback trace;
   const FinalizationCallback finalize;

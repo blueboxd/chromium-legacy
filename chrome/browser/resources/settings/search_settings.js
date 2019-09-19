@@ -149,11 +149,15 @@ cr.define('settings', function() {
     let associatedControl = null;
     // Find corresponding SETTINGS-SECTION parent and make it visible.
     let parent = node;
-    while (parent && parent.nodeName !== 'SETTINGS-SECTION') {
+    while (parent.nodeName !== 'SETTINGS-SECTION') {
       parent = parent.nodeType == Node.DOCUMENT_FRAGMENT_NODE ?
           parent.host :
           parent.parentNode;
-      if (parent && parent.nodeName == 'SETTINGS-SUBPAGE') {
+      if (!parent) {
+        // |node| wasn't inside a SETTINGS-SECTION.
+        return null;
+      }
+      if (parent.nodeName == 'SETTINGS-SUBPAGE') {
         // TODO(dpapad): Cast to SettingsSubpageElement here.
         associatedControl = assert(
             parent.associatedControl,
@@ -161,9 +165,7 @@ cr.define('settings', function() {
                 parent.pageTitle + ', but was not found.');
       }
     }
-    if (parent) {
-      parent.hiddenBySearch = false;
-    }
+    parent.hiddenBySearch = false;
 
     // Need to add the search bubble after the parent SETTINGS-SECTION has
     // become visible, otherwise |offsetWidth| returns zero.

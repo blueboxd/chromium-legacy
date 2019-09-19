@@ -25,7 +25,7 @@ class ScriptState;
 
 // TODO(yhirano): Remove NOINLINE once we find the cause of crashes.
 class CORE_EXPORT ScriptPromisePropertyBase
-    : public GarbageCollectedFinalized<ScriptPromisePropertyBase>,
+    : public GarbageCollected<ScriptPromisePropertyBase>,
       public ContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(ScriptPromisePropertyBase);
 

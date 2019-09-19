@@ -27,6 +27,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace cloud_print {
 
@@ -220,7 +221,7 @@ void PrivetURLLoader::SetUploadData(const std::string& upload_content_type,
 
 void PrivetURLLoader::OnResponseStarted(
     const GURL& final_url,
-    const network::ResourceResponseHead& response_head) {
+    const network::mojom::URLResponseHead& response_head) {
   if (!response_head.headers ||
       response_head.headers->response_code() == net::HTTP_SERVICE_UNAVAILABLE) {
     url_loader_.reset();

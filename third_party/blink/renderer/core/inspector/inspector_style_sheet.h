@@ -52,7 +52,7 @@ class InspectorStyleSheetBase;
 typedef HeapVector<Member<CSSRule>> CSSRuleVector;
 typedef Vector<unsigned> LineEndings;
 
-class InspectorStyle final : public GarbageCollectedFinalized<InspectorStyle> {
+class InspectorStyle final : public GarbageCollected<InspectorStyle> {
  public:
   InspectorStyle(CSSStyleDeclaration*,
                  CSSRuleSourceData*,
@@ -77,7 +77,7 @@ class InspectorStyle final : public GarbageCollectedFinalized<InspectorStyle> {
 };
 
 class InspectorStyleSheetBase
-    : public GarbageCollectedFinalized<InspectorStyleSheetBase> {
+    : public GarbageCollected<InspectorStyleSheetBase> {
  public:
   class CORE_EXPORT Listener {
    public:

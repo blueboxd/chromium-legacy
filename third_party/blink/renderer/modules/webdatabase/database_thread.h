@@ -43,7 +43,7 @@ class DatabaseTask;
 class SQLTransactionClient;
 class SQLTransactionCoordinator;
 
-class DatabaseThread final : public GarbageCollectedFinalized<DatabaseThread> {
+class DatabaseThread final : public GarbageCollected<DatabaseThread> {
  public:
   DatabaseThread();
   ~DatabaseThread();

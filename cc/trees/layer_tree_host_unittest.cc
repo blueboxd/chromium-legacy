@@ -51,9 +51,9 @@
 #include "cc/trees/clip_node.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/frame_rate_counter.h"
-#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
+#include "cc/trees/scroll_and_scale_set.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/swap_promise.h"
@@ -779,7 +779,7 @@ class LayerTreeHostTestPushPropertiesTo : public LayerTreeHostTest {
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    VerifyAfterValues(impl->active_tree()->root_layer_for_testing());
+    VerifyAfterValues(impl->active_tree()->root_layer());
   }
 
   void DidCommitAndDrawFrame() override {
@@ -1644,7 +1644,7 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
   void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     gfx::Transform transform;
     FilterOperations filters;
-    LayerImpl* root = impl->active_tree()->root_layer_for_testing();
+    LayerImpl* root = impl->active_tree()->root_layer();
     switch (static_cast<Animations>(index_)) {
       case OPACITY:
         index_++;
@@ -1914,7 +1914,7 @@ class LayerTreeHostTestEffectTreeSync : public LayerTreeHostTest {
 
   void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     EffectTree& effect_tree = impl->sync_tree()->property_trees()->effect_tree;
-    LayerImpl* root = impl->sync_tree()->root_layer_for_testing();
+    LayerImpl* root = impl->sync_tree()->root_layer();
     EffectNode* node = effect_tree.Node(root->effect_tree_index());
     switch (impl->sync_tree()->source_frame_number()) {
       case 0:
@@ -2186,8 +2186,7 @@ class LayerTreeHostTestSwitchMaskLayer : public LayerTreeHostTest {
   void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     auto* mask_surface =
         GetRenderSurface(impl->sync_tree()->LayerById(mask_layer_->id()));
-    auto* root_surface =
-        GetRenderSurface(impl->sync_tree()->root_layer_for_testing());
+    auto* root_surface = GetRenderSurface(impl->sync_tree()->root_layer());
     ASSERT_TRUE(mask_surface);
     switch (index_) {
       case 0: {
@@ -2534,10 +2533,8 @@ class LayerTreeHostTestDeviceScaleFactorChange : public LayerTreeHostTest {
     } else {
       gfx::Rect root_damage_rect =
           frame_data->render_passes.back()->damage_rect;
-      EXPECT_EQ(
-          gfx::Rect(
-              host_impl->active_tree()->root_layer_for_testing()->bounds()),
-          root_damage_rect);
+      EXPECT_EQ(gfx::Rect(host_impl->active_tree()->root_layer()->bounds()),
+                root_damage_rect);
       EXPECT_EQ(4.f, host_impl->active_tree()->device_scale_factor());
       EndTest();
     }
@@ -2621,10 +2618,8 @@ class LayerTreeHostTestRasterColorSpaceChange : public LayerTreeHostTest {
     if (!frame_data->has_no_damage) {
       gfx::Rect root_damage_rect =
           frame_data->render_passes.back()->damage_rect;
-      EXPECT_EQ(
-          gfx::Rect(
-              host_impl->active_tree()->root_layer_for_testing()->bounds()),
-          root_damage_rect);
+      EXPECT_EQ(gfx::Rect(host_impl->active_tree()->root_layer()->bounds()),
+                root_damage_rect);
     }
 
     return draw_result;
@@ -3293,8 +3288,8 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
     // Device viewport is scaled.
     EXPECT_EQ(gfx::Rect(60, 60), impl->active_tree()->GetDeviceViewport());
 
-    FakePictureLayerImpl* root = static_cast<FakePictureLayerImpl*>(
-        impl->active_tree()->root_layer_for_testing());
+    FakePictureLayerImpl* root =
+        static_cast<FakePictureLayerImpl*>(impl->active_tree()->root_layer());
     FakePictureLayerImpl* child = static_cast<FakePictureLayerImpl*>(
         impl->active_tree()->LayerById(child_layer_->id()));
 
@@ -3858,10 +3853,10 @@ class LayerTreeHostTestLCDChange : public LayerTreeHostTest {
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
-    PictureLayerImpl* root_layer = static_cast<PictureLayerImpl*>(
-        host_impl->active_tree()->root_layer_for_testing());
+    PictureLayerImpl* root_layer =
+        static_cast<PictureLayerImpl*>(host_impl->active_tree()->root_layer());
     bool can_use_lcd_text =
-        host_impl->active_tree()->root_layer_for_testing()->CanUseLCDText();
+        host_impl->active_tree()->root_layer()->CanUseLCDText();
     switch (host_impl->active_tree()->source_frame_number()) {
       case 0:
         // The first draw.
@@ -4450,7 +4445,7 @@ class LayerTreeHostTestImplLayersPushProperties
 
         // Make sure the new root is pushed.
         EXPECT_EQ(1u, static_cast<PushPropertiesCountingLayerImpl*>(
-                          host_impl->active_tree()->root_layer_for_testing())
+                          host_impl->active_tree()->root_layer())
                           ->push_properties_count());
         return;
       case 4:
@@ -4556,7 +4551,7 @@ class LayerTreeHostTestImplLayersPushProperties
     // Pull the layers that we need from the tree assuming the same structure
     // as LayerTreeHostTestLayersPushProperties
     root_impl_ = static_cast<PushPropertiesCountingLayerImpl*>(
-        host_impl->active_tree()->root_layer_for_testing());
+        host_impl->active_tree()->root_layer());
 
     LayerTreeImpl* impl = root_impl_->layer_tree_impl();
     if (impl->LayerById(child_->id())) {
@@ -8229,8 +8224,8 @@ class LayerTreeHostTestImageAnimation : public LayerTreeHostTest {
 
   void WillPrepareToDrawOnThread(LayerTreeHostImpl* host_impl) override {
     gfx::Rect image_rect(-1, -1, 502, 502);
-    auto* layer = static_cast<PictureLayerImpl*>(
-        host_impl->active_tree()->root_layer_for_testing());
+    auto* layer =
+        static_cast<PictureLayerImpl*>(host_impl->active_tree()->root_layer());
     switch (++draw_count_) {
       case 1:
         // First draw, everything is invalid.

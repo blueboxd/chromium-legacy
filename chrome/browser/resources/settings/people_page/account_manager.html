@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_indicator.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_tooltip_icon.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/icon.html">
 <link rel="import" href="chrome://resources/html/util.html">
@@ -88,6 +89,11 @@
       .management-status {
         color: var(--cr-secondary-text-color);
       }
+
+      .tooltip-primary-account {
+        margin-inline-end: 12px;
+        margin-inline-start: 12px;
+      }
     </style>
 
     <div class="settings-box first">
@@ -152,6 +158,11 @@
 
           <!-- If this is the Device Account, display the management status -->
           <template is="dom-if" if="[[item.isDeviceAccount]]">
+            <cr-tooltip-icon icon-class="cr:info-outline"
+                class="tooltip-primary-account"
+                tooltip-text="$i18n{accountManagerPrimaryAccountTooltip}"
+                icon-aria-label="$i18n{accountManagerPrimaryAccountTooltip}">
+            </cr-tooltip-icon>
             <span class="management-status">
               [[getManagementLabel_(item)]]
             </span>

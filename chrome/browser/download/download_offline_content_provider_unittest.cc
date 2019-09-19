@@ -31,7 +31,7 @@ class DownloadOfflineContentProviderTest : public testing::Test {
       : task_runner_(new base::TestSimpleTaskRunner),
         handle_(task_runner_),
         provider_(&aggregator_, kTestDownloadNamespace),
-        coordinator_(base::NullCallback()) {}
+        coordinator_(base::NullCallback(), false) {}
 
   ~DownloadOfflineContentProviderTest() override {}
 

@@ -21,21 +21,27 @@
 
 namespace web_app {
 
-WebAppControllerBrowserTest::WebAppControllerBrowserTest()
-    : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+WebAppControllerBrowserTestBase::WebAppControllerBrowserTestBase() {
   if (GetParam() == ControllerType::kUnifiedControllerWithWebApp) {
     scoped_feature_list_.InitWithFeatures(
-        {features::kDesktopPWAsWithoutExtensions},
-        {predictors::kSpeculativePreconnectFeature});
+        {features::kDesktopPWAsWithoutExtensions}, {});
   } else if (GetParam() == ControllerType::kUnifiedControllerWithBookmarkApp) {
     scoped_feature_list_.InitWithFeatures(
         {features::kDesktopPWAsUnifiedUiController},
-        {predictors::kSpeculativePreconnectFeature});
+        {features::kDesktopPWAsWithoutExtensions});
   } else {
     scoped_feature_list_.InitWithFeatures(
         {}, {features::kDesktopPWAsUnifiedUiController,
-             predictors::kSpeculativePreconnectFeature});
+             features::kDesktopPWAsWithoutExtensions});
   }
+}
+
+WebAppControllerBrowserTestBase::~WebAppControllerBrowserTestBase() = default;
+
+WebAppControllerBrowserTest::WebAppControllerBrowserTest()
+    : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+  scoped_feature_list_.InitWithFeatures(
+      {}, {predictors::kSpeculativePreconnectFeature});
 }
 
 WebAppControllerBrowserTest::~WebAppControllerBrowserTest() = default;

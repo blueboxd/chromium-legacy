@@ -20,7 +20,7 @@ class LocalDOMWindow;
 class Visitor;
 
 class DOMWindowLaunchParams final
-    : public GarbageCollectedFinalized<DOMWindowLaunchParams>,
+    : public GarbageCollected<DOMWindowLaunchParams>,
       public Supplement<LocalDOMWindow> {
   USING_GARBAGE_COLLECTED_MIXIN(DOMWindowLaunchParams);
 

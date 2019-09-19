@@ -500,6 +500,13 @@ int ContentsView::AddLauncherPage(AppListPage* view, ash::AppListState state) {
 }
 
 gfx::Rect ContentsView::GetSearchBoxBounds(ash::AppListState state) const {
+  if (app_list_view_->is_in_drag()) {
+    return GetSearchBoxExpectedBoundsForProgress(
+        state, app_list_view_->GetAppListTransitionProgress(
+                   state == ash::AppListState::kStateSearchResults
+                       ? AppListView::kProgressFlagSearchResults
+                       : AppListView::kProgressFlagNone));
+  }
   return GetSearchBoxBoundsForViewState(state, target_view_state());
 }
 
@@ -535,16 +542,19 @@ gfx::Rect ContentsView::GetSearchBoxBoundsForViewState(
 }
 
 gfx::Rect ContentsView::GetSearchBoxExpectedBoundsForProgress(
+    ash::AppListState state,
     float progress) const {
-  gfx::Rect bounds = GetSearchBoxBoundsForViewState(
-      ash::AppListState::kStateApps, ash::AppListViewState::kPeeking);
+  ash::AppListViewState baseline_state =
+      state == ash::AppListState::kStateSearchResults
+          ? ash::AppListViewState::kHalf
+          : ash::AppListViewState::kPeeking;
+  gfx::Rect bounds = GetSearchBoxBoundsForViewState(state, baseline_state);
 
   if (progress <= 1) {
     bounds.set_y(gfx::Tween::IntValueBetween(progress, 0, bounds.y()));
   } else {
-    const int fullscreen_y =
-        GetSearchBoxTopForViewState(ash::AppListState::kStateApps,
-                                    ash::AppListViewState::kFullscreenAllApps);
+    const int fullscreen_y = GetSearchBoxTopForViewState(
+        state, ash::AppListViewState::kFullscreenAllApps);
     bounds.set_y(
         gfx::Tween::IntValueBetween(progress - 1, bounds.y(), fullscreen_y));
   }
@@ -701,40 +711,57 @@ views::View* ContentsView::GetSelectedView() const {
 }
 
 void ContentsView::UpdateYPositionAndOpacity() {
-  ash::AppListViewState state = app_list_view_->app_list_state();
-  if (state == ash::AppListViewState::kFullscreenSearch ||
-      state == ash::AppListViewState::kHalf) {
-    return;
+  const int current_page = pagination_model_.has_transition()
+                               ? pagination_model_.transition().target_page
+                               : pagination_model_.selected_page();
+  const ash::AppListState current_state = GetStateForPageIndex(current_page);
+  float progress = 0.0f;
+  if (app_list_view_->is_in_drag()) {
+    progress = app_list_view_->GetAppListTransitionProgress(
+        current_state == ash::AppListState::kStateSearchResults
+            ? AppListView::kProgressFlagSearchResults
+            : AppListView::kProgressFlagNone);
+  } else {
+    progress = AppListView::GetTransitionProgressForState(target_view_state());
   }
 
-  const bool should_restore_opacity =
+  const bool restore_opacity =
       !app_list_view_->is_in_drag() &&
-      (app_list_view_->app_list_state() != ash::AppListViewState::kClosed);
-  const float progress = app_list_view_->GetAppListTransitionProgress();
-
-  // Changes the opacity of expand arrow between 0 and 1 when app list
-  // transition progress changes between |kExpandArrowOpacityStartProgress|
-  // and |kExpandArrowOpacityEndProgress|.
-  expand_arrow_view_->layer()->SetOpacity(
-      should_restore_opacity
-          ? 1.0f
-          : std::min(std::max((progress - kExpandArrowOpacityStartProgress) /
-                                  (kExpandArrowOpacityEndProgress -
-                                   kExpandArrowOpacityStartProgress),
-                              0.f),
-                     1.0f));
+      target_view_state() != ash::AppListViewState::kClosed;
+  if (current_state != ash::AppListState::kStateApps) {
+    expand_arrow_view_->layer()->SetOpacity(0.0f);
+  } else if (restore_opacity) {
+    expand_arrow_view_->layer()->SetOpacity(1.0f);
+  } else {
+    // Changes the opacity of expand arrow between 0 and 1 when app list
+    // transition progress changes between |kExpandArrowOpacityStartProgress|
+    // and |kExpandArrowOpacityEndProgress|.
+    expand_arrow_view_->layer()->SetOpacity(
+        std::min(std::max((progress - kExpandArrowOpacityStartProgress) /
+                              (kExpandArrowOpacityEndProgress -
+                               kExpandArrowOpacityStartProgress),
+                          0.f),
+                 1.0f));
+  }
 
   expand_arrow_view_->SchedulePaint();
+
   SearchBoxView* search_box = GetSearchBoxView();
-  const gfx::Rect search_box_bounds_for_progress =
-      GetSearchBoxExpectedBoundsForProgress(progress);
-  gfx::Rect search_rect = search_box->GetViewBoundsForSearchBoxContentsBounds(
-      ConvertRectToWidgetWithoutTransform(search_box_bounds_for_progress));
+  const gfx::Rect search_box_bounds = GetSearchBoxBounds(current_state);
+  const gfx::Rect search_rect =
+      search_box->GetViewBoundsForSearchBoxContentsBounds(
+          ConvertRectToWidgetWithoutTransform(search_box_bounds));
   search_box->GetWidget()->SetBounds(search_rect);
 
-  search_results_page_view()->SetBoundsRect(search_box_bounds_for_progress);
+  for (AppListPage* page : app_list_pages_) {
+    page->UpdatePageBoundsForState(current_state, GetContentsBounds(),
+                                   search_box_bounds);
+  }
 
-  GetAppsContainerView()->UpdateYPositionAndOpacity();
+  if (current_state == ash::AppListState::kStateApps) {
+    GetAppsContainerView()->UpdateYPositionAndOpacity(progress,
+                                                      restore_opacity);
+  }
 }
 
 void ContentsView::SetExpandArrowViewVisibility(bool show) {

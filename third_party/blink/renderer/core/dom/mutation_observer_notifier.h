@@ -16,7 +16,7 @@ class HTMLSlotElement;
 // In charge of mutation observer related state that should be managed per
 // WindowAgent.
 class MutationObserverNotifier final
-    : public GarbageCollectedFinalized<MutationObserverNotifier> {
+    : public GarbageCollected<MutationObserverNotifier> {
  public:
   MutationObserverNotifier();
 

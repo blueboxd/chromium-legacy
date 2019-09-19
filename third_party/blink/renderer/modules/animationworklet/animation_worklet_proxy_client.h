@@ -26,7 +26,7 @@ class WorkletGlobalScope;
 // This is constructed on the main thread but it is used in the worklet backing
 // thread.
 class MODULES_EXPORT AnimationWorkletProxyClient
-    : public GarbageCollectedFinalized<AnimationWorkletProxyClient>,
+    : public GarbageCollected<AnimationWorkletProxyClient>,
       public Supplement<WorkerClients>,
       public AnimationWorkletMutator {
   USING_GARBAGE_COLLECTED_MIXIN(AnimationWorkletProxyClient);

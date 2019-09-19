@@ -81,7 +81,7 @@ enum WebSocketOpCode {
 }  // namespace
 
 class WebSocketChannelImpl::BlobLoader final
-    : public GarbageCollectedFinalized<WebSocketChannelImpl::BlobLoader>,
+    : public GarbageCollected<WebSocketChannelImpl::BlobLoader>,
       public FileReaderLoaderClient {
  public:
   BlobLoader(scoped_refptr<BlobDataHandle>,
@@ -105,7 +105,7 @@ class WebSocketChannelImpl::BlobLoader final
 };
 
 class WebSocketChannelImpl::Message final
-    : public GarbageCollectedFinalized<WebSocketChannelImpl::Message> {
+    : public GarbageCollected<WebSocketChannelImpl::Message> {
  public:
   Message(const std::string&, base::OnceClosure completion_callback);
   explicit Message(scoped_refptr<BlobDataHandle>);
@@ -627,15 +627,8 @@ void WebSocketChannelImpl::SendAndAdjustQuota(
     network::mojom::blink::WebSocketMessageType type,
     base::span<const char> data,
     uint64_t* consumed_buffered_amount) {
-  // TODO(darin): Avoid this copy.
-  Vector<uint8_t> data_to_pass;
-  // This cast is always valid because the data size is limited by
-  // sending_quota_, which is controlled by the browser process and in practice
-  // is always much smaller than 4GB.
-  // TODO(ricea): Change the type of sending_quota_ to wtf_size_t.
-  data_to_pass.ReserveInitialCapacity(static_cast<wtf_size_t>(data.size()));
-  data_to_pass.Append(data.data(), static_cast<wtf_size_t>(data.size()));
-
+  base::span<const uint8_t> data_to_pass(
+      reinterpret_cast<const uint8_t*>(data.data()), data.size());
   websocket_->SendFrame(fin, type, data_to_pass);
 
   sending_quota_ -= data.size();

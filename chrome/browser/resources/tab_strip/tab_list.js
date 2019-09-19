@@ -9,14 +9,24 @@ import {CustomElement} from './custom_element.js';
 import {TabElement} from './tab.js';
 import {TabsApiProxy} from './tabs_api_proxy.js';
 
+/** @const {number} */
 const GHOST_PINNED_TAB_COUNT = 3;
 
 /**
  * The amount of padding to leave between the edge of the screen and the active
  * tab when auto-scrolling. This should leave some room to show the previous or
  * next tab to afford to users that there more tabs if the user scrolls.
+ * @const {number}
  */
 const SCROLL_PADDING = 32;
+
+/**
+ * @param {!Element} element
+ * @return {boolean}
+ */
+function isTabElement(element) {
+  return element.tagName === 'TABSTRIP-TAB';
+}
 
 class TabListElement extends CustomElement {
   static get template() {
@@ -34,6 +44,12 @@ class TabListElement extends CustomElement {
      * @type {!Promise}
      */
     this.animationPromises = Promise.resolve();
+
+    /**
+     * The TabElement that is currently being dragged.
+     * @private {!TabElement|undefined}
+     */
+    this.draggedItem_;
 
     /** @private {!Element} */
     this.pinnedTabsContainerElement_ =
@@ -59,6 +75,13 @@ class TabListElement extends CustomElement {
 
     addWebUIListener(
         'tab-thumbnail-updated', this.tabThumbnailUpdated_.bind(this));
+
+    this.addEventListener(
+        'dragstart', (e) => this.onDragStart_(/** @type {!DragEvent} */ (e)));
+    this.addEventListener(
+        'dragend', (e) => this.onDragEnd_(/** @type {!DragEvent} */ (e)));
+    this.addEventListener(
+        'dragover', (e) => this.onDragOver_(/** @type {!DragEvent} */ (e)));
   }
 
   /**
@@ -131,6 +154,15 @@ class TabListElement extends CustomElement {
   }
 
   /**
+   * @return {number}
+   * @private
+   */
+  getPinnedTabsCount_() {
+    return this.pinnedTabsContainerElement_.childElementCount -
+        GHOST_PINNED_TAB_COUNT;
+  }
+
+  /**
    * @param {!TabElement} tabElement
    * @param {number} index
    * @private
@@ -145,14 +177,70 @@ class TabListElement extends CustomElement {
     } else {
       // Pinned tabs are in their own container, so the index of non-pinned
       // tabs need to be offset by the number of pinned tabs
-      const offsetIndex = index -
-          (this.pinnedTabsContainerElement_.childElementCount -
-           GHOST_PINNED_TAB_COUNT);
+      const offsetIndex = index - this.getPinnedTabsCount_();
       this.tabsContainerElement_.insertBefore(
           tabElement, this.tabsContainerElement_.childNodes[offsetIndex]);
     }
 
     this.updatePinnedTabsState_();
+  }
+
+  /**
+   * @param {!DragEvent} event
+   * @private
+   */
+  onDragEnd_(event) {
+    if (!this.draggedItem_) {
+      return;
+    }
+
+    this.draggedItem_.setDragging(false);
+    this.draggedItem_ = undefined;
+  }
+
+  /**
+   * @param {!DragEvent} event
+   * @private
+   */
+  onDragOver_(event) {
+    event.preventDefault();
+    const dragOverItem = event.path.find((pathItem) => {
+      return pathItem !== this.draggedItem_ && isTabElement(pathItem);
+    });
+
+    if (!dragOverItem ||
+        dragOverItem.tab.pinned !== this.draggedItem_.tab.pinned) {
+      // TODO(johntlee): Support dragging between different pinned states.
+      return;
+    }
+
+    let dragOverIndex =
+        Array.from(dragOverItem.parentNode.children).indexOf(dragOverItem);
+    event.dataTransfer.dropEffect = 'move';
+    if (!dragOverItem.tab.pinned) {
+      dragOverIndex += this.getPinnedTabsCount_();
+    }
+
+    this.tabsApi_.moveTab(this.draggedItem_.tab.id, dragOverIndex);
+  }
+
+  /**
+   * @param {!DragEvent} event
+   * @private
+   */
+  onDragStart_(event) {
+    const draggedItem = event.path[0];
+    if (!isTabElement(draggedItem)) {
+      return;
+    }
+
+    this.draggedItem_ = /** @type {!TabElement} */ (draggedItem);
+    this.draggedItem_.setDragging(true);
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setDragImage(
+        this.draggedItem_.getDragImage(),
+        event.pageX - this.draggedItem_.offsetLeft,
+        event.pageY - this.draggedItem_.offsetTop);
   }
 
   /**

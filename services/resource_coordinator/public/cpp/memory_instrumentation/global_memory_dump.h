@@ -35,8 +35,8 @@ class COMPONENT_EXPORT(RESOURCE_COORDINATOR_PUBLIC_MEMORY_INSTRUMENTATION)
 
     base::ProcessId pid() const { return raw_dump_->pid; }
     mojom::ProcessType process_type() const { return raw_dump_->process_type; }
-    const std::vector<std::string>& service_names() const {
-      return raw_dump_->service_names;
+    const base::Optional<std::string>& service_name() const {
+      return raw_dump_->service_name;
     }
 
     const mojom::OSMemDump& os_dump() const { return *raw_dump_->os_dump; }

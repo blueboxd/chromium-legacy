@@ -221,7 +221,8 @@ void DiscardsGraphDumpImpl::OnBeforeFrameNodeRemoved(
 }
 
 void DiscardsGraphDumpImpl::OnURLChanged(
-    const performance_manager::FrameNode* frame_node) {
+    const performance_manager::FrameNode* frame_node,
+    const GURL& previous_value) {
   SendFrameNotification(frame_node, false);
   StartFrameFaviconRequest(frame_node);
 }

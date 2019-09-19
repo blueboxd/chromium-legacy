@@ -24,9 +24,8 @@ class ScriptState;
 // Registration.
 //
 // TODO(peter): Use the PushMessaging Mojo service directly from here.
-class PushMessagingBridge final
-    : public GarbageCollectedFinalized<PushMessagingBridge>,
-      public Supplement<ServiceWorkerRegistration> {
+class PushMessagingBridge final : public GarbageCollected<PushMessagingBridge>,
+                                  public Supplement<ServiceWorkerRegistration> {
   USING_GARBAGE_COLLECTED_MIXIN(PushMessagingBridge);
 
  public:

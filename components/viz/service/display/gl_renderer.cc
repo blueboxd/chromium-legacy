@@ -59,6 +59,8 @@
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
+#include "gpu/config/gpu_driver_bug_workaround_type.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "media/base/media_switches.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -367,7 +369,9 @@ GLRenderer::GLRenderer(
       context_caps.blend_equation_advanced_coherent;
   use_occlusion_query_ = context_caps.occlusion_query;
   use_swap_with_bounds_ = context_caps.swap_buffers_with_bounds;
-
+  prefer_draw_to_copy_ = output_surface_->context_provider()
+                             ->GetGpuFeatureInfo()
+                             .IsWorkaroundEnabled(gpu::PREFER_DRAW_TO_COPY);
   InitializeSharedObjects();
 }
 
@@ -848,16 +852,42 @@ uint32_t GLRenderer::GetBackdropTexture(const gfx::Rect& window_rect,
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-  *internal_format = GetFramebufferCopyTextureFormat();
-  // CopyTexImage2D requires inernalformat channels to be a subset of
-  // the channels of the source texture internalformat.
-  DCHECK(*internal_format == GL_RGB || *internal_format == GL_RGBA ||
-         *internal_format == GL_BGRA_EXT);
-  if (*internal_format == GL_BGRA_EXT)
-    *internal_format = GL_RGBA;
-  gl_->CopyTexImage2D(GL_TEXTURE_2D, 0, *internal_format, window_rect.x(),
-                      window_rect.y(), window_rect.width(),
-                      window_rect.height(), 0);
+  // If there is a source texture |current_framebuffer_texture_| and the
+  // workaround |prefer_draw_to_copy_| is enabled, then do texture to texture
+  // copy via draw instead of glCopyTexImage2D.
+  if (prefer_draw_to_copy_ && current_framebuffer_texture_) {
+    // Copying from a non-root renderpass, so will use the format of the bound
+    // texture.
+    ResourceFormat resource_format = BackbufferFormat();
+
+    // Get gl_format, gl_type and internal_format.
+    DCHECK(GLSupportsFormat(resource_format));
+    *internal_format = GLInternalFormat(resource_format);
+    GLenum gl_format = GLDataFormat(resource_format);
+    GLenum gl_type = GLDataType(resource_format);
+
+    // Size the destination texture with empty data. This is required since
+    // CopySubTextureCHROMIUM() does not sizes the texture but CopyTexImage2D
+    // does.
+    gl_->TexImage2D(GL_TEXTURE_2D, 0, *internal_format, window_rect.width(),
+                    window_rect.height(), 0, gl_format, gl_type, nullptr);
+    gl_->CopySubTextureCHROMIUM(
+        current_framebuffer_texture_->id(), 0, GL_TEXTURE_2D, texture_id, 0, 0,
+        0, window_rect.x(), window_rect.y(), window_rect.width(),
+        window_rect.height(), GL_FALSE, GL_FALSE, GL_FALSE);
+  } else {
+    *internal_format = GetFramebufferCopyTextureFormat();
+
+    // CopyTexImage2D requires inernalformat channels to be a subset of
+    // the channels of the source texture internalformat.
+    DCHECK(*internal_format == GL_RGB || *internal_format == GL_RGBA ||
+           *internal_format == GL_BGRA_EXT);
+    if (*internal_format == GL_BGRA_EXT)
+      *internal_format = GL_RGBA;
+    gl_->CopyTexImage2D(GL_TEXTURE_2D, 0, *internal_format, window_rect.x(),
+                        window_rect.y(), window_rect.width(),
+                        window_rect.height(), 0);
+  }
   gl_->BindTexture(GL_TEXTURE_2D, 0);
   return texture_id;
 }

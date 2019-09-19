@@ -16,7 +16,7 @@ struct WebResourceTimingInfo;
 // appropriate Performance Timeline.
 // https://w3c.github.io/performance-timeline/#performance-timeline
 class WorkerResourceTimingNotifier
-    : public GarbageCollectedFinalized<WorkerResourceTimingNotifier> {
+    : public GarbageCollected<WorkerResourceTimingNotifier> {
  public:
   WorkerResourceTimingNotifier() = default;
   virtual ~WorkerResourceTimingNotifier() = default;

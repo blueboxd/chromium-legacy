@@ -73,7 +73,7 @@ class Thread;
 // thread but that pass frames on Render IO thread. It has an internal Encoder
 // with its own threading subtleties, see the implementation file.
 class MODULES_EXPORT VideoTrackRecorder
-    : public GarbageCollectedFinalized<VideoTrackRecorder>,
+    : public GarbageCollected<VideoTrackRecorder>,
       public WebMediaStreamSink {
   USING_PRE_FINALIZER(VideoTrackRecorder, Prefinalize);
 

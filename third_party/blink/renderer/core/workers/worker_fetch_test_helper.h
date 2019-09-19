@@ -16,7 +16,7 @@
 
 namespace blink {
 
-class ClientImpl final : public GarbageCollectedFinalized<ClientImpl>,
+class ClientImpl final : public GarbageCollected<ClientImpl>,
                          public ModuleScriptFetcher::Client {
   USING_GARBAGE_COLLECTED_MIXIN(ClientImpl);
 

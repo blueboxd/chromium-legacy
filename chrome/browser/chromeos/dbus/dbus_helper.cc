@@ -17,6 +17,7 @@
 #include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
 #include "chromeos/dbus/cups_proxy/cups_proxy_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "chromeos/dbus/initialize_dbus_client.h"
 #include "chromeos/dbus/kerberos/kerberos_client.h"
 #include "chromeos/dbus/machine_learning/machine_learning_client.h"
@@ -63,6 +64,7 @@ void InitializeDBus() {
   InitializeDBusClient<CrosHealthdClient>(bus);
   InitializeDBusClient<CryptohomeClient>(bus);
   InitializeDBusClient<CupsProxyClient>(bus);
+  InitializeDBusClient<DlcserviceClient>(bus);
   InitializeDBusClient<KerberosClient>(bus);
   InitializeDBusClient<MachineLearningClient>(bus);
   InitializeDBusClient<MediaAnalyticsClient>(bus);
@@ -98,6 +100,7 @@ void ShutdownDBus() {
   MediaAnalyticsClient::Shutdown();
   MachineLearningClient::Shutdown();
   KerberosClient::Shutdown();
+  DlcserviceClient::Shutdown();
   CupsProxyClient::Shutdown();
   CryptohomeClient::Shutdown();
   CrosHealthdClient::Shutdown();

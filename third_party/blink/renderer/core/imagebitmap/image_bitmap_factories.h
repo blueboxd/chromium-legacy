@@ -61,7 +61,7 @@ class ImageBitmapSource;
 class ImageBitmapOptions;
 
 class ImageBitmapFactories final
-    : public GarbageCollectedFinalized<ImageBitmapFactories>,
+    : public GarbageCollected<ImageBitmapFactories>,
       public Supplement<LocalDOMWindow>,
       public Supplement<WorkerGlobalScope>,
       public NameClient {
@@ -102,10 +102,9 @@ class ImageBitmapFactories final
   }
 
  private:
-  class ImageBitmapLoader final
-      : public GarbageCollectedFinalized<ImageBitmapLoader>,
-        public ContextLifecycleObserver,
-        public FileReaderLoaderClient {
+  class ImageBitmapLoader final : public GarbageCollected<ImageBitmapLoader>,
+                                  public ContextLifecycleObserver,
+                                  public FileReaderLoaderClient {
     USING_GARBAGE_COLLECTED_MIXIN(ImageBitmapLoader);
 
    public:

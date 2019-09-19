@@ -14,7 +14,7 @@ namespace blink {
 class BackgroundFetchBridge;
 
 class MODULES_EXPORT BackgroundFetchIconLoader final
-    : public GarbageCollectedFinalized<BackgroundFetchIconLoader> {
+    : public GarbageCollected<BackgroundFetchIconLoader> {
  public:
   // The bitmap may be empty if the request failed or the image data could not
   // be decoded. The int64_t returned is the scale of the ideal to chosen icon,

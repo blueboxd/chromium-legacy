@@ -21,7 +21,7 @@ namespace {
 using Result = BytesConsumer::Result;
 
 class BytesConsumerTestClient final
-    : public GarbageCollectedFinalized<BytesConsumerTestClient>,
+    : public GarbageCollected<BytesConsumerTestClient>,
       public BytesConsumer::Client {
   USING_GARBAGE_COLLECTED_MIXIN(BytesConsumerTestClient);
 

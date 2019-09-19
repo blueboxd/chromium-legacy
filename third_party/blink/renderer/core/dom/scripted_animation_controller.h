@@ -42,7 +42,7 @@ class EventTarget;
 class MediaQueryListListener;
 
 class CORE_EXPORT ScriptedAnimationController
-    : public GarbageCollectedFinalized<ScriptedAnimationController>,
+    : public GarbageCollected<ScriptedAnimationController>,
       public NameClient {
  public:
   explicit ScriptedAnimationController(Document*);

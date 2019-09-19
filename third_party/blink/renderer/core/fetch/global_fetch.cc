@@ -33,10 +33,9 @@ void MeasureFetchProperties(ExecutionContext* execution_context,
 }
 
 template <typename T>
-class GlobalFetchImpl final
-    : public GarbageCollectedFinalized<GlobalFetchImpl<T>>,
-      public GlobalFetch::ScopedFetcher,
-      public Supplement<T> {
+class GlobalFetchImpl final : public GarbageCollected<GlobalFetchImpl<T>>,
+                              public GlobalFetch::ScopedFetcher,
+                              public Supplement<T> {
   USING_GARBAGE_COLLECTED_MIXIN(GlobalFetchImpl);
 
  public:

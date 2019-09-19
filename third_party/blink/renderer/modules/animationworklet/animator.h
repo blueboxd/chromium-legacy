@@ -23,8 +23,7 @@ class AnimatorDefinition;
 // Represents an animator instance. It owns the underlying |v8::Object| for the
 // instance and knows how to invoke the |animate| function on it.
 // See also |AnimationWorkletGlobalScope::CreateInstance|.
-class Animator final : public GarbageCollectedFinalized<Animator>,
-                       public NameClient {
+class Animator final : public GarbageCollected<Animator>, public NameClient {
  public:
   Animator(v8::Isolate*,
            AnimatorDefinition*,

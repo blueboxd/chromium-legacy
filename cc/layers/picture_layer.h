@@ -37,11 +37,6 @@ class CC_EXPORT PictureLayer : public Layer {
     return picture_layer_inputs_.transformed_rasterization_allowed;
   }
 
-  // TODO(crbug.com/1003414): Remove this flag when we tile mask layers (except
-  // for backdrop filter masks) normally.
-  void SetIsMask(bool is_mask);
-  bool is_mask() const { return picture_layer_inputs_.is_mask; }
-
   void SetIsBackdropFilterMask(bool is_backdrop_filter_mask);
   bool is_backdrop_filter_mask() const {
     return picture_layer_inputs_.is_backdrop_filter_mask;
@@ -77,7 +72,6 @@ class CC_EXPORT PictureLayer : public Layer {
     ContentLayerClient* client = nullptr;
     bool nearest_neighbor = false;
     bool transformed_rasterization_allowed = false;
-    bool is_mask = false;
     bool is_backdrop_filter_mask = false;
     gfx::Rect recorded_viewport;
     scoped_refptr<DisplayItemList> display_list;

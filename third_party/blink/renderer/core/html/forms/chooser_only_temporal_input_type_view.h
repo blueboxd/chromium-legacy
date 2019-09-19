@@ -35,7 +35,7 @@
 namespace blink {
 
 class ChooserOnlyTemporalInputTypeView final
-    : public GarbageCollectedFinalized<ChooserOnlyTemporalInputTypeView>,
+    : public GarbageCollected<ChooserOnlyTemporalInputTypeView>,
       public KeyboardClickableInputTypeView,
       public DateTimeChooserClient {
   USING_GARBAGE_COLLECTED_MIXIN(ChooserOnlyTemporalInputTypeView);

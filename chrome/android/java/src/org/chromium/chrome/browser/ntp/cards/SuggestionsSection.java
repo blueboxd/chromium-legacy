@@ -26,7 +26,6 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.signin.SigninManager;
-import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsOfflineModelObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
@@ -104,16 +103,9 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
         boolean isExpandable = getCategory() == KnownCategories.ARTICLES;
         boolean isExpanded =
                 PrefServiceBridge.getInstance().getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE);
-        // No header when touchless. The header allows users to choose to collapse/hide suggestions,
-        // but when touchless collapsing the suggestions shouldn't be necessary. There is no omnibox
-        // to distract from.
-        if (!SuggestionsConfig.isTouchless()) {
-            mHeader = isExpandable ? new SectionHeader(info.getTitle(), isExpanded,
-                              this::updateSuggestionsVisibilityForExpandableHeader)
-                                   : new SectionHeader(info.getTitle());
-        } else {
-            mHeader = null;
-        }
+        mHeader = isExpandable ? new SectionHeader(info.getTitle(), isExpanded,
+                          this::updateSuggestionsVisibilityForExpandableHeader)
+                               : new SectionHeader(info.getTitle());
 
         if (isExpandable && SignInPromo.shouldCreatePromo()) {
             mSigninPromo = new SignInPromo(signinManager);
@@ -515,8 +507,7 @@ public class SuggestionsSection extends InnerNode<NewTabPageViewHolder, PartialB
     }
 
     /**
-     * Sets the visibility of this section's header. Note this will not work when header is not
-     * added to view hierarchy as a result of {@link SuggestionsConfig#isTouchless(boolean)}.
+     * Sets the visibility of this section's header.
      */
     public void setHeaderVisibility(boolean headerVisibility) {
         if (mHeader != null) {

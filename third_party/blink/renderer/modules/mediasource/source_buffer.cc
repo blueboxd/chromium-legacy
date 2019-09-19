@@ -1149,6 +1149,16 @@ void SourceBuffer::NotifyParseWarning(const ParseWarning warning) {
       UseCounter::Count(source_->MediaElement()->GetDocument(),
                         WebFeature::kMediaSourceMuxedSequenceMode);
       break;
+    case WebSourceBufferClient::kGroupEndTimestampDecreaseWithinMediaSegment:
+      // Report this problematic Media Segment structure usage to help inform
+      // follow-up work.
+      // TODO(wolenetz): Use the data to scope additional work. See
+      // https://crbug.com/920853 and
+      // https://github.com/w3c/media-source/issues/203.
+      UseCounter::Count(
+          source_->MediaElement()->GetDocument(),
+          WebFeature::kMediaSourceGroupEndTimestampDecreaseWithinMediaSegment);
+      break;
   }
 }
 

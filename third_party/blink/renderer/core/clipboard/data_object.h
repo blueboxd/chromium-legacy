@@ -50,7 +50,7 @@ enum class PasteMode;
 // A data object for holding data that would be in a clipboard or moved
 // during a drag-n-drop operation. This is the data that WebCore is aware
 // of and is not specific to a platform.
-class CORE_EXPORT DataObject : public GarbageCollectedFinalized<DataObject>,
+class CORE_EXPORT DataObject : public GarbageCollected<DataObject>,
                                public Supplementable<DataObject> {
   USING_GARBAGE_COLLECTED_MIXIN(DataObject);
 

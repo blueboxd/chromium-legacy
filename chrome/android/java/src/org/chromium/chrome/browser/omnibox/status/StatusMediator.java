@@ -38,6 +38,7 @@ class StatusMediator {
     private boolean mPageIsOffline;
     private boolean mShowStatusIconWhenUrlFocused;
     private boolean mIsSecurityButtonShown;
+    private boolean mIsSearchEngineStateSetup;
     private boolean mIsSearchEngineGoogle;
     private boolean mShouldCancelCustomFavicon;
 
@@ -298,8 +299,16 @@ class StatusMediator {
                 || mPageIsOffline;
     }
 
+    /**
+     * Called when the search engine status icon needs updating.
+     *
+     * @param shouldShowSearchEngineLogo True if the search engine icon should be shown.
+     * @param isSearchEngineGoogle True if the default search engine is google.
+     * @param searchEngineUrl The URL for the search engine icon.
+     */
     public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
             boolean isSearchEngineGoogle, String searchEngineUrl) {
+        mIsSearchEngineStateSetup = true;
         mIsSearchEngineGoogle = isSearchEngineGoogle;
         updateLocationBarIcon();
     }
@@ -335,7 +344,7 @@ class StatusMediator {
                 && mToolbarCommonPropertiesModel.getDisplaySearchTerms() != null
                 && SearchEngineLogoUtils.doesUrlMatchDefaultSearchEngine(
                         mToolbarCommonPropertiesModel.getCurrentUrl());
-        if (SearchEngineLogoUtils.shouldShowSearchEngineLogo()
+        if (SearchEngineLogoUtils.shouldShowSearchEngineLogo() && mIsSearchEngineStateSetup
                 && (showFocused || showUnfocusedNewTabPage || showUnfocusedSearchResultsPage)) {
             mShouldCancelCustomFavicon = false;
             mModel.set(StatusProperties.STATUS_ICON_TINT_RES, 0);

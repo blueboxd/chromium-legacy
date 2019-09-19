@@ -185,11 +185,13 @@ FakeSkiaOutputSurface::CreateImageContext(const gpu::MailboxHolder& holder,
       holder, size, format, std::move(color_space));
 }
 
-void FakeSkiaOutputSurface::SkiaSwapBuffers(OutputSurfaceFrame frame) {
+gpu::SyncToken FakeSkiaOutputSurface::SkiaSwapBuffers(OutputSurfaceFrame frame,
+                                                      bool wants_sync_token) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&FakeSkiaOutputSurface::SwapBuffersAck,
                                 weak_ptr_factory_.GetWeakPtr()));
+  return gpu::SyncToken();
 }
 
 SkCanvas* FakeSkiaOutputSurface::BeginPaintRenderPass(

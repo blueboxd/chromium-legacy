@@ -18,7 +18,7 @@ namespace blink {
 
 // Represents the key ID and associated status.
 class MediaKeyStatusMap::MapEntry final
-    : public GarbageCollectedFinalized<MediaKeyStatusMap::MapEntry> {
+    : public GarbageCollected<MediaKeyStatusMap::MapEntry> {
  public:
   MapEntry(WebData key_id, const String& status)
       : key_id_(DOMArrayBuffer::Create(scoped_refptr<SharedBuffer>(key_id))),

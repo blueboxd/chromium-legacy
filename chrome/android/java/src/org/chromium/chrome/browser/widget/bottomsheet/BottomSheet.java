@@ -1040,7 +1040,7 @@ public class BottomSheet
         if (mContainerHeight <= 0) return 0;
         float customFullRatio =
                 mSheetContent != null ? mSheetContent.getCustomFullRatio() : INVALID_HEIGHT_RATIO;
-        return customFullRatio < 0 ? mContainerHeight / (mContainerHeight + mToolbarShadowHeight)
+        return customFullRatio < 0 ? (mContainerHeight + mToolbarShadowHeight) / mContainerHeight
                                    : customFullRatio;
     }
 
@@ -1333,7 +1333,7 @@ public class BottomSheet
 
     public boolean isSmallScreen() {
         // A small screen is defined by there being less than 160dp between half and full states.
-        float fullHeightRatio = mContainerHeight / (mContainerHeight + mToolbarShadowHeight);
+        float fullHeightRatio = (mContainerHeight + mToolbarShadowHeight) / mContainerHeight;
         float fullToHalfDiff = (fullHeightRatio - HALF_HEIGHT_RATIO) * mContainerHeight;
         return fullToHalfDiff < mMinHalfFullDistance;
     }

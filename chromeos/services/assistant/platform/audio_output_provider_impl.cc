@@ -141,13 +141,15 @@ class AudioOutputImpl : public assistant_client::AudioOutput {
 
 AudioOutputProviderImpl::AudioOutputProviderImpl(
     mojom::Client* client,
-    chromeos::PowerManagerClient* power_manager_client,
+    PowerManagerClient* power_manager_client,
+    CrasAudioHandler* cras_audio_handler,
     AssistantMediaSession* media_session,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner,
     const std::string& device_id)
     : client_(client),
       loop_back_input_(client,
                        power_manager_client,
+                       cras_audio_handler,
                        media::AudioDeviceDescription::kLoopbackInputDeviceId,
                        /*hotword_device_id=*/std::string()),
       volume_control_impl_(client, media_session),

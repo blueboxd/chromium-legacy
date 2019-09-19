@@ -48,8 +48,9 @@ enum FrameSequenceTrackerType {
 // submitted frames.
 class CC_EXPORT FrameSequenceTrackerCollection {
  public:
-  explicit FrameSequenceTrackerCollection(
-      CompositorFrameReportingController* = nullptr);
+  FrameSequenceTrackerCollection(
+      bool is_single_threaded,
+      CompositorFrameReportingController* frame_reporting_controller);
   ~FrameSequenceTrackerCollection();
 
   FrameSequenceTrackerCollection(const FrameSequenceTrackerCollection&) =
@@ -95,6 +96,7 @@ class CC_EXPORT FrameSequenceTrackerCollection {
  private:
   friend class FrameSequenceTrackerTest;
 
+  const bool is_single_threaded_;
   // The callsite can use the type to manipulate the tracker.
   base::flat_map<FrameSequenceTrackerType,
                  std::unique_ptr<FrameSequenceTracker>>

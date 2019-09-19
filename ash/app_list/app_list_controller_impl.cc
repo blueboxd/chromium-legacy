@@ -1230,8 +1230,9 @@ void AppListControllerImpl::RemoveObserver(
 void AppListControllerImpl::NotifyAppListVisibilityChanged(bool visible,
                                                            int64_t display_id) {
   if (!visible) {
-    presenter_.GetView()->search_box_view()->SetSearchBoxActive(false,
-                                                                ui::ET_UNKNOWN);
+    presenter_.GetView()
+        ->search_box_view()
+        ->ClearSearchAndDeactivateSearchBox();
   }
 
   // Notify chrome of visibility changes.

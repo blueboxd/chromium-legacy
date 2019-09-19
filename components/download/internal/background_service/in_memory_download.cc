@@ -11,6 +11,7 @@
 #include "components/download/internal/background_service/blob_task_proxy.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
 
@@ -140,7 +141,7 @@ void InMemoryDownloadImpl::OnComplete(bool success) {
   // OnComplete() called without OnResponseStarted(). This will happen when the
   // request was aborted.
   if (!started_)
-    OnResponseStarted(GURL(), network::ResourceResponseHead());
+    OnResponseStarted(GURL(), network::mojom::URLResponseHead());
 
   NotifyDelegateDownloadComplete();
 }
@@ -223,14 +224,14 @@ void InMemoryDownloadImpl::SendRequest() {
 
 void InMemoryDownloadImpl::OnRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& response_head,
+    const network::mojom::URLResponseHead& response_head,
     std::vector<std::string>* to_be_removed_headers) {
   url_chain_.push_back(redirect_info.new_url);
 }
 
 void InMemoryDownloadImpl::OnResponseStarted(
     const GURL& final_url,
-    const network::ResourceResponseHead& response_head) {
+    const network::mojom::URLResponseHead& response_head) {
   started_ = true;
   response_headers_ = response_head.headers;
 

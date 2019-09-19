@@ -2414,6 +2414,7 @@ enum WebFeature {
   kDelegateFocusNotFirstInFlatTree = 3031,
   kThirdPartySharedWorker = 3032,
   kThirdPartyBroadcastChannel = 3033,
+  kMediaSourceGroupEndTimestampDecreaseWithinMediaSegment = 3034,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

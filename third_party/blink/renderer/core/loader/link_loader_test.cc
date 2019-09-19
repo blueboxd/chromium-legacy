@@ -32,7 +32,7 @@ namespace blink {
 namespace {
 
 class MockLinkLoaderClient final
-    : public GarbageCollectedFinalized<MockLinkLoaderClient>,
+    : public GarbageCollected<MockLinkLoaderClient>,
       public LinkLoaderClient {
   USING_GARBAGE_COLLECTED_MIXIN(MockLinkLoaderClient);
 

@@ -5,7 +5,9 @@
 #include "chrome/browser/accessibility/accessibility_ui.h"
 
 #include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -47,30 +49,43 @@
 
 static const char kTargetsDataFile[] = "targets-data.json";
 
+static const char kAccessibilityModeField[] = "a11yMode";
+static const char kBrowsersField[] = "browsers";
+static const char kEnabledField[] = "enabled";
+static const char kErrorField[] = "error";
+static const char kFaviconUrlField[] = "faviconUrl";
+static const char kFlagNameField[] = "flagName";
+static const char kImprovementsEnabledField[] = "improvementsEnabled";
+static const char kModeIdField[] = "modeId";
+static const char kNameField[] = "name";
+static const char kPagesField[] = "pages";
+static const char kPidField[] = "pid";
 static const char kProcessIdField[] = "processId";
+static const char kRequestTypeField[] = "requestType";
 static const char kRouteIdField[] = "routeId";
 static const char kSessionIdField[] = "sessionId";
-static const char kUrlField[] = "url";
-static const char kNameField[] = "name";
-static const char kFaviconUrlField[] = "favicon_url";
-static const char kPidField[] = "pid";
-static const char kAccessibilityModeField[] = "a11y_mode";
+static const char kShouldRequestTreeField[] = "shouldRequestTree";
+static const char kTreeField[] = "tree";
 static const char kTypeField[] = "type";
-static const char kImprovementsEnabled[] = "improvementsEnabled";
+static const char kUrlField[] = "url";
 
 // Global flags
-static const char kInternal[] = "internal";
-static const char kNative[] = "native";
-static const char kWeb[] = "web";
-static const char kText[] = "text";
-static const char kScreenReader[] = "screenreader";
+static const char kBrowser[] = "browser";
+static const char kCopyTree[] = "copyTree";
 static const char kHTML[] = "html";
-static const char kLabelImages[] = "label_images";
+static const char kInternal[] = "internal";
+static const char kLabelImages[] = "labelImages";
+static const char kNative[] = "native";
+static const char kPage[] = "page";
+static const char kScreenReader[] = "screenreader";
+static const char kShowTree[] = "showTree";
+static const char kText[] = "text";
+static const char kWeb[] = "web";
 
 // Possible global flag values
+static const char kDisabled[] = "disabled";
 static const char kOff[] = "off";
 static const char kOn[] = "on";
-static const char kDisabled[] = "disabled";
 
 namespace {
 
@@ -91,7 +106,7 @@ std::unique_ptr<base::DictionaryValue> BuildTargetDescriptor(
   target_data->SetInteger(kPidField, base::GetProcId(handle));
   target_data->SetString(kFaviconUrlField, favicon_url.spec());
   target_data->SetInteger(kAccessibilityModeField, accessibility_mode.mode());
-  target_data->SetString(kTypeField, "page");
+  target_data->SetString(kTypeField, kPage);
   return target_data;
 }
 
@@ -133,7 +148,7 @@ std::unique_ptr<base::DictionaryValue> BuildTargetDescriptor(Browser* browser) {
   target_data->SetInteger(kSessionIdField, browser->session_id().id());
   target_data->SetString(kNameField,
                          browser->GetWindowTitleForCurrentTab(false));
-  target_data->SetString(kTypeField, "browser");
+  target_data->SetString(kTypeField, kBrowser);
   return target_data;
 }
 #endif  // !defined(OS_ANDROID)
@@ -175,7 +190,7 @@ void HandleAccessibilityRequestCallback(
                  is_web_enabled ? (screenreader ? kOn : kOff) : kDisabled);
   data.SetString(kHTML, is_web_enabled ? (html ? kOn : kOff) : kDisabled);
 
-  // The "label_images" flag works only if "web" is enabled, the current profile
+  // The "labelImages" flag works only if "web" is enabled, the current profile
   // has the kAccessibilityImageLabelsEnabled preference set and the appropriate
   // command line switch has been used.
   bool are_accessibility_image_labels_enabled =
@@ -220,7 +235,7 @@ void HandleAccessibilityRequestCallback(
                            are_accessibility_image_labels_enabled);
     rvh_list->Append(std::move(descriptor));
   }
-  data.Set("pages", std::move(rvh_list));
+  data.Set(kPagesField, std::move(rvh_list));
 
   std::unique_ptr<base::ListValue> browser_list(new base::ListValue());
 #if !defined(OS_ANDROID)
@@ -228,9 +243,9 @@ void HandleAccessibilityRequestCallback(
     browser_list->Append(BuildTargetDescriptor(browser));
   }
 #endif  // !defined(OS_ANDROID)
-  data.Set("browsers", std::move(browser_list));
+  data.Set(kBrowsersField, std::move(browser_list));
 
-  data.SetBoolean(kImprovementsEnabled, improvements_enabled);
+  data.SetBoolean(kImprovementsEnabledField, improvements_enabled);
 
   std::string json_string;
   base::JSONWriter::Write(data, &json_string);
@@ -267,6 +282,11 @@ void AddPropertyFilters(
         content::AccessibilityTreeFormatter::PropertyFilter(
             base::ASCIIToUTF16(attribute), type));
   }
+}
+
+std::string Validate(const std::string* str) {
+  CHECK(str);
+  return *str;
 }
 
 }  // namespace
@@ -332,22 +352,13 @@ void AccessibilityUIMessageHandler::RegisterMessages() {
 
 void AccessibilityUIMessageHandler::ToggleAccessibility(
     const base::ListValue* args) {
-  std::string process_id_str;
-  std::string route_id_str;
-  std::string should_request_tree_str;
-  int process_id;
-  int route_id;
-  int mode;
-  bool should_request_tree;
-  CHECK_EQ(4U, args->GetSize());
-  CHECK(args->GetString(0, &process_id_str));
-  CHECK(args->GetString(1, &route_id_str));
-  // TODO(695247): We should pass each ax flag seperately
-  CHECK(args->GetInteger(2, &mode));
-  CHECK(args->GetString(3, &should_request_tree_str));
-  CHECK(base::StringToInt(process_id_str, &process_id));
-  CHECK(base::StringToInt(route_id_str, &route_id));
-  should_request_tree = (should_request_tree_str == "true");
+  const base::DictionaryValue* data;
+  CHECK(args->GetDictionary(0, &data));
+
+  int process_id = *data->FindIntPath(kProcessIdField);
+  int route_id = *data->FindIntPath(kRouteIdField);
+  int mode = *data->FindIntPath(kModeIdField);
+  bool should_request_tree = *data->FindBoolPath(kShouldRequestTreeField);
 
   AllowJavascript();
   content::RenderViewHost* rvh =
@@ -379,10 +390,12 @@ void AccessibilityUIMessageHandler::ToggleAccessibility(
   web_contents->SetAccessibilityMode(current_mode);
 
   if (should_request_tree) {
+    base::DictionaryValue request_data;
+    request_data.SetIntPath(kProcessIdField, process_id);
+    request_data.SetIntPath(kRouteIdField, route_id);
+    request_data.SetStringPath(kRequestTypeField, kShowTree);
     base::ListValue request_args;
-    request_args.Append(std::make_unique<base::Value>(process_id_str));
-    request_args.Append(std::make_unique<base::Value>(route_id_str));
-    request_args.Append(std::make_unique<base::Value>("showTree"));
+    request_args.Append(std::move(request_data));
     RequestWebContentsTree(&request_args);
   } else {
     // Call accessibility.showTree without a 'tree' field so the row's
@@ -394,11 +407,11 @@ void AccessibilityUIMessageHandler::ToggleAccessibility(
 }
 
 void AccessibilityUIMessageHandler::SetGlobalFlag(const base::ListValue* args) {
-  std::string flag_name_str;
-  bool enabled;
-  CHECK_EQ(2U, args->GetSize());
-  CHECK(args->GetString(0, &flag_name_str));
-  CHECK(args->GetBoolean(1, &enabled));
+  const base::DictionaryValue* data;
+  CHECK(args->GetDictionary(0, &data));
+
+  std::string flag_name_str = Validate(data->FindStringPath(kFlagNameField));
+  bool enabled = *data->FindBoolPath(kEnabledField);
 
   AllowJavascript();
   if (flag_name_str == kInternal) {
@@ -452,25 +465,20 @@ void AccessibilityUIMessageHandler::SetGlobalFlag(const base::ListValue* args) {
 
 void AccessibilityUIMessageHandler::RequestWebContentsTree(
     const base::ListValue* args) {
-  std::string process_id_str;
-  std::string route_id_str;
-  int process_id;
-  int route_id;
-  std::string request_type;
-  std::string allow;
-  std::string allow_empty;
-  std::string deny;
-  CHECK_EQ(6U, args->GetSize());
-  CHECK(args->GetString(0, &process_id_str));
-  CHECK(args->GetString(1, &route_id_str));
-  CHECK(base::StringToInt(process_id_str, &process_id));
-  CHECK(base::StringToInt(route_id_str, &route_id));
-  CHECK(args->GetString(2, &request_type));
-  CHECK(request_type == "showTree" || request_type == "copyTree");
+  const base::DictionaryValue* data;
+  CHECK(args->GetDictionary(0, &data));
+
+  int process_id = *data->FindIntPath(kProcessIdField);
+  int route_id = *data->FindIntPath(kRouteIdField);
+
+  std::string request_type = Validate(data->FindStringPath(kRequestTypeField));
+  CHECK(request_type == kShowTree || request_type == kCopyTree);
   request_type = "accessibility." + request_type;
-  CHECK(args->GetString(3, &allow));
-  CHECK(args->GetString(4, &allow_empty));
-  CHECK(args->GetString(5, &deny));
+
+  std::string allow = Validate(data->FindStringPath("filters.allow"));
+  std::string allow_empty =
+      Validate(data->FindStringPath("filters.allowEmpty"));
+  std::string deny = Validate(data->FindStringPath("filters.deny"));
 
   AllowJavascript();
   content::RenderViewHost* rvh =
@@ -479,7 +487,7 @@ void AccessibilityUIMessageHandler::RequestWebContentsTree(
     std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
     result->SetInteger(kProcessIdField, process_id);
     result->SetInteger(kRouteIdField, route_id);
-    result->SetString("error", "Renderer no longer exists.");
+    result->SetString(kErrorField, "Renderer no longer exists.");
     CallJavascriptFunction(request_type, *(result.get()));
     return;
   }
@@ -507,21 +515,20 @@ void AccessibilityUIMessageHandler::RequestWebContentsTree(
   bool internal = pref->GetBoolean(prefs::kShowInternalAccessibilityTree);
   base::string16 accessibility_contents_utf16 =
       web_contents->DumpAccessibilityTree(internal, property_filters);
-  result->SetString("tree", base::UTF16ToUTF8(accessibility_contents_utf16));
-  result->SetBoolean(kImprovementsEnabled, improvements_enabled_);
+  result->SetString(kTreeField,
+                    base::UTF16ToUTF8(accessibility_contents_utf16));
+  result->SetBoolean(kImprovementsEnabledField, improvements_enabled_);
   CallJavascriptFunction(request_type, *(result.get()));
 }
 
 void AccessibilityUIMessageHandler::RequestNativeUITree(
     const base::ListValue* args) {
-  std::string session_id_str;
-  int session_id;
-  std::string request_type;
-  CHECK_EQ(2U, args->GetSize());
-  CHECK(args->GetString(0, &session_id_str));
-  CHECK(base::StringToInt(session_id_str, &session_id));
-  CHECK(args->GetString(1, &request_type));
-  CHECK(request_type == "showTree" || request_type == "copyTree");
+  const base::DictionaryValue* data;
+  CHECK(args->GetDictionary(0, &data));
+
+  int session_id = *data->FindIntPath(kSessionIdField);
+  std::string request_type = Validate(data->FindStringPath(kRequestTypeField));
+  CHECK(request_type == kShowTree || request_type == kCopyTree);
   request_type = "accessibility." + request_type;
 
   AllowJavascript();
@@ -534,7 +541,7 @@ void AccessibilityUIMessageHandler::RequestNativeUITree(
       gfx::NativeWindow native_window = browser->window()->GetNativeWindow();
       ui::AXPlatformNode* node =
           ui::AXPlatformNode::FromNativeWindow(native_window);
-      result->SetKey("tree",
+      result->SetKey(kTreeField,
                      base::Value(RecursiveDumpAXPlatformNodeAsString(node, 0)));
       CallJavascriptFunction(request_type, *(result.get()));
       return;
@@ -544,8 +551,8 @@ void AccessibilityUIMessageHandler::RequestNativeUITree(
   // No browser with the specified |session_id| was found.
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   result->SetInteger(kSessionIdField, session_id);
-  result->SetString(kTypeField, "browser");
-  result->SetString("error", "Browser no longer exists.");
+  result->SetString(kTypeField, kBrowser);
+  result->SetString(kErrorField, "Browser no longer exists.");
   CallJavascriptFunction(request_type, *(result.get()));
 }
 

@@ -47,7 +47,7 @@ namespace {
 constexpr int kShelfBlurRadius = 30;
 // The maximum size of the opaque layer during an "overshoot" (drag away from
 // the screen edge).
-constexpr int kShelfMaxOvershootHeight = 32;
+constexpr int kShelfMaxOvershootHeight = 40;
 constexpr float kShelfBlurQuality = 0.33f;
 
 // Return the first or last focusable child of |root|.
@@ -347,7 +347,6 @@ void ShelfWidget::Shutdown() {
   shelf_layout_manager_->PrepareForShutdown();
 
   Shell::Get()->focus_cycler()->RemoveWidget(status_area_widget_.get());
-  status_area_widget_.reset();
 
   Shell::Get()->focus_cycler()->RemoveWidget(navigation_widget_.get());
   Shell::Get()->focus_cycler()->RemoveWidget(hotseat_widget_.get());
@@ -359,6 +358,11 @@ void ShelfWidget::Shutdown() {
   // Don't need to observe focus/activation during shutdown.
   Shell::Get()->focus_cycler()->RemoveWidget(this);
   SetFocusCycler(nullptr);
+
+  // The contents view of |hotseat_widget_| may rely on |status_area_widget_|.
+  // So do explicit destruction here.
+  hotseat_widget_.reset();
+  status_area_widget_.reset();
 }
 
 void ShelfWidget::CreateNavigationWidget(aura::Window* container) {

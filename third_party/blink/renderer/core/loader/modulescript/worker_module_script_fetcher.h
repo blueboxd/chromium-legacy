@@ -17,7 +17,7 @@ class WorkerGlobalScope;
 // https://html.spec.whatwg.org/C/#fetching-scripts-perform-fetch
 // https://html.spec.whatwg.org/C/#worker-processing-model
 class CORE_EXPORT WorkerModuleScriptFetcher final
-    : public GarbageCollectedFinalized<WorkerModuleScriptFetcher>,
+    : public GarbageCollected<WorkerModuleScriptFetcher>,
       public ModuleScriptFetcher {
   USING_GARBAGE_COLLECTED_MIXIN(WorkerModuleScriptFetcher);
 

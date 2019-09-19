@@ -434,6 +434,60 @@ public class TabSwitcherMediatorUnitTest {
     }
 
     @Test
+    public void updatesResetHandlerOnRestoreCompleted() {
+        initAndAssertAllProperties();
+        mMediator.showOverview(true);
+        assertThat(mModel.get(TabListContainerProperties.IS_VISIBLE), equalTo(true));
+
+        mTabModelObserverCaptor.getValue().restoreCompleted();
+
+        // MRU will be false unless the start surface is enabled.
+        verify(mResetHandler).resetWithTabList(mTabModelFilter, false, false);
+    }
+
+    @Test
+    public void showOverviewDoesNotUpdateResetHandlerBeforeRestoreCompleted() {
+        initAndAssertAllProperties();
+        doReturn(false).when(mTabModelFilter).isTabModelRestored();
+        mMediator.showOverview(true);
+
+        // MRU will be false unless the start surface is enabled.
+        verify(mResetHandler, never()).resetWithTabList(mTabModelFilter, true, false);
+    }
+
+    @Test
+    public void prepareOverviewDoesNotUpdateResetHandlerBeforeRestoreCompleted() {
+        initAndAssertAllProperties();
+        doReturn(false).when(mTabModelFilter).isTabModelRestored();
+        mMediator.prepareOverview();
+
+        // MRU will be false unless the start surface is enabled.
+        verify(mResetHandler, never()).resetWithTabList(mTabModelFilter, false, false);
+    }
+
+    @Test
+    public void showOverviewUpdatesResetHandlerAfterRestoreCompleted() {
+        initAndAssertAllProperties();
+        doReturn(true).when(mTabModelFilter).isTabModelRestored();
+
+        mMediator.showOverview(true);
+
+        // MRU will be false unless the start surface is enabled.
+        verify(mResetHandler).resetWithTabList(mTabModelFilter, true, false);
+    }
+
+    @Test
+    public void prepareOverviewUpdatesResetHandlerAfterRestoreCompleted() {
+        initAndAssertAllProperties();
+        doReturn(true).when(mTabModelFilter).isTabModelRestored();
+
+        mMediator.prepareOverview();
+
+        // MRU will be false unless the start surface is enabled.
+        verify(mResetHandler).resetWithTabList(mTabModelFilter, false, false);
+    }
+
+    @Test
     @DisableFeatures(ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID)
     public void openDialogButton_FlagDisabled() {
         FeatureUtilities.setTabGroupsAndroidEnabledForTesting(false);

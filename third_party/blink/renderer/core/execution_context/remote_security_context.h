@@ -13,7 +13,7 @@
 namespace blink {
 
 class CORE_EXPORT RemoteSecurityContext
-    : public GarbageCollectedFinalized<RemoteSecurityContext>,
+    : public GarbageCollected<RemoteSecurityContext>,
       public SecurityContext {
   USING_GARBAGE_COLLECTED_MIXIN(RemoteSecurityContext);
 

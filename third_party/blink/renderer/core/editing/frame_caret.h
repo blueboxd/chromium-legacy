@@ -50,8 +50,7 @@ struct PhysicalOffset;
 
 enum class CaretVisibility { kVisible, kHidden };
 
-class CORE_EXPORT FrameCaret final
-    : public GarbageCollectedFinalized<FrameCaret> {
+class CORE_EXPORT FrameCaret final : public GarbageCollected<FrameCaret> {
  public:
   FrameCaret(LocalFrame&, const SelectionEditor&);
   ~FrameCaret();

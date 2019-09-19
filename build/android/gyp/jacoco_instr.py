@@ -6,7 +6,7 @@
 
 """Instruments classes and jar files.
 
-This script corresponds to the 'jacoco_instr' action in the java build process.
+This script corresponds to the 'jacoco_instr' action in the Java build process.
 Depending on whether jacoco_instrument is set, the 'jacoco_instr' action will
 call the instrument command which accepts a jar and instruments it using
 jacococli.jar.
@@ -21,6 +21,7 @@ import os
 import shutil
 import sys
 import tempfile
+import zipfile
 
 from util import build_utils
 
@@ -53,6 +54,9 @@ def _AddArguments(parser):
       help='File containing newline-separated .java paths')
   parser.add_argument(
       '--jacococli-jar', required=True, help='Path to jacococli.jar.')
+  parser.add_argument(
+      '--files-to-instrument',
+      help='Path to a file containing which source files are affected.')
 
 
 def _GetSourceDirsFromSourceFiles(source_files):
@@ -101,8 +105,100 @@ def _CreateSourcesJsonFile(source_dirs, input_path, sources_json_file,
     json.dump(data, f)
 
 
+def _GetAffectedClasses(jar_file, source_files):
+  """Gets affected classes by affected source files to a jar.
+
+  Args:
+    jar_file: The jar file to get all members.
+    source_files: The list of affected source files.
+
+  Returns:
+    A tuple of affected classes and unaffected members.
+  """
+  with zipfile.ZipFile(jar_file) as f:
+    members = f.namelist()
+
+  affected_classes = []
+  unaffected_members = []
+
+  for member in members:
+    if not member.endswith('.class'):
+      unaffected_members.append(member)
+      continue
+
+    is_affected = False
+    index = member.find('$')
+    if index == -1:
+      index = member.find('.class')
+    for source_file in source_files:
+      if source_file.endswith(member[:index] + '.java'):
+        affected_classes.append(member)
+        is_affected = True
+        break
+    if not is_affected:
+      unaffected_members.append(member)
+
+  return affected_classes, unaffected_members
+
+
+def _InstrumentWholeJar(instrument_cmd, input_path, output_path, temp_dir):
+  """Instruments input jar to output_path.
+
+  Args:
+    instrument_cmd: JaCoCo instrument command.
+    input_path: The input path to non-instrumented jar.
+    output_path: The output path to instrumented jar.
+    temp_dir: The temporary directory.
+  """
+  instrument_cmd.extend([input_path, '--dest', temp_dir])
+
+  build_utils.CheckOutput(instrument_cmd)
+
+  jars = os.listdir(temp_dir)
+  if len(jars) != 1:
+    raise Exception('Error: multiple output files: %s' % jars)
+
+  # Delete output_path first to avoid modifying input_path in the case where
+  # input_path is a hardlink to output_path. http://crbug.com/571642
+  if os.path.exists(output_path):
+    os.unlink(output_path)
+  shutil.move(os.path.join(temp_dir, jars[0]), output_path)
+
+
+def _InstrumentClassFiles(instrument_cmd, input_path, output_path, temp_dir,
+                          affected_source_files):
+  """Instruments affected class files from input jar.
+
+  Args:
+    instrument_cmd: JaCoCo instrument command.
+    input_path: The input path to non-instrumented jar.
+    output_path: The output path to instrumented jar.
+    temp_dir: The temporary directory.
+    affected_source_files: The affected source file paths to input jar.
+  """
+  affected_classes, unaffected_members = _GetAffectedClasses(
+      input_path, affected_source_files)
+
+  # Extract affected class files.
+  with zipfile.ZipFile(input_path) as f:
+    f.extractall(temp_dir, affected_classes)
+
+  instrumented_dir = os.path.join(temp_dir, 'instrumented')
+
+  # Instrument extracted class files.
+  instrument_cmd.extend([temp_dir, '--dest', instrumented_dir])
+  build_utils.CheckOutput(instrument_cmd)
+
+  # Extract unaffected members to instrumented_dir.
+  with zipfile.ZipFile(input_path) as f:
+    f.extractall(instrumented_dir, unaffected_members)
+
+  # Zip all files to output_path
+  build_utils.ZipDir(output_path, instrumented_dir)
+
+
 def _RunInstrumentCommand(parser):
-  """Instruments jar files using Jacoco.
+  """Instruments class or Jar files using JaCoCo.
 
   Args:
     parser: ArgumentParser object.
@@ -112,33 +208,30 @@ def _RunInstrumentCommand(parser):
   """
   args = parser.parse_args()
 
-  temp_dir = tempfile.mkdtemp()
-  try:
-    cmd = [
-        'java', '-jar', args.jacococli_jar, 'instrument', args.input_path,
-        '--dest', temp_dir
-    ]
-
-    build_utils.CheckOutput(cmd)
-
-    jars = os.listdir(temp_dir)
-    if len(jars) != 1:
-      print('Error: multiple output files in: %s' % (temp_dir))
-      return 1
-
-    # Delete output_path first to avoid modifying input_path in the case where
-    # input_path is a hardlink to output_path. http://crbug.com/571642
-    if os.path.exists(args.output_path):
-      os.unlink(args.output_path)
-    shutil.move(os.path.join(temp_dir, jars[0]), args.output_path)
-  finally:
-    shutil.rmtree(temp_dir)
-
   source_files = []
   if args.java_sources_file:
     source_files.extend(build_utils.ReadSourcesList(args.java_sources_file))
-  source_dirs = _GetSourceDirsFromSourceFiles(source_files)
 
+  with build_utils.TempDir() as temp_dir:
+    instrument_cmd = ['java', '-jar', args.jacococli_jar, 'instrument']
+
+    if not args.files_to_instrument:
+      _InstrumentWholeJar(instrument_cmd, args.input_path, args.output_path,
+                          temp_dir)
+    else:
+      affected_files = build_utils.ReadSourcesList(args.files_to_instrument)
+      source_set = set(source_files)
+      affected_source_files = [f for f in affected_files if f in source_set]
+
+      # Copy input_path to output_path and return if no source file affected.
+      if not affected_source_files:
+        shutil.copyfile(args.input_path, args.output_path)
+        return 0
+      else:
+        _InstrumentClassFiles(instrument_cmd, args.input_path, args.output_path,
+                              temp_dir, affected_source_files)
+
+  source_dirs = _GetSourceDirsFromSourceFiles(source_files)
   # TODO(GYP): In GN, we are passed the list of sources, detecting source
   # directories, then walking them to re-establish the list of sources.
   # This can obviously be simplified!

@@ -99,7 +99,7 @@ interface SerialPortManager {
   // in |watcher| will also be closed.
   GetPort(mojo_base.mojom.UnguessableToken token,
           SerialPort& port_request,
-          SerialPortConnectionWatcher? watcher);
+          pending_remote<SerialPortConnectionWatcher>? watcher);
 };
 
 // Performs asynchronous I/O on serial devices.

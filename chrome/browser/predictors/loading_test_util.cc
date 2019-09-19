@@ -72,6 +72,9 @@ RedirectData CreateRedirectData(const std::string& primary_key,
 }
 
 OriginData CreateOriginData(const std::string& host, uint64_t last_visit_time) {
+  // |host| should not contain the scheme.
+  EXPECT_EQ(std::string::npos, host.find("https://"));
+  EXPECT_EQ(std::string::npos, host.find("http://"));
   OriginData data;
   data.set_host(host);
   data.set_last_visit_time(last_visit_time);

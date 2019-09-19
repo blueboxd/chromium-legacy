@@ -17,7 +17,7 @@ class DeviceSensorEntry;
 class PlatformEventController;
 
 class MODULES_EXPORT DeviceMotionEventPump
-    : public GarbageCollectedFinalized<DeviceMotionEventPump>,
+    : public GarbageCollected<DeviceMotionEventPump>,
       public DeviceSensorEventPump {
   USING_GARBAGE_COLLECTED_MIXIN(DeviceMotionEventPump);
 

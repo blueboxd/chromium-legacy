@@ -23,12 +23,11 @@ class NFCWriter;
 
 // This is a proxy class used by NFCWriter(s) and NFCReader(s) to connect
 // to implementation of device::mojom::blink::NFC interface.
-class MODULES_EXPORT NFCProxy final
-    : public GarbageCollectedFinalized<NFCProxy>,
-      public PageVisibilityObserver,
-      public FocusChangedObserver,
-      public Supplement<Document>,
-      public device::mojom::blink::NFCClient {
+class MODULES_EXPORT NFCProxy final : public GarbageCollected<NFCProxy>,
+                                      public PageVisibilityObserver,
+                                      public FocusChangedObserver,
+                                      public Supplement<Document>,
+                                      public device::mojom::blink::NFCClient {
   USING_GARBAGE_COLLECTED_MIXIN(NFCProxy);
   USING_PRE_FINALIZER(NFCProxy, Dispose);
 

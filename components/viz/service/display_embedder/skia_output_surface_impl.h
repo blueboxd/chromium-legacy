@@ -57,6 +57,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   ~SkiaOutputSurfaceImpl() override;
 
   // OutputSurface implementation:
+  gpu::SurfaceHandle GetSurfaceHandle() const override;
   void BindToClient(OutputSurfaceClient* client) override;
   void BindFramebuffer() override;
   void SetDrawRectangle(const gfx::Rect& draw_rectangle) override;
@@ -89,7 +90,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       SkYUVColorSpace yuv_color_space,
       sk_sp<SkColorSpace> dst_color_space,
       bool has_alpha) override;
-  void SkiaSwapBuffers(OutputSurfaceFrame frame) override;
+  gpu::SyncToken SkiaSwapBuffers(OutputSurfaceFrame frame,
+                                 bool wants_sync_token) override;
   void ScheduleOutputSurfaceAsOverlay(
       OverlayProcessor::OutputSurfaceOverlayPlane output_surface_plane)
       override;
@@ -109,6 +111,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       sk_sp<SkColorSpace> color_space) override;
 
   void RemoveRenderPassResource(std::vector<RenderPassId> ids) override;
+  void SetEnableDCLayers(bool enable) override;
+  void ScheduleDCLayers(std::vector<DCLayerOverlay> overlays) override;
   void CopyOutput(RenderPassId id,
                   const copy_output::RenderPassGeometry& geometry,
                   const gfx::ColorSpace& color_space,

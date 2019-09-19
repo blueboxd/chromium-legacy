@@ -739,6 +739,10 @@ class ClientHintsAllowThirdPartyBrowserTest : public ClientHintsBrowserTest {
   }
 };
 
+INSTANTIATE_TEST_SUITE_P(/* no prefix */,
+                         ClientHintsAllowThirdPartyBrowserTest,
+                         testing::Bool());
+
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, CorsChecks) {
   for (size_t i = 0; i < blink::kClientHintsMappingsCount; ++i) {
     // Do not test for headers that have not been enabled on the blink "stable"
@@ -897,14 +901,14 @@ IN_PROC_BROWSER_TEST_P(ClientHintsAllowThirdPartyBrowserTest,
   ui_test_utils::NavigateToURL(browser(), gurl);
   histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 0);
 
-  EXPECT_EQ(11u, count_client_hints_headers_seen());
+  EXPECT_EQ(10u, count_client_hints_headers_seen());
 
   // Requests to third party servers should not have client hints attached.
   EXPECT_EQ(1u, third_party_request_count_seen());
 
-  // Device memory, viewport width and DRP client hints should be sent to the
-  // third-party when feature "AllowClientHintsToThirdParty" is enabled.
-  EXPECT_EQ(3u, third_party_client_hints_count_seen());
+  // Device memory, viewport width, DRP, and UA client hints should be sent to
+  // the third-party when feature "AllowClientHintsToThirdParty" is enabled.
+  EXPECT_EQ(4u, third_party_client_hints_count_seen());
 }
 
 // Test that client hints are not attached to third party subresources if

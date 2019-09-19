@@ -49,8 +49,8 @@
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "cc/raster/task_graph_runner.h"
 #include "cc/trees/layer_tree_frame_sink.h"
-#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "cc/trees/ukm_manager.h"
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
 #include "components/metrics/public/mojom/single_sample_metrics.mojom.h"
 #include "components/metrics/single_sample_metrics.h"
@@ -92,7 +92,6 @@
 #include "content/renderer/media/gpu/gpu_video_accelerator_factories_impl.h"
 #include "content/renderer/media/render_media_client.h"
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
-#include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "content/renderer/net_info_helper.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process_impl.h"
@@ -147,7 +146,6 @@
 #include "third_party/blink/public/platform/web_scoped_page_pauser.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/blink.h"
-#include "third_party/blink/public/web/modules/peerconnection/peer_connection_dependency_factory.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_script_controller.h"
@@ -745,9 +743,6 @@ void RenderThreadImpl::Init() {
   peer_connection_tracker_.reset(
       new PeerConnectionTracker(main_thread_runner()));
   AddObserver(peer_connection_tracker_.get());
-
-  peer_connection_factory_.reset(new blink::PeerConnectionDependencyFactory(
-      /*create_p2p_socket_dispatcher =*/true));
 
   unfreezable_message_filter_ = new UnfreezableMessageFilter(this);
   AddFilter(unfreezable_message_filter_.get());
@@ -1999,11 +1994,6 @@ RenderThreadImpl::GetAssociatedInterfaceRegistry() {
   return &associated_interfaces_;
 }
 
-blink::PeerConnectionDependencyFactory*
-RenderThreadImpl::GetPeerConnectionDependencyFactory() {
-  return peer_connection_factory_.get();
-}
-
 mojom::RenderMessageFilter* RenderThreadImpl::render_message_filter() {
   if (!render_message_filter_)
     GetChannel()->GetRemoteAssociatedInterface(&render_message_filter_);
@@ -2057,7 +2047,7 @@ void RenderThreadImpl::CreateFrame(mojom::CreateFrameParamsPtr params) {
       std::move(browser_interface_broker), params->previous_routing_id,
       params->opener_routing_id, params->parent_routing_id,
       params->previous_sibling_routing_id, params->devtools_frame_token,
-      params->replication_state, compositor_deps, *params->widget_params,
+      params->replication_state, compositor_deps, params->widget_params.get(),
       params->frame_owner_properties, params->has_committed_real_load);
 }
 

@@ -10,7 +10,7 @@
 namespace blink {
 
 class CORE_EXPORT HitTestCanvasResult final
-    : public GarbageCollectedFinalized<HitTestCanvasResult> {
+    : public GarbageCollected<HitTestCanvasResult> {
  public:
   HitTestCanvasResult(String id, Member<Element> control);
 

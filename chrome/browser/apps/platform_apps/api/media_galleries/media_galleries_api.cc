@@ -628,13 +628,10 @@ void MediaGalleriesGetMetadataFunction::OnPreferencesInit(
     const std::string& blob_uuid) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // BlobReader is self-deleting.
-  BlobReader* reader =
-      new BlobReader(GetProfile(), blob_uuid,
-                     base::Bind(&MediaGalleriesGetMetadataFunction::GetMetadata,
-                                this, metadata_type, blob_uuid));
-  reader->SetByteRange(0, net::kMaxBytesToSniff);
-  reader->Start();
+  BlobReader::Read(GetProfile(), blob_uuid,
+                   base::Bind(&MediaGalleriesGetMetadataFunction::GetMetadata,
+                              this, metadata_type, blob_uuid),
+                   0, net::kMaxBytesToSniff);
 }
 
 void MediaGalleriesGetMetadataFunction::GetMetadata(

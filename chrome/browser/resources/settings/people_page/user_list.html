@@ -47,8 +47,10 @@
         <div class="user layout horizontal center two-line">
           <img class="user-icon" src="[[getProfilePictureUrl_(item)]]">
           <div class="flex layout vertical user-info no-min-width">
-            <div class="text-elide">[[getUserName_(item)]]</div>
-            <div class="secondary text-elide"
+            <div class="text-elide" title="[[getTooltip_(item)]]">
+              [[getUserName_(item)]]
+            </div>
+            <div class="secondary text-elide" title="[[item.displayEmail]]"
                 hidden$="[[!shouldShowEmail_(item)]]">
               [[item.displayEmail]]
             </div>

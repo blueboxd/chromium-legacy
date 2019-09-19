@@ -27,7 +27,7 @@
 
 namespace blink {
 
-struct SameSizeAsCSSRule : public GarbageCollectedFinalized<SameSizeAsCSSRule>,
+struct SameSizeAsCSSRule : public GarbageCollected<SameSizeAsCSSRule>,
                            public ScriptWrappable {
   ~SameSizeAsCSSRule() override;
   unsigned char bitfields;

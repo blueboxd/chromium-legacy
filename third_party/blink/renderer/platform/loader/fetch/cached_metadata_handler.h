@@ -44,8 +44,7 @@ PLATFORM_EXPORT bool ShouldUseIsolatedCodeCache(mojom::RequestContextType,
                                                 const ResourceResponse&);
 
 // Handler class for caching operations.
-class CachedMetadataHandler
-    : public GarbageCollectedFinalized<CachedMetadataHandler> {
+class CachedMetadataHandler : public GarbageCollected<CachedMetadataHandler> {
  public:
   enum CacheType {
     kSendToPlatform,  // send cache data to blink::Platform::cacheMetadata

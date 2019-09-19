@@ -514,7 +514,7 @@ TEST(ImageResourceTest, CancelOnRemoveObserver) {
   EXPECT_FALSE(GetMemoryCache()->ResourceForURL(test_url));
 }
 
-class MockFinishObserver : public GarbageCollectedFinalized<MockFinishObserver>,
+class MockFinishObserver : public GarbageCollected<MockFinishObserver>,
                            public ResourceFinishObserver {
   USING_GARBAGE_COLLECTED_MIXIN(MockFinishObserver);
 

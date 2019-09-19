@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.infobar;
 
-import android.content.res.Resources;
 import android.support.v7.widget.SwitchCompat;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -13,18 +12,9 @@ import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ResourceId;
-import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties;
-import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.DialogListItemProperties;
-import org.chromium.chrome.browser.touchless.dialog.TouchlessDialogProperties.ListItemType;
-import org.chromium.chrome.browser.util.FeatureUtilities;
-import org.chromium.ui.modaldialog.ModalDialogProperties;
-import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
-import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
-import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.widget.ButtonCompat;
 
@@ -107,7 +97,7 @@ public class AdsBlockedInfoBar extends ConfirmInfoBar implements OnCheckedChange
         // If we aren't already showing the explanation, clicking the link should expand to show the
         // explanation. If we *are* already showing the explanation, clicking the link (which should
         // change to Learn more) should take us to the help page.
-        if (!mIsShowingExplanation && !FeatureUtilities.isNoTouchModeEnabled()) {
+        if (!mIsShowingExplanation) {
             mIsShowingExplanation = true;
             replaceView(createView());
         }
@@ -124,52 +114,5 @@ public class AdsBlockedInfoBar extends ConfirmInfoBar implements OnCheckedChange
         assert mButton != null;
         mButton.setText(isChecked ? mReloadButtonText : mOKButtonText);
         mReloadIsToggled = isChecked;
-    }
-
-    @Override
-    public boolean supportsTouchlessMode() {
-        return true;
-    }
-
-    @Override
-    public PropertyModel createModel() {
-        PropertyModel model = super.createModel();
-        Resources res = getContext().getResources();
-
-        model.set(ModalDialogProperties.TITLE, res.getString(R.string.blocked_ads_prompt_title));
-        model.set(ModalDialogProperties.MESSAGE, res.getString(R.string.intrusive_ads_information));
-
-        ModelList listItems = new ModelList();
-        listItems.add(new ListItem(ListItemType.DEFAULT,
-                new PropertyModel.Builder(DialogListItemProperties.ALL_KEYS)
-                        .with(DialogListItemProperties.TEXT, res.getString(R.string.learn_more))
-                        .with(DialogListItemProperties.CLICK_LISTENER, (v) -> onLinkClicked())
-                        .with(DialogListItemProperties.ICON,
-                                ApiCompatibilityUtils.getDrawable(
-                                        res, R.drawable.ic_info_outline_grey))
-                        .build()));
-        // TODO(973601): We should have a better string for "always allow"; at least one that is
-        //               specific to this feature.
-        listItems.add(new ListItem(ListItemType.DEFAULT,
-                new PropertyModel.Builder(DialogListItemProperties.ALL_KEYS)
-                        .with(DialogListItemProperties.TEXT,
-                                res.getString(R.string.always_allow_redirects))
-                        .with(DialogListItemProperties.CLICK_LISTENER,
-                                (v) -> {
-                                    mReloadIsToggled = true;
-                                    onButtonClicked(true);
-                                })
-                        .with(DialogListItemProperties.ICON,
-                                ApiCompatibilityUtils.getDrawable(res, R.drawable.ic_check_circle))
-                        .build()));
-
-        model.set(TouchlessDialogProperties.LIST_MODELS, listItems);
-
-        // The alt action matches cancel but with a different name.
-        model.get(TouchlessDialogProperties.ACTION_NAMES).alt = R.string.ok;
-        model.set(TouchlessDialogProperties.ALT_ACTION,
-                model.get(TouchlessDialogProperties.CANCEL_ACTION));
-
-        return model;
     }
 }

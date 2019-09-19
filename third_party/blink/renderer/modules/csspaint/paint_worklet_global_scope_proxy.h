@@ -20,7 +20,7 @@ class WorkletModuleResponsesMap;
 
 // A proxy for PaintWorklet to talk to PaintWorkletGlobalScope.
 class MODULES_EXPORT PaintWorkletGlobalScopeProxy
-    : public GarbageCollectedFinalized<PaintWorkletGlobalScopeProxy>,
+    : public GarbageCollected<PaintWorkletGlobalScopeProxy>,
       public WorkletGlobalScopeProxy {
   USING_GARBAGE_COLLECTED_MIXIN(PaintWorkletGlobalScopeProxy);
 

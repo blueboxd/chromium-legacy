@@ -36,7 +36,7 @@ class ImageBitmap;
 // reason, a SerializedScriptValue can only be unpacked once, but thereafter it
 // can be deserialized multiple times.
 class CORE_EXPORT UnpackedSerializedScriptValue final
-    : public GarbageCollectedFinalized<UnpackedSerializedScriptValue> {
+    : public GarbageCollected<UnpackedSerializedScriptValue> {
  public:
   // Callers should use SerializedScriptValue::Unpack.
   explicit UnpackedSerializedScriptValue(scoped_refptr<SerializedScriptValue>);

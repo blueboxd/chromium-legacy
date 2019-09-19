@@ -21,9 +21,8 @@ namespace blink {
 
 class ScriptPromiseResolver;
 
-class ClipboardPromise final
-    : public GarbageCollectedFinalized<ClipboardPromise>,
-      public ContextLifecycleObserver {
+class ClipboardPromise final : public GarbageCollected<ClipboardPromise>,
+                               public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ClipboardPromise);
 
  public:

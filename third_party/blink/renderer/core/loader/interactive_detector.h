@@ -35,7 +35,7 @@ class Event;
 // TODO(crbug.com/631203): This class currently only detects Time to
 // Interactive. Implement First Idle.
 class CORE_EXPORT InteractiveDetector
-    : public GarbageCollectedFinalized<InteractiveDetector>,
+    : public GarbageCollected<InteractiveDetector>,
       public Supplement<Document>,
       public ContextLifecycleObserver,
       public LongTaskObserver {

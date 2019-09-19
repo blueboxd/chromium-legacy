@@ -19,7 +19,7 @@ namespace {
 
 template <typename T>
 class GlobalCacheStorageImpl final
-    : public GarbageCollectedFinalized<GlobalCacheStorageImpl<T>>,
+    : public GarbageCollected<GlobalCacheStorageImpl<T>>,
       public Supplement<T> {
   USING_GARBAGE_COLLECTED_MIXIN(GlobalCacheStorageImpl);
 

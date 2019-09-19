@@ -53,7 +53,7 @@ class CORE_EXPORT InterpolationEffect
 
  private:
   class InterpolationRecord final
-      : public GarbageCollectedFinalized<InterpolationRecord> {
+      : public GarbageCollected<InterpolationRecord> {
    public:
     InterpolationRecord(Interpolation* interpolation,
                         scoped_refptr<TimingFunction> easing,

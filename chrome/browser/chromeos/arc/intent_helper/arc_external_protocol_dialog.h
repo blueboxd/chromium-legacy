@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/mojom/intent_helper.mojom.h"
 #include "ui/base/page_transition_types.h"
@@ -94,7 +95,8 @@ enum class ProtocolAction {
   WEBCAL_ACCEPTED_PERSISTED = 45,
   WEBCAL_ACCEPTED_NOT_PERSISTED = 46,
   WEBCAL_REJECTED = 47,
-  kMaxValue = WEBCAL_REJECTED
+  TEL_DEVICE_SELECTED = 48,
+  kMaxValue = TEL_DEVICE_SELECTED
 };
 
 // Possible schemes for recording external protocol dialog metrics
@@ -141,9 +143,15 @@ bool GetAndResetSafeToRedirectToArcWithoutUserConfirmationFlagForTesting(
 bool IsChromeAnAppCandidateForTesting(
     const std::vector<mojom::IntentHandlerInfoPtr>& handlers);
 
-void RecordUmaDialogAction(Scheme scheme, bool accepted, bool persisted);
+void RecordUmaDialogAction(Scheme scheme,
+                           apps::PickerEntryType entry_type,
+                           bool accepted,
+                           bool persisted);
 
-ProtocolAction GetProtocolAction(Scheme scheme, bool accepted, bool persisted);
+ProtocolAction GetProtocolAction(Scheme scheme,
+                                 apps::PickerEntryType entry_type,
+                                 bool accepted,
+                                 bool persisted);
 
 }  // namespace arc
 

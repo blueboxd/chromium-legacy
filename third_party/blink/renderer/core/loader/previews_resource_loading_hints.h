@@ -27,7 +27,7 @@ class KURL;
 // PreviewsResourceLoadingHints stores the resource loading hints that apply to
 // a single document.
 class CORE_EXPORT PreviewsResourceLoadingHints final
-    : public GarbageCollectedFinalized<PreviewsResourceLoadingHints> {
+    : public GarbageCollected<PreviewsResourceLoadingHints> {
  public:
   static PreviewsResourceLoadingHints* Create(
       ExecutionContext& execution_context,

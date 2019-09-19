@@ -28,7 +28,7 @@ enum class PushRegistrationStatus;
 
 class PushSubscriptionOptions;
 
-class PushProvider final : public GarbageCollectedFinalized<PushProvider>,
+class PushProvider final : public GarbageCollected<PushProvider>,
                            public Supplement<ServiceWorkerRegistration> {
   USING_GARBAGE_COLLECTED_MIXIN(PushProvider);
 

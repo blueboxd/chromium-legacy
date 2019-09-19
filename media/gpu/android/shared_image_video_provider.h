@@ -53,15 +53,16 @@ class MEDIA_GPU_EXPORT SharedImageVideoProvider {
     // Mailbox to which this shared image is bound.
     gpu::Mailbox mailbox;
 
-    // Sampler conversion information which is used in vulkan context.
-    base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info;
-
     // Release callback.  When this is called (or dropped), the image will be
     // considered to be unused.
     ReleaseCB release_cb;
 
     // CodecImage that one can use for MaybeRenderEarly.
     scoped_refptr<CodecImageHolder> codec_image_holder;
+
+    // Is the underlying context Vulkan?  If so, then one must provide YCbCrInfo
+    // with the VideoFrame.
+    bool is_vulkan = false;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(ImageRecord);

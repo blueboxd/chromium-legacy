@@ -39,20 +39,11 @@ let EmailMessageData;
  */
 let PrintPreviewParams;
 
-// Note: Redefining these types here, to work around the fact that ink externs
+// Note: Redefining this type here, to work around the fact that ink externs
 // are only available on Chrome OS, so the targets that contain them cannot be
 // built on other platforms.
 // TODO (rbpotter): Break InkController into its own file that is only included
 // on Chrome OS.
-
-/**
- * @typedef {{
- *   tool: string,
- *   size: number,
- *   color: string,
- * }}
- */
-let AnnotationTool;
 
 /**
  * @typedef {{

@@ -146,6 +146,9 @@ const base::Feature kImeDecoderWithSandbox{"ImeDecoderWithSandbox",
 const base::Feature kInstantTethering{"InstantTethering",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// ChromeOS Media App. https://crbug.com/996088.
+const base::Feature kMediaApp{"MediaApp", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to enable the Parental Controls section of settings.
 const base::Feature kParentalControlsSettings{
     "ChromeOSParentalControlsSettings", base::FEATURE_DISABLED_BY_DEFAULT};

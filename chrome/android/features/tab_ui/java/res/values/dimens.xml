@@ -32,4 +32,5 @@
     <dimen name="tab_carousel_height">192dp</dimen>
     <dimen name="tab_carousel_card_width">168dp</dimen>
     <dimen name="tab_carousel_start_margin">-3dp</dimen>
+    <dimen name="tasks_view_items_vertical_spacing">8dp</dimen>
 </resources>

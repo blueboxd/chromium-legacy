@@ -10,8 +10,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace extensions {
 namespace image_writer {
@@ -136,7 +136,7 @@ void WriteFromUrlOperation::DestroySimpleURLLoader() {
 
 void WriteFromUrlOperation::OnResponseStarted(
     const GURL& final_url,
-    const network::ResourceResponseHead& response_head) {
+    const network::mojom::URLResponseHead& response_head) {
   total_response_bytes_ = response_head.content_length;
 }
 

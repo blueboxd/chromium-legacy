@@ -115,3 +115,4 @@ use_copyteximage2d_instead_of_readpixels_on_multisampled_textures
 use_eqaa_storage_samples_2
 max_3d_array_texture_size_1024
 disable_half_float_for_gmb
+prefer_draw_to_copy

@@ -141,7 +141,7 @@ struct WrapperTypeInfo;
 // ====== References ======
 // https://wiki.mozilla.org/Gecko:SplitWindow
 // https://whatwg.org/C/browsers.html#the-windowproxy-exotic-object
-class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
+class WindowProxy : public GarbageCollected<WindowProxy> {
  public:
   virtual ~WindowProxy();
 

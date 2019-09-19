@@ -126,7 +126,7 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
   };
 
   class LoadFontPromiseResolver final
-      : public GarbageCollectedFinalized<LoadFontPromiseResolver>,
+      : public GarbageCollected<LoadFontPromiseResolver>,
         public FontFace::LoadFontCallback {
     USING_GARBAGE_COLLECTED_MIXIN(LoadFontPromiseResolver);
 

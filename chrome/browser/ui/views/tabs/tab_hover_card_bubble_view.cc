@@ -9,7 +9,6 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/metrics/tab_count_metrics.h"
@@ -320,7 +319,7 @@ TabHoverCardBubbleView::TabHoverCardBubbleView(Tab* tab)
   alert_state_label_ = new views::Label(
       base::string16(), CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_SECONDARY);
   alert_state_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  alert_state_label_->SetMultiLine(false);
+  alert_state_label_->SetMultiLine(true);
   alert_state_label_->SetVisible(false);
   AddChildView(alert_state_label_);
 

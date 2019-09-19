@@ -22,24 +22,17 @@ class DummyObserver {
   MOCK_METHOD1(NotifyAlwaysConst, void(const DummyNode*));
   MOCK_METHOD1(NotifyOnlyOnChangesConst, void(const DummyNode*));
   MOCK_METHOD2(NotifyOnlyOnChangesWithPreviousValueConst,
-               void(const DummyNode*, bool));
+               void(const DummyNode*, const bool&));
 };
 
 class DummyNode {
  public:
-  DummyNode() {}
-  ~DummyNode() {}
+  DummyNode() = default;
+  ~DummyNode() = default;
 
-  void AddObserver(DummyObserver* observer) {
-    observers_.AddObserver(observer);
-    new_observers_.push_back(observer);
-  }
+  void AddObserver(DummyObserver* observer) { observers_.push_back(observer); }
 
-  base::ObserverList<DummyObserver>::Unchecked& observers() {
-    return observers_;
-  }
-
-  const std::vector<DummyObserver*>& GetObservers() { return new_observers_; }
+  const std::vector<DummyObserver*>& GetObservers() { return observers_; }
 
   bool observed_always() const { return observed_always_.value(); }
   bool observed_only_on_changes() const {
@@ -74,8 +67,7 @@ class DummyNode {
       &DummyObserver::NotifyOnlyOnChangesWithPreviousValueConst>
       observed_only_on_changes_with_previous_value_{false};
 
-  base::ObserverList<DummyObserver>::Unchecked observers_;
-  std::vector<DummyObserver*> new_observers_;
+  std::vector<DummyObserver*> observers_;
 };
 
 class GraphPropertiesTest : public ::testing::Test {
@@ -135,7 +127,7 @@ TEST_F(GraphPropertiesTest, ObservedOnlyOnChangesProperty) {
 TEST_F(GraphPropertiesTest, ObservedOnlyOnChangesWithPreviousValueProperty) {
   EXPECT_FALSE(node_.observed_only_on_changes_with_previous_value());
 
-  EXPECT_FALSE(node_.SetObservedOnlyOnChanges(false));
+  EXPECT_FALSE(node_.SetObservedOnlyOnChangesWithPreviousValue(false));
   EXPECT_EQ(false, node_.observed_only_on_changes_with_previous_value());
 
   EXPECT_CALL(observer_,

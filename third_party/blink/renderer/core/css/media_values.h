@@ -21,7 +21,7 @@ enum class ColorSpaceGamut;
 enum class PreferredColorScheme;
 enum class ForcedColors;
 
-class CORE_EXPORT MediaValues : public GarbageCollectedFinalized<MediaValues> {
+class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues> {
  public:
   virtual ~MediaValues() = default;
   virtual void Trace(blink::Visitor* visitor) {}

@@ -22,7 +22,7 @@ namespace blink {
 
 class Element;
 
-class Command : public GarbageCollectedFinalized<Command> {
+class Command : public GarbageCollected<Command> {
  public:
   Command() = default;
   virtual ~Command() = default;

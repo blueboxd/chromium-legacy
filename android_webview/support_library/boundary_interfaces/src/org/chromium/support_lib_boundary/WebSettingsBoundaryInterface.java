@@ -8,6 +8,10 @@ package org.chromium.support_lib_boundary;
 // android.webkit parameter or android.webkit return value. But for forwards compatibility all
 // app-facing classes should have a boundary-interface that the WebView glue layer can build
 // against.
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * Boundary interface for WebSettingsCompat.
  */
@@ -26,4 +30,15 @@ public interface WebSettingsBoundaryInterface {
 
     void setForceDark(int forceDarkMode);
     int getForceDark();
+
+    @Retention(RetentionPolicy.SOURCE)
+    @interface ForceDarkBehavior {
+        int FORCE_DARK_ONLY = 0;
+        int MEDIA_QUERY_ONLY = 1;
+        int PREFER_MEDIA_QUERY_OVER_FORCE_DARK = 2;
+    }
+
+    void setForceDarkBehavior(@ForceDarkBehavior int forceDarkBehavior);
+    @ForceDarkBehavior
+    int getForceDarkBehavior();
 }

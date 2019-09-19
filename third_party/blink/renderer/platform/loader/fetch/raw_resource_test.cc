@@ -59,7 +59,7 @@ class RawResourceTest : public testing::Test {
 
  protected:
   class NoopResponseBodyLoaderClient
-      : public GarbageCollectedFinalized<NoopResponseBodyLoaderClient>,
+      : public GarbageCollected<NoopResponseBodyLoaderClient>,
         public ResponseBodyLoaderClient {
     USING_GARBAGE_COLLECTED_MIXIN(NoopResponseBodyLoaderClient);
 
@@ -96,7 +96,7 @@ TEST_F(RawResourceTest, DontIgnoreAcceptForCacheReuse) {
             Resource::MatchStatus::kOk);
 }
 
-class DummyClient final : public GarbageCollectedFinalized<DummyClient>,
+class DummyClient final : public GarbageCollected<DummyClient>,
                           public RawResourceClient {
   USING_GARBAGE_COLLECTED_MIXIN(DummyClient);
 
@@ -135,7 +135,7 @@ class DummyClient final : public GarbageCollectedFinalized<DummyClient>,
 };
 
 // This client adds another client when notified.
-class AddingClient final : public GarbageCollectedFinalized<AddingClient>,
+class AddingClient final : public GarbageCollected<AddingClient>,
                            public RawResourceClient {
   USING_GARBAGE_COLLECTED_MIXIN(AddingClient);
 
@@ -192,7 +192,7 @@ TEST_F(RawResourceTest, AddClientDuringCallback) {
 }
 
 // This client removes another client when notified.
-class RemovingClient : public GarbageCollectedFinalized<RemovingClient>,
+class RemovingClient : public GarbageCollected<RemovingClient>,
                        public RawResourceClient {
   USING_GARBAGE_COLLECTED_MIXIN(RemovingClient);
 

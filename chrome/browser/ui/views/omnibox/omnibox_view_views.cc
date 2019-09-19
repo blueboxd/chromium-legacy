@@ -41,6 +41,7 @@
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
@@ -1489,11 +1490,8 @@ void OmniboxViewViews::ExecuteTextEditCommand(ui::TextEditCommand command) {
 }
 
 bool OmniboxViewViews::ShouldShowPlaceholderText() const {
-  bool show_with_caret = base::FeatureList::IsEnabled(
-      omnibox::kUIExperimentShowPlaceholderWhenCaretShowing);
   return Textfield::ShouldShowPlaceholderText() &&
-         (show_with_caret || !model()->is_caret_visible()) &&
-         !model()->is_keyword_selected();
+         !model()->is_caret_visible() && !model()->is_keyword_selected();
 }
 
 #if defined(OS_CHROMEOS)
@@ -1828,8 +1826,7 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
           send_tab_to_self_sub_menu_model_.get());
     }
 #if !defined(OS_MACOSX)
-    menu_contents->SetIcon(index,
-                           gfx::Image(*send_tab_to_self::GetImageSkia()));
+    menu_contents->SetIcon(index, kSendTabToSelfIcon);
 #endif
     menu_contents->InsertSeparatorAt(++index, ui::NORMAL_SEPARATOR);
   }

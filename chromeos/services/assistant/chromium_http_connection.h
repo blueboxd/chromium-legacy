@@ -17,9 +17,9 @@
 #include "libassistant/shared/internal_api/http_connection.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/http/http_request_headers.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
 #include "services/network/public/mojom/chunked_data_pipe_getter.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -89,8 +89,9 @@ class ChromiumHttpConnection
   void OnURLLoadComplete(std::unique_ptr<std::string> response_body);
 
   // Callback invoked when the response of the http connection has started.
-  void OnResponseStarted(const GURL& final_url,
-                         const network::ResourceResponseHead& response_header);
+  void OnResponseStarted(
+      const GURL& final_url,
+      const network::mojom::URLResponseHead& response_header);
 
   Delegate* const delegate_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

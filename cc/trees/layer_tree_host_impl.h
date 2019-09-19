@@ -59,7 +59,6 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_range.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/latency/frame_metrics.h"
 
 namespace gfx {
 class ScrollOffset;
@@ -1239,8 +1238,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   PresentationTimeCallbackBuffer presentation_time_callbacks_;
-  ui::FrameMetrics frame_metrics_;
-  ui::SkippedFrameTracker skipped_frame_tracker_;
   bool is_animating_for_snap_;
 
   const PaintImage::GeneratorClientId paint_image_generator_client_id_;

@@ -14,7 +14,6 @@ import static org.mockito.Mockito.verify;
 
 import android.content.res.Resources;
 
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,7 +25,6 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 /**
@@ -44,10 +42,6 @@ public class WebappDisclosureSnackbarControllerTest {
 
     @Before
     public void setUp() throws InterruptedException {
-        // These tests are not applicable on touchless builds because snackbars/infobars are not
-        // shown on them, see https://crbug.com/981871.
-        Assume.assumeFalse(FeatureUtilities.isNoTouchModeEnabled());
-
         MockitoAnnotations.initMocks(this);
 
         doReturn("test text").when(mResources).getString(anyInt());

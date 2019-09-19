@@ -39,7 +39,7 @@
 namespace blink {
 
 class ContextFeaturesCache final
-    : public GarbageCollectedFinalized<ContextFeaturesCache>,
+    : public GarbageCollected<ContextFeaturesCache>,
       public Supplement<Document> {
   USING_GARBAGE_COLLECTED_MIXIN(ContextFeaturesCache);
 

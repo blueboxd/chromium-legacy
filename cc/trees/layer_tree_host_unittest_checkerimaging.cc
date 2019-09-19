@@ -120,7 +120,7 @@ class LayerTreeHostCheckerImagingTestMergeWithMainFrame
       case 2: {
         // Ensure that the expected tiles are invalidated on the sync tree.
         PictureLayerImpl* sync_layer_impl = static_cast<PictureLayerImpl*>(
-            host_impl->sync_tree()->root_layer_for_testing());
+            host_impl->sync_tree()->root_layer());
         PictureLayerTiling* sync_tiling =
             sync_layer_impl->picture_layer_tiling_set()
                 ->FindTilingWithResolution(TileResolution::HIGH_RESOLUTION);
@@ -180,8 +180,8 @@ class LayerTreeHostCheckerImagingTestImplSideTree
     EXPECT_EQ(host_impl->sync_tree()->source_frame_number(), 0);
 
     // Ensure that the expected tiles are invalidated on the sync tree.
-    PictureLayerImpl* sync_layer_impl = static_cast<PictureLayerImpl*>(
-        host_impl->sync_tree()->root_layer_for_testing());
+    PictureLayerImpl* sync_layer_impl =
+        static_cast<PictureLayerImpl*>(host_impl->sync_tree()->root_layer());
     PictureLayerTiling* sync_tiling =
         sync_layer_impl->picture_layer_tiling_set()->FindTilingWithResolution(
             TileResolution::HIGH_RESOLUTION);

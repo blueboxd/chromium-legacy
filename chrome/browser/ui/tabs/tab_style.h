@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
@@ -99,6 +100,9 @@ class TabStyle {
 
   // Derives and returns colors for the tab. See TabColors, above.
   virtual TabColors CalculateColors() const = 0;
+
+  // Returns the appropriate fonts for the current theme and active state.
+  virtual const gfx::FontList& GetFontList() const = 0;
 
   // Paints the tab.
   virtual void PaintTab(gfx::Canvas* canvas) const = 0;

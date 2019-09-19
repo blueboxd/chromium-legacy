@@ -63,8 +63,6 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
       ShouldUseTransformedRasterization());
   layer_impl->set_gpu_raster_max_texture_size(
       layer_tree_host()->device_viewport_rect().size());
-
-  layer_impl->SetIsMask(is_mask());
   layer_impl->SetIsBackdropFilterMask(is_backdrop_filter_mask());
 
   // TODO(enne): http://crbug.com/918126 debugging
@@ -232,19 +230,10 @@ bool PictureLayer::HasDrawableContent() const {
   return picture_layer_inputs_.client && Layer::HasDrawableContent();
 }
 
-void PictureLayer::SetIsMask(bool is_mask) {
-  if (picture_layer_inputs_.is_mask == is_mask)
-    return;
-
-  picture_layer_inputs_.is_mask = is_mask;
-  SetNeedsCommit();
-}
-
 void PictureLayer::SetIsBackdropFilterMask(bool is_backdrop_filter_mask) {
   if (picture_layer_inputs_.is_backdrop_filter_mask == is_backdrop_filter_mask)
     return;
 
-  DCHECK(!is_backdrop_filter_mask || is_mask());
   picture_layer_inputs_.is_backdrop_filter_mask = is_backdrop_filter_mask;
   SetNeedsCommit();
 }

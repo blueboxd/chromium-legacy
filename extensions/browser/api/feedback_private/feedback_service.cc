@@ -40,21 +40,15 @@ void FeedbackService::SendFeedback(scoped_refptr<FeedbackData> feedback_data,
   feedback_data->set_user_agent(ExtensionsBrowserClient::Get()->GetUserAgent());
 
   if (!feedback_data->attached_file_uuid().empty()) {
-    // Self-deleting object.
-    BlobReader* attached_file_reader =
-        new BlobReader(browser_context_, feedback_data->attached_file_uuid(),
-                       base::Bind(&FeedbackService::AttachedFileCallback,
-                                  AsWeakPtr(), feedback_data, callback));
-    attached_file_reader->Start();
+    BlobReader::Read(browser_context_, feedback_data->attached_file_uuid(),
+                     base::Bind(&FeedbackService::AttachedFileCallback,
+                                AsWeakPtr(), feedback_data, callback));
   }
 
   if (!feedback_data->screenshot_uuid().empty()) {
-    // Self-deleting object.
-    BlobReader* screenshot_reader =
-        new BlobReader(browser_context_, feedback_data->screenshot_uuid(),
-                       base::Bind(&FeedbackService::ScreenshotCallback,
-                                  AsWeakPtr(), feedback_data, callback));
-    screenshot_reader->Start();
+    BlobReader::Read(browser_context_, feedback_data->screenshot_uuid(),
+                     base::Bind(&FeedbackService::ScreenshotCallback,
+                                AsWeakPtr(), feedback_data, callback));
   }
 
   CompleteSendFeedback(feedback_data, callback);

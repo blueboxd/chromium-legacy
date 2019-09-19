@@ -27,6 +27,7 @@ ExtensionsMenuButton::ExtensionsMenuButton(
       parent_(parent),
       controller_(controller) {
   SetInkDropMode(InkDropMode::ON);
+  SetFocusBehavior(FocusBehavior::ALWAYS);
   SetButtonController(std::make_unique<HoverButtonController>(
       this, this,
       std::make_unique<views::Button::DefaultButtonControllerDelegate>(this)));

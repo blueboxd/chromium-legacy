@@ -1,6 +1,5 @@
 include_rules = [
   "+components/translate/core/language_detection",
-  "+content/app/strings/grit",
   "+content/public/renderer",
 
   "+gin",
@@ -17,6 +16,7 @@ include_rules = [
   "+third_party/blink/public/mojom/frame/document_interface_broker.mojom.h",
   "+third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h",
   "+third_party/blink/public/platform",
+  "+third_party/blink/public/strings/grit/blink_strings.h",
   "+third_party/blink/public/web",
   "+third_party/zlib/google/compression_utils.h",
 

@@ -22,7 +22,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace {
 
@@ -56,7 +56,7 @@ const char kMessage[] = "message";
 
 static GoogleServiceAuthError CreateAuthError(
     int net_error,
-    const network::ResourceResponseHead* head,
+    const network::mojom::URLResponseHead* head,
     std::unique_ptr<std::string> body) {
   if (net_error == net::ERR_ABORTED) {
     return GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED);
@@ -186,7 +186,7 @@ std::string OAuth2MintTokenFlow::CreateApiCallBody() {
 }
 
 void OAuth2MintTokenFlow::ProcessApiCallSuccess(
-    const network::ResourceResponseHead* head,
+    const network::mojom::URLResponseHead* head,
     std::unique_ptr<std::string> body) {
   std::string response_body;
   if (body)
@@ -230,7 +230,7 @@ void OAuth2MintTokenFlow::ProcessApiCallSuccess(
 
 void OAuth2MintTokenFlow::ProcessApiCallFailure(
     int net_error,
-    const network::ResourceResponseHead* head,
+    const network::mojom::URLResponseHead* head,
     std::unique_ptr<std::string> body) {
   ReportFailure(CreateAuthError(net_error, head, std::move(body)));
 }

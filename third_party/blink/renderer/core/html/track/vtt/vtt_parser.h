@@ -59,7 +59,7 @@ class VTTParserClient : public GarbageCollectedMixin {
 
 // Implementation of the WebVTT parser algorithm.
 // https://w3c.github.io/webvtt/#webvtt-parser-algorithm
-class VTTParser final : public GarbageCollectedFinalized<VTTParser> {
+class VTTParser final : public GarbageCollected<VTTParser> {
  public:
   enum ParseState {
     kInitial,

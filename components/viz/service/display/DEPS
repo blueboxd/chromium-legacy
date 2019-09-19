@@ -30,6 +30,7 @@ include_rules = [
   "+ui/gl/trace_util.h",
   "+gpu/ipc/common/vulkan_ycbcr_info.h",
   "+gpu/ipc/scheduler_sequence.h",
+  "+gpu/config/gpu_driver_bug_workaround_type.h",
 ]
 
 specific_include_rules = {

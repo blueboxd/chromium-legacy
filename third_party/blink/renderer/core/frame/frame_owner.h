@@ -79,7 +79,7 @@ class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
 // frames. Move this into WebLocalFrameImpl.cpp and remove existing dependencies
 // on it.
 class CORE_EXPORT DummyFrameOwner final
-    : public GarbageCollectedFinalized<DummyFrameOwner>,
+    : public GarbageCollected<DummyFrameOwner>,
       public FrameOwner {
   USING_GARBAGE_COLLECTED_MIXIN(DummyFrameOwner);
 

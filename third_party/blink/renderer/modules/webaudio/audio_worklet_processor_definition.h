@@ -25,7 +25,7 @@ class V8BlinkAudioWorkletProcessorConstructor;
 // This is constructed and destroyed on a worker thread, and all methods also
 // must be called on the worker thread.
 class MODULES_EXPORT AudioWorkletProcessorDefinition final
-    : public GarbageCollectedFinalized<AudioWorkletProcessorDefinition>,
+    : public GarbageCollected<AudioWorkletProcessorDefinition>,
       public NameClient {
  public:
   static AudioWorkletProcessorDefinition* Create(

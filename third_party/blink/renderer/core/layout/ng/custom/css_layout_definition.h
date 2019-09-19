@@ -30,9 +30,8 @@ class V8NoArgumentConstructor;
 // Represents a javascript class registered on the LayoutWorkletGlobalScope by
 // the author.
 // https://drafts.css-houdini.org/css-layout-api/#layout-definition
-class CSSLayoutDefinition final
-    : public GarbageCollectedFinalized<CSSLayoutDefinition>,
-      public NameClient {
+class CSSLayoutDefinition final : public GarbageCollected<CSSLayoutDefinition>,
+                                  public NameClient {
  public:
   CSSLayoutDefinition(
       ScriptState*,
@@ -47,7 +46,7 @@ class CSSLayoutDefinition final
 
   // This class represents an instance of the layout class defined by the
   // CSSLayoutDefinition.
-  class Instance final : public GarbageCollectedFinalized<Instance> {
+  class Instance final : public GarbageCollected<Instance> {
    public:
     Instance(CSSLayoutDefinition*, v8::Local<v8::Value> instance);
 

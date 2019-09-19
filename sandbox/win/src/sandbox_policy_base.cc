@@ -759,17 +759,30 @@ ResultCode PolicyBase::AddRuleInternal(SubSystem subsystem,
       break;
     }
     case SUBSYS_WIN32K_LOCKDOWN: {
-      if (!ProcessMitigationsWin32KLockdownPolicy::GenerateRules(
-              pattern, semantics, policy_maker_)) {
-        NOTREACHED();
-        return SBOX_ERROR_BAD_PARAMS;
+      // Win32k intercept rules only supported on Windows 8 and above. This must
+      // match the version checks in process_mitigations.cc for consistency.
+      if (base::win::GetVersion() >= base::win::Version::WIN8) {
+        DCHECK_EQ(MITIGATION_WIN32K_DISABLE,
+                  mitigations_ & MITIGATION_WIN32K_DISABLE)
+            << "Enable MITIGATION_WIN32K_DISABLE before adding win32k policy "
+               "rules.";
+        if (!ProcessMitigationsWin32KLockdownPolicy::GenerateRules(
+                pattern, semantics, policy_maker_)) {
+          NOTREACHED();
+          return SBOX_ERROR_BAD_PARAMS;
+        }
       }
       break;
     }
     case SUBSYS_SIGNED_BINARY: {
-      // These rules only need to be added if the
-      // MITIGATION_FORCE_MS_SIGNED_BINS pre-startup mitigation is set.
-      if (mitigations_ & MITIGATION_FORCE_MS_SIGNED_BINS) {
+      // Signed intercept rules only supported on Windows 10 TH2 and above. This
+      // must match the version checks in process_mitigations.cc for
+      // consistency.
+      if (base::win::GetVersion() >= base::win::Version::WIN10_TH2) {
+        DCHECK_EQ(MITIGATION_FORCE_MS_SIGNED_BINS,
+                  mitigations_ & MITIGATION_FORCE_MS_SIGNED_BINS)
+            << "Enable MITIGATION_FORCE_MS_SIGNED_BINS before adding signed "
+               "policy rules.";
         if (!SignedPolicy::GenerateRules(pattern, semantics, policy_maker_)) {
           NOTREACHED();
           return SBOX_ERROR_BAD_PARAMS;

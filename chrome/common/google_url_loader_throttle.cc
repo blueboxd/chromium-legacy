@@ -7,6 +7,7 @@
 #include "chrome/common/net/safe_search_util.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/extension_urls.h"
@@ -63,7 +64,8 @@ void GoogleURLLoaderThrottle::WillRedirectRequest(
     bool* /* defer */,
     std::vector<std::string>* to_be_removed_headers,
     net::HttpRequestHeaders* modified_headers) {
-  variations::RemoveVariationsHeaderIfNeeded(*redirect_info, response_head,
+  network::mojom::URLResponseHeadPtr response_head_ptr = response_head;
+  variations::RemoveVariationsHeaderIfNeeded(*redirect_info, *response_head_ptr,
                                              to_be_removed_headers);
 
   // URLLoaderThrottles can only change the redirect URL when the network

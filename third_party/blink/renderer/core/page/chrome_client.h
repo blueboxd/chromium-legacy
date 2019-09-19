@@ -104,8 +104,7 @@ struct WebWindowFeatures;
 
 using CompositorElementId = cc::ElementId;
 
-class CORE_EXPORT ChromeClient
-    : public GarbageCollectedFinalized<ChromeClient> {
+class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   DISALLOW_COPY_AND_ASSIGN(ChromeClient);
 
  public:

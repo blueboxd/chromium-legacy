@@ -42,7 +42,7 @@ namespace blink {
 // and WritableStreamDefaultWriter::Write() to bypass promise creation and so
 // reduce the number of allocations on the hot path.
 class ReadableStreamNative::PipeToEngine final
-    : public GarbageCollectedFinalized<PipeToEngine> {
+    : public GarbageCollected<PipeToEngine> {
  public:
   PipeToEngine(ScriptState* script_state, PipeOptions pipe_options)
       : script_state_(script_state), pipe_options_(pipe_options) {}
@@ -599,7 +599,7 @@ class ReadableStreamNative::PipeToEngine final
 };
 
 class ReadableStreamNative::TeeEngine final
-    : public GarbageCollectedFinalized<TeeEngine> {
+    : public GarbageCollected<TeeEngine> {
  public:
   TeeEngine() = default;
 

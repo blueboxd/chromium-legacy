@@ -135,9 +135,6 @@ def _ParseOptions():
   options.extra_mapping_output_paths = build_utils.ParseGnList(
       options.extra_mapping_output_paths)
 
-  if options.apply_mapping:
-    options.apply_mapping = os.path.abspath(options.apply_mapping)
-
   return options
 
 
@@ -331,7 +328,7 @@ def _CreateDynamicConfig(options):
 }""" % options.min_api)
 
   if options.apply_mapping:
-    ret.append("-applymapping '%s'" % options.apply_mapping)
+    ret.append("-applymapping '%s'" % os.path.abspath(options.apply_mapping))
   if options.repackage_classes:
     ret.append("-repackageclasses '%s'" % options.repackage_classes)
 
@@ -413,7 +410,7 @@ def main():
 
   inputs = options.proguard_configs + options.input_paths + libraries
   if options.apply_mapping:
-    inputs += options.apply_mapping
+    inputs.append(options.apply_mapping)
 
   build_utils.WriteDepfile(
       options.depfile, options.output_path, inputs=inputs, add_pydeps=False)

@@ -159,7 +159,7 @@ class FetchDataLoaderForWasmStreaming final : public FetchDataLoader,
 // argument to BodyStreamBuffer::startLoading, however, it fulfills
 // a very small role. Consider refactoring to avoid it.
 class WasmDataLoaderClient final
-    : public GarbageCollectedFinalized<WasmDataLoaderClient>,
+    : public GarbageCollected<WasmDataLoaderClient>,
       public FetchDataLoader::Client {
   USING_GARBAGE_COLLECTED_MIXIN(WasmDataLoaderClient);
 

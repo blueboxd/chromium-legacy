@@ -2902,8 +2902,6 @@ void LocalFrameView::UpdateStyleAndLayoutIfNeededRecursive() {
   frame_->GetDocument()->GetLayoutView()->AssertLaidOut();
 #endif
 
-  UpdateGeometriesIfNeeded();
-
   if (Lifecycle().GetState() < DocumentLifecycle::kLayoutClean)
     Lifecycle().AdvanceTo(DocumentLifecycle::kLayoutClean);
 

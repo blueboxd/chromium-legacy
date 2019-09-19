@@ -7,6 +7,7 @@ package org.chromium.weblayer_private;
 import android.content.Context;
 
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.weblayer_private.aidl.IBrowserController;
 import org.chromium.weblayer_private.aidl.IObjectWrapper;
 import org.chromium.weblayer_private.aidl.IProfile;
@@ -17,18 +18,18 @@ public final class ProfileImpl extends IProfile.Stub {
     private long mNativeProfile;
 
     public ProfileImpl(String path) {
-        mNativeProfile = nativeCreateProfile(path);
+        mNativeProfile = ProfileImplJni.get().createProfile(path);
     }
 
     @Override
     public void destroy() {
-        nativeDeleteProfile(mNativeProfile);
+        ProfileImplJni.get().deleteProfile(mNativeProfile);
         mNativeProfile = 0;
     }
 
     @Override
     public void clearBrowsingData() {
-        nativeClearBrowsingData(mNativeProfile);
+        ProfileImplJni.get().clearBrowsingData(mNativeProfile);
     }
 
     @Override
@@ -42,9 +43,10 @@ public final class ProfileImpl extends IProfile.Stub {
         return mNativeProfile;
     }
 
-    private static native long nativeCreateProfile(String path);
-
-    private static native void nativeDeleteProfile(long profile);
-
-    private static native void nativeClearBrowsingData(long nativeProfileImpl);
+    @NativeMethods
+    interface Natives {
+        long createProfile(String path);
+        void deleteProfile(long profile);
+        void clearBrowsingData(long nativeProfileImpl);
+    }
 }

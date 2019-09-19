@@ -9,9 +9,9 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
-#include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -134,7 +134,7 @@ void ExpectTotalCounts(const base::HistogramTester& tester,
 
 }  // namespace
 
-class BookmarkAppTest : public extensions::ExtensionBrowserTest {
+class BookmarkAppTest : public web_app::WebAppControllerBrowserTestBase {
  public:
   BookmarkAppTest() = default;
   ~BookmarkAppTest() override = default;
@@ -221,7 +221,7 @@ class BookmarkAppTest : public extensions::ExtensionBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppTest);
 };
 
-IN_PROC_BROWSER_TEST_F(BookmarkAppTest, EngagementHistogramForAppInWindow) {
+IN_PROC_BROWSER_TEST_P(BookmarkAppTest, EngagementHistogramForAppInWindow) {
   base::HistogramTester tester;
 
   const GURL example_url = GURL("http://example.org/");
@@ -249,7 +249,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppTest, EngagementHistogramForAppInWindow) {
   TestEngagementEventsAfterLaunch(histograms, app_browser);
 }
 
-IN_PROC_BROWSER_TEST_F(BookmarkAppTest, EngagementHistogramForAppInTab) {
+IN_PROC_BROWSER_TEST_P(BookmarkAppTest, EngagementHistogramForAppInTab) {
   base::HistogramTester tester;
 
   const GURL example_url = GURL("http://example.org/");
@@ -275,7 +275,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppTest, EngagementHistogramForAppInTab) {
   TestEngagementEventsAfterLaunch(histograms, browser);
 }
 
-IN_PROC_BROWSER_TEST_F(BookmarkAppTest, EngagementHistogramAppWithoutScope) {
+IN_PROC_BROWSER_TEST_P(BookmarkAppTest, EngagementHistogramAppWithoutScope) {
   base::HistogramTester tester;
 
   const GURL example_url = GURL("http://example.org/");
@@ -306,7 +306,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppTest, EngagementHistogramAppWithoutScope) {
   TestEngagementEventsAfterLaunch(histograms, browser);
 }
 
-IN_PROC_BROWSER_TEST_F(BookmarkAppTest, EngagementHistogramTwoApps) {
+IN_PROC_BROWSER_TEST_P(BookmarkAppTest, EngagementHistogramTwoApps) {
   base::HistogramTester tester;
 
   const GURL example_url1 = GURL("http://example.org/");
@@ -354,7 +354,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppTest, EngagementHistogramTwoApps) {
   ExpectTotalCounts(tester, ~histograms, 0);
 }
 
-IN_PROC_BROWSER_TEST_F(BookmarkAppTest, EngagementHistogramManyUserApps) {
+IN_PROC_BROWSER_TEST_P(BookmarkAppTest, EngagementHistogramManyUserApps) {
   base::HistogramTester tester;
 
   // More than 3 user-installed apps:
@@ -395,7 +395,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppTest, EngagementHistogramManyUserApps) {
   ExpectTotalCounts(tester, ~histograms, 0);
 }
 
-IN_PROC_BROWSER_TEST_F(BookmarkAppTest, EngagementHistogramDefaultApp) {
+IN_PROC_BROWSER_TEST_P(BookmarkAppTest, EngagementHistogramDefaultApp) {
   base::HistogramTester tester;
 
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -422,7 +422,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppTest, EngagementHistogramDefaultApp) {
   TestEngagementEventsAfterLaunch(histograms, browser);
 }
 
-IN_PROC_BROWSER_TEST_F(BookmarkAppTest,
+IN_PROC_BROWSER_TEST_P(BookmarkAppTest,
                        EngagementHistogramNavigateAwayFromAppTab) {
   const GURL app_url = GURL("http://example.org/app/");
   const GURL outer_url = GURL("http://example.org/");
@@ -456,7 +456,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(BookmarkAppTest, EngagementHistogramRecordedForNonApps) {
+IN_PROC_BROWSER_TEST_P(BookmarkAppTest, EngagementHistogramRecordedForNonApps) {
   base::HistogramTester tester;
   CountUserInstalledApps();
 
@@ -474,3 +474,8 @@ IN_PROC_BROWSER_TEST_F(BookmarkAppTest, EngagementHistogramRecordedForNonApps) {
   histograms[kHistogramNoUserInstalledApps] = true;
   TestEngagementEventsAfterLaunch(histograms, browser());
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    BookmarkAppTest,
+    ::testing::Values(web_app::ControllerType::kHostedAppController));

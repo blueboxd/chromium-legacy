@@ -30,11 +30,10 @@ class ResourceResponse;
 // the ManifestParser in order to do so.
 //
 // Consumers should use the mojo ManifestManager interface to use this class.
-class MODULES_EXPORT ManifestManager
-    : public GarbageCollectedFinalized<ManifestManager>,
-      public Supplement<LocalFrame>,
-      public mojom::blink::ManifestManager,
-      public ContextLifecycleObserver {
+class MODULES_EXPORT ManifestManager : public GarbageCollected<ManifestManager>,
+                                       public Supplement<LocalFrame>,
+                                       public mojom::blink::ManifestManager,
+                                       public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ManifestManager);
 
  public:

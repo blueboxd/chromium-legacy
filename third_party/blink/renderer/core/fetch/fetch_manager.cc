@@ -82,7 +82,7 @@ bool HasNonEmptyLocationHeader(const FetchHeaderList* headers) {
 }  // namespace
 
 class FetchManager::Loader final
-    : public GarbageCollectedFinalized<FetchManager::Loader>,
+    : public GarbageCollected<FetchManager::Loader>,
       public ThreadableLoaderClient {
   USING_GARBAGE_COLLECTED_MIXIN(Loader);
 
@@ -108,7 +108,7 @@ class FetchManager::Loader final
   void Dispose();
   void Abort();
 
-  class SRIVerifier final : public GarbageCollectedFinalized<SRIVerifier>,
+  class SRIVerifier final : public GarbageCollected<SRIVerifier>,
                             public BytesConsumer::Client {
     USING_GARBAGE_COLLECTED_MIXIN(SRIVerifier);
 

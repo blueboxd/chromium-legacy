@@ -46,6 +46,9 @@ SearchSuggestServiceFactory::~SearchSuggestServiceFactory() = default;
 
 KeyedService* SearchSuggestServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
+  if (!SearchSuggestService::IsEnabled())
+    return nullptr;
+
   Profile* profile = Profile::FromBrowserContext(context);
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);

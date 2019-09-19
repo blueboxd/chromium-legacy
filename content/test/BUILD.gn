@@ -1287,9 +1287,9 @@ test("content_browsertests") {
     ]
 
     deps += [
-      "//content/app/strings",
       "//net:net_resources",
       "//third_party/blink/public:resources",
+      "//third_party/blink/public/strings",
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
     ]

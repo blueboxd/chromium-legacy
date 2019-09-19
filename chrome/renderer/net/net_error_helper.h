@@ -15,12 +15,9 @@
 #include "chrome/common/navigation_corrector.mojom.h"
 #include "chrome/common/network_diagnostics.mojom.h"
 #include "chrome/common/network_easter_egg.mojom.h"
-#include "chrome/common/supervised_user_commands.mojom.h"
 #include "chrome/renderer/net/net_error_helper_core.h"
 #include "chrome/renderer/net/net_error_page_controller.h"
 #include "chrome/renderer/security_interstitials/security_interstitial_page_controller.h"
-#include "chrome/renderer/supervised_user/supervised_user_error_page_controller.h"
-#include "chrome/renderer/supervised_user/supervised_user_error_page_controller_delegate.h"
 #include "components/error_page/common/localized_error.h"
 #include "components/error_page/common/net_error_info.h"
 #include "components/security_interstitials/core/controller_client.h"
@@ -55,7 +52,6 @@ class NetErrorHelper
       public NetErrorHelperCore::Delegate,
       public NetErrorPageController::Delegate,
       public SecurityInterstitialPageController::Delegate,
-      public SupervisedUserErrorPageControllerDelegate,
       public chrome::mojom::NetworkDiagnosticsClient,
       public chrome::mojom::NavigationCorrector {
  public:
@@ -77,11 +73,6 @@ class NetErrorHelper
   // SecurityInterstitialPageController::Delegate implementation
   void SendCommand(
       security_interstitials::SecurityInterstitialCommand command) override;
-
-  // SupervisedUserErrorPageControllerDelegate implementation
-  void GoBack() override;
-  void RequestPermission(base::OnceCallback<void(bool)> callback) override;
-  void Feedback() override;
 
   // RenderFrameObserver implementation.
   void DidStartNavigation(
@@ -197,9 +188,6 @@ class NetErrorHelper
   mojo::AssociatedRemote<chrome::mojom::NetworkEasterEgg>
       remote_network_easter_egg_;
 
-  mojo::AssociatedRemote<supervised_user::mojom::SupervisedUserCommands>
-      supervised_user_interface_;
-
   // Weak factories for vending weak pointers to PageControllers. Weak
   // pointers are invalidated on each commit, to prevent getting messages from
   // Controllers used for the previous commit that haven't yet been cleaned up.
@@ -208,9 +196,6 @@ class NetErrorHelper
 
   base::WeakPtrFactory<SecurityInterstitialPageController::Delegate>
       weak_security_interstitial_controller_delegate_factory_{this};
-
-  base::WeakPtrFactory<SupervisedUserErrorPageControllerDelegate>
-      weak_supervised_user_error_controller_delegate_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetErrorHelper);
 };

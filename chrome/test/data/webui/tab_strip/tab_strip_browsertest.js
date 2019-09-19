@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+GEN('#include "services/network/public/cpp/features.h"');
+
 var TabStripBrowserTest = class extends testing.Test {
   get isAsync() {
     return true;
@@ -20,6 +22,11 @@ var TabStripBrowserTest = class extends testing.Test {
 
   get runAccessibilityChecks() {
     return false;
+  }
+
+  /** @override */
+  get featureList() {
+    return {enabled: ['network::features::kOutOfBlinkCors']};
   }
 };
 

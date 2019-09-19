@@ -413,6 +413,17 @@ bool FrameProcessor::ProcessFrames(
            "SourceBuffer.";
   }
 
+  // Monitor |group_end_timestamp_| to detect any cases where it decreases while
+  // processing |frames| (which should all be from no more than 1 media
+  // segment), to see if (outside of mediasource fuzzers) real API usage hits
+  // this case frequently enough to potentially warrant MSE spec clarification
+  // of the last step in the coded frame processing algorithm. The previous
+  // value is not used as a baseline, since the spec would already handle that
+  // case interoperably (since we may be starting the processing of frames from
+  // a new media segment.) See https://crbug.com/920853 and
+  // https://github.com/w3c/media-source/issues/203.
+  base::TimeDelta max_group_end_timestamp = kNoTimestamp;
+
   // Implements the coded frame processing algorithm's outer loop for step 1.
   // Note that ProcessFrame() implements an inner loop for a single frame that
   // handles "jump to the Loop Top step to restart processing of the current
@@ -439,6 +450,9 @@ bool FrameProcessor::ProcessFrames(
       FlushProcessedFrames();
       return false;
     }
+
+    max_group_end_timestamp =
+        std::max(group_end_timestamp_, max_group_end_timestamp);
   }
 
   if (!FlushProcessedFrames())
@@ -449,6 +463,13 @@ bool FrameProcessor::ProcessFrames(
   // 5. If the media segment contains data beyond the current duration, then run
   //    the duration change algorithm with new duration set to the maximum of
   //    the current duration and the group end timestamp.
+  if (max_group_end_timestamp > group_end_timestamp_) {
+    // Log a parse warning. For now at least, we don't also log this to
+    // media-internals.
+    DCHECK(parse_warning_cb_);
+    parse_warning_cb_.Run(
+        SourceBufferParseWarning::kGroupEndTimestampDecreaseWithinMediaSegment);
+  }
   update_duration_cb_.Run(group_end_timestamp_);
 
   return true;

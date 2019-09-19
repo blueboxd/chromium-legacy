@@ -41,7 +41,7 @@ class NavigatorContentUtilsClient;
 // It is owned by Navigator, and an instance is created lazily by calling
 // NavigatorContentUtils::From() via [register/unregister]ProtocolHandler.
 class MODULES_EXPORT NavigatorContentUtils final
-    : public GarbageCollectedFinalized<NavigatorContentUtils>,
+    : public GarbageCollected<NavigatorContentUtils>,
       public Supplement<Navigator> {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorContentUtils);
 

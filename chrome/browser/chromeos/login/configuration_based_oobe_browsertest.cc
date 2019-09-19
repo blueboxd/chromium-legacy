@@ -46,12 +46,13 @@
 #define MAYBE_TestDeviceRequisition TestDeviceRequisition
 #endif
 
+// Disabled due to flakiness: https://crbug.com/997685.
+#define MAYBE_TestDemoModeAcceptEula DISABLED_TestDemoModeAcceptEula
+#define MAYBE_TestDemoModeOfflineNetwork DISABLED_TestDemoModeOfflineNetwork
 // Disabled on debug build due to flakiness: https://crbug.com/997685.
 #if !defined(NDEBUG)
 #define MAYBE_TestAcceptEula DISABLED_TestAcceptEula
 #define MAYBE_TestDemoModeAcceptArcTos DISABLED_TestDemoModeAcceptArcTos
-#define MAYBE_TestDemoModeAcceptEula DISABLED_TestDemoModeAcceptEula
-#define MAYBE_TestDemoModeOfflineNetwork DISABLED_TestDemoModeOfflineNetwork
 #define MAYBE_TestDemoModePreferences DISABLED_TestDemoModePreferences
 #define MAYBE_TestEnableDemoMode DISABLED_TestEnableDemoMode
 #define MAYBE_TestLeaveWelcomeScreen DISABLED_TestLeaveWelcomeScreen
@@ -61,8 +62,6 @@
 #else
 #define MAYBE_TestAcceptEula TestAcceptEula
 #define MAYBE_TestDemoModeAcceptArcTos TestDemoModeAcceptArcTos
-#define MAYBE_TestDemoModeAcceptEula TestDemoModeAcceptEula
-#define MAYBE_TestDemoModeOfflineNetwork TestDemoModeOfflineNetwork
 #define MAYBE_TestDemoModePreferences TestDemoModePreferences
 #define MAYBE_TestEnableDemoMode TestEnableDemoMode
 #define MAYBE_TestLeaveWelcomeScreen TestLeaveWelcomeScreen
@@ -350,7 +349,7 @@ IN_PROC_BROWSER_TEST_F(OobeConfigurationEnrollmentTest, TestEnrollUsingToken) {
 
 // Check that HID detection screen is shown if it is not specified by
 // configuration.
-IN_PROC_BROWSER_TEST_F(OobeConfigurationTestNoHID, TestShowHID) {
+IN_PROC_BROWSER_TEST_F(OobeConfigurationTestNoHID, TestLeaveWelcomeScreen) {
   LoadConfiguration();
   OobeScreenWaiter(HIDDetectionView::kScreenId).Wait();
 }

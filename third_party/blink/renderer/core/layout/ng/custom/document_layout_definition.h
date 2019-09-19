@@ -13,7 +13,7 @@ namespace blink {
 // needed by the document about the author defined layout.
 // https://drafts.css-houdini.org/css-layout-api/#document-layout-definition
 class DocumentLayoutDefinition final
-    : public GarbageCollectedFinalized<DocumentLayoutDefinition> {
+    : public GarbageCollected<DocumentLayoutDefinition> {
  public:
   explicit DocumentLayoutDefinition(CSSLayoutDefinition*);
   virtual ~DocumentLayoutDefinition();

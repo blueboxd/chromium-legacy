@@ -56,7 +56,7 @@ class LocalFrame;
 class WebLocalFrameImpl;
 
 class CORE_EXPORT WebDevToolsAgentImpl final
-    : public GarbageCollectedFinalized<WebDevToolsAgentImpl>,
+    : public GarbageCollected<WebDevToolsAgentImpl>,
       public DevToolsAgent::Client,
       public InspectorPageAgent::Client,
       public InspectorLayerTreeAgent::Client,

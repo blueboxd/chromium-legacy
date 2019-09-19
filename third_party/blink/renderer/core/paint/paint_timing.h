@@ -26,9 +26,8 @@ class LocalFrame;
 
 // PaintTiming is responsible for tracking paint-related timings for a given
 // document.
-class CORE_EXPORT PaintTiming final
-    : public GarbageCollectedFinalized<PaintTiming>,
-      public Supplement<Document> {
+class CORE_EXPORT PaintTiming final : public GarbageCollected<PaintTiming>,
+                                      public Supplement<Document> {
   USING_GARBAGE_COLLECTED_MIXIN(PaintTiming);
   friend class FirstMeaningfulPaintDetector;
   using ReportTimeCallback =

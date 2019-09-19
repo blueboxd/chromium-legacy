@@ -20,7 +20,7 @@ class WebString;
 class WebLocalFrameImpl;
 
 class CORE_EXPORT FindTaskController final
-    : public GarbageCollectedFinalized<FindTaskController> {
+    : public GarbageCollected<FindTaskController> {
  public:
   FindTaskController(WebLocalFrameImpl& owner_frame, TextFinder& text_finder);
 

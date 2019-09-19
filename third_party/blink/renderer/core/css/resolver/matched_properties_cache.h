@@ -37,7 +37,7 @@ class ComputedStyle;
 class StyleResolverState;
 
 class CachedMatchedProperties final
-    : public GarbageCollectedFinalized<CachedMatchedProperties> {
+    : public GarbageCollected<CachedMatchedProperties> {
  public:
   HeapVector<MatchedProperties> matched_properties;
   scoped_refptr<ComputedStyle> computed_style;

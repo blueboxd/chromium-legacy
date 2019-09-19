@@ -44,6 +44,9 @@ class DestructionObserver {
   // expectation.
   void DoNotAllowDestruction();
 
+  // Return if the object has been destroyed.
+  bool destructed() const { return destructed_; }
+
  private:
   void VerifyExpectations();
   void OnObservableDestructed();

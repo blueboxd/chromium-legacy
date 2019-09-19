@@ -4,12 +4,11 @@
 
 #include "cc/test/property_tree_test_utils.h"
 
-#include "cc/layers/layer.h"
-#include "cc/layers/layer_impl.h"
+#include "cc/layers/picture_layer.h"
+#include "cc/layers/picture_layer_impl.h"
 #include "cc/trees/clip_node.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host.h"
-#include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/property_tree.h"
 #include "cc/trees/scroll_node.h"
@@ -149,7 +148,6 @@ ScrollNode& CreateScrollNodeInternal(LayerType* layer, int parent_id) {
 template <typename LayerType, typename MaskLayerType>
 void SetupMaskPropertiesInternal(LayerType* masked_layer,
                                  MaskLayerType* mask_layer) {
-  mask_layer->SetIsMask(true);
   if (!GetEffectNode(masked_layer)->backdrop_filters.IsEmpty())
     mask_layer->SetIsBackdropFilterMask(true);
   mask_layer->SetBounds(masked_layer->bounds());
@@ -359,7 +357,7 @@ void SetupViewport(LayerImpl* root,
   LayerTreeImpl* layer_tree_impl = root->layer_tree_impl();
   DCHECK(!layer_tree_impl->InnerViewportScrollLayer());
   DCHECK(layer_tree_impl->settings().use_layer_lists);
-  DCHECK_EQ(root, layer_tree_impl->root_layer_for_testing());
+  DCHECK_EQ(root, layer_tree_impl->root_layer());
 
   std::unique_ptr<LayerImpl> inner_viewport_container_layer =
       LayerImpl::Create(layer_tree_impl, 10000);
@@ -406,6 +404,21 @@ void SetupViewport(LayerImpl* root,
                           layer_tree_impl->InnerViewportScrollLayer(),
                           layer_tree_impl->OuterViewportContainerLayer(),
                           layer_tree_impl->OuterViewportScrollLayer());
+}
+
+PropertyTrees* GetPropertyTrees(const Layer* layer) {
+  return layer->layer_tree_host()->property_trees();
+}
+
+PropertyTrees* GetPropertyTrees(const LayerImpl* layer) {
+  return layer->layer_tree_impl()->property_trees();
+}
+
+RenderSurfaceImpl* GetRenderSurface(const LayerImpl* layer) {
+  auto& effect_tree = GetPropertyTrees(layer)->effect_tree;
+  if (auto* surface = effect_tree.GetRenderSurface(layer->effect_tree_index()))
+    return surface;
+  return effect_tree.GetRenderSurface(GetEffectNode(layer)->target_id);
 }
 
 }  // namespace cc

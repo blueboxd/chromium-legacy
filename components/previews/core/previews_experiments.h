@@ -126,10 +126,6 @@ bool LitePagePreviewsTriggerOnLocalhost();
 // page hints for the host.
 bool LitePagePreviewsOverridePageHints();
 
-// The maximum number of times that a Lite Page Redirect preview should restart
-// a navigation.
-size_t LitePageRedirectPreviewMaxNavigationRestarts();
-
 // Whether we should preconnect to the lite page redirect server or the origin.
 bool LitePageRedirectPreviewShouldPreconnect();
 

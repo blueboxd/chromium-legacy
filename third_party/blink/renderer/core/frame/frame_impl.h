@@ -18,7 +18,7 @@ namespace blink {
 class LocalFrame;
 
 // Implementation of mojom::blink::Frame
-class CORE_EXPORT FrameImpl final : public GarbageCollectedFinalized<FrameImpl>,
+class CORE_EXPORT FrameImpl final : public GarbageCollected<FrameImpl>,
                                     public Supplement<LocalFrame>,
                                     public mojom::blink::Frame {
   USING_GARBAGE_COLLECTED_MIXIN(FrameImpl);

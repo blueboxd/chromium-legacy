@@ -16,7 +16,7 @@
 namespace blink {
 
 class MODULES_EXPORT BatteryDispatcher final
-    : public GarbageCollectedFinalized<BatteryDispatcher>,
+    : public GarbageCollected<BatteryDispatcher>,
       public PlatformEventDispatcher {
   USING_GARBAGE_COLLECTED_MIXIN(BatteryDispatcher);
 

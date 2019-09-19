@@ -116,8 +116,7 @@ void AddWebappWithSkBitmap(const ShortcutInfo& info,
       java_short_name, java_best_primary_icon_url, java_bitmap,
       is_icon_maskable, info.display, info.orientation, info.source,
       OptionalSkColorToJavaColor(info.theme_color),
-      OptionalSkColorToJavaColor(info.background_color), callback_pointer,
-      false /* isShortcutAsWebapp */);
+      OptionalSkColorToJavaColor(info.background_color), callback_pointer);
 }
 
 // Adds a shortcut which opens in a browser tab to the launcher.

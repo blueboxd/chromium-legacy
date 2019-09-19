@@ -27,7 +27,7 @@ class WakeLockStateRecord;
 // WakeLockController is used to track per-Document wake lock state and react to
 // Document changes appropriately.
 class MODULES_EXPORT WakeLockController final
-    : public GarbageCollectedFinalized<WakeLockController>,
+    : public GarbageCollected<WakeLockController>,
       public Supplement<ExecutionContext>,
       public ContextLifecycleObserver,
       public PageVisibilityObserver {

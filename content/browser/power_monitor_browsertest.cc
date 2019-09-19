@@ -22,7 +22,9 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/common/power_monitor_test.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/power_monitor.mojom.h"
 #include "services/service_manager/public/cpp/service_binding.h"
@@ -67,25 +69,25 @@ class MockPowerMonitorMessageBroadcaster : public device::mojom::PowerMonitor {
   }
 
   // device::mojom::PowerMonitor:
-  void AddClient(
-      device::mojom::PowerMonitorClientPtr power_monitor_client) override {
+  void AddClient(mojo::PendingRemote<device::mojom::PowerMonitorClient>
+                     pending_power_monitor_client) override {
+    mojo::Remote<device::mojom::PowerMonitorClient> power_monitor_client(
+        std::move(pending_power_monitor_client));
     power_monitor_client->PowerStateChange(on_battery_power_);
-    clients_.AddPtr(std::move(power_monitor_client));
+    clients_.Add(std::move(power_monitor_client));
   }
 
   void OnPowerStateChange(bool on_battery_power) {
     on_battery_power_ = on_battery_power;
-    clients_.ForAllPtrs(
-        [&on_battery_power](device::mojom::PowerMonitorClient* client) {
-          client->PowerStateChange(on_battery_power);
-        });
+    for (auto& client : clients_)
+      client->PowerStateChange(on_battery_power);
   }
 
  private:
   bool on_battery_power_ = false;
 
   mojo::BindingSet<device::mojom::PowerMonitor> bindings_;
-  mojo::InterfacePtrSet<device::mojom::PowerMonitorClient> clients_;
+  mojo::RemoteSet<device::mojom::PowerMonitorClient> clients_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPowerMonitorMessageBroadcaster);
 };

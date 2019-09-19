@@ -119,6 +119,21 @@ input[type="week" i]::-webkit-calendar-picker-indicator {
   width: 1.2em;
 }
 
+input[type="time" i]::-webkit-calendar-picker-indicator {
+  background-image: -webkit-image-set(url(images/time_icon.svg) 1x);
+  background-origin: content-box;
+  background-repeat: no-repeat;
+  background-size: contain;
+  height: 1.05em;
+  opacity: 1;
+  outline: none;
+  padding-bottom: 3px;
+  padding-inline-start: 11px;
+  padding-inline-end: 3px;
+  padding-top: 3px;
+  width: 1.05em;
+}
+
 input::-webkit-calendar-picker-indicator:hover {
   background-color: initial;
 }

@@ -21,7 +21,7 @@ class SensorProviderProxy;
 
 // This class wraps 'Sensor' mojo interface and used by multiple
 // JS sensor instances of the same type (within a single frame).
-class SensorProxy : public GarbageCollectedFinalized<SensorProxy>,
+class SensorProxy : public GarbageCollected<SensorProxy>,
                     public PageVisibilityObserver,
                     public FocusChangedObserver {
   USING_GARBAGE_COLLECTED_MIXIN(SensorProxy);

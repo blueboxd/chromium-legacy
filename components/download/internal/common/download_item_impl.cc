@@ -41,6 +41,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
+#include "base/trace_event/memory_usage_estimator.h"
 #include "build/build_config.h"
 #include "components/download/internal/common/download_job_impl.h"
 #include "components/download/internal/common/parallel_download_utils.h"
@@ -2620,6 +2621,30 @@ const char* DownloadItemImpl::DebugResumeModeString(ResumeMode mode) {
   }
   NOTREACHED() << "Unknown resume mode " << static_cast<int>(mode);
   return "unknown";
+}
+
+size_t DownloadItemImpl::GetApproximateMemoryUsage() const {
+  static size_t class_size = sizeof(DownloadItemImpl);
+  size_t size = class_size;
+
+  for (const GURL& url : GetUrlChain())
+    size += url.EstimateMemoryUsage();
+  size += GetReferrerUrl().EstimateMemoryUsage();
+  size += GetSiteUrl().EstimateMemoryUsage();
+  size += GetTabUrl().EstimateMemoryUsage();
+  size += GetTabReferrerUrl().EstimateMemoryUsage();
+  size += base::trace_event::EstimateMemoryUsage(GetSuggestedFilename());
+  size += base::trace_event::EstimateMemoryUsage(GetForcedFilePath().value());
+  size += base::trace_event::EstimateMemoryUsage(GetRemoteAddress());
+  size += base::trace_event::EstimateMemoryUsage(GetTargetFilePath().value());
+  size += base::trace_event::EstimateMemoryUsage(GetFullPath().value());
+  size += base::trace_event::EstimateMemoryUsage(GetHash());
+  size += base::trace_event::EstimateMemoryUsage(GetMimeType());
+  size += base::trace_event::EstimateMemoryUsage(GetOriginalMimeType());
+  size += base::trace_event::EstimateMemoryUsage(GetLastModifiedTime());
+  size += base::trace_event::EstimateMemoryUsage(GetETag());
+  size += base::trace_event::EstimateMemoryUsage(GetGuid());
+  return size;
 }
 
 }  // namespace download

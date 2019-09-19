@@ -45,8 +45,7 @@ class SQLTransaction;
 
 class SQLStatement final : public GarbageCollected<SQLStatement> {
  public:
-  class OnSuccessCallback
-      : public GarbageCollectedFinalized<OnSuccessCallback> {
+  class OnSuccessCallback : public GarbageCollected<OnSuccessCallback> {
    public:
     virtual ~OnSuccessCallback() = default;
     virtual void Trace(blink::Visitor*) {}
@@ -73,7 +72,7 @@ class SQLStatement final : public GarbageCollected<SQLStatement> {
     Member<V8SQLStatementCallback> callback_;
   };
 
-  class OnErrorCallback : public GarbageCollectedFinalized<OnErrorCallback> {
+  class OnErrorCallback : public GarbageCollected<OnErrorCallback> {
    public:
     virtual ~OnErrorCallback() = default;
     virtual void Trace(blink::Visitor*) {}

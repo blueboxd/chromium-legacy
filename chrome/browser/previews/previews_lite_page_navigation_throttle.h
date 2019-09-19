@@ -5,15 +5,15 @@
 #ifndef CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_NAVIGATION_THROTTLE_H_
 #define CHROME_BROWSER_PREVIEWS_PREVIEWS_LITE_PAGE_NAVIGATION_THROTTLE_H_
 
-#include "chrome/browser/previews/previews_lite_page_navigation_throttle_manager.h"
 #include "components/previews/content/previews_user_data.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/navigation_throttle.h"
+#include "url/gurl.h"
 
 namespace content {
-struct OpenURLParams;
 class BrowserContext;
 }  // namespace content
+
+class PreviewsLitePageNavigationThrottleManager;
 
 // If the given URL is a LitePage Preview URL, this returns true but does not
 // change the |url|. This will set |update_virtual_url_with_url| on
@@ -31,11 +31,7 @@ bool HandlePreviewsLitePageURLRewriteReverse(
     GURL* url,
     content::BrowserContext* browser_context);
 
-// This class does the actual decision making about when to serve a Lite Page
-// Server Preview, and the legwork to trigger the Preview navigation. When a
-// Preview is triggered, it will cancel the incoming navigation and PostTask a
-// new one to the Previews Server.
-class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
+class PreviewsLitePageNavigationThrottle {
  public:
   // Reasons that a navigation is blacklisted from this preview. This enum must
   // remain synchronized with the enum |PreviewsServerLitePageBlacklistReason|
@@ -110,23 +106,8 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
     kMaxValue = kConnectionError,
   };
 
-  PreviewsLitePageNavigationThrottle(
-      content::NavigationHandle* handle,
-      PreviewsLitePageNavigationThrottleManager* manager);
-
-  ~PreviewsLitePageNavigationThrottle() override;
-
   // Returns the URL for a preview given by the url.
   static GURL GetPreviewsURLForURL(const GURL& original_url);
-
-  // Starts a new navigation with |params| page in the given |web_contents|,
-  // adding the params' url as a single bypass to |manager|.
-  static void LoadAndBypass(
-      content::WebContents* web_contents,
-      PreviewsLitePageNavigationThrottleManager* manager,
-      const content::OpenURLParams& params,
-      std::unique_ptr<previews::PreviewsUserData::ServerLitePageInfo> info,
-      bool use_post_task);
 
   // Records an entry in the ineligibility histogram.
   static void LogIneligibleReason(IneligibleReason reason);
@@ -139,52 +120,6 @@ class PreviewsLitePageNavigationThrottle : public content::NavigationThrottle {
   GetOrCreateServerLitePageInfo(
       content::NavigationHandle* navigation_handle,
       PreviewsLitePageNavigationThrottleManager* manager);
-
- private:
-  // The current effective connection type;
-  net::EffectiveConnectionType GetECT() const;
-
-  // Returns true if the current URL is eligible for the preview. Does not check
-  // any blacklisting or single bypass.
-  bool IsEligibleForPreview() const;
-
-  // Returns the URL for a preview of the current URL given by the navigation
-  // handle.
-  GURL GetPreviewsURL() const;
-
-  // This method is called on every request and redirect. It checks all
-  // eligibility and blacklisting criteria for the current URL and will return
-  // CANCEL when the preview is triggered and post a new navigation, or will
-  // return PROCEED if the preview is not triggered.
-  content::NavigationThrottle::ThrottleCheckResult MaybeNavigateToPreview()
-      const;
-
-  // Can be called by any of the content::NavigationThrottle implementation
-  // methods to trigger the preview. Returns the
-  // |content::NavigationThrottle::ThrottleCheckResult| for the implemented
-  // method to return.
-  content::NavigationThrottle::ThrottleCheckResult TriggerPreview() const;
-
-  // Gets the ServerLitePageInfo struct from an existing attempted lite page
-  // navigation, if there is one. If not, returns nullptr.
-  previews::PreviewsUserData::ServerLitePageInfo* GetServerLitePageInfo() const;
-
-  // Safely sets the status of the ServerLitePageInfo struct from an existing
-  // attempted lite page navigation, if there is one. If not, does nothing.
-  void SetServerLitePageInfoStatus(previews::ServerLitePageStatus status);
-
-  // content::NavigationThrottle implementation:
-  content::NavigationThrottle::ThrottleCheckResult WillStartRequest() override;
-  content::NavigationThrottle::ThrottleCheckResult WillRedirectRequest()
-      override;
-  content::NavigationThrottle::ThrottleCheckResult WillFailRequest() override;
-  content::NavigationThrottle::ThrottleCheckResult WillProcessResponse()
-      override;
-  const char* GetNameForLogging() override;
-
-  // The manager class to report state changes to and get state from. Outlives
-  // |this|.
-  PreviewsLitePageNavigationThrottleManager* manager_;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsLitePageNavigationThrottle);
 };

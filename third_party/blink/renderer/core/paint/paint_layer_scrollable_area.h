@@ -114,7 +114,7 @@ struct CORE_EXPORT PaintLayerScrollableAreaRareData {
 // are painted by their associated GraphicsLayer that sets the paint flag
 // PaintLayerPaintingOverlayScrollbars.
 class CORE_EXPORT PaintLayerScrollableArea final
-    : public GarbageCollectedFinalized<PaintLayerScrollableArea>,
+    : public GarbageCollected<PaintLayerScrollableArea>,
       public ScrollableArea {
   USING_GARBAGE_COLLECTED_MIXIN(PaintLayerScrollableArea);
   friend class Internals;

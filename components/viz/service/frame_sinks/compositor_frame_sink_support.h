@@ -112,8 +112,6 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   void OnSurfaceActivated(Surface* surface) override;
   void OnSurfaceDestroyed(Surface* surface) override;
   void OnSurfaceWillDraw(Surface* surface) override;
-  void OnSurfaceWasDrawn(uint32_t frame_token,
-                         base::TimeTicks draw_start_timestamp) override;
   void RefResources(
       const std::vector<TransferableResource>& resources) override;
   void UnrefResources(const std::vector<ReturnedResource>& resources) override;
@@ -133,6 +131,8 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
       const gfx::Rect& damage_rect,
       base::TimeTicks expected_display_time) override;
   void OnSurfacePresented(uint32_t frame_token,
+                          base::TimeTicks draw_start_timestamp,
+                          const gfx::SwapTimings& swap_timings,
                           const gfx::PresentationFeedback& feedback) override;
   bool NeedsSyncTokens() const override;
 
@@ -214,6 +214,8 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   void DidReceiveCompositorFrameAck();
   void DidPresentCompositorFrame(uint32_t frame_token,
+                                 base::TimeTicks draw_start_timestamp,
+                                 const gfx::SwapTimings& swap_timings,
                                  const gfx::PresentationFeedback& feedback);
   void DidRejectCompositorFrame(
       uint32_t frame_token,
@@ -326,11 +328,10 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   bool callback_received_receive_ack_ = true;
   uint32_t trace_sequence_ = 0;
 
-  // Contains FrameTimingDetails for in-flight frames that have not yet been
-  // presented or aborted. After presentation the details are moved into
-  // |frame_timing_details_| which is sent to the client and cleared with each
-  // OnBeginFrame()
-  FrameTimingDetailsMap pending_frame_timing_details_;
+  // Maps |frame_token| to the timestamp when that frame was received. This
+  // timestamp is combined with the information received in OnSurfacePresented()
+  // and stored in |frame_timing_details_|.
+  base::flat_map<uint32_t, base::TimeTicks> pending_received_frame_times_;
   FrameTimingDetailsMap frame_timing_details_;
   LocalSurfaceId last_evicted_local_surface_id_;
 

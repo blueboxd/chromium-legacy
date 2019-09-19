@@ -77,7 +77,7 @@ class PaymentMethodManifestDownloaderTest : public testing::Test {
 
     downloader_.OnURLLoaderRedirect(
         downloader_.GetLoaderForTesting(), redirect_info,
-        network::ResourceResponseHead(), &to_be_removed_headers);
+        network::mojom::URLResponseHead(), &to_be_removed_headers);
   }
 
   GURL GetOriginalURL() { return downloader_.GetLoaderOriginalURLForTesting(); }

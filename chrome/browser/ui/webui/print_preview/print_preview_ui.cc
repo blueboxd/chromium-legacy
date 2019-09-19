@@ -66,6 +66,10 @@
 #include "base/enterprise_util.h"
 #endif
 
+#if !BUILDFLAG(OPTIMIZE_WEBUI)
+#include "chrome/browser/ui/webui/managed_ui_handler.h"
+#endif
+
 using content::WebContents;
 
 namespace printing {
@@ -471,7 +475,12 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
       handler_(CreatePrintPreviewHandlers(web_ui)) {
   // Set up the chrome://print/ data source.
   Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(profile, CreatePrintPreviewUISource(profile));
+  content::WebUIDataSource* source = CreatePrintPreviewUISource(profile);
+#if !BUILDFLAG(OPTIMIZE_WEBUI)
+  // For the Polymer 3 demo page.
+  ManagedUIHandler::Initialize(web_ui, source);
+#endif
+  content::WebUIDataSource::Add(profile, source);
 
   // Set up the chrome://theme/ source.
   content::URLDataSource::Add(profile, std::make_unique<ThemeSource>(profile));

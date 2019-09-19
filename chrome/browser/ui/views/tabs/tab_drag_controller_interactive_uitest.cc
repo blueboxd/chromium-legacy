@@ -78,6 +78,7 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 #include "content/public/common/service_manager_connection.h"
@@ -87,6 +88,7 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #endif
@@ -2493,6 +2495,56 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   // |tab_strip| should have been merged into |browser2|. Thus there should only
   // be one browser now.
   EXPECT_EQ(browser_list->size(), 1u);
+}
+
+namespace {
+
+void WindowSizeDuringDraggingTestStep2(
+    DetachToBrowserTabDragControllerTest* test,
+    TabStrip* tab_strip) {
+  // There should be two browser windows, including the newly created one for
+  // the dragged tab.
+  EXPECT_EQ(2u, test->browser_list->size());
+
+  // Get this new created window for the dragged tab.
+  Browser* new_browser = test->browser_list->get(1);
+  aura::Window* window = new_browser->window()->GetNativeWindow();
+  const gfx::Size work_area = display::Screen::GetScreen()
+                                  ->GetDisplayNearestWindow(window)
+                                  .work_area()
+                                  .size();
+  const gfx::Size minimum_size = window->delegate()->GetMinimumSize();
+  const gfx::Size window_size = window->bounds().size();
+  EXPECT_GE(minimum_size.width(),
+            BrowserViewLayout::kMainBrowserContentsMinimumWidth);
+  EXPECT_GE(window_size.width(), minimum_size.width());
+  EXPECT_GE(window_size.height(), minimum_size.height());
+  EXPECT_EQ(window_size,
+            gfx::Size(std::max(work_area.width() / 2, minimum_size.width()),
+                      std::max(work_area.height() / 2, minimum_size.height())));
+
+  ASSERT_TRUE(test->ReleaseInput());
+}
+
+}  // namespace
+
+// Tests that when drgging a tab out of a browser window, the dragged window's
+// size should be equal or larger than its minimum size.
+IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
+                       WindowSizeDuringDraggingTest) {
+  // Set the display size small enough.
+  display::test::DisplayManagerTestApi(ash::Shell::Get()->display_manager())
+      .UpdateDisplay(base::NumberToString(
+                         BrowserViewLayout::kMainBrowserContentsMinimumWidth) +
+                     "x400");
+  ash::ShellTestApi().SetTabletModeEnabledForTest(true);
+
+  TabStrip* tab_strip = GetTabStripForBrowser(browser());
+  AddTabsAndResetBrowser(browser(), 1);
+
+  // Drag it far enough that the first tab detaches.
+  DragTabAndNotify(tab_strip, base::BindOnce(&WindowSizeDuringDraggingTestStep2,
+                                             this, tab_strip));
 }
 
 // Subclass of DetachToBrowserTabDragControllerTest that

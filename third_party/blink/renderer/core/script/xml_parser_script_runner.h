@@ -19,7 +19,7 @@ class XMLParserScriptRunnerHost;
 //
 // https://html.spec.whatwg.org/C/#parsing-xhtml-documents
 class XMLParserScriptRunner final
-    : public GarbageCollectedFinalized<XMLParserScriptRunner>,
+    : public GarbageCollected<XMLParserScriptRunner>,
       public PendingScriptClient {
   USING_GARBAGE_COLLECTED_MIXIN(XMLParserScriptRunner);
 

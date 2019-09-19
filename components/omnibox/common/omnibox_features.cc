@@ -224,14 +224,6 @@ const base::Feature kUIExperimentSwapTitleAndUrl{
 #endif
 };
 
-// Shows the "Search Google or type a URL" omnibox placeholder even when the
-// caret (text edit cursor) is showing / when focused. views::Textfield works
-// this way, as does <input placeholder="">. Omnibox and the NTP's "fakebox"
-// are exceptions in this regard and this experiment makes this more consistent.
-const base::Feature kUIExperimentShowPlaceholderWhenCaretShowing{
-    "OmniboxUIExperimentShowPlaceholderWhenCaretShowing",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Feature used to enable speculatively starting a service worker associated
 // with the destination of the default match when the user's input looks like a
 // query.

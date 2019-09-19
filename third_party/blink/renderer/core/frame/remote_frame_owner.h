@@ -21,7 +21,7 @@ namespace blink {
 //    its owner element in another process.
 // 2. Trigger a load event on its owner element once it finishes a load.
 class CORE_EXPORT RemoteFrameOwner final
-    : public GarbageCollectedFinalized<RemoteFrameOwner>,
+    : public GarbageCollected<RemoteFrameOwner>,
       public FrameOwner {
   USING_GARBAGE_COLLECTED_MIXIN(RemoteFrameOwner);
 

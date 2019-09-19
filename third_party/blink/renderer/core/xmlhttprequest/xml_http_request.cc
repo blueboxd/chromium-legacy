@@ -231,7 +231,7 @@ bool ValidateOpenArguments(const AtomicString& method,
 }  // namespace
 
 class XMLHttpRequest::BlobLoader final
-    : public GarbageCollectedFinalized<XMLHttpRequest::BlobLoader>,
+    : public GarbageCollected<XMLHttpRequest::BlobLoader>,
       public FileReaderLoaderClient {
  public:
   BlobLoader(XMLHttpRequest* xhr, scoped_refptr<BlobDataHandle> handle)

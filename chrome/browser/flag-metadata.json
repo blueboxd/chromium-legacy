@@ -1194,6 +1194,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "enable-experimental-fling-animation",
+    "owners": [ "sarsha@microsoft.com" ],
+    "expiry_milestone": 80
+  },
+  {
     "name": "enable-experimental-kernel-vm-support",
     "owners": [ "jflat", "zwisler" ],
     "expiry_milestone": 78
@@ -1525,8 +1530,8 @@
   },
   {
     "name": "enable-quic",
-    "owners": [ "rch" ],
-    "expiry_milestone": 78
+    "owners": [ "//net/quic/OWNERS" ],
+    "expiry_milestone": 88
   },
   {
     "name": "enable-reader-mode",
@@ -1849,6 +1854,11 @@
     "expiry_milestone": 79
   },
   {
+    "name": "enable-vulkan",
+    "owners": [ "penghuang" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "enable-web-authentication-ble-support",
     "owners": [ "webauthn-team@google.com" ],
     "expiry_milestone": 82
@@ -1978,7 +1988,7 @@
     "owners": [ "wensh@microsoft.com" ],
     "expiry_milestone": 80
   },
-  {
+ {
     "name": "enable-zero-copy",
     "owners": [ "ccameron", "chrome-gpu@google.com" ],
     // This flag is commonly used when asking users to help gather debug info.
@@ -2674,11 +2684,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "omnibox-ui-show-placeholder-when-caret-showing",
-    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "omnibox-ui-show-suggestion-favicons",
     "owners": [ "ender", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 79
@@ -2833,6 +2838,11 @@
   {
     "name": "profile-menu-revamp",
     "owners": [ "tangltom" ],
+    "expiry_milestone": 82
+  },
+  {
+    "name": "prominent-dark-mode-active-tab-title",
+    "owners": [ "dfried" ],
     "expiry_milestone": 82
   },
   {

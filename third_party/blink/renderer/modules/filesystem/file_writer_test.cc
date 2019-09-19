@@ -30,7 +30,7 @@ KURL mock_path_as_kurl() {
 
 }  // namespace
 
-class TestableFileWriter : public GarbageCollectedFinalized<TestableFileWriter>,
+class TestableFileWriter : public GarbageCollected<TestableFileWriter>,
                            public FileWriterBase {
   USING_GARBAGE_COLLECTED_MIXIN(TestableFileWriter);
 

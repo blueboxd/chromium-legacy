@@ -12,7 +12,6 @@
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
-#include "third_party/blink/public/platform/modules/peerconnection/stun_field_trial.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/p2p/stunprober/stun_prober.h"
@@ -39,6 +38,7 @@ class IpcNetworkManager;
 class IpcPacketSocketFactory;
 class MdnsResponderAdapter;
 class P2PSocketDispatcher;
+class StunProberTrial;
 class WebLocalFrame;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
@@ -48,8 +48,13 @@ class WebRtcAudioDeviceImpl;
 class BLINK_MODULES_EXPORT PeerConnectionDependencyFactory
     : base::MessageLoopCurrent::DestructionObserver {
  public:
+  // TODO(crbug.com/787254): Make this constructor private, when
+  // MockPeerConnectionDependencyFactory gets moved to blink.
+  // (friend class declaration will be needed).
   PeerConnectionDependencyFactory(bool create_p2p_socket_dispatcher);
   ~PeerConnectionDependencyFactory() override;
+
+  static PeerConnectionDependencyFactory* GetInstance();
 
   // Create a RTCPeerConnectionHandler object that implements the
   // WebKit WebRTCPeerConnectionHandler interface.

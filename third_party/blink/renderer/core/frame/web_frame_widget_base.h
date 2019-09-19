@@ -40,7 +40,7 @@ struct IntrinsicSizingInfo;
 struct WebFloatPoint;
 
 class CORE_EXPORT WebFrameWidgetBase
-    : public GarbageCollectedFinalized<WebFrameWidgetBase>,
+    : public GarbageCollected<WebFrameWidgetBase>,
       public WebFrameWidget {
  public:
   explicit WebFrameWidgetBase(WebWidgetClient&);

@@ -501,6 +501,11 @@ TabStripLayoutHelper::GetCurrentTabWidthConstraints() const {
 void TabStripLayoutHelper::AnimateSlot(int slots_index,
                                        TabAnimationState target_state) {
   slots_[slots_index].animation->AnimateTo(target_state);
+  if (!gfx::Animation::ShouldRenderRichAnimation()) {
+    slots_[slots_index].animation->CompleteAnimation();
+    on_animation_progressed_.Run();
+    return;
+  }
   if (!animation_timer_.IsRunning()) {
     animation_timer_.Start(FROM_HERE, kTickInterval, this,
                            &TabStripLayoutHelper::TickAnimations);

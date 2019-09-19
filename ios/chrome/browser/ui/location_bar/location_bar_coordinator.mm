@@ -185,6 +185,7 @@ const int kLocationAuthorizationStatusCount = 5;
   // BadgeButtons for a BadgeType.
   BadgeButtonFactory* buttonFactory =
       [[BadgeButtonFactory alloc] initWithActionHandler:actionHandler];
+  buttonFactory.incognito = isIncognito;
   self.badgeViewController =
       [[BadgeViewController alloc] initWithButtonFactory:buttonFactory];
   [self.viewController addChildViewController:self.badgeViewController];

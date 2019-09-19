@@ -298,7 +298,7 @@ TEST_F(ResourceLoaderTest, LoadDataURL_AsyncAndNonStream) {
 // Helper class which stores a BytesConsumer passed by RawResource and reads the
 // bytes when ReadThroughBytesConsumer is called.
 class TestRawResourceClient final
-    : public GarbageCollectedFinalized<TestRawResourceClient>,
+    : public GarbageCollected<TestRawResourceClient>,
       public RawResourceClient {
   USING_GARBAGE_COLLECTED_MIXIN(TestRawResourceClient);
 

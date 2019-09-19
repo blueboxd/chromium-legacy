@@ -212,11 +212,11 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_USE_SUGGESTED_PASSWORD" desc="Button title in a suggested password popup asking user if they want to use the suggested password. [Length: 20em] [iOS only]">
         Use Suggested Password
       </message>
-      <message name="IDS_IOS_APPLICATION_SHORTCUT_NEWINCOGNITOTAB_TITLE" desc="Message when opening a New Incognito Tab from springboard force touch static shortcuts. [Length: unlimited] [iOS only]." meaning="3D Touch entry to create a new Incognito tab.">
-        New Incognito Tab
+      <message name="IDS_IOS_APPLICATION_SHORTCUT_INCOGNITOSEARCH_TITLE" desc="Message when opening a New Incognito Search from springboard force touch static shortcuts. [Length: unlimited] [iOS only]." meaning="3D Touch entry to create a new Incognito tab.">
+       Incognito Search
       </message>
-      <message name="IDS_IOS_APPLICATION_SHORTCUT_NEWTAB_TITLE" desc="Message when opening a New Tab from springboard force touch static shortcuts. [Length: unlimited] [iOS only]." meaning="3D Touch entry to create a new tab.">
-        New Tab
+      <message name="IDS_IOS_APPLICATION_SHORTCUT_NEWSEARCH_TITLE" desc="Message when opening a New Search from springboard force touch static shortcuts. [Length: unlimited] [iOS only]." meaning="3D Touch entry to create a new tab.">
+        New Search
       </message>
       <message name="IDS_IOS_APPLICATION_SHORTCUT_QR_SCANNER_TITLE" desc="Message when opening a QR Scanner from springboard force touch static shortcuts. [Length: unlimited] [iOS only].">
         Scan QR Code

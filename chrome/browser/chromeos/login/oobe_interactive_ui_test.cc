@@ -3,8 +3,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <memory>
-
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "base/bind.h"
@@ -14,8 +12,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
-#include "chrome/browser/chrome_browser_main.h"
-#include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/extensions/quick_unlock_private/quick_unlock_private_api.h"
@@ -57,8 +53,6 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_observer.h"
 #include "ui/display/display_switches.h"
 
 using net::test_server::BasicHttpResponse;
@@ -352,58 +346,6 @@ class ScopedQuickUnlockPrivateGetAuthTokenFunctionObserver
 
   DISALLOW_COPY_AND_ASSIGN(
       ScopedQuickUnlockPrivateGetAuthTokenFunctionObserver);
-};
-
-// Observes an |aura::Window| to see if the window was visible at some point in
-// time.
-class NativeWindowVisibilityObserver : public aura::WindowObserver {
- public:
-  NativeWindowVisibilityObserver() = default;
-  // aura::Window will remove observers on destruction.
-  ~NativeWindowVisibilityObserver() override = default;
-
-  void Observe(aura::Window* window) {
-    window_ = window;
-    window_->AddObserver(this);
-  }
-
-  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override {
-    if (visible)
-      was_visible_ = visible;
-  }
-
-  bool was_visible() { return was_visible_; }
-
- private:
-  // The window was visible at some point in time.
-  bool was_visible_ = false;
-
-  aura::Window* window_;
-
-  DISALLOW_COPY_AND_ASSIGN(NativeWindowVisibilityObserver);
-};
-
-// Sets the |NativeWindowVisibilityObserver| to observe the
-// |LoginDisplayHost|'s |NativeWindow|. This needs to be done in
-// |PostProfileInit()| as the |default_host| will not be initialized before
-// this.
-class NativeWindowVisibilityBrowserMainExtraParts
-    : public ChromeBrowserMainExtraParts {
- public:
-  NativeWindowVisibilityBrowserMainExtraParts(
-      NativeWindowVisibilityObserver* observer)
-      : observer_(observer) {}
-  ~NativeWindowVisibilityBrowserMainExtraParts() override = default;
-
-  // ChromeBrowserMainExtraParts:
-  void PostProfileInit() override {
-    observer_->Observe(LoginDisplayHost::default_host()->GetNativeWindow());
-  }
-
- private:
-  NativeWindowVisibilityObserver* observer_;
-
-  DISALLOW_COPY_AND_ASSIGN(NativeWindowVisibilityBrowserMainExtraParts);
 };
 
 class OobeEndToEndTestSetupMixin : public InProcessBrowserTestMixin {
@@ -736,8 +678,7 @@ class PublicSessionOobeTest
       : PublicSessionOobeTest(false /*requires_terms_of_service*/) {}
 
   explicit PublicSessionOobeTest(bool requires_terms_of_service)
-      : requires_terms_of_service_(requires_terms_of_service),
-        observer_(std::make_unique<NativeWindowVisibilityObserver>()) {
+      : requires_terms_of_service_(requires_terms_of_service) {
     // Prevents Chrome from starting to quit right after login display is
     // finalized.
     login_manager_.set_should_launch_browser(true);
@@ -781,25 +722,10 @@ class PublicSessionOobeTest
     MixinBasedInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
   }
 
-  void CreatedBrowserMainParts(content::BrowserMainParts* parts) override {
-    MixinBasedInProcessBrowserTest::CreatedBrowserMainParts(parts);
-    static_cast<ChromeBrowserMainParts*>(parts)->AddParts(
-        new NativeWindowVisibilityBrowserMainExtraParts(observer_.get()));
-  }
-
-  void TearDownOnMainThread() override {
-    observer_.reset();
-    MixinBasedInProcessBrowserTest::TearDownOnMainThread();
-  }
-
-  bool DialogWasVisible() { return observer_->was_visible(); }
-
   LoginManagerMixin login_manager_{&mixin_host_, {}};
 
  private:
   const bool requires_terms_of_service_;
-
-  std::unique_ptr<NativeWindowVisibilityObserver> observer_;
 
   OobeEndToEndTestSetupMixin setup_{&mixin_host_, nullptr, GetParam()};
   DeviceStateMixin device_state_{
@@ -808,8 +734,6 @@ class PublicSessionOobeTest
 
 IN_PROC_BROWSER_TEST_P(PublicSessionOobeTest, NoTermsOfService) {
   login_manager_.WaitForActiveSession();
-  // Check that the dialog was never shown.
-  EXPECT_FALSE(DialogWasVisible());
 }
 
 INSTANTIATE_TEST_SUITE_P(

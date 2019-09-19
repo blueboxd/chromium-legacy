@@ -12,7 +12,7 @@
 namespace blink {
 
 class CORE_EXPORT CompositorKeyframeValue
-    : public GarbageCollectedFinalized<CompositorKeyframeValue> {
+    : public GarbageCollected<CompositorKeyframeValue> {
  public:
   virtual ~CompositorKeyframeValue() = default;
 

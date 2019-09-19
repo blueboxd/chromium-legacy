@@ -43,8 +43,7 @@ namespace blink {
 
 namespace {
 
-class PromiseAllHandler final
-    : public GarbageCollectedFinalized<PromiseAllHandler> {
+class PromiseAllHandler final : public GarbageCollected<PromiseAllHandler> {
  public:
   static ScriptPromise All(ScriptState* script_state,
                            const Vector<ScriptPromise>& promises) {

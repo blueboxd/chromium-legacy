@@ -424,7 +424,8 @@ int IpcPacketSocket::SendTo(const void* data,
   send_bytes_available_ -= data_size;
 
   const int8_t* data_char = reinterpret_cast<const int8_t*>(data);
-  std::vector<int8_t> data_vector(data_char, data_char + data_size);
+  Vector<int8_t> data_vector;
+  data_vector.AppendRange(data_char, data_char + data_size);
   uint64_t packet_id = client_->Send(address_chrome, data_vector, options);
 
   // Ensure packet_id is not 0. It can't be the case according to

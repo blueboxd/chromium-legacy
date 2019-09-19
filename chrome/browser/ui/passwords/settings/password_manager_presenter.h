@@ -110,12 +110,6 @@ class PasswordManagerPresenter
       std::map<std::string,
                std::vector<std::unique_ptr<autofill::PasswordForm>>>;
 
-  // Implementation used in both |ChangeSavedPassword()| methods.
-  void ChangeSavedPasswords(
-      const std::vector<std::unique_ptr<autofill::PasswordForm>>& old_forms,
-      const base::string16& new_username,
-      const base::Optional<base::string16>& new_password);
-
   // Attempts to remove the entries corresponding to |index| from |form_map|.
   // This will also add a corresponding undo operation to |undo_manager_|.
   // Returns whether removing the entry succeeded.

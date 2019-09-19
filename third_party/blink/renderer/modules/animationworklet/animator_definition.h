@@ -21,7 +21,7 @@ class V8StateCallback;
 // |AnimationWorkletGlobalScope::registerAnimator| to validate the provided
 // Javascript class before completing the registration.
 class MODULES_EXPORT AnimatorDefinition final
-    : public GarbageCollectedFinalized<AnimatorDefinition>,
+    : public GarbageCollected<AnimatorDefinition>,
       public NameClient {
  public:
   explicit AnimatorDefinition(V8AnimatorConstructor* constructor,

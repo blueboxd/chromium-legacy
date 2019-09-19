@@ -178,7 +178,6 @@ public class ExploreSitesCategoryCardView extends LinearLayout {
                         createInteractionDelegate(model);
                 view.setOnClickListener(interactionDelegate);
                 view.setOnCreateContextMenuListener(interactionDelegate);
-                ContextMenuManager.registerViewForTouchlessContextMenu(view, interactionDelegate);
                 view.setOnFocusChangeListener(interactionDelegate);
             }
         }

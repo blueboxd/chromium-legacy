@@ -27,7 +27,7 @@ struct WebScrollIntoViewParams;
 // the layout viewport. Thus, we could say this class is a decorator on the
 // LocalFrameView scrollable area that adds pinch-zoom semantics to scrolling.
 class CORE_EXPORT RootFrameViewport final
-    : public GarbageCollectedFinalized<RootFrameViewport>,
+    : public GarbageCollected<RootFrameViewport>,
       public ScrollableArea {
   USING_GARBAGE_COLLECTED_MIXIN(RootFrameViewport);
 

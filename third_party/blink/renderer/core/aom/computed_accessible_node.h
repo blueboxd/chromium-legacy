@@ -22,7 +22,7 @@ class Document;
 class ScriptState;
 
 class ComputedAccessibleNodePromiseResolver final
-    : public GarbageCollectedFinalized<ComputedAccessibleNodePromiseResolver> {
+    : public GarbageCollected<ComputedAccessibleNodePromiseResolver> {
  public:
   ComputedAccessibleNodePromiseResolver(ScriptState*, Element&);
   ~ComputedAccessibleNodePromiseResolver() {}

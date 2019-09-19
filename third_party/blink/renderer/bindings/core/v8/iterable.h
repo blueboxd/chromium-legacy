@@ -88,7 +88,7 @@ class Iterable {
     }
   }
 
-  class IterationSource : public GarbageCollectedFinalized<IterationSource> {
+  class IterationSource : public GarbageCollected<IterationSource> {
    public:
     virtual ~IterationSource() = default;
 

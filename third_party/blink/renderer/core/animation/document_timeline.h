@@ -59,7 +59,7 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  class PlatformTiming : public GarbageCollectedFinalized<PlatformTiming> {
+  class PlatformTiming : public GarbageCollected<PlatformTiming> {
    public:
     // Calls DocumentTimeline's wake() method after duration seconds.
     virtual void WakeAfter(base::TimeDelta duration) = 0;

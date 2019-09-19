@@ -23,8 +23,6 @@
 #include "base/linux_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -110,6 +108,7 @@
 #include "chrome/browser/chromeos/startup_settings_cache.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/user_removal_manager.h"
+#include "chrome/browser/chromeos/system_token_cert_db_initializer.h"
 #include "chrome/browser/chromeos/ui/gnubby_notification.h"
 #include "chrome/browser/chromeos/ui/low_disk_notification.h"
 #include "chrome/browser/chromeos/usb/cros_usb_detector.h"
@@ -143,7 +142,6 @@
 #include "chromeos/cryptohome/homedir_methods.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/constants/cryptohome_key_delegate_constants.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
@@ -182,14 +180,10 @@
 #include "content/public/browser/system_connector.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
-#include "crypto/nss_util_internal.h"
-#include "crypto/scoped_nss_types.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_change_notifier_posix.h"
-#include "net/cert/nss_cert_database.h"
-#include "net/cert/nss_cert_database_chromeos.h"
 #include "printing/backend/print_backend.h"
 #include "rlz/buildflags/buildflags.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
@@ -239,50 +233,6 @@ void InitializeNetworkPortalDetector() {
     network_portal_detector::SetNetworkPortalDetector(
         new NetworkPortalDetectorImpl());
   }
-}
-
-// Called on UI Thread when the system slot has been retrieved.
-void GotSystemSlotOnUIThread(
-    base::Callback<void(crypto::ScopedPK11Slot)> callback_ui_thread,
-    crypto::ScopedPK11Slot system_slot) {
-  callback_ui_thread.Run(std::move(system_slot));
-}
-
-// Called on IO Thread when the system slot has been retrieved.
-void GotSystemSlotOnIOThread(
-    base::Callback<void(crypto::ScopedPK11Slot)> callback_ui_thread,
-    crypto::ScopedPK11Slot system_slot) {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&GotSystemSlotOnUIThread, callback_ui_thread,
-                                std::move(system_slot)));
-}
-
-// Called on IO Thread, initiates retrieval of system slot. |callback_ui_thread|
-// will be executed on the UI thread when the system slot has been retrieved.
-void GetSystemSlotOnIOThread(
-    base::Callback<void(crypto::ScopedPK11Slot)> callback_ui_thread) {
-  auto callback =
-      base::BindRepeating(&GotSystemSlotOnIOThread, callback_ui_thread);
-  crypto::ScopedPK11Slot system_nss_slot =
-      crypto::GetSystemNSSKeySlot(callback);
-  if (system_nss_slot) {
-    callback.Run(std::move(system_nss_slot));
-  }
-}
-
-// Decides if on start we shall signal to the platform that it can attempt
-// owning the TPM.
-// For official Chrome builds, send this signal if EULA has been accepted
-// already (i.e. the user has started OOBE) to make sure we are not stuck with
-// uninitialized TPM after an interrupted OOBE process.
-// For Chromium builds, don't send it here. Instead, rely on this signal being
-// sent after each successful login.
-bool ShallAttemptTpmOwnership() {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  return StartupUtils::IsEulaAccepted();
-#else
-  return false;
-#endif
 }
 
 }  // namespace
@@ -459,97 +409,6 @@ class DBusServices {
   DISALLOW_COPY_AND_ASSIGN(DBusServices);
 };
 
-// Initializes a global NSSCertDatabase for the system token and starts
-// NetworkCertLoader with that database. Note that this is triggered from
-// PreMainMessageLoopRun, which is executed after PostMainMessageLoopStart,
-// where NetworkCertLoader is initialized. We can thus assume that
-// NetworkCertLoader is initialized.
-class SystemTokenCertDBInitializer {
- public:
-  SystemTokenCertDBInitializer() {}
-  ~SystemTokenCertDBInitializer() {}
-
-  // Entry point, called on UI thread.
-  void Initialize() {
-    // Only start loading the system token once cryptohome is available and only
-    // if the TPM is ready (available && owned && not being owned).
-    CryptohomeClient::Get()->WaitForServiceToBeAvailable(
-        base::Bind(&SystemTokenCertDBInitializer::OnCryptohomeAvailable,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
-
- private:
-  // Called once the cryptohome service is available.
-  void OnCryptohomeAvailable(bool available) {
-    if (!available) {
-      LOG(ERROR) << "SystemTokenCertDBInitializer: Failed to wait for "
-                    "cryptohome to become available.";
-      return;
-    }
-
-    VLOG(1) << "SystemTokenCertDBInitializer: Cryptohome available.";
-    CryptohomeClient::Get()->TpmIsReady(
-        base::Bind(&SystemTokenCertDBInitializer::OnGotTpmIsReady,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  // This is a callback for the cryptohome TpmIsReady query. Note that this is
-  // not a listener which would be called once TPM becomes ready if it was not
-  // ready on startup (e.g. after device enrollment), see crbug.com/725500.
-  void OnGotTpmIsReady(base::Optional<bool> tpm_is_ready) {
-    if (!tpm_is_ready.has_value() || !tpm_is_ready.value()) {
-      VLOG(1) << "SystemTokenCertDBInitializer: TPM is not ready - not loading "
-                 "system token.";
-      if (ShallAttemptTpmOwnership()) {
-        // Signal to cryptohome that it can attempt TPM ownership, if it
-        // haven't done that yet. The previous signal from EULA dialogue could
-        // have been lost if initialization was interrupted.
-        // We don't care about the result, and don't block waiting for it.
-        LOG(WARNING) << "Request attempting TPM ownership.";
-        CryptohomeClient::Get()->TpmCanAttemptOwnership(
-            EmptyVoidDBusMethodCallback());
-      }
-
-      return;
-    }
-    VLOG(1)
-        << "SystemTokenCertDBInitializer: TPM is ready, loading system token.";
-    TPMTokenLoader::Get()->EnsureStarted();
-    base::Callback<void(crypto::ScopedPK11Slot)> callback =
-        base::BindRepeating(&SystemTokenCertDBInitializer::InitializeDatabase,
-                            weak_ptr_factory_.GetWeakPtr());
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   base::BindOnce(&GetSystemSlotOnIOThread, callback));
-  }
-
-  // Initializes the global system token NSSCertDatabase with |system_slot|.
-  // Also starts NetworkCertLoader with the system token database.
-  void InitializeDatabase(crypto::ScopedPK11Slot system_slot) {
-    // Currently, NSSCertDatabase requires a public slot to be set, so we use
-    // the system slot there. We also want GetSystemSlot() to return the system
-    // slot. As ScopedPK11Slot is actually a unique_ptr which will be moved into
-    // the NSSCertDatabase, we need to create a copy, referencing the same slot
-    // (using PK11_ReferenceSlot).
-    crypto::ScopedPK11Slot system_slot_copy =
-        crypto::ScopedPK11Slot(PK11_ReferenceSlot(system_slot.get()));
-    auto database = std::make_unique<net::NSSCertDatabaseChromeOS>(
-        std::move(system_slot) /* public_slot */,
-        crypto::ScopedPK11Slot() /* private_slot */);
-    database->SetSystemSlot(std::move(system_slot_copy));
-
-    system_token_cert_database_ = std::move(database);
-
-    VLOG(1) << "SystemTokenCertDBInitializer: Passing system token NSS "
-               "database to NetworkCertLoader.";
-    NetworkCertLoader::Get()->SetSystemNSSDB(system_token_cert_database_.get());
-  }
-
-  // Global NSSCertDatabase which sees the system token.
-  std::unique_ptr<net::NSSCertDatabase> system_token_cert_database_;
-
-  base::WeakPtrFactory<SystemTokenCertDBInitializer> weak_ptr_factory_{this};
-};
-
 }  // namespace internal
 
 // ChromeBrowserMainPartsChromeos ----------------------------------------------
@@ -654,8 +513,7 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
 
   // Initialize NSS database for system token.
   system_token_certdb_initializer_ =
-      std::make_unique<internal::SystemTokenCertDBInitializer>();
-  system_token_certdb_initializer_->Initialize();
+      std::make_unique<SystemTokenCertDBInitializer>();
 
   CrasAudioHandler::Initialize(
       content::GetSystemConnector(),
@@ -1262,6 +1120,10 @@ void ChromeBrowserMainPartsChromeos::PostDestroyThreads() {
 
   network_change_manager_client_.reset();
   session_termination_manager_.reset();
+
+  // The cert database initializer must be shut down before DBus services are
+  // destroyed.
+  system_token_certdb_initializer_->ShutDown();
 
   // Destroy DBus services immediately after threads are stopped.
   dbus_services_.reset();

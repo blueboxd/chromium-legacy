@@ -15,7 +15,7 @@ namespace blink {
 
 // http://fetch.spec.whatwg.org/#terminology-headers
 class CORE_EXPORT FetchHeaderList final
-    : public GarbageCollectedFinalized<FetchHeaderList> {
+    : public GarbageCollected<FetchHeaderList> {
  public:
   struct ByteCaseInsensitiveCompare {
     bool operator()(const String& lhs, const String& rhs) const {

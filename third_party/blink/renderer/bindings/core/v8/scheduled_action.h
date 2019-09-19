@@ -47,7 +47,7 @@ class ScriptValue;
 class V8Function;
 class WorkerGlobalScope;
 
-class ScheduledAction final : public GarbageCollectedFinalized<ScheduledAction>,
+class ScheduledAction final : public GarbageCollected<ScheduledAction>,
                               public NameClient {
   DISALLOW_COPY_AND_ASSIGN(ScheduledAction);
 

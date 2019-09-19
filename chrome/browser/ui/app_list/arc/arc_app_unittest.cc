@@ -240,7 +240,7 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
     arc_test_.SetUp(profile_.get());
     CreateBuilder();
 
-    CreateLauncherController()->Init();
+    CreateLauncherController();
 
     // Validating decoded content does not fit well for unit tests.
     ArcAppIcon::DisableSafeDecodingForTesting();

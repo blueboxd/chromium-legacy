@@ -920,27 +920,6 @@
             ]
         }
     ],
-    "AutofillOffNoServerData": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillOffNoServerData"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillProfileValidation": [
         {
             "platforms": [
@@ -1051,6 +1030,23 @@
                     },
                     "enable_features": [
                         "AutofillSaveCreditCardUsesImprovedMessaging"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AutofillSaveCardShowNoThanks": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20190726",
+                    "enable_features": [
+                        "AutofillSaveCardShowNoThanks"
                     ]
                 }
             ]
@@ -1579,6 +1575,21 @@
             "experiments": [
                 {
                     "name": "Disabled"
+                }
+            ]
+        }
+    ],
+    "ChromeosVideoDecoder": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ChromeosVideoDecoder"
+                    ]
                 }
             ]
         }
@@ -5179,6 +5190,24 @@
                 },
                 {
                     "name": "Control"
+                }
+            ]
+        }
+    ],
+    "SafeBrowsingPasswordProtectionForSignedInUsers": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SafeBrowsingPasswordProtectionForSignedInUsers"
+                    ]
                 }
             ]
         }

@@ -13,7 +13,7 @@ namespace blink {
 // Helper class for TextFragmentAnchor that provides hooks for tracking and
 // reporting usage and performance metrics to UMA.
 class CORE_EXPORT TextFragmentAnchorMetrics final
-    : public GarbageCollectedFinalized<TextFragmentAnchorMetrics> {
+    : public GarbageCollected<TextFragmentAnchorMetrics> {
  public:
   TextFragmentAnchorMetrics(Document* document);
 

@@ -101,6 +101,7 @@ class RenderFrameImplTest : public RenderViewTest {
   void LoadChildFrame() {
     mojom::CreateFrameWidgetParams widget_params;
     widget_params.routing_id = kSubframeWidgetRouteId;
+    widget_params.visual_properties.new_size = gfx::Size(100, 100);
 
     FrameReplicationState frame_replication_state;
     frame_replication_state.name = "frame";
@@ -135,7 +136,7 @@ class RenderFrameImplTest : public RenderViewTest {
         std::move(stub_browser_interface_broker), MSG_ROUTING_NONE,
         MSG_ROUTING_NONE, kFrameProxyRouteId, MSG_ROUTING_NONE,
         base::UnguessableToken::Create(), frame_replication_state,
-        &compositor_deps_, widget_params, FrameOwnerProperties(),
+        &compositor_deps_, &widget_params, FrameOwnerProperties(),
         /*has_committed_real_load=*/true);
 
     frame_ = static_cast<TestRenderFrame*>(

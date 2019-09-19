@@ -52,7 +52,7 @@ class WebAudioSourceProvider;
 // TODO(hta): Consider merging the two classes.
 
 class PLATFORM_EXPORT MediaStreamComponent final
-    : public GarbageCollectedFinalized<MediaStreamComponent> {
+    : public GarbageCollected<MediaStreamComponent> {
   USING_PRE_FINALIZER(MediaStreamComponent, Dispose);
 
  private:

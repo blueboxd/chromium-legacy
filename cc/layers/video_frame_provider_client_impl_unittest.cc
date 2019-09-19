@@ -5,7 +5,7 @@
 #include "cc/layers/video_frame_provider_client_impl.h"
 #include "cc/layers/video_layer_impl.h"
 #include "cc/test/fake_video_frame_provider.h"
-#include "cc/test/layer_test_common.h"
+#include "cc/test/layer_tree_impl_test_base.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "media/base/video_frame.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -92,7 +92,7 @@ class VideoFrameProviderClientImplTest : public testing::Test,
 
  protected:
   FakeVideoFrameProvider provider_;
-  LayerTestCommon::LayerImplTest impl_;
+  LayerTreeImplTestBase impl_;
   scoped_refptr<VideoFrameProviderClientImpl> client_impl_;
   VideoLayerImpl* video_layer_impl_;
   scoped_refptr<media::VideoFrame> test_frame_;

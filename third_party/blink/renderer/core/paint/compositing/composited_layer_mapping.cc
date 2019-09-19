@@ -1733,7 +1733,6 @@ bool CompositedLayerMapping::UpdateMaskLayer(bool needs_mask_layer) {
           GetLayoutObject().UniqueId(),
           CompositorElementIdNamespace::kEffectMask);
       mask_layer_->SetElementId(element_id);
-      mask_layer_->CcLayer()->SetIsMask(true);
       if (GetLayoutObject().HasBackdropFilter())
         mask_layer_->CcLayer()->SetIsBackdropFilterMask(true);
       layer_changed = true;

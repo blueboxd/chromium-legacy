@@ -121,10 +121,11 @@ def _AdbOatDumpForPackage(device, package_name, out_file):
   """Runs oatdump on the device."""
   # Get the path to the odex file.
   odex_file = PathToDexForPlatformVersion(device, package_name)
-  device.RunShellCommand(['oatdump',
-                          '--oat-file=' + odex_file,
-                          '--output=' + out_file],
-                         timeout=120, shell=True, check_return=True)
+  device.RunShellCommand(
+      ['oatdump', '--oat-file=' + odex_file, '--output=' + out_file],
+      timeout=420,
+      shell=True,
+      check_return=True)
 
 
 class JavaClass(object):
@@ -211,7 +212,7 @@ def RealMain(mapping, device_arg, package, status, hide_summary, workdir):
       device.adb) as file_on_device:
     _AdbOatDumpForPackage(device, package, file_on_device.name)
     file_on_host = os.path.join(workdir, 'out.dump')
-    device.PullFile(file_on_device.name, file_on_host)
+    device.PullFile(file_on_device.name, file_on_host, timeout=220)
   proguard_mappings = (_ParseMappingFile(mapping) if mapping else None)
   with open(file_on_host, 'r') as f:
     java_classes = ListClassesAndVerificationStatus(f, proguard_mappings)

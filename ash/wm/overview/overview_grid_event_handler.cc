@@ -77,6 +77,7 @@ void OverviewGridEventHandler::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_SCROLL_UPDATE: {
       if (!ShouldUseTabletModeGridLayout())
         return;
+
       grid_->UpdateScrollOffset(event->details().scroll_x());
       event->SetHandled();
       break;
@@ -84,6 +85,7 @@ void OverviewGridEventHandler::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_SCROLL_END: {
       if (!ShouldUseTabletModeGridLayout())
         return;
+
       grid_->EndScroll();
       event->SetHandled();
       break;
@@ -97,18 +99,19 @@ void OverviewGridEventHandler::OnAnimationStep(base::TimeTicks timestamp) {
   // Updates |grid_| based on |offset| when |observed_compositor_| begins a new
   // frame.
   DCHECK(observed_compositor_);
-  gfx::Vector2dF offset;
 
   // As a fling progresses, the velocity degenerates, and the difference in
   // offset is passed into |grid_| as an updated scroll value. Stop flinging if
   // the API for fling says to finish, or we reach one of the edges of the
-  // overview grid.
+  // overview grid. Update the grid even if the API says to stop flinging as it
+  // still produces a usable |offset|, but end the fling afterwards.
+  gfx::Vector2dF offset;
   bool continue_fling =
       fling_curve_->ComputeScrollOffset(timestamp, &offset, &fling_velocity_);
-  if (!continue_fling) {
-    continue_fling = grid_->UpdateScrollOffset(
-        fling_last_offset_ ? offset.x() - fling_last_offset_->x() : offset.x());
-  }
+  continue_fling = grid_->UpdateScrollOffset(
+                       fling_last_offset_ ? offset.x() - fling_last_offset_->x()
+                                          : offset.x()) &&
+                   continue_fling;
   fling_last_offset_ = base::make_optional(offset);
 
   if (!continue_fling)
@@ -143,6 +146,7 @@ void OverviewGridEventHandler::HandleFlingScroll(ui::GestureEvent* event) {
 void OverviewGridEventHandler::EndFling() {
   if (!observed_compositor_)
     return;
+
   observed_compositor_->RemoveAnimationObserver(this);
   observed_compositor_ = nullptr;
   fling_curve_.reset();

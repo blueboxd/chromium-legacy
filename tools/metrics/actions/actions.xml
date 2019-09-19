@@ -2319,6 +2319,22 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="ApplicationShortcut.NewIncognitoSearchPressed">
+  <owner>pschaffner@chromium.com</owner>
+  <description>
+    Force pressed on a springboard shortcut and tapped Incognito Search in
+    Chrome for iOS.
+  </description>
+</action>
+
+<action name="ApplicationShortcut.NewSearchPressed">
+  <owner>pschaffner@chromium.com</owner>
+  <description>
+    Force pressed on a springboard shortcut and tapped New Search in Chrome for
+    iOS.
+  </description>
+</action>
+
 <action name="AppList_AutoLaunchCanceled">
   <obsolete>Voice search in Launcher is not supported anymore.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
@@ -21467,6 +21483,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Suggestions.Tile.Tapped.GridTabSwitcher">
+  <owner>mattsimmons@chromium.org</owner>
+  <owner>memex-team@google.com</owner>
+  <description>
+    User tapped on a suggestions tile while viewing the tab switcher.
+    Android-only.
+  </description>
+</action>
+
 <action name="SuspiciousExtensionBubbleDismissed">
   <owner>finnur@chromium.org</owner>
   <description>Please enter the description of this user action.</description>
@@ -21621,9 +21646,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TabContextMenu_NewTab">
-  <obsolete>Deprecated due to removal.</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <description>
+    User selected New Tab to the Right from the tabstrip context menu.
+  </description>
 </action>
 
 <action name="TabContextMenu_OpenTabsLeftToRight">

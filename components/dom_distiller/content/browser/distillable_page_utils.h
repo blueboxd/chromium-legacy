@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/observer_list_types.h"
+#include "base/optional.h"
 
 namespace content {
 class WebContents;
@@ -44,6 +45,9 @@ class DistillabilityObserver : public base::CheckedObserver {
 // |web_contents| must be non-null.
 void AddObserver(content::WebContents* web_contents,
                  DistillabilityObserver* observer);
+
+base::Optional<DistillabilityResult> GetLatestResult(
+    content::WebContents* web_contents);
 
 }  // namespace dom_distiller
 

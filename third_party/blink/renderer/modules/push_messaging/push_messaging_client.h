@@ -26,9 +26,8 @@ class KURL;
 class PushSubscriptionOptions;
 class ServiceWorkerRegistration;
 
-class PushMessagingClient final
-    : public GarbageCollectedFinalized<PushMessagingClient>,
-      public Supplement<LocalFrame> {
+class PushMessagingClient final : public GarbageCollected<PushMessagingClient>,
+                                  public Supplement<LocalFrame> {
   USING_GARBAGE_COLLECTED_MIXIN(PushMessagingClient);
 
  public:

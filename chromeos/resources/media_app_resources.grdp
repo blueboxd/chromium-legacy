@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grit-part>
+  <include name="IDR_MEDIA_APP_INDEX_HTML"
+      file="../components/media_app_ui/resources/index.html"
+      type="BINDATA" />
+  <include name="IDR_MEDIA_APP_APP_HTML"
+      file="../components/media_app_ui/resources/app.html"
+      type="BINDATA" />
+  <if expr="enable_cros_media_app">
+    <then>
+      <include name="IDR_MEDIA_APP_APP_JS"
+          file="../components/media_app_ui/resources/app/js/app_main.js"
+          type="BINDATA" />
+      <include name="IDR_MEDIA_APP_IMAGE_HANDLER_MODULE_JS"
+          file="../components/media_app_ui/resources/app/js/app_image_handler_module.js"
+          type="BINDATA" />
+      <include name="IDR_MEDIA_APP_DROP_TARGET_MODULE_JS"
+          file="../components/media_app_ui/resources/app/js/app_drop_target_module.js"
+          type="BINDATA" />
+    </then>
+    <else>
+      <include name="IDR_MEDIA_APP_APP_JS"
+          file="../components/media_app_ui/resources/mock/js/app_main.js"
+          type="BINDATA" />
+      <include name="IDR_MEDIA_APP_IMAGE_HANDLER_MODULE_JS"
+          file="../components/media_app_ui/resources/mock/js/mock_module.js"
+          type="BINDATA" />
+      <include name="IDR_MEDIA_APP_DROP_TARGET_MODULE_JS"
+          file="../components/media_app_ui/resources/mock/js/mock_module.js"
+          type="BINDATA" />
+    </else>
+  </if>
+</grit-part>

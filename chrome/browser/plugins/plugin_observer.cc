@@ -189,8 +189,7 @@ void PluginObserver::CreatePluginObserverInfoBar(
       infobars::InfoBarDelegate::PLUGIN_OBSERVER_INFOBAR_DELEGATE,
       &kExtensionCrashedIcon,
       l10n_util::GetStringFUTF16(IDS_PLUGIN_INITIALIZATION_ERROR_PROMPT,
-                                 plugin_name),
-      true);
+                                 plugin_name));
 }
 
 void PluginObserver::BlockedOutdatedPlugin(

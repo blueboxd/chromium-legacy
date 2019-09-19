@@ -21,7 +21,7 @@ class ReportingObserver;
 // ReportingContext processes all reports for an ExecutionContext, and serves as
 // a container for all active ReportingObservers on that ExecutionContext.
 class CORE_EXPORT ReportingContext final
-    : public GarbageCollectedFinalized<ReportingContext>,
+    : public GarbageCollected<ReportingContext>,
       public Supplement<ExecutionContext> {
   USING_GARBAGE_COLLECTED_MIXIN(ReportingContext);
 

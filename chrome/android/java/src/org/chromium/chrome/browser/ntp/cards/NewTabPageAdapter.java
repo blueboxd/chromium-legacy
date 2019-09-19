@@ -225,11 +225,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
                 mUiDelegate.getSuggestionsSource().areRemoteSuggestionsEnabled();
         boolean isArticleSectionVisible = mSections.getSection(KnownCategories.ARTICLES) != null;
 
-        // Always hide footer when in touchless mode since the learn more link will be shown in the
-        // context menu.
         mFooter.setVisible(!SuggestionsConfig.scrollToLoad()
-                && (areRemoteSuggestionsEnabled || isArticleSectionVisible)
-                && !SuggestionsConfig.isTouchless());
+                && (areRemoteSuggestionsEnabled || isArticleSectionVisible));
     }
 
     private boolean areArticlesLoading() {

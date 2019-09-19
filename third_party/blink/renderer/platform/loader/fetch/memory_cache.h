@@ -62,10 +62,9 @@ class MemoryCacheEntry final : public GarbageCollected<MemoryCacheEntry> {
 
 // This cache holds subresources used by Web pages: images, scripts,
 // stylesheets, etc.
-class PLATFORM_EXPORT MemoryCache final
-    : public GarbageCollectedFinalized<MemoryCache>,
-      public MemoryCacheDumpClient,
-      public MemoryPressureListener {
+class PLATFORM_EXPORT MemoryCache final : public GarbageCollected<MemoryCache>,
+                                          public MemoryCacheDumpClient,
+                                          public MemoryPressureListener {
   USING_GARBAGE_COLLECTED_MIXIN(MemoryCache);
 
  public:

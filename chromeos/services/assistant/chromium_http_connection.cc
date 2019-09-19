@@ -17,6 +17,7 @@
 #include "services/network/public/cpp/header_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 using assistant_client::HttpConnection;
 using network::SharedURLLoaderFactory;
@@ -395,7 +396,7 @@ void ChromiumHttpConnection::OnURLLoadComplete(
 
 void ChromiumHttpConnection::OnResponseStarted(
     const GURL& final_url,
-    const network::ResourceResponseHead& response_header) {
+    const network::mojom::URLResponseHead& response_header) {
   if (enable_header_response_ && response_header.headers) {
     // Only propagate |OnHeaderResponse()| once before any |OnPartialResponse()|
     // invoked to honor the API contract.

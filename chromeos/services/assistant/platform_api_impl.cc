@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/system/sys_info.h"
-#include "chromeos/dbus/power/power_manager_client.h"
+#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/services/assistant/media_session/assistant_media_session.h"
 #include "chromeos/services/assistant/platform/power_manager_provider_impl.h"
 #include "chromeos/services/assistant/public/features.h"
@@ -80,21 +80,26 @@ void PlatformApiImpl::DummyAuthProvider::Reset() {}
 PlatformApiImpl::PlatformApiImpl(
     mojom::Client* client,
     AssistantMediaSession* media_session,
+    PowerManagerClient* power_manager_client,
+    CrasAudioHandler* cras_audio_handler,
     mojo::PendingRemote<device::mojom::BatteryMonitor> battery_monitor,
     scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> background_task_runner,
     std::string pref_locale)
     : audio_input_provider_(client,
-                            chromeos::PowerManagerClient::Get(),
+                            power_manager_client,
+                            cras_audio_handler,
                             media::AudioDeviceDescription::kDefaultDeviceId,
                             /*hotword_device_id=*/std::string()),
       audio_output_provider_(client,
-                             chromeos::PowerManagerClient::Get(),
+                             power_manager_client,
+                             cras_audio_handler,
                              media_session,
                              background_task_runner,
                              media::AudioDeviceDescription::kDefaultDeviceId),
       network_provider_(client),
-      pref_locale_(pref_locale) {
+      pref_locale_(pref_locale),
+      cras_audio_handler_(cras_audio_handler) {
   // Only enable native power features if they are supported by the UI.
   std::unique_ptr<PowerManagerProviderImpl> provider;
   if (features::IsPowerManagerEnabled()) {
@@ -104,12 +109,12 @@ PlatformApiImpl::PlatformApiImpl(
   system_provider_ = std::make_unique<SystemProviderImpl>(
       std::move(provider), std::move(battery_monitor));
 
-  chromeos::CrasAudioHandler::Get()->AddAudioObserver(this);
+  cras_audio_handler_->AddAudioObserver(this);
   OnAudioNodesChanged();
 }
 
 PlatformApiImpl::~PlatformApiImpl() {
-  chromeos::CrasAudioHandler::Get()->RemoveAudioObserver(this);
+  cras_audio_handler_->RemoveAudioObserver(this);
 }
 
 AudioInputProviderImpl& PlatformApiImpl::GetAudioInputProvider() {
@@ -139,10 +144,9 @@ SystemProvider& PlatformApiImpl::GetSystemProvider() {
 void PlatformApiImpl::OnAudioNodesChanged() {
   if (!base::SysInfo::IsRunningOnChromeOS())
     return;
-  auto* cras = chromeos::CrasAudioHandler::Get();
 
   chromeos::AudioDeviceList devices;
-  cras->GetAudioDevices(&devices);
+  cras_audio_handler_->GetAudioDevices(&devices);
 
   const chromeos::AudioDevice* input_device = nullptr;
   const chromeos::AudioDevice* hotword_device = nullptr;

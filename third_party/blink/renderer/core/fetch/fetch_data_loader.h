@@ -28,8 +28,7 @@ class FormData;
 // - Client's methods can be called synchronously in Start().
 // - If FetchDataLoader::Cancel() is called, Client's methods will not be
 //   called anymore.
-class CORE_EXPORT FetchDataLoader
-    : public GarbageCollectedFinalized<FetchDataLoader> {
+class CORE_EXPORT FetchDataLoader : public GarbageCollected<FetchDataLoader> {
  public:
   class CORE_EXPORT Client : public GarbageCollectedMixin {
    public:

@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 
-#include "cc/test/layer_test_common.h"
+#include "cc/test/layer_tree_impl_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -16,7 +16,7 @@ TEST(SolidColorScrollbarLayerImplTest, Occlusion) {
   gfx::Size layer_size(10, 1000);
   gfx::Size viewport_size(1000, 1000);
 
-  LayerTestCommon::LayerImplTest impl;
+  LayerTreeImplTestBase impl;
 
   ScrollbarOrientation orientation = VERTICAL;
   int thumb_thickness = layer_size.width();
@@ -48,7 +48,7 @@ TEST(SolidColorScrollbarLayerImplTest, Occlusion) {
     gfx::Rect occluded;
     impl.AppendQuadsWithOcclusion(scrollbar_layer_impl, occluded);
 
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(), thumb_rect);
+    VerifyQuadsExactlyCoverRect(impl.quad_list(), thumb_rect);
     EXPECT_EQ(1u, impl.quad_list().size());
   }
 
@@ -57,7 +57,7 @@ TEST(SolidColorScrollbarLayerImplTest, Occlusion) {
     gfx::Rect occluded(scrollbar_layer_impl->visible_layer_rect());
     impl.AppendQuadsWithOcclusion(scrollbar_layer_impl, occluded);
 
-    LayerTestCommon::VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());
+    VerifyQuadsExactlyCoverRect(impl.quad_list(), gfx::Rect());
     EXPECT_EQ(impl.quad_list().size(), 0u);
   }
 
@@ -67,8 +67,8 @@ TEST(SolidColorScrollbarLayerImplTest, Occlusion) {
     impl.AppendQuadsWithOcclusion(scrollbar_layer_impl, occluded);
 
     size_t partially_occluded_count = 0;
-    LayerTestCommon::VerifyQuadsAreOccluded(
-        impl.quad_list(), occluded, &partially_occluded_count);
+    VerifyQuadsAreOccluded(impl.quad_list(), occluded,
+                           &partially_occluded_count);
     // The layer outputs one quad, which is partially occluded.
     EXPECT_EQ(1u, impl.quad_list().size());
     EXPECT_EQ(1u, partially_occluded_count);

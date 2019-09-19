@@ -20,6 +20,7 @@
 #include "cc/test/fake_proxy.h"
 #include "cc/test/fake_recording_source.h"
 #include "cc/test/layer_test_common.h"
+#include "cc/test/property_tree_test_utils.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/stub_layer_tree_host_single_thread_client.h"
 #include "cc/test/test_task_graph_runner.h"
@@ -107,7 +108,7 @@ TEST(PictureLayerTest, InvalidateRasterAfterUpdate) {
   host_impl.pending_tree()->SetRootLayerForTesting(
       FakePictureLayerImpl::Create(host_impl.pending_tree(), 1));
   FakePictureLayerImpl* layer_impl = static_cast<FakePictureLayerImpl*>(
-      host_impl.pending_tree()->root_layer_for_testing());
+      host_impl.pending_tree()->root_layer());
   layer->PushPropertiesTo(layer_impl);
 
   EXPECT_EQ(invalidation_bounds,
@@ -147,7 +148,7 @@ TEST(PictureLayerTest, InvalidateRasterWithoutUpdate) {
   host_impl.pending_tree()->SetRootLayerForTesting(
       FakePictureLayerImpl::Create(host_impl.pending_tree(), 1));
   FakePictureLayerImpl* layer_impl = static_cast<FakePictureLayerImpl*>(
-      host_impl.pending_tree()->root_layer_for_testing());
+      host_impl.pending_tree()->root_layer());
   layer->PushPropertiesTo(layer_impl);
 
   EXPECT_EQ(gfx::Rect(), layer_impl->GetPendingInvalidation()->bounds());
@@ -191,7 +192,7 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
   host_impl.pending_tree()->SetRootLayerForTesting(
       FakePictureLayerImpl::Create(host_impl.pending_tree(), 1));
   FakePictureLayerImpl* layer_impl = static_cast<FakePictureLayerImpl*>(
-      host_impl.pending_tree()->root_layer_for_testing());
+      host_impl.pending_tree()->root_layer());
   SetupRootProperties(layer_impl);
   UpdateDrawProperties(host_impl.pending_tree());
 
@@ -210,7 +211,7 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
 
   host_impl.CreatePendingTree();
   layer_impl = static_cast<FakePictureLayerImpl*>(
-      host_impl.pending_tree()->root_layer_for_testing());
+      host_impl.pending_tree()->root_layer());
 
   // We should now have invalid contents and should therefore clear the
   // recording source.
@@ -221,11 +222,9 @@ TEST(PictureLayerTest, ClearVisibleRectWhenNoTiling) {
 
   std::unique_ptr<viz::RenderPass> render_pass = viz::RenderPass::Create();
   AppendQuadsData data;
-  host_impl.active_tree()->root_layer_for_testing()->WillDraw(
-      DRAW_MODE_SOFTWARE, nullptr);
-  host_impl.active_tree()->root_layer_for_testing()->AppendQuads(
-      render_pass.get(), &data);
-  host_impl.active_tree()->root_layer_for_testing()->DidDraw(nullptr);
+  host_impl.active_tree()->root_layer()->WillDraw(DRAW_MODE_SOFTWARE, nullptr);
+  host_impl.active_tree()->root_layer()->AppendQuads(render_pass.get(), &data);
+  host_impl.active_tree()->root_layer()->DidDraw(nullptr);
 }
 
 TEST(PictureLayerTest, HasSlowPaths) {

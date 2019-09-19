@@ -221,16 +221,23 @@ class CONTENT_EXPORT RenderWidget
       mojo::PendingReceiver<mojom::Widget> widget_receiver);
 
   // Initialize a new RenderWidget for a popup. The |show_callback| is called
-  // when RenderWidget::Show() happens. This method increments the reference
-  // count on the RenderWidget, making it self-referencing, which is then
-  // release when a WidgetMsg_Close IPC is received.
+  // when RenderWidget::Show() happens.
   void InitForPopup(ShowCallback show_callback,
                     blink::WebPagePopup* web_page_popup);
 
+  // Initialize a new RenderWidget for pepper fullscreen. The |show_callback| is
+  // called when RenderWidget::Show() happens.
+  void InitForPepperFullscreen(ShowCallback show_callback,
+                               blink::WebWidget* web_widget);
+
+  // Initialize a new RenderWidget that will be attached to a RenderFrame (via
+  // the WebFrameWidget), for a frame that is a main frame.
+  void InitForMainFrame(ShowCallback show_callback,
+                        blink::WebFrameWidget* web_frame_widget);
+
   // Initialize a new RenderWidget that will be attached to a RenderFrame (via
   // the WebFrameWidget), for a frame that is a local root, but not the main
-  // frame. This method increments the reference count on the RenderWidget,
-  // making it self-referencing, which can be released by calling Close().
+  // frame.
   void InitForChildLocalRoot(blink::WebFrameWidget* web_frame_widget);
 
   // Sets a delegate to handle certain RenderWidget operations that need an
@@ -694,11 +701,6 @@ class CONTENT_EXPORT RenderWidget
     in_synchronous_composite_for_testing_ = in;
   }
 
-  // Called by Create() functions and subclasses to finish initialization.
-  // |show_callback| will be invoked once WebWidgetClient::Show() occurs, and
-  // should be null if Show() won't be triggered for this widget.
-  void Init(ShowCallback show_callback, blink::WebWidget* web_widget);
-
   base::WeakPtr<RenderWidget> AsWeakPtr();
 
   // TODO(https://crbug.com/995981): Eventually, the lifetime of RenderWidget
@@ -710,14 +712,6 @@ class CONTENT_EXPORT RenderWidget
  protected:
   // Notify subclasses that we initiated the paint operation.
   virtual void DidInitiatePaint() {}
-
-  // RenderWidgets are created for frames, popups and pepper fullscreen. In the
-  // former case, the caller frame takes ownership and eventually passes the
-  // unique_ptr back in Close(). In the latter cases, the browser process takes
-  // ownership via IPC.  These booleans exist to allow us to confirm than an IPC
-  // message to kill the render widget is coming for a popup or fullscreen.
-  bool popup_ = false;
-  bool pepper_fullscreen_ = false;
 
  private:
   // Friend RefCounted so that the dtor can be non-public. Using this class
@@ -738,6 +732,11 @@ class CONTENT_EXPORT RenderWidget
 
   static scoped_refptr<base::SingleThreadTaskRunner> GetCleanupTaskRunner();
 
+  // Called by Create() functions and subclasses to finish initialization.
+  // |show_callback| will be invoked once WebWidgetClient::Show() occurs, and
+  // should be null if Show() won't be triggered for this widget.
+  void Init(ShowCallback show_callback, blink::WebWidget* web_widget);
+
   // Creates the compositor, but leaves it in a stopped state, where it will
   // not set up IPC channels or begin trying to produce frames until started
   // via StartStopCompositor().
@@ -754,6 +753,13 @@ class CONTENT_EXPORT RenderWidget
 
   gfx::Size GetSizeForWebWidget() const;
   void ResizeWebWidget();
+
+  // Enable or disable auto-resize. This is part of
+  // OnSynchronizeVisualProperties though tests may call to it more directly.
+  void SetAutoResizeMode(bool auto_resize,
+                         const gfx::Size& min_size_before_dsf,
+                         const gfx::Size& max_size_before_dsf,
+                         float device_scale_factor);
 
   // Helper method to get the device_viewport_rect() from the compositor, which
   // is always in physical pixels.
@@ -829,11 +835,6 @@ class CONTENT_EXPORT RenderWidget
   // our state.
   void SetHidden(bool hidden);
 
-  // Sets the fullscreen state for the WebView.
-  // TODO(danakj): This is currently located on RenderWidget but is a page/view
-  // state, and should move to RenderView.
-  void SetIsFullscreen(bool fullscreen);
-
   // Returns a rect that the compositor needs to raster. For a main frame this
   // is always the entire viewport, but for out-of-process iframes this can be
   // constrained to limit overdraw.
@@ -888,8 +889,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Used to force the size of a window when running web tests.
   void SetWindowRectSynchronously(const gfx::Rect& new_window_rect);
-
-  void UpdateCaptureSequenceNumber(uint32_t capture_sequence_number);
 
   // A variant of Send but is fatal if it fails. The browser may
   // be waiting for this IPC Message and if the send fails the browser will
@@ -1134,6 +1133,13 @@ class CONTENT_EXPORT RenderWidget
   // that are not for a frame (eg popups) and excludes the widget for the main
   // frame (which is attached to the RenderViewImpl).
   bool for_child_local_root_frame_ = false;
+  // RenderWidgets are created for frames, popups and pepper fullscreen. In the
+  // former case, the caller frame takes ownership and eventually passes the
+  // unique_ptr back in Close(). In the latter cases, the browser process takes
+  // ownership via IPC.  These booleans exist to allow us to confirm than an IPC
+  // message to kill the render widget is coming for a popup or fullscreen.
+  bool popup_ = false;
+  bool pepper_fullscreen_ = false;
 
   // A callback into the creator/opener of this widget, to be executed when
   // WebWidgetClient::Show() occurs.

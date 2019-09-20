@@ -40,12 +40,4 @@
              valid reference to a layout. -->
         <attr name="layout" format="reference" />
     </declare-styleable>
-
-    <declare-styleable name="RoundedCornerImageView">
-        <attr name="cornerRadiusTopStart" format="dimension" />
-        <attr name="cornerRadiusTopEnd" format="dimension" />
-        <attr name="cornerRadiusBottomStart" format="dimension" />
-        <attr name="cornerRadiusBottomEnd" format="dimension" />
-        <attr name="roundedfillColor" format="reference|color" />
-    </declare-styleable>
 </resources>

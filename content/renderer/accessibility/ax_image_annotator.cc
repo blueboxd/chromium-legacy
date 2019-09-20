@@ -197,9 +197,9 @@ AXImageAnnotator::ImageInfo::ImageInfo(const blink::WebAXObject& image)
 
 AXImageAnnotator::ImageInfo::~ImageInfo() = default;
 
-image_annotation::mojom::ImageProcessorPtr
+mojo::PendingRemote<image_annotation::mojom::ImageProcessor>
 AXImageAnnotator::ImageInfo::GetImageProcessor() {
-  return image_processor_.GetPtr();
+  return image_processor_.GetPendingRemote();
 }
 
 bool AXImageAnnotator::ImageInfo::HasAnnotation() const {

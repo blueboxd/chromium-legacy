@@ -81,9 +81,6 @@
 #include "chrome/browser/net_benchmarking.h"
 #include "chrome/browser/notifications/platform_notification_service_factory.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
-#include "chrome/browser/page_load_metrics/metrics_navigation_throttle.h"
-#include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/payments/payment_request_display_manager_factory.h"
 #include "chrome/browser/performance_manager/chrome_browser_main_extra_parts_performance_manager.h"
@@ -130,7 +127,7 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/signin/chrome_signin_proxying_url_loader_factory.h"
 #include "chrome/browser/signin/chrome_signin_url_loader_throttle.h"
-#include "chrome/browser/signin/header_modification_delegate_on_ui_thread_impl.h"
+#include "chrome/browser/signin/header_modification_delegate_impl.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/site_isolation/site_isolation_policy.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
@@ -223,6 +220,9 @@
 #include "components/nacl/common/buildflags.h"
 #include "components/nacl/common/nacl_constants.h"
 #include "components/net_log/chrome_net_log.h"
+#include "components/page_load_metrics/browser/metrics_navigation_throttle.h"
+#include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
+#include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/payments/content/payment_request_display_manager.h"
 #include "components/policy/content/policy_blacklist_navigation_throttle.h"
@@ -4620,8 +4620,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
 #endif
 
   auto delegate =
-      std::make_unique<signin::HeaderModificationDelegateOnUIThreadImpl>(
-          profile);
+      std::make_unique<signin::HeaderModificationDelegateImpl>(profile);
   auto signin_throttle = signin::URLLoaderThrottle::MaybeCreate(
       std::move(delegate), navigation_ui_data, wc_getter);
   if (signin_throttle)

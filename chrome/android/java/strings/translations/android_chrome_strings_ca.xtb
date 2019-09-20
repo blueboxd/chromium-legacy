@@ -174,6 +174,7 @@
 <translation id="2154484045852737596">Edita la targeta</translation>
 <translation id="2154710561487035718">Copia l'URL</translation>
 <translation id="2156074688469523661">Llocs restants (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="2157851137955077194">Per compartir elements del telèfon amb un altre dispositiu, activa la sincronització a la configuració de Chrome en tots dos dispositius</translation>
 <translation id="2170088579611075216">Permet i activa el mode RV</translation>
 <translation id="218608176142494674">S'estan compartint</translation>
 <translation id="2227444325776770048">Continua com a <ph name="USER_FULL_NAME" /></translation>
@@ -538,10 +539,10 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5011311129201317034"><ph name="SITE" /> es vol connectar</translation>
 <translation id="5013696553129441713">No hi ha cap suggeriment nou</translation>
 <translation id="5016205925109358554">Serif</translation>
-<translation id="5033865233969348410">Mentre tinguis el mode RV activat, pot ser que aquest lloc web pugui obtenir la informació següent:
+<translation id="5033865233969348410">Mentre estiguis en el mode RV, pot ser que aquest lloc web pugui obtenir la informació següent:
   -  les teves característiques físiques, com ara l'alçada.
 
-Assegura't que confies en aquest lloc web abans d'activar el mode RV.</translation>
+Assegura't que confies en aquest lloc web abans d'entrar al mode RV.</translation>
 <translation id="5039804452771397117">Permet</translation>
 <translation id="5040262127954254034">Privadesa</translation>
 <translation id="5048398596102334565">Permet que els llocs web accedeixin als sensors de moviment (opció recomanada)</translation>
@@ -602,7 +603,6 @@ Assegura't que confies en aquest lloc web abans d'activar el mode RV.</translati
 <translation id="545042621069398927">S'està accelerant la baixada.</translation>
 <translation id="5456381639095306749">Baixa la pàgina</translation>
 <translation id="5475862044948910901">Vols iniciar la sessió de realitat augmentada?</translation>
-<translation id="5481942164684849270"><ph name="APP_NAME" /> s'ha afegit a les teves aplicacions</translation>
 <translation id="548278423535722844">Obre en una aplicació de mapes</translation>
 <translation id="5487521232677179737">Esborra les dades</translation>
 <translation id="5494752089476963479">Bloqueja els anuncis als llocs web que mostren publicitat intrusiva o enganyosa</translation>
@@ -616,11 +616,11 @@ Assegura't que confies en aquest lloc web abans d'activar el mode RV.</translati
 <translation id="5527082711130173040">Chrome necessita accedir a la ubicació per poder cercar dispositius. <ph name="BEGIN_LINK1" />Actualitza els permisos<ph name="END_LINK1" />. L'accés a la ubicació també està <ph name="BEGIN_LINK2" />desactivat en aquest dispositiu<ph name="END_LINK2" />.</translation>
 <translation id="5527111080432883924">Pregunta'm abans de permetre que els llocs web llegeixin el text i les imatges del porta-retalls (opció recomanada)</translation>
 <translation id="5530766185686772672">Tanca pestanyes d'incògnit</translation>
-<translation id="5534334044554683961">Mentre tinguis el mode RV activat, pot ser que aquest lloc web pugui obtenir la informació següent:
+<translation id="5534334044554683961">Mentre estiguis en el mode RV, pot ser que aquest lloc web pugui obtenir la informació següent:
   -   les teves característiques físiques, com ara l'alçada
   -   la distribució de la teva habitació
 
-Assegura't que confies en aquest lloc web abans d'activar el mode RV.</translation>
+Assegura't que confies en aquest lloc web abans d'entrar al mode RV.</translation>
 <translation id="5534640966246046842">S'ha copiat el lloc web</translation>
 <translation id="5556459405103347317">Torna a carregar</translation>
 <translation id="5561549206367097665">S'està esperant la xarxa…</translation>
@@ -911,7 +911,7 @@ El lloc web NO obté accés a la càmera. Només tu pots veure les imatges de la
 <translation id="7665369617277396874">Afegeix un compte</translation>
 <translation id="766587987807204883">Els articles es mostren aquí i els pots llegir fins i tot sense connexió</translation>
 <translation id="7682724950699840886">Segueix aquests consells: comprova que hi hagi prou espai al dispositiu i prova d'exportar les contrasenyes de nou.</translation>
-<translation id="7685301384041462804">Assegura't que confies en aquest lloc web abans d'activar el mode RV.</translation>
+<translation id="7685301384041462804">Assegura't que confies en aquest lloc web abans d'entrar al mode RV.</translation>
 <translation id="7698359219371678927">Crea una adreça electrònica a <ph name="APP_NAME" /></translation>
 <translation id="7704317875155739195">Completa automàticament les cerques i els URL</translation>
 <translation id="7725024127233776428">Les pàgines que afegeixis a les adreces d'interès es mostraran aquí</translation>
@@ -1009,7 +1009,6 @@ El lloc web NO obté accés a la càmera. Només tu pots veure les imatges de la
 <translation id="8364299278605033898">Mostra llocs web populars</translation>
 <translation id="8368027906805972958">Dispositiu desconegut o no admès (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Permet la sincronització en segon pla en un lloc concret.</translation>
-<translation id="8374821112118309944">Heu de fer l'actualització de TalkBack a una versió més recent</translation>
 <translation id="8378714024927312812">Gestionat per la teva organització</translation>
 <translation id="8380167699614421159">Aquest lloc web mostra anuncis intrusius o enganyosos</translation>
 <translation id="8393700583063109961">Envia el missatge</translation>
@@ -1073,6 +1072,7 @@ El lloc web NO obté accés a la càmera. Només tu pots veure les imatges de la
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, pestanya</translation>
 <translation id="885701979325669005">Emmagatzematge</translation>
+<translation id="889338405075704026">Ves a la configuració de Chrome</translation>
 <translation id="8901170036886848654">No s'ha trobat cap adreça d'interès</translation>
 <translation id="8909135823018751308">Comparteix...</translation>
 <translation id="8912362522468806198">Compte de Google</translation>
@@ -1091,7 +1091,8 @@ El lloc web NO obté accés a la càmera. Només tu pots veure les imatges de la
 <translation id="8993760627012879038">Obre una pestanya nova en mode d'incògnit</translation>
 <translation id="8998729206196772491">Estàs iniciant la sessió amb un compte gestionat per <ph name="MANAGED_DOMAIN" /> i estàs donant a l'administrador el control de les teves dades de Chrome. Les dades passaran a estar vinculades a aquest compte permanentment. Si tanques la sessió de Chrome, se suprimiran les teves dades d'aquest dispositiu, però continuaran emmagatzemades al teu compte de Google.</translation>
 <translation id="9019902583201351841">Gestionat pels pares</translation>
-<translation id="9029323097866369874">Vols permetre que <ph name="DOMAIN" /> activi el mode RV?</translation>
+<translation id="9028914725102941583">Activa la sincronització per compartir elements entre dispositius</translation>
+<translation id="9029323097866369874">Vols permetre que <ph name="DOMAIN" /> entri al mode RV?</translation>
 <translation id="9040142327097499898">Es permeten les notificacions. La ubicació està desactivada en aquest dispositiu.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# vídeo}other{# vídeos}}</translation>
 <translation id="9050666287014529139">Frase de contrasenya</translation>

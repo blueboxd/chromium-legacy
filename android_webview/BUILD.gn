@@ -737,6 +737,7 @@ source_set("common") {
     "//ui/shell_dialogs",
     "//url",
     "//v8",
+    "//weblayer:weblayer_lib",
   ]
 
   if (enable_spellcheck) {
@@ -898,6 +899,10 @@ android_library("browser_java") {
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/blink/public:blink_headers_java",
     "//ui/android:ui_java",
+
+    # These are needed for WebLayer.
+    "//components/viz/service:service_java",
+    "//weblayer/browser/java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 

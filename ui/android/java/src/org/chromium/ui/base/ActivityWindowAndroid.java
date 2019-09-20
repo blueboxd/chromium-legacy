@@ -50,7 +50,7 @@ public class ActivityWindowAndroid
      */
     public ActivityWindowAndroid(Context context, boolean listenToActivityState) {
         super(context);
-        Activity activity = activityFromContext(context);
+        Activity activity = ContextUtils.activityFromContext(context);
         if (activity == null) {
             throw new IllegalArgumentException("Context is not and does not wrap an Activity");
         }
@@ -159,7 +159,7 @@ public class ActivityWindowAndroid
 
     @Override
     public WeakReference<Activity> getActivity() {
-        return new WeakReference<>(activityFromContext(getContext().get()));
+        return new WeakReference<>(ContextUtils.activityFromContext(getContext().get()));
     }
 
     @Override

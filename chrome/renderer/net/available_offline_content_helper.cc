@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/net/available_offline_content_helper.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/json/json_reader.h"
@@ -18,6 +20,7 @@
 #include "components/error_page/common/net_error_info.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_thread.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 
@@ -113,15 +116,15 @@ bool AvailableOfflineContentHelper::BindProvider() {
   if (provider_)
     return true;
 
-  auto request = mojo::MakeRequest(&provider_);
+  auto receiver = provider_.BindNewPipeAndPassReceiver();
   const auto& binder_override = GetBinderOverride();
   if (binder_override) {
-    binder_override.Run(std::move(request));
+    binder_override.Run(std::move(receiver));
     return true;
   }
 
   blink::Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
-      std::move(request));
+      std::move(receiver));
   return true;
 }
 

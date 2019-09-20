@@ -276,6 +276,7 @@ jumbo_component("gl") {
       "//build/config/linux:x11",
       "//build/config/linux:xcomposite",
       "//build/config/linux:xext",
+      "//build/config/linux:xrandr",
     ]
 
     deps += [

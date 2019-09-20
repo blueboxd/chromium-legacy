@@ -41,8 +41,8 @@ void BarcodeDetectionProviderMac::CreateBarcodeDetection(
           std::make_unique<BarcodeDetectionImplMacVision>(std::move(options));
       auto* impl_ptr = impl.get();
       impl_ptr->SetBinding(mojo::MakeStrongBinding(
-          std::move(impl),
-          mojo::InterfaceRequest<mojom::BarcodeDetection>(receiver)));
+          std::move(impl), mojo::InterfaceRequest<mojom::BarcodeDetection>(
+                               std::move(receiver))));
       return;
     }
   }

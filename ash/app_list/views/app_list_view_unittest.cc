@@ -208,13 +208,32 @@ class AppListViewTest : public views::ViewsTestBase,
     ContentsView* contents_view = view_->app_list_main_view()->contents_view();
     bool success = true;
     for (int i = 0; i < contents_view->NumLauncherPages(); ++i) {
-      success =
-          success && (contents_view->GetPageView(i)->GetPageBoundsForState(
-                          state, contents_view->GetContentsBounds(),
-                          contents_view->GetSearchBoxBounds(state)) ==
-                      contents_view->GetPageView(i)->bounds());
+      const gfx::Rect expected_bounds =
+          contents_view->GetPageView(i)->GetPageBoundsForState(
+              state, contents_view->GetContentsBounds(),
+              contents_view->GetSearchBoxBounds(state));
+      const views::View* page_view = contents_view->GetPageView(i);
+      if (page_view->bounds() != expected_bounds) {
+        ADD_FAILURE() << "Page " << i << " bounds do not match "
+                      << "expected: " << expected_bounds.ToString()
+                      << " actual: " << page_view->bounds().ToString();
+        success = false;
+      }
+
+      if (contents_view->GetPageIndexForState(state) == i &&
+          !page_view->GetVisible()) {
+        ADD_FAILURE() << "Target page not visible " << i;
+        success = false;
+      }
     }
-    return success && state == delegate_->GetModel()->state();
+
+    if (state != delegate_->GetModel()->state()) {
+      ADD_FAILURE() << "Model state does not match state "
+                    << static_cast<int>(state);
+      success = false;
+    }
+
+    return success;
   }
 
   // Checks the search box widget is at |expected| in the contents view's
@@ -2344,9 +2363,14 @@ TEST_F(AppListViewTest, PageSwitchingAnimationTest) {
   contents_view->ShowSearchResults(true);
   EXPECT_TRUE(IsStateShown(ash::AppListState::kStateSearchResults));
 
-  // Change to a third page. Should jump to the third page.
+  // Change back to the apps container.
   contents_view->SetActiveState(ash::AppListState::kStateApps);
   EXPECT_TRUE(IsStateShown(ash::AppListState::kStateApps));
+
+  // Verify that search results are shown when going back to search results
+  // page.
+  contents_view->ShowSearchResults(true);
+  EXPECT_TRUE(IsStateShown(ash::AppListState::kStateSearchResults));
 
   AppListView::SetShortAnimationForTesting(true);
 }

@@ -923,6 +923,8 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       owned_render_widget_host_ = RenderWidgetHostFactory::Create(
           frame_tree_->render_widget_delegate(), GetProcess(),
           widget_routing_id, std::move(widget), /*hidden=*/true);
+      owned_render_widget_host_->BindVisualPropertiesManager(
+          render_view_host_->GetVisualPropertiesManager());
       owned_render_widget_host_->set_owned_by_render_frame_host(true);
     }
 
@@ -4030,9 +4032,7 @@ void RenderFrameHostImpl::CreateNewWindow(
     // with calling renderer.
     was_consumed = frame_tree_node_->UpdateUserActivationState(
         blink::UserActivationUpdateType::kConsumeTransientActivation);
-  }
-
-  if (!can_create_window) {
+  } else {
     std::move(callback).Run(mojom::CreateNewWindowStatus::kIgnore, nullptr);
     return;
   }
@@ -4068,15 +4068,8 @@ void RenderFrameHostImpl::CreateNewWindow(
   // means the current renderer process will not be able to route messages to
   // it. Because of this, we will immediately show and navigate the window
   // in OnCreateNewWindowOnUI, using the params provided here.
-  int render_view_route_id = MSG_ROUTING_NONE;
-  int main_frame_route_id = MSG_ROUTING_NONE;
-  int main_frame_widget_route_id = MSG_ROUTING_NONE;
-  int render_process_id = GetProcess()->GetID();
-  if (!params->opener_suppressed && !no_javascript_access) {
-    render_view_route_id = GetProcess()->GetNextRoutingID();
-    main_frame_route_id = GetProcess()->GetNextRoutingID();
-    main_frame_widget_route_id = GetProcess()->GetNextRoutingID();
-  }
+  bool is_new_browsing_instance =
+      params->opener_suppressed || no_javascript_access;
 
   DCHECK(IsRenderFrameLive());
 
@@ -4084,35 +4077,20 @@ void RenderFrameHostImpl::CreateNewWindow(
   if (base::FeatureList::IsEnabled(features::kUserActivationV2))
     opened_by_user_activation = was_consumed;
 
-  delegate_->CreateNewWindow(this, render_view_route_id, main_frame_route_id,
-                             main_frame_widget_route_id, *params,
-                             opened_by_user_activation, cloned_namespace.get());
+  // The non-owning pointer |new_window| is valid in this stack frame since
+  // nothing can delete it until this thread is freed up again.
+  RenderFrameHostDelegate* new_window = delegate_->CreateNewWindow(
+      this, *params, is_new_browsing_instance, opened_by_user_activation,
+      cloned_namespace.get());
 
-  if (main_frame_route_id == MSG_ROUTING_NONE) {
+  if (is_new_browsing_instance || !new_window) {
     // Opener suppressed or Javascript access disabled. Never tell the renderer
     // about the new window.
     std::move(callback).Run(mojom::CreateNewWindowStatus::kIgnore, nullptr);
     return;
   }
 
-  bool succeeded =
-      RenderWidgetHost::FromID(render_process_id, main_frame_widget_route_id) !=
-      nullptr;
-  if (!succeeded) {
-    // If we did not create a WebContents to host the renderer-created
-    // RenderFrame/RenderView/RenderWidget objects, signal failure to the
-    // renderer.
-    DCHECK(!RenderFrameHost::FromID(render_process_id, main_frame_route_id));
-    DCHECK(!RenderViewHost::FromID(render_process_id, render_view_route_id));
-    std::move(callback).Run(mojom::CreateNewWindowStatus::kIgnore, nullptr);
-    return;
-  }
-
-  // The view, widget, and frame should all be routable now.
-  DCHECK(RenderViewHost::FromID(render_process_id, render_view_route_id));
-  RenderFrameHostImpl* rfh = RenderFrameHostImpl::FromID(
-      GlobalFrameRoutingId(GetProcess()->GetID(), main_frame_route_id));
-  DCHECK(rfh);
+  RenderFrameHostImpl* main_frame = new_window->GetMainFrame();
 
   // When the popup is created, it hasn't committed any navigation yet - its
   // initial empty document should inherit the origin of its opener (the origin
@@ -4122,18 +4100,18 @@ void RenderFrameHostImpl::CreateNewWindow(
   // Checking sandbox flags of the new frame should be safe at this point,
   // because the flags should be already inherited by the CreateNewWindow call
   // above.
-  rfh->SetOriginOfNewFrame(GetLastCommittedOrigin());
+  main_frame->SetOriginOfNewFrame(GetLastCommittedOrigin());
 
-  if (rfh->waiting_for_init_) {
+  if (main_frame->waiting_for_init_) {
     // Need to check |waiting_for_init_| as some paths inside CreateNewWindow
     // call above (namely, if WebContentsDelegate::ShouldCreateWebContents
     // returns false) will resume requests by calling RenderFrameHostImpl::Init.
-    rfh->frame_->BlockRequests();
+    main_frame->frame_->BlockRequests();
   }
 
   service_manager::mojom::InterfaceProviderPtrInfo
       main_frame_interface_provider_info;
-  rfh->BindInterfaceProviderRequest(
+  main_frame->BindInterfaceProviderRequest(
       mojo::MakeRequest(&main_frame_interface_provider_info));
 
   mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
@@ -4141,23 +4119,26 @@ void RenderFrameHostImpl::CreateNewWindow(
 
   mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
       document_interface_broker_blink;
-  rfh->BindDocumentInterfaceBrokerReceiver(
+  main_frame->BindDocumentInterfaceBrokerReceiver(
       document_interface_broker_content.InitWithNewPipeAndPassReceiver(),
       document_interface_broker_blink.InitWithNewPipeAndPassReceiver());
 
   mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
       browser_interface_broker;
-  rfh->BindBrowserInterfaceBrokerReceiver(
+  main_frame->BindBrowserInterfaceBrokerReceiver(
       browser_interface_broker.InitWithNewPipeAndPassReceiver());
 
   mojom::CreateNewWindowReplyPtr reply = mojom::CreateNewWindowReply::New(
-      render_view_route_id, main_frame_route_id, main_frame_widget_route_id,
+      main_frame->GetRenderViewHost()->GetRoutingID(),
+      main_frame->GetRoutingID(),
+      main_frame->GetRenderViewHost()->GetWidget()->GetRoutingID(),
       mojom::DocumentScopedInterfaceBundle::New(
           std::move(main_frame_interface_provider_info),
           std::move(document_interface_broker_content),
           std::move(document_interface_broker_blink),
           std::move(browser_interface_broker)),
-      cloned_namespace->id(), rfh->GetDevToolsFrameToken());
+      cloned_namespace->id(), main_frame->GetDevToolsFrameToken());
+
   std::move(callback).Run(mojom::CreateNewWindowStatus::kSuccess,
                           std::move(reply));
 }
@@ -4691,7 +4672,7 @@ void RenderFrameHostImpl::DispatchBeforeUnload(BeforeUnloadType type,
     // Cancel any pending navigations, to avoid their navigation commit/fail
     // event from wiping out the is_waiting_for_beforeunload_ack_ state.
     if (frame_tree_node_->navigation_request() &&
-        frame_tree_node_->navigation_request()->navigation_handle()) {
+        frame_tree_node_->navigation_request()->IsNavigationStarted()) {
       frame_tree_node_->navigation_request()->set_net_error(net::ERR_ABORTED);
     }
     frame_tree_node_->ResetNavigationRequest(false, true);
@@ -5527,7 +5508,7 @@ void RenderFrameHostImpl::FailedNavigation(
 
   // An error page is expected to commit, hence why is_loading_ is set to true.
   is_loading_ = true;
-  DCHECK(navigation_request && navigation_request->navigation_handle() &&
+  DCHECK(navigation_request && navigation_request->IsNavigationStarted() &&
          navigation_request->GetNetErrorCode() != net::OK);
 }
 
@@ -6906,7 +6887,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   }
 
   DCHECK(navigation_request);
-  DCHECK(navigation_request->navigation_handle());
+  DCHECK(navigation_request->IsNavigationStarted());
 
   // Update the page transition. For subframe navigations, the renderer process
   // only gives the correct page transition at commit time.
@@ -7133,16 +7114,16 @@ void RenderFrameHostImpl::DidCommitNavigation(
     std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
         validated_params,
     mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params) {
-  NavigationHandleImpl* navigation_handle;
+  NavigationRequest* request;
   if (committing_navigation_request) {
-    navigation_handle = committing_navigation_request->navigation_handle();
+    request = committing_navigation_request.get();
   } else {
-    navigation_handle = GetNavigationHandle();
+    request = navigation_request();
   }
 
-  if (navigation_handle) {
+  if (request && request->IsNavigationStarted()) {
     main_frame_request_ids_ = {validated_params->request_id,
-                               navigation_handle->GetGlobalRequestID()};
+                               request->GetGlobalRequestID()};
     if (deferred_main_frame_load_info_)
       ResourceLoadComplete(std::move(deferred_main_frame_load_info_));
   }
@@ -7528,27 +7509,26 @@ void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
                                           base::debug::CrashKeySize::Size256),
       last_successful_url().GetOrigin().spec());
 
-  if (navigation_request && navigation_request->navigation_handle()) {
-    NavigationHandleImpl* handle = navigation_request->navigation_handle();
+  if (navigation_request && navigation_request->IsNavigationStarted()) {
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("is_renderer_initiated",
                                             base::debug::CrashKeySize::Size32),
-        bool_to_crash_key(handle->IsRendererInitiated()));
+        bool_to_crash_key(navigation_request->IsRendererInitiated()));
 
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("is_server_redirect",
                                             base::debug::CrashKeySize::Size32),
-        bool_to_crash_key(handle->WasServerRedirect()));
+        bool_to_crash_key(navigation_request->WasServerRedirect()));
 
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("is_form_submission",
                                             base::debug::CrashKeySize::Size32),
-        bool_to_crash_key(handle->IsFormSubmission()));
+        bool_to_crash_key(navigation_request->IsFormSubmission()));
 
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("is_error_page",
                                             base::debug::CrashKeySize::Size32),
-        bool_to_crash_key(handle->IsErrorPage()));
+        bool_to_crash_key(navigation_request->IsErrorPage()));
 
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("from_begin_navigation",
@@ -7563,14 +7543,14 @@ void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("initiator_origin",
                                             base::debug::CrashKeySize::Size64),
-        handle->GetInitiatorOrigin()
-            ? handle->GetInitiatorOrigin()->GetDebugString()
+        navigation_request->GetInitiatorOrigin()
+            ? navigation_request->GetInitiatorOrigin()->GetDebugString()
             : "none");
 
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("starting_site_instance",
                                             base::debug::CrashKeySize::Size64),
-        handle->GetStartingSiteInstance()->GetSiteURL().spec());
+        navigation_request->GetStartingSiteInstance()->GetSiteURL().spec());
 
     // Recompute the target SiteInstance to see if it matches the current
     // one at commit time.
@@ -7630,39 +7610,38 @@ void RenderFrameHostImpl::LogCannotCommitOriginCrashKeys(
                                           base::debug::CrashKeySize::Size32),
       bool_to_crash_key(IsCrossProcessSubframe()));
 
-  if (navigation_request && navigation_request->navigation_handle()) {
-    NavigationHandleImpl* handle = navigation_request->navigation_handle();
+  if (navigation_request && navigation_request->IsNavigationStarted()) {
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("is_renderer_initiated",
                                             base::debug::CrashKeySize::Size32),
-        bool_to_crash_key(handle->IsRendererInitiated()));
+        bool_to_crash_key(navigation_request->IsRendererInitiated()));
 
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("is_server_redirect",
                                             base::debug::CrashKeySize::Size32),
-        bool_to_crash_key(handle->WasServerRedirect()));
+        bool_to_crash_key(navigation_request->WasServerRedirect()));
 
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("is_form_submission",
                                             base::debug::CrashKeySize::Size32),
-        bool_to_crash_key(handle->IsFormSubmission()));
+        bool_to_crash_key(navigation_request->IsFormSubmission()));
 
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("is_error_page",
                                             base::debug::CrashKeySize::Size32),
-        bool_to_crash_key(handle->IsErrorPage()));
+        bool_to_crash_key(navigation_request->IsErrorPage()));
 
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("initiator_origin",
                                             base::debug::CrashKeySize::Size64),
-        handle->GetInitiatorOrigin()
-            ? handle->GetInitiatorOrigin()->GetDebugString()
+        navigation_request->GetInitiatorOrigin()
+            ? navigation_request->GetInitiatorOrigin()->GetDebugString()
             : "none");
 
     base::debug::SetCrashKeyString(
         base::debug::AllocateCrashKeyString("starting_site_instance",
                                             base::debug::CrashKeySize::Size64),
-        handle->GetStartingSiteInstance()->GetSiteURL().spec());
+        navigation_request->GetStartingSiteInstance()->GetSiteURL().spec());
   }
 }
 

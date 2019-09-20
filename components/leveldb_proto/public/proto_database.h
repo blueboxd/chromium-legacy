@@ -117,23 +117,9 @@ class ProtoDatabase {
   //
   // DEPRECATED: |unique_db_options| is used only when a unique DB is loaded,
   // once migration to shared DB is done, this parameter will be ignored.
-  //
-  // DEPRECATED: |client_uma_name| was used to record UMA metrics, new clients
-  // should instead add their name to
-  // SharedProtoDatabaseClientList::ProtoDbTypeToString.
   virtual void Init(Callbacks::InitStatusCallback callback) = 0;
-  virtual void Init(const std::string& client_uma_name,
-                    Callbacks::InitStatusCallback callback) = 0;
   virtual void Init(const leveldb_env::Options& unique_db_options,
                     Callbacks::InitStatusCallback callback) = 0;
-
-  // DEPRECATED. This version of Init is for compatibility, must be called only
-  // when the object is created by the ProtoDatabaseProvider::CreateUniqueDB<T>
-  // function.
-  virtual void Init(const char* client_name,
-                    const base::FilePath& database_dir,
-                    const leveldb_env::Options& options,
-                    Callbacks::InitCallback callback) = 0;
 
   // Asynchronously saves |entries_to_save| and deletes entries from
   // |keys_to_remove| from the database. |callback| will be invoked on the

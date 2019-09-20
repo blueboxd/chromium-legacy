@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 
 // Observer responsible for capturing and recording page load metrics for the
 // Optimization Guide.

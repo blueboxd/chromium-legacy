@@ -346,7 +346,7 @@
 <translation id="2721148159707890343">Sol·licitud realitzada correctament</translation>
 <translation id="2728127805433021124">El certificat del servidor està signat mitjançant un algoritme de signatura dèbil.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Executar el Diagnòstic de connectivitat<ph name="END_LINK" /></translation>
-<translation id="2734544361860335147">En activar aquestes funcions, podries perdre dades del navegador o posar en perill la teva seguretat o privadesa. Les funcions activades afecten tots els usuaris d'aquest navegador.</translation>
+<translation id="2734544361860335147">En activar aquestes funcions, podries perdre dades del navegador o posar en perill la teva seguretat o privadesa. Les funcions activades s'apliquen a tots els usuaris d'aquest navegador.</translation>
 <translation id="2735043616039983645">Hi ha més d'un origen amb valors conflictius en aquesta política.</translation>
 <translation id="2738330467931008676">Tria l'adreça de recollida</translation>
 <translation id="2740531572673183784">D'acord</translation>

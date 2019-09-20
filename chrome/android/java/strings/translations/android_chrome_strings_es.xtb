@@ -174,6 +174,7 @@
 <translation id="2154484045852737596">Editar tarjeta</translation>
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2156074688469523661">Sitios web restantes (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="2157851137955077194">Si quieres compartir algo de tu teléfono con otro dispositivo, activa la sincronización en la configuración de Chrome en ambos dispositivos</translation>
 <translation id="2170088579611075216">Permitir y acceder a la realidad virtual</translation>
 <translation id="218608176142494674">Compartir</translation>
 <translation id="2227444325776770048">Continuar como <ph name="USER_FULL_NAME" /></translation>
@@ -602,7 +603,6 @@ Asegúrate de que este sitio web sea de confianza antes de acceder al modo de re
 <translation id="545042621069398927">Acelerando descarga.</translation>
 <translation id="5456381639095306749">Descargar página</translation>
 <translation id="5475862044948910901">¿Quieres iniciar la sesión de realidad aumentada?</translation>
-<translation id="5481942164684849270"><ph name="APP_NAME" /> se ha añadido a mis aplicaciones</translation>
 <translation id="548278423535722844">Abrirla en una aplicación de mapas</translation>
 <translation id="5487521232677179737">Borrar datos</translation>
 <translation id="5494752089476963479">Bloquea anuncios invasivos o engañosos en los sitios web que los muestran</translation>
@@ -1009,7 +1009,6 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="8364299278605033898">Descubre los sitios web populares</translation>
 <translation id="8368027906805972958">Dispositivo desconocido o no compatible (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Permite la sincronización en segundo plano de un sitio web específico.</translation>
-<translation id="8374821112118309944">Debes instalar una nueva versión de TalkBack.</translation>
 <translation id="8378714024927312812">Gestionado por tu organización</translation>
 <translation id="8380167699614421159">El sitio web muestra anuncios invasivos o engañosos</translation>
 <translation id="8393700583063109961">Enviar mensaje</translation>
@@ -1073,6 +1072,7 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198">Pestaña <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Almacenamiento</translation>
+<translation id="889338405075704026">Ir a la configuración de Chrome</translation>
 <translation id="8901170036886848654">No se han encontrado marcadores</translation>
 <translation id="8909135823018751308">Compartir…</translation>
 <translation id="8912362522468806198">cuenta de Google</translation>
@@ -1091,6 +1091,7 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="8993760627012879038">Abre una nueva pestaña en modo de incógnito</translation>
 <translation id="8998729206196772491">Estás iniciando sesión con una cuenta gestionada por <ph name="MANAGED_DOMAIN" />, lo que significa que vas a proporcionar a su administrador el control sobre tus datos de Chrome. Los datos se vincularán de forma permanente a esta cuenta. Si cierras sesión en Chrome, se eliminarán los datos de este dispositivo, pero permanecerán almacenados en tu cuenta de Google.</translation>
 <translation id="9019902583201351841">Administrado por tus padres</translation>
+<translation id="9028914725102941583">Activar la sincronización para compartir con otros dispositivos</translation>
 <translation id="9029323097866369874">¿Permites a <ph name="DOMAIN" /> acceder al modo de realidad virtual?</translation>
 <translation id="9040142327097499898">Las notificaciones están permitidas. La ubicación está desactivada en este dispositivo.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# vídeo}other{# vídeos}}</translation>

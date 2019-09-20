@@ -9,7 +9,7 @@
 
   <template>
     <oobe-dialog id="signin-frame-dialog" class="gaia-dialog" role="dialog"
-        has-buttons no-header no-footer-padding no-buttons-padding
+        has-buttons no-header no-footer-padding
         hidden="[[!isSigninFrameDialogVisible_(screenMode_,
                                                pinDialogParameters_)]]">
       <div slot="footer" class="flex layout vertical">
@@ -19,7 +19,7 @@
         </div>
       </div>
       <div id="gaia-screen-navigation-buttons"
-          slot="bottom-buttons" class="relative flex layout horizontal center">
+          slot="bottom-buttons" class="relative flex layout horizontal">
         <div id="buttons-container" class="flex layout horizontal center">
           <oobe-back-button id="signin-back-button"
               disabled="[[!navigationEnabled_]]"></oobe-back-button>

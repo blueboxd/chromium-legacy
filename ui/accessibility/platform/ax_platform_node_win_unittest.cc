@@ -5844,4 +5844,11 @@ TEST_F(AXPlatformNodeWinTest, IScrollProviderSetScrollPercent) {
   EXPECT_EQ(y_scroll_percent, 34);
 }
 
+TEST_F(AXPlatformNodeWinTest, TestSanitizeStringAttributeForIA2) {
+  std::string input("\\:=,;");
+  std::string output;
+  AXPlatformNodeWin::SanitizeStringAttributeForIA2(input, &output);
+  EXPECT_EQ("\\\\\\:\\=\\,\\;", output);
+}
+
 }  // namespace ui

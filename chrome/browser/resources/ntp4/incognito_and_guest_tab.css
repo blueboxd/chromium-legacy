@@ -11,7 +11,7 @@ body {
 
 @media (prefers-color-scheme: dark) {
   html {
-    background: rgb(50, 54, 57);
+    background: rgb(53, 54, 58);
     color: rgb(232, 234, 237);  /* --google-grey-200 */
   }
 }

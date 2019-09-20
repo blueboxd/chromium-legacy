@@ -250,7 +250,8 @@
         <settings-subpage
             associated-control="[[$$('#account-manager-subpage-trigger')]]"
             page-title="$i18n{accountManagerPageTitle}">
-          <settings-account-manager></settings-account-manager>
+          <settings-account-manager prefs="[[prefs]]">
+          </settings-account-manager>
         </settings-subpage>
       </template>
       <template is="dom-if" if="[[pageVisibility.people.kerberosAccounts]]">

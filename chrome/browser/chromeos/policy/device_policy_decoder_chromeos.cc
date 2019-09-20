@@ -844,6 +844,20 @@ void DecodeAccessibilityPolicies(const em::ChromeDeviceSettingsProto& policy,
           nullptr);
     }
 
+    if (container.has_login_screen_spoken_feedback_enabled()) {
+      PolicyLevel level;
+      if (GetPolicyLevel(
+              container.has_login_screen_spoken_feedback_enabled_options(),
+              container.login_screen_spoken_feedback_enabled_options(),
+              &level)) {
+        policies->Set(key::kDeviceLoginScreenSpokenFeedbackEnabled, level,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::make_unique<base::Value>(
+                          container.login_screen_spoken_feedback_enabled()),
+                      nullptr);
+      }
+    }
+
     if (container.has_login_screen_default_high_contrast_enabled()) {
       policies->Set(key::kDeviceLoginScreenDefaultHighContrastEnabled,
                     POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
@@ -851,6 +865,19 @@ void DecodeAccessibilityPolicies(const em::ChromeDeviceSettingsProto& policy,
                     std::make_unique<base::Value>(
                         container.login_screen_default_high_contrast_enabled()),
                     nullptr);
+    }
+
+    if (container.has_login_screen_high_contrast_enabled()) {
+      PolicyLevel level;
+      if (GetPolicyLevel(
+              container.has_login_screen_high_contrast_enabled_options(),
+              container.login_screen_high_contrast_enabled_options(), &level)) {
+        policies->Set(key::kDeviceLoginScreenHighContrastEnabled, level,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::make_unique<base::Value>(
+                          container.login_screen_high_contrast_enabled()),
+                      nullptr);
+      }
     }
 
     if (container.has_login_screen_default_screen_magnifier_type()) {
@@ -869,6 +896,20 @@ void DecodeAccessibilityPolicies(const em::ChromeDeviceSettingsProto& policy,
           std::make_unique<base::Value>(
               container.login_screen_default_virtual_keyboard_enabled()),
           nullptr);
+    }
+
+    if (container.has_login_screen_virtual_keyboard_enabled()) {
+      PolicyLevel level;
+      if (GetPolicyLevel(
+              container.has_login_screen_virtual_keyboard_enabled_options(),
+              container.login_screen_virtual_keyboard_enabled_options(),
+              &level)) {
+        policies->Set(key::kDeviceLoginScreenVirtualKeyboardEnabled, level,
+                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                      std::make_unique<base::Value>(
+                          container.login_screen_virtual_keyboard_enabled()),
+                      nullptr);
+      }
     }
   }
 }

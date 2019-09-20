@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/containers/span.h"
 #include "base/optional.h"
 #include "ui/views/view.h"
@@ -19,17 +20,21 @@ class Button;
 class ColorPickerElementView;
 
 // Lets users pick from a list of colors displayed as circles that can be
-// clicked on. At most one can be selected, similar to radio buttons.
+// clicked on. Similar to radio buttons, exactly one is selected after the first
+// selection is made.
 //
 // TODO(crbug.com/989174): make this keyboard and screenreader accessible.
 class ColorPickerView : public views::View {
  public:
+  using ColorSelectedCallback = base::RepeatingCallback<void()>;
   // |colors| should contain the color values and accessible names. There should
   // not be duplicate colors.
   explicit ColorPickerView(
-      base::span<const std::pair<SkColor, base::string16>> colors);
+      base::span<const std::pair<SkColor, base::string16>> colors,
+      ColorSelectedCallback callback);
   ~ColorPickerView() override;
 
+  // After the callback is called, this is guaranteed to never return nullopt.
   base::Optional<SkColor> GetSelectedColor() const;
 
   // views::View:
@@ -41,6 +46,9 @@ class ColorPickerView : public views::View {
   // Handles the selection of a particular color. This is passed as a callback
   // to the views representing each color.
   void OnColorSelected(ColorPickerElementView* element);
+
+  // Called each time the color selection changes.
+  ColorSelectedCallback callback_;
 
   std::vector<ColorPickerElementView*> elements_;
 };

@@ -108,6 +108,7 @@ Bug(none) compositing/visibility/visibility-image-layers-dynamic.html [ Failure 
 Bug(none) css3/masking/mask-composite-missing-image.html [ Failure ]
 Bug(none) external/wpt/css/css-transforms/transform3d-backface-visibility-006.html [ Failure ]
 Bug(none) external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-overflow.html [ Crash ]
+Bug(none) external/wpt/largest-contentful-paint/invisible-images.html [ Failure ]
 Bug(none) external/wpt/portals/portals-rendering.html [ Failure ]
 Bug(none) fast/css/outline-offset-large.html [ Failure ]
 Bug(none) fast/forms/validation-bubble-device-emulation-change.html [ Failure ]
@@ -118,7 +119,9 @@ Bug(none) fast/sub-pixel/should-not-repaint-subpixel-composited-layer.html [ Fai
 Bug(none) fast/sub-pixel/transformed-iframe-copy-on-scroll.html [ Failure ]
 Bug(none) fragmentation/outline-crossing-columns.html [ Crash ]
 Bug(none) fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure ]
+Bug(none) http/tests/devtools/layers/layers-3d-view-after-update.js [ Failure ]
 Bug(none) http/tests/input/discard-events-to-unstable-iframe.html [ Failure ]
+Bug(none) http/tests/misc/synthetic-gesture-initiated-in-cross-origin-frame.html [ Failure ]
 Bug(none) paint/pagination/pagination-change-clip-crash.html [ Failure ]
 Bug(none) printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Failure ]
 Bug(none) printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Failure ]
@@ -126,6 +129,11 @@ Bug(none) printing/offscreencanvas-2d-printing.html [ Failure ]
 Bug(none) printing/webgl-repeated-printing-preservedrawingbuffer.html [ Failure ]
 Bug(none) printing/webgl-repeated-printing.html [ Failure ]
 Bug(none) transforms/3d/general/background-visibility-layers.html [ Failure ]
+Bug(none) virtual/forced-colors/fast/css/forced-colors-mode/forced-colors-mode-22.html [ Crash ]
+Bug(none) virtual/scalefactor200/external/wpt/largest-contentful-paint/invisible-images.html [ Failure ]
+Bug(none) virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/invisible-images.html [ Failure ]
+Bug(none) virtual/threaded/fast/scrolling/middle-click-autoscroll-latching-clicked-node.html [ Failure ]
+Bug(none) wpt_internal/display-lock/rendersubtree/paint/locked-iframe-doesnt-paint-contents.html [ Failure ]
 
 # Loading an image in a subframe.
 crbug.com/959936 http/tests/images/image-decode-in-frame.html [ Failure ]
@@ -244,8 +252,6 @@ Bug(none) virtual/threaded/fast/scroll-behavior/first-scroll-runs-on-compositor.
 Bug(none) virtual/threaded/compositing/visibility/layer-visible-content.html [ Failure ]
 Bug(none) virtual/threaded/compositing/visibility/visibility-image-layers-dynamic.html [ Failure ]
 Bug(none) virtual/threaded/synthetic_gestures/smooth-scroll-tiny-delta.html [ Failure Timeout Pass ]
-
-Bug(none) fast/block/float/float-change-composited-scrolling.html [ Failure ]
 
 # Failures due to an extra layer caused by a scroll hit test layer. Most of
 # these should pass once compositing reasons are correct in CompositeAfterPaint.
@@ -547,16 +553,9 @@ crbug.com/966981 virtual/threaded/fast/scrolling/events/scrollend-event-fired-to
 crbug.com/966981 virtual/threaded/fast/scrolling/events/scrollend-event-fired-to-window.html [ Timeout ]
 crbug.com/966981 virtual/threaded/synthetic_gestures/animated-wheel-tiny-delta.html [ Failure ]
 
-crbug.com/985388 fast/scrolling/fractional-scroll-offset-iframe-fixed-position.html [ Failure ]
-crbug.com/985388 virtual/scroll_customization/fast/scrolling/fractional-scroll-offset-iframe-fixed-position.html [ Failure ]
-crbug.com/985388 virtual/threaded/fast/scrolling/fractional-scroll-offset-iframe-fixed-position.html [ Failure ]
-
 # Added to land BGPT-fixes
 crbug.com/979002 virtual/threaded/fast/scrolling/uncomposite-and-composite-scroll.html [ Failure ]
 crbug.com/981749 virtual/threaded/fast/scrolling/scroll-chaining-from-position-fixed.html [ Failure ]
-
-
-crbug.com/989673 svg/foreignObject/mask.html [ Failure ]
 
 # These tests are failing due to subpixel differences but can't be rebaselined.
 Bug(none) virtual/controls-refresh/fast/forms/controls-new-ui/select/select-multiple-appearance-basic.html [ Failure ]

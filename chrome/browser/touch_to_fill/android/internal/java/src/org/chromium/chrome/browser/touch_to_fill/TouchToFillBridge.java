@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.touch_to_fill;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
 import org.chromium.ui.base.WindowAndroid;
@@ -33,6 +34,11 @@ class TouchToFillBridge {
     }
 
     @CalledByNative
+    private void destroy() {
+        mNativeView = 0;
+    }
+
+    @CalledByNative
     private static Credential[] createCredentialArray(int size) {
         return new Credential[size];
     }
@@ -50,12 +56,18 @@ class TouchToFillBridge {
     }
 
     private void onDismissed() {
-        // TODO(crbug.com/957532): Call native side to continue dismissing.
+        TouchToFillBridgeJni.get().onDismiss(mNativeView);
         mNativeView = 0; // The native view shouldn't be used after it's dismissed.
     }
 
     private void onSelectCredential(Credential credential) {
         assert mNativeView != 0 : "The native side is already dismissed";
-        // TODO(crbug.com/957532): Call native side to continue filling.
+        TouchToFillBridgeJni.get().onCredentialSelected(mNativeView, credential);
+    }
+
+    @NativeMethods
+    interface Natives {
+        void onCredentialSelected(long nativeTouchToFillViewImpl, Credential credential);
+        void onDismiss(long nativeTouchToFillViewImpl);
     }
 }

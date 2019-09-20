@@ -24,6 +24,7 @@
 #include "content/browser/renderer_host/input/input_device_change_observer.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_owner_delegate.h"
+#include "content/browser/renderer_host/visual_properties_manager.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/public/browser/notification_observer.h"
@@ -132,6 +133,10 @@ class CONTENT_EXPORT RenderViewHostImpl
       const FrameReplicationState& replicated_frame_state,
       bool window_was_created_with_opener);
 
+  base::WeakPtr<VisualPropertiesManager> GetVisualPropertiesManager() {
+    return visual_properties_manager_.GetWeakPtr();
+  }
+
   // Tracks whether this RenderViewHost is in an active state (rather than
   // pending swap out or swapped out), according to its main frame
   // RenderFrameHost.
@@ -235,8 +240,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   bool IsNeverVisible() override;
   WebPreferences GetWebkitPreferencesForWidget() override;
   FrameTreeNode* GetFocusedFrame() override;
-  void UpdatePageVisualProperties(
-      const VisualProperties& visual_properties) override;
 
   void ShowContextMenu(RenderFrameHost* render_frame_host,
                        const ContextMenuParams& params) override;
@@ -353,6 +356,9 @@ class CONTENT_EXPORT RenderViewHostImpl
   // then back to active, and for the latter transition, this avoids firing
   // duplicate RenderViewCreated events.
   bool has_notified_about_creation_;
+
+  // Used to send Page and Widget visual properties to Renderers.
+  VisualPropertiesManager visual_properties_manager_;
 
   base::WeakPtrFactory<RenderViewHostImpl> weak_factory_{this};
 

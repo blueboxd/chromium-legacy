@@ -62,6 +62,7 @@
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/url_formatter/elide_url.h"
+#include "components/url_formatter/url_formatter.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -87,6 +88,7 @@
 #include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -1534,8 +1536,12 @@ views::View* BookmarkBarView::CreateBookmarkButton(const BookmarkNode* node) {
   views::LabelButton* button = nullptr;
   if (node->is_url()) {
     button = new BookmarkButton(this, node->url(), node->GetTitle());
+    button->GetViewAccessibility().OverrideDescription(url_formatter::FormatUrl(
+        node->url(), url_formatter::kFormatUrlOmitDefaults,
+        net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
   } else {
     button = new BookmarkFolderButton(node->GetTitle(), this);
+    button->GetViewAccessibility().OverrideDescription("");
   }
   ConfigureButton(node, button);
   bookmark_buttons_.insert(bookmark_buttons_.cbegin() + index, button);

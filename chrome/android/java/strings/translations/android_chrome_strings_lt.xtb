@@ -174,6 +174,7 @@
 <translation id="2154484045852737596">Kortelės informacijos redagavimas</translation>
 <translation id="2154710561487035718">Kopijuoti URL adresą</translation>
 <translation id="2156074688469523661">Likusios svetainės (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="2157851137955077194">Norėdami bendrinti turinį iš savo telefono į kitą įrenginį, įjunkite sinchronizavimą abiejų įrenginių „Chrome“ nustatymuose</translation>
 <translation id="2170088579611075216">Leisti ir įvesti VR</translation>
 <translation id="218608176142494674">Bendrinimas</translation>
 <translation id="2227444325776770048">Tęsti kaip <ph name="USER_FULL_NAME" /></translation>
@@ -602,7 +603,6 @@ Prieš aktyvindami VR režimą įsitikinkite, kad ši svetainė patikima.</trans
 <translation id="545042621069398927">Paspartinamas atsisiuntimas.</translation>
 <translation id="5456381639095306749">Atsisiųsti puslapį</translation>
 <translation id="5475862044948910901">Pradėti išplėstosios realybės seansą?</translation>
-<translation id="5481942164684849270">„<ph name="APP_NAME" />“ pridėta prie programų</translation>
 <translation id="548278423535722844">Atidaryti Žemėlapių programoje</translation>
 <translation id="5487521232677179737">Išvalyti duomenis</translation>
 <translation id="5494752089476963479">Blokuoti skelbimus svetainėse, kuriose rodomi nepageidaujami arba klaidinantys skelbimai</translation>
@@ -1009,7 +1009,6 @@ Svetainė NETURI prieigos prie fotoaparato. Fotoaparato vaizdai matomi tik jums.
 <translation id="8364299278605033898">Žr. populiarias svetaines</translation>
 <translation id="8368027906805972958">Nežinomas arba nepalaikomas įrenginys (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Leisti fono sinchronizavimą konkrečioje svetainėje.</translation>
-<translation id="8374821112118309944">Reikia atnaujinti „TalkBack“ versiją į naujesnę.</translation>
 <translation id="8378714024927312812">Tvarko jūsų organizacija</translation>
 <translation id="8380167699614421159">Šioje svetainėje rodomi nepageidaujami arba klaidinantys skelbimai</translation>
 <translation id="8393700583063109961">Siųsti pranešimą</translation>
@@ -1073,6 +1072,7 @@ Svetainė NETURI prieigos prie fotoaparato. Fotoaparato vaizdai matomi tik jums.
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198">„<ph name="TAB_TITLE" />“, skirtukas</translation>
 <translation id="885701979325669005">Saugykla</translation>
+<translation id="889338405075704026">Eiti į „Chrome“ nustatymus</translation>
 <translation id="8901170036886848654">Žymių nerasta</translation>
 <translation id="8909135823018751308">Bendrinti…</translation>
 <translation id="8912362522468806198">„Google“ paskyra</translation>
@@ -1091,6 +1091,7 @@ Svetainė NETURI prieigos prie fotoaparato. Fotoaparato vaizdai matomi tik jums.
 <translation id="8993760627012879038">Atidaryti naują skirtuką inkognito režimu</translation>
 <translation id="8998729206196772491">Prisijungiate naudodami „<ph name="MANAGED_DOMAIN" />“ tvarkomą paskyrą ir suteikiate jos administratoriui galimybę valdyti jūsų „Chrome“ duomenis. Duomenys bus visam laikui susieti su šia paskyra. Atsijungę nuo „Chrome“ ištrinsite duomenis iš šio įrenginio, bet jie ir toliau bus saugomi „Google“ paskyroje.</translation>
 <translation id="9019902583201351841">Tvarko jūsų tėvai</translation>
+<translation id="9028914725102941583">Įjunkite sinchronizavimą, kad galėtumėte bendrinti turinį įrenginiuose</translation>
 <translation id="9029323097866369874">Leisti <ph name="DOMAIN" /> aktyvinti VR režimą?</translation>
 <translation id="9040142327097499898">Pranešimai leidžiami. Vieta išjungta šiame įrenginyje.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# vaizdo įrašas}one{# vaizdo įrašas}few{# vaizdo įrašai}many{# vaizdo įrašo}other{# vaizdo įrašų}}</translation>

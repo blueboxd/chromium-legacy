@@ -23,8 +23,6 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
 
-using namespace testing;
-
 namespace {
 
 class MockCanvas : public SkCanvas {

@@ -472,6 +472,11 @@ TEST_F(SplitViewControllerTest, WindowStateChangeTest) {
 
   // 2 - Then test two snapped window scenario.
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  // Reactivate |window1| because it is the one that we will be maximizing and
+  // fullscreening. When |window1| goes out of scope at the end of the test, it
+  // will be a full screen window, and if it is not the active window, then the
+  // destructor will cause a |DCHECK| failure in |ash::WindowState::Get|.
+  wm::ActivateWindow(window1.get());
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   split_view_controller()->SnapWindow(window2.get(),
                                       SplitViewController::RIGHT);
@@ -555,10 +560,14 @@ TEST_F(SplitViewControllerTest, ExitOverviewTest) {
   EXPECT_EQ(split_view_controller()->InSplitViewMode(), true);
   EXPECT_EQ(split_view_controller()->state(), SplitViewState::kLeftSnapped);
   EXPECT_EQ(split_view_controller()->left_window(), window1.get());
+  // Activate |window1| in preparation to verify that it stays active when
+  // overview mode is ended.
+  wm::ActivateWindow(window1.get());
 
   ToggleOverview();
   EXPECT_EQ(split_view_controller()->state(), SplitViewState::kBothSnapped);
   EXPECT_EQ(split_view_controller()->right_window(), window3.get());
+  EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
   CheckOverviewEnterExitHistogram("ExitInSplitView", {1, 0}, {0, 1});
 }
 
@@ -2842,6 +2851,7 @@ TEST_F(SplitViewTabDraggingTest, DragMaximizedWindow) {
   EXPECT_EQ(split_view_controller()->state(), SplitViewState::kBothSnapped);
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
   EXPECT_TRUE(window1->GetProperty(kCanAttachToAnotherWindowKey));
+  EXPECT_EQ(window1.get(), window_util::GetActiveWindow());
 
   EndSplitView();
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
@@ -3695,8 +3705,8 @@ TEST_F(SplitViewTabDraggingTest, SourceWindowBackgroundTest) {
   EXPECT_TRUE(window3->IsVisible());
   EXPECT_TRUE(window4->IsVisible());
 
-  if (IsTabletMode())
-    EXPECT_TRUE(Shell::Get()->app_list_controller()->IsVisible());
+  // Home launcher should be shown because none of these windows are activated.
+  EXPECT_TRUE(Shell::Get()->app_list_controller()->IsVisible());
 
   // 1) Start dragging |window1|. |window2| is the source window.
   std::unique_ptr<WindowResizer> resizer =
@@ -3710,9 +3720,8 @@ TEST_F(SplitViewTabDraggingTest, SourceWindowBackgroundTest) {
   EXPECT_FALSE(window3->IsVisible());
   EXPECT_FALSE(window4->IsVisible());
 
-  // Test that home launcher should be dismissed.
-  if (IsTabletMode())
-    EXPECT_FALSE(Shell::Get()->app_list_controller()->IsVisible());
+  // Test that home launcher is not shown because a window is active.
+  EXPECT_FALSE(Shell::Get()->app_list_controller()->IsVisible());
 
   // Test that during dragging, we could not show a hidden window.
   window3->Show();
@@ -3725,9 +3734,8 @@ TEST_F(SplitViewTabDraggingTest, SourceWindowBackgroundTest) {
   EXPECT_TRUE(window3->IsVisible());
   EXPECT_TRUE(window4->IsVisible());
 
-  // Test that home launcher should be reshown.
-  if (IsTabletMode())
-    EXPECT_TRUE(Shell::Get()->app_list_controller()->IsVisible());
+  // Test that home launcher is still not shown, because a window is active.
+  EXPECT_FALSE(Shell::Get()->app_list_controller()->IsVisible());
 }
 
 // Tests that the dragged window should be the active and top window if overview

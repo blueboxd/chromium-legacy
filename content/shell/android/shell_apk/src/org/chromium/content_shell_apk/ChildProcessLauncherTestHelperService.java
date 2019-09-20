@@ -78,7 +78,8 @@ public class ChildProcessLauncherTestHelperService extends Service {
         String[] commandLine = { "_", "--" + BaseSwitches.RENDERER_WAIT_FOR_JAVA_DEBUGGER };
         final boolean bindToCaller = true;
         ChildProcessCreationParams.set(getPackageName(), false, LibraryProcessType.PROCESS_CHILD,
-                bindToCaller, false /* ignoreVisibilityForImportance */);
+                bindToCaller, false /* ignoreVisibilityForImportance */,
+                null /* privilegedServicesName */, null /* sandboxedServicesName */);
         mProcessLauncher = ChildProcessLauncherTestUtils.startForTesting(true /* sandboxed */,
                 commandLine, new FileDescriptorInfo[0], true /* doSetupConnection */);
 

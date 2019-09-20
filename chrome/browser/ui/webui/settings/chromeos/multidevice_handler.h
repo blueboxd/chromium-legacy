@@ -82,7 +82,6 @@ class MultideviceHandler
   void OnSetFeatureStateEnabledResult(const std::string& js_callback_id,
                                       bool success);
 
-  void RegisterPrefChangeListeners();
   void NotifySmartLockSignInEnabledChanged();
   void NotifySmartLockSignInAllowedChanged();
   // Generate android sms info dictionary containing the messages for web

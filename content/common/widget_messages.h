@@ -111,12 +111,6 @@ IPC_MESSAGE_ROUTED2(WidgetMsg_ShowContextMenu,
 // Expects a Close_ACK message when finished.
 IPC_MESSAGE_ROUTED0(WidgetMsg_Close)
 
-// Tells the renderer to update visual properties. The resulting
-// CompositorFrame will produce a RenderFrameMetadata containing a new
-// LocalSurfaceId. This acts as a form of ACK for this message.
-IPC_MESSAGE_ROUTED1(WidgetMsg_SynchronizeVisualProperties,
-                    content::VisualProperties /* params */)
-
 // Enables device emulation. See WebDeviceEmulationParams for description.
 IPC_MESSAGE_ROUTED1(WidgetMsg_EnableDeviceEmulation,
                     blink::WebDeviceEmulationParams /* params */)

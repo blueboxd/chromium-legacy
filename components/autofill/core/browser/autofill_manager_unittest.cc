@@ -7670,6 +7670,58 @@ TEST_F(AutofillManagerTest,
                                     HasSubstr("Autofill.FormEvents.Address"))));
 }
 
+// Test that we import data when the field type is determined by the value and
+// without any heuristics on the attributes.
+TEST_F(AutofillManagerTest, ImportDataWhenValueDetected) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kAutofillSaveAndFillVPA);
+
+  FormData form;
+  form.url = GURL("https://wwww.foo.com");
+
+  FormFieldData field;
+  test::CreateTestFormField("VPA:", "vpa", "", "text", &field);
+  form.fields.push_back(field);
+
+  FormsSeen({form});
+  autofill_manager_->SetExpectedSubmittedFieldTypes({{UPI_VPA}});
+  autofill_manager_->SetExpectedObservedSubmission(true);
+  autofill_manager_->SetCallParentUploadFormData(true);
+  form.submission_event =
+      mojom::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
+
+  form.fields[0].value = ASCIIToUTF16("user@indianbank");
+  FormSubmitted(form);
+
+  EXPECT_EQ(1, personal_data_.num_times_save_vpa_called());
+}
+
+// Test that we do not import VPA data when in incognito.
+TEST_F(AutofillManagerTest, DontImportVPAWhenIncognito) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kAutofillSaveAndFillVPA);
+  autofill_driver_->SetIsIncognito(true);
+
+  FormData form;
+  form.url = GURL("https://wwww.foo.com");
+
+  FormFieldData field;
+  test::CreateTestFormField("VPA:", "vpa", "", "text", &field);
+  form.fields.push_back(field);
+
+  FormsSeen({form});
+  autofill_manager_->SetExpectedSubmittedFieldTypes({{UPI_VPA}});
+  autofill_manager_->SetExpectedObservedSubmission(true);
+  autofill_manager_->SetCallParentUploadFormData(true);
+  form.submission_event =
+      mojom::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
+
+  form.fields[0].value = ASCIIToUTF16("user@indianbank");
+  FormSubmitted(form);
+
+  EXPECT_EQ(0, personal_data_.num_times_save_vpa_called());
+}
+
 // Test param indicates if there is an active screen reader.
 class OnFocusOnFormFieldTest : public AutofillManagerTest,
                                public testing::WithParamInterface<bool> {

@@ -519,6 +519,9 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   base::string16 GetLocalizedStringForLandmarkType() const override;
   base::string16 GetLocalizedStringForRoleDescription() const override;
   base::string16 GetStyleNameAttributeAsLocalizedString() const override;
+  ui::TextAttributeMap ComputeTextAttributeMap(
+      const ui::TextAttributeList& default_attributes) const override;
+  std::string GetInheritedFontFamilyName() const override;
   bool ShouldIgnoreHoveredStateForTesting() override;
   bool IsOffscreen() const override;
   bool IsMinimized() const override;
@@ -545,6 +548,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
       BrowserAccessibilityPosition::AXPositionInstance;
   using AXPlatformRange =
       ui::AXRange<BrowserAccessibilityPositionInstance::element_type>;
+
+  virtual ui::TextAttributeList ComputeTextAttributes() const;
 
   BrowserAccessibility();
 
@@ -604,6 +609,26 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   // If the node has a child tree, get the root node.
   BrowserAccessibility* PlatformGetRootOfChildTree() const;
+
+  // Returns a text attribute map indicating the offsets in the text of a leaf
+  // object, such as a text field or static text, where spelling and grammar
+  // errors are present.
+  ui::TextAttributeMap GetSpellingAndGrammarAttributes() const;
+
+  // Given a set of map of spelling text attributes and a start offset, merge
+  // them into the given map of existing text attributes. Merges the given
+  // spelling attributes, i.e. document marker information, into the given text
+  // attributes starting at the given character offset. This is required
+  // because document markers that are present on text leaves need to be
+  // propagated to their parent object for compatibility with Firefox.
+  static void MergeSpellingAndGrammarIntoTextAttributes(
+      const ui::TextAttributeMap& spelling_attributes,
+      int start_offset,
+      ui::TextAttributeMap* text_attributes);
+
+  // Return true is the list of text attributes already includes an invalid
+  // attribute originating from ARIA.
+  static bool HasInvalidAttribute(const ui::TextAttributeList& attributes);
 
   // A unique ID, since node IDs are frame-local.
   ui::AXUniqueId unique_id_;

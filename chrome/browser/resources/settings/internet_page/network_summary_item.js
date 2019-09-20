@@ -126,12 +126,11 @@ Polymer({
    * @private
    */
   getConnectionStateText_: function(networkState, deviceState) {
-    if (!networkState) {
+    if (!networkState || !networkState.guid) {
       return '';
     }
     const connectionState = networkState.connectionState;
-    const name =
-        networkState ? OncMojo.getNetworkStateDisplayName(networkState) : '';
+    const name = OncMojo.getNetworkStateDisplayName(networkState);
     if (OncMojo.connectionStateIsConnected(connectionState)) {
       // Ethernet networks always have the display name 'Ethernet' so we use the
       // state text 'Connected' to avoid repeating the label in the sublabel.
@@ -288,14 +287,22 @@ Polymer({
     const type = deviceState.type;
     if (type == mojom.NetworkType.kTether ||
         (type == mojom.NetworkType.kCellular && this.tetherDeviceState)) {
-      // The "Mobile data" subpage should always be shown if Tether networks are
+      // The "Mobile data" subpage should always be shown if Tether is
       // available, even if there are currently no associated networks.
       return true;
     }
-    const minlen =
-        (type == mojom.NetworkType.kWiFi || type == mojom.NetworkType.kVPN) ?
-        1 :
-        2;
+    let minlen;
+    if (type == mojom.NetworkType.kVPN) {
+      // VPN subpage provides provider info so show if there are any networks.
+      minlen = 1;
+    } else if (type == mojom.NetworkType.kWiFi) {
+      // WiFi subpage includes 'Known Networks' so always show, even if the
+      // technology is still enabling / scanning, or none are visible.
+      minlen = 0;
+    } else {
+      // By default, only show the subpage if there are 2+ networks
+      minlen = 2;
+    }
     return networkStateList.length >= minlen;
   },
 

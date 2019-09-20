@@ -49,8 +49,6 @@ import java.lang.annotation.RetentionPolicy;
 
 /**
  * Parent for TabGridDialog component.
- * TODO(yuezhanggg): Add animations of card scales up to dialog and dialog scales down to card when
- * show/hide dialog.
  */
 public class TabGridDialogParent {
     private static final int DIALOG_ANIMATION_DURATION = 300;
@@ -128,6 +126,7 @@ public class TabGridDialogParent {
     private int mUngroupBarBackgroundColorResourceId = R.color.tab_grid_dialog_background_color;
     private int mUngroupBarHoveredBackgroundColorResourceId = R.color.tab_grid_card_selected_color;
     private int mUngroupBarTextAppearance = R.style.TextAppearance_BlueTitle2;
+    private int mBackgroundDrawableResourceId = R.drawable.tab_grid_dialog_background;
 
     TabGridDialogParent(Context context, ViewGroup parent) {
         mParent = parent;
@@ -711,6 +710,7 @@ public class TabGridDialogParent {
      * @param backgroundResourceId The new background resource id to use.
      */
     void updateDialogContainerBackgroundResource(int backgroundResourceId) {
+        mBackgroundDrawableResourceId = backgroundResourceId;
         mDialogContainerView.setBackgroundResource(backgroundResourceId);
         mBackgroundFrame.setBackgroundResource(backgroundResourceId);
     }
@@ -766,5 +766,35 @@ public class TabGridDialogParent {
     @VisibleForTesting
     Animator getCurrentUngroupBarAnimatorForTesting() {
         return mCurrentUngroupBarAnimator;
+    }
+
+    @VisibleForTesting
+    int getUngroupBarStatusForTesting() {
+        return mUngroupBarStatus;
+    }
+
+    @VisibleForTesting
+    AnimatorSet getShowDialogAnimationForTesting() {
+        return mShowDialogAnimation;
+    }
+
+    @VisibleForTesting
+    int getBackgroundDrawableResourceIdForTesting() {
+        return mBackgroundDrawableResourceId;
+    }
+
+    @VisibleForTesting
+    int getUngroupBarBackgroundColorResourceIdForTesting() {
+        return mUngroupBarBackgroundColorResourceId;
+    }
+
+    @VisibleForTesting
+    int getUngroupBarHoveredBackgroundColorResourceIdForTesting() {
+        return mUngroupBarHoveredBackgroundColorResourceId;
+    }
+
+    @VisibleForTesting
+    int getUngroupBarTextAppearanceForTesting() {
+        return mUngroupBarTextAppearance;
     }
 }

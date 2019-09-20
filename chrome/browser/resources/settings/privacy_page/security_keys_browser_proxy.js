@@ -5,6 +5,16 @@
 cr.exportPath('settings');
 
 /**
+ * Ctap2Status contains a subset of CTAP2 status codes. See
+ * device::CtapDeviceResponseCode for the full list.
+ * @enum{number}
+ */
+const Ctap2Status = {
+  OK: 0x0,
+  ERR_KEEPALIVE_CANCEL: 0x2D,
+};
+
+/**
  * Credential represents a CTAP2 resident credential enumerated from a security
  * key.
  *
@@ -31,11 +41,11 @@ let Credential;
  * where 'remaining' indicates the number of samples left, 'status' indicates
  * the last enrollment status, and 'code' indicates the CtapDeviceResponseCode.
  * For each enrollment sample, 'status' is set - when the enrollment operation
- * reaches an end state, 'code' is set. A 'code' of CtapDeviceResponseCode 0
- * indicates successful enrollment.
+ * reaches an end state, 'code' is set. |OK| indicates successful enrollment.
+ * |ERR_KEEPALIVE_CANCEL| indicates user-initated cancellation.
  *
  * @typedef {{status: ?number,
- *            code: ?number,
+ *            code: ?Ctap2Status,
  *            remaining: number}}
  * @see chrome/browser/ui/webui/settings/settings_security_key_handler.cc
  */
@@ -197,9 +207,6 @@ cr.define('settings', function() {
      * Cancel an ongoing enrollment suboperation. This can safely be called at
      * any time and only has an impact when the authenticator is currently
      * sampling.
-     *
-     * @return {!Promise} resolves when the ongoing enrollment suboperation has
-     *     been cancelled.
      */
     cancelEnrollment() {}
 
@@ -303,7 +310,7 @@ cr.define('settings', function() {
 
     /** @override */
     cancelEnrollment() {
-      return cr.sendWithPromise('securityKeyBioEnrollCancel');
+      return chrome.send('securityKeyBioEnrollCancel');
     }
 
     /** @override */

@@ -174,6 +174,7 @@
 <translation id="2154484045852737596">Kaardi muutmine</translation>
 <translation id="2154710561487035718">Kopeeri URL</translation>
 <translation id="2156074688469523661">Järelejäänud saidid (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="2157851137955077194">Kui soovite midagi oma telefonist teise seadmega jagada, lülitage sünkroonimine mõlema seadme Chrome'i seadetes sisse</translation>
 <translation id="2170088579611075216">Luba virtuaalreaalsus ja sisene</translation>
 <translation id="218608176142494674">Jagamine</translation>
 <translation id="2227444325776770048">Jätka kasutajana <ph name="USER_FULL_NAME" /></translation>
@@ -602,7 +603,6 @@ Enne VR-i aktiveerimist veenduge, et sait oleks usaldusväärne.</translation>
 <translation id="545042621069398927">Allalaadimise kiirendamine.</translation>
 <translation id="5456381639095306749">Laadi leht alla</translation>
 <translation id="5475862044948910901">Kas alustada liitreaalsuse seanssi?</translation>
-<translation id="5481942164684849270"><ph name="APP_NAME" /> on minu rakendustesse lisatud</translation>
 <translation id="548278423535722844">Avage kaardirakenduses</translation>
 <translation id="5487521232677179737">Kustuta andmed</translation>
 <translation id="5494752089476963479">Blokeeri reklaamid saitidel, mis kuvavad sekkuvaid või eksitavaid reklaame</translation>
@@ -1009,7 +1009,6 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="8364299278605033898">Vaadake populaarseid veebisaite</translation>
 <translation id="8368027906805972958">Tundmatu või toetamata seade (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Konkreetse saidi jaoks taustal sünkroonimise lubamine.</translation>
-<translation id="8374821112118309944">Peate värskendama TalkBacki uuemale versioonile.</translation>
 <translation id="8378714024927312812">Haldab teie organisatsioon</translation>
 <translation id="8380167699614421159">Sait kuvab sekkuvaid või eksitavaid reklaame.</translation>
 <translation id="8393700583063109961">Saatke sõnum</translation>
@@ -1073,6 +1072,7 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, vahekaart</translation>
 <translation id="885701979325669005">Salvestamine</translation>
+<translation id="889338405075704026">Ava Chrome'i seaded</translation>
 <translation id="8901170036886848654">Ei leitud ühtegi järjehoidjat</translation>
 <translation id="8909135823018751308">Jaga ...</translation>
 <translation id="8912362522468806198">Google'i konto</translation>
@@ -1091,6 +1091,7 @@ Sait EI saa juurdepääsu kaamerale. Kaamera jäädvustatud pildid on nähtavad 
 <translation id="8993760627012879038">Uue vahelehe avamine inkognito režiimis</translation>
 <translation id="8998729206196772491">Logite sisse kontoga, mida haldab <ph name="MANAGED_DOMAIN" />, ja annate selle administraatorile üle Chrome'i andmete juhtimise. Teie andmed seotakse jäädavalt selle kontoga. Chrome'ist väljalogimisel kustutatakse teie andmed sellest seadmest, kuid need jäävad alles teie Google'i kontole.</translation>
 <translation id="9019902583201351841">Vanemate hallatud</translation>
+<translation id="9028914725102941583">Seadmete vahel jagamiseks lülitage sünkroonimine sisse</translation>
 <translation id="9029323097866369874">Kas lubate saidil <ph name="DOMAIN" /> VR-i aktiveerida?</translation>
 <translation id="9040142327097499898">Märguanded on lubatud. Asukoht on selle seadme puhul välja lülitatud.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# videot}}</translation>

@@ -752,10 +752,10 @@ RenderWidgetHostView* InterstitialPageImpl::GetView() {
   return render_view_host_->GetWidget()->GetView();
 }
 
-RenderFrameHost* InterstitialPageImpl::GetMainFrame() {
+RenderFrameHostImpl* InterstitialPageImpl::GetMainFrame() {
   if (!render_view_host_)
     return nullptr;
-  return render_view_host_->GetMainFrame();
+  return static_cast<RenderFrameHostImpl*>(render_view_host_->GetMainFrame());
 }
 
 InterstitialPageDelegate* InterstitialPageImpl::GetDelegateForTesting() {
@@ -766,15 +766,14 @@ void InterstitialPageImpl::DontCreateViewForTesting() {
   create_view_ = false;
 }
 
-void InterstitialPageImpl::CreateNewWindow(
+RenderFrameHostDelegate* InterstitialPageImpl::CreateNewWindow(
     RenderFrameHost* opener,
-    int32_t render_view_route_id,
-    int32_t main_frame_route_id,
-    int32_t main_frame_widget_route_id,
     const mojom::CreateNewWindowParams& params,
+    bool is_new_browsing_instance,
     bool has_user_gesture,
     SessionStorageNamespace* session_storage_namespace) {
   NOTREACHED() << "InterstitialPage does not support showing popups.";
+  return nullptr;
 }
 
 void InterstitialPageImpl::SetFocusedFrame(FrameTreeNode* node,
@@ -795,14 +794,16 @@ Visibility InterstitialPageImpl::GetVisibility() {
 void InterstitialPageImpl::CreateNewWidget(
     int32_t render_process_id,
     int32_t route_id,
-    mojo::PendingRemote<mojom::Widget> widget) {
+    mojo::PendingRemote<mojom::Widget> widget,
+    RenderViewHostImpl* render_view_host) {
   NOTREACHED() << "InterstitialPage does not support showing drop-downs.";
 }
 
 void InterstitialPageImpl::CreateNewFullscreenWidget(
     int32_t render_process_id,
     int32_t route_id,
-    mojo::PendingRemote<mojom::Widget> widget) {
+    mojo::PendingRemote<mojom::Widget> widget,
+    RenderViewHostImpl* render_view_host) {
   NOTREACHED()
       << "InterstitialPage does not support showing full screen popups.";
 }

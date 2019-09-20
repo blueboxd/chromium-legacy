@@ -184,7 +184,6 @@ class SecurityKeysBioEnrollmentHandler : public SecurityKeysHandlerBase {
     kEnumerating,
     kEnrolling,
     kDeleting,
-    kCancelling,
   };
 
   void RegisterMessages() override;
@@ -210,7 +209,6 @@ class SecurityKeysBioEnrollmentHandler : public SecurityKeysHandlerBase {
   void OnDelete(device::CtapDeviceResponseCode);
 
   void HandleCancel(const base::ListValue* args);
-  void OnEnrollCancel(device::CtapDeviceResponseCode);
 
   State state_ = State::kNone;
   std::string callback_id_;

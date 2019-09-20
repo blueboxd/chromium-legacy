@@ -87,9 +87,9 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   bool NeedsToProgress(SMILTime elapsed);
   // Check if the current interval is still current, and if not compute the
-  // next interval. Returns true if the interval was restarted.
-  bool CheckAndUpdateInterval(SMILTime elapsed);
-  void UpdateActiveState(SMILTime elapsed, bool interval_restart);
+  // next interval.
+  void CheckAndUpdateInterval(SMILTime elapsed);
+  void UpdateActiveState(SMILTime elapsed);
   void UpdateSyncBases();
 
   SMILTime NextInterestingTime(SMILTime elapsed) const;
@@ -126,9 +126,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
     DCHECK(animated_property_locked_);
     animated_property_locked_ = false;
   }
-
-  void ConnectSyncBaseConditions();
-  void ConnectEventBaseConditions();
 
   void ScheduleEvent(const AtomicString& event_type);
   void ScheduleRepeatEvents();
@@ -241,8 +238,8 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   bool ParseCondition(const String&, BeginOrEnd begin_or_end);
   void ParseBeginOrEnd(const String&, BeginOrEnd begin_or_end);
 
-  void DisconnectSyncBaseConditions();
-  void DisconnectEventBaseConditions();
+  void ConnectConditions();
+  void DisconnectConditions();
 
   void NotifyDependentsIntervalChanged(const SMILInterval& interval);
   void CreateInstanceTimesFromSyncBase(SVGSMILElement* timed_element,
@@ -263,7 +260,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   Member<IdTargetObserver> target_id_observer_;
 
   HeapVector<Member<Condition>> conditions_;
-  bool sync_base_conditions_connected_;
+  bool conditions_connected_;
   bool has_end_event_conditions_;
 
   bool is_waiting_for_first_interval_;

@@ -231,6 +231,7 @@
 
       Als dit beleid niet is ingesteld, kan de netwerkcode buiten het browserproces worden uitgevoerd, afhankelijk van praktijktests van het NetworkService-experiment.</translation>
 <translation id="1384459581748403878">Referentie: <ph name="REFERENCE_URL" /></translation>
+<translation id="138847842893090358">OS-updatestatus rapporten</translation>
 <translation id="1393485621820363363">Zakelijke apparaatprinters ingeschakeld</translation>
 <translation id="1397855852561539316">Voorgestelde URL voor standaardzoekprovider</translation>
 <translation id="1404043648050567997">De service Safe Browsing geeft een waarschuwingspagina weer wanneer gebruikers naar sites gaan die als potentieel schadelijk zijn gemarkeerd. Als je deze instelling inschakelt, voorkom je dat gebruikers vanaf de waarschuwingspagina toch doorgaan naar de schadelijke site.
@@ -308,15 +309,6 @@
 
       Als dit beleid niet wordt ingesteld, is de standaardwaarde 'MultiProfileUserBehaviorMustBePrimary' van toepassing op gebruikers die op ondernemingsniveau worden beheerd en wordt 'MultiProfileUserBehaviorUnrestricted' gebruikt voor niet-beheerde gebruikers.</translation>
 <translation id="1465619815762735808">Klikken om af te spelen</translation>
-<translation id="1468307069016535757">De standaardstatus van de toegankelijkheidsfunctie 'Modus voor hoog contrast' instellen op het inlogscherm
-
-          Als dit beleid op 'True' is ingesteld, wordt de modus voor hoog contrast ingeschakeld wanneer het inlogscherm wordt weergegeven.
-
-          Als dit beleid op 'False' is ingesteld, wordt de modus voor hoog contrast uitgeschakeld wanneer het inlogscherm wordt weergegeven.
-
-          Als je dit beleid instelt, kunnen gebruikers dit tijdelijk negeren door de modus voor hoog contrast in of uit te schakelen. De keuze van de gebruiker is echter niet permanent en de standaardinstelling wordt hersteld wanneer het inlogscherm opnieuw wordt weergegeven of de gebruiker gedurende een minuut niet actief is op het inlogscherm.
-
-          Als je het beleid niet instelt, wordt de modus voor hoog contrast uitgeschakeld wanneer het inlogscherm voor de eerste keer wordt weergegeven. Gebruikers kunnen de modus voor hoog contrast op elk moment in- of uitschakelen en de status op het inlogscherm is permanent tussen gebruikers.</translation>
 <translation id="1468707346106619889">Als dit beleid is ingesteld op 'True', is Unified Desktop toegestaan en
       standaard ingeschakeld, waardoor apps op meerdere schermen worden weergegeven.
       De gebruiker kan Unified Desktop uitschakelen voor afzonderlijke schermen door
@@ -811,6 +803,10 @@
 
       Als het beleid is ingesteld op 'True', worden gebeurtenissen geregistreerd.
       Als het beleid is ingesteld op 'False' of niet is ingesteld, worden gebeurtenissen niet geregistreerd.</translation>
+<translation id="2440773021691931148">Hiermee worden hardwarestatistieken en -ID's met betrekking tot de stroomstatus gerapporteerd.
+
+      Als het beleid is ingesteld op False of niet is ingesteld, worden de statistieken niet gerapporteerd.
+      Als het beleid is ingesteld op True, worden de statistieken gerapporteerd.</translation>
 <translation id="244317009688098048">Sneltoets voor automatisch inloggen inschakelen.
 
       Als dit beleid niet is ingesteld of is ingesteld als 'true', en een lokaal account op een apparaat is geconfigureerd voor automatisch inloggen zonder uitstel, gebruikt <ph name="PRODUCT_OS_NAME" /> de sneltoets Ctrl+Alt+S voor het overslaan van het automatisch inloggen en weergeven van het inlogvenster.
@@ -819,6 +815,15 @@
 <translation id="2454228136871844693">Optimaliseren voor stabiliteit.</translation>
 <translation id="2463034609187171371">DHE-coderingssuites inschakelen in TLS</translation>
 <translation id="2463365186486772703">Landinstelling voor applicatie</translation>
+<translation id="2464012905766911533">Via dit beleid kan een beheerder opgeven dat een pagina synchrone XHR-verzoeken mag versturen tijdens de afwijzing van de pagina.
+
+      Als het beleid is ingeschakeld, mogen pagina's synchrone XHR-verzoeken versturen tijdens de afwijzing van de pagina.
+
+      Als het beleid is uitgeschakeld of niet is ingesteld, mogen pagina's geen synchrone XHR-verzoeken tijdens de afwijzing van de pagina.
+
+      Dit beleid wordt verwijderd in Chrome 82.
+
+      Zie https://www.chromestatus.com/feature/4664843055398912 .</translation>
 <translation id="2466131534462628618">Captive portal-verificatie negeert proxyserver</translation>
 <translation id="2466697858869282874">Hiermee configureer je de beschikbaarheid en het gedrag van de updatefunctionaliteit voor <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware.
 
@@ -1523,6 +1528,7 @@
           Als dit beleid niet wordt ingesteld, is de functie 'Selecteer om uitgesproken te worden' in eerste instantie uitgeschakeld. De gebruiker kan de functie echter op elk gewenst moment inschakelen.</translation>
 <translation id="3591527072193107424">Schakel de functie 'Ondersteuning voor oudere browsers' in.</translation>
 <translation id="3591584750136265240">Het verificatiegedrag voor inloggen configureren</translation>
+<translation id="3617743504695003280">Hiermee wordt toegestaan dat een pagina synchrone XHR-verzoeken verstuurt tijdens de afwijzing van de pagina.</translation>
 <translation id="3627678165642179114">Webservice voor spellingcontrole in- of uitschakelen</translation>
 <translation id="3628480121685794414">Enkelzijdig afdrukken inschakelen</translation>
 <translation id="3631099945620529777">Als deze optie is ingesteld op 'false', is de knop 'Proces beëindigen' uitgeschakeld in Taakbeheer.
@@ -1717,6 +1723,10 @@
       Als het achtergrondbeleid voor het apparaat is ingesteld, downloadt het Chrome OS-apparaat de achtergrondafbeelding en gebruikt deze op het inlogscherm als er nog geen gebruiker is ingelogd bij het apparaat. Zodra de gebruiker inlogt, wordt het achtergrondbeleid van de gebruiker toegepast.
 
       Als het achtergrondbeleid voor het apparaat niet is ingesteld, wordt op basis van het achtergrondbeleid van de gebruiker (als dit is ingesteld) bepaald wat wordt weergegeven.</translation>
+<translation id="3964606652985594895">Hiermee worden hardwarestatistieken en -ID's gerapporteerd voor opslagapparaten.
+
+      Als het beleid is ingesteld op False of niet is ingesteld, worden de statistieken niet gerapporteerd.
+      Als het beleid is ingesteld op True, worden de statistieken gerapporteerd.</translation>
 <translation id="3965339130942650562">Time-out tot de inactieve gebruiker is uitgelogd</translation>
 <translation id="3973371701361892765">Archief nooit automatisch verbergen</translation>
 <translation id="3984028218719007910">Bepaalt of <ph name="PRODUCT_OS_NAME" /> na het afmelden lokale accountgegevens bewaart. Als dit is ingesteld op 'true', bewaart <ph name="PRODUCT_OS_NAME" /> geen bestaande accounts en worden alle gegevens over de gebruikerssessie na het afmelden gewist. Als dit beleid is ingesteld op 'false' of niet is geconfigureerd, bewaart het apparaat mogelijk (gecodeerde) lokale gebruikersgegevens.</translation>
@@ -2196,9 +2206,16 @@
 <translation id="4807950475297505572">De gebruikers die het langst geleden gebruikt zijn, worden verwijderd totdat er voldoende vrije ruimte is</translation>
 <translation id="4816674326202173458">Toestaan dat Enterprise-gebruiker zowel primair als secundair is (standaardgedrag voor niet-beheerde gebruikers)</translation>
 <translation id="4826326557828204741">Actie die moet worden ondernomen wanneer de vertraging voor inactief wordt bereikt bij gebruik op accuvermogen</translation>
+<translation id="4830531683854509779">Hiermee worden hardwarestatistieken gerapporteerd voor SoC-componenten.
+
+      Als het beleid is ingesteld op False of niet is ingesteld, worden de statistieken niet gerapporteerd.
+      Als het beleid is ingesteld op True, worden de statistieken gerapporteerd.</translation>
 <translation id="4832852360828533362">Gebruikers- en apparaatrapporten</translation>
 <translation id="4834526953114077364">De gebruikers die het langst geleden gebruikt zijn en gedurende de laatste drie maanden niet zijn ingelogd, worden verwijderd totdat er voldoende vrije ruimte is</translation>
 <translation id="4835622243021053389">NTLMv2-verificatie inschakelen.</translation>
+<translation id="4856471929724652373">Hiermee worden OS-updategegevens gerapporteerd, zoals updatestatus, platformversie, laatste updatecontrole en laatste keer opnieuw opstarten.
+
+      Als het beleid is ingesteld op False of niet is ingesteld, worden de OS-updategegevens niet gerapporteerd. Als het beleid is ingesteld op True, worden de OS-updategegevens gerapporteerd.</translation>
 <translation id="4858735034935305895">Modus voor volledig scherm toestaan</translation>
 <translation id="4861767323695239729">De toegestane invoermethoden in een gebruikerssessie configureren</translation>
 <translation id="487460824085252184">Automatisch migreren, niet om toestemming van de gebruiker vragen.</translation>
@@ -2836,15 +2853,6 @@
       URL's (zoals https://example.com/some/path) komen alleen overeen als U2F appID's. Domeinen (zoals example.com) komen alleen overeen als webauthn RP ID's. Dus om zowel de U2F- als webauthn-API voor een bepaalde site te omvatten, moeten zowel de appID-URL als het appID-domein worden vermeld.</translation>
 <translation id="5836064773277134605">Het UDP-poortbereik beperken dat voor de host voor externe toegang wordt gebruikt</translation>
 <translation id="5861856285460256766">Configuratie van toegangscode voor ouders</translation>
-<translation id="5862253018042179045">De standaardstatus van de toegankelijkheidsfunctie voor gesproken feedback instellen op het inlogscherm.
-
-          Als dit beleid is ingesteld op 'True', wordt gesproken feedback ingeschakeld wanneer het inlogscherm wordt weergegeven.
-
-          Als dit beleid is ingesteld op 'False', wordt gesproken feedback uitgeschakeld wanneer het inlogscherm wordt weergegeven.
-
-          Als je dit beleid instelt, kunnen gebruikers dit tijdelijk negeren door gesproken feedback in of uit te schakelen. De keuze van de gebruiker is echter niet permanent en de standaardinstelling wordt hersteld als het inlogscherm opnieuw wordt weergegeven of de gebruiker gedurende een minuut niet actief is op het inlogscherm.
-
-          Als je het beleid niet instelt, wordt gesproken feedback uitgeschakeld wanneer het inlogscherm voor het eerst wordt weergegeven. Gebruikers kunnen gesproken feedback op elk moment in- of uitschakelen en de status op het inlogscherm is permanent tussen gebruikers.</translation>
 <translation id="5868414965372171132">Netwerkconfiguratie op gebruikersniveau</translation>
 <translation id="5879014913445067283">Bepaalt de detectiemethode van 'Network File Shares' via <ph name="NETBIOS_NAME" /></translation>
 <translation id="5882345429632338713">Vertraging voor starten van alternatieve browser (in milliseconden)</translation>
@@ -3226,6 +3234,7 @@ Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de pagina 'N
 <translation id="6689792153960219308">De hardwarestatus melden</translation>
 <translation id="6698632841807204978">Monochroom afdrukken inschakelen</translation>
 <translation id="6699880231565102694">Authenticatie in twee stappen inschakelen voor hosts voor externe toegang</translation>
+<translation id="670597451099978576">Automatisch toestemming verlenen aan deze sites om verbinding te maken met USB-apparaten met de opgegeven leveranciers- en product-ID's op het inlogscherm.</translation>
 <translation id="6720080634516505446"><ph name="PRODUCT_NAME" /> zorgt ervoor dat extensies veilig kunnen worden geüpdatet en geïnstalleerd. De content van sommige extensies die buiten de Chrome Web Store worden gehost, wordt echter mogelijk alleen beschermd door onbeveiligde ondertekening of hashingalgoritmen zoals SHA1. Wanneer dit beleid is uitgeschakeld, wordt het door Chrome niet toegestaan om dergelijke extensies opnieuw te installeren of te updaten (totdat de ontwerpers van die extensie deze opnieuw samenstellen met krachtigere algoritmen). Wanneer dit beleid is ingeschakeld, is het toegestaan om dergelijke extensies te installeren en te updaten.
 
           Het ingeschakelde gedrag wordt standaard gebruikt wanneer het beleid niet is ingesteld.
@@ -3805,6 +3814,21 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Wanneer dit beleid is ingesteld, kan de toegangscode voor ouders worden geverifieerd op het apparaat van de gebruiker met een kinderaccount.
       Wanneer dit beleid niet is ingesteld, kan de toegangscode voor ouders niet worden geverifieerd op het apparaat van de gebruiker met een kinderaccount.</translation>
 <translation id="7625444193696794922">Hiermee wordt het releasekanaal gespecificeerd waarmee dit apparaat moet worden vergrendeld.</translation>
+<translation id="7625498350540361483">
+      Als het beleid is ingesteld op True, mag <ph name="PRODUCT_NAME" /> WebRTC-gebeurtenislogboeken verzamelen van Google-services (zoals Google Meet) en deze logboeken uploaden naar Google.
+
+      Als het beleid is ingesteld op False, mag <ph name="PRODUCT_NAME" /> deze logboeken niet verzamelen of uploaden.
+
+      Als het beleid niet is ingesteld, geldt voor versies tot en met M76 dat <ph name="PRODUCT_NAME" /> deze logboeken niet mag verzamelen of uploaden.
+
+      Als het beleid niet is ingesteld, geldt vanaf versie M77 dat <ph name="PRODUCT_NAME" /> deze logboeken standaard mag verzamelen of uploaden, afhankelijk van of het browserprofiel als beheerd wordt beschouwd (dat wil zeggen, het profiel ontvangt beleidsregels op cloud- of machineniveau) en geen onderliggend, tijdelijk, inlog- of incognitoprofiel is.
+
+      Deze logboeken bevatten diagnostische informatie die handig is voor het oplossen van problemen met audio- of videogesprekken in Chrome. Deze informatie betreft bijvoorbeeld het tijdstip en de grootte van verzonden en ontvangen RTP-pakketten, feedback over overbelasting van het netwerk en metadata over de duur en kwaliteit van audio- en videoframes. Deze logboeken bevatten geen audio of video van het gesprek.
+
+      Chrome verzamelt deze gegevens alleen als Chrome wordt getriggerd door webservices van Google, zoals Google Hangouts of Google Meet.
+
+      Google mag deze logboeken aan de hand van de sessie-ID koppelen aan andere logboeken die door de Google-service zelf zijn verzameld. Het doel hiervan is dat fouten makkelijker kunnen worden opgespoord.
+      </translation>
 <translation id="7632724434767231364">Naam van GSSAPI-bibliotheek</translation>
 <translation id="7635471475589566552">Hiermee wordt de landinstelling voor de applicatie geconfigureerd in <ph name="PRODUCT_NAME" /> en wordt voorkomen dat gebruikers de landinstelling kunnen wijzigen.
 
@@ -4324,6 +4348,11 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
       Door dit beleid wordt de kop X-GoogApps-Allowed-Domains toegevoegd aan alle HTTP- en HTTPS-verzoeken voor alle google.com-domeinen, zoals beschreven in https://support.google.com/a/answer/1668854.
 
       Gebruikers kunnen deze instelling niet wijzigen of overschrijven.</translation>
+<translation id="8625234016727663537">Hiermee kun je een lijst met URL's instellen die aangeven welke sites automatisch toegang krijgen tot een USB-apparaat met de opgegeven leverancier- en product-ID's op het inlogscherm. Het beleid is alleen geldig als elk item in de lijst zowel apparaten als URL's bevat. Elk item in apparaten kan een veld voor leverancier-ID en een veld voor product-ID bevatten. Een ID die is weggelaten, wordt als jokerteken behandeld, met één uitzondering: er mag geen product-ID worden opgegeven zonder dat er ook een leverancier-ID is opgegeven. Anders is het beleid niet geldig. Ongeldige beleidswaarden worden genegeerd.
+
+        Het USB-rechtenmodel gebruikt de URL van de site die de aanvraag indient ('aanvragende URL') en de URL van de framesite op hoofdniveau ('insluitings-URL') om de aanvragende URL toegang te geven tot het USB-apparaat. Als de aanvragende site in een iframe wordt geladen, is het mogelijk dat de aanvragende URL en de insluitings-URL niet hetzelfde zijn. Daarom kan het veld voor URL's maximaal twee, door een komma gescheiden URL-tekenreeksen bevatten om respectievelijk de aanvragende URL en insluitings-URL op te geven. Als er slechts één URL wordt opgegeven, wordt toegang tot de bijbehorende USB-apparaten gegeven wanneer de URL van de aanvragende site overeenkomt met deze URL, ongeacht de insluitingsstatus. De URL's in het veld voor URL's moeten geldig zijn. Als dit niet het geval is, wordt het beleid genegeerd.
+
+        Als dit beleid niet is ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites (geen automatische toegang).</translation>
 <translation id="8631434304112909927">tot versie <ph name="UNTIL_VERSION" /></translation>
 <translation id="8649763579836720255">Chrome OS-apparaten kunnen externe bevestiging (geverifieerde toegang) gebruiken om een certificaat door Chrome OS te laten uitgeven waarin het apparaat uniek wordt geïdentificeerd en geschikt bevonden voor beschermde content.
 

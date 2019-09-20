@@ -690,8 +690,9 @@ class CONTENT_EXPORT RenderWidget
       base::OnceCallback<void(const gfx::PresentationFeedback&)>;
   virtual void RequestPresentation(PresentationTimeCallback callback);
 
-  // RenderWidget IPC message handler that can be overridden by subclasses.
-  virtual void OnSynchronizeVisualProperties(
+  // Handles widget VisualProperties updates that are coming from the RenderView
+  // [routing IPC from browser].
+  virtual void SynchronizeVisualPropertiesFromRenderView(
       const VisualProperties& visual_properties);
 
   bool in_synchronous_composite_for_testing() const {

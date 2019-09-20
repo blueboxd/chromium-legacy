@@ -1489,6 +1489,7 @@ jumbo_component("platform") {
     "//ui/base:base",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/gfx/mojom",
   ]
 
   if (is_mac) {
@@ -1650,6 +1651,7 @@ jumbo_static_library("test_support") {
 
   deps = [
     "//base/test:test_support",
+    "//media:test_support",
     "//mojo/core/embedder",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
@@ -1848,6 +1850,8 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "transforms/rotation_test.cc",
     "transforms/transform_operations_test.cc",
     "transforms/transformation_matrix_test.cc",
+    "video_capture/gpu_memory_buffer_test_support.cc",
+    "video_capture/gpu_memory_buffer_test_support.h",
     "video_capture/video_capture_impl_test.cc",
     "weborigin/known_ports_test.cc",
     "weborigin/kurl_test.cc",

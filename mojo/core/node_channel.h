@@ -132,6 +132,7 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
   void Introduce(const ports::NodeName& name, PlatformHandle channel_handle);
   void SendChannelMessage(Channel::MessagePtr message);
   void Broadcast(Channel::MessagePtr message);
+  void BindBrokerHost(PlatformHandle broker_host_handle);
 
 #if defined(OS_WIN)
   // Relay the message to the specified node via this channel.  This is used to
@@ -161,6 +162,10 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
               scoped_refptr<base::TaskRunner> io_task_runner,
               const ProcessErrorCallback& process_error_callback);
   ~NodeChannel() override;
+
+  // Creates a BrokerHost to satisfy a |BindBrokerHost()| request from the other
+  // end of the channel.
+  void CreateAndBindLocalBrokerHost(PlatformHandle broker_host_handle);
 
   // Channel::Delegate:
   void OnChannelMessage(const void* payload,

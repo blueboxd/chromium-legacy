@@ -151,29 +151,14 @@ component("printing") {
     configs += [ ":cups" ]
 
     if (is_linux) {
-      # rebase_path does not accept an empty string
-      if (use_sysroot) {
-        cups_sysroot = rebase_path(sysroot)
-      } else {
-        cups_sysroot = ""
-      }
-      cups_version = exec_script("cups_config_helper.py",
-                                 [
-                                   "--api-version",
-                                   cups_sysroot,
-                                 ],
-                                 "trim string")
-
-      if (cups_version == "1.6" || cups_version == "1.7") {
-        cflags += [
-          # CUPS 1.6 deprecated the PPD APIs, but we will stay with this
-          # API for now as supported Linux and Mac OS'es are still using
-          # older versions of CUPS. More info: crbug.com/226176
-          "-Wno-deprecated-declarations",
-          # CUPS 1.7 deprecates httpConnectEncrypt(), see the mac section
-          # below.
-        ]
-      }
+      cflags += [
+        # CUPS 1.6 deprecated the PPD APIs, but we will stay with this
+        # API for now as supported Linux and Mac OS'es are still using
+        # older versions of CUPS. More info: crbug.com/226176
+        "-Wno-deprecated-declarations",
+        # CUPS 1.7 deprecates httpConnectEncrypt(), see the mac section
+        # below.
+      ]
     }
 
     if (is_mac) {

@@ -1001,6 +1001,10 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
         "GL_COMMANDS_ISSUED_CHROMIUM",
     },
     {
+        0x6005,
+        "GL_COMMANDS_ISSUED_TIMESTAMP_CHROMIUM",
+    },
+    {
         0x6006,
         "GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM",
     },

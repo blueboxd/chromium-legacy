@@ -587,16 +587,64 @@ message AccessibilitySettingsProto {
   // when the login screen is shown. If this policy is set to false, the large
   // cursor will be disabled when the login screen is shown. If the
   // PolicyOptions mode was being mandatory then the user won't be able to
-  // change these settings. Only if PolicyOptions was being set as
-  // recommended users can temporarily override this setting by enabling or
-  // disabling the large cursor. However, the user's choice is not persistent
-  // and the default is restored whenever the login screen is shown anew or the
-  // user remains idle on the login screen for a minute. If this policy is left
-  // unset, the large cursor is disabled when the login screen is first shown.
-  // Users can enable or disable the large cursor anytime and its status on the
-  // login screen is persisted between users.
+  // change these settings. Only if PolicyOptions was being set as recommended
+  // users can temporarily override this setting by enabling or disabling the
+  // large cursor. However, the user's choice is not persistent and the default
+  // is restored whenever the login screen is shown anew or the user remains
+  // idle on the login screen for a minute. If this policy is left unset, the
+  // large cursor is disabled when the login screen is first shown. Users can
+  // enable or disable the large cursor anytime and its status on the login
+  // screen is persisted between users.
   optional bool login_screen_large_cursor_enabled = 6;
   optional PolicyOptions login_screen_large_cursor_enabled_options = 7;
+
+  // Sets the state of the spoken feedback accessibility feature on the login
+  // screen. If this policy is set to true, the spoken feedback will be enabled
+  // when the login screen is shown. If this policy is set to false, the spoken
+  // feedback will be disabled when the spoken feedback is shown. If the
+  // PolicyOptions mode was being mandatory then the user won't be able to
+  // change these settings. Only if PolicyOptions was being set as
+  // recommended users can temporarily override this setting by enabling or
+  // disabling the spoken feedback. However, the user's choice is not persistent
+  // and the default is restored whenever the login screen is shown anew or the
+  // user remains idle on the login screen for a minute. If this policy is left
+  // unset, the spoken feedback is disabled when the login screen is first
+  // shown. Users can enable or disable the spoken feedback anytime and its
+  // status on the login screen is persisted between users.
+  optional bool login_screen_spoken_feedback_enabled = 8;
+  optional PolicyOptions login_screen_spoken_feedback_enabled_options = 9;
+
+  // Sets the state of the high contrast accessibility feature on the login
+  // screen. If this policy is set to true, the high contrast will be enabled
+  // when the login screen is shown. If this policy is set to false, the spoken
+  // feedback will be disabled when the high contrast is shown. If the
+  // PolicyOptions mode was being mandatory then the user won't be able to
+  // change these settings. Only if PolicyOptions was being set as
+  // recommended users can temporarily override this setting by enabling or
+  // disabling the high contrast. However, the user's choice is not persistent
+  // and the default is restored whenever the login screen is shown anew or the
+  // user remains idle on the login screen for a minute. If this policy is left
+  // unset, the high contrast is disabled when the login screen is first
+  // shown. Users can enable or disable the high contrast anytime and its
+  // status on the login screen is persisted between users.
+  optional bool login_screen_high_contrast_enabled = 10;
+  optional PolicyOptions login_screen_high_contrast_enabled_options = 11;
+
+  // Sets the state of the virtual keyboard accessibility feature on the login
+  // screen. If this policy is set to true, the virtual keyboard will be enabled
+  // when the login screen is shown. If this policy is set to false, the spoken
+  // feedback will be disabled when the virtual keyboard is shown. If the
+  // PolicyOptions mode was being mandatory then the user won't be able to
+  // change these settings. Only if PolicyOptions was being set as
+  // recommended users can temporarily override this setting by enabling or
+  // disabling the virtual keyboard. However, the user's choice is not
+  // persistent and the default is restored whenever the login screen is shown
+  // anew or the user remains idle on the login screen for a minute. If this
+  // policy is left unset, the virtual keyboard is disabled when the login
+  // screen is first shown. Users can enable or disable the virtual keyboard
+  // anytime and its status on the login screen is persisted between users.
+  optional bool login_screen_virtual_keyboard_enabled = 12;
+  optional PolicyOptions login_screen_virtual_keyboard_enabled_options = 13;
 }
 
 message SupervisedUsersSettingsProto {

@@ -4,6 +4,7 @@
 
 package org.chromium.base;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -11,6 +12,8 @@ import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.os.Process;
 import android.preference.PreferenceManager;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
@@ -161,5 +164,23 @@ public class ContextUtils {
             // https://chromium-review.googlesource.com/c/chromium/src/+/905563/1
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Extract the {@link Activity} if the given {@link Context} either is or wraps one.
+     *
+     * @param context The context to check.
+     * @return Extracted activity if it exists, otherwise null.
+     */
+    public static @Nullable Activity activityFromContext(@Nullable Context context) {
+        // Only retrieves the base context if the supplied context is a ContextWrapper but not an
+        // Activity, because Activity is a subclass of ContextWrapper.
+        while (context instanceof ContextWrapper) {
+            if (context instanceof Activity) return (Activity) context;
+
+            context = ((ContextWrapper) context).getBaseContext();
+        }
+
+        return null;
     }
 }

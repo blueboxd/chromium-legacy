@@ -61,6 +61,7 @@ namespace {
 
 // Helpers --------------------------------------------------------------------
 
+constexpr float kShortcutIconToImageRatio = 9.0 / 16.0;
 
 // Number of times the Dice sign-in promo illustration should be shown.
 constexpr int kDiceSigninPromoIllustrationShowCountMax = 10;
@@ -413,18 +414,19 @@ void ProfileMenuView::BuildIdentity() {
 
 void ProfileMenuView::BuildAutofillButtons() {
   AddShortcutFeatureButton(
-      kKeyIcon, l10n_util::GetStringUTF16(IDS_PROFILES_PASSWORDS_LINK),
+      ImageForMenu(kKeyIcon, kShortcutIconToImageRatio),
+      l10n_util::GetStringUTF16(IDS_PROFILES_PASSWORDS_LINK),
       base::BindRepeating(&ProfileMenuView::OnPasswordsButtonClicked,
                           base::Unretained(this)));
 
   AddShortcutFeatureButton(
-      kCreditCardIcon,
+      ImageForMenu(kCreditCardIcon, kShortcutIconToImageRatio),
       l10n_util::GetStringUTF16(IDS_PROFILES_CREDIT_CARDS_LINK),
       base::BindRepeating(&ProfileMenuView::OnCreditCardsButtonClicked,
                           base::Unretained(this)));
 
   AddShortcutFeatureButton(
-      vector_icons::kLocationOnIcon,
+      ImageForMenu(vector_icons::kLocationOnIcon, kShortcutIconToImageRatio),
       l10n_util::GetStringUTF16(IDS_PROFILES_ADDRESSES_LINK),
       base::BindRepeating(&ProfileMenuView::OnAddressesButtonClicked,
                           base::Unretained(this)));
@@ -512,7 +514,7 @@ void ProfileMenuView::BuildSelectableProfiles() {
 
 void ProfileMenuView::BuildProfileFeatureButtons() {
   AddProfileShortcutFeatureButton(
-      ImageForMenu(vector_icons::kSettingsIcon, /*icon_to_image_ratio=*/0.625),
+      ImageForMenu(vector_icons::kSettingsIcon, kShortcutIconToImageRatio),
       l10n_util::GetStringUTF16(IDS_PROFILES_MANAGE_USERS_BUTTON),
       base::BindRepeating(&ProfileMenuView::OnManageProfilesButtonClicked,
                           base::Unretained(this)));

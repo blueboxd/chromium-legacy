@@ -119,7 +119,9 @@ class COMPONENT_EXPORT(LEVELDB_PROTO) SharedProtoDatabase
       SharedClientInitCallback callback,
       scoped_refptr<base::SequencedTaskRunner> callback_task_runner);
   void InitMetadataDatabase(int attempt, bool corruption);
-  void OnMetadataInitComplete(int attempt, bool corruption, bool success);
+  void OnMetadataInitComplete(int attempt,
+                              bool corruption,
+                              leveldb_proto::Enums::InitStatus status);
   void OnGetGlobalMetadata(bool corruption,
                            bool success,
                            std::unique_ptr<SharedDBMetadataProto> proto);

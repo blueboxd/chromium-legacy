@@ -509,6 +509,12 @@ void TabHoverCardBubbleView::OnWidgetVisibilityChanged(views::Widget* widget,
     ++hover_cards_seen_count_;
 }
 
+ax::mojom::Role TabHoverCardBubbleView::GetAccessibleWindowRole() {
+  // Override the role so that hover cards are not read when they appear because
+  // tabs handle accessibility text.
+  return ax::mojom::Role::kIgnored;
+}
+
 int TabHoverCardBubbleView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }

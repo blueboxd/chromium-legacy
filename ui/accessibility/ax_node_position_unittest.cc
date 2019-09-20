@@ -1220,6 +1220,63 @@ TEST_F(AXPositionTest, ParagraphEdgesWithPreservedNewLine) {
   EXPECT_FALSE(text_position14->AtStartOfParagraph());
 }
 
+TEST_F(
+    AXPositionTest,
+    PreviousParagraphEndStopAtAnchorBoundaryWithConsecutiveParentChildLineBreakingObjects) {
+  // This test updates the tree structure to test a specific edge case -
+  // CreatePreviousParagraphEndPosition(), stopping at an anchor boundary,
+  // with consecutive parent-child line breaking objects.
+  // ++1 rootWebArea
+  // ++++2 staticText name="first"
+  // ++++3 genericContainer isLineBreakingObject
+  // ++++++4 genericContainer isLineBreakingObject
+  // ++++++5 staticText name="second"
+  AXNodePosition::SetTree(nullptr);
+
+  AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+
+  AXNodeData static_text_data_a;
+  static_text_data_a.id = 2;
+  static_text_data_a.role = ax::mojom::Role::kStaticText;
+  static_text_data_a.SetName("first");
+
+  AXNodeData container_data_a;
+  container_data_a.id = 3;
+  container_data_a.role = ax::mojom::Role::kGenericContainer;
+  container_data_a.AddBoolAttribute(
+      ax::mojom::BoolAttribute::kIsLineBreakingObject, true);
+
+  AXNodeData container_data_b;
+  container_data_b.id = 4;
+  container_data_b.role = ax::mojom::Role::kGenericContainer;
+  container_data_b.AddBoolAttribute(
+      ax::mojom::BoolAttribute::kIsLineBreakingObject, true);
+
+  AXNodeData static_text_data_b;
+  static_text_data_b.id = 5;
+  static_text_data_b.role = ax::mojom::Role::kStaticText;
+  static_text_data_b.SetName("second");
+
+  root_data.child_ids = {static_text_data_a.id, container_data_a.id};
+  container_data_a.child_ids = {container_data_b.id, static_text_data_b.id};
+
+  std::unique_ptr<AXTree> new_tree =
+      CreateAXTree({root_data, static_text_data_a, container_data_a,
+                    container_data_b, static_text_data_b});
+
+  TestPositionType test_position = AXNodePosition::CreateTextPosition(
+      new_tree->data().tree_id, root_data.id, 11 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+
+  test_position = test_position->CreatePreviousParagraphEndPosition(
+      ui::AXBoundaryBehavior::StopAtAnchorBoundary);
+  EXPECT_TRUE(test_position->IsTextPosition());
+  EXPECT_EQ(root_data.id, test_position->anchor_id());
+  EXPECT_EQ(5, test_position->text_offset());
+}
+
 TEST_F(AXPositionTest,
        AtStartOrEndOfParagraphWithLeadingAndTrailingDocumentWhitespace) {
   // This test updates the tree structure to test a specific edge case -

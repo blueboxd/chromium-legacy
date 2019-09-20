@@ -46,11 +46,12 @@ static_library("app") {
     "crash_switches.h",
     "crashpad.h",
     "crashpad_android.cc",
+    "crashpad_linux.cc",
     "crashpad_mac.mm",
     "crashpad_win.cc",
   ]
 
-  if (is_mac || is_win || is_android) {
+  if (is_mac || is_win || is_android || is_linux) {
     sources += [ "crashpad.cc" ]
   }
 
@@ -72,7 +73,7 @@ static_library("app") {
     "//build:branding_buildflags",
   ]
 
-  if (is_mac || is_win || is_android) {
+  if (is_mac || is_win || is_android || is_linux) {
     deps += [
       "//third_party/crashpad/crashpad/client",
       "//third_party/crashpad/crashpad/util",
@@ -99,11 +100,10 @@ static_library("app") {
   }
 
   if (is_linux) {
-    deps += [ "//third_party/breakpad:client" ]
-  }
-
-  if (is_chromeos) {
-    deps += [ "//content/public/common" ]
+    deps += [
+      "//content/public/common",
+      "//third_party/breakpad:client",
+    ]
   }
 
   if (is_win) {
@@ -131,6 +131,12 @@ static_library("app") {
 
   if (is_android) {
     libs = [ "log" ]
+  }
+
+  if (is_linux) {
+    data_deps = [
+      "//third_party/crashpad/crashpad/handler:crashpad_handler",
+    ]
   }
 }
 

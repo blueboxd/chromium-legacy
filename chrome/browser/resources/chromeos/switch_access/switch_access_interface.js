@@ -52,6 +52,12 @@ class SwitchAccessInterface {
   onPreferencesChanged(changes) {}
 
   /**
+   * Returns whether prefs have initially loaded or not.
+   * @return {boolean}
+   */
+  prefsAreReady() {}
+
+  /**
    * Set the value of the preference |name| to |value| in chrome.storage.sync.
    * The behavior is not updated until the storage update is complete.
    *

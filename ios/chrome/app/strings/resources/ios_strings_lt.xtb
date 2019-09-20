@@ -18,7 +18,6 @@
 <translation id="1176932207622159128">Nepav. išs. vaizdo</translation>
 <translation id="1180526666083833456">Sinchronizuojama ir suasmeninama įvairiuose įrenginiuose.</translation>
 <translation id="1181037720776840403">Pašalinti</translation>
-<translation id="1201530049782216880">Naujas inkognito skirtukas</translation>
 <translation id="1209206284964581585">Slėpti dabar</translation>
 <translation id="1219674500290482172">Nepavyksta prisijungti prie interneto.</translation>
 <translation id="122699739164161391">Uždaryti visus skirtukus</translation>
@@ -94,7 +93,6 @@
 <translation id="2149973817440762519">Redaguoti žymes</translation>
 <translation id="2179182049312275900">Galite bet kada įjungti sinchronizavimą nustatymuose.</translation>
 <translation id="2198757192731523470">„Google“ gali naudoti jūsų istoriją, kad suasmenintų Paiešką, skelbimus ir kitas „Google“ paslaugas.</translation>
-<translation id="2207590065820824892">Neskaitytų straipsnių skaitymo sąraše: <ph name="UNREAD_COUNT" />.</translation>
 <translation id="2230173723195178503">TInklalapis įkeltas</translation>
 <translation id="2239626343334228536">Išvalomi naršymo duomenis...</translation>
 <translation id="2256128224215992540">Paieškos / svetain. pasiūl.</translation>
@@ -124,7 +122,6 @@
 <translation id="2625189173221582860">Slaptažodis nukopijuotas</translation>
 <translation id="2648803196158606475">Ištrinti skaitytus</translation>
 <translation id="2653659639078652383">Pateikti</translation>
-<translation id="2684815431982545828">Naujas skirtukas</translation>
 <translation id="2690858294534178585">Fotoaparatas naudojamas</translation>
 <translation id="2691653761409724435">Nepasiekiama neprisijungus</translation>
 <translation id="2702801445560668637">Skait. sąraš.</translation>
@@ -267,7 +264,6 @@ Duomenys užšifruoti naudojant slaptafrazę. Įveskite ją, kad pradėtumėte s
 
 Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatykite sinchronizavimą<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">Netinkamas kortelės numeris</translation>
-<translation id="4807020197310989387">1 neskaitytas straipsnis skaitymo sąraše.</translation>
 <translation id="4818522717893377262">Pridėti kalbą...</translation>
 <translation id="481968316161811770">Slapuk., svet. duom.</translation>
 <translation id="4833786495304741580">Automatiškai siunčia naudojimo statistiką ir strigčių ataskaitas „Google“.</translation>

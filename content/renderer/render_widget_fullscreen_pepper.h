@@ -70,7 +70,7 @@ class RenderWidgetFullscreenPepper : public RenderWidget,
   // RenderWidget API.
   void DidInitiatePaint() override;
   void Close(std::unique_ptr<RenderWidget> widget) override;
-  void OnSynchronizeVisualProperties(
+  void SynchronizeVisualPropertiesFromRenderView(
       const VisualProperties& visual_properties) override;
 
  private:

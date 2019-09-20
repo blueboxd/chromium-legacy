@@ -392,7 +392,6 @@ void SessionControllerImpl::StartLock(StartLockCallback callback) {
   lock_state_controller->SetLockScreenDisplayedCallback(
       base::BindOnce(&SessionControllerImpl::OnLockAnimationFinished,
                      weak_ptr_factory_.GetWeakPtr()));
-  lock_state_controller->OnStartingLock();
 }
 
 void SessionControllerImpl::NotifyChromeLockAnimationsComplete() {

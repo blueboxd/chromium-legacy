@@ -4,6 +4,7 @@
 
 #include "chrome/services/cups_proxy/public/cpp/cups_util.h"
 
+#include <queue>
 #include <string>
 #include <utility>
 
@@ -14,6 +15,47 @@
 #include "printing/backend/cups_jobs.h"
 
 namespace cups_proxy {
+namespace {
+
+// This comparator defines a priority_queue of printers in descending order by
+// display name.
+class DisplayNameComparator {
+ public:
+  bool operator()(const chromeos::Printer& a, const chromeos::Printer& b) {
+    return a.display_name() < b.display_name();
+  }
+};
+
+// Return the top |k| printers from |printers| sorted alphabetically by display
+// name.
+std::vector<chromeos::Printer> GetFirstKPrinters(
+    const std::vector<chromeos::Printer>& printers,
+    size_t k) {
+  auto pq =
+      std::priority_queue<chromeos::Printer, std::vector<chromeos::Printer>,
+                          DisplayNameComparator>();
+
+  // Filter through |printers|, only keeping the first |k| printers in the pq.
+  for (const chromeos::Printer& printer : printers) {
+    pq.push(printer);
+    if (pq.size() > k) {
+      pq.pop();
+    }
+  }
+
+  // We want the returned list in ascending order, so we assign to ret in
+  // reverse order.
+  std::vector<chromeos::Printer> ret;
+  ret.resize(pq.size());
+  for (int i = pq.size() - 1; i >= 0; --i) {
+    ret[i] = pq.top();
+    pq.pop();
+  }
+
+  return ret;
+}
+
+}  // namespace
 
 base::Optional<IppResponse> BuildGetDestsResponse(
     const IppRequest& request,
@@ -108,6 +150,25 @@ base::Optional<std::string> ParseEndpointForPrinterId(
   }
 
   return endpoint.substr(last_path + 1).as_string();
+}
+
+std::vector<chromeos::Printer> FilterPrintersForPluginVm(
+    const std::vector<chromeos::Printer>& saved,
+    const std::vector<chromeos::Printer>& enterprise) {
+  if (saved.size() >= kPluginVmPrinterLimit) {
+    return std::vector<chromeos::Printer>(
+        saved.begin(), saved.begin() + kPluginVmPrinterLimit);
+  }
+
+  // Filter down enterprise printers to backfill.
+  size_t num_enterprise_printers = kPluginVmPrinterLimit - saved.size();
+  auto filtered_enterprise =
+      GetFirstKPrinters(enterprise, num_enterprise_printers);
+
+  // Concatenate saved printers and filtered_enterprise to return.
+  std::vector<chromeos::Printer> ret = saved;
+  ret.insert(ret.end(), filtered_enterprise.begin(), filtered_enterprise.end());
+  return ret;
 }
 
 }  // namespace cups_proxy

@@ -144,15 +144,14 @@ void SVGSMILElement::Condition::Trace(blink::Visitor* visitor) {
 void SVGSMILElement::Condition::ConnectSyncBase(SVGSMILElement& timed_element) {
   DCHECK(!base_id_.IsEmpty());
   DCHECK_EQ(type_, kSyncBase);
+  DCHECK(!base_element_);
   auto* svg_smil_element =
       DynamicTo<SVGSMILElement>(SVGURIReference::ObserveTarget(
           base_id_observer_, timed_element.GetTreeScope(), base_id_,
           WTF::BindRepeating(&SVGSMILElement::BuildPendingResource,
                              WrapWeakPersistent(&timed_element))));
-  if (!svg_smil_element) {
-    base_element_ = nullptr;
+  if (!svg_smil_element)
     return;
-  }
   base_element_ = svg_smil_element;
   svg_smil_element->AddSyncBaseDependent(timed_element);
 }
@@ -171,22 +170,21 @@ void SVGSMILElement::Condition::ConnectEventBase(
     SVGSMILElement& timed_element) {
   DCHECK_EQ(type_, kEventBase);
   DCHECK(!base_element_);
-  Element* target;
+  SVGElement* target;
   if (base_id_.IsEmpty()) {
     target = timed_element.targetElement();
   } else {
-    target = SVGURIReference::ObserveTarget(
+    target = DynamicTo<SVGElement>(SVGURIReference::ObserveTarget(
         base_id_observer_, timed_element.GetTreeScope(), base_id_,
         WTF::BindRepeating(&SVGSMILElement::BuildPendingResource,
-                           WrapWeakPersistent(&timed_element)));
+                           WrapWeakPersistent(&timed_element))));
   }
-  auto* svg_element = DynamicTo<SVGElement>(target);
-  if (!svg_element)
+  if (!target)
     return;
   DCHECK(!event_listener_);
   event_listener_ =
       MakeGarbageCollected<ConditionEventListener>(&timed_element, this);
-  base_element_ = svg_element;
+  base_element_ = target;
   base_element_->addEventListener(name_, event_listener_, false);
   timed_element.AddReferenceTo(base_element_);
 }
@@ -208,7 +206,7 @@ SVGSMILElement::SVGSMILElement(const QualifiedName& tag_name, Document& doc)
       SVGTests(this),
       attribute_name_(AnyQName()),
       target_element_(nullptr),
-      sync_base_conditions_connected_(false),
+      conditions_connected_(false),
       has_end_event_conditions_(false),
       is_waiting_for_first_interval_(true),
       is_scheduled_(false),
@@ -236,16 +234,9 @@ void SVGSMILElement::ClearResourceAndEventBaseReferences() {
   RemoveAllOutgoingReferences();
 }
 
-void SVGSMILElement::ClearConditions() {
-  DisconnectSyncBaseConditions();
-  DisconnectEventBaseConditions();
-  conditions_.clear();
-}
-
 void SVGSMILElement::BuildPendingResource() {
   ClearResourceAndEventBaseReferences();
-  DisconnectEventBaseConditions();
-  DisconnectSyncBaseConditions();
+  DisconnectConditions();
 
   if (!isConnected()) {
     // Reset the target element if we are no longer in the document.
@@ -273,8 +264,7 @@ void SVGSMILElement::BuildPendingResource() {
     // react to it.
     AddReferenceTo(svg_target);
   }
-  ConnectSyncBaseConditions();
-  ConnectEventBaseConditions();
+  ConnectConditions();
 }
 
 static inline void ClearTimesWithDynamicOrigins(
@@ -513,8 +503,7 @@ void SVGSMILElement::ParseAttribute(const AttributeModificationParams& params) {
     }
     ParseBeginOrEnd(value.GetString(), kBegin);
     if (isConnected()) {
-      ConnectSyncBaseConditions();
-      ConnectEventBaseConditions();
+      ConnectConditions();
       BeginListChanged(Elapsed());
     }
     AnimationAttributeChanged();
@@ -525,8 +514,7 @@ void SVGSMILElement::ParseAttribute(const AttributeModificationParams& params) {
     }
     ParseBeginOrEnd(value.GetString(), kEnd);
     if (isConnected()) {
-      ConnectSyncBaseConditions();
-      ConnectEventBaseConditions();
+      ConnectConditions();
       EndListChanged(Elapsed());
     }
     AnimationAttributeChanged();
@@ -578,39 +566,33 @@ void SVGSMILElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   AnimationAttributeChanged();
 }
 
-void SVGSMILElement::ConnectSyncBaseConditions() {
-  if (sync_base_conditions_connected_)
-    DisconnectSyncBaseConditions();
-  sync_base_conditions_connected_ = true;
+void SVGSMILElement::ConnectConditions() {
+  if (conditions_connected_)
+    DisconnectConditions();
   for (Condition* condition : conditions_) {
     if (condition->GetType() == Condition::kSyncBase)
       condition->ConnectSyncBase(*this);
+    else if (condition->GetType() == Condition::kEventBase)
+      condition->ConnectEventBase(*this);
   }
+  conditions_connected_ = true;
 }
 
-void SVGSMILElement::DisconnectSyncBaseConditions() {
-  if (!sync_base_conditions_connected_)
+void SVGSMILElement::DisconnectConditions() {
+  if (!conditions_connected_)
     return;
-  sync_base_conditions_connected_ = false;
   for (Condition* condition : conditions_) {
     if (condition->GetType() == Condition::kSyncBase)
       condition->DisconnectSyncBase(*this);
-  }
-}
-
-void SVGSMILElement::ConnectEventBaseConditions() {
-  DisconnectEventBaseConditions();
-  for (Condition* condition : conditions_) {
-    if (condition->GetType() == Condition::kEventBase)
-      condition->ConnectEventBase(*this);
-  }
-}
-
-void SVGSMILElement::DisconnectEventBaseConditions() {
-  for (Condition* condition : conditions_) {
-    if (condition->GetType() == Condition::kEventBase)
+    else if (condition->GetType() == Condition::kEventBase)
       condition->DisconnectEventBase(*this);
   }
+  conditions_connected_ = false;
+}
+
+void SVGSMILElement::ClearConditions() {
+  DisconnectConditions();
+  conditions_.clear();
 }
 
 void SVGSMILElement::SetTargetElement(SVGElement* target) {
@@ -941,13 +923,13 @@ void SVGSMILElement::EndListChanged(SMILTime) {
     time_container_->NotifyIntervalsChanged();
 }
 
-bool SVGSMILElement::CheckAndUpdateInterval(SMILTime elapsed) {
+void SVGSMILElement::CheckAndUpdateInterval(SMILTime elapsed) {
   DCHECK(!is_waiting_for_first_interval_);
   DCHECK(interval_.BeginsBefore(elapsed));
 
   Restart restart = GetRestart();
   if (restart == kRestartNever)
-    return false;
+    return;
 
   base::Optional<SMILInterval> new_interval;
   if (restart == kRestartAlways && interval_.EndsAfter(elapsed)) {
@@ -963,15 +945,11 @@ bool SVGSMILElement::CheckAndUpdateInterval(SMILTime elapsed) {
     new_interval = ResolveNextInterval();
   }
 
-  // Track "restarts" to handle active -> active transitions.
-  bool interval_restart = (new_interval && *new_interval != interval_);
-
   if (new_interval) {
     previous_interval_ = interval_;
     interval_ = *new_interval;
     interval_has_changed_ = true;
   }
-  return interval_restart;
 }
 
 const SMILInterval& SVGSMILElement::GetActiveInterval(SMILTime elapsed) const {
@@ -1088,7 +1066,7 @@ bool SVGSMILElement::NeedsToProgress(SMILTime elapsed) {
   // Check we're connected to something and that our conditions have been
   // "connected".
   DCHECK(time_container_);
-  DCHECK(sync_base_conditions_connected_);
+  DCHECK(conditions_connected_);
   // Check that we have some form of start or are prepared to find it.
   DCHECK(is_waiting_for_first_interval_ || interval_.IsResolved());
 
@@ -1118,10 +1096,16 @@ void SVGSMILElement::UpdateSyncBases() {
   NotifyDependentsIntervalChanged(interval_);
 }
 
-void SVGSMILElement::UpdateActiveState(SMILTime elapsed,
-                                       bool interval_restart) {
+void SVGSMILElement::UpdateActiveState(SMILTime elapsed) {
   ActiveState old_active_state = GetActiveState();
   active_state_ = DetermineActiveState(elapsed);
+
+  // TODO(fs): This should really only need to cover the case where we have a
+  // new interval and the previous interval ended at the same time as the
+  // current interval began. It seems this is prevented by the way dependent
+  // interval notifications can end up clobbering the current interval.
+  const bool interval_restart =
+      interval_has_changed_ && previous_interval_ != interval_;
 
   if (IsContributing(elapsed)) {
     if (old_active_state == kInactive || interval_restart) {

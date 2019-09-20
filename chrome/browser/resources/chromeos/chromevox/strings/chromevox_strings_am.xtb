@@ -420,7 +420,6 @@
 <translation id="4039983576244166038">ባዶ የረድፍ ራስጌ</translation>
 <translation id="4042843249978639960">ምንም ቀጣይ የደረጃ 2 ርዕስ የለም።</translation>
 <translation id="4043348641337972076">ምንም ቀዳሚ የARIA ምልክት የለም።</translation>
-<translation id="4045764028670444336">የሆሄያት ግድፈት መጀመሪያ</translation>
 <translation id="4047216625641135770">ምልክት አድርግበት</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4053520724192563562">ሎሚ አረንጓዴ</translation>
@@ -503,7 +502,6 @@
 <translation id="4547556996012970016">ቀጣይ የደረጃ 5 ርዕስ</translation>
 <translation id="4562381607973973258">ራስጌ</translation>
 <translation id="4569941707103739422">ለማሰስ የላይ ወይም የታች ቀስትን፣ ለማግበር enter ይጫኑ።</translation>
-<translation id="4570424871453628777">የሆሄያት ግድፈት መጨረሻ</translation>
 <translation id="4591507479202817876">፣ ተመርጧል</translation>
 <translation id="4597532268155981612">ቅጽ</translation>
 <translation id="4597896406374528575">ኤፕሪል</translation>
@@ -727,7 +725,6 @@
 <translation id="6037602951055904232">ወደፊት አንፏቅቅ</translation>
 <translation id="6042826534790431634">ለማግበር ፍለጋ+Space ይጫኑ።</translation>
 <translation id="6044160928851315051">ማያ ገጹን አጨልም</translation>
-<translation id="6065293622157674001">የሰዋሰው ስህተት መጀመሪያ</translation>
 <translation id="6082768461603900813">መሠረታዊ አሰሳ</translation>
 <translation id="6118126368611144850">የAndroid መተግበሪያዎች ለChrome። በመሣሪያዎ ላይ Play መደብር ካለዎት የAndroid መተግበሪያዎች ያሉት ChromeVoxን በጨረፍታ ይመልከቱ። Google Chrome Canaryን ከPlay መደብሩ በማውረድ የሙከራ ድጋፉን ይሞክሩ።</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -868,7 +865,6 @@
 <translation id="7143207342074048698">በመያያዝ ላይ</translation>
 <translation id="7153618581592392745">ፈዘዝ ያለ ወይን ጠጅ</translation>
 <translation id="7157306005867877619">ረቂቅ</translation>
-<translation id="7161425887892204659">የጽሑፍ ተዛማጅ መጨረሻ</translation>
 <translation id="7161771961008409533">ብቅ-ባይ አዝራር</translation>
 <translation id="7165714724802225287">የአሁኑ የማሳያ ቅጥ ምትር ነው።</translation>
 <translation id="7167657087543110">የቁምፊ ማስተጋባት</translation>
@@ -906,7 +902,6 @@
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">ከሠንጠረዥ በመውጣት ላይ።</translation>
 <translation id="738899727977260036">የመከለያ ሰማያዊ</translation>
-<translation id="7392145451309930991">የጽሑፍ ተዛማጅ መጀመሪያ</translation>
 <translation id="739763518212184081">ቀዳሚ መስመር</translation>
 <translation id="7400575256015741911">የፊደል አጻጻፍ ስህተት ተገኝቷል</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -1119,7 +1114,6 @@
 <translation id="8476408756881832830">ChromeVox እየተናገረ ሳለ መልሶ ማጫወትን ባለበት አቁም</translation>
 <translation id="8476508772960940536">የመስኮት አጠቃላይ እይታ</translation>
 <translation id="8503360654911991865">የአሰሳ ጥራት ደረጃ ይቀንሱ</translation>
-<translation id="8504695234784218301">የሰዋሰው ስህተት መጨረሻ</translation>
 <translation id="8520472399088452386">ማሾሪያ አዝራር</translation>
 <translation id="8534394844575788431">ቅርጸት</translation>
 <translation id="8538744478902126321">የአሁኑ ሕዋስ ረድፍ ራስጌ ገምት</translation>

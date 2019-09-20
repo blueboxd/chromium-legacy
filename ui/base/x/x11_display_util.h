@@ -7,6 +7,7 @@
 
 #include "base/component_export.h"
 #include "ui/display/display.h"
+#include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace ui {
@@ -27,6 +28,12 @@ std::vector<display::Display> BuildDisplaysFromXRandRInfo(
     int version,
     float scale,
     int64_t* primary_display_index_out);
+
+// Calculates the refresh rate of an xrandr mode.
+COMPONENT_EXPORT(UI_BASE_X)
+float GetRefreshRateFromXRRModeInfo(XRRModeInfo* modes,
+                                    int num_of_mode,
+                                    RRMode current_mode_id);
 
 }  // namespace ui
 

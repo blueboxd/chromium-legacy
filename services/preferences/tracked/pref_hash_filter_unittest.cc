@@ -25,7 +25,7 @@
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "components/prefs/testing_pref_store.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/preferences/public/cpp/tracked/configuration.h"
 #include "services/preferences/public/cpp/tracked/mock_validation_delegate.h"
 #include "services/preferences/public/cpp/tracked/pref_names.h"
@@ -577,9 +577,10 @@ class PrefHashFilterTest : public testing::TestWithParam<EnforcementLevel>,
         temp_mock_external_validation_pref_hash_store.get();
     mock_external_validation_hash_store_contents_ =
         temp_mock_external_validation_hash_store_contents.get();
-    prefs::mojom::ResetOnLoadObserverPtr reset_on_load_observer;
-    reset_on_load_observer_bindings_.AddBinding(
-        this, mojo::MakeRequest(&reset_on_load_observer));
+    mojo::PendingRemote<prefs::mojom::ResetOnLoadObserver>
+        reset_on_load_observer;
+    reset_on_load_observer_receivers_.Add(
+        this, reset_on_load_observer.InitWithNewPipeAndPassReceiver());
     pref_hash_filter_.reset(new PrefHashFilter(
         std::move(temp_mock_pref_hash_store),
         PrefHashFilter::StoreContentsPair(
@@ -636,8 +637,8 @@ class PrefHashFilterTest : public testing::TestWithParam<EnforcementLevel>,
 
   base::test::SingleThreadTaskEnvironment task_environment_;
   MockValidationDelegate mock_validation_delegate_;
-  mojo::BindingSet<prefs::mojom::ResetOnLoadObserver>
-      reset_on_load_observer_bindings_;
+  mojo::ReceiverSet<prefs::mojom::ResetOnLoadObserver>
+      reset_on_load_observer_receivers_;
   bool reset_recorded_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefHashFilterTest);

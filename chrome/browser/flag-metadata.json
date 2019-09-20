@@ -995,6 +995,11 @@
     "expiry_milestone": 87
   },
   {
+    "name": "enable-autofill-upi-vpa",
+    "owners": ["cfroussios"],
+    "expiry_milestone": 82
+  },
+  {
     "name": "enable-avoid-flash-between-navigation",
     "owners": [ "schenney", "paint-dev" ],
     "expiry_milestone": 80
@@ -1835,7 +1840,12 @@
     "name": "enable-virtual-desks",
     "owners": [ "afakhry" ],
     // This is a flag to enable or disable the Virtual Desks feature.
-    "expiry_milestone": 79
+    "expiry_milestone": 81
+  },
+  {
+    "name": "enable-virtual-desks-gestures",
+    "owners": [ "afakhry" ],
+    "expiry_milestone": 81
   },
   {
     "name": "enable-virtual-keyboard",

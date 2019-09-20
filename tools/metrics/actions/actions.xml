@@ -1466,6 +1466,16 @@ should be able to be added at any place in this file.
   <description>Emitted when the Add Supervision dialog is opened.</description>
 </action>
 
+<action name="AddSupervisionDialog_SwitchedAccounts">
+  <owner>tobyhuang@chromium.org</owner>
+  <owner>michaelpg@chromium.org</owner>
+  <owner>danan@chromium.org</owner>
+  <description>
+    Emitted when the user signs out from within the Add Supervision dialog to
+    switch accounts before enrollment is completed.
+  </description>
+</action>
+
 <action name="AlertIndicatorButton_Dragged">
   <owner>miu@chromium.org</owner>
   <description>

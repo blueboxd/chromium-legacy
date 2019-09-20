@@ -120,6 +120,19 @@ void SetAssistantPrivacyInfoDismissed() {
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
   prefs->SetBoolean(prefs::kAssistantPrivacyInfoDismissedInLauncher, true);
 }
+
+// Whether a window will be shown over the applist when shown in tablet mode.
+bool HasVisibleWindows() {
+  std::vector<aura::Window*> window_list =
+      ash::Shell::Get()->mru_window_tracker()->BuildMruWindowList(
+          ash::DesksMruType::kActiveDesk);
+  for (auto* window : window_list) {
+    if (window->TargetVisibility())
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 AppListControllerImpl::AppListControllerImpl()
@@ -444,6 +457,10 @@ aura::Window* AppListControllerImpl::GetWindow() {
   return presenter_.GetWindow();
 }
 
+bool AppListControllerImpl::IsVisible() {
+  return last_visible_;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // app_list::AppListModelObserver:
 
@@ -514,11 +531,7 @@ void AppListControllerImpl::OnAppListStateChanged(ash::AppListState new_state,
 // Methods used in Ash
 
 bool AppListControllerImpl::GetTargetVisibility() const {
-  return presenter_.GetTargetVisibility();
-}
-
-bool AppListControllerImpl::IsVisible() const {
-  return presenter_.IsVisible();
+  return last_target_visible_;
 }
 
 void AppListControllerImpl::Show(int64_t display_id,
@@ -857,8 +870,7 @@ void AppListControllerImpl::RecordShelfAppLaunched(
   app_list::RecordAppListAppLaunched(
       AppListLaunchedFrom::kLaunchedFromShelf,
       recorded_app_list_view_state.value_or(GetAppListViewState()),
-      IsTabletMode(),
-      recorded_home_launcher_shown.value_or(presenter_.home_launcher_shown()));
+      IsTabletMode(), recorded_home_launcher_shown.value_or(last_visible_));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1200,7 +1212,7 @@ void AppListControllerImpl::GetAppLaunchedMetricParams(
     app_list::AppLaunchedMetricParams* metric_params) {
   metric_params->app_list_view_state = GetAppListViewState();
   metric_params->is_tablet_mode = IsTabletMode();
-  metric_params->home_launcher_shown = presenter_.home_launcher_shown();
+  metric_params->home_launcher_shown = last_visible_;
 }
 
 gfx::Rect AppListControllerImpl::SnapBoundsToDisplayEdge(
@@ -1214,8 +1226,7 @@ gfx::Rect AppListControllerImpl::SnapBoundsToDisplayEdge(
 void AppListControllerImpl::RecordAppLaunched(
     AppListLaunchedFrom launched_from) {
   app_list::RecordAppListAppLaunched(launched_from, GetAppListViewState(),
-                                     IsTabletMode(),
-                                     presenter_.home_launcher_shown());
+                                     IsTabletMode(), last_visible_);
 }
 
 void AppListControllerImpl::AddObserver(AppListControllerObserver* observer) {
@@ -1229,7 +1240,28 @@ void AppListControllerImpl::RemoveObserver(
 
 void AppListControllerImpl::NotifyAppListVisibilityChanged(bool visible,
                                                            int64_t display_id) {
-  if (!visible) {
+  const bool is_home_launcher = IsTabletMode();
+
+  bool real_visibility = visible;
+  if (is_home_launcher) {
+    // HomeLauncher is only visible when no other app windows are visible.
+    real_visibility &= !HasVisibleWindows();
+  }
+
+  DCHECK_EQ(last_target_visible_, real_visibility)
+      << "Visibility notifications should follow target visibility "
+         "notifications.";
+
+  // Skip adjacent same changes.
+  if (last_visible_ == real_visibility &&
+      last_visible_display_id_ == display_id) {
+    return;
+  }
+
+  last_visible_ = real_visibility;
+  last_visible_display_id_ = display_id;
+
+  if (!real_visibility) {
     presenter_.GetView()
         ->search_box_view()
         ->ClearSearchAndDeactivateSearchBox();
@@ -1237,16 +1269,35 @@ void AppListControllerImpl::NotifyAppListVisibilityChanged(bool visible,
 
   // Notify chrome of visibility changes.
   if (client_)
-    client_->OnAppListVisibilityChanged(visible);
+    client_->OnAppListVisibilityChanged(real_visibility);
 
   for (auto& observer : observers_)
-    observer.OnAppListVisibilityChanged(visible, display_id);
+    observer.OnAppListVisibilityChanged(real_visibility, display_id);
 }
 
-void AppListControllerImpl::NotifyAppListTargetVisibilityChanged(bool visible) {
+void AppListControllerImpl::NotifyAppListTargetVisibilityChanged(
+    bool visible,
+    int64_t display_id) {
+  const bool is_home_launcher = IsTabletMode();
+
+  bool real_target_visibility = visible;
+  if (is_home_launcher) {
+    // HomeLauncher is only visible when no other app windows are visible.
+    real_target_visibility &= !HasVisibleWindows();
+  }
+
+  // Skip adjacent same changes.
+  if (last_target_visible_ == real_target_visibility &&
+      last_target_visible_display_id_ == display_id) {
+    return;
+  }
+
+  last_target_visible_ = real_target_visibility;
+  last_target_visible_display_id_ = display_id;
+
   // Notify chrome of target visibility changes.
   if (client_)
-    client_->OnAppListTargetVisibilityChanged(visible);
+    client_->OnAppListTargetVisibilityChanged(real_target_visibility);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

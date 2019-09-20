@@ -175,9 +175,15 @@ TEST_F(PerformanceTest, AllowsTimingRedirect) {
                                     *security_origin.get(),
                                     GetExecutionContext()));
 
-  // When cross-origin redirect opts in.
+  // When cross-origin redirect opts in, but the final response doesn't.
   redirect_chain.back().SetHttpHeaderField(http_names::kTimingAllowOrigin,
                                            origin_domain);
+  EXPECT_FALSE(AllowsTimingRedirect(redirect_chain, final_response,
+                                    *security_origin.get(),
+                                    GetExecutionContext()));
+  // When cross-origin redirect opts in, and the final response has as well.
+  final_response.SetHttpHeaderField(http_names::kTimingAllowOrigin,
+                                    origin_domain);
   EXPECT_TRUE(AllowsTimingRedirect(redirect_chain, final_response,
                                    *security_origin.get(),
                                    GetExecutionContext()));

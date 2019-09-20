@@ -24,7 +24,6 @@ class OmniboxMatchCellView : public views::View {
   ~OmniboxMatchCellView() override;
 
   views::ImageView* icon() { return icon_view_; }
-  views::ImageView* answer_image() { return answer_image_view_; }
   OmniboxTextView* content() { return content_view_; }
   OmniboxTextView* description() { return description_view_; }
   OmniboxTextView* separator() { return separator_view_; }
@@ -40,20 +39,17 @@ class OmniboxMatchCellView : public views::View {
 
   // views::View:
   const char* GetClassName() const override;
+  gfx::Insets GetInsets() const override;
   void Layout() override;
   bool CanProcessEventsWithinSubtree() const override;
   gfx::Size CalculatePreferredSize() const override;
 
  private:
   enum class LayoutStyle {
-    OLD_ANSWER,
     ONE_LINE_SUGGESTION,
     TWO_LINE_SUGGESTION,
   };
 
-  void LayoutOldStyleAnswer(int icon_view_width, int text_indent);
-  void LayoutNewStyleTwoLineSuggestion();
-  void LayoutOneLineSuggestion(int icon_view_width, int text_indent);
   void SetTailSuggestCommonPrefixWidth(const base::string16& common_prefix);
 
   bool is_rich_suggestion_ = false;

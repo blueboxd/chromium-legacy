@@ -31,17 +31,21 @@ bool ReaderModeIconView::Update() {
     return false;
   }
 
-  const bool was_previously_active = active();
-
-  // TODO(gilmanmh): Display icon for only those pages that are likely to
-  // render well in Reader Mode.
-  SetVisible(true);
-  SetActive(IsDistilledPage(contents->GetLastCommittedURL()));
-
   // Notify the icon when navigation to and from a distilled page occurs so that
   // it can hide the inkdrop.
   Observe(contents);
 
+  const bool was_previously_active = active();
+  if (IsDistilledPage(contents->GetLastCommittedURL())) {
+    SetVisible(true);
+    SetActive(true);
+  } else {
+    dom_distiller::AddObserver(contents, this);
+    base::Optional<dom_distiller::DistillabilityResult> distillability =
+        dom_distiller::GetLatestResult(contents);
+    SetVisible(distillability && distillability.value().is_distillable);
+    SetActive(false);
+  }
   return active() != was_previously_active;
 }
 
@@ -57,4 +61,9 @@ base::string16 ReaderModeIconView::GetTextForTooltipAndAccessibleName() const {
 // activates the icon to explain what Reader Mode is.
 views::BubbleDialogDelegateView* ReaderModeIconView::GetBubble() const {
   return nullptr;
+}
+
+void ReaderModeIconView::OnResult(
+    const dom_distiller::DistillabilityResult& result) {
+  Update();
 }

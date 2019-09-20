@@ -74,7 +74,7 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
   void DontProceed() override;
   void Proceed() override;
   WebContents* GetWebContents() override;
-  RenderFrameHost* GetMainFrame() override;
+  RenderFrameHostImpl* GetMainFrame() override;
   InterstitialPageDelegate* GetDelegateForTesting() override;
   void DontCreateViewForTesting() override;
   void SetSize(const gfx::Size& size) override;
@@ -129,12 +129,10 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
   void Copy() override;
   void Paste() override;
   void SelectAll() override;
-  void CreateNewWindow(
+  RenderFrameHostDelegate* CreateNewWindow(
       RenderFrameHost* opener,
-      int32_t render_view_route_id,
-      int32_t main_frame_route_id,
-      int32_t main_frame_widget_route_id,
       const mojom::CreateNewWindowParams& params,
+      bool is_new_browsing_instance,
       bool has_user_gesture,
       SessionStorageNamespace* session_storage_namespace) override;
   void ShowCreatedWindow(int process_id,
@@ -161,11 +159,12 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
       BrowserContext* browser_context) const override;
   void CreateNewWidget(int32_t render_process_id,
                        int32_t route_id,
-                       mojo::PendingRemote<mojom::Widget> widget) override;
-  void CreateNewFullscreenWidget(
-      int32_t render_process_id,
-      int32_t route_id,
-      mojo::PendingRemote<mojom::Widget> widget) override;
+                       mojo::PendingRemote<mojom::Widget> widget,
+                       RenderViewHostImpl* render_view_host) override;
+  void CreateNewFullscreenWidget(int32_t render_process_id,
+                                 int32_t route_id,
+                                 mojo::PendingRemote<mojom::Widget> widget,
+                                 RenderViewHostImpl* render_view_host) override;
   void ShowCreatedWidget(int process_id,
                          int route_id,
                          const gfx::Rect& initial_rect) override;

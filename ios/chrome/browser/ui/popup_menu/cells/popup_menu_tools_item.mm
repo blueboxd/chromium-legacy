@@ -34,6 +34,12 @@ NSString* const kToolsMenuTextBadgeAccessibilityIdentifier =
 @implementation PopupMenuToolsItem
 
 @synthesize actionIdentifier = _actionIdentifier;
+@synthesize badgeNumber = _badgeNumber;
+@synthesize badgeText = _badgeText;
+@synthesize image = _image;
+@synthesize title = _title;
+@synthesize enabled = _enabled;
+@synthesize destructiveAction = _destructiveAction;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
@@ -54,7 +60,6 @@ NSString* const kToolsMenuTextBadgeAccessibilityIdentifier =
   cell.destructiveAction = self.destructiveAction;
   [cell setBadgeNumber:self.badgeNumber];
   [cell setBadgeText:self.badgeText];
-  cell.additionalAccessibilityLabel = self.additionalAccessibilityLabel;
 }
 
 #pragma mark - PopupMenuItem
@@ -99,6 +104,11 @@ NSString* const kToolsMenuTextBadgeAccessibilityIdentifier =
 @implementation PopupMenuToolsCell
 
 @synthesize imageView = _imageView;
+@synthesize numberBadgeView = _numberBadgeView;
+@synthesize textBadgeView = _textBadgeView;
+@synthesize titleLabel = _titleLabel;
+@synthesize titleToBadgeConstraint = _titleToBadgeConstraint;
+@synthesize destructiveAction = _destructiveAction;
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style
               reuseIdentifier:(NSString*)reuseIdentifier {
@@ -303,17 +313,6 @@ NSString* const kToolsMenuTextBadgeAccessibilityIdentifier =
     self.titleLabel.textColor = [UIColor colorNamed:kDisabledTintColor];
     self.imageView.tintColor = [UIColor colorNamed:kDisabledTintColor];
     self.accessibilityTraits |= UIAccessibilityTraitNotEnabled;
-  }
-}
-
-#pragma mark - Accessibility
-
-- (NSString*)accessibilityLabel {
-  if (self.additionalAccessibilityLabel) {
-    return [NSString stringWithFormat:@"%@, %@", self.titleLabel.text,
-                                      self.additionalAccessibilityLabel];
-  } else {
-    return self.titleLabel.text;
   }
 }
 

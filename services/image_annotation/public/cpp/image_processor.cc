@@ -85,10 +85,10 @@ ImageProcessor::ImageProcessor(base::RepeatingCallback<SkBitmap()> get_pixels)
 
 ImageProcessor::~ImageProcessor() = default;
 
-mojom::ImageProcessorPtr ImageProcessor::GetPtr() {
-  mojom::ImageProcessorPtr ptr;
-  bindings_.AddBinding(this, mojo::MakeRequest(&ptr));
-  return ptr;
+mojo::PendingRemote<mojom::ImageProcessor> ImageProcessor::GetPendingRemote() {
+  mojo::PendingRemote<mojom::ImageProcessor> remote;
+  receivers_.Add(this, remote.InitWithNewPipeAndPassReceiver());
+  return remote;
 }
 
 void ImageProcessor::GetJpgImageData(GetJpgImageDataCallback callback) {

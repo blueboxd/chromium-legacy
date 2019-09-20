@@ -14,13 +14,10 @@
 #include "ash/rotator/screen_rotation_animator_observer.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm/window_state_observer.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -54,9 +51,7 @@ class PresentationTimeRecorder;
 //    0, 1, 2, 3, 4, 5, 6
 // The selector is switched to the next window grid (if available) or wrapped if
 // it reaches the end of its movement sequence.
-class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
-                                public WindowStateObserver,
-                                public ScreenRotationAnimatorObserver,
+class ASH_EXPORT OverviewGrid : public ScreenRotationAnimatorObserver,
                                 public WallpaperControllerObserver {
  public:
   OverviewGrid(aura::Window* root_window,
@@ -109,8 +104,13 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   //
   // Note: This function should only be called by |OverviewSession::RemoveItem|
   // and |OverviewGrid::Shutdown|. |overview_session_| keeps count of all
-  // overview items, but this function does not update the tally.
-  void RemoveItem(OverviewItem* overview_item);
+  // overview items, but this function does not update the tally. If
+  // |item_destroying| is true, we may want to notify |overview_session_| that
+  // there are no longer any items. Calls |PositionWindows| to animate the items
+  // to their new locations if |reposition| is true.
+  void RemoveItem(OverviewItem* overview_item,
+                  bool item_destroying = false,
+                  bool reposition = false);
 
   // Adds a drop target for |dragged_item|, at the index immediately following
   // |dragged_item|. Repositions all items except |dragged_item|, so that the
@@ -168,22 +168,6 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // Returns the overview item that accociates with |drop_target_widget_|.
   // Returns nullptr if overview does not have the drop target.
   OverviewItem* GetDropTarget();
-
-  // aura::WindowObserver:
-  void OnWindowDestroying(aura::Window* window) override;
-  // TODO(flackr): Handle window bounds changed in OverviewItem. See also
-  // OnWindowPropertyChanged() below.
-  void OnWindowBoundsChanged(aura::Window* window,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds,
-                             ui::PropertyChangeReason reason) override;
-  void OnWindowPropertyChanged(aura::Window* window,
-                               const void* key,
-                               intptr_t old) override;
-
-  // WindowStateObserver:
-  void OnPostWindowStateTypeChange(WindowState* window_state,
-                                   WindowStateType old_type) override;
 
   // ScreenRotationAnimatorObserver:
   void OnScreenCopiedBeforeRotation() override;
@@ -398,9 +382,6 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // Vector containing all the windows in this grid.
   std::vector<std::unique_ptr<OverviewItem>> window_list_;
 
-  ScopedObserver<aura::Window, aura::WindowObserver> window_observer_{this};
-  ScopedObserver<WindowState, WindowStateObserver> window_state_observer_{this};
-
   // Widget that contains the DeskBarView contents when the Virtual Desks
   // feature is enabled.
   std::unique_ptr<views::Widget> desks_widget_;
@@ -421,9 +402,6 @@ class ASH_EXPORT OverviewGrid : public aura::WindowObserver,
   // window in overview and is not destroyed yet, we need to update the overview
   // minimized widget's content view so that it reflects the merge.
   std::unique_ptr<TargetWindowObserver> target_window_observer_;
-
-  // True only after all windows have been prepared for overview.
-  bool prepared_for_overview_ = false;
 
   // True if the overview grid should animate when exiting overview mode. Note
   // even if it's true, it doesn't mean all window items in the grid should

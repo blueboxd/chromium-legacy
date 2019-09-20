@@ -67,6 +67,11 @@ class _Artifact(object):
     metrics[self.name + ' (method count)'] = self._resource_sizes_json[
         'charts']['Dex']['unique methods']['value']
 
+  def AddDfmSizes(self, metrics):
+    for k, v in sorted(self._resource_sizes_json['charts'].iteritems()):
+      if k.startswith('DFM_'):
+        metrics['DFM: ' + k[4:]] = v['Size with hindi']['value']
+
   def PrintLibraryCompression(self):
     with zipfile.ZipFile(self._path) as z:
       for info in z.infolist():
@@ -74,6 +79,13 @@ class _Artifact(object):
           sys.stdout.write('{}/{} compressed: {} uncompressed: {}\n'.format(
               self.name, posixpath.basename(info.filename), info.compress_size,
               info.file_size))
+
+
+def _DumpCsv(metrics):
+  csv_writer = csv.DictWriter(
+      sys.stdout, fieldnames=metrics.keys(), delimiter='\t')
+  csv_writer.writeheader()
+  csv_writer.writerow(metrics)
 
 
 def _DownloadAndAnalyze(signed_prefix):
@@ -105,14 +117,14 @@ def _DownloadAndAnalyze(signed_prefix):
   monochrome64.AddSize(metrics)
   webview.AddSize(metrics)
   webview64.AddSize(metrics)
+  _DumpCsv(metrics)
+
+  metrics = collections.OrderedDict()
   monochrome.AddAndroidGoSize(metrics)
   chrome.AddMethodCount(metrics)
   monochrome.AddMethodCount(metrics)
-
-  csv_writer = csv.DictWriter(
-      sys.stdout, fieldnames=metrics.keys(), delimiter='\t')
-  csv_writer.writeheader()
-  csv_writer.writerow(metrics)
+  monochrome.AddDfmSizes(metrics)
+  _DumpCsv(metrics)
 
   webview.PrintLibraryCompression()
 

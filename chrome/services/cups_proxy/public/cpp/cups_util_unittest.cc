@@ -10,7 +10,11 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/rand_util.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "chromeos/printing/printer_configuration.h"
 #include "printing/backend/cups_jobs.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,8 +22,15 @@
 namespace cups_proxy {
 namespace {
 
+using chromeos::Printer;
 using ::testing::IsEmpty;
 using ::testing::Not;
+using ::testing::Pointwise;
+
+// Matcher used to compare two Printers by display_name.
+MATCHER(DisplayNameEq, "") {
+  return std::get<0>(arg).display_name() == std::get<1>(arg).display_name();
+}
 
 const char kEndpointPrefix[] = "/printers/";
 
@@ -37,6 +48,32 @@ ipp_t* GetPrinterAttributesRequest(
   ippAddString(ret, IPP_TAG_OPERATION, IPP_TAG_URI, "printer-uri", nullptr,
                printer_uri.c_str());
   return ret;
+}
+
+// Generates |num_printers| printers with unique display_names starting with
+// |prefix|. Returned printers are in alphabetically ascending order.
+std::vector<Printer> GenPrinters(int num_printers, base::StringPiece prefix) {
+  std::vector<Printer> ret;
+  for (int i = 0; i < num_printers; i++) {
+    Printer printer;
+    printer.set_display_name(base::StrCat({prefix, base::NumberToString(i)}));
+    ret.push_back(printer);
+  }
+
+  // Alphabetically ascending order by display name.
+  std::sort(ret.begin(), ret.end(), [](const Printer& a, const Printer& b) {
+    return a.display_name() < b.display_name();
+  });
+
+  return ret;
+}
+
+std::vector<Printer> GetSavedPrinters(int num_printers) {
+  return GenPrinters(num_printers, "SavedPrinter");
+}
+
+std::vector<Printer> GetEnterprisePrinters(int num_printers) {
+  return GenPrinters(num_printers, "EnterprisePrinter");
 }
 
 TEST(GetPrinterIdTest, SimpleSanityTest) {
@@ -84,6 +121,41 @@ TEST(ParseEndpointForPrinterIdTest, EmptyPrinterId) {
 // Endpoints must contain a '/'.
 TEST(ParseEndpointForPrinterIdTest, MissingPathDelimiter) {
   EXPECT_FALSE(ParseEndpointForPrinterId(kDefaultPrinterId));
+}
+
+// If there are enough saved printers, we should just serve those.
+TEST(FilterPrintersForPluginVmTest, EnoughSavedPrinters) {
+  auto saved = GetSavedPrinters(kPluginVmPrinterLimit);
+  auto enterprise = GetEnterprisePrinters(10);
+  auto ret = FilterPrintersForPluginVm(saved, enterprise);
+  EXPECT_THAT(saved, Pointwise(DisplayNameEq(), ret));
+}
+
+// Backfilled enterprise printers should be in alphabetical order, by
+// display_name.
+TEST(FilterPrintersForPluginVmTest, OrderedEnterprisePrinters) {
+  auto enterprise = GetEnterprisePrinters(50);
+  auto saved = GetSavedPrinters(10);
+
+  // Filtered list should be saved printers + top enterprise printers up to the
+  // limit.
+  auto expected = saved;
+  expected.insert(expected.end(), enterprise.begin(),
+                  enterprise.begin() + (kPluginVmPrinterLimit - saved.size()));
+
+  // We pre-shuffle the enterprise printers to test the ordering constraints.
+  base::RandomShuffle(enterprise.begin(), enterprise.end());
+  auto ret = FilterPrintersForPluginVm(saved, enterprise);
+  EXPECT_THAT(ret, Pointwise(DisplayNameEq(), expected));
+
+  // Test self-check.
+  EXPECT_EQ(ret.front().display_name(), "SavedPrinter0");
+  EXPECT_EQ(ret.back().display_name(), "EnterprisePrinter35");
+
+  size_t last_saved_printer_idx = 9;
+  EXPECT_EQ(ret[last_saved_printer_idx].display_name(), "SavedPrinter9");
+  EXPECT_EQ(ret[last_saved_printer_idx + 1].display_name(),
+            "EnterprisePrinter0");
 }
 
 }  // namespace

@@ -174,6 +174,7 @@
 <translation id="2154484045852737596">કાર્ડમાં ફેરફાર કરો</translation>
 <translation id="2154710561487035718">URL ની કૉપિ કરો</translation>
 <translation id="2156074688469523661">બાકી સાઇટ (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="2157851137955077194">તમારા ફોનથી કોઈ અન્ય ડિવાઇસ પર કંઈક શેર કરવા માટે, બન્ને ડિવાઇસ પરના Chrome સેટિંગમાં સિંકની સુવિધા ચાલુ કરો</translation>
 <translation id="2170088579611075216">VRને મંજૂરી આપો અને તેમાં પ્રવેશ કરો</translation>
 <translation id="218608176142494674">શેરિંગ</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> તરીકે ચાલુ રાખો</translation>
@@ -602,7 +603,6 @@ VR મોડમાં દાખલ થતા પહેલા ખાતરી ક
 <translation id="545042621069398927">તમારા ડાઉનલોડની ગતિ વધારી રહ્યાં છીએ.</translation>
 <translation id="5456381639095306749">પૃષ્ઠ ડાઉનલોડ કરો</translation>
 <translation id="5475862044948910901">ઑગ્મેન્ટેડ રિયાલિટી સત્ર શરૂ કરીએ?</translation>
-<translation id="5481942164684849270"><ph name="APP_NAME" />ને મારી ઍપમાં ઉમેરી</translation>
 <translation id="548278423535722844">નકશા અ‍ૅપ્લિકેશનમાં ખોલો</translation>
 <translation id="5487521232677179737">ડેટા સાફ કરો</translation>
 <translation id="5494752089476963479">ઘૃણાસ્પદ અથવા ભ્રામક જાહેરાતો બતાવતી સાઇટ પરથી જાહેરાતો બ્લૉક કરો</translation>
@@ -1009,7 +1009,6 @@ VR મોડમાં દાખલ થતા પહેલા ખાતરી ક
 <translation id="8364299278605033898">લોકપ્રિય વેબસાઇટ જુઓ</translation>
 <translation id="8368027906805972958">અજાણ્યું અથવા અસમર્થિત ડિવાઇસ (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">ચોક્કસ સાઇટ માટે પૃષ્ઠભૂમિ સમન્વયનની મંજૂરી આપો.</translation>
-<translation id="8374821112118309944">તમારે TalkBack ને નવા વર્ઝન પર અપડેટ કરવાની જરૂર છે.</translation>
 <translation id="8378714024927312812">તમારી સંસ્થા દ્વારા મેનેજ કરેલ</translation>
 <translation id="8380167699614421159">આ સાઇટ ઘૃણાસ્પદ અથવા ભ્રામક જાહેરાતો બતાવે છે</translation>
 <translation id="8393700583063109961">સંદેશ મોકલો</translation>
@@ -1073,6 +1072,7 @@ VR મોડમાં દાખલ થતા પહેલા ખાતરી ક
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, ટેબ</translation>
 <translation id="885701979325669005">સ્ટોરેજ</translation>
+<translation id="889338405075704026">Chrome સેટિંગ પર જાઓ</translation>
 <translation id="8901170036886848654">કોઇ બુકમાર્ક્સ મળ્યાં નથી</translation>
 <translation id="8909135823018751308">શેર કરો…</translation>
 <translation id="8912362522468806198">Google એકાઉન્ટ</translation>
@@ -1091,6 +1091,7 @@ VR મોડમાં દાખલ થતા પહેલા ખાતરી ક
 <translation id="8993760627012879038">છુપા મોડમાં એક નવું ટૅબ ખોલો</translation>
 <translation id="8998729206196772491">તમે <ph name="MANAGED_DOMAIN" /> દ્વારા મેનેજ એકાઉન્ટમાં સાઇન ઇન કરી રહ્યાં છો અને તમારા Chrome ડેટા પર એનું એડમિન નિયંત્રણ આપી રહ્યાં છો. તમારો ડેટા આ એકાઉન્ટ સાથે કાયમીરૂપે જોડાયેલું રહેશે. Chromeમાંથી સાઇન આઉટ કરવું આ ડિવાઇસ પરથી તમારો ડેટા ડિલીટ કરશે, પરંતુ એ તમારા Google એકાઉન્ટમાં સ્ટોર રહેશે.</translation>
 <translation id="9019902583201351841">તમારા માતાપિતા દ્વારા સંચાલિત</translation>
+<translation id="9028914725102941583">બધા ડિવાઇસ પર શેર કરવા માટે 'સિંક કરો'ની સુવિધા ચાલુ કરો</translation>
 <translation id="9029323097866369874"><ph name="DOMAIN" />ને VR મોડમાં દાખલ થવાની મંજૂરી આપીએ?</translation>
 <translation id="9040142327097499898">નોટિફિકેશનની મંજૂરી છે. આ ઉપકરણ માટે સ્થાન ઍક્સેસ બંધ છે.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# વીડિયો}one{# વીડિયો}other{# વીડિયો}}</translation>

@@ -6,6 +6,10 @@ source_set("infobars") {
   sources = [
     "sc_infobar_banner_coordinator.h",
     "sc_infobar_banner_coordinator.mm",
+    "sc_infobar_banner_no_modal_coordinator.h",
+    "sc_infobar_banner_no_modal_coordinator.mm",
+    "sc_infobar_container_view_controller.h",
+    "sc_infobar_container_view_controller.mm",
   ]
   deps = [
     "//ios/chrome/browser/infobars:public",
@@ -23,6 +27,7 @@ source_set("eg_tests") {
   testonly = true
   sources = [
     "sc_infobar_banner_coordinator_egtest.mm",
+    "sc_infobar_banner_no_modal_coordinator_egtest.mm",
   ]
   deps = [
     "//ios/chrome/browser/ui/infobars/banners:public",

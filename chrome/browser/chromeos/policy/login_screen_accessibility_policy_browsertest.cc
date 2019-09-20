@@ -89,10 +89,9 @@ class LoginScreenAccessibilityPolicyBrowsertest
 
   void RefreshDevicePolicyAndWaitForPrefChange(const char* pref_name);
 
-  // Returns the pref value only if it exists in the pref service and has the
-  // same policy being applied as mandatory when |is_managed| is true or as
-  // recommended when |is_managed| is false, otherwise returns an empty value.
-  base::Value GetPrefValue(const char* pref_name, bool is_managed) const;
+  bool IsPrefManaged(const char* pref_name) const;
+
+  base::Value GetPrefValue(const char* pref_name) const;
 
   Profile* login_profile_ = nullptr;
 
@@ -132,14 +131,18 @@ void LoginScreenAccessibilityPolicyBrowsertest::SetUpCommandLine(
   command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
 }
 
-base::Value LoginScreenAccessibilityPolicyBrowsertest::GetPrefValue(
-    const char* pref_name,
-    bool is_managed) const {
+bool LoginScreenAccessibilityPolicyBrowsertest::IsPrefManaged(
+    const char* pref_name) const {
   const PrefService::Preference* pref =
       login_profile_->GetPrefs()->FindPreference(pref_name);
-  const bool is_recommended = pref && pref->IsRecommended() && !is_managed,
-             is_mandatory = pref && pref->IsManaged() && is_managed;
-  if (is_recommended || is_mandatory)
+  return pref && pref->IsManaged();
+}
+
+base::Value LoginScreenAccessibilityPolicyBrowsertest::GetPrefValue(
+    const char* pref_name) const {
+  const PrefService::Preference* pref =
+      login_profile_->GetPrefs()->FindPreference(pref_name);
+  if (pref)
     return pref->GetValue()->Clone();
   else
     return base::Value();
@@ -168,9 +171,9 @@ IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
 
   // Verify that the pref which controls the large cursor in the login profile
   // is managed by the policy.
+  EXPECT_TRUE(IsPrefManaged(ash::prefs::kAccessibilityLargeCursorEnabled));
   EXPECT_EQ(base::Value(false),
-            GetPrefValue(ash::prefs::kAccessibilityLargeCursorEnabled,
-                         /*is_managed=*/true));
+            GetPrefValue(ash::prefs::kAccessibilityLargeCursorEnabled));
 
   // Verify that the large cursor cannot be enabled manually anymore.
   accessibility_manager->EnableLargeCursor(true);
@@ -205,9 +208,9 @@ IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
 
   // Verify that the pref which controls the large cursor in the login profile
   // is managed by the policy and is enabled.
+  EXPECT_FALSE(IsPrefManaged(ash::prefs::kAccessibilityLargeCursorEnabled));
   EXPECT_EQ(base::Value(true),
-            GetPrefValue(ash::prefs::kAccessibilityLargeCursorEnabled,
-                         /*is_managed=*/false));
+            GetPrefValue(ash::prefs::kAccessibilityLargeCursorEnabled));
 
   // Disable the large cursor through DeviceLoginScreenLargeCursorEnabled device
   // policy, and enable it through DeviceLoginScreenDefaultLargeCursorEnabled;
@@ -224,9 +227,267 @@ IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
 
   // Verify that the pref which controls the large cursor in the login profile
   // is managed by the policy and is disabled.
+  EXPECT_FALSE(IsPrefManaged(ash::prefs::kAccessibilityLargeCursorEnabled));
   EXPECT_EQ(base::Value(false),
-            GetPrefValue(ash::prefs::kAccessibilityLargeCursorEnabled,
-                         /*is_managed=*/false));
+            GetPrefValue(ash::prefs::kAccessibilityLargeCursorEnabled));
+}
+
+IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
+                       DeviceLoginScreenSpokenFeedbackEnabled) {
+  // Verifies that the state of the spoken feedback accessibility feature on the
+  // login screen can be controlled through device policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  ASSERT_TRUE(accessibility_manager);
+  EXPECT_FALSE(accessibility_manager->IsSpokenFeedbackEnabled());
+
+  // Manually enable the spoken feedback.
+  accessibility_manager->EnableSpokenFeedback(true);
+  EXPECT_TRUE(accessibility_manager->IsSpokenFeedbackEnabled());
+
+  // Disable the spoken feedback through device policy and wait for the change
+  // to take effect.
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_spoken_feedback_enabled(false);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilitySpokenFeedbackEnabled);
+
+  // Verify that the pref which controls the spoken feedback in the login
+  // profile is managed by the policy.
+  EXPECT_TRUE(IsPrefManaged(ash::prefs::kAccessibilitySpokenFeedbackEnabled));
+  EXPECT_EQ(base::Value(false),
+            GetPrefValue(ash::prefs::kAccessibilitySpokenFeedbackEnabled));
+
+  // Verify that the spoken feedback cannot be enabled manually anymore.
+  accessibility_manager->EnableSpokenFeedback(true);
+  EXPECT_FALSE(accessibility_manager->IsSpokenFeedbackEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
+                       SpokenFeedbackEnabledOverridesDefaultPolicy) {
+  // Verifies that the state of the spoken feedback accessibility feature on the
+  // login screen will be controlled only through
+  // DeviceLoginScreenSpokenFeedbackEnabled device policy if both of
+  // DeviceLoginScreenSpokenFeedbackEnabled and
+  // DeviceLoginScreenDefaultSpokenFeedbackEnabled have been set.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  ASSERT_TRUE(accessibility_manager);
+  EXPECT_FALSE(accessibility_manager->IsSpokenFeedbackEnabled());
+
+  // Enable the spoken feedback through DeviceLoginScreenSpokenFeedbackEnabled
+  // device policy, and disable it through
+  // DeviceLoginScreenDefaultSpokenFeedbackEnabled; then wait for the change to
+  // take effect.
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_spoken_feedback_enabled(true);
+  proto.mutable_accessibility_settings()
+      ->mutable_login_screen_spoken_feedback_enabled_options()
+      ->set_mode(em::PolicyOptions::RECOMMENDED);
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_default_spoken_feedback_enabled(false);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilitySpokenFeedbackEnabled);
+
+  // Verify that the pref which controls the spoken feedback in the login
+  // profile is managed by the policy and is enabled.
+  EXPECT_FALSE(IsPrefManaged(ash::prefs::kAccessibilitySpokenFeedbackEnabled));
+  EXPECT_EQ(base::Value(true),
+            GetPrefValue(ash::prefs::kAccessibilitySpokenFeedbackEnabled));
+
+  // Disable the spoken feedback through DeviceLoginScreenSpokenFeedbackEnabled
+  // device policy, and enable it through
+  // DeviceLoginScreenDefaultSpokenFeedbackEnabled; then wait for the change to
+  // take effect.
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_spoken_feedback_enabled(false);
+  proto.mutable_accessibility_settings()
+      ->mutable_login_screen_spoken_feedback_enabled_options()
+      ->set_mode(em::PolicyOptions::RECOMMENDED);
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_default_spoken_feedback_enabled(true);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilitySpokenFeedbackEnabled);
+
+  // Verify that the pref which controls the spoken feedback in the login
+  // profile is managed by the policy and is disabled.
+  EXPECT_FALSE(IsPrefManaged(ash::prefs::kAccessibilitySpokenFeedbackEnabled));
+  EXPECT_EQ(base::Value(false),
+            GetPrefValue(ash::prefs::kAccessibilitySpokenFeedbackEnabled));
+}
+
+IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
+                       DeviceLoginScreenHighContrastEnabled) {
+  // Verifies that the state of the high contrast accessibility feature on the
+  // login screen can be controlled through device policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  ASSERT_TRUE(accessibility_manager);
+  EXPECT_FALSE(accessibility_manager->IsHighContrastEnabled());
+
+  // Manually enable the high contrast.
+  accessibility_manager->EnableHighContrast(true);
+  EXPECT_TRUE(accessibility_manager->IsHighContrastEnabled());
+
+  // Disable the high contrast through device policy and wait for the change
+  // to take effect.
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_high_contrast_enabled(false);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityHighContrastEnabled);
+
+  // Verify that the pref which controls the high contrast in the login
+  // profile is managed by the policy.
+  EXPECT_TRUE(IsPrefManaged(ash::prefs::kAccessibilityHighContrastEnabled));
+  EXPECT_EQ(base::Value(false),
+            GetPrefValue(ash::prefs::kAccessibilityHighContrastEnabled));
+
+  // Verify that the high contrast cannot be enabled manually anymore.
+  accessibility_manager->EnableHighContrast(true);
+  EXPECT_FALSE(accessibility_manager->IsHighContrastEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
+                       HighContrastEnabledOverridesDefaultPolicy) {
+  // Verifies that the state of the high contrast accessibility feature on the
+  // login screen will be controlled only through
+  // DeviceLoginScreenHighContrastEnabled device policy if both of
+  // DeviceLoginScreenHighContrastEnabled and
+  // DeviceLoginScreenDefaultHighContrastEnabled have been set.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  ASSERT_TRUE(accessibility_manager);
+  EXPECT_FALSE(accessibility_manager->IsHighContrastEnabled());
+
+  // Enable the high contrast through DeviceLoginScreenHighContrastEnabled
+  // device policy, and disable it through
+  // DeviceLoginScreenDefaultHighContrastEnabled; then wait for the change to
+  // take effect.
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_high_contrast_enabled(true);
+  proto.mutable_accessibility_settings()
+      ->mutable_login_screen_high_contrast_enabled_options()
+      ->set_mode(em::PolicyOptions::RECOMMENDED);
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_default_high_contrast_enabled(false);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityHighContrastEnabled);
+
+  // Verify that the pref which controls the high contrast in the login
+  // profile is managed by the policy and is enabled.
+  EXPECT_FALSE(IsPrefManaged(ash::prefs::kAccessibilityHighContrastEnabled));
+  EXPECT_EQ(base::Value(true),
+            GetPrefValue(ash::prefs::kAccessibilityHighContrastEnabled));
+
+  // Disable the high contrast through DeviceLoginScreenHighContrastEnabled
+  // device policy, and enable it through
+  // DeviceLoginScreenDefaultHighContrastEnabled; then wait for the change to
+  // take effect.
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_high_contrast_enabled(false);
+  proto.mutable_accessibility_settings()
+      ->mutable_login_screen_high_contrast_enabled_options()
+      ->set_mode(em::PolicyOptions::RECOMMENDED);
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_default_high_contrast_enabled(true);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityHighContrastEnabled);
+
+  // Verify that the pref which controls the high contrast in the login
+  // profile is managed by the policy and is disabled.
+  EXPECT_FALSE(IsPrefManaged(ash::prefs::kAccessibilityHighContrastEnabled));
+  EXPECT_EQ(base::Value(false),
+            GetPrefValue(ash::prefs::kAccessibilityHighContrastEnabled));
+}
+
+IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
+                       DeviceLoginScreenVirtualKeyboardEnabled) {
+  // Verifies that the state of the virtual keyboard accessibility feature on
+  // the login screen can be controlled through device policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  ASSERT_TRUE(accessibility_manager);
+  EXPECT_FALSE(accessibility_manager->IsVirtualKeyboardEnabled());
+
+  // Manually enable the virtual keyboard.
+  accessibility_manager->EnableVirtualKeyboard(true);
+  EXPECT_TRUE(accessibility_manager->IsVirtualKeyboardEnabled());
+
+  // Disable the virtual keyboard through device policy and wait for the change
+  // to take effect.
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_virtual_keyboard_enabled(false);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityVirtualKeyboardEnabled);
+
+  // Verify that the pref which controls the virtual keyboard in the login
+  // profile is managed by the policy.
+  EXPECT_TRUE(IsPrefManaged(ash::prefs::kAccessibilityVirtualKeyboardEnabled));
+  EXPECT_EQ(base::Value(false),
+            GetPrefValue(ash::prefs::kAccessibilityVirtualKeyboardEnabled));
+
+  // Verify that the virtual keyboard cannot be enabled manually anymore.
+  accessibility_manager->EnableVirtualKeyboard(true);
+  EXPECT_FALSE(accessibility_manager->IsVirtualKeyboardEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
+                       VirtualKeyboardEnabledOverridesDefaultPolicy) {
+  // Verifies that the state of the virtual keyboard accessibility feature on
+  // the login screen will be controlled only through
+  // DeviceLoginScreenVirtualKeyboardEnabled device policy if both of
+  // DeviceLoginScreenVirtualKeyboardEnabled and
+  // DeviceLoginScreenDefaultVirtualKeyboardEnabled have been set.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  ASSERT_TRUE(accessibility_manager);
+  EXPECT_FALSE(accessibility_manager->IsVirtualKeyboardEnabled());
+
+  // Enable the virtual keyboard through DeviceLoginScreenVirtualKeyboardEnabled
+  // device policy, and disable it through
+  // DeviceLoginScreenDefaultVirtualKeyboardEnabled; then wait for the change to
+  // take effect.
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_virtual_keyboard_enabled(true);
+  proto.mutable_accessibility_settings()
+      ->mutable_login_screen_virtual_keyboard_enabled_options()
+      ->set_mode(em::PolicyOptions::RECOMMENDED);
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_default_virtual_keyboard_enabled(false);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityVirtualKeyboardEnabled);
+
+  // Verify that the pref which controls the virtual keyboard in the login
+  // profile is managed by the policy and is enabled.
+  EXPECT_FALSE(IsPrefManaged(ash::prefs::kAccessibilityVirtualKeyboardEnabled));
+  EXPECT_EQ(base::Value(true),
+            GetPrefValue(ash::prefs::kAccessibilityVirtualKeyboardEnabled));
+
+  // Disable the virtual keyboard through
+  // DeviceLoginScreenVirtualKeyboardEnabled device policy, and enable it
+  // through DeviceLoginScreenDefaultVirtualKeyboardEnabled; then wait for the
+  // change to take effect.
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_virtual_keyboard_enabled(false);
+  proto.mutable_accessibility_settings()
+      ->mutable_login_screen_virtual_keyboard_enabled_options()
+      ->set_mode(em::PolicyOptions::RECOMMENDED);
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_default_virtual_keyboard_enabled(true);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityVirtualKeyboardEnabled);
+
+  // Verify that the pref which controls the virtual keyboard in the login
+  // profile is managed by the policy and is disabled.
+  EXPECT_FALSE(IsPrefManaged(ash::prefs::kAccessibilityVirtualKeyboardEnabled));
+  EXPECT_EQ(base::Value(false),
+            GetPrefValue(ash::prefs::kAccessibilityVirtualKeyboardEnabled));
 }
 
 }  // namespace policy

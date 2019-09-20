@@ -18,6 +18,7 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/browser_test_utils.h"
@@ -29,23 +30,31 @@ using content::BrowserThread;
 
 namespace {
 
-// "ServiceWorker", "CacheStorage" are not available because the test server
-// runs on http.
+// "ServiceWorker" is not handled correctly by content settings with secondary
+// pattern yet.
 const std::vector<std::string> kStorageTypes{
-    "Cookie",         "LocalStorage", "FileSystem",
-    "SessionStorage", "IndexedDb",    "WebSql",
+    "Cookie",    "LocalStorage", "FileSystem",   "SessionStorage",
+    "IndexedDb", "WebSql",       "CacheStorage",
 };
 
 class CookiePolicyBrowserTest : public InProcessBrowserTest {
  protected:
-  CookiePolicyBrowserTest() {}
+  CookiePolicyBrowserTest()
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
     base::FilePath path;
     base::PathService::Get(content::DIR_TEST_DATA, &path);
-    embedded_test_server()->ServeFilesFromDirectory(path);
-    ASSERT_TRUE(embedded_test_server()->Start());
+    https_server_.ServeFilesFromDirectory(path);
+    https_server_.AddDefaultHandlers(GetChromeTestDataDir());
+    ASSERT_TRUE(https_server_.Start());
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // HTTPS server only serves a valid cert for localhost, so this is needed
+    // to load pages from other hosts without an error.
+    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
   }
 
   void SetBlockThirdPartyCookies(bool value) {
@@ -54,12 +63,12 @@ class CookiePolicyBrowserTest : public InProcessBrowserTest {
   }
 
   void NavigateToPageWithFrame(const std::string& host) {
-    GURL main_url(embedded_test_server()->GetURL(host, "/iframe.html"));
+    GURL main_url(https_server_.GetURL(host, "/iframe.html"));
     ui_test_utils::NavigateToURL(browser(), main_url);
   }
 
   void NavigateFrameTo(const std::string& host, const std::string& path) {
-    GURL page = embedded_test_server()->GetURL(host, path);
+    GURL page = https_server_.GetURL(host, path);
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     EXPECT_TRUE(NavigateIframeToURL(web_contents, "test", page));
@@ -75,7 +84,7 @@ class CookiePolicyBrowserTest : public InProcessBrowserTest {
   }
 
   void NavigateNestedFrameTo(const std::string& host, const std::string& path) {
-    GURL url(embedded_test_server()->GetURL(host, path));
+    GURL url(https_server_.GetURL(host, path));
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     content::TestNavigationObserver load_observer(web_contents);
@@ -97,9 +106,8 @@ class CookiePolicyBrowserTest : public InProcessBrowserTest {
 
   void ExpectCookiesOnHost(const std::string& host,
                            const std::string& expected) {
-    EXPECT_EQ(expected,
-              content::GetCookies(browser()->profile(),
-                                  embedded_test_server()->GetURL(host, "/")));
+    EXPECT_EQ(expected, content::GetCookies(browser()->profile(),
+                                            https_server_.GetURL(host, "/")));
   }
 
   void SetStorageForFrame(content::RenderFrameHost* frame) {
@@ -115,8 +123,7 @@ class CookiePolicyBrowserTest : public InProcessBrowserTest {
     for (const auto& data_type : kStorageTypes) {
       bool data;
       EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-          frame, "try { has" + data_type + "(); } catch(e) { failure_(); }",
-          &data));
+          frame, "has" + data_type + "();", &data));
       EXPECT_EQ(expected, data) << data_type;
     }
   }
@@ -130,6 +137,9 @@ class CookiePolicyBrowserTest : public InProcessBrowserTest {
   content::RenderFrameHost* GetNestedFrame() {
     return ChildFrameAt(GetFrame(), 0);
   }
+
+ protected:
+  net::test_server::EmbeddedTestServer https_server_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CookiePolicyBrowserTest);
@@ -153,7 +163,7 @@ class CookiePolicyTopLevelOriginBrowserTest : public CookiePolicyBrowserTest {
 IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest, AllowFirstPartyCookies) {
   SetBlockThirdPartyCookies(false);
 
-  GURL url(embedded_test_server()->GetURL("/set-cookie?cookie1"));
+  GURL url(https_server_.GetURL("/set-cookie?cookie1"));
 
   std::string cookie = content::GetCookies(browser()->profile(), url);
   ASSERT_EQ("", cookie);
@@ -170,8 +180,8 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest,
                        AllowFirstPartyCookiesRedirect) {
   SetBlockThirdPartyCookies(true);
 
-  GURL url(embedded_test_server()->GetURL("/server-redirect?"));
-  GURL redirected_url(embedded_test_server()->GetURL("/set-cookie?cookie2"));
+  GURL url(https_server_.GetURL("/server-redirect?"));
+  GURL redirected_url(https_server_.GetURL("/set-cookie?cookie2"));
 
   // Change the host name from 127.0.0.1 to www.example.com so it triggers
   // third-party cookie blocking if the first party for cookies URL is not
@@ -252,8 +262,7 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest,
   SetBlockThirdPartyCookies(false);
 
   // Set a cookie on `b.com`.
-  content::SetCookie(browser()->profile(),
-                     embedded_test_server()->GetURL("b.com", "/"),
+  content::SetCookie(browser()->profile(), https_server_.GetURL("b.com", "/"),
                      "thirdparty");
   ExpectCookiesOnHost("b.com", "thirdparty");
 
@@ -284,8 +293,7 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest,
   SetBlockThirdPartyCookies(true);
 
   // Set a cookie on `b.com`.
-  content::SetCookie(browser()->profile(),
-                     embedded_test_server()->GetURL("b.com", "/"),
+  content::SetCookie(browser()->profile(), https_server_.GetURL("b.com", "/"),
                      "thirdparty");
   ExpectCookiesOnHost("b.com", "thirdparty");
 
@@ -316,15 +324,14 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyTopLevelOriginBrowserTest,
   SetBlockThirdPartyCookies(true);
 
   // Set a cookie on `b.com`.
-  content::SetCookie(browser()->profile(),
-                     embedded_test_server()->GetURL("b.com", "/"),
+  content::SetCookie(browser()->profile(), https_server_.GetURL("b.com", "/"),
                      "thirdparty");
   ExpectCookiesOnHost("b.com", "thirdparty");
 
   // Allow all requests to b.com to have cookies.
   auto cookie_settings =
       CookieSettingsFactory::GetForProfile(browser()->profile());
-  GURL url = embedded_test_server()->GetURL("b.com", "/");
+  GURL url = https_server_.GetURL("b.com", "/");
   cookie_settings->SetCookieSetting(url, ContentSetting::CONTENT_SETTING_ALLOW);
 
   NavigateToPageWithFrame("a.com");
@@ -354,15 +361,14 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyTopLevelOriginBrowserTest,
   SetBlockThirdPartyCookies(true);
 
   // Set a cookie on `b.com`.
-  content::SetCookie(browser()->profile(),
-                     embedded_test_server()->GetURL("b.com", "/"),
+  content::SetCookie(browser()->profile(), https_server_.GetURL("b.com", "/"),
                      "thirdparty");
   ExpectCookiesOnHost("b.com", "thirdparty");
 
   // Allow all requests on the top frame domain a.com to have cookies.
   auto cookie_settings =
       CookieSettingsFactory::GetForProfile(browser()->profile());
-  GURL url = embedded_test_server()->GetURL("a.com", "/");
+  GURL url = https_server_.GetURL("a.com", "/");
   cookie_settings->SetThirdPartyCookieSetting(
       url, ContentSetting::CONTENT_SETTING_ALLOW);
 
@@ -405,8 +411,8 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyTopLevelOriginBrowserTest,
   // Allow all requests to b.com to access storage.
   auto cookie_settings =
       CookieSettingsFactory::GetForProfile(browser()->profile());
-  GURL a_url = embedded_test_server()->GetURL("a.com", "/");
-  GURL b_url = embedded_test_server()->GetURL("b.com", "/");
+  GURL a_url = https_server_.GetURL("a.com", "/");
+  GURL b_url = https_server_.GetURL("b.com", "/");
   cookie_settings->SetCookieSetting(b_url,
                                     ContentSetting::CONTENT_SETTING_ALLOW);
 
@@ -450,8 +456,8 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyTopLevelOriginBrowserTest,
   // Allow all requests to b.com to access storage.
   auto cookie_settings =
       CookieSettingsFactory::GetForProfile(browser()->profile());
-  GURL a_url = embedded_test_server()->GetURL("a.com", "/");
-  GURL c_url = embedded_test_server()->GetURL("c.com", "/");
+  GURL a_url = https_server_.GetURL("a.com", "/");
+  GURL c_url = https_server_.GetURL("c.com", "/");
   cookie_settings->SetCookieSetting(c_url,
                                     ContentSetting::CONTENT_SETTING_ALLOW);
 
@@ -498,7 +504,7 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyTopLevelOriginBrowserTest,
   // Allow all requests to b.com to access storage.
   auto cookie_settings =
       CookieSettingsFactory::GetForProfile(browser()->profile());
-  GURL a_url = embedded_test_server()->GetURL("a.com", "/");
+  GURL a_url = https_server_.GetURL("a.com", "/");
   cookie_settings->SetCookieSetting(a_url,
                                     ContentSetting::CONTENT_SETTING_ALLOW);
 

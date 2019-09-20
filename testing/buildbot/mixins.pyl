@@ -417,7 +417,6 @@
       'dimensions': {
         'gpu': '8086:0a2e',
         'os': 'Mac-10.13.6',
-        'pool': 'Chrome-GPU',
       },
     },
   },

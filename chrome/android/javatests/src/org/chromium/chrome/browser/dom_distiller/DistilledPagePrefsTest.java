@@ -17,7 +17,6 @@ import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
@@ -70,31 +69,25 @@ public class DistilledPagePrefsTest {
         Assert.assertEquals(Theme.SEPIA, mDistilledPagePrefs.getTheme());
     }
 
-    /*
+    @Test
     @SmallTest
     @Feature({"DomDistiller"})
-    */
-    @Test
-    @DisabledTest(message = "crbug.com/458196")
     public void testSingleObserverTheme() throws InterruptedException {
         TestingObserver testObserver = new TestingObserver();
         mDistilledPagePrefs.addObserver(testObserver);
 
         setTheme(Theme.DARK);
         // Assumes that callback does not occur immediately.
-        Assert.assertNull(testObserver.getTheme());
+        Assert.assertEquals(Theme.LIGHT, testObserver.getTheme());
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
         // Check that testObserver's theme has been updated,
         Assert.assertEquals(Theme.DARK, testObserver.getTheme());
         mDistilledPagePrefs.removeObserver(testObserver);
     }
 
-    /*
+    @Test
     @SmallTest
     @Feature({"DomDistiller"})
-    */
-    @Test
-    @DisabledTest(message = "crbug.com/458196")
     public void testMultipleObserversTheme() throws InterruptedException {
         TestingObserver testObserverOne = new TestingObserver();
         mDistilledPagePrefs.addObserver(testObserverOne);
@@ -127,33 +120,25 @@ public class DistilledPagePrefsTest {
         Assert.assertEquals(FontFamily.SERIF, mDistilledPagePrefs.getFontFamily());
     }
 
-    /*
+    @Test
     @SmallTest
     @Feature({"DomDistiller"})
-    crbug.com/458196
-    */
-    @Test
-    @DisabledTest
     public void testSingleObserverFontFamily() throws InterruptedException {
         TestingObserver testObserver = new TestingObserver();
         mDistilledPagePrefs.addObserver(testObserver);
 
         setFontFamily(FontFamily.SERIF);
         // Assumes that callback does not occur immediately.
-        Assert.assertNull(testObserver.getFontFamily());
+        Assert.assertEquals(FontFamily.SANS_SERIF, testObserver.getFontFamily());
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
         // Check that testObserver's font family has been updated,
         Assert.assertEquals(FontFamily.SERIF, testObserver.getFontFamily());
         mDistilledPagePrefs.removeObserver(testObserver);
     }
 
-    /*
+    @Test
     @SmallTest
     @Feature({"DomDistiller"})
-    crbug.com/458196
-    */
-    @Test
-    @DisabledTest
     public void testMultipleObserversFontFamily() throws InterruptedException {
         TestingObserver testObserverOne = new TestingObserver();
         mDistilledPagePrefs.addObserver(testObserverOne);
@@ -186,33 +171,25 @@ public class DistilledPagePrefsTest {
         Assert.assertEquals(1.2, mDistilledPagePrefs.getFontScaling(), EPSILON);
     }
 
-    /*
+    @Test
     @SmallTest
     @Feature({"DomDistiller"})
-    crbug.com/458196
-    */
-    @Test
-    @DisabledTest
     public void testSingleObserverFontScaling() throws InterruptedException {
         TestingObserver testObserver = new TestingObserver();
         mDistilledPagePrefs.addObserver(testObserver);
 
         setFontScaling(1.1f);
         // Assumes that callback does not occur immediately.
-        Assert.assertNull(testObserver.getFontScaling());
+        Assert.assertEquals(0, testObserver.getFontScaling(), EPSILON);
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
         // Check that testObserver's font scaling has been updated,
         Assert.assertEquals(1.1, testObserver.getFontScaling(), EPSILON);
         mDistilledPagePrefs.removeObserver(testObserver);
     }
 
-    /*
+    @Test
     @SmallTest
     @Feature({"DomDistiller"})
-    crbug.com/458196
-    */
-    @Test
-    @DisabledTest
     public void testMultipleObserversFontScaling() throws InterruptedException {
         TestingObserver testObserverOne = new TestingObserver();
         mDistilledPagePrefs.addObserver(testObserverOne);

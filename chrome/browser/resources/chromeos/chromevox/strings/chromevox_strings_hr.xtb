@@ -421,7 +421,6 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="4039983576244166038">Prazan redak zaglavlja</translation>
 <translation id="4042843249978639960">Nema sljedećeg naslova razine 2.</translation>
 <translation id="4043348641337972076">Nema prethodnog ARIA orijentira.</translation>
-<translation id="4045764028670444336">Početak pravopisne pogreške</translation>
 <translation id="4047216625641135770">Oznaka</translation>
 <translation id="404803211695627272"><ph name="V1" /> – <ph name="V2" /></translation>
 <translation id="4053520724192563562">Limetazelena</translation>
@@ -504,7 +503,6 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="4547556996012970016">Sljedeći naslov razine 5</translation>
 <translation id="4562381607973973258">Zaglavlje</translation>
 <translation id="4569941707103739422">Za kretanje po izborniku pritisnite strelicu prema gore ili dolje, a za aktiviranje stavke pritisnite Enter.</translation>
-<translation id="4570424871453628777">Kraj pravopisne pogreške</translation>
 <translation id="4591507479202817876">, odabran</translation>
 <translation id="4597532268155981612">obrazac</translation>
 <translation id="4597896406374528575">travanj</translation>
@@ -728,7 +726,6 @@ Ako ste gotovi s vodičem, pomoću ChromeVoxa dođite do gumba Zatvori i kliknit
 <translation id="6037602951055904232">Pomiči se prema naprijed</translation>
 <translation id="6042826534790431634">Za aktiviranje pritisnite tipku za pretraživanje i razmaknicu.</translation>
 <translation id="6044160928851315051">Zatamni zaslon</translation>
-<translation id="6065293622157674001">Početak gramatičke pogreške</translation>
 <translation id="6082768461603900813">Osnovno kretanje</translation>
 <translation id="6118126368611144850">Android aplikacije za Chrome. Ako na uređaju imate Trgovinu Play, pogledajte kako ChromeVox funkcionira s Android aplikacijama. Preuzmite Google Chrome Canary iz Trgovine Play i isprobajte eksperimentalnu podršku.</translation>
 <translation id="611827076493383239">psjćn</translation>
@@ -869,7 +866,6 @@ Za otvaranje izbornika preglednika Chrome pritisnite tipke Alt i F.</translation
 <translation id="7143207342074048698">Povezivanje</translation>
 <translation id="7153618581592392745">Lavanda</translation>
 <translation id="7157306005867877619">Sažetak</translation>
-<translation id="7161425887892204659">Kraj podudaranja teksta</translation>
 <translation id="7161771961008409533">Gumb skočnog prozora</translation>
 <translation id="7165714724802225287">Trenutačni je stil prikaza ispreplitanje.</translation>
 <translation id="7167657087543110">odjek znakova</translation>
@@ -907,7 +903,6 @@ Za otvaranje izbornika preglednika Chrome pritisnite tipke Alt i F.</translation
 <translation id="737396357417333429">klk</translation>
 <translation id="7374104575779636480">Napuštanje tablice.</translation>
 <translation id="738899727977260036">Sivoplava</translation>
-<translation id="7392145451309930991">Početak podudaranja teksta</translation>
 <translation id="739763518212184081">Prethodni redak</translation>
 <translation id="7400575256015741911">Otkrivena pravopisna pogreška</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -1120,7 +1115,6 @@ Za otvaranje izbornika preglednika Chrome pritisnite tipke Alt i F.</translation
 <translation id="8476408756881832830">Pauziraj reprodukciju kad ChromeVox govori</translation>
 <translation id="8476508772960940536">prozor pregleda</translation>
 <translation id="8503360654911991865">Smanji razinu pojedinosti navigacije</translation>
-<translation id="8504695234784218301">Kraj gramatičke pogreške</translation>
 <translation id="8520472399088452386">Okretni gumb</translation>
 <translation id="8534394844575788431">Formatiranje</translation>
 <translation id="8538744478902126321">Pokušaj utvrđivanja zaglavlja retka trenutačne ćelije</translation>

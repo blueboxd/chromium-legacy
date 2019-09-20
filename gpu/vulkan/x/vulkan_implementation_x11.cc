@@ -70,25 +70,18 @@ bool VulkanImplementationX11::InitializeVulkanInstance(bool using_surface) {
   VulkanFunctionPointers* vulkan_function_pointers =
       gpu::GetVulkanFunctionPointers();
 
+  base::FilePath path;
   if (use_swiftshader()) {
-    base::FilePath path;
     if (!base::PathService::Get(base::DIR_MODULE, &path))
       return false;
 
-    base::FilePath root_path = path.Append("libvk_swiftshader.so");
-    if (!InitializeVulkanFunctionPointers(root_path,
-                                          vulkan_function_pointers)) {
-      base::FilePath rel_path = path.Append("swiftshader/libvk_swiftshader.so");
-      if (!InitializeVulkanFunctionPointers(rel_path,
-                                            vulkan_function_pointers)) {
-        return false;
-      }
-    }
+    path = path.Append("libvk_swiftshader.so");
   } else {
-    base::FilePath path = base::FilePath("libvulkan.so.1");
-    if (!InitializeVulkanFunctionPointers(path, vulkan_function_pointers))
-      return false;
+    path = base::FilePath("libvulkan.so.1");
   }
+
+  if (!InitializeVulkanFunctionPointers(path, vulkan_function_pointers))
+    return false;
 
   if (!vulkan_instance_.Initialize(required_extensions, {}))
     return false;

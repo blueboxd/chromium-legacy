@@ -80,6 +80,7 @@ th {
 /* Base typography. */
 
 html {
+  /* This has to be in sync with |baseSize| in dom_distiller_viewer.js. */
   font-size: 14px;
 }
 

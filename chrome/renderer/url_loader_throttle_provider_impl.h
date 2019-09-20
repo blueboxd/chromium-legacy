@@ -13,6 +13,8 @@
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "extensions/buildflags/buildflags.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -53,8 +55,8 @@ class URLLoaderThrottleProviderImpl
   content::URLLoaderThrottleProviderType type_;
   ChromeContentRendererClient* const chrome_content_renderer_client_;
 
-  safe_browsing::mojom::SafeBrowsingPtrInfo safe_browsing_info_;
-  safe_browsing::mojom::SafeBrowsingPtr safe_browsing_;
+  mojo::PendingRemote<safe_browsing::mojom::SafeBrowsing> safe_browsing_remote_;
+  mojo::Remote<safe_browsing::mojom::SafeBrowsing> safe_browsing_;
 
   data_reduction_proxy::mojom::DataReductionProxyPtrInfo
       data_reduction_proxy_info_;

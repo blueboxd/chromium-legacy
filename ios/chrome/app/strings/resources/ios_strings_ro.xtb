@@ -18,7 +18,6 @@
 <translation id="1176932207622159128">Imaginea nu s-a salvat</translation>
 <translation id="1180526666083833456">Sincronizează și personalizează pe toate dispozitivele.</translation>
 <translation id="1181037720776840403">Elimină</translation>
-<translation id="1201530049782216880">Filă incognito nouă</translation>
 <translation id="1209206284964581585">Ascunde momentan</translation>
 <translation id="1219674500290482172">Nu se poate realiza conexiunea la internet.</translation>
 <translation id="122699739164161391">Închide toate filele</translation>
@@ -94,7 +93,6 @@
 <translation id="2149973817440762519">Editați marcajul</translation>
 <translation id="2179182049312275900">Poți să activezi sincronizarea oricând în setări.</translation>
 <translation id="2198757192731523470">Google poate folosi istoricul pentru a personaliza Căutarea, anunțurile și alte servicii Google.</translation>
-<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> articole necitite în Lista de lectură.</translation>
 <translation id="2230173723195178503">Pagina web s-a încărcat</translation>
 <translation id="2239626343334228536">Se șterg datele de navigare...</translation>
 <translation id="2256128224215992540">Sugestii de căutare și de site-uri</translation>
@@ -124,7 +122,6 @@
 <translation id="2625189173221582860">Parola a fost copiată</translation>
 <translation id="2648803196158606475">Șterge-le pe cele citite</translation>
 <translation id="2653659639078652383">Trimite</translation>
-<translation id="2684815431982545828">Filă nouă</translation>
 <translation id="2690858294534178585">Camera foto este în uz</translation>
 <translation id="2691653761409724435">Indisponibil offline</translation>
 <translation id="2702801445560668637">Listă de lectură</translation>
@@ -267,7 +264,6 @@ Datele sunt criptate cu expresia de acces pentru sincronizare. Introdu-o pentru 
 
 Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincronizarea<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">Numărul cardului nu este valid</translation>
-<translation id="4807020197310989387">Un articol necitit în Lista de lectură.</translation>
 <translation id="4818522717893377262">Adaugă o limbă...</translation>
 <translation id="481968316161811770">Cookie-urile, datele privind site-urile</translation>
 <translation id="4833786495304741580">Trimite automat statistici de utilizare și rapoarte de blocare la Google.</translation>

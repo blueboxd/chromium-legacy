@@ -17,9 +17,12 @@
 @interface InfobarBannerViewController
     : UIViewController <InfobarBannerInteractable>
 
-// Designated Initializer. |delegate| handles InfobarBannerVC actions, and
-// |infobarType| is used to know which Coordinator presented this VC.
+// Designated Initializer. |delegate| handles InfobarBannerVC actions.
+// |presentsModal| should be YES if the banner is able to present an
+// InfobarModal. |infobarType| is used to know which Coordinator presented this
+// VC.
 - (instancetype)initWithDelegate:(id<InfobarBannerDelegate>)delegate
+                   presentsModal:(BOOL)presentsModal
                             type:(InfobarType)infobarType
     NS_DESIGNATED_INITIALIZER;
 

@@ -421,7 +421,6 @@
 <translation id="4039983576244166038">ফাঁকা সারি শিরোলেখ</translation>
 <translation id="4042843249978639960">কোনো পূর্ববর্তী স্তর ২ শিরোলেখ নেই৷</translation>
 <translation id="4043348641337972076">কোনো পূর্ববর্তী ARIA ল্যান্ডমার্ক নেই৷</translation>
-<translation id="4045764028670444336">ভুল বানান শুরু</translation>
 <translation id="4047216625641135770">চিহ্নিত</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4053520724192563562">পাতিলেবুর সবুজ</translation>
@@ -504,7 +503,6 @@
 <translation id="4547556996012970016">পরবর্তী স্তর ৫ শিরোনাম</translation>
 <translation id="4562381607973973258">শিরোনাম</translation>
 <translation id="4569941707103739422">নেভিগেট করতে উপরের অথবা নিচের তীরচিহ্ন, চালু করতে এন্টার টিপুন।</translation>
-<translation id="4570424871453628777">ভুল বানান শেষ</translation>
 <translation id="4591507479202817876">, নির্বাচিত</translation>
 <translation id="4597532268155981612">ফর্ম</translation>
 <translation id="4597896406374528575">এপ্রিল</translation>
@@ -728,7 +726,6 @@
 <translation id="6037602951055904232">প্যান ফরওয়ার্ড</translation>
 <translation id="6042826534790431634">চালু করতে Search+Space টিপুন।</translation>
 <translation id="6044160928851315051">স্ক্রীনে আলো কমান</translation>
-<translation id="6065293622157674001">ব্যাকরণের ত্রুটি শুরু</translation>
 <translation id="6082768461603900813">প্রাথমিক নেভিগেশান</translation>
 <translation id="6118126368611144850">Chrome এর জন্য Android অ্যাপ। আপনার ডিভাইসে যদি Play স্টোর থাকে তাহলে Android অ্যাপের সাথে ChromeVox ব্যবহার করে দেখুন। Play স্টোর থেকে Google Chrome Canary ডাউনলোড করার মাধ্যমে পরীক্ষামূলক সহায়তা পান।</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -869,7 +866,6 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="7143207342074048698">সংযুক্ত হচ্ছে</translation>
 <translation id="7153618581592392745">ল্যাভেণ্ডার</translation>
 <translation id="7157306005867877619">বিমূর্ত</translation>
-<translation id="7161425887892204659">টেক্সট ম্যাচিং শেষ</translation>
 <translation id="7161771961008409533">পপ-আপ বোতাম</translation>
 <translation id="7165714724802225287">বর্তমান প্রদর্শন স্টাইল একটি অন্যটির মাঝে সমাবেশিত।</translation>
 <translation id="7167657087543110">অক্ষর ইকো</translation>
@@ -907,7 +903,6 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">সারণী ত্যাগ করছে৷</translation>
 <translation id="738899727977260036">স্লেট নীল</translation>
-<translation id="7392145451309930991">টেক্সট ম্যাচিং শুরু</translation>
 <translation id="739763518212184081">পূর্ববর্তী লাইন</translation>
 <translation id="7400575256015741911">বানান পরীক্ষাগত ত্রুটি শনাক্ত হয়েছে</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -1120,7 +1115,6 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="8476408756881832830">ChromeVox কথা বলতে থাকলে প্লেব্যাক সাময়িকভাবে থামান</translation>
 <translation id="8476508772960940536">এক নজরে উইন্ডো</translation>
 <translation id="8503360654911991865">নেভিগেশন কণিকাভাবটি কমান</translation>
-<translation id="8504695234784218301">ব্যাকরণের ত্রুটি শেষ</translation>
 <translation id="8520472399088452386">ঘূর্ণন বোতাম</translation>
 <translation id="8534394844575788431">ফর্ম্যাটিং</translation>
 <translation id="8538744478902126321">বর্তমান কক্ষের সারি শিরোলেখে একটি অনুমান করে</translation>

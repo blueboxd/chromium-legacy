@@ -312,6 +312,10 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   friend class MockHttpCache;
   friend class HttpCacheIOCallbackTest;
 
+  FRIEND_TEST_ALL_PREFIXES(HttpCacheTest, SplitCacheWithFrameOrigin);
+  FRIEND_TEST_ALL_PREFIXES(HttpCacheTest, NonSplitCache);
+  FRIEND_TEST_ALL_PREFIXES(HttpCacheTest, SplitCache);
+
   using TransactionList = std::list<Transaction*>;
   using TransactionSet = std::unordered_set<Transaction*>;
   typedef std::list<std::unique_ptr<WorkItem>> WorkItemList;

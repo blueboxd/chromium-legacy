@@ -7,6 +7,7 @@ package org.chromium.android_webview;
 import android.content.Context;
 import android.view.View;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -14,7 +15,6 @@ import org.chromium.components.autofill.AutofillDelegate;
 import org.chromium.components.autofill.AutofillPopup;
 import org.chromium.components.autofill.AutofillSuggestion;
 import org.chromium.ui.DropdownItem;
-import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Java counterpart to the AwAutofillClient. This class is owned by AwContents and has
@@ -45,7 +45,7 @@ public class AwAutofillClient {
             AutofillSuggestion[] suggestions) {
 
         if (mAutofillPopup == null) {
-            if (WindowAndroid.activityFromContext(mContext) == null) {
+            if (ContextUtils.activityFromContext(mContext) == null) {
                 AwAutofillClientJni.get().dismissed(mNativeAwAutofillClient, AwAutofillClient.this);
                 return;
             }

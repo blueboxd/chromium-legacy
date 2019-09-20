@@ -642,6 +642,13 @@ void PersonalDataManager::RecordUseOf(const AutofillDataModel& data_model) {
   }
 }
 
+void PersonalDataManager::AddVPA(const std::string& vpa_id) {
+  DCHECK(!vpa_id.empty());
+  if (is_off_the_record_ || !database_helper_->GetLocalDatabase())
+    return;
+  database_helper_->GetLocalDatabase()->AddVPA(vpa_id);
+}
+
 void PersonalDataManager::AddProfile(const AutofillProfile& profile) {
   if (!IsAutofillProfileEnabled())
     return;
@@ -1350,7 +1357,6 @@ void PersonalDataManager::ClearProfileNonSettingsOrigins() {
       UpdateProfileInDB(*profile, /*enforced=*/true);
     }
   }
-
 }
 
 void PersonalDataManager::ClearCreditCardNonSettingsOrigins() {

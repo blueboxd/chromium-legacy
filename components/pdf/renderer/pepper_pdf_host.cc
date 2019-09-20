@@ -46,15 +46,12 @@ PepperPDFHost::PepperPDFHost(content::RendererPpapiHost* host,
                              PP_Instance instance,
                              PP_Resource resource)
     : ppapi::host::ResourceHost(host->GetPpapiHost(), instance, resource),
-      host_(host),
-      binding_(this) {
+      host_(host) {
   mojom::PdfService* service = GetRemotePdfService();
   if (!service)
     return;
 
-  mojom::PdfListenerPtr listener;
-  binding_.Bind(mojo::MakeRequest(&listener));
-  service->SetListener(std::move(listener));
+  service->SetListener(receiver_.BindNewPipeAndPassRemote());
 }
 
 PepperPDFHost::~PepperPDFHost() {}
@@ -335,7 +332,7 @@ mojom::PdfService* PepperPDFHost::GetRemotePdfService() {
 
   if (!remote_pdf_service_) {
     render_frame->GetRemoteAssociatedInterfaces()->GetInterface(
-        &remote_pdf_service_);
+        remote_pdf_service_.BindNewEndpointAndPassReceiver());
   }
   return remote_pdf_service_.get();
 }

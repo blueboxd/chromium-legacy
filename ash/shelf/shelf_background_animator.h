@@ -25,7 +25,6 @@ namespace ash {
 
 enum class AnimationChangeType;
 class Shelf;
-class ShelfConfig;
 class ShelfBackgroundAnimatorObserver;
 class ShelfBackgroundAnimatorTestApi;
 class WallpaperControllerImpl;
@@ -86,9 +85,6 @@ class ASH_EXPORT ShelfBackgroundAnimator : public ShelfObserver,
 
   // Gets the alpha value of |background_type|.
   int GetBackgroundAlphaValue(ShelfBackgroundType background_type) const;
-
-  // Set the shelf_config to use for tests when there is no Shell instance.
-  void SetShelfConfigForTest(ShelfConfig* shelf_config);
 
  protected:
   // ShelfObserver:
@@ -180,9 +176,6 @@ class ASH_EXPORT ShelfBackgroundAnimator : public ShelfObserver,
 
   // Tracks the item background animation values.
   AnimationValues item_background_values_;
-
-  // The shelf config to access the needed shelf constants.
-  ShelfConfig* shelf_config_ = nullptr;
 
   base::ObserverList<ShelfBackgroundAnimatorObserver>::Unchecked observers_;
 

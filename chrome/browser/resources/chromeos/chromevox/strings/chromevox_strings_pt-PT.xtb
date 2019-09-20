@@ -421,7 +421,6 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="4039983576244166038">Cabeçalho da linha vazio</translation>
 <translation id="4042843249978639960">Não existe nenhum título de nível 2 seguinte.</translation>
 <translation id="4043348641337972076">Não existe nenhum ponto de referência ARIA anterior.</translation>
-<translation id="4045764028670444336">Início de erro ortográfico</translation>
 <translation id="4047216625641135770">Mark</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4053520724192563562">Verde-lima</translation>
@@ -504,7 +503,6 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="4547556996012970016">Título de nível 5 seguinte</translation>
 <translation id="4562381607973973258">Cabeçalho</translation>
 <translation id="4569941707103739422">Prima a seta para cima ou para baixo para navegar. Prima Enter para ativar.</translation>
-<translation id="4570424871453628777">Fim de erro ortográfico</translation>
 <translation id="4591507479202817876">, selecionado</translation>
 <translation id="4597532268155981612">formulário</translation>
 <translation id="4597896406374528575">Abril</translation>
@@ -728,7 +726,6 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="6037602951055904232">Deslocar para a frente</translation>
 <translation id="6042826534790431634">Prima Pesquisar + Espaço para ativar.</translation>
 <translation id="6044160928851315051">Escurecer ecrã</translation>
-<translation id="6065293622157674001">Início de erro de gramática</translation>
 <translation id="6082768461603900813">Navegação básica</translation>
 <translation id="6118126368611144850">Aplicações Android para o Chrome. Se tiver a Play Store instalada no seu dispositivo, conheça em primeira mão o ChromeVox com aplicações para Android. Transfira o Google Chrome Canary a partir da Play Store para experimentar o suporte experimental.</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -869,7 +866,6 @@ Para abrir o menu do navegador Chrome, prima Alt + F.</translation>
 <translation id="7143207342074048698">A ligar</translation>
 <translation id="7153618581592392745">Lilás</translation>
 <translation id="7157306005867877619">Resumo</translation>
-<translation id="7161425887892204659">Fim de correspondência de texto</translation>
 <translation id="7161771961008409533">Botão pop-up</translation>
 <translation id="7165714724802225287">O estilo atual do ecrã é intercalado.</translation>
 <translation id="7167657087543110">eco dos carateres</translation>
@@ -907,7 +903,6 @@ Para abrir o menu do navegador Chrome, prima Alt + F.</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">A sair da tabela.</translation>
 <translation id="738899727977260036">Azul-ardósia</translation>
-<translation id="7392145451309930991">Início de correspondência de texto</translation>
 <translation id="739763518212184081">Linha anterior</translation>
 <translation id="7400575256015741911">Erro ortográfico detetado</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -1120,7 +1115,6 @@ Para abrir o menu do navegador Chrome, prima Alt + F.</translation>
 <translation id="8476408756881832830">Colocar reprodução em pausa quando o ChromeVox estiver a falar</translation>
 <translation id="8476508772960940536">vista geral das janelas</translation>
 <translation id="8503360654911991865">Diminuir nível de detalhe da navegação</translation>
-<translation id="8504695234784218301">Fim de erro de gramática</translation>
 <translation id="8520472399088452386">Botão giratório</translation>
 <translation id="8534394844575788431">Formatação</translation>
 <translation id="8538744478902126321">Adivinhar o cabeçalho da linha da célula atual</translation>

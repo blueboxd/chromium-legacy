@@ -39,8 +39,8 @@ enum FrameSequenceTrackerType {
   kPinchZoom = 2,
   kRAF = 3,
   kTouchScroll = 4,
-  kWheelScroll = 5,
-  kUniversal = 6,
+  kUniversal = 5,
+  kWheelScroll = 6,
   kMaxType
 };
 

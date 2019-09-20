@@ -8,9 +8,9 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
-#include "chrome/browser/page_load_metrics/page_load_tracker.h"
+#include "components/page_load_metrics/browser/page_load_metrics_observer.h"
+#include "components/page_load_metrics/browser/page_load_metrics_util.h"
+#include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/navigation_simulator.h"

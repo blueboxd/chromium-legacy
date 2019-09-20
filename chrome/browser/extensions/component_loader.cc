@@ -544,6 +544,11 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
     Add(IDR_QUICKOFFICE_MANIFEST,
         base::FilePath(
             FILE_PATH_LITERAL("/usr/share/chromeos-assets/quickoffice")));
+
+    // TODO(https://crbug.com/1005083): Force the off the record profile to be
+    // created to allow the virtual keyboard to work in guest mode.
+    if (!IsNormalSession())
+      ExtensionsBrowserClient::Get()->GetOffTheRecordContext(profile_);
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
     Add(IDR_ECHO_MANIFEST,

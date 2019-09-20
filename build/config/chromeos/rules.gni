@@ -13,7 +13,8 @@ declare_args() {
 declare_args() {
   # Determines if we're running tests on VMs or on devices.
   # TODO(crbug.com/866062): Is there a better way to do this?
-  cros_is_vm = cros_board == "amd64-generic" || cros_board == "betty"
+  cros_is_vm = cros_board == "amd64-generic" || cros_board == "betty" ||
+               cros_board == "betty-pi-arc"
 }
 
 # Ensure that if one is set, the other is as well.
@@ -209,7 +210,8 @@ template("tast_test") {
     # The following expression filters out all non-critical tests. See the link
     # below for more details:
     # https://chromium.googlesource.com/chromiumos/platform/tast/+/master/docs/test_attributes.md
-    tast_attr_expr = "!disabled && !\"group:*\" && \"dep:chrome\""
+    tast_attr_expr =
+        "!disabled && (\"group:mainline\" || !\"group:*\") && \"dep:chrome\""
 
     if (defined(enable_tast_informational_tests) &&
         enable_tast_informational_tests) {

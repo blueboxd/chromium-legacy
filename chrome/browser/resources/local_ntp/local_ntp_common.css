@@ -5,7 +5,7 @@
 html {
   /* Material Design colors. Keep in sync with ui/gfx/color_palette.h. */
 
-  --dark-mode-bg-rgb: 50, 54, 57;
+  --dark-mode-bg-rgb: 53, 54, 58;
   --dark-mode-dialog-rgb: 41, 42, 45;
 
   /* Google Grey */

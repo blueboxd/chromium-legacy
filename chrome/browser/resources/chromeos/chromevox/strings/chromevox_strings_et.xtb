@@ -421,7 +421,6 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="4039983576244166038">Rea päis on tühi</translation>
 <translation id="4042843249978639960">Järgmist 2. taseme pealkirja ei ole.</translation>
 <translation id="4043348641337972076">Eelmist ARIA maamärki ei ole.</translation>
-<translation id="4045764028670444336">Õigekirjaveaga sõna algus</translation>
 <translation id="4047216625641135770">Märk</translation>
 <translation id="404803211695627272"><ph name="V1" /> – <ph name="V2" /></translation>
 <translation id="4053520724192563562">Laimiroheline</translation>
@@ -504,7 +503,6 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="4547556996012970016">Järgmine 5. taseme pealkiri</translation>
 <translation id="4562381607973973258">Päis</translation>
 <translation id="4569941707103739422">Navigeerimiseks vajutage üles- või allanoolt, aktiveerimiseks vajutage sisestusklahvi.</translation>
-<translation id="4570424871453628777">Õigekirjaveaga sõna lõpp</translation>
 <translation id="4591507479202817876">, valitud</translation>
 <translation id="4597532268155981612">vorm</translation>
 <translation id="4597896406374528575">Aprill</translation>
@@ -728,7 +726,6 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="6037602951055904232">Edasi navigeerimine</translation>
 <translation id="6042826534790431634">Aktiveerimiseks vajutage otsinguklahvi + tühikut.</translation>
 <translation id="6044160928851315051">Ekraanikuva tumendamine</translation>
-<translation id="6065293622157674001">Grammatikavea algus</translation>
 <translation id="6082768461603900813">Navigeerimise põhifunktsioonid</translation>
 <translation id="6118126368611144850">Androidi rakendused Chrome'i jaoks. Kui teie seadmes on Play pood, saate  vaadata, kuidas ChromeVox Androidi rakendustega töötab. Proovige katselist tuge, laadides Play poest alla Google Chrome Canary.</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -869,7 +866,6 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="7143207342074048698">Ühendamine</translation>
 <translation id="7153618581592392745">Lavendlililla</translation>
 <translation id="7157306005867877619">Abstraktne</translation>
-<translation id="7161425887892204659">Tekstivaste lõpp</translation>
 <translation id="7161771961008409533">Hüpikunupp</translation>
 <translation id="7165714724802225287">Praegu on valitud vahelehtedega kuvastiil.</translation>
 <translation id="7167657087543110">tähemärkide kaja</translation>
@@ -907,7 +903,6 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Tabelist lahkumine.</translation>
 <translation id="738899727977260036">Kiltsinine</translation>
-<translation id="7392145451309930991">Tekstivaste algus</translation>
 <translation id="739763518212184081">Eelmine rida</translation>
 <translation id="7400575256015741911">Tuvastati õigekirjaviga</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -1120,7 +1115,6 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="8476408756881832830">Peata taasesitus, kui ChromeVox räägib</translation>
 <translation id="8476508772960940536">akna ülevaade</translation>
 <translation id="8503360654911991865">Vähenda navigatsiooni detailsust</translation>
-<translation id="8504695234784218301">Grammatikavea lõpp</translation>
 <translation id="8520472399088452386">Pöördnupp</translation>
 <translation id="8534394844575788431">Vormindamine</translation>
 <translation id="8538744478902126321">Tee praeguse lahtri rea päise kohta oletus</translation>

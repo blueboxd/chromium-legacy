@@ -61,6 +61,7 @@ struct DisallowedFeatures {
     chromium_color_buffer_float_rgb = false;
     ext_color_buffer_float = false;
     ext_color_buffer_half_float = false;
+    ext_texture_filter_anisotropic = false;
     oes_texture_float_linear = false;
     oes_texture_half_float_linear = false;
     ext_float_blend = false;
@@ -75,6 +76,7 @@ struct DisallowedFeatures {
   bool chromium_color_buffer_float_rgb = false;
   bool ext_color_buffer_float = false;
   bool ext_color_buffer_half_float = false;
+  bool ext_texture_filter_anisotropic = false;
   bool oes_texture_float_linear = false;
   bool oes_texture_half_float_linear = false;
   bool ext_float_blend = false;

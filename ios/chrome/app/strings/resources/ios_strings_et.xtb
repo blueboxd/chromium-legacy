@@ -18,7 +18,6 @@
 <translation id="1176932207622159128">Ei saa salvestada</translation>
 <translation id="1180526666083833456">Kasutage eri seadmete vahel sünkroonimist ja isikupärastamist.</translation>
 <translation id="1181037720776840403">Eemalda</translation>
-<translation id="1201530049782216880">Uus inkognito vaheleht</translation>
 <translation id="1209206284964581585">Peida praeguseks</translation>
 <translation id="1219674500290482172">Internetiga ei saa ühendust.</translation>
 <translation id="122699739164161391">Sule kõik vahelehed</translation>
@@ -94,7 +93,6 @@
 <translation id="2149973817440762519">Muuda järjehoidjat</translation>
 <translation id="2179182049312275900">Saate sünkroonimise seadetes alati sisse lülitada.</translation>
 <translation id="2198757192731523470">Google võib kasutada teie ajalugu otsingu, reklaamide ja muude Google'i teenuste isikupärastamiseks.</translation>
-<translation id="2207590065820824892">Lugemisloendis on <ph name="UNREAD_COUNT" /> lugemata artiklit.</translation>
 <translation id="2230173723195178503">Veebileht laaditi</translation>
 <translation id="2239626343334228536">Sirvimisandmete kustutamine …</translation>
 <translation id="2256128224215992540">Otsingu- ja saidisoovitused</translation>
@@ -124,7 +122,6 @@
 <translation id="2625189173221582860">Parool on kopeeritud</translation>
 <translation id="2648803196158606475">Kustuta loetud</translation>
 <translation id="2653659639078652383">Esita</translation>
-<translation id="2684815431982545828">Uus vaheleht</translation>
 <translation id="2690858294534178585">Kaamera on kasutusel</translation>
 <translation id="2691653761409724435">Pole võrguühenduseta saadaval</translation>
 <translation id="2702801445560668637">Lugemisloend</translation>
@@ -267,7 +264,6 @@ Teie andmed on krüpteeritud teie sünkroonimisparooliga. Sisestage see sünkroo
 
 Seade muutmiseks <ph name="BEGIN_LINK" />lähtestage sünkroonimine<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">Sobimatu kaardinumber</translation>
-<translation id="4807020197310989387">Lugemisloendis on 1 lugemata artikkel.</translation>
 <translation id="4818522717893377262">Lisa keel …</translation>
 <translation id="481968316161811770">Küpsis., saidi andm.</translation>
 <translation id="4833786495304741580">Google'ile saadetakse automaatselt kasutusstatistikat ja krahhiaruandeid.</translation>

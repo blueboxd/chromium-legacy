@@ -3630,4 +3630,8 @@ NavigationRequest* NavigationRequest::From(NavigationHandle* handle) {
   return static_cast<NavigationHandleImpl*>(handle)->navigation_request();
 }
 
+bool NavigationRequest::IsNavigationStarted() const {
+  return state_ >= STARTED;
+}
+
 }  // namespace content

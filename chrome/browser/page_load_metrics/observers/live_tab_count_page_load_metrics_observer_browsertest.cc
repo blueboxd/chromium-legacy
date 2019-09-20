@@ -11,11 +11,11 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/metrics/tab_count_metrics.h"
 #include "chrome/browser/page_load_metrics/observers/histogram_suffixes.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_test_waiter.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 #include "components/tab_count_metrics/tab_count_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

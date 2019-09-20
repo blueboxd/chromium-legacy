@@ -121,6 +121,12 @@ base::string16 LauncherControllerHelper::GetAppTitle(
     return base::string16();
 
   // Get the title if the app is an ARC app.
+  //
+  // TODO(crbug.com/1002351): ARC converts the ShelfId and |app_id| here.
+  // ShelfId has not been added to AppService yet. So ARC's code is still used
+  // here to get the title name. When ShelfId is integrated to AppService, the
+  // ARC code can be removed, and use AppService to get title names for all
+  // apps.
   if (arc::IsArcItem(profile, app_id)) {
     std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
         ArcAppListPrefs::Get(profile)->GetApp(
@@ -128,6 +134,18 @@ base::string16 LauncherControllerHelper::GetAppTitle(
     DCHECK(app_info.get());
     if (app_info)
       return base::UTF8ToUTF16(app_info->name);
+  }
+
+  if (base::FeatureList::IsEnabled(features::kAppServiceShelf)) {
+    apps::AppServiceProxy* proxy =
+        apps::AppServiceProxyFactory::GetForProfile(profile);
+    if (!proxy)
+      return base::string16();
+    std::string name;
+    proxy->AppRegistryCache().ForOneApp(
+        app_id,
+        [&name](const apps::AppUpdate& update) { name = update.Name(); });
+    return base::UTF8ToUTF16(name);
   }
 
   crostini::CrostiniRegistryService* registry_service =

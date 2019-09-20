@@ -61,5 +61,6 @@ interface Annotator {
   //                         argument when we support more than one type of
   //                         annotation.
   AnnotateImage(string source_id, string description_language_tag,
-                ImageProcessor image_processor) => (AnnotateImageResult result);
+                pending_remote<ImageProcessor> image_processor)
+                    => (AnnotateImageResult result);
 };

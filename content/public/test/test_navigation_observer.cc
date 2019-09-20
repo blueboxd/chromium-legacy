@@ -5,7 +5,6 @@
 #include "content/public/test/test_navigation_observer.h"
 
 #include "base/bind.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -192,13 +191,9 @@ void TestNavigationObserver::OnDidStopLoading(WebContents* web_contents) {
 void TestNavigationObserver::OnDidStartNavigation(
     NavigationHandle* navigation_handle) {
   last_navigation_succeeded_ = false;
-  NavigationHandleImpl* nav_handle =
-      static_cast<NavigationHandleImpl*>(navigation_handle);
-  if (nav_handle->frame_tree_node()->navigation_request()) {
-    last_initiator_origin_ = nav_handle->frame_tree_node()
-                                 ->navigation_request()
-                                 ->common_params()
-                                 .initiator_origin;
+  NavigationRequest* request = NavigationRequest::From(navigation_handle);
+  if (request) {
+    last_initiator_origin_ = request->common_params().initiator_origin;
   } else {
     last_initiator_origin_.reset();
   }
@@ -210,7 +205,7 @@ void TestNavigationObserver::OnDidFinishNavigation(
   last_navigation_succeeded_ = !navigation_handle->IsErrorPage();
   last_net_error_code_ = navigation_handle->GetNetErrorCode();
   last_navigation_type_ =
-      static_cast<NavigationHandleImpl*>(navigation_handle)->navigation_type();
+      NavigationRequest::From(navigation_handle)->navigation_type();
 
   if (wait_event_ == WaitEvent::kNavigationFinished)
     EventTriggered();

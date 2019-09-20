@@ -2106,7 +2106,8 @@ bool CompositedLayerMapping::NeedsToReparentOverflowControls() const {
 }
 
 GraphicsLayer* CompositedLayerMapping::DetachLayerForOverflowControls() {
-  overflow_controls_host_layer_->RemoveFromParent();
+  if (overflow_controls_host_layer_)
+    overflow_controls_host_layer_->RemoveFromParent();
   return overflow_controls_host_layer_.get();
 }
 

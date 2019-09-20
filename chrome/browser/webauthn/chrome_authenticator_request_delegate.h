@@ -80,9 +80,9 @@ class ChromeAuthenticatorRequestDelegate
   bool ShouldPermitCableExtension(const url::Origin& origin) override;
   bool SetCableTransportInfo(
       bool cable_extension_provided,
+      bool has_paired_phones,
       base::Optional<device::QRGeneratorKey> qr_generator_key) override;
-  void AppendCablePairings(
-      std::vector<device::CableDiscoveryData>* pairings) override;
+  std::vector<device::CableDiscoveryData> GetCablePairings() override;
   void SelectAccount(
       std::vector<device::AuthenticatorGetAssertionResponse> responses,
       base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>

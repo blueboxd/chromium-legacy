@@ -18,7 +18,6 @@
 <translation id="1176932207622159128">చిత్రాన్ని సేవ్ చేయడం సాధ్యపడలేదు</translation>
 <translation id="1180526666083833456">అన్ని పరికరాలలో సింక్ చేయండి మరియు వ్యక్తిగతీకరించండి.</translation>
 <translation id="1181037720776840403">తీసివేయి</translation>
-<translation id="1201530049782216880">కొత్త అజ్ఞాత ట్యాబ్</translation>
 <translation id="1209206284964581585">ప్రస్తుతానికి దాచు</translation>
 <translation id="1219674500290482172">ఇంటర్నెట్‌కు కనెక్ట్ చేయడం సాధ్యపడలేదు.</translation>
 <translation id="122699739164161391">అన్ని ట్యాబ్‌లను మూసివేయి</translation>
@@ -93,7 +92,6 @@
 <translation id="2149973817440762519">బుక్‌మార్క్‌ను సవరించు</translation>
 <translation id="2179182049312275900">సింక్‌ను సెట్టింగ్‌లలో మీరు ఎప్పుడైనా ఆన్ చేయవచ్చు.</translation>
 <translation id="2198757192731523470">శోధన, ప్రకటనలు మరియు ఇతర Google సేవలను వ్యక్తిగతీకరించడానికి Google మీ చరిత్రను ఉపయోగించవచ్చు</translation>
-<translation id="2207590065820824892">చదవాల్సిన జాబితాలో <ph name="UNREAD_COUNT" /> కథనాలు ఉన్నాయి.</translation>
 <translation id="2230173723195178503">వెబ్‌పేజీ లోడ్ అయ్యింది</translation>
 <translation id="2239626343334228536">బ్రౌజింగ్ డేటాను తీసివేస్తోంది...</translation>
 <translation id="2256128224215992540">శోధన &amp; సైట్ సూచనలు</translation>
@@ -123,7 +121,6 @@
 <translation id="2625189173221582860">పాస్‌వర్డ్ కాపీ చేయబడింది</translation>
 <translation id="2648803196158606475">చదివిన వాటిని తొలగించు</translation>
 <translation id="2653659639078652383">సమర్పించు</translation>
-<translation id="2684815431982545828">కొత్త ట్యాబ్</translation>
 <translation id="2690858294534178585">కెమెరా వినియోగంలో ఉంది</translation>
 <translation id="2691653761409724435">ఆఫ్‌లైన్‌లో అందుబాటులో లేదు</translation>
 <translation id="2702801445560668637">పఠనా జాబితా</translation>
@@ -266,7 +263,6 @@
 
 ఈ సెట్టింగ్‌ని మార్చడం కోసం, <ph name="BEGIN_LINK" />సమకాలీకరణను రీసెట్ చేయండి<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">చెల్లని కార్డ్ నంబర్</translation>
-<translation id="4807020197310989387">చదవాల్సిన జాబితాలో 1 కథనం ఉంది.</translation>
 <translation id="4818522717893377262">భాషను జోడించు...</translation>
 <translation id="481968316161811770">కుక్కీలు, సైట్ డేటా</translation>
 <translation id="4833786495304741580">Googleకు ఆటోమేటిక్‌గా వినియోగ గణాంకాలు, క్రాష్ నివేదికలను పంపుతుంది.</translation>
@@ -315,6 +311,7 @@
 హ్యాండ్‌ఆఫ్‌ను తప్పనిసరిగా సాధారణ సెట్టింగ్‌ల విభాగంలో కూడా ప్రారంభించాలి. మీ పరికరాలు తప్పనిసరిగా ఒకే iCloud ఖాతాను ఉపయోగించాలి.</translation>
 <translation id="5551897871312988470">అనువదించడం ఆఫర్ చేస్తుంది</translation>
 <translation id="5556459405103347317">మళ్లీ లోడ్ చేయి</translation>
+<translation id="5592679540098330836"><ph name="NAME" /> కోసం సింక్ ఆన్ చేయండి</translation>
 <translation id="5614553682702429503">పాస్‌వర్డ్‌ను సేవ్ చేయాలా?</translation>
 <translation id="5626245204502895507">ఫైల్‌ను ఈ సమయంలో డౌన్‌‌లోడ్ చేయడం సాధ్యపడలేదు.</translation>
 <translation id="5631164295104953411">చెల్లింపు పద్ధతిని జోడించండి</translation>

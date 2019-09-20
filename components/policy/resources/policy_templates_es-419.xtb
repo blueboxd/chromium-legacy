@@ -231,6 +231,7 @@
 
       Si no se establece esta política, es posible que el código de red se agote en el proceso del navegador en función de las pruebas de campo del experimento NetworkService.</translation>
 <translation id="1384459581748403878">Referencia: <ph name="REFERENCE_URL" /></translation>
+<translation id="138847842893090358">Informa el estado de la actualización del SO</translation>
 <translation id="1393485621820363363">Impresoras empresariales habilitadas asociadas a dispositivos</translation>
 <translation id="1397855852561539316">Dirección URL sugerida para el proveedor de búsqueda predeterminado</translation>
 <translation id="1404043648050567997">El servicio de "Navegación segura" muestra una página de advertencia cuando los usuarios visitan sitios marcados como potencialmente maliciosos. Si se habilita esta configuración, se evita que los usuarios avancen de la página de advertencia a sitios maliciosos.
@@ -303,15 +304,6 @@
 
       Si esta política no se establece, se aplicará el valor predeterminado "MultiProfileUserBehaviorMustBePrimary" para los usuarios administrados por políticas empresariales y el valor predeterminado "MultiProfileUserBehaviorUnrestricted" para usuarios no administrados.</translation>
 <translation id="1465619815762735808">Haz clic para reproducir</translation>
-<translation id="1468307069016535757">Establece el estado predeterminado de la función de accesibilidad del modo de contraste alto en la pantalla de acceso.
-
-          Si esta política se establece como verdadera, el modo de contraste alto estará habilitado cuando se muestre la pantalla de acceso.
-
-          Si esta política se establece como falsa, el modo de contraste alto estará inhabilitado cuando se muestre la pantalla de acceso.
-
-          Si estableces esta política, los usuarios podrán anularla de forma temporal habilitando o inhabilitando el modo de contraste alto. Sin embargo, la selección del usuario no es permanente, y se restablecerá la opción predeterminada cuando se vuelva a mostrar la pantalla de acceso o el usuario permanezca ausente en la pantalla de acceso durante un minuto.
-
-          Si no se establece esta política, el modo de contraste alto se inhabilitará la primera vez que se muestre la pantalla de acceso. Los usuarios pueden habilitar o inhabilitar el modo de contraste alto en cualquier momento, y su estado en la pantalla de acceso permanece entre usuarios.</translation>
 <translation id="1468707346106619889">Si la política se define en "verdadero", se permite el uso del modo de escritorio unificado, y
       la opción queda habilitada en la configuración predeterminada, lo que permite a las aplicaciones mostrarse en varias pantallas.
       El usuario podrá inhabilitar el modo de escritorio unificado en pantallas individuales; para ello, debe desmarcarlo
@@ -790,6 +782,10 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Si la política se establece como verdadera, se registrarán los eventos.
       Si se establece como falsa o no se establece, no se registrarán los eventos.</translation>
+<translation id="2440773021691931148">Envía informes sobre las estadísticas de hardware y los identificadores relacionados con la energía.
+
+      Si se establece la política como falsa o no se establece, no se enviará un informe con las estadísticas.
+      Si se establece como verdadera, se enviará el informe con esos datos.</translation>
 <translation id="244317009688098048">Permite habilitar combinación de teclas de acceso directo de rescate para acceso automático.
 
       Si esta política no está establecida o se establece en Verdadero y hay una cuenta local de dispositivo configurada con el acceso automático sin retraso, <ph name="PRODUCT_OS_NAME" /> utilizará la combinación de teclas para acceso directo Ctrl+Alt+S para omitir el acceso automático y mostrar la pantalla de acceso.
@@ -798,6 +794,15 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="2454228136871844693">Optimiza la estabilidad.</translation>
 <translation id="2463034609187171371">Permitir los paquetes de encriptación DHE en TLS</translation>
 <translation id="2463365186486772703">Configuración regional de la aplicación</translation>
+<translation id="2464012905766911533">Esta política permite que un administrador especifique si una página puede enviar solicitudes XHR síncronas cuando el usuario la abandona (la cierra o pasa a otra página).
+
+      Si se habilita la política, cuando el usuario abandona las páginas, estas podrán enviar solicitudes XHR síncronas.
+
+      Si se inhabilita o no se establece, cuando el usuario abandona las páginas, estas no podrán enviar estas solicitudes.
+
+      Se quitará esta política en Chrome 82.
+
+      Consulta https://www.chromestatus.com/feature/4664843055398912.</translation>
 <translation id="2466131534462628618">La autenticación de portal cautivo ignora el proxy</translation>
 <translation id="2466697858869282874">Configura la disponibilidad y el comportamiento de la función de actualización del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
@@ -1327,7 +1332,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="332771718998993005">Determina el nombre anunciado como un destino de <ph name="PRODUCT_NAME" />.
 
           Si esta política se establece con una string no vacía, esa string se usará como el nombre del destino de <ph name="PRODUCT_NAME" />. De lo contrario, el nombre del destino será el nombre del dispositivo. Si esta política no se establece, el nombre del destino será el nombre del dispositivo, y el propietario del dispositivo (o un usuario del dominio que administre el dispositivo) podrá cambiarlo. El nombre tiene un límite máximo de 24 caracteres.</translation>
-<translation id="3331950121151548952">Indica una lista de dominios en los que es necesario revisar las cargas para detectar software malicioso.  Se utiliza esta política únicamente si se establece <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> con un valor que permite la revisión de las cargas para detectar software malicioso o la aplica de manera forzosa.
+<translation id="3331950121151548952">Indica una lista de dominios en los que es necesario revisar las cargas para detectar software malicioso.  Se utiliza esta política únicamente si se establece <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> con un valor que permite la revisión de las cargas para detectar software malicioso o si se la aplica de manera forzosa.
 
       Si no se establece esta política o se establece como una lista vacía de dominios, no se revisarán las cargas para detectar si hay software malicioso.
       </translation>
@@ -1484,6 +1489,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Si no la estableces, la función estará inicialmente inhabilitada, pero el usuario podrá habilitarla en cualquier momento.</translation>
 <translation id="3591527072193107424">Habilitar la función "Compatibilidad con navegadores heredados"</translation>
 <translation id="3591584750136265240">Configurar el comportamiento de autenticación en el acceso</translation>
+<translation id="3617743504695003280">Permite que una página realice solicitudes XHR síncronas cuando el usuario la abandona</translation>
 <translation id="3627678165642179114">Habilita o inhabilita el servicio web de revisión ortográfica.</translation>
 <translation id="3628480121685794414">Permitir impresión simple</translation>
 <translation id="3631099945620529777">Si se configura como falsa, se inhabilitará el botón "Finalizar proceso" en el Administrador de tareas.
@@ -1678,6 +1684,10 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si se establece la política de fondo de pantalla del dispositivo, el dispositivo con el Sistema operativo Chrome descargará y usará la imagen de fondo de pantalla en la pantalla de acceso si aún ningún usuario accedió a su cuenta en el dispositivo. Una vez que el usuario acceda a su cuenta, se habilitará la política de fondo de pantalla del usuario.
 
       Si no se establece la política de fondo de pantalla del dispositivo, la política de fondo de pantalla del usuario, en caso de establecerse, decidirá lo que se muestra.</translation>
+<translation id="3964606652985594895">Envía informes sobre las estadísticas de hardware y los identificadores para los dispositivos de almacenamiento.
+
+      Si se establece la política como falsa o no se establece, no se enviará un informe con las estadísticas.
+      Si se establece como verdadera, se enviará el informe con esos datos.</translation>
 <translation id="3965339130942650562">Está ejecutado el tiempo de espera para salir del navegador cuando el usuario se encuentre inactivo</translation>
 <translation id="3973371701361892765">Nunca ocultar automáticamente los archivos</translation>
 <translation id="3984028218719007910">Determina si <ph name="PRODUCT_OS_NAME" /> mantiene los datos de cuenta locales tras cerrar la sesión. Si el valor se establece en "true", <ph name="PRODUCT_OS_NAME" /> no conservará ninguna cuenta de forma permanente y todos los datos de la sesión del usuario se descartarán al cerrar la sesión. Si esta política no se configura o se establece en "false", el dispositivo puede guardar datos de usuario locales (encriptados).</translation>
@@ -2153,9 +2163,18 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4807950475297505572">Elimina los usuarios que más tiempo hace que no se utilizan hasta que se libere espacio suficiente.</translation>
 <translation id="4816674326202173458">Permitir que el usuario de empresa sea principal y secundario (comportamiento predeterminado para usuarios no administrados)</translation>
 <translation id="4826326557828204741">Acción a realizar si se alcanza la demora de inactividad mientras el dispositivo funciona con batería</translation>
+<translation id="4830531683854509779">Envía informes sobre las estadísticas de hardware para los componentes de SoC.
+
+      Si se establece la política como falsa o no se establece, no se enviará un informe con las estadísticas.
+      Si se establece como verdadera, se enviará el informe con esos datos.</translation>
 <translation id="4832852360828533362">Informes de usuarios y dispositivos</translation>
 <translation id="4834526953114077364">Elimina los usuarios que más tiempo hace que no se utilizan y que no accedieron en los últimos tres meses hasta que se libere suficiente espacio.</translation>
 <translation id="4835622243021053389">Habilitar la autenticación NTLMv2</translation>
+<translation id="4856471929724652373">Envía informes sobre las actualizaciones del SO, como el estado de la actualización, la versión de la plataforma,
+      la última revisión de actualizaciones y el último reinicio.
+
+      Si se establece la política como falsa o no se establece, no se enviará el informe con
+      las actualizaciones del SO. Si se establece como verdadera, se enviará el informe con esos datos.</translation>
 <translation id="4858735034935305895">Permitir el modo de pantalla completa</translation>
 <translation id="4861767323695239729">Configurar los métodos de entrada permitidos en una sesión de usuario</translation>
 <translation id="487460824085252184">Migra automáticamente y no solicita el consentimiento del usuario.</translation>
@@ -2486,7 +2505,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si configuras esta política, los usuarios no podrán modificarla ni anularla.
 
       Si no se configura esta política, los usuarios podrán elegir la imagen del fondo de pantalla del escritorio y de la pantalla de acceso.</translation>
-<translation id="5437214086679373363">Controla si se permite a los usuarios cargar o descargar archivos protegidos con contraseña cuando sea necesario analizarlos.  Esta restricción solo se aplica a los archivos que deban analizarse conforme a lo determinado en <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> y las políticas que controlan la lista de dominios en los que se hayan habilitado las comprobaciones.
+<translation id="5437214086679373363">Controla si se permite a los usuarios cargar o descargar archivos protegidos con contraseña cuando sea necesario analizarlos.  Esta restricción solo se aplica a los archivos que deban analizarse conforme a lo determinado en <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> y las políticas que controlan la lista de dominios en los que se hayan habilitado los controles.
 
       Si se configura esta política como "Ninguno", <ph name="PRODUCT_NAME" /> evitará que el usuario cargue o descargue archivos protegidos por contraseña.
 
@@ -2753,15 +2772,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Las URL (como https://ejemplo.com/una/ruta) solo coincidirán como appID de U2F. Los dominios (como ejemplo.com) solo coincidirán como RP ID de webauthn. Por lo tanto, para abarcar las API de U2F y webauthn para un determinado sitio, deben enumerarse el dominio y la URL de appID.</translation>
 <translation id="5836064773277134605">Restringir el intervalo de puertos UDP que utiliza el host de acceso remoto</translation>
 <translation id="5861856285460256766">Configuración del código de acceso superior</translation>
-<translation id="5862253018042179045">Establece el estado predeterminado de la función de accesibilidad de los comentarios por voz en la pantalla de acceso.
-
-          Si esta política se establece como verdadera, los comentarios por voz estarán habilitados cuando se muestre la pantalla de acceso.
-
-          Si esta política se establece como falsa, los comentarios por voz estarán inhabilitados cuando se muestre la pantalla de acceso.
-
-          Si estableces esta política, los usuarios podrán anularla de forma temporal habilitando o inhabilitando los comentarios por voz. Sin embargo, la selección del usuario no es permanente, y se restablecerá la opción predeterminada cuando se vuelva a mostrar la pantalla de acceso o el usuario permanezca ausente en la pantalla de acceso durante un minuto.
-
-          Si no se establece esta política, los comentarios por voz se inhabilitarán la primera vez que se muestre la pantalla de acceso. Los usuarios pueden habilitar o inhabilitar los comentarios por voz en cualquier momento, y su estado en la pantalla de acceso permanece entre usuarios.</translation>
 <translation id="5868414965372171132">Configuración de red de usuario</translation>
 <translation id="5879014913445067283">Controla la detección de archivos compartidos en la red a través de <ph name="NETBIOS_NAME" /></translation>
 <translation id="5882345429632338713">Retraso antes de ejecutar otro navegador (milisegundos)</translation>
@@ -3153,6 +3163,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6689792153960219308">Informar estado de hardware</translation>
 <translation id="6698632841807204978">Habilitar la impresión monocromática</translation>
 <translation id="6699880231565102694">Habilitar autenticación de dos factores para los hosts de acceso remoto.</translation>
+<translation id="670597451099978576">Otorga permiso automáticamente a estos sitios para conectarse a dispositivos USB con los ID de producto y proveedor correspondientes en la pantalla de acceso</translation>
 <translation id="6720080634516505446"><ph name="PRODUCT_NAME" /> garantiza que la instalación y actualización de extensiones sean seguras. Sin embargo, es posible que el contenido de algunas extensiones alojadas fuera de Chrome Web Store solo cuente con la protección de algoritmos de hash y acceso no seguros, como SHA1. Si se inhabilita esta política, Chrome no permitirá la instalación ni la actualización de esas extensiones (hasta que los desarrolladores vuelvan a diseñar la extensión con algoritmos más seguros). Si se habilita, Chrome permitirá la instalación y actualización de las extensiones.
 
           Si no se establece, se considerará habilitada.
@@ -3418,7 +3429,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       Si la política no se configura, el usuario puede tomar su propia decisión.</translation>
 <translation id="7145335384492396213">Modo de impresión con PIN predeterminado</translation>
-<translation id="7149042336307555519"> Esta política controla los tipos de conexiones permitidos en las actualizaciones del SO. Es posible que el tamaño de las actualizaciones del SO sobrecargue la conexión, lo que podría generar costos adicionales para el usuario. Por lo tanto, no están habilitadas de forma predeterminada en conexiones que se consideren costosas (actualmente, solo "cellular").
+<translation id="7149042336307555519"> Esta política controla los tipos de conexiones permitidos en las actualizaciones del SO. Es posible que el tamaño de las actualizaciones del SO sobrecargue la conexión, lo que podría generar costos adicionales para el usuario. Por lo tanto, no están habilitadas de forma predeterminada en conexiones que se consideren costosas (actualmente, solo "celular").
 
       Los identificadores de tipos de conexión son <ph name="CONNECTION_TYPE_ETHERNET_NAME" />, <ph name="CONNECTION_TYPE_WIFI_NAME" /> y <ph name="CONNECTION_TYPE_CELLULAR_NAME" />.</translation>
 <translation id="7152605873936173525">Controla el modo del agente de resolución de DNS sobre HTTPS. Ten en cuenta que esta política solo establecerá el modo predeterminado para cada consulta. Se puede anular el modo en tipos de solicitudes especiales, como las que se usan para resolver el nombre de host de un servidor con el protocolo DNS sobre HTTPS.
@@ -3718,6 +3729,21 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si se establece esta política, el código de acceso superior podrá verificarse en el dispositivo del usuario menor de edad.
       Si no se establece, no es posible verificar el código en esos dispositivos.</translation>
 <translation id="7625444193696794922">Especifica el canal de publicaciones al que debe conectarse este dispositivo.</translation>
+<translation id="7625498350540361483">
+      Si se establece la política como verdadera, <ph name="PRODUCT_NAME" /> podrá recopilar registros de acontecimientos de WebRTC de los servicios de Google (p. ej., Google Meet) y subir esos registros a Google.
+
+      Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá recopilar ni subir esos registros.
+
+      Si no se establece, hasta la versión M76 inclusive, <ph name="PRODUCT_NAME" /> no podrá recopilar ni subir esos registros.
+
+      En cambio, a partir de la versión M77, <ph name="PRODUCT_NAME" /> podrá recopilarlos y subirlos de forma predeterminada si se considera que el perfil del navegador está administrado, es decir, si el perfil recibe políticas de nube o de la máquina y no se trata de un perfil de incógnito, de acceso, efímero o de un niño.
+
+      Estos registros contienen información de diagnóstico que resulta útil para depurar problemas con llamadas de video o audio en Chrome, como el momento en que se enviaron y recibieron paquetes RTP (y el tamaño de estos), comentarios sobre la congestión en la red y metadatos sobre el tiempo y la calidad de los cuadros de video y audio. Estos registros no tienen contenido de audio ni video de la llamada.
+
+      Esta recopilación de datos por parte de Chrome solo se puede activar a través de los servicios web de Google, como Google Hangouts o Google Meet.
+
+      Con el fin de simplificar la depuración, Google puede asociar estos registros, por medio de un ID de sesión, con otros registros recopilados por el servicio de Google en sí.
+      </translation>
 <translation id="7632724434767231364">Nombre de la biblioteca GSSAPI</translation>
 <translation id="7635471475589566552">Si se establece la configuración regional de la aplicación en <ph name="PRODUCT_NAME" />, los usuarios no podrán cambiarla. Si se habilita esta configuración, <ph name="PRODUCT_NAME" /> usará aquella que se especificó. Si la configuración regional no es compatible, se usará "en-US" en su lugar. Si esta opción se inhabilita o no se configura, <ph name="PRODUCT_NAME" /> usará la configuración regional preferida que haya especificado el usuario (si está configurada), la configuración regional del sistema o la configuración regional alternativa "en-US".</translation>
 <translation id="7641363659597330616">Configura el tipo de descarga que <ph name="PRODUCT_NAME" /> bloqueará por completo, sin permitir que los usuarios anulen la decisión de seguridad.
@@ -4261,6 +4287,11 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       https://support.google.com/a/answer/1668854.
 
       Los usuarios no pueden cambiar ni anular esta configuración.</translation>
+<translation id="8625234016727663537">Te permite establecer una lista de URL en la que se especifiquen los sitios a los que se les otorgará permiso para acceder de forma automática a un dispositivo USB con los ID del producto y proveedor correspondientes en la pantalla de acceso. Para que la política sea válida, cada elemento en la lista debe contener tanto los dispositivos como las URL. Cada elemento en los dispositivos puede contener un campo de ID del producto y del proveedor. Los ID que se omitan se considerarán como comodín con una excepción: no podrá especificarse un ID del producto sin que se especifique un ID del proveedor; de lo contrario, la política no será válida y se ignorará.
+
+        El modelo del permiso para USB utiliza la URL del sitio que lo solicita ("URL que solicita permiso") y la URL del sitio del marco principal ("URL de incorporación") para otorgar permiso a la URL que lo solicita a fin de acceder al dispositivo USB. Es posible que esa URL no sea la misma que la de incorporación cuando se carga el sitio que solicita permiso en un iframe. Por lo tanto, el campo "urls" puede incluir hasta dos strings de URL delimitados por una coma para especificar la URL que solicita permiso y la URL de incorporación, respectivamente. Si solo se especifica una URL, se otorgará el acceso a los dispositivos USB correspondientes cuando la URL del sitio que lo solicita coincida con esta URL más allá del estado de incorporación. Las URL en el campo "urls" deben ser válidas; de lo contrario, se ignorará la política.
+
+        Si no se establece esta política, se usará el valor predeterminado general para todos los sitios (sin acceso automático).</translation>
 <translation id="8631434304112909927">hasta la versión <ph name="UNTIL_VERSION" /></translation>
 <translation id="8649763579836720255">Los dispositivos con Sistema operativo Chrome pueden utilizar la confirmación remota (acceso verificado) para obtener un certificado emitido por la entidad de certificación del Sistema operativo Chrome que afirme que el dispositivo es apto para reproducir contenido protegido. Este proceso implica el envío de información de aprobación del hardware a la entidad de certificación del Sistema operativo Chrome, la cual identifica el dispositivo de forma única.
 
@@ -4325,7 +4356,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8798099450830957504">Predeterminado</translation>
 <translation id="8800453707696044281">Establecer el porcentaje del nivel de la batería en el que se debe detener la carga</translation>
 <translation id="8801680448782904838">Notificar a un usuario que se recomienda o es obligatorio reiniciar el navegador o el dispositivo</translation>
-<translation id="8802816494059596691">Los nombres de host que se especifican en esta lista no se incluirán en la revisión de la política de HSTS que podría mejorar las solicitudes de http a https. En esta política, solo se permiten nombres de host con una sola etiqueta. Los nombres de host deben estar canonicalizados: debe convertirse cualquier IDN a su formato de etiqueta A y deben estar en minúscula todas las letras en formato ASCII. Esta política solo se aplica a los nombres de host específicos de la lista; no se aplica a los subdominios de estos nombres.</translation>
+<translation id="8802816494059596691">Los nombres de host que se especifican en esta lista no se incluirán en la revisión de la política de HSTS que podría mejorar las solicitudes de http a https. En esta política, solo se permiten nombres de host con una sola etiqueta. Los nombres de host deben estar canonicalizados: debe convertirse cualquier IDN a su formato de etiqueta A y todas las letras en formato ASCII deben estar en minúscula. Esta política solo se aplica a los nombres de host específicos de la lista; no se aplica a los subdominios de estos nombres.</translation>
 <translation id="8818173863808665831">Informa la ubicación geográfica del dispositivo.
 
      Si no se configura la política, ni se establece como falsa, no se informará la ubicación.</translation>
@@ -4494,7 +4525,7 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
           Si se establece esta política, se aplicará el modo de carga de la batería (cuando lo admita el dispositivo).
 
-          Si no se establece esta política (y el dispositivo no la admite), se aplicará el modo estándar de carga de la batería, y el usuario no podrá cambiarlo.
+          Si no se establece esta política (y el dispositivo la admite), se aplicará el modo estándar de carga de la batería, y el usuario no podrá cambiarlo.
 
           Nota: <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> anula esta política si se especifica la política anterior.</translation>
 <translation id="9054012305936267950">Esta política controla el comportamiento de acceso en el navegador. Te permite especificar si el usuario puede acceder a <ph name="PRODUCT_NAME" /> con su cuenta y usar los servicios relacionados, como la "Sincronización de Chrome".

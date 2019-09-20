@@ -563,7 +563,7 @@ TEST_F(RenderWidgetUnittest, ActivePinchGestureUpdatesLayerTreeHostSubFrame) {
 
   // Sync visual properties on a child RenderWidget.
   visual_properties.is_pinch_gesture_active = true;
-  widget()->OnSynchronizeVisualProperties(visual_properties);
+  widget()->SynchronizeVisualPropertiesFromRenderView(visual_properties);
   // We expect the |is_pinch_gesture_active| value to propagate to the
   // LayerTreeHost for sub-frames. Since GesturePinch events are handled
   // directly in the main-frame's layer tree (and only there), information about
@@ -573,7 +573,7 @@ TEST_F(RenderWidgetUnittest, ActivePinchGestureUpdatesLayerTreeHostSubFrame) {
   // pinch gestures are active.
   EXPECT_TRUE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
   visual_properties.is_pinch_gesture_active = false;
-  widget()->OnSynchronizeVisualProperties(visual_properties);
+  widget()->SynchronizeVisualPropertiesFromRenderView(visual_properties);
   EXPECT_FALSE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
 }
 
@@ -605,7 +605,7 @@ TEST_F(RenderWidgetPopupUnittest, EmulatingPopupRect) {
       new PopupRenderWidget(&compositor_deps_, &page_properties_));
 
   // Setup emulation on the |parent_widget|.
-  parent_widget->OnSynchronizeVisualProperties(visual_properties);
+  parent_widget->SynchronizeVisualPropertiesFromRenderView(visual_properties);
   parent_widget->OnEnableDeviceEmulation(emulation_params);
   // Then use it for the popup widget under test.
   widget()->ApplyEmulatedScreenMetricsForPopupWidget(parent_widget.get());

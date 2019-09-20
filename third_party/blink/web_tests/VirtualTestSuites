@@ -1090,11 +1090,6 @@
     "args": ["--enable-blink-features=CSSVariables2AtProperty"]
   },
   {
-    "prefix": "cache-storage-parallel",
-    "base": "external/wpt/service-workers",
-    "args": ["--disable-features=CacheStorageParallelOps"]
-  },
-  {
     "prefix": "cache-storage-sequence",
     "base": "external/wpt/service-workers",
     "args": ["--disable-features=CacheStorageSequence"]

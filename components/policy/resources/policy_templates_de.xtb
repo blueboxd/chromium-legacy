@@ -304,15 +304,6 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
 
       Falls die Richtlinie nicht konfiguriert ist, gilt der Standardwert "MultiProfileUserBehaviorMustBePrimary" für alle vom Unternehmen verwalteten Nutzer und "MultiProfileUserBehaviorUnrestricted" für nicht verwaltete Nutzer.</translation>
 <translation id="1465619815762735808">Click-to-Play</translation>
-<translation id="1468307069016535757">Hiermit wird der Standardstatus der Bedienungshilfefunktion für den Modus mit hohem Kontrast auf der Anmeldeseite festgelegt.
-
-          Ist diese Richtlinie auf "true" gesetzt, ist der Modus mit hohem Kontrast aktiviert, wenn die Anmeldeseite angezeigt wird.
-
-          Ist diese Richtlinie auf "false" gesetzt, ist der Modus mit hohem Kontrast deaktiviert, wenn die Anmeldeseite angezeigt wird.
-
-          Wenn Sie diese Richtlinie konfigurieren, können die Nutzer sie vorübergehend außer Kraft setzen, indem sie den Modus mit hohem Kontrast aktivieren bzw. deaktivieren. Die Nutzerauswahl ist jedoch nicht dauerhaft und die Standardeinstellung wird wiederhergestellt, sobald die Anmeldeseite erneut angezeigt wird oder der Nutzer auf der Anmeldeseite eine Minute lang inaktiv ist.
-
-          Falls diese Richtlinie nicht konfiguriert wird, ist der Modus mit hohem Kontrast deaktiviert, wenn die Anmeldeseite das erste Mal angezeigt wird. Die Nutzer können den Modus mit hohem Kontrast jederzeit aktivieren oder deaktivieren und dieser Status bleibt auf der Anmeldeseite erhalten.</translation>
 <translation id="1468707346106619889">Ist diese Richtlinie auf "true" gesetzt, wird Unified Desktop zugelassen und
       standardmäßig aktiviert. So können sich Apps über mehrere Bildschirme erstrecken.
       Der Nutzer kann Unified Desktop für einzelne Bildschirme deaktivieren,
@@ -2434,7 +2425,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 
           Wenn Sie diese Richtlinie konfigurieren, können Nutzer sie vorübergehend überschreiben, indem sie den großen Cursor aktivieren oder deaktivieren. Die Nutzerauswahl wird jedoch nicht beibehalten und die Standardeinstellung wird wiederhergestellt, sobald die Anmeldeseite neu angezeigt wird oder der Nutzer auf der Anmeldeseite eine Minute lang inaktiv ist.
 
-          Wenn diese Richtlinie nicht konfiguriert wird, ist der große Cursor deaktiviert, wenn die Anmeldeseite das erste Mal angezeigt wird. Die Nutzer können den großen Cursor jederzeit aktivieren oder deaktivieren und dieser Status bleibt auf der Anmeldeseite erhalten.
+          Wenn diese Richtlinie nicht konfiguriert wird, ist der große Cursor deaktiviert, wenn die Anmeldeseite das erste Mal angezeigt wird. Die Nutzer können den großen Cursor jederzeit aktivieren oder deaktivieren. Dieser Status wird gespeichert und bleibt erhalten, bis sich ein Nutzer mit anderen Einstellungen anmeldet.
 
           Hinweis: Sofern konfiguriert, überschreibt "<ph name="DEVICE_LOGIN_SCREEN_LARGE_CURSOR_ENABLED" />" diese Richtlinie.</translation>
 <translation id="538108065117008131">Verarbeitung der folgenden Inhaltstypen durch <ph name="PRODUCT_FRAME_NAME" /> zulassen</translation>
@@ -2760,15 +2751,6 @@ Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSIO
       URLs, wie z. B. https://example.com/some/path, werden nur durch U2F-AppIDs bestimmt. Domains, wie z. B. example.com, werden nur durch Webauthn-RP-IDs bestimmt. Um sowohl U2F- als auch Webauthn-APIs in eine bestimmte Website einzubeziehen, müssen deshalb sowohl die AppID-URL als auch die Domain aufgeführt werden.</translation>
 <translation id="5836064773277134605">Vom Host für den Remotezugriff verwendeten UDP-Portbereich einschränken</translation>
 <translation id="5861856285460256766">Konfiguration von Elternzugriffscodes</translation>
-<translation id="5862253018042179045">Hiermit wird der Standardstatus der Bedienungshilfefunktion für das gesprochene Feedback auf der Anmeldeseite festgelegt.
-
-          Ist diese Richtlinie auf "true" gesetzt, ist das gesprochene Feedback aktiviert, wenn die Anmeldeseite angezeigt wird.
-
-          Ist diese Richtlinie auf "false" gesetzt, ist das gesprochene Feedback deaktiviert, wenn die Anmeldeseite angezeigt wird.
-
-          Wenn Sie diese Richtlinie konfigurieren, können die Nutzer sie vorübergehend außer Kraft setzen, indem sie das gesprochene Feedback aktivieren bzw. deaktivieren. Die Nutzerauswahl ist jedoch nicht dauerhaft und die Standardeinstellung wird wiederhergestellt, sobald die Anmeldeseite erneut angezeigt wird oder der Nutzer auf der Anmeldeseite eine Minute lang inaktiv ist.
-
-          Falls diese Richtlinie nicht konfiguriert wird, ist das gesprochene Feedback deaktiviert, wenn die Anmeldeseite das erste Mal angezeigt wird. Die Nutzer können das gesprochene Feedback jederzeit aktivieren oder deaktivieren und dieser Status bleibt auf der Anmeldeseite erhalten.</translation>
 <translation id="5868414965372171132">Netzwerkkonfiguration auf Nutzerebene</translation>
 <translation id="5879014913445067283">Steuerung der Erkennung von Netzwerkfreigaben über <ph name="NETBIOS_NAME" /></translation>
 <translation id="5882345429632338713">Verzögerung vor dem Starten eines alternativen Browsers (Millisekunden)</translation>

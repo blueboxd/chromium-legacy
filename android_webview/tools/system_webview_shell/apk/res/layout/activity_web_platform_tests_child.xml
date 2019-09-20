@@ -3,7 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:ignore="UselessParent"
     android:orientation="vertical"
-    android:visibility="invisible"
     android:background="@android:color/black"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -40,4 +39,9 @@
         android:textColor="@android:color/white"
         />
   </LinearLayout>
+  <WebView
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:id="@+id/childWebView"
+      />
 </LinearLayout>

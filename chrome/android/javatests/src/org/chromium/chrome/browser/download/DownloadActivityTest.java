@@ -728,6 +728,7 @@ public class DownloadActivityTest {
         onView(withId(R.id.search_text)).check(matches(not(isDisplayed())));
     }
 
+    @DisabledTest(message = "crbug.com/1005250")
     @Test
     @MediumTest
     @DisableFeatures(ChromeFeatureList.DOWNLOADS_LOCATION_CHANGE)

@@ -33,6 +33,7 @@
 #include "ash/wm/overview/overview_observer.h"
 #include "base/observer_list.h"
 #include "components/sync/model/string_ordinal.h"
+#include "ui/display/types/display_constants.h"
 
 class PrefRegistrySimple;
 
@@ -120,11 +121,11 @@ class ASH_EXPORT AppListControllerImpl
   void ResolveOemFolderPosition(
       const syncer::StringOrdinal& preferred_oem_position,
       ResolveOemFolderPositionCallback callback) override;
-
   void DismissAppList() override;
   void GetAppInfoDialogBounds(GetAppInfoDialogBoundsCallback callback) override;
   void ShowAppList() override;
   aura::Window* GetWindow() override;
+  bool IsVisible() override;
 
   // app_list::AppListModelObserver:
   void OnAppListItemAdded(app_list::AppListItem* item) override;
@@ -138,7 +139,6 @@ class ASH_EXPORT AppListControllerImpl
 
   // Methods used in ash:
   bool GetTargetVisibility() const;
-  bool IsVisible() const;
   void Show(int64_t display_id,
             app_list::AppListShowSource show_source,
             base::TimeTicks event_time_stamp);
@@ -215,9 +215,9 @@ class ASH_EXPORT AppListControllerImpl
   void AddObserver(AppListControllerObserver* observer);
   void RemoveObserver(AppListControllerObserver* obsever);
 
-  // AppList visibility announcements are for clamshell mode AppList.
+  // Notifies observers of AppList visibility changes.
   void NotifyAppListVisibilityChanged(bool visible, int64_t display_id);
-  void NotifyAppListTargetVisibilityChanged(bool visible);
+  void NotifyAppListTargetVisibilityChanged(bool visible, int64_t display_id);
 
   // ShellObserver:
   void OnShelfAlignmentChanged(aura::Window* root_window) override;
@@ -373,6 +373,14 @@ class ASH_EXPORT AppListControllerImpl
 
   // Whether to immediately dismiss the AppListView.
   bool should_dismiss_immediately_ = false;
+
+  // The last target visibility change and its display id.
+  bool last_target_visible_ = false;
+  int64_t last_target_visible_display_id_ = display::kInvalidDisplayId;
+
+  // The last visibility change and its display id.
+  bool last_visible_ = false;
+  int64_t last_visible_display_id_ = display::kInvalidDisplayId;
 
   // Used in mojo callings to specify the profile whose app list data is
   // read/written by Ash side through IPC. Notice that in multi-profile mode,

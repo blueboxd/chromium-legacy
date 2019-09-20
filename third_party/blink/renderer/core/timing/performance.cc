@@ -336,12 +336,16 @@ void Performance::setResourceTimingBufferSize(unsigned size) {
 bool Performance::PassesTimingAllowCheck(
     const ResourceResponse& response,
     const SecurityOrigin& initiator_security_origin,
-    ExecutionContext* context) {
+    ExecutionContext* context,
+    bool* tainted) {
+  DCHECK(tainted);
   const KURL& response_url = response.ResponseUrl();
   scoped_refptr<const SecurityOrigin> resource_origin =
       SecurityOrigin::Create(response_url);
-  if (resource_origin->IsSameSchemeHostPort(&initiator_security_origin))
+  if (!*tainted &&
+      resource_origin->IsSameSchemeHostPort(&initiator_security_origin))
     return true;
+  *tainted = true;
 
   const AtomicString& timing_allow_origin_string =
       response.HttpHeaderField(http_names::kTimingAllowOrigin);
@@ -381,13 +385,16 @@ bool Performance::AllowsTimingRedirect(
     const ResourceResponse& final_response,
     const SecurityOrigin& initiator_security_origin,
     ExecutionContext* context) {
-  if (!PassesTimingAllowCheck(final_response, initiator_security_origin,
-                              context))
-    return false;
+  bool tainted = false;
 
   for (const ResourceResponse& response : redirect_chain) {
-    if (!PassesTimingAllowCheck(response, initiator_security_origin, context))
+    if (!PassesTimingAllowCheck(response, initiator_security_origin, context,
+                                &tainted))
       return false;
+  }
+  if (!PassesTimingAllowCheck(final_response, initiator_security_origin,
+                              context, &tainted)) {
+    return false;
   }
 
   return true;
@@ -420,8 +427,9 @@ WebResourceTimingInfo Performance::GenerateResourceTiming(
   result.timing = final_response.GetResourceLoadTiming();
   result.response_end = info.LoadResponseEnd();
 
+  bool tainted = false;
   result.allow_timing_details = PassesTimingAllowCheck(
-      final_response, destination_origin, &context_for_use_counter);
+      final_response, destination_origin, &context_for_use_counter, &tainted);
 
   const Vector<ResourceResponse>& redirect_chain = info.RedirectChain();
   if (!redirect_chain.IsEmpty()) {

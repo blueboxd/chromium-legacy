@@ -35,6 +35,9 @@ class CONTENT_EXPORT BrowserAccessibilityWin : public BrowserAccessibility {
 
   class BrowserAccessibilityComWin* GetCOM() const;
 
+ protected:
+  ui::TextAttributeList ComputeTextAttributes() const override;
+
  private:
   CComObject<BrowserAccessibilityComWin>* browser_accessibility_com_;
   // Give BrowserAccessibility::Create access to our constructor.

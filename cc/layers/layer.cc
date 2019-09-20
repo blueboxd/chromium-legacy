@@ -18,7 +18,6 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/simple_enclosed_region.h"
-#include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/layer_client.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/picture_layer.h"
@@ -68,7 +67,6 @@ struct SameSizeAsLayer : public base::RefCounted<SameSizeAsLayer> {
     gfx::ScrollOffset scroll_offset;
     gfx::Size scroll_container_bounds;
     int mirror_count;
-    uint32_t main_thread_scrolling_reasons;
     Region non_fast_scrollable_region;
     TouchActionRegion touch_action_region;
     ElementId element_id;
@@ -115,9 +113,7 @@ Layer::Inputs::Inputs(int layer_id)
       background_color(0),
       backdrop_filter_quality(1.0f),
       corner_radii({0, 0, 0, 0}),
-      mirror_count(0),
-      main_thread_scrolling_reasons(
-          MainThreadScrollingReason::kNotScrollingOnMain) {}
+      mirror_count(0) {}
 
 Layer::Inputs::~Inputs() = default;
 
@@ -1075,54 +1071,6 @@ bool Layer::GetUserScrollableVertical() const {
     return false;
   }
   return inputs_.user_scrollable_vertical;
-}
-
-uint32_t Layer::GetMainThreadScrollingReasons() const {
-  // When using layer lists, main thread scrolling reasons are stored in scroll
-  // nodes.
-  if (layer_tree_host() && layer_tree_host()->IsUsingLayerLists()) {
-    auto& scroll_tree = layer_tree_host()->property_trees()->scroll_tree;
-    if (auto* scroll_node = scroll_tree.Node(scroll_tree_index_))
-      return scroll_node->main_thread_scrolling_reasons;
-    return MainThreadScrollingReason::kNotScrollingOnMain;
-  }
-  return inputs_.main_thread_scrolling_reasons;
-}
-
-void Layer::AddMainThreadScrollingReasons(
-    uint32_t main_thread_scrolling_reasons) {
-  DCHECK(IsPropertyChangeAllowed());
-  DCHECK(main_thread_scrolling_reasons);
-
-  // When layer lists are used, the main thread scrolling reasons should be set
-  // on property tree nodes directly.
-  // TODO(pdr): Uncomment this check when https://crbug.com/919969 is fixed.
-  // DCHECK(!layer_tree_host() || !layer_tree_host()->IsUsingLayerLists());
-
-  // Layer should only see non-transient scrolling reasons. Transient scrolling
-  // reasons are computed per hit test.
-  DCHECK(MainThreadScrollingReason::MainThreadCanSetScrollReasons(
-      main_thread_scrolling_reasons));
-  uint32_t new_reasons =
-      inputs_.main_thread_scrolling_reasons | main_thread_scrolling_reasons;
-  if (inputs_.main_thread_scrolling_reasons == new_reasons)
-    return;
-  inputs_.main_thread_scrolling_reasons = new_reasons;
-  SetPropertyTreesNeedRebuild();
-  SetNeedsCommit();
-}
-
-void Layer::ClearMainThreadScrollingReasons(
-    uint32_t main_thread_scrolling_reasons_to_clear) {
-  DCHECK(IsPropertyChangeAllowed());
-  DCHECK(main_thread_scrolling_reasons_to_clear);
-  uint32_t new_reasons = ~main_thread_scrolling_reasons_to_clear &
-                         inputs_.main_thread_scrolling_reasons;
-  if (new_reasons == inputs_.main_thread_scrolling_reasons)
-    return;
-  inputs_.main_thread_scrolling_reasons = new_reasons;
-  SetPropertyTreesNeedRebuild();
-  SetNeedsCommit();
 }
 
 void Layer::SetNonFastScrollableRegion(const Region& region) {

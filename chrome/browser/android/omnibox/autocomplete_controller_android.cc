@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -654,8 +655,9 @@ static void JNI_AutocompleteController_PrefetchZeroSuggestResults(JNIEnv* env) {
   // ZeroSuggestPrefetcher uses a fake AutocompleteInput classified as OTHER.
   // See its constructor.
   if (!base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTP) &&
-      OmniboxFieldTrial::GetZeroSuggestVariant(OmniboxEventProto::OTHER) !=
-          ZeroSuggestProvider::kRemoteNoUrlVariant) {
+      !base::Contains(
+          OmniboxFieldTrial::GetZeroSuggestVariants(OmniboxEventProto::OTHER),
+          ZeroSuggestProvider::kRemoteNoUrlVariant)) {
     return;
   }
 

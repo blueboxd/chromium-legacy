@@ -2312,6 +2312,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     }
     NSArray<GuideName*>* guideNames = @[
       kContentAreaGuide,
+      kBadgeOverflowMenuGuide,
       kOmniboxGuide,
       kOmniboxLeadingImageGuide,
       kOmniboxTextFieldGuide,

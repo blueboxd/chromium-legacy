@@ -18,6 +18,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "components/leveldb_proto/internal/proto_database_impl.h"
 #include "components/leveldb_proto/public/proto_database.h"
+#include "components/leveldb_proto/public/shared_proto_database_client_list.h"
 
 namespace leveldb_proto {
 namespace test {
@@ -32,15 +33,9 @@ class FakeDB : public ProtoDatabaseImpl<P, T> {
   explicit FakeDB(EntryMap* db);
 
   // ProtoDatabase implementation.
-  void Init(const std::string& client_name,
-            Callbacks::InitStatusCallback callback) override;
   void Init(Callbacks::InitStatusCallback callback) override;
   void Init(const leveldb_env::Options& unique_db_options,
             Callbacks::InitStatusCallback callback) override;
-  void Init(const char* client_name,
-            const base::FilePath& database_dir,
-            const leveldb_env::Options& options,
-            Callbacks::InitCallback callback) override;
   void UpdateEntries(std::unique_ptr<typename ProtoDatabase<T>::KeyEntryVector>
                          entries_to_save,
                      std::unique_ptr<std::vector<std::string>> keys_to_remove,
@@ -173,13 +168,14 @@ void ProtoToDataWrap(const P& proto, T* data) {
 template <typename P, typename T>
 FakeDB<P, T>::FakeDB(EntryMap* db)
     : ProtoDatabaseImpl<P, T>(
+          ProtoDbType::TEST_DATABASE0,
+          base::FilePath(FILE_PATH_LITERAL("db_dir")),
           base::MakeRefCounted<base::TestSimpleTaskRunner>()) {
   db_ = db;
 }
 
 template <typename P, typename T>
-void FakeDB<P, T>::Init(const std::string& client_name,
-                        Callbacks::InitStatusCallback callback) {
+void FakeDB<P, T>::Init(Callbacks::InitStatusCallback callback) {
   dir_ = base::FilePath(FILE_PATH_LITERAL("db_dir"));
   init_status_callback_ = std::move(callback);
 }
@@ -187,21 +183,7 @@ void FakeDB<P, T>::Init(const std::string& client_name,
 template <typename P, typename T>
 void FakeDB<P, T>::Init(const leveldb_env::Options& unique_db_options,
                         Callbacks::InitStatusCallback callback) {
-  Init("fake_db", std::move(callback));
-}
-
-template <typename P, typename T>
-void FakeDB<P, T>::Init(Callbacks::InitStatusCallback callback) {
-  Init("fake_db", std::move(callback));
-}
-
-template <typename P, typename T>
-void FakeDB<P, T>::Init(const char* client_name,
-                        const base::FilePath& database_dir,
-                        const leveldb_env::Options& options,
-                        Callbacks::InitCallback callback) {
-  dir_ = database_dir;
-  init_callback_ = std::move(callback);
+  Init(std::move(callback));
 }
 
 template <typename P, typename T>

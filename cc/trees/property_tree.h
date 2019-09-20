@@ -395,6 +395,7 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   int CurrentlyScrollingNodeId() const;
 #endif
   void set_currently_scrolling_node(int scroll_node_id);
+  int currently_scrolling_node() const { return currently_scrolling_node_id_; }
   gfx::Transform ScreenSpaceTransform(int scroll_node_id) const;
 
   gfx::Vector2dF ClampScrollToMaxScrollOffset(ScrollNode* node, LayerTreeImpl*);

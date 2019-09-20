@@ -18,7 +18,10 @@ class TransportHoverListModel : public HoverListModel {
   // views that observe the model.
   class Delegate {
    public:
-    virtual void OnItemSelected(AuthenticatorTransport transport) = 0;
+    // Called when the given |transport| is selected by the user.
+    virtual void OnTransportSelected(AuthenticatorTransport transport) = 0;
+    // Called when the user selects the item to pair a new phone.
+    virtual void StartPhonePairing() = 0;
   };
 
   explicit TransportHoverListModel(

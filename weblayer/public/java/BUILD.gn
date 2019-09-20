@@ -5,6 +5,20 @@
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 
+weblayer_client_manifest =
+    "$target_gen_dir/weblayer_client_manifest/AndroidManifest.xml"
+
+jinja_template("weblayer_client_manifest") {
+  input = "AndroidManifest.xml"
+  output = weblayer_client_manifest
+}
+
+android_resources("client_resources") {
+  resource_dirs = []
+  android_manifest = weblayer_client_manifest
+  android_manifest_dep = ":weblayer_client_manifest"
+}
+
 android_library("java") {
   java_files = [
     "org/chromium/weblayer/BrowserController.java",
@@ -16,13 +30,27 @@ android_library("java") {
     "org/chromium/weblayer/ObserverList.java",
     "org/chromium/weblayer/Profile.java",
     "org/chromium/weblayer/WebLayer.java",
+    "org/chromium/weblayer/ChildProcessService.java",
   ]
 
   deps = [
+    ":client_resources",
     "//weblayer/browser/java:client_java",
   ]
 
   # Needed for android.webkit.WebViewDelegate.
   alternative_android_sdk_dep =
       "//third_party/android_sdk:public_framework_system_java"
+}
+
+dist_aar("client_aar") {
+  deps = [
+    ":java",
+    ":weblayer_client_manifest",
+  ]
+
+  # dist_aar does not take the manifest from libraries in deps, so we have to
+  # specify again here.
+  android_manifest = weblayer_client_manifest
+  output = "$root_build_dir/WebLayerClient.aar"
 }

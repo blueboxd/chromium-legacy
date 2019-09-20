@@ -136,6 +136,23 @@
             }
           ]
         },
+        "test": "color_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-16.04",
+              "pool": "chrome.tests.cros-vm"
+            }
+          ]
+        },
         "test": "cros_browser_sanity_test"
       },
       {
@@ -640,6 +657,23 @@
           "idempotent": false
         },
         "test": "chrome_all_tast_tests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1",
+              "os": "Ubuntu-16.04",
+              "pool": "chrome.tests.cros-vm"
+            }
+          ]
+        },
+        "test": "color_unittests"
       },
       {
         "merge": {
@@ -1581,6 +1615,23 @@
           ]
         },
         "test": "chromeos_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-16.04",
+              "pool": "chrome.tests",
+              "ssd": "0"
+            }
+          ]
+        },
+        "test": "color_unittests"
       },
       {
         "merge": {

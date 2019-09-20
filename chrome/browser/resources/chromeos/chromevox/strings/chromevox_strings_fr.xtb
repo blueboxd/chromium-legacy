@@ -421,7 +421,6 @@ Une fois le tutoriel terminé, utilisez ChromeVox pour accéder au bouton de fer
 <translation id="4039983576244166038">En-tête de ligne vide</translation>
 <translation id="4042843249978639960">Aucun titre de niveau 2 suivant</translation>
 <translation id="4043348641337972076">Aucun repère ARIA précédent</translation>
-<translation id="4045764028670444336">Début de la faute d'orthographe</translation>
 <translation id="4047216625641135770">Surlignage</translation>
 <translation id="404803211695627272"><ph name="V1" /> – <ph name="V2" /></translation>
 <translation id="4053520724192563562">Vert prairie</translation>
@@ -504,7 +503,6 @@ Une fois le tutoriel terminé, utilisez ChromeVox pour accéder au bouton de fer
 <translation id="4547556996012970016">En-tête suivant de niveau 5</translation>
 <translation id="4562381607973973258">En-tête</translation>
 <translation id="4569941707103739422">Appuyez sur la flèche vers le haut ou vers le bas pour parcourir les éléments, et sur la touche Entrée pour les activer.</translation>
-<translation id="4570424871453628777">Fin de la faute d'orthographe</translation>
 <translation id="4591507479202817876">, sélectionné</translation>
 <translation id="4597532268155981612">formulaire</translation>
 <translation id="4597896406374528575">Avril</translation>
@@ -728,7 +726,6 @@ Une fois le tutoriel terminé, utilisez ChromeVox pour accéder au bouton de fer
 <translation id="6037602951055904232">Panoramique avant</translation>
 <translation id="6042826534790431634">Appuyez sur Recherche+Espace pour activer la commande.</translation>
 <translation id="6044160928851315051">Asssombrir l'écran</translation>
-<translation id="6065293622157674001">Début de l'erreur grammaticale</translation>
 <translation id="6082768461603900813">Navigation de base</translation>
 <translation id="6118126368611144850">Applications Android pour Chrome. Si le Play Store est installé sur votre appareil, découvrez en avant-première ChromeVox avec les applications Android. Essayez la compatibilité expérimentale en téléchargeant Google Chrome Canary sur le Play Store.</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -869,7 +866,6 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="7143207342074048698">Connexion en cours</translation>
 <translation id="7153618581592392745">Lavande</translation>
 <translation id="7157306005867877619">Résumé</translation>
-<translation id="7161425887892204659">Fin de la correspondance de texte</translation>
 <translation id="7161771961008409533">Bouton pop-up</translation>
 <translation id="7165714724802225287">Le style d'affichage actuel est "entrelacé".</translation>
 <translation id="7167657087543110">écho des caractères</translation>
@@ -907,7 +903,6 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Fermeture du tableau</translation>
 <translation id="738899727977260036">Bleu ardoise</translation>
-<translation id="7392145451309930991">Début de la correspondance de texte</translation>
 <translation id="739763518212184081">Ligne précédente</translation>
 <translation id="7400575256015741911">Faute d'orthographe détectée</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -1120,7 +1115,6 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="8476408756881832830">Interrompre la lecture pendant la diffusion des commentaires audio ChromeVox</translation>
 <translation id="8476508772960940536">vue d'ensemble des fenêtres</translation>
 <translation id="8503360654911991865">Diminuer la granularité de la navigation</translation>
-<translation id="8504695234784218301">Fin de l'erreur grammaticale</translation>
 <translation id="8520472399088452386">Bouton Toupie</translation>
 <translation id="8534394844575788431">Mise en forme</translation>
 <translation id="8538744478902126321">Tenter de détecter l'en-tête de ligne de la cellule actuelle</translation>

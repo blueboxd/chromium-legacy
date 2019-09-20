@@ -40,6 +40,7 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
         AuthenticatorTransport::kInternal,
         AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy};
     model->set_cable_transport_info(/*cable_extension_provided=*/true,
+                                    /*have_paired_phones=*/false,
                                     device::CableDiscoveryData::NewQRKey());
     model->StartFlow(std::move(transport_availability), base::nullopt, nullptr);
 

@@ -11,12 +11,14 @@
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/display/display_observer.h"
 
 namespace ash {
 
 // Provides layout and drawing config for the Shelf. Note That some of these
 // values could change at runtime.
-class ASH_EXPORT ShelfConfig : public TabletModeObserver {
+class ASH_EXPORT ShelfConfig : public TabletModeObserver,
+                               public display::DisplayObserver {
  public:
   class Observer : public base::CheckedObserver {
    public:
@@ -41,6 +43,10 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver {
   // TabletModeObserver:
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
+
+  // DisplayObserver:
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t changed_metrics) override;
 
   // Size of the shelf when visible (height when the shelf is horizontal and
   // width when the shelf is vertical).
@@ -122,6 +128,8 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver {
   }
 
  private:
+  friend class ShelfConfigTest;
+
   // Updates |is_dense_| and notifies all observers of the update.
   void UpdateIsDense();
 

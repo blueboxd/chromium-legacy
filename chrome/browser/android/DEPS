@@ -17,9 +17,10 @@ include_rules = [
 ]
 
 specific_include_rules = {
-  # Special-case where monochrome composes chrome+webview
+  # Special-case where monochrome composes chrome+webview+weblayer
   "monochrome_entry_point\.cc": [
     "+android_webview",
+    "+weblayer",
   ],
   # Allowed for test setup.
   "chrome_entry_point_for_test\.cc": [

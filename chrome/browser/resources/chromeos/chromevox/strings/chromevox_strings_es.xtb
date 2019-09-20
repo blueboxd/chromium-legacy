@@ -421,7 +421,6 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="4039983576244166038">Encabezado de fila vacío</translation>
 <translation id="4042843249978639960">No hay ningún título de nivel 2 posterior.</translation>
 <translation id="4043348641337972076">No hay ningún punto de referencia de ARIA anterior.</translation>
-<translation id="4045764028670444336">Inicio del error ortográfico</translation>
 <translation id="4047216625641135770">Etiqueta de marcado</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4053520724192563562">Verde lima</translation>
@@ -504,7 +503,6 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="4547556996012970016">Siguiente encabezado de nivel 5</translation>
 <translation id="4562381607973973258">Etiqueta de encabezado</translation>
 <translation id="4569941707103739422">Pulsa la flecha hacia arriba o hacia abajo para desplazarte, y la tecla Intro para activar la opción.</translation>
-<translation id="4570424871453628777">Fin del error ortográfico</translation>
 <translation id="4591507479202817876">, seleccionado</translation>
 <translation id="4597532268155981612">formulario</translation>
 <translation id="4597896406374528575">Abril</translation>
@@ -728,7 +726,6 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="6037602951055904232">Se desplaza hacia delante</translation>
 <translation id="6042826534790431634">Pulsa la tecla de búsqueda y la barra espaciadora para activar la opción.</translation>
 <translation id="6044160928851315051">Oscurecer la pantalla</translation>
-<translation id="6065293622157674001">Inicio del error gramatical</translation>
 <translation id="6082768461603900813">Navegación básica</translation>
 <translation id="6118126368611144850">Aplicaciones de Android para Chrome. Si tienes Play Store en tu dispositivo, disfruta de algunas de las funciones de ChromeVox con antelación con las aplicaciones de Android. Descarga Google Chrome Canary de Play Store y prueba la compatibilidad experimental.</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -869,7 +866,6 @@ Para abrir el menú del navegador Chrome, pulsa Alt + F.</translation>
 <translation id="7143207342074048698">Conectando</translation>
 <translation id="7153618581592392745">Lavanda</translation>
 <translation id="7157306005867877619">Resumen</translation>
-<translation id="7161425887892204659">Fin de la coincidencia de texto</translation>
 <translation id="7161771961008409533">Botón con componente emergente</translation>
 <translation id="7165714724802225287">El estilo de presentación actual es intercalado.</translation>
 <translation id="7167657087543110">decir caracteres</translation>
@@ -907,7 +903,6 @@ Para abrir el menú del navegador Chrome, pulsa Alt + F.</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Saliendo de la tabla.</translation>
 <translation id="738899727977260036">Azul pizarra</translation>
-<translation id="7392145451309930991">Inicio de la coincidencia de texto</translation>
 <translation id="739763518212184081">Línea anterior</translation>
 <translation id="7400575256015741911">Error de ortografía detectado</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -1120,7 +1115,6 @@ Para abrir el menú del navegador Chrome, pulsa Alt + F.</translation>
 <translation id="8476408756881832830">Detener la reproducción cuando ChromeVox habla</translation>
 <translation id="8476508772960940536">visión general de la ventana</translation>
 <translation id="8503360654911991865">Disminuye granularidad de navegación</translation>
-<translation id="8504695234784218301">Fin del error gramatical</translation>
 <translation id="8520472399088452386">Botón de control numérico</translation>
 <translation id="8534394844575788431">Formato</translation>
 <translation id="8538744478902126321">Intenta detectar el encabezado de la fila de la celda actual</translation>

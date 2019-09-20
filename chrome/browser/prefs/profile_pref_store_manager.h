@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
 
@@ -85,7 +86,8 @@ class ProfilePrefStoreManager {
           tracking_configuration,
       size_t reporting_ids_count,
       scoped_refptr<base::SequencedTaskRunner> io_task_runner,
-      prefs::mojom::ResetOnLoadObserverPtr reset_on_load_observer,
+      mojo::PendingRemote<prefs::mojom::ResetOnLoadObserver>
+          reset_on_load_observer,
       prefs::mojom::TrackedPreferenceValidationDelegatePtr validation_delegate);
 
   // Initializes the preferences for the managed profile with the preference
@@ -103,7 +105,8 @@ class ProfilePrefStoreManager {
       std::vector<prefs::mojom::TrackedPreferenceMetadataPtr>
           tracking_configuration,
       size_t reporting_ids_count,
-      prefs::mojom::ResetOnLoadObserverPtr reset_on_load_observer,
+      mojo::PendingRemote<prefs::mojom::ResetOnLoadObserver>
+          reset_on_load_observer,
       prefs::mojom::TrackedPreferenceValidationDelegatePtr validation_delegate,
       service_manager::Connector* connector);
 
@@ -112,7 +115,8 @@ class ProfilePrefStoreManager {
       std::vector<prefs::mojom::TrackedPreferenceMetadataPtr>
           tracking_configuration,
       size_t reporting_ids_count,
-      prefs::mojom::ResetOnLoadObserverPtr reset_on_load_observer,
+      mojo::PendingRemote<prefs::mojom::ResetOnLoadObserver>
+          reset_on_load_observer,
       prefs::mojom::TrackedPreferenceValidationDelegatePtr validation_delegate);
 
   const base::FilePath profile_path_;

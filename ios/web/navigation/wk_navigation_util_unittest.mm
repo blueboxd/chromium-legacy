@@ -111,9 +111,10 @@ TEST_F(WKNavigationUtilTest, CreateRestoreSessionBruteForce) {
 
       base::Value* urls_value = value_with_error.value->FindKey("urls");
       if (num_items > kMaxSessionSize) {
-        ASSERT_EQ(kMaxSessionSize, (int)urls_value->GetList().size());
+        ASSERT_EQ(kMaxSessionSize,
+                  static_cast<int>(urls_value->GetList().size()));
       } else {
-        ASSERT_EQ(num_items, (int)urls_value->GetList().size());
+        ASSERT_EQ(num_items, static_cast<int>(urls_value->GetList().size()));
       }
     }
   }

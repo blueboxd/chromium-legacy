@@ -2475,7 +2475,6 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
   if (pages_.empty() && reload)
     return;
   pending_pages_.clear();
-  pp::Size old_document_size = layout_.size();
   std::vector<pp::Size> page_sizes;
   size_t new_page_count = FPDF_GetPageCount(doc());
 
@@ -2522,8 +2521,10 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
   }
 
   CalculateVisiblePages();
-  if (layout_.size() != old_document_size)
+  if (layout_.dirty()) {
+    layout_.clear_dirty();
     client_->DocumentSizeUpdated(layout_.size());
+  }
 }
 
 void PDFiumEngine::LoadBody() {
@@ -3368,7 +3369,7 @@ void PDFiumEngine::RotateInternal() {
   // Save the current page.
   int most_visible_page = most_visible_page_;
 
-  layout_.set_options(desired_layout_options_);
+  layout_.SetOptions(desired_layout_options_);
   InvalidateAllPages();
 
   // Restore find results.

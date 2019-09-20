@@ -250,7 +250,8 @@ TEST_F(NavigationRequestTest, SimpleDataChecksRedirectAndProcess) {
       NavigationSimulatorImpl::CreateRendererInitiated(kUrl1, main_rfh());
   navigation->Start();
   EXPECT_EQ(blink::mojom::RequestContextType::HYPERLINK,
-            navigation->GetNavigationHandle()->request_context_type());
+            NavigationRequest::From(navigation->GetNavigationHandle())
+                ->request_context_type());
   EXPECT_EQ(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN,
             navigation->GetNavigationHandle()->GetConnectionInfo());
 
@@ -258,7 +259,8 @@ TEST_F(NavigationRequestTest, SimpleDataChecksRedirectAndProcess) {
       net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1);
   navigation->Redirect(kUrl2);
   EXPECT_EQ(blink::mojom::RequestContextType::HYPERLINK,
-            navigation->GetNavigationHandle()->request_context_type());
+            NavigationRequest::From(navigation->GetNavigationHandle())
+                ->request_context_type());
   EXPECT_EQ(net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1,
             navigation->GetNavigationHandle()->GetConnectionInfo());
 
@@ -266,7 +268,8 @@ TEST_F(NavigationRequestTest, SimpleDataChecksRedirectAndProcess) {
       net::HttpResponseInfo::CONNECTION_INFO_QUIC_35);
   navigation->ReadyToCommit();
   EXPECT_EQ(blink::mojom::RequestContextType::HYPERLINK,
-            navigation->GetNavigationHandle()->request_context_type());
+            NavigationRequest::From(navigation->GetNavigationHandle())
+                ->request_context_type());
   EXPECT_EQ(net::HttpResponseInfo::CONNECTION_INFO_QUIC_35,
             navigation->GetNavigationHandle()->GetConnectionInfo());
 }
@@ -292,13 +295,15 @@ TEST_F(NavigationRequestTest, SimpleDataChecksFailure) {
       NavigationSimulatorImpl::CreateRendererInitiated(kUrl, main_rfh());
   navigation->Start();
   EXPECT_EQ(blink::mojom::RequestContextType::HYPERLINK,
-            navigation->GetNavigationHandle()->request_context_type());
+            NavigationRequest::From(navigation->GetNavigationHandle())
+                ->request_context_type());
   EXPECT_EQ(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN,
             navigation->GetNavigationHandle()->GetConnectionInfo());
 
   navigation->Fail(net::ERR_CERT_DATE_INVALID);
   EXPECT_EQ(blink::mojom::RequestContextType::HYPERLINK,
-            navigation->GetNavigationHandle()->request_context_type());
+            NavigationRequest::From(navigation->GetNavigationHandle())
+                ->request_context_type());
   EXPECT_EQ(net::ERR_CERT_DATE_INVALID,
             navigation->GetNavigationHandle()->GetNetErrorCode());
 }
@@ -550,11 +555,12 @@ TEST_F(NavigationRequestTest, MAYBE_WillFailRequestCanAccessRenderFrameHost) {
   navigation->SetAutoAdvance(false);
   navigation->Start();
   navigation->Fail(net::ERR_CERT_DATE_INVALID);
-  EXPECT_EQ(
-      NavigationRequest::PROCESSING_WILL_FAIL_REQUEST,
-      navigation->GetNavigationHandle()->navigation_request()->handle_state());
+  EXPECT_EQ(NavigationRequest::PROCESSING_WILL_FAIL_REQUEST,
+            NavigationRequest::From(navigation->GetNavigationHandle())
+                ->handle_state());
   EXPECT_TRUE(navigation->GetNavigationHandle()->GetRenderFrameHost());
-  navigation->GetNavigationHandle()->CallResumeForTesting();
+  NavigationRequest::From(navigation->GetNavigationHandle())
+      ->CallResumeForTesting();
   EXPECT_TRUE(navigation->GetNavigationHandle()->GetRenderFrameHost());
 
   SetBrowserClientForTesting(old_browser_client);

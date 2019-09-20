@@ -202,7 +202,8 @@ class AutofillCapturedSitesInteractiveTest
     SetServerUrlLoader(std::make_unique<test::ServerUrlLoader>(
         std::make_unique<test::ServerCacheReplayer>(
             GetParam().capture_file_path,
-            test::ServerCacheReplayer::kOptionFailOnInvalidJsonRecord)));
+            test::ServerCacheReplayer::kOptionFailOnInvalidJsonRecord |
+                test::ServerCacheReplayer::kOptionSplitRequestsByForm)));
   }
 
   void TearDownOnMainThread() override {

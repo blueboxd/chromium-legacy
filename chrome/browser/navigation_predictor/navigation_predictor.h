@@ -33,7 +33,6 @@ class PrerenderHandle;
 class PrerenderManager;
 }
 
-class SiteEngagementService;
 class TemplateURLService;
 
 // This class gathers metrics of anchor elements from both renderer process
@@ -125,10 +124,6 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   bool IsValidMetricFromRenderer(
       const blink::mojom::AnchorElementMetrics& metric) const;
 
-  // Returns site engagement service, which can be used to get site engagement
-  // score. Return value is guaranteed to be non-null.
-  SiteEngagementService* GetEngagementService() const;
-
   // Returns template URL service. Guaranteed to be non-null.
   TemplateURLService* GetTemplateURLService() const;
 
@@ -136,8 +131,8 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   void MergeMetricsSameTargetUrl(
       std::vector<blink::mojom::AnchorElementMetricsPtr>* metrics) const;
 
-  // Computes and stores document level metrics, including |number_of_anchors_|,
-  // |document_engagement_score_|, etc.
+  // Computes and stores document level metrics, including |number_of_anchors_|
+  // etc.
   void ComputeDocumentMetricsOnLoad(
       const std::vector<blink::mojom::AnchorElementMetricsPtr>& metrics);
 
@@ -145,8 +140,6 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // returns navigation score. Virtual for testing purposes.
   virtual double CalculateAnchorNavigationScore(
       const blink::mojom::AnchorElementMetrics& metrics,
-      double document_engagement_score,
-      double target_engagement_score,
       int area_rank) const;
 
   // If |sum_page_scales_| is non-zero, return the page-wide score to add to
@@ -244,8 +237,6 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   const int is_same_host_scale_;
   const int contains_image_scale_;
   const int is_url_incremented_scale_;
-  const int source_engagement_score_scale_;
-  const int target_engagement_score_scale_;
   const int area_rank_scale_;
   const int ratio_distance_root_top_scale_;
 

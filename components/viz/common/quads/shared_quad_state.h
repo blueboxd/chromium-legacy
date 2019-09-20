@@ -75,6 +75,9 @@ class VIZ_COMMON_EXPORT SharedQuadState {
   // occluding surfaces and is only for quads that are the only quad in
   // their surface. SetAll() doesn't update this data.
   base::Optional<gfx::Rect> occluding_damage_rect;
+
+  // The amount to skew quads in this layer. For experimental de-jelly effect.
+  float de_jelly_delta_y = 0.0f;
 };
 
 }  // namespace viz

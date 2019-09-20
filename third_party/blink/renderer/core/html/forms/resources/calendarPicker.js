@@ -2181,6 +2181,8 @@ YearListCell.prototype.reset = function(row) {
   this.label.textContent = row + 1;
   for (var i = 0; i < this.monthButtons.length; ++i) {
     this.monthButtons[i].classList.remove(YearListCell.ClassNameHighlighted);
+    this.monthButtons[i].classList.remove(YearListCell.ClassNameSelected);
+    this.monthButtons[i].classList.remove(YearListCell.ClassNameToday);
   }
   this.show();
 };

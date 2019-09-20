@@ -4,14 +4,15 @@
 
 #include "net/base/network_change_notifier_fuchsia.h"
 
+#include <lib/sys/cpp/component_context.h>
 #include <algorithm>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/fuchsia/service_directory_client.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "net/base/network_interfaces.h"
@@ -22,8 +23,9 @@ namespace net {
 NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(
     uint32_t required_features)
     : NetworkChangeNotifierFuchsia(
-          base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
-              ->ConnectToService<fuchsia::netstack::Netstack>(),
+          base::fuchsia::ComponentContextForCurrentProcess()
+              ->svc()
+              ->Connect<fuchsia::netstack::Netstack>(),
           required_features) {}
 
 NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(

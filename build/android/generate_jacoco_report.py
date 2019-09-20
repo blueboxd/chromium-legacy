@@ -130,7 +130,7 @@ def main():
     for f in sources_json_files:
       with open(f, 'r') as json_file:
         data = json.load(json_file)
-        class_files.append(data['input_path'])
+        class_files.extend(data['input_path'])
         source_dirs.extend(data['source_dirs'])
 
   # Fix source directories as direct parent of Java packages.

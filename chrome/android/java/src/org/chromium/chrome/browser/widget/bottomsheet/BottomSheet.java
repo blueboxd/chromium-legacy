@@ -16,6 +16,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
@@ -28,6 +29,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.Supplier;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
@@ -42,6 +44,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
+import org.chromium.ui.KeyboardVisibilityDelegate;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -216,9 +219,6 @@ public class BottomSheet
     /** Whether the sheet is currently open. */
     private boolean mIsSheetOpen;
 
-    /** The activity displaying the bottom sheet. */
-    protected ChromeActivity mActivity;
-
     /** Whether {@link #destroy()} has been called. **/
     private boolean mIsDestroyed;
 
@@ -380,7 +380,7 @@ public class BottomSheet
 
         // If the sheet is already open, the experiment is not enabled, or accessibility is enabled
         // there is no need to restrict the swipe area.
-        if (mActivity == null || isSheetOpen() || AccessibilityUtil.isAccessibilityEnabled()) {
+        if (isSheetOpen() || AccessibilityUtil.isAccessibilityEnabled()) {
             return true;
         }
 
@@ -501,19 +501,24 @@ public class BottomSheet
      * heights of the root view and control container are important as they are used in many of the
      * calculations in this class.
      * @param root The container of the bottom sheet.
-     * @param activity The activity displaying the bottom sheet.
+     * @param tabProvider A means of accessing the active tab.
+     * @param fullscreenManager A fullscreen manager for persisting browser controls and
+     *         determining\
+     *                          their offset.
+     * @param window Android window for getting insets.
+     * @param keyboardDelegate Delegate for hiding the keyboard.
      */
-    public void init(View root, ChromeActivity activity) {
-        mTabSupplier = activity.getActivityTabProvider();
-        mFullscreenManager = activity.getFullscreenManager();
+    public void init(View root, ActivityTabProvider tabProvider,
+            ChromeFullscreenManager fullscreenManager, Window window,
+            KeyboardVisibilityDelegate keyboardDelegate) {
+        mTabSupplier = tabProvider;
+        mFullscreenManager = fullscreenManager;
 
         mToolbarHolder =
                 (TouchRestrictingFrameLayout) findViewById(R.id.bottom_sheet_toolbar_container);
         setBackground(mToolbarHolder);
 
         mDefaultToolbarView = mToolbarHolder.findViewById(R.id.bottom_sheet_toolbar);
-
-        mActivity = activity;
 
         getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
 
@@ -548,10 +553,9 @@ public class BottomSheet
 
                 // Reset mVisibleViewportRect regardless of sheet open state as it is used outside
                 // of calculating the keyboard height.
-                mActivity.getWindow().getDecorView().getWindowVisibleDisplayFrame(
-                        mVisibleViewportRect);
+                window.getDecorView().getWindowVisibleDisplayFrame(mVisibleViewportRect);
                 if (isSheetOpen()) {
-                    int decorHeight = mActivity.getWindow().getDecorView().getHeight();
+                    int decorHeight = window.getDecorView().getHeight();
                     heightMinusKeyboard = Math.min(decorHeight, mVisibleViewportRect.height());
                     keyboardHeight = (int) (mContainerHeight - heightMinusKeyboard);
                 }
@@ -584,9 +588,8 @@ public class BottomSheet
                     // If we are in the middle of a touch event stream (i.e. scrolling while
                     // keyboard is up) don't set the sheet state. Instead allow the gesture detector
                     // to position the sheet and make sure the keyboard hides.
-                    if (mGestureDetector.isScrolling() && mActivity.getWindowAndroid() != null) {
-                        mActivity.getWindowAndroid().getKeyboardDelegate().hideKeyboard(
-                                BottomSheet.this);
+                    if (mGestureDetector.isScrolling() && keyboardDelegate != null) {
+                        keyboardDelegate.hideKeyboard(BottomSheet.this);
                     } else {
                         cancelAnimation();
                         setSheetState(mCurrentState, false);
@@ -821,7 +824,6 @@ public class BottomSheet
 
         dismissSelectedText();
         for (BottomSheetObserver o : mObservers) o.onSheetOpened(reason);
-        mActivity.addViewObscuringAllTabs(this);
     }
 
     /**
@@ -844,7 +846,6 @@ public class BottomSheet
                     getCurrentSheetContent().getSheetClosedAccessibilityStringId()));
         }
         clearFocus();
-        mActivity.removeViewObscuringAllTabs(this);
 
         setFocusable(false);
         setFocusableInTouchMode(false);
@@ -942,6 +943,7 @@ public class BottomSheet
     @Override
     public void setSheetOffset(float offset, boolean shouldAnimate) {
         cancelAnimation();
+        if (mSheetContent == null) return;
 
         if (shouldAnimate) {
             float velocityY = getCurrentOffsetPx() - offset;

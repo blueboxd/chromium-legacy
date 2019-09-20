@@ -90,7 +90,6 @@ const CLASSES = {
   // Vertically centers the most visited section for a non-Google provided page.
   NON_GOOGLE_PAGE: 'non-google-page',
   NON_WHITE_BG: 'non-white-bg',
-  RTL: 'rtl',                  // Right-to-left language text.
   SEARCH_ICON: 'search-icon',  // Magnifying glass/search icon.
   SELECTED: 'selected',  // A selected (via up/down arrow key) realbox match.
   SHOW_ELEMENT: 'show-element',
@@ -112,7 +111,7 @@ const SEARCH_HISTORY_MATCH_TYPES = [
  * @type {string}
  * @const
  */
-const DARK_MODE_BACKGROUND_COLOR = 'rgba(50,54,57,1)';
+const DARK_MODE_BACKGROUND_COLOR = 'rgba(53,54,58,1)';
 
 /**
  * The period of time (ms) before transitions can be applied to a toast
@@ -227,7 +226,7 @@ const NOTIFICATION_TIMEOUT = 10000;
  */
 const NTP_DESIGN = {
   backgroundColor: [255, 255, 255, 255],
-  darkBackgroundColor: [50, 54, 57, 255],
+  darkBackgroundColor: [53, 54, 58, 255],
   iconBackgroundColor: [241, 243, 244, 255],  /** GG100 */
   iconDarkBackgroundColor: [32, 33, 36, 255], /** GG900 */
   numTitleLines: 1,
@@ -301,6 +300,24 @@ let lastOutput = {text: '', inline: ''};
 let ntpApiHandle;
 
 // Helper methods.
+
+/**
+ * @param {number} style
+ * @return {!Array<string>}
+ */
+function classificationStyleToClasses(style) {
+  const classes = [];
+  if (style & ACMatchClassificationStyle.DIM) {
+    classes.push('dim');
+  }
+  if (style & ACMatchClassificationStyle.MATCH) {
+    classes.push('match');
+  }
+  if (style & ACMatchClassificationStyle.URL) {
+    classes.push('url');
+  }
+  return classes;
+}
 
 /**
  * Converts an Array of color components into RGBA format "rgba(R,G,B,A)".
@@ -630,7 +647,7 @@ function handlePostMessage(event) {
         $(IDS.SUGGESTIONS).style.visibility = 'visible';
       }
       if ($(IDS.PROMO)) {
-        $(IDS.PROMO).classList.add(CLASSES.SHOW_ELEMENT);
+        showPromoIfNotOverlappingAndTrackResizes();
       }
       if (customLinksEnabled()) {
         $(customize.IDS.CUSTOM_LINKS_RESTORE_DEFAULT)
@@ -831,13 +848,6 @@ function init() {
 
   if (searchboxApiHandle.rtl) {
     $(IDS.NOTIFICATION).dir = 'rtl';
-    // Grabbing the root HTML element. TODO(dbeam): could this just be <html ...
-    // dir="$i18n{textdirection}"> in the .html file instead? It could result in
-    // less flicker for RTL users (as HTML/CSS can render before JavaScript has
-    // the chance to run).
-    document.documentElement.setAttribute('dir', 'rtl');
-    // Add class for setting alignments based on language directionality.
-    document.documentElement.classList.add(CLASSES.RTL);
   }
 
   if (!iframesAndVoiceSearchDisabledForTesting) {
@@ -917,7 +927,7 @@ function injectPromo(promo) {
 
   // The the MV tiles are already loaded show the promo immediately.
   if (tilesAreLoaded) {
-    promoContainer.classList.add(CLASSES.SHOW_ELEMENT);
+    showPromoIfNotOverlappingAndTrackResizes();
   }
 }
 
@@ -957,6 +967,71 @@ function isFakeboxClick(event) {
 function isFakeboxFocused() {
   return document.body.classList.contains(CLASSES.FAKEBOX_FOCUS) ||
       document.body.classList.contains(CLASSES.FAKEBOX_DRAG_FOCUS);
+}
+
+/** @return {boolean} */
+function isPromoOverlapping() {
+  const MARGIN = 10;
+
+  /**
+   * @param {string} id
+   * @return {DOMRect}
+   */
+  const rect = id => $(id).getBoundingClientRect();
+
+  const promoRect = $(IDS.PROMO).querySelector('div').getBoundingClientRect();
+
+  if (promoRect.top - MARGIN <= rect(IDS.USER_CONTENT).bottom) {
+    return true;
+  }
+
+  if (window.chrome.embeddedSearch.searchBox.rtl) {
+    const attributionRect = rect(IDS.ATTRIBUTION);
+    if (attributionRect.width > 0 &&
+        promoRect.left - MARGIN <= attributionRect.right) {
+      return true;
+    }
+
+    const editBgRect = rect(customize.IDS.EDIT_BG);
+    assert(editBgRect.width > 0);
+    if (promoRect.left - 2 * MARGIN <= editBgRect.right) {
+      return true;
+    }
+
+    const customAttributionsRect = rect(customize.IDS.ATTRIBUTIONS);
+    if (customAttributionsRect.width > 0 &&
+        promoRect.right + MARGIN >= customAttributionsRect.left) {
+      return true;
+    }
+  } else {
+    const customAttributionsRect = rect(customize.IDS.ATTRIBUTIONS);
+    if (customAttributionsRect.width > 0 &&
+        promoRect.left - MARGIN <= customAttributionsRect.right) {
+      return true;
+    }
+
+    const editBgRect = rect(customize.IDS.EDIT_BG);
+    assert(editBgRect.width > 0);
+    if (promoRect.right + 2 * MARGIN >= editBgRect.left) {
+      return true;
+    }
+
+    const attributionEl = $(IDS.ATTRIBUTION);
+    const attributionRect = attributionEl.getBoundingClientRect();
+    if (attributionRect.width > 0) {
+      const attributionOnLeft =
+          attributionEl.classList.contains(CLASSES.LEFT_ALIGN_ATTRIBUTION);
+      if (attributionOnLeft) {
+        if (promoRect.left - MARGIN <= attributionRect.right) {
+          return true;
+        }
+      } else if (promoRect.right + MARGIN >= attributionRect.left) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 /** Binds event listeners. */
@@ -1260,6 +1335,9 @@ function onThemeChange() {
   renderTheme();
   renderOneGoogleBarTheme();
   sendThemeInfoToMostVisitedIframe();
+  if ($(IDS.PROMO)) {
+    showPromoIfNotOverlapping();
+  }
 }
 
 /**
@@ -1643,6 +1721,18 @@ function showNotification(msg) {
   $(IDS.UNDO_LINK).focus();
 }
 
+function showPromoIfNotOverlapping() {
+  $(IDS.PROMO).style.visibility = isPromoOverlapping() ? 'hidden' : 'visible';
+}
+
+function showPromoIfNotOverlappingAndTrackResizes() {
+  showPromoIfNotOverlapping();
+  // The removal before addition is to ensure only 1 event listener is ever
+  // active at the same time.
+  window.removeEventListener('resize', showPromoIfNotOverlapping);
+  window.addEventListener('resize', showPromoIfNotOverlapping);
+}
+
 /**
  * @param {string} text
  * @param {!Array<string>} classes
@@ -1653,24 +1743,6 @@ function spanWithClasses(text, classes) {
   span.classList.add(...classes);
   span.textContent = text;
   return span;
-}
-
-/**
- * @param {number} style
- * @return {!Array<string>}
- */
-function classificationStyleToClasses(style) {
-  const classes = [];
-  if (style & ACMatchClassificationStyle.DIM) {
-    classes.push('dim');
-  }
-  if (style & ACMatchClassificationStyle.MATCH) {
-    classes.push('match');
-  }
-  if (style & ACMatchClassificationStyle.URL) {
-    classes.push('url');
-  }
-  return classes;
 }
 
 /** @param {!RealboxOutputUpdate} update */

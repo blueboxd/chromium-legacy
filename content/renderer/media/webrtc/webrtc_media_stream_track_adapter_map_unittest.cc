@@ -10,7 +10,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
+#include "base/test/test_timeouts.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -260,7 +262,11 @@ class WebRtcMediaStreamTrackAdapterMapStressTest
     : public WebRtcMediaStreamTrackAdapterMapTest {
  public:
   WebRtcMediaStreamTrackAdapterMapStressTest()
-      : WebRtcMediaStreamTrackAdapterMapTest(), remaining_iterations_(0u) {}
+      : WebRtcMediaStreamTrackAdapterMapTest(),
+        increased_run_timeout_(
+            TestTimeouts::action_max_timeout(),
+            base::MakeExpectedNotRunClosure(FROM_HERE,
+                                            "RunLoop::Run() timed out.")) {}
 
   void RunStressTest(size_t iterations) {
     base::RunLoop run_loop;
@@ -335,6 +341,10 @@ class WebRtcMediaStreamTrackAdapterMapStressTest
   }
 
  private:
+  // TODO(https://crbug.com/1002761): Fix this test to run in < action_timeout()
+  // on slower bots (e.g. Debug, ASAN, etc).
+  const base::RunLoop::ScopedRunTimeoutForTest increased_run_timeout_;
+
   size_t remaining_iterations_;
 };
 

@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.AndroidRuntimeException;
@@ -26,12 +27,12 @@ import java.lang.reflect.Field;
  * WebLayer is responsible for initializing state necessary to use* any of the classes in web layer.
  */
 public final class WebLayer {
-    private static final String PACKAGE_NAME = "org.chromium.weblayer.support";
+    // TODO: Using a metadata key for the WebLayerImpl package is just being used for testing,
+    // production will use a different mechanism.
+    private static final String PACKAGE_MANIFEST_KEY = "org.chromium.weblayer.WebLayerPackage";
 
     private static WebLayer sInstance;
     private IWebLayer mImpl;
-
-    private Application mApplication;
 
     public static WebLayer getInstance() {
         if (sInstance == null) {
@@ -43,13 +44,12 @@ public final class WebLayer {
     WebLayer() {}
 
     public void init(Application application) {
-        mApplication = application;
         try {
             // TODO: Make asset loading work on L, where WebViewDelegate doesn't exist.
             // WebViewDelegate.addWebViewAssetPath() accesses the currently loaded package info from
             // WebViewFactory, so we have to fake it.
             PackageInfo implPackageInfo = application.getPackageManager().getPackageInfo(
-                    PACKAGE_NAME, PackageManager.GET_META_DATA);
+                    getImplPackageName(application), PackageManager.GET_META_DATA);
             Field packageInfo = WebViewFactory.class.getDeclaredField("sPackageInfo");
             packageInfo.setAccessible(true);
             packageInfo.set(null, implPackageInfo);
@@ -61,7 +61,7 @@ public final class WebLayer {
             WebViewDelegate delegate = (WebViewDelegate) constructor.newInstance();
             delegate.addWebViewAssetPath(application);
 
-            Context remoteContext = createRemoteContext();
+            Context remoteContext = createRemoteContext(application);
             mImpl = IWebLayer.Stub.asInterface(
                     (IBinder) remoteContext.getClassLoader()
                             .loadClass("org.chromium.weblayer_private.WebLayerImpl")
@@ -96,12 +96,24 @@ public final class WebLayer {
     /**
      * Creates a Context for the remote (weblayer implementation) side.
      */
-    Context createRemoteContext() {
+    static Context createRemoteContext(Context localContext) {
         try {
-            return mApplication.createPackageContext(
-                    PACKAGE_NAME, Context.CONTEXT_IGNORE_SECURITY | Context.CONTEXT_INCLUDE_CODE);
+            // TODO(cduvall): Might want to cache the remote context so we don't need to call into
+            // package manager more than we need to.
+            return localContext.createPackageContext(getImplPackageName(localContext),
+                    Context.CONTEXT_IGNORE_SECURITY | Context.CONTEXT_INCLUDE_CODE);
         } catch (NameNotFoundException e) {
             throw new AndroidRuntimeException(e);
         }
+    }
+
+    private static String getImplPackageName(Context localContext)
+            throws PackageManager.NameNotFoundException {
+        Bundle metaData = localContext.getPackageManager()
+                                  .getApplicationInfo(localContext.getPackageName(),
+                                          PackageManager.GET_META_DATA)
+                                  .metaData;
+        if (metaData != null) return metaData.getString(PACKAGE_MANIFEST_KEY);
+        return null;
     }
 }

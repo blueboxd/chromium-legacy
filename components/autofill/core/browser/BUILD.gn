@@ -194,6 +194,8 @@ jumbo_static_library("browser") {
     "payments/strike_database_integrator_base.h",
     "payments/strike_database_integrator_test_strike_database.cc",
     "payments/strike_database_integrator_test_strike_database.h",
+    "payments/upi_vpa_save_manager.cc",
+    "payments/upi_vpa_save_manager.h",
     "personal_data_manager.cc",
     "personal_data_manager.h",
     "personal_data_manager_observer.h",

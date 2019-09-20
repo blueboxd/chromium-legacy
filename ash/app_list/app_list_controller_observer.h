@@ -12,7 +12,11 @@ namespace ash {
 
 class ASH_EXPORT AppListControllerObserver : public base::CheckedObserver {
  public:
-  // Called when the AppList is shown or dismissed.
+  // Called when the AppList target visibility changes.
+  virtual void OnAppListTargetVisibilityChanged(bool shown,
+                                                int64_t display_id) {}
+
+  // Called when the AppList visibility changes.
   virtual void OnAppListVisibilityChanged(bool shown, int64_t display_id) {}
 };
 

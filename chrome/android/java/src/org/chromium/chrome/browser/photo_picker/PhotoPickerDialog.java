@@ -12,10 +12,10 @@ import android.support.v7.app.AlertDialog;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.ui.PhotoPickerListener;
-import org.chromium.ui.base.WindowAndroid;
 
 import java.util.List;
 
@@ -116,7 +116,7 @@ public class PhotoPickerDialog
                         dismiss();
                     }
                 }
-            }, WindowAndroid.activityFromContext(mContext));
+            }, ContextUtils.activityFromContext(mContext));
         }
     }
 

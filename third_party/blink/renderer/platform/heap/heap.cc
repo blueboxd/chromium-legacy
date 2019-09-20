@@ -547,27 +547,23 @@ void ThreadHeap::CollectStatistics(ThreadState::Statistics* stats) {
 #undef SNAPSHOT_ARENA
 }
 
-bool ThreadHeap::AdvanceLazySweep(base::TimeTicks deadline) {
-  static const base::TimeDelta slack = base::TimeDelta::FromSecondsD(0.001);
-  for (int i = 0; i < BlinkGC::kNumberOfArenas; i++) {
+bool ThreadHeap::AdvanceSweep(SweepingType sweeping_type,
+                              base::TimeTicks deadline) {
+  static constexpr base::TimeDelta slack = base::TimeDelta::FromSecondsD(0.001);
+  auto sweeping_function = sweeping_type == SweepingType::kMutator
+                               ? &BaseArena::LazySweepWithDeadline
+                               : &BaseArena::ConcurrentSweepWithDeadline;
+  for (size_t i = 0; i < BlinkGC::kNumberOfArenas; i++) {
     // lazySweepWithDeadline() won't check the deadline until it sweeps
     // 10 pages. So we give a small slack for safety.
     const base::TimeDelta remaining_budget =
         deadline - slack - base::TimeTicks::Now();
     if (remaining_budget <= base::TimeDelta() ||
-        !arenas_[i]->LazySweepWithDeadline(deadline)) {
+        !(arenas_[i]->*sweeping_function)(deadline)) {
       return false;
     }
   }
   return true;
-}
-
-void ThreadHeap::ConcurrentSweep() {
-  // Concurrent sweep simply sweeps pages not calling finalizers.
-  for (size_t i = BlinkGC::kNormalPage1ArenaIndex;
-       i < BlinkGC::kNumberOfArenas; i++) {
-    arenas_[i]->SweepOnConcurrentThread();
-  }
 }
 
 // TODO(omerkatz): Temporary solution until concurrent marking is ready. see

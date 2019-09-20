@@ -51,13 +51,17 @@ RenderViewHost* RenderViewHostFactory::Create(
                                           routing_id, main_frame_routing_id,
                                           widget_routing_id, swapped_out);
   }
-  return new RenderViewHostImpl(
+
+  RenderViewHostImpl* view_host = new RenderViewHostImpl(
       instance,
       RenderWidgetHostFactory::Create(widget_delegate, instance->GetProcess(),
                                       widget_routing_id, mojo::NullRemote(),
                                       /*hidden=*/true),
       delegate, routing_id, main_frame_routing_id, swapped_out,
       true /* has_initialized_audio_host */);
+  view_host->GetWidget()->BindVisualPropertiesManager(
+      view_host->GetVisualPropertiesManager());
+  return view_host;
 }
 
 // static

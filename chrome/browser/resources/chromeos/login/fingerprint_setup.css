@@ -7,10 +7,6 @@
   font-weight: 400; /* roboto-regular */
 }
 
-[slot='bottom-buttons'] {
-  padding: 0 34px;
-}
-
 [slot='footer'] {
   padding: 50px 0 0;
 }

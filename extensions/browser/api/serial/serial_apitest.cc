@@ -23,6 +23,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -86,7 +87,7 @@ class FakeSerialPort : public device::mojom::SerialPort {
   void Open(device::mojom::SerialConnectionOptionsPtr options,
             mojo::ScopedDataPipeConsumerHandle in_stream,
             mojo::ScopedDataPipeProducerHandle out_stream,
-            device::mojom::SerialPortClientPtr client,
+            mojo::PendingRemote<device::mojom::SerialPortClient> client,
             OpenCallback callback) override {
     if (client_) {
       // Port is already open.
@@ -96,7 +97,7 @@ class FakeSerialPort : public device::mojom::SerialPort {
 
     DoConfigurePort(*options);
     DCHECK(client);
-    client_ = std::move(client);
+    client_.Bind(std::move(client));
     SetUpInStreamPipe(std::move(in_stream));
     SetUpOutStreamPipe(std::move(out_stream));
     std::move(callback).Run(true);
@@ -272,7 +273,7 @@ class FakeSerialPort : public device::mojom::SerialPort {
   std::vector<uint8_t> buffer_;
   int read_step_ = 0;
   int write_step_ = 0;
-  device::mojom::SerialPortClientPtr client_;
+  mojo::Remote<device::mojom::SerialPortClient> client_;
   mojo::ScopedDataPipeConsumerHandle in_stream_;
   mojo::SimpleWatcher in_stream_watcher_;
   mojo::ScopedDataPipeProducerHandle out_stream_;

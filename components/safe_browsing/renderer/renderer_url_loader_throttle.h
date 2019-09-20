@@ -10,6 +10,8 @@
 #include "base/memory/weak_ptr.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "url/gurl.h"
 
@@ -64,8 +66,8 @@ class RendererURLLoaderThrottle : public blink::URLLoaderThrottle,
 
   // These fields hold the connection to this instance's private connection to
   // the Safe Browsing service if DetachFromCurrentThread has been called.
-  mojom::SafeBrowsingPtrInfo safe_browsing_ptr_info_;
-  mojom::SafeBrowsingPtr safe_browsing_ptr_;
+  mojo::PendingRemote<mojom::SafeBrowsing> safe_browsing_pending_remote_;
+  mojo::Remote<mojom::SafeBrowsing> safe_browsing_remote_;
 
   mojom::SafeBrowsingUrlCheckerPtr url_checker_;
 

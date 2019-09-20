@@ -634,7 +634,7 @@
 <translation id="4277028893293644418">Redefinir senha</translation>
 <translation id="4279811152705618813">Seu <ph name="DEVICE_TYPE" /> é gerenciado por <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Esse cartão foi adicionado à sua Conta do Google}one{Esse cartão foi adicionado à sua Conta do Google}other{Esses cartões foram adicionados à sua Conta do Google}}</translation>
-<translation id="428847186335018806">Verificar os arquivos dos quais você faz o download ou upload no Chrome.</translation>
+<translation id="428847186335018806">Verifica os arquivos dos quais você faz o download ou upload no Chrome.</translation>
 <translation id="42981349822642051">Expandir</translation>
 <translation id="4302965934281694568">Chou3 (Envelope)</translation>
 <translation id="4305817255990598646">Alternar</translation>
@@ -1022,7 +1022,7 @@
 <translation id="6433490469411711332">Editar informações de contato</translation>
 <translation id="6433595998831338502">A conexão com <ph name="HOST_NAME" /> foi recusada.</translation>
 <translation id="6434309073475700221">Descartar</translation>
-<translation id="6435221585574090192">Compartilhe os dados sobre ocorrências de segurança que foram marcadas pelo serviço de proteção contra ameaças do Chrome Enterprise com seu administrador. Isso pode incluir URLs de páginas, nomes e metadados de arquivos, o nome de usuário do dispositivo e seu nome de usuário do Chrome.</translation>
+<translation id="6435221585574090192">Compartilhe os dados sobre ocorrências de segurança sinalizadas pelo serviço de proteção contra ameaças do Chrome Enterprise com seu administrador. Isso pode incluir URLs de páginas, nomes e metadados de arquivos, o nome de usuário do dispositivo e seu nome de usuário do Chrome.</translation>
 <translation id="6440503408713884761">Ignorada</translation>
 <translation id="6446163441502663861">Kahu (Envelope)</translation>
 <translation id="6446608382365791566">Adicionar mais informações</translation>

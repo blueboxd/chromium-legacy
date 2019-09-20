@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
+#include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"

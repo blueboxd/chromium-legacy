@@ -36,7 +36,7 @@ const base::Feature kRefreshExpirationDate{"RefreshExpirationDate",
 #endif
 
 const base::Feature kPreventDownloadsWithSamePath{
-    "PreventDownloadsWithSamePath", base::FEATURE_DISABLED_BY_DEFAULT};
+    "PreventDownloadsWithSamePath", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kUseInProgressDownloadManagerForDownloadService{
     "UseInProgressDownloadManagerForDownloadService",

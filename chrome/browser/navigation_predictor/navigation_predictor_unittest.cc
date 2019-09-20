@@ -59,8 +59,6 @@ class TestNavigationPredictor : public NavigationPredictor {
  private:
   double CalculateAnchorNavigationScore(
       const blink::mojom::AnchorElementMetrics& metrics,
-      double document_engagement_score,
-      double target_engagement_score,
       int area_rank) const override {
     area_rank_map_.emplace(std::make_pair(metrics.target_url, area_rank));
     return 100 * metrics.ratio_area;
@@ -97,8 +95,6 @@ class TestNavigationPredictorBasedOnScroll : public TestNavigationPredictor {
   // any weight is the ratio distance to the top of the document.
   double CalculateAnchorNavigationScore(
       const blink::mojom::AnchorElementMetrics& metrics,
-      double document_engagement_score,
-      double target_engagement_score,
       int area_rank) const override {
     return metrics.ratio_distance_root_top;
   }
@@ -199,8 +195,6 @@ TEST_F(NavigationPredictorTest, ReportAnchorElementMetricsOnClick) {
   predictor_service()->ReportAnchorElementMetricsOnClick(std::move(metrics));
   base::RunLoop().RunUntilIdle();
 
-  histogram_tester.ExpectTotalCount(
-      "AnchorElementMetrics.Clicked.HrefEngagementScore2", 1);
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.AccuracyActionTaken",
       NavigationPredictor::ActionAccuracy::kNoActionTakenClickHappened, 1);
@@ -234,7 +228,7 @@ TEST_F(NavigationPredictorTest,
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectTotalCount(
-      "AnchorElementMetrics.Clicked.HrefEngagementScore2", 0);
+      "AnchorElementMetrics.Visible.HighestNavigationScore", 0);
 }
 
 // Test that if source/target url is not http or https, no navigation score will
@@ -459,8 +453,6 @@ TEST_F(NavigationPredictorTest, ActionTaken_SameOrigin_Prefetch) {
       std::move(metrics_clicked));
   base::RunLoop().RunUntilIdle();
 
-  histogram_tester.ExpectTotalCount(
-      "AnchorElementMetrics.Clicked.HrefEngagementScore2", 1);
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.AccuracyActionTaken",
       NavigationPredictor::ActionAccuracy::kPrefetchActionClickToSameOrigin, 1);
@@ -864,8 +856,6 @@ TEST_F(NavigationPredictorPrefetchDisabledTest,
       std::move(metrics_clicked));
   base::RunLoop().RunUntilIdle();
 
-  histogram_tester.ExpectTotalCount(
-      "AnchorElementMetrics.Clicked.HrefEngagementScore2", 1);
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.AccuracyActionTaken",
       NavigationPredictor::ActionAccuracy::kPreconnectActionClickToSameOrigin,
@@ -956,8 +946,6 @@ TEST_F(NavigationPredictorPreconnectPrefetchDisabledTest,
       std::move(metrics_clicked));
   base::RunLoop().RunUntilIdle();
 
-  histogram_tester.ExpectTotalCount(
-      "AnchorElementMetrics.Clicked.HrefEngagementScore2", 1);
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.AccuracyActionTaken",
       NavigationPredictor::ActionAccuracy::kPreconnectActionClickToSameOrigin,

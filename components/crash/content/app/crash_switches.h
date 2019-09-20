@@ -5,10 +5,16 @@
 #ifndef COMPONENTS_CRASH_CONTENT_APP_CRASH_SWITCHES_H_
 #define COMPONENTS_CRASH_CONTENT_APP_CRASH_SWITCHES_H_
 
+#include "build/build_config.h"
+
 namespace crash_reporter {
 namespace switches {
 
 extern const char kCrashpadHandler[];
+
+#if defined(OS_LINUX)
+extern const char kCrashpadHandlerPid[];
+#endif  // OS_LINUX
 
 }  // namespace switches
 }  // namespace crash_reporter

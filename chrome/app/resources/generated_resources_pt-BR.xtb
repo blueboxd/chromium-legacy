@@ -2927,7 +2927,7 @@ Verifique se você confia neste site antes de entrar na RV.</translation>
 <translation id="5360150013186312835">Mostrar na barra de ferramentas</translation>
 <translation id="5362741141255528695">Selecionar arquivo de chave privada.</translation>
 <translation id="5363109466694494651">Realizar Powerwash e reverter</translation>
-<translation id="5365716706805792666">O Google pode verificar se suas senhas estavam em uma violação de dados. Isso será ativado quando você fizer login com sua Conta Google.</translation>
+<translation id="5365716706805792666">O Google pode verificar se suas senhas foram afetadas por uma violação de dados. O recurso será ativado quando você fizer login com sua Conta Google.</translation>
 <translation id="5365881113273618889">A pasta selecionada contém arquivos confidenciais. Tem certeza de que quer conceder acesso permanente de gravação nessa pasta ao "<ph name="APP_NAME" />"?</translation>
 <translation id="5367091008316207019">Lendo arquivo...</translation>
 <translation id="5368720394188453070">Seu smartphone está bloqueado. Desbloqueie-o para entrar.</translation>
@@ -4756,7 +4756,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8014154204619229810">O atualizador está sendo executado no momento. Aguarde um minuto e atualize para verificar novamente.</translation>
 <translation id="8014206674403687691">Não foi possível reverter o produto <ph name="IDS_SHORT_PRODUCT_NAME" /> para a versão anteriormente instalada. Tente executar novamente o Powerwash no seu dispositivo.</translation>
 <translation id="8014210335923519270">Melhore o <ph name="IDS_SHORT_PRODUCT_NAME" /> e a segurança dele enviando informações do sistema e sobre o uso para o Google</translation>
-<translation id="8015780634880457457">O Google pode verificar se suas senhas estavam em uma violação de dados</translation>
+<translation id="8015780634880457457">O Google pode verificar se suas senhas foram afetadas em uma violação de dados</translation>
 <translation id="8016266267177410919">Armazenamento temporário</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Atalho editado</translation>
@@ -4859,7 +4859,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8174876712881364124">Fazer backup no Google Drive. Restaure dados com facilidade ou troque de dispositivo a qualquer momento. Esse backup inclui dados de apps. Ele é enviado ao Google e criptografado usando a senha da Conta do Google do seu filho. <ph name="BEGIN_LINK1" />Saiba mais<ph name="END_LINK1" /></translation>
 <translation id="8176332201990304395">Rosa e branco</translation>
 <translation id="8177196903785554304">Detalhes da rede</translation>
-<translation id="8178208419593390223">Gerencie as Contas do Google em que você está conectado. Sites, apps e extensões no Chrome e no Google Play podem usar essas contas para personalizar sua experiência, dependendo das permissões.</translation>
 <translation id="8179976553408161302">Entrar</translation>
 <translation id="8180239481735238521">página</translation>
 <translation id="8180294223783876911">Envie dados de uso e diagnóstico. No momento, este dispositivo está enviando automaticamente ao Google dados de diagnóstico, de uso de apps e do dispositivo. Eles ajudarão a melhorar o sistema, a estabilidade de apps e muito mais. Alguns dados agregados também ajudarão os apps do Google e os nossos parceiros, como os desenvolvedores Android. Se a configuração "Atividade na Web e de apps adicional" estiver ativada, esses dados poderão ser salvos na sua Conta do Google. <ph name="BEGIN_LINK1" />Saiba mais<ph name="END_LINK1" /></translation>

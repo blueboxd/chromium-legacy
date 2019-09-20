@@ -2,6 +2,7 @@ include_rules = [
   "+cc",
   "+components/embedder_support",
   "+content/public",
+  "+mojo/public",
   "+net",
   "+sandbox",
   "+services/service_manager",
@@ -12,5 +13,6 @@ include_rules = [
   "+ui/events",
   "+ui/gfx",
   "+ui/views",
+  "+ui/webui",
   "+ui/wm",
 ]

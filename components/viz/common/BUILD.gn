@@ -114,6 +114,8 @@ viz_component("common") {
   sources = [
     "constants.cc",
     "constants.h",
+    "display/de_jelly.cc",
+    "display/de_jelly.h",
     "display/overlay_strategy.cc",
     "display/overlay_strategy.h",
     "display/renderer_settings.cc",

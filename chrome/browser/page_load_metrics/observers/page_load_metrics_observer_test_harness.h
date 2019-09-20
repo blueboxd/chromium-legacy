@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_tester.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "ui/base/page_transition_types.h"
 

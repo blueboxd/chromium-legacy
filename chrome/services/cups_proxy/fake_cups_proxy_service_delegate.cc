@@ -6,7 +6,8 @@
 
 namespace cups_proxy {
 
-std::vector<chromeos::Printer> FakeCupsProxyServiceDelegate::GetPrinters() {
+std::vector<chromeos::Printer> FakeCupsProxyServiceDelegate::GetPrinters(
+    chromeos::PrinterClass printer_class) {
   return {};
 }
 

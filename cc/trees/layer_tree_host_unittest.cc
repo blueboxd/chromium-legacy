@@ -966,13 +966,13 @@ class LayerTreeHostTestPushElementIdToNodeIdMap : public LayerTreeHostTest {
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
         child_->SetForceRenderSurfaceForTesting(true);
-        child_->AddMainThreadScrollingReasons(
-            MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
+        // Add a non-fast region to ensure a scroll node is created.
+        child_->SetNonFastScrollableRegion(Region(gfx::Rect(50, 50, 50, 50)));
         break;
       case 2:
         child_->SetForceRenderSurfaceForTesting(false);
-        child_->ClearMainThreadScrollingReasons(
-            MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
+        // Remove the non-fast region to ensure a scroll node is removed.
+        child_->SetNonFastScrollableRegion(Region());
         break;
     }
   }

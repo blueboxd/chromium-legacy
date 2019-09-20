@@ -15,6 +15,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
+import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -25,6 +26,7 @@ import org.chromium.ui.base.ResourceBundle;
 import org.chromium.weblayer_private.aidl.IProfile;
 import org.chromium.weblayer_private.aidl.IWebLayer;
 
+@UsedByReflection("WebLayer")
 public final class WebLayerImpl extends IWebLayer.Stub {
     // TODO: should there be one tag for all this code?
     private static final String TAG = "WebLayer";
@@ -32,6 +34,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     // TODO: Configure this from the client.
     private static final String COMMAND_LINE_FILE = "/data/local/tmp/weblayer-command-line";
 
+    @UsedByReflection("WebLayer")
     public static IBinder create(Application application, Context implContext) {
         return new WebLayerImpl(application, implContext);
     }
@@ -52,9 +55,11 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         ResourceBundle.setNoAvailableLocalePaks();
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
 
-        ChildProcessCreationParams.set(implContext.getPackageName(), true /* isExternalService */,
-                LibraryProcessType.PROCESS_CHILD, true /* bindToCaller */,
-                false /* ignoreVisibilityForImportance */);
+        ChildProcessCreationParams.set(application.getPackageName(), false /* isExternalService */,
+                LibraryProcessType.PROCESS_WEBLAYER_CHILD, true /* bindToCaller */,
+                false /* ignoreVisibilityForImportance */,
+                "org.chromium.weblayer.ChildProcessService$Privileged",
+                "org.chromium.weblayer.ChildProcessService$Sandboxed");
 
         if (!CommandLine.isInitialized()) {
             CommandLine.initFromFile(COMMAND_LINE_FILE);
@@ -63,14 +68,14 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         DeviceUtils.addDeviceSpecificUserAgentSwitch();
 
         try {
-            LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
+            LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_WEBLAYER);
         } catch (ProcessInitException e) {
             Log.e(TAG, "ContentView initialization failed.", e);
             throw new AndroidRuntimeException(e);
         }
 
         try {
-            BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+            BrowserStartupController.get(LibraryProcessType.PROCESS_WEBLAYER)
                     .startBrowserProcessesSync(
                             /* singleProcess*/ false);
         } catch (ProcessInitException e) {

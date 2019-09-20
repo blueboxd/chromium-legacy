@@ -59,6 +59,7 @@ struct GFX_EXPORT GpuMemoryBufferHandle {
   GpuMemoryBufferHandle(GpuMemoryBufferHandle&& other);
   GpuMemoryBufferHandle& operator=(GpuMemoryBufferHandle&& other);
   ~GpuMemoryBufferHandle();
+  GpuMemoryBufferHandle Clone() const;
   bool is_null() const { return type == EMPTY_BUFFER; }
   GpuMemoryBufferType type;
   GpuMemoryBufferId id;

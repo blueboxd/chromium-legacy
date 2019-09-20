@@ -18,7 +18,6 @@
 <translation id="1176932207622159128">Görüntü Kaydedilemiyor</translation>
 <translation id="1180526666083833456">Cihazlar arasında senkronize edin ve kişiselleştirme yapın.</translation>
 <translation id="1181037720776840403">Kaldır</translation>
-<translation id="1201530049782216880">Yeni Gizli Sekme</translation>
 <translation id="1209206284964581585">Şimdilik gizle</translation>
 <translation id="1219674500290482172">İnternet'e bağlanılamıyor.</translation>
 <translation id="122699739164161391">Tüm Sekmeleri Kapat</translation>
@@ -94,7 +93,6 @@
 <translation id="2149973817440762519">Yer İşaretini Düzenle</translation>
 <translation id="2179182049312275900">Senkronizasyonu istediğiniz zaman ayarlardan açabilirsiniz</translation>
 <translation id="2198757192731523470">Google; Arama, reklamlar ve diğer Google hizmetlerini kişiselleştirmek için geçmişinizi kullanabilir</translation>
-<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> okunmamış Okuma Listesi makalesi.</translation>
 <translation id="2230173723195178503">Web sayfası yüklendi</translation>
 <translation id="2239626343334228536">Göz atma verileri temizleniyor...</translation>
 <translation id="2256128224215992540">Arama ve Site Önerileri</translation>
@@ -124,7 +122,6 @@
 <translation id="2625189173221582860">Şifre kopyalandı</translation>
 <translation id="2648803196158606475">Okunanları Sil</translation>
 <translation id="2653659639078652383">Gönder</translation>
-<translation id="2684815431982545828">Yeni Sekme</translation>
 <translation id="2690858294534178585">Kamera kullanılıyor</translation>
 <translation id="2691653761409724435">Çevrimdışı kullanılamaz</translation>
 <translation id="2702801445560668637">Okuma Listesi</translation>
@@ -267,7 +264,6 @@ Verileriniz senkronizasyon parolanızla şifrelendi. Senkronizasyonu başlatmak 
 
 Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlayın<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">Geçersiz Kart Numarası</translation>
-<translation id="4807020197310989387">1 okunmamış Okuma Listesi makalesi.</translation>
 <translation id="4818522717893377262">Dil Ekle...</translation>
 <translation id="481968316161811770">Çerezler, Site Verileri</translation>
 <translation id="4833786495304741580">Kullanım istatistiklerini ve kilitlenme raporlarını Google'a otomatik olarak gönderir.</translation>

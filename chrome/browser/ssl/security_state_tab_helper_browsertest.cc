@@ -5,6 +5,7 @@
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 
 #include "base/base64.h"
+#include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -12,6 +13,7 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -74,6 +76,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "net/base/net_errors.h"
+#include "net/cert/cert_database.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/ct_policy_status.h"
@@ -89,9 +92,6 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/test/test_data_directory.h"
-#include "net/test/url_request/url_request_failed_job.h"
-#include "net/url_request/url_request_filter.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
@@ -1270,32 +1270,6 @@ IN_PROC_BROWSER_TEST_F(PKPModelClientTest, PKPEnforced) {
                            browser(), cert.get());
 }
 
-// Fails requests with ERR_IO_PENDING. Can be used to simulate a navigation
-// that never stops loading.
-class PendingJobInterceptor : public net::URLRequestInterceptor {
- public:
-  PendingJobInterceptor() {}
-  ~PendingJobInterceptor() override {}
-
-  // URLRequestInterceptor implementation
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    return new net::URLRequestFailedJob(request, network_delegate,
-                                        net::ERR_IO_PENDING);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PendingJobInterceptor);
-};
-
-void InstallLoadingInterceptor(const std::string& host) {
-  net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
-  filter->AddHostnameInterceptor(
-      "http", host,
-      std::unique_ptr<net::URLRequestInterceptor>(new PendingJobInterceptor()));
-}
-
 class SecurityStateLoadingTest : public SecurityStateTabHelperTest {
  public:
   SecurityStateLoadingTest() : SecurityStateTabHelperTest() {}
@@ -1304,11 +1278,6 @@ class SecurityStateLoadingTest : public SecurityStateTabHelperTest {
  protected:
   void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->Start());
-
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&InstallLoadingInterceptor,
-                       embedded_test_server()->GetURL("/title1.html").host()));
   }
 
  private:

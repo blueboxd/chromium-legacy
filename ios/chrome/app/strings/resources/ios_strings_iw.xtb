@@ -18,7 +18,6 @@
 <translation id="1176932207622159128">לא ניתן לשמור את התמונה</translation>
 <translation id="1180526666083833456">סנכרון והתאמה אישית במכשירים שונים</translation>
 <translation id="1181037720776840403">הסרה</translation>
-<translation id="1201530049782216880">כרטיסייה חדשה לגלישה בסתר</translation>
 <translation id="1209206284964581585">הסתר בינתיים</translation>
 <translation id="1219674500290482172">לא ניתן להתחבר לאינטרנט.</translation>
 <translation id="122699739164161391">סגירת כל הכרטיסיות</translation>
@@ -94,7 +93,6 @@
 <translation id="2149973817440762519">ערוך סימניות</translation>
 <translation id="2179182049312275900">אפשר להפעיל את הסנכרון בכל זמן דרך ההגדרות.</translation>
 <translation id="2198757192731523470">‏Google תוכל להשתמש בהיסטוריית הגלישה שלך לצורך התאמה אישית של החיפוש, מודעות ושירותי Google אחרים.</translation>
-<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> מאמרים שלא נקראו ברשימת הקריאה.</translation>
 <translation id="2230173723195178503">דף האינטרנט נטען</translation>
 <translation id="2239626343334228536">מנקה נתוני גלישה…</translation>
 <translation id="2256128224215992540">הצעות למונחי חיפוש ולאתרים</translation>
@@ -124,7 +122,6 @@
 <translation id="2625189173221582860">הסיסמה הועתקה</translation>
 <translation id="2648803196158606475">מחק פריטים שנקראו</translation>
 <translation id="2653659639078652383">שלח</translation>
-<translation id="2684815431982545828">כרטיסייה חדשה</translation>
 <translation id="2690858294534178585">המצלמה נמצאת בשימוש</translation>
 <translation id="2691653761409724435">לא זמין במצב לא מקוון</translation>
 <translation id="2702801445560668637">רשימת קריאה</translation>
@@ -267,7 +264,6 @@
 
 כדי לשנות את ההגדרה הזו צריך <ph name="BEGIN_LINK" />לאפס את הסנכרון<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">מספר כרטיס לא חוקי</translation>
-<translation id="4807020197310989387">מאמר אחד שלא נקרא ברשימת הקריאה.</translation>
 <translation id="4818522717893377262">הוספת שפה…</translation>
 <translation id="481968316161811770">‏קובצי cookie, נתוני אתרים</translation>
 <translation id="4833786495304741580">‏שליחת דוחות קריסה וסטטיסטיקות שימוש אל Google באופן אוטומטי.</translation>

@@ -220,8 +220,8 @@ Polymer({
     for (const type of orderedNetworkTypes) {
       const device = newDeviceStates[type];
       if (!device) {
-        continue;
-      }  // The technology for this device type is unavailable.
+        continue;  // The technology for this device type is unavailable.
+      }
 
       // If both 'Tether' and 'Cellular' technologies exist, merge the network
       // lists and do not add an active network for 'Tether' so that there is
@@ -238,7 +238,7 @@ Polymer({
       // types are enabled but no Cellular network exists (edge case).
       const networkState =
           this.getActiveStateForType_(activeNetworkStatesByType, type);
-      if (networkState.source === undefined &&
+      if (networkState.source == mojom.OncSource.kNone &&
           device.deviceState == mojom.DeviceStateType.kProhibited) {
         // Prohibited technologies are enforced by the device policy.
         networkState.source =

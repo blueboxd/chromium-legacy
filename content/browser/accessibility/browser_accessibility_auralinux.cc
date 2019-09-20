@@ -73,4 +73,9 @@ ui::AXPlatformNode* BrowserAccessibilityAuraLinux::GetFromNodeID(int32_t id) {
   return ToBrowserAccessibilityAuraLinux(accessibility)->GetNode();
 }
 
+ui::TextAttributeList BrowserAccessibilityAuraLinux::ComputeTextAttributes()
+    const {
+  return GetNode()->ComputeTextAttributes();
+}
+
 }  // namespace content

@@ -48,6 +48,9 @@ typedef NS_ENUM(NSInteger, PopupMenuAction) {
   PopupMenuActionNeverTranslateSourceLanguage,
   PopupMenuActionNeverTranslateSite,
   PopupMenuActionChangeSourceLanguage,
+  // Badge overflow popup menu
+  PopupMenuActionShowSavePasswordOptions,
+  PopupMenuActionShowUpdatePasswordOptions,
 };
 
 // Protocol defining a popup item.

@@ -20,6 +20,14 @@
 #include "third_party/blink/public/common/media/video_capture.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
+namespace gpu {
+class GpuMemoryBufferSupport;
+}  // namespace gpu
+
+namespace media {
+class GpuVideoAcceleratorFactories;
+}  // namespace media
+
 namespace blink {
 
 // VideoCaptureImpl represents a capture device in renderer process. It provides
@@ -73,6 +81,8 @@ class PLATFORM_EXPORT VideoCaptureImpl
       media::mojom::blink::VideoCaptureHost* service) {
     video_capture_host_for_testing_ = service;
   }
+  void SetGpuMemoryBufferSupportForTesting(
+      std::unique_ptr<gpu::GpuMemoryBufferSupport> gpu_memory_buffer_support);
 
   // media::mojom::VideoCaptureObserver implementation.
   void OnStateChanged(media::mojom::VideoCaptureState state) override;
@@ -96,6 +106,12 @@ class PLATFORM_EXPORT VideoCaptureImpl
 
   using BufferFinishedCallback =
       base::OnceCallback<void(double consumer_resource_utilization)>;
+
+  void OnVideoFrameReady(int32_t buffer_id,
+                         base::TimeTicks reference_time,
+                         media::mojom::blink::VideoFrameInfoPtr info,
+                         scoped_refptr<media::VideoFrame> frame,
+                         scoped_refptr<BufferContext> buffer_context);
 
   void OnAllClientsFinishedConsumingFrame(
       int buffer_id,
@@ -157,6 +173,12 @@ class PLATFORM_EXPORT VideoCaptureImpl
   base::TimeTicks first_frame_ref_time_;
 
   VideoCaptureState state_;
+
+  // Methods of |gpu_factories_| need to run on |media_task_runner_|.
+  media::GpuVideoAcceleratorFactories* gpu_factories_;
+  scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
+
+  std::unique_ptr<gpu::GpuMemoryBufferSupport> gpu_memory_buffer_support_;
 
   THREAD_CHECKER(io_thread_checker_);
 

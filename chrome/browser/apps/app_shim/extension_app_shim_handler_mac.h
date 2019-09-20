@@ -100,12 +100,6 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
   // none.
   AppShimHost* FindHost(Profile* profile, const std::string& app_id);
 
-  // Return the host corresponding to |profile| and |app_id|, if one exists.
-  // If one does not exist, create one, and launch the app shim (so that the
-  // app shim will connect to the returned host).
-  AppShimHost* FindOrCreateHost(Profile* profile,
-                                const extensions::Extension* extension);
-
   // Get the AppShimHost corresponding to a browser instance, returning nullptr
   // if none should exist. If no AppShimHost exists, but one should exist
   // (e.g, because the app process is still launching), create one, which will
@@ -189,11 +183,10 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
 
   std::unique_ptr<Delegate> delegate_;
 
-  // Retrieve the ProfileState for a given (app, Profile) pair. If one does not
-  // exist, do not create one unless |create| is specified.
-  ProfileState* GetProfileState(Profile* profile,
-                                const std::string& app_id,
-                                bool create = false);
+  // Retrieve the ProfileState for a given (Profile, Extension) pair. If one
+  // does not exist, create one.
+  ProfileState* GetOrCreateProfileState(Profile* profile,
+                                        const extensions::Extension* extension);
 
   // Map from extension id to the state for that app.
   std::map<std::string, std::unique_ptr<AppState>> apps_;

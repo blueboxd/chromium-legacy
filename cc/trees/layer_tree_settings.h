@@ -172,6 +172,9 @@ class CC_EXPORT LayerTreeSettings {
   // When false, we do not check for occlusion and all quads are drawn.
   // Defaults to true.
   bool enable_occlusion = true;
+
+  // Whether experimental de-jelly effect is allowed.
+  bool allow_de_jelly_effect = false;
 };
 
 class CC_EXPORT LayerListSettings : public LayerTreeSettings {

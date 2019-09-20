@@ -299,15 +299,6 @@ Cada item da lista da política é uma string que contém um código de extensã
 
       Se a política não for configurada, o valor padrão "MultiProfileUserBehaviorMustBePrimary" será aplicado aos usuários gerenciados pela empresa, e "MultiProfileUserBehaviorUnrestricted" será usado para usuários não gerenciados.</translation>
 <translation id="1465619815762735808">Clique para reproduzir</translation>
-<translation id="1468307069016535757">Definir o estado padrão do recurso de acessibilidade do modo de alto contraste na tela de login.
-
-          Se esta política for definida como "verdadeira", o modo de alto contraste será ativado quando a tela de login for exibida.
-
-          Se esta política for definida como "falsa", o modo de alto contraste será desativado quando a tela de login for exibida.
-
-          Se você definir esta política, os usuários poderão substituí-la temporariamente ativando ou desativando o modo de alto contraste. No entanto, a escolha do usuário não é permanente e o padrão será restaurado sempre que a tela de login for exibida novamente ou quando o usuário permanecer inativo na tela de login por um minuto.
-
-          Se esta política não for definida, o modo de alto contraste será desativado quando a tela de login for exibida pela primeira vez. Os usuários podem ativar ou desativar o modo de alto contraste a qualquer momento e seu status na tela de login continuará entre os usuários.</translation>
 <translation id="1468707346106619889">Se essa política for configurada como "true", a área de trabalho unificada será
       ativada por padrão, o que permite que os aplicativos abranjam várias telas.
       O usuário pode desativar a área de trabalho unificada para telas individuais desmarcando-a
@@ -1868,7 +1859,7 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
 
           Observação: <ph name="CHARGE_START_TIME_FIELD_NAME" /> precisa ser menor que <ph name="CHARGE_END_TIME_FIELD_NAME" />.
 
-          Observação: os valores permitidos para o campo <ph name="MINUTE_FIELD_NAME" /> em <ph name="CHARGE_START_TIME_FIELD_NAME" /> e <ph name="CHARGE_END_TIME_FIELD_NAME" /> são 0, 15, 30 e 45.</translation>
+          Observação: os valores permitidos para o campo <ph name="MINUTE_FIELD_NAME" /> em "<ph name="CHARGE_START_TIME_FIELD_NAME" />" e "<ph name="CHARGE_END_TIME_FIELD_NAME" />" são 0, 15, 30 e 45.</translation>
 <translation id="4224610387358583899">Tempo de espera para bloqueio de tela</translation>
 <translation id="423797045246308574">Permite que você defina uma lista de padrões de URL que especificam sites que não têm permissão para usar a geração de chaves. Se um padrão de URL estiver na política "KeygenAllowedForUrls", ela substituirá essas exceções.
 
@@ -2766,15 +2757,6 @@ Se esta política não for definida, qualquer plug-in que corresponder aos padr�
       Os URLs (como https://example.com/algum/caminho) só terão correspondência como U2F appIDs. Os domínios (como example.com) só terão correspondência como webauthn RP IDs. Sendo assim, para abranger as APIs U2F e webauthn de um determinado site, tanto o domínio quanto o URL do appID precisarão ser listados.</translation>
 <translation id="5836064773277134605">Restringir o intervalo de portas UDP usado pelo host de acesso remoto</translation>
 <translation id="5861856285460256766">Configuração do código de acesso dos pais</translation>
-<translation id="5862253018042179045">Definir o estado padrão do recurso de acessibilidade do feedback falado na tela de login.
-
-          Se esta política for definida como "verdadeira", o feedback falado será ativado quando a tela de login for exibida.
-
-          Se esta política for definida como "falsa", o feedback falado será desativado quando a tela de login for exibida.
-
-          Se você definir esta política, os usuários poderão substituí-la temporariamente ativando ou desativando o feedback falado. No entanto, a escolha do usuário não é permanente e o padrão será restaurado sempre que a tela de login for exibida novamente ou quando o usuário permanecer inativo na tela de login por um minuto.
-
-          Se esta política não for definida, o feedback falado será desativado quando a tela de login for exibida pela primeira vez. Os usuários podem ativar ou desativar o feedback falado a qualquer momento e seu status na tela de login continuará entre os usuários.</translation>
 <translation id="5868414965372171132">Configuração de rede em nível do usuário</translation>
 <translation id="5879014913445067283">Controla a detecção de compartilhamentos de arquivos de rede por meio do <ph name="NETBIOS_NAME" /></translation>
 <translation id="5882345429632338713">Atraso para iniciar um navegador alternativo (milésimos de segundo)</translation>
@@ -3411,7 +3393,7 @@ Se esta política não for definida, não haverá restrições quanto aos usuár
 
           Se esta política não for configurada ou estiver indefinida, a economia de energia no período de pico sempre estará desativada.
 
-          Observação: os valores permitidos para o campo <ph name="MINUTE_FIELD_NAME" /> em <ph name="START_TIME_FIELD_NAME" />, <ph name="END_TIME_FIELD_NAME" /> e <ph name="CHARGE_START_TIME_FIELD_NAME" /> são 0, 15, 30 e 45.</translation>
+          Observação: os valores permitidos para o campo <ph name="MINUTE_FIELD_NAME" /> em "<ph name="START_TIME_FIELD_NAME" />", "<ph name="END_TIME_FIELD_NAME" />" e "<ph name="CHARGE_START_TIME_FIELD_NAME" />" são 0, 15, 30 e 45.</translation>
 <translation id="7138678301420049075">Outro</translation>
 <translation id="7139809614375682935">Configurar a parada personalizada do carregamento da bateria, em porcentagem.
 

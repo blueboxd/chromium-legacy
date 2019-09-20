@@ -99,7 +99,7 @@ void VROrientationDevice::SensorReady(
   }
 
   default_config.set_frequency(kDefaultPumpFrequencyHz);
-  sensor_.set_connection_error_handler(base::BindOnce(
+  sensor_.set_disconnect_handler(base::BindOnce(
       &VROrientationDevice::HandleSensorError, base::Unretained(this)));
   sensor_->ConfigureReadingChangeNotifications(false /* disabled */);
   sensor_->AddConfiguration(

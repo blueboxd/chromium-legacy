@@ -29,6 +29,11 @@ NSString* kChromeActionsErrorDomain = @"ChromeActionsError";
       chrome_test_util::GetCurrentWebState(), selector, triggerContextMenu);
 }
 
++ (id<GREYAction>)scrollElementToVisible:(ElementSelector*)selector {
+  return WebViewScrollElementToVisible(chrome_test_util::GetCurrentWebState(),
+                                       selector);
+}
+
 + (id<GREYAction>)turnSettingsSwitchOn:(BOOL)on {
   id<GREYMatcher> constraints = grey_not(grey_systemAlertViewShown());
   NSString* actionName =

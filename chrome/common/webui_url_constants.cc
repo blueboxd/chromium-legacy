@@ -384,6 +384,7 @@ const char kAccessibilitySubPage[] = "accessibility";
 const char kAccountManagerSubPage[] = "accountManager";
 const char kAccountSubPage[] = "accounts";
 const char kAndroidAppsDetailsSubPage[] = "androidApps/details";
+const char kAppManagementDetailSubPage[] = "app-management/detail";
 const char kAssistantSubPage[] = "googleAssistant";
 const char kBluetoothSubPage[] = "bluetoothDevices";
 const char kChangePictureSubPage[] = "changePicture";
@@ -427,6 +428,7 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       kAccountManagerSubPage,
       kAccountSubPage,
       kAndroidAppsDetailsSubPage,
+      kAppManagementDetailSubPage,
       kAssistantSubPage,
       kBluetoothSubPage,
       kChangePictureSubPage,

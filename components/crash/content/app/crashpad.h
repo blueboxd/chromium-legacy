@@ -17,8 +17,13 @@
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_mach_port.h"
 #endif
+
 #if defined(OS_WIN)
 #include <windows.h>
+#endif
+
+#if defined(OS_LINUX)
+#include <signal.h>
 #endif
 
 namespace base {
@@ -31,6 +36,13 @@ class CrashReportDatabase;
 }  // namespace crashpad
 
 namespace crash_reporter {
+
+#if defined(OS_LINUX)
+// TODO(jperaza): Remove kEnableCrashpad and IsCrashpadEnabled() when Crashpad
+// is fully enabled on Linux.
+extern const char kEnableCrashpad[];
+bool IsCrashpadEnabled();
+#endif
 
 // Initializes Crashpad in a way that is appropriate for initial_client and
 // process_type.
@@ -175,6 +187,16 @@ bool DumpWithoutCrashingForClient(CrashReporterClient* client);
 // crashpad's ProcessMemory interface.
 void WhitelistMemoryRange(void* begin, size_t size);
 #endif  // OS_ANDROID
+
+#if defined(OS_LINUX)
+// Install a handler that gets a chance to handle faults before Crashpad. This
+// is used by V8 for trap-based bounds checks.
+void SetFirstChanceExceptionHandler(bool (*handler)(int, siginfo_t*, void*));
+
+// Gets the socket and process ID of the Crashpad handler connected to this
+// process, valid if this function returns `true`.
+bool GetHandlerSocket(int* sock, pid_t* pid);
+#endif  // OS_LINUX
 
 namespace internal {
 

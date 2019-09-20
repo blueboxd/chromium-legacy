@@ -365,4 +365,15 @@ TEST_F(ObjectPaintInvalidatorTest, Selection) {
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
+// Passes if it does not crash.
+TEST_F(ObjectPaintInvalidatorTest, ZeroWidthForeignObject) {
+  SetBodyInnerHTML(R"HTML(
+    <svg style="backface-visibility: hidden;">
+      <foreignObject width=0 height=50>
+        <div style="position: relative">test</div>
+      </foreignObject>
+    </svg>
+  )HTML");
+}
+
 }  // namespace blink

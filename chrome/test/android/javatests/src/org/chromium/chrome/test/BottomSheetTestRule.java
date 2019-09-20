@@ -85,7 +85,9 @@ public class BottomSheetTestRule extends ChromeTabbedActivityTestRule {
                                    .getLayoutInflater()
                                    .inflate(R.layout.bottom_sheet, coordinator)
                                    .findViewById(R.id.bottom_sheet);
-            mBottomSheet.init(coordinator, getActivity());
+            mBottomSheet.init(coordinator, getActivity().getActivityTabProvider(),
+                    getActivity().getFullscreenManager(), getActivity().getWindow(),
+                    getActivity().getWindowAndroid().getKeyboardDelegate());
         });
 
         mObserver = new Observer();

@@ -468,7 +468,7 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
   }
 
   void SetDeviceScaleFactor(float dsf) {
-    view()->GetWidget()->OnSynchronizeVisualProperties(
+    view()->GetWidget()->SynchronizeVisualPropertiesFromRenderView(
         MakeVisualPropertiesWithDeviceScaleFactor(dsf));
     ASSERT_EQ(dsf, view()->page_properties()->GetDeviceScaleFactor());
     ASSERT_EQ(dsf,

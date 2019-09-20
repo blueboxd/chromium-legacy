@@ -176,10 +176,9 @@ void NavigatorImpl::DidFailProvisionalLoadWithError(
   }
 
   // Discard the pending navigation entry if needed.
+  NavigationRequest* request = render_frame_host->navigation_request();
   int expected_pending_entry_id =
-      render_frame_host->GetNavigationHandle()
-          ? render_frame_host->GetNavigationHandle()->pending_nav_entry_id()
-          : 0;
+      request && request->IsNavigationStarted() ? request->nav_entry_id() : 0;
   DiscardPendingEntryIfNeeded(expected_pending_entry_id);
 }
 

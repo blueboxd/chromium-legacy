@@ -127,7 +127,8 @@ android_library("mojo_javatests") {
     "//mojo/public/interfaces/bindings/tests:test_mojom_import_java",
     "//mojo/public/java:bindings_java",
     "//mojo/public/java:system_java",
-    "//third_party/android_support_test_runner:runner_java",
+    "//third_party/android_deps:androidx_test_monitor_java",
+    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/junit",
   ]
 
@@ -167,7 +168,8 @@ instrumentation_test_apk("mojo_test_apk") {
     "//base:base_java",
     "//mojo/public/interfaces/bindings/tests:test_interfaces",
     "//mojo/public/java:bindings_java",
-    "//third_party/android_support_test_runner:runner_java",
+    "//third_party/android_deps:androidx_test_monitor_java",
+    "//third_party/android_deps:androidx_test_runner_java",
   ]
   shared_libraries = [ ":mojo_java_unittests" ]
   apk_name = "MojoTest"

@@ -144,10 +144,6 @@ class CORE_EXPORT ScrollAnimator : public ScrollAnimatorBase {
   bool RegisterAndScheduleAnimation();
 
   void CreateAnimationCurve();
-  void PostAnimationCleanupAndReset();
-
-  void AddMainThreadScrollingReason();
-  void RemoveMainThreadScrollingReason();
 
   // Returns true if will animate to the given target offset. Returns false
   // only when there is no animation running and we are not starting one

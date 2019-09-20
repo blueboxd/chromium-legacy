@@ -63,10 +63,10 @@ void SupervisedUserNavigationObserver::OnRequestBlocked(
 void SupervisedUserNavigationObserver::DidFinishNavigation(
       content::NavigationHandle* navigation_handle) {
   // If this is a different navigation than the one that triggered the
-  // interstitial, clear is_showing_interstitial_
-  if (is_showing_interstitial_ &&
+  // interstitial, remove the interstitial.
+  if (interstitial_ &&
       navigation_handle->GetNavigationId() != interstitial_navigation_id_) {
-    is_showing_interstitial_ = false;
+    OnInterstitialDone();
   }
 
   // Only filter same page navigations (eg. pushState/popState); others will
@@ -142,11 +142,12 @@ void SupervisedUserNavigationObserver::URLFilterCheckCallback(
   if (url != web_contents()->GetLastCommittedURL())
     return;
 
-  if (!is_showing_interstitial_ &&
-      behavior == SupervisedUserURLFilter::FilteringBehavior::BLOCK) {
+  bool is_showing_interstitial = interstitial_.get() != nullptr;
+  bool should_show_interstitial =
+      behavior == SupervisedUserURLFilter::FilteringBehavior::BLOCK;
+
+  if (is_showing_interstitial != should_show_interstitial)
     web_contents()->GetController().Reload(content::ReloadType::NORMAL, false);
-    return;
-  }
 }
 
 void SupervisedUserNavigationObserver::MaybeShowInterstitial(
@@ -157,33 +158,30 @@ void SupervisedUserNavigationObserver::MaybeShowInterstitial(
     const base::Callback<
         void(SupervisedUserNavigationThrottle::CallbackActions)>& callback) {
   interstitial_navigation_id_ = navigation_id;
-  is_showing_interstitial_ = true;
-  interstitial_ = SupervisedUserInterstitial::Create(
-      web_contents(), url, reason, initial_page_load,
-      base::BindOnce(&SupervisedUserNavigationObserver::OnInterstitialDone,
-                     weak_ptr_factory_.GetWeakPtr()));
+  interstitial_ =
+      SupervisedUserInterstitial::Create(web_contents(), url, reason);
   callback.Run(SupervisedUserNavigationThrottle::CallbackActions::
                    kCancelWithInterstitial);
 }
 
 void SupervisedUserNavigationObserver::OnInterstitialDone() {
-  is_showing_interstitial_ = false;
+  interstitial_.reset();
 }
 
 void SupervisedUserNavigationObserver::GoBack() {
-  if (interstitial_ && is_showing_interstitial_)
-    interstitial_->CommandReceived("\"back\"");
+  if (interstitial_)
+    interstitial_->GoBack();
 }
 
 void SupervisedUserNavigationObserver::RequestPermission(
     RequestPermissionCallback callback) {
-  if (interstitial_ && is_showing_interstitial_)
+  if (interstitial_)
     interstitial_->RequestPermission(std::move(callback));
 }
 
 void SupervisedUserNavigationObserver::Feedback() {
-  if (interstitial_ && is_showing_interstitial_)
-    interstitial_->CommandReceived("\"feedback\"");
+  if (interstitial_)
+    interstitial_->ShowFeedback();
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(SupervisedUserNavigationObserver)

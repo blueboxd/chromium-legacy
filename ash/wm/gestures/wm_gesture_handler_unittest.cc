@@ -27,15 +27,37 @@ bool InOverviewSession() {
   return Shell::Get()->overview_controller()->InOverviewSession();
 }
 
+bool CanHandleVirtualDesksGestures() {
+  return features::IsVirtualDesksEnabled() &&
+         features::IsVirtualDesksGesturesEnabled();
+}
+
+int GetNumFingersForHighlight() {
+  return CanHandleVirtualDesksGestures() ? 4 : 3;
+}
+
+const aura::Window* GetHighlightedWindow() {
+  return InOverviewSession() ? GetOverviewHighlightedWindow() : nullptr;
+}
+
 }  // namespace
 
-class WmGestureHandlerTest : public AshTestBase {
+class WmGestureHandlerTest : public AshTestBase,
+                             public ::testing::WithParamInterface<bool> {
  public:
   WmGestureHandlerTest() = default;
   ~WmGestureHandlerTest() override = default;
 
-  const aura::Window* GetHighlightedWindow() {
-    return InOverviewSession() ? GetOverviewHighlightedWindow() : nullptr;
+  // AshTestBase:
+  void SetUp() override {
+    if (GetParam()) {
+      scoped_feature_list_.InitWithFeatures(
+          /*enabled_features=*/{features::kVirtualDesks,
+                                features::kVirtualDesksGestures},
+          /*disabled_features=*/{});
+    }
+
+    AshTestBase::SetUp();
   }
 
   void Scroll(float x_offset, float y_offset, int fingers) {
@@ -44,13 +66,25 @@ class WmGestureHandlerTest : public AshTestBase {
         /*steps=*/100, fingers);
   }
 
+  void ScrollToSwitchDesks(bool scroll_left) {
+    DCHECK(CanHandleVirtualDesksGestures());
+
+    DeskSwitchAnimationWaiter waiter;
+    const float x_offset =
+        (scroll_left ? -1 : 1) * WmGestureHandler::kHorizontalThresholdDp;
+    Scroll(x_offset, 0, /*fingers=*/3);
+    waiter.Wait();
+  }
+
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(WmGestureHandlerTest);
 };
 
 // Tests a three fingers upwards scroll gesture to enter and a scroll down to
 // exit overview.
-TEST_F(WmGestureHandlerTest, VerticalScrolls) {
+TEST_P(WmGestureHandlerTest, VerticalScrolls) {
   const float long_scroll = 2 * WmGestureHandler::kVerticalThresholdDp;
   Scroll(0, -long_scroll, 3);
   EXPECT_TRUE(InOverviewSession());
@@ -68,8 +102,9 @@ TEST_F(WmGestureHandlerTest, VerticalScrolls) {
   EXPECT_FALSE(InOverviewSession());
 }
 
-// Tests four finger horizontal scroll gesture to move selection left or right.
-TEST_F(WmGestureHandlerTest, HorizontalScrollInOverview) {
+// Tests three or four finger horizontal scroll gesture (depending on flags) to
+// move selection left or right.
+TEST_P(WmGestureHandlerTest, HorizontalScrollInOverview) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1 = CreateTestWindow(bounds);
   std::unique_ptr<aura::Window> window2 = CreateTestWindow(bounds);
@@ -88,7 +123,7 @@ TEST_F(WmGestureHandlerTest, HorizontalScrollInOverview) {
   auto scroll_until_window_highlighted = [this](float x_offset,
                                                 float y_offset) {
     do {
-      Scroll(x_offset, y_offset, /*num_fingers=*/4);
+      Scroll(x_offset, y_offset, GetNumFingersForHighlight());
     } while (!GetHighlightedWindow());
   };
 
@@ -99,11 +134,11 @@ TEST_F(WmGestureHandlerTest, HorizontalScrollInOverview) {
   scroll_until_window_highlighted(horizontal_scroll * 3, 0);
   EXPECT_TRUE(InOverviewSession());
 
-  // Short scroll left (4 fingers) moves selection to the third window.
+  // Short scroll left moves selection to the third window.
   scroll_until_window_highlighted(-horizontal_scroll, 0);
   EXPECT_TRUE(InOverviewSession());
 
-  // Short scroll left (4 fingers) moves selection to the second window.
+  // Short scroll left moves selection to the second window.
   scroll_until_window_highlighted(-horizontal_scroll, 0);
   EXPECT_TRUE(InOverviewSession());
 
@@ -116,18 +151,18 @@ TEST_F(WmGestureHandlerTest, HorizontalScrollInOverview) {
   EXPECT_EQ(window4.get(), window_util::GetActiveWindow());
 }
 
-// Tests that a mostly horizontal three-finger scroll does not trigger overview.
-TEST_F(WmGestureHandlerTest, HorizontalScrolls) {
+// Tests that a mostly horizontal scroll does not trigger overview.
+TEST_P(WmGestureHandlerTest, HorizontalScrolls) {
   const float long_scroll = 2 * WmGestureHandler::kVerticalThresholdDp;
-  Scroll(long_scroll + 100, -long_scroll, 3);
+  Scroll(long_scroll + 100, -long_scroll, GetNumFingersForHighlight());
   EXPECT_FALSE(InOverviewSession());
 
-  Scroll(-long_scroll - 100, -long_scroll, 3);
+  Scroll(-long_scroll - 100, -long_scroll, GetNumFingersForHighlight());
   EXPECT_FALSE(InOverviewSession());
 }
 
 // Tests that we only enter overview after a scroll has ended.
-TEST_F(WmGestureHandlerTest, EnterOverviewOnScrollEnd) {
+TEST_P(WmGestureHandlerTest, EnterOverviewOnScrollEnd) {
   base::TimeTicks timestamp = base::TimeTicks::Now();
   const int num_fingers = 3;
   base::TimeDelta step_delay(base::TimeDelta::FromMilliseconds(5));
@@ -152,33 +187,12 @@ TEST_F(WmGestureHandlerTest, EnterOverviewOnScrollEnd) {
   EXPECT_TRUE(InOverviewSession());
 }
 
-class DesksGestureHandlerTest : public WmGestureHandlerTest {
- public:
-  DesksGestureHandlerTest() = default;
-  ~DesksGestureHandlerTest() override = default;
-
-  // AshTestBase:
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kVirtualDesks);
-    WmGestureHandlerTest::SetUp();
-  }
-
-  void ScrollToSwitchDesks(bool scroll_left) {
-    DeskSwitchAnimationWaiter waiter;
-    const float x_offset =
-        (scroll_left ? -1 : 1) * WmGestureHandler::kHorizontalThresholdDp;
-    Scroll(x_offset, 0, 3);
-    waiter.Wait();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(DesksGestureHandlerTest);
-};
+// The tests that verifies Virtual Desks gestures will be parameterized
+// separately to run only when Virtual Desks and its gestures are enabled.
+using DesksGestureHandlerTest = WmGestureHandlerTest;
 
 // Tests that a three-finger horizontal scroll will switch desks as expected.
-TEST_F(DesksGestureHandlerTest, HorizontalScrolls) {
+TEST_P(DesksGestureHandlerTest, HorizontalScrolls) {
   auto* desk_controller = DesksController::Get();
   desk_controller->NewDesk(DesksCreationRemovalSource::kButton);
   ASSERT_EQ(2u, desk_controller->desks().size());
@@ -201,7 +215,7 @@ TEST_F(DesksGestureHandlerTest, HorizontalScrolls) {
 
 // Tests that vertical scrolls and horizontal scrolls that are too small do not
 // switch desks.
-TEST_F(DesksGestureHandlerTest, NoDeskChanges) {
+TEST_P(DesksGestureHandlerTest, NoDeskChanges) {
   auto* desk_controller = DesksController::Get();
   desk_controller->NewDesk(DesksCreationRemovalSource::kButton);
   ASSERT_EQ(2u, desk_controller->desks().size());
@@ -224,7 +238,7 @@ TEST_F(DesksGestureHandlerTest, NoDeskChanges) {
 }
 
 // Tests that a large scroll only moves to the next desk.
-TEST_F(DesksGestureHandlerTest, NoDoubleDeskChange) {
+TEST_P(DesksGestureHandlerTest, NoDoubleDeskChange) {
   auto* desk_controller = DesksController::Get();
   desk_controller->NewDesk(DesksCreationRemovalSource::kButton);
   desk_controller->NewDesk(DesksCreationRemovalSource::kButton);
@@ -238,5 +252,9 @@ TEST_F(DesksGestureHandlerTest, NoDoubleDeskChange) {
   waiter.Wait();
   EXPECT_EQ(desk_controller->desks()[1].get(), desk_controller->active_desk());
 }
+
+// Instantiate the parametrized tests.
+INSTANTIATE_TEST_SUITE_P(, WmGestureHandlerTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, DesksGestureHandlerTest, ::testing::Values(true));
 
 }  // namespace ash

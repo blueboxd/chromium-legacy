@@ -1677,6 +1677,8 @@
       # Always fails on older cards, flaky on newer cards.
       'Win7 FYI Debug (AMD)',
       'Win7 FYI Release (AMD)',
+      # crbug.com/1005814
+      'Win10 FYI x64 Release (AMD RX 550)',
     ],
   },
   'webgl_conformance_tests': {

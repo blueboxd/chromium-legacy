@@ -55,6 +55,7 @@ class AccessibilityTreeFormatterAuraLinux
   std::unique_ptr<base::DictionaryValue> BuildAccessibilityTreeWithNode(
       AtspiAccessible* node);
 
+  void AddTextProperties(AtkText* atk_text, base::DictionaryValue* dict);
   void AddValueProperties(AtkObject* atk_object, base::DictionaryValue* dict);
   void AddTableProperties(AtkObject* atk_object, base::DictionaryValue* dict);
   void AddTableCellProperties(const ui::AXPlatformNodeAuraLinux* node,
@@ -325,6 +326,51 @@ const char* const kRoleNames[] = {
     "footnote",  // ATK_ROLE_FOOTNOTE = 122.
 };
 
+void AccessibilityTreeFormatterAuraLinux::AddTextProperties(
+    AtkText* atk_text,
+    base::DictionaryValue* dict) {
+  auto text_values = std::make_unique<base::ListValue>();
+  int character_count = atk_text_get_character_count(atk_text);
+  text_values->AppendString(
+      base::StringPrintf("character_count=%i", character_count));
+
+  int caret_offset = atk_text_get_caret_offset(atk_text);
+  if (caret_offset != -1)
+    text_values->AppendString(
+        base::StringPrintf("caret_offset=%i", caret_offset));
+
+  int selection_start, selection_end;
+  char* selection_text =
+      atk_text_get_selection(atk_text, 0, &selection_start, &selection_end);
+  g_free(selection_text);
+  if (selection_start || selection_end) {
+    text_values->AppendString(
+        base::StringPrintf("selection_start=%i", selection_start));
+    text_values->AppendString(
+        base::StringPrintf("selection_end=%i", selection_end));
+  }
+
+  auto add_attribute_set_values = [](gpointer value, gpointer list) {
+    const AtkAttribute* attribute = static_cast<const AtkAttribute*>(value);
+    static_cast<base::ListValue*>(list)->AppendString(
+        base::StringPrintf("%s=%s", attribute->name, attribute->value));
+  };
+
+  int current_offset = 0, start_offset, end_offset;
+  while (current_offset < character_count) {
+    AtkAttributeSet* text_attributes = atk_text_get_run_attributes(
+        atk_text, current_offset, &start_offset, &end_offset);
+    text_values->AppendString(base::StringPrintf("offset=%i", start_offset));
+    g_slist_foreach(text_attributes, add_attribute_set_values,
+                    text_values.get());
+    atk_attribute_set_free(text_attributes);
+
+    current_offset = end_offset;
+  }
+
+  dict->Set("text", std::move(text_values));
+}
+
 void AccessibilityTreeFormatterAuraLinux::AddValueProperties(
     AtkObject* atk_object,
     base::DictionaryValue* dict) {
@@ -530,7 +576,7 @@ void AccessibilityTreeFormatterAuraLinux::AddProperties(
   }
   atk_attribute_set_free(attributes);
 
-  // Properties obtained via AtkValue.
+  AddTextProperties(ATK_TEXT(atk_object), dict);
   AddValueProperties(atk_object, dict);
   AddTableProperties(atk_object, dict);
   AddTableCellProperties(ax_platform_node, atk_object, dict);
@@ -601,8 +647,8 @@ const char* const ATK_OBJECT_ATTRIBUTES[] = {
     "container-live",
     "container-relevant",
     "current",
-    "dropeffect",
     "display",
+    "dropeffect",
     "explicit-name",
     "grabbed",
     "haspopup",
@@ -714,6 +760,15 @@ base::string16 AccessibilityTreeFormatterAuraLinux::ProcessTreeForOutput(
       std::string cell_property;
       if (it->GetAsString(&cell_property))
         WriteAttribute(true, cell_property, &line);
+    }
+  }
+
+  const base::ListValue* text_info;
+  if (node.GetList("text", &text_info)) {
+    for (auto it = text_info->begin(); it != text_info->end(); ++it) {
+      std::string cell_property;
+      if (it->GetAsString(&cell_property))
+        WriteAttribute(false, cell_property, &line);
     }
   }
 

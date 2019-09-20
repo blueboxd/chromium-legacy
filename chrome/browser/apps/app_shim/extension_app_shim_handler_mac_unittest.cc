@@ -16,9 +16,11 @@
 #include "base/optional.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_task_environment.h"
@@ -280,6 +282,8 @@ class ExtensionAppShimHandlerTest : public testing::Test {
                                                  handler_.get());
     host_ab_unique_ = std::make_unique<TestHost>(profile_path_a_, kTestAppIdB,
                                                  handler_.get());
+    host_ba_unique_ = std::make_unique<TestHost>(profile_path_b_, kTestAppIdA,
+                                                 handler_.get());
     host_bb_unique_ = std::make_unique<TestHost>(profile_path_b_, kTestAppIdB,
                                                  handler_.get());
     host_aa_duplicate_unique_ = std::make_unique<TestHost>(
@@ -287,14 +291,18 @@ class ExtensionAppShimHandlerTest : public testing::Test {
 
     host_aa_ = host_aa_unique_->GetWeakPtr();
     host_ab_ = host_ab_unique_->GetWeakPtr();
+    host_ba_ = host_ba_unique_->GetWeakPtr();
     host_bb_ = host_bb_unique_->GetWeakPtr();
 
     base::FilePath extension_path("/fake/path");
-    extension_a_ = extensions::ExtensionBuilder("Fake Name")
-                       .SetLocation(extensions::Manifest::INTERNAL)
-                       .SetPath(extension_path)
-                       .SetID(kTestAppIdA)
-                       .Build();
+    extension_a_ =
+        extensions::ExtensionBuilder("Fake Name")
+            .SetLocation(extensions::Manifest::INTERNAL)
+            .SetPath(extension_path)
+            .SetID(kTestAppIdA)
+            .AddFlags(extensions::Extension::InitFromValueFlags::FROM_BOOKMARK)
+            .Build();
+
     extension_b_ = extensions::ExtensionBuilder("Fake Name")
                        .SetLocation(extensions::Manifest::INTERNAL)
                        .SetPath(extension_path)
@@ -417,11 +425,13 @@ class ExtensionAppShimHandlerTest : public testing::Test {
   // the WeakPtr versions.
   std::unique_ptr<TestHost> host_aa_unique_;
   std::unique_ptr<TestHost> host_ab_unique_;
+  std::unique_ptr<TestHost> host_ba_unique_;
   std::unique_ptr<TestHost> host_bb_unique_;
   std::unique_ptr<TestHost> host_aa_duplicate_unique_;
 
   base::WeakPtr<TestHost> host_aa_;
   base::WeakPtr<TestHost> host_ab_;
+  base::WeakPtr<TestHost> host_ba_;
   base::WeakPtr<TestHost> host_bb_;
 
   scoped_refptr<const Extension> extension_a_;
@@ -692,11 +702,11 @@ TEST_F(ExtensionAppShimHandlerTest, DontCreateHost) {
 
   // The app should be launched.
   EXPECT_CALL(*delegate_, LaunchApp(_, _, _)).Times(1);
-  NormalLaunch(bootstrap_aa_, std::move(host_aa_unique_));
+  NormalLaunch(bootstrap_ab_, std::move(host_ab_unique_));
   // But the bootstrap should be closed.
-  EXPECT_EQ(APP_SHIM_LAUNCH_DUPLICATE_HOST, *bootstrap_aa_result_);
+  EXPECT_EQ(APP_SHIM_LAUNCH_DUPLICATE_HOST, *bootstrap_ab_result_);
   // And we should create no host.
-  EXPECT_FALSE(handler_->FindHost(&profile_a_, kTestAppIdA));
+  EXPECT_FALSE(handler_->FindHost(&profile_a_, kTestAppIdB));
 }
 
 TEST_F(ExtensionAppShimHandlerTest, LoadProfile) {
@@ -739,8 +749,8 @@ TEST_F(ExtensionAppShimHandlerTest, PreExistingHost) {
   // Create a host for our profile.
   delegate_->SetHostForCreate(std::move(host_aa_unique_));
   EXPECT_EQ(nullptr, handler_->FindHost(&profile_a_, kTestAppIdA));
-  EXPECT_EQ(host_aa_.get(),
-            handler_->FindOrCreateHost(&profile_a_, extension_a_.get()));
+  handler_->OnAppActivated(&profile_a_, kTestAppIdA);
+  EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
   EXPECT_FALSE(host_aa_->did_connect_to_host());
 
   // Launch the app for this host. It should find the pre-existing host, and the
@@ -763,6 +773,47 @@ TEST_F(ExtensionAppShimHandlerTest, PreExistingHost) {
   EXPECT_TRUE(host_aa_->did_connect_to_host());
   EXPECT_EQ(APP_SHIM_LAUNCH_DUPLICATE_HOST, *bootstrap_aa_duplicate_result_);
   EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
+}
+
+TEST_F(ExtensionAppShimHandlerTest, MultiProfile) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kAppShimMultiProfile},
+      /*disabled_features=*/{});
+
+  // Test with a bookmark app (host is shared).
+  {
+    // Create a host for profile A.
+    delegate_->SetHostForCreate(std::move(host_aa_unique_));
+    EXPECT_EQ(nullptr, handler_->FindHost(&profile_a_, kTestAppIdA));
+    handler_->OnAppActivated(&profile_a_, kTestAppIdA);
+    EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
+    EXPECT_FALSE(host_aa_->did_connect_to_host());
+
+    // Ensure that profile B has the same host.
+    delegate_->SetHostForCreate(std::move(host_ba_unique_));
+    EXPECT_EQ(nullptr, handler_->FindHost(&profile_b_, kTestAppIdA));
+    handler_->OnAppActivated(&profile_b_, kTestAppIdA);
+    EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_b_, kTestAppIdA));
+    EXPECT_FALSE(host_aa_->did_connect_to_host());
+  }
+
+  // Test with a non-bookmark app (host is not shared).
+  {
+    // Create a host for profile A.
+    delegate_->SetHostForCreate(std::move(host_ab_unique_));
+    EXPECT_EQ(nullptr, handler_->FindHost(&profile_a_, kTestAppIdB));
+    handler_->OnAppActivated(&profile_a_, kTestAppIdB);
+    EXPECT_EQ(host_ab_.get(), handler_->FindHost(&profile_a_, kTestAppIdB));
+    EXPECT_FALSE(host_ab_->did_connect_to_host());
+
+    // Ensure that profile B has the same host.
+    delegate_->SetHostForCreate(std::move(host_bb_unique_));
+    EXPECT_EQ(nullptr, handler_->FindHost(&profile_b_, kTestAppIdB));
+    handler_->OnAppActivated(&profile_b_, kTestAppIdB);
+    EXPECT_EQ(host_bb_.get(), handler_->FindHost(&profile_b_, kTestAppIdB));
+    EXPECT_FALSE(host_bb_->did_connect_to_host());
+  }
 }
 
 }  // namespace apps

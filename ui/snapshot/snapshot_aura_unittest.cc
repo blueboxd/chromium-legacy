@@ -10,8 +10,10 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/test/test_timeouts.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -201,6 +203,14 @@ INSTANTIATE_TEST_SUITE_P(, SnapshotAuraTest, ::testing::Bool());
 #define MAYBE_FullScreenWindow FullScreenWindow
 #endif
 TEST_P(SnapshotAuraTest, MAYBE_FullScreenWindow) {
+#if defined(OS_LINUX)
+  // TODO(https://crbug.com/1002716): Fix this test to run in < action_timeout()
+  // on the Linux Debug & TSAN bots.
+  const base::RunLoop::ScopedRunTimeoutForTest increased_run_timeout(
+      TestTimeouts::action_max_timeout(),
+      base::MakeExpectedNotRunClosure(FROM_HERE, "RunLoop::Run() timed out."));
+#endif  // defined(OS_LINUX)
+
 #if defined(OS_WIN)
   // TODO(https://crbug.com/850556): Make work on Win10.
   base::win::Version version = base::win::GetVersion();

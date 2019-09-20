@@ -9917,6 +9917,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_WEBAUTHN_TRANSPORT_POPUP_BLE" desc="Menu item text. The user selects this to verify their identity on a web site (i.e. sign in) using a security key (an external physical device for user authentication) connected to the user's computer over Bluetooth Low Energy.">
         Verify via Bluetooth
       </message>
+      <message name="IDS_WEBAUTHN_TRANSPORT_POPUP_PAIR_PHONE" desc="Menu item text. The user selects this to begin the process of pairing with a previously unknown smartphone.">
+        Pair with new phone
+      </message>
       <message name="IDS_WEBAUTHN_TRANSPORT_POPUP_ANOTHER_BLE" desc="Menu item text. The user selects this to verify their identity on a web site (i.e. sign in) using a Bluetooth security key (an external physical device for user authentication connected over Bluetooth Low Energy) that they haven't used on this computer before.">
         Add another Bluetooth security key
       </message>
@@ -9934,6 +9937,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <message name="IDS_WEBAUTHN_CABLE_ACTIVATE_DESCRIPTION" desc="Contents of the dialog shown when the user tries to sign-in using a phone as a security key.">
         A notification was sent to your phone to confirm it's you.
+      </message>
+      <message name="IDS_WEBAUTHN_CABLE_QR_TITLE" desc="Title of a dialog that contains a QR-code for the user to scan with a mobile phone app. A QR code is a type of barcode that can be read using a smartphone's camera.">
+        Pair new phone
+      </message>
+      <message name="IDS_WEBAUTHN_CABLE_QR_DESCRIPTION" desc="Description text in a dialog that contains a QR-code for the user to scan with a mobile phone app. A QR code is a type of barcode that can be read using a smartphone's camera.">
+        Scan the QR code with a compatible authenticator app on your phone.
       </message>
 
       <!-- WebAuthn authenticator PIN entry/setup -->

@@ -171,9 +171,7 @@ WebSocketBasicHandshakeStream::WebSocketBasicHandshakeStream(
     WebSocketStreamRequestAPI* request,
     WebSocketEndpointLockManager* websocket_endpoint_lock_manager)
     : result_(HandshakeResult::INCOMPLETE),
-      state_(std::move(connection),
-             using_proxy,
-             false /* http_09_on_non_default_ports_enabled */),
+      state_(std::move(connection), using_proxy),
       connect_delegate_(connect_delegate),
       http_response_info_(nullptr),
       requested_sub_protocols_(std::move(requested_sub_protocols)),

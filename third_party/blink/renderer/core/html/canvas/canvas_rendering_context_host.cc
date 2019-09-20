@@ -222,7 +222,7 @@ ScriptPromise CanvasRenderingContextHost::convertToBlob(
   }
 
   if (!this->IsPaintable() || Size().IsEmpty()) {
-    error_msg << "The size of " << object_name << " iz zero.";
+    error_msg << "The size of " << object_name << " is zero.";
     exception_state.ThrowDOMException(DOMExceptionCode::kIndexSizeError,
                                       error_msg.str().c_str());
     return ScriptPromise();

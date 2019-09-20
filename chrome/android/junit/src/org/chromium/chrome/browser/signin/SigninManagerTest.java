@@ -221,7 +221,7 @@ public class SigninManagerTest {
                 .when(mIdentityManager)
                 .findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(any());
         doReturn(true).when(mIdentityMutator).setPrimaryAccount(any());
-        doNothing().when(mIdentityMutator).reloadAccountsFromSystem();
+        doNothing().when(mIdentityMutator).reloadAllAccountsFromSystemWithPrimaryAccount(any());
 
         mSigninManager.onFirstRunCheckDone(); // Allow sign-in.
 

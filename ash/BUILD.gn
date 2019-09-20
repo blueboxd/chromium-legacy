@@ -1775,6 +1775,7 @@ test("ash_unittests") {
     "shelf/shelf_application_menu_model_unittest.cc",
     "shelf/shelf_background_animator_unittest.cc",
     "shelf/shelf_button_pressed_metric_tracker_unittest.cc",
+    "shelf/shelf_config_unittest.cc",
     "shelf/shelf_context_menu_model_unittest.cc",
     "shelf/shelf_controller_unittest.cc",
     "shelf/shelf_layout_manager_unittest.cc",

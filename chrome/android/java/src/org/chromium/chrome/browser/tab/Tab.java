@@ -546,8 +546,7 @@ public class Tab {
      */
     public ChromeActivity getActivity() {
         if (getWindowAndroid() == null) return null;
-        Activity activity = WindowAndroid.activityFromContext(
-                getWindowAndroid().getContext().get());
+        Activity activity = ContextUtils.activityFromContext(getWindowAndroid().getContext().get());
         if (activity instanceof ChromeActivity) return (ChromeActivity) activity;
         return null;
     }
@@ -1056,7 +1055,7 @@ public class Tab {
         // is always non-null even when the tab is in detached state. See the comment in |detach()|.
         WindowAndroid window = getWebContents().getTopLevelNativeWindow();
         if (window == null) return true;
-        Activity activity = WindowAndroid.activityFromContext(window.getContext().get());
+        Activity activity = ContextUtils.activityFromContext(window.getContext().get());
         return !(activity instanceof ChromeActivity);
     }
 

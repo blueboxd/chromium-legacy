@@ -513,78 +513,40 @@ void FidoDeviceAuthenticator::GetSensorInfo(BioEnrollmentCallback callback) {
 }
 
 void FidoDeviceAuthenticator::BioEnrollFingerprint(
-    const pin::TokenResponse& response,
-    BioEnrollmentSampleCallback sample_callback,
-    BioEnrollmentCallback completion_callback) {
+    const pin::TokenResponse& pin_token,
+    base::Optional<std::vector<uint8_t>> template_id,
+    BioEnrollmentCallback callback) {
   RunOperation<BioEnrollmentRequest, BioEnrollmentResponse>(
-      BioEnrollmentRequest::ForEnrollBegin(
-          GetBioEnrollmentRequestVersion(*Options()), response),
-      base::BindOnce(&FidoDeviceAuthenticator::OnBioEnroll,
-                     weak_factory_.GetWeakPtr(), std::move(response),
-                     std::move(sample_callback), std::move(completion_callback),
-                     /*current_template_id=*/base::nullopt),
-      base::BindOnce(&BioEnrollmentResponse::Parse));
+      template_id ? BioEnrollmentRequest::ForEnrollNextSample(
+                        GetBioEnrollmentRequestVersion(*Options()),
+                        std::move(pin_token), std::move(*template_id))
+                  : BioEnrollmentRequest::ForEnrollBegin(
+                        GetBioEnrollmentRequestVersion(*Options()),
+                        std::move(pin_token)),
+      std::move(callback), base::BindOnce(&BioEnrollmentResponse::Parse));
 }
 
 void FidoDeviceAuthenticator::BioEnrollRename(
-    const pin::TokenResponse& response,
+    const pin::TokenResponse& pin_token,
     std::vector<uint8_t> id,
     std::string name,
     BioEnrollmentCallback callback) {
   RunOperation<BioEnrollmentRequest, BioEnrollmentResponse>(
       BioEnrollmentRequest::ForRename(
-          GetBioEnrollmentRequestVersion(*Options()), response, std::move(id),
+          GetBioEnrollmentRequestVersion(*Options()), pin_token, std::move(id),
           std::move(name)),
       std::move(callback), base::BindOnce(&BioEnrollmentResponse::Parse));
 }
 
 void FidoDeviceAuthenticator::BioEnrollDelete(
-    const pin::TokenResponse& response,
+    const pin::TokenResponse& pin_token,
     std::vector<uint8_t> template_id,
     BioEnrollmentCallback callback) {
   RunOperation<BioEnrollmentRequest, BioEnrollmentResponse>(
       BioEnrollmentRequest::ForDelete(
-          GetBioEnrollmentRequestVersion(*Options()), response,
+          GetBioEnrollmentRequestVersion(*Options()), pin_token,
           std::move(template_id)),
       std::move(callback), base::BindOnce(&BioEnrollmentResponse::Parse));
-}
-
-void FidoDeviceAuthenticator::OnBioEnroll(
-    pin::TokenResponse response,
-    BioEnrollmentSampleCallback sample_callback,
-    BioEnrollmentCallback completion_callback,
-    base::Optional<std::vector<uint8_t>> current_template_id,
-    CtapDeviceResponseCode code,
-    base::Optional<BioEnrollmentResponse> bio) {
-  if (code != CtapDeviceResponseCode::kSuccess || !bio->last_status ||
-      !bio->remaining_samples || bio->remaining_samples == 0) {
-    std::move(completion_callback).Run(code, std::move(bio));
-    return;
-  }
-  if (!current_template_id) {
-    if (!bio->template_id) {
-      // The templateId response field is required in the first response of each
-      // enrollment.
-      std::move(completion_callback)
-          .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
-      return;
-    }
-    current_template_id = *bio->template_id;
-  }
-
-  sample_callback.Run(*bio->last_status, *bio->remaining_samples);
-
-  auto request = BioEnrollmentRequest::ForEnrollNextSample(
-      GetBioEnrollmentRequestVersion(*Options()), response,
-      *current_template_id);
-
-  RunOperation<BioEnrollmentRequest, BioEnrollmentResponse>(
-      std::move(request),
-      base::BindOnce(&FidoDeviceAuthenticator::OnBioEnroll,
-                     weak_factory_.GetWeakPtr(), std::move(response),
-                     std::move(sample_callback), std::move(completion_callback),
-                     std::move(current_template_id)),
-      base::BindOnce(&BioEnrollmentResponse::Parse));
 }
 
 void FidoDeviceAuthenticator::BioEnrollCancel(BioEnrollmentCallback callback) {

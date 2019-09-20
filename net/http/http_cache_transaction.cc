@@ -1007,10 +1007,6 @@ int HttpCache::Transaction::DoGetBackendComplete(int result) {
   // function can be invoked multiple times for a transaction.
   mode_ = NONE;
 
-  // Keep track of the fraction of requests that we can double-key.
-  UMA_HISTOGRAM_BOOLEAN("HttpCache.NetworkIsolationKeyPresent",
-                        request_->network_isolation_key.IsFullyPopulated());
-
   if (!ShouldPassThrough()) {
     cache_key_ = cache_->GenerateCacheKey(request_);
 
@@ -2408,41 +2404,45 @@ void HttpCache::Transaction::SetRequest(const NetLogWithSource& net_log) {
 }
 
 bool HttpCache::Transaction::ShouldPassThrough() {
+  bool cacheable = true;
+
   // We may have a null disk_cache if there is an error we cannot recover from,
   // like not enough disk space, or sharing violations.
-  if (!cache_->disk_cache_.get())
-    return true;
-
-  if (effective_load_flags_ & LOAD_DISABLE_CACHE)
-    return true;
-
+  if (!cache_->disk_cache_.get()) {
+    cacheable = false;
+  } else if (effective_load_flags_ & LOAD_DISABLE_CACHE) {
+    cacheable = false;
+  }
   // Prevent resources whose origin is opaque from being cached. Blink's memory
   // cache should take care of reusing resources within the current page load,
   // but otherwise a resource with an opaque top-frame origin won’t be used
   // again. Also, if the request does not have a top frame origin, bypass the
   // cache otherwise resources from different pages could share a cached entry
   // in such cases.
-  if (base::FeatureList::IsEnabled(
-          features::kSplitCacheByNetworkIsolationKey) &&
-      request_->network_isolation_key.IsTransient()) {
-    return true;
+  else if (base::FeatureList::IsEnabled(
+               features::kSplitCacheByNetworkIsolationKey) &&
+           request_->network_isolation_key.IsTransient()) {
+    cacheable = false;
+  } else if (method_ == "GET" || method_ == "HEAD") {
+  } else if (method_ == "POST" && request_->upload_data_stream &&
+             request_->upload_data_stream->identifier()) {
+  } else if (method_ == "PUT" && request_->upload_data_stream) {
+  } else if (method_ == "DELETE") {
+  } else {
+    cacheable = false;
   }
 
-  if (method_ == "GET" || method_ == "HEAD")
-    return false;
+  NetworkIsolationKeyPresent nik_present_enum =
+      request_->network_isolation_key.IsFullyPopulated()
+          ? NetworkIsolationKeyPresent::kPresent
+          : cacheable
+                ? NetworkIsolationKeyPresent::kNotPresentCacheableRequest
+                : NetworkIsolationKeyPresent::kNotPresentNonCacheableRequest;
 
-  if (method_ == "POST" && request_->upload_data_stream &&
-      request_->upload_data_stream->identifier()) {
-    return false;
-  }
+  UMA_HISTOGRAM_ENUMERATION("HttpCache.NetworkIsolationKeyPresent2",
+                            nik_present_enum);
 
-  if (method_ == "PUT" && request_->upload_data_stream)
-    return false;
-
-  if (method_ == "DELETE")
-    return false;
-
-  return true;
+  return !cacheable;
 }
 
 int HttpCache::Transaction::BeginCacheRead() {

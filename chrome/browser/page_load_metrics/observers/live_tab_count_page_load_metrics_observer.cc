@@ -10,7 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/metrics/tab_count_metrics.h"
 #include "chrome/browser/page_load_metrics/observers/histogram_suffixes.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
+#include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/tab_count_metrics/tab_count_metrics.h"
 
 #define LIVE_TAB_COUNT_PAGE_LOAD_HISTOGRAM(prefix, tab_count_bucket, sample, \

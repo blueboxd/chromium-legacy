@@ -4,6 +4,7 @@
 
 package org.chromium.content_shell_apk;
 
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -28,7 +29,7 @@ import javax.annotation.concurrent.GuardedBy;
 /**
  * Child service started by ChildProcessLauncherTest.
  */
-public class TestChildProcessService extends ChildProcessService {
+public class TestChildProcessService extends Service {
     private static final String TAG = "TestProcessService";
 
     private static final long MAIN_BLOCKING_DURATION_MS = 5000;
@@ -146,7 +147,27 @@ public class TestChildProcessService extends ChildProcessService {
         }
     };
 
-    public TestChildProcessService() {
-        super(new TestChildProcessServiceDelegate());
+    private ChildProcessService mService;
+
+    public TestChildProcessService() {}
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        mService = new ChildProcessService(
+                new TestChildProcessServiceDelegate(), this, getApplicationContext());
+        mService.onCreate();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mService.onDestroy();
+        mService = null;
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return mService.onBind(intent);
     }
 }

@@ -110,10 +110,10 @@ NetworkQualityEstimatorManager::~NetworkQualityEstimatorManager() {
   network_quality_estimator_->RemoveRTTAndThroughputEstimatesObserver(this);
 }
 
-void NetworkQualityEstimatorManager::AddRequest(
-    mojom::NetworkQualityEstimatorManagerRequest request) {
+void NetworkQualityEstimatorManager::AddReceiver(
+    mojo::PendingReceiver<mojom::NetworkQualityEstimatorManager> receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  bindings_.AddBinding(this, std::move(request));
+  receivers_.Add(this, std::move(receiver));
 }
 
 void NetworkQualityEstimatorManager::RequestNotifications(

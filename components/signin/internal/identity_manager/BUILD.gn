@@ -104,12 +104,14 @@ source_set("identity_manager") {
   if (is_ios) {
     configs += [ "//build/config/compiler:enable_arc" ]
 
+    deps += [ "//components/signin/public/identity_manager/ios" ]
+  }
+
+  if (is_ios || is_android) {
     sources += [
       "device_accounts_synchronizer_impl.cc",
       "device_accounts_synchronizer_impl.h",
     ]
-
-    deps += [ "//components/signin/public/identity_manager/ios" ]
   }
 }
 

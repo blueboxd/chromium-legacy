@@ -107,16 +107,14 @@ PersistentPrefStore* CreateTrackedPersistentPrefStore(
       new PrefHashFilter(CreatePrefHashStore(*config, false),
                          GetExternalVerificationPrefHashStorePair(
                              *config, temp_scoped_dir_cleaner),
-                         unprotected_configuration, nullptr,
+                         unprotected_configuration, mojo::NullRemote(),
                          validation_delegate.get(),
                          config->reporting_ids_count));
-  prefs::mojom::ResetOnLoadObserverPtr reset_on_load_observer(
-      std::move(config->reset_on_load_observer));
   std::unique_ptr<PrefHashFilter> protected_pref_hash_filter(new PrefHashFilter(
       CreatePrefHashStore(*config, true),
       GetExternalVerificationPrefHashStorePair(*config,
                                                temp_scoped_dir_cleaner),
-      protected_configuration, std::move(reset_on_load_observer),
+      protected_configuration, std::move(config->reset_on_load_observer),
       validation_delegate.get(), config->reporting_ids_count));
 
   PrefHashFilter* raw_unprotected_pref_hash_filter =
@@ -153,7 +151,7 @@ void InitializeMasterPrefsTracking(
   PrefHashFilter(
       CreatePrefHashStore(*configuration, false),
       GetExternalVerificationPrefHashStorePair(*configuration, nullptr),
-      configuration->tracking_configuration, nullptr, nullptr,
+      configuration->tracking_configuration, mojo::NullRemote(), nullptr,
       configuration->reporting_ids_count)
       .Initialize(master_prefs);
 }

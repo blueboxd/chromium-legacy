@@ -92,6 +92,7 @@ TEST_F(DocumentLayoutOptionsTest, RotatePagesCounterclockwise) {
 TEST_F(DocumentLayoutTest, DefaultConstructor) {
   EXPECT_EQ(layout_.options().default_page_orientation(),
             PageOrientation::kOriginal);
+  EXPECT_FALSE(layout_.dirty());
   EXPECT_PRED2(PpSizeEq, layout_.size(), pp::Size(0, 0));
   EXPECT_EQ(layout_.page_count(), 0u);
 }
@@ -102,10 +103,20 @@ TEST_F(DocumentLayoutTest, SetOptionsDoesNotRecomputeLayout) {
 
   DocumentLayout::Options options;
   options.RotatePagesClockwise();
-  layout_.set_options(options);
+  layout_.SetOptions(options);
   EXPECT_EQ(layout_.options().default_page_orientation(),
             PageOrientation::kClockwise90);
   EXPECT_PRED2(PpSizeEq, layout_.size(), pp::Size(100, 200));
+}
+
+TEST_F(DocumentLayoutTest, DirtySetOnOrientationChange) {
+  DocumentLayout::Options options;
+  layout_.SetOptions(options);
+  EXPECT_FALSE(layout_.dirty());
+
+  options.RotatePagesClockwise();
+  layout_.SetOptions(options);
+  EXPECT_TRUE(layout_.dirty());
 }
 
 TEST_F(DocumentLayoutTest, ComputeSingleViewLayout) {
@@ -206,6 +217,49 @@ TEST_F(DocumentLayoutTest, ComputeTwoUpViewLayout) {
   EXPECT_PRED2(PpRectEq, pp::Rect(105, 903, 290, 390),
                layout_.page_bounds_rect(4));
   EXPECT_PRED2(PpSizeEq, pp::Size(800, 1300), layout_.size());
+}
+
+TEST_F(DocumentLayoutTest, DirtySetOnSingleViewLayoutInputChange) {
+  layout_.ComputeSingleViewLayout({pp::Size(100, 200)});
+  EXPECT_TRUE(layout_.dirty());
+  layout_.clear_dirty();
+  EXPECT_FALSE(layout_.dirty());
+
+  layout_.ComputeSingleViewLayout({pp::Size(100, 200)});
+  EXPECT_FALSE(layout_.dirty());
+
+  layout_.ComputeSingleViewLayout({pp::Size(200, 100)});
+  EXPECT_TRUE(layout_.dirty());
+  layout_.clear_dirty();
+
+  layout_.ComputeSingleViewLayout({pp::Size(200, 100), pp::Size(300, 300)});
+  EXPECT_TRUE(layout_.dirty());
+  layout_.clear_dirty();
+
+  layout_.ComputeSingleViewLayout({pp::Size(200, 100)});
+  EXPECT_TRUE(layout_.dirty());
+}
+
+TEST_F(DocumentLayoutTest, DirtySetOnTwoUpViewLayoutInputChange) {
+  layout_.ComputeTwoUpViewLayout({pp::Size(100, 200), pp::Size(200, 100)});
+  EXPECT_TRUE(layout_.dirty());
+  layout_.clear_dirty();
+  EXPECT_FALSE(layout_.dirty());
+
+  layout_.ComputeTwoUpViewLayout({pp::Size(100, 200), pp::Size(200, 100)});
+  EXPECT_FALSE(layout_.dirty());
+
+  layout_.ComputeTwoUpViewLayout({pp::Size(200, 100), pp::Size(100, 200)});
+  EXPECT_TRUE(layout_.dirty());
+  layout_.clear_dirty();
+
+  layout_.ComputeTwoUpViewLayout(
+      {pp::Size(200, 100), pp::Size(100, 200), pp::Size(300, 300)});
+  EXPECT_TRUE(layout_.dirty());
+  layout_.clear_dirty();
+
+  layout_.ComputeTwoUpViewLayout({pp::Size(200, 100), pp::Size(100, 200)});
+  EXPECT_TRUE(layout_.dirty());
 }
 
 }  // namespace

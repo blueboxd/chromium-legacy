@@ -135,7 +135,7 @@ void GpuHostImpl::ResetFontRenderParams() {
   GetFontRenderParams().Reset();
 }
 
-void GpuHostImpl::OnProcessLaunched(base::ProcessId pid) {
+void GpuHostImpl::SetProcessId(base::ProcessId pid) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(base::kNullProcessId, pid_);
   DCHECK_NE(base::kNullProcessId, pid);

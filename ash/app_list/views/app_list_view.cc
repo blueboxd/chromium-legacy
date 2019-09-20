@@ -512,53 +512,6 @@ class AppListBackgroundShieldView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(AppListBackgroundShieldView);
 };
 
-// Animation used to translate AppListView as well as its child views. The
-// location and opacity of child views' are updated in each animation frame so
-// it is expensive.
-class PeekingResetAnimation : public ui::LayerAnimationElement {
- public:
-  PeekingResetAnimation(int y_offset,
-                        base::TimeDelta duration_ms,
-                        AppListView* view)
-      : ui::LayerAnimationElement(ui::LayerAnimationElement::TRANSFORM,
-                                  duration_ms),
-        transform_(std::make_unique<ui::InterpolatedTranslation>(
-            gfx::PointF(0, y_offset),
-            gfx::PointF())),
-        view_(view) {
-    DCHECK(view_->ending_drag());
-    DCHECK_EQ(view_->app_list_state(), ash::AppListViewState::kPeeking);
-    DCHECK(!view_->is_tablet_mode());
-  }
-
-  ~PeekingResetAnimation() override = default;
-
-  // ui::LayerAnimationElement:
-  void OnStart(ui::LayerAnimationDelegate* delegate) override {}
-  bool OnProgress(double current,
-                  ui::LayerAnimationDelegate* delegate) override {
-    const double progress =
-        gfx::Tween::CalculateValue(gfx::Tween::EASE_OUT, current);
-    delegate->SetTransformFromAnimation(
-        transform_->Interpolate(progress),
-        ui::PropertyChangeReason::FROM_ANIMATION);
-
-    // Update child views' location and opacity at each animation frame because
-    // child views' padding changes along with the app list view's bounds.
-    view_->app_list_main_view()->contents_view()->UpdateYPositionAndOpacity();
-
-    return true;
-  }
-  void OnGetTarget(TargetValue* target) const override {}
-  void OnAbort(ui::LayerAnimationDelegate* delegate) override {}
-
- private:
-  std::unique_ptr<ui::InterpolatedTransform> transform_;
-  AppListView* view_;
-
-  DISALLOW_COPY_AND_ASSIGN(PeekingResetAnimation);
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 // AppListView::TestApi
 
@@ -968,7 +921,13 @@ void AppListView::UpdateDrag(const gfx::Point& location) {
 }
 
 void AppListView::EndDrag(const gfx::Point& location) {
-  base::AutoReset<bool> auto_reset(&ending_drag_, true);
+  // |is_in_drag_| might have been cleared if the app list was dismissed while
+  // drag was still in progress. Nothing to do here in that case.
+  if (!is_in_drag_) {
+    DCHECK_EQ(ash::AppListViewState::kClosed, app_list_state_);
+    return;
+  }
+
   SetIsInDrag(false);
 
   // Change the app list state based on where the drag ended. If fling velocity
@@ -1325,6 +1284,10 @@ void AppListView::OnScrollEvent(ui::ScrollEvent* event) {
 }
 
 void AppListView::OnMouseEvent(ui::MouseEvent* event) {
+  // Ignore events if the app list is closing or closed.
+  if (app_list_state_ == ash::AppListViewState::kClosed)
+    return;
+
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
       event->SetHandled();
@@ -1374,6 +1337,10 @@ void AppListView::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 void AppListView::OnGestureEvent(ui::GestureEvent* event) {
+  // Ignore events if the app list is closing or closed.
+  if (app_list_state_ == ash::AppListViewState::kClosed)
+    return;
+
   switch (event->type()) {
     case ui::ET_GESTURE_TAP:
     case ui::ET_GESTURE_LONG_PRESS:
@@ -1471,8 +1438,6 @@ void AppListView::OnTabletModeChanged(bool started) {
       ->horizontal_page_container()
       ->OnTabletModeChanged(started);
 
-  base::AutoReset<bool> auto_reset(&ending_drag_, is_in_drag_);
-
   if (is_in_drag_) {
     SetIsInDrag(false);
     UpdateChildViewsYPositionAndOpacity();
@@ -1552,6 +1517,9 @@ void AppListView::SetState(ash::AppListViewState new_state) {
   ash::AppListViewState new_state_override = new_state;
   ConvertAppListStateToFullscreenEquivalent(&new_state_override);
   MaybeCreateAccessibilityEvent(new_state_override);
+  // Clear the drag state before closing the view.
+  if (new_state_override == ash::AppListViewState::kClosed)
+    SetIsInDrag(false);
   SetChildViewsForStateTransition(new_state_override);
   StartAnimationForState(new_state_override);
   MaybeIncreaseAssistantPrivacyInfoRowShownCount(new_state_override);
@@ -1559,12 +1527,8 @@ void AppListView::SetState(ash::AppListViewState new_state) {
   model_->SetStateFullscreen(new_state_override);
   app_list_state_ = new_state_override;
 
-  if (!update_childview_each_frame_ &&
-      app_list_state_ != ash::AppListViewState::kClosed) {
-    // Layout is called on animation completion, which makes the child views
-    // jump. Update y positions in advance here to avoid that.
+  if (is_in_drag_ && app_list_state_ != ash::AppListViewState::kClosed)
     app_list_main_view_->contents_view()->UpdateYPositionAndOpacity();
-  }
 
   if (GetWidget()->IsActive()) {
     // Reset the focus to initially focused view. This should be
@@ -1579,40 +1543,40 @@ void AppListView::SetState(ash::AppListViewState new_state) {
   GetAppsContainerView()->UpdateControlVisibility(app_list_state_, is_in_drag_);
 }
 
-void AppListView::StartAnimationForState(ash::AppListViewState target_state) {
-  int animation_duration = kAppListAnimationDurationMs;
+base::TimeDelta AppListView::GetStateTransitionAnimationDuration(
+    ash::AppListViewState target_state) {
   if (ShortAnimationsForTesting() || is_side_shelf_ ||
       (target_state == ash::AppListViewState::kClosed &&
        delegate_->ShouldDismissImmediately())) {
-    animation_duration = kAppListAnimationDurationImmediateMs;
-  } else if (is_fullscreen() ||
-             target_state == ash::AppListViewState::kFullscreenAllApps ||
-             target_state == ash::AppListViewState::kFullscreenSearch) {
-    // Animate over more time to or from a fullscreen state, to maintain a
-    // similar speed.
-    animation_duration = kAppListAnimationDurationFromFullscreenMs;
-  }
-  if (target_state == ash::AppListViewState::kClosed) {
-    // On closing, animate the opacity twice as fast so the SearchBoxView does
-    // not flash behind the shelf.
-    const int child_animation_duration = animation_duration / 2;
-    app_list_main_view_->contents_view()->FadeOutOnClose(
-        base::TimeDelta::FromMilliseconds(child_animation_duration));
-  } else {
-    app_list_main_view_->contents_view()->FadeInOnOpen(
-        base::TimeDelta::FromMilliseconds(animation_duration));
+    return base::TimeDelta::FromMilliseconds(
+        kAppListAnimationDurationImmediateMs);
   }
 
-  ApplyBoundsAnimation(target_state,
-                       base::TimeDelta::FromMilliseconds(animation_duration));
+  if (is_fullscreen() ||
+      target_state == ash::AppListViewState::kFullscreenAllApps ||
+      target_state == ash::AppListViewState::kFullscreenSearch) {
+    // Animate over more time to or from a fullscreen state, to maintain a
+    // similar speed.
+    return base::TimeDelta::FromMilliseconds(
+        kAppListAnimationDurationFromFullscreenMs);
+  }
+
+  return base::TimeDelta::FromMilliseconds(kAppListAnimationDurationMs);
+}
+
+void AppListView::StartAnimationForState(ash::AppListViewState target_state) {
+  base::TimeDelta animation_duration =
+      GetStateTransitionAnimationDuration(target_state);
+
+  ApplyBoundsAnimation(target_state, animation_duration);
+  if (!is_in_drag_) {
+    app_list_main_view_->contents_view()->AnimateToViewState(
+        target_state, animation_duration);
+  }
 }
 
 void AppListView::ApplyBoundsAnimation(ash::AppListViewState target_state,
                                        base::TimeDelta duration_ms) {
-  base::AutoReset<bool> auto_reset(
-      &update_childview_each_frame_,
-      ShouldUpdateChildViewsDuringAnimation(target_state));
-
   // Reset animation metrics reporter when animation is started.
   ResetTransitionMetricsReporter();
 
@@ -1710,12 +1674,6 @@ void AppListView::ApplyBoundsAnimation(ash::AppListViewState target_state,
                                -AppListConfig::instance().background_radius());
   }
   app_list_background_shield_->SetTransform(shield_transform);
-
-  if (update_childview_each_frame_) {
-    layer->GetAnimator()->StartAnimation(new ui::LayerAnimationSequence(
-        std::make_unique<PeekingResetAnimation>(y_offset, duration_ms, this)));
-    return;
-  }
 
   animation.SetTransitionDuration(duration_ms);
   animation.SetTweenType(gfx::Tween::EASE_OUT);
@@ -1831,12 +1789,12 @@ void AppListView::SetIsInDrag(bool is_in_drag) {
   if (is_in_drag == is_in_drag_)
     return;
 
-  is_in_drag_ = is_in_drag;
-
   // Don't allow dragging to interrupt the close animation, it probably is not
   // intentional.
   if (app_list_state_ == ash::AppListViewState::kClosed)
     return;
+
+  is_in_drag_ = is_in_drag;
 
   if (is_in_drag && !is_tablet_mode_) {
     presentation_time_recorder_.reset();
@@ -1871,7 +1829,12 @@ int AppListView::GetCurrentAppListHeight() const {
 }
 
 float AppListView::GetAppListTransitionProgress(int flags) const {
-  const int current_height = GetCurrentAppListHeight();
+  int current_height = GetCurrentAppListHeight();
+  if (flags & kProgressFlagWithTransform) {
+    current_height -=
+        GetWidget()->GetLayer()->transform().To2dTranslation().y();
+  }
+
   const int fullscreen_height = GetFullscreenStateHeight();
   const int baseline_height =
       std::min(fullscreen_height,
@@ -2280,29 +2243,6 @@ void AppListView::UpdateAppListBackgroundYPosition(
     app_list_background_shield_->SetTransform(transform);
 }
 
-bool AppListView::ShouldUpdateChildViewsDuringAnimation(
-    ash::AppListViewState target_state) const {
-  // Return true when following conditions are all satisfied:
-  // (1) In Clamshell mode.
-  // (2) AppListView is in drag and both the current state and the target state
-  // are Peeking. For example, drag AppListView from Peeking state by a little
-  // offset then release the drag.
-  // (3) The top of AppListView's current bounds is lower than that of
-  // AppList in Peeking state. Because UI janks obviously in this situation
-  // wihtout updating child views in each animation frame.
-
-  if (is_tablet_mode_)
-    return false;
-
-  if (target_state != ash::AppListViewState::kPeeking || !ending_drag_ ||
-      app_list_state_ != target_state) {
-    return false;
-  }
-
-  return GetWidget()->GetNativeView()->bounds().origin().y() >
-         GetPreferredWidgetYForState(target_state);
-}
-
 void AppListView::OnStateTransitionAnimationCompleted() {
   delegate_->OnStateTransitionAnimationCompleted(app_list_state_);
 }
@@ -2314,7 +2254,6 @@ void AppListView::OnTabletModeAnimationTransitionNotified(
 }
 
 void AppListView::EndDragFromShelf(ash::AppListViewState app_list_state) {
-  base::AutoReset<bool> auto_reset(&ending_drag_, true);
   SetIsInDrag(false);
 
   if (app_list_state == ash::AppListViewState::kClosed ||

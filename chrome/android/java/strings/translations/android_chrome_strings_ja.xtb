@@ -174,6 +174,7 @@
 <translation id="2154484045852737596">カードを編集</translation>
 <translation id="2154710561487035718">URL をコピー</translation>
 <translation id="2156074688469523661">その他のサイト（<ph name="NUMBER_OF_SITES" /> 件）</translation>
+<translation id="2157851137955077194">お使いのスマートフォンから別のデバイスにデータを共有するには、両方のデバイスの Chrome 設定で同期をオンにしてください</translation>
 <translation id="2170088579611075216">VR を許可して開始</translation>
 <translation id="218608176142494674">共有</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> として続行</translation>
@@ -602,7 +603,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="545042621069398927">ダウンロード速度が向上しました。</translation>
 <translation id="5456381639095306749">ページをダウンロード</translation>
 <translation id="5475862044948910901">拡張現実セッションを開始しますか？</translation>
-<translation id="5481942164684849270"><ph name="APP_NAME" /> をマイアプリに追加しました</translation>
 <translation id="548278423535722844">マップアプリで開く</translation>
 <translation id="5487521232677179737">データを削除</translation>
 <translation id="5494752089476963479">煩わしい広告や誤解を招く広告が表示されるサイトで広告をブロックする</translation>
@@ -1009,7 +1009,6 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="8364299278605033898">人気のウェブサイトを表示します</translation>
 <translation id="8368027906805972958">不明またはサポートされていないデバイス（<ph name="DEVICE_ID" />）</translation>
 <translation id="8372893542064058268">特定のサイトに対してバックグラウンド同期を許可します。</translation>
-<translation id="8374821112118309944">TalkBack を最新版に更新する必要があります。</translation>
 <translation id="8378714024927312812">組織によって管理されています</translation>
 <translation id="8380167699614421159">このサイトでは煩わしい広告や誤解を招く広告が表示されます</translation>
 <translation id="8393700583063109961">メッセージを送信</translation>
@@ -1073,6 +1072,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198">「<ph name="TAB_TITLE" />」タブ</translation>
 <translation id="885701979325669005">ストレージ</translation>
+<translation id="889338405075704026">Chrome 設定に移動</translation>
 <translation id="8901170036886848654">ブックマークが見つかりません</translation>
 <translation id="8909135823018751308">共有...</translation>
 <translation id="8912362522468806198">Google アカウントを使用</translation>
@@ -1091,6 +1091,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="8993760627012879038">新しいタブをシークレット モードで開く</translation>
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" /> で管理されているアカウントでログインして、Chrome データの管理を管理者に委ねようとしています。この操作を行うと、データはこのアカウントに恒久的に関連付けられます。Chrome からログアウトすると、データはこのデバイスから削除されますが、Google アカウントには残ります。</translation>
 <translation id="9019902583201351841">保護者により管理されています</translation>
+<translation id="9028914725102941583">デバイス間で共有するには同期をオンにします</translation>
 <translation id="9029323097866369874"><ph name="DOMAIN" /> に VR の開始を許可しますか？</translation>
 <translation id="9040142327097499898">通知が許可されていますが、位置情報がデバイスでオフになっています。</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# 個の動画}other{# 個の動画}}</translation>

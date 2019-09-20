@@ -271,7 +271,7 @@ function addTestPromo() {
   let promo = document.createElement('div');
   promo.id = IDS.PROMO;
   promo.innerHTML = 'test';
-  promo.classList.add('show-element');
+  promo.style.visibility = 'visible';
   $('ntp-contents').appendChild(promo);
 }
 

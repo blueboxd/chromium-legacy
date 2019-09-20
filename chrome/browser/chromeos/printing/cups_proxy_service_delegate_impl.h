@@ -38,7 +38,7 @@ class CupsProxyServiceDelegateImpl
   base::Optional<Printer> GetPrinter(const std::string& id) override;
 
   // Get the currently known list of printers.
-  std::vector<Printer> GetPrinters() override;
+  std::vector<Printer> GetPrinters(PrinterClass printer_class) override;
 
   // Returns whether |printer| is currently installed in CUPS with this config.
   bool IsPrinterInstalled(const Printer& printer) override;

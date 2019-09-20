@@ -154,6 +154,10 @@ class PersonalDataManager : public KeyedService,
   std::string OnAcceptedLocalCreditCardSave(
       const CreditCard& imported_credit_card);
 
+  // Triggered when the user accepts saving a VPA value. Stores the |vpa_id| to
+  // the database.
+  virtual void AddVPA(const std::string& vpa_id);
+
   // Adds |profile| to the web database.
   virtual void AddProfile(const AutofillProfile& profile);
 

@@ -716,9 +716,11 @@ void OverviewWindowDragController::SnapWindow(
 
   // |item_| will be deleted after SplitViewController::SnapWindow().
   DCHECK(!Shell::Get()->split_view_controller()->IsDividerAnimating());
-  split_view_controller_->SnapWindow(item_->GetWindow(), snap_position,
+  aura::Window* window = item_->GetWindow();
+  split_view_controller_->SnapWindow(window, snap_position,
                                      /*use_divider_spawn_animation=*/true);
   item_ = nullptr;
+  wm::ActivateWindow(window);
 }
 
 }  // namespace ash

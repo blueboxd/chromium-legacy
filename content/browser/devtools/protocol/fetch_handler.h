@@ -57,7 +57,8 @@ class FetchHandler : public DevToolsDomainHandler, public Fetch::Backend {
   void FulfillRequest(
       const String& fetchId,
       int responseCode,
-      std::unique_ptr<Array<Fetch::HeaderEntry>> responseHeaders,
+      Maybe<Array<Fetch::HeaderEntry>> responseHeaders,
+      Maybe<Binary> binaryResponseHeaders,
       Maybe<Binary> body,
       Maybe<String> responsePhrase,
       std::unique_ptr<FulfillRequestCallback> callback) override;

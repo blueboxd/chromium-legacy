@@ -174,6 +174,7 @@
 <translation id="2154484045852737596">Urejanje kartice</translation>
 <translation id="2154710561487035718">Kopiraj URL</translation>
 <translation id="2156074688469523661">Preostala spletna mesta (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="2157851137955077194">Če želite deliti kaj iz telefona z drugo napravo, v obeh napravah v nastavitvah Chroma vklopite sinhronizacijo</translation>
 <translation id="2170088579611075216">Omogoči in zaženi VR</translation>
 <translation id="218608176142494674">Deljenje z drugimi</translation>
 <translation id="2227444325776770048">Nadaljujte kot <ph name="USER_FULL_NAME" /></translation>
@@ -602,7 +603,6 @@ Prepričajte se, da zaupate temu spletnemu mestu, preden zaženete VR.</translat
 <translation id="545042621069398927">Pospeševanje prenosa.</translation>
 <translation id="5456381639095306749">Prenos strani</translation>
 <translation id="5475862044948910901">Želite začeti sejo razširjene resničnosti?</translation>
-<translation id="5481942164684849270">Aplikacija <ph name="APP_NAME" /> je dodana v moje aplikacije</translation>
 <translation id="548278423535722844">Odpiranje v aplikaciji z zemljevidi</translation>
 <translation id="5487521232677179737">Izbriši podatke</translation>
 <translation id="5494752089476963479">Blokiranje oglasov na spletnih mestih, ki prikazujejo vsiljive ali zavajajoče oglase</translation>
@@ -1009,7 +1009,6 @@ Spletno mesto NIMA dostopa do kamere. Posnetki kamere so vidni samo vam.</transl
 <translation id="8364299278605033898">Ogled priljubljenih spletnih mest</translation>
 <translation id="8368027906805972958">Neznana ali nepodprta naprava (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Dovoli sinhroniziranje v ozadju za določeno spletno mesto.</translation>
-<translation id="8374821112118309944">TalkBack morate posodobiti na novejšo različico.</translation>
 <translation id="8378714024927312812">Upravlja vaša organizacija</translation>
 <translation id="8380167699614421159">To spletno mesto prikazuje vsiljive ali zavajajoče oglase</translation>
 <translation id="8393700583063109961">Pošlji sporočilo</translation>
@@ -1073,6 +1072,7 @@ Spletno mesto NIMA dostopa do kamere. Posnetki kamere so vidni samo vam.</transl
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, zavihek</translation>
 <translation id="885701979325669005">Shramba</translation>
+<translation id="889338405075704026">Odprite nastavitve Chroma</translation>
 <translation id="8901170036886848654">Ni najdenih zaznamkov</translation>
 <translation id="8909135823018751308">Skupna raba …</translation>
 <translation id="8912362522468806198">Google Račun</translation>
@@ -1091,6 +1091,7 @@ Spletno mesto NIMA dostopa do kamere. Posnetki kamere so vidni samo vam.</transl
 <translation id="8993760627012879038">Odpiranje novega zavihka brez beleženja zgodovine</translation>
 <translation id="8998729206196772491">Prijavljate se z računom, ki ga upravlja <ph name="MANAGED_DOMAIN" />, in nadzor nad podatki v Chromu predajate skrbniku. Vaši podatki bodo trajno povezani s tem računom. Če se odjavite iz Chroma, boste izbrisali podatke iz te naprave, vendar bodo še naprej shranjeni v Google Računu.</translation>
 <translation id="9019902583201351841">Upravljajo starši</translation>
+<translation id="9028914725102941583">Vklopite sinhronizacijo, če želite deliti z drugimi napravami</translation>
 <translation id="9029323097866369874">Dovolite spletnemu mestu <ph name="DOMAIN" />, da zažene VR?</translation>
 <translation id="9040142327097499898">Obvestila so dovoljena. Lokacija je izklopljena za to napravo.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# videoposnetek}one{# videoposnetek}two{# videoposnetka}few{# videoposnetki}other{# videoposnetkov}}</translation>

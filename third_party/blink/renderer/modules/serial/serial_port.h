@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERIAL_SERIAL_PORT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERIAL_SERIAL_PORT_H_
 
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/serial.mojom-blink.h"
@@ -70,7 +71,7 @@ class SerialPort final : public ScriptWrappable,
   void OnConnectionError();
   void OnOpen(mojo::ScopedDataPipeConsumerHandle,
               mojo::ScopedDataPipeProducerHandle,
-              device::mojom::blink::SerialPortClientRequest,
+              mojo::PendingReceiver<device::mojom::blink::SerialPortClient>,
               bool success);
   void InitializeReadableStream(ScriptState*,
                                 mojo::ScopedDataPipeConsumerHandle);

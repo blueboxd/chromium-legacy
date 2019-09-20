@@ -67,6 +67,10 @@ const char kSettingDuplexMode[] = "duplex";
 // selected else false.
 const char kSettingFitToPageEnabled[] = "fitToPageEnabled";
 
+// Option to fit source page contents to paper size: true if
+// selected else false.
+const char kSettingFitToPaperEnabled[] = "fitToPaperEnabled";
+
 // Option to print headers and Footers: true if selected, false if not.
 const char kSettingHeaderFooterEnabled[] = "headerFooterEnabled";
 

@@ -421,7 +421,6 @@
 <translation id="4039983576244166038">Празно заглавље реда</translation>
 <translation id="4042843249978639960">Нема следећег заглавља 2. нивоа.</translation>
 <translation id="4043348641337972076">Нема претходног ARIA обележја.</translation>
-<translation id="4045764028670444336">Почетак погрешно написане речи</translation>
 <translation id="4047216625641135770">Ознака</translation>
 <translation id="404803211695627272"><ph name="V1" />–<ph name="V2" /></translation>
 <translation id="4053520724192563562">Отворенозелена</translation>
@@ -504,7 +503,6 @@
 <translation id="4547556996012970016">Следеће заглавље 5. нивоа</translation>
 <translation id="4562381607973973258">Заглавље</translation>
 <translation id="4569941707103739422">Притисните стрелицу нагоре или надоле да бисте се кретали. Да бисте активирали, притисните Enter.</translation>
-<translation id="4570424871453628777">Крај погрешно написане речи</translation>
 <translation id="4591507479202817876">, изабрано</translation>
 <translation id="4597532268155981612">образац</translation>
 <translation id="4597896406374528575">април</translation>
@@ -728,7 +726,6 @@
 <translation id="6037602951055904232">Померање унапред</translation>
 <translation id="6042826534790431634">За активирање притисните тастер за претрагу + тастер за размак.</translation>
 <translation id="6044160928851315051">Затамни екран</translation>
-<translation id="6065293622157674001">Почетак граматичке грешке</translation>
 <translation id="6082768461603900813">Основно кретање</translation>
 <translation id="6118126368611144850">Android апликације за Chrome. Ако имате Play продавницу на уређају, погледајте ChromeVox са Android апликацијама пре званичног објављивања. Испробајте експерименталну подршку тако што ћете преузети Google Chrome Canary из Play продавнице.</translation>
 <translation id="611827076493383239">посећено</translation>
@@ -869,7 +866,6 @@
 <translation id="7143207342074048698">Повезивање</translation>
 <translation id="7153618581592392745">Светлољубичаста</translation>
 <translation id="7157306005867877619">Сажетак</translation>
-<translation id="7161425887892204659">Крај текстуалног подударања</translation>
 <translation id="7161771961008409533">Искачуће дугме</translation>
 <translation id="7165714724802225287">Актуелни стил приказа је „преклапање“.</translation>
 <translation id="7167657087543110">одјек знакова</translation>
@@ -907,7 +903,6 @@
 <translation id="737396357417333429">клик</translation>
 <translation id="7374104575779636480">Напуштање табеле.</translation>
 <translation id="738899727977260036">Сивоплава</translation>
-<translation id="7392145451309930991">Почетак текстуалног подударања</translation>
 <translation id="739763518212184081">Претходни ред</translation>
 <translation id="7400575256015741911">Откривена је грешка у куцању</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -1120,7 +1115,6 @@
 <translation id="8476408756881832830">Паузирај репродукцију док ChromeVox говори</translation>
 <translation id="8476508772960940536">преглед прозора</translation>
 <translation id="8503360654911991865">Смањивање грануларности навигације</translation>
-<translation id="8504695234784218301">Крај граматичке грешке</translation>
 <translation id="8520472399088452386">Дугме за промену вредности</translation>
 <translation id="8534394844575788431">Форматирање</translation>
 <translation id="8538744478902126321">Предвиђање наслова реда актуелне ћелије</translation>

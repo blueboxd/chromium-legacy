@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
 
 namespace device {
@@ -40,7 +40,7 @@ class SensorProviderImpl final : public mojom::SensorProvider {
 
   std::unique_ptr<PlatformSensorProvider> provider_;
   mojo::BindingSet<mojom::SensorProvider> bindings_;
-  mojo::StrongBindingSet<mojom::Sensor> sensor_bindings_;
+  mojo::UniqueReceiverSet<mojom::Sensor> sensor_receivers_;
   base::WeakPtrFactory<SensorProviderImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SensorProviderImpl);

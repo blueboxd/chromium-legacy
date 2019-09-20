@@ -118,33 +118,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   void RegisterSubresourceOverride(
       mojom::TransferrableURLLoaderPtr transferrable_loader) override;
 
-  blink::mojom::RequestContextType request_context_type() const {
-    return navigation_request_->request_context_type();
-  }
-
-  // Get the unique id from the NavigationEntry associated with this
-  // NavigationHandle. Note that a synchronous, renderer-initiated navigation
-  // will not have a NavigationEntry associated with it, and this will return 0.
-  int pending_nav_entry_id() const {
-    return navigation_request_->nav_entry_id();
-  }
-
   // Returns the FrameTreeNode this navigation is happening in.
   FrameTreeNode* frame_tree_node() const {
     return navigation_request_->frame_tree_node();
-  }
-
-  NavigationType navigation_type() {
-    return navigation_request_->navigation_type();
-  }
-
-  CSPDisposition should_check_main_world_csp() const {
-    return navigation_request_->common_params()
-        .initiator_csp_info.should_check_main_world_csp;
-  }
-
-  const base::Optional<SourceLocation>& source_location() const {
-    return navigation_request_->common_params().source_location;
   }
 
  private:
@@ -155,10 +131,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // |navigation_start| comes from the CommonNavigationParams associated with
   // this navigation.
   NavigationHandleImpl(NavigationRequest* navigation_request);
-
-  NavigationRequest::NavigationHandleState state() const {
-    return navigation_request_->handle_state();
-  }
 
   // The NavigationRequest that owns this NavigationHandle.
   NavigationRequest* navigation_request_;

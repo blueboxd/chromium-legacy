@@ -290,8 +290,10 @@ bool ChromeAuthenticatorRequestDelegate::ShouldPermitCableExtension(
 
 bool ChromeAuthenticatorRequestDelegate::SetCableTransportInfo(
     bool cable_extension_provided,
+    bool have_paired_phones,
     base::Optional<device::QRGeneratorKey> qr_generator_key) {
   weak_dialog_model_->set_cable_transport_info(cable_extension_provided,
+                                               have_paired_phones,
                                                std::move(qr_generator_key));
   return true;
 }
@@ -360,6 +362,8 @@ void ChromeAuthenticatorRequestDelegate::UpdateLastTransportUsed(
 
   if (!weak_dialog_model_)
     return;
+
+  weak_dialog_model_->OnSuccess(transport);
 
   // We already invoke AddFidoBleDeviceToPairedList() on
   // AuthenticatorRequestDialogModel::OnPairingSuccess(). We invoke the function
@@ -547,11 +551,12 @@ void ChromeAuthenticatorRequestDelegate::OnCancelRequest() {
   std::move(cancel_callback_).Run();
 }
 
-void ChromeAuthenticatorRequestDelegate::AppendCablePairings(
-    std::vector<device::CableDiscoveryData>* pairings) {
+std::vector<device::CableDiscoveryData>
+ChromeAuthenticatorRequestDelegate::GetCablePairings() {
+  std::vector<device::CableDiscoveryData> ret;
   if (!base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
     NOTREACHED();
-    return;
+    return ret;
   }
 
   PrefService* prefs =
@@ -578,8 +583,10 @@ void ChromeAuthenticatorRequestDelegate::AppendCablePairings(
       continue;
     }
 
-    pairings->push_back(discovery);
+    ret.push_back(discovery);
   }
+
+  return ret;
 }
 
 void ChromeAuthenticatorRequestDelegate::AddFidoBleDeviceToPairedList(

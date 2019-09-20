@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/process/memory.h"
 #include "base/stl_util.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
@@ -439,8 +440,13 @@ class GLPixelBufferRGBAResult : public CopyOutputResult {
       return *cached_bitmap();
 
     SkBitmap result_bitmap;
-    result_bitmap.allocPixels(SkImageInfo::MakeN32Premul(
-        size().width(), size().height(), GetRGBAColorSpace().ToSkColorSpace()));
+    // size() was clamped to render pass or framebuffer size. If we can't
+    // allocate it then OOM.
+    auto info = SkImageInfo::MakeN32Premul(
+        size().width(), size().height(), GetRGBAColorSpace().ToSkColorSpace());
+    if (!result_bitmap.tryAllocPixels(info, info.minRowBytes()))
+      base::TerminateBecauseOutOfMemory(info.computeMinByteSize());
+
     ReadRGBAPlane(static_cast<uint8_t*>(result_bitmap.getPixels()),
                   result_bitmap.rowBytes());
     *cached_bitmap() = result_bitmap;

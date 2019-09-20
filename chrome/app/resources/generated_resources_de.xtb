@@ -4552,7 +4552,7 @@ Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translati
 <translation id="7776701556330691704">Keine Stimmen gefunden</translation>
 <translation id="7781335840981796660">Alle Benutzerkonten und lokalen Daten werden entfernt.</translation>
 <translation id="7782102568078991263">Keine weiteren Vorschläge von Google</translation>
-<translation id="7782717250816686129">Persistente Daten auf dem Anmeldebildschirm speichern und Anmeldedaten für die Sitzung eingeben.</translation>
+<translation id="7782717250816686129">Vom Nutzer auf dem Anmeldebildschirm angegebene Daten speichern und mit anderen Erweiterungen in der Nutzersitzung teilen.</translation>
 <translation id="778330624322499012"><ph name="PLUGIN_NAME" /> konnte nicht geladen werden</translation>
 <translation id="7784067724422331729">Diese Datei wurde von den Sicherheitseinstellungen auf Ihrem Computer blockiert.</translation>
 <translation id="7784796923038949829">Daten der Website können nicht gelesen oder geändert werden</translation>
@@ -4852,7 +4852,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8174876712881364124">In Google Drive sichern: Sie können Ihre Daten jederzeit wiederherstellen – auch auf einem anderen Gerät. Diese Sicherung enthält App-Daten. Sicherungen werden bei Google hochgeladen und mit dem Passwort des Google-Kontos Ihres Kindes verschlüsselt. <ph name="BEGIN_LINK1" />Weitere Informationen<ph name="END_LINK1" /></translation>
 <translation id="8176332201990304395">Rosa und Weiß</translation>
 <translation id="8177196903785554304">Netzwerkdetails</translation>
-<translation id="8178208419593390223">Hier können Sie Ihre angemeldeten Google-Konten verwalten. Websites, Apps und Erweiterungen in Chrome und Google Play greifen möglicherweise auf diese Konten zurück, um Ihnen – abhängig von den jeweiligen Berechtigungen – personalisierte Inhalte anzuzeigen.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">Seite</translation>
 <translation id="8180294223783876911">Sie haben die Möglichkeit, Nutzungs- und Diagnosedaten zu senden. Dieses Gerät sendet momentan automatisch Diagnose- sowie Geräte- und App-Nutzungsdaten an Google. Die Daten helfen unter anderem dabei, die Stabilität des Systems und der Apps zu verbessern. Einige aggregierte Daten sind auch für Apps und Partner von Google, beispielsweise Android-Entwickler, nützlich. Wenn zusätzlich die Einstellung "Web- &amp; App-Aktivitäten" aktiviert ist, werden diese Daten eventuell in Ihrem Google-Konto gespeichert. <ph name="BEGIN_LINK1" />Weitere Informationen<ph name="END_LINK1" /></translation>

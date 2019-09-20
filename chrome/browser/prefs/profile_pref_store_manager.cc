@@ -88,7 +88,8 @@ PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
         tracking_configuration,
     size_t reporting_ids_count,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner,
-    prefs::mojom::ResetOnLoadObserverPtr reset_on_load_observer,
+    mojo::PendingRemote<prefs::mojom::ResetOnLoadObserver>
+        reset_on_load_observer,
     prefs::mojom::TrackedPreferenceValidationDelegatePtr validation_delegate) {
   if (!kPlatformSupportsPreferenceTracking) {
     return new JsonPrefStore(profile_path_.Append(chrome::kPreferencesFilename),
@@ -138,7 +139,8 @@ ProfilePrefStoreManager::CreateTrackedPrefStoreConfiguration(
     std::vector<prefs::mojom::TrackedPreferenceMetadataPtr>
         tracking_configuration,
     size_t reporting_ids_count,
-    prefs::mojom::ResetOnLoadObserverPtr reset_on_load_observer,
+    mojo::PendingRemote<prefs::mojom::ResetOnLoadObserver>
+        reset_on_load_observer,
     prefs::mojom::TrackedPreferenceValidationDelegatePtr validation_delegate) {
   return prefs::mojom::TrackedPersistentPrefStoreConfiguration::New(
       profile_path_.Append(chrome::kPreferencesFilename),
@@ -152,6 +154,5 @@ ProfilePrefStoreManager::CreateTrackedPrefStoreConfiguration(
 #else
       base::string16(),
 #endif
-      validation_delegate.PassInterface(),
-      reset_on_load_observer.PassInterface());
+      validation_delegate.PassInterface(), std::move(reset_on_load_observer));
 }

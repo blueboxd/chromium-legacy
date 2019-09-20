@@ -12,6 +12,7 @@
 #include "apps/launcher.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/hash/sha1.h"
 #include "base/logging.h"
@@ -41,6 +42,7 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut_mac.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -199,15 +201,17 @@ namespace apps {
 // The state for an individual (app, Profile) pair. This includes the
 // AppShimHost.
 struct ExtensionAppShimHandler::ProfileState {
-  ProfileState(ExtensionAppShimHandler::AppState* in_app_state)
-      : app_state(in_app_state) {}
+  ProfileState(ExtensionAppShimHandler::AppState* in_app_state,
+               std::unique_ptr<AppShimHost> in_single_profile_host);
   ~ProfileState() = default;
+
+  AppShimHost* GetHost() const;
 
   // Weak, owns |this|.
   ExtensionAppShimHandler::AppState* const app_state;
 
   // The AppShimHost for apps that are not multi-profile.
-  std::unique_ptr<AppShimHost> host;
+  const std::unique_ptr<AppShimHost> single_profile_host;
 
   // All browser instances for this (app, Profile) pair.
   std::set<Browser*> browsers;
@@ -218,17 +222,41 @@ struct ExtensionAppShimHandler::ProfileState {
 
 // The state for an individual app. This includes the state for all
 // profiles that are using the app.
-// TODO(https://crbug.com/982024): Add AppShimHost when shared amongst
-// profiles.
 struct ExtensionAppShimHandler::AppState {
-  AppState() = default;
+  AppState(std::unique_ptr<AppShimHost> in_multi_profile_host)
+      : multi_profile_host(std::move(in_multi_profile_host)) {}
   ~AppState() = default;
+
+  bool IsMultiProfile() const;
+
+  // Multi-profile apps share the same shim process across multiple profiles.
+  const std::unique_ptr<AppShimHost> multi_profile_host;
 
   std::map<Profile*, std::unique_ptr<ProfileState>> profiles;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AppState);
 };
+
+ExtensionAppShimHandler::ProfileState::ProfileState(
+    ExtensionAppShimHandler::AppState* in_app_state,
+    std::unique_ptr<AppShimHost> in_single_profile_host)
+    : app_state(in_app_state),
+      single_profile_host(std::move(in_single_profile_host)) {
+  // Assert that the ProfileState and AppState agree about whether or not this
+  // is a multi-profile shim.
+  DCHECK_NE(!!single_profile_host, !!app_state->multi_profile_host);
+}
+
+AppShimHost* ExtensionAppShimHandler::ProfileState::GetHost() const {
+  if (app_state->multi_profile_host)
+    return app_state->multi_profile_host.get();
+  return single_profile_host.get();
+}
+
+bool ExtensionAppShimHandler::AppState::IsMultiProfile() const {
+  return multi_profile_host.get();
+}
 
 base::FilePath ExtensionAppShimHandler::Delegate::GetFullProfilePath(
     const base::FilePath& relative_profile_path) {
@@ -379,8 +407,6 @@ ExtensionAppShimHandler::ExtensionAppShimHandler()
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
-                 content::NotificationService::AllBrowserContextsAndSources());
   BrowserList::AddObserver(this);
 }
 
@@ -390,22 +416,15 @@ ExtensionAppShimHandler::~ExtensionAppShimHandler() {
 
 AppShimHost* ExtensionAppShimHandler::FindHost(Profile* profile,
                                                const std::string& app_id) {
-  ProfileState* profile_state = GetProfileState(profile, app_id);
-  if (!profile_state)
+  auto found_app = apps_.find(app_id);
+  if (found_app == apps_.end())
     return nullptr;
-  return profile_state->host.get();
-}
-
-AppShimHost* ExtensionAppShimHandler::FindOrCreateHost(
-    Profile* profile,
-    const extensions::Extension* extension) {
-  if (web_app::AppShimLaunchDisabled())
+  AppState* app_state = found_app->second.get();
+  auto found_profile = app_state->profiles.find(profile);
+  if (found_profile == app_state->profiles.end())
     return nullptr;
-  ProfileState* profile_state =
-      GetProfileState(profile, extension->id(), true /* create */);
-  if (!profile_state->host)
-    profile_state->host = delegate_->CreateHost(this, profile, extension);
-  return profile_state->host.get();
+  ProfileState* profile_state = found_profile->second.get();
+  return profile_state->GetHost();
 }
 
 AppShimHost* ExtensionAppShimHandler::GetHostForBrowser(Browser* browser) {
@@ -414,7 +433,10 @@ AppShimHost* ExtensionAppShimHandler::GetHostForBrowser(Browser* browser) {
       apps::ExtensionAppShimHandler::MaybeGetAppForBrowser(browser);
   if (!extension || !extension->is_hosted_app())
     return nullptr;
-  return FindOrCreateHost(profile, extension);
+  ProfileState* profile_state = GetOrCreateProfileState(profile, extension);
+  if (!profile_state)
+    return nullptr;
+  return profile_state->GetHost();
 }
 
 // static
@@ -591,10 +613,12 @@ void ExtensionAppShimHandler::OnExtensionEnabled(
     return;
   }
 
-  AppShimHost* host = delegate_->AllowShimToConnect(profile, extension)
-                          ? FindOrCreateHost(profile, extension)
-                          : nullptr;
-  if (host) {
+  ProfileState* profile_state =
+      delegate_->AllowShimToConnect(profile, extension)
+          ? GetOrCreateProfileState(profile, extension)
+          : nullptr;
+  if (profile_state) {
+    AppShimHost* host = profile_state->GetHost();
     if (host->HasBootstrapConnected()) {
       // If another app shim process has already connected to this (profile,
       // app_id) pair, then focus the windows for the existing process, and
@@ -636,7 +660,6 @@ bool ExtensionAppShimHandler::IsAcceptablyCodeSigned(pid_t pid) const {
 void ExtensionAppShimHandler::OnShimProcessDisconnected(AppShimHost* host) {
   Profile* profile = delegate_->ProfileForPath(host->GetProfilePath());
   const std::string app_id = host->GetAppId();
-  DCHECK_EQ(host, FindHost(profile, app_id));
 
   // For non-RemoteCocoa apps, close all of the windows only if the the shim
   // process has successfully connected (if it never connected, then let the
@@ -644,8 +667,23 @@ void ExtensionAppShimHandler::OnShimProcessDisconnected(AppShimHost* host) {
   bool close_windows =
       !host->UsesRemoteViews() && host->HasBootstrapConnected();
 
-  CloseShimForApp(profile, host->GetAppId());
-  // Note that |host| is destroyed by CloseShimForApp.
+  // Find the AppState or ProfileState that owns |host| and delete it. Note
+  // that that will destroy |host| as well.
+  auto found_app = apps_.find(app_id);
+  DCHECK(found_app != apps_.end());
+  AppState* app_state = found_app->second.get();
+  if (app_state->IsMultiProfile()) {
+    DCHECK_EQ(host, app_state->multi_profile_host.get());
+    apps_.erase(found_app);
+  } else {
+    auto found_profile = app_state->profiles.find(profile);
+    DCHECK(found_profile != app_state->profiles.end());
+    ProfileState* profile_state = found_profile->second.get();
+    DCHECK_EQ(host, profile_state->single_profile_host.get());
+    app_state->profiles.erase(found_profile);
+    if (app_state->profiles.empty())
+      apps_.erase(found_app);
+  }
   host = nullptr;
 
   if (close_windows) {
@@ -713,21 +751,6 @@ void ExtensionAppShimHandler::Observe(
       CloseShimsForProfile(profile);
       break;
     }
-    case chrome::NOTIFICATION_BROWSER_OPENED: {
-      Browser* browser = content::Source<Browser>(source).ptr();
-      // Don't keep track of browsers that are not associated with an app.
-      const Extension* extension = MaybeGetAppForBrowser(browser);
-      if (!extension)
-        return;
-
-      ProfileState* profile_state = GetProfileState(
-          browser->profile(), extension->id(), true /* create */);
-      profile_state->browsers.insert(browser);
-      if (profile_state->browsers.size() == 1)
-        OnAppActivated(browser->profile(), extension->id());
-
-      break;
-    }
     default: {
       NOTREACHED();  // Unexpected notification.
       break;
@@ -740,15 +763,12 @@ void ExtensionAppShimHandler::OnAppStart(content::BrowserContext* context,
 
 void ExtensionAppShimHandler::OnAppActivated(content::BrowserContext* context,
                                              const std::string& app_id) {
+  Profile* profile = Profile::FromBrowserContext(context);
   const Extension* extension = delegate_->MaybeGetAppExtension(context, app_id);
   if (!extension)
     return;
-
-  Profile* profile = static_cast<Profile*>(context);
-  AppShimHost* host = FindOrCreateHost(profile, extension);
-  if (!host)
-    return;
-  host->LaunchShim();
+  if (auto* profile_state = GetOrCreateProfileState(profile, extension))
+    profile_state->GetHost()->LaunchShim();
 }
 
 void ExtensionAppShimHandler::OnAppDeactivated(content::BrowserContext* context,
@@ -761,12 +781,18 @@ void ExtensionAppShimHandler::OnAppDeactivated(content::BrowserContext* context,
 void ExtensionAppShimHandler::OnAppStop(content::BrowserContext* context,
                                         const std::string& app_id) {}
 
-// The BrowserWindow may be NULL when this is called.
-// Therefore we listen for the notification
-// chrome::NOTIFICATION_BROWSER_OPENED and then call OnAppActivated.
-// If this notification is removed, check that OnBrowserAdded is called after
-// the BrowserWindow is ready.
-void ExtensionAppShimHandler::OnBrowserAdded(Browser* browser) {}
+void ExtensionAppShimHandler::OnBrowserAdded(Browser* browser) {
+  // Don't keep track of browsers that are not associated with an app.
+  const Extension* extension = MaybeGetAppForBrowser(browser);
+  if (!extension)
+    return;
+  if (auto* profile_state =
+          GetOrCreateProfileState(browser->profile(), extension)) {
+    profile_state->browsers.insert(browser);
+    if (profile_state->browsers.size() == 1)
+      OnAppActivated(browser->profile(), extension->id());
+  }
+}
 
 void ExtensionAppShimHandler::OnBrowserRemoved(Browser* browser) {
   // Note that |browser| may no longer have an extension, if it was unloaded
@@ -790,24 +816,39 @@ void ExtensionAppShimHandler::OnBrowserRemoved(Browser* browser) {
   }
 }
 
-ExtensionAppShimHandler::ProfileState* ExtensionAppShimHandler::GetProfileState(
+ExtensionAppShimHandler::ProfileState*
+ExtensionAppShimHandler::GetOrCreateProfileState(
     Profile* profile,
-    const std::string& app_id,
-    bool create) {
-  auto found_app = apps_.find(app_id);
+    const extensions::Extension* extension) {
+  if (web_app::AppShimLaunchDisabled())
+    return nullptr;
+
+  const bool is_multi_profile =
+      base::FeatureList::IsEnabled(features::kAppShimMultiProfile) &&
+      extension->from_bookmark();
+
+  auto found_app = apps_.find(extension->id());
   if (found_app == apps_.end()) {
-    if (!create)
-      return nullptr;
-    auto new_app_state = std::make_unique<AppState>();
+    std::unique_ptr<AppShimHost> multi_profile_host;
+    // TODO(https://crbug.com/982024): Pass nullptr instead of |profile| to
+    // CreateHost.
+    if (is_multi_profile)
+      multi_profile_host = delegate_->CreateHost(this, profile, extension);
+    auto new_app_state =
+        std::make_unique<AppState>(std::move(multi_profile_host));
     found_app =
-        apps_.insert(std::make_pair(app_id, std::move(new_app_state))).first;
+        apps_.insert(std::make_pair(extension->id(), std::move(new_app_state)))
+            .first;
   }
   AppState* app_state = found_app->second.get();
+
   auto found_profile = app_state->profiles.find(profile);
   if (found_profile == app_state->profiles.end()) {
-    if (!create)
-      return nullptr;
-    auto new_profile_state = std::make_unique<ProfileState>(app_state);
+    std::unique_ptr<AppShimHost> single_profile_host;
+    if (!is_multi_profile)
+      single_profile_host = delegate_->CreateHost(this, profile, extension);
+    auto new_profile_state = std::make_unique<ProfileState>(
+        app_state, std::move(single_profile_host));
     found_profile =
         app_state->profiles
             .insert(std::make_pair(profile, std::move(new_profile_state)))

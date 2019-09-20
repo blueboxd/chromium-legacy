@@ -44,6 +44,8 @@
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
+#include "base/test/bind_test_util.h"
+#include "base/test/test_timeouts.h"
 #include "chrome/browser/android/download/mock_download_controller.h"
 #include "components/gcm_driver/instance_id/instance_id_android.h"
 #include "components/gcm_driver/instance_id/scoped_use_fake_instance_id_android.h"
@@ -407,6 +409,14 @@ TEST_F(OfflinePageUtilsTest, TestGetCachedOfflinePageSizeBetween) {
 }
 
 TEST_F(OfflinePageUtilsTest, TestGetCachedOfflinePageSizeNoPageInModel) {
+#if defined(OS_ANDROID)
+  // TODO(https://crbug.com/1002762): Fix this test to run in < action_timeout()
+  // on the Android bots.
+  const base::RunLoop::ScopedRunTimeoutForTest increased_run_timeout(
+      TestTimeouts::action_max_timeout(),
+      base::MakeExpectedNotRunClosure(FROM_HERE, "RunLoop::Run() timed out."));
+#endif  // defined(OS_ANDROID)
+
   clock()->Advance(base::TimeDelta::FromHours(3));
 
   // Get the size of cached offline pages between 01:00:00 and 03:00:00.

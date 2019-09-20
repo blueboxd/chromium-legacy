@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/previews/core/previews_lite_page_redirect.h"
 
 namespace content {

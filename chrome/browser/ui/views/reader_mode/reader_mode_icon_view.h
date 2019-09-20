@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
+#include "components/dom_distiller/content/browser/distillable_page_utils.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/vector_icon_types.h"
 
@@ -21,6 +22,7 @@ class CommandUpdater;
 
 // A location bar icon that toggles Reader Mode for the current page.
 class ReaderModeIconView : public PageActionIconView,
+                           public dom_distiller::DistillabilityObserver,
                            public content::WebContentsObserver {
  public:
   ReaderModeIconView(CommandUpdater* command_updater,
@@ -41,6 +43,8 @@ class ReaderModeIconView : public PageActionIconView,
   // intentionally does not display a bubble when activated.
   views::BubbleDialogDelegateView* GetBubble() const override;
   void OnExecuting(PageActionIconView::ExecuteSource execute_source) override {}
+
+  void OnResult(const dom_distiller::DistillabilityResult& result) override;
 
   DISALLOW_COPY_AND_ASSIGN(ReaderModeIconView);
 };

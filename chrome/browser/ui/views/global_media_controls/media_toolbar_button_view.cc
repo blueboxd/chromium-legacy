@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/global_media_controls/media_toolbar_button_view.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/in_product_help/global_media_controls_in_product_help.h"
@@ -31,7 +32,8 @@ MediaToolbarButtonView::MediaToolbarButtonView(
       browser_->profile());
 
   button_controller()->set_notify_action(
-      views::ButtonController::NotifyAction::NOTIFY_ON_PRESS);
+      views::ButtonController::NotifyAction::kOnPress);
+  EnableCanvasFlippingForRTLUI(false);
   SetTooltipText(
       l10n_util::GetStringUTF16(IDS_GLOBAL_MEDIA_CONTROLS_ICON_TOOLTIP_TEXT));
 
@@ -66,11 +68,13 @@ void MediaToolbarButtonView::Hide() {
 
 void MediaToolbarButtonView::Enable() {
   SetEnabled(true);
+  UpdateIcon();
   InformIPHOfButtonEnabled();
 }
 
 void MediaToolbarButtonView::Disable() {
   SetEnabled(false);
+  UpdateIcon();
   InformIPHOfButtonDisabledorHidden();
 }
 
@@ -90,8 +94,22 @@ void MediaToolbarButtonView::UpdateIcon() {
 
   SetImage(views::Button::STATE_NORMAL,
            gfx::CreateVectorIcon(icon, normal_color));
+
+#if defined(OS_MACOSX)
+  // On Mac OS X, the toolbar is set to disabled any time the current window is
+  // not in focus. This causes the icon to look disabled in weird cases, such as
+  // when the dialog is open. Therefore on Mac we only set the disabled image
+  // when necessary.
+  if (GetEnabled()) {
+    SetImage(views::Button::STATE_DISABLED, gfx::ImageSkia());
+  } else {
+    SetImage(views::Button::STATE_DISABLED,
+             gfx::CreateVectorIcon(icon, disabled_color));
+  }
+#else
   SetImage(views::Button::STATE_DISABLED,
            gfx::CreateVectorIcon(icon, disabled_color));
+#endif  // defined(OS_MACOSX)
 }
 
 void MediaToolbarButtonView::ShowPromo() {

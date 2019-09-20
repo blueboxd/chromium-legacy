@@ -11,6 +11,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/protected_memory.h"
@@ -203,16 +204,16 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   // and end attributes will be assigned to the start_offset and end_offset
   // pointers if they are non-null. The return value AtkAttributeSet should
   // be freed with atk_attribute_set_free.
-  AtkAttributeSet* GetTextAttributes(int offset,
-                                     int* start_offset,
-                                     int* end_offset);
+  const TextAttributeList& GetTextAttributes(int offset,
+                                             int* start_offset,
+                                             int* end_offset);
 
   // Return the default text attributes for this node. The default text
   // attributes are the ones that apply to the entire node. Attributes found at
   // a given offset can be thought of as overriding the default attribute.
   // The return value AtkAttributeSet should be freed with
   // atk_attribute_set_free.
-  AtkAttributeSet* GetDefaultTextAttributes();
+  const TextAttributeList& GetDefaultTextAttributes();
 
   void ActivateFindInPageResult(int start_offset, int end_offset);
   void TerminateFindInPage();
@@ -273,11 +274,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   base::Optional<std::pair<int, int>> GetEmbeddedObjectIndicesForId(int id);
 
   void ComputeStylesIfNeeded();
-  void MergeSpellingIntoAtkTextAttributesAtOffset(
-      int offset,
-      std::map<int, AtkAttributes>* text_attributes);
-  AtkAttributes ComputeTextAttributes() const;
-  int FindStartOfStyle(int start_offset, AXTextBoundaryDirection direction);
+  int FindStartOfStyle(int start_offset, ui::AXTextBoundaryDirection direction);
 
   // Reset any find in page operations for the toplevel document of this node.
   void ForgetCurrentFindInPageResult();
@@ -322,10 +319,10 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
 
   // A map which converts between an offset in the node's hypertext and the
   // ATK text attributes at that offset.
-  std::map<int, AtkAttributes> offset_to_text_attributes_;
+  TextAttributeMap offset_to_text_attributes_;
 
   // The default ATK text attributes for this node.
-  AtkAttributes default_text_attributes_;
+  TextAttributeList default_text_attributes_;
 
   DISALLOW_COPY_AND_ASSIGN(AXPlatformNodeAuraLinux);
 };

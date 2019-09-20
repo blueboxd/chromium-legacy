@@ -27,6 +27,10 @@ namespace cups_proxy {
 // Note: This is assumed to be stable.
 static const size_t kHttpMaxBufferSize = 2048;
 
+// Max number of printers PluginVm can handle in a CUPS-Get-Printers IPP
+// response.
+static const int kPluginVmPrinterLimit = 40;
+
 // PDF and PostScript document format identifiers.
 constexpr std::array<uint8_t, 5> pdf_magic_bytes = {0x25, 0x50, 0x44, 0x46,
                                                     0x2d};  // { %PDF- }
@@ -49,6 +53,13 @@ base::Optional<std::string> GetPrinterId(ipp_t* ipp);
 // Returns an empty Optional if parsing fails or yields an empty printer_id.
 base::Optional<std::string> ParseEndpointForPrinterId(
     base::StringPiece endpoint);
+
+// Returned list of printers contains first |saved| printers, backfilled with
+// |enterprise| printers listed alphabetically up until the hard printer limit
+// of kPluginVmPrinterLimit.
+std::vector<chromeos::Printer> FilterPrintersForPluginVm(
+    const std::vector<chromeos::Printer>& saved,
+    const std::vector<chromeos::Printer>& enterprise);
 
 }  // namespace cups_proxy
 

@@ -41,6 +41,8 @@
 using chrome_test_util::CancelButton;
 using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::StaticTextWithAccessibilityLabelId;
+using chrome_test_util::TapWebElementWithId;
+using chrome_test_util::TapWebElementWithIdInFrame;
 
 namespace {
 
@@ -281,7 +283,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 - (void)testPasswordsViewControllerIsPresented {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Tap on the passwords icon.
   [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
@@ -297,7 +299,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 - (void)testPasswordsViewControllerContainsManagePasswordsAction {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Tap on the passwords icon.
   [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
@@ -312,7 +314,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 - (void)testManagePasswordsActionOpensPasswordSettings {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Tap on the passwords icon.
   [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
@@ -332,7 +334,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 - (void)testPasswordsButtonStateAfterPresentingManagePasswords {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Tap on the passwords icon.
   [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
@@ -367,7 +369,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 - (void)testUseOtherPasswordActionOpens {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Tap on the passwords icon.
   [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
@@ -387,7 +389,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 - (void)testPasswordsButtonStateAfterPresentingUseOtherPassword {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Tap on the passwords icon.
   [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
@@ -422,7 +424,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 - (void)testPasswordControllerPauses {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Tap on the passwords icon.
   [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
@@ -448,7 +450,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 - (void)DISABLED_testPasswordControllerResumes {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Tap on the passwords icon.
   [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
@@ -488,7 +490,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 - (void)DISABLED_testPasswordControllerResumesWhenOtherPasswordsDismiss {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Tap on the passwords icon.
   [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
@@ -526,7 +528,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
   }
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Tap on the passwords icon.
   [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
@@ -556,7 +558,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
   }
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Tap on the passwords icon.
   [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
@@ -593,7 +595,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
   }
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Tap on the passwords icon.
   [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
@@ -619,7 +621,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 - (void)testPasswordControllerKeepsRightSize {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Tap on the passwords icon.
   [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
@@ -631,7 +633,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
   // Tap the second element.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementPassword)];
+      performAction:TapWebElementWithId(kFormElementPassword)];
 
   // Try to scroll.
   [[EarlGrey selectElementWithMatcher:PasswordTableViewMatcher()]
@@ -646,7 +648,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 - (void)testPasswordControllerSupportsRotation {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Tap on the passwords icon.
   [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]
@@ -678,8 +680,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElementInFrame(kFormElementUsername,
-                                                           0)];
+      performAction:TapWebElementWithIdInFrame(kFormElementUsername, 0)];
 
   // Wait for the accessory icon to appear.
   [GREYKeyboard waitForKeyboardToAppear];
@@ -712,7 +713,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Wait for the accessory icon to appear.
   [GREYKeyboard waitForKeyboardToAppear];
@@ -740,7 +741,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Wait for the keyboard to appear.
   [GREYKeyboard waitForKeyboardToAppear];
@@ -754,7 +755,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
   // Tap another field to trigger form activity.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementPassword)];
+      performAction:TapWebElementWithId(kFormElementPassword)];
 
   // Assert the password icon is visible now.
   [[EarlGrey selectElementWithMatcher:PasswordIconMatcher()]

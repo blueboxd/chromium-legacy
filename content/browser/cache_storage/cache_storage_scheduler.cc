@@ -21,8 +21,11 @@ namespace content {
 
 namespace {
 
+// Maximum parallel shared operations.  This constant was selected via
+// experimentation.  We tried 4, 16, and 64 for the limit.  16 was clearly
+// better than 4, but 64 was did not provide significant further benefit.
 const base::FeatureParam<int> kCacheStorageMaxSharedOps{
-    &features::kCacheStorageParallelOps, "max_shared_ops", 1};
+    &features::kCacheStorageParallelOps, "max_shared_ops", 16};
 
 }  // namespace
 

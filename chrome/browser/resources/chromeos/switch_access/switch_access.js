@@ -69,10 +69,8 @@ class SwitchAccess {
 
     this.commands_ = new Commands(this);
     this.autoScanManager_ = new AutoScanManager(this);
-    const onPrefsReady =
-        this.autoScanManager_.onPrefsReady.bind(this.autoScanManager_);
     this.switchAccessPreferences_ =
-        new SwitchAccessPreferences(this, onPrefsReady);
+        new SwitchAccessPreferences(this, this.onPrefsReady_.bind(this));
 
     chrome.automation.getDesktop(function(desktop) {
       this.navigationManager_ = new NavigationManager(desktop, this);
@@ -174,6 +172,15 @@ class SwitchAccess {
   }
 
   /**
+   * Returns whether prefs have initially loaded or not.
+   * @return {boolean}
+   * @override
+   */
+  prefsAreReady() {
+    return this.switchAccessPreferences_.isReady();
+  }
+
+  /**
    * Set the value of the preference |name| to |value| in chrome.storage.sync.
    * Once the storage is set, the Switch Access preferences/behavior are
    * updated.
@@ -247,5 +254,15 @@ class SwitchAccess {
     // If not, set navReadyCallback_ to have the menuPanel try again.
     this.navReadyCallback_ = menuPanel.connectToBackground.bind(menuPanel);
     return null;
+  }
+
+  /**
+   * Notifies managers that the preferences have initially loaded.
+   */
+  onPrefsReady_() {
+    this.autoScanManager_.onPrefsReady();
+    if (this.navigationManager_) {
+      this.navigationManager_.focusRingManager.onPrefsReady();
+    }
   }
 }

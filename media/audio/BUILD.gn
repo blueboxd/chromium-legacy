@@ -295,7 +295,10 @@ source_set("audio") {
       "fuchsia/audio_output_stream_fuchsia.cc",
       "fuchsia/audio_output_stream_fuchsia.h",
     ]
-    deps += [ "//third_party/fuchsia-sdk/sdk:media" ]
+    deps += [
+      "//third_party/fuchsia-sdk/sdk:media",
+      "//third_party/fuchsia-sdk/sdk:sys_cpp",
+    ]
   }
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]

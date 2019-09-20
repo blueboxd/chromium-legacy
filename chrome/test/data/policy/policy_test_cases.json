@@ -4027,13 +4027,22 @@
   "DeviceLoginScreenDefaultSpokenFeedbackEnabled" : {
   },
 
+  "DeviceLoginScreenSpokenFeedbackEnabled" : {
+  },
+
   "DeviceLoginScreenDefaultHighContrastEnabled" : {
+  },
+
+  "DeviceLoginScreenHighContrastEnabled" : {
   },
 
   "DeviceLoginScreenDefaultScreenMagnifierType" : {
   },
 
   "DeviceLoginScreenDefaultVirtualKeyboardEnabled" : {
+  },
+
+  "DeviceLoginScreenVirtualKeyboardEnabled" : {
   },
 
   "DeviceLoginScreenLocales" : {

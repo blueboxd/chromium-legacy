@@ -174,6 +174,7 @@
 <translation id="2154484045852737596">Rediger kort</translation>
 <translation id="2154710561487035718">Kopier webadresse</translation>
 <translation id="2156074688469523661">Tilbageværende websites (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="2157851137955077194">Hvis du vil dele noget på din telefon med en anden enhed, kan du aktivere synkronisering i Chrome-indstillingerne på begge enheder</translation>
 <translation id="2170088579611075216">Tillad og start VR</translation>
 <translation id="218608176142494674">Deling</translation>
 <translation id="2227444325776770048">Fortsæt som <ph name="USER_FULL_NAME" /></translation>
@@ -602,7 +603,6 @@ Sørg for, at du har tillid til dette website, før du starter VR.</translation>
 <translation id="545042621069398927">Øger hastigheden på din download.</translation>
 <translation id="5456381639095306749">Download siden</translation>
 <translation id="5475862044948910901">Vil du starte en session med augmented reality?</translation>
-<translation id="5481942164684849270"><ph name="APP_NAME" /> blev føjet til mine apps</translation>
 <translation id="548278423535722844">Åbn i kortapp</translation>
 <translation id="5487521232677179737">Ryd data</translation>
 <translation id="5494752089476963479">Bloker annoncer på websites, der viser påtrængende eller vildledende annoncer</translation>
@@ -1009,7 +1009,6 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="8364299278605033898">Se populære websites</translation>
 <translation id="8368027906805972958">Ukendt eller ikke-understøttet enhed (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Tillad synkronisering i baggrunden for et bestemt website.</translation>
-<translation id="8374821112118309944">Du skal opdatere TalkBack til en nyere version.</translation>
 <translation id="8378714024927312812">Administreret af din organisation</translation>
 <translation id="8380167699614421159">Dette website viser påtrængende eller vildledende annoncer</translation>
 <translation id="8393700583063109961">Send en besked</translation>
@@ -1073,6 +1072,7 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, fane</translation>
 <translation id="885701979325669005">Lagerplads</translation>
+<translation id="889338405075704026">Gå til Chrome-indstillinger</translation>
 <translation id="8901170036886848654">Der blev ikke fundet nogen bogmærker</translation>
 <translation id="8909135823018751308">Del…</translation>
 <translation id="8912362522468806198">Google-konto</translation>
@@ -1091,6 +1091,7 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="8993760627012879038">Åbn en ny fane i inkognitotilstand</translation>
 <translation id="8998729206196772491">Du er ved at logge ind med en konto, der administreres af <ph name="MANAGED_DOMAIN" />, hvilket giver administratoren kontrol over dine Chrome-data. Dine data tilknyttes denne konto permanent. Hvis du logger ud af Chrome, slettes dine data fra denne enhed, men de forbliver gemt på din Google-konto.</translation>
 <translation id="9019902583201351841">Administreret af dine forældre</translation>
+<translation id="9028914725102941583">Aktivér for at synkronisere på flere enheder</translation>
 <translation id="9029323097866369874">Vil du tillade, at <ph name="DOMAIN" /> starter VR?</translation>
 <translation id="9040142327097499898">Notifikationer er tilladt. Placering er deaktiveret for denne enhed.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}one{# video}other{# videoer}}</translation>

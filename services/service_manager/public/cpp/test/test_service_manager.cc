@@ -31,7 +31,7 @@ mojom::ServiceRequest TestServiceManager::RegisterInstance(
   auto receiver = service.InitWithNewPipeAndPassReceiver();
   background_service_manager_->RegisterService(identity, std::move(service),
                                                mojo::NullReceiver());
-  return receiver;
+  return std::move(receiver);
 }
 
 }  // namespace service_manager

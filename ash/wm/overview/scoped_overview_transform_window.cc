@@ -297,10 +297,6 @@ int ScopedOverviewTransformWindow::GetTopInset() const {
   return window_->GetProperty(aura::client::kTopViewInset);
 }
 
-void ScopedOverviewTransformWindow::OnWindowDestroyed() {
-  window_ = nullptr;
-}
-
 void ScopedOverviewTransformWindow::SetOpacity(float opacity) {
   for (auto* window : GetVisibleTransientTreeIterator(GetOverviewWindow()))
     window->layer()->SetOpacity(opacity);

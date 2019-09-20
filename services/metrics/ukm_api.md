@@ -95,7 +95,7 @@ is no event name included as the metric must always be in the same event.
 The metric to act as a key must also have `<aggregation>`, `<history>`, and
 `<statistics>` tags with a valid statistic (currently only `<enumeration>`
 metrics are supported as keys). However, since generating statistics for this
-"key" metric isn't likely to be useful on its own, add `export=False` to its
+"key" metric isn't likely to be useful on its own, add `export="False"` to its
 `<statistics>` tag.
 
 ```xml

@@ -18,7 +18,6 @@
 <translation id="1176932207622159128">Kan afbeelding niet opslaan</translation>
 <translation id="1180526666083833456">Synchronisatie en personalisatie op meerdere apparaten.</translation>
 <translation id="1181037720776840403">Verwijderen</translation>
-<translation id="1201530049782216880">Nieuw incognitotabblad</translation>
 <translation id="1209206284964581585">Voorlopig verbergen</translation>
 <translation id="1219674500290482172">Kan geen verbinding maken met internet.</translation>
 <translation id="122699739164161391">Alle tabbladen sluiten</translation>
@@ -94,7 +93,6 @@
 <translation id="2149973817440762519">Bladwijzer bewerken</translation>
 <translation id="2179182049312275900">Je kunt synchronisatie op elk gewenst moment inschakelen via de instellingen</translation>
 <translation id="2198757192731523470">Google kan je geschiedenis gebruiken om Google Zoeken, advertenties en andere Google-services te personaliseren.</translation>
-<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> ongelezen artikelen op de leeslijst.</translation>
 <translation id="2230173723195178503">Webpagina geladen</translation>
 <translation id="2239626343334228536">Browsegegevens wissen…</translation>
 <translation id="2256128224215992540">Zoek- en sitesuggesties</translation>
@@ -124,7 +122,6 @@
 <translation id="2625189173221582860">Wachtwoord gekopieerd</translation>
 <translation id="2648803196158606475">Gelezen items verwijderen</translation>
 <translation id="2653659639078652383">Verzenden</translation>
-<translation id="2684815431982545828">Nieuw tabblad</translation>
 <translation id="2690858294534178585">Camera wordt gebruikt</translation>
 <translation id="2691653761409724435">Niet offline beschikbaar</translation>
 <translation id="2702801445560668637">Leeslijst</translation>
@@ -267,7 +264,6 @@ Je gegevens zijn versleuteld met je wachtwoordzin voor synchronisatie. Geef deze
 
 <ph name="BEGIN_LINK" />Reset de synchronisatie<ph name="END_LINK" /> als je deze instelling wilt wijzigen.</translation>
 <translation id="4805759445554688327">Ongeldig creditcardnummer</translation>
-<translation id="4807020197310989387">1 ongelezen artikel op de leeslijst.</translation>
 <translation id="4818522717893377262">Taal toevoegen...</translation>
 <translation id="481968316161811770">Cookies en sitegegevens</translation>
 <translation id="4833786495304741580">Hiermee worden automatisch gebruiksstatistieken en crashrapporten naar Google verzonden.</translation>

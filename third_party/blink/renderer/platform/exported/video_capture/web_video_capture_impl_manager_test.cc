@@ -16,7 +16,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/video_capture/web_video_capture_impl_manager.h"
-#include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
+#include "third_party/blink/renderer/platform/video_capture/gpu_memory_buffer_test_support.h"
 #include "third_party/blink/renderer/platform/video_capture/video_capture_impl.h"
 
 using media::BindToCurrentLoop;
@@ -223,7 +223,8 @@ class VideoCaptureImplManagerTest : public ::testing::Test,
   }
 
   base::test::TaskEnvironment task_environment_;
-  ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
+  ScopedTestingPlatformSupport<TestingPlatformSupportForGpuMemoryBuffer>
+      platform_;
   base::RunLoop cleanup_run_loop_;
   std::unique_ptr<MockVideoCaptureImplManager> manager_;
 

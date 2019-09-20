@@ -57,6 +57,11 @@ void CloneSharedBufferToRawFileDescriptorHandle(
 #endif
 }
 
+void CloneGpuMemoryBufferHandle(const gfx::GpuMemoryBufferHandle& source,
+                                media::mojom::VideoBufferHandlePtr* target) {
+  (*target)->set_gpu_memory_buffer_handle(source.Clone());
+}
+
 }  // anonymous namespace
 
 BroadcastingReceiver::ClientContext::ClientContext(
@@ -167,8 +172,8 @@ BroadcastingReceiver::BufferContext::CloneBufferHandle(
       }
       break;
     case media::VideoCaptureBufferType::kGpuMemoryBuffer:
-      // TODO(jcliang): Implement this.
-      NOTREACHED() << "Unexpected video buffer handle type";
+      CloneGpuMemoryBufferHandle(buffer_handle_->get_gpu_memory_buffer_handle(),
+                                 &result);
       break;
   }
   return result;

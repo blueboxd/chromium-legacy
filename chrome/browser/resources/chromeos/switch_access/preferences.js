@@ -25,6 +25,12 @@ class SwitchAccessPreferences {
      */
     this.preferences_ = new Map();
 
+    /**
+     * Tracks whether the initial preference load has completed.
+     * @private {boolean}
+     */
+    this.isReady_ = false;
+
     this.init_(onReady);
   }
 
@@ -62,10 +68,23 @@ class SwitchAccessPreferences {
    * @private
    */
   init_(onReady) {
+    let readyFunction = function(onReady) {
+      this.isReady_ = true;
+      onReady();
+    }.bind(this, onReady);
+
     chrome.settingsPrivate.onPrefsChanged.addListener(
         this.updateFromSettings_.bind(this));
     chrome.settingsPrivate.getAllPrefs(
-        (prefs) => this.updateFromSettings_(prefs, onReady));
+        (prefs) => this.updateFromSettings_(prefs, readyFunction));
+  }
+
+  /**
+   * Returns whether the preferences have been initialized or not.
+   * @return {boolean}
+   */
+  isReady() {
+    return this.isReady_;
   }
 
   /**

@@ -52,7 +52,7 @@ interface SafeBrowsing {
               bool showed_interstitial);
 
   // Bind an additional pipe to this instance of the SafeBrowsing interface.
-  Clone(SafeBrowsing& request);
+  Clone(pending_receiver<SafeBrowsing> receiver);
 };
 
 interface SafeBrowsingUrlChecker {

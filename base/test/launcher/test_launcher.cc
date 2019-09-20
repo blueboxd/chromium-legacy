@@ -1757,8 +1757,9 @@ size_t NumParallelJobs() {
   // processors into groups).
   return base::checked_cast<size_t>(
       ::GetActiveProcessorCount(ALL_PROCESSOR_GROUPS));
-#endif
+#else
   return base::checked_cast<size_t>(SysInfo::NumberOfProcessors());
+#endif
 }
 
 std::string GetTestOutputSnippet(const TestResult& result,

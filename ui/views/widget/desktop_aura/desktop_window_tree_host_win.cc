@@ -918,7 +918,9 @@ void DesktopWindowTreeHostWin::HandleKeyEvent(ui::KeyEvent* event) {
   // WM_SYSCHAR would trigger a beep when processed by the native event handler.
   if ((event->type() == ui::ET_KEY_PRESSED) &&
       (event->key_code() == ui::VKEY_SPACE) &&
-      (event->flags() & ui::EF_ALT_DOWN) && GetWidget()->non_client_view()) {
+      (event->flags() & ui::EF_ALT_DOWN) &&
+      !(event->flags() & ui::EF_CONTROL_DOWN) &&
+      GetWidget()->non_client_view()) {
     return;
   }
 

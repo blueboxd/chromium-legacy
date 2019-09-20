@@ -26,6 +26,8 @@
 #include "components/leveldb_proto/internal/leveldb_database.h"
 #include "components/leveldb_proto/internal/proto_database_impl.h"
 #include "components/leveldb_proto/internal/unique_proto_database.h"
+#include "components/leveldb_proto/public/proto_database.h"
+#include "components/leveldb_proto/public/shared_proto_database_client_list.h"
 #include "components/leveldb_proto/testing/proto/test_db.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -95,20 +97,20 @@ static const std::vector<TestParams> kManyEntriesDistributionTestParams = {
 
 class TestDatabase {
  public:
-  TestDatabase(const std::string& name,
-               scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-               const base::FilePath& path) {
-    db_.reset(new ProtoDatabaseImpl<TestProto>(task_runner));
-    leveldb_env::Options options = leveldb_proto::CreateSimpleOptions();
-
+  TestDatabase(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+               const base::FilePath& path)
+      : db_(std::make_unique<ProtoDatabaseImpl<TestProto>>(
+            ProtoDbType::TEST_DATABASE0,
+            path,
+            task_runner)) {
     base::RunLoop run_init_db;
-    db_->Init(name.c_str(), path, options,
-              base::BindOnce(
-                  [](base::OnceClosure signal, bool success) {
-                    EXPECT_TRUE(success);
-                    std::move(signal).Run();
-                  },
-                  run_init_db.QuitClosure()));
+    db_->Init(base::BindOnce(
+        [](base::OnceClosure signal, Enums::InitStatus status) {
+          bool success = status == Enums::kOK;
+          EXPECT_TRUE(success);
+          std::move(signal).Run();
+        },
+        run_init_db.QuitClosure()));
     run_init_db.Run();
 
     is_initialized_ = true;
@@ -160,7 +162,7 @@ class ProtoDBPerfTest : public testing::Test {
   }
 
   void InitDB(const std::string& name, const base::FilePath& path) {
-    auto db = std::make_unique<TestDatabase>(name, task_runner_, path);
+    auto db = std::make_unique<TestDatabase>(task_runner_, path);
     EXPECT_TRUE(db->is_initialized());
     dbs_[name] = std::move(db);
   }

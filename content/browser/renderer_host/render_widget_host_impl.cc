@@ -66,6 +66,7 @@
 #include "content/browser/renderer_host/render_widget_host_owner_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
+#include "content/browser/renderer_host/visual_properties_manager.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/drag_messages.h"
@@ -428,6 +429,13 @@ RenderWidgetHostImpl::~RenderWidgetHostImpl() {
   render_frame_metadata_provider_.RemoveObserver(this);
   if (!destroyed_)
     Destroy(false);
+}
+
+void RenderWidgetHostImpl::BindVisualPropertiesManager(
+    base::WeakPtr<VisualPropertiesManager> visual_properties_manager) {
+  DCHECK(visual_properties_manager);
+  DCHECK(!visual_properties_manager_);
+  visual_properties_manager_ = std::move(visual_properties_manager);
 }
 
 // static
@@ -927,21 +935,15 @@ bool RenderWidgetHostImpl::SynchronizeVisualProperties(
           visual_properties->visible_viewport_size;
 
   bool sent_visual_properties = false;
-
-  // If the RenderWidget is associated with a RenderView, then we send the
-  // visual properties to the RenderView instead of the RenderWidget. The
-  // RenderView will pass along the relevant properties to the RenderWidget,
-  // which will send back an ACK.
-  if (owner_delegate_) {
-    owner_delegate_->UpdatePageVisualProperties(*visual_properties);
-
-    // TODO(erikchen): Remove sent_visual_properties. It's unused and doesn't
-    // even make sense, since we're potentially sending multiple IPC messages.
+  if (visual_properties_manager_) {
+    visual_properties_manager_->SendVisualProperties(*visual_properties,
+                                                     GetRoutingID());
     sent_visual_properties = true;
-  } else {
-    sent_visual_properties = Send(new WidgetMsg_SynchronizeVisualProperties(
-        routing_id_, *visual_properties));
   }
+
+  // Ideally, page visual properties and widget visual properties would be sent
+  // synchronously. As they become decoupled, members should be moved from the
+  // VisualPropertiesManager::SendVisualProperties into this one.
   if (delegate() && visible_viewport_size_changed) {
     delegate()->NotifyVisibleViewportSizeChanged(
         visual_properties->visible_viewport_size);

@@ -203,7 +203,6 @@ HttpStreamParser::HttpStreamParser(StreamSocket* stream_socket,
       request_(request),
       request_headers_(nullptr),
       request_headers_length_(0),
-      http_09_on_non_default_ports_enabled_(false),
       read_buf_(read_buffer),
       read_buf_unused_offset_(0),
       response_header_start_offset_(std::string::npos),
@@ -1003,9 +1002,8 @@ int HttpStreamParser::ParseResponseHeaders(int end_offset) {
     // If the port is not the default for the scheme, assume it's not a real
     // HTTP/0.9 response, and fail the request.
     base::StringPiece scheme = request_->url.scheme_piece();
-    if (!http_09_on_non_default_ports_enabled_ &&
-        url::DefaultPortForScheme(scheme.data(), scheme.length()) !=
-            request_->url.EffectiveIntPort()) {
+    if (url::DefaultPortForScheme(scheme.data(), scheme.length()) !=
+        request_->url.EffectiveIntPort()) {
       // Allow Shoutcast responses over HTTP, as it's somewhat common and relies
       // on HTTP/0.9 on weird ports to work.
       // See

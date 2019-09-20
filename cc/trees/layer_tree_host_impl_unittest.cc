@@ -9538,42 +9538,19 @@ TEST_F(LayerTreeHostImplTest, ScrollInvisibleScroller) {
             host_impl_->CurrentlyScrollingNode()->id);
 }
 
-template <bool commit_to_active_tree>
-class LayerTreeHostImplLatencyInfoTest : public LayerTreeHostImplTest {
- public:
-  void SetUp() override {
-    LayerTreeSettings settings = DefaultSettings();
-    settings.commit_to_active_tree = commit_to_active_tree;
-    CreateHostImpl(settings, CreateLayerTreeFrameSink());
-    SetupRootLayer<SolidColorLayerImpl>(host_impl_->active_tree(),
-                                        gfx::Size(10, 10));
-    UpdateDrawProperties(host_impl_->active_tree());
-  }
-};
+// Make sure LatencyInfo carried by LatencyInfoSwapPromise are passed
+// in viz::CompositorFrameMetadata.
+TEST_F(LayerTreeHostImplTest, LatencyInfoPassedToCompositorFrameMetadata) {
+  LayerTreeSettings settings = DefaultSettings();
+  settings.commit_to_active_tree = false;
+  CreateHostImpl(settings, CreateLayerTreeFrameSink());
+  SetupRootLayer<SolidColorLayerImpl>(host_impl_->active_tree(),
+                                      gfx::Size(10, 10));
+  UpdateDrawProperties(host_impl_->active_tree());
 
-// Make sure LatencyInfo are passed in viz::CompositorFrameMetadata properly in
-// the Renderer. This includes components added by LatencyInfoSwapPromise and
-// the default LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT.
-using LayerTreeHostImplLatencyInfoRendererTest =
-    LayerTreeHostImplLatencyInfoTest<false>;
-TEST_F(LayerTreeHostImplLatencyInfoRendererTest,
-       LatencyInfoPassedToCompositorFrameMetadataRenderer) {
   auto* fake_layer_tree_frame_sink =
       static_cast<FakeLayerTreeFrameSink*>(host_impl_->layer_tree_frame_sink());
 
-  // The first frame should only have the default BeginFrame component.
-  DrawFrame();
-
-  const std::vector<ui::LatencyInfo>& metadata_latency_after1 =
-      fake_layer_tree_frame_sink->last_sent_frame()->metadata.latency_info;
-  EXPECT_EQ(1u, metadata_latency_after1.size());
-  EXPECT_TRUE(metadata_latency_after1[0].FindLatency(
-      ui::LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT, nullptr));
-  EXPECT_TRUE(metadata_latency_after1[0].FindLatency(
-      ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, nullptr));
-
-  // The second frame should have the default BeginFrame component and the
-  // component attached via LatencyInfoSwapPromise.
   ui::LatencyInfo latency_info;
   latency_info.set_trace_id(5);
   latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT);
@@ -9585,68 +9562,11 @@ TEST_F(LayerTreeHostImplLatencyInfoRendererTest,
   host_impl_->SetNeedsRedraw();
   DrawFrame();
 
-  const std::vector<ui::LatencyInfo>& metadata_latency_after2 =
+  const auto& metadata_latency_after =
       fake_layer_tree_frame_sink->last_sent_frame()->metadata.latency_info;
-  EXPECT_EQ(2u, metadata_latency_after2.size());
-  EXPECT_TRUE(metadata_latency_after2[0].FindLatency(
+  EXPECT_EQ(1u, metadata_latency_after.size());
+  EXPECT_TRUE(metadata_latency_after[0].FindLatency(
       ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
-  EXPECT_TRUE(metadata_latency_after2[1].FindLatency(
-      ui::LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT, nullptr));
-
-  // Renderer should also record INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT.
-  EXPECT_TRUE(metadata_latency_after2[0].FindLatency(
-      ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, nullptr));
-  EXPECT_TRUE(metadata_latency_after2[1].FindLatency(
-      ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, nullptr));
-}
-
-// Make sure LatencyInfo are passed in viz::CompositorFrameMetadata properly in
-// the UI. This includes components added by LatencyInfoSwapPromise and
-// the default LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT.
-using LayerTreeHostImplLatencyInfoUITest =
-    LayerTreeHostImplLatencyInfoTest<true>;
-TEST_F(LayerTreeHostImplLatencyInfoUITest,
-       LatencyInfoPassedToCompositorFrameMetadataUI) {
-  auto* fake_layer_tree_frame_sink =
-      static_cast<FakeLayerTreeFrameSink*>(host_impl_->layer_tree_frame_sink());
-
-  // The first frame should only have the default BeginFrame component.
-  DrawFrame();
-
-  const std::vector<ui::LatencyInfo>& metadata_latency_after1 =
-      fake_layer_tree_frame_sink->last_sent_frame()->metadata.latency_info;
-  EXPECT_EQ(1u, metadata_latency_after1.size());
-  EXPECT_TRUE(metadata_latency_after1[0].FindLatency(
-      ui::LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT, nullptr));
-  EXPECT_FALSE(metadata_latency_after1[0].FindLatency(
-      ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, nullptr));
-
-  // The second frame should have the default BeginFrame component and the
-  // component attached via LatencyInfoSwapPromise.
-  ui::LatencyInfo latency_info;
-  latency_info.set_trace_id(5);
-  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT);
-  std::unique_ptr<SwapPromise> swap_promise(
-      new LatencyInfoSwapPromise(latency_info));
-  host_impl_->active_tree()->QueuePinnedSwapPromise(std::move(swap_promise));
-
-  host_impl_->SetFullViewportDamage();
-  host_impl_->SetNeedsRedraw();
-  DrawFrame();
-
-  const std::vector<ui::LatencyInfo>& metadata_latency_after2 =
-      fake_layer_tree_frame_sink->last_sent_frame()->metadata.latency_info;
-  EXPECT_EQ(2u, metadata_latency_after2.size());
-  EXPECT_TRUE(metadata_latency_after2[0].FindLatency(
-      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
-  EXPECT_TRUE(metadata_latency_after2[1].FindLatency(
-      ui::LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT, nullptr));
-
-  // UI should not record INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT.
-  EXPECT_FALSE(metadata_latency_after2[0].FindLatency(
-      ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, nullptr));
-  EXPECT_FALSE(metadata_latency_after2[1].FindLatency(
-      ui::INPUT_EVENT_LATENCY_RENDERER_SWAP_COMPONENT, nullptr));
 }
 
 #if defined(OS_ANDROID)

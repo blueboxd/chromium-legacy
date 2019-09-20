@@ -4,7 +4,7 @@
 
 #include "chrome/browser/page_load_metrics/observers/protocol_page_load_metrics_observer.h"
 
-#include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
+#include "components/page_load_metrics/browser/page_load_metrics_util.h"
 
 namespace {
 

@@ -8,9 +8,6 @@
 #include <string>
 
 #include "build/build_config.h"
-#if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
-#endif
 
 namespace signin_metrics {
 enum ProfileSignout : int;
@@ -39,8 +36,8 @@ class PrimaryAccountMutator {
     kRemoveAll,  // Remove all accounts.
   };
 
-  PrimaryAccountMutator();
-  virtual ~PrimaryAccountMutator();
+  PrimaryAccountMutator() = default;
+  virtual ~PrimaryAccountMutator() = default;
 
   // PrimaryAccountMutator is non-copyable, non-moveable.
   PrimaryAccountMutator(PrimaryAccountMutator&& other) = delete;
@@ -84,22 +81,6 @@ class PrimaryAccountMutator {
       ClearAccountsAction action,
       signin_metrics::ProfileSignout source_metric,
       signin_metrics::SignoutDelete delete_metric) = 0;
-#endif
-
-#if defined(OS_ANDROID)
-  // Overloads for calls from java:
-  bool SetPrimaryAccount(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& account_id);
-
-  bool ClearPrimaryAccount(JNIEnv* env,
-                           jint action,
-                           jint source_metric,
-                           jint delete_metric);
-
-  base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
-
-  base::android::ScopedJavaGlobalRef<jobject> java_primary_account_mutator_;
 #endif
 };
 

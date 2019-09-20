@@ -25,7 +25,6 @@
 #include "content/browser/browser_url_handler_impl.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_impl.h"
@@ -281,8 +280,8 @@ class LoadCommittedDetailsObserver : public WebContentsObserver {
     if (!navigation_handle->HasCommitted())
       return;
 
-    navigation_type_ = static_cast<NavigationHandleImpl*>(navigation_handle)
-                           ->navigation_type();
+    navigation_type_ =
+        NavigationRequest::From(navigation_handle)->navigation_type();
     previous_url_ = navigation_handle->GetPreviousURL();
     reload_type_ = navigation_handle->GetReloadType();
     is_same_document_ = navigation_handle->IsSameDocument();

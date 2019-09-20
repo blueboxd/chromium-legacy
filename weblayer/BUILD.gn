@@ -50,6 +50,12 @@ jumbo_static_library("weblayer_lib") {
     "browser/navigation_impl.h",
     "browser/profile_impl.cc",
     "browser/profile_impl.h",
+    "browser/weblayer_content_browser_overlay_manifest.cc",
+    "browser/weblayer_content_browser_overlay_manifest.h",
+    "browser/webui/web_ui_controller_factory.cc",
+    "browser/webui/web_ui_controller_factory.h",
+    "browser/webui/weblayer_internals_ui.cc",
+    "browser/webui/weblayer_internals_ui.h",
     "common/content_client_impl.cc",
     "common/content_client_impl.h",
     "public/browser_controller.h",
@@ -102,8 +108,11 @@ jumbo_static_library("weblayer_lib") {
     "//ui/gfx/ipc/skia",
     "//ui/gl",
     "//ui/platform_window",
+    "//ui/webui",
     "//url",
     "//v8",
+    "//weblayer:resources",
+    "//weblayer/browser/webui:mojo_bindings",
   ]
 
   if (enable_vulkan) {
@@ -163,6 +172,24 @@ jumbo_static_library("weblayer_lib") {
       "//ui/wm",
     ]
   }
+}
+
+grit("resources") {
+  source = "weblayer_resources.grd"
+
+  source_is_generated = true
+
+  outputs = [
+    "grit/weblayer_resources.h",
+    "weblayer_resources.pak",
+  ]
+  grit_flags = [
+    "-E",
+    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+  ]
+  deps = [
+    "//weblayer/browser/webui:mojo_bindings_js",
+  ]
 }
 
 # TODO(jam): move weblayer_shell_resources_grit and copy_shell_resources here in

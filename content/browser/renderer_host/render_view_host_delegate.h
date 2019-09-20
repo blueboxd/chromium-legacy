@@ -40,7 +40,7 @@ namespace content {
 
 class BrowserContext;
 class FrameTree;
-class RenderFrameHost;
+class RenderFrameHostImpl;
 class RenderViewHost;
 class RenderViewHostImpl;
 class RenderViewHostDelegateView;
@@ -133,13 +133,15 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // happen in response to ShowCreatedWidget.
   virtual void CreateNewWidget(int32_t render_process_id,
                                int32_t widget_route_id,
-                               mojo::PendingRemote<mojom::Widget> widget) {}
+                               mojo::PendingRemote<mojom::Widget> widget,
+                               RenderViewHostImpl* render_view_host) {}
 
   // Creates a full screen RenderWidget. Similar to above.
   virtual void CreateNewFullscreenWidget(
       int32_t render_process_id,
       int32_t widget_route_id,
-      mojo::PendingRemote<mojom::Widget> widget) {}
+      mojo::PendingRemote<mojom::Widget> widget,
+      RenderViewHostImpl* render_view_host) {}
 
   // Show the newly created widget with the specified bounds.
   // The widget is identified by the route_id passed to CreateNewWidget.
@@ -191,7 +193,7 @@ class CONTENT_EXPORT RenderViewHostDelegate {
 
   // Returns the RenderFrameHost for a pending or speculative main frame
   // navigation for the page.  Returns nullptr if there is no such navigation.
-  virtual RenderFrameHost* GetPendingMainFrame();
+  virtual RenderFrameHostImpl* GetPendingMainFrame();
 
   // The RenderView finished the first visually non-empty paint.
   virtual void DidFirstVisuallyNonEmptyPaint(RenderViewHostImpl* source) {}

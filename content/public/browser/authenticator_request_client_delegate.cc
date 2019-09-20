@@ -61,12 +61,15 @@ bool AuthenticatorRequestClientDelegate::ShouldPermitCableExtension(
 
 bool AuthenticatorRequestClientDelegate::SetCableTransportInfo(
     bool cable_extension_provided,
+    bool have_paired_phones,
     base::Optional<device::QRGeneratorKey> qr_generator_key) {
   return false;
 }
 
-void AuthenticatorRequestClientDelegate::AppendCablePairings(
-    std::vector<device::CableDiscoveryData>* pairings) {}
+std::vector<device::CableDiscoveryData>
+AuthenticatorRequestClientDelegate::GetCablePairings() {
+  return {};
+}
 
 void AuthenticatorRequestClientDelegate::SelectAccount(
     std::vector<device::AuthenticatorGetAssertionResponse> responses,

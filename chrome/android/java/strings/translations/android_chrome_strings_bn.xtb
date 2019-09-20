@@ -174,6 +174,7 @@
 <translation id="2154484045852737596">কার্ড সম্পাদনা করুন</translation>
 <translation id="2154710561487035718">ইউআরএল কপি করুন</translation>
 <translation id="2156074688469523661">(<ph name="NUMBER_OF_SITES" />)টি সাইট বাকি আছে</translation>
+<translation id="2157851137955077194">আপনার ফোন থেকে অন্য কোনও ডিভাইসে কিছু শেয়ার করতে হলে, দুটি ডিভাইসের Chrome সেটিংস থেকে সিঙ্ক ফিচার চালু করুন</translation>
 <translation id="2170088579611075216">ভিআর প্রেজেন্টেশন শুরু করার অনুমতি দিন</translation>
 <translation id="218608176142494674">শেয়ার করা সংক্রান্ত বিজ্ঞপ্তি</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" /> হিসেবে চালিয়ে যান</translation>
@@ -604,7 +605,6 @@
 <translation id="545042621069398927">আপনার ডাউনলোডের স্পিড বাড়ানো হচ্ছে।</translation>
 <translation id="5456381639095306749">পৃষ্ঠা ডাউনলোড করুন</translation>
 <translation id="5475862044948910901">অগমেন্টেড রিয়েলিটি সেশন শুরু করতে চান?</translation>
-<translation id="5481942164684849270">আমার অ্যাপে <ph name="APP_NAME" /> যোগ করা হয়েছে</translation>
 <translation id="548278423535722844">ম্যাপ অ্যাপ্লিকেশানে খুলুন</translation>
 <translation id="5487521232677179737">ডেটা সাফ করুন</translation>
 <translation id="5494752089476963479">সাইটে থাকা ব্যাঘাত সৃষ্টিকারী বা বিভ্রান্তিকর বিজ্ঞাপন ব্লক করুন</translation>
@@ -1011,7 +1011,6 @@
 <translation id="8364299278605033898">জনপ্রিয় ওয়েবসাইট দেখুন</translation>
 <translation id="8368027906805972958">অপরিচিত বা কাজ করে না এমন ডিভাইস (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">একটি নির্দিষ্ট সাইটের জন্য পটভূমি সিঙ্কের অনুমতি দিন।</translation>
-<translation id="8374821112118309944">আপনাকে একটি নতুন ভার্সনের TalkBack-এ আপডেট করতে হবে৷</translation>
 <translation id="8378714024927312812">আপনার প্রতিষ্ঠানের দ্বারা ম্যানেজ করা</translation>
 <translation id="8380167699614421159">এই সাইট ব্যাঘাত সৃষ্টিকারী বা বিভ্রান্তিকর বিজ্ঞাপন দেখায়</translation>
 <translation id="8393700583063109961">বার্তা পাঠান</translation>
@@ -1075,6 +1074,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, ট্যাব</translation>
 <translation id="885701979325669005">স্টোরেজ</translation>
+<translation id="889338405075704026">Chrome সেটিংসে যান</translation>
 <translation id="8901170036886848654">কোনো বুকমার্ক পাওয়া যায়নি</translation>
 <translation id="8909135823018751308">শেয়ার করুন...</translation>
 <translation id="8912362522468806198">Google অ্যাকাউন্ট</translation>
@@ -1093,6 +1093,7 @@
 <translation id="8993760627012879038">ছদ্মবেশী মোডে একটি নতুন ট্যাব খুলুন</translation>
 <translation id="8998729206196772491">আপনি <ph name="MANAGED_DOMAIN" /> দ্বারা পরিচালিত একটি অ্যাকাউন্টের মাধ্যমে সাইন-ইন করছেন এবং এর অ্যাডমিনিস্ট্রেটরকে আপনার Chrome ডেটা নিয়ন্ত্রণ করতে দিচ্ছেন৷ আপনার ডেটা এই অ্যাকাউন্টের সাথে স্থায়ীভাবে আবদ্ধ হবে৷ Chrome থেকে সাইন-আউট করলে এই ডিভাইস থেকে আপনার ডেটা মুছে ফেলা হবে, কিন্তু এটা আপনার Google অ্যাকাউন্টে সঞ্চিত থাকবে।</translation>
 <translation id="9019902583201351841">আপনার পিতামাতার দ্বারা পরিচালিত</translation>
+<translation id="9028914725102941583">বিভিন্ন ডিভাইসের জুড়ে শেয়ার করার জন্য সিঙ্ক ফিচার চালু করুন</translation>
 <translation id="9029323097866369874"><ph name="DOMAIN" /> সাইটকে ভিআর (VR) মোড ব্যবহার করার অনুমতি দেবেন?</translation>
 <translation id="9040142327097499898">বিজ্ঞপ্তির অনুমতি দেওয়া আছে। এই ডিভাইসে লোকেশন বন্ধ করা আছে।</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{#টি ভিডিও}one{#টি ভিডিও}other{#টি ভিডিও}}</translation>

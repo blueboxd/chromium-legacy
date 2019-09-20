@@ -57,13 +57,13 @@
             android:strokeWidth="3"/>
     </group>
     <group android:name="touch_point_background"
-        android:pivotX="450"
+        android:pivotX="470"
         android:pivotY="200">
         <path
             android:name="touch_point_background_circle"
             android:fillColor="@color/modern_blue_600"
             android:pathData="
-                M 450, 200
+                M 470, 200
                 m -40, 0
                 a 40,40 0 1,0 80,0
                 a 40,40 0 1,0 -80,0
@@ -72,13 +72,13 @@
             />
     </group>
     <group android:name="touch_point"
-        android:pivotX="450"
+        android:pivotX="470"
         android:pivotY="200">
         <path
             android:name="touch_point_circle"
             android:fillColor="@color/modern_blue_600"
             android:pathData="
-                M 450, 200
+                M 470, 200
                 m -24, 0
                 a 24,24 0 1,0 48,0
                 a 24,24 0 1,0 -48,0

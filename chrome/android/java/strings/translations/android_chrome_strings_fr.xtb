@@ -174,6 +174,7 @@
 <translation id="2154484045852737596">Modifier la carte</translation>
 <translation id="2154710561487035718">Copier l'URL</translation>
 <translation id="2156074688469523661">Sites restants (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="2157851137955077194">Pour partager un contenu depuis votre téléphone vers un autre appareil, activez la synchronisation dans les paramètres Chrome sur les deux appareils</translation>
 <translation id="2170088579611075216">Autoriser et activer la RV</translation>
 <translation id="218608176142494674">Partage</translation>
 <translation id="2227444325776770048">Continuer en tant que <ph name="USER_FULL_NAME" /></translation>
@@ -602,7 +603,6 @@ N'activez la RV que si vous faites confiance à ce site.</translation>
 <translation id="545042621069398927">Accélération du téléchargement…</translation>
 <translation id="5456381639095306749">Télécharger la page</translation>
 <translation id="5475862044948910901">Lancer une session en réalité augmentée ?</translation>
-<translation id="5481942164684849270">Ajouté à mes applications : <ph name="APP_NAME" /></translation>
 <translation id="548278423535722844">Ouvrir dans une application de plans</translation>
 <translation id="5487521232677179737">Effacer les données</translation>
 <translation id="5494752089476963479">Bloquer les annonces sur les sites qui affichent des annonces intrusives ou trompeuses</translation>
@@ -1009,7 +1009,6 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="8364299278605033898">Affichez les sites Web populaires</translation>
 <translation id="8368027906805972958">Appareil inconnu ou non compatible (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Autorise la synchronisation en arrière-plan pour un site spécifique.</translation>
-<translation id="8374821112118309944">Vous devez mettre à jour TalkBack vers une version plus récente</translation>
 <translation id="8378714024927312812">Géré par votre organisation</translation>
 <translation id="8380167699614421159">Ce site affiche des annonces intrusives ou trompeuses</translation>
 <translation id="8393700583063109961">Envoyer un message</translation>
@@ -1073,6 +1072,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198">"<ph name="TAB_TITLE" />", onglet</translation>
 <translation id="885701979325669005">Données stockées</translation>
+<translation id="889338405075704026">Accéder aux paramètres Chrome</translation>
 <translation id="8901170036886848654">Aucun favori trouvé</translation>
 <translation id="8909135823018751308">Partager…</translation>
 <translation id="8912362522468806198">Compte Google</translation>
@@ -1091,6 +1091,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="8993760627012879038">Ouvrir un nouvel onglet en mode navigation privée</translation>
 <translation id="8998729206196772491">Vous vous connectez avec un compte géré par <ph name="MANAGED_DOMAIN" />, ce qui permettra à son administrateur de contrôler vos données Chrome. Celles-ci seront définitivement associées à ce compte. Si vous vous déconnectez de Chrome, vos données seront supprimées de cet appareil, mais elles seront conservées dans votre compte Google.</translation>
 <translation id="9019902583201351841">Géré par tes parents</translation>
+<translation id="9028914725102941583">Activer la synchronisation pour partager des contenus d'un appareil à un autre</translation>
 <translation id="9029323097866369874">Autoriser le site <ph name="DOMAIN" /> à activer la RV ?</translation>
 <translation id="9040142327097499898">Les notifications sont autorisées. La localisation est désactivée pour cet appareil.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# vidéo}one{# vidéo}other{# vidéos}}</translation>

@@ -74,7 +74,7 @@ class OAuth2TokenServiceDelegateAndroid
 
   void LoadCredentials(const CoreAccountId& primary_account_id) override;
 
-  void ReloadAccountsFromSystem(
+  void ReloadAllAccountsFromSystemWithPrimaryAccount(
       const CoreAccountId& primary_account_id) override;
 
  protected:

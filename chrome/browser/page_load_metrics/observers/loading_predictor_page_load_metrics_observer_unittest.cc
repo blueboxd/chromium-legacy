@@ -7,10 +7,10 @@
 #include <memory>
 
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
-#include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/browser/predictors/loading_data_collector.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "components/page_load_metrics/common/test/page_load_metrics_test_util.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"

@@ -518,6 +518,11 @@ CookieChangeDispatcher& CookieMonster::GetChangeDispatcher() {
   return change_dispatcher_;
 }
 
+void CookieMonster::SetCookieAccessDelegate(
+    std::unique_ptr<CookieAccessDelegate> delegate) {
+  cookie_access_delegate_ = std::move(delegate);
+}
+
 void CookieMonster::DumpMemoryStats(
     base::trace_event::ProcessMemoryDump* pmd,
     const std::string& parent_absolute_name) const {

@@ -312,7 +312,7 @@ as required builders.
 
 * [android-pie-arm64-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/android-pie-arm64-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/android-pie-arm64-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+android-pie-arm64-rel))
 
-  * Experimental percentage: 2
+  * Experimental percentage: 10
 
 * [chromeos-kevin-experimental-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/chromeos-kevin-experimental-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/chromeos-kevin-experimental-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+chromeos-kevin-experimental-rel))
 

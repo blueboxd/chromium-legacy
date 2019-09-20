@@ -25,6 +25,10 @@ id<GREYAction> LongPressElementForContextMenu(ElementSelector* selector,
                                   triggerContextMenu:triggers_context_menu];
 }
 
+id<GREYAction> ScrollElementToVisible(ElementSelector* selector) {
+  return [ChromeActionsAppInterface scrollElementToVisible:selector];
+}
+
 id<GREYAction> TurnSettingsSwitchOn(BOOL on) {
   return [ChromeActionsAppInterface turnSettingsSwitchOn:on];
 }
@@ -33,13 +37,17 @@ id<GREYAction> TurnSyncSwitchOn(BOOL on) {
   return [ChromeActionsAppInterface turnSyncSwitchOn:on];
 }
 
-id<GREYAction> TapWebElement(const std::string& element_id) {
+id<GREYAction> TapWebElement(ElementSelector* selector) {
+  return [ChromeActionsAppInterface tapWebElement:selector];
+}
+
+id<GREYAction> TapWebElementWithId(const std::string& element_id) {
   return [ChromeActionsAppInterface
       tapWebElement:[ElementSelector selectorWithElementID:element_id]];
 }
 
-id<GREYAction> TapWebElementInFrame(const std::string& element_id,
-                                    const int frame_index) {
+id<GREYAction> TapWebElementWithIdInFrame(const std::string& element_id,
+                                          const int frame_index) {
   return [ChromeActionsAppInterface
       tapWebElement:[ElementSelector selectorWithElementID:element_id
                                           inFrameWithIndex:frame_index]];

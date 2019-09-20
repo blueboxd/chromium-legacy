@@ -950,7 +950,10 @@ NET_ERROR(DNS_SERVER_FAILED, -802)
 // DNS transaction timed out.
 NET_ERROR(DNS_TIMED_OUT, -803)
 
-// The entry was not found in cache, for cache-only lookups.
+// The entry was not found in cache or other local sources, for lookups where
+// only local sources were queried.
+// TODO(ericorth): Consider renaming to DNS_LOCAL_MISS or something like that as
+// the cache is not necessarily queried either.
 NET_ERROR(DNS_CACHE_MISS, -804)
 
 // Suffix search list rules prevent resolution of the given host name.

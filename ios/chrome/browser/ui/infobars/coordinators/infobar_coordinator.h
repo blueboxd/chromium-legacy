@@ -39,8 +39,14 @@ enum class InfobarBannerPresentationState;
                                                    InfobarBannerDelegate,
                                                    InfobarModalDelegate>
 
+// Designated Initializer. |infoBarDelegate| is used to configure the Infobar
+// and subsequently perform related actions. |badgeSupport| should be YES if the
+// Infobar will add a Badge and support a Modal. |infobarType| is the unique
+// identifier for each Infobar, there can't be more than one infobar with the
+// same type added to the InfobarManager.
 - (instancetype)initWithInfoBarDelegate:
                     (infobars::InfoBarDelegate*)infoBarDelegate
+                           badgeSupport:(BOOL)badgeSupport
                                    type:(InfobarType)infobarType
     NS_DESIGNATED_INITIALIZER;
 
@@ -81,7 +87,8 @@ enum class InfobarBannerPresentationState;
 // ModalViewController owned by this Coordinator. Can be nil.
 @property(nonatomic, strong, readonly) UIViewController* modalViewController;
 
-// Handles any followup actions to Infobar UI events.
+// Handles any followup actions to Infobar UI events. Should be nil if the
+// Coordinator doesn't support a badge.
 @property(nonatomic, weak) id<InfobarBadgeUIDelegate> badgeDelegate;
 
 // The ChromeBrowserState owned by the Coordinator.

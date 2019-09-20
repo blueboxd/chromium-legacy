@@ -1110,8 +1110,10 @@ void TabStripModel::AddToGroupForRestore(const std::vector<int>& indices,
     AddToNewGroupImpl(indices, group);
 }
 
-void TabStripModel::UpdateGroupForDragRevert(int index,
-                                             base::Optional<TabGroupId> group) {
+void TabStripModel::UpdateGroupForDragRevert(
+    int index,
+    base::Optional<TabGroupId> group_id,
+    base::Optional<TabGroupVisualData> group_data) {
   DCHECK(!reentrancy_guard_);
   base::AutoReset<bool> resetter(&reentrancy_guard_, true);
 
@@ -1119,30 +1121,31 @@ void TabStripModel::UpdateGroupForDragRevert(int index,
   // observers can delete that group.
   base::Optional<TabGroupId> old_group = UngroupTab(index);
 
-  if (group.has_value()) {
+  if (group_id.has_value()) {
     auto add_to_group_and_notify = [&]() {
-      contents_data_[index]->set_group(group.value());
-      group_data_.at(group.value()).TabAdded();
-      NotifyGroupChange(index, old_group, group);
+      contents_data_[index]->set_group(group_id.value());
+      group_data_.at(group_id.value()).TabAdded();
+      NotifyGroupChange(index, old_group, group_id);
     };
 
-    const bool group_exists = base::Contains(group_data_, group.value());
+    const bool group_exists = base::Contains(group_data_, group_id.value());
     if (group_exists) {
       add_to_group_and_notify();
     } else {
-      auto data_it =
-          group_data_.emplace(group.value(), GroupData(TabGroupVisualData()))
-              .first;
+      auto data_it = group_data_
+                         .emplace(group_id.value(),
+                                  GroupData(TabGroupVisualData(*group_data)))
+                         .first;
       add_to_group_and_notify();
       // Notify observers about the initial visual data.
       for (auto& observer : observers_) {
-        observer.OnTabGroupVisualDataChanged(this, group.value(),
+        observer.OnTabGroupVisualDataChanged(this, group_id.value(),
                                              &data_it->second.visual_data());
       }
     }
   }
 
-  NotifyGroupChange(index, old_group, group);
+  NotifyGroupChange(index, old_group, group_id);
 }
 
 void TabStripModel::RemoveFromGroup(const std::vector<int>& indices) {

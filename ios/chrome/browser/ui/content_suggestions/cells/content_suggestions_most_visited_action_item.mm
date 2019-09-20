@@ -79,9 +79,7 @@
   }
 
   self.accessibilityLabel =
-      [NSString stringWithFormat:@"%@, %@", self.title,
-                                 AccessibilityLabelForReadingListCellWithCount(
-                                     self.count)];
+      AccessibilityLabelForReadingListCellWithCount(self.count);
   DCHECK(self.accessibilityLabel.length);
 }
 

@@ -17,11 +17,8 @@
 namespace net {
 
 HttpBasicStream::HttpBasicStream(std::unique_ptr<ClientSocketHandle> connection,
-                                 bool using_proxy,
-                                 bool http_09_on_non_default_ports_enabled)
-    : state_(std::move(connection),
-             using_proxy,
-             http_09_on_non_default_ports_enabled) {}
+                                 bool using_proxy)
+    : state_(std::move(connection), using_proxy) {}
 
 HttpBasicStream::~HttpBasicStream() = default;
 
@@ -89,8 +86,7 @@ HttpStream* HttpBasicStream::RenewStreamForAuth() {
   // be extra-sure it doesn't touch the connection again, delete it here rather
   // than leaving it until the destructor is called.
   state_.DeleteParser();
-  return new HttpBasicStream(state_.ReleaseConnection(), state_.using_proxy(),
-                             state_.http_09_on_non_default_ports_enabled());
+  return new HttpBasicStream(state_.ReleaseConnection(), state_.using_proxy());
 }
 
 bool HttpBasicStream::IsResponseBodyComplete() const {

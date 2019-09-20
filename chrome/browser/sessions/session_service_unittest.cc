@@ -1167,8 +1167,8 @@ TEST_F(SessionServiceTest, TabGroupMetadataSaved) {
   for (int group_ndx = 0; group_ndx < kNumGroups; ++group_ndx) {
     const base::Token group_id = group_ids[group_ndx];
     ASSERT_TRUE(base::Contains(tab_groups, group_id));
-    EXPECT_EQ(titles[group_ndx], tab_groups[group_id]->title);
-    EXPECT_EQ(colors[group_ndx], tab_groups[group_id]->color);
+    EXPECT_EQ(titles[group_ndx], tab_groups[group_id]->metadata.title);
+    EXPECT_EQ(colors[group_ndx], tab_groups[group_id]->metadata.color);
   }
 }
 

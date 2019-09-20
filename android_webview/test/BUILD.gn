@@ -146,13 +146,12 @@ android_assets("webview_instrumentation_apk_assets") {
 shared_library("libstandalonelibwebviewchromium") {
   testonly = true
   sources = [
-    "../lib/webview_entry_point.cc",
     "shell/src/draw_gl/draw_fn.cc",
   ]
   ldflags = [ "-Wl,-shared,-Bsymbolic" ]
   deps = [
     ":webview_instrumentation_test_native_jni_impl",
-    "//android_webview:common",
+    "//android_webview:webview_entry_point",
     "//base",
     "//components/heap_profiling:test_support",
     "//components/minidump_uploader",

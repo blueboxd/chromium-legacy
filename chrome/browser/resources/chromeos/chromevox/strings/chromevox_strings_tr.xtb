@@ -420,7 +420,6 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="4039983576244166038">Boş satır üst bilgisi</translation>
 <translation id="4042843249978639960">Sonraki 2. düzey başlık yok.</translation>
 <translation id="4043348641337972076">Önceki ARIA önemli noktası yok.</translation>
-<translation id="4045764028670444336">Yazım hatası başlangıcı</translation>
 <translation id="4047216625641135770">İşaretle</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4053520724192563562">Misket Limonu Yeşili</translation>
@@ -503,7 +502,6 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="4547556996012970016">Sonraki 5. düzey başlık</translation>
 <translation id="4562381607973973258">Üst bilgi</translation>
 <translation id="4569941707103739422">Gezinmek için yukarı veya aşağı oka, etkinleştirmek için Enter tuşuna basın.</translation>
-<translation id="4570424871453628777">Yazım hatası sonu</translation>
 <translation id="4591507479202817876">, seçili</translation>
 <translation id="4597532268155981612">form</translation>
 <translation id="4597896406374528575">Nisan</translation>
@@ -727,7 +725,6 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="6037602951055904232">İleri kaydır</translation>
 <translation id="6042826534790431634">Etkinleştirmek için Arama+Boşluk tuşlarına basın.</translation>
 <translation id="6044160928851315051">Ekranı kapat</translation>
-<translation id="6065293622157674001">Dil bilgisi hatası başlangıcı</translation>
 <translation id="6082768461603900813">Temel Gezinme</translation>
 <translation id="6118126368611144850">Chrome için Android uygulamaları. Cihazınızda Play Store varsa Android uygulamaları ile ChromeVox'a önceden göz atın. Play Store'dan Google Chrome Canary sürümünü indirerek deneysel desteği deneyin.</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -868,7 +865,6 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="7143207342074048698">Bağlanıyor</translation>
 <translation id="7153618581592392745">Lavanta</translation>
 <translation id="7157306005867877619">Özet</translation>
-<translation id="7161425887892204659">Eşleşen metin sonu</translation>
 <translation id="7161771961008409533">Pop-up düğme</translation>
 <translation id="7165714724802225287">Mevcut görüntüleme stili üst üste (interleave).</translation>
 <translation id="7167657087543110">karakter yansıtma</translation>
@@ -906,7 +902,6 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Tablodan çıkılıyor.</translation>
 <translation id="738899727977260036">Kurşun Mavisi</translation>
-<translation id="7392145451309930991">Eşleşen metin başlangıcı</translation>
 <translation id="739763518212184081">Önceki Satır</translation>
 <translation id="7400575256015741911">Yazım hatası algılandı</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -1119,7 +1114,6 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="8476408756881832830">ChromeVox konuşurken çalmayı duraklat</translation>
 <translation id="8476508772960940536">pencere genel bakışı</translation>
 <translation id="8503360654911991865">Gezinme hassasiyetini azalt</translation>
-<translation id="8504695234784218301">Dil bilgisi hatası sonu</translation>
 <translation id="8520472399088452386">Dönme düğmesi</translation>
 <translation id="8534394844575788431">Biçimlendirme</translation>
 <translation id="8538744478902126321">Mevcut hücrenin satır üst bilgisini tahmin et</translation>

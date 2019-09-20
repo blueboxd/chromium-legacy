@@ -196,9 +196,12 @@ void InternalAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
 
 void InternalAppResult::OnVisibilityChanged(bool visibility) {
   DCHECK_EQ(id(), kReleaseNotesAppId);
-  DCHECK(chromeos::ReleaseNotesStorage(profile()).ShouldShowSuggestionChip());
-  chromeos::ReleaseNotesStorage(profile())
-      .DecreaseTimesLeftToShowSuggestionChip();
+
+  if (visibility) {
+    DCHECK(chromeos::ReleaseNotesStorage(profile()).ShouldShowSuggestionChip());
+    chromeos::ReleaseNotesStorage(profile())
+        .DecreaseTimesLeftToShowSuggestionChip();
+  }
 }
 
 SearchResultType InternalAppResult::GetSearchResultType() const {

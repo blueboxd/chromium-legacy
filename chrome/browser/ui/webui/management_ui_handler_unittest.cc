@@ -304,7 +304,7 @@ TEST_F(ManagementUIHandlerTests,
 TEST_F(ManagementUIHandlerTests,
        ManagementContextualSourceUpdateManagedKnownDomain) {
   TestingProfile::Builder builder;
-  builder.SetProfileName("managed@manager.com");
+  builder.SetProfileName("managed@gmail.com.manager.com.gmail.com");
   auto profile = builder.Build();
 
   base::string16 extension_reporting_title;
@@ -324,15 +324,17 @@ TEST_F(ManagementUIHandlerTests,
 
   EXPECT_EQ(data.DictSize(), 4u);
   EXPECT_EQ(extension_reporting_title,
-            l10n_util::GetStringFUTF16(IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
-                                       base::UTF8ToUTF16("manager.com")));
+            l10n_util::GetStringFUTF16(
+                IDS_MANAGEMENT_EXTENSIONS_INSTALLED_BY,
+                base::UTF8ToUTF16("gmail.com.manager.com.gmail.com")));
   EXPECT_EQ(browser_management_notice,
             l10n_util::GetStringFUTF16(
                 IDS_MANAGEMENT_BROWSER_NOTICE,
                 base::UTF8ToUTF16(chrome::kManagedUiLearnMoreUrl)));
   EXPECT_EQ(subtitle,
-            l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
-                                       base::UTF8ToUTF16("manager.com")));
+            l10n_util::GetStringFUTF16(
+                IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
+                base::UTF8ToUTF16("gmail.com.manager.com.gmail.com")));
   EXPECT_TRUE(managed);
 }
 

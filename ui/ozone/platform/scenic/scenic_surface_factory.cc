@@ -4,12 +4,13 @@
 
 #include "ui/ozone/platform/scenic/scenic_surface_factory.h"
 
+#include <lib/sys/cpp/component_context.h>
 #include <lib/zx/event.h>
 #include <memory>
 
 #include "base/bind.h"
+#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/fuchsia/service_directory_client.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "ui/gfx/native_pixmap.h"
@@ -64,14 +65,19 @@ class GLOzoneEGLScenic : public GLOzoneEGL {
   DISALLOW_COPY_AND_ASSIGN(GLOzoneEGLScenic);
 };
 
+fuchsia::sysmem::AllocatorSyncPtr ConnectSysmemAllocator() {
+  fuchsia::sysmem::AllocatorSyncPtr allocator;
+  base::fuchsia::ComponentContextForCurrentProcess()->svc()->Connect(
+      allocator.NewRequest());
+  return allocator;
+}
+
 }  // namespace
 
 ScenicSurfaceFactory::ScenicSurfaceFactory(mojom::ScenicGpuHost* gpu_host)
     : gpu_host_(gpu_host),
       egl_implementation_(std::make_unique<GLOzoneEGLScenic>()),
-      sysmem_buffer_manager_(
-          base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
-              ->ConnectToServiceSync<fuchsia::sysmem::Allocator>()),
+      sysmem_buffer_manager_(ConnectSysmemAllocator()),
       weak_ptr_factory_(this) {
   // TODO(spang, crbug.com/923445): Add message loop to GPU tests.
   if (base::ThreadTaskRunnerHandle::IsSet())
@@ -213,8 +219,9 @@ void ScenicSurfaceFactory::CreateScenicSessionOnMainThread(
     fidl::InterfaceHandle<fuchsia::ui::scenic::SessionListener> listener) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!scenic_) {
-    scenic_ = base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
-                  ->ConnectToService<fuchsia::ui::scenic::Scenic>();
+    scenic_ = base::fuchsia::ComponentContextForCurrentProcess()
+                  ->svc()
+                  ->Connect<fuchsia::ui::scenic::Scenic>();
     scenic_.set_error_handler([](zx_status_t status) {
       ZX_LOG(FATAL, status) << "Scenic connection failed";
     });

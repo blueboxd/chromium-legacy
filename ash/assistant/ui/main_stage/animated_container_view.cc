@@ -113,6 +113,10 @@ void AnimatedContainerView::SetPropagatePreferredSizeChanged(bool propagate) {
 }
 
 void AnimatedContainerView::FadeOutViews() {
+  // If there's already an animation in progress, there's nothing for us to do.
+  if (fade_out_in_progress_)
+    return;
+
   // We don't allow processing of events while waiting for the next query
   // response. The contents will be faded out, so it should not be interactive.
   set_can_process_events_within_subtree(false);

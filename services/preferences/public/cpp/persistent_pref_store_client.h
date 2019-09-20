@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/pref_value_store.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/preferences/public/cpp/pref_store_client_mixin.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 
@@ -84,7 +85,7 @@ class PersistentPrefStoreClient
 
   bool read_only_ = false;
   PrefReadError read_error_ = PersistentPrefStore::PREF_READ_ERROR_NONE;
-  mojom::PersistentPrefStorePtr pref_store_;
+  mojo::Remote<mojom::PersistentPrefStore> pref_store_;
   std::map<std::string, std::pair<std::set<std::vector<std::string>>, uint32_t>>
       pending_writes_;
 

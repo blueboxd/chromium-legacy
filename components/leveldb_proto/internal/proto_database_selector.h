@@ -35,7 +35,7 @@ class COMPONENT_EXPORT(LEVELDB_PROTO) ProtoDatabaseSelector
   enum class ProtoDatabaseInitState {
     kSharedDbInitAttempted = 0,
     kFailureUniqueDbCorrupted = 1,
-    kFailureNoDatabaseProvider = 2,
+    kFailureNoDatabaseProvider = 2,  // Deprecated.
     kBothUniqueAndSharedFailedOpen = 3,
     kSharedDbClientMissingInitFailed = 4,
     kSharedDbClientMissingUniqueReturned = 5,
@@ -59,7 +59,9 @@ class COMPONENT_EXPORT(LEVELDB_PROTO) ProtoDatabaseSelector
     kSharedDbClientSuccess = 23,
     kSharedLevelDbInitFailure = 24,
     kSharedDbClientMissing = 25,
-    kMaxValue = kSharedDbClientMissing
+    kFailureNoSharedDBProviderUniqueFailed = 26,
+    kSuccessNoSharedDBProviderUniqueSucceeded = 27,
+    kMaxValue = kSuccessNoSharedDBProviderUniqueSucceeded,
   };
 
   static void RecordInitState(ProtoDatabaseInitState state);

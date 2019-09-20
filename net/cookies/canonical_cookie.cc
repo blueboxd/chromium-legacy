@@ -441,6 +441,9 @@ CanonicalCookie::CookieInclusionStatus CanonicalCookie::IncludeForRequestURL(
                               effective_same_site,
                               CookieEffectiveSameSite::COUNT);
   }
+  UMA_HISTOGRAM_ENUMERATION("Cookie.RequestSameSiteContext",
+                            options.same_site_cookie_context(),
+                            CookieOptions::SameSiteCookieContext::COUNT);
   switch (effective_same_site) {
     case CookieEffectiveSameSite::STRICT_MODE:
       if (options.same_site_cookie_context() <

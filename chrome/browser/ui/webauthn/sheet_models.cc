@@ -151,6 +151,10 @@ void AuthenticatorTransportSelectorSheetModel::OnTransportSelected(
   dialog_model()->StartGuidedFlowForTransport(transport);
 }
 
+void AuthenticatorTransportSelectorSheetModel::StartPhonePairing() {
+  dialog_model()->StartPhonePairing();
+}
+
 // AuthenticatorInsertAndActivateUsbSheetModel ----------------------
 
 AuthenticatorInsertAndActivateUsbSheetModel::
@@ -1198,18 +1202,14 @@ AuthenticatorQRSheetModel::~AuthenticatorQRSheetModel() = default;
 
 const gfx::VectorIcon& AuthenticatorQRSheetModel::GetStepIllustration(
     ImageColorScheme color_scheme) const {
-  return color_scheme == ImageColorScheme::kDark ? kWebauthnPermissionDarkIcon
-                                                 : kWebauthnPermissionIcon;
+  return color_scheme == ImageColorScheme::kDark ? kWebauthnPhoneDarkIcon
+                                                 : kWebauthnPhoneIcon;
 }
 
 base::string16 AuthenticatorQRSheetModel::GetStepTitle() const {
-  // TODO: this UI is not yet reachable, but will need a translated string
-  // once it is.
-  return base::UTF8ToUTF16("Title");
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLE_QR_TITLE);
 }
 
 base::string16 AuthenticatorQRSheetModel::GetStepDescription() const {
-  // TODO: this UI is not yet reachable, but will need a translated string
-  // once it is.
-  return base::UTF8ToUTF16("Description");
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLE_QR_DESCRIPTION);
 }

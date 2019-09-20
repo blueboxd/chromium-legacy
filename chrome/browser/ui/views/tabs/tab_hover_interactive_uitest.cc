@@ -70,15 +70,9 @@ class TabHoverTest : public UIPerformanceTest {
 
  private:
   std::vector<std::string> GetUMAHistogramNames() const override {
-    // Report each step in the Pipeline Reporter. Note that the UMA mean
-    // will only be printed if the following command line flag is provided:
-    // --perf-test-print-uma-means. Each measurement is in microseconds.
-    return {
-        "SingleThreadedCompositorLatency.BeginImplFrameToSendBeginMainFrame",
-        "SingleThreadedCompositorLatency.SendBeginMainFrameToCommit",
-        "SingleThreadedCompositorLatency.Commit",
-        "SingleThreadedCompositorLatency.EndCommitToActivation",
-        "SingleThreadedCompositorLatency.EndActivateToSubmitCompositorFrame"};
+    // This used to report the different stages from the pipline, but they have
+    // been removed for the UI compositor. Details in crbug.com/1005226
+    return {};
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;

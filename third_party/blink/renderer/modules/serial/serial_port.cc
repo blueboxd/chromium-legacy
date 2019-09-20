@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/serial/serial_port.h"
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
@@ -178,9 +179,7 @@ ScriptPromise SerialPort::open(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  device::mojom::blink::SerialPortClientPtr client_ptr;
-  auto client_request = mojo::MakeRequest(&client_ptr);
-
+  mojo::PendingRemote<device::mojom::blink::SerialPortClient> client;
   parent_->GetPort(info_->token, port_.BindNewPipeAndPassReceiver());
   port_.set_disconnect_handler(
       WTF::Bind(&SerialPort::OnConnectionError, WrapWeakPersistent(this)));
@@ -188,10 +187,10 @@ ScriptPromise SerialPort::open(ScriptState* script_state,
   open_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   auto callback = WTF::Bind(&SerialPort::OnOpen, WrapPersistent(this),
                             std::move(readable_pipe), std::move(writable_pipe),
-                            std::move(client_request));
+                            client.InitWithNewPipeAndPassReceiver());
 
   port_->Open(std::move(mojo_options), std::move(writable_pipe_consumer),
-              std::move(readable_pipe_producer), std::move(client_ptr),
+              std::move(readable_pipe_producer), std::move(client),
               std::move(callback));
   return open_resolver_->Promise();
 }
@@ -401,7 +400,8 @@ void SerialPort::OnConnectionError() {
 void SerialPort::OnOpen(
     mojo::ScopedDataPipeConsumerHandle readable_pipe,
     mojo::ScopedDataPipeProducerHandle writable_pipe,
-    device::mojom::blink::SerialPortClientRequest client_request,
+    mojo::PendingReceiver<device::mojom::blink::SerialPortClient>
+        client_receiver,
     bool success) {
   ScriptState* script_state = open_resolver_->GetScriptState();
   if (!script_state->ContextIsValid())
@@ -418,7 +418,7 @@ void SerialPort::OnOpen(
   ScriptState::Scope scope(script_state);
   InitializeReadableStream(script_state, std::move(readable_pipe));
   InitializeWritableStream(script_state, std::move(writable_pipe));
-  client_receiver_.Bind(std::move(client_request));
+  client_receiver_.Bind(std::move(client_receiver));
   open_resolver_->Resolve();
   open_resolver_ = nullptr;
 }

@@ -50,12 +50,13 @@ const std::vector<std::pair<SkColor, base::string16>>& GetColorPickerList() {
 }  // namespace
 
 // static
-void TabGroupEditorBubbleView::Show(views::View* anchor_view,
-                                    TabController* tab_controller,
-                                    TabGroupId group) {
-  BubbleDialogDelegateView::CreateBubble(
-      new TabGroupEditorBubbleView(anchor_view, tab_controller, group))
-      ->Show();
+views::Widget* TabGroupEditorBubbleView::Show(views::View* anchor_view,
+                                              TabController* tab_controller,
+                                              TabGroupId group) {
+  views::Widget* const widget = BubbleDialogDelegateView::CreateBubble(
+      new TabGroupEditorBubbleView(anchor_view, tab_controller, group));
+  widget->Show();
+  return widget;
 }
 
 gfx::Size TabGroupEditorBubbleView::CalculatePreferredSize() const {
@@ -70,38 +71,33 @@ base::string16 TabGroupEditorBubbleView::GetWindowTitle() const {
   return base::ASCIIToUTF16("Customize tab group visuals");
 }
 
-bool TabGroupEditorBubbleView::Accept() {
-  TabGroupVisualData old_data = *tab_controller_->GetVisualDataForGroup(group_);
+ui::ModalType TabGroupEditorBubbleView::GetModalType() const {
+  return ui::MODAL_TYPE_NONE;
+}
 
-  base::Optional<SkColor> selected_color = color_selector_->GetSelectedColor();
-  const SkColor color =
-      selected_color.has_value() ? selected_color.value() : old_data.color();
-  TabGroupVisualData new_data(title_field_->GetText(), color);
-
-  tab_controller_->SetVisualDataForGroup(group_, new_data);
-
-  return true;
+int TabGroupEditorBubbleView::GetDialogButtons() const {
+  return ui::DIALOG_BUTTON_NONE;
 }
 
 TabGroupEditorBubbleView::TabGroupEditorBubbleView(
     views::View* anchor_view,
     TabController* tab_controller,
     TabGroupId group)
-    : tab_controller_(tab_controller), group_(group) {
+    : tab_controller_(tab_controller),
+      group_(group),
+      title_field_controller_(this) {
   SetAnchorView(anchor_view);
 
   const auto* layout_provider = ChromeLayoutProvider::Get();
   const TabGroupVisualData* current_data =
       tab_controller_->GetVisualDataForGroup(group_);
 
-  // Add the text field for editing the title along with a label above it.
-  View* title_label = AddChildView(std::make_unique<views::Label>(
-      base::ASCIIToUTF16("New title"), views::style::CONTEXT_LABEL,
-      views::style::STYLE_PRIMARY));
+  // Add the text field for editing the title.
   title_field_ = AddChildView(std::make_unique<views::Textfield>());
-  title_field_->SetAssociatedLabel(title_label);
   title_field_->SetDefaultWidthInChars(15);
   title_field_->SetText(current_data->title());
+  title_field_->SetAccessibleName(base::ASCIIToUTF16("Group title"));
+  title_field_->set_controller(&title_field_controller_);
 
   title_field_->SetProperty(
       views::kMarginsKey,
@@ -110,8 +106,9 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
                       views::DISTANCE_UNRELATED_CONTROL_VERTICAL),
                   0));
 
-  color_selector_ =
-      AddChildView(std::make_unique<ColorPickerView>(GetColorPickerList()));
+  color_selector_ = AddChildView(std::make_unique<ColorPickerView>(
+      GetColorPickerList(), base::Bind(&TabGroupEditorBubbleView::UpdateGroup,
+                                       base::Unretained(this))));
 
   // Layout vertically with margin collapsing. This allows us to use spacer
   // views with |DISTANCE_UNRELATED_CONTROL_VERTICAL| margins without worrying
@@ -122,8 +119,26 @@ TabGroupEditorBubbleView::TabGroupEditorBubbleView(
           views::DISTANCE_RELATED_CONTROL_VERTICAL),
       true /* collapse_margins_spacing */);
   layout->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::kStart);
+      views::BoxLayout::CrossAxisAlignment::kStretch);
   SetLayoutManager(std::move(layout));
 }
 
 TabGroupEditorBubbleView::~TabGroupEditorBubbleView() = default;
+
+void TabGroupEditorBubbleView::UpdateGroup() {
+  TabGroupVisualData old_data = *tab_controller_->GetVisualDataForGroup(group_);
+
+  base::Optional<SkColor> selected_color = color_selector_->GetSelectedColor();
+  const SkColor color =
+      selected_color.has_value() ? selected_color.value() : old_data.color();
+  TabGroupVisualData new_data(title_field_->GetText(), color);
+
+  tab_controller_->SetVisualDataForGroup(group_, new_data);
+}
+
+void TabGroupEditorBubbleView::TitleFieldController::ContentsChanged(
+    views::Textfield* sender,
+    const base::string16& new_contents) {
+  DCHECK_EQ(sender, parent_->title_field_);
+  parent_->UpdateGroup();
+}

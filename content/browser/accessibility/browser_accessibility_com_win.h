@@ -8,10 +8,13 @@
 #include <oleacc.h>
 #include <stddef.h>
 #include <stdint.h>
+
+#include <map>
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/win/atl.h"
 #include "content/browser/accessibility/browser_accessibility.h"
@@ -392,8 +395,7 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
 
   // Public accessors (these do not have COM accessible accessors)
   const base::string16& role_name() const { return win_attributes_->role_name; }
-  const std::map<int, std::vector<base::string16>>& offset_to_text_attributes()
-      const {
+  const ui::TextAttributeMap& offset_to_text_attributes() const {
     return win_attributes_->offset_to_text_attributes;
   }
 
@@ -419,17 +421,12 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   void Init(ui::AXPlatformNodeDelegate* delegate) override;
 
   // Returns the IA2 text attributes for this object.
-  std::vector<base::string16> ComputeTextAttributes() const;
+  ui::TextAttributeList ComputeTextAttributes() const;
 
   // Add one to the reference count and return the same object. Always
   // use this method when returning a BrowserAccessibilityComWin object as
   // an output parameter to a COM interface, never use it otherwise.
   BrowserAccessibilityComWin* NewReference();
-
-  // Returns a list of IA2 attributes indicating the offsets in the text of a
-  // leaf object, such as a text field or static text, where spelling errors are
-  // present.
-  std::map<int, std::vector<base::string16>> GetSpellingAttributes();
 
   // Many MSAA methods take a var_id parameter indicating that the operation
   // should be performed on a particular child ID, rather than this object.
@@ -443,27 +440,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   // and return S_OK. If not found or empty, return S_FALSE.
   HRESULT GetStringAttributeAsBstr(ax::mojom::StringAttribute attribute,
                                    BSTR* value_bstr);
-
-  // Merges the given spelling attributes, i.e. document marker information,
-  // into the given text attributes starting at the given character offset. This
-  // is required for two reasons: 1. Document markers that are present on text
-  // leaves need to be propagated to their parent object for compatibility with
-  // Firefox. 2. Spelling markers need to overwrite any aria-invalid="false" in
-  // the text attributes.
-  static void MergeSpellingIntoTextAttributes(
-      const std::map<int, std::vector<base::string16>>& spelling_attributes,
-      int start_offset,
-      std::map<int, std::vector<base::string16>>* text_attributes);
-
-  // Escapes characters in string attributes as required by the IA2 Spec.
-  // It's okay for input to be the same as output.
-  CONTENT_EXPORT static void SanitizeStringAttributeForIA2(
-      const base::string16& input,
-      base::string16* output);
-  FRIEND_TEST_ALL_PREFIXES(BrowserAccessibilityTest,
-                           TestSanitizeStringAttributeForIA2);
-  FRIEND_TEST_ALL_PREFIXES(BrowserAccessibilityWinTest,
-                           TestSanitizeStringAttributeForIA2);
 
   // Sets the selection given a start and end offset in IA2 Hypertext.
   void SetIA2HypertextSelection(LONG start_offset, LONG end_offset);
@@ -516,7 +492,7 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
     std::vector<base::string16> ia2_attributes;
 
     // Maps each style span to its start offset in hypertext.
-    std::map<int, std::vector<base::string16>> offset_to_text_attributes;
+    ui::TextAttributeMap offset_to_text_attributes;
   };
 
   BrowserAccessibilityWin* owner_;

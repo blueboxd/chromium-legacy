@@ -102,9 +102,6 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
     // An ID that changes for each GPU restart.
     int restart_id = -1;
 
-    // Whether GPU is running in-process or not.
-    bool in_process = false;
-
     // Whether caching GPU shader on disk is disabled or not.
     bool disable_gpu_shader_disk_cache = false;
 
@@ -141,7 +138,7 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
   static void InitFontRenderParams(const gfx::FontRenderParams& params);
   static void ResetFontRenderParams();
 
-  void OnProcessLaunched(base::ProcessId pid);
+  void SetProcessId(base::ProcessId pid);
   void OnProcessCrashed();
 
   // Adds a connection error handler for the GpuService.

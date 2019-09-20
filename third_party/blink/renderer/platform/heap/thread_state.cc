@@ -426,7 +426,8 @@ void ThreadState::PerformIdleLazySweep(base::TimeTicks deadline) {
     ThreadHeapStatsCollector::EnabledScope stats_scope(
         Heap().stats_collector(), ThreadHeapStatsCollector::kLazySweepInIdle,
         "idleDeltaInSeconds", (deadline - base::TimeTicks::Now()).InSecondsF());
-    sweep_completed = Heap().AdvanceLazySweep(deadline);
+    sweep_completed =
+        Heap().AdvanceSweep(ThreadHeap::SweepingType::kMutator, deadline);
     // We couldn't finish the sweeping within the deadline.
     // We request another idle task for the remaining sweeping.
     if (sweep_completed) {
@@ -444,11 +445,25 @@ void ThreadState::PerformIdleLazySweep(base::TimeTicks deadline) {
 void ThreadState::PerformConcurrentSweep() {
   VLOG(2) << "[state:" << this << "] [threadid:" << CurrentThread() << "] "
           << "ConcurrentSweep";
+  // As opposed to PerformIdleLazySweep, this function doesn't receive deadline
+  // from the scheduler, but defines it itself.
+  static constexpr base::TimeDelta kConcurrentSweepStepDuration =
+      base::TimeDelta::FromMilliseconds(2);
   // Concurrent sweeper doesn't call finalizers - this guarantees that sweeping
   // is not called recursively.
   ThreadHeapStatsCollector::EnabledConcurrentScope stats_scope(
       Heap().stats_collector(), ThreadHeapStatsCollector::kConcurrentSweep);
-  Heap().ConcurrentSweep();
+  const bool finished = Heap().AdvanceSweep(
+      ThreadHeap::SweepingType::kConcurrent,
+      base::TimeTicks::Now() + kConcurrentSweepStepDuration);
+  if (!finished) {
+    // Reschedule itself. It is safe even if the task timeouts and reposts
+    // itself while the mutator thread is waiting on CancelAndWait(). The
+    // mutator thread will simply wake up and cancel the newly post task itself.
+    sweeper_scheduler_->ScheduleTask(
+        WTF::CrossThreadBindOnce(&ThreadState::PerformConcurrentSweep,
+                                 WTF::CrossThreadUnretained(this)));
+  }
 }
 
 void ThreadState::ScheduleIncrementalMarkingStep() {

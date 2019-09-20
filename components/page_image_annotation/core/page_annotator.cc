@@ -62,7 +62,7 @@ void PageAnnotator::AnnotateImage(Observer* const observer,
   annotator_->AnnotateImage(
       lookup->second.first.source_id,
       std::string() /* description_language_tag */,
-      lookup->second.second.GetPtr(),
+      lookup->second.second.GetPendingRemote(),
       base::BindOnce(&PageAnnotator::NotifyObserver, base::Unretained(this),
                      observer, node_id));
 }

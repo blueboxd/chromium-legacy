@@ -331,6 +331,22 @@ gfx::Rect SplitViewDivider::GetDividerBoundsInScreen(bool is_dragging) {
                                   is_dragging);
 }
 
+void SplitViewDivider::SetAlwaysOnTop(bool on_top) {
+  if (on_top) {
+    divider_widget_->SetZOrderLevel(ui::ZOrderLevel::kFloatingUIElement);
+
+    // Special handling when put divider into always_on_top container. We want
+    // to put it at the bottom so it won't block other always_on_top windows.
+    aura::Window* always_on_top_container =
+        Shell::GetContainer(divider_widget_->GetNativeWindow()->GetRootWindow(),
+                            kShellWindowId_AlwaysOnTopContainer);
+    always_on_top_container->StackChildAtBottom(
+        divider_widget_->GetNativeWindow());
+  } else {
+    divider_widget_->SetZOrderLevel(ui::ZOrderLevel::kNormal);
+  }
+}
+
 void SplitViewDivider::AddObservedWindow(aura::Window* window) {
   if (!base::Contains(observed_windows_, window)) {
     window->AddObserver(this);
@@ -445,22 +461,6 @@ void SplitViewDivider::CreateDividerWidget(aura::Window* root_window) {
   divider_widget_->SetContentsView(divider_view);
   divider_widget_->SetBounds(GetDividerBoundsInScreen(false /* is_dragging */));
   divider_widget_->Show();
-}
-
-void SplitViewDivider::SetAlwaysOnTop(bool on_top) {
-  if (on_top) {
-    divider_widget_->SetZOrderLevel(ui::ZOrderLevel::kFloatingUIElement);
-
-    // Special handling when put divider into always_on_top container. We want
-    // to put it at the bottom so it won't block other always_on_top windows.
-    aura::Window* always_on_top_container =
-        Shell::GetContainer(divider_widget_->GetNativeWindow()->GetRootWindow(),
-                            kShellWindowId_AlwaysOnTopContainer);
-    always_on_top_container->StackChildAtBottom(
-        divider_widget_->GetNativeWindow());
-  } else {
-    divider_widget_->SetZOrderLevel(ui::ZOrderLevel::kNormal);
-  }
 }
 
 }  // namespace ash

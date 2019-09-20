@@ -71,6 +71,10 @@ std::string SharedProtoDatabaseClientList::ProtoDbTypeToString(
       return "DownloadDB";
     case ProtoDbType::VIDEO_DECODE_STATS_DB:
       return "VideoDecodeStatsDB";
+    case ProtoDbType::GCM_KEY_STORE:
+      return "GCMKeyStore";
+    case ProtoDbType::SHARED_DB_METADATA:
+      return "Metadata";
     case ProtoDbType::PRINT_JOB_DATABASE:
       return "PrintJobDatabase";
     case ProtoDbType::LAST:

@@ -702,10 +702,10 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // before AppListViewState changes.
   ash::AppListViewState recorded_app_list_view_state_;
 
-  // Whether home launcher was shown before a button press, used to record app
-  // launching metrics. This is recorded in case home_launcher_shown_ is changed
+  // Whether the applist was shown before a button press, used to record app
+  // launching metrics. This is recorded because AppList visibility can change
   // before the metric is recorded.
-  bool recorded_home_launcher_shown_ = false;
+  bool app_list_visibility_before_app_launch_ = false;
 
   // Whether this view should focus its last focusable child (instead of its
   // first) when focused.

@@ -192,31 +192,46 @@ void NodeController::SendBrokerClientInvitation(
 
 void NodeController::AcceptBrokerClientInvitation(
     ConnectionParams connection_params) {
+  base::Optional<PlatformHandle> broker_host_handle;
   DCHECK(!GetConfiguration().is_broker_process);
 #if !defined(OS_MACOSX) && !defined(OS_NACL_SFI) && !defined(OS_FUCHSIA)
-  // Use the bootstrap channel for the broker and receive the node's channel
-  // synchronously as the first message from the broker.
-  DCHECK(connection_params.endpoint().is_valid());
-  base::ElapsedTimer timer;
-  broker_ = std::make_unique<Broker>(
-      connection_params.TakeEndpoint().TakePlatformHandle());
-  PlatformChannelEndpoint endpoint = broker_->GetInviterEndpoint();
+  if (!connection_params.is_async()) {
+    // Use the bootstrap channel for the broker and receive the node's channel
+    // synchronously as the first message from the broker.
+    DCHECK(connection_params.endpoint().is_valid());
+    base::ElapsedTimer timer;
+    broker_ = std::make_unique<Broker>(
+        connection_params.TakeEndpoint().TakePlatformHandle(),
+        /*wait_for_channel_handle=*/true);
+    PlatformChannelEndpoint endpoint = broker_->GetInviterEndpoint();
 
-  if (!endpoint.is_valid()) {
-    // Most likely the inviter's side of the channel has already been closed and
-    // the broker was unable to negotiate a NodeChannel pipe. In this case we
-    // can cancel our connection to our inviter.
-    DVLOG(1) << "Cannot connect to invalid inviter channel.";
-    CancelPendingPortMerges();
-    return;
+    if (!endpoint.is_valid()) {
+      // Most likely the inviter's side of the channel has already been closed
+      // and the broker was unable to negotiate a NodeChannel pipe. In this case
+      // we can cancel our connection to our inviter.
+      DVLOG(1) << "Cannot connect to invalid inviter channel.";
+      CancelPendingPortMerges();
+      return;
+    }
+    connection_params = ConnectionParams(std::move(endpoint));
+  } else {
+    // For async connections, we instead create a new channel for the broker and
+    // send a request for the inviting process to bind to it. This avoids doing
+    // blocking I/O to accept the invitation. Does not work in some sandboxed
+    // environments, where the PlatformChannel constructor will CHECK fail.
+    PlatformChannel channel;
+    broker_ = std::make_unique<Broker>(
+        channel.TakeLocalEndpoint().TakePlatformHandle(),
+        /*wait_for_channel_handle=*/false);
+    broker_host_handle = channel.TakeRemoteEndpoint().TakePlatformHandle();
   }
-  connection_params = ConnectionParams(std::move(endpoint));
 #endif
 
   io_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&NodeController::AcceptBrokerClientInvitationOnIOThread,
-                     base::Unretained(this), std::move(connection_params)));
+                     base::Unretained(this), std::move(connection_params),
+                     std::move(broker_host_handle)));
 }
 
 void NodeController::ConnectIsolated(ConnectionParams connection_params,
@@ -331,28 +346,39 @@ void NodeController::SendBrokerClientInvitationOnIOThread(
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
 #if !defined(OS_MACOSX) && !defined(OS_NACL) && !defined(OS_FUCHSIA)
-  PlatformChannel node_channel;
-  ConnectionParams node_connection_params(node_channel.TakeLocalEndpoint());
-  // BrokerHost owns itself.
-  BrokerHost* broker_host =
-      new BrokerHost(target_process.get(), std::move(connection_params),
-                     process_error_callback);
-  bool channel_ok = broker_host->SendChannel(
-      node_channel.TakeRemoteEndpoint().TakePlatformHandle());
+  ConnectionParams node_connection_params;
+  if (!connection_params.is_async()) {
+    // Sync connections usurp the passed endpoint and use it for the sync broker
+    // channel. A new channel is created here for the NodeChannel and sent over
+    // a sync broker message to the client.
+    PlatformChannel node_channel;
+    node_connection_params = ConnectionParams(node_channel.TakeLocalEndpoint());
+    // BrokerHost owns itself.
+    BrokerHost* broker_host =
+        new BrokerHost(target_process.get(), std::move(connection_params),
+                       process_error_callback);
+    bool channel_ok = broker_host->SendChannel(
+        node_channel.TakeRemoteEndpoint().TakePlatformHandle());
 
 #if defined(OS_WIN)
-  if (!channel_ok) {
-    // On Windows the above operation may fail if the channel is crossing a
-    // session boundary. In that case we fall back to a named pipe.
-    NamedPlatformChannel::Options options;
-    NamedPlatformChannel named_channel(options);
-    node_connection_params =
-        ConnectionParams(named_channel.TakeServerEndpoint());
-    broker_host->SendNamedChannel(named_channel.GetServerName());
-  }
+    if (!channel_ok) {
+      // On Windows the above operation may fail if the channel is crossing a
+      // session boundary. In that case we fall back to a named pipe.
+      NamedPlatformChannel::Options options;
+      NamedPlatformChannel named_channel(options);
+      node_connection_params =
+          ConnectionParams(named_channel.TakeServerEndpoint());
+      broker_host->SendNamedChannel(named_channel.GetServerName());
+    }
 #else
-  CHECK(channel_ok);
+    CHECK(channel_ok);
 #endif  // defined(OS_WIN)
+  } else {
+    // For async connections, the passed endpoint really is the NodeChannel
+    // endpoint. The broker channel will be established asynchronously by a
+    // |BIND_SYNC_BROKER| message from the invited client.
+    node_connection_params = std::move(connection_params);
+  }
 
   scoped_refptr<NodeChannel> channel =
       NodeChannel::Create(this, std::move(node_connection_params),
@@ -380,7 +406,8 @@ void NodeController::SendBrokerClientInvitationOnIOThread(
 }
 
 void NodeController::AcceptBrokerClientInvitationOnIOThread(
-    ConnectionParams connection_params) {
+    ConnectionParams connection_params,
+    base::Optional<PlatformHandle> broker_host_handle) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   {
@@ -400,6 +427,8 @@ void NodeController::AcceptBrokerClientInvitationOnIOThread(
     bootstrap_inviter_channel_->LeakHandleOnShutdown();
   }
   bootstrap_inviter_channel_->Start();
+  if (broker_host_handle)
+    bootstrap_inviter_channel_->BindBrokerHost(std::move(*broker_host_handle));
 }
 
 void NodeController::ConnectIsolatedOnIOThread(

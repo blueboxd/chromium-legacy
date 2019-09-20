@@ -280,6 +280,7 @@ TEST_F(ParentAccessViewTest, HelpButton) {
 
   EXPECT_CALL(*client, ShowParentAccessHelpApp()).Times(1);
   SimulateButtonPress(test_api.help_button());
+  base::RunLoop().RunUntilIdle();
 
   ExpectUMAActionReported(ParentAccessView::UMAAction::kGetHelp, 1, 1);
 }

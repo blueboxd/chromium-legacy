@@ -633,7 +633,7 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
   if (IsHomeScreenAvailable()) {
     // If the home launcher is shown, being animated, or dragged, show the
     // default background.
-    if (is_home_launcher_shown_ || home_launcher_animation_state_ == kShowing)
+    if (is_app_list_visible_ || home_launcher_animation_state_ == kShowing)
       return SHELF_BACKGROUND_DEFAULT;
   } else if (is_app_list_visible_) {
     return maximized ? SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST
@@ -785,6 +785,14 @@ void ShelfLayoutManager::OnOverviewModeEndingAnimationComplete(bool canceled) {
   overview_suspend_visibility_update_.reset();
 }
 
+void ShelfLayoutManager::OnAppListTargetVisibilityChanged(bool shown,
+                                                          int64_t display_id) {
+  if (!IsTabletModeEnabled())
+    return;
+
+  OnHomeLauncherTargetPositionChanged(shown, display_id);
+}
+
 void ShelfLayoutManager::OnAppListVisibilityChanged(bool shown,
                                                     int64_t display_id) {
   // Shell may be under destruction.
@@ -795,8 +803,8 @@ void ShelfLayoutManager::OnAppListVisibilityChanged(bool shown,
     return;
 
   if (IsTabletModeEnabled()) {
-    is_home_launcher_shown_ = shown;
-    home_launcher_animation_state_ = HomeLauncherAnimationState::kFinished;
+    OnHomeLauncherAnimationComplete(shown, display_id);
+    return;
   }
 
   const bool should_update_visibility_state = shown != is_app_list_visible_;
@@ -811,6 +819,9 @@ void ShelfLayoutManager::OnAppListVisibilityChanged(bool shown,
 void ShelfLayoutManager::OnHomeLauncherTargetPositionChanged(
     bool showing,
     int64_t display_id) {
+  if (!IsTabletModeEnabled())
+    return;
+
   // Shell may be under destruction.
   if (!shelf_widget_ || !shelf_widget_->GetNativeWindow())
     return;
@@ -819,9 +830,9 @@ void ShelfLayoutManager::OnHomeLauncherTargetPositionChanged(
     return;
 
   HomeLauncherAnimationState new_animation_state;
-  if (is_home_launcher_shown_ && !showing) {
+  if (is_app_list_visible_ && !showing) {
     new_animation_state = kHiding;
-  } else if (!is_home_launcher_shown_ && showing) {
+  } else if (!is_app_list_visible_ && showing) {
     new_animation_state = kShowing;
   } else {
     // No valid animation state.
@@ -839,6 +850,9 @@ void ShelfLayoutManager::OnHomeLauncherTargetPositionChanged(
 
 void ShelfLayoutManager::OnHomeLauncherAnimationComplete(bool shown,
                                                          int64_t display_id) {
+  if (!IsTabletModeEnabled())
+    return;
+
   // Shell may be under destruction.
   if (!shelf_widget_ || !shelf_widget_->GetNativeWindow())
     return;
@@ -846,8 +860,8 @@ void ShelfLayoutManager::OnHomeLauncherAnimationComplete(bool shown,
   if (display_.id() != display_id)
     return;
 
-  const bool should_update_visibility_state = is_home_launcher_shown_ != shown;
-  is_home_launcher_shown_ = shown;
+  const bool should_update_visibility_state = is_app_list_visible_ != shown;
+  is_app_list_visible_ = shown;
   home_launcher_animation_state_ = HomeLauncherAnimationState::kFinished;
 
   if (should_update_visibility_state)
@@ -1044,7 +1058,7 @@ HotseatState ShelfLayoutManager::GetHotseatState(
         case kHiding:
           return HotseatState::kHidden;
         case kFinished:
-          if (is_home_launcher_shown_)
+          if (is_app_list_visible_)
             return HotseatState::kShown;
           if (Shell::Get()->overview_controller() &&
               Shell::Get()->overview_controller()->InOverviewSession()) {
@@ -1817,7 +1831,7 @@ bool ShelfLayoutManager::StartGestureDrag(
     drag_status_ = previous_drag_status;
   }
 
-  if (is_home_launcher_shown_)
+  if (is_app_list_visible_)
     return true;
 
   return StartShelfDrag(gesture_in_screen);

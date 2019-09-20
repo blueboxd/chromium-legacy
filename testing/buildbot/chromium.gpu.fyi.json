@@ -12352,8 +12352,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600,
@@ -12377,8 +12376,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600
@@ -12403,8 +12401,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600
@@ -12426,8 +12423,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600
@@ -12448,8 +12444,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600
@@ -12470,8 +12465,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600
@@ -12489,8 +12483,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600
@@ -12512,8 +12505,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600
@@ -12531,8 +12523,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600
@@ -12563,8 +12554,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600,
@@ -12593,8 +12583,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600,
@@ -12623,8 +12612,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600,
@@ -12653,8 +12641,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600,
@@ -12687,8 +12674,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600,
@@ -12724,8 +12710,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600,
@@ -12769,8 +12754,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600,
@@ -12801,8 +12785,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600,
@@ -12831,8 +12814,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600,
@@ -12863,8 +12845,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600,
@@ -12894,8 +12875,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600,
@@ -12925,8 +12905,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.14.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.14.6"
             }
           ],
           "expiration": 21600,
@@ -14038,8 +14017,7 @@
           "dimension_sets": [
             {
               "gpu": "8086:0a2e",
-              "os": "Mac-10.13.6",
-              "pool": "Chrome-GPU"
+              "os": "Mac-10.13.6"
             }
           ],
           "expiration": 21600,
@@ -24095,37 +24073,6 @@
           "--browser=release_x64",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "webgl_conformance_gl_passthrough_tests",
-        "should_retry_with_patch": false,
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "containment_type": "AUTO",
-          "dimension_sets": [
-            {
-              "gpu": "1002:699f",
-              "os": "Windows-10",
-              "pool": "Chrome-GPU"
-            }
-          ],
-          "expiration": 21600,
-          "idempotent": false,
-          "shards": 2
-        }
-      },
-      {
-        "args": [
-          "webgl_conformance",
-          "--show-stdout",
-          "--browser=release_x64",
-          "--passthrough",
-          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --force_high_performance_gpu"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -29407,6 +29354,45 @@
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "screenshot_sync_tests",
+        "should_retry_with_patch": false,
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "containment_type": "AUTO",
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "idempotent": false
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"gpu\": \"nvidia-quadro-p400-win10-stable\", \"os\": \"Windows-10\", \"pool\": \"Chrome-GPU\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
+        }
+      },
+      {
+        "args": [
+          "screenshot_sync",
+          "--show-stdout",
+          "--browser=release",
+          "--passthrough",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --enable-features=UseSkiaRenderer",
+          "--dont-restore-color-profile-after-test"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
+        },
+        "name": "skia_renderer_screenshot_sync_tests",
         "should_retry_with_patch": false,
         "swarming": {
           "can_use_on_swarming_builders": true,

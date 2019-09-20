@@ -1,3 +1,9 @@
 include_rules = [
   "+chrome/services/app_service/public",
 ]
+
+specific_include_rules = {
+  "app_service_test\.cc": [
+    "+chrome/services/app_service/app_service.h",
+  ],
+}

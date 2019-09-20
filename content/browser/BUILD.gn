@@ -1591,6 +1591,8 @@ jumbo_source_set("browser") {
     "renderer_host/text_input_manager.h",
     "renderer_host/ui_events_helper.cc",
     "renderer_host/ui_events_helper.h",
+    "renderer_host/visual_properties_manager.cc",
+    "renderer_host/visual_properties_manager.h",
     "renderer_host/web_database_host_impl.cc",
     "renderer_host/web_database_host_impl.h",
     "renderer_host/webmenurunner_mac.h",

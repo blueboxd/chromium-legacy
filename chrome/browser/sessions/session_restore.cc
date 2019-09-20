@@ -446,8 +446,8 @@ class SessionRestoreImpl : public BrowserListObserver {
       // the groups' visual data.
       if (base::FeatureList::IsEnabled(features::kTabGroups)) {
         for (auto& tab_group : (*i)->tab_groups) {
-          TabGroupVisualData restored_data(std::move(tab_group->title),
-                                           tab_group->color);
+          TabGroupVisualData restored_data(std::move(tab_group->metadata.title),
+                                           tab_group->metadata.color);
           browser->tab_strip_model()->SetVisualDataForGroup(
               TabGroupId::FromRawToken(tab_group->group_id),
               std::move(restored_data));

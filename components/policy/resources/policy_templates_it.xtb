@@ -218,6 +218,7 @@ Se questa norma non viene impostata, verrà applicato il comportamento predefini
 
       Se questa norma non è impostata, il codice di networking potrebbe essere eseguito al di fuori del processo di browser, a seconda delle prove sul campo dell'esperimento NetworkService.</translation>
 <translation id="1384459581748403878">Riferimento: <ph name="REFERENCE_URL" /></translation>
+<translation id="138847842893090358">Indica lo stato di aggiornamento del sistema operativo</translation>
 <translation id="1393485621820363363">Stampanti aziendali associate ai dispositivi attive</translation>
 <translation id="1397855852561539316">URL di suggerimento del provider di ricerca predefinito</translation>
 <translation id="1404043648050567997">Il servizio Navigazione sicura mostra una pagina di avviso quando gli utenti visitano siti che sono segnalati come potenzialmente dannosi. L'attivazione di questa impostazione impedisce agli utenti di proseguire dalla pagina di avviso al sito dannoso.
@@ -293,15 +294,6 @@ Se questa norma non viene impostata, verrà applicato il comportamento predefini
 
       Se la norma non viene impostata, per gli utenti gestiti dall'azienda viene applicato il valore predefinito "MultiProfileUserBehaviorMustBePrimary", mentre per gli utenti non gestiti viene applicato il valore "MultiProfileUserBehaviorUnrestricted".</translation>
 <translation id="1465619815762735808">Click to play</translation>
-<translation id="1468307069016535757">Consente di impostare lo stato predefinito della funzione di accessibilità della modalità ad alto contrasto nella schermata di accesso.
-
-Se la norma viene impostata su true, la modalità ad alto contrasto verrà attivata quando viene visualizzata la schermata di accesso.
-
-Se la norma viene impostata su false, la modalità ad alto contrasto verrà disattivata quando viene visualizzata la schermata di accesso.
-
-Se la norma viene impostata, gli utenti possono ignorarla temporaneamente attivando o disattivando la modalità ad alto contrasto. La scelta dell'utente non è però permanente e viene ripristinato il valore predefinito quando viene visualizzata di nuovo la schermata di accesso o quando l'utente rimane inattivo nella schermata di accesso per un minuto.
-
-Se la norma non viene impostata, la modalità ad alto contrasto viene disattivata alla prima visualizzazione della schermata di accesso. Gli utenti possono attivare o disattivare la modalità ad alto contrasto in qualsiasi momento e il relativo stato nella schermata di accesso persiste per tutti gli utenti.</translation>
 <translation id="1468707346106619889">Se le norme sono impostate su "true", la modalità Desktop unificato è consentita e
       attivata per impostazione predefinita, il che significa che le applicazioni includono diverse visualizzazioni.
       L'utente può disattivare la modalità Desktop unificato per le singole visualizzazioni deselezionandola
@@ -775,6 +767,10 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
       Se la norma viene impostata su True, gli eventi saranno registrati.
       Se la norma viene impostata su False o non viene impostata, gli eventi non saranno registrati.</translation>
+<translation id="2440773021691931148">Consente di segnalare statistiche hardware e identificatori relativi all'alimentazione.
+
+      Se il criterio viene impostato su false o non viene impostato, le statistiche non vengono segnalate.
+      Se viene impostato su true, le statistiche vengono segnalate.</translation>
 <translation id="244317009688098048">Attiva scorciatoia da tastiera bailout per accesso automatico.
 
       Se questa norma non è impostata o è impostata su True e un account dispositivo locale è configurato per l'accesso automatico senza ritardo, <ph name="PRODUCT_OS_NAME" /> rispetterà la scorciatoia da tastiera Ctrl+Alt+S per bypassare l'accesso automatico e la visualizzazione della schermata di accesso.
@@ -783,6 +779,15 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2454228136871844693">Ottimizza per aumentare la stabilità.</translation>
 <translation id="2463034609187171371">Attiva i pacchetti di crittografia DHE in TLS</translation>
 <translation id="2463365186486772703">Lingua dell'applicazione</translation>
+<translation id="2464012905766911533">Questo criterio consente a un amministratore di specificare che una pagina potrebbe inviare richieste XHR sincrone durante l'uscita dalla pagina.
+
+      Quando il criterio viene attivato, le pagine possono inviare richieste XHR sincrone durante l'uscita dalle pagine.
+
+      Quando il criterio viene disattivato o non viene impostato, le pagine non possono inviare richieste XHR sincrone durante l'uscita dalle pagine.
+
+      Nella versione 82 di Chrome, questo criterio verrà rimosso.
+
+      Consulta https://www.chromestatus.com/feature/4664843055398912 .</translation>
 <translation id="2466131534462628618">L'autenticazione tramite captive portal ignora il proxy</translation>
 <translation id="2466697858869282874">Consente di configurare disponibilità e comportamento della funzionalità di aggiornamento del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
@@ -1468,6 +1473,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
           Se questo criterio non viene impostato, inizialmente la funzione Seleziona per ascoltare è disattivata, ma l'utente può attivarla in qualsiasi momento.</translation>
 <translation id="3591527072193107424">Attiva la funzionalità Supporto dei browser precedenti.</translation>
 <translation id="3591584750136265240">Configura il comportamento di autenticazione dell'accesso</translation>
+<translation id="3617743504695003280">Consente a una pagina di fare richieste XHR sincrone durante l'uscita dalla pagina.</translation>
 <translation id="3627678165642179114">Attiva o disattiva il servizio web di controllo ortografico</translation>
 <translation id="3628480121685794414">Attiva stampa su un lato</translation>
 <translation id="3631099945620529777">Se la norma è impostata su false, il pulsante "Termina processo" in Task Manager viene disattivato.
@@ -1658,6 +1664,10 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
       Se il criterio dello sfondo del dispositivo è impostato, il dispositivo Chrome OS scaricherà e utilizzerà l'immagine di sfondo nella schermata di accesso se ancora nessun utente ha effettuato l'accesso al dispositivo. Quando un utente accede, si attiva il criterio dello sfondo dell'utente.
 
       Se il criterio dello sfondo del dispositivo non viene impostato, è il criterio dello sfondo dell'utente a definire cosa mostrare se si imposta il criterio dello sfondo del dispositivo.</translation>
+<translation id="3964606652985594895">Consente di segnalare statistiche hardware e identificatori relativi ai dispositivi di archiviazione.
+
+      Se il criterio viene impostato su false o non viene impostato, le statistiche non vengono segnalate.
+      Se viene impostato su true, le statistiche vengono segnalate.</translation>
 <translation id="3965339130942650562">Timeout fino a esecuzione uscita utente non attivo</translation>
 <translation id="3973371701361892765">Non nascondere mai automaticamente lo shelf</translation>
 <translation id="3984028218719007910">Consente di stabilire se tenere o meno memorizzati in <ph name="PRODUCT_OS_NAME" /> i dati degli account locali dopo l'uscita. Se la norma viene impostata su true, in <ph name="PRODUCT_OS_NAME" /> non verranno conservati gli account persistenti e tutti i dati della sessione utente verranno eliminati dopo l'uscita. Se la norma viene impostata su false o non viene configurata, il dispositivo potrebbe conservare i dati utente locali (criptati).</translation>
@@ -2121,9 +2131,18 @@ Se la norma non viene impostata, il puntatore grande sarà inizialmente disattiv
 <translation id="4807950475297505572">Gli utenti utilizzati meno di recente vengono rimossi fino alla disponibilità di spazio libero sufficiente</translation>
 <translation id="4816674326202173458">Consenti all'utente aziendale di essere l'utente principale e secondario (comportamento predefinito per gli utenti non gestiti)</translation>
 <translation id="4826326557828204741">Azione da compiere quando il ritardo di inattività viene raggiunto durante l'utilizzo della batteria</translation>
+<translation id="4830531683854509779">Consente di segnalare statistiche hardware relative ai componenti SoC.
+
+      Se il criterio viene impostato su false o non viene impostato, le statistiche non vengono segnalate.
+      Se viene impostato su true, le statistiche vengono segnalate.</translation>
 <translation id="4832852360828533362">Rapporti su dispositivi e utenti</translation>
 <translation id="4834526953114077364">Gli utenti utilizzati meno di recente che non hanno eseguito l'accesso negli ultimi tre mesi vengono rimossi fino alla disponibilità di spazio libero sufficiente</translation>
 <translation id="4835622243021053389">Attiva autenticazione NTLMv2</translation>
+<translation id="4856471929724652373">Consente di segnalare informazioni sull'aggiornamento del sistema operativo, ad esempio stato di aggiornamento, versione della piattaforma,
+      controllo dell'ultimo aggiornamento e ultimo riavvio.
+
+      Se il criterio è impostato su false o non viene impostato, le informazioni sull'aggiornamento del sistema operativo non verranno
+      segnalate. Se è impostato su true, le informazioni sull'aggiornamento del sistema operativo verranno segnalate.</translation>
 <translation id="4858735034935305895">Consenti modalità a schermo intero</translation>
 <translation id="4861767323695239729">Configura i metodi di immissione consentiti in una sessione utente</translation>
 <translation id="487460824085252184">Esegui automaticamente la migrazione senza chiedere il consenso dell'utente</translation>
@@ -2725,15 +2744,6 @@ Il valore della norma deve essere specificato in millisecondi.</translation>
       Gli URL (ad esempio https://example.com/some/path) corrisponderanno soltanto ad appID U2F. I domini (come example.com) corrisponderanno soltanto a ID RP webauthn. Di conseguenza, per includere entrambe le API U2F e webauthn per un determinato sito, devono essere elencati sia il dominio sia l'URL appID.</translation>
 <translation id="5836064773277134605">Limita l'intervallo di porte UDP utilizzate dall'host di accesso remoto</translation>
 <translation id="5861856285460256766">Configurazione codice di accesso genitori</translation>
-<translation id="5862253018042179045">Consente di impostare lo stato predefinito della funzione di accessibilità di lettura vocale nella schermata di accesso.
-
-Se questa norma viene impostata su true, la lettura vocale viene attivata quando viene visualizzata la schermata di accesso.
-
-Se la norma viene impostata su false, la lettura vocale viene disattivata quando viene visualizzata la schermata di accesso.
-
-Se la norma viene impostata, gli utenti possono ignorarla temporaneamente attivando o disattivando la lettura vocale. La scelta dell'utente non è però permanente e viene ripristinato il valore predefinito quando viene visualizzata di nuovo la schermata di accesso o quando l'utente rimane inattivo nella schermata di accesso per un minuto.
-
-Se la norma non viene impostata, la lettura vocale viene disattivata alla prima visualizzazione della schermata di accesso. Gli utenti possono attivare o disattivare la lettura vocale in qualsiasi momento e il relativo stato nella schermata di accesso persiste per tutti gli utenti.</translation>
 <translation id="5868414965372171132">Configurazione di rete a livello di utente</translation>
 <translation id="5879014913445067283">Consente di controllare la funzione Condivisioni file di rete tramite il protocollo <ph name="NETBIOS_NAME" /></translation>
 <translation id="5882345429632338713">Ritardo prima di avviare il browser alternativo (in millisecondi)</translation>
@@ -3118,6 +3128,7 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 <translation id="6689792153960219308">Segnala lo stato dell'hardware</translation>
 <translation id="6698632841807204978">Attiva la stampa monocromatica</translation>
 <translation id="6699880231565102694">Abilita autenticazione a due fattori per gli host di accesso remoto</translation>
+<translation id="670597451099978576">Concede automaticamente a questi siti l'autorizzazione a connettersi a dispositivi USB usando gli ID fornitore e prodotto indicati nella schermata di accesso.</translation>
 <translation id="6720080634516505446"><ph name="PRODUCT_NAME" /> garantisce la sicurezza degli aggiornamenti e dell'installazione delle estensioni. Tuttavia, i contenuti di alcune estensioni ospitate al di fuori del Chrome Web Store potrebbero essere protetti solo dagli accessi non sicuri o da algoritmi di hashing, ad esempio SHA1. Quando questo criterio è disattivato, la nuova installazione o gli aggiornamenti di tali estensioni non verranno consentiti da Chrome (finché gli sviluppatori delle estensioni non ricreano le estensioni con algoritmi più efficaci). Se questo criterio viene attivato, l'installazione e gli aggiornamenti di queste estensioni saranno concessi.
 
           Se il criterio non è impostato, viene applicato per impostazione predefinita il comportamento previsto dal criterio attivo.
@@ -3679,6 +3690,21 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
       Quando questa norma è impostata, il codice di accesso genitori può essere verificato sul dispositivo dell'utente bambino o ragazzo.
       Quando questa norma non è impostata, non è possibile verificare il codice di accesso genitori sul dispositivo dell'utente bambino o ragazzo.</translation>
 <translation id="7625444193696794922">Consente di specificare il canale di rilascio su cui deve essere bloccato questo dispositivo.</translation>
+<translation id="7625498350540361483">
+      Se il criterio è impostato su true, <ph name="PRODUCT_NAME" /> può raccogliere log eventi WebRTC dai servizi Google (ad es., Google Meet) e caricare i log su Google.
+
+      Se la norma è impostata su false, <ph name="PRODUCT_NAME" /> non può raccogliere né caricare questi log.
+
+      Se il criterio non è impostato, fino alla versione M67 inclusa, <ph name="PRODUCT_NAME" /> non può raccogliere né caricare questi log.
+
+      Se il criterio non è impostato, a partire dalla versione M77, <ph name="PRODUCT_NAME" /> può raccogliere o caricare questi log per impostazione predefinita, se il profilo del browser è considerato gestito, ovvero se il profilo riceve norme a livello di cloud o macchina e se non si tratta di un profilo secondario, temporaneo, di accesso o in incognito.
+
+      Questi log contengono informazioni diagnostiche utili per il debug dei problemi relativi a chiamate vocali o videochiamate in Chrome, ad esempio data/ora e dimensioni dei pacchetti RTP inviati e ricevuti, feedback sulla congestione della rete, nonché metadati su tempo e qualità dei frame audio e video. Questi log non contengono l'audio o i video delle chiamate.
+
+      Questa raccolta di dati da parte di Chrome può essere attivata soltanto dai servizi web di Google, ad esempio Google Hangouts o Google Meet.
+
+      Google potrebbe associare questi log tramite un ID sessione ad altri log raccolti dal servizio Google stesso al fine di facilitare il debug.
+      </translation>
 <translation id="7632724434767231364">Nome della libreria GSSAPI</translation>
 <translation id="7635471475589566552">Consente di configurare in <ph name="PRODUCT_NAME" /> le impostazioni della lingua e di impedirne la modifica agli utenti. Se attivi questa impostazione, <ph name="PRODUCT_NAME" /> utilizzerà le impostazioni della lingua specificate. Se la lingua configurata non è supportata, verrà utilizzata la lingua "en-US". Se questa impostazione viene disattivata o non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà la lingua preferita specificata dall'utente (se configurata), quella del sistema o la lingua di riserva "en-US".</translation>
 <translation id="7641363659597330616">Consente di configurare i tipi di download che verranno completamente bloccati in <ph name="PRODUCT_NAME" />; gli utenti non potranno ignorare la decisione di sicurezza.
@@ -4189,6 +4215,11 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
       Questa norma comporta l'aggiunta dell'intestazione X-GoogApps-Allowed-Domains a tutte le richieste HTTP e HTTPS inviate a tutti i domini google.com, come descritto all'indirizzo https://support.google.com/a/answer/1668854.
 
       L'utente non può modificare o ignorare questa impostazione.</translation>
+<translation id="8625234016727663537">Consente di impostare un elenco di URL che specifica a quali siti verrà concessa automaticamente l'autorizzazione per accedere a un dispositivo USB con gli ID prodotto e fornitore indicati nella schermata di accesso. Perché il criterio sia valido, ogni elemento dell'elenco deve contenere sia dispositivi sia URL. Ogni elemento nei dispositivi può contenere un campo ID fornitore e un campo ID prodotto. Gli eventuali ID omessi verranno considerati caratteri jolly con l'eccezione che non è possibile specificare un ID prodotto senza aver specificato un ID fornitore. In caso contrario, il criterio non sarà valido e verrà ignorato.
+
+        Il modello di autorizzazione USB utilizza l'URL del sito richiedente ("URL richiedente") e l'URL del sito frame di livello principale ("URL di incorporamento") per concedere all'URL richiedente l'autorizzazione di accesso al dispositivo USB. L'URL richiedente può essere diverso dall'URL di incorporamento quando il sito richiedente viene caricato in un iframe. Di conseguenza il campo "URL" può contenere fino a due stringhe URL delimitate da virgola per specificare rispettivamente l'URL richiedente e l'URL di incorporamento. Se è specificato un solo URL, l'accesso ai dispositivi USB corrispondenti viene concesso quando l'URL del sito richiedente corrisponde all'URL, a prescindere dallo stato di incorporamento. Gli URL in "URL" devono essere validi, altrimenti il criterio viene ignorato.
+
+        Se questo criterio non viene impostato, per tutti i siti viene usato il valore predefinito globale (nessun accesso automatico).</translation>
 <translation id="8631434304112909927">fino alla versione <ph name="UNTIL_VERSION" /></translation>
 <translation id="8649763579836720255">I dispositivi Chrome OS possono utilizzare un'attestazione remota (Accesso verificato) per ottenere un certificato emesso dalla CA di Chrome OS in cui si afferma che il dispositivo è idoneo a riprodurre contenuti protetti. Questo processo comporta l'invio alla CA di Chrome OS di informazioni di approvazione dell'hardware che identificano in modo univoco il dispositivo.
 

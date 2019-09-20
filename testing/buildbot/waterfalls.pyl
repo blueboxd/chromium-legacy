@@ -2815,7 +2815,6 @@
         'os_type': 'mac',
         'browser_config': 'release',
         'mixins': [
-          'gpu_pool',
           'intel_iris_5100',
           'limited_capacity_bot',
           'mac_10.14.6',

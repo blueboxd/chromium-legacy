@@ -598,12 +598,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       RenderFrameHostImpl* frame,
       const gfx::Rect& bounds_in_root_view) override;
   void OnAdvanceFocus(RenderFrameHostImpl* source_rfh) override;
-  void CreateNewWindow(
+  RenderFrameHostDelegate* CreateNewWindow(
       RenderFrameHost* opener,
-      int32_t render_view_route_id,
-      int32_t main_frame_route_id,
-      int32_t main_frame_widget_route_id,
       const mojom::CreateNewWindowParams& params,
+      bool is_new_browsing_instance,
       bool has_user_gesture,
       SessionStorageNamespace* session_storage_namespace) override;
   void ShowCreatedWindow(int process_id,
@@ -676,11 +674,12 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void UpdatePreferredSize(const gfx::Size& pref_size) override;
   void CreateNewWidget(int32_t render_process_id,
                        int32_t route_id,
-                       mojo::PendingRemote<mojom::Widget> widget) override;
-  void CreateNewFullscreenWidget(
-      int32_t render_process_id,
-      int32_t widget_route_id,
-      mojo::PendingRemote<mojom::Widget> widget) override;
+                       mojo::PendingRemote<mojom::Widget> widget,
+                       RenderViewHostImpl* render_view_host) override;
+  void CreateNewFullscreenWidget(int32_t render_process_id,
+                                 int32_t widget_route_id,
+                                 mojo::PendingRemote<mojom::Widget> widget,
+                                 RenderViewHostImpl* render_view_host) override;
   void ShowCreatedWidget(int process_id,
                          int widget_route_id,
                          const gfx::Rect& initial_rect) override;
@@ -703,7 +702,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool HideDownloadUI() const override;
   bool HasPersistentVideo() const override;
   bool IsSpatialNavigationDisabled() const override;
-  RenderFrameHost* GetPendingMainFrame() override;
+  RenderFrameHostImpl* GetPendingMainFrame() override;
   void DidFirstVisuallyNonEmptyPaint(RenderViewHostImpl* source) override;
   bool IsPortal() const override;
 
@@ -1237,6 +1236,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // See WebContents::Create for a description of these parameters.
   explicit WebContentsImpl(BrowserContext* browser_context);
 
+  // Covariant return type alternative for WebContents::Create(). Avoids
+  // need for casting of objects inside the content layer.
+  static std::unique_ptr<WebContentsImpl> Create(const CreateParams& params);
+
   // Add and remove observers for page navigation notifications. The order in
   // which notifications are sent to observers is undefined. Clients must be
   // sure to remove the observer before they go away.
@@ -1403,7 +1406,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void CreateNewWidget(int32_t render_process_id,
                        int32_t route_id,
                        bool is_fullscreen,
-                       mojo::PendingRemote<mojom::Widget> widget);
+                       mojo::PendingRemote<mojom::Widget> widget,
+                       RenderViewHostImpl* render_view_host);
 
   // Helper for ShowCreatedWidget/ShowCreatedFullscreenWidget.
   void ShowCreatedWidget(int process_id,

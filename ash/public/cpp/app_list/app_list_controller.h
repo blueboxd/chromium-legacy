@@ -170,6 +170,9 @@ class ASH_PUBLIC_EXPORT AppListController {
   // Returns the app list window or nullptr if it is not visible.
   virtual aura::Window* GetWindow() = 0;
 
+  // Returns whether the AppList is visible.
+  virtual bool IsVisible() = 0;
+
  protected:
   AppListController();
   virtual ~AppListController();

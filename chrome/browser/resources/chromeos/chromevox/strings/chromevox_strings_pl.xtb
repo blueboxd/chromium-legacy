@@ -421,7 +421,6 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="4039983576244166038">Pusty nagłówek wiersza</translation>
 <translation id="4042843249978639960">Brak następnego nagłówka poziomu 2.</translation>
 <translation id="4043348641337972076">Brak poprzedniego punktu orientacyjnego ARIA.</translation>
-<translation id="4045764028670444336">Początek błędnie napisanego słowa</translation>
 <translation id="4047216625641135770">Zaznaczenie</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4053520724192563562">Zielony limonkowy</translation>
@@ -504,7 +503,6 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="4547556996012970016">Następny nagłówek poziomu 5</translation>
 <translation id="4562381607973973258">Nagłówek</translation>
 <translation id="4569941707103739422">Naciśnij strzałkę w górę lub w dół, aby się poruszać, i Enter, aby wybrać.</translation>
-<translation id="4570424871453628777">Koniec błędnie napisanego słowa</translation>
 <translation id="4591507479202817876">, wybrany</translation>
 <translation id="4597532268155981612">formularz</translation>
 <translation id="4597896406374528575">kwiecień</translation>
@@ -728,7 +726,6 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="6037602951055904232">Przesuń do przodu</translation>
 <translation id="6042826534790431634">Naciśnij klawisz wyszukiwania + spację, aby aktywować.</translation>
 <translation id="6044160928851315051">Wygaś ekran</translation>
-<translation id="6065293622157674001">Początek błędu gramatycznego</translation>
 <translation id="6082768461603900813">Podstawowa nawigacja</translation>
 <translation id="6118126368611144850">Aplikacje na Androida dla Chrome. Jeśli na urządzeniu masz zainstalowany Sklep Play, możesz sprawdzić, jak ChromeVox współpracuje z aplikacjami na Androida. Przekonaj się, jak działa eksperymentalna obsługa – pobierz Google Chrome Canary ze Sklepu Play.</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -869,7 +866,6 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="7143207342074048698">Łączenie</translation>
 <translation id="7153618581592392745">Lawendowy</translation>
 <translation id="7157306005867877619">Streszczenie</translation>
-<translation id="7161425887892204659">Koniec pasującego tekstu</translation>
 <translation id="7161771961008409533">Przycisk wyskakującego okienka</translation>
 <translation id="7165714724802225287">Bieżący styl wyświetlania to Przeplatany.</translation>
 <translation id="7167657087543110">odczytywanie znaków</translation>
@@ -907,7 +903,6 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Opuszczasz tabelę.</translation>
 <translation id="738899727977260036">Szaroniebieski</translation>
-<translation id="7392145451309930991">Początek pasującego tekstu</translation>
 <translation id="739763518212184081">Poprzedni wiersz</translation>
 <translation id="7400575256015741911">Wykryto błąd pisowni</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -1120,7 +1115,6 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="8476408756881832830">Wstrzymaj odtwarzanie, gdy ChromeVox mówi</translation>
 <translation id="8476508772960940536">przegląd okien</translation>
 <translation id="8503360654911991865">Zmniejsz dokładność nawigacji</translation>
-<translation id="8504695234784218301">Koniec błędu gramatycznego</translation>
 <translation id="8520472399088452386">Przycisk przewijany</translation>
 <translation id="8534394844575788431">Formatowanie</translation>
 <translation id="8538744478902126321">Odgadnij nagłówek wiersza bieżącej komórki.</translation>

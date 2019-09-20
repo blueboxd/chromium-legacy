@@ -18,12 +18,16 @@ class NET_EXPORT CookieOptions {
  public:
   // Relation between the cookie and the navigational environment.
   // Ordered from least to most trusted environment.
+  // Don't renumber, used in histograms.
   enum class SameSiteCookieContext {
-    CROSS_SITE,
+    CROSS_SITE = 0,
     // Same rules as lax but the http method is unsafe.
-    SAME_SITE_LAX_METHOD_UNSAFE,
-    SAME_SITE_LAX,
-    SAME_SITE_STRICT
+    SAME_SITE_LAX_METHOD_UNSAFE = 1,
+    SAME_SITE_LAX = 2,
+    SAME_SITE_STRICT = 3,
+
+    // Keep last, used for histograms.
+    COUNT
   };
 
   // Creates a CookieOptions object which:

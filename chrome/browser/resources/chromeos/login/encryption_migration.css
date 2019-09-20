@@ -23,10 +23,6 @@ paper-progress {
   width: 100%;
 }
 
-[slot='bottom-buttons'] {
-  padding-inline-end: 16px;
-}
-
 oobe-text-button {
   color: rgb(90, 90, 90);
 }

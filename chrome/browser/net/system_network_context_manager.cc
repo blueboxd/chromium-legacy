@@ -715,7 +715,6 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
   // point, all NetworkContexts will be destroyed as well.
   AddSSLConfigToNetworkContextParams(network_context_params.get());
 
-  bool http_09_on_non_default_ports_enabled = false;
 #if !defined(OS_ANDROID)
 
   if (g_enable_certificate_transparency) {
@@ -747,17 +746,7 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
       network_context_params->ct_logs.push_back(std::move(log_info));
     }
   }
-
-  const base::Value* value =
-      g_browser_process->policy_service()
-          ->GetPolicies(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
-                                                std::string()))
-          .GetValue(policy::key::kHttp09OnNonDefaultPortsEnabled);
-  if (value)
-    value->GetAsBoolean(&http_09_on_non_default_ports_enabled);
 #endif
-  network_context_params->http_09_on_non_default_ports_enabled =
-      http_09_on_non_default_ports_enabled;
 
   return network_context_params;
 }

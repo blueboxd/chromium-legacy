@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/webauthn/authenticator_request_sheet_model.h"
+#include "chrome/browser/ui/webauthn/transport_hover_list_model.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 
 namespace gfx {
@@ -63,13 +64,14 @@ class AuthenticatorSheetModelBase
 // The sheet shown for selecting the transport over which the security key
 // should be accessed.
 class AuthenticatorTransportSelectorSheetModel
-    : public AuthenticatorSheetModelBase {
+    : public AuthenticatorSheetModelBase,
+      public TransportHoverListModel::Delegate {
  public:
   using AuthenticatorSheetModelBase::AuthenticatorSheetModelBase;
 
-  // Initiates the step-by-step flow with the the transport at the given |index|
-  // selected by the user.
-  void OnTransportSelected(AuthenticatorTransport transport);
+  // TransportHoverListModel::Delegate:
+  void OnTransportSelected(AuthenticatorTransport transport) override;
+  void StartPhonePairing() override;
 
  private:
   // AuthenticatorSheetModelBase:

@@ -34,8 +34,6 @@ class ASH_EXPORT WmGestureHandler {
   bool ProcessScrollEvent(const ui::ScrollEvent& event);
 
  private:
-  friend class WmGestureHandlerTest;
-
   // A struct containing the relevant data during a scroll session.
   struct ScrollData {
     int finger_count = 0;
@@ -49,6 +47,8 @@ class ASH_EXPORT WmGestureHandler {
   // Tries to move the overview selector. Returns true if successful. Called in
   // the middle of scrolls and when scrolls have ended.
   bool MoveOverviewSelection(int finger_count, float scroll_x, float scroll_y);
+
+  const bool can_handle_desks_gestures_;
 
   // Contains the data during a scroll session. Empty is no scroll is underway.
   base::Optional<ScrollData> scroll_data_;

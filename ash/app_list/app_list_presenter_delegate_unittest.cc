@@ -59,6 +59,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
@@ -66,6 +67,7 @@
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace {
@@ -895,7 +897,8 @@ TEST_F(AppListPresenterDelegateTest,
             shelf_layout_manager->GetShelfBackgroundType());
 }
 
-// Tests the shelf background type is as expected when in tablet mode.
+// Tests the shelf background type is as expected when a window is created after
+// going to tablet mode.
 TEST_F(AppListPresenterDelegateTest, ShelfBackgroundWithHomeLauncher) {
   // Enter tablet mode to display the home launcher.
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
@@ -908,6 +911,7 @@ TEST_F(AppListPresenterDelegateTest, ShelfBackgroundWithHomeLauncher) {
 
   // Add a window. It should be maximized because it is in tablet mode.
   auto window = CreateTestWindow();
+  wm::ActivateWindow(window.get());
   EXPECT_EQ(ShelfBackgroundType::SHELF_BACKGROUND_MAXIMIZED,
             shelf_layout_manager->GetShelfBackgroundType());
 }
@@ -1486,6 +1490,85 @@ TEST_P(AppListPresenterDelegateTest, LongUpwardDragInFullscreenShouldNotClose) {
     GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenSearch);
   else
     GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
+}
+
+// Tests closing the app list during drag, and verifies the bounds get properly
+// updated when the app list is shown again..
+TEST_P(AppListPresenterDelegateTest, CloseAppListDuringDrag) {
+  const bool test_mouse_event = TestMouseEventParam();
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
+  const gfx::Point drag_start = GetAppListView()->GetBoundsInScreen().origin();
+
+  // Start drag and press escape to close the app list view.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  if (test_mouse_event) {
+    generator->MoveMouseTo(drag_start);
+    generator->PressLeftButton();
+    generator->MoveMouseBy(0, -10);
+  } else {
+    generator->MoveTouch(drag_start);
+    generator->PressTouch();
+    generator->MoveTouch(drag_start + gfx::Vector2d(0, -10));
+  }
+
+  EXPECT_TRUE(GetAppListView()->is_in_drag());
+  generator->PressKey(ui::KeyboardCode::VKEY_ESCAPE, 0);
+  GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
+  EXPECT_FALSE(GetAppListView()->is_in_drag());
+
+  // Show the app list and verify the app list returns to peeking position.
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
+  EXPECT_EQ(drag_start, GetAppListView()->GetBoundsInScreen().origin());
+}
+
+// Tests closing the app list during drag, and verifies that drag updates are
+// ignored while the app list is closing.
+TEST_P(AppListPresenterDelegateTest, DragUpdateWhileAppListClosing) {
+  const bool test_mouse_event = TestMouseEventParam();
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
+  const gfx::Point drag_start = GetAppListView()->GetBoundsInScreen().origin();
+
+  // Set up non zero animation duration to ensure app list is not closed
+  // immediately.
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  app_list::AppListView::SetShortAnimationForTesting(false);
+
+  // Start drag and press escape to close the app list view.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  if (test_mouse_event) {
+    generator->MoveMouseTo(drag_start);
+    generator->PressLeftButton();
+    generator->MoveMouseBy(0, -10);
+  } else {
+    generator->MoveTouch(drag_start);
+    generator->PressTouch();
+    generator->MoveTouch(drag_start + gfx::Vector2d(0, -10));
+  }
+  EXPECT_TRUE(GetAppListView()->is_in_drag());
+
+  generator->PressKey(ui::KeyboardCode::VKEY_ESCAPE, 0);
+
+  // Update the drag before running the loop that waits for the close animation
+  // to finish,
+  if (test_mouse_event) {
+    generator->MoveMouseBy(0, -10);
+  } else {
+    generator->MoveTouch(drag_start + gfx::Vector2d(0, -20));
+  }
+
+  base::RunLoop().RunUntilIdle();
+  GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
+  LOG(ERROR) << "AHA";
+  EXPECT_FALSE(GetAppListView()->is_in_drag());
+
+  // Show the app list and verify the app list returns to peeking position.
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
+  EXPECT_EQ(drag_start, GetAppListView()->GetBoundsInScreen().origin());
 }
 
 // Tests that a drag can not make the app list smaller than the shelf height.
@@ -2625,7 +2708,7 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, PressAcceleratorToDismiss) {
   GetAppListTestHelper()->CheckVisibility(true);
 }
 
-// Tests that moving focus outside app list window cannot dismiss it.
+// Tests that moving focus outside app list window can dismiss it.
 TEST_F(AppListPresenterDelegateHomeLauncherTest, FocusOutToDismiss) {
   // Show app list in non-tablet mode. Move focus to another window.
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
@@ -2635,10 +2718,21 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, FocusOutToDismiss) {
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(false);
 
-  // Show app list in tablet mode. Move focus to another window.
+  // Go to tablet mode with a focused window, the AppList should not be visible.
   EnableTabletMode(true);
-  GetAppListTestHelper()->CheckVisibility(true);
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(false);
+
+  // Refocusing the already focused window should change nothing.
   wm::ActivateWindow(window.get());
+
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckVisibility(false);
+
+  // Minimizing the focused window with no remaining windows should result in a
+  // shown applist.
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
+
   GetAppListTestHelper()->WaitUntilIdle();
   GetAppListTestHelper()->CheckVisibility(true);
 }
@@ -2761,27 +2855,24 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest,
        VisibilityDuringWallpaperPreview) {
   WallpaperControllerTestApi wallpaper_test_api(
       Shell::Get()->wallpaper_controller());
-  std::unique_ptr<aura::Window> wallpaper_picker_window(
-      CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
 
   // The app list is hidden in the beginning.
   GetAppListTestHelper()->CheckVisibility(false);
   // Open wallpaper picker and start preview. Verify the app list remains
   // hidden.
-  WindowState::Get(wallpaper_picker_window.get())->Activate();
   wallpaper_test_api.StartWallpaperPreview();
   GetAppListTestHelper()->CheckVisibility(false);
   // Enable tablet mode. Verify the app list is still hidden because wallpaper
   // preview is active.
   EnableTabletMode(true);
-  EXPECT_FALSE(GetAppListView()->GetWidget()->IsVisible());
+  GetAppListTestHelper()->CheckVisibility(false);
   // End preview by confirming the wallpaper. Verify the app list is shown.
   wallpaper_test_api.EndWallpaperPreview(true /*confirm_preview_wallpaper=*/);
   GetAppListTestHelper()->CheckVisibility(true);
 
   // Start preview again. Verify the app list is hidden.
   wallpaper_test_api.StartWallpaperPreview();
-  EXPECT_FALSE(GetAppListView()->GetWidget()->IsVisible());
+  GetAppListTestHelper()->CheckVisibility(false);
   // End preview by canceling the wallpaper. Verify the app list is shown.
   wallpaper_test_api.EndWallpaperPreview(false /*confirm_preview_wallpaper=*/);
   GetAppListTestHelper()->CheckVisibility(true);
@@ -2793,12 +2884,12 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest,
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
-  EXPECT_FALSE(GetAppListView()->GetWidget()->IsVisible());
+  GetAppListTestHelper()->CheckVisibility(false);
   // Disable overview mode. Verify the app list is still hidden because
   // wallpaper preview is still active.
   overview_controller->EndOverview();
   EXPECT_FALSE(overview_controller->InOverviewSession());
-  EXPECT_FALSE(GetAppListView()->GetWidget()->IsVisible());
+  GetAppListTestHelper()->CheckVisibility(false);
   // End preview by confirming the wallpaper. Verify the app list is shown.
   wallpaper_test_api.EndWallpaperPreview(true /*confirm_preview_wallpaper=*/);
   GetAppListTestHelper()->CheckVisibility(true);
@@ -3006,7 +3097,7 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, BackdropTest) {
   std::unique_ptr<aura::Window> non_fullscreen_window(
       CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
   non_fullscreen_window->Show();
-  GetAppListTestHelper()->CheckVisibility(true);
+  GetAppListTestHelper()->CheckVisibility(false);
   EXPECT_TRUE(test_helper.GetBackdropWindow());
 }
 
@@ -3035,7 +3126,7 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest,
 
   // Show app list in tablet mode. It should not be active.
   EnableTabletMode(true);
-  GetAppListTestHelper()->CheckVisibility(true);
+  GetAppListTestHelper()->CheckVisibility(false);
   EXPECT_EQ(window.get(), window_util::GetActiveWindow());
 }
 

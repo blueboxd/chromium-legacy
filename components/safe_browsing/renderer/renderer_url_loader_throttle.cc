@@ -28,7 +28,8 @@ RendererURLLoaderThrottle::~RendererURLLoaderThrottle() {
 void RendererURLLoaderThrottle::DetachFromCurrentSequence() {
   // Create a new pipe to the SafeBrowsing interface that can be bound to a
   // different sequence.
-  safe_browsing_->Clone(mojo::MakeRequest(&safe_browsing_ptr_info_));
+  safe_browsing_->Clone(
+      safe_browsing_pending_remote_.InitWithNewPipeAndPassReceiver());
   safe_browsing_ = nullptr;
 }
 
@@ -39,11 +40,11 @@ void RendererURLLoaderThrottle::WillStartRequest(
   DCHECK(!blocked_);
   DCHECK(!url_checker_);
 
-  if (safe_browsing_ptr_info_.is_valid()) {
+  if (safe_browsing_pending_remote_.is_valid()) {
     // Bind the pipe created in DetachFromCurrentSequence to the current
     // sequence.
-    safe_browsing_ptr_.Bind(std::move(safe_browsing_ptr_info_));
-    safe_browsing_ = safe_browsing_ptr_.get();
+    safe_browsing_remote_.Bind(std::move(safe_browsing_pending_remote_));
+    safe_browsing_ = safe_browsing_remote_.get();
   }
 
   original_url_ = request->url;

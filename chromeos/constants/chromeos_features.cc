@@ -157,6 +157,10 @@ const base::Feature kParentalControlsSettings{
 const base::Feature kReleaseNotes{"ReleaseNotes",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables the scrollable shelf.
+const base::Feature kShelfScrollable{"ShelfScrollable",
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables or disables a toggle to enable Bluetooth debug logs.
 const base::Feature kShowBluetoothDebugLogToggle{
     "ShowBluetoothDebugLogToggle", base::FEATURE_DISABLED_BY_DEFAULT};

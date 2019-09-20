@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_access_delegate.h"
 #include "net/cookies/cookie_deletion_info.h"
 #include "net/cookies/cookie_options.h"
 
@@ -126,6 +127,10 @@ class NET_EXPORT CookieStore {
   // schemes will always return false.
   virtual void SetCookieableSchemes(const std::vector<std::string>& schemes,
                                     SetCookieableSchemesCallback callback) = 0;
+
+  // Transfer ownership of a CookieAccessDelegate.
+  virtual void SetCookieAccessDelegate(
+      std::unique_ptr<CookieAccessDelegate> delegate);
 
   // Reports the estimate of dynamically allocated memory in bytes.
   virtual void DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,

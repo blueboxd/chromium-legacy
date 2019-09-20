@@ -18,7 +18,6 @@
 <translation id="1176932207622159128">ذخیره تصویر ممکن نشد</translation>
 <translation id="1180526666083833456">همگام‌سازی و شخصی‌سازی در همه دستگاه‌ها.</translation>
 <translation id="1181037720776840403">حذف</translation>
-<translation id="1201530049782216880">برگه ناشناس جدید</translation>
 <translation id="1209206284964581585">فعلاً پنهان شود</translation>
 <translation id="1219674500290482172">اتصال به اینترنت امکان‌پذیر نیست.</translation>
 <translation id="122699739164161391">بستن همه برگه‌ها</translation>
@@ -94,7 +93,6 @@
 <translation id="2149973817440762519">ویرایش نشانک</translation>
 <translation id="2179182049312275900">هرزمان خواستید می‌توانید همگام‌سازی را در تنظیمات روشن کنید.</translation>
 <translation id="2198757192731523470">‏Google ممکن است از سابقه مرور شما برای شخصی کردن جستجو، آگهی‌ها، و سایر سرویس‌های Google استفاده کند.</translation>
-<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> مقاله خوانده‌نشده در فهرست مطالعه.</translation>
 <translation id="2230173723195178503">صفحه وب بار شد</translation>
 <translation id="2239626343334228536">درحال پاک کردن داده‌های محصول مرور…</translation>
 <translation id="2256128224215992540">پیشنهادات جستجو و سایت</translation>
@@ -124,7 +122,6 @@
 <translation id="2625189173221582860">گذرواژه کپی شد</translation>
 <translation id="2648803196158606475">حذف خوانده‌شده‌ها</translation>
 <translation id="2653659639078652383">ارائه</translation>
-<translation id="2684815431982545828">برگه جدید</translation>
 <translation id="2690858294534178585">دوربین درحال استفاده است</translation>
 <translation id="2691653761409724435">به‌صورت آفلاین در دسترس نیست</translation>
 <translation id="2702801445560668637">فهرست خواندن</translation>
@@ -267,7 +264,6 @@
 
 برای تغییر این تنظیم، <ph name="BEGIN_LINK" />همگام‌سازی را بازنشانی کنید<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">شماره کارت نامعتبر است</translation>
-<translation id="4807020197310989387">۱ مقاله خوانده‌نشده در فهرست مطالعه.</translation>
 <translation id="4818522717893377262">افزودن زبان...</translation>
 <translation id="481968316161811770">کوکی‌ها، داده‌های سایت</translation>
 <translation id="4833786495304741580">‏به‌طور خودکار آمار کاربرد و گزارش‌های خرابی را به Google ارسال می‌کند.</translation>

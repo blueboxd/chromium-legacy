@@ -18,7 +18,6 @@
 <translation id="1176932207622159128">Imposs. enreg. image</translation>
 <translation id="1180526666083833456">Synchroniser et personnaliser les données sur tous les appareils.</translation>
 <translation id="1181037720776840403">Supprimer</translation>
-<translation id="1201530049782216880">Nouvel onglet de navigation privée</translation>
 <translation id="1209206284964581585">Masquer pour le moment</translation>
 <translation id="1219674500290482172">Impossible de se connecter à Internet.</translation>
 <translation id="122699739164161391">Fermer tous les onglets</translation>
@@ -94,7 +93,6 @@
 <translation id="2149973817440762519">Modifier le favori</translation>
 <translation id="2179182049312275900">Vous pouvez activer la synchronisation à tout moment dans les paramètres</translation>
 <translation id="2198757192731523470">Google peut utiliser votre historique pour personnaliser la recherche, les annonces et d'autres services Google.</translation>
-<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> articles non lus dans la liste de lecture.</translation>
 <translation id="2230173723195178503">Page Web chargée</translation>
 <translation id="2239626343334228536">Effacement des données de navigation…</translation>
 <translation id="2256128224215992540">Suggestions de recherches et de sites</translation>
@@ -124,7 +122,6 @@
 <translation id="2625189173221582860">Mot de passe copié</translation>
 <translation id="2648803196158606475">Supprimer entrées lues</translation>
 <translation id="2653659639078652383">Valider</translation>
-<translation id="2684815431982545828">Nouvel onglet</translation>
 <translation id="2690858294534178585">Caméra en cours d'utilisation</translation>
 <translation id="2691653761409724435">Indisponible hors connexion</translation>
 <translation id="2702801445560668637">Liste de lecture</translation>
@@ -267,7 +264,6 @@ Vos données sont chiffrées avec votre phrase secrète de synchronisation. Sais
 
 Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchronisation<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">Numéro de carte non valide</translation>
-<translation id="4807020197310989387">1 article non lu dans la liste de lecture.</translation>
 <translation id="4818522717893377262">Ajouter une langue…</translation>
 <translation id="481968316161811770">Cookies/données site</translation>
 <translation id="4833786495304741580">Envoie automatiquement des statistiques d'utilisation et des rapports d'erreur à Google</translation>

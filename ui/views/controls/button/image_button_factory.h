@@ -68,6 +68,13 @@ VIEWS_EXPORT void SetToggledImageFromVectorIcon(
     int dip_size,
     SkColor related_text_color = gfx::kGoogleGrey900);
 
+// As above, but with a given icon color instead of deriving from a text color.
+VIEWS_EXPORT void SetToggledImageFromVectorIconWithColor(
+    ToggleImageButton* button,
+    const gfx::VectorIcon& icon,
+    int dip_size,
+    SkColor icon_color);
+
 }  // namespace views
 
 #endif  // UI_VIEWS_CONTROLS_BUTTON_IMAGE_BUTTON_FACTORY_H_

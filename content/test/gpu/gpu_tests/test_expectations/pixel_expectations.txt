@@ -3,7 +3,7 @@
 # tags: [ skia-renderer no-skia-renderer ]
 # tags: [ use-vulkan no-use-vulkan ]
 # tags: [ amd amd-0x6613 amd-0x679e amd-0x6821 intel intel-0xa2e intel-0x5912
-#         nvidia nvidia-0xfe9 qualcomm-adreno-(tm)-330 qualcomm-adreno-(tm)-418
+#         intel-0xd26 nvidia qualcomm-adreno-(tm)-330 qualcomm-adreno-(tm)-418
 #         qualcomm-adreno-(tm)-420 qualcomm-adreno-(tm)-430
 #         qualcomm-adreno-(tm)-540
 # ]
@@ -84,9 +84,7 @@ crbug.com/624256 [ mac ] Pixel_SolidColorBackground [ Failure ]
 
 crbug.com/624256 [ android ] Pixel_SolidColorBackground [ Failure ]
 
-crbug.com/690277 [ mac nvidia-0xfe9 ] Pixel_CSSFilterEffects [ Failure ]
-
-crbug.com/996824 [ mac nvidia-0xfe9 ] Pixel_OffscreenCanvasWebglResizeOnWorker [ Failure ]
+crbug.com/690277 [ mac intel-0xd26 debug ] Pixel_CSSFilterEffects [ Failure ]
 
 # Became flaky on 10.13.6. When it flakes, it flakes 3 times, so
 # mark failing, unfortunately.
@@ -113,9 +111,7 @@ crbug.com/791733 [ android nvidia ] Pixel_WebGL_PremultipliedAlpha_False [ Failu
 
 # Failing on retina Macs
 crbug.com/744658 [ mac amd-0x6821 ] Pixel_Canvas2DRedBox_NoGpuProcess [ Failure ]
-crbug.com/744658 [ mac nvidia-0xfe9 ] Pixel_Canvas2DRedBox_NoGpuProcess [ Failure ]
 crbug.com/744658 [ mac amd-0x6821 ] Pixel_CSS3DBlueBox_NoGpuProcess [ Failure ]
-crbug.com/744658 [ mac nvidia-0xfe9 ] Pixel_CSS3DBlueBox_NoGpuProcess [ Failure ]
 
 # TODO(fserb): temporarily suppress this test.
 crbug.com/840394 [ linux ] Pixel_OffscreenCanvas2DResizeOnWorker [ RetryOnFailure ]

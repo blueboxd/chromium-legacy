@@ -16844,6 +16844,10 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
       std::string::npos) {
     feature_info_->EnableEXTColorBufferHalfFloat();
   }
+  if (feature_str.find("GL_EXT_texture_filter_anisotropic ") !=
+      std::string::npos) {
+    feature_info_->EnableEXTTextureFilterAnisotropic();
+  }
   if (feature_str.find("GL_OES_texture_float_linear ") != std::string::npos) {
     feature_info_->EnableOESTextureFloatLinear();
   }

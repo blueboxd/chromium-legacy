@@ -18,7 +18,6 @@
 <translation id="1176932207622159128">Di Ma-save Larawan</translation>
 <translation id="1180526666083833456">Mag-sync at mag-personalize sa lahat ng device.</translation>
 <translation id="1181037720776840403">Alisin</translation>
-<translation id="1201530049782216880">Bagong Tab na Incognito</translation>
 <translation id="1209206284964581585">Itago sa ngayon</translation>
 <translation id="1219674500290482172">Hindi makakonekta sa Internet.</translation>
 <translation id="122699739164161391">Isara ang Lahat ng Tab</translation>
@@ -94,7 +93,6 @@
 <translation id="2149973817440762519">I-edit ang Bookmark</translation>
 <translation id="2179182049312275900">Puwede mong i-on ang pag-sync anumang oras sa mga setting.</translation>
 <translation id="2198757192731523470">Maaaring gamitin ng Google ang iyong history para i-personalize ang Search, mga ad, at iba pang serbisyo ng Google.</translation>
-<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> (na) hindi pa nababasang artikulo sa Listahan ng Babasahin</translation>
 <translation id="2230173723195178503">Na-load na ang webpage</translation>
 <translation id="2239626343334228536">Kini-clear ang data sa pag-browse...</translation>
 <translation id="2256128224215992540">Mga Suhestyon sa Paghahanap at Site</translation>
@@ -124,7 +122,6 @@
 <translation id="2625189173221582860">Nakopya ang password</translation>
 <translation id="2648803196158606475">I-delete ang Nabasa Na</translation>
 <translation id="2653659639078652383">Isumite</translation>
-<translation id="2684815431982545828">Bagong Tab</translation>
 <translation id="2690858294534178585">Ginagamit ang camera</translation>
 <translation id="2691653761409724435">Hindi available offline</translation>
 <translation id="2702801445560668637">Listahan ng Babasahin</translation>
@@ -267,7 +264,6 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync. Ilagay ito upa
 
 Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">Invalid ang Numero ng Card</translation>
-<translation id="4807020197310989387">1 hindi pa nababasang artikulo sa Listahan ng Babasahin.</translation>
 <translation id="4818522717893377262">Magdagdag ng Wika...</translation>
 <translation id="481968316161811770">Cookies, Data ng Site</translation>
 <translation id="4833786495304741580">Awtomatikong nagpapadala sa Google ng mga istatistika sa paggamit at ulat ng pag-crash.</translation>

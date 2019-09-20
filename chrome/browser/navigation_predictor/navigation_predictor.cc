@@ -14,7 +14,6 @@
 #include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/system/sys_info.h"
-#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/prerender/prerender_handle.h"
@@ -146,14 +145,6 @@ NavigationPredictor::NavigationPredictor(
           blink::features::kNavigationPredictor,
           "is_url_incremented_scale",
           100)),
-      source_engagement_score_scale_(base::GetFieldTrialParamByFeatureAsInt(
-          blink::features::kNavigationPredictor,
-          "source_engagement_score_scale",
-          0)),
-      target_engagement_score_scale_(base::GetFieldTrialParamByFeatureAsInt(
-          blink::features::kNavigationPredictor,
-          "target_engagement_score_scale",
-          0)),
       area_rank_scale_(base::GetFieldTrialParamByFeatureAsInt(
           blink::features::kNavigationPredictor,
           "area_rank_scale",
@@ -201,7 +192,6 @@ NavigationPredictor::NavigationPredictor(
       sum_link_scales_(
           ratio_area_scale_ + is_in_iframe_scale_ + is_same_host_scale_ +
           contains_image_scale_ + is_url_incremented_scale_ +
-          source_engagement_score_scale_ + target_engagement_score_scale_ +
           area_rank_scale_ + ratio_distance_root_top_scale_),
       sum_page_scales_(link_total_scale_ + iframe_link_total_scale_ +
                        increment_link_total_scale_ +
@@ -536,13 +526,6 @@ void NavigationPredictor::MaybeSendClickMetricsToUkm(
   builder.Record(ukm_recorder_);
 }
 
-SiteEngagementService* NavigationPredictor::GetEngagementService() const {
-  Profile* profile = Profile::FromBrowserContext(browser_context_);
-  SiteEngagementService* service = SiteEngagementService::Get(profile);
-  DCHECK(service);
-  return service;
-}
-
 TemplateURLService* NavigationPredictor::GetTemplateURLService() const {
   return TemplateURLServiceFactory::GetForProfile(
       Profile::FromBrowserContext(browser_context_));
@@ -571,27 +554,6 @@ void NavigationPredictor::ReportAnchorElementMetricsOnClick(
   }
 
   RecordTimingOnClick();
-
-  SiteEngagementService* engagement_service = GetEngagementService();
-
-  UMA_HISTOGRAM_COUNTS_100(
-      "AnchorElementMetrics.Clicked.DocumentEngagementScore",
-      static_cast<int>(engagement_service->GetScore(metrics->source_url)));
-
-  double target_score = engagement_service->GetScore(metrics->target_url);
-  UMA_HISTOGRAM_COUNTS_100("AnchorElementMetrics.Clicked.HrefEngagementScore2",
-                           static_cast<int>(target_score));
-  if (target_score > 0) {
-    UMA_HISTOGRAM_COUNTS_100(
-        "AnchorElementMetrics.Clicked.HrefEngagementScorePositive",
-        static_cast<int>(target_score));
-  }
-  if (!metrics->is_same_host) {
-    UMA_HISTOGRAM_COUNTS_100(
-        "AnchorElementMetrics.Clicked.HrefEngagementScoreExternal",
-        static_cast<int>(target_score));
-  }
-
   clicked_count_++;
 
   RecordActionAccuracyOnClick(metrics->target_url);
@@ -821,17 +783,6 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
   median_link_location_ = link_locations[link_locations.size() / 2] * 100;
   double page_metrics_score = GetPageMetricsScore();
 
-  // Retrieve site engagement score of the document. |metrics| is guaranteed to
-  // be non-empty. All |metrics| have the same source_url.
-  SiteEngagementService* engagement_service = GetEngagementService();
-  double document_engagement_score =
-      engagement_service->GetScore(metrics[0]->source_url);
-  DCHECK(document_engagement_score >= 0 &&
-         document_engagement_score <= engagement_service->GetMaxPoints());
-  UMA_HISTOGRAM_COUNTS_100(
-      "AnchorElementMetrics.Visible.DocumentEngagementScore",
-      static_cast<int>(document_engagement_score));
-
   // Sort metric by area in descending order to get area rank, which is a
   // derived feature to calculate navigation score.
   std::sort(metrics.begin(), metrics.end(), [](const auto& a, const auto& b) {
@@ -854,28 +805,13 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
     const auto& metric = metrics[i];
     RecordMetricsOnLoad(*metric);
 
-    const double target_engagement_score =
-        engagement_service->GetScore(metric->target_url);
-    DCHECK(target_engagement_score >= 0 &&
-           target_engagement_score <= engagement_service->GetMaxPoints());
-    UMA_HISTOGRAM_COUNTS_100(
-        "AnchorElementMetrics.Visible.HrefEngagementScore2",
-        static_cast<int>(target_engagement_score));
-    if (!metric->is_same_host) {
-      UMA_HISTOGRAM_COUNTS_100(
-          "AnchorElementMetrics.Visible.HrefEngagementScoreExternal",
-          static_cast<int>(target_engagement_score));
-    }
-
     // Anchor elements with the same area are assigned with the same rank.
     size_t area_rank = i;
     if (i > 0 && metric->ratio_area == metrics[i - 1]->ratio_area)
       area_rank = navigation_scores[navigation_scores.size() - 1]->area_rank;
 
     double score =
-        CalculateAnchorNavigationScore(*metric, document_engagement_score,
-                                       target_engagement_score, area_rank) +
-        page_metrics_score;
+        CalculateAnchorNavigationScore(*metric, area_rank) + page_metrics_score;
     total_score += score;
 
     navigation_scores.push_back(std::make_unique<NavigationScore>(
@@ -918,17 +854,11 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
 
 double NavigationPredictor::CalculateAnchorNavigationScore(
     const blink::mojom::AnchorElementMetrics& metrics,
-    double document_engagement_score,
-    double target_engagement_score,
     int area_rank) const {
   DCHECK(!browser_context_->IsOffTheRecord());
 
   if (sum_link_scales_ == 0)
     return 0.0;
-
-  double max_engagement_points = GetEngagementService()->GetMaxPoints();
-  document_engagement_score /= max_engagement_points;
-  target_engagement_score /= max_engagement_points;
 
   double area_rank_score =
       (double)((number_of_anchors_ - area_rank)) / number_of_anchors_;
@@ -947,12 +877,6 @@ double NavigationPredictor::CalculateAnchorNavigationScore(
 
   DCHECK_LE(0, metrics.is_url_incremented_by_one);
   DCHECK_GE(1, metrics.is_url_incremented_by_one);
-
-  DCHECK_LE(0, document_engagement_score);
-  DCHECK_GE(1, document_engagement_score);
-
-  DCHECK_LE(0, target_engagement_score);
-  DCHECK_GE(1, target_engagement_score);
 
   DCHECK_LE(0, area_rank_score);
   DCHECK_GE(1, area_rank_score);
@@ -975,8 +899,6 @@ double NavigationPredictor::CalculateAnchorNavigationScore(
       (metrics.is_in_iframe ? is_in_iframe_scale_ : 0.0) +
       (metrics.contains_image ? contains_image_scale_ : 0.0) + host_score +
       (metrics.is_url_incremented_by_one ? is_url_incremented_scale_ : 0.0) +
-      (source_engagement_score_scale_ * document_engagement_score) +
-      (target_engagement_score_scale_ * target_engagement_score) +
       (area_rank_scale_ * area_rank_score) +
       (ratio_distance_root_top_scale_ *
        GetLinearBucketForLinkLocation(

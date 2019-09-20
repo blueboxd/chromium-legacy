@@ -15,6 +15,7 @@
 #include "base/optional.h"
 #include "content/common/content_export.h"
 #include "content/renderer/accessibility/render_accessibility_impl.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/image_annotation/public/cpp/image_processor.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
@@ -66,7 +67,8 @@ class CONTENT_EXPORT AXImageAnnotator : public base::CheckedObserver {
     ImageInfo(const blink::WebAXObject& image);
     virtual ~ImageInfo();
 
-    image_annotation::mojom::ImageProcessorPtr GetImageProcessor();
+    mojo::PendingRemote<image_annotation::mojom::ImageProcessor>
+    GetImageProcessor();
     bool HasAnnotation() const;
 
     ax::mojom::ImageAnnotationStatus status() const { return status_; }

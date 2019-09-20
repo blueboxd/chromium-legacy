@@ -421,7 +421,6 @@
 <translation id="4039983576244166038">Κενή κεφαλίδα γραμμής</translation>
 <translation id="4042843249978639960">Δεν υπάρχει επόμενη επικεφαλίδα επιπέδου 2.</translation>
 <translation id="4043348641337972076">Δεν υπάρχει προηγούμενο ορόσημο ARIA.</translation>
-<translation id="4045764028670444336">Αρχή ορθογραφικού λάθους</translation>
 <translation id="4047216625641135770">Επισήμανση</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4053520724192563562">Λαχανί</translation>
@@ -504,7 +503,6 @@
 <translation id="4547556996012970016">Επικεφαλίδα επόμενου επιπέδου 5</translation>
 <translation id="4562381607973973258">Κεφαλίδα</translation>
 <translation id="4569941707103739422">Πατήστε το πάνω ή το κάτω βέλος για πλοήγηση και το πλήκτρο Enter για ενεργοποίηση.</translation>
-<translation id="4570424871453628777">Τέλος ορθογραφικού λάθους</translation>
 <translation id="4591507479202817876">, επιλέχθηκε</translation>
 <translation id="4597532268155981612">φόρμα</translation>
 <translation id="4597896406374528575">Απρίλιος</translation>
@@ -728,7 +726,6 @@
 <translation id="6037602951055904232">Μετακίνηση προς τα εμπρός</translation>
 <translation id="6042826534790431634">Πατήστε τα πλήκτρα Αναζήτηση+Space για ενεργοποίηση.</translation>
 <translation id="6044160928851315051">Απενεργοποίηση φωτισμού οθόνης</translation>
-<translation id="6065293622157674001">Αρχή γραμματικού σφάλματος</translation>
 <translation id="6082768461603900813">Βασική πλοήγηση</translation>
 <translation id="6118126368611144850">Εφαρμογές Android για Chrome. Εάν έχετε εγκατεστημένο το Play Store στη συσκευή σας, μπορείτε να πάρετε μια γεύση από το ChromeVox με τις εφαρμογές Android. Δοκιμάστε την πειραματική υποστήριξη κατεβάζοντας το Google Chrome Canary από το Play Store.</translation>
 <translation id="611827076493383239">ιστότοπος που επισκεφτήκατε</translation>
@@ -870,7 +867,6 @@
 <translation id="7143207342074048698">Σύνδεση</translation>
 <translation id="7153618581592392745">Λιλά</translation>
 <translation id="7157306005867877619">Περίληψη</translation>
-<translation id="7161425887892204659">Τέλος αντιστοίχισης κειμένου</translation>
 <translation id="7161771961008409533">Αναδυόμενο κουμπί</translation>
 <translation id="7165714724802225287">Το τρέχον στυλ προβολής είναι η παρεμβολή.</translation>
 <translation id="7167657087543110">εκφώνηση χαρακτήρων</translation>
@@ -908,7 +904,6 @@
 <translation id="737396357417333429">στοιχείο με δυνατότητα κλικ</translation>
 <translation id="7374104575779636480">Απομάκρυνση από τον πίνακα.</translation>
 <translation id="738899727977260036">Μπλε γκρι</translation>
-<translation id="7392145451309930991">Αρχή αντιστοίχισης κειμένου</translation>
 <translation id="739763518212184081">Προηγούμενη γραμμή</translation>
 <translation id="7400575256015741911">Έχει εντοπιστεί ορθογραφικό λάθος</translation>
 <translation id="7408482676469142474">πίνακας</translation>
@@ -1121,7 +1116,6 @@
 <translation id="8476408756881832830">Παύση αναπαραγωγής κατά την εκφώνηση από το ChromeVox</translation>
 <translation id="8476508772960940536">επισκόπηση παραθύρου</translation>
 <translation id="8503360654911991865">Μείωση ευαισθησίας πλοήγησης</translation>
-<translation id="8504695234784218301">Τέλος γραμματικού σφάλματος</translation>
 <translation id="8520472399088452386">Κουμπί περιστροφής</translation>
 <translation id="8534394844575788431">Μορφοποίηση</translation>
 <translation id="8538744478902126321">Κάντε μια εκτίμηση για την κεφαλίδα της σειράς του τρέχοντος κελιού</translation>

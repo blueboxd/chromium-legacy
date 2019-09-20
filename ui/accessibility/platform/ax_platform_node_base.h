@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
+#include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/accessibility/platform/ax_platform_text_boundary.h"
 #include "ui/base/buildflags.h"
 #include "ui/gfx/geometry/rect.h"
@@ -25,7 +26,6 @@
 namespace ui {
 
 struct AXNodeData;
-class AXPlatformNodeDelegate;
 
 struct AX_EXPORT AXHypertext {
   AXHypertext();
@@ -273,6 +273,8 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // input node. The node's subtree will not be searched.
   int NearestTextIndexToPoint(gfx::Point point);
 
+  ui::TextAttributeList ComputeTextAttributes() const;
+
   //
   // Delegate.  This is a weak reference which owns |this|.
   //
@@ -346,6 +348,12 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // and AT-SPI2. It's okay for input to be the same as output.
   static void SanitizeStringAttribute(const std::string& input,
                                       std::string* output);
+
+  // Escapes characters in text attribute values as required by the platform.
+  // It's okay for input to be the same as output. The default implementation
+  // does nothing to the input value.
+  virtual void SanitizeTextAttributeValue(const std::string& input,
+                                          std::string* output) const;
 
   // Compute the hypertext for this node to be exposed via IA2 and ATK This
   // method is responsible for properly embedding children using the special

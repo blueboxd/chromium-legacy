@@ -377,19 +377,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool GetUserScrollableHorizontal() const;
   bool GetUserScrollableVertical() const;
 
-  // Set or get if this layer is able to be scrolled on the compositor thread.
-  // This only applies for layers that are marked as scrollable, not for layers
-  // that are moved by a scroll parent. When any reason is present, the layer
-  // will not be scrolled on the compositor thread. The reasons are a set of
-  // bitflags from MainThreadScrollingReason, used to track the reason for
-  // debugging and reporting.
-  // AddMainThreadScrollingReasons() is used to add flags to the current set,
-  // and ClearMainThreadScrollingReasons() removes flags from the current set.
-  void AddMainThreadScrollingReasons(uint32_t main_thread_scrolling_reasons);
-  void ClearMainThreadScrollingReasons(
-      uint32_t main_thread_scrolling_reasons_to_clear);
-  uint32_t GetMainThreadScrollingReasons() const;
-
   // Set or get an area of this layer within which initiating a scroll can not
   // be done from the compositor thread. Within this area, if the user attempts
   // to start a scroll, the events must be sent to the main thread and processed
@@ -937,7 +924,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
     int mirror_count;
 
-    uint32_t main_thread_scrolling_reasons;
     Region non_fast_scrollable_region;
 
     TouchActionRegion touch_action_region;

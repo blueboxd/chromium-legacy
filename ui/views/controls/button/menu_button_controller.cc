@@ -25,9 +25,9 @@ namespace {
 ui::EventType NotifyActionToMouseEventType(
     ButtonController::NotifyAction notify_action) {
   switch (notify_action) {
-    case ButtonController::NOTIFY_ON_PRESS:
+    case ButtonController::NotifyAction::kOnPress:
       return ui::ET_MOUSE_PRESSED;
-    case ButtonController::NOTIFY_ON_RELEASE:
+    case ButtonController::NotifyAction::kOnRelease:
       return ui::ET_MOUSE_RELEASED;
   }
 }
@@ -82,7 +82,7 @@ MenuButtonController::MenuButtonController(
     : ButtonController(button, std::move(delegate)), listener_(listener) {
   // Triggers on button press by default, unless drag-and-drop is enabled, see
   // MenuButtonController::IsTriggerableEventType.
-  set_notify_action(ButtonController::NOTIFY_ON_PRESS);
+  set_notify_action(ButtonController::NotifyAction::kOnPress);
 }
 
 MenuButtonController::~MenuButtonController() = default;

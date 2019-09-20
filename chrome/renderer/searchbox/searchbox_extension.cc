@@ -539,7 +539,6 @@ class SearchBoxBindings : public gin::Wrappable<SearchBoxBindings> {
       v8::Isolate* isolate) final;
 
   // Handlers for JS properties.
-  static bool GetRightToLeft();
   static bool IsFocused();
   static bool IsKeyCaptureEnabled();
 
@@ -562,7 +561,7 @@ SearchBoxBindings::~SearchBoxBindings() = default;
 gin::ObjectTemplateBuilder SearchBoxBindings::GetObjectTemplateBuilder(
     v8::Isolate* isolate) {
   return gin::Wrappable<SearchBoxBindings>::GetObjectTemplateBuilder(isolate)
-      .SetProperty("rtl", &SearchBoxBindings::GetRightToLeft)
+      .SetProperty("rtl", &base::i18n::IsRTL)
       .SetProperty("isFocused", &SearchBoxBindings::IsFocused)
       .SetProperty("isKeyCaptureEnabled",
                    &SearchBoxBindings::IsKeyCaptureEnabled)
@@ -573,10 +572,6 @@ gin::ObjectTemplateBuilder SearchBoxBindings::GetObjectTemplateBuilder(
                  &SearchBoxBindings::StartCapturingKeyStrokes)
       .SetMethod("stopCapturingKeyStrokes",
                  &SearchBoxBindings::StopCapturingKeyStrokes);
-}
-
-bool SearchBoxBindings::GetRightToLeft() {
-  return base::i18n::IsRTL();
 }
 
 // static

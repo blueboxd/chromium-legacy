@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 
@@ -34,11 +35,11 @@ class FakeSerialPort : public mojom::SerialPort {
   void Open(mojom::SerialConnectionOptionsPtr options,
             mojo::ScopedDataPipeConsumerHandle in_stream,
             mojo::ScopedDataPipeProducerHandle out_stream,
-            mojom::SerialPortClientPtr client,
+            mojo::PendingRemote<mojom::SerialPortClient> client,
             OpenCallback callback) override {
     in_stream_ = std::move(in_stream);
     out_stream_ = std::move(out_stream);
-    client_ = std::move(client);
+    client_.Bind(std::move(client));
     std::move(callback).Run(true);
   }
 
@@ -77,7 +78,7 @@ class FakeSerialPort : public mojom::SerialPort {
   // Mojo handles to keep open in order to simulate an active connection.
   mojo::ScopedDataPipeConsumerHandle in_stream_;
   mojo::ScopedDataPipeProducerHandle out_stream_;
-  mojom::SerialPortClientPtr client_;
+  mojo::Remote<mojom::SerialPortClient> client_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSerialPort);
 };

@@ -55,8 +55,8 @@ class ASH_EXPORT AppListPresenterDelegateImpl
   bool GetOnScreenKeyboardShown() override;
   aura::Window* GetRootWindowForDisplayId(int64_t display_id) override;
   void OnVisibilityChanged(bool visible, int64_t display_id) override;
-  void OnTargetVisibilityChanged(bool visible) override;
-
+  void OnTargetVisibilityChanged(bool visible, int64_t display_id) override;
+  bool IsVisible() override;
   // DisplayObserver overrides:
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;

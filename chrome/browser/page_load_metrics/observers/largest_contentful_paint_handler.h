@@ -7,7 +7,7 @@
 #include <map>
 
 #include "base/trace_event/traced_value.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 

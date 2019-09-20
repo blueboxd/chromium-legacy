@@ -2412,7 +2412,7 @@ TEST_F(ShelfLayoutManagerTest, BackgroundTypeWhenLockingScreen) {
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, GetShelfWidget()->GetBackgroundType());
 
-  Shell::Get()->lock_state_controller()->StartLockAnimationAndLockImmediately();
+  Shell::Get()->lock_state_controller()->LockWithoutAnimation();
   EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
 }
 

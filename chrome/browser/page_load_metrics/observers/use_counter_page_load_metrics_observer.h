@@ -9,7 +9,7 @@
 #include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 

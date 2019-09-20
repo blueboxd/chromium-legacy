@@ -180,6 +180,8 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   void OnOverviewModeEndingAnimationComplete(bool canceled) override;
 
   // AppListControllerObserver:
+  void OnAppListTargetVisibilityChanged(bool shown,
+                                        int64_t display_id) override;
   void OnAppListVisibilityChanged(bool shown, int64_t display_id) override;
 
   // HomeLauncherGestureHandlerObserver:
@@ -227,6 +229,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   }
 
   bool updating_bounds() const { return updating_bounds_; }
+  bool is_app_list_visible() const { return is_app_list_visible_; }
   ShelfAutoHideState auto_hide_state() const { return state_.auto_hide_state; }
 
   // TODO(harrym|oshima): These templates will be moved to a new Shelf class.
@@ -457,14 +460,8 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   Shelf* shelf_;
 
   // Whether the app list is visible. This is maintained by
-  // OnAppListVisibilityChanged. Used to determine AppList visibility in
-  // clamshell mode.
+  // OnAppListVisibilityChanged and OnHomeLauncherAnimationComplete.
   bool is_app_list_visible_ = false;
-
-  // Whether the HomeLauncher is shown. This is maintained by
-  // OnHomeLauncherAnimationComplete. Used to determine AppList visibility in
-  // tablet mode.
-  bool is_home_launcher_shown_ = false;
 
   enum HomeLauncherAnimationState {
     kFinished,

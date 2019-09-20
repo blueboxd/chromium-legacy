@@ -202,14 +202,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   void Layout() override;
   const char* GetClassName() const override;
 
-  // Starts the fade out animation when the app list is closed. This
-  // prevents the contents from being visible behind the shelf.
-  void FadeOutOnClose(base::TimeDelta animation_duration);
-
-  // Starts the fade in animation when the app list is opened. This prevents the
-  // contents from being visible behind the shelf.
-  void FadeInOnOpen(base::TimeDelta animation_duration);
-
   // Overridden from PaginationModelObserver:
   void TotalPagesChanged() override;
   void SelectedPageChanged(int old_selected, int new_selected) override;
@@ -221,6 +213,12 @@ class APP_LIST_EXPORT ContentsView : public views::View,
 
   // Updates y position and opacity of the items in this view during dragging.
   void UpdateYPositionAndOpacity();
+
+  // Starts animated transition to |target_view_state|.
+  // Manages the child view opacity, and vertically translates search box and
+  // app list pages to the bounds required for the new view state.
+  void AnimateToViewState(ash::AppListViewState target_view_state,
+                          const base::TimeDelta& animation_duration);
 
   // Show/hide the expand arrow view button when contents view is in fullscreen
   // and tablet mode is enabled.

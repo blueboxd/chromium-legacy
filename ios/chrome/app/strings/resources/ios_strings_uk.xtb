@@ -18,7 +18,6 @@
 <translation id="1176932207622159128">Помилка збереження</translation>
 <translation id="1180526666083833456">Синхронізуйте та персоналізуйте служби на всіх пристроях.</translation>
 <translation id="1181037720776840403">Видалити</translation>
-<translation id="1201530049782216880">Нова анонімна вкладка</translation>
 <translation id="1209206284964581585">Приховати</translation>
 <translation id="1219674500290482172">Неможливо під’єднатися до Інтернету.</translation>
 <translation id="122699739164161391">Закрити всі вкладки</translation>
@@ -94,7 +93,6 @@
 <translation id="2149973817440762519">Редагувати закладку</translation>
 <translation id="2179182049312275900">Ви можете будь-коли ввімкнути синхронізацію в налаштуваннях.</translation>
 <translation id="2198757192731523470">Ваша історія може допомогти нам персоналізувати Пошук, оголошення й інші сервіси Google.</translation>
-<translation id="2207590065820824892">Непрочитаних статей у списку читання: <ph name="UNREAD_COUNT" />.</translation>
 <translation id="2230173723195178503">Веб-сторінку завантажено</translation>
 <translation id="2239626343334228536">Очищення даних веб-перегляду…</translation>
 <translation id="2256128224215992540">Пропозиції термінів і сайтів</translation>
@@ -124,7 +122,6 @@
 <translation id="2625189173221582860">Пароль скопійовано</translation>
 <translation id="2648803196158606475">Видалити прочитані</translation>
 <translation id="2653659639078652383">Надіслати</translation>
-<translation id="2684815431982545828">Нова вкладка</translation>
 <translation id="2690858294534178585">Камера використовується</translation>
 <translation id="2691653761409724435">Недоступно в режимі офлайн</translation>
 <translation id="2702801445560668637">Список читання</translation>
@@ -267,7 +264,6 @@
 
 Щоб змінити це налаштування, <ph name="BEGIN_LINK" />скиньте параметри синхронізації<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">Недійсний номер картки</translation>
-<translation id="4807020197310989387">1 непрочитана стаття в списку читання.</translation>
 <translation id="4818522717893377262">Додати мову…</translation>
 <translation id="481968316161811770">Файли cookie й дані із сайтів</translation>
 <translation id="4833786495304741580">Автоматично надсилає статистику використання та звіти про аварійне завершення роботи в Google.</translation>

@@ -1223,7 +1223,6 @@ class SimpleGetRunner {
  public:
   SimpleGetRunner()
       : url_("http://localhost"),
-        http_09_on_non_default_ports_enabled_(false),
         read_buffer_(base::MakeRefCounted<GrowableIOBuffer>()),
         sequence_number_(0) {
     writes_.push_back(MockWrite(
@@ -1231,11 +1230,6 @@ class SimpleGetRunner {
   }
 
   void set_url(const GURL& url) { url_ = url; }
-  void set_http_09_on_non_default_ports_enabled(
-      bool http_09_on_non_default_ports_enabled) {
-    http_09_on_non_default_ports_enabled_ =
-        http_09_on_non_default_ports_enabled;
-  }
 
   HttpStreamParser* parser() { return parser_.get(); }
   GrowableIOBuffer* read_buffer() { return read_buffer_.get(); }
@@ -1269,9 +1263,6 @@ class SimpleGetRunner {
     parser_.reset(new HttpStreamParser(stream_socket_.get(),
                                        false /* is_reused */, &request_info_,
                                        read_buffer(), NetLogWithSource()));
-
-    parser_->set_http_09_on_non_default_ports_enabled(
-        http_09_on_non_default_ports_enabled_);
 
     TestCompletionCallback callback;
     ASSERT_EQ(OK, parser_->SendRequest("GET / HTTP/1.1\r\n", request_headers_,
@@ -1308,7 +1299,6 @@ class SimpleGetRunner {
 
  private:
   GURL url_;
-  bool http_09_on_non_default_ports_enabled_;
 
   HttpRequestHeaders request_headers_;
   HttpResponseInfo response_info_;
@@ -1327,7 +1317,6 @@ class SimpleGetRunner {
 TEST(HttpStreamParser, Http09PortTests) {
   struct TestCase {
     const char* url;
-    bool http_09_on_non_default_ports_enabled;
 
     // Expected result when trying to read headers and response is an HTTP/0.9
     // non-Shoutcast response.
@@ -1340,30 +1329,18 @@ TEST(HttpStreamParser, Http09PortTests) {
   const TestCase kTestCases[] = {
       // Default ports should work for HTTP/0.9, regardless of whether the port
       // is explicitly specified or not.
-      {"http://foo.com/", false, OK, OK},
-      {"http://foo.com:80/", false, OK, OK},
-      {"https://foo.com/", false, OK, OK},
-      {"https://foo.com:443/", false, OK, OK},
+      {"http://foo.com/", OK, OK},
+      {"http://foo.com:80/", OK, OK},
+      {"https://foo.com/", OK, OK},
+      {"https://foo.com:443/", OK, OK},
 
       // Non-standard ports should not support HTTP/0.9, by default.
-      {"http://foo.com:8080/", false, ERR_INVALID_HTTP_RESPONSE, OK},
-      {"https://foo.com:8080/", false, ERR_INVALID_HTTP_RESPONSE,
+      {"http://foo.com:8080/", ERR_INVALID_HTTP_RESPONSE, OK},
+      {"https://foo.com:8080/", ERR_INVALID_HTTP_RESPONSE,
        ERR_INVALID_HTTP_RESPONSE},
-      {"http://foo.com:443/", false, ERR_INVALID_HTTP_RESPONSE, OK},
-      {"https://foo.com:80/", false, ERR_INVALID_HTTP_RESPONSE,
+      {"http://foo.com:443/", ERR_INVALID_HTTP_RESPONSE, OK},
+      {"https://foo.com:80/", ERR_INVALID_HTTP_RESPONSE,
        ERR_INVALID_HTTP_RESPONSE},
-
-      // Allowing non-default ports should not break the default ones.
-      {"http://foo.com/", true, OK, OK},
-      {"http://foo.com:80/", true, OK, OK},
-      {"https://foo.com/", true, OK, OK},
-      {"https://foo.com:443/", true, OK, OK},
-
-      // Check that non-default ports works.
-      {"http://foo.com:8080/", true, OK, OK},
-      {"https://foo.com:8080/", true, OK, OK},
-      {"http://foo.com:443/", true, OK, OK},
-      {"https://foo.com:80/", true, OK, OK},
   };
 
   const std::string kResponse = "hello\r\nworld\r\n";
@@ -1371,8 +1348,6 @@ TEST(HttpStreamParser, Http09PortTests) {
   for (const auto& test_case : kTestCases) {
     SimpleGetRunner get_runner;
     get_runner.set_url(GURL(test_case.url));
-    get_runner.set_http_09_on_non_default_ports_enabled(
-        test_case.http_09_on_non_default_ports_enabled);
     get_runner.AddRead(kResponse);
     get_runner.SetupParserAndSendRequest();
 
@@ -1397,8 +1372,6 @@ TEST(HttpStreamParser, Http09PortTests) {
   for (const auto& test_case : kTestCases) {
     SimpleGetRunner get_runner;
     get_runner.set_url(GURL(test_case.url));
-    get_runner.set_http_09_on_non_default_ports_enabled(
-        test_case.http_09_on_non_default_ports_enabled);
     get_runner.AddRead(kShoutcastResponse);
     get_runner.SetupParserAndSendRequest();
 
@@ -1450,7 +1423,6 @@ TEST(HttpStreamParser, NullFails) {
 TEST(HttpStreamParser, ShoutcastSingleByteReads) {
   SimpleGetRunner get_runner;
   get_runner.set_url(GURL("http://foo.com:8080/"));
-  get_runner.set_http_09_on_non_default_ports_enabled(false);
   get_runner.AddRead("i");
   get_runner.AddRead("c");
   get_runner.AddRead("Y");
@@ -1471,7 +1443,6 @@ TEST(HttpStreamParser, ShoutcastSingleByteReads) {
 TEST(HttpStreamParser, ShoutcastWeirdHeader) {
   SimpleGetRunner get_runner;
   get_runner.set_url(GURL("http://foo.com:8080/"));
-  get_runner.set_http_09_on_non_default_ports_enabled(false);
   get_runner.AddRead("iCyCreamSundae");
   get_runner.SetupParserAndSendRequest();
 

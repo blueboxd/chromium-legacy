@@ -182,7 +182,7 @@ public class StackAnimation {
                 for (int i = 0; i < tabs.length; i++) {
                     addToAnimation(animationList, propertyList, handler, tabs[i],
                             StackTab.SCROLL_OFFSET, tabs[i].getScrollOffset(), 0.0f,
-                            TAB_OPENED_ANIMATION_DURATION_MS, 0);
+                            TAB_OPENED_ANIMATION_DURATION_MS);
                 }
                 break;
             case OverviewAnimationType.REACH_TOP:
@@ -191,12 +191,12 @@ public class StackAnimation {
                 float screenTarget = 0.0f;
                 for (int i = 0; i < tabs.length; ++i) {
                     if (screenTarget
-                            >= getLandscapePortraitScreenPositionInScrollDirection(tabs[i]))
+                            >= getLandscapePortraitScreenPositionInScrollDirection(tabs[i])) {
                         break;
+                    }
                     addToAnimation(animationList, propertyList, handler, tabs[i],
                             StackTab.SCROLL_OFFSET, tabs[i].getScrollOffset(),
-                            mStack.screenToScroll(screenTarget), REACH_TOP_ANIMATION_DURATION_MS,
-                            0);
+                            mStack.screenToScroll(screenTarget), REACH_TOP_ANIMATION_DURATION_MS);
                     screenTarget += mOrientation == Orientation.LANDSCAPE
                             ? tabs[i].getLayoutTab().getScaledContentWidth()
                             : tabs[i].getLayoutTab().getScaledContentHeight();
@@ -227,7 +227,7 @@ public class StackAnimation {
                 for (int i = sourceIndex + 1; i < tabs.length; ++i) {
                     addToAnimation(animationList, propertyList, handler, tabs[i],
                             StackTab.SCROLL_OFFSET, tabs[i].getScrollOffset(),
-                            tabs[i].getScrollOffset() + offset, VIEW_MORE_ANIMATION_DURATION_MS, 0);
+                            tabs[i].getScrollOffset() + offset, VIEW_MORE_ANIMATION_DURATION_MS);
                 }
                 break;
             default:
@@ -249,10 +249,10 @@ public class StackAnimation {
             LayoutTab tab, float end, int durationMs) {
         if (mOrientation == Orientation.LANDSCAPE) {
             addToAnimation(animationList, propertyList, handler, tab, LayoutTab.TILTY,
-                    tab.getTiltY(), end, durationMs, 0);
+                    tab.getTiltY(), end, durationMs);
         } else {
             addToAnimation(animationList, propertyList, handler, tab, LayoutTab.TILTX,
-                    tab.getTiltX(), end, durationMs, 0);
+                    tab.getTiltX(), end, durationMs);
         }
     }
 
@@ -290,34 +290,33 @@ public class StackAnimation {
             if (i < focusIndex) {
                 tab.getLayoutTab().setMaxContentHeight(mStack.getMaxTabHeight());
                 addToAnimation(animationList, propertyList, handler, tab, StackTab.SCROLL_OFFSET,
-                        initialScrollOffset, scrollOffset, ENTER_STACK_ANIMATION_DURATION_MS, 0);
+                        initialScrollOffset, scrollOffset, ENTER_STACK_ANIMATION_DURATION_MS);
             } else if (i > focusIndex) {
                 tab.getLayoutTab().setMaxContentHeight(mStack.getMaxTabHeight());
                 tab.setScrollOffset(scrollOffset + trailingScrollOffset);
                 addToAnimation(animationList, propertyList, handler, tab,
-                        StackTab.Y_IN_STACK_OFFSET, mHeight, 0, ENTER_STACK_ANIMATION_DURATION_MS,
-                        0);
+                        StackTab.Y_IN_STACK_OFFSET, mHeight, 0, ENTER_STACK_ANIMATION_DURATION_MS);
             } else { // i == focusIndex
                 tab.setScrollOffset(scrollOffset);
 
-                addToAnimation(animationList, propertyList, handler, tab.getLayoutTab(),
+                addToAnimationWithDelay(animationList, propertyList, handler, tab.getLayoutTab(),
                         LayoutTab.MAX_CONTENT_HEIGHT,
                         tab.getLayoutTab().getUnclampedOriginalContentHeight(),
                         mStack.getMaxTabHeight(), ENTER_STACK_ANIMATION_DURATION_MS,
                         ENTER_STACK_RESIZE_DELAY_MS);
                 addToAnimation(animationList, propertyList, handler, tab,
                         StackTab.Y_IN_STACK_INFLUENCE, 0.0f, 1.0f,
-                        ENTER_STACK_BORDER_ALPHA_DURATION_MS, 0);
+                        ENTER_STACK_BORDER_ALPHA_DURATION_MS);
                 addToAnimation(animationList, propertyList, handler, tab, StackTab.SCALE, 1.0f,
-                        mStack.getScaleAmount(), ENTER_STACK_BORDER_ALPHA_DURATION_MS, 0);
+                        mStack.getScaleAmount(), ENTER_STACK_BORDER_ALPHA_DURATION_MS);
                 addToAnimation(animationList, propertyList, handler, tab.getLayoutTab(),
                         LayoutTab.TOOLBAR_Y_OFFSET, 0.f, getToolbarOffsetToLineUpWithBorder(),
-                        ENTER_STACK_BORDER_ALPHA_DURATION_MS, 0);
+                        ENTER_STACK_BORDER_ALPHA_DURATION_MS);
                 addToAnimation(animationList, propertyList, handler, tab.getLayoutTab(),
-                        LayoutTab.SIDE_BORDER_SCALE, 0.f, 1.f, ENTER_STACK_BORDER_ALPHA_DURATION_MS,
-                        0);
+                        LayoutTab.SIDE_BORDER_SCALE, 0.f, 1.f,
+                        ENTER_STACK_BORDER_ALPHA_DURATION_MS);
 
-                addToAnimation(animationList, propertyList, handler, tab.getLayoutTab(),
+                addToAnimationWithDelay(animationList, propertyList, handler, tab.getLayoutTab(),
                         LayoutTab.TOOLBAR_ALPHA, 1.f, 0.f, ENTER_STACK_BORDER_ALPHA_DURATION_MS,
                         ENTER_STACK_TOOLBAR_ALPHA_DELAY_MS);
 
@@ -345,32 +344,32 @@ public class StackAnimation {
             addToAnimation(animationList, propertyList, handler, tab.getLayoutTab(),
                     LayoutTab.MAX_CONTENT_HEIGHT,
                     tab.getLayoutTab().getUnclampedOriginalContentHeight(),
-                    mStack.getMaxTabHeight(), ENTER_STACK_ANIMATION_DURATION_MS, 0);
+                    mStack.getMaxTabHeight(), ENTER_STACK_ANIMATION_DURATION_MS);
             if (i < focusIndex) {
                 addToAnimation(animationList, propertyList, handler, tab, StackTab.SCROLL_OFFSET,
-                        initialScrollOffset, scrollOffset, ENTER_STACK_ANIMATION_DURATION_MS, 0);
+                        initialScrollOffset, scrollOffset, ENTER_STACK_ANIMATION_DURATION_MS);
             } else if (i > focusIndex) {
                 tab.setScrollOffset(scrollOffset);
                 addToAnimation(animationList, propertyList, handler, tab,
                         StackTab.X_IN_STACK_OFFSET,
                         (mWidth > mHeight && LocalizationUtils.isLayoutRtl()) ? -mWidth : mWidth,
-                        0.0f, ENTER_STACK_ANIMATION_DURATION_MS, 0);
+                        0.0f, ENTER_STACK_ANIMATION_DURATION_MS);
             } else { // i == focusIndex
                 tab.setScrollOffset(scrollOffset);
 
                 addToAnimation(animationList, propertyList, handler, tab,
                         StackTab.X_IN_STACK_INFLUENCE, 0.0f, 1.0f,
-                        ENTER_STACK_BORDER_ALPHA_DURATION_MS, 0);
+                        ENTER_STACK_BORDER_ALPHA_DURATION_MS);
                 addToAnimation(animationList, propertyList, handler, tab, StackTab.SCALE, 1.0f,
-                        mStack.getScaleAmount(), ENTER_STACK_BORDER_ALPHA_DURATION_MS, 0);
+                        mStack.getScaleAmount(), ENTER_STACK_BORDER_ALPHA_DURATION_MS);
                 addToAnimation(animationList, propertyList, handler, tab.getLayoutTab(),
                         LayoutTab.TOOLBAR_Y_OFFSET, 0.f, getToolbarOffsetToLineUpWithBorder(),
-                        ENTER_STACK_BORDER_ALPHA_DURATION_MS, 0);
+                        ENTER_STACK_BORDER_ALPHA_DURATION_MS);
                 addToAnimation(animationList, propertyList, handler, tab.getLayoutTab(),
-                        LayoutTab.SIDE_BORDER_SCALE, 0.f, 1.f, ENTER_STACK_BORDER_ALPHA_DURATION_MS,
-                        0);
+                        LayoutTab.SIDE_BORDER_SCALE, 0.f, 1.f,
+                        ENTER_STACK_BORDER_ALPHA_DURATION_MS);
 
-                addToAnimation(animationList, propertyList, handler, tab.getLayoutTab(),
+                addToAnimationWithDelay(animationList, propertyList, handler, tab.getLayoutTab(),
                         LayoutTab.TOOLBAR_ALPHA, 1.f, 0.f, ENTER_STACK_TOOLBAR_ALPHA_DURATION_MS,
                         ENTER_STACK_TOOLBAR_ALPHA_DELAY_MS);
             }
@@ -400,7 +399,7 @@ public class StackAnimation {
             addLandscapePortraitTiltScrollAnimation(animationList, propertyList, handler, layoutTab,
                     0.0f, TAB_FOCUSED_ANIMATION_DURATION_MS);
             addToAnimation(animationList, propertyList, handler, tab, StackTab.DISCARD_AMOUNT,
-                    tab.getDiscardAmount(), 0.0f, TAB_FOCUSED_ANIMATION_DURATION_MS, 0);
+                    tab.getDiscardAmount(), 0.0f, TAB_FOCUSED_ANIMATION_DURATION_MS);
 
             if (i < focusIndex) {
                 // Landscape: for tabs left of the focused tab move them left to 0.
@@ -410,7 +409,7 @@ public class StackAnimation {
                         mOrientation == Orientation.LANDSCAPE
                                 ? Math.max(0.0f, tab.getScrollOffset() - mWidth - spacing)
                                 : tab.getScrollOffset() - mHeight - spacing,
-                        TAB_FOCUSED_ANIMATION_DURATION_MS, 0);
+                        TAB_FOCUSED_ANIMATION_DURATION_MS);
                 continue;
             } else if (i > focusIndex) {
                 if (mOrientation == Orientation.LANDSCAPE) {
@@ -422,7 +421,7 @@ public class StackAnimation {
                             : mWidth - coveringTabPosition;
                     float clampedDistanceToBorder = MathUtils.clamp(distanceToBorder, 0, mWidth);
                     float delay = TAB_FOCUSED_MAX_DELAY_MS * clampedDistanceToBorder / mWidth;
-                    addToAnimation(animationList, propertyList, handler, tab,
+                    addToAnimationWithDelay(animationList, propertyList, handler, tab,
                             StackTab.X_IN_STACK_OFFSET, tab.getXInStackOffset(),
                             tab.getXInStackOffset()
                                     + (LocalizationUtils.isLayoutRtl() ? -mWidth : mWidth),
@@ -434,7 +433,7 @@ public class StackAnimation {
                     float distanceToBorder =
                             MathUtils.clamp(mHeight - coveringTabPosition, 0, mHeight);
                     float delay = TAB_FOCUSED_MAX_DELAY_MS * distanceToBorder / mHeight;
-                    addToAnimation(animationList, propertyList, handler, tab,
+                    addToAnimationWithDelay(animationList, propertyList, handler, tab,
                             StackTab.Y_IN_STACK_OFFSET, tab.getYInStackOffset(),
                             tab.getYInStackOffset() + mHeight,
                             (TAB_FOCUSED_ANIMATION_DURATION_MS - (long) delay), (long) delay);
@@ -456,43 +455,42 @@ public class StackAnimation {
             if (mOrientation == Orientation.LANDSCAPE) {
                 addToAnimation(animationList, propertyList, handler, tab,
                         StackTab.X_IN_STACK_INFLUENCE, tab.getXInStackInfluence(), 0.0f,
-                        TAB_FOCUSED_ANIMATION_DURATION_MS, 0);
+                        TAB_FOCUSED_ANIMATION_DURATION_MS);
                 if (!isHorizontalTabSwitcherFlagEnabled()) {
                     addToAnimation(animationList, propertyList, handler, tab,
                             StackTab.SCROLL_OFFSET, tab.getScrollOffset(), mStack.screenToScroll(0),
-                            TAB_FOCUSED_ANIMATION_DURATION_MS, 0);
+                            TAB_FOCUSED_ANIMATION_DURATION_MS);
                 }
             } else { // mOrientation == Orientation.PORTRAIT
                 addToAnimation(animationList, propertyList, handler, tab, StackTab.SCROLL_OFFSET,
                         tab.getScrollOffset(),
                         Math.max(0.0f, tab.getScrollOffset() - mWidth - spacing),
-                        TAB_FOCUSED_ANIMATION_DURATION_MS, 0);
+                        TAB_FOCUSED_ANIMATION_DURATION_MS);
             }
 
             addToAnimation(animationList, propertyList, handler, tab, StackTab.SCALE,
-                    tab.getScale(), 1.0f, TAB_FOCUSED_ANIMATION_DURATION_MS, 0);
+                    tab.getScale(), 1.0f, TAB_FOCUSED_ANIMATION_DURATION_MS);
             addToAnimation(animationList, propertyList, handler, tab, StackTab.Y_IN_STACK_INFLUENCE,
-                    tab.getYInStackInfluence(), 0.0f, TAB_FOCUSED_Y_STACK_DURATION_MS, 0);
+                    tab.getYInStackInfluence(), 0.0f, TAB_FOCUSED_Y_STACK_DURATION_MS);
             addToAnimation(animationList, propertyList, handler, tab.getLayoutTab(),
                     LayoutTab.MAX_CONTENT_HEIGHT, tab.getLayoutTab().getMaxContentHeight(),
                     tab.getLayoutTab().getUnclampedOriginalContentHeight(),
-                    TAB_FOCUSED_ANIMATION_DURATION_MS, 0);
+                    TAB_FOCUSED_ANIMATION_DURATION_MS);
 
             tab.setYOutOfStack(getStaticTabPosition());
 
             if (layoutTab.shouldStall()) {
                 addToAnimation(animationList, propertyList, handler, layoutTab,
-                        LayoutTab.SATURATION, 1.0f, 0.0f, TAB_FOCUSED_BORDER_ALPHA_DURATION_MS, 0);
+                        LayoutTab.SATURATION, 1.0f, 0.0f, TAB_FOCUSED_BORDER_ALPHA_DURATION_MS);
             }
             addToAnimation(animationList, propertyList, handler, tab.getLayoutTab(),
                     LayoutTab.TOOLBAR_ALPHA, layoutTab.getToolbarAlpha(), 1.f,
-                    TAB_FOCUSED_TOOLBAR_ALPHA_DURATION_MS, 0);
+                    TAB_FOCUSED_TOOLBAR_ALPHA_DURATION_MS);
             addToAnimation(animationList, propertyList, handler, tab.getLayoutTab(),
                     LayoutTab.TOOLBAR_Y_OFFSET, getToolbarOffsetToLineUpWithBorder(), 0.f,
-                    TAB_FOCUSED_TOOLBAR_ALPHA_DURATION_MS, 0);
+                    TAB_FOCUSED_TOOLBAR_ALPHA_DURATION_MS);
             addToAnimation(animationList, propertyList, handler, tab.getLayoutTab(),
-                    LayoutTab.SIDE_BORDER_SCALE, 1.f, 0.f, TAB_FOCUSED_TOOLBAR_ALPHA_DURATION_MS,
-                    0);
+                    LayoutTab.SIDE_BORDER_SCALE, 1.f, 0.f, TAB_FOCUSED_TOOLBAR_ALPHA_DURATION_MS);
         }
     }
 
@@ -567,14 +565,14 @@ public class StackAnimation {
                 if (tab.getDiscardAmount() != 0.f) {
                     addToAnimation(animationList, propertyList, handler, tab,
                             StackTab.DISCARD_AMOUNT, tab.getDiscardAmount(), 0.0f,
-                            UNDISCARD_ANIMATION_DURATION_MS, 0);
+                            UNDISCARD_ANIMATION_DURATION_MS);
                 }
                 addToAnimation(animationList, propertyList, handler, tab, StackTab.SCALE,
-                        tab.getScale(), mStack.getScaleAmount(), DISCARD_ANIMATION_DURATION_MS, 0);
+                        tab.getScale(), mStack.getScaleAmount(), DISCARD_ANIMATION_DURATION_MS);
 
                 addToAnimation(animationList, propertyList, handler, tab.getLayoutTab(),
                         LayoutTab.MAX_CONTENT_HEIGHT, tab.getLayoutTab().getMaxContentHeight(),
-                        mStack.getMaxTabHeight(), DISCARD_ANIMATION_DURATION_MS, 0);
+                        mStack.getMaxTabHeight(), DISCARD_ANIMATION_DURATION_MS);
 
                 float newScrollOffset = mStack.screenToScroll(spacing * newIndex);
 
@@ -589,7 +587,7 @@ public class StackAnimation {
                     if (start != newScrollOffset) {
                         addToAnimation(animationList, propertyList, handler, tab,
                                 StackTab.SCROLL_OFFSET, start, newScrollOffset,
-                                TAB_REORDER_DURATION_MS, 0);
+                                TAB_REORDER_DURATION_MS);
                     }
                 }
                 newIndex++;
@@ -625,7 +623,7 @@ public class StackAnimation {
                 nonOverlappingStack.suppressScrollClampingForAnimation();
                 addToAnimation(animationList, propertyList, handler, nonOverlappingStack,
                         Stack.SCROLL_OFFSET, stack.getScrollOffset(),
-                        -(centeredTabIndex - 1) * stack.getSpacing(), TAB_REORDER_DURATION_MS, 0);
+                        -(centeredTabIndex - 1) * stack.getSpacing(), TAB_REORDER_DURATION_MS);
             }
         }
     }
@@ -660,7 +658,7 @@ public class StackAnimation {
      * @param durationMs    The duration of the animation.
      * @param startTimeMs   The start time.
      */
-    public static <T> void addToAnimation(ArrayList<Animator> animationList,
+    private static <T> void addToAnimationWithDelay(ArrayList<Animator> animationList,
             ArrayList<FloatProperty> propertyList, CompositorAnimationHandler handler,
             final T target, final FloatProperty<T> property, float startValue, float endValue,
             long durationMs, long startTimeMs) {
@@ -670,5 +668,13 @@ public class StackAnimation {
 
         animationList.add(compositorAnimator);
         propertyList.add(property);
+    }
+
+    private static <T> void addToAnimation(ArrayList<Animator> animationList,
+            ArrayList<FloatProperty> propertyList, CompositorAnimationHandler handler,
+            final T target, final FloatProperty<T> property, float startValue, float endValue,
+            long durationMs) {
+        addToAnimationWithDelay(animationList, propertyList, handler, target, property, startValue,
+                endValue, durationMs, 0);
     }
 }

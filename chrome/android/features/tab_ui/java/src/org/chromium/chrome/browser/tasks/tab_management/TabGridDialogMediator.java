@@ -41,9 +41,9 @@ import java.util.List;
  */
 public class TabGridDialogMediator {
     /**
-     * Defines an interface for a {@link TabGridDialogMediator} reset event handler.
+     * Defines an interface for a {@link TabGridDialogMediator} to control dialog.
      */
-    interface ResetHandler {
+    interface DialogController {
         /**
          * Handles a reset event originated from {@link TabGridDialogMediator} and {@link
          * TabSwitcherMediator}.
@@ -57,6 +57,11 @@ public class TabGridDialogMediator {
          * @param showAnimation Whether to show an animation when hiding the dialog.
          */
         void hideDialog(boolean showAnimation);
+
+        /**
+         * @return Whether or not the TabGridDialog consumed the event.
+         */
+        boolean handleBackPressed();
     }
 
     /**
@@ -79,14 +84,14 @@ public class TabGridDialogMediator {
     private final TabModelSelectorObserver mTabModelSelectorObserver;
     private final TabModelObserver mTabModelObserver;
     private final TabCreatorManager mTabCreatorManager;
-    private final ResetHandler mDialogResetHandler;
+    private final DialogController mDialogController;
     private final TabSwitcherMediator.ResetHandler mTabSwitcherResetHandler;
     private final AnimationParamsProvider mAnimationParamsProvider;
     private final DialogHandler mTabGridDialogHandler;
     private final String mComponentName;
     private int mCurrentTabId = Tab.INVALID_TAB_ID;
 
-    TabGridDialogMediator(Context context, ResetHandler dialogResetHandler, PropertyModel model,
+    TabGridDialogMediator(Context context, DialogController dialogController, PropertyModel model,
             TabModelSelector tabModelSelector, TabCreatorManager tabCreatorManager,
             TabSwitcherMediator.ResetHandler tabSwitcherResetHandler,
             AnimationParamsProvider animationParamsProvider, String componentName) {
@@ -94,7 +99,7 @@ public class TabGridDialogMediator {
         mModel = model;
         mTabModelSelector = tabModelSelector;
         mTabCreatorManager = tabCreatorManager;
-        mDialogResetHandler = dialogResetHandler;
+        mDialogController = dialogController;
         mTabSwitcherResetHandler = tabSwitcherResetHandler;
         mAnimationParamsProvider = animationParamsProvider;
         mTabGridDialogHandler = new DialogHandler();
@@ -190,7 +195,7 @@ public class TabGridDialogMediator {
                         mAnimationParamsProvider.getAnimationParamsForTab(mCurrentTabId));
             }
         }
-        mDialogResetHandler.resetWithListOfTabs(null);
+        mDialogController.resetWithListOfTabs(null);
     }
 
     void onReset(@Nullable List<Tab> tabs) {

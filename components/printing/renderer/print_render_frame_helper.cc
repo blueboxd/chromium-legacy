@@ -368,10 +368,7 @@ bool IsPrintingPdf(blink::WebLocalFrame* frame, const blink::WebNode& node) {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 // Returns true if the current destination printer is PRINT_TO_PDF.
 bool IsPrintToPdfRequested(const base::DictionaryValue& job_settings) {
-  bool print_to_pdf = false;
-  if (!job_settings.GetBoolean(kSettingPrintToPDF, &print_to_pdf))
-    NOTREACHED();
-  return print_to_pdf;
+  return job_settings.FindBoolKey(kSettingPrintToPDF).value();
 }
 
 bool PrintingFrameHasPageSizeStyle(blink::WebLocalFrame* frame,
@@ -449,11 +446,13 @@ gfx::Size GetPdfPageSize(const gfx::Size& page_size, int dpi) {
 }
 
 bool FitToPageEnabled(const base::DictionaryValue& job_settings) {
-  bool fit_to_paper_size = false;
-  if (!job_settings.GetBoolean(kSettingFitToPageEnabled, &fit_to_paper_size)) {
-    NOTREACHED();
-  }
-  return fit_to_paper_size;
+  return job_settings.FindBoolKey(kSettingFitToPageEnabled).value();
+}
+
+bool FitToPaperEnabled(const base::DictionaryValue& job_settings) {
+  // TODO(dhoss): Bug 989978: Should have a value. Will fix when
+  // |job_settings| contains a "fitToPaperEnabled" boolean field.
+  return job_settings.FindBoolKey(kSettingFitToPaperEnabled).value_or(false);
 }
 
 // Returns the print scaling option to retain/scale/crop the source page size
@@ -480,12 +479,20 @@ blink::WebPrintScalingOption GetPrintScalingOption(
     return blink::kWebPrintScalingOptionSourceSize;
 
   if (!source_is_html) {
-    if (!FitToPageEnabled(job_settings))
+    bool fit_to_page = FitToPageEnabled(job_settings);
+    bool fit_to_paper = FitToPaperEnabled(job_settings);
+
+    // The following conditions are ordered for an optimization that avoids
+    // calling PDFShouldDisableScaling(), which has to make a call using PPAPI.
+    if (!fit_to_page && !fit_to_paper)
       return blink::kWebPrintScalingOptionNone;
 
     bool no_plugin_scaling = PDFShouldDisableScaling(frame, node, params, true);
     if (params.is_first_request && no_plugin_scaling)
       return blink::kWebPrintScalingOptionNone;
+
+    if (fit_to_paper)
+      return blink::kWebPrintScalingOptionFitToPaper;
   }
   return blink::kWebPrintScalingOptionFitToPrintableArea;
 }
@@ -721,21 +728,21 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
   ExecuteScript(frame, kPageLoadScriptFormat, html);
 
   auto options = std::make_unique<base::DictionaryValue>();
-  options->SetDouble(kSettingHeaderFooterDate, base::Time::Now().ToJsTime());
-  options->SetDouble("width", page_size.width);
-  options->SetDouble("height", page_size.height);
-  options->SetDouble("topMargin", page_layout.margin_top);
-  options->SetDouble("bottomMargin", page_layout.margin_bottom);
-  options->SetDouble("leftMargin", page_layout.margin_left);
-  options->SetDouble("rightMargin", page_layout.margin_right);
-  options->SetInteger("pageNumber", page_number);
-  options->SetInteger("totalPages", total_pages);
-  options->SetString("url", params.url);
+  options->SetDoubleKey(kSettingHeaderFooterDate, base::Time::Now().ToJsTime());
+  options->SetDoubleKey("width", page_size.width);
+  options->SetDoubleKey("height", page_size.height);
+  options->SetDoubleKey("topMargin", page_layout.margin_top);
+  options->SetDoubleKey("bottomMargin", page_layout.margin_bottom);
+  options->SetDoubleKey("leftMargin", page_layout.margin_left);
+  options->SetDoubleKey("rightMargin", page_layout.margin_right);
+  options->SetIntKey("pageNumber", page_number);
+  options->SetIntKey("totalPages", total_pages);
+  options->SetStringKey("url", params.url);
   base::string16 title = source_frame.GetDocument().Title().Utf16();
-  options->SetString("title", title.empty() ? params.title : title);
-  options->SetString("headerTemplate", params.header_template);
-  options->SetString("footerTemplate", params.footer_template);
-  options->SetBoolean("isRtl", base::i18n::IsRTL());
+  options->SetStringKey("title", title.empty() ? params.title : title);
+  options->SetStringKey("headerTemplate", params.header_template);
+  options->SetStringKey("footerTemplate", params.footer_template);
+  options->SetBoolKey("isRtl", base::i18n::IsRTL());
 
   ExecuteScript(frame, kPageSetupScriptFormat, *options);
 
@@ -1275,10 +1282,9 @@ void PrintRenderFrameHelper::GetPageSizeAndContentAreaFromPageLayout(
 
 void PrintRenderFrameHelper::UpdateFrameMarginsCssInfo(
     const base::DictionaryValue& settings) {
-  int margins_type = 0;
-  if (!settings.GetInteger(kSettingMarginsType, &margins_type))
-    margins_type = DEFAULT_MARGINS;
-  ignore_css_margins_ = (margins_type != DEFAULT_MARGINS);
+  base::Optional<int> margins_type = settings.FindIntKey(kSettingMarginsType);
+  ignore_css_margins_ =
+      margins_type.value_or(DEFAULT_MARGINS) != DEFAULT_MARGINS;
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -2004,8 +2010,8 @@ bool PrintRenderFrameHelper::UpdatePrintSettings(
     job_settings = &passed_job_settings;
   } else {
     modified_job_settings.MergeDictionary(&passed_job_settings);
-    modified_job_settings.SetBoolean(kSettingHeaderFooterEnabled, false);
-    modified_job_settings.SetInteger(kSettingMarginsType, NO_MARGINS);
+    modified_job_settings.SetBoolKey(kSettingHeaderFooterEnabled, false);
+    modified_job_settings.SetIntKey(kSettingMarginsType, NO_MARGINS);
     job_settings = &modified_job_settings;
   }
 
@@ -2022,6 +2028,7 @@ bool PrintRenderFrameHelper::UpdatePrintSettings(
     return false;
   }
 
+  // TODO(dhoss): Replace deprecated base::DictionaryValue::Get<Type>() calls
   if (!job_settings->GetInteger(kPreviewUIID, &settings.params.preview_ui_id)) {
     NOTREACHED();
     print_preview_context_.set_error(PREVIEW_ERROR_BAD_SETTING);

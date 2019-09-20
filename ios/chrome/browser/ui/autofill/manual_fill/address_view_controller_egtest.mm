@@ -171,7 +171,7 @@ void ClearProfiles(autofill::PersonalDataManager* personalDataManager) {
 - (void)testAddressesViewControllerIsPresented {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementName)];
+      performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Tap on the addresses icon.
   [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
@@ -189,7 +189,7 @@ void ClearProfiles(autofill::PersonalDataManager* personalDataManager) {
 - (void)testAddressesViewControllerContainsManageAddressesAction {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementName)];
+      performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Tap on the addresses icon.
   [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
@@ -208,7 +208,7 @@ void ClearProfiles(autofill::PersonalDataManager* personalDataManager) {
 - (void)testManageAddressesActionOpensAddressSettings {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementName)];
+      performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Tap on the addresses icon.
   [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
@@ -232,7 +232,7 @@ void ClearProfiles(autofill::PersonalDataManager* personalDataManager) {
 - (void)testAddressesButtonStateAfterPresentingManageAddresses {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementName)];
+      performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Tap on the addresses icon.
   [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
@@ -281,7 +281,7 @@ void ClearProfiles(autofill::PersonalDataManager* personalDataManager) {
   }
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementName)];
+      performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Tap on the addresses icon.
   [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
@@ -313,7 +313,7 @@ void ClearProfiles(autofill::PersonalDataManager* personalDataManager) {
   }
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementName)];
+      performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Tap on the addresses icon.
   [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
@@ -346,7 +346,7 @@ void ClearProfiles(autofill::PersonalDataManager* personalDataManager) {
 
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementName)];
+      performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Wait for the keyboard to appear.
   [GREYKeyboard waitForKeyboardToAppear];
@@ -360,7 +360,7 @@ void ClearProfiles(autofill::PersonalDataManager* personalDataManager) {
 
   // Tap another field to trigger form activity.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
+      performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Assert the address icon is visible now.
   [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]

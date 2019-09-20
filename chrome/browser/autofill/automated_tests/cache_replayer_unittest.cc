@@ -437,7 +437,7 @@ TEST(AutofillCacheReplayerTest,
       MakeQueryRequestResponsePair({form_to_add}).first;
   const std::string key = GetKeyFromQueryRequest(query_request_for_key);
 
-  const char invalid_http[] = "";
+  const char invalid_http[] = "Dumb Nonsense That Doesn't Have a HTTP Header";
   ServerCacheReplayer cache_replayer(ServerCache{{key, invalid_http}});
 
   // Verify if we get false when invalid HTTP response to decompress.
@@ -463,6 +463,100 @@ TEST(AutofillCacheReplayerTest,
   std::string response_http_text;
   EXPECT_TRUE(cache_replayer.GetResponseForQuery(query_request_for_key,
                                                  &response_http_text));
+}
+
+TEST(AutofillCacheReplayerTest, GetResponseForQueryGivesFalseForLargeKey) {
+  // Make writable file path.
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath file_path =
+      temp_dir.GetPath().AppendASCII("test_wpr_capture.json");
+
+  // Make request/response pairs to write in cache.
+  std::vector<RequestResponsePair> request_response_pairs;
+  std::vector<RequestResponsePair> unmatched_existing_keys;
+  std::vector<RequestResponsePair> unmatched_different_keys;
+  {
+    LightForm form_to_add1;
+    form_to_add1.signature = 1111;
+    form_to_add1.fields = {LightField{1111, 1}, LightField{1112, 31},
+                           LightField{1113, 33}};
+    LightForm form_to_add2;
+    form_to_add2.signature = 2222;
+    form_to_add2.fields = {LightField{2221, 2}};
+    request_response_pairs.push_back(
+        MakeQueryRequestResponsePair({form_to_add1, form_to_add2}));
+
+    LightForm form_to_add3;
+    form_to_add3.signature = 3333;
+    form_to_add3.fields = {LightField{3331, 3}};
+    LightForm form_to_add4;
+    form_to_add4.signature = 4444;
+    form_to_add4.fields = {LightField{4441, 4}};
+    request_response_pairs.push_back(
+        MakeQueryRequestResponsePair({form_to_add3, form_to_add4}));
+
+    unmatched_existing_keys.push_back(
+        MakeQueryRequestResponsePair({form_to_add1}));
+    unmatched_existing_keys.push_back(
+        MakeQueryRequestResponsePair({form_to_add2}));
+    unmatched_existing_keys.push_back(
+        MakeQueryRequestResponsePair({form_to_add3}));
+    unmatched_existing_keys.push_back(
+        MakeQueryRequestResponsePair({form_to_add4}));
+
+    unmatched_existing_keys.push_back(
+        MakeQueryRequestResponsePair({form_to_add1, form_to_add3}));
+    unmatched_existing_keys.push_back(
+        MakeQueryRequestResponsePair({form_to_add2, form_to_add4}));
+    unmatched_existing_keys.push_back(
+        MakeQueryRequestResponsePair({form_to_add3, form_to_add2}));
+    unmatched_existing_keys.push_back(
+        MakeQueryRequestResponsePair({form_to_add4, form_to_add1}));
+
+    LightForm form_to_add5;
+    form_to_add5.signature = 5555;
+    form_to_add5.fields = {LightField{5551, 42}};
+    unmatched_different_keys.push_back(
+        MakeQueryRequestResponsePair({form_to_add5}));
+  }
+
+  // Write cache to json and create replayer.
+  ASSERT_TRUE(WriteJSON(file_path, request_response_pairs));
+  ServerCacheReplayer cache_replayer(
+      file_path, ServerCacheReplayer::kOptionFailOnInvalidJsonRecord &
+                     ServerCacheReplayer::kOptionFailOnEmpty);
+
+  std::string http_text;
+
+  // First, check the exact same key combos we sent properly respond
+  EXPECT_TRUE(cache_replayer.GetResponseForQuery(
+      request_response_pairs[0].first, &http_text));
+  EXPECT_TRUE(cache_replayer.GetResponseForQuery(
+      request_response_pairs[1].first, &http_text));
+  // And, inexistent combos - verify they don't
+  for (auto query_key : unmatched_existing_keys) {
+    EXPECT_FALSE(
+        cache_replayer.GetResponseForQuery(query_key.first, &http_text));
+  }
+  EXPECT_FALSE(cache_replayer.GetResponseForQuery(
+      unmatched_different_keys[0].first, &http_text));
+
+  // Now, load the same thing into the cache replayer with
+  // ServerCacheReplayer::kOptionSplitRequestsByForm set and expect matches
+  // for all combos
+  ServerCacheReplayer form_split_cache_replayer(
+      file_path, ServerCacheReplayer::kOptionSplitRequestsByForm);
+  EXPECT_TRUE(form_split_cache_replayer.GetResponseForQuery(
+      request_response_pairs[0].first, &http_text));
+  EXPECT_TRUE(form_split_cache_replayer.GetResponseForQuery(
+      request_response_pairs[1].first, &http_text));
+  for (auto query_key : unmatched_existing_keys) {
+    EXPECT_TRUE(form_split_cache_replayer.GetResponseForQuery(query_key.first,
+                                                              &http_text));
+  }
+  EXPECT_FALSE(form_split_cache_replayer.GetResponseForQuery(
+      unmatched_different_keys[0].first, &http_text));
 }
 #endif  // if defined(OS_LINUX)
 

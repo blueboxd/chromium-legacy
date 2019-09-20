@@ -31,7 +31,8 @@ class CupsProxyServiceDelegate {
   // CupsProxyService internal managers.
   base::WeakPtr<CupsProxyServiceDelegate> GetWeakPtr();
 
-  virtual std::vector<chromeos::Printer> GetPrinters() = 0;
+  virtual std::vector<chromeos::Printer> GetPrinters(
+      chromeos::PrinterClass printer_class) = 0;
   virtual base::Optional<chromeos::Printer> GetPrinter(
       const std::string& id) = 0;
   virtual bool IsPrinterInstalled(const chromeos::Printer& printer) = 0;

@@ -175,6 +175,7 @@ TEST_F(AutofillActionTest, PreconditionFailedPopulatesUnexpectedErrorInfo) {
   EXPECT_EQ(base::JoinString({kAddressName, "one_more"}, ","),
             error_info.client_memory_address_key_names());
   EXPECT_EQ(kAddressName, error_info.address_key_requested());
+  EXPECT_TRUE(error_info.address_pointee_was_null());
 }
 
 TEST_F(AutofillActionTest, ShortWaitForElementVisible) {

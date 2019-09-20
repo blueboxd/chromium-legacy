@@ -42,13 +42,17 @@ class AddSupervisionMetricsRecorderTest : public InProcessBrowserTest {
     AddSupervisionDialog::Show(web_contents->GetTopLevelNativeWindow());
   }
 
+  void CloseNowForTesting() {
+    AddSupervisionDialog* instance =
+        static_cast<AddSupervisionDialog*>(AddSupervisionDialog::GetInstance());
+    instance->CloseNowForTesting();
+  }
+
   void CloseAddSupervisionDialog() {
     bool out_close_dialog =
         AddSupervisionDialog::GetInstance()->OnDialogCloseRequested();
     EXPECT_TRUE(out_close_dialog);
-    AddSupervisionDialog* instance =
-        static_cast<AddSupervisionDialog*>(AddSupervisionDialog::GetInstance());
-    instance->CloseNowForTesting();
+    CloseNowForTesting();
   }
 
   void NotifySupervisionEnabled() {
@@ -59,6 +63,11 @@ class AddSupervisionMetricsRecorderTest : public InProcessBrowserTest {
         std::move(request), &test_web_ui_, identity_test_env.identity_manager(),
         &add_supervision_ui);
     add_supervision_handler.NotifySupervisionEnabled();
+  }
+
+  void LogOutAndClose() {
+    LogOutHelper();
+    CloseNowForTesting();
   }
 
  private:
@@ -91,8 +100,8 @@ IN_PROC_BROWSER_TEST_F(AddSupervisionMetricsRecorderTest, HistogramTest) {
       AddSupervisionMetricsRecorder::EnrollmentState::kClosed, 1);
   histogram_tester.ExpectTotalCount("AddSupervisionDialog.Enrollment", 2);
 
-  // Simulate the user opening the Add Supervision dialog, enrolling in
-  // supervision and signing out.
+  // Simulate the user opening the Add Supervision dialog and signing out to
+  // switch accounts.
   ShowAddSupervisionDialog();
 
   // Should see 2 Add Supervision processes initiated.
@@ -101,21 +110,39 @@ IN_PROC_BROWSER_TEST_F(AddSupervisionMetricsRecorderTest, HistogramTest) {
       AddSupervisionMetricsRecorder::EnrollmentState::kInitiated, 2);
   histogram_tester.ExpectTotalCount("AddSupervisionDialog.Enrollment", 3);
 
+  LogOutAndClose();
+
+  // Should see 1 switch accounts attempt.
+  histogram_tester.ExpectBucketCount(
+      "AddSupervisionDialog.Enrollment",
+      AddSupervisionMetricsRecorder::EnrollmentState::kSwitchedAccounts, 1);
+  histogram_tester.ExpectTotalCount("AddSupervisionDialog.Enrollment", 4);
+
+  // Simulate the user opening the Add Supervision dialog, enrolling in
+  // supervision and signing out.
+  ShowAddSupervisionDialog();
+
+  // Should see 3 Add Supervision processes initiated.
+  histogram_tester.ExpectBucketCount(
+      "AddSupervisionDialog.Enrollment",
+      AddSupervisionMetricsRecorder::EnrollmentState::kInitiated, 3);
+  histogram_tester.ExpectTotalCount("AddSupervisionDialog.Enrollment", 5);
+
   NotifySupervisionEnabled();
 
   // Should see 1 Add Supervision process completed.
   histogram_tester.ExpectBucketCount(
       "AddSupervisionDialog.Enrollment",
       AddSupervisionMetricsRecorder::EnrollmentState::kCompleted, 1);
-  histogram_tester.ExpectTotalCount("AddSupervisionDialog.Enrollment", 4);
+  histogram_tester.ExpectTotalCount("AddSupervisionDialog.Enrollment", 6);
 
-  LogOutHelper();
+  LogOutAndClose();
 
   // Should see 1 sign out attempt.
   histogram_tester.ExpectBucketCount(
       "AddSupervisionDialog.Enrollment",
       AddSupervisionMetricsRecorder::EnrollmentState::kSignedOut, 1);
-  histogram_tester.ExpectTotalCount("AddSupervisionDialog.Enrollment", 5);
+  histogram_tester.ExpectTotalCount("AddSupervisionDialog.Enrollment", 7);
 }
 
 IN_PROC_BROWSER_TEST_F(AddSupervisionMetricsRecorderTest, UserActionTest) {
@@ -145,13 +172,28 @@ IN_PROC_BROWSER_TEST_F(AddSupervisionMetricsRecorderTest, UserActionTest) {
   EXPECT_EQ(user_action_tester.GetActionCount("AddSupervisionDialog_Closed"),
             1);
 
-  // Simulate the user opening the Add Supervision dialog, enrolling in
-  // supervision and signing out.
+  // Simulate the user opening the Add Supervision dialog and signing out to
+  // switch accounts.
   ShowAddSupervisionDialog();
 
   // Should see 2 Launched actions.
   EXPECT_EQ(user_action_tester.GetActionCount("AddSupervisionDialog_Launched"),
             2);
+
+  LogOutAndClose();
+
+  // Should see 1 switch accounts attempt.
+  EXPECT_EQ(user_action_tester.GetActionCount(
+                "AddSupervisionDialog_SwitchedAccounts"),
+            1);
+
+  // Simulate the user opening the Add Supervision dialog, enrolling in
+  // supervision and signing out.
+  ShowAddSupervisionDialog();
+
+  // Should see 3 Launched actions.
+  EXPECT_EQ(user_action_tester.GetActionCount("AddSupervisionDialog_Launched"),
+            3);
 
   NotifySupervisionEnabled();
 
@@ -160,7 +202,7 @@ IN_PROC_BROWSER_TEST_F(AddSupervisionMetricsRecorderTest, UserActionTest) {
                 "AddSupervisionDialog_EnrollmentCompleted"),
             1);
 
-  LogOutHelper();
+  LogOutAndClose();
 
   // Should see 1 AttemptedSignoutAfterEnrollment action.
   EXPECT_EQ(user_action_tester.GetActionCount(
@@ -213,6 +255,22 @@ IN_PROC_BROWSER_TEST_P(AddSupervisionMetricsRecorderTimeTest, UserTimingTest) {
   histogram_tester.ExpectTotalCount(
       "AddSupervisionDialog.SignoutCompletedUserTime", 0);
 
+  // Simulate the user opening the Add Supervision dialog and signing out to
+  // switch accounts after GetParam() seconds.
+  ShowAddSupervisionDialog();
+  task_runner_->FastForwardBy(duration);
+  LogOutAndClose();
+
+  // Should see 1 new EnrollmentNotCompletedUserTime timing.
+  histogram_tester.ExpectTimeBucketCount(
+      "AddSupervisionDialog.EnrollmentNotCompletedUserTime", duration, 2);
+  histogram_tester.ExpectTotalCount(
+      "AddSupervisionDialog.EnrollmentNotCompletedUserTime", 2);
+  histogram_tester.ExpectTotalCount(
+      "AddSupervisionDialog.EnrollmentCompletedUserTime", 0);
+  histogram_tester.ExpectTotalCount(
+      "AddSupervisionDialog.SignoutCompletedUserTime", 0);
+
   // Simulate the user opening the Add Supervision dialog, enrolling in
   // supervision after GetParam() seconds and signing out after GetParam()
   // seconds.
@@ -220,10 +278,10 @@ IN_PROC_BROWSER_TEST_P(AddSupervisionMetricsRecorderTimeTest, UserTimingTest) {
   task_runner_->FastForwardBy(duration);
   NotifySupervisionEnabled();
   task_runner_->FastForwardBy(duration);
-  LogOutHelper();
+  LogOutAndClose();
 
   histogram_tester.ExpectTotalCount(
-      "AddSupervisionDialog.EnrollmentNotCompletedUserTime", 1);
+      "AddSupervisionDialog.EnrollmentNotCompletedUserTime", 2);
   // Should see 1 new EnrollmentCompletedUserTime timing.
   histogram_tester.ExpectTimeBucketCount(
       "AddSupervisionDialog.EnrollmentCompletedUserTime", duration, 1);

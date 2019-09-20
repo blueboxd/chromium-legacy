@@ -259,7 +259,7 @@ interface NetworkService {
 
   // Gets the NetworkQualityEstimatorManager.
   GetNetworkQualityEstimatorManager(
-      NetworkQualityEstimatorManager& network_quality_estimator_manager);
+      pending_receiver<NetworkQualityEstimatorManager> receiver);
 
   // Gets the DnsConfigChangeManager.
   GetDnsConfigChangeManager(DnsConfigChangeManager& dns_config_change_manager);

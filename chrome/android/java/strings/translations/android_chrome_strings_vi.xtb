@@ -174,6 +174,7 @@
 <translation id="2154484045852737596">Chỉnh sửa thẻ</translation>
 <translation id="2154710561487035718">Sao chép URL</translation>
 <translation id="2156074688469523661">Số trang web còn lại (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="2157851137955077194">Để chia sẻ nội dung trên điện thoại với một thiết bị khác, hãy bật tính năng đồng bộ hóa trong phần Cài đặt của Chrome trên cả hai thiết bị</translation>
 <translation id="2170088579611075216">Cho phép và chuyển sang thực tế ảo</translation>
 <translation id="218608176142494674">Chia sẻ</translation>
 <translation id="2227444325776770048">Tiếp tục bằng <ph name="USER_FULL_NAME" /></translation>
@@ -602,7 +603,6 @@ Nhớ kiểm tra xem trang web này có tin cậy không trước khi vào chế
 <translation id="545042621069398927">Đang tăng tốc độ tải xuống.</translation>
 <translation id="5456381639095306749">Tải trang xuống</translation>
 <translation id="5475862044948910901">Bắt đầu phiên đăng nhập thực tế tăng cường?</translation>
-<translation id="5481942164684849270">Đã thêm <ph name="APP_NAME" /> vào danh sách ứng dụng của tôi</translation>
 <translation id="548278423535722844">Mở trong ứng dụng bản đồ</translation>
 <translation id="5487521232677179737">Xóa dữ liệu</translation>
 <translation id="5494752089476963479">Chặn quảng cáo trên các trang web hiển thị quảng cáo xâm nhập hoặc quảng cáo gây hiểu nhầm</translation>
@@ -1009,7 +1009,6 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="8364299278605033898">Xem các trang web phổ biến</translation>
 <translation id="8368027906805972958">Thiết bị không xác định hoặc không được hỗ trợ (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Cho phép Đồng bộ hóa dưới nền cho trang web cụ thể.</translation>
-<translation id="8374821112118309944">Bạn cần phải cập nhật TalkBack lên phiên bản mới hơn.</translation>
 <translation id="8378714024927312812">Do tổ chức của bạn quản lý</translation>
 <translation id="8380167699614421159">Trang web này hiển thị quảng cáo xâm nhập hoặc quảng cáo gây hiểu nhầm</translation>
 <translation id="8393700583063109961">Gửi tin nhắn</translation>
@@ -1073,6 +1072,7 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198">Tab <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Bộ nhớ</translation>
+<translation id="889338405075704026">Chuyển đến phần Cài đặt của Chrome</translation>
 <translation id="8901170036886848654">Không tìm thấy dấu trang</translation>
 <translation id="8909135823018751308">Chia sẻ...</translation>
 <translation id="8912362522468806198">Tài khoản Google</translation>
@@ -1091,6 +1091,7 @@ Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới 
 <translation id="8993760627012879038">Mở tab mới trong chế độ Ẩn danh</translation>
 <translation id="8998729206196772491">Bạn đang đăng nhập bằng tài khoản do <ph name="MANAGED_DOMAIN" /> quản lý và cấp cho quản trị viên quyền kiểm soát dữ liệu Chrome của bạn. Dữ liệu của bạn sẽ được liên kết vĩnh viễn với tài khoản này. Việc đăng xuất khỏi Chrome sẽ xóa dữ liệu của bạn khỏi thiết bị này nhưng dữ liệu sẽ vẫn được lưu trữ trong Tài khoản Google.</translation>
 <translation id="9019902583201351841">Do cha mẹ của bạn quản lý</translation>
+<translation id="9028914725102941583">Bật tính năng đồng bộ hóa để chia sẻ giữa các thiết bị</translation>
 <translation id="9029323097866369874">Cho phép <ph name="DOMAIN" /> vào chế độ thực tế ảo?</translation>
 <translation id="9040142327097499898">Cho phép thông báo. Đã tắt vị trí đối với thiết bị này.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# video}}</translation>

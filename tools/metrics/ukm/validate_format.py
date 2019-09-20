@@ -25,13 +25,17 @@ def main():
     validator = UkmXmlValidation(config)
 
     ownerCheckSuccess, ownerCheckErrors = validator.checkEventsHaveOwners()
-    metricCheckSuccess, metricCheckErrors, metricCheckWarnings = \
-      validator.checkMetricTypeIsSpecified()
+    metricCheckSuccess, metricCheckErrors, metricCheckWarnings = (
+      validator.checkMetricTypeIsSpecified())
+    aggregationCheckSuccess, aggregationCheckErrors = (
+      validator.checkLocalMetricIsAggregated())
 
     results = dict();
 
-    if not ownerCheckSuccess or not metricCheckSuccess:
-      results['Errors'] = ownerCheckErrors + metricCheckErrors
+    if (not ownerCheckSuccess or not metricCheckSuccess or
+        not aggregationCheckSuccess):
+      results['Errors'] = (ownerCheckErrors + metricCheckErrors +
+                           aggregationCheckErrors)
     if metricCheckWarnings and not IGNORE_METRIC_CHECK_WARNINGS:
       results['Warnings'] = metricCheckWarnings
 

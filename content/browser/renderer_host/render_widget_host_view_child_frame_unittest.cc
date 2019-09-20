@@ -28,7 +28,9 @@
 #include "content/browser/renderer_host/frame_connector_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/visual_properties_manager.h"
 #include "content/common/frame_visual_properties.h"
+#include "content/common/view_messages.h"
 #include "content/common/widget_messages.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/test/browser_task_environment.h"
@@ -46,6 +48,21 @@
 
 namespace content {
 namespace {
+
+class MockRenderWidgetHostVisualPropertiesManager
+    : public VisualPropertiesManager {
+ public:
+  MockRenderWidgetHostVisualPropertiesManager()
+      : VisualPropertiesManager(nullptr) {}
+  void SendVisualProperties(const VisualProperties& visual_properties,
+                            int widget_routing_id) override {
+    ++sent_visual_properties_count_;
+    sent_visual_properties_ = visual_properties;
+  }
+
+  int sent_visual_properties_count_ = 0;
+  VisualProperties sent_visual_properties_;
+};
 
 const viz::LocalSurfaceId kArbitraryLocalSurfaceId(
     1,
@@ -119,6 +136,8 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
         widget.InitWithNewPipeAndPassReceiver());
     widget_host_ = new RenderWidgetHostImpl(
         &delegate_, process_host, routing_id, std::move(widget), false);
+    widget_host_->BindVisualPropertiesManager(
+        visual_properties_manager_.GetWeakPtr());
     view_ = RenderWidgetHostViewChildFrame::Create(widget_host_);
 
     test_frame_connector_ =
@@ -176,6 +195,7 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
   MockFrameConnectorDelegate* test_frame_connector_;
   std::unique_ptr<FakeRendererCompositorFrameSink>
       renderer_compositor_frame_sink_;
+  MockRenderWidgetHostVisualPropertiesManager visual_properties_manager_;
 
  private:
   viz::mojom::CompositorFrameSinkClientPtr renderer_compositor_frame_sink_ptr_;
@@ -285,8 +305,7 @@ TEST_F(RenderWidgetHostViewChildFrameTest,
       allocator.GetCurrentLocalSurfaceIdAllocation();
   constexpr viz::FrameSinkId frame_sink_id(1, 1);
 
-  process->sink().ClearMessages();
-
+  EXPECT_EQ(visual_properties_manager_.sent_visual_properties_count_, 0);
   FrameVisualProperties visual_properties;
   visual_properties.screen_space_rect = screen_space_rect;
   visual_properties.compositor_viewport = compositor_viewport_pixel_rect;
@@ -296,19 +315,16 @@ TEST_F(RenderWidgetHostViewChildFrameTest,
   test_frame_connector_->SynchronizeVisualProperties(frame_sink_id,
                                                      visual_properties);
 
-  ASSERT_EQ(1u, process->sink().message_count());
+  EXPECT_EQ(visual_properties_manager_.sent_visual_properties_count_, 1);
 
-  const IPC::Message* resize_msg = process->sink().GetUniqueMessageMatching(
-      WidgetMsg_SynchronizeVisualProperties::ID);
-  ASSERT_NE(nullptr, resize_msg);
-  WidgetMsg_SynchronizeVisualProperties::Param params;
-  WidgetMsg_SynchronizeVisualProperties::Read(resize_msg, &params);
+  VisualProperties sent_visual_properties =
+      visual_properties_manager_.sent_visual_properties_;
   EXPECT_EQ(compositor_viewport_pixel_rect,
-            std::get<0>(params).compositor_viewport_pixel_rect);
-  EXPECT_EQ(screen_space_rect.size(), std::get<0>(params).new_size);
+            sent_visual_properties.compositor_viewport_pixel_rect);
+  EXPECT_EQ(screen_space_rect.size(), sent_visual_properties.new_size);
   EXPECT_EQ(local_surface_id_allocation,
-            std::get<0>(params).local_surface_id_allocation);
-  EXPECT_EQ(123u, std::get<0>(params).capture_sequence_number);
+            sent_visual_properties.local_surface_id_allocation);
+  EXPECT_EQ(123u, sent_visual_properties.capture_sequence_number);
 }
 
 // Test that when we have a gesture scroll sequence that is not consumed by the

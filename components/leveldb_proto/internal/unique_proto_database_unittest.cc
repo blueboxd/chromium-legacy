@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/files/file_path.h"
 #include "components/leveldb_proto/public/proto_database.h"
 
 #include <stddef.h>
@@ -23,6 +24,7 @@
 #include "components/leveldb_proto/internal/leveldb_database.h"
 #include "components/leveldb_proto/internal/proto_database_impl.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
+#include "components/leveldb_proto/public/shared_proto_database_client_list.h"
 #include "components/leveldb_proto/testing/proto/test_db.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -222,6 +224,7 @@ class UniqueProtoDatabaseTest : public testing::Test {
       : options_(MakeMatcher(new OptionsEqMatcher(CreateSimpleOptions()))) {}
   void SetUp() override {
     db_ = std::make_unique<ProtoDatabaseImpl<TestProto>>(
+        ProtoDbType::TEST_DATABASE0, base::FilePath(),
         base::ThreadTaskRunnerHandle::Get());
   }
 
@@ -570,13 +573,16 @@ TEST_F(UniqueProtoDatabaseLevelDBTest, TestDBSaveAndLoadKeys) {
   base::Thread db_thread("dbthread");
   ASSERT_TRUE(db_thread.Start());
   std::unique_ptr<ProtoDatabase<TestProto>> db =
-      ProtoDatabaseProvider::CreateUniqueDB<TestProto>(db_thread.task_runner());
+      ProtoDatabaseProvider::GetUniqueDB<TestProto>(ProtoDbType::TEST_DATABASE0,
+                                                    temp_dir.GetPath(),
+                                                    db_thread.task_runner());
 
   base::RunLoop init_loop;
-  db->Init(kTestLevelDBClientName, temp_dir.GetPath(), CreateSimpleOptions(),
-           base::BindOnce([](base::OnceClosure closure,
-                             bool success) { std::move(closure).Run(); },
-                          init_loop.QuitClosure()));
+  db->Init(base::BindOnce(
+      [](base::OnceClosure closure, leveldb_proto::Enums::InitStatus status) {
+        std::move(closure).Run();
+      },
+      init_loop.QuitClosure()));
   init_loop.Run();
 
   base::RunLoop run_update_entries;
@@ -802,19 +808,21 @@ TEST(UniqueProtoDatabaseThreadingTest, TestDBDestruction) {
   ASSERT_TRUE(db_thread.Start());
 
   std::unique_ptr<ProtoDatabase<TestProto>> db =
-      ProtoDatabaseProvider::CreateUniqueDB<TestProto>(db_thread.task_runner());
+      ProtoDatabaseProvider::GetUniqueDB<TestProto>(ProtoDbType::TEST_DATABASE0,
+                                                    temp_dir.GetPath(),
+                                                    db_thread.task_runner());
 
   MockDatabaseCaller caller;
   EXPECT_CALL(caller, InitCallback(_));
   base::RunLoop init_loop;
-  db->Init(kTestLevelDBClientName, temp_dir.GetPath(), CreateSimpleOptions(),
-           base::BindOnce(
-               [](MockDatabaseCaller* caller, base::OnceClosure closure,
-                  bool success) {
-                 caller->InitCallback(success);
-                 std::move(closure).Run();
-               },
-               &caller, init_loop.QuitClosure()));
+  db->Init(base::BindOnce(
+      [](MockDatabaseCaller* caller, base::OnceClosure closure,
+         leveldb_proto::Enums::InitStatus status) {
+        bool success = status == Enums::kOK;
+        caller->InitCallback(success);
+        std::move(closure).Run();
+      },
+      &caller, init_loop.QuitClosure()));
   init_loop.Run();
 
   db.reset();
@@ -836,19 +844,21 @@ TEST(UniqueProtoDatabaseThreadingTest, TestDBDestroy) {
   ASSERT_TRUE(db_thread.Start());
 
   std::unique_ptr<ProtoDatabase<TestProto>> db =
-      ProtoDatabaseProvider::CreateUniqueDB<TestProto>(db_thread.task_runner());
+      ProtoDatabaseProvider::GetUniqueDB<TestProto>(ProtoDbType::TEST_DATABASE0,
+                                                    temp_dir.GetPath(),
+                                                    db_thread.task_runner());
 
   MockDatabaseCaller caller;
   EXPECT_CALL(caller, InitCallback(_));
   base::RunLoop init_loop;
-  db->Init(kTestLevelDBClientName, temp_dir.GetPath(), CreateSimpleOptions(),
-           base::BindOnce(
-               [](MockDatabaseCaller* caller, base::OnceClosure closure,
-                  bool success) {
-                 caller->InitCallback(success);
-                 std::move(closure).Run();
-               },
-               &caller, init_loop.QuitClosure()));
+  db->Init(base::BindOnce(
+      [](MockDatabaseCaller* caller, base::OnceClosure closure,
+         leveldb_proto::Enums::InitStatus status) {
+        bool success = status == Enums::kOK;
+        caller->InitCallback(success);
+        std::move(closure).Run();
+      },
+      &caller, init_loop.QuitClosure()));
   init_loop.Run();
 
   EXPECT_CALL(caller, DestroyCallback(_));

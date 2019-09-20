@@ -15,6 +15,7 @@ import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.SmallTest;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.junit.BeforeClass;
@@ -28,7 +29,6 @@ import org.chromium.chrome.test.ui.DummyUiActivityTestCase;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
-import org.chromium.ui.widget.RoundedCornerImageView;
 
 /**
  * Tests for RevampedContextMenuHeader view and {@link RevampedContextMenuHeaderViewBinder}
@@ -44,7 +44,7 @@ public class RevampedContextMenuHeaderViewTest extends DummyUiActivityTestCase {
     private TextView mTitle;
     private TextView mUrl;
     private View mTitleAndUrl;
-    private RoundedCornerImageView mImage;
+    private ImageView mImage;
     private View mCircleBg;
     private PropertyModel mModel;
     private PropertyModelChangeProcessor mMCP;
@@ -175,8 +175,8 @@ public class RevampedContextMenuHeaderViewTest extends DummyUiActivityTestCase {
         assertThat("Incorrect circle background visibility.", mCircleBg.getVisibility(),
                 equalTo(View.VISIBLE));
 
-        assertNull("Thumbnail drawable isn't null when it should be, initially.",
-                mImage.getDrawable());
+        assertFalse("Thumbnail drawable should use fallback color initially.",
+                mImage.getDrawable() instanceof BitmapDrawable);
         final Bitmap bitmap = Bitmap.createBitmap(4, 4, Bitmap.Config.ARGB_8888);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mModel.set(RevampedContextMenuHeaderProperties.IMAGE, bitmap));

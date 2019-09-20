@@ -19,22 +19,24 @@ AwURLLoaderThrottleProvider::AwURLLoaderThrottleProvider(
     content::URLLoaderThrottleProviderType type)
     : type_(type) {
   DETACH_FROM_THREAD(thread_checker_);
-  broker->GetInterface(mojo::MakeRequest(&safe_browsing_info_));
+  broker->GetInterface(safe_browsing_remote_.InitWithNewPipeAndPassReceiver());
 }
 
 AwURLLoaderThrottleProvider::AwURLLoaderThrottleProvider(
     const AwURLLoaderThrottleProvider& other)
     : type_(other.type_) {
   DETACH_FROM_THREAD(thread_checker_);
-  if (other.safe_browsing_)
-    other.safe_browsing_->Clone(mojo::MakeRequest(&safe_browsing_info_));
+  if (other.safe_browsing_) {
+    other.safe_browsing_->Clone(
+        safe_browsing_remote_.InitWithNewPipeAndPassReceiver());
+  }
 }
 
 std::unique_ptr<content::URLLoaderThrottleProvider>
 AwURLLoaderThrottleProvider::Clone() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (safe_browsing_info_)
-    safe_browsing_.Bind(std::move(safe_browsing_info_));
+  if (safe_browsing_remote_)
+    safe_browsing_.Bind(std::move(safe_browsing_remote_));
   return base::WrapUnique(new AwURLLoaderThrottleProvider(*this));
 }
 
@@ -59,8 +61,8 @@ AwURLLoaderThrottleProvider::CreateThrottles(
          type_ == content::URLLoaderThrottleProviderType::kFrame);
 
   if (!is_frame_resource) {
-    if (safe_browsing_info_)
-      safe_browsing_.Bind(std::move(safe_browsing_info_));
+    if (safe_browsing_remote_)
+      safe_browsing_.Bind(std::move(safe_browsing_remote_));
     throttles.push_back(
         std::make_unique<safe_browsing::RendererURLLoaderThrottle>(
             safe_browsing_.get(), render_frame_id));

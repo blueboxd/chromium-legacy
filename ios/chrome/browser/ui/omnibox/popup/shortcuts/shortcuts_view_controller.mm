@@ -195,10 +195,8 @@ const CGFloat kTopInset = 10;
     if (self.readingListBadgeValue > 0) {
       cell.tile.countLabel.text = [@(self.readingListBadgeValue) stringValue];
       cell.tile.countContainer.hidden = NO;
-      cell.accessibilityLabel = [NSString
-          stringWithFormat:@"%@, %@", cell.accessibilityLabel,
-                           AccessibilityLabelForReadingListCellWithCount(
-                               self.readingListBadgeValue)];
+      cell.accessibilityLabel = AccessibilityLabelForReadingListCellWithCount(
+          self.readingListBadgeValue);
     }
   }
 }

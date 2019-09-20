@@ -224,8 +224,14 @@ base::TimeDelta OmniboxFieldTrial::StopTimerFieldTrialDuration() {
 }
 
 // static
-std::string OmniboxFieldTrial::GetZeroSuggestVariant(
+std::vector<std::string> OmniboxFieldTrial::GetZeroSuggestVariants(
     OmniboxEventProto::PageClassification page_classification) {
+  std::function<std::vector<std::string>(const std::string&)> split =
+      [](const std::string& value) {
+        return base::SplitString(value, ",", base::TRIM_WHITESPACE,
+                                 base::SPLIT_WANT_ALL);
+      };
+
   // Note: These checks are necessary because it is not possible to enable
   // multiple features using Finch Forcing groups (omnibox::kOnFocusSuggestions
   // as well as another feature). Therefore, in order to specify the
@@ -236,19 +242,19 @@ std::string OmniboxFieldTrial::GetZeroSuggestVariant(
         omnibox::kZeroSuggestionsOnNTP, kZeroSuggestVariantRule,
         page_classification);
     if (!result.empty())
-      return result;
+      return split(result);
   }
   if (base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTPRealbox)) {
     auto result = internal::GetValueForRuleInContextByFeature(
         omnibox::kZeroSuggestionsOnNTPRealbox, kZeroSuggestVariantRule,
         page_classification);
     if (!result.empty())
-      return result;
+      return split(result);
   }
 
-  return internal::GetValueForRuleInContextByFeature(
+  return split(internal::GetValueForRuleInContextByFeature(
       omnibox::kOnFocusSuggestions, kZeroSuggestVariantRule,
-      page_classification);
+      page_classification));
 }
 
 bool OmniboxFieldTrial::ShortcutsScoringMaxRelevance(

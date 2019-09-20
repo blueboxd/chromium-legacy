@@ -420,7 +420,6 @@
 <translation id="4039983576244166038">Празна заглавка на ред</translation>
 <translation id="4042843249978639960">Няма следващо заглавие от второ ниво.</translation>
 <translation id="4043348641337972076">Няма предишен отличителен белег на ARIA.</translation>
-<translation id="4045764028670444336">Начало на неправилно изписаната дума</translation>
 <translation id="4047216625641135770">Маркиране</translation>
 <translation id="404803211695627272"><ph name="V1" /> – <ph name="V2" /></translation>
 <translation id="4053520724192563562">лимоненозелено</translation>
@@ -503,7 +502,6 @@
 <translation id="4547556996012970016">Следващото заглавие от пето ниво</translation>
 <translation id="4562381607973973258">Горен колонтитул</translation>
 <translation id="4569941707103739422">За придвижване натиснете клавиша със стрелка нагоре или надолу, за активиране използвайте Enter.</translation>
-<translation id="4570424871453628777">Край на неправилно изписаната дума</translation>
 <translation id="4591507479202817876">, избрано</translation>
 <translation id="4597532268155981612">формуляр</translation>
 <translation id="4597896406374528575">април</translation>
@@ -727,7 +725,6 @@
 <translation id="6037602951055904232">Панорамно придвижване напред</translation>
 <translation id="6042826534790431634">За активиране натиснете клавиша „търсене“ + интервал.</translation>
 <translation id="6044160928851315051">Потъмняване на екрана</translation>
-<translation id="6065293622157674001">Начало на граматичната грешка</translation>
 <translation id="6082768461603900813">Основна навигация</translation>
 <translation id="6118126368611144850">Приложения за Android в Chrome: Ако имате Google Play Магазин на устройството си, изтеглете Google Chrome Canary оттам, за да изпробвате експерименталната поддръжка за ChromeVox в приложения за Android.</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -868,7 +865,6 @@
 <translation id="7143207342074048698">Свързва се</translation>
 <translation id="7153618581592392745">лавандулово</translation>
 <translation id="7157306005867877619">Резюме</translation>
-<translation id="7161425887892204659">Край на съответстващия текст</translation>
 <translation id="7161771961008409533">Бутон с изскачащ прозорец</translation>
 <translation id="7165714724802225287">Използва се изгледът с наслагване.</translation>
 <translation id="7167657087543110">ехо за знаците</translation>
@@ -906,7 +902,6 @@
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Напускате таблицата.</translation>
 <translation id="738899727977260036">шистовосиньо</translation>
-<translation id="7392145451309930991">Начало на съответстващия текст</translation>
 <translation id="739763518212184081">Предишният ред</translation>
 <translation id="7400575256015741911">Открита е правописна грешка</translation>
 <translation id="7408482676469142474">таблица</translation>
@@ -1119,7 +1114,6 @@
 <translation id="8476408756881832830">Поставяне на възпроизвеждането на пауза, когато ChromeVox говори</translation>
 <translation id="8476508772960940536">общ преглед на прозорците</translation>
 <translation id="8503360654911991865">По-малко подробна навигация</translation>
-<translation id="8504695234784218301">Край на граматичната грешка</translation>
 <translation id="8520472399088452386">Брояч</translation>
 <translation id="8534394844575788431">Форматиране</translation>
 <translation id="8538744478902126321">Предположение за заглавката на реда за текущата клетка</translation>

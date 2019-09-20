@@ -4152,6 +4152,13 @@ void WebGL2RenderingContextBase::SamplerParameter(WebGLSampler* sampler,
           return;
       }
       break;
+    case GL_TEXTURE_MAX_ANISOTROPY_EXT:
+      if (!ExtensionEnabled(kEXTTextureFilterAnisotropicName)) {
+        SynthesizeGLError(GL_INVALID_ENUM, "samplerParameter",
+                          "EXT_texture_filter_anisotropic not enabled");
+        return;
+      }
+      break;
     default:
       SynthesizeGLError(GL_INVALID_ENUM, "samplerParameter",
                         "invalid parameter name");
@@ -4198,6 +4205,16 @@ ScriptValue WebGL2RenderingContextBase::getSamplerParameter(
     }
     case GL_TEXTURE_MAX_LOD:
     case GL_TEXTURE_MIN_LOD: {
+      GLfloat value = 0.f;
+      ContextGL()->GetSamplerParameterfv(ObjectOrZero(sampler), pname, &value);
+      return WebGLAny(script_state, value);
+    }
+    case GL_TEXTURE_MAX_ANISOTROPY_EXT: {
+      if (!ExtensionEnabled(kEXTTextureFilterAnisotropicName)) {
+        SynthesizeGLError(GL_INVALID_ENUM, "samplerParameter",
+                          "EXT_texture_filter_anisotropic not enabled");
+        return ScriptValue::CreateNull(script_state);
+      }
       GLfloat value = 0.f;
       ContextGL()->GetSamplerParameterfv(ObjectOrZero(sampler), pname, &value);
       return WebGLAny(script_state, value);

@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/util/type_safety/pass_key.h"
 #include "chrome/browser/autofill/accessory_controller.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace content {
 class WebContents;
@@ -44,6 +45,9 @@ class TouchToFillController
   // AccessoryController:
   void OnFillingTriggered(const autofill::UserInfo::Field& selection) override;
   void OnOptionSelected(autofill::AccessoryAction selected_action) override;
+
+  // The web page view containing the focused field.
+  gfx::NativeView GetNativeView();
 
  private:
   // Lazy-initializes and returns the ManualFillingController for the current

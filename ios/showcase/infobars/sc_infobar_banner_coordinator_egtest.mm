@@ -6,7 +6,7 @@
 
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_constants.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_constants.h"
-#import "ios/showcase/infobars/sc_infobar_banner_coordinator.h"
+#import "ios/showcase/infobars/sc_infobar_container_view_controller.h"
 #import "ios/showcase/test/showcase_eg_utils.h"
 #import "ios/showcase/test/showcase_test_case.h"
 

@@ -159,9 +159,9 @@ base::TimeDelta StopTimerFieldTrialDuration();
 // ---------------------------------------------------------
 // For the ZeroSuggestProvider field trial.
 
-// Returns the configured "ZeroSuggestVariant" parameter for
+// Returns the configured "ZeroSuggestVariant" parameter values for
 // |page_classification|.
-std::string GetZeroSuggestVariant(
+std::vector<std::string> GetZeroSuggestVariants(
     metrics::OmniboxEventProto::PageClassification page_classification);
 
 // ---------------------------------------------------------

@@ -439,6 +439,9 @@
     "includes": [27880],
     "structures": [28080],
   },
+  "weblayer/weblayer_resources.grd": {
+    "includes": [28700],
+  },
 
   # This file is generated during the build.
   "<(SHARED_INTERMEDIATE_DIR)/devtools/devtools_resources.grd": {

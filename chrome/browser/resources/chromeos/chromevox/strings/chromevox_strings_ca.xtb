@@ -420,7 +420,6 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="4039983576244166038">La capçalera de la fila és buida.</translation>
 <translation id="4042843249978639960">No hi ha cap capçalera més del nivell 2.</translation>
 <translation id="4043348641337972076">No hi ha cap punt de referència ARIA anterior.</translation>
-<translation id="4045764028670444336">Inici de l'error ortogràfic</translation>
 <translation id="4047216625641135770">Marca</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4053520724192563562">Verd llima</translation>
@@ -503,7 +502,6 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="4547556996012970016">Capçalera del nivell 5 següent</translation>
 <translation id="4562381607973973258">Capçalera</translation>
 <translation id="4569941707103739422">Prem les fletxes amunt i avall per navegar; prem Retorn per activar una opció.</translation>
-<translation id="4570424871453628777">Fi de l'error ortogràfic</translation>
 <translation id="4591507479202817876">, seleccionat</translation>
 <translation id="4597532268155981612">formulari</translation>
 <translation id="4597896406374528575">Abril</translation>
@@ -727,7 +725,6 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="6037602951055904232">Desplaça cap endavant.</translation>
 <translation id="6042826534790431634">Prem Cerca+Espai per activar l'opció.</translation>
 <translation id="6044160928851315051">Enfosqueix la pantalla</translation>
-<translation id="6065293622157674001">Inici de l'error gramatical</translation>
 <translation id="6082768461603900813">Navegació bàsica</translation>
 <translation id="6118126368611144850">Aplicacions d'Android per a Chrome. Si tens Play Store al dispositiu, dona un cop d'ull a ChromeVox amb les aplicacions d'Android. Baixa Google Chrome Canary de Play Store per provar aquesta compatibilitat experimental.</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -868,7 +865,6 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="7143207342074048698">S'està connectant</translation>
 <translation id="7153618581592392745">Lavanda</translation>
 <translation id="7157306005867877619">Resum</translation>
-<translation id="7161425887892204659">Fi de la coincidència de text</translation>
 <translation id="7161771961008409533">Botó emergent</translation>
 <translation id="7165714724802225287">L'estil de pantalla actual és entrellaçat.</translation>
 <translation id="7167657087543110">retorn de caràcters</translation>
@@ -906,7 +902,6 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">S'està sortint de la taula.</translation>
 <translation id="738899727977260036">Blau pissarra</translation>
-<translation id="7392145451309930991">Inici de la coincidència de text</translation>
 <translation id="739763518212184081">Línia anterior</translation>
 <translation id="7400575256015741911">S'ha detectat un error ortogràfic.</translation>
 <translation id="7408482676469142474">taula</translation>
@@ -1119,7 +1114,6 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="8476408756881832830">Pausa la reproducció quan ChromeVox parli</translation>
 <translation id="8476508772960940536">visió general de la finestra</translation>
 <translation id="8503360654911991865">Disminueix la granularitat de la navegació.</translation>
-<translation id="8504695234784218301">Fi de l'error gramatical</translation>
 <translation id="8520472399088452386">Botó de selecció de valors</translation>
 <translation id="8534394844575788431">Format</translation>
 <translation id="8538744478902126321">Fes una suposició a la capçalera de la fila de la cel·la actual</translation>

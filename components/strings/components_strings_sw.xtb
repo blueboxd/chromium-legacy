@@ -567,7 +567,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{Hamna}=1{Kutoka kwenye tovuti 1 }other{Kutoka kwenye tovuti # }}</translation>
 <translation id="397105322502079400">Inakokotoa...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> imezuiwa.</translation>
-<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> imewasha Ulinzi wa Hatari wa Biashara ya Chrome kwenye kivinjari chako. Ulinzi wa Hatari wa Biashara ya Chrome una uwezo wa kufikia baadhi ya data yako.</translation>
+<translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> imewasha Ulinzi wa Hatari wa Chrome Enterprise kwenye kivinjari chako. Kipengele cha Ulinzi wa Hatari cha Chrome Enterprise kina uwezo wa kufikia baadhi ya data yako.</translation>
 <translation id="3987940399970879459">Chini ya MB 1</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{ukurasa 1 wa wavuti ulio karibu}other{kurasa # za wavuti zilizo karibu}}</translation>
 <translation id="4030383055268325496">Tendua kuongeza</translation>
@@ -1025,7 +1025,7 @@
 <translation id="6433490469411711332">Badilisha maelezo ya mawasiliano</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> imekataa kuunganisha.</translation>
 <translation id="6434309073475700221">Tupa</translation>
-<translation id="6435221585574090192">Kushiriki data kuhusu matukio ya usalama ambayo yameripotiwa na kipengele cha Ulinzi wa Hatari wa Biashara ya Chrome na msimamizi wako. Hii inaweza kujumuisha URL za ukurasa, jina la faili na metadata ya faili, jina lako la mtumiaji wa kifaa na jina lako la mtumiaji wa Chrome.</translation>
+<translation id="6435221585574090192">Shiriki na msimamizi wako data kuhusu matukio ya usalama ambayo yameripotiwa na kipengele cha Ulinzi wa Hatari cha Chrome Enterprise. Hii inaweza kujumuisha URL za ukurasa, jina la faili na metadata ya faili, jina lako la mtumiaji wa kifaa na jina lako la mtumiaji wa Chrome.</translation>
 <translation id="6440503408713884761">Imepuuzwa</translation>
 <translation id="6446163441502663861">Kahu (Bahasha)</translation>
 <translation id="6446608382365791566">Ongeza maelezo zaidi</translation>
@@ -1249,7 +1249,7 @@
 <translation id="7610193165460212391">Thamani imezidi masafa<ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Muda wa matumizi utakwisha: <ph name="EXPIRATION_MONTH" /> / <ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Tayari una data ambayo imesimbwa kwa fiche kwa kutumia toleo tofauti la nenosiri lako la  Akaunti ya Google. Tafadhali liingize hapo chini.</translation>
-<translation id="7625784245512586808">Ulinzi wa Hatari wa Biashara ya Chrome</translation>
+<translation id="7625784245512586808">Ulinzi wa Hatari wa Chrome Enterprise</translation>
 <translation id="7633909222644580952">Ripoti za utendaji na programu kuacha kufanya kazi</translation>
 <translation id="7637571805876720304">Je, ungependa kuondoa kadi ya mikopo kwenye Chromium?</translation>
 <translation id="7638605456503525968">Milango ya kuingiza</translation>
@@ -1360,7 +1360,7 @@
 <translation id="8211406090763984747">Muunganisho ni salama</translation>
 <translation id="8218327578424803826">Mahali Palipohawilishwa:</translation>
 <translation id="8220146938470311105">C7/C6 (Bahasha)</translation>
-<translation id="8220639454292072926">Kuripoti Biashara</translation>
+<translation id="8220639454292072926">Kuripoti katika Shirika</translation>
 <translation id="8225771182978767009">Mtu ambaye aliweka mipangilio ya kompyuta hii ameamua kuzuia tovuti hii.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Fungua ukurasa kwenye kichupo fiche kipya</translation>
@@ -1507,7 +1507,7 @@
 <translation id="9080712759204168376">Muhtasari wa Agizo</translation>
 <translation id="9089260154716455634">Sera ya Saa Zisizo za Kazi:</translation>
 <translation id="9095388113577226029">Lugha zaidi...</translation>
-<translation id="9098981495403789647">Msimamizi wako amewasha kipengele cha Ulinzi wa Hatari wa Biashara ya Chrome kwenye kivinjari chako. Ulinzi wa Hatari wa Biashara ya Chrome una uwezo wa kufikia baadhi ya data yako.</translation>
+<translation id="9098981495403789647">Msimamizi wako amewasha kipengele cha Ulinzi wa Hatari cha Chrome Enterprise kwenye kivinjari chako. Kipengele cha Ulinzi wa Hatari cha Chrome Enterprise kina uwezo wa kufikia baadhi ya data yako.</translation>
 <translation id="9103872766612412690">Kwa kawaida <ph name="SITE" /> hutumia usimbaji fiche ili kulinda maelezo yako. Chromium ilipojaribu kuunganisha kwenye <ph name="SITE" /> wakati huu, tovuti ilituma kitambulisho kisicho cha kawaida na kisicho sahihi. Hili linaweza kutokea mvamizi anapojaribu kujifanya kuwa <ph name="SITE" />, au uchanganuzi wa kuingia katika Wi-Fi umeingilia muunganisho. Maelezo yako yangali salama kwa sababu Chromium ilisimamisha muunganisho kabla data yoyote itumwe.</translation>
 <translation id="9106062320799175032">Ongeza Anwani ya Kutuma Bili</translation>
 <translation id="9114524666733003316">Inathibitisha kadi…</translation>

@@ -232,6 +232,7 @@
 
       Si cette règle n'est pas définie, le code réseau peut ne pas suivre le processus du navigateur, en fonction des essais sur le terrain de l'expérience NetworkService.</translation>
 <translation id="1384459581748403878">Référence : <ph name="REFERENCE_URL" /></translation>
+<translation id="138847842893090358">Indiquer l'état de la mise à jour du système</translation>
 <translation id="1393485621820363363">Imprimantes d'appareils d'entreprise activées</translation>
 <translation id="1397855852561539316">URL de suggestions de recherche du moteur de recherche par défaut</translation>
 <translation id="1404043648050567997">Le service de navigation sécurisée affiche une page d'avertissement lorsque l'utilisateur essaie d'accéder à des sites signalés comme étant potentiellement malveillants. L'activation de ce paramètre bloque la navigation sur ces sites dès lors que l'avertissement apparaît.
@@ -306,15 +307,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       Si la règle n'est pas définie, la valeur par défaut "MultiProfileUserBehaviorMustBePrimary'' s'applique aux utilisateurs gérés par l'entreprise et la valeur "MultiProfileUserBehaviorUnrestricted" est utilisée pour les utilisateurs non gérés.</translation>
 <translation id="1465619815762735808">Cliquer pour lire</translation>
-<translation id="1468307069016535757">Définit l'état par défaut de la fonctionnalité d'accessibilité du mode Contraste élevé sur l'écran de connexion.
-
-          Si vous définissez cette règle sur "True", le mode Contraste élevé est activé à l'affichage de l'écran de connexion.
-
-          Si vous définissez cette règle sur "False", il est désactivé à l'affichage de l'écran de connexion.
-
-          Si vous définissez cette règle, les utilisateurs peuvent l'ignorer temporairement en activant ou en désactivant le mode Contraste élevé. Toutefois, cette option n'est pas définitive, et la valeur par défaut est restaurée dès que l'écran de connexion est affiché de nouveau ou que l'utilisateur reste inactif pendant une minute sur l'écran de connexion.
-
-          Si vous ne définissez pas cette règle, le mode Contraste élevé est désactivé au premier affichage de l'écran de connexion. Les utilisateurs peuvent l'activer ou le désactiver à tout moment, et son état sur l'écran de connexion est appliqué à tous les utilisateurs.</translation>
 <translation id="1468707346106619889">Si cette règle est définie sur "True", le bureau unifié est autorisé et activé
       par défaut, ce qui permet aux applications de couvrir plusieurs affichages.
       L'utilisateur peut désactiver le bureau unifié pour certains affichages
@@ -817,6 +809,10 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       Si cette règle est définie sur "True", les événements sont enregistrés.
       Si cette règle est définie sur "False" ou si elle n'est pas configurée, les événements ne sont pas enregistrés.</translation>
+<translation id="2440773021691931148">Envoie des rapports sur les statistiques et identifiants matériels associés à l'alimentation.
+
+      Si la règle est définie sur "False" ou n'est pas définie, les statistiques ne seront pas envoyées.
+      Si la règle est définie sur "True", elles seront envoyées.</translation>
 <translation id="244317009688098048">Activer le raccourci clavier permettant d'ignorer le processus de connexion automatique
 
       Si cette règle n'est pas définie, ou si elle est définie sur "true", et qu'un compte local de l'appareil est configuré pour une connexion automatique sans délai d'expiration, le raccourci clavier Ctrl + Alt + S est pris en compte dans <ph name="PRODUCT_OS_NAME" /> pour ignorer la connexion automatique et afficher l'écran de connexion.
@@ -825,6 +821,15 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 <translation id="2454228136871844693">Privilégier la stabilité.</translation>
 <translation id="2463034609187171371">Activer des suites de chiffrement DHE dans TLS</translation>
 <translation id="2463365186486772703">Paramètres régionaux de l'application</translation>
+<translation id="2464012905766911533">Cette règle permet à un administrateur de spécifier qu'une page peut envoyer des requêtes XHR synchrones pendant sa fermeture.
+
+      Lorsque la règle est activée, les pages sont autorisées à envoyer des requêtes XHR synchrones pendant leur fermeture.
+
+      Lorsque la règle est désactivée ou n'est pas définie, les pages ne sont pas autorisées à envoyer des requêtes XHR synchrones pendant leur fermeture.
+
+      Cette règle sera supprimée dans Chrome 82.
+
+      Pour en savoir plus, consultez l'article à l'adresse https://www.chromestatus.com/feature/4664843055398912.</translation>
 <translation id="2466131534462628618">L'authentification de portail captif ignore le proxy</translation>
 <translation id="2466697858869282874">Permet de configurer la disponibilité et le comportement de la fonctionnalité de mise à jour du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
@@ -1528,6 +1533,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
           Si cette règle n'est pas définie, la fonctionnalité Sélectionner pour prononcer est initialement désactivée, mais les utilisateurs peuvent l'activer à tout moment.</translation>
 <translation id="3591527072193107424">Activer la fonctionnalité Legacy Browser Support.</translation>
 <translation id="3591584750136265240">Configurer le mode d'authentification lors de la connexion</translation>
+<translation id="3617743504695003280">Autorise une page à exécuter des requêtes XHR synchrones pendant sa fermeture.</translation>
 <translation id="3627678165642179114">Activer ou désactiver le service Web de correction orthographique</translation>
 <translation id="3628480121685794414">Activer l'impression recto</translation>
 <translation id="3631099945620529777">Si cette règle est définie sur "false", le bouton "Arrêter le processus" est désactivé dans le gestionnaire de tâches.
@@ -1723,6 +1729,10 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si la règle relative au fond d'écran est configurée, l'appareil Chrome OS téléchargera et utilisera l'image de fond d'écran sur l'écran de connexion si aucun utilisateur ne s'est encore connecté à l'appareil. Lorsque l'utilisateur se connecte, la règle relative au fond d'écran pour cet utilisateur est activée.
 
       Si la règle relative au fond d'écran n'est pas définie pour l'appareil, la règle correspondante pour l'utilisateur détermine l'élément à afficher (si cette règle est définie).</translation>
+<translation id="3964606652985594895">Envoie des rapports sur les statistiques et identifiants matériels pour les appareils de stockage.
+
+      Si la règle est définie sur "False" ou n'est pas définie, les statistiques ne seront pas envoyées.
+      Si la règle est définie sur "True", elles seront envoyées.</translation>
 <translation id="3965339130942650562">Délai avant exécution de la déconnexion de l'utilisateur en cas d'inactivité</translation>
 <translation id="3973371701361892765">Ne jamais masquer automatiquement l'étagère</translation>
 <translation id="3984028218719007910">Détermine si <ph name="PRODUCT_OS_NAME" /> doit conserver les données locales des comptes après la déconnexion. Si cette règle est définie sur "true", aucun compte persistant n'est conservé par <ph name="PRODUCT_OS_NAME" />. Par ailleurs, toutes les données de la session utilisateur sont supprimées après la déconnexion. Si cette règle est définie sur "false" ou si elle n'est pas configurée, l'appareil peut conserver des données utilisateur locales (chiffrées).</translation>
@@ -2210,9 +2220,16 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 <translation id="4807950475297505572">Les comptes utilisateurs utilisés le moins récemment sont supprimés jusqu'à ce que l'espace libre soit suffisant.</translation>
 <translation id="4816674326202173458">Autoriser l'utilisateur d'entreprise à être à la fois un utilisateur principal et un utilisateur secondaire (comportement par défaut pour les utilisateurs non gérés)</translation>
 <translation id="4826326557828204741">Définit l'action à effectuer si le délai d'inactivité est atteint lorsque l'appareil fonctionne sur batterie.</translation>
+<translation id="4830531683854509779">Envoie des rapports sur les statistiques matérielles pour les composants SoC.
+
+      Si la règle est définie sur "False" ou n'est pas définie, les statistiques ne seront pas envoyées.
+      Si la règle est définie sur "True", elles seront envoyées.</translation>
 <translation id="4832852360828533362">Création de rapports sur les utilisateurs et les appareils</translation>
 <translation id="4834526953114077364">Les utilisateurs qui ne se sont pas connectés au cours des trois derniers mois et dont les comptes ont été utilisés le moins récemment sont supprimés jusqu'à ce que l'espace libre soit suffisant.</translation>
 <translation id="4835622243021053389">Activer l'authentification NTLMv2.</translation>
+<translation id="4856471929724652373">Fournit des informations concernant la mise à jour du système d'exploitation, par exemple l'état de la mise à jour, la version de la plate-forme, la dernière recherche de mise à jour et le dernier redémarrage.
+
+      Si la règle est définie sur "False" ou n'est pas définie, les informations de mise à jour du système d'exploitation ne seront pas communiquées. Si elle est définie sur "True", les informations concernant la mise à jour du système d'exploitation seront communiquées.</translation>
 <translation id="4858735034935305895">Autoriser le mode plein écran</translation>
 <translation id="4861767323695239729">Configurer les modes de saisie autorisés dans une session utilisateur</translation>
 <translation id="487460824085252184">Effectuer automatiquement la migration, sans demander l'autorisation de l'utilisateur.</translation>
@@ -2846,15 +2863,6 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
       Les URL (comme https://example.com/ce/chemin) ne sont reconnues que comme des identifiants d'application U2F. Les domaines (comme example.com) ne sont reconnus que comme des identifiants RP WebAuthn. Ainsi, pour couvrir à la fois les API U2F et WebAuthn d'un site donné, vous devez préciser l'URL et le domaine de l'identifiant d'application.</translation>
 <translation id="5836064773277134605">Restreindre la plage de ports UDP utilisés par l'hôte d'accès à distance</translation>
 <translation id="5861856285460256766">Configuration du code d'accès parental</translation>
-<translation id="5862253018042179045">Définir l'état par défaut de la fonctionnalité d'accessibilité de commentaires audio sur l'écran de connexion
-
-          Si vous définissez cette règle sur "True", les commentaires audio sont activés à l'affichage de l'écran de connexion.
-
-          Si vous définissez cette règle sur "False", ils sont désactivés à l'affichage de l'écran de connexion.
-
-          Si vous définissez cette règle, les utilisateurs peuvent l'ignorer temporairement en activant ou en désactivant les commentaires audio. Toutefois, cette option n'est pas définitive, et la valeur par défaut est restaurée dès que l'écran de connexion est affiché de nouveau ou que l'utilisateur reste inactif pendant une minute sur l'écran de connexion.
-
-          Si vous ne définissez pas cette règle, les commentaires audio sont désactivés au premier affichage de l'écran de connexion. Les utilisateurs peuvent les activer ou les désactiver à tout moment, et leur état sur l'écran de connexion est appliqué à tous les utilisateurs.</translation>
 <translation id="5868414965372171132">Configuration réseau au niveau de l'utilisateur</translation>
 <translation id="5879014913445067283">Contrôler la détection des partages de fichiers sur le réseau via <ph name="NETBIOS_NAME" /></translation>
 <translation id="5882345429632338713">Délai avant le lancement du navigateur secondaire (en millisecondes)</translation>
@@ -3252,6 +3260,7 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6689792153960219308">Envoyer des rapports sur l'état du matériel</translation>
 <translation id="6698632841807204978">Activer l'impression monochrome</translation>
 <translation id="6699880231565102694">Activer l'authentification forte pour les hôtes d'accès à distance</translation>
+<translation id="670597451099978576">Autoriser automatiquement ces sites à se connecter aux appareils USB à l'aide des ID de fournisseur et de produit indiqués sur l'écran de connexion.</translation>
 <translation id="6720080634516505446"><ph name="PRODUCT_NAME" /> assure la sécurité de la mise à jour et de l'installation d'extensions. Cependant, le contenu de certaines extensions hébergées en dehors du Chrome Web Store peut n'être protégé que par une connexion non sécurisée ou des algorithmes de hachage tels que SHA1. Si cette règle est désactivée, Chrome n'autorise pas l'installation ni la mise à jour de ces extensions (tant que les développeurs ne les dotent pas d'algorithmes plus sécurisés). Si cette règle est activée, l'installation et la mise à jour de ces extensions sont autorisées.
 
           Si elle n'est pas définie, la règle est activée par défaut.
@@ -3829,6 +3838,21 @@ On attend de cette règle qu'elle soit utilisée dans le cadre de la modificatio
       Lorsque cette règle est activée, le code d'accès parental peut être validé sur l'appareil d'un enfant.
       Lorsqu'elle est désactivée, il est impossible de valider ce code sur l'appareil d'un enfant.</translation>
 <translation id="7625444193696794922">Indique le canal de distribution sur lequel cet appareil devrait être verrouillé.</translation>
+<translation id="7625498350540361483">
+      Si la règle est définie sur "True", <ph name="PRODUCT_NAME" /> est autorisé à collecter auprès des services Google (Google Meet, par exemple) les journaux des événements WebRTC et à les importer sur Google.
+
+      Si la règle est définie sur "False", <ph name="PRODUCT_NAME" /> ne peut ni collecter ni importer ces journaux.
+
+      Si la règle n'est pas définie, jusqu'à M76 inclus, <ph name="PRODUCT_NAME" /> ne peut ni collecter ni importer ces journaux.
+
+      Si la règle n'est pas définie, à partir de M77, <ph name="PRODUCT_NAME" /> peut collecter ou importer ces journaux par défaut si le profil du navigateur est considéré comme géré, c'est-à-dire si le profil reçoit des règles au niveau du cloud ou de la machine, et n'est pas un profil d'enfant, un profil éphémère, un profil de connexion, ni un profil de navigation privée.
+
+      Ces journaux contiennent des informations de diagnostic utiles pour déboguer des problèmes liés aux appels audio ou vidéo dans Chrome, telles que l'horodatage et la taille des paquets RTP envoyés et reçus, des commentaires sur l'encombrement du réseau, ainsi que des métadonnées concernant l'horodatage et la qualité des trames vidéo et audio. Ces journaux n'incluent aucun contenu audio ni vidéo de l'appel.
+
+      Cette collecte de données par Chrome ne peut être déclenchée que par des services Web de Google, tels que Google Hangouts ou Google Meet.
+
+      Google peut associer ces journaux à d'autres journaux collectés par le service Google proprement dit à l'aide d'un ID de session dans le but de faciliter le débogage.
+      </translation>
 <translation id="7632724434767231364">Nom de la bibliothèque GSSAPI</translation>
 <translation id="7635471475589566552">Configure les paramètres régionaux de l'application dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ces paramètres. 
 
@@ -4356,6 +4380,11 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
       domaines google.com, comme décrit sur la page https://support.google.com/a/answer/1668854.
 
       Les utilisateurs ne peuvent pas modifier ni remplacer ce paramètre.</translation>
+<translation id="8625234016727663537">Vous permet de définir une liste d'URL spécifiant les sites automatiquement autorisés à accéder à un appareil USB correspondant aux ID de fournisseur et de produit indiqués sur l'écran de connexion. Chaque élément de la liste doit contenir à la fois les appareils et les URL pour que la règle soit valide. Chaque élément des appareils peut comporter un champ d'ID de produit et d'ID de fournisseur. Les ID non renseignés sont traités comme des caractères génériques, à une exception près : un ID de produit ne peut pas être spécifié si un ID de fournisseur n'est pas aussi spécifié. Sinon, la règle n'est pas valide et est ignorée.
+
+        Le modèle d'autorisation USB utilise l'URL du site à l'origine de la demande ("URL de requête") et l'URL du site du cadre de premier niveau ("URL d'intégration") pour autoriser l'URL de requête à accéder à l'appareil USB. L'URL de requête peut être différente de l'URL d'intégration si le site à l'origine de la demande est chargé dans un iFrame. Le champ "URL" peut de ce fait contenir jusqu'à deux chaînes d'URL séparées par une virgule, afin d'indiquer l'URL de requête et l'URL d'intégration, respectivement. Si une seule URL est spécifiée, l'accès aux appareils USB concernés est autorisé si l'URL du site à l'origine de la demande correspond à cette URL, quel que soit l'état d'intégration. Si les URL indiquées dans le champ "URL" ne sont pas valides, la règle est ignorée.
+
+        Si cette règle n'est pas définie, la valeur globale par défaut est utilisée pour tous les sites (pas d'accès automatique).</translation>
 <translation id="8631434304112909927">jusqu'à la version <ph name="UNTIL_VERSION" /></translation>
 <translation id="8649763579836720255">Il est possible d'utiliser l'attestation à distance (accès vérifié) pour les appareils Chrome OS afin d'obtenir un certificat délivré par Chrome OS CA qui atteste que vous pouvez lire du contenu protégé sur cet appareil. Ce processus implique l'envoi d'informations relatives au matériel à Chrome OS CA qui permettent d'identifier l'appareil de façon unique.
 

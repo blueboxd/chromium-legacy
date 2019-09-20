@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "net/cookies/canonical_cookie.h"
 #include "url/gurl.h"
 #include "url/origin.h"

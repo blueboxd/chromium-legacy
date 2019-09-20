@@ -142,7 +142,8 @@ void FaceDetectionProviderWin::OnFaceDetectorCreated(
   auto* impl_ptr = impl.get();
   impl_ptr->SetBinding(mojo::MakeStrongBinding(
       std::move(impl),
-      mojo::InterfaceRequest<shape_detection::mojom::FaceDetection>(receiver)));
+      mojo::InterfaceRequest<shape_detection::mojom::FaceDetection>(
+          std::move(receiver))));
 }
 
 }  // namespace shape_detection

@@ -17,6 +17,16 @@ DeviceAccountsSynchronizerImpl::DeviceAccountsSynchronizerImpl(
 
 DeviceAccountsSynchronizerImpl::~DeviceAccountsSynchronizerImpl() = default;
 
+#if defined(OS_ANDROID)
+void DeviceAccountsSynchronizerImpl::
+    ReloadAllAccountsFromSystemWithPrimaryAccount(
+        const CoreAccountId& primary_account_id) {
+  token_service_delegate_->ReloadAllAccountsFromSystemWithPrimaryAccount(
+      primary_account_id);
+}
+#endif
+
+#if defined(OS_IOS)
 void DeviceAccountsSynchronizerImpl::ReloadAllAccountsFromSystem() {
   token_service_delegate_->ReloadAllAccountsFromSystem();
 }
@@ -25,5 +35,6 @@ void DeviceAccountsSynchronizerImpl::ReloadAccountFromSystem(
     const CoreAccountId& account_id) {
   token_service_delegate_->ReloadAccountFromSystem(account_id);
 }
+#endif
 
 }  // namespace signin

@@ -84,10 +84,10 @@ MojoSafeBrowsingImpl::MojoSafeBrowsingImpl(
       resource_context_(resource_context) {
   DCHECK(resource_context_);
 
-  // It is safe to bind |this| as Unretained because |bindings_| is owned by
+  // It is safe to bind |this| as Unretained because |receivers_| is owned by
   // |this| and will not call this callback after it is destroyed.
-  bindings_.set_connection_error_handler(base::Bind(
-      &MojoSafeBrowsingImpl::OnConnectionError, base::Unretained(this)));
+  receivers_.set_disconnect_handler(base::Bind(
+      &MojoSafeBrowsingImpl::OnMojoDisconnect, base::Unretained(this)));
 }
 
 MojoSafeBrowsingImpl::~MojoSafeBrowsingImpl() {
@@ -99,7 +99,7 @@ void MojoSafeBrowsingImpl::MaybeCreate(
     int render_process_id,
     content::ResourceContext* resource_context,
     const base::Callback<scoped_refptr<UrlCheckerDelegate>()>& delegate_getter,
-    mojom::SafeBrowsingRequest request) {
+    mojo::PendingReceiver<mojom::SafeBrowsing> receiver) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   scoped_refptr<UrlCheckerDelegate> delegate = delegate_getter.Run();
@@ -110,7 +110,7 @@ void MojoSafeBrowsingImpl::MaybeCreate(
 
   std::unique_ptr<MojoSafeBrowsingImpl> impl(new MojoSafeBrowsingImpl(
       std::move(delegate), render_process_id, resource_context));
-  impl->Clone(std::move(request));
+  impl->Clone(std::move(receiver));
 
   MojoSafeBrowsingImpl* raw_impl = impl.get();
   std::unique_ptr<SafeBrowserUserData> user_data =
@@ -161,12 +161,13 @@ void MojoSafeBrowsingImpl::CreateCheckerAndCheck(
   mojo::MakeStrongBinding(std::move(checker_impl), std::move(request));
 }
 
-void MojoSafeBrowsingImpl::Clone(mojom::SafeBrowsingRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void MojoSafeBrowsingImpl::Clone(
+    mojo::PendingReceiver<mojom::SafeBrowsing> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
-void MojoSafeBrowsingImpl::OnConnectionError() {
-  if (bindings_.empty()) {
+void MojoSafeBrowsingImpl::OnMojoDisconnect() {
+  if (receivers_.empty()) {
     resource_context_->RemoveUserData(user_data_key_);
     // This object is destroyed.
   }

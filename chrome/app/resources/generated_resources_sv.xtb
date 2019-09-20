@@ -4857,7 +4857,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8174876712881364124">Säkerhetskopiera till Google Drive. Återställ enkelt data eller byt enhet när som helst. Säkerhetskopian innehåller appdata. Säkerhetskopiorna krypteras med hjälp av lösenordet för ditt barns Google-konto och laddas upp på Google. <ph name="BEGIN_LINK1" />Läs mer<ph name="END_LINK1" /></translation>
 <translation id="8176332201990304395">Rosa och vit</translation>
 <translation id="8177196903785554304">Nätverksuppgifter</translation>
-<translation id="8178208419593390223">Hantera inloggade Google-konton. Webbplatser, appar och tillägg i Chrome och på Google Play kan anpassa din upplevelse utifrån dessa konton beroende på behörighet.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">sida</translation>
 <translation id="8180294223783876911">Skicka diagnostik- och användningsdata. Den här enheten skickar för närvarande diagnostikdata, enhetsdata och data om appanvändning till Google automatiskt. Denna data används till att förbättra systemets och apparnas stabilitet med mera. Viss samlad data används även till att förbättra appar från Google och partner, till exempel Android-utvecklare. Om ytterligare webb- och appaktivitet har aktiverats kan denna data sparas i Google-kontot. <ph name="BEGIN_LINK1" />Läs mer<ph name="END_LINK1" /></translation>

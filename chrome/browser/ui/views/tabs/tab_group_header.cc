@@ -54,7 +54,18 @@ TabGroupHeader::TabGroupHeader(TabController* controller, TabGroupId group)
 }
 
 bool TabGroupHeader::OnMousePressed(const ui::MouseEvent& event) {
-  TabGroupEditorBubbleView::Show(this, controller_, group_);
+  // Ignore the click if the editor is already open. Do this so clicking
+  // on us again doesn't re-trigger the editor.
+  //
+  // Though the bubble is deactivated before we receive a mouse event,
+  // the actual widget destruction happens in a posted task. That task
+  // gets run after we receive the mouse event. If this sounds brittle,
+  // that's because it is!
+  if (editor_bubble_tracker_.is_open())
+    return false;
+
+  editor_bubble_tracker_.Opened(
+      TabGroupEditorBubbleView::Show(this, controller_, group_));
   return true;
 }
 
@@ -103,4 +114,16 @@ void TabGroupHeader::VisualsChanged() {
       data->color(),
       provider->GetCornerRadiusMetric(views::EMPHASIS_MAXIMUM,
                                       title_chip_->GetPreferredSize())));
+}
+
+void TabGroupHeader::EditorBubbleTracker::Opened(views::Widget* bubble_widget) {
+  DCHECK(bubble_widget);
+  DCHECK(!is_open_);
+  is_open_ = true;
+  bubble_widget->AddObserver(this);
+}
+
+void TabGroupHeader::EditorBubbleTracker::OnWidgetDestroyed(
+    views::Widget* widget) {
+  is_open_ = false;
 }

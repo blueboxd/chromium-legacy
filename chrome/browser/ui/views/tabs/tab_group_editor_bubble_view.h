@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/controls/textfield/textfield_controller.h"
 
 class TabController;
 
@@ -24,14 +25,17 @@ class ColorPickerView;
 // testing, but it is not ready to be launched.
 class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
  public:
-  static void Show(views::View* anchor_view,
-                   TabController* tab_controller,
-                   TabGroupId group);
+  // Shows the editor for |group|. Returns an *unowned* pointer to the
+  // bubble's widget.
+  static views::Widget* Show(views::View* anchor_view,
+                             TabController* tab_controller,
+                             TabGroupId group);
 
   // views::BubbleDialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
   base::string16 GetWindowTitle() const override;
-  bool Accept() override;
+  ui::ModalType GetModalType() const override;
+  int GetDialogButtons() const override;
 
  private:
   TabGroupEditorBubbleView(views::View* anchor_view,
@@ -39,9 +43,26 @@ class TabGroupEditorBubbleView : public views::BubbleDialogDelegateView {
                            TabGroupId group);
   ~TabGroupEditorBubbleView() override;
 
+  void UpdateGroup();
+
   TabController* const tab_controller_;
   const TabGroupId group_;
 
+  class TitleFieldController : public views::TextfieldController {
+   public:
+    explicit TitleFieldController(TabGroupEditorBubbleView* parent)
+        : parent_(parent) {}
+    ~TitleFieldController() override = default;
+
+    // views::TextfieldController:
+    void ContentsChanged(views::Textfield* sender,
+                         const base::string16& new_contents) override;
+
+   private:
+    TabGroupEditorBubbleView* const parent_;
+  };
+
+  TitleFieldController title_field_controller_;
   views::Textfield* title_field_;
 
   ColorPickerView* color_selector_;

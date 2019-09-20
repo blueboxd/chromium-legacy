@@ -10,7 +10,10 @@
 #include <algorithm>
 #include <iterator>
 #include <memory>
+#include <string>
+#include <utility>
 
+#include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
@@ -112,14 +115,22 @@ void TabRestoreServiceHelper::BrowserClosing(LiveTabContext* context) {
   window->show_state = context->GetRestoredState();
   window->workspace = context->GetWorkspace();
 
+  base::flat_set<base::Token> seen_groups;
   for (int tab_index = 0; tab_index < context->GetTabCount(); ++tab_index) {
     auto tab = std::make_unique<Tab>();
     PopulateTab(tab.get(), tab_index, context,
                 context->GetLiveTabAt(tab_index));
     if (!tab->navigations.empty()) {
+      if (tab->group.has_value())
+        seen_groups.insert(tab->group.value());
       tab->browser_id = context->GetSessionID().id();
       window->tabs.push_back(std::move(tab));
     }
+  }
+
+  for (const base::Token& group : seen_groups) {
+    TabGroupMetadata metadata = context->GetTabGroupMetadata(group);
+    window->tab_groups.emplace(group, std::move(metadata));
   }
 
   if (window->tabs.size() == 1 && window->app_name.empty()) {
@@ -316,6 +327,11 @@ std::vector<LiveTab*> TabRestoreServiceHelper::RestoreEntryById(
             live_tabs.push_back(restored_tab);
           }
         }
+
+        for (const auto& tab_group : window.tab_groups) {
+          context->SetTabGroupMetadata(tab_group.first, tab_group.second);
+        }
+
         // All the window's tabs had the same former browser_id.
         if (auto browser_id = window.tabs[0]->browser_id) {
           UpdateTabBrowserIDs(browser_id, context->GetSessionID());

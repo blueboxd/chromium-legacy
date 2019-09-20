@@ -2386,6 +2386,7 @@ bool ShellUtil::GetOldUserSpecificRegistrySuffix(base::string16* suffix) {
 bool ShellUtil::AddFileAssociations(
     const base::string16& prog_id,
     const base::CommandLine& command_line,
+    const base::string16& application_name,
     const base::string16& file_type_name,
     const base::FilePath& icon_path,
     const std::set<base::string16>& file_extensions) {
@@ -2394,6 +2395,7 @@ bool ShellUtil::AddFileAssociations(
   // Create a class for this app.
   ApplicationInfo app_info;
   app_info.prog_id = prog_id;
+  app_info.application_name = application_name;
   app_info.file_type_name = file_type_name;
   app_info.file_type_icon_path = icon_path;
   app_info.file_type_icon_index = 0;

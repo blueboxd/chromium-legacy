@@ -1241,8 +1241,8 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)
     IPC_MESSAGE_HANDLER(ViewMsg_EnablePreferredSizeChangedMode,
                         OnEnablePreferredSizeChangedMode)
-    IPC_MESSAGE_HANDLER(ViewMsg_UpdateLocalMainFrameVisualProperties,
-                        OnUpdateLocalMainFramePageVisualProperties)
+    IPC_MESSAGE_HANDLER(ViewMsg_UpdateVisualProperties,
+                        OnUpdateVisualProperties)
     IPC_MESSAGE_HANDLER(ViewMsg_SetRendererPrefs, OnSetRendererPrefs)
     IPC_MESSAGE_HANDLER(ViewMsg_PluginActionAt, OnPluginActionAt)
     IPC_MESSAGE_HANDLER(ViewMsg_AnimateDoubleTapZoom,
@@ -1996,15 +1996,15 @@ void RenderViewImpl::OnPageWasShown() {
   ApplyPageHidden(/*hidden=*/false, /*initial_setting=*/false);
 }
 
-void RenderViewImpl::OnUpdateLocalMainFramePageVisualProperties(
-    const VisualProperties& visual_properties) {
+void RenderViewImpl::OnUpdateVisualProperties(
+    const VisualProperties& visual_properties,
+    int widget_routing_id) {
   // TODO(https://crbug.com/998273): We should not forward visual properties to
   // frozen render widgets.
-  // If the main frame is detached while the IPC is in flight, then
-  // render_widget_ may be nullptr when we get here [once we get rid of frozen
-  // RenderWidgets]. In that case, don't forward anything.
-  if (render_widget_) {
-    render_widget_->OnSynchronizeVisualProperties(visual_properties);
+  // The widget may have been destroyed while the IPC was in flight.
+  RenderWidget* widget = RenderWidget::FromRoutingID(widget_routing_id);
+  if (widget) {
+    widget->SynchronizeVisualPropertiesFromRenderView(visual_properties);
   }
 }
 

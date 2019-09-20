@@ -200,18 +200,9 @@
 #include "net/base/url_util.h"
 #include "net/cert/x509_util.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/http/http_stream_factory.h"
-#include "net/http/transport_security_state.h"
-#include "net/http/transport_security_state_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "net/test/url_request/url_request_failed_job.h"
-#include "net/test/url_request/url_request_mock_http_job.h"
-#include "net/url_request/test_url_request_interceptor.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_filter.h"
-#include "net/url_request/url_request_interceptor.h"
 #include "services/device/public/cpp/test/fake_usb_device_info.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -279,7 +270,6 @@
 #endif
 
 using content::BrowserThread;
-using net::URLRequestMockHTTPJob;
 using safe_browsing::ReusedPasswordAccountType;
 using testing::_;
 using testing::AtLeast;
@@ -322,80 +312,6 @@ content::RenderFrameHost* GetMostVisitedIframe(content::WebContents* tab) {
   }
   return nullptr;
 }
-
-// Filters requests to the hosts in |urls| and redirects them to the test data
-// dir through URLRequestMockHTTPJobs.
-void RedirectHostsToTestData(const char* const urls[], size_t size) {
-  // Map the given hosts to the test data dir.
-  net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
-  base::FilePath base_path;
-  GetTestDataDirectory(&base_path);
-  for (size_t i = 0; i < size; ++i) {
-    const GURL url(urls[i]);
-    EXPECT_TRUE(url.is_valid());
-    filter->AddUrlInterceptor(
-        url, URLRequestMockHTTPJob::CreateInterceptor(base_path));
-  }
-}
-
-// Fails requests using ERR_CONNECTION_RESET.
-class FailedJobInterceptor : public net::URLRequestInterceptor {
- public:
-  FailedJobInterceptor() {}
-  ~FailedJobInterceptor() override {}
-
-  // URLRequestInterceptor implementation:
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    return new net::URLRequestFailedJob(request, network_delegate,
-                                        net::ERR_CONNECTION_RESET);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FailedJobInterceptor);
-};
-
-// While |MakeRequestFail| is in scope URLRequests to |host| will fail.
-class MakeRequestFail {
- public:
-  // Sets up the filter on IO thread such that requests to |host| fail.
-  explicit MakeRequestFail(const std::string& host) : host_(host) {
-    base::RunLoop run_loop;
-    base::PostTaskAndReply(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(MakeRequestFailOnIO, host_),
-                           run_loop.QuitClosure());
-    run_loop.Run();
-  }
-  ~MakeRequestFail() {
-    base::RunLoop run_loop;
-    base::PostTaskAndReply(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(UndoMakeRequestFailOnIO, host_),
-                           run_loop.QuitClosure());
-    run_loop.Run();
-  }
-
- private:
-  // Filters requests to the |host| such that they fail. Run on IO thread.
-  static void MakeRequestFailOnIO(const std::string& host) {
-    net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
-    filter->AddHostnameInterceptor("http", host,
-                                   std::unique_ptr<net::URLRequestInterceptor>(
-                                       new FailedJobInterceptor()));
-    filter->AddHostnameInterceptor("https", host,
-                                   std::unique_ptr<net::URLRequestInterceptor>(
-                                       new FailedJobInterceptor()));
-  }
-
-  // Remove filters for requests to the |host|. Run on IO thread.
-  static void UndoMakeRequestFailOnIO(const std::string& host) {
-    net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
-    filter->RemoveHostnameHandler("http", host);
-    filter->RemoveHostnameHandler("https", host);
-  }
-
-  const std::string host_;
-};
 
 // Verifies that the given url |spec| can be opened. This assumes that |spec|
 // points at empty.html in the test data dir.
@@ -993,8 +909,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WebsiteCookiesSetting) {
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
-  MakeRequestFail make_request_fail("search.example");
-
   // Verifies that a default search is made using the provider configured via
   // policy. Also checks that default search can be completely disabled.
   const base::string16 kKeyword(base::ASCIIToUTF16("testsearch"));
@@ -2974,12 +2888,6 @@ class RestoreOnStartupPolicyTest
     command_line->InitFromArgv(argv);
     ASSERT_TRUE(std::equal(argv.begin(), argv.end(),
                            command_line->argv().begin()));
-  }
-
-  void SetUpOnMainThread() override {
-    base::PostTask(FROM_HERE, {BrowserThread::IO},
-                   base::BindOnce(RedirectHostsToTestData, kRestoredURLs,
-                                  base::size(kRestoredURLs)));
   }
 
   void ListOfURLs() {
@@ -5831,21 +5739,16 @@ class HSTSPolicyTest : public PolicyTest {
               std::make_unique<base::ListValue>(bypass_list));
     provider_.UpdateChromePolicy(policies);
   }
-
- private:
-  net::ScopedTransportSecurityStateSource hsts_source_;
 };
 
 IN_PROC_BROWSER_TEST_F(HSTSPolicyTest, HSTSPolicyBypassList) {
-  if (content::IsOutOfProcessNetworkService()) {
-    network::mojom::NetworkServiceTestPtr network_service_test;
-    content::GetSystemConnector()->BindInterface(
-        content::mojom::kNetworkServiceName, &network_service_test);
-    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
-    // The port number 1234 here doesn't matter - it just needs to be a non-zero
-    // value so that we use the unittest_default preload list.
-    network_service_test->SetTransportSecurityStateSource(1234);
-  }
+  network::mojom::NetworkServiceTestPtr network_service_test;
+  content::GetSystemConnector()->BindInterface(
+      content::mojom::kNetworkServiceName, &network_service_test);
+  mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+  // The port number 1234 here doesn't matter - it just needs to be a non-zero
+  // value so that we use the unittest_default preload list.
+  network_service_test->SetTransportSecurityStateSource(1234);
 
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url("http://example/");

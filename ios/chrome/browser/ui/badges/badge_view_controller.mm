@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/badges/badge_button_factory.h"
 #import "ios/chrome/browser/ui/badges/badge_item.h"
 #import "ios/chrome/browser/ui/elements/extended_touch_target_button.h"
+#import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -149,6 +150,9 @@ const double kFullScreenProgressThreshold = 0.85;
   }
   _displayedBadge = badgeButton;
   [self.stackView addArrangedSubview:_displayedBadge];
+  NamedGuide* guide = [NamedGuide guideWithName:kBadgeOverflowMenuGuide
+                                           view:_displayedBadge];
+  guide.constrainedView = _displayedBadge;
 }
 
 - (void)setFullScreenBadge:(BadgeButton*)fullScreenBadge {

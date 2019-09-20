@@ -759,8 +759,8 @@ void ShelfView::ButtonPressed(views::Button* sender,
   // AppListViewState before the app was launched.
   recorded_app_list_view_state_ =
       Shell::Get()->app_list_controller()->GetAppListViewState();
-  recorded_home_launcher_shown_ =
-      Shell::Get()->app_list_controller()->presenter()->home_launcher_shown();
+  app_list_visibility_before_app_launch_ =
+      Shell::Get()->app_list_controller()->IsVisible();
 
   // Run AfterItemSelected directly if the item has no delegate (ie. in tests).
   const ShelfItem& item = model_->items()[last_pressed_index_];
@@ -2300,7 +2300,7 @@ void ShelfView::AfterItemSelected(const ShelfItem& item,
   if (action == SHELF_ACTION_NEW_WINDOW_CREATED ||
       action == SHELF_ACTION_WINDOW_ACTIVATED) {
     Shell::Get()->app_list_controller()->RecordShelfAppLaunched(
-        recorded_app_list_view_state_, recorded_home_launcher_shown_);
+        recorded_app_list_view_state_, app_list_visibility_before_app_launch_);
   }
 
   // The app list handles its own ink drop effect state changes.

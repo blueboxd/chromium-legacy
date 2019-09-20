@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
+#include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 
 #include <memory>
 #include <vector>
@@ -13,13 +13,13 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
-#include "chrome/browser/page_load_metrics/metrics_navigation_throttle.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_embedder_interface.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
-#include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/page_load_metrics/browser/metrics_navigation_throttle.h"
+#include "components/page_load_metrics/browser/page_load_metrics_embedder_interface.h"
+#include "components/page_load_metrics/browser/page_load_metrics_observer.h"
+#include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "components/page_load_metrics/common/test/weak_mock_timer.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"

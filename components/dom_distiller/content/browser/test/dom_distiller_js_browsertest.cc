@@ -113,11 +113,10 @@ class DomDistillerJsTest : public content::ContentBrowserTest {
 
 // Disabled on MSan as well as Android and Linux CFI bots.
 // https://crbug.com/845180
-// Then disabled more generally on Android: https://crbug.com/979685
-#if defined(MEMORY_SANITIZER) || defined(OS_WIN) || defined(OS_ANDROID) || \
-    (defined(OS_LINUX) &&                                                  \
-     (BUILDFLAG(CFI_CAST_CHECK) || BUILDFLAG(CFI_ICALL_CHECK) ||           \
-      BUILDFLAG(CFI_ENFORCEMENT_DIAGNOSTIC) ||                             \
+#if defined(MEMORY_SANITIZER) || defined(OS_WIN) ||              \
+    ((defined(OS_ANDROID) || defined(OS_LINUX)) &&               \
+     (BUILDFLAG(CFI_CAST_CHECK) || BUILDFLAG(CFI_ICALL_CHECK) || \
+      BUILDFLAG(CFI_ENFORCEMENT_DIAGNOSTIC) ||                   \
       BUILDFLAG(CFI_ENFORCEMENT_TRAP)))
 #define MAYBE_RunJsTests DISABLED_RunJsTests
 #else
@@ -162,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(DomDistillerJsTest, MAYBE_RunJsTests) {
   run_loop.Run();
 
   // Convert to dictionary and parse the results.
-  ASSERT_TRUE(result_.is_dict());
+  ASSERT_TRUE(result_.is_dict()) << "Result is not a dictionary: " << result_;
 
   base::Optional<bool> success = result_.FindBoolKey("success");
   ASSERT_TRUE(success.has_value());

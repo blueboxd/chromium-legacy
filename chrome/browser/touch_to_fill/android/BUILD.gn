@@ -5,6 +5,19 @@
 import("//build/config/android/rules.gni")
 import("//chrome/android/features/android_library_factory_tmpl.gni")
 
+source_set("android") {
+  visibility = [ "//chrome/browser/touch_to_fill:factory" ]
+
+  sources = [
+    "touch_to_fill_view_impl.cc",
+    "touch_to_fill_view_impl.h",
+  ]
+
+  deps = [
+    ":jni_headers",
+  ]
+}
+
 generate_jni("jni_headers") {
   sources = [
     "internal/java/src/org/chromium/chrome/browser/touch_to_fill/TouchToFillBridge.java",
@@ -20,6 +33,7 @@ android_library("public_java") {
     "//chrome/android:chrome_public_java",
     "//ui/android:ui_java",
   ]
+
   java_files = [
     "java/src/org/chromium/chrome/browser/touch_to_fill/data/Credential.java",
     "java/src/org/chromium/chrome/browser/touch_to_fill/TouchToFillComponent.java",

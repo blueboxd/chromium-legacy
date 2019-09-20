@@ -135,7 +135,10 @@ void ProtoDatabaseSelector::OnInitUniqueDB(
   if (!db_provider_ || unique_database_dir_.empty()) {
     db_ = std::move(unique_db);
     std::move(callback).Run(status);
-    OnInitDone(ProtoDatabaseInitState::kFailureNoDatabaseProvider);
+    OnInitDone(
+        status == Enums::kOK
+            ? ProtoDatabaseInitState::kSuccessNoSharedDBProviderUniqueSucceeded
+            : ProtoDatabaseInitState::kFailureNoSharedDBProviderUniqueFailed);
     return;
   }
 

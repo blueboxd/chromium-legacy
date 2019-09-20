@@ -98,6 +98,16 @@ bool IsDropdownEnabled(content::WebContents* contents,
   return result;
 }
 
+void WaitForExperimentalFeatures(content::WebContents* contents) {
+  bool unused;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      contents,
+      "experimentalFeaturesReady.then(() => {"
+      "  window.domAutomationController.send(true);"
+      "});",
+      &unused));
+}
+
 // In these tests, valid origins in the existing command line flag will be
 // appended to the list entered by the user in chrome://flags.
 // The tests are run twice for each bool value: Once with an existing command
@@ -129,6 +139,12 @@ class AboutFlagsBrowserTest : public InProcessBrowserTest,
                                       : kSanitizedInput;
   }
 
+  void NavigateToFlagsPage() {
+    ui_test_utils::NavigateToURL(browser(), GURL("chrome://flags"));
+    WaitForExperimentalFeatures(
+        browser()->tab_strip_model()->GetActiveWebContents());
+  }
+
   base::test::ScopedFeatureList feature_list_;
 };
 
@@ -139,7 +155,7 @@ INSTANTIATE_TEST_SUITE_P(,
 // Goes to chrome://flags page, types text into an ORIGIN_LIST_VALUE field but
 // does not enable the feature.
 IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, PRE_OriginFlagDisabled) {
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome://flags"));
+  NavigateToFlagsPage();
 
   const base::CommandLine::SwitchMap kInitialSwitches =
       base::CommandLine::ForCurrentProcess()->GetSwitches();
@@ -158,7 +174,7 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, PRE_OriginFlagDisabled) {
             base::CommandLine::ForCurrentProcess()->GetSwitches());
 
   // Input should be restored after a page reload.
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome://flags"));
+  NavigateToFlagsPage();
   EXPECT_EQ(GetSanitizedInputAndCommandLine(),
             GetOriginListText(contents, kSwitchName));
 }
@@ -170,7 +186,7 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, OriginFlagDisabled) {
       GetInitialCommandLine(),
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kSwitchName));
 
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome://flags"));
+  NavigateToFlagsPage();
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_FALSE(IsDropdownEnabled(contents, kSwitchName));
@@ -181,7 +197,7 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, OriginFlagDisabled) {
 // Goes to chrome://flags page, types text into an ORIGIN_LIST_VALUE field and
 // enables the feature.
 IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, PRE_OriginFlagEnabled) {
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome://flags"));
+  NavigateToFlagsPage();
 
   const base::CommandLine::SwitchMap kInitialSwitches =
       base::CommandLine::ForCurrentProcess()->GetSwitches();
@@ -217,18 +233,12 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, PRE_OriginFlagEnabled) {
 #endif
 
   // Input should be restored after a page reload.
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome://flags"));
+  NavigateToFlagsPage();
   EXPECT_EQ(GetSanitizedInputAndCommandLine(),
             GetOriginListText(contents, kSwitchName));
 }
 
-#if defined(OS_CHROMEOS) && !defined(NDEBUG)
-// TODO(https://crbug.com/1000714): Re-enable this test.
-#define MAYBE_OriginFlagEnabled DISABLED_OriginFlagEnabled
-#else
-#define MAYBE_OriginFlagEnabled OriginFlagEnabled
-#endif
-IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, MAYBE_OriginFlagEnabled) {
+IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, OriginFlagEnabled) {
 #if !defined(OS_CHROMEOS)
   // On non-ChromeOS, the command line is modified after restart.
   EXPECT_EQ(
@@ -241,7 +251,7 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, MAYBE_OriginFlagEnabled) {
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kSwitchName));
 #endif
 
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome://flags"));
+  NavigateToFlagsPage();
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(IsDropdownEnabled(contents, kSwitchName));

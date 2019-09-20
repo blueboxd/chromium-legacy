@@ -421,7 +421,6 @@
 <translation id="4039983576244166038">列標題沒有內容</translation>
 <translation id="4042843249978639960">沒有下一個第 2 階標題。</translation>
 <translation id="4043348641337972076">沒有上一個 ARIA 地標。</translation>
-<translation id="4045764028670444336">錯字開頭</translation>
 <translation id="4047216625641135770">標記</translation>
 <translation id="404803211695627272"><ph name="V1" /> 至 <ph name="V2" /></translation>
 <translation id="4053520724192563562">萊姆綠</translation>
@@ -504,7 +503,6 @@
 <translation id="4547556996012970016">下一個第 5 階標題</translation>
 <translation id="4562381607973973258">頁首</translation>
 <translation id="4569941707103739422">按下向上鍵或向下鍵即可瀏覽；按下 Enter 鍵則可啟動。</translation>
-<translation id="4570424871453628777">錯字結尾</translation>
 <translation id="4591507479202817876">，已選取</translation>
 <translation id="4597532268155981612">表單</translation>
 <translation id="4597896406374528575">4 月</translation>
@@ -728,7 +726,6 @@
 <translation id="6037602951055904232">向前平移</translation>
 <translation id="6042826534790431634">按下搜尋鍵和空格鍵即可啟動。</translation>
 <translation id="6044160928851315051">調暗螢幕</translation>
-<translation id="6065293622157674001">文法錯誤開頭</translation>
 <translation id="6082768461603900813">基本瀏覽操作</translation>
 <translation id="6118126368611144850">Android 應用程式 Chrome 版：如果你的裝置上有 Play 商店，可透過 Android 應用程式搶先體驗 ChromeVox。只要從 Play 商店下載 Google Chrome Canary 版，即可體驗實驗功能。</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -869,7 +866,6 @@
 <translation id="7143207342074048698">連線中</translation>
 <translation id="7153618581592392745">淡紫色</translation>
 <translation id="7157306005867877619">摘要</translation>
-<translation id="7161425887892204659">相符文字結尾</translation>
 <translation id="7161771961008409533">彈出式按鈕</translation>
 <translation id="7165714724802225287">目前的顯示樣式為交錯。</translation>
 <translation id="7167657087543110">字元語音回應</translation>
@@ -907,7 +903,6 @@
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">離開表格。</translation>
 <translation id="738899727977260036">岩藍</translation>
-<translation id="7392145451309930991">相符文字開頭</translation>
 <translation id="739763518212184081">上一行</translation>
 <translation id="7400575256015741911">偵測到拼字錯誤</translation>
 <translation id="7408482676469142474">表格</translation>
@@ -1120,7 +1115,6 @@
 <translation id="8476408756881832830">ChromeVox 朗讀時暫停播放音訊</translation>
 <translation id="8476508772960940536">視窗總覽</translation>
 <translation id="8503360654911991865">降低導覽精細度</translation>
-<translation id="8504695234784218301">文法錯誤結尾</translation>
 <translation id="8520472399088452386">微調按鈕</translation>
 <translation id="8534394844575788431">格式設定</translation>
 <translation id="8538744478902126321">推測目前儲存格的列標題</translation>

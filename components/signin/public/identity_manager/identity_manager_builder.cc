@@ -30,8 +30,11 @@
 #endif
 
 #if defined(OS_IOS)
-#include "components/signin/internal/identity_manager/device_accounts_synchronizer_impl.h"
 #include "components/signin/public/identity_manager/ios/device_accounts_provider.h"
+#endif
+
+#if defined(OS_ANDROID) || defined(OS_IOS)
+#include "components/signin/internal/identity_manager/device_accounts_synchronizer_impl.h"
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -155,7 +158,7 @@ std::unique_ptr<IdentityManager> BuildIdentityManager(
                                  std::move(params->image_decoder));
 
   std::unique_ptr<DeviceAccountsSynchronizer> device_accounts_synchronizer;
-#if defined(OS_IOS)
+#if defined(OS_IOS) || defined(OS_ANDROID)
   device_accounts_synchronizer =
       std::make_unique<DeviceAccountsSynchronizerImpl>(
           token_service->GetDelegate());

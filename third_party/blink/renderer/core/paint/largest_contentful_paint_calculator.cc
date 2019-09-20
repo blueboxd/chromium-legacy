@@ -123,10 +123,12 @@ void LargestContentfulPaintCalculator::UpdateLargestContentfulPaint(
     const KURL& url = cached_image->Url();
     auto* document = window_performance_->GetExecutionContext();
     bool expose_paint_time_to_api = true;
+    bool tainted = false;
     if (!url.ProtocolIsData() &&
-        (!document || !Performance::PassesTimingAllowCheck(
-                          cached_image->GetResponse(),
-                          *document->GetSecurityOrigin(), document))) {
+        (!document ||
+         !Performance::PassesTimingAllowCheck(cached_image->GetResponse(),
+                                              *document->GetSecurityOrigin(),
+                                              document, &tainted))) {
       expose_paint_time_to_api = false;
     }
     const String& image_url =

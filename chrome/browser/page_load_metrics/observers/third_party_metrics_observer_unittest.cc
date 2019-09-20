@@ -5,7 +5,7 @@
 #include "chrome/browser/page_load_metrics/observers/third_party_metrics_observer.h"
 
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
-#include "chrome/browser/page_load_metrics/page_load_tracker.h"
+#include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "net/cookies/canonical_cookie.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

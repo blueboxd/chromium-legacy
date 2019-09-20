@@ -420,7 +420,6 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="4039983576244166038">Lege koptekst rij</translation>
 <translation id="4042843249978639960">Geen volgende kop voor niveau 2.</translation>
 <translation id="4043348641337972076">Geen vorig ARIA-oriëntatiepunt.</translation>
-<translation id="4045764028670444336">Begin van spelfout</translation>
 <translation id="4047216625641135770">Markeren</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4053520724192563562">Limoengroen</translation>
@@ -503,7 +502,6 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="4547556996012970016">Volgende kop voor niveau 5</translation>
 <translation id="4562381607973973258">Koptekst</translation>
 <translation id="4569941707103739422">Druk op de pijl-omhoog of -omlaag om te navigeren of druk op Enter om te activeren.</translation>
-<translation id="4570424871453628777">Einde van spelfout</translation>
 <translation id="4591507479202817876">, geselecteerd</translation>
 <translation id="4597532268155981612">formulier</translation>
 <translation id="4597896406374528575">april</translation>
@@ -727,7 +725,6 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="6037602951055904232">Vooruit schuiven</translation>
 <translation id="6042826534790431634">Druk op de zoektoets en de spatiebalk om te activeren.</translation>
 <translation id="6044160928851315051">Scherm donkerder maken</translation>
-<translation id="6065293622157674001">Begin van grammaticafout</translation>
 <translation id="6082768461603900813">Basisnavigatie</translation>
 <translation id="6118126368611144850">Android-apps voor Chrome. Als de Play Store op je apparaat staat, kun je een voorproefje van ChromeVox met Android-apps krijgen. Probeer de experimentele ondersteuning door Google Chrome Canary te downloaden vanuit de Play Store.</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -867,7 +864,6 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="7143207342074048698">Verbinding maken</translation>
 <translation id="7153618581592392745">Lavendel</translation>
 <translation id="7157306005867877619">Uittreksel</translation>
-<translation id="7161425887892204659">Eind van tekstovereenkomst</translation>
 <translation id="7161771961008409533">Pop-up-knop</translation>
 <translation id="7165714724802225287">De huidige weergavestijl is interleave.</translation>
 <translation id="7167657087543110">tekenecho</translation>
@@ -905,7 +901,6 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Tabel verlaten.</translation>
 <translation id="738899727977260036">Leisteenblauw</translation>
-<translation id="7392145451309930991">Begin van tekstovereenkomst</translation>
 <translation id="739763518212184081">Vorige regel</translation>
 <translation id="7400575256015741911">Spelfout gedetecteerd</translation>
 <translation id="7408482676469142474">tabel</translation>
@@ -1118,7 +1113,6 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="8476408756881832830">Afspelen onderbreken wanneer ChromeVox spreekt</translation>
 <translation id="8476508772960940536">vensteroverzicht</translation>
 <translation id="8503360654911991865">Detailniveau van navigatie verkleinen</translation>
-<translation id="8504695234784218301">Einde van grammaticafout</translation>
 <translation id="8520472399088452386">Draaiknop</translation>
 <translation id="8534394844575788431">Opmaak</translation>
 <translation id="8538744478902126321">Schat de kop van de rij van de huidige cel</translation>

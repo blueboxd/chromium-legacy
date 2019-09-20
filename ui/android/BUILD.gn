@@ -326,7 +326,6 @@ android_library("ui_full_java") {
     "java/src/org/chromium/ui/widget/OptimizedFrameLayout.java",
     "java/src/org/chromium/ui/widget/RectProvider.java",
     "java/src/org/chromium/ui/widget/RippleBackgroundHelper.java",
-    "java/src/org/chromium/ui/widget/RoundedCornerImageView.java",
     "java/src/org/chromium/ui/widget/TextViewWithClickableSpans.java",
     "java/src/org/chromium/ui/widget/TextViewWithLeading.java",
     "java/src/org/chromium/ui/widget/Toast.java",
@@ -338,11 +337,13 @@ android_library("ui_full_java") {
     ":ui_java_resources",
     ":ui_utils_java",
     "//base:base_java",
+    "//base:jni_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:com_android_support_asynclayoutinflater_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
   ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   srcjar_deps = [
     ":java_enums_srcjar",
     "//ui/base:ui_base_cursor_type_java_enums_srcjar",

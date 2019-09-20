@@ -1426,39 +1426,6 @@ IN_PROC_BROWSER_TEST_F(DNSErrorPageTest, RedirectToInvalidURL) {
                      ->GetLastCommittedURL());
 }
 
-class ErrorPageWithHttp09OnNonDefaultPortsTest : public InProcessBrowserTest {
- public:
-  // InProcessBrowserTest:
-  void SetUp() override {
-    EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
-        .WillRepeatedly(testing::Return(true));
-    policy::PolicyMap values;
-    values.Set(policy::key::kHttp09OnNonDefaultPortsEnabled,
-               policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
-               policy::POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::Value(true)), nullptr);
-    policy_provider_.UpdateChromePolicy(values);
-    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
-        &policy_provider_);
-
-    InProcessBrowserTest::SetUp();
-  }
-
- private:
-  policy::MockConfigurationPolicyProvider policy_provider_;
-};
-
-// Make sure HTTP/0.9 works on non-default ports when enabled by policy.
-IN_PROC_BROWSER_TEST_F(ErrorPageWithHttp09OnNonDefaultPortsTest,
-                       Http09WeirdPortEnabled) {
-  const char kHttp09Response[] = "JumboShrimp";
-  ASSERT_TRUE(embedded_test_server()->Start());
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL(std::string("/echo-raw?") +
-                                                kHttp09Response));
-  EXPECT_TRUE(IsDisplayingText(browser(), kHttp09Response));
-}
-
 // Checks that when an HTTP error page is sniffed as a download, an error page
 // is displayed. This tests the particular case in which the response body
 // is small enough that the entire response must be read before its MIME type

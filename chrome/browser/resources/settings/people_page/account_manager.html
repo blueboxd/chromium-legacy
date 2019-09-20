@@ -45,8 +45,17 @@
         margin-inline-start: 60px;
       }
 
-      #account-list-header {
-        padding-bottom: 8px;
+      .secondary-accounts-policy-indicator {
+        margin-inline-end: 12px;
+      }
+
+      .settings-box.user-message {
+        align-items: flex-end;
+      }
+
+      #account-list-header > h2 {
+        padding-bottom: 12px;
+        padding-top: 12px;
       }
 
       cr-policy-indicator {
@@ -55,7 +64,8 @@
       }
 
       #add-account-button {
-        margin-top: var(--add-account-margin-top);
+        margin-bottom: 12px;
+        margin-top: 12px;
       }
 
       #add-account-icon {
@@ -105,14 +115,21 @@
       </span>
     </div>
 
+    <div id="settings-box-user-message" class="settings-box first user-message"
+        hidden="[[isSecondaryGoogleAccountSigninAllowed_()]]">
+      <cr-policy-pref-indicator class="secondary-accounts-policy-indicator"
+          pref=
+          "[[prefs.account_manager.secondary_google_account_signin_allowed]]">
+      </cr-policy-pref-indicator>
+      <div id="user-message-text" class="secondary">
+        [[getSecondaryAccountsDisabledUserMessage_()]]
+      </div>
+    </div>
+
     <div class="settings-box first">
       <div id="account-list-header" class="flex">
         <h2>$i18n{accountListHeader}</h2>
       </div>
-      <cr-policy-indicator
-          hidden="[[isSecondaryGoogleAccountSigninAllowed_()]]"
-          indicator-type="userPolicy">
-      </cr-policy-indicator>
       <cr-button disabled="[[!isSecondaryGoogleAccountSigninAllowed_()]]"
           id="add-account-button" on-tap="addAccount_">
         <div id="add-account-icon"></div>

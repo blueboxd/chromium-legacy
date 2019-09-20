@@ -156,6 +156,7 @@ import org.chromium.chrome.browser.webapps.addtohomescreen.AddToHomescreenManage
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -1456,7 +1457,20 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         ViewGroup coordinator = findViewById(R.id.coordinator);
         getLayoutInflater().inflate(R.layout.bottom_sheet, coordinator);
         mBottomSheet = coordinator.findViewById(R.id.bottom_sheet);
-        mBottomSheet.init(coordinator, this);
+        mBottomSheet.init(coordinator, getActivityTabProvider(), getFullscreenManager(),
+                getWindow(), getWindowAndroid().getKeyboardDelegate());
+
+        mBottomSheet.addObserver(new EmptyBottomSheetObserver() {
+            @Override
+            public void onSheetOpened(int reason) {
+                addViewObscuringAllTabs(mBottomSheet);
+            }
+
+            @Override
+            public void onSheetClosed(int reason) {
+                removeViewObscuringAllTabs(mBottomSheet);
+            }
+        });
 
         ((BottomContainer) findViewById(R.id.bottom_container)).setBottomSheet(mBottomSheet);
 

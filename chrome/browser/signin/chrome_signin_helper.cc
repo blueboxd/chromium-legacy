@@ -83,15 +83,12 @@ int g_dice_account_reconcilor_blocked_delay_ms = 1000;
 const char kGoogleSignoutResponseHeader[] = "Google-Accounts-SignOut";
 
 // Refcounted wrapper that facilitates creating and deleting a
-// AccountReconcilor::Lock on the UI thread.
+// AccountReconcilor::Lock.
 class AccountReconcilorLockWrapper
     : public base::RefCountedThreadSafe<AccountReconcilorLockWrapper> {
  public:
-  AccountReconcilorLockWrapper() = default;
-
-  // Creates the account reconcilor lock on the UI thread. The lock will be
-  // deleted on the UI thread when this wrapper is deleted.
-  void CreateLockOnUI(const content::WebContents::Getter& web_contents_getter) {
+  explicit AccountReconcilorLockWrapper(
+      const content::WebContents::Getter& web_contents_getter) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     content::WebContents* web_contents = web_contents_getter.Run();
     if (!web_contents)
@@ -104,7 +101,7 @@ class AccountReconcilorLockWrapper
         new AccountReconcilor::Lock(account_reconcilor));
   }
 
-  void DestroyOnUIAfterDelay() {
+  void DestroyAfterDelay() {
     base::PostDelayedTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(base::DoNothing::Once<
@@ -120,10 +117,7 @@ class AccountReconcilorLockWrapper
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   }
 
-  // The account reconcilor lock is created and deleted on UI thread.
-  std::unique_ptr<AccountReconcilor::Lock,
-                  content::BrowserThread::DeleteOnUIThread>
-      account_reconcilor_lock_;
+  std::unique_ptr<AccountReconcilor::Lock> account_reconcilor_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountReconcilorLockWrapper);
 };
@@ -169,7 +163,7 @@ class ManageAccountsHeaderReceivedUserData
 // Processes the mirror response header on the UI thread. Currently depending
 // on the value of |header_value|, it either shows the profile avatar menu, or
 // opens an incognito window/tab.
-void ProcessMirrorHeaderUIThread(
+void ProcessMirrorHeader(
     ManageAccountsParams manage_accounts_params,
     const content::WebContents::Getter& web_contents_getter) {
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
@@ -297,7 +291,7 @@ void ShowDiceSigninError(Profile* profile,
       browser, base::UTF8ToUTF16(error_message), base::UTF8ToUTF16(email));
 }
 
-void ProcessDiceHeaderUIThread(
+void ProcessDiceHeader(
     const DiceResponseParams& dice_params,
     const content::WebContents::Getter& web_contents_getter) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -398,7 +392,7 @@ void ProcessMirrorResponseHeaderIfExists(ResponseAdapter* response,
   // Post a task even if we are already on the UI thread to avoid making any
   // requests while processing a throttle event.
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(ProcessMirrorHeaderUIThread, params,
+                 base::BindOnce(ProcessMirrorHeader, params,
                                 response->GetWebContentsGetter()));
 }
 
@@ -435,7 +429,7 @@ void ProcessDiceResponseHeaderIfExists(ResponseAdapter* response,
   // Post a task even if we are already on the UI thread to avoid making any
   // requests while processing a throttle event.
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(ProcessDiceHeaderUIThread, std::move(params),
+                 base::BindOnce(ProcessDiceHeader, std::move(params),
                                 response->GetWebContentsGetter()));
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -499,20 +493,11 @@ void FixAccountConsistencyRequestHeader(
   // allows the DiceReponseHandler to process the response before the reconcilor
   // starts.
   if (dice_header_added && ShouldBlockReconcilorForRequest(request)) {
-    auto lock_wrapper = base::MakeRefCounted<AccountReconcilorLockWrapper>();
-    if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-      lock_wrapper->CreateLockOnUI(request->GetWebContentsGetter());
-    } else {
-      base::PostTask(
-          FROM_HERE, {content::BrowserThread::UI},
-          base::BindOnce(&AccountReconcilorLockWrapper::CreateLockOnUI,
-                         lock_wrapper, request->GetWebContentsGetter()));
-    }
-
+    auto lock_wrapper = base::MakeRefCounted<AccountReconcilorLockWrapper>(
+        request->GetWebContentsGetter());
     // On destruction of the request |lock_wrapper| will be released.
-    request->SetDestructionCallback(
-        base::BindOnce(&AccountReconcilorLockWrapper::DestroyOnUIAfterDelay,
-                       std::move(lock_wrapper)));
+    request->SetDestructionCallback(base::BindOnce(
+        &AccountReconcilorLockWrapper::DestroyAfterDelay, lock_wrapper));
   }
 #endif
 

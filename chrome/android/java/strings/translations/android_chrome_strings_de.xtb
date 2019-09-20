@@ -174,6 +174,7 @@
 <translation id="2154484045852737596">Karte bearbeiten</translation>
 <translation id="2154710561487035718">URL kopieren</translation>
 <translation id="2156074688469523661">Restliche Websites (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="2157851137955077194">Wenn Sie Inhalte auf Ihrem Smartphone mit einem anderen Gerät teilen möchten, aktivieren Sie auf beiden Geräten in den Chrome-Einstellungen die Synchronisierung</translation>
 <translation id="2170088579611075216">Zulassen und VR starten</translation>
 <translation id="218608176142494674">Freigabe</translation>
 <translation id="2227444325776770048">Als <ph name="USER_FULL_NAME" /> fortfahren</translation>
@@ -602,7 +603,6 @@ Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translati
 <translation id="545042621069398927">Download wird beschleunigt.</translation>
 <translation id="5456381639095306749">Seite herunterladen</translation>
 <translation id="5475862044948910901">Augmented-Reality-Sitzung starten?</translation>
-<translation id="5481942164684849270"><ph name="APP_NAME" /> zu meinen Apps hinzugefügt</translation>
 <translation id="548278423535722844">In einer Karten-App öffnen</translation>
 <translation id="5487521232677179737">Daten löschen</translation>
 <translation id="5494752089476963479">Werbung auf Websites blockieren, auf denen aufdringliche oder irreführende Werbung angezeigt wird</translation>
@@ -1009,7 +1009,6 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="8364299278605033898">Beliebte Websites ansehen</translation>
 <translation id="8368027906805972958">Unbekanntes oder nicht unterstütztes Gerät (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Lässt die Hintergrundsynchronisierung für eine bestimmte Website zu.</translation>
-<translation id="8374821112118309944">TalkBack muss auf eine neuere Version aktualisiert werden.</translation>
 <translation id="8378714024927312812">Von Ihrer Organisation verwaltet</translation>
 <translation id="8380167699614421159">Diese Website zeigt aufdringliche oder irreführende Werbung an</translation>
 <translation id="8393700583063109961">Nachricht senden</translation>
@@ -1073,6 +1072,7 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Speicher</translation>
+<translation id="889338405075704026">Zu den Chrome-Einstellungen</translation>
 <translation id="8901170036886848654">Keine Lesezeichen gefunden</translation>
 <translation id="8909135823018751308">Teilen...</translation>
 <translation id="8912362522468806198">Google-Konto</translation>
@@ -1091,6 +1091,7 @@ Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur fü
 <translation id="8993760627012879038">Neuen Tab im Inkognitomodus öffnen</translation>
 <translation id="8998729206196772491">Sie melden sich mit einem von <ph name="MANAGED_DOMAIN" /> verwalteten Konto an und geben dem Administrator der Domain Kontrolle über Ihre Chrome-Daten. Die Daten werden diesem Konto dauerhaft zugeordnet. Wenn Sie sich von Chrome abmelden, werden Ihre Daten auf dem Gerät gelöscht, bleiben jedoch in Ihrem Google-Konto erhalten.</translation>
 <translation id="9019902583201351841">Von deinen Eltern verwaltet</translation>
+<translation id="9028914725102941583">Synchronisierung aktivieren, um geräteübergreifend zu teilen</translation>
 <translation id="9029323097866369874"><ph name="DOMAIN" /> erlauben, VR zu starten?</translation>
 <translation id="9040142327097499898">Benachrichtigungen sind erlaubt. Der Standortzugriff ist für dieses Gerät deaktiviert.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# Video}other{# Videos}}</translation>

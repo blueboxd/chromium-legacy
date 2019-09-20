@@ -125,7 +125,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/network_service_util.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
@@ -143,6 +142,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/cert/asn1_util.h"
+#include "net/cert/cert_database.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/x509_certificate.h"
@@ -163,10 +163,6 @@
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_certificate_data.h"
 #include "net/test/test_data_directory.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_filter.h"
-#include "net/url_request/url_request_job.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -274,32 +270,6 @@ class SSLInterstitialTimerObserver {
   std::unique_ptr<base::RunLoop> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLInterstitialTimerObserver);
-};
-
-class HungJob : public net::URLRequestJob {
- public:
-  HungJob(net::URLRequest* request, net::NetworkDelegate* network_delegate)
-      : net::URLRequestJob(request, network_delegate) {}
-
-  void Start() override {}
-};
-
-class FaviconFilter : public net::URLRequestInterceptor {
- public:
-  FaviconFilter() {}
-  ~FaviconFilter() override {}
-
-  // net::URLRequestInterceptor implementation
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const override {
-    if (request->url().path() == "/favicon.ico")
-      return new HungJob(request, network_delegate);
-    return nullptr;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FaviconFilter);
 };
 
 class ChromeContentBrowserClientForMixedContentTest
@@ -523,20 +493,6 @@ class SSLUITestBase : public InProcessBrowserTest,
     https_server_common_name_only_.SetSSLConfig(
         net::EmbeddedTestServer::CERT_COMMON_NAME_ONLY);
     https_server_common_name_only_.AddDefaultHandlers(GetChromeTestDataDir());
-
-    // Sometimes favicons load before tests check the authentication
-    // state, and sometimes they load after. This is problematic on
-    // tests that load pages with certificate errors, because the page
-    // will be marked as having displayed subresources with certificate
-    // errors only if the favicon loads before the test checks the
-    // authentication state. To avoid this non-determinism, add an
-    // interceptor to hang all favicon requests.
-    std::unique_ptr<net::URLRequestInterceptor> interceptor(new FaviconFilter);
-    net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
-        "https", "127.0.0.1", std::move(interceptor));
-    interceptor.reset(new FaviconFilter);
-    net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
-        "https", "localhost", std::move(interceptor));
   }
 
   void SetUp() override {
@@ -804,25 +760,6 @@ class SSLUITestBase : public InProcessBrowserTest,
         ->FlushSSLConfigManagerForTesting();
   }
 
-  // Checks that the TransportSecurityState associated with the
-  // net::URLRequestContext of the |context_getter| will return
-  // |expected_status| for |host|, given the certificate |cert|,
-  // |is_issued_by_known_root|, associated |hashes|, and a CT policy result of
-  // |policy_compliance|.
-  void CheckCTStatus(
-      scoped_refptr<net::URLRequestContextGetter> context_getter,
-      const std::string& host,
-      scoped_refptr<net::X509Certificate> cert,
-      bool is_issued_by_known_root,
-      const net::HashValueVector& hashes,
-      net::ct::CTPolicyCompliance policy_compliance,
-      net::TransportSecurityState::CTRequirementsStatus expected_status) {
-    RunOnIOThreadBlocking(base::BindOnce(
-        &SSLUITestBase::CheckCTStatusOnIOThread, base::Unretained(this),
-        context_getter, host, cert, is_issued_by_known_root, hashes,
-        policy_compliance, expected_status));
-  }
-
   // Helper function for TestInterstitialLinksOpenInNewTab. Implemented as a
   // test fixture method because the whole test fixture class is friended by
   // SSLBlockingPage.
@@ -934,30 +871,6 @@ class SSLUITestBase : public InProcessBrowserTest,
     base::PostTaskAndReply(FROM_HERE, {content::BrowserThread::IO},
                            std::move(task), run_loop.QuitClosure());
     run_loop.Run();
-  }
-
-  void CheckCTStatusOnIOThread(
-      scoped_refptr<net::URLRequestContextGetter> context_getter,
-      std::string host,
-      scoped_refptr<net::X509Certificate> cert,
-      bool known_root,
-      net::HashValueVector hashes,
-      net::ct::CTPolicyCompliance compliance_level,
-      net::TransportSecurityState::CTRequirementsStatus expected_status) {
-    net::URLRequestContext* context = context_getter->GetURLRequestContext();
-    ASSERT_TRUE(context);
-
-    net::TransportSecurityState* tss = context->transport_security_state();
-    ASSERT_TRUE(tss);
-
-    net::HostPortPair host_port_pair(host, 443);
-
-    EXPECT_EQ(expected_status,
-              tss->CheckCTRequirements(
-                  host_port_pair, known_root, hashes, cert.get(), cert.get(),
-                  net::SignedCertificateTimestampAndStatusList(),
-                  net::TransportSecurityState::DISABLE_EXPECT_CT_REPORTS,
-                  compliance_level));
   }
 
   net::EmbeddedTestServer https_server_;
@@ -4651,11 +4564,6 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
       clock_interstitial_ssl_status, after_interstitial_ssl_status));
 }
 
-void CleanUpOnIOThread() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  net::URLRequestFilter::GetInstance()->ClearHandlers();
-}
-
 // A fixture for testing on-demand network time queries on SSL
 // certificate date errors. It can simulate a delayed network time
 // request, and it allows the user to configure the experimental
@@ -4975,53 +4883,6 @@ IN_PROC_BROWSER_TEST_F(SSLNetworkTimeBrowserTest,
   TriggerTimeResponse();
 }
 
-namespace {
-
-// Fails with a CHECK for all requests over HTTP except for favicons. This is to
-// ensure that name mismatch redirect feature's suggest URL ping stops on
-// redirects and never hits an HTTP URL.
-class HttpNameMismatchPingInterceptor : public net::URLRequestInterceptor {
- public:
-  HttpNameMismatchPingInterceptor() {}
-  ~HttpNameMismatchPingInterceptor() override {}
-
-  net::URLRequestJob* MaybeInterceptRequest(
-      net::URLRequest* request,
-      net::NetworkDelegate* delegate) const override {
-    if (request->url().path() == "/favicon.ico") {
-      // When a page doesn't list a favicon, a favicon request is automatically
-      // made over HTTP. These are harmless and don't leak the original page's
-      // URL, so ignore them.
-      return nullptr;
-    }
-
-    EXPECT_TRUE(false)
-        << "Name mismatch pings must never be over HTTP. This request was for "
-        << request->url();
-    return nullptr;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(HttpNameMismatchPingInterceptor);
-};
-
-void SetUpHttpNameMismatchPingInterceptorOnIOThread() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  // Add interceptors for HTTP versions of example.org and www.example.org.
-  // These are the hostnames used in the tests, and we never want them to be
-  // contacted over HTTP.
-  net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
-      "http", "example.org",
-      std::unique_ptr<HttpNameMismatchPingInterceptor>(
-          new HttpNameMismatchPingInterceptor()));
-  net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
-      "http", "www.example.org",
-      std::unique_ptr<HttpNameMismatchPingInterceptor>(
-          new HttpNameMismatchPingInterceptor()));
-}
-
-}  // namespace
-
 class CommonNameMismatchBrowserTest : public CertVerifierBrowserTest {
  public:
   CommonNameMismatchBrowserTest() : CertVerifierBrowserTest() {}
@@ -5036,14 +4897,9 @@ class CommonNameMismatchBrowserTest : public CertVerifierBrowserTest {
   void SetUpOnMainThread() override {
     CertVerifierBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&SetUpHttpNameMismatchPingInterceptorOnIOThread));
   }
 
   void TearDownOnMainThread() override {
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   base::BindOnce(&CleanUpOnIOThread));
     CertVerifierBrowserTest::TearDownOnMainThread();
   }
 
@@ -5912,9 +5768,6 @@ class SSLUITestNoCert : public SSLUITest,
 
 // Checks that a newly-added certificate authority is usable immediately.
 IN_PROC_BROWSER_TEST_F(SSLUITestNoCert, NewCertificateAuthority) {
-  if (!content::IsOutOfProcessNetworkService())
-    return;
-
   ASSERT_TRUE(https_server_.Start());
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
@@ -7077,31 +6930,15 @@ IN_PROC_BROWSER_TEST_F(SSLUIMITMSoftwareEnabledTest,
   TestNoMITMSoftwareInterstitial();
 }
 
-void SetRequireCTDelegateOnIOThread(
-    scoped_refptr<net::URLRequestContextGetter> context_getter,
-    net::TransportSecurityState::RequireCTDelegate* delegate) {
-  net::TransportSecurityState* state =
-      context_getter->GetURLRequestContext()->transport_security_state();
-  state->SetRequireCTDelegate(delegate);
-}
-
 void SetShouldNotRequireCTForTesting() {
-  if (content::IsOutOfProcessNetworkService()) {
-    network::mojom::NetworkServiceTestPtr network_service_test;
-    content::GetSystemConnector()->BindInterface(
-        content::mojom::kNetworkServiceName, &network_service_test);
-    network::mojom::NetworkServiceTest::ShouldRequireCT required_ct =
-        network::mojom::NetworkServiceTest::ShouldRequireCT::DONT_REQUIRE;
+  network::mojom::NetworkServiceTestPtr network_service_test;
+  content::GetSystemConnector()->BindInterface(
+      content::mojom::kNetworkServiceName, &network_service_test);
+  network::mojom::NetworkServiceTest::ShouldRequireCT required_ct =
+      network::mojom::NetworkServiceTest::ShouldRequireCT::DONT_REQUIRE;
 
-    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
-    network_service_test->SetShouldRequireCT(required_ct);
-    return;
-  }
-
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&net::TransportSecurityState::SetShouldRequireCTForTesting,
-                     base::Owned(new bool(false))));
+  mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+  network_service_test->SetShouldRequireCT(required_ct);
 }
 
 class TLSLegacyVersionSSLUITest : public CertVerifierBrowserTest {
@@ -7715,17 +7552,12 @@ class SSLPKPBrowserTest : public CertVerifierBrowserTest {
   }
 
   void TearDownOnMainThread() override {
-    if (content::IsOutOfProcessNetworkService()) {
-      mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
 
-      network::mojom::NetworkServiceTestPtr network_service_test;
-      content::GetSystemConnector()->BindInterface(
-          content::mojom::kNetworkServiceName, &network_service_test);
-      network_service_test->SetTransportSecurityStateSource(0);
-    } else {
-      RunOnIOThreadBlocking(base::BindOnce(
-          &SSLPKPBrowserTest::CleanUpOnIOThread, base::Unretained(this)));
-    }
+    network::mojom::NetworkServiceTestPtr network_service_test;
+    content::GetSystemConnector()->BindInterface(
+        content::mojom::kNetworkServiceName, &network_service_test);
+    network_service_test->SetTransportSecurityStateSource(0);
     CertVerifierBrowserTest::TearDownOnMainThread();
   }
 
@@ -7736,18 +7568,10 @@ class SSLPKPBrowserTest : public CertVerifierBrowserTest {
             browser()->profile());
     partition->GetNetworkContext()->EnableStaticKeyPinningForTesting();
 
-    if (content::IsOutOfProcessNetworkService()) {
-      mojo::ScopedAllowSyncCallForTesting allow_sync_call;
-
-      network::mojom::NetworkServiceTestPtr network_service_test;
-      content::GetSystemConnector()->BindInterface(
-          content::mojom::kNetworkServiceName, &network_service_test);
-      network_service_test->SetTransportSecurityStateSource(reporting_port);
-    } else {
-      RunOnIOThreadBlocking(base::BindOnce(
-          &SSLPKPBrowserTest::SetTransportSecurityStateSourceOnIO,
-          base::Unretained(this), reporting_port));
-    }
+    network::mojom::NetworkServiceTestPtr network_service_test;
+    content::GetSystemConnector()->BindInterface(
+        content::mojom::kNetworkServiceName, &network_service_test);
+    network_service_test->SetTransportSecurityStateSource(reporting_port);
   }
 
  private:
@@ -7757,18 +7581,6 @@ class SSLPKPBrowserTest : public CertVerifierBrowserTest {
                            std::move(task), run_loop.QuitClosure());
     run_loop.Run();
   }
-
-  void SetTransportSecurityStateSourceOnIO(int reporting_port) {
-    transport_security_state_source_ =
-        std::make_unique<net::ScopedTransportSecurityStateSource>(
-            reporting_port);
-  }
-
-  void CleanUpOnIOThread() { transport_security_state_source_.reset(); }
-
-  // Only used when NetworkService is disabled. Accessed on IO thread.
-  std::unique_ptr<net::ScopedTransportSecurityStateSource>
-      transport_security_state_source_;
 };
 
 // Test case where a PKP report is sent.
@@ -7849,12 +7661,6 @@ class RecurrentInterstitialBrowserTest : public CertVerifierBrowserTest {
   void SetUpOnMainThread() override {
     CertVerifierBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
-  }
-
-  void TearDownOnMainThread() override {
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   base::BindOnce(&CleanUpOnIOThread));
-    CertVerifierBrowserTest::TearDownOnMainThread();
   }
 
  private:

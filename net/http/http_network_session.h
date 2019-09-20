@@ -144,10 +144,6 @@ class NET_EXPORT HttpNetworkSession {
     // If non-empty, QUIC will only be spoken to hosts in this list.
     base::flat_set<std::string> quic_host_allowlist;
 
-    // Enable HTTP/0.9 for HTTP/HTTPS on ports other than the default one for
-    // each protocol.
-    bool http_09_on_non_default_ports_enabled;
-
     // If true, idle sockets won't be closed when memory pressure happens.
     bool disable_idle_sockets_close_on_memory_pressure;
 

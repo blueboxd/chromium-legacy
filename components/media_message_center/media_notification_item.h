@@ -107,6 +107,10 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationItem
 
   void MaybeUnfreeze();
 
+  void Unfreeze();
+
+  bool HasArtwork() const;
+
   void OnFreezeTimerFired();
 
   void MaybeHideOrShowNotification();
@@ -144,6 +148,14 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationItem
   // When the item is frozen the |view_| will not receive any updates to the
   // data and no actions will be executed.
   bool frozen_ = false;
+
+  // True if we're currently frozen and the frozen view contains non-null
+  // artwork.
+  bool frozen_with_artwork_ = false;
+
+  // True if we have the necessary metadata to unfreeze, but we're waiting for
+  // new artwork to load.
+  bool waiting_for_artwork_ = false;
 
   // The timer that will notify the controller to destroy this item after it
   // has been frozen for a certain period of time.

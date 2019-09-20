@@ -436,6 +436,7 @@ component("skia") {
       "//third_party/fuchsia-sdk/sdk:fonts",
       "//third_party/fuchsia-sdk/sdk:io",
       "//third_party/fuchsia-sdk/sdk:sys",
+      "//third_party/fuchsia-sdk/sdk:sys_cpp",
       "//third_party/fuchsia-sdk/sdk:zx",
       "//third_party/icu:icuuc",
     ]
@@ -836,6 +837,7 @@ source_set("test_fonts") {
       "//third_party/fuchsia-sdk/sdk:fonts",
       "//third_party/fuchsia-sdk/sdk:io",
       "//third_party/fuchsia-sdk/sdk:sys",
+      "//third_party/fuchsia-sdk/sdk:sys_cpp",
     ]
   }
   if (is_linux) {

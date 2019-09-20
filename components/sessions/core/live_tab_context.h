@@ -9,8 +9,11 @@
 #include <vector>
 
 #include "base/optional.h"
+#include "base/strings/string16.h"
 #include "components/sessions/core/session_id.h"
+#include "components/sessions/core/session_types.h"
 #include "components/sessions/core/sessions_export.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
 
 namespace base {
@@ -32,6 +35,8 @@ class PlatformSpecificTabData;
 // is backed by an instance of the Browser class.
 class SESSIONS_EXPORT LiveTabContext {
  public:
+  using TabGroupMetadata = sessions::TabGroupMetadata;
+
   // TODO(blundell): Rename.
   virtual void ShowBrowserWindow() = 0;
   virtual SessionID GetSessionID() const = 0;
@@ -42,6 +47,9 @@ class SESSIONS_EXPORT LiveTabContext {
   virtual LiveTab* GetActiveLiveTab() const = 0;
   virtual bool IsTabPinned(int index) const = 0;
   virtual base::Optional<base::Token> GetTabGroupForTab(int index) const = 0;
+  // Should not be called for |group| unless GetTabGroupForTab() returned
+  // |group|.
+  virtual TabGroupMetadata GetTabGroupMetadata(base::Token group) const = 0;
   virtual const gfx::Rect GetRestoredBounds() const = 0;
   virtual ui::WindowShowState GetRestoredState() const = 0;
   virtual std::string GetWorkspace() const = 0;
@@ -73,6 +81,11 @@ class SESSIONS_EXPORT LiveTabContext {
       const PlatformSpecificTabData* tab_platform_data,
       const std::string& user_agent_override) = 0;
   virtual void CloseTab() = 0;
+
+  // Update |group|'s metadata. Should only be called for |group| if a tab has
+  // been restored in |group| via AddRestoredTab() or ReplaceRestoredTab().
+  virtual void SetTabGroupMetadata(base::Token group,
+                                   TabGroupMetadata metadata) = 0;
 
  protected:
   virtual ~LiveTabContext() {}

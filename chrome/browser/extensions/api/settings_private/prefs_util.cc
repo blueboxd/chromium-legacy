@@ -56,6 +56,7 @@
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_on_off.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_pref_names.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/arc/arc_prefs.h"
@@ -344,6 +345,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[chromeos::kAccountsPrefUsers] =
       settings_api::PrefType::PREF_TYPE_LIST;
+  (*s_whitelist)[chromeos::prefs::kSecondaryGoogleAccountSigninAllowed] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
   // kEnableAutoScreenLock is read-only.
   (*s_whitelist)[ash::prefs::kEnableAutoScreenLock] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
@@ -753,8 +756,13 @@ std::unique_ptr<settings_api::PrefObject> PrefsUtil::GetPref(
 #endif
 
   if (pref && pref->IsManaged()) {
-    pref_object->controlled_by =
-        settings_api::ControlledBy::CONTROLLED_BY_USER_POLICY;
+    if (profile_->IsChild()) {
+      pref_object->controlled_by =
+          settings_api::ControlledBy::CONTROLLED_BY_CHILD_RESTRICTION;
+    } else {
+      pref_object->controlled_by =
+          settings_api::ControlledBy::CONTROLLED_BY_USER_POLICY;
+    }
     pref_object->enforcement = settings_api::Enforcement::ENFORCEMENT_ENFORCED;
     return pref_object;
   }

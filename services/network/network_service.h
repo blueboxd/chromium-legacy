@@ -142,7 +142,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void GetNetworkChangeManager(
       mojom::NetworkChangeManagerRequest request) override;
   void GetNetworkQualityEstimatorManager(
-      mojom::NetworkQualityEstimatorManagerRequest request) override;
+      mojo::PendingReceiver<mojom::NetworkQualityEstimatorManager> receiver)
+      override;
   void GetDnsConfigChangeManager(
       mojom::DnsConfigChangeManagerRequest request) override;
   void GetTotalNetworkUsages(

@@ -19,6 +19,7 @@ jumbo_component("fuchsia") {
   defines = [ "IS_UI_BASE_IME_FUCHSIA_IMPL" ]
 
   public_deps = [
+    "//third_party/fuchsia-sdk/sdk:sys_cpp",
     "//third_party/fuchsia-sdk/sdk:ui_input",
     "//ui/base/ime",
     "//ui/events",

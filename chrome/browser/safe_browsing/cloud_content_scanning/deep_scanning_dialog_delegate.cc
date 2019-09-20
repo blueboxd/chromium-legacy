@@ -302,8 +302,16 @@ void DeepScanningDialogDelegate::ShowForWebContents(
     return;
   }
 
-  delegate->FillAllResultsWith(true);
-  delegate->RunCallback();
+  if (!wait_for_verdict || !work_being_done) {
+    // The UI will not be shown but the policy is set to not wait for the
+    // verdict, or no scans need to be performed.  Inform the caller that they
+    // may proceed.
+    //
+    // Supporting "wait for verdict" while not showing a UI makes writing tests
+    // for callers of this code easier.
+    delegate->FillAllResultsWith(true);
+    delegate->RunCallback();
+  }
 
   // Upload service callback will delete the delegate.
   if (work_being_done)
@@ -345,7 +353,8 @@ void DeepScanningDialogDelegate::StringRequestCallback(
   text_request_complete_ = true;
   bool text_complies = (result == BinaryUploadService::Result::SUCCESS &&
                         response.dlp_scan_verdict().triggered_rules().empty());
-  result_.text_results.resize(data_.text.size(), text_complies);
+  std::fill(result_.text_results.begin(), result_.text_results.end(),
+            text_complies);
   MaybeCompleteScanRequest();
 }
 
@@ -479,7 +488,6 @@ bool DeepScanningDialogDelegate::CloseTabModalDialog() {
   if (!dialog_)
     return false;
 
-  RunCallback();
   dialog_->CancelTabModalDialog();
   return true;
 }
@@ -487,6 +495,8 @@ bool DeepScanningDialogDelegate::CloseTabModalDialog() {
 void DeepScanningDialogDelegate::MaybeCompleteScanRequest() {
   if (!text_request_complete_ || file_result_count_ < data_.paths.size())
     return;
+
+  RunCallback();
 
   if (!CloseTabModalDialog()) {
     // No UI was shown.  Delete |this| to cleanup.

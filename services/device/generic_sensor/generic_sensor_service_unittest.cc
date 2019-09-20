@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/device_service.h"
 #include "services/device/device_service_test_base.h"
 #include "services/device/generic_sensor/fake_platform_sensor_and_provider.h"
@@ -100,7 +101,8 @@ class TestSensorClient : public mojom::SensorClient {
     check_value_ = std::move(callback);
   }
 
-  mojom::SensorPtr& sensor() { return sensor_; }
+  mojom::Sensor* sensor() { return sensor_.get(); }
+  void ResetSensor() { sensor_.reset(); }
 
  private:
   void UpdateReadingData() {
@@ -127,7 +129,7 @@ class TestSensorClient : public mojom::SensorClient {
     return true;
   }
 
-  mojom::SensorPtr sensor_;
+  mojo::Remote<mojom::Sensor> sensor_;
   mojo::Binding<mojom::SensorClient> client_binding_;
   mojo::ScopedSharedBufferMapping shared_buffer_;
   SensorReading reading_data_;
@@ -321,7 +323,7 @@ TEST_F(GenericSensorServiceTest, ClientMojoConnectionBrokenTest) {
   }
 
   // Breaks mojo connection of client_1.
-  client_1->sensor().reset();
+  client_1->ResetSensor();
 
   {
     base::RunLoop run_loop;

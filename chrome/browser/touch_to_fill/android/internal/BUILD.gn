@@ -8,6 +8,7 @@ import("//chrome/common/features.gni")
 android_library("java") {
   deps = [
     "//base:base_java",
+    "//base:jni_java",
     "//chrome/android:chrome_java",
     "//chrome/browser/touch_to_fill/android:public_java",
     "//ui/android:ui_java",
@@ -18,4 +19,6 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/touch_to_fill/TouchToFillCoordinator.java",
     "java/src/org/chromium/chrome/browser/touch_to_fill/TouchToFillProperties.java",
   ]
+
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }

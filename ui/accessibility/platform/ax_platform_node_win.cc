@@ -7187,4 +7187,23 @@ void AXPlatformNodeWin::FireLiveRegionChangeRecursive() {
   }
 }
 
+void AXPlatformNodeWin::SanitizeTextAttributeValue(const std::string& input,
+                                                   std::string* output) const {
+  SanitizeStringAttributeForIA2(input, output);
+}
+
+// static
+void AXPlatformNodeWin::SanitizeStringAttributeForIA2(const std::string& input,
+                                                      std::string* output) {
+  DCHECK(output);
+  // According to the IA2 Spec, these characters need to be escaped with a
+  // backslash: backslash, colon, comma, equals and semicolon.
+  // Note that backslash must be replaced first.
+  base::ReplaceChars(input, "\\", "\\\\", output);
+  base::ReplaceChars(*output, ":", "\\:", output);
+  base::ReplaceChars(*output, ",", "\\,", output);
+  base::ReplaceChars(*output, "=", "\\=", output);
+  base::ReplaceChars(*output, ";", "\\;", output);
+}
+
 }  // namespace ui

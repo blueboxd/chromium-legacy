@@ -9,7 +9,7 @@
 namespace {
 
 bool NativeInit(base::android::LibraryProcessType) {
-  return weblayer::OnJNIOnLoadInit();
+  return weblayer::OnJNIOnLoadInit("weblayer_support.pak");
 }
 
 }  // namespace

@@ -92,7 +92,7 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
   set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
                               ui::EF_RIGHT_MOUSE_BUTTON);
   button_controller()->set_notify_action(
-      views::ButtonController::NotifyAction::NOTIFY_ON_RELEASE);
+      views::ButtonController::NotifyAction::kOnRelease);
 }
 
 HoverButton::HoverButton(views::ButtonListener* button_listener,

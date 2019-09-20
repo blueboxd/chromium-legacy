@@ -200,6 +200,8 @@
 <translation id="753534427205733210">{0,plural, =1{ഒരു മിനിറ്റിൽ Chromium വീണ്ടും സമാരംഭിക്കും}other{# മിനിറ്റിൽ Chromium വീണ്ടും സമാരംഭിക്കും}}</translation>
 <translation id="7549178288319965365">Chromium OS-നെക്കുറിച്ച്</translation>
 <translation id="7561906087460245826">Chromium-ൽ നിന്നും ഡാറ്റ മായ്ക്കുക (<ph name="URL" />)</translation>
+<translation id="7585853947355360626">ഈ പേജിൽ ക്രമീകരണം കാണിക്കുന്നില്ലെങ്കിൽ <ph name="LINK_BEGIN" />
+      Chromium OS ക്രമീകരണത്തിൽ<ph name="LINK_END" /> പരിശോധിക്കുക</translation>
 <translation id="761356813943268536">Chromium നിങ്ങളുടെ ക്യാമറയും മൈക്രോഫോണും ഉപയോഗിക്കുന്നു.</translation>
 <translation id="7617377681829253106">Chromium കൂടുതൽ മികച്ചതായി</translation>
 <translation id="7686590090926151193">Chromium നിങ്ങളുടെ ഡിഫോൾട്ട് ബ്രൗസറല്ല</translation>
@@ -233,6 +235,8 @@
 <translation id="8619360774459241877">Chromium സമാരംഭിക്കുന്നു...</translation>
 <translation id="8621669128220841554">അവ്യക്തമായ പിശകിനാൽ ഇൻസ്റ്റാൾ ചെയ്യൽ പരാജയപ്പെട്ടു. Chromium വീണ്ടും ഡൗൺലോഡ് ചെയ്യുക.</translation>
 <translation id="8667808506758191620">നിങ്ങളുടെ <ph name="DEVICE_TYPE" /> അപ്‌ ടു ഡേറ്റാണ്.</translation>
+<translation id="8682540261359803721">ഈ പേജിൽ ക്രമീകരണം കാണിക്കുന്നില്ലെങ്കിൽ <ph name="LINK_BEGIN" />
+    Chromium ബ്രൗസർ ക്രമീകരണത്തിൽ<ph name="LINK_END" /> പരിശോധിക്കുക</translation>
 <translation id="8697124171261953979">നിങ്ങൾ Chromium ആരംഭിക്കുമ്പോൾ അല്ലെങ്കിൽ ഓമ്‌നിബോക്‌സിൽ നിന്ന് തിരയുമ്പോൾ ദൃശ്യമാകുന്ന പേജും അത് നിയന്ത്രിയ്ക്കുന്നു.</translation>
 <translation id="8704119203788522458">ഇത് നിങ്ങളുടെ Chromium ആണ്</translation>
 <translation id="8739167630197873875">Chromium-ത്തിൽ നിന്ന് പുറത്തുകടക്കുമ്പോൾ കുക്കികൾ മായ്‌ക്കുക. സമന്വയിപ്പിക്കുന്നത് തുടരാൻ, <ph name="COOKIE_SETTINGS_LINK" /> ഇത് മാറ്റുക.</translation>

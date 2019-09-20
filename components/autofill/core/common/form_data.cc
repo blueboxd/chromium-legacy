@@ -69,25 +69,12 @@ void LogDeserializationError(int version) {
 
 }  // namespace
 
-FormData::FormData() : is_form_tag(true), is_formless_checkout(false) {}
-
-FormData::FormData(const FormData& data)
-    : name(data.name),
-      button_titles(data.button_titles),
-      url(data.url),
-      action(data.action),
-      main_frame_origin(data.main_frame_origin),
-      is_form_tag(data.is_form_tag),
-      is_formless_checkout(data.is_formless_checkout),
-      unique_renderer_id(data.unique_renderer_id),
-      submission_event(data.submission_event),
-      fields(data.fields),
-      username_predictions(data.username_predictions),
-      is_gaia_with_skip_save_password_form(
-          data.is_gaia_with_skip_save_password_form) {}
-
-FormData::~FormData() {
-}
+FormData::FormData() = default;
+FormData::FormData(const FormData&) = default;
+FormData& FormData::operator=(const FormData&) = default;
+FormData::FormData(FormData&&) = default;
+FormData& FormData::operator=(FormData&&) = default;
+FormData::~FormData() = default;
 
 bool FormData::SameFormAs(const FormData& form) const {
   if (name != form.name || url != form.url || action != form.action ||

@@ -11,6 +11,14 @@
 
 namespace ash {
 
+namespace {
+
+// When any edge of the primary display is less than or equal to this threshold,
+// dense shelf will be active.
+const int kDenseShelfScreenSizeThreshold = 600;
+
+}  // namespace
+
 ShelfConfig::ShelfConfig()
     : is_dense_(false),
       shelf_size_(56),
@@ -74,12 +82,14 @@ void ShelfConfig::Init() {
     return;
 
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
+  display::Screen::GetScreen()->AddObserver(this);
 }
 
 void ShelfConfig::Shutdown() {
   if (!chromeos::switches::ShouldShowShelfHotseat())
     return;
 
+  display::Screen::GetScreen()->RemoveObserver(this);
   Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
 }
 
@@ -88,6 +98,11 @@ void ShelfConfig::OnTabletModeStarted() {
 }
 
 void ShelfConfig::OnTabletModeEnded() {
+  UpdateIsDense();
+}
+
+void ShelfConfig::OnDisplayMetricsChanged(const display::Display& display,
+                                          uint32_t changed_metrics) {
   UpdateIsDense();
 }
 
@@ -131,9 +146,14 @@ int ShelfConfig::status_area_hit_region_padding() const {
 }
 
 void ShelfConfig::UpdateIsDense() {
+  const gfx::Rect screen_size =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+
   const bool new_is_dense =
       chromeos::switches::ShouldShowShelfHotseat() &&
-      !Shell::Get()->tablet_mode_controller()->InTabletMode();
+      (!Shell::Get()->tablet_mode_controller()->InTabletMode() ||
+       (screen_size.width() <= kDenseShelfScreenSizeThreshold ||
+        screen_size.height() <= kDenseShelfScreenSizeThreshold));
   if (new_is_dense == is_dense_)
     return;
 

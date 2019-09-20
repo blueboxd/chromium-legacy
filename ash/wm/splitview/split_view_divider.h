@@ -67,6 +67,8 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
   // position.
   gfx::Rect GetDividerBoundsInScreen(bool is_dragging);
 
+  void SetAlwaysOnTop(bool on_top);
+
   void AddObservedWindow(aura::Window* window);
   void RemoveObservedWindow(aura::Window* window);
 
@@ -97,7 +99,6 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
 
  private:
   void CreateDividerWidget(aura::Window* root_window);
-  void SetAlwaysOnTop(bool on_top);
 
   SplitViewController* controller_;
 

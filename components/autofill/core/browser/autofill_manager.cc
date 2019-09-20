@@ -346,6 +346,17 @@ AutofillField* GetBestPossibleCVCField(
   return HeuristicallyFindCVCField(form_structure);
 }
 
+// Some autofill types are detected based on values and not based on form
+// features. We may decide that it's an autofill form after submission.
+bool ContainsAutofillableValue(const autofill::FormStructure& form) {
+  return std::any_of(form.begin(), form.end(),
+                     [](const std::unique_ptr<autofill::AutofillField>& field) {
+                       return base::Contains(field->possible_types(),
+                                             UPI_VPA) ||
+                              IsUPIVirtualPaymentAddress(field->value);
+                     });
+}
+
 }  // namespace
 
 AutofillManager::FillingContext::FillingContext() = default;
@@ -588,8 +599,10 @@ void AutofillManager::OnFormSubmittedImpl(const FormData& form,
         enable_ablation_logging_, sync_state_, *submitted_form);
   }
 
-  if (!submitted_form->IsAutofillable())
+  if (!submitted_form->IsAutofillable() &&
+      !ContainsAutofillableValue(*submitted_form)) {
     return;
+  }
 
   // Update Personal Data with the form's submitted data.
   // Also triggers offering local/upload credit card save, if applicable.

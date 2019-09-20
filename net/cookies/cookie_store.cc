@@ -20,6 +20,11 @@ void CookieStore::SetForceKeepSessionState() {
   // By default, do nothing.
 }
 
+void CookieStore::SetCookieAccessDelegate(
+    std::unique_ptr<CookieAccessDelegate> delegate) {
+  // By default, do nothing.
+}
+
 void CookieStore::DumpMemoryStats(
     base::trace_event::ProcessMemoryDump* pmd,
     const std::string& parent_absolute_name) const {}

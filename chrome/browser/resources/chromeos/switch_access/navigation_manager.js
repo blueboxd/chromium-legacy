@@ -653,8 +653,9 @@ class NavigationManager {
    * @private
    */
   init_() {
-    // TODO(anastasi): call this when it's actually ready
-    this.focusRingManager.onPrefsReady();
+    if (this.switchAccess_.prefsAreReady()) {
+      this.focusRingManager.onPrefsReady();
+    }
 
     this.desktop_.addEventListener(
         chrome.automation.EventType.FOCUS, this.onFocusChange_.bind(this),

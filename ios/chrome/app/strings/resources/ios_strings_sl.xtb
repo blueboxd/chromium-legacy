@@ -18,7 +18,6 @@
 <translation id="1176932207622159128">Slike ni mog. shran.</translation>
 <translation id="1180526666083833456">Sinhronizacija in prilagajanje med napravami.</translation>
 <translation id="1181037720776840403">Odstrani</translation>
-<translation id="1201530049782216880">New Incognito Tab</translation>
 <translation id="1209206284964581585">Zaenkrat skrij</translation>
 <translation id="1219674500290482172">Internetne povezave ni mogoče vzpostaviti.</translation>
 <translation id="122699739164161391">Zapri vse zavihke</translation>
@@ -94,7 +93,6 @@
 <translation id="2149973817440762519">Uredi zaznamek</translation>
 <translation id="2179182049312275900">Sinhronizacijo lahko kadarkoli vklopite v nastavitvah.</translation>
 <translation id="2198757192731523470">Google lahko vašo zgodovino uporabi za prilagajanje Iskanja Google, oglasov in drugih Googlovih storitev.</translation>
-<translation id="2207590065820824892">Št. neprebranih člankov s seznama za branje: <ph name="UNREAD_COUNT" />.</translation>
 <translation id="2230173723195178503">Spletna stran je naložena</translation>
 <translation id="2239626343334228536">Brisanje podatkov brskanja …</translation>
 <translation id="2256128224215992540">Predlogi za iskanje in spletna mesta</translation>
@@ -124,7 +122,6 @@
 <translation id="2625189173221582860">Geslo kopirano</translation>
 <translation id="2648803196158606475">Izbriši prebrano</translation>
 <translation id="2653659639078652383">Pošlji</translation>
-<translation id="2684815431982545828">New Tab</translation>
 <translation id="2690858294534178585">Kamera je v uporabi</translation>
 <translation id="2691653761409724435">Ni na voljo brez povezave</translation>
 <translation id="2702801445560668637">Reading List</translation>
@@ -267,7 +264,6 @@ Podatki so šifrirani z vašim geslom za sinhronizacijo. Vnesite ga, če želite
 
 Če želite spremeniti to nastavitev, <ph name="BEGIN_LINK" />ponastavite sinhronizacijo<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">Neveljavna številka kartice</translation>
-<translation id="4807020197310989387">1 neprebran članek s seznama za branje.</translation>
 <translation id="4818522717893377262">Dodaj jezik …</translation>
 <translation id="481968316161811770">Cookies, Site Data</translation>
 <translation id="4833786495304741580">Samodejno pošilja statistične podatke o uporabi in poročila o zrušitvah Googlu.</translation>

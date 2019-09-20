@@ -44,7 +44,6 @@
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
-#include "net/test/url_request/url_request_failed_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -207,22 +206,12 @@ void TestingThrottleInstaller::DidStartNavigation(
           is_wifi_connection_, wifi_ssid_));
 }
 
-void AddURLRequestFilterOnIOThread() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  net::URLRequestFailedJob::AddUrlHandler();
-}
-
 }  // namespace
 
 class CaptivePortalBlockingPageTest : public InProcessBrowserTest {
  public:
   CaptivePortalBlockingPageTest() {
     CertReportHelper::SetFakeOfficialBuildForTesting();
-  }
-
-  void SetUpOnMainThread() override {
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   base::BindOnce(&AddURLRequestFilterOnIOThread));
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -284,9 +273,11 @@ void CaptivePortalBlockingPageTest::TestInterstitial(
   // handled by the normal SSLErrorNavigationThrotttle since this test only
   // checks the behavior of the Blocking Page, not the integration with that
   // throttle.
-  ui_test_utils::NavigateToURL(
-      browser(),
-      net::URLRequestFailedJob::GetMockHttpsUrl(net::ERR_BLOCKED_BY_CLIENT));
+  //
+  // TODO(https://crbug.com/1003940): Clean this code up now that committed
+  // interstitials have shipped.
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL("https://mock.failed.request/start=-20"));
   content::RenderFrameHost* frame;
   frame = contents->GetMainFrame();
   ASSERT_TRUE(WaitForRenderFrameReady(frame));

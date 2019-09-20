@@ -179,8 +179,8 @@ PaymentHandlerWebFlowViewController::PaymentHandlerWebFlowViewController(
               chrome::FindBrowserWithWebContents(payment_request_web_contents))
               ->GetWebContentsModalDialogHost()) {
   progress_bar_->set_owned_by_client();
-  progress_bar_->set_foreground_color(gfx::kGoogleBlue500);
-  progress_bar_->set_background_color(SK_ColorTRANSPARENT);
+  progress_bar_->SetForegroundColor(gfx::kGoogleBlue500);
+  progress_bar_->SetBackgroundColor(SK_ColorTRANSPARENT);
   separator_->set_owned_by_client();
   separator_->SetColor(separator_->GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_SeparatorColor));

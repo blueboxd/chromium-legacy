@@ -21,7 +21,8 @@ class FakeCupsProxyServiceDelegate : public CupsProxyServiceDelegate {
   ~FakeCupsProxyServiceDelegate() override = default;
 
   // CupsProxyServiceDelegate overrides.
-  std::vector<chromeos::Printer> GetPrinters() override;
+  std::vector<chromeos::Printer> GetPrinters(
+      chromeos::PrinterClass printer_class) override;
   base::Optional<chromeos::Printer> GetPrinter(const std::string& id) override;
   bool IsPrinterInstalled(const chromeos::Printer& printer) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() override;

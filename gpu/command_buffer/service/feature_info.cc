@@ -388,6 +388,17 @@ void FeatureInfo::EnableEXTColorBufferHalfFloat() {
   feature_flags_.enable_color_buffer_half_float = true;
 }
 
+void FeatureInfo::EnableEXTTextureFilterAnisotropic() {
+  if (!ext_texture_filter_anisotropic_available_)
+    return;
+  AddExtensionString("GL_EXT_texture_filter_anisotropic");
+  validators_.texture_parameter.AddValue(GL_TEXTURE_MAX_ANISOTROPY_EXT);
+  validators_.g_l_state.AddValue(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+  if (IsWebGL2OrES3OrHigherContext()) {
+    validators_.sampler_parameter.AddValue(GL_TEXTURE_MAX_ANISOTROPY_EXT);
+  }
+}
+
 void FeatureInfo::EnableCHROMIUMColorBufferFloatRGBA() {
   if (!feature_flags_.chromium_color_buffer_float_rgba)
     return;
@@ -602,9 +613,9 @@ void FeatureInfo::InitializeFeatures() {
 
   // Check if we should enable GL_EXT_texture_filter_anisotropic.
   if (gfx::HasExtension(extensions, "GL_EXT_texture_filter_anisotropic")) {
-    AddExtensionString("GL_EXT_texture_filter_anisotropic");
-    validators_.texture_parameter.AddValue(GL_TEXTURE_MAX_ANISOTROPY_EXT);
-    validators_.g_l_state.AddValue(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+    ext_texture_filter_anisotropic_available_ = true;
+    if (!disallowed_features_.ext_texture_filter_anisotropic)
+      EnableEXTTextureFilterAnisotropic();
   }
 
   // Check if we should support GL_OES_packed_depth_stencil and/or

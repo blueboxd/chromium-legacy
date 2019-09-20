@@ -905,6 +905,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   AddTabsAndResetBrowser(browser(), 3);
   TabGroupId group1 = model->AddToNewGroup({2, 3});
   TabGroupId group2 = model->AddToNewGroup({1});
+  const TabGroupVisualData new_data(base::ASCIIToUTF16("Foo"), SK_ColorCYAN);
+  model->SetVisualDataForGroup(group2, new_data);
   StopAnimating(tab_strip);
 
   // Dragging the tab in the first index to the tab in the second index switches
@@ -923,6 +925,10 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_EQ("0 1 2 3", IDString(model));
   EXPECT_THAT(model->ListTabsInGroup(group1), testing::ElementsAre(2, 3));
   EXPECT_THAT(model->ListTabsInGroup(group2), testing::ElementsAre(1));
+  const TabGroupVisualData* group2_visual_data =
+      model->GetVisualDataForGroup(group2);
+  EXPECT_THAT(group2_visual_data->title(), new_data.title());
+  EXPECT_THAT(group2_visual_data->color(), new_data.color());
 }
 
 // Drags a tab within the window (without dragging the whole window) then

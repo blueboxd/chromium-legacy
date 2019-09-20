@@ -40,6 +40,7 @@
 #include "cc/tiles/image_decode_cache.h"
 #include "cc/tiles/tile_manager.h"
 #include "cc/trees/animated_paint_worklet_tracker.h"
+#include "cc/trees/de_jelly_state.h"
 #include "cc/trees/layer_tree_frame_sink_client.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_mutator.h"
@@ -1276,6 +1277,9 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   // Responsible for storing animated custom property values and for
   // invalidating PaintWorklets as the property values change.
   AnimatedPaintWorkletTracker paint_worklet_tracker_;
+
+  // Helper for de-jelly logic.
+  DeJellyState de_jelly_state_;
 
   // Must be the last member to ensure this is destroyed first in the
   // destruction order and invalidates all weak pointers.

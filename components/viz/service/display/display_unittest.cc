@@ -314,8 +314,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
               software_output_device_->viewport_pixel_size());
     EXPECT_EQ(gfx::Rect(10, 10, 1, 1), software_output_device_->damage_rect());
 
-    // Display should inject its own LatencyInfo.
-    EXPECT_EQ(1u, output_surface_->last_sent_frame()->latency_info.size());
+    EXPECT_EQ(0u, output_surface_->last_sent_frame()->latency_info.size());
   }
 
   // Pass has no damage so shouldn't be swapped.
@@ -398,9 +397,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100),
               software_output_device_->damage_rect());
 
-    // Latency info from previous frame should be sent now, along with the
-    // Display's info.
-    EXPECT_EQ(2u, output_surface_->last_sent_frame()->latency_info.size());
+    EXPECT_EQ(1u, output_surface_->last_sent_frame()->latency_info.size());
   }
 
   // Pass has copy output request so should be swapped.
@@ -487,10 +484,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     display_->Resize(gfx::Size(100, 100));
     EXPECT_TRUE(scheduler_->swapped);
     EXPECT_EQ(5u, output_surface_->num_sent_frames());
-
-    // Latency info from previous frame should have been discarded since
-    // there was no damage. So we only get the Display's LatencyInfo.
-    EXPECT_EQ(1u, output_surface_->last_sent_frame()->latency_info.size());
+    EXPECT_EQ(0u, output_surface_->last_sent_frame()->latency_info.size());
   }
 
   // Surface that's damaged completely should be resized and swapped.
@@ -521,9 +515,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
               software_output_device_->viewport_pixel_size());
     EXPECT_EQ(gfx::Rect(0, 0, 100, 100),
               software_output_device_->damage_rect());
-
-    // Only expect the Display's LatencyInfo.
-    EXPECT_EQ(1u, output_surface_->last_sent_frame()->latency_info.size());
+    EXPECT_EQ(0u, output_surface_->last_sent_frame()->latency_info.size());
   }
   TearDownDisplay();
 }
@@ -552,7 +544,7 @@ void DisplayTest::LatencyInfoCapTest(bool over_capacity) {
 
   display_->DrawAndSwap();
   EXPECT_EQ(1u, output_surface_->num_sent_frames());
-  EXPECT_EQ(1u, output_surface_->last_sent_frame()->latency_info.size());
+  EXPECT_EQ(0u, output_surface_->last_sent_frame()->latency_info.size());
 
   // Resize so the swap fails even though there's damage, which triggers
   // the case where we store latency info to append to a future swap.
@@ -573,7 +565,7 @@ void DisplayTest::LatencyInfoCapTest(bool over_capacity) {
 
   EXPECT_TRUE(display_->DrawAndSwap());
   EXPECT_EQ(1u, output_surface_->num_sent_frames());
-  EXPECT_EQ(1u, output_surface_->last_sent_frame()->latency_info.size());
+  EXPECT_EQ(0u, output_surface_->last_sent_frame()->latency_info.size());
 
   // Run a successful swap and verify whether or not LatencyInfo was discarded.
   display_->Resize(gfx::Size(100, 100));
@@ -583,7 +575,7 @@ void DisplayTest::LatencyInfoCapTest(bool over_capacity) {
   EXPECT_TRUE(display_->DrawAndSwap());
 
   // Verify whether or not LatencyInfo was dropped.
-  size_t expected_size = 1;  // The Display adds its own latency info.
+  size_t expected_size = 0;
   if (!over_capacity)
     expected_size += max_latency_info_count;
   EXPECT_EQ(2u, output_surface_->num_sent_frames());

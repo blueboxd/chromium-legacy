@@ -258,8 +258,6 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest, ClickAnchorElement) {
   base::RunLoop().RunUntilIdle();
 
   histogram_tester.ExpectTotalCount(
-      "AnchorElementMetrics.Clicked.HrefEngagementScore2", 1);
-  histogram_tester.ExpectTotalCount(
       "AnchorElementMetrics.Clicked.DurationLoadToFirstClick", 1);
   histogram_tester.ExpectTotalCount(
       "AnchorElementMetrics.Clicked.NavigationScore", 1);
@@ -294,9 +292,6 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.ActionTaken",
       NavigationPredictor::Action::kPrefetch, 1);
-
-  histogram_tester.ExpectTotalCount(
-      "AnchorElementMetrics.Clicked.HrefEngagementScore2", 1);
 
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.AccuracyActionTaken",
@@ -340,9 +335,6 @@ IN_PROC_BROWSER_TEST_F(
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.ActionTaken",
       NavigationPredictor::Action::kPrefetch, 1);
-
-  histogram_tester.ExpectTotalCount(
-      "AnchorElementMetrics.Clicked.HrefEngagementScore2", 1);
 
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.AccuracyActionTaken",
@@ -641,9 +633,6 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
       "NavigationPredictor.OnNonDSE.ActionTaken",
       NavigationPredictor::Action::kPrefetch, 1);
 
-  histogram_tester.ExpectTotalCount(
-      "AnchorElementMetrics.Clicked.HrefEngagementScore2", 1);
-
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.AccuracyActionTaken",
       NavigationPredictor::ActionAccuracy::kPrefetchActionClickToSameURL, 1);
@@ -664,10 +653,8 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
   EXPECT_TRUE(content::ExecuteScript(
       incognito->tab_strip_model()->GetActiveWebContents(),
       "document.getElementById('google').click();"));
-  base::RunLoop().RunUntilIdle();
-
   histogram_tester.ExpectTotalCount(
-      "AnchorElementMetrics.Clicked.HrefEngagementScore2", 0);
+      "AnchorElementMetrics.Visible.HighestNavigationScore", 0);
 }
 
 // Simulate click at the anchor element.

@@ -165,8 +165,9 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
      * Get BrowserStartupController instance, create a new one if no existing.
      *
      * @param libraryProcessType the type of process the shared library is loaded. it must be
-     *                           LibraryProcessType.PROCESS_BROWSER or
-     *                           LibraryProcessType.PROCESS_WEBVIEW.
+     *                           LibraryProcessType.PROCESS_BROWSER,
+     *                           LibraryProcessType.PROCESS_WEBVIEW or
+     *                           LibraryProcessType.PROCESS_WEBLAYER.
      * @return BrowserStartupController instance.
      */
     public static BrowserStartupController get(int libraryProcessType) {
@@ -174,7 +175,8 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
         ThreadUtils.assertOnUiThread();
         if (sInstance == null) {
             assert LibraryProcessType.PROCESS_BROWSER == libraryProcessType
-                    || LibraryProcessType.PROCESS_WEBVIEW == libraryProcessType;
+                    || LibraryProcessType.PROCESS_WEBVIEW == libraryProcessType
+                    || LibraryProcessType.PROCESS_WEBLAYER == libraryProcessType;
             sInstance = new BrowserStartupControllerImpl(libraryProcessType);
         }
         assert sInstance.mLibraryProcessType == libraryProcessType : "Wrong process type";

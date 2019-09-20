@@ -37,6 +37,8 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/mock_render_thread.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/base/net_errors.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -2512,7 +2514,7 @@ class FakeAvailableOfflineContentProvider
   void AddBinding(
       mojo::PendingReceiver<chrome::mojom::AvailableOfflineContentProvider>
           receiver) {
-    bindings_.AddBinding(this, std::move(receiver));
+    receivers_.Add(this, std::move(receiver));
   }
 
   void set_return_content(bool return_content) {
@@ -2526,7 +2528,7 @@ class FakeAvailableOfflineContentProvider
  private:
   bool return_content_ = true;
   bool list_visible_by_prefs_ = true;
-  mojo::BindingSet<chrome::mojom::AvailableOfflineContentProvider> bindings_;
+  mojo::ReceiverSet<chrome::mojom::AvailableOfflineContentProvider> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAvailableOfflineContentProvider);
 };

@@ -18,7 +18,6 @@
 <translation id="1176932207622159128">이미지를 저장할 수 없음</translation>
 <translation id="1180526666083833456">모든 기기를 동기화 및 맞춤설정하세요.</translation>
 <translation id="1181037720776840403">삭제</translation>
-<translation id="1201530049782216880">새 시크릿 탭</translation>
 <translation id="1209206284964581585">지금 숨기기</translation>
 <translation id="1219674500290482172">인터넷에 연결할 수 없습니다.</translation>
 <translation id="122699739164161391">탭 모두 닫기</translation>
@@ -94,7 +93,6 @@
 <translation id="2149973817440762519">북마크 수정</translation>
 <translation id="2179182049312275900">언제든지 설정에서 동기화를 사용 설정할 수 있습니다.</translation>
 <translation id="2198757192731523470">Google에서 검색, 광고 및 다른 Google 서비스를 맞춤설정하기 위하여 내 방문 기록을 사용할 수 있습니다.</translation>
-<translation id="2207590065820824892">읽기 목록에 읽지 않은 기사가 <ph name="UNREAD_COUNT" />개 있습니다.</translation>
 <translation id="2230173723195178503">웹페이지 로드됨</translation>
 <translation id="2239626343334228536">인터넷 사용 기록 삭제 중...</translation>
 <translation id="2256128224215992540">검색 및 사이트 제안</translation>
@@ -124,7 +122,6 @@
 <translation id="2625189173221582860">비밀번호 복사됨</translation>
 <translation id="2648803196158606475">읽은 항목 삭제</translation>
 <translation id="2653659639078652383">제출</translation>
-<translation id="2684815431982545828">새 탭</translation>
 <translation id="2690858294534178585">카메라 사용 중</translation>
 <translation id="2691653761409724435">오프라인에서 사용할 수 없음</translation>
 <translation id="2702801445560668637">읽기 목록</translation>
@@ -267,7 +264,6 @@
 
 이 설정을 변경하려면 <ph name="BEGIN_LINK" />동기화를 재설정<ph name="END_LINK" />하세요.</translation>
 <translation id="4805759445554688327">카드 번호가 잘못됨</translation>
-<translation id="4807020197310989387">읽기 목록에 읽지 않은 기사가 1개 있습니다.</translation>
 <translation id="4818522717893377262">언어 추가...</translation>
 <translation id="481968316161811770">쿠키, 사이트 데이터</translation>
 <translation id="4833786495304741580">사용 통계 및 비정상 종료 보고서를 Google에 자동으로 전송합니다.</translation>

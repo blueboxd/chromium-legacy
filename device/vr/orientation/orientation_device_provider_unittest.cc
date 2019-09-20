@@ -18,6 +18,7 @@
 #include "device/vr/orientation/orientation_device_provider.h"
 #include "device/vr/test/fake_orientation_provider.h"
 #include "device/vr/test/fake_sensor_provider.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading_shared_buffer_reader.h"
 #include "services/device/public/cpp/generic_sensor/sensor_traits.h"
@@ -38,7 +39,7 @@ class VROrientationDeviceProviderTest : public testing::Test {
     fake_sensor_provider_ = std::make_unique<FakeSensorProvider>();
 
     fake_sensor_ = std::make_unique<FakeOrientationSensor>(
-        mojo::MakeRequest(&sensor_ptr_));
+        sensor_.InitWithNewPipeAndPassReceiver());
     shared_buffer_handle_ = mojo::SharedBufferHandle::Create(
         sizeof(SensorReadingSharedBuffer) *
         (static_cast<uint64_t>(mojom::SensorType::kMaxValue) + 1));
@@ -70,7 +71,7 @@ class VROrientationDeviceProviderTest : public testing::Test {
 
   mojom::SensorInitParamsPtr FakeInitParams() {
     auto init_params = mojom::SensorInitParams::New();
-    init_params->sensor = std::move(sensor_ptr_);
+    init_params->sensor = std::move(sensor_);
     init_params->default_configuration = PlatformSensorConfiguration(
         SensorTraits<kOrientationSensorType>::kDefaultFrequency);
 
@@ -142,7 +143,7 @@ class VROrientationDeviceProviderTest : public testing::Test {
 
   // Fake Sensor Init params objects
   std::unique_ptr<FakeOrientationSensor> fake_sensor_;
-  mojom::SensorPtrInfo sensor_ptr_;
+  mojo::PendingRemote<mojom::Sensor> sensor_;
   mojo::ScopedSharedBufferHandle shared_buffer_handle_;
   mojom::SensorClientPtr sensor_client_ptr_;
 

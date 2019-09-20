@@ -204,13 +204,16 @@ class HttpsPreviewsBaseClass():
   def testServerShowsSafebrowsingInterstitial(self):
     with TestDriver() as t:
       self.EnableLitePageServerPreviewsAndInit(t)
-      try :
-        # LoadURL will timeout when the interstital appears.
-        t.LoadURL('https://testsafebrowsing.appspot.com/s/malware.html')
-        self.fail('expected timeout')
-      except TimeoutException:
-        histogram = t.GetBrowserHistogram('SB2.ResourceTypes2.Unsafe')
-        self.assertEqual(1, histogram['count'])
+      t.LoadURL('https://testsafebrowsing.appspot.com/s/malware.html')
+
+      # Verify no response is received and 1 bypass redirect was seen.
+      self.assertEqual(0, len(t.GetHTTPResponses()))
+      bypass_count = t.GetBrowserHistogram(
+        'Previews.ServerLitePage.ServerResponse', 2)
+      self.assertEqual(1, bypass_count['count'])
+      self.assertPreviewNotShownViaHistogram(t, 'LitePageRedirect')
+      histogram = t.GetBrowserHistogram('SB2.ResourceTypes2.Unsafe')
+      self.assertEqual(1, histogram['count'])
 
 
   # Verifies that a Lite Page is served, an intervention report has been

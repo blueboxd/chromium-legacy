@@ -137,10 +137,11 @@ void GraphicsLayerTreeBuilder::RebuildRecursive(
                 return a.second < b.second;
               });
     for (auto& item : pending) {
-      this_layer_children.insert(item.second + offset,
-                                 item.first->GetCompositedLayerMapping()
-                                     ->DetachLayerForOverflowControls());
-      offset++;
+      if (auto* layer = item.first->GetCompositedLayerMapping()
+                            ->DetachLayerForOverflowControls()) {
+        this_layer_children.insert(item.second + offset, layer);
+        offset++;
+      }
     }
 
     if (!parented && !this_layer_children.IsEmpty()) {

@@ -1910,10 +1910,66 @@ class AXPosition {
 
   AXPositionInstance CreatePreviousParagraphEndPosition(
       AXBoundaryBehavior boundary_behavior) const {
-    return CreateBoundaryEndPosition(
+    AXPositionInstance previous_position = CreateBoundaryEndPosition(
         boundary_behavior, AXTextBoundaryDirection::kBackwards,
         base::BindRepeating(&AtStartOfParagraphPredicate),
         base::BindRepeating(&AtEndOfParagraphPredicate));
+    if (boundary_behavior == AXBoundaryBehavior::CrossBoundary ||
+        boundary_behavior == AXBoundaryBehavior::StopAtLastAnchorBoundary) {
+      // This is asymmetric with CreateNextParagraphEndPosition due to
+      // asymmetries in text anchor movement. Consider:
+      //
+      // ++1 rootWebArea
+      // ++++2 staticText name="FIRST"
+      // ++++3 genericContainer isLineBreakingObject=true
+      // ++++++4 genericContainer isLineBreakingObject=true
+      // ++++++5 staticText name="SECOND"
+      //
+      // Node 2 offset 5 FIRST<> is a paragraph end since node 3 is a line-
+      // breaking object that's not collapsible (since it's not a leaf). When
+      // looking for the next text anchor position from there, we advance to
+      // sibling node 3, then since that node has descendants, we convert to a
+      // tree position to find the leaf node that maps to "node 3 offset 0".
+      // Since node 4 has no text, we skip it and land on node 5. We end up at
+      // node 5 offset 6 SECOND<> as our next paragraph end.
+      //
+      // The set of paragraph ends should be consistent when moving in the
+      // reverse direction. But starting from node 5 offset 6, the previous text
+      // anchor position is previous sibling node 4. We'll consider that a
+      // paragraph end since it's a leaf line-breaking object and stop.
+      //
+      // Essentially, we have two consecutive line-breaking objects, each of
+      // which stops movement in the "outward" direction, for different reasons.
+      //
+      // We handle this by looking back one more step after finding a candidate
+      // for previous paragraph end, then testing a forward step from the look-
+      // back position. That will land us on the candidate position if it's a
+      // valid paragraph boundary.
+      //
+      while (!previous_position->IsNullPosition()) {
+        AXPositionInstance look_back_position =
+            previous_position->AsLeafTextPosition()
+                ->CreatePreviousLeafTextPosition()
+                ->CreatePositionAtEndOfAnchor();
+        if (look_back_position->IsNullPosition()) {
+          // Nowhere to look back to, so our candidate must be a valid paragraph
+          // boundary.
+          break;
+        }
+        AXPositionInstance forward_step_position =
+            look_back_position->CreateNextLeafTextPosition()
+                ->CreatePositionAtEndOfAnchor();
+        if (*forward_step_position == *previous_position)
+          break;
+
+        previous_position = previous_position->CreateBoundaryEndPosition(
+            boundary_behavior, AXTextBoundaryDirection::kBackwards,
+            base::BindRepeating(&AtStartOfParagraphPredicate),
+            base::BindRepeating(&AtEndOfParagraphPredicate));
+      }
+    }
+
+    return previous_position;
   }
 
   AXPositionInstance CreateNextPageStartPosition(

@@ -186,9 +186,10 @@ var pincher = (function() {
 
   var MIN_SPAN_LENGTH = 20;
 
-  // The font size is guaranteed to be in px.
-  var baseSize =
-      parseFloat(getComputedStyle(document.documentElement).fontSize);
+  // This has to be in sync with 'font-size' in distilledpage.css.
+  // This value is hard-coded because JS might be injected before CSS is ready.
+  // See crbug.com/1004663.
+  var baseSize = 14;
 
   var refreshTransform = function() {
     var slowedScale = Math.exp(Math.log(scale) * FONT_SCALE_MULTIPLIER);

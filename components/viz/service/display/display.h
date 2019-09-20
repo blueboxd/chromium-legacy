@@ -185,7 +185,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   // presented.
   class PresentationGroupTiming {
    public:
-    explicit PresentationGroupTiming(base::TimeTicks swap_triggered_timestamp);
+    PresentationGroupTiming();
     PresentationGroupTiming(PresentationGroupTiming&& other);
     ~PresentationGroupTiming();
 
@@ -196,14 +196,11 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
     bool HasSwapped() const { return !swap_timings_.is_null(); }
     void OnPresent(const gfx::PresentationFeedback& feedback);
 
-    base::TimeTicks draw_and_swap_triggered_timestamp() const {
-      return draw_and_swap_triggered_timestamp_;
+    base::TimeTicks draw_start_timestamp() const {
+      return draw_start_timestamp_;
     }
 
    private:
-    // Not currently tracked by metrics but is used for
-    // SanitizePresentationFeedback()
-    base::TimeTicks draw_and_swap_triggered_timestamp_;
     base::TimeTicks draw_start_timestamp_;
     gfx::SwapTimings swap_timings_;
     std::vector<std::unique_ptr<Surface::PresentationHelper>>
@@ -265,10 +262,6 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
 
   int64_t swapped_trace_id_ = 0;
   int64_t last_presented_trace_id_ = 0;
-
-  // TODO(nazabris, crbug.com/1003892): remove this member now that
-  // PresentationGroupTiming stores the same info.
-  base::circular_deque<base::TimeTicks> draw_start_times_pending_swap_ack_;
 
   DISALLOW_COPY_AND_ASSIGN(Display);
 };

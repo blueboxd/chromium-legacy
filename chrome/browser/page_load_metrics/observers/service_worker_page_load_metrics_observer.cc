@@ -6,8 +6,8 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/page_load_metrics/observers/from_gws_page_load_metrics_observer.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_observer_delegate.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
+#include "components/page_load_metrics/browser/page_load_metrics_observer_delegate.h"
+#include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "net/http/http_response_headers.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"

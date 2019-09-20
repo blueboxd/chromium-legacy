@@ -143,7 +143,9 @@ class AutofillAssistantUiTestUtil {
         ViewGroup coordinator = activity.findViewById(R.id.coordinator);
         LayoutInflater.from(activity).inflate(R.layout.bottom_sheet, coordinator);
         BottomSheet bottomSheet = coordinator.findViewById(R.id.bottom_sheet);
-        bottomSheet.init(coordinator, activity);
+        bottomSheet.init(coordinator, activity.getActivityTabProvider(),
+                activity.getFullscreenManager(), activity.getWindow(),
+                activity.getWindowAndroid().getKeyboardDelegate());
 
         ((BottomContainer) activity.findViewById(R.id.bottom_container))
                 .setBottomSheet(bottomSheet);

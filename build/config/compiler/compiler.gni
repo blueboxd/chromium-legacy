@@ -63,6 +63,10 @@ declare_args() {
   # also http://blog.llvm.org/2016/06/thinlto-scalable-and-incremental-lto.html
   use_thin_lto = is_cfi || (is_android && is_official_build)
 
+  # Limit the number of jobs (threads/processes) the linker is allowed
+  # to use (for linkers that support this).
+  max_jobs_per_link = 8
+
   # Tell VS to create a PDB that references information in .obj files rather
   # than copying it all. This should improve linker performance. mspdbcmf.exe
   # can be used to convert a fastlink pdb to a normal one.

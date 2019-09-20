@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
 namespace network {
@@ -155,13 +156,12 @@ void NetworkQualityTracker::InitializeMojoChannel() {
       get_network_service_callback_.Run();
   DCHECK(network_service);
 
-  // Get NetworkQualityEstimatorManagerPtr.
-  network::mojom::NetworkQualityEstimatorManagerPtr manager_ptr;
-  network::mojom::NetworkQualityEstimatorManagerRequest request(
-      mojo::MakeRequest(&manager_ptr));
-  network_service->GetNetworkQualityEstimatorManager(std::move(request));
+  // Get mojo::Remote<NetworkQualityEstimatorManager>.
+  mojo::Remote<network::mojom::NetworkQualityEstimatorManager> manager;
+  network_service->GetNetworkQualityEstimatorManager(
+      manager.BindNewPipeAndPassReceiver());
 
-  manager_ptr->RequestNotifications(receiver_.BindNewPipeAndPassRemote());
+  manager->RequestNotifications(receiver_.BindNewPipeAndPassRemote());
 
   // base::Unretained is safe as destruction of the
   // NetworkQualityTracker will also destroy the |receiver_|.

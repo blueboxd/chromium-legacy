@@ -11,6 +11,7 @@
 #include "ash/wm/overview/caption_container_view.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/scoped_overview_transform_window.h"
+#include "ash/wm/window_state_observer.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "ui/aura/window.h"
@@ -35,9 +36,10 @@ class RoundedLabelWidget;
 
 // This class represents an item in overview mode.
 class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
+                                public views::ButtonListener,
                                 public aura::WindowObserver,
-                                public ui::ImplicitAnimationObserver,
-                                public views::ButtonListener {
+                                public WindowStateObserver,
+                                public ui::ImplicitAnimationObserver {
  public:
   OverviewItem(aura::Window* window,
                OverviewSession* overview,
@@ -102,9 +104,6 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
 
   // Closes |transform_window_|.
   void CloseWindow();
-
-  // Called when the window is minimized or unminimized.
-  void OnMinimizedStateChanged();
 
   // Shows the cannot snap warning if currently in splitview, and the associated
   // window cannot be snapped.
@@ -199,12 +198,19 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // aura::WindowObserver:
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override;
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds,
                              ui::PropertyChangeReason reason) override;
   void OnWindowDestroying(aura::Window* window) override;
   void OnWindowTitleChanged(aura::Window* window) override;
+
+  // WindowStateObserver:
+  void OnPostWindowStateTypeChange(WindowState* window_state,
+                                   WindowStateType old_type) override;
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
@@ -363,6 +369,8 @@ class ASH_EXPORT OverviewItem : public CaptionContainerView::EventDelegate,
 
   // True to always disable mask regardless of the state.
   bool disable_mask_ = false;
+
+  bool prepared_for_overview_ = false;
 
   // Stores the last translations of the windows affected by SetBounds. Used for
   // ease of calculations when swiping away overview mode using home launcher

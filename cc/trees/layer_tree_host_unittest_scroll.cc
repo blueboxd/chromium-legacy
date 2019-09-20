@@ -1220,7 +1220,9 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostScrollTestScrollNonDrawnLayer);
 class LayerTreeHostScrollTestImplScrollUnderMainThreadScrollingParent
     : public LayerTreeHostScrollTest {
  public:
-  LayerTreeHostScrollTestImplScrollUnderMainThreadScrollingParent() = default;
+  LayerTreeHostScrollTestImplScrollUnderMainThreadScrollingParent() {
+    SetUseLayerLists();
+  }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 

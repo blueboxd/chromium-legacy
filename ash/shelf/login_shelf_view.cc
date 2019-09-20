@@ -32,6 +32,7 @@
 #include "base/callback_helpers.h"
 #include "base/metrics/user_metrics.h"
 #include "base/sequence_checker.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "skia/ext/image_operations.h"
@@ -557,7 +558,12 @@ void LoginShelfView::ButtonPressed(views::Button* sender,
       StartAddUser();
       break;
     case kParentAccess:
-      LockScreen::Get()->ShowParentAccessDialog();
+      // TODO(https://crbug.com/999387): Remove this when handling touch
+      // cancellation is fixed for system modal windows.
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce([]() {
+            LockScreen::Get()->ShowParentAccessDialog();
+          }));
       break;
     default:
       NOTREACHED();

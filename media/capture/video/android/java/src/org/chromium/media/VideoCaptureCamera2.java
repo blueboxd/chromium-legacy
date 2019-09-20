@@ -590,7 +590,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
                             == CameraMetadata.CONTROL_AE_MODE_OFF) {
                 jniExposureMode = AndroidMeteringMode.NONE;
             }
-            if (mPreviewRequest.get(CaptureRequest.CONTROL_AE_LOCK)) {
+            if (mPreviewRequest.get(CaptureRequest.CONTROL_AE_LOCK) != null
+                    && mPreviewRequest.get(CaptureRequest.CONTROL_AE_LOCK)) {
                 jniExposureMode = AndroidMeteringMode.FIXED;
             }
             builder.setMeteringMode(MeteringModeType.EXPOSURE, jniExposureMode);
@@ -1015,7 +1016,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 (CameraManager) ContextUtils.getApplicationContext().getSystemService(
                         Context.CAMERA_SERVICE);
         try {
-            return manager.getCameraCharacteristics(Integer.toString(id));
+            return manager.getCameraCharacteristics(manager.getCameraIdList()[id]);
         } catch (CameraAccessException | IllegalArgumentException | AssertionError ex) {
             Log.e(TAG, "getCameraCharacteristics: ", ex);
         }
@@ -1515,7 +1516,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
         try {
             TraceEvent.instant("VideoCaptureCamera2.java",
                     "VideoCaptureCamera2.startCaptureMaybeAsync calling manager.openCamera");
-            manager.openCamera(Integer.toString(mId), stateListener, mCameraThreadHandler);
+            manager.openCamera(manager.getCameraIdList()[mId], stateListener, mCameraThreadHandler);
         } catch (CameraAccessException | IllegalArgumentException | SecurityException ex) {
             Log.e(TAG, "allocate: manager.openCamera: ", ex);
             return false;

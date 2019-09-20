@@ -91,9 +91,10 @@ void FidoAuthenticator::GetSensorInfo(BioEnrollmentCallback) {
   NOTREACHED();
 }
 
-void FidoAuthenticator::BioEnrollFingerprint(const pin::TokenResponse&,
-                                             BioEnrollmentSampleCallback,
-                                             BioEnrollmentCallback) {
+void FidoAuthenticator::BioEnrollFingerprint(
+    const pin::TokenResponse&,
+    base::Optional<std::vector<uint8_t>> template_id,
+    BioEnrollmentCallback) {
   NOTREACHED();
 }
 

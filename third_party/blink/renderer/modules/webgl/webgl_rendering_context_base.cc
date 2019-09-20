@@ -3364,9 +3364,10 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* script_state,
           "invalid parameter name, OES_vertex_array_object not enabled");
       return ScriptValue::CreateNull(script_state);
     case GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT:  // EXT_texture_filter_anisotropic
-      if (ExtensionEnabled(kEXTTextureFilterAnisotropicName))
-        return GetUnsignedIntParameter(script_state,
-                                       GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+      if (ExtensionEnabled(kEXTTextureFilterAnisotropicName)) {
+        return GetFloatParameter(script_state,
+                                 GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+      }
       SynthesizeGLError(
           GL_INVALID_ENUM, "getParameter",
           "invalid parameter name, EXT_texture_filter_anisotropic not enabled");
@@ -5455,9 +5456,13 @@ void WebGLRenderingContextBase::TexImageHelperCanvasRenderingContextHost(
     // TODO(crbug.com/612542): Implement GPU-to-GPU copy path for more
     // cases, like copying to layers of 3D textures, and elements of
     // 2D texture arrays.
+    bool flip_y = unpack_flip_y_;
+    if (is_origin_top_left_ && is_webgl_canvas)
+      flip_y = !flip_y;
+
     TexImageImpl(function_id, target, level, internalformat, xoffset, yoffset,
                  zoffset, format, type, image.get(),
-                 WebGLImageConversion::kHtmlDomCanvas, unpack_flip_y_,
+                 WebGLImageConversion::kHtmlDomCanvas, flip_y,
                  unpack_premultiply_alpha_, source_sub_rectangle, depth,
                  unpack_image_height);
   }

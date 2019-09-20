@@ -54,15 +54,14 @@ SerialPortImpl::~SerialPortImpl() {
 void SerialPortImpl::Open(mojom::SerialConnectionOptionsPtr options,
                           mojo::ScopedDataPipeConsumerHandle in_stream,
                           mojo::ScopedDataPipeProducerHandle out_stream,
-                          mojom::SerialPortClientPtr client,
+                          mojo::PendingRemote<mojom::SerialPortClient> client,
                           OpenCallback callback) {
   DCHECK(in_stream);
   DCHECK(out_stream);
   in_stream_ = std::move(in_stream);
   out_stream_ = std::move(out_stream);
-  if (client) {
-    client_ = std::move(client);
-  }
+  if (client)
+    client_.Bind(std::move(client));
   io_handler_->Open(*options, base::BindOnce(&SerialPortImpl::OnOpenCompleted,
                                              weak_factory_.GetWeakPtr(),
                                              std::move(callback)));

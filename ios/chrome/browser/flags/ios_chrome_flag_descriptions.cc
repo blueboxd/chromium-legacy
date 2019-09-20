@@ -352,12 +352,6 @@ const char kToolbarNewTabButtonName[] =
 const char kToolbarNewTabButtonDescription[] =
     "When enabled, the bottom toolbar middle button opens a new tab";
 
-const char kUnifiedConsentName[] = "Unified Consent";
-const char kUnifiedConsentDescription[] =
-    "Enables a unified management of user consent for privacy-related "
-    "features. This includes new confirmation screens and improved settings "
-    "pages.";
-
 const char kUseDdljsonApiName[] = "Use new ddljson API for Doodles";
 const char kUseDdljsonApiDescription[] =
     "Enables the new ddljson API to fetch Doodles for the NTP.";

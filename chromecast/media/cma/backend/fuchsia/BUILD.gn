@@ -41,6 +41,7 @@ cast_source_set("cma_backend_support") {
     "//chromecast/public/media",
     "//media",
     "//third_party/fuchsia-sdk/sdk:media",
+    "//third_party/fuchsia-sdk/sdk:sys_cpp",
   ]
 }
 

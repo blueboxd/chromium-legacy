@@ -46,7 +46,7 @@ bool VulkanSwapChain::Initialize(
     bool use_protected_memory,
     std::unique_ptr<VulkanSwapChain> old_swap_chain) {
   DCHECK(device_queue);
-  DCHECK(!use_protected_memory || device_queue_->allow_protected_memory());
+  DCHECK(!use_protected_memory || device_queue->allow_protected_memory());
   use_protected_memory_ = use_protected_memory;
   device_queue_ = device_queue;
   device_queue_->GetFenceHelper()->ProcessCleanupTasks();

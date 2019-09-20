@@ -305,15 +305,6 @@ Si no se establece ningún valor para esta política, la frecuencia predetermina
 
       Si no se establece la política, el valor predeterminado MultiProfileUserBehaviorMustBePrimary se aplicará a usuarios administrados por empresas y MultiProfileUserBehaviorUnrestricted se utilizará para usuarios no administrados.</translation>
 <translation id="1465619815762735808">Hacer clic para ejecutar</translation>
-<translation id="1468307069016535757">Establece el estado predeterminado de la función de accesibilidad del modo de contraste alto en la pantalla de inicio de sesión.
-
-          Si el valor de esta política se establece en True, el modo de contraste alto se habilitará cuando se muestre la pantalla de inicio de sesión.
-
-          Si el valor de esta política se establece en False, el modo de contraste alto se inhabilitará cuando se muestre la pantalla de inicio de sesión.
-
-          Si estableces esta política, los usuarios podrán anularla de forma temporal habilitando o inhabilitando el modo de contraste alto. No obstante, la selección del usuario no es permanente, y se restablecerá la opción predeterminada cuando se vuelva a mostrar la pantalla de inicio de sesión o el usuario permanezca inactivo en la pantalla de inicio de sesión durante un minuto.
-
-          Si no se establece esta política, el modo de contraste alto se inhabilitará la primera vez que se muestre la pantalla de inicio de sesión. Los usuarios pueden habilitar o inhabilitar el modo de contraste alto en cualquier momento, y su estado en la pantalla de inicio de sesión permanece entre usuarios.</translation>
 <translation id="1468707346106619889">Si esta política está establecida en "true", el escritorio unificado está permitido y habilitado de forma predeterminada, lo que permite que las aplicaciones ocupen varias pantallas.
 El usuario puede inhabilitar el escritorio unificado para pantallas individuales desactivando la opción en los ajustes de la pantalla.
 
@@ -2846,15 +2837,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Las URL (como https://example.com/una/ruta) solo se identifican como appIDs U2F, mientras que los dominios (como example.com) se identifican únicamente como IDs RP de WebAuthn. Por ello, para incluir tanto las API WebAuthn como U2F de un determinado sitio web, se deben indican la URL appID y el dominio.</translation>
 <translation id="5836064773277134605">Restringe el intervalo de puertos UDP utilizado por el host de acceso remoto</translation>
 <translation id="5861856285460256766">Configuración del código de acceso parental</translation>
-<translation id="5862253018042179045">Establece el estado predeterminado de la función de accesibilidad de comentarios por voz en la pantalla de inicio de sesión.
-
-          Si el valor de esta política está establecido en True, se habilitarán los comentarios por voz cuando se muestre la pantalla de inicio de sesión.
-
-          Si el valor de esta política está establecido en False, se inhabilitarán los comentarios por voz cuando se muestre la pantalla de inicio de sesión.
-
-          Si estableces esta política, los usuarios podrán anularla de forma temporal habilitando o inhabilitando los comentarios por voz. No obstante, la selección del usuario no es permanente, y se restablecerá la opción predeterminada cuando se vuelva a mostrar la pantalla de inicio de sesión o el usuario permanezca inactivo en la pantalla de inicio de sesión durante un minuto.
-
-          Si no se establece esta política, se inhabilitarán los comentarios por voz la primera vez que se muestre la pantalla de inicio de sesión. No obstante, los usuarios podrán habilitar o inhabilitar los comentarios por voz en cualquier momento, y su estado en la pantalla de inicio de sesión permanecerá entre usuarios.</translation>
 <translation id="5868414965372171132">Configuración de red de usuarios</translation>
 <translation id="5879014913445067283">Controla la búsqueda de archivos compartidos en la red mediante <ph name="NETBIOS_NAME" /></translation>
 <translation id="5882345429632338713">Retraso antes de iniciar un navegador alternativo (en milisegundos)</translation>

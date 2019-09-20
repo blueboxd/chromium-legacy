@@ -482,11 +482,11 @@ void MediaNotificationView::UpdateForegroundColor() {
   header_row_->SetBackgroundColor(background);
 
   // Update play/pause button images.
-  views::SetImageFromVectorIcon(
+  views::SetImageFromVectorIconWithColor(
       play_pause_button_,
       *GetVectorIconForMediaAction(MediaSessionAction::kPlay),
       kMediaButtonIconSize, foreground);
-  views::SetToggledImageFromVectorIcon(
+  views::SetToggledImageFromVectorIconWithColor(
       play_pause_button_,
       *GetVectorIconForMediaAction(MediaSessionAction::kPause),
       kMediaButtonIconSize, foreground);
@@ -503,7 +503,7 @@ void MediaNotificationView::UpdateForegroundColor() {
 
     views::ImageButton* button = static_cast<views::ImageButton*>(child);
 
-    views::SetImageFromVectorIcon(
+    views::SetImageFromVectorIconWithColor(
         button, *GetVectorIconForMediaAction(GetActionFromButtonTag(*button)),
         kMediaButtonIconSize, foreground);
 

@@ -2002,7 +2002,7 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="3919145445993746351">Per accedir a les extensions des de tots els ordinadors, activa la sincronització</translation>
 <translation id="3920504717067627103">Normes de certificats</translation>
 <translation id="392089482157167418">Activa ChromeVox (avisos de veu)</translation>
-<translation id="3923676227229836009">Aquesta pàgina pot veure fitxers</translation>
+<translation id="3923676227229836009">Aquesta pàgina té permís per veure fitxers</translation>
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3925573269917483990">Càmera:</translation>
 <translation id="3925842537050977900">No el fixis al prestatge</translation>
@@ -2248,7 +2248,7 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="4296575653627536209">Afegeix un usuari supervisat</translation>
 <translation id="4297219207642690536">Reinicia i restableix</translation>
 <translation id="4297322094678649474">Canvia els idiomes</translation>
-<translation id="4301671483919369635">Aquesta pàgina pot editar els fitxers</translation>
+<translation id="4301671483919369635">Aquesta pàgina té permís per editar fitxers</translation>
 <translation id="4303079906735388947">Configura un PIN nou per a la clau de seguretat</translation>
 <translation id="4306119971288449206">Les aplicacions s'han de distribuir amb el tipus de contingut "<ph name="CONTENT_TYPE" />"</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K (<ph name="NUM_KILOBYTES_LIVE" /> K actius)</translation>
@@ -2709,10 +2709,10 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="5029568752722684782">Esborra la còpia</translation>
 <translation id="5030338702439866405">Emès per</translation>
 <translation id="5033266061063942743">Formes geomètriques</translation>
-<translation id="5033865233969348410">Mentre tinguis el mode RV activat, pot ser que aquest lloc web pugui obtenir la informació següent:
+<translation id="5033865233969348410">Mentre estiguis en el mode RV, pot ser que aquest lloc web pugui obtenir la informació següent:
   -  les teves característiques físiques, com ara l'alçada.
 
-Assegura't que confies en aquest lloc web abans d'activar el mode RV.</translation>
+Assegura't que confies en aquest lloc web abans d'entrar al mode RV.</translation>
 <translation id="503498442187459473"><ph name="HOST" /> vol utilitzar la càmera i el micròfon</translation>
 <translation id="5036662165765606524">No permetis que cap lloc baixi diversos fitxers automàticament</translation>
 <translation id="5037676449506322593">Selecciona-ho tot</translation>
@@ -3048,11 +3048,11 @@ Assegura't que confies en aquest lloc web abans d'activar el mode RV.</translati
 <translation id="5532223876348815659">General</translation>
 <translation id="5533001281916885985"><ph name="SITE_NAME" /> vol</translation>
 <translation id="5534304873398226603">Descarta la foto o el vídeo</translation>
-<translation id="5534334044554683961">Mentre tinguis el mode RV activat, pot ser que aquest lloc web pugui obtenir la informació següent:
+<translation id="5534334044554683961">Mentre estiguis en el mode RV, pot ser que aquest lloc web pugui obtenir la informació següent:
   -   les teves característiques físiques, com ara l'alçada
   -   la distribució de la teva habitació
 
-Assegura't que confies en aquest lloc web abans d'activar el mode RV.</translation>
+Assegura't que confies en aquest lloc web abans d'entrar al mode RV.</translation>
 <translation id="5535941515421698170">Suprimeix també les teves dades d'aquest dispositiu</translation>
 <translation id="5539221284352502426">El servidor ha rebutjat la contrasenya que has introduït. Els motius poden ser els següents: la contrasenya és massa curta, la contrasenya ha d'incloure números o símbols, o la contrasenya no es pot haver utilitzat anteriorment.</translation>
 <translation id="5541694225089836610">L'administrador ha desactivat l'acció</translation>
@@ -4491,7 +4491,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7684559058815332124">Accedeix a la pàgina d'inici de sessió del portal captiu</translation>
 <translation id="7685049629764448582">Memòria de JavaScript </translation>
 <translation id="7685087414635069102">PIN obligatori</translation>
-<translation id="7685301384041462804">Assegura't que confies en aquest lloc web abans d'activar el mode RV.</translation>
+<translation id="7685301384041462804">Assegura't que confies en aquest lloc web abans d'entrar al mode RV.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Confirma la contrasenya nova</translation>
 <translation id="7690378713476594306">Tria de la llista</translation>
@@ -4855,7 +4855,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8174876712881364124">Fes còpies de seguretat a Google Drive. Canvia de dispositiu o restaura'n les dades fàcilment en qualsevol moment. Aquesta còpia de seguretat inclou dades d'aplicacions. Les còpies de seguretat es pengen a Google i s'encripten amb la contrasenya del Compte de Google del teu fill. <ph name="BEGIN_LINK1" />Més informació<ph name="END_LINK1" /></translation>
 <translation id="8176332201990304395">Rosa i blanc</translation>
 <translation id="8177196903785554304">Informació sobre la xarxa</translation>
-<translation id="8178208419593390223">Gestiona els Comptes de Google en què tinguis la sessió iniciada. És possible que els llocs web, les aplicacions i les extensions de Chrome i Google Play utilitzin aquests comptes per personalitzar la teva experiència, en funció dels permisos.</translation>
 <translation id="8179976553408161302">Retorn</translation>
 <translation id="8180239481735238521">pàgina</translation>
 <translation id="8180294223783876911">Envia dades d'ús i de diagnòstic. En aquests moments aquest dispositiu envia automàticament a Google dades de diagnòstic, del dispositiu i d''ús d'aplicacions. Aquestes dades ajudaran a millorar l'estabilitat del sistema i de les aplicacions, entre altres característiques. Una part de les dades agregades també serà útil per a les aplicacions i els col·laboradors de Google, com ara els desenvolupadors d'Android. Si tens activada l'opció Activitat al web i en aplicacions addicional, és possible que aquestes dades es desin al teu Compte de Google. <ph name="BEGIN_LINK1" />Més informació<ph name="END_LINK1" /></translation>
@@ -5453,7 +5452,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="9026731007018893674">baixa</translation>
 <translation id="9026852570893462412">Aquest procés pot tardar uns quants minuts. S'està baixant la màquina virtual.</translation>
 <translation id="9027459031423301635">Obre l'enllaç en una pes&amp;tanya nova</translation>
-<translation id="9029323097866369874">Vols permetre que <ph name="DOMAIN" /> activi el mode RV?</translation>
+<translation id="9029323097866369874">Vols permetre que <ph name="DOMAIN" /> entri al mode RV?</translation>
 <translation id="9030515284705930323">La teva organització no t'ha activat Google Play Store al compte. Contacta amb l'administrador per obtenir més informació.</translation>
 <translation id="9030785788945687215">Gmail</translation>
 <translation id="9033857511263905942">&amp;Enganxa</translation>

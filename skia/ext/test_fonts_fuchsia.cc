@@ -8,9 +8,10 @@
 #include <fuchsia/io/cpp/fidl.h>
 #include <fuchsia/sys/cpp/fidl.h>
 #include <lib/fidl/cpp/interface_handle.h>
+#include <lib/sys/cpp/component_context.h>
 
+#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/file_utils.h"
-#include "base/fuchsia/service_directory_client.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "skia/ext/fontmgr_default.h"
@@ -43,17 +44,18 @@ fuchsia::fonts::ProviderSyncPtr RunTestProviderWithTestFonts(
   launch_info.directory_request =
       font_provider_services_dir.NewRequest().TakeChannel();
 
-  fuchsia::sys::LauncherSyncPtr launcher =
-      base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
-          ->ConnectToServiceSync<fuchsia::sys::Launcher>();
+  fuchsia::sys::LauncherSyncPtr launcher;
+  base::fuchsia::ComponentContextForCurrentProcess()->svc()->Connect(
+      launcher.NewRequest());
   launcher->CreateComponent(std::move(launch_info),
                             controller_out->NewRequest());
 
-  base::fuchsia::ServiceDirectoryClient font_provider_services_client(
+  sys::ServiceDirectory font_provider_services_client(
       std::move(font_provider_services_dir));
 
-  return font_provider_services_client
-      .ConnectToServiceSync<fuchsia::fonts::Provider>();
+  fuchsia::fonts::ProviderSyncPtr provider;
+  font_provider_services_client.Connect(provider.NewRequest());
+  return provider;
 }
 
 void ConfigureTestFont() {

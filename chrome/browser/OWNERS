@@ -15,6 +15,7 @@ per-file BUILD.gn=*
 per-file *.xtb=file://tools/translation/TRANSLATION_OWNERS
 
 per-file *_android.*=file://chrome/browser/android/OWNERS
+per-file *.java=file://chrome/browser/android/OWNERS
 
 per-file browser_resources.grd=file://ui/webui/PLATFORM_OWNERS
 

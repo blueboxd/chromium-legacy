@@ -490,6 +490,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate,
     return begin_params_->mixed_content_context_type;
   }
 
+  // Returns true if the navigation was started by the Navigator by calling
+  // BeginNavigation(), or if the request was created at commit time by calling
+  // CreateForCommit().
+  bool IsNavigationStarted() const;
+
  private:
   friend class NavigationRequestTest;
 

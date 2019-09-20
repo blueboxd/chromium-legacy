@@ -27,6 +27,8 @@ void WebLayerBrowserTest::PreRunTestOnMainThread() {
   shell_ = Shell::windows()[0];
 }
 
-void WebLayerBrowserTest::PostRunTestOnMainThread() {}
+void WebLayerBrowserTest::PostRunTestOnMainThread() {
+  Shell::CloseAllWindows();
+}
 
 }  // namespace weblayer

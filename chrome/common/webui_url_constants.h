@@ -340,6 +340,7 @@ extern const char kAccessibilitySubPage[];
 extern const char kAccountManagerSubPage[];
 extern const char kAccountSubPage[];
 extern const char kAndroidAppsDetailsSubPage[];
+extern const char kAppManagementDetailSubPage[];
 extern const char kAssistantSubPage[];
 extern const char kBluetoothSubPage[];
 extern const char kChangePictureSubPage[];

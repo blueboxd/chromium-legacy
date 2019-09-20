@@ -4,12 +4,15 @@
 
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate.h"
 
+#include <set>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/fake_deep_scanning_dialog_delegate.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -26,83 +29,6 @@ namespace {
 
 const char kDmToken[] = "dm_token";
 const char kTestUrl[] = "http://example.com";
-
-// A derivative of DeepScanningDialogDelegate that overrides calls to the
-// real binary upload service and re-implements them locally.
-class FakeDeepScanningDialogDelegate : public DeepScanningDialogDelegate {
- public:
-  static std::unique_ptr<DeepScanningDialogDelegate> Create(
-      base::RepeatingClosure delete_closure,
-      content::WebContents* web_contents,
-      Data data,
-      CompletionCallback callback) {
-    auto ret = std::make_unique<FakeDeepScanningDialogDelegate>(
-        delete_closure, web_contents, std::move(data), std::move(callback));
-    return ret;
-  }
-
-  FakeDeepScanningDialogDelegate(base::RepeatingClosure delete_closure,
-                                 content::WebContents* web_contents,
-                                 Data data,
-                                 CompletionCallback callback)
-      : DeepScanningDialogDelegate(web_contents,
-                                   std::move(data),
-                                   std::move(callback)),
-        delete_closure_(delete_closure) {}
-
-  ~FakeDeepScanningDialogDelegate() override {
-    if (!delete_closure_.is_null())
-      delete_closure_.Run();
-  }
-
- private:
-  void Response(base::FilePath path,
-                std::unique_ptr<BinaryUploadService::Request> request) {
-    DeepScanningClientResponse response;
-    response.mutable_dlp_scan_verdict();
-    response.mutable_malware_scan_verdict();
-
-    if (path.empty()) {
-      StringRequestCallback(BinaryUploadService::Result::SUCCESS, response);
-    } else {
-      FileRequestCallback(path, BinaryUploadService::Result::SUCCESS, response);
-    }
-  }
-
-  void UploadTextForDeepScanning(
-      std::unique_ptr<BinaryUploadService::Request> request) override {
-    EXPECT_EQ(
-        DlpDeepScanningClientRequest::WEB_CONTENT_UPLOAD,
-        request->deep_scanning_request().dlp_scan_request().content_source());
-    EXPECT_EQ(kDmToken, request->deep_scanning_request().dm_token());
-
-    // Simulate a response.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&FakeDeepScanningDialogDelegate::Response,
-                                  base::Unretained(this), base::FilePath(),
-                                  std::move(request)));
-  }
-
-  void UploadFileForDeepScanning(
-      const base::FilePath& path,
-      std::unique_ptr<BinaryUploadService::Request> request) override {
-    DCHECK(!path.empty());
-    EXPECT_EQ(
-        DlpDeepScanningClientRequest::WEB_CONTENT_UPLOAD,
-        request->deep_scanning_request().dlp_scan_request().content_source());
-    EXPECT_EQ(kDmToken, request->deep_scanning_request().dm_token());
-
-    // Simulate a response.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&FakeDeepScanningDialogDelegate::Response,
-                       base::Unretained(this), path, std::move(request)));
-  }
-
-  bool CloseTabModalDialog() override { return false; }
-
-  base::RepeatingClosure delete_closure_;
-};
 
 class BaseTest : public testing::Test {
  public:
@@ -124,6 +50,11 @@ class BaseTest : public testing::Test {
   void SetDlpPolicy(CheckContentComplianceValues state) {
     TestingBrowserProcess::GetGlobal()->local_state()->SetInteger(
         prefs::kCheckContentCompliance, state);
+  }
+
+  void SetWaitPolicy(DelayDeliveryUntilVerdictValues state) {
+    TestingBrowserProcess::GetGlobal()->local_state()->SetInteger(
+        prefs::kDelayDeliveryUntilVerdict, state);
   }
 
   void SetMalwarePolicy(SendFilesForMalwareCheckValues state) {
@@ -322,6 +253,10 @@ class DeepScanningDialogDelegateAuditOnlyTest : public BaseTest {
     return web_contents_.get();
   }
 
+  void PathFailsDeepScan(base::FilePath path) {
+    failures_.insert(std::move(path));
+  }
+
  private:
   void SetUp() override {
     BaseTest::SetUp();
@@ -332,11 +267,22 @@ class DeepScanningDialogDelegateAuditOnlyTest : public BaseTest {
     SetMalwarePolicy(SEND_UPLOADS);
 
     DeepScanningDialogDelegate::SetFactoryForTesting(base::BindRepeating(
-        &FakeDeepScanningDialogDelegate::Create, run_loop_.QuitClosure()));
+        &FakeDeepScanningDialogDelegate::Create, run_loop_.QuitClosure(),
+        base::Bind(&DeepScanningDialogDelegateAuditOnlyTest::StatusCallback,
+                   base::Unretained(this)),
+        kDmToken));
+  }
+
+  bool StatusCallback(const base::FilePath& path) {
+    // The path succeeds if it is not in the |failures_| maps.
+    return failures_.find(path) == failures_.end();
   }
 
   base::RunLoop run_loop_;
   std::unique_ptr<content::WebContents> web_contents_;
+
+  // Paths in this map will be consider to have failed deep scan checks.
+  std::set<base::FilePath> failures_;
 };
 
 TEST_F(DeepScanningDialogDelegateAuditOnlyTest, Empty) {
@@ -346,16 +292,21 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, Empty) {
 
   // Keep |data| empty by not setting any text or paths.
 
+  bool called = false;
   DeepScanningDialogDelegate::ShowForWebContents(
       contents(), std::move(data),
-      base::BindOnce([](const DeepScanningDialogDelegate::Data& data,
-                        const DeepScanningDialogDelegate::Result& result) {
-        EXPECT_EQ(0u, data.text.size());
-        EXPECT_EQ(0u, data.paths.size());
-        EXPECT_EQ(0u, result.text_results.size());
-        EXPECT_EQ(0u, result.paths_results.size());
-      }));
+      base::BindOnce(
+          [](bool* called, const DeepScanningDialogDelegate::Data& data,
+             const DeepScanningDialogDelegate::Result& result) {
+            EXPECT_EQ(0u, data.text.size());
+            EXPECT_EQ(0u, data.paths.size());
+            EXPECT_EQ(0u, result.text_results.size());
+            EXPECT_EQ(0u, result.paths_results.size());
+            *called = true;
+          },
+          &called));
   RunUntilDone();
+  EXPECT_TRUE(called);
 }
 
 TEST_F(DeepScanningDialogDelegateAuditOnlyTest, StringData) {
@@ -365,17 +316,22 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, StringData) {
 
   data.text.emplace_back(base::UTF8ToUTF16("foo"));
 
+  bool called = false;
   DeepScanningDialogDelegate::ShowForWebContents(
       contents(), std::move(data),
-      base::BindOnce([](const DeepScanningDialogDelegate::Data& data,
-                        const DeepScanningDialogDelegate::Result& result) {
-        EXPECT_EQ(1u, data.text.size());
-        EXPECT_EQ(0u, data.paths.size());
-        ASSERT_EQ(1u, result.text_results.size());
-        EXPECT_EQ(0u, result.paths_results.size());
-        EXPECT_TRUE(result.text_results[0]);
-      }));
+      base::BindOnce(
+          [](bool* called, const DeepScanningDialogDelegate::Data& data,
+             const DeepScanningDialogDelegate::Result& result) {
+            EXPECT_EQ(1u, data.text.size());
+            EXPECT_EQ(0u, data.paths.size());
+            ASSERT_EQ(1u, result.text_results.size());
+            EXPECT_EQ(0u, result.paths_results.size());
+            EXPECT_TRUE(result.text_results[0]);
+            *called = true;
+          },
+          &called));
   RunUntilDone();
+  EXPECT_TRUE(called);
 }
 
 TEST_F(DeepScanningDialogDelegateAuditOnlyTest, StringData2) {
@@ -386,18 +342,23 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, StringData2) {
   data.text.emplace_back(base::UTF8ToUTF16("foo"));
   data.text.emplace_back(base::UTF8ToUTF16("bar"));
 
+  bool called = false;
   DeepScanningDialogDelegate::ShowForWebContents(
       contents(), std::move(data),
-      base::BindOnce([](const DeepScanningDialogDelegate::Data& data,
-                        const DeepScanningDialogDelegate::Result& result) {
-        EXPECT_EQ(2u, data.text.size());
-        EXPECT_EQ(0u, data.paths.size());
-        ASSERT_EQ(2u, result.text_results.size());
-        EXPECT_EQ(0u, result.paths_results.size());
-        EXPECT_TRUE(result.text_results[0]);
-        EXPECT_TRUE(result.text_results[1]);
-      }));
+      base::BindOnce(
+          [](bool* called, const DeepScanningDialogDelegate::Data& data,
+             const DeepScanningDialogDelegate::Result& result) {
+            EXPECT_EQ(2u, data.text.size());
+            EXPECT_EQ(0u, data.paths.size());
+            ASSERT_EQ(2u, result.text_results.size());
+            EXPECT_EQ(0u, result.paths_results.size());
+            EXPECT_TRUE(result.text_results[0]);
+            EXPECT_TRUE(result.text_results[1]);
+            *called = true;
+          },
+          &called));
   RunUntilDone();
+  EXPECT_TRUE(called);
 }
 
 TEST_F(DeepScanningDialogDelegateAuditOnlyTest, FileData) {
@@ -407,17 +368,22 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, FileData) {
 
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo"));
 
+  bool called = false;
   DeepScanningDialogDelegate::ShowForWebContents(
       contents(), std::move(data),
-      base::BindOnce([](const DeepScanningDialogDelegate::Data& data,
-                        const DeepScanningDialogDelegate::Result& result) {
-        EXPECT_EQ(0u, data.text.size());
-        EXPECT_EQ(1u, data.paths.size());
-        EXPECT_EQ(0u, result.text_results.size());
-        ASSERT_EQ(1u, result.paths_results.size());
-        EXPECT_TRUE(result.paths_results[0]);
-      }));
+      base::BindOnce(
+          [](bool* called, const DeepScanningDialogDelegate::Data& data,
+             const DeepScanningDialogDelegate::Result& result) {
+            EXPECT_EQ(0u, data.text.size());
+            EXPECT_EQ(1u, data.paths.size());
+            EXPECT_EQ(0u, result.text_results.size());
+            ASSERT_EQ(1u, result.paths_results.size());
+            EXPECT_TRUE(result.paths_results[0]);
+            *called = true;
+          },
+          &called));
   RunUntilDone();
+  EXPECT_TRUE(called);
 }
 
 TEST_F(DeepScanningDialogDelegateAuditOnlyTest, FileData2) {
@@ -428,18 +394,23 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, FileData2) {
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/bar"));
 
+  bool called = false;
   DeepScanningDialogDelegate::ShowForWebContents(
       contents(), std::move(data),
-      base::BindOnce([](const DeepScanningDialogDelegate::Data& data,
-                        const DeepScanningDialogDelegate::Result& result) {
-        EXPECT_EQ(0u, data.text.size());
-        EXPECT_EQ(2u, data.paths.size());
-        EXPECT_EQ(0u, result.text_results.size());
-        ASSERT_EQ(2u, result.paths_results.size());
-        EXPECT_TRUE(result.paths_results[0]);
-        EXPECT_TRUE(result.paths_results[1]);
-      }));
+      base::BindOnce(
+          [](bool* called, const DeepScanningDialogDelegate::Data& data,
+             const DeepScanningDialogDelegate::Result& result) {
+            EXPECT_EQ(0u, data.text.size());
+            EXPECT_EQ(2u, data.paths.size());
+            EXPECT_EQ(0u, result.text_results.size());
+            ASSERT_EQ(2u, result.paths_results.size());
+            EXPECT_TRUE(result.paths_results[0]);
+            EXPECT_TRUE(result.paths_results[1]);
+            *called = true;
+          },
+          &called));
   RunUntilDone();
+  EXPECT_TRUE(called);
 }
 
 TEST_F(DeepScanningDialogDelegateAuditOnlyTest, StringFileData) {
@@ -451,19 +422,79 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, StringFileData) {
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo"));
   data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/bar"));
 
+  bool called = false;
   DeepScanningDialogDelegate::ShowForWebContents(
       contents(), std::move(data),
-      base::BindOnce([](const DeepScanningDialogDelegate::Data& data,
-                        const DeepScanningDialogDelegate::Result& result) {
-        EXPECT_EQ(1u, data.text.size());
-        EXPECT_EQ(2u, data.paths.size());
-        ASSERT_EQ(1u, result.text_results.size());
-        ASSERT_EQ(2u, result.paths_results.size());
-        EXPECT_TRUE(result.text_results[0]);
-        EXPECT_TRUE(result.paths_results[0]);
-        EXPECT_TRUE(result.paths_results[1]);
-      }));
+      base::BindOnce(
+          [](bool* called, const DeepScanningDialogDelegate::Data& data,
+             const DeepScanningDialogDelegate::Result& result) {
+            EXPECT_EQ(1u, data.text.size());
+            EXPECT_EQ(2u, data.paths.size());
+            ASSERT_EQ(1u, result.text_results.size());
+            ASSERT_EQ(2u, result.paths_results.size());
+            EXPECT_TRUE(result.text_results[0]);
+            EXPECT_TRUE(result.paths_results[0]);
+            EXPECT_TRUE(result.paths_results[1]);
+            *called = true;
+          },
+          &called));
   RunUntilDone();
+  EXPECT_TRUE(called);
+}
+
+TEST_F(DeepScanningDialogDelegateAuditOnlyTest, StringFileDataPartialSuccess) {
+  SetWaitPolicy(DELAY_UPLOADS);
+
+  GURL url(kTestUrl);
+  DeepScanningDialogDelegate::Data data;
+  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
+
+  data.text.emplace_back(base::UTF8ToUTF16("foo"));
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo"));
+
+  PathFailsDeepScan(data.paths[0]);
+
+  bool called = false;
+  DeepScanningDialogDelegate::ShowForWebContents(
+      contents(), std::move(data),
+      base::BindOnce(
+          [](bool* called, const DeepScanningDialogDelegate::Data& data,
+             const DeepScanningDialogDelegate::Result& result) {
+            EXPECT_EQ(1u, data.text.size());
+            EXPECT_EQ(1u, data.paths.size());
+            ASSERT_EQ(1u, result.text_results.size());
+            ASSERT_EQ(1u, result.paths_results.size());
+            EXPECT_TRUE(result.text_results[0]);
+            EXPECT_FALSE(result.paths_results[0]);
+            *called = true;
+          },
+          &called));
+  RunUntilDone();
+  EXPECT_TRUE(called);
+}
+
+TEST_F(DeepScanningDialogDelegateAuditOnlyTest, EmptyWait) {
+  SetWaitPolicy(DELAY_UPLOADS);
+
+  GURL url(kTestUrl);
+  DeepScanningDialogDelegate::Data data;
+  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
+
+  bool called = false;
+  DeepScanningDialogDelegate::ShowForWebContents(
+      contents(), std::move(data),
+      base::BindOnce(
+          [](bool* called, const DeepScanningDialogDelegate::Data& data,
+             const DeepScanningDialogDelegate::Result& result) {
+            EXPECT_EQ(0u, data.text.size());
+            EXPECT_EQ(0u, data.paths.size());
+            ASSERT_EQ(0u, result.text_results.size());
+            ASSERT_EQ(0u, result.paths_results.size());
+            *called = true;
+          },
+          &called));
+  RunUntilDone();
+  EXPECT_TRUE(called);
 }
 
 }  // namespace

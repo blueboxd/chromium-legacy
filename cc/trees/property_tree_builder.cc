@@ -37,10 +37,8 @@ struct DataForRecursion {
   int scroll_tree_parent;
   int closest_ancestor_with_cached_render_surface;
   int closest_ancestor_with_copy_request;
-  uint32_t main_thread_scrolling_reasons;
   SkColor safe_opaque_background_color;
   bool should_flatten;
-  bool scroll_tree_parent_created_by_uninheritable_criteria;
   bool animation_axis_aligned_since_render_target;
   bool not_axis_aligned_since_last_clip;
   gfx::Transform compound_transform_since_render_target;
@@ -646,21 +644,9 @@ void PropertyTreeBuilderContext::AddScrollNodeIfNeeded(
   bool scrollable = layer->scrollable();
   bool contains_non_fast_scrollable_region =
       !layer->non_fast_scrollable_region().IsEmpty();
-  uint32_t main_thread_scrolling_reasons =
-      layer->GetMainThreadScrollingReasons();
 
-  bool scroll_node_uninheritable_criteria =
-      is_root || scrollable || contains_non_fast_scrollable_region;
-  bool has_different_main_thread_scrolling_reasons =
-      main_thread_scrolling_reasons !=
-      data_from_ancestor.main_thread_scrolling_reasons;
   bool requires_node =
-      scroll_node_uninheritable_criteria ||
-      (main_thread_scrolling_reasons !=
-           MainThreadScrollingReason::kNotScrollingOnMain &&
-       (has_different_main_thread_scrolling_reasons ||
-        data_from_ancestor
-            .scroll_tree_parent_created_by_uninheritable_criteria));
+      is_root || scrollable || contains_non_fast_scrollable_region;
 
   int node_id;
   if (!requires_node) {
@@ -669,7 +655,6 @@ void PropertyTreeBuilderContext::AddScrollNodeIfNeeded(
   } else {
     ScrollNode node;
     node.scrollable = scrollable;
-    node.main_thread_scrolling_reasons = main_thread_scrolling_reasons;
     node.bounds = layer->bounds();
     node.container_bounds = layer->scroll_container_bounds();
     node.offset_to_transform_parent = layer->offset_to_transform_parent();
@@ -682,10 +667,7 @@ void PropertyTreeBuilderContext::AddScrollNodeIfNeeded(
 
     node_id = scroll_tree_.Insert(node, parent_id);
     data_for_children->scroll_tree_parent = node_id;
-    data_for_children->main_thread_scrolling_reasons =
-        node.main_thread_scrolling_reasons;
-    data_for_children->scroll_tree_parent_created_by_uninheritable_criteria =
-        scroll_node_uninheritable_criteria;
+
     // For animation subsystem purposes, if this layer has a compositor element
     // id, we build a map from that id to this scroll node.
     if (layer->element_id()) {
@@ -805,10 +787,6 @@ void PropertyTreeBuilderContext::BuildPropertyTrees() {
   data_for_recursion.closest_ancestor_with_copy_request =
       EffectTree::kInvalidNodeId;
   data_for_recursion.should_flatten = false;
-  data_for_recursion.main_thread_scrolling_reasons =
-      MainThreadScrollingReason::kNotScrollingOnMain;
-  data_for_recursion.scroll_tree_parent_created_by_uninheritable_criteria =
-      true;
   data_for_recursion.compound_transform_since_render_target = gfx::Transform();
   data_for_recursion.animation_axis_aligned_since_render_target = true;
   data_for_recursion.not_axis_aligned_since_last_clip = false;

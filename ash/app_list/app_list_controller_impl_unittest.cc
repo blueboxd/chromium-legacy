@@ -19,6 +19,7 @@
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/unified/unified_system_tray_test_api.h"
@@ -730,6 +731,9 @@ TEST_F(AppListControllerImplMetricsTest,
   EXPECT_FALSE(IsTabletMode());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(AppListViewState::kClosed, GetAppListView()->app_list_state());
+  EXPECT_FALSE(AshTestBase::GetPrimaryShelf()
+                   ->shelf_layout_manager()
+                   ->is_app_list_visible());
 
   // Check metrics initial values.
   histogram_tester_.ExpectTotalCount(
@@ -750,7 +754,6 @@ TEST_F(AppListControllerImplMetricsTest,
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->GestureScrollSequence(shelf_center, target_point,
                                    base::TimeDelta::FromMicroseconds(500), 1);
-  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(AppListViewState::kFullscreenAllApps,
             GetAppListView()->app_list_state());
   histogram_tester_.ExpectTotalCount(

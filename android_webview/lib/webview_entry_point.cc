@@ -5,11 +5,19 @@
 #include "android_webview/lib/webview_jni_onload.h"
 #include "base/android/jni_android.h"
 #include "base/android/library_loader/library_loader_hooks.h"
+#include "weblayer/app/jni_onload.h"
 
 namespace {
 
-bool NativeInit(base::android::LibraryProcessType) {
-  return android_webview::OnJNIOnLoadInit();
+bool NativeInit(base::android::LibraryProcessType library_process_type) {
+  switch (library_process_type) {
+    case base::android::PROCESS_WEBLAYER:
+    case base::android::PROCESS_WEBLAYER_CHILD:
+      return weblayer::OnJNIOnLoadInit("resources.pak");
+      break;
+    default:
+      return android_webview::OnJNIOnLoadInit();
+  }
 }
 
 }  // namespace

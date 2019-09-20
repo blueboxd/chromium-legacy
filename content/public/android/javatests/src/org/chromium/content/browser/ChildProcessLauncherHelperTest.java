@@ -151,7 +151,8 @@ public class ChildProcessLauncherHelperTest {
         // will fail to start and the ChildProcessLauncher will retry and use the slot 1.
         ChildProcessCreationParamsImpl.set(context.getPackageName(), false /* isExternalService */,
                 LibraryProcessType.PROCESS_CHILD, true /* bindToCallerCheck */,
-                false /* ignoreVisibilityForImportance */);
+                false /* ignoreVisibilityForImportance */, null /* privilegedServicesName */,
+                null /* sandboxedServicesName */);
         ChildProcessLauncherHelperImpl launcher =
                 startSandboxedChildProcess(BLOCK_UNTIL_SETUP, true /* doSetupConnection */);
 
@@ -257,7 +258,8 @@ public class ChildProcessLauncherHelperTest {
         Context context = InstrumentationRegistry.getTargetContext();
         ChildProcessCreationParamsImpl.set(context.getPackageName(), false /* isExternalService */,
                 LibraryProcessType.PROCESS_CHILD, true /* bindToCallerCheck */,
-                false /* ignoreVisibilityForImportance */);
+                false /* ignoreVisibilityForImportance */, null /* privilegedServicesName */,
+                null /* sandboxedServicesName */);
         testWarmUpImpl();
     }
 

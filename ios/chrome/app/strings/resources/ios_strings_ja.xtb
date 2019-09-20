@@ -18,7 +18,6 @@
 <translation id="1176932207622159128">画像を保存できません</translation>
 <translation id="1180526666083833456">デバイス間の同期とカスタマイズを行います。</translation>
 <translation id="1181037720776840403">削除</translation>
-<translation id="1201530049782216880">新しいシークレット タブ</translation>
 <translation id="1209206284964581585">今は表示しない</translation>
 <translation id="1219674500290482172">インターネットに接続できません。</translation>
 <translation id="122699739164161391">すべてのタブを閉じる</translation>
@@ -94,7 +93,6 @@
 <translation id="2149973817440762519">ブックマークを編集</translation>
 <translation id="2179182049312275900">同期は設定でいつでもオンにできます。</translation>
 <translation id="2198757192731523470">検索、広告、その他の Google サービスをカスタマイズする目的で、Google が履歴を使用することがあります。</translation>
-<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> 件のリーディング リストの記事が未読です。</translation>
 <translation id="2230173723195178503">ウェブページを読み込みました</translation>
 <translation id="2239626343334228536">閲覧データを削除しています...</translation>
 <translation id="2256128224215992540">検索とサイトの候補を表示</translation>
@@ -124,7 +122,6 @@
 <translation id="2625189173221582860">パスワードがコピーされました</translation>
 <translation id="2648803196158606475">既読を削除</translation>
 <translation id="2653659639078652383">送信</translation>
-<translation id="2684815431982545828">新しいタブ</translation>
 <translation id="2690858294534178585">カメラが使用中です</translation>
 <translation id="2691653761409724435">オフラインで使用不可</translation>
 <translation id="2702801445560668637">リーディング リスト</translation>
@@ -267,7 +264,6 @@
 
 この設定を変更する場合は<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />してください</translation>
 <translation id="4805759445554688327">無効なカード番号</translation>
-<translation id="4807020197310989387">1 件のリーディング リストの記事が未読です。</translation>
 <translation id="4818522717893377262">言語を追加...</translation>
 <translation id="481968316161811770">Cookie、サイトデータ</translation>
 <translation id="4833786495304741580">使用統計情報や障害レポートを Google に自動送信します。</translation>

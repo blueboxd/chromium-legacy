@@ -28,6 +28,7 @@ std::unique_ptr<infobars::InfoBar> CreateConfirmInfoBar(
     // Coordinator create the right Coordinator using that delegate.
     InfobarConfirmCoordinator* coordinator = [[InfobarConfirmCoordinator alloc]
         initWithInfoBarDelegate:delegate.get()
+                   badgeSupport:NO
                            type:InfobarType::kInfobarTypeConfirm];
     return std::make_unique<InfoBarIOS>(coordinator, std::move(delegate));
   } else {

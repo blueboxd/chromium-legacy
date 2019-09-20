@@ -6,6 +6,7 @@ package org.chromium.components.embedder_support.delegate;
 
 import android.content.Context;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.ui.base.WindowAndroid;
@@ -47,7 +48,7 @@ public class ColorChooserAndroid {
             WindowAndroid windowAndroid, int initialColor, ColorSuggestion[] suggestions) {
         if (windowAndroid == null) return null;
         Context windowContext = windowAndroid.getContext().get();
-        if (WindowAndroid.activityFromContext(windowContext) == null) return null;
+        if (ContextUtils.activityFromContext(windowContext) == null) return null;
         ColorChooserAndroid chooser = new ColorChooserAndroid(
                 nativeColorChooserAndroid, windowContext, initialColor, suggestions);
         chooser.openColorChooser();

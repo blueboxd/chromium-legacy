@@ -35,8 +35,10 @@
 
 - (instancetype)initWithInfoBarDelegate:
                     (ConfirmInfoBarDelegate*)confirmInfoBarDelegate
+                           badgeSupport:(BOOL)badgeSupport
                                    type:(InfobarType)infobarType {
   self = [super initWithInfoBarDelegate:confirmInfoBarDelegate
+                           badgeSupport:badgeSupport
                                    type:infobarType];
   if (self) {
     _confirmInfobarDelegate = confirmInfoBarDelegate;
@@ -51,6 +53,7 @@
     self.started = YES;
     self.bannerViewController =
         [[InfobarBannerViewController alloc] initWithDelegate:self
+                                                presentsModal:self.hasBadge
                                                          type:self.infobarType];
     self.bannerViewController.titleText =
         base::SysUTF16ToNSString(self.confirmInfobarDelegate->GetMessageText());

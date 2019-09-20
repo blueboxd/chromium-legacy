@@ -33,18 +33,18 @@ class VIEWS_EXPORT ProgressBar : public View, public gfx::AnimationDelegate {
   gfx::Size CalculatePreferredSize() const override;
   void OnPaint(gfx::Canvas* canvas) override;
 
-  double current_value() const { return current_value_; }
-
+  double GetValue() const;
   // Sets the current value. Values outside of the display range of 0.0-1.0 will
   // be displayed with an infinite loading animation.
   void SetValue(double value);
 
   // The color of the progress portion.
   SkColor GetForegroundColor() const;
-  void set_foreground_color(SkColor color) { foreground_color_ = color; }
+  void SetForegroundColor(SkColor color);
+
   // The color of the portion that displays potential progress.
   SkColor GetBackgroundColor() const;
-  void set_background_color(SkColor color) { background_color_ = color; }
+  void SetBackgroundColor(SkColor color);
 
  protected:
   int preferred_height() const { return preferred_height_; }

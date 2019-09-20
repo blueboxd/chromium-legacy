@@ -1228,6 +1228,9 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
       active_tree()->property_trees()->effect_tree.HasCopyRequests();
   bool have_missing_animated_tiles = false;
 
+  // Advance our de-jelly state. This is a no-op if de-jelly is not active.
+  de_jelly_state_.AdvanceFrame(active_tree_.get());
+
   for (EffectTreeLayerListIterator it(active_tree());
        it.state() != EffectTreeLayerListIterator::State::END; ++it) {
     auto target_render_pass_id = it.target_render_surface()->id();
@@ -1251,6 +1254,11 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
       if (render_surface->contributes_to_drawn_surface()) {
         render_surface->AppendQuads(draw_mode, target_render_pass,
                                     &append_quads_data);
+        if (settings_.allow_de_jelly_effect) {
+          de_jelly_state_.UpdateSharedQuadState(
+              active_tree_.get(), render_surface->TransformTreeIndex(),
+              target_render_pass);
+        }
       }
     } else if (it.state() == EffectTreeLayerListIterator::State::LAYER) {
       LayerImpl* layer = it.current_layer();
@@ -1262,6 +1270,11 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
           frame->may_contain_video = true;
 
         layer->AppendQuads(target_render_pass, &append_quads_data);
+        if (settings_.allow_de_jelly_effect) {
+          de_jelly_state_.UpdateSharedQuadState(active_tree_.get(),
+                                                layer->transform_tree_index(),
+                                                target_render_pass);
+        }
       }
 
       rendering_stats_instrumentation_->AddVisibleContentArea(
@@ -2343,15 +2356,7 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
         active_tree()->TakeForceSendMetadataRequest());
   }
 
-  metadata.latency_info.emplace_back(ui::SourceEventType::FRAME);
-  ui::LatencyInfo& new_latency_info = metadata.latency_info.back();
-  if (CommitToActiveTree()) {
-    new_latency_info.AddLatencyNumberWithTimestamp(
-        ui::LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT, frame_time);
-  } else {
-    new_latency_info.AddLatencyNumberWithTimestamp(
-        ui::LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT, frame_time);
-
+  if (!CommitToActiveTree()) {
     base::TimeTicks draw_time = base::TimeTicks::Now();
     for (auto& latency : metadata.latency_info) {
       latency.AddLatencyNumberWithTimestamp(

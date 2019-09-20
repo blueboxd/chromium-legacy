@@ -21,6 +21,7 @@
 #include "services/service_manager/embedder/result_codes.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "weblayer/browser/webui/web_ui_controller_factory.h"
 #include "weblayer/public/main.h"
 
 #if defined(OS_ANDROID)
@@ -83,6 +84,9 @@ int BrowserMainPartsImpl::PreEarlyInitialization() {
 void BrowserMainPartsImpl::PreMainMessageLoopRun() {
   ui::MaterialDesignController::Initialize();
   params_->delegate->PreMainMessageLoopRun();
+
+  content::WebUIControllerFactory::RegisterFactory(
+      WebUIControllerFactory::GetInstance());
 
   if (main_function_params_.ui_task) {
     main_function_params_.ui_task->Run();

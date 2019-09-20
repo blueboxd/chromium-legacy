@@ -1060,6 +1060,7 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Completed"/>
   <int value="2" label="Signed out"/>
   <int value="3" label="Closed"/>
+  <int value="4" label="Switched accounts"/>
 </enum>
 
 <enum name="AddToHomescreenTimeoutStatus">
@@ -18101,6 +18102,9 @@ Called by update_net_error_codes.py.-->
   <int value="602" label="ReportDeviceOsUpdateStatus"/>
   <int value="603" label="DeviceLoginScreenWebUsbAllowDevicesForUrls"/>
   <int value="604" label="AllowSyncXHRInPageDismissal"/>
+  <int value="605" label="DeviceLoginSpokenFeedbackEnabled"/>
+  <int value="606" label="DeviceLoginScreenHighContrastEnabled"/>
+  <int value="607" label="DeviceLoginScreenVirtualKeyboardEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -34931,6 +34935,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="enable-zero-suggest-most-visited-without-serp"/>
   <int value="-1886713568"
       label="AutofillGetPaymentsIdentityFromSync:disabled"/>
+  <int value="-1885074774" label="ShelfScrollable:enabled"/>
   <int value="-1883170077" label="EnableHtmlBaseUsernameDetector:disabled"/>
   <int value="-1882330924" label="NTPArticleSuggestions:enabled"/>
   <int value="-1881250251" label="InterestFeedContentSuggestions:disabled"/>
@@ -35076,7 +35081,6 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1684773837" label="TabEngagementReportingAndroid:disabled"/>
   <int value="-1684123448" label="disable-best-effort-tasks"/>
   <int value="-1682843294" label="DataReductionProxyDecidesTransform:enabled"/>
-  <int value="-1681832882" label="shelf-scrollable"/>
   <int value="-1679624666" label="NtpRealbox:enabled"/>
   <int value="-1677715989" label="UnifiedConsent:disabled"/>
   <int value="-1676256979"
@@ -35953,6 +35957,7 @@ from previous Chrome versions.
   <int value="-560114351" label="OfflinePagesRenovations:disabled"/>
   <int value="-558471324" label="PreviewsCoinFlipHoldback_UKMOnly:disabled"/>
   <int value="-557742250" label="ContentSuggestionsCategories:disabled"/>
+  <int value="-555341956" label="AutofillSaveAndFillVPA:enabled"/>
   <int value="-548082154" label="protect-sync-credential:disabled"/>
   <int value="-547301855" label="SyncPseudoUSSSupervisedUsers:enabled"/>
   <int value="-544629557" label="CSSBackdropFilter:enabled"/>
@@ -36288,6 +36293,7 @@ from previous Chrome versions.
   <int value="-88273414" label="ContentSuggestionsShowSummary:enabled"/>
   <int value="-86788587" label="allow-autofill-sync-credential"/>
   <int value="-86243376" label="LayoutNG:enabled"/>
+  <int value="-85706353" label="VirtualDesksGestures:enabled"/>
   <int value="-82530769" label="WebXRPlaneDetection:enabled"/>
   <int value="-80501013" label="AutofillOffNoServerData:enabled"/>
   <int value="-80353187" label="disable-display-color-calibration"/>
@@ -36523,6 +36529,7 @@ from previous Chrome versions.
   <int value="223591010" label="CastMediaRouteProvider:enabled"/>
   <int value="223662457" label="BackgroundLoadingForDownloads:enabled"/>
   <int value="229476202" label="CryptAuthV2Enrollment:enabled"/>
+  <int value="229877058" label="ShelfScrollable:disabled"/>
   <int value="233721248" label="DownloadRename:disabled"/>
   <int value="237570976" label="CommandLineOnNonRooted:disabled"/>
   <int value="237964589"
@@ -37130,6 +37137,7 @@ from previous Chrome versions.
   <int value="1085130793" label="LongPressBackForHistory:disabled"/>
   <int value="1087235172" label="file-manager-enable-new-audio-player"/>
   <int value="1088915385" label="new-password-form-parsing:enabled"/>
+  <int value="1089913432" label="VirtualDesksGestures:disabled"/>
   <int value="1090377940" label="enable-quic-https"/>
   <int value="1091631619" label="disable-accelerated-video-encode"/>
   <int value="1092896354" label="EnableFullscreenAppList:disabled"/>
@@ -37181,6 +37189,7 @@ from previous Chrome versions.
   <int value="1155923106" label="NTPOfflinePages:enabled"/>
   <int value="1161075291" label="OmniboxReverseTabSwitchLogic:disabled"/>
   <int value="1163255347" label="ash-enable-touch-view-touch-feedback"/>
+  <int value="1165682330" label="AutofillSaveAndFillVPA:disabled"/>
   <int value="1166169237" label="disable-delay-agnostic-aec"/>
   <int value="1166789664" label="SyncPseudoUSSAppList:disabled"/>
   <int value="1166897718" label="TextSuggestionsTouchBar:disabled"/>
@@ -43558,6 +43567,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Proxy"/>
   <int value="4" label="AuthExtTimeout"/>
   <int value="5" label="None"/>
+</enum>
+
+<enum name="NetworkIsolationKeyPresent">
+  <int value="0" label="Network Isolation Key Not Present. Cacheable Request."/>
+  <int value="1"
+      label="Network Isolation Key Not Present. Non-Cacheable Request."/>
+  <int value="2" label="Network Isolation Key Present."/>
 </enum>
 
 <enum name="NetworkLocationRequestEvent">
@@ -50495,10 +50511,12 @@ Called by update_net_trust_anchors.py.-->
   <summary>
     Track the failure and success states of proto database migration.
   </summary>
-  <int value="0" label="Shared DB init attempted"/>
+  <int value="0" label="Starting: DB init attempted"/>
   <int value="1" label="Failed: unique DB corruption"/>
-  <int value="2" label="Failed: missing provider"/>
-  <int value="3" label="Failed: open for both unqiue and shared"/>
+  <int value="2"
+      label="Failed: No shared DB provider provided, result unknown, assume
+             failure (DEPRECATED)"/>
+  <int value="3" label="Failed: open for both unique and shared"/>
   <int value="4" label="Failed: Shared DB client is missing"/>
   <int value="5" label="Success: Unique DB, no shared db present"/>
   <int value="6" label="Failed: Shared DB failed to open"/>
@@ -50516,11 +50534,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="18" label="Success: migrated to unique"/>
   <int value="19" label="Legacy init called"/>
   <int value="20" label="Shared metadata db open failed"/>
-  <int value="21" label="Shared metadata write failed"/>
+  <int value="21" label="Shared metadata db has no migration status"/>
   <int value="22" label="Shared db corruption for client"/>
   <int value="23" label="Shared db client created"/>
   <int value="24" label="Shared leveldb failed to open"/>
   <int value="25" label="Shared leveldb does not exist"/>
+  <int value="26"
+      label="Failed: No shared DB provider provided, unique DB failed"/>
+  <int value="27"
+      label="Success: No shared DB provider provided, using unique"/>
 </enum>
 
 <enum name="ProvisionalLoadEvent">
@@ -52847,6 +52869,17 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="No Safety Tip"/>
   <int value="2" label="Safety Tip for bad reputation"/>
   <int value="3" label="Safety Tip for lookalike URL"/>
+</enum>
+
+<enum name="SameSiteCookieContext">
+  <summary>
+    The SameSiteCookieContext of a request describes the relation between the
+    cookie request and the navigational environment.
+  </summary>
+  <int value="0" label="Cross-site"/>
+  <int value="1" label="Lax method unsafe"/>
+  <int value="2" label="Laxly same-site"/>
+  <int value="3" label="Strictly same-site"/>
 </enum>
 
 <enum name="SamlInSessionPasswordChangeEvent">
@@ -62857,6 +62890,19 @@ Full version information for the fingerprint enum values:
   <int value="2" label="Allowed"/>
   <int value="3" label="Blocked"/>
   <int value="4" label="Abandoned"/>
+</enum>
+
+<enum name="WebAuthenticationCableV1Event">
+  <int value="0" label="Flow started"/>
+  <int value="1" label="BLE hardware found"/>
+  <int value="2" label="BLE hardware already powered on"/>
+  <int value="3" label="User prompted to allow Chrome to power BLE"/>
+  <int value="4" label="User prompted to enable BLE in settings"/>
+  <int value="5"
+      label="Transmitting caBLE advert after prompting user to power on
+             device"/>
+  <int value="6" label="Success"/>
+  <int value="7" label="Timeout"/>
 </enum>
 
 <enum name="WebAuthenticationFidoTransport">

@@ -6,7 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/page_load_metrics/observers/histogram_suffixes.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
+#include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "content/public/browser/web_contents.h"
 
 #if defined(OS_ANDROID)

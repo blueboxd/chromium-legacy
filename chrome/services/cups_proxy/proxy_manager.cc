@@ -235,8 +235,10 @@ void ProxyManagerImpl::OnParseIpp(
 }
 
 void ProxyManagerImpl::SpoofGetPrinters() {
-  auto response =
-      BuildGetDestsResponse(in_flight_->request, delegate_->GetPrinters());
+  auto printers = FilterPrintersForPluginVm(
+      delegate_->GetPrinters(chromeos::PrinterClass::kSaved),
+      delegate_->GetPrinters(chromeos::PrinterClass::kEnterprise));
+  auto response = BuildGetDestsResponse(in_flight_->request, printers);
   if (!response.has_value()) {
     return Fail("Failed to spoof CUPS-Get-Printers response");
   }

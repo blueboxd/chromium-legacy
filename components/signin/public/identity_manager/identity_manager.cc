@@ -25,8 +25,7 @@
 #if defined(OS_ANDROID)
 #include "base/android/jni_string.h"
 #include "components/signin/internal/identity_manager/android/jni_headers/IdentityManager_jni.h"
-#include "components/signin/internal/identity_manager/android/jni_headers/IdentityMutator_jni.h"
-#include "components/signin/internal/identity_manager/oauth2_token_service_delegate_android.h"
+#include "components/signin/internal/identity_manager/profile_oauth2_token_service_delegate.h"
 #elif !defined(OS_IOS)
 #include "components/signin/internal/identity_manager/mutable_profile_oauth2_token_service_delegate.h"
 #endif
@@ -49,17 +48,13 @@ IdentityManager::IdentityManager(
       gaia_cookie_manager_service_(std::move(gaia_cookie_manager_service)),
       primary_account_manager_(std::move(primary_account_manager)),
       account_fetcher_service_(std::move(account_fetcher_service)),
-      primary_account_mutator_(std::move(primary_account_mutator)),
-      accounts_mutator_(std::move(accounts_mutator)),
-      accounts_cookie_mutator_(std::move(accounts_cookie_mutator)),
-      diagnostics_provider_(std::move(diagnostics_provider)),
-      device_accounts_synchronizer_(std::move(device_accounts_synchronizer)) {
+      identity_mutator_(std::move(primary_account_mutator),
+                        std::move(accounts_mutator),
+                        std::move(accounts_cookie_mutator),
+                        std::move(device_accounts_synchronizer)),
+      diagnostics_provider_(std::move(diagnostics_provider)) {
   DCHECK(account_fetcher_service_);
-  DCHECK(accounts_cookie_mutator_);
   DCHECK(diagnostics_provider_);
-
-  DCHECK(!accounts_mutator_ || !device_accounts_synchronizer_)
-      << "Cannot have both an AccountsMutator and a DeviceAccountsSynchronizer";
 
   // IdentityManager will outlive the PrimaryAccountManager, so base::Unretained
   // is safe.
@@ -100,14 +95,6 @@ IdentityManager::IdentityManager(
     UpdateUnconsentedPrimaryAccount();
 
 #if defined(OS_ANDROID)
-  java_identity_mutator_ =
-      primary_account_mutator_
-          ? Java_IdentityMutator_Constructor(
-                base::android::AttachCurrentThread(),
-                reinterpret_cast<intptr_t>(primary_account_mutator_.get()),
-                reinterpret_cast<intptr_t>(this))
-          : nullptr;
-
   java_identity_manager_ = Java_IdentityManager_create(
       base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this));
 #endif
@@ -126,9 +113,6 @@ IdentityManager::~IdentityManager() {
   if (java_identity_manager_)
     Java_IdentityManager_destroy(base::android::AttachCurrentThread(),
                                  java_identity_manager_);
-  if (java_identity_mutator_)
-    Java_IdentityMutator_destroy(base::android::AttachCurrentThread(),
-                                 java_identity_mutator_);
 #endif
 }
 
@@ -347,19 +331,19 @@ AccountsInCookieJarInfo IdentityManager::GetAccountsInCookieJar() const {
 }
 
 PrimaryAccountMutator* IdentityManager::GetPrimaryAccountMutator() {
-  return primary_account_mutator_.get();
+  return identity_mutator_.GetPrimaryAccountMutator();
 }
 
 AccountsMutator* IdentityManager::GetAccountsMutator() {
-  return accounts_mutator_.get();
+  return identity_mutator_.GetAccountsMutator();
 }
 
 AccountsCookieMutator* IdentityManager::GetAccountsCookieMutator() {
-  return accounts_cookie_mutator_.get();
+  return identity_mutator_.GetAccountsCookieMutator();
 }
 
 DeviceAccountsSynchronizer* IdentityManager::GetDeviceAccountsSynchronizer() {
-  return device_accounts_synchronizer_.get();
+  return identity_mutator_.GetDeviceAccountsSynchronizer();
 }
 
 void IdentityManager::AddDiagnosticsObserver(DiagnosticsObserver* observer) {
@@ -409,11 +393,6 @@ DiagnosticsProvider* IdentityManager::GetDiagnosticsProvider() {
 }
 
 #if defined(OS_ANDROID)
-void IdentityManager::LegacyReloadAccountsFromSystem() {
-  token_service_->GetDelegate()->ReloadAccountsFromSystem(
-      GetPrimaryAccountId());
-}
-
 base::android::ScopedJavaLocalRef<jobject>
 IdentityManager::LegacyGetAccountTrackerServiceJavaObject() {
   return account_tracker_service_->GetJavaObject();
@@ -431,8 +410,8 @@ base::android::ScopedJavaLocalRef<jobject> IdentityManager::GetJavaObject() {
 
 base::android::ScopedJavaLocalRef<jobject>
 IdentityManager::GetIdentityMutatorJavaObject() {
-  DCHECK(java_identity_manager_);
-  return base::android::ScopedJavaLocalRef<jobject>(java_identity_mutator_);
+  return base::android::ScopedJavaLocalRef<jobject>(
+      identity_mutator_.GetJavaObject());
 }
 
 void IdentityManager::ForceRefreshOfExtendedAccountInfo(
@@ -455,10 +434,6 @@ base::android::ScopedJavaLocalRef<jobject> IdentityManager::
   if (!account_info.has_value())
     return nullptr;
   return ConvertToJavaCoreAccountInfo(env, account_info.value());
-}
-
-void IdentityManager::ReloadAccountsFromSystem(JNIEnv* env) {
-  LegacyReloadAccountsFromSystem();
 }
 #endif
 

@@ -30,7 +30,6 @@
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/display_util.h"
@@ -761,8 +760,7 @@ class FrameNavigateParamsCapturer : public WebContentsObserver {
     transitions_.push_back(navigation_handle->GetPageTransition());
     urls_.push_back(navigation_handle->GetURL());
     navigation_types_.push_back(
-        static_cast<NavigationHandleImpl*>(navigation_handle)
-            ->navigation_type());
+        NavigationRequest::From(navigation_handle)->navigation_type());
     is_same_documents_.push_back(navigation_handle->IsSameDocument());
     did_replace_entries_.push_back(navigation_handle->DidReplaceEntry());
     if (!navigations_remaining_ &&

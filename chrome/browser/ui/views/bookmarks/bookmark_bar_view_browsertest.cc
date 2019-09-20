@@ -163,8 +163,15 @@ IN_PROC_BROWSER_TEST_F(BookmarkBarNavigationTest, SecFetchFromEmptyTab) {
   }
 }
 
+#if defined(OS_MACOSX)
+//  TODO(crbug.com/1006033): Test flaky on MAC
+#define MAYBE_SecFetchSiteNoneFromNonEmptyTab \
+  DISABLED_SecFetchSiteNoneFromNonEmptyTab
+#else
+#define MAYBE_SecFetchSiteNoneFromNonEmptyTab SecFetchSiteNoneFromNonEmptyTab
+#endif
 IN_PROC_BROWSER_TEST_F(BookmarkBarNavigationTest,
-                       SecFetchSiteNoneFromNonEmptyTab) {
+                       MAYBE_SecFetchSiteNoneFromNonEmptyTab) {
   // Navigate to an non-empty tab
   ui_test_utils::NavigateToURL(browser(), GURL("http://example.com/"));
 

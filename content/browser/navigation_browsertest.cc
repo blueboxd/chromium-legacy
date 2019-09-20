@@ -320,6 +320,34 @@ INSTANTIATE_TEST_SUITE_P(/* no prefix */,
                          NetworkIsolationNavigationBrowserTest,
                          ::testing::Bool());
 
+class NavigationBrowserTestReferrerPolicy
+    : public ContentBrowserTest,
+      public ::testing::WithParamInterface<network::mojom::ReferrerPolicy> {
+ protected:
+  void SetUpOnMainThread() override {
+    ASSERT_TRUE(embedded_test_server()->Start());
+    ContentBrowserTest::SetUpOnMainThread();
+  }
+
+  network::mojom::ReferrerPolicy GetReferrerPolicy() const {
+    return GetParam();
+  }
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    NavigationBrowserTestReferrerPolicy,
+    ::testing::Values(network::mojom::ReferrerPolicy::kAlways,
+                      network::mojom::ReferrerPolicy::kDefault,
+                      network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade,
+                      network::mojom::ReferrerPolicy::kNever,
+                      network::mojom::ReferrerPolicy::kOrigin,
+                      network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin,
+                      network::mojom::ReferrerPolicy::
+                          kNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+                      network::mojom::ReferrerPolicy::kSameOrigin,
+                      network::mojom::ReferrerPolicy::kStrictOrigin));
+
 // Ensure that browser initiated basic navigations work.
 IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, BrowserInitiatedNavigations) {
   // Perform a navigation with no live renderer.
@@ -605,6 +633,62 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, SanitizeReferrer) {
   EXPECT_TRUE(manager.WaitForResponse());
   manager.WaitForNavigationFinished();
   EXPECT_EQ(kInsecureUrl, shell()->web_contents()->GetLastCommittedURL());
+}
+
+// Ensure the correctness of a navigation request's referrer. This is a
+// regression test for https://crbug.com/1004083.
+IN_PROC_BROWSER_TEST_P(NavigationBrowserTestReferrerPolicy, ReferrerPolicy) {
+  const GURL kDestination(embedded_test_server()->GetURL("/title1.html"));
+  const GURL kReferrerURL(embedded_test_server()->GetURL("/referrer-page"));
+  const url::Origin kReferrerOrigin = url::Origin::Create(kReferrerURL);
+
+  // It is possible that the referrer URL does not match what the policy
+  // demands (e.g., non-empty URL and kNever policy), so we'll test that the
+  // correct referrer is generated, and that the navigation succeeds.
+  const Referrer referrer(kReferrerURL, GetReferrerPolicy());
+
+  // Navigate to a resource whose destination URL is same-origin with the
+  // navigation's referrer. The final referrer should be generated correctly.
+  NavigationController::LoadURLParams load_params(kDestination);
+  load_params.referrer = referrer;
+  TestNavigationManager manager(shell()->web_contents(), kDestination);
+  shell()->web_contents()->GetController().LoadURLWithParams(load_params);
+  EXPECT_TRUE(manager.WaitForRequestStart());
+
+  // The referrer should have been sanitized.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetMainFrame()
+                            ->frame_tree_node();
+  ASSERT_TRUE(root->navigation_request());
+  switch (GetReferrerPolicy()) {
+    case network::mojom::ReferrerPolicy::kAlways:
+    case network::mojom::ReferrerPolicy::kDefault:
+    case network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade:
+    case network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin:
+    case network::mojom::ReferrerPolicy::
+        kNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+    case network::mojom::ReferrerPolicy::kSameOrigin:
+      EXPECT_EQ(
+          kReferrerURL,
+          root->navigation_request()->navigation_handle()->GetReferrer().url);
+      break;
+    case network::mojom::ReferrerPolicy::kNever:
+      EXPECT_EQ(
+          GURL(),
+          root->navigation_request()->navigation_handle()->GetReferrer().url);
+      break;
+    case network::mojom::ReferrerPolicy::kOrigin:
+    case network::mojom::ReferrerPolicy::kStrictOrigin:
+      EXPECT_EQ(
+          kReferrerOrigin.GetURL(),
+          root->navigation_request()->navigation_handle()->GetReferrer().url);
+      break;
+  }
+
+  // The navigation should commit without being blocked.
+  EXPECT_TRUE(manager.WaitForResponse());
+  manager.WaitForNavigationFinished();
+  EXPECT_EQ(kDestination, shell()->web_contents()->GetLastCommittedURL());
 }
 
 // Test to verify that an exploited renderer process trying to upload a file

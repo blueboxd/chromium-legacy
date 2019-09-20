@@ -142,7 +142,7 @@ class ProfileOAuth2TokenServiceDelegate {
 
   // Triggers platform specific implementation for Android to reload accounts
   // from system.
-  virtual void ReloadAccountsFromSystem(
+  virtual void ReloadAllAccountsFromSystemWithPrimaryAccount(
       const CoreAccountId& primary_account_id) {}
 #endif
 

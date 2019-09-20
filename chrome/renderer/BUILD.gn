@@ -101,6 +101,8 @@ jumbo_static_library("renderer") {
     "subresource_redirect/subresource_redirect_url_loader_throttle.h",
     "subresource_redirect/subresource_redirect_util.cc",
     "subresource_redirect/subresource_redirect_util.h",
+    "sync_encryption_keys_extension.cc",
+    "sync_encryption_keys_extension.h",
     "url_loader_throttle_provider_impl.cc",
     "url_loader_throttle_provider_impl.h",
     "v8_unwinder.cc",

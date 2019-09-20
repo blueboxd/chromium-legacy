@@ -10,6 +10,7 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/public/cpp/window_state_type.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/shell.h"
@@ -37,6 +38,7 @@
 #include "base/auto_reset.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -205,14 +207,17 @@ OverviewItem::OverviewItem(aura::Window* window,
       overview_grid_(overview_grid) {
   CreateWindowLabel();
   for (auto* window_iter : WindowTransientDescendantIteratorRange(
-           WindowTransientDescendantIterator(GetWindow()))) {
+           WindowTransientDescendantIterator(window))) {
     window_iter->AddObserver(this);
   }
+  WindowState::Get(window)->AddObserver(this);
 }
 
 OverviewItem::~OverviewItem() {
+  aura::Window* window = GetWindow();
+  WindowState::Get(window)->RemoveObserver(this);
   for (auto* window_iter : WindowTransientDescendantIteratorRange(
-           WindowTransientDescendantIterator(GetWindow()))) {
+           WindowTransientDescendantIterator(window))) {
     window_iter->RemoveObserver(this);
   }
 }
@@ -268,6 +273,8 @@ void OverviewItem::PrepareForOverview() {
   transform_window_.PrepareForOverview();
   aura::Window* widget_window = item_widget_->GetNativeWindow();
   widget_window->parent()->StackChildBelow(widget_window, GetWindow());
+
+  prepared_for_overview_ = true;
 }
 
 void OverviewItem::SlideWindowIn() {
@@ -478,13 +485,6 @@ void OverviewItem::CloseWindow() {
   // Fade out the window and the label, effectively hiding them.
   AnimateOpacity(0.0, OVERVIEW_ANIMATION_CLOSE_OVERVIEW_ITEM);
   transform_window_.Close();
-}
-
-void OverviewItem::OnMinimizedStateChanged() {
-  const bool minimized = transform_window_.IsMinimized();
-  caption_container_view_->SetShowPreview(minimized);
-  if (!minimized)
-    EnsureVisible();
 }
 
 void OverviewItem::UpdateCannotSnapWarningVisibility() {
@@ -889,16 +889,39 @@ void OverviewItem::ButtonPressed(views::Button* sender,
   CloseWindow();
 }
 
+void OverviewItem::OnWindowPropertyChanged(aura::Window* window,
+                                           const void* key,
+                                           intptr_t old) {
+  if (prepared_for_overview_ && window == GetWindow() &&
+      key == aura::client::kTopViewInset &&
+      window->GetProperty(aura::client::kTopViewInset) !=
+          static_cast<int>(old)) {
+    overview_grid_->PositionWindows(/*animate=*/false);
+  }
+}
+
 void OverviewItem::OnWindowBoundsChanged(aura::Window* window,
                                          const gfx::Rect& old_bounds,
                                          const gfx::Rect& new_bounds,
                                          ui::PropertyChangeReason reason) {
+  // During preparation, window bounds can change. Ignore bounds change
+  // notifications in this case; we'll reposition soon.
+  if (!prepared_for_overview_)
+    return;
+
   // Do not keep the overview bounds if we're shutting down.
   if (!Shell::Get()->overview_controller()->InOverviewSession())
     return;
 
+  // The drop target will get its bounds set as opposed to its transform
+  // set in |SetItemBounds| so do not position windows again when that
+  // particular window has its bounds changed.
+  aura::Window* main_window = GetWindow();
+  if (overview_grid_->IsDropTargetWindow(main_window))
+    return;
+
   if (reason == ui::PropertyChangeReason::NOT_FROM_ANIMATION) {
-    if (window == GetWindow()) {
+    if (window == main_window) {
       caption_container_view_->UpdatePreviewView();
     } else {
       // Transient window is repositioned. The new position within the
@@ -906,6 +929,15 @@ void OverviewItem::OnWindowBoundsChanged(aura::Window* window,
       SetBounds(target_bounds_, OVERVIEW_ANIMATION_NONE);
     }
   }
+
+  if (window != main_window)
+    return;
+
+  // Immediately finish any active bounds animation.
+  window->layer()->GetAnimator()->StopAnimatingProperty(
+      ui::LayerAnimationElement::BOUNDS);
+  UpdateWindowDimensionsType();
+  overview_grid_->PositionWindows(/*animate=*/false);
 }
 
 void OverviewItem::OnWindowDestroying(aura::Window* window) {
@@ -914,14 +946,17 @@ void OverviewItem::OnWindowDestroying(aura::Window* window) {
            WindowTransientDescendantIterator(window))) {
     window_iter->RemoveObserver(this);
   }
+
   if (window != GetWindow())
     return;
-  transform_window_.OnWindowDestroyed();
 
   if (is_being_dragged_) {
     Shell::Get()->overview_controller()->UnpauseOcclusionTracker(
         kOcclusionPauseDurationForDrag);
   }
+
+  overview_grid_->RemoveItem(this, /*item_destroying=*/true,
+                             /*reposition=*/!animating_to_close_);
 }
 
 void OverviewItem::OnWindowTitleChanged(aura::Window* window) {
@@ -929,6 +964,33 @@ void OverviewItem::OnWindowTitleChanged(aura::Window* window) {
     return;
 
   caption_container_view_->SetTitle(window->GetTitle());
+}
+
+void OverviewItem::OnPostWindowStateTypeChange(WindowState* window_state,
+                                               WindowStateType old_type) {
+  // During preparation, window state can change, e.g. updating shelf
+  // visibility may show the temporarily hidden (minimized) panels.
+  if (!prepared_for_overview_)
+    return;
+
+  // When swiping away overview mode via shelf, windows will get minimized, but
+  // we do not want show a mirrored view in this case.
+  if (overview_session_->enter_exit_overview_type() ==
+      OverviewSession::EnterExitOverviewType::kSwipeFromShelf) {
+    return;
+  }
+
+  WindowStateType new_type = window_state->GetStateType();
+  if (IsMinimizedWindowStateType(old_type) ==
+      IsMinimizedWindowStateType(new_type)) {
+    return;
+  }
+
+  const bool minimized = transform_window_.IsMinimized();
+  caption_container_view_->SetShowPreview(minimized);
+  if (!minimized)
+    EnsureVisible();
+  overview_grid_->PositionWindows(/*animate=*/false);
 }
 
 void OverviewItem::OnImplicitAnimationsCompleted() {

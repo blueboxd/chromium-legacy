@@ -373,3 +373,22 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_skip_packet_number_for_pto,
           false)
+// If true, enable HTTP/2 default scheduling(round robin).
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_enable_rr_write_scheduler,
+          false)
+
+// If true, when timer fires in RTO or PTO mode, make sure there is enough
+// credits to retransmit one packet.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_grant_enough_credits, false)
+
+// If true, combine QuicPacketGenerator and QuicPacketCreator.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_combine_generator_and_creator,
+          false)
+
+// If true, support HTTP/3 priority in v99.
+// TODO(renjietang): flip back to false since draft 23
+// (https://tools.ietf.org/html/draft-ietf-quic-http-23#appendix-B.1)
+// no longer support HTTP/3 priority.
+QUIC_FLAG(bool, FLAGS_quic_allow_http3_priority, true)

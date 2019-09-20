@@ -25,7 +25,7 @@
 #include "components/offline_items_collection/core/offline_item_state.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/prefs/pref_service.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "ui/base/l10n/time_format.h"
 
 namespace android {
@@ -261,13 +261,14 @@ void AvailableOfflineContentProvider::ListVisibilityChanged(bool is_visible) {
 // static
 void AvailableOfflineContentProvider::Create(
     Profile* profile,
-    chrome::mojom::AvailableOfflineContentProviderRequest request) {
-  // Strong bindings remain as long as the pipe is error free. The renderer is
-  // on the other side of the pipe, and the profile outlives the
+    mojo::PendingReceiver<chrome::mojom::AvailableOfflineContentProvider>
+        receiver) {
+  // Self owned receiveres remain as long as the pipe is error free. The
+  // renderer is on the other side of the pipe, and the profile outlives the
   // RenderProcessHost, so the profile will outlive the Mojo pipe.
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<AvailableOfflineContentProvider>(profile),
-      std::move(request));
+      std::move(receiver));
 }
 
 // Picks the best available offline content items, and passes them to callback.

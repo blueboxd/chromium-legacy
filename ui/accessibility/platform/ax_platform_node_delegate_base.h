@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -92,6 +93,9 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
 
   base::string16 GetHypertext() const override;
   bool SetHypertextSelection(int start_offset, int end_offset) override;
+  TextAttributeMap ComputeTextAttributeMap(
+      const TextAttributeList& default_attributes) const override;
+  std::string GetInheritedFontFamilyName() const override;
 
   base::string16 GetInnerText() const override;
 

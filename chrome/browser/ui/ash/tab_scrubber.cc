@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
@@ -24,6 +25,17 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
+
+namespace {
+
+int GetRequiredNumberOfFingers() {
+  return ash::features::IsVirtualDesksEnabled() &&
+                 ash::features::IsVirtualDesksGesturesEnabled()
+             ? 4
+             : 3;
+}
+
+}  // namespace
 
 // static
 TabScrubber* TabScrubber::GetInstance() {
@@ -67,7 +79,8 @@ bool TabScrubber::IsActivationPending() {
   return activate_timer_.IsRunning();
 }
 
-TabScrubber::TabScrubber() {
+TabScrubber::TabScrubber()
+    : required_finger_count_(GetRequiredNumberOfFingers()) {
   // TODO(mash): Add window server API to observe swipe gestures. Observing
   // gestures on browser windows is not sufficient, as this feature works when
   // the cursor is over the shelf, desktop, etc. https://crbug.com/796366
@@ -87,7 +100,7 @@ void TabScrubber::OnScrollEvent(ui::ScrollEvent* event) {
     return;
   }
 
-  if (event->finger_count() != 4)
+  if (event->finger_count() != required_finger_count_)
     return;
 
   Browser* browser = GetActiveBrowser();

@@ -9863,8 +9863,10 @@ TEST_F(HttpCacheTest, SplitCacheWithFrameOrigin) {
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
   EXPECT_FALSE(response.was_cached);
-  histograms.ExpectBucketCount("HttpCache.NetworkIsolationKeyPresent", true, 1);
-  histograms.ExpectTotalCount("HttpCache.NetworkIsolationKeyPresent", 1);
+  histograms.ExpectBucketCount(
+      "HttpCache.NetworkIsolationKeyPresent2",
+      HttpCache::Transaction::NetworkIsolationKeyPresent::kPresent, 1);
+  histograms.ExpectTotalCount("HttpCache.NetworkIsolationKeyPresent2", 1);
 
   // The second request should be cached.
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
@@ -10043,8 +10045,11 @@ TEST_F(HttpCacheTest, SplitCache) {
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
   EXPECT_FALSE(response.was_cached);
-  histograms.ExpectUniqueSample("HttpCache.NetworkIsolationKeyPresent", false,
-                                1);
+  histograms.ExpectUniqueSample(
+      "HttpCache.NetworkIsolationKeyPresent2",
+      HttpCache::Transaction::NetworkIsolationKeyPresent::
+          kNotPresentNonCacheableRequest,
+      1);
 
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
@@ -10056,8 +10061,10 @@ TEST_F(HttpCacheTest, SplitCache) {
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
   EXPECT_FALSE(response.was_cached);
-  histograms.ExpectBucketCount("HttpCache.NetworkIsolationKeyPresent", true, 1);
-  histograms.ExpectTotalCount("HttpCache.NetworkIsolationKeyPresent", 3);
+  histograms.ExpectBucketCount(
+      "HttpCache.NetworkIsolationKeyPresent2",
+      HttpCache::Transaction::NetworkIsolationKeyPresent::kPresent, 1);
+  histograms.ExpectTotalCount("HttpCache.NetworkIsolationKeyPresent2", 3);
 
   // The second request should be cached.
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
@@ -10140,8 +10147,10 @@ TEST_F(HttpCacheTest, NonSplitCache) {
   RunTransactionTestWithRequest(cache.http_cache(), kSimpleGET_Transaction,
                                 trans_info, &response);
   EXPECT_TRUE(response.was_cached);
-  histograms.ExpectBucketCount("HttpCache.NetworkIsolationKeyPresent", true, 1);
-  histograms.ExpectTotalCount("HttpCache.NetworkIsolationKeyPresent", 3);
+  histograms.ExpectBucketCount(
+      "HttpCache.NetworkIsolationKeyPresent2",
+      HttpCache::Transaction::NetworkIsolationKeyPresent::kPresent, 1);
+  histograms.ExpectTotalCount("HttpCache.NetworkIsolationKeyPresent2", 3);
 }
 
 TEST_F(HttpCacheTest, SkipVaryCheck) {

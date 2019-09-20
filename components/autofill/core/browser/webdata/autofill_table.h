@@ -275,6 +275,11 @@ struct PaymentsCustomerData;
 //                      Contains Google Payments customer data.
 //
 //   customer_id        A string representing the Google Payments customer id.
+//
+// payments_upi_vpa     Contains saved UPI/VPA payment data.
+//                      https://en.wikipedia.org/wiki/Unified_Payments_Interface
+//
+//   vpa_id             A string representing the VPA value.
 
 class AutofillTable : public WebDatabaseTable,
                       public syncer::SyncMetadataStore {
@@ -434,6 +439,9 @@ class AutofillTable : public WebDatabaseTable,
   // may return true but leave |customer_data| untouched if there is no data.
   bool GetPaymentsCustomerData(
       std::unique_ptr<PaymentsCustomerData>* customer_data) const;
+
+  // Adds |vpa| to the saved VPA ids.
+  bool InsertVPA(const std::string& vpa);
 
   // Deletes all data from the server card and profile tables. Returns true if
   // any data was deleted, false if not (so false means "commit not needed"
@@ -638,6 +646,7 @@ class AutofillTable : public WebDatabaseTable,
   bool InitAutofillSyncMetadataTable();
   bool InitModelTypeStateTable();
   bool InitPaymentsCustomerDataTable();
+  bool InitPaymentsUPIVPATable();
 
   std::unique_ptr<AutofillTableEncryptor> autofill_table_encryptor_;
 

@@ -943,7 +943,8 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
     const gfx::ColorSpace& color_space,
     uint32_t usage) {
   if (!gpu_memory_buffer_formats_.Has(buffer_format)) {
-    LOG(ERROR) << "CreateSharedImage: unsupported buffer format";
+    LOG(ERROR) << "CreateSharedImage: unsupported buffer format "
+               << gfx::BufferFormatToString(buffer_format);
     return nullptr;
   }
 

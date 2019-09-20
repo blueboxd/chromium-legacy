@@ -335,7 +335,7 @@ TEST_F(ButtonTest, NotifyAction) {
   // Set the notify action to its listener on mouse press.
   button()->Reset();
   button()->button_controller()->set_notify_action(
-      ButtonController::NotifyAction::NOTIFY_ON_PRESS);
+      ButtonController::NotifyAction::kOnPress);
   button()->OnMousePressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
@@ -370,7 +370,7 @@ TEST_F(ButtonTest, NotifyActionNoClick) {
   // Set the notify action to its listener on mouse press.
   button()->Reset();
   button()->button_controller()->set_notify_action(
-      ButtonController::NotifyAction::NOTIFY_ON_PRESS);
+      ButtonController::NotifyAction::kOnPress);
   button()->OnMousePressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
       ui::EF_RIGHT_MOUSE_BUTTON, ui::EF_RIGHT_MOUSE_BUTTON));
@@ -626,7 +626,7 @@ TEST_F(ButtonTest, InkDropShowHideOnMouseDraggedNotifyOnRelease) {
   TestInkDrop* ink_drop = new TestInkDrop();
   CreateButtonWithInkDrop(base::WrapUnique(ink_drop), false);
   button()->button_controller()->set_notify_action(
-      ButtonController::NotifyAction::NOTIFY_ON_RELEASE);
+      ButtonController::NotifyAction::kOnRelease);
 
   button()->OnMousePressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
@@ -668,7 +668,7 @@ TEST_F(ButtonTest, InkDropShowHideOnMouseDraggedNotifyOnPress) {
   TestInkDrop* ink_drop = new TestInkDrop();
   CreateButtonWithInkDrop(base::WrapUnique(ink_drop), true);
   button()->button_controller()->set_notify_action(
-      ButtonController::NotifyAction::NOTIFY_ON_PRESS);
+      ButtonController::NotifyAction::kOnPress);
 
   button()->OnMousePressed(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),

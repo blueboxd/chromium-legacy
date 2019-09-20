@@ -15,6 +15,7 @@
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_observer.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "components/signin/public/identity_manager/identity_mutator.h"
 #include "components/signin/public/identity_manager/ubertoken_fetcher.h"
 #include "google_apis/gaia/oauth2_access_token_manager.h"
 #include "services/identity/public/cpp/scope_set.h"
@@ -43,14 +44,10 @@ class ProfileOAuth2TokenService;
 
 namespace signin {
 
-class AccountsMutator;
-class AccountsCookieMutator;
 struct AccountsInCookieJarInfo;
 class IdentityManagerTest;
 class IdentityTestEnvironment;
-class DeviceAccountsSynchronizer;
 class DiagnosticsProvider;
-class PrimaryAccountMutator;
 enum class ClearPrimaryAccountPolicy;
 struct CookieParamsForTest;
 
@@ -426,14 +423,6 @@ class IdentityManager : public KeyedService,
   DiagnosticsProvider* GetDiagnosticsProvider();
 
 #if defined(OS_ANDROID)
-  // Reloads the accounts in the token service from the system accounts. This
-  // API calls ProfileOAuth2TokenServiceDelegate::ReloadAccountsFromSystem and
-  // it triggers platform specific implementation for Android. NOTE: In normal
-  // usage, this method SHOULD NOT be called.
-  // TODO(https://crbug.com/930094): Expose this through
-  // DeviceAccountsSynchronizer
-  void LegacyReloadAccountsFromSystem();
-
   // Returns a pointer to the AccountTrackerService Java instance associated
   // with this object.
   // TODO(https://crbug.com/934688): Eliminate this method once
@@ -467,8 +456,6 @@ class IdentityManager : public KeyedService,
   FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
       JNIEnv* env,
       const base::android::JavaParamRef<jstring>& j_email) const;
-
-  void ReloadAccountsFromSystem(JNIEnv* env);
 #endif
 
  private:
@@ -658,23 +645,10 @@ class IdentityManager : public KeyedService,
   std::unique_ptr<PrimaryAccountManager> primary_account_manager_;
   std::unique_ptr<AccountFetcherService> account_fetcher_service_;
 
-  // PrimaryAccountMutator instance. May be null if mutation of the primary
-  // account state is not supported on the current platform.
-  std::unique_ptr<PrimaryAccountMutator> primary_account_mutator_;
-
-  // AccountsMutator instance. May be null if mutation of accounts is not
-  // supported on the current platform.
-  std::unique_ptr<AccountsMutator> accounts_mutator_;
-
-  // AccountsCookieMutator instance. Guaranteed to be non-null, as this
-  // functionality is supported on all platforms.
-  std::unique_ptr<AccountsCookieMutator> accounts_cookie_mutator_;
+  IdentityMutator identity_mutator_;
 
   // DiagnosticsProvider instance.
   std::unique_ptr<DiagnosticsProvider> diagnostics_provider_;
-
-  // DeviceAccountsSynchronizer instance.
-  std::unique_ptr<DeviceAccountsSynchronizer> device_accounts_synchronizer_;
 
   // Lists of observers.
   // Makes sure lists are empty on destruction.
@@ -689,8 +663,6 @@ class IdentityManager : public KeyedService,
 #if defined(OS_ANDROID)
   // Java-side IdentityManager object.
   base::android::ScopedJavaGlobalRef<jobject> java_identity_manager_;
-  // Java-side IdentityMutator object.
-  base::android::ScopedJavaGlobalRef<jobject> java_identity_mutator_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(IdentityManager);

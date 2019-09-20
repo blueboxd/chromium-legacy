@@ -34,6 +34,7 @@ class TestPersonalDataManager : public PersonalDataManager {
       const AutofillProfile& imported_profile) override;
   std::string SaveImportedCreditCard(
       const CreditCard& imported_credit_card) override;
+  void AddVPA(const std::string& vpa) override;
   void AddProfile(const AutofillProfile& profile) override;
   void UpdateProfile(const AutofillProfile& profile) override;
   void RemoveByGUID(const std::string& guid) override;
@@ -91,6 +92,8 @@ class TestPersonalDataManager : public PersonalDataManager {
     return num_times_save_imported_credit_card_called_;
   }
 
+  int num_times_save_vpa_called() const { return num_times_save_vpa_called_; }
+
   bool sync_service_initialized() const { return sync_service_initialized_; }
 
   void SetAutofillEnabled(bool autofill_enabled) {
@@ -129,6 +132,7 @@ class TestPersonalDataManager : public PersonalDataManager {
   std::string default_country_code_;
   int num_times_save_imported_profile_called_ = 0;
   int num_times_save_imported_credit_card_called_ = 0;
+  int num_times_save_vpa_called_ = 0;
   base::Optional<bool> autofill_enabled_;
   base::Optional<bool> autofill_profile_enabled_;
   base::Optional<bool> autofill_credit_card_enabled_;

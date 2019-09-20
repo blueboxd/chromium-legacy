@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/page_load_metrics/observers/https_engagement_metrics/https_engagement_service.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
+#include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "url/gurl.h"
 
 namespace content {

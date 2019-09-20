@@ -173,15 +173,23 @@ Polymer({
   },
 
   /**
-   * CrosNetworkConfigObserver impl
+   * CrNetworkListenerBehavior override
    * @param {!Array<OncMojo.NetworkStateProperties>} networks
    */
   onActiveNetworksChanged: function(networks) {
     this.getNetworkStateList_();
   },
 
-  /** CrosNetworkConfigObserver impl */
+  /** CrNetworkListenerBehavior override */
   onNetworkStateListChanged: function() {
+    this.getNetworkStateList_();
+  },
+
+  /** CrNetworkListenerBehavior override */
+  onVpnProvidersChanged: function() {
+    if (this.deviceState.type != mojom.NetworkType.kVPN) {
+      return;
+    }
     this.getNetworkStateList_();
   },
 
@@ -329,6 +337,45 @@ Polymer({
     }
 
     this.networkStateList_ = networkStates;
+  },
+
+  /**
+   * Returns an ordered list of VPN providers for all third party VPNs and any
+   * other known providers.
+   * @param {!Array<!chromeos.networkConfig.mojom.VpnProvider>} vpnProviders
+   * @param {!Object<!Array<!OncMojo.NetworkStateProperties>>} thirdPartyVpns
+   * @return {!Array<!chromeos.networkConfig.mojom.VpnProvider>}
+   * @private
+   */
+  getVpnProviders_(vpnProviders, thirdPartyVpns) {
+    // First add providers for configured thirdPartyVpns. This list will
+    // generally be empty or small.
+    const configuredProviders = [];
+    for (const vpnList of Object.values(thirdPartyVpns)) {
+      assert(vpnList.length > 0);
+      // All vpns in the list will have the same type and provider id.
+      const vpn = vpnList[0].vpn;
+      const provider = {
+        type: vpn.type,
+        providerId: vpn.providerId,
+        providerName: vpn.providerName || vpn.providerId,
+        appId: '',
+        lastLaunchTime: {internalValue: 0}
+      };
+      configuredProviders.push(provider);
+    }
+    // Next update or append known third party providers.
+    const unconfiguredProviders = [];
+    for (const provider of vpnProviders) {
+      const idx = configuredProviders.findIndex(
+          p => p.providerId == provider.providerId);
+      if (idx >= 0) {
+        configuredProviders[idx] = provider;
+      } else {
+        unconfiguredProviders.push(provider);
+      }
+    }
+    return configuredProviders.concat(unconfiguredProviders);
   },
 
   /**
@@ -635,6 +682,10 @@ Polymer({
     if (type == mojom.NetworkType.kTether ||
         (type == mojom.NetworkType.kCellular && this.tetherDeviceState)) {
       return this.i18nAdvanced('internetNoNetworksMobileData');
+    }
+
+    if (type == mojom.NetworkType.kVPN) {
+      return this.i18n('internetNoNetworks');
     }
 
     // If a scan has not yet completed since the device was last enabled, it may

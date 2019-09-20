@@ -605,4 +605,131 @@ TEST_F(BrowserAccessibilityAuraLinuxTest,
   manager.reset();
 }
 
+TEST_F(BrowserAccessibilityAuraLinuxTest,
+       TestExistingMisspellingsInSimpleTextFields) {
+  std::string value1("Testing .");
+  // The word "helo" is misspelled.
+  std::string value2("Helo there.");
+
+  int value1_length = value1.length();
+  int value2_length = value2.length();
+  int combo_box_value_length = value1_length + value2_length;
+
+  ui::AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.AddState(ax::mojom::State::kFocusable);
+
+  ui::AXNodeData combo_box;
+  combo_box.id = 2;
+  combo_box.role = ax::mojom::Role::kTextFieldWithComboBox;
+  combo_box.AddState(ax::mojom::State::kEditable);
+  combo_box.AddState(ax::mojom::State::kFocusable);
+  combo_box.SetValue(value1 + value2);
+
+  ui::AXNodeData combo_box_div;
+  combo_box_div.id = 3;
+  combo_box_div.role = ax::mojom::Role::kGenericContainer;
+  combo_box_div.AddState(ax::mojom::State::kEditable);
+
+  ui::AXNodeData static_text1;
+  static_text1.id = 4;
+  static_text1.role = ax::mojom::Role::kStaticText;
+  static_text1.AddState(ax::mojom::State::kEditable);
+  static_text1.SetName(value1);
+
+  ui::AXNodeData static_text2;
+  static_text2.id = 5;
+  static_text2.role = ax::mojom::Role::kStaticText;
+  static_text2.AddState(ax::mojom::State::kEditable);
+  static_text2.SetName(value2);
+
+  std::vector<int32_t> marker_types;
+  marker_types.push_back(
+      static_cast<int32_t>(ax::mojom::MarkerType::kSpelling));
+  std::vector<int32_t> marker_starts;
+  marker_starts.push_back(0);
+  std::vector<int32_t> marker_ends;
+  marker_ends.push_back(4);
+  static_text2.AddIntListAttribute(ax::mojom::IntListAttribute::kMarkerTypes,
+                                   marker_types);
+  static_text2.AddIntListAttribute(ax::mojom::IntListAttribute::kMarkerStarts,
+                                   marker_starts);
+  static_text2.AddIntListAttribute(ax::mojom::IntListAttribute::kMarkerEnds,
+                                   marker_ends);
+
+  root.child_ids.push_back(combo_box.id);
+  combo_box.child_ids.push_back(combo_box_div.id);
+  combo_box_div.child_ids.push_back(static_text1.id);
+  combo_box_div.child_ids.push_back(static_text2.id);
+
+  std::unique_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(root, combo_box, combo_box_div, static_text1,
+                           static_text2),
+          test_browser_accessibility_delegate_.get(),
+          new BrowserAccessibilityFactory()));
+
+  ASSERT_NE(nullptr, manager->GetRoot());
+  BrowserAccessibilityAuraLinux* ax_root =
+      ToBrowserAccessibilityAuraLinux(manager->GetRoot());
+  ASSERT_NE(nullptr, ax_root);
+  ASSERT_EQ(1U, ax_root->PlatformChildCount());
+
+  BrowserAccessibilityAuraLinux* ax_combo_box =
+      ToBrowserAccessibilityAuraLinux(ax_root->PlatformGetChild(0));
+  ASSERT_NE(nullptr, ax_combo_box);
+
+  AtkText* combo_box_text =
+      ATK_TEXT(ax_combo_box->GetNode()->GetNativeViewAccessible());
+  int start_offset, end_offset;
+
+  auto contains_spelling_attribute = [](AtkAttributeSet* attributes) {
+    const char* invalid_str =
+        atk_text_attribute_get_name(ATK_TEXT_ATTR_INVALID);
+    while (attributes) {
+      AtkAttribute* attribute = static_cast<AtkAttribute*>(attributes->data);
+      if (!g_strcmp0(attribute->name, invalid_str) &&
+          !g_strcmp0(attribute->value, "spelling"))
+        return true;
+      attributes = g_slist_next(attributes);
+    }
+
+    return false;
+  };
+
+  // Ensure that the first part of the value is not marked misspelled.
+  for (int offset = 0; offset < value1_length; ++offset) {
+    AtkAttributeSet* attributes = atk_text_get_run_attributes(
+        combo_box_text, offset, &start_offset, &end_offset);
+    EXPECT_FALSE(contains_spelling_attribute(attributes));
+    EXPECT_EQ(0, start_offset);
+    EXPECT_EQ(value1_length, end_offset);
+    atk_attribute_set_free(attributes);
+  }
+
+  // Ensure that "helo" is marked misspelled.
+  for (int offset = value1_length; offset < value1_length + 4; ++offset) {
+    AtkAttributeSet* attributes = atk_text_get_run_attributes(
+        combo_box_text, offset, &start_offset, &end_offset);
+    EXPECT_EQ(value1_length, start_offset);
+    EXPECT_EQ(value1_length + 4, end_offset);
+    EXPECT_TRUE(contains_spelling_attribute(attributes));
+    atk_attribute_set_free(attributes);
+  }
+
+  // Ensure that the last part of the value is not marked misspelled.
+  for (int offset = value1_length + 4; offset < combo_box_value_length;
+       ++offset) {
+    AtkAttributeSet* attributes = atk_text_get_run_attributes(
+        combo_box_text, offset, &start_offset, &end_offset);
+    EXPECT_FALSE(contains_spelling_attribute(attributes));
+    EXPECT_EQ(value1_length + 4, start_offset);
+    EXPECT_EQ(combo_box_value_length, end_offset);
+    atk_attribute_set_free(attributes);
+  }
+
+  manager.reset();
+}
+
 }  // namespace content

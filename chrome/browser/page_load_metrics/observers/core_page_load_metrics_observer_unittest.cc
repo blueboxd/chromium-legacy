@@ -6,11 +6,11 @@
 
 #include <memory>
 
-#include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
-#include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
+#include "components/page_load_metrics/browser/page_load_metrics_util.h"
+#include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "components/page_load_metrics/common/test/page_load_metrics_test_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"

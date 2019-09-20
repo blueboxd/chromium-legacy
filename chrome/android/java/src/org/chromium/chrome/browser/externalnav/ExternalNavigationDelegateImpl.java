@@ -59,7 +59,6 @@ import org.chromium.network.mojom.ReferrerPolicy;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.PermissionCallback;
-import org.chromium.ui.base.WindowAndroid;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.util.ArrayList;
@@ -101,8 +100,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
      */
     protected final Context getAvailableContext() {
         if (mTab.getWindowAndroid() == null) return mApplicationContext;
-        Context activityContext = WindowAndroid.activityFromContext(
-                mTab.getWindowAndroid().getContext().get());
+        Context activityContext =
+                ContextUtils.activityFromContext(mTab.getWindowAndroid().getContext().get());
         if (activityContext == null) return mApplicationContext;
         return activityContext;
     }

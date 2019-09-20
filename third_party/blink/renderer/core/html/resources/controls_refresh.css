@@ -63,7 +63,6 @@ input[type="password" i]::-internal-reveal.reveal {
 
 input[type="password" i]::-internal-reveal:hover,
 input[type="password" i]::-internal-reveal:focus {
-  background-color: #F7F7F7;
   border-radius: 1px;
   cursor: pointer;
 }

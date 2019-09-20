@@ -232,6 +232,8 @@ extern "C" {
 #if !defined(MAC_OS_X_VERSION_10_11) || \
     MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_11
 
+CFTypeID AXTextMarkerGetTypeID();
+
 AXTextMarkerRef AXTextMarkerCreate(CFAllocatorRef allocator,
                                    const UInt8* bytes,
                                    CFIndex length);
@@ -239,6 +241,8 @@ AXTextMarkerRef AXTextMarkerCreate(CFAllocatorRef allocator,
 const UInt8* AXTextMarkerGetBytePtr(AXTextMarkerRef text_marker);
 
 size_t AXTextMarkerGetLength(AXTextMarkerRef text_marker);
+
+CFTypeID AXTextMarkerRangeGetTypeID();
 
 AXTextMarkerRangeRef AXTextMarkerRangeCreate(CFAllocatorRef allocator,
                                              AXTextMarkerRef start_marker,
@@ -254,17 +258,16 @@ AXTextMarkerRef AXTextMarkerRangeCopyEndMarker(
 
 }  // extern "C"
 
-// AXTextMarkerCreate copies from data buffer given to it.
+// AXTextMarkerCreate is a system function that makes a copy of the data buffer
+// given to it.
 id CreateTextMarker(BrowserAccessibilityPositionInstance position) {
   SerializedPosition serialized = position->Serialize();
-  AXTextMarkerRef text_marker = AXTextMarkerCreate(
+  AXTextMarkerRef cf_text_marker = AXTextMarkerCreate(
       kCFAllocatorDefault, reinterpret_cast<const UInt8*>(&serialized),
       sizeof(SerializedPosition));
-  return [static_cast<id>(text_marker) autorelease];
+  return [static_cast<id>(cf_text_marker) autorelease];
 }
 
-// |range| is destructed at the end of this method. |anchor| and |focus| are
-// copied into the individual text markers.
 id CreateTextMarkerRange(const AXPlatformRange range) {
   SerializedPosition serialized_anchor = range.anchor()->Serialize();
   SerializedPosition serialized_focus = range.focus()->Serialize();
@@ -274,18 +277,22 @@ id CreateTextMarkerRange(const AXPlatformRange range) {
   base::ScopedCFTypeRef<AXTextMarkerRef> end_marker(AXTextMarkerCreate(
       kCFAllocatorDefault, reinterpret_cast<const UInt8*>(&serialized_focus),
       sizeof(SerializedPosition)));
-  AXTextMarkerRangeRef marker_range =
+  AXTextMarkerRangeRef cf_marker_range =
       AXTextMarkerRangeCreate(kCFAllocatorDefault, start_marker, end_marker);
-  return [static_cast<id>(marker_range) autorelease];
+  return [static_cast<id>(cf_marker_range) autorelease];
 }
 
 BrowserAccessibilityPositionInstance CreatePositionFromTextMarker(
-    AXTextMarkerRef text_marker) {
-  DCHECK(text_marker);
-  if (AXTextMarkerGetLength(text_marker) != sizeof(SerializedPosition))
+    id text_marker) {
+  AXTextMarkerRef cf_text_marker = static_cast<AXTextMarkerRef>(text_marker);
+  DCHECK(cf_text_marker);
+  if (CFGetTypeID(cf_text_marker) != AXTextMarkerGetTypeID())
     return BrowserAccessibilityPosition::CreateNullPosition();
 
-  const UInt8* source_buffer = AXTextMarkerGetBytePtr(text_marker);
+  if (AXTextMarkerGetLength(cf_text_marker) != sizeof(SerializedPosition))
+    return BrowserAccessibilityPosition::CreateNullPosition();
+
+  const UInt8* source_buffer = AXTextMarkerGetBytePtr(cf_text_marker);
   if (!source_buffer)
     return BrowserAccessibilityPosition::CreateNullPosition();
 
@@ -293,20 +300,24 @@ BrowserAccessibilityPositionInstance CreatePositionFromTextMarker(
       *reinterpret_cast<const SerializedPosition*>(source_buffer));
 }
 
-AXPlatformRange CreateRangeFromTextMarkerRange(
-    AXTextMarkerRangeRef marker_range) {
-  DCHECK(marker_range);
+AXPlatformRange CreateRangeFromTextMarkerRange(id marker_range) {
+  AXTextMarkerRangeRef cf_marker_range =
+      static_cast<AXTextMarkerRangeRef>(marker_range);
+  DCHECK(cf_marker_range);
+  if (CFGetTypeID(cf_marker_range) != AXTextMarkerRangeGetTypeID())
+    return AXPlatformRange();
+
   base::ScopedCFTypeRef<AXTextMarkerRef> start_marker(
-      AXTextMarkerRangeCopyStartMarker(marker_range));
+      AXTextMarkerRangeCopyStartMarker(cf_marker_range));
   base::ScopedCFTypeRef<AXTextMarkerRef> end_marker(
-      AXTextMarkerRangeCopyEndMarker(marker_range));
+      AXTextMarkerRangeCopyEndMarker(cf_marker_range));
   if (!start_marker.get() || !end_marker.get())
     return AXPlatformRange();
 
   BrowserAccessibilityPositionInstance anchor =
-      CreatePositionFromTextMarker(start_marker.get());
+      CreatePositionFromTextMarker(static_cast<id>(start_marker.get()));
   BrowserAccessibilityPositionInstance focus =
-      CreatePositionFromTextMarker(end_marker.get());
+      CreatePositionFromTextMarker(static_cast<id>(end_marker.get()));
   // |AXPlatformRange| takes ownership of its anchor and focus.
   return AXPlatformRange(std::move(anchor), std::move(focus));
 }
@@ -398,15 +409,14 @@ void AddMisspelledTextAttributes(const AXPlatformRange& ax_range,
   [attributed_string endEditing];
 }
 
-NSString* GetTextForTextMarkerRange(AXTextMarkerRangeRef marker_range) {
+NSString* GetTextForTextMarkerRange(id marker_range) {
   AXPlatformRange range = CreateRangeFromTextMarkerRange(marker_range);
   if (range.IsNull())
     return nil;
   return base::SysUTF16ToNSString(range.GetText());
 }
 
-NSAttributedString* GetAttributedTextForTextMarkerRange(
-    AXTextMarkerRangeRef marker_range) {
+NSAttributedString* GetAttributedTextForTextMarkerRange(id marker_range) {
   AXPlatformRange ax_range = CreateRangeFromTextMarkerRange(marker_range);
   if (ax_range.IsNull())
     return nil;

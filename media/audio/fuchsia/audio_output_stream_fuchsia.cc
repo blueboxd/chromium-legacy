@@ -4,10 +4,11 @@
 
 #include "media/audio/fuchsia/audio_output_stream_fuchsia.h"
 
+#include <lib/sys/cpp/component_context.h>
 #include <zircon/syscalls.h>
 
 #include "base/bind.h"
-#include "base/fuchsia/service_directory_client.h"
+#include "base/fuchsia/default_context.h"
 #include "base/memory/writable_shared_memory_region.h"
 #include "media/audio/fuchsia/audio_manager_fuchsia.h"
 #include "media/base/audio_sample_types.h"
@@ -37,8 +38,9 @@ bool AudioOutputStreamFuchsia::Open() {
 
   // Connect |audio_renderer_| to the audio service.
   fuchsia::media::AudioPtr audio_server =
-      base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
-          ->ConnectToService<fuchsia::media::Audio>();
+      base::fuchsia::ComponentContextForCurrentProcess()
+          ->svc()
+          ->Connect<fuchsia::media::Audio>();
   audio_server->CreateAudioRenderer(audio_renderer_.NewRequest());
   audio_renderer_.set_error_handler(
       fit::bind_member(this, &AudioOutputStreamFuchsia::OnRendererError));

@@ -174,7 +174,7 @@ class TestSecurityKeysBioEnrollProxy extends TestSecurityKeysBrowserProxy {
 
   /** @override */
   cancelEnrollment() {
-    return this.handleMethod('cancelEnrollment');
+    return this.methodCalled('cancelEnrollment');
   }
 
   /** @override */

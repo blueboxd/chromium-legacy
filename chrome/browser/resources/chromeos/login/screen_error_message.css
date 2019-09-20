@@ -62,8 +62,8 @@ oobe-dialog .error-icon {
   text-decoration: none;
 }
 
-#error-message-md-footer {
-  overflow: scroll;
+.scrollable {
+  overflow: auto;
 }
 
 #offline-network-control {

@@ -30,15 +30,6 @@ class MessageLite;
 
 namespace leveldb_proto {
 
-class ProtoDatabaseProvider;
-
-// Avoids circular dependencies between ProtoDatabaseImpl and
-// ProtoDatabaseProvider, since we'd need to include the provider header here
-// to use |db_provider_|'s GetSharedDBInstance.
-void GetSharedDBInstance(
-    ProtoDatabaseProvider* db_provider,
-    base::OnceCallback<void(scoped_refptr<SharedProtoDatabase>)> callback);
-
 // Update transactions happen on background task runner and callback runs on the
 // client task runner.
 void COMPONENT_EXPORT(LEVELDB_PROTO) RunUpdateCallback(
@@ -68,9 +59,10 @@ void COMPONENT_EXPORT(LEVELDB_PROTO) RunDestroyCallback(
 template <typename P, typename T = P>
 class ProtoDatabaseImpl : public ProtoDatabase<P, T> {
  public:
-  // DEPRECATED. Force usage of unique db. The clients must use Init(name,
-  // db_dir, options, callback) version.
+  // Force usage of unique db.
   ProtoDatabaseImpl(
+      ProtoDbType db_type,
+      const base::FilePath& db_dir,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
   // Internal implementation is free to choose between unique and shared
@@ -83,12 +75,6 @@ class ProtoDatabaseImpl : public ProtoDatabase<P, T> {
   virtual ~ProtoDatabaseImpl() = default;
 
   void Init(Callbacks::InitStatusCallback callback) override;
-  void Init(const char* client_name,
-            const base::FilePath& database_dir,
-            const leveldb_env::Options& options,
-            Callbacks::InitCallback callback) override;
-  void Init(const std::string& uma_name,
-            Callbacks::InitStatusCallback callback) override;
   void Init(const leveldb_env::Options& unique_db_options,
             Callbacks::InitStatusCallback callback) override;
 
@@ -341,11 +327,14 @@ void ParseLoadedEntry(
 
 template <typename P, typename T>
 ProtoDatabaseImpl<P, T>::ProtoDatabaseImpl(
+    ProtoDbType db_type,
+    const base::FilePath& db_dir,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
-    : db_type_(ProtoDbType::LAST),
+    : db_type_(db_type),
       db_wrapper_(new ProtoDatabaseSelector(db_type_, task_runner, nullptr)),
       force_unique_db_(true),
-      task_runner_(task_runner) {}
+      task_runner_(task_runner),
+      db_dir_(db_dir) {}
 
 template <typename P, typename T>
 ProtoDatabaseImpl<P, T>::ProtoDatabaseImpl(
@@ -360,25 +349,6 @@ ProtoDatabaseImpl<P, T>::ProtoDatabaseImpl(
       force_unique_db_(false),
       task_runner_(task_runner),
       db_dir_(db_dir) {}
-
-template <typename P, typename T>
-void ProtoDatabaseImpl<P, T>::Init(const char* client_uma_name,
-                                   const base::FilePath& database_dir,
-                                   const leveldb_env::Options& options,
-                                   Callbacks::InitCallback callback) {
-  DCHECK(force_unique_db_);
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &ProtoDatabaseSelector::InitUniqueOrShared, db_wrapper_,
-          client_uma_name, database_dir, options,
-          /*use_shared_db=*/false, base::SequencedTaskRunnerHandle::Get(),
-          base::BindOnce(
-              [](Callbacks::InitCallback callback, Enums::InitStatus status) {
-                std::move(callback).Run(status == Enums::InitStatus::kOK);
-              },
-              std::move(callback))));
-}
 
 template <typename P, typename T>
 void ProtoDatabaseImpl<P, T>::Init(
@@ -404,17 +374,6 @@ void ProtoDatabaseImpl<P, T>::Init(
       SharedProtoDatabaseClientList::ProtoDbTypeToString(db_type_);
 
   InitInternal(client_uma_name, unique_db_options, use_shared_db,
-               std::move(callback));
-}
-
-template <typename P, typename T>
-void ProtoDatabaseImpl<P, T>::Init(
-    const std::string& client_uma_name,
-    typename Callbacks::InitStatusCallback callback) {
-  bool use_shared_db =
-      !force_unique_db_ &&
-      SharedProtoDatabaseClientList::ShouldUseSharedDB(db_type_);
-  InitInternal(client_uma_name, CreateSimpleOptions(), use_shared_db,
                std::move(callback));
 }
 

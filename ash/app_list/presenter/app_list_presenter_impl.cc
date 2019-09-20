@@ -98,6 +98,7 @@ void AppListPresenterImpl::Show(int64_t display_id,
   }
 
   is_target_visibility_show_ = true;
+  NotifyTargetVisibilityChanged(GetTargetVisibility(), display_id);
   RequestPresentationTime(display_id, event_time_stamp);
 
   if (!view_) {
@@ -107,10 +108,7 @@ void AppListPresenterImpl::Show(int64_t display_id,
     SetView(view);
   }
   delegate_->ShowForDisplay(display_id);
-  if (delegate_->IsTabletMode())
-    home_launcher_shown_ = true;
 
-  NotifyTargetVisibilityChanged(GetTargetVisibility());
   NotifyVisibilityChanged(GetTargetVisibility(), display_id);
 }
 
@@ -154,9 +152,9 @@ void AppListPresenterImpl::Dismiss(base::TimeTicks event_time_stamp) {
     view_->GetWidget()->Deactivate();
 
   delegate_->OnClosing();
-  view_->SetState(ash::AppListViewState::kClosed);
 
-  NotifyTargetVisibilityChanged(GetTargetVisibility());
+  NotifyTargetVisibilityChanged(GetTargetVisibility(), GetDisplayId());
+  view_->SetState(ash::AppListViewState::kClosed);
   base::RecordAction(base::UserMetricsAction("Launcher_Dismiss"));
 }
 
@@ -196,7 +194,7 @@ ash::ShelfAction AppListPresenterImpl::ToggleAppList(
 }
 
 bool AppListPresenterImpl::IsVisible() const {
-  return view_ && view_->GetWidget()->IsVisible();
+  return delegate_->IsVisible();
 }
 
 bool AppListPresenterImpl::GetTargetVisibility() const {
@@ -297,17 +295,11 @@ void AppListPresenterImpl::SetExpandArrowViewVisibility(bool show) {
 
 void AppListPresenterImpl::OnTabletModeChanged(bool started) {
   if (started) {
-    if (GetTargetVisibility()) {
-      DCHECK(IsVisible());
+    if (GetTargetVisibility())
       view_->OnTabletModeChanged(true);
-    }
-    // The AppList widget is shown without being focused in tablet mode, so
-    // check for visibility, not focus.
-    home_launcher_shown_ = GetWindow() && GetWindow()->IsVisible();
   } else {
     if (IsVisible())
       view_->OnTabletModeChanged(false);
-    home_launcher_shown_ = false;
   }
 }
 
@@ -354,23 +346,12 @@ int64_t AppListPresenterImpl::GetDisplayId() {
 
 void AppListPresenterImpl::NotifyVisibilityChanged(bool visible,
                                                    int64_t display_id) {
-  // Skip adjacent same changes.
-  if (last_visible_ == visible && last_display_id_ == display_id)
-    return;
-  last_visible_ = visible;
-  last_display_id_ = display_id;
-
-  // Notify the Shell and its observers of the app list visibility change.
   delegate_->OnVisibilityChanged(visible, display_id);
 }
 
-void AppListPresenterImpl::NotifyTargetVisibilityChanged(bool visible) {
-  // Skip adjacent same changes.
-  if (last_target_visible_ == visible)
-    return;
-  last_target_visible_ = visible;
-
-  delegate_->OnTargetVisibilityChanged(visible);
+void AppListPresenterImpl::NotifyTargetVisibilityChanged(bool visible,
+                                                         int64_t display_id) {
+  delegate_->OnTargetVisibilityChanged(visible, display_id);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -389,14 +370,14 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
 
     if (delegate_->IsTabletMode()) {
       const bool is_shown = !app_list_lost_focus;
-      if (is_shown != home_launcher_shown_) {
-        home_launcher_shown_ = is_shown;
-        if (home_launcher_shown_)
+      if (is_shown != delegate_->IsVisible()) {
+        if (is_shown)
           view_->OnHomeLauncherGainingFocusWithoutAnimation();
         else
           HandleCloseOpenSearchBox();
 
-        NotifyVisibilityChanged(home_launcher_shown_, GetDisplayId());
+        NotifyTargetVisibilityChanged(is_shown, GetDisplayId());
+        NotifyVisibilityChanged(is_shown, GetDisplayId());
       }
     }
 
@@ -445,6 +426,7 @@ void AppListPresenterImpl::OnWidgetDestroyed(views::Widget* widget) {
 void AppListPresenterImpl::OnWidgetVisibilityChanged(views::Widget* widget,
                                                      bool visible) {
   DCHECK_EQ(view_->GetWidget(), widget);
+  NotifyTargetVisibilityChanged(visible, GetDisplayId());
   NotifyVisibilityChanged(visible, GetDisplayId());
 }
 

@@ -21,6 +21,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 
@@ -98,6 +99,16 @@ struct SESSIONS_EXPORT SessionTab {
   DISALLOW_COPY_AND_ASSIGN(SessionTab);
 };
 
+// Visual parameters of a tab group. This is shared between the session
+// service and the tab restore service.
+struct SESSIONS_EXPORT TabGroupMetadata {
+  // A human-readable title for the group.
+  base::string16 title;
+
+  // An accent color used when displaying the group.
+  SkColor color = gfx::kPlaceholderColor;
+};
+
 // SessionTabGroup -----------------------------------------------------------
 
 // Describes a tab group referenced by some SessionTab entry in its group
@@ -112,11 +123,7 @@ struct SESSIONS_EXPORT SessionTabGroup {
   // different sessions.
   base::Token group_id;
 
-  // A human-readable title for the group.
-  base::string16 title;
-
-  // An accent color used when displaying the group.
-  SkColor color;
+  TabGroupMetadata metadata;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionTabGroup);

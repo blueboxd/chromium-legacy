@@ -77,6 +77,14 @@ base::Optional<base::Token> TabRestoreServiceDelegateImplIOS::GetTabGroupForTab(
   return base::nullopt;
 }
 
+TabRestoreServiceDelegateImplIOS::TabGroupMetadata
+TabRestoreServiceDelegateImplIOS::GetTabGroupMetadata(base::Token group) const {
+  // Since we never return a group from GetTabGroupForTab(), this should never
+  // be called.
+  NOTREACHED();
+  return TabGroupMetadata();
+}
+
 const gfx::Rect TabRestoreServiceDelegateImplIOS::GetRestoredBounds() const {
   // Not supported by iOS.
   return gfx::Rect();
@@ -135,4 +143,10 @@ void TabRestoreServiceDelegateImplIOS::CloseTab() {
   WebStateList* web_state_list = GetWebStateList();
   web_state_list->CloseWebStateAt(web_state_list->active_index(),
                                   WebStateList::CLOSE_USER_ACTION);
+}
+
+void TabRestoreServiceDelegateImplIOS::SetTabGroupMetadata(
+    base::Token group,
+    TabGroupMetadata group_metadata) {
+  // Not supported on iOS.
 }

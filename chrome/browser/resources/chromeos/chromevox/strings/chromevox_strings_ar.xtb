@@ -421,7 +421,6 @@
 <translation id="4039983576244166038">عنوان صف فارغ</translation>
 <translation id="4042843249978639960">ليس هناك عنوان تالٍ من المستوى الثاني.</translation>
 <translation id="4043348641337972076">‏ليس هناك مَعلم ARIA سابق.</translation>
-<translation id="4045764028670444336">بداية الخطأ الإملائي</translation>
 <translation id="4047216625641135770">علامة</translation>
 <translation id="404803211695627272"><ph name="V1" />-‏<ph name="V2" /></translation>
 <translation id="4053520724192563562">أخضر ليموني</translation>
@@ -504,7 +503,6 @@
 <translation id="4547556996012970016">عنوان المستوى الخامس التالي</translation>
 <translation id="4562381607973973258">رأس صفحة</translation>
 <translation id="4569941707103739422">‏يُرجى الضغط على السهم المتجه للأعلى أو للأسفل للتنقل، والضغط على Enter للتفعيل.</translation>
-<translation id="4570424871453628777">نهاية الخطأ الإملائي</translation>
 <translation id="4591507479202817876">، محدد</translation>
 <translation id="4597532268155981612">نموذج</translation>
 <translation id="4597896406374528575">نيسان (أبريل)</translation>
@@ -728,7 +726,6 @@
 <translation id="6037602951055904232">تحريك للأمام</translation>
 <translation id="6042826534790431634">يُرجى الضغط على "بحث" + "مسافة" للتفعيل.</translation>
 <translation id="6044160928851315051">تعتيم الشاشة</translation>
-<translation id="6065293622157674001">بداية الخطأ النحوي</translation>
 <translation id="6082768461603900813">التنقل الأساسي</translation>
 <translation id="6118126368611144850">‏تطبيقات Android في متصفح Chrome. إذا كان لديك متجر Play على جهازك، يمكنك إلقاء نظرة سريعة على ChromeVox مع تطبيقات Android، كما يمكنك تجربة الدعم التجريبي من خلال تنزيل Google Chrome Canary من متجر Play.</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -869,7 +866,6 @@
 <translation id="7143207342074048698">اتصال</translation>
 <translation id="7153618581592392745">بنفسجي فاتح</translation>
 <translation id="7157306005867877619">نبذة مختصرة</translation>
-<translation id="7161425887892204659">نهاية مطابقة النص</translation>
 <translation id="7161771961008409533">زر بقائمة منبثقة</translation>
 <translation id="7165714724802225287">نمط العرض الحالي هو تضمين النص.</translation>
 <translation id="7167657087543110">صدى الحرف</translation>
@@ -907,7 +903,6 @@
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">جارٍ مغادرة الجدول.</translation>
 <translation id="738899727977260036">أزرق مائل إلى الرمادي</translation>
-<translation id="7392145451309930991">بداية مطابقة النص</translation>
 <translation id="739763518212184081">السطر السابق</translation>
 <translation id="7400575256015741911">تم اكتشاف خطأ إملائي</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -1120,7 +1115,6 @@
 <translation id="8476408756881832830">‏إيقاف التشغيل مؤقتًا أثناء تحدُّث ChromeVox</translation>
 <translation id="8476508772960940536">نظرة عامة للنافذة</translation>
 <translation id="8503360654911991865">خفض دقة التنقل</translation>
-<translation id="8504695234784218301">نهاية الخطأ النحوي</translation>
 <translation id="8520472399088452386">زر الدوران</translation>
 <translation id="8534394844575788431">التنسيق</translation>
 <translation id="8538744478902126321">إجراء تخمين في عنوان الصف للخلية الحالية</translation>

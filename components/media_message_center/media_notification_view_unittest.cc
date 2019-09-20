@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/task_environment.h"
 #include "base/unguessable_token.h"
 #include "components/media_message_center/media_notification_background.h"
 #include "components/media_message_center/media_notification_constants.h"
@@ -108,7 +109,9 @@ class MockMediaNotificationContainer : public MediaNotificationContainer {
 
 class MediaNotificationViewTest : public views::ViewsTestBase {
  public:
-  MediaNotificationViewTest() = default;
+  MediaNotificationViewTest()
+      : views::ViewsTestBase(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
   ~MediaNotificationViewTest() override = default;
 
   void SetUp() override {
@@ -279,6 +282,12 @@ class MediaNotificationViewTest : public views::ViewsTestBase {
     histogram_tester_.ExpectBucketCount(
         MediaNotificationView::kMetadataHistogramName,
         static_cast<base::HistogramBase::Sample>(metadata), count);
+  }
+
+  void AdvanceClockMilliseconds(int milliseconds) {
+    ASSERT_TRUE(task_environment_.has_value());
+    task_environment_->FastForwardBy(
+        base::TimeDelta::FromMilliseconds(milliseconds));
   }
 
  private:
@@ -1052,6 +1061,157 @@ TEST_F(MediaNotificationViewTest, UnfreezingDoesntMissUpdates) {
   EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPause));
   EXPECT_EQ(base::ASCIIToUTF16("title2"), title_label()->GetText());
   EXPECT_EQ(base::ASCIIToUTF16("artist2"), artist_label()->GetText());
+}
+
+TEST_F(MediaNotificationViewTest, UnfreezingWaitsForArtwork_Timeout) {
+  EnableAction(MediaSessionAction::kPlay);
+  EnableAction(MediaSessionAction::kPause);
+
+  // Set an image before freezing.
+  SkBitmap initial_image;
+  initial_image.allocN32Pixels(10, 10);
+  initial_image.eraseColor(SK_ColorMAGENTA);
+  GetItem()->MediaControllerImageChanged(
+      media_session::mojom::MediaSessionImageType::kArtwork, initial_image);
+  EXPECT_FALSE(GetArtworkImage().isNull());
+
+  // Freeze the item and clear the metadata.
+  GetItem()->Freeze();
+  GetItem()->MediaSessionInfoChanged(nullptr);
+  GetItem()->MediaSessionMetadataChanged(base::nullopt);
+  GetItem()->MediaControllerImageChanged(
+      media_session::mojom::MediaSessionImageType::kArtwork, SkBitmap());
+
+  // The item should be frozen and the view should contain the old data.
+  EXPECT_TRUE(GetItem()->frozen());
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPlay));
+  EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPause));
+  EXPECT_EQ(base::ASCIIToUTF16("title"), title_label()->GetText());
+  EXPECT_EQ(base::ASCIIToUTF16("artist"), artist_label()->GetText());
+  EXPECT_FALSE(GetArtworkImage().isNull());
+
+  // Bind the item to a new controller that's playing instead of paused.
+  auto new_media_controller = std::make_unique<TestMediaController>();
+  media_session::mojom::MediaSessionInfoPtr session_info(
+      media_session::mojom::MediaSessionInfo::New());
+  session_info->playback_state =
+      media_session::mojom::MediaPlaybackState::kPlaying;
+  session_info->is_controllable = true;
+  GetItem()->SetController(new_media_controller->CreateMediaControllerRemote(),
+                           session_info.Clone());
+
+  // The item will receive a MediaSessionInfoChanged.
+  GetItem()->MediaSessionInfoChanged(session_info.Clone());
+
+  // The item should still be frozen, and the view should contain the old data.
+  EXPECT_TRUE(GetItem()->frozen());
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPlay));
+  EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPause));
+  EXPECT_EQ(base::ASCIIToUTF16("title"), title_label()->GetText());
+  EXPECT_EQ(base::ASCIIToUTF16("artist"), artist_label()->GetText());
+  EXPECT_FALSE(GetArtworkImage().isNull());
+
+  // Update the metadata.
+  media_session::MediaMetadata metadata;
+  metadata.title = base::ASCIIToUTF16("title2");
+  metadata.artist = base::ASCIIToUTF16("artist2");
+  GetItem()->MediaSessionMetadataChanged(metadata);
+
+  // The item should still be frozen, and waiting for a new image.
+  EXPECT_TRUE(GetItem()->frozen());
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPlay));
+  EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPause));
+  EXPECT_EQ(base::ASCIIToUTF16("title"), title_label()->GetText());
+  EXPECT_EQ(base::ASCIIToUTF16("artist"), artist_label()->GetText());
+  EXPECT_FALSE(GetArtworkImage().isNull());
+
+  // Once the freeze timer fires, the item should unfreeze even if there's no
+  // artwork.
+  AdvanceClockMilliseconds(2600);
+
+  EXPECT_FALSE(GetItem()->frozen());
+  EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPlay));
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPause));
+  EXPECT_EQ(base::ASCIIToUTF16("title2"), title_label()->GetText());
+  EXPECT_EQ(base::ASCIIToUTF16("artist2"), artist_label()->GetText());
+  EXPECT_TRUE(GetArtworkImage().isNull());
+}
+
+TEST_F(MediaNotificationViewTest, UnfreezingWaitsForArtwork_ReceiveArtwork) {
+  EnableAction(MediaSessionAction::kPlay);
+  EnableAction(MediaSessionAction::kPause);
+
+  // Set an image before freezing.
+  SkBitmap initial_image;
+  initial_image.allocN32Pixels(10, 10);
+  initial_image.eraseColor(SK_ColorMAGENTA);
+  GetItem()->MediaControllerImageChanged(
+      media_session::mojom::MediaSessionImageType::kArtwork, initial_image);
+  EXPECT_FALSE(GetArtworkImage().isNull());
+
+  // Freeze the item and clear the metadata.
+  GetItem()->Freeze();
+  GetItem()->MediaSessionInfoChanged(nullptr);
+  GetItem()->MediaSessionMetadataChanged(base::nullopt);
+  GetItem()->MediaControllerImageChanged(
+      media_session::mojom::MediaSessionImageType::kArtwork, SkBitmap());
+
+  // The item should be frozen and the view should contain the old data.
+  EXPECT_TRUE(GetItem()->frozen());
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPlay));
+  EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPause));
+  EXPECT_EQ(base::ASCIIToUTF16("title"), title_label()->GetText());
+  EXPECT_EQ(base::ASCIIToUTF16("artist"), artist_label()->GetText());
+  EXPECT_FALSE(GetArtworkImage().isNull());
+
+  // Bind the item to a new controller that's playing instead of paused.
+  auto new_media_controller = std::make_unique<TestMediaController>();
+  media_session::mojom::MediaSessionInfoPtr session_info(
+      media_session::mojom::MediaSessionInfo::New());
+  session_info->playback_state =
+      media_session::mojom::MediaPlaybackState::kPlaying;
+  session_info->is_controllable = true;
+  GetItem()->SetController(new_media_controller->CreateMediaControllerRemote(),
+                           session_info.Clone());
+
+  // The item will receive a MediaSessionInfoChanged.
+  GetItem()->MediaSessionInfoChanged(session_info.Clone());
+
+  // The item should still be frozen, and the view should contain the old data.
+  EXPECT_TRUE(GetItem()->frozen());
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPlay));
+  EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPause));
+  EXPECT_EQ(base::ASCIIToUTF16("title"), title_label()->GetText());
+  EXPECT_EQ(base::ASCIIToUTF16("artist"), artist_label()->GetText());
+  EXPECT_FALSE(GetArtworkImage().isNull());
+
+  // Update the metadata.
+  media_session::MediaMetadata metadata;
+  metadata.title = base::ASCIIToUTF16("title2");
+  metadata.artist = base::ASCIIToUTF16("artist2");
+  GetItem()->MediaSessionMetadataChanged(metadata);
+
+  // The item should still be frozen, and waiting for a new image.
+  EXPECT_TRUE(GetItem()->frozen());
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPlay));
+  EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPause));
+  EXPECT_EQ(base::ASCIIToUTF16("title"), title_label()->GetText());
+  EXPECT_EQ(base::ASCIIToUTF16("artist"), artist_label()->GetText());
+  EXPECT_FALSE(GetArtworkImage().isNull());
+
+  // Once we receive artwork, the item should unfreeze.
+  SkBitmap new_image;
+  new_image.allocN32Pixels(10, 10);
+  new_image.eraseColor(SK_ColorYELLOW);
+  GetItem()->MediaControllerImageChanged(
+      media_session::mojom::MediaSessionImageType::kArtwork, new_image);
+
+  EXPECT_FALSE(GetItem()->frozen());
+  EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPlay));
+  EXPECT_TRUE(GetButtonForAction(MediaSessionAction::kPause));
+  EXPECT_EQ(base::ASCIIToUTF16("title2"), title_label()->GetText());
+  EXPECT_EQ(base::ASCIIToUTF16("artist2"), artist_label()->GetText());
+  EXPECT_FALSE(GetArtworkImage().isNull());
 }
 
 TEST_F(MediaNotificationViewTest, ForcedExpandedState) {

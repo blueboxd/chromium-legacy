@@ -884,6 +884,19 @@ void ChromeLauncherController::OnAppInstalled(
     }
   }
 
+  // When the app is pinned to the shelf, or added to the shelf, the app
+  // probably isn't ready in AppService, so set the title again on
+  // callback when the app is ready in AppService.
+  int index = model_->ItemIndexByAppID(app_id);
+  if (index != kInvalidIndex) {
+    ash::ShelfItem item = model_->items()[index];
+    if ((item.type == ash::TYPE_APP || item.type == ash::TYPE_PINNED_APP) &&
+        item.title.empty()) {
+      item.title = LauncherControllerHelper::GetAppTitle(profile(), app_id);
+      model_->Set(index, item);
+    }
+  }
+
   UpdateAppLaunchersFromSync();
 }
 
@@ -1303,6 +1316,7 @@ void ChromeLauncherController::AttachProfile(Profile* profile_to_attach) {
 
 void ChromeLauncherController::ReleaseProfile() {
   app_updaters_.clear();
+  app_icon_loaders_.clear();
 
   pref_change_registrar_.RemoveAll();
 

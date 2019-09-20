@@ -6,11 +6,12 @@
 
 #include <fuchsia/ui/policy/cpp/fidl.h>
 #include <fuchsia/ui/views/cpp/fidl.h>
+#include <lib/sys/cpp/component_context.h>
 #include <lib/ui/scenic/cpp/view_ref_pair.h>
 #include <lib/ui/scenic/cpp/view_token_pair.h>
 
+#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/fuchsia/service_directory_client.h"
 
 namespace ui {
 namespace fuchsia {
@@ -28,8 +29,9 @@ void InitializeViewTokenAndPresentView(
   window_properties_out->view_ref_pair = scenic::ViewRefPair::New();
 
   // Request Presenter to show the view full-screen.
-  auto presenter = base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
-                       ->ConnectToService<::fuchsia::ui::policy::Presenter>();
+  auto presenter = base::fuchsia::ComponentContextForCurrentProcess()
+                       ->svc()
+                       ->Connect<::fuchsia::ui::policy::Presenter>();
 
   presenter->PresentView(std::move(view_holder_token), nullptr);
 }

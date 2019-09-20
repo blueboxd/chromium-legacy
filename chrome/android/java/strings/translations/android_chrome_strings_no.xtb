@@ -603,7 +603,6 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="545042621069398927">Øker hastigheten på nedlastingen.</translation>
 <translation id="5456381639095306749">Last ned siden</translation>
 <translation id="5475862044948910901">Vil du starte en økt med utvidet virkelighet?</translation>
-<translation id="5481942164684849270"><ph name="APP_NAME" /> er lagt til i appene mine</translation>
 <translation id="548278423535722844">Åpne i en kartapp</translation>
 <translation id="5487521232677179737">Slett data</translation>
 <translation id="5494752089476963479">Blokkér annonser på nettsteder som ofte viser forstyrrende eller villedende annonser</translation>
@@ -1010,7 +1009,6 @@ Nettstedet får IKKE tilgang til kameraet. Kamerabildene er kun synlige for deg.
 <translation id="8364299278605033898">Se populære nettsteder</translation>
 <translation id="8368027906805972958">Ukjent eller ikke-støttet enhet (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Tillat bakgrunnssynkronisering for et bestemt nettsted.</translation>
-<translation id="8374821112118309944">Du må oppdatere til en nyere versjon av Talkback.</translation>
 <translation id="8378714024927312812">Administreres av organisasjonen din</translation>
 <translation id="8380167699614421159">Dette nettstedet viser forstyrrende eller villedende annonser</translation>
 <translation id="8393700583063109961">Send melding</translation>

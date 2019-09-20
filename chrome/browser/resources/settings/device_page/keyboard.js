@@ -155,7 +155,7 @@ Polymer({
 
   onShowLanguageInputTap_: function() {
     settings.navigateTo(
-        settings.routes.LANGUAGES,
+        settings.routes.LANGUAGES_DETAILS,
         /* dynamicParams */ null, /* removeSearch */ true);
   },
 

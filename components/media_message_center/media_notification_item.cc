@@ -124,6 +124,8 @@ void MediaNotificationItem::MediaControllerImageChanged(
 
   if (view_ && !frozen_)
     view_->UpdateWithMediaArtwork(*session_artwork_);
+  else if (waiting_for_artwork_)
+    MaybeUnfreeze();
 }
 
 void MediaNotificationItem::SetView(MediaNotificationView* view) {
@@ -161,6 +163,13 @@ bool MediaNotificationItem::ShouldShowNotification() const {
 
 void MediaNotificationItem::OnFreezeTimerFired() {
   DCHECK(frozen_);
+
+  // If we've just been waiting for artwork, stop waiting and just show what we
+  // have.
+  if (waiting_for_artwork_ && ShouldShowNotification() && is_bound_) {
+    Unfreeze();
+    return;
+  }
 
   if (is_bound_) {
     controller_->HideNotification(request_id_);
@@ -237,6 +246,7 @@ void MediaNotificationItem::Freeze() {
 
   frozen_ = true;
   is_bound_ = false;
+  frozen_with_artwork_ = HasArtwork();
 
   freeze_timer_.Start(FROM_HERE, kFreezeTimerDelay,
                       base::BindOnce(&MediaNotificationItem::OnFreezeTimerFired,
@@ -247,10 +257,27 @@ void MediaNotificationItem::MaybeUnfreeze() {
   if (!frozen_)
     return;
 
+  if (waiting_for_artwork_ && !HasArtwork())
+    return;
+
   if (!ShouldShowNotification() || !is_bound_)
     return;
 
+  // If the currently frozen view has artwork and the new session currently has
+  // no artwork, then wait until either the freeze timer ends or the new artwork
+  // is downloaded.
+  if (frozen_with_artwork_ && !HasArtwork()) {
+    waiting_for_artwork_ = true;
+    return;
+  }
+
+  Unfreeze();
+}
+
+void MediaNotificationItem::Unfreeze() {
   frozen_ = false;
+  waiting_for_artwork_ = false;
+  frozen_with_artwork_ = false;
   freeze_timer_.Stop();
 
   // When we unfreeze, we want to fully update |view_| with any changes that
@@ -264,6 +291,10 @@ void MediaNotificationItem::MaybeUnfreeze() {
     if (session_artwork_.has_value())
       view_->UpdateWithMediaArtwork(*session_artwork_);
   }
+}
+
+bool MediaNotificationItem::HasArtwork() const {
+  return session_artwork_.has_value() && !session_artwork_->isNull();
 }
 
 }  // namespace media_message_center

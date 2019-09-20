@@ -17,6 +17,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/renderer.mojom.h"
+#include "content/common/view_messages.h"
 #include "content/common/visual_properties.h"
 #include "content/common/widget_messages.h"
 #include "content/public/browser/content_browser_client.h"
@@ -696,11 +697,13 @@ void RenderViewTest::Resize(gfx::Size new_size,
   visual_properties.browser_controls_shrink_blink_size = false;
   visual_properties.is_fullscreen_granted = is_fullscreen_granted;
   visual_properties.display_mode = blink::kWebDisplayModeBrowser;
+  RenderViewImpl* view = static_cast<RenderViewImpl*>(view_);
+  RenderWidget* render_widget = view->GetWidget();
   std::unique_ptr<IPC::Message> resize_message(
-      new WidgetMsg_SynchronizeVisualProperties(0, visual_properties));
-  RenderWidget* render_widget =
-      static_cast<RenderViewImpl*>(view_)->GetWidget();
-  render_widget->OnMessageReceived(*resize_message);
+      new ViewMsg_UpdateVisualProperties(view->GetRoutingID(),
+                                         visual_properties,
+                                         render_widget->routing_id()));
+  view->OnMessageReceived(*resize_message);
 }
 
 void RenderViewTest::SimulateUserTypingASCIICharacter(char ascii_character,

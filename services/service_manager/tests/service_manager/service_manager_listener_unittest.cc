@@ -134,7 +134,7 @@ class ServiceManagerListenerTest : public testing::Test, public Service {
                  base::Token::CreateRandom()),
         std::move(service), metadata.BindNewPipeAndPassReceiver());
     metadata->SetPID(fake_pid);
-    return receiver;
+    return std::move(receiver);
   }
 
   void WaitForServiceStarted(Identity* out_identity, uint32_t* out_pid) {

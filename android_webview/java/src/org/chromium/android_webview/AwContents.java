@@ -56,6 +56,7 @@ import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.android_webview.renderer_priority.RendererPriority;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.LocaleUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
@@ -1532,7 +1533,7 @@ public class AwContents implements SmartClipProvider {
 
     public static Activity activityFromContext(Context context) {
         try (ScopedSysTraceEvent e = ScopedSysTraceEvent.scoped("AwContents.activityFromContext")) {
-            return WindowAndroid.activityFromContext(context);
+            return ContextUtils.activityFromContext(context);
         }
     }
     /**
@@ -2797,7 +2798,7 @@ public class AwContents implements SmartClipProvider {
             intent.putExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, true);
         }
 
-        if (WindowAndroid.activityFromContext(mContext) == null) {
+        if (ContextUtils.activityFromContext(mContext) == null) {
             mContext.startActivity(intent);
             return;
         }

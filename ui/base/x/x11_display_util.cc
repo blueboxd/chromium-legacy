@@ -101,9 +101,11 @@ void ClipWorkArea(std::vector<display::Display>* displays,
     primary.set_work_area(work_area);
 }
 
-int GetRefreshRateFromXRRModeInfo(XRRModeInfo* modes,
-                                  int num_of_mode,
-                                  RRMode current_mode_id) {
+}  // namespace
+
+float GetRefreshRateFromXRRModeInfo(XRRModeInfo* modes,
+                                    int num_of_mode,
+                                    RRMode current_mode_id) {
   for (int i = 0; i < num_of_mode; i++) {
     XRRModeInfo mode_info = modes[i];
     if (mode_info.id != current_mode_id)
@@ -112,11 +114,11 @@ int GetRefreshRateFromXRRModeInfo(XRRModeInfo* modes,
       return 0;
 
     // Refresh Rate = Pixel Clock / (Horizontal Total * Vertical Total)
-    return mode_info.dotClock / (mode_info.hTotal * mode_info.vTotal);
+    return mode_info.dotClock /
+           static_cast<float>(mode_info.hTotal * mode_info.vTotal);
   }
   return 0;
 }
-}  // namespace
 
 int GetXrandrVersion(XDisplay* xdisplay) {
   int xrandr_version = 0;
@@ -251,8 +253,8 @@ std::vector<display::Display> BuildDisplaysFromXRandRInfo(
       }
 
       // Set monitor refresh rate
-      int refresh_rate = GetRefreshRateFromXRRModeInfo(
-          resources->modes, resources->nmode, crtc->mode);
+      int refresh_rate = static_cast<int>(GetRefreshRateFromXRRModeInfo(
+          resources->modes, resources->nmode, crtc->mode));
       display.set_display_frequency(refresh_rate);
 
       displays.push_back(display);

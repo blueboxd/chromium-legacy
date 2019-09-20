@@ -420,7 +420,6 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="4039983576244166038">Zeilenüberschrift leer</translation>
 <translation id="4042843249978639960">Keine nächste Überschrift der Ebene 2</translation>
 <translation id="4043348641337972076">Keine vorherige ARIA-Markierung</translation>
-<translation id="4045764028670444336">Anfang Rechtschreibfehler</translation>
 <translation id="4047216625641135770">Mark-Element</translation>
 <translation id="404803211695627272"><ph name="V1" />–<ph name="V2" /></translation>
 <translation id="4053520724192563562">Gelbgrün</translation>
@@ -503,7 +502,6 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="4547556996012970016">Nächste Überschrift der Ebene 5</translation>
 <translation id="4562381607973973258">Header-Element</translation>
 <translation id="4569941707103739422">Zum Auswählen von Elementen die Pfeiltaste nach oben oder unten drücken und zum Öffnen des Elements mit der Eingabetaste bestätigen.</translation>
-<translation id="4570424871453628777">Ende Rechtschreibfehler</translation>
 <translation id="4591507479202817876">, ausgewählt</translation>
 <translation id="4597532268155981612">Formular</translation>
 <translation id="4597896406374528575">April</translation>
@@ -727,7 +725,6 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="6037602951055904232">Nach vorn verschieben</translation>
 <translation id="6042826534790431634">Zum Aktivieren Suchtaste + Leertaste drücken.</translation>
 <translation id="6044160928851315051">Bildschirm abdunkeln</translation>
-<translation id="6065293622157674001">Anfang Grammatikfehler</translation>
 <translation id="6082768461603900813">Grundlegende Navigation</translation>
 <translation id="6118126368611144850">Android-Apps für Chrome. Wenn Sie den Play Store auf Ihrem Gerät installiert haben, können Sie vorab einen Blick auf ChromeVox mit Android-Apps werfen. Um die experimentelle Unterstützung auszuprobieren, laden Sie Google Chrome Canary aus dem Play Store herunter.</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -868,7 +865,6 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="7143207342074048698">Verbindung wird hergestellt.</translation>
 <translation id="7153618581592392745">Lavendel</translation>
 <translation id="7157306005867877619">Zusammenfassung</translation>
-<translation id="7161425887892204659">Ende Textübereinstimmung</translation>
 <translation id="7161771961008409533">Pop-up-Schaltfläche</translation>
 <translation id="7165714724802225287">Die aktuelle Displaydarstellung ist "Überlappen".</translation>
 <translation id="7167657087543110">Zeichenecho</translation>
@@ -906,7 +902,6 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Tabelle wird verlassen.</translation>
 <translation id="738899727977260036">Schieferblau</translation>
-<translation id="7392145451309930991">Anfang Textübereinstimmung</translation>
 <translation id="739763518212184081">Vorherige Zeile</translation>
 <translation id="7400575256015741911">Rechtschreibfehler gefunden</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -1119,7 +1114,6 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="8476408756881832830">Wiedergabe pausieren, wenn eine Sprachausgabe durch ChromeVox stattfindet</translation>
 <translation id="8476508772960940536">Fensterübersicht</translation>
 <translation id="8503360654911991865">Navigationsgenauigkeit verringern</translation>
-<translation id="8504695234784218301">Ende Grammatikfehler</translation>
 <translation id="8520472399088452386">Drehfeld</translation>
 <translation id="8534394844575788431">Formatierung</translation>
 <translation id="8538744478902126321">Zeilenüberschrift für aktuelle Zelle vorschlagen</translation>

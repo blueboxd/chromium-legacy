@@ -58,7 +58,7 @@ PageActionIconView::PageActionIconView(CommandUpdater* command_updater,
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   // Only shows bubble after mouse is released.
   button_controller()->set_notify_action(
-      views::ButtonController::NotifyAction::NOTIFY_ON_RELEASE);
+      views::ButtonController::NotifyAction::kOnRelease);
   UpdateBorder();
 }
 

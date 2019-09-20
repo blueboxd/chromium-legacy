@@ -12,10 +12,19 @@ class IOSChromeSavePasswordInfoBarDelegate;
 // Coordinator that creates and manages the PasswordInfobar.
 @interface InfobarPasswordCoordinator : InfobarCoordinator
 
+// Designated initializer. |passwordInfoBarDelegate| is used to configure the
+// Infobar and subsequently perform related actions. |infobarType| should most
+// likely be related to Passwords e.g.: kInfobarTypePasswordSave or
+// kInfobarTypePasswordUpdate.
 - (instancetype)initWithInfoBarDelegate:(IOSChromeSavePasswordInfoBarDelegate*)
                                             passwordInfoBarDelegate
                                    type:(InfobarType)infobarType
     NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithInfoBarDelegate:
+                    (infobars::InfoBarDelegate*)infoBarDelegate
+                           badgeSupport:(BOOL)badgeSupport
+                                   type:(InfobarType)infobarType NS_UNAVAILABLE;
 
 @end
 

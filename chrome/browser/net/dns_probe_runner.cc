@@ -28,6 +28,11 @@ DnsProbeRunner::Result EvaluateResponse(
       break;
 
     case net::ERR_FAILED:
+    // ERR_DNS_CACHE_MISS means HostResolver was not able to attempt DNS, e.g.
+    // due to limitations from Chrome build configuration or because of
+    // incompatibilities with the DNS configuration from the system. The result
+    // Chrome would have gotten from DNS if attempted is therefore unknown.
+    case net::ERR_DNS_CACHE_MISS:
       return DnsProbeRunner::UNKNOWN;
 
     // ERR_NAME_NOT_RESOLVED maps to NXDOMAIN, which means the server is working

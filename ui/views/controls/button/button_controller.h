@@ -20,9 +20,9 @@ class VIEWS_EXPORT ButtonController {
   virtual ~ButtonController();
 
   // An enum describing the events on which a button should notify its listener.
-  enum NotifyAction {
-    NOTIFY_ON_PRESS,
-    NOTIFY_ON_RELEASE,
+  enum class NotifyAction {
+    kOnPress,
+    kOnRelease,
   };
 
   Button* button() { return button_; }
@@ -63,7 +63,7 @@ class VIEWS_EXPORT ButtonController {
   std::unique_ptr<ButtonControllerDelegate> button_controller_delegate_;
 
   // The event on which the button's listener should be notified.
-  NotifyAction notify_action_ = NOTIFY_ON_RELEASE;
+  NotifyAction notify_action_ = NotifyAction::kOnRelease;
 
   DISALLOW_COPY_AND_ASSIGN(ButtonController);
 };

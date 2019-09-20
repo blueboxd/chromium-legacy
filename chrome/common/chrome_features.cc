@@ -668,6 +668,12 @@ const base::Feature kSubresourceRedirectIncludedMediaSuffixes{
     "SubresourceRedirectIncludedMediaSuffixes",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+#if !defined(OS_ANDROID)
+// Enables or disables the Javascript API to propagate sync encryption keys.
+const base::Feature kSyncEncryptionKeysWebApi{
+    "SyncEncryptionKeysWebApi", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // !defined(OS_ANDROID)
+
 #if defined(OS_CHROMEOS)
 // Enables or disables chrome://sys-internals.
 const base::Feature kSysInternals{"SysInternals",

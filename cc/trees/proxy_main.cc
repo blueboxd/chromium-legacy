@@ -313,16 +313,6 @@ void ProxyMain::BeginMainFrame(
     return;
   }
 
-  // Queue the LATENCY_BEGIN_FRAME_RENDERER_MAIN_COMPONENT swap promise only
-  // once we know we will commit since QueueSwapPromise itself requests a
-  // commit.
-  ui::LatencyInfo new_latency_info(ui::SourceEventType::FRAME);
-  new_latency_info.AddLatencyNumberWithTimestamp(
-      ui::LATENCY_BEGIN_FRAME_RENDERER_MAIN_COMPONENT,
-      begin_main_frame_state->begin_frame_args.frame_time);
-  layer_tree_host_->QueueSwapPromise(
-      std::make_unique<LatencyInfoSwapPromise>(new_latency_info));
-
   current_pipeline_stage_ = NO_PIPELINE_STAGE;
 
   // Notify the impl thread that the main thread is ready to commit. This will

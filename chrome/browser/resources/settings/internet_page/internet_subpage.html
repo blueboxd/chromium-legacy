@@ -163,7 +163,8 @@
 
         <template is="dom-if" if="[[matchesType_('VPN', deviceState)]]">
           <!-- Third party VPNs. -->
-          <template is="dom-repeat" items="[[vpnProviders]]">
+          <template is="dom-repeat"
+              items="[[getVpnProviders_(vpnProviders, thirdPartyVpns_)]]">
             <div id="[[item.providerName]]"
                 class="vpn-header layout horizontal center">
               <div class="flex settings-box-text">[[item.providerName]]</div>

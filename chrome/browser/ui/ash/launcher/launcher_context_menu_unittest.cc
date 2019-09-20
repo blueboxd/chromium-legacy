@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/apps/app_service/app_service_test.h"
 #include "chrome/browser/chromeos/arc/icon_decode_request.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
@@ -24,7 +25,6 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/app_service/app_service_test.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
@@ -144,7 +144,7 @@ class LauncherContextMenuTest : public ChromeAshTestBase {
 
   ArcAppTest& arc_test() { return arc_test_; }
 
-  AppServiceTest& app_service_test() { return app_service_test_; }
+  apps::AppServiceTest& app_service_test() { return app_service_test_; }
 
   TestingProfile* profile() { return &profile_; }
 
@@ -155,7 +155,7 @@ class LauncherContextMenuTest : public ChromeAshTestBase {
  private:
   TestingProfile profile_;
   ArcAppTest arc_test_;
-  AppServiceTest app_service_test_;
+  apps::AppServiceTest app_service_test_;
   std::unique_ptr<session_manager::SessionManager> session_manager_;
   std::unique_ptr<ash::ShelfModel> model_;
   std::unique_ptr<ChromeLauncherController> launcher_controller_;
@@ -230,6 +230,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
   arc_test().app_instance()->SendRefreshAppList(
       std::vector<arc::mojom::AppInfo>(arc_test().fake_apps().begin(),
                                        arc_test().fake_apps().begin() + 1));
+  app_service_test().WaitForAppService();
   const std::string app_id = ArcAppTest::GetAppId(arc_test().fake_apps()[0]);
   const std::string app_name = arc_test().fake_apps()[0].name;
 
@@ -261,6 +262,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
   CreateArcWindow(window_app_id1);
   arc_test().app_instance()->SendTaskCreated(1, arc_test().fake_apps()[0],
                                              std::string());
+  app_service_test().WaitForAppService();
 
   item_delegate = model()->GetShelfItemDelegate(shelf_id);
   ASSERT_TRUE(item_delegate);
@@ -284,6 +286,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
   CreateArcWindow(window_app_id2);
   arc_test().app_instance()->SendTaskCreated(2, arc_test().fake_apps()[1],
                                              std::string());
+  app_service_test().WaitForAppService();
   const ash::ShelfID shelf_id2(app_id2);
   const ash::ShelfItem* item2 = controller()->GetItem(shelf_id2);
   ASSERT_TRUE(item2);
@@ -310,6 +313,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
   shortcuts[0].intent_uri +=
       ";S.org.chromium.arc.shelf_group_id=arc_test_shelf_group;end";
   arc_test().app_instance()->SendInstallShortcuts(shortcuts);
+  app_service_test().WaitForAppService();
   const std::string app_id3 =
       arc::ArcAppShelfId("arc_test_shelf_group",
                          ArcAppTest::GetAppId(arc_test().fake_apps()[2]))
@@ -328,6 +332,7 @@ TEST_F(LauncherContextMenuTest, ArcLauncherMenusCheck) {
     arc_test().app_instance()->SendTaskDescription(
         task_id, GetAppNameInShelfGroup(task_id),
         std::string() /* icon_png_data_as_string */);
+    app_service_test().WaitForAppService();
     const ash::ShelfID shelf_id3(app_id3);
     const ash::ShelfItem* item3 = controller()->GetItem(shelf_id3);
     ASSERT_TRUE(item3);

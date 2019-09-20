@@ -1,0 +1,30 @@
+[document web] offset=0
+++[paragraph] offset=0 offset=4 weight=700 offset=9 offset=10 style=italic offset=15 offset=16 underline=single offset=19 offset=20 weight=700 style=italic offset=26 offset=27 style=italic underline=single offset=31 offset=32 weight=700 style=italic underline=single
+++++[text] name='The ' offset=0
+++++[text] name='quick' offset=0 weight=700
+++++[text] name=' ' offset=0
+++++[text] name='brown' offset=0 style=italic
+++++[text] name=' ' offset=0
+++++[text] name='fox' offset=0 underline=single
+++++[text] name=' ' offset=0
+++++[text] name='jumped' offset=0 weight=700 style=italic
+++++[text] name=' ' offset=0
+++++[text] name='over' offset=0 style=italic underline=single
+++++[text] name=' ' offset=0
+++++[text] name='dog' offset=0 weight=700 style=italic underline=single
+++[section] selectable-text offset=0 offset=7 weight=700 offset=11 offset=12 style=italic offset=18 offset=19 underline=single offset=28 offset=29 offset=41 offset=42 offset=51 offset=52
+++++[text] name='Normal' offset=0
+++++[text] name=' ' offset=0
+++++[text] name='bold' offset=0 weight=700
+++++[text] name=' ' offset=0
+++++[text] name='italic' offset=0 style=italic
+++++[text] name=' ' offset=0
+++++[text] name='underline' offset=0 underline=single
+++++[text] name=' ' offset=0
+++++[text] name='line-through' offset=0
+++++[text] name=' ' offset=0
+++++[subscript] name='subscript' offset=0
+++++[text] name=' ' offset=0
+++++[superscript] name='superscript' offset=0
+<-- End-of-file -->
+

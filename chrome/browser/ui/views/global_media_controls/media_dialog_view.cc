@@ -95,7 +95,7 @@ gfx::Size MediaDialogView::CalculatePreferredSize() const {
   // Otherwise, use a standard size for bubble dialogs.
   const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_BUBBLE_PREFERRED_WIDTH);
-  return gfx::Size(width, GetHeightForWidth(width));
+  return gfx::Size(width, 1);
 }
 
 MediaDialogView::MediaDialogView(views::View* anchor_view,

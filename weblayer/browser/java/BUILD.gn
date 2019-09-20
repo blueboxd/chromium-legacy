@@ -17,6 +17,7 @@ android_library("java") {
     "org/chromium/weblayer_private/ProfileImpl.java",
     "org/chromium/weblayer_private/TopControlsContainerView.java",
     "org/chromium/weblayer_private/WebLayerImpl.java",
+    "org/chromium/weblayer_private/ChildProcessServiceImpl.java",
   ]
 
   deps = [
@@ -55,6 +56,7 @@ android_aidl("aidl") {
   sources = [
     "org/chromium/weblayer_private/aidl/IBrowserController.aidl",
     "org/chromium/weblayer_private/aidl/IBrowserControllerClient.aidl",
+    "org/chromium/weblayer_private/aidl/IChildProcessService.aidl",
     "org/chromium/weblayer_private/aidl/IClientNavigation.aidl",
     "org/chromium/weblayer_private/aidl/INavigation.aidl",
     "org/chromium/weblayer_private/aidl/INavigationController.aidl",

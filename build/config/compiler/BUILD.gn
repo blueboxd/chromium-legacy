@@ -600,7 +600,7 @@ config("compiler") {
       # files on Windows (https://crbug.com/871962).
       ldflags += [
         "/opt:lldlto=" + lto_opt_level,
-        "/opt:lldltojobs=8",
+        "/opt:lldltojobs=" + max_jobs_per_link,
 
         # Experimentally determined to yield a reasonable trade-off between
         # build time, run-time performance, and binary size.
@@ -613,7 +613,7 @@ config("compiler") {
       # linker jobs. This is still suboptimal to a potential dynamic
       # resource allocation scheme, but should be good enough.
       if (use_lld) {
-        ldflags += [ "-Wl,--thinlto-jobs=8" ]
+        ldflags += [ "-Wl,--thinlto-jobs=" + max_jobs_per_link ]
 
         # Caching on Chrome OS materially slows the PFQ down; disable it until
         # we can figure out why. (crbug.com/964328)
@@ -629,7 +629,7 @@ config("compiler") {
           ]
         }
       } else {
-        ldflags += [ "-Wl,-plugin-opt,jobs=8" ]
+        ldflags += [ "-Wl,-plugin-opt,jobs=" + max_jobs_per_link ]
       }
 
       if (use_lld) {
@@ -1892,11 +1892,7 @@ if (is_win) {
 
     # TODO(thakis): Remove is_clang here, https://crbug.com/598772
     if (!use_lld && !is_clang) {
-      common_optimize_on_ldflags += [
-        # Set the number of LTCG code-gen threads to eight. The default is four.
-        # This gives a 5-10% link speedup.
-        "/cgthreads:8",
-      ]
+      common_optimize_on_ldflags += [ "/cgthreads:" + max_jobs_per_link ]
       if (use_incremental_wpo) {
         # Incremental Link-time code generation.
         common_optimize_on_ldflags += [ "/LTCG:INCREMENTAL" ]
@@ -1928,7 +1924,7 @@ if (is_win) {
   }
 
   if (is_mac || is_ios) {
-    if (symbol_level > 0) {
+    if (symbol_level == 2) {
       # Mac dead code stripping requires symbols.
       common_optimize_on_ldflags += [ "-Wl,-dead_strip" ]
     }

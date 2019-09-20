@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{ 1 മീറ്റര്‍}other{# മീറ്റർ}}</translation>
 <translation id="1181037720776840403">നീക്കംചെയ്യൂ</translation>
 <translation id="1243314992276662751">അപ്‌ലോഡുചെയ്യുക</translation>
+<translation id="1266864766717917324"><ph name="CONTENT_TYPE" /> പങ്കിടാനായില്ല</translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1290982764014248209"><ph name="FOLDER_NAME" /> ഫോൾഡറിലേക്ക് <ph name="DRAGGED_APP" /> നീക്കുക.</translation>
+<translation id="1291104554099683393">ചെറിയ ഭാഗങ്ങളായി ടെക്‌സ്‌റ്റ് പങ്കിടാൻ ശ്രമിക്കൂ.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">ശുപാർശിത ആപ്പുകൾ</translation>
 <translation id="1368832886055348810">ഇടതുനിന്ന് വലത്തേക്ക്</translation>
 <translation id="1383876407941801731">തിരയുക</translation>
 <translation id="1398853756734560583">വലുതാക്കുക</translation>
 <translation id="1409544243779336081">ആപ്പ് നിർദ്ദേശങ്ങൾ</translation>
+<translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> പങ്കിടാനാവുന്നില്ല</translation>
 <translation id="1498028757988366001">നിങ്ങൾ ഇതിനായി മുമ്പ് തിരഞ്ഞിട്ടുണ്ട്. ചരിത്രത്തിൽ നിന്ന് "<ph name="QUERY" />" ഇല്ലാതാക്കുന്നത്, നിങ്ങളുടെ എല്ലാ ഉപകരണങ്ങളിലുമുടനീളമുള്ള അക്കൗണ്ടിൽ നിന്ന് അതിനെ ശാശ്വതമായി ഇല്ലാതാക്കും.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{ഒരു മിനിറ്റും }other{# മിനിറ്റും }}</translation>
 <translation id="1643823602425662293">അറിയിപ്പ്</translation>
@@ -35,6 +38,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">എല്ലാം &amp;തിരഞ്ഞെടുക്കൂ</translation>
 <translation id="1938451708255335766">വിൻഡോ ഡിസ്പ്ലേ സാന്ദ്രത ക്രമീകരിക്കാൻ, ആപ്പ് റീസ്റ്റാര്‍ട്ട് ചെയ്യുക.</translation>
+<translation id="2006524834898217237">ഈ ഉപകരണം ഇന്റർനെറ്റിലേക്ക് കണക്റ്റ് ചെയ്‌തിട്ടുണ്ടെന്ന് ഉറപ്പാക്കുക.</translation>
 <translation id="208586643495776849">വീണ്ടും ശ്രമിക്കുക</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1ദിവസം}other{# ദിവസം}}</translation>
 <translation id="2148716181193084225">ഇന്ന്</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{ഒരു ദിവസം}other{# ദിവസം}}</translation>
 <translation id="3295886253693811851">ഇതുപയോഗിച്ച് കോൾ ചെയ്യുക</translation>
 <translation id="335581015389089642">സംഭാഷണം</translation>
+<translation id="3389286852084373014">ടെക്‌സ്‌റ്റ് വളരെ വലുതാണ്</translation>
 <translation id="3443810440409579745">ടാബ് സ്വീകരിച്ചു.</translation>
 <translation id="3479552764303398839">ഇപ്പോഴല്ല</translation>
 <translation id="348799646910989694">ഷെൽഫ് സ്വയമേവ മറച്ചു</translation>
@@ -152,11 +157,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{ഒരു സെക്കൻഡ് മുമ്പ്}other{# സെക്കൻഡ് മുമ്പ്}}</translation>
 <translation id="6430678249303439055">ഈ ആപ്പിൽ നിന്നുള്ള എല്ലാ അറിയിപ്പുകളും ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 സെക്കൻഡ് മുമ്പ്}other{# സെക്കൻഡ് മുമ്പ്}}</translation>
+<translation id="6539092367496845964">എന്തോ കുഴപ്പം സംഭവിച്ചു. പിന്നീട് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="654149438358937226">എല്ലാ അറിയിപ്പുകളും ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="6567071839949112727">ആൻസിസ്റ്ററിൽ ക്ലിക്ക് ചെയ്യുക</translation>
 <translation id="6578407462441924264">പേരില്ലാത്തത്</translation>
 <translation id="6612467943526193239">കാലിബറേഷനിൽ നിന്ന് പുറത്തുകടക്കാൻ Esc അമർത്തുക.</translation>
 <translation id="6620110761915583480">ഫയല്‍‌ സംരക്ഷിക്കുക</translation>
+<translation id="6656912866303152668">Chrome-ൽ <ph name="TARGET_DEVICE_NAME" /> എന്ന ഉപകരണത്തിൽ സമന്വയം ഓണാക്കിയിട്ടുണ്ടെന്ന് ഉറപ്പാക്കുക, തുടർന്ന് വീണ്ടും അയയ്ക്കാൻ ശ്രമിക്കുക.</translation>
 <translation id="6699343763173986273">അടുത്ത മീഡിയ ട്രാക്ക്</translation>
 <translation id="673773751041746814">ഇല്ലാതാക്കൽ</translation>
 <translation id="6779314412797872738">നിങ്ങളുടെ Android ഫോണിലേക്ക് ഇവിടെ നിന്ന് ഒരു നമ്പർ അയയ്‌ക്കാൻ, ക്രമീകരണത്തിൽ രണ്ട് ഉപകരണങ്ങളുടെയും <ph name="TROUBLESHOOT_LINK" />.</translation>
@@ -222,6 +229,7 @@
 <translation id="8876215549894133151">ഫോര്‍മാറ്റ്:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">ഷെൽഫ് എപ്പോഴും അദൃശ്യമാണ്</translation>
+<translation id="8996630695507351249"><ph name="TARGET_DEVICE_NAME" /> ഇന്റർ‌നെറ്റിലേക്ക് കണക്‌റ്റ് ചെയ്‌തിട്ടുണ്ടെന്ന് ഉറപ്പാക്കുക.</translation>
 <translation id="9002566407876343676">തുറക്കുക</translation>
 <translation id="9039076430527029379">പേജ് <ph name="PAGE_NUMBER" />, വരി <ph name="ROW_NUMBER" />, കോളം <ph name="COLUMN_NUMBER" /> എന്നിവയിലേക്ക് നീക്കുക.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{ഒരു സെക്കൻഡ്}other{# സെക്കൻഡ്}}</translation>

@@ -2579,8 +2579,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTestWithHistogramTester, SavePageNonHTMLViaGet) {
   // - favicon.ico
   // - SavePage: image.jpg
   // - context menu: image.jpg
-  histogram_tester().ExpectBucketCount("HttpCache.NetworkIsolationKeyPresent",
-                                       true /*sample*/, 4 /*count*/);
+  histogram_tester().ExpectBucketCount("HttpCache.NetworkIsolationKeyPresent2",
+                                       2 /*kPresent*/, 4 /*count*/);
   ResetURLLoaderInterceptor();
 }
 

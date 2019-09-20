@@ -93,8 +93,9 @@ public abstract class DragReorderableListAdapter<T> extends RecyclerView.Adapter
         public void clearView(RecyclerView recyclerView, ViewHolder viewHolder) {
             super.clearView(recyclerView, viewHolder);
             if (viewHolder.getAdapterPosition() != mStart) {
-                // Commit the position change for the dragged item when it's dropped.
-                setOrder(mElements);
+                // Commit the position change for the dragged item when it's dropped and
+                // recyclerView has finished layout computing
+                recyclerView.post(() -> setOrder(mElements));
             }
             // the row has been dropped, even though it is possible at same row
             mBeingDragged = null;

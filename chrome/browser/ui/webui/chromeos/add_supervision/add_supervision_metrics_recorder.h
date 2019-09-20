@@ -29,9 +29,11 @@ class AddSupervisionMetricsRecorder {
     // Recorded when user closes the dialog without enrollment, excluding sign
     // out.
     kClosed = 3,
+    // Recorded when user signs out to switch accounts.
+    kSwitchedAccounts = 4,
     // Add future entries above this comment, in sync with enums.xml.
     // Update kMaxValue to the last value.
-    kMaxValue = kClosed
+    kMaxValue = kSwitchedAccounts
   };
 
   static AddSupervisionMetricsRecorder* GetInstance();

@@ -162,8 +162,14 @@ void AppListPresenterDelegateImpl::OnVisibilityChanged(bool visible,
   controller_->NotifyAppListVisibilityChanged(visible, display_id);
 }
 
-void AppListPresenterDelegateImpl::OnTargetVisibilityChanged(bool visible) {
-  controller_->NotifyAppListTargetVisibilityChanged(visible);
+void AppListPresenterDelegateImpl::OnTargetVisibilityChanged(
+    bool visible,
+    int64_t display_id) {
+  controller_->NotifyAppListTargetVisibilityChanged(visible, display_id);
+}
+
+bool AppListPresenterDelegateImpl::IsVisible() {
+  return controller_->IsVisible();
 }
 
 void AppListPresenterDelegateImpl::OnDisplayMetricsChanged(
@@ -290,7 +296,7 @@ void AppListPresenterDelegateImpl::OnKeyEvent(ui::KeyEvent* event) {
     return;
 
   // If the home launcher is not shown in tablet mode, ignore events.
-  if (IsTabletMode() && !presenter_->home_launcher_shown())
+  if (IsTabletMode() && !IsVisible())
     return;
 
   // Don't absorb the first event for the search box while it is open

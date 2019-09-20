@@ -760,19 +760,11 @@ void SecurityKeysBioEnrollmentHandler::OnDelete(
 void SecurityKeysBioEnrollmentHandler::HandleCancel(
     const base::ListValue* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_EQ(1u, args->GetSize());
-  state_ = State::kCancelling;
-  callback_id_ = args->GetList()[0].GetString();
-  bio_->Cancel(base::BindOnce(&SecurityKeysBioEnrollmentHandler::OnEnrollCancel,
-                              weak_factory_.GetWeakPtr()));
-}
-
-void SecurityKeysBioEnrollmentHandler::OnEnrollCancel(
-    device::CtapDeviceResponseCode) {
-  DCHECK_EQ(state_, State::kCancelling);
-  state_ = State::kReady;
-  ResolveJavascriptCallback(base::Value(std::move(callback_id_)),
-                            base::Value());
+  DCHECK_EQ(state_, State::kEnrolling);
+  DCHECK_EQ(0u, args->GetSize());
+  DCHECK(!callback_id_.empty());
+  // OnEnrollmentFinished() will be invoked once the cancellation is complete.
+  bio_->CancelEnrollment();
 }
 
 }  // namespace settings

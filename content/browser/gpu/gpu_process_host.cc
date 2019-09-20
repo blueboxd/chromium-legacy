@@ -863,8 +863,6 @@ bool GpuProcessHost::Init() {
     if (base::FeatureList::IsEnabled(features::kGpuUseDisplayThreadPriority))
       options.priority = base::ThreadPriority::DISPLAY;
     in_process_gpu_thread_->StartWithOptions(options);
-
-    OnProcessLaunched();  // Fake a callback that the process is ready.
   } else if (!LaunchGpuProcess()) {
     return false;
   }
@@ -876,7 +874,6 @@ bool GpuProcessHost::Init() {
           viz_main_pending_remote.InitWithNewEndpointAndPassReceiver());
   viz::GpuHostImpl::InitParams params;
   params.restart_id = host_id_;
-  params.in_process = in_process_;
   params.disable_gpu_shader_disk_cache =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGpuShaderDiskCache);
@@ -887,6 +884,11 @@ bool GpuProcessHost::Init() {
       base::CreateSingleThreadTaskRunner({BrowserThread::UI});
   gpu_host_ = std::make_unique<viz::GpuHostImpl>(
       this, std::move(viz_main_pending_remote), std::move(params));
+
+  if (in_process_) {
+    // Fake a callback that the process is ready.
+    OnProcessLaunched();
+  }
 
 #if BUILDFLAG(USE_VIZ_DEVTOOLS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -949,10 +951,14 @@ void GpuProcessHost::OnProcessLaunched() {
     RecordAppContainerStatus(sandbox::SBOX_ALL_OK, crashed_before_);
 #endif  // defined(OS_WIN)
 
-  if (!in_process_) {
+  DCHECK(gpu_host_);
+  if (in_process_) {
+    // Don't set |process_id_| as it is publicly available through process_id().
+    gpu_host_->SetProcessId(base::GetCurrentProcId());
+  } else {
     process_id_ = process_->GetProcess().Pid();
     DCHECK_NE(base::kNullProcessId, process_id_);
-    gpu_host_->OnProcessLaunched(process_id_);
+    gpu_host_->SetProcessId(process_id_);
   }
 }
 

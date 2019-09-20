@@ -31,7 +31,7 @@
             android:layout_marginEnd="@dimen/revamped_context_menu_header_circle_bg_lateral_margin"
             android:visibility="invisible" />
 
-        <org.chromium.ui.widget.RoundedCornerImageView
+        <ImageView
             android:id="@+id/menu_header_image"
             android:layout_width="@dimen/revamped_context_menu_header_image_max_size"
             android:layout_height="@dimen/revamped_context_menu_header_image_max_size"
@@ -39,11 +39,7 @@
             android:importantForAccessibility="no"
             android:layout_marginTop="@dimen/revamped_context_menu_header_vertical_padding"
             android:layout_marginBottom="@dimen/revamped_context_menu_bottom_padding"
-            app:cornerRadiusTopStart="@dimen/default_rounded_corner_radius"
-            app:cornerRadiusTopEnd="@dimen/default_rounded_corner_radius"
-            app:cornerRadiusBottomStart="@dimen/default_rounded_corner_radius"
-            app:cornerRadiusBottomEnd="@dimen/default_rounded_corner_radius"
-            app:roundedfillColor="@color/thumbnail_placeholder_on_primary_bg" />
+            android:src="@color/thumbnail_placeholder_on_primary_bg" />
     </FrameLayout>
 
     <LinearLayout

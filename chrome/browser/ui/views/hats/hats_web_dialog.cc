@@ -21,6 +21,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/template_expressions.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/widget/widget.h"
 #include "url/url_canon.h"
@@ -32,8 +33,8 @@ namespace {
 const int kDefaultHatsDialogWidth = 448;
 const int kDefaultHatsDialogHeight = 440;
 
-// Placeholder strings in html file to be replaced when the file is loaded.
-constexpr char kScriptSrcReplacementToken[] = "$SCRIPT_SRC";
+// Placeholder string in html file to be replaced when the file is loaded.
+constexpr char kScriptSrcReplacementToken[] = "scriptSrc";
 
 // Base URL to fetch the Google consumer survey script.
 constexpr char kBaseFormatUrl[] =
@@ -48,18 +49,13 @@ constexpr char kBaseFormatUrl[] =
 // survey feedback to the HaTS server.
 std::string LoadLocalHtmlAsString(const std::string& site_id,
                                   const std::string& site_context) {
-  std::string html_data;
-  ui::ResourceBundle::GetSharedInstance()
-      .GetRawDataResource(IDR_DESKTOP_HATS_HTML)
-      .CopyToString(&html_data);
-
-  size_t pos = html_data.find(kScriptSrcReplacementToken);
-  DCHECK(pos != std::string::npos);
-  html_data.replace(pos, strlen(kScriptSrcReplacementToken),
-                    base::StringPrintf(kBaseFormatUrl, site_id.c_str(),
-                                       site_context.c_str()));
-
-  return html_data;
+  base::StringPiece raw_html =
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_DESKTOP_HATS_HTML);
+  ui::TemplateReplacements replacements;
+  replacements[kScriptSrcReplacementToken] =
+      base::StringPrintf(kBaseFormatUrl, site_id.c_str(), site_context.c_str());
+  return ui::ReplaceTemplateExpressions(raw_html, replacements);
 }
 
 }  // namespace

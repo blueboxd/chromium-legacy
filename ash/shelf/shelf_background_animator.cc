@@ -58,9 +58,7 @@ bool ShelfBackgroundAnimator::AnimationValues::InitialValuesEqualTargetValuesOf(
 ShelfBackgroundAnimator::ShelfBackgroundAnimator(
     Shelf* shelf,
     WallpaperControllerImpl* wallpaper_controller)
-    : shelf_(shelf),
-      wallpaper_controller_(wallpaper_controller),
-      shelf_config_(Shell::HasInstance() ? ShelfConfig::Get() : nullptr) {}
+    : shelf_(shelf), wallpaper_controller_(wallpaper_controller) {}
 
 ShelfBackgroundAnimator::~ShelfBackgroundAnimator() {
   if (wallpaper_controller_)
@@ -117,6 +115,9 @@ void ShelfBackgroundAnimator::AnimationEnded(const gfx::Animation* animation) {
   DCHECK_EQ(animation, animator_.get());
   SetAnimationValues(animation->GetCurrentValue());
   animator_.reset();
+
+  for (auto& observer : observers_)
+    observer.OnShelfBackgroundAnimationEnded();
 }
 
 // Gets the target color alpha value of the shelf according to the given
@@ -126,12 +127,12 @@ int ShelfBackgroundAnimator::GetBackgroundAlphaValue(
   switch (background_type) {
     case SHELF_BACKGROUND_DEFAULT:
     case SHELF_BACKGROUND_OVERVIEW:
-      return shelf_config_->shelf_translucent_alpha();
+      return ShelfConfig::Get()->shelf_translucent_alpha();
     case SHELF_BACKGROUND_MAXIMIZED:
-      return shelf_config_->shelf_translucent_maximized_window();
+      return ShelfConfig::Get()->shelf_translucent_maximized_window();
     case SHELF_BACKGROUND_APP_LIST:
     case SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST:
-      return shelf_config_->shelf_translucent_over_app_list();
+      return ShelfConfig::Get()->shelf_translucent_over_app_list();
     case SHELF_BACKGROUND_OOBE:
       return SK_AlphaTRANSPARENT;
     case SHELF_BACKGROUND_LOGIN:
@@ -140,10 +141,6 @@ int ShelfBackgroundAnimator::GetBackgroundAlphaValue(
       return login_constants::kNonBlurredWallpaperBackgroundAlpha;
   }
   return SK_AlphaTRANSPARENT;
-}
-
-void ShelfBackgroundAnimator::SetShelfConfigForTest(ShelfConfig* shelf_config) {
-  shelf_config_ = shelf_config;
 }
 
 void ShelfBackgroundAnimator::OnWallpaperColorsChanged() {
@@ -241,28 +238,29 @@ void ShelfBackgroundAnimator::GetTargetValues(
   // Fetches wallpaper color and darkens it.
   auto darken_wallpaper = [&](int darkening_alpha) {
     if (!wallpaper_controller_)
-      return shelf_config_->shelf_default_base_color();
+      return ShelfConfig::Get()->shelf_default_base_color();
     SkColor target_color =
         wallpaper_controller_->GetProminentColor(GetShelfColorProfile());
     if (target_color == kInvalidWallpaperColor)
-      return shelf_config_->shelf_default_base_color();
+      return ShelfConfig::Get()->shelf_default_base_color();
     return color_utils::GetResultingPaintColor(
-        SkColorSetA(shelf_config_->shelf_default_base_color(), darkening_alpha),
+        SkColorSetA(ShelfConfig::Get()->shelf_default_base_color(),
+                    darkening_alpha),
         target_color);
   };
 
-  SkColor shelf_target_color = shelf_config_->shelf_default_base_color();
+  SkColor shelf_target_color = ShelfConfig::Get()->shelf_default_base_color();
   switch (background_type) {
     case SHELF_BACKGROUND_DEFAULT:
     case SHELF_BACKGROUND_APP_LIST:
     case SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST:
     case SHELF_BACKGROUND_OVERVIEW:
       shelf_target_color = darken_wallpaper(
-          shelf_config_->shelf_translucent_color_darken_alpha());
+          ShelfConfig::Get()->shelf_translucent_color_darken_alpha());
       break;
     case SHELF_BACKGROUND_MAXIMIZED:
-      shelf_target_color =
-          darken_wallpaper(shelf_config_->shelf_opaque_color_darken_alpha());
+      shelf_target_color = darken_wallpaper(
+          ShelfConfig::Get()->shelf_opaque_color_darken_alpha());
       break;
     case SHELF_BACKGROUND_OOBE:
       shelf_target_color = SK_ColorTRANSPARENT;

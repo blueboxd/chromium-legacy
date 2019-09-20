@@ -4,13 +4,13 @@
 
 #include "chrome/browser/page_load_metrics/observers/foreground_duration_ukm_observer.h"
 
-#include "chrome/browser/page_load_metrics/page_load_metrics_test_waiter.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/page_load_metrics/browser/page_load_metrics_test_waiter.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"

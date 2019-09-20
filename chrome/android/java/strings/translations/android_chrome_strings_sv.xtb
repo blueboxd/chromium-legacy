@@ -174,6 +174,7 @@
 <translation id="2154484045852737596">Redigera kortet</translation>
 <translation id="2154710561487035718">Kopiera webbadress</translation>
 <translation id="2156074688469523661">Återstående webbplatser (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="2157851137955077194">Om du vill dela något från telefonen till en annan enhet aktiverar du synkronisering i Chrome-inställningarna på båda enheterna</translation>
 <translation id="2170088579611075216">Tillåt och aktivera VR</translation>
 <translation id="218608176142494674">Delar</translation>
 <translation id="2227444325776770048">Fortsätt som <ph name="USER_FULL_NAME" /></translation>
@@ -602,7 +603,6 @@ Se till att du litar på webbplatsen innan du aktiverar VR.</translation>
 <translation id="545042621069398927">Nedladdningen görs snabbare.</translation>
 <translation id="5456381639095306749">Ladda ned sida</translation>
 <translation id="5475862044948910901">Vill du starta en session med förstärkt verklighet?</translation>
-<translation id="5481942164684849270"><ph name="APP_NAME" /> har lagts till i mina appar</translation>
 <translation id="548278423535722844">Öppna i kartapp</translation>
 <translation id="5487521232677179737">Rensa data</translation>
 <translation id="5494752089476963479">Blockera annonser på webbplatser där påträngande eller vilseledande annonser visas</translation>
@@ -1009,7 +1009,6 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="8364299278605033898">Visa populära webbplatser</translation>
 <translation id="8368027906805972958">Enheten är okänd eller stöds inte (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Tillåt bakgrundssynkronisering för en specifik webbplats.</translation>
-<translation id="8374821112118309944">Du måste uppdatera till en senare version av TalkBack.</translation>
 <translation id="8378714024927312812">Hanteras av organisationen</translation>
 <translation id="8380167699614421159">Påträngande eller vilseledande annonser visas på den här webbplatsen</translation>
 <translation id="8393700583063109961">Skicka meddelande</translation>
@@ -1073,6 +1072,7 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, flik</translation>
 <translation id="885701979325669005">Lagring</translation>
+<translation id="889338405075704026">Öppna Chrome-inställningarna</translation>
 <translation id="8901170036886848654">Inga bokmärken hittades</translation>
 <translation id="8909135823018751308">Dela …</translation>
 <translation id="8912362522468806198">Google-konto</translation>
@@ -1091,6 +1091,7 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="8993760627012879038">Öppna en ny flik i inkognitoläge</translation>
 <translation id="8998729206196772491">Du håller på att logga in med ett konto som hanteras av <ph name="MANAGED_DOMAIN" />, vilket ger administratören kontroll över data i Chrome. Din data kopplas permanent till det här kontot. Om du loggar ut från Chrome raderas all din data från enheten, men den lagras fortfarande i Google-kontot.</translation>
 <translation id="9019902583201351841">Hanteras av dina föräldrar</translation>
+<translation id="9028914725102941583">Aktivera synkronisering om du vill dela mellan enheter</translation>
 <translation id="9029323097866369874">Vill du tillåta att <ph name="DOMAIN" /> aktiverar VR?</translation>
 <translation id="9040142327097499898">Aviseringar tillåts. Plats har inaktiverats på enheten.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}other{# videor}}</translation>

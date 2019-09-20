@@ -94,6 +94,8 @@ class FocusRingManager {
    * @param {!chrome.automation.AutomationNode} scope
    */
   setFocusNodes(primary, scope) {
+    if (this.rings_.size === 0) return;
+
     const focusRect = primary.location;
 
     // If the scope element has not changed, we want to use the previously
@@ -147,6 +149,8 @@ class FocusRingManager {
    * @param {!Array<chrome.accessibilityPrivate.ScreenRect>} rects
    */
   setRing(id, rects) {
+    if (this.rings_.size === 0) return;
+
     this.rings_.get(id).rects = rects;
     this.updateFocusRings_();
   }

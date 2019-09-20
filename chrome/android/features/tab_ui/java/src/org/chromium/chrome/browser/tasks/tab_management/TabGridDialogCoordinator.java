@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
@@ -24,7 +25,7 @@ import java.util.List;
  * {@link TabListCoordinator} as well as the life-cycle of shared component
  * objects.
  */
-public class TabGridDialogCoordinator implements TabGridDialogMediator.ResetHandler {
+public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogController {
     private final String mComponentName;
     private final Context mContext;
     private final TabListCoordinator mTabListCoordinator;
@@ -87,7 +88,7 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.ResetHand
         return thumbnail;
     }
 
-    TabGridDialogMediator.ResetHandler getResetHandler() {
+    TabGridDialogMediator.DialogController getDialogController() {
         return this;
     }
 
@@ -100,5 +101,13 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.ResetHand
     @Override
     public void hideDialog(boolean showAnimation) {
         mMediator.hideDialog(showAnimation);
+    }
+
+    @Override
+    public boolean handleBackPressed() {
+        if (!isVisible()) return false;
+        mMediator.hideDialog(true);
+        RecordUserAction.record("TabGridDialog.Exit");
+        return true;
     }
 }

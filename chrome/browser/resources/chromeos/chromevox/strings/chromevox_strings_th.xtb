@@ -420,7 +420,6 @@
 <translation id="4039983576244166038">ส่วนหัวของแถวว่างเปล่า</translation>
 <translation id="4042843249978639960">ไม่มีส่วนหัวระดับ 2 ถัดไป</translation>
 <translation id="4043348641337972076">ไม่มีจุดสังเกต ARIA ก่อนหน้า</translation>
-<translation id="4045764028670444336">เริ่มคำที่สะกดผิด</translation>
 <translation id="4047216625641135770">เครื่องหมาย</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4053520724192563562">สีเขียวมะนาว</translation>
@@ -503,7 +502,6 @@
 <translation id="4547556996012970016">ส่วนหัวระดับ 5 ถัดไป</translation>
 <translation id="4562381607973973258">ส่วนหัว</translation>
 <translation id="4569941707103739422">กดลูกศรขึ้นหรือลงเพื่อนำทาง แล้วกด Enter เพื่อเปิดใช้งาน</translation>
-<translation id="4570424871453628777">สิ้นสุดคำที่สะกดผิด</translation>
 <translation id="4591507479202817876">, เลือกไว้</translation>
 <translation id="4597532268155981612">ฟอร์ม</translation>
 <translation id="4597896406374528575">เมษายน</translation>
@@ -727,7 +725,6 @@
 <translation id="6037602951055904232">เลื่อนไปข้างหน้า</translation>
 <translation id="6042826534790431634">กด Search+Space เพื่อเปิดใช้งาน</translation>
 <translation id="6044160928851315051">ปิดแสงหน้าจอ</translation>
-<translation id="6065293622157674001">เริ่มข้อผิดพลาดทางไวยากรณ์</translation>
 <translation id="6082768461603900813">การนำทางเบื้องต้น</translation>
 <translation id="6118126368611144850">แอป Android สำหรับ Chrome ถ้าคุณมี Play Store ในอุปกรณ์ ลองใช้ ChromeVox กับแอป Android และลองใช้การสนับสนุนเชิงทดสอบด้วยการดาวน์โหลด Google Chrome Canary จาก Play Store</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -868,7 +865,6 @@
 <translation id="7143207342074048698">กำลังเชื่อมต่อ</translation>
 <translation id="7153618581592392745">ลาเวนเดอร์</translation>
 <translation id="7157306005867877619">บทคัดย่อ</translation>
-<translation id="7161425887892204659">สิ้นสุดข้อความที่ตรงกัน</translation>
 <translation id="7161771961008409533">ปุ่มป๊อปอัป</translation>
 <translation id="7165714724802225287">รูปแบบการแสดงผลปัจจุบันคือข้อความแทรก</translation>
 <translation id="7167657087543110">พูดอักขระ</translation>
@@ -906,7 +902,6 @@
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">ออกจากตาราง</translation>
 <translation id="738899727977260036">สีน้ำเงินอมเทา</translation>
-<translation id="7392145451309930991">เริ่มข้อความที่ตรงกัน</translation>
 <translation id="739763518212184081">บรรทัดก่อนหน้า</translation>
 <translation id="7400575256015741911">ตรวจพบข้อผิดพลาดในการสะกด</translation>
 <translation id="7408482676469142474">ตาราง</translation>
@@ -1119,7 +1114,6 @@
 <translation id="8476408756881832830">หยุดเล่นชั่วคราวเมื่อ ChromeVox กำลังพูด</translation>
 <translation id="8476508772960940536">ภาพรวมหน้าต่าง</translation>
 <translation id="8503360654911991865">ลดความละเอียดในการนำทาง</translation>
-<translation id="8504695234784218301">สิ้นสุดข้อผิดพลาดทางไวยากรณ์</translation>
 <translation id="8520472399088452386">ปุ่มหมุน</translation>
 <translation id="8534394844575788431">การจัดรูปแบบ</translation>
 <translation id="8538744478902126321">เดาส่วนหัวของแถวของเซลล์ปัจจุบัน</translation>

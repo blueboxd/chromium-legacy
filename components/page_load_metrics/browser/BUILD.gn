@@ -1,0 +1,69 @@
+# Copyright 2019 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//testing/test.gni")
+
+source_set("browser") {
+  sources = [
+    "metrics_navigation_throttle.cc",
+    "metrics_navigation_throttle.h",
+    "metrics_web_contents_observer.cc",
+    "metrics_web_contents_observer.h",
+    "page_load_metrics_embedder_interface.h",
+    "page_load_metrics_observer.cc",
+    "page_load_metrics_observer.h",
+    "page_load_metrics_observer_delegate.h",
+    "page_load_metrics_update_dispatcher.cc",
+    "page_load_metrics_update_dispatcher.h",
+    "page_load_metrics_util.cc",
+    "page_load_metrics_util.h",
+    "page_load_tracker.cc",
+    "page_load_tracker.h",
+    "protocol_util.cc",
+    "protocol_util.h",
+    "resource_tracker.cc",
+    "resource_tracker.h",
+  ]
+  deps = [
+    "//components/data_reduction_proxy/core/browser",
+    "//components/page_load_metrics/common",
+    "//components/page_load_metrics/common:page_load_metrics_mojom",
+    "//content/public/browser",
+    "//content/public/common",
+    "//net",
+    "//ui/base",
+  ]
+}
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "page_load_metrics_test_waiter.cc",
+    "page_load_metrics_test_waiter.h",
+  ]
+  deps = [
+    ":browser",
+    "//base",
+    "//components/page_load_metrics/common:page_load_metrics_mojom",
+    "//content/public/browser",
+    "//content/public/common",
+    "//testing/gtest",
+    "//ui/gfx/geometry",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "page_load_metrics_util_unittest.cc",
+    "resource_tracker_unittest.cc",
+  ]
+  deps = [
+    ":browser",
+    "//components/page_load_metrics/common:page_load_metrics_mojom",
+    "//content/public/browser",
+    "//testing/gtest",
+    "//url",
+  ]
+}

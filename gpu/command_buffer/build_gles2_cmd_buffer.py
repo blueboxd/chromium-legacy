@@ -775,7 +775,6 @@ _NAMED_TYPE_INFO = {
   },
   'SamplerParameter': {
     'type': 'GLenum',
-    'is_complete': True,
     'valid': [
       'GL_TEXTURE_MAG_FILTER',
       'GL_TEXTURE_MIN_FILTER',

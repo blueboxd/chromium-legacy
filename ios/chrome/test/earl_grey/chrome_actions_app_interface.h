@@ -23,6 +23,10 @@
 + (id<GREYAction>)longPressElement:(ElementSelector*)selector
                 triggerContextMenu:(BOOL)triggerContextMenu;
 
+// Action to scroll a web element described by the given |selector| to visible
+// on the current web state.
++ (id<GREYAction>)scrollElementToVisible:(ElementSelector*)selector;
+
 // Action to turn the switch of a SettingsSwitchCell to the given |on| state.
 + (id<GREYAction>)turnSettingsSwitchOn:(BOOL)on;
 

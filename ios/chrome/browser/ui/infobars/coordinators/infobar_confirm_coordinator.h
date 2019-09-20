@@ -14,6 +14,7 @@ class ConfirmInfoBarDelegate;
 
 - (instancetype)initWithInfoBarDelegate:
                     (ConfirmInfoBarDelegate*)confirmInfoBarDelegate
+                           badgeSupport:(BOOL)badgeSupport
                                    type:(InfobarType)infobarType
     NS_DESIGNATED_INITIALIZER;
 

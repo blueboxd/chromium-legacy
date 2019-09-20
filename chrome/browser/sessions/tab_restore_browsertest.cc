@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
+#include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/chrome_paths.h"
@@ -924,10 +925,17 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindowWithGroupedTabs) {
   ASSERT_EQ(2u, active_browser_list_->size());
 
   const int tab_count = AddSomeTabs(browser(), 3);
+
   TabGroupId group1 = browser()->tab_strip_model()->AddToNewGroup(
       {tab_count - 3, tab_count - 2});
+  TabGroupVisualData group1_data(base::ASCIIToUTF16("Foo"), SK_ColorRED);
+  browser()->tab_strip_model()->SetVisualDataForGroup(group1, group1_data);
+
   TabGroupId group2 =
       browser()->tab_strip_model()->AddToNewGroup({tab_count - 1});
+  TabGroupVisualData group2_data(base::ASCIIToUTF16("Bar"), SK_ColorBLUE);
+  browser()->tab_strip_model()->SetVisualDataForGroup(group2, group2_data);
+
   CloseBrowserSynchronously(browser());
   ASSERT_EQ(1u, active_browser_list_->size());
 
@@ -945,6 +953,11 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindowWithGroupedTabs) {
   EXPECT_EQ(
       base::make_optional(group2),
       restored_window->tab_strip_model()->GetTabGroupForTab(tab_count - 1));
+
+  EXPECT_EQ(group1_data,
+            *restored_window->tab_strip_model()->GetVisualDataForGroup(group1));
+  EXPECT_EQ(group2_data,
+            *restored_window->tab_strip_model()->GetVisualDataForGroup(group2));
 }
 
 // Ensure tab groups aren't restored if |features::kTabGroups| is disabled.

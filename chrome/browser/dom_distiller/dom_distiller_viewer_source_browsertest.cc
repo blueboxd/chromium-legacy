@@ -209,14 +209,8 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
 
 // The DomDistillerViewerSource renders untrusted content, so ensure no bindings
 // are enabled when requesting to view an arbitrary URL.
-// Flaky on Linux: see http://crbug.com/606040.
-#if defined(OS_LINUX)
-#define MAYBE_NoWebUIBindingsViewUrl DISABLED_NoWebUIBindingsViewUrl
-#else
-#define MAYBE_NoWebUIBindingsViewUrl NoWebUIBindingsViewUrl
-#endif
 IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
-                       MAYBE_NoWebUIBindingsViewUrl) {
+                       NoWebUIBindingsViewUrl) {
   // We should expect distillation for any valid URL.
   expect_distillation_ = true;
   expect_distiller_page_ = true;
@@ -248,14 +242,8 @@ void DomDistillerViewerSourceBrowserTest::ViewSingleDistilledPage(
   EXPECT_EQ(expected_mime_type, contents_after_nav->GetContentsMimeType());
 }
 
-#if defined(OS_LINUX)
-// Flaky on Ubuntu-12.04 bots: https://crbug.com/604362
-#define MAYBE_TestBadUrlErrorPage DISABLED_TestBadUrlErrorPage
-#else
-#define MAYBE_TestBadUrlErrorPage TestBadUrlErrorPage
-#endif
 IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
-                       MAYBE_TestBadUrlErrorPage) {
+                       TestBadUrlErrorPage) {
   GURL url("chrome-distiller://bad");
   ViewSingleDistilledPageAndExpectErrorPage(url);
 }
@@ -300,14 +288,8 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
   ViewSingleDistilledPage(url, "text/css");
 }
 
-#if defined(OS_LINUX)
-// Flaky on Ubuntu-12.04 bots: https://crbug.com/604362
-#define MAYBE_EmptyURLShouldNotCrash DISABLED_EmptyURLShouldNotCrash
-#else
-#define MAYBE_EmptyURLShouldNotCrash EmptyURLShouldNotCrash
-#endif
 IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
-                       MAYBE_EmptyURLShouldNotCrash) {
+                       EmptyURLShouldNotCrash) {
   // This is a bogus URL, so no distillation will happen.
   expect_distillation_ = false;
   expect_distiller_page_ = false;
@@ -549,24 +531,11 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, MultiPageArticle) {
   EXPECT_THAT(result, HasSubstr("Page 2 content"));
 }
 
-// Flaky on Ubuntu-12.04 bots: https://crbug.com/606037
-#if defined(OS_LINUX)
-#define MAYBE_PrefChange DISABLED_PrefChange
-#else
-#define MAYBE_PrefChange PrefChange
-#endif
-IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, MAYBE_PrefChange) {
+IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, PrefChange) {
   PrefTest(false);
 }
 
-#if defined(OS_LINUX)
-// Flaky on Ubuntu-12.04 bots: https://crbug.com/604362
-#define MAYBE_PrefChangeError DISABLED_PrefChangeError
-#else
-#define MAYBE_PrefChangeError PrefChangeError
-#endif
-IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
-                       MAYBE_PrefChangeError) {
+IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, PrefChangeError) {
   PrefTest(true);
 }
 

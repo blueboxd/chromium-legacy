@@ -106,7 +106,8 @@ public final class AwBrowserProcess {
         final boolean ignoreVisibilityForImportance = true;
         ChildProcessCreationParams.set(getWebViewPackageName(), isExternalService,
                 LibraryProcessType.PROCESS_WEBVIEW_CHILD, bindToCaller,
-                ignoreVisibilityForImportance);
+                ignoreVisibilityForImportance, null /* privilegedServicesName */,
+                null /* sandboxedServicesName */);
     }
 
     /**

@@ -420,7 +420,6 @@
 <translation id="4039983576244166038">Kichwa kitupu cha safu mlalo</translation>
 <translation id="4042843249978639960">Hakuna kichwa cha ngazi ya 2 kinachofuata.</translation>
 <translation id="4043348641337972076">Hakuna kivutio cha ARIA kilichotangulia.</translation>
-<translation id="4045764028670444336">Mwanzo wa neno lenye tahajia isiyofaa</translation>
 <translation id="4047216625641135770">Alama</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4053520724192563562">Kijani cha Chokaa</translation>
@@ -503,7 +502,6 @@
 <translation id="4547556996012970016">Kichwa cha ngazi ya 5 kinachofuata</translation>
 <translation id="4562381607973973258">Kichwa</translation>
 <translation id="4569941707103739422">Bonyeza kishale cha juu au cha chini ili usogeze; bonyeza 'enter' ili uwashe.</translation>
-<translation id="4570424871453628777">Mwisho wa neno lenye tahajia isiyofaa</translation>
 <translation id="4591507479202817876">, kimechaguliwa</translation>
 <translation id="4597532268155981612">fomu</translation>
 <translation id="4597896406374528575">Aprili</translation>
@@ -727,7 +725,6 @@
 <translation id="6037602951055904232">Elekeza mbele</translation>
 <translation id="6042826534790431634">Bonyeza Search+Space ili uwashe.</translation>
 <translation id="6044160928851315051">Punguza mwanga kwenye skrini</translation>
-<translation id="6065293622157674001">Mwanzo wa maandishi ya hitilafu ya sarufi</translation>
 <translation id="6082768461603900813">Usogezaji wa Kawaida</translation>
 <translation id="6118126368611144850">Programu za Android za Chrome. Kama una programu ya Duka la Google Play kwenye kifaa chako, angalia toleo la awali la ChromeVox katika programu za Android. Jaribu kutumia jaribio kwa kupakua programu ya Google Chrome Canary kutoka Duka la Google Play.</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -868,7 +865,6 @@ Ili kufungua menyu ya kivinjari cha Chrome, bonyeza Alt+F.</translation>
 <translation id="7143207342074048698">Inaunganisha</translation>
 <translation id="7153618581592392745">Urujuani</translation>
 <translation id="7157306005867877619">Ikisiri</translation>
-<translation id="7161425887892204659">Mwisho wa maandishi yanayolingana</translation>
 <translation id="7161771961008409533">Kitufe cha dirisha ibukizi</translation>
 <translation id="7165714724802225287">Mtindo wa onyesho wa sasa ni wa mchanganyiko.</translation>
 <translation id="7167657087543110">mwangwi wa herufi</translation>
@@ -906,7 +902,6 @@ Ili kufungua menyu ya kivinjari cha Chrome, bonyeza Alt+F.</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Unaondoka katika jedwali.</translation>
 <translation id="738899727977260036">Samawati ya Kijivu</translation>
-<translation id="7392145451309930991">Mwanzo wa maandishi yanayolingana</translation>
 <translation id="739763518212184081">Mstari Uliotangulia</translation>
 <translation id="7400575256015741911">Kosa la tahajia limegunduliwa</translation>
 <translation id="7408482676469142474">jedwali</translation>
@@ -1119,7 +1114,6 @@ Ili kufungua menyu ya kivinjari cha Chrome, bonyeza Alt+F.</translation>
 <translation id="8476408756881832830">Sitisha kucheza ChromeVox inapozungumza</translation>
 <translation id="8476508772960940536">muhtasari wa dirisha</translation>
 <translation id="8503360654911991865">Punguza kiwango cha maelezo unapodurusu</translation>
-<translation id="8504695234784218301">Mwisho wa maandishi yenye kosa la sarufi</translation>
 <translation id="8520472399088452386">Kitufe cha kusokota</translation>
 <translation id="8534394844575788431">Kurekebisha muundo</translation>
 <translation id="8538744478902126321">Kisia kichwa cha safu mlalo ya kisanduku cha sasa</translation>

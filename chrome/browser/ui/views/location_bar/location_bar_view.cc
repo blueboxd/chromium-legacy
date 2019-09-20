@@ -65,7 +65,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/content_settings/core/common/features.h"
-#include "components/dom_distiller/core/dom_distiller_switches.h"
+#include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
@@ -253,9 +253,7 @@ void LocationBarView::Init() {
           PageActionIconType::kNativeFileSystemAccess);
     }
 
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableDomDistiller) &&
-        browser_->is_type_normal()) {
+    if (dom_distiller::IsDomDistillerEnabled() && browser_->is_type_normal()) {
       params.types_enabled.push_back(PageActionIconType::kReaderMode);
     }
 

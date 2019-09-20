@@ -375,6 +375,7 @@
           'idempotent': False,  # https://crbug.com/923426#c27
         },
       },
+      'color_unittests': {},
       'cros_browser_sanity_test': {},
       'crypto_unittests': {},
       'display_unittests': {},
@@ -2283,6 +2284,7 @@
         ],
       },
       'cast_unittests': {},
+      'color_unittests': {},
       'components_browsertests': {},
       'components_unittests': {
         'android_swarming': {
@@ -4050,11 +4052,7 @@
           '--driver-logging',
           '--ignore-default-expectations',
           '--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations',
-          # TODO(crbug.com/984815): Use --isolated-script-test-filter to select
-          # webgpu tests, instead of just the file path, so retries (which just
-          # append the specific test path to the end of this command line) work
-          # correctly instead of also running the whole rest of the test suite.
-          'external/wpt/webgpu/',
+          '--isolated-script-test-filter=external/wpt/webgpu/*',
         ],
         'linux_args': [ '--no-xvfb' ],
         'merge': {
@@ -4077,11 +4075,7 @@
           '--ignore-default-expectations',
           '--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations',
           '-t', 'Release_x64',
-          # TODO(crbug.com/984815): Use --isolated-script-test-filter to select
-          # webgpu tests, instead of just the file path, so retries (which just
-          # append the specific test path to the end of this command line) work
-          # correctly instead of also running the whole rest of the test suite.
-          'external/wpt/webgpu/',
+          '--isolated-script-test-filter=external/wpt/webgpu/*',
         ],
         'merge': {
           'args': [
@@ -4345,6 +4339,9 @@
           'shards': 15,
         },
         'test': 'browser_tests',
+      },
+      'weblayer_browsertests': {
+        'test': 'weblayer_browsertests',
       },
     },
 
@@ -4674,6 +4671,17 @@
           'shards': 2,
         },
         'test': 'content_browsertests',
+      },
+    },
+
+    # Very small set of test that exercise SkiaRenderer and produce pixels.
+    'skia_renderer_gpu_telemetry_tests': {
+      'skia_renderer_screenshot_sync': {
+        'args': [
+          '--dont-restore-color-profile-after-test',
+          '--extra-browser-args=--enable-features=UseSkiaRenderer',
+        ],
+        'telemetry_test_name': 'screenshot_sync',
       },
     },
 
@@ -5463,6 +5471,7 @@
       'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
+      'skia_renderer_gpu_telemetry_tests',
     ],
 
     'gpu_dawn_deps_isolated_scripts': [

@@ -331,6 +331,13 @@ IN_PROC_BROWSER_TEST_F(ArcAppDeferredLauncherBrowserTest,
   aura::Window* const root_window = ash::Shell::GetPrimaryRootWindow();
   ash::ShelfViewTestAPI test_api(
       ash::Shelf::ForWindow(root_window)->GetShelfViewForTesting());
+
+  // In this test, we need the shelf button's bounds. The scrollable shelf
+  // is notified of the added shelf button and layouts its child views
+  // during the bounds animation. So wait for the bounds animation to finish
+  // then get the final bounds of the shelf button.
+  test_api.RunMessageLoopUntilAnimationsDone();
+
   const int item_index =
       controller->shelf_model()->ItemIndexByID(ash::ShelfID(app_id));
   ASSERT_GE(item_index, 0);

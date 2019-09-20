@@ -20,13 +20,56 @@ at the top. This can be helpful for checking which WebView version is installed
 & selected on the device.
 ***
 
-## Working with the shell
+## Building the shell
+
+```sh
+$ autoninja -C out/Default system_webview_shell_apk
+```
+
+## Installing the shell
 
 ```sh
 # Build and install
-$ autoninja -C out/Default system_webview_shell_apk
 $ out/Default/bin/system_webview_shell_apk install
+```
 
+The WebView shell may be preinstalled on a device or emulator. If the signature
+of the locally built shell does not match the preinstalled shell then the
+install will fail &ndash; usually with this error:
+
+```
+...
+path/to/SystemWebViewShell.apk: Failure [INSTALL_FAILED_UPDATE_INCOMPATIBLE:
+Package org.chromium.webview_shell signatures do not match previously installed
+version; ignoring!]
+```
+
+If this occurs then delete the preinstalled WebView shell as so:
+
+*** note
+**Note:** If using the emulator ensure it is being started with the
+`-writable-system` option as per the
+[Writable system partition](docs/android_emulator.md#writable-system-partition)
+instructions.
+***
+
+```sh
+# Remount the /system partition read-write
+$ adb root
+$ adb remount
+# Get the APK path to the WebView shell
+$ adb shell pm path org.chromium.webview_shell
+package:/system/app/Browser2/Browser2.apk
+# Use the APK path above to delete the APK
+$ adb shell rm /system/app/Browser2/Browser2.apk
+# Restart the Android shell to "forget" about the WebView shell
+$ adb shell stop
+$ adb shell start
+```
+
+## Running the shell
+
+```sh
 # Launch a URL from the commandline, or open the app from the app launcher
 $ out/Default/bin/system_webview_shell_apk launch "https://www.google.com/"
 

@@ -5,6 +5,8 @@
 #include "pdf/document_layout.h"
 
 #include "base/logging.h"
+#include "ppapi/cpp/rect.h"
+#include "ppapi/cpp/size.h"
 
 namespace chrome_pdf {
 
@@ -51,31 +53,62 @@ DocumentLayout::DocumentLayout() = default;
 
 DocumentLayout::~DocumentLayout() = default;
 
+void DocumentLayout::SetOptions(const Options& options) {
+  // TODO(kmoon): This is pessimistic, but we still want to consider the layout
+  // dirty for orientation changes, even if the page rects don't change.
+  //
+  // We also probably don't want orientation changes to actually kick in until
+  // the next call to ComputeLayout(). (In practice, we'll call ComputeLayout()
+  // shortly after calling SetOptions().)
+  if (options_.default_page_orientation() !=
+      options.default_page_orientation()) {
+    dirty_ = true;
+  }
+  options_ = options;
+}
+
 void DocumentLayout::ComputeSingleViewLayout(
     const std::vector<pp::Size>& page_sizes) {
-  size_ = {GetWidestPageWidth(page_sizes), 0};
+  pp::Size document_size(GetWidestPageWidth(page_sizes), 0);
 
-  page_layouts_.resize(page_sizes.size());
+  if (page_layouts_.size() != page_sizes.size()) {
+    // TODO(kmoon): May want to do less work when shrinking a layout.
+    page_layouts_.resize(page_sizes.size());
+    dirty_ = true;
+  }
+
   for (size_t i = 0; i < page_sizes.size(); ++i) {
     if (i != 0) {
       // Add space for bottom separator.
-      size_.Enlarge(0, kBottomSeparator);
+      document_size.Enlarge(0, kBottomSeparator);
     }
 
     const pp::Size& page_size = page_sizes[i];
-    pp::Rect page_rect = draw_utils::GetRectForSingleView(page_size, size_);
-    page_layouts_[i].outer_rect = page_rect;
-    page_layouts_[i].inner_rect = InsetRect(page_rect, kSingleViewInsets);
+    pp::Rect page_rect =
+        draw_utils::GetRectForSingleView(page_size, document_size);
+    CopyRectIfModified(page_rect, &page_layouts_[i].outer_rect);
+    CopyRectIfModified(InsetRect(page_rect, kSingleViewInsets),
+                       &page_layouts_[i].inner_rect);
 
-    draw_utils::ExpandDocumentSize(page_size, &size_);
+    draw_utils::ExpandDocumentSize(page_size, &document_size);
+  }
+
+  if (size_ != document_size) {
+    size_ = document_size;
+    dirty_ = true;
   }
 }
 
 void DocumentLayout::ComputeTwoUpViewLayout(
     const std::vector<pp::Size>& page_sizes) {
-  size_ = {GetWidestPageWidth(page_sizes), 0};
+  pp::Size document_size(GetWidestPageWidth(page_sizes), 0);
 
-  page_layouts_.resize(page_sizes.size());
+  if (page_layouts_.size() != page_sizes.size()) {
+    // TODO(kmoon): May want to do less work when shrinking a layout.
+    page_layouts_.resize(page_sizes.size());
+    dirty_ = true;
+  }
+
   for (size_t i = 0; i < page_sizes.size(); ++i) {
     draw_utils::PageInsetSizes page_insets =
         draw_utils::GetPageInsetsForTwoUpView(
@@ -85,22 +118,36 @@ void DocumentLayout::ComputeTwoUpViewLayout(
     pp::Rect page_rect;
     if (i % 2 == 0) {
       page_rect = draw_utils::GetLeftRectForTwoUpView(
-          page_size, {size_.width(), size_.height()});
+          page_size, {document_size.width(), document_size.height()});
     } else {
       page_rect = draw_utils::GetRightRectForTwoUpView(
-          page_size, {size_.width(), size_.height()});
-      size_.Enlarge(0,
-                    std::max(page_size.height(), page_sizes[i - 1].height()));
+          page_size, {document_size.width(), document_size.height()});
+      document_size.Enlarge(
+          0, std::max(page_size.height(), page_sizes[i - 1].height()));
     }
-    page_layouts_[i].outer_rect = page_rect;
-    page_layouts_[i].inner_rect = InsetRect(page_rect, page_insets);
+    CopyRectIfModified(page_rect, &page_layouts_[i].outer_rect);
+    CopyRectIfModified(InsetRect(page_rect, page_insets),
+                       &page_layouts_[i].inner_rect);
   }
 
   if (page_sizes.size() % 2 == 1) {
-    size_.Enlarge(0, page_sizes.back().height());
+    document_size.Enlarge(0, page_sizes.back().height());
   }
 
-  size_.set_width(2 * size_.width());
+  document_size.set_width(2 * document_size.width());
+
+  if (size_ != document_size) {
+    size_ = document_size;
+    dirty_ = true;
+  }
+}
+
+void DocumentLayout::CopyRectIfModified(const pp::Rect& source_rect,
+                                        pp::Rect* destination_rect) {
+  if (*destination_rect != source_rect) {
+    *destination_rect = source_rect;
+    dirty_ = true;
+  }
 }
 
 }  // namespace chrome_pdf

@@ -10,10 +10,10 @@
 
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_embedder_interface.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
+#include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
+#include "components/page_load_metrics/browser/page_load_metrics_embedder_interface.h"
 #include "content/public/browser/media_player_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"

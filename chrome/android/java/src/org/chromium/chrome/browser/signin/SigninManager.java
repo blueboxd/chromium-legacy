@@ -519,7 +519,8 @@ public class SigninManager
         }
 
         // Trigger token requests via native.
-        mIdentityMutator.reloadAccountsFromSystem();
+        mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(
+                mSignInState.mCoreAccountInfo.getId());
 
         if (mSignInState.isInteractive()) {
             // If signin was a user action, record that it succeeded.

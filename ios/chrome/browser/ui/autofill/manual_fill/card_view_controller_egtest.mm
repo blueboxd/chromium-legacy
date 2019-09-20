@@ -41,6 +41,7 @@
 
 using chrome_test_util::CancelButton;
 using chrome_test_util::StaticTextWithAccessibilityLabelId;
+using chrome_test_util::TapWebElementWithId;
 
 namespace {
 
@@ -228,7 +229,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 - (void)testCreditCardsButtonAbsentWhenNoCreditCardsAvailable {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Verify there's no credit card icon.
   [[EarlGrey selectElementWithMatcher:CreditCardIconMatcher()]
@@ -241,7 +242,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Tap on the credit card icon.
   [[EarlGrey selectElementWithMatcher:CreditCardIconMatcher()]
@@ -259,7 +260,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Tap on the credit card icon.
   [[EarlGrey selectElementWithMatcher:CreditCardIconMatcher()]
@@ -281,7 +282,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Tap on the credit card icon.
   [[EarlGrey selectElementWithMatcher:CreditCardIconMatcher()]
@@ -307,7 +308,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Scroll to the right.
   [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
@@ -350,7 +351,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Tap on the credit card icon.
   [[EarlGrey selectElementWithMatcher:CreditCardIconMatcher()]
@@ -378,7 +379,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Scroll to the right.
   [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
@@ -424,7 +425,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Tap on the credit cards icon.
   [[EarlGrey selectElementWithMatcher:CreditCardIconMatcher()]
@@ -456,7 +457,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Tap on the credit cards icon.
   [[EarlGrey selectElementWithMatcher:CreditCardIconMatcher()]
@@ -490,7 +491,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Tap on the credit cards icon.
   [[EarlGrey selectElementWithMatcher:CreditCardIconMatcher()]
@@ -518,7 +519,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Tap on the credit cards icon.
   [[EarlGrey selectElementWithMatcher:CreditCardIconMatcher()]
@@ -526,7 +527,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
   // Tap the second element.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementOtherStuff)];
+      performAction:TapWebElementWithId(kFormElementOtherStuff)];
 
   // Try to scroll.
   [[EarlGrey selectElementWithMatcher:CreditCardTableViewMatcher()]
@@ -539,7 +540,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Tap on the credit cards icon.
   [[EarlGrey selectElementWithMatcher:CreditCardIconMatcher()]
@@ -602,7 +603,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Wait for the accessory icon to appear.
   [GREYKeyboard waitForKeyboardToAppear];
@@ -635,7 +636,7 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
 
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementUsername)];
+      performAction:TapWebElementWithId(kFormElementUsername)];
 
   // Wait for the accessory icon to appear.
   [GREYKeyboard waitForKeyboardToAppear];

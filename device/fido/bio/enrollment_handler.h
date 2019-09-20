@@ -28,6 +28,9 @@ enum class BioEnrollmentStatus {
   kAuthenticatorMissingBioEnrollment,
 };
 
+// BioEnrollmentHandler exercises the CTAP2.1 authenticatorBioEnrollment
+// sub-protocol for enrolling biometric templates on external authenticators
+// supporting internal UV.
 class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
     : public FidoRequestHandlerBase {
  public:
@@ -35,9 +38,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
   using GetPINCallback =
       base::RepeatingCallback<void(int64_t retries,
                                    base::OnceCallback<void(std::string)>)>;
-  using ResponseCallback =
-      base::OnceCallback<void(CtapDeviceResponseCode,
-                              base::Optional<BioEnrollmentResponse>)>;
   using StatusCallback = base::OnceCallback<void(CtapDeviceResponseCode)>;
   using EnumerationCallback = base::OnceCallback<void(
       CtapDeviceResponseCode,
@@ -54,14 +54,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
       FidoDiscoveryFactory* factory);
   ~BioEnrollmentHandler() override;
 
-  // Returns the modality of the authenticator's user verification.
-  // Currently, the only valid modality is fingerprint.
-  void GetModality(ResponseCallback);
-
-  // Returns fingerprint sensor info for the authenticator.
-  // This includes number of required samples to enroll and sensor type.
-  void GetSensorInfo(ResponseCallback);
-
   // Enrolls a new fingerprint template. The user must provide the required
   // number of samples by touching the authenticator's sensor repeatedly.
   // After each sample, or a timeout, |sample_callback| is invoked with the
@@ -71,9 +63,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
   void EnrollTemplate(SampleCallback sample_callback,
                       StatusCallback completion_callback);
 
-  // Cancels an ongoing enrollment, if any, and invokes the callback with
-  // |CtapDeviceResponseCode::kSuccess|.
-  void Cancel(StatusCallback);
+  // Cancels an ongoing enrollment, if any, and invokes the
+  // |completion_callback| passed to EnrollTemplate() with
+  // |CtapDeviceResponseCode::kCtap2ErrKeepAliveCancel|.
+  void CancelEnrollment();
 
   // Requests a map of current enrollments from the authenticator. On success,
   // the callback is invoked with a map from template IDs to human-readable
@@ -89,6 +82,22 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
   void DeleteTemplate(std::vector<uint8_t> template_id, StatusCallback);
 
  private:
+  enum class State {
+    kWaitingForTouch,
+    kGettingRetries,
+    kWaitingForPIN,
+    kGettingEphemeralKey,
+    kGettingPINToken,
+    kReady,
+    kEnrolling,
+    kEnrollingPendingCancel,
+    kCancellingEnrollment,
+    kEnumerating,
+    kRenaming,
+    kDeleting,
+    kFinished,
+  };
+
   // FidoRequestHandlerBase:
   void DispatchRequest(FidoAuthenticator*) override;
   void AuthenticatorRemoved(FidoDiscoveryBase*, FidoAuthenticator*) override;
@@ -102,20 +111,30 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
                           base::Optional<pin::KeyAgreementResponse>);
   void OnHavePINToken(CtapDeviceResponseCode,
                       base::Optional<pin::TokenResponse>);
-  void OnEnrollTemplateFinished(StatusCallback,
-                                CtapDeviceResponseCode,
-                                base::Optional<BioEnrollmentResponse>);
+  void OnEnrollResponse(
+      SampleCallback,
+      StatusCallback,
+      base::Optional<std::vector<uint8_t>> current_template_id,
+      CtapDeviceResponseCode,
+      base::Optional<BioEnrollmentResponse>);
   void OnCancel(StatusCallback,
                 CtapDeviceResponseCode,
                 base::Optional<BioEnrollmentResponse>);
   void OnEnumerateTemplates(EnumerationCallback,
                             CtapDeviceResponseCode,
                             base::Optional<BioEnrollmentResponse>);
-  void OnStatusCallback(StatusCallback,
+  void OnRenameTemplate(StatusCallback,
+                        CtapDeviceResponseCode,
+                        base::Optional<BioEnrollmentResponse>);
+  void OnDeleteTemplate(StatusCallback,
                         CtapDeviceResponseCode,
                         base::Optional<BioEnrollmentResponse>);
 
+  void Finish(BioEnrollmentStatus status);
+
   SEQUENCE_CHECKER(sequence_checker_);
+
+  State state_ = State::kWaitingForTouch;
 
   FidoAuthenticator* authenticator_ = nullptr;
   base::OnceClosure ready_callback_;

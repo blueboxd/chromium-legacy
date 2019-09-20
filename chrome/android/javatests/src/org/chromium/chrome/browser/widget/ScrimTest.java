@@ -12,7 +12,6 @@ import static org.junit.Assert.assertTrue;
 
 import android.support.test.filters.SmallTest;
 import android.view.View;
-import android.view.ViewGroup;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -62,19 +61,9 @@ public class ScrimTest {
         final ChromeTabbedActivity activity = mActivityTestRule.getActivity();
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            ViewGroup coordinator = activity.findViewById(org.chromium.chrome.R.id.coordinator);
-            mBottomSheet = activity.getLayoutInflater()
-                                   .inflate(org.chromium.chrome.R.layout.bottom_sheet, coordinator)
-                                   .findViewById(org.chromium.chrome.R.id.bottom_sheet)
-                                   .findViewById(org.chromium.chrome.R.id.bottom_sheet);
-            mBottomSheet.init(coordinator, activity);
-
+            mSheetController = activity.getBottomSheetController();
+            mBottomSheet = mSheetController.getBottomSheet();
             mScrim = activity.getScrim();
-
-            mSheetController = new BottomSheetController(activity,
-                    activity.getLifecycleDispatcher(), activity.getActivityTabProvider(), mScrim,
-                    mBottomSheet,
-                    activity.getCompositorViewHolder().getLayoutManager().getOverlayPanelManager());
         });
     }
 

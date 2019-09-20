@@ -35,6 +35,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/renderer_host/visual_properties_manager.h"
 #include "content/common/edit_command.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
@@ -443,6 +444,16 @@ class MockRenderWidgetHostOwnerDelegate
                void(const VisualProperties& visual_properties));
 };
 
+class MockRenderWidgetHostVisualPropertiesManager
+    : public VisualPropertiesManager {
+ public:
+  MockRenderWidgetHostVisualPropertiesManager()
+      : VisualPropertiesManager(nullptr) {}
+  MOCK_METHOD2(SendVisualProperties,
+               void(const VisualProperties& visual_properties,
+                    int widget_routing_id));
+};
+
 // RenderWidgetHostTest --------------------------------------------------------
 
 class RenderWidgetHostTest : public testing::Test {
@@ -493,6 +504,8 @@ class RenderWidgetHostTest : public testing::Test {
                                              process_->GetNextRoutingID()));
     // Set up the RenderWidgetHost as being for a main frame.
     host_->set_owner_delegate(&mock_owner_delegate_);
+    host_->BindVisualPropertiesManager(
+        mock_visual_properties_manager_.GetWeakPtr());
     view_.reset(new TestView(host_.get()));
     ConfigureView(view_.get());
     host_->SetView(view_.get());
@@ -702,6 +715,8 @@ class RenderWidgetHostTest : public testing::Test {
   RenderWidgetHostProcess* process_;  // Deleted automatically by the widget.
   std::unique_ptr<MockRenderWidgetHostDelegate> delegate_;
   testing::NiceMock<MockRenderWidgetHostOwnerDelegate> mock_owner_delegate_;
+  testing::NiceMock<MockRenderWidgetHostVisualPropertiesManager>
+      mock_visual_properties_manager_;
   std::unique_ptr<MockRenderWidgetHost> host_;
   std::unique_ptr<TestView> view_;
   std::unique_ptr<display::Screen> screen_;
@@ -737,28 +752,31 @@ class RenderWidgetHostWithSourceTest
 
 TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
   // The initial zoom is 0 so host should not send a sync message
-  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(0);
+  EXPECT_CALL(mock_visual_properties_manager_, SendVisualProperties(_, _))
+      .Times(0);
   delegate_->SetZoomLevel(0);
   EXPECT_FALSE(host_->SynchronizeVisualProperties());
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_visual_properties_manager_);
 
   // The zoom has changed so host should send out a sync message
-  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(1);
+  EXPECT_CALL(mock_visual_properties_manager_, SendVisualProperties(_, _))
+      .Times(1);
   double new_zoom_level = content::ZoomFactorToZoomLevel(0.25);
   delegate_->SetZoomLevel(new_zoom_level);
   EXPECT_TRUE(host_->SynchronizeVisualProperties());
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_NEAR(new_zoom_level, host_->old_visual_properties_->zoom_level, 0.01);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_visual_properties_manager_);
 
   // The initial bounds is the empty rect, so setting it to the same thing
   // shouldn't send the resize message.
-  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(0);
+  EXPECT_CALL(mock_visual_properties_manager_, SendVisualProperties(_, _))
+      .Times(0);
   view_->SetBounds(gfx::Rect());
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_visual_properties_manager_);
 
   // No visual properties ACK if the physical backing gets set, but the view
   // bounds are zero.
@@ -768,18 +786,20 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
 
   // Setting the view bounds to nonzero should send out the notification.
   // but should not expect ack for empty physical backing size.
-  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(1);
+  EXPECT_CALL(mock_visual_properties_manager_, SendVisualProperties(_, _))
+      .Times(1);
   gfx::Rect original_size(0, 0, 100, 100);
   view_->SetBounds(original_size);
   view_->SetMockCompositorViewportPixelSize(gfx::Size());
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(original_size.size(), host_->old_visual_properties_->new_size);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_visual_properties_manager_);
 
   // Setting the bounds and physical backing size to nonzero should send out
   // the notification and expect an ack.
-  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(1);
+  EXPECT_CALL(mock_visual_properties_manager_, SendVisualProperties(_, _))
+      .Times(1);
   view_->ClearMockCompositorViewportPixelSize();
   host_->SynchronizeVisualProperties();
   EXPECT_TRUE(host_->visual_properties_ack_pending_);
@@ -789,7 +809,7 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
   metadata.local_surface_id_allocation = base::nullopt;
   host_->DidUpdateVisualProperties(metadata);
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_visual_properties_manager_);
 
   gfx::Rect second_size(0, 0, 110, 110);
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
@@ -799,77 +819,85 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
 
   // Sending out a new notification should NOT send out a new IPC message since
   // a visual properties ACK is pending.
-  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(0);
+  EXPECT_CALL(mock_visual_properties_manager_, SendVisualProperties(_, _))
+      .Times(0);
   gfx::Rect third_size(0, 0, 120, 120);
   process_->sink().ClearMessages();
   view_->SetBounds(third_size);
   EXPECT_FALSE(host_->SynchronizeVisualProperties());
   EXPECT_TRUE(host_->visual_properties_ack_pending_);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_visual_properties_manager_);
 
   // Send a update that's a visual properties ACK, but for the original_size we
   // sent. Since this isn't the second_size, the message handler should
   // immediately send a new resize message for the new size to the renderer.
-  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(1);
+  EXPECT_CALL(mock_visual_properties_manager_, SendVisualProperties(_, _))
+      .Times(1);
   metadata.viewport_size_in_pixels = original_size.size();
   metadata.local_surface_id_allocation = base::nullopt;
   host_->DidUpdateVisualProperties(metadata);
   EXPECT_TRUE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(third_size.size(), host_->old_visual_properties_->new_size);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_visual_properties_manager_);
 
   // Send the visual properties ACK for the latest size.
-  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(0);
+  EXPECT_CALL(mock_visual_properties_manager_, SendVisualProperties(_, _))
+      .Times(0);
   metadata.viewport_size_in_pixels = third_size.size();
   metadata.local_surface_id_allocation = base::nullopt;
   host_->DidUpdateVisualProperties(metadata);
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(third_size.size(), host_->old_visual_properties_->new_size);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_visual_properties_manager_);
 
   // Now clearing the bounds should send out a notification but we shouldn't
   // expect a visual properties ACK (since the renderer won't ack empty sizes).
   // The message should contain the new size (0x0) and not the previous one that
   // we skipped.
-  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(1);
+  EXPECT_CALL(mock_visual_properties_manager_, SendVisualProperties(_, _))
+      .Times(1);
   view_->SetBounds(gfx::Rect());
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(gfx::Size(), host_->old_visual_properties_->new_size);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_visual_properties_manager_);
 
   // Send a rect that has no area but has either width or height set.
-  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(1);
+  EXPECT_CALL(mock_visual_properties_manager_, SendVisualProperties(_, _))
+      .Times(1);
   view_->SetBounds(gfx::Rect(0, 0, 0, 30));
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(gfx::Size(0, 30), host_->old_visual_properties_->new_size);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_visual_properties_manager_);
 
   // Set the same size again. It should not be sent again.
-  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(0);
+  EXPECT_CALL(mock_visual_properties_manager_, SendVisualProperties(_, _))
+      .Times(0);
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(gfx::Size(0, 30), host_->old_visual_properties_->new_size);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_visual_properties_manager_);
 
   // A different size should be sent again, however.
-  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(1);
+  EXPECT_CALL(mock_visual_properties_manager_, SendVisualProperties(_, _))
+      .Times(1);
   view_->SetBounds(gfx::Rect(0, 0, 0, 31));
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(gfx::Size(0, 31), host_->old_visual_properties_->new_size);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_visual_properties_manager_);
 
   // An invalid LocalSurfaceId should result in no change to the
   // |visual_properties_ack_pending_| bit.
-  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(1);
+  EXPECT_CALL(mock_visual_properties_manager_, SendVisualProperties(_, _))
+      .Times(1);
   view_->SetBounds(gfx::Rect(25, 25));
   view_->InvalidateLocalSurfaceId();
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(gfx::Size(25, 25), host_->old_visual_properties_->new_size);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_visual_properties_manager_);
 }
 
 // Test that a resize event is sent if SynchronizeVisualProperties() is called
@@ -882,35 +910,39 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
   screen_info.orientation_angle = 0;
   screen_info.orientation_type = SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
 
-  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(1);
+  EXPECT_CALL(mock_visual_properties_manager_, SendVisualProperties(_, _))
+      .Times(1);
   view_->SetScreenInfo(screen_info);
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_visual_properties_manager_);
 
   screen_info.orientation_angle = 180;
   screen_info.orientation_type = SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY;
 
-  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(1);
+  EXPECT_CALL(mock_visual_properties_manager_, SendVisualProperties(_, _))
+      .Times(1);
   view_->SetScreenInfo(screen_info);
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_visual_properties_manager_);
 
   screen_info.device_scale_factor = 2.f;
 
-  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(1);
+  EXPECT_CALL(mock_visual_properties_manager_, SendVisualProperties(_, _))
+      .Times(1);
   view_->SetScreenInfo(screen_info);
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_visual_properties_manager_);
 
   // No screen change.
-  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(0);
+  EXPECT_CALL(mock_visual_properties_manager_, SendVisualProperties(_, _))
+      .Times(0);
   view_->SetScreenInfo(screen_info);
   host_->SynchronizeVisualProperties();
   EXPECT_FALSE(host_->visual_properties_ack_pending_);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_visual_properties_manager_);
 }
 
 // Test for crbug.com/25097. If a renderer crashes between a resize and the
@@ -918,13 +950,14 @@ TEST_F(RenderWidgetHostTest, ResizeScreenInfo) {
 // ACK logic.
 TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
   // Setting the bounds to a "real" rect should send out the notification.
-  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(1);
+  EXPECT_CALL(mock_visual_properties_manager_, SendVisualProperties(_, _))
+      .Times(1);
   gfx::Rect original_size(0, 0, 100, 100);
   view_->SetBounds(original_size);
   host_->SynchronizeVisualProperties();
   EXPECT_TRUE(host_->visual_properties_ack_pending_);
   EXPECT_EQ(original_size.size(), host_->old_visual_properties_->new_size);
-  ::testing::Mock::VerifyAndClearExpectations(&mock_owner_delegate_);
+  ::testing::Mock::VerifyAndClearExpectations(&mock_visual_properties_manager_);
 
   // Simulate a renderer crash before the update message. Ensure all the visual
   // properties ACK logic is cleared. Must clear the view first so it doesn't
@@ -1622,7 +1655,8 @@ TEST_F(RenderWidgetHostInitialSizeTest, InitialSize) {
 TEST_F(RenderWidgetHostTest, HideUnthrottlesResize) {
   gfx::Size original_size(100, 100);
   view_->SetBounds(gfx::Rect(original_size));
-  EXPECT_CALL(mock_owner_delegate_, UpdatePageVisualProperties(_)).Times(1);
+  EXPECT_CALL(mock_visual_properties_manager_, SendVisualProperties(_, _))
+      .Times(1);
   EXPECT_TRUE(host_->SynchronizeVisualProperties());
   EXPECT_EQ(original_size, host_->old_visual_properties_->new_size);
   EXPECT_TRUE(host_->visual_properties_ack_pending_);

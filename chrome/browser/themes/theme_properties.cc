@@ -141,21 +141,16 @@ base::Optional<SkColor> GetIncognitoColor(int id) {
   switch (id) {
     case ThemeProperties::COLOR_FRAME:
     case ThemeProperties::COLOR_BACKGROUND_TAB:
-      return color_utils::HSLShift(
-          GetLightModeColor(ThemeProperties::COLOR_FRAME),
-          ThemeProperties::GetDefaultTint(ThemeProperties::TINT_FRAME, true));
+      return gfx::kGoogleGrey900;
     case ThemeProperties::COLOR_FRAME_INACTIVE:
     case ThemeProperties::COLOR_BACKGROUND_TAB_INACTIVE:
-      return color_utils::HSLShift(
-          GetLightModeColor(ThemeProperties::COLOR_FRAME),
-          ThemeProperties::GetDefaultTint(ThemeProperties::TINT_FRAME_INACTIVE,
-                                          true));
+      return gfx::kGoogleGrey800;
     case ThemeProperties::COLOR_DOWNLOAD_SHELF:
     case ThemeProperties::COLOR_STATUS_BUBBLE:
     case ThemeProperties::COLOR_INFOBAR:
     case ThemeProperties::COLOR_TOOLBAR:
     case ThemeProperties::COLOR_NTP_BACKGROUND:
-      return SkColorSetRGB(0x32, 0x36, 0x39);
+      return SkColorSetRGB(0x35, 0x36, 0x3A);
     case ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_FOREGROUND:
       return gfx::kGoogleGrey700;
     case ThemeProperties::COLOR_HOVER_CARD_NO_PREVIEW_BACKGROUND:
@@ -179,7 +174,7 @@ base::Optional<SkColor> GetIncognitoColor(int id) {
     case ThemeProperties::COLOR_OMNIBOX_TEXT:
       return SK_ColorWHITE;
     case ThemeProperties::COLOR_OMNIBOX_BACKGROUND:
-      return SkColorSetRGB(0x28, 0x2C, 0x2F);
+      return gfx::kGoogleGrey900;
     default:
       return base::nullopt;
   }

@@ -421,7 +421,6 @@
 <translation id="4039983576244166038">Нет заголовка для строки</translation>
 <translation id="4042843249978639960">Следующего заголовка второго уровня нет.</translation>
 <translation id="4043348641337972076">Предыдущего ориентира ARIA нет.</translation>
-<translation id="4045764028670444336">Начало неправильного слова</translation>
 <translation id="4047216625641135770">Пометка.</translation>
 <translation id="404803211695627272"><ph name="V1" /> – <ph name="V2" /></translation>
 <translation id="4053520724192563562">Зеленый лайм</translation>
@@ -504,7 +503,6 @@
 <translation id="4547556996012970016">Перейти к следующему заголовку пятого уровня</translation>
 <translation id="4562381607973973258">Заголовок.</translation>
 <translation id="4569941707103739422">Перемещайтесь по меню с помощью стрелок вверх и вниз. Чтобы выбрать команду, нажмите Ввод.</translation>
-<translation id="4570424871453628777">Конец неправильного слова</translation>
 <translation id="4591507479202817876">, выбрано.</translation>
 <translation id="4597532268155981612">форма</translation>
 <translation id="4597896406374528575">апрель</translation>
@@ -728,7 +726,6 @@
 <translation id="6037602951055904232">Перейти вперед</translation>
 <translation id="6042826534790431634">Чтобы активировать элемент, нажмите Поиск + Пробел.</translation>
 <translation id="6044160928851315051">Затемнить экран</translation>
-<translation id="6065293622157674001">Начало грамматической ошибки</translation>
 <translation id="6082768461603900813">Навигация</translation>
 <translation id="6118126368611144850">Теперь ChromeVox поддерживается в приложениях Android. Если на вашем устройстве установлен Play Маркет, скачайте Google Chrome Canary и убедитесь сами.</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -869,7 +866,6 @@
 <translation id="7143207342074048698">Подключение</translation>
 <translation id="7153618581592392745">Бледно-лиловый</translation>
 <translation id="7157306005867877619">Аннотация</translation>
-<translation id="7161425887892204659">Конец совпадающего отрывка</translation>
 <translation id="7161771961008409533">Кнопка-переключатель</translation>
 <translation id="7165714724802225287">Текущий стиль дисплея: чередующийся.</translation>
 <translation id="7167657087543110">Озвучивание символов.</translation>
@@ -907,7 +903,6 @@
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Выход из таблицы.</translation>
 <translation id="738899727977260036">Аспидно-синий</translation>
-<translation id="7392145451309930991">Начало совпадающего отрывка</translation>
 <translation id="739763518212184081">Перейти к предыдущей строке</translation>
 <translation id="7400575256015741911">Найдена орфографическая ошибка</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -1120,7 +1115,6 @@
 <translation id="8476408756881832830">Останавливать его во время чтения ChromeVox</translation>
 <translation id="8476508772960940536">режим обзора</translation>
 <translation id="8503360654911991865">Уменьшить точность навигации</translation>
-<translation id="8504695234784218301">Конец грамматической ошибки</translation>
 <translation id="8520472399088452386">Счетчик</translation>
 <translation id="8534394844575788431">Форматирование</translation>
 <translation id="8538744478902126321">Определить тип данных в заголовке строки текущей ячейки</translation>

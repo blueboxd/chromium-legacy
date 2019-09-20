@@ -36,10 +36,10 @@ class AppListView;
 // animation. While the UI is visible, it monitors things such as app list
 // activation state to auto dismiss the UI.
 class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
-    : public aura::client::FocusChangeObserver,
+    : public ash::PaginationModelObserver,
+      public aura::client::FocusChangeObserver,
       public ui::ImplicitAnimationObserver,
-      public views::WidgetObserver,
-      public ash::PaginationModelObserver {
+      public views::WidgetObserver {
  public:
   // Callback which fills out the passed settings object. Used by
   // UpdateYPositionAndOpacityForHomeLauncher so different callers can do
@@ -121,9 +121,6 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // Called when tablet mode starts and ends.
   void OnTabletModeChanged(bool started);
 
-  // Returns whether home launcher is currently shown.
-  bool home_launcher_shown() const { return home_launcher_shown_; }
-
  private:
   // Sets the app list view and attempts to show it.
   void SetView(AppListView* view);
@@ -136,10 +133,7 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   int64_t GetDisplayId();
 
   void NotifyVisibilityChanged(bool visible, int64_t display_id);
-  void NotifyTargetVisibilityChanged(bool visible);
-  void NotifyHomeLauncherTargetPositionChanged(bool showing,
-                                               int64_t display_id);
-  void NotifyHomeLauncherAnimationComplete(bool shown, int64_t display_id);
+  void NotifyTargetVisibilityChanged(bool visible, int64_t display_id);
 
   // aura::client::FocusChangeObserver overrides:
   void OnWindowFocused(aura::Window* gained_focus,
@@ -178,19 +172,6 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
 
   // Cached bounds of |view_| for snapping back animation after over-scroll.
   gfx::Rect view_bounds_;
-
-  // The last target visibility change.
-  bool last_target_visible_ = false;
-
-  // The last visibility change and its display id.
-  bool last_visible_ = false;
-  int64_t last_display_id_ = display::kInvalidDisplayId;
-
-  // If true, dismiss the app list immediately.
-  bool dismiss_without_animation_ = false;
-
-  // Whether the home launcher is currently shown.
-  bool home_launcher_shown_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterImpl);
 };

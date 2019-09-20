@@ -6,6 +6,7 @@
 #define COMPONENTS_SESSIONS_CORE_TAB_RESTORE_SERVICE_H_
 
 #include <list>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,6 +15,7 @@
 #include "base/time/time.h"
 #include "base/token.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/sessions/core/live_tab_context.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_types.h"
@@ -26,7 +28,6 @@ namespace sessions {
 
 class LiveTab;
 class PlatformSpecificTabData;
-class LiveTabContext;
 class TabRestoreServiceObserver;
 
 // TabRestoreService is responsible for maintaining the most recently closed
@@ -52,7 +53,7 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
   // The type of entry.
   enum Type {
     TAB,
-    WINDOW
+    WINDOW,
   };
 
   struct SESSIONS_EXPORT Entry {
@@ -134,6 +135,9 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
 
     // The tabs that comprised the window, in order.
     std::vector<std::unique_ptr<Tab>> tabs;
+
+    // Tab group data.
+    std::map<base::Token, TabGroupMetadata> tab_groups;
 
     // Index of the selected tab.
     int selected_tab_index = -1;

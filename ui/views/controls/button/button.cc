@@ -302,7 +302,7 @@ bool Button::OnMouseDragged(const ui::MouseEvent& event) {
     const bool should_show_pending =
         should_enter_pushed &&
         button_controller_->notify_action() ==
-            ButtonController::NotifyAction::NOTIFY_ON_RELEASE &&
+            ButtonController::NotifyAction::kOnRelease &&
         !InDrag();
     if (HitTestPoint(event.location())) {
       SetState(should_enter_pushed ? STATE_PRESSED : STATE_HOVERED);

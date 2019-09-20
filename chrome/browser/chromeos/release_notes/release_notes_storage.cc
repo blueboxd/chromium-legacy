@@ -54,6 +54,10 @@ bool ReleaseNotesStorage::ShouldNotify() {
     return false;
   }
 
+  // Only shows notification in stable channel.
+  if (!chrome::GetChannelName().empty())
+    return false;
+
   std::string user_email = profile_->GetProfileUserName();
   if (base::EndsWith(user_email, "@google.com",
                      base::CompareCase::INSENSITIVE_ASCII) ||

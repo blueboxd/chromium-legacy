@@ -34,6 +34,7 @@ class AndroidLiveTabContext : public sessions::LiveTabContext {
   sessions::LiveTab* GetActiveLiveTab() const override;
   bool IsTabPinned(int index) const override;
   base::Optional<base::Token> GetTabGroupForTab(int index) const override;
+  TabGroupMetadata GetTabGroupMetadata(base::Token group) const override;
   const gfx::Rect GetRestoredBounds() const override;
   ui::WindowShowState GetRestoredState() const override;
   std::string GetWorkspace() const override;
@@ -57,6 +58,8 @@ class AndroidLiveTabContext : public sessions::LiveTabContext {
       const sessions::PlatformSpecificTabData* tab_platform_data,
       const std::string& user_agent_override) override;
   void CloseTab() override;
+  void SetTabGroupMetadata(base::Token group,
+                           TabGroupMetadata group_metadata) override;
 
   static LiveTabContext* FindContextForWebContents(
       const content::WebContents* contents);

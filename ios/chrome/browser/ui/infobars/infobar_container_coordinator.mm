@@ -222,7 +222,10 @@
 
   // Present the InfobarBanner, and set the Coordinator and View hierarchies.
   [infobarCoordinator start];
-  infobarCoordinator.badgeDelegate = self.mediator;
+  // Only set the infobarCoordinator's badgeDelegate if it supports a badge. Not
+  // doing so might cause undefined behavior since no badge was added.
+  if (infobarCoordinator.hasBadge)
+    infobarCoordinator.badgeDelegate = self.mediator;
   infobarCoordinator.browserState = self.browserState;
   infobarCoordinator.webState = self.webStateList->GetActiveWebState();
   infobarCoordinator.baseViewController = self.baseViewController;

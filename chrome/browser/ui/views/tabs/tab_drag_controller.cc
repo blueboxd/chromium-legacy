@@ -644,8 +644,15 @@ void TabDragController::InitTabDragData(Tab* tab,
   drag_data->contents = source_context_->GetTabStripModel()->GetWebContentsAt(
       drag_data->source_model_index);
   drag_data->pinned = source_context_->IsTabPinned(tab);
-  drag_data->group_id = source_context_->GetTabStripModel()->GetTabGroupForTab(
-      source_model_index);
+  base::Optional<TabGroupId> tab_group_id =
+      source_context_->GetTabStripModel()->GetTabGroupForTab(
+          source_model_index);
+  if (tab_group_id.has_value()) {
+    drag_data->tab_group_data = TabDragData::TabGroupData{
+        tab_group_id.value(),
+        *source_context_->GetTabStripModel()->GetVisualDataForGroup(
+            tab_group_id.value())};
+  }
 }
 
 void TabDragController::OnWidgetBoundsChanged(views::Widget* widget,
@@ -1679,7 +1686,14 @@ void TabDragController::RevertDragAt(size_t drag_index) {
         (data->pinned ? TabStripModel::ADD_PINNED : 0));
   }
   source_context_->GetTabStripModel()->UpdateGroupForDragRevert(
-      data->source_model_index, data->group_id);
+      data->source_model_index,
+      data->tab_group_data.has_value()
+          ? base::Optional<TabGroupId>{data->tab_group_data.value().group_id}
+          : base::nullopt,
+      data->tab_group_data.has_value()
+          ? base::Optional<TabGroupVisualData>{data->tab_group_data.value()
+                                                   .group_visual_data}
+          : base::nullopt);
 }
 
 void TabDragController::CompleteDrag() {

@@ -17,6 +17,7 @@
 #include "components/autofill/core/browser/payments/credit_card_save_manager.h"
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
+#include "components/autofill/core/browser/payments/upi_vpa_save_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 
 class SaveCardOfferObserver;
@@ -89,13 +90,16 @@ class FormDataImporter {
   // data. If the form contains credit card data already present in a local
   // credit card entry *and* |should_return_local_card| is true, the data is
   // stored into |imported_credit_card| so that we can prompt the user whether
-  // to upload it. Returns |true| if sufficient address or credit card data
+  // to upload it. If the form contains UPI/VPA data and
+  // |credit_card_autofill_enabled| is true, the VPA value will be stored into
+  // |imported_vpa|. Returns |true| if sufficient address or credit card data
   // was found. Exposed for testing.
   bool ImportFormData(const FormStructure& form,
                       bool profile_autofill_enabled,
                       bool credit_card_autofill_enabled,
                       bool should_return_local_card,
-                      std::unique_ptr<CreditCard>* imported_credit_card);
+                      std::unique_ptr<CreditCard>* imported_credit_card,
+                      base::Optional<std::string>* imported_vpa);
 
   // Go through the |form| fields and attempt to extract and import valid
   // address profiles. Returns true on extraction success of at least one
@@ -122,6 +126,10 @@ class FormDataImporter {
   CreditCard ExtractCreditCardFromForm(const FormStructure& form,
                                        bool* hasDuplicateFieldType);
 
+  // Go through the |form| fields and find a UPI/VPA value to import. The return
+  // value will be empty if no VPA was found.
+  base::Optional<std::string> ImportVPA(const FormStructure& form);
+
   // Whether a dynamic change form is imported.
   bool from_dynamic_change_form_ = false;
 
@@ -134,6 +142,9 @@ class FormDataImporter {
 
   // Responsible for managing credit card save flows (local or upload).
   std::unique_ptr<CreditCardSaveManager> credit_card_save_manager_;
+
+  // Responsible for managing UPI/VPA save flows.
+  std::unique_ptr<UpiVpaSaveManager> upi_vpa_save_manager_;
 
   // Responsible for migrating locally saved credit cards to Google Pay.
   std::unique_ptr<LocalCardMigrationManager> local_card_migration_manager_;
@@ -200,6 +211,8 @@ class FormDataImporter {
       ImportFormData_SecondImportResetsCreditCardRecordType);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
                            ImportFormData_TwoAddressesOneCreditCard);
+  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
+                           ImportFormData_DontSetVPAWhenOnlyCreditCardExists);
   FRIEND_TEST_ALL_PREFIXES(
       FormDataImporterTest,
       Metrics_SubmittedServerCardExpirationStatus_FullServerCardMatch);
@@ -221,6 +234,9 @@ class FormDataImporter {
   FRIEND_TEST_ALL_PREFIXES(
       FormDataImporterTest,
       Metrics_SubmittedDifferentServerCardExpirationStatus_EmptyExpirationYear);
+  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest, ImportVPA);
+  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest, ImportVPADisabled);
+  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest, ImportVPAIgnoreNonVPA);
 
   DISALLOW_COPY_AND_ASSIGN(FormDataImporter);
 };

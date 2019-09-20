@@ -39,4 +39,8 @@ struct SharedQuadState {
   int32 sorting_context_id;
 
   bool is_fast_rounded_corner;
+
+  // The y offset by which to skew quads in this layer. For experimental
+  // de-jelly effect.
+  float de_jelly_delta_y;
 };

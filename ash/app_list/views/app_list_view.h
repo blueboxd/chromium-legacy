@@ -260,18 +260,27 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // details, see GetAppListTransitionProgress() documentation.
   static constexpr int kProgressFlagNone = 0;
   static constexpr int kProgressFlagSearchResults = 1;
+  static constexpr int kProgressFlagWithTransform = 1 << 1;
 
   // The progress of app list height transitioning from closed to fullscreen
   // state. [0.0, 1.0] means the progress between closed and peeking state,
   // while [1.0, 2.0] means the progress between peeking and fullscreen state.
   //
   // By default, this calculates progress for drag operation while app list
-  // is AppListState::kApps state. The |flags| argument can be used to amend
-  // this behavior:
+  // is AppListState::kApps state, relative to the current app list view bounds.
+  // The |flags| argument can be used to amend this behavior:
   // *   Use |kProgressFlagNone| for default behavior.
   // *   If |kProgressFlagSearchResult| flag is set, the progress will be
   //     calculated using kHalf state height as baseline. This should be used
   //     when calculating contents layout for search results state.
+  // *   If |kProgressFlagWithTransform| is set, the progress will be calculated
+  //     for the app list height offset by the current app list view transform.
+  //     This should be used when setting up transform animations for views
+  //     whose bounds depend on the app list height - in particular when the
+  //     animation is implemented by setting up target bounds first, and then
+  //     animating view layer transform from one that matches current bounds to
+  //     an identity transform. This flag is needed to properly calculate the
+  //     initial animation transform.
   float GetAppListTransitionProgress(int flags) const;
 
   // Returns the height of app list in fullscreen state.
@@ -338,8 +347,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   bool is_in_drag() const { return is_in_drag_; }
 
-  bool ending_drag() const { return ending_drag_; }
-
   void set_onscreen_keyboard_shown(bool onscreen_keyboard_shown) {
     onscreen_keyboard_shown_ = onscreen_keyboard_shown;
   }
@@ -390,6 +397,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   // Converts |state| to the fullscreen equivalent.
   void ConvertAppListStateToFullscreenEquivalent(ash::AppListViewState* state);
+
+  // Gets the animation duration that transition to |taget_state| should have.
+  base::TimeDelta GetStateTransitionAnimationDuration(
+      ash::AppListViewState target_state);
 
   // Kicks off the proper animation for the state change. If an animation is
   // in progress it will be interrupted.
@@ -460,11 +471,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // |state| and |is_in_drag_|.
   void UpdateAppListBackgroundYPosition(ash::AppListViewState state);
 
-  // Returns whether it should update child views' position and opacity in each
-  // animation frame.
-  bool ShouldUpdateChildViewsDuringAnimation(
-      ash::AppListViewState target_state) const;
-
   AppListViewDelegate* delegate_;    // Weak. Owned by AppListService.
   AppListModel* const model_;        // Not Owned.
   SearchModel* const search_model_;  // Not Owned.
@@ -493,9 +499,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // True if the user is in the process of gesture-dragging on opened app list,
   // or dragging the app list from shelf.
   bool is_in_drag_ = false;
-
-  // Whether the app list view is going through state change due to drag ending.
-  bool ending_drag_ = false;
 
   // Whether the view is being built.
   bool is_building_ = false;
@@ -548,14 +551,6 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   // Records the presentation time for app launcher dragging.
   std::unique_ptr<ash::PresentationTimeRecorder> presentation_time_recorder_;
-
-  // Update child views' position and opacity in each animation frame when it is
-  // true. The padding between child views is affected by the height of
-  // AppListView. In the normal animation, child views' location is only updated
-  // at the end of animation. As a result, the dramatic change in padding leads
-  // to animation jank. However, updating child views in each animation frame is
-  // expensive. So it is only applied in the limited scenarios.
-  bool update_childview_each_frame_ = false;
 
   // If set, the app list config that should be used within the app list view
   // instead of the default instance.

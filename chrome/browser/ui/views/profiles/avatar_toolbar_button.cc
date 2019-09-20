@@ -95,7 +95,7 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
   // Activate on press for left-mouse-button only to mimic other MenuButtons
   // without drag-drop actions (specifically the adjacent browser menu).
   button_controller()->set_notify_action(
-      views::ButtonController::NOTIFY_ON_PRESS);
+      views::ButtonController::NotifyAction::kOnPress);
   set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON);
 
   set_tag(IDC_SHOW_AVATAR_MENU);

@@ -111,6 +111,7 @@ class InfobarContainerCoordinatorTest : public PlatformTest {
         new TestInfoBarDelegate(@"Title");
     coordinator_ = [[InfobarConfirmCoordinator alloc]
         initWithInfoBarDelegate:test_infobar_delegate
+                   badgeSupport:YES
                            type:InfobarType::kInfobarTypeConfirm];
     infobar_delegate_ =
         std::unique_ptr<ConfirmInfoBarDelegate>(test_infobar_delegate);
@@ -154,6 +155,7 @@ class InfobarContainerCoordinatorTest : public PlatformTest {
         new TestInfoBarDelegate(@"Title 2");
     second_coordinator_ = [[InfobarConfirmCoordinator alloc]
         initWithInfoBarDelegate:test_infobar_delegate
+                   badgeSupport:YES
                            type:InfobarType::kInfobarTypePasswordSave];
     std::unique_ptr<ConfirmInfoBarDelegate> infobar_delegate =
         std::unique_ptr<ConfirmInfoBarDelegate>(test_infobar_delegate);
@@ -324,8 +326,6 @@ TEST_F(InfobarContainerCoordinatorTest,
 }
 
 // Tests that the InfobarBanner is dismissed when changing Webstates.
-// TODO(crbug.com/1004514): This test fails due to
-// infobarBannerWasDismissed:forWebState:.
 TEST_F(InfobarContainerCoordinatorTest,
        TestInfobarBannerDismissAtWebStateChange) {
   AddInfobar();
@@ -426,8 +426,6 @@ TEST_F(InfobarContainerCoordinatorTest,
 
 // Tests that the Infobar is dismissed by closing the Webstate before its
 // presentation is completed.
-// TODO(crbug.com/1004514): This test fails due to
-// infobarBannerWasDismissed:forWebState:.
 TEST_F(InfobarContainerCoordinatorTest,
        TestInfobarBannerDismissedClosingWebstate) {
   AddInfobar();
@@ -443,8 +441,6 @@ TEST_F(InfobarContainerCoordinatorTest,
 }
 
 // Tests that the Infobar is dismissed when both the VC and Webstate are closed.
-// TODO(crbug.com/1004514): This test fails due to
-// infobarBannerWasDismissed:forWebState:.
 TEST_F(InfobarContainerCoordinatorTest, TestDismissingAndClosingWebstate) {
   AddInfobar();
   ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
@@ -469,8 +465,6 @@ TEST_F(InfobarContainerCoordinatorTest, TestDismissingAndClosingWebstate) {
 
 // Tests that the Infobar is dismissed when both the VC and Webstate are closed,
 // and there's more than one webstate.
-// TODO(crbug.com/1004514): This test fails due to
-// infobarBannerWasDismissed:forWebState:.
 TEST_F(InfobarContainerCoordinatorTest,
        TestDismissingAndClosingWebstateSecondWebstate) {
   AddInfobar();

@@ -13,7 +13,6 @@
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/base/math_util.h"
-#include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/solid_color_scrollbar_layer.h"
@@ -918,58 +917,6 @@ TEST_F(LayerTest, CheckSetNeedsDisplayCausesCorrectBehavior) {
   EXPECT_TRUE(LayerNeedsDisplay(test_layer.get()));
 }
 
-TEST_F(LayerTest, TestSettingMainThreadScrollingReason) {
-  scoped_refptr<Layer> test_layer = Layer::Create();
-  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1,
-                                  layer_tree_host_->SetRootLayer(test_layer));
-  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetIsDrawable(true));
-
-  // sanity check of initial test condition
-  EXPECT_FALSE(LayerNeedsDisplay(test_layer.get()));
-
-  uint32_t reasons = 0, reasons_to_clear = 0, reasons_after_clearing = 0;
-  reasons |= MainThreadScrollingReason::kThreadedScrollingDisabled;
-  reasons |= MainThreadScrollingReason::kHandlingScrollFromMainThread;
-  reasons |= MainThreadScrollingReason::kScrollbarScrolling;
-
-  reasons_to_clear |= MainThreadScrollingReason::kHandlingScrollFromMainThread;
-
-  reasons_after_clearing |=
-      MainThreadScrollingReason::kThreadedScrollingDisabled;
-  reasons_after_clearing |= MainThreadScrollingReason::kScrollbarScrolling;
-
-  // Check that the reasons are added correctly.
-  EXPECT_SET_NEEDS_COMMIT(
-      1, test_layer->AddMainThreadScrollingReasons(
-             MainThreadScrollingReason::kThreadedScrollingDisabled));
-  EXPECT_SET_NEEDS_COMMIT(
-      1, test_layer->AddMainThreadScrollingReasons(
-             MainThreadScrollingReason::kHandlingScrollFromMainThread));
-  EXPECT_SET_NEEDS_COMMIT(1,
-                          test_layer->AddMainThreadScrollingReasons(
-                              MainThreadScrollingReason::kScrollbarScrolling));
-  EXPECT_EQ(reasons, test_layer->GetMainThreadScrollingReasons());
-
-  // Check that the reasons can be selectively cleared.
-  EXPECT_SET_NEEDS_COMMIT(
-      1, test_layer->ClearMainThreadScrollingReasons(reasons_to_clear));
-  EXPECT_EQ(reasons_after_clearing,
-            test_layer->GetMainThreadScrollingReasons());
-
-  // Check that clearing non-set reasons doesn't set needs commit.
-  reasons_to_clear = 0;
-  reasons_to_clear |= MainThreadScrollingReason::kFrameOverlay;
-  EXPECT_SET_NEEDS_COMMIT(
-      0, test_layer->ClearMainThreadScrollingReasons(reasons_to_clear));
-  EXPECT_EQ(reasons_after_clearing,
-            test_layer->GetMainThreadScrollingReasons());
-
-  // Check that adding an existing condition doesn't set needs commit.
-  EXPECT_SET_NEEDS_COMMIT(
-      0, test_layer->AddMainThreadScrollingReasons(
-             MainThreadScrollingReason::kThreadedScrollingDisabled));
-}
-
 TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
   scoped_refptr<Layer> test_layer = Layer::Create();
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1,
@@ -1002,9 +949,6 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetUserScrollable(true, false));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetScrollOffset(
       gfx::ScrollOffset(10, 10)));
-  EXPECT_SET_NEEDS_COMMIT(
-      1, test_layer->AddMainThreadScrollingReasons(
-             MainThreadScrollingReason::kThreadedScrollingDisabled));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetNonFastScrollableRegion(
       Region(gfx::Rect(1, 1, 2, 2))));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetTransform(

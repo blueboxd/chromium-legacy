@@ -731,13 +731,13 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
 
 #promo {
   bottom: 16px;
-  display: none;
   left: 0;
   pointer-events: none;
   position: fixed;
   right: 0;
   text-align: center;
   transition: bottom 400ms;
+  visibility: hidden;
 }
 
 #promo.float-down {
@@ -776,18 +776,6 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
   }
 }
 
-/**
- * Hide the promo if the window is too small:
- * max-width = promo.max-width (505px) + 2 * edit gear icon (16px + 28px + 8px)
- * max-height = ntp-contents.max-height (628px) + promo div height (16px + 22px)
- */
-@media only screen and (max-width: 609px),
-            screen and (max-height: 666px)  {
-  #promo > div {
-    display: none;
-  }
-}
-
 #promo > div > a {
   color: rgb(51, 103, 214) !important;
   text-decoration: none;
@@ -818,8 +806,7 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
   }
 }
 
-#one-google.show-element,
-#promo.show-element {
+#one-google.show-element {
   display: block;
 }
 

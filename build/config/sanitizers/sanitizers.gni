@@ -117,15 +117,6 @@ declare_args() {
   archive_seed_corpus = true
 }
 
-declare_args() {
-  # Use dynamic libraries instrumented by one of the sanitizers instead of the
-  # standard system libraries. Set this flag to download prebuilt binaries from
-  # GCS.
-  # TODO(thakis): Stop setting this in bot configs, then stop making this
-  # an arg. It should be set exactly when is_msan is on.
-  use_prebuilt_instrumented_libraries = is_msan
-}
-
 # Disable sanitizers for non-default toolchains.
 if (current_toolchain != default_toolchain) {
   is_asan = false
@@ -146,13 +137,15 @@ if (current_toolchain != default_toolchain) {
   use_cfi_diag = false
   use_cfi_recover = false
   use_libfuzzer = false
-  use_prebuilt_instrumented_libraries = false
   use_locally_built_instrumented_libraries = false
   use_sanitizer_coverage = false
 }
 
-assert(is_msan == use_prebuilt_instrumented_libraries,
-       "msan requires using instrumented libraries, but nothing else does")
+# Use dynamic libraries instrumented by one of the sanitizers instead of the
+# standard system libraries. We have instrumented system libraries for msan,
+# which requires them to prevent false positives.
+# TODO(thakis): Maybe remove this variable.
+use_prebuilt_instrumented_libraries = is_msan
 
 # Whether we are doing a fuzzer build. Normally this should be checked instead
 # of checking "use_libfuzzer || use_afl" because often developers forget to

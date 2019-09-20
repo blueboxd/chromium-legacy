@@ -12,7 +12,7 @@
 #include "base/time/time.h"
 #include "chrome/android/chrome_jni_headers/PageLoadMetrics_jni.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
+#include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "services/network/public/cpp/network_quality_tracker.h"

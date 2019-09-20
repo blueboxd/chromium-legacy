@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.history.HistoryPage;
@@ -357,6 +358,7 @@ public class VrBrowserControllerInputTest {
      * Verifies that swiping up/down on the Daydream controller's touchpad
      * scrolls a native page while in the VR browser.
      */
+    @DisabledTest(message = "crbug.com/1005835")
     @Test
     @MediumTest
     public void testControllerScrollingNative() throws InterruptedException {

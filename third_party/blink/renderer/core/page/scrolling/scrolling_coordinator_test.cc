@@ -118,12 +118,6 @@ class ScrollingCoordinatorTest
         WebString::FromUTF8(file_name));
   }
 
-  cc::Layer* GetRootScrollLayer() {
-    GraphicsLayer* layer =
-        GetFrame()->View()->LayoutViewport()->LayerForScrolling();
-    return layer ? layer->CcLayer() : nullptr;
-  }
-
   WebViewImpl* GetWebView() const { return helper_.GetWebView(); }
   LocalFrame* GetFrame() const { return helper_.LocalMainFrame()->GetFrame(); }
   frame_test_helpers::TestWebWidgetClient* GetWidgetClient() const {
@@ -131,6 +125,14 @@ class ScrollingCoordinatorTest
   }
 
   void LoadAhem() { helper_.LoadAhem(); }
+
+  bool HasMainThreadScrollingReasons(const GraphicsLayer& layer) const {
+    const auto* scroll = layer.GetPropertyTreeState()
+                             .Transform()
+                             .NearestScrollTranslationNode()
+                             .ScrollNode();
+    return scroll->GetMainThreadScrollingReasons();
+  }
 
  protected:
   std::string base_url_;
@@ -158,10 +160,11 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingByDefault) {
       frame_view));
 
   // Fast scrolling should be enabled by default.
-  cc::Layer* root_scroll_layer = GetRootScrollLayer();
-  ASSERT_TRUE(root_scroll_layer);
-  ASSERT_TRUE(root_scroll_layer->scrollable());
-  ASSERT_FALSE(root_scroll_layer->GetMainThreadScrollingReasons());
+  const auto& root_scroll_graphics_layer =
+      *GetFrame()->View()->LayoutViewport()->LayerForScrolling();
+  EXPECT_FALSE(HasMainThreadScrollingReasons(root_scroll_graphics_layer));
+  EXPECT_TRUE(root_scroll_graphics_layer.CcLayer()->scrollable());
+
   ASSERT_EQ(cc::EventListenerProperties::kNone,
             GetWidgetClient()->EventListenerProperties(
                 cc::EventListenerClass::kTouchStartOrMove));
@@ -169,10 +172,11 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingByDefault) {
             GetWidgetClient()->EventListenerProperties(
                 cc::EventListenerClass::kMouseWheel));
 
-  cc::Layer* inner_viewport_scroll_layer =
-      page->GetVisualViewport().ScrollLayer()->CcLayer();
-  ASSERT_TRUE(inner_viewport_scroll_layer->scrollable());
-  ASSERT_FALSE(inner_viewport_scroll_layer->GetMainThreadScrollingReasons());
+  const auto& inner_viewport_scroll_graphics_layer =
+      *page->GetVisualViewport().ScrollLayer();
+  EXPECT_FALSE(
+      HasMainThreadScrollingReasons(inner_viewport_scroll_graphics_layer));
+  EXPECT_TRUE(inner_viewport_scroll_graphics_layer.CcLayer()->scrollable());
 }
 
 TEST_P(ScrollingCoordinatorTest, fastFractionalScrollingDiv) {
@@ -214,10 +218,9 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForFixedPosition) {
   NavigateTo(base_url_ + "fixed-position.html");
   ForceFullCompositingUpdate();
 
-  // Fixed position should not fall back to main thread scrolling.
-  cc::Layer* root_scroll_layer = GetRootScrollLayer();
-  ASSERT_TRUE(root_scroll_layer);
-  ASSERT_FALSE(root_scroll_layer->GetMainThreadScrollingReasons());
+  const auto& root_scroll_layer =
+      *GetFrame()->View()->LayoutViewport()->LayerForScrolling();
+  EXPECT_FALSE(HasMainThreadScrollingReasons(root_scroll_layer));
 }
 
 // Sticky constraints are stored on transform property tree nodes.
@@ -234,9 +237,9 @@ TEST_P(ScrollingCoordinatorTest, fastScrollingForStickyPosition) {
   ForceFullCompositingUpdate();
 
   // Sticky position should not fall back to main thread scrolling.
-  cc::Layer* root_scroll_layer = GetRootScrollLayer();
-  ASSERT_TRUE(root_scroll_layer);
-  EXPECT_FALSE(root_scroll_layer->GetMainThreadScrollingReasons());
+  const auto& root_scroll_layer =
+      *GetFrame()->View()->LayoutViewport()->LayerForScrolling();
+  EXPECT_FALSE(HasMainThreadScrollingReasons(root_scroll_layer));
 
   Document* document = GetFrame()->GetDocument();
   {
@@ -455,9 +458,10 @@ TEST_P(ScrollingCoordinatorTest, clippedBodyTest) {
   NavigateTo(base_url_ + "clipped-body.html");
   ForceFullCompositingUpdate();
 
-  cc::Layer* root_scroll_layer = GetRootScrollLayer();
-  ASSERT_TRUE(root_scroll_layer);
-  EXPECT_TRUE(root_scroll_layer->non_fast_scrollable_region().IsEmpty());
+  const auto* root_scroll_layer =
+      GetFrame()->View()->LayoutViewport()->LayerForScrolling();
+  EXPECT_TRUE(
+      root_scroll_layer->CcLayer()->non_fast_scrollable_region().IsEmpty());
 }
 
 TEST_P(ScrollingCoordinatorTest, touchAction) {

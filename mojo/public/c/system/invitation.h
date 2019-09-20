@@ -88,6 +88,20 @@ typedef uint32_t MojoInvitationTransportType;
 #define MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL_SERVER \
   ((MojoInvitationTransportType)1)
 
+// Similar to CHANNEL transport. Normally with a CHANNEL transport, the inviting
+// client sends a secondary sync channel to the invited client, and the invited
+// client synchronously waits for this before it can accept the invitation.
+//
+// With this transport type, the invited client creates its own sync channel and
+// sends the remote endpoint to the inviting client to be passed along to the
+// broker. This allows acceptance of incoming invitations to avoid blocking
+// operations, making both sides of the channel initialization process fully
+// asynchronous.
+//
+// Not supported in all platform sandbox configurations.
+#define MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL_ASYNC \
+  ((MojoInvitationTransportType)2)
+
 // A transport endpoint over which an invitation may be sent or received via
 // |MojoSendInvitation()| or |MojoAcceptInvitation()| respectively.
 struct MOJO_ALIGNAS(8) MojoInvitationTransportEndpoint {

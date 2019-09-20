@@ -312,13 +312,13 @@ bool BaseArena::LazySweepWithDeadline(base::TimeTicks deadline) {
   // Platform::current()->monotonicallyIncreasingTimeSeconds() per page (i.e.,
   // 128 KB sweep or one LargeObject sweep), so we check the deadline per 10
   // pages.
-  static const int kDeadlineCheckInterval = 10;
+  static constexpr size_t kDeadlineCheckInterval = 10;
 
   CHECK(GetThreadState()->IsSweepingInProgress());
   DCHECK(GetThreadState()->SweepForbidden());
   DCHECK(ScriptForbiddenScope::IsScriptForbidden());
 
-  int page_count = 1;
+  size_t page_count = 1;
   // TODO(bikineev): We should probably process pages in the reverse order. This
   // will leave more work for concurrent sweeper and reduce memory footprint
   // faster.
@@ -370,10 +370,18 @@ void BaseArena::InvokeFinalizersOnSweptPages() {
   }
 }
 
-void BaseArena::SweepOnConcurrentThread() {
+bool BaseArena::ConcurrentSweepWithDeadline(base::TimeTicks deadline) {
+  static constexpr size_t kDeadlineCheckInterval = 10;
+  size_t page_count = 1;
   while (BasePage* page = unswept_pages_.PopLocked()) {
     SweepUnsweptPageOnConcurrentThread(page);
+    if (page_count % kDeadlineCheckInterval == 0 &&
+        deadline <= base::TimeTicks::Now()) {
+      return SweepingCompleted();
+    }
+    ++page_count;
   }
+  return true;
 }
 
 void BaseArena::CompleteSweep() {

@@ -301,10 +301,6 @@ extern const char kToolbarContainerDescription[];
 extern const char kToolbarNewTabButtonName[];
 extern const char kToolbarNewTabButtonDescription[];
 
-// Title and description for the flag to enable the unified consent.
-extern const char kUnifiedConsentName[];
-extern const char kUnifiedConsentDescription[];
-
 // Title and description for the flag to enable the ddljson Doodle API.
 extern const char kUseDdljsonApiName[];
 extern const char kUseDdljsonApiDescription[];

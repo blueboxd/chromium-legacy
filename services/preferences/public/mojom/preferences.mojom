@@ -45,7 +45,7 @@ interface PrefStoreObserver {
 // store and a handle to receive notifications on.
 struct PrefStoreConnection {
   // Handle to receive updates on.
-  PrefStoreObserver& observer;
+  pending_receiver<PrefStoreObserver> observer;
 
   // Initial values of the PrefStore. These will not be communicated through
   // OnPrefChanged.
@@ -72,7 +72,7 @@ struct PersistentPrefStoreConnection {
   };
 
   PrefStoreConnection? pref_store_connection;
-  PersistentPrefStore? pref_store;
+  pending_remote<PersistentPrefStore>? pref_store;
   ReadError read_error;
   bool read_only;
 };
@@ -192,7 +192,7 @@ struct TrackedPersistentPrefStoreConfiguration {
   string registry_seed;
   mojo_base.mojom.String16 registry_path;
   TrackedPreferenceValidationDelegate? validation_delegate;
-  ResetOnLoadObserver? reset_on_load_observer;
+  pending_remote<ResetOnLoadObserver>? reset_on_load_observer;
 };
 
 struct TrackedPreferenceMetadata {

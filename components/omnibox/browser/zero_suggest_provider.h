@@ -45,8 +45,8 @@ class PrefRegistrySyncable;
 // omnibox text and suggestions.
 class ZeroSuggestProvider : public BaseSearchProvider {
  public:
-  // Fixed parameter values corresponding to each possible ZeroSuggestVariant,
-  // which also corresponds to each ZeroSuggestProvider::ResultType.
+  // ZeroSuggestVariant field trial param values corresponding to each
+  // ZeroSuggestProvider::ResultType.
   // Public for testing.
   static const char kNoneVariant[];
   static const char kRemoteNoUrlVariant[];

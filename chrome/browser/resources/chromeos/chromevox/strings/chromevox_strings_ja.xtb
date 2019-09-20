@@ -421,7 +421,6 @@
 <translation id="4039983576244166038">行見出しが空です</translation>
 <translation id="4042843249978639960">次のレベル 2 見出しはありません。</translation>
 <translation id="4043348641337972076">前の ARIA ランドマークはありません。</translation>
-<translation id="4045764028670444336">スペルミスの先頭</translation>
 <translation id="4047216625641135770">マーク</translation>
 <translation id="404803211695627272"><ph name="V1" />～<ph name="V2" /></translation>
 <translation id="4053520724192563562">ライムグリーン</translation>
@@ -504,7 +503,6 @@
 <translation id="4547556996012970016">次のレベル 5 見出し</translation>
 <translation id="4562381607973973258">見出し</translation>
 <translation id="4569941707103739422">上または下矢印キーで移動し、Enter キーで有効にします。</translation>
-<translation id="4570424871453628777">スペルミスの末尾</translation>
 <translation id="4591507479202817876">、選択済み</translation>
 <translation id="4597532268155981612">フォーム</translation>
 <translation id="4597896406374528575">4 月</translation>
@@ -728,7 +726,6 @@
 <translation id="6037602951055904232">前方にパンします</translation>
 <translation id="6042826534790431634">検索+スペースキーで有効にします。</translation>
 <translation id="6044160928851315051">画面表示をオフにする</translation>
-<translation id="6065293622157674001">文法ミスの先頭</translation>
 <translation id="6082768461603900813">基本的な操作</translation>
 <translation id="6118126368611144850">Chrome 用 Android アプリ。お使いのデバイスに Play ストアがインストールされている場合は、Android アプリで ChromeVox をお試しいただけます。Play ストアから Google Chrome Canary をダウンロードして、試験的にサポートされている機能をご利用ください。</translation>
 <translation id="611827076493383239">アクセス済み</translation>
@@ -869,7 +866,6 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="7143207342074048698">接続中</translation>
 <translation id="7153618581592392745">ラベンダー</translation>
 <translation id="7157306005867877619">概要</translation>
-<translation id="7161425887892204659">テキスト一致の末尾</translation>
 <translation id="7161771961008409533">ポップアップ ボタン</translation>
 <translation id="7165714724802225287">現在の表示スタイルは交互です。</translation>
 <translation id="7167657087543110">文字読み上げ</translation>
@@ -907,7 +903,6 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="737396357417333429">クリック可能</translation>
 <translation id="7374104575779636480">表から移動します。</translation>
 <translation id="738899727977260036">スレートブルー</translation>
-<translation id="7392145451309930991">テキスト一致の先頭</translation>
 <translation id="739763518212184081">前の行</translation>
 <translation id="7400575256015741911">スペルミスが見つかりました</translation>
 <translation id="7408482676469142474">表</translation>
@@ -1120,7 +1115,6 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="8476408756881832830">ChromeVox の読み上げ中は再生を一時停止する</translation>
 <translation id="8476508772960940536">ウィンドウ概観</translation>
 <translation id="8503360654911991865">一度に移動する単位を大きくする</translation>
-<translation id="8504695234784218301">文法ミスの末尾</translation>
 <translation id="8520472399088452386">スピンボタン</translation>
 <translation id="8534394844575788431">書式設定</translation>
 <translation id="8538744478902126321">現在のセルの行見出しを推測</translation>

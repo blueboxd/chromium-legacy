@@ -420,7 +420,6 @@
 <translation id="4039983576244166038">Порожній заголовок рядка</translation>
 <translation id="4042843249978639960">Немає наступного заголовка рівня 2.</translation>
 <translation id="4043348641337972076">Немає попереднього орієнтира ARIA.</translation>
-<translation id="4045764028670444336">Початок тексту з орфографічною помилкою</translation>
 <translation id="4047216625641135770">Виділений текст</translation>
 <translation id="404803211695627272"><ph name="V1" /> – <ph name="V2" /></translation>
 <translation id="4053520724192563562">Лимонно-зелений</translation>
@@ -503,7 +502,6 @@
 <translation id="4547556996012970016">Наступний заголовок рівня 5</translation>
 <translation id="4562381607973973258">Заголовок</translation>
 <translation id="4569941707103739422">Натискайте стрілки вгору чи вниз для навігації; натисніть Enter, щоб активувати.</translation>
-<translation id="4570424871453628777">Кінець тексту з орфографічною помилкою</translation>
 <translation id="4591507479202817876">, вибрано</translation>
 <translation id="4597532268155981612">форма</translation>
 <translation id="4597896406374528575">квітень</translation>
@@ -727,7 +725,6 @@
 <translation id="6037602951055904232">На задній план</translation>
 <translation id="6042826534790431634">Натисніть клавішу пошуку та пробіл, щоб активувати.</translation>
 <translation id="6044160928851315051">Дезактивувати екран</translation>
-<translation id="6065293622157674001">Початок тексту з граматичною помилкою</translation>
 <translation id="6082768461603900813">Основна навігація</translation>
 <translation id="6118126368611144850">Додатки Android для Chrome. Якщо на вашому пристрої встановлено Play Маркет, спробуйте експериментальну функцію ChromeVox із додатками Android. Завантажте Google Chrome Canary з Play Маркету.</translation>
 <translation id="611827076493383239">натиснуто</translation>
@@ -868,7 +865,6 @@
 <translation id="7143207342074048698">Під’єднання</translation>
 <translation id="7153618581592392745">Лавандовий</translation>
 <translation id="7157306005867877619">Автореферат</translation>
-<translation id="7161425887892204659">Кінець збігу в тексті</translation>
 <translation id="7161771961008409533">Кнопка зі спливаючою підказкою</translation>
 <translation id="7165714724802225287">Поточний стиль дисплея – чергування.</translation>
 <translation id="7167657087543110">озвучення символів</translation>
@@ -906,7 +902,6 @@
 <translation id="737396357417333429">інтерактивний елемент</translation>
 <translation id="7374104575779636480">Вихід із таблиці.</translation>
 <translation id="738899727977260036">Грифельно-синій</translation>
-<translation id="7392145451309930991">Початок збігу в тексті</translation>
 <translation id="739763518212184081">Попередній рядок</translation>
 <translation id="7400575256015741911">Виявлено орфографічну помилку</translation>
 <translation id="7408482676469142474">таблиця</translation>
@@ -1119,7 +1114,6 @@
 <translation id="8476408756881832830">Призупиняти відтворення, коли ChromeVox зчитує з екрана</translation>
 <translation id="8476508772960940536">огляд вікна</translation>
 <translation id="8503360654911991865">Зменшити деталізацію навігації</translation>
-<translation id="8504695234784218301">Кінець тексту з граматичною помилкою</translation>
 <translation id="8520472399088452386">Кнопка обертання</translation>
 <translation id="8534394844575788431">Форматування</translation>
 <translation id="8538744478902126321">Зробити припущення щодо заголовка рядка поточної клітинки</translation>

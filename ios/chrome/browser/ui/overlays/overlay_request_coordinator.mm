@@ -13,6 +13,14 @@
 
 @implementation OverlayRequestCoordinator
 
+- (void)dealloc {
+  // ChromeCoordinator's |-dealloc| calls |-stop|, which defaults to an animated
+  // dismissal.  OverlayRequestCoordinators should instead stop without
+  // animation so that the OverlayRequestCoordinatorDelegate can be notified of
+  // the dismissal immediately.
+  [self stopAnimated:NO];
+}
+
 + (BOOL)supportsRequest:(OverlayRequest*)request {
   return NO;
 }

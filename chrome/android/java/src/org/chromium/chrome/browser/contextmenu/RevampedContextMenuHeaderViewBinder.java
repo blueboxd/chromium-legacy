@@ -7,12 +7,12 @@ package org.chromium.chrome.browser.contextmenu;
 import android.graphics.Bitmap;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
-import org.chromium.ui.widget.RoundedCornerImageView;
 
 class RevampedContextMenuHeaderViewBinder {
     public static void bind(PropertyModel model, View view, PropertyKey propertyKey) {
@@ -49,9 +49,7 @@ class RevampedContextMenuHeaderViewBinder {
         } else if (propertyKey == RevampedContextMenuHeaderProperties.IMAGE) {
             Bitmap bitmap = model.get(RevampedContextMenuHeaderProperties.IMAGE);
             if (bitmap != null) {
-                RoundedCornerImageView imageView = view.findViewById(R.id.menu_header_image);
-                // Clear the loading background color now that we have the real image.
-                imageView.setRoundedFillColor(android.R.color.transparent);
+                ImageView imageView = view.findViewById(R.id.menu_header_image);
                 imageView.setImageBitmap(bitmap);
             }
         } else if (propertyKey == RevampedContextMenuHeaderProperties.CIRCLE_BG_VISIBLE) {

@@ -235,7 +235,6 @@ struct SpdySessionDependencies {
   bool enable_websocket_over_http2;
   base::Optional<SpdySessionPool::GreasedHttp2Frame> greased_http2_frame;
   NetLog* net_log;
-  bool http_09_on_non_default_ports_enabled;
   bool disable_idle_sockets_close_on_memory_pressure;
   bool enable_early_data;
   HttpAuthPreferences::DefaultCredentials allow_default_credentials;

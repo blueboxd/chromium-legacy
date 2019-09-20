@@ -29,6 +29,7 @@
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_access_delegate.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_monster_change_dispatcher.h"
 #include "net/cookies/cookie_store.h"
@@ -190,6 +191,10 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // The default list of schemes the cookie monster can handle.
   static const char* const kDefaultCookieableSchemes[];
   static const int kDefaultCookieableSchemesCount;
+
+  // Take ownership of a CookieAccessDelegate.
+  void SetCookieAccessDelegate(
+      std::unique_ptr<CookieAccessDelegate> delegate) override;
 
   void DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
                        const std::string& parent_absolute_name) const override;
@@ -617,6 +622,11 @@ class NET_EXPORT CookieMonster : public CookieStore {
   base::Time last_statistic_record_time_;
 
   bool persist_session_cookies_;
+
+  // Used to determine whether a particular cookie should be subject to legacy
+  // or non-legacy access semantics.
+  // TODO(chlily): Hook up to CanonicalCookie::GetEffectiveSameSite.
+  std::unique_ptr<CookieAccessDelegate> cookie_access_delegate_;
 
   base::ThreadChecker thread_checker_;
 

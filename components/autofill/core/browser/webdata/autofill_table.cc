@@ -410,7 +410,8 @@ bool AutofillTable::CreateTablesIfNecessary() {
           InitMaskedCreditCardsTable() && InitUnmaskedCreditCardsTable() &&
           InitServerCardMetadataTable() && InitServerAddressesTable() &&
           InitServerAddressMetadataTable() && InitAutofillSyncMetadataTable() &&
-          InitModelTypeStateTable() && InitPaymentsCustomerDataTable());
+          InitModelTypeStateTable() && InitPaymentsCustomerDataTable() &&
+          InitPaymentsUPIVPATable());
 }
 
 bool AutofillTable::IsSyncable() {
@@ -1638,6 +1639,21 @@ bool AutofillTable::GetPaymentsCustomerData(
   }
 
   return s.Succeeded();
+}
+
+bool AutofillTable::InsertVPA(const std::string& vpa) {
+  sql::Transaction transaction(db_);
+  if (!transaction.Begin())
+    return false;
+
+  sql::Statement insert_vpa_statement(
+      db_->GetUniqueStatement("INSERT INTO payments_upi_vpa (vpa) VALUES (?)"));
+  insert_vpa_statement.BindString(0, vpa);
+  insert_vpa_statement.Run();
+
+  transaction.Commit();
+
+  return db_->GetLastChangeCount() > 0;
 }
 
 bool AutofillTable::ClearAllServerData() {
@@ -3132,6 +3148,17 @@ bool AutofillTable::InitPaymentsCustomerDataTable() {
   if (!db_->DoesTableExist("payments_customer_data")) {
     if (!db_->Execute("CREATE TABLE payments_customer_data "
                       "(customer_id VARCHAR)")) {
+      NOTREACHED();
+      return false;
+    }
+  }
+  return true;
+}
+
+bool AutofillTable::InitPaymentsUPIVPATable() {
+  if (!db_->DoesTableExist("payments_upi_vpa")) {
+    if (!db_->Execute("CREATE TABLE payments_upi_vpa ("
+                      "vpa VARCHAR)")) {
       NOTREACHED();
       return false;
     }

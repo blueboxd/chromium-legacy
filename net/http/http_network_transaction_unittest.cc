@@ -871,39 +871,6 @@ TEST_F(HttpNetworkTransactionTest, SimpleGETNoReadDestroyRequestInfo) {
   trans.reset();
 }
 
-// Response with no status line, and a weird port.  Option to allow weird ports
-// enabled.
-TEST_F(HttpNetworkTransactionTest, SimpleGETNoHeadersWeirdPortAllowed) {
-  MockRead data_reads[] = {
-      MockRead("hello world"), MockRead(SYNCHRONOUS, OK),
-  };
-
-  StaticSocketDataProvider data(data_reads, base::span<MockWrite>());
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
-  session_deps_.http_09_on_non_default_ports_enabled = true;
-  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-
-  HttpRequestInfo request;
-  auto trans =
-      std::make_unique<HttpNetworkTransaction>(DEFAULT_PRIORITY, session.get());
-
-  request.method = "GET";
-  request.url = GURL("http://www.example.com:2000/");
-  request.traffic_annotation =
-      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
-
-  TestCompletionCallback callback;
-  int rv = trans->Start(&request, callback.callback(), NetLogWithSource());
-  EXPECT_THAT(callback.GetResult(rv), IsOk());
-
-  const HttpResponseInfo* info = trans->GetResponseInfo();
-  ASSERT_TRUE(info->headers);
-  EXPECT_EQ("HTTP/0.9 200 OK", info->headers->GetStatusLine());
-
-  // Don't bother to read the body - that's verified elsewhere, important thing
-  // is that the option to allow HTTP/0.9 on non-default ports is respected.
-}
-
 // Allow up to 4 bytes of junk to precede status line.
 TEST_F(HttpNetworkTransactionTest, StatusLineJunk3Bytes) {
   MockRead data_reads[] = {

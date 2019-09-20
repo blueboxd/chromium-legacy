@@ -6,11 +6,11 @@
 
 #include <memory>
 
-#include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "content/public/browser/web_contents.h"
 
 namespace internal {

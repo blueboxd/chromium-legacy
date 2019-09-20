@@ -21,8 +21,15 @@ bool ShouldIncludeAppUpdate(const apps::AppUpdate& app_update) {
 
 void LogOutHelper() {
   // Record UMA metric that the user clicked "Sign out".
-  AddSupervisionMetricsRecorder::GetInstance()->RecordAddSupervisionEnrollment(
-      AddSupervisionMetricsRecorder::EnrollmentState::kSignedOut);
+  if (EnrollmentCompleted()) {
+    AddSupervisionMetricsRecorder::GetInstance()
+        ->RecordAddSupervisionEnrollment(
+            AddSupervisionMetricsRecorder::EnrollmentState::kSignedOut);
+  } else {
+    AddSupervisionMetricsRecorder::GetInstance()
+        ->RecordAddSupervisionEnrollment(
+            AddSupervisionMetricsRecorder::EnrollmentState::kSwitchedAccounts);
+  }
   chrome::AttemptUserExit();
 }
 

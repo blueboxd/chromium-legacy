@@ -218,6 +218,7 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
 
       Jika kebijakan ini tidak disetel, kode jaringan mungkin dijalankan di luar proses browser yang bergantung pada uji coba kolom eksperimen NetworkService.</translation>
 <translation id="1384459581748403878">Referensi: <ph name="REFERENCE_URL" /></translation>
+<translation id="138847842893090358">Melaporkan status update OS</translation>
 <translation id="1393485621820363363">Mengaktifkan printer perangkat perusahaan</translation>
 <translation id="1397855852561539316">URL saran penyedia penelusuran default</translation>
 <translation id="1404043648050567997">Layanan Safe Browsing menampilkan halaman peringatan saat pengguna membuka situs yang ditandai sebagai berpotensi berbahaya. Mengaktifkan setelan ini akan mencegah pengguna agar tidak melanjutkan penelusuran dari halaman peringatan ke situs berbahaya.
@@ -290,15 +291,6 @@ Secara default, tidak ada mode buka kunci cepat yang tersedia untuk perangkat ya
 
       Jika kebijakan dibiarkan tidak disetel, nilai default 'MultiProfileUserBehaviorMustBePrimary' berlaku untuk pengguna yang dikelola oleh perusahaan dan 'MultiProfileUserBehaviorUnrestricted' akan digunakan untuk pengguna yang tidak dikelola.</translation>
 <translation id="1465619815762735808">Klik untuk memainkan</translation>
-<translation id="1468307069016535757">Menyetel status default fitur aksesibilitas mode kontras tinggi di layar masuk.
-
-          Jika kebijakan ini disetel ke true, mode kontras tinggi akan diaktifkan saat layar masuk ditampilkan.
-
-          Jika kebijakan ini disetel ke false, mode kontras tinggi akan dinonaktifkan saat layar masuk ditampilkan.
-
-          Jika Anda menyetel kebijakan ini, pengguna dapat menimpanya untuk sementara dengan mengaktifkan atau menonaktifkan mode kontras tinggi. Namun, pilihan pengguna tidak bersifat permanen dan setelan default akan dipulihkan kapan pun layar masuk ditampilkan lagi atau pengguna tetap menganggur di layar masuk selama satu menit.
-
-          Jika kebijakan ini tidak disetel, mode kontras tinggi dinonaktifkan saat layar masuk ditampilkan untuk pertama kali. Pengguna dapat mengaktifkan atau menonaktifkan mode kontras tinggi kapan saja dan statusnya di layar masuk bersifat permanen antar pengguna.</translation>
 <translation id="1468707346106619889">Jika kebijakan ini disetel ke true, Desktop Terpadu diizinkan dan
       diaktifkan secara default, yang memungkinkan aplikasi merentangkan beberapa tampilan.
       Pengguna dapat menonaktifkan Desktop Terpadu untuk tampilan individual dengan menghapus centang
@@ -781,6 +773,10 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 
       Jika kebijakan disetel ke true, peristiwa akan dicatat dalam log.
       Jika kebijakan disetel ke false atau tidak disetel, peristiwa tidak akan dicatat dalam log.</translation>
+<translation id="2440773021691931148">Melaporkan ID dan statistik hardware yang terkait dengan daya.
+
+      Jika kebijakan ditetapkan ke false atau tidak ditetapkan, statistik tidak akan dilaporkan.
+      Jika ditetapkan ke true, statistik akan dilaporkan.</translation>
 <translation id="244317009688098048">Aktifkan pintasan keyboard penyelamatan untuk masuk otomatis.
 
       Jika kebijakan ini tidak disetel atau disetel ke True dan akun lokal perangkat dikonfigurasikan untuk masuk otomatis tanpa penundaan, <ph name="PRODUCT_OS_NAME" /> akan menerima pintasan keyboard Ctrl+Alt+S untuk melewati masuk otomatis dan menampilkan layar masuk.
@@ -789,6 +785,15 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
 <translation id="2454228136871844693">Mengoptimalkan untuk stabilitas.</translation>
 <translation id="2463034609187171371">Mengaktifkan paket penyandian DHE di TLS</translation>
 <translation id="2463365186486772703">Lokal aplikasi</translation>
+<translation id="2464012905766911533">Kebijakan ini memungkinkan admin untuk menentukan bahwa halaman dapat mengirimkan permintaan XHR sinkron saat menutup halaman.
+
+      Ketika kebijakan ditetapkan ke aktif, halaman diizinkan untuk mengirimkan permintaan XHR sinkron saat menutup halaman.
+
+      Ketika kebijakan ditetapkan ke tidak aktif atau tidak ditetapkan, halaman tidak diizinkan untuk mengirimkan permintaan XHR sinkron saat menutup halaman.
+
+      Kebijakan ini akan dihapus pada Chrome 82.
+
+      Buka https://www.chromestatus.com/feature/4664843055398912 .</translation>
 <translation id="2466131534462628618">Autentikasi portal tawanan mengabaikan proxy</translation>
 <translation id="2466697858869282874">Mengonfigurasi ketersediaan dan perilaku fungsionalitas update firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
@@ -1479,6 +1484,7 @@ Jika kebijakan ini tidak disetel, setelan kebijakan berarti diaktifkan, lihat de
           Jika kebijakan ini tidak ditetapkan, fitur klik untuk diucapkan mula-mula dinonaktifkan, tetapi dapat diaktifkan oleh pengguna kapan saja.</translation>
 <translation id="3591527072193107424">Mengaktifkan fitur Dukungan Browser Lama.</translation>
 <translation id="3591584750136265240">Mengonfigurasi perilaku autentikasi proses masuk</translation>
+<translation id="3617743504695003280">Mengizinkan halaman untuk melakukan permintaan XHR sinkron saat menutup halaman.</translation>
 <translation id="3627678165642179114">Mengaktifkan atau menonaktifkan layanan web memeriksa ejaan</translation>
 <translation id="3628480121685794414">Aktifkan pencetakan simpleks</translation>
 <translation id="3631099945620529777">Jika ditetapkan ke False, tombol 'Akhiri proses' akan dinonaktifkan di Pengelola Tugas.
@@ -1673,6 +1679,10 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
       Jika kebijakan wallpaper perangkat ditetapkan, perangkat Chrome OS akan mendownload dan menggunakan gambar wallpaper di layar login jika belum ada pengguna yang login ke perangkat. Setelah pengguna login, kebijakan wallpaper pengguna akan diterapkan.
 
       Jika kebijakan wallpaper perangkat tidak ditetapkan, kebijakan wallpaper pengguna yang akan menentukan gambar yang ditampilkan apabila kebijakan wallpaper pengguna ditetapkan.</translation>
+<translation id="3964606652985594895">Melaporkan ID dan statistik hardware untuk perangkat penyimpanan.
+
+      Jika kebijakan ditetapkan ke false atau tidak ditetapkan, statistik tidak akan dilaporkan.
+      Jika ditetapkan ke true, statistik akan dilaporkan.</translation>
 <translation id="3965339130942650562">Waktu tunggu sampai proses keluar pengguna nganggur dieksekusi</translation>
 <translation id="3973371701361892765">Jangan sembunyikan rak secara otomatis</translation>
 <translation id="3984028218719007910">Menentukan apakah <ph name="PRODUCT_OS_NAME" /> menyimpan data akun lokal setelah keluar. Jika disetel ke true, maka tidak ada akun yang terus-menerus disimpan oleh <ph name="PRODUCT_OS_NAME" /> dan semua data dari sesi pengguna akan dihapus setelah keluar. Jika kebijakan ini disetel ke false atau tidak dikonfigurasi, perangkat dapat menyimpan data pengguna lokal (yang dienkripsi).</translation>
@@ -2149,9 +2159,18 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="4807950475297505572">Pengguna yang paling jarang digunakan dihapus sampai terdapat cukup ruang kosong</translation>
 <translation id="4816674326202173458">Memungkinkan pengguna perusahaan menjadi primer dan sekunder (Perilaku default untuk pengguna yang tidak dikelola)</translation>
 <translation id="4826326557828204741">Tindakan yang diperlukan saat penundaan nganggur tercapai ketika menjalankan daya baterai</translation>
+<translation id="4830531683854509779">Melaporkan statistik hardware untuk komponen SoC.
+
+      Jika kebijakan ditetapkan ke false atau tidak ditetapkan, statistik tidak akan dilaporkan.
+      Jika ditetapkan ke true, statistik akan dilaporkan.</translation>
 <translation id="4832852360828533362">Pelaporan perangkat dan pengguna</translation>
 <translation id="4834526953114077364">Pengguna yang paling jarang digunakan yang belum masuk dalam 3 bulan terakhir dihapus sampai terdapat cukup ruang kosong</translation>
 <translation id="4835622243021053389">Mengaktifkan autentikasi NTLMv2.</translation>
+<translation id="4856471929724652373">Melaporkan informasi update OS, seperti status update, versi platform,
+      pemeriksaan update terakhir, dan reboot terakhir.
+
+      Jika kebijakan ditetapkan ke false atau tidak ditetapkan, informasi update OS tidak akan
+      dilaporkan. Jika ditetapkan ke true, informasi update OS akan dilaporkan.</translation>
 <translation id="4858735034935305895">Izinkan mode layar penuh</translation>
 <translation id="4861767323695239729">Mengonfigurasi metode masukan yang diizinkan dalam sesi pengguna</translation>
 <translation id="487460824085252184">Migrasi otomatis, jangan tanya persetujuan pengguna.</translation>
@@ -2754,15 +2773,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       URL (seperti https://example.com/some/path) hanya akan cocok sebagai U2F appID. Domain (seperti example.com) hanya akan cocok sebagai webauthn RP ID. Oleh karena itu, guna mencakup U2F dan webauthn API untuk situs tertentu, appID URL dan domain perlu dicantumkan.</translation>
 <translation id="5836064773277134605">Batasi jangkauan port UDP yang digunakan oleh hosting akses jarak jauh</translation>
 <translation id="5861856285460256766">Konfigurasi Kode Akses Orang Tua</translation>
-<translation id="5862253018042179045">Menyetel status default fitur aksesibilitas masukan yang diucapkan di layar masuk.
-
-          Jika kebijakan ini disetel ke true, masukan yang diucapkan akan diaktifkan saat layar masuk ditampilkan.
-
-          Jika kebijakan ini disetel ke false, masukan yang diucapkan akan dinonaktifkan saat layar masuk ditampilkan.
-
-          Jika Anda menyetel kebijakan ini, pengguna dapat menimpanya untuk sementara dengan mengaktifkan atau menonaktifkan masukan yang diucapkan. Namun, pilihan pengguna tidak bersifat permanen dan setelan default akan dipulihkan kapan pun layar masuk ditampilkan lagi atau pengguna tetap menganggur di layar masuk selama satu menit.
-
-          Jika kebijakan ini tidak disetel, masukan yang diucapkan akan dinonaktifkan saat layar masuk ditampilkan untuk pertama kali. Pengguna dapat mengaktifkan atau menonaktifkan masukan yang diucapkan kapan saja dan statusnya di layar masuk bersifat permanen antar pengguna.</translation>
 <translation id="5868414965372171132">Konfigurasi jaringan tingkat pengguna</translation>
 <translation id="5879014913445067283">Mengontrol penemuan Berbagi File Jaringan melalui <ph name="NETBIOS_NAME" /></translation>
 <translation id="5882345429632338713">Penundaan sebelum meluncurkan browser alternatif (milidetik)</translation>
@@ -3131,6 +3141,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6689792153960219308">Melaporkan status hardware</translation>
 <translation id="6698632841807204978">Aktifkan pencetakan monokrom</translation>
 <translation id="6699880231565102694">Mengaktifkan autentikasi dua faktor untuk hosting akses jarak jauh</translation>
+<translation id="670597451099978576">Memberikan izin secara otomatis ke situs ini untuk terhubung ke perangkat USB dengan ID vendor dan ID produk tertentu pada layar login.</translation>
 <translation id="6720080634516505446"><ph name="PRODUCT_NAME" /> menyediakan update dan penginstalan ekstensi yang aman. Namun, konten dari beberapa ekstensi yang di-host di luar Chrome Web Store mungkin hanya dilindungi dengan algoritme hashing atau penandatanganan yang tidak aman seperti SHA1. Jika kebijakan ini dinonaktifkan, penginstalan baru dan update ekstensi tersebut tidak akan diizinkan oleh Chrome (sampai developer membuat ulang ekstensi ini dengan algoritme yang lebih kuat). Jika kebijakan ini diaktifkan, penginstalan dan update ekstensi tersebut akan diizinkan.
 
           Kebijakan ini secara default akan diaktifkan jika tidak disetel.
@@ -3694,6 +3705,21 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
       Jika kebijakan ini disetel, Kode Akses Orang Tua dapat diverifikasi di perangkat pengguna anak.
       Jika kebijakan ini tidak disetel, Kode Akses Orang Tua tidak dapat diverifikasi di perangkat pengguna anak.</translation>
 <translation id="7625444193696794922">Menentukan saluran rilis yang harus dikunci oleh perangkat ini.</translation>
+<translation id="7625498350540361483">
+      Jika kebijakan ditetapkan ke true, <ph name="PRODUCT_NAME" /> diizinkan untuk mengumpulkan log aktivitas WebRTC dari layanan Google (mis. Google Meet), dan mengupload log tersebut ke Google.
+
+      Jika kebijakan ditetapkan ke false, <ph name="PRODUCT_NAME" /> tidak dapat mengumpulkan atau mengupload log tersebut.
+
+      Jika kebijakan tidak ditetapkan, hingga dan termasuk M76, <ph name="PRODUCT_NAME" /> tidak dapat mengumpulkan atau mengupload log tersebut.
+
+      Jika kebijakan tidak ditetapkan, mulai M77, <ph name="PRODUCT_NAME" /> dapat mengumpulkan atau mengupload log tersebut secara default dengan syarat profil browser dianggap telah dikelola. Hal ini berarti, profil akan menerima kebijakan level cloud atau mesin, dan bukan merupakan profil turunan, profil singkat, profil login, atau profil samaran.
+
+      Log ini berisi informasi diagnostik yang berguna saat melakukan proses debug masalah pada panggilan audio atau video di Chrome, seperti waktu dan ukuran paket RTP yang dikirim dan diterima, masukan tentang kemacetan pada jaringan, dan metadata tentang waktu dan kualitas frame audio dan video. Log ini tidak berisi konten audio atau video dari panggilan.
+
+      Pengumpulan data yang dilakukan Chrome ini hanya dapat dipicu oleh layanan web Google, seperti Google Hangouts atau Google Meet.
+
+      Google dapat mengaitkan log ini dengan log lain, yang dikumpulkan oleh layanan Google sendiri, menggunakan ID sesi. Hal ini dimaksudkan untuk mempermudah proses debug.
+      </translation>
 <translation id="7632724434767231364">Nama pustaka GSSAPI</translation>
 <translation id="7635471475589566552">Mengonfigurasi lokal aplikasi di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah lokal tersebut. Jika Anda mengaktifkan setelan ini, <ph name="PRODUCT_NAME" /> akan menggunakan lokal yang ditentukan. Jika lokal terkonfigurasi tidak didukung, 'en-US' akan digunakan. Jika setelan ini dinonaktifkan atau tidak disetel, <ph name="PRODUCT_NAME" /> akan menggunakan lokal terpilih yang ditentukan pengguna (jika dikonfigurasi), lokal sistem, atau lokal pengganti 'en-US'.</translation>
 <translation id="7641363659597330616">Mengonfigurasi jenis download yang akan diblokir seluruhnya oleh <ph name="PRODUCT_NAME" />, tanpa mengizinkan pengguna mengganti keputusan keamanan.
@@ -4207,6 +4233,11 @@ semua permintaan HTTP dan HTTPS ke semua domain google.com, seperti yang dijelas
 https://support.google.com/a/answer/1668854.
 
 Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
+<translation id="8625234016727663537">Memungkinkan Anda menetapkan daftar URL yang menentukan situs mana yang akan diberi izin secara otomatis untuk mengakses perangkat USB dengan ID produk dan vendor tertentu pada layar login. Setiap item dalam daftar harus berisi URL dan perangkat agar kebijakan menjadi valid. Setiap item di perangkat dapat berisi kolom ID produk dan ID vendor. ID yang dihapus diperlakukan sebagai karakter pengganti dengan satu pengecualian, yaitu ID produk tidak dapat ditentukan jika ID vendor juga tidak ditentukan. Jika tidak, kebijakan akan menjadi tidak valid dan akan diabaikan.
+
+        Model izin USB menggunakan URL situs yang meminta ("URL yang meminta") dan URL situs bingkai level teratas ("URL sematan") untuk memberikan izin ke URL yang meminta guna mengakses perangkat USB. URL yang meminta mungkin berbeda dengan URL sematan saat situs yang meminta dimuat dalam iframe. Oleh karena itu, kolom "url" dapat berisi hingga dua string URL yang dipisahkan dengan koma, untuk menentukan masing-masing URL yang meminta dan URL sematan. Jika hanya ada satu URL yang ditentukan, akses ke perangkat USB yang sesuai akan diberikan saat URL situs yang meminta cocok dengan URL ini, terlepas dari status sematannya. URL dalam "url" harus berupa URL yang valid. Jika tidak, kebijakan akan diabaikan.
+
+        Jika kebijakan ini tidak ditetapkan, nilai default global akan digunakan untuk semua situs (tidak ada akses otomatis).</translation>
 <translation id="8631434304112909927">sampai versi <ph name="UNTIL_VERSION" /></translation>
 <translation id="8649763579836720255">Perangkat Chrome OS dapat menggunakan atestasi jarak jauh (Akses Terverifikasi) untuk mendapatkan sertifikat yang diberikan oleh Chrome OS CA yang menyatakan bahwa perangkat tersebut memenuhi syarat untuk memutar konten yang dilindungi. Proses ini mencakup pengiriman informasi dukungan hardware ke Chrome OS CA yang mengidentifikasi perangkat tersebut secara unik.
 

@@ -180,9 +180,7 @@ public class PureJavaExceptionReporter {
         if (ChromeVersionInfo.isBetaBuild()) {
             return "beta";
         }
-        if (ChromeVersionInfo.isStableBuild()) {
-            return "stable";
-        }
+        // An empty string indicates the stable channel.
         return "";
     }
 

@@ -154,6 +154,9 @@ extern const char kAutofillRestrictUnownedFieldsToFormlessCheckoutDescription[];
 extern const char kAutofillRichMetadataQueriesName[];
 extern const char kAutofillRichMetadataQueriesDescription[];
 
+extern const char kAutofillSaveAndFillVPAName[];
+extern const char kAutofillSaveAndFillVPADescription[];
+
 extern const char kAutofillSettingsSplitByCardTypeName[];
 extern const char kAutofillSettingsSplitByCardTypeDescription[];
 
@@ -1999,6 +2002,9 @@ extern const char kEnableVideoPlayerNativeControlsDescription[];
 
 extern const char kEnableVirtualDesksName[];
 extern const char kEnableVirtualDesksDescription[];
+
+extern const char kEnableVirtualDesksGesturesName[];
+extern const char kEnableVirtualDesksGesturesDescription[];
 
 extern const char kTrimOnFreezeName[];
 extern const char kTrimOnFreezeDescription[];

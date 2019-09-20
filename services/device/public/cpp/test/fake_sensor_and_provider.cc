@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/device/public/cpp/generic_sensor/sensor_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -175,8 +175,9 @@ void FakeSensorProvider::GetSensor(mojom::SensorType type,
     init_params->maximum_frequency = sensor->GetMaximumSupportedFrequency();
     init_params->minimum_frequency = sensor->GetMinimumSupportedFrequency();
 
-    mojo::MakeStrongBinding(std::move(sensor),
-                            mojo::MakeRequest(&init_params->sensor));
+    mojo::MakeSelfOwnedReceiver(
+        std::move(sensor),
+        init_params->sensor.InitWithNewPipeAndPassReceiver());
     std::move(callback).Run(mojom::SensorCreationResult::SUCCESS,
                             std::move(init_params));
   } else {

@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1ని}other{#ని}}</translation>
 <translation id="1181037720776840403">తీసివేయి</translation>
 <translation id="1243314992276662751">అప్‌లోడ్ చేయి</translation>
+<translation id="1266864766717917324"><ph name="CONTENT_TYPE" />ను షేర్ చేయడం సాధ్యపడలేదు</translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1290982764014248209"><ph name="DRAGGED_APP" />ను <ph name="FOLDER_NAME" /> ఫోల్డర్‌కు తరలించండి.</translation>
+<translation id="1291104554099683393">మొత్తం వచనాన్ని కాస్త చిన్న భాగాలుగా విభజించాక, షేర్ చేసి చూడండి.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">సిఫార్సు చేసిన యాప్‌లు</translation>
 <translation id="1368832886055348810">ఎడమ నుండి కుడికి</translation>
 <translation id="1383876407941801731">వెతుకు</translation>
 <translation id="1398853756734560583">గరిష్ఠీకరించు</translation>
 <translation id="1409544243779336081">యాప్ సిఫార్సు</translation>
+<translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> షేర్ చేయడం సాధ్యపడలేదు</translation>
 <translation id="1498028757988366001">మీరు దీని కోసం గతంలో వెతికారు. మీ చరిత్ర నుండి "<ph name="QUERY" />"ను తొలగిస్తే, మీ ఖాతాతో సైన్ ఇన్ చేసి ఉన్న మీ పరికరాలు అన్నింటిలో అది శాశ్వతంగా తీసివేయబడుతుంది.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 నిమిషం మరియు }other{# నిమిషాలు మరియు }}</translation>
 <translation id="1643823602425662293">నోటిఫికేషన్</translation>
@@ -35,6 +38,7 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;అన్నీ ఎంచుకోండి</translation>
 <translation id="1938451708255335766">విండో డిస్‌ప్లే సాంద్రతను సర్దుబాటు చేయడం కోసం, యాప్‌ని పునఃప్రారంభించండి.</translation>
+<translation id="2006524834898217237">ఈ పరికరం ఇంటర్నెట్‌కు కనెక్ట్ చేయబడి ఉందని నిర్ధారించుకోండి.</translation>
 <translation id="208586643495776849">దయచేసి మళ్లీ ప్రయత్నించండి</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1రో}other{#రో}}</translation>
 <translation id="2148716181193084225">ఈ రోజు</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 రోజు}other{# రోజులు}}</translation>
 <translation id="3295886253693811851">దీని నుండి కాల్ చేయండి</translation>
 <translation id="335581015389089642">ప్రసంగం</translation>
+<translation id="3389286852084373014">వచనం చాలా పెద్దదిగా ఉంది</translation>
 <translation id="3443810440409579745">ట్యాబ్‌ను అందుకున్నారు.</translation>
 <translation id="3479552764303398839">ఇప్పుడు కాదు</translation>
 <translation id="348799646910989694">అర ఆటోమేటిక్‌గా దాచి పెట్టబడుతుంది</translation>
@@ -151,11 +156,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 సెక. క్రితం}other{# సెక. క్రితం}}</translation>
 <translation id="6430678249303439055">ఈ యాప్ నుండి నోటిఫికేషన్‌లు అన్ని బ్లాక్ చేయండి</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 సెకను క్రితం}other{# సెకన్ల క్రితం}}</translation>
+<translation id="6539092367496845964">ఏదో తప్పు జరిగింది. తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="654149438358937226">అన్ని నోటిఫికేషన్‌లను బ్లాక్ చేయి</translation>
 <translation id="6567071839949112727">క్లిక్ మూలకం</translation>
 <translation id="6578407462441924264">పేరు లేదు</translation>
 <translation id="6612467943526193239">క్రమాంకనం నుండి నిష్క్రమించేందుకు, Esc నొక్కండి.</translation>
 <translation id="6620110761915583480">ఫైల్‌ను సేవ్ చేయి</translation>
+<translation id="6656912866303152668">Chromeతో <ph name="TARGET_DEVICE_NAME" /> సింక్ చేయబడి ఉందని నిర్ధారించుకుని, ఆపై మళ్లీ పంపే ప్రయత్నం చేయండి.</translation>
 <translation id="6699343763173986273">మీడియా తరువాత ట్రాక్</translation>
 <translation id="673773751041746814">తొలగింపు</translation>
 <translation id="6779314412797872738">దీని నుండి మీ ఫోన్‌కు Android నంబర్‌ను పంపడానికి, రెండు పరికరాలలోని సెట్టింగ్‌లలో "<ph name="TROUBLESHOOT_LINK" />".</translation>
@@ -221,6 +228,7 @@
 <translation id="8876215549894133151">ఆకృతి:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">అర ఎల్లప్పుడూ దాచబడుతుంది</translation>
+<translation id="8996630695507351249"><ph name="TARGET_DEVICE_NAME" /> ఇంటర్నెట్‌కు కనెక్ట్ చేయబడి ఉందని నిర్ధారించుకోండి.</translation>
 <translation id="9002566407876343676">తెరువు</translation>
 <translation id="9039076430527029379">పేజీ నంబర్ <ph name="PAGE_NUMBER" />, అడ్డు వరుస <ph name="ROW_NUMBER" />, నిలువు వరుస <ph name="COLUMN_NUMBER" />కు తరలించండి.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 సెక.}other{# సెక.}}</translation>

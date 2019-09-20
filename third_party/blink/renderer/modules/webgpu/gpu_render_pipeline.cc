@@ -177,6 +177,9 @@ DawnVertexInputInfo GPUVertexInputAsDawnInputState(
     // stopped appending to the vector so the pointers aren't invalidated.
     uint32_t attributeIndex = 0;
     for (DawnVertexBufferDescriptor& buffer : dawn_vertex_buffers) {
+      if (buffer.attributeCount == 0) {
+        continue;
+      }
       buffer.attributes = &dawn_vertex_attributes[attributeIndex];
       attributeIndex += buffer.attributeCount;
     }

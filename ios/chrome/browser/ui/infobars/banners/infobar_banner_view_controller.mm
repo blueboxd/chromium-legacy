@@ -32,12 +32,6 @@ const CGFloat kSelectBannerAnimationDurationInSeconds = 0.2;
 const CGFloat kTappedBannerAnimationDurationInSeconds = 0.05;
 const CGFloat kSelectedBannerViewYShadowOffset = 8.0;
 
-// Bottom Grip constants.
-const CGFloat kBottomGripCornerRadius = 0.2;
-const CGFloat kBottomGripWidth = 44.0;
-const CGFloat kBottomGripHeight = 3.0;
-const CGFloat kBottomGripBottomPadding = 4.0;
-
 // Button constants.
 const CGFloat kButtonWidth = 100.0;
 const CGFloat kButtonSeparatorWidth = 1.0;
@@ -82,6 +76,8 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 // YES if the banner on screen time metric has already been recorded for this
 // banner.
 @property(nonatomic, assign) BOOL bannerOnScreenTimeWasRecorded;
+// YES if the banner should be able to present a Modal.
+@property(nonatomic, assign) BOOL presentsModal;
 
 @end
 
@@ -89,12 +85,14 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 @synthesize interactionDelegate = _interactionDelegate;
 
 - (instancetype)initWithDelegate:(id<InfobarBannerDelegate>)delegate
+                   presentsModal:(BOOL)presentsModal
                             type:(InfobarType)infobarType {
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
     _delegate = delegate;
     _metricsRecorder =
         [[InfobarMetricsRecorder alloc] initWithType:infobarType];
+    _presentsModal = presentsModal;
   }
   return self;
 }
@@ -124,13 +122,6 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   self.view.isAccessibilityElement = YES;
   self.view.accessibilityLabel = [self accessibilityLabel];
   self.view.accessibilityCustomActions = [self accessibilityActions];
-
-  // Bottom Grip setup.
-  UIView* bottomGrip = [[UIView alloc] init];
-  bottomGrip.backgroundColor = [UIColor colorNamed:kBackgroundColor];
-  bottomGrip.layer.cornerRadius = kBottomGripCornerRadius;
-  bottomGrip.translatesAutoresizingMaskIntoConstraints = NO;
-  [self.view addSubview:bottomGrip];
 
   // Icon setup.
   self.iconImage = [self.iconImage
@@ -218,12 +209,6 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
     [buttonSeparator.topAnchor constraintEqualToAnchor:self.view.topAnchor],
     [buttonSeparator.bottomAnchor
         constraintEqualToAnchor:self.view.bottomAnchor],
-    // Bottom Grip.
-    [bottomGrip.widthAnchor constraintEqualToConstant:kBottomGripWidth],
-    [bottomGrip.heightAnchor constraintEqualToConstant:kBottomGripHeight],
-    [bottomGrip.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
-    [bottomGrip.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor
-                                            constant:-kBottomGripBottomPadding],
   ]];
 
   // Gestures setup.
@@ -240,10 +225,13 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
       kLongPressTimeDurationInSeconds;
   [self.view addGestureRecognizer:longPressGestureRecognizer];
 
-  UITapGestureRecognizer* tapGestureRecognizer = [[UITapGestureRecognizer alloc]
-      initWithTarget:self
-              action:@selector(animateBannerTappedAndPresentModal)];
-  [self.view addGestureRecognizer:tapGestureRecognizer];
+  if (self.presentsModal) {
+    UITapGestureRecognizer* tapGestureRecognizer =
+        [[UITapGestureRecognizer alloc]
+            initWithTarget:self
+                    action:@selector(animateBannerTappedAndPresentModal)];
+    [self.view addGestureRecognizer:tapGestureRecognizer];
+  }
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -398,8 +386,9 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 }
 
 // Animate the Banner being tapped by scaling it down and then to its original
-// state. After the animation it presentd the Infobar Modal.
+// state. After the animation, it presents the Infobar Modal.
 - (void)animateBannerTappedAndPresentModal {
+  DCHECK(self.presentsModal);
   [self.interactionDelegate infobarBannerStartedInteraction];
   // TODO(crbug.com/961343): Interrupt this animation in case the Banner needs
   // to be dismissed mid tap (Currently it will be dismmissed after the
@@ -422,6 +411,7 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 }
 
 - (void)presentInfobarModalAfterTap {
+  DCHECK(self.presentsModal);
   base::RecordAction(base::UserMetricsAction("MobileMessagesBannerTapped"));
   [self.metricsRecorder
       recordBannerDismissType:MobileMessagesBannerDismissType::TappedToModal];

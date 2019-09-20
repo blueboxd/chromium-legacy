@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/writable_shared_memory_region.h"
+#include "base/optional.h"
 #include "base/task_runner.h"
 #include "build/build_config.h"
 #include "mojo/core/atomic_flag.h"
@@ -156,7 +157,8 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
       ports::NodeName token,
       const ProcessErrorCallback& process_error_callback);
   void AcceptBrokerClientInvitationOnIOThread(
-      ConnectionParams connection_params);
+      ConnectionParams connection_params,
+      base::Optional<PlatformHandle> broker_host_handle);
 
   void ConnectIsolatedOnIOThread(ConnectionParams connection_params,
                                  ports::PortRef port,

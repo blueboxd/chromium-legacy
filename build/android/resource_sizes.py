@@ -216,6 +216,22 @@ def _RunAaptDumpResources(apk_path):
   return output
 
 
+def _ReportDfmSizes(zip_obj, report_func):
+  sizes = collections.defaultdict(int)
+  for info in zip_obj.infolist():
+    # Looks for paths like splits/vr-master.apk, splits/vr-hi.apk.
+    name_parts = info.filename.split('/')
+    if name_parts[0] == 'splits' and len(name_parts) == 2:
+      name_parts = name_parts[1].split('-')
+      if len(name_parts) == 2:
+        module_name, config_name = name_parts
+        if module_name != 'base' and config_name[:-4] in ('master', 'hi'):
+          sizes[module_name] += info.file_size
+
+  for module_name, size in sorted(sizes.iteritems()):
+    report_func('DFM_' + module_name, 'Size with hindi', size, 'bytes')
+
+
 class _FileGroup(object):
   """Represents a category that apk files can fall into."""
 
@@ -359,6 +375,7 @@ def _DoApkAnalysis(apk_filename, apks_path, tool_prefix, out_dir, report_func):
     with zipfile.ZipFile(apks_path) as z:
       hindi_apk_info = z.getinfo('splits/base-hi.apk')
       total_apk_size += hindi_apk_info.file_size
+      _ReportDfmSizes(z, report_func)
 
   total_install_size = total_apk_size
   total_install_size_android_go = total_apk_size

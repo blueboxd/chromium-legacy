@@ -26,6 +26,7 @@
 #include "content/renderer/accessibility/ax_image_annotator.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ppapi/c/private/ppp_pdf.h"
@@ -107,13 +108,17 @@ class MockAnnotationService : public image_annotation::mojom::Annotator {
     return remote;
   }
 
-  void AnnotateImage(const std::string& image_id,
-                     const std::string& /* description_language_tag */,
-                     image_annotation::mojom::ImageProcessorPtr image_processor,
-                     AnnotateImageCallback callback) override {
+  void AnnotateImage(
+      const std::string& image_id,
+      const std::string& /* description_language_tag */,
+      mojo::PendingRemote<image_annotation::mojom::ImageProcessor>
+          image_processor,
+      AnnotateImageCallback callback) override {
     image_ids_.push_back(image_id);
-    image_processors_.push_back(std::move(image_processor));
-    image_processors_.back().set_connection_error_handler(
+    image_processors_.push_back(
+        mojo::Remote<image_annotation::mojom::ImageProcessor>(
+            std::move(image_processor)));
+    image_processors_.back().set_disconnect_handler(
         base::BindOnce(&MockAnnotationService::ResetImageProcessor,
                        base::Unretained(this), image_processors_.size() - 1));
     callbacks_.push_back(std::move(callback));
@@ -121,7 +126,8 @@ class MockAnnotationService : public image_annotation::mojom::Annotator {
 
   // Tests should not delete entries in these lists.
   std::vector<std::string> image_ids_;
-  std::vector<image_annotation::mojom::ImageProcessorPtr> image_processors_;
+  std::vector<mojo::Remote<image_annotation::mojom::ImageProcessor>>
+      image_processors_;
   std::vector<AnnotateImageCallback> callbacks_;
 
  private:

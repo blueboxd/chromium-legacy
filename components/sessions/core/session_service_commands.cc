@@ -632,10 +632,10 @@ bool CreateTabsAndWindows(
 
         SessionTabGroup* group = GetTabGroup(group_id.value(), tab_groups);
 
-        if (!iter.ReadString16(&group->title))
+        if (!iter.ReadString16(&group->metadata.title))
           return true;
 
-        if (!iter.ReadUInt32(&group->color))
+        if (!iter.ReadUInt32(&group->metadata.color))
           return true;
         break;
       }

@@ -165,10 +165,11 @@ class CapturedSitesPasswordManagerBrowserTest
         std::make_unique<captured_sites_test_utils::TestRecipeReplayer>(
             browser(), this);
     recipe_replayer()->Setup();
-    SetServerUrlLoader(std::make_unique<ServerUrlLoader>(
-        std::make_unique<ServerCacheReplayer>(
+    SetServerUrlLoader(
+        std::make_unique<ServerUrlLoader>(std::make_unique<ServerCacheReplayer>(
             GetParam().capture_file_path,
-            ServerCacheReplayer::kOptionFailOnInvalidJsonRecord)));
+            ServerCacheReplayer::kOptionFailOnInvalidJsonRecord |
+                ServerCacheReplayer::kOptionSplitRequestsByForm)));
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

@@ -108,6 +108,10 @@ void TouchToFillController::OnOptionSelected(
   NOTREACHED();
 }
 
+gfx::NativeView TouchToFillController::GetNativeView() {
+  return web_contents_->GetNativeView();
+}
+
 ManualFillingController* TouchToFillController::GetManualFillingController() {
   if (!mf_controller_)
     mf_controller_ = ManualFillingController::GetOrCreate(web_contents_);

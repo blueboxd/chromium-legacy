@@ -36,7 +36,7 @@ void FaceDetectionProviderMac::CreateFaceDetection(
       auto* impl_ptr = impl.get();
       impl_ptr->SetBinding(mojo::MakeStrongBinding(
           std::move(impl),
-          mojo::InterfaceRequest<mojom::FaceDetection>(receiver)));
+          mojo::InterfaceRequest<mojom::FaceDetection>(std::move(receiver))));
       return;
     }
   }

@@ -27,8 +27,6 @@ class StubRenderWidgetHostOwnerDelegate : public RenderWidgetHostOwnerDelegate {
   bool IsNeverVisible() override;
   WebPreferences GetWebkitPreferencesForWidget() override;
   FrameTreeNode* GetFocusedFrame() override;
-  void UpdatePageVisualProperties(
-      const VisualProperties& visual_properties) override {}
   void ShowContextMenu(RenderFrameHost* render_frame_host,
                        const ContextMenuParams& params) override {}
 };

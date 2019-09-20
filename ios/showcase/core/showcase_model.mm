@@ -113,6 +113,12 @@
       showcase::kUseCaseKey : @"Infobar Banner",
     },
     @{
+      showcase::kClassForDisplayKey : @"InfobarBannerViewController",
+      showcase::
+      kClassForInstantiationKey : @"SCInfobarBannerNoModalCoordinator",
+      showcase::kUseCaseKey : @"Infobar Banner No Modal",
+    },
+    @{
       showcase::kClassForDisplayKey : @"AlertController",
       showcase::kClassForInstantiationKey : @"SCAlertCoordinator",
       showcase::kUseCaseKey : @"Alert",

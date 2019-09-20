@@ -69,12 +69,13 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 
 - (instancetype)initWithInfoBarDelegate:
                     (infobars::InfoBarDelegate*)infoBarDelegate
+                           badgeSupport:(BOOL)badgeSupport
                                    type:(InfobarType)infobarType {
   self = [super initWithBaseViewController:nil browserState:nil];
   if (self) {
     _infobarDelegate = infoBarDelegate;
     _presented = YES;
-    _hasBadge = YES;
+    _hasBadge = badgeSupport;
     _infobarType = infobarType;
   }
   return self;

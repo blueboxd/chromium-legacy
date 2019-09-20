@@ -1485,7 +1485,8 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   // in OnSynchronizeVisualProperties(), which would pass it along if it did
   // change.
   render_widget->UpdateWebViewWithDeviceScaleFactor();
-  render_widget->OnSynchronizeVisualProperties(params->visual_properties);
+  render_widget->SynchronizeVisualPropertiesFromRenderView(
+      params->visual_properties);
 
   // The WebFrame created here was already attached to the Page as its
   // main frame, and the WebFrameWidget has been initialized, so we can call
@@ -1715,7 +1716,7 @@ void RenderFrameImpl::CreateFrame(
     // thus would not get VisualProperty updates while the frame is provisional,
     // we need at least one update to them in order to meet expectations in the
     // renderer, and that update comes as part of the CreateFrame message.
-    render_frame->render_widget_->OnSynchronizeVisualProperties(
+    render_frame->render_widget_->SynchronizeVisualPropertiesFromRenderView(
         widget_params->visual_properties);
   }
 

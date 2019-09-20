@@ -6,7 +6,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
+#include "components/page_load_metrics/browser/page_load_metrics_util.h"
 
 namespace {
 

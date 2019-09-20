@@ -53,6 +53,13 @@ void AddSupervisionMetricsRecorder::RecordAddSupervisionEnrollment(
       base::RecordAction(
           base::UserMetricsAction("AddSupervisionDialog_Closed"));
       break;
+    case EnrollmentState::kSwitchedAccounts:
+      DCHECK(!EnrollmentCompleted()) << "The only way for the user to switch "
+                                        "accounts is before enrollment";
+      RecordUserTime("AddSupervisionDialog.EnrollmentNotCompletedUserTime");
+      base::RecordAction(
+          base::UserMetricsAction("AddSupervisionDialog_SwitchedAccounts"));
+      break;
   }
 }
 

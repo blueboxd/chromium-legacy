@@ -421,7 +421,6 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="4039983576244166038">Empty row header</translation>
 <translation id="4042843249978639960">No next level 2 heading.</translation>
 <translation id="4043348641337972076">No previous ARIA landmark.</translation>
-<translation id="4045764028670444336">Misspelling start</translation>
 <translation id="4047216625641135770">Mark</translation>
 <translation id="404803211695627272"><ph name="V1" />–<ph name="V2" /></translation>
 <translation id="4053520724192563562">Lime Green</translation>
@@ -504,7 +503,6 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="4547556996012970016">Next level 5 heading</translation>
 <translation id="4562381607973973258">Header</translation>
 <translation id="4569941707103739422">Press up or down arrow to navigate; enter to activate.</translation>
-<translation id="4570424871453628777">Misspelling end</translation>
 <translation id="4591507479202817876">, selected</translation>
 <translation id="4597532268155981612">form</translation>
 <translation id="4597896406374528575">April</translation>
@@ -728,7 +726,6 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="6037602951055904232">Pan forward</translation>
 <translation id="6042826534790431634">Press Search+Space to activate.</translation>
 <translation id="6044160928851315051">Darken screen</translation>
-<translation id="6065293622157674001">Grammar error start</translation>
 <translation id="6082768461603900813">Basic Navigation</translation>
 <translation id="6118126368611144850">Android apps for Chrome. If you have Play Store on your device, get a sneak peek at ChromeVox with Android apps. Try the experimental support by downloading Google Chrome Canary from the Play Store.</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -869,7 +866,6 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="7143207342074048698">Connecting ...</translation>
 <translation id="7153618581592392745">Lavender</translation>
 <translation id="7157306005867877619">Abstract</translation>
-<translation id="7161425887892204659">Text match end</translation>
 <translation id="7161771961008409533">Pop-up button</translation>
 <translation id="7165714724802225287">Current display style is interleave.</translation>
 <translation id="7167657087543110">character echo</translation>
@@ -907,7 +903,6 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Leaving table.</translation>
 <translation id="738899727977260036">Slate Blue</translation>
-<translation id="7392145451309930991">Text match start</translation>
 <translation id="739763518212184081">Previous Line</translation>
 <translation id="7400575256015741911">Spelling mistake detected</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -1120,7 +1115,6 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="8476408756881832830">Pause playback when ChromeVox is speaking</translation>
 <translation id="8476508772960940536">window overview</translation>
 <translation id="8503360654911991865">Decrease navigation granularity</translation>
-<translation id="8504695234784218301">Grammar error end</translation>
 <translation id="8520472399088452386">Spin button</translation>
 <translation id="8534394844575788431">Formatting</translation>
 <translation id="8538744478902126321">Make a guess at the row header of the current cell</translation>

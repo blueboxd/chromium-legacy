@@ -153,6 +153,11 @@ TEST_F(DnsProbeRunnerTest, Probe_FAILING) {
   RunTest(DnsProbeRunner::FAILING);
 }
 
+TEST_F(DnsProbeRunnerTest, Probe_DnsNotRun) {
+  SetupTest(net::ERR_DNS_CACHE_MISS, FakeHostResolver::kNoResponse);
+  RunTest(DnsProbeRunner::UNKNOWN);
+}
+
 TEST_F(DnsProbeRunnerTest, TwoProbes) {
   SetupTest({{net::OK, FakeHostResolver::kOneAddressResponse},
              {net::ERR_NAME_NOT_RESOLVED, FakeHostResolver::kNoResponse}});

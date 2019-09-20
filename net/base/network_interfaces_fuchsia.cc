@@ -7,13 +7,14 @@
 #include <fuchsia/hardware/ethernet/cpp/fidl.h>
 #include <fuchsia/net/cpp/fidl.h>
 #include <fuchsia/netstack/cpp/fidl.h>
+#include <lib/sys/cpp/component_context.h>
 
 #include <string>
 #include <utility>
 
 #include "base/format_macros.h"
+#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/fuchsia/service_directory_client.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/network_interfaces.h"
@@ -102,9 +103,9 @@ std::vector<NetworkInterface> NetInterfaceToNetworkInterfaces(
 bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
   DCHECK(networks);
 
-  fuchsia::netstack::NetstackSyncPtr netstack =
-      base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
-          ->ConnectToServiceSync<fuchsia::netstack::Netstack>();
+  fuchsia::netstack::NetstackSyncPtr netstack;
+  base::fuchsia::ComponentContextForCurrentProcess()->svc()->Connect(
+      netstack.NewRequest());
 
   // TODO(kmarshall): Use NetworkChangeNotifier's cached interface list.
   std::vector<fuchsia::netstack::NetInterface> interfaces;

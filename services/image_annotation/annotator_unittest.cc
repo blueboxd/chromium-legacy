@@ -15,7 +15,8 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "services/data_decoder/public/cpp/test_data_decoder_service.h"
@@ -238,14 +239,14 @@ class TestImageProcessor : public mojom::ImageProcessor {
  public:
   TestImageProcessor() = default;
 
-  mojom::ImageProcessorPtr GetPtr() {
-    mojom::ImageProcessorPtr ptr;
-    bindings_.AddBinding(this, mojo::MakeRequest(&ptr));
-    return ptr;
+  mojo::PendingRemote<mojom::ImageProcessor> GetPendingRemote() {
+    mojo::PendingRemote<mojom::ImageProcessor> remote;
+    receivers_.Add(this, remote.InitWithNewPipeAndPassReceiver());
+    return remote;
   }
 
   void Reset() {
-    bindings_.CloseAllBindings();
+    receivers_.Clear();
     callbacks_.clear();
   }
 
@@ -258,7 +259,7 @@ class TestImageProcessor : public mojom::ImageProcessor {
  private:
   std::vector<GetJpgImageDataCallback> callbacks_;
 
-  mojo::BindingSet<mojom::ImageProcessor> bindings_;
+  mojo::ReceiverSet<mojom::ImageProcessor> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(TestImageProcessor);
 };
@@ -403,7 +404,7 @@ TEST(AnnotatorTest, OcrSuccessAndCache) {
     std::vector<mojom::Annotation> annotations;
 
     annotator.AnnotateImage(
-        kImage1Url, kDescLang, processor.GetPtr(),
+        kImage1Url, kDescLang, processor.GetPendingRemote(),
         base::BindOnce(&ReportResult, &error, &annotations));
     test_task_env.RunUntilIdle();
 
@@ -469,7 +470,7 @@ TEST(AnnotatorTest, OcrSuccessAndCache) {
     std::vector<mojom::Annotation> annotations;
 
     annotator.AnnotateImage(
-        kImage1Url, kDescLang, processor.GetPtr(),
+        kImage1Url, kDescLang, processor.GetPendingRemote(),
         base::BindOnce(&ReportResult, &error, &annotations));
     test_task_env.RunUntilIdle();
 
@@ -506,7 +507,7 @@ TEST(AnnotatorTest, DescriptionSuccess) {
   base::Optional<mojom::AnnotateImageError> error;
   std::vector<mojom::Annotation> annotations;
 
-  annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPtr(),
+  annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPendingRemote(),
                           base::BindOnce(&ReportResult, &error, &annotations));
   test_task_env.RunUntilIdle();
 
@@ -613,7 +614,7 @@ TEST(AnnotatorTest, DoubleOcrResult) {
   base::Optional<mojom::AnnotateImageError> error;
   std::vector<mojom::Annotation> annotations;
 
-  annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPtr(),
+  annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPendingRemote(),
                           base::BindOnce(&ReportResult, &error, &annotations));
   test_task_env.RunUntilIdle();
 
@@ -728,7 +729,7 @@ TEST(AnnotatorTest, HttpError) {
   base::Optional<mojom::AnnotateImageError> error;
   std::vector<mojom::Annotation> annotations;
 
-  annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPtr(),
+  annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPendingRemote(),
                           base::BindOnce(&ReportResult, &error, &annotations));
   test_task_env.RunUntilIdle();
 
@@ -784,7 +785,7 @@ TEST(AnnotatorTest, BackendError) {
   base::Optional<mojom::AnnotateImageError> error;
   std::vector<mojom::Annotation> annotations;
 
-  annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPtr(),
+  annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPendingRemote(),
                           base::BindOnce(&ReportResult, &error, &annotations));
   test_task_env.RunUntilIdle();
 
@@ -867,7 +868,7 @@ TEST(AnnotatorTest, OcrBackendError) {
   base::Optional<mojom::AnnotateImageError> error;
   std::vector<mojom::Annotation> annotations;
 
-  annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPtr(),
+  annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPendingRemote(),
                           base::BindOnce(&ReportResult, &error, &annotations));
   test_task_env.RunUntilIdle();
 
@@ -961,7 +962,7 @@ TEST(AnnotatorTest, DescriptionBackendError) {
   base::Optional<mojom::AnnotateImageError> error;
   std::vector<mojom::Annotation> annotations;
 
-  annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPtr(),
+  annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPendingRemote(),
                           base::BindOnce(&ReportResult, &error, &annotations));
   test_task_env.RunUntilIdle();
 
@@ -1051,7 +1052,7 @@ TEST(AnnotatorTest, ServerError) {
   base::Optional<mojom::AnnotateImageError> error;
   std::vector<mojom::Annotation> annotations;
 
-  annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPtr(),
+  annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPendingRemote(),
                           base::BindOnce(&ReportResult, &error, &annotations));
   test_task_env.RunUntilIdle();
 
@@ -1109,7 +1110,7 @@ TEST(AnnotatorTest, AdultError) {
   base::Optional<mojom::AnnotateImageError> error;
   std::vector<mojom::Annotation> annotations;
 
-  annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPtr(),
+  annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPendingRemote(),
                           base::BindOnce(&ReportResult, &error, &annotations));
   test_task_env.RunUntilIdle();
 
@@ -1186,7 +1187,7 @@ TEST(AnnotatorTest, ProcessorFails) {
 
   for (int i = 0; i < 3; ++i) {
     annotator.AnnotateImage(
-        kImage1Url, kDescLang, processor[i].GetPtr(),
+        kImage1Url, kDescLang, processor[i].GetPendingRemote(),
         base::BindOnce(&ReportResult, &error[i], &annotations[i]));
   }
   test_task_env.RunUntilIdle();
@@ -1266,7 +1267,7 @@ TEST(AnnotatorTest, ProcessorFailedPreviously) {
 
   // Processor 1 makes a request for annotation of a given image.
   annotator.AnnotateImage(
-      kImage1Url, kDescLang, processor[0].GetPtr(),
+      kImage1Url, kDescLang, processor[0].GetPendingRemote(),
       base::BindOnce(&ReportResult, &error[0], &annotations[0]));
   test_task_env.RunUntilIdle();
 
@@ -1281,7 +1282,7 @@ TEST(AnnotatorTest, ProcessorFailedPreviously) {
 
   // Processor 2 makes a request for annotation of the same image.
   annotator.AnnotateImage(
-      kImage1Url, kDescLang, processor[1].GetPtr(),
+      kImage1Url, kDescLang, processor[1].GetPendingRemote(),
       base::BindOnce(&ReportResult, &error[1], &annotations[1]));
   test_task_env.RunUntilIdle();
 
@@ -1335,7 +1336,7 @@ TEST(AnnotatorTest, ProcessorDies) {
 
   for (int i = 0; i < 3; ++i) {
     annotator.AnnotateImage(
-        kImage1Url, kDescLang, processor[i].GetPtr(),
+        kImage1Url, kDescLang, processor[i].GetPendingRemote(),
         base::BindOnce(&ReportResult, &error[i], &annotations[i]));
   }
   test_task_env.RunUntilIdle();
@@ -1410,13 +1411,13 @@ TEST(AnnotatorTest, ConcurrentSameBatch) {
 
   // Request OCR for images 1, 2 and 3.
   annotator.AnnotateImage(
-      kImage1Url, kDescLang, processor[0].GetPtr(),
+      kImage1Url, kDescLang, processor[0].GetPendingRemote(),
       base::BindOnce(&ReportResult, &error[0], &annotations[0]));
   annotator.AnnotateImage(
-      kImage2Url, kDescLang, processor[1].GetPtr(),
+      kImage2Url, kDescLang, processor[1].GetPendingRemote(),
       base::BindOnce(&ReportResult, &error[1], &annotations[1]));
   annotator.AnnotateImage(
-      kImage3Url, kDescLang, processor[2].GetPtr(),
+      kImage3Url, kDescLang, processor[2].GetPendingRemote(),
       base::BindOnce(&ReportResult, &error[2], &annotations[2]));
   test_task_env.RunUntilIdle();
 
@@ -1497,7 +1498,7 @@ TEST(AnnotatorTest, ConcurrentSeparateBatches) {
 
   // Request OCR for image 1.
   annotator.AnnotateImage(
-      kImage1Url, kDescLang, processor[0].GetPtr(),
+      kImage1Url, kDescLang, processor[0].GetPendingRemote(),
       base::BindOnce(&ReportResult, &error[0], &annotations[0]));
   test_task_env.RunUntilIdle();
 
@@ -1517,7 +1518,7 @@ TEST(AnnotatorTest, ConcurrentSeparateBatches) {
 
   // Request OCR for image 2.
   annotator.AnnotateImage(
-      kImage2Url, kDescLang, processor[1].GetPtr(),
+      kImage2Url, kDescLang, processor[1].GetPendingRemote(),
       base::BindOnce(&ReportResult, &error[1], &annotations[1]));
   test_task_env.RunUntilIdle();
 
@@ -1641,7 +1642,7 @@ TEST(AnnotatorTest, DuplicateWork) {
 
   // First request annotation of the image with processor 1.
   annotator.AnnotateImage(
-      kImage1Url, kDescLang, processor[0].GetPtr(),
+      kImage1Url, kDescLang, processor[0].GetPendingRemote(),
       base::BindOnce(&ReportResult, &error[0], &annotations[0]));
   test_task_env.RunUntilIdle();
 
@@ -1653,7 +1654,7 @@ TEST(AnnotatorTest, DuplicateWork) {
 
   // Now request annotation of the image with processor 2.
   annotator.AnnotateImage(
-      kImage1Url, kDescLang, processor[1].GetPtr(),
+      kImage1Url, kDescLang, processor[1].GetPendingRemote(),
       base::BindOnce(&ReportResult, &error[1], &annotations[1]));
   test_task_env.RunUntilIdle();
 
@@ -1671,7 +1672,7 @@ TEST(AnnotatorTest, DuplicateWork) {
 
   // Now request annotation of the image with processor 3.
   annotator.AnnotateImage(
-      kImage1Url, kDescLang, processor[2].GetPtr(),
+      kImage1Url, kDescLang, processor[2].GetPendingRemote(),
       base::BindOnce(&ReportResult, &error[2], &annotations[2]));
   test_task_env.RunUntilIdle();
 
@@ -1688,7 +1689,7 @@ TEST(AnnotatorTest, DuplicateWork) {
   test_task_env.FastForwardBy(base::TimeDelta::FromSeconds(1));
   EXPECT_THAT(test_url_factory.requests(), SizeIs(1));
   annotator.AnnotateImage(
-      kImage1Url, kDescLang, processor[3].GetPtr(),
+      kImage1Url, kDescLang, processor[3].GetPendingRemote(),
       base::BindOnce(&ReportResult, &error[3], &annotations[3]));
   test_task_env.RunUntilIdle();
 
@@ -1749,13 +1750,13 @@ TEST(AnnotatorTest, DescPolicy) {
 
   // Request annotation for images 1, 2 and 3.
   annotator.AnnotateImage(
-      kImage1Url, kDescLang, processor[0].GetPtr(),
+      kImage1Url, kDescLang, processor[0].GetPendingRemote(),
       base::BindOnce(&ReportResult, &error[0], &annotations[0]));
   annotator.AnnotateImage(
-      kImage2Url, kDescLang, processor[1].GetPtr(),
+      kImage2Url, kDescLang, processor[1].GetPendingRemote(),
       base::BindOnce(&ReportResult, &error[1], &annotations[1]));
   annotator.AnnotateImage(
-      kImage3Url, kDescLang, processor[2].GetPtr(),
+      kImage3Url, kDescLang, processor[2].GetPendingRemote(),
       base::BindOnce(&ReportResult, &error[2], &annotations[2]));
   test_task_env.RunUntilIdle();
 
@@ -1952,13 +1953,13 @@ TEST(AnnotatorTest, DescLanguage) {
   // Request annotation for one image in two languages, and one other image in
   // one language.
   annotator.AnnotateImage(
-      kImage1Url, "fr", processor[0].GetPtr(),
+      kImage1Url, "fr", processor[0].GetPendingRemote(),
       base::BindOnce(&ReportResult, &error[0], &annotations[0]));
   annotator.AnnotateImage(
-      kImage1Url, "en-AU", processor[1].GetPtr(),
+      kImage1Url, "en-AU", processor[1].GetPendingRemote(),
       base::BindOnce(&ReportResult, &error[1], &annotations[1]));
   annotator.AnnotateImage(
-      kImage2Url, "en-US", processor[2].GetPtr(),
+      kImage2Url, "en-US", processor[2].GetPendingRemote(),
       base::BindOnce(&ReportResult, &error[2], &annotations[2]));
   test_task_env.RunUntilIdle();
 
@@ -2143,7 +2144,7 @@ TEST(AnnotatorTest, ApiKey) {
                         test_dd_service.connector());
     TestImageProcessor processor;
 
-    annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPtr(),
+    annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPendingRemote(),
                             base::DoNothing());
     test_task_env.RunUntilIdle();
 
@@ -2177,7 +2178,7 @@ TEST(AnnotatorTest, ApiKey) {
                         test_dd_service.connector());
     TestImageProcessor processor;
 
-    annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPtr(),
+    annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPendingRemote(),
                             base::DoNothing());
     test_task_env.RunUntilIdle();
 
@@ -2208,7 +2209,7 @@ TEST(AnnotatorTest, ApiKey) {
                         test_dd_service.connector());
     TestImageProcessor processor;
 
-    annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPtr(),
+    annotator.AnnotateImage(kImage1Url, kDescLang, processor.GetPendingRemote(),
                             base::DoNothing());
     test_task_env.RunUntilIdle();
 

@@ -1435,9 +1435,13 @@ if (enable_java_templates) {
         rebase_path(invoker.java_sources_file, root_build_dir),
         "--jacococli-jar",
         rebase_path(_jacococli_jar, root_build_dir),
-        "--files-to-instrument",
-        rebase_path(coverage_instrumentation_input_file, root_build_dir),
       ]
+      if (coverage_instrumentation_input_file != "") {
+        args += [
+          "--files-to-instrument",
+          rebase_path(coverage_instrumentation_input_file, root_build_dir),
+        ]
+      }
     }
   }
 

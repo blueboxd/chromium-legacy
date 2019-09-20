@@ -36,8 +36,8 @@ TEST_F(ProgressBarTest, OverrideDefaultColors) {
   EXPECT_NE(SK_ColorGREEN, bar.GetBackgroundColor());
   EXPECT_NE(bar.GetForegroundColor(), bar.GetBackgroundColor());
 
-  bar.set_foreground_color(SK_ColorRED);
-  bar.set_background_color(SK_ColorGREEN);
+  bar.SetForegroundColor(SK_ColorRED);
+  bar.SetBackgroundColor(SK_ColorGREEN);
   EXPECT_EQ(SK_ColorRED, bar.GetForegroundColor());
   EXPECT_EQ(SK_ColorGREEN, bar.GetBackgroundColor());
 }

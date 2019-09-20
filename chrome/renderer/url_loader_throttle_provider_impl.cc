@@ -117,7 +117,7 @@ URLLoaderThrottleProviderImpl::URLLoaderThrottleProviderImpl(
     : type_(type),
       chrome_content_renderer_client_(chrome_content_renderer_client) {
   DETACH_FROM_THREAD(thread_checker_);
-  broker->GetInterface(mojo::MakeRequest(&safe_browsing_info_));
+  broker->GetInterface(safe_browsing_remote_.InitWithNewPipeAndPassReceiver());
   if (data_reduction_proxy::params::IsEnabledWithNetworkService())
     broker->GetInterface(mojo::MakeRequest(&data_reduction_proxy_info_));
 }
@@ -132,7 +132,8 @@ URLLoaderThrottleProviderImpl::URLLoaderThrottleProviderImpl(
       chrome_content_renderer_client_(other.chrome_content_renderer_client_) {
   DETACH_FROM_THREAD(thread_checker_);
   if (other.safe_browsing_)
-    other.safe_browsing_->Clone(mojo::MakeRequest(&safe_browsing_info_));
+    other.safe_browsing_->Clone(
+        safe_browsing_remote_.InitWithNewPipeAndPassReceiver());
   if (other.data_reduction_proxy_) {
     other.data_reduction_proxy_->Clone(
         mojo::MakeRequest(&data_reduction_proxy_info_));
@@ -143,8 +144,8 @@ URLLoaderThrottleProviderImpl::URLLoaderThrottleProviderImpl(
 std::unique_ptr<content::URLLoaderThrottleProvider>
 URLLoaderThrottleProviderImpl::Clone() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (safe_browsing_info_)
-    safe_browsing_.Bind(std::move(safe_browsing_info_));
+  if (safe_browsing_remote_)
+    safe_browsing_.Bind(std::move(safe_browsing_remote_));
   if (data_reduction_proxy_info_)
     data_reduction_proxy_.Bind(std::move(data_reduction_proxy_info_));
   return base::WrapUnique(new URLLoaderThrottleProviderImpl(*this));
@@ -182,8 +183,8 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
   }
 
   if (!is_frame_resource) {
-    if (safe_browsing_info_)
-      safe_browsing_.Bind(std::move(safe_browsing_info_));
+    if (safe_browsing_remote_)
+      safe_browsing_.Bind(std::move(safe_browsing_remote_));
     throttles.push_back(
         std::make_unique<safe_browsing::RendererURLLoaderThrottle>(
             safe_browsing_.get(), render_frame_id));

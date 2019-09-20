@@ -4,10 +4,10 @@
 
 #include "chrome/browser/page_load_metrics/observers/data_reduction_proxy_metrics_observer_test_utils.h"
 
-#include "chrome/browser/page_load_metrics/metrics_web_contents_observer.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
-#include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
+#include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
+#include "components/page_load_metrics/browser/page_load_metrics_observer.h"
+#include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "content/public/test/web_contents_tester.h"
 
 namespace data_reduction_proxy {

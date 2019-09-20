@@ -59,7 +59,8 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/buildflags/buildflags.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "rlz/buildflags/buildflags.h"
 #include "services/preferences/public/cpp/tracked/configuration.h"
 #include "services/preferences/public/cpp/tracked/pref_names.h"
@@ -430,10 +431,10 @@ std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateProfilePrefs(
     std::unique_ptr<PrefValueStore::Delegate> delegate) {
   TRACE_EVENT0("browser", "chrome_prefs::CreateProfilePrefs");
 
-  prefs::mojom::ResetOnLoadObserverPtr reset_on_load_observer;
-  mojo::MakeStrongBinding(
+  mojo::PendingRemote<prefs::mojom::ResetOnLoadObserver> reset_on_load_observer;
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<ResetOnLoadObserverImpl>(profile_path),
-      mojo::MakeRequest(&reset_on_load_observer));
+      reset_on_load_observer.InitWithNewPipeAndPassReceiver());
   sync_preferences::PrefServiceSyncableFactory factory;
   scoped_refptr<PersistentPrefStore> user_pref_store =
       CreateProfilePrefStoreManager(profile_path)

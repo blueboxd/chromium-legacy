@@ -14,8 +14,8 @@
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/page_load_metrics/observers/data_reduction_proxy_metrics_observer_test_utils.h"
 #include "chrome/browser/page_load_metrics/observers/histogram_suffixes.h"
-#include "chrome/browser/page_load_metrics/page_load_tracker.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
+#include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "components/previews/content/previews_user_data.h"
 #include "content/public/browser/web_contents.h"
 

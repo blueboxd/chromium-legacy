@@ -13,13 +13,14 @@
 #include "components/leveldb_proto/internal/leveldb_database.h"
 #include "components/leveldb_proto/internal/proto_database_selector.h"
 #include "components/leveldb_proto/internal/proto_leveldb_wrapper.h"
+#include "components/leveldb_proto/public/proto_database.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
+#include "components/leveldb_proto/public/shared_proto_database_client_list.h"
 
 namespace leveldb_proto {
 
 namespace {
 
-const char kMetadataDatabaseName[] = "Metadata";
 const base::FilePath::CharType kMetadataDatabasePath[] =
     FILE_PATH_LITERAL("metadata");
 const int kMaxInitMetaDatabaseAttempts = 3;
@@ -65,7 +66,9 @@ SharedProtoDatabase::SharedProtoDatabase(const std::string& client_db_id,
       db_(std::make_unique<LevelDB>(client_db_id.c_str())),
       db_wrapper_(std::make_unique<ProtoLevelDBWrapper>(task_runner_)),
       metadata_db_wrapper_(
-          ProtoDatabaseProvider::CreateUniqueDB<SharedDBMetadataProto>(
+          ProtoDatabaseProvider::GetUniqueDB<SharedDBMetadataProto>(
+              ProtoDbType::SHARED_DB_METADATA,
+              db_dir_.Append(base::FilePath(kMetadataDatabasePath)),
               task_runner_)) {
   DETACH_FROM_SEQUENCE(on_task_runner_);
 }
@@ -298,11 +301,8 @@ void SharedProtoDatabase::InitMetadataDatabase(int attempt, bool corruption) {
     return;
   }
 
-  base::FilePath metadata_path =
-      db_dir_.Append(base::FilePath(kMetadataDatabasePath));
   // TODO: figure out destroy on corruption param
   metadata_db_wrapper_->Init(
-      kMetadataDatabaseName, metadata_path, CreateSimpleOptions(),
       base::BindOnce(&SharedProtoDatabase::OnMetadataInitComplete, this,
                      attempt, corruption));
 }
@@ -310,8 +310,10 @@ void SharedProtoDatabase::InitMetadataDatabase(int attempt, bool corruption) {
 void SharedProtoDatabase::OnMetadataInitComplete(
     int attempt,
     bool corruption,
-    bool success) {
+    leveldb_proto::Enums::InitStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(on_task_runner_);
+
+  bool success = status == Enums::kOK;
 
   if (!success) {
     init_state_ = InitState::kFailure;

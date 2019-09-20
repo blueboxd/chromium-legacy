@@ -7,7 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
+#include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"

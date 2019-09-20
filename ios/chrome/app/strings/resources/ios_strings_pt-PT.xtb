@@ -18,7 +18,6 @@
 <translation id="1176932207622159128">Não é Possível Guardar a Imagem</translation>
 <translation id="1180526666083833456">Sincronize e personalize entre dispositivos.</translation>
 <translation id="1181037720776840403">Remover</translation>
-<translation id="1201530049782216880">Novo separador de navegação anónima</translation>
 <translation id="1209206284964581585">Ocultar para já</translation>
 <translation id="1219674500290482172">Não é possível estabelecer ligação à Internet.</translation>
 <translation id="122699739164161391">Fechar todos os separadores</translation>
@@ -94,7 +93,6 @@
 <translation id="2149973817440762519">Editar marcador</translation>
 <translation id="2179182049312275900">Pode ativar a sincronização em qualquer altura nas definições.</translation>
 <translation id="2198757192731523470">A Google pode utilizar o seu histórico para personalizar a Pesquisa, os anúncios e outros serviços Google.</translation>
-<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> artigos não lidos na Lista de leitura.</translation>
 <translation id="2230173723195178503">Página Web carregada</translation>
 <translation id="2239626343334228536">A limpar os dados de navegação…</translation>
 <translation id="2256128224215992540">Sugestões de pesquisa e de sites</translation>
@@ -124,7 +122,6 @@
 <translation id="2625189173221582860">Palavra-passe copiada</translation>
 <translation id="2648803196158606475">Eliminar lidas</translation>
 <translation id="2653659639078652383">Submeter</translation>
-<translation id="2684815431982545828">Novo separador</translation>
 <translation id="2690858294534178585">A câmara está a ser utilizada</translation>
 <translation id="2691653761409724435">Não disponível offline</translation>
 <translation id="2702801445560668637">Lista de leitura</translation>
@@ -267,7 +264,6 @@ Os dados estão encriptados com a sua frase de acesso de sincronização. Introd
 
 Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização<ph name="END_LINK" />.</translation>
 <translation id="4805759445554688327">Número de cartão inválido</translation>
-<translation id="4807020197310989387">1 artigo não lido na Lista de leitura.</translation>
 <translation id="4818522717893377262">Adicionar idioma…</translation>
 <translation id="481968316161811770">Cookies, dados de sites</translation>
 <translation id="4833786495304741580">Envia automaticamente estatísticas de utilização e relatórios de falhas para a Google.</translation>

@@ -38,10 +38,6 @@ cr-checkbox {
   --cr-checkbox-label-padding-start: 12px;
 }
 
-#syncConsentOverviewDialog [slot='bottom-buttons'] {
-  padding: 0 6px; /* = 8px - 2px button border */
-}
-
 /* --------------- Sync Make Chrome ... --------------- */
 
 #syncConsentNewDialog [slot='oobe-icon'] {
@@ -59,10 +55,6 @@ cr-checkbox {
 
 #syncConsentNewDialog .sync-feature-item-icon {
   padding-inline-end: 16px;
-}
-
-#syncConsentNewDialog [slot='bottom-buttons'] {
-  padding: 0 24px;
 }
 
 /* ------------------ Sync options ------------- */

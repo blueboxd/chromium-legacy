@@ -60,7 +60,7 @@ const base::Feature kSimplifyHttpsIndicator{"SimplifyHttpsIndicator",
 // except for the default match which is unchanged in position.
 const base::Feature kOmniboxGroupSuggestionsBySearchVsUrl{
   "OmniboxGroupSuggestionsBySearchVsUrl",
-#if defined(OS_IOS) || defined(OS_ANDROID)
+#if defined(OS_IOS)
       base::FEATURE_DISABLED_BY_DEFAULT
 #else
       base::FEATURE_ENABLED_BY_DEFAULT
@@ -265,7 +265,7 @@ const base::Feature kOmniboxSearchEngineLogo{"OmniboxSearchEngineLogo",
 // Exempts the default match from demotion-by-type.
 const base::Feature kOmniboxPreserveDefaultMatchScore {
   "OmniboxPreserveDefaultMatchScore",
-#if defined(OS_IOS) || defined(OS_ANDROID)
+#if defined(OS_IOS)
       base::FEATURE_DISABLED_BY_DEFAULT
 #else
       base::FEATURE_ENABLED_BY_DEFAULT

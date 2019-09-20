@@ -125,6 +125,9 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // to advance to directly to guiding the user to check their phone as the site
   // is strongly indicating that it will work.
   //
+  // have_paired_phones is true if a previous call to |GetCablePairings|
+  // returned one or more caBLE pairings.
+  //
   // |qr_generator_key| is a random AES-256 key that can be used to
   // encrypt a coarse timestamp with |CableDiscoveryData::DeriveQRKeyMaterial|.
   // The UI may display a QR code with the resulting secret which, if
@@ -137,15 +140,15 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // handshakes is irrelevant if the UI is not displaying the QR codes.
   virtual bool SetCableTransportInfo(
       bool cable_extension_provided,
+      bool have_paired_phones,
       base::Optional<device::QRGeneratorKey> qr_generator_key);
 
-  // AppendCablePairings appends any known caBLE pairing data to |discoveries|.
-  // For example, the embedder may know of pairings because it configured the
+  // GetCablePairings returns any known caBLE pairing data. For example, the
+  // embedder may know of pairings because it configured the
   // |FidoDiscoveryFactory| (using |CustomizeDiscoveryFactory|) to make a
   // callback when a phone offered long-term pairing data. Additionally, it may
   // know of pairings via some cloud-based service or sync feature.
-  virtual void AppendCablePairings(
-      std::vector<device::CableDiscoveryData>* pairings);
+  virtual std::vector<device::CableDiscoveryData> GetCablePairings();
 
   // SelectAccount is called to allow the embedder to select between one or more
   // accounts. This is triggered when the web page requests an unspecified

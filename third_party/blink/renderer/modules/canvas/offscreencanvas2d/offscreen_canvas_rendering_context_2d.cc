@@ -132,6 +132,8 @@ int OffscreenCanvasRenderingContext2D::Height() const {
 
 bool OffscreenCanvasRenderingContext2D::CanCreateCanvas2dResourceProvider()
     const {
+  if (!Host() || Host()->Size().IsEmpty())
+    return false;
   return !!offscreenCanvasForBinding()->GetOrCreateResourceProvider();
 }
 

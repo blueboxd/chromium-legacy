@@ -26,8 +26,9 @@
 
 #if defined(OS_FUCHSIA)
 #include <fuchsia/deprecatedtimezone/cpp/fidl.h>
+#include <lib/sys/cpp/component_context.h>
+#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/fuchsia/service_directory_client.h"
 #include "base/no_destructor.h"
 #include "base/numerics/clamped_math.h"
 #endif
@@ -72,11 +73,16 @@ void SysTimeToTimeStruct(SysTime t, struct tm* timestruct, bool is_local) {
 #elif defined(OS_FUCHSIA)
 typedef time_t SysTime;
 
+fuchsia::deprecatedtimezone::TimezoneSyncPtr ConnectTimeZoneServiceSync() {
+  fuchsia::deprecatedtimezone::TimezoneSyncPtr timezone;
+  base::fuchsia::ComponentContextForCurrentProcess()->svc()->Connect(
+      timezone.NewRequest());
+  return timezone;
+}
+
 SysTime GetTimezoneOffset(SysTime utc_time) {
   static base::NoDestructor<fuchsia::deprecatedtimezone::TimezoneSyncPtr>
-      timezone(
-          base::fuchsia::ServiceDirectoryClient::ForCurrentProcess()
-              ->ConnectToServiceSync<fuchsia::deprecatedtimezone::Timezone>());
+      timezone(ConnectTimeZoneServiceSync());
 
   int64_t milliseconds_since_epoch =
       base::ClampMul(utc_time, base::Time::kMillisecondsPerSecond);

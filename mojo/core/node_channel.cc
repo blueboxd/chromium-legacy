@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "mojo/core/broker_host.h"
 #include "mojo/core/channel.h"
 #include "mojo/core/configuration.h"
 #include "mojo/core/core.h"
@@ -41,6 +42,7 @@ enum class MessageType : uint32_t {
   EVENT_MESSAGE_FROM_RELAY,
 #endif
   ACCEPT_PEER,
+  BIND_BROKER_HOST,
 };
 
 struct Header {
@@ -109,6 +111,9 @@ struct RequestPortMergeData {
 struct IntroductionData {
   ports::NodeName name;
 };
+
+// This message is just a PlatformHandle.
+struct BindBrokerHostData {};
 
 #if defined(OS_WIN)
 // This struct is followed by the full payload of a message to be relayed.
@@ -373,6 +378,20 @@ void NodeChannel::Broadcast(Channel::MessagePtr message) {
   WriteChannelMessage(std::move(broadcast_message));
 }
 
+void NodeChannel::BindBrokerHost(PlatformHandle broker_host_handle) {
+#if !defined(OS_MACOSX) && !defined(OS_NACL) && !defined(OS_FUCHSIA)
+  DCHECK(broker_host_handle.is_valid());
+  BindBrokerHostData* data;
+  std::vector<PlatformHandle> handles;
+  handles.push_back(std::move(broker_host_handle));
+  Channel::MessagePtr message =
+      CreateMessage(MessageType::BIND_BROKER_HOST, sizeof(BindBrokerHostData),
+                    handles.size(), &data);
+  message->SetHandles(std::move(handles));
+  WriteChannelMessage(std::move(message));
+#endif
+}
+
 #if defined(OS_WIN)
 void NodeChannel::RelayEventMessage(const ports::NodeName& destination,
                                     Channel::MessagePtr message) {
@@ -459,6 +478,17 @@ NodeChannel::NodeChannel(Delegate* delegate,
 
 NodeChannel::~NodeChannel() {
   ShutDown();
+}
+
+void NodeChannel::CreateAndBindLocalBrokerHost(
+    PlatformHandle broker_host_handle) {
+#if !defined(OS_MACOSX) && !defined(OS_NACL) && !defined(OS_FUCHSIA)
+  // Self-owned.
+  ConnectionParams connection_params(
+      PlatformChannelEndpoint(std::move(broker_host_handle)));
+  new BrokerHost(remote_process_handle_.get(), std::move(connection_params),
+                 process_error_callback_);
+#endif
 }
 
 void NodeChannel::OnChannelMessage(const void* payload,
@@ -684,6 +714,13 @@ void NodeChannel::OnChannelMessage(const void* payload,
       }
       break;
     }
+
+    case MessageType::BIND_BROKER_HOST:
+      if (handles.size() == 1) {
+        CreateAndBindLocalBrokerHost(std::move(handles[0]));
+        return;
+      }
+      break;
 
     default:
       // Ignore unrecognized message types, allowing for future extensibility.

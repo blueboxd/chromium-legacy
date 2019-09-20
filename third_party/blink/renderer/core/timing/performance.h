@@ -268,7 +268,8 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   // TODO(npm): is the AtomicString parameter here actually needed?
   static bool PassesTimingAllowCheck(const ResourceResponse&,
                                      const SecurityOrigin&,
-                                     ExecutionContext*);
+                                     ExecutionContext*,
+                                     bool* tainted);
 
   static bool AllowsTimingRedirect(const Vector<ResourceResponse>&,
                                    const ResourceResponse&,

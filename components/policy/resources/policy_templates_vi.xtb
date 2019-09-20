@@ -310,15 +310,6 @@
 
       Nếu chính sách không được đặt, giá trị mặc định 'MultiProfileUserBehaviorMustBePrimary' sẽ áp dụng cho người dùng được doanh nghiệp quản lý và 'MultiProfileUserBehaviorUnrestricted' sẽ được sử dụng cho người dùng không bị quản lý.</translation>
 <translation id="1465619815762735808">Nhấp để phát</translation>
-<translation id="1468307069016535757">Đặt trạng thái mặc định của tính năng trợ năng chế độ tương phản cao trên màn hình đăng nhập.
-
-          Nếu chính sách này được đặt thành true, chế độ tương phản cao sẽ được bật khi màn hình đăng nhập hiển thị.
-
-          Nếu chính sách này được đặt thành false, chế độ tương phản cao sẽ bị tắt khi màn hình đăng nhập hiển thị.
-
-          Nếu bạn đặt chính sách này, người dùng có thể tạm thời ghi đè chính sách bằng cách bật hoặc tắt chế độ tương phản cao. Tuy nhiên, lựa chọn của người dùng không được duy trì mãi và cài đặt mặc định được khôi phục bất cứ khi nào màn hình đăng nhập mới được hiển thị hoặc người dùng không thực hiện thao tác nào trên màn hình đăng nhập trong một phút.
-
-          Nếu không đặt chính sách này, chế độ tương phản cao bị tắt khi màn hình đăng nhập hiển thị lần đầu. Người dùng có thể bật hoặc tắt chế độ tương phản cao bất cứ lúc nào và trạng thái của chế độ này trên màn hình đăng nhập được duy trì giữa những người dùng.</translation>
 <translation id="1468707346106619889">Nếu chính sách này được đặt thành true thì Màn hình hợp nhất sẽ được cho phép và
       bật theo mặc định, nhờ đó cho phép ứng dụng mở rộng nhiều màn hình.
       Người dùng có thể tắt Màn hình hợp nhất cho các màn hình riêng lẻ bằng cách bỏ
@@ -2839,15 +2830,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Các URL (như https://example.com/some/path) sẽ chỉ khớp dưới dạng U2F appID. Các miền (như example.com) chỉ khớp dưới dạng ID RP webauthn. Do đó, để bao gồm cả API U2F và API webauthn cho một trang web cho trước, cần liệt kê cả miền và URL appID.</translation>
 <translation id="5836064773277134605">Hạn chế phạm vi cổng UDP được máy chủ truy cập từ xa sử dụng</translation>
 <translation id="5861856285460256766">Cấu hình mã truy cập dành cho cha mẹ</translation>
-<translation id="5862253018042179045">Đặt trạng thái mặc định của tính năng trợ năng phản hồi bằng giọng nói trên màn hình đăng nhập.
-
-          Nếu chính sách này được đặt thành true, phản hồi bằng giọng nói sẽ được bật khi màn hình đăng nhập hiển thị.
-
-          Nếu chính sách này được đặt thành false, phản hồi bằng giọng nói sẽ bị tắt khi màn hình đăng nhập hiển thị.
-
-          Nếu bạn đặt chính sách này, người dùng có thể tạm thời ghi đè chính sách bằng cách bật hoặc tắt phản hồi bằng giọng nói. Tuy nhiên, lựa chọn của người dùng không được duy trì mãi và cài đặt mặc định được khôi phục bất cứ khi nào màn hình đăng nhập mới được hiển thị hoặc người dùng không thực hiện thao tác nào trên màn hình đăng nhập trong một phút.
-
-          Nếu không đặt chính sách này, phản hồi bằng giọng nói bị tắt khi màn hình đăng nhập hiển thị lần đầu. Người dùng có thể bật hoặc tắt phản hồi bằng giọng nói bất cứ lúc nào và trạng thái của tính năng này trên màn hình đăng nhập được duy trì giữa những người dùng.</translation>
 <translation id="5868414965372171132">Cấu hình mạng ở mức người dùng</translation>
 <translation id="5879014913445067283">Kiểm soát tính năng phát hiện Chia sẻ tệp trong mạng thông qua <ph name="NETBIOS_NAME" /></translation>
 <translation id="5882345429632338713">Hoãn lại trước khi chạy trình duyệt thay thế (mili giây)</translation>

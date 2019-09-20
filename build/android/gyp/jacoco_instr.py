@@ -100,7 +100,9 @@ def _CreateSourcesJsonFile(source_dirs, input_path, sources_json_file,
 
   data = {}
   data['source_dirs'] = relative_sources
-  data['input_path'] = os.path.abspath(input_path)
+  data['input_path'] = []
+  if input_path:
+    data['input_path'].append(os.path.abspath(input_path))
   with open(sources_json_file, 'w') as f:
     json.dump(data, f)
 
@@ -226,6 +228,9 @@ def _RunInstrumentCommand(parser):
       # Copy input_path to output_path and return if no source file affected.
       if not affected_source_files:
         shutil.copyfile(args.input_path, args.output_path)
+        # Create a dummy sources_json_file.
+        _CreateSourcesJsonFile([], None, args.sources_json_file,
+                               build_utils.DIR_SOURCE_ROOT)
         return 0
       else:
         _InstrumentClassFiles(instrument_cmd, args.input_path, args.output_path,

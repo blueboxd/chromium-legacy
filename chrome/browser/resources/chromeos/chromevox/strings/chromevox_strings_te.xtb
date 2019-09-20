@@ -420,7 +420,6 @@
 <translation id="4039983576244166038">ఖాళీ అడ్డు వరుస శీర్షిక</translation>
 <translation id="4042843249978639960">తరువాత స్థాయి 2 శీర్షిక లేదు.</translation>
 <translation id="4043348641337972076">మునుపటి ARIA మైలురాయి లేదు.</translation>
-<translation id="4045764028670444336">అక్షరక్రమ దోషం ప్రారంభం</translation>
 <translation id="4047216625641135770">గుర్తు పెట్టండి</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4053520724192563562">నిమ్మపండు ఆకుపచ్చ</translation>
@@ -503,7 +502,6 @@
 <translation id="4547556996012970016">తరువాత స్థాయి 5 శీర్షిక</translation>
 <translation id="4562381607973973258">ముఖ్య శీర్షిక</translation>
 <translation id="4569941707103739422">నావిగేట్ చేయడం కోసం పైకి లేదా కిందికి బాణాన్ని నొక్కండి; యాక్టివేట్‌ చేయడం కోసం enter నొక్కండి.</translation>
-<translation id="4570424871453628777">అక్షరక్రమ దోషం ముగింపు</translation>
 <translation id="4591507479202817876">, ఎంచుకోబడింది</translation>
 <translation id="4597532268155981612">ఫారమ్</translation>
 <translation id="4597896406374528575">ఏప్రిల్</translation>
@@ -726,7 +724,6 @@
 <translation id="6037602951055904232">ముందుకు ప్యాన్ చేయండి</translation>
 <translation id="6042826534790431634">యాక్టివేట్ చేయడం కోసం శోధన+స్పేస్ నొక్కండి.</translation>
 <translation id="6044160928851315051">స్క్రీన్‌ను కాంతిహీనంగా చేస్తుంది</translation>
-<translation id="6065293622157674001">వ్యాకరణ దోషం ప్రారంభం</translation>
 <translation id="6082768461603900813">ప్రాథమిక నావిగేషన్</translation>
 <translation id="6118126368611144850">Chrome కోసం Android యాప్‌లు. మీ పరికరంలో Play స్టోర్ ఉన్నట్లయితే, Android యాప్‌లతో ChromeVoxను పరిశీలించండి. Play స్టోర్ నుండి Google Chrome Canaryని డౌన్‌లోడ్ చేయడం ద్వారా ప్రయోగాత్మక మద్దతును ప్రయత్నించండి.</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -867,7 +864,6 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="7143207342074048698">కనెక్ట్ అవుతోంది</translation>
 <translation id="7153618581592392745">లావెండర్ రంగు</translation>
 <translation id="7157306005867877619">సంక్షేపం</translation>
-<translation id="7161425887892204659">వచన సరిపోలిక ముగింపు</translation>
 <translation id="7161771961008409533">పాప్-అప్ బటన్</translation>
 <translation id="7165714724802225287">ప్రస్తుత ప్రదర్శన శైలి ఇంటర్‌లీవ్.</translation>
 <translation id="7167657087543110">అక్షర అనుకరణ</translation>
@@ -905,7 +901,6 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">పట్టికను వ‌దిలిపెడుతున్నారు.</translation>
 <translation id="738899727977260036">మేఘ వర్ణపు నీలం రంగు</translation>
-<translation id="7392145451309930991">వచన సరిపోలిక ప్రారంభం</translation>
 <translation id="739763518212184081">మునుపటి పంక్తి</translation>
 <translation id="7400575256015741911">అక్షరదోషం కనుగొనబడింది</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -1118,7 +1113,6 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="8476408756881832830">ChromeVox మాట్లాడుతున్నప్పుడు ప్లేబ్యాక్‌ను పాజ్ చేయి</translation>
 <translation id="8476508772960940536">విండో స్థూలదృష్టి</translation>
 <translation id="8503360654911991865">నావిగేషన్ గ్రాన్యులారిటీని తగ్గించండి</translation>
-<translation id="8504695234784218301">వ్యాకరణ దోషం ముగింపు</translation>
 <translation id="8520472399088452386">స్పిన్ బటన్</translation>
 <translation id="8534394844575788431">ఫార్మాటింగ్</translation>
 <translation id="8538744478902126321">ప్రస్తుత సెల్ యొక్క అడ్డు వరుస శీర్షిక వద్ద అంచనా వేయండి</translation>

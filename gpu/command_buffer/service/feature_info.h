@@ -58,6 +58,7 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool oes_compressed_etc1_rgb8_texture = false;
     bool packed_depth24_stencil8 = false;
     bool npot_ok = false;
+    bool enable_texture_filter_anisotropic = false;
     bool enable_texture_float_linear = false;
     bool enable_texture_half_float_linear = false;
     bool enable_color_buffer_float = false;
@@ -206,6 +207,7 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   void EnableEXTFloatBlend();
   void EnableEXTColorBufferFloat();
   void EnableEXTColorBufferHalfFloat();
+  void EnableEXTTextureFilterAnisotropic();
   void EnableOESTextureFloatLinear();
   void EnableOESTextureHalfFloatLinear();
 
@@ -260,6 +262,7 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
 
   bool ext_color_buffer_float_available_ = false;
   bool ext_color_buffer_half_float_available_ = false;
+  bool ext_texture_filter_anisotropic_available_ = false;
   bool oes_texture_float_linear_available_ = false;
   bool oes_texture_half_float_linear_available_ = false;
 

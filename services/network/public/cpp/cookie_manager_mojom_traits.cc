@@ -154,9 +154,10 @@ EnumTraits<network::mojom::CookieSameSiteContext,
       return network::mojom::CookieSameSiteContext::SAME_SITE_LAX_METHOD_UNSAFE;
     case net::CookieOptions::SameSiteCookieContext::CROSS_SITE:
       return network::mojom::CookieSameSiteContext::CROSS_SITE;
+    default:
+      NOTREACHED();
+      return network::mojom::CookieSameSiteContext::CROSS_SITE;
   }
-  NOTREACHED();
-  return network::mojom::CookieSameSiteContext::CROSS_SITE;
 }
 
 bool EnumTraits<network::mojom::CookieSameSiteContext,

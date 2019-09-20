@@ -1309,7 +1309,9 @@ MojoResult Core::SendInvitation(
     return MOJO_RESULT_INVALID_ARGUMENT;
   if (transport_endpoint->type != MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL &&
       transport_endpoint->type !=
-          MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL_SERVER) {
+          MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL_SERVER &&
+      transport_endpoint->type !=
+          MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL_ASYNC) {
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
@@ -1373,6 +1375,10 @@ MojoResult Core::SendInvitation(
                                          attached_ports[0].second,
                                          connection_name);
   } else {
+    if (transport_endpoint->type ==
+        MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL_ASYNC) {
+      connection_params.set_is_async(true);
+    }
     GetNodeController()->SendBrokerClientInvitation(
         target_process, std::move(connection_params), attached_ports,
         process_error_callback);
@@ -1398,7 +1404,9 @@ MojoResult Core::AcceptInvitation(
     return MOJO_RESULT_INVALID_ARGUMENT;
   if (transport_endpoint->type != MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL &&
       transport_endpoint->type !=
-          MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL_SERVER) {
+          MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL_SERVER &&
+      transport_endpoint->type !=
+          MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL_ASYNC) {
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
@@ -1447,6 +1455,10 @@ MojoResult Core::AcceptInvitation(
         dispatcher->AttachMessagePipe(kIsolatedInvitationPipeName, local_port);
     DCHECK_EQ(MOJO_RESULT_OK, result);
   } else {
+    if (transport_endpoint->type ==
+        MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL_ASYNC) {
+      connection_params.set_is_async(true);
+    }
     node_controller->AcceptBrokerClientInvitation(std::move(connection_params));
   }
 

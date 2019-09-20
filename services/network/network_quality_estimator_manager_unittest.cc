@@ -34,12 +34,11 @@ class TestNetworkQualityEstimatorManagerClient
         http_rtt_(base::TimeDelta()),
         transport_rtt_(base::TimeDelta()),
         downlink_bandwidth_kbps_(INT32_MAX) {
-    mojom::NetworkQualityEstimatorManagerPtr manager_ptr;
-    mojom::NetworkQualityEstimatorManagerRequest request(
-        mojo::MakeRequest(&manager_ptr));
-    network_quality_estimator_manager_->AddRequest(std::move(request));
+    mojo::Remote<mojom::NetworkQualityEstimatorManager> manager;
+    network_quality_estimator_manager_->AddReceiver(
+        manager.BindNewPipeAndPassReceiver());
 
-    manager_ptr->RequestNotifications(receiver_.BindNewPipeAndPassRemote());
+    manager->RequestNotifications(receiver_.BindNewPipeAndPassRemote());
   }
 
   ~TestNetworkQualityEstimatorManagerClient() override {}

@@ -907,8 +907,8 @@ class PLATFORM_EXPORT BaseArena {
   // Returns true if we have swept all pages within the deadline. Returns false
   // otherwise.
   bool LazySweepWithDeadline(base::TimeTicks deadline);
+  bool ConcurrentSweepWithDeadline(base::TimeTicks deadline);
   void CompleteSweep();
-  void SweepOnConcurrentThread();
   void InvokeFinalizersOnSweptPages();
 
   ThreadState* GetThreadState() { return thread_state_; }

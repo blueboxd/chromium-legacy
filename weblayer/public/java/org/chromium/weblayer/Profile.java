@@ -47,7 +47,7 @@ public final class Profile {
         try {
             return new BrowserFragmentImpl(
                     mImpl.createBrowserController(ObjectWrapper.wrap(context),
-                            ObjectWrapper.wrap(WebLayer.getInstance().createRemoteContext())));
+                            ObjectWrapper.wrap(WebLayer.createRemoteContext(context))));
         } catch (RemoteException e) {
             throw new APICallException(e);
         }

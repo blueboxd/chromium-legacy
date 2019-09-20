@@ -33,6 +33,7 @@
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/ukm_manager.h"
+#include "components/viz/common/display/de_jelly.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -669,8 +670,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(WidgetMsg_SetIsInert, OnSetIsInert)
     IPC_MESSAGE_HANDLER(WidgetMsg_SetInheritedEffectiveTouchAction,
                         OnSetInheritedEffectiveTouchAction)
-    IPC_MESSAGE_HANDLER(WidgetMsg_SynchronizeVisualProperties,
-                        OnSynchronizeVisualProperties)
     IPC_MESSAGE_HANDLER(WidgetMsg_UpdateRenderThrottlingStatus,
                         OnUpdateRenderThrottlingStatus)
     IPC_MESSAGE_HANDLER(WidgetMsg_WaitForNextFrameForTests,
@@ -762,9 +761,10 @@ void RenderWidget::PrepareForClose() {
   CloseWebWidget();
 }
 
-void RenderWidget::OnSynchronizeVisualProperties(
+void RenderWidget::SynchronizeVisualPropertiesFromRenderView(
     const VisualProperties& visual_properties_from_browser) {
-  TRACE_EVENT0("renderer", "RenderWidget::OnSynchronizeVisualProperties");
+  TRACE_EVENT0("renderer",
+               "RenderWidget::SynchronizeVisualPropertiesFromRenderView");
 
   VisualProperties visual_properties = visual_properties_from_browser;
   // Web tests can override the device scale factor in the renderer.
@@ -922,9 +922,11 @@ void RenderWidget::OnSynchronizeVisualProperties(
         // (such as in RenderViewHost) and distribute it to each frame-hosted
         // RenderWidget from there.
         for (auto& child_proxy : render_frame_proxies_) {
-          child_proxy.OnPageScaleFactorChanged(
-              visual_properties.page_scale_factor,
-              visual_properties.is_pinch_gesture_active);
+          if (!is_undead_) {
+            child_proxy.OnPageScaleFactorChanged(
+                visual_properties.page_scale_factor,
+                visual_properties.is_pinch_gesture_active);
+          }
         }
       }
     }
@@ -1698,6 +1700,7 @@ gfx::Rect RenderWidget::CompositorViewportRect() const {
 }
 
 void RenderWidget::UpdateZoom(double zoom_level) {
+  DCHECK(!is_undead_);
   blink::WebFrameWidget* frame_widget = GetFrameWidget();
   if (!frame_widget)
     return;
@@ -1713,7 +1716,6 @@ void RenderWidget::UpdateZoom(double zoom_level) {
 
   for (auto& observer : render_frame_proxies_)
     observer.OnZoomLevelChanged(zoom_level);
-
   for (auto& plugin : browser_plugins_)
     plugin.OnZoomLevelChanged(zoom_level);
 }
@@ -2303,8 +2305,10 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
     OnOrientationChange();
 
   if (previous_original_screen_info != GetOriginalScreenInfo()) {
-    for (auto& observer : render_frame_proxies_)
-      observer.OnScreenInfoChanged(GetOriginalScreenInfo());
+    for (auto& observer : render_frame_proxies_) {
+      if (!is_undead_)
+        observer.OnScreenInfoChanged(GetOriginalScreenInfo());
+    }
 
     // Notify all embedded BrowserPlugins of the updated ScreenInfo.
     for (auto& observer : browser_plugins_)
@@ -3208,6 +3212,15 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
 
   settings.send_compositor_frame_ack = false;
 
+  // Renderer can de-jelly, browser UI can not. We do not know whether we are
+  // going to apply de-jelly until we draw a frame in the Viz process. Because
+  // of this, all changes in the renderer are based on whether de-jelly may be
+  // active (viz::DeJellyEnabled) vs whether it is currently active
+  // (viz::DeJellyActive).
+  settings.allow_de_jelly_effect = viz::DeJellyEnabled();
+  // Disable occlusion if de-jelly effect is enabled.
+  settings.enable_occlusion &= !settings.allow_de_jelly_effect;
+
   return settings;
 }
 
@@ -3407,8 +3420,10 @@ void RenderWidget::SetPageScaleStateAndLimits(float page_scale_factor,
   // the message to their child RenderWidgets (through their proxy child
   // frames).
   for (auto& observer : render_frame_proxies_) {
-    observer.OnPageScaleFactorChanged(page_scale_factor,
-                                      is_pinch_gesture_active);
+    if (!is_undead_) {
+      observer.OnPageScaleFactorChanged(page_scale_factor,
+                                        is_pinch_gesture_active);
+    }
   }
   // Store the value to give to any new RenderFrameProxy that is registered.
   page_scale_factor_from_mainframe_ = page_scale_factor;

@@ -84,58 +84,6 @@ TEST_F(BioEnrollmentHandlerTest, NoPINSupport) {
   EXPECT_EQ(error_callback_.value(), BioEnrollmentStatus::kNoPINSet);
 }
 
-// Tests getting authenticator modality without pin auth.
-TEST_F(BioEnrollmentHandlerTest, Modality) {
-  VirtualCtap2Device::Config config;
-  config.pin_support = true;
-  config.bio_enrollment_preview_support = true;
-
-  virtual_device_factory_.SetCtap2Config(config);
-
-  auto handler = MakeHandler();
-  ready_callback_.WaitForCallback();
-
-  test::StatusAndValueCallbackReceiver<CtapDeviceResponseCode,
-                                       base::Optional<BioEnrollmentResponse>>
-      cb;
-  handler->GetModality(cb.callback());
-  cb.WaitForCallback();
-
-  // Operation was successful.
-  EXPECT_EQ(cb.status(), CtapDeviceResponseCode::kSuccess);
-
-  // Result is correct.
-  BioEnrollmentResponse expected;
-  expected.modality = BioEnrollmentModality::kFingerprint;
-  EXPECT_EQ(cb.value(), expected);
-}
-
-// Tests getting authenticator modality without pin auth.
-TEST_F(BioEnrollmentHandlerTest, FingerprintSensorInfo) {
-  VirtualCtap2Device::Config config;
-  config.pin_support = true;
-  config.bio_enrollment_preview_support = true;
-
-  virtual_device_factory_.SetCtap2Config(config);
-
-  auto handler = MakeHandler();
-  ready_callback_.WaitForCallback();
-
-  test::StatusAndValueCallbackReceiver<CtapDeviceResponseCode,
-                                       base::Optional<BioEnrollmentResponse>>
-      cb;
-  handler->GetSensorInfo(cb.callback());
-  cb.WaitForCallback();
-
-  EXPECT_EQ(cb.status(), CtapDeviceResponseCode::kSuccess);
-
-  BioEnrollmentResponse expected;
-  expected.modality = BioEnrollmentModality::kFingerprint;
-  expected.fingerprint_kind = BioEnrollmentFingerprintKind::kTouch;
-  expected.max_samples_for_enroll = 4;
-  EXPECT_EQ(cb.value(), expected);
-}
-
 // Tests enrollment handler PIN soft block.
 TEST_F(BioEnrollmentHandlerTest, SoftPINBlock) {
   VirtualCtap2Device::Config config;
@@ -237,24 +185,6 @@ TEST_F(BioEnrollmentHandlerTest, EnrollMax) {
   }
 
   EXPECT_EQ(status, CtapDeviceResponseCode::kCtap2ErrKeyStoreFull);
-}
-
-// Tests cancelling fingerprint without an ongoing enrollment.
-TEST_F(BioEnrollmentHandlerTest, CancelNoEnroll) {
-  VirtualCtap2Device::Config config;
-  config.pin_support = true;
-  config.bio_enrollment_preview_support = true;
-
-  virtual_device_factory_.SetCtap2Config(config);
-
-  auto handler = MakeHandler();
-  ready_callback_.WaitForCallback();
-
-  test::ValueCallbackReceiver<CtapDeviceResponseCode> cb;
-  handler->Cancel(cb.callback());
-  cb.WaitForCallback();
-
-  EXPECT_EQ(cb.value(), CtapDeviceResponseCode::kSuccess);
 }
 
 // Tests enumerating with no enrollments.
@@ -382,25 +312,6 @@ TEST_F(BioEnrollmentHandlerTest, Delete) {
   handler->DeleteTemplate({1}, cb3.callback());
   cb3.WaitForCallback();
   EXPECT_EQ(cb3.value(), CtapDeviceResponseCode::kCtap2ErrInvalidOption);
-}
-
-// Test cancelling using the non-preview command.
-TEST_F(BioEnrollmentHandlerTest, NonPreviewCancel) {
-  VirtualCtap2Device::Config config;
-  config.pin_support = true;
-  config.bio_enrollment_support = true;
-
-  virtual_device_factory_.SetCtap2Config(config);
-
-  auto handler = MakeHandler();
-  ready_callback_.WaitForCallback();
-
-  // Cancel enrollment.
-  test::ValueCallbackReceiver<CtapDeviceResponseCode> cb;
-  handler->Cancel(cb.callback());
-
-  cb.WaitForCallback();
-  EXPECT_EQ(cb.value(), CtapDeviceResponseCode::kSuccess);
 }
 
 }  // namespace

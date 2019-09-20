@@ -687,30 +687,6 @@ TEST_F(NetworkContextTest, EnableNetworkErrorLogging) {
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
-TEST_F(NetworkContextTest, Http09Disabled) {
-  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  context_params->http_09_on_non_default_ports_enabled = false;
-  std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(std::move(context_params));
-  EXPECT_FALSE(network_context->url_request_context()
-                   ->http_transaction_factory()
-                   ->GetSession()
-                   ->params()
-                   .http_09_on_non_default_ports_enabled);
-}
-
-TEST_F(NetworkContextTest, Http09Enabled) {
-  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  context_params->http_09_on_non_default_ports_enabled = true;
-  std::unique_ptr<NetworkContext> network_context =
-      CreateContextWithParams(std::move(context_params));
-  EXPECT_TRUE(network_context->url_request_context()
-                  ->http_transaction_factory()
-                  ->GetSession()
-                  ->params()
-                  .http_09_on_non_default_ports_enabled);
-}
-
 TEST_F(NetworkContextTest, DefaultHttpNetworkSessionParams) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
@@ -4375,7 +4351,7 @@ class MockMojoProxyResolverFactory
     mojo::MakeSelfOwnedReceiver(
         std::make_unique<MockMojoProxyResolverFactory>(),
         remote.InitWithNewPipeAndPassReceiver());
-    return remote;
+    return std::move(remote);
   }
 
  private:

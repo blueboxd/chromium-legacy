@@ -11,11 +11,14 @@
 #include "base/files/file_util.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
+#include "content/public/browser/devtools_manager_delegate.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/common/user_agent.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "weblayer/browser/browser_main_parts_impl.h"
+#include "weblayer/browser/weblayer_content_browser_overlay_manifest.h"
 #include "weblayer/public/main.h"
 
 #if defined(OS_ANDROID)
@@ -58,6 +61,17 @@ content::WebContentsViewDelegate*
 ContentBrowserClientImpl::GetWebContentsViewDelegate(
     content::WebContents* web_contents) {
   return nullptr;
+}
+content::DevToolsManagerDelegate*
+ContentBrowserClientImpl::GetDevToolsManagerDelegate() {
+  return new content::DevToolsManagerDelegate();
+}
+
+base::Optional<service_manager::Manifest>
+ContentBrowserClientImpl::GetServiceManifestOverlay(base::StringPiece name) {
+  if (name == content::mojom::kBrowserServiceName)
+    return GetWebLayerContentBrowserOverlayManifest();
+  return base::nullopt;
 }
 
 std::string ContentBrowserClientImpl::GetUserAgent() {

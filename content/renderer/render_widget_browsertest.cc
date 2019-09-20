@@ -28,7 +28,7 @@ class RenderWidgetTest : public RenderViewTest {
   }
 
   void OnSynchronizeVisualProperties(const VisualProperties& params) {
-    widget()->OnSynchronizeVisualProperties(params);
+    widget()->SynchronizeVisualPropertiesFromRenderView(params);
   }
 
   void GetCompositionRange(gfx::Range* range) {
@@ -234,7 +234,7 @@ TEST_F(RenderWidgetTest, ActivePinchGestureUpdatesLayerTreeHost) {
 
   // Sync visual properties on a mainframe RenderWidget.
   visual_properties.is_pinch_gesture_active = true;
-  widget()->OnSynchronizeVisualProperties(visual_properties);
+  widget()->SynchronizeVisualPropertiesFromRenderView(visual_properties);
   // We do not expect the |is_pinch_gesture_active| value to propagate to the
   // LayerTreeHost for the main-frame. Since GesturePinch events are handled
   // directly by the layer tree for the main frame, it already knows whether or

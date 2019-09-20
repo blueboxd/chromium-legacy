@@ -84,7 +84,7 @@ class GCMKeyStore {
   // EncryptedPrivateKeyInfo blocks, to storing a single PrivateKeyInfo block.
   void UpgradeDatabase(std::unique_ptr<std::vector<EncryptionData>> entries);
 
-  void DidInitialize(bool success);
+  void DidInitialize(leveldb_proto::Enums::InitStatus status);
   void DidLoadKeys(bool success,
                    std::unique_ptr<std::vector<EncryptionData>> entries);
   void DidStoreKeys(std::unique_ptr<crypto::ECPrivateKey> key,

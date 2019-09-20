@@ -8,7 +8,9 @@
 
 #include "base/bind.h"
 #include "base/test/task_environment.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -56,16 +58,18 @@ class TestAnnotator : public ia_mojom::Annotator {
     return remote;
   }
 
-  void AnnotateImage(const std::string& source_id,
-                     const std::string& description_language_tag,
-                     ia_mojom::ImageProcessorPtr image_processor,
-                     AnnotateImageCallback callback) override {
+  void AnnotateImage(
+      const std::string& source_id,
+      const std::string& description_language_tag,
+      mojo::PendingRemote<ia_mojom::ImageProcessor> image_processor,
+      AnnotateImageCallback callback) override {
     CHECK_EQ(description_language_tag, std::string());
 
     source_ids_.push_back(source_id);
 
-    image_processors_.push_back(std::move(image_processor));
-    image_processors_.back().set_connection_error_handler(
+    image_processors_.push_back(
+        mojo::Remote<ia_mojom::ImageProcessor>(std::move(image_processor)));
+    image_processors_.back().set_disconnect_handler(
         base::BindOnce(&TestAnnotator::ResetImageProcessor,
                        base::Unretained(this), image_processors_.size() - 1));
 
@@ -74,7 +78,7 @@ class TestAnnotator : public ia_mojom::Annotator {
 
   // Tests should not delete entries in these lists.
   std::vector<std::string> source_ids_;
-  std::vector<ia_mojom::ImageProcessorPtr> image_processors_;
+  std::vector<mojo::Remote<ia_mojom::ImageProcessor>> image_processors_;
   std::vector<AnnotateImageCallback> callbacks_;
 
  private:

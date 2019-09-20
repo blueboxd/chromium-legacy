@@ -56,12 +56,8 @@ public final class ChildProcessLauncherHelperImpl {
     // Manifest values used to specify the service names.
     private static final String NUM_SANDBOXED_SERVICES_KEY =
             "org.chromium.content.browser.NUM_SANDBOXED_SERVICES";
-    private static final String SANDBOXED_SERVICES_NAME =
-            "org.chromium.content.app.SandboxedProcessService";
     private static final String NUM_PRIVILEGED_SERVICES_KEY =
             "org.chromium.content.browser.NUM_PRIVILEGED_SERVICES";
-    private static final String PRIVILEGED_SERVICES_NAME =
-            "org.chromium.content.app.PrivilegedProcessService";
 
     // Flag to check features after native is initialized.
     private static boolean sCheckedFeatures;
@@ -354,10 +350,11 @@ public final class ChildProcessLauncherHelperImpl {
 
         if (!sandboxed) {
             if (sPrivilegedChildConnectionAllocator == null) {
-                sPrivilegedChildConnectionAllocator =
-                        ChildConnectionAllocator.create(context, LauncherThread.getHandler(), null,
-                                packageName, PRIVILEGED_SERVICES_NAME, NUM_PRIVILEGED_SERVICES_KEY,
-                                bindToCaller, bindAsExternalService, true /* useStrongBinding */);
+                sPrivilegedChildConnectionAllocator = ChildConnectionAllocator.create(context,
+                        LauncherThread.getHandler(), null, packageName,
+                        ChildProcessCreationParamsImpl.getPrivilegedServicesName(),
+                        NUM_PRIVILEGED_SERVICES_KEY, bindToCaller, bindAsExternalService,
+                        true /* useStrongBinding */);
             }
             return sPrivilegedChildConnectionAllocator;
         }
@@ -387,13 +384,15 @@ public final class ChildProcessLauncherHelperImpl {
                                 bindToCaller, bindAsExternalService, false /* useStrongBinding */);
             } else if (ChildProcessConnection.supportVariableConnections()) {
                 connectionAllocator = ChildConnectionAllocator.createVariableSize(context,
-                        LauncherThread.getHandler(), packageName, SANDBOXED_SERVICES_NAME,
-                        bindToCaller, bindAsExternalService, false /* useStrongBinding */);
+                        LauncherThread.getHandler(), packageName,
+                        ChildProcessCreationParamsImpl.getSandboxedServicesName(), bindToCaller,
+                        bindAsExternalService, false /* useStrongBinding */);
             } else {
                 connectionAllocator = ChildConnectionAllocator.create(context,
                         LauncherThread.getHandler(), freeSlotRunnable, packageName,
-                        SANDBOXED_SERVICES_NAME, NUM_SANDBOXED_SERVICES_KEY, bindToCaller,
-                        bindAsExternalService, false /* useStrongBinding */);
+                        ChildProcessCreationParamsImpl.getSandboxedServicesName(),
+                        NUM_SANDBOXED_SERVICES_KEY, bindToCaller, bindAsExternalService,
+                        false /* useStrongBinding */);
             }
             if (sSandboxedServiceFactoryForTesting != null) {
                 connectionAllocator.setConnectionFactoryForTesting(

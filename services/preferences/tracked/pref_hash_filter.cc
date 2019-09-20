@@ -53,7 +53,8 @@ PrefHashFilter::PrefHashFilter(
     StoreContentsPair external_validation_hash_store_pair,
     const std::vector<prefs::mojom::TrackedPreferenceMetadataPtr>&
         tracked_preferences,
-    prefs::mojom::ResetOnLoadObserverPtr reset_on_load_observer,
+    mojo::PendingRemote<prefs::mojom::ResetOnLoadObserver>
+        reset_on_load_observer,
     prefs::mojom::TrackedPreferenceValidationDelegate* delegate,
     size_t reporting_ids_count)
     : pref_hash_store_(std::move(pref_hash_store)),

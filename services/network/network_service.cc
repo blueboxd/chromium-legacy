@@ -562,8 +562,8 @@ void NetworkService::GetNetworkChangeManager(
 }
 
 void NetworkService::GetNetworkQualityEstimatorManager(
-    mojom::NetworkQualityEstimatorManagerRequest request) {
-  network_quality_estimator_manager_->AddRequest(std::move(request));
+    mojo::PendingReceiver<mojom::NetworkQualityEstimatorManager> receiver) {
+  network_quality_estimator_manager_->AddReceiver(std::move(receiver));
 }
 
 void NetworkService::GetDnsConfigChangeManager(

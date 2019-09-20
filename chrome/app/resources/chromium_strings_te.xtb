@@ -190,6 +190,8 @@
 <translation id="753534427205733210">{0,plural, =1{1 నిమిషంలో Chromium తిరిగి ప్రారంభించబడుతుంది}other{# నిమిషాల్లో Chromium తిరిగి ప్రారంభించబడుతుంది}}</translation>
 <translation id="7549178288319965365">Chromium OS గురించి</translation>
 <translation id="7561906087460245826">అలాగే (<ph name="URL" />)లో ఉన్న Chromiumకి సంబంధించిన డేటాని తీసివేయి</translation>
+<translation id="7585853947355360626">ఏదైనా సెట్టింగ్ ఈ పేజీలో కనపడకపోతే, మీ <ph name="LINK_BEGIN" />
+      Chromium OS సెట్టింగ్‌లు<ph name="LINK_END" />లో చూడండి</translation>
 <translation id="761356813943268536">Chromium మీ కెమెరా మరియు మైక్రోఫోన్‌ని ఉపయోగిస్తోంది.</translation>
 <translation id="7617377681829253106">Chromium ఇప్పుడు మెరుగైంది</translation>
 <translation id="7686590090926151193">Chromium మీ డిఫాల్ట్ బ్రౌజర్ కాదు</translation>
@@ -223,6 +225,8 @@
 <translation id="8619360774459241877">Chromiumని ప్రారంభిస్తోంది...</translation>
 <translation id="8621669128220841554">తెలియ‌ని ఎర్ర‌ర్‌ కారణంగా ఇన‌స్ట‌లేష‌న్‌ విఫలమైంది. దయచేసి Chromiumను మళ్లీ డౌన్‌లోడ్ చేయండి.</translation>
 <translation id="8667808506758191620">మీ <ph name="DEVICE_TYPE" /> ఆధునికంగా ఉంది.</translation>
+<translation id="8682540261359803721">ఏదైనా సెట్టింగ్ ఈ పేజీలో కనపడకపోతే, మీ <ph name="LINK_BEGIN" />
+    Chromium బ్రౌజర్ సెట్టింగ్‌లు<ph name="LINK_END" />లో చూడండి</translation>
 <translation id="8697124171261953979">ఇది మీరు Chromiumను ప్రారంభించేటప్పుడు లేదా ఓమ్నిబాక్స్ నుండి వెతికేటప్పుడు చూపబడే పేజీని కూడా నియంత్రిస్తుంది.</translation>
 <translation id="8704119203788522458">ఇది మీ Chromium</translation>
 <translation id="8739167630197873875">మీరు Chromium నుండి నిష్క్రమించినప్పుడు, కుక్కీలను క్లియర్ చేయండి. సింక్ చేయడం కొనసాగించడానికి, ఈ <ph name="COOKIE_SETTINGS_LINK" />ను మార్చండి.</translation>

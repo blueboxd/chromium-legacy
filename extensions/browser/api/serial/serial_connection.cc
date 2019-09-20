@@ -18,6 +18,7 @@
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/common/api/serial.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace extensions {
 
@@ -171,8 +172,7 @@ SerialConnection::SerialConnection(const std::string& owner_extension_id,
       serial_port_(std::move(serial_port)),
       receive_pipe_watcher_(FROM_HERE,
                             mojo::SimpleWatcher::ArmingPolicy::MANUAL),
-      send_pipe_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
-      client_binding_(this) {
+      send_pipe_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL) {
   DCHECK(serial_port_);
   serial_port_.set_connection_error_handler(base::BindOnce(
       &SerialConnection::OnConnectionError, base::Unretained(this)));
@@ -253,16 +253,15 @@ void SerialConnection::Open(const api::serial::ConnectionOptions& options,
   mojo::ScopedDataPipeConsumerHandle send_consumer;
   CreatePipe(&send_producer, &send_consumer);
 
-  device::mojom::SerialPortClientPtr client;
-  auto client_request = mojo::MakeRequest(&client);
-
+  mojo::PendingRemote<device::mojom::SerialPortClient> client;
+  auto client_receiver = client.InitWithNewPipeAndPassReceiver();
   serial_port_->Open(
       device::mojom::SerialConnectionOptions::From(options),
       std::move(send_consumer), std::move(receive_producer), std::move(client),
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           base::BindOnce(&SerialConnection::OnOpen, weak_factory_.GetWeakPtr(),
                          std::move(receive_consumer), std::move(send_producer),
-                         std::move(client_request), std::move(callback)),
+                         std::move(client_receiver), std::move(callback)),
           false));
 }
 
@@ -329,7 +328,7 @@ void SerialConnection::OnSendError(device::mojom::SerialSendError error) {
 void SerialConnection::OnOpen(
     mojo::ScopedDataPipeConsumerHandle consumer,
     mojo::ScopedDataPipeProducerHandle producer,
-    device::mojom::SerialPortClientRequest client_request,
+    mojo::PendingReceiver<device::mojom::SerialPortClient> client_receiver,
     OpenCompleteCallback callback,
     bool success) {
   if (!success) {
@@ -339,9 +338,9 @@ void SerialConnection::OnOpen(
 
   SetUpReceiveDataPipe(std::move(consumer));
   SetUpSendDataPipe(std::move(producer));
-  client_binding_.Bind(std::move(client_request));
-  client_binding_.set_connection_error_handler(base::BindOnce(
-      &SerialConnection::OnClientBindingClosed, weak_factory_.GetWeakPtr()));
+  client_receiver_.Bind(std::move(client_receiver));
+  client_receiver_.set_disconnect_handler(base::BindOnce(
+      &SerialConnection::OnClientReceiverClosed, weak_factory_.GetWeakPtr()));
   std::move(callback).Run(true);
 }
 
@@ -611,8 +610,8 @@ void SerialConnection::OnConnectionError() {
   }
 }
 
-void SerialConnection::OnClientBindingClosed() {
-  client_binding_.Close();
+void SerialConnection::OnClientReceiverClosed() {
+  client_receiver_.reset();
   OnReadError(device::mojom::SerialReceiveError::DISCONNECTED);
   OnSendError(device::mojom::SerialSendError::DISCONNECTED);
 }

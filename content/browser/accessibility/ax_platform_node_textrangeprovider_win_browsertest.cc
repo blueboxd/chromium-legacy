@@ -1094,6 +1094,89 @@ IN_PROC_BROWSER_TEST_F(
       /*expected_count*/ -1);
 }
 
+IN_PROC_BROWSER_TEST_F(
+    AXPlatformNodeTextRangeProviderWinBrowserTest,
+    MoveEndpointByUnitParagraphCollapseConsecutiveParentChildLineBreakingObjects) {
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          div {
+            width: 100px;
+          }
+
+          code::before {
+            content: "[";
+          }
+
+          code::after {
+            content: "]";
+          }
+
+          /* This will create an empty anonymous layout block before the <b>
+             element. */
+          b::before {
+            content: "";
+            display: block;
+          }
+        </style>
+      </head>
+
+      <body>
+        <div>start</div>
+        <div>
+          text with <code>:before</code>
+          and <code>:after</code> content,
+          then a
+          <div>
+            <b>bold</b> element
+          </div>
+        </div>
+      </body>
+      </html>)HTML");
+  BrowserAccessibility* start_node =
+      FindNode(ax::mojom::Role::kStaticText, "start");
+  ASSERT_NE(nullptr, start_node);
+
+  std::vector<base::string16> paragraphs = {
+      L"start",
+      L"text with [:before] and [:after]content, then a",
+      L"bold element",
+  };
+
+  // Forward navigation.
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(*start_node, &text_range_provider);
+  ASSERT_NE(nullptr, text_range_provider.Get());
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"start");
+
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Paragraph,
+      /*count*/ 1,
+      /*expected_text*/ (paragraphs[0] + L"\n" + paragraphs[1]).c_str(),
+      /*expected_count*/ 1);
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Paragraph,
+      /*count*/ 1,
+      /*expected_text*/
+      (paragraphs[0] + L"\n" + paragraphs[1] + L"\n" + paragraphs[2]).c_str(),
+      /*expected_count*/ 1);
+
+  // Reverse navigation.
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Paragraph,
+      /*count*/ -1,
+      /*expected_text*/ (paragraphs[0] + L"\n" + paragraphs[1]).c_str(),
+      /*expected_count*/ -1);
+
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Paragraph,
+      /*count*/ -1,
+      /*expected_text*/ paragraphs[0].c_str(),
+      /*expected_count*/ -1);
+}
+
 IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
                        MoveEndpointByUnitParagraphPreservedWhiteSpace) {
   LoadInitialAccessibilityTreeFromHtml(

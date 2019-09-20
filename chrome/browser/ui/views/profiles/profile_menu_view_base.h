@@ -101,7 +101,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   void SetSyncInfo(const base::string16& description,
                    const base::string16& link_text,
                    base::RepeatingClosure action);
-  void AddShortcutFeatureButton(const gfx::VectorIcon& icon,
+  void AddShortcutFeatureButton(const gfx::ImageSkia& icon,
                                 const base::string16& text,
                                 base::RepeatingClosure action);
   void AddAccountFeatureButton(const gfx::ImageSkia& icon,

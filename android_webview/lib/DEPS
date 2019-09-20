@@ -13,3 +13,10 @@ include_rules = [
   "+ui/events/gesture_detection",
   "+ui/gl",
 ]
+
+specific_include_rules = {
+    # Special-case where webview composes webview+weblayer.
+    "webview_entry_point\.cc": [
+        "+weblayer",
+    ],
+}

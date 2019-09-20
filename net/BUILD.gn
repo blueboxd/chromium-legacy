@@ -629,6 +629,8 @@ component("net") {
       "cert_net/nss_ocsp.h",
       "cookies/canonical_cookie.cc",
       "cookies/canonical_cookie.h",
+      "cookies/cookie_access_delegate.cc",
+      "cookies/cookie_access_delegate.h",
       "cookies/cookie_change_dispatcher.cc",
       "cookies/cookie_change_dispatcher.h",
       "cookies/cookie_constants.cc",
@@ -2325,6 +2327,7 @@ source_set("net_deps") {
       public_deps += [
         "//third_party/fuchsia-sdk/sdk:hardware_ethernet",
         "//third_party/fuchsia-sdk/sdk:netstack",
+        "//third_party/fuchsia-sdk/sdk:sys_cpp",
       ]
     }
 

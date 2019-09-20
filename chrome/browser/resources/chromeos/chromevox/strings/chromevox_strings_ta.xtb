@@ -421,7 +421,6 @@
 <translation id="4039983576244166038">காலியான வரிசை மேற்தலைப்பு</translation>
 <translation id="4042843249978639960">அடுத்த 2 ஆம் நிலை தலைப்பு இல்லை.</translation>
 <translation id="4043348641337972076">முந்தைய ARIA லேண்ட்மார்க் இல்லை.</translation>
-<translation id="4045764028670444336">எழுத்துப்பிழையின் தொடக்கம்</translation>
 <translation id="4047216625641135770">Mark</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4053520724192563562">லைம் க்ரீன்</translation>
@@ -504,7 +503,6 @@
 <translation id="4547556996012970016">அடுத்த 5 ஆம் படிநிலை தலைப்பு</translation>
 <translation id="4562381607973973258">தலைப்பு</translation>
 <translation id="4569941707103739422">மெனு கன்ட்ரோலில் வெவ்வேறு உருப்படிகளுக்குச் செல்ல, மேல்நோக்கிய அல்லது கீழ்நோக்கிய அம்புக்குறி விசையை அழுத்தவும்; செயல்படுத்த, enter விசையை அழுத்தவும்.</translation>
-<translation id="4570424871453628777">எழுத்துப்பிழையின் இறுதி</translation>
 <translation id="4591507479202817876">, தேர்ந்தெடுத்தது</translation>
 <translation id="4597532268155981612">படிவம்</translation>
 <translation id="4597896406374528575">ஏப்ரல்</translation>
@@ -728,7 +726,6 @@
 <translation id="6037602951055904232">முன்னோக்கி நகர்த்து</translation>
 <translation id="6042826534790431634">செயல்படுத்த, தேடல்+Space விசைகளை அழுத்தவும்.</translation>
 <translation id="6044160928851315051">விஷுவல் திரையை முடக்கும்</translation>
-<translation id="6065293622157674001">இலக்கணப் பிழையின் தொடக்கம்</translation>
 <translation id="6082768461603900813">அடிப்படை வழிசெலுத்துதல்</translation>
 <translation id="6118126368611144850">Chromeக்கான Android பயன்பாடுகள். உங்கள் சாதனத்தில் Play ஸ்டோர் இருந்தால், Android பயன்பாடுகளுடன்கூடிய ChromeVox இல் புத்தம்புதிய அம்சங்களைப் பெறுங்கள் (பொதுவில் வெளியாவதற்கு முன்பே). Play ஸ்டோரிலிருந்து Google Chrome Canaryஐப் பதிவிறக்கி, பரிசோதனைக்குரிய ஆதரவைப் பயன்படுத்திப் பார்க்கவும்.</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -869,7 +866,6 @@ Chrome உலாவி மெனுவைத் திறக்க, Alt+F வி
 <translation id="7143207342074048698">இணைத்தல்</translation>
 <translation id="7153618581592392745">லாவெண்டர் நிறம்</translation>
 <translation id="7157306005867877619">சுருக்கம்</translation>
-<translation id="7161425887892204659">உரைப் பொருத்தத்தின் இறுதி</translation>
 <translation id="7161771961008409533">பாப் அப் பொத்தான்</translation>
 <translation id="7165714724802225287">தற்போதைய காட்சி நடை: ஒன்றின் மேல் ஒன்று.</translation>
 <translation id="7167657087543110">எழுத்து எதிரொலி</translation>
@@ -907,7 +903,6 @@ Chrome உலாவி மெனுவைத் திறக்க, Alt+F வி
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">அட்டவணையிலிருந்து வெளியேறுகிறீர்கள்</translation>
 <translation id="738899727977260036">ஸ்லேட் புளூ</translation>
-<translation id="7392145451309930991">உரைப் பொருத்தத்தின் தொடக்கம்</translation>
 <translation id="739763518212184081">முந்தைய வரி</translation>
 <translation id="7400575256015741911">எழுத்துப் பிழை கண்டுபிடிக்கப்பட்டது</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -1120,7 +1115,6 @@ Chrome உலாவி மெனுவைத் திறக்க, Alt+F வி
 <translation id="8476408756881832830">ChromeVox பேசும் போது, பிளேபேக்கை இடைநிறுத்து</translation>
 <translation id="8476508772960940536">சாளரத்தின் மேலோட்டம்</translation>
 <translation id="8503360654911991865">வழிசெலுத்தும் நுணுக்கத்தைக் குறை</translation>
-<translation id="8504695234784218301">இலக்கணப் பிழையின் இறுதி</translation>
 <translation id="8520472399088452386">சுழல் பொத்தான்</translation>
 <translation id="8534394844575788431">வடிவமைத்தல்</translation>
 <translation id="8538744478902126321">நடப்புக் கலத்தின் வரிசைத் தலைப்பில் யூகத்தை உருவாக்கு</translation>

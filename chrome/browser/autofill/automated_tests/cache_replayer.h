@@ -21,7 +21,18 @@ using ServerCache = std::map<std::string, std::string>;
 // Splits raw HTTP request text into a pair, where the first element represent
 // the head with headers and the second element represents the body that
 // contains the data payload.
-std::pair<std::string, std::string> SplitHTTP(std::string http_text);
+std::pair<std::string, std::string> SplitHTTP(const std::string& http_text);
+
+// Streams in text format. For consistency, taken from anonymous namespace in
+// components/autofill/core/browser/autofill_download_manager.cc
+std::ostream& operator<<(std::ostream& out,
+                         const autofill::AutofillQueryContents& query);
+
+// Streams in text format. For consistency, taken from anonymous namespace in
+// components/autofill/core/browser/form_structure.cc
+std::ostream& operator<<(
+    std::ostream& out,
+    const autofill::AutofillQueryResponseContents& response);
 
 // Gets a key from a given query request.
 std::string GetKeyFromQueryRequest(const AutofillQueryContents& query_request);
@@ -34,7 +45,8 @@ class ServerCacheReplayer {
   enum Options {
     kOptionNone = 0,
     kOptionFailOnInvalidJsonRecord = 1 << 1,
-    kOptionFailOnEmpty = 1 << 2
+    kOptionFailOnEmpty = 1 << 2,
+    kOptionSplitRequestsByForm = 1 << 3,
   };
 
   // Container for status.
@@ -61,7 +73,8 @@ class ServerCacheReplayer {
   // Options. Will crash if there is a failure when loading the cache.
   ServerCacheReplayer(const base::FilePath& json_file_path, int options);
   // Constructs the replayer from an already populated cache.
-  explicit ServerCacheReplayer(ServerCache server_cache);
+  explicit ServerCacheReplayer(ServerCache server_cache,
+                               bool split_requests_by_form = false);
   ~ServerCacheReplayer();
 
   // Gets an uncompress HTTP textual response that is paired with |query| as
@@ -77,6 +90,16 @@ class ServerCacheReplayer {
   ServerCache cache_;
   // Represents the cache at read time.
   const ServerCache& const_cache_ = cache_;
+  // Controls the type of matching behavior. If False, will cache form signature
+  // groupings as they are recorded in the WPR archive. If True, will cache each
+  // form individually and attempt to stitch them together on retrieval, which
+  // allows a higher hit rate.
+  const bool split_requests_by_form_;
+
+  // Assumes key exists, and decompresses and returns http body which is stored
+  // at that location.
+  bool RetrieveAndDecompressStoredHTTP(const std::string& key,
+                                       std::string* decompressed_http) const;
 };
 
 // Url loader that intercepts Autofill Server calls and serves back cached

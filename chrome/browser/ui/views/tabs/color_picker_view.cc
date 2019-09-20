@@ -122,9 +122,12 @@ class ColorPickerElementView : public views::Button,
   void ButtonPressed(Button* sender, const ui::Event& event) override {
     DCHECK_EQ(this, sender);
 
-    selected_ = !selected_;
-    SchedulePaint();
-    selected_callback_.Run(this);
+    // Pressing this a second time shouldn't do anything.
+    if (!selected_) {
+      selected_ = true;
+      SchedulePaint();
+      selected_callback_.Run(this);
+    }
   }
 
  private:
@@ -169,7 +172,9 @@ class ColorPickerElementView : public views::Button,
 };
 
 ColorPickerView::ColorPickerView(
-    base::span<const std::pair<SkColor, base::string16>> colors) {
+    base::span<const std::pair<SkColor, base::string16>> colors,
+    ColorSelectedCallback callback)
+    : callback_(std::move(callback)) {
   elements_.reserve(colors.size());
   for (const auto& color : colors) {
     // Create the views for each color, passing them our callback and saving
@@ -232,4 +237,7 @@ void ColorPickerView::OnColorSelected(ColorPickerElementView* element) {
     if (other_element != element)
       other_element->SetSelected(false);
   }
+
+  if (callback_)
+    callback_.Run();
 }

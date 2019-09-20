@@ -29,6 +29,8 @@
 #error "This file requires ARC support."
 #endif
 
+using chrome_test_util::TapWebElementWithId;
+
 namespace {
 
 constexpr char kFormElementNormal[] = "normal_field";
@@ -93,7 +95,7 @@ void AddAutofillProfile(autofill::PersonalDataManager* personalDataManager) {
 - (void)testReadOnlyFieldDoesNotShowManualFallbackIcons {
   // Tap the readonly field.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementReadonly)];
+      performAction:TapWebElementWithId(kFormElementReadonly)];
 
   // Verify the profiles icon is not visible.
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
@@ -105,7 +107,7 @@ void AddAutofillProfile(autofill::PersonalDataManager* personalDataManager) {
 - (void)testReadOnlyFieldDoesNotShowManualFallbackIconsAfterNormalField {
   // Tap the regular field.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementNormal)];
+      performAction:TapWebElementWithId(kFormElementNormal)];
 
   // Verify the profiles icon is visible.
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
@@ -113,7 +115,7 @@ void AddAutofillProfile(autofill::PersonalDataManager* personalDataManager) {
 
   // Tap the readonly field.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementReadonly)];
+      performAction:TapWebElementWithId(kFormElementReadonly)];
 
   // Verify the profiles icon is not visible.
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
@@ -125,7 +127,7 @@ void AddAutofillProfile(autofill::PersonalDataManager* personalDataManager) {
 - (void)testNormalFieldHasManualFallbackIconsAfterReadonlyField {
   // Tap the readonly field.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementReadonly)];
+      performAction:TapWebElementWithId(kFormElementReadonly)];
 
   // Verify the profiles icon is not visible.
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
@@ -133,7 +135,7 @@ void AddAutofillProfile(autofill::PersonalDataManager* personalDataManager) {
 
   // Tap the regular field.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementNormal)];
+      performAction:TapWebElementWithId(kFormElementNormal)];
 
   // Verify the profiles icon is visible.
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]

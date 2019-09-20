@@ -20,6 +20,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace views {
 
@@ -97,6 +98,10 @@ void ProgressBar::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawPath(slice_path, slice_flags);
 }
 
+double ProgressBar::GetValue() const {
+  return current_value_;
+}
+
 void ProgressBar::SetValue(double value) {
   double adjusted_value = (value < 0.0 || value > 1.0) ? -1.0 : value;
 
@@ -110,7 +115,7 @@ void ProgressBar::SetValue(double value) {
     indeterminate_bar_animation_->Start();
   } else {
     indeterminate_bar_animation_.reset();
-    SchedulePaint();
+    OnPropertyChanged(&current_value_, kPropertyEffectsPaint);
   }
 }
 
@@ -122,9 +127,25 @@ SkColor ProgressBar::GetForegroundColor() const {
       ui::NativeTheme::kColorId_ProminentButtonColor);
 }
 
+void ProgressBar::SetForegroundColor(SkColor color) {
+  if (foreground_color_ == color)
+    return;
+
+  foreground_color_ = color;
+  OnPropertyChanged(&foreground_color_, kPropertyEffectsPaint);
+}
+
 SkColor ProgressBar::GetBackgroundColor() const {
   return background_color_.value_or(
       color_utils::BlendTowardMaxContrast(GetForegroundColor(), 0xCC));
+}
+
+void ProgressBar::SetBackgroundColor(SkColor color) {
+  if (background_color_ == color)
+    return;
+
+  background_color_ = color;
+  OnPropertyChanged(&background_color_, kPropertyEffectsPaint);
 }
 
 void ProgressBar::AnimationProgressed(const gfx::Animation* animation) {
@@ -208,6 +229,8 @@ void ProgressBar::OnPaintIndeterminate(gfx::Canvas* canvas) {
 
 BEGIN_METADATA(ProgressBar)
 METADATA_PARENT_CLASS(View)
+ADD_PROPERTY_METADATA(ProgressBar, SkColor, ForegroundColor)
+ADD_PROPERTY_METADATA(ProgressBar, SkColor, BackgroundColor)
 END_METADATA()
 
 }  // namespace views

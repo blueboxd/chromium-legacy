@@ -62,6 +62,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
+#include "services/network/cookie_access_delegate_impl.h"
 #include "services/network/cookie_manager.h"
 #include "services/network/cors/cors_url_loader_factory.h"
 #include "services/network/host_resolver.h"
@@ -412,10 +413,16 @@ NetworkContext::~NetworkContext() {
   // domain_reliability_monitor_ will be destroyed before
   // |url_loader_factories_| which could own URLLoader's whose destructor call
   // back into this class and might use domain_reliability_monitor_. So we reset
-  // |domain_reliability_monitor_| here expliclity, instead of changing the
+  // |domain_reliability_monitor_| here explicitly, instead of changing the
   // order, because any work calling into |domain_reliability_monitor_| at
   // shutdown would be unnecessary as the reports would be thrown out.
   domain_reliability_monitor_.reset();
+
+  // The cookie store's CookieAccessDelegate holds a pointer to the
+  // CookieManager's CookieSettings. Since the CookieManager is being destroyed,
+  // first destroy the CookieAccessDelegate.
+  if (url_request_context_ && url_request_context_->cookie_store())
+    url_request_context_->cookie_store()->SetCookieAccessDelegate(nullptr);
 
   if (url_request_context_ &&
       url_request_context_->transport_security_state()) {
@@ -1739,8 +1746,6 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
 
   session_params.allow_default_credentials = params_->allow_default_credentials;
 
-  session_params.http_09_on_non_default_ports_enabled =
-      params_->http_09_on_non_default_ports_enabled;
   session_params.disable_idle_sockets_close_on_memory_pressure =
       params_->disable_idle_sockets_close_on_memory_pressure;
 
@@ -1895,6 +1900,10 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
       result.url_request_context->cookie_store(),
       std::move(session_cleanup_cookie_store),
       std::move(params_->cookie_manager_params));
+
+  result.url_request_context->cookie_store()->SetCookieAccessDelegate(
+      std::make_unique<CookieAccessDelegateImpl>(
+          &cookie_manager_->cookie_settings()));
 
   if (cert_net_fetcher_)
     cert_net_fetcher_->SetURLRequestContext(result.url_request_context.get());

@@ -324,6 +324,9 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // WebContents is not live.
   virtual RenderFrameHost* GetFocusedFrameIncludingInnerWebContents();
 
+  // Returns the main frame for the delegate.
+  virtual RenderFrameHostImpl* GetMainFrame();
+
   // Called by when |source_rfh| advances focus to a RenderFrameProxyHost.
   virtual void OnAdvanceFocus(RenderFrameHostImpl* source_rfh) {}
 
@@ -341,12 +344,11 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
       const gfx::Rect& bounds_in_root_view) {}
 
   // The page is trying to open a new page (e.g. a popup window). The window
-  // should be created associated with the given |main_frame_widget_route_id| in
-  // the process of |opener|, but it should not be shown yet. That should happen
-  // in response to ShowCreatedWindow. |params.window_container_type| describes
-  // the type of RenderViewHost container that is requested -- in particular,
-  // the window.open call may have specified 'background' and 'persistent' in
-  // the feature string.
+  // should be created associated the process of |opener|, but it should not
+  // be shown yet. That should happen in response to ShowCreatedWindow.
+  // |params.window_container_type| describes the type of RenderViewHost
+  // container that is requested -- in particular, the window.open call may
+  // have specified 'background' and 'persistent' in the feature string.
   //
   // The passed |opener| is the RenderFrameHost initiating the window creation.
   // It will never be null, even if the opener is suppressed via |params|.
@@ -357,17 +359,17 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Note: this is not called "CreateWindow" because that will clash with
   // the Windows function which is actually a #define.
   //
+  // On success, a non-owning pointer to the new RenderFrameHostDelegate is
+  // returned.
+  //
   // The caller is expected to handle cleanup if this operation fails or is
-  // suppressed, by looking for the existence of a RenderFrameHost in
-  // |opener|'s process with |main_frame_route_id| after this method returns.
-  virtual void CreateNewWindow(
+  // suppressed by checking if the return value is null.
+  virtual RenderFrameHostDelegate* CreateNewWindow(
       RenderFrameHost* opener,
-      int32_t render_view_route_id,
-      int32_t main_frame_route_id,
-      int32_t main_frame_widget_route_id,
       const mojom::CreateNewWindowParams& params,
+      bool is_new_browsing_instance,
       bool has_user_gesture,
-      SessionStorageNamespace* session_storage_namespace) {}
+      SessionStorageNamespace* session_storage_namespace);
 
   // Show a previously created page with the specified disposition and bounds.
   // The window is identified by the |main_frame_widget_route_id| passed to

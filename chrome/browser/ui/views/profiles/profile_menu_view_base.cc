@@ -35,6 +35,7 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/view_class_properties.h"
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/profiles/profile_menu_view.h"
@@ -60,6 +61,16 @@ constexpr int kMinimumScrollableContentHeight = 40;
 // the menu items.
 constexpr int kMenuEdgeMargin = 16;
 
+SkColor GetDefaultIconColor() {
+  return ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+      ui::NativeTheme::kColorId_DefaultIconColor);
+}
+
+SkColor GetDefaultSeparatorColor() {
+  return ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+      ui::NativeTheme::kColorId_MenuSeparatorColor);
+}
+
 gfx::ImageSkia SizeImage(const gfx::ImageSkia& image, int size) {
   return gfx::ImageSkiaOperations::CreateResizedImage(
       image, skia::ImageOperations::RESIZE_BEST, gfx::Size(size, size));
@@ -81,9 +92,6 @@ std::unique_ptr<views::BoxLayout> CreateBoxLayout(
 std::unique_ptr<views::View> CreateBorderedBoxView(
     std::unique_ptr<views::View> children_container) {
   constexpr int kBorderThickness = 1;
-  const SkColor kBorderColor =
-      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
-          ui::NativeTheme::kColorId_MenuSeparatorColor);
 
   // Add rounded rectangular border around children.
   children_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -91,7 +99,7 @@ std::unique_ptr<views::View> CreateBorderedBoxView(
   children_container->SetBorder(views::CreateRoundedRectBorder(
       kBorderThickness,
       views::LayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH),
-      kBorderColor));
+      GetDefaultSeparatorColor()));
 
   // Create outer view with margin.
   // The outer view is needed because |BoxLayout| doesn't support outer
@@ -103,6 +111,33 @@ std::unique_ptr<views::View> CreateBorderedBoxView(
   outer_view->AddChildView(std::move(children_container));
 
   return outer_view;
+}
+
+std::unique_ptr<views::Button> CreateCircularImageButton(
+    views::ButtonListener* listener,
+    const gfx::ImageSkia& image,
+    const base::string16& text,
+    bool show_border = false) {
+  constexpr int kImageSize = 28;
+  const int kBorderThickness = show_border ? 1 : 0;
+  const SkScalar kButtonRadius = (kImageSize + 2 * kBorderThickness) / 2.0;
+
+  auto button = std::make_unique<views::ImageButton>(listener);
+  button->SetImage(views::Button::STATE_NORMAL, SizeImage(image, kImageSize));
+  button->SetTooltipText(text);
+  button->SetInkDropMode(views::Button::InkDropMode::ON);
+  button->SetFocusForPlatform();
+  button->set_ink_drop_base_color(GetDefaultIconColor());
+  if (show_border) {
+    button->SetBorder(views::CreateRoundedRectBorder(
+        kBorderThickness, kButtonRadius, GetDefaultSeparatorColor()));
+  }
+  // Set circular highlight path.
+  auto path = std::make_unique<SkPath>();
+  path->addCircle(kButtonRadius, kButtonRadius, kButtonRadius);
+  button->SetProperty(views::kHighlightPathKey, path.release());
+
+  return button;
 }
 
 }  // namespace
@@ -265,21 +300,11 @@ void ProfileMenuViewBase::SetSyncInfo(const base::string16& description,
 }
 
 void ProfileMenuViewBase::AddShortcutFeatureButton(
-    const gfx::VectorIcon& icon,
+    const gfx::ImageSkia& icon,
     const base::string16& text,
     base::RepeatingClosure action) {
   constexpr auto kMargins = gfx::Insets(8, 0);
   constexpr int kButtonSpacing = 6;
-  constexpr int kIconSize = 16;
-  constexpr int kIconPadding = 6;
-  const SkColor kIconColor =
-      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
-          ui::NativeTheme::kColorId_DefaultIconColor);
-  const SkColor kBorderColor =
-      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
-          ui::NativeTheme::kColorId_MenuSeparatorColor);
-  constexpr int kBorderThickness = 1;
-  constexpr int kButtonRadius = kIconSize / 2 + kIconPadding;
 
   // Initialize layout if this is the first time a button is added.
   if (!shortcut_features_container_->GetLayoutManager()) {
@@ -291,17 +316,8 @@ void ProfileMenuViewBase::AddShortcutFeatureButton(
         views::BoxLayout::MainAxisAlignment::kCenter);
   }
 
-  // Add icon button with tooltip text(shown on hover).
-  views::Button* button =
-      shortcut_features_container_->AddChildView(std::make_unique<HoverButton>(
-          this, gfx::CreateVectorIcon(icon, kIconSize, kIconColor),
-          base::string16()));
-  button->SetTooltipText(text);
-  // Specify circular border with inside padding.
-  auto circular_border = views::CreateRoundedRectBorder(
-      kBorderThickness, kButtonRadius, kBorderColor);
-  button->SetBorder(views::CreatePaddedBorder(std::move(circular_border),
-                                              gfx::Insets(kIconPadding)));
+  views::Button* button = shortcut_features_container_->AddChildView(
+      CreateCircularImageButton(this, icon, text, /*show_border=*/true));
 
   RegisterClickAction(button, std::move(action));
 }
@@ -311,9 +327,6 @@ void ProfileMenuViewBase::AddAccountFeatureButton(
     const base::string16& text,
     base::RepeatingClosure action) {
   constexpr int kIconSize = 16;
-  const SkColor kIconColor =
-      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
-          ui::NativeTheme::kColorId_DefaultIconColor);
 
   // Initialize layout if this is the first time a button is added.
   if (!account_features_container_->GetLayoutManager()) {
@@ -327,7 +340,8 @@ void ProfileMenuViewBase::AddAccountFeatureButton(
 
   views::Button* button =
       account_features_container_->AddChildView(std::make_unique<HoverButton>(
-          this, SizeImage(ColorImage(icon, kIconColor), kIconSize), text));
+          this, SizeImage(ColorImage(icon, GetDefaultIconColor()), kIconSize),
+          text));
 
   RegisterClickAction(button, std::move(action));
 }
@@ -371,8 +385,6 @@ void ProfileMenuViewBase::AddProfileShortcutFeatureButton(
     const gfx::ImageSkia& icon,
     const base::string16& text,
     base::RepeatingClosure action) {
-  constexpr int kIconSize = 28;
-
   // Initialize layout if this is the first time a button is added.
   if (!profile_shortcut_features_container_->GetLayoutManager()) {
     profile_shortcut_features_container_->SetLayoutManager(
@@ -382,10 +394,7 @@ void ProfileMenuViewBase::AddProfileShortcutFeatureButton(
   }
 
   views::Button* button = profile_shortcut_features_container_->AddChildView(
-      std::make_unique<HoverButton>(this, SizeImage(icon, kIconSize),
-                                    base::string16()));
-  button->SetTooltipText(text);
-  button->SetBorder(nullptr);
+      CreateCircularImageButton(this, icon, text));
 
   RegisterClickAction(button, std::move(action));
 }
@@ -411,14 +420,11 @@ void ProfileMenuViewBase::AddProfileFeatureButton(
 
 gfx::ImageSkia ProfileMenuViewBase::ImageForMenu(const gfx::VectorIcon& icon,
                                                  float icon_to_image_ratio) {
-  const SkColor kIconColor =
-      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
-          ui::NativeTheme::kColorId_DefaultIconColor);
   const int padding =
       static_cast<int>(kMaxImageSize * (1.0 - icon_to_image_ratio) / 2.0);
 
-  auto sized_icon =
-      gfx::CreateVectorIcon(icon, kMaxImageSize - 2 * padding, kIconColor);
+  auto sized_icon = gfx::CreateVectorIcon(icon, kMaxImageSize - 2 * padding,
+                                          GetDefaultIconColor());
   return gfx::CanvasImageSource::CreatePadded(sized_icon, gfx::Insets(padding));
 }
 
@@ -822,10 +828,7 @@ void ProfileMenuViewBase::RepopulateViewFromMenuItems() {
 
 gfx::ImageSkia ProfileMenuViewBase::CreateVectorIcon(
     const gfx::VectorIcon& icon) {
-  return gfx::CreateVectorIcon(
-      icon, kIconSize,
-      ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
-          ui::NativeTheme::kColorId_DefaultIconColor));
+  return gfx::CreateVectorIcon(icon, kIconSize, GetDefaultIconColor());
 }
 
 int ProfileMenuViewBase::GetDefaultIconSize() {

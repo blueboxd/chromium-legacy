@@ -194,7 +194,8 @@ void FetchHandler::FailRequest(const String& requestId,
 void FetchHandler::FulfillRequest(
     const String& requestId,
     int responseCode,
-    std::unique_ptr<Array<Fetch::HeaderEntry>> responseHeaders,
+    Maybe<Array<Fetch::HeaderEntry>> responseHeaders,
+    Maybe<Binary> binaryResponseHeaders,
     Maybe<Binary> body,
     Maybe<String> responsePhrase,
     std::unique_ptr<FulfillRequestCallback> callback) {
@@ -209,14 +210,19 @@ void FetchHandler::FulfillRequest(
                 static_cast<net::HttpStatusCode>(responseCode));
   if (status_phrase.empty()) {
     callback->sendFailure(
-        Response::Error("Invalid http status code or phrase"));
+        Response::InvalidParams("Invalid http status code or phrase"));
     return;
   }
   std::string headers =
       base::StringPrintf("HTTP/1.1 %d %s", responseCode, status_phrase.c_str());
   headers.append(1, '\0');
-  if (responseHeaders) {
-    for (const std::unique_ptr<Fetch::HeaderEntry>& entry : *responseHeaders) {
+  if (responseHeaders.isJust()) {
+    if (binaryResponseHeaders.isJust()) {
+      callback->sendFailure(Response::InvalidParams(
+          "Only one of responseHeaders or binaryHeaders may be present"));
+      return;
+    }
+    for (const auto& entry : *responseHeaders.fromJust()) {
       if (!ValidateHeaders(entry.get(), callback.get()))
         return;
       headers.append(entry->GetName());
@@ -224,6 +230,12 @@ void FetchHandler::FulfillRequest(
       headers.append(entry->GetValue());
       headers.append(1, '\0');
     }
+  } else if (binaryResponseHeaders.isJust()) {
+    Binary response_headers = binaryResponseHeaders.fromJust();
+    headers.append(reinterpret_cast<const char*>(response_headers.data()),
+                   response_headers.size());
+    if (headers.back() != '\0')
+      headers.append(1, '\0');
   }
   headers.append(1, '\0');
   auto modifications =

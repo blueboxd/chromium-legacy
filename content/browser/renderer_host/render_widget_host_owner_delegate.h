@@ -87,11 +87,6 @@ class CONTENT_EXPORT RenderWidgetHostOwnerDelegate {
   virtual void ShowContextMenu(RenderFrameHost* render_frame_host,
                                const ContextMenuParams& params) = 0;
 
-  // Update VisualProperties for the page. For now, this only updates the main
-  // frame renderer.
-  virtual void UpdatePageVisualProperties(
-      const VisualProperties& visual_properties) = 0;
-
  protected:
   virtual ~RenderWidgetHostOwnerDelegate() {}
 };

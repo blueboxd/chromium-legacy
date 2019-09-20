@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/ui/tabs/tab_group_visual_data.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_context.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
@@ -236,8 +237,15 @@ class TabDragController : public views::WidgetObserver {
     // Is the tab pinned?
     bool pinned;
 
-    // Stores the group the tab is in, or nullopt if tab is not grouped.
-    base::Optional<TabGroupId> group_id;
+    // Contains the information for the tab's group at the start of the drag.
+    struct TabGroupData {
+      TabGroupId group_id;
+      TabGroupVisualData group_visual_data;
+    };
+
+    // Stores the information of the group the tab is in, or nullopt if tab is
+    // not grouped.
+    base::Optional<TabGroupData> tab_group_data;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(TabDragData);

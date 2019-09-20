@@ -55,6 +55,7 @@ class TabHoverCardBubbleView : public views::BubbleDialogDelegateView,
 
   // BubbleDialogDelegateView:
   void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override;
+  ax::mojom::Role GetAccessibleWindowRole() override;
   int GetDialogButtons() const override;
 
   void set_last_mouse_exit_timestamp(

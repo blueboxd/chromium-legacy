@@ -1782,4 +1782,16 @@ TEST_F(CompositedLayerMappingTest, ContentsOpaque) {
   EXPECT_TRUE(mapping->MainGraphicsLayer()->ContentsOpaque());
 }
 
+TEST_F(CompositedLayerMappingTest, NullOverflowControlsHostLayer) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
+
+  SetHtmlInnerHTML("<div id='target' style='will-change: transform'></div>");
+  CompositedLayerMapping* mapping =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))
+          ->Layer()
+          ->GetCompositedLayerMapping();
+  EXPECT_FALSE(mapping->DetachLayerForOverflowControls());
+}
+
 }  // namespace blink

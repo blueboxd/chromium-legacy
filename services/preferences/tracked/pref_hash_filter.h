@@ -18,6 +18,8 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/preferences/tracked/hash_store_contents.h"
 #include "services/preferences/tracked/interceptable_pref_filter.h"
@@ -62,7 +64,8 @@ class PrefHashFilter : public InterceptablePrefFilter {
                  StoreContentsPair external_validation_hash_store_pair_,
                  const std::vector<prefs::mojom::TrackedPreferenceMetadataPtr>&
                      tracked_preferences,
-                 prefs::mojom::ResetOnLoadObserverPtr reset_on_load_observer,
+                 mojo::PendingRemote<prefs::mojom::ResetOnLoadObserver>
+                     reset_on_load_observer,
                  prefs::mojom::TrackedPreferenceValidationDelegate* delegate,
                  size_t reporting_ids_count);
 
@@ -139,7 +142,7 @@ class PrefHashFilter : public InterceptablePrefFilter {
   base::Optional<StoreContentsPair> external_validation_hash_store_pair_;
 
   // Notified if a reset occurs in a call to FilterOnLoad.
-  prefs::mojom::ResetOnLoadObserverPtr reset_on_load_observer_;
+  mojo::Remote<prefs::mojom::ResetOnLoadObserver> reset_on_load_observer_;
 
   TrackedPreferencesMap tracked_paths_;
 

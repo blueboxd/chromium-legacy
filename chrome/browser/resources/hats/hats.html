@@ -1,5 +1,22 @@
+<!doctype html>
 <html>
   <head>
+    <style>
+      /* 402 is the project code name used in the content loaded by this page.
+       * We need to override their focus behavior to improve keyboard focus
+       * accessibility.
+       */
+      .t402-prompt-websat .t402-prompt-root .t402-button:focus {
+        outline-style: auto;
+      }
+      .t402-css-theme-hats-material1 .t402-titlebar-title-alt:focus {
+        outline-style: auto;
+      }
+      :focus {
+        /* Needs to override dynamically loaded, more specific styles. */
+        outline-color: rgb(77, 144, 254) !important;
+      }
+    </style>
     <script>
       /**
        * Close the window when the survey is submitted or when the survey
@@ -14,7 +31,7 @@
         }
 
         window.close();
-      };
+      }
 
       /**
        * Called after the survey HTML is injected into the page.
@@ -26,7 +43,7 @@
           element.style.display = 'none';
       }
     </script>
-    <script src="$SCRIPT_SRC"></script>
+    <script src="$i18n{scriptSrc}"></script>
   </head>
   <body>
   </body>

@@ -17,6 +17,7 @@ capture_unittests
 cast_unittests
 cc_unittests
 chrome_app_unittests
+color_unittests
 components_browsertests
 components_unittests
 compositor_unittests

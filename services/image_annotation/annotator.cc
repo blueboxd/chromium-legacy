@@ -319,7 +319,7 @@ static_assert(Annotator::kDescMaxAspectRatio > 0.0,
               "Description engine must accept images of some aspect ratios.");
 
 Annotator::ClientRequestInfo::ClientRequestInfo(
-    mojom::ImageProcessorPtr in_image_processor,
+    mojo::PendingRemote<mojom::ImageProcessor> in_image_processor,
     AnnotateImageCallback in_callback)
     : image_processor(std::move(in_image_processor)),
       callback(std::move(in_callback)) {}
@@ -377,10 +377,11 @@ void Annotator::BindRequest(mojom::AnnotatorRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void Annotator::AnnotateImage(const std::string& source_id,
-                              const std::string& description_language_tag,
-                              mojom::ImageProcessorPtr image_processor,
-                              AnnotateImageCallback callback) {
+void Annotator::AnnotateImage(
+    const std::string& source_id,
+    const std::string& description_language_tag,
+    mojo::PendingRemote<mojom::ImageProcessor> image_processor,
+    AnnotateImageCallback callback) {
   const RequestKey request_key(source_id, description_language_tag);
 
   // Return cached results if they exist.
@@ -399,7 +400,7 @@ void Annotator::AnnotateImage(const std::string& source_id,
   // If the image processor dies: automatically delete the request info and
   // reassign local processing (for other interested clients) if the dead image
   // processor was responsible for some ongoing work.
-  request_info_list.back().image_processor.set_connection_error_handler(
+  request_info_list.back().image_processor.set_disconnect_handler(
       base::BindOnce(&Annotator::RemoveRequestInfo, base::Unretained(this),
                      request_key, --request_info_list.end(),
                      true /* canceled */));

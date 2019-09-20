@@ -5,6 +5,7 @@
 package org.chromium.base.process_launcher;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.Bundle;
@@ -49,10 +50,13 @@ import javax.annotation.concurrent.GuardedBy;
  *
  * Subclasses must also provide a delegate in this class constructor. That delegate is responsible
  * for loading native libraries and running the main entry point of the service.
+ *
+ * This class does not directly inherit from Service because the logic may be used by a Service
+ * implementation which cannot directly inherit from this class (e.g. for WebLayer child services).
  */
 @JNINamespace("base::android")
 @MainDex
-public abstract class ChildProcessService extends Service {
+public class ChildProcessService {
     private static final String MAIN_THREAD_NAME = "ChildProcessMain";
     private static final String TAG = "ChildProcessService";
 
@@ -60,6 +64,8 @@ public abstract class ChildProcessService extends Service {
     private static boolean sCreateCalled;
 
     private final ChildProcessServiceDelegate mDelegate;
+    private final Service mService;
+    private final Context mApplicationContext;
 
     private final Object mBinderLock = new Object();
     private final Object mLibraryInitializedLock = new Object();
@@ -91,8 +97,11 @@ public abstract class ChildProcessService extends Service {
     // Interface to send notifications to the parent process.
     private IParentProcess mParentProcess;
 
-    public ChildProcessService(ChildProcessServiceDelegate delegate) {
+    public ChildProcessService(
+            ChildProcessServiceDelegate delegate, Service service, Context applicationContext) {
         mDelegate = delegate;
+        mService = service;
+        mApplicationContext = applicationContext;
     }
 
     // Binder object used by clients for this service.
@@ -182,9 +191,7 @@ public abstract class ChildProcessService extends Service {
      * Loads Chrome's native libraries and initializes a ChildProcessService.
      */
     // For sCreateCalled check.
-    @Override
     public void onCreate() {
-        super.onCreate();
         Log.i(TAG, "Creating new ChildProcessService pid=%d", Process.myPid());
         if (sCreateCalled) {
             throw new RuntimeException("Illegal child process reuse.");
@@ -273,9 +280,7 @@ public abstract class ChildProcessService extends Service {
         mMainThread.start();
     }
 
-    @Override
     public void onDestroy() {
-        super.onDestroy();
         Log.i(TAG, "Destroying ChildProcessService pid=%d", Process.myPid());
         System.exit(0);
     }
@@ -288,7 +293,6 @@ public abstract class ChildProcessService extends Service {
      * @param intent The intent that was used to bind to the service.
      * @return the binder used by the client to setup the connection.
      */
-    @Override
     public IBinder onBind(Intent intent) {
         if (mServiceBound) return mBinder;
 
@@ -296,7 +300,7 @@ public abstract class ChildProcessService extends Service {
         // Otherwise the system may keep it around and available for a reconnect. The child
         // processes do not currently support reconnect; they must be initialized from scratch every
         // time.
-        stopSelf();
+        mService.stopSelf();
 
         mBindToCallerCheck =
                 intent.getBooleanExtra(ChildProcessConstants.EXTRA_BIND_TO_CALLER, false);
@@ -331,6 +335,10 @@ public abstract class ChildProcessService extends Service {
             mDelegate.onConnectionSetup(bundle, clientInterfaces);
             mMainThread.notifyAll();
         }
+    }
+
+    private Context getApplicationContext() {
+        return mApplicationContext;
     }
 
     @NativeMethods

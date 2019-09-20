@@ -61,6 +61,7 @@
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/prerender/prerenderer_client.h"
 #include "chrome/renderer/previews/resource_loading_hints_agent.h"
+#include "chrome/renderer/sync_encryption_keys_extension.h"
 #include "chrome/renderer/url_loader_throttle_provider_impl.h"
 #include "chrome/renderer/v8_unwinder.h"
 #include "chrome/renderer/websocket_handshake_throttle_provider_impl.h"
@@ -502,6 +503,12 @@ void ChromeContentRendererClient::RenderFrameCreated(
 
 #if defined(OS_ANDROID)
   SandboxStatusExtension::Create(render_frame);
+#endif
+
+#if !defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kSyncEncryptionKeysWebApi)) {
+    SyncEncryptionKeysExtension::Create(render_frame);
+  }
 #endif
 
   new NetErrorHelper(render_frame);

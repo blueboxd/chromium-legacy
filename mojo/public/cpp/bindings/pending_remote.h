@@ -71,7 +71,7 @@ class PendingRemote {
 
   // Temporary helper for transitioning away from old bindings types. This is
   // intentionally an implicit conversion.
-  operator InterfacePtrInfo<Interface>() {
+  operator InterfacePtrInfo<Interface>() && {
     return InterfacePtrInfo<Interface>(PassPipe(), version());
   }
 

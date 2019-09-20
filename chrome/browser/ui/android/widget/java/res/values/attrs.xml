@@ -36,4 +36,12 @@
         <!-- drawableTint wasn't added in Android until API level 23. -->
         <attr name="chromeDrawableTint" format="color"/>
     </declare-styleable>
+
+    <declare-styleable name="RoundedCornerImageView">
+        <attr name="cornerRadiusTopStart" format="dimension" />
+        <attr name="cornerRadiusTopEnd" format="dimension" />
+        <attr name="cornerRadiusBottomStart" format="dimension" />
+        <attr name="cornerRadiusBottomEnd" format="dimension" />
+        <attr name="roundedfillColor" format="reference|color" />
+    </declare-styleable>
 </resources>

@@ -9,10 +9,10 @@ import android.content.res.TypedArray;
 import android.support.v7.preference.Preference;
 import android.util.AttributeSet;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.ui.base.LocalizationUtils;
-import org.chromium.ui.base.WindowAndroid;
 
 /**
  * A preference that navigates to an URL.
@@ -32,7 +32,7 @@ public class HyperlinkPreference extends Preference {
 
     @Override
     protected void onClick() {
-        CustomTabActivity.showInfoPage(WindowAndroid.activityFromContext(getContext()),
+        CustomTabActivity.showInfoPage(ContextUtils.activityFromContext(getContext()),
                 LocalizationUtils.substituteLocalePlaceholder(getContext().getString(mUrlResId)));
     }
 }

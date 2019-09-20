@@ -407,7 +407,7 @@ void DockKeyboard() {
 
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementName)];
+      performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Tap on the profiles icon.
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
@@ -451,7 +451,7 @@ void DockKeyboard() {
 
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
+      performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Tap on the profiles icon.
   [[EarlGrey selectElementWithMatcher:ProfilesIconMatcher()]
@@ -495,7 +495,7 @@ void DockKeyboard() {
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
+      performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Tap on the profiles icon.
   [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
@@ -529,7 +529,7 @@ void DockKeyboard() {
 
   // Bring up the regular keyboard again.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
+      performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Wait for the accessory icon to appear.
   [GREYKeyboard waitForKeyboardToAppear];
@@ -565,7 +565,7 @@ void DockKeyboard() {
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
+      performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   if (!UndockAndSplitKeyboard()) {
     EARL_GREY_TEST_DISABLED(
@@ -607,7 +607,7 @@ void DockKeyboard() {
 
   // Bring up the regular keyboard again.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementName)];
+      performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Wait for the accessory icon to appear.
   [GREYKeyboard waitForKeyboardToAppear];
@@ -643,7 +643,7 @@ void DockKeyboard() {
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
+      performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   if (!UndockAndSplitKeyboard()) {
     EARL_GREY_TEST_DISABLED(
@@ -679,7 +679,7 @@ void DockKeyboard() {
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
+      performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Verify the profiles icon is visible.
   [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
@@ -696,7 +696,7 @@ void DockKeyboard() {
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
+      performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Verify the profiles icon is visible.
   [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
@@ -714,7 +714,7 @@ void DockKeyboard() {
   AddAutofillProfile(_personalDataManager);
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
+      performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Verify the profiles icon is visible.
   [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
@@ -728,7 +728,7 @@ void DockKeyboard() {
   [ChromeEarlGrey waitForWebStateContainingText:webViewText];
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
+      performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Verify the profiles icon is visible.
   [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
@@ -744,7 +744,7 @@ void DockKeyboard() {
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
+      performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Verify the profiles icon is visible.
   [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
@@ -760,7 +760,7 @@ void DockKeyboard() {
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
+      performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Open a  regular tab.
   [ChromeEarlGrey openNewTab];
@@ -770,7 +770,7 @@ void DockKeyboard() {
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
+      performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // This will fail if there is more than one profiles icon in the hierarchy.
   [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
@@ -787,7 +787,7 @@ void DockKeyboard() {
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
+      performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Verify the profiles icon is visible.
   [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]
@@ -804,7 +804,7 @@ void DockKeyboard() {
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
+      performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Open a  regular tab.
   [ChromeEarlGrey openNewTab];
@@ -814,7 +814,7 @@ void DockKeyboard() {
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
-      performAction:chrome_test_util::TapWebElement(kFormElementCity)];
+      performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // This will fail if there is more than one profiles icon in the hierarchy.
   [[EarlGrey selectElementWithMatcher:FormSuggestionViewMatcher()]

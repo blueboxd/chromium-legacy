@@ -64,8 +64,8 @@ void SMILAnimationSandwich::UpdateTiming(SMILTime elapsed) {
 
     if (!animation->NeedsToProgress(elapsed))
       continue;
-    bool interval_restart = animation->CheckAndUpdateInterval(elapsed);
-    animation->UpdateActiveState(elapsed, interval_restart);
+    animation->CheckAndUpdateInterval(elapsed);
+    animation->UpdateActiveState(elapsed);
   }
 }
 

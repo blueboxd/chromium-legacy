@@ -131,6 +131,10 @@ const base::Feature kAutofillRestrictUnownedFieldsToFormlessCheckout{
 const base::Feature kAutofillRichMetadataQueries{
     "AutofillRichMetadataQueries", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether UPI/VPA values will be saved and filled into payment forms.
+const base::Feature kAutofillSaveAndFillVPA{"AutofillSaveAndFillVPA",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kAutofillSaveOnProbablySubmitted{
     "AutofillSaveOnProbablySubmitted", base::FEATURE_ENABLED_BY_DEFAULT};
 

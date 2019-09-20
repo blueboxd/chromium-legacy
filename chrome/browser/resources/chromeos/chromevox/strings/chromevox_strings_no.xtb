@@ -421,7 +421,6 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="4039983576244166038">Tom radoverskrift</translation>
 <translation id="4042843249978639960">Det finnes ikke flere overskrifter på nivå 2.</translation>
 <translation id="4043348641337972076">Det finnes ingen tidligere ARIA-landemerker.</translation>
-<translation id="4045764028670444336">Begynnelse på stavefeil</translation>
 <translation id="4047216625641135770">Mark-tag</translation>
 <translation id="404803211695627272"><ph name="V1" />–<ph name="V2" /></translation>
 <translation id="4053520724192563562">Limegrønn</translation>
@@ -504,7 +503,6 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="4547556996012970016">Neste overskrift på nivå 5</translation>
 <translation id="4562381607973973258">Topptekst</translation>
 <translation id="4569941707103739422">Trykk på opp- eller nedoverpilen for å navigere og Enter for å aktivere.</translation>
-<translation id="4570424871453628777">Slutt på stavefeil</translation>
 <translation id="4591507479202817876">, valgt</translation>
 <translation id="4597532268155981612">skjema</translation>
 <translation id="4597896406374528575">April</translation>
@@ -728,7 +726,6 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="6037602951055904232">Panorer frem</translation>
 <translation id="6042826534790431634">Trykk på Søk + mellomrom for å aktivere.</translation>
 <translation id="6044160928851315051">Gjør skjermen mørk</translation>
-<translation id="6065293622157674001">Begynnelse på grammatikkfeil</translation>
 <translation id="6082768461603900813">Grunnleggende navigering</translation>
 <translation id="6118126368611144850">Android-apper for Chrome. Hvis du har Play Butikk på enheten din, kan du ta en sniktitt på ChromeVox med Android-apper. Prøv den eksperimentelle støtten ved å laste ned Google Chrome Canary fra Play-butikken.</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -869,7 +866,6 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="7143207342074048698">Kobler til</translation>
 <translation id="7153618581592392745">Lavendel</translation>
 <translation id="7157306005867877619">Abstrakt</translation>
-<translation id="7161425887892204659">Slutt på samsvarende tekst</translation>
 <translation id="7161771961008409533">Knapp med forgrunnsvindu</translation>
 <translation id="7165714724802225287">Nåværende visningsstil er innfelt.</translation>
 <translation id="7167657087543110">tegnekko</translation>
@@ -907,7 +903,6 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Forlater tabellen.</translation>
 <translation id="738899727977260036">Skiferblå</translation>
-<translation id="7392145451309930991">Begynnelse på samsvarende tekst</translation>
 <translation id="739763518212184081">Forrige linje</translation>
 <translation id="7400575256015741911">En stavefeil er oppdaget</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -1120,7 +1115,6 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="8476408756881832830">Sett avspillingen på pause når ChromeVox snakker</translation>
 <translation id="8476508772960940536">vindusoversikt</translation>
 <translation id="8503360654911991865">Reduser detaljnivået på navigeringen</translation>
-<translation id="8504695234784218301">Slutt på grammatikkfeil</translation>
 <translation id="8520472399088452386">Verdisettingsknapp</translation>
 <translation id="8534394844575788431">Formatering</translation>
 <translation id="8538744478902126321">Gjett radoverskriften i den nåværende cellen</translation>

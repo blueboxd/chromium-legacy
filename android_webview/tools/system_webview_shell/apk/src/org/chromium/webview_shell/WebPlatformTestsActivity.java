@@ -35,16 +35,17 @@ import org.chromium.base.VisibleForTesting;
  */
 public class WebPlatformTestsActivity extends Activity {
     private static final String TAG = "WPTActivity";
+    private static final boolean DEBUG = false;
 
     /**
      * A callback for testing.
      */
     @VisibleForTesting
     public interface TestCallback {
-        /** Called after child layout becomes visible. */
-        void onChildLayoutVisible();
-        /** Called after child layout becomes invisible. */
-        void onChildLayoutInvisible();
+        /** Called after child layout is added. */
+        void onChildLayoutAdded();
+        /** Called after child layout is removed. */
+        void onChildLayoutRemoved();
     }
 
     private LayoutInflater mLayoutInflater;
@@ -58,10 +59,9 @@ public class WebPlatformTestsActivity extends Activity {
         @Override
         public boolean onCreateWindow(
                 WebView webView, boolean isDialog, boolean isUserGesture, Message resultMsg) {
-            removeAndDestroyWebView(mChildWebView);
-            // Note that WebView is not inflated but created programmatically
-            // such that it can be destroyed separately.
-            mChildWebView = new WebView(WebPlatformTestsActivity.this);
+            if (DEBUG) Log.i(TAG, "onCreateWindow");
+            mChildLayout = createChildLayout();
+            mChildWebView = mChildLayout.findViewById(R.id.childWebView);
             setUpWebSettings(mChildWebView.getSettings());
             mChildWebView.setWebViewClient(new WebViewClient() {
                 @Override
@@ -85,11 +85,7 @@ public class WebPlatformTestsActivity extends Activity {
             WebView.WebViewTransport transport = (WebView.WebViewTransport) resultMsg.obj;
             transport.setWebView(mChildWebView);
             resultMsg.sendToTarget();
-
-            mChildLayout.addView(mChildWebView);
-            // Make the child webview's layout visible
-            mChildLayout.setVisibility(View.VISIBLE);
-            if (mTestCallback != null) mTestCallback.onChildLayoutVisible();
+            if (mTestCallback != null) mTestCallback.onChildLayoutAdded();
             return true;
         }
 
@@ -120,7 +116,6 @@ public class WebPlatformTestsActivity extends Activity {
         setContentView(R.layout.activity_web_platform_tests);
         mRootLayout = findViewById(R.id.rootLayout);
         mWebView = findViewById(R.id.webview);
-        mChildLayout = createChildLayout();
 
         String url = getUrlFromIntent();
         if (url == null) {
@@ -164,6 +159,7 @@ public class WebPlatformTestsActivity extends Activity {
         settings.setSupportMultipleWindows(true);
         // Respect "viewport" HTML meta tag. This is false by default, but set to false to be clear.
         settings.setUseWideViewPort(false);
+        settings.setDomStorageEnabled(true);
     }
 
     private void setUpMainWebView(String url) {
@@ -173,12 +169,15 @@ public class WebPlatformTestsActivity extends Activity {
     }
 
     private void closeChild() {
-        TextView childTitleText = mChildLayout.findViewById(R.id.childTitleText);
-        childTitleText.setText("");
-        mChildLayout.setVisibility(View.INVISIBLE);
+        if (DEBUG) Log.i(TAG, "closeChild");
         removeAndDestroyWebView(mChildWebView);
         mChildWebView = null;
-        if (mTestCallback != null) mTestCallback.onChildLayoutInvisible();
+
+        assert mChildLayout != null;
+        ViewGroup parent = (ViewGroup) mChildLayout.getParent();
+        parent.removeView(mChildLayout);
+        mChildLayout = null;
+        if (mTestCallback != null) mTestCallback.onChildLayoutRemoved();
     }
 
     @VisibleForTesting

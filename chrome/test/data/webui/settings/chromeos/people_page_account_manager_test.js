@@ -153,7 +153,7 @@ cr.define('settings_people_page_account_manager', function() {
 
     test('AddAccount', function() {
       assertFalse(accountManager.$$('#add-account-button').disabled);
-      assertTrue(accountManager.$$('cr-policy-indicator').hidden);
+      assertTrue(accountManager.$$('#settings-box-user-message').hidden);
       accountManager.$$('#add-account-button').click();
       assertEquals(1, browserProxy.getCallCount('addAccount'));
     });
@@ -269,7 +269,8 @@ cr.define('settings_people_page_account_manager', function() {
     let accountList = null;
 
     suiteSetup(function() {
-      loadTimeData.overrideValues({secondaryGoogleAccountSigninAllowed: false});
+      loadTimeData.overrideValues(
+          {secondaryGoogleAccountSigninAllowed: false, isChild: false});
     });
 
     setup(function() {
@@ -291,7 +292,48 @@ cr.define('settings_people_page_account_manager', function() {
 
     test('AddAccountCanBeDisabledByPolicy', function() {
       assertTrue(accountManager.$$('#add-account-button').disabled);
-      assertFalse(accountManager.$$('cr-policy-indicator').hidden);
+      assertFalse(accountManager.$$('#settings-box-user-message').hidden);
+    });
+
+    test('UserMessageSetForAccountType', function() {
+      assertEquals(
+          loadTimeData.getString('accountManagerSecondaryAccountsDisabledText'),
+          accountManager.$$('#user-message-text').textContent.trim());
+    });
+  });
+
+  suite('AccountManagerAccountAdditionDisabledChildAccountTests', function() {
+    let browserProxy = null;
+    let accountManager = null;
+    let accountList = null;
+
+    suiteSetup(function() {
+      loadTimeData.overrideValues(
+          {secondaryGoogleAccountSigninAllowed: false, isChild: true});
+    });
+
+    setup(function() {
+      browserProxy = new TestAccountManagerBrowserProxy();
+      settings.AccountManagerBrowserProxyImpl.instance_ = browserProxy;
+      PolymerTest.clearBody();
+
+      accountManager = document.createElement('settings-account-manager');
+      document.body.appendChild(accountManager);
+      accountList = accountManager.$$('#account-list');
+      assertTrue(!!accountList);
+
+      settings.navigateTo(settings.routes.ACCOUNT_MANAGER);
+    });
+
+    teardown(function() {
+      accountManager.remove();
+    });
+
+    test('UserMessageSetForAccountType', function() {
+      assertEquals(
+          loadTimeData.getString(
+              'accountManagerSecondaryAccountsDisabledChildText'),
+          accountManager.$$('#user-message-text').textContent.trim());
     });
   });
 });

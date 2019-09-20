@@ -4855,7 +4855,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8174876712881364124">Varmuuskopioi Google Driveen. Palauta dataa tai vaihda laitetta helposti milloin tahansa. Varmuuskopio sisältää sovellusdatan. Varmuuskopiot ladataan Googleen ja salataan lapsesi Google-tilin salasanalla. <ph name="BEGIN_LINK1" />Lue lisää<ph name="END_LINK1" /></translation>
 <translation id="8176332201990304395">Pinkki ja valkoinen</translation>
 <translation id="8177196903785554304">Verkon tiedot</translation>
-<translation id="8178208419593390223">Kirjautuneiden Google-tilien ylläpito. Verkkosivustot, sovellukset ja laajennukset Chromessa ja Google Playssa voivat käyttää näitä tilejä käyttökokemuksen personointiin annettujen oikeuksien mukaan.</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">sivu</translation>
 <translation id="8180294223783876911">Lähetä käyttö- ja diagnostiikkadataa. Laite lähettää tällä hetkellä diagnostiikkadataa sekä laitteen ja sovellusten käyttödataa automaattisesti Googlelle. Datan avulla parannetaan esimerkiksi järjestelmän ja sovellusten vakautta. Kootusta datasta on hyötyä myös Googlen sovelluksille ja kumppaneille, kuten Android-kehittäjille. Jos olet ottanut käyttöön muun verkko- ja sovellustoiminnan asetuksen, tätä dataa voidaan tallentaa Google-tilillesi. <ph name="BEGIN_LINK1" />Lue lisää<ph name="END_LINK1" /></translation>

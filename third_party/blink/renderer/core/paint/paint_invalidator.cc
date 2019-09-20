@@ -198,7 +198,7 @@ void PaintInvalidator::UpdatePaintInvalidationContainer(
     PaintInvalidatorContext& context) {
   if (object.IsPaintInvalidationContainer()) {
     context.paint_invalidation_container = ToLayoutBoxModelObject(&object);
-    if (object.StyleRef().IsStackingContext())
+    if (object.StyleRef().IsStackingContext() || object.IsSVGRoot())
       context.paint_invalidation_container_for_stacked_contents =
           ToLayoutBoxModelObject(&object);
   } else if (object.IsLayoutView()) {

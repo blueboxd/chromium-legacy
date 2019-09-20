@@ -4851,7 +4851,6 @@
 <translation id="8174876712881364124">备份到 Google 云端硬盘。您随时都能轻松地恢复数据或更换设备。此类备份内容会包含应用数据、会上传到 Google 并会使用您孩子的 Google 帐号密码进行加密。<ph name="BEGIN_LINK1" />了解详情<ph name="END_LINK1" /></translation>
 <translation id="8176332201990304395">粉色和白色</translation>
 <translation id="8177196903785554304">网络详细信息</translation>
-<translation id="8178208419593390223">管理已登录的 Google 帐号。在获得相关权限的情况下，Chrome 和 Google Play 中的网站、应用和扩展程序可能会使用这些帐号自定义您的体验。</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">页</translation>
 <translation id="8180294223783876911">发送使用情况数据和诊断数据。目前，此设备会自动向 Google 发送诊断数据、设备数据和应用使用情况数据。这些数据会被用来帮助提高系统和应用的稳定性以及实现其他方面的改进。部分汇总数据也会对 Google 应用和合作伙伴（例如 Android 开发者）有所帮助。如果您已开启“其他网络与应用活动记录”设置，这些数据可能会被保存到您的 Google 帐号中。<ph name="BEGIN_LINK1" />了解详情<ph name="END_LINK1" /></translation>

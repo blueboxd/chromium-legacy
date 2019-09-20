@@ -421,7 +421,6 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="4039983576244166038">Üres sorfejléc</translation>
 <translation id="4042843249978639960">Nincs következő 2-es szintű címsor.</translation>
 <translation id="4043348641337972076">Nincs előző ARIA határjel.</translation>
-<translation id="4045764028670444336">Helyesírási hiba kezdődik</translation>
 <translation id="4047216625641135770">Kiemelés</translation>
 <translation id="404803211695627272"><ph name="V1" />–<ph name="V2" /></translation>
 <translation id="4053520724192563562">Limezöld</translation>
@@ -504,7 +503,6 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="4547556996012970016">Következő 5. szintű fejléc</translation>
 <translation id="4562381607973973258">Fejléc</translation>
 <translation id="4569941707103739422">A navigációhoz a lefelé és a felfelé mutató nyilakat, az aktiváláshoz az Enter billentyűt használja.</translation>
-<translation id="4570424871453628777">Helyesírási hiba vége</translation>
 <translation id="4591507479202817876">, kiválasztva</translation>
 <translation id="4597532268155981612">űrlap</translation>
 <translation id="4597896406374528575">április</translation>
@@ -728,7 +726,6 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="6037602951055904232">Pászt előre</translation>
 <translation id="6042826534790431634">Az aktiváláshoz nyomja le a Keresés+szóköz billentyűparancsot.</translation>
 <translation id="6044160928851315051">Képernyő sötétítése</translation>
-<translation id="6065293622157674001">Nyelvtani hiba kezdődik</translation>
 <translation id="6082768461603900813">Alapvető navigáció</translation>
 <translation id="6118126368611144850">Android-alkalmazások Chrome-ra. Ha eszközén telepítve van a Play Áruház, előzetes betekintést kaphat a ChromeVox Android-alkalmazásokkal való használatába. Töltse le a Google Chrome Canary verzióját a Play Áruházból, és próbálja ki a kísérleti támogatást.</translation>
 <translation id="611827076493383239">felkeresett</translation>
@@ -869,7 +866,6 @@ A Chrome böngésző menüjének megnyitásához nyomja le az Alt + F billentyű
 <translation id="7143207342074048698">Csatlakozás</translation>
 <translation id="7153618581592392745">Levendula</translation>
 <translation id="7157306005867877619">Absztrakt</translation>
-<translation id="7161425887892204659">Szöveges egyezés vége</translation>
 <translation id="7161771961008409533">Előugró gomb</translation>
 <translation id="7165714724802225287">Az aktuális megjelenítési mód beékelt.</translation>
 <translation id="7167657087543110">karakterek visszaolvasása</translation>
@@ -907,7 +903,6 @@ A Chrome böngésző menüjének megnyitásához nyomja le az Alt + F billentyű
 <translation id="737396357417333429">kattintható</translation>
 <translation id="7374104575779636480">Táblázat elhagyása.</translation>
 <translation id="738899727977260036">Palakék</translation>
-<translation id="7392145451309930991">Szöveges egyezés kezdődik</translation>
 <translation id="739763518212184081">Előző sor</translation>
 <translation id="7400575256015741911">Észlelt helyesírási hiba</translation>
 <translation id="7408482676469142474">tábl</translation>
@@ -1120,7 +1115,6 @@ A Chrome böngésző menüjének megnyitásához nyomja le az Alt + F billentyű
 <translation id="8476408756881832830">Lejátszás szüneteltetése, amikor a ChromeVox beszél</translation>
 <translation id="8476508772960940536">ablakáttekintési mód</translation>
 <translation id="8503360654911991865">Navigáció részletezettségének csökkentése</translation>
-<translation id="8504695234784218301">Nyelvtani hiba vége</translation>
 <translation id="8520472399088452386">Léptetőnyíl</translation>
 <translation id="8534394844575788431">Formázás</translation>
 <translation id="8538744478902126321">Aktuális cella sorfejlécének tippelése</translation>

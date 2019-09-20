@@ -421,7 +421,6 @@
 <translation id="4039983576244166038">행 헤더가 비어 있음</translation>
 <translation id="4042843249978639960">다음 수준 2 제목이 없습니다.</translation>
 <translation id="4043348641337972076">이전 ARIA 랜드마크가 없습니다.</translation>
-<translation id="4045764028670444336">철자 오류 시작 부분</translation>
 <translation id="4047216625641135770">표시</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4053520724192563562">라임 그린</translation>
@@ -504,7 +503,6 @@
 <translation id="4547556996012970016">다음 수준 5 제목</translation>
 <translation id="4562381607973973258">머리글</translation>
 <translation id="4569941707103739422">이동하려면 위쪽 또는 아래쪽 화살표를 누르고, 활성화하려면 Enter를 누르세요.</translation>
-<translation id="4570424871453628777">철자 오류 끝부분</translation>
 <translation id="4591507479202817876">, 선택됨</translation>
 <translation id="4597532268155981612">양식</translation>
 <translation id="4597896406374528575">4월</translation>
@@ -728,7 +726,6 @@
 <translation id="6037602951055904232">앞으로 이동</translation>
 <translation id="6042826534790431634">활성화하려면 Search + Space를 누르세요.</translation>
 <translation id="6044160928851315051">화면을 어둡게 합니다.</translation>
-<translation id="6065293622157674001">문법 오류 시작 부분</translation>
 <translation id="6082768461603900813">기본 탐색</translation>
 <translation id="6118126368611144850">Chrome용 Android 앱입니다. 기기에 Play 스토어가 설치되어 있다면 Android 앱으로 ChromeVox를 미리 볼 수 있습니다. Play 스토어에서 Chrome Canary를 다운로드하여 실험적으로 지원되는 기능을 사용해 보세요.</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -869,7 +866,6 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="7143207342074048698">연결 중</translation>
 <translation id="7153618581592392745">라벤더색</translation>
 <translation id="7157306005867877619">초록</translation>
-<translation id="7161425887892204659">텍스트 일치 끝부분</translation>
 <translation id="7161771961008409533">팝업 버튼</translation>
 <translation id="7165714724802225287">현재 인터리브 디스플레이 스타일입니다.</translation>
 <translation id="7167657087543110">문자 에코</translation>
@@ -907,7 +903,6 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">표를 종료합니다.</translation>
 <translation id="738899727977260036">슬레이트 블루</translation>
-<translation id="7392145451309930991">텍스트 일치 시작 부분</translation>
 <translation id="739763518212184081">이전 행</translation>
 <translation id="7400575256015741911">철자 오류 발견됨</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -1120,7 +1115,6 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="8476408756881832830">ChromeVox 음성이 나올 때는 재생을 일시중지합니다.</translation>
 <translation id="8476508772960940536">창 전체보기</translation>
 <translation id="8503360654911991865">탐색 세밀도 낮추기</translation>
-<translation id="8504695234784218301">문법 오류 끝부분</translation>
 <translation id="8520472399088452386">스핀 버튼</translation>
 <translation id="8534394844575788431">서식</translation>
 <translation id="8538744478902126321">현재 셀의 행 헤더 추측</translation>

@@ -15,7 +15,7 @@ HoverButtonController::HoverButtonController(
     views::ButtonListener* listener,
     std::unique_ptr<views::ButtonControllerDelegate> delegate)
     : ButtonController(button, std::move(delegate)), listener_(listener) {
-  set_notify_action(views::ButtonController::NotifyAction::NOTIFY_ON_RELEASE);
+  set_notify_action(views::ButtonController::NotifyAction::kOnRelease);
 }
 
 HoverButtonController::~HoverButtonController() = default;
@@ -36,8 +36,7 @@ bool HoverButtonController::OnKeyPressed(const ui::KeyEvent& event) {
 }
 
 bool HoverButtonController::OnMousePressed(const ui::MouseEvent& event) {
-  DCHECK(notify_action() ==
-         views::ButtonController::NotifyAction::NOTIFY_ON_RELEASE);
+  DCHECK(notify_action() == views::ButtonController::NotifyAction::kOnRelease);
   if (button()->request_focus_on_press())
     button()->RequestFocus();
   if (listener_) {
@@ -51,8 +50,7 @@ bool HoverButtonController::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 void HoverButtonController::OnMouseReleased(const ui::MouseEvent& event) {
-  DCHECK(notify_action() ==
-         views::ButtonController::NotifyAction::NOTIFY_ON_RELEASE);
+  DCHECK(notify_action() == views::ButtonController::NotifyAction::kOnRelease);
   if (button()->state() != views::Button::STATE_DISABLED &&
       delegate()->IsTriggerableEvent(event) &&
       button()->HitTestPoint(event.location()) && !delegate()->InDrag()) {

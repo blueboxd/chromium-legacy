@@ -1082,9 +1082,8 @@ int HttpStreamFactory::Job::DoCreateStream() {
               ->CreateBasicStream(std::move(connection_), using_proxy,
                                   session_->websocket_endpoint_lock_manager());
     } else {
-      stream_ = std::make_unique<HttpBasicStream>(
-          std::move(connection_), using_proxy,
-          session_->params().http_09_on_non_default_ports_enabled);
+      stream_ = std::make_unique<HttpBasicStream>(std::move(connection_),
+                                                  using_proxy);
     }
     return OK;
   }

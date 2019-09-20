@@ -1023,7 +1023,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, AltJobSucceedsMainJobDestroyed) {
 
   // Make |alternative_job| succeed.
   auto http_stream = std::make_unique<HttpBasicStream>(
-      std::make_unique<ClientSocketHandle>(), false, false);
+      std::make_unique<ClientSocketHandle>(), false);
   EXPECT_CALL(request_delegate_, OnStreamReadyImpl(_, _, http_stream.get()));
 
   HttpStreamFactoryJobPeer::SetStream(job_factory_.alternative_job(),
@@ -1173,7 +1173,7 @@ TEST_F(HttpStreamFactoryJobControllerTest,
 
   // Make |alternative_job| succeed.
   auto http_stream = std::make_unique<HttpBasicStream>(
-      std::make_unique<ClientSocketHandle>(), false, false);
+      std::make_unique<ClientSocketHandle>(), false);
   HttpStreamFactoryJobPeer::SetStream(job_factory_.alternative_job(),
                                       std::move(http_stream));
   // This should not call request_delegate_::OnStreamReady.
@@ -1223,7 +1223,7 @@ void HttpStreamFactoryJobControllerTest::TestAltJobSucceedsAfterMainJobFailed(
 
   // Make |alternative_job| succeed.
   auto http_stream = std::make_unique<HttpBasicStream>(
-      std::make_unique<ClientSocketHandle>(), false, false);
+      std::make_unique<ClientSocketHandle>(), false);
   EXPECT_CALL(request_delegate_, OnStreamReadyImpl(_, _, http_stream.get()));
 
   HttpStreamFactoryJobPeer::SetStream(job_factory_.alternative_job(),
@@ -1298,7 +1298,7 @@ void HttpStreamFactoryJobControllerTest::
 
   // Make |alternative_job| succeed.
   auto http_stream = std::make_unique<HttpBasicStream>(
-      std::make_unique<ClientSocketHandle>(), false, false);
+      std::make_unique<ClientSocketHandle>(), false);
 
   HttpStreamFactoryJobPeer::SetStream(job_factory_.alternative_job(),
                                       std::move(http_stream));
@@ -1372,7 +1372,7 @@ void HttpStreamFactoryJobControllerTest::
   }
   // Make |alternative_job| succeed.
   auto http_stream = std::make_unique<HttpBasicStream>(
-      std::make_unique<ClientSocketHandle>(), false, false);
+      std::make_unique<ClientSocketHandle>(), false);
   EXPECT_CALL(request_delegate_, OnStreamReadyImpl(_, _, http_stream.get()));
 
   HttpStreamFactoryJobPeer::SetStream(job_factory_.alternative_job(),
@@ -1446,7 +1446,7 @@ void HttpStreamFactoryJobControllerTest::TestMainJobFailsAfterAltJobSucceeded(
   }
   // Make |alternative_job| succeed.
   auto http_stream = std::make_unique<HttpBasicStream>(
-      std::make_unique<ClientSocketHandle>(), false, false);
+      std::make_unique<ClientSocketHandle>(), false);
   EXPECT_CALL(request_delegate_, OnStreamReadyImpl(_, _, http_stream.get()));
 
   HttpStreamFactoryJobPeer::SetStream(job_factory_.alternative_job(),
@@ -1624,7 +1624,7 @@ TEST_F(HttpStreamFactoryJobControllerTest, GetLoadStateAfterMainJobFailed) {
 
   // |alternative_job| succeeds and should report status to Request.
   auto http_stream = std::make_unique<HttpBasicStream>(
-      std::make_unique<ClientSocketHandle>(), false, false);
+      std::make_unique<ClientSocketHandle>(), false);
   EXPECT_CALL(request_delegate_, OnStreamReadyImpl(_, _, http_stream.get()));
 
   HttpStreamFactoryJobPeer::SetStream(job_factory_.alternative_job(),

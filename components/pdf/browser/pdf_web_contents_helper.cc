@@ -42,8 +42,10 @@ PDFWebContentsHelper::~PDFWebContentsHelper() {
   touch_selection_controller_client_manager_->RemoveObserver(this);
 }
 
-void PDFWebContentsHelper::SetListener(mojom::PdfListenerPtr listener) {
-  remote_pdf_client_ = std::move(listener);
+void PDFWebContentsHelper::SetListener(
+    mojo::PendingRemote<mojom::PdfListener> listener) {
+  remote_pdf_client_.reset();
+  remote_pdf_client_.Bind(std::move(listener));
 }
 
 gfx::PointF PDFWebContentsHelper::ConvertHelper(const gfx::PointF& point_f,

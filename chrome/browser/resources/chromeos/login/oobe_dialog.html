@@ -41,11 +41,12 @@
       <iron-icon icon-"icon2" ... slot="oobe-icon" class="oobe-icon-2x">
 
   |bottom-buttons| block is shown only if |has-buttons| attribute is set.
+  Please keep |bottom-buttons| block as simple as possible. Ideally just a div
+  with oobe buttons. No custom styles, etc.
 
   Attributes:
     no-header - hides header
     no-footer-padding - disables footer padding.
-    no-buttons-padding - disables buttons padding.
     has-buttons - shows bottom buttons menu
 
   I.e. [no-header no-footer-padding] will make the footer occupy all the dialog
@@ -78,7 +79,6 @@
     </div>
     <template is="dom-if" if="[[hasButtons]]">
       <div id="oobe-bottom" hideShadow$="[[hideShadow]]"
-        no-buttons-padding$="[[noButtonsPadding]]"
           class="layout horizontal center">
         <slot name="bottom-buttons"></slot>
       </div>

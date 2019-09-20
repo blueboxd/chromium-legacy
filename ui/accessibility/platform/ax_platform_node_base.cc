@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -1701,6 +1702,146 @@ std::string AXPlatformNodeBase::GetInvalidValue() const {
     }
   }
   return invalid_value;
+}
+
+ui::TextAttributeList AXPlatformNodeBase::ComputeTextAttributes() const {
+  ui::TextAttributeList attributes;
+
+  // We include list markers for now, but there might be other objects that are
+  // auto generated.
+  // TODO(nektar): Compute what objects are auto-generated in Blink.
+  if (GetData().role == ax::mojom::Role::kListMarker)
+    attributes.push_back(std::make_pair("auto-generated", "true"));
+
+  int color;
+  if (GetIntAttribute(ax::mojom::IntAttribute::kBackgroundColor, &color)) {
+    unsigned int alpha = SkColorGetA(color);
+    unsigned int red = SkColorGetR(color);
+    unsigned int green = SkColorGetG(color);
+    unsigned int blue = SkColorGetB(color);
+    // Don't expose default value of pure white.
+    if (alpha && (red != 255 || green != 255 || blue != 255)) {
+      std::string color_value = "rgb(" + base::NumberToString(red) + ',' +
+                                base::NumberToString(green) + ',' +
+                                base::NumberToString(blue) + ')';
+      SanitizeTextAttributeValue(color_value, &color_value);
+      attributes.push_back(std::make_pair("background-color", color_value));
+    }
+  }
+
+  if (GetIntAttribute(ax::mojom::IntAttribute::kColor, &color)) {
+    unsigned int red = SkColorGetR(color);
+    unsigned int green = SkColorGetG(color);
+    unsigned int blue = SkColorGetB(color);
+    // Don't expose default value of black.
+    if (red || green || blue) {
+      std::string color_value = "rgb(" + base::NumberToString(red) + ',' +
+                                base::NumberToString(green) + ',' +
+                                base::NumberToString(blue) + ')';
+      SanitizeTextAttributeValue(color_value, &color_value);
+      attributes.push_back(std::make_pair("color", color_value));
+    }
+  }
+
+  // First try to get the inherited font family name from the delegate. If we
+  // cannot find any name, fall back to looking the hierarchy of this node's
+  // AXNodeData instead.
+  std::string font_family(GetDelegate()->GetInheritedFontFamilyName());
+  if (font_family.empty()) {
+    font_family =
+        GetInheritedStringAttribute(ax::mojom::StringAttribute::kFontFamily);
+  }
+
+  // Attribute has no default value.
+  if (!font_family.empty()) {
+    SanitizeTextAttributeValue(font_family, &font_family);
+    attributes.push_back(std::make_pair("font-family", font_family));
+  }
+
+  float font_size;
+  // Attribute has no default value.
+  if (GetFloatAttribute(ax::mojom::FloatAttribute::kFontSize, &font_size)) {
+    // The IA2 Spec requires the value to be in pt, not in pixels.
+    // There are 72 points per inch.
+    // We assume that there are 96 pixels per inch on a standard display.
+    // TODO(nektar): Figure out the current value of pixels per inch.
+    float points = font_size * 72.0 / 96.0;
+    attributes.push_back(
+        std::make_pair("font-size", base::NumberToString(points) + "pt"));
+  }
+
+  // TODO(nektar): Add Blink support for the following attributes:
+  // text-line-through-mode, text-line-through-width, text-outline:false,
+  // text-position:baseline, text-shadow:none, text-underline-mode:continuous.
+
+  int32_t text_style = GetIntAttribute(ax::mojom::IntAttribute::kTextStyle);
+  if (text_style) {
+    if (GetData().HasTextStyle(ax::mojom::TextStyle::kBold))
+      attributes.push_back(std::make_pair("font-weight", "bold"));
+    if (GetData().HasTextStyle(ax::mojom::TextStyle::kItalic))
+      attributes.push_back(std::make_pair("font-style", "italic"));
+    if (GetData().HasTextStyle(ax::mojom::TextStyle::kLineThrough)) {
+      // TODO(nektar): Figure out a more specific value.
+      attributes.push_back(std::make_pair("text-line-through-style", "solid"));
+    }
+    if (GetData().HasTextStyle(ax::mojom::TextStyle::kUnderline)) {
+      // TODO(nektar): Figure out a more specific value.
+      attributes.push_back(std::make_pair("text-underline-style", "solid"));
+    }
+  }
+
+  // Screen readers look at the text attributes to determine if something is
+  // misspelled, so we need to propagate any spelling attributes from immediate
+  // parents of text-only objects.
+  std::string invalid_value = GetInvalidValue();
+  if (!invalid_value.empty())
+    attributes.push_back(std::make_pair("invalid", invalid_value));
+
+  std::string language = GetDelegate()->GetLanguage();
+  if (!language.empty()) {
+    SanitizeTextAttributeValue(language, &language);
+    attributes.push_back(std::make_pair("language", language));
+  }
+
+  auto text_direction = static_cast<ax::mojom::TextDirection>(
+      GetIntAttribute(ax::mojom::IntAttribute::kTextDirection));
+  switch (text_direction) {
+    case ax::mojom::TextDirection::kNone:
+      break;
+    case ax::mojom::TextDirection::kLtr:
+      attributes.push_back(std::make_pair("writing-mode", "lr"));
+      break;
+    case ax::mojom::TextDirection::kRtl:
+      attributes.push_back(std::make_pair("writing-mode", "rl"));
+      break;
+    case ax::mojom::TextDirection::kTtb:
+      attributes.push_back(std::make_pair("writing-mode", "tb"));
+      break;
+    case ax::mojom::TextDirection::kBtt:
+      // Not listed in the IA2 Spec.
+      attributes.push_back(std::make_pair("writing-mode", "bt"));
+      break;
+  }
+
+  auto text_position = static_cast<ax::mojom::TextPosition>(
+      GetIntAttribute(ax::mojom::IntAttribute::kTextPosition));
+  switch (text_position) {
+    case ax::mojom::TextPosition::kNone:
+      break;
+    case ax::mojom::TextPosition::kSubscript:
+      attributes.push_back(std::make_pair("text-position", "sub"));
+      break;
+    case ax::mojom::TextPosition::kSuperscript:
+      attributes.push_back(std::make_pair("text-position", "super"));
+      break;
+  }
+
+  return attributes;
+}
+
+void AXPlatformNodeBase::SanitizeTextAttributeValue(const std::string& input,
+                                                    std::string* output) const {
+  DCHECK(output);
 }
 
 }  // namespace ui

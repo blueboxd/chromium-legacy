@@ -63,12 +63,10 @@ std::string GetHexString(const std::string& input) {
   return output;
 }
 
-// Makes HTTP request from a pair where the first element is the head and the
-// second element is the body.
-std::string MakeHTTPTextFromSplit(
-    std::pair<std::string, std::string> splitted_http) {
-  return base::JoinString({splitted_http.first, splitted_http.second},
-                          kHTTPBodySep);
+// Makes HTTP request from a header and body
+std::string MakeHTTPTextFromSplit(const std::string& header,
+                                  const std::string& body) {
+  return base::JoinString({header, body}, kHTTPBodySep);
 }
 
 // Determines whether replayer should fail if there is an invalid json record.
@@ -81,6 +79,12 @@ bool FailOnError(int options) {
 // with.
 bool FailOnEmpty(int options) {
   return static_cast<bool>(options & ServerCacheReplayer::kOptionFailOnEmpty);
+}
+
+// Determines whether replayer should split and cache each form individually.
+bool SplitRequestsByForm(int options) {
+  return static_cast<bool>(options &
+                           ServerCacheReplayer::kOptionSplitRequestsByForm);
 }
 
 // Checks the validity of a json value node.
@@ -107,26 +111,17 @@ RequestType GetRequestTypeFromURL(base::StringPiece url) {
   return RequestType::kLegacyQueryProtoPOST;
 }
 
-// Streams in text format the signatures within the Query request proto.
-// Example:
-//   Form {
-//     Signature: 1
-//     Field {
-//       Signature: 10
-//     }
-//   }
-std::ostream& operator<<(std::ostream& os, const AutofillQueryContents& query) {
-  for (const auto& form : query.form()) {
-    os << "Form {" << std::endl;
-    os << "  Signature: " << form.signature() << std::endl;
-    for (const auto& field : form.field()) {
-      os << "  Field {" << std::endl;
-      os << "    Signature: " << field.signature() << std::endl;
-      os << "  }" << std::endl;
-    }
-    os << "}" << std::endl;
+// Parse AutofillQueryContents or AutofillQueryResponseContents from the given
+// |http_text|.
+template <class T>
+StatusOr<T> ParseProtoContents(const std::string http_text) {
+  T proto_contents;
+  if (!proto_contents.ParseFromString(http_text)) {
+    return MakeInternalError(
+        base::StrCat({"could not parse proto:`", proto_contents.GetTypeName(),
+                      "` from raw data:`", GetHexString(http_text), "`."}));
   }
-  return os;
+  return StatusOr<T>(std::move(proto_contents));
 }
 
 // Gets Query request proto content from GET URL.
@@ -152,17 +147,7 @@ StatusOr<AutofillQueryContents> GetAutofillQueryContentsFromGETQueryURL(
          "URL: \"",
          q_value, "\""}));
   }
-
-  // Parse decoded "q" value to Query request proto.
-  AutofillQueryContents legacy_query;
-  if (!legacy_query.ParseFromString(decoded_query)) {
-    return MakeInternalError(base::StrCat(
-        {"could not parse to AutofillQueryContents proto the base64-decoded "
-         "value of query parameter \"q\" in Query GET URL: \"",
-         GetHexString(decoded_query), "\""}));
-  }
-
-  return StatusOr<AutofillQueryContents>(std::move(legacy_query));
+  return ParseProtoContents<AutofillQueryContents>(decoded_query);
 }
 
 // Puts all data elements within the request or response body together in a
@@ -186,140 +171,208 @@ std::string GetStringFromDataElements(
 // Gets Query request proto content from HTTP POST body.
 StatusOr<AutofillQueryContents> GetAutofillQueryContentsFromPOSTQuery(
     const network::ResourceRequest& resource_request) {
-  std::string http_body =
-      GetStringFromDataElements(resource_request.request_body->elements());
-  AutofillQueryContents query_request;
-  if (!query_request.ParseFromString(http_body)) {
-    return MakeInternalError(base::StrCat(
-        {"could not parse HTTP request body to AutofillQueryContents proto: ",
-         GetHexString(http_body)}));
-  }
-  return StatusOr<AutofillQueryContents>(query_request);
+  return ParseProtoContents<AutofillQueryContents>(
+      GetStringFromDataElements(resource_request.request_body->elements()));
 }
 
-// Gets cache key from URL for GET Query request.
-bool GetKeyFromURL(const GURL& url, std::string* key) {
-  StatusOr<AutofillQueryContents> query_statusor =
-      GetAutofillQueryContentsFromGETQueryURL(url);
-  if (!query_statusor.ok()) {
-    VLOG(1) << query_statusor.status();
-    return false;
-  }
-
-  VLOG(2) << "Getting key from Query request proto:\n "
-          << query_statusor.ValueOrDie();
-  *key = GetKeyFromQueryRequest(query_statusor.ValueOrDie());
-  return true;
-}
-
-// Gets cache key from request HTTP body for POST request.
-bool GetKeyFromRequestBody(const base::Value& request_node, std::string* key) {
-  // Get and check "SerializedRequest" field node string.
-  std::string serialized_request;
+// Validates, retrieves, and decodes node |node_name| from |request_node| and
+// returns it in |decoded_value|. Returns false if unsuccessful.
+bool RetrieveValueFromRequestNode(const base::Value& request_node,
+                                  const std::string node_name,
+                                  std::string* decoded_value) {
+  // Get and check field node string.
+  std::string serialized_value;
   {
-    const std::string node_name = "SerializedRequest";
     const base::Value* node = request_node.FindKey(node_name);
     if (!CheckNodeValidity(node, node_name, base::Value::Type::STRING)) {
+      VLOG(1) << "Invalid Node in WPR archive";
       return false;
     }
-    serialized_request = node->GetString();
+    serialized_value = node->GetString();
   }
-
   // Decode serialized request string.
-  std::string decoded_serialized_request;
   {
-    if (!base::Base64Decode(serialized_request, &decoded_serialized_request)) {
-      VLOG(1) << "Could not base64 decode serialized request: "
-              << serialized_request;
-      return false;
-    }
-  }
-
-  // Parse serialized request string to request proto and get corresponding
-  // key.
-  AutofillQueryContents query;
-  if (!query.ParseFromString(SplitHTTP(decoded_serialized_request).second)) {
-    VLOG(1) << "Could not parse serialized request to AutofillQueryContents: "
-            << SplitHTTP(decoded_serialized_request).second;
-    return false;
-  }
-  VLOG(2) << "Getting key from Query request proto:\n " << query;
-  *key = GetKeyFromQueryRequest(query);
-  return true;
-}
-
-// Gets gzip-compressed HTTP response bytes from |request_node|.
-bool GetCompressedResponseFromNode(const base::Value& request_node,
-                                   std::string* compressed_response) {
-  // Get serialized response string.
-  std::string serialized_response;
-  {
-    const std::string node_name = "SerializedResponse";
-    const base::Value* node = request_node.FindKey(node_name);
-    if (!CheckNodeValidity(node, node_name, base::Value::Type::STRING)) {
-      return false;
-    }
-    serialized_response = node->GetString();
-  }
-
-  // Decode serialized response string and fill compressed response.
-  {
-    if (!base::Base64Decode(serialized_response, compressed_response)) {
-      VLOG(1) << "Could not base64 decode serialized response, skipping cache "
-                 "loading: "
-              << serialized_response;
+    if (!base::Base64Decode(serialized_value, decoded_value)) {
+      VLOG(1) << "Could not base64 decode serialized value: "
+              << serialized_value;
       return false;
     }
   }
   return true;
 }
 
-// Populates |cache| with content from |query_node| that contains a list of
-// single request node that share the same URL field (e.g.,
+// Gets AutofillQueryContents from WPR recorded HTTP request body for POST.
+StatusOr<AutofillQueryContents> GetAutofillQueryContentsFromRequestNode(
+    const base::Value& request_node) {
+  std::string decoded_request_text;
+  if (!RetrieveValueFromRequestNode(request_node, "SerializedRequest",
+                                    &decoded_request_text)) {
+    return MakeInternalError(
+        "Unable to retrieve serialized request from WPR request_node");
+  }
+  return ParseProtoContents<AutofillQueryContents>(
+      SplitHTTP(decoded_request_text).second);
+}
+
+// Gets AutofillQueryResponseContents from WPR recorded HTTP response body.
+// Also populates and returns the split |response_header_text|.
+StatusOr<AutofillQueryResponseContents>
+GetAutofillQueryResponseContentsFromRequestNode(
+    const base::Value& request_node,
+    std::string* response_header_text) {
+  std::string compressed_response_text;
+  if (!RetrieveValueFromRequestNode(request_node, "SerializedResponse",
+                                    &compressed_response_text)) {
+    return MakeInternalError(
+        "Unable to retrieve serialized request from WPR request_node");
+  }
+  auto http_pair = SplitHTTP(compressed_response_text);
+  std::string decompressed_body;
+  if (!compression::GzipUncompress(http_pair.second, &decompressed_body)) {
+    return MakeInternalError(
+        base::StrCat({"Could not gzip decompress HTTP response: ",
+                      GetHexString(http_pair.second)}));
+  }
+
+  // Eventual response needs header information, so lift that as well.
+  *response_header_text = http_pair.first;
+
+  return ParseProtoContents<AutofillQueryResponseContents>(decompressed_body);
+}
+
+// Fills |cache_to_fill| with the keys from a single |query_request| and
+// |query_response| pair. Loops through each form in request and creates an
+// individual response of just the associated fields for that request. Uses
+// |response_header_text| to build and store well-formed and backwards
+// compatible http text in the cache.
+bool FillFormSplitCache(const AutofillQueryContents& query_request,
+                        const std::string& response_header_text,
+                        const AutofillQueryResponseContents& query_response,
+                        ServerCache* cache_to_fill) {
+  VLOG(2) << "Full Request Key is:" << GetKeyFromQueryRequest(query_request);
+  VLOG(2) << "Matching keys from Query request proto:\n" << query_request;
+  VLOG(2) << "To field types from Query response proto:\n" << query_response;
+  auto current_field = query_response.field().begin();
+  for (const auto& form : query_request.form()) {
+    std::string key = base::NumberToString(form.signature());
+    // If already stored a respones for this key, then just advance the
+    // current_field by that offset and continue.
+    if (base::Contains((*cache_to_fill), key)) {
+      VLOG(2) << "Already added key: " << key;
+      current_field += form.field_size();
+      continue;
+    }
+    // Grab fields for this form from overall response and add to unique form
+    // object.
+    AutofillQueryResponseContents individual_form_response;
+    for (int i = 0; i < form.field_size(); i++) {
+      if (current_field >= query_response.field().end()) {
+        VLOG(1) << "Reached end of query_response fields prematurely!";
+        return false;
+      }
+      individual_form_response.add_field()->CopyFrom(*current_field);
+      ++current_field;
+    }
+
+    // Compress that form response to a string and gzip it.
+    std::string serialized_response;
+    if (!individual_form_response.SerializeToString(&serialized_response)) {
+      VLOG(1) << "Unable to serialize the new response for key! " << key;
+      continue;
+    }
+    std::string compressed_response_body;
+    if (!compression::GzipCompress(serialized_response,
+                                   &compressed_response_body)) {
+      VLOG(1) << "Unable to compress the new response for key! " << key;
+      continue;
+    }
+    // Final http text is header_text concatenated with a compressed body.
+    std::string http_text =
+        MakeHTTPTextFromSplit(response_header_text, compressed_response_body);
+
+    VLOG(1) << "Adding key:" << key
+            << "\nAnd response:" << individual_form_response;
+    (*cache_to_fill)[key] = std::move(http_text);
+  }
+  return true;
+}
+
+// Populates |cache_to_fill| with content from |query_node| that contains a
+// list of single request node that share the same URL field (e.g.,
 // https://clients1.google.com/tbproxy/af/query) in the WPR capture json cache.
 // Returns Status with message when there is an error when parsing the requests
 // and OPTION_FAIL_ON_INVALID_JSON is flipped in |options|. Returns status ok
 // regardless of errors if OPTION_FAIL_ON_INVALID_JSON is not flipped in
 // |options| where bad nodes will be skipped. Keeps a log trace whenever there
-// is an error even if OPTION_FAIL_ON_INVALID_JSON is not flipped.
+// is an error even if OPTION_FAIL_ON_INVALID_JSON is not flipped. Uses only the
+// form combinations seen in recorded session if OPTION_SPLIT_REQUESTS_BY_FORM
+// is false, fill cache with individual form keys (and expect
+// ServerCacheReplayer to be able to split incoming request by key and stitch
+// results together).
 ServerCacheReplayer::Status PopulateCacheFromQueryNode(
     const QueryNode& query_node,
     int options,
     ServerCache* cache_to_fill) {
   bool fail_on_error = FailOnError(options);
+  bool split_requests_by_form = SplitRequestsByForm(options);
   for (const base::Value& request : query_node.node->GetList()) {
-    // Track error state across steps.
-    bool is_success = true;
-    // Get cache key.
-    std::string key;
-    if (GetRequestTypeFromURL(query_node.url) ==
-        RequestType::kLegacyQueryProtoPOST) {
-      is_success &= GetKeyFromRequestBody(request, &key);
-    } else {
-      is_success &= GetKeyFromURL(GURL(query_node.url), &key);
-    }
-
-    // Get compressed response to put in cache.
-    std::string compressed_response;
-    is_success &= GetCompressedResponseFromNode(request, &compressed_response);
-
-    // Handle bad status.
-    if (!is_success) {
-      constexpr base::StringPiece status_msg =
-          "could not cache query node content";
-      if (fail_on_error) {
-        return ServerCacheReplayer::Status{
-            ServerCacheReplayer::StatusCode::kBadNode, status_msg.as_string()};
+    // Get AutofillQueryContents from request.
+    bool is_post_request = GetRequestTypeFromURL(query_node.url) ==
+                           RequestType::kLegacyQueryProtoPOST;
+    StatusOr<AutofillQueryContents> query_request_statusor =
+        is_post_request
+            ? GetAutofillQueryContentsFromRequestNode(request)
+            : GetAutofillQueryContentsFromGETQueryURL(GURL(query_node.url));
+    // Only proceed if successfully parse the query request proto, else drop to
+    // failure space.
+    if (query_request_statusor.ok()) {
+      VLOG(2) << "Getting key from Query request proto:\n "
+              << query_request_statusor.ValueOrDie();
+      std::string key =
+          GetKeyFromQueryRequest(query_request_statusor.ValueOrDie());
+      bool is_single_form_request =
+          query_request_statusor.ValueOrDie().form_size() == 1;
+      // Switch to store forms as individuals or only in the groupings that they
+      // were sent on recording. If only a single form in request then can use
+      // old behavior still and skip decompression and combination steps.
+      if (!split_requests_by_form || is_single_form_request) {
+        std::string compressed_response_text;
+        if (RetrieveValueFromRequestNode(request, "SerializedResponse",
+                                         &compressed_response_text)) {
+          (*cache_to_fill)[key] = std::move(compressed_response_text);
+          VLOG(1) << "Cached response content for key: " << key;
+          continue;
+        }
       } else {
-        // Keep a trace when not set to fail on bad node.
-        VLOG(1) << status_msg;
+        // Get AutofillQueryResponseContents and response header text.
+        std::string response_header_text;
+        StatusOr<AutofillQueryResponseContents> query_response_statusor =
+            GetAutofillQueryResponseContentsFromRequestNode(
+                request, &response_header_text);
+        if (!query_response_statusor.ok()) {
+          VLOG(1) << "Unable to get AutofillQueryResponseContents from WPR node"
+                  << "SerializedResponse for request:" << key;
+        } else {
+          // We have a proper request and a proper response, we can populate for
+          // each form in the AutofillQueryContents.
+          if (FillFormSplitCache(
+                  query_request_statusor.ValueOrDie(), response_header_text,
+                  query_response_statusor.ValueOrDie(), cache_to_fill)) {
+            continue;
+          }
+        }
       }
     }
-    // Fill cache if there were no errors. Caching will be skipped for bad
-    // |query_node| when no option to fail on error.
-    if (is_success) {
-      VLOG(1) << "Cached response content for key: " << key;
-      (*cache_to_fill)[key] = std::move(compressed_response);
+    // If we've fallen to this level, something went bad with adding the request
+    // node. If fail_on_error is set then abort, else log and try the next one.
+    constexpr base::StringPiece status_msg =
+        "could not cache query node content";
+    if (fail_on_error) {
+      return ServerCacheReplayer::Status{
+          ServerCacheReplayer::StatusCode::kBadNode, status_msg.as_string()};
+    } else {
+      // Keep a trace when not set to fail on bad node.
+      VLOG(1) << status_msg;
     }
   }
   return ServerCacheReplayer::Status{ServerCacheReplayer::StatusCode::kOk, ""};
@@ -423,7 +476,7 @@ ServerCacheReplayer::Status PopulateCacheFromJSONFile(
           PopulateCacheFromQueryNode(query_node, options, cache_to_fill);
       if (!status.Ok())
         return status;
-      VLOG(1) << "Filled cache with " << query_node.node->GetList().size()
+      VLOG(1) << "Filled cache with " << cache_to_fill->size()
               << " requests for Query node with URL: " << query_node.url;
     }
   }
@@ -440,20 +493,27 @@ ServerCacheReplayer::Status PopulateCacheFromJSONFile(
   return ServerCacheReplayer::Status{ServerCacheReplayer::StatusCode::kOk, ""};
 }
 
+}  // namespace
+
 // Decompressed HTTP response read from WPR capture file. Will set
 // |decompressed_http| to "" and return false if there is an error.
-bool DecompressHTTPResponse(const std::string& http_text,
-                            std::string* decompressed_http) {
+bool ServerCacheReplayer::RetrieveAndDecompressStoredHTTP(
+    const std::string& key,
+    std::string* decompressed_http) const {
+  // Safe to use at() here since we looked for key's presence and there is no
+  // mutation done when there is concurrency.
+  const std::string& http_text = const_cache_.at(key);
+
   auto header_and_body = SplitHTTP(http_text);
   if (header_and_body.first == "") {
     *decompressed_http = "";
-    VLOG(1) << "Cannot decompress response of invalid HTTP text: " << http_text;
+    VLOG(1) << "No header found in supposed HTTP text: " << http_text;
     return false;
   }
   // Look if there is a body to decompress, if not just return HTTP text as is.
   if (header_and_body.second == "") {
     *decompressed_http = http_text;
-    VLOG(1) << "There is no HTTP body to decompress" << http_text;
+    VLOG(1) << "There is no HTTP body to decompress: " << http_text;
     return true;
   }
   // TODO(crbug.com/945925): Add compression format detection, return an
@@ -467,17 +527,14 @@ bool DecompressHTTPResponse(const std::string& http_text,
     return false;
   }
   // Rebuild the response HTTP text by using the new decompressed body.
-  *decompressed_http = MakeHTTPTextFromSplit(
-      std::make_pair(std::move(header_and_body.first), decompressed_body));
+  *decompressed_http =
+      MakeHTTPTextFromSplit(header_and_body.first, decompressed_body);
   return true;
 }
 
-
-}  // namespace
-
 // Gives a pair that contains the HTTP text split in 2, where the first
 // element is the HTTP head and the second element is the HTTP body.
-std::pair<std::string, std::string> SplitHTTP(std::string http_text) {
+std::pair<std::string, std::string> SplitHTTP(const std::string& http_text) {
   const size_t split_index = http_text.find(kHTTPBodySep);
   if (split_index != std::string::npos) {
     const size_t sep_length = std::string(kHTTPBodySep).size();
@@ -487,6 +544,35 @@ std::pair<std::string, std::string> SplitHTTP(std::string http_text) {
     return std::make_pair(std::move(head), std::move(body));
   }
   return std::make_pair("", "");
+}
+
+// Streams in text format. For consistency, taken from anonymous namespace in
+// components/autofill/core/browser/autofill_download_manager.cc
+std::ostream& operator<<(std::ostream& out,
+                         const autofill::AutofillQueryContents& query) {
+  out << "client_version: " << query.client_version();
+  for (const auto& form : query.form()) {
+    out << "\nForm\n signature: " << form.signature();
+    for (const auto& field : form.field()) {
+      out << "\n Field\n  signature: " << field.signature();
+      if (!field.name().empty())
+        out << "\n  name: " << field.name();
+      if (!field.type().empty())
+        out << "\n  type: " << field.type();
+    }
+  }
+  return out;
+}
+
+// Streams in text format. For consistency, taken from anonymous namespace in
+// components/autofill/core/browser/form_structure.cc
+std::ostream& operator<<(
+    std::ostream& out,
+    const autofill::AutofillQueryResponseContents& response) {
+  for (const auto& field : response.field()) {
+    out << "\nautofill_type: " << field.overall_type_prediction();
+  }
+  return out;
 }
 
 // Gets a key for cache lookup from a query request.
@@ -502,7 +588,8 @@ std::string GetKeyFromQueryRequest(const AutofillQueryContents& query_request) {
 ServerCacheReplayer::~ServerCacheReplayer() {}
 
 ServerCacheReplayer::ServerCacheReplayer(const base::FilePath& json_file_path,
-                                         int options) {
+                                         int options)
+    : split_requests_by_form_(SplitRequestsByForm(options)) {
   // Using CHECK is fine here since ServerCacheReplayer will only be used for
   // testing and we prefer the test to crash than being in an inconsistent state
   // when the cache could not be properly populated from the JSON file.
@@ -511,8 +598,10 @@ ServerCacheReplayer::ServerCacheReplayer(const base::FilePath& json_file_path,
   CHECK(status.Ok()) << status.message;
 }
 
-ServerCacheReplayer::ServerCacheReplayer(ServerCache server_cache)
-    : cache_(std::move(server_cache)) {}
+ServerCacheReplayer::ServerCacheReplayer(ServerCache server_cache,
+                                         bool split_requests_by_form)
+    : cache_(std::move(server_cache)),
+      split_requests_by_form_(split_requests_by_form) {}
 
 bool ServerCacheReplayer::GetResponseForQuery(
     const AutofillQueryContents& query,
@@ -521,21 +610,71 @@ bool ServerCacheReplayer::GetResponseForQuery(
     VLOG(1) << "Cannot fill |http_text| because null";
     return false;
   }
-  std::string key = GetKeyFromQueryRequest(query);
-  if (!base::Contains(const_cache_, key)) {
-    VLOG(1) << "Did not match any response for " << key;
+  std::string combined_key = GetKeyFromQueryRequest(query);
+
+  if (base::Contains(const_cache_, combined_key)) {
+    VLOG(1) << "Retrieving response for " << combined_key;
+    std::string decompressed_http_response;
+    if (!RetrieveAndDecompressStoredHTTP(combined_key,
+                                         &decompressed_http_response)) {
+      return false;
+    }
+    *http_text = decompressed_http_response;
+    return true;
+  }
+  // If we didn't find a single-form match and we're not splitting requests by
+  // form, we failed to find a response for this query.
+  if (!split_requests_by_form_) {
+    VLOG(1) << "Did not match any response for " << combined_key;
     return false;
   }
-  VLOG(1) << "Retrieving response for " << key;
-  std::string decompressed_http_response;
-  // Safe to use at() here since we looked for key's presence and there is no
-  // mutation done when there is concurrency.
-  const std::string& http_response = const_cache_.at(key);
-  if (!DecompressHTTPResponse(http_response, &decompressed_http_response)) {
-    VLOG(1) << "Could not decompress http response";
+
+  AutofillQueryResponseContents combined_form_response;
+  std::string response_header_text;
+  bool first_loop = true;
+  for (const auto& form : query.form()) {
+    std::string key = base::NumberToString(form.signature());
+    if (!base::Contains(const_cache_, key)) {
+      VLOG(2) << "Stubbing in fields for uncached key `" << key << "`.";
+      for (int i = 0; i < form.field_size(); i++) {
+        AutofillQueryResponseContents::Field* new_field =
+            combined_form_response.add_field();
+        new_field->set_overall_type_prediction(0);
+      }
+      continue;
+    }
+    std::string decompressed_http_response;
+    if (!RetrieveAndDecompressStoredHTTP(key, &decompressed_http_response)) {
+      return false;
+    }
+    if (first_loop) {
+      response_header_text = SplitHTTP(decompressed_http_response).first;
+      first_loop = false;
+    }
+    StatusOr<AutofillQueryResponseContents> single_form_response =
+        ParseProtoContents<AutofillQueryResponseContents>(
+            SplitHTTP(decompressed_http_response).second);
+    if (!single_form_response.ok()) {
+      VLOG(1) << "Unable to parse result contents for key:" << key;
+      return false;
+    }
+    for (auto& field : single_form_response.ValueOrDie().field()) {
+      combined_form_response.add_field()->CopyFrom(field);
+    }
+  }
+  // If all we got were stubbed forms, return false as not a single match.
+  if (first_loop) {
+    VLOG(1) << "Did not match any response for " << combined_key;
     return false;
   }
-  *http_text = decompressed_http_response;
+
+  std::string compressed_response;
+  if (!combined_form_response.SerializeToString(&compressed_response)) {
+    VLOG(1) << "Unable to serialize the new response for keys!";
+    return false;
+  }
+  VLOG(1) << "Retrieving stitched response for " << combined_key;
+  *http_text = MakeHTTPTextFromSplit(response_header_text, compressed_response);
   return true;
 }
 

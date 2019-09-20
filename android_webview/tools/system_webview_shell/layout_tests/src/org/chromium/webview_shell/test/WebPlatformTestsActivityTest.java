@@ -33,14 +33,15 @@ public class WebPlatformTestsActivityTest {
             "<html><head><script>function ensure_test_window() {"
             + "  if (!this.test_window || this.test_window.location === null) {"
             + "    this.test_window = window.open('about:blank', 800, 600);"
-            + "    this.test_window.close();"
+            // https://crbug.com/1002727
+            + "    setTimeout(function() { this.test_window.close(); }, 50);"
             + "  }"
             + "};"
             + "ensure_test_window();"
             + "</script></head><body>TestRunner Window</body></html>";
 
-    private static final int CHILD_LAYOUT_SHOWN = 1;
-    private static final int CHILD_LAYOUT_HIDDEN = 2;
+    private static final int CHILD_LAYOUT_ADDED = 1;
+    private static final int CHILD_LAYOUT_REMOVED = 2;
 
     private static final long TEST_TIMEOUT_IN_SECONDS = scaleTimeout(3);
 
@@ -63,23 +64,23 @@ public class WebPlatformTestsActivityTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
             mTestActivity.setTestCallback(new WebPlatformTestsActivity.TestCallback() {
                 @Override
-                public void onChildLayoutVisible() {
-                    queue.add(CHILD_LAYOUT_SHOWN);
+                public void onChildLayoutAdded() {
+                    queue.add(CHILD_LAYOUT_ADDED);
                 }
 
                 @Override
-                public void onChildLayoutInvisible() {
-                    queue.add(CHILD_LAYOUT_HIDDEN);
+                public void onChildLayoutRemoved() {
+                    queue.add(CHILD_LAYOUT_REMOVED);
                 }
             });
             WebView webView = mTestActivity.getTestRunnerWebView();
             webView.loadDataWithBaseURL(
                     "https://some.domain.test/", OPEN_TEST_WINDOW_SCRIPT, "text/html", null, null);
         });
-        Assert.assertEquals("Child window should be created.", Integer.valueOf(CHILD_LAYOUT_SHOWN),
+        Assert.assertEquals("Child window should be added.", Integer.valueOf(CHILD_LAYOUT_ADDED),
                 queue.poll(TEST_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS));
-        Assert.assertEquals("Child window should be destroyed.",
-                Integer.valueOf(CHILD_LAYOUT_HIDDEN),
+        Assert.assertEquals("Child window should be removed.",
+                Integer.valueOf(CHILD_LAYOUT_REMOVED),
                 queue.poll(TEST_TIMEOUT_IN_SECONDS, TimeUnit.SECONDS));
     }
 }

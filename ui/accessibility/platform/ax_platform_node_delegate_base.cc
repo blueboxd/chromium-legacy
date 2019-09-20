@@ -410,6 +410,19 @@ AXPlatformNodeDelegateBase::GetStyleNameAttributeAsLocalizedString() const {
   return base::string16();
 }
 
+TextAttributeMap AXPlatformNodeDelegateBase::ComputeTextAttributeMap(
+    const TextAttributeList& default_attributes) const {
+  ui::TextAttributeMap attributes_map;
+  attributes_map[0] = default_attributes;
+  return attributes_map;
+}
+
+std::string AXPlatformNodeDelegateBase::GetInheritedFontFamilyName() const {
+  // We don't have access to AXNodeData here, so we cannot return
+  // an inherited font family name.
+  return std::string();
+}
+
 bool AXPlatformNodeDelegateBase::ShouldIgnoreHoveredStateForTesting() {
   return true;
 }

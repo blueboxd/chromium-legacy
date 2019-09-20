@@ -3701,7 +3701,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 
   FetchHistogramsFromChildProcesses();
   base::HistogramTester histogram_tester;
-  histogram_tester.ExpectTotalCount("HttpCache.NetworkIsolationKeyPresent", 0);
+  histogram_tester.ExpectTotalCount("HttpCache.NetworkIsolationKeyPresent2", 0);
 
   std::unique_ptr<DownloadCreateObserver> observer(
       new DownloadCreateObserver(DownloadManagerForShell(shell())));
@@ -3716,8 +3716,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 
   FetchHistogramsFromChildProcesses();
   // Assert that the NIK for the download request is populated.
-  histogram_tester.ExpectUniqueSample("HttpCache.NetworkIsolationKeyPresent",
-                                      true /*sample*/, 1 /*count*/);
+  histogram_tester.ExpectUniqueSample("HttpCache.NetworkIsolationKeyPresent2",
+                                      2 /*kPresent*/, 1 /*count*/);
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeSameOriginIFrame) {

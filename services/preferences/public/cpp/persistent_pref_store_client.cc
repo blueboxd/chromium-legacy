@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "components/prefs/pref_registry.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "services/preferences/public/cpp/pref_registry_serializer.h"
 
@@ -157,7 +158,7 @@ PersistentPrefStoreClient::PersistentPrefStoreClient(
              std::move(connection->pref_store_connection->initial_prefs))),
          true, std::move(connection->pref_store_connection->observer));
   } else {
-    Init(nullptr, false, nullptr);
+    Init(nullptr, false, mojo::NullReceiver());
   }
 }
 

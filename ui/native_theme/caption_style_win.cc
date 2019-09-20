@@ -18,9 +18,9 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 
-namespace ui {
+namespace CC = ABI::Windows::Media::ClosedCaptioning;
 
-using namespace ABI::Windows::Media::ClosedCaptioning;
+namespace ui {
 
 namespace {
 
@@ -44,34 +44,34 @@ std::string AddCSSImportant(std::string css_string) {
 // CSS FontFamily value.
 // These fonts were chosen to satisfy the characteristics represented by values
 // of ClosedCaptionStyle Enum in Windows Settings.
-void GetFontFamilyString(ClosedCaptionStyle closed_caption_style,
+void GetFontFamilyString(CC::ClosedCaptionStyle closed_caption_style,
                          std::string* css_font_family,
                          std::string* css_font_variant) {
   *css_font_variant = "normal";
   switch (closed_caption_style) {
-    case ClosedCaptionStyle_MonospacedWithSerifs:
+    case CC::ClosedCaptionStyle_MonospacedWithSerifs:
       *css_font_family = "Courier New";
       break;
-    case ClosedCaptionStyle_ProportionalWithSerifs:
+    case CC::ClosedCaptionStyle_ProportionalWithSerifs:
       *css_font_family = "Times New Roman";
       break;
-    case ClosedCaptionStyle_MonospacedWithoutSerifs:
+    case CC::ClosedCaptionStyle_MonospacedWithoutSerifs:
       *css_font_family = "Consolas";
       break;
-    case ClosedCaptionStyle_ProportionalWithoutSerifs:
+    case CC::ClosedCaptionStyle_ProportionalWithoutSerifs:
       *css_font_family = "Tahoma";
       break;
-    case ClosedCaptionStyle_Casual:
+    case CC::ClosedCaptionStyle_Casual:
       *css_font_family = "Segoe Print";
       break;
-    case ClosedCaptionStyle_Cursive:
+    case CC::ClosedCaptionStyle_Cursive:
       *css_font_family = "Segoe Script";
       break;
-    case ClosedCaptionStyle_SmallCapitals:
+    case CC::ClosedCaptionStyle_SmallCapitals:
       *css_font_family = "Tahoma";
       *css_font_variant = "small-caps";
       break;
-    case ClosedCaptionStyle_Default:
+    case CC::ClosedCaptionStyle_Default:
       // We shouldn't override with OS Styling for Default case.
       NOTREACHED();
       *css_font_family = std::string();
@@ -81,23 +81,23 @@ void GetFontFamilyString(ClosedCaptionStyle closed_caption_style,
 
 // Translates a Windows::Media::ClosedCaptioning::ClosedCaptionEdgeEffect to a
 // CSS style value.
-std::string GetEdgeEffectString(ClosedCaptionEdgeEffect edge_effect) {
+std::string GetEdgeEffectString(CC::ClosedCaptionEdgeEffect edge_effect) {
   switch (edge_effect) {
-    case ClosedCaptionEdgeEffect_None:
+    case CC::ClosedCaptionEdgeEffect_None:
       return "none";
-    case ClosedCaptionEdgeEffect_Raised:
+    case CC::ClosedCaptionEdgeEffect_Raised:
       return "-1px 0px 0px silver, 0px -1px 0px silver, 1px 1px 0px black, 2px "
              "2px 0px black, 3px 3px 0px black";
-    case ClosedCaptionEdgeEffect_Depressed:
+    case CC::ClosedCaptionEdgeEffect_Depressed:
       return "1px 1px 0px silver, 0px 1px 0px silver, -1px -1px 0px black, "
              "-1px "
              "0px 0px black";
-    case ClosedCaptionEdgeEffect_Uniform:
+    case CC::ClosedCaptionEdgeEffect_Uniform:
       return "0px 0px 4px black, 0px 0px 4px black, 0px 0px 4px black, 0px 0px "
              "4px black";
-    case ClosedCaptionEdgeEffect_DropShadow:
+    case CC::ClosedCaptionEdgeEffect_DropShadow:
       return "3px 3px 3px 2px black";
-    case ClosedCaptionEdgeEffect_Default:
+    case CC::ClosedCaptionEdgeEffect_Default:
       // We shouldn't override with OS Styling for Default case.
       NOTREACHED();
       return std::string();
@@ -106,17 +106,17 @@ std::string GetEdgeEffectString(ClosedCaptionEdgeEffect edge_effect) {
 
 // Translates a Windows::Media::ClosedCaptioning::ClosedCaptionSize to a CSS
 // style value.
-std::string GetCaptionSizeString(ClosedCaptionSize caption_size) {
+std::string GetCaptionSizeString(CC::ClosedCaptionSize caption_size) {
   switch (caption_size) {
-    case ClosedCaptionSize_FiftyPercent:
+    case CC::ClosedCaptionSize_FiftyPercent:
       return "50%";
-    case ClosedCaptionSize_OneHundredPercent:
+    case CC::ClosedCaptionSize_OneHundredPercent:
       return "100%";
-    case ClosedCaptionSize_OneHundredFiftyPercent:
+    case CC::ClosedCaptionSize_OneHundredFiftyPercent:
       return "150%";
-    case ClosedCaptionSize_TwoHundredPercent:
+    case CC::ClosedCaptionSize_TwoHundredPercent:
       return "200%";
-    case ClosedCaptionSize_Default:
+    case CC::ClosedCaptionSize_Default:
       // We shouldn't override with OS Styling for Default case.
       NOTREACHED();
       return std::string();
@@ -125,16 +125,16 @@ std::string GetCaptionSizeString(ClosedCaptionSize caption_size) {
 
 // Translates a Windows::Media::ClosedCaptioning::ClosedCaptionOpacity to an
 // SkAlpha value.
-SkAlpha GetCaptionOpacity(ClosedCaptionOpacity caption_opacity) {
+SkAlpha GetCaptionOpacity(CC::ClosedCaptionOpacity caption_opacity) {
   switch (caption_opacity) {
-    case ClosedCaptionOpacity_ZeroPercent:
+    case CC::ClosedCaptionOpacity_ZeroPercent:
       return SK_AlphaTRANSPARENT;
-    case ClosedCaptionOpacity_TwentyFivePercent:
+    case CC::ClosedCaptionOpacity_TwentyFivePercent:
       return gfx::ToRoundedInt(SK_AlphaOPAQUE * 0.25);
-    case ClosedCaptionOpacity_SeventyFivePercent:
+    case CC::ClosedCaptionOpacity_SeventyFivePercent:
       return gfx::ToRoundedInt(SK_AlphaOPAQUE * 0.75);
-    case ClosedCaptionOpacity_OneHundredPercent:
-    case ClosedCaptionOpacity_Default:
+    case CC::ClosedCaptionOpacity_OneHundredPercent:
+    case CC::ClosedCaptionOpacity_Default:
     default:
       return SK_AlphaOPAQUE;
   }
@@ -142,25 +142,25 @@ SkAlpha GetCaptionOpacity(ClosedCaptionOpacity caption_opacity) {
 
 // Translates a Windows::Media::ClosedCaptioning::ClosedCaptionColor to an
 // SkColor value.
-SkColor GetCaptionColor(ClosedCaptionColor caption_color) {
+SkColor GetCaptionColor(CC::ClosedCaptionColor caption_color) {
   switch (caption_color) {
-    case ClosedCaptionColor_Black:
+    case CC::ClosedCaptionColor_Black:
       return SK_ColorBLACK;
-    case ClosedCaptionColor_Red:
+    case CC::ClosedCaptionColor_Red:
       return SK_ColorRED;
-    case ClosedCaptionColor_Green:
+    case CC::ClosedCaptionColor_Green:
       return SK_ColorGREEN;
-    case ClosedCaptionColor_Blue:
+    case CC::ClosedCaptionColor_Blue:
       return SK_ColorBLUE;
-    case ClosedCaptionColor_Yellow:
+    case CC::ClosedCaptionColor_Yellow:
       return SK_ColorYELLOW;
-    case ClosedCaptionColor_Magenta:
+    case CC::ClosedCaptionColor_Magenta:
       return SK_ColorMAGENTA;
-    case ClosedCaptionColor_Cyan:
+    case CC::ClosedCaptionColor_Cyan:
       return SK_ColorCYAN;
-    case ClosedCaptionColor_White:
+    case CC::ClosedCaptionColor_White:
       return SK_ColorWHITE;
-    case ClosedCaptionColor_Default:
+    case CC::ClosedCaptionColor_Default:
     default:
       // We shouldn't override with OS Styling for Default case.
       NOTREACHED();
@@ -171,8 +171,8 @@ SkColor GetCaptionColor(ClosedCaptionColor caption_color) {
 // Translates a Windows::Media::ClosedCaptioning::ClosedCaptionColor and a
 // Windows::Media::ClosedCaptioning::ClosedCaptionOpacity to an RGBA CSS color
 // string.
-std::string GetCssColorWithAlpha(ClosedCaptionColor caption_color,
-                                 ClosedCaptionOpacity caption_opacity) {
+std::string GetCssColorWithAlpha(CC::ClosedCaptionColor caption_color,
+                                 CC::ClosedCaptionOpacity caption_opacity) {
   const SkAlpha opacity = GetCaptionOpacity(caption_opacity);
   const SkColor color = GetCaptionColor(caption_color);
   return color_utils::SkColorToRgbaString(SkColorSetA(color, opacity));
@@ -196,7 +196,7 @@ base::Optional<CaptionStyle> InitializeFromSystemSettings() {
   base::win::ScopedHString closed_caption_properties_string =
       base::win::ScopedHString::Create(
           RuntimeClass_Windows_Media_ClosedCaptioning_ClosedCaptionProperties);
-  Microsoft::WRL::ComPtr<IClosedCaptionPropertiesStatics>
+  Microsoft::WRL::ComPtr<CC::IClosedCaptionPropertiesStatics>
       closed_caption_properties_statics;
   HRESULT hr = base::win::RoGetActivationFactory(
       closed_caption_properties_string.get(),
@@ -208,7 +208,7 @@ base::Optional<CaptionStyle> InitializeFromSystemSettings() {
     return base::nullopt;
   }
 
-  ClosedCaptionSize font_size = ClosedCaptionSize_Default;
+  CC::ClosedCaptionSize font_size = CC::ClosedCaptionSize_Default;
   hr = closed_caption_properties_statics->get_FontSize(&font_size);
   if (FAILED(hr)) {
     DLOG(ERROR) << "Failed to retrieve Font Size"
@@ -217,7 +217,7 @@ base::Optional<CaptionStyle> InitializeFromSystemSettings() {
     return base::nullopt;
   }
 
-  ClosedCaptionEdgeEffect edge_effect = ClosedCaptionEdgeEffect_Default;
+  CC::ClosedCaptionEdgeEffect edge_effect = CC::ClosedCaptionEdgeEffect_Default;
   hr = closed_caption_properties_statics->get_FontEffect(&edge_effect);
   if (FAILED(hr)) {
     DLOG(ERROR) << "Failed to retrieve Font Effect"
@@ -226,7 +226,7 @@ base::Optional<CaptionStyle> InitializeFromSystemSettings() {
     return base::nullopt;
   }
 
-  ClosedCaptionStyle font_family = ClosedCaptionStyle_Default;
+  CC::ClosedCaptionStyle font_family = CC::ClosedCaptionStyle_Default;
   hr = closed_caption_properties_statics->get_FontStyle(&font_family);
   if (FAILED(hr)) {
     DLOG(ERROR) << "Failed to retrieve Font Family"
@@ -235,7 +235,7 @@ base::Optional<CaptionStyle> InitializeFromSystemSettings() {
     return base::nullopt;
   }
 
-  ClosedCaptionColor font_color = ClosedCaptionColor_Default;
+  CC::ClosedCaptionColor font_color = CC::ClosedCaptionColor_Default;
   hr = closed_caption_properties_statics->get_FontColor(&font_color);
   if (FAILED(hr)) {
     DLOG(ERROR) << "Failed to retrieve Font Color"
@@ -244,7 +244,7 @@ base::Optional<CaptionStyle> InitializeFromSystemSettings() {
     return base::nullopt;
   }
 
-  ClosedCaptionOpacity font_opacity = ClosedCaptionOpacity_Default;
+  CC::ClosedCaptionOpacity font_opacity = CC::ClosedCaptionOpacity_Default;
   hr = closed_caption_properties_statics->get_FontOpacity(&font_opacity);
   if (FAILED(hr)) {
     DLOG(ERROR) << "Failed to retrieve Font Opacity"
@@ -253,7 +253,7 @@ base::Optional<CaptionStyle> InitializeFromSystemSettings() {
     return base::nullopt;
   }
 
-  ClosedCaptionColor background_color = ClosedCaptionColor_Default;
+  CC::ClosedCaptionColor background_color = CC::ClosedCaptionColor_Default;
   hr =
       closed_caption_properties_statics->get_BackgroundColor(&background_color);
   if (FAILED(hr)) {
@@ -263,7 +263,8 @@ base::Optional<CaptionStyle> InitializeFromSystemSettings() {
     return base::nullopt;
   }
 
-  ClosedCaptionOpacity background_opacity = ClosedCaptionOpacity_Default;
+  CC::ClosedCaptionOpacity background_opacity =
+      CC::ClosedCaptionOpacity_Default;
   hr = closed_caption_properties_statics->get_BackgroundOpacity(
       &background_opacity);
   if (FAILED(hr)) {
@@ -273,7 +274,7 @@ base::Optional<CaptionStyle> InitializeFromSystemSettings() {
     return base::nullopt;
   }
 
-  ClosedCaptionColor region_color = ClosedCaptionColor_Default;
+  CC::ClosedCaptionColor region_color = CC::ClosedCaptionColor_Default;
   hr = closed_caption_properties_statics->get_RegionColor(&region_color);
   if (FAILED(hr)) {
     DLOG(ERROR) << "Failed to retrieve Region Color"
@@ -282,7 +283,7 @@ base::Optional<CaptionStyle> InitializeFromSystemSettings() {
     return base::nullopt;
   }
 
-  ClosedCaptionOpacity region_opacity = ClosedCaptionOpacity_Default;
+  CC::ClosedCaptionOpacity region_opacity = CC::ClosedCaptionOpacity_Default;
   hr = closed_caption_properties_statics->get_RegionOpacity(&region_opacity);
   if (FAILED(hr)) {
     DLOG(ERROR) << "Failed to retrieve Region Opacity"
@@ -292,32 +293,32 @@ base::Optional<CaptionStyle> InitializeFromSystemSettings() {
   }
 
   CaptionStyle caption_style;
-  if (font_family != ClosedCaptionStyle_Default) {
+  if (font_family != CC::ClosedCaptionStyle_Default) {
     GetFontFamilyString(font_family, &(caption_style.font_family),
                         &(caption_style.font_variant));
     caption_style.font_family = AddCSSImportant(caption_style.font_family);
     caption_style.font_variant = AddCSSImportant(caption_style.font_variant);
   }
 
-  if (font_size != ClosedCaptionSize_Default)
+  if (font_size != CC::ClosedCaptionSize_Default)
     caption_style.text_size = AddCSSImportant(GetCaptionSizeString(font_size));
 
-  if (edge_effect != ClosedCaptionEdgeEffect_Default) {
+  if (edge_effect != CC::ClosedCaptionEdgeEffect_Default) {
     caption_style.text_shadow =
         AddCSSImportant(GetEdgeEffectString(edge_effect));
   }
 
-  if (font_color != ClosedCaptionColor_Default) {
+  if (font_color != CC::ClosedCaptionColor_Default) {
     caption_style.text_color =
         AddCSSImportant(GetCssColorWithAlpha(font_color, font_opacity));
   }
 
-  if (background_color != ClosedCaptionColor_Default) {
+  if (background_color != CC::ClosedCaptionColor_Default) {
     caption_style.background_color = AddCSSImportant(
         GetCssColorWithAlpha(background_color, background_opacity));
   }
 
-  if (region_color != ClosedCaptionColor_Default) {
+  if (region_color != CC::ClosedCaptionColor_Default) {
     caption_style.window_color =
         AddCSSImportant(GetCssColorWithAlpha(region_color, region_opacity));
   }

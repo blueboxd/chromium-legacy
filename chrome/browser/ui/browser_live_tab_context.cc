@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/browser_live_tab_context.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/token.h"
 #include "chrome/browser/profiles/profile.h"
@@ -97,6 +98,15 @@ base::Optional<base::Token> BrowserLiveTabContext::GetTabGroupForTab(
                               : base::nullopt;
 }
 
+BrowserLiveTabContext::TabGroupMetadata
+BrowserLiveTabContext::GetTabGroupMetadata(base::Token group) const {
+  const TabGroupVisualData* metadata =
+      browser_->tab_strip_model()->GetVisualDataForGroup(
+          TabGroupId::FromRawToken(group));
+  DCHECK(metadata);
+  return TabGroupMetadata{metadata->title(), metadata->color()};
+}
+
 const gfx::Rect BrowserLiveTabContext::GetRestoredBounds() const {
   return browser_->window()->GetRestoredBounds();
 }
@@ -178,6 +188,15 @@ sessions::LiveTab* BrowserLiveTabContext::ReplaceRestoredTab(
 
 void BrowserLiveTabContext::CloseTab() {
   chrome::CloseTab(browser_);
+}
+
+void BrowserLiveTabContext::SetTabGroupMetadata(
+    base::Token group,
+    TabGroupMetadata group_metadata) {
+  TabGroupVisualData restored_data(std::move(group_metadata.title),
+                                   group_metadata.color);
+  browser_->tab_strip_model()->SetVisualDataForGroup(
+      TabGroupId::FromRawToken(group), std::move(restored_data));
 }
 
 // static

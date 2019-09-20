@@ -58,6 +58,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/version_info/version_info.h"
 #include "extensions/browser/extension_registry.h"
@@ -496,10 +497,11 @@ void ShowManagementPageForProfile(Profile* profile) {
 
 void ShowAppManagementPage(Profile* profile, const std::string& app_id) {
   DCHECK(base::FeatureList::IsEnabled(features::kAppManagement));
-  constexpr char kAppManagementSubPagePrefix[] = "app-management/detail?id=";
+  std::string sub_page =
+      base::StrCat({chrome::kAppManagementDetailSubPage, "?id=", app_id});
   base::RecordAction(base::UserMetricsAction("ShowAppManagementDetailPage"));
-  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-      profile, kAppManagementSubPagePrefix + app_id);
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(profile,
+                                                               sub_page);
 }
 
 GURL GetOSSettingsUrl(const std::string& sub_page) {

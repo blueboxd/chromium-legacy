@@ -63,7 +63,7 @@ MultideviceHandler::MultideviceHandler(
       multidevice_setup_observer_(this),
       android_sms_pairing_state_tracker_observer_(this),
       android_sms_app_manager_observer_(this) {
-  RegisterPrefChangeListeners();
+  pref_change_registrar_.Init(prefs_);
 }
 
 MultideviceHandler::~MultideviceHandler() {}
@@ -122,9 +122,22 @@ void MultideviceHandler::OnJavascriptAllowed() {
 
   if (android_sms_app_manager_)
     android_sms_app_manager_observer_.Add(android_sms_app_manager_);
+
+  pref_change_registrar_.Add(
+      proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled,
+      base::BindRepeating(
+          &MultideviceHandler::NotifySmartLockSignInEnabledChanged,
+          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      multidevice_setup::kSmartLockSigninAllowedPrefName,
+      base::BindRepeating(
+          &MultideviceHandler::NotifySmartLockSignInAllowedChanged,
+          base::Unretained(this)));
 }
 
 void MultideviceHandler::OnJavascriptDisallowed() {
+  pref_change_registrar_.RemoveAll();
+
   if (multidevice_setup_client_)
     multidevice_setup_observer_.Remove(multidevice_setup_client_);
 
@@ -376,23 +389,7 @@ MultideviceHandler::GeneratePageContentDataDictionary() {
   return page_content_dictionary;
 }
 
-void MultideviceHandler::RegisterPrefChangeListeners() {
-  pref_change_registrar_.Init(prefs_);
-  pref_change_registrar_.Add(
-      proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled,
-      base::BindRepeating(
-          &MultideviceHandler::NotifySmartLockSignInEnabledChanged,
-          base::Unretained(this)));
-  pref_change_registrar_.Add(
-      multidevice_setup::kSmartLockSigninAllowedPrefName,
-      base::BindRepeating(
-          &MultideviceHandler::NotifySmartLockSignInAllowedChanged,
-          base::Unretained(this)));
-}
-
 void MultideviceHandler::NotifySmartLockSignInEnabledChanged() {
-  AllowJavascript();
-
   bool sign_in_enabled = prefs_->GetBoolean(
       proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled);
   FireWebUIListener("smart-lock-signin-enabled-changed",

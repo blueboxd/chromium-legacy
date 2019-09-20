@@ -88,4 +88,8 @@ const BrowserAccessibilityWin* ToBrowserAccessibilityWin(
   return static_cast<const BrowserAccessibilityWin*>(obj);
 }
 
+ui::TextAttributeList BrowserAccessibilityWin::ComputeTextAttributes() const {
+  return GetCOM()->AXPlatformNodeWin::ComputeTextAttributes();
+}
+
 }  // namespace content

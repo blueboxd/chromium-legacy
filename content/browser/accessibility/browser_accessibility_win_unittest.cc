@@ -2292,13 +2292,6 @@ TEST_F(BrowserAccessibilityWinTest, TestInheritedStringAttributes) {
                          ax::mojom::StringAttribute::kFontFamily));
 }
 
-TEST_F(BrowserAccessibilityWinTest, TestSanitizeStringAttributeForIA2) {
-  base::string16 input(L"\\:=,;");
-  base::string16 output;
-  BrowserAccessibilityComWin::SanitizeStringAttributeForIA2(input, &output);
-  EXPECT_EQ(L"\\\\\\:\\=\\,\\;", output);
-}
-
 TEST_F(BrowserAccessibilityWinTest, UniqueIdWinInvalidAfterDeletingTree) {
   ui::AXNodeData root_node;
   root_node.id = 1;

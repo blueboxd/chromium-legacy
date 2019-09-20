@@ -70,6 +70,7 @@ jumbo_static_library("weblayer_shell_lib") {
     "//ui/platform_window",
     "//url",
     "//v8",
+    "//weblayer:resources",
   ]
 
   if (is_linux) {
@@ -182,6 +183,7 @@ repack("support_pak") {
     "$root_gen_dir/ui/resources/webui_resources.pak",
     "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
     "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
+    "$root_gen_dir/weblayer/weblayer_resources.pak",
   ]
 
   deps = [
@@ -195,6 +197,7 @@ repack("support_pak") {
     "//third_party/blink/public/strings",
     "//ui/resources",
     "//ui/strings",
+    "//weblayer:resources",
   ]
 
   if (toolkit_views) {

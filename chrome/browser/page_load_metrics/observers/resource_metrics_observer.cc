@@ -4,8 +4,8 @@
 
 #include "chrome/browser/page_load_metrics/observers/resource_metrics_observer.h"
 
-#include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
-#include "chrome/browser/page_load_metrics/resource_tracker.h"
+#include "components/page_load_metrics/browser/page_load_metrics_util.h"
+#include "components/page_load_metrics/browser/resource_tracker.h"
 
 namespace {
 

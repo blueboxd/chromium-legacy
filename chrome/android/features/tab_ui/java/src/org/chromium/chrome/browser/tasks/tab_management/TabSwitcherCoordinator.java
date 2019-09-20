@@ -45,7 +45,7 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
                                                TabSwitcherMediator.ResetHandler {
     // TODO(crbug.com/982018): Rename 'COMPONENT_NAME' so as to add different metrics for carousel
     // tab switcher.
-    final static String COMPONENT_NAME = "GridTabSwitcher";
+    static final String COMPONENT_NAME = "GridTabSwitcher";
     private final PropertyModelChangeProcessor mContainerViewChangeProcessor;
     private final ActivityLifecycleDispatcher mLifecycleDispatcher;
     private final MenuOrKeyboardActionController mMenuOrKeyboardActionController;
@@ -94,7 +94,7 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
             mUndoGroupSnackbarController =
                     new UndoGroupSnackbarController(context, tabModelSelector, snackbarManageable);
 
-            mMediator.setTabGridDialogResetHandler(mTabGridDialogCoordinator.getResetHandler());
+            mMediator.setTabGridDialogController(mTabGridDialogCoordinator.getDialogController());
         } else {
             mTabGridDialogCoordinator = null;
             mUndoGroupSnackbarController = null;

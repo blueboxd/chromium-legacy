@@ -14,7 +14,6 @@
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/public/cpp/window_state_type.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/screen_util.h"
@@ -400,8 +399,6 @@ OverviewGrid::OverviewGrid(aura::Window* root_window,
     auto* animator = window->layer()->GetAnimator();
     if (animator->is_animating())
       window->layer()->GetAnimator()->StopAnimating();
-    window_observer_.Add(window);
-    window_state_observer_.Add(WindowState::Get(window));
     window_list_.push_back(
         std::make_unique<OverviewItem>(window, overview_session_, this));
   }
@@ -450,10 +447,8 @@ void OverviewGrid::PrepareForOverview() {
 
   for (const auto& window : window_list_)
     window->PrepareForOverview();
-  prepared_for_overview_ = true;
-  if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
+  if (Shell::Get()->tablet_mode_controller()->InTabletMode())
     ScreenRotationAnimator::GetForRootWindow(root_window_)->AddObserver(this);
-  }
 
   grid_event_handler_ = std::make_unique<OverviewGridEventHandler>(this);
   Shell::Get()->wallpaper_controller()->AddObserver(this);
@@ -561,8 +556,6 @@ void OverviewGrid::AddItem(aura::Window* window,
   DCHECK(!GetOverviewItemContaining(window));
   DCHECK_LE(index, window_list_.size());
 
-  window_observer_.Add(window);
-  window_state_observer_.Add(WindowState::Get(window));
   window_list_.insert(
       window_list_.begin() + index,
       std::make_unique<OverviewItem>(window, overview_session_, this));
@@ -582,7 +575,9 @@ void OverviewGrid::AppendItem(aura::Window* window,
           window_list_.size());
 }
 
-void OverviewGrid::RemoveItem(OverviewItem* overview_item) {
+void OverviewGrid::RemoveItem(OverviewItem* overview_item,
+                              bool item_destroying,
+                              bool reposition) {
   auto* window = overview_item->GetWindow();
   // Use reverse iterator to be efficiently when removing all.
   auto iter = std::find_if(window_list_.rbegin(), window_list_.rend(),
@@ -590,8 +585,6 @@ void OverviewGrid::RemoveItem(OverviewItem* overview_item) {
                              return item->GetWindow() == window;
                            });
   DCHECK(iter != window_list_.rend());
-  window_observer_.Remove(window);
-  window_state_observer_.Remove(WindowState::Get(window));
 
   // This can also be called when shutting down |this|, at which the item will
   // be cleaning up and its associated view may be nullptr.
@@ -604,6 +597,21 @@ void OverviewGrid::RemoveItem(OverviewItem* overview_item) {
   // iterating through the |window_list_|.
   std::unique_ptr<OverviewItem> tmp = std::move(*iter);
   window_list_.erase(std::next(iter).base());
+  tmp.reset();
+
+  if (!item_destroying)
+    return;
+
+  if (!overview_session_)
+    return;
+
+  if (empty()) {
+    overview_session_->OnGridEmpty();
+    return;
+  }
+
+  if (reposition)
+    PositionWindows(/*animate=*/true);
 }
 
 void OverviewGrid::AddDropTargetForDraggingFromOverview(
@@ -822,102 +830,6 @@ OverviewItem* OverviewGrid::GetDropTarget() {
   return drop_target_widget_
              ? GetOverviewItemContaining(drop_target_widget_->GetNativeWindow())
              : nullptr;
-}
-
-void OverviewGrid::OnWindowDestroying(aura::Window* window) {
-  // TODO(sammiequon): Consider making this use `RemoveItem()`.
-  window_observer_.Remove(window);
-  window_state_observer_.Remove(WindowState::Get(window));
-  auto iter = GetOverviewItemIterContainingWindow(window);
-  DCHECK(iter != window_list_.end());
-  if (overview_session_) {
-    overview_session_->highlight_controller()->OnViewDestroyingOrDisabling(
-        (*iter)->caption_container_view());
-  }
-
-  // Windows that are animating to a close state already call PositionWindows,
-  // no need to call it twice.
-  const bool needs_repositioning = !((*iter)->animating_to_close());
-
-  // Erase from the list first because deleting OverviewItem can lead to
-  // iterating through the |window_list_|.
-  std::unique_ptr<OverviewItem> tmp = std::move(*iter);
-  window_list_.erase(iter);
-  tmp.reset();
-
-  if (empty()) {
-    if (overview_session_)
-      overview_session_->OnGridEmpty();
-    return;
-  }
-
-  if (needs_repositioning)
-    PositionWindows(true);
-}
-
-void OverviewGrid::OnWindowBoundsChanged(aura::Window* window,
-                                         const gfx::Rect& old_bounds,
-                                         const gfx::Rect& new_bounds,
-                                         ui::PropertyChangeReason reason) {
-  // During preparation, window bounds can change. Ignore bounds
-  // change notifications in this case; we'll reposition soon.
-  if (!prepared_for_overview_)
-    return;
-
-  // |drop_target_widget_| will get its bounds set as opposed to its transform
-  // set in |OverviewItem::SetItemBounds| so do not position windows again when
-  // that particular window has its bounds changed.
-  if (IsDropTargetWindow(window))
-    return;
-
-  auto iter = GetOverviewItemIterContainingWindow(window);
-  DCHECK(iter != window_list_.end());
-
-  // Immediately finish any active bounds animation.
-  window->layer()->GetAnimator()->StopAnimatingProperty(
-      ui::LayerAnimationElement::BOUNDS);
-  (*iter)->UpdateWindowDimensionsType();
-  PositionWindows(false);
-}
-
-void OverviewGrid::OnWindowPropertyChanged(aura::Window* window,
-                                           const void* key,
-                                           intptr_t old) {
-  if (prepared_for_overview_ && key == aura::client::kTopViewInset &&
-      window->GetProperty(aura::client::kTopViewInset) !=
-          static_cast<int>(old)) {
-    PositionWindows(/*animate=*/false);
-  }
-}
-
-void OverviewGrid::OnPostWindowStateTypeChange(WindowState* window_state,
-                                               WindowStateType old_type) {
-  // During preparation, window state can change, e.g. updating shelf
-  // visibility may show the temporarily hidden (minimized) panels.
-  if (!prepared_for_overview_)
-    return;
-
-  // When swiping away overview mode via shelf, windows will get minimized, but
-  // we do not want show a mirrored view in this case.
-  if (overview_session_->enter_exit_overview_type() ==
-      OverviewSession::EnterExitOverviewType::kSwipeFromShelf) {
-    return;
-  }
-
-  WindowStateType new_type = window_state->GetStateType();
-  if (IsMinimizedWindowStateType(old_type) ==
-      IsMinimizedWindowStateType(new_type)) {
-    return;
-  }
-
-  auto iter = std::find_if(window_list_.begin(), window_list_.end(),
-                           [window_state](std::unique_ptr<OverviewItem>& item) {
-                             return item->Contains(window_state->window());
-                           });
-  if (iter != window_list_.end()) {
-    (*iter)->OnMinimizedStateChanged();
-    PositionWindows(/*animate=*/false);
-  }
 }
 
 void OverviewGrid::OnScreenCopiedBeforeRotation() {

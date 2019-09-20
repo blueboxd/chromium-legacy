@@ -36,7 +36,11 @@ class MOJO_SYSTEM_IMPL_EXPORT ConnectionParams {
     return std::move(server_endpoint_);
   }
 
+  void set_is_async(bool is_async) { is_async_ = is_async; }
+  bool is_async() const { return is_async_; }
+
  private:
+  bool is_async_ = false;
   PlatformChannelEndpoint endpoint_;
   PlatformChannelServerEndpoint server_endpoint_;
 

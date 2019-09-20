@@ -115,6 +115,8 @@ class ScriptsSmokeTest(unittest.TestCase):
               perf_results, 'json perf results should be populated: ' + stdout)
     except IOError as e:
       self.fail('json_test_results should be populated: ' + stdout + str(e))
+    except AssertionError as e:
+      self.fail('Caught assertion error: ' + str(e) + 'With stdout: ' + stdout)
     finally:
       shutil.rmtree(tempdir)
 

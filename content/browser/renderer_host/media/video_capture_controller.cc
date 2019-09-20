@@ -243,6 +243,9 @@ VideoCaptureController::BufferContext::CloneBufferHandle() {
     DCHECK(result->get_read_only_shmem_region().IsValid());
   } else if (buffer_handle_->is_mailbox_handles()) {
     result->set_mailbox_handles(buffer_handle_->get_mailbox_handles()->Clone());
+  } else if (buffer_handle_->is_gpu_memory_buffer_handle()) {
+    result->set_gpu_memory_buffer_handle(
+        buffer_handle_->get_gpu_memory_buffer_handle().Clone());
   } else {
     NOTREACHED() << "Unexpected video buffer handle type";
   }

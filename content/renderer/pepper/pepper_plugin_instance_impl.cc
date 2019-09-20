@@ -293,6 +293,8 @@ STATIC_ASSERT_ENUM(blink::kWebPrintScalingOptionFitToPrintableArea,
                    PP_PRINTSCALINGOPTION_FIT_TO_PRINTABLE_AREA);
 STATIC_ASSERT_ENUM(blink::kWebPrintScalingOptionSourceSize,
                    PP_PRINTSCALINGOPTION_SOURCE_SIZE);
+STATIC_ASSERT_ENUM(blink::kWebPrintScalingOptionFitToPaper,
+                   PP_PRINTSCALINGOPTION_FIT_TO_PAPER);
 
 #undef STATIC_ASSERT_ENUM
 
@@ -1959,6 +1961,11 @@ int PepperPluginInstanceImpl::PrintBegin(const WebPrintParams& print_params) {
     num_pages = plugin_pdf_interface_->PrintBegin(
         pp_instance(), &print_settings, &pdf_print_settings);
   } else {
+    // If the content is not from the PDF plugin, "fit to paper" should have
+    // never been a scaling option for the user to begin with.
+    DCHECK_NE(print_settings.print_scaling_option,
+              PP_PRINTSCALINGOPTION_FIT_TO_PAPER);
+
     num_pages = plugin_print_interface_->Begin(pp_instance(), &print_settings);
   }
   if (!num_pages)

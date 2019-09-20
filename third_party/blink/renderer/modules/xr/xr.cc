@@ -554,15 +554,6 @@ void XR::RequestImmersiveSession(LocalFrame* frame,
     did_log_request_immersive_session_ = true;
   }
 
-  // If its an immersive AR session, make sure that feature is enabled
-  if (query->mode() == XRSession::kModeImmersiveAR &&
-      !RuntimeEnabledFeatures::WebXRARModuleEnabled(doc)) {
-    query->RejectWithTypeError(
-        String::Format(kImmersiveArModeNotValid, "requestSession"),
-        exception_state);
-    return;
-  }
-
   // Make sure the request is allowed
   auto* immersive_session_request_error =
       CheckImmersiveSessionRequestAllowed(frame, doc);
@@ -668,6 +659,22 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
   }
 
   XRSession::SessionMode session_mode = stringToSessionMode(mode);
+
+  // If the request is for immersive-ar, ensure that feature is enabled.
+  if (session_mode == XRSession::kModeImmersiveAR &&
+      !RuntimeEnabledFeatures::WebXRARModuleEnabled(doc)) {
+    exception_state.ThrowTypeError(
+        String::Format(kImmersiveArModeNotValid, "requestSession"));
+
+    // We haven't created the query yet, so we can't use it to implicitly log
+    // our metrics for us, so explicitly log it here, as the query requires the
+    // features to be parsed before it can be built.
+    ukm::builders::XR_WebXR_SessionRequest(GetSourceId())
+        .SetMode(static_cast<int64_t>(session_mode))
+        .SetStatus(static_cast<int64_t>(SessionRequestStatus::kOtherError))
+        .Record(doc->UkmRecorder());
+    return ScriptPromise();
+  }
 
   // Parse required feature strings
   RequestedXRSessionFeatureSet required_features;

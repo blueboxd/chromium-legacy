@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "ui/base/x/x11_display_util.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/x/x11.h"
@@ -56,6 +57,43 @@ bool g_glx_sgi_video_sync_supported = false;
 Visual* g_visual = nullptr;
 int g_depth = CopyFromParent;
 Colormap g_colormap = CopyFromParent;
+
+base::TimeDelta GetPrimaryDisplayRefreshIntervalFromXrandr(Display* display) {
+  constexpr base::TimeDelta kDefaultInterval =
+      base::TimeDelta::FromSecondsD(1. / 60);
+  GLXWindow root = DefaultRootWindow(display);
+  gfx::XScopedPtr<
+      XRRScreenResources,
+      gfx::XObjectDeleter<XRRScreenResources, void, XRRFreeScreenResources>>
+      resources(XRRGetScreenResourcesCurrent(display, root));
+  if (!resources)
+    return kDefaultInterval;
+  // TODO(crbug.com/726842): It might make sense here to pick the output that
+  // the window is on. On the other hand, if compositing is enabled, all drawing
+  // might be synced to the primary output anyway. Needs investigation.
+  RROutput primary_output = XRRGetOutputPrimary(display, root);
+  for (int i = 0; i < resources->noutput; i++) {
+    if (resources->outputs[i] != primary_output)
+      continue;
+    gfx::XScopedPtr<XRROutputInfo,
+                    gfx::XObjectDeleter<XRROutputInfo, void, XRRFreeOutputInfo>>
+        output_info(XRRGetOutputInfo(display, resources.get(), primary_output));
+    if (!output_info)
+      return kDefaultInterval;
+    gfx::XScopedPtr<XRRCrtcInfo,
+                    gfx::XObjectDeleter<XRRCrtcInfo, void, XRRFreeCrtcInfo>>
+        crtc(XRRGetCrtcInfo(display, resources.get(), output_info->crtc));
+    if (!crtc)
+      return kDefaultInterval;
+    float refresh_rate = ui::GetRefreshRateFromXRRModeInfo(
+        resources->modes, resources->nmode, crtc->mode);
+    if (refresh_rate == 0)
+      return kDefaultInterval;
+
+    return base::TimeDelta::FromSecondsD(1. / refresh_rate);
+  }
+  return kDefaultInterval;
+}
 
 GLXFBConfig GetConfigForWindow(Display* display,
                                gfx::AcceleratedWidget window) {
@@ -312,32 +350,29 @@ class SGIVideoSyncProviderThreadShim {
   }
 
   void GetVSyncParameters(gfx::VSyncProvider::UpdateVSyncCallback callback) {
-    base::TimeTicks now;
-    {
-      // Don't allow |window_| destruction while we're probing vsync.
-      base::AutoLock locked(vsync_lock_);
+    // Don't allow |window_| destruction while we're probing vsync.
+    base::AutoLock locked(vsync_lock_);
 
-      if (!vsync_thread_->GetGLXContext() || cancel_vsync_flag_.IsSet())
-        return;
+    if (!vsync_thread_->GetGLXContext() || cancel_vsync_flag_.IsSet())
+      return;
 
-      glXMakeContextCurrent(vsync_thread_->GetDisplay(), glx_window_,
-                            glx_window_, vsync_thread_->GetGLXContext());
+    base::TimeDelta interval =
+        GetPrimaryDisplayRefreshIntervalFromXrandr(vsync_thread_->GetDisplay());
 
-      unsigned int retrace_count = 0;
-      if (glXWaitVideoSyncSGI(1, 0, &retrace_count) != 0)
-        return;
+    glXMakeContextCurrent(vsync_thread_->GetDisplay(), glx_window_, glx_window_,
+                          vsync_thread_->GetGLXContext());
 
-      TRACE_EVENT_INSTANT0("gpu", "vblank", TRACE_EVENT_SCOPE_THREAD);
-      now = base::TimeTicks::Now();
+    unsigned int retrace_count = 0;
+    if (glXWaitVideoSyncSGI(1, 0, &retrace_count) != 0)
+      return;
 
-      glXMakeContextCurrent(vsync_thread_->GetDisplay(), 0, 0, nullptr);
-    }
+    base::TimeTicks now = base::TimeTicks::Now();
+    TRACE_EVENT_INSTANT0("gpu", "vblank", TRACE_EVENT_SCOPE_THREAD);
 
-    const base::TimeDelta kDefaultInterval =
-        base::TimeDelta::FromSeconds(1) / 60;
+    glXMakeContextCurrent(vsync_thread_->GetDisplay(), 0, 0, nullptr);
 
-    task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), now, kDefaultInterval));
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(std::move(callback), now, interval));
   }
 
  private:

@@ -6,6 +6,14 @@ var lastChanged = null;
 var lastFocused = null;
 var restartButton = $('experiment-restart-button');
 
+/** @type {?function():void} */
+var experimentalFeaturesResolver = null;
+
+/** @type {!Promise} */
+var experimentalFeaturesReady = new Promise(resolve => {
+  experimentalFeaturesResolver = resolve;
+});
+
 /**
  * This variable structure is here to document the structure that the template
  * expects to correctly populate the page.
@@ -246,6 +254,8 @@ function returnExperimentalFeatures(experimentalFeaturesData) {
   if (ownerWarningDiv) {
     ownerWarningDiv.hidden = !experimentalFeaturesData.showOwnerWarning;
   }
+
+  experimentalFeaturesResolver();
 }
 
 /**

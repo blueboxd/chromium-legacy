@@ -295,6 +295,7 @@ android_library("content_java") {
     "java/src/org/chromium/content_public/common/ScreenOrientationConstants.java",
     "java/src/org/chromium/content_public/common/ServiceManagerConnection.java",
     "java/src/org/chromium/content_public/common/UseZoomForDSFPolicy.java",
+    "java/src/org/chromium/content_public/app/ChildProcessServiceFactory.java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }

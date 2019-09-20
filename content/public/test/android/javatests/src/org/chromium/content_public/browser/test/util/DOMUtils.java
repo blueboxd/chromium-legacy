@@ -11,11 +11,11 @@ import android.view.View;
 
 import org.junit.Assert;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.RenderCoordinatesImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.base.WindowAndroid;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -178,7 +178,7 @@ public class DOMUtils {
     }
 
     private static Activity getActivity(final WebContents webContents) {
-        return WindowAndroid.activityFromContext(((WebContentsImpl) webContents).getContext());
+        return ContextUtils.activityFromContext(((WebContentsImpl) webContents).getContext());
     }
 
     /**

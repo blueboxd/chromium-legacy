@@ -363,14 +363,13 @@ TaskEnvironment::TaskEnvironment(
                                     : nullptr),
       scoped_lazy_task_runner_list_for_testing_(
           std::make_unique<internal::ScopedLazyTaskRunnerListForTesting>()),
-      // TODO(https://crbug.com/918724): Enable Run() timeouts even for
-      // instances created with *MOCK_TIME, and determine whether the timeout
-      // can be reduced from action_max_timeout() to action_timeout().
+      // TODO(https://crbug.com/922098): Enable Run() timeouts even for
+      // instances created with *MOCK_TIME.
       run_loop_timeout_(
           mock_time_domain_
               ? nullptr
               : std::make_unique<RunLoop::ScopedRunTimeoutForTest>(
-                    TestTimeouts::action_max_timeout(),
+                    TestTimeouts::action_timeout(),
                     MakeExpectedNotRunClosure(FROM_HERE,
                                               "RunLoop::Run() timed out."))) {
   CHECK(!base::ThreadTaskRunnerHandle::IsSet());

@@ -48,13 +48,6 @@ enum LatencyComponentType {
   // scroll processing in impl thread. This is the timestamp when we consider
   // the main thread scroll listener update is begun.
   LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT,
-  // The BeginFrame::frame_time of various frame sources.
-  LATENCY_BEGIN_FRAME_RENDERER_MAIN_COMPONENT,
-  LATENCY_BEGIN_FRAME_RENDERER_INVALIDATE_COMPONENT,
-  LATENCY_BEGIN_FRAME_RENDERER_COMPOSITOR_COMPONENT,
-  LATENCY_BEGIN_FRAME_UI_MAIN_COMPONENT,
-  LATENCY_BEGIN_FRAME_UI_COMPOSITOR_COMPONENT,
-  LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT,
   // ---------------------------NORMAL COMPONENT-------------------------------
   // The original timestamp of the touch event which converts to scroll update.
   INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
@@ -104,7 +97,6 @@ enum class SourceEventType {
   KEY_PRESS,
   // TODO(crbug.com/868056) Touchpad scrolling latency report as WHEEL.
   TOUCHPAD,
-  FRAME,
   SCROLLBAR,
   OTHER,
   LAST = OTHER,

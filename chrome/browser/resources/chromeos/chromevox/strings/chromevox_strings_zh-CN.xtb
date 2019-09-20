@@ -420,7 +420,6 @@
 <translation id="4039983576244166038">行标题为空</translation>
 <translation id="4042843249978639960">不存在下一个2级标题。</translation>
 <translation id="4043348641337972076">不存在上一个ARIA地标。</translation>
-<translation id="4045764028670444336">拼写有误的字词的开头</translation>
 <translation id="4047216625641135770">标记</translation>
 <translation id="404803211695627272"><ph name="V1" />到<ph name="V2" /></translation>
 <translation id="4053520724192563562">柠檬绿</translation>
@@ -503,7 +502,6 @@
 <translation id="4547556996012970016">下一个5级标题</translation>
 <translation id="4562381607973973258">标头标记</translation>
 <translation id="4569941707103739422">按向上或向下箭头即可浏览；按 Enter 键即可启动。</translation>
-<translation id="4570424871453628777">拼写有误的字词的末尾</translation>
 <translation id="4591507479202817876">，已选中</translation>
 <translation id="4597532268155981612">表单</translation>
 <translation id="4597896406374528575">4月</translation>
@@ -727,7 +725,6 @@
 <translation id="6037602951055904232">向前平移</translation>
 <translation id="6042826534790431634">同时按搜索键和空格键即可启动。</translation>
 <translation id="6044160928851315051">调暗屏幕</translation>
-<translation id="6065293622157674001">语法错误的开头</translation>
 <translation id="6082768461603900813">基本导航操作</translation>
 <translation id="6118126368611144850">适合在 Chrome 中使用的 Android 应用。如果您的设备上安装了 Play 商店，则可以通过 Android 应用抢先体验 ChromeVox。只需从 Play 商店下载 Google Chrome Canary，即可体验实验功能。</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -868,7 +865,6 @@
 <translation id="7143207342074048698">正在连接</translation>
 <translation id="7153618581592392745">薰衣草色</translation>
 <translation id="7157306005867877619">摘要</translation>
-<translation id="7161425887892204659">匹配文字的末尾</translation>
 <translation id="7161771961008409533">弹出式按钮</translation>
 <translation id="7165714724802225287">当前显示样式为交错。</translation>
 <translation id="7167657087543110">字符回显</translation>
@@ -906,7 +902,6 @@
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">即将离开表格。</translation>
 <translation id="738899727977260036">岩蓝色</translation>
-<translation id="7392145451309930991">匹配文字的开头</translation>
 <translation id="739763518212184081">上一行</translation>
 <translation id="7400575256015741911">检测到拼写错误</translation>
 <translation id="7408482676469142474">表格标记</translation>
@@ -1119,7 +1114,6 @@
 <translation id="8476408756881832830">在 ChromeVox 朗读时暂停播放音频</translation>
 <translation id="8476508772960940536">窗口概览</translation>
 <translation id="8503360654911991865">降低导航精细度</translation>
-<translation id="8504695234784218301">语法错误的末尾</translation>
 <translation id="8520472399088452386">数值调节按钮</translation>
 <translation id="8534394844575788431">格式化</translation>
 <translation id="8538744478902126321">推测当前单元格的行标题</translation>

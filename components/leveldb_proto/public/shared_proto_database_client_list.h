@@ -43,6 +43,11 @@ enum class ProtoDbType {
   DOWNLOAD_DB = 21,
   VIDEO_DECODE_STATS_DB = 22,
   PRINT_JOB_DATABASE = 23,
+  // DB is not tied to a profile, will always be unique.
+  GCM_KEY_STORE = 24,
+  // DB Used by shared database, will always be unique.
+  SHARED_DB_METADATA = 25,
+
   LAST,
 };
 

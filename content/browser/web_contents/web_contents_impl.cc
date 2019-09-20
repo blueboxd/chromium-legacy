@@ -306,7 +306,12 @@ bool AreValidRegisterProtocolHandlerArguments(const std::string& protocol,
 
 std::unique_ptr<WebContents> WebContents::Create(
     const WebContents::CreateParams& params) {
-  return WebContentsImpl::CreateWithOpener(params, FindOpenerRFH(params));
+  return WebContentsImpl::Create(params);
+}
+
+std::unique_ptr<WebContentsImpl> WebContentsImpl::Create(
+    const CreateParams& params) {
+  return CreateWithOpener(params, FindOpenerRFH(params));
 }
 
 std::unique_ptr<WebContents> WebContents::CreateWithSessionStorage(
@@ -2776,38 +2781,23 @@ void WebContentsImpl::OnRenderFrameProxyVisibilityChanged(
   }
 }
 
-void WebContentsImpl::CreateNewWindow(
+RenderFrameHostDelegate* WebContentsImpl::CreateNewWindow(
     RenderFrameHost* opener,
-    int32_t render_view_route_id,
-    int32_t main_frame_route_id,
-    int32_t main_frame_widget_route_id,
     const mojom::CreateNewWindowParams& params,
+    bool is_new_browsing_instance,
     bool has_user_gesture,
     SessionStorageNamespace* session_storage_namespace) {
-  // We should have zero valid routing ids, or three valid routing IDs.
-  DCHECK_EQ((render_view_route_id == MSG_ROUTING_NONE),
-            (main_frame_route_id == MSG_ROUTING_NONE));
-  DCHECK_EQ((render_view_route_id == MSG_ROUTING_NONE),
-            (main_frame_widget_route_id == MSG_ROUTING_NONE));
   DCHECK(opener);
 
   int render_process_id = opener->GetProcess()->GetID();
-  SiteInstance* source_site_instance = opener->GetSiteInstance();
 
-  // The route IDs passed into this function can be trusted not to already
-  // be in use; they were allocated by the RenderWidgetHelper by the caller.
-  DCHECK(!RenderFrameHostImpl::FromID(render_process_id, main_frame_route_id));
+  SiteInstance* source_site_instance = opener->GetSiteInstance();
 
   // We usually create the new window in the same BrowsingInstance (group of
   // script-related windows), by passing in the current SiteInstance.  However,
   // if the opener is being suppressed (in a non-guest), we create a new
   // SiteInstance in its own BrowsingInstance.
   bool is_guest = BrowserPluginGuest::IsGuest(this);
-
-  // If the opener is to be suppressed, the new window can be in any process.
-  // Since routing ids are process specific, we must not have one passed in
-  // as argument here.
-  DCHECK(!params.opener_suppressed || render_view_route_id == MSG_ROUTING_NONE);
 
   scoped_refptr<SiteInstance> site_instance =
       params.opener_suppressed && !is_guest
@@ -2829,6 +2819,17 @@ void WebContentsImpl::CreateNewWindow(
       static_cast<SessionStorageNamespaceImpl*>(session_storage_namespace);
   CHECK(session_storage_namespace_impl->IsFromContext(dom_storage_context));
 
+  // TODO(crbug.com/545684): Move these closer to usage after cleaning up the
+  // ShouldCreateWebContents() interface to not need the raw ID numbers.
+  int render_view_route_id = MSG_ROUTING_NONE;
+  int main_frame_route_id = MSG_ROUTING_NONE;
+  int main_frame_widget_route_id = MSG_ROUTING_NONE;
+  if (!is_new_browsing_instance) {
+    render_view_route_id = opener->GetProcess()->GetNextRoutingID();
+    main_frame_route_id = opener->GetProcess()->GetNextRoutingID();
+    main_frame_widget_route_id = opener->GetProcess()->GetNextRoutingID();
+  }
+
   if (delegate_ &&
       !delegate_->ShouldCreateWebContents(
           this, opener, source_site_instance, render_view_route_id,
@@ -2846,8 +2847,13 @@ void WebContentsImpl::CreateNewWindow(
     if (rfh) {
       DCHECK(rfh->IsRenderFrameLive());
       rfh->Init();
+      // TODO(crbug.com/545684): It's super surprising that
+      // ShouldCreateWebContents() is actually a way to allow
+      // BackgroundWebContents to intercede and provide a completely different
+      // webcontents. Fix that API.
+      return rfh->delegate();
     }
-    return;
+    return nullptr;
   }
 
   bool renderer_started_hidden =
@@ -2856,28 +2862,32 @@ void WebContentsImpl::CreateNewWindow(
   // Create the new web contents. This will automatically create the new
   // WebContentsView. In the future, we may want to create the view separately.
   CreateParams create_params(GetBrowserContext(), site_instance.get());
-  create_params.routing_id = render_view_route_id;
-  create_params.main_frame_routing_id = main_frame_route_id;
-  create_params.main_frame_widget_routing_id = main_frame_widget_route_id;
   create_params.main_frame_name = params.frame_name;
   create_params.opener_render_process_id = render_process_id;
   create_params.opener_render_frame_id = opener->GetRoutingID();
   create_params.opener_suppressed = params.opener_suppressed;
   create_params.initially_hidden = renderer_started_hidden;
-  create_params.renderer_initiated_creation =
-      main_frame_route_id != MSG_ROUTING_NONE;
 
-  std::unique_ptr<WebContents> new_contents;
+  // Even though all codepaths leading here are in response to a renderer
+  // tryng to open a new window, if the new window ends up in a different
+  // browsing instance, then the RenderViewHost, RenderWidgetHost,
+  // RenderFrameHost constellation is effectively browser initiated
+  // the opener's process will not given the routing IDs for the new
+  // objects.
+  create_params.renderer_initiated_creation = !is_new_browsing_instance;
+  create_params.routing_id = render_view_route_id;
+  create_params.main_frame_routing_id = main_frame_route_id;
+  create_params.main_frame_widget_routing_id = main_frame_widget_route_id;
+
+  std::unique_ptr<WebContentsImpl> new_contents;
   if (!is_guest) {
     create_params.context = view_->GetNativeView();
-    new_contents = WebContents::Create(create_params);
-  }  else {
-    new_contents = base::WrapUnique(
-        GetBrowserPluginGuest()->CreateNewGuestWindow(create_params));
+    new_contents = WebContentsImpl::Create(create_params);
+  } else {
+    new_contents = base::WrapUnique(static_cast<WebContentsImpl*>(
+        GetBrowserPluginGuest()->CreateNewGuestWindow(create_params)));
   }
-  auto owning_contents_impl =
-      base::WrapUnique(static_cast<WebContentsImpl*>(new_contents.release()));
-  auto* new_contents_impl = owning_contents_impl.get();
+  auto* new_contents_impl = new_contents.get();
 
   new_contents_impl->GetController().SetSessionStorageNamespace(
       partition_id, session_storage_namespace);
@@ -2913,7 +2923,7 @@ void WebContentsImpl::CreateNewWindow(
     // frame.  https://crbug.com/545684
     DCHECK_NE(MSG_ROUTING_NONE, main_frame_widget_route_id);
     GlobalRoutingID id(render_process_id, main_frame_widget_route_id);
-    pending_contents_[id] = std::move(owning_contents_impl);
+    pending_contents_[id] = std::move(new_contents);
     AddDestructionObserver(new_contents_impl);
   }
 
@@ -2945,12 +2955,12 @@ void WebContentsImpl::CreateNewWindow(
           new_contents_impl->weak_factory_.GetWeakPtr();
 
       gfx::Rect initial_rect;  // Report an empty initial rect.
-      delegate_->AddNewContents(this, std::move(owning_contents_impl),
+      delegate_->AddNewContents(this, std::move(new_contents),
                                 params.disposition, initial_rect,
                                 has_user_gesture, &was_blocked);
       // The delegate may delete |new_contents_impl| during AddNewContents().
       if (!weak_new_contents)
-        return;
+        return nullptr;
     }
 
     if (!was_blocked) {
@@ -2975,29 +2985,31 @@ void WebContentsImpl::CreateNewWindow(
       }
     }
   }
+  return new_contents_impl;
 }
 
-void WebContentsImpl::CreateNewWidget(
-    int32_t render_process_id,
-    int32_t widget_route_id,
-    mojo::PendingRemote<mojom::Widget> widget) {
+void WebContentsImpl::CreateNewWidget(int32_t render_process_id,
+                                      int32_t widget_route_id,
+                                      mojo::PendingRemote<mojom::Widget> widget,
+                                      RenderViewHostImpl* render_view_host) {
   CreateNewWidget(render_process_id, widget_route_id, /*is_fullscreen=*/false,
-                  std::move(widget));
+                  std::move(widget), render_view_host);
 }
 
 void WebContentsImpl::CreateNewFullscreenWidget(
     int32_t render_process_id,
     int32_t widget_route_id,
-    mojo::PendingRemote<mojom::Widget> widget) {
+    mojo::PendingRemote<mojom::Widget> widget,
+    RenderViewHostImpl* render_view_host) {
   CreateNewWidget(render_process_id, widget_route_id, /*is_fullscreen=*/true,
-                  std::move(widget));
+                  std::move(widget), render_view_host);
 }
 
-void WebContentsImpl::CreateNewWidget(
-    int32_t render_process_id,
-    int32_t route_id,
-    bool is_fullscreen,
-    mojo::PendingRemote<mojom::Widget> widget) {
+void WebContentsImpl::CreateNewWidget(int32_t render_process_id,
+                                      int32_t route_id,
+                                      bool is_fullscreen,
+                                      mojo::PendingRemote<mojom::Widget> widget,
+                                      RenderViewHostImpl* render_view_host) {
   RenderProcessHost* process = RenderProcessHost::FromID(render_process_id);
   // A message to create a new widget can only come from an active process for
   // this WebContentsImpl instance. If any other process sends the request,
@@ -3009,6 +3021,8 @@ void WebContentsImpl::CreateNewWidget(
 
   RenderWidgetHostImpl* widget_host = new RenderWidgetHostImpl(
       this, process, route_id, std::move(widget), IsHidden());
+  widget_host->BindVisualPropertiesManager(
+      render_view_host->GetVisualPropertiesManager());
 
   RenderWidgetHostViewBase* widget_view =
       static_cast<RenderWidgetHostViewBase*>(
@@ -5631,7 +5645,7 @@ bool WebContentsImpl::IsSpatialNavigationDisabled() const {
   return is_spatial_navigation_disabled_;
 }
 
-RenderFrameHost* WebContentsImpl::GetPendingMainFrame() {
+RenderFrameHostImpl* WebContentsImpl::GetPendingMainFrame() {
   return GetRenderManager()->speculative_frame_host();
 }
 

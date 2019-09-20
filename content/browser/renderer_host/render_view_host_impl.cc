@@ -226,7 +226,8 @@ RenderViewHostImpl::RenderViewHostImpl(
       is_waiting_for_close_ack_(false),
       sudden_termination_allowed_(false),
       updating_web_preferences_(false),
-      has_notified_about_creation_(false) {
+      has_notified_about_creation_(false),
+      visual_properties_manager_(this) {
   DCHECK(instance_.get());
   CHECK(delegate_);  // http://crbug.com/82827
   DCHECK_NE(GetRoutingID(), render_widget_host_->GetRoutingID());
@@ -430,12 +431,6 @@ WebPreferences RenderViewHostImpl::GetWebkitPreferencesForWidget() {
 
 FrameTreeNode* RenderViewHostImpl::GetFocusedFrame() {
   return GetDelegate()->GetFrameTree()->GetFocusedFrame();
-}
-
-void RenderViewHostImpl::UpdatePageVisualProperties(
-    const VisualProperties& visual_properties) {
-  Send(new ViewMsg_UpdateLocalMainFrameVisualProperties(GetRoutingID(),
-                                                        visual_properties));
 }
 
 void RenderViewHostImpl::ShowContextMenu(RenderFrameHost* render_frame_host,
@@ -755,8 +750,8 @@ RenderFrameHost* RenderViewHostImpl::GetMainFrame() {
   // TODO(alexmos, creis): Migrate these code paths to use RenderFrameHost APIs
   // and remove this fallback.  See https://crbug.com/763548.
   if (is_active()) {
-    return RenderFrameHost::FromID(GetProcess()->GetID(),
-                                   main_frame_routing_id_);
+    return RenderFrameHostImpl::FromID(GetProcess()->GetID(),
+                                       main_frame_routing_id_);
   }
   return delegate_->GetPendingMainFrame();
 }
@@ -859,14 +854,14 @@ void RenderViewHostImpl::CreateNewWidget(
     int32_t widget_route_id,
     mojo::PendingRemote<mojom::Widget> widget) {
   delegate_->CreateNewWidget(GetProcess()->GetID(), widget_route_id,
-                             std::move(widget));
+                             std::move(widget), this);
 }
 
 void RenderViewHostImpl::CreateNewFullscreenWidget(
     int32_t widget_route_id,
     mojo::PendingRemote<mojom::Widget> widget) {
   delegate_->CreateNewFullscreenWidget(GetProcess()->GetID(), widget_route_id,
-                                       std::move(widget));
+                                       std::move(widget), this);
 }
 
 void RenderViewHostImpl::OnShowWidget(int widget_route_id,

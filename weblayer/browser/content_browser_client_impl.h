@@ -30,6 +30,9 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
   std::string GetAcceptLangs(content::BrowserContext* context) override;
   content::WebContentsViewDelegate* GetWebContentsViewDelegate(
       content::WebContents* web_contents) override;
+  content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
+  base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
+      base::StringPiece name) override;
   std::string GetUserAgent() override;
   blink::UserAgentMetadata GetUserAgentMetadata() override;
 

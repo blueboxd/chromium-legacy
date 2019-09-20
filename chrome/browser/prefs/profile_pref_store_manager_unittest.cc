@@ -31,6 +31,8 @@
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/common/service_names.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/preferences/public/cpp/pref_service_main.h"
 #include "services/preferences/public/cpp/tracked/configuration.h"
 #include "services/preferences/public/cpp/tracked/mock_validation_delegate.h"
@@ -219,9 +221,9 @@ class ProfilePrefStoreManagerTest : public testing::Test,
   void InitializePrefs() {
     // According to the implementation of ProfilePrefStoreManager, this is
     // actually a SegregatedPrefStore backed by two underlying pref stores.
-    prefs::mojom::ResetOnLoadObserverPtr observer;
-    reset_on_load_observer_bindings_.AddBinding(this,
-                                                mojo::MakeRequest(&observer));
+    mojo::PendingRemote<prefs::mojom::ResetOnLoadObserver> observer;
+    reset_on_load_observer_receivers_.Add(
+        this, observer.InitWithNewPipeAndPassReceiver());
     prefs::mojom::TrackedPreferenceValidationDelegatePtr validation_delegate;
     mock_validation_delegate_bindings_.AddBinding(
         mock_validation_delegate_.get(),
@@ -273,9 +275,9 @@ class ProfilePrefStoreManagerTest : public testing::Test,
 
   void LoadExistingPrefs() {
     DestroyPrefStore();
-    prefs::mojom::ResetOnLoadObserverPtr observer;
-    reset_on_load_observer_bindings_.AddBinding(this,
-                                                mojo::MakeRequest(&observer));
+    mojo::PendingRemote<prefs::mojom::ResetOnLoadObserver> observer;
+    reset_on_load_observer_receivers_.Add(
+        this, observer.InitWithNewPipeAndPassReceiver());
     prefs::mojom::TrackedPreferenceValidationDelegatePtr validation_delegate;
     mock_validation_delegate_bindings_.AddBinding(
         mock_validation_delegate_.get(),
@@ -352,8 +354,8 @@ class ProfilePrefStoreManagerTest : public testing::Test,
   base::test::ScopedFeatureList feature_list_;
   bool reset_recorded_;
   service_manager::mojom::ConnectorRequest connector_request_;
-  mojo::BindingSet<prefs::mojom::ResetOnLoadObserver>
-      reset_on_load_observer_bindings_;
+  mojo::ReceiverSet<prefs::mojom::ResetOnLoadObserver>
+      reset_on_load_observer_receivers_;
 };
 
 TEST_F(ProfilePrefStoreManagerTest, StoreValues) {

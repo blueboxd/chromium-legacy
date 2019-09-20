@@ -161,8 +161,7 @@ class AutofillWebDataBackendImpl
                                       WebDatabase* db);
 
   // Removes a credit card from the web database. Valid only for local cards.
-  WebDatabase::State RemoveCreditCard(const std::string& guid,
-                                      WebDatabase* db);
+  WebDatabase::State RemoveCreditCard(const std::string& guid, WebDatabase* db);
 
   // Adds a full server credit card to the web database.
   WebDatabase::State AddFullServerCreditCard(const CreditCard& credit_card,
@@ -185,6 +184,8 @@ class AutofillWebDataBackendImpl
 
   WebDatabase::State UpdateServerAddressMetadata(const AutofillProfile& profile,
                                                  WebDatabase* db);
+
+  WebDatabase::State AddVPA(const std::string& vpa_id, WebDatabase* db);
 
   // Returns the PaymentsCustomerData from the database.
   std::unique_ptr<WDTypedResult> GetPaymentsCustomerData(WebDatabase* db);

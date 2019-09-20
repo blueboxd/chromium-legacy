@@ -56,6 +56,10 @@ class SupervisedUserNavigationObserver
   // SupervisedUserServiceObserver implementation.
   void OnURLFilterChanged() override;
 
+  // Called when interstitial error page is no longer being shown in the main
+  // frame.
+  void OnInterstitialDone();
+
  private:
   friend class content::WebContentsUserData<SupervisedUserNavigationObserver>;
 
@@ -82,8 +86,6 @@ class SupervisedUserNavigationObserver
       const base::Callback<
           void(SupervisedUserNavigationThrottle::CallbackActions)>& callback);
 
-  void OnInterstitialDone();
-
   // supervised_user::mojom::SupervisedUserCommands implementation. Should not
   // be called when an interstitial is no longer showing. This should be
   // enforced by the mojo caller.
@@ -99,8 +101,6 @@ class SupervisedUserNavigationObserver
 
   // Navigation ID of the navigation that triggered the last interstitial.
   int64_t interstitial_navigation_id_;
-
-  bool is_showing_interstitial_ = false;
 
   std::vector<std::unique_ptr<const sessions::SerializedNavigationEntry>>
       blocked_navigations_;

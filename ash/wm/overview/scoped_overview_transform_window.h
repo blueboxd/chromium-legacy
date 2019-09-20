@@ -110,10 +110,6 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   // OverviewItem::RestoreWindow() for details why we need this.
   void RestoreWindow(bool reset_transform);
 
-  // Informs the ScopedOverviewTransformWindow that the window being watched was
-  // destroyed. This resets the internal window pointer.
-  void OnWindowDestroyed();
-
   // Prepares for overview mode by doing any necessary actions before entering.
   void PrepareForOverview();
 

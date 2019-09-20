@@ -108,13 +108,6 @@ crbug.com/685232 [ win amd d3d11 passthrough ] conformance/textures/misc/copytex
 crbug.com/772037 [ win7 debug amd d3d11 passthrough ] conformance/textures/misc/texture-sub-image-cube-maps.html [ RetryOnFailure ]
 crbug.com/772037 [ win7 release amd d3d11 passthrough ] conformance/extensions/oes-texture-half-float.html [ RetryOnFailure ]
 
-crbug.com/1002269 [ win10 amd opengl passthrough ] conformance/extensions/oes-texture-float-with-video.html [ Failure ]
-crbug.com/1002269 [ win10 amd opengl passthrough ] conformance/extensions/oes-texture-half-float-with-video.html [ Failure ]
-crbug.com/1002269 [ win10 amd opengl passthrough ] conformance/textures/misc/tex-input-validation.html [ Failure ]
-crbug.com/1002269 [ win10 amd opengl passthrough ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
-crbug.com/1002269 [ win10 amd opengl passthrough ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
-crbug.com/1002269 [ win10 amd opengl passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
-
 # Win / NVIDIA / Passthrough command decoder / D3D11
 crbug.com/751849 [ win7 debug nvidia d3d11 passthrough ] conformance/extensions/oes-texture-half-float-with-video.html [ RetryOnFailure ]
 # crbug.com/737016 [ win nvidia d3d11 passthrough ] conformance/programs/program-test.html [ RetryOnFailure ]
@@ -213,21 +206,6 @@ crbug.com/963205 [ win nvidia opengl passthrough ] conformance/extensions/webgl-
 
 # Mark ANGLE's OpenGL as flaky on Windows Nvidia
 crbug.com/582083 [ win nvidia opengl ] conformance/* [ RetryOnFailure ]
-
-# Win / OpenGL / AMD failures
-crbug.com/649824 [ win amd opengl ] conformance/attribs/gl-bindAttribLocation-aliasing.html [ Skip ]
-crbug.com/angleproject/1007 [ win amd opengl ] conformance/glsl/misc/shader-struct-scope.html [ Skip ]
-crbug.com/angleproject/1506 [ win amd opengl ] conformance/rendering/clipping-wide-points.html [ Failure ]
-
-# AMD RX 550 Failures
-crbug.com/950123 [ win amd-0x699f opengl ] conformance/glsl/bugs/gl-fragcoord-multisampling-bug.html [ Skip ]
-crbug.com/950123 [ win amd-0x699f opengl ] conformance/glsl/misc/fragcolor-fragdata-invariant.html [ Skip ]
-crbug.com/950123 [ win amd-0x699f opengl ] conformance/glsl/samplers/glsl-function-texture2dprojlod.html [ Skip ]
-crbug.com/950123 [ win amd-0x699f opengl ] conformance/rendering/line-rendering-quality.html [ Skip ]
-crbug.com/952887 [ win amd-0x699f opengl passthrough ] conformance/rendering/multisample-corruption.html [ Skip ]
-
-# Mark ANGLE's OpenGL as flaky on Windows Amd
-crbug.com/582083 [ win amd opengl ] conformance/* [ RetryOnFailure ]
 
 # D3D9 / Passthrough command decoder
 crbug.com/angleproject/2192 [ win d3d9 passthrough ] conformance/textures/canvas/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]

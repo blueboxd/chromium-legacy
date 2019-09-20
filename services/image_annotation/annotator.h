@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/data_decoder/public/mojom/json_parser.mojom.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
@@ -83,18 +84,20 @@ class Annotator : public mojom::Annotator {
   // mojom::Annotator:
   void AnnotateImage(const std::string& source_id,
                      const std::string& description_language_tag,
-                     mojom::ImageProcessorPtr image,
+                     mojo::PendingRemote<mojom::ImageProcessor> image,
                      AnnotateImageCallback callback) override;
 
  private:
   // The relevant info for a request from a client feature for a single image.
   struct ClientRequestInfo {
-    ClientRequestInfo(mojom::ImageProcessorPtr image_processor,
-                      AnnotateImageCallback callback);
+    ClientRequestInfo(
+        mojo::PendingRemote<mojom::ImageProcessor> image_processor,
+        AnnotateImageCallback callback);
     ~ClientRequestInfo();
 
-    mojom::ImageProcessorPtr image_processor;  // The interface to use for local
-                                               // processing for this client.
+    mojo::Remote<mojom::ImageProcessor>
+        image_processor;  // The interface to use for local
+                          // processing for this client.
 
     AnnotateImageCallback callback;  // The callback to execute when
                                      // processing has finished.
@@ -209,7 +212,7 @@ class Annotator : public mojom::Annotator {
   // Note that separate local processing will be scheduled for two requests that
   // share a source ID but differ in language. This is suboptimal; in future we
   // could share local processing among all relevant requests.
-  std::map<RequestKey, mojom::ImageProcessorPtr*> local_processors_;
+  std::map<RequestKey, mojo::Remote<mojom::ImageProcessor>*> local_processors_;
 
   // A list of currently-ongoing HTTP requests to the image annotation server.
   UrlLoaderList ongoing_server_requests_;

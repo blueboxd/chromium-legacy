@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import unittest
-from xml_validations import UkmXmlValidation
+import xml_validations
 from xml.dom import minidom
 
 
@@ -22,7 +22,7 @@ class UkmXmlValidationTest(unittest.TestCase):
           </event>
         </ukm-configuration>
         """.strip())
-    validator = UkmXmlValidation(ukm_config)
+    validator = xml_validations.UkmXmlValidation(ukm_config)
     success, errors = validator.checkEventsHaveOwners()
     self.assertTrue(success)
     self.assertListEqual([], errors)
@@ -46,7 +46,7 @@ class UkmXmlValidationTest(unittest.TestCase):
         "address.",
     ]
 
-    validator = UkmXmlValidation(ukm_config)
+    validator = xml_validations.UkmXmlValidation(ukm_config)
     success, errors = validator.checkEventsHaveOwners()
     self.assertFalse(success)
     self.assertListEqual(expected_errors, errors)
@@ -74,11 +74,107 @@ class UkmXmlValidationTest(unittest.TestCase):
         "Event2:Metric4.",
     ]
 
-    validator = UkmXmlValidation(ukm_config)
+    validator = xml_validations.UkmXmlValidation(ukm_config)
     success, errors, warnings = validator.checkMetricTypeIsSpecified()
     self.assertFalse(success)
     self.assertListEqual(expected_errors, errors)
     self.assertListEqual(expected_warnings, warnings)
+
+  def testCheckLocalMetricIsAggregated(self):
+    bad_ukm_config = self.toUkmConfig("""
+        <ukm-configuration>
+          <event name="Event">
+            <metric name="M1" enum="Enum1"/>
+            <metric name="M2" enum="Enum2">
+              <aggregation>
+                <history>
+                  <index fields="metrics.M1,metrics.M4,profile.country"/>
+                  <statistics>
+                    <enumeration/>
+                  </statistics>
+                </history>
+              </aggregation>
+            </metric>
+            <metric name="M3" unit="ms">
+              <aggregation>
+                <history>
+                  <index fields="metrics.M1,metrics.M2,metrics.M4"/>
+                  <statistics>
+                    <enumeration/>
+                  </statistics>
+                </history>
+              </aggregation>
+            </metric>
+            <metric name="M4"/>
+          </event>
+        </ukm-configuration>
+        """.strip())
+    expected_errors = [
+      xml_validations.INVALID_LOCAL_METRIC_FIELD_ERROR %(
+        {'event':'Event', 'metric':'M2', 'invalid_metrics':'M1, M4'}),
+      xml_validations.INVALID_LOCAL_METRIC_FIELD_ERROR %(
+        # M3 is not included in invalid_metrics because it's configured to
+        # aggregate as an enumeration.
+        {'event':'Event', 'metric':'M3', 'invalid_metrics':'M1, M4'}),
+    ]
+    validator = xml_validations.UkmXmlValidation(bad_ukm_config)
+    success, errors = validator.checkLocalMetricIsAggregated()
+    self.assertFalse(success)
+    self.assertListEqual(expected_errors, errors)
+
+    # Add aggregation definitions to M1 and M4 to make it valid. Note the
+    # export="False" that prevents M1 and M4 from being aggregated, and only
+    # useful as an index field.
+    good_ukm_config = self.toUkmConfig("""
+        <ukm-configuration>
+          <event name="Event">
+            <metric name="M1" enum="Enum1">
+              <aggregation>
+                <history>
+                  <statistics export="False">
+                    <enumeration/>
+                  </statistics>
+                </history>
+              </aggregation>
+            </metric>
+            <metric name="M2" enum="Enum2">
+              <aggregation>
+                <history>
+                  <index fields="metrics.M1,metrics.M4,profile.country"/>
+                  <statistics>
+                    <enumeration/>
+                  </statistics>
+                </history>
+              </aggregation>
+            </metric>
+            <metric name="M3" unit="ms">
+              <aggregation>
+                <history>
+                  <index fields="metrics.M1,metrics.M2,metrics.M4"/>
+                  <statistics>
+                    <enumeration/>
+                  </statistics>
+                </history>
+              </aggregation>
+            </metric>
+            <metric name="M4">
+              <aggregation>
+                <history>
+                  <statistics export="False">
+                    <enumeration/>
+                  </statistics>
+                </history>
+              </aggregation>
+            </metric>
+          </event>
+        </ukm-configuration>
+        """.strip())
+
+    validator = xml_validations.UkmXmlValidation(good_ukm_config)
+    success, errors = validator.checkLocalMetricIsAggregated()
+    self.assertTrue(success)
+    self.assertListEqual([], errors)
+
 
 if __name__ == '__main__':
   unittest.main()

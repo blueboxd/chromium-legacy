@@ -56,6 +56,7 @@ DisallowedFeatures AdjustDisallowedFeatures(
     adjusted_disallowed_features.oes_texture_float_linear = true;
     adjusted_disallowed_features.ext_color_buffer_half_float = true;
     adjusted_disallowed_features.oes_texture_half_float_linear = true;
+    adjusted_disallowed_features.ext_texture_filter_anisotropic = true;
     adjusted_disallowed_features.ext_float_blend = true;
   }
   return adjusted_disallowed_features;

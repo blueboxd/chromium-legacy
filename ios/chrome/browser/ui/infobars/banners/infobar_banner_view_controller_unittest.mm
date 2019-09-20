@@ -29,6 +29,7 @@ class InfobarBannerViewControllerTest : public PlatformTest {
       : banner_delegate_(OCMProtocolMock(@protocol(InfobarBannerDelegate))),
         view_controller_([[InfobarBannerViewController alloc]
             initWithDelegate:banner_delegate_
+               presentsModal:YES
                         type:InfobarType::kInfobarTypeConfirm]) {}
   id banner_delegate_;
   InfobarBannerViewController* view_controller_;

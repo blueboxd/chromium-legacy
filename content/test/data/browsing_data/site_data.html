@@ -33,7 +33,11 @@
   }
 
   function hasLocalStorage() {
-    domAutomationController.send(localStorage.getItem('foo') == 'bar');
+    try {
+      domAutomationController.send(localStorage.getItem('foo') == 'bar');
+    } catch (e) {
+      failure_();
+    }
   }
 
   function setSessionStorage() {
@@ -42,7 +46,11 @@
   }
 
   function hasSessionStorage() {
-    domAutomationController.send(sessionStorage.getItem('foo') == 'bar');
+    try {
+      domAutomationController.send(sessionStorage.getItem('foo') == 'bar');
+    } catch (e) {
+      failure_();
+    }
   }
 
   function setServiceWorker() {
@@ -54,7 +62,7 @@
   function hasServiceWorker() {
     navigator.serviceWorker.getRegistrations().then(function (registrations) {
       domAutomationController.send(registrations.length > 0);
-    });
+    }).catch(failure_);
   }
 
   function setCacheStorage() {
@@ -68,7 +76,7 @@
       cache.keys().then(function (keys) {
         domAutomationController.send(keys.length > 0);
       });
-    });
+    }).catch(failure_);
   }
 
   function openFile_(name, options, callback, error) {
@@ -94,7 +102,11 @@
   }
 
   function hasWebSql() {
-    var db = openDatabase('testdb', '1.0', 'a test db', 1024);
+    try {
+      var db = openDatabase('testdb', '1.0', 'a test db', 1024);
+    } catch (e) {
+      return failure_();
+    }
     var num_results;
     db.transaction(function (tx) {
       tx.executeSql('CREATE TABLE IF NOT EXISTS foo (text)');

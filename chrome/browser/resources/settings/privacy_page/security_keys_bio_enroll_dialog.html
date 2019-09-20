@@ -99,12 +99,13 @@
       </div>
 
       <div slot="button-container">
-        <cr-button id="cancelButton" class="cancel-button"
-            on-click="cancel_" hidden="[[!cancelButtonVisible_]]">
+        <cr-button id="cancelButton" class="cancel-button" on-click="cancel_"
+            hidden="[[!cancelButtonVisible_]]"
+            disabled="[[cancelButtonDisabled_]]">
           $i18n{cancel}
         </cr-button>
-        <cr-button id="okButton" class="action-button"
-            on-click="okButtonClick_" hidden="[[!okButtonVisible_]]">
+        <cr-button id="okButton" class="action-button" on-click="okButtonClick_"
+            hidden="[[!okButtonVisible_]]" disabled="[[okButtonDisabled_]]">
           $i18n{ok}
         </cr-button>
         <cr-button id="doneButton" class="action-button"

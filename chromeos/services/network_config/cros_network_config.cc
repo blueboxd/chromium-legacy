@@ -1239,6 +1239,11 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
         result->vpn = std::move(vpn);
         break;
       }
+      mojom::ManagedStringPtr managed_type =
+          GetManagedString(vpn_dict, ::onc::vpn::kType);
+      CHECK(managed_type);
+      vpn->type = OncVpnTypeToMojo(managed_type->active_value);
+
       vpn->auto_connect = GetManagedBoolean(vpn_dict, ::onc::vpn::kAutoConnect);
       vpn->host = GetManagedString(vpn_dict, ::onc::vpn::kHost);
       vpn->ip_sec = GetManagedIPSecProperties(vpn_dict, ::onc::vpn::kIPsec);
@@ -1246,24 +1251,33 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       vpn->open_vpn =
           GetManagedOpenVPNProperties(vpn_dict, ::onc::vpn::kOpenVPN);
 
-      const base::Value* third_party_dict =
-          vpn_dict->FindKey(::onc::vpn::kThirdPartyVpn);
-      if (third_party_dict) {
-        vpn->provider_id = GetManagedString(
-            third_party_dict, ::onc::third_party_vpn::kExtensionID);
-        base::Optional<std::string> provider_name =
-            GetString(third_party_dict, ::onc::third_party_vpn::kProviderName);
-        if (provider_name)
-          vpn->provider_name = *provider_name;
-        if (vpn->provider_id && vpn->provider_name.empty()) {
-          vpn->provider_name =
-              GetVpnProviderName(vpn_providers, vpn->provider_id->active_value);
+      if (vpn->type == mojom::VpnType::kExtension ||
+          vpn->type == mojom::VpnType::kArc) {
+        const base::Value* third_party_dict =
+            vpn_dict->FindKey(::onc::vpn::kThirdPartyVpn);
+        if (third_party_dict) {
+          vpn->provider_id = GetManagedString(
+              third_party_dict, ::onc::third_party_vpn::kExtensionID);
+          base::Optional<std::string> provider_name = GetString(
+              third_party_dict, ::onc::third_party_vpn::kProviderName);
+          if (provider_name)
+            vpn->provider_name = *provider_name;
+          if (vpn->provider_id && vpn->provider_name.empty()) {
+            vpn->provider_name = GetVpnProviderName(
+                vpn_providers, vpn->provider_id->active_value);
+          }
+        } else {
+          // Lookup VPN provider details from the NetworkState.
+          const NetworkState::VpnProviderInfo* vpn_provider =
+              network_state->vpn_provider();
+          if (vpn_provider) {
+            vpn->provider_id = mojom::ManagedString::New();
+            vpn->provider_id->active_value = vpn_provider->id;
+            vpn->provider_name =
+                GetVpnProviderName(vpn_providers, vpn_provider->id);
+          }
         }
       }
-      mojom::ManagedStringPtr managed_type =
-          GetManagedString(vpn_dict, ::onc::vpn::kType);
-      CHECK(managed_type);
-      vpn->type = OncVpnTypeToMojo(managed_type->active_value);
       result->vpn = std::move(vpn);
       break;
     }

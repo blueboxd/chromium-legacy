@@ -10,23 +10,19 @@ import org.chromium.components.signin.metrics.SignoutDelete;
 import org.chromium.components.signin.metrics.SignoutReason;
 
 /**
- * IdentityMutator is the write interface of IdentityManager, see identity_manager.h and
- * primary_account_mutator.h for more information.
+ * IdentityMutator is the write interface of IdentityManager, see identity_mutator.h for more
+ * information.
  */
 public class IdentityMutator {
     private static final String TAG = "IdentityMutator";
 
-    // Pointer to native PrimaryAccountMutator, not final because of destroy().
-    private long mNativePrimaryAccountMutator;
-    // Pointer to native IdentityManager, not final because of destroy().
-    private long mNativeIdentityManager;
+    // Pointer to native IdentityMutator, not final because of destroy().
+    private long mNativeIdentityMutator;
 
     @CalledByNative
-    private IdentityMutator(long nativePrimaryAccountMutator, long nativeIdentityManager) {
-        assert nativePrimaryAccountMutator != 0;
-        assert nativeIdentityManager != 0;
-        mNativePrimaryAccountMutator = nativePrimaryAccountMutator;
-        mNativeIdentityManager = nativeIdentityManager;
+    private IdentityMutator(long nativeIdentityMutator) {
+        assert nativeIdentityMutator != 0;
+        mNativeIdentityMutator = nativeIdentityMutator;
     }
 
     /**
@@ -34,8 +30,7 @@ public class IdentityMutator {
      */
     @CalledByNative
     private void destroy() {
-        mNativeIdentityManager = 0;
-        mNativePrimaryAccountMutator = 0;
+        mNativeIdentityMutator = 0;
     }
 
     /**
@@ -47,7 +42,7 @@ public class IdentityMutator {
      *   - there is not already a primary account set.
      */
     public boolean setPrimaryAccount(CoreAccountId accountId) {
-        return IdentityMutatorJni.get().setPrimaryAccount(mNativePrimaryAccountMutator, accountId);
+        return IdentityMutatorJni.get().setPrimaryAccount(mNativeIdentityMutator, accountId);
     }
 
     /**
@@ -57,23 +52,25 @@ public class IdentityMutator {
     public boolean clearPrimaryAccount(@ClearAccountsAction int action,
             @SignoutReason int sourceMetric, @SignoutDelete int deleteMetric) {
         return IdentityMutatorJni.get().clearPrimaryAccount(
-                mNativePrimaryAccountMutator, action, sourceMetric, deleteMetric);
+                mNativeIdentityMutator, action, sourceMetric, deleteMetric);
     }
 
     /**
      * Reloads the accounts in the token service from the system accounts. This API calls
-     * ProfileOAuth2TokenServiceDelegate::ReloadAccountsFromSystem.
+     * ProfileOAuth2TokenServiceDelegate::ReloadAllAccountsFromSystemWithPrimaryAccount.
      */
-    public void reloadAccountsFromSystem() {
-        IdentityMutatorJni.get().reloadAccountsFromSystem(mNativeIdentityManager);
+    public void reloadAllAccountsFromSystemWithPrimaryAccount(CoreAccountId accountId) {
+        IdentityMutatorJni.get().reloadAllAccountsFromSystemWithPrimaryAccount(
+                mNativeIdentityMutator, accountId);
     }
 
     @NativeMethods
     interface Natives {
-        public boolean setPrimaryAccount(long nativePrimaryAccountMutator, CoreAccountId accountId);
-        public boolean clearPrimaryAccount(long nativePrimaryAccountMutator,
+        public boolean setPrimaryAccount(long nativeJniIdentityMutator, CoreAccountId accountId);
+        public boolean clearPrimaryAccount(long nativeJniIdentityMutator,
                 @ClearAccountsAction int action, @SignoutReason int sourceMetric,
                 @SignoutDelete int deleteMetric);
-        public void reloadAccountsFromSystem(long nativeIdentityManager);
+        public void reloadAllAccountsFromSystemWithPrimaryAccount(
+                long nativeJniIdentityMutator, CoreAccountId accountId);
     }
 }

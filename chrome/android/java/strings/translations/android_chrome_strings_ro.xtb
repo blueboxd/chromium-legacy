@@ -174,6 +174,7 @@
 <translation id="2154484045852737596">Editează cardul</translation>
 <translation id="2154710561487035718">Copiați adresa URL</translation>
 <translation id="2156074688469523661">Site-uri rămase (<ph name="NUMBER_OF_SITES" />)</translation>
+<translation id="2157851137955077194">Ca să trimiți ceva de pe telefon pe alt dispozitiv, activează sincronizarea în setările Chrome pe ambele dispozitive</translation>
 <translation id="2170088579611075216">Permite și intră în RV</translation>
 <translation id="218608176142494674">Trimitere</translation>
 <translation id="2227444325776770048">Continuă ca <ph name="USER_FULL_NAME" /></translation>
@@ -602,7 +603,6 @@ Asigură-te că site-ul este de încredere înainte să intri în RV.</translati
 <translation id="545042621069398927">Se accelerează descărcarea.</translation>
 <translation id="5456381639095306749">Descarcă pagina</translation>
 <translation id="5475862044948910901">Pornești sesiunea de realitate augmentată?</translation>
-<translation id="5481942164684849270"><ph name="APP_NAME" /> adăugată în aplicațiile mele</translation>
 <translation id="548278423535722844">Deschide în aplicația Maps</translation>
 <translation id="5487521232677179737">Șterge datele</translation>
 <translation id="5494752089476963479">Blochează anunțurile pe site-urile care afișează anunțuri deranjante sau înșelătoare</translation>
@@ -1009,7 +1009,6 @@ Acest site NU primește acces la cameră. Imaginile camerei sunt vizibile doar p
 <translation id="8364299278605033898">Vezi site-urile populare</translation>
 <translation id="8368027906805972958">Dispozitiv necunoscut sau neacceptat (<ph name="DEVICE_ID" />)</translation>
 <translation id="8372893542064058268">Permite sincronizarea în fundal pentru un anumit site.</translation>
-<translation id="8374821112118309944">Trebuie să actualizați TalkBack la o versiune mai nouă.</translation>
 <translation id="8378714024927312812">Gestionat de organizația ta</translation>
 <translation id="8380167699614421159">Acest site afișează anunțuri deranjante sau înșelătoare</translation>
 <translation id="8393700583063109961">Trimite un mesaj</translation>
@@ -1073,6 +1072,7 @@ Acest site NU primește acces la cameră. Imaginile camerei sunt vizibile doar p
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, filă</translation>
 <translation id="885701979325669005">Stocare</translation>
+<translation id="889338405075704026">Accesează setările Chrome</translation>
 <translation id="8901170036886848654">Niciun marcaj găsit</translation>
 <translation id="8909135823018751308">Trimite…</translation>
 <translation id="8912362522468806198">Contul Google</translation>
@@ -1091,6 +1091,7 @@ Acest site NU primește acces la cameră. Imaginile camerei sunt vizibile doar p
 <translation id="8993760627012879038">Deschide o filă nouă în modul incognito</translation>
 <translation id="8998729206196772491">Te conectezi cu un cont gestionat de <ph name="MANAGED_DOMAIN" /> și acorzi administratorului acestuia controlul asupra datelor Chrome. Datele vor fi asociate definitiv acestui cont. Dacă te deconectezi de la Chrome, datele se vor șterge de pe acest dispozitiv, dar vor rămâne stocate în Contul Google.</translation>
 <translation id="9019902583201351841">Gestionat de părinții tăi</translation>
+<translation id="9028914725102941583">Activează sincronizarea ca să trimiți de pe un dispozitiv pe altul</translation>
 <translation id="9029323097866369874">Permiți ca <ph name="DOMAIN" /> să intre în VR?</translation>
 <translation id="9040142327097499898">Notificările sunt permise. Locația este dezactivată pentru acest dispozitiv.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{Un videoclip}few{# videoclipuri}other{# de videoclipuri}}</translation>

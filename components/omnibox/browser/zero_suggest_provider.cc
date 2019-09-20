@@ -16,6 +16,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -118,9 +119,9 @@ void LogOmniboxRemoteNoUrlEligibilityOnNTP(
   auto* provider = service ? service->GetDefaultSearchProvider() : nullptr;
   auto engine = provider ? provider->GetEngineType(service->search_terms_data())
                          : SEARCH_ENGINE_UNKNOWN;
-  auto variant = OmniboxFieldTrial::GetZeroSuggestVariant(page_class);
+  const auto variants = OmniboxFieldTrial::GetZeroSuggestVariants(page_class);
 
-  if (variant != ZeroSuggestProvider::kRemoteNoUrlVariant) {
+  if (!base::Contains(variants, ZeroSuggestProvider::kRemoteNoUrlVariant)) {
     value =
         ZeroSuggestEligibilityForRemoteNoURL::kIneligibleUserNotParticipating;
   } else if (client->IsOffTheRecord()) {
@@ -305,8 +306,9 @@ void ZeroSuggestProvider::Stop(bool clear_cached_results,
 }
 
 void ZeroSuggestProvider::DeleteMatch(const AutocompleteMatch& match) {
-  if (OmniboxFieldTrial::GetZeroSuggestVariant(current_page_classification_) ==
-      kRemoteNoUrlVariant) {
+  if (base::Contains(OmniboxFieldTrial::GetZeroSuggestVariants(
+                         current_page_classification_),
+                     kRemoteNoUrlVariant)) {
     // Remove the deleted match from the cache, so it is not shown to the user
     // again. Since we cannot remove just one result, blow away the cache.
     client()->GetPrefs()->SetString(omnibox::kZeroSuggestCachedResults,
@@ -685,10 +687,10 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
       kOmniboxZeroSuggestEligibleHistogramName, static_cast<int>(eligibility),
       static_cast<int>(ZeroSuggestEligibility::ELIGIBLE_MAX_VALUE));
 
-  std::string field_trial_variant =
-      OmniboxFieldTrial::GetZeroSuggestVariant(current_page_classification_);
+  const auto field_trial_variants =
+      OmniboxFieldTrial::GetZeroSuggestVariants(current_page_classification_);
 
-  if (field_trial_variant == kNoneVariant ||
+  if (base::Contains(field_trial_variants, kNoneVariant) ||
       base::FeatureList::IsEnabled(
           omnibox::kOmniboxPopupShortcutIconsInZeroState)) {
     return NONE;
@@ -699,7 +701,7 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
   if (current_page_classification_ == OmniboxEventProto::CHROMEOS_APP_LIST)
     return REMOTE_NO_URL;
 
-  if (field_trial_variant == kRemoteNoUrlVariant) {
+  if (base::Contains(field_trial_variants, kRemoteNoUrlVariant)) {
 #if defined(OS_ANDROID) || defined(OS_IOS)
     // TODO(tommycli): It's odd that this doesn't apply to kRemoteSendUrlVariant
     // as well. Most likely this fallback concept should be replaced by
@@ -712,10 +714,11 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
     return REMOTE_NO_URL;
   }
 
-  if (field_trial_variant == kRemoteSendUrlVariant && can_send_current_url)
+  if (base::Contains(field_trial_variants, kRemoteSendUrlVariant) &&
+      can_send_current_url)
     return REMOTE_SEND_URL;
 
-  if (field_trial_variant == kMostVisitedVariant)
+  if (base::Contains(field_trial_variants, kMostVisitedVariant))
     return MOST_VISITED;
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
@@ -723,7 +726,7 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
   //  - There is no configured variant for |page_classification| AND
   //  - The user is not on the search results page of the default search
   //    provider.
-  if (field_trial_variant.empty() &&
+  if (field_trial_variants.empty() &&
       current_page_classification_ !=
           OmniboxEventProto::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT &&
       current_page_classification_ !=

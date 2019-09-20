@@ -68,7 +68,9 @@ public class BottomSheetControllerTest {
                                    .inflate(org.chromium.chrome.R.layout.bottom_sheet, coordinator)
                                    .findViewById(org.chromium.chrome.R.id.bottom_sheet)
                                    .findViewById(org.chromium.chrome.R.id.bottom_sheet);
-            mBottomSheet.init(coordinator, activity);
+            mBottomSheet.init(coordinator, activity.getActivityTabProvider(),
+                    activity.getFullscreenManager(), activity.getWindow(),
+                    activity.getWindowAndroid().getKeyboardDelegate());
 
             ScrimView scrim = new ScrimView(mActivityTestRule.getActivity(), null, coordinator);
 

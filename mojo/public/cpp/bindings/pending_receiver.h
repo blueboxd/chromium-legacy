@@ -63,7 +63,7 @@ class PendingReceiver {
 
   // Temporary implicit conversion operator to InterfaceRequest<Interface> to
   // aid in converting usage to PendingReceiver.
-  operator InterfaceRequest<Interface>() {
+  operator InterfaceRequest<Interface>() && {
     InterfaceRequest<Interface> request(PassPipe());
     request.set_connection_group(PassConnectionGroupRef());
     return request;

@@ -463,8 +463,9 @@ void OAuth2TokenServiceDelegateAndroid::LoadCredentials(
   }
 }
 
-void OAuth2TokenServiceDelegateAndroid::ReloadAccountsFromSystem(
-    const CoreAccountId& primary_account_id) {
+void OAuth2TokenServiceDelegateAndroid::
+    ReloadAllAccountsFromSystemWithPrimaryAccount(
+        const CoreAccountId& primary_account_id) {
   // UpdateAccountList() effectively synchronizes the accounts in the Token
   // Service with those present at the system level.
   UpdateAccountList(primary_account_id, GetValidAccounts(),

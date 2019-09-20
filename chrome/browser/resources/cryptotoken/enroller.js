@@ -352,6 +352,18 @@ var ConveyancePreference = {
 };
 
 /**
+ * WebAuthnAttestationConveyancePreference is the
+ * AttestationConveyancePreference enum from WebAuthn.
+ * @enum{string}
+ */
+const WebAuthnAttestationConveyancePreference = {
+  NONE: 'none',
+  INDIRECT: 'indirect',
+  DIRECT: 'direct',
+  ENTERPRISE: 'enterprise',
+};
+
+/**
  * conveyancePreference returns the attestation certificate replacement mode.
  *
  * @param {EnrollChallenge} enrollChallenge
@@ -397,12 +409,14 @@ function handleU2fEnrollRequest(messageSender, request, sendResponse) {
     if (conveyancePreference(enrollChallenge) == ConveyancePreference.NONE) {
       isDirect = false;
     } else if (chrome.cryptotokenPrivate != null) {
-      isDirect = await(new Promise((resolve, reject) => {
+      isDirect = await (new Promise((resolve, reject) => {
         chrome.cryptotokenPrivate.canAppIdGetAttestation(
-            {'appId': appId,
-             'tabId': messageSender.tab.id,
-             'origin': sender.origin,
-            }, resolve);
+            {
+              'appId': appId,
+              'tabId': messageSender.tab.id,
+              'origin': sender.origin,
+            },
+            resolve);
       }));
     }
 
@@ -821,11 +835,11 @@ Enroller.prototype.sendEnrollRequestToHelper_ = function() {
     let v2Challenge;
     for (let index = 0; index < self.enrollChallenges_.length; index++) {
       if (self.enrollChallenges_[index]['version'] === 'U2F_V2') {
-        v2Challenge = self.enrollChallenges_[index]['challenge'];
+        v2Challenge = self.enrollChallenges_[index];
       }
     }
 
-    if (v2Challenge === undefined) {
+    if (v2Challenge['challenge'] === undefined) {
       console.warn('Did not find U2F_V2 challenge');
       this.notifyError_({errorCode: ErrorCodes.BAD_REQUEST});
       return;
@@ -844,23 +858,39 @@ const googleCorpAppId =
  * @private
  */
 Enroller.prototype.doRegisterWebAuthn_ = function(appId, challenge, request) {
+  const encodedChallenge = challenge['challenge'];
+
   if (appId == googleCorpAppId) {
-    this.doRegisterWebAuthnContinue_(appId, challenge, request, true);
+    this.doRegisterWebAuthnContinue_(
+        appId, encodedChallenge, request,
+        WebAuthnAttestationConveyancePreference.ENTERPRISE);
     return;
   }
 
+  const attestationPreference =
+      conveyancePreference(challenge) == ConveyancePreference.DIRECT ?
+      WebAuthnAttestationConveyancePreference.DIRECT :
+      WebAuthnAttestationConveyancePreference.NONE;
+
   if (!chrome.cryptotokenPrivate) {
-    this.doRegisterWebAuthnContinue_(appId, challenge, request, false);
+    this.doRegisterWebAuthnContinue_(
+        appId, encodedChallenge, request, attestationPreference);
     return;
   }
 
   chrome.cryptotokenPrivate.isAppIdHashInEnterpriseContext(
       decodeWebSafeBase64ToArray(B64_encode(sha256HashOfString(appId))),
-      this.doRegisterWebAuthnContinue_.bind(this, appId, challenge, request));
+      (enterprise_context) => {
+        this.doRegisterWebAuthnContinue_(
+            appId, encodedChallenge, request,
+            enterprise_context ?
+                WebAuthnAttestationConveyancePreference.ENTERPRISE :
+                attestationPreference);
+      });
 };
 
 Enroller.prototype.doRegisterWebAuthnContinue_ = function(
-    appId, challenge, request, useIndividualAttestation) {
+    appId, challenge, request, attestationMode) {
   // Set a random ID.
   const randomId = new Uint8Array(new ArrayBuffer(16));
   crypto.getRandomValues(randomId);
@@ -895,7 +925,6 @@ Enroller.prototype.doRegisterWebAuthnContinue_ = function(
   // Request enterprise attestation for the gstatic corp App ID and domains
   // whitelisted via enterprise policy. Otherwise request 'direct' attestation
   // (which might later get stripped).
-  const attestationMode = useIndividualAttestation ? 'enterprise' : 'direct';
   const options = {
     publicKey: {
       rp: {

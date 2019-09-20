@@ -3919,6 +3919,12 @@
     <message name="IDS_SETTINGS_ACCOUNT_MANAGER_PRIMARY_ACCOUNT_TOOLTIP" desc="Tooltip for the primary account in accounts list in Settings describing how to sign out.">
       To sign out of the primary account on this device, click the time on your screen. In the menu that appears, click "Sign out".
     </message>
+    <message name="IDS_SETTINGS_ACCOUNT_MANAGER_SECONDARY_ACCOUNTS_DISABLED_TEXT" desc="Text for 'secondary accounts disabled' message in Settings page.">
+      Your administrator has disabled the addition of more Google Accounts
+    </message>
+    <message name="IDS_SETTINGS_ACCOUNT_MANAGER_SECONDARY_ACCOUNTS_DISABLED_CHILD_TEXT" desc="Text for 'secondary accounts disabled' message for child accounts in Settings page.">
+      Addition of more Google Accounts is disabled
+    </message>
     <message name="IDS_SETTINGS_ACCOUNT_MANAGER_SIGNED_OUT_ACCOUNT_PLACEHOLDER" desc="Placeholder text for the full name of a signed out account in Account Manager.">
       Sign in again
     </message>

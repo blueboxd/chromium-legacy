@@ -40,6 +40,7 @@ public class MonochromeApplication extends ChromeApplication {
         boolean bindToCaller = false;
         boolean ignoreVisibilityForImportance = false;
         ChildProcessCreationParams.set(getPackageName(), true /* isExternalService */,
-                LibraryProcessType.PROCESS_CHILD, bindToCaller, ignoreVisibilityForImportance);
+                LibraryProcessType.PROCESS_CHILD, bindToCaller, ignoreVisibilityForImportance,
+                null /* privilegedServicesName */, null /* sandboxedServicesName */);
     }
 }

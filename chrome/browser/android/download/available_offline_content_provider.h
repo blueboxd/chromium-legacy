@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/common/available_offline_content.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 class Profile;
 
@@ -38,7 +39,8 @@ class AvailableOfflineContentProvider
 
   static void Create(
       Profile* profile,
-      chrome::mojom::AvailableOfflineContentProviderRequest request);
+      mojo::PendingReceiver<chrome::mojom::AvailableOfflineContentProvider>
+          receiver);
 
  private:
   void ListFinalize(

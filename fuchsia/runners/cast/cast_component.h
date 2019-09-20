@@ -36,9 +36,8 @@ class CastComponent : public WebComponent,
     fidl::InterfaceRequest<fuchsia::sys::ComponentController>
         controller_request;
     chromium::cast::ApplicationConfig app_config;
-    chromium::cast::UrlRequestRewriteRulesProviderPtr rewrite_rules_provider;
-    base::Optional<std::vector<fuchsia::web::UrlRequestRewriteRule>>
-        rewrite_rules;
+    fuchsia::web::AdditionalHeadersProviderPtr headers_provider;
+    base::Optional<std::vector<fuchsia::net::http::Header>> headers;
   };
 
   CastComponent(CastRunner* runner, CastComponentParams params);
@@ -52,9 +51,6 @@ class CastComponent : public WebComponent,
   void DestroyComponent(int termination_exit_code,
                         fuchsia::sys::TerminationReason reason) override;
 
-  void OnRewriteRulesReceived(
-      std::vector<fuchsia::web::UrlRequestRewriteRule> rewrite_rules);
-
   // fuchsia::web::NavigationEventListener implementation.
   // Triggers the injection of API channels into the page content.
   void OnNavigationStateChanged(
@@ -63,7 +59,6 @@ class CastComponent : public WebComponent,
 
   std::unique_ptr<cr_fuchsia::AgentManager> agent_manager_;
   chromium::cast::ApplicationConfig application_config_;
-  chromium::cast::UrlRequestRewriteRulesProviderPtr rewrite_rules_provider_;
 
   bool constructor_active_ = false;
   TouchInputPolicy touch_input_policy_;

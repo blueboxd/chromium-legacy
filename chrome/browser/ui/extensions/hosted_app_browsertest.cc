@@ -47,6 +47,7 @@
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_menu_model.h"
+#include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
@@ -482,6 +483,12 @@ class HostedAppTest : public extensions::ExtensionBrowserTest,
     auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile());
     CHECK(provider);
     return provider->registrar();
+  }
+
+  web_app::AppRegistryController& registry_controller() {
+    auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile());
+    CHECK(provider);
+    return provider->registry_controller();
   }
 
   Browser* app_browser_;
@@ -1256,7 +1263,8 @@ IN_PROC_BROWSER_TEST_P(SharedPWATest, CanInstallOverTabPwa) {
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
   web_app::AppId app_id = InstallPwaForCurrentUrl();
   // Change launch container to open in tab.
-  registrar().SetAppLaunchContainer(app_id, web_app::LaunchContainer::kTab);
+  registry_controller().SetAppLaunchContainer(app_id,
+                                              web_app::LaunchContainer::kTab);
 
   Browser* new_browser =
       NavigateInNewWindowAndAwaitInstallabilityCheck(GetInstallableAppURL());
@@ -1273,7 +1281,8 @@ IN_PROC_BROWSER_TEST_P(SharedPWATest, CannotInstallOverWindowShortcutApp) {
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
   web_app::AppId app_id = InstallShortcutAppForCurrentUrl();
   // Change launch container to open in window.
-  registrar().SetAppLaunchContainer(app_id, web_app::LaunchContainer::kWindow);
+  registry_controller().SetAppLaunchContainer(
+      app_id, web_app::LaunchContainer::kWindow);
 
   Browser* new_browser =
       NavigateInNewWindowAndAwaitInstallabilityCheck(GetInstallableAppURL());

@@ -19,7 +19,6 @@ class Profile;
 
 namespace extensions {
 
-class BookmarkAppRegistrar;
 class CrxInstaller;
 class Extension;
 
@@ -50,8 +49,6 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
       const web_app::AppId& app_id,
       const WebApplicationInfo& web_app_info) const override;
   bool CanUserUninstallFromSync(const web_app::AppId& app_id) const override;
-  void SetSubsystems(web_app::AppRegistrar* registrar,
-                     web_app::WebAppUiManager* ui_manager) override;
 
   using CrxInstallerFactory =
       base::RepeatingCallback<scoped_refptr<CrxInstaller>(Profile*)>;
@@ -74,7 +71,6 @@ class BookmarkAppInstallFinalizer : public web_app::InstallFinalizer {
   web_app::ExternallyInstalledWebAppPrefs externally_installed_app_prefs_;
 
   Profile* profile_;
-  BookmarkAppRegistrar* registrar_ = nullptr;
 
   base::WeakPtrFactory<BookmarkAppInstallFinalizer> weak_ptr_factory_{this};
 

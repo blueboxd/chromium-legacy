@@ -37,6 +37,10 @@ namespace history {
 class HistoryService;
 }
 
+namespace web_app {
+class WebAppEngagementBrowserTest;
+}
+
 class GURL;
 class HostContentSettingsMap;
 class Profile;
@@ -185,9 +189,9 @@ class SiteEngagementService : public KeyedService,
   void AddPointsForTesting(const GURL& url, double points);
 
  private:
-  friend class BookmarkAppTest;
   friend class SiteEngagementObserver;
   friend class SiteEngagementServiceTest;
+  friend class web_app::WebAppEngagementBrowserTest;
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, CheckHistograms);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, CleanupEngagementScores);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest,

@@ -96,7 +96,7 @@ void ForwardingAudioStreamFactory::Core::CreateOutputStream(
     const std::string& device_id,
     const media::AudioParameters& params,
     const base::Optional<base::UnguessableToken>& processing_id,
-    media::mojom::AudioOutputStreamProviderClientPtr client) {
+    mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient> client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // |this| owns |outputs_|, so Unretained is safe.

@@ -42,6 +42,7 @@
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "media/media_buildflags.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ppapi/c/dev/ppp_network_state_dev.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppp.h"
@@ -120,12 +121,15 @@ PpapiThread::PpapiThread(base::RepeatingClosure quit_closure,
   // In single process, browser main loop set up the discardable memory
   // allocator.
   if (!command_line.HasSwitch(switches::kSingleProcess)) {
-    discardable_memory::mojom::DiscardableSharedMemoryManagerPtr manager_ptr;
-    ChildThread::Get()->GetConnector()->BindInterface(
-        mojom::kSystemServiceName, mojo::MakeRequest(&manager_ptr));
+    mojo::PendingRemote<
+        discardable_memory::mojom::DiscardableSharedMemoryManager>
+        manager_remote;
+    ChildThread::Get()->GetConnector()->Connect(
+        mojom::kSystemServiceName,
+        manager_remote.InitWithNewPipeAndPassReceiver());
     discardable_shared_memory_manager_ = std::make_unique<
         discardable_memory::ClientDiscardableSharedMemoryManager>(
-        std::move(manager_ptr), GetIOTaskRunner());
+        std::move(manager_remote), GetIOTaskRunner());
     base::DiscardableMemoryAllocator::SetInstance(
         discardable_shared_memory_manager_.get());
   }

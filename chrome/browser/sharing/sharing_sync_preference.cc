@@ -30,16 +30,25 @@ const char kRegistrationP256dh[] = "registration_p256dh";
 const char kRegistrationAuthSecret[] = "registration_auth_secret";
 const char kRegistrationTimestamp[] = "registration_timestamp";
 
+// Legacy value for enabled features on a device. These are stored in sync
+// preferences when the device is registered, and the values should never be
+// changed.
+constexpr int kClickToCall = 1 << 0;
+constexpr int kSharedClipboard = 1 << 1;
+
 }  // namespace
 
-SharingSyncPreference::Device::Device(std::string fcm_token,
-                                      std::string p256dh,
-                                      std::string auth_secret,
-                                      const int capabilities)
+using sync_pb::SharingSpecificFields;
+
+SharingSyncPreference::Device::Device(
+    std::string fcm_token,
+    std::string p256dh,
+    std::string auth_secret,
+    std::set<SharingSpecificFields::EnabledFeatures> enabled_features)
     : fcm_token(std::move(fcm_token)),
       p256dh(std::move(p256dh)),
       auth_secret(std::move(auth_secret)),
-      capabilities(capabilities) {}
+      enabled_features(std::move(enabled_features)) {}
 
 SharingSyncPreference::Device::Device(Device&& other) = default;
 
@@ -223,11 +232,17 @@ base::Value SharingSyncPreference::DeviceToValue(const Device& device,
   base::Base64Encode(device.p256dh, &base64_p256dh);
   base::Base64Encode(device.auth_secret, &base64_auth_secret);
 
+  int capabilities = 0;
+  if (device.enabled_features.count(SharingSpecificFields::CLICK_TO_CALL))
+    capabilities |= kClickToCall;
+  if (device.enabled_features.count(SharingSpecificFields::SHARED_CLIPBOARD))
+    capabilities |= kSharedClipboard;
+
   base::Value result(base::Value::Type::DICTIONARY);
   result.SetStringKey(kDeviceFcmToken, device.fcm_token);
   result.SetStringKey(kDeviceP256dh, base64_p256dh);
   result.SetStringKey(kDeviceAuthSecret, base64_auth_secret);
-  result.SetIntKey(kDeviceCapabilities, device.capabilities);
+  result.SetIntKey(kDeviceCapabilities, capabilities);
   result.SetKey(kDeviceLastUpdated, base::CreateTimeValue(timestamp));
   return result;
 }
@@ -253,6 +268,12 @@ SharingSyncPreference::ValueToDevice(const base::Value& value) {
     return base::nullopt;
   }
 
+  std::set<SharingSpecificFields::EnabledFeatures> enabled_features;
+  if ((*capabilities & kClickToCall) == kClickToCall)
+    enabled_features.insert(SharingSpecificFields::CLICK_TO_CALL);
+  if ((*capabilities & kSharedClipboard) == kSharedClipboard)
+    enabled_features.insert(SharingSpecificFields::SHARED_CLIPBOARD);
+
   return Device(*fcm_token, std::move(p256dh), std::move(auth_secret),
-                *capabilities);
+                std::move(enabled_features));
 }

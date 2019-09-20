@@ -72,7 +72,7 @@ void WebGPUSwapBufferProvider::Neuter() {
     layer_ = nullptr;
   }
 
-  if (current_swap_buffer_) {
+  if (current_swap_buffer_ && !dawn_control_client_->IsDestroyed()) {
     // Ensure we wait for previous WebGPU commands before destroying the shared
     // image.
     gpu::webgpu::WebGPUInterface* webgpu = dawn_control_client_->GetInterface();
@@ -87,7 +87,7 @@ void WebGPUSwapBufferProvider::Neuter() {
 
 DawnTexture WebGPUSwapBufferProvider::GetNewTexture(DawnDevice device,
                                                     const IntSize& size) {
-  DCHECK(!current_swap_buffer_);
+  DCHECK(!current_swap_buffer_ && !dawn_control_client_->IsDestroyed());
 
   gpu::webgpu::WebGPUInterface* webgpu = dawn_control_client_->GetInterface();
   gpu::SharedImageInterface* sii =
@@ -132,7 +132,7 @@ bool WebGPUSwapBufferProvider::PrepareTransferableResource(
     cc::SharedBitmapIdRegistrar* bitmap_registrar,
     viz::TransferableResource* out_resource,
     std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback) {
-  DCHECK(!neutered_);
+  DCHECK(!neutered_ && !dawn_control_client_->IsDestroyed());
 
   if (!current_swap_buffer_ || neutered_) {
     return false;
@@ -206,6 +206,9 @@ WebGPUSwapBufferProvider::SwapBuffer::SwapBuffer(
       access_finished_token(creation_token) {}
 
 WebGPUSwapBufferProvider::SwapBuffer::~SwapBuffer() {
+  if (swap_buffers->dawn_control_client_->IsDestroyed()) {
+    return;
+  }
   gpu::SharedImageInterface* sii =
       swap_buffers->dawn_control_client_->GetContextProvider()
           ->SharedImageInterface();

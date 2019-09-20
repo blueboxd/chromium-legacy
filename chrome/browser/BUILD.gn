@@ -1584,7 +1584,6 @@ jumbo_split_static_library("browser") {
     "sharing/shared_clipboard/shared_clipboard_message_handler.h",
     "sharing/sharing_constants.cc",
     "sharing/sharing_constants.h",
-    "sharing/sharing_device_capability.h",
     "sharing/sharing_device_registration.cc",
     "sharing/sharing_device_registration.h",
     "sharing/sharing_device_registration_result.h",
@@ -3060,8 +3059,6 @@ jumbo_split_static_library("browser") {
       "enterprise_reporting/request_timer.h",
       "feedback/feedback_dialog_utils.cc",
       "feedback/feedback_dialog_utils.h",
-      "feedback/feedback_profile_observer.cc",
-      "feedback/feedback_profile_observer.h",
       "feedback/feedback_uploader_chrome.cc",
       "feedback/feedback_uploader_chrome.h",
       "feedback/feedback_uploader_factory_chrome.cc",
@@ -5805,11 +5802,6 @@ if (!is_android) {
 }
 
 if (is_android) {
-  java_cpp_enum("sharing_device_capability_generated_enum") {
-    sources = [
-      "sharing/sharing_device_capability.h",
-    ]
-  }
   java_cpp_enum("sharing_send_message_result_generated_enum") {
     sources = [
       "sharing/sharing_send_message_result.h",

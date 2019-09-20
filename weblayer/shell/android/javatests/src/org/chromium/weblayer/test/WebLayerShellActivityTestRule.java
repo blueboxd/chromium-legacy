@@ -7,9 +7,8 @@ package org.chromium.weblayer.test;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.ActivityTestRule;
-
-import androidx.test.InstrumentationRegistry;
 
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;

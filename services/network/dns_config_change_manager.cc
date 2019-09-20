@@ -16,9 +16,9 @@ DnsConfigChangeManager::~DnsConfigChangeManager() {
   net::NetworkChangeNotifier::RemoveDNSObserver(this);
 }
 
-void DnsConfigChangeManager::AddBinding(
-    mojom::DnsConfigChangeManagerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void DnsConfigChangeManager::AddReceiver(
+    mojo::PendingReceiver<mojom::DnsConfigChangeManager> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void DnsConfigChangeManager::RequestNotifications(

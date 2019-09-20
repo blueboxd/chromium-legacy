@@ -67,7 +67,7 @@ struct OmniboxResponse {
 
 interface OmniboxPageHandler {
   // Registers the webui page.
-  SetClientPage(OmniboxPage page);
+  SetClientPage(pending_remote<OmniboxPage> page);
   // Prompts a autocopmlete controller to process an omnibox query.
   StartOmniboxQuery(string input_string,
                     bool reset_autocomplete_controller,

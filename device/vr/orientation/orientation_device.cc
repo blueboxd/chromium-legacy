@@ -56,8 +56,7 @@ VROrientationDevice::VROrientationDevice(
     mojom::SensorProviderPtr* sensor_provider,
     base::OnceClosure ready_callback)
     : VRDeviceBase(mojom::XRDeviceId::ORIENTATION_DEVICE_ID),
-      ready_callback_(std::move(ready_callback)),
-      binding_(this) {
+      ready_callback_(std::move(ready_callback)) {
   (*sensor_provider)
       ->GetSensor(kOrientationSensorType,
                   base::BindOnce(&VROrientationDevice::SensorReady,
@@ -87,7 +86,7 @@ void VROrientationDevice::SensorReady(
 
   sensor_.Bind(std::move(params->sensor));
 
-  binding_.Bind(std::move(params->client_request));
+  receiver_.Bind(std::move(params->client_receiver));
 
   shared_buffer_reader_ = device::SensorReadingSharedBufferReader::Create(
       std::move(params->memory), params->buffer_offset);
@@ -128,7 +127,7 @@ void VROrientationDevice::RaiseError() {
 void VROrientationDevice::HandleSensorError() {
   sensor_.reset();
   shared_buffer_reader_.reset();
-  binding_.Close();
+  receiver_.reset();
 }
 
 void VROrientationDevice::RequestSession(

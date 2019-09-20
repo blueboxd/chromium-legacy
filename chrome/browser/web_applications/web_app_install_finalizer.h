@@ -17,11 +17,12 @@ namespace web_app {
 
 class WebApp;
 class WebAppIconManager;
-class WebAppRegistrar;
+class WebAppSyncBridge;
 
 class WebAppInstallFinalizer final : public InstallFinalizer {
  public:
-  explicit WebAppInstallFinalizer(WebAppIconManager* icon_manager);
+  WebAppInstallFinalizer(WebAppSyncBridge* sync_bridge,
+                         WebAppIconManager* icon_manager);
   ~WebAppInstallFinalizer() override;
 
   // InstallFinalizer:
@@ -41,16 +42,14 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
       const AppId& app_id,
       const WebApplicationInfo& web_app_info) const override;
   bool CanUserUninstallFromSync(const AppId& app_id) const override;
-  void SetSubsystems(AppRegistrar* registrar,
-                     WebAppUiManager* ui_manager) override;
 
  private:
   void OnDataWritten(InstallFinalizedCallback callback,
                      std::unique_ptr<WebApp> web_app,
                      bool success);
 
+  WebAppSyncBridge* sync_bridge_;
   WebAppIconManager* const icon_manager_;
-  WebAppRegistrar* registrar_ = nullptr;
 
   base::WeakPtrFactory<WebAppInstallFinalizer> weak_ptr_factory_{this};
 

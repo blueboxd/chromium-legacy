@@ -15,6 +15,8 @@ constexpr char kAshPipFreeResizeInitialAreaHistogramName[] =
 constexpr char kAshPipFreeResizeFinishAreaHistogramName[] =
     "Ash.Pip.FreeResizeFinishArea";
 constexpr char kAshPipPositionHistogramName[] = "Ash.Pip.Position";
+constexpr char kAshPipAndroidPipUseTimeHistogramName[] =
+    "Ash.Pip.AndroidPipUseTime";
 
 // This enum should be kept in sync with the AshPipEvents enum in
 // src/tools/metrics/histograms/enums.xml.

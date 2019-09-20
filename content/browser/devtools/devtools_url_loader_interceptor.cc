@@ -7,6 +7,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/no_destructor.h"
+#include "base/strings/pattern.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
@@ -32,18 +33,114 @@
 
 namespace content {
 
+InterceptedRequestInfo::InterceptedRequestInfo() = default;
+
+InterceptedRequestInfo::~InterceptedRequestInfo() = default;
+
+DevToolsURLLoaderInterceptor::AuthChallengeResponse::AuthChallengeResponse(
+    ResponseType response_type)
+    : response_type(response_type) {
+  DCHECK_NE(kProvideCredentials, response_type);
+}
+
+DevToolsURLLoaderInterceptor::AuthChallengeResponse::AuthChallengeResponse(
+    const base::string16& username,
+    const base::string16& password)
+    : response_type(kProvideCredentials), credentials(username, password) {}
+
+DevToolsURLLoaderInterceptor::FilterEntry::FilterEntry(
+    const base::UnguessableToken& target_id,
+    std::vector<Pattern> patterns,
+    RequestInterceptedCallback callback)
+    : target_id(target_id),
+      patterns(std::move(patterns)),
+      callback(std::move(callback)) {}
+
+DevToolsURLLoaderInterceptor::FilterEntry::FilterEntry(FilterEntry&&) = default;
+DevToolsURLLoaderInterceptor::FilterEntry::~FilterEntry() = default;
+
+DevToolsURLLoaderInterceptor::Modifications::Modifications() = default;
+
+DevToolsURLLoaderInterceptor::Modifications::Modifications(
+    net::Error error_reason)
+    : error_reason(error_reason) {}
+
+DevToolsURLLoaderInterceptor::Modifications::Modifications(
+    scoped_refptr<net::HttpResponseHeaders> response_headers,
+    scoped_refptr<base::RefCountedMemory> response_body)
+    : response_headers(std::move(response_headers)),
+      response_body(std::move(response_body)) {}
+
+DevToolsURLLoaderInterceptor::Modifications::Modifications(
+    std::unique_ptr<AuthChallengeResponse> auth_challenge_response)
+    : auth_challenge_response(std::move(auth_challenge_response)) {}
+
+DevToolsURLLoaderInterceptor::Modifications::Modifications(
+    protocol::Maybe<std::string> modified_url,
+    protocol::Maybe<std::string> modified_method,
+    protocol::Maybe<std::string> modified_post_data,
+    std::unique_ptr<HeadersVector> modified_headers)
+    : modified_url(std::move(modified_url)),
+      modified_method(std::move(modified_method)),
+      modified_post_data(std::move(modified_post_data)),
+      modified_headers(std::move(modified_headers)) {}
+
+DevToolsURLLoaderInterceptor::Modifications::Modifications(
+    base::Optional<net::Error> error_reason,
+    scoped_refptr<net::HttpResponseHeaders> response_headers,
+    scoped_refptr<base::RefCountedMemory> response_body,
+    size_t body_offset,
+    protocol::Maybe<std::string> modified_url,
+    protocol::Maybe<std::string> modified_method,
+    protocol::Maybe<std::string> modified_post_data,
+    std::unique_ptr<HeadersVector> modified_headers,
+    std::unique_ptr<AuthChallengeResponse> auth_challenge_response)
+    : error_reason(std::move(error_reason)),
+      response_headers(std::move(response_headers)),
+      response_body(std::move(response_body)),
+      body_offset(body_offset),
+      modified_url(std::move(modified_url)),
+      modified_method(std::move(modified_method)),
+      modified_post_data(std::move(modified_post_data)),
+      modified_headers(std::move(modified_headers)),
+      auth_challenge_response(std::move(auth_challenge_response)) {}
+
+DevToolsURLLoaderInterceptor::Modifications::~Modifications() = default;
+
+DevToolsURLLoaderInterceptor::Pattern::~Pattern() = default;
+
+DevToolsURLLoaderInterceptor::Pattern::Pattern(const Pattern& other) = default;
+
+DevToolsURLLoaderInterceptor::Pattern::Pattern(
+    const std::string& url_pattern,
+    base::flat_set<ResourceType> resource_types,
+    InterceptionStage interception_stage)
+    : url_pattern(url_pattern),
+      resource_types(std::move(resource_types)),
+      interception_stage(interception_stage) {}
+
+bool DevToolsURLLoaderInterceptor::Pattern::Matches(
+    const std::string& url,
+    ResourceType resource_type) const {
+  if (!resource_types.empty() &&
+      resource_types.find(resource_type) == resource_types.end()) {
+    return false;
+  }
+  return base::MatchPattern(url, url_pattern);
+}
+
 namespace {
 
 using RequestInterceptedCallback =
-    DevToolsNetworkInterceptor::RequestInterceptedCallback;
+    DevToolsURLLoaderInterceptor::RequestInterceptedCallback;
 using ContinueInterceptedRequestCallback =
-    DevToolsNetworkInterceptor::ContinueInterceptedRequestCallback;
+    DevToolsURLLoaderInterceptor::ContinueInterceptedRequestCallback;
 using GetResponseBodyCallback =
-    DevToolsNetworkInterceptor::GetResponseBodyForInterceptionCallback;
+    DevToolsURLLoaderInterceptor::GetResponseBodyForInterceptionCallback;
 using TakeResponseBodyPipeCallback =
-    DevToolsNetworkInterceptor::TakeResponseBodyPipeCallback;
-using Modifications = DevToolsNetworkInterceptor::Modifications;
-using InterceptionStage = DevToolsNetworkInterceptor::InterceptionStage;
+    DevToolsURLLoaderInterceptor::TakeResponseBodyPipeCallback;
+using Modifications = DevToolsURLLoaderInterceptor::Modifications;
+using InterceptionStage = DevToolsURLLoaderInterceptor::InterceptionStage;
 using protocol::Response;
 using GlobalRequestId = std::tuple<int32_t, int32_t, int32_t>;
 
@@ -199,7 +296,7 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
 
   Response InnerContinueRequest(std::unique_ptr<Modifications> modifications);
   void ProcessAuthResponse(
-      const DevToolsNetworkInterceptor::AuthChallengeResponse&
+      const DevToolsURLLoaderInterceptor::AuthChallengeResponse&
           auth_challenge_response);
   Response ProcessResponseOverride(
       scoped_refptr<net::HttpResponseHeaders> headers,
@@ -347,7 +444,7 @@ class DevToolsURLLoaderInterceptor::Impl
                         std::move(cookie_manager));
   }
 
-  void SetPatterns(std::vector<DevToolsNetworkInterceptor::Pattern> patterns,
+  void SetPatterns(std::vector<DevToolsURLLoaderInterceptor::Pattern> patterns,
                    bool handle_auth) {
     patterns_ = std::move(patterns);
     handle_auth_ = handle_auth;
@@ -375,7 +472,7 @@ class DevToolsURLLoaderInterceptor::Impl
 
   void TakeResponseBodyPipe(
       const std::string& interception_id,
-      DevToolsNetworkInterceptor::TakeResponseBodyPipeCallback callback) {
+      DevToolsURLLoaderInterceptor::TakeResponseBodyPipeCallback callback) {
     auto it = jobs_.find(interception_id);
     if (it == jobs_.end()) {
       base::PostTask(
@@ -421,7 +518,7 @@ class DevToolsURLLoaderInterceptor::Impl
 
   std::map<std::string, InterceptionJob*> jobs_;
   RequestInterceptedCallback request_intercepted_callback_;
-  std::vector<DevToolsNetworkInterceptor::Pattern> patterns_;
+  std::vector<DevToolsURLLoaderInterceptor::Pattern> patterns_;
   bool handle_auth_;
 
   DISALLOW_COPY_AND_ASSIGN(Impl);
@@ -583,7 +680,7 @@ DevToolsURLLoaderInterceptor::DevToolsURLLoaderInterceptor(
 DevToolsURLLoaderInterceptor::~DevToolsURLLoaderInterceptor() = default;
 
 void DevToolsURLLoaderInterceptor::SetPatterns(
-    std::vector<DevToolsNetworkInterceptor::Pattern> patterns,
+    std::vector<DevToolsURLLoaderInterceptor::Pattern> patterns,
     bool handle_auth) {
   enabled_ = !!patterns.size();
   DCHECK(enabled_ || !handle_auth);
@@ -604,7 +701,7 @@ void DevToolsURLLoaderInterceptor::GetResponseBody(
 
 void DevToolsURLLoaderInterceptor::TakeResponseBodyPipe(
     const std::string& interception_id,
-    DevToolsNetworkInterceptor::TakeResponseBodyPipeCallback callback) {
+    DevToolsURLLoaderInterceptor::TakeResponseBodyPipeCallback callback) {
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&Impl::TakeResponseBodyPipe, base::Unretained(impl_.get()),
@@ -923,15 +1020,16 @@ void InterceptionJob::ApplyModificationsToRequest(
 }
 
 void InterceptionJob::ProcessAuthResponse(
-    const DevToolsNetworkInterceptor::AuthChallengeResponse& response) {
+    const DevToolsURLLoaderInterceptor::AuthChallengeResponse& response) {
   switch (response.response_type) {
-    case DevToolsNetworkInterceptor::AuthChallengeResponse::kDefault:
+    case DevToolsURLLoaderInterceptor::AuthChallengeResponse::kDefault:
       std::move(pending_auth_callback_).Run(true, base::nullopt);
       break;
-    case DevToolsNetworkInterceptor::AuthChallengeResponse::kCancelAuth:
+    case DevToolsURLLoaderInterceptor::AuthChallengeResponse::kCancelAuth:
       std::move(pending_auth_callback_).Run(false, base::nullopt);
       break;
-    case DevToolsNetworkInterceptor::AuthChallengeResponse::kProvideCredentials:
+    case DevToolsURLLoaderInterceptor::AuthChallengeResponse::
+        kProvideCredentials:
       std::move(pending_auth_callback_).Run(false, response.credentials);
       break;
   }

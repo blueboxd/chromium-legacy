@@ -222,8 +222,8 @@ struct TypeConverter<mojom::AutocompleteResultsForProviderPtr,
 
 OmniboxPageHandler::OmniboxPageHandler(
     Profile* profile,
-    mojo::InterfaceRequest<mojom::OmniboxPageHandler> request)
-    : profile_(profile), binding_(this, std::move(request)), observer_(this) {
+    mojo::PendingReceiver<mojom::OmniboxPageHandler> receiver)
+    : profile_(profile), receiver_(this, std::move(receiver)), observer_(this) {
   observer_.Add(OmniboxControllerEmitter::GetForBrowserContext(profile_));
   ResetController();
 }
@@ -372,8 +372,9 @@ bool OmniboxPageHandler::LookupIsTypedHost(const base::string16& host,
   return true;
 }
 
-void OmniboxPageHandler::SetClientPage(mojom::OmniboxPagePtr page) {
-  page_ = std::move(page);
+void OmniboxPageHandler::SetClientPage(
+    mojo::PendingRemote<mojom::OmniboxPage> page) {
+  page_.Bind(std::move(page));
 }
 
 void OmniboxPageHandler::StartOmniboxQuery(const std::string& input_string,

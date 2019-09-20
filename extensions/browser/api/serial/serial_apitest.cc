@@ -78,8 +78,8 @@ class FakeSerialPort : public device::mojom::SerialPort {
 
   const device::mojom::SerialPortInfo& info() { return *info_; }
 
-  void Bind(device::mojom::SerialPortRequest request) {
-    bindings_.AddBinding(this, std::move(request));
+  void Bind(mojo::PendingReceiver<device::mojom::SerialPort> receiver) {
+    receivers_.Add(this, std::move(receiver));
   }
 
  private:
@@ -266,7 +266,7 @@ class FakeSerialPort : public device::mojom::SerialPort {
   }
 
   device::mojom::SerialPortInfoPtr info_;
-  mojo::BindingSet<device::mojom::SerialPort> bindings_;
+  mojo::ReceiverSet<device::mojom::SerialPort> receivers_;
 
   // Currently applied connection options.
   device::mojom::SerialConnectionOptions options_;
@@ -305,13 +305,13 @@ class FakeSerialPortManager : public device::mojom::SerialPortManager {
   }
 
   void GetPort(const base::UnguessableToken& token,
-               device::mojom::SerialPortRequest request,
+               mojo::PendingReceiver<device::mojom::SerialPort> receiver,
                mojo::PendingRemote<device::mojom::SerialPortConnectionWatcher>
                    watcher) override {
     DCHECK(!watcher);
     auto it = ports_.find(token);
     DCHECK(it != ports_.end());
-    it->second->Bind(std::move(request));
+    it->second->Bind(std::move(receiver));
   }
 
   void AddPort(const base::FilePath& path) {

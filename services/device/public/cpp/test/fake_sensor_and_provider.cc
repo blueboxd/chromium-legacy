@@ -70,8 +70,8 @@ double FakeSensor::GetMinimumSupportedFrequency() {
   return 1.0;
 }
 
-mojom::SensorClientRequest FakeSensor::GetClient() {
-  return mojo::MakeRequest(&client_);
+mojo::PendingReceiver<mojom::SensorClient> FakeSensor::GetClient() {
+  return client_.BindNewPipeAndPassReceiver();
 }
 
 uint64_t FakeSensor::GetBufferOffset() {
@@ -167,7 +167,7 @@ void FakeSensorProvider::GetSensor(mojom::SensorType type,
 
   if (sensor) {
     auto init_params = mojom::SensorInitParams::New();
-    init_params->client_request = sensor->GetClient();
+    init_params->client_receiver = sensor->GetClient();
     init_params->memory = shared_buffer_handle_->Clone(
         mojo::SharedBufferHandle::AccessMode::READ_ONLY);
     init_params->buffer_offset = sensor->GetBufferOffset();

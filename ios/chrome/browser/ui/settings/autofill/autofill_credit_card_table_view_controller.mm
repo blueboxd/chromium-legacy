@@ -153,9 +153,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (BOOL)shouldHideToolbar {
-  if (base::FeatureList::IsEnabled(kSettingsAddPaymentMethod)) {
+  // There is a bug from apple that this method might be called in this view
+  // controller even if it is not the top view controller.
+  if (self.navigationController.topViewController == self &&
+      base::FeatureList::IsEnabled(kSettingsAddPaymentMethod)) {
     return NO;
   }
+
   return [super shouldHideToolbar];
 }
 

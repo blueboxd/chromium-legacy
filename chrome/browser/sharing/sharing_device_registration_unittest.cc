@@ -196,8 +196,8 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Success) {
   EXPECT_EQ(kDeviceAuthSecret, device.auth_secret);
   EXPECT_EQ(kDevicep256dh, device.p256dh);
   EXPECT_EQ(kFCMToken, device.fcm_token);
-  EXPECT_EQ(sharing_device_registration_.GetDeviceCapabilities(),
-            device.capabilities);
+  EXPECT_EQ(sharing_device_registration_.GetEnabledFeatures(),
+            device.enabled_features);
   EXPECT_TRUE(fcm_registration_);
   EXPECT_EQ(kFCMToken, fcm_registration_->fcm_token);
   EXPECT_EQ(kDevicep256dh, fcm_registration_->p256dh);

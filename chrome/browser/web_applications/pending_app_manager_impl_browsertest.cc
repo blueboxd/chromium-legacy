@@ -12,7 +12,9 @@
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
@@ -25,17 +27,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace web_app {
-
-ExternalInstallOptions CreateInstallOptions(const GURL& url) {
-  ExternalInstallOptions install_options(
-      url, LaunchContainer::kWindow, ExternalInstallSource::kInternalDefault);
-  // Avoid creating real shortcuts in tests.
-  install_options.add_to_applications_menu = false;
-  install_options.add_to_desktop = false;
-  install_options.add_to_quick_launch_bar = false;
-
-  return install_options;
-}
 
 class PendingAppManagerImplBrowserTest : public InProcessBrowserTest {
  protected:
@@ -50,19 +41,7 @@ class PendingAppManagerImplBrowserTest : public InProcessBrowserTest {
   }
 
   void InstallApp(ExternalInstallOptions install_options) {
-    base::RunLoop run_loop;
-
-    WebAppProviderBase::GetProviderBase(browser()->profile())
-        ->pending_app_manager()
-        .Install(std::move(install_options),
-                 base::BindLambdaForTesting(
-                     [this, &run_loop](const GURL& provided_url,
-                                       InstallResultCode code) {
-                       result_code_ = code;
-                       run_loop.Quit();
-                     }));
-    run_loop.Run();
-    ASSERT_TRUE(result_code_.has_value());
+    result_code_ = web_app::InstallApp(browser()->profile(), install_options);
   }
 
   void CheckServiceWorkerStatus(const GURL& url,

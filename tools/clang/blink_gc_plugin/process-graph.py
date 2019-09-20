@@ -345,7 +345,6 @@ def read_ignored_cycles():
 
 gc_bases = (
   'blink::GarbageCollected',
-  'blink::GarbageCollectedFinalized',
   'blink::GarbageCollectedMixin',
 )
 ref_bases = (

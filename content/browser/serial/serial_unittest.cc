@@ -69,8 +69,8 @@ TEST_F(SerialTest, OpenAndClosePort) {
 
   EXPECT_FALSE(contents()->IsConnectedToSerialPort());
 
-  device::mojom::SerialPortPtr port;
-  service->GetPort(token, mojo::MakeRequest(&port));
+  mojo::Remote<device::mojom::SerialPort> port;
+  service->GetPort(token, port.BindNewPipeAndPassReceiver());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(contents()->IsConnectedToSerialPort());
 
@@ -94,8 +94,8 @@ TEST_F(SerialTest, OpenAndNavigateCrossOrigin) {
 
   EXPECT_FALSE(contents()->IsConnectedToSerialPort());
 
-  device::mojom::SerialPortPtr port;
-  service->GetPort(token, mojo::MakeRequest(&port));
+  mojo::Remote<device::mojom::SerialPort> port;
+  service->GetPort(token, port.BindNewPipeAndPassReceiver());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(contents()->IsConnectedToSerialPort());
 
@@ -103,7 +103,7 @@ TEST_F(SerialTest, OpenAndNavigateCrossOrigin) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(contents()->IsConnectedToSerialPort());
   port.FlushForTesting();
-  EXPECT_TRUE(port.encountered_error());
+  EXPECT_FALSE(port.is_connected());
 }
 
 }  // namespace content

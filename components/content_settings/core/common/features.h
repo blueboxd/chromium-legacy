@@ -17,6 +17,11 @@ namespace content_settings {
 COMPONENT_EXPORT(CONTENT_SETTINGS_FEATURES)
 extern const base::Feature kImprovedCookieControls;
 
+// Feature to enable the improved cookie contronls ui for third-party cookie
+// blocking users.
+COMPONENT_EXPORT(CONTENT_SETTINGS_FEATURES)
+extern const base::Feature kImprovedCookieControlsForThirdPartyCookieBlocking;
+
 }  // namespace content_settings
 
 #endif  // COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_FEATURES_H_

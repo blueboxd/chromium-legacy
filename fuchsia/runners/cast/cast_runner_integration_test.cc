@@ -23,7 +23,6 @@
 #include "fuchsia/base/result_receiver.h"
 #include "fuchsia/base/string_util.h"
 #include "fuchsia/base/test_navigation_listener.h"
-#include "fuchsia/base/url_request_rewrite_test_util.h"
 #include "fuchsia/runners/cast/cast_runner.h"
 #include "fuchsia/runners/cast/fake_application_config_manager.h"
 #include "fuchsia/runners/cast/test_api_bindings.h"
@@ -46,36 +45,28 @@ void ComponentErrorHandler(zx_status_t status) {
   ADD_FAILURE();
 }
 
-class FakeUrlRequestRewriteRulesProvider
-    : public chromium::cast::UrlRequestRewriteRulesProvider {
+class FakeAdditionalHeadersProvider
+    : public fuchsia::web::AdditionalHeadersProvider {
  public:
-  explicit FakeUrlRequestRewriteRulesProvider(sys::OutgoingDirectory* directory)
+  explicit FakeAdditionalHeadersProvider(sys::OutgoingDirectory* directory)
       : binding_(directory, this) {}
-  ~FakeUrlRequestRewriteRulesProvider() override = default;
+  ~FakeAdditionalHeadersProvider() override = default;
 
  private:
-  void GetUrlRequestRewriteRules(
-      GetUrlRequestRewriteRulesCallback callback) override {
-    // Only send the rules once. They do not expire
-    if (rules_sent_)
-      return;
-    rules_sent_ = true;
-
-    std::vector<fuchsia::web::UrlRequestRewrite> rewrites;
-    rewrites.push_back(cr_fuchsia::CreateRewriteAddHeaders("Test", "Value"));
-    fuchsia::web::UrlRequestRewriteRule rule;
-    rule.set_rewrites(std::move(rewrites));
-    std::vector<fuchsia::web::UrlRequestRewriteRule> rules;
-    rules.push_back(std::move(rule));
-    callback(std::move(rules));
+  void GetHeaders(GetHeadersCallback callback) override {
+    std::vector<fuchsia::net::http::Header> headers;
+    fuchsia::net::http::Header header;
+    header.name = cr_fuchsia::StringToBytes("Test");
+    header.value = cr_fuchsia::StringToBytes("Value");
+    headers.push_back(std::move(header));
+    callback(std::move(headers), 0);
   }
 
-  bool rules_sent_ = false;
   const base::fuchsia::ScopedServiceBinding<
-      chromium::cast::UrlRequestRewriteRulesProvider>
+      fuchsia::web::AdditionalHeadersProvider>
       binding_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeUrlRequestRewriteRulesProvider);
+  DISALLOW_COPY_AND_ASSIGN(FakeAdditionalHeadersProvider);
 };
 
 class FakeApplicationControllerReceiver
@@ -113,8 +104,8 @@ class FakeComponentState : public cr_fuchsia::AgentImpl::ComponentStateBase {
       bool provide_controller_receiver)
       : ComponentStateBase(component_url),
         app_config_binding_(outgoing_directory(), app_config_manager),
-        url_request_rules_provider_(
-            std::make_unique<FakeUrlRequestRewriteRulesProvider>(
+        additional_headers_provider_(
+            std::make_unique<FakeAdditionalHeadersProvider>(
                 outgoing_directory())) {
     if (bindings_manager) {
       bindings_manager_binding_ = std::make_unique<
@@ -147,8 +138,7 @@ class FakeComponentState : public cr_fuchsia::AgentImpl::ComponentStateBase {
   std::unique_ptr<
       base::fuchsia::ScopedServiceBinding<chromium::cast::ApiBindings>>
       bindings_manager_binding_;
-  std::unique_ptr<FakeUrlRequestRewriteRulesProvider>
-      url_request_rules_provider_;
+  std::unique_ptr<FakeAdditionalHeadersProvider> additional_headers_provider_;
   FakeApplicationControllerReceiver controller_receiver_;
   base::Optional<base::fuchsia::ScopedServiceBinding<
       chromium::cast::ApplicationControllerReceiver>>
@@ -404,7 +394,7 @@ TEST_F(CastRunnerIntegrationTest, IncorrectCastAppId) {
   EXPECT_FALSE(web_component.has_value());
 }
 
-TEST_F(CastRunnerIntegrationTest, UrlRequestRewriteRulesProvider) {
+TEST_F(CastRunnerIntegrationTest, AdditionalHeadersProvider) {
   const char kEchoAppId[] = "00000000";
   const char kEchoAppPath[] = "/echoheader?Test";
   const GURL echo_app_url = test_server_.GetURL(kEchoAppPath);

@@ -14,9 +14,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
-#include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/network.h"
+#include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
@@ -38,6 +38,7 @@ namespace content {
 class BrowserContext;
 class DevToolsAgentHostImpl;
 class DevToolsIOContext;
+class DevToolsURLLoaderInterceptor;
 class RenderFrameHostImpl;
 class RenderProcessHost;
 class NavigationRequest;

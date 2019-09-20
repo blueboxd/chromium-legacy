@@ -39,6 +39,8 @@ class ScrollableShelfViewTest : public AshTestBase {
   ~ScrollableShelfViewTest() override = default;
 
   void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        chromeos::switches::kShelfScrollable);
     AshTestBase::SetUp();
     scrollable_shelf_view_ = GetPrimaryShelf()
                                  ->shelf_widget()

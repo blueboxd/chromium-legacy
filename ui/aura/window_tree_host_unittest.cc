@@ -20,50 +20,26 @@
 
 namespace aura {
 
-namespace {
-
-gfx::Rect ScaleRect(const gfx::Rect& rect_in_pixels, float scale) {
-  gfx::RectF rect_in_dip(rect_in_pixels);
-  gfx::Transform transform;
-  transform.Scale(scale, scale);
-  transform.TransformRectReverse(&rect_in_dip);
-  return gfx::ToEnclosingRect(rect_in_dip);
-}
-
-gfx::Rect TransformRect(const gfx::Rect& rect_in_pixels,
-                        const gfx::Transform& transform,
-                        float device_scale_factor) {
-  gfx::RectF new_bounds =
-      gfx::ScaleRect(gfx::RectF(rect_in_pixels), 1.0f / device_scale_factor);
-  transform.TransformRect(&new_bounds);
-  return gfx::ToEnclosingRect(new_bounds);
-}
-
-}  // namespace
-
 using WindowTreeHostTest = test::AuraTestBase;
 
 TEST_F(WindowTreeHostTest, DPIWindowSize) {
-  gfx::Rect starting_bounds = host()->GetBoundsInPixels();
+  gfx::Rect starting_bounds(0, 0, 800, 600);
   EXPECT_EQ(starting_bounds.size(), host()->compositor()->size());
+  EXPECT_EQ(starting_bounds, host()->GetBoundsInPixels());
   EXPECT_EQ(starting_bounds, root_window()->bounds());
 
-  float device_scale_factor = 1.5;
-  test_screen()->SetDeviceScaleFactor(device_scale_factor);
+  test_screen()->SetDeviceScaleFactor(1.5f);
   EXPECT_EQ(starting_bounds, host()->GetBoundsInPixels());
   // Size should be rounded up after scaling.
-  gfx::Rect rect_in_dip = ScaleRect(starting_bounds, device_scale_factor);
-  EXPECT_EQ(rect_in_dip, root_window()->bounds());
+  EXPECT_EQ(gfx::Rect(0, 0, 534, 400), root_window()->bounds());
 
   gfx::Transform transform;
   transform.Translate(0, 1.1f);
   host()->SetRootTransform(transform);
-  gfx::Rect transformed_rect =
-      TransformRect(starting_bounds, transform, device_scale_factor);
-  EXPECT_EQ(transformed_rect, root_window()->bounds());
+  EXPECT_EQ(gfx::Rect(0, 1, 534, 401), root_window()->bounds());
 
   EXPECT_EQ(starting_bounds, host()->GetBoundsInPixels());
-  EXPECT_EQ(transformed_rect, root_window()->bounds());
+  EXPECT_EQ(gfx::Rect(0, 1, 534, 401), root_window()->bounds());
 }
 
 #if defined(OS_CHROMEOS)

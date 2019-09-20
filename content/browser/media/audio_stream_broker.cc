@@ -68,7 +68,8 @@ class AudioStreamBrokerFactoryImpl final : public AudioStreamBrokerFactory {
       const base::UnguessableToken& group_id,
       const base::Optional<base::UnguessableToken>& processing_id,
       AudioStreamBroker::DeleterCallback deleter,
-      media::mojom::AudioOutputStreamProviderClientPtr client) final {
+      mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient> client)
+      final {
     return std::make_unique<AudioOutputStreamBroker>(
         render_process_id, render_frame_id, stream_id, output_device_id, params,
         group_id, processing_id, std::move(deleter), std::move(client));

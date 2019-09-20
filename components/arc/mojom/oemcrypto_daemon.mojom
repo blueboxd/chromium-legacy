@@ -20,6 +20,7 @@ import "components/arc/mojom/protected_buffer_manager.mojom";
 // Chrome OS and has Connect called from the Browser process in Chrome.
 // Next Method ID: 1
 interface OemCryptoHostDaemon {
-  Connect@0(arc.mojom.OemCryptoService& oemcryptor,
-            arc.mojom.ProtectedBufferManager protected_buffer_manager);
+  Connect@0(
+    arc.mojom.OemCryptoService& oemcryptor,
+    pending_remote<arc.mojom.ProtectedBufferManager> protected_buffer_manager);
 };

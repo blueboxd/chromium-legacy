@@ -168,7 +168,7 @@ class VideoCaptureControllerTest
   void InitializeNewDeviceClientAndBufferPoolInstances() {
     buffer_pool_ = new media::VideoCaptureBufferPoolImpl(
         std::make_unique<media::VideoCaptureBufferTrackerFactoryImpl>(),
-        kPoolSize);
+        media::VideoCaptureBufferType::kSharedMemory, kPoolSize);
 #if defined(OS_CHROMEOS)
     device_client_.reset(new media::VideoCaptureDeviceClient(
         media::VideoCaptureBufferType::kSharedMemory,

@@ -102,15 +102,15 @@ GpuHostImpl::GpuHostImpl(Delegate* delegate,
       host_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(delegate_);
 
-  discardable_memory::mojom::DiscardableSharedMemoryManagerPtr
-      discardable_manager_ptr;
-  auto discardable_request = mojo::MakeRequest(&discardable_manager_ptr);
-  delegate_->BindDiscardableMemoryRequest(std::move(discardable_request));
+  mojo::PendingRemote<discardable_memory::mojom::DiscardableSharedMemoryManager>
+      discardable_manager_remote;
+  delegate_->BindDiscardableMemoryReceiver(
+      discardable_manager_remote.InitWithNewPipeAndPassReceiver());
 
   DCHECK(GetFontRenderParams().Get());
   viz_main_->CreateGpuService(gpu_service_remote_.BindNewPipeAndPassReceiver(),
                               gpu_host_receiver_.BindNewPipeAndPassRemote(),
-                              std::move(discardable_manager_ptr),
+                              std::move(discardable_manager_remote),
                               activity_flags_.CloneHandle(),
                               GetFontRenderParams().Get()->subpixel_rendering);
 

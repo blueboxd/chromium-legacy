@@ -42,7 +42,7 @@ void SerialPortManagerImpl::GetDevices(GetDevicesCallback callback) {
 
 void SerialPortManagerImpl::GetPort(
     const base::UnguessableToken& token,
-    mojom::SerialPortRequest request,
+    mojo::PendingReceiver<mojom::SerialPort> receiver,
     mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher) {
   if (!enumerator_)
     enumerator_ = SerialDeviceEnumerator::Create();
@@ -50,7 +50,7 @@ void SerialPortManagerImpl::GetPort(
   if (path) {
     io_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&SerialPortImpl::Create, *path, std::move(request),
+        base::BindOnce(&SerialPortImpl::Create, *path, std::move(receiver),
                        std::move(watcher), ui_task_runner_));
   }
 }

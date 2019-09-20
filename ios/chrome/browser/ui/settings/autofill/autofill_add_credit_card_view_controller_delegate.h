@@ -27,6 +27,29 @@
 - (void)addCreditCardViewControllerDidUseCamera:
     (AutofillAddCreditCardViewController*)viewController;
 
+// Checks if a credit card has a valid |cardNumber|.
+- (bool)addCreditCardViewController:
+            (AutofillAddCreditCardViewController*)viewController
+            isValidCreditCardNumber:(NSString*)cardNumber;
+
+// Checks if a credit card has a valid |expirationMonth|.
+- (bool)addCreditCardViewController:
+            (AutofillAddCreditCardViewController*)viewController
+    isValidCreditCardExpirationMonth:(NSString*)expirationMonth;
+
+// Checks if a credit card has a valid |expirationYear|.
+- (bool)addCreditCardViewController:
+            (AutofillAddCreditCardViewController*)viewController
+    isValidCreditCardExpirationYear:(NSString*)expirationYear;
+
+// Checks if a credit card has a valid |cardNumber|, |expirationMonth| and
+// |expirationYear|.
+- (bool)addCreditCardViewController:
+            (AutofillAddCreditCardViewController*)viewController
+            isValidCreditCardNumber:(NSString*)cardNumber
+                    expirationMonth:(NSString*)expirationMonth
+                     expirationYear:(NSString*)expirationYear;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_AUTOFILL_AUTOFILL_ADD_CREDIT_CARD_VIEW_CONTROLLER_DELEGATE_H_

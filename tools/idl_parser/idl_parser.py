@@ -268,7 +268,8 @@ class IDLParser(object):
     p[0] = self.BuildError(p, 'Definition')
 
   def p_ArgumentNameKeyword(self, p):
-    """ArgumentNameKeyword : ATTRIBUTE
+    """ArgumentNameKeyword : ASYNC
+                           | ATTRIBUTE
                            | CALLBACK
                            | CONST
                            | DELETER
@@ -330,7 +331,7 @@ class IDLParser(object):
     p[0] = p[1]
 
   def p_PartialInterfaceRest(self, p):
-    """PartialInterfaceRest : identifier '{' InterfaceMembers '}' ';'"""
+    """PartialInterfaceRest : identifier '{' PartialInterfaceMembers '}' ';'"""
     p[0] = self.BuildNamed('Interface', p, 1, p[3])
 
   def p_InterfaceMembers(self, p):
@@ -346,15 +347,33 @@ class IDLParser(object):
     p[0] = self.BuildError(p, 'InterfaceMembers')
 
   def p_InterfaceMember(self, p):
-    """InterfaceMember : Const
-                       | Operation
-                       | Stringifier
-                       | StaticMember
-                       | Iterable
-                       | ReadonlyMember
-                       | ReadWriteAttribute
-                       | ReadWriteMaplike
-                       | ReadWriteSetlike"""
+    """InterfaceMember : PartialInterfaceMember
+                       | Constructor"""
+    p[0] = p[1]
+
+  def p_PartialInterfaceMembers(self, p):
+    """PartialInterfaceMembers : ExtendedAttributeList PartialInterfaceMember PartialInterfaceMembers
+                               |"""
+    if len(p) > 1:
+      p[2].AddChildren(p[1])
+      p[0] = ListFromConcat(p[2], p[3])
+
+  # Error recovery for InterfaceMembers
+  def p_PartialInterfaceMembersError(self, p):
+    """PartialInterfaceMembers : error"""
+    p[0] = self.BuildError(p, 'PartialInterfaceMembers')
+
+  def p_PartialInterfaceMember(self, p):
+    """PartialInterfaceMember : Const
+                              | Operation
+                              | Stringifier
+                              | StaticMember
+                              | Iterable
+                              | AsyncIterable
+                              | ReadonlyMember
+                              | ReadWriteAttribute
+                              | ReadWriteMaplike
+                              | ReadWriteSetlike"""
     p[0] = p[1]
 
   def p_Inheritance(self, p):
@@ -478,7 +497,8 @@ class IDLParser(object):
     p[0] = p[1]
 
   def p_AttributeNameKeyword(self, p):
-    """AttributeNameKeyword : REQUIRED"""
+    """AttributeNameKeyword : ASYNC
+                            | REQUIRED"""
     p[0] = p[1]
 
   def p_ReadOnly(self, p):
@@ -603,6 +623,11 @@ class IDLParser(object):
     else:
       p[0] = p[1]
 
+  def p_Constructor(self, p):
+    """Constructor : CONSTRUCTOR '(' ArgumentList ')' ';'"""
+    arguments = self.BuildProduction('Arguments', p, 1, p[3])
+    p[0] = self.BuildProduction('Constructor', p, 1, arguments)
+
   def p_Stringifier(self, p):
     """Stringifier : STRINGIFIER StringifierRest"""
     p[0] = self.BuildProduction('Stringifier', p, 1, p[2])
@@ -639,6 +664,12 @@ class IDLParser(object):
                     |"""
     if len(p) > 1:
       p[0] = p[2]
+
+  def p_AsyncIterable(self, p):
+    """AsyncIterable : ASYNC ITERABLE '<' TypeWithExtendedAttributes ',' TypeWithExtendedAttributes '>' ';'"""
+    childlist = ListFromConcat(p[4], p[6])
+    p[0] = self.BuildProduction('Iterable', p, 2, childlist)
+    p[0].AddChildren(self.BuildTrue('ASYNC'))
 
   def p_ReadWriteMaplike(self, p):
     """ReadWriteMaplike : MaplikeRest"""
@@ -817,8 +848,9 @@ class IDLParser(object):
     p[0].AddChildren(p[1])
 
   def p_SingleType(self, p):
-    """SingleType : NonAnyType
-                  | ANY"""
+    """SingleType : DistinguishableType
+                  | ANY
+                  | PromiseType"""
     if p[1] != 'any':
       p[0] = p[1]
     else:
@@ -830,7 +862,7 @@ class IDLParser(object):
     p[0] = self.BuildProduction('UnionType', p, 1, members)
 
   def p_UnionMemberType(self, p):
-    """UnionMemberType : ExtendedAttributeList NonAnyType
+    """UnionMemberType : ExtendedAttributeList DistinguishableType
                        | UnionType Null"""
     if p[1] is None:
       p[0] = self.BuildProduction('Type', p, 1, p[2])
@@ -849,13 +881,12 @@ class IDLParser(object):
   # Moving all built-in types into PrimitiveType makes it easier to
   # differentiate between them and 'identifier', since p[1] would be a string in
   # both cases.
-  def p_NonAnyType(self, p):
-    """NonAnyType : PrimitiveType Null
-                  | PromiseType Null
-                  | identifier Null
-                  | SEQUENCE '<' TypeWithExtendedAttributes '>' Null
-                  | FROZENARRAY '<' TypeWithExtendedAttributes '>' Null
-                  | RecordType Null"""
+  def p_DistinguishableType(self, p):
+    """DistinguishableType : PrimitiveType Null
+                           | identifier Null
+                           | SEQUENCE '<' TypeWithExtendedAttributes '>' Null
+                           | FROZENARRAY '<' TypeWithExtendedAttributes '>' Null
+                           | RecordType Null"""
     if len(p) == 3:
       if type(p[1]) == str:
         typeref = self.BuildNamed('Typeref', p, 1)

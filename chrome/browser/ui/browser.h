@@ -61,6 +61,7 @@
 #include "chrome/browser/ui/signin_view_controller.h"
 #endif
 
+class BackgroundContents;
 class BrowserContentSettingBubbleModelDelegate;
 class BrowserInstantController;
 class BrowserSyncedWindowDelegate;
@@ -983,9 +984,16 @@ class Browser : public TabStripModelObserver,
   // the last browser window is being closed.
   bool ShouldStartShutdown() const;
 
-  // Creates a BackgroundContents if appropriate; return true if one was
-  // created.
-  bool MaybeCreateBackgroundContents(
+  // Returns true if a BackgroundContents should be created in response to a
+  // WebContents::CreateNewWindow() call.
+  bool ShouldCreateBackgroundContents(
+      content::SiteInstance* source_site_instance,
+      const GURL& opener_url,
+      const std::string& frame_name);
+
+  // Creates a BackgroundContents. This should only be called when
+  // ShouldCreateBackgroundContents() is true.
+  BackgroundContents* CreateBackgroundContents(
       content::SiteInstance* source_site_instance,
       content::RenderFrameHost* opener,
       const GURL& opener_url,

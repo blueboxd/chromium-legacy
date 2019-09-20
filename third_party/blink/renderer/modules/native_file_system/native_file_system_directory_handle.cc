@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_handle.h"
 
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_error.mojom-blink.h"
@@ -80,7 +81,8 @@ ScriptPromise NativeFileSystemDirectoryHandle::getDirectory(
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, const String& name,
              NativeFileSystemErrorPtr result,
-             mojom::blink::NativeFileSystemDirectoryHandlePtr handle) {
+             mojo::PendingRemote<mojom::blink::NativeFileSystemDirectoryHandle>
+                 handle) {
             ExecutionContext* context = resolver->GetExecutionContext();
             if (!context)
               return;
@@ -93,7 +95,8 @@ ScriptPromise NativeFileSystemDirectoryHandle::getDirectory(
                     name,
                     RevocableInterfacePtr<
                         mojom::blink::NativeFileSystemDirectoryHandle>(
-                        handle.PassInterface(),
+                        mojom::blink::NativeFileSystemDirectoryHandlePtrInfo(
+                            handle.PassPipe(), 0u),
                         context->GetInterfaceInvalidator(),
                         context->GetTaskRunner(TaskType::kMiscPlatformAPI))));
           },
@@ -171,7 +174,8 @@ ScriptPromise NativeFileSystemDirectoryHandle::getSystemDirectory(
       [](ScriptPromiseResolver* resolver,
          mojo::Remote<mojom::blink::NativeFileSystemManager>,
          NativeFileSystemErrorPtr result,
-         mojom::blink::NativeFileSystemDirectoryHandlePtr handle) {
+         mojo::PendingRemote<mojom::blink::NativeFileSystemDirectoryHandle>
+             handle) {
         ExecutionContext* context = resolver->GetExecutionContext();
         if (!context)
           return;
@@ -183,7 +187,9 @@ ScriptPromise NativeFileSystemDirectoryHandle::getSystemDirectory(
             kSandboxRootDirectoryName,
             RevocableInterfacePtr<
                 mojom::blink::NativeFileSystemDirectoryHandle>(
-                handle.PassInterface(), context->GetInterfaceInvalidator(),
+                mojom::blink::NativeFileSystemDirectoryHandlePtrInfo(
+                    handle.PassPipe(), 0u),
+                context->GetInterfaceInvalidator(),
                 context->GetTaskRunner(TaskType::kMiscPlatformAPI))));
       },
       WrapPersistent(resolver), std::move(manager)));

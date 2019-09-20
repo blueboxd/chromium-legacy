@@ -86,8 +86,10 @@ class DistilledPageObserver : public NavigationObserver {
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override {
     if (!render_frame_host->GetParent() &&
-        validated_url.scheme() == kDomDistillerScheme)
+        validated_url.scheme() == kDomDistillerScheme) {
       loaded_distiller_page_ = true;
+      MaybeNotifyLoaded();
+    }
   }
 
   void TitleWasSet(content::NavigationEntry* entry) override {
@@ -95,14 +97,19 @@ class DistilledPageObserver : public NavigationObserver {
     // and once when the distillation has finished. Watch for the second time
     // as a signal that the JavaScript that sets the content has run.
     title_set_count_++;
-    if (title_set_count_ >= 2 && loaded_distiller_page_) {
-      new_url_loaded_runner_.QuitClosure().Run();
-    }
+    MaybeNotifyLoaded();
   }
 
  private:
   int title_set_count_;
   bool loaded_distiller_page_;
+
+  // DidFinishLoad() can come after the two title settings.
+  void MaybeNotifyLoaded() {
+    if (title_set_count_ >= 2 && loaded_distiller_page_) {
+      new_url_loaded_runner_.QuitClosure().Run();
+    }
+  }
 };
 
 class DomDistillerTabUtilsBrowserTest : public InProcessBrowserTest {

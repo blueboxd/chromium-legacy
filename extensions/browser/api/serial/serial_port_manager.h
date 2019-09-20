@@ -14,6 +14,7 @@
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/common/api/serial.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/serial.mojom.h"
 
@@ -42,7 +43,7 @@ class SerialPortManager : public BrowserContextKeyedAPI {
       device::mojom::SerialPortManager::GetDevicesCallback callback);
 
   void GetPort(const std::string& path,
-               device::mojom::SerialPortRequest request);
+               mojo::PendingReceiver<device::mojom::SerialPort> receiver);
 
   // Start the poilling process for the connection.
   void StartConnectionPolling(const std::string& extension_id,
@@ -77,7 +78,7 @@ class SerialPortManager : public BrowserContextKeyedAPI {
   void EnsureConnection();
   void OnGotDevicesToGetPort(
       const std::string& path,
-      device::mojom::SerialPortRequest request,
+      mojo::PendingReceiver<device::mojom::SerialPort> receiver,
       std::vector<device::mojom::SerialPortInfoPtr> devices);
   void OnPortManagerConnectionError();
 

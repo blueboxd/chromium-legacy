@@ -42,11 +42,13 @@ struct VizDevToolsParams {
 interface VizMain {
   CreateFrameSinkManager(FrameSinkManagerParams params);
 
-  CreateGpuService(pending_receiver<GpuService> gpu_service,
-                   pending_remote<GpuHost> gpu_host,
-                   discardable_memory.mojom.DiscardableSharedMemoryManager discardable_memory_manager,
-                   handle<shared_buffer>? activity_flags,
-                   gfx.mojom.SubpixelRendering subpixel_rendering);
+  CreateGpuService(
+      pending_receiver<GpuService> gpu_service,
+      pending_remote<GpuHost> gpu_host,
+      pending_remote<discardable_memory.mojom.DiscardableSharedMemoryManager>
+          discardable_memory_manager,
+      handle<shared_buffer>? activity_flags,
+      gfx.mojom.SubpixelRendering subpixel_rendering);
 
   // The viz devtools server is for use by developers to observe the
   // FrameSinkManager in the viz compositor. This is only called if the flag

@@ -2512,6 +2512,8 @@ void NavigationControllerImpl::PruneOldestSkippableEntryIfFull() {
 void NavigationControllerImpl::NavigateToExistingPendingEntry(
     ReloadType reload_type,
     int sandboxed_source_frame_tree_node_id) {
+  TRACE_EVENT0("navigation",
+               "NavigationControllerImpl::NavigateToExistingPendingEntry");
   DCHECK(pending_entry_);
   DCHECK(IsInitialNavigation() || pending_entry_index_ != -1);
   DCHECK(!IsRendererDebugURL(pending_entry_->GetURL()));

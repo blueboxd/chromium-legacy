@@ -78,9 +78,6 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final : public WebEmbeddedWorker {
   void TerminateWorkerContext() override;
   void ResumeAfterDownload() override;
 
-  static std::unique_ptr<WebEmbeddedWorkerImpl> CreateForTesting(
-      WebServiceWorkerContextClient*);
-
   void WaitForShutdownForTesting();
 
  private:

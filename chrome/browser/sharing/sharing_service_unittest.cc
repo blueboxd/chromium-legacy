@@ -15,7 +15,6 @@
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
 #include "chrome/browser/sharing/sharing_constants.h"
-#include "chrome/browser/sharing/sharing_device_capability.h"
 #include "chrome/browser/sharing/sharing_device_registration.h"
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
@@ -40,8 +39,10 @@ using namespace testing;
 
 namespace {
 
-constexpr int kNoCapabilities =
-    static_cast<int>(SharingDeviceCapability::kNone);
+const std::set<sync_pb::SharingSpecificFields::EnabledFeatures>
+    kNoFeaturesEnabled;
+const std::set<sync_pb::SharingSpecificFields::EnabledFeatures>
+    kClickToCallEnabled{sync_pb::SharingSpecificFields::CLICK_TO_CALL};
 const char kP256dh[] = "p256dh";
 const char kAuthSecret[] = "auth_secret";
 const char kFcmToken[] = "fcm_token";
@@ -245,7 +246,7 @@ class SharingServiceTest : public testing::Test {
 
   static SharingSyncPreference::Device CreateFakeSyncDevice() {
     return SharingSyncPreference::Device(kFcmToken, kP256dh, kAuthSecret,
-                                         kNoCapabilities);
+                                         kClickToCallEnabled);
   }
 
   // Lazily initialized so we can test the constructor.
@@ -290,7 +291,8 @@ class SharingServiceTest : public testing::Test {
 
 TEST_F(SharingServiceTest, GetDeviceCandidates_Empty) {
   std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
-      GetSharingService()->GetDeviceCandidates(kNoCapabilities);
+      GetSharingService()->GetDeviceCandidates(
+          sync_pb::SharingSpecificFields::CLICK_TO_CALL);
   EXPECT_TRUE(candidates.empty());
 }
 
@@ -301,7 +303,8 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_NoSynced) {
   device_info_tracker_.Add(device_info.get());
 
   std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
-      GetSharingService()->GetDeviceCandidates(kNoCapabilities);
+      GetSharingService()->GetDeviceCandidates(
+          sync_pb::SharingSpecificFields::CLICK_TO_CALL);
 
   EXPECT_TRUE(candidates.empty());
 }
@@ -310,7 +313,8 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_NoTracked) {
   sync_prefs_->SetSyncDevice(base::GenerateGUID(), CreateFakeSyncDevice());
 
   std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
-      GetSharingService()->GetDeviceCandidates(kNoCapabilities);
+      GetSharingService()->GetDeviceCandidates(
+          sync_pb::SharingSpecificFields::CLICK_TO_CALL);
 
   EXPECT_TRUE(candidates.empty());
 }
@@ -323,7 +327,8 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_SyncedAndTracked) {
   sync_prefs_->SetSyncDevice(id, CreateFakeSyncDevice());
 
   std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
-      GetSharingService()->GetDeviceCandidates(kNoCapabilities);
+      GetSharingService()->GetDeviceCandidates(
+          sync_pb::SharingSpecificFields::CLICK_TO_CALL);
 
   ASSERT_EQ(1u, candidates.size());
 }
@@ -340,7 +345,8 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_Expired) {
                                   base::TimeDelta::FromMilliseconds(1));
 
   std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
-      GetSharingService()->GetDeviceCandidates(kNoCapabilities);
+      GetSharingService()->GetDeviceCandidates(
+          sync_pb::SharingSpecificFields::CLICK_TO_CALL);
 
   EXPECT_TRUE(candidates.empty());
 }
@@ -352,9 +358,10 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_MissingRequirements) {
   device_info_tracker_.Add(device_info.get());
   sync_prefs_->SetSyncDevice(id, CreateFakeSyncDevice());
 
-  // Require all capabilities.
+  // Requires shared clipboard feature.
   std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
-      GetSharingService()->GetDeviceCandidates(-1);
+      GetSharingService()->GetDeviceCandidates(
+          sync_pb::SharingSpecificFields::SHARED_CLIPBOARD);
 
   EXPECT_TRUE(candidates.empty());
 }
@@ -385,7 +392,8 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_DuplicateDeviceNames) {
   sync_prefs_->SetSyncDevice(id3, CreateFakeSyncDevice());
 
   std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
-      GetSharingService()->GetDeviceCandidates(kNoCapabilities);
+      GetSharingService()->GetDeviceCandidates(
+          sync_pb::SharingSpecificFields::CLICK_TO_CALL);
 
   ASSERT_EQ(1u, candidates.size());
   EXPECT_EQ(id2, candidates[0]->guid());
@@ -679,7 +687,8 @@ TEST_F(SharingServiceTest, NoDevicesWhenSyncDisabled) {
   sync_prefs_->SetSyncDevice(id, CreateFakeSyncDevice());
 
   std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
-      GetSharingService()->GetDeviceCandidates(kNoCapabilities);
+      GetSharingService()->GetDeviceCandidates(
+          sync_pb::SharingSpecificFields::CLICK_TO_CALL);
 
   ASSERT_EQ(0u, candidates.size());
 }

@@ -35,7 +35,7 @@ void VideoSourceImpl::AddToBindingSet(mojom::VideoSourceRequest request) {
 }
 
 void VideoSourceImpl::CreatePushSubscription(
-    mojom::ReceiverPtr subscriber,
+    mojo::PendingRemote<mojom::Receiver> subscriber,
     const media::VideoCaptureParams& requested_settings,
     bool force_reopen_with_new_settings,
     mojom::PushVideoStreamSubscriptionRequest subscription_request,
@@ -103,9 +103,10 @@ void VideoSourceImpl::OnCreateDeviceResponse(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   switch (result_code) {
     case mojom::DeviceAccessResultCode::SUCCESS: {
-      mojom::ReceiverPtr broadcaster_as_receiver;
+      mojo::PendingRemote<mojom::Receiver> broadcaster_as_receiver;
       broadcaster_binding_ = std::make_unique<mojo::Binding<mojom::Receiver>>(
-          &broadcaster_, mojo::MakeRequest(&broadcaster_as_receiver));
+          &broadcaster_,
+          broadcaster_as_receiver.InitWithNewPipeAndPassReceiver());
       device_->Start(device_start_settings_,
                      std::move(broadcaster_as_receiver));
       device_status_ = DeviceStatus::kStarted;

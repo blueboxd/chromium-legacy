@@ -105,7 +105,8 @@ class VizMainImpl : public mojom::VizMain {
   void CreateGpuService(
       mojo::PendingReceiver<mojom::GpuService> pending_receiver,
       mojo::PendingRemote<mojom::GpuHost> pending_gpu_host,
-      discardable_memory::mojom::DiscardableSharedMemoryManagerPtr
+      mojo::PendingRemote<
+          discardable_memory::mojom::DiscardableSharedMemoryManager>
           discardable_memory_manager,
       mojo::ScopedSharedBufferHandle activity_flags,
       gfx::FontRenderParams::SubpixelRendering subpixel_rendering) override;

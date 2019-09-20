@@ -182,8 +182,12 @@ bool FontFallback::GetCachedFont(const base::string16& text,
   for (family_iterator = family_list.begin();
        family_iterator != family_list.end(); ++family_iterator) {
     mswr::ComPtr<IDWriteFont> matched_font;
-    (*family_iterator)->GetFirstMatchingFont(base_weight, base_stretch,
-                                             base_style, &matched_font);
+
+    if (FAILED((*family_iterator)
+                   ->GetFirstMatchingFont(base_weight, base_stretch, base_style,
+                                          &matched_font))) {
+      continue;
+    }
 
     // |character_index| tracks how much of the string we have read. This is
     // different from |mapped_length| because ReadUnicodeCharacter can advance

@@ -91,7 +91,7 @@ void SensorProviderImpl::SensorCreated(
   auto init_params = mojom::SensorInitParams::New();
 
   auto sensor_impl = std::make_unique<SensorImpl>(sensor);
-  init_params->client_request = sensor_impl->GetClient();
+  init_params->client_receiver = sensor_impl->GetClient();
 
   mojo::PendingRemote<mojom::Sensor> pending_sensor;
   sensor_receivers_.Add(std::move(sensor_impl),

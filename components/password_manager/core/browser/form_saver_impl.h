@@ -25,7 +25,7 @@ class FormSaverImpl : public FormSaver {
 
   // FormSaver:
   autofill::PasswordForm PermanentlyBlacklist(
-      PasswordStore::FormDigest digest) override WARN_UNUSED_RESULT;
+      PasswordStore::FormDigest digest) override;
   void Save(autofill::PasswordForm pending,
             const std::vector<const autofill::PasswordForm*>& matches,
             const base::string16& old_password) override;

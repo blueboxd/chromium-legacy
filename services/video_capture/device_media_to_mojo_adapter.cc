@@ -61,9 +61,10 @@ DeviceMediaToMojoAdapter::~DeviceMediaToMojoAdapter() {
 
 void DeviceMediaToMojoAdapter::Start(
     const media::VideoCaptureParams& requested_settings,
-    mojom::ReceiverPtr receiver) {
+    mojo::PendingRemote<mojom::Receiver> receiver_pending_remote) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  receiver.set_connection_error_handler(
+  mojo::Remote<mojom::Receiver> receiver(std::move(receiver_pending_remote));
+  receiver.set_disconnect_handler(
       base::Bind(&DeviceMediaToMojoAdapter::OnClientConnectionErrorOrClose,
                  weak_factory_.GetWeakPtr()));
 
@@ -87,6 +88,7 @@ void DeviceMediaToMojoAdapter::Start(
       std::make_unique<media::VideoCaptureBufferTrackerFactoryImpl>();
   scoped_refptr<media::VideoCaptureBufferPool> buffer_pool(
       new media::VideoCaptureBufferPoolImpl(std::move(buffer_tracker_factory),
+                                            requested_settings.buffer_type,
                                             max_buffer_pool_buffer_count()));
 #if defined(OS_CHROMEOS)
   auto device_client = std::make_unique<media::VideoCaptureDeviceClient>(

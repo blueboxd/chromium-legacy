@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle.h"
 #include "url/gurl.h"
 
@@ -48,12 +49,12 @@ class WebSocketSBHandshakeThrottle : public blink::WebSocketHandshakeThrottle,
   void OnCheckResult(mojom::UrlCheckNotifierRequest slow_check_notifier,
                      bool proceed,
                      bool showed_interstitial);
-  void OnConnectionError();
+  void OnMojoDisconnect();
 
   const int render_frame_id_;
   GURL url_;
   blink::WebSocketHandshakeThrottle::OnCompletion completion_callback_;
-  mojom::SafeBrowsingUrlCheckerPtr url_checker_;
+  mojo::Remote<mojom::SafeBrowsingUrlChecker> url_checker_;
   mojom::SafeBrowsing* safe_browsing_;
   std::unique_ptr<mojo::Binding<mojom::UrlCheckNotifier>> notifier_binding_;
   base::TimeTicks start_time_;

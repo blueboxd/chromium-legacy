@@ -80,7 +80,7 @@ class WebAppDataRetriever : content::WebContentsObserver {
       int last_committed_nav_entry_unique_id,
       const WebApplicationInfo& web_app_info);
   void OnDidPerformInstallableCheck(const InstallableData& data);
-  void OnIconsDownloaded(bool success, const IconsMap& icons_map);
+  void OnIconsDownloaded(bool success, IconsMap icons_map);
 
   void CallCallbackOnError();
   bool ShouldStopRetrieval() const;

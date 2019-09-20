@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "ui/views/view.h"
+#include "ui/views/controls/scroll_view.h"
 
 namespace views {
 class GridLayout;
@@ -27,7 +27,7 @@ class CanonicalCookie;
 // CookieInfoView
 //
 //  Responsible for displaying a tabular grid of Cookie information.
-class CookieInfoView : public views::View {
+class CookieInfoView : public views::ScrollView {
  public:
   CookieInfoView();
   ~CookieInfoView() override;

@@ -148,6 +148,10 @@ const CGFloat kFlashDuration = 0.5;
   [_previewView setTransform:rotation];
 }
 
+- (CGRect)viewportRegionOfInterest {
+  return [_previewView viewportRegionOfInterest];
+}
+
 - (CGRect)viewportRectOfInterest {
   return [_previewView viewportRectOfInterest];
 }

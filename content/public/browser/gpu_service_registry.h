@@ -6,9 +6,10 @@
 #define CONTENT_PUBLIC_BROWSER_GPU_INTERFACE_REGISTRY_H_
 
 #include <string>
+#include <utility>
 
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace content {
@@ -19,9 +20,8 @@ CONTENT_EXPORT void BindInterfaceInGpuProcess(
 
 // Bind to an interface exposed by the GPU process.
 template <typename Interface>
-void BindInterfaceInGpuProcess(mojo::InterfaceRequest<Interface> request) {
-  BindInterfaceInGpuProcess(Interface::Name_,
-                            std::move(request.PassMessagePipe()));
+void BindInterfaceInGpuProcess(mojo::PendingReceiver<Interface> receiver) {
+  BindInterfaceInGpuProcess(Interface::Name_, receiver.PassPipe());
 }
 
 }  // namespace content

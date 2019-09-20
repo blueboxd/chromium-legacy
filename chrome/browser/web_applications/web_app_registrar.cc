@@ -9,117 +9,25 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/callback.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/web_applications/abstract_web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "chrome/browser/web_applications/web_app_registry_update.h"
 
 namespace web_app {
 
-WebAppRegistrar::WebAppRegistrar(Profile* profile,
-                                 AbstractWebAppSyncBridge* sync_bridge)
-    : AppRegistrar(profile), sync_bridge_(sync_bridge) {
-  DCHECK(sync_bridge_);
-}
+WebAppRegistrar::WebAppRegistrar(Profile* profile) : AppRegistrar(profile) {}
 
 WebAppRegistrar::~WebAppRegistrar() = default;
-
-void WebAppRegistrar::RegisterApp(std::unique_ptr<WebApp> web_app) {
-  CountMutation();
-
-  const auto app_id = web_app->app_id();
-  DCHECK(!app_id.empty());
-  DCHECK(!GetAppById(app_id));
-
-  // TODO(loyso): Expose CompletionCallback as RegisterApp argument.
-  sync_bridge_->WriteWebApps({web_app.get()}, base::DoNothing());
-
-  registry_.emplace(app_id, std::move(web_app));
-}
-
-std::unique_ptr<WebApp> WebAppRegistrar::UnregisterApp(const AppId& app_id) {
-  CountMutation();
-
-  DCHECK(!app_id.empty());
-
-  // TODO(loyso): Expose CompletionCallback as UnregisterApp argument.
-  sync_bridge_->DeleteWebApps({app_id}, base::DoNothing());
-
-  auto kv = registry_.find(app_id);
-  DCHECK(kv != registry_.end());
-
-  auto web_app = std::move(kv->second);
-  registry_.erase(kv);
-  return web_app;
-}
-
-void WebAppRegistrar::UnregisterAll() {
-  CountMutation();
-
-  // TODO(loyso): Expose CompletionCallback as UnregisterAll argument.
-  sync_bridge_->DeleteWebApps(GetAppIds(), base::DoNothing());
-  registry_.clear();
-}
 
 const WebApp* WebAppRegistrar::GetAppById(const AppId& app_id) const {
   auto it = registry_.find(app_id);
   return it == registry_.end() ? nullptr : it->second.get();
 }
 
-std::unique_ptr<WebAppRegistryUpdate> WebAppRegistrar::BeginUpdate() {
-  DCHECK(!is_in_update_);
-  is_in_update_ = true;
-
-  return base::WrapUnique(new WebAppRegistryUpdate(this));
-}
-
-void WebAppRegistrar::CommitUpdate(std::unique_ptr<WebAppRegistryUpdate> update,
-                                   CommitCallback callback) {
-  DCHECK(is_in_update_);
-  is_in_update_ = false;
-  if (update == nullptr || update->apps_to_update_.empty()) {
-    std::move(callback).Run(/*success*/ true);
-    return;
-  }
-
-#if DCHECK_IS_ON()
-  for (auto* app : update->apps_to_update_)
-    DCHECK(GetAppById(app->app_id()));
-#endif
-
-  sync_bridge_->WriteWebApps(
-      std::move(update->apps_to_update_),
-      base::BindOnce(&WebAppRegistrar::OnDataWritten,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-void WebAppRegistrar::Init(base::OnceClosure callback) {
-  sync_bridge_->OpenDatabase(base::BindOnce(&WebAppRegistrar::OnDatabaseOpened,
-                                            weak_ptr_factory_.GetWeakPtr(),
-                                            std::move(callback)));
-}
-
-void WebAppRegistrar::OnDatabaseOpened(base::OnceClosure callback,
-                                       Registry registry) {
+void WebAppRegistrar::InitRegistry(Registry&& registry) {
   DCHECK(is_empty());
   registry_ = std::move(registry);
-  std::move(callback).Run();
-}
-
-void WebAppRegistrar::OnDataWritten(CommitCallback callback, bool success) {
-  if (!success)
-    DLOG(ERROR) << "WebAppRegistrar commit failed";
-
-  std::move(callback).Run(success);
-}
-
-WebAppRegistrar* WebAppRegistrar::AsWebAppRegistrar() {
-  return this;
 }
 
 bool WebAppRegistrar::IsInstalled(const AppId& app_id) const {
@@ -209,14 +117,6 @@ LaunchContainer WebAppRegistrar::GetAppLaunchContainer(
   return web_app ? web_app->launch_container() : LaunchContainer::kDefault;
 }
 
-void WebAppRegistrar::SetAppLaunchContainer(const AppId& app_id,
-                                            LaunchContainer launch_container) {
-  ScopedRegistryUpdate update(this);
-  WebApp* web_app = update->UpdateApp(app_id);
-  if (web_app)
-    web_app->SetLaunchContainer(launch_container);
-}
-
 std::vector<AppId> WebAppRegistrar::GetAppIds() const {
   std::vector<AppId> app_ids;
   app_ids.reserve(registry_.size());
@@ -274,6 +174,20 @@ void WebAppRegistrar::CountMutation() {
 #if DCHECK_IS_ON()
   ++mutations_count_;
 #endif
+}
+
+bool IsRegistryEqual(const Registry& registry, const Registry& registry2) {
+  if (registry.size() != registry2.size())
+    return false;
+
+  for (auto& kv : registry) {
+    const WebApp* web_app = kv.second.get();
+    const WebApp* web_app2 = registry2.at(web_app->app_id()).get();
+    if (*web_app != *web_app2)
+      return false;
+  }
+
+  return true;
 }
 
 }  // namespace web_app

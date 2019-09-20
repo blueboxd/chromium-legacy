@@ -14,6 +14,7 @@
 #include "media/audio/audio_output_delegate.h"
 #include "media/base/audio_parameters.h"
 #include "mojo/core/embedder/embedder.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -88,13 +89,13 @@ TEST(MojoAudioOutputStreamProviderTest, AcquireTwice_BadMessage) {
       base::BindOnce(&CreateFakeDelegate), deleter.Get(),
       std::make_unique<FakeObserver>());
 
-  mojom::AudioOutputStreamProviderClientPtr client_1;
-  mojo::MakeRequest(&client_1);
+  mojo::PendingRemote<mojom::AudioOutputStreamProviderClient> client_1;
+  ignore_result(client_1.InitWithNewPipeAndPassReceiver());
   provider_remote->Acquire(media::AudioParameters::UnavailableDeviceParams(),
                            std::move(client_1), base::nullopt);
 
-  mojom::AudioOutputStreamProviderClientPtr client_2;
-  mojo::MakeRequest(&client_2);
+  mojo::PendingRemote<mojom::AudioOutputStreamProviderClient> client_2;
+  ignore_result(client_2.InitWithNewPipeAndPassReceiver());
   provider_remote->Acquire(media::AudioParameters::UnavailableDeviceParams(),
                            std::move(client_2), base::nullopt);
 
@@ -127,8 +128,8 @@ TEST(MojoAudioOutputStreamProviderTest,
       base::BindOnce(&CreateFakeDelegate), deleter.Get(),
       std::make_unique<FakeObserver>());
 
-  mojom::AudioOutputStreamProviderClientPtr client;
-  mojo::MakeRequest(&client);
+  mojo::PendingRemote<mojom::AudioOutputStreamProviderClient> client;
+  ignore_result(client.InitWithNewPipeAndPassReceiver());
   provider_remote->Acquire(params, std::move(client), base::nullopt);
 
 #if defined(OS_ANDROID)

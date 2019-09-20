@@ -16,8 +16,8 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
-#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -85,8 +85,9 @@ void SetIcons(const WebApplicationInfo& web_app_info, WebApp* web_app) {
 
 }  // namespace
 
-WebAppInstallFinalizer::WebAppInstallFinalizer(WebAppIconManager* icon_manager)
-    : icon_manager_(icon_manager) {}
+WebAppInstallFinalizer::WebAppInstallFinalizer(WebAppSyncBridge* sync_bridge,
+                                               WebAppIconManager* icon_manager)
+    : sync_bridge_(sync_bridge), icon_manager_(icon_manager) {}
 
 WebAppInstallFinalizer::~WebAppInstallFinalizer() = default;
 
@@ -101,8 +102,9 @@ void WebAppInstallFinalizer::FinalizeInstall(
       InferSourceFromMetricsInstallSource(options.install_source);
 
   AppId app_id = GenerateAppIdFromURL(web_app_info.app_url);
-  if (registrar_->GetAppById(app_id)) {
-    ScopedRegistryUpdate update(registrar_);
+  // TODO(crbug.com/878262): Fix is_locally_installed flag handling here.
+  if (registrar().IsInstalled(app_id)) {
+    ScopedRegistryUpdate update(sync_bridge_);
     WebApp* existing_web_app = update->UpdateApp(app_id);
     existing_web_app->AddSource(source);
 
@@ -159,9 +161,9 @@ void WebAppInstallFinalizer::OnDataWritten(InstallFinalizedCallback callback,
 
   AppId app_id = web_app->app_id();
 
-  registrar_->RegisterApp(std::move(web_app));
+  sync_bridge_->RegisterApp(std::move(web_app));
   // TODO(loyso): NotifyWebAppInstalled should be a part of RegisterApp.
-  registrar_->NotifyWebAppInstalled(app_id);
+  registrar().NotifyWebAppInstalled(app_id);
 
   std::move(callback).Run(std::move(app_id),
                           InstallResultCode::kSuccessNewInstall);
@@ -206,12 +208,6 @@ bool WebAppInstallFinalizer::CanUserUninstallFromSync(
     const AppId& app_id) const {
   // TODO(crbug.com/901226): Implement it.
   return false;
-}
-
-void WebAppInstallFinalizer::SetSubsystems(AppRegistrar* registrar,
-                                           WebAppUiManager* ui_manager) {
-  registrar_ = registrar ? registrar->AsWebAppRegistrar() : nullptr;
-  InstallFinalizer::SetSubsystems(registrar, ui_manager);
 }
 
 }  // namespace web_app

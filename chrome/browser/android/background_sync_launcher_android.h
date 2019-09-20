@@ -16,8 +16,7 @@
 #include "base/time/time.h"
 #include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
 
-// The BackgroundSyncLauncherAndroid singleton owns the Java
-// BackgroundSyncLauncher object and is used to register interest in starting
+// BackgroundSyncLauncherAndroid is used to register interest in starting
 // the browser the next time the device goes online. This class runs on the UI
 // thread.
 class BackgroundSyncLauncherAndroid {
@@ -33,8 +32,8 @@ class BackgroundSyncLauncherAndroid {
 
   static bool ShouldDisableBackgroundSync();
 
-  // TODO(iclelland): Remove this once the bots have their play services package
-  // updated before every test run. (https://crbug.com/514449)
+  // TODO(crbug.com/514449): Remove this once the bots have their play services
+  // package updated before every test run.
   static void SetPlayServicesVersionCheckDisabledForTests(bool disabled);
 
   // Fires all pending Background Sync events across all storage partitions
@@ -56,8 +55,6 @@ class BackgroundSyncLauncherAndroid {
       blink::mojom::BackgroundSyncType sync_type,
       base::TimeDelta soonest_wakeup_delta);
 
-  base::android::ScopedJavaGlobalRef<jobject>
-      java_gcm_network_manager_launcher_;
   base::android::ScopedJavaGlobalRef<jobject>
       java_background_sync_background_task_scheduler_launcher_;
 

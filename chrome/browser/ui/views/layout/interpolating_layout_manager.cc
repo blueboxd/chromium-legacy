@@ -160,43 +160,6 @@ int InterpolatingLayoutManager::GetPreferredHeightForWidth(
                                            second);
 }
 
-// static
-views::LayoutManagerBase::ProposedLayout
-InterpolatingLayoutManager::Interpolate(double value,
-                                        const ProposedLayout& start,
-                                        const ProposedLayout& target) {
-  if (value >= 1.0)
-    return target;
-
-  ProposedLayout layout;
-
-  // Interpolate the host size.
-  layout.host_size =
-      gfx::Tween::SizeValueBetween(value, start.host_size, target.host_size);
-
-  // The views may not be listed in the same order and some views might be
-  // omitted from either the |start| or |target| layout.
-  std::map<const views::View*, size_t> start_view_to_index;
-  for (size_t i = 0; i < start.child_layouts.size(); ++i)
-    start_view_to_index.emplace(start.child_layouts[i].child_view, i);
-  for (const ChildLayout& target_child : target.child_layouts) {
-    // Try to match the view from the target with the view from the start.
-    const auto start_match = start_view_to_index.find(target_child.child_view);
-    if (start_match == start_view_to_index.end()) {
-      // If there is no match, make the view present but invisible.
-      layout.child_layouts.push_back({target_child.child_view, false});
-    } else {
-      // Tween the two layouts.
-      const ChildLayout& start_child = start.child_layouts[start_match->second];
-      layout.child_layouts.push_back(
-          {target_child.child_view, start_child.visible && target_child.visible,
-           gfx::Tween::RectValueBetween(value, start_child.bounds,
-                                        target_child.bounds)});
-    }
-  }
-  return layout;
-}
-
 const views::LayoutManagerBase* InterpolatingLayoutManager::GetDefaultLayout()
     const {
   DCHECK(!embedded_layouts_.empty());

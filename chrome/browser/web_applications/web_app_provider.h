@@ -29,6 +29,7 @@ class PrefRegistrySyncable;
 namespace web_app {
 
 // Forward declarations of generalized interfaces.
+class AppRegistryController;
 class AppIconManager;
 class ExternalWebAppManager;
 class FileHandlerManager;
@@ -42,7 +43,6 @@ class WebAppUiManager;
 
 // Forward declarations for new extension-independent subsystems.
 class WebAppDatabaseFactory;
-class WebAppSyncBridge;
 
 // Connects Web App features, such as the installation of default and
 // policy-managed web apps, with Profiles (as WebAppProvider is a
@@ -67,6 +67,7 @@ class WebAppProvider : public WebAppProviderBase {
 
   // WebAppProviderBase:
   AppRegistrar& registrar() override;
+  AppRegistryController& registry_controller() override;
   InstallManager& install_manager() override;
   InstallFinalizer& install_finalizer() override;
   ManifestUpdateManager& manifest_update_manager() override;
@@ -77,7 +78,6 @@ class WebAppProvider : public WebAppProviderBase {
   FileHandlerManager& file_handler_manager() override;
   AppIconManager& icon_manager() override;
 
-  WebAppSyncBridge& sync_bridge() { return *sync_bridge_; }
   SystemWebAppManager& system_web_app_manager();
 
   // KeyedService:
@@ -103,18 +103,18 @@ class WebAppProvider : public WebAppProviderBase {
   // Wire together subsystems but do not start them (yet).
   void ConnectSubsystems();
 
-  // Start registry. All other subsystems depend on it.
-  void StartRegistry();
-  void OnRegistryReady();
+  // Start registry controller. All other subsystems depend on it.
+  void StartRegistryController();
+  void OnRegistryControllerReady();
 
   void CheckIsConnected() const;
 
   // New extension-independent subsystems:
   std::unique_ptr<WebAppDatabaseFactory> database_factory_;
-  std::unique_ptr<WebAppSyncBridge> sync_bridge_;
 
   // Generalized subsystems:
   std::unique_ptr<AppRegistrar> registrar_;
+  std::unique_ptr<AppRegistryController> registry_controller_;
   std::unique_ptr<ExternalWebAppManager> external_web_app_manager_;
   std::unique_ptr<FileHandlerManager> file_handler_manager_;
   std::unique_ptr<AppIconManager> icon_manager_;

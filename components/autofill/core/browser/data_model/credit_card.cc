@@ -708,6 +708,11 @@ bool CreditCard::HasValidCardNumber() const {
   return IsValidCreditCardNumber(number_);
 }
 
+bool CreditCard::HasValidExpirationYear() const {
+  return IsValidCreditCardExpirationYear(expiration_year_,
+                                         AutofillClock::Now());
+}
+
 bool CreditCard::HasValidExpirationDate() const {
   return IsValidCreditCardExpirationDate(expiration_year_, expiration_month_,
                                          AutofillClock::Now());

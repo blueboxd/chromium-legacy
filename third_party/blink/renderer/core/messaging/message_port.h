@@ -62,7 +62,7 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
 
   void postMessage(ScriptState*,
                    const ScriptValue& message,
-                   Vector<ScriptValue>& transfer,
+                   HeapVector<ScriptValue>& transfer,
                    ExceptionState&);
   void postMessage(ScriptState*,
                    const ScriptValue& message,

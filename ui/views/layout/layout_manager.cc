@@ -47,4 +47,9 @@ void LayoutManager::SetViewVisibility(View* view, bool visible) {
   view->SetVisible(visible);
 }
 
+std::vector<View*> LayoutManager::GetChildViewsInPaintOrder(
+    const View* host) const {
+  return host->children();
+}
+
 }  // namespace views

@@ -96,7 +96,6 @@ static void ConsiderForBestCandidate(SpatialNavigationDirection direction,
   if (distance == kMaxDistance)
     return;
 
-
   if (distance < *best_distance && IsUnobscured(candidate)) {
     *best_candidate = candidate;
     *best_distance = distance;
@@ -466,8 +465,11 @@ void SpatialNavigationController::MoveInterestTo(Node* next_node) {
 }
 
 void SpatialNavigationController::DispatchMouseMoveAt(Element* element) {
-  FloatPoint event_position =
-      element ? RectInViewport(*element).Location() : FloatPoint(-1, -1);
+  FloatPoint event_position(-1, -1);
+  if (element) {
+    event_position = RectInViewport(*element).Location();
+    event_position.Move(1, 1);
+  }
 
   // TODO(bokan): Can we get better screen coordinates?
   FloatPoint event_position_screen = event_position;

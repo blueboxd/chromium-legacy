@@ -29,6 +29,7 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/discardable_memory/common/discardable_memory_export.h"
 #include "components/discardable_memory/public/mojom/discardable_shared_memory_manager.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace base {
 class WaitableEvent;
@@ -58,9 +59,10 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryManager
   // created in the current process.
   static DiscardableSharedMemoryManager* Get();
 
-  // Bind the manager to a mojo interface request.
-  void Bind(mojom::DiscardableSharedMemoryManagerRequest request,
-            const service_manager::BindSourceInfo& source_info);
+  // Bind the manager to a mojo interface receiver.
+  void Bind(
+      mojo::PendingReceiver<mojom::DiscardableSharedMemoryManager> receiver,
+      const service_manager::BindSourceInfo& source_info);
 
   // Overridden from base::DiscardableMemoryAllocator:
   std::unique_ptr<base::DiscardableMemory> AllocateLockedDiscardableMemory(

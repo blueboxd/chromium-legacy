@@ -41,7 +41,7 @@ class ClickToCallUiController
   // Overridden from SharingUiController:
   base::string16 GetTitle() override;
   PageActionIconType GetIconType() override;
-  int GetRequiredDeviceCapabilities() override;
+  sync_pb::SharingSpecificFields::EnabledFeatures GetRequiredFeature() override;
   void OnDeviceChosen(const syncer::DeviceInfo& device) override;
   void OnAppChosen(const App& app) override;
   void OnDialogClosed(SharingDialog* dialog) override;
@@ -52,6 +52,8 @@ class ClickToCallUiController
   base::string16 GetEducationWindowTitleText() const override;
   void OnHelpTextClicked(SharingDialogType dialog_type) override;
   int GetHeaderImageId() const override;
+  std::unique_ptr<views::StyledLabel> GetHelpTextLabel(
+      views::StyledLabelListener* listener) override;
 
  protected:
   explicit ClickToCallUiController(content::WebContents* web_contents);

@@ -61,7 +61,7 @@ void DataReductionProxyURLLoaderThrottle::DetachFromCurrentSequence() {
   }
 
   data_reduction_proxy_->Clone(
-      mojo::MakeRequest(&private_data_reduction_proxy_info_));
+      private_data_reduction_proxy_remote_.InitWithNewPipeAndPassReceiver());
   data_reduction_proxy_ = nullptr;
 }
 
@@ -72,7 +72,7 @@ void DataReductionProxyURLLoaderThrottle::SetUpPrivateMojoPipes() {
   // Bind the pipe created in DetachFromCurrentSequence() to the current
   // sequence.
   private_data_reduction_proxy_.Bind(
-      std::move(private_data_reduction_proxy_info_));
+      std::move(private_data_reduction_proxy_remote_));
   data_reduction_proxy_ = private_data_reduction_proxy_.get();
 
   data_reduction_proxy_->AddThrottleConfigObserver(
@@ -84,7 +84,7 @@ void DataReductionProxyURLLoaderThrottle::WillStartRequest(
     bool* defer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (private_data_reduction_proxy_info_)
+  if (private_data_reduction_proxy_remote_)
     SetUpPrivateMojoPipes();
 
   url_chain_.clear();

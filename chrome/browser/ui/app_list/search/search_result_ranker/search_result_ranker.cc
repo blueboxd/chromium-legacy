@@ -159,7 +159,7 @@ float ReRange(const float score, const float min, const float max) {
 SearchResultRanker::SearchResultRanker(Profile* profile,
                                        history::HistoryService* history_service,
                                        service_manager::Connector* connector)
-    : config_converter_(connector),
+    : connector_(connector),
       history_service_observer_(this),
       profile_(profile),
       weak_factory_(this) {
@@ -212,12 +212,13 @@ void SearchResultRanker::InitializeRankers() {
       // Item ranker model.
       const std::string config_json = GetFieldTrialParamValueByFeature(
           app_list_features::kEnableQueryBasedMixedTypesRanker, "config");
-      config_converter_.Convert(
-          config_json, "QueryBasedMixedTypes",
+      query_mixed_config_converter_ = JsonConfigConverter::Convert(
+          connector_, config_json, "QueryBasedMixedTypes",
           base::BindOnce(
               [](SearchResultRanker* ranker,
                  const RecurrenceRankerConfigProto& default_config,
                  base::Optional<RecurrenceRankerConfigProto> parsed_config) {
+                ranker->query_mixed_config_converter_.reset();
                 if (ranker->json_config_parsed_for_testing_)
                   std::move(ranker->json_config_parsed_for_testing_).Run();
                 ranker->query_based_mixed_types_ranker_ =
@@ -257,12 +258,14 @@ void SearchResultRanker::InitializeRankers() {
 
     const std::string config_json = GetFieldTrialParamValueByFeature(
         app_list_features::kEnableZeroStateMixedTypesRanker, "config");
-    config_converter_.Convert(
-        config_json, "ZeroStateGroups",
+
+    zero_state_config_converter_ = JsonConfigConverter::Convert(
+        connector_, config_json, "ZeroStateGroups",
         base::BindOnce(
             [](SearchResultRanker* ranker,
                const RecurrenceRankerConfigProto& default_config,
                base::Optional<RecurrenceRankerConfigProto> parsed_config) {
+              ranker->zero_state_config_converter_.reset();
               if (ranker->json_config_parsed_for_testing_)
                 std::move(ranker->json_config_parsed_for_testing_).Run();
               ranker->zero_state_group_ranker_ =

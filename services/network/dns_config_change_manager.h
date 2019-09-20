@@ -10,8 +10,8 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/base/network_change_notifier.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 
@@ -24,7 +24,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) DnsConfigChangeManager
   DnsConfigChangeManager();
   ~DnsConfigChangeManager() override;
 
-  void AddBinding(mojom::DnsConfigChangeManagerRequest request);
+  void AddReceiver(
+      mojo::PendingReceiver<mojom::DnsConfigChangeManager> receiver);
 
   // mojom::DnsConfigChangeManager implementation:
   void RequestNotifications(
@@ -35,7 +36,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) DnsConfigChangeManager
   void OnDNSChanged() override;
   void OnInitialDNSConfigRead() override;
 
-  mojo::BindingSet<mojom::DnsConfigChangeManager> bindings_;
+  mojo::ReceiverSet<mojom::DnsConfigChangeManager> receivers_;
   mojo::InterfacePtrSet<mojom::DnsConfigChangeManagerClient> clients_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsConfigChangeManager);

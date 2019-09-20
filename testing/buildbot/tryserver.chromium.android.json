@@ -3037,6 +3037,12 @@
       },
       {
         "isolate_coverage_data": true,
+        "name": "touch_to_fill_junit_tests",
+        "swarming": {},
+        "test": "touch_to_fill_junit_tests"
+      },
+      {
+        "isolate_coverage_data": true,
         "name": "ui_junit_tests",
         "swarming": {},
         "test": "ui_junit_tests"

@@ -262,7 +262,8 @@ interface NetworkService {
       pending_receiver<NetworkQualityEstimatorManager> receiver);
 
   // Gets the DnsConfigChangeManager.
-  GetDnsConfigChangeManager(DnsConfigChangeManager& dns_config_change_manager);
+  GetDnsConfigChangeManager(
+      pending_receiver<DnsConfigChangeManager> receiver);
 
   // Gets the accumulated network usage since the start/restart of the service.
   GetTotalNetworkUsages() => (array<NetworkUsage> total_network_usages);

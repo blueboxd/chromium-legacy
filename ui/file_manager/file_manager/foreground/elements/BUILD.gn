@@ -132,11 +132,7 @@ js_unittest("files_toast_unittest") {
 
 js_unittest("files_xf_elements_unittest") {
   deps = [
-    ":xf_activity_complete",
-    ":xf_button",
-    ":xf_circular_progress",
     ":xf_display_panel",
-    ":xf_panel_item",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:webui_resource_test",
   ]
@@ -157,6 +153,7 @@ js_library("xf_activity_complete") {
 
 js_library("xf_button") {
   deps = [
+    "//ui/webui/resources/cr_elements/cr_button:cr_button",
     "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button",
   ]
 }
@@ -165,7 +162,15 @@ js_library("xf_circular_progress") {
 }
 
 js_library("xf_display_panel") {
+  deps = [
+    ":xf_panel_item",
+  ]
 }
 
 js_library("xf_panel_item") {
+  deps = [
+    ":xf_activity_complete",
+    ":xf_button",
+    ":xf_circular_progress",
+  ]
 }

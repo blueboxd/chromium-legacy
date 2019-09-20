@@ -159,7 +159,7 @@ class SQLTransaction final : public ScriptWrappable,
   void executeSql(ScriptState*, const String& sql_statement, ExceptionState&);
   void executeSql(ScriptState*,
                   const String& sql_statement,
-                  const base::Optional<Vector<ScriptValue>>& arguments,
+                  const base::Optional<HeapVector<ScriptValue>>& arguments,
                   V8SQLStatementCallback*,
                   V8SQLStatementErrorCallback*,
                   ExceptionState&);

@@ -20,11 +20,16 @@
 using chrome_test_util::AddPaymentMethodButton;
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
+using chrome_test_util::IconViewForCellWithLabelId;
 using chrome_test_util::PaymentMethodsButton;
 using chrome_test_util::StaticTextWithAccessibilityLabelId;
 using chrome_test_util::TextFieldForCellWithLabelId;
 
 namespace {
+
+// Identifiers for text field icons.
+NSString* const kErrorIconIdentifier = @"_errorIcon";
+NSString* const kEditIconIdentifier = @"_editIcon";
 
 // Matcher for the 'Name on Card' field in the add credit card view.
 id<GREYMatcher> NameOnCardField() {
@@ -69,6 +74,11 @@ id<GREYMatcher> MonthOfExpiryTextField() {
 // Matcher for the 'Year of Expiry' text field in the add credit card view.
 id<GREYMatcher> YearOfExpiryTextField() {
   return TextFieldForCellWithLabelId(IDS_IOS_AUTOFILL_EXP_YEAR);
+}
+
+// Matcher for the 'Card Number' icon view in the add credit card view.
+id<GREYMatcher> CardNumberIconView(NSString* icon_type) {
+  return IconViewForCellWithLabelId(IDS_IOS_AUTOFILL_CARD_NUMBER, icon_type);
 }
 
 // Matcher for the Invalid Card Number Alert.
@@ -150,21 +160,6 @@ id<GREYMatcher> InvalidCardExpiryDateAlert() {
 
 // Tests that the 'Add' button in the top toolbar is disabled by default.
 - (void)testAddButtonDisabledOnDefault {
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::AddCreditCardButton()]
-      assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
-                                   grey_not(grey_enabled()), nil)];
-}
-
-// Tests that the 'Add' button in the top toolbar is enabled when any text is
-// typed and disabled when there is no text.
-- (void)testAddButtonEnabledDisabledOnModifyingTextField {
-  [[EarlGrey selectElementWithMatcher:CardNumberTextField()]
-      performAction:grey_typeText(@"1234")];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::AddCreditCardButton()]
-      assertWithMatcher:grey_allOf(grey_sufficientlyVisible(), grey_enabled(),
-                                   nil)];
-  [[EarlGrey selectElementWithMatcher:CardNumberField()]
-      performAction:grey_clearText()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::AddCreditCardButton()]
       assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
                                    grey_not(grey_enabled()), nil)];
@@ -264,6 +259,58 @@ id<GREYMatcher> InvalidCardExpiryDateAlert() {
       assertWithMatcher:grey_sufficientlyVisible()];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::CloseButton()]
       performAction:grey_tap()];
+}
+
+#pragma mark - Inline Testing
+
+// Tests that an error icon is displayed when a field has invalid text. The icon
+// is displayed if the field is not currently being editted.
+- (void)testInvalidInputDisplaysInlineError {
+  [[EarlGrey selectElementWithMatcher:CardNumberIconView(kEditIconIdentifier)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Error icon displayed when field is invalid.
+  [[EarlGrey selectElementWithMatcher:CardNumberTextField()]
+      performAction:grey_typeText(@"1234")];
+  [[EarlGrey selectElementWithMatcher:MonthOfExpiryTextField()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:CardNumberIconView(kErrorIconIdentifier)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:CardNumberIconView(kEditIconIdentifier)]
+      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+
+  // Editing a field makes both icons disappear.
+  [[EarlGrey selectElementWithMatcher:CardNumberTextField()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:CardNumberIconView(kErrorIconIdentifier)]
+      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+  [[EarlGrey selectElementWithMatcher:CardNumberIconView(kEditIconIdentifier)]
+      assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+
+  // Clearing the text enables the edit icon.
+  [[EarlGrey selectElementWithMatcher:CardNumberTextField()]
+      performAction:grey_clearText()];
+  [[EarlGrey selectElementWithMatcher:CardNumberIconView(kEditIconIdentifier)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that add button is disabled until typing a single character makes all
+// the fields valid.
+- (void)testAddButtonDisabledTillValidForm {
+  [[EarlGrey selectElementWithMatcher:CardNumberTextField()]
+      performAction:grey_typeText(@"4111111111111111")];
+  [[EarlGrey selectElementWithMatcher:MonthOfExpiryTextField()]
+      performAction:grey_typeText(@"12")];
+  [[EarlGrey selectElementWithMatcher:YearOfExpiryTextField()]
+      performAction:grey_typeText(@"299")];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::AddCreditCardButton()]
+      assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
+                                   grey_not(grey_enabled()), nil)];
+  [[EarlGrey selectElementWithMatcher:YearOfExpiryTextField()]
+      performAction:grey_typeText(@"9")];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::AddCreditCardButton()]
+      assertWithMatcher:grey_allOf(grey_sufficientlyVisible(), grey_enabled(),
+                                   nil)];
 }
 
 @end

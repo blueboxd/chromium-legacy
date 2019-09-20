@@ -16,6 +16,8 @@
 #include "content/public/test/mock_download_manager.h"
 #include "content/public/test/test_web_ui.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,13 +25,14 @@ namespace {
 
 class TestDownloadsDOMHandler : public DownloadsDOMHandler {
  public:
-  TestDownloadsDOMHandler(downloads::mojom::PagePtr page,
+  TestDownloadsDOMHandler(mojo::PendingRemote<downloads::mojom::Page> page,
                           content::DownloadManager* download_manager,
                           content::WebUI* web_ui)
-      : DownloadsDOMHandler(downloads::mojom::PageHandlerRequest(),
-                            std::move(page),
-                            download_manager,
-                            web_ui) {}
+      : DownloadsDOMHandler(
+            mojo::PendingReceiver<downloads::mojom::PageHandler>(),
+            std::move(page),
+            download_manager,
+            web_ui) {}
 
   using DownloadsDOMHandler::FinalizeRemovals;
   using DownloadsDOMHandler::RemoveDownloads;
@@ -66,7 +69,8 @@ class DownloadsDOMHandlerTest : public testing::Test {
 
 TEST_F(DownloadsDOMHandlerTest, ChecksForRemovedFiles) {
   EXPECT_CALL(*manager(), CheckForHistoryFilesRemoval());
-  TestDownloadsDOMHandler handler(page_.BindAndGetPtr(), manager(), web_ui());
+  TestDownloadsDOMHandler handler(page_.BindAndGetRemote(), manager(),
+                                  web_ui());
 
   testing::Mock::VerifyAndClear(manager());
 
@@ -74,7 +78,8 @@ TEST_F(DownloadsDOMHandlerTest, ChecksForRemovedFiles) {
 }
 
 TEST_F(DownloadsDOMHandlerTest, HandleGetDownloads) {
-  TestDownloadsDOMHandler handler(page_.BindAndGetPtr(), manager(), web_ui());
+  TestDownloadsDOMHandler handler(page_.BindAndGetRemote(), manager(),
+                                  web_ui());
 
   handler.GetDownloads(std::vector<std::string>());
 
@@ -110,7 +115,8 @@ TEST_F(DownloadsDOMHandlerTest, ClearAll) {
 
   ASSERT_TRUE(DownloadItemModel(&completed).ShouldShowInShelf());
 
-  TestDownloadsDOMHandler handler(page_.BindAndGetPtr(), manager(), web_ui());
+  TestDownloadsDOMHandler handler(page_.BindAndGetRemote(), manager(),
+                                  web_ui());
   handler.RemoveDownloads(downloads);
 
   // Ensure |completed| has been "soft removed" (i.e. can be revived).

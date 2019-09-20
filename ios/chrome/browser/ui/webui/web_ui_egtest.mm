@@ -289,4 +289,33 @@ bool WebStateContainsChromeFlagsBody() {
              @"JavaScript error or body-container is not visible");
 }
 
+- (void)testChromePasswordManagerInternalsSite {
+  LoadWebUIUrl(kChromeUIPasswordManagerInternalsHost);
+
+  // Not using kChromeUIPasswordManagerInternalsHost because it has a final "/"
+  // that is not displayed in Omnibox.
+  [[EarlGrey
+      selectElementWithMatcher:WaitForOmniboxText(
+                                   "chrome://password-manager-internals")]
+      assertWithMatcher:grey_notNil()];
+
+  // Validates that some of the expected text on the page exists.
+  [ChromeEarlGrey waitForWebStateContainingText:"Variations"];
+  [ChromeEarlGrey waitForWebStateContainingText:"Password Manager Internals"];
+}
+
+- (void)testChromeAutofillInternalsSite {
+  LoadWebUIUrl(kChromeUIAutofillInternalsHost);
+
+  // Not using kChromeUIAutofillInternalsHost because it has a final "/" that
+  // is not displayed in Omnibox.
+  [[EarlGrey selectElementWithMatcher:WaitForOmniboxText(
+                                          "chrome://autofill-internals")]
+      assertWithMatcher:grey_notNil()];
+
+  // Validates that some of the expected text on the page exists.
+  [ChromeEarlGrey waitForWebStateContainingText:"Variations"];
+  [ChromeEarlGrey waitForWebStateContainingText:"Autofill Internals"];
+}
+
 @end

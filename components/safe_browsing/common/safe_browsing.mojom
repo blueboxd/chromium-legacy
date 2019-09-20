@@ -39,7 +39,7 @@ interface SafeBrowsing {
   // has been shown to the user.
   CreateCheckerAndCheck(
       int32 render_frame_id,
-      SafeBrowsingUrlChecker& request,
+      pending_receiver<SafeBrowsingUrlChecker> receiver,
       url.mojom.Url url,
       string method,
       network.mojom.HttpRequestHeaders headers,

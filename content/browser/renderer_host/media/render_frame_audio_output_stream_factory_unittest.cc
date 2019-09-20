@@ -30,7 +30,6 @@
 #include "media/audio/test_audio_thread.h"
 #include "media/base/audio_parameters.h"
 #include "media/mojo/mojom/audio_output_stream.mojom.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -221,8 +220,8 @@ TEST_F(RenderFrameAudioOutputStreamFactoryTest,
       provider_remote.BindNewPipeAndPassReceiver(), base::nullopt,
       kDefaultDeviceId, mock_callback.Get());
   {
-    media::mojom::AudioOutputStreamProviderClientPtr client;
-    mojo::MakeRequest(&client);
+    mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient> client;
+    ignore_result(client.InitWithNewPipeAndPassReceiver());
     provider_remote->Acquire(kParams, std::move(client), base::nullopt);
   }
 
@@ -258,8 +257,8 @@ TEST_F(RenderFrameAudioOutputStreamFactoryTest,
   }
   // Now factory is destructed. Trying to create a stream should fail.
   {
-    media::mojom::AudioOutputStreamProviderClientPtr client;
-    mojo::MakeRequest(&client);
+    mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient> client;
+    ignore_result(client.InitWithNewPipeAndPassReceiver());
     provider_remote->Acquire(kParams, std::move(client), base::nullopt);
   }
 

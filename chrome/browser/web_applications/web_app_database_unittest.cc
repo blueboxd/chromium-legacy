@@ -24,36 +24,19 @@
 
 namespace web_app {
 
-namespace {
-
-bool IsRegistryEqual(const Registry& registry, const Registry& registry2) {
-  if (registry.size() != registry2.size())
-    return false;
-
-  for (auto& kv : registry) {
-    const WebApp* web_app = kv.second.get();
-    const WebApp* web_app2 = registry2.at(web_app->app_id()).get();
-    if (*web_app != *web_app2)
-      return false;
-  }
-
-  return true;
-}
-
-}  // namespace
-
 class WebAppDatabaseTest : public testing::Test {
  public:
   WebAppDatabaseTest() {
     database_factory_ = std::make_unique<TestWebAppDatabaseFactory>();
-    sync_bridge_ = std::make_unique<WebAppSyncBridge>(database_factory_.get());
-    registrar_ = std::make_unique<WebAppRegistrar>(nullptr, sync_bridge_.get());
+    registrar_ = std::make_unique<WebAppRegistrar>(nullptr);
+    sync_bridge_ = std::make_unique<WebAppSyncBridge>(
+        nullptr, database_factory_.get(), registrar_.get());
   }
 
   void InitRegistrar() {
     base::RunLoop run_loop;
 
-    registrar_->Init(base::BindLambdaForTesting([&]() { run_loop.Quit(); }));
+    sync_bridge().Init(base::BindLambdaForTesting([&]() { run_loop.Quit(); }));
 
     run_loop.Run();
   }
@@ -106,21 +89,8 @@ class WebAppDatabaseTest : public testing::Test {
     return app;
   }
 
-  Registry ReadRegistry() {
-    Registry registry;
-    base::RunLoop run_loop;
-
-    sync_bridge().ReadRegistry(base::BindLambdaForTesting([&](Registry r) {
-      registry = std::move(r);
-      run_loop.Quit();
-    }));
-
-    run_loop.Run();
-    return registry;
-  }
-
   bool IsDatabaseRegistryEqualToRegistrar() {
-    Registry registry = ReadRegistry();
+    Registry registry = database_factory().ReadRegistry();
     return IsRegistryEqual(registrar_->registry_for_testing(), registry);
   }
 
@@ -160,6 +130,8 @@ class WebAppDatabaseTest : public testing::Test {
   }
 
  protected:
+  TestWebAppDatabaseFactory& database_factory() { return *database_factory_; }
+  WebAppDatabase& database() { return sync_bridge().database_for_testing(); }
   WebAppSyncBridge& sync_bridge() { return *sync_bridge_; }
   WebAppRegistrar& registrar() { return *registrar_; }
 
@@ -181,19 +153,19 @@ TEST_F(WebAppDatabaseTest, WriteAndReadRegistry) {
 
   auto app = CreateWebApp(base_url, 0);
   auto app_id = app->app_id();
-  registrar().RegisterApp(std::move(app));
+  sync_bridge().RegisterApp(std::move(app));
   EXPECT_TRUE(IsDatabaseRegistryEqualToRegistrar());
 
   for (int i = 1; i <= num_apps; ++i) {
     auto extra_app = CreateWebApp(base_url, i);
-    registrar().RegisterApp(std::move(extra_app));
+    sync_bridge().RegisterApp(std::move(extra_app));
   }
   EXPECT_TRUE(IsDatabaseRegistryEqualToRegistrar());
 
-  registrar().UnregisterApp(app_id);
+  sync_bridge().UnregisterApp(app_id);
   EXPECT_TRUE(IsDatabaseRegistryEqualToRegistrar());
 
-  registrar().UnregisterAll();
+  sync_bridge().UnregisterAll();
   EXPECT_TRUE(IsDatabaseRegistryEqualToRegistrar());
 }
 
@@ -217,27 +189,27 @@ TEST_F(WebAppDatabaseTest, WriteAndDeleteAppsWithCallbacks) {
 
   {
     base::RunLoop run_loop;
-    sync_bridge().WriteWebApps(std::move(apps_to_write),
-                               base::BindLambdaForTesting([&](bool success) {
-                                 EXPECT_TRUE(success);
-                                 run_loop.Quit();
-                               }));
+    database().WriteWebApps(std::move(apps_to_write),
+                            base::BindLambdaForTesting([&](bool success) {
+                              EXPECT_TRUE(success);
+                              run_loop.Quit();
+                            }));
     run_loop.Run();
 
-    Registry registry_written = ReadRegistry();
+    Registry registry_written = database_factory().ReadRegistry();
     EXPECT_TRUE(IsRegistryEqual(registry_written, registry));
   }
 
   {
     base::RunLoop run_loop;
-    sync_bridge().DeleteWebApps(std::move(apps_to_delete),
-                                base::BindLambdaForTesting([&](bool success) {
-                                  EXPECT_TRUE(success);
-                                  run_loop.Quit();
-                                }));
+    database().DeleteWebApps(std::move(apps_to_delete),
+                             base::BindLambdaForTesting([&](bool success) {
+                               EXPECT_TRUE(success);
+                               run_loop.Quit();
+                             }));
     run_loop.Run();
 
-    Registry registry_deleted = ReadRegistry();
+    Registry registry_deleted = database_factory().ReadRegistry();
     EXPECT_TRUE(registry_deleted.empty());
   }
 }
@@ -276,9 +248,9 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app->scope().is_empty());
   EXPECT_FALSE(app->theme_color().has_value());
   EXPECT_TRUE(app->icons().empty());
-  registrar().RegisterApp(std::move(app));
+  sync_bridge().RegisterApp(std::move(app));
 
-  Registry registry = ReadRegistry();
+  Registry registry = database_factory().ReadRegistry();
   EXPECT_EQ(1UL, registry.size());
 
   std::unique_ptr<WebApp>& app_copy = registry.at(app_id);
@@ -322,9 +294,9 @@ TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {
   }
   app->SetIcons(std::move(icons));
 
-  registrar().RegisterApp(std::move(app));
+  sync_bridge().RegisterApp(std::move(app));
 
-  Registry registry = ReadRegistry();
+  Registry registry = database_factory().ReadRegistry();
   EXPECT_EQ(1UL, registry.size());
 
   std::unique_ptr<WebApp>& app_copy = registry.at(app_id);

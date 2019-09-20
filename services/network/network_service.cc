@@ -567,8 +567,8 @@ void NetworkService::GetNetworkQualityEstimatorManager(
 }
 
 void NetworkService::GetDnsConfigChangeManager(
-    mojom::DnsConfigChangeManagerRequest request) {
-  dns_config_change_manager_->AddBinding(std::move(request));
+    mojo::PendingReceiver<mojom::DnsConfigChangeManager> receiver) {
+  dns_config_change_manager_->AddReceiver(std::move(receiver));
 }
 
 void NetworkService::GetTotalNetworkUsages(

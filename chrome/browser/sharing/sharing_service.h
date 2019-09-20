@@ -22,6 +22,7 @@
 #include "components/gcm_driver/web_push_common.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/driver/sync_service_observer.h"
+#include "components/sync/protocol/device_info_specifics.pb.h"
 #include "components/sync_device_info/device_info_tracker.h"
 #include "net/base/backoff_entry.h"
 
@@ -88,10 +89,9 @@ class SharingService : public KeyedService,
       const std::string& guid) const;
 
   // Returns a list of DeviceInfo that is available to receive messages.
-  // All returned devices has the specified |required_capabilities| defined in
-  // SharingDeviceCapability enum.
+  // All returned devices have the specified |required_feature|.
   virtual std::vector<std::unique_ptr<syncer::DeviceInfo>> GetDeviceCandidates(
-      int required_capabilities) const;
+      sync_pb::SharingSpecificFields::EnabledFeatures required_feature) const;
 
   // Register |callback| so it will be invoked after all dependencies of
   // GetDeviceCandidates are ready.
@@ -116,7 +116,7 @@ class SharingService : public KeyedService,
 
   // Used to register devices with required capabilities in tests.
   void RegisterDeviceInTesting(
-      int capabilities,
+      std::set<sync_pb::SharingSpecificFields_EnabledFeatures> enabled_feautres,
       SharingDeviceRegistration::RegistrationCallback callback);
 
   SharingSyncPreference* GetSyncPreferences() const;

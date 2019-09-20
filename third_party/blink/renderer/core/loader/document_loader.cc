@@ -213,7 +213,16 @@ DocumentLoader::DocumentLoader(
       !params_->is_static_data && WillLoadUrlAsEmpty(url_);
   loading_srcdoc_ = url_.IsAboutSrcdocURL();
 
-  if (!loading_url_as_empty_document_) {
+  if (loading_srcdoc_) {
+    // about:srcdoc always inherits CSP from its parent.
+    ContentSecurityPolicy* parent_csp = frame_->Tree()
+                                            .Parent()
+                                            ->GetSecurityContext()
+                                            ->GetContentSecurityPolicy();
+    content_security_policy_ = MakeGarbageCollected<ContentSecurityPolicy>();
+    content_security_policy_->CopyStateFrom(parent_csp);
+    content_security_policy_->CopyPluginTypesFrom(parent_csp);
+  } else if (!loading_url_as_empty_document_) {
     content_security_policy_ =
         CreateCSP(params_->response.ToResourceResponse(), origin_policy_);
     if (!content_security_policy_) {

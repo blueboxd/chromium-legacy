@@ -10,11 +10,13 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "components/autofill/core/browser/form_data_importer.h"
+#include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/ios/browser/autofill_util.h"
 #import "ios/web/public/web_state.h"
 #include "ios/web_view/internal/app/application_context.h"
+#import "ios/web_view/internal/autofill/web_view_autofill_log_router_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -55,7 +57,15 @@ WebViewAutofillClientIOS::WebViewAutofillClientIOS(
               ->GetApplicationLocale())),
       strike_database_(strike_database),
       autofill_web_data_service_(autofill_web_data_service),
-      sync_service_(sync_service) {}
+      sync_service_(sync_service),
+      // TODO(crbug.com/928595): Replace the closure with a callback to the
+      // renderer that indicates if log messages should be sent from the
+      // renderer.
+      log_manager_(LogManager::Create(
+          autofill::WebViewAutofillLogRouterFactory::GetForBrowserState(
+              ios_web_view::WebViewBrowserState::FromBrowserState(
+                  web_state->GetBrowserState())),
+          base::Closure())) {}
 
 WebViewAutofillClientIOS::~WebViewAutofillClientIOS() {
   HideAutofillPopup();
@@ -258,6 +268,10 @@ void WebViewAutofillClientIOS::ExecuteCommand(int id) {
 void WebViewAutofillClientIOS::LoadRiskData(
     base::OnceCallback<void(const std::string&)> callback) {
   [bridge_ loadRiskData:std::move(callback)];
+}
+
+LogManager* WebViewAutofillClientIOS::GetLogManager() const {
+  return log_manager_.get();
 }
 
 }  // namespace autofill

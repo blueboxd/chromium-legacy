@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
+#include "chrome/browser/ui/webui/downloads/downloads.mojom.h"
 #include "chrome/browser/ui/webui/downloads/downloads_dom_handler.h"
 #include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
@@ -37,6 +38,9 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -163,7 +167,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
 ///////////////////////////////////////////////////////////////////////////////
 
 DownloadsUI::DownloadsUI(content::WebUI* web_ui)
-    : ui::MojoWebUIController(web_ui, true), page_factory_binding_(this) {
+    : ui::MojoWebUIController(web_ui, true) {
   Profile* profile = Profile::FromWebUI(web_ui);
   web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
 
@@ -187,20 +191,19 @@ base::RefCountedMemory* DownloadsUI::GetFaviconResourceBytes(
 }
 
 void DownloadsUI::BindPageHandlerFactory(
-    downloads::mojom::PageHandlerFactoryRequest request) {
-  if (page_factory_binding_.is_bound())
-    page_factory_binding_.Unbind();
+    mojo::PendingReceiver<downloads::mojom::PageHandlerFactory> receiver) {
+  page_factory_receiver_.reset();
 
-  page_factory_binding_.Bind(std::move(request));
+  page_factory_receiver_.Bind(std::move(receiver));
 }
 
 void DownloadsUI::CreatePageHandler(
-    downloads::mojom::PagePtr page,
-    downloads::mojom::PageHandlerRequest request) {
+    mojo::PendingRemote<downloads::mojom::Page> page,
+    mojo::PendingReceiver<downloads::mojom::PageHandler> receiver) {
   DCHECK(page);
   Profile* profile = Profile::FromWebUI(web_ui());
   DownloadManager* dlm = BrowserContext::GetDownloadManager(profile);
 
   page_handler_ = std::make_unique<DownloadsDOMHandler>(
-      std::move(request), std::move(page), dlm, web_ui());
+      std::move(receiver), std::move(page), dlm, web_ui());
 }

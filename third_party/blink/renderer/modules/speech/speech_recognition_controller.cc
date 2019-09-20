@@ -50,7 +50,8 @@ SpeechRecognitionController* SpeechRecognitionController::Create(
 }
 
 void SpeechRecognitionController::Start(
-    mojom::blink::SpeechRecognitionSessionRequest session_request,
+    mojo::PendingReceiver<mojom::blink::SpeechRecognitionSession>
+        session_receiver,
     mojo::PendingRemote<mojom::blink::SpeechRecognitionSessionClient>
         session_client,
     const SpeechGrammarList& grammars,
@@ -71,7 +72,7 @@ void SpeechRecognitionController::Start(
   msg_params->interim_results = interim_results;
   msg_params->origin = GetSupplementable()->GetDocument()->GetSecurityOrigin();
   msg_params->client = std::move(session_client);
-  msg_params->session_request = std::move(session_request);
+  msg_params->session_receiver = std::move(session_receiver);
 
   GetSpeechRecognizer()->Start(std::move(msg_params));
 }

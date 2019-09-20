@@ -24,7 +24,7 @@ namespace views {
 
 class View;
 
-namespace internal {
+namespace layout {
 class NormalizedSizeBounds;
 }
 
@@ -159,7 +159,7 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
   base::Optional<int> GetAvailableCrossAxisSize(
       const FlexLayoutData& layout,
       size_t child_index,
-      const internal::NormalizedSizeBounds& bounds) const;
+      const layout::NormalizedSizeBounds& bounds) const;
 
   // Calculates the preferred spacing between two child views, or between a
   // view edge and the first or last visible child views.
@@ -169,7 +169,7 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
 
   // Calculates the position of each child view and the size of the overall
   // layout based on tentative visibilities and sizes for each child.
-  void UpdateLayoutFromChildren(const internal::NormalizedSizeBounds& bounds,
+  void UpdateLayoutFromChildren(const layout::NormalizedSizeBounds& bounds,
                                 FlexLayoutData* data,
                                 ChildViewSpacing* child_spacing) const;
 
@@ -184,7 +184,7 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
   // Typically, this method will be called once with |expandable_views| set and
   // then again with it null to allocate the remaining space.
   void AllocateFlexSpace(
-      const internal::NormalizedSizeBounds& bounds,
+      const layout::NormalizedSizeBounds& bounds,
       const FlexOrderToViewIndexMap& order_to_index,
       FlexLayoutData* data,
       ChildViewSpacing* child_spacing,
@@ -193,7 +193,7 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
   // Fills out the child entries for |data| and generates some initial size
   // and visibility data, and stores off information about which views can
   // expand in |flex_order_to_index|.
-  void InitializeChildData(const internal::NormalizedSizeBounds& bounds,
+  void InitializeChildData(const layout::NormalizedSizeBounds& bounds,
                            FlexLayoutData* data,
                            FlexOrderToViewIndexMap* flex_order_to_index) const;
 

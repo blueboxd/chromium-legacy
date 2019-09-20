@@ -198,6 +198,9 @@ class CreditCard : public AutofillDataModel {
   // not complete.
   bool HasValidCardNumber() const;
 
+  // Returns true if credit card has valid expiration year.
+  bool HasValidExpirationYear() const;
+
   // Returns true if credit card has valid expiration date.
   bool HasValidExpirationDate() const;
 

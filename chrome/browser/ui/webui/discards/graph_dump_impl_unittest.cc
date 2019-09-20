@@ -6,6 +6,7 @@
 
 #include <map>
 #include <set>
+#include <utility>
 
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -13,8 +14,12 @@
 #include "base/time/time.h"
 #include "chrome/browser/performance_manager/test_support/graph_impl.h"
 #include "chrome/browser/performance_manager/test_support/mock_graphs.h"
+#include "chrome/browser/ui/webui/discards/discards.mojom.h"
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -28,14 +33,14 @@ class TestChangeStream : public discards::mojom::GraphChangeStream {
   using ProcessMap = std::map<int64_t, discards::mojom::ProcessInfoPtr>;
   using IdSet = std::set<int64_t>;
 
-  TestChangeStream() : binding_(this) {}
+  TestChangeStream() {}
 
-  discards::mojom::GraphChangeStreamPtr GetProxy() {
-    discards::mojom::GraphChangeStreamPtr proxy;
+  mojo::PendingRemote<discards::mojom::GraphChangeStream> GetRemote() {
+    mojo::PendingRemote<discards::mojom::GraphChangeStream> remote;
 
-    binding_.Bind(mojo::MakeRequest(&proxy));
+    receiver_.Bind(remote.InitWithNewPipeAndPassReceiver());
 
-    return proxy;
+    return remote;
   }
 
   // discards::mojom::GraphChangeStream implementation
@@ -106,7 +111,7 @@ class TestChangeStream : public discards::mojom::GraphChangeStream {
   IdSet id_set_;
   size_t num_changes_ = 0;
 
-  mojo::Binding<discards::mojom::GraphChangeStream> binding_;
+  mojo::Receiver<discards::mojom::GraphChangeStream> receiver_{this};
 };
 
 class DiscardsGraphDumpImplTest : public testing::Test {
@@ -137,13 +142,13 @@ TEST_F(DiscardsGraphDumpImplTest, ChangeStream) {
   std::unique_ptr<DiscardsGraphDumpImpl> impl =
       std::make_unique<DiscardsGraphDumpImpl>();
   DiscardsGraphDumpImpl* impl_raw = impl.get();
-  // Create a mojo proxy to the impl.
-  discards::mojom::GraphDumpPtr impl_proxy;
-  impl->BindWithGraph(&graph_, mojo::MakeRequest(&impl_proxy));
+  // Create a mojo remote to the impl.
+  mojo::Remote<discards::mojom::GraphDump> graph_dump_remote;
+  impl->BindWithGraph(&graph_, graph_dump_remote.BindNewPipeAndPassReceiver());
   graph_.PassToGraph(std::move(impl));
 
   TestChangeStream change_stream;
-  impl_proxy->SubscribeToChanges(change_stream.GetProxy());
+  graph_dump_remote->SubscribeToChanges(change_stream.GetRemote());
 
   task_environment.RunUntilIdle();
 
@@ -207,7 +212,7 @@ TEST_F(DiscardsGraphDumpImplTest, ChangeStream) {
   task_environment.RunUntilIdle();
 
   // Make sure the Dump impl is torn down when the proxy closes.
-  impl_proxy.reset();
+  graph_dump_remote.reset();
   task_environment.RunUntilIdle();
 
   EXPECT_EQ(nullptr, graph_.TakeFromGraph(impl_raw));

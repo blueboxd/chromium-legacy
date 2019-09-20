@@ -40,7 +40,8 @@ class LazyLoadBrowserTest : public InProcessBrowserTest {
     scoped_feature_list_.InitWithFeaturesAndParameters(
         {{features::kLazyImageLoading,
           {{"automatic-lazy-load-images-enabled", "true"},
-           {"restrict-lazy-load-images-to-data-saver-only", "false"}}},
+           {"restrict-lazy-load-images-to-data-saver-only", "false"},
+           {"lazy_image_first_k_fully_load", "4G:0"}}},
          {features::kLazyFrameLoading,
           {{"automatic-lazy-load-frames-enabled", "true"},
            {"restrict-lazy-load-frames-to-data-saver-only", "false"}}}},

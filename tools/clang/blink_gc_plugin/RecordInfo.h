@@ -100,7 +100,6 @@ class RecordInfo {
   bool IsGCDerived();
   bool IsGCDirectlyDerived();
   bool IsGCAllocated();
-  bool IsGCFinalized();
   bool IsGCMixin();
   bool IsStackAllocated();
   bool IsNonNewable();

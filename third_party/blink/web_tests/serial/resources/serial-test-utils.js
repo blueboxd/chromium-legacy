@@ -328,12 +328,12 @@ class FakeSerialService {
       return { port: null };
   }
 
-  async getPort(token, port_request) {
+  async getPort(token, port_receiver) {
     let record = this.ports_.get(token.low);
     if (record !== undefined) {
-      record.fakePort.bind(port_request);
+      record.fakePort.bind(port_receiver);
     } else {
-      port_request.close();
+      port_receiver.close();
     }
   }
 }

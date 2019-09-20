@@ -179,22 +179,13 @@ void WebAppDataRetriever::OnDidPerformInstallableCheck(
       .Run(*data.manifest, data.valid_manifest, is_installable);
 }
 
-void WebAppDataRetriever::OnIconsDownloaded(bool success,
-                                            const IconsMap& icons_map) {
+void WebAppDataRetriever::OnIconsDownloaded(bool success, IconsMap icons_map) {
   if (ShouldStopRetrieval())
     return;
 
   Observe(nullptr);
-
-  // |icons_map| is owned by |icon_downloader_|. Take a copy before destroying
-  // the downloader. Return empty |result_map| if the web contents has navigated
-  // away during the icon download.
-  IconsMap result_map;
-  if (success)
-    result_map = icons_map;
   icon_downloader_.reset();
-
-  std::move(get_icons_callback_).Run(std::move(result_map));
+  std::move(get_icons_callback_).Run(std::move(icons_map));
 }
 
 void WebAppDataRetriever::CallCallbackOnError() {

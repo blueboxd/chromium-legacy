@@ -57,6 +57,7 @@ class DawnObject : public DawnObjectImpl {
  public:
   DawnObject(GPUDevice* device, Handle handle)
       : DawnObjectImpl(device), handle_(handle) {}
+  ~DawnObject() override = default;
 
   Handle GetHandle() const { return handle_; }
 

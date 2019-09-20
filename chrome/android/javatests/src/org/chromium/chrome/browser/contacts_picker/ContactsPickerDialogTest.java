@@ -22,7 +22,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -79,6 +78,9 @@ public class ContactsPickerDialogTest
     // second bit is for emails and third bit is for names.
     private int mLastPropertiesRequested;
 
+    // Whether the dialog is being closed as a result of an explicit user action.
+    private boolean mClosing;
+
     // The list of currently selected contacts (built piecemeal).
     private List<ContactDetails> mCurrentContactSelection;
 
@@ -134,6 +136,7 @@ public class ContactsPickerDialogTest
 
     private ContactsPickerDialog createDialog(final boolean multiselect, final boolean includeNames,
             final boolean includeEmails, final boolean includeTel) throws Exception {
+        mClosing = false;
         final ContactsPickerDialog dialog =
                 TestThreadUtils.runOnUiThreadBlocking(new Callable<ContactsPickerDialog>() {
                     @Override
@@ -184,6 +187,9 @@ public class ContactsPickerDialogTest
     }
 
     private void clickDone() throws Exception {
+        Assert.assertEquals(false, mClosing);
+        mClosing = true;
+
         mLastActionRecorded = ContactsPickerAction.NUM_ENTRIES;
 
         ContactsPickerToolbar toolbar =
@@ -196,6 +202,9 @@ public class ContactsPickerDialogTest
     }
 
     public void clickCancel() throws Exception {
+        Assert.assertEquals(false, mClosing);
+        mClosing = true;
+
         mLastActionRecorded = ContactsPickerAction.NUM_ENTRIES;
 
         PickerCategoryView categoryView = mDialog.getCategoryViewForTesting();
@@ -240,8 +249,13 @@ public class ContactsPickerDialogTest
         TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(), search);
     }
 
-    private void dismissDialog() {
+    private void dismissDialog() throws Exception {
+        Assert.assertEquals(false, mClosing);
+        mClosing = true;
+
+        int callCount = onActionCallback.getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(() -> mDialog.cancel());
+        onActionCallback.waitForCallback(callCount, 1);
     }
 
     private TopView getTopView() throws Exception {
@@ -314,8 +328,6 @@ public class ContactsPickerDialogTest
         Assert.assertEquals(0, mLastPercentageShared);
         Assert.assertEquals(7, mLastPropertiesRequested);
         Assert.assertEquals(ContactsPickerAction.CANCEL, mLastActionRecorded);
-
-        dismissDialog();
     }
 
     @Test
@@ -338,8 +350,6 @@ public class ContactsPickerDialogTest
                 mTestContacts.get(1).getDisplayName(), mLastSelectedContacts.get(0).names.get(0));
         Assert.assertEquals(16, mLastPercentageShared);
         Assert.assertEquals(7, mLastPropertiesRequested);
-
-        dismissDialog();
     }
 
     @Test
@@ -367,8 +377,6 @@ public class ContactsPickerDialogTest
                 mTestContacts.get(0).getDisplayName(), mLastSelectedContacts.get(2).names.get(0));
         Assert.assertEquals(50, mLastPercentageShared);
         Assert.assertEquals(7, mLastPropertiesRequested);
-
-        dismissDialog();
     }
 
     @Test
@@ -392,8 +400,6 @@ public class ContactsPickerDialogTest
                 mLastSelectedContacts.get(0).emails.get(0));
         Assert.assertEquals(16, mLastPercentageShared);
         Assert.assertEquals(7, mLastPropertiesRequested);
-
-        dismissDialog();
     }
 
     @Test
@@ -417,8 +423,6 @@ public class ContactsPickerDialogTest
         Assert.assertEquals(new ArrayList<String>(), mLastSelectedContacts.get(0).emails);
         Assert.assertEquals(16, mLastPercentageShared);
         Assert.assertEquals(7, mLastPropertiesRequested);
-
-        dismissDialog();
     }
 
     @Test
@@ -442,13 +446,10 @@ public class ContactsPickerDialogTest
         Assert.assertEquals(new ArrayList<String>(), mLastSelectedContacts.get(0).tel);
         Assert.assertEquals(16, mLastPercentageShared);
         Assert.assertEquals(7, mLastPropertiesRequested);
-
-        dismissDialog();
     }
 
     @Test
     @LargeTest
-    @DisabledTest(message = "https://crbug.com/1004762")
     public void testPropertiesRequested() throws Throwable {
         // Create a dialog showing names only.
         createDialog(/* multiselect = */ false, /* includeNames = */ true,
@@ -457,7 +458,6 @@ public class ContactsPickerDialogTest
         Assert.assertTrue(mDialog.isShowing());
         clickCancel();
         Assert.assertEquals(4, mLastPropertiesRequested);
-        dismissDialog();
 
         // Create a dialog showing emails only.
         createDialog(/* multiselect = */ false, /* includeNames = */ false,
@@ -466,7 +466,6 @@ public class ContactsPickerDialogTest
         Assert.assertTrue(mDialog.isShowing());
         clickCancel();
         Assert.assertEquals(2, mLastPropertiesRequested);
-        dismissDialog();
 
         // Create a dialog showing telephone numbers only.
         createDialog(/* multiselect = */ false, /* includeNames = */ false,
@@ -475,7 +474,6 @@ public class ContactsPickerDialogTest
         Assert.assertTrue(mDialog.isShowing());
         clickCancel();
         Assert.assertEquals(1, mLastPropertiesRequested);
-        dismissDialog();
     }
 
     @Test

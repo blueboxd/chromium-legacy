@@ -58,9 +58,10 @@ class URLLoaderThrottleProviderImpl
   mojo::PendingRemote<safe_browsing::mojom::SafeBrowsing> safe_browsing_remote_;
   mojo::Remote<safe_browsing::mojom::SafeBrowsing> safe_browsing_;
 
-  data_reduction_proxy::mojom::DataReductionProxyPtrInfo
-      data_reduction_proxy_info_;
-  data_reduction_proxy::mojom::DataReductionProxyPtr data_reduction_proxy_;
+  mojo::PendingRemote<data_reduction_proxy::mojom::DataReductionProxy>
+      data_reduction_proxy_remote_;
+  mojo::Remote<data_reduction_proxy::mojom::DataReductionProxy>
+      data_reduction_proxy_;
   std::unique_ptr<data_reduction_proxy::DataReductionProxyThrottleManager>
       data_reduction_proxy_manager_;
 

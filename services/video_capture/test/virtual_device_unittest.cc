@@ -128,8 +128,8 @@ TEST_F(VirtualDeviceTest, OnFrameReadyInBufferWithReceiver) {
   // Release all buffers back to consumer, then back to the pool
   // after |Receiver::OnFrameReadyInBuffer| is invoked.
   base::RunLoop wait_loop;
-  mojom::ReceiverPtr receiver_proxy;
-  MockReceiver receiver(mojo::MakeRequest(&receiver_proxy));
+  mojo::PendingRemote<mojom::Receiver> receiver_proxy;
+  MockReceiver receiver(receiver_proxy.InitWithNewPipeAndPassReceiver());
   EXPECT_CALL(receiver, OnStarted());
   EXPECT_CALL(receiver, DoOnNewBuffer(_, _))
       .Times(

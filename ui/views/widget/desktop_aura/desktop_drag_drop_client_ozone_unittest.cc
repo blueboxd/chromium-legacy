@@ -30,7 +30,7 @@ class FakePlatformWindow : public ui::PlatformWindow, public ui::WmDragHandler {
   ~FakePlatformWindow() override = default;
 
   // ui::PlatformWindow
-  void Show(bool inactive) override {}
+  void Show() override {}
   void Hide() override {}
   void Close() override {}
   void PrepareForShutdown() override {}

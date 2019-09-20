@@ -9,7 +9,6 @@
 #include "base/base64.h"
 #include "base/callback_list.h"
 #include "chrome/browser/sharing/sharing_constants.h"
-#include "chrome/browser/sharing/sharing_device_capability.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
@@ -31,8 +30,8 @@ const char kMessageId[] = "message_id";
 const char kFcmToken[] = "fcm_token";
 const char kP256dh[] = "p256dh";
 const char kAuthSecret[] = "auth_secret";
-constexpr int kNoCapabilities =
-    static_cast<int>(SharingDeviceCapability::kNone);
+const std::set<sync_pb::SharingSpecificFields::EnabledFeatures>
+    kNoFeaturesEnabled;
 const char kSenderGuid[] = "test_sender_guid";
 const char kSenderFcmToken[] = "sender_fcm_token";
 const char kSenderP256dh[] = "sender_p256dh";
@@ -153,7 +152,7 @@ class SharingFCMSenderTest : public Test {
 
   SharingSyncPreference::Device CreateFakeSyncDevice() {
     return SharingSyncPreference::Device(kFcmToken, kP256dh, kAuthSecret,
-                                         kNoCapabilities);
+                                         kNoFeaturesEnabled);
   }
 
   std::unique_ptr<SharingSyncPreference> sync_prefs_;
@@ -209,7 +208,7 @@ class SharingFCMSenderResultTest
       public testing::WithParamInterface<SharingFCMSenderResultTestData> {};
 
 TEST_P(SharingFCMSenderResultTest, ResultTest) {
-  Device target(kFcmToken, kP256dh, kAuthSecret, kNoCapabilities);
+  Device target(kFcmToken, kP256dh, kAuthSecret, kNoFeaturesEnabled);
 
   sync_prefs_->SetFCMRegistration(SharingSyncPreference::FCMRegistration(
       kAuthorizedEntity, kSenderFcmToken, kSenderP256dh, kSenderAuthSecret,

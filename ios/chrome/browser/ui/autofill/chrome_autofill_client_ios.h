@@ -123,6 +123,8 @@ class ChromeAutofillClientIOS : public AutofillClient {
   void LoadRiskData(
       base::OnceCallback<void(const std::string&)> callback) override;
 
+  LogManager* GetLogManager() const override;
+
  private:
   PrefService* pref_service_;
   syncer::SyncService* sync_service_;
@@ -138,6 +140,7 @@ class ChromeAutofillClientIOS : public AutofillClient {
   infobars::InfoBarManager* infobar_manager_;
   password_manager::PasswordManager* password_manager_;
   CardUnmaskPromptControllerImpl unmask_controller_;
+  std::unique_ptr<LogManager> log_manager_;
 
   // A weak reference to the view controller used to present UI.
   __weak UIViewController* base_view_controller_;

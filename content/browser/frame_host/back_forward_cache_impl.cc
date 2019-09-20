@@ -6,6 +6,7 @@
 
 #include <unordered_set>
 
+#include "base/strings/string_util.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -62,39 +63,6 @@ void SetPageFrozenImpl(
   }
 }
 
-// Recursively checks whether this RenderFrameHost and all child frames
-// can be cached.
-bool CanStoreRenderFrameHost(RenderFrameHostImpl* rfh,
-                             uint64_t disallowed_features) {
-  // For the main frame, we don't check loading at the FrameTreeNode level,
-  // because the FrameTreeNode has already begun loading the page being
-  // navigated to.
-  bool is_loading = rfh->frame_tree_node()->IsMainFrame()
-                        ? rfh->is_loading()
-                        : rfh->frame_tree_node()->IsLoading();
-  if (is_loading)
-    return false;
-
-  // If the rfh has ever granted media access, prevent it from entering cache.
-  // TODO(crbug.com/989379): Consider only blocking when there's an active
-  //                         media stream.
-  if (rfh->was_granted_media_access())
-    return false;
-
-  // Don't cache the page if it uses any disallowed features.
-  if (disallowed_features & rfh->scheduler_tracked_features())
-    return false;
-
-  for (size_t i = 0; i < rfh->child_count(); i++) {
-    if (!CanStoreRenderFrameHost(rfh->child_at(i)->current_frame_host(),
-                                 disallowed_features)) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
 bool IsServiceWorkerSupported() {
   static constexpr base::FeatureParam<bool> service_worker_supported(
       &features::kBackForwardCache, "service_worker_supported", false);
@@ -137,7 +105,88 @@ uint64_t GetDisallowedFeatures() {
   return result;
 }
 
+std::string DescribeFeatures(uint64_t blocklisted_features) {
+  std::vector<std::string> features;
+  for (size_t i = 0;
+       i <= static_cast<size_t>(WebSchedulerTrackedFeature::kMaxValue); ++i) {
+    if (blocklisted_features & (1 << i)) {
+      features.push_back(blink::scheduler::FeatureToString(
+          static_cast<WebSchedulerTrackedFeature>(i)));
+    }
+  }
+  return base::JoinString(features, ", ");
+}
+
 }  // namespace
+
+enum class BackForwardCacheImpl::CanStoreDocumentResult::Reason : uint8_t {
+  kNotMainFrame,
+  kBackForwardCacheDisabled,
+  kRelatedActiveContentsExist,
+  kHTTPStatusNotOK,
+  kSchemeNotHTTPOrHTTPS,
+  kLoading,
+  kWasGrantedMediaAccess,
+  kBlocklistedFeatures,
+  kDisableForRenderFrameHostCalled
+};
+
+std::string BackForwardCacheImpl::CanStoreDocumentResult::ToString() {
+  if (can_store)
+    return "Yes";
+
+  switch (reason.value()) {
+    case Reason::kNotMainFrame:
+      return "No: not a main frame";
+    case Reason::kBackForwardCacheDisabled:
+      return "No: BackForwardCache disabled";
+    case Reason::kRelatedActiveContentsExist:
+      return "No: related active contents exist";
+    case Reason::kHTTPStatusNotOK:
+      return "No: HTTP status is not OK";
+    case Reason::kSchemeNotHTTPOrHTTPS:
+      return "No: scheme is not HTTP or HTTPS";
+    case Reason::kLoading:
+      return "No: frame is not fully loaded";
+    case Reason::kWasGrantedMediaAccess:
+      return "No: frame was granted microphone or camera access";
+    case Reason::kBlocklistedFeatures:
+      return "No: blocklisted features: " +
+             DescribeFeatures(blocklisted_features);
+    case Reason::kDisableForRenderFrameHostCalled:
+      return "No: BackForwardCache::DisableForRenderFrameHost() was called";
+  }
+}
+
+BackForwardCacheImpl::CanStoreDocumentResult::CanStoreDocumentResult(
+    const CanStoreDocumentResult&) = default;
+BackForwardCacheImpl::CanStoreDocumentResult::~CanStoreDocumentResult() =
+    default;
+
+BackForwardCacheImpl::CanStoreDocumentResult
+BackForwardCacheImpl::CanStoreDocumentResult::Yes() {
+  return CanStoreDocumentResult(true, base::nullopt, 0);
+}
+
+BackForwardCacheImpl::CanStoreDocumentResult
+BackForwardCacheImpl::CanStoreDocumentResult::No(Reason reason) {
+  return CanStoreDocumentResult(false, reason, 0);
+}
+
+BackForwardCacheImpl::CanStoreDocumentResult
+BackForwardCacheImpl::CanStoreDocumentResult::NoDueToFeatures(
+    uint64_t blocklisted_features) {
+  return CanStoreDocumentResult(false, Reason::kBlocklistedFeatures,
+                                blocklisted_features);
+}
+
+BackForwardCacheImpl::CanStoreDocumentResult::CanStoreDocumentResult(
+    bool can_store,
+    base::Optional<Reason> reason,
+    uint64_t blocklisted_features)
+    : can_store(can_store),
+      reason(reason),
+      blocklisted_features(blocklisted_features) {}
 
 BackForwardCacheImpl::BackForwardCacheImpl() : weak_factory_(this) {}
 BackForwardCacheImpl::~BackForwardCacheImpl() = default;
@@ -148,16 +197,23 @@ base::TimeDelta BackForwardCacheImpl::GetTimeToLiveInBackForwardCache() {
       kDefaultTimeToLiveInBackForwardCacheInSeconds));
 }
 
-bool BackForwardCacheImpl::CanStoreDocument(RenderFrameHostImpl* rfh) {
+BackForwardCacheImpl::CanStoreDocumentResult
+BackForwardCacheImpl::CanStoreDocument(RenderFrameHostImpl* rfh) {
   // Use the BackForwardCache only for the main frame.
-  if (rfh->GetParent())
-    return false;
+  if (rfh->GetParent()) {
+    return CanStoreDocumentResult::No(
+        CanStoreDocumentResult::Reason::kNotMainFrame);
+  }
 
-  if (!IsBackForwardCacheEnabled() || is_disabled_for_testing_)
-    return false;
+  if (!IsBackForwardCacheEnabled() || is_disabled_for_testing_) {
+    return CanStoreDocumentResult::No(
+        CanStoreDocumentResult::Reason::kBackForwardCacheDisabled);
+  }
 
-  if (rfh->is_back_forward_cache_disallowed())
-    return false;
+  if (rfh->is_back_forward_cache_disallowed()) {
+    return CanStoreDocumentResult::No(
+        CanStoreDocumentResult::Reason::kDisableForRenderFrameHostCalled);
+  }
 
   // Two pages in the same BrowsingInstance can script each other. When a page
   // can be scripted from outside, it can't enter the BackForwardCache.
@@ -168,24 +224,72 @@ bool BackForwardCacheImpl::CanStoreDocument(RenderFrameHostImpl* rfh) {
   //
   // This check makes sure the old and new document aren't sharing the same
   // BrowsingInstance.
-  if (rfh->GetSiteInstance()->GetRelatedActiveContentsCount() != 0)
-    return false;
+  if (rfh->GetSiteInstance()->GetRelatedActiveContentsCount() != 0) {
+    return CanStoreDocumentResult::No(
+        CanStoreDocumentResult::Reason::kRelatedActiveContentsExist);
+  }
 
   // Only store documents that have successful http status code.
   // Note that for error pages, |last_http_status_code| is equal to 0.
-  if (rfh->last_http_status_code() != net::HTTP_OK)
-    return false;
+  if (rfh->last_http_status_code() != net::HTTP_OK) {
+    return CanStoreDocumentResult::No(
+        CanStoreDocumentResult::Reason::kHTTPStatusNotOK);
+  }
 
   // Do store main document with non HTTP/HTTPS URL scheme. In particular, this
   // excludes the new tab page.
-  if (!rfh->GetLastCommittedURL().SchemeIsHTTPOrHTTPS())
-    return false;
+  if (!rfh->GetLastCommittedURL().SchemeIsHTTPOrHTTPS()) {
+    return CanStoreDocumentResult::No(
+        CanStoreDocumentResult::Reason::kSchemeNotHTTPOrHTTPS);
+  }
 
   return CanStoreRenderFrameHost(rfh, GetDisallowedFeatures());
 }
 
+// Recursively checks whether this RenderFrameHost and all child frames
+// can be cached.
+BackForwardCacheImpl::CanStoreDocumentResult
+BackForwardCacheImpl::CanStoreRenderFrameHost(RenderFrameHostImpl* rfh,
+                                              uint64_t disallowed_features) {
+  // For the main frame, we don't check loading at the FrameTreeNode level,
+  // because the FrameTreeNode has already begun loading the page being
+  // navigated to.
+  bool is_loading = rfh->frame_tree_node()->IsMainFrame()
+                        ? rfh->is_loading()
+                        : rfh->frame_tree_node()->IsLoading();
+  if (is_loading)
+    return CanStoreDocumentResult::No(CanStoreDocumentResult::Reason::kLoading);
+
+  // If the rfh has ever granted media access, prevent it from entering cache.
+  // TODO(crbug.com/989379): Consider only blocking when there's an active
+  //                         media stream.
+  if (rfh->was_granted_media_access()) {
+    return CanStoreDocumentResult::No(
+        CanStoreDocumentResult::Reason::kWasGrantedMediaAccess);
+  }
+
+  // Don't cache the page if it uses any disallowed features.
+  // TODO(altimin): At the moment only the first detected failure is reported.
+  // For reporting purposes it's a good idea to also collect this information
+  // from children.
+  if (uint64_t banned_features =
+          disallowed_features & rfh->scheduler_tracked_features()) {
+    return CanStoreDocumentResult::NoDueToFeatures(banned_features);
+  }
+
+  for (size_t i = 0; i < rfh->child_count(); i++) {
+    CanStoreDocumentResult can_store_child = CanStoreRenderFrameHost(
+        rfh->child_at(i)->current_frame_host(), disallowed_features);
+    if (!can_store_child.can_store)
+      return can_store_child;
+  }
+
+  return CanStoreDocumentResult::Yes();
+}
+
 void BackForwardCacheImpl::StoreDocument(
     std::unique_ptr<RenderFrameHostImpl> rfh) {
+  TRACE_EVENT0("navigation", "BackForwardCache::StoreDocument");
   DCHECK(CanStoreDocument(rfh.get()));
 
   rfh->EnterBackForwardCache();
@@ -222,6 +326,7 @@ void BackForwardCacheImpl::Resume(RenderFrameHostImpl* main_rfh) {
 
 std::unique_ptr<RenderFrameHostImpl> BackForwardCacheImpl::RestoreDocument(
     int navigation_entry_id) {
+  TRACE_EVENT0("navigation", "BackForwardCache::RestoreDocument");
   // Select the RenderFrameHostImpl matching the navigation entry.
   auto matching_rfh = std::find_if(
       render_frame_hosts_.begin(), render_frame_hosts_.end(),
@@ -244,6 +349,7 @@ std::unique_ptr<RenderFrameHostImpl> BackForwardCacheImpl::RestoreDocument(
 }
 
 void BackForwardCacheImpl::Flush() {
+  TRACE_EVENT0("navigation", "BackForwardCache::Flush");
   render_frame_hosts_.clear();
 }
 
@@ -289,6 +395,7 @@ RenderFrameHostImpl* BackForwardCacheImpl::GetDocument(
 }
 
 void BackForwardCacheImpl::DestroyEvictedFrames() {
+  TRACE_EVENT0("navigation", "BackForwardCache::DestroyEvictedFrames");
   if (render_frame_hosts_.empty())
     return;
   render_frame_hosts_.erase(

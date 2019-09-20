@@ -73,9 +73,9 @@ class TestWebAppIconDownloader : public WebAppIconDownloader {
 
   size_t pending_requests() const { return in_progress_requests_.size(); }
 
-  void DownloadsComplete(bool success, const IconsMap& map) {
+  void DownloadsComplete(bool success, IconsMap map) {
     downloads_succeeded_ = success;
-    favicon_map_ = map;
+    favicon_map_ = std::move(map);
   }
 
   IconsMap favicon_map() const { return favicon_map_; }

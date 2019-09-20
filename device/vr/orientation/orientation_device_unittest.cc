@@ -17,6 +17,7 @@
 #include "device/vr/test/fake_orientation_provider.h"
 #include "device/vr/test/fake_sensor_provider.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading_shared_buffer_reader.h"
 #include "services/device/public/cpp/generic_sensor/sensor_traits.h"
@@ -195,7 +196,7 @@ class VROrientationDeviceTest : public testing::Test {
     init_params->default_configuration = PlatformSensorConfiguration(
         SensorTraits<kOrientationSensorType>::kDefaultFrequency);
 
-    init_params->client_request = mojo::MakeRequest(&sensor_client_ptr_);
+    init_params->client_receiver = sensor_client_.BindNewPipeAndPassReceiver();
 
     init_params->memory = shared_buffer_handle_->Clone(
         mojo::SharedBufferHandle::AccessMode::READ_ONLY);
@@ -237,7 +238,7 @@ class VROrientationDeviceTest : public testing::Test {
   mojo::PendingRemote<mojom::Sensor> sensor_;
   mojo::ScopedSharedBufferHandle shared_buffer_handle_;
   mojo::ScopedSharedBufferMapping shared_buffer_mapping_;
-  mojom::SensorClientPtr sensor_client_ptr_;
+  mojo::Remote<mojom::SensorClient> sensor_client_;
 
   std::unique_ptr<FakeScreen> fake_screen_;
   std::unique_ptr<ScopedScreenOverride> scoped_screen_override_;

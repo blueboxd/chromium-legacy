@@ -116,6 +116,8 @@ class WebViewAutofillClientIOS : public AutofillClient {
   void LoadRiskData(
       base::OnceCallback<void(const std::string&)> callback) override;
 
+  LogManager* GetLogManager() const override;
+
  private:
   PrefService* pref_service_;
   PersonalDataManager* personal_data_manager_;
@@ -128,6 +130,7 @@ class WebViewAutofillClientIOS : public AutofillClient {
   StrikeDatabase* strike_database_;
   scoped_refptr<AutofillWebDataService> autofill_web_data_service_;
   syncer::SyncService* sync_service_ = nullptr;
+  std::unique_ptr<LogManager> log_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewAutofillClientIOS);
 };

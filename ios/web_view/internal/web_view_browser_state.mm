@@ -33,6 +33,7 @@
 #include "ios/web/public/thread/web_thread.h"
 #include "ios/web_view/cwv_web_view_buildflags.h"
 #include "ios/web_view/internal/app/application_context.h"
+#import "ios/web_view/internal/autofill/web_view_autofill_log_router_factory.h"
 #include "ios/web_view/internal/autofill/web_view_personal_data_manager_factory.h"
 #include "ios/web_view/internal/content_settings/web_view_cookie_settings_factory.h"
 #include "ios/web_view/internal/content_settings/web_view_host_content_settings_map_factory.h"
@@ -187,6 +188,7 @@ void WebViewBrowserState::RegisterPrefs(
   WebViewTranslateAcceptLanguagesFactory::GetInstance();
 
 #if BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)
+  autofill::WebViewAutofillLogRouterFactory::GetInstance();
   WebViewPersonalDataManagerFactory::GetInstance();
   WebViewWebDataServiceWrapperFactory::GetInstance();
   WebViewPasswordManagerLogRouterFactory::GetInstance();

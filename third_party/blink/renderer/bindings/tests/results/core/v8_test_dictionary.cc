@@ -129,7 +129,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (any_in_record_member_value.IsEmpty() || any_in_record_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    Vector<std::pair<String, ScriptValue>> any_in_record_member_cpp_value = NativeValueTraits<IDLRecord<IDLString, ScriptValue>>::NativeValue(isolate, any_in_record_member_value, exception_state);
+    HeapVector<std::pair<String, ScriptValue>> any_in_record_member_cpp_value = NativeValueTraits<IDLRecord<IDLString, ScriptValue>>::NativeValue(isolate, any_in_record_member_value, exception_state);
     if (exception_state.HadException())
       return;
     impl->setAnyInRecordMember(any_in_record_member_cpp_value);

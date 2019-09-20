@@ -88,16 +88,6 @@ std::unique_ptr<WebEmbeddedWorker> WebEmbeddedWorker::Create(
           mojom::blink::BrowserInterfaceBroker::Version_));
 }
 
-// static
-std::unique_ptr<WebEmbeddedWorkerImpl> WebEmbeddedWorkerImpl::CreateForTesting(
-    WebServiceWorkerContextClient* client) {
-  auto worker_impl = std::make_unique<WebEmbeddedWorkerImpl>(
-      client, mojo::NullRemote() /* cache_storage */,
-      nullptr /* interface_provider_info */,
-      mojo::NullRemote() /* browser_interface_broker */);
-  return worker_impl;
-}
-
 WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
     WebServiceWorkerContextClient* client,
     mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote,

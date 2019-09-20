@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "content/public/browser/desktop_media_id.h"
+#include "content/public/browser/web_contents_observer.h"
 
 namespace content {
 class WebContents;
@@ -31,7 +32,8 @@ class Profile;
 class TabSharingUIViews : public TabSharingUI,
                           public BrowserListObserver,
                           public TabStripModelObserver,
-                          public infobars::InfoBarManager::Observer {
+                          public infobars::InfoBarManager::Observer,
+                          public content::WebContentsObserver {
  public:
   TabSharingUIViews(const content::DesktopMediaID& media_id,
                     base::string16 app_name);
@@ -68,6 +70,10 @@ class TabSharingUIViews : public TabSharingUI,
 
   // InfoBarManager::Observer:
   void OnInfoBarRemoved(infobars::InfoBar* infobar, bool animate) override;
+
+  // WebContentsObserver:
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
  private:
   void CreateInfobarsForAllTabs();

@@ -98,6 +98,7 @@
 #include "chrome/browser/media/android/cdm/media_drm_origin_id_manager_factory.h"
 #else
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/feedback/feedback_uploader_factory_chrome.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_profile_session_durations_service_factory.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_factory.h"
 #include "chrome/browser/search/instant_service_factory.h"
@@ -292,6 +293,9 @@ void ChromeBrowserMainExtraPartsProfiles::
   feature_engagement::NewTabTrackerFactory::GetInstance();
 #endif
   feature_engagement::TrackerFactory::GetInstance();
+#if !defined(OS_ANDROID)
+  feedback::FeedbackUploaderFactoryChrome::GetInstance();
+#endif
   FindBarStateFactory::GetInstance();
   GAIAInfoUpdateServiceFactory::GetInstance();
 #if !defined(OS_ANDROID)

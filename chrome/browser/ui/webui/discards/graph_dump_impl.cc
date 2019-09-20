@@ -18,11 +18,16 @@
 #include "chrome/browser/performance_manager/public/performance_manager.h"
 #include "chrome/browser/performance_manager/public/web_contents_proxy.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/discards/discards.mojom.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_callback.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace {
 
@@ -108,7 +113,7 @@ void DiscardsGraphDumpImpl::FaviconRequestHelper::FaviconDataAvailable(
                      graph_dump_, serialization_id, result.bitmap_data));
 }
 
-DiscardsGraphDumpImpl::DiscardsGraphDumpImpl() : binding_(this) {}
+DiscardsGraphDumpImpl::DiscardsGraphDumpImpl() {}
 
 DiscardsGraphDumpImpl::~DiscardsGraphDumpImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -119,20 +124,20 @@ DiscardsGraphDumpImpl::~DiscardsGraphDumpImpl() {
 
 // static
 void DiscardsGraphDumpImpl::CreateAndBind(
-    discards::mojom::GraphDumpRequest request,
+    mojo::PendingReceiver<discards::mojom::GraphDump> receiver,
     performance_manager::Graph* graph) {
   std::unique_ptr<DiscardsGraphDumpImpl> dump =
       std::make_unique<DiscardsGraphDumpImpl>();
 
-  dump->BindWithGraph(graph, std::move(request));
+  dump->BindWithGraph(graph, std::move(receiver));
   graph->PassToGraph(std::move(dump));
 }
 
 void DiscardsGraphDumpImpl::BindWithGraph(
     performance_manager::Graph* graph,
-    discards::mojom::GraphDumpRequest request) {
-  binding_.Bind(std::move(request));
-  binding_.set_connection_error_handler(base::BindOnce(
+    mojo::PendingReceiver<discards::mojom::GraphDump> receiver) {
+  receiver_.Bind(std::move(receiver));
+  receiver_.set_disconnect_handler(base::BindOnce(
       &DiscardsGraphDumpImpl::OnConnectionError, base::Unretained(this)));
 }
 
@@ -151,9 +156,9 @@ void ForFrameAndOffspring(const performance_manager::FrameNode* parent_frame,
 }  // namespace
 
 void DiscardsGraphDumpImpl::SubscribeToChanges(
-    discards::mojom::GraphChangeStreamPtr change_subscriber) {
+    mojo::PendingRemote<discards::mojom::GraphChangeStream> change_subscriber) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  change_subscriber_ = std::move(change_subscriber);
+  change_subscriber_.Bind(std::move(change_subscriber));
 
   // Send creation notifications for all existing nodes.
   for (const performance_manager::ProcessNode* process_node :

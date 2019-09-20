@@ -439,6 +439,9 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // keyboard position changes.
   void UpdatePipBounds();
 
+  // Collects PIP enter and exit metrics:
+  void CollectPipEnterExitMetrics(bool enter);
+
   // aura::WindowObserver:
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
@@ -491,6 +494,9 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // The animation type for the bounds change.
   BoundsChangeAnimationType bounds_animation_type_ =
       BoundsChangeAnimationType::DEFAULT;
+
+  // When the current (or last) PIP session started.
+  base::TimeTicks pip_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowState);
 };

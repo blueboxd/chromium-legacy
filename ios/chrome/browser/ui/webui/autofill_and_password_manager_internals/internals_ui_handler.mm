@@ -10,6 +10,7 @@
 #include "components/version_ui/version_handler_helper.h"
 #include "components/version_ui/version_ui_constants.h"
 #import "ios/chrome/browser/application_context.h"
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/common/channel_info.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/public/web_state.h"
@@ -66,7 +67,7 @@ void InternalsUIHandler::RegisterMessages() {
 }
 
 void InternalsUIHandler::OnLoaded(const base::ListValue* args) {
-  web_ui()->CallJavascriptFunction("setUpPasswordManagerInternals", {});
+  web_ui()->CallJavascriptFunction(call_on_load_, {});
 
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromWebUIIOS(web_ui());

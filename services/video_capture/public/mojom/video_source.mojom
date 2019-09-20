@@ -80,7 +80,7 @@ interface VideoSource {
   // source will be reopened trying to match |requested_settings|. This will
   // potentially briefly interrupt the video stream received by other
   // subscribers.
-  CreatePushSubscription(Receiver subscriber,
+  CreatePushSubscription(pending_remote<Receiver> subscriber,
                          media.mojom.VideoCaptureParams requested_settings,
                          bool force_reopen_with_new_settings,
                          PushVideoStreamSubscription& subscription)

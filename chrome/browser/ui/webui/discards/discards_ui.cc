@@ -38,7 +38,8 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -167,9 +168,9 @@ class DiscardsDetailsProviderImpl : public discards::mojom::DetailsProvider {
   DiscardsDetailsProviderImpl(
       resource_coordinator::LocalSiteCharacteristicsDataStoreInspector*
           data_store_inspector,
-      mojo::InterfaceRequest<discards::mojom::DetailsProvider> request)
+      mojo::PendingReceiver<discards::mojom::DetailsProvider> receiver)
       : data_store_inspector_(data_store_inspector),
-        binding_(this, std::move(request)) {}
+        receiver_(this, std::move(receiver)) {}
 
   ~DiscardsDetailsProviderImpl() override {}
 
@@ -309,7 +310,7 @@ class DiscardsDetailsProviderImpl : public discards::mojom::DetailsProvider {
   OriginToReaderMap requested_origins_;
 
   LocalSiteCharacteristicsDataStoreInspector* data_store_inspector_;
-  mojo::Binding<discards::mojom::DetailsProvider> binding_;
+  mojo::Receiver<discards::mojom::DetailsProvider> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(DiscardsDetailsProviderImpl);
 };
@@ -453,17 +454,17 @@ DiscardsUI::DiscardsUI(content::WebUI* web_ui)
 DiscardsUI::~DiscardsUI() {}
 
 void DiscardsUI::BindDiscardsDetailsProvider(
-    discards::mojom::DetailsProviderRequest request) {
+    mojo::PendingReceiver<discards::mojom::DetailsProvider> receiver) {
   ui_handler_ = std::make_unique<DiscardsDetailsProviderImpl>(
-      data_store_inspector_, std::move(request));
+      data_store_inspector_, std::move(receiver));
 }
 
 void DiscardsUI::BindDiscardsGraphDumpProvider(
-    discards::mojom::GraphDumpRequest request) {
+    mojo::PendingReceiver<discards::mojom::GraphDump> receiver) {
   if (performance_manager::PerformanceManager::IsAvailable()) {
-    // Forward the interface request directly to the service.
+    // Forward the interface receiver directly to the service.
     performance_manager::PerformanceManager::CallOnGraph(
         FROM_HERE, base::BindOnce(&DiscardsGraphDumpImpl::CreateAndBind,
-                                  std::move(request)));
+                                  std::move(receiver)));
   }
 }

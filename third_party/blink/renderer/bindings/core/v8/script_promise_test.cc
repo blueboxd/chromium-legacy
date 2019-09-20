@@ -371,7 +371,7 @@ TEST(ScriptPromiseTest, AllWithEmptyPromises) {
   ScriptValue on_fulfilled, on_rejected;
 
   ScriptPromise promise =
-      ScriptPromise::All(scope.GetScriptState(), Vector<ScriptPromise>());
+      ScriptPromise::All(scope.GetScriptState(), HeapVector<ScriptPromise>());
   ASSERT_FALSE(promise.IsEmpty());
 
   promise.Then(FunctionForScriptPromiseTest::CreateFunction(
@@ -393,7 +393,7 @@ TEST(ScriptPromiseTest, AllWithResolvedPromises) {
   V8TestingScope scope;
   ScriptValue on_fulfilled, on_rejected;
 
-  Vector<ScriptPromise> promises;
+  HeapVector<ScriptPromise> promises;
   promises.push_back(ScriptPromise::Cast(
       scope.GetScriptState(), V8String(scope.GetIsolate(), "hello")));
   promises.push_back(ScriptPromise::Cast(
@@ -423,7 +423,7 @@ TEST(ScriptPromiseTest, AllWithRejectedPromise) {
   V8TestingScope scope;
   ScriptValue on_fulfilled, on_rejected;
 
-  Vector<ScriptPromise> promises;
+  HeapVector<ScriptPromise> promises;
   promises.push_back(ScriptPromise::Cast(
       scope.GetScriptState(), V8String(scope.GetIsolate(), "hello")));
   promises.push_back(ScriptPromise::Reject(

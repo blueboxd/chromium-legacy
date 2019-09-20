@@ -14,7 +14,6 @@
 #include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/browser/sharing/sharing_constants.h"
-#include "chrome/browser/sharing/sharing_device_capability.h"
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
@@ -29,6 +28,7 @@
 #endif
 
 using instance_id::InstanceID;
+using sync_pb::SharingSpecificFields;
 
 SharingDeviceRegistration::SharingDeviceRegistration(
     SharingSyncPreference* sharing_sync_preference,
@@ -121,10 +121,11 @@ void SharingDeviceRegistration::OnEncryptionInfoReceived(
     return;
   }
 
-  int device_capabilities = GetDeviceCapabilities();
+  std::set<SharingSpecificFields::EnabledFeatures> enabled_features =
+      GetEnabledFeatures();
   SharingSyncPreference::Device device(
       fcm_registration_token, std::move(p256dh), std::move(auth_secret),
-      device_capabilities);
+      enabled_features);
   sharing_sync_preference_->SetSyncDevice(local_device_info->guid(), device);
   std::move(callback).Run(SharingDeviceRegistrationResult::kSuccess);
 }
@@ -193,21 +194,19 @@ base::Optional<std::string> SharingDeviceRegistration::GetAuthorizationEntity()
   return base::make_optional(std::move(base64_public_key));
 }
 
-int SharingDeviceRegistration::GetDeviceCapabilities() const {
+std::set<SharingSpecificFields::EnabledFeatures>
+SharingDeviceRegistration::GetEnabledFeatures() const {
   // Used in tests
-  if (device_capabilities_testing_value_)
-    return device_capabilities_testing_value_.value();
+  if (enabled_features_testing_value_)
+    return enabled_features_testing_value_.value();
 
-  int device_capabilities = static_cast<int>(SharingDeviceCapability::kNone);
-  if (IsClickToCallSupported()) {
-    device_capabilities |=
-        static_cast<int>(SharingDeviceCapability::kClickToCall);
-  }
-  if (IsSharedClipboardSupported()) {
-    device_capabilities |=
-        static_cast<int>(SharingDeviceCapability::kSharedClipboard);
-  }
-  return device_capabilities;
+  std::set<SharingSpecificFields::EnabledFeatures> enabled_features;
+  if (IsClickToCallSupported())
+    enabled_features.insert(SharingSpecificFields::CLICK_TO_CALL);
+  if (IsSharedClipboardSupported())
+    enabled_features.insert(SharingSpecificFields::SHARED_CLIPBOARD);
+
+  return enabled_features;
 }
 
 bool SharingDeviceRegistration::IsClickToCallSupported() const {
@@ -225,7 +224,7 @@ bool SharingDeviceRegistration::IsSharedClipboardSupported() const {
   return base::FeatureList::IsEnabled(kSharedClipboardReceiver);
 }
 
-void SharingDeviceRegistration::SetDeviceCapabilityForTesting(
-    int device_capabilities) {
-  device_capabilities_testing_value_ = device_capabilities;
+void SharingDeviceRegistration::SetEnabledFeaturesForTesting(
+    std::set<SharingSpecificFields::EnabledFeatures> enabled_feautres) {
+  enabled_features_testing_value_ = std::move(enabled_feautres);
 }

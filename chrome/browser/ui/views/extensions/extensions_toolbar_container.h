@@ -15,11 +15,14 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_icon_container_view.h"
 
-class AnimatingLayoutManager;
 class Browser;
 class ExtensionsToolbarButton;
 class ToolbarActionViewController;
 class ToolbarActionsBarBubbleViews;
+
+namespace views {
+class AnimatingLayoutManager;
+}  // namespace views
 
 // Container for extensions shown in the toolbar. These include pinned
 // extensions and extensions that are 'popped out' transitively to show dialogs
@@ -46,7 +49,7 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
     return active_bubble_;
   }
 
-  AnimatingLayoutManager* animating_layout_for_testing() {
+  views::AnimatingLayoutManager* animating_layout_for_testing() {
     return animating_layout_;
   }
 
@@ -167,7 +170,7 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   // there is none.
   std::unique_ptr<DropInfo> drop_info_;
 
-  AnimatingLayoutManager* animating_layout_ = nullptr;
+  views::AnimatingLayoutManager* animating_layout_ = nullptr;
 
   base::WeakPtrFactory<ExtensionsToolbarContainer> weak_ptr_factory_{this};
 

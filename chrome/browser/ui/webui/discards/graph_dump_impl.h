@@ -15,7 +15,10 @@
 #include "chrome/browser/performance_manager/public/graph/page_node.h"
 #include "chrome/browser/performance_manager/public/graph/process_node.h"
 #include "chrome/browser/ui/webui/discards/discards.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 // TODO(siggi): Add workers to the WebUI graph.
 class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
@@ -27,19 +30,22 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
   DiscardsGraphDumpImpl();
   ~DiscardsGraphDumpImpl() override;
 
-  // Creates a new DiscardsGraphDumpImpl to service |request| and passes its
+  // Creates a new DiscardsGraphDumpImpl to service |receiver| and passes its
   // ownership to |graph|.
-  static void CreateAndBind(discards::mojom::GraphDumpRequest request,
-                            performance_manager::Graph* graph);
+  static void CreateAndBind(
+      mojo::PendingReceiver<discards::mojom::GraphDump> receiver,
+      performance_manager::Graph* graph);
 
   // Exposed for testing.
-  void BindWithGraph(performance_manager::Graph* graph,
-                     discards::mojom::GraphDumpRequest request);
+  void BindWithGraph(
+      performance_manager::Graph* graph,
+      mojo::PendingReceiver<discards::mojom::GraphDump> receiver);
 
  protected:
   // WebUIGraphDump implementation.
   void SubscribeToChanges(
-      discards::mojom::GraphChangeStreamPtr change_subscriber) override;
+      mojo::PendingRemote<discards::mojom::GraphChangeStream> change_subscriber)
+      override;
 
   // GraphOwned implementation.
   void OnPassedToGraph(performance_manager::Graph* graph) override;
@@ -141,8 +147,9 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
       int64_t serialization_id,
       scoped_refptr<base::RefCountedMemory> bitmap_data);
 
-  static void BindOnPMSequence(discards::mojom::GraphDumpRequest request,
-                               performance_manager::Graph* graph);
+  static void BindOnPMSequence(
+      mojo::PendingReceiver<discards::mojom::GraphDump> receiver,
+      performance_manager::Graph* graph);
   static void OnConnectionError(DiscardsGraphDumpImpl* impl);
 
   performance_manager::Graph* graph_ = nullptr;
@@ -152,8 +159,8 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
   // The current change subscriber to this dumper. This instance is subscribed
   // to every node in |graph_| save for the system node, so long as there is a
   // subscriber.
-  discards::mojom::GraphChangeStreamPtr change_subscriber_;
-  mojo::Binding<discards::mojom::GraphDump> binding_;
+  mojo::Remote<discards::mojom::GraphChangeStream> change_subscriber_;
+  mojo::Receiver<discards::mojom::GraphDump> receiver_{this};
 
   SEQUENCE_CHECKER(sequence_checker_);
 

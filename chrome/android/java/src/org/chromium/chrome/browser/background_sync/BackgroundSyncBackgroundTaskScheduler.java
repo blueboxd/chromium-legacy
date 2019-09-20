@@ -27,6 +27,14 @@ import org.chromium.components.background_task_scheduler.TaskInfo;
  */
 public class BackgroundSyncBackgroundTaskScheduler {
     /**
+     * Any tasks scheduled using GCMNetworkManager directly to wake up Chrome
+     * would use this TASK_TAG. We no longer use GCMNetworkManager directly, so
+     * when these tasks are run, we rescheduling using
+     * BackgroundSyncBackgroundTaskScheduler.
+     */
+    public static final String TASK_TAG = "BackgroundSync Event";
+
+    /**
      * Denotes the one-off Background Sync Background Tasks scheduled through
      * this class.
      * ONE_SHOT_SYNC_CHROME_WAKE_UP is the task that processes one-shot

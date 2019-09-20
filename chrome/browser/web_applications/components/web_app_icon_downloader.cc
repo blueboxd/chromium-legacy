@@ -124,8 +124,9 @@ void WebAppIconDownloader::DidDownloadFavicon(
   icons_map_[image_url] = bitmaps;
 
   // Once all requests have been resolved, perform post-download tasks.
-  if (in_progress_requests_.empty() && !need_favicon_urls_)
-    std::move(callback_).Run(true, icons_map_);
+  if (in_progress_requests_.empty() && !need_favicon_urls_) {
+    std::move(callback_).Run(true, std::move(icons_map_));
+  }
 }
 
 // content::WebContentsObserver overrides:

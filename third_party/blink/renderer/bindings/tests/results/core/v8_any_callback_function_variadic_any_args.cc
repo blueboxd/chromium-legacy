@@ -28,7 +28,7 @@ const char* V8AnyCallbackFunctionVariadicAnyArgs::NameInHeapSnapshot() const {
   return "V8AnyCallbackFunctionVariadicAnyArgs";
 }
 
-v8::Maybe<ScriptValue> V8AnyCallbackFunctionVariadicAnyArgs::Invoke(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, const Vector<ScriptValue>& arguments) {
+v8::Maybe<ScriptValue> V8AnyCallbackFunctionVariadicAnyArgs::Invoke(bindings::V8ValueOrScriptWrappableAdapter callback_this_value, const HeapVector<ScriptValue>& arguments) {
   ScriptState* callback_relevant_script_state =
       CallbackRelevantScriptStateOrThrowException(
           "AnyCallbackFunctionVariadicAnyArgs",
@@ -133,7 +133,7 @@ v8::Maybe<ScriptValue> V8AnyCallbackFunctionVariadicAnyArgs::Invoke(bindings::V8
   }
 }
 
-v8::Maybe<ScriptValue> V8AnyCallbackFunctionVariadicAnyArgs::Construct(const Vector<ScriptValue>& arguments) {
+v8::Maybe<ScriptValue> V8AnyCallbackFunctionVariadicAnyArgs::Construct(const HeapVector<ScriptValue>& arguments) {
   ScriptState* callback_relevant_script_state =
       CallbackRelevantScriptStateOrThrowException(
           "AnyCallbackFunctionVariadicAnyArgs",

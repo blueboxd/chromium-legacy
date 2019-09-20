@@ -42,12 +42,6 @@ using base::android::JavaParamRef;
 
 namespace {
 
-// Clears the information about the last signed-in user from |profile|.
-void ClearLastSignedInUserForProfile(Profile* profile) {
-  profile->GetPrefs()->ClearPref(prefs::kGoogleServicesLastAccountId);
-  profile->GetPrefs()->ClearPref(prefs::kGoogleServicesLastUsername);
-}
-
 // A BrowsingDataRemover::Observer that clears Profile data and then invokes
 // a callback and deletes itself. It can be configured to delete all data
 // (for enterprise users) or only Google's service workers (for all users).
@@ -97,7 +91,8 @@ class ProfileDataRemover : public content::BrowsingDataRemover::Observer {
       // All the Profile data has been wiped. Clear the last signed in username
       // as well, so that the next signin doesn't trigger the account
       // change dialog.
-      ClearLastSignedInUserForProfile(profile_);
+      profile_->GetPrefs()->ClearPref(prefs::kGoogleServicesLastAccountId);
+      profile_->GetPrefs()->ClearPref(prefs::kGoogleServicesLastUsername);
     }
 
     origin_runner_->PostTask(FROM_HERE, std::move(callback_));
@@ -160,10 +155,6 @@ SigninManagerAndroid::~SigninManagerAndroid() {}
 void SigninManagerAndroid::Shutdown() {
   Java_SigninManager_destroy(base::android::AttachCurrentThread(),
                              java_signin_manager_);
-}
-
-void SigninManagerAndroid::ClearLastSignedInUser(JNIEnv* env) {
-  ClearLastSignedInUserForProfile(profile_);
 }
 
 bool SigninManagerAndroid::IsSigninAllowed() const {

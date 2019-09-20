@@ -8,12 +8,13 @@
 #include <memory>
 
 #include "base/callback_forward.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
-#include "chrome/browser/web_applications/abstract_web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/sync/model/model_type_store.h"
 
 namespace syncer {
@@ -32,11 +33,11 @@ class WebAppDatabase {
   explicit WebAppDatabase(AbstractWebAppDatabaseFactory* database_factory);
   ~WebAppDatabase();
 
-  using RegistryOpenedCallback =
-      AbstractWebAppSyncBridge::RegistryOpenedCallback;
-  using CompletionCallback = AbstractWebAppSyncBridge::CompletionCallback;
-  using AppsToWrite = AbstractWebAppSyncBridge::AppsToWrite;
+  using RegistryOpenedCallback = base::OnceCallback<void(Registry registry)>;
+  using CompletionCallback = base::OnceCallback<void(bool success)>;
+  using AppsToWrite = base::flat_set<const WebApp*>;
 
+  // Open existing or create new DB. Read all data and return it via callback.
   void OpenDatabase(RegistryOpenedCallback callback);
   void WriteWebApps(AppsToWrite apps, CompletionCallback callback);
   void DeleteWebApps(std::vector<AppId> app_ids, CompletionCallback callback);
@@ -47,6 +48,9 @@ class WebAppDatabase {
   static std::unique_ptr<WebApp> CreateWebApp(const WebAppProto& proto);
   // Exposed for testing.
   void ReadRegistry(RegistryOpenedCallback callback);
+  // Exposed for testing.
+  static std::unique_ptr<WebApp> ParseWebApp(const AppId& app_id,
+                                             const std::string& value);
 
  private:
   void CreateStore(syncer::OnceModelTypeStoreFactory store_factory,
@@ -62,9 +66,6 @@ class WebAppDatabase {
 
   void OnDataWritten(CompletionCallback callback,
                      const base::Optional<syncer::ModelError>& error);
-
-  static std::unique_ptr<WebApp> ParseWebApp(const AppId& app_id,
-                                             const std::string& value);
 
   void BeginTransaction();
   void CommitTransaction(CompletionCallback callback);

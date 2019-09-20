@@ -59,7 +59,7 @@ class RendererURLLoaderThrottle : public blink::URLLoaderThrottle,
                                bool proceed,
                                bool showed_interstitial);
 
-  void OnConnectionError();
+  void OnMojoDisconnect();
 
   mojom::SafeBrowsing* safe_browsing_;
   const int render_frame_id_;
@@ -69,7 +69,7 @@ class RendererURLLoaderThrottle : public blink::URLLoaderThrottle,
   mojo::PendingRemote<mojom::SafeBrowsing> safe_browsing_pending_remote_;
   mojo::Remote<mojom::SafeBrowsing> safe_browsing_remote_;
 
-  mojom::SafeBrowsingUrlCheckerPtr url_checker_;
+  mojo::Remote<mojom::SafeBrowsingUrlChecker> url_checker_;
 
   size_t pending_checks_ = 0;
   size_t pending_slow_checks_ = 0;

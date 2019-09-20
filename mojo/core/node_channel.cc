@@ -112,8 +112,11 @@ struct IntroductionData {
   ports::NodeName name;
 };
 
-// This message is just a PlatformHandle.
-struct BindBrokerHostData {};
+// This message is just a PlatformHandle. The data struct here has only a
+// padding field to ensure an aligned, non-zero-length payload.
+struct BindBrokerHostData {
+  uint64_t padding;
+};
 
 #if defined(OS_WIN)
 // This struct is followed by the full payload of a message to be relayed.
@@ -387,6 +390,7 @@ void NodeChannel::BindBrokerHost(PlatformHandle broker_host_handle) {
   Channel::MessagePtr message =
       CreateMessage(MessageType::BIND_BROKER_HOST, sizeof(BindBrokerHostData),
                     handles.size(), &data);
+  data->padding = 0;
   message->SetHandles(std::move(handles));
   WriteChannelMessage(std::move(message));
 #endif

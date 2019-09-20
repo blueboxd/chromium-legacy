@@ -52,6 +52,29 @@ int GetLazyImageLoadingViewportDistanceThresholdPx(const Document& document) {
   return 0;
 }
 
+int GetFirstKFullyLoadCount(const Document& document) {
+  const Settings* settings = document.GetSettings();
+  if (!settings)
+    return 0;
+
+  switch (GetNetworkStateNotifier().EffectiveType()) {
+    case WebEffectiveConnectionType::kTypeOffline:
+      return 0;
+    case WebEffectiveConnectionType::kTypeUnknown:
+      return settings->GetLazyImageFirstKFullyLoadUnknown();
+    case WebEffectiveConnectionType::kTypeSlow2G:
+      return settings->GetLazyImageFirstKFullyLoadSlow2G();
+    case WebEffectiveConnectionType::kType2G:
+      return settings->GetLazyImageFirstKFullyLoad2G();
+    case WebEffectiveConnectionType::kType3G:
+      return settings->GetLazyImageFirstKFullyLoad3G();
+    case WebEffectiveConnectionType::kType4G:
+      return settings->GetLazyImageFirstKFullyLoad4G();
+  }
+  NOTREACHED();
+  return 0;
+}
+
 // Returns if the element or its ancestors are invisible, due to their style or
 // attribute or due to themselves not connected to the main document tree.
 bool IsElementInInvisibleSubTree(const Element& element) {
@@ -72,7 +95,8 @@ bool IsElementInInvisibleSubTree(const Element& element) {
 
 }  // namespace
 
-LazyLoadImageObserver::LazyLoadImageObserver() = default;
+LazyLoadImageObserver::LazyLoadImageObserver(const Document& document)
+    : count_remaining_images_fully_loaded_(GetFirstKFullyLoadCount(document)) {}
 
 void LazyLoadImageObserver::StartMonitoringNearViewport(
     Document* root_document,
@@ -291,6 +315,14 @@ void LazyLoadImageObserver::OnVisibilityChanged(
       }
     }
   }
+}
+
+bool LazyLoadImageObserver::IsFullyLoadableFirstKImageAndDecrementCount() {
+  if (count_remaining_images_fully_loaded_ > 0) {
+    count_remaining_images_fully_loaded_--;
+    return true;
+  }
+  return false;
 }
 
 void LazyLoadImageObserver::Trace(Visitor* visitor) {

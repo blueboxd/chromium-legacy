@@ -7,6 +7,7 @@
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"
@@ -35,12 +36,12 @@ class FakeAccessPermission : public mojom::ScopedAccessPermission {
 class BroadcastingReceiverTest : public ::testing::Test {
  public:
   void SetUp() override {
-    mojom::ReceiverPtr receiver_1;
-    mojom::ReceiverPtr receiver_2;
-    mock_receiver_1_ =
-        std::make_unique<MockReceiver>(mojo::MakeRequest(&receiver_1));
-    mock_receiver_2_ =
-        std::make_unique<MockReceiver>(mojo::MakeRequest(&receiver_2));
+    mojo::PendingRemote<mojom::Receiver> receiver_1;
+    mojo::PendingRemote<mojom::Receiver> receiver_2;
+    mock_receiver_1_ = std::make_unique<MockReceiver>(
+        receiver_1.InitWithNewPipeAndPassReceiver());
+    mock_receiver_2_ = std::make_unique<MockReceiver>(
+        receiver_2.InitWithNewPipeAndPassReceiver());
     client_id_1_ = broadcaster_.AddClient(
         std::move(receiver_1), media::VideoCaptureBufferType::kSharedMemory);
     client_id_2_ = broadcaster_.AddClient(

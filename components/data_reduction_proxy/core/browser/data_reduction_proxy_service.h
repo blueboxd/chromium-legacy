@@ -21,7 +21,9 @@
 #include "components/data_reduction_proxy/core/browser/db_data_owner.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy.mojom.h"
 #include "components/data_use_measurement/core/data_use_measurement.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "net/nqe/effective_connection_type.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
@@ -159,7 +161,8 @@ class DataReductionProxyService
   void AddThrottleConfigObserver(
       mojo::PendingRemote<mojom::DataReductionProxyThrottleConfigObserver>
           observer) override;
-  void Clone(mojom::DataReductionProxyRequest request) override;
+  void Clone(
+      mojo::PendingReceiver<mojom::DataReductionProxy> receiver) override;
 
   // Accessor methods.
   DataReductionProxyCompressionStats* compression_stats() const {
@@ -310,7 +313,7 @@ class DataReductionProxyService
   mojo::RemoteSet<network::mojom::CustomProxyConfigClient>
       proxy_config_clients_;
 
-  mojo::BindingSet<mojom::DataReductionProxy> drp_bindings_;
+  mojo::ReceiverSet<mojom::DataReductionProxy> drp_receivers_;
 
   mojo::RemoteSet<mojom::DataReductionProxyThrottleConfigObserver>
       drp_throttle_config_observers_;

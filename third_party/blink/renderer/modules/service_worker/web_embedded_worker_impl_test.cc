@@ -195,7 +195,10 @@ class WebEmbeddedWorkerImplTest : public testing::Test {
  protected:
   void SetUp() override {
     mock_client_ = std::make_unique<MockServiceWorkerContextClient>();
-    worker_ = WebEmbeddedWorkerImpl::CreateForTesting(mock_client_.get());
+    worker_ = std::make_unique<WebEmbeddedWorkerImpl>(
+        mock_client_.get(), /*cache_storage_remote=*/mojo::NullRemote(),
+        /*interface_provider_info=*/nullptr,
+        /*browser_interface_broker=*/mojo::NullRemote());
 
     WebURL script_url =
         url_test_helpers::ToKURL("https://www.example.com/sw.js");

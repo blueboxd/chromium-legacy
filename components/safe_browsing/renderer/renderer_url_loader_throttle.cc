@@ -54,7 +54,7 @@ void RendererURLLoaderThrottle::WillStartRequest(
   net::HttpRequestHeaders headers;
   headers.CopyFrom(request->headers);
   safe_browsing_->CreateCheckerAndCheck(
-      render_frame_id_, mojo::MakeRequest(&url_checker_), request->url,
+      render_frame_id_, url_checker_.BindNewPipeAndPassReceiver(), request->url,
       request->method, headers, request->load_flags,
       static_cast<content::ResourceType>(request->resource_type),
       request->has_user_gesture, request->originated_from_service_worker,
@@ -62,8 +62,8 @@ void RendererURLLoaderThrottle::WillStartRequest(
                      weak_factory_.GetWeakPtr()));
   safe_browsing_ = nullptr;
 
-  url_checker_.set_connection_error_handler(base::BindOnce(
-      &RendererURLLoaderThrottle::OnConnectionError, base::Unretained(this)));
+  url_checker_.set_disconnect_handler(base::BindOnce(
+      &RendererURLLoaderThrottle::OnMojoDisconnect, base::Unretained(this)));
 }
 
 void RendererURLLoaderThrottle::WillRedirectRequest(
@@ -186,7 +186,7 @@ void RendererURLLoaderThrottle::OnCompleteCheckInternal(
   }
 }
 
-void RendererURLLoaderThrottle::OnConnectionError() {
+void RendererURLLoaderThrottle::OnMojoDisconnect() {
   DCHECK(!blocked_);
 
   // If a service-side disconnect happens, treat all URLs as if they are safe.

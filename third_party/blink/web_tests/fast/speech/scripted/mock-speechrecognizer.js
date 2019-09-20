@@ -89,7 +89,7 @@ class MockSpeechRecognizer {
   }
 
   start(params) {
-    this.session_ = new MockSpeechRecognitionSession(params.sessionRequest, this);
+    this.session_ = new MockSpeechRecognitionSession(params.sessionReceiver, this);
     this.session_client_ = params.client;
 
     // if setMockSpeechRecognitionError was called

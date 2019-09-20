@@ -62,6 +62,15 @@ void StartMonitoringVisibility(HTMLImageElement* html_image) {
   }
 }
 
+bool IsFullyLoadableFirstKImageAndDecrementCount(
+    HTMLImageElement* image_element) {
+  Document* document = GetRootDocumentOrNull(image_element);
+  if (!document)
+    return true;
+  return document->EnsureLazyLoadImageObserver()
+      .IsFullyLoadableFirstKImageAndDecrementCount();
+}
+
 }  // namespace
 
 // static
@@ -103,6 +112,8 @@ LazyImageHelper::DetermineEligibilityAndTrackVisibilityMetrics(
 
   const auto lazy_load_image_setting = frame.GetLazyLoadImageSetting();
   LoadingAttrValue loading_attr = GetLoadingAttrValue(*html_image);
+  bool is_fully_loadable =
+      IsFullyLoadableFirstKImageAndDecrementCount(html_image);
   if (loading_attr == LoadingAttrValue::kLazy) {
     StartMonitoringVisibility(html_image);
     UseCounter::Count(frame.GetDocument(),
@@ -153,8 +164,9 @@ LazyImageHelper::DetermineEligibilityAndTrackVisibilityMetrics(
 
   StartMonitoringVisibility(html_image);
 
-  if (lazy_load_image_setting ==
-      LocalFrame::LazyLoadImageSetting::kEnabledAutomatic) {
+  if (!is_fully_loadable &&
+      lazy_load_image_setting ==
+          LocalFrame::LazyLoadImageSetting::kEnabledAutomatic) {
     // Automatic lazyload
     if (!RuntimeEnabledFeatures::LazyImageLoadingMetadataFetchEnabled() ||
         IsDimensionAbsoluteLarge(*html_image)) {

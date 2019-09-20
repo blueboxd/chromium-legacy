@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,10 +21,10 @@ class TextureVirtualDeviceMojoAdapterTest : public ::testing::Test {
   TextureVirtualDeviceMojoAdapterTest() = default;
 
   void SetUp() override {
-    mock_receiver_1_ =
-        std::make_unique<MockReceiver>(mojo::MakeRequest(&receiver_1_));
-    mock_receiver_2_ =
-        std::make_unique<MockReceiver>(mojo::MakeRequest(&receiver_2_));
+    mock_receiver_1_ = std::make_unique<MockReceiver>(
+        receiver_1_.InitWithNewPipeAndPassReceiver());
+    mock_receiver_2_ = std::make_unique<MockReceiver>(
+        receiver_2_.InitWithNewPipeAndPassReceiver());
     adapter_ = std::make_unique<TextureVirtualDeviceMojoAdapter>();
   }
 
@@ -62,8 +63,8 @@ class TextureVirtualDeviceMojoAdapterTest : public ::testing::Test {
  private:
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TextureVirtualDeviceMojoAdapter> adapter_;
-  mojom::ReceiverPtr receiver_1_;
-  mojom::ReceiverPtr receiver_2_;
+  mojo::PendingRemote<mojom::Receiver> receiver_1_;
+  mojo::PendingRemote<mojom::Receiver> receiver_2_;
 };
 
 // Tests that when buffer handles are shared by the producer before a receiver

@@ -12,7 +12,7 @@ namespace video_capture {
 
 PushVideoStreamSubscriptionImpl::PushVideoStreamSubscriptionImpl(
     mojom::PushVideoStreamSubscriptionRequest subscription_request,
-    mojom::ReceiverPtr subscriber,
+    mojo::PendingRemote<mojom::Receiver> subscriber,
     const media::VideoCaptureParams& requested_settings,
     mojom::VideoSource::CreatePushSubscriptionCallback creation_callback,
     BroadcastingReceiver* broadcaster,

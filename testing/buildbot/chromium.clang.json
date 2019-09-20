@@ -7754,6 +7754,11 @@
         "test": "service_junit_tests"
       },
       {
+        "name": "touch_to_fill_junit_tests",
+        "swarming": {},
+        "test": "touch_to_fill_junit_tests"
+      },
+      {
         "name": "ui_junit_tests",
         "swarming": {},
         "test": "ui_junit_tests"

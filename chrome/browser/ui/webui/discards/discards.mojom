@@ -246,5 +246,5 @@ interface GraphChangeStream {
 // of the performance manager graph.
 interface GraphDump {
   // Subscribes |change_subscriber| to a graph change stream.
-  SubscribeToChanges(GraphChangeStream change_subscriber);
+  SubscribeToChanges(pending_remote<GraphChangeStream> change_subscriber);
 };

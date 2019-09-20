@@ -11,7 +11,6 @@
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_utils.h"
 #include "chrome/browser/sharing/sharing_constants.h"
-#include "chrome/browser/sharing/sharing_device_capability.h"
 #include "chrome/browser/sharing/sharing_dialog.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/browser.h"
@@ -80,8 +79,9 @@ PageActionIconType ClickToCallUiController::GetIconType() {
   return PageActionIconType::kClickToCall;
 }
 
-int ClickToCallUiController::GetRequiredDeviceCapabilities() {
-  return static_cast<int>(SharingDeviceCapability::kClickToCall);
+sync_pb::SharingSpecificFields::EnabledFeatures
+ClickToCallUiController::GetRequiredFeature() {
+  return sync_pb::SharingSpecificFields::CLICK_TO_CALL;
 }
 
 void ClickToCallUiController::DoUpdateApps(UpdateAppsCallback callback) {
@@ -175,6 +175,21 @@ int ClickToCallUiController::GetHeaderImageId() const {
 
   return is_dark ? IDR_CLICK_TO_CALL_ILLUSTRATION_DARK
                  : IDR_CLICK_TO_CALL_ILLUSTRATION_LIGHT;
+}
+
+std::unique_ptr<views::StyledLabel> ClickToCallUiController::GetHelpTextLabel(
+    views::StyledLabelListener* listener) {
+  const base::string16 link = l10n_util::GetStringUTF16(
+      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TROUBLESHOOT_LINK);
+  size_t offset;
+  const base::string16 text = l10n_util::GetStringFUTF16(
+      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES, link,
+      &offset);
+  auto label = std::make_unique<views::StyledLabel>(text, listener);
+  views::StyledLabel::RangeStyleInfo link_style =
+      views::StyledLabel::RangeStyleInfo::CreateForLink();
+  label->AddStyleRange(gfx::Range(offset, offset + link.length()), link_style);
+  return label;
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(ClickToCallUiController)

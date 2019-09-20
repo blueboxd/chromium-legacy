@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "content/public/test/browser_task_environment.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -19,8 +19,9 @@ namespace {
 
 class TestSerialConnection : public SerialConnection {
  public:
-  explicit TestSerialConnection(device::mojom::SerialPortPtr port_ptr)
-      : SerialConnection("dummy_id", std::move(port_ptr)) {}
+  explicit TestSerialConnection(
+      mojo::PendingRemote<device::mojom::SerialPort> port)
+      : SerialConnection("dummy_id", std::move(port)) {}
   ~TestSerialConnection() override {}
 
   void SetReceiveBuffer(const std::vector<uint8_t>& receive_buffer) {
@@ -103,11 +104,11 @@ std::vector<uint8_t> ToByteVector(const char (&array)[N]) {
 class ViscaWebcamTest : public testing::Test {
  protected:
   ViscaWebcamTest() {
-    device::mojom::SerialPortPtr port_ptr;
-    mojo::MakeRequest(&port_ptr);
+    mojo::PendingRemote<device::mojom::SerialPort> port;
+    ignore_result(port.InitWithNewPipeAndPassReceiver());
     webcam_ = new ViscaWebcam;
     webcam_->OpenForTesting(
-        std::make_unique<TestSerialConnection>(std::move(port_ptr)));
+        std::make_unique<TestSerialConnection>(std::move(port)));
   }
   ~ViscaWebcamTest() override {}
 

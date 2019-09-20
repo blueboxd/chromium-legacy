@@ -59,6 +59,12 @@ id<GREYMatcher> TextFieldForCellWithLabelId(int message_id) {
   return [ChromeMatchersAppInterface textFieldForCellWithLabelID:message_id];
 }
 
+id<GREYMatcher> IconViewForCellWithLabelId(int message_id,
+                                           NSString* icon_type) {
+  return [ChromeMatchersAppInterface iconViewForCellWithLabelID:message_id
+                                                       iconType:icon_type];
+}
+
 id<GREYMatcher> PrimaryToolbar() {
   return [ChromeMatchersAppInterface primaryToolbar];
 }

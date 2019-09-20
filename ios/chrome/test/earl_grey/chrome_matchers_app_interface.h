@@ -48,6 +48,10 @@
 // Matcher for text field of a cell with |messageID|.
 + (id<GREYMatcher>)textFieldForCellWithLabelID:(int)messageID;
 
+// Matcher for icon view of a cell with |messageID|.
++ (id<GREYMatcher>)iconViewForCellWithLabelID:(int)messageID
+                                     iconType:(NSString*)iconType;
+
 // Matcher for element with accessibility label corresponding to |label| and
 // accessibility trait UIAccessibilityTraitHeader.
 + (id<GREYMatcher>)headerWithAccessibilityLabel:(NSString*)label;

@@ -3485,6 +3485,7 @@ void RenderFrameHostImpl::SendAccessibilityEventsToManager(
 }
 
 void RenderFrameHostImpl::EvictFromBackForwardCache() {
+  TRACE_EVENT0("navigation", "RenderFrameHostImpl::EvictFromBackForwardCache");
   DCHECK(IsBackForwardCacheEnabled());
 
   if (is_evicted_from_back_forward_cache_)
@@ -7571,7 +7572,12 @@ void RenderFrameHostImpl::MaybeEvictFromBackForwardCache() {
 
   NavigationControllerImpl* controller = static_cast<NavigationControllerImpl*>(
       frame_tree_node_->navigator()->GetController());
-  if (controller->GetBackForwardCache().CanStoreDocument(this))
+  auto can_store = controller->GetBackForwardCache().CanStoreDocument(this);
+  TRACE_EVENT1("navigation",
+               "RenderFrameHostImpl::MaybeEvictFromBackForwardCache",
+               "can_store", can_store.ToString());
+
+  if (can_store)
     return;
 
   EvictFromBackForwardCache();

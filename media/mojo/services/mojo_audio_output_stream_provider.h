@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace media {
 
@@ -46,7 +47,8 @@ class MEDIA_MOJO_EXPORT MojoAudioOutputStreamProvider
   // mojom::AudioOutputStreamProvider implementation.
   void Acquire(
       const AudioParameters& params,
-      mojom::AudioOutputStreamProviderClientPtr provider_client,
+      mojo::PendingRemote<mojom::AudioOutputStreamProviderClient>
+          provider_client,
       const base::Optional<base::UnguessableToken>& processing_id) override;
 
   // Called when |audio_output_| had an error.
@@ -63,7 +65,7 @@ class MEDIA_MOJO_EXPORT MojoAudioOutputStreamProvider
   std::unique_ptr<mojom::AudioOutputStreamObserver> observer_;
   mojo::Receiver<mojom::AudioOutputStreamObserver> observer_receiver_;
   base::Optional<MojoAudioOutputStream> audio_output_;
-  mojom::AudioOutputStreamProviderClientPtr provider_client_;
+  mojo::Remote<mojom::AudioOutputStreamProviderClient> provider_client_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoAudioOutputStreamProvider);
 };

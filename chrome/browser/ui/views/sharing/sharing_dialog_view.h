@@ -62,6 +62,8 @@ class SharingDialogView : public SharingDialog,
   void OnThemeChanged() override;
 
   static views::BubbleDialogDelegateView* GetAsBubble(SharingDialog* dialog);
+  std::unique_ptr<views::StyledLabel> CreateHelpText(
+      views::StyledLabelListener* listener);
 
  private:
   friend class SharingDialogViewTest;

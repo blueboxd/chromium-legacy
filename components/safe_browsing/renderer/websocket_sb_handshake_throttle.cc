@@ -51,7 +51,7 @@ void WebSocketSBHandshakeThrottle::ThrottleHandshake(
   int load_flags = 0;
   start_time_ = base::TimeTicks::Now();
   safe_browsing_->CreateCheckerAndCheck(
-      render_frame_id_, mojo::MakeRequest(&url_checker_), url, "GET",
+      render_frame_id_, url_checker_.BindNewPipeAndPassReceiver(), url, "GET",
       net::HttpRequestHeaders(), load_flags,
       content::ResourceType::kSubResource, false /* has_user_gesture */,
       false /* originated_from_service_worker */,
@@ -60,9 +60,8 @@ void WebSocketSBHandshakeThrottle::ThrottleHandshake(
 
   // This use of base::Unretained() is safe because the handler will not be
   // called after |url_checker_| is destroyed, and it is owned by this object.
-  url_checker_.set_connection_error_handler(
-      base::BindOnce(&WebSocketSBHandshakeThrottle::OnConnectionError,
-                     base::Unretained(this)));
+  url_checker_.set_disconnect_handler(base::BindOnce(
+      &WebSocketSBHandshakeThrottle::OnMojoDisconnect, base::Unretained(this)));
 }
 
 void WebSocketSBHandshakeThrottle::OnCompleteCheck(bool proceed,
@@ -103,7 +102,7 @@ void WebSocketSBHandshakeThrottle::OnCheckResult(
   notifier_binding_->Bind(std::move(slow_check_notifier));
 }
 
-void WebSocketSBHandshakeThrottle::OnConnectionError() {
+void WebSocketSBHandshakeThrottle::OnMojoDisconnect() {
   DCHECK_EQ(result_, Result::UNKNOWN);
 
   url_checker_.reset();

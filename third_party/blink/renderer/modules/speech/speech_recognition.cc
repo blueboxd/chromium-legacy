@@ -27,6 +27,7 @@
 
 #include <algorithm>
 #include "build/build_config.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -64,10 +65,11 @@ void SpeechRecognition::start(ExceptionState& exception_state) {
   binding_.set_connection_error_handler(WTF::Bind(
       &SpeechRecognition::OnConnectionError, WrapWeakPersistent(this)));
 
-  mojom::blink::SpeechRecognitionSessionRequest session_request =
-      MakeRequest(&session_, GetExecutionContext()->GetInterfaceInvalidator());
+  mojo::PendingReceiver<mojom::blink::SpeechRecognitionSession>
+      session_receiver = MakeRequest(
+          &session_, GetExecutionContext()->GetInterfaceInvalidator());
 
-  controller_->Start(std::move(session_request), std::move(session_client),
+  controller_->Start(std::move(session_receiver), std::move(session_client),
                      *grammars_, lang_, continuous_, interim_results_,
                      max_alternatives_);
   started_ = true;

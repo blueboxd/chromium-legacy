@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/device_service.h"
 #include "services/device/device_service_test_base.h"
@@ -43,7 +43,7 @@ void CheckSuccess(base::OnceClosure quit_closure,
 
 class TestSensorClient : public mojom::SensorClient {
  public:
-  TestSensorClient(SensorType type) : client_binding_(this), type_(type) {}
+  TestSensorClient(SensorType type) : type_(type) {}
 
   // Implements mojom::SensorClient:
   void SensorReadingChanged() override {
@@ -77,7 +77,7 @@ class TestSensorClient : public mojom::SensorClient {
     ASSERT_TRUE(shared_buffer_);
 
     sensor_.Bind(std::move(params->sensor));
-    client_binding_.Bind(std::move(params->client_request));
+    client_receiver_.Bind(std::move(params->client_receiver));
     std::move(quit_closure).Run();
   }
 
@@ -130,7 +130,7 @@ class TestSensorClient : public mojom::SensorClient {
   }
 
   mojo::Remote<mojom::Sensor> sensor_;
-  mojo::Binding<mojom::SensorClient> client_binding_;
+  mojo::Receiver<mojom::SensorClient> client_receiver_{this};
   mojo::ScopedSharedBufferMapping shared_buffer_;
   SensorReading reading_data_;
 

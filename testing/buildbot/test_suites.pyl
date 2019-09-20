@@ -2392,6 +2392,7 @@
       'module_installer_junit_tests': {},
       'net_junit_tests': {},
       'service_junit_tests': {},
+      'touch_to_fill_junit_tests': {},
       'ui_junit_tests': {},
       'webapk_client_junit_tests': {},
       'webapk_shell_apk_h2o_junit_tests': {},

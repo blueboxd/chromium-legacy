@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -200,6 +201,24 @@ class PLATFORM_EXPORT V8PrivateProperty {
     return Symbol(isolate, CreateCachedV8Private(isolate, symbol));
   }
 
+  // Returns a Symbol to access a private property. Symbol instances from same
+  // |key|s are guaranteed to access the same property. |desc| is a description
+  // of the property.
+  static Symbol GetSymbol(v8::Isolate* isolate, void* key, const char* desc) {
+    V8PrivateProperty* private_prop =
+        V8PerIsolateData::From(isolate)->PrivateProperty();
+    auto& symbol_map = private_prop->symbol_map_;
+    auto itr = symbol_map.find(key);
+    v8::Local<v8::Private> v8_private;
+    if (UNLIKELY(itr == symbol_map.end())) {
+      v8_private = CreateV8Private(isolate, desc);
+      symbol_map.insert(key, v8::Eternal<v8::Private>(isolate, v8_private));
+    } else {
+      v8_private = itr->value.Get(isolate);
+    }
+    return Symbol(isolate, v8_private);
+  }
+
  private:
   static v8::Local<v8::Private> CreateV8Private(v8::Isolate*,
                                                 const char* symbol);
@@ -218,6 +237,8 @@ class PLATFORM_EXPORT V8PrivateProperty {
   // a snapshot, and it cannot be a v8::Eternal<> due to V8 serializer's
   // requirement.
   ScopedPersistent<v8::Private> symbol_window_document_cached_accessor_;
+
+  WTF::HashMap<void*, v8::Eternal<v8::Private>> symbol_map_;
 
   DISALLOW_COPY_AND_ASSIGN(V8PrivateProperty);
 };

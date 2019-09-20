@@ -18,6 +18,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_service_registry.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
 
@@ -43,11 +44,13 @@ class ArcOemCryptoBridgeFactory
   ~ArcOemCryptoBridgeFactory() override = default;
 };
 
-mojom::ProtectedBufferManagerPtr GetGpuBufferManagerOnIOThread() {
+mojo::PendingRemote<mojom::ProtectedBufferManager>
+GetGpuBufferManagerOnIOThread() {
   // Get the Mojo interface from the GPU for dealing with secure buffers and
   // pass that to the daemon as well in our Connect call.
-  mojom::ProtectedBufferManagerPtr gpu_buffer_manager;
-  content::BindInterfaceInGpuProcess(mojo::MakeRequest(&gpu_buffer_manager));
+  mojo::PendingRemote<mojom::ProtectedBufferManager> gpu_buffer_manager;
+  content::BindInterfaceInGpuProcess(
+      gpu_buffer_manager.InitWithNewPipeAndPassReceiver());
   return gpu_buffer_manager;
 }
 
@@ -156,7 +159,7 @@ void ArcOemCryptoBridge::ConnectToDaemon(
 
 void ArcOemCryptoBridge::FinishConnectingToDaemon(
     mojom::OemCryptoServiceRequest request,
-    mojom::ProtectedBufferManagerPtr gpu_buffer_manager) {
+    mojo::PendingRemote<mojom::ProtectedBufferManager> gpu_buffer_manager) {
   if (!oemcrypto_host_daemon_ptr_) {
     VLOG(1) << "Mojo connection is already lost.";
     return;

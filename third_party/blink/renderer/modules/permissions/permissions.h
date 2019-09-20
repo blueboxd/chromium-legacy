@@ -26,7 +26,7 @@ class Permissions final : public ScriptWrappable {
   ScriptPromise request(ScriptState*, const ScriptValue&, ExceptionState&);
   ScriptPromise revoke(ScriptState*, const ScriptValue&, ExceptionState&);
   ScriptPromise requestAll(ScriptState*,
-                           const Vector<ScriptValue>&,
+                           const HeapVector<ScriptValue>&,
                            ExceptionState&);
 
  private:

@@ -118,11 +118,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   void RegisterSubresourceOverride(
       mojom::TransferrableURLLoaderPtr transferrable_loader) override;
 
-  // Returns the FrameTreeNode this navigation is happening in.
-  FrameTreeNode* frame_tree_node() const {
-    return navigation_request_->frame_tree_node();
-  }
-
  private:
   friend class NavigationRequest;
 

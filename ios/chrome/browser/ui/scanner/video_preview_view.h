@@ -23,6 +23,9 @@
 // Returns the VideoPreviewView's layer cast to AVCaptureVideoPreviewLayer.
 - (AVCaptureVideoPreviewLayer*)previewLayer;
 
+// Returns the normalised rectangle of interest required for the Vision request.
+- (CGRect)viewportRegionOfInterest;
+
 // Returns the rectangle in camera coordinates in which codes should be
 // recognized.
 - (CGRect)viewportRectOfInterest;

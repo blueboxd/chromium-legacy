@@ -65,11 +65,14 @@ gfx::Rect DrmWindowHost::GetCursorConfinedBounds() const {
                                            : cursor_confined_bounds_;
 }
 
-void DrmWindowHost::Show(bool inactive) {}
+void DrmWindowHost::Show() {
+}
 
-void DrmWindowHost::Hide() {}
+void DrmWindowHost::Hide() {
+}
 
-void DrmWindowHost::Close() {}
+void DrmWindowHost::Close() {
+}
 
 void DrmWindowHost::PrepareForShutdown() {}
 
@@ -83,7 +86,8 @@ gfx::Rect DrmWindowHost::GetBounds() {
   return bounds_;
 }
 
-void DrmWindowHost::SetTitle(const base::string16& title) {}
+void DrmWindowHost::SetTitle(const base::string16& title) {
+}
 
 void DrmWindowHost::SetCapture() {
   window_manager_->GrabEvents(widget_);
@@ -97,13 +101,17 @@ bool DrmWindowHost::HasCapture() const {
   return widget_ == window_manager_->event_grabber();
 }
 
-void DrmWindowHost::ToggleFullscreen() {}
+void DrmWindowHost::ToggleFullscreen() {
+}
 
-void DrmWindowHost::Maximize() {}
+void DrmWindowHost::Maximize() {
+}
 
-void DrmWindowHost::Minimize() {}
+void DrmWindowHost::Minimize() {
+}
 
-void DrmWindowHost::Restore() {}
+void DrmWindowHost::Restore() {
+}
 
 PlatformWindowState DrmWindowHost::GetPlatformWindowState() const {
   return PlatformWindowState::kUnknown;

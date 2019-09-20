@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -92,8 +91,7 @@ OriginPolicyThrottle::WillProcessResponse() {
   const base::Optional<network::OriginPolicy>& origin_policy =
       GetTestOriginPolicy().has_value()
           ? GetTestOriginPolicy()
-          : static_cast<NavigationHandleImpl*>(navigation_handle())
-                ->navigation_request()
+          : NavigationRequest::From(navigation_handle())
                 ->response()
                 ->head.origin_policy;
 

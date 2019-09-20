@@ -71,39 +71,27 @@ void ServiceThread::PerformHeartbeatLatencyReport() const {
   if (!task_tracker_)
     return;
 
-  static constexpr TaskTraits kReportedTraits[] = {
-      {ThreadPool(), TaskPriority::BEST_EFFORT},
-      {ThreadPool(), TaskPriority::BEST_EFFORT, MayBlock()},
-      {ThreadPool(), TaskPriority::USER_VISIBLE},
-      {ThreadPool(), TaskPriority::USER_VISIBLE, MayBlock()},
-      {ThreadPool(), TaskPriority::USER_BLOCKING},
-      {ThreadPool(), TaskPriority::USER_BLOCKING, MayBlock()}};
-
-  // Only record latency for one set of TaskTraits per report to avoid bias in
-  // the order in which tasks are posted (should we record all at once) as well
-  // as to avoid spinning up many worker threads to process this report if the
+  // Only record latency for one TaskPriority per report to avoid bias in the
+  // order in which tasks are posted (should we record all at once) as well as
+  // to avoid spinning up many worker threads to process this report if the
   // thread pool is currently idle (each thread group keeps at least one idle
   // thread so a single task isn't an issue).
 
   // Invoke RandInt() out-of-line to ensure it's obtained before
   // TimeTicks::Now().
-  const TaskTraits& profiled_traits =
-      kReportedTraits[RandInt(0, base::size(kReportedTraits) - 1)];
+  const TaskPriority profiled_priority = static_cast<TaskPriority>(
+      RandInt(static_cast<int>(TaskPriority::LOWEST),
+              static_cast<int>(TaskPriority::HIGHEST)));
 
   // Post through the static API to time the full stack. Use a new Now() for
   // every set of traits in case PostTask() itself is slow.
   // Bonus: this approach also includes the overhead of BindOnce() in the
   // reported latency.
-  // TODO(jessemckenna): pass |profiled_traits| directly to
-  // RecordHeartbeatLatencyAndTasksRunWhileQueuingHistograms() once compiler
-  // error on NaCl is fixed
-  TaskPriority task_priority = profiled_traits.priority();
-  bool may_block = profiled_traits.may_block();
   base::PostTask(
-      FROM_HERE, profiled_traits,
+      FROM_HERE, {base::ThreadPool(), profiled_priority},
       BindOnce(
           &TaskTracker::RecordHeartbeatLatencyAndTasksRunWhileQueuingHistograms,
-          Unretained(task_tracker_), task_priority, may_block, TimeTicks::Now(),
+          Unretained(task_tracker_), profiled_priority, TimeTicks::Now(),
           task_tracker_->GetNumTasksRun()));
 }
 

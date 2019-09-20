@@ -12,15 +12,15 @@ namespace blink {
 DawnControlClientHolder::DawnControlClientHolder(
     std::unique_ptr<WebGraphicsContext3DProvider> context_provider)
     : context_provider_(std::move(context_provider)),
-      interface_(context_provider_->WebGPUInterface()),
-      destroyed_(false) {}
+      interface_(context_provider_->WebGPUInterface()) {}
 
-void DawnControlClientHolder::MarkDestroyed() {
-  destroyed_ = true;
+void DawnControlClientHolder::Destroy() {
+  interface_ = nullptr;
+  context_provider_.reset();
 }
 
 bool DawnControlClientHolder::IsDestroyed() const {
-  return destroyed_;
+  return !interface_;
 }
 
 WebGraphicsContext3DProvider* DawnControlClientHolder::GetContextProvider()
@@ -29,12 +29,11 @@ WebGraphicsContext3DProvider* DawnControlClientHolder::GetContextProvider()
 }
 
 gpu::webgpu::WebGPUInterface* DawnControlClientHolder::GetInterface() const {
-  DCHECK(!destroyed_);
+  DCHECK(interface_);
   return interface_;
 }
 
 const DawnProcTable& DawnControlClientHolder::GetProcs() const {
-  DCHECK(!destroyed_);
   DCHECK(interface_);
   return interface_->GetProcs();
 }

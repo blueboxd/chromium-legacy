@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 
@@ -20,10 +20,10 @@ namespace {
 class FakeSerialPort : public mojom::SerialPort {
  public:
   FakeSerialPort(
-      mojom::SerialPortRequest request,
+      mojo::PendingReceiver<mojom::SerialPort> receiver,
       mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher)
-      : binding_(this, std::move(request)), watcher_(std::move(watcher)) {
-    binding_.set_connection_error_handler(base::BindOnce(
+      : receiver_(this, std::move(receiver)), watcher_(std::move(watcher)) {
+    receiver_.set_disconnect_handler(base::BindOnce(
         [](FakeSerialPort* self) { delete self; }, base::Unretained(this)));
     watcher_.set_disconnect_handler(base::BindOnce(
         [](FakeSerialPort* self) { delete self; }, base::Unretained(this)));
@@ -72,7 +72,7 @@ class FakeSerialPort : public mojom::SerialPort {
   void Close(CloseCallback callback) override { std::move(callback).Run(); }
 
  private:
-  mojo::Binding<mojom::SerialPort> binding_;
+  mojo::Receiver<mojom::SerialPort> receiver_;
   mojo::Remote<mojom::SerialPortConnectionWatcher> watcher_;
 
   // Mojo handles to keep open in order to simulate an active connection.
@@ -108,11 +108,11 @@ void FakeSerialPortManager::GetDevices(GetDevicesCallback callback) {
 
 void FakeSerialPortManager::GetPort(
     const base::UnguessableToken& token,
-    mojom::SerialPortRequest request,
+    mojo::PendingReceiver<mojom::SerialPort> receiver,
     mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher) {
-  // The new FakeSerialPort instance is owned by the |request| and |watcher|
+  // The new FakeSerialPort instance is owned by the |receiver| and |watcher|
   // pipes.
-  new FakeSerialPort(std::move(request), std::move(watcher));
+  new FakeSerialPort(std::move(receiver), std::move(watcher));
 }
 
 }  // namespace device

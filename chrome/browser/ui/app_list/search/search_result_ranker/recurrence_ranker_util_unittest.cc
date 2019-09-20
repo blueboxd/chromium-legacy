@@ -24,20 +24,17 @@ namespace app_list {
 
 class RecurrenceRankerJsonConfigConverterTest : public testing::Test {
  public:
-  void SetUp() override {
-    converter_ = std::make_unique<JsonConfigConverter>(dd_service_.connector());
-  }
-
   // Converts the async JsonConfigConverter::Convert call into a synchronous
   // call for ease of testing.
   base::Optional<RecurrenceRankerConfigProto> Convert(const std::string& json) {
     base::RunLoop run_loop;
     done_callback_ = run_loop.QuitClosure();
-    converter_->Convert(
-        json, "",
+    converter_ = JsonConfigConverter::Convert(
+        dd_service_.connector(), json, "",
         base::BindOnce(
             [](RecurrenceRankerJsonConfigConverterTest* fixture,
                base::Optional<RecurrenceRankerConfigProto> config) {
+              fixture->converter_.reset();
               fixture->config_ = config;
               fixture->done_callback_.Run();
             },

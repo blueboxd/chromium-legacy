@@ -92,7 +92,6 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
             gfx::Rect(),                             // label_rect
             gfx::HorizontalAlignment::ALIGN_CENTER,  // text_alignment
             gfx::Rect(20, 20, 320, 240),             // image_rect
-            4,   // selection_border_thickness
             5);  // focus_rectangle_inset
 
         const DesktopMediaSourceViewStyle kGenericScreenStyle(
@@ -102,7 +101,6 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
             gfx::Rect(15, 165, 240, 40),             // label_rect
             gfx::HorizontalAlignment::ALIGN_CENTER,  // text_alignment
             gfx::Rect(15, 15, 240, 150),             // image_rect
-            2,   // selection_border_thickness
             5);  // focus_rectangle_inset
 
         std::unique_ptr<views::ScrollView> screen_scroll_view =
@@ -134,7 +132,6 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
             gfx::Rect(32, 110, 138, 40),           // label_rect
             gfx::HorizontalAlignment::ALIGN_LEFT,  // text_alignment
             gfx::Rect(8, 8, 164, 104),             // image_rect
-            2,                                     // selection_border_thickness
             5);                                    // focus_rectangle_inset
 
         std::unique_ptr<views::ScrollView> window_scroll_view =

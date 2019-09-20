@@ -37,6 +37,19 @@ part of the public interface as defined in `TouchToFillComponent`
 This folder contains a separate [README](internal/README.md) that explains in
 detail how the architecture looks like and how to extend the component further.
 
+#### junit/
+
+Contains Robolectric tests that test the controller of the component. These
+tests run without emulator which means that they are incredibly fast but cannot
+instantiate or verify Android Views.
+The public build and run target is `touch_to_fill_junit_tests`. Run them with:
+
+``` bash
+./out/<OutDirectory>/bin/run_touch_to_fill_junit_tests
+```
+
+Although the entire suite should run in seconds, you can filter tests with `-f`.
+
 
 ## Example usage
 

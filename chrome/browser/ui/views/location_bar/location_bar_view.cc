@@ -256,11 +256,7 @@ void LocationBarView::Init() {
     if (dom_distiller::IsDomDistillerEnabled() && browser_->is_type_normal()) {
       params.types_enabled.push_back(PageActionIconType::kReaderMode);
     }
-
-    if (base::FeatureList::IsEnabled(
-            content_settings::kImprovedCookieControls)) {
-      params.types_enabled.push_back(PageActionIconType::kCookieControls);
-    }
+    params.types_enabled.push_back(PageActionIconType::kCookieControls);
   }
   // Add icons only when feature is not enabled. Otherwise icons will
   // be added to the ToolbarPageActionIconContainerView.

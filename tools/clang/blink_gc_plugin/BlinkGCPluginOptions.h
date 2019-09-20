@@ -12,10 +12,6 @@
 struct BlinkGCPluginOptions {
   bool dump_graph = false;
 
-  // If |true|, emit warning for class types which derive from from
-  // GarbageCollectedFinalized<> when just GarbageCollected<> will do.
-  bool warn_unneeded_finalizer = false;
-
   // Member<T> fields are only permitted in managed classes,
   // something CheckFieldsVisitor verifies, issuing errors if
   // found in unmanaged classes. WeakMember<T> should be treated
@@ -29,10 +25,6 @@ struct BlinkGCPluginOptions {
   //
   // TODO(sof): remove this option once safely rolled out.
   bool enable_weak_members_in_unmanaged_classes = false;
-
-  // If |true| don't perform checks on whether a class needs to be derived from
-  // GarbageCollectedFinalized.
-  bool no_gc_finalized = false;
 
   std::set<std::string> ignored_classes;
   std::set<std::string> checked_namespaces;

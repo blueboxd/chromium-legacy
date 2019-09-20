@@ -449,21 +449,23 @@ void RecordAppContainerStatus(int error_code, bool crashed_before) {
 }
 #endif  // defined(OS_WIN)
 
-void BindDiscardableMemoryRequestOnIO(
-    discardable_memory::mojom::DiscardableSharedMemoryManagerRequest request,
+void BindDiscardableMemoryReceiverOnIO(
+    mojo::PendingReceiver<
+        discardable_memory::mojom::DiscardableSharedMemoryManager> receiver,
     discardable_memory::DiscardableSharedMemoryManager* manager) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   service_manager::BindSourceInfo source_info;
-  manager->Bind(std::move(request), source_info);
+  manager->Bind(std::move(receiver), source_info);
 }
 
-void BindDiscardableMemoryRequestOnUI(
-    discardable_memory::mojom::DiscardableSharedMemoryManagerRequest request) {
+void BindDiscardableMemoryReceiverOnUI(
+    mojo::PendingReceiver<
+        discardable_memory::mojom::DiscardableSharedMemoryManager> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
-          &BindDiscardableMemoryRequestOnIO, std::move(request),
+          &BindDiscardableMemoryReceiverOnIO, std::move(receiver),
           discardable_memory::DiscardableSharedMemoryManager::Get()));
 }
 
@@ -598,8 +600,9 @@ void GpuProcessHost::BindInterface(
     mojo::ScopedMessagePipeHandle interface_pipe) {
   if (interface_name ==
       discardable_memory::mojom::DiscardableSharedMemoryManager::Name_) {
-    BindDiscardableMemoryRequest(
-        discardable_memory::mojom::DiscardableSharedMemoryManagerRequest(
+    BindDiscardableMemoryReceiver(
+        mojo::PendingReceiver<
+            discardable_memory::mojom::DiscardableSharedMemoryManager>(
             std::move(interface_pipe)));
     return;
   }
@@ -1068,11 +1071,12 @@ void GpuProcessHost::RecordLogMessage(int32_t severity,
   GpuDataManagerImpl::GetInstance()->AddLogMessage(severity, header, message);
 }
 
-void GpuProcessHost::BindDiscardableMemoryRequest(
-    discardable_memory::mojom::DiscardableSharedMemoryManagerRequest request) {
+void GpuProcessHost::BindDiscardableMemoryReceiver(
+    mojo::PendingReceiver<
+        discardable_memory::mojom::DiscardableSharedMemoryManager> receiver) {
   base::PostTask(
       FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&BindDiscardableMemoryRequestOnUI, std::move(request)));
+      base::BindOnce(&BindDiscardableMemoryReceiverOnUI, std::move(receiver)));
 }
 
 GpuProcessKind GpuProcessHost::kind() {

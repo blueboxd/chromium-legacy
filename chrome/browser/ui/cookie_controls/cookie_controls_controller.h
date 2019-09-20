@@ -76,8 +76,9 @@ class CookieControlsController {
   // Updates the blocked cookie count of |icon_|.
   void PresentBlockedCookieCounter();
 
-  // Callback for when the cookie controls preference changes.
-  void OnCookieControlsPrefChanged();
+  // Callback for when the cookie controls or third-party cookie blocking
+  // preference changes.
+  void OnPrefChanged();
 
   content::WebContents* GetWebContents();
 

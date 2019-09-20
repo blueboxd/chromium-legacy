@@ -13,6 +13,7 @@
 #include "components/arc/mojom/oemcrypto.mojom.h"
 #include "components/arc/mojom/oemcrypto_daemon.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace content {
 class BrowserContext;
@@ -43,7 +44,7 @@ class ArcOemCryptoBridge : public KeyedService,
   void ConnectToDaemon(mojom::OemCryptoServiceRequest request);
   void FinishConnectingToDaemon(
       mojom::OemCryptoServiceRequest request,
-      mojom::ProtectedBufferManagerPtr gpu_buffer_manager);
+      mojo::PendingRemote<mojom::ProtectedBufferManager> gpu_buffer_manager);
   void OnMojoConnectionError();
 
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.

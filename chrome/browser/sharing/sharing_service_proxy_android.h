@@ -31,7 +31,7 @@ class SharingServiceProxyAndroid {
   void GetDeviceCandidates(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& j_device_info,
-      jint j_capabilities);
+      jint j_required_feature);
 
   void AddDeviceCandidatesInitializedObserver(
       JNIEnv* env,

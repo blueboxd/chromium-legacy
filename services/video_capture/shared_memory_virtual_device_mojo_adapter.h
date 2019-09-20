@@ -8,6 +8,7 @@
 #include "base/sequence_checker.h"
 #include "media/capture/video/video_capture_buffer_pool.h"
 #include "media/capture/video_capture_types.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/public/mojom/producer.mojom.h"
 #include "services/video_capture/public/mojom/receiver.mojom.h"
@@ -35,7 +36,7 @@ class SharedMemoryVirtualDeviceMojoAdapter
 
   // mojom::Device implementation.
   void Start(const media::VideoCaptureParams& requested_settings,
-             mojom::ReceiverPtr receiver) override;
+             mojo::PendingRemote<mojom::Receiver> receiver) override;
   void MaybeSuspend() override;
   void Resume() override;
   void GetPhotoState(GetPhotoStateCallback callback) override;
@@ -52,7 +53,7 @@ class SharedMemoryVirtualDeviceMojoAdapter
  private:
   void OnReceiverConnectionErrorOrClose();
 
-  mojom::ReceiverPtr receiver_;
+  mojo::Remote<mojom::Receiver> receiver_;
   mojom::ProducerPtr producer_;
   const bool send_buffer_handles_to_producer_as_raw_file_descriptors_;
   scoped_refptr<media::VideoCaptureBufferPool> buffer_pool_;

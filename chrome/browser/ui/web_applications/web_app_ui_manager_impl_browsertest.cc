@@ -8,18 +8,17 @@
 #include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/apps/app_service/built_in_chromeos_apps.h"
-#include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "extensions/common/extension.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
@@ -77,16 +76,15 @@ class WebAppUiManagerImplBrowserTest : public InProcessBrowserTest {
  protected:
   Profile* profile() { return browser()->profile(); }
 
-  const extensions::Extension* InstallWebApp(const GURL& app_url) {
-    WebApplicationInfo web_app_info;
-    web_app_info.app_url = app_url;
-    web_app_info.open_as_window = true;
-    return extensions::browsertest_util::InstallBookmarkApp(profile(),
-                                                            web_app_info);
+  const AppId InstallWebApp(const GURL& app_url) {
+    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    web_app_info->app_url = app_url;
+    web_app_info->open_as_window = true;
+    return web_app::InstallWebApp(profile(), std::move(web_app_info));
   }
 
-  Browser* LaunchApp(const extensions::Extension* app) {
-    return extensions::browsertest_util::LaunchAppBrowser(profile(), app);
+  Browser* LaunchWebApp(const AppId& app_id) {
+    return web_app::LaunchWebAppBrowser(profile(), app_id);
   }
 
   WebAppUiManager& ui_manager() {
@@ -99,47 +97,46 @@ IN_PROC_BROWSER_TEST_F(WebAppUiManagerImplBrowserTest,
   // Zero apps on start:
   EXPECT_EQ(0u, ui_manager().GetNumWindowsForApp(AppId()));
 
-  const auto* foo_app = InstallWebApp(kFooUrl);
-  LaunchApp(foo_app);
-  EXPECT_EQ(1u, ui_manager().GetNumWindowsForApp(foo_app->id()));
+  AppId foo_app_id = InstallWebApp(kFooUrl);
+  LaunchWebApp(foo_app_id);
+  EXPECT_EQ(1u, ui_manager().GetNumWindowsForApp(foo_app_id));
 
-  LaunchApp(foo_app);
-  EXPECT_EQ(2u, ui_manager().GetNumWindowsForApp(foo_app->id()));
+  LaunchWebApp(foo_app_id);
+  EXPECT_EQ(2u, ui_manager().GetNumWindowsForApp(foo_app_id));
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppUiManagerImplBrowserTest,
                        GetNumWindowsForApp_AppWindowsRemoved) {
-  const auto* foo_app = InstallWebApp(kFooUrl);
-  auto* foo_window1 = LaunchApp(foo_app);
-  auto* foo_window2 = LaunchApp(foo_app);
+  AppId foo_app_id = InstallWebApp(kFooUrl);
+  auto* foo_window1 = LaunchWebApp(foo_app_id);
+  auto* foo_window2 = LaunchWebApp(foo_app_id);
 
-  const auto* bar_app = InstallWebApp(kBarUrl);
-  LaunchApp(bar_app);
+  AppId bar_app_id = InstallWebApp(kBarUrl);
+  LaunchWebApp(bar_app_id);
 
-  EXPECT_EQ(2u, ui_manager().GetNumWindowsForApp(foo_app->id()));
-  EXPECT_EQ(1u, ui_manager().GetNumWindowsForApp(bar_app->id()));
+  EXPECT_EQ(2u, ui_manager().GetNumWindowsForApp(foo_app_id));
+  EXPECT_EQ(1u, ui_manager().GetNumWindowsForApp(bar_app_id));
 
   CloseAndWait(foo_window1);
 
-  EXPECT_EQ(1u, ui_manager().GetNumWindowsForApp(foo_app->id()));
-  EXPECT_EQ(1u, ui_manager().GetNumWindowsForApp(bar_app->id()));
+  EXPECT_EQ(1u, ui_manager().GetNumWindowsForApp(foo_app_id));
+  EXPECT_EQ(1u, ui_manager().GetNumWindowsForApp(bar_app_id));
 
   CloseAndWait(foo_window2);
 
-  EXPECT_EQ(0u, ui_manager().GetNumWindowsForApp(foo_app->id()));
-  EXPECT_EQ(1u, ui_manager().GetNumWindowsForApp(bar_app->id()));
+  EXPECT_EQ(0u, ui_manager().GetNumWindowsForApp(foo_app_id));
+  EXPECT_EQ(1u, ui_manager().GetNumWindowsForApp(bar_app_id));
 }
 
 IN_PROC_BROWSER_TEST_F(WebAppUiManagerImplBrowserTest,
                        NotifyOnAllAppWindowsClosed_NoOpenedWindows) {
-  const auto* foo_app = InstallWebApp(kFooUrl);
-  const auto* bar_app = InstallWebApp(kBarUrl);
-  LaunchApp(bar_app);
+  AppId foo_app_id = InstallWebApp(kFooUrl);
+  AppId bar_app_id = InstallWebApp(kBarUrl);
+  LaunchWebApp(bar_app_id);
 
   base::RunLoop run_loop;
   // Should return early; no windows for |foo_app|.
-  ui_manager().NotifyOnAllAppWindowsClosed(foo_app->id(),
-                                           run_loop.QuitClosure());
+  ui_manager().NotifyOnAllAppWindowsClosed(foo_app_id, run_loop.QuitClosure());
   run_loop.Run();
 }
 
@@ -147,19 +144,19 @@ IN_PROC_BROWSER_TEST_F(WebAppUiManagerImplBrowserTest,
 // app window.
 IN_PROC_BROWSER_TEST_F(WebAppUiManagerImplBrowserTest,
                        NotifyOnAllAppWindowsClosed_MultipleOpenedWindows) {
-  const auto* foo_app = InstallWebApp(kFooUrl);
-  const auto* bar_app = InstallWebApp(kBarUrl);
+  AppId foo_app_id = InstallWebApp(kFooUrl);
+  AppId bar_app_id = InstallWebApp(kBarUrl);
 
   // Test that NotifyOnAllAppWindowsClosed can be called more than once for
   // the same app.
   for (int i = 0; i < 2; i++) {
-    auto* foo_window1 = LaunchApp(foo_app);
-    auto* foo_window2 = LaunchApp(foo_app);
-    auto* bar_window = LaunchApp(bar_app);
+    auto* foo_window1 = LaunchWebApp(foo_app_id);
+    auto* foo_window2 = LaunchWebApp(foo_app_id);
+    auto* bar_window = LaunchWebApp(bar_app_id);
 
     bool callback_ran = false;
     base::RunLoop run_loop;
-    ui_manager().NotifyOnAllAppWindowsClosed(foo_app->id(),
+    ui_manager().NotifyOnAllAppWindowsClosed(foo_app_id,
                                              base::BindLambdaForTesting([&]() {
                                                callback_ran = true;
                                                run_loop.Quit();
@@ -210,8 +207,7 @@ IN_PROC_BROWSER_TEST_F(WebAppUiManagerMigrationBrowserTest,
   scoped_feature_list.InitAndEnableFeature(features::kSystemWebApps);
 
   auto& system_web_app_manager =
-      web_app::WebAppProvider::Get(browser()->profile())
-          ->system_web_app_manager();
+      WebAppProvider::Get(browser()->profile())->system_web_app_manager();
 
   auto* app_list_service =
       app_list::AppListSyncableServiceFactory::GetForProfile(

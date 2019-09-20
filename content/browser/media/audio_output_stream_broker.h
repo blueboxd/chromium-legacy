@@ -19,6 +19,7 @@
 #include "media/mojo/mojom/audio_output_stream.mojom.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
 
 namespace content {
@@ -37,7 +38,8 @@ class CONTENT_EXPORT AudioOutputStreamBroker final : public AudioStreamBroker {
       const base::UnguessableToken& group_id,
       const base::Optional<base::UnguessableToken>& processing_id,
       DeleterCallback deleter,
-      media::mojom::AudioOutputStreamProviderClientPtr client);
+      mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient>
+          client);
 
   ~AudioOutputStreamBroker() final;
 
@@ -67,7 +69,7 @@ class CONTENT_EXPORT AudioOutputStreamBroker final : public AudioStreamBroker {
 
   DeleterCallback deleter_;
 
-  media::mojom::AudioOutputStreamProviderClientPtr client_;
+  mojo::Remote<media::mojom::AudioOutputStreamProviderClient> client_;
 
   AudioOutputStreamObserverImpl observer_;
   mojo::AssociatedReceiver<media::mojom::AudioOutputStreamObserver>

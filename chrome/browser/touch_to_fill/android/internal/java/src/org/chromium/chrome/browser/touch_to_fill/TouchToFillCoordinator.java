@@ -9,6 +9,7 @@ import android.content.Context;
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.List;
 
@@ -17,17 +18,19 @@ import java.util.List;
  * user select a set of credentials and fills it into the focused form.
  */
 public class TouchToFillCoordinator implements TouchToFillComponent {
-    TouchToFillCoordinator() {}
+    TouchToFillMediator mMediator = new TouchToFillMediator();
+    PropertyModel mModel = TouchToFillProperties.createDefaultModel(mMediator);
 
     @Override
     public void initialize(Context context, BottomSheetController sheetController,
             TouchToFillComponent.Delegate delegate) {
-        // TODO(crbug.com/957532): Implement.
+        mMediator.initialize(delegate, mModel);
+        // TODO(crbug.com/957532): Create view and setup view binder(s).
     }
 
     @Override
     public void showCredentials(
             String formattedUrl, List<Credential> credentials, Callback<Credential> callback) {
-        // TODO(crbug.com/957532): Implement.
+        mMediator.showCredentials(formattedUrl, credentials, callback);
     }
 }

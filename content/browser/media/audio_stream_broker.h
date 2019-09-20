@@ -131,7 +131,8 @@ class CONTENT_EXPORT AudioStreamBrokerFactory {
       const base::UnguessableToken& group_id,
       const base::Optional<base::UnguessableToken>& processing_id,
       AudioStreamBroker::DeleterCallback deleter,
-      media::mojom::AudioOutputStreamProviderClientPtr client) = 0;
+      mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient>
+          client) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioStreamBrokerFactory);

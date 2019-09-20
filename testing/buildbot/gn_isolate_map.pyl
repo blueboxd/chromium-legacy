@@ -2687,6 +2687,10 @@
     "label": "//third_party/re2:third_party_re2_fuzzer",
     "type": "fuzzer",
   },
+  "touch_to_fill_junit_tests": {
+    "label": "//chrome/browser/touch_to_fill/android:touch_to_fill_junit_tests",
+    "type": "junit_test",
+  },
   "tracing_perftests": {
     "args": [
       "tracing_perftests",

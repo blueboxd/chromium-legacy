@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -15,6 +16,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/sync/protocol/device_info_specifics.pb.h"
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -31,7 +33,8 @@ class SharingSyncPreference {
     Device(std::string fcm_token,
            std::string p256dh,
            std::string auth_secret,
-           const int capabilities);
+           std::set<sync_pb::SharingSpecificFields::EnabledFeatures>
+               enabled_features);
     Device(Device&& other);
     Device& operator=(Device&& other);
     ~Device();
@@ -45,9 +48,8 @@ class SharingSyncPreference {
     // Auth secret key required for RFC 8291.
     std::string auth_secret;
 
-    // Bitmask of capabilities, defined in SharingDeviceCapability enum, that
-    // are supported by the device.
-    int capabilities;
+    // Set of enabled features on the device.
+    std::set<sync_pb::SharingSpecificFields::EnabledFeatures> enabled_features;
   };
 
   // FCM registration status of current device. Not synced across devices.

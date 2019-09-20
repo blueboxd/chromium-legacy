@@ -151,8 +151,19 @@ class SMILTimeContainer final : public GarbageCollected<SMILTimeContainer> {
   Member<SVGSVGElement> owner_svg_element_;
 
 #if DCHECK_IS_ON()
+  friend class ScheduledAnimationsMutationsForbidden;
+  // This boolean will catch any attempts to mutate (schedule/unschedule)
+  // |scheduled_animations_| when it is set to true.
   bool prevent_scheduled_animations_changes_ = false;
 #endif
+
+  bool ScheduledAnimationsMutationsAllowed() const {
+#if DCHECK_IS_ON()
+    return !prevent_scheduled_animations_changes_;
+#else
+    return true;
+#endif
+  }
 };
 }  // namespace blink
 

@@ -23,7 +23,7 @@ class Supplement : public GarbageCollectedMixin {
 };
 
 // Class derived from a mixin template needs USING_GARBAGE_COLLECTED_MIXIN.
-class MySupplement : public GarbageCollectedFinalized<MySupplement>,
+class MySupplement : public GarbageCollected<MySupplement>,
                      public Supplement<Derived> {
   virtual void Trace(Visitor* visitor) override { Supplement::Trace(visitor); }
 };

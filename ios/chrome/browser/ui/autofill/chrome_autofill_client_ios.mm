@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "components/autofill/core/browser/form_data_importer.h"
+#include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/payments/autofill_credit_card_filling_infobar_delegate_mobile.h"
 #include "components/autofill/core/browser/payments/autofill_save_card_infobar_delegate_mobile.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
@@ -25,6 +26,7 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/address_normalizer_factory.h"
 #include "ios/chrome/browser/autofill/autocomplete_history_manager_factory.h"
+#import "ios/chrome/browser/autofill/autofill_log_router_factory.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/autofill/strike_database_factory.h"
 #include "ios/chrome/browser/infobars/infobar.h"
@@ -93,7 +95,13 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
       infobar_manager_(infobar_manager),
       password_manager_(password_manager),
       unmask_controller_(browser_state->GetPrefs(),
-                         browser_state->IsOffTheRecord()) {}
+                         browser_state->IsOffTheRecord()),
+      // TODO(crbug.com/928595): Replace the closure with a callback to the
+      // renderer that indicates if log messages should be sent from the
+      // renderer.
+      log_manager_(LogManager::Create(
+          autofill::AutofillLogRouterFactory::GetForBrowserState(browser_state),
+          base::Closure())) {}
 
 ChromeAutofillClientIOS::~ChromeAutofillClientIOS() {
   HideAutofillPopup();
@@ -346,6 +354,10 @@ void ChromeAutofillClientIOS::ExecuteCommand(int id) {
 void ChromeAutofillClientIOS::LoadRiskData(
     base::OnceCallback<void(const std::string&)> callback) {
   std::move(callback).Run(ios::GetChromeBrowserProvider()->GetRiskData());
+}
+
+LogManager* ChromeAutofillClientIOS::GetLogManager() const {
+  return log_manager_.get();
 }
 
 }  // namespace autofill

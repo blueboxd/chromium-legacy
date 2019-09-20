@@ -78,7 +78,7 @@ void FakeVideoCaptureDeviceLauncher::LaunchDeviceAsync(
   scoped_refptr<media::VideoCaptureBufferPool> buffer_pool(
       new media::VideoCaptureBufferPoolImpl(
           std::make_unique<media::VideoCaptureBufferTrackerFactoryImpl>(),
-          kMaxBufferCount));
+          media::VideoCaptureBufferType::kSharedMemory, kMaxBufferCount));
 #if defined(OS_CHROMEOS)
   auto device_client = std::make_unique<media::VideoCaptureDeviceClient>(
       media::VideoCaptureBufferType::kSharedMemory,

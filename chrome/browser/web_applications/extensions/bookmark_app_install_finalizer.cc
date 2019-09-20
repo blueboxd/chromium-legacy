@@ -210,13 +210,6 @@ bool BookmarkAppInstallFinalizer::CanUserUninstallFromSync(
       ->UserMayModifySettings(app, nullptr);
 }
 
-void BookmarkAppInstallFinalizer::SetSubsystems(
-    web_app::AppRegistrar* registrar,
-    web_app::WebAppUiManager* ui_manager) {
-  registrar_ = registrar ? registrar->AsBookmarkAppRegistrar() : nullptr;
-  InstallFinalizer::SetSubsystems(registrar, ui_manager);
-}
-
 void BookmarkAppInstallFinalizer::SetCrxInstallerFactoryForTesting(
     CrxInstallerFactory crx_installer_factory) {
   crx_installer_factory_ = crx_installer_factory;
@@ -257,8 +250,7 @@ void BookmarkAppInstallFinalizer::OnExtensionInstalled(
 
   SetBookmarkAppIsLocallyInstalled(profile_, extension, is_locally_installed);
 
-  DCHECK(registrar_);
-  registrar_->NotifyWebAppInstalled(extension->id());
+  registrar().NotifyWebAppInstalled(extension->id());
 
   std::move(callback).Run(extension->id(),
                           web_app::InstallResultCode::kSuccessNewInstall);

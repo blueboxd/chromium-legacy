@@ -12,10 +12,12 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
@@ -57,6 +59,9 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/application_status_listener.h"
+#endif
 #if defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
 #endif
@@ -70,6 +75,22 @@
 namespace content {
 
 namespace {
+
+#if defined(OS_ANDROID)
+// NOINLINE to ensure this function is used in crash reports.
+NOINLINE void FatalGpuProcessLaunchFailureOnBackground() {
+  if (!base::android::ApplicationStatusListener::HasVisibleActivities()) {
+    // We expect the platform to aggressively kill services when the app is
+    // backgrounded. A FATAL error creates a dialog notifying users that the
+    // app has crashed which doesn't look good. So we use SIGKILL instead. But
+    // still do a crash dump for 1% cases to make sure we're not regressing this
+    // case.
+    if (base::RandInt(1, 100) == 1)
+      base::debug::DumpWithoutCrashing();
+    kill(getpid(), SIGKILL);
+  }
+}
+#endif
 
 #if defined(OS_WIN)
 int GetGpuBlacklistHistogramValueWin(gpu::GpuFeatureStatus status) {
@@ -949,6 +970,9 @@ void GpuDataManagerImplPrivate::FallBackToNextGpuMode() {
   // Android and Chrome OS can't switch to software compositing. If the GPU
   // process initialization fails or GPU process is too unstable then crash the
   // browser process to reset everything.
+#if defined(OS_ANDROID)
+  FatalGpuProcessLaunchFailureOnBackground();
+#endif
   LOG(FATAL) << "GPU process isn't usable. Goodbye.";
 #else
   switch (gpu_mode_) {

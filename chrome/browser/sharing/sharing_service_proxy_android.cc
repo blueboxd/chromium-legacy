@@ -65,9 +65,10 @@ void SharingServiceProxyAndroid::SendSharedClipboardMessage(
 void SharingServiceProxyAndroid::GetDeviceCandidates(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_device_info,
-    jint j_capabilities) {
-  auto device_candidates =
-      sharing_service_->GetDeviceCandidates(j_capabilities);
+    jint j_required_feature) {
+  auto device_candidates = sharing_service_->GetDeviceCandidates(
+      static_cast<sync_pb::SharingSpecificFields::EnabledFeatures>(
+          j_required_feature));
   for (const auto& device_info : device_candidates) {
     Java_SharingServiceProxy_createDeviceInfoAndAppendToList(
         env, j_device_info,

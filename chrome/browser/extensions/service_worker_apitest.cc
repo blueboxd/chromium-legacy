@@ -1183,7 +1183,13 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, NotificationAPI) {
                                   "page.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, WebAccessibleResourcesFetch) {
+// Flaky on Linux (crbug.com/1006129).
+#if defined(OS_LINUX)
+#define MAYBE_WebAccessibleResourcesFetch DISABLED_WebAccessibleResourcesFetch
+#else
+#define MAYBE_WebAccessibleResourcesFetch WebAccessibleResourcesFetch
+#endif
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, MAYBE_WebAccessibleResourcesFetch) {
   EXPECT_TRUE(RunExtensionSubtest(
       "service_worker/web_accessible_resources/fetch/", "page.html"));
 }

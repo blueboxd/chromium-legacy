@@ -13,7 +13,7 @@
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -374,8 +374,7 @@ void TestWebContents::SetHistoryOffsetAndLength(int history_offset,
 void TestWebContents::SetHttpResponseHeaders(
     NavigationHandle* navigation_handle,
     scoped_refptr<net::HttpResponseHeaders> response_headers) {
-  static_cast<NavigationHandleImpl*>(navigation_handle)
-      ->navigation_request()
+  NavigationRequest::From(navigation_handle)
       ->set_response_headers_for_testing(response_headers);
 }
 

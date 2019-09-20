@@ -81,7 +81,7 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
   void setTarget(Element*);
   String composite() const;
   void setComposite(String);
-  Vector<ScriptValue> getKeyframes(ScriptState*);
+  HeapVector<ScriptValue> getKeyframes(ScriptState*);
   void setKeyframes(ScriptState*,
                     const ScriptValue& keyframes,
                     ExceptionState&);

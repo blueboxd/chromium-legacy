@@ -256,11 +256,6 @@ TEST_F(DesktopMediaPickerViewsTest, OkButtonDisabledWhenNoSelection) {
   }
 }
 
-// Verifies that the MediaListView gets the initial focus.
-TEST_F(DesktopMediaPickerViewsTest, ListViewHasInitialFocus) {
-  EXPECT_TRUE(test_api_.GetSelectedListView()->HasFocus());
-}
-
 // Verifies the visible status of audio checkbox.
 TEST_F(DesktopMediaPickerViewsTest, AudioCheckboxState) {
   bool expect_value = false;

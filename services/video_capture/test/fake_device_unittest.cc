@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "media/base/video_frame.h"
 #include "media/mojo/common/media_type_converters.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/video_capture/broadcasting_receiver.h"
 #include "services/video_capture/device_media_to_mojo_adapter.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"
@@ -32,8 +33,8 @@ TEST_F(FakeVideoCaptureDeviceTest, FrameCallbacksArriveFromI420Device) {
   // https://social.msdn.microsoft.com/Forums/SqlServer/4abf18bd-4ae4-4c72-ba3e-3b13e7909d5f
   static const int kNumFramesToWaitFor = 3;
   int num_frames_arrived = 0;
-  mojom::ReceiverPtr receiver_proxy;
-  MockReceiver receiver(mojo::MakeRequest(&receiver_proxy));
+  mojo::PendingRemote<mojom::Receiver> receiver_proxy;
+  MockReceiver receiver(receiver_proxy.InitWithNewPipeAndPassReceiver());
   EXPECT_CALL(receiver, DoOnNewBuffer(_, _)).Times(AtLeast(1));
   EXPECT_CALL(receiver, DoOnFrameReadyInBuffer(_, _, _, _))
       .WillRepeatedly(InvokeWithoutArgs([&wait_loop, &num_frames_arrived]() {
@@ -57,8 +58,8 @@ TEST_F(FakeVideoCaptureDeviceTest, FrameCallbacksArriveFromMjpegDevice) {
   // https://social.msdn.microsoft.com/Forums/SqlServer/4abf18bd-4ae4-4c72-ba3e-3b13e7909d5f
   static const int kNumFramesToWaitFor = 3;
   int num_frames_arrived = 0;
-  mojom::ReceiverPtr receiver_proxy;
-  MockReceiver receiver(mojo::MakeRequest(&receiver_proxy));
+  mojo::PendingRemote<mojom::Receiver> receiver_proxy;
+  MockReceiver receiver(receiver_proxy.InitWithNewPipeAndPassReceiver());
   EXPECT_CALL(receiver, DoOnNewBuffer(_, _)).Times(AtLeast(1));
   EXPECT_CALL(receiver, DoOnFrameReadyInBuffer(_, _, _, _))
       .WillRepeatedly(InvokeWithoutArgs([&wait_loop, &num_frames_arrived]() {
@@ -86,8 +87,8 @@ TEST_F(FakeVideoCaptureDeviceTest, BuffersGetReused) {
   static const int kNumFramesToWaitFor = kMaxBufferPoolBuffers + 3;
   int num_buffers_created = 0;
   int num_frames_arrived = 0;
-  mojom::ReceiverPtr receiver_proxy;
-  MockReceiver receiver(mojo::MakeRequest(&receiver_proxy));
+  mojo::PendingRemote<mojom::Receiver> receiver_proxy;
+  MockReceiver receiver(receiver_proxy.InitWithNewPipeAndPassReceiver());
   EXPECT_CALL(receiver, DoOnNewBuffer(_, _))
       .WillRepeatedly(InvokeWithoutArgs(
           [&num_buffers_created]() { num_buffers_created++; }));
@@ -113,8 +114,8 @@ TEST_F(FakeVideoCaptureDeviceTest, BuffersGetRetiredWhenDeviceIsStopped) {
   static const int kNumFramesToWaitFor = 2;
   std::vector<int32_t> known_buffer_ids;
   int num_frames_arrived = 0;
-  mojom::ReceiverPtr receiver_proxy;
-  MockReceiver receiver(mojo::MakeRequest(&receiver_proxy));
+  mojo::PendingRemote<mojom::Receiver> receiver_proxy;
+  MockReceiver receiver(receiver_proxy.InitWithNewPipeAndPassReceiver());
   EXPECT_CALL(receiver, DoOnNewBuffer(_, _))
       .WillRepeatedly(
           Invoke([&known_buffer_ids](int32_t buffer_id,
@@ -160,8 +161,8 @@ TEST_F(FakeVideoCaptureDeviceTest,
   static const int kNumFramesToWaitFor = 3;
   int num_frames_arrived = 0;
   std::map<int32_t, media::mojom::VideoBufferHandlePtr> buffers_by_id;
-  mojom::ReceiverPtr receiver_proxy;
-  MockReceiver receiver(mojo::MakeRequest(&receiver_proxy));
+  mojo::PendingRemote<mojom::Receiver> receiver_proxy;
+  MockReceiver receiver(receiver_proxy.InitWithNewPipeAndPassReceiver());
   EXPECT_CALL(receiver, DoOnNewBuffer(_, _))
       .Times(AtLeast(1))
       .WillRepeatedly(Invoke(

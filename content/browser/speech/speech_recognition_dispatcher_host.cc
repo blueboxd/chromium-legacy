@@ -190,8 +190,8 @@ void SpeechRecognitionDispatcherHost::StartSessionOnIO(
       SpeechRecognitionManager::GetInstance()->CreateSession(config);
   DCHECK_NE(session_id, SpeechRecognitionManager::kSessionIDInvalid);
   session->SetSessionId(session_id);
-  mojo::MakeStrongBinding(std::move(session),
-                          std::move(params->session_request));
+  mojo::MakeSelfOwnedReceiver(std::move(session),
+                              std::move(params->session_receiver));
 
   SpeechRecognitionManager::GetInstance()->StartSession(session_id);
 }

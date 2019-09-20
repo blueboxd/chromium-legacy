@@ -17,6 +17,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/video_capture/public/cpp/mock_push_subscription.h"
 #include "services/video_capture/public/cpp/mock_video_capture_service.h"
 #include "services/video_capture/public/cpp/mock_video_source.h"
@@ -101,13 +102,14 @@ class ServiceVideoCaptureProviderTest : public testing::Test {
 
     ON_CALL(mock_source_, DoCreatePushSubscription(_, _, _, _, _))
         .WillByDefault(Invoke(
-            [this](video_capture::mojom::ReceiverPtr& subscriber,
-                   const media::VideoCaptureParams& requested_settings,
-                   bool force_reopen_with_new_settings,
-                   video_capture::mojom::PushVideoStreamSubscriptionRequest&
-                       subscription,
-                   video_capture::mojom::VideoSource::
-                       CreatePushSubscriptionCallback& callback) {
+            [this](
+                mojo::PendingRemote<video_capture::mojom::Receiver> subscriber,
+                const media::VideoCaptureParams& requested_settings,
+                bool force_reopen_with_new_settings,
+                video_capture::mojom::PushVideoStreamSubscriptionRequest&
+                    subscription,
+                video_capture::mojom::VideoSource::
+                    CreatePushSubscriptionCallback& callback) {
               subscription_bindings_.AddBinding(&mock_subscription_,
                                                 std::move(subscription));
               std::move(callback).Run(

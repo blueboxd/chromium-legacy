@@ -53,8 +53,13 @@
 namespace {
 
 // Dimensions of the tree views.
-const int kTreeViewWidth = 400;
-const int kTreeViewHeight = 125;
+constexpr int kTreeViewWidth = 400;
+constexpr int kTreeViewHeight = 125;
+
+// Baseline height of the cookie info view. We limit the height of the scroll
+// pane for the cookie info so that the overall dialog is not too tall to fit in
+// a smaller browser window.
+constexpr int kInfoViewHeight = 130;
 
 // Adds a ColumnSet to |layout| to hold two buttons with padding between.
 // Starts a new row with the added ColumnSet.
@@ -152,12 +157,10 @@ bool CookiesTreeViewDrawingProvider::ShouldDrawIconForNode(
 class InfobarView : public views::View {
  public:
   InfobarView() {
-    content_ = new views::View;
-
-    info_image_ = new views::ImageView();
+    info_image_ = AddChildView(std::make_unique<views::ImageView>());
     info_image_->SetImage(gfx::CreateVectorIcon(vector_icons::kInfoOutlineIcon,
                                                 16, gfx::kChromeIconGrey));
-    label_ = new views::Label();
+    label_ = AddChildView(std::make_unique<views::Label>());
   }
   ~InfobarView() override {}
 
@@ -192,56 +195,30 @@ class InfobarView : public views::View {
         NOTREACHED();
     }
     label_->SetText(label);
-    content_->Layout();
     SetVisible(true);
   }
 
  private:
   // Initialize contents and layout.
   void Init() {
-    AddChildView(content_);
+    const int vertical_distance =
+        ChromeLayoutProvider::Get()->GetDistanceMetric(
+            DISTANCE_UNRELATED_CONTROL_VERTICAL_LARGE);
+    const int horizontal_spacing =
+        ChromeLayoutProvider::Get()->GetDistanceMetric(
+            DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL);
+
     // The containing dialog content view has no margins so that its
     // TabbedPane can span the full width of the dialog, but because of
     // that, InfobarView needs to impose its own horizontal margin.
-    gfx::Insets dialog_insets =
+    gfx::Insets insets =
         ChromeLayoutProvider::Get()->GetInsetsMetric(views::INSETS_DIALOG);
-    // No top inset is needed because the control above the infobar imposes one,
-    // but the button bar below the infobar has no margin, so a small bottom
-    // inset is needed.
-    gfx::Insets layout_insets(0, dialog_insets.left(),
-                              ChromeLayoutProvider::Get()->GetDistanceMetric(
-                                  DISTANCE_RELATED_CONTROL_VERTICAL_SMALL),
-                              dialog_insets.right());
-    content_->SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::Orientation::kHorizontal, layout_insets,
-        ChromeLayoutProvider::Get()->GetDistanceMetric(
-            DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL)));
-    content_->AddChildView(info_image_);
-    content_->AddChildView(label_);
+    insets.set_top(vertical_distance);
+    insets.set_bottom(vertical_distance);
+    SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kHorizontal, insets,
+        horizontal_spacing));
     UpdateVisibility(false, CONTENT_SETTING_BLOCK, base::string16());
-  }
-
-  // views::View overrides.
-  gfx::Size CalculatePreferredSize() const override {
-    // Always return the preferred size, even if not currently visible. This
-    // ensures that the layout manager always reserves space within the view
-    // so it can be made visible when necessary. Otherwise, changing the
-    // visibility of this view would require the entire dialog to be resized,
-    // which is undesirable from both a UX and technical perspective.
-
-    // Add space around the banner.
-    gfx::Size size(content_->GetPreferredSize());
-    size.Enlarge(0, 2 * ChromeLayoutProvider::Get()->GetDistanceMetric(
-        views::DISTANCE_RELATED_CONTROL_VERTICAL));
-    return size;
-  }
-
-  void Layout() override {
-    ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-    const int vertical_spacing =
-        provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL);
-    content_->SetBounds(
-        0, vertical_spacing, width(), height() - vertical_spacing);
   }
 
   void ViewHierarchyChanged(
@@ -250,8 +227,6 @@ class InfobarView : public views::View {
       Init();
   }
 
-  // Holds the info icon image and text label and renders the border.
-  views::View* content_;
   // Info icon image.
   views::ImageView* info_image_;
   // The label responsible for rendering the text.
@@ -422,7 +397,7 @@ void CollectedCookiesViews::Init() {
   // by the content itself.
   SetBorder(views::CreateEmptyBorder(
       gfx::Insets(provider->GetDistanceMetric(
-                      views::DISTANCE_DIALOG_CONTENT_MARGIN_TOP_CONTROL),
+                      views::DISTANCE_DIALOG_CONTENT_MARGIN_TOP_TEXT),
                   0, 0, 0)));
 
   const int single_column_layout_id = 0;
@@ -446,6 +421,12 @@ void CollectedCookiesViews::Init() {
 
   layout->StartRow(views::GridLayout::kFixedSize, single_column_layout_id);
   cookie_info_view_ = layout->AddView(std::make_unique<CookieInfoView>());
+  // Fix the height of the cookie info view, which is scrollable. It needs to be
+  // large enough to fit at least 3-4 lines of information, but small enough
+  // that it doesn't make the dialog too tall to fit in a small-ish browser.
+  // (This is an accessibility issue; low-vision users using a high DPI zoom may
+  // have browser windows under 600dip tall.)
+  cookie_info_view_->ClipHeightTo(kInfoViewHeight, kInfoViewHeight);
 
   layout->StartRow(views::GridLayout::kFixedSize, single_column_layout_id);
   infobar_ = layout->AddView(std::make_unique<InfobarView>());
@@ -489,9 +470,8 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateAllowedPane() {
   pane->SetBorder(
       views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
           views::INSETS_DIALOG_SUBSECTION)));
-  int unrelated_vertical_distance =
-      ChromeLayoutProvider::Get()->GetDistanceMetric(
-          views::DISTANCE_UNRELATED_CONTROL_VERTICAL);
+  const int vertical_distance = ChromeLayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_UNRELATED_CONTROL_VERTICAL);
 
   const int single_column_layout_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(single_column_layout_id);
@@ -500,8 +480,7 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateAllowedPane() {
 
   layout->StartRow(views::GridLayout::kFixedSize, single_column_layout_id);
   allowed_label_ = layout->AddView(std::move(allowed_label));
-  layout->AddPaddingRow(views::GridLayout::kFixedSize,
-                        unrelated_vertical_distance);
+  layout->AddPaddingRow(views::GridLayout::kFixedSize, vertical_distance);
 
   layout->StartRow(1.0, single_column_layout_id);
 
@@ -509,8 +488,6 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateAllowedPane() {
   layout->AddView(CreateScrollView(std::move(allowed_cookies_tree)), 1, 1,
                   views::GridLayout::FILL, views::GridLayout::FILL,
                   kTreeViewWidth, kTreeViewHeight);
-  layout->AddPaddingRow(views::GridLayout::kFixedSize,
-                        unrelated_vertical_distance);
 
   return pane;
 }
@@ -555,9 +532,8 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateBlockedPane() {
   pane->SetBorder(
       views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
           views::INSETS_DIALOG_SUBSECTION)));
-  int unrelated_vertical_distance =
-      ChromeLayoutProvider::Get()->GetDistanceMetric(
-          views::DISTANCE_UNRELATED_CONTROL_VERTICAL);
+  const int vertical_distance = ChromeLayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_UNRELATED_CONTROL_VERTICAL);
 
   const int single_column_layout_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(single_column_layout_id);
@@ -568,8 +544,7 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateBlockedPane() {
   blocked_label_ =
       layout->AddView(std::move(blocked_label), 1, 1, views::GridLayout::FILL,
                       views::GridLayout::FILL);
-  layout->AddPaddingRow(views::GridLayout::kFixedSize,
-                        unrelated_vertical_distance);
+  layout->AddPaddingRow(views::GridLayout::kFixedSize, vertical_distance);
 
   layout->StartRow(1.0, single_column_layout_id);
 
@@ -577,8 +552,6 @@ std::unique_ptr<views::View> CollectedCookiesViews::CreateBlockedPane() {
   layout->AddView(CreateScrollView(std::move(blocked_cookies_tree)), 1, 1,
                   views::GridLayout::FILL, views::GridLayout::FILL,
                   kTreeViewWidth, kTreeViewHeight);
-  layout->AddPaddingRow(views::GridLayout::kFixedSize,
-                        unrelated_vertical_distance);
 
   return pane;
 }

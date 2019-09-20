@@ -690,8 +690,6 @@ jumbo_source_set("browser") {
     "devtools/devtools_io_context.h",
     "devtools/devtools_manager.cc",
     "devtools/devtools_manager.h",
-    "devtools/devtools_network_interceptor.cc",
-    "devtools/devtools_network_interceptor.h",
     "devtools/devtools_pipe_handler.cc",
     "devtools/devtools_pipe_handler.h",
     "devtools/devtools_protocol_encoding.cc",

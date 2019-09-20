@@ -6,10 +6,14 @@
 
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/post_task.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "components/feedback/feedback_report.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_fetcher.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -20,13 +24,28 @@ namespace {
 constexpr char kAuthenticationErrorLogMessage[] =
     "Feedback report will be sent without authentication.";
 
+void QueueSingleReport(base::WeakPtr<feedback::FeedbackUploader> uploader,
+                       scoped_refptr<FeedbackReport> report) {
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&FeedbackUploaderChrome::RequeueReport,
+                                std::move(uploader), std::move(report)));
+}
+
 }  // namespace
 
 FeedbackUploaderChrome::FeedbackUploaderChrome(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     content::BrowserContext* context,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : FeedbackUploader(url_loader_factory, context, task_runner) {}
+    : FeedbackUploader(url_loader_factory, context, task_runner) {
+  DCHECK(!context->IsOffTheRecord());
+
+  task_runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&FeedbackReport::LoadReportsAndQueue,
+                     feedback_reports_path(),
+                     base::BindRepeating(&QueueSingleReport, AsWeakPtr())));
+}
 
 FeedbackUploaderChrome::~FeedbackUploaderChrome() = default;
 

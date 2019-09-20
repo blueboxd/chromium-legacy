@@ -18,6 +18,8 @@ source_set("extensions") {
     "bookmark_app_install_finalizer.h",
     "bookmark_app_registrar.cc",
     "bookmark_app_registrar.h",
+    "bookmark_app_registry_controller.cc",
+    "bookmark_app_registry_controller.h",
     "bookmark_app_util.cc",
     "bookmark_app_util.h",
     "web_app_extension_shortcut.cc",

@@ -7,6 +7,8 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "services/device/public/mojom/sensor.mojom.h"
@@ -34,7 +36,7 @@ class FakeSensor : public mojom::Sensor {
   mojom::ReportingMode GetReportingMode();
   double GetMaximumSupportedFrequency();
   double GetMinimumSupportedFrequency();
-  mojom::SensorClientRequest GetClient();
+  mojo::PendingReceiver<mojom::SensorClient> GetClient();
   mojo::ScopedSharedBufferHandle GetSharedBufferHandle();
   uint64_t GetBufferOffset();
   void SetReading(SensorReading reading);
@@ -45,7 +47,7 @@ class FakeSensor : public mojom::Sensor {
   mojom::SensorType sensor_type_;
   SensorReadingSharedBuffer* buffer_;
   bool reading_notification_enabled_ = true;
-  mojom::SensorClientPtr client_;
+  mojo::Remote<mojom::SensorClient> client_;
   SensorReading reading_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSensor);

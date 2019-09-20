@@ -652,10 +652,6 @@ public class SigninManager
         return SigninManagerJni.get().getManagementDomain(mNativeSigninManagerAndroid);
     }
 
-    public void clearLastSignedInUser() {
-        SigninManagerJni.get().clearLastSignedInUser(mNativeSigninManagerAndroid);
-    }
-
     /**
      * Aborts the current sign in.
      *
@@ -787,8 +783,6 @@ public class SigninManager
         boolean isSigninAllowedByPolicy(long nativeSigninManagerAndroid);
 
         boolean isForceSigninEnabled(long nativeSigninManagerAndroid);
-
-        void clearLastSignedInUser(long nativeSigninManagerAndroid);
 
         String extractDomainName(String email);
 

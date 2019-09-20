@@ -19,8 +19,10 @@ namespace media {
 
 VideoCaptureBufferPoolImpl::VideoCaptureBufferPoolImpl(
     std::unique_ptr<VideoCaptureBufferTrackerFactory> buffer_tracker_factory,
+    VideoCaptureBufferType buffer_type,
     int count)
-    : count_(count),
+    : buffer_type_(buffer_type),
+      count_(count),
       next_buffer_id_(0),
       buffer_tracker_factory_(std::move(buffer_tracker_factory)) {
   DCHECK_GT(count, 0);
@@ -226,7 +228,7 @@ VideoCaptureBufferPoolImpl::ReserveForProducerInternal(
   const int new_buffer_id = next_buffer_id_++;
 
   std::unique_ptr<VideoCaptureBufferTracker> tracker =
-      buffer_tracker_factory_->CreateTracker();
+      buffer_tracker_factory_->CreateTracker(buffer_type_);
   if (!tracker->Init(dimensions, pixel_format, strides)) {
     DLOG(ERROR) << "Error initializing VideoCaptureBufferTracker";
     *buffer_id = kInvalidId;

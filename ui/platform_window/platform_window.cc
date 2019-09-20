@@ -16,4 +16,8 @@ ZOrderLevel PlatformWindow::GetZOrderLevel() const {
   return ZOrderLevel::kNormal;
 }
 
+void PlatformWindow::StackAbove(gfx::AcceleratedWidget widget) {}
+
+void PlatformWindow::StackAtTop() {}
+
 }  // namespace ui

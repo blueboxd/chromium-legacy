@@ -1616,16 +1616,17 @@ bool Browser::ShouldCreateWebContents(
     const GURL& target_url,
     const std::string& partition_id,
     content::SessionStorageNamespace* session_storage_namespace) {
-  if (window_container_type ==
-      content::mojom::WindowContainerType::BACKGROUND) {
-    // If a BackgroundContents is created, suppress the normal WebContents.
-    return !MaybeCreateBackgroundContents(
-        source_site_instance, opener, opener_url, route_id, main_frame_route_id,
-        main_frame_widget_route_id, frame_name, target_url, partition_id,
-        session_storage_namespace);
-  }
+  if ((window_container_type !=
+       content::mojom::WindowContainerType::BACKGROUND) ||
+      !ShouldCreateBackgroundContents(source_site_instance, opener_url,
+                                      frame_name))
+    return true;
 
-  return true;
+  CreateBackgroundContents(source_site_instance, opener, opener_url, route_id,
+                           main_frame_route_id, main_frame_widget_route_id,
+                           frame_name, target_url, partition_id,
+                           session_storage_namespace);
+  return false;
 }
 
 void Browser::WebContentsCreated(WebContents* source_contents,
@@ -2765,17 +2766,10 @@ bool Browser::ShouldStartShutdown() const {
   return BrowserList::GetInstance()->size() == closing_browsers_count + 1u;
 }
 
-bool Browser::MaybeCreateBackgroundContents(
+bool Browser::ShouldCreateBackgroundContents(
     content::SiteInstance* source_site_instance,
-    content::RenderFrameHost* opener,
     const GURL& opener_url,
-    int32_t route_id,
-    int32_t main_frame_route_id,
-    int32_t main_frame_widget_route_id,
-    const std::string& frame_name,
-    const GURL& target_url,
-    const std::string& partition_id,
-    content::SessionStorageNamespace* session_storage_namespace) {
+    const std::string& frame_name) {
   extensions::ExtensionService* extensions_service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
 
@@ -2807,46 +2801,62 @@ bool Browser::MaybeCreateBackgroundContents(
     return false;
   }
 
-  // Only allow a single background contents per app.
+  return true;
+}
+
+BackgroundContents* Browser::CreateBackgroundContents(
+    content::SiteInstance* source_site_instance,
+    content::RenderFrameHost* opener,
+    const GURL& opener_url,
+    int32_t route_id,
+    int32_t main_frame_route_id,
+    int32_t main_frame_widget_route_id,
+    const std::string& frame_name,
+    const GURL& target_url,
+    const std::string& partition_id,
+    content::SessionStorageNamespace* session_storage_namespace) {
+  BackgroundContentsService* service =
+      BackgroundContentsServiceFactory::GetForProfile(profile_);
+  const Extension* extension = extensions::ExtensionRegistry::Get(profile_)
+                                   ->enabled_extensions()
+                                   .GetHostedAppByURL(opener_url);
   bool allow_js_access = extensions::BackgroundInfo::AllowJSAccess(extension);
+  // Only allow a single background contents per app.
   BackgroundContents* existing =
       service->GetAppBackgroundContents(extension->id());
   if (existing) {
     // For non-scriptable background contents, ignore the request altogether,
-    // (returning true, so that a regular WebContents isn't created either).
+    // Note that ShouldCreateBackgroundContents() returning true will also
+    // suppress creation of the normal WebContents.
     if (!allow_js_access)
-      return true;
+      return nullptr;
     // For scriptable background pages, if one already exists, close it (even
     // if it was specified in the manifest).
     delete existing;
   }
 
   // Passed all the checks, so this should be created as a BackgroundContents.
-  BackgroundContents* contents = nullptr;
   if (allow_js_access) {
-    contents = service->CreateBackgroundContents(
+    return service->CreateBackgroundContents(
         source_site_instance, opener, route_id, main_frame_route_id,
         main_frame_widget_route_id, profile_, frame_name, extension->id(),
         partition_id, session_storage_namespace);
-  } else {
-    // If script access is not allowed, create the the background contents in a
-    // new SiteInstance, so that a separate process is used. We must not use any
-    // of the passed-in routing IDs, as they are objects in the opener's
-    // process.
-    contents = service->CreateBackgroundContents(
-        content::SiteInstance::Create(
-            source_site_instance->GetBrowserContext()),
-        nullptr, MSG_ROUTING_NONE, MSG_ROUTING_NONE, MSG_ROUTING_NONE, profile_,
-        frame_name, extension->id(), partition_id, session_storage_namespace);
-
-    // When a separate process is used, the original renderer cannot access the
-    // new window later, thus we need to navigate the window now.
-    if (contents) {
-      contents->web_contents()->GetController().LoadURL(
-          target_url, content::Referrer(), ui::PAGE_TRANSITION_LINK,
-          std::string());  // No extra headers.
-    }
   }
 
-  return contents != NULL;
+  // If script access is not allowed, create the the background contents in a
+  // new SiteInstance, so that a separate process is used. We must not use any
+  // of the passed-in routing IDs, as they are objects in the opener's
+  // process.
+  BackgroundContents* contents = service->CreateBackgroundContents(
+      content::SiteInstance::Create(source_site_instance->GetBrowserContext()),
+      nullptr, MSG_ROUTING_NONE, MSG_ROUTING_NONE, MSG_ROUTING_NONE, profile_,
+      frame_name, extension->id(), partition_id, session_storage_namespace);
+
+  // When a separate process is used, the original renderer cannot access the
+  // new window later, thus we need to navigate the window now.
+  contents->web_contents()->GetController().LoadURL(
+      target_url, content::Referrer(), ui::PAGE_TRANSITION_LINK,
+      std::string());  // No extra headers.
+
+  return contents;
 }

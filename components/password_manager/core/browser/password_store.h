@@ -183,6 +183,13 @@ class PasswordStore : protected PasswordStoreSync,
       const base::Callback<bool(const GURL&)>& origin_filter,
       const base::Closure& completion);
 
+  // Unblacklists the login with |form_digest| by deleting all the corresponding
+  // blacklisted entries. If |completion| is not null, it will be posted to the
+  // |main_task_runner_| after deletions have been completed. Should be called
+  // on the UI thread.
+  void Unblacklist(const PasswordStore::FormDigest& form_digest,
+                   base::OnceClosure completion);
+
   // Searches for a matching PasswordForm, and notifies |consumer| on
   // completion. The request will be cancelled if the consumer is destroyed.
   virtual void GetLogins(const FormDigest& form,
@@ -560,6 +567,8 @@ class PasswordStore : protected PasswordStoreSync,
   void DisableAutoSignInForOriginsInternal(
       const base::Callback<bool(const GURL&)>& origin_filter,
       const base::Closure& completion);
+  void UnblacklistInternal(const PasswordStore::FormDigest& form_digest,
+                           base::OnceClosure completion);
 
   // Finds all PasswordForms with a signon_realm that is equal to, or is a
   // PSL-match to that of |form|, and takes care of notifying the consumer with

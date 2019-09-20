@@ -210,6 +210,13 @@ void PasswordStore::DisableAutoSignInForOrigins(
       base::RepeatingCallback<bool(const GURL&)>(origin_filter), completion));
 }
 
+void PasswordStore::Unblacklist(const PasswordStore::FormDigest& form_digest,
+                                base::OnceClosure completion) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
+  ScheduleTask(base::BindOnce(&PasswordStore::UnblacklistInternal, this,
+                              form_digest, std::move(completion)));
+}
+
 void PasswordStore::GetLogins(const FormDigest& form,
                               PasswordStoreConsumer* consumer) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
@@ -806,6 +813,22 @@ void PasswordStore::DisableAutoSignInForOriginsInternal(
   DisableAutoSignInForOriginsImpl(origin_filter);
   if (!completion.is_null())
     main_task_runner_->PostTask(FROM_HERE, completion);
+}
+
+void PasswordStore::UnblacklistInternal(
+    const PasswordStore::FormDigest& form_digest,
+    base::OnceClosure completion) {
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+
+  std::vector<std::unique_ptr<PasswordForm>> all_matches =
+      GetLoginsImpl(form_digest);
+  for (auto& form : all_matches) {
+    // Ignore PSL matches for blacklisted entries.
+    if (form->blacklisted_by_user && !form->is_public_suffix_match)
+      RemoveLoginInternal(*form);
+  }
+  if (!completion.is_null())
+    main_task_runner_->PostTask(FROM_HERE, std::move(completion));
 }
 
 std::vector<std::unique_ptr<autofill::PasswordForm>>

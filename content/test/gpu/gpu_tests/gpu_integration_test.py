@@ -9,7 +9,6 @@ from telemetry.testing import serially_executed_browser_test_case
 from telemetry.util import screenshot
 from typ import json_results
 
-from gpu_tests import exception_formatter
 from gpu_tests import gpu_helper
 
 _START_BROWSER_RETRIES = 3
@@ -181,17 +180,14 @@ class GpuIntegrationTest(
           # doesn't propagate to the next iteration.
           self._RestartBrowser('flaky test failure')
         else:
-          msg = 'Expected exception while running %s' % test_name
-          exception_formatter.PrintFormattedException(msg=msg)
+          logging.exception('Expected exception while running %s', test_name)
           # Even though this is a known failure, the browser might still
           # be in a bad state; for example, certain kinds of timeouts
           # will affect the next test. Restart the browser to prevent
           # these kinds of failures propagating to the next test.
           self._RestartBrowser('expected test failure')
       else:
-        # This is not an expected exception or test failure, so print
-        # the detail to the console.
-        exception_formatter.PrintFormattedException()
+        logging.exception('Unexpected exception while running %s', test_name)
         # Symbolize any crash dump (like from the GPU process) that
         # might have happened but wasn't detected above. Note we don't
         # do this for either 'fail' or 'flaky' expectations because

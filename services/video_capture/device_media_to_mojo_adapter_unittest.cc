@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "media/capture/video/mock_device.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,8 +24,8 @@ class DeviceMediaToMojoAdapterTest : public ::testing::Test {
   ~DeviceMediaToMojoAdapterTest() override = default;
 
   void SetUp() override {
-    mock_receiver_ =
-        std::make_unique<MockReceiver>(mojo::MakeRequest(&receiver_));
+    mock_receiver_ = std::make_unique<MockReceiver>(
+        receiver_.InitWithNewPipeAndPassReceiver());
     auto mock_device = std::make_unique<media::MockDevice>();
     mock_device_ptr_ = mock_device.get();
 #if defined(OS_CHROMEOS)
@@ -48,7 +49,7 @@ class DeviceMediaToMojoAdapterTest : public ::testing::Test {
   media::MockDevice* mock_device_ptr_;
   std::unique_ptr<DeviceMediaToMojoAdapter> adapter_;
   std::unique_ptr<MockReceiver> mock_receiver_;
-  mojom::ReceiverPtr receiver_;
+  mojo::PendingRemote<mojom::Receiver> receiver_;
   base::test::TaskEnvironment task_environment_;
 };
 

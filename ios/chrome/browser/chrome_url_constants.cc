@@ -23,6 +23,7 @@ const char kChromeUISuggestionsURL[] = "chrome://suggestions/";
 const char kChromeUITermsURL[] = "chrome://terms/";
 const char kChromeUIVersionURL[] = "chrome://version/";
 
+const char kChromeUIAutofillInternalsHost[] = "autofill-internals";
 const char kChromeUIBrowserCrashHost[] = "inducebrowsercrashforrealz";
 const char kChromeUICrashHost[] = "crash";
 const char kChromeUIChromeURLsHost[] = "chrome-urls";

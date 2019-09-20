@@ -359,7 +359,7 @@ function sensorMocks() {
 
       const initParams = new device.mojom.SensorInitParams({
         sensor: sensorPtr,
-        clientRequest: mojo.makeRequest(this.activeSensors_.get(mojoSensorType).client_),
+        clientReceiver: mojo.makeRequest(this.activeSensors_.get(mojoSensorType).client_),
         memory: rv.handle,
         bufferOffset: offset,
         mode: reportingMode,

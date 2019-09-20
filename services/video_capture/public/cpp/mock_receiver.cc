@@ -10,10 +10,10 @@
 namespace video_capture {
 
 MockReceiver::MockReceiver()
-    : binding_(this), should_store_access_permissions_(false) {}
+    : receiver_(this), should_store_access_permissions_(false) {}
 
-MockReceiver::MockReceiver(mojom::ReceiverRequest request)
-    : binding_(this, std::move(request)),
+MockReceiver::MockReceiver(mojo::PendingReceiver<mojom::Receiver> receiver)
+    : receiver_(this, std::move(receiver)),
       should_store_access_permissions_(false) {}
 
 MockReceiver::~MockReceiver() = default;

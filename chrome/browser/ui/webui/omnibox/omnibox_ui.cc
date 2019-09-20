@@ -51,7 +51,7 @@ OmniboxUI::OmniboxUI(content::WebUI* web_ui)
 OmniboxUI::~OmniboxUI() {}
 
 void OmniboxUI::BindOmniboxPageHandler(
-    mojom::OmniboxPageHandlerRequest request) {
-  omnibox_handler_.reset(
-      new OmniboxPageHandler(Profile::FromWebUI(web_ui()), std::move(request)));
+    mojo::PendingReceiver<mojom::OmniboxPageHandler> receiver) {
+  omnibox_handler_ = std::make_unique<OmniboxPageHandler>(
+      Profile::FromWebUI(web_ui()), std::move(receiver));
 }

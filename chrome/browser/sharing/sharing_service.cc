@@ -129,7 +129,8 @@ std::unique_ptr<syncer::DeviceInfo> SharingService::GetDeviceByGuid(
 }
 
 std::vector<std::unique_ptr<syncer::DeviceInfo>>
-SharingService::GetDeviceCandidates(int required_capabilities) const {
+SharingService::GetDeviceCandidates(
+    sync_pb::SharingSpecificFields::EnabledFeatures required_feature) const {
   std::vector<std::unique_ptr<syncer::DeviceInfo>> device_candidates;
   std::vector<std::unique_ptr<syncer::DeviceInfo>> all_devices =
       device_info_tracker_->GetAllDeviceInfo();
@@ -166,8 +167,7 @@ SharingService::GetDeviceCandidates(int required_capabilities) const {
     if (synced_device == synced_devices.end())
       continue;
 
-    int device_capabilities = synced_device->second.capabilities;
-    if ((device_capabilities & required_capabilities) != required_capabilities)
+    if (!synced_device->second.enabled_features.count(required_feature))
       continue;
 
     // Only insert the first occurrence of each device name.
@@ -348,9 +348,10 @@ void SharingService::RegisterDevice() {
 }
 
 void SharingService::RegisterDeviceInTesting(
-    int capabilities,
+    std::set<sync_pb::SharingSpecificFields_EnabledFeatures> enabled_feautres,
     SharingDeviceRegistration::RegistrationCallback callback) {
-  sharing_device_registration_->SetDeviceCapabilityForTesting(capabilities);
+  sharing_device_registration_->SetEnabledFeaturesForTesting(
+      std::move(enabled_feautres));
   sharing_device_registration_->RegisterDevice(std::move(callback));
 }
 

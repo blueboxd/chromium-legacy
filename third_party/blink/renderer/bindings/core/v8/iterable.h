@@ -120,14 +120,14 @@ class Iterable {
   };
   struct EntrySelector {
     STATIC_ONLY(EntrySelector);
-    static Vector<ScriptValue, 2> Select(ScriptState* script_state,
-                                         const KeyType& key,
-                                         const ValueType& value) {
+    static HeapVector<ScriptValue, 2> Select(ScriptState* script_state,
+                                             const KeyType& key,
+                                             const ValueType& value) {
       v8::Local<v8::Object> creation_context =
           script_state->GetContext()->Global();
       v8::Isolate* isolate = script_state->GetIsolate();
 
-      Vector<ScriptValue, 2> entry;
+      HeapVector<ScriptValue, 2> entry;
       entry.push_back(
           ScriptValue(script_state, ToV8(key, creation_context, isolate)));
       entry.push_back(

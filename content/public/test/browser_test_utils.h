@@ -333,6 +333,12 @@ void MaybeSendSyntheticTapGesture(WebContents* guest_web_contents);
 // realized.
 void RunUntilInputProcessed(RenderWidgetHost* host);
 
+// Returns a string representation of a given |referrer_policy|. This is used to
+// setup <meta name=referrer> tags in documents used for referrer-policy-based
+// tests. The value `no-meta` indicates no tag should be created.
+std::string ReferrerPolicyToString(
+    network::mojom::ReferrerPolicy referrer_policy);
+
 // Holds down modifier keys for the duration of its lifetime and releases them
 // upon destruction. This allows simulating multiple input events without
 // simulating modifier key releases in between.

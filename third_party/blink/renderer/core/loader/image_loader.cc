@@ -524,10 +524,8 @@ void ImageLoader::DoUpdateFromElement(
       if (frame->IsClientLoFiAllowed(params.GetResourceRequest())) {
         params.SetClientLoFiPlaceholder();
       } else if (auto* html_image = ToHTMLImageElementOrNull(GetElement())) {
-        const LazyImageHelper::Eligibility lazy_image_eligibility =
-            LazyImageHelper::DetermineEligibilityAndTrackVisibilityMetrics(
-                *frame, html_image, params.Url());
-        switch (lazy_image_eligibility) {
+        switch (LazyImageHelper::DetermineEligibilityAndTrackVisibilityMetrics(
+            *frame, html_image, params.Url())) {
           case LazyImageHelper::Eligibility::kEnabledFullyDeferred:
             lazy_image_load_state_ = LazyImageLoadState::kDeferred;
             was_fully_deferred_ = true;
@@ -555,7 +553,7 @@ void ImageLoader::DoUpdateFromElement(
     }
 
     if (lazy_image_load_state_ == LazyImageLoadState::kDeferred &&
-        was_fully_deferred_) {
+        was_fully_deferred_ && !ShouldLoadImmediately(url)) {
       // TODO(rajendrant): Remove this temporary workaround of creating a 1x1
       // placeholder to fix an intersection observer issue not firing with
       // certain styles (https://crbug.com/992765). Instead

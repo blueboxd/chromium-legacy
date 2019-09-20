@@ -50,6 +50,9 @@ id<GREYMatcher> HeaderWithAccessibilityLabel(NSString* label);
 // Matcher for text field of a cell with |message_id|.
 id<GREYMatcher> TextFieldForCellWithLabelId(int message_id);
 
+// Matcher for icon view of a cell with |message_id|.
+id<GREYMatcher> IconViewForCellWithLabelId(int message_id, NSString* icon_type);
+
 // Returns matcher for the primary toolbar.
 id<GREYMatcher> PrimaryToolbar();
 

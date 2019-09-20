@@ -40,6 +40,25 @@
 
 namespace blink {
 
+class ScheduledAnimationsMutationsForbidden {
+  STACK_ALLOCATED();
+
+ public:
+  explicit ScheduledAnimationsMutationsForbidden(
+      SMILTimeContainer* time_container)
+#if DCHECK_IS_ON()
+      : flag_reset_(&time_container->prevent_scheduled_animations_changes_,
+                    true)
+#endif
+  {
+  }
+
+ private:
+#if DCHECK_IS_ON()
+  base::AutoReset<bool> flag_reset_;
+#endif
+};
+
 static constexpr base::TimeDelta kAnimationPolicyOnceDuration =
     base::TimeDelta::FromSeconds(3);
 
@@ -63,9 +82,7 @@ SMILTimeContainer::~SMILTimeContainer() {
   CancelAnimationFrame();
   CancelAnimationPolicyTimer();
   DCHECK(!wakeup_timer_.IsActive());
-#if DCHECK_IS_ON()
-  DCHECK(!prevent_scheduled_animations_changes_);
-#endif
+  DCHECK(ScheduledAnimationsMutationsAllowed());
 }
 
 void SMILTimeContainer::Schedule(SVGSMILElement* animation,
@@ -74,10 +91,7 @@ void SMILTimeContainer::Schedule(SVGSMILElement* animation,
   DCHECK_EQ(animation->TimeContainer(), this);
   DCHECK(target);
   DCHECK(animation->HasValidTarget());
-
-#if DCHECK_IS_ON()
-  DCHECK(!prevent_scheduled_animations_changes_);
-#endif
+  DCHECK(ScheduledAnimationsMutationsAllowed());
 
   // Separate out Discard and AnimateMotion
   QualifiedName name = (animation->HasTagName(svg_names::kAnimateMotionTag) ||
@@ -103,10 +117,7 @@ void SMILTimeContainer::Unschedule(SVGSMILElement* animation,
                                    SVGElement* target,
                                    const QualifiedName& attribute_name) {
   DCHECK_EQ(animation->TimeContainer(), this);
-
-#if DCHECK_IS_ON()
-  DCHECK(!prevent_scheduled_animations_changes_);
-#endif
+  DCHECK(ScheduledAnimationsMutationsAllowed());
 
   // Separate out Discard and AnimateMotion
   QualifiedName name = (animation->HasTagName(svg_names::kAnimateMotionTag) ||
@@ -260,15 +271,12 @@ void SMILTimeContainer::SetElapsed(SMILTime elapsed) {
   if (!IsPaused())
     SynchronizeToDocumentTimeline();
 
-#if DCHECK_IS_ON()
-  prevent_scheduled_animations_changes_ = true;
-#endif
-  for (const auto& sandwich : scheduled_animations_) {
-    sandwich.value->Reset();
+  {
+    ScheduledAnimationsMutationsForbidden scope(this);
+    for (auto& sandwich : scheduled_animations_.Values())
+      sandwich->Reset();
   }
-#if DCHECK_IS_ON()
-  prevent_scheduled_animations_changes_ = false;
-#endif
+
   intervals_dirty_ = true;
   latest_update_time_ = SMILTime();
   UpdateAnimationsAndScheduleFrameIfNeeded(elapsed);
@@ -475,14 +483,7 @@ void SMILTimeContainer::UpdateIntervals(SMILTime document_time) {
 void SMILTimeContainer::UpdateAnimationTimings(SMILTime presentation_time) {
   DCHECK(GetDocument().IsActive());
 
-#if DCHECK_IS_ON()
-  // This boolean will catch any attempts to schedule/unschedule
-  // scheduledAnimations during this critical section. Similarly, any elements
-  // removed will unschedule themselves, so this will catch modification of
-  // animationsToApply.
-  base::AutoReset<bool> no_scheduled_animations_change_scope(
-      &prevent_scheduled_animations_changes_, true);
-#endif
+  ScheduledAnimationsMutationsForbidden scope(this);
 
   if (document_order_indexes_dirty_)
     UpdateDocumentOrderIndexes();
@@ -501,32 +502,24 @@ void SMILTimeContainer::UpdateAnimationTimings(SMILTime presentation_time) {
 }
 
 void SMILTimeContainer::ApplyAnimationValues(SMILTime elapsed) {
-#if DCHECK_IS_ON()
-  prevent_scheduled_animations_changes_ = true;
-#endif
   HeapVector<Member<SVGSMILElement>> animations_to_apply;
-  for (auto& sandwich : scheduled_animations_.Values()) {
-    sandwich->UpdateActiveAnimationStack(elapsed);
-    if (SVGSMILElement* animation = sandwich->ApplyAnimationValues())
-      animations_to_apply.push_back(animation);
+  {
+    ScheduledAnimationsMutationsForbidden scope(this);
+    for (auto& sandwich : scheduled_animations_.Values()) {
+      sandwich->UpdateActiveAnimationStack(elapsed);
+      if (SVGSMILElement* animation = sandwich->ApplyAnimationValues())
+        animations_to_apply.push_back(animation);
+    }
   }
 
-  if (animations_to_apply.IsEmpty()) {
-#if DCHECK_IS_ON()
-    prevent_scheduled_animations_changes_ = false;
-#endif
+  if (animations_to_apply.IsEmpty())
     return;
-  }
 
   // Everything bellow handles "discard" elements.
   UseCounter::Count(&GetDocument(), WebFeature::kSVGSMILAnimationAppliedEffect);
 
   std::sort(animations_to_apply.begin(), animations_to_apply.end(),
             PriorityCompare(elapsed));
-
-#if DCHECK_IS_ON()
-  prevent_scheduled_animations_changes_ = false;
-#endif
 
   for (const auto& timed_element : animations_to_apply) {
     if (timed_element->isConnected() && timed_element->IsSVGDiscardElement()) {

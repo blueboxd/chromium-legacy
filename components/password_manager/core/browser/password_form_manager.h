@@ -281,6 +281,8 @@ class PasswordFormManager : public PasswordFormManagerInterface,
   // Save/update |pending_credentials_| to the password store.
   void SavePendingToStore(bool update);
 
+  PasswordStore::FormDigest ConstructObservedFormDigest();
+
   // The client which implements embedder-specific PasswordManager operations.
   PasswordManagerClient* client_;
 
@@ -298,14 +300,11 @@ class PasswordFormManager : public PasswordFormManagerInterface,
   // form. They are owned by |form_fetcher_|.
   std::vector<const autofill::PasswordForm*> blacklisted_matches_;
 
-  // If the observed form gets blacklisted through |this|, the blacklist entry
-  // gets stored in |new_blacklisted_| until data is potentially refreshed by
-  // reading from PasswordStore again. |blacklisted_matches_| will contain
-  // |new_blacklisted_.get()| in that case. The PasswordForm will usually get
-  // accessed via |blacklisted_matches_|, this unique_ptr is only used to store
-  // it (unlike the rest of forms being pointed to in |blacklisted_matches_|,
-  // which are owned by |form_fetcher_|).
-  std::unique_ptr<autofill::PasswordForm> new_blacklisted_;
+  // If the observed form gets blacklisted through |this|, we keep the
+  // information in this boolean flag until data is potentially refreshed by
+  // reading from PasswordStore again. Upon reading from the store again, we set
+  // this boolean to false again.
+  bool newly_blacklisted_ = false;
 
   // Takes care of recording metrics and events for |*this|.
   scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder_;

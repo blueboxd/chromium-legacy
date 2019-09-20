@@ -29,6 +29,7 @@
 #include "media/base/output_device_info.h"
 #include "media/mojo/mojom/audio_output_stream.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
 namespace content {
@@ -72,7 +73,8 @@ class RenderFrameAudioOutputStreamFactory::Core final
 
     void Acquire(
         const media::AudioParameters& params,
-        media::mojom::AudioOutputStreamProviderClientPtr provider_client,
+        mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient>
+            provider_client,
         const base::Optional<base::UnguessableToken>& processing_id) final {
       DCHECK_CURRENTLY_ON(BrowserThread::IO);
       TRACE_EVENT1("audio",

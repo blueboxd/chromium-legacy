@@ -4,6 +4,7 @@
 #include "content/browser/devtools/devtools_instrumentation.h"
 
 #include "content/browser/devtools/browser_devtools_agent_host.h"
+#include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/devtools/protocol/emulation_handler.h"
 #include "content/browser/devtools/protocol/fetch_handler.h"
 #include "content/browser/devtools/protocol/network_handler.h"

@@ -57,7 +57,7 @@ void GPU::Trace(blink::Visitor* visitor) {
 }
 
 void GPU::ContextDestroyed(ExecutionContext* execution_context) {
-  dawn_control_client_->MarkDestroyed();
+  dawn_control_client_->Destroy();
 }
 
 ScriptPromise GPU::requestAdapter(ScriptState* script_state,

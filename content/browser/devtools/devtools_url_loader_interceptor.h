@@ -5,16 +5,155 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_URL_LOADER_INTERCEPTOR_H_
 #define CONTENT_BROWSER_DEVTOOLS_DEVTOOLS_URL_LOADER_INTERCEPTOR_H_
 
+#include "base/callback.h"
+#include "base/containers/flat_set.h"
 #include "base/memory/weak_ptr.h"
-#include "content/browser/devtools/devtools_network_interceptor.h"
+#include "base/optional.h"
+#include "base/unguessable_token.h"
+#include "content/browser/devtools/protocol/network.h"
+#include "content/public/common/resource_type.h"
+#include "mojo/public/cpp/system/data_pipe.h"
+#include "net/base/auth.h"
+#include "net/base/net_errors.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+
+namespace net {
+class AuthChallengeInfo;
+class HttpResponseHeaders;
+}  // namespace net
 
 namespace content {
 
 class RenderProcessHost;
 
+struct InterceptedRequestInfo {
+  InterceptedRequestInfo();
+  ~InterceptedRequestInfo();
+
+  std::string interception_id;
+  base::UnguessableToken frame_id;
+  ResourceType resource_type;
+  bool is_navigation = false;
+  int response_error_code = net::OK;
+  std::unique_ptr<protocol::Network::Request> network_request;
+  std::unique_ptr<net::AuthChallengeInfo> auth_challenge;
+  scoped_refptr<net::HttpResponseHeaders> response_headers;
+  protocol::Maybe<bool> is_download;
+  protocol::Maybe<protocol::String> redirect_url;
+  protocol::Maybe<protocol::String> renderer_request_id;
+};
+
 class DevToolsURLLoaderInterceptor {
  public:
+  using RequestInterceptedCallback =
+      base::RepeatingCallback<void(std::unique_ptr<InterceptedRequestInfo>)>;
+  using ContinueInterceptedRequestCallback =
+      protocol::Network::Backend::ContinueInterceptedRequestCallback;
+  using GetResponseBodyForInterceptionCallback =
+      protocol::Network::Backend::GetResponseBodyForInterceptionCallback;
+  using TakeResponseBodyPipeCallback =
+      base::OnceCallback<void(protocol::Response,
+                              mojo::ScopedDataPipeConsumerHandle,
+                              const std::string& mime_type)>;
+
+  struct AuthChallengeResponse {
+    enum ResponseType {
+      kDefault,
+      kCancelAuth,
+      kProvideCredentials,
+    };
+
+    explicit AuthChallengeResponse(ResponseType response_type);
+    AuthChallengeResponse(const base::string16& username,
+                          const base::string16& password);
+
+    const ResponseType response_type;
+    const net::AuthCredentials credentials;
+
+    DISALLOW_COPY_AND_ASSIGN(AuthChallengeResponse);
+  };
+
+  struct Modifications {
+    using HeadersVector = std::vector<std::pair<std::string, std::string>>;
+
+    Modifications();
+    explicit Modifications(net::Error error_reason);
+    explicit Modifications(
+        std::unique_ptr<AuthChallengeResponse> auth_challenge_response);
+    Modifications(scoped_refptr<net::HttpResponseHeaders> response_headers,
+                  scoped_refptr<base::RefCountedMemory> response_body);
+    Modifications(protocol::Maybe<std::string> modified_url,
+                  protocol::Maybe<std::string> modified_method,
+                  protocol::Maybe<std::string> modified_post_data,
+                  std::unique_ptr<HeadersVector> modified_headers);
+    Modifications(
+        base::Optional<net::Error> error_reason,
+        scoped_refptr<net::HttpResponseHeaders> response_headers,
+        scoped_refptr<base::RefCountedMemory> response_body,
+        size_t body_offset,
+        protocol::Maybe<std::string> modified_url,
+        protocol::Maybe<std::string> modified_method,
+        protocol::Maybe<std::string> modified_post_data,
+        std::unique_ptr<HeadersVector> modified_headers,
+        std::unique_ptr<AuthChallengeResponse> auth_challenge_response);
+    ~Modifications();
+
+    // If none of the following are set then the request will be allowed to
+    // continue unchanged.
+    base::Optional<net::Error> error_reason;  // Finish with error.
+    // If either of the below fields is set, complete the request by
+    // responding with the provided headers and body.
+    scoped_refptr<net::HttpResponseHeaders> response_headers;
+    scoped_refptr<base::RefCountedMemory> response_body;
+    size_t body_offset = 0;
+
+    // Optionally modify before sending to network.
+    protocol::Maybe<std::string> modified_url;
+    protocol::Maybe<std::string> modified_method;
+    protocol::Maybe<std::string> modified_post_data;
+    std::unique_ptr<HeadersVector> modified_headers;
+    // AuthChallengeResponse is mutually exclusive with the above.
+    std::unique_ptr<AuthChallengeResponse> auth_challenge_response;
+  };
+
+  enum InterceptionStage {
+    DONT_INTERCEPT = 0,
+    REQUEST = (1 << 0),
+    RESPONSE = (1 << 1),
+    // Note: Both is not sent from front-end. It is used if both Request
+    // and HeadersReceived was found it upgrades it to Both.
+    BOTH = (REQUEST | RESPONSE),
+  };
+
+  struct Pattern {
+   public:
+    ~Pattern();
+    Pattern(const Pattern& other);
+    Pattern(const std::string& url_pattern,
+            base::flat_set<ResourceType> resource_types,
+            InterceptionStage interception_stage);
+
+    bool Matches(const std::string& url, ResourceType resource_type) const;
+
+    const std::string url_pattern;
+    const base::flat_set<ResourceType> resource_types;
+    const InterceptionStage interception_stage;
+  };
+
+  struct FilterEntry {
+    FilterEntry(const base::UnguessableToken& target_id,
+                std::vector<Pattern> patterns,
+                RequestInterceptedCallback callback);
+    FilterEntry(FilterEntry&&);
+    ~FilterEntry();
+
+    const base::UnguessableToken target_id;
+    std::vector<Pattern> patterns;
+    const RequestInterceptedCallback callback;
+
+    DISALLOW_COPY_AND_ASSIGN(FilterEntry);
+  };
+
   class Impl;
 
   using HandleAuthRequestCallback =
@@ -27,27 +166,20 @@ class DevToolsURLLoaderInterceptor {
                                 const net::AuthChallengeInfo& auth_info,
                                 HandleAuthRequestCallback callback);
 
-  explicit DevToolsURLLoaderInterceptor(
-      DevToolsNetworkInterceptor::RequestInterceptedCallback callback);
+  explicit DevToolsURLLoaderInterceptor(RequestInterceptedCallback callback);
   ~DevToolsURLLoaderInterceptor();
 
-  void SetPatterns(std::vector<DevToolsNetworkInterceptor::Pattern> patterns,
-                   bool handle_auth);
+  void SetPatterns(std::vector<Pattern> patterns, bool handle_auth);
 
   void GetResponseBody(
       const std::string& interception_id,
-      std::unique_ptr<
-          DevToolsNetworkInterceptor::GetResponseBodyForInterceptionCallback>
-          callback);
-  void TakeResponseBodyPipe(
-      const std::string& interception_id,
-      DevToolsNetworkInterceptor::TakeResponseBodyPipeCallback callback);
+      std::unique_ptr<GetResponseBodyForInterceptionCallback> callback);
+  void TakeResponseBodyPipe(const std::string& interception_id,
+                            TakeResponseBodyPipeCallback callback);
   void ContinueInterceptedRequest(
       const std::string& interception_id,
-      std::unique_ptr<DevToolsNetworkInterceptor::Modifications> modifications,
-      std::unique_ptr<
-          DevToolsNetworkInterceptor::ContinueInterceptedRequestCallback>
-          callback);
+      std::unique_ptr<Modifications> modifications,
+      std::unique_ptr<ContinueInterceptedRequestCallback> callback);
 
   bool CreateProxyForInterception(
       RenderProcessHost* rph,
@@ -93,6 +225,13 @@ class DevToolsURLLoaderFactoryAdapter
 
   network::mojom::URLLoaderFactoryPtr factory_;
 };
+
+inline DevToolsURLLoaderInterceptor::InterceptionStage& operator|=(
+    DevToolsURLLoaderInterceptor::InterceptionStage& a,
+    const DevToolsURLLoaderInterceptor::InterceptionStage& b) {
+  a = static_cast<DevToolsURLLoaderInterceptor::InterceptionStage>(a | b);
+  return a;
+}
 
 }  // namespace content
 

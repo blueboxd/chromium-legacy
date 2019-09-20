@@ -1119,7 +1119,7 @@ FileManagerPrivateSearchFilesByHashesFunction::Run() {
             this, hashes,
             integration_service->GetMountPointPath().Append(
                 drive::util::kDriveMyDriveRootDirName),
-            drive::util::GetDriveMountPointPath(chrome_details_.GetProfile())),
+            base::FilePath("/").Append(drive::util::kDriveMyDriveRootDirName)),
         base::BindOnce(
             &FileManagerPrivateSearchFilesByHashesFunction::OnSearchByAttribute,
             this, hashes));
@@ -1184,10 +1184,7 @@ void FileManagerPrivateSearchFilesByHashesFunction::OnSearchByHashes(
     DCHECK(result->HasKey(hashAndPath.hash));
     base::ListValue* list;
     result->GetListWithoutPathExpansion(hashAndPath.hash, &list);
-    list->AppendString(
-        file_manager::util::ConvertDrivePathToFileSystemUrl(
-            chrome_details_.GetProfile(), hashAndPath.path, extension_id())
-            .spec());
+    list->AppendString(hashAndPath.path.value());
   }
   Respond(OneArgument(std::move(result)));
 }

@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/test/fake_device_descriptor_test.h"
@@ -117,15 +118,14 @@ TEST_F(FakeVideoCaptureDeviceDescriptorTest, CanUseSecondRequestedProxy) {
       media::PowerLineFrequency::FREQUENCY_DEFAULT;
 
   base::RunLoop wait_loop_2;
-  mojom::ReceiverPtr receiver_proxy;
-  MockReceiver receiver(mojo::MakeRequest(&receiver_proxy));
+  mojo::PendingRemote<mojom::Receiver> subscriber;
+  MockReceiver receiver(subscriber.InitWithNewPipeAndPassReceiver());
   EXPECT_CALL(receiver, DoOnNewBuffer(_, _)).Times(AtLeast(1));
   EXPECT_CALL(receiver, DoOnFrameReadyInBuffer(_, _, _, _))
       .WillRepeatedly(
           InvokeWithoutArgs([&wait_loop_2]() { wait_loop_2.Quit(); }));
 
-  device_proxy_2->Start(arbitrary_requested_settings,
-                        std::move(receiver_proxy));
+  device_proxy_2->Start(arbitrary_requested_settings, std::move(subscriber));
   wait_loop_2.Run();
 }
 

@@ -262,6 +262,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(lazy_load_enabled)
   IPC_STRUCT_TRAITS_MEMBER(lazy_frame_loading_distance_thresholds_px)
   IPC_STRUCT_TRAITS_MEMBER(lazy_image_loading_distance_thresholds_px)
+  IPC_STRUCT_TRAITS_MEMBER(lazy_image_first_k_fully_load)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::mojom::WindowFeatures)

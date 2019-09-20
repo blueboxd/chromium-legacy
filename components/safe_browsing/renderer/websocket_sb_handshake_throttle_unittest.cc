@@ -36,18 +36,19 @@ class FakeSafeBrowsing : public mojom::SafeBrowsing {
         has_user_gesture_(false),
         originated_from_service_worker_(false) {}
 
-  void CreateCheckerAndCheck(int32_t render_frame_id,
-                             mojom::SafeBrowsingUrlCheckerRequest request,
-                             const GURL& url,
-                             const std::string& method,
-                             const net::HttpRequestHeaders& headers,
-                             int32_t load_flags,
-                             content::ResourceType resource_type,
-                             bool has_user_gesture,
-                             bool originated_from_service_worker,
-                             CreateCheckerAndCheckCallback callback) override {
+  void CreateCheckerAndCheck(
+      int32_t render_frame_id,
+      mojo::PendingReceiver<mojom::SafeBrowsingUrlChecker> receiver,
+      const GURL& url,
+      const std::string& method,
+      const net::HttpRequestHeaders& headers,
+      int32_t load_flags,
+      content::ResourceType resource_type,
+      bool has_user_gesture,
+      bool originated_from_service_worker,
+      CreateCheckerAndCheckCallback callback) override {
     render_frame_id_ = render_frame_id;
-    request_ = std::move(request);
+    receiver_ = std::move(receiver);
     url_ = url;
     method_ = method;
     headers_ = headers;
@@ -66,7 +67,7 @@ class FakeSafeBrowsing : public mojom::SafeBrowsing {
   void RunUntilCalled() { run_loop_.Run(); }
 
   int32_t render_frame_id_;
-  mojom::SafeBrowsingUrlCheckerRequest request_;
+  mojo::PendingReceiver<mojom::SafeBrowsingUrlChecker> receiver_;
   GURL url_;
   std::string method_;
   net::HttpRequestHeaders headers_;

@@ -24,6 +24,15 @@ constexpr char kCrostiniDefaultAnsibleVersion[] =
 class AnsibleManagementService : public KeyedService,
                                  public LinuxPackageOperationProgressObserver {
  public:
+  // Observer class for Ansible Management Service related events.
+  class Observer : public base::CheckedObserver {
+   public:
+    ~Observer() override = default;
+    virtual void OnApplicationStarted() = 0;
+    virtual void OnApplicationFinished() = 0;
+    virtual void OnError() = 0;
+  };
+
   static AnsibleManagementService* GetForProfile(Profile* profile);
 
   explicit AnsibleManagementService(Profile* profile);
@@ -51,6 +60,9 @@ class AnsibleManagementService : public KeyedService,
   void OnApplyAnsiblePlaybookProgress(
       vm_tools::cicerone::ApplyAnsiblePlaybookProgressSignal::Status status);
 
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
  private:
   void OnInstallAnsibleInDefaultContainer(CrostiniResult result);
 
@@ -61,6 +73,7 @@ class AnsibleManagementService : public KeyedService,
           response);
 
   Profile* profile_;
+  base::ObserverList<Observer> observers_;
   base::OnceCallback<void(bool success)>
       ansible_installation_finished_callback_;
   base::OnceCallback<void(bool success)>

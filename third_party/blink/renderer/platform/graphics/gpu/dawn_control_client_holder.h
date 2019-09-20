@@ -22,15 +22,15 @@ class WebGPUInterface;
 namespace blink {
 
 // This class holds the WebGPUInterface and a |destroyed_| flag.
-// DawnControlClientHolder::MarkDestroyed() should be called if the
-// backing WebGPUInterface has been destroyed.
+// DawnControlClientHolder::Destroy() should be called to destroy the backing
+// WebGPUInterface.
 class PLATFORM_EXPORT DawnControlClientHolder
     : public RefCounted<DawnControlClientHolder> {
  public:
   DawnControlClientHolder(
       std::unique_ptr<WebGraphicsContext3DProvider> context_provider);
 
-  void MarkDestroyed();
+  void Destroy();
   bool IsDestroyed() const;
 
   WebGraphicsContext3DProvider* GetContextProvider() const;
@@ -43,7 +43,6 @@ class PLATFORM_EXPORT DawnControlClientHolder
 
   std::unique_ptr<WebGraphicsContext3DProvider> context_provider_;
   gpu::webgpu::WebGPUInterface* interface_;
-  bool destroyed_;
 };
 
 }  // namespace blink

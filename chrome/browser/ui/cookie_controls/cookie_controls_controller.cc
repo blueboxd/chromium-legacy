@@ -29,9 +29,12 @@ CookieControlsController::CookieControlsController(
   pref_change_registrar_.Init(profile->GetPrefs());
   pref_change_registrar_.Add(
       prefs::kCookieControlsMode,
-      base::BindRepeating(
-          &CookieControlsController::OnCookieControlsPrefChanged,
-          base::Unretained(this)));
+      base::BindRepeating(&CookieControlsController::OnPrefChanged,
+                          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kBlockThirdPartyCookies,
+      base::BindRepeating(&CookieControlsController::OnPrefChanged,
+                          base::Unretained(this)));
 }
 
 CookieControlsController::~CookieControlsController() {}
@@ -99,13 +102,13 @@ void CookieControlsController::PresentBlockedCookieCounter() {
     observer.OnBlockedCookiesCountChanged(blocked_objects.GetObjectCount());
 }
 
-void CookieControlsController::OnCookieControlsPrefChanged() {
+void CookieControlsController::OnPrefChanged() {
   if (GetWebContents())
     Update(GetWebContents());
 }
 
 content::WebContents* CookieControlsController::GetWebContents() {
-  if (!tab_observer_)
+  if (!tab_observer_ || !tab_observer_->tab_specific_content_settings())
     return nullptr;
   return tab_observer_->tab_specific_content_settings()->web_contents();
 }

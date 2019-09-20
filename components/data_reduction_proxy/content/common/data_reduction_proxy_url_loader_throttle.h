@@ -10,7 +10,9 @@
 #include "base/sequence_checker.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace data_reduction_proxy {
@@ -104,8 +106,9 @@ class DataReductionProxyURLLoaderThrottle
   mojom::DataReductionProxy* data_reduction_proxy_;
 
   // Throttles that run on different sequences need "private" mojo pipes.
-  mojom::DataReductionProxyPtrInfo private_data_reduction_proxy_info_;
-  mojom::DataReductionProxyPtr private_data_reduction_proxy_;
+  mojo::PendingRemote<mojom::DataReductionProxy>
+      private_data_reduction_proxy_remote_;
+  mojo::Remote<mojom::DataReductionProxy> private_data_reduction_proxy_;
   mojo::Receiver<mojom::DataReductionProxyThrottleConfigObserver>
       private_config_observer_receiver_{this};
 

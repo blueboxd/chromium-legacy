@@ -75,13 +75,14 @@ void SerialPortManager::GetDevices(
   port_manager_->GetDevices(std::move(callback));
 }
 
-void SerialPortManager::GetPort(const std::string& path,
-                                device::mojom::SerialPortRequest request) {
+void SerialPortManager::GetPort(
+    const std::string& path,
+    mojo::PendingReceiver<device::mojom::SerialPort> receiver) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   EnsureConnection();
   port_manager_->GetDevices(
       base::BindOnce(&SerialPortManager::OnGotDevicesToGetPort,
-                     weak_factory_.GetWeakPtr(), path, std::move(request)));
+                     weak_factory_.GetWeakPtr(), path, std::move(receiver)));
 }
 
 void SerialPortManager::StartConnectionPolling(const std::string& extension_id,
@@ -168,13 +169,13 @@ void SerialPortManager::EnsureConnection() {
 
 void SerialPortManager::OnGotDevicesToGetPort(
     const std::string& path,
-    device::mojom::SerialPortRequest request,
+    mojo::PendingReceiver<device::mojom::SerialPort> receiver,
     std::vector<device::mojom::SerialPortInfoPtr> devices) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   for (auto& device : devices) {
     if (device->path.AsUTF8Unsafe() == path) {
-      port_manager_->GetPort(device->token, std::move(request),
+      port_manager_->GetPort(device->token, std::move(receiver),
                              /*watcher=*/mojo::NullRemote());
       return;
     }

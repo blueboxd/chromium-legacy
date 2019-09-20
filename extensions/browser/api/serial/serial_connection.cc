@@ -159,8 +159,9 @@ ApiResourceManager<SerialConnection>::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
-SerialConnection::SerialConnection(const std::string& owner_extension_id,
-                                   device::mojom::SerialPortPtr serial_port)
+SerialConnection::SerialConnection(
+    const std::string& owner_extension_id,
+    mojo::PendingRemote<device::mojom::SerialPort> serial_port)
     : ApiResource(owner_extension_id),
       persistent_(false),
       buffer_size_(kDefaultBufferSize),
@@ -174,7 +175,7 @@ SerialConnection::SerialConnection(const std::string& owner_extension_id,
                             mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       send_pipe_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL) {
   DCHECK(serial_port_);
-  serial_port_.set_connection_error_handler(base::BindOnce(
+  serial_port_.set_disconnect_handler(base::BindOnce(
       &SerialConnection::OnConnectionError, base::Unretained(this)));
 }
 
@@ -220,7 +221,7 @@ void SerialConnection::SetPaused(bool paused) {
 
 void SerialConnection::SetConnectionErrorHandler(
     base::OnceClosure connection_error_handler) {
-  if (serial_port_.encountered_error()) {
+  if (!serial_port_.is_connected()) {
     // Already being disconnected, run client's error handler immediatelly.
     std::move(connection_error_handler).Run();
     return;

@@ -95,10 +95,10 @@ interface SerialPortManager {
   GetDevices() => (array<SerialPortInfo> devices);
 
   // Creates a SerialPort instance attached to the port represented by |token|.
-  // When the pipe passed in |port_request| is closed the optional pipe passed
+  // When the pipe passed in |port_receiver| is closed the optional pipe passed
   // in |watcher| will also be closed.
   GetPort(mojo_base.mojom.UnguessableToken token,
-          SerialPort& port_request,
+          pending_receiver<SerialPort> port_receiver,
           pending_remote<SerialPortConnectionWatcher>? watcher);
 };
 

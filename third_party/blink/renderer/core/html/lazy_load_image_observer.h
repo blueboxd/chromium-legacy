@@ -39,13 +39,15 @@ class LazyLoadImageObserver final
     base::TimeTicks time_when_first_visible;
   };
 
-  LazyLoadImageObserver();
+  LazyLoadImageObserver(const Document&);
 
   void StartMonitoringNearViewport(Document*, Element*, DeferralMessage);
   void StopMonitoring(Element*);
 
   void StartMonitoringVisibility(Document*, HTMLImageElement*);
   void OnLoadFinished(HTMLImageElement*);
+
+  bool IsFullyLoadableFirstKImageAndDecrementCount();
 
   void Trace(Visitor*);
 
@@ -61,6 +63,9 @@ class LazyLoadImageObserver final
 
   // The intersection observer used to track when the image becomes visible.
   Member<IntersectionObserver> visibility_metrics_observer_;
+
+  // Count of remaining images that can be fully loaded.
+  int count_remaining_images_fully_loaded_ = 0;
 
   // Used to show the intervention console message one time only.
   bool is_load_event_deferred_intervention_shown_ = false;

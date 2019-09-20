@@ -56,6 +56,9 @@ constexpr const char kTestPSLMatchingWebOrigin[] =
     "https://psl.example.com/origin";
 constexpr const char kTestUnrelatedWebRealm[] = "https://notexample.com/";
 constexpr const char kTestUnrelatedWebOrigin[] = "https:/notexample.com/origin";
+constexpr const char kTestUnrelatedWebRealm2[] = "https://notexample2.com/";
+constexpr const char kTestUnrelatedWebOrigin2[] =
+    "https:/notexample2.com/origin";
 constexpr const char kTestInsecureWebRealm[] = "http://one.example.com/";
 constexpr const char kTestInsecureWebOrigin[] = "http://one.example.com/origin";
 constexpr const char kTestAndroidRealm1[] =
@@ -893,6 +896,70 @@ TEST_F(PasswordStoreTest, GetAllLoginsWithAffiliationAndBrandingInformation) {
   // Since GetAutofillableLoginsWithAffiliationAndBrandingInformation
   // schedules a request for affiliation information to UI thread, don't
   // shutdown UI thread until there are no tasks in the UI queue.
+  WaitForPasswordStore();
+  store->ShutdownOnUIThread();
+}
+
+TEST_F(PasswordStoreTest, Unblacklisting) {
+  static const PasswordFormData kTestCredentials[] = {
+      // A PasswordFormData with nullptr as the username_value will be converted
+      // in a blacklisted PasswordForm in FillPasswordFormWithData().
+
+      // Blacklisted entry for the observed domain.
+      {PasswordForm::Scheme::kHtml, kTestWebRealm1, kTestWebOrigin1, "", L"",
+       L"", L"", nullptr, L"", true, 1},
+      // Blacklisted entry for a PSL match of the observed form.
+      {PasswordForm::Scheme::kHtml, kTestPSLMatchingWebRealm,
+       kTestPSLMatchingWebOrigin, "", L"", L"", L"", nullptr, L"", true, 1},
+      // Blacklisted entry for another domain
+      {PasswordForm::Scheme::kHtml, kTestUnrelatedWebRealm,
+       kTestUnrelatedWebOrigin, "", L"", L"", L"", nullptr, L"", true, 1},
+      // Non-blacklisted for the observed domain with a username.
+      {PasswordForm::Scheme::kHtml, kTestWebRealm1, kTestWebOrigin1, "", L"",
+       L"", L"", L"username", L"", true, 1},
+      // Non-blacklisted for the observed domain without a username.
+      {PasswordForm::Scheme::kHtml, kTestWebRealm1, kTestWebOrigin1, "", L"",
+       L"", L"username_element", L"", L"", true, 1},
+      // Non-blacklisted entry for a PSL match of the observed form.
+      {PasswordForm::Scheme::kHtml, kTestPSLMatchingWebRealm,
+       kTestPSLMatchingWebOrigin, "", L"", L"", L"", L"username", L"", true, 1},
+      // Non-blacklisted entry for another domain
+      {PasswordForm::Scheme::kHtml, kTestUnrelatedWebRealm2,
+       kTestUnrelatedWebOrigin2, "", L"", L"", L"", L"username", L"", true, 1}};
+
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
+  store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
+
+  std::vector<std::unique_ptr<PasswordForm>> all_credentials;
+  for (const auto& test_credential : kTestCredentials) {
+    all_credentials.push_back(FillPasswordFormWithData(test_credential));
+    store->AddLogin(*all_credentials.back());
+  }
+  WaitForPasswordStore();
+
+  MockPasswordStoreObserver mock_observer;
+  store->AddObserver(&mock_observer);
+
+  // Only the related non-PSL match should be deleted.
+  EXPECT_CALL(mock_observer, OnLoginsChanged(testing::SizeIs(1u)));
+  base::RunLoop run_loop;
+  PasswordStore::FormDigest observed_form_digest = {
+      PasswordForm::Scheme::kHtml, kTestWebRealm1, GURL(kTestWebOrigin1)};
+
+  store->Unblacklist(observed_form_digest, run_loop.QuitClosure());
+  run_loop.Run();
+  testing::Mock::VerifyAndClearExpectations(&mock_observer);
+
+  // Unblacklisting will delete only the first credential. It should leave the
+  // PSL match as well as the unrelated blacklisting entry and all
+  // non-blacklisting entries.
+  all_credentials.erase(all_credentials.begin());
+
+  MockPasswordStoreConsumer mock_consumer;
+  EXPECT_CALL(mock_consumer,
+              OnGetPasswordStoreResultsConstRef(
+                  UnorderedPasswordFormElementsAre(&all_credentials)));
+  store->GetAllLogins(&mock_consumer);
   WaitForPasswordStore();
   store->ShutdownOnUIThread();
 }

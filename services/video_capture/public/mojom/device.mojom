@@ -16,7 +16,8 @@ import "services/video_capture/public/mojom/receiver.mojom";
 // Receiver.OnStopped() to indicate that stopping has completed and no further
 // events are going to be sent to |receiver|.
 interface Device {
-  Start(media.mojom.VideoCaptureParams requested_settings, Receiver receiver);
+  Start(media.mojom.VideoCaptureParams requested_settings,
+        pending_remote<Receiver> receiver);
   MaybeSuspend();
   Resume();
   GetPhotoState()

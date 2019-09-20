@@ -3475,6 +3475,12 @@
   <message name="IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_SUBTEXT" translateable="false" desc="Description for dialog warning user of unavailable Linux container until software configurations are applied.">
     Your app will open when configuration is finished. Configuration can take a few minutes.
   </message>
+  <message name="IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_ERROR_LABEL" translateable="false" desc="Label for Crostini software config dialog when there is an error in Ansible playbook application or installation.">
+    Error configuring Linux
+  </message>
+  <message name="IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_ERROR_SUBTEXT" translateable="false" desc="Text shown for Crostini software config dialog when there is an error in Ansible playbook application or installation.">
+    There was an error configuring Linux. Please contact your administrator.
+  </message>
   <message name="IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM" desc="Text shown in the context menu for the Linux terminal app, allowing users to shut down the Linux virtual machine.">
     Shut down Linux (Beta)
   </message>

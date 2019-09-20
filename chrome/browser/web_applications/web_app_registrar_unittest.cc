@@ -16,10 +16,12 @@
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/test/test_web_app_sync_bridge.h"
+#include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "components/sync/model/mock_model_type_change_processor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -36,6 +38,7 @@ Registry CreateRegistryForTesting(const std::string& base_url, int num_apps) {
     const AppId app_id = GenerateAppIdFromURL(GURL(url));
 
     auto web_app = std::make_unique<WebApp>(app_id);
+    web_app->AddSource(Source::kSync);
     web_app->SetLaunchUrl(GURL(url));
     web_app->SetLaunchContainer(LaunchContainer::kTab);
 
@@ -52,50 +55,68 @@ class WebAppRegistrarTest : public WebAppTest {
   void SetUp() override {
     WebAppTest::SetUp();
 
-    sync_bridge_ = std::make_unique<TestWebAppSyncBridge>();
-    registrar_ =
-        std::make_unique<WebAppRegistrar>(profile(), sync_bridge_.get());
+    database_factory_ = std::make_unique<TestWebAppDatabaseFactory>();
+    registrar_ = std::make_unique<WebAppRegistrar>(profile());
+
+    sync_bridge_ = std::make_unique<WebAppSyncBridge>(
+        profile(), database_factory_.get(), registrar_.get(),
+        mock_processor_.CreateForwardingProcessor());
+
+    ON_CALL(processor(), IsTrackingMetadata())
+        .WillByDefault(testing::Return(true));
   }
 
  protected:
-  TestWebAppSyncBridge& sync_bridge() { return *sync_bridge_; }
+  syncer::MockModelTypeChangeProcessor& processor() { return mock_processor_; }
+  TestWebAppDatabaseFactory& database_factory() { return *database_factory_; }
   WebAppRegistrar& registrar() { return *registrar_; }
+  WebAppSyncBridge& sync_bridge() { return *sync_bridge_; }
+
+  void InitSyncBridge() {
+    base::RunLoop run_loop;
+    sync_bridge_->Init(base::BindLambdaForTesting([&]() { run_loop.Quit(); }));
+    run_loop.Run();
+  }
 
   std::set<AppId> RegisterAppsForTesting(Registry registry) {
     std::set<AppId> ids;
 
     for (auto& kv : registry) {
       ids.insert(kv.first);
-      registrar().RegisterApp(std::move(kv.second));
+      sync_bridge().RegisterApp(std::move(kv.second));
     }
 
     return ids;
   }
 
   AppId InitRegistrarWithApp(std::unique_ptr<WebApp> app) {
-    const AppId app_id = app->app_id();
-
-    registrar().Init(base::DoNothing());
     DCHECK(registrar().is_empty());
+
+    const AppId app_id = app->app_id();
 
     Registry registry;
     registry.emplace(app_id, std::move(app));
 
-    sync_bridge().TakeOpenDatabaseCallback().Run(std::move(registry));
+    InitRegistrarWithRegistry(registry);
     return app_id;
   }
 
   std::set<AppId> InitRegistrarWithApps(const std::string& base_url,
                                         int num_apps) {
-    std::set<AppId> app_ids;
-    registrar().Init(base::DoNothing());
     DCHECK(registrar().is_empty());
 
     Registry registry = CreateRegistryForTesting(base_url, num_apps);
+    return InitRegistrarWithRegistry(registry);
+  }
+
+  std::set<AppId> InitRegistrarWithRegistry(const Registry& registry) {
+    std::set<AppId> app_ids;
     for (auto& kv : registry)
       app_ids.insert(kv.second->app_id());
 
-    sync_bridge().TakeOpenDatabaseCallback().Run(std::move(registry));
+    database_factory().WriteRegistry(registry);
+    InitSyncBridge();
+
     return app_ids;
   }
 
@@ -105,19 +126,20 @@ class WebAppRegistrarTest : public WebAppTest {
 
     auto web_app = std::make_unique<WebApp>(app_id);
 
+    web_app->AddSource(Source::kSync);
+    web_app->SetLaunchContainer(LaunchContainer::kWindow);
     web_app->SetName("Name");
     web_app->SetLaunchUrl(launch_url);
-    web_app->SetLaunchContainer(LaunchContainer::kWindow);
     return web_app;
   }
 
-  void RegistrarCommitUpdate(std::unique_ptr<WebAppRegistryUpdate> update) {
+  void SyncBridgeCommitUpdate(std::unique_ptr<WebAppRegistryUpdate> update) {
     base::RunLoop run_loop;
-    registrar().CommitUpdate(std::move(update),
-                             base::BindLambdaForTesting([&](bool success) {
-                               EXPECT_TRUE(success);
-                               run_loop.Quit();
-                             }));
+    sync_bridge().CommitUpdate(std::move(update),
+                               base::BindLambdaForTesting([&](bool success) {
+                                 EXPECT_TRUE(success);
+                                 run_loop.Quit();
+                               }));
 
     run_loop.Run();
   }
@@ -128,11 +150,15 @@ class WebAppRegistrarTest : public WebAppTest {
   }
 
  private:
-  std::unique_ptr<TestWebAppSyncBridge> sync_bridge_;
+  std::unique_ptr<TestWebAppDatabaseFactory> database_factory_;
   std::unique_ptr<WebAppRegistrar> registrar_;
+  testing::NiceMock<syncer::MockModelTypeChangeProcessor> mock_processor_;
+  std::unique_ptr<WebAppSyncBridge> sync_bridge_;
 };
 
 TEST_F(WebAppRegistrarTest, CreateRegisterUnregister) {
+  InitSyncBridge();
+
   EXPECT_EQ(nullptr, registrar().GetAppById(AppId()));
   EXPECT_FALSE(registrar().GetAppById(AppId()));
 
@@ -149,17 +175,23 @@ TEST_F(WebAppRegistrarTest, CreateRegisterUnregister) {
   auto web_app = std::make_unique<WebApp>(app_id);
   auto web_app2 = std::make_unique<WebApp>(app_id2);
 
+  web_app->AddSource(Source::kSync);
+  web_app->SetLaunchContainer(LaunchContainer::kWindow);
   web_app->SetName(name);
   web_app->SetDescription(description);
   web_app->SetLaunchUrl(launch_url);
   web_app->SetScope(scope);
   web_app->SetThemeColor(theme_color);
 
+  web_app2->AddSource(Source::kDefault);
+  web_app2->SetLaunchContainer(LaunchContainer::kTab);
+  web_app2->SetLaunchUrl(launch_url2);
+
   EXPECT_EQ(nullptr, registrar().GetAppById(app_id));
   EXPECT_EQ(nullptr, registrar().GetAppById(app_id2));
   EXPECT_TRUE(registrar().is_empty());
 
-  registrar().RegisterApp(std::move(web_app));
+  sync_bridge().RegisterApp(std::move(web_app));
   EXPECT_TRUE(registrar().IsInstalled(app_id));
   const WebApp* app = registrar().GetAppById(app_id);
 
@@ -173,13 +205,13 @@ TEST_F(WebAppRegistrarTest, CreateRegisterUnregister) {
   EXPECT_EQ(nullptr, registrar().GetAppById(app_id2));
   EXPECT_FALSE(registrar().is_empty());
 
-  registrar().RegisterApp(std::move(web_app2));
+  sync_bridge().RegisterApp(std::move(web_app2));
   EXPECT_TRUE(registrar().IsInstalled(app_id2));
   const WebApp* app2 = registrar().GetAppById(app_id2);
   EXPECT_EQ(app_id2, app2->app_id());
   EXPECT_FALSE(registrar().is_empty());
 
-  registrar().UnregisterApp(app_id);
+  sync_bridge().UnregisterApp(app_id);
   EXPECT_FALSE(registrar().IsInstalled(app_id));
   EXPECT_EQ(nullptr, registrar().GetAppById(app_id));
   EXPECT_FALSE(registrar().is_empty());
@@ -189,21 +221,20 @@ TEST_F(WebAppRegistrarTest, CreateRegisterUnregister) {
   EXPECT_TRUE(registrar().IsInstalled(app_id2));
   EXPECT_EQ(app_id2, app2->app_id());
 
-  registrar().UnregisterApp(app_id2);
+  sync_bridge().UnregisterApp(app_id2);
   EXPECT_FALSE(registrar().IsInstalled(app_id2));
   EXPECT_EQ(nullptr, registrar().GetAppById(app_id2));
   EXPECT_TRUE(registrar().is_empty());
 }
 
 TEST_F(WebAppRegistrarTest, DestroyRegistrarOwningRegisteredApps) {
-  const AppId app_id = GenerateAppIdFromURL(GURL("https://example.com/path"));
-  const AppId app_id2 = GenerateAppIdFromURL(GURL("https://example.com/path2"));
+  InitSyncBridge();
 
-  auto web_app = std::make_unique<WebApp>(app_id);
-  registrar().RegisterApp(std::move(web_app));
+  auto web_app = CreateWebApp("https://example.com/path");
+  sync_bridge().RegisterApp(std::move(web_app));
 
-  auto web_app2 = std::make_unique<WebApp>(app_id2);
-  registrar().RegisterApp(std::move(web_app2));
+  auto web_app2 = CreateWebApp("https://example.com/path2");
+  sync_bridge().RegisterApp(std::move(web_app2));
 
   DestroySubsystems();
 }
@@ -232,6 +263,8 @@ TEST_F(WebAppRegistrarTest, AllAppsMutable) {
 }
 
 TEST_F(WebAppRegistrarTest, DoForEachAndUnregisterAllApps) {
+  InitSyncBridge();
+
   Registry registry = CreateRegistryForTesting("https://example.com/path", 100);
   auto ids = RegisterAppsForTesting(std::move(registry));
   EXPECT_EQ(100UL, ids.size());
@@ -243,39 +276,36 @@ TEST_F(WebAppRegistrarTest, DoForEachAndUnregisterAllApps) {
   EXPECT_TRUE(ids.empty());
 
   EXPECT_FALSE(registrar().is_empty());
-  registrar().UnregisterAll();
+  sync_bridge().UnregisterAll();
   EXPECT_TRUE(registrar().is_empty());
 }
 
-TEST_F(WebAppRegistrarTest, AbstractWebAppSyncBridge) {
+TEST_F(WebAppRegistrarTest, WebAppSyncBridge) {
   std::set<AppId> ids = InitRegistrarWithApps("https://example.com/path", 100);
 
   // Add 1 app after Init.
-  const AppId app_id = GenerateAppIdFromURL(GURL("https://example.com/path"));
-  auto web_app = std::make_unique<WebApp>(app_id);
-  registrar().RegisterApp(std::move(web_app));
+  auto web_app = CreateWebApp("https://example.com/path");
+  const AppId app_id = web_app->app_id();
 
-  EXPECT_EQ(1UL, sync_bridge().write_web_app_ids().size());
-  EXPECT_EQ(app_id, sync_bridge().write_web_app_ids()[0]);
+  sync_bridge().RegisterApp(std::move(web_app));
 
+  EXPECT_EQ(101UL, database_factory().ReadAllAppIds().size());
   EXPECT_EQ(101UL, registrar().registry_for_testing().size());
 
   // Remove 1 app after Init.
-  registrar().UnregisterApp(app_id);
+  sync_bridge().UnregisterApp(app_id);
   EXPECT_EQ(100UL, registrar().registry_for_testing().size());
-  EXPECT_EQ(1UL, sync_bridge().delete_web_app_ids().size());
-  EXPECT_EQ(app_id, sync_bridge().delete_web_app_ids()[0]);
+  EXPECT_EQ(100UL, database_factory().ReadAllAppIds().size());
 
   // Remove 100 apps after Init.
-  registrar().UnregisterAll();
-  for (auto& app_id : sync_bridge().delete_web_app_ids())
-    ids.erase(app_id);
-
-  EXPECT_TRUE(ids.empty());
+  sync_bridge().UnregisterAll();
+  EXPECT_TRUE(database_factory().ReadAllAppIds().empty());
   EXPECT_TRUE(registrar().is_empty());
 }
 
 TEST_F(WebAppRegistrarTest, GetAppDataFields) {
+  InitSyncBridge();
+
   const GURL launch_url = GURL("https://example.com/path");
   const AppId app_id = GenerateAppIdFromURL(launch_url);
   const std::string name = "Name";
@@ -289,6 +319,7 @@ TEST_F(WebAppRegistrarTest, GetAppDataFields) {
   auto web_app = std::make_unique<WebApp>(app_id);
   WebApp* web_app_ptr = web_app.get();
 
+  web_app->AddSource(Source::kSync);
   web_app->SetName(name);
   web_app->SetDescription(description);
   web_app->SetThemeColor(theme_color);
@@ -296,7 +327,7 @@ TEST_F(WebAppRegistrarTest, GetAppDataFields) {
   web_app->SetLaunchContainer(launch_container);
   web_app->SetIsLocallyInstalled(/*is_locally_installed*/ false);
 
-  registrar().RegisterApp(std::move(web_app));
+  sync_bridge().RegisterApp(std::move(web_app));
 
   EXPECT_EQ(name, registrar().GetAppShortName(app_id));
   EXPECT_EQ(description, registrar().GetAppDescription(app_id));
@@ -319,81 +350,95 @@ TEST_F(WebAppRegistrarTest, GetAppDataFields) {
     web_app_ptr->SetLaunchContainer(LaunchContainer::kTab);
     EXPECT_EQ(LaunchContainer::kTab, registrar().GetAppLaunchContainer(app_id));
 
-    registrar().SetAppLaunchContainer(app_id, LaunchContainer::kWindow);
+    sync_bridge().SetAppLaunchContainer(app_id, LaunchContainer::kWindow);
     EXPECT_EQ(LaunchContainer::kWindow, web_app_ptr->launch_container());
   }
 }
 
 TEST_F(WebAppRegistrarTest, CanFindAppsInScope) {
+  InitSyncBridge();
+
   const GURL origin_scope("https://example.com/");
+
   const GURL app1_scope("https://example.com/app");
   const GURL app2_scope("https://example.com/app-two");
   const GURL app3_scope("https://not-example.com/app");
+
+  const AppId app1_id = GenerateAppIdFromURL(app1_scope);
+  const AppId app2_id = GenerateAppIdFromURL(app2_scope);
+  const AppId app3_id = GenerateAppIdFromURL(app3_scope);
 
   std::vector<web_app::AppId> in_scope =
       registrar().FindAppsInScope(origin_scope);
   EXPECT_EQ(0u, in_scope.size());
 
-  auto app1 = std::make_unique<WebApp>("1");
+  auto app1 = CreateWebApp(app1_scope.spec());
   app1->SetScope(app1_scope);
-  registrar().RegisterApp(std::move(app1));
+  sync_bridge().RegisterApp(std::move(app1));
 
   in_scope = registrar().FindAppsInScope(origin_scope);
-  EXPECT_THAT(in_scope, testing::UnorderedElementsAre("1"));
+  EXPECT_THAT(in_scope, testing::UnorderedElementsAre(app1_id));
 
   in_scope = registrar().FindAppsInScope(app1_scope);
-  EXPECT_THAT(in_scope, testing::UnorderedElementsAre("1"));
+  EXPECT_THAT(in_scope, testing::UnorderedElementsAre(app1_id));
 
-  auto app2 = std::make_unique<WebApp>("2");
+  auto app2 = CreateWebApp(app2_scope.spec());
   app2->SetScope(app2_scope);
-  registrar().RegisterApp(std::move(app2));
+  sync_bridge().RegisterApp(std::move(app2));
 
   in_scope = registrar().FindAppsInScope(origin_scope);
-  EXPECT_THAT(in_scope, testing::UnorderedElementsAre("1", "2"));
+  EXPECT_THAT(in_scope, testing::UnorderedElementsAre(app1_id, app2_id));
 
   in_scope = registrar().FindAppsInScope(app1_scope);
-  EXPECT_THAT(in_scope, testing::UnorderedElementsAre("1", "2"));
+  EXPECT_THAT(in_scope, testing::UnorderedElementsAre(app1_id, app2_id));
 
   in_scope = registrar().FindAppsInScope(app2_scope);
-  EXPECT_THAT(in_scope, testing::UnorderedElementsAre("2"));
+  EXPECT_THAT(in_scope, testing::UnorderedElementsAre(app2_id));
 
-  auto app3 = std::make_unique<WebApp>("3");
+  auto app3 = CreateWebApp(app3_scope.spec());
   app3->SetScope(app3_scope);
-  registrar().RegisterApp(std::move(app3));
+  sync_bridge().RegisterApp(std::move(app3));
 
   in_scope = registrar().FindAppsInScope(origin_scope);
-  EXPECT_THAT(in_scope, testing::UnorderedElementsAre("1", "2"));
+  EXPECT_THAT(in_scope, testing::UnorderedElementsAre(app1_id, app2_id));
 
   in_scope = registrar().FindAppsInScope(app3_scope);
-  EXPECT_THAT(in_scope, testing::UnorderedElementsAre("3"));
+  EXPECT_THAT(in_scope, testing::UnorderedElementsAre(app3_id));
 }
 
 TEST_F(WebAppRegistrarTest, CanFindAppWithUrlInScope) {
+  InitSyncBridge();
+
   const GURL origin_scope("https://example.com/");
+
   const GURL app1_scope("https://example.com/app");
   const GURL app2_scope("https://example.com/app-two");
   const GURL app3_scope("https://not-example.com/app");
 
-  auto app1 = std::make_unique<WebApp>("1");
+  const AppId app1_id = GenerateAppIdFromURL(app1_scope);
+  const AppId app2_id = GenerateAppIdFromURL(app2_scope);
+  const AppId app3_id = GenerateAppIdFromURL(app3_scope);
+
+  auto app1 = CreateWebApp(app1_scope.spec());
   app1->SetScope(app1_scope);
-  registrar().RegisterApp(std::move(app1));
+  sync_bridge().RegisterApp(std::move(app1));
 
   base::Optional<AppId> app2_match =
       registrar().FindAppWithUrlInScope(app2_scope);
   DCHECK(app2_match);
-  EXPECT_EQ(*app2_match, "1");
+  EXPECT_EQ(*app2_match, app1_id);
 
   base::Optional<AppId> app3_match =
       registrar().FindAppWithUrlInScope(app3_scope);
   EXPECT_FALSE(app3_match);
 
-  auto app2 = std::make_unique<WebApp>("2");
+  auto app2 = CreateWebApp(app2_scope.spec());
   app2->SetScope(app2_scope);
-  registrar().RegisterApp(std::move(app2));
+  sync_bridge().RegisterApp(std::move(app2));
 
-  auto app3 = std::make_unique<WebApp>("3");
+  auto app3 = CreateWebApp(app3_scope.spec());
   app3->SetScope(app3_scope);
-  registrar().RegisterApp(std::move(app3));
+  sync_bridge().RegisterApp(std::move(app3));
 
   base::Optional<AppId> origin_match =
       registrar().FindAppWithUrlInScope(origin_scope);
@@ -402,18 +447,20 @@ TEST_F(WebAppRegistrarTest, CanFindAppWithUrlInScope) {
   base::Optional<AppId> app1_match =
       registrar().FindAppWithUrlInScope(app1_scope);
   DCHECK(app1_match);
-  EXPECT_EQ(*app1_match, "1");
+  EXPECT_EQ(*app1_match, app1_id);
 
   app2_match = registrar().FindAppWithUrlInScope(app2_scope);
   DCHECK(app2_match);
-  EXPECT_EQ(*app2_match, "2");
+  EXPECT_EQ(*app2_match, app2_id);
 
   app3_match = registrar().FindAppWithUrlInScope(app3_scope);
   DCHECK(app3_match);
-  EXPECT_EQ(*app3_match, "3");
+  EXPECT_EQ(*app3_match, app3_id);
 }
 
 TEST_F(WebAppRegistrarTest, CanFindShortcutWithUrlInScope) {
+  InitSyncBridge();
+
   const GURL app1_page("https://example.com/app/page");
   const GURL app2_page("https://example.com/app-two/page");
   const GURL app3_page("https://not-example.com/app/page");
@@ -422,10 +469,13 @@ TEST_F(WebAppRegistrarTest, CanFindShortcutWithUrlInScope) {
   const GURL app2_launch("https://example.com/app-two/launch");
   const GURL app3_launch("https://not-example.com/app/launch");
 
+  const AppId app1_id = GenerateAppIdFromURL(app1_launch);
+  const AppId app2_id = GenerateAppIdFromURL(app2_launch);
+  const AppId app3_id = GenerateAppIdFromURL(app3_launch);
+
   // Implicit scope "https://example.com/app/"
-  auto app1 = std::make_unique<WebApp>("1");
-  app1->SetLaunchUrl(app1_launch);
-  registrar().RegisterApp(std::move(app1));
+  auto app1 = CreateWebApp(app1_launch.spec());
+  sync_bridge().RegisterApp(std::move(app1));
 
   base::Optional<AppId> app2_match =
       registrar().FindAppWithUrlInScope(app2_page);
@@ -435,75 +485,57 @@ TEST_F(WebAppRegistrarTest, CanFindShortcutWithUrlInScope) {
       registrar().FindAppWithUrlInScope(app3_page);
   EXPECT_FALSE(app3_match);
 
-  auto app2 = std::make_unique<WebApp>("2");
-  app2->SetLaunchUrl(app2_launch);
-  registrar().RegisterApp(std::move(app2));
+  auto app2 = CreateWebApp(app2_launch.spec());
+  sync_bridge().RegisterApp(std::move(app2));
 
-  auto app3 = std::make_unique<WebApp>("3");
-  app3->SetLaunchUrl(app3_launch);
-  registrar().RegisterApp(std::move(app3));
+  auto app3 = CreateWebApp(app3_launch.spec());
+  sync_bridge().RegisterApp(std::move(app3));
 
   base::Optional<AppId> app1_match =
       registrar().FindAppWithUrlInScope(app1_page);
   DCHECK(app1_match);
-  EXPECT_EQ(app1_match, base::Optional<AppId>("1"));
+  EXPECT_EQ(app1_match, base::Optional<AppId>(app1_id));
 
   app2_match = registrar().FindAppWithUrlInScope(app2_page);
   DCHECK(app2_match);
-  EXPECT_EQ(app2_match, base::Optional<AppId>("2"));
+  EXPECT_EQ(app2_match, base::Optional<AppId>(app2_id));
 
   app3_match = registrar().FindAppWithUrlInScope(app3_page);
   DCHECK(app3_match);
-  EXPECT_EQ(app3_match, base::Optional<AppId>("3"));
+  EXPECT_EQ(app3_match, base::Optional<AppId>(app3_id));
 }
 
 TEST_F(WebAppRegistrarTest, FindPwaOverShortcut) {
+  InitSyncBridge();
+
   const GURL app1_launch("https://example.com/app/specific/launch1");
 
   const GURL app2_scope("https://example.com/app");
   const GURL app2_page("https://example.com/app/specific/page2");
+  const AppId app2_id = GenerateAppIdFromURL(app2_scope);
 
   const GURL app3_launch("https://example.com/app/specific/launch3");
 
-  auto app1 = std::make_unique<WebApp>("1");
-  app1->SetLaunchUrl(app1_launch);
-  registrar().RegisterApp(std::move(app1));
+  auto app1 = CreateWebApp(app1_launch.spec());
+  sync_bridge().RegisterApp(std::move(app1));
 
-  auto app2 = std::make_unique<WebApp>("2");
+  auto app2 = CreateWebApp(app2_scope.spec());
   app2->SetScope(app2_scope);
-  registrar().RegisterApp(std::move(app2));
+  sync_bridge().RegisterApp(std::move(app2));
 
-  auto app3 = std::make_unique<WebApp>("3");
-  app3->SetLaunchUrl(app3_launch);
-  registrar().RegisterApp(std::move(app3));
+  auto app3 = CreateWebApp(app3_launch.spec());
+  sync_bridge().RegisterApp(std::move(app3));
 
   base::Optional<AppId> app2_match =
       registrar().FindAppWithUrlInScope(app2_page);
   DCHECK(app2_match);
-  EXPECT_EQ(app2_match, base::Optional<AppId>("2"));
-}
-
-TEST_F(WebAppRegistrarTest, DatabaseWriteAndDeleteAppsFail) {
-  auto app = CreateWebApp("https://example.com/path");
-  auto app_id = app->app_id();
-
-  sync_bridge().SetNextWriteWebAppsResult(false);
-  registrar().RegisterApp(std::move(app));
-
-  // nothing crashes, the production database impl would DLOG an error.
-  EXPECT_FALSE(registrar().is_empty());
-
-  sync_bridge().SetNextDeleteWebAppsResult(false);
-  registrar().UnregisterApp(app_id);
-
-  // nothing crashes, the production database impl would DLOG an error.
-  EXPECT_TRUE(registrar().is_empty());
+  EXPECT_EQ(app2_match, base::Optional<AppId>(app2_id));
 }
 
 TEST_F(WebAppRegistrarTest, BeginAndCommitUpdate) {
   std::set<AppId> ids = InitRegistrarWithApps("https://example.com/path", 10);
 
-  std::unique_ptr<WebAppRegistryUpdate> update = registrar().BeginUpdate();
+  std::unique_ptr<WebAppRegistryUpdate> update = sync_bridge().BeginUpdate();
 
   for (auto& app_id : ids) {
     WebApp* app = update->UpdateApp(app_id);
@@ -518,79 +550,65 @@ TEST_F(WebAppRegistrarTest, BeginAndCommitUpdate) {
     app->SetLaunchContainer(LaunchContainer::kWindow);
   }
 
-  RegistrarCommitUpdate(std::move(update));
+  SyncBridgeCommitUpdate(std::move(update));
 
   // Make sure that all app ids were written to the database.
-  EXPECT_EQ(ids.size(), sync_bridge().write_web_app_ids().size());
+  auto registry_written = database_factory().ReadRegistry();
+  EXPECT_EQ(ids.size(), registry_written.size());
 
-  for (auto& written_app_id : sync_bridge().write_web_app_ids())
-    ids.erase(written_app_id);
+  for (auto& kv : registry_written) {
+    EXPECT_EQ("New Name", kv.second->name());
+    ids.erase(kv.second->app_id());
+  }
 
   EXPECT_TRUE(ids.empty());
 }
 
 TEST_F(WebAppRegistrarTest, CommitEmptyUpdate) {
   std::set<AppId> ids = InitRegistrarWithApps("https://example.com/path", 10);
+  const auto initial_registry = database_factory().ReadRegistry();
 
   {
-    std::unique_ptr<WebAppRegistryUpdate> update = registrar().BeginUpdate();
-    RegistrarCommitUpdate(std::move(update));
+    std::unique_ptr<WebAppRegistryUpdate> update = sync_bridge().BeginUpdate();
+    SyncBridgeCommitUpdate(std::move(update));
 
-    EXPECT_TRUE(sync_bridge().write_web_app_ids().empty());
+    auto registry = database_factory().ReadRegistry();
+    EXPECT_TRUE(IsRegistryEqual(initial_registry, registry));
   }
 
   {
-    std::unique_ptr<WebAppRegistryUpdate> update = registrar().BeginUpdate();
+    std::unique_ptr<WebAppRegistryUpdate> update = sync_bridge().BeginUpdate();
     update.reset();
-    RegistrarCommitUpdate(std::move(update));
+    SyncBridgeCommitUpdate(std::move(update));
 
-    EXPECT_TRUE(sync_bridge().write_web_app_ids().empty());
+    auto registry = database_factory().ReadRegistry();
+    EXPECT_TRUE(IsRegistryEqual(initial_registry, registry));
   }
 
   {
-    std::unique_ptr<WebAppRegistryUpdate> update = registrar().BeginUpdate();
+    std::unique_ptr<WebAppRegistryUpdate> update = sync_bridge().BeginUpdate();
 
     WebApp* app = update->UpdateApp("unknown");
     EXPECT_FALSE(app);
 
-    RegistrarCommitUpdate(std::move(update));
+    SyncBridgeCommitUpdate(std::move(update));
 
-    EXPECT_TRUE(sync_bridge().write_web_app_ids().empty());
+    auto registry = database_factory().ReadRegistry();
+    EXPECT_TRUE(IsRegistryEqual(initial_registry, registry));
   }
-}
-
-TEST_F(WebAppRegistrarTest, CommitUpdateFailed) {
-  auto app = CreateWebApp("https://example.com/path");
-  auto app_id = InitRegistrarWithApp(std::move(app));
-  EXPECT_TRUE(sync_bridge().write_web_app_ids().empty());
-
-  std::unique_ptr<WebAppRegistryUpdate> update = registrar().BeginUpdate();
-
-  WebApp* update_app = update->UpdateApp(app_id);
-  EXPECT_TRUE(update_app);
-  update_app->SetName("New Name");
-
-  sync_bridge().SetNextWriteWebAppsResult(false);
-
-  base::RunLoop run_loop;
-  registrar().CommitUpdate(std::move(update),
-                           base::BindLambdaForTesting([&](bool success) {
-                             EXPECT_FALSE(success);
-                             run_loop.Quit();
-                           }));
-
-  run_loop.Run();
 }
 
 TEST_F(WebAppRegistrarTest, ScopedRegistryUpdate) {
   std::set<AppId> ids = InitRegistrarWithApps("https://example.com/path", 10);
+  const auto initial_registry = database_factory().ReadRegistry();
 
   // Test empty update first.
-  { ScopedRegistryUpdate update(&registrar()); }
-  EXPECT_TRUE(sync_bridge().write_web_app_ids().empty());
+  { ScopedRegistryUpdate update(&sync_bridge()); }
+  EXPECT_TRUE(
+      IsRegistryEqual(initial_registry, database_factory().ReadRegistry()));
 
   {
-    ScopedRegistryUpdate update(&registrar());
+    ScopedRegistryUpdate update(&sync_bridge());
 
     for (auto& app_id : ids) {
       WebApp* app = update->UpdateApp(app_id);
@@ -600,10 +618,13 @@ TEST_F(WebAppRegistrarTest, ScopedRegistryUpdate) {
   }
 
   // Make sure that all app ids were written to the database.
-  EXPECT_EQ(ids.size(), sync_bridge().write_web_app_ids().size());
+  auto updated_registry = database_factory().ReadRegistry();
+  EXPECT_EQ(ids.size(), updated_registry.size());
 
-  for (auto& written_app_id : sync_bridge().write_web_app_ids())
-    ids.erase(written_app_id);
+  for (auto& kv : updated_registry) {
+    EXPECT_EQ(kv.second->description(), "New Description");
+    ids.erase(kv.second->app_id());
+  }
 
   EXPECT_TRUE(ids.empty());
 }

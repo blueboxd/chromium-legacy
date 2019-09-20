@@ -6169,7 +6169,8 @@ crbug.com/919204 external/wpt/scroll-to-text-fragment/scroll-to-text-fragment.ht
 
 crbug.com/999209 virtual/lazyload-image/http/tests/lazyload/style-dimension.html [ Timeout ]
 
-crbug.com/1000051 [ Mac ] virtual/audio-service/media/controls/volume-slider.html [ Failure Timeout Pass ]
+crbug.com/1000051 media/controls/volume-slider.html [ Failure Timeout Pass ]
+crbug.com/1000051 virtual/audio-service/media/controls/volume-slider.html [ Failure Timeout Pass ]
 
 # Sheriff 2019-09-03
 crbug.com/999799 [ Mac Linux ] external/wpt/html/rendering/dimension-attributes.html [ Pass Timeout ]
@@ -6235,12 +6236,15 @@ crbug.com/1003055 virtual/threaded/external/wpt/css/css-scroll-snap/scroll-targe
 
 # Sheriff 2019-09-12
 crbug.com/1003268 [ Win10 ] fast/harness/internals-observe-gc.html [ Failure ]
-crbug.com/731018 [ Mac10.13 ] external/wpt/accelerometer/Accelerometer.https.html [ Pass Failure ]
-crbug.com/731018 [ Mac10.13 ] external/wpt/gyroscope/Gyroscope.https.html [ Pass Failure ]
-crbug.com/731018 [ Mac10.13 ] external/wpt/orientation-sensor/AbsoluteOrientationSensor.https.html [ Pass Failure ]
-crbug.com/731018 [ Mac10.13 ] external/wpt/orientation-sensor/RelativeOrientationSensor.https.html [ Pass Failure ]
+crbug.com/731018 [ Mac ] external/wpt/accelerometer/Accelerometer.https.html [ Pass Failure ]
+crbug.com/731018 [ Mac ] external/wpt/gyroscope/Gyroscope.https.html [ Pass Failure ]
+crbug.com/731018 [ Mac ] external/wpt/orientation-sensor/AbsoluteOrientationSensor.https.html [ Pass Failure ]
+crbug.com/731018 [ Mac ] external/wpt/orientation-sensor/RelativeOrientationSensor.https.html [ Pass Failure ]
 
 # TODO (csmartdalton): Remove after Skia roll and rebaseline
 crbug.com/630695 css3/filters/effect-blur-hw.html [ Pass Failure ]
 crbug.com/630695 css3/filters/effect-drop-shadow-hw.html [ Pass Failure ]
 crbug.com/630695 virtual/scalefactor200/css3/filters/effect-drop-shadow-hw.html [ Pass Failure ]
+
+# Sheriff 2019-09-20
+crbug.com/1005128 crypto/subtle/abandon-crypto-operation2.html [ Pass Crash ]

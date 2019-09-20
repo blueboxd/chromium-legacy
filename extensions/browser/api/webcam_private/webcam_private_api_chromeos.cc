@@ -15,6 +15,7 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_factory.h"
 #include "extensions/common/api/webcam_private.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "url/origin.h"
 
 namespace webcam_private = extensions::api::webcam_private;
@@ -79,13 +80,13 @@ bool WebcamPrivateAPI::OpenSerialWebcam(
     return false;
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  device::mojom::SerialPortPtr port_ptr;
+  mojo::PendingRemote<device::mojom::SerialPort> port;
   auto* port_manager = api::SerialPortManager::Get(browser_context_);
   DCHECK(port_manager);
-  port_manager->GetPort(device_path, mojo::MakeRequest(&port_ptr));
+  port_manager->GetPort(device_path, port.InitWithNewPipeAndPassReceiver());
 
   auto visca_webcam = base::MakeRefCounted<ViscaWebcam>();
-  visca_webcam->Open(extension_id, std::move(port_ptr),
+  visca_webcam->Open(extension_id, std::move(port),
                      base::Bind(&WebcamPrivateAPI::OnOpenSerialWebcam,
                                 weak_ptr_factory_.GetWeakPtr(), extension_id,
                                 device_path, visca_webcam, callback));

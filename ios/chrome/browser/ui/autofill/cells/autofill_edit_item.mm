@@ -15,7 +15,7 @@
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
   if (self) {
-    self.hideEditIcon = !base::FeatureList::IsEnabled(kSettingsRefresh);
+    self.hideIcon = !base::FeatureList::IsEnabled(kSettingsRefresh);
   }
   return self;
 }

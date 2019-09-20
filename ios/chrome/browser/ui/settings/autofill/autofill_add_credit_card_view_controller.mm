@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/settings/autofill/features.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -47,7 +48,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 }  // namespace
 
-@interface AutofillAddCreditCardViewController ()
+@interface AutofillAddCreditCardViewController () <
+    TableViewTextEditItemDelegate>
 
 // The AddCreditCardViewControllerDelegate for this ViewController.
 @property(nonatomic, weak) id<AddCreditCardViewControllerDelegate> delegate;
@@ -231,6 +233,66 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return nil;
 }
 
+#pragma mark - TableViewTextEditItemDelegate
+
+- (void)tableViewItemDidBeginEditing:
+    (TableViewTextEditItem*)tableViewTextEditItem {
+  // Sets a field to have valid text when a user begins editing so that the
+  // error icon is not visible while a user edits a field.
+  tableViewTextEditItem.hasValidText = YES;
+  [self reconfigureCellsForItems:@[ tableViewTextEditItem ]];
+}
+
+- (void)tableViewItemDidChange:(TableViewTextEditItem*)tableViewTextEditItem {
+  // Checks the validity of the form and enables/disables the add button when
+  // the user types a character that makes the form valid/invalid.
+  [self updateCreditCardData];
+
+  self.navigationItem.rightBarButtonItem.enabled =
+      [self.delegate addCreditCardViewController:self
+                         isValidCreditCardNumber:self.cardNumber
+                                 expirationMonth:self.expirationMonth
+                                  expirationYear:self.expirationYear];
+
+  [self reconfigureCellsForItems:@[ tableViewTextEditItem ]];
+}
+
+- (void)tableViewItemDidEndEditing:
+    (TableViewTextEditItem*)tableViewTextEditItem {
+  // Checks the validity of the field when a user ends editing and updates the
+  // cells to display the error icon if the text is invalid.
+  [self updateCreditCardData];
+
+  // Considers a textfield to be valid if it has no data.
+  if (tableViewTextEditItem.textFieldValue.length == 0) {
+    tableViewTextEditItem.hasValidText = YES;
+    [self reconfigureCellsForItems:@[ tableViewTextEditItem ]];
+    return;
+  }
+
+  switch (tableViewTextEditItem.type) {
+    case ItemTypeCardNumber:
+      tableViewTextEditItem.hasValidText =
+          [self.delegate addCreditCardViewController:self
+                             isValidCreditCardNumber:self.cardNumber];
+      break;
+    case ItemTypeExpirationMonth:
+      tableViewTextEditItem.hasValidText =
+          [self.delegate addCreditCardViewController:self
+                    isValidCreditCardExpirationMonth:self.expirationMonth];
+      break;
+    case ItemTypeExpirationYear:
+      tableViewTextEditItem.hasValidText =
+          [self.delegate addCreditCardViewController:self
+                     isValidCreditCardExpirationYear:self.expirationYear];
+      break;
+    default:
+      // For the 'Name on card' textfield.
+      tableViewTextEditItem.hasValidText = YES;
+  }
+  [self reconfigureCellsForItems:@[ tableViewTextEditItem ]];
+}
+
 #pragma mark - UITableViewDataSource
 
 - (UITableViewCell*)tableView:(UITableView*)tableView
@@ -245,13 +307,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
       base::mac::ObjCCast<TableViewTextEditCell>(cell);
   editCell.textField.delegate = self;
   editCell.selectionStyle = UITableViewCellSelectionStyleNone;
-  // The cell could be reused by TableView.
-  [editCell.textField removeTarget:self
-                            action:@selector(textFieldDidChange:)
-                  forControlEvents:UIControlEventEditingChanged];
-  [editCell.textField addTarget:self
-                         action:@selector(textFieldDidChange:)
-               forControlEvents:UIControlEventEditingChanged];
 
   return cell;
 }
@@ -358,12 +413,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self reconfigureCellsForItems:@[ item ]];
 }
 
-// Updates the status of the "Add" button based on the content of the
-// textfields.
-- (void)textFieldDidChange:(id)sender {
-  self.navigationItem.rightBarButtonItem.enabled = [self tableViewHasUserInput];
-}
-
 // Dimisses this view controller when Cancel button is tapped.
 - (void)handleCancelButton:(id)sender {
   [self.delegate addCreditCardViewControllerDidCancel:self];
@@ -378,11 +427,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
                                   autofillUIType:
                                       (AutofillUIType)autofillUIType {
   AutofillEditItem* item = [[AutofillEditItem alloc] initWithType:itemType];
+  item.delegate = self;
   item.textFieldName = textFieldName;
   item.textFieldValue = textFieldValue;
   item.textFieldPlaceholder = textFieldPlaceholder;
   item.keyboardType = keyboardType;
-  item.hideEditIcon = NO;
+  item.hideIcon = NO;
   item.textFieldEnabled = YES;
   item.autofillUIType = autofillUIType;
   return item;

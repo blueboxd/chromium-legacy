@@ -252,7 +252,7 @@ base::span<const InteractionsStats> PasswordFormManager::GetInteractionsStats()
 }
 
 bool PasswordFormManager::IsBlacklisted() const {
-  return !blacklisted_matches_.empty();
+  return !blacklisted_matches_.empty() || newly_blacklisted_;
 }
 
 void PasswordFormManager::Save() {
@@ -263,6 +263,13 @@ void PasswordFormManager::Save() {
        blacklisted_iterator != blacklisted_matches_.end();) {
     form_saver_->Remove(**blacklisted_iterator);
     blacklisted_iterator = blacklisted_matches_.erase(blacklisted_iterator);
+  }
+  if (newly_blacklisted_) {
+    PasswordForm newly_blacklisted_form =
+        password_manager_util::MakeNormalizedBlacklistedForm(
+            ConstructObservedFormDigest());
+    form_saver_->Remove(newly_blacklisted_form);
+    newly_blacklisted_ = false;
   }
 
   // TODO(https://crbug.com/831123): Implement indicator event metrics.
@@ -397,24 +404,24 @@ void PasswordFormManager::OnNoInteraction(bool is_update) {
 
 void PasswordFormManager::PermanentlyBlacklist() {
   DCHECK(!client_->IsIncognito());
+  form_saver_->PermanentlyBlacklist(ConstructObservedFormDigest());
+  newly_blacklisted_ = true;
+}
 
-  if (!new_blacklisted_) {
-    new_blacklisted_ = std::make_unique<PasswordForm>();
-    if (observed_not_web_form_digest_) {
-      new_blacklisted_->origin = observed_not_web_form_digest_->origin;
-      // GetSignonRealm is not suitable for http auth credentials.
-      new_blacklisted_->signon_realm =
-          IsHttpAuth() ? observed_not_web_form_digest_->signon_realm
+PasswordStore::FormDigest PasswordFormManager::ConstructObservedFormDigest() {
+  std::string signon_realm;
+  GURL origin;
+  if (observed_not_web_form_digest_) {
+    origin = observed_not_web_form_digest_->origin;
+    // GetSignonRealm is not suitable for http auth credentials.
+    signon_realm = IsHttpAuth()
+                       ? observed_not_web_form_digest_->signon_realm
                        : GetSignonRealm(observed_not_web_form_digest_->origin);
-    } else {
-      new_blacklisted_->origin = observed_form_.url;
-      new_blacklisted_->signon_realm = GetSignonRealm(observed_form_.url);
-    }
-    new_blacklisted_->scheme = GetScheme();
-    blacklisted_matches_.push_back(new_blacklisted_.get());
+  } else {
+    origin = observed_form_.url;
+    signon_realm = GetSignonRealm(observed_form_.url);
   }
-  *new_blacklisted_ = form_saver_->PermanentlyBlacklist(
-      PasswordStore::FormDigest(*new_blacklisted_));
+  return PasswordStore::FormDigest(GetScheme(), signon_realm, origin);
 }
 
 void PasswordFormManager::OnPasswordsRevealed() {
@@ -597,7 +604,7 @@ void PasswordFormManager::OnFetchCompleted() {
   received_stored_credentials_time_ = TimeTicks::Now();
 
   // Copy out blacklisted matches.
-  new_blacklisted_.reset();
+  newly_blacklisted_ = false;
   blacklisted_matches_ = form_fetcher_->GetBlacklistedMatches();
 
   autofills_left_ = kMaxTimesAutofill;

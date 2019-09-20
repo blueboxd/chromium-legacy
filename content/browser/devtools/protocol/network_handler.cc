@@ -411,15 +411,15 @@ String securityState(const GURL& url, const net::CertStatus& cert_status) {
   return Security::SecurityStateEnum::Secure;
 }
 
-DevToolsNetworkInterceptor::InterceptionStage ToInterceptorStage(
+DevToolsURLLoaderInterceptor::InterceptionStage ToInterceptorStage(
     const protocol::Network::InterceptionStage& interceptor_stage) {
   if (interceptor_stage == protocol::Network::InterceptionStageEnum::Request)
-    return DevToolsNetworkInterceptor::REQUEST;
+    return DevToolsURLLoaderInterceptor::REQUEST;
   if (interceptor_stage ==
       protocol::Network::InterceptionStageEnum::HeadersReceived)
-    return DevToolsNetworkInterceptor::RESPONSE;
+    return DevToolsURLLoaderInterceptor::RESPONSE;
   NOTREACHED();
-  return DevToolsNetworkInterceptor::REQUEST;
+  return DevToolsURLLoaderInterceptor::REQUEST;
 }
 
 double timeDelta(base::TimeTicks time,
@@ -1756,7 +1756,7 @@ DispatchResponse NetworkHandler::SetRequestInterception(
     return Response::OK();
   }
 
-  std::vector<DevToolsNetworkInterceptor::Pattern> interceptor_patterns;
+  std::vector<DevToolsURLLoaderInterceptor::Pattern> interceptor_patterns;
   for (const std::unique_ptr<protocol::Network::RequestPattern>& pattern :
        *patterns) {
     base::flat_set<ResourceType> resource_types;
@@ -1832,13 +1832,13 @@ void NetworkHandler::ContinueInterceptedRequest(
     }
   }
 
-  std::unique_ptr<DevToolsNetworkInterceptor::Modifications::HeadersVector>
+  std::unique_ptr<DevToolsURLLoaderInterceptor::Modifications::HeadersVector>
       override_headers;
   if (opt_headers.isJust()) {
     std::unique_ptr<protocol::DictionaryValue> headers =
         opt_headers.fromJust()->toValue();
     override_headers = std::make_unique<
-        DevToolsNetworkInterceptor::Modifications::HeadersVector>();
+        DevToolsURLLoaderInterceptor::Modifications::HeadersVector>();
     for (size_t i = 0; i < headers->size(); ++i) {
       const protocol::DictionaryValue::Entry& entry = headers->at(i);
       std::string value;
@@ -1850,7 +1850,7 @@ void NetworkHandler::ContinueInterceptedRequest(
     }
   }
   using AuthChallengeResponse =
-      DevToolsNetworkInterceptor::AuthChallengeResponse;
+      DevToolsURLLoaderInterceptor::AuthChallengeResponse;
   std::unique_ptr<AuthChallengeResponse> override_auth;
   if (auth_challenge_response.isJust()) {
     std::string type = auth_challenge_response.fromJust()->GetResponse();
@@ -1876,7 +1876,7 @@ void NetworkHandler::ContinueInterceptedRequest(
   }
 
   auto modifications =
-      std::make_unique<DevToolsNetworkInterceptor::Modifications>(
+      std::make_unique<DevToolsURLLoaderInterceptor::Modifications>(
           std::move(error), std::move(response_headers),
           std::move(response_body), body_offset, std::move(url),
           std::move(method), std::move(post_data), std::move(override_headers),

@@ -134,8 +134,9 @@ class SearchResultRankerTest : public testing::Test {
   }
 
   std::unique_ptr<SearchResultRanker> MakeRanker() {
+    dd_service_ = std::make_unique<data_decoder::TestDataDecoderService>();
     return std::make_unique<SearchResultRanker>(
-        profile_.get(), history_service_.get(), dd_service_.connector());
+        profile_.get(), history_service_.get(), dd_service_->connector());
   }
 
   Mixer::SortedResults MakeSearchResults(const std::vector<std::string>& ids,
@@ -160,7 +161,7 @@ class SearchResultRankerTest : public testing::Test {
 
   content::BrowserTaskEnvironment task_environment_;
 
-  data_decoder::TestDataDecoderService dd_service_;
+  std::unique_ptr<data_decoder::TestDataDecoderService> dd_service_;
 
   ScopedFeatureList scoped_feature_list_;
   ScopedTempDir temp_dir_;
@@ -493,8 +494,9 @@ TEST_F(SearchResultRankerTest, QueryMixedModelDeletesURLCorrectly) {
 
   // Load a new ranker from disk and ensure |url_1| hasn't been retained.
   base::RunLoop new_run_loop;
+  dd_service_ = std::make_unique<data_decoder::TestDataDecoderService>();
   auto new_ranker = std::make_unique<SearchResultRanker>(
-      profile_.get(), history_service(), dd_service_.connector());
+      profile_.get(), history_service(), dd_service_->connector());
   new_ranker->set_json_config_parsed_for_testing(new_run_loop.QuitClosure());
   new_ranker->InitializeRankers();
   new_run_loop.Run();

@@ -113,7 +113,7 @@ class WaylandWindow : public PlatformWindow,
                  base::OnceCallback<void(int)> callback) override;
 
   // PlatformWindow
-  void Show(bool inactive) override;
+  void Show() override;
   void Hide() override;
   void Close() override;
   void PrepareForShutdown() override;

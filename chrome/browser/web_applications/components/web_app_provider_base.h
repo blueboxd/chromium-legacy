@@ -17,6 +17,7 @@ class PendingAppManager;
 class InstallManager;
 class InstallFinalizer;
 class AppRegistrar;
+class AppRegistryController;
 class FileHandlerManager;
 class AppIconManager;
 class WebAppPolicyManager;
@@ -31,8 +32,10 @@ class WebAppProviderBase : public KeyedService {
   WebAppProviderBase();
   ~WebAppProviderBase() override;
 
-  // The app registry manager.
+  // The app registry model.
   virtual AppRegistrar& registrar() = 0;
+  // The app registry controller.
+  virtual AppRegistryController& registry_controller() = 0;
   // UIs can use InstallManager for user-initiated Web Apps install.
   virtual InstallManager& install_manager() = 0;
   // Implements persistence for Web Apps install.

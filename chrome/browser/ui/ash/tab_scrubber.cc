@@ -220,6 +220,7 @@ void TabScrubber::BeginScrub(BrowserView* browser_view, float x_offset) {
   DCHECK(browser_view);
   DCHECK(browser_view->browser());
 
+  scrubbing_start_time_ = base::TimeTicks::Now();
   tab_strip_ = browser_view->tabstrip();
   scrubbing_ = true;
   browser_ = browser_view->browser();
@@ -249,6 +250,8 @@ void TabScrubber::FinishScrub(bool activate) {
       int distance = std::abs(highlighted_tab_ -
                               browser_->tab_strip_model()->active_index());
       UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.ScrubDistance", distance, 1, 20, 21);
+      UMA_HISTOGRAM_TIMES("Tabs.ScrubDuration",
+                          base::TimeTicks::Now() - scrubbing_start_time_);
       browser_->tab_strip_model()->ActivateTabAt(
           highlighted_tab_, {TabStripModel::GestureType::kOther});
     }

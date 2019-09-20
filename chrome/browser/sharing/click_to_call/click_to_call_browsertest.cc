@@ -20,7 +20,6 @@
 #include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/sharing_constants.h"
-#include "chrome/browser/sharing/sharing_device_capability.h"
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_service.h"
@@ -85,7 +84,8 @@ class ClickToCallBrowserTest : public SyncTest {
 
       base::RunLoop run_loop;
       service->RegisterDeviceInTesting(
-          static_cast<int>(SharingDeviceCapability::kClickToCall),
+          std::set<sync_pb::SharingSpecificFields_EnabledFeatures>{
+              sync_pb::SharingSpecificFields::CLICK_TO_CALL},
           base::BindLambdaForTesting([&](SharingDeviceRegistrationResult r) {
             ASSERT_EQ(SharingDeviceRegistrationResult::kSuccess, r);
             run_loop.Quit();
@@ -185,7 +185,7 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
   SetUpDevices(/*count=*/1);
 
   auto devices = sharing_service()->GetDeviceCandidates(
-      static_cast<int>(SharingDeviceCapability::kClickToCall));
+      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
 
   ASSERT_EQ(1u, devices.size());
 
@@ -247,7 +247,7 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
   SetUpDevices(/*count=*/2);
 
   auto devices = sharing_service()->GetDeviceCandidates(
-      static_cast<int>(SharingDeviceCapability::kClickToCall));
+      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
 
   ASSERT_EQ(2u, devices.size());
 
@@ -287,7 +287,7 @@ IN_PROC_BROWSER_TEST_F(ClickToCallBrowserTest,
   SetUpDevices(/*count=*/2);
 
   auto devices = sharing_service()->GetDeviceCandidates(
-      static_cast<int>(SharingDeviceCapability::kClickToCall));
+      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
 
   ASSERT_EQ(2u, devices.size());
 
@@ -329,7 +329,7 @@ IN_PROC_BROWSER_TEST_F(
   SetUpDevices(/*count=*/2);
 
   auto devices = sharing_service()->GetDeviceCandidates(
-      static_cast<int>(SharingDeviceCapability::kClickToCall));
+      sync_pb::SharingSpecificFields::CLICK_TO_CALL);
 
   ASSERT_EQ(2u, devices.size());
 

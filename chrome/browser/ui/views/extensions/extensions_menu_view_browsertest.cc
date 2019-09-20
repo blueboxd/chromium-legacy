@@ -19,7 +19,6 @@
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/hover_button_controller.h"
-#include "chrome/browser/ui/views/layout/animating_layout_manager.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/chrome_paths.h"
@@ -27,13 +26,15 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
+#include "ui/views/layout/animating_layout_manager.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/window/dialog_client_view.h"
 
 // Helper to wait until the hover card widget is visible.
-class AnimatingLayoutWaiter : public AnimatingLayoutManager::Observer {
+class AnimatingLayoutWaiter : public views::AnimatingLayoutManager::Observer {
  public:
-  explicit AnimatingLayoutWaiter(AnimatingLayoutManager* animating_layout)
+  explicit AnimatingLayoutWaiter(
+      views::AnimatingLayoutManager* animating_layout)
       : animating_layout_(animating_layout) {
     animating_layout_->AddObserver(this);
   }
@@ -45,15 +46,15 @@ class AnimatingLayoutWaiter : public AnimatingLayoutManager::Observer {
     run_loop_.Run();
   }
 
-  // AnimatingLayoutManager overrides:
-  void OnLayoutIsAnimatingChanged(AnimatingLayoutManager* source,
+  // views::AnimatingLayoutManager overrides:
+  void OnLayoutIsAnimatingChanged(views::AnimatingLayoutManager* source,
                                   bool is_animating) override {
     if (!is_animating)
       run_loop_.Quit();
   }
 
  private:
-  AnimatingLayoutManager* const animating_layout_;
+  views::AnimatingLayoutManager* const animating_layout_;
   base::RunLoop run_loop_;
 };
 

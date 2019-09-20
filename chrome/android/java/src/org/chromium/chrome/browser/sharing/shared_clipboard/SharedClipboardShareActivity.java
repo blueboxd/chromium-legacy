@@ -23,10 +23,10 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.sharing.SharingAdapter;
-import org.chromium.chrome.browser.sharing.SharingDeviceCapability;
 import org.chromium.chrome.browser.sharing.SharingServiceProxy;
 import org.chromium.chrome.browser.sharing.SharingServiceProxy.DeviceInfo;
 import org.chromium.components.sync.AndroidSyncSettings;
+import org.chromium.components.sync.protocol.SharingSpecificFields;
 import org.chromium.ui.widget.ButtonCompat;
 
 /**
@@ -95,7 +95,7 @@ public class SharedClipboardShareActivity
     public void finishNativeInitialization() {
         super.finishNativeInitialization();
 
-        mAdapter = new SharingAdapter(SharingDeviceCapability.SHARED_CLIPBOARD);
+        mAdapter = new SharingAdapter(SharingSpecificFields.EnabledFeatures.SHARED_CLIPBOARD);
         if (!mAdapter.isEmpty()) {
             findViewById(R.id.device_picker_toolbar).setVisibility(View.VISIBLE);
             SharedClipboardMetrics.recordShowDeviceList();

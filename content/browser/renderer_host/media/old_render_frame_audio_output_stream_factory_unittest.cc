@@ -19,7 +19,6 @@
 #include "content/public/test/test_browser_context.h"
 #include "media/base/audio_parameters.h"
 #include "media/mojo/mojom/audio_data_pipe.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -32,12 +31,6 @@ namespace content {
 namespace {
 
 using testing::Test;
-using AudioOutputStreamProviderClient =
-    media::mojom::AudioOutputStreamProviderClient;
-using AudioOutputStreamProviderClientPtr =
-    mojo::InterfacePtr<AudioOutputStreamProviderClient>;
-using AudioOutputStreamProviderClientRequest =
-    mojo::InterfaceRequest<AudioOutputStreamProviderClient>;
 
 const int kStreamId = 0;
 const int kRenderProcessId = 42;
@@ -158,15 +151,14 @@ class MockContext : public RendererAudioOutputStreamFactoryContext {
   DISALLOW_COPY_AND_ASSIGN(MockContext);
 };
 
-class MockClient : public AudioOutputStreamProviderClient {
+class MockClient : public media::mojom::AudioOutputStreamProviderClient {
  public:
-  MockClient() : provider_client_binding_(this) {}
+  MockClient() = default;
   ~MockClient() override {}
 
-  AudioOutputStreamProviderClientPtr MakeProviderClientPtr() {
-    AudioOutputStreamProviderClientPtr p;
-    provider_client_binding_.Bind(mojo::MakeRequest(&p));
-    return p;
+  mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient>
+  MakeProviderClientPendingRemote() {
+    return provider_client_receiver_.BindNewPipeAndPassRemote();
   }
 
   void Created(mojo::PendingRemote<media::mojom::AudioOutputStream> stream,
@@ -181,7 +173,8 @@ class MockClient : public AudioOutputStreamProviderClient {
   MOCK_METHOD0(OnError, void());
 
  private:
-  mojo::Binding<AudioOutputStreamProviderClient> provider_client_binding_;
+  mojo::Receiver<media::mojom::AudioOutputStreamProviderClient>
+      provider_client_receiver_{this};
   mojo::Remote<media::mojom::AudioOutputStream> stream_;
   bool was_called_ = false;
 
@@ -232,7 +225,7 @@ TEST(OldRenderFrameAudioOutputStreamFactoryTest, CreateStream) {
   // Ensure that we don't blow up getting a processing ID, despite not using it.
   const base::UnguessableToken kUnusedProcessingId =
       base::UnguessableToken::Create();
-  provider->Acquire(params, client.MakeProviderClientPtr(),
+  provider->Acquire(params, client.MakeProviderClientPendingRemote(),
                     kUnusedProcessingId);
   base::RunLoop().RunUntilIdle();
   ASSERT_NE(event_handler, nullptr);
@@ -295,8 +288,8 @@ TEST(OldRenderFrameAudioOutputStreamFactoryTest,
                         const std::string& id) {}));
   base::RunLoop().RunUntilIdle();
 
-  provider->Acquire(GetTestAudioParameters(), client.MakeProviderClientPtr(),
-                    base::nullopt);
+  provider->Acquire(GetTestAudioParameters(),
+                    client.MakeProviderClientPendingRemote(), base::nullopt);
   base::RunLoop().RunUntilIdle();
   ASSERT_NE(event_handler, nullptr);
   EXPECT_FALSE(delegate_is_destructed);
@@ -327,8 +320,8 @@ TEST(OldRenderFrameAudioOutputStreamFactoryTest, DelegateError_DeletesStream) {
                         const std::string& id) {}));
   base::RunLoop().RunUntilIdle();
 
-  provider->Acquire(GetTestAudioParameters(), client.MakeProviderClientPtr(),
-                    base::nullopt);
+  provider->Acquire(GetTestAudioParameters(),
+                    client.MakeProviderClientPendingRemote(), base::nullopt);
   base::RunLoop().RunUntilIdle();
   ASSERT_NE(event_handler, nullptr);
   EXPECT_FALSE(delegate_is_destructed);

@@ -25,7 +25,7 @@
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
 #include "chrome/browser/web_applications/test/test_file_utils.h"
 #include "chrome/browser/web_applications/test/test_install_finalizer.h"
-#include "chrome/browser/web_applications/test/test_web_app_sync_bridge.h"
+#include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
 #include "chrome/browser/web_applications/test/test_web_app_ui_manager.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
@@ -34,9 +34,12 @@
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/sync/model/mock_model_type_change_processor.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -116,9 +119,11 @@ class WebAppInstallTaskTest : public WebAppTest {
   void SetUp() override {
     WebAppTest::SetUp();
 
-    sync_bridge_ = std::make_unique<TestWebAppSyncBridge>();
-    registrar_ =
-        std::make_unique<WebAppRegistrar>(profile(), sync_bridge_.get());
+    database_factory_ = std::make_unique<TestWebAppDatabaseFactory>();
+    registrar_ = std::make_unique<WebAppRegistrar>(profile());
+    sync_bridge_ = std::make_unique<WebAppSyncBridge>(
+        profile(), database_factory_.get(), registrar_.get(),
+        mock_processor_.CreateForwardingProcessor());
 
     auto file_utils = std::make_unique<TestFileUtils>();
     file_utils_ = file_utils.get();
@@ -128,8 +133,8 @@ class WebAppInstallTaskTest : public WebAppTest {
 
     ui_manager_ = std::make_unique<TestWebAppUiManager>();
 
-    install_finalizer_ =
-        std::make_unique<WebAppInstallFinalizer>(icon_manager_.get());
+    install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
+        sync_bridge_.get(), icon_manager_.get());
     install_finalizer_->SetSubsystems(registrar_.get(), ui_manager_.get());
 
     auto data_retriever = std::make_unique<TestDataRetriever>();
@@ -137,6 +142,13 @@ class WebAppInstallTaskTest : public WebAppTest {
 
     install_task_ = std::make_unique<WebAppInstallTask>(
         profile(), install_finalizer_.get(), std::move(data_retriever));
+
+    ON_CALL(processor(), IsTrackingMetadata())
+        .WillByDefault(testing::Return(true));
+
+    base::RunLoop run_loop;
+    sync_bridge_->Init(base::BindLambdaForTesting([&]() { run_loop.Quit(); }));
+    run_loop.Run();
 
 #if defined(OS_CHROMEOS)
     arc_test_.SetUp(profile());
@@ -313,8 +325,13 @@ class WebAppInstallTaskTest : public WebAppTest {
   }
 
  protected:
-  std::unique_ptr<TestWebAppSyncBridge> sync_bridge_;
+  syncer::MockModelTypeChangeProcessor& processor() { return mock_processor_; }
+
+  std::unique_ptr<TestWebAppDatabaseFactory> database_factory_;
   std::unique_ptr<WebAppRegistrar> registrar_;
+  testing::NiceMock<syncer::MockModelTypeChangeProcessor> mock_processor_;
+  std::unique_ptr<WebAppSyncBridge> sync_bridge_;
+
   std::unique_ptr<WebAppIconManager> icon_manager_;
   std::unique_ptr<WebAppInstallTask> install_task_;
   std::unique_ptr<TestWebAppUiManager> ui_manager_;

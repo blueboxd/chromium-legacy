@@ -9,6 +9,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace network {
@@ -18,17 +19,15 @@ class TestDnsConfigChangeManagerClient
     : public mojom::DnsConfigChangeManagerClient {
  public:
   explicit TestDnsConfigChangeManagerClient(DnsConfigChangeManager* manager) {
-    mojom::DnsConfigChangeManagerPtr manager_ptr;
-    mojom::DnsConfigChangeManagerRequest manager_request(
-        mojo::MakeRequest(&manager_ptr));
-    manager->AddBinding(std::move(manager_request));
+    mojo::Remote<mojom::DnsConfigChangeManager> manager_remote;
+    manager->AddReceiver(manager_remote.BindNewPipeAndPassReceiver());
 
     mojom::DnsConfigChangeManagerClientPtr client_ptr;
     mojom::DnsConfigChangeManagerClientRequest client_request(
         mojo::MakeRequest(&client_ptr));
     binding_.Bind(std::move(client_request));
 
-    manager_ptr->RequestNotifications(std::move(client_ptr));
+    manager_remote->RequestNotifications(std::move(client_ptr));
   }
 
   void OnSystemDnsConfigChanged() override {

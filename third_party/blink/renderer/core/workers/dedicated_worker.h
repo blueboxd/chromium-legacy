@@ -66,7 +66,7 @@ class CORE_EXPORT DedicatedWorker final
 
   void postMessage(ScriptState*,
                    const ScriptValue& message,
-                   Vector<ScriptValue>& transfer,
+                   HeapVector<ScriptValue>& transfer,
                    ExceptionState&);
   void postMessage(ScriptState*,
                    const ScriptValue& message,

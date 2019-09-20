@@ -271,13 +271,11 @@ SurroundingTextInfo InputMethodBase::GetSurroundingTextInfo() {
 }
 
 void InputMethodBase::SendKeyEvent(KeyEvent* event) {
-  sending_key_event_ = true;
   if (track_key_events_for_testing_) {
     key_events_for_testing_.push_back(std::make_unique<KeyEvent>(*event));
   }
   ui::EventDispatchDetails details = DispatchKeyEvent(event);
   DCHECK(!details.dispatcher_destroyed);
-  sending_key_event_ = false;
 }
 
 InputMethod* InputMethodBase::GetInputMethod() {

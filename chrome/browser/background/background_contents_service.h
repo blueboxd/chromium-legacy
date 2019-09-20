@@ -120,7 +120,7 @@ class BackgroundContentsService : private content::NotificationObserver,
   // shutdown if the parent application is uninstalled.
   // A BACKGROUND_CONTENTS_OPENED notification will be generated with the passed
   // |frame_name| and |application_id| values, using the passed |profile| as the
-  // Source..
+  // Source.
   BackgroundContents* CreateBackgroundContents(
       scoped_refptr<content::SiteInstance> site,
       content::RenderFrameHost* opener,

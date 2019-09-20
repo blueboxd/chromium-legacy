@@ -65,8 +65,8 @@ class DomDistillerViewerSource::RequestViewerHandle
       content::NavigationHandle* navigation_handle) override;
   void RenderProcessGone(base::TerminationStatus status) override;
   void WebContentsDestroyed() override;
-  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                     const GURL& validated_url) override;
+  void DocumentLoadedInFrame(
+      content::RenderFrameHost* render_frame_host) override;
   void OnInterfaceRequestFromFrame(
       content::RenderFrameHost* render_frame_host,
       const std::string& interface_name,
@@ -179,14 +179,24 @@ void DomDistillerViewerSource::RequestViewerHandle::Cancel() {
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
-void DomDistillerViewerSource::RequestViewerHandle::DidFinishLoad(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url) {
+void DomDistillerViewerSource::RequestViewerHandle::DocumentLoadedInFrame(
+    content::RenderFrameHost* render_frame_host) {
+  // DocumentLoadedInFrame() is late enough to execute JavaScript, and is early
+  // enough so that it's more likely that the title and content can be picked up
+  // by TalkBack instead of the placeholder. If distillation is finished by
+  // DocumentLoadedInFrame(), onload() event would also be delayed, so that the
+  // accessibility focus is more likely to be on the web content. Otherwise, the
+  // focus is usually on the close button of the CustomTab (CCT), or nowhere. If
+  // distillation finishes later than DocumentLoadedInFrame(), or if for some
+  // reason the accessibility focus is on the close button of the CCT, the title
+  // could go unannounced.
+  // See http://crbug.com/811417.
   if (render_frame_host->GetParent()) {
     return;
   }
 
-  int64_t start_time_ms = url_utils::GetTimeFromDistillerUrl(validated_url);
+  int64_t start_time_ms = url_utils::GetTimeFromDistillerUrl(
+      render_frame_host->GetLastCommittedURL());
   if (start_time_ms > 0) {
     base::TimeTicks start_time =
         base::TimeDelta::FromMilliseconds(start_time_ms) + base::TimeTicks();

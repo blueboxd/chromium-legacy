@@ -985,6 +985,31 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
     NOTREACHED();
   }
 
+  for (const auto& fully_load_k_pair : prefs.lazy_image_first_k_fully_load) {
+    switch (fully_load_k_pair.first) {
+      case net::EFFECTIVE_CONNECTION_TYPE_OFFLINE:
+        continue;
+      case net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN:
+        settings->SetLazyImageFirstKFullyLoadUnknown(fully_load_k_pair.second);
+        continue;
+      case net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G:
+        settings->SetLazyImageFirstKFullyLoadSlow2G(fully_load_k_pair.second);
+        continue;
+      case net::EFFECTIVE_CONNECTION_TYPE_2G:
+        settings->SetLazyImageFirstKFullyLoad2G(fully_load_k_pair.second);
+        continue;
+      case net::EFFECTIVE_CONNECTION_TYPE_3G:
+        settings->SetLazyImageFirstKFullyLoad3G(fully_load_k_pair.second);
+        continue;
+      case net::EFFECTIVE_CONNECTION_TYPE_4G:
+        settings->SetLazyImageFirstKFullyLoad4G(fully_load_k_pair.second);
+        continue;
+      case net::EFFECTIVE_CONNECTION_TYPE_LAST:
+        continue;
+    }
+    NOTREACHED();
+  }
+
 #if defined(OS_MACOSX)
   web_view->SetMaximumLegibleScale(prefs.default_maximum_page_scale_factor);
 #endif

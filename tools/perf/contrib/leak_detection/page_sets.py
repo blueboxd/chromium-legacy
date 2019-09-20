@@ -155,7 +155,8 @@ class LeakDetectionStorySet(story_module.StorySet):
       'https://www.hotstar.com/',
       'https://www.incometaxindiaefiling.gov.in/',
       'https://stackoverflow.com/',
-      'https://www.irctc.co.in/nget/',
+      # TODO(crbug.com/1005035) Memory dump fails flakily.
+      # 'https://www.irctc.co.in/nget/',
       'https://www.hdfcbank.com/',
       'https://www.whatsapp.com/',
       'https://uidai.gov.in/',

@@ -541,9 +541,12 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
       DCHECK(base::FeatureList::IsEnabled(features::kDesktopPWAsUSS));
       auto* provider = web_app::WebAppProvider::Get(profile_);
       DCHECK(provider);
-      return provider->sync_bridge()
-          .change_processor()
-          ->GetControllerDelegate();
+
+      web_app::WebAppSyncBridge* sync_bridge =
+          provider->registry_controller().AsWebAppSyncBridge();
+      DCHECK(sync_bridge);
+
+      return sync_bridge->change_processor()->GetControllerDelegate();
     }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
     // We don't exercise this function for certain datatypes, because their

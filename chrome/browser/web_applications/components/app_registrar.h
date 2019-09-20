@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -19,14 +18,9 @@
 class GURL;
 class Profile;
 
-namespace extensions {
-class BookmarkAppRegistrar;
-}
-
 namespace web_app {
 
 class AppRegistrarObserver;
-class WebAppRegistrar;
 
 enum class ExternalInstallSource;
 
@@ -34,12 +28,6 @@ class AppRegistrar {
  public:
   explicit AppRegistrar(Profile* profile);
   virtual ~AppRegistrar();
-
-  virtual void Init(base::OnceClosure callback) = 0;
-
-  // Safe downcasts. TODO(loyso): Subclass WebAppProvider to get rid of these:
-  virtual WebAppRegistrar* AsWebAppRegistrar();
-  virtual extensions::BookmarkAppRegistrar* AsBookmarkAppRegistrar();
 
   // Returns true if the app with |app_id| is currently installed.
   virtual bool IsInstalled(const AppId& app_id) const = 0;
@@ -90,8 +78,6 @@ class AppRegistrar {
   virtual const GURL& GetAppLaunchURL(const AppId& app_id) const = 0;
   virtual base::Optional<GURL> GetAppScope(const AppId& app_id) const = 0;
   virtual LaunchContainer GetAppLaunchContainer(const AppId& app_id) const = 0;
-  virtual void SetAppLaunchContainer(const AppId& app_id,
-                                     LaunchContainer launch_container) = 0;
 
   virtual std::vector<AppId> GetAppIds() const = 0;
 

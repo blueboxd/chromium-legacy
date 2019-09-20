@@ -27,7 +27,6 @@ MojoAudioOutputIPC::MojoAudioOutputIPC(
     FactoryAccessorCB factory_accessor,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : factory_accessor_(std::move(factory_accessor)),
-      binding_(this),
       io_task_runner_(std::move(io_task_runner)) {}
 
 MojoAudioOutputIPC::~MojoAudioOutputIPC() {
@@ -82,16 +81,17 @@ void MojoAudioOutputIPC::CreateStream(
   }
 
   DCHECK_EQ(delegate_, delegate);
-  // Since the creation callback won't fire if the provider binding is gone
+  // Since the creation callback won't fire if the provider receiver is gone
   // and |this| owns |stream_provider_|, unretained is safe.
   stream_creation_start_time_ = base::TimeTicks::Now();
-  media::mojom::AudioOutputStreamProviderClientPtr client_ptr;
-  binding_.Bind(mojo::MakeRequest(&client_ptr));
-  // Unretained is safe because |this| owns |binding_|.
-  binding_.set_connection_error_with_reason_handler(
+  mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient>
+      client_remote;
+  receiver_.Bind(client_remote.InitWithNewPipeAndPassReceiver());
+  // Unretained is safe because |this| owns |receiver_|.
+  receiver_.set_disconnect_with_reason_handler(
       base::BindOnce(&MojoAudioOutputIPC::ProviderClientBindingDisconnected,
                      base::Unretained(this)));
-  stream_provider_->Acquire(params, std::move(client_ptr), processing_id);
+  stream_provider_->Acquire(params, std::move(client_remote), processing_id);
 }
 
 void MojoAudioOutputIPC::PlayStream() {
@@ -118,7 +118,7 @@ void MojoAudioOutputIPC::CloseStream() {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   stream_provider_.reset();
   stream_.reset();
-  binding_.Close();
+  receiver_.reset();
   delegate_ = nullptr;
   expected_state_ = kPaused;
   volume_ = base::nullopt;
@@ -155,7 +155,7 @@ bool MojoAudioOutputIPC::AuthorizationRequested() const {
 }
 
 bool MojoAudioOutputIPC::StreamCreationRequested() const {
-  return binding_.is_bound();
+  return receiver_.is_bound();
 }
 
 mojo::PendingReceiver<media::mojom::AudioOutputStreamProvider>

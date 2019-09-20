@@ -62,11 +62,13 @@ class TestStreamProvider : public media::mojom::AudioOutputStreamProvider {
 
   void Acquire(
       const media::AudioParameters& params,
-      media::mojom::AudioOutputStreamProviderClientPtr provider_client,
+      mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient>
+          pending_provider_client,
       const base::Optional<base::UnguessableToken>& processing_id) override {
     EXPECT_EQ(receiver_, base::nullopt);
     EXPECT_NE(stream_, nullptr);
-    std::swap(provider_client, provider_client_);
+    provider_client_.reset();
+    provider_client_.Bind(std::move(pending_provider_client));
     mojo::PendingRemote<media::mojom::AudioOutputStream> stream_pending_remote;
     receiver_.emplace(stream_,
                       stream_pending_remote.InitWithNewPipeAndPassReceiver());
@@ -88,7 +90,7 @@ class TestStreamProvider : public media::mojom::AudioOutputStreamProvider {
 
  private:
   media::mojom::AudioOutputStream* stream_;
-  media::mojom::AudioOutputStreamProviderClientPtr provider_client_;
+  mojo::Remote<media::mojom::AudioOutputStreamProviderClient> provider_client_;
   base::Optional<mojo::Receiver<media::mojom::AudioOutputStream>> receiver_;
   base::CancelableSyncSocket socket_;
 };

@@ -62,8 +62,8 @@ void WinWindow::Destroy() {
     DestroyWindow(hwnd());
 }
 
-void WinWindow::Show(bool inactive) {
-  ShowWindow(hwnd(), inactive ? SW_SHOWNOACTIVATE : SW_SHOWNORMAL);
+void WinWindow::Show() {
+  ShowWindow(hwnd(), SW_SHOWNORMAL);
 }
 
 void WinWindow::Hide() {
@@ -156,6 +156,14 @@ void WinWindow::SetZOrderLevel(ZOrderLevel order) {
 ZOrderLevel WinWindow::GetZOrderLevel() const {
   NOTIMPLEMENTED_LOG_ONCE();
   return ZOrderLevel::kNormal;
+}
+
+void WinWindow::StackAbove(gfx::AcceleratedWidget widget) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void WinWindow::StackAtTop() {
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 LRESULT WinWindow::OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {

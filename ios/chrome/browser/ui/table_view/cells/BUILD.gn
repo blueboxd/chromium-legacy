@@ -30,6 +30,7 @@ source_set("cells") {
     "table_view_text_button_item.mm",
     "table_view_text_edit_item.h",
     "table_view_text_edit_item.mm",
+    "table_view_text_edit_item_delegate.h",
     "table_view_text_header_footer_item.h",
     "table_view_text_header_footer_item.mm",
     "table_view_text_item.h",
@@ -45,6 +46,7 @@ source_set("cells") {
   deps = [
     "resources:table_view_cell_chevron",
     "resources:table_view_cell_edit_icon",
+    "resources:table_view_cell_error_icon",
     "resources:table_view_cell_favicon_background",
     "//base",
     "//base:i18n",

@@ -13,6 +13,8 @@
 #include "content/browser/native_file_system/fixed_native_file_system_permission_grant.h"
 #include "content/browser/native_file_system/mock_native_file_system_permission_context.h"
 #include "content/public/test/browser_task_environment.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/test/async_file_test_helper.h"
 #include "storage/browser/test/test_file_system_context.h"
@@ -92,16 +94,20 @@ class NativeFileSystemManagerImplTest : public testing::Test {
 };
 
 TEST_F(NativeFileSystemManagerImplTest, GetSandboxedFileSystem_Permissions) {
-  blink::mojom::NativeFileSystemDirectoryHandlePtr root;
+  mojo::PendingRemote<blink::mojom::NativeFileSystemDirectoryHandle>
+      directory_remote;
   base::RunLoop loop;
   manager_remote_->GetSandboxedFileSystem(base::BindLambdaForTesting(
       [&](blink::mojom::NativeFileSystemErrorPtr result,
-          blink::mojom::NativeFileSystemDirectoryHandlePtr handle) {
+          mojo::PendingRemote<blink::mojom::NativeFileSystemDirectoryHandle>
+              handle) {
         EXPECT_EQ(blink::mojom::NativeFileSystemStatus::kOk, result->status);
-        root = std::move(handle);
+        directory_remote = std::move(handle);
         loop.Quit();
       }));
   loop.Run();
+  mojo::Remote<blink::mojom::NativeFileSystemDirectoryHandle> root(
+      std::move(directory_remote));
   ASSERT_TRUE(root);
   EXPECT_EQ(PermissionStatus::GRANTED,
             GetPermissionStatusSync(/*writable=*/false, root.get()));
@@ -180,7 +186,7 @@ TEST_F(NativeFileSystemManagerImplTest,
 
   blink::mojom::NativeFileSystemEntryPtr entry =
       manager_->CreateDirectoryEntryFromPath(kBindingContext, kTestPath);
-  blink::mojom::NativeFileSystemDirectoryHandlePtr handle(
+  mojo::Remote<blink::mojom::NativeFileSystemDirectoryHandle> handle(
       std::move(entry->entry_handle->get_directory()));
   EXPECT_EQ(PermissionStatus::GRANTED,
             GetPermissionStatusSync(/*writable=*/false, handle.get()));

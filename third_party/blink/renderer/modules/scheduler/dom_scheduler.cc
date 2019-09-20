@@ -80,7 +80,7 @@ DOMTaskQueue* DOMScheduler::GetTaskQueue(WebSchedulingPriority priority) {
 
 DOMTask* DOMScheduler::postTask(V8Function* callback_function,
                                 SchedulerPostTaskOptions* options,
-                                const Vector<ScriptValue>& args) {
+                                const HeapVector<ScriptValue>& args) {
   DOMTaskQueue* task_queue = getTaskQueue(AtomicString(options->priority()));
   if (!task_queue)
     return nullptr;

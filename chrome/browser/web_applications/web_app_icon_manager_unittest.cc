@@ -3,18 +3,23 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
+#include <memory>
 
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/test/test_file_utils.h"
-#include "chrome/browser/web_applications/test/test_web_app_sync_bridge.h"
+#include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/sync/model/mock_model_type_change_processor.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -24,13 +29,25 @@ class WebAppIconManagerTest : public WebAppTest {
   void SetUp() override {
     WebAppTest::SetUp();
 
+    database_factory_ = std::make_unique<TestWebAppDatabaseFactory>();
+    registrar_ = std::make_unique<WebAppRegistrar>(profile());
+
+    sync_bridge_ = std::make_unique<WebAppSyncBridge>(
+        profile(), database_factory_.get(), registrar_.get(),
+        mock_processor_.CreateForwardingProcessor());
+
+    ON_CALL(processor(), IsTrackingMetadata())
+        .WillByDefault(testing::Return(true));
+
     auto file_utils = std::make_unique<TestFileUtils>();
     file_utils_ = file_utils.get();
 
-    sync_bridge_ = std::make_unique<TestWebAppSyncBridge>();
-    registrar_ = std::make_unique<WebAppRegistrar>(nullptr, sync_bridge_.get());
     icon_manager_ = std::make_unique<WebAppIconManager>(profile(), *registrar_,
                                                         std::move(file_utils));
+
+    base::RunLoop run_loop;
+    sync_bridge_->Init(base::BindLambdaForTesting([&]() { run_loop.Quit(); }));
+    run_loop.Run();
   }
 
  protected:
@@ -69,8 +86,26 @@ class WebAppIconManagerTest : public WebAppTest {
     return icons;
   }
 
-  std::unique_ptr<TestWebAppSyncBridge> sync_bridge_;
+  std::unique_ptr<WebApp> CreateWebApp() {
+    const GURL app_url = GURL("https://example.com/path");
+    const AppId app_id = GenerateAppIdFromURL(app_url);
+
+    auto web_app = std::make_unique<WebApp>(app_id);
+    web_app->AddSource(Source::kSync);
+    web_app->SetLaunchContainer(LaunchContainer::kWindow);
+    web_app->SetName("Name");
+    web_app->SetLaunchUrl(app_url);
+
+    return web_app;
+  }
+
+  syncer::MockModelTypeChangeProcessor& processor() { return mock_processor_; }
+
+  std::unique_ptr<TestWebAppDatabaseFactory> database_factory_;
   std::unique_ptr<WebAppRegistrar> registrar_;
+  std::unique_ptr<WebAppSyncBridge> sync_bridge_;
+  testing::NiceMock<syncer::MockModelTypeChangeProcessor> mock_processor_;
+
   std::unique_ptr<WebAppIconManager> icon_manager_;
 
   // Owned by icon_manager_:
@@ -78,19 +113,16 @@ class WebAppIconManagerTest : public WebAppTest {
 };
 
 TEST_F(WebAppIconManagerTest, WriteAndReadIcon) {
-  const std::string name = "Name";
-  const GURL app_url = GURL("https://example.com/path");
-  const AppId app_id = GenerateAppIdFromURL(app_url);
+  auto web_app = CreateWebApp();
+  const AppId app_id = web_app->app_id();
 
   const std::vector<int> sizes_px{icon_size::k512};
   const std::vector<SkColor> colors{SK_ColorYELLOW};
-  WriteIcons(app_id, app_url, sizes_px, colors);
+  WriteIcons(app_id, web_app->launch_url(), sizes_px, colors);
 
-  auto web_app = std::make_unique<WebApp>(app_id);
-  web_app->SetName(name);
-  web_app->SetLaunchUrl(app_url);
-  web_app->SetIcons(ListIcons(app_url, sizes_px));
-  registrar_->RegisterApp(std::move(web_app));
+  web_app->SetIcons(ListIcons(web_app->launch_url(), sizes_px));
+
+  sync_bridge_->RegisterApp(std::move(web_app));
 
   {
     base::RunLoop run_loop;
@@ -108,22 +140,18 @@ TEST_F(WebAppIconManagerTest, WriteAndReadIcon) {
 }
 
 TEST_F(WebAppIconManagerTest, ReadIconFailed) {
-  const std::string name = "Name";
-  const GURL app_url = GURL("https://example.com/path");
-  const AppId app_id = GenerateAppIdFromURL(app_url);
+  auto web_app = CreateWebApp();
+  const AppId app_id = web_app->app_id();
 
   const GURL icon_url = GURL("https://example.com/app.ico");
   const int icon_size_px = icon_size::k256;
-
-  auto web_app = std::make_unique<WebApp>(app_id);
-  web_app->SetName(name);
-  web_app->SetLaunchUrl(app_url);
 
   // Set icon meta-info but don't write bitmap to disk.
   WebApp::Icons icons;
   icons.push_back({icon_url, icon_size_px});
   web_app->SetIcons(std::move(icons));
-  registrar_->RegisterApp(std::move(web_app));
+
+  sync_bridge_->RegisterApp(std::move(web_app));
 
   // Request non-existing icon size.
   EXPECT_FALSE(
@@ -143,20 +171,17 @@ TEST_F(WebAppIconManagerTest, ReadIconFailed) {
 }
 
 TEST_F(WebAppIconManagerTest, FindExact) {
-  const std::string name = "Name";
-  const GURL app_url = GURL("https://example.com/path");
-  const AppId app_id = GenerateAppIdFromURL(app_url);
+  auto web_app = CreateWebApp();
+  const AppId app_id = web_app->app_id();
 
   const std::vector<int> sizes_px{10, 60, 50, 20, 30};
   const std::vector<SkColor> colors{SK_ColorRED, SK_ColorYELLOW, SK_ColorGREEN,
                                     SK_ColorBLUE, SK_ColorMAGENTA};
-  WriteIcons(app_id, app_url, sizes_px, colors);
+  WriteIcons(app_id, web_app->launch_url(), sizes_px, colors);
 
-  auto web_app = std::make_unique<WebApp>(app_id);
-  web_app->SetName(name);
-  web_app->SetLaunchUrl(app_url);
-  web_app->SetIcons(ListIcons(app_url, sizes_px));
-  registrar_->RegisterApp(std::move(web_app));
+  web_app->SetIcons(ListIcons(web_app->launch_url(), sizes_px));
+
+  sync_bridge_->RegisterApp(std::move(web_app));
 
   {
     const bool icon_requested = icon_manager_->ReadIcon(
@@ -181,20 +206,17 @@ TEST_F(WebAppIconManagerTest, FindExact) {
 }
 
 TEST_F(WebAppIconManagerTest, FindSmallest) {
-  const std::string name = "Name";
-  const GURL app_url = GURL("https://example.com/path");
-  const AppId app_id = GenerateAppIdFromURL(app_url);
+  auto web_app = CreateWebApp();
+  const AppId app_id = web_app->app_id();
 
   const std::vector<int> sizes_px{10, 60, 50, 20, 30};
   const std::vector<SkColor> colors{SK_ColorRED, SK_ColorYELLOW, SK_ColorGREEN,
                                     SK_ColorBLUE, SK_ColorMAGENTA};
-  WriteIcons(app_id, app_url, sizes_px, colors);
+  WriteIcons(app_id, web_app->launch_url(), sizes_px, colors);
 
-  auto web_app = std::make_unique<WebApp>(app_id);
-  web_app->SetName(name);
-  web_app->SetLaunchUrl(app_url);
-  web_app->SetIcons(ListIcons(app_url, sizes_px));
-  registrar_->RegisterApp(std::move(web_app));
+  web_app->SetIcons(ListIcons(web_app->launch_url(), sizes_px));
+
+  sync_bridge_->RegisterApp(std::move(web_app));
 
   {
     const bool icon_requested = icon_manager_->ReadSmallestIcon(

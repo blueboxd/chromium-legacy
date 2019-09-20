@@ -208,6 +208,13 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
                     grey_kindOfClass([UITextField class]), nil);
 }
 
++ (id<GREYMatcher>)iconViewForCellWithLabelID:(int)messageID
+                                     iconType:(NSString*)iconType {
+  return grey_allOf(grey_accessibilityID([l10n_util::GetNSStringWithFixup(
+                        messageID) stringByAppendingString:iconType]),
+                    grey_kindOfClass([UIImageView class]), nil);
+}
+
 + (id<GREYMatcher>)primaryToolbar {
   return grey_kindOfClass([PrimaryToolbarView class]);
 }

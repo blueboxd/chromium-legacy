@@ -42,7 +42,7 @@ class SerialPortManagerImpl : public mojom::SerialPortManager {
   void GetDevices(GetDevicesCallback callback) override;
   void GetPort(
       const base::UnguessableToken& token,
-      mojom::SerialPortRequest request,
+      mojo::PendingReceiver<mojom::SerialPort> receiver,
       mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher) override;
 
   std::unique_ptr<SerialDeviceEnumerator> enumerator_;

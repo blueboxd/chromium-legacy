@@ -66,12 +66,12 @@ void TextureVirtualDeviceMojoAdapter::OnBufferRetired(int buffer_id) {
 
 void TextureVirtualDeviceMojoAdapter::Start(
     const media::VideoCaptureParams& requested_settings,
-    mojom::ReceiverPtr receiver) {
+    mojo::PendingRemote<mojom::Receiver> receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  receiver.set_connection_error_handler(base::BindOnce(
+  receiver_.Bind(std::move(receiver));
+  receiver_.set_disconnect_handler(base::BindOnce(
       &TextureVirtualDeviceMojoAdapter::OnReceiverConnectionErrorOrClose,
       base::Unretained(this)));
-  receiver_ = std::move(receiver);
   receiver_->OnStarted();
 
   // Notify receiver of known buffer handles */
@@ -112,7 +112,7 @@ void TextureVirtualDeviceMojoAdapter::Stop() {
   if (!receiver_.is_bound())
     return;
   // Unsubscribe from connection error callbacks.
-  receiver_.set_connection_error_handler(base::OnceClosure());
+  receiver_.set_disconnect_handler(base::OnceClosure());
   // Send out OnBufferRetired events and OnStopped.
   for (const auto& entry : known_buffer_handles_)
     receiver_->OnBufferRetired(entry.first);

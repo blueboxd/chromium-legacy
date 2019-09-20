@@ -19,7 +19,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -1183,8 +1183,7 @@ class NavigationHandleGrabber : public WebContentsObserver {
   void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override {
     if (navigation_handle->GetURL().path() != "/title2.html")
       return;
-    static_cast<NavigationHandleImpl*>(navigation_handle)
-        ->navigation_request()
+    NavigationRequest::From(navigation_handle)
         ->set_complete_callback_for_testing(
             base::Bind(&NavigationHandleGrabber::SendingNavigationCommitted,
                        base::Unretained(this), navigation_handle));

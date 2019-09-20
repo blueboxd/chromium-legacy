@@ -20,14 +20,6 @@ AppRegistrar::~AppRegistrar() {
     observer.OnAppRegistrarDestroyed();
 }
 
-WebAppRegistrar* AppRegistrar::AsWebAppRegistrar() {
-  return nullptr;
-}
-
-extensions::BookmarkAppRegistrar* AppRegistrar::AsBookmarkAppRegistrar() {
-  return nullptr;
-}
-
 bool AppRegistrar::IsLocallyInstalled(const GURL& start_url) const {
   return IsLocallyInstalled(GenerateAppIdFromURL(start_url));
 }

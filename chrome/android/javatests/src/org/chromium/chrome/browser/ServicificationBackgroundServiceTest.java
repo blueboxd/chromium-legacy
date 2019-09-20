@@ -56,7 +56,6 @@ public final class ServicificationBackgroundServiceTest {
     public void setUp() {
         mServicificationBackgroundService =
                 new ServicificationBackgroundService(true /*supportsServiceManagerOnly*/);
-        BackgroundSyncLauncher.setGCMEnabled(false);
         RecordHistogram.setDisabledForTests(true);
     }
 

@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "content/browser/native_file_system/native_file_system_error.h"
 #include "content/browser/native_file_system/native_file_system_transfer_token_impl.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/escape.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
@@ -133,14 +134,15 @@ void NativeFileSystemDirectoryHandleImpl::GetDirectory(
   blink::mojom::NativeFileSystemErrorPtr get_child_url_result =
       GetChildURL(basename, &child_url);
   if (get_child_url_result->status != NativeFileSystemStatus::kOk) {
-    std::move(callback).Run(std::move(get_child_url_result), nullptr);
+    std::move(callback).Run(std::move(get_child_url_result),
+                            mojo::NullRemote());
     return;
   }
 
   if (GetReadPermissionStatus() != PermissionStatus::GRANTED) {
     std::move(callback).Run(native_file_system_error::FromStatus(
                                 NativeFileSystemStatus::kPermissionDenied),
-                            nullptr);
+                            mojo::NullRemote());
     return;
   }
 
@@ -156,7 +158,7 @@ void NativeFileSystemDirectoryHandleImpl::GetDirectory(
           std::move(callback).Run(
               native_file_system_error::FromStatus(
                   NativeFileSystemStatus::kPermissionDenied),
-              nullptr);
+              mojo::NullRemote());
         }),
         std::move(callback));
   } else {
@@ -263,7 +265,7 @@ void NativeFileSystemDirectoryHandleImpl::DidGetDirectory(
 
   if (result != base::File::FILE_OK) {
     std::move(callback).Run(native_file_system_error::FromFileError(result),
-                            nullptr);
+                            mojo::NullRemote());
     return;
   }
 
@@ -369,9 +371,7 @@ NativeFileSystemEntryPtr NativeFileSystemDirectoryHandleImpl::CreateEntry(
   if (is_directory) {
     return NativeFileSystemEntry::New(
         NativeFileSystemHandle::NewDirectory(
-            manager()
-                ->CreateDirectoryHandle(context(), url, handle_state())
-                .PassInterface()),
+            manager()->CreateDirectoryHandle(context(), url, handle_state())),
         basename);
   }
   return NativeFileSystemEntry::New(

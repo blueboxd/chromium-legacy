@@ -702,6 +702,33 @@ void RunUntilInputProcessed(RenderWidgetHost* host) {
   run_loop.Run();
 }
 
+std::string ReferrerPolicyToString(
+    network::mojom::ReferrerPolicy referrer_policy) {
+  switch (referrer_policy) {
+    case network::mojom::ReferrerPolicy::kDefault:
+      return "no-meta";
+    case network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade:
+      return "no-referrer-when-downgrade";
+    case network::mojom::ReferrerPolicy::kOrigin:
+      return "origin";
+    case network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin:
+      return "origin-when-crossorigin";
+    case network::mojom::ReferrerPolicy::kSameOrigin:
+      return "same-origin";
+    case network::mojom::ReferrerPolicy::kStrictOrigin:
+      return "strict-origin";
+    case network::mojom::ReferrerPolicy::kAlways:
+      return "always";
+    case network::mojom::ReferrerPolicy::kNever:
+      return "never";
+    case network::mojom::ReferrerPolicy::
+        kNoReferrerWhenDowngradeOriginWhenCrossOrigin:
+      return "strict-origin-when-cross-origin";
+  }
+  NOTREACHED();
+  return "";
+}
+
 void WaitForLoadStopWithoutSuccessCheck(WebContents* web_contents) {
   // In many cases, the load may have finished before we get here.  Only wait if
   // the tab still has a pending navigation.

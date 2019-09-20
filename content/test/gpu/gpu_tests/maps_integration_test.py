@@ -158,6 +158,12 @@ class MapsIntegrationTest(
     self._ValidateScreenshotSamples(
       tab, url, screenshot, expected, _TOLERANCE, dpr)
 
+  @classmethod
+  def ExpectationsFiles(cls):
+    return [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                     'test_expectations', 'maps_expectations.txt')]
+
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.
   return gpu_integration_test.LoadAllTestsInModule(sys.modules[__name__])

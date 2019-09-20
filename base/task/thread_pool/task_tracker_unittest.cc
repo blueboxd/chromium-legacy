@@ -19,7 +19,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
-#include "base/metrics/statistics_recorder.h"
 #include "base/sequence_token.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -37,6 +36,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/simple_thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1244,8 +1244,6 @@ TEST(ThreadPoolTaskTrackerWaitAllowedTest, WaitAllowed) {
 // Verify that ThreadPool.TaskLatency.* histograms are correctly recorded
 // when a task runs.
 TEST(ThreadPoolTaskTrackerHistogramTest, TaskLatency) {
-  auto statistics_recorder = StatisticsRecorder::CreateTemporaryForTesting();
-
   TaskTracker tracker("Test");
 
   struct {
@@ -1257,28 +1255,28 @@ TEST(ThreadPoolTaskTrackerHistogramTest, TaskLatency) {
        "BackgroundTaskPriority"},
       {{ThreadPool(), MayBlock(), TaskPriority::BEST_EFFORT},
        "ThreadPool.TaskLatencyMicroseconds.Test."
-       "BackgroundTaskPriority_MayBlock"},
+       "BackgroundTaskPriority"},
       {{ThreadPool(), WithBaseSyncPrimitives(), TaskPriority::BEST_EFFORT},
        "ThreadPool.TaskLatencyMicroseconds.Test."
-       "BackgroundTaskPriority_MayBlock"},
+       "BackgroundTaskPriority"},
       {{ThreadPool(), TaskPriority::USER_VISIBLE},
        "ThreadPool.TaskLatencyMicroseconds.Test."
        "UserVisibleTaskPriority"},
       {{ThreadPool(), MayBlock(), TaskPriority::USER_VISIBLE},
        "ThreadPool.TaskLatencyMicroseconds.Test."
-       "UserVisibleTaskPriority_MayBlock"},
+       "UserVisibleTaskPriority"},
       {{ThreadPool(), WithBaseSyncPrimitives(), TaskPriority::USER_VISIBLE},
        "ThreadPool.TaskLatencyMicroseconds.Test."
-       "UserVisibleTaskPriority_MayBlock"},
+       "UserVisibleTaskPriority"},
       {{ThreadPool(), TaskPriority::USER_BLOCKING},
        "ThreadPool.TaskLatencyMicroseconds.Test."
        "UserBlockingTaskPriority"},
       {{ThreadPool(), MayBlock(), TaskPriority::USER_BLOCKING},
        "ThreadPool.TaskLatencyMicroseconds.Test."
-       "UserBlockingTaskPriority_MayBlock"},
+       "UserBlockingTaskPriority"},
       {{ThreadPool(), WithBaseSyncPrimitives(), TaskPriority::USER_BLOCKING},
        "ThreadPool.TaskLatencyMicroseconds.Test."
-       "UserBlockingTaskPriority_MayBlock"}};
+       "UserBlockingTaskPriority"}};
 
   for (const auto& test : kTests) {
     Task task(FROM_HERE, DoNothing(), TimeDelta());

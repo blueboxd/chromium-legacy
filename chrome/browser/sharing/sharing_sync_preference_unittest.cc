@@ -24,7 +24,8 @@ const char kDeviceGuid[] = "test_device";
 const char kDeviceFcmToken[] = "test_fcm_token";
 const char kDeviceAuthToken[] = "test_auth_token";
 const char kDeviceP256dh[] = "test_p256dh";
-const int kCapabilities = 1;
+const std::set<sync_pb::SharingSpecificFields::EnabledFeatures>
+    kClickToCallEnabled{sync_pb::SharingSpecificFields::CLICK_TO_CALL};
 
 const char kAuthorizedEntity[] = "authorized_entity";
 
@@ -40,12 +41,13 @@ class SharingSyncPreferenceTest : public testing::Test {
     sharing_sync_preference_.SetSyncDevice(
         kDeviceGuid,
         SharingSyncPreference::Device(kDeviceFcmToken, kDeviceP256dh,
-                                      kDeviceAuthToken, kCapabilities));
+                                      kDeviceAuthToken, kClickToCallEnabled));
   }
 
   static base::Value CreateRandomDevice(base::Time timestamp) {
     return SharingSyncPreference::DeviceToValue(
-        {base::GenerateGUID(), kDeviceP256dh, kDeviceAuthToken, kCapabilities},
+        {base::GenerateGUID(), kDeviceP256dh, kDeviceAuthToken,
+         kClickToCallEnabled},
         timestamp);
   }
 
@@ -79,7 +81,7 @@ TEST_F(SharingSyncPreferenceTest, SyncDevice) {
   EXPECT_EQ(kDeviceFcmToken, device->fcm_token);
   EXPECT_EQ(kDeviceP256dh, device->p256dh);
   EXPECT_EQ(kDeviceAuthToken, device->auth_secret);
-  EXPECT_EQ(kCapabilities, device->capabilities);
+  EXPECT_EQ(kClickToCallEnabled, device->enabled_features);
 
   auto synced_devices = sharing_sync_preference_.GetSyncedDevices();
   auto it = synced_devices.find(kDeviceGuid);
@@ -87,7 +89,7 @@ TEST_F(SharingSyncPreferenceTest, SyncDevice) {
   EXPECT_EQ(device->fcm_token, it->second.fcm_token);
   EXPECT_EQ(device->p256dh, it->second.p256dh);
   EXPECT_EQ(device->auth_secret, it->second.auth_secret);
-  EXPECT_EQ(device->capabilities, it->second.capabilities);
+  EXPECT_EQ(device->enabled_features, it->second.enabled_features);
 }
 
 TEST_F(SharingSyncPreferenceTest, FCMRegistrationGetSet) {

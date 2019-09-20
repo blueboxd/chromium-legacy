@@ -21,7 +21,8 @@ namespace aura {
 // Always returns the same window.
 class StaticWindowTargeter : public WindowTargeter {
  public:
-  explicit StaticWindowTargeter(aura::Window* window) : window_(window) {}
+  explicit StaticWindowTargeter(aura::Window* window)
+      : window_(window) {}
   ~StaticWindowTargeter() override {}
 
  private:
@@ -85,6 +86,7 @@ TEST_F(WindowTargeterTest, FindTargetInRootWindow) {
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(root_window());
   EXPECT_EQ(display.bounds(), root_window()->GetBoundsInScreen());
+  EXPECT_EQ(display.bounds(), gfx::Rect(0, 0, 800, 600));
 
   // Mouse and touch presses inside the display yield null targets.
   gfx::Point inside = display.bounds().CenterPoint();

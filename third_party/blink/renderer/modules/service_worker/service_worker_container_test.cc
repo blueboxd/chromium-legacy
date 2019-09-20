@@ -46,6 +46,7 @@ struct StubScriptFunction {
 
   size_t CallCount() { return call_count_; }
   ScriptValue Arg() { return arg_; }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(arg_); }
 
  private:
   size_t call_count_;

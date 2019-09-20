@@ -23,26 +23,38 @@ CrostiniAnsibleSoftwareConfigView*
 
 }  // namespace
 
-void crostini::ShowCrostiniAnsibleSoftwareConfigView() {
+namespace crostini {
+
+void ShowCrostiniAnsibleSoftwareConfigView(Profile* profile) {
   if (!g_crostini_ansible_software_configuration_view) {
     g_crostini_ansible_software_configuration_view =
-        new CrostiniAnsibleSoftwareConfigView();
+        new CrostiniAnsibleSoftwareConfigView(profile);
     views::DialogDelegate::CreateDialogWidget(
         g_crostini_ansible_software_configuration_view, nullptr, nullptr);
   }
+
   g_crostini_ansible_software_configuration_view->GetWidget()->Show();
 }
 
+}  // namespace crostini
+
 int CrostiniAnsibleSoftwareConfigView::GetDialogButtons() const {
+  if (state_ == State::ERROR) {
+    return ui::DIALOG_BUTTON_OK;
+  }
   return ui::DIALOG_BUTTON_NONE;
 }
 
 base::string16 CrostiniAnsibleSoftwareConfigView::GetWindowTitle() const {
+  if (state_ == State::ERROR) {
+    return l10n_util::GetStringUTF16(
+        IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_ERROR_LABEL);
+  }
   return l10n_util::GetStringUTF16(IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_LABEL);
 }
 
 bool CrostiniAnsibleSoftwareConfigView::ShouldShowCloseButton() const {
-  return true;
+  return false;
 }
 
 gfx::Size CrostiniAnsibleSoftwareConfigView::CalculatePreferredSize() const {
@@ -52,7 +64,56 @@ gfx::Size CrostiniAnsibleSoftwareConfigView::CalculatePreferredSize() const {
   return gfx::Size(dialog_width, GetHeightForWidth(dialog_width));
 }
 
-CrostiniAnsibleSoftwareConfigView::CrostiniAnsibleSoftwareConfigView() {
+void CrostiniAnsibleSoftwareConfigView::OnApplicationStarted() {
+  DCHECK_EQ(state_, State::INSTALLING);
+
+  state_ = State::APPLYING;
+}
+
+void CrostiniAnsibleSoftwareConfigView::OnApplicationFinished() {
+  DCHECK_EQ(state_, State::APPLYING);
+
+  ansible_management_service_->RemoveObserver(this);
+  // TODO(crbug.com/1005774): We should preferably add another ClosedReason
+  // instead of passing kUnspecified.
+  GetWidget()->CloseWithReason(views::Widget::ClosedReason::kUnspecified);
+}
+
+void CrostiniAnsibleSoftwareConfigView::OnError() {
+  DCHECK(state_ == State::APPLYING || state_ == State::INSTALLING);
+  state_ = State::ERROR;
+
+  ansible_management_service_->RemoveObserver(this);
+
+  // Bring dialog to front.
+  GetWidget()->Show();
+
+  GetWidget()->UpdateWindowTitle();
+  subtext_label_->SetText(l10n_util::GetStringUTF16(
+      IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_ERROR_SUBTEXT));
+
+  progress_bar_->SetVisible(false);
+
+  DialogModelChanged();
+}
+
+base::string16
+CrostiniAnsibleSoftwareConfigView::GetSubtextLabelStringForTesting() {
+  return subtext_label_->GetText();
+}
+
+// static
+CrostiniAnsibleSoftwareConfigView*
+CrostiniAnsibleSoftwareConfigView::GetActiveViewForTesting() {
+  return g_crostini_ansible_software_configuration_view;
+}
+
+CrostiniAnsibleSoftwareConfigView::CrostiniAnsibleSoftwareConfigView(
+    Profile* profile)
+    : ansible_management_service_(
+          crostini::AnsibleManagementService::GetForProfile(profile)) {
+  ansible_management_service_->AddObserver(this);
+
   views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
@@ -61,21 +122,20 @@ CrostiniAnsibleSoftwareConfigView::CrostiniAnsibleSoftwareConfigView() {
   set_margins(provider->GetDialogInsetsForContentType(
       views::DialogContentType::TEXT, views::DialogContentType::CONTROL));
 
-  const base::string16 message =
-      l10n_util::GetStringUTF16(IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_SUBTEXT);
-  auto message_label = std::make_unique<views::Label>(message);
-  message_label->SetMultiLine(true);
-  message_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  AddChildView(std::move(message_label));
+  subtext_label_ = new views::Label(
+      l10n_util::GetStringUTF16(IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_SUBTEXT));
+  subtext_label_->SetMultiLine(true);
+  subtext_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  AddChildView(subtext_label_);
 
   // Add infinite progress bar.
   // TODO(crbug.com/1000173): add progress reporting and display text above
   // progress bar indicating current process.
-  auto progress_bar = std::make_unique<views::ProgressBar>();
-  progress_bar->SetVisible(true);
+  progress_bar_ = new views::ProgressBar();
+  progress_bar_->SetVisible(true);
   // Values outside the range [0,1] display an infinite loading animation.
-  progress_bar->SetValue(-1);
-  AddChildView(std::move(progress_bar));
+  progress_bar_->SetValue(-1);
+  AddChildView(progress_bar_);
 
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::CROSTINI_ANSIBLE_SOFTWARE_CONFIG);

@@ -119,7 +119,7 @@ void DeviceSensorEntry::OnSensorCreated(
   DCHECK_EQ(0u, params->buffer_offset % kReadBufferSize);
 
   sensor_remote_.Bind(std::move(params->sensor));
-  client_receiver_.Bind(std::move(params->client_request));
+  client_receiver_.Bind(std::move(params->client_receiver));
 
   shared_buffer_reader_ = device::SensorReadingSharedBufferReader::Create(
       std::move(params->memory), params->buffer_offset);

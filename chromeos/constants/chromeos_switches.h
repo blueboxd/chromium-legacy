@@ -184,6 +184,7 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kRlzPingDelay[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kSamlPasswordChangeUrl[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShelfHoverPreviews[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShelfHotseat[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShelfScrollable[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kShowAndroidFilesInFilesApp[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShowLoginDevOverlay[];

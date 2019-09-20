@@ -11,8 +11,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
@@ -34,14 +35,14 @@ class SerialPortImpl : public mojom::SerialPort {
  public:
   static void Create(
       const base::FilePath& path,
-      mojom::SerialPortRequest request,
+      mojo::PendingReceiver<mojom::SerialPort> receiver,
       mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
  private:
   SerialPortImpl(
       const base::FilePath& path,
-      mojom::SerialPortRequest request,
+      mojo::PendingReceiver<mojom::SerialPort> receiver,
       mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
   ~SerialPortImpl() override;
@@ -72,7 +73,7 @@ class SerialPortImpl : public mojom::SerialPort {
                                const mojo::HandleSignalsState& state);
   void WriteToOutStream(uint32_t bytes_read, mojom::SerialReceiveError error);
 
-  mojo::Binding<mojom::SerialPort> binding_;
+  mojo::Receiver<mojom::SerialPort> receiver_;
 
   // Underlying connection to the serial port.
   scoped_refptr<SerialIoHandler> io_handler_;

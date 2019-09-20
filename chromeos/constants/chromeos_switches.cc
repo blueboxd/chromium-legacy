@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 
 namespace chromeos {
@@ -458,6 +457,9 @@ const char kShelfHotseat[] = "shelf-hotseat";
 // App window previews when hovering over the shelf.
 const char kShelfHoverPreviews[] = "shelf-hover-previews";
 
+// Scrollable list of apps on the shelf.
+const char kShelfScrollable[] = "shelf-scrollable";
+
 // If true, files in Android internal storage will be shown in Files app.
 const char kShowAndroidFilesInFilesApp[] = "show-android-files-in-files-app";
 
@@ -558,8 +560,7 @@ bool ShouldShowScrollableShelf() {
   // If we're showing the new shelf design, also enable scrollable shelf.
   if (ShouldShowShelfHotseat())
     return true;
-
-  return base::FeatureList::IsEnabled(features::kShelfScrollable);
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kShelfScrollable);
 }
 
 bool ShouldTetherHostScansIgnoreWiredConnections() {

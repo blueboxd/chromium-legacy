@@ -2542,4 +2542,114 @@ IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest,
   // been invalidated. At some point, |url_b| should be displayed, not |url_c|.
 }
 
+// Regression test for https://crbug.com/1001283
+// 1) Load main document with CSP: script-src 'none'
+// 2) Open an about:srcdoc iframe. It inherits the CSP.
+// 3) The iframe navigates elsewhere.
+// 4) The iframe navigates back to about:srcdoc.
+// Check Javascript is never allowed.
+IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest,
+                       SrcDocCSPInheritedAfterSameSiteHistoryNavigation) {
+  using Response = net::test_server::ControllableHttpResponse;
+  Response main_document_response(embedded_test_server(), "/main_document");
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url_a = embedded_test_server()->GetURL("a.com", "/main_document");
+  GURL url_b = embedded_test_server()->GetURL("a.com", "/title1.html");
+
+  auto console_delegate_1 = std::make_unique<ConsoleObserverDelegate>(
+      shell()->web_contents(), "Refused to execute inline script *");
+  shell()->web_contents()->SetDelegate(console_delegate_1.get());
+
+  // 1) Load main document with CSP: script-src 'none'
+  // 2) Open an about:srcdoc iframe. It inherits the CSP from its parent.
+  shell()->LoadURL(url_a);
+  main_document_response.WaitForRequest();
+  main_document_response.Send(
+      "HTTP/1.1 200 OK\n"
+      "content-type: text/html; charset=UTF-8\n"
+      "Content-Security-Policy: script-src 'none'\n"
+      "\n"
+      "<iframe name='theiframe' srcdoc='"
+      "  <script>"
+      "    console.error(\"CSP failure\");"
+      "  </script>"
+      "'>"
+      "</iframe>");
+  main_document_response.Done();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // Check Javascript was blocked the first time.
+  console_delegate_1->Wait();
+
+  // 3) The iframe navigates elsewhere.
+  shell()->LoadURLForFrame(url_b, "theiframe",
+                           ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  auto console_delegate_2 = std::make_unique<ConsoleObserverDelegate>(
+      shell()->web_contents(), "Refused to execute inline script *");
+  shell()->web_contents()->SetDelegate(console_delegate_2.get());
+
+  // 4) The iframe navigates back to about:srcdoc.
+  shell()->web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // Check Javascript was blocked the second time.
+  console_delegate_2->Wait();
+}
+
+IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest,
+                       SrcDocCSPInheritedAfterCrossSiteHistoryNavigation) {
+  using Response = net::test_server::ControllableHttpResponse;
+  Response main_document_response(embedded_test_server(), "/main_document");
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url_a = embedded_test_server()->GetURL("a.com", "/main_document");
+  GURL url_b = embedded_test_server()->GetURL("b.com", "/title1.html");
+
+  auto console_delegate_1 = std::make_unique<ConsoleObserverDelegate>(
+      shell()->web_contents(), "Refused to execute inline script *");
+  shell()->web_contents()->SetDelegate(console_delegate_1.get());
+
+  // 1) Load main document with CSP: script-src 'none'
+  // 2) Open an about:srcdoc iframe. It inherits the CSP from its parent.
+  shell()->LoadURL(url_a);
+  main_document_response.WaitForRequest();
+  main_document_response.Send(
+      "HTTP/1.1 200 OK\n"
+      "content-type: text/html; charset=UTF-8\n"
+      "Content-Security-Policy: script-src 'none'\n"
+      "\n"
+      "<iframe name='theiframe' srcdoc='"
+      "  <script>"
+      "    console.error(\"CSP failure\");"
+      "  </script>"
+      "'>"
+      "</iframe>");
+  main_document_response.Done();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // Check Javascript was blocked the first time.
+  console_delegate_1->Wait();
+
+  // 3) The iframe navigates elsewhere.
+  shell()->LoadURLForFrame(url_b, "theiframe",
+                           ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  auto console_delegate_2 = std::make_unique<ConsoleObserverDelegate>(
+      shell()->web_contents(), "Refused to execute inline script *");
+  shell()->web_contents()->SetDelegate(console_delegate_2.get());
+
+  // 4) The iframe navigates back to about:srcdoc.
+  shell()->web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // Check Javascript was blocked the second time.
+  console_delegate_2->Wait();
+}
+
 }  // namespace content

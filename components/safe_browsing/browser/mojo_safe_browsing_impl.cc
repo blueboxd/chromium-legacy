@@ -15,7 +15,7 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/resource_type.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/load_flags.h"
 
 namespace safe_browsing {
@@ -121,7 +121,7 @@ void MojoSafeBrowsingImpl::MaybeCreate(
 
 void MojoSafeBrowsingImpl::CreateCheckerAndCheck(
     int32_t render_frame_id,
-    mojom::SafeBrowsingUrlCheckerRequest request,
+    mojo::PendingReceiver<mojom::SafeBrowsingUrlChecker> receiver,
     const GURL& url,
     const std::string& method,
     const net::HttpRequestHeaders& headers,
@@ -142,8 +142,8 @@ void MojoSafeBrowsingImpl::CreateCheckerAndCheck(
                               false /* showed_interstitial */);
     }
 
-    // This will drop |request|. The result is that the renderer side will
-    // consider all URLs in the redirect chain of this request as safe.
+    // This will drop |receiver|. The result is that the renderer side will
+    // consider all URLs in the redirect chain of this receiver as safe.
     return;
   }
 
@@ -158,7 +158,7 @@ void MojoSafeBrowsingImpl::CreateCheckerAndCheck(
       base::BindOnce(
           &CheckUrlCallbackWrapper::Run,
           base::Owned(new CheckUrlCallbackWrapper(std::move(callback)))));
-  mojo::MakeStrongBinding(std::move(checker_impl), std::move(request));
+  mojo::MakeSelfOwnedReceiver(std::move(checker_impl), std::move(receiver));
 }
 
 void MojoSafeBrowsingImpl::Clone(

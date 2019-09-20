@@ -18,9 +18,9 @@
 #include "media/audio/audio_output_ipc.h"
 #include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "media/mojo/mojom/audio_output_stream.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace content {
@@ -95,7 +95,7 @@ class CONTENT_EXPORT MojoAudioOutputIPC
   enum { kPaused, kPlaying } expected_state_ = kPaused;
   base::Optional<double> volume_;
 
-  mojo::Binding<media::mojom::AudioOutputStreamProviderClient> binding_;
+  mojo::Receiver<media::mojom::AudioOutputStreamProviderClient> receiver_{this};
   mojo::Remote<media::mojom::AudioOutputStreamProvider> stream_provider_;
   mojo::Remote<media::mojom::AudioOutputStream> stream_;
   media::AudioOutputIPCDelegate* delegate_ = nullptr;

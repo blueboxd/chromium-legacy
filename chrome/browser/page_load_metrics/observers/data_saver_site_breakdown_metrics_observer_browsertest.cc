@@ -67,7 +67,8 @@ class DataSaverSiteBreakdownMetricsObserverBrowserTestBase
     scoped_feature_list_.InitWithFeaturesAndParameters(
         {{features::kLazyImageLoading,
           {{"automatic-lazy-load-images-enabled", "true"},
-           {"enable-lazy-load-images-metadata-fetch", "true"}}},
+           {"enable-lazy-load-images-metadata-fetch", "true"},
+           {"lazy_image_first_k_fully_load", "4G:0"}}},
          {features::kLazyFrameLoading,
           {{"automatic-lazy-load-frames-enabled", "true"}}}},
         {});

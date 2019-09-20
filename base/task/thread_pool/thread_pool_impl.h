@@ -60,8 +60,8 @@ class BASE_EXPORT ThreadPoolImpl : public ThreadPoolInstance,
       TaskTracker;
 #endif
 
-  // Creates a ThreadPoolImpl with a production TaskTracker.
-  //|histogram_label| is used to label histograms, it must not be empty.
+  // Creates a ThreadPoolImpl with a production TaskTracker. |histogram_label|
+  // is used to label histograms. No histograms are recorded if it is empty.
   explicit ThreadPoolImpl(StringPiece histogram_label);
 
   // For testing only. Creates a ThreadPoolImpl with a custom TaskTracker.

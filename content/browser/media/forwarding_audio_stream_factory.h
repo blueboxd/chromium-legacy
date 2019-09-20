@@ -98,7 +98,8 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
         const std::string& device_id,
         const media::AudioParameters& params,
         const base::Optional<base::UnguessableToken>& processing_id,
-        media::mojom::AudioOutputStreamProviderClientPtr client);
+        mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient>
+            client);
 
     void CreateLoopbackStream(
         int render_process_id,

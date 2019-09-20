@@ -251,7 +251,7 @@ PASS filter: percentage or numeric-specifiable functions (number value)
 PASS filter: percentage or numeric-specifiable functions (percentage value)
 PASS filter: interpolate different length of filter-function-list with function which lacuna value is 1
 PASS filter: interpolate different length of filter-function-list with function which lacuna value is 0
-FAIL filter: interpolate different length of filter-function-list with drop-shadow function assert_equals: The value should be blur(5px) drop-shadow(rgba(85, 0, 170, 0.6) 5px 5px 5px at 500ms expected "blur(5px) drop-shadow(rgba(85, 0, 170, 0.6) 5px 5px 5px" but got "blur(5px) drop-shadow(rgba(0, 0, 255, 0.4) 5px 5px 5px)"
+FAIL filter: interpolate different length of filter-function-list with drop-shadow function assert_equals: The value should be blur(5px) drop-shadow(rgba(0, 0, 255, 0.4) 5px 5px 5px at 500ms expected "blur(5px) drop-shadow(rgba(0, 0, 255, 0.4) 5px 5px 5px" but got "blur(5px) drop-shadow(rgba(0, 0, 255, 0.4) 5px 5px 5px)"
 PASS filter: interpolate from none
 PASS filter: url function (interpoalte as discrete)
 PASS flex-basis (type: lengthPercentageOrCalc) has testInterpolation function

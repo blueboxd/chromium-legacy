@@ -56,8 +56,9 @@ void StartUtilityProcessOnIOThread(mojom::PowerMonitorTestRequest request) {
   BindInterface(host, std::move(request));
 }
 
-void BindInterfaceForGpuOnIOThread(mojom::PowerMonitorTestRequest request) {
-  BindInterfaceInGpuProcess(std::move(request));
+void BindInterfaceForGpuOnIOThread(
+    mojo::PendingReceiver<mojom::PowerMonitorTest> receiver) {
+  BindInterfaceInGpuProcess(std::move(receiver));
 }
 
 class MockPowerMonitorMessageBroadcaster : public device::mojom::PowerMonitor {

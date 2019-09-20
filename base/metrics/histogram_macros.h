@@ -187,7 +187,7 @@
 // underflow bucket.
 
 // Sample usage:
-//   UMA_HISTOGRAM_CUSTOM_COUNTS("My.Histogram", 1, 100000000, 100);
+//   UMA_HISTOGRAM_CUSTOM_COUNTS("My.Histogram", sample, 1, 100000000, 50);
 #define UMA_HISTOGRAM_CUSTOM_COUNTS(name, sample, min, max, bucket_count)      \
     INTERNAL_HISTOGRAM_CUSTOM_COUNTS_WITH_FLAG(                                \
         name, sample, min, max, bucket_count,                                  \

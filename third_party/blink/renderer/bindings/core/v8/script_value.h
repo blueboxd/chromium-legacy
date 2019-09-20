@@ -164,10 +164,10 @@ class CORE_EXPORT ScriptValue final {
 
   static ScriptValue CreateNull(ScriptState*);
 
+  void Trace(Visitor* visitor) { visitor->Trace(script_state_); }
+
  private:
-  // TODO(peria): Move ScriptValue to Oilpan heap.
-  GC_PLUGIN_IGNORE("813731")
-  Persistent<ScriptState> script_state_;
+  Member<ScriptState> script_state_;
   scoped_refptr<SharedPersistent<v8::Value>> value_;
 };
 
@@ -182,5 +182,15 @@ struct NativeValueTraits<ScriptValue>
 };
 
 }  // namespace blink
+
+namespace WTF {
+
+template <>
+struct VectorTraits<blink::ScriptValue> : VectorTraitsBase<blink::ScriptValue> {
+  STATIC_ONLY(VectorTraits);
+  static constexpr bool kCanClearUnusedSlotsWithMemset = true;
+};
+
+}  // namespace WTF
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_VALUE_H_

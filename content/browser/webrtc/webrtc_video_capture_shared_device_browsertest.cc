@@ -13,6 +13,7 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "media/base/media_switches.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
@@ -124,7 +125,7 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     main_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     mock_receiver_ = std::make_unique<video_capture::MockReceiver>(
-        mojo::MakeRequest(&receiver_proxy_));
+        subscriber_.InitWithNewPipeAndPassReceiver());
   }
 
   scoped_refptr<base::TaskRunner> main_task_runner_;
@@ -155,7 +156,7 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
     requestable_settings.requested_format.frame_size = kVideoSize;
     requestable_settings.buffer_type = buffer_type_to_request;
 
-    device_->Start(requestable_settings, std::move(receiver_proxy_));
+    device_->Start(requestable_settings, std::move(subscriber_));
   }
 
   void OnSourceInfosReceived(
@@ -173,7 +174,7 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
 
     video_capture::mojom::PushVideoStreamSubscriptionPtr subscription;
     video_source_->CreatePushSubscription(
-        std::move(receiver_proxy_), requestable_settings,
+        std::move(subscriber_), requestable_settings,
         false /*force_reopen_with_new_settings*/,
         mojo::MakeRequest(&subscription_),
         base::BindOnce(&WebRtcVideoCaptureSharedDeviceBrowserTest::
@@ -200,7 +201,7 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
   video_capture::mojom::VideoSourcePtr video_source_;
   video_capture::mojom::PushVideoStreamSubscriptionPtr subscription_;
 
-  video_capture::mojom::ReceiverPtr receiver_proxy_;
+  mojo::PendingRemote<video_capture::mojom::Receiver> subscriber_;
   base::WeakPtrFactory<WebRtcVideoCaptureSharedDeviceBrowserTest> weak_factory_{
       this};
 

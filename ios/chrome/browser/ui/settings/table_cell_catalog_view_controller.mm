@@ -247,7 +247,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[TableViewTextEditItem alloc] initWithType:ItemTypeTextEditItem];
   textEditItem.textFieldName = @"Edit Text Item";
   textEditItem.textFieldValue = @" with no icons";
-  textEditItem.hideEditIcon = YES;
+  textEditItem.hideIcon = YES;
   textEditItem.textFieldEnabled = YES;
   [model addItem:textEditItem toSectionWithIdentifier:SectionIdentifierText];
 

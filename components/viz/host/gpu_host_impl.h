@@ -73,9 +73,10 @@ class VIZ_HOST_EXPORT GpuHostImpl : public mojom::GpuHost {
     virtual void RecordLogMessage(int32_t severity,
                                   const std::string& header,
                                   const std::string& message) = 0;
-    virtual void BindDiscardableMemoryRequest(
-        discardable_memory::mojom::DiscardableSharedMemoryManagerRequest
-            request) = 0;
+    virtual void BindDiscardableMemoryReceiver(
+        mojo::PendingReceiver<
+            discardable_memory::mojom::DiscardableSharedMemoryManager>
+            receiver) = 0;
     virtual void BindInterface(
         const std::string& interface_name,
         mojo::ScopedMessagePipeHandle interface_pipe) = 0;

@@ -65,6 +65,9 @@
 // Rounds the parameters of the preview layer's transform.
 - (void)finishPreviewRotation;
 
+// Returns the normalised rectangle of interest required for the Vision request.
+- (CGRect)viewportRegionOfInterest;
+
 // Returns the rectangle in camera coordinates in which items should be
 // recognized.
 - (CGRect)viewportRectOfInterest;

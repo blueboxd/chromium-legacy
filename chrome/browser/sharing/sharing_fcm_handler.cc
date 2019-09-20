@@ -145,7 +145,7 @@ void SharingFCMHandler::SendAckMessage(const SharingMessage& original_message,
     auto& sender_info = original_message.sender_info();
     target.emplace(sender_info.fcm_token(), sender_info.p256dh(),
                    sender_info.auth_secret(),
-                   /*capabilities=*/0);
+                   std::set<sync_pb::SharingSpecificFields::EnabledFeatures>());
   } else {
     target = sync_preference_->GetSyncedDevice(original_message.sender_guid());
     if (!target) {

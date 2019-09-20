@@ -17,6 +17,7 @@
 #include "extensions/browser/api/serial/serial_connection.h"
 #include "extensions/browser/api/webcam_private/webcam.h"
 #include "extensions/common/api/serial.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/serial.mojom.h"
 
 namespace extensions {
@@ -32,7 +33,7 @@ class ViscaWebcam : public Webcam {
   // command buffer. After these three steps completes, |open_callback| will be
   // called.
   void Open(const std::string& extension_id,
-            device::mojom::SerialPortPtr port_ptr,
+            mojo::PendingRemote<device::mojom::SerialPort> port,
             const OpenCompleteCallback& open_callback);
 
  private:

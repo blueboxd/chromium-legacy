@@ -293,6 +293,42 @@ interface MyIFaceSpecials {
 };
 
 /** TREE
+ *Interface(MyIFaceConstructor)
+ *  Constructor()
+ *    Arguments()
+ *  Constructor()
+ *    Arguments()
+ *      Argument(str)
+ *        Type()
+ *          StringType(DOMString)
+ *      Argument(param)
+ *        OPTIONAL: True
+ *        Type()
+ *          PrimitiveType(long)
+ *  Constructor()
+ *    Arguments()
+ *      Argument(node)
+ *        Type()
+ *          Typeref(Node)
+ *    ExtAttributes()
+ *      ExtAttribute(Custom)
+ */
+interface MyIFaceConstructor {
+  constructor();
+  constructor(DOMString str, optional long param);
+  [Custom] constructor(Node node);
+};
+
+/** TREE
+ *Interface(PartialIFaceConstructor)
+ *  PARTIAL: True
+ *  Error(Unexpected keyword "constructor" after "{".)
+ */
+partial interface PartialIFaceConstructor {
+  constructor();
+};
+
+/** TREE
  *Interface(MyIFaceStringifiers)
  *  Stringifier()
  *  Stringifier()
@@ -400,6 +436,12 @@ interface MyIfacePromise {
  *      PrimitiveType(long long)
  *      ExtAttributes()
  *        ExtAttribute(EnforceRange)
+ *  Iterable()
+ *    ASYNC: True
+ *    Type()
+ *      PrimitiveType(double)
+ *    Type()
+ *      StringType(DOMString)
  */
 interface MyIfaceIterable {
   iterable<long>;
@@ -408,6 +450,7 @@ interface MyIfaceIterable {
   iterable<[TreatNullAs=EmptyString] DOMString>;
   iterable<[Clamp, XAttr] long>;
   iterable<[Clamp] long, [EnforceRange] long long>;
+  async iterable<double, DOMString>;
 };
 
 /** TREE

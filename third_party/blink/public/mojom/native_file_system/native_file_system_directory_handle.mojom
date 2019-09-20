@@ -13,7 +13,7 @@ import "third_party/blink/public/mojom/permissions/permission_status.mojom";
 // can return arbitrary handles.
 union NativeFileSystemHandle {
   pending_remote<NativeFileSystemFileHandle> file;
-  NativeFileSystemDirectoryHandle directory;
+  pending_remote<NativeFileSystemDirectoryHandle> directory;
 };
 
 struct NativeFileSystemEntry {
@@ -51,7 +51,8 @@ interface NativeFileSystemDirectoryHandle {
   // Returns an error if the operation fails, or a handle to the newly created
   // directory if the operation succeeds.
   GetDirectory(string basename, bool create) =>
-      (NativeFileSystemError result, NativeFileSystemDirectoryHandle? directory);
+      (NativeFileSystemError result,
+       pending_remote<NativeFileSystemDirectoryHandle>? directory);
 
   // Returns all the direct children of this directory.
   // TODO(mek): Change this API to stream results in chunks rather than block

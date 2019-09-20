@@ -272,12 +272,10 @@ NativeFileSystemManagerImpl::CreateDirectoryEntryFromPath(
   }
 
   return blink::mojom::NativeFileSystemEntry::New(
-      blink::mojom::NativeFileSystemHandle::NewDirectory(
-          CreateDirectoryHandle(
-              binding_context, url.url,
-              SharedHandleState(std::move(read_grant), std::move(write_grant),
-                                std::move(url.file_system)))
-              .PassInterface()),
+      blink::mojom::NativeFileSystemHandle::NewDirectory(CreateDirectoryHandle(
+          binding_context, url.url,
+          SharedHandleState(std::move(read_grant), std::move(write_grant),
+                            std::move(url.file_system)))),
       url.base_name);
 }
 
@@ -308,7 +306,7 @@ NativeFileSystemManagerImpl::CreateFileHandle(
   return result;
 }
 
-blink::mojom::NativeFileSystemDirectoryHandlePtr
+mojo::PendingRemote<blink::mojom::NativeFileSystemDirectoryHandle>
 NativeFileSystemManagerImpl::CreateDirectoryHandle(
     const BindingContext& binding_context,
     const storage::FileSystemURL& url,
@@ -319,11 +317,11 @@ NativeFileSystemManagerImpl::CreateDirectoryHandle(
             handle_state.file_system.is_valid())
       << url.mount_type();
 
-  blink::mojom::NativeFileSystemDirectoryHandlePtr result;
-  directory_bindings_.AddBinding(
+  mojo::PendingRemote<blink::mojom::NativeFileSystemDirectoryHandle> result;
+  directory_receivers_.Add(
       std::make_unique<NativeFileSystemDirectoryHandleImpl>(
           this, binding_context, url, handle_state),
-      mojo::MakeRequest(&result));
+      result.InitWithNewPipeAndPassReceiver());
   return result;
 }
 
@@ -397,7 +395,7 @@ void NativeFileSystemManagerImpl::DidOpenSandboxedFileSystem(
 
   if (result != base::File::FILE_OK) {
     std::move(callback).Run(native_file_system_error::FromFileError(result),
-                            nullptr);
+                            mojo::NullRemote());
     return;
   }
 

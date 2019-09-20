@@ -326,7 +326,7 @@ void WaylandWindow::StartDrag(const ui::OSExchangeData& data,
   connection_->StartDrag(data, operation);
 }
 
-void WaylandWindow::Show(bool inactive) {
+void WaylandWindow::Show() {
   if (!is_tooltip_)  // Tooltip windows should not get keyboard focus
     set_keyboard_focus(true);
 

@@ -18,6 +18,7 @@
 #include "components/services/pdf_compositor/public/cpp/pdf_service_mojo_types.h"
 #include "content/public/utility/utility_thread.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "printing/common/metafile_utils.h"
 #include "third_party/blink/public/platform/web_image_generator.h"
@@ -85,11 +86,11 @@ void PdfCompositorImpl::SetDiscardableSharedMemoryManager(
     mojo::PendingRemote<
         discardable_memory::mojom::DiscardableSharedMemoryManager> manager) {
   // Set up discardable memory manager.
-  discardable_memory::mojom::DiscardableSharedMemoryManagerPtr manager_ptr(
-      std::move(manager));
+  mojo::PendingRemote<discardable_memory::mojom::DiscardableSharedMemoryManager>
+      manager_remote(std::move(manager));
   discardable_shared_memory_manager_ = std::make_unique<
       discardable_memory::ClientDiscardableSharedMemoryManager>(
-      std::move(manager_ptr), io_task_runner_);
+      std::move(manager_remote), io_task_runner_);
   base::DiscardableMemoryAllocator::SetInstance(
       discardable_shared_memory_manager_.get());
 }

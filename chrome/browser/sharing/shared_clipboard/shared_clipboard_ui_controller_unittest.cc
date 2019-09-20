@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sharing/fake_local_device_info_provider.h"
 #include "chrome/browser/sharing/sharing_constants.h"
-#include "chrome/browser/sharing/sharing_device_capability.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_service.h"
@@ -57,9 +56,10 @@ class MockSharingService : public SharingService {
 
   ~MockSharingService() override = default;
 
-  MOCK_CONST_METHOD1(GetDeviceCandidates,
-                     std::vector<std::unique_ptr<syncer::DeviceInfo>>(
-                         int required_capabilities));
+  MOCK_CONST_METHOD1(
+      GetDeviceCandidates,
+      std::vector<std::unique_ptr<syncer::DeviceInfo>>(
+          sync_pb::SharingSpecificFields::EnabledFeatures required_feature));
 
   MOCK_METHOD4(SendMessageToDevice,
                void(const std::string& device_guid,
@@ -129,7 +129,8 @@ TEST_F(SharedClipboardUiControllerTest, OnDeviceChosen) {
 
 // Check the call to sharing service to get all synced devices.
 TEST_F(SharedClipboardUiControllerTest, GetSyncedDevices) {
-  EXPECT_CALL(*service(), GetDeviceCandidates(Eq(static_cast<int>(
-                              SharingDeviceCapability::kSharedClipboard))));
+  EXPECT_CALL(*service(),
+              GetDeviceCandidates(
+                  Eq(sync_pb::SharingSpecificFields::SHARED_CLIPBOARD)));
   controller_->UpdateAndShowDialog();
 }

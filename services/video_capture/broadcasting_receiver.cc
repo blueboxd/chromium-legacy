@@ -65,7 +65,7 @@ void CloneGpuMemoryBufferHandle(const gfx::GpuMemoryBufferHandle& source,
 }  // anonymous namespace
 
 BroadcastingReceiver::ClientContext::ClientContext(
-    mojom::ReceiverPtr client,
+    mojo::PendingRemote<mojom::Receiver> client,
     media::VideoCaptureBufferType target_buffer_type)
     : client_(std::move(client)),
       target_buffer_type_(target_buffer_type),
@@ -242,7 +242,7 @@ void BroadcastingReceiver::SetOnStoppedHandler(
 }
 
 int32_t BroadcastingReceiver::AddClient(
-    mojom::ReceiverPtr client,
+    mojo::PendingRemote<mojom::Receiver> client,
     media::VideoCaptureBufferType target_buffer_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto client_id = next_client_id_++;
@@ -250,7 +250,7 @@ int32_t BroadcastingReceiver::AddClient(
   auto& added_client_context =
       clients_.insert(std::make_pair(client_id, std::move(context)))
           .first->second;
-  added_client_context.client().set_connection_error_handler(
+  added_client_context.client().set_disconnect_handler(
       base::BindOnce(&BroadcastingReceiver::OnClientDisconnected,
                      weak_factory_.GetWeakPtr(), client_id));
   if (status_ == Status::kOnErrorHasBeenCalled) {
@@ -284,7 +284,8 @@ void BroadcastingReceiver::ResumeClient(int32_t client_id) {
   clients_.at(client_id).set_is_suspended(false);
 }
 
-mojom::ReceiverPtr BroadcastingReceiver::RemoveClient(int32_t client_id) {
+mojo::Remote<mojom::Receiver> BroadcastingReceiver::RemoveClient(
+    int32_t client_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto client = std::move(clients_.at(client_id));
   clients_.erase(client_id);

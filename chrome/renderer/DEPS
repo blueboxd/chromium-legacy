@@ -57,6 +57,7 @@ include_rules = [
   "+extensions/buildflags",
   "+extensions/renderer",
   "+gin",
+  "+google_apis",
   "+media/base",
   "+ppapi/shared_impl",
   "+services/network/public/cpp",

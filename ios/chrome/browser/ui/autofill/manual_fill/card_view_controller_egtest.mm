@@ -370,6 +370,39 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
+// Tests that the "Add Credit Cards..." action works on OTR.
+- (void)testOTRAddCreditCardsActionOpensAddCreditCardSettings {
+  base::test::ScopedFeatureList featureList;
+  featureList.InitAndEnableFeature(kSettingsAddPaymentMethod);
+  [self saveLocalCreditCard];
+
+  // Open a tab in incognito.
+  [ChromeEarlGrey openNewIncognitoTab];
+  const GURL URL = self.testServer->GetURL(kFormHTMLFile);
+  [ChromeEarlGrey loadURL:URL];
+  [ChromeEarlGrey waitForWebStateContainingText:"hello!"];
+
+  // Bring up the keyboard.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+      performAction:TapWebElementWithId(kFormElementUsername)];
+
+  // Tap on the credit card icon.
+  [[EarlGrey selectElementWithMatcher:CreditCardIconMatcher()]
+      performAction:grey_tap()];
+
+  // Try to scroll.
+  [[EarlGrey selectElementWithMatcher:CreditCardTableViewMatcher()]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
+
+  // Tap the "Add Credit Cards..." action.
+  [[EarlGrey selectElementWithMatcher:AddCreditCardsMatcher()]
+      performAction:grey_tap()];
+
+  // Verify the credit cards settings opened.
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::AddCreditCardView()]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
 // Tests that the manual fallback view icon is not highlighted after presenting
 // the add credit card view.
 - (void)testCreditCardsButtonStateAfterPresentingAddCreditCard {

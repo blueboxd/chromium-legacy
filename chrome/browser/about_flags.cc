@@ -1711,7 +1711,7 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(chromeos::switches::kShelfHoverPreviews)},
     {"shelf-scrollable", flag_descriptions::kShelfScrollableName,
      flag_descriptions::kShelfScrollableDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kShelfScrollable)},
+     SINGLE_VALUE_TYPE(chromeos::switches::kShelfScrollable)},
     {"show-bluetooth-debug-log-toggle",
      flag_descriptions::kShowBluetoothDebugLogToggleName,
      flag_descriptions::kShowBluetoothDebugLogToggleDescription, kOsCrOS,
@@ -4534,10 +4534,17 @@ const FeatureEntry kFeatureEntries[] = {
          password_manager::features::kEnablePasswordsAccountStorage)},
 
 #if !defined(OS_ANDROID)
-    {"improved-cookie-controls",
-     flag_descriptions::kEnableImprovedCookieControlsName,
-     flag_descriptions::kEnableImprovedCookieControlsDescription, kOsDesktop,
+    {"improved-cookie-controls", flag_descriptions::kImprovedCookieControlsName,
+     flag_descriptions::kImprovedCookieControlsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(content_settings::kImprovedCookieControls)},
+
+    {"improved-cookie-controls-for-third-party-cookie-blocking",
+     flag_descriptions::kImprovedCookieControlsForThirdPartyCookieBlockingName,
+     flag_descriptions::
+         kImprovedCookieControlsForThirdPartyCookieBlockingDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         content_settings::kImprovedCookieControlsForThirdPartyCookieBlocking)},
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
@@ -4566,6 +4573,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kBackForwardCache,
                                     kBackForwardCacheVariations,
                                     "BackForwardCache")},
+
+#if defined(OS_ANDROID)
+    {"android-setup-search-engine",
+     flag_descriptions::kAndroidSetupSearchEngineName,
+     flag_descriptions::kAndroidSetupSearchEngineDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kAndroidSetupSearchEngine)},
+#endif  // defined(OS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

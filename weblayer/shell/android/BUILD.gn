@@ -110,25 +110,25 @@ if (public_android_sdk) {
       "//chrome/android:monochrome_public_apk",
     ]
   }
-}
 
-generate_wrapper("run_weblayer_shell_trichrome") {
-  testonly = true
-  wrapper_script = "$root_out_dir/bin/run_weblayer_shell_trichrome"
-  executable = "//weblayer/tools/run_weblayer_shell.py"
-  executable_args = [
-    "--shell-apk-path",
-    "@WrappedPath(apks/WebLayerShellWebView.apk)",
-    "--support-apk-path",
-    "@WrappedPath(apks/TrichromeLibrary.apk)",
-    "@WrappedPath(apks/TrichromeWebView.apk)",
-  ]
+  generate_wrapper("run_weblayer_shell_trichrome") {
+    testonly = true
+    wrapper_script = "$root_out_dir/bin/run_weblayer_shell_trichrome"
+    executable = "//weblayer/tools/run_weblayer_shell.py"
+    executable_args = [
+      "--shell-apk-path",
+      "@WrappedPath(apks/WebLayerShellWebView.apk)",
+      "--support-apk-path",
+      "@WrappedPath(apks/TrichromeLibrary.apk)",
+      "@WrappedPath(apks/TrichromeWebView.apk)",
+    ]
 
-  deps = [
-    ":weblayer_shell_webview_apk",
-    "//android_webview:trichrome_webview_apk",
-    "//chrome/android:trichrome_library_apk",
-  ]
+    deps = [
+      ":weblayer_shell_webview_apk",
+      "//android_webview:trichrome_webview_apk",
+      "//chrome/android:trichrome_library_apk",
+    ]
+  }
 }
 
 demo_apk_manifest = "$target_gen_dir/demo_apk_manifest/AndroidManifest.xml"
@@ -247,8 +247,7 @@ instrumentation_test_apk("weblayer_instrumentation_test_apk") {
   deps = [
     "//base:base_java_test_support",
     "//content/public/test/android:content_java_test_support",
-    "//third_party/android_deps:androidx_test_monitor_java",
-    "//third_party/android_deps:androidx_test_runner_java",
+    "//third_party/android_support_test_runner:runner_java",
   ]
   java_files = [
     "javatests/src/org/chromium/weblayer/test/NavigationTest.java",

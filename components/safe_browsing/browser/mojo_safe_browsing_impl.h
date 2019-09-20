@@ -40,16 +40,17 @@ class MojoSafeBrowsingImpl : public mojom::SafeBrowsing {
                        content::ResourceContext* resource_context);
 
   // mojom::SafeBrowsing implementation.
-  void CreateCheckerAndCheck(int32_t render_frame_id,
-                             mojom::SafeBrowsingUrlCheckerRequest request,
-                             const GURL& url,
-                             const std::string& method,
-                             const net::HttpRequestHeaders& headers,
-                             int32_t load_flags,
-                             content::ResourceType resource_type,
-                             bool has_user_gesture,
-                             bool originated_from_service_worker,
-                             CreateCheckerAndCheckCallback callback) override;
+  void CreateCheckerAndCheck(
+      int32_t render_frame_id,
+      mojo::PendingReceiver<mojom::SafeBrowsingUrlChecker> receiver,
+      const GURL& url,
+      const std::string& method,
+      const net::HttpRequestHeaders& headers,
+      int32_t load_flags,
+      content::ResourceType resource_type,
+      bool has_user_gesture,
+      bool originated_from_service_worker,
+      CreateCheckerAndCheckCallback callback) override;
   void Clone(mojo::PendingReceiver<mojom::SafeBrowsing> receiver) override;
 
   void OnMojoDisconnect();

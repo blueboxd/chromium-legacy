@@ -443,6 +443,11 @@ class LazyLoadImagesParamsTest : public SimTest,
     settings.SetLazyImageLoadingDistanceThresholdPx4G(700);
     settings.SetLazyLoadEnabled(
         RuntimeEnabledFeatures::LazyImageLoadingEnabled());
+    settings.SetLazyImageFirstKFullyLoadUnknown(0);
+    settings.SetLazyImageFirstKFullyLoadSlow2G(0);
+    settings.SetLazyImageFirstKFullyLoad2G(0);
+    settings.SetLazyImageFirstKFullyLoad3G(0);
+    settings.SetLazyImageFirstKFullyLoad4G(0);
   }
 
   int GetLoadingDistanceThreshold() const {
@@ -850,6 +855,12 @@ class LazyLoadAutomaticImagesTest : public SimTest {
         kLoadingDistanceThreshold);
     settings.SetLazyLoadEnabled(
         RuntimeEnabledFeatures::LazyImageLoadingEnabled());
+    settings.SetLazyImageFirstKFullyLoad4G(0);
+  }
+
+  void SetLazyImageFirstKFullyLoad(int count) {
+    Settings& settings = WebView().GetPage()->GetSettings();
+    settings.SetLazyImageFirstKFullyLoad4G(count);
   }
 
   void LoadMainResourceWithImageFarFromViewport(const char* image_attributes) {
@@ -1103,6 +1114,57 @@ TEST_F(LazyLoadAutomaticImagesTest, TinyImageViaStyleWidth10Height10) {
 TEST_F(LazyLoadAutomaticImagesTest, TinyImageViaStyleWidth11Height1) {
   TestLoadImageExpectingLazyLoadWithoutPlaceholder(
       "style='width:11px;height:1px;'");
+}
+
+TEST_F(LazyLoadAutomaticImagesTest, FirstKImagesLoaded) {
+  ScopedLazyImageLoadingMetadataFetchForTest
+      scoped_lazy_image_loading_metadata_fetch_for_test = false;
+  SetLazyImageFirstKFullyLoad(1);
+
+  SimRequest main_resource("https://example.com/", "text/html");
+  SimSubresourceRequest img1("https://example.com/image.png?id=1", "image/png");
+
+  LoadURL("https://example.com/");
+  main_resource.Complete(String::Format(
+      R"HTML(
+    <body onload='console.log("main body onload");'>
+    <div style='height: %dpx;'></div>
+    <img src='https://example.com/image.png?id=1'
+         onload='console.log("image id=1 onload");' />
+    <img src='https://example.com/image.png?id=2'
+         onload='console.log("image id=2 onload");' />
+    </body>)HTML",
+      kViewportHeight + kLoadingDistanceThreshold + 100));
+  Compositor().BeginFrame();
+
+  // One image should be loaded fully, even though it is below viewport.
+  img1.Complete(ReadTestImage());
+  ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
+      KURL("https://example.com/image.png?id=1")));
+  test::RunPendingTasks();
+
+  EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
+  EXPECT_TRUE(ConsoleMessages().Contains("image id=1 onload"));
+  EXPECT_FALSE(ConsoleMessages().Contains("image id=2 onload"));
+
+  // Scrolling down should trigger the fetch of the second image.
+  GetDocument().View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, kLoadingDistanceThreshold + kViewportHeight),
+      kProgrammaticScroll);
+
+  SimSubresourceRequest img2("https://example.com/image.png?id=2", "image/png");
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+  img2.Complete(ReadTestImage());
+
+  ExpectResourceIsFullImage(GetDocument().Fetcher()->CachedResource(
+      KURL("https://example.com/image.png?id=2")));
+  test::RunPendingTasks();
+
+  EXPECT_TRUE(ConsoleMessages().Contains("main body onload"));
+  EXPECT_TRUE(ConsoleMessages().Contains("image id=1 onload"));
+  EXPECT_TRUE(ConsoleMessages().Contains("image id=2 onload"));
+  EXPECT_TRUE(ConsoleMessages().Contains(kLazyLoadEventsDeferredMessage));
 }
 
 TEST_F(LazyLoadAutomaticImagesTest, JavascriptCreatedImageFarFromViewport) {

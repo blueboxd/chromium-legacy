@@ -11939,7 +11939,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Create an out-of-process iframe that causes itself to be detached during
 // its layout/animate phase. See https://crbug.com/802932.
 // Disabled on Android due to flakiness, https://crbug.com/809580.
-#if defined(OS_ANDROID)
+// Disabled on Mac due to flakiness, https://crbug.com/1006122.
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 #define MAYBE_OOPIFDetachDuringAnimation DISABLED_OOPIFDetachDuringAnimation
 #else
 #define MAYBE_OOPIFDetachDuringAnimation OOPIFDetachDuringAnimation

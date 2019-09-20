@@ -290,6 +290,11 @@ class WebSettings {
   virtual void SetLazyImageLoadingDistanceThresholdPx2G(int) = 0;
   virtual void SetLazyImageLoadingDistanceThresholdPx3G(int) = 0;
   virtual void SetLazyImageLoadingDistanceThresholdPx4G(int) = 0;
+  virtual void SetLazyImageFirstKFullyLoadUnknown(int) = 0;
+  virtual void SetLazyImageFirstKFullyLoadSlow2G(int) = 0;
+  virtual void SetLazyImageFirstKFullyLoad2G(int) = 0;
+  virtual void SetLazyImageFirstKFullyLoad3G(int) = 0;
+  virtual void SetLazyImageFirstKFullyLoad4G(int) = 0;
   virtual void SetForceDarkModeEnabled(bool) = 0;
   virtual void SetPreferredColorScheme(PreferredColorScheme) = 0;
   virtual void SetForcedColors(ForcedColors) = 0;

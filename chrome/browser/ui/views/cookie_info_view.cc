@@ -116,13 +116,15 @@ void CookieInfoView::Init() {
   // Ensure we don't run this more than once and leak memory.
   DCHECK(!name_value_field_);
 
-  views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>());
-  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
+  const ChromeLayoutProvider* const provider = ChromeLayoutProvider::Get();
   const gfx::Insets& dialog_insets =
       provider->GetInsetsMetric(views::INSETS_DIALOG);
   SetBorder(views::CreateEmptyBorder(0, dialog_insets.left(), 0,
                                      dialog_insets.right()));
+
+  View* const contents = SetContents(std::make_unique<views::View>());
+  views::GridLayout* layout =
+      contents->SetLayoutManager(std::make_unique<views::GridLayout>());
 
   int three_column_layout_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(three_column_layout_id);

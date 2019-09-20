@@ -5,6 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_SCHEDULER_WEB_SCHEDULER_TRACKED_FEATURE_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_SCHEDULER_WEB_SCHEDULER_TRACKED_FEATURE_H_
 
+#include <stdint.h>
+
+#include "third_party/blink/public/common/common_export.h"
+
 namespace blink {
 namespace scheduler {
 
@@ -72,6 +76,9 @@ enum class WebSchedulerTrackedFeature {
 static_assert(static_cast<uint32_t>(WebSchedulerTrackedFeature::kMaxValue) < 64,
               "This enum is used in a bitmask, so the values should fit into a"
               "64-bit integer");
+
+BLINK_COMMON_EXPORT const char* FeatureToString(
+    WebSchedulerTrackedFeature feature);
 
 }  // namespace scheduler
 }  // namespace blink

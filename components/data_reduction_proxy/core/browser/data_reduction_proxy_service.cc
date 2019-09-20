@@ -436,8 +436,8 @@ void DataReductionProxyService::AddThrottleConfigObserver(
 }
 
 void DataReductionProxyService::Clone(
-    mojom::DataReductionProxyRequest request) {
-  drp_bindings_.AddBinding(this, std::move(request));
+    mojo::PendingReceiver<mojom::DataReductionProxy> receiver) {
+  drp_receivers_.Add(this, std::move(receiver));
 }
 
 void DataReductionProxyService::UpdateCustomProxyConfig() {

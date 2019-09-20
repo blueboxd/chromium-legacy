@@ -138,6 +138,7 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver,
   // these are local files and omnibox results.
   std::unique_ptr<RecurrenceRanker> query_based_mixed_types_ranker_;
   std::map<std::string, float> query_mixed_ranks_;
+  std::unique_ptr<JsonConfigConverter> query_mixed_config_converter_;
   // Flag set when a delayed task to save the model is created. This is used to
   // prevent several delayed tasks from being created.
   bool query_mixed_ranker_save_queued_ = false;
@@ -145,6 +146,7 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver,
   // Ranks the kinds of results possible in the zero state results list.
   std::unique_ptr<RecurrenceRanker> zero_state_group_ranker_;
   std::map<std::string, float> zero_state_group_ranks_;
+  std::unique_ptr<JsonConfigConverter> zero_state_config_converter_;
   // Stores the id of the most recent highest-scoring zero state result from
   // each relevant provider, along with how many times it has been shown to the
   // user.
@@ -161,9 +163,7 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver,
   std::unique_ptr<RecurrenceRanker> app_ranker_;
   std::map<std::string, float> app_ranks_;
 
-  // Converts JSON config strings to RecurrenceRankerConfigProtos.
-  JsonConfigConverter config_converter_;
-
+  service_manager::Connector* connector_;
   // Testing-only closure to inform tests once a JSON config has been parsed.
   base::OnceClosure json_config_parsed_for_testing_;
 

@@ -35,6 +35,7 @@ extern const char kChromeUITermsURL[];
 extern const char kChromeUIVersionURL[];
 
 // URL components for Chrome on iOS.
+extern const char kChromeUIAutofillInternalsHost[];
 extern const char kChromeUIBrowserCrashHost[];
 extern const char kChromeUIChromeURLsHost[];
 extern const char kChromeUICrashesHost[];

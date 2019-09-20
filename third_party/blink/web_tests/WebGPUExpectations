@@ -1,2 +1,3 @@
 # WebGPU tests are only run on GPU bots, so they are skipped by default and run
 # separately from other Web Tests, with this expectations file.
+crbug.com/dawn/227 [ Linux Win ] external/wpt/webgpu/cts.html?q=cts:buffers/map_oom: [ Crash Pass ]

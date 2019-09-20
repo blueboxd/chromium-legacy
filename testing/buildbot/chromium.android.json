@@ -1972,6 +1972,10 @@
         "test": "service_junit_tests"
       },
       {
+        "name": "touch_to_fill_junit_tests",
+        "test": "touch_to_fill_junit_tests"
+      },
+      {
         "name": "ui_junit_tests",
         "test": "ui_junit_tests"
       },
@@ -25799,6 +25803,11 @@
         "name": "service_junit_tests",
         "swarming": {},
         "test": "service_junit_tests"
+      },
+      {
+        "name": "touch_to_fill_junit_tests",
+        "swarming": {},
+        "test": "touch_to_fill_junit_tests"
       },
       {
         "name": "ui_junit_tests",

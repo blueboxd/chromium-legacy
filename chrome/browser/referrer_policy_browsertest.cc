@@ -75,34 +75,6 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
         GetExpectedTitle(url, EXPECT_ORIGIN_AS_REFERRER));
   }
 
-  // Returns a string representation of a given |referrer_policy|.
-  std::string ReferrerPolicyToString(
-      network::mojom::ReferrerPolicy referrer_policy) {
-    switch (referrer_policy) {
-      case network::mojom::ReferrerPolicy::kDefault:
-        return "no-meta";
-      case network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade:
-        return "default";
-      case network::mojom::ReferrerPolicy::kOrigin:
-        return "origin";
-      case network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin:
-        return "origin-when-crossorigin";
-      case network::mojom::ReferrerPolicy::kSameOrigin:
-        return "same-origin";
-      case network::mojom::ReferrerPolicy::kStrictOrigin:
-        return "strict-origin";
-      case network::mojom::ReferrerPolicy::kAlways:
-        return "always";
-      case network::mojom::ReferrerPolicy::kNever:
-        return "never";
-      case network::mojom::ReferrerPolicy::
-          kNoReferrerWhenDowngradeOriginWhenCrossOrigin:
-        return "reduce-referrer-granularity";
-    }
-    NOTREACHED();
-    return "";
-  }
-
   enum StartOnProtocol { START_ON_HTTP, START_ON_HTTPS, };
 
   enum LinkType { REGULAR_LINK, LINK_WITH_TARGET_BLANK, };
@@ -168,7 +140,7 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
 
     std::string relative_url =
         std::string("/referrer_policy/referrer-policy-start.html?") +
-        "policy=" + ReferrerPolicyToString(referrer_policy) +
+        "policy=" + content::ReferrerPolicyToString(referrer_policy) +
         "&redirect=" + redirect_url.spec() + "&link=" +
         (button == blink::WebMouseEvent::Button::kNoButton ? "false" : "true") +
         "&target=" + (link_type == LINK_WITH_TARGET_BLANK ? "_blank" : "");

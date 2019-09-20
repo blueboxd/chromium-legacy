@@ -14,6 +14,7 @@ import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.task.PostTask;
+import org.chromium.chrome.browser.background_sync.BackgroundSyncBackgroundTaskScheduler;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.ServiceManagerStartupUtils;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
@@ -37,8 +38,10 @@ public class ChromeBackgroundService extends GcmTaskService {
         final Context context = this;
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
             switch (taskTag) {
-                case BackgroundSyncLauncher.TASK_TAG:
-                    handleBackgroundSyncEvent(context, taskTag);
+                case BackgroundSyncBackgroundTaskScheduler.TASK_TAG:
+                    // Background Sync tasks are now scheduled using BackgroundTaskScheduler.
+                    // This should be rare, and we simply reschedule using BackgroundTaskScheduler.
+                    rescheduleOneShotBackgroundSyncTasks();
                     break;
 
                 case OfflinePageUtils.TASK_TAG:
@@ -65,18 +68,6 @@ public class ChromeBackgroundService extends GcmTaskService {
         });
 
         return GcmNetworkManager.RESULT_SUCCESS;
-    }
-
-    private void handleBackgroundSyncEvent(Context context, String tag) {
-        if (!BackgroundSyncLauncher.hasInstance()) {
-            // Start the browser. The browser's BackgroundSyncManager (for the active profile) will
-            // start, check the network, and run any necessary sync events. This task runs with a
-            // wake lock, but has a three minute timeout, so we need to start the browser in its
-            // own task.
-            // TODO(jkarlin): Protect the browser sync event with a wake lock.
-            // See crbug.com/486020.
-            launchBrowser(context, tag);
-        }
     }
 
     private void handleSnippetsOnPersistentSchedulerWakeUp(Context context, String tag) {
@@ -113,7 +104,7 @@ public class ChromeBackgroundService extends GcmTaskService {
 
     @VisibleForTesting
     protected void rescheduleBackgroundSyncTasksOnUpgrade() {
-        BackgroundSyncLauncher.rescheduleTasksOnUpgrade(this);
+        rescheduleOneShotBackgroundSyncTasks();
     }
 
     private void handleSnippetsOnBrowserUpgraded() {
@@ -126,8 +117,14 @@ public class ChromeBackgroundService extends GcmTaskService {
     }
 
     /** Reschedules offline pages (using appropriate version of Background Task Scheduler). */
-    protected void rescheduleOfflinePages() {
+    private void rescheduleOfflinePages() {
         BackgroundScheduler.getInstance().reschedule();
+    }
+
+    private void rescheduleOneShotBackgroundSyncTasks() {
+        BackgroundSyncBackgroundTaskScheduler.getInstance().reschedule(
+                BackgroundSyncBackgroundTaskScheduler.BackgroundSyncTask
+                        .ONE_SHOT_SYNC_CHROME_WAKE_UP);
     }
 
     @Override

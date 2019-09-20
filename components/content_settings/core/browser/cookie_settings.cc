@@ -183,6 +183,13 @@ CookieSettings::~CookieSettings() {
 }
 
 bool CookieSettings::IsCookieControlsEnabled() {
+  if (base::FeatureList::IsEnabled(
+          kImprovedCookieControlsForThirdPartyCookieBlocking) &&
+      pref_change_registrar_.prefs()->GetBoolean(
+          prefs::kBlockThirdPartyCookies)) {
+    return true;
+  }
+
   if (!base::FeatureList::IsEnabled(kImprovedCookieControls))
     return false;
 

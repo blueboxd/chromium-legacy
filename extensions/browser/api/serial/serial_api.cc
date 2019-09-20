@@ -18,7 +18,7 @@
 #include "extensions/browser/api/serial/serial_port_manager.h"
 #include "extensions/common/api/serial.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace extensions {
 
@@ -115,8 +115,8 @@ ExtensionFunction::ResponseAction SerialConnectFunction::Run() {
   auto* manager = SerialPortManager::Get(browser_context());
   DCHECK(manager);
 
-  device::mojom::SerialPortPtr serial_port;
-  manager->GetPort(params->path, mojo::MakeRequest(&serial_port));
+  mojo::PendingRemote<device::mojom::SerialPort> serial_port;
+  manager->GetPort(params->path, serial_port.InitWithNewPipeAndPassReceiver());
 
   connection_ = std::make_unique<SerialConnection>(extension_->id(),
                                                    std::move(serial_port));

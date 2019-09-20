@@ -34,7 +34,7 @@ class SharedClipboardUiController
   // Overridden from SharingUiController:
   base::string16 GetTitle() override;
   PageActionIconType GetIconType() override;
-  int GetRequiredDeviceCapabilities() override;
+  sync_pb::SharingSpecificFields::EnabledFeatures GetRequiredFeature() override;
   void OnDeviceChosen(const syncer::DeviceInfo& device) override;
   void OnAppChosen(const App& app) override;
   base::string16 GetContentType() const override;
@@ -44,6 +44,8 @@ class SharedClipboardUiController
   base::string16 GetTextForTooltipAndAccessibleName() const override;
   SharingFeatureName GetFeatureMetricsPrefix() const override;
   base::string16 GetEducationWindowTitleText() const override;
+  std::unique_ptr<views::StyledLabel> GetHelpTextLabel(
+      views::StyledLabelListener* listener) override;
 
  protected:
   explicit SharedClipboardUiController(content::WebContents* web_contents);

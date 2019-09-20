@@ -19,26 +19,26 @@ namespace device {
 // static
 void SerialPortImpl::Create(
     const base::FilePath& path,
-    mojom::SerialPortRequest request,
+    mojo::PendingReceiver<mojom::SerialPort> receiver,
     mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-  // This SerialPortImpl is owned by |request| and |watcher|.
-  new SerialPortImpl(path, std::move(request), std::move(watcher),
+  // This SerialPortImpl is owned by |receiver| and |watcher|.
+  new SerialPortImpl(path, std::move(receiver), std::move(watcher),
                      std::move(ui_task_runner));
 }
 
 SerialPortImpl::SerialPortImpl(
     const base::FilePath& path,
-    mojom::SerialPortRequest request,
+    mojo::PendingReceiver<mojom::SerialPort> receiver,
     mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
-    : binding_(this, std::move(request)),
+    : receiver_(this, std::move(receiver)),
       io_handler_(device::SerialIoHandler::Create(path, ui_task_runner)),
       watcher_(std::move(watcher)),
       in_stream_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       out_stream_watcher_(FROM_HERE,
                           mojo::SimpleWatcher::ArmingPolicy::MANUAL) {
-  binding_.set_connection_error_handler(base::BindOnce(
+  receiver_.set_disconnect_handler(base::BindOnce(
       [](SerialPortImpl* self) { delete self; }, base::Unretained(this)));
   if (watcher_.is_bound()) {
     watcher_.set_disconnect_handler(base::BindOnce(

@@ -97,5 +97,10 @@ static void JNI_ApplicationStatus_OnApplicationStateChange(
   ApplicationStatusListener::NotifyApplicationStateChange(application_state);
 }
 
+// static
+bool ApplicationStatusListener::HasVisibleActivities() {
+  return Java_ApplicationStatus_hasVisibleActivities(AttachCurrentThread());
+}
+
 }  // namespace android
 }  // namespace base

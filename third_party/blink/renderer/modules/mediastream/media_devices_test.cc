@@ -179,6 +179,7 @@ class PromiseObserver {
   bool isFulfilled() { return is_fulfilled_; }
   bool isRejected() { return is_rejected_; }
   ScriptValue argument() { return saved_arg_; }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(saved_arg_); }
 
  private:
   class MyScriptFunction : public ScriptFunction {

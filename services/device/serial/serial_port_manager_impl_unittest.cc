@@ -78,13 +78,14 @@ TEST_F(SerialPortManagerImplTest, SimpleConnectTest) {
   port_manager->GetDevices(base::BindLambdaForTesting(
       [&](std::vector<mojom::SerialPortInfoPtr> results) {
         for (auto& device : results) {
-          mojom::SerialPortPtr serial_port;
-          port_manager->GetPort(device->token, mojo::MakeRequest(&serial_port),
+          mojo::Remote<mojom::SerialPort> serial_port;
+          port_manager->GetPort(device->token,
+                                serial_port.BindNewPipeAndPassReceiver(),
                                 /*watcher=*/mojo::NullRemote());
           // Send a message on the pipe and wait for the response to make sure
           // that the interface request was bound successfully.
           serial_port.FlushForTesting();
-          EXPECT_FALSE(serial_port.encountered_error());
+          EXPECT_TRUE(serial_port.is_connected());
         }
         loop.Quit();
       }));
@@ -119,14 +120,14 @@ TEST_F(SerialPortManagerImplTest, GetPort) {
       [&](std::vector<mojom::SerialPortInfoPtr> results) {
         EXPECT_GT(results.size(), 0u);
 
-        mojom::SerialPortPtr serial_port;
+        mojo::Remote<mojom::SerialPort> serial_port;
         port_manager->GetPort(results[0]->token,
-                              mojo::MakeRequest(&serial_port),
+                              serial_port.BindNewPipeAndPassReceiver(),
                               /*watcher=*/mojo::NullRemote());
         // Send a message on the pipe and wait for the response to make sure
         // that the interface request was bound successfully.
         serial_port.FlushForTesting();
-        EXPECT_FALSE(serial_port.encountered_error());
+        EXPECT_TRUE(serial_port.is_connected());
         loop.Quit();
       }));
   loop.Run();

@@ -66,23 +66,6 @@ gfx::ImageSkia CreateAppIcon(const SharingUiController::App& app) {
                          : app.image.AsImageSkia();
 }
 
-std::unique_ptr<views::StyledLabel> CreateHelpText(
-    views::StyledLabelListener* listener) {
-  const base::string16 link = l10n_util::GetStringUTF16(
-      // TODO(yasmo): rename to IDS_BROWSER_SHARING_DIALOG_TROUBLESHOOT_LINK
-      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_TROUBLESHOOT_LINK);
-  size_t offset;
-  const base::string16 text = l10n_util::GetStringFUTF16(
-      // TODO(yasmo): rename to IDS_BROWSER_SHARING_DIALOG_HELP_TEXT_NO_DEVICES
-      IDS_BROWSER_SHARING_CLICK_TO_CALL_DIALOG_HELP_TEXT_NO_DEVICES, link,
-      &offset);
-  auto label = std::make_unique<views::StyledLabel>(text, listener);
-  views::StyledLabel::RangeStyleInfo link_style =
-      views::StyledLabel::RangeStyleInfo::CreateForLink();
-  label->AddStyleRange(gfx::Range(offset, offset + link.length()), link_style);
-  return label;
-}
-
 // TODO(himanshujaju): This is almost same as self share, we could unify these
 // methods once we unify our architecture and dialog views.
 base::string16 GetLastUpdatedTimeInDays(base::Time last_updated_timestamp) {
@@ -105,6 +88,11 @@ SharingDialogView::~SharingDialogView() = default;
 
 void SharingDialogView::Hide() {
   CloseBubble();
+}
+
+std::unique_ptr<views::StyledLabel> SharingDialogView::CreateHelpText(
+    views::StyledLabelListener* listener) {
+  return controller_->GetHelpTextLabel(listener);
 }
 
 int SharingDialogView::GetDialogButtons() const {

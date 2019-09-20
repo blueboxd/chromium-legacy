@@ -12,6 +12,7 @@
 #include "media/capture/video/mock_device_factory.h"
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video/video_capture_system_impl.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
 #include "services/video_capture/device_media_to_mojo_adapter.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"
@@ -31,8 +32,8 @@ namespace video_capture {
 class MockDeviceSharedAccessTest : public ::testing::Test {
  public:
   MockDeviceSharedAccessTest()
-      : mock_receiver_1_(mojo::MakeRequest(&receiver_1_)),
-        mock_receiver_2_(mojo::MakeRequest(&receiver_2_)),
+      : mock_receiver_1_(receiver_1_.InitWithNewPipeAndPassReceiver()),
+        mock_receiver_2_(receiver_2_.InitWithNewPipeAndPassReceiver()),
         next_arbitrary_frame_feedback_id_(123) {}
   ~MockDeviceSharedAccessTest() override {}
 
@@ -256,10 +257,10 @@ class MockDeviceSharedAccessTest : public ::testing::Test {
   media::VideoCaptureParams requestable_settings_;
 
   mojom::PushVideoStreamSubscriptionPtr subscription_1_;
-  mojom::ReceiverPtr receiver_1_;
+  mojo::PendingRemote<mojom::Receiver> receiver_1_;
   MockReceiver mock_receiver_1_;
   mojom::PushVideoStreamSubscriptionPtr subscription_2_;
-  mojom::ReceiverPtr receiver_2_;
+  mojo::PendingRemote<mojom::Receiver> receiver_2_;
   MockReceiver mock_receiver_2_;
 
   int32_t next_arbitrary_frame_feedback_id_;

@@ -37,5 +37,5 @@ interface DataReductionProxy {
   AddThrottleConfigObserver(
       pending_remote<DataReductionProxyThrottleConfigObserver> observer);
 
-  Clone(DataReductionProxy& request);
+  Clone(pending_receiver<DataReductionProxy> receiver);
 };

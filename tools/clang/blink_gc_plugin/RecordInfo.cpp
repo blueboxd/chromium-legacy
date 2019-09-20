@@ -141,7 +141,7 @@ bool RecordInfo::IsGCDirectlyDerived() {
       continue;
 
     const std::string& name = base->getName();
-    if (Config::IsGCSimpleBase(name) || Config::IsGCFinalizedBase(name)) {
+    if (Config::IsGCSimpleBase(name)) {
       directly_derived_gc_base_ = &it;
       break;
     }
@@ -195,16 +195,6 @@ void RecordInfo::walkBases() {
       break;
     base_record = queue.pop_back_val(); // not actually a queue.
   }
-}
-
-bool RecordInfo::IsGCFinalized() {
-  if (!IsGCDerived())
-    return false;
-  for (const auto& gc_base : gc_base_names_) {
-    if (Config::IsGCFinalizedBase(gc_base))
-      return true;
-  }
-  return false;
 }
 
 // A GC mixin is a class that inherits from a GC mixin base and has

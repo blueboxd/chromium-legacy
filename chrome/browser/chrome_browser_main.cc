@@ -200,7 +200,6 @@
 #include "chrome/browser/metrics/thread_watcher_android.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #else
-#include "chrome/browser/feedback/feedback_profile_observer.h"
 #include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -1218,10 +1217,6 @@ void ChromeBrowserMainParts::PreProfileInit() {
     chrome_extra_parts_[i]->PreProfileInit();
 
 #if !defined(OS_ANDROID)
-  // Initialize the feedback uploader so it can setup notifications for profile
-  // creation.
-  feedback::FeedbackProfileObserver::Initialize();
-
   // Ephemeral profiles may have been left behind if the browser crashed.
   g_browser_process->profile_manager()->CleanUpEphemeralProfiles();
   // Files of deleted profiles can also be left behind after a crash.

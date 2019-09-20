@@ -5,8 +5,6 @@
 #include "ui/platform_window/x11/x11_window.h"
 
 #include "base/trace_event/trace_event.h"
-#include "ui/base/x/x11_util.h"
-#include "ui/display/screen.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -88,11 +86,6 @@ X11Window::~X11Window() {
 void X11Window::Initialize(PlatformWindowInitProperties properties) {
   XWindow::Configuration config =
       ConvertInitPropertiesToXWindowConfig(properties);
-
-  gfx::Size adjusted_size_in_pixels =
-      AdjustSizeForDisplay(config.bounds.size());
-  config.bounds.set_size(adjusted_size_in_pixels);
-
   Init(config);
 }
 
@@ -101,11 +94,9 @@ void X11Window::SetXEventDelegate(XEventDelegate* delegate) {
   x_event_delegate_ = delegate;
 }
 
-void X11Window::Show(bool inactive) {
-  if (mapped_in_client())
-    return;
-
-  XWindow::Map(inactive);
+void X11Window::Show() {
+  // TODO(msisov): pass inactivity to PlatformWindow::Show.
+  XWindow::Map(false /* inactive */);
 }
 
 void X11Window::Hide() {
@@ -126,30 +117,17 @@ void X11Window::PrepareForShutdown() {
 }
 
 void X11Window::SetBounds(const gfx::Rect& bounds) {
-  gfx::Rect current_bounds_in_pixels = GetBounds();
-  gfx::Rect bounds_in_pixels(bounds.origin(),
-                             AdjustSizeForDisplay(bounds.size()));
-
-  bool size_changed =
-      current_bounds_in_pixels.size() != bounds_in_pixels.size();
-
-  if (size_changed) {
-    // Only cancel the delayed resize task if we're already about to call
-    // OnHostResized in this function.
-    XWindow::CancelResize();
-  }
-
   // Assume that the resize will go through as requested, which should be the
   // case if we're running without a window manager.  If there's a window
   // manager, it can modify or ignore the request, but (per ICCCM) we'll get a
   // (possibly synthetic) ConfigureNotify about the actual size and correct
   // |bounds_| later.
-  XWindow::SetBounds(bounds_in_pixels);
+  XWindow::SetBounds(bounds);
 
   // Even if the pixel bounds didn't change this call to the delegate should
   // still happen. The device scale factor may have changed which effectively
   // changes the bounds.
-  platform_window_delegate_->OnBoundsChanged(bounds_in_pixels);
+  platform_window_delegate_->OnBoundsChanged(bounds);
 }
 
 gfx::Rect X11Window::GetBounds() {
@@ -174,79 +152,13 @@ bool X11Window::HasCapture() const {
 }
 
 void X11Window::ToggleFullscreen() {
-  // Check if we need to fullscreen the window or not.
-  bool fullscreen = state_ != PlatformWindowState::kFullScreen;
-  if (fullscreen)
-    CancelResize();
-
-  // Work around a bug where if we try to unfullscreen, metacity immediately
-  // fullscreens us again. This is a little flickery and not necessary if
-  // there's a gnome-panel, but it's not easy to detect whether there's a
-  // panel or not.
-  bool unmaximize_and_remaximize = !fullscreen && IsMaximized() &&
-                                   ui::GuessWindowManager() == ui::WM_METACITY;
-
-  if (unmaximize_and_remaximize)
-    Restore();
-
-  // Fullscreen state changes have to be handled manually and then checked
-  // against configuration events, which come from a compositor. The reason
-  // of manually changing the |state_| is that the compositor answers
-  // about state changes asynchronously, which leads to a wrong return value in
-  // DesktopWindowTreeHostPlatform::IsFullscreen, for example, and media
-  // files can never be set to fullscreen. Wayland does the same.
-  if (fullscreen)
-    state_ = PlatformWindowState::kFullScreen;
-  else
-    state_ = PlatformWindowState::kUnknown;
-  SetFullscreen(fullscreen);
-
-  if (unmaximize_and_remaximize)
-    Maximize();
-
-  // Try to guess the size we will have after the switch to/from fullscreen:
-  // - (may) avoid transient states
-  // - works around Flash content which expects to have the size updated
-  //   synchronously.
-  // See https://crbug.com/361408
-  gfx::Rect bounds_in_pixels = GetBounds();
-  if (fullscreen) {
-    display::Screen* screen = display::Screen::GetScreen();
-    const display::Display display =
-        screen->GetDisplayMatching(bounds_in_pixels);
-    SetRestoredBoundsInPixels(bounds_in_pixels);
-    bounds_in_pixels = display.bounds();
-  } else {
-    bounds_in_pixels = GetRestoredBoundsInPixels();
-  }
-  // Do not go through SetBounds as long as it adjusts bounds and sets them to X
-  // Server. Instead, we just store the bounds and notify the client that the
-  // window occupies the entire screen.
-  XWindow::set_bounds(bounds_in_pixels);
-  platform_window_delegate_->OnBoundsChanged(bounds_in_pixels);
+  bool is_fullscreen = IsFullscreen();
+  SetFullscreen(!is_fullscreen);
 }
 
 void X11Window::Maximize() {
-  if (IsFullscreen()) {
-    // Unfullscreen the window if it is fullscreen.
-    ToggleFullscreen();
-
-    // Resize the window so that it does not have the same size as a monitor.
-    // (Otherwise, some window managers immediately put the window back in
-    // fullscreen mode).
-    gfx::Rect bounds_in_pixels = GetBounds();
-    gfx::Rect adjusted_bounds_in_pixels(
-        bounds_in_pixels.origin(),
-        AdjustSizeForDisplay(bounds_in_pixels.size()));
-    if (adjusted_bounds_in_pixels != bounds_in_pixels)
-      SetBounds(adjusted_bounds_in_pixels);
-  }
-
-  // When we are in the process of requesting to maximize a window, we can
-  // accurately keep track of our restored bounds instead of relying on the
-  // heuristics that are in the PropertyNotify and ConfigureNotify handlers.
-  SetRestoredBoundsInPixels(GetBounds());
-
+  if (IsFullscreen())
+    SetFullscreen(false);
   XWindow::Maximize();
 }
 
@@ -255,11 +167,10 @@ void X11Window::Minimize() {
 }
 
 void X11Window::Restore() {
-  if (XWindow::IsFullscreen())
+  if (IsFullscreen())
     ToggleFullscreen();
-  if (XWindow::IsMaximized())
-    XWindow::Unmaximize();
-  XWindow::Unhide();
+  if (IsMaximized())
+    Unmaximize();
 }
 
 PlatformWindowState X11Window::GetPlatformWindowState() const {
@@ -295,11 +206,14 @@ void X11Window::ConfineCursorToBounds(const gfx::Rect& bounds) {
 }
 
 void X11Window::SetRestoredBoundsInPixels(const gfx::Rect& bounds) {
-  restored_bounds_in_pixels_ = bounds;
+  // TODO(crbug.com/848131): Restore bounds on restart
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 gfx::Rect X11Window::GetRestoredBoundsInPixels() const {
-  return restored_bounds_in_pixels_;
+  // TODO(crbug.com/848131): Restore bounds on restart
+  NOTIMPLEMENTED_LOG_ONCE();
+  return gfx::Rect();
 }
 
 void X11Window::SetZOrderLevel(ZOrderLevel order) {
@@ -322,6 +236,14 @@ ZOrderLevel X11Window::GetZOrderLevel() const {
   // kFloatingWindow as a reasonable equivalent.
   return window_always_on_top ? ui::ZOrderLevel::kFloatingWindow
                               : ui::ZOrderLevel::kNormal;
+}
+
+void X11Window::StackAbove(gfx::AcceleratedWidget widget) {
+  XWindow::StackXWindowAbove(static_cast<::Window>(widget));
+}
+
+void X11Window::StackAtTop() {
+  XWindow::StackXWindowAtTop();
 }
 
 bool X11Window::CanDispatchEvent(const PlatformEvent& xev) {
@@ -445,32 +367,6 @@ void X11Window::DispatchHostWindowDragMovement(
 void X11Window::SetPlatformEventDispatcher() {
   DCHECK(PlatformEventSource::GetInstance());
   PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
-}
-
-gfx::Size X11Window::AdjustSizeForDisplay(
-    const gfx::Size& requested_size_in_pixels) {
-#if defined(OS_CHROMEOS)
-  // We do not need to apply the workaround for the ChromeOS.
-  return requested_size_in_pixels;
-#else
-  auto* screen = display::Screen::GetScreen();
-  if (screen) {
-    std::vector<display::Display> displays = screen->GetAllDisplays();
-    // Compare against all monitor sizes. The window manager can move the window
-    // to whichever monitor it wants.
-    for (const auto& display : displays) {
-      if (requested_size_in_pixels == display.GetSizeInPixel()) {
-        return gfx::Size(requested_size_in_pixels.width() - 1,
-                         requested_size_in_pixels.height() - 1);
-      }
-    }
-  }
-
-  // Do not request a 0x0 window size. It causes an XError.
-  gfx::Size size_in_pixels = requested_size_in_pixels;
-  size_in_pixels.SetToMax(gfx::Size(1, 1));
-  return size_in_pixels;
-#endif
 }
 
 }  // namespace ui

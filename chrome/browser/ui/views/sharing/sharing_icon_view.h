@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-
 // The location bar icon to show the sharing features bubble.
 class SharingIconView : public PageActionIconView {
  public:

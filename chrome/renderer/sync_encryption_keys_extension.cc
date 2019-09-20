@@ -9,12 +9,26 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "content/public/renderer/chrome_object_extensions_utils.h"
 #include "content/public/renderer/render_frame.h"
 #include "gin/arguments.h"
 #include "gin/function_template.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "url/origin.h"
+
+namespace {
+
+const url::Origin& GetAllowedOrigin() {
+  static const base::NoDestructor<url::Origin> origin(
+      url::Origin::Create(GaiaUrls::GetInstance()->gaia_url()));
+  CHECK(!origin->opaque());
+  return *origin;
+}
+
+}  // namespace
 
 // static
 void SyncEncryptionKeysExtension::Create(content::RenderFrame* frame) {
@@ -32,8 +46,14 @@ void SyncEncryptionKeysExtension::OnDestruct() {
 }
 
 void SyncEncryptionKeysExtension::DidClearWindowObject() {
-  // TODO(crbug.com/1000146): This API should be restricted to allowed origins.
-  Install();
+  if (!render_frame()) {
+    return;
+  }
+
+  url::Origin origin = render_frame()->GetWebFrame()->GetSecurityOrigin();
+  if (origin == GetAllowedOrigin()) {
+    Install();
+  }
 }
 
 void SyncEncryptionKeysExtension::Install() {

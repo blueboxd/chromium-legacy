@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.sharing.SharingServiceProxy.DeviceInfo;
+import org.chromium.components.sync.protocol.SharingSpecificFields;
 import org.chromium.ui.widget.ChromeImageView;
 
 import java.util.ArrayList;
@@ -28,8 +29,8 @@ import java.util.concurrent.TimeUnit;
 public class SharingAdapter extends BaseAdapter {
     private final ArrayList<DeviceInfo> mTargetDevices;
 
-    public SharingAdapter(int capabilities) {
-        mTargetDevices = SharingServiceProxy.getInstance().getDeviceCandidates(capabilities);
+    public SharingAdapter(SharingSpecificFields.EnabledFeatures requiredFeature) {
+        mTargetDevices = SharingServiceProxy.getInstance().getDeviceCandidates(requiredFeature);
     }
 
     @Override

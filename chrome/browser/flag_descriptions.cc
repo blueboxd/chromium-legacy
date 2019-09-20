@@ -2274,6 +2274,10 @@ const char kAndroidAutofillAccessibilityName[] = "Autofill Accessibility";
 const char kAndroidAutofillAccessibilityDescription[] =
     "Enable accessibility for autofill popup.";
 
+const char kAndroidSetupSearchEngineName[] = "Android setup search engine";
+const char kAndroidSetupSearchEngineDescription[] =
+    "Enables search engine selection at Android setup.";
+
 const char kAndroidSurfaceControl[] = "Use Android SurfaceControl";
 const char kAndroidSurfaceControlDescription[] =
     "Use the SurfaceControl API for supporting overlays on Android";
@@ -2828,11 +2832,15 @@ const char kNtpRealboxDescription[] =
     "directly (i.e. not be a \"fake\" box). Search results will show below the "
     "non-fake input (\"realbox\").";
 
-const char kEnableImprovedCookieControlsName[] =
-    "Enable improved cookie controls UI";
-const char kEnableImprovedCookieControlsDescription[] =
-    "Improved UI in Incognito mode for the existing third-party cookie "
-    "blocking.";
+const char kImprovedCookieControlsName[] =
+    "Enable improved cookie controls UI in incognito mode";
+const char kImprovedCookieControlsDescription[] =
+    "Improved UI in Incognito mode for third-party cookie blocking.";
+
+const char kImprovedCookieControlsForThirdPartyCookieBlockingName[] =
+    "Enable improved UI for third-party cookie blocking";
+const char kImprovedCookieControlsForThirdPartyCookieBlockingDescription[] =
+    "Enables an improved UI for existing third-party cookie blocking users.";
 
 const char kEnableReaderModeName[] = "Enable Reader Mode";
 const char kEnableReaderModeDescription[] =

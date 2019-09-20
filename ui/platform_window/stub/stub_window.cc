@@ -20,7 +20,7 @@ StubWindow::StubWindow(PlatformWindowDelegate* delegate,
 
 StubWindow::~StubWindow() {}
 
-void StubWindow::Show(bool inactive) {}
+void StubWindow::Show() {}
 
 void StubWindow::Hide() {}
 

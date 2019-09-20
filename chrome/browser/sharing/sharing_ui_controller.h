@@ -18,8 +18,11 @@
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
+#include "components/sync/protocol/device_info_specifics.pb.h"
 #include "components/sync_device_info/device_info.h"
 #include "ui/gfx/image/image.h"
+#include "ui/views/controls/styled_label.h"
+#include "ui/views/controls/styled_label_listener.h"
 
 class BrowserWindow;
 class SharingDialog;
@@ -62,7 +65,8 @@ class SharingUiController {
   // Called when user chooses a local app to complete the task.
   virtual void OnAppChosen(const App& app) = 0;
   virtual PageActionIconType GetIconType() = 0;
-  virtual int GetRequiredDeviceCapabilities() = 0;
+  virtual sync_pb::SharingSpecificFields::EnabledFeatures
+  GetRequiredFeature() = 0;
   virtual const gfx::VectorIcon& GetVectorIcon() const = 0;
   virtual base::string16 GetTextForTooltipAndAccessibleName() const = 0;
   // Get the name of the feature to be used as a prefix for the metric name.
@@ -71,6 +75,10 @@ class SharingUiController {
 
   // Called by the SharingDialog when it is being closed.
   virtual void OnDialogClosed(SharingDialog* dialog);
+
+  // Get the help text label for the help dialog.
+  virtual std::unique_ptr<views::StyledLabel> GetHelpTextLabel(
+      views::StyledLabelListener* listener) = 0;
 
   // Closes the current dialog and resets all state.
   void ClearLastDialog();

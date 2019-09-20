@@ -9,6 +9,7 @@
 #include "base/test/task_environment.h"
 #include "base/timer/timer.h"
 #include "media/base/media_switches.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/video_capture/public/cpp/mock_receiver.h"
 #include "services/video_capture/public/mojom/constants.mojom.h"
@@ -171,8 +172,8 @@ TEST_F(VideoCaptureServiceLifecycleTest,
       }));
   media::VideoCaptureParams requestable_settings;
   requestable_settings.requested_format = fake_device_info.supported_formats[0];
-  mojom::ReceiverPtr receiver_proxy;
-  MockReceiver mock_receiver(mojo::MakeRequest(&receiver_proxy));
+  mojo::PendingRemote<mojom::Receiver> receiver_proxy;
+  MockReceiver mock_receiver(receiver_proxy.InitWithNewPipeAndPassReceiver());
   fake_device->Start(requestable_settings, std::move(receiver_proxy));
   {
     base::RunLoop wait_loop;

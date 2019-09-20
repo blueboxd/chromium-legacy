@@ -18,7 +18,6 @@
 #include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "url/gurl.h"
 
@@ -30,14 +29,6 @@ BookmarkAppRegistrar::BookmarkAppRegistrar(Profile* profile)
 }
 
 BookmarkAppRegistrar::~BookmarkAppRegistrar() = default;
-
-void BookmarkAppRegistrar::Init(base::OnceClosure callback) {
-  ExtensionSystem::Get(profile())->ready().Post(FROM_HERE, std::move(callback));
-}
-
-BookmarkAppRegistrar* BookmarkAppRegistrar::AsBookmarkAppRegistrar() {
-  return this;
-}
 
 bool BookmarkAppRegistrar::IsInstalled(const web_app::AppId& app_id) const {
   return GetExtension(app_id) != nullptr;
@@ -161,29 +152,6 @@ web_app::LaunchContainer BookmarkAppRegistrar::GetAppLaunchContainer(
     case LaunchContainer::kLaunchContainerNone:
       NOTREACHED();
       return web_app::LaunchContainer::kDefault;
-  }
-}
-
-void BookmarkAppRegistrar::SetAppLaunchContainer(
-    const web_app::AppId& app_id,
-    web_app::LaunchContainer launch_container) {
-  const Extension* extension = GetExtension(app_id);
-  DCHECK(extension);
-  if (!extension)
-    return;
-
-  switch (launch_container) {
-    case web_app::LaunchContainer::kWindow:
-      extensions::SetLaunchType(profile(), extension->id(),
-                                extensions::LAUNCH_TYPE_WINDOW);
-      return;
-    case web_app::LaunchContainer::kTab:
-      extensions::SetLaunchType(profile(), extension->id(),
-                                extensions::LAUNCH_TYPE_REGULAR);
-      return;
-    case web_app::LaunchContainer::kDefault:
-      NOTREACHED();
-      return;
   }
 }
 

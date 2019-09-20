@@ -5,6 +5,7 @@ BYTESTRING ByteString
 BYTE byte
 CALLBACK callback
 CONST const
+CONSTRUCTOR constructor
 DELETER deleter
 DICTIONARY dictionary
 DOMSTRING DOMString

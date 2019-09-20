@@ -215,6 +215,9 @@ TEST_F(WindowStateTest, AndroidPipWindowUmaMetrics) {
             histograms.GetBucketCount(kAshPipEventsHistogramName,
                                       Sample(AshPipEvents::ANDROID_PIP_END)));
   histograms.ExpectTotalCount(kAshPipEventsHistogramName, 4);
+
+  // Check time count:
+  histograms.ExpectTotalCount(kAshPipAndroidPipUseTimeHistogramName, 1);
 }
 
 TEST_F(WindowStateTest, ChromePipWindowUmaMetricsCountsExitOnDestroy) {

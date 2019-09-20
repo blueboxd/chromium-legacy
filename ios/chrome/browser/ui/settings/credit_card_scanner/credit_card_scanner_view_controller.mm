@@ -77,7 +77,7 @@ NSString* const kCreditCardScannerViewID = @"kCreditCardScannerViewID";
 
 - (void)viewDidLayoutSubviews {
   [super viewDidLayoutSubviews];
-  self.creditCardViewport = [self.scannerView viewportRectOfInterest];
+  self.creditCardViewport = [self.scannerView viewportRegionOfInterest];
 }
 
 #pragma mark - ScannerViewController

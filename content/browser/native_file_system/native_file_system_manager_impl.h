@@ -15,10 +15,8 @@
 #include "content/public/browser/native_file_system_permission_context.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_file_writer.mojom.h"
@@ -123,10 +121,10 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
 
   // Creates a new NativeFileSystemDirectoryHandleImpl for a given url. Assumes
   // the passed in URL is valid and represents a directory.
-  blink::mojom::NativeFileSystemDirectoryHandlePtr CreateDirectoryHandle(
-      const BindingContext& context,
-      const storage::FileSystemURL& url,
-      const SharedHandleState& handle_state);
+  mojo::PendingRemote<blink::mojom::NativeFileSystemDirectoryHandle>
+  CreateDirectoryHandle(const BindingContext& context,
+                        const storage::FileSystemURL& url,
+                        const SharedHandleState& handle_state);
 
   // Creates a new NativeFileSystemFileWriterImpl for a given target and
   // swap file URLs. Assumes the passed in URLs are valid and represent files.
@@ -257,12 +255,12 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   mojo::ReceiverSet<blink::mojom::NativeFileSystemManager, BindingContext>
       receivers_;
 
-  // All the bindings and receivers for file and directory handles that have
-  // references to them.
+  // All the receivers for file and directory handles that have references to
+  // them.
   mojo::UniqueReceiverSet<blink::mojom::NativeFileSystemFileHandle>
       file_receivers_;
-  mojo::StrongBindingSet<blink::mojom::NativeFileSystemDirectoryHandle>
-      directory_bindings_;
+  mojo::UniqueReceiverSet<blink::mojom::NativeFileSystemDirectoryHandle>
+      directory_receivers_;
   mojo::UniqueReceiverSet<blink::mojom::NativeFileSystemFileWriter>
       writer_receivers_;
 

@@ -31,6 +31,8 @@ const char kSenderGuid[] = "test_sender_guid";
 const char kFCMToken[] = "test_fcm_token";
 const char kP256dh[] = "test_p256_dh";
 const char kAuthSecret[] = "test_auth_secret";
+const std::set<sync_pb::SharingSpecificFields::EnabledFeatures>
+    kNoEnabledFeatures;
 
 class MockSharingMessageHandler : public SharingMessageHandler {
  public:
@@ -118,8 +120,8 @@ TEST_F(SharingFCMHandlerTest, AckMessageHandler) {
 
 // Generic test for handling of SharingMessage payload other than AckMessage.
 TEST_F(SharingFCMHandlerTest, PingMessageHandler) {
-  sync_prefs_->SetSyncDevice(kSenderGuid,
-                             Device(kFCMToken, kP256dh, kAuthSecret, 0));
+  sync_prefs_->SetSyncDevice(
+      kSenderGuid, Device(kFCMToken, kP256dh, kAuthSecret, kNoEnabledFeatures));
 
   SharingMessage sharing_message;
   sharing_message.set_sender_guid(kSenderGuid);
@@ -159,8 +161,8 @@ TEST_F(SharingFCMHandlerTest, PingMessageHandler) {
 // Test for handling of SharingMessage payload other than AckMessage for
 // secondary users in Android.
 TEST_F(SharingFCMHandlerTest, PingMessageHandlerSecondaryUser) {
-  sync_prefs_->SetSyncDevice(kSenderGuid,
-                             Device(kFCMToken, kP256dh, kAuthSecret, 0));
+  sync_prefs_->SetSyncDevice(
+      kSenderGuid, Device(kFCMToken, kP256dh, kAuthSecret, kNoEnabledFeatures));
 
   SharingMessage sharing_message;
   sharing_message.set_sender_guid(kSenderGuid);

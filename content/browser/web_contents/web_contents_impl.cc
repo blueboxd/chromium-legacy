@@ -60,7 +60,6 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
-#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -4379,10 +4378,9 @@ void WebContentsImpl::DidRedirectNavigation(
   // Notify accessibility if this is a reload. This has to called on the
   // BrowserAccessibilityManager associated with the old RFHI.
   if (navigation_handle->GetReloadType() != ReloadType::NONE) {
-    NavigationHandleImpl* nhi =
-        static_cast<NavigationHandleImpl*>(navigation_handle);
+    NavigationRequest* request = NavigationRequest::From(navigation_handle);
     BrowserAccessibilityManager* manager =
-        nhi->frame_tree_node()
+        request->frame_tree_node()
             ->current_frame_host()
             ->browser_accessibility_manager();
     if (manager)

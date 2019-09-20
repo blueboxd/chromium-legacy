@@ -466,6 +466,7 @@ public class ApplicationStatus {
      * @return Whether any Activity under this Application is visible.
      */
     @AnyThread
+    @CalledByNative
     public static boolean hasVisibleActivities() {
         assert isInitialized();
         int state = getStateForApplication();

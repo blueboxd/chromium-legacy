@@ -342,14 +342,15 @@ void ModuleTreeLinker::NotifyModuleLoadFinished(ModuleScript* module_script) {
 void ModuleTreeLinker::FetchDescendants(const ModuleScript* module_script) {
   DCHECK(module_script);
 
-  // TODO(crbug.com/1000152): Replace ScriptState::Scope with v8::HandleScope
-  ScriptState::Scope scope(modulator_->GetScriptState());
   // [nospec] Abort the steps if the browsing context is discarded.
   if (!modulator_->HasValidContext()) {
     result_ = nullptr;
     AdvanceState(State::kFinished);
     return;
   }
+
+  // TODO(crbug.com/1000152): Replace ScriptState::Scope with v8::HandleScope
+  ScriptState::Scope scope(modulator_->GetScriptState());
 
   // <spec step="2">Let record be module script's record.</spec>
   v8::Local<v8::Module> record = module_script->V8Module();

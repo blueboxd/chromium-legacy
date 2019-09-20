@@ -64,8 +64,8 @@ void MockDeviceTest::SetUp() {
   requested_settings_.power_line_frequency =
       media::PowerLineFrequency::FREQUENCY_DEFAULT;
 
-  mock_receiver_ =
-      std::make_unique<MockReceiver>(mojo::MakeRequest(&mock_receiver_proxy_));
+  mock_receiver_ = std::make_unique<MockReceiver>(
+      mock_subscriber_.InitWithNewPipeAndPassReceiver());
 }
 
 }  // namespace video_capture

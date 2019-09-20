@@ -89,28 +89,19 @@ std::unique_ptr<views::BoxLayout> CreateBoxLayout(
   return layout;
 }
 
-std::unique_ptr<views::View> CreateBorderedBoxView(
-    std::unique_ptr<views::View> children_container) {
+std::unique_ptr<views::View> CreateBorderedBoxView() {
   constexpr int kBorderThickness = 1;
 
-  // Add rounded rectangular border around children.
-  children_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
+  auto bordered_box = std::make_unique<views::View>();
+  bordered_box->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
-  children_container->SetBorder(views::CreateRoundedRectBorder(
+  bordered_box->SetBorder(views::CreateRoundedRectBorder(
       kBorderThickness,
       views::LayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH),
       GetDefaultSeparatorColor()));
+  bordered_box->SetProperty(views::kMarginsKey, gfx::Insets(kMenuEdgeMargin));
 
-  // Create outer view with margin.
-  // The outer view is needed because |BoxLayout| doesn't support outer
-  // margins.
-  auto outer_view = std::make_unique<views::View>();
-  outer_view->SetLayoutManager(std::make_unique<views::FillLayout>());
-  constexpr auto kOuterMargin = gfx::Insets(16);
-  outer_view->SetBorder(views::CreateEmptyBorder(kOuterMargin));
-  outer_view->AddChildView(std::move(children_container));
-
-  return outer_view;
+  return bordered_box;
 }
 
 std::unique_ptr<views::Button> CreateCircularImageButton(
@@ -519,17 +510,15 @@ void ProfileMenuViewBase::Reset() {
 
   // Create and add new component containers in the correct order.
   // First, add the bordered box with the identity and feature buttons.
-  auto bordered_box_container = std::make_unique<views::View>();
+  views::View* bordered_box = components->AddChildView(CreateBorderedBoxView());
   identity_info_container_ =
-      bordered_box_container->AddChildView(std::make_unique<views::View>());
+      bordered_box->AddChildView(std::make_unique<views::View>());
   shortcut_features_container_ =
-      bordered_box_container->AddChildView(std::make_unique<views::View>());
+      bordered_box->AddChildView(std::make_unique<views::View>());
   sync_info_container_ =
-      bordered_box_container->AddChildView(std::make_unique<views::View>());
+      bordered_box->AddChildView(std::make_unique<views::View>());
   account_features_container_ =
-      bordered_box_container->AddChildView(std::make_unique<views::View>());
-  components->AddChildView(
-      CreateBorderedBoxView(std::move(bordered_box_container)));
+      bordered_box->AddChildView(std::make_unique<views::View>());
   // Second, add the profile header.
   auto profile_header = std::make_unique<views::View>();
   views::BoxLayout* profile_header_layout =

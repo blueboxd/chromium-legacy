@@ -356,6 +356,7 @@ struct CONTENT_EXPORT WebPreferences {
       lazy_frame_loading_distance_thresholds_px;
   std::map<net::EffectiveConnectionType, int>
       lazy_image_loading_distance_thresholds_px;
+  std::map<net::EffectiveConnectionType, int> lazy_image_first_k_fully_load;
 
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for

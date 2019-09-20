@@ -122,13 +122,8 @@ class Config {
     return name == "GarbageCollectedMixin";
   }
 
-  static bool IsGCFinalizedBase(const std::string& name) {
-    return name == "GarbageCollectedFinalized";
-  }
-
   static bool IsGCBase(const std::string& name) {
-    return IsGCSimpleBase(name) || IsGCFinalizedBase(name) ||
-           IsGCMixinBase(name);
+    return IsGCSimpleBase(name) || IsGCMixinBase(name);
   }
 
   static bool IsIterator(const std::string& name) {

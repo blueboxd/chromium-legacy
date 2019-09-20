@@ -42,24 +42,34 @@ class JsonConfigConverter {
   using OnConfigLoadedCallback =
       base::OnceCallback<void(base::Optional<RecurrenceRankerConfigProto>)>;
 
+  // Creates a JsonConfigConverter and starts a conversion of |json_string|.
+  // |model_identifier| is used for metrics reporting in the same way as
+  // RecurrenceRanker's |model_identifier|. |connector| can be
+  // content::GetSystemConnector() in most cases.
+  //
+  // The provided |callback| will be called with the resulting proto if the
+  // conversion succeeded, or base::nullopt if the parsing or conversion failed.
+  // If the returned JsonConfigConverter instance is destroyed before parsing is
+  // complete, |callback| will never be called.
+  //
+  // |callback| should destroy the returned JsonConfigConverter instance.
+  static std::unique_ptr<JsonConfigConverter> Convert(
+      service_manager::Connector* connector,
+      const std::string& json_string,
+      const std::string& model_identifier,
+      OnConfigLoadedCallback callback);
+
+  ~JsonConfigConverter();
+
+ private:
   // The constructor requires a connector to interact with the parsing service.
   // For most use cases, this can be content::GetSystemConnector().
   explicit JsonConfigConverter(service_manager::Connector* connector);
-  ~JsonConfigConverter();
 
-  // Performs a conversion. The provided |callback| will be called with the
-  // resulting proto if the conversion succeeded, or base::nullopt if the
-  // parsing or conversion failed. |model_identifier| is used for metrics
-  // reporting in the same way as the RecurrenceRanker's |model_identifier|
-  // parameter.
-  void Convert(const std::string& json_string,
-               const std::string& model_identifier,
-               OnConfigLoadedCallback callback);
-
- private:
-  // Create or reuse a connection to the data decoder service for safe JSON
-  // parsing.
-  data_decoder::mojom::JsonParser* GetJsonParser();
+  // Performs a conversion.
+  void Start(const std::string& json_string,
+             const std::string& model_identifier,
+             OnConfigLoadedCallback callback);
 
   // Callback for parser.
   void OnJsonParsed(OnConfigLoadedCallback callback,

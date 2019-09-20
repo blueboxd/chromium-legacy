@@ -482,6 +482,11 @@ PropertyChangedSubscription View::AddEnabledChangedCallback(
 }
 
 View::Views View::GetChildrenInZOrder() {
+  if (layout_manager_) {
+    const auto result = layout_manager_->GetChildViewsInPaintOrder(this);
+    DCHECK_EQ(children_.size(), result.size());
+    return result;
+  }
   return children_;
 }
 

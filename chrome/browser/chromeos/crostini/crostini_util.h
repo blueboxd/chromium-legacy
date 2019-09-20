@@ -154,7 +154,7 @@ void CloseCrostiniUpgradeContainerView();
 
 // Show the Crostini Software Config Upgrade dialog (for installing Ansible and
 // applying an Ansible playbook in the container).
-void ShowCrostiniAnsibleSoftwareConfigView();
+void ShowCrostiniAnsibleSoftwareConfigView(Profile* profile);
 
 // We use an arbitrary well-formed extension id for the Terminal app, this
 // is equal to GenerateId("Terminal").

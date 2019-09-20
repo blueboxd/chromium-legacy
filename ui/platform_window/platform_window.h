@@ -11,6 +11,7 @@
 #include "ui/base/class_property.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace gfx {
@@ -29,10 +30,7 @@ class PlatformWindow : public PropertyHandler {
   PlatformWindow();
   ~PlatformWindow() override;
 
-  // PlatformWindow maybe called with the |inactive| set to true in some cases.
-  // That means that the Window Manager must not activate the window when it is
-  // shown. Most of PlatformWindow may ignore this value if not supported.
-  virtual void Show(bool inactive = false) = 0;
+  virtual void Show() = 0;
   virtual void Hide() = 0;
   virtual void Close() = 0;
 
@@ -85,6 +83,10 @@ class PlatformWindow : public PropertyHandler {
   // implementation always returns ZOrderLevel::kNormal value.
   virtual void SetZOrderLevel(ZOrderLevel order);
   virtual ZOrderLevel GetZOrderLevel() const;
+
+  // Asks the PlatformWindow to stack itself on top of |widget|.
+  virtual void StackAbove(gfx::AcceleratedWidget widget);
+  virtual void StackAtTop();
 };
 
 }  // namespace ui

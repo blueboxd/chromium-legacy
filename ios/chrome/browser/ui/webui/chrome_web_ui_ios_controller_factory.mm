@@ -11,6 +11,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/system_flags.h"
 #include "ios/chrome/browser/ui/webui/about_ui.h"
+#include "ios/chrome/browser/ui/webui/autofill_and_password_manager_internals/autofill_internals_ui_ios.h"
 #include "ios/chrome/browser/ui/webui/autofill_and_password_manager_internals/password_manager_internals_ui_ios.h"
 #include "ios/chrome/browser/ui/webui/crashes_ui.h"
 #include "ios/chrome/browser/ui/webui/flags_ui.h"
@@ -67,6 +68,8 @@ WebUIIOSFactoryFunction GetWebUIIOSFactoryFunction(const GURL& url) {
   // Please keep this in alphabetical order. If #ifs or special logic is
   // required, add it below in the appropriate section.
   const std::string url_host = url.host();
+  if (url_host == kChromeUIAutofillInternalsHost)
+    return &NewWebUIIOS<AutofillInternalsUIIOS>;
   if (url_host == kChromeUIChromeURLsHost ||
       url_host == kChromeUIHistogramHost || url_host == kChromeUICreditsHost)
     return &NewWebUIIOSWithHost<AboutUI>;

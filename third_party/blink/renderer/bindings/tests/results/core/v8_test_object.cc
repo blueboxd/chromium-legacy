@@ -166,8 +166,10 @@ static void ReadonlyTestInterfaceEmptyAttributeAttributeGetter(const v8::Functio
   if (cpp_value && DOMDataStore::SetReturnValue(info.GetReturnValue(), cpp_value))
     return;
   v8::Local<v8::Value> v8_value(ToV8(cpp_value, holder, info.GetIsolate()));
+  // This key is used for uniquely identifying v8::Private.
+  static int private_property_key;
   V8PrivateProperty::GetSymbol(
-      info.GetIsolate(), "KeepAlive#TestObject#readonlyTestInterfaceEmptyAttribute")
+      info.GetIsolate(), &private_property_key, "KeepAlive#TestObject#readonlyTestInterfaceEmptyAttribute")
       .Set(holder, v8_value);
 
   V8SetReturnValue(info, v8_value);
@@ -2482,8 +2484,10 @@ static void PerWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetter(c
   if (cpp_value && DOMDataStore::SetReturnValue(info.GetReturnValue(), cpp_value))
     return;
   v8::Local<v8::Value> v8_value(ToV8(cpp_value, holder, info.GetIsolate()));
+  // This key is used for uniquely identifying v8::Private.
+  static int private_property_key;
   V8PrivateProperty::GetSymbol(
-      info.GetIsolate(), "KeepAlive#TestObject#perWorldBindingsReadonlyTestInterfaceEmptyAttribute")
+      info.GetIsolate(), &private_property_key, "KeepAlive#TestObject#perWorldBindingsReadonlyTestInterfaceEmptyAttribute")
       .Set(holder, v8_value);
 
   V8SetReturnValue(info, v8_value);
@@ -2501,8 +2505,10 @@ static void PerWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterFo
   if (cpp_value && DOMDataStore::SetReturnValueForMainWorld(info.GetReturnValue(), cpp_value))
     return;
   v8::Local<v8::Value> v8_value(ToV8(cpp_value, holder, info.GetIsolate()));
+  // This key is used for uniquely identifying v8::Private.
+  static int private_property_key;
   V8PrivateProperty::GetSymbol(
-      info.GetIsolate(), "KeepAlive#TestObject#perWorldBindingsReadonlyTestInterfaceEmptyAttribute")
+      info.GetIsolate(), &private_property_key, "KeepAlive#TestObject#perWorldBindingsReadonlyTestInterfaceEmptyAttribute")
       .Set(holder, v8_value);
 
   V8SetReturnValue(info, v8_value);
@@ -4061,8 +4067,10 @@ static void SameObjectAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8
   if (cpp_value && DOMDataStore::SetReturnValue(info.GetReturnValue(), cpp_value))
     return;
   v8::Local<v8::Value> v8_value(ToV8(cpp_value, holder, info.GetIsolate()));
+  // This key is used for uniquely identifying v8::Private.
+  static int private_property_key;
   V8PrivateProperty::GetSymbol(
-      info.GetIsolate(), "KeepAlive#TestObject#sameObjectAttribute")
+      info.GetIsolate(), &private_property_key, "KeepAlive#TestObject#sameObjectAttribute")
       .Set(holder, v8_value);
 
   V8SetReturnValue(info, v8_value);
@@ -4095,8 +4103,10 @@ static void SaveSameObjectAttributeAttributeGetter(const v8::FunctionCallbackInf
   if (cpp_value && DOMDataStore::SetReturnValue(info.GetReturnValue(), cpp_value))
     return;
   v8::Local<v8::Value> v8_value(ToV8(cpp_value, holder, info.GetIsolate()));
+  // This key is used for uniquely identifying v8::Private.
+  static int private_property_key;
   V8PrivateProperty::GetSymbol(
-      info.GetIsolate(), "KeepAlive#TestObject#saveSameObjectAttribute")
+      info.GetIsolate(), &private_property_key, "KeepAlive#TestObject#saveSameObjectAttribute")
       .Set(holder, v8_value);
 
   V8SetReturnValue(info, v8_value);
@@ -7225,7 +7235,7 @@ static void OverloadedMethodL1Method(const v8::FunctionCallbackInfo<v8::Value>& 
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
   int32_t long_arg;
-  Vector<ScriptValue> rest_args;
+  HeapVector<ScriptValue> rest_args;
   long_arg = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), info[0], exception_state);
   if (exception_state.HadException())
     return;
@@ -7243,7 +7253,7 @@ static void OverloadedMethodL2Method(const v8::FunctionCallbackInfo<v8::Value>& 
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
   V8StringResource<> string_arg;
-  Vector<ScriptValue> rest_args;
+  HeapVector<ScriptValue> rest_args;
   string_arg = info[0];
   if (!string_arg.Prepare())
     return;

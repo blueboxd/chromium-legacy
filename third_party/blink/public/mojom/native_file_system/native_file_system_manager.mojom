@@ -33,8 +33,9 @@ struct ChooseFileSystemEntryAcceptsOption {
 // tell what operations are being done by which document or worker.
 interface NativeFileSystemManager {
   // Opens the sandboxed filesystem for the origin of the current document or worker.
-  GetSandboxedFileSystem() => (NativeFileSystemError result,
-                               NativeFileSystemDirectoryHandle? directory);
+  GetSandboxedFileSystem() =>
+      (NativeFileSystemError result,
+       pending_remote<NativeFileSystemDirectoryHandle>? directory);
 
   // Prompts the user to select a file from the native filesystem. Returns an
   // error code if something failed, or a list of the selected entries on

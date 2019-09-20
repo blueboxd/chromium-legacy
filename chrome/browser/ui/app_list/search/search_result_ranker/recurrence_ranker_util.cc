@@ -236,15 +236,35 @@ std::unique_ptr<RecurrencePredictor> MakePredictor(
   return nullptr;
 }
 
+std::unique_ptr<JsonConfigConverter> JsonConfigConverter::Convert(
+    service_manager::Connector* connector,
+    const std::string& json_string,
+    const std::string& model_identifier,
+    OnConfigLoadedCallback callback) {
+  // We don't use make_unique because the ctor is private.
+  std::unique_ptr<JsonConfigConverter> converter(
+      new JsonConfigConverter(connector));
+  converter->Start(json_string, model_identifier, std::move(callback));
+  return converter;
+}
+
 JsonConfigConverter::JsonConfigConverter(service_manager::Connector* connector)
     : connector_(connector) {}
 JsonConfigConverter::~JsonConfigConverter() {}
 
-void JsonConfigConverter::Convert(const std::string& json_string,
-                                  const std::string& model_identifier,
-                                  OnConfigLoadedCallback callback) {
+void JsonConfigConverter::Start(const std::string& json_string,
+                                const std::string& model_identifier,
+                                OnConfigLoadedCallback callback) {
   DCHECK(connector_);
-  GetJsonParser()->Parse(
+  connector_->Connect(data_decoder::mojom::kServiceName,
+                      json_parser_.BindNewPipeAndPassReceiver());
+  json_parser_.set_disconnect_handler(base::BindOnce(
+      [](JsonConfigConverter* const converter) {
+        converter->json_parser_.reset();
+      },
+      base::Unretained(this)));
+
+  json_parser_->Parse(
       json_string,
       base::BindOnce(&JsonConfigConverter::OnJsonParsed, base::Unretained(this),
                      std::move(callback), model_identifier));
@@ -255,6 +275,11 @@ void JsonConfigConverter::OnJsonParsed(
     const std::string& model_identifier,
     const base::Optional<base::Value> json_data,
     const base::Optional<std::string>& error) {
+  // Unbind the data decoder service remote. This makes it safe to keep a
+  // JsonConfigConverter object alive for eg. the lifetime of Chrome without a
+  // significant memory cost.
+  json_parser_.reset();
+
   RecurrenceRankerConfigProto proto;
   if (json_data && ConvertRecurrenceRanker(&json_data.value(), &proto)) {
     LogJsonConfigConversionStatus(model_identifier,
@@ -265,18 +290,6 @@ void JsonConfigConverter::OnJsonParsed(
                                   JsonConfigConversionStatus::kFailure);
     std::move(callback).Run(base::nullopt);
   }
-}
-
-data_decoder::mojom::JsonParser* JsonConfigConverter::GetJsonParser() {
-  if (!json_parser_) {
-    connector_->Connect(data_decoder::mojom::kServiceName,
-                        json_parser_.BindNewPipeAndPassReceiver());
-    json_parser_.set_disconnect_handler(base::BindOnce(
-        [](JsonConfigConverter* const loader) { loader->json_parser_.reset(); },
-        base::Unretained(this)));
-  }
-
-  return json_parser_.get();
 }
 
 }  // namespace app_list

@@ -32,6 +32,7 @@ class CAPTURE_EXPORT VideoCaptureBufferPoolImpl
  public:
   explicit VideoCaptureBufferPoolImpl(
       std::unique_ptr<VideoCaptureBufferTrackerFactory> buffer_tracker_factory,
+      VideoCaptureBufferType buffer_type,
       int count);
 
   // VideoCaptureBufferPool implementation.
@@ -68,6 +69,9 @@ class CAPTURE_EXPORT VideoCaptureBufferPoolImpl
       int* tracker_id_to_drop);
 
   VideoCaptureBufferTracker* GetTracker(int buffer_id);
+
+  // The type of the buffer the pool serves.
+  VideoCaptureBufferType buffer_type_;
 
   // The max number of buffers that the pool is allowed to have at any moment.
   const int count_;

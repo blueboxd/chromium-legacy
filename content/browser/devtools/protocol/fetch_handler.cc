@@ -44,23 +44,23 @@ void FetchHandler::Wire(UberDispatcher* dispatcher) {
   Fetch::Dispatcher::wire(dispatcher, this);
 }
 
-DevToolsNetworkInterceptor::InterceptionStage RequestStageToInterceptorStage(
+DevToolsURLLoaderInterceptor::InterceptionStage RequestStageToInterceptorStage(
     const Fetch::RequestStage& stage) {
   if (stage == Fetch::RequestStageEnum::Request)
-    return DevToolsNetworkInterceptor::REQUEST;
+    return DevToolsURLLoaderInterceptor::REQUEST;
   if (stage == Fetch::RequestStageEnum::Response)
-    return DevToolsNetworkInterceptor::RESPONSE;
+    return DevToolsURLLoaderInterceptor::RESPONSE;
   NOTREACHED();
-  return DevToolsNetworkInterceptor::REQUEST;
+  return DevToolsURLLoaderInterceptor::REQUEST;
 }
 
 Response ToInterceptionPatterns(
     const Maybe<Array<Fetch::RequestPattern>>& maybe_patterns,
-    std::vector<DevToolsNetworkInterceptor::Pattern>* result) {
+    std::vector<DevToolsURLLoaderInterceptor::Pattern>* result) {
   result->clear();
   if (!maybe_patterns.isJust()) {
     result->emplace_back("*", base::flat_set<ResourceType>(),
-                         DevToolsNetworkInterceptor::REQUEST);
+                         DevToolsURLLoaderInterceptor::REQUEST);
     return Response::OK();
   }
   Array<Fetch::RequestPattern>& patterns = *maybe_patterns.fromJust();
@@ -103,7 +103,7 @@ void FetchHandler::Enable(Maybe<Array<Fetch::RequestPattern>> patterns,
         std::make_unique<DevToolsURLLoaderInterceptor>(base::BindRepeating(
             &FetchHandler::RequestIntercepted, weak_factory_.GetWeakPtr()));
   }
-  std::vector<DevToolsNetworkInterceptor::Pattern> interception_patterns;
+  std::vector<DevToolsURLLoaderInterceptor::Pattern> interception_patterns;
   Response response = ToInterceptionPatterns(patterns, &interception_patterns);
   if (!response.isSuccess()) {
     callback->sendFailure(response);
@@ -130,7 +130,7 @@ Response FetchHandler::Disable() {
 
 namespace {
 using ContinueInterceptedRequestCallback =
-    DevToolsNetworkInterceptor::ContinueInterceptedRequestCallback;
+    DevToolsURLLoaderInterceptor::ContinueInterceptedRequestCallback;
 
 template <typename Callback, typename Base, typename... Args>
 class CallbackWrapper : public Base {
@@ -186,7 +186,7 @@ void FetchHandler::FailRequest(const String& requestId,
     return;
   }
   auto modifications =
-      std::make_unique<DevToolsNetworkInterceptor::Modifications>(reason);
+      std::make_unique<DevToolsURLLoaderInterceptor::Modifications>(reason);
   interceptor_->ContinueInterceptedRequest(requestId, std::move(modifications),
                                            WrapCallback(std::move(callback)));
 }
@@ -239,7 +239,7 @@ void FetchHandler::FulfillRequest(
   }
   headers.append(1, '\0');
   auto modifications =
-      std::make_unique<DevToolsNetworkInterceptor::Modifications>(
+      std::make_unique<DevToolsURLLoaderInterceptor::Modifications>(
           base::MakeRefCounted<net::HttpResponseHeaders>(headers),
           body.isJust() ? body.fromJust().bytes() : nullptr);
   interceptor_->ContinueInterceptedRequest(requestId, std::move(modifications),
@@ -257,11 +257,11 @@ void FetchHandler::ContinueRequest(
     callback->sendFailure(Response::Error("Fetch domain is not enabled"));
     return;
   }
-  std::unique_ptr<DevToolsNetworkInterceptor::Modifications::HeadersVector>
+  std::unique_ptr<DevToolsURLLoaderInterceptor::Modifications::HeadersVector>
       request_headers;
   if (headers.isJust()) {
     request_headers = std::make_unique<
-        DevToolsNetworkInterceptor::Modifications::HeadersVector>();
+        DevToolsURLLoaderInterceptor::Modifications::HeadersVector>();
     for (const std::unique_ptr<Fetch::HeaderEntry>& entry :
          *headers.fromJust()) {
       if (!ValidateHeaders(entry.get(), callback.get()))
@@ -270,7 +270,7 @@ void FetchHandler::ContinueRequest(
     }
   }
   auto modifications =
-      std::make_unique<DevToolsNetworkInterceptor::Modifications>(
+      std::make_unique<DevToolsURLLoaderInterceptor::Modifications>(
           std::move(url), std::move(method), std::move(postData),
           std::move(request_headers));
   interceptor_->ContinueInterceptedRequest(requestId, std::move(modifications),
@@ -287,7 +287,7 @@ void FetchHandler::ContinueWithAuth(
     return;
   }
   using AuthChallengeResponse =
-      DevToolsNetworkInterceptor::AuthChallengeResponse;
+      DevToolsURLLoaderInterceptor::AuthChallengeResponse;
   std::unique_ptr<AuthChallengeResponse> auth_response;
   std::string type = authChallengeResponse->GetResponse();
   if (type == Network::AuthChallengeResponse::ResponseEnum::Default) {
@@ -307,7 +307,7 @@ void FetchHandler::ContinueWithAuth(
     return;
   }
   auto modifications =
-      std::make_unique<DevToolsNetworkInterceptor::Modifications>(
+      std::make_unique<DevToolsURLLoaderInterceptor::Modifications>(
           std::move(auth_response));
   interceptor_->ContinueInterceptedRequest(requestId, std::move(modifications),
                                            WrapCallback(std::move(callback)));
@@ -318,7 +318,7 @@ void FetchHandler::GetResponseBody(
     std::unique_ptr<GetResponseBodyCallback> callback) {
   auto weapped_callback = std::make_unique<CallbackWrapper<
       GetResponseBodyCallback,
-      DevToolsNetworkInterceptor::GetResponseBodyForInterceptionCallback,
+      DevToolsURLLoaderInterceptor::GetResponseBodyForInterceptionCallback,
       const std::string&, bool>>(std::move(callback));
   interceptor_->GetResponseBody(requestId, std::move(weapped_callback));
 }

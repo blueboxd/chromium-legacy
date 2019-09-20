@@ -2823,8 +2823,6 @@ jumbo_split_static_library("ui") {
       "views/infobars/infobar_view.h",
       "views/javascript_dialog_views.cc",
       "views/javascript_dialog_views.h",
-      "views/layout/animating_layout_manager.cc",
-      "views/layout/animating_layout_manager.h",
       "views/layout/interpolating_layout_manager.cc",
       "views/layout/interpolating_layout_manager.h",
       "views/load_complete_listener.cc",

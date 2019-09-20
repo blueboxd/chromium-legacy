@@ -28,7 +28,6 @@ const int kInitialNumberOfLiveDocuments = 1;
 const int kInitialNumberOfLiveNodes = 4;
 const int kInitialNumberOfLiveLayoutObjects = 3;
 const int kInitialNumberOfLiveResources = 0;
-const int kInitialNumberOfScriptPromises = 0;
 const int kInitialNumberOfLiveFrames = 1;
 const int kInitialNumberOfWorkerGlobalScopes = 0;
 const int kInitialNumberOfLiveResourceFetchers = 1;
@@ -50,8 +49,6 @@ LeakDetector::LeakDetector() {
   previous_result_->number_of_live_resources = kInitialNumberOfLiveResources;
   previous_result_->number_of_live_context_lifecycle_state_observers =
       kInitialNumberOfLiveContextLifecycleStateObservers;
-  previous_result_->number_of_live_script_promises =
-      kInitialNumberOfScriptPromises;
   previous_result_->number_of_live_frames = kInitialNumberOfLiveFrames;
   previous_result_->number_of_live_v8_per_context_data =
       kInitialNumberOfV8PerContextData;
@@ -126,13 +123,6 @@ void LeakDetector::OnLeakDetectionComplete(
       list->AppendInteger(
           result->number_of_live_context_lifecycle_state_observers);
       detail.Set("numberOfLiveContextLifecycleStateObservers", std::move(list));
-    }
-    if (previous_result_->number_of_live_script_promises <
-        result->number_of_live_script_promises) {
-      auto list = std::make_unique<base::ListValue>();
-      list->AppendInteger(previous_result_->number_of_live_script_promises);
-      list->AppendInteger(result->number_of_live_script_promises);
-      detail.Set("numberOfLiveScriptPromises", std::move(list));
     }
     if (previous_result_->number_of_live_frames <
         result->number_of_live_frames) {

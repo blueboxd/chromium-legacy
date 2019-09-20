@@ -28,7 +28,7 @@ class FormSaver {
   // Blacklist the origin described by |digest|. Returns the PasswordForm pushed
   // to the store.
   virtual autofill::PasswordForm PermanentlyBlacklist(
-      PasswordStore::FormDigest digest) WARN_UNUSED_RESULT = 0;
+      PasswordStore::FormDigest digest) = 0;
 
   // Saves the |pending| form.
   // |matches| are relevant credentials for the site. After saving |pending|,

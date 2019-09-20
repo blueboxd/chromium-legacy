@@ -83,13 +83,14 @@ class DiscardableMemoryImpl : public base::DiscardableMemory {
   DISALLOW_COPY_AND_ASSIGN(DiscardableMemoryImpl);
 };
 
-void InitManagerMojoOnIO(mojom::DiscardableSharedMemoryManagerPtr* manager_mojo,
-                         mojom::DiscardableSharedMemoryManagerPtrInfo info) {
-  manager_mojo->Bind(std::move(info));
+void InitManagerMojoOnIO(
+    mojo::Remote<mojom::DiscardableSharedMemoryManager>* manager_mojo,
+    mojo::PendingRemote<mojom::DiscardableSharedMemoryManager> remote) {
+  manager_mojo->Bind(std::move(remote));
 }
 
 void DeletedDiscardableSharedMemoryOnIO(
-    mojom::DiscardableSharedMemoryManagerPtr* manager_mojo,
+    mojo::Remote<mojom::DiscardableSharedMemoryManager>* manager_mojo,
     int32_t id) {
   (*manager_mojo)->DeletedDiscardableSharedMemory(id);
 }
@@ -97,18 +98,18 @@ void DeletedDiscardableSharedMemoryOnIO(
 }  // namespace
 
 ClientDiscardableSharedMemoryManager::ClientDiscardableSharedMemoryManager(
-    mojom::DiscardableSharedMemoryManagerPtr manager,
+    mojo::PendingRemote<mojom::DiscardableSharedMemoryManager> manager,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : io_task_runner_(std::move(io_task_runner)),
-      manager_mojo_(new mojom::DiscardableSharedMemoryManagerPtr),
+      manager_mojo_(std::make_unique<
+                    mojo::Remote<mojom::DiscardableSharedMemoryManager>>()),
       heap_(new DiscardableSharedMemoryHeap(base::GetPageSize())) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "ClientDiscardableSharedMemoryManager",
       base::ThreadTaskRunnerHandle::Get());
-  mojom::DiscardableSharedMemoryManagerPtrInfo info = manager.PassInterface();
   io_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&InitManagerMojoOnIO, manager_mojo_.get(),
-                                std::move(info)));
+                                std::move(manager)));
 }
 
 ClientDiscardableSharedMemoryManager::~ClientDiscardableSharedMemoryManager() {

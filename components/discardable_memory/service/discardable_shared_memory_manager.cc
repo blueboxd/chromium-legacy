@@ -30,7 +30,7 @@
 #include "build/build_config.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/discardable_memory/common/discardable_shared_memory_heap.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 #if defined(OS_LINUX)
 #include "base/files/file_path.h"
@@ -285,7 +285,7 @@ DiscardableSharedMemoryManager* DiscardableSharedMemoryManager::Get() {
 }
 
 void DiscardableSharedMemoryManager::Bind(
-    mojom::DiscardableSharedMemoryManagerRequest request,
+    mojo::PendingReceiver<mojom::DiscardableSharedMemoryManager> receiver,
     const service_manager::BindSourceInfo& source_info) {
   DCHECK(!mojo_thread_message_loop_ ||
          mojo_thread_message_loop_ == base::MessageLoopCurrent::Get());
@@ -296,10 +296,10 @@ void DiscardableSharedMemoryManager::Bind(
     mojo_thread_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   }
 
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<MojoDiscardableSharedMemoryManagerImpl>(
           next_client_id_++, mojo_thread_weak_ptr_factory_.GetWeakPtr()),
-      std::move(request));
+      std::move(receiver));
 }
 
 std::unique_ptr<base::DiscardableMemory>

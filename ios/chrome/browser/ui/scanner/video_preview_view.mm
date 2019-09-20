@@ -38,6 +38,19 @@
   return base::mac::ObjCCastStrict<AVCaptureVideoPreviewLayer>([self layer]);
 }
 
+- (CGRect)viewportRegionOfInterest {
+  CGRect rect = CGRectMakeCenteredRectInFrame(self.frame.size, _viewportSize);
+  CGFloat x = rect.origin.x / self.frame.size.width;
+  CGFloat y = rect.origin.y / self.frame.size.height;
+
+  CGFloat width = rect.size.width / self.frame.size.width;
+  CGFloat height = rect.size.height / self.frame.size.height;
+
+  // Vision region of interest measures the frame size from the lower left
+  // corner so reverse x & y, reverse width & height.
+  return CGRectMake(y, x, height, width);
+}
+
 - (CGRect)viewportRectOfInterest {
   DCHECK(CGPointEqualToPoint(self.frame.origin, CGPointZero));
   CGRect viewportRect =

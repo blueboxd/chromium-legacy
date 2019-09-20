@@ -33,7 +33,7 @@ namespace web_app {
 class WebAppIconDownloader : public content::WebContentsObserver {
  public:
   using WebAppIconDownloaderCallback =
-      base::OnceCallback<void(bool success, const IconsMap& icons_map)>;
+      base::OnceCallback<void(bool success, IconsMap icons_map)>;
 
   // |extra_favicon_urls| allows callers to provide icon urls that aren't
   // provided by the renderer (e.g touch icons on non-android environments).

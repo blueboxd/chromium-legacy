@@ -15,7 +15,8 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_throttle_manager.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -52,8 +53,9 @@ class MockMojoDataReductionProxy : public mojom::DataReductionProxy {
     ++observer_count_;
   }
 
-  void Clone(mojom::DataReductionProxyRequest request) override {
-    bindings_.AddBinding(this, std::move(request));
+  void Clone(
+      mojo::PendingReceiver<mojom::DataReductionProxy> receiver) override {
+    receivers_.Add(this, std::move(receiver));
   }
 
   // When mojom::DataReductionProxy methods are called via mojo, things are
@@ -70,12 +72,12 @@ class MockMojoDataReductionProxy : public mojom::DataReductionProxy {
   // +1 because MockMojoDataReductionProxy uses direct calls through the
   // mojom::DataReductionProxy interface by default, and mojo is only involved
   // after Clone().
-  size_t pipe_count() const { return bindings_.size() + 1u; }
+  size_t pipe_count() const { return receivers_.size() + 1u; }
 
   size_t observer_count() const { return observer_count_; }
 
  private:
-  mojo::BindingSet<mojom::DataReductionProxy> bindings_;
+  mojo::ReceiverSet<mojom::DataReductionProxy> receivers_;
   size_t observer_count_ = 0;
 
   base::OnceClosure waiting_for_mark_as_bad_closure_;

@@ -63,9 +63,10 @@ class MockSharingService : public SharingService {
 
   ~MockSharingService() override = default;
 
-  MOCK_CONST_METHOD1(GetDeviceCandidates,
-                     std::vector<std::unique_ptr<syncer::DeviceInfo>>(
-                         int required_capabilities));
+  MOCK_CONST_METHOD1(
+      GetDeviceCandidates,
+      std::vector<std::unique_ptr<syncer::DeviceInfo>>(
+          sync_pb::SharingSpecificFields::EnabledFeatures required_feature));
 
   MOCK_METHOD4(SendMessageToDevice,
                void(const std::string& device_guid,

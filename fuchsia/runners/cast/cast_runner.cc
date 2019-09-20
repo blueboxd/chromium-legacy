@@ -4,6 +4,7 @@
 
 #include "fuchsia/runners/cast/cast_runner.h"
 
+#include <fuchsia/sys/cpp/fidl.h>
 #include <memory>
 #include <string>
 #include <utility>
@@ -66,26 +67,25 @@ void CastRunner::StartComponent(
       base::BindOnce(&CastRunner::MaybeStartComponent, base::Unretained(this),
                      base::Unretained(pending_component.get())));
 
-  // Get UrlRequestRewriteRulesProvider from the Agent.
-  fidl::InterfaceHandle<chromium::cast::UrlRequestRewriteRulesProvider>
-      url_request_rules_provider;
+  // Get AdditionalHeadersProvider from the Agent.
+  fidl::InterfaceHandle<fuchsia::web::AdditionalHeadersProvider>
+      additional_headers_provider;
   pending_component->agent_manager->ConnectToAgentService(
-      kAgentComponentUrl, url_request_rules_provider.NewRequest());
-  pending_component->rewrite_rules_provider = url_request_rules_provider.Bind();
-  pending_component->rewrite_rules_provider.set_error_handler(
-      [this, pending_component = pending_component.get()](zx_status_t status) {
-        ZX_LOG(ERROR, status) << "UrlRequestRewriteRulesProvider disconnected.";
-
-        // The rules provider disconnected, cancel the component launch.
-        size_t count = pending_components_.erase(pending_component);
-        DCHECK_EQ(count, 1u);
+      kAgentComponentUrl, additional_headers_provider.NewRequest());
+  pending_component->headers_provider = additional_headers_provider.Bind();
+  pending_component->headers_provider.set_error_handler(
+      [this, pending_component = pending_component.get()](zx_status_t error) {
+        if (pending_component->headers.has_value())
+          return;
+        pending_component->headers = {};
+        MaybeStartComponent(pending_component);
       });
-  pending_component->rewrite_rules_provider->GetUrlRequestRewriteRules(
+  pending_component->headers_provider->GetHeaders(
       [this, pending_component = pending_component.get()](
-          std::vector<fuchsia::web::UrlRequestRewriteRule> rewrite_rules) {
-        pending_component->rewrite_rules =
-            base::Optional<std::vector<fuchsia::web::UrlRequestRewriteRule>>(
-                std::move(rewrite_rules));
+          std::vector<fuchsia::net::http::Header> headers, zx_time_t expiry) {
+        pending_component->headers =
+            base::Optional<std::vector<fuchsia::net::http::Header>>(
+                std::move(headers));
         MaybeStartComponent(pending_component);
       });
 
@@ -126,17 +126,19 @@ void CastRunner::MaybeStartComponent(
     return;
   if (!pending_component->api_bindings_client->HasBindings())
     return;
-  if (!pending_component->rewrite_rules.has_value())
+  if (!pending_component->headers.has_value())
     return;
 
   // Create a component based on the returned configuration, and pass it the
   // |pending_component|.
+  std::vector<fuchsia::net::http::Header> additional_headers =
+      pending_component->headers.value();
+
   GURL cast_app_url(pending_component->app_config.web_url());
   auto component =
       std::make_unique<CastComponent>(this, std::move(*pending_component));
   pending_components_.erase(pending_component);
 
-  component->LoadUrl(std::move(cast_app_url),
-                     std::vector<fuchsia::net::http::Header>());
+  component->LoadUrl(std::move(cast_app_url), std::move(additional_headers));
   RegisterComponent(std::move(component));
 }

@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
+#include "components/sync/protocol/device_info_specifics.pb.h"
 
 namespace instance_id {
 class InstanceIDDriver;
@@ -48,7 +49,9 @@ class SharingDeviceRegistration {
   virtual void UnregisterDevice(RegistrationCallback callback);
 
   // For testing
-  void SetDeviceCapabilityForTesting(int device_capabilities);
+  void SetEnabledFeaturesForTesting(
+      std::set<sync_pb::SharingSpecificFields_EnabledFeatures>
+          enabled_feautres);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SharingDeviceRegistrationTest,
@@ -85,8 +88,9 @@ class SharingDeviceRegistration {
   // Returns the authorization entity for FCM registration.
   base::Optional<std::string> GetAuthorizationEntity() const;
 
-  // Computes and returns a bitmask of all capabilities supported by the device.
-  int GetDeviceCapabilities() const;
+  // Computes and returns a set of all enabled features on the device.
+  std::set<sync_pb::SharingSpecificFields_EnabledFeatures> GetEnabledFeatures()
+      const;
 
   // Returns if device can handle receiving phone numbers for calling.
   bool IsClickToCallSupported() const;
@@ -98,7 +102,8 @@ class SharingDeviceRegistration {
   instance_id::InstanceIDDriver* instance_id_driver_;
   VapidKeyManager* vapid_key_manager_;
   syncer::LocalDeviceInfoProvider* local_device_info_provider_;
-  base::Optional<int> device_capabilities_testing_value_;
+  base::Optional<std::set<sync_pb::SharingSpecificFields_EnabledFeatures>>
+      enabled_features_testing_value_;
 
   base::WeakPtrFactory<SharingDeviceRegistration> weak_ptr_factory_{this};
 

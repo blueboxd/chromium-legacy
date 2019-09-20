@@ -19,7 +19,9 @@
 #include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/common/api/serial.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/io_buffer.h"
@@ -66,7 +68,7 @@ class SerialConnection : public ApiResource,
       device::mojom::SerialPort::SetControlSignalsCallback;
 
   SerialConnection(const std::string& owner_extension_id,
-                   device::mojom::SerialPortPtr serial_port);
+                   mojo::PendingRemote<device::mojom::SerialPort> serial_port);
   ~SerialConnection() override;
 
   // ApiResource override.
@@ -220,8 +222,8 @@ class SerialConnection : public ApiResource,
   // Send().
   base::CancelableClosure send_timeout_task_;
 
-  // Mojo interface ptr corresponding with remote asynchronous I/O handler.
-  device::mojom::SerialPortPtr serial_port_;
+  // Mojo interface remote corresponding with remote asynchronous I/O handler.
+  mojo::Remote<device::mojom::SerialPort> serial_port_;
 
   // Pipe for read.
   mojo::ScopedDataPipeConsumerHandle receive_pipe_;

@@ -88,6 +88,25 @@ bool SyncSetCounter(XDisplay* display, XID counter, int64_t value) {
   return XSyncSetCounter(display, counter, sync_value) == x11::True;
 }
 
+// Returns the whole path from |window| to the root.
+std::vector<::Window> GetParentsList(XDisplay* xdisplay, ::Window window) {
+  ::Window parent_win, root_win;
+  Window* child_windows;
+  unsigned int num_child_windows;
+  std::vector<::Window> result;
+
+  while (window) {
+    result.push_back(window);
+    if (!XQueryTree(xdisplay, window, &root_win, &parent_win, &child_windows,
+                    &num_child_windows))
+      break;
+    if (child_windows)
+      XFree(child_windows);
+    window = parent_win;
+  }
+  return result;
+}
+
 }  // namespace
 
 XWindow::Configuration::Configuration()
@@ -632,7 +651,37 @@ void XWindow::ReleasePointerGrab() {
   has_pointer_grab_ = false;
 }
 
-void XWindow::StackAtTop() {
+void XWindow::StackXWindowAbove(::Window window) {
+  DCHECK(window != x11::None);
+
+  // Find all parent windows up to the root.
+  std::vector<::Window> window_below_parents =
+      GetParentsList(xdisplay_, window);
+  std::vector<::Window> window_above_parents =
+      GetParentsList(xdisplay_, xwindow_);
+
+  // Find their common ancestor.
+  auto it_below_window = window_below_parents.rbegin();
+  auto it_above_window = window_above_parents.rbegin();
+  for (; it_below_window != window_below_parents.rend() &&
+         it_above_window != window_above_parents.rend() &&
+         *it_below_window == *it_above_window;
+       ++it_below_window, ++it_above_window) {
+  }
+
+  if (it_below_window != window_below_parents.rend() &&
+      it_above_window != window_above_parents.rend()) {
+    // First stack |xwindow| below so Z-order of |window| stays the same.
+    ::Window windows[] = {*it_below_window, *it_above_window};
+    if (XRestackWindows(xdisplay_, windows, 2) == 0) {
+      // Now stack them properly.
+      std::swap(windows[0], windows[1]);
+      XRestackWindows(xdisplay_, windows, 2);
+    }
+  }
+}
+
+void XWindow::StackXWindowAtTop() {
   XRaiseWindow(xdisplay_, xwindow_);
 }
 

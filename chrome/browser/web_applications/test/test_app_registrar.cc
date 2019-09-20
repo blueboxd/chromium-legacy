@@ -36,8 +36,6 @@ void TestAppRegistrar::SimulateExternalAppUninstalledByUser(
     RemoveExternalApp(app_id);
 }
 
-void TestAppRegistrar::Init(base::OnceClosure callback) {}
-
 bool TestAppRegistrar::IsInstalled(const AppId& app_id) const {
   return base::Contains(installed_apps_, app_id);
 }
@@ -135,11 +133,6 @@ LaunchContainer TestAppRegistrar::GetAppLaunchContainer(
     const AppId& app_id) const {
   NOTIMPLEMENTED();
   return LaunchContainer::kTab;
-}
-
-void TestAppRegistrar::SetAppLaunchContainer(const AppId& app_id,
-                                             LaunchContainer launch_container) {
-  NOTIMPLEMENTED();
 }
 
 std::vector<AppId> TestAppRegistrar::GetAppIds() const {

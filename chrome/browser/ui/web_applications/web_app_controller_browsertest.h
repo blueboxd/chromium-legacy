@@ -40,6 +40,18 @@ class WebAppControllerBrowserTestBase
   WebAppControllerBrowserTestBase();
   ~WebAppControllerBrowserTestBase() = 0;
 
+  AppId InstallPWA(const GURL& app_url);
+
+  AppId InstallWebApp(std::unique_ptr<WebApplicationInfo> web_app_info);
+
+  // Launches the app as a window and returns the browser.
+  Browser* LaunchWebAppBrowser(const AppId&);
+
+  // Launches the app as a tab and returns the browser.
+  Browser* LaunchBrowserForWebAppInTab(const AppId&);
+
+  base::Optional<AppId> FindAppWithUrlInScope(const GURL& url);
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -55,10 +67,6 @@ class WebAppControllerBrowserTest : public WebAppControllerBrowserTestBase {
   void SetUp() override;
 
  protected:
-  AppId InstallPWA(const GURL& app_url);
-
-  AppId InstallWebApp(std::unique_ptr<WebApplicationInfo>&& web_app_info);
-
   content::WebContents* OpenApplication(const AppId&);
 
   net::EmbeddedTestServer* https_server() { return &https_server_; }

@@ -15,7 +15,7 @@
 namespace web_app {
 
 class WebApp;
-class WebAppRegistrar;
+class WebAppSyncBridge;
 
 // An explicit writable "view" for the registry. Any write operations must be
 // batched as a part of WebAppRegistryUpdate object.
@@ -30,22 +30,22 @@ class WebAppRegistryUpdate {
   WebApp* UpdateApp(const AppId& app_id);
 
  private:
-  friend class WebAppRegistrar;
+  friend class WebAppSyncBridge;
   friend class ScopedRegistryUpdate;
 
-  explicit WebAppRegistryUpdate(WebAppRegistrar* registrar);
+  explicit WebAppRegistryUpdate(WebAppSyncBridge* sync_bridge);
 
   base::flat_set<const WebApp*> apps_to_update_;
-  WebAppRegistrar* registrar_;
+  WebAppSyncBridge* sync_bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppRegistryUpdate);
 };
 
-// A convenience utility class to use RAII for WebAppRegistrar::BeginUpdate and
-// WebAppRegistrar::CommitUpdate calls.
+// A convenience utility class to use RAII for WebAppSyncBridge::BeginUpdate and
+// WebAppSyncBridge::CommitUpdate calls.
 class ScopedRegistryUpdate {
  public:
-  explicit ScopedRegistryUpdate(WebAppRegistrar* registrar);
+  explicit ScopedRegistryUpdate(WebAppSyncBridge* sync_bridge);
   ~ScopedRegistryUpdate();
 
   WebAppRegistryUpdate* operator->() { return update_.get(); }

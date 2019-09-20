@@ -9,6 +9,8 @@ source_set("components") {
     "app_registrar.cc",
     "app_registrar.h",
     "app_registrar_observer.h",
+    "app_registry_controller.cc",
+    "app_registry_controller.h",
     "external_install_options.cc",
     "external_install_options.h",
     "externally_installed_web_app_prefs.cc",

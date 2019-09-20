@@ -8,7 +8,12 @@
 
 namespace content_settings {
 
+// Enables an improved UI for third-party cookie blocking in incognito mode.
 const base::Feature kImprovedCookieControls{"ImprovedCookieControls",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables an improved UI for existing third-party cookie blocking users.
+const base::Feature kImprovedCookieControlsForThirdPartyCookieBlocking{
+    "ImprovedCookieControlsForThirdPartyCookieBlocking",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 }

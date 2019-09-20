@@ -227,8 +227,7 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
   params.types_enabled.push_back(PageActionIconType::kZoom);
   if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI))
     params.types_enabled.push_back(PageActionIconType::kNativeFileSystemAccess);
-  if (base::FeatureList::IsEnabled(content_settings::kImprovedCookieControls))
-    params.types_enabled.push_back(PageActionIconType::kCookieControls);
+  params.types_enabled.push_back(PageActionIconType::kCookieControls);
   params.types_enabled.push_back(PageActionIconType::kLocalCardMigration);
   params.types_enabled.push_back(PageActionIconType::kSaveCard);
   params.icon_size = GetLayoutConstant(WEB_APP_PAGE_ACTION_ICON_SIZE);

@@ -24,7 +24,7 @@ TEST_F(MockVideoCaptureDeviceTest, DeviceIsStoppedWhenDiscardingDeviceProxy) {
     EXPECT_CALL(mock_device_, DoStopAndDeAllocate())
         .WillOnce(Invoke([&wait_loop]() { wait_loop.Quit(); }));
 
-    device_proxy_->Start(requested_settings_, std::move(mock_receiver_proxy_));
+    device_proxy_->Start(requested_settings_, std::move(mock_subscriber_));
     device_proxy_.reset();
 
     wait_loop.Run();
@@ -46,7 +46,7 @@ TEST_F(MockVideoCaptureDeviceTest, DeviceIsStoppedWhenDiscardingDeviceClient) {
     EXPECT_CALL(mock_device_, DoStopAndDeAllocate())
         .WillOnce(Invoke([&wait_loop]() { wait_loop.Quit(); }));
 
-    device_proxy_->Start(requested_settings_, std::move(mock_receiver_proxy_));
+    device_proxy_->Start(requested_settings_, std::move(mock_subscriber_));
     mock_receiver_.reset();
 
     wait_loop.Run();

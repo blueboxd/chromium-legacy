@@ -93,6 +93,11 @@
     "expiry_milestone": 78
   },
   {
+    "name": "android-setup-search-engine",
+    "owners": [ "pavely", "wylieb" ],
+    "expiry_milestone": 83
+  },
+  {
     "name": "android-site-settings-ui-refresh",
     "owners": [ "hkamila" ],
     "expiry_milestone": 76
@@ -2263,6 +2268,11 @@
   },
   {
     "name": "improved-cookie-controls",
+    "owners": [ "dullweber", "huanzhong" ],
+    "expiry_milestone": 84
+  },
+  {
+    "name": "improved-cookie-controls-for-third-party-cookie-blocking",
     "owners": [ "dullweber", "huanzhong" ],
     "expiry_milestone": 84
   },

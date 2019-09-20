@@ -10,7 +10,7 @@
 namespace video_capture {
 
 ReceiverMojoToMediaAdapter::ReceiverMojoToMediaAdapter(
-    mojom::ReceiverPtr receiver)
+    mojo::Remote<mojom::Receiver> receiver)
     : receiver_(std::move(receiver)) {}
 
 ReceiverMojoToMediaAdapter::~ReceiverMojoToMediaAdapter() = default;

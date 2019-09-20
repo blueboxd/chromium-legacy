@@ -8,6 +8,7 @@
 #include "base/sequence_checker.h"
 #include "media/capture/video/video_capture_buffer_pool.h"
 #include "media/capture/video_capture_types.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/public/mojom/producer.mojom.h"
 #include "services/video_capture/public/mojom/receiver.mojom.h"
@@ -35,7 +36,7 @@ class TextureVirtualDeviceMojoAdapter : public mojom::TextureVirtualDevice,
 
   // mojom::Device implementation.
   void Start(const media::VideoCaptureParams& requested_settings,
-             mojom::ReceiverPtr receiver) override;
+             mojo::PendingRemote<mojom::Receiver> receiver) override;
   void MaybeSuspend() override;
   void Resume() override;
   void GetPhotoState(GetPhotoStateCallback callback) override;
@@ -49,7 +50,7 @@ class TextureVirtualDeviceMojoAdapter : public mojom::TextureVirtualDevice,
   void OnReceiverConnectionErrorOrClose();
 
   base::OnceClosure optional_receiver_disconnected_callback_;
-  mojom::ReceiverPtr receiver_;
+  mojo::Remote<mojom::Receiver> receiver_;
   std::unordered_map<int32_t, media::mojom::MailboxBufferHandleSetPtr>
       known_buffer_handles_;
   SEQUENCE_CHECKER(sequence_checker_);

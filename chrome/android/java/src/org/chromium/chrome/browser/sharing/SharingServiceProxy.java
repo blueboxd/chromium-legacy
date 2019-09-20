@@ -8,6 +8,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.sync.protocol.SharingSpecificFields;
 import org.chromium.components.sync.protocol.SyncEnums;
 
 import java.util.ArrayList;
@@ -95,17 +96,18 @@ public class SharingServiceProxy {
 
     /**
      * Returns a list of devices for with given capabilities.
-     * @param capabilities A bitmask of capabilities created from.
-     *         org.chromium.chrome.browser.sharing.SharingDeviceCapability enum values.
+     * @param requiredFeature Required feature from SharingSpecificFields.EnabledFeatures enum.
      */
-    public ArrayList<DeviceInfo> getDeviceCandidates(int capabilities) {
+    public ArrayList<DeviceInfo> getDeviceCandidates(
+            SharingSpecificFields.EnabledFeatures requiredFeature) {
         ArrayList<DeviceInfo> deviceInfo = new ArrayList<>();
         if (sNativeSharingServiceProxyAndroid == 0) {
             return deviceInfo;
         }
 
         Natives jni = SharingServiceProxyJni.get();
-        jni.getDeviceCandidates(sNativeSharingServiceProxyAndroid, deviceInfo, capabilities);
+        jni.getDeviceCandidates(
+                sNativeSharingServiceProxyAndroid, deviceInfo, requiredFeature.getNumber());
         return deviceInfo;
     }
 
@@ -125,7 +127,7 @@ public class SharingServiceProxy {
         void sendSharedClipboardMessage(long nativeSharingServiceProxyAndroid, String guid,
                 String text, Callback<Integer> callback);
         void getDeviceCandidates(long nativeSharingServiceProxyAndroid,
-                ArrayList<DeviceInfo> deviceInfo, int capabilities);
+                ArrayList<DeviceInfo> deviceInfo, int requiredFeature);
         void addDeviceCandidatesInitializedObserver(
                 long nativeSharingServiceProxyAndroid, Runnable runnable);
     }

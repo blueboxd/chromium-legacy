@@ -133,7 +133,8 @@ class MockBrokerFactory : public AudioStreamBrokerFactory {
       const base::UnguessableToken& group_id,
       const base::Optional<base::UnguessableToken>& processing_id,
       AudioStreamBroker::DeleterCallback deleter,
-      media::mojom::AudioOutputStreamProviderClientPtr client) final {
+      mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient> client)
+      final {
     std::unique_ptr<MockBroker> prepared_broker =
         std::move(prepared_output_stream_brokers_.front());
     prepared_output_stream_brokers_.pop();
@@ -306,7 +307,7 @@ TEST_F(ForwardingAudioStreamFactoryTest,
 
 TEST_F(ForwardingAudioStreamFactoryTest,
        CreateOutputStream_CreatesOutputStream) {
-  media::mojom::AudioOutputStreamProviderClientPtr client;
+  mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient> client;
   base::WeakPtr<MockBroker> broker = ExpectOutputBrokerConstruction(main_rfh());
 
   ForwardingAudioStreamFactory factory(
@@ -314,7 +315,7 @@ TEST_F(ForwardingAudioStreamFactoryTest,
       std::move(broker_factory_));
 
   EXPECT_CALL(*broker, CreateStream(NotNull()));
-  mojo::MakeRequest(&client);
+  ignore_result(client.InitWithNewPipeAndPassReceiver());
   factory.core()->CreateOutputStream(
       main_rfh()->GetProcess()->GetID(), main_rfh()->GetRoutingID(),
       kOutputDeviceId, kParams, base::nullopt, std::move(client));
@@ -406,7 +407,6 @@ TEST_F(ForwardingAudioStreamFactoryTest,
 
 TEST_F(ForwardingAudioStreamFactoryTest,
        OutputBrokerDeleterCalled_DestroysOutputStream) {
-  media::mojom::AudioOutputStreamProviderClientPtr client;
   base::WeakPtr<MockBroker> main_rfh_broker =
       ExpectOutputBrokerConstruction(main_rfh());
   base::WeakPtr<MockBroker> other_rfh_broker =
@@ -418,7 +418,8 @@ TEST_F(ForwardingAudioStreamFactoryTest,
 
   {
     EXPECT_CALL(*main_rfh_broker, CreateStream(NotNull()));
-    mojo::MakeRequest(&client);
+    mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient> client;
+    ignore_result(client.InitWithNewPipeAndPassReceiver());
     factory.core()->CreateOutputStream(
         main_rfh()->GetProcess()->GetID(), main_rfh()->GetRoutingID(),
         kOutputDeviceId, kParams, base::nullopt, std::move(client));
@@ -426,7 +427,8 @@ TEST_F(ForwardingAudioStreamFactoryTest,
   }
   {
     EXPECT_CALL(*other_rfh_broker, CreateStream(NotNull()));
-    mojo::MakeRequest(&client);
+    mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient> client;
+    ignore_result(client.InitWithNewPipeAndPassReceiver());
     factory.core()->CreateOutputStream(
         other_rfh()->GetProcess()->GetID(), other_rfh()->GetRoutingID(),
         kOutputDeviceId, kParams, base::nullopt, std::move(client));
@@ -452,7 +454,6 @@ TEST_F(ForwardingAudioStreamFactoryTest, DestroyFrame_DestroysRelatedStreams) {
   base::WeakPtr<MockBroker> other_rfh_loopback_broker =
       ExpectLoopbackBrokerConstruction(other_rfh());
 
-  media::mojom::AudioOutputStreamProviderClientPtr output_client;
   base::WeakPtr<MockBroker> main_rfh_output_broker =
       ExpectOutputBrokerConstruction(main_rfh());
   base::WeakPtr<MockBroker> other_rfh_output_broker =
@@ -517,7 +518,9 @@ TEST_F(ForwardingAudioStreamFactoryTest, DestroyFrame_DestroysRelatedStreams) {
 
   {
     EXPECT_CALL(*main_rfh_output_broker, CreateStream(NotNull()));
-    mojo::MakeRequest(&output_client);
+    mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient>
+        output_client;
+    ignore_result(output_client.InitWithNewPipeAndPassReceiver());
     factory.core()->CreateOutputStream(
         main_rfh()->GetProcess()->GetID(), main_rfh()->GetRoutingID(),
         kOutputDeviceId, kParams, base::nullopt, std::move(output_client));
@@ -525,7 +528,9 @@ TEST_F(ForwardingAudioStreamFactoryTest, DestroyFrame_DestroysRelatedStreams) {
   }
   {
     EXPECT_CALL(*other_rfh_output_broker, CreateStream(NotNull()));
-    mojo::MakeRequest(&output_client);
+    mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient>
+        output_client;
+    ignore_result(output_client.InitWithNewPipeAndPassReceiver());
     factory.core()->CreateOutputStream(
         other_rfh()->GetProcess()->GetID(), other_rfh()->GetRoutingID(),
         kOutputDeviceId, kParams, base::nullopt, std::move(output_client));
@@ -552,7 +557,8 @@ TEST_F(ForwardingAudioStreamFactoryTest, DestroyWebContents_DestroysStreams) {
   base::WeakPtr<MockBroker> input_broker =
       ExpectInputBrokerConstruction(main_rfh());
 
-  media::mojom::AudioOutputStreamProviderClientPtr output_client;
+  mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient>
+      output_client;
   base::WeakPtr<MockBroker> output_broker =
       ExpectOutputBrokerConstruction(main_rfh());
 
@@ -568,7 +574,7 @@ TEST_F(ForwardingAudioStreamFactoryTest, DestroyWebContents_DestroysStreams) {
                                     nullptr, std::move(input_client));
 
   EXPECT_CALL(*output_broker, CreateStream(NotNull()));
-  mojo::MakeRequest(&output_client);
+  ignore_result(output_client.InitWithNewPipeAndPassReceiver());
   factory.core()->CreateOutputStream(
       main_rfh()->GetProcess()->GetID(), main_rfh()->GetRoutingID(),
       kOutputDeviceId, kParams, base::nullopt, std::move(output_client));
@@ -588,7 +594,6 @@ TEST_F(ForwardingAudioStreamFactoryTest, LastStreamDeleted_ClearsFactoryPtr) {
   base::WeakPtr<MockBroker> other_rfh_input_broker =
       ExpectInputBrokerConstruction(other_rfh());
 
-  media::mojom::AudioOutputStreamProviderClientPtr output_client;
   base::WeakPtr<MockBroker> main_rfh_output_broker =
       ExpectOutputBrokerConstruction(main_rfh());
   base::WeakPtr<MockBroker> other_rfh_output_broker =
@@ -623,7 +628,9 @@ TEST_F(ForwardingAudioStreamFactoryTest, LastStreamDeleted_ClearsFactoryPtr) {
 
   {
     EXPECT_CALL(*main_rfh_output_broker, CreateStream(NotNull()));
-    mojo::MakeRequest(&output_client);
+    mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient>
+        output_client;
+    ignore_result(output_client.InitWithNewPipeAndPassReceiver());
     factory.core()->CreateOutputStream(
         main_rfh()->GetProcess()->GetID(), main_rfh()->GetRoutingID(),
         kOutputDeviceId, kParams, base::nullopt, std::move(output_client));
@@ -631,7 +638,9 @@ TEST_F(ForwardingAudioStreamFactoryTest, LastStreamDeleted_ClearsFactoryPtr) {
   }
   {
     EXPECT_CALL(*other_rfh_output_broker, CreateStream(NotNull()));
-    mojo::MakeRequest(&output_client);
+    mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient>
+        output_client;
+    ignore_result(output_client.InitWithNewPipeAndPassReceiver());
     factory.core()->CreateOutputStream(
         other_rfh()->GetProcess()->GetID(), other_rfh()->GetRoutingID(),
         kOutputDeviceId, kParams, base::nullopt, std::move(output_client));
@@ -680,14 +689,14 @@ TEST_F(ForwardingAudioStreamFactoryTest,
 }
 
 TEST_F(ForwardingAudioStreamFactoryTest, MuteWithOutputStream_ConnectsMuter) {
-  media::mojom::AudioOutputStreamProviderClientPtr client;
+  mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient> client;
   base::WeakPtr<MockBroker> broker = ExpectOutputBrokerConstruction(main_rfh());
   ForwardingAudioStreamFactory factory(
       web_contents(), nullptr /*user_input_monitor*/, std::move(connector_),
       std::move(broker_factory_));
 
   EXPECT_CALL(*broker, CreateStream(NotNull()));
-  mojo::MakeRequest(&client);
+  ignore_result(client.InitWithNewPipeAndPassReceiver());
   factory.core()->CreateOutputStream(
       main_rfh()->GetProcess()->GetID(), main_rfh()->GetRoutingID(),
       kOutputDeviceId, kParams, base::nullopt, std::move(client));
@@ -712,7 +721,7 @@ TEST_F(ForwardingAudioStreamFactoryTest, MuteWithOutputStream_ConnectsMuter) {
 
 TEST_F(ForwardingAudioStreamFactoryTest,
        WhenMuting_ConnectedWhenOutputStreamExists) {
-  media::mojom::AudioOutputStreamProviderClientPtr client;
+  mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient> client;
   base::WeakPtr<MockBroker> broker = ExpectOutputBrokerConstruction(main_rfh());
   ForwardingAudioStreamFactory factory(
       web_contents(), nullptr /*user_input_monitor*/, std::move(connector_),
@@ -728,7 +737,7 @@ TEST_F(ForwardingAudioStreamFactoryTest,
   EXPECT_FALSE(stream_factory_.IsMuterConnected());
 
   EXPECT_CALL(*broker, CreateStream(NotNull()));
-  mojo::MakeRequest(&client);
+  ignore_result(client.InitWithNewPipeAndPassReceiver());
   factory.core()->CreateOutputStream(
       main_rfh()->GetProcess()->GetID(), main_rfh()->GetRoutingID(),
       kOutputDeviceId, kParams, base::nullopt, std::move(client));
@@ -748,7 +757,6 @@ TEST_F(ForwardingAudioStreamFactoryTest,
 
 TEST_F(ForwardingAudioStreamFactoryTest,
        WhenMuting_AddRemoveSecondStream_DoesNotChangeMuting) {
-  media::mojom::AudioOutputStreamProviderClientPtr client;
   base::WeakPtr<MockBroker> broker = ExpectOutputBrokerConstruction(main_rfh());
   base::WeakPtr<MockBroker> another_broker =
       ExpectOutputBrokerConstruction(main_rfh());
@@ -758,7 +766,8 @@ TEST_F(ForwardingAudioStreamFactoryTest,
 
   {
     EXPECT_CALL(*broker, CreateStream(NotNull()));
-    mojo::MakeRequest(&client);
+    mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient> client;
+    ignore_result(client.InitWithNewPipeAndPassReceiver());
     factory.core()->CreateOutputStream(
         main_rfh()->GetProcess()->GetID(), main_rfh()->GetRoutingID(),
         kOutputDeviceId, kParams, base::nullopt, std::move(client));
@@ -776,7 +785,8 @@ TEST_F(ForwardingAudioStreamFactoryTest,
 
   {
     EXPECT_CALL(*another_broker, CreateStream(NotNull()));
-    mojo::MakeRequest(&client);
+    mojo::PendingRemote<media::mojom::AudioOutputStreamProviderClient> client;
+    ignore_result(client.InitWithNewPipeAndPassReceiver());
     factory.core()->CreateOutputStream(
         main_rfh()->GetProcess()->GetID(), main_rfh()->GetRoutingID(),
         kOutputDeviceId, kParams, base::nullopt, std::move(client));

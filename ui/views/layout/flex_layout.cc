@@ -20,7 +20,7 @@
 #include "ui/events/event_target_iterator.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/layout/flex_layout_types.h"
-#include "ui/views/layout/flex_layout_types_internal.h"
+#include "ui/views/layout/normalized_geometry.h"
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 
@@ -28,14 +28,14 @@
 
 namespace views {
 
-using internal::NormalizedInsets;
-using internal::NormalizedPoint;
-using internal::NormalizedRect;
-using internal::NormalizedSize;
-using internal::NormalizedSizeBounds;
+using layout::NormalizedInsets;
+using layout::NormalizedPoint;
+using layout::NormalizedRect;
+using layout::NormalizedSize;
+using layout::NormalizedSizeBounds;
 
-using internal::Denormalize;
-using internal::Normalize;
+using layout::Denormalize;
+using layout::Normalize;
 
 namespace {
 
@@ -378,7 +378,7 @@ LayoutManagerBase::ProposedLayout FlexLayout::CalculateProposedLayout(
 }
 
 void FlexLayout::InitializeChildData(
-    const internal::NormalizedSizeBounds& bounds,
+    const layout::NormalizedSizeBounds& bounds,
     FlexLayoutData* data,
     FlexOrderToViewIndexMap* flex_order_to_index) const {
   // Step through the children, creating placeholder layout view elements

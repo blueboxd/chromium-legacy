@@ -11,8 +11,8 @@
 #include "chrome/browser/ui/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
-#include "chrome/browser/ui/views/layout/animating_layout_manager.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
+#include "ui/views/layout/animating_layout_manager.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget_observer.h"
@@ -39,7 +39,7 @@ ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser)
       model_observer_(this),
       extensions_button_(new ExtensionsToolbarButton(browser_, this)) {
   animating_layout_ =
-      SetLayoutManager(std::make_unique<AnimatingLayoutManager>());
+      SetLayoutManager(std::make_unique<views::AnimatingLayoutManager>());
   animating_layout_->SetShouldAnimateBounds(true);
   auto* flex_layout = animating_layout_->SetTargetLayoutManager(
       std::make_unique<views::FlexLayout>());

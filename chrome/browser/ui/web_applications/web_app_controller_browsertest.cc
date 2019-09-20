@@ -4,13 +4,11 @@
 
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 
-#include "base/test/bind_test_util.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/extensions/browsertest_util.h"
-#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
-#include "chrome/browser/web_applications/components/install_manager.h"
+#include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
@@ -38,6 +36,36 @@ WebAppControllerBrowserTestBase::WebAppControllerBrowserTestBase() {
 
 WebAppControllerBrowserTestBase::~WebAppControllerBrowserTestBase() = default;
 
+AppId WebAppControllerBrowserTestBase::InstallPWA(const GURL& app_url) {
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->app_url = app_url;
+  web_app_info->scope = app_url.GetWithoutFilename();
+  web_app_info->open_as_window = true;
+  return web_app::InstallWebApp(profile(), std::move(web_app_info));
+}
+
+AppId WebAppControllerBrowserTestBase::InstallWebApp(
+    std::unique_ptr<WebApplicationInfo> web_app_info) {
+  return web_app::InstallWebApp(profile(), std::move(web_app_info));
+}
+
+Browser* WebAppControllerBrowserTestBase::LaunchWebAppBrowser(
+    const AppId& app_id) {
+  return web_app::LaunchWebAppBrowser(profile(), app_id);
+}
+
+Browser* WebAppControllerBrowserTestBase::LaunchBrowserForWebAppInTab(
+    const AppId& app_id) {
+  return web_app::LaunchBrowserForWebAppInTab(profile(), app_id);
+}
+
+base::Optional<AppId> WebAppControllerBrowserTestBase::FindAppWithUrlInScope(
+    const GURL& url) {
+  auto* provider = WebAppProvider::Get(profile());
+  DCHECK(provider);
+  return provider->registrar().FindAppWithUrlInScope(url);
+}
+
 WebAppControllerBrowserTest::WebAppControllerBrowserTest()
     : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
   scoped_feature_list_.InitWithFeatures(
@@ -52,37 +80,9 @@ void WebAppControllerBrowserTest::SetUp() {
   extensions::ExtensionBrowserTest::SetUp();
 }
 
-AppId WebAppControllerBrowserTest::InstallPWA(const GURL& app_url) {
-  auto web_app_info = std::make_unique<WebApplicationInfo>();
-  web_app_info->app_url = app_url;
-  web_app_info->scope = app_url.GetWithoutFilename();
-  web_app_info->open_as_window = true;
-  return InstallWebApp(std::move(web_app_info));
-}
-
-AppId WebAppControllerBrowserTest::InstallWebApp(
-    std::unique_ptr<WebApplicationInfo>&& web_app_info) {
-  AppId app_id;
-  base::RunLoop run_loop;
-  auto* provider = web_app::WebAppProvider::Get(profile());
-  DCHECK(provider);
-  provider->install_manager().InstallWebAppFromInfo(
-      std::move(web_app_info), ForInstallableSite::kYes,
-      WebappInstallSource::OMNIBOX_INSTALL_ICON,
-      base::BindLambdaForTesting(
-          [&](const AppId& installed_app_id, web_app::InstallResultCode code) {
-            EXPECT_EQ(web_app::InstallResultCode::kSuccessNewInstall, code);
-            app_id = installed_app_id;
-            run_loop.Quit();
-          }));
-
-  run_loop.Run();
-  return app_id;
-}
-
 content::WebContents* WebAppControllerBrowserTest::OpenApplication(
     const AppId& app_id) {
-  auto* provider = web_app::WebAppProvider::Get(profile());
+  auto* provider = WebAppProvider::Get(profile());
   DCHECK(provider);
   ui_test_utils::UrlLoadObserver url_observer(
       provider->registrar().GetAppLaunchURL(app_id),

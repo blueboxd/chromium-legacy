@@ -6,6 +6,7 @@
 #define SERVICES_VIDEO_CAPTURE_PUSH_VIDEO_STREAM_SUBSCRIPTION_IMPL_H_
 
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/video_capture/public/mojom/device.mojom.h"
 #include "services/video_capture/public/mojom/receiver.mojom.h"
 #include "services/video_capture/public/mojom/video_source.mojom.h"
@@ -19,7 +20,7 @@ class PushVideoStreamSubscriptionImpl
  public:
   PushVideoStreamSubscriptionImpl(
       mojom::PushVideoStreamSubscriptionRequest subscription_request,
-      mojom::ReceiverPtr subscriber,
+      mojo::PendingRemote<mojom::Receiver> subscriber,
       const media::VideoCaptureParams& requested_settings,
       mojom::VideoSource::CreatePushSubscriptionCallback creation_callback,
       BroadcastingReceiver* broadcaster,
@@ -55,7 +56,7 @@ class PushVideoStreamSubscriptionImpl
   void OnConnectionLost();
 
   mojo::Binding<mojom::PushVideoStreamSubscription> binding_;
-  mojom::ReceiverPtr subscriber_;
+  mojo::PendingRemote<mojom::Receiver> subscriber_;
   const media::VideoCaptureParams requested_settings_;
   mojom::VideoSource::CreatePushSubscriptionCallback creation_callback_;
   BroadcastingReceiver* const broadcaster_;

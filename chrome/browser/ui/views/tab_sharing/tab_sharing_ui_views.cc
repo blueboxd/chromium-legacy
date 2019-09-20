@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "components/infobars/core/infobar.h"
 #include "components/url_formatter/elide_url.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/origin_util.h"
@@ -115,6 +116,7 @@ TabSharingUIViews::TabSharingUIViews(const content::DesktopMediaID& media_id,
       content::RenderFrameHost::FromID(
           media_id.web_contents_id.render_process_id,
           media_id.web_contents_id.main_render_frame_id));
+  Observe(shared_tab_);
   shared_tab_name_ = GetTabName(shared_tab_);
   profile_ = ProfileManager::GetLastUsedProfileAllowedByPolicy();
   InitContentsBorderWidget(shared_tab_);
@@ -236,6 +238,25 @@ void TabSharingUIViews::OnInfoBarRemoved(infobars::InfoBar* info_bar,
   infobars_.erase(infobars_entry);
   if (infobars_entry->first == shared_tab_)
     StopSharing();
+}
+
+void TabSharingUIViews::DidFinishNavigation(content::NavigationHandle* handle) {
+  // Only interested in committed navigations on the shared tab that result in
+  // changing the shared tab's name.
+  if (!handle->IsInMainFrame() || !handle->HasCommitted() ||
+      handle->IsSameDocument() || handle->GetWebContents() != shared_tab_ ||
+      GetTabName(shared_tab_) == shared_tab_name_) {
+    return;
+  }
+  shared_tab_name_ = GetTabName(shared_tab_);
+  for (const auto& infobars_entry : infobars_) {
+    if (infobars_entry.first == shared_tab_)
+      continue;
+    // Recreate infobars to reflect the new shared tab name.
+    infobars_entry.second->owner()->RemoveObserver(this);
+    infobars_entry.second->RemoveSelf();
+    CreateInfobarForWebContents(infobars_entry.first);
+  }
 }
 
 void TabSharingUIViews::CreateInfobarsForAllTabs() {

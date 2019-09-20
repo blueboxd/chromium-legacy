@@ -140,8 +140,7 @@ void SharingUiController::UpdateAndShowDialog() {
 }
 
 void SharingUiController::UpdateDevices() {
-  devices_ =
-      sharing_service_->GetDeviceCandidates(GetRequiredDeviceCapabilities());
+  devices_ = sharing_service_->GetDeviceCandidates(GetRequiredFeature());
 }
 
 base::string16 SharingUiController::GetTargetDeviceName() const {

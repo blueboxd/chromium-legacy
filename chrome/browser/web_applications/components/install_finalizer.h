@@ -77,11 +77,7 @@ class InstallFinalizer {
 
   virtual bool CanUserUninstallFromSync(const AppId& app_id) const = 0;
 
-  // TODO(loyso): This method should be protected and subclasses should call it
-  // (upcasting their final registrar type). Subclassing WebAppProvider will fix
-  // this.
-  virtual void SetSubsystems(AppRegistrar* registrar,
-                             WebAppUiManager* ui_manager);
+  void SetSubsystems(AppRegistrar* registrar, WebAppUiManager* ui_manager);
 
   virtual ~InstallFinalizer() = default;
 

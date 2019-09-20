@@ -55,7 +55,8 @@ class VideoCaptureDeviceClientTest : public ::testing::Test {
   VideoCaptureDeviceClientTest() {
     scoped_refptr<VideoCaptureBufferPoolImpl> buffer_pool(
         new VideoCaptureBufferPoolImpl(
-            std::make_unique<VideoCaptureBufferTrackerFactoryImpl>(), 2));
+            std::make_unique<VideoCaptureBufferTrackerFactoryImpl>(),
+            VideoCaptureBufferType::kSharedMemory, 2));
     auto controller = std::make_unique<NiceMock<MockVideoFrameReceiver>>();
     receiver_ = controller.get();
     gpu_memory_buffer_manager_ =

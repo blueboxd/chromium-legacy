@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -33,10 +34,35 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
   BackForwardCacheImpl();
   ~BackForwardCacheImpl();
 
-  // Returns true when a RenderFrameHost can be stored into the
+  struct CanStoreDocumentResult {
+    enum class Reason : uint8_t;
+
+    CanStoreDocumentResult(const CanStoreDocumentResult&);
+    ~CanStoreDocumentResult();
+
+    bool can_store;
+    base::Optional<Reason> reason;
+    uint64_t blocklisted_features;
+
+    static CanStoreDocumentResult Yes();
+    static CanStoreDocumentResult No(Reason reason);
+    static CanStoreDocumentResult NoDueToFeatures(uint64_t features);
+
+    std::string ToString();
+
+    operator bool() const { return can_store; }
+
+   private:
+    CanStoreDocumentResult(bool can_store,
+                           base::Optional<Reason> reason,
+                           uint64_t blocklisted_features);
+  };
+
+  // Returns whether a RenderFrameHost can be stored into the
   // BackForwardCache. Depends on the |render_frame_host| and its children's
   // state.
-  bool CanStoreDocument(RenderFrameHostImpl* render_frame_host);
+  CanStoreDocumentResult CanStoreDocument(
+      RenderFrameHostImpl* render_frame_host);
 
   // Moves |rfh| into the BackForwardCache. It can be reused in
   // a future history navigation by using RestoreDocument(). When the
@@ -154,6 +180,11 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
  private:
   // Destroys all evicted frames in the BackForwardCache.
   void DestroyEvictedFrames();
+
+  // Helper for recursively checking each child.
+  CanStoreDocumentResult CanStoreRenderFrameHost(
+      RenderFrameHostImpl* render_frame_host,
+      uint64_t disallowed_features);
 
   // Contains the set of stored RenderFrameHost.
   // Invariant:

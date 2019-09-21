@@ -7,6 +7,7 @@
 
 #include "base/threading/thread_checker.h"
 #include "components/rappor/public/mojom/rappor_recorder.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 class GURL;
 
@@ -22,7 +23,7 @@ class RapporRecorderImpl : public mojom::RapporRecorder {
   ~RapporRecorderImpl() override;
 
   static void Create(RapporServiceImpl* rappor_service,
-                     mojom::RapporRecorderRequest request);
+                     mojo::PendingReceiver<mojom::RapporRecorder> receiver);
 
  private:
   // rappor::mojom::RapporRecorder:

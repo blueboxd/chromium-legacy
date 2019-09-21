@@ -4,9 +4,107 @@
 
 #include "pdf/accessibility.h"
 
+#include <algorithm>
+#include <utility>
+
+#include "base/numerics/safe_math.h"
 #include "pdf/pdf_engine.h"
 
 namespace chrome_pdf {
+
+namespace {
+
+bool IsCharWithinTextRun(const PP_PrivateAccessibilityTextRunInfo& text_run,
+                         uint32_t text_run_start_char_index,
+                         uint32_t char_index) {
+  return char_index >= text_run_start_char_index &&
+         char_index - text_run_start_char_index < text_run.len;
+}
+
+bool GetEnclosingTextRunRangeForCharRange(
+    const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+    int start_char_index,
+    int char_count,
+    uint32_t* start_text_run_index,
+    uint32_t* text_run_count) {
+  if (start_char_index < 0 || char_count <= 0)
+    return false;
+
+  base::CheckedNumeric<uint32_t> checked_end_char_index = char_count - 1;
+  checked_end_char_index += start_char_index;
+  if (!checked_end_char_index.IsValid())
+    return false;
+  uint32_t end_char_index = checked_end_char_index.ValueOrDie();
+  uint32_t current_char_index = 0;
+  base::Optional<uint32_t> start_text_run;
+  for (size_t i = 0; i < text_runs.size(); ++i) {
+    if (!start_text_run.has_value() &&
+        IsCharWithinTextRun(text_runs[i], current_char_index,
+                            start_char_index)) {
+      start_text_run = i;
+    }
+
+    if (start_text_run.has_value() &&
+        IsCharWithinTextRun(text_runs[i], current_char_index, end_char_index)) {
+      *start_text_run_index = start_text_run.value();
+      *text_run_count = i - *start_text_run_index + 1;
+      return true;
+    }
+    current_char_index += text_runs[i].len;
+  }
+  return false;
+}
+
+void GetAccessibilityLinkInfo(
+    PDFEngine* engine,
+    int32_t page_index,
+    const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+    std::vector<pp::PDF::PrivateAccessibilityLinkInfo>* links) {
+  uint32_t link_count = engine->GetLinkCount(page_index);
+  for (uint32_t i = 0; i < link_count; ++i) {
+    pp::PDF::PrivateAccessibilityLinkInfo link_info;
+    int start_char_index = -1;
+    int char_count = 0;
+    bool is_link_info_present =
+        engine->GetLinkInfo(page_index, i, &link_info.url, &start_char_index,
+                            &char_count, &link_info.bounds);
+    DCHECK(is_link_info_present);
+    link_info.index_in_page = i;
+    if (!GetEnclosingTextRunRangeForCharRange(
+            text_runs, start_char_index, char_count, &link_info.text_run_index,
+            &link_info.text_run_count)) {
+      // If a valid text run range is not found for the link, set the fallback
+      // values of |text_run_index| and |text_run_count| for |link_info|.
+      link_info.text_run_index = text_runs.size();
+      link_info.text_run_count = 0;
+    }
+    links->push_back(std::move(link_info));
+  }
+  std::sort(links->begin(), links->end(),
+            [](const pp::PDF::PrivateAccessibilityLinkInfo& a,
+               const pp::PDF::PrivateAccessibilityLinkInfo& b) {
+              return a.text_run_index < b.text_run_index;
+            });
+}
+
+void GetAccessibilityImageInfo(
+    PDFEngine* engine,
+    int32_t page_index,
+    uint32_t text_run_count,
+    std::vector<pp::PDF::PrivateAccessibilityImageInfo>* images) {
+  uint32_t image_count = engine->GetImageCount(page_index);
+  for (uint32_t i = 0; i < image_count; ++i) {
+    pp::PDF::PrivateAccessibilityImageInfo image_info;
+    bool ret = engine->GetImageInfo(page_index, i, &image_info.alt_text,
+                                    &image_info.bounds);
+    DCHECK(ret);
+    // TODO(mohitb): Update text run index to nearest text run to image bounds.
+    image_info.text_run_index = text_run_count;
+    images->push_back(std::move(image_info));
+  }
+}
+
+}  // namespace
 
 bool GetAccessibilityInfo(
     PDFEngine* engine,
@@ -89,8 +187,10 @@ bool GetAccessibilityInfo(
   }
 
   page_info->text_run_count = text_runs->size();
-  // TODO(crbug.com/981448): Populate |links| and |images|.
+  GetAccessibilityLinkInfo(engine, page_index, *text_runs, links);
   page_info->link_count = links->size();
+  GetAccessibilityImageInfo(engine, page_index, page_info->text_run_count,
+                            images);
   page_info->image_count = images->size();
   return true;
 }

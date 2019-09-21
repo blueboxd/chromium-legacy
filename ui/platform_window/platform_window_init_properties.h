@@ -84,6 +84,9 @@ struct PlatformWindowInitProperties {
   std::string wm_role_name;
   std::string wm_class_name;
   std::string wm_class_class;
+
+  // Stores visual id for the system tray in X11.
+  base::Optional<int> x_visual_id;
 #endif
 };
 

@@ -1350,7 +1350,7 @@ TEST_F(FFmpegDemuxerTest, NaturalSizeWithPASP) {
 
 TEST_F(FFmpegDemuxerTest, HEVC_in_MP4_container) {
   CreateDemuxer("bear-hevc-frag.mp4");
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
   // HEVC is not supported by default media platform. Embedders who add support
   // must declare it via MediaClient.
   MockMediaClient media_client;

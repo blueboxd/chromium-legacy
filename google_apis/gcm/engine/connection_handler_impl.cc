@@ -16,7 +16,7 @@
 #include "net/base/net_errors.h"
 #include "net/socket/stream_socket.h"
 
-using namespace google::protobuf::io;
+namespace io = google::protobuf::io;
 
 namespace gcm {
 
@@ -101,7 +101,7 @@ void ConnectionHandlerImpl::SendMessage(
   DCHECK(handshake_complete_);
 
   {
-    CodedOutputStream coded_output_stream(output_stream_.get());
+    io::CodedOutputStream coded_output_stream(output_stream_.get());
     DVLOG(1) << "Writing proto of size " << message.ByteSize();
     int tag = GetMCSProtoTag(message);
     DCHECK_NE(tag, -1);
@@ -125,7 +125,7 @@ void ConnectionHandlerImpl::Login(
   const char version_byte[1] = {kMCSVersion};
   const char login_request_tag[1] = {kLoginRequestTag};
   {
-    CodedOutputStream coded_output_stream(output_stream_.get());
+    io::CodedOutputStream coded_output_stream(output_stream_.get());
     coded_output_stream.WriteRaw(version_byte, 1);
     coded_output_stream.WriteRaw(login_request_tag, 1);
     coded_output_stream.WriteVarint32(login_request.ByteSize());
@@ -291,7 +291,7 @@ void ConnectionHandlerImpl::WaitForData(ProcessingState state) {
 void ConnectionHandlerImpl::OnGotVersion() {
   uint8_t version = 0;
   {
-    CodedInputStream coded_input_stream(input_stream_.get());
+    io::CodedInputStream coded_input_stream(input_stream_.get());
     coded_input_stream.ReadRaw(&version, 1);
   }
   // TODO(zea): remove this when the server is ready.
@@ -315,7 +315,7 @@ void ConnectionHandlerImpl::OnGotMessageTag() {
   }
 
   {
-    CodedInputStream coded_input_stream(input_stream_.get());
+    io::CodedInputStream coded_input_stream(input_stream_.get());
     coded_input_stream.ReadRaw(&message_tag_, 1);
   }
 
@@ -342,7 +342,7 @@ void ConnectionHandlerImpl::OnGotMessageSize() {
   int result = net::OK;
   bool incomplete_size_packet = false;
   {
-    CodedInputStream coded_input_stream(input_stream_.get());
+    io::CodedInputStream coded_input_stream(input_stream_.get());
     if (!coded_input_stream.ReadVarint32(&message_size_)) {
       DVLOG(1) << "Expecting another message size byte.";
       if (prev_byte_count >= kSizePacketLenMax) {
@@ -410,7 +410,7 @@ void ConnectionHandlerImpl::OnGotMessageBytes() {
 
   int result = net::OK;
   if (message_size_ < kDefaultDataPacketLimit) {
-    CodedInputStream coded_input_stream(input_stream_.get());
+    io::CodedInputStream coded_input_stream(input_stream_.get());
     if (!protobuf->ParsePartialFromCodedStream(&coded_input_stream)) {
       LOG(ERROR) << "Unable to parse GCM message of type "
                  << static_cast<unsigned int>(message_tag_);
@@ -427,9 +427,9 @@ void ConnectionHandlerImpl::OnGotMessageBytes() {
     DCHECK_LE(payload_input_buffer_.size(), message_size_);
 
     if (payload_input_buffer_.size() == message_size_) {
-      ArrayInputStream buffer_input_stream(payload_input_buffer_.data(),
-                                           payload_input_buffer_.size());
-      CodedInputStream coded_input_stream(&buffer_input_stream);
+      io::ArrayInputStream buffer_input_stream(payload_input_buffer_.data(),
+                                               payload_input_buffer_.size());
+      io::CodedInputStream coded_input_stream(&buffer_input_stream);
       if (!protobuf->ParsePartialFromCodedStream(&coded_input_stream)) {
         LOG(ERROR) << "Unable to parse GCM message of type "
                    << static_cast<unsigned int>(message_tag_);

@@ -76,12 +76,12 @@ declare_args() {
       is_chromecast || is_mac || is_win || is_linux || is_android
 
   # Enable HEVC/H265 demuxing. Actual decoding must be provided by the
-  # platform. Enable by default for Chromecast.
-  enable_hevc_demuxing = proprietary_codecs && is_chromecast
+  # platform. Enabled by default for Chromecast.
+  enable_platform_hevc = proprietary_codecs && is_chromecast
 
   # Enable Dolby Vision demuxing. Enable by default for Chromecast. Actual
   # decoding must be provided by the platform. Note some Dolby Vision profiles
-  # which are encoded using HEVC require |enable_hevc_demuxing| to be enabled.
+  # which are encoded using HEVC require |enable_platform_hevc| to be enabled.
   enable_dolby_vision_demuxing = proprietary_codecs && is_chromecast
 
   # Enable HLS with SAMPLE-AES decryption.

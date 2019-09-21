@@ -834,11 +834,6 @@ DesktopWindowTreeHostX11::GetKeyboardLayoutMap() {
   return {};
 }
 
-void DesktopWindowTreeHostX11::SetVisualId(VisualID visual_id) {
-  DCHECK_EQ(GetXWindow()->window(), x11::None);
-  GetXWindow()->set_visual_id(visual_id);
-}
-
 void DesktopWindowTreeHostX11::OnBoundsChanged(const gfx::Rect& new_bounds) {
   ResetWindowRegion();
   WindowTreeHostPlatform::OnBoundsChanged(new_bounds);

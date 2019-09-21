@@ -49,7 +49,7 @@
 #include "media/media_buildflags.h"
 #include "third_party/ffmpeg/ffmpeg_features.h"
 
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
 #include "media/filters/ffmpeg_h265_to_annex_b_bitstream_converter.h"
 #endif
 
@@ -788,7 +788,7 @@ void FFmpegDemuxerStream::InitBitstreamConverter() {
       bitstream_converter_.reset(
           new FFmpegH264ToAnnexBBitstreamConverter(stream_->codecpar));
       break;
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
     case AV_CODEC_ID_HEVC:
       bitstream_converter_.reset(
           new FFmpegH265ToAnnexBBitstreamConverter(stream_->codecpar));
@@ -1325,7 +1325,7 @@ void FFmpegDemuxer::OnFindStreamInfoDone(int result) {
                                  codec_hash);
       }
 
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
       if (codec_id == AV_CODEC_ID_HEVC) {
         // If ffmpeg is built without HEVC parser/decoder support, it will be
         // able to demux HEVC based solely on container-provided information,

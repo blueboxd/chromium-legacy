@@ -137,26 +137,35 @@ class SMILTime {
 
 std::ostream& operator<<(std::ostream& os, SMILTime time);
 
+// What generated a SMILTime.
+enum class SMILTimeOrigin {
+  kAttribute,       // 'begin' / 'end' attribute
+  kScript,          // beginElementAt / endElementAt
+  kSyncBase,        // Sync-base
+  kRepeat,          // Repeat event
+  kEvent,           // DOM event
+  kLinkActivation,  // Link activation (Click on link referring to timed
+                    // element.)
+};
+
 class SMILTimeWithOrigin {
   DISALLOW_NEW();
 
  public:
-  enum Origin { kParserOrigin, kScriptOrigin };
+  SMILTimeWithOrigin() : origin_(SMILTimeOrigin::kAttribute) {}
 
-  SMILTimeWithOrigin() : origin_(kParserOrigin) {}
-
-  SMILTimeWithOrigin(const SMILTime& time, Origin origin)
+  SMILTimeWithOrigin(const SMILTime& time, SMILTimeOrigin origin)
       : time_(time), origin_(origin) {}
 
   const SMILTime& Time() const { return time_; }
-  bool OriginIsScript() const { return origin_ == kScriptOrigin; }
+  bool OriginIsScript() const { return origin_ == SMILTimeOrigin::kScript; }
   bool HasSameOrigin(SMILTimeWithOrigin other) const {
     return origin_ == other.origin_;
   }
 
  private:
   SMILTime time_;
-  Origin origin_;
+  SMILTimeOrigin origin_;
 };
 
 inline bool operator<(const SMILTimeWithOrigin& a,

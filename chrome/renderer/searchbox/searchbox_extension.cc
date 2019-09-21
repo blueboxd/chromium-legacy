@@ -709,6 +709,7 @@ class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings> {
                                       v8::Local<v8::Value> color);
   static void RevertThemeChanges();
   static void ConfirmThemeChanges();
+  static void BlocklistPromo(const std::string& promo_id);
   static v8::Local<v8::Value> GetColorsInfo(v8::Isolate* isolate);
 
   DISALLOW_COPY_AND_ASSIGN(NewTabPageBindings);
@@ -781,7 +782,8 @@ gin::ObjectTemplateBuilder NewTabPageBindings::GetObjectTemplateBuilder(
       .SetMethod("revertThemeChanges", &NewTabPageBindings::RevertThemeChanges)
       .SetMethod("confirmThemeChanges",
                  &NewTabPageBindings::ConfirmThemeChanges)
-      .SetMethod("getColorsInfo", &NewTabPageBindings::GetColorsInfo);
+      .SetMethod("getColorsInfo", &NewTabPageBindings::GetColorsInfo)
+      .SetMethod("blocklistPromo", &NewTabPageBindings::BlocklistPromo);
 }
 
 // static
@@ -1265,6 +1267,13 @@ v8::Local<v8::Value> NewTabPageBindings::GetColorsInfo(v8::Isolate* isolate) {
     v8_colors->CreateDataProperty(context, i++, v8_color_info).Check();
   }
   return v8_colors;
+}
+
+void NewTabPageBindings::BlocklistPromo(const std::string& promo_id) {
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
+  if (!search_box)
+    return;
+  search_box->BlocklistPromo(promo_id);
 }
 
 }  // namespace

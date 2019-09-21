@@ -451,7 +451,7 @@ TEST_F(MP4StreamParserTest, VideoSamplesStartWithAUDs) {
 }
 
 TEST_F(MP4StreamParserTest, HEVC_in_MP4_container) {
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
   bool expect_success = true;
 #else
   bool expect_success = false;
@@ -466,13 +466,13 @@ TEST_F(MP4StreamParserTest, HEVC_in_MP4_container) {
   scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile("bear-hevc-frag.mp4");
   EXPECT_EQ(expect_success,
             AppendDataInPieces(buffer->data(), buffer->data_size(), 512));
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
   EXPECT_EQ(kCodecHEVC, video_decoder_config_.codec());
   EXPECT_EQ(HEVCPROFILE_MAIN, video_decoder_config_.profile());
 #endif
 }
 
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
 TEST_F(MP4StreamParserTest, HEVC_KeyAndNonKeyframeness_Match_Container) {
   // Both HEVC video frames' keyframe-ness metadata matches the MP4:
   // Frame 0: HEVC IDR, trun.first_sample_flags: sync sample that doesn't

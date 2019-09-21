@@ -2280,6 +2280,36 @@ base::Optional<PP_PrivateAccessibilityTextRunInfo> PDFiumEngine::GetTextRunInfo(
   return pages_[page_index]->GetTextRunInfo(start_char_index);
 }
 
+uint32_t PDFiumEngine::GetLinkCount(int page_index) {
+  DCHECK(PageIndexInBounds(page_index));
+  return pages_[page_index]->GetLinkCount();
+}
+
+bool PDFiumEngine::GetLinkInfo(int page_index,
+                               uint32_t link_index,
+                               std::string* out_url,
+                               int* out_start_char_index,
+                               int* out_char_count,
+                               pp::FloatRect* out_bounds) {
+  DCHECK(PageIndexInBounds(page_index));
+  return pages_[page_index]->GetLinkInfo(
+      link_index, out_url, out_start_char_index, out_char_count, out_bounds);
+}
+
+uint32_t PDFiumEngine::GetImageCount(int page_index) {
+  DCHECK(PageIndexInBounds(page_index));
+  return pages_[page_index]->GetImageCount();
+}
+
+bool PDFiumEngine::GetImageInfo(int page_index,
+                                uint32_t image_index,
+                                std::string* out_alt_text,
+                                pp::FloatRect* out_bounds) {
+  DCHECK(PageIndexInBounds(page_index));
+  return pages_[page_index]->GetImageInfo(image_index, out_alt_text,
+                                          out_bounds);
+}
+
 bool PDFiumEngine::GetPrintScaling() {
   return !!FPDF_VIEWERREF_GetPrintScaling(doc());
 }

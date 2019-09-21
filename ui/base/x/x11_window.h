@@ -83,6 +83,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
     std::string wm_class_name;
     std::string wm_class_class;
     std::string wm_role_name;
+    base::Optional<int> visual_id;
   };
 
   XWindow();
@@ -146,7 +147,6 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   bool use_custom_shape() const { return custom_window_shape_; }
   bool was_minimized() const { return was_minimized_; }
   bool has_alpha() const { return visual_has_alpha_; }
-  void set_visual_id(VisualID visual_id) { visual_id_ = visual_id; }
   base::Optional<int> workspace() const { return workspace_; }
 
   XDisplay* display() const { return xdisplay_; }
@@ -206,6 +206,8 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
       const base::flat_set<XAtom>& new_window_properties);
 
   void UnconfineCursor();
+
+  void SetVisualId(base::Optional<int> visual_id);
 
   // Interface that must be used by a class that inherits the XWindow to receive
   // different messages from X Server.

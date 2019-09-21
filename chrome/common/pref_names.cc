@@ -1658,6 +1658,8 @@ const char kNtpCollapsedSyncPromo[] = "ntp.collapsed_sync_promo";
 const char kNtpCustomBackgroundDict[] = "ntp.custom_background_dict";
 const char kNtpCustomBackgroundLocalToDevice[] =
     "ntp.custom_background_local_to_device";
+// List of promos that the user has dismissed while on the NTP.
+const char kNtpPromoBlocklist[] = "ntp.promo_blocklist";
 // Data associated with search suggestions that appear on the NTP.
 const char kNtpSearchSuggestionsBlocklist[] =
     "ntp.search_suggestions_blocklist";

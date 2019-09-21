@@ -1259,7 +1259,6 @@ void AppListControllerImpl::NotifyAppListVisibilityChanged(bool visible,
     return;
   }
 
-  last_visible_ = real_visibility;
   last_visible_display_id_ = display_id;
 
   if (!real_visibility) {
@@ -1269,11 +1268,15 @@ void AppListControllerImpl::NotifyAppListVisibilityChanged(bool visible,
   }
 
   // Notify chrome of visibility changes.
-  if (client_)
-    client_->OnAppListVisibilityChanged(real_visibility);
+  if (last_visible_ != real_visibility) {
+    if (client_)
+      client_->OnAppListVisibilityChanged(real_visibility);
 
-  for (auto& observer : observers_)
-    observer.OnAppListVisibilityChanged(real_visibility, display_id);
+    for (auto& observer : observers_)
+      observer.OnAppListVisibilityChanged(real_visibility, display_id);
+
+    last_visible_ = real_visibility;
+  }
 }
 
 void AppListControllerImpl::NotifyAppListTargetVisibilityChanged(

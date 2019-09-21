@@ -27,6 +27,8 @@ extern const base::Feature kNtpRealbox;
 // are enabled.
 bool IsNtpRealboxEnabled();
 
+extern const base::Feature kDismissNtpPromos;
+
 }  // namespace features
 
 #endif  // CHROME_BROWSER_SEARCH_NTP_FEATURES_H_

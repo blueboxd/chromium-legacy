@@ -461,6 +461,14 @@ void SearchIPCRouter::StopAutocomplete(bool clear_result) {
   delegate_->StopAutocomplete(clear_result);
 }
 
+void SearchIPCRouter::BlocklistPromo(const std::string& promo_id) {
+  if (!policy_->ShouldProcessBlocklistPromo()) {
+    return;
+  }
+
+  delegate_->BlocklistPromo(promo_id);
+}
+
 void SearchIPCRouter::set_delegate_for_testing(Delegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;

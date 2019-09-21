@@ -403,8 +403,7 @@ scoped_refptr<base::RefCountedString> GetPromoString(
   if (promo.has_value()) {
     dict.SetString("promoHtml", promo->promo_html);
     dict.SetString("promoLogUrl", promo->promo_log_url.spec());
-  } else {
-    dict.SetString("promoHtml", std::string());
+    dict.SetString("promoId", promo->promo_id);
   }
 
   std::string js;
@@ -1355,6 +1354,10 @@ void LocalNtpSource::ServePromo(const base::Optional<PromoData>& data) {
   if (promo_service_->promo_status() == PromoService::Status::OK_WITH_PROMO) {
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "NewTabPage.Promos.RequestLatency2.SuccessWithPromo", delta);
+  } else if (promo_service_->promo_status() ==
+             PromoService::Status::OK_BUT_BLOCKED) {
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "NewTabPage.Promos.RequestLatency2.SuccessButBlocked", delta);
   } else if (promo_service_->promo_status() ==
              PromoService::Status::OK_WITHOUT_PROMO) {
     UMA_HISTOGRAM_MEDIUM_TIMES(

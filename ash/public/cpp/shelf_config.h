@@ -6,6 +6,7 @@
 #define ASH_PUBLIC_CPP_SHELF_CONFIG_H_
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/app_list/app_list_controller_observer.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -18,6 +19,7 @@ namespace ash {
 // Provides layout and drawing config for the Shelf. Note That some of these
 // values could change at runtime.
 class ASH_EXPORT ShelfConfig : public TabletModeObserver,
+                               public AppListControllerObserver,
                                public display::DisplayObserver {
  public:
   class Observer : public base::CheckedObserver {
@@ -47,6 +49,9 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
+
+  // AppListControllerObserver:
+  void OnAppListVisibilityChanged(bool shown, int64_t display_id) override;
 
   // Size of the shelf when visible (height when the shelf is horizontal and
   // width when the shelf is vertical).
@@ -136,18 +141,12 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // Whether shelf is currently standard or dense.
   bool is_dense_;
 
-  // Size of the shelf when visible (height when the shelf is horizontal and
-  // width when the shelf is vertical).
-  const int shelf_size_;
-  const int shelf_size_dense_;
+  // Whether the app list (or home launcher in tablet mode) is visible.
+  bool is_app_list_visible_;
 
   // Size of the icons within shelf buttons.
   const int shelf_button_icon_size_;
   const int shelf_button_icon_size_dense_;
-
-  // Size for controls like the home button, back button, etc.
-  const int shelf_control_size_;
-  const int shelf_control_size_dense_;
 
   // Size allocated for each app button on the shelf.
   const int shelf_button_size_;
@@ -155,14 +154,6 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
 
   // Size of the space between buttons on the shelf.
   const int shelf_button_spacing_;
-
-  // Size of the space between edge of screen and home button.
-  const int shelf_home_button_edge_spacing_;
-  const int shelf_home_button_edge_spacing_dense_;
-
-  // The margin around the overflow button on the shelf.
-  const int shelf_overflow_button_margin_;
-  const int shelf_overflow_button_margin_dense_;
 
   // The extra padding added to status area tray buttons on the shelf.
   const int shelf_status_area_hit_region_padding_;

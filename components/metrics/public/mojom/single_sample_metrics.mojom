@@ -12,11 +12,11 @@ interface SingleSampleMetricsProvider {
   // The sample may be changed prior to destruction using the SetSample() method
   // as many times as desired.
   //
-  // See base/metrics/histograms.h for parameter definitions. |request| is the
+  // See base/metrics/histograms.h for parameter definitions. |receiver| is the
   // returned histogram.
   AcquireSingleSampleMetric(string histogram_name, int32 min, int32 max,
                             uint32 bucket_count, int32 flags,
-                            SingleSampleMetric& request);
+                            pending_receiver<SingleSampleMetric> receiver);
 };
 
 interface SingleSampleMetric {

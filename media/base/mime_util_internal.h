@@ -57,7 +57,7 @@ class MEDIA_EXPORT MimeUtil {
     bool has_platform_vp9_decoder = false;
     bool has_platform_vp9_2_decoder = false;
     bool has_platform_vp9_3_decoder = false;
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
     bool has_platform_hevc_decoder = false;
 #endif
     bool has_platform_opus_decoder = false;

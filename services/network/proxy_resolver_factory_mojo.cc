@@ -53,13 +53,14 @@ base::Value NetLogErrorParams(int line_number, const std::string& message) {
 // on a worker thread. Will notify |client| on completion.
 void DoMyIpAddressOnWorker(
     bool is_ex,
-    proxy_resolver::mojom::HostResolverRequestClientPtrInfo client_info) {
+    mojo::PendingRemote<proxy_resolver::mojom::HostResolverRequestClient>
+        client_remote) {
   // Resolve the list of IP addresses.
   std::vector<net::IPAddress> my_ip_addresses =
       is_ex ? net::PacMyIpAddressEx() : net::PacMyIpAddress();
 
-  proxy_resolver::mojom::HostResolverRequestClientPtr client;
-  client.Bind(std::move(client_info));
+  mojo::Remote<proxy_resolver::mojom::HostResolverRequestClient> client(
+      std::move(client_remote));
 
   // TODO(eroman): Note that this code always returns a success response (with
   // loopback) rather than passing forward the error. This is to ensure that the
@@ -129,10 +130,7 @@ class ClientMixin : public ClientInterface {
           base::BindOnce(&DoMyIpAddressOnWorker, is_ex, std::move(client)));
     } else {
       // Request was for dnsResolve() or dnsResolveEx().
-      host_resolver_.Resolve(
-          hostname, is_ex,
-          proxy_resolver::mojom::HostResolverRequestClientPtr(
-              std::move(client)));
+      host_resolver_.Resolve(hostname, is_ex, std::move(client));
     }
   }
 

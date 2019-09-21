@@ -252,6 +252,7 @@ int InteractiveRenderWidget::next_routing_id_ = 0;
 
 class RenderWidgetUnittest : public testing::Test {
  public:
+  RenderWidgetUnittest() : page_properties_(&compositor_deps_) {}
   // testing::Test implementation.
   void SetUp() override {
     widget_ = std::make_unique<InteractiveRenderWidget>(&compositor_deps_,

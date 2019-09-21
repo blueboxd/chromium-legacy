@@ -142,6 +142,7 @@ class SearchTabHelper : public content::WebContentsObserver,
       chrome::mojom::EmbeddedSearch::QueryAutocompleteCallback callback)
       override;
   void StopAutocomplete(bool clear_result) override;
+  void BlocklistPromo(const std::string& promo_id) override;
 
   // Overridden from InstantServiceObserver:
   void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) override;

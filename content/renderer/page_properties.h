@@ -8,8 +8,14 @@
 #include "content/common/content_export.h"
 #include "content/public/common/screen_info.h"
 
+namespace blink {
+struct WebFloatRect;
+struct WebRect;
+}  // namespace blink
+
 namespace content {
 
+class CompositorDependencies;
 class RenderWidgetScreenMetricsEmulator;
 
 // This interface exposes "page global" concepts to child frames. Historically
@@ -22,10 +28,10 @@ class RenderWidgetScreenMetricsEmulator;
 // abstractions and clarifies which APIs can be coupled.
 class CONTENT_EXPORT PageProperties {
  public:
-  PageProperties();
+  explicit PageProperties(CompositorDependencies* compositor_deps);
   ~PageProperties();
 
-  const ScreenInfo& GetScreenInfo() { return screen_info_; }
+  const ScreenInfo& GetScreenInfo() const { return screen_info_; }
   void SetScreenInfo(const ScreenInfo& screen_info) {
     screen_info_ = screen_info;
   }
@@ -39,8 +45,18 @@ class CONTENT_EXPORT PageProperties {
   RenderWidgetScreenMetricsEmulator* ScreenMetricsEmulator() {
     return screen_metrics_emulator_.get();
   }
+  const RenderWidgetScreenMetricsEmulator* ScreenMetricsEmulator() const {
+    return screen_metrics_emulator_.get();
+  }
   void SetScreenMetricsEmulator(
       std::unique_ptr<RenderWidgetScreenMetricsEmulator> emulator);
+
+  void ConvertViewportToWindow(blink::WebRect* rect);
+  void ConvertViewportToWindow(blink::WebFloatRect* rect);
+  void ConvertWindowToViewport(blink::WebFloatRect* rect);
+
+  // When emulated, this returns the original (non-emulated) ScreenInfo.
+  const ScreenInfo& GetOriginalScreenInfo() const;
 
  private:
   // Properties of the screen hosting the page.
@@ -50,6 +66,8 @@ class CONTENT_EXPORT PageProperties {
   // to RenderViewScreenMetricsEmulator and reroute IPCs through RenderView
   // instead of RenderWidget.
   std::unique_ptr<RenderWidgetScreenMetricsEmulator> screen_metrics_emulator_;
+
+  CompositorDependencies* compositor_deps_ = nullptr;
 };
 
 }  // namespace content

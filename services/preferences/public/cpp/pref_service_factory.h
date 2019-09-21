@@ -17,6 +17,7 @@
 #include "base/optional.h"
 #include "base/token.h"
 #include "components/prefs/pref_value_store.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 
 class PrefRegistry;
@@ -40,10 +41,11 @@ using ConnectCallback = base::Callback<void(std::unique_ptr<::PrefService>)>;
 // |client_token| uniquely identifies the client, fixing it to a specific set of
 // observed prefs; if not provided, the Service Manager Identity used to acquire
 // |connector| will be used for that purpose instead.
-void ConnectToPrefService(mojom::PrefStoreConnectorPtr connector,
-                          scoped_refptr<PrefRegistry> pref_registry,
-                          base::Optional<base::Token> client_token,
-                          ConnectCallback callback);
+void ConnectToPrefService(
+    mojo::PendingRemote<mojom::PrefStoreConnector> connector,
+    scoped_refptr<PrefRegistry> pref_registry,
+    base::Optional<base::Token> client_token,
+    ConnectCallback callback);
 
 // Create a |PrefService| object acting as a client library for the pref
 // service, by connecting to the service using |connector|. Connecting is

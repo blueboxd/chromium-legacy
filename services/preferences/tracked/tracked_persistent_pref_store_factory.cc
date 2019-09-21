@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_filter.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
 #include "services/preferences/tracked/pref_hash_filter.h"
 #include "services/preferences/tracked/pref_hash_store_impl.h"
@@ -101,7 +102,8 @@ PersistentPrefStore* CreateTrackedPersistentPrefStore(
   }
 #endif
 
-  prefs::mojom::TrackedPreferenceValidationDelegatePtr validation_delegate;
+  mojo::Remote<prefs::mojom::TrackedPreferenceValidationDelegate>
+      validation_delegate;
   validation_delegate.Bind(std::move(config->validation_delegate));
   std::unique_ptr<PrefHashFilter> unprotected_pref_hash_filter(
       new PrefHashFilter(CreatePrefHashStore(*config, false),

@@ -242,10 +242,9 @@ void DeviceSyncImpl::PrefConnectionDelegate::ConnectToPrefService(
     mojo::PendingRemote<prefs::mojom::PrefStoreConnector> pref_store_connector,
     scoped_refptr<PrefRegistrySimple> pref_registry,
     prefs::ConnectCallback callback) {
-  prefs::ConnectToPrefService(
-      prefs::mojom::PrefStoreConnectorPtr(std::move(pref_store_connector)),
-      std::move(pref_registry), base::Token::CreateRandom(),
-      std::move(callback));
+  prefs::ConnectToPrefService(std::move(pref_store_connector),
+                              std::move(pref_registry),
+                              base::Token::CreateRandom(), std::move(callback));
 }
 
 DeviceSyncImpl::PendingSetSoftwareFeatureRequest::

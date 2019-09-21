@@ -9,8 +9,14 @@
 
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/promos/promo_data.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_service_manager_context.h"
@@ -35,7 +41,10 @@ class PromoServiceTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
 
-    service_ = std::make_unique<PromoService>(test_shared_loader_factory_);
+    PromoService::RegisterProfilePrefs(pref_service_.registry());
+
+    service_ = std::make_unique<PromoService>(test_shared_loader_factory_,
+                                              &pref_service_);
   }
 
   void SetUpResponseWithData(const GURL& load_url,
@@ -52,6 +61,7 @@ class PromoServiceTest : public testing::Test {
   }
 
   PromoService* service() { return service_.get(); }
+  PrefService* pref_service() { return &pref_service_; }
 
  private:
   // Required to run tests from UI and threads.
@@ -65,6 +75,7 @@ class PromoServiceTest : public testing::Test {
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
 
+  TestingPrefServiceSimple pref_service_;
   std::unique_ptr<PromoService> service_;
 };
 
@@ -93,22 +104,6 @@ TEST_F(PromoServiceTest, BadPromoResponse) {
   EXPECT_EQ(service()->promo_status(), PromoService::Status::FATAL_ERROR);
 }
 
-TEST_F(PromoServiceTest, BadPromoResponseNoLogUrl) {
-  SetUpResponseWithData(
-      service()->GetLoadURLForTesting(),
-      "{\"update\":{\"promos\":{\"middle\":\"<style></style><div><script></"
-      "script></div>\"}}}");
-
-  ASSERT_EQ(service()->promo_data(), base::nullopt);
-
-  service()->Refresh();
-  base::RunLoop().RunUntilIdle();
-
-  PromoData data;
-  EXPECT_EQ(service()->promo_data(), data);
-  EXPECT_EQ(service()->promo_status(), PromoService::Status::OK_WITHOUT_PROMO);
-}
-
 TEST_F(PromoServiceTest, PromoResponseMissingData) {
   SetUpResponseWithData(service()->GetLoadURLForTesting(),
                         "{\"update\":{\"promos\":{}}}");
@@ -118,19 +113,14 @@ TEST_F(PromoServiceTest, PromoResponseMissingData) {
   service()->Refresh();
   base::RunLoop().RunUntilIdle();
 
-  PromoData data;
-  EXPECT_EQ(service()->promo_data(), data);
+  EXPECT_EQ(service()->promo_data(), PromoData());
   EXPECT_EQ(service()->promo_status(), PromoService::Status::OK_WITHOUT_PROMO);
 }
 
 TEST_F(PromoServiceTest, GoodPromoResponse) {
   std::string response_string =
       "{\"update\":{\"promos\":{\"middle\":\"<style></style><div><script></"
-      "script></div>\", \"log_url\":\"/log_url?param=1\"}}}";
-  PromoData promo;
-  promo.promo_html = "<style></style><div><script></script></div>";
-  promo.promo_log_url = GURL("https://www.google.com/log_url?param=1");
-
+      "script></div>\", \"log_url\":\"/log_url?id=42\", \"id\": \"42\"}}}";
   SetUpResponseWithData(service()->GetLoadURLForTesting(), response_string);
 
   ASSERT_EQ(service()->promo_data(), base::nullopt);
@@ -138,6 +128,134 @@ TEST_F(PromoServiceTest, GoodPromoResponse) {
   service()->Refresh();
   base::RunLoop().RunUntilIdle();
 
+  PromoData promo;
+  promo.promo_html = "<style></style><div><script></script></div>";
+  promo.promo_log_url = GURL("https://www.google.com/log_url?id=42");
+
   EXPECT_EQ(service()->promo_data(), promo);
   EXPECT_EQ(service()->promo_status(), PromoService::Status::OK_WITH_PROMO);
+}
+
+TEST_F(PromoServiceTest, GoodPromoResponseCanDismiss) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kDismissNtpPromos);
+
+  std::string response_string =
+      "{\"update\":{\"promos\":{\"middle\":\"<style></style><div><script></"
+      "script></div>\", \"log_url\":\"/log_url?id=42\", \"id\": \"42\"}}}";
+  SetUpResponseWithData(service()->GetLoadURLForTesting(), response_string);
+
+  ASSERT_EQ(service()->promo_data(), base::nullopt);
+
+  service()->Refresh();
+  base::RunLoop().RunUntilIdle();
+
+  PromoData promo;
+  promo.promo_html = "<style></style><div><script></script></div>";
+  promo.promo_log_url = GURL("https://www.google.com/log_url?id=42");
+  promo.promo_id = "42";
+
+  EXPECT_EQ(service()->promo_data(), promo);
+  EXPECT_EQ(service()->promo_status(), PromoService::Status::OK_WITH_PROMO);
+}
+
+TEST_F(PromoServiceTest, GoodPromoResponseNoIdField) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kDismissNtpPromos);
+
+  std::string response_string =
+      "{\"update\":{\"promos\":{\"middle\":\"<style></style><div><script></"
+      "script></div>\", \"log_url\":\"/log_url?id=42\"}}}";
+  SetUpResponseWithData(service()->GetLoadURLForTesting(), response_string);
+
+  ASSERT_EQ(service()->promo_data(), base::nullopt);
+
+  service()->Refresh();
+  base::RunLoop().RunUntilIdle();
+
+  PromoData promo;
+  promo.promo_html = "<style></style><div><script></script></div>";
+  promo.promo_log_url = GURL("https://www.google.com/log_url?id=42");
+  promo.promo_id = "42";
+
+  EXPECT_EQ(service()->promo_data(), promo);
+  EXPECT_EQ(service()->promo_status(), PromoService::Status::OK_WITH_PROMO);
+}
+
+TEST_F(PromoServiceTest, GoodPromoResponseNoIdFieldNorLogUrl) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kDismissNtpPromos);
+
+  std::string response_string =
+      "{\"update\":{\"promos\":{\"middle\":\"<style></style><div><script></"
+      "script></div>\"}}}";
+  SetUpResponseWithData(service()->GetLoadURLForTesting(), response_string);
+
+  ASSERT_EQ(service()->promo_data(), base::nullopt);
+
+  service()->Refresh();
+  base::RunLoop().RunUntilIdle();
+
+  PromoData promo;
+  promo.promo_html = "<style></style><div><script></script></div>";
+
+  EXPECT_EQ(service()->promo_data(), promo);
+  EXPECT_EQ(service()->promo_status(), PromoService::Status::OK_WITH_PROMO);
+}
+
+TEST_F(PromoServiceTest, GoodPromoWithBlockedID) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kDismissNtpPromos);
+
+  {
+    ListPrefUpdate update(pref_service(), prefs::kNtpPromoBlocklist);
+    update->Append("42");
+  }
+
+  std::string response_string =
+      "{\"update\":{\"promos\":{\"middle\":\"<style></style><div><script></"
+      "script></div>\", \"log_url\":\"/log_url?id=42\", \"id\": \"42\"}}}";
+  SetUpResponseWithData(service()->GetLoadURLForTesting(), response_string);
+
+  ASSERT_EQ(service()->promo_data(), base::nullopt);
+
+  service()->Refresh();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(service()->promo_data(), PromoData());
+  EXPECT_EQ(service()->promo_status(), PromoService::Status::OK_BUT_BLOCKED);
+}
+
+TEST_F(PromoServiceTest, BlocklistPromo) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kDismissNtpPromos);
+
+  std::string response_string =
+      "{\"update\":{\"promos\":{\"middle\":\"<style></style><div><script></"
+      "script></div>\", \"log_url\":\"/log_url?id=42\", \"id\": \"42\"}}}";
+  SetUpResponseWithData(service()->GetLoadURLForTesting(), response_string);
+
+  ASSERT_EQ(service()->promo_data(), base::nullopt);
+
+  service()->Refresh();
+  base::RunLoop().RunUntilIdle();
+
+  PromoData promo;
+  promo.promo_html = "<style></style><div><script></script></div>";
+  promo.promo_log_url = GURL("https://www.google.com/log_url?id=42");
+  promo.promo_id = "42";
+
+  EXPECT_EQ(service()->promo_data(), promo);
+  EXPECT_EQ(service()->promo_status(), PromoService::Status::OK_WITH_PROMO);
+
+  ASSERT_EQ(0u, pref_service()->GetList(prefs::kNtpPromoBlocklist)->GetSize());
+
+  service()->BlocklistPromo("42");
+
+  EXPECT_EQ(service()->promo_data(), PromoData());
+  EXPECT_EQ(service()->promo_status(), PromoService::Status::OK_BUT_BLOCKED);
+
+  const auto* blocklist = pref_service()->GetList(prefs::kNtpPromoBlocklist);
+  ASSERT_EQ(1u, blocklist->GetSize());
+  EXPECT_EQ("42", blocklist->GetList()[0].GetString());
 }

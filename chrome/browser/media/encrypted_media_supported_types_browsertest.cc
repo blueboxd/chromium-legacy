@@ -123,7 +123,7 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
 
     video_mp4_hi10p_codecs_.push_back("avc1.6E001E");  // Hi10P profile
 
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
     video_mp4_codecs_.push_back("hvc1.1.6.L93.B0");
     video_mp4_codecs_.push_back("hev1.1.6.L93.B0");
 #else

@@ -44,6 +44,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/network_service_instance.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
@@ -191,7 +192,8 @@ void StartupData::CreateServicesInternal() {
                        chrome_feature_list_creator_->actual_locale(),
                        pref_registry_.get());
 
-  prefs::mojom::TrackedPreferenceValidationDelegatePtr pref_validation_delegate;
+  mojo::PendingRemote<prefs::mojom::TrackedPreferenceValidationDelegate>
+      pref_validation_delegate;
   // The preference tracking and protection is not required on Android.
   DCHECK(!ProfilePrefStoreManager::kPlatformSupportsPreferenceTracking);
 

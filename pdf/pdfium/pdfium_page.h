@@ -53,6 +53,22 @@ class PDFiumPage {
   uint32_t GetCharUnicode(int char_index);
   // Get the bounds of a character in page pixels.
   pp::FloatRect GetCharBounds(int char_index);
+  // Gets the number of links in the page.
+  uint32_t GetLinkCount();
+  // Given a link index, gets the url, underlying text range and bounding
+  // box. Returns false if the link index is invalid.
+  bool GetLinkInfo(uint32_t link_index,
+                   std::string* out_url,
+                   int* out_start_char_index,
+                   int* out_char_count,
+                   pp::FloatRect* out_bounds);
+  // Gets the number of images in the page.
+  uint32_t GetImageCount();
+  // Given an image index, gets the alt text and bounding box. Returns false if
+  // the image index is invalid.
+  bool GetImageInfo(uint32_t image_index,
+                    std::string* out_alt_text,
+                    pp::FloatRect* out_bounds);
 
   enum Area {
     NONSELECTABLE_AREA,

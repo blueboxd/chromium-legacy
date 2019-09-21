@@ -152,7 +152,8 @@
 #include "content/public/common/content_constants.h"
 #include "extensions/buildflags/buildflags.h"
 #include "google_apis/google_api_keys.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/identity/identity_service.h"
@@ -622,15 +623,17 @@ void ProfileImpl::LoadPrefsForNormalStartup(bool async_prefs) {
                          g_browser_process->GetApplicationLocale(),
                          pref_registry_.get());
 
-  prefs::mojom::TrackedPreferenceValidationDelegatePtr pref_validation_delegate;
+  mojo::PendingRemote<prefs::mojom::TrackedPreferenceValidationDelegate>
+      pref_validation_delegate;
   scoped_refptr<safe_browsing::SafeBrowsingService> safe_browsing_service(
       g_browser_process->safe_browsing_service());
   if (safe_browsing_service.get()) {
     auto pref_validation_delegate_impl =
         safe_browsing_service->CreatePreferenceValidationDelegate(this);
     if (pref_validation_delegate_impl) {
-      mojo::MakeStrongBinding(std::move(pref_validation_delegate_impl),
-                              mojo::MakeRequest(&pref_validation_delegate));
+      mojo::MakeSelfOwnedReceiver(
+          std::move(pref_validation_delegate_impl),
+          pref_validation_delegate.InitWithNewPipeAndPassReceiver());
     }
   }
 

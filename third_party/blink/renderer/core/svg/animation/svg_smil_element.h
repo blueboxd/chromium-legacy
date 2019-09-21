@@ -145,10 +145,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
     interval_.end = SMILTime();
   }
 
-  void AddInstanceTime(
-      BeginOrEnd,
-      SMILTime,
-      SMILTimeWithOrigin::Origin = SMILTimeWithOrigin::kParserOrigin);
+  void AddInstanceTime(BeginOrEnd, SMILTime, SMILTimeOrigin);
 
   void SetInactive() { active_state_ = kInactive; }
 
@@ -241,9 +238,13 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   void ConnectConditions();
   void DisconnectConditions();
 
-  void NotifyDependentsIntervalChanged(const SMILInterval& interval);
+  void NotifyDependentsOnNewInterval(const SMILInterval& interval);
+  void NotifyDependentsOnRepeat(unsigned repeat_nr, SMILTime repeat_time);
+
+  struct NotifyDependentsInfo;
+  void NotifyDependents(const NotifyDependentsInfo& info);
   void CreateInstanceTimesFromSyncBase(SVGSMILElement* timed_element,
-                                       const SMILInterval& interval);
+                                       const NotifyDependentsInfo& info);
   void AddSyncBaseDependent(SVGSMILElement&);
   void RemoveSyncBaseDependent(SVGSMILElement&);
 

@@ -9,10 +9,15 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/values.h"
+#include "chrome/browser/search/ntp_features.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/google/core/common/google_util.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/system_connector.h"
 #include "net/base/load_flags.h"
+#include "net/base/url_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -24,15 +29,32 @@ const char kNewTabPromosApiPath[] = "/async/newtab_promos";
 
 const char kXSSIResponsePreamble[] = ")]}'";
 
-// Parses an update proto from |value|. Will return false if |value|
-// is not of the form: {"update":{"promos":{"middle": "", "log_url": ""}}}, and
-// true otherwise. Additionally |data| will be base::nullopt if at least
-// the top level dictionary with "update" and "promos" keys is not present.
-// Resolves the log_url against the base_url to form a valid GURL.
+bool CanBlockPromos() {
+  return base::FeatureList::IsEnabled(features::kDismissNtpPromos);
+}
+
+GURL GetGoogleBaseUrl() {
+  GURL google_base_url = google_util::CommandLineGoogleBaseURL();
+  if (!google_base_url.is_valid()) {
+    google_base_url = GURL(google_util::kGoogleHomepageURL);
+  }
+  return google_base_url;
+}
+
+GURL GetApiUrl() {
+  return GetGoogleBaseUrl().Resolve(kNewTabPromosApiPath);
+}
+
+// Parses an update proto from |value|. Will return false if |value| is not of
+// the form: {"update":{"promos":{"middle": ""}}}, and true otherwise.
+// Additionally, there can be a "log_url" or "id" field in the promo. Those are
+// populated if found. They're not set for emergency promos. |data| will never
+// be base::nullopt if top level dictionary keys of "update" and "promos" are
+// present. Note: the "log_url" (if found), is resolved against
+// GetGoogleBaseUrl() to form a valid GURL.
 bool JsonToPromoData(const base::Value& value,
-                     const GURL& base_url,
-                     base::Optional<PromoData>& data) {
-  data = base::nullopt;
+                     base::Optional<PromoData>* data) {
+  *data = base::nullopt;
 
   const base::DictionaryValue* dict = nullptr;
   if (!value.GetAsDictionary(&dict)) {
@@ -53,25 +75,35 @@ bool JsonToPromoData(const base::Value& value,
   }
 
   PromoData result;
-  data = result;
+  *data = result;
 
-  std::string middle = std::string();
+  std::string middle;
   if (!promos->GetString("middle", &middle)) {
     DVLOG(1) << "No middle promo";
     return false;
   }
 
-  std::string log_url = std::string();
-  if (!promos->GetString("log_url", &log_url)) {
-    DVLOG(1) << "No promo log_url";
-    return false;
-  }
+  std::string log_url;
+  // Emergency promos don't have these, so it's OK if this key is missing.
+  promos->GetString("log_url", &log_url);
 
-  GURL promo_log_url = base_url.Resolve(log_url);
+  GURL promo_log_url;
+  if (!log_url.empty())
+    promo_log_url = GetGoogleBaseUrl().Resolve(log_url);
+
+  std::string promo_id;
+  if (CanBlockPromos()) {
+    if (!promos->GetString("id", &promo_id))
+      net::GetValueForKeyInQuery(promo_log_url, "id", &promo_id);
+  }
+  // Emergency promos may not have IDs, which is OK. They also can't be
+  // dismissed (because of this).
+
   result.promo_html = middle;
   result.promo_log_url = promo_log_url;
+  result.promo_id = promo_id;
 
-  data = result;
+  *data = result;
 
   return true;
 }
@@ -79,25 +111,11 @@ bool JsonToPromoData(const base::Value& value,
 }  // namespace
 
 PromoService::PromoService(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : url_loader_factory_(url_loader_factory) {}
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    PrefService* pref_service)
+    : url_loader_factory_(url_loader_factory), pref_service_(pref_service) {}
 
 PromoService::~PromoService() = default;
-
-GURL PromoService::GetGoogleBaseUrl() const {
-  GURL google_base_url = google_util::CommandLineGoogleBaseURL();
-  if (!google_base_url.is_valid()) {
-    google_base_url = GURL(google_util::kGoogleHomepageURL);
-  }
-
-  return google_base_url;
-}
-
-GURL PromoService::GetApiUrl() const {
-  GURL api_url = GetGoogleBaseUrl().Resolve(kNewTabPromosApiPath);
-
-  return api_url;
-}
 
 void PromoService::Refresh() {
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -165,17 +183,19 @@ void PromoService::OnLoadDone(std::unique_ptr<std::string> response_body) {
 }
 
 void PromoService::OnJsonParsed(base::Value value) {
-  const GURL google_base_url = GetGoogleBaseUrl();
   base::Optional<PromoData> result;
-  if (JsonToPromoData(value, google_base_url, result)) {
-    PromoDataLoaded(Status::OK_WITH_PROMO, result);
+  PromoService::Status status;
+
+  if (JsonToPromoData(value, &result)) {
+    bool is_blocked = IsBlocked(result->promo_id);
+    if (is_blocked)
+      result = PromoData();
+    status = is_blocked ? Status::OK_BUT_BLOCKED : Status::OK_WITH_PROMO;
   } else {
-    if (result.has_value()) {
-      PromoDataLoaded(Status::OK_WITHOUT_PROMO, result);
-    } else {
-      PromoDataLoaded(Status::FATAL_ERROR, result);
-    }
+    status = result ? Status::OK_WITHOUT_PROMO : Status::FATAL_ERROR;
   }
+
+  PromoDataLoaded(status, result);
 }
 
 void PromoService::OnJsonParseFailed(const std::string& message) {
@@ -191,12 +211,32 @@ void PromoService::Shutdown() {
   DCHECK(!observers_.might_have_observers());
 }
 
+// static
+void PromoService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterListPref(prefs::kNtpPromoBlocklist);
+}
+
 void PromoService::AddObserver(PromoServiceObserver* observer) {
   observers_.AddObserver(observer);
 }
 
 void PromoService::RemoveObserver(PromoServiceObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void PromoService::BlocklistPromo(const std::string& promo_id) {
+  if (!CanBlockPromos() || promo_id.empty() || IsBlocked(promo_id))
+    return;
+
+  ListPrefUpdate update(pref_service_, prefs::kNtpPromoBlocklist);
+  update->Append(promo_id);
+
+  if (promo_data_ && promo_data_->promo_id == promo_id) {
+    promo_data_ = PromoData();
+    promo_status_ = Status::OK_BUT_BLOCKED;
+    NotifyObservers();
+    // TODO(crbug.com/1003508): hide promos on existing, already-opened NTPs.
+  }
 }
 
 void PromoService::PromoDataLoaded(Status status,
@@ -214,6 +254,18 @@ void PromoService::NotifyObservers() {
   for (auto& observer : observers_) {
     observer.OnPromoDataUpdated();
   }
+}
+
+bool PromoService::IsBlocked(const std::string& promo_id) const {
+  if (promo_id.empty() || !CanBlockPromos())
+    return false;
+
+  const auto* blocklist = pref_service_->GetList(prefs::kNtpPromoBlocklist);
+  for (const auto& blocked : blocklist->GetList()) {
+    if (blocked.GetString() == promo_id)
+      return true;
+  }
+  return false;
 }
 
 GURL PromoService::GetLoadURLForTesting() const {

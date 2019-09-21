@@ -13,8 +13,7 @@
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/address_family.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
@@ -34,11 +33,11 @@ class TestRequestClient
     : public proxy_resolver::mojom::HostResolverRequestClient {
  public:
   explicit TestRequestClient(
-      mojo::InterfaceRequest<proxy_resolver::mojom::HostResolverRequestClient>
-          req)
-      : done_(false), binding_(this, std::move(req)) {
-    binding_.set_connection_error_handler(base::Bind(
-        &TestRequestClient::OnConnectionError, base::Unretained(this)));
+      mojo::PendingReceiver<proxy_resolver::mojom::HostResolverRequestClient>
+          receiver)
+      : done_(false), receiver_(this, std::move(receiver)) {
+    receiver_.set_disconnect_handler(base::Bind(
+        &TestRequestClient::OnMojoDisconnect, base::Unretained(this)));
   }
 
   void WaitForResult();
@@ -52,14 +51,14 @@ class TestRequestClient
   void ReportResult(int32_t error,
                     const std::vector<net::IPAddress>& results) override;
 
-  // Mojo error handler.
-  void OnConnectionError();
+  // Mojo disconnect handler.
+  void OnMojoDisconnect();
 
   bool done_;
   base::Closure run_loop_quit_closure_;
   base::Closure connection_error_quit_closure_;
 
-  mojo::Binding<proxy_resolver::mojom::HostResolverRequestClient> binding_;
+  mojo::Receiver<proxy_resolver::mojom::HostResolverRequestClient> receiver_;
 };
 
 void TestRequestClient::WaitForResult() {
@@ -90,7 +89,7 @@ void TestRequestClient::ReportResult(
   done_ = true;
 }
 
-void TestRequestClient::OnConnectionError() {
+void TestRequestClient::OnMojoDisconnect() {
   if (!connection_error_quit_closure_.is_null())
     connection_error_quit_closure_.Run();
 }
@@ -132,11 +131,12 @@ class MojoHostResolverImplTest : public testing::Test {
 };
 
 TEST_F(MojoHostResolverImplTest, Resolve) {
-  proxy_resolver::mojom::HostResolverRequestClientPtr client_ptr;
-  TestRequestClient client(mojo::MakeRequest(&client_ptr));
+  mojo::PendingRemote<proxy_resolver::mojom::HostResolverRequestClient>
+      client_remote;
+  TestRequestClient client(client_remote.InitWithNewPipeAndPassReceiver());
 
   resolver_service_->Resolve("example.com", false /* is_ex */,
-                             std::move(client_ptr));
+                             std::move(client_remote));
   client.WaitForResult();
 
   EXPECT_THAT(client.error_, IsOk());
@@ -144,13 +144,14 @@ TEST_F(MojoHostResolverImplTest, Resolve) {
 }
 
 TEST_F(MojoHostResolverImplTest, ResolveSynchronous) {
-  proxy_resolver::mojom::HostResolverRequestClientPtr client_ptr;
-  TestRequestClient client(mojo::MakeRequest(&client_ptr));
+  mojo::PendingRemote<proxy_resolver::mojom::HostResolverRequestClient>
+      client_remote;
+  TestRequestClient client(client_remote.InitWithNewPipeAndPassReceiver());
 
   mock_host_resolver_.set_synchronous_mode(true);
 
   resolver_service_->Resolve("example.com", false /* is_ex */,
-                             std::move(client_ptr));
+                             std::move(client_remote));
   client.WaitForResult();
 
   EXPECT_THAT(client.error_, IsOk());
@@ -158,17 +159,19 @@ TEST_F(MojoHostResolverImplTest, ResolveSynchronous) {
 }
 
 TEST_F(MojoHostResolverImplTest, ResolveMultiple) {
-  proxy_resolver::mojom::HostResolverRequestClientPtr client1_ptr;
-  TestRequestClient client1(mojo::MakeRequest(&client1_ptr));
-  proxy_resolver::mojom::HostResolverRequestClientPtr client2_ptr;
-  TestRequestClient client2(mojo::MakeRequest(&client2_ptr));
+  mojo::PendingRemote<proxy_resolver::mojom::HostResolverRequestClient>
+      client1_remote;
+  TestRequestClient client1(client1_remote.InitWithNewPipeAndPassReceiver());
+  mojo::PendingRemote<proxy_resolver::mojom::HostResolverRequestClient>
+      client2_remote;
+  TestRequestClient client2(client2_remote.InitWithNewPipeAndPassReceiver());
 
   mock_host_resolver_.set_ondemand_mode(true);
 
   resolver_service_->Resolve("example.com", false /* is_ex */,
-                             std::move(client1_ptr));
+                             std::move(client1_remote));
   resolver_service_->Resolve("chromium.org", false /* is_ex */,
-                             std::move(client2_ptr));
+                             std::move(client2_remote));
   WaitForRequests(2);
   mock_host_resolver_.ResolveAllPending();
 
@@ -182,17 +185,19 @@ TEST_F(MojoHostResolverImplTest, ResolveMultiple) {
 }
 
 TEST_F(MojoHostResolverImplTest, ResolveDuplicate) {
-  proxy_resolver::mojom::HostResolverRequestClientPtr client1_ptr;
-  TestRequestClient client1(mojo::MakeRequest(&client1_ptr));
-  proxy_resolver::mojom::HostResolverRequestClientPtr client2_ptr;
-  TestRequestClient client2(mojo::MakeRequest(&client2_ptr));
+  mojo::PendingRemote<proxy_resolver::mojom::HostResolverRequestClient>
+      client1_remote;
+  TestRequestClient client1(client1_remote.InitWithNewPipeAndPassReceiver());
+  mojo::PendingRemote<proxy_resolver::mojom::HostResolverRequestClient>
+      client2_remote;
+  TestRequestClient client2(client2_remote.InitWithNewPipeAndPassReceiver());
 
   mock_host_resolver_.set_ondemand_mode(true);
 
   resolver_service_->Resolve("example.com", false /* is_ex */,
-                             std::move(client1_ptr));
+                             std::move(client1_remote));
   resolver_service_->Resolve("example.com", false /* is_ex */,
-                             std::move(client2_ptr));
+                             std::move(client2_remote));
   WaitForRequests(2);
   mock_host_resolver_.ResolveAllPending();
 
@@ -206,11 +211,12 @@ TEST_F(MojoHostResolverImplTest, ResolveDuplicate) {
 }
 
 TEST_F(MojoHostResolverImplTest, ResolveFailure) {
-  proxy_resolver::mojom::HostResolverRequestClientPtr client_ptr;
-  TestRequestClient client(mojo::MakeRequest(&client_ptr));
+  mojo::PendingRemote<proxy_resolver::mojom::HostResolverRequestClient>
+      client_remote;
+  TestRequestClient client(client_remote.InitWithNewPipeAndPassReceiver());
 
   resolver_service_->Resolve("failure.fail", false /* is_ex */,
-                             std::move(client_ptr));
+                             std::move(client_remote));
   client.WaitForResult();
 
   EXPECT_THAT(client.error_, IsError(net::ERR_NAME_NOT_RESOLVED));
@@ -218,11 +224,12 @@ TEST_F(MojoHostResolverImplTest, ResolveFailure) {
 }
 
 TEST_F(MojoHostResolverImplTest, ResolveEx) {
-  proxy_resolver::mojom::HostResolverRequestClientPtr client_ptr;
-  TestRequestClient client(mojo::MakeRequest(&client_ptr));
+  mojo::PendingRemote<proxy_resolver::mojom::HostResolverRequestClient>
+      client_remote;
+  TestRequestClient client(client_remote.InitWithNewPipeAndPassReceiver());
 
   resolver_service_->Resolve("example.com", true /* is_ex */,
-                             std::move(client_ptr));
+                             std::move(client_remote));
   client.WaitForResult();
 
   EXPECT_THAT(client.error_, IsOk());
@@ -230,14 +237,15 @@ TEST_F(MojoHostResolverImplTest, ResolveEx) {
 }
 
 TEST_F(MojoHostResolverImplTest, DestroyClient) {
-  proxy_resolver::mojom::HostResolverRequestClientPtr client_ptr;
+  mojo::PendingRemote<proxy_resolver::mojom::HostResolverRequestClient>
+      client_remote;
   std::unique_ptr<TestRequestClient> client(
-      new TestRequestClient(mojo::MakeRequest(&client_ptr)));
+      new TestRequestClient(client_remote.InitWithNewPipeAndPassReceiver()));
 
   mock_host_resolver_.set_ondemand_mode(true);
 
   resolver_service_->Resolve("example.com", false /* is_ex */,
-                             std::move(client_ptr));
+                             std::move(client_remote));
   WaitForRequests(1);
 
   client.reset();

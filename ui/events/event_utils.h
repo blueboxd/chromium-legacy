@@ -50,6 +50,11 @@ constexpr char kPropertyKeyboardIBusFlag[] = "_keyevent_kbd_ibus_ime_flags_";
 constexpr unsigned int kPropertyKeyboardIBusFlagOffset = 24;
 constexpr unsigned int kPropertyKeyboardIBusFlagMask = 0x03;
 
+// Key used to store mouse event flag telling ET_MOUSE_EXITED must actually be
+// interpreted as "crossing intermediate window" in blink context.
+constexpr char kPropertyMouseCrossedIntermediateWindow[] =
+    "_mouseevent_cros_window_";
+
 // Returns a ui::Event wrapping a native event. Ownership of the returned value
 // is transferred to the caller.
 EVENTS_EXPORT std::unique_ptr<Event> EventFromNative(

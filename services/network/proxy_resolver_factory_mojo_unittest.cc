@@ -282,11 +282,12 @@ void MockMojoProxyResolver::GetProxyForUrl(
       break;
     }
     case GetProxyForUrlAction::MAKE_DNS_REQUEST: {
-      proxy_resolver::mojom::HostResolverRequestClientPtr dns_client;
-      mojo::MakeRequest(&dns_client);
+      mojo::PendingRemote<proxy_resolver::mojom::HostResolverRequestClient>
+          dns_client;
+      ignore_result(dns_client.InitWithNewPipeAndPassReceiver());
       client->ResolveDns(url.host(),
                          net::ProxyResolveDnsOperation::DNS_RESOLVE_EX,
-                         dns_client.PassInterface());
+                         std::move(dns_client));
       blocked_clients_.push_back(
           std::make_unique<
               proxy_resolver::mojom::ProxyResolverRequestClientPtr>(
@@ -467,11 +468,12 @@ void MockMojoProxyResolverFactory::CreateResolver(
       break;
     }
     case CreateProxyResolverAction::MAKE_DNS_REQUEST: {
-      proxy_resolver::mojom::HostResolverRequestClientPtr dns_client;
-      mojo::MakeRequest(&dns_client);
+      mojo::PendingRemote<proxy_resolver::mojom::HostResolverRequestClient>
+          dns_client;
+      ignore_result(dns_client.InitWithNewPipeAndPassReceiver());
       client->ResolveDns(pac_script,
                          net::ProxyResolveDnsOperation::DNS_RESOLVE_EX,
-                         dns_client.PassInterface());
+                         std::move(dns_client));
       blocked_clients_.push_back(
           std::make_unique<
               proxy_resolver::mojom::ProxyResolverFactoryRequestClientPtr>(

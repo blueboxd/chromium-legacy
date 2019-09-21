@@ -100,7 +100,7 @@ source_set("formats") {
     ]
   }
 
-  if (proprietary_codecs && enable_hevc_demuxing) {
+  if (proprietary_codecs && enable_platform_hevc) {
     sources += [
       "mp4/hevc.cc",
       "mp4/hevc.h",
@@ -259,7 +259,7 @@ source_set("unit_tests") {
       sources += [ "mp4/dolby_vision_unittest.cc" ]
     }
 
-    if (enable_hevc_demuxing) {
+    if (enable_platform_hevc) {
       sources += [ "mp4/hevc_unittest.cc" ]
     }
   }

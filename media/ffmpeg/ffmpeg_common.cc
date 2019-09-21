@@ -178,7 +178,7 @@ static VideoCodec CodecIDToVideoCodec(AVCodecID codec_id) {
   switch (codec_id) {
     case AV_CODEC_ID_H264:
       return kCodecH264;
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
     case AV_CODEC_ID_HEVC:
       return kCodecHEVC;
 #endif
@@ -202,7 +202,7 @@ AVCodecID VideoCodecToCodecID(VideoCodec video_codec) {
   switch (video_codec) {
     case kCodecH264:
       return AV_CODEC_ID_H264;
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
     case kCodecHEVC:
       return AV_CODEC_ID_HEVC;
 #endif
@@ -521,7 +521,7 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
     case kCodecAV1:
       profile = AV1PROFILE_PROFILE_MAIN;
       break;
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
     case kCodecHEVC:
       profile = HEVCPROFILE_MAIN;
       break;

@@ -12,6 +12,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/log/net_log_with_source.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"
 
@@ -37,9 +38,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) MojoHostResolverImpl {
                        const net::NetLogWithSource& net_log);
   ~MojoHostResolverImpl();
 
-  void Resolve(const std::string& hostname,
-               bool is_ex,
-               proxy_resolver::mojom::HostResolverRequestClientPtr client);
+  void Resolve(
+      const std::string& hostname,
+      bool is_ex,
+      mojo::PendingRemote<proxy_resolver::mojom::HostResolverRequestClient>
+          client);
 
   bool request_in_progress() { return !pending_jobs_.empty(); }
 

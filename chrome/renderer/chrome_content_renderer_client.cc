@@ -1465,14 +1465,16 @@ ChromeContentRendererClient::CreateBrowserPluginDelegate(
 void ChromeContentRendererClient::RecordRappor(const std::string& metric,
                                                const std::string& sample) {
   if (!rappor_recorder_)
-    RenderThread::Get()->BindHostReceiver(mojo::MakeRequest(&rappor_recorder_));
+    RenderThread::Get()->BindHostReceiver(
+        rappor_recorder_.BindNewPipeAndPassReceiver());
   rappor_recorder_->RecordRappor(metric, sample);
 }
 
 void ChromeContentRendererClient::RecordRapporURL(const std::string& metric,
                                                   const GURL& url) {
   if (!rappor_recorder_)
-    RenderThread::Get()->BindHostReceiver(mojo::MakeRequest(&rappor_recorder_));
+    RenderThread::Get()->BindHostReceiver(
+        rappor_recorder_.BindNewPipeAndPassReceiver());
   rappor_recorder_->RecordRapporURL(metric, url);
 }
 

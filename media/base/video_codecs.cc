@@ -605,7 +605,7 @@ std::string TranslateLegacyAvc1CodecIds(const std::string& codec_id) {
 }
 #endif
 
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
 // The specification for HEVC codec id strings can be found in ISO IEC 14496-15
 // dated 2012 or newer in the Annex E.3
 bool ParseHEVCCodecId(const std::string& codec_id,
@@ -780,7 +780,7 @@ bool ParseDolbyVisionCodecId(const std::string& codec_id,
       else if (profile_id == 9)
         *profile = DOLBYVISION_PROFILE9;
       break;
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
     case 4:
     case 5:
     case 7:
@@ -850,7 +850,7 @@ VideoCodec StringToVideoCodec(const std::string& codec_id) {
   if (ParseAVCCodecId(TranslateLegacyAvc1CodecIds(codec_id), &profile, &level))
     return kCodecH264;
 #endif
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
   if (ParseHEVCCodecId(codec_id, &profile, &level))
     return kCodecHEVC;
 #endif

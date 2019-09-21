@@ -52,19 +52,28 @@ bool X11EventHasNonStandardState(const PlatformEvent& event) {
   return event && (event->xkey.state & ~kAllStateMask) != 0;
 }
 
-Event::Properties GetKeyEventPropertiesFromXKeyEvent(const XKeyEvent& xev) {
+Event::Properties GetEventPropertiesFromXEvent(EventType type,
+                                               const XEvent& xev) {
   using Values = std::vector<uint8_t>;
   Event::Properties properties;
+  if (type == ET_KEY_PRESSED || type == ET_KEY_RELEASED) {
+    // Keyboard group
+    uint8_t group = XkbGroupForCoreState(xev.xkey.state);
+    properties.emplace(kPropertyKeyboardGroup, Values{group});
 
-  // Keyboard group
-  uint8_t group = XkbGroupForCoreState(xev.state);
-  properties.emplace(kPropertyKeyboardGroup, Values{group});
+    // IBus-gtk specific flags
+    uint8_t ibus_flags = (xev.xkey.state >> kPropertyKeyboardIBusFlagOffset) &
+                         kPropertyKeyboardIBusFlagMask;
+    properties.emplace(kPropertyKeyboardIBusFlag, Values{ibus_flags});
 
-  // IBus-gtk specific flags
-  uint8_t ibus_flags = (xev.state >> kPropertyKeyboardIBusFlagOffset) &
-                       kPropertyKeyboardIBusFlagMask;
-  properties.emplace(kPropertyKeyboardIBusFlag, Values{ibus_flags});
-
+  } else if (type == ET_MOUSE_EXITED) {
+    // NotifyVirtual events are created for intermediate windows that the
+    // pointer crosses through. These occur when middle clicking.
+    // Change these into mouse move events.
+    bool crossing_intermediate_window = xev.xcrossing.detail == NotifyVirtual;
+    properties.emplace(kPropertyMouseCrossedIntermediateWindow,
+                       crossing_intermediate_window);
+  }
   return properties;
 }
 #endif
@@ -494,6 +503,9 @@ MouseEvent::MouseEvent(const PlatformEvent& native_event)
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT);
   if (type() == ET_MOUSE_PRESSED || type() == ET_MOUSE_RELEASED)
     SetClickCount(GetRepeatCount(*this));
+#if defined(USE_X11)
+  SetProperties(GetEventPropertiesFromXEvent(type(), *native_event));
+#endif
 }
 
 MouseEvent::MouseEvent(EventType type,
@@ -909,7 +921,7 @@ KeyEvent::KeyEvent(const PlatformEvent& native_event, int event_flags)
 #if defined(USE_X11)
   NormalizeFlags();
   key_ = GetDomKeyFromXEvent(native_event);
-  SetProperties(GetKeyEventPropertiesFromXKeyEvent(native_event->xkey));
+  SetProperties(GetEventPropertiesFromXEvent(type(), *native_event));
 #elif defined(OS_WIN)
   // Only Windows has native character events.
   if (is_char_) {

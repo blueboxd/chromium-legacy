@@ -9,9 +9,9 @@
 #include "base/strings/string_util.h"
 #include "media/video/h264_parser.h"
 
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
 #include "media/video/h265_parser.h"
-#endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
 
 namespace media {
 namespace mp4 {
@@ -74,7 +74,7 @@ void WriteNALUType<H264NALU>(std::vector<uint8_t>* buffer,
   buffer->push_back(H264StringToNALUType(nal_unit_type));
 }
 
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
 // Convert NALU type string to NALU type. It only supports a subset of all the
 // NALU types for testing purpose.
 H265NALU::Type H265StringToNALUType(const std::string& name) {
@@ -120,7 +120,7 @@ void WriteNALUType<H265NALU>(std::vector<uint8_t>* buffer,
   buffer->push_back(header1);
   buffer->push_back(header2);
 }
-#endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
 
 template <typename T>
 void WriteStartCodeAndNALUType(std::vector<uint8_t>* buffer,
@@ -184,13 +184,13 @@ void AvcStringToAnnexB(const std::string& str,
   StringToAnnexB<H264NALU>(str, buffer, subsamples);
 }
 
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
 void HevcStringToAnnexB(const std::string& str,
                         std::vector<uint8_t>* buffer,
                         std::vector<SubsampleEntry>* subsamples) {
   StringToAnnexB<H265NALU>(str, buffer, subsamples);
 }
-#endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
 
 bool AnalysesMatch(const BitstreamConverter::AnalysisResult& r1,
                    const BitstreamConverter::AnalysisResult& r2) {

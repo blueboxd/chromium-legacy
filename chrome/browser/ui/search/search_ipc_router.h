@@ -161,6 +161,8 @@ class SearchIPCRouter : public content::WebContentsObserver,
         chrome::mojom::EmbeddedSearch::QueryAutocompleteCallback callback) = 0;
 
     virtual void StopAutocomplete(bool clear_result) = 0;
+
+    virtual void BlocklistPromo(const std::string& promo_id) = 0;
   };
 
   // An interface to be implemented by consumers of SearchIPCRouter objects to
@@ -201,6 +203,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
     virtual bool ShouldProcessThemeChangeMessages() = 0;
     virtual bool ShouldProcessQueryAutocomplete(bool is_active_tab) = 0;
     virtual bool ShouldProcessStopAutocomplete(bool is_active_tab) = 0;
+    virtual bool ShouldProcessBlocklistPromo() = 0;
   };
 
   // Creates chrome::mojom::EmbeddedSearchClient connections on request.
@@ -311,6 +314,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
       chrome::mojom::EmbeddedSearch::QueryAutocompleteCallback callback)
       override;
   void StopAutocomplete(bool clear_result) override;
+  void BlocklistPromo(const std::string& promo_id) override;
   void set_embedded_search_client_factory_for_testing(
       std::unique_ptr<EmbeddedSearchClientFactory> factory) {
     embedded_search_client_factory_ = std::move(factory);

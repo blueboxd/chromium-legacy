@@ -66,6 +66,7 @@ ui::XWindow::Configuration ConvertInitPropertiesToXWindowConfig(
   config.wm_class_class = properties.wm_class_class;
   config.wm_role_name = properties.wm_role_name;
   config.activatable = properties.activatable;
+  config.visual_id = properties.x_visual_id;
   return config;
 }
 

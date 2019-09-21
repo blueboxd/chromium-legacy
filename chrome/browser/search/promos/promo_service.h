@@ -13,8 +13,10 @@
 #include "chrome/browser/search/promos/promo_data.h"
 #include "chrome/browser/search/promos/promo_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_registry_simple.h"
 
 class GURL;
+class PrefService;
 
 namespace network {
 class SimpleURLLoader;
@@ -37,15 +39,23 @@ class PromoService : public KeyedService {
     TRANSIENT_ERROR,
     // A fatal error occurred, such as the server responding with an error code
     // or with invalid data. Any previously cached response should be cleared.
-    FATAL_ERROR
+    FATAL_ERROR,
+    // There's a valid promo coming back from the promo server, but it's been
+    // locally blocked by the user client-side. TODO(crbug.com/1003508): send
+    // blocked promo IDs to the server so this doesn't happen / they can do a
+    // better job ranking?
+    OK_BUT_BLOCKED,
   };
 
-  explicit PromoService(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+  PromoService(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      PrefService* pref_service);
   ~PromoService() override;
 
   // KeyedService implementation.
   void Shutdown() override;
+
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Returns the currently cached middle-slot PromoData, if any.
   const base::Optional<PromoData>& promo_data() const { return promo_data_; }
@@ -60,6 +70,9 @@ class PromoService : public KeyedService {
   void AddObserver(PromoServiceObserver* observer);
   void RemoveObserver(PromoServiceObserver* observer);
 
+  // Marks |promo_id| as blocked from being shown again.
+  void BlocklistPromo(const std::string& promo_id);
+
   GURL GetLoadURLForTesting() const;
 
  protected:
@@ -72,8 +85,8 @@ class PromoService : public KeyedService {
 
   void NotifyObservers();
 
-  GURL GetGoogleBaseUrl() const;
-  GURL GetApiUrl() const;
+  // Whether or not |promo_id| has been blocked by the user.
+  bool IsBlocked(const std::string& promo_id) const;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   std::unique_ptr<network::SimpleURLLoader> simple_loader_;
@@ -82,6 +95,8 @@ class PromoService : public KeyedService {
 
   base::Optional<PromoData> promo_data_;
   Status promo_status_;
+
+  PrefService* pref_service_;
 
   base::WeakPtrFactory<PromoService> weak_ptr_factory_{this};
 };

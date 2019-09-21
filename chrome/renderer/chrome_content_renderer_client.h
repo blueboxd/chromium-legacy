@@ -29,6 +29,7 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -271,7 +272,7 @@ class ChromeContentRendererClient
   // Used to profile main thread.
   std::unique_ptr<ThreadProfiler> main_thread_profiler_;
 
-  rappor::mojom::RapporRecorderPtr rappor_recorder_;
+  mojo::Remote<rappor::mojom::RapporRecorder> rappor_recorder_;
 
   std::unique_ptr<ChromeRenderThreadObserver> chrome_observer_;
   std::unique_ptr<web_cache::WebCacheImpl> web_cache_impl_;

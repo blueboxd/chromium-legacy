@@ -175,6 +175,7 @@ class GpuIntegrationTest(
     except Exception:
       if ResultType.Failure in expected_results or should_retry_on_failure:
         if should_retry_on_failure:
+          logging.exception('Exception while running flaky test %s', test_name)
           # For robustness, shut down the browser and restart it
           # between flaky test failures, to make sure any state
           # doesn't propagate to the next iteration.

@@ -73,6 +73,7 @@ const CLASSES = {
   // Applies styles to dialogs used in customization.
   CUSTOMIZE_DIALOG: 'customize-dialog',
   DELAYED_HIDE_NOTIFICATION: 'mv-notice-delayed-hide',
+  DISMISS_PROMO: 'dismiss-promo',
   // Extended and elevated style for customization entry point.
   ENTRY_POINT_ENHANCED: 'ep-enhanced',
   FAKEBOX_FOCUS: 'fakebox-focused',  // Applies focus styles to the fakebox
@@ -903,7 +904,10 @@ function injectOneGoogleBar(ogb) {
  * doesn't block the main page load.
  */
 function injectPromo(promo) {
-  if (promo.promoHtml == '') {
+  if (!promo.promoHtml) {
+    if ($(IDS.PROMO)) {
+      $(IDS.PROMO).remove();
+    }
     return;
   }
 
@@ -918,11 +922,23 @@ function injectPromo(promo) {
 
   ntpApiHandle.logEvent(LOG_TYPE.NTP_MIDDLE_SLOT_PROMO_SHOWN);
 
-  const links = promoContainer.getElementsByTagName('a');
-  if (links[0]) {
-    links[0].onclick = function() {
+  const link = promoContainer.querySelector('a');
+  if (link) {
+    link.onclick = function() {
       ntpApiHandle.logEvent(LOG_TYPE.NTP_MIDDLE_SLOT_PROMO_LINK_CLICKED);
     };
+  }
+
+  if (promo.promoId) {
+    const dismiss = document.createElement('button');
+    dismiss.classList.add(CLASSES.DISMISS_PROMO);
+    // TODO(crbug.com/1003508): title or aria-label.
+    dismiss.onclick = e => {
+      ntpApiHandle.blocklistPromo(promo.promoId);
+      promoContainer.remove();
+      window.removeEventListener('resize', showPromoIfNotOverlapping);
+    };
+    promoContainer.querySelector('div').appendChild(dismiss);
   }
 
   // The the MV tiles are already loaded show the promo immediately.

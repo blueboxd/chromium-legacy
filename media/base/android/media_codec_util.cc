@@ -288,7 +288,7 @@ bool MediaCodecUtil::IsAv1DecoderAvailable() {
   return IsMediaCodecAvailable() && IsDecoderSupportedByDevice(kAv1MimeType);
 }
 
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
 // static
 bool MediaCodecUtil::IsHEVCDecoderAvailable() {
   return IsMediaCodecAvailable() && IsDecoderSupportedByDevice(kHevcMimeType);

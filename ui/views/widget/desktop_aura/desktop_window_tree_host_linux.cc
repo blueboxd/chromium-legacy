@@ -23,6 +23,10 @@ DesktopWindowTreeHostLinux::DesktopWindowTreeHostLinux(
 
 DesktopWindowTreeHostLinux::~DesktopWindowTreeHostLinux() = default;
 
+void DesktopWindowTreeHostLinux::SetPendingXVisualId(int x_visual_id) {
+  pending_x_visual_id_ = x_visual_id;
+}
+
 void DesktopWindowTreeHostLinux::OnNativeWidgetCreated(
     const Widget::InitParams& params) {
   AddNonClientEventFilter();
@@ -108,6 +112,8 @@ void DesktopWindowTreeHostLinux::AddAdditionalInitProperties(
   properties->wm_class_name = params.wm_class_name;
   properties->wm_class_class = params.wm_class_class;
   properties->wm_role_name = params.wm_role_name;
+
+  properties->x_visual_id = pending_x_visual_id_;
 }
 
 void DesktopWindowTreeHostLinux::AddNonClientEventFilter() {

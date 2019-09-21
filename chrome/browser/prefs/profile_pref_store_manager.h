@@ -88,7 +88,8 @@ class ProfilePrefStoreManager {
       scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       mojo::PendingRemote<prefs::mojom::ResetOnLoadObserver>
           reset_on_load_observer,
-      prefs::mojom::TrackedPreferenceValidationDelegatePtr validation_delegate);
+      mojo::PendingRemote<prefs::mojom::TrackedPreferenceValidationDelegate>
+          validation_delegate);
 
   // Initializes the preferences for the managed profile with the preference
   // values in |master_prefs|. Acts synchronously, including blocking IO.
@@ -107,7 +108,8 @@ class ProfilePrefStoreManager {
       size_t reporting_ids_count,
       mojo::PendingRemote<prefs::mojom::ResetOnLoadObserver>
           reset_on_load_observer,
-      prefs::mojom::TrackedPreferenceValidationDelegatePtr validation_delegate,
+      mojo::PendingRemote<prefs::mojom::TrackedPreferenceValidationDelegate>
+          validation_delegate,
       service_manager::Connector* connector);
 
   prefs::mojom::TrackedPersistentPrefStoreConfigurationPtr
@@ -117,7 +119,8 @@ class ProfilePrefStoreManager {
       size_t reporting_ids_count,
       mojo::PendingRemote<prefs::mojom::ResetOnLoadObserver>
           reset_on_load_observer,
-      prefs::mojom::TrackedPreferenceValidationDelegatePtr validation_delegate);
+      mojo::PendingRemote<prefs::mojom::TrackedPreferenceValidationDelegate>
+          validation_delegate);
 
   const base::FilePath profile_path_;
   const std::string seed_;

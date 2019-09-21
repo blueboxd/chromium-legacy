@@ -745,6 +745,7 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
 }
 
 #promo > div {
+  --promo-height: 32px;
   background-color: #FFF;
   border: 1px solid rgb(var(--GG300-rgb));
   border-radius: 16px;
@@ -752,7 +753,7 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
   color: rgb(var(--GG700-rgb));
   display: inline-block;
   font-size: 12px;
-  line-height: 32px;
+  line-height: var(--promo-height);
   margin-bottom: 0;
   /* TODO(crbug.com/969062): this magic constant would be better implemented as
    * real multi-line promo text support or a better QA process to check that
@@ -774,6 +775,21 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
     border-color: rgba(0, 0, 0, .1);
     color: rgb(var(--GG200-rgb));
   }
+}
+
+#promo > div > .dismiss-promo {
+  --icon-size: 16px;
+  -webkit-appearance: none;
+  background: url(../../../../ui/webui/resources/images/icon_clear.svg)
+      no-repeat center center;
+  background-size: var(--icon-size);
+  border: none;
+  display: inline-block;
+  height: var(--promo-height);
+  margin-inline-end: -8px;
+  margin-inline-start: 8px;
+  vertical-align: middle;
+  width: var(--icon-size);
 }
 
 #promo > div > a {

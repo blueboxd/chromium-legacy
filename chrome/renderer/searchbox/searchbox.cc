@@ -442,6 +442,10 @@ void SearchBox::StopAutocomplete(bool clear_result) {
   embedded_search_service_->StopAutocomplete(clear_result);
 }
 
+void SearchBox::BlocklistPromo(const std::string& promo_id) {
+  embedded_search_service_->BlocklistPromo(promo_id);
+}
+
 void SearchBox::QueryAutocompleteResult(
     chrome::mojom::AutocompleteResultPtr result) {
   if (can_run_js_in_renderframe_) {

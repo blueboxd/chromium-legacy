@@ -11,11 +11,14 @@
 
 namespace chromeos {
 
+// The mock implementation of PrintJobHistoryService for testing.
 class MockPrintJobHistoryService : public PrintJobHistoryService {
  public:
   MockPrintJobHistoryService();
   ~MockPrintJobHistoryService() override;
 
+  // This method doesn't save print job to the persistent storage.
+  // It should be used only for testing to notify observers.
   void SavePrintJobProto(const printing::proto::PrintJobInfo& print_job_info);
 
   MOCK_METHOD(void,

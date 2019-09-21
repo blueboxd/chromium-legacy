@@ -48,4 +48,9 @@ bool IsNtpRealboxEnabled() {
          base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTPRealbox);
 }
 
+// If enabled, "middle slot" promos on the bottom of the NTP will show a dismiss
+// UI that allows users to close them and not see them again.
+const base::Feature kDismissNtpPromos{"DismissNtpPromos",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features

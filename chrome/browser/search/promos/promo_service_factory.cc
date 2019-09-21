@@ -45,5 +45,6 @@ KeyedService* PromoServiceFactory::BuildServiceInstanceFor(
   auto url_loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(context)
           ->GetURLLoaderFactoryForBrowserProcess();
-  return new PromoService(url_loader_factory);
+  return new PromoService(url_loader_factory,
+                          Profile::FromBrowserContext(context)->GetPrefs());
 }

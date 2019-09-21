@@ -21,8 +21,6 @@
 #include "google_apis/gcm/engine/connection_factory.h"
 #include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 
-using namespace google::protobuf::io;
-
 namespace gcm {
 
 namespace {

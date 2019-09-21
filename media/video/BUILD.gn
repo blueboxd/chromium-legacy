@@ -41,7 +41,7 @@ source_set("video") {
     "video_encode_accelerator.h",
   ]
 
-  if (proprietary_codecs && enable_hevc_demuxing) {
+  if (proprietary_codecs && enable_platform_hevc) {
     sources += [
       "h265_parser.cc",
       "h265_parser.h",
@@ -109,7 +109,7 @@ source_set("unit_tests") {
     "half_float_maker_unittest.cc",
     "supported_video_decoder_config_unittest.cc",
   ]
-  if (enable_hevc_demuxing) {
+  if (enable_platform_hevc) {
     sources += [ "h265_parser_unittest.cc" ]
   }
 

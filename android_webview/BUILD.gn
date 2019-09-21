@@ -34,6 +34,7 @@ group("android_webview") {
 generate_jni("common_jni_headers") {
   sources = [
     "java/src/org/chromium/android_webview/common/AwResource.java",
+    "java/src/org/chromium/android_webview/common/crash/AwCrashReporterClient.java",
   ]
 }
 
@@ -1018,13 +1019,16 @@ android_library("platform_service_bridge_upstream_implementation_java") {
 
 android_library("common_crash_java") {
   java_files = [
+    "java/src/org/chromium/android_webview/common/crash/AwCrashReporterClient.java",
     "java/src/org/chromium/android_webview/common/crash/CrashInfo.java",
     "java/src/org/chromium/android_webview/common/crash/SystemWideCrashDirectories.java",
   ]
 
   deps = [
     "//base:base_java",
+    "//base:jni_java",
   ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 
 android_library("common_java") {

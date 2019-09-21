@@ -108,8 +108,9 @@ let og;
  * The type of the middle-slot promo data object. The definition is based on
  * chrome/browser/search/local_ntp_source.cc:
  *     ConvertPromoDataToDict()
- * @typedef {{promoHtml: string,
- *            promoLogUrl: string}}
+ * @typedef {{promoHtml: (string|undefined),
+ *            promoLogUrl: (string|undefined),
+ *            promoId: (string|undefined)}}
  */
 let promo;
 
@@ -372,6 +373,9 @@ window.chrome.embeddedSearch.newTabPage.undoMostVisitedDeletion;
  * @param {string} url
  */
 window.chrome.embeddedSearch.newTabPage.updateCustomLink;
+
+/** @param {string} promoId */
+window.chrome.embeddedSearch.newTabPage.blocklistPromo;
 
 /**
  * Embedded Search API methods defined in

@@ -114,6 +114,42 @@ TEST_F(AccessibilityTest, GetAccessibilityPage) {
   }
 }
 
+TEST_F(AccessibilityTest, GetAccessibilityImageInfo) {
+  static const pp::PDF::PrivateAccessibilityImageInfo kExpectedImageInfo[] = {
+      {"Image 1", 0, {{380, 78}, {67, 68}}},
+      {"Image 2", 0, {{380, 385}, {27, 28}}},
+      {"Image 3", 0, {{380, 678}, {1, 1}}}};
+
+  static const pp::Rect kExpectedPageRect = {{5, 3}, {816, 1056}};
+
+  TestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("image_alt_text.pdf"));
+  ASSERT_TRUE(engine);
+  ASSERT_EQ(1, engine->GetNumberOfPages());
+
+  PP_PrivateAccessibilityPageInfo page_info;
+  std::vector<PP_PrivateAccessibilityTextRunInfo> text_runs;
+  std::vector<PP_PrivateAccessibilityCharInfo> chars;
+  std::vector<pp::PDF::PrivateAccessibilityLinkInfo> links;
+  std::vector<pp::PDF::PrivateAccessibilityImageInfo> images;
+  ASSERT_TRUE(GetAccessibilityInfo(engine.get(), 0, &page_info, &text_runs,
+                                   &chars, &links, &images));
+  EXPECT_EQ(0u, page_info.page_index);
+  CompareRect(kExpectedPageRect, page_info.bounds);
+  EXPECT_EQ(text_runs.size(), page_info.text_run_count);
+  EXPECT_EQ(chars.size(), page_info.char_count);
+  EXPECT_EQ(links.size(), page_info.link_count);
+  EXPECT_EQ(images.size(), page_info.image_count);
+  ASSERT_EQ(images.size(), base::size(kExpectedImageInfo));
+
+  for (size_t i = 0; i < page_info.image_count; ++i) {
+    EXPECT_EQ(images[i].alt_text, kExpectedImageInfo[i].alt_text);
+    CompareRect(kExpectedImageInfo[i].bounds, images[i].bounds);
+    EXPECT_EQ(images[i].text_run_index, kExpectedImageInfo[i].text_run_index);
+  }
+}
+
 TEST_F(AccessibilityTest, GetUnderlyingTextRangeForRect) {
   TestClient client;
   std::unique_ptr<PDFiumEngine> engine =
@@ -368,6 +404,50 @@ TEST_F(AccessibilityTest, TestInternalLinkClickActionHandling) {
   EXPECT_EQ(1159, client.y_scroll_offset());
   EXPECT_TRUE(client.compensate_for_toolbar());
   EXPECT_TRUE(client.url().empty());
+}
+
+TEST_F(AccessibilityTest, GetAccessibilityLinkInfo) {
+  static pp::PDF::PrivateAccessibilityLinkInfo expected_link_info[] = {
+      {"http://yahoo.com", 0, 1, 1, {{75, 191}, {110, 16}}},
+      {"http://bing.com", 1, 4, 1, {{131, 121}, {138, 20}}},
+      {"http://google.com", 2, 7, 1, {{82, 67}, {161, 21}}}};
+
+  if (IsRunningOnChromeOS()) {
+    expected_link_info[0].bounds = {{75, 192}, {110, 15}};
+    expected_link_info[1].bounds = {{131, 120}, {138, 22}};
+  }
+
+  static const pp::Rect kExpectedPageRect = {{5, 3}, {533, 266}};
+
+  TestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("weblinks.pdf"));
+  ASSERT_TRUE(engine);
+  ASSERT_EQ(1, engine->GetNumberOfPages());
+
+  PP_PrivateAccessibilityPageInfo page_info;
+  std::vector<PP_PrivateAccessibilityTextRunInfo> text_runs;
+  std::vector<PP_PrivateAccessibilityCharInfo> chars;
+  std::vector<pp::PDF::PrivateAccessibilityLinkInfo> links;
+  std::vector<pp::PDF::PrivateAccessibilityImageInfo> images;
+  ASSERT_TRUE(GetAccessibilityInfo(engine.get(), 0, &page_info, &text_runs,
+                                   &chars, &links, &images));
+  EXPECT_EQ(0u, page_info.page_index);
+  CompareRect(kExpectedPageRect, page_info.bounds);
+  EXPECT_EQ(text_runs.size(), page_info.text_run_count);
+  EXPECT_EQ(chars.size(), page_info.char_count);
+  EXPECT_EQ(links.size(), page_info.link_count);
+  EXPECT_EQ(images.size(), page_info.image_count);
+  ASSERT_EQ(links.size(), base::size(expected_link_info));
+
+  for (size_t i = 0; i < page_info.link_count; ++i) {
+    const pp::PDF::PrivateAccessibilityLinkInfo& link_info = links[i];
+    EXPECT_EQ(link_info.url, expected_link_info[i].url);
+    EXPECT_EQ(link_info.index_in_page, expected_link_info[i].index_in_page);
+    CompareRect(expected_link_info[i].bounds, link_info.bounds);
+    EXPECT_EQ(link_info.text_run_index, expected_link_info[i].text_run_index);
+    EXPECT_EQ(link_info.text_run_count, expected_link_info[i].text_run_count);
+  }
 }
 
 }  // namespace chrome_pdf

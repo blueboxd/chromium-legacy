@@ -15,8 +15,7 @@ void PrefConnectionDelegate::ConnectToPrefService(
     mojo::PendingRemote<prefs::mojom::PrefStoreConnector> connector,
     scoped_refptr<PrefRegistrySimple> pref_registry,
     prefs::ConnectCallback callback) {
-  prefs::mojom::PrefStoreConnectorPtr ptr(std::move(connector));
-  ::prefs::ConnectToPrefService(std::move(ptr), std::move(pref_registry),
+  ::prefs::ConnectToPrefService(std::move(connector), std::move(pref_registry),
                                 base::Token::CreateRandom(), callback);
 }
 

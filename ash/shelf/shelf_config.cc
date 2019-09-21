@@ -4,6 +4,7 @@
 
 #include "ash/public/cpp/shelf_config.h"
 
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -21,21 +22,12 @@ const int kDenseShelfScreenSizeThreshold = 600;
 
 ShelfConfig::ShelfConfig()
     : is_dense_(false),
-      shelf_size_(56),
-      shelf_size_dense_(48),
+      is_app_list_visible_(false),
       shelf_button_icon_size_(44),
       shelf_button_icon_size_dense_(36),
-      shelf_control_size_(40),
-      shelf_control_size_dense_(36),
-      shelf_button_size_(shelf_size_),
-      shelf_button_size_dense_(shelf_size_dense_),
+      shelf_button_size_(56),
+      shelf_button_size_dense_(48),
       shelf_button_spacing_(8),
-      shelf_home_button_edge_spacing_(8),
-      shelf_home_button_edge_spacing_dense_(6),
-      shelf_overflow_button_margin_((shelf_button_size_ - shelf_control_size_) /
-                                    2),
-      shelf_overflow_button_margin_dense_(
-          (shelf_button_size_dense_ - shelf_control_size_dense_) / 2),
       shelf_status_area_hit_region_padding_(4),
       shelf_status_area_hit_region_padding_dense_(2),
       app_icon_group_margin_(16),
@@ -82,6 +74,7 @@ void ShelfConfig::Init() {
     return;
 
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
+  Shell::Get()->app_list_controller()->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
 }
 
@@ -90,6 +83,7 @@ void ShelfConfig::Shutdown() {
     return;
 
   display::Screen::GetScreen()->RemoveObserver(this);
+  Shell::Get()->app_list_controller()->RemoveObserver(this);
   Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
 }
 
@@ -106,8 +100,32 @@ void ShelfConfig::OnDisplayMetricsChanged(const display::Display& display,
   UpdateIsDense();
 }
 
+void ShelfConfig::OnAppListVisibilityChanged(bool shown, int64_t display_id) {
+  // Let's check that the app visibility mechanism isn't mis-firing, which
+  // would lead to a lot of extraneous relayout work.
+  DCHECK_NE(is_app_list_visible_, shown);
+
+  is_app_list_visible_ = shown;
+  for (auto& observer : observers_)
+    observer.OnShelfConfigUpdated();
+}
+
 int ShelfConfig::shelf_size() const {
-  return is_dense_ ? shelf_size_dense_ : shelf_size_;
+  // TODO(manucornet): Add unit tests to check that this returns the correct
+  // sizes in various situations.
+
+  // Before the hotseat redesign, the shelf always has the same size.
+  if (!chromeos::switches::ShouldShowShelfHotseat())
+    return 56;
+
+  // In clamshell mode, the shelf always has the same size.
+  if (!Shell::Get()->tablet_mode_controller()->InTabletMode())
+    return 48;
+
+  if (is_dense_)
+    return is_app_list_visible_ ? 48 : 36;
+  else
+    return is_app_list_visible_ ? 56 : 40;
 }
 
 int ShelfConfig::button_size() const {
@@ -123,7 +141,16 @@ int ShelfConfig::button_icon_size() const {
 }
 
 int ShelfConfig::control_size() const {
-  return is_dense_ ? shelf_control_size_dense_ : shelf_control_size_;
+  if (!chromeos::switches::ShouldShowShelfHotseat())
+    return 40;
+
+  if (!Shell::Get()->tablet_mode_controller()->InTabletMode())
+    return 36;
+
+  if (is_dense_)
+    return is_app_list_visible_ ? 36 : 28;
+  else
+    return is_app_list_visible_ ? 40 : 30;
 }
 
 int ShelfConfig::control_border_radius() const {
@@ -131,13 +158,11 @@ int ShelfConfig::control_border_radius() const {
 }
 
 int ShelfConfig::overflow_button_margin() const {
-  return is_dense_ ? shelf_overflow_button_margin_dense_
-                   : shelf_overflow_button_margin_;
+  return (button_size() - control_size()) / 2;
 }
 
 int ShelfConfig::home_button_edge_spacing() const {
-  return is_dense_ ? shelf_home_button_edge_spacing_dense_
-                   : shelf_home_button_edge_spacing_;
+  return (shelf_size() - control_size()) / 2;
 }
 
 int ShelfConfig::status_area_hit_region_padding() const {

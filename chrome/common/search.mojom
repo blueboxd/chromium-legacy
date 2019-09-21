@@ -181,6 +181,9 @@ interface EmbeddedSearch {
   // Cancels the current autocomplete query. Clears the result set if
   // |clear_result| is true.
   StopAutocomplete(bool clear_result);
+
+  // Called when a user dismisses a promo.
+  BlocklistPromo(string promo_id);
 };
 
 [Native]

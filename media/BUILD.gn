@@ -29,7 +29,7 @@ buildflag_header("media_buildflags") {
     "ENABLE_DOLBY_VISION_DEMUXING=$enable_dolby_vision_demuxing",
     "ENABLE_FFMPEG=$media_use_ffmpeg",
     "ENABLE_FFMPEG_VIDEO_DECODERS=$enable_ffmpeg_video_decoders",
-    "ENABLE_HEVC_DEMUXING=$enable_hevc_demuxing",
+    "ENABLE_PLATFORM_HEVC=$enable_platform_hevc",
     "ENABLE_HLS_SAMPLE_AES=$enable_hls_sample_aes",
     "ENABLE_LIBRARY_CDMS=$enable_library_cdms",
     "ENABLE_LIBVPX=$media_use_libvpx",

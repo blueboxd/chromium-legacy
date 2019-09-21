@@ -185,7 +185,7 @@ class FuchsiaVideoDecoder : public VideoDecoder,
   void OnDecryptorError() override;
   void OnDecryptorNoKey() override;
 
-  // Event handlers for |codec_|.
+  // Event handlers for |decoder_|.
   void OnStreamFailed(uint64_t stream_lifetime_ordinal,
                       fuchsia::media::StreamError error);
   void OnInputConstraints(
@@ -200,12 +200,15 @@ class FuchsiaVideoDecoder : public VideoDecoder,
   void OnOutputEndOfStream(uint64_t stream_lifetime_ordinal,
                            bool error_detected_before);
 
+  // Drops all pending input buffers and then calls all pending DecodeCB with
+  // |status|. Returns true if the decoder still exists.
+  bool DropInputQueue(DecodeStatus status);
+
   // Called on errors to shutdown the decoder and notify the client.
   void OnError();
 
   // Callback for |input_buffer_collection_creator_->Create()|.
-  void OnInputBufferPoolCreated(fuchsia::media::StreamBufferConstraints,
-                                std::unique_ptr<SysmemBufferPool> pool);
+  void OnInputBufferPoolCreated(std::unique_ptr<SysmemBufferPool> pool);
 
   // Callback for |input_buffer_collection_->CreateWriter()|.
   void OnWriterCreated(std::unique_ptr<SysmemBufferWriter> writer);
@@ -225,7 +228,8 @@ class FuchsiaVideoDecoder : public VideoDecoder,
   // reused.
   void OnReuseMailbox(uint32_t buffer_index, uint32_t packet_index);
 
-  // Releases BufferCollection currently used for output buffers if any.
+  // Releases BufferCollections used for input or output buffers if any.
+  void ReleaseInputBuffers();
   void ReleaseOutputBuffers();
 
   gpu::SharedImageInterface* const shared_image_interface_;
@@ -241,8 +245,14 @@ class FuchsiaVideoDecoder : public VideoDecoder,
   // Decryptor is allocated only for encrypted streams.
   std::unique_ptr<FuchsiaSecureStreamDecryptor> decryptor_;
 
+  VideoCodec current_codec_ = kUnknownVideoCodec;
+
   // TODO(sergeyu): Use StreamProcessorHelper.
-  fuchsia::media::StreamProcessorPtr codec_;
+  fuchsia::media::StreamProcessorPtr decoder_;
+
+  base::Optional<fuchsia::media::StreamBufferConstraints>
+      decoder_input_constraints_;
+
   BufferAllocator sysmem_allocator_;
   std::unique_ptr<gfx::ClientNativePixmapFactory> client_native_pixmap_factory_;
 
@@ -255,19 +265,19 @@ class FuchsiaVideoDecoder : public VideoDecoder,
   // Callbacks for pending Decode() request.
   std::deque<DecodeCB> decode_callbacks_;
 
-  // Buffer queue for |codec_|. Used only for clear streams, i.e. when there
+  // Buffer queue for |decoder_|. Used only for clear streams, i.e. when there
   // is no |decryptor_|.
   SysmemBufferWriterQueue input_writer_queue_;
 
-  // Input buffers for |codec_|.
+  // Input buffers for |decoder_|.
   uint64_t input_buffer_lifetime_ordinal_ = 1;
   std::unique_ptr<SysmemBufferPool::Creator> input_buffer_collection_creator_;
-  size_t num_input_buffers_ = 0;
   std::unique_ptr<SysmemBufferPool> input_buffer_collection_;
+  size_t num_input_buffers_ = 0;
   base::flat_map<size_t, StreamProcessorHelper::IoPacket>
       in_flight_input_packets_;
 
-  // Output buffers for |codec_|.
+  // Output buffers for |decoder_|.
   fuchsia::media::VideoUncompressedFormat output_format_;
   uint64_t output_buffer_lifetime_ordinal_ = 1;
   fuchsia::sysmem::BufferCollectionPtr output_buffer_collection_;
@@ -316,6 +326,9 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                      const WaitingCB& waiting_cb) {
   auto done_callback = BindToCurrentLoop(std::move(init_cb));
 
+  if (!DropInputQueue(DecodeStatus::ABORTED))
+    return;
+
   if (config.is_encrypted()) {
     // Caller makes sure |cdm_context| is available if the stream is encrypted.
     if (!cdm_context) {
@@ -340,24 +353,53 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
   output_cb_ = output_cb;
   container_pixel_aspect_ratio_ = config.GetPixelAspectRatio();
 
-  fuchsia::mediacodec::CreateDecoder_Params codec_params;
-  codec_params.mutable_input_details()->set_format_details_version_ordinal(0);
+  // If we already have |decoder_| that was initializes for the same codec then
+  // keep using it.
+  if (decoder_ && current_codec_ == config.codec()) {
+    // Input buffers can be in one of the following states here:
+    // 1. Input buffer constraints are empty, i.e. OnInputConstraints() event
+    //   hasn't been received yet. Input buffers will be allocated once
+    //   OnInputConstraints() is received.
+    // 2. Input buffers are being created.
+    // 3. Input buffers exist.
+    // 4. Input buffers were destroyed by DropInputQueue() call above (which is
+    //   required for encrypted streams).
+    //
+    // In the last case we need to re-initialize input buffers by calling
+    // OnInputConstraints().
+    if (decoder_input_constraints_.has_value() &&
+        !input_buffer_collection_creator_ && !input_buffer_collection_) {
+      OnInputConstraints(std::move(decoder_input_constraints_).value());
+    }
+
+    std::move(done_callback).Run(true);
+    return;
+  }
+
+  decoder_.Unbind();
+
+  // Reset IO buffers since we won't be able to re-use them.
+  ReleaseInputBuffers();
+  ReleaseOutputBuffers();
+
+  fuchsia::mediacodec::CreateDecoder_Params decoder_params;
+  decoder_params.mutable_input_details()->set_format_details_version_ordinal(0);
 
   switch (config.codec()) {
     case kCodecH264:
-      codec_params.mutable_input_details()->set_mime_type("video/h264");
+      decoder_params.mutable_input_details()->set_mime_type("video/h264");
       break;
     case kCodecVP8:
-      codec_params.mutable_input_details()->set_mime_type("video/vp8");
+      decoder_params.mutable_input_details()->set_mime_type("video/vp8");
       break;
     case kCodecVP9:
-      codec_params.mutable_input_details()->set_mime_type("video/vp9");
+      decoder_params.mutable_input_details()->set_mime_type("video/vp9");
       break;
     case kCodecHEVC:
-      codec_params.mutable_input_details()->set_mime_type("video/hevc");
+      decoder_params.mutable_input_details()->set_mime_type("video/hevc");
       break;
     case kCodecAV1:
-      codec_params.mutable_input_details()->set_mime_type("video/av1");
+      decoder_params.mutable_input_details()->set_mime_type("video/av1");
       break;
 
     default:
@@ -365,42 +407,45 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
       return;
   }
 
-  codec_params.set_promise_separate_access_units_on_input(true);
-  codec_params.set_require_hw(!enable_sw_decoding_);
+  decoder_params.set_promise_separate_access_units_on_input(true);
+  decoder_params.set_require_hw(!enable_sw_decoding_);
 
-  auto codec_factory = base::fuchsia::ComponentContextForCurrentProcess()
-                           ->svc()
-                           ->Connect<fuchsia::mediacodec::CodecFactory>();
-  codec_factory->CreateDecoder(std::move(codec_params), codec_.NewRequest());
+  auto decoder_factory = base::fuchsia::ComponentContextForCurrentProcess()
+                             ->svc()
+                             ->Connect<fuchsia::mediacodec::CodecFactory>();
+  decoder_factory->CreateDecoder(std::move(decoder_params),
+                                 decoder_.NewRequest());
 
-  codec_.set_error_handler([this](zx_status_t status) {
+  decoder_.set_error_handler([this](zx_status_t status) {
     ZX_LOG(ERROR, status) << "fuchsia.mediacodec.Codec disconnected.";
     OnError();
   });
 
-  codec_.events().OnStreamFailed =
+  decoder_.events().OnStreamFailed =
       fit::bind_member(this, &FuchsiaVideoDecoder::OnStreamFailed);
-  codec_.events().OnInputConstraints =
+  decoder_.events().OnInputConstraints =
       fit::bind_member(this, &FuchsiaVideoDecoder::OnInputConstraints);
-  codec_.events().OnFreeInputPacket =
+  decoder_.events().OnFreeInputPacket =
       fit::bind_member(this, &FuchsiaVideoDecoder::OnFreeInputPacket);
-  codec_.events().OnOutputConstraints =
+  decoder_.events().OnOutputConstraints =
       fit::bind_member(this, &FuchsiaVideoDecoder::OnOutputConstraints);
-  codec_.events().OnOutputFormat =
+  decoder_.events().OnOutputFormat =
       fit::bind_member(this, &FuchsiaVideoDecoder::OnOutputFormat);
-  codec_.events().OnOutputPacket =
+  decoder_.events().OnOutputPacket =
       fit::bind_member(this, &FuchsiaVideoDecoder::OnOutputPacket);
-  codec_.events().OnOutputEndOfStream =
+  decoder_.events().OnOutputEndOfStream =
       fit::bind_member(this, &FuchsiaVideoDecoder::OnOutputEndOfStream);
 
-  codec_->EnableOnStreamFailed();
+  decoder_->EnableOnStreamFailed();
+
+  current_codec_ = config.codec();
 
   std::move(done_callback).Run(true);
 }
 
 void FuchsiaVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                                  DecodeCB decode_cb) {
-  if (!codec_) {
+  if (!decoder_) {
     // Post the callback to the current sequence as DecoderStream doesn't expect
     // Decode() to complete synchronously.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
@@ -419,22 +464,9 @@ void FuchsiaVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 }
 
 void FuchsiaVideoDecoder::Reset(base::OnceClosure closure) {
-  // Call DecodeCB(ABORTED) for all pending decode requests.
-  for (auto& cb : decode_callbacks_) {
-    std::move(cb).Run(DecodeStatus::ABORTED);
-  }
-
-  input_writer_queue_.ResetQueue();
-
-  if (active_stream_) {
-    codec_->CloseCurrentStream(stream_lifetime_ordinal_,
-                               /*release_input_buffers=*/false,
-                               /*release_output_buffers=*/false);
-    stream_lifetime_ordinal_ += 2;
-    active_stream_ = false;
-  }
-
-  BindToCurrentLoop(std::move(closure)).Run();
+  DropInputQueue(DecodeStatus::ABORTED);
+  base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                   std::move(closure));
 }
 
 bool FuchsiaVideoDecoder::NeedsBitstreamConversion() const {
@@ -482,10 +514,9 @@ void FuchsiaVideoDecoder::OnInputConstraints(
   // Buffer lifetime ordinal is an odd number incremented by 2 for each buffer
   // generation as required by StreamProcessor.
   input_buffer_lifetime_ordinal_ += 2;
+  decoder_input_constraints_ = std::move(stream_constraints);
 
-  input_buffer_collection_.reset();
-  input_writer_queue_.ResetBuffers();
-  num_input_buffers_ = 0;
+  ReleaseInputBuffers();
 
   // Create buffer constrains for the input buffer collection.
   size_t num_tokens;
@@ -498,8 +529,8 @@ void FuchsiaVideoDecoder::OnInputConstraints(
     buffer_constraints.usage.none = fuchsia::sysmem::noneUsage;
   } else {
     num_tokens = 1;
-    auto writer_constraints =
-        SysmemBufferWriter::GetRecommendedConstraints(stream_constraints);
+    auto writer_constraints = SysmemBufferWriter::GetRecommendedConstraints(
+        decoder_input_constraints_.value());
     if (!writer_constraints.has_value()) {
       OnError();
       return;
@@ -512,11 +543,10 @@ void FuchsiaVideoDecoder::OnInputConstraints(
   input_buffer_collection_creator_->Create(
       std::move(buffer_constraints),
       base::BindOnce(&FuchsiaVideoDecoder::OnInputBufferPoolCreated,
-                     base::Unretained(this), std::move(stream_constraints)));
+                     base::Unretained(this)));
 }
 
 void FuchsiaVideoDecoder::OnInputBufferPoolCreated(
-    fuchsia::media::StreamBufferConstraints constraints,
     std::unique_ptr<SysmemBufferPool> pool) {
   if (!pool) {
     DLOG(ERROR) << "Fail to allocate input buffers for the codec.";
@@ -526,26 +556,28 @@ void FuchsiaVideoDecoder::OnInputBufferPoolCreated(
 
   input_buffer_collection_ = std::move(pool);
   num_input_buffers_ =
-      constraints.default_settings().packet_count_for_server() +
-      constraints.default_settings().packet_count_for_client();
+      decoder_input_constraints_->default_settings().packet_count_for_server() +
+      decoder_input_constraints_->default_settings().packet_count_for_client();
 
   fuchsia::media::StreamBufferPartialSettings settings;
   settings.set_buffer_lifetime_ordinal(input_buffer_lifetime_ordinal_);
   settings.set_buffer_constraints_version_ordinal(
-      constraints.buffer_constraints_version_ordinal());
+      decoder_input_constraints_->buffer_constraints_version_ordinal());
   settings.set_single_buffer_mode(false);
   settings.set_packet_count_for_server(
-      constraints.default_settings().packet_count_for_server());
+      decoder_input_constraints_->default_settings().packet_count_for_server());
   settings.set_packet_count_for_client(
-      constraints.default_settings().packet_count_for_client());
+      decoder_input_constraints_->default_settings().packet_count_for_client());
   settings.set_sysmem_token(input_buffer_collection_->TakeToken());
-  codec_->SetInputBufferPartialSettings(std::move(settings));
+  decoder_->SetInputBufferPartialSettings(std::move(settings));
 
   if (decryptor_) {
     decryptor_->SetOutputBufferCollectionToken(
         input_buffer_collection_->TakeToken(),
-        constraints.default_settings().packet_count_for_client(),
-        constraints.default_settings().packet_count_for_server());
+        decoder_input_constraints_->default_settings()
+            .packet_count_for_client(),
+        decoder_input_constraints_->default_settings()
+            .packet_count_for_server());
   } else {
     input_buffer_collection_->CreateWriter(base::BindOnce(
         &FuchsiaVideoDecoder::OnWriterCreated, base::Unretained(this)));
@@ -580,7 +612,7 @@ void FuchsiaVideoDecoder::SendInputPacket(
   media_packet.set_start_offset(packet.offset());
   media_packet.set_valid_length_bytes(packet.size());
   media_packet.set_known_end_access_unit(packet.unit_end());
-  codec_->QueueInputPacket(std::move(media_packet));
+  decoder_->QueueInputPacket(std::move(media_packet));
 
   active_stream_ = true;
 
@@ -591,8 +623,8 @@ void FuchsiaVideoDecoder::SendInputPacket(
 
 void FuchsiaVideoDecoder::ProcessEndOfStream() {
   active_stream_ = true;
-  codec_->QueueInputEndOfStream(stream_lifetime_ordinal_);
-  codec_->FlushEndOfStreamAndCloseStream(stream_lifetime_ordinal_);
+  decoder_->QueueInputEndOfStream(stream_lifetime_ordinal_);
+  decoder_->FlushEndOfStreamAndCloseStream(stream_lifetime_ordinal_);
 }
 
 void FuchsiaVideoDecoder::OnFreeInputPacket(
@@ -754,6 +786,10 @@ void FuchsiaVideoDecoder::OnOutputPacket(fuchsia::media::Packet output_packet,
     return;
   }
 
+  if (output_packet.stream_lifetime_ordinal() != stream_lifetime_ordinal_) {
+    return;
+  }
+
   if (output_packet.header().buffer_lifetime_ordinal() !=
       output_buffer_lifetime_ordinal_) {
     return;
@@ -868,30 +904,49 @@ void FuchsiaVideoDecoder::OnOutputEndOfStream(uint64_t stream_lifetime_ordinal,
   std::move(flush_cb).Run(DecodeStatus::OK);
 }
 
-void FuchsiaVideoDecoder::OnError() {
-  codec_.Unbind();
+bool FuchsiaVideoDecoder::DropInputQueue(DecodeStatus status) {
+  input_writer_queue_.ResetQueue();
+
+  if (active_stream_) {
+    if (decoder_) {
+      decoder_->CloseCurrentStream(stream_lifetime_ordinal_,
+                                   /*release_input_buffers=*/false,
+                                   /*release_output_buffers=*/false);
+    }
+    stream_lifetime_ordinal_ += 2;
+    active_stream_ = false;
+  }
+
+  // Input buffers have to be re-initialized for encrypted streams.
+  if (decryptor_) {
+    decryptor_.reset();
+    ReleaseInputBuffers();
+  }
+
+  in_flight_input_packets_.clear();
 
   auto weak_this = weak_this_;
 
-  // Call all decode callback with DECODE_ERROR.
   for (auto& cb : decode_callbacks_) {
-    std::move(cb).Run(DecodeStatus::DECODE_ERROR);
+    std::move(cb).Run(status);
 
-    // DecodeCB(DECODE_ERROR) may destroy |this|.
+    // DecodeCB may destroy |this|.
     if (!weak_this)
-      return;
+      return false;
   }
   decode_callbacks_.clear();
 
+  return true;
+}
+
+void FuchsiaVideoDecoder::OnError() {
+  decoder_.Unbind();
   decryptor_.reset();
 
-  input_writer_queue_.ResetBuffers();
-  input_writer_queue_.ResetQueue();
-
-  input_buffer_collection_.reset();
-  input_buffer_collection_creator_.reset();
-
+  ReleaseInputBuffers();
   ReleaseOutputBuffers();
+
+  DropInputQueue(DecodeStatus::DECODE_ERROR);
 }
 
 void FuchsiaVideoDecoder::InitializeOutputBufferCollection(
@@ -920,14 +975,22 @@ void FuchsiaVideoDecoder::InitializeOutputBufferCollection(
   settings.set_packet_count_for_server(
       constraints.packet_count_for_server_recommended());
   settings.set_sysmem_token(std::move(collection_token_for_codec));
-  codec_->SetOutputBufferPartialSettings(std::move(settings));
-  codec_->CompleteOutputBufferPartialSettings(output_buffer_lifetime_ordinal_);
+  decoder_->SetOutputBufferPartialSettings(std::move(settings));
+  decoder_->CompleteOutputBufferPartialSettings(
+      output_buffer_lifetime_ordinal_);
 
   DCHECK(output_mailboxes_.empty());
   output_mailboxes_.resize(
       max_used_output_buffers_ +
           constraints.packet_count_for_server_recommended(),
       nullptr);
+}
+
+void FuchsiaVideoDecoder::ReleaseInputBuffers() {
+  input_writer_queue_.ResetBuffers();
+  input_buffer_collection_creator_.reset();
+  input_buffer_collection_.reset();
+  num_input_buffers_ = 0;
 }
 
 void FuchsiaVideoDecoder::ReleaseOutputBuffers() {
@@ -955,7 +1018,7 @@ void FuchsiaVideoDecoder::ReleaseOutputBuffers() {
 
 void FuchsiaVideoDecoder::OnReuseMailbox(uint32_t buffer_index,
                                          uint32_t packet_index) {
-  DCHECK(codec_);
+  DCHECK(decoder_);
 
   DCHECK_GT(num_used_output_buffers_, 0);
   num_used_output_buffers_--;
@@ -963,7 +1026,7 @@ void FuchsiaVideoDecoder::OnReuseMailbox(uint32_t buffer_index,
   fuchsia::media::PacketHeader header;
   header.set_buffer_lifetime_ordinal(output_buffer_lifetime_ordinal_);
   header.set_packet_index(packet_index);
-  codec_->RecycleOutputPacket(std::move(header));
+  decoder_->RecycleOutputPacket(std::move(header));
 }
 
 std::unique_ptr<VideoDecoder> CreateFuchsiaVideoDecoder(

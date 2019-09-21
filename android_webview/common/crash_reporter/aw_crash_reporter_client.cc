@@ -10,9 +10,13 @@
 #include "android_webview/common/aw_paths.h"
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/common/crash_reporter/crash_keys.h"
+#include "android_webview/common_jni_headers/AwCrashReporterClient_jni.h"
 #include "base/android/build_info.h"
+#include "base/android/java_exception_reporter.h"
+#include "base/android/jni_android.h"
 #include "base/base_paths_android.h"
 #include "base/base_switches.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -24,6 +28,8 @@
 #include "components/version_info/android/channel_getter.h"
 #include "components/version_info/version_info.h"
 #include "components/version_info/version_info_values.h"
+
+using base::android::AttachCurrentThread;
 
 namespace android_webview {
 
@@ -96,6 +102,12 @@ class AwCrashReporterClient : public crash_reporter::CrashReporterClient {
                  ? "browser"
                  : "webview";
     return true;
+  }
+
+  bool JavaExceptionFilter(
+      const base::android::ScopedJavaLocalRef<jthrowable>& java_exception) {
+    return Java_AwCrashReporterClient_stackTraceContainsWebViewCode(
+        AttachCurrentThread(), java_exception);
   }
 
  private:

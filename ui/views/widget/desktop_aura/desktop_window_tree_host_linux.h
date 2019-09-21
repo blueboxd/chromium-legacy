@@ -22,6 +22,10 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
       DesktopNativeWidgetAura* desktop_native_widget_aura);
   ~DesktopWindowTreeHostLinux() override;
 
+  // This must be called before the window is created, because the visual cannot
+  // be changed after. Useful for X11. Not in use for Wayland.
+  void SetPendingXVisualId(int x_visual_id);
+
  protected:
   // Overridden from DesktopWindowTreeHost:
   void OnNativeWidgetCreated(const Widget::InitParams& params) override;
@@ -55,6 +59,11 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
 
   // A handler for events intended for non client area.
   std::unique_ptr<WindowEventFilterLinux> non_client_window_event_filter_;
+
+  // X11 may set set a visual id for the system tray icon before the host is
+  // initialized. This value will be passed down to PlatformWindow during
+  // initialization of the host.
+  base::Optional<int> pending_x_visual_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostLinux);
 };

@@ -164,7 +164,7 @@ jumbo_source_set("filters") {
         "ffmpeg_h264_to_annex_b_bitstream_converter.h",
       ]
 
-      if (enable_hevc_demuxing) {
+      if (enable_platform_hevc) {
         sources += [
           "ffmpeg_h265_to_annex_b_bitstream_converter.cc",
           "ffmpeg_h265_to_annex_b_bitstream_converter.h",

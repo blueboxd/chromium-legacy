@@ -34,9 +34,9 @@
 #include "media/formats/mp4/dolby_vision.h"
 #endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
 
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
 #include "media/formats/mp4/hevc.h"
-#endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 namespace media {
@@ -874,7 +874,7 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
 #endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
       break;
     }
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
     case FOURCC_HEV1:
     case FOURCC_HVC1: {
       DVLOG(2) << __func__ << " parsing HEVCDecoderConfigurationRecord (hvcC)";
@@ -896,7 +896,7 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
 #endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
       break;
     }
-#endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
 #if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
     case FOURCC_DVA1:
     case FOURCC_DVAV: {
@@ -914,7 +914,7 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
       video_codec_profile = dv_config->codec_profile;
       break;
     }
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
     case FOURCC_DVH1:
     case FOURCC_DVHE: {
       DVLOG(2) << __func__ << " reading HEVCDecoderConfigurationRecord (hvcC)";
@@ -930,7 +930,7 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
       video_codec_profile = dv_config->codec_profile;
       break;
     }
-#endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
 #endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
     case FOURCC_VP09: {
@@ -977,14 +977,14 @@ bool VideoSampleEntry::IsFormatValid() const {
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
     case FOURCC_AVC1:
     case FOURCC_AVC3:
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
     case FOURCC_HEV1:
     case FOURCC_HVC1:
 #if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
     case FOURCC_DVH1:
     case FOURCC_DVHE:
 #endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
-#endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
 #if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
     case FOURCC_DVA1:
     case FOURCC_DVAV:

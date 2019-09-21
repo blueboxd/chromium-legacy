@@ -392,8 +392,9 @@ scoped_refptr<viz::ContextProviderCommandBuffer> CreateOffscreenContext(
 // connect from the renderer process to the browser process.
 void CreateSingleSampleMetricsProvider(
     mojo::SharedRemote<mojom::ChildProcessHost> process_host,
-    metrics::mojom::SingleSampleMetricsProviderRequest request) {
-  process_host->BindHostReceiver(std::move(request));
+    mojo::PendingReceiver<metrics::mojom::SingleSampleMetricsProvider>
+        receiver) {
+  process_host->BindHostReceiver(std::move(receiver));
 }
 
 // This factory is used to defer binding of the InterfacePtr to the compositor

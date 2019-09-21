@@ -12,6 +12,7 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "components/metrics/single_sample_metrics.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace metrics {
@@ -52,8 +53,9 @@ class SingleSampleMetricsFactoryImplTest : public testing::Test {
     thread_.Stop();
   }
 
-  void CreateProvider(mojom::SingleSampleMetricsProviderRequest request) {
-    CreateSingleSampleMetricsProvider(std::move(request));
+  void CreateProvider(
+      mojo::PendingReceiver<mojom::SingleSampleMetricsProvider> receiver) {
+    CreateSingleSampleMetricsProvider(std::move(receiver));
     provider_count_++;
   }
 

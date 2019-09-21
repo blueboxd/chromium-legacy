@@ -72,7 +72,7 @@ class MEDIA_EXPORT MediaCodecUtil {
   // Indicates if the av1 decoder is available on this device.
   static bool IsAv1DecoderAvailable();
 
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
   // Indicates if the h265 decoder is available on this device.
   static bool IsHEVCDecoderAvailable();
 #endif

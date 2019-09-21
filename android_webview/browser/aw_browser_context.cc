@@ -202,7 +202,7 @@ void AwBrowserContext::CreateUserPrefService() {
   pref_service_factory.set_user_prefs(base::MakeRefCounted<SegregatedPrefStore>(
       base::MakeRefCounted<InMemoryPrefStore>(),
       base::MakeRefCounted<JsonPrefStore>(GetPrefStorePath()), persistent_prefs,
-      /*validation_delegate=*/nullptr));
+      mojo::Remote<::prefs::mojom::TrackedPreferenceValidationDelegate>()));
 
   policy::URLBlacklistManager::RegisterProfilePrefs(pref_registry.get());
   AwBrowserPolicyConnector* browser_policy_connector =

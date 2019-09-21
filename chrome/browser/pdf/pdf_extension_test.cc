@@ -2391,6 +2391,11 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionAccessibilityTextExtractionTest,
   RunTextExtractionTest(FILE_PATH_LITERAL("whitespace.pdf"));
 }
 
+// Test data of inline text boxes for PDF with weblinks.
+IN_PROC_BROWSER_TEST_F(PDFExtensionAccessibilityTextExtractionTest, WebLinks) {
+  RunTextExtractionTest(FILE_PATH_LITERAL("weblinks.pdf"));
+}
+
 class PDFExtensionAccessibilityTreeDumpTest
     : public PDFExtensionTest,
       public ::testing::WithParamInterface<size_t> {
@@ -2584,4 +2589,12 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest,
 
 IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, TextDirection) {
   RunPDFTest(FILE_PATH_LITERAL("text-direction.pdf"));
+}
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, WebLinks) {
+  RunPDFTest(FILE_PATH_LITERAL("weblinks.pdf"));
+}
+
+IN_PROC_BROWSER_TEST_P(PDFExtensionAccessibilityTreeDumpTest, Images) {
+  RunPDFTest(FILE_PATH_LITERAL("image_alt_text.pdf"));
 }

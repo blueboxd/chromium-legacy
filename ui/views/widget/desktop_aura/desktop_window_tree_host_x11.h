@@ -88,10 +88,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   // Returns a map of KeyboardEvent code to KeyboardEvent key values.
   base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
 
-  // This must be called before the window is created, because the visual cannot
-  // be changed after.
-  void SetVisualId(VisualID visual_id);
-
  protected:
   // Overridden from DesktopWindowTreeHost:
   void Init(const Widget::InitParams& params) override;

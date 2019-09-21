@@ -393,22 +393,17 @@ blink::WebMouseEvent MakeWebMouseEventFromUiEvent(const MouseEvent& event) {
       click_count = event.GetClickCount();
       break;
     case ET_MOUSE_EXITED: {
-#if defined(USE_X11)
-      // NotifyVirtual events are created for intermediate windows that the
-      // pointer crosses through. These occur when middle clicking.
-      // Change these into mouse move events.
-      const PlatformEvent& native_event = event.native_event();
-
-      if (native_event && native_event->type == LeaveNotify &&
-          native_event->xcrossing.detail == NotifyVirtual) {
+      // When MOUSE_EXITED is created for intermediate windows that the
+      // pointer crosses through, change these into mouse move events.
+      const Event::Properties* props = event.properties();
+      if (props && props->contains(kPropertyMouseCrossedIntermediateWindow)) {
         type = blink::WebInputEvent::kMouseMove;
-        break;
+      } else {
+        static bool s_send_leave =
+            base::FeatureList::IsEnabled(features::kSendMouseLeaveEvents);
+        type = s_send_leave ? blink::WebInputEvent::kMouseLeave
+                            : blink::WebInputEvent::kMouseMove;
       }
-#endif
-      static bool s_send_leave =
-          base::FeatureList::IsEnabled(features::kSendMouseLeaveEvents);
-      type = s_send_leave ? blink::WebInputEvent::kMouseLeave
-                          : blink::WebInputEvent::kMouseMove;
       break;
     }
     case ET_MOUSE_ENTERED:

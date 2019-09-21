@@ -79,7 +79,7 @@ PrefStoreManagerImpl::PrefStoreManagerImpl(
           base::WrapRefCounted(pref_registry))) {
   // This store is done in-process so it's already "registered":
   registry_.AddInterface<prefs::mojom::PrefStoreConnector>(
-      base::Bind(&PrefStoreManagerImpl::BindPrefStoreConnectorRequest,
+      base::Bind(&PrefStoreManagerImpl::BindPrefStoreConnectorReceiver,
                  base::Unretained(this)));
   persistent_pref_store_ = std::make_unique<PersistentPrefStoreImpl>(
       base::WrapRefCounted(user_prefs),
@@ -111,12 +111,12 @@ base::OnceClosure PrefStoreManagerImpl::ShutDownClosure() {
                         weak_factory_.GetWeakPtr());
 }
 
-void PrefStoreManagerImpl::BindPrefStoreConnectorRequest(
-    prefs::mojom::PrefStoreConnectorRequest request,
+void PrefStoreManagerImpl::BindPrefStoreConnectorReceiver(
+    mojo::PendingReceiver<prefs::mojom::PrefStoreConnector> receiver,
     const service_manager::BindSourceInfo& source_info) {
-  connector_bindings_.AddBinding(
+  connector_receivers_.Add(
       std::make_unique<ConnectorConnection>(this, source_info),
-      std::move(request));
+      std::move(receiver));
 }
 
 void PrefStoreManagerImpl::OnBindInterface(

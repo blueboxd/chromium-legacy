@@ -149,7 +149,7 @@ MimeUtil::MimeUtil() {
       MediaCodecUtil::IsVp9Profile2DecoderAvailable();
   platform_info_.has_platform_vp9_3_decoder =
       MediaCodecUtil::IsVp9Profile3DecoderAvailable();
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
   platform_info_.has_platform_hevc_decoder =
       MediaCodecUtil::IsHEVCDecoderAvailable();
 #endif
@@ -330,9 +330,9 @@ void MimeUtil::AddSupportedMediaFormats() {
 #endif  // BUILDFLAG(ENABLE_MPEG_H_AUDIO_DEMUXING)
 
   mp4_video_codecs.emplace(H264);
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
   mp4_video_codecs.emplace(HEVC);
-#endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
 
 #if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
   mp4_video_codecs.emplace(DOLBY_VISION);
@@ -612,12 +612,12 @@ bool MimeUtil::IsCodecSupportedOnAndroid(
       return !is_encrypted || platform_info.has_platform_decoders;
 
     case HEVC:
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
       return platform_info.has_platform_decoders &&
              platform_info.has_platform_hevc_decoder;
 #else
       return false;
-#endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
 
     case VP8:
       // If clear, the unified pipeline can always decode VP8 in software.
@@ -824,7 +824,7 @@ bool MimeUtil::ParseCodecHelper(const std::string& mime_type_lower_case,
     return true;
   }
 
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
   if (ParseHEVCCodecId(codec_id, out_profile, out_level)) {
     out_result->codec = MimeUtil::HEVC;
     return true;

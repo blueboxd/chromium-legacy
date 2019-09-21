@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
@@ -27,7 +28,8 @@ class MojoHostResolverImpl::Job {
       const std::string& hostname,
       bool is_ex,
       const net::NetLogWithSource& net_log,
-      proxy_resolver::mojom::HostResolverRequestClientPtr client);
+      mojo::PendingRemote<proxy_resolver::mojom::HostResolverRequestClient>
+          client);
   ~Job();
 
   void set_iter(std::list<Job>::iterator iter) { iter_ = iter; }
@@ -38,14 +40,14 @@ class MojoHostResolverImpl::Job {
   // Completion callback for the HostResolver::Resolve request.
   void OnResolveDone(int result);
 
-  // Mojo error handler.
-  void OnConnectionError();
+  // Mojo disconnect handler.
+  void OnMojoDisconnect();
 
   MojoHostResolverImpl* resolver_service_;
   // This Job's iterator in |resolver_service_|, so the Job may be removed on
   // completion.
   std::list<Job>::iterator iter_;
-  proxy_resolver::mojom::HostResolverRequestClientPtr client_;
+  mojo::Remote<proxy_resolver::mojom::HostResolverRequestClient> client_;
   const std::string hostname_;
   std::unique_ptr<net::HostResolver::ResolveHostRequest> request_;
   base::ThreadChecker thread_checker_;
@@ -62,7 +64,8 @@ MojoHostResolverImpl::~MojoHostResolverImpl() {
 void MojoHostResolverImpl::Resolve(
     const std::string& hostname,
     bool is_ex,
-    proxy_resolver::mojom::HostResolverRequestClientPtr client) {
+    mojo::PendingRemote<proxy_resolver::mojom::HostResolverRequestClient>
+        client) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   pending_jobs_.emplace_front(this, resolver_, hostname, is_ex, net_log_,
@@ -83,12 +86,13 @@ MojoHostResolverImpl::Job::Job(
     const std::string& hostname,
     bool is_ex,
     const net::NetLogWithSource& net_log,
-    proxy_resolver::mojom::HostResolverRequestClientPtr client)
+    mojo::PendingRemote<proxy_resolver::mojom::HostResolverRequestClient>
+        client)
     : resolver_service_(resolver_service),
       client_(std::move(client)),
       hostname_(hostname) {
-  client_.set_connection_error_handler(base::Bind(
-      &MojoHostResolverImpl::Job::OnConnectionError, base::Unretained(this)));
+  client_.set_disconnect_handler(base::Bind(
+      &MojoHostResolverImpl::Job::OnMojoDisconnect, base::Unretained(this)));
 
   net::HostResolver::ResolveHostParameters parameters;
   if (!is_ex)
@@ -133,11 +137,11 @@ void MojoHostResolverImpl::Job::OnResolveDone(int result) {
   resolver_service_->DeleteJob(iter_);
 }
 
-void MojoHostResolverImpl::Job::OnConnectionError() {
+void MojoHostResolverImpl::Job::OnMojoDisconnect() {
   DCHECK(thread_checker_.CalledOnValidThread());
   // |resolver_service_| should always outlive us.
   DCHECK(resolver_service_);
-  DVLOG(1) << "Connection error on request for " << hostname_;
+  DVLOG(1) << "Disconnection on request for " << hostname_;
   resolver_service_->DeleteJob(iter_);
 }
 

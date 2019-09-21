@@ -82,7 +82,7 @@ void StatusIconLinuxX11::OnSetDelegate() {
 
   int visual_id;
   if (ui::GetIntProperty(manager, "_NET_SYSTEM_TRAY_VISUAL", &visual_id))
-    host->SetVisualId(visual_id);
+    host->SetPendingXVisualId(visual_id);
 
   const int width = std::max(1, delegate_->GetImage().width());
   const int height = std::max(1, delegate_->GetImage().height());

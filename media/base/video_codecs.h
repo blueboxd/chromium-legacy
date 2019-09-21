@@ -132,7 +132,7 @@ MEDIA_EXPORT bool ParseAVCCodecId(const std::string& codec_id,
                                   VideoCodecProfile* profile,
                                   uint8_t* level_idc);
 
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
 MEDIA_EXPORT bool ParseHEVCCodecId(const std::string& codec_id,
                                    VideoCodecProfile* profile,
                                    uint8_t* level_idc);

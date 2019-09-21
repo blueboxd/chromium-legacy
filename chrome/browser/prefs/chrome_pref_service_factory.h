@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/pref_value_store.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom-forward.h"
 
 namespace base {
@@ -75,7 +76,8 @@ std::unique_ptr<PrefService> CreateLocalState(
 
 std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateProfilePrefs(
     const base::FilePath& pref_filename,
-    prefs::mojom::TrackedPreferenceValidationDelegatePtr validation_delegate,
+    mojo::PendingRemote<prefs::mojom::TrackedPreferenceValidationDelegate>
+        validation_delegate,
     policy::PolicyService* policy_service,
     SupervisedUserSettingsService* supervised_user_settings,
     scoped_refptr<PrefStore> extension_prefs,

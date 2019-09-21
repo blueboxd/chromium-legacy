@@ -163,23 +163,23 @@ static const CodecInfo kH264AVC1CodecInfo = {
 static const CodecInfo kH264AVC3CodecInfo = {
     "avc3.*", CodecInfo::VIDEO, nullptr, CodecInfo::HISTOGRAM_H264};
 
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
 static const CodecInfo kHEVCHEV1CodecInfo = {
     "hev1.*", CodecInfo::VIDEO, nullptr, CodecInfo::HISTOGRAM_HEVC};
 static const CodecInfo kHEVCHVC1CodecInfo = {
     "hvc1.*", CodecInfo::VIDEO, nullptr, CodecInfo::HISTOGRAM_HEVC};
-#endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
 #if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
 static const CodecInfo kDolbyVisionAVCCodecInfo1 = {
     "dva1.*", CodecInfo::VIDEO, nullptr, CodecInfo::HISTOGRAM_DOLBYVISION};
 static const CodecInfo kDolbyVisionAVCCodecInfo2 = {
     "dvav.*", CodecInfo::VIDEO, nullptr, CodecInfo::HISTOGRAM_DOLBYVISION};
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
 static const CodecInfo kDolbyVisionHEVCCodecInfo1 = {
     "dvh1.*", CodecInfo::VIDEO, nullptr, CodecInfo::HISTOGRAM_DOLBYVISION};
 static const CodecInfo kDolbyVisionHEVCCodecInfo2 = {
     "dvhe.*", CodecInfo::VIDEO, nullptr, CodecInfo::HISTOGRAM_DOLBYVISION};
-#endif  // BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
 #endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
 static const CodecInfo kMPEG4AACCodecInfo = {"mp4a.40.*", CodecInfo::AUDIO,
                                              &ValidateMP4ACodecID,
@@ -237,14 +237,14 @@ static const CodecInfo* const kVideoMP4Codecs[] = {&kMPEG4FLACCodecInfo,
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
                                                    &kH264AVC1CodecInfo,
                                                    &kH264AVC3CodecInfo,
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
                                                    &kHEVCHEV1CodecInfo,
                                                    &kHEVCHVC1CodecInfo,
 #endif
 #if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
                                                    &kDolbyVisionAVCCodecInfo1,
                                                    &kDolbyVisionAVCCodecInfo2,
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
                                                    &kDolbyVisionHEVCCodecInfo1,
                                                    &kDolbyVisionHEVCCodecInfo2,
 #endif

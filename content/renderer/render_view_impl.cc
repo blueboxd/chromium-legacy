@@ -460,6 +460,7 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
       renderer_wide_named_frame_lookup_(
           params.renderer_wide_named_frame_lookup),
       webkit_preferences_(params.web_preferences),
+      page_properties_(compositor_deps),
       session_storage_namespace_id_(params.session_storage_namespace_id) {
   DCHECK(!session_storage_namespace_id_.empty())
       << "Session storage namespace must be populated.";
@@ -1819,13 +1820,13 @@ void RenderViewImpl::didScrollWithKeyboard(const blink::WebSize& delta) {
 #endif
 
 void RenderViewImpl::ConvertViewportToWindowViaWidget(blink::WebRect* rect) {
-  render_widget_->ConvertViewportToWindow(rect);
+  page_properties_.ConvertViewportToWindow(rect);
 }
 
 gfx::RectF RenderViewImpl::ElementBoundsInWindow(
     const blink::WebElement& element) {
   blink::WebRect bounding_box_in_window = element.BoundsInViewport();
-  render_widget_->ConvertViewportToWindow(&bounding_box_in_window);
+  page_properties_.ConvertViewportToWindow(&bounding_box_in_window);
   return gfx::RectF(bounding_box_in_window);
 }
 
@@ -1842,7 +1843,7 @@ void RenderViewImpl::UpdatePreferredSize() {
 
   blink::WebSize tmp_size = webview()->ContentsPreferredMinimumSize();
   blink::WebRect tmp_rect(0, 0, tmp_size.width, tmp_size.height);
-  render_widget_->ConvertViewportToWindow(&tmp_rect);
+  page_properties_.ConvertViewportToWindow(&tmp_rect);
   gfx::Size size(tmp_rect.width, tmp_rect.height);
   if (size == preferred_size_)
     return;

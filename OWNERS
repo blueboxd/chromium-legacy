@@ -25,4 +25,4 @@ per-file PRESUBMIT*.py=dpranke@chromium.org
 per-file PRESUBMIT*.py=jochen@chromium.org
 per-file README.md=*
 per-file WATCHLISTS=*
-per-file *fuzz*=file://testing/libfuzzer/OWNERS
+per-file *fuzzer.*=file://testing/libfuzzer/OWNERS

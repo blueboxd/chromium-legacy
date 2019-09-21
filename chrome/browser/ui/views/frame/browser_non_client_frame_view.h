@@ -117,7 +117,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Updates the throbber.
   virtual void UpdateThrobber(bool running) = 0;
 
-  // Provided for mus and macOS to update the minimum window size property.
+  // Provided for platform-specific updates of minimum window size.
   virtual void UpdateMinimumSize();
 
   // views::NonClientFrameView:

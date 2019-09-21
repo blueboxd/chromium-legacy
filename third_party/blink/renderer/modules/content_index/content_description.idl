@@ -5,6 +5,7 @@
 // https://github.com/rknoll/content-index
 
 enum ContentCategory {
+    "",
     "homepage",
     "article",
     "video",
@@ -15,7 +16,7 @@ dictionary ContentDescription {
     required DOMString id;
     required DOMString title;
     required DOMString description;
-    required ContentCategory category;
+    ContentCategory category = "";
     sequence<ContentIconDefinition> icons = [];
     required USVString launchUrl;
 };

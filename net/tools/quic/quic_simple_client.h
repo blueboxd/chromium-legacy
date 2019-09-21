@@ -45,6 +45,10 @@ class QuicSimpleClient : public quic::QuicSpdyClientBase {
 
   ~QuicSimpleClient() override;
 
+  std::unique_ptr<quic::QuicSession> CreateQuicClientSession(
+      const quic::ParsedQuicVersionVector& supported_versions,
+      quic::QuicConnection* connection) override;
+
  private:
   friend class net::test::QuicClientPeer;
 

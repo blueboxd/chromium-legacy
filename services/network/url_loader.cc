@@ -670,12 +670,6 @@ const void* const URLLoader::kUserDataKey = &URLLoader::kUserDataKey;
 void URLLoader::FollowRedirect(const std::vector<std::string>& removed_headers,
                                const net::HttpRequestHeaders& modified_headers,
                                const base::Optional<GURL>& new_url) {
-  if (!url_request_) {
-    NotifyCompleted(net::ERR_UNEXPECTED);
-    // |this| may have been deleted.
-    return;
-  }
-
   if (!deferred_redirect_url_) {
     NOTREACHED();
     return;
@@ -736,9 +730,6 @@ void URLLoader::PauseReadingBodyFromNet() {
   DVLOG(1) << "URLLoader pauses fetching response body for "
            << (url_request_ ? url_request_->original_url().spec()
                             : "a URL that has completed loading or failed.");
-
-  if (!url_request_)
-    return;
 
   // Please note that we pause reading body in all cases. Even if the URL
   // request indicates that the response was cached, there could still be
@@ -1217,8 +1208,6 @@ int URLLoader::OnHeadersReceived(
 }
 
 net::LoadState URLLoader::GetLoadStateForTesting() const {
-  if (!url_request_)
-    return net::LOAD_STATE_IDLE;
   return url_request_->GetLoadState().state;
 }
 
@@ -1265,9 +1254,6 @@ URLLoader* URLLoader::ForRequest(const net::URLRequest& request) {
 void URLLoader::OnAuthCredentials(
     const base::Optional<net::AuthCredentials>& credentials) {
   auth_challenge_responder_receiver_.reset();
-
-  if (!url_request_)
-    return;
 
   if (!credentials.has_value()) {
     url_request_->CancelAuth();
@@ -1466,10 +1452,6 @@ void URLLoader::OnUploadProgressACK() {
 
 void URLLoader::OnSSLCertificateErrorResponse(const net::SSLInfo& ssl_info,
                                               int net_error) {
-  // The request can be NULL if it was cancelled by the client.
-  if (!url_request_ || !url_request_->is_pending())
-    return;
-
   if (net_error == net::OK) {
     url_request_->ContinueDespiteLastError();
     return;
@@ -1483,9 +1465,6 @@ bool URLLoader::HasDataPipe() const {
 }
 
 void URLLoader::RecordBodyReadFromNetBeforePausedIfNeeded() {
-  if (!url_request_)
-    return;
-
   if (update_body_read_before_paused_)
     body_read_before_paused_ = url_request_->GetRawBodyBytes();
   if (body_read_before_paused_ != -1) {

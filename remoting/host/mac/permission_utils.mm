@@ -20,7 +20,10 @@
 namespace {
 
 constexpr int kMinDialogWidthPx = 650;
-constexpr NSString* kServiceScriptName = @"org.chromium.chromoting.me2me.sh";
+
+// The name of the host service as it appears in the system's Accessibility
+// permission dialog.
+constexpr NSString* kHostServiceName = @"remoting_me2me_host";
 
 void ShowPermissionDialog() {
   base::scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
@@ -32,7 +35,7 @@ void ShowPermissionDialog() {
                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
                  l10n_util::GetStringUTF16(
                      IDS_ACCESSIBILITY_PERMISSION_DIALOG_OPEN_BUTTON),
-                 base::SysNSStringToUTF16(kServiceScriptName))];
+                 base::SysNSStringToUTF16(kHostServiceName))];
   [alert
       addButtonWithTitle:l10n_util::GetNSString(
                              IDS_ACCESSIBILITY_PERMISSION_DIALOG_OPEN_BUTTON)];

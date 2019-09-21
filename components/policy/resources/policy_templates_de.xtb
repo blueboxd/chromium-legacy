@@ -228,6 +228,7 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
 
       Wenn die Richtlinie nicht konfiguriert ist, kann der Netzwerkcode – je nach Abhängigkeit der Feldtests des NetworkService-Tests – außerhalb des Browserprozesses ausgeführt werden.</translation>
 <translation id="1384459581748403878">Referenz: <ph name="REFERENCE_URL" /></translation>
+<translation id="138847842893090358">Update-Status des Betriebssystems melden</translation>
 <translation id="1393485621820363363">Aktivierte, an Geräte gebundene Unternehmensdrucker</translation>
 <translation id="1397855852561539316">Vorschlags-URL für die Standardsuchmaschine</translation>
 <translation id="1404043648050567997">Der Safe Browsing-Dienst zeigt eine Seite mit einer Warnmeldung an, wenn Nutzer Websites aufrufen, die als potenziell schädlich eingestuft sind. Wenn diese Einstellung aktiviert ist, können Nutzer die schädliche Website nicht von der Hinweisseite aus besuchen.
@@ -794,6 +795,10 @@ Diese Richtlinie gilt auch für Komponentenerweiterungen, zum Beispiel die Hango
 
       Wenn die Richtlinie auf "true" festgelegt ist, werden Ereignisse protokolliert.
       Ist die Richtlinie auf "false" festgelegt oder nicht konfiguriert, werden Ereignisse nicht protokolliert.</translation>
+<translation id="2440773021691931148">Hiermit können Hardwarestatistiken und Kennzeichnungen im Zusammenhang mit der Stromversorgung gemeldet werden.
+
+      Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, werden keine Statistiken gemeldet.
+      Wird die Richtlinie auf "true" gesetzt, werden Statistiken gemeldet.</translation>
 <translation id="244317009688098048">Aktiviert Tastenkombination zur Umgehung der automatischen Anmeldung.
 
 Falls diese Richtlinie auf "true" gesetzt oder nicht festgelegt wird und bei einem gerätespezifischen lokalen Konto eine verzögerungsfreie automatische Anmeldung konfiguriert ist, dann erlaubt es <ph name="PRODUCT_OS_NAME" />, mit dem Tastaturkürzel Strg+Alt+S die automatische Anmeldung zu umgehen und stattdessen den Anmeldebildschirm aufzurufen.
@@ -802,6 +807,15 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="2454228136871844693">Für eine optimale Stabilität.</translation>
 <translation id="2463034609187171371">DHE-Verschlüsselungssammlungen in TLS aktivieren</translation>
 <translation id="2463365186486772703">Gebietsschema der App</translation>
+<translation id="2464012905766911533">Mit dieser Richtlinie kann ein Administrator festlegen, ob eine Seite beim Schließen eine synchrone XHR-Anfrage senden darf.
+
+      Wenn die Richtlinie aktiviert ist, dürfen die Seiten beim Schließen synchrone XHR-Anfragen senden.
+
+      Wenn diese Richtlinie deaktiviert oder nicht konfiguriert ist, dürfen Seiten beim Schließen keine synchronen XHR-Anfragen senden.
+
+      Diese Richtlinie wird in Chrome 82 entfernt.
+
+      Siehe https://www.chromestatus.com/feature/4664843055398912.</translation>
 <translation id="2466131534462628618">Captive-Portal-Authentifizierung ignoriert Proxy</translation>
 <translation id="2466697858869282874">Hiermit werden Verfügbarkeit und Verhalten der Updatefunktion für die <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware konfiguriert.
 
@@ -1487,6 +1501,7 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
           Wird sie nicht konfiguriert, so ist die Funktion "Vorlesen" anfangs deaktiviert, kann jedoch vom Nutzer jederzeit aktiviert werden.</translation>
 <translation id="3591527072193107424">Funktion für die Unterstützung älterer Browser aktivieren.</translation>
 <translation id="3591584750136265240">Verhalten der Log-in-Authentifizierung konfigurieren</translation>
+<translation id="3617743504695003280">Einer Seite erlauben, während des Schließens synchrone XHR-Anfragen auszuführen.</translation>
 <translation id="3627678165642179114">Webdienst für die Rechtschreibprüfung aktivieren oder deaktivieren</translation>
 <translation id="3628480121685794414">Simplexdruck aktivieren</translation>
 <translation id="3631099945620529777">Wenn diese Richtlinie auf "false" gesetzt ist, ist die Schaltfläche "Prozess beenden" im Task-Manager deaktiviert.
@@ -1677,6 +1692,10 @@ Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, wird kein Zerti
       Ist die Richtlinie für den Gerätehintergrund konfiguriert, lädt das Chrome OS-Gerät das Hintergrundbild herunter und zeigt es auf dem Anmeldebildschirm an, wenn sich noch kein Nutzer auf dem Gerät angemeldet hat. Sobald sich der Nutzer anmeldet, wird seine Hintergrundrichtlinie wirksam.
 
       Wenn die Richtlinie für den Gerätehintergrund nicht konfiguriert ist, wird über die Hintergrundrichtlinie des Nutzers bestimmt, was angezeigt werden soll, sofern diese festgelegt ist.</translation>
+<translation id="3964606652985594895">Hiermit können Hardwarestatistiken und Kennzeichnungen im Zusammenhang mit Speichergeräten gemeldet werden.
+
+      Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, werden keine Statistiken gemeldet.
+      Wird die Richtlinie auf "true" gesetzt, werden Statistiken gemeldet.</translation>
 <translation id="3965339130942650562">Zeitlimit bis zur Abmeldung eines inaktiven Nutzers</translation>
 <translation id="3973371701361892765">Ablage nie automatisch ausblenden</translation>
 <translation id="3984028218719007910">Legt fest, ob lokale Kontodaten nach der Abmeldung in <ph name="PRODUCT_OS_NAME" /> gespeichert werden. Bei Einstellung auf "true" werden Konten nicht dauerhaft in <ph name="PRODUCT_OS_NAME" /> gespeichert und alle Daten der Nutzersitzung werden nach der Abmeldung verworfen. Ist die Richtlinie auf "false" gesetzt oder nicht konfiguriert, können (verschlüsselte) lokale Nutzerdaten auf dem Gerät verbleiben.</translation>
@@ -2146,9 +2165,16 @@ Wenn die Richtlinie auf "FALSE" gesetzt oder nicht festgelegt wird, führt die T
 <translation id="4807950475297505572">Die am längsten nicht verwendeten Nutzer werden entfernt, bis genügend freier Speicherplatz vorhanden ist.</translation>
 <translation id="4816674326202173458">Unternehmensnutzer sowohl als primären als auch als sekundären Nutzer zulassen (Standardverhalten für nicht verwaltete Nutzer)</translation>
 <translation id="4826326557828204741">Auszuführende Aktion beim Erreichen der Leerlaufverzögerung während des Akkubetriebs</translation>
+<translation id="4830531683854509779">Hiermit können Hardwarestatistiken für SoC-Komponenten gemeldet werden.
+
+      Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, werden keine Statistiken gemeldet.
+      Wird die Richtlinie auf "true" gesetzt, werden Statistiken gemeldet.</translation>
 <translation id="4832852360828533362">Berichte zu Nutzern und Geräten</translation>
 <translation id="4834526953114077364">Die am längsten nicht verwendeten Nutzer, dich sich in den letzten 3 Monaten nicht angemeldet haben, werden entfernt, bis genügend freier Speicherplatz vorhanden ist.</translation>
 <translation id="4835622243021053389">NTLMv2-Authentifizierung aktivieren.</translation>
+<translation id="4856471929724652373">Sie können Informationen zum Betriebssystem-Update melden, wie den Updatestatus, die Plattformversion, die letzte Updateprüfung und den letzten Neustart.
+
+      Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, werden die Informationen zum Betriebssystem-Update nicht gemeldet. Wird die Richtlinie auf "true" gesetzt, werden die Informationen zum Betriebssystem-Update gemeldet.</translation>
 <translation id="4858735034935305895">Vollbildmodus zulassen</translation>
 <translation id="4861767323695239729">In einer Nutzersitzung zulässige Eingabemethoden konfigurieren</translation>
 <translation id="487460824085252184">Automatisch migrieren, ohne die Zustimmung des Nutzers einzuholen</translation>
@@ -3062,15 +3088,6 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
 <translation id="6559057113164934677">Keine Website darf auf meine Kamera oder mein Mikrofon zugreifen</translation>
 <translation id="6561396069801924653">Optionen für Bedienungshilfen im Taskleistenmenü anzeigen</translation>
 <translation id="6563458316362153786">802.11r Fast Transition aktivieren</translation>
-<translation id="6565312346072273043">Standardstatus für die Bildschirmtastatur auf der Anmeldeseite festlegen
-
-          Wenn diese Richtlinie auf "true" gesetzt ist, ist die Bildschirmtastatur aktiviert, wenn die Anmeldeseite angezeigt wird.
-
-          Wenn diese Richtlinie auf "falsch" gesetzt ist, ist die Bildschirmtastatur deaktiviert, wenn die Anmeldeseite angezeigt wird.
-
-          Wenn Sie diese Richtlinie konfigurieren, kann diese von Nutzern vorübergehend außer Kraft gesetzt werden, indem sie die Bildschirmtastatur aktivieren oder deaktivieren. Die Wahl des Nutzers ist jedoch nicht dauerhaft. Deshalb wird die Standardeinstellung wiederhergestellt, wenn die Anmeldeseite erneut aufgerufen wird oder der Nutzer innerhalb von einer Minute keine Eingabe auf der Anmeldeseite macht.
-
-          Wird diese Richtlinie nicht konfiguriert, ist die Bildschirmtastatur beim erstmaligen Aufrufen der Anmeldeseite deaktiviert. Nutzer können die Bildschirmtastatur jederzeit aktivieren oder deaktivieren, wobei ihr Status auf der Anmeldeseite bei einem Nutzerwechsel erhalten bleibt.</translation>
 <translation id="6573305661369899995">Eine externe Quelle für URL-Einschränkungen festlegen</translation>
 <translation id="6583851521569686409">Hiermit wird eine Liste von Druckern konfiguriert.
 
@@ -3128,6 +3145,7 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
 <translation id="6689792153960219308">Hardwarestatus senden</translation>
 <translation id="6698632841807204978">Schwarz-Weiß-Druck aktivieren</translation>
 <translation id="6699880231565102694">Zwei-Faktor-Authentifizierung für Remotezugriff-Hosts aktivieren</translation>
+<translation id="670597451099978576">Websites automatisch die Berechtigung erteilen, eine Verbindung zu USB-Geräten mit der angegebenen Anbieter-ID und Produkt-ID auf dem Anmeldebildschirm herzustellen.</translation>
 <translation id="6720080634516505446"><ph name="PRODUCT_NAME" /> bietet eine sichere Aktualisierung und Installation von Erweiterungen. Der Inhalt einiger Erweiterungen wird jedoch außerhalb des Chrome Web Store gehostet und kann nur durch unsichere Signatur- oder Hash-Algorithmen wie SHA1 geschützt werden. Wenn diese Richtlinie deaktiviert ist, wird eine Neuinstallation und Aktualisierung solcher Erweiterungen von Chrome nicht erlaubt (bis die Entwickler der Erweiterung diese mit stärkeren Algorithmen neu erstellen). Wenn diese Richtlinie aktiviert ist, ist die Installation und Aktualisierung solcher Erweiterungen zulässig.
 
           Ist diese Richtlinie nicht konfiguriert, wird sie standardmäßig aktiviert.
@@ -3689,6 +3707,21 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
       Wenn diese Richtlinie festgelegt ist, kann der Elternzugriffscode auf dem Gerät des Kindes überprüft werden.
       Ist die Richtlinie nicht festgelegt, kann der Elternzugriffscode auf dem Gerät des Kindes nicht überprüft werden.</translation>
 <translation id="7625444193696794922">Gibt den Release-Kanal an, an den dieses Gerät gebunden werden soll.</translation>
+<translation id="7625498350540361483">
+      Wenn diese Richtlinie auf "true" gesetzt ist, darf <ph name="PRODUCT_NAME" /> WebRTC-Ereignisprotokolle aus Google-Diensten, wie z. B. Hangouts Meet, speichern und die Protokolle bei Google hochladen.
+
+      Ist die Richtlinie auf "false" gesetzt, darf <ph name="PRODUCT_NAME" /> solche Protokolle weder speichern noch hochladen.
+
+      Ist diese Richtlinie nicht konfiguriert (bis einschließlich M76), darf <ph name="PRODUCT_NAME" /> solche Protokolle weder speichern noch hochladen.
+
+      Ist diese Richtlinie nicht konfiguriert (ab M77), darf <ph name="PRODUCT_NAME" /> solche Protokolle standardmäßig speichern oder hochladen, wenn das Browserprofil als verwaltet gilt, d. h. das Profil erhält Richtlinien aus der Cloud- oder Maschinenebene und ist kein untergeordnetes, flüchtiges, Anmelde- oder Inkognitoprofil.
+
+      Diese Protokolle enthalten Diagnoseinformationen, die für die Fehlerbehebung bei Audio- oder Videoanrufen in Chrome hilfreich sein können. Dazu zählen die Uhrzeit und die Größe gesendeter und empfangener RTP-Pakete, Feedback zur Auslastung des Netzwerks und Metadaten zur Länge und Qualität von Audio- und Videoframes. Die Protokolle enthalten keine Audio- oder Videoinhalte aus dem Anruf.
+
+      Das Erfassen dieser Daten kann nur von den Google-Webdiensten ausgelöst werden, etwa von Google Hangouts oder Hangouts Meet.
+
+      Google kann diese Protokolle anhand einer Sitzungs-ID mit anderen Protokollen verknüpfen, die vom Google-Dienst selbst erstellt wurden. Dies dient dazu, Fehler leichter zu beheben.
+      </translation>
 <translation id="7632724434767231364">Name der GSSAPI-Bibliothek</translation>
 <translation id="7635471475589566552">Konfiguriert das App-Gebietsschema in <ph name="PRODUCT_NAME" /> und verhindert, dass Nutzer das Gebietsschema ändern. Wenn Sie diese Einstellung aktivieren, verwendet <ph name="PRODUCT_NAME" /> das angegebene Gebietsschema. Wird das konfigurierte Gebietsschema nicht unterstützt, kommt stattdessen "en-US" zum Einsatz. Ist diese Einstellung deaktiviert oder nicht konfiguriert, verwendet <ph name="PRODUCT_NAME" /> das vom Nutzer angegebene bevorzugte Gebietsschema (sofern konfiguriert), das Gebietsschema des Systems oder das Ersatz-Gebietsschema "en-US".</translation>
 <translation id="7641363659597330616">Hiermit wird die Art von Downloads konfiguriert, die von <ph name="PRODUCT_NAME" /> vollständig blockiert werden, ohne dass Nutzer die Sicherheitseinstellung überschreiben können.
@@ -4200,6 +4233,11 @@ Wenn Sie diese Einstellung leer lassen bzw. nicht konfigurieren, können Nutzer 
 Durch diese Richtlinie wird allen HTTP- und HTTPS-Anforderungen, die an google.com-Domains gesendet werden, der Header "X-GoogApps-Allowed-Domains" angehängt (siehe https://support.google.com/a/answer/1668854).
 
 Nutzer können diese Einstellung weder ändern noch überschreiben.</translation>
+<translation id="8625234016727663537">Hiermit können Sie eine Liste mit URLs festlegen, deren Websites automatisch über den Anmeldebildschirm auf ein USB-Gerät mit der angegebenen Anbieter- und Produkt-ID zugreifen dürfen. Damit die Richtlinie gültig ist, muss jeder Eintrag in der Liste sowohl Geräte als auch URLs enthalten. Jeder Geräteeintrag kann je ein Feld für eine Anbieter-ID und eine Produkt-ID enthalten. Fehlende IDs werden als Platzhalter betrachtet, wobei als Ausnahme zu berücksichtigen ist, dass eine Produkt-ID nicht ohne zugehörige Anbieter-ID angegeben werden kann. Andernfalls ist die Richtlinie ungültig und wird ignoriert.
+
+        Im USB-Berechtigungsmodell wird die URL der anfragenden Website ("anfragende URL") und die URL der Frame-Website der obersten Ebene ("einbettende URL") verwendet. Dabei wird der anfragenden URL die Berechtigung erteilt, auf das USB-Gerät zuzugreifen. Wird die anfragende Website in einen iFrame geladen, kann die anfragende von der einbettenden URL abweichen. Deshalb darf das Feld "urls" bis zu zwei durch ein Komma voneinander getrennte URL-Strings enthalten: die anfragende URL und die einbettende URL. Falls nur eine einzige URL angegeben ist, wird der Zugriff auf die entsprechenden USB-Geräte gewährt, wenn unabhängig vom Einbettungsstatus die URL der anfragenden Website mit dieser URL übereinstimmt. Die URLs im Feld "urls" müssen gültig sein, da ansonsten die Richtlinie ignoriert wird.
+
+        Ist diese Richtlinie nicht konfiguriert, kommt für alle Websites der globale Standardwert zum Einsatz. Es gibt keinen automatischen Zugriff.</translation>
 <translation id="8631434304112909927">Bis Version <ph name="UNTIL_VERSION" /></translation>
 <translation id="8649763579836720255">Chrome OS-Geräte können mithilfe einer Remote-Bescheinigung für überprüften Zugriff ein von der Chrome OS-Zertifizierungsstelle herausgegebenes Zertifikat erhalten, das die Berechtigung des Geräts für die Wiedergabe geschützter Medien nachweist. Bei diesem Vorgang werden Informationen zur Bestätigung der Hardware an die Chrome OS-Zertifizierungsstelle gesendet, anhand derer das Gerät eindeutig identifiziert werden kann.
 

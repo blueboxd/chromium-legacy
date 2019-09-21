@@ -10,7 +10,6 @@ import android.view.View;
 
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
-import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantTermsSection.Delegate;
 import org.chromium.chrome.browser.payments.AddressEditor;
 import org.chromium.chrome.browser.payments.AutofillPaymentApp;
 import org.chromium.chrome.browser.payments.AutofillPaymentInstrument;
@@ -95,6 +94,8 @@ class AssistantCollectUserDataBinder
         private final int mSectionToSectionPadding;
         private final AssistantLoginSection mLoginSection;
         private final AssistantContactDetailsSection mContactDetailsSection;
+        private final AssistantDateSection mDateRangeStartSection;
+        private final AssistantDateSection mDateRangeEndSection;
         private final AssistantPaymentMethodSection mPaymentMethodSection;
         private final AssistantShippingAddressSection mShippingAddressSection;
         private final AssistantTermsSection mTermsSection;
@@ -106,6 +107,8 @@ class AssistantCollectUserDataBinder
         public ViewHolder(View rootView, AssistantVerticalExpanderAccordion accordion,
                 int sectionPadding, AssistantLoginSection loginSection,
                 AssistantContactDetailsSection contactDetailsSection,
+                AssistantDateSection dateRangeStartSection,
+                AssistantDateSection dateRangeEndSection,
                 AssistantPaymentMethodSection paymentMethodSection,
                 AssistantShippingAddressSection shippingAddressSection,
                 AssistantTermsSection termsSection, AssistantTermsSection termsAsCheckboxSection,
@@ -115,6 +118,8 @@ class AssistantCollectUserDataBinder
             mSectionToSectionPadding = sectionPadding;
             mLoginSection = loginSection;
             mContactDetailsSection = contactDetailsSection;
+            mDateRangeStartSection = dateRangeStartSection;
+            mDateRangeEndSection = dateRangeEndSection;
             mPaymentMethodSection = paymentMethodSection;
             mShippingAddressSection = shippingAddressSection;
             mTermsSection = termsSection;
@@ -161,30 +166,61 @@ class AssistantCollectUserDataBinder
         handled = updateSectionPaddings(model, propertyKey, view) || handled;
 
         if (propertyKey == AssistantCollectUserDataModel.DELEGATE) {
-            AssistantCollectUserDataDelegate delegate =
+            AssistantCollectUserDataDelegate collectUserDataDelegate =
                     model.get(AssistantCollectUserDataModel.DELEGATE);
 
-            Delegate termsDelegate = delegate == null ? null : new Delegate() {
-                @Override
-                public void onStateChanged(@AssistantTermsAndConditionsState int state) {
-                    delegate.onTermsAndConditionsChanged(state);
-                }
+            AssistantTermsSection.Delegate termsDelegate =
+                    collectUserDataDelegate == null ? null : new AssistantTermsSection.Delegate() {
+                        @Override
+                        public void onStateChanged(@AssistantTermsAndConditionsState int state) {
+                            collectUserDataDelegate.onTermsAndConditionsChanged(state);
+                        }
 
-                @Override
-                public void onLinkClicked(int link) {
-                    delegate.onTermsAndConditionsLinkClicked(link);
+                        @Override
+                        public void onLinkClicked(int link) {
+                            collectUserDataDelegate.onTermsAndConditionsLinkClicked(link);
+                        }
+                    };
+            AssistantDateSection.Delegate dateStartDelegate = collectUserDataDelegate == null
+                    ? null
+                    : (year, month, day, hour, minute, second) -> {
+                AssistantDateTime newStartValue =
+                        new AssistantDateTime(year, month, day, hour, minute, second);
+                if (newStartValue.getTimeInUtcMillis()
+                        > view.mDateRangeEndSection.getCurrentValue().getTimeInUtcMillis()) {
+                    view.mDateRangeEndSection.setCurrentValue(newStartValue);
                 }
+                collectUserDataDelegate.onDateTimeRangeStartChanged(
+                        year, month, day, hour, minute, second);
+            };
+            AssistantDateSection.Delegate dateEndDelegate = collectUserDataDelegate == null
+                    ? null
+                    : (year, month, day, hour, minute, second) -> {
+                AssistantDateTime newEndValue =
+                        new AssistantDateTime(year, month, day, hour, minute, second);
+                if (newEndValue.getTimeInUtcMillis()
+                        < view.mDateRangeStartSection.getCurrentValue().getTimeInUtcMillis()) {
+                    view.mDateRangeStartSection.setCurrentValue(newEndValue);
+                }
+                collectUserDataDelegate.onDateTimeRangeEndChanged(
+                        year, month, day, hour, minute, second);
             };
             view.mTermsSection.setDelegate(termsDelegate);
             view.mTermsAsCheckboxSection.setDelegate(termsDelegate);
-            view.mContactDetailsSection.setListener(
-                    delegate != null ? delegate::onContactInfoChanged : null);
-            view.mPaymentMethodSection.setListener(
-                    delegate != null ? delegate::onPaymentMethodChanged : null);
-            view.mShippingAddressSection.setListener(
-                    delegate != null ? delegate::onShippingAddressChanged : null);
-            view.mLoginSection.setListener(
-                    delegate != null ? delegate::onLoginChoiceChanged : null);
+            view.mContactDetailsSection.setListener(collectUserDataDelegate != null
+                            ? collectUserDataDelegate::onContactInfoChanged
+                            : null);
+            view.mPaymentMethodSection.setListener(collectUserDataDelegate != null
+                            ? collectUserDataDelegate::onPaymentMethodChanged
+                            : null);
+            view.mShippingAddressSection.setListener(collectUserDataDelegate != null
+                            ? collectUserDataDelegate::onShippingAddressChanged
+                            : null);
+            view.mLoginSection.setListener(collectUserDataDelegate != null
+                            ? collectUserDataDelegate::onLoginChoiceChanged
+                            : null);
+            view.mDateRangeStartSection.setDelegate(dateStartDelegate);
+            view.mDateRangeEndSection.setDelegate(dateEndDelegate);
         } else if (propertyKey == AssistantCollectUserDataModel.SUPPORTED_BASIC_CARD_NETWORKS) {
             updateAvailablePaymentMethods(model);
         } else if (propertyKey == AssistantCollectUserDataModel.SUPPORTED_PAYMENT_METHODS) {
@@ -205,6 +241,14 @@ class AssistantCollectUserDataBinder
         if (propertyKey == AssistantCollectUserDataModel.LOGIN_SECTION_TITLE) {
             view.mLoginSection.setTitle(
                     model.get(AssistantCollectUserDataModel.LOGIN_SECTION_TITLE));
+            return true;
+        } else if (propertyKey == AssistantCollectUserDataModel.DATE_RANGE_START_LABEL) {
+            view.mDateRangeStartSection.setTitle(
+                    model.get(AssistantCollectUserDataModel.DATE_RANGE_START_LABEL));
+            return true;
+        } else if (propertyKey == AssistantCollectUserDataModel.DATE_RANGE_END_LABEL) {
+            view.mDateRangeEndSection.setTitle(
+                    model.get(AssistantCollectUserDataModel.DATE_RANGE_END_LABEL));
             return true;
         }
         return false;
@@ -256,6 +300,14 @@ class AssistantCollectUserDataBinder
                         model.get(AssistantCollectUserDataModel.AVAILABLE_LOGINS));
             }
             return true;
+        } else if (propertyKey == AssistantCollectUserDataModel.DATE_RANGE_START) {
+            view.mDateRangeStartSection.setDateChoiceOptions(
+                    model.get(AssistantCollectUserDataModel.DATE_RANGE_START));
+            return true;
+        } else if (propertyKey == AssistantCollectUserDataModel.DATE_RANGE_END) {
+            view.mDateRangeEndSection.setDateChoiceOptions(
+                    model.get(AssistantCollectUserDataModel.DATE_RANGE_END));
+            return true;
         }
 
         return false;
@@ -298,6 +350,11 @@ class AssistantCollectUserDataBinder
         } else if (propertyKey == AssistantCollectUserDataModel.REQUEST_LOGIN_CHOICE) {
             view.mLoginSection.setVisible(
                     model.get(AssistantCollectUserDataModel.REQUEST_LOGIN_CHOICE));
+            return true;
+        } else if (propertyKey == AssistantCollectUserDataModel.REQUEST_DATE_RANGE) {
+            boolean requestDateRange = model.get(AssistantCollectUserDataModel.REQUEST_DATE_RANGE);
+            view.mDateRangeStartSection.setVisible(requestDateRange);
+            view.mDateRangeEndSection.setVisible(requestDateRange);
             return true;
         }
         return false;
@@ -392,6 +449,7 @@ class AssistantCollectUserDataBinder
                 && (propertyKey != AssistantCollectUserDataModel.REQUEST_PHONE)
                 && (propertyKey != AssistantCollectUserDataModel.REQUEST_PAYMENT)
                 && (propertyKey != AssistantCollectUserDataModel.REQUEST_LOGIN_CHOICE)
+                && (propertyKey != AssistantCollectUserDataModel.REQUEST_DATE_RANGE)
                 && (propertyKey != AssistantCollectUserDataModel.EXPANDED_SECTION)) {
             return false;
         }
@@ -402,12 +460,28 @@ class AssistantCollectUserDataBinder
             view.mLoginSection.setPaddings(0, view.mSectionToSectionPadding);
             view.mContactDetailsSection.setPaddings(
                     view.mSectionToSectionPadding, view.mSectionToSectionPadding);
+            view.mDateRangeStartSection.setPaddings(
+                    view.mSectionToSectionPadding, view.mSectionToSectionPadding);
+            view.mDateRangeEndSection.setPaddings(
+                    view.mSectionToSectionPadding, view.mSectionToSectionPadding);
             view.mPaymentMethodSection.setPaddings(
                     view.mSectionToSectionPadding, view.mSectionToSectionPadding);
             view.mShippingAddressSection.setPaddings(
                     view.mSectionToSectionPadding, view.mSectionToSectionPadding);
         } else if (shouldShowContactDetails(model)) {
             view.mContactDetailsSection.setPaddings(0, view.mSectionToSectionPadding);
+            view.mDateRangeStartSection.setPaddings(
+                    view.mSectionToSectionPadding, view.mSectionToSectionPadding);
+            view.mDateRangeEndSection.setPaddings(
+                    view.mSectionToSectionPadding, view.mSectionToSectionPadding);
+            view.mPaymentMethodSection.setPaddings(
+                    view.mSectionToSectionPadding, view.mSectionToSectionPadding);
+            view.mShippingAddressSection.setPaddings(
+                    view.mSectionToSectionPadding, view.mSectionToSectionPadding);
+        } else if (model.get(AssistantCollectUserDataModel.REQUEST_DATE_RANGE)) {
+            view.mDateRangeStartSection.setPaddings(0, view.mSectionToSectionPadding);
+            view.mDateRangeEndSection.setPaddings(
+                    view.mSectionToSectionPadding, view.mSectionToSectionPadding);
             view.mPaymentMethodSection.setPaddings(
                     view.mSectionToSectionPadding, view.mSectionToSectionPadding);
             view.mShippingAddressSection.setPaddings(

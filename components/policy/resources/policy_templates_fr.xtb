@@ -3194,15 +3194,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6559057113164934677">Interdire à tous les sites d'accéder à la caméra et au microphone</translation>
 <translation id="6561396069801924653">Afficher les options d'accessibilité dans le menu de la barre système</translation>
 <translation id="6563458316362153786">Activer la transition rapide 802.11r</translation>
-<translation id="6565312346072273043">Définir l'état par défaut de la fonctionnalité d'accessibilité du clavier à l'écran sur l'écran de connexion
-
-          Si cette règle est définie sur "True", le clavier à l'écran est activé à l'affichage de l'écran de connexion.
-
-          Si cette règle est définie sur "False", le clavier à l'écran est désactivé à l'affichage de l'écran de connexion.
-
-          Si vous définissez cette règle, les utilisateurs peuvent temporairement l'ignorer en activant ou en désactivant le clavier à l'écran. Toutefois, leur sélection n'est pas permanente, et le paramètre par défaut est restauré chaque fois que l'écran de connexion s'affiche de nouveau ou lorsque l'utilisateur reste inactif sur l'écran de connexion pendant une minute.
-
-          Si vous ne définissez pas cette règle, le clavier à l'écran est désactivé la première fois que l'écran de connexion s'affiche. Les utilisateurs peuvent activer ou désactiver à tout moment le clavier à l'écran, et son état est permanent d'un utilisateur à l'autre sur le même écran de connexion.</translation>
 <translation id="6573305661369899995">Définir une source externe pour les restrictions d'URL</translation>
 <translation id="6583851521569686409">Permet de configurer une liste d'imprimantes.
 

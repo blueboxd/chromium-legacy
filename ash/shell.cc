@@ -493,21 +493,6 @@ void Shell::UpdateAfterLoginStatusChange(LoginStatus status) {
     root_window_controller->UpdateAfterLoginStatusChange(status);
 }
 
-void Shell::NotifySplitViewModeStarting() {
-  for (auto& observer : shell_observers_)
-    observer.OnSplitViewModeStarting();
-}
-
-void Shell::NotifySplitViewModeStarted() {
-  for (auto& observer : shell_observers_)
-    observer.OnSplitViewModeStarted();
-}
-
-void Shell::NotifySplitViewModeEnded() {
-  for (auto& observer : shell_observers_)
-    observer.OnSplitViewModeEnded();
-}
-
 void Shell::NotifyFullscreenStateChanged(bool is_fullscreen,
                                          aura::Window* container) {
   for (auto& observer : shell_observers_)
@@ -665,6 +650,10 @@ Shell::~Shell() {
   // dependency on the latter.
   assistant_controller_.reset();
 
+  // Because this function will call |TabletModeController::RemoveObserver|, do
+  // it before destroying |tablet_mode_controller_|.
+  accessibility_controller_->Shutdown();
+
   // Destroy tablet mode controller early on since it has some observers which
   // need to be removed.
   tablet_mode_controller_->Shutdown();
@@ -700,10 +689,6 @@ Shell::~Shell() {
   // Has to happen before ~MruWindowTracker.
   window_cycle_controller_.reset();
   overview_controller_.reset();
-
-  // |split_view_controller_| needs to be deleted after
-  // |overview_controller_|.
-  split_view_controller_.reset();
 
   // Stop dispatching events (e.g. synthesized mouse exits from window close).
   // https://crbug.com/874156
@@ -791,6 +776,10 @@ Shell::~Shell() {
   // destruction of its owned RootWindowControllers relies on the value.
   window_tree_host_manager_->Shutdown();
 
+  // Destroy |SplitViewController| and |RootWindowController| at about the same
+  // time, as we plan for |RootWindowController| to own a |SplitViewController|.
+  // TODO(crbug.com/970013): Actually carry out that plan.
+  split_view_controller_.reset();
   // Depends on |focus_controller_|, so must be destroyed before.
   window_tree_host_manager_.reset();
 
@@ -980,7 +969,6 @@ void Shell::Init(
   accelerator_controller_ = std::make_unique<AcceleratorControllerImpl>();
 
   shelf_config_ = std::make_unique<ShelfConfig>();
-  shelf_config_->Init();
   shelf_controller_ = std::make_unique<ShelfController>();
 
   magnifier_key_scroll_handler_ = MagnifierKeyScroller::CreateHandler();
@@ -1069,6 +1057,9 @@ void Shell::Init(
   app_list_controller_ = std::make_unique<AppListControllerImpl>();
   home_screen_controller_->SetDelegate(app_list_controller_.get());
 
+  // The |shelf_config_| needs |app_list_controller_| to initialize itself.
+  shelf_config_->Init();
+
   autoclick_controller_ = std::make_unique<AutoclickController>();
 
   high_contrast_controller_.reset(new HighContrastController);
@@ -1113,6 +1104,10 @@ void Shell::Init(
   system_notification_controller_ =
       std::make_unique<SystemNotificationController>();
 
+  // Create |SplitViewController| and |RootWindowController| at about the same
+  // time, as we plan for |RootWindowController| to own a |SplitViewController|.
+  // TODO(crbug.com/970013): Actually carry out that plan.
+  split_view_controller_ = std::make_unique<SplitViewController>();
   window_tree_host_manager_->InitHosts();
 
   // Create virtual keyboard after WindowTreeHostManager::InitHosts() since
@@ -1141,7 +1136,6 @@ void Shell::Init(
       std::make_unique<ScreenOrientationController>();
   screen_layout_observer_.reset(new ScreenLayoutObserver());
   sms_observer_.reset(new SmsObserver());
-  split_view_controller_.reset(new SplitViewController());
   snap_controller_ = std::make_unique<SnapControllerImpl>();
   key_accessibility_enabler_ = std::make_unique<KeyAccessibilityEnabler>();
 

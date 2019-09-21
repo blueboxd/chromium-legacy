@@ -20,6 +20,7 @@
 
 namespace views {
 class Label;
+class ScrollBar;
 class ToggleButton;
 }  // namespace views
 
@@ -99,6 +100,7 @@ class ASH_EXPORT NotifierSettingsView : public views::View,
   views::ToggleButton* quiet_mode_toggle_;
   views::View* header_view_;
   views::Label* top_label_;
+  views::ScrollBar* scroll_bar_;
   views::ScrollView* scroller_;
   views::View* no_notifiers_view_;
   std::set<NotifierButton*> buttons_;

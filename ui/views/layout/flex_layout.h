@@ -22,11 +22,8 @@
 
 namespace views {
 
-class View;
-
-namespace layout {
 class NormalizedSizeBounds;
-}
+class View;
 
 // Provides CSS-like layout for a one-dimensional (vertical or horizontal)
 // arrangement of child views. Independent alignment can be specified for the
@@ -89,6 +86,7 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
   FlexLayout& SetIncludeHostInsetsInLayout(bool include_host_insets_in_layout);
   FlexLayout& SetIgnoreDefaultMainAxisMargins(
       bool ignore_default_main_axis_margins);
+  FlexLayout& SetBetweenChildSpacing(int between_child_spacing);
 
   LayoutOrientation orientation() const { return orientation_; }
   bool collapse_margins() const { return collapse_margins_; }
@@ -102,6 +100,7 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
   bool ignore_default_main_axis_margins() const {
     return ignore_default_main_axis_margins_;
   }
+  int between_child_spacing() const { return between_child_spacing_; }
 
   // Moves and uses |value| as the default value for layout property |key|.
   template <class T, class U>
@@ -149,17 +148,21 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
   Inset1D GetCrossAxisMargins(const FlexLayoutData& layout,
                               size_t child_index) const;
 
-  // Calculates a margin between two child views based on each's margin and any
-  // internal padding present in one or both elements. Uses properties of the
-  // layout, like whether adjacent margins should be collapsed.
-  int CalculateMargin(int margin1, int margin2, int internal_padding) const;
+  // Calculates a margin between two child views based on each's margin,
+  // inter-child spacing, and any internal padding present in one or both
+  // elements. Uses properties of the layout, like whether adjacent margins
+  // should be collapsed.
+  int CalculateMargin(int margin1,
+                      int margin2,
+                      int internal_padding,
+                      int spacing = 0) const;
 
   // Calculates the cross-layout space available to a view based on the
   // available space and margins.
   base::Optional<int> GetAvailableCrossAxisSize(
       const FlexLayoutData& layout,
       size_t child_index,
-      const layout::NormalizedSizeBounds& bounds) const;
+      const NormalizedSizeBounds& bounds) const;
 
   // Calculates the preferred spacing between two child views, or between a
   // view edge and the first or last visible child views.
@@ -169,7 +172,7 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
 
   // Calculates the position of each child view and the size of the overall
   // layout based on tentative visibilities and sizes for each child.
-  void UpdateLayoutFromChildren(const layout::NormalizedSizeBounds& bounds,
+  void UpdateLayoutFromChildren(const NormalizedSizeBounds& bounds,
                                 FlexLayoutData* data,
                                 ChildViewSpacing* child_spacing) const;
 
@@ -184,7 +187,7 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
   // Typically, this method will be called once with |expandable_views| set and
   // then again with it null to allocate the remaining space.
   void AllocateFlexSpace(
-      const layout::NormalizedSizeBounds& bounds,
+      const NormalizedSizeBounds& bounds,
       const FlexOrderToViewIndexMap& order_to_index,
       FlexLayoutData* data,
       ChildViewSpacing* child_spacing,
@@ -193,7 +196,7 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
   // Fills out the child entries for |data| and generates some initial size
   // and visibility data, and stores off information about which views can
   // expand in |flex_order_to_index|.
-  void InitializeChildData(const layout::NormalizedSizeBounds& bounds,
+  void InitializeChildData(const NormalizedSizeBounds& bounds,
                            FlexLayoutData* data,
                            FlexOrderToViewIndexMap* flex_order_to_index) const;
 
@@ -262,6 +265,11 @@ class VIEWS_EXPORT FlexLayout : public LayoutManagerBase {
   // called, the default child margin of 10 would also apply on the leading and
   // trailing edge of the host view.
   bool ignore_default_main_axis_margins_ = false;
+
+  // The spacing between the children along the main axis. This is irrespective
+  // of any margins which are set. If |collapse_margins_| is true, then the max
+  // between this value and the margins is used.
+  int between_child_spacing_ = 0;
 
   // Default properties for any views that don't have them explicitly set for
   // this layout.

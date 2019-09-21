@@ -169,6 +169,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="2220529011494928058">Informar un problema</translation>
 <translation id="2223693656926968778">Tomar medidas sobre el elemento actual</translation>
 <translation id="225732394367814946">Hablar más rápido</translation>
+<translation id="2267538686624070261">Saliendo del error ortográfico</translation>
 <translation id="2267945578749931355">Carácter siguiente</translation>
 <translation id="2278490101488436824">Deslizar tres dedos hacia la izquierda</translation>
 <translation id="2281234842553884450">Control deslizante anterior</translation>
@@ -207,6 +208,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="257674075312929031">Grupo</translation>
 <translation id="2582407057977008361">Lateral</translation>
 <translation id="2592212930811759050">Presiona dos veces para comenzar a editar</translation>
+<translation id="2598495320872286378">Error gramatical</translation>
 <translation id="2614981083756825552">Diseño de MathML</translation>
 <translation id="2624431853467395961">Abrir el modo de aprendizaje</translation>
 <translation id="2626530649491650971">elemento en el que se puede hacer clic</translation>
@@ -821,6 +823,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="6833103209700200188">Pie de página</translation>
 <translation id="6858047746862060282">Prólogo</translation>
 <translation id="6859876496651143278">Deslizar un dedo hacia la izquierda</translation>
+<translation id="6865519907510167493">Error ortográfico</translation>
 <translation id="6871161210040114857">No distingue mayúscula de minúscula.</translation>
 <translation id="6877435256196695200">No hay ningún gráfico posterior.</translation>
 <translation id="6897341342232909480">Mover hacia la izquierda</translation>
@@ -1111,6 +1114,7 @@ Para abrir el menú del navegador Chrome, presiona Alt + F.</translation>
 <translation id="8446884382197647889">Más información</translation>
 <translation id="8455868257606149352">Máximo <ph name="X" /></translation>
 <translation id="84575901236241018">tiene tecla de acceso, <ph name="KEY" /></translation>
+<translation id="8463645336674919227">Saliendo del error gramatical</translation>
 <translation id="847154984256717791">ocupado</translation>
 <translation id="8476408756881832830">Pausar la reproducción cuando ChromeVox esté hablando</translation>
 <translation id="8476508772960940536">vista general de ventana</translation>

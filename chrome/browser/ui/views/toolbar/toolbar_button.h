@@ -10,6 +10,8 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
@@ -128,13 +130,62 @@ class ToolbarButton : public views::LabelButton,
  private:
   friend test::ToolbarButtonTestApi;
 
+  class HighlightColorAnimation : gfx::AnimationDelegate {
+   public:
+    explicit HighlightColorAnimation(ToolbarButton* parent);
+
+    ~HighlightColorAnimation() override;
+
+    // Starts a fade-in animation using the provided |highlight color| or using
+    // a default color if not set.
+    void Show(base::Optional<SkColor> highlight_color);
+
+    // Starts a fade-out animation. A no-op if the fade-out animation is
+    // currently in progress or not shown.
+    void Hide();
+
+    // Returns current text / border / background / ink-drop base color based on
+    // current |highlight_color_| and on the current animation state (which
+    // influences the alpha channel). Returns no value if there is no such color
+    // and we should use the default text color / paint no border / paint no
+    // background / use the default ink-drop base color.
+    base::Optional<SkColor> GetTextColor() const;
+    base::Optional<SkColor> GetBorderColor() const;
+    base::Optional<SkColor> GetBackgroundColor() const;
+    base::Optional<SkColor> GetInkDropBaseColor() const;
+
+    void AnimationEnded(const gfx::Animation* animation) override;
+    void AnimationProgressed(const gfx::Animation* animation) override;
+
+   private:
+    // Returns whether the animation is currently shown. Note that this returns
+    // true even after calling Hide() until the fade-out animation finishes.
+    bool IsShown() const;
+
+    void ClearHighlightColor();
+
+    ToolbarButton* const parent_;
+
+    // A highlight color is used to signal special states. When set this color
+    // is used as a base for background, text, border and ink drops. When not
+    // set, uses the default ToolbarButton ink drop.
+    base::Optional<SkColor> highlight_color_;
+
+    // Animation for showing the highlight color (in border, text, and
+    // background) when it becomes non-empty and hiding it when it becomes empty
+    // again.
+    gfx::SlideAnimation highlight_color_animation_;
+
+    DISALLOW_COPY_AND_ASSIGN(HighlightColorAnimation);
+  };
+
   // Clears the current highlight, i.e. it sets the label to an empty string and
   // clears the highlight color. If there was a non-empty highlight, previously,
   // it hides the current highlight using an animation. Otherwise, it is a
   // no-op.
   void ClearHighlight();
 
-  void UpdateHighlightBackgroundAndInsets();
+  void UpdateColorsAndInsets();
 
   // Sets the spacing on the outer side of the label (not the side where the
   // image is). The spacing is applied only when the label is non-empty.
@@ -173,14 +224,15 @@ class ToolbarButton : public views::LabelButton,
   // larger-than-16dp avatar avatar icon outside of touchable mode.
   gfx::Insets layout_inset_delta_;
 
-  // A highlight color is used to signal error states. When set this color is
-  // used as a base for background, text and ink drops. When not set, uses the
-  // default ToolbarButton ink drop.
-  base::Optional<SkColor> highlight_color_;
-
   // Used instead of the standard InkDrop implementation when
   // |views::kInstallableInkDropFeature| is enabled.
   std::unique_ptr<views::InstallableInkDrop> installable_ink_drop_;
+
+  // Class responsible for animating highlight color (calling a callback on
+  // |this| to refresh UI).
+  HighlightColorAnimation highlight_color_animation_;
+
+  base::Optional<SkColor> last_border_color_;
 
   // A factory for tasks that show the dropdown context menu for the button.
   base::WeakPtrFactory<ToolbarButton> show_menu_factory_{this};

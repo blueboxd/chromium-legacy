@@ -93,6 +93,7 @@
 <translation id="2149973817440762519">Editar marcador</translation>
 <translation id="2179182049312275900">Pode ativar a sincronização em qualquer altura nas definições.</translation>
 <translation id="2198757192731523470">A Google pode utilizar o seu histórico para personalizar a Pesquisa, os anúncios e outros serviços Google.</translation>
+<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> artigos não lidos na Lista de leitura.</translation>
 <translation id="2230173723195178503">Página Web carregada</translation>
 <translation id="2239626343334228536">A limpar os dados de navegação…</translation>
 <translation id="2256128224215992540">Sugestões de pesquisa e de sites</translation>
@@ -108,6 +109,7 @@
 <translation id="2360196772093551345">Pedir site para dispositivos móveis</translation>
 <translation id="2381405137052800939">Noções básicas</translation>
 <translation id="2386793615875593361">1 selecionada</translation>
+<translation id="2421044535038393232">Continuar a editar</translation>
 <translation id="2435457462613246316">Mostrar palavra-passe</translation>
 <translation id="2481538920734869610">ADICIONAR CONTA</translation>
 <translation id="2497852260688568942">A sincronização foi desativada pelo gestor</translation>
@@ -227,6 +229,7 @@
 <translation id="418156467088430727">Ver versão offline num novo separador</translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="424315890655130736">Introduzir frase de acesso</translation>
+<translation id="4263576668337963058">Mostrar ações de página disponíveis</translation>
 <translation id="4272631900155121838">Para ler um código QR, ative a câmara nas definições</translation>
 <translation id="4281844954008187215">Termos de Utilização</translation>
 <translation id="430793432425771671">Sincronizar Tudo</translation>
@@ -264,6 +267,7 @@ Os dados estão encriptados com a sua frase de acesso de sincronização. Introd
 
 Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização<ph name="END_LINK" />.</translation>
 <translation id="4805759445554688327">Número de cartão inválido</translation>
+<translation id="4807020197310989387">1 artigo não lido na Lista de leitura.</translation>
 <translation id="4818522717893377262">Adicionar idioma…</translation>
 <translation id="481968316161811770">Cookies, dados de sites</translation>
 <translation id="4833786495304741580">Envia automaticamente estatísticas de utilização e relatórios de falhas para a Google.</translation>

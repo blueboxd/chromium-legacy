@@ -66,14 +66,6 @@ bool HandlePreviewsLitePageURLRewriteReverse(
 }
 
 // static
-void PreviewsLitePageNavigationThrottle::LogIneligibleReason(
-    IneligibleReason reason) {
-  UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.IneligibleReasons",
-
-                            reason);
-}
-
-// static
 GURL PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
     const GURL& original_url) {
   DCHECK(original_url.is_valid());
@@ -113,7 +105,7 @@ GURL PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
 previews::PreviewsUserData::ServerLitePageInfo*
 PreviewsLitePageNavigationThrottle::GetOrCreateServerLitePageInfo(
     content::NavigationHandle* navigation_handle,
-    PreviewsLitePageNavigationThrottleManager* manager) {
+    PreviewsLitePageDecider* decider) {
   PreviewsUITabHelper* ui_tab_helper =
       PreviewsUITabHelper::FromWebContents(navigation_handle->GetWebContents());
   if (!ui_tab_helper)
@@ -154,7 +146,7 @@ PreviewsLitePageNavigationThrottle::GetOrCreateServerLitePageInfo(
   // The page id may not be set in some corner cases (like forward navigation),
   // so make sure it gets set here.
   if (info->page_id == 0U)
-    info->page_id = manager->GeneratePageID();
+    info->page_id = decider->GeneratePageID();
 
   return info;
 }

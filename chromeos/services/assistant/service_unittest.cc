@@ -70,13 +70,11 @@ class FakePrefConnectionDelegate : public PrefConnectionDelegate {
 class FakeIdentityAccessor : identity::mojom::IdentityAccessor {
  public:
   FakeIdentityAccessor()
-      : binding_(this),
-        access_token_expriation_delay_(kDefaultTokenExpirationDelay) {}
+      : access_token_expriation_delay_(kDefaultTokenExpirationDelay) {}
 
-  identity::mojom::IdentityAccessorPtr CreateInterfacePtrAndBind() {
-    identity::mojom::IdentityAccessorPtr ptr;
-    binding_.Bind(mojo::MakeRequest(&ptr));
-    return ptr;
+  mojo::PendingRemote<identity::mojom::IdentityAccessor>
+  CreatePendingRemoteAndBind() {
+    return receiver_.BindNewPipeAndPassRemote();
   }
 
   void SetAccessTokenExpirationDelay(base::TimeDelta delay) {
@@ -117,7 +115,7 @@ class FakeIdentityAccessor : identity::mojom::IdentityAccessor {
     ++get_access_token_count_;
   }
 
-  mojo::Binding<identity::mojom::IdentityAccessor> binding_;
+  mojo::Receiver<identity::mojom::IdentityAccessor> receiver_{this};
 
   base::TimeDelta access_token_expriation_delay_;
 
@@ -133,7 +131,7 @@ class FakeAssistantClient : public FakeClient {
   explicit FakeAssistantClient(ash::AssistantState* assistant_state)
       : assistant_state_(assistant_state) {}
 
-  mojom::ClientPtr CreateInterfacePtrAndBind() {
+  mojom::ClientPtr CreatePendingRemoteAndBind() {
     mojom::ClientPtr ptr;
     binding_.Bind(mojo::MakeRequest(&ptr));
     return ptr;
@@ -230,7 +228,7 @@ class AssistantServiceTest : public testing::Test {
     service_->SetTimerForTesting(std::move(mock_timer));
 
     service_->SetIdentityAccessorForTesting(
-        fake_identity_accessor_.CreateInterfacePtrAndBind());
+        fake_identity_accessor_.CreatePendingRemoteAndBind());
 
     remote_service_->Init(fake_assistant_client_.MakeRemote(),
                           fake_device_actions_.CreatePendingRemoteAndBind(),

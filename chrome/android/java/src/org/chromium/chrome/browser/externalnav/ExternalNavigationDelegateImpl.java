@@ -48,6 +48,7 @@ import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.chrome.browser.util.UrlUtilitiesJni;
 import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.chrome.browser.webapps.WebappScopePolicy;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -633,7 +634,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         NavigationEntry entry = nController.getEntryAtIndex(index);
         if (entry == null) return false;
 
-        return UrlUtilities.nativeIsGoogleSearchUrl(entry.getUrl());
+        return UrlUtilitiesJni.get().isGoogleSearchUrl(entry.getUrl());
     }
 
     @Override

@@ -21,6 +21,85 @@
 
 namespace previews {
 
+// Reasons that a navigation is blacklisted from a lite page redirect preview.
+// This enum must remain synchronized with the enum
+// |PreviewsServerLitePageBlacklistReason| in
+// tools/metrics/histograms/enums.xml.
+enum class LitePageRedirectBlacklistReason {
+  // DEPRECATED: kPathSuffixBlacklisted = 0,
+  kNavigationToPreviewsDomain = 1,
+  kNavigationToPrivateDomain = 2,
+  kHostBypassBlacklisted = 3,
+  kMaxValue = kHostBypassBlacklisted,
+};
+
+// Reasons that a navigation is not eligible for a lite page redirect preview.
+// This enum must remain synchronized with the enum
+// |PreviewsServerLitePageIneligibleReason| in
+// tools/metrics/histograms/enums.xml.
+enum class LitePageRedirectIneligibleReason {
+  kNonHttpsScheme = 0,
+  // DEPRECATED: kHttpPost = 1,
+  kSubframeNavigation = 2,
+  kServerUnavailable = 3,
+  kInfoBarNotSeen = 4,
+  // DEPRECATED: kNetworkNotSlow = 5,
+  kLoadOriginalReload = 6,
+  kCookiesBlocked = 7,
+  // DEPRECATED: kECTUnknown = 8,
+  kExceededMaxNavigationRestarts = 9,
+  // DEPRECATED: kPreviewsState = 10,
+  kInvalidProxyHeaders = 11,
+  kServiceProbeIncomplete = 12,
+  kServiceProbeFailed = 13,
+  kMaxValue = kServiceProbeFailed,
+};
+
+// The response type from the previews server. This enum must
+// remain synchronized with the enum |PreviewsServerLitePageServerResponse| in
+// tools/metrics/histograms/enums.xml.
+enum class LitePageRedirectServerResponse {
+  // A preview was served (HTTP 200).
+  kOk = 0,
+
+  // The client was redirected to another page (HTTP 307).
+  kRedirect = 1,
+
+  // The requested preview was not available (HTTP 307).
+  kPreviewUnavailable = 2,
+
+  // The previews server is not available (HTTP 503).
+  kServiceUnavailable = 3,
+
+  // The previews server responded with some other HTTP code.
+  kOther = 4,
+
+  // There was some network error and we did not get a response from the
+  // previews server.
+  kFailed = 5,
+
+  // The previews server did not respond after a timeout.
+  kTimeout = 6,
+
+  // The previews server rejected our authentication (HTTP 403).
+  kAuthFailure = 7,
+
+  // No response headers were available from the preview server.
+  kNoResponseHeaders = 8,
+
+  // The connection was closed without getting a response.
+  kOnCompleteBeforeOnResponse = 9,
+
+  // There was an error connecting to the previews server.
+  kConnectionError = 10,
+
+  kMaxValue = kConnectionError,
+};
+
+// Records an entry in the lite page redirect ineligibility histogram.
+void LogLitePageRedirectIneligibleReason(
+    LitePageRedirectIneligibleReason reason);
+
 // A class that attempts to intercept requests and fetch the Lite Page version
 // of the request. Its lifetime matches that of the content/ navigation loader
 // code. Currently, not fully implemented.

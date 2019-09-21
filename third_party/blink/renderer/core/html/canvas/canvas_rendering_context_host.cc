@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_host.h"
 
+#include "base/feature_list.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_async_blob_creator.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
@@ -16,6 +17,10 @@
 #include "third_party/skia/include/core/SkSurface.h"
 
 namespace blink {
+namespace {
+const base::Feature kLowLatencyCanvas2dSwapChain{
+    "LowLatencyCanvas2dSwapChain", base::FEATURE_DISABLED_BY_DEFAULT};
+}  // namespace
 
 CanvasRenderingContextHost::CanvasRenderingContextHost(HostType host_type)
     : host_type_(host_type) {}
@@ -161,7 +166,7 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
         }
         // Allow swap chains only if the runtime feature is enabled and we're
         // in low latency mode too.
-        if (RuntimeEnabledFeatures::Canvas2dSwapChainEnabled() &&
+        if (base::FeatureList::IsEnabled(kLowLatencyCanvas2dSwapChain) &&
             LowLatencyEnabled() && want_acceleration) {
           presentation_mode |=
               CanvasResourceProvider::kAllowSwapChainPresentationMode;

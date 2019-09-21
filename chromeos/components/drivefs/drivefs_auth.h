@@ -16,6 +16,7 @@
 #include "base/timer/timer.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
 
 class AccountId;
@@ -85,7 +86,7 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsAuth {
 
   void AuthTimeout();
 
-  identity::mojom::IdentityAccessor& GetIdentityAccessor();
+  identity::mojom::IdentityAccessor* GetIdentityAccessor();
 
   SEQUENCE_CHECKER(sequence_checker_);
   const base::Clock* const clock_;
@@ -94,7 +95,7 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsAuth {
   Delegate* const delegate_;
 
   // The connection to the identity service. Access via |GetIdentityAccessor()|.
-  identity::mojom::IdentityAccessorPtr identity_accessor_;
+  mojo::Remote<identity::mojom::IdentityAccessor> identity_accessor_;
 
   // Pending callback for an in-flight GetAccessToken request.
   mojom::DriveFsDelegate::GetAccessTokenCallback get_access_token_callback_;

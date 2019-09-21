@@ -1,0 +1,73 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/html/util.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="icons.html">
+<link rel="import" href="viewer-zoom-button.html">
+
+<dom-module id="viewer-zoom-toolbar">
+  <template>
+    <style>
+      :host {
+        --button-position-offset: 48px;
+        bottom: 0;
+        padding: 48px 0;
+        position: fixed;
+        right: 0;
+        user-select: none;
+        z-index: 3;
+      }
+
+      :host([new-print-preview]) {
+        --button-position-offset: 24px;
+      }
+
+      :host([show-on-left_]) {
+        left: 0;
+        right: auto;
+      }
+
+      #zoom-buttons {
+        position: relative;
+        right: var(--button-position-offset);
+      }
+
+      :host([show-on-left_]) #zoom-buttons {
+        left: var(--button-position-offset);
+        right: auto;
+      }
+
+      viewer-zoom-button {
+        display: block;
+      }
+
+      /* A small gap between the zoom in/zoom out buttons. */
+      #zoom-out-button {
+        margin-top: 10px;
+      }
+
+      /* A larger gap between the fit button and bottom two buttons. */
+      #zoom-in-button {
+        margin-top: 24px;
+      }
+    </style>
+    <div id="zoom-buttons">
+      <viewer-zoom-button id="fit-button" on-fabclick="fitToggle" delay="100"
+          new-print-preview="[[newPrintPreview]]"
+          show-on-left="[[showOnLeft_]]"
+          keyboard-navigation-active="[[keyboardNavigationActive_]]"
+          icons="pdf:fullscreen-exit cr:fullscreen">
+      </viewer-zoom-button>
+      <viewer-zoom-button id="zoom-in-button" icons="pdf:add"
+          new-print-preview="[[newPrintPreview]]"
+          show-on-left="[[showOnLeft_]]"
+          keyboard-navigation-active="[[keyboardNavigationActive_]]"
+          on-fabclick="zoomIn" delay="50"></viewer-zoom-button>
+      <viewer-zoom-button id="zoom-out-button" icons="pdf:remove"
+          new-print-preview="[[newPrintPreview]]"
+          show-on-left="[[showOnLeft_]]"
+          keyboard-navigation-active="[[keyboardNavigationActive_]]"
+          on-fabclick="zoomOut" delay="0"></viewer-zoom-button>
+    </div>
+  </template>
+  <script src="viewer-zoom-toolbar.js"></script>
+</dom-module>

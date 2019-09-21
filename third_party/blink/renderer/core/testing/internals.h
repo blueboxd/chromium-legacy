@@ -466,8 +466,6 @@ class Internals final : public ScriptWrappable {
 
   void forceCompositingUpdate(Document*, ExceptionState&);
 
-  void setZoomFactor(float);
-
   void setShouldRevealPassword(Element*, bool, ExceptionState&);
 
   ScriptPromise createResolvedPromise(ScriptState*, ScriptValue);

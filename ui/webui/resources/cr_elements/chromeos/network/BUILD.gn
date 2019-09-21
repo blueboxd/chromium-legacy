@@ -4,11 +4,11 @@
 
 import("//third_party/closure_compiler/compile_js.gni")
 
-# Note: This file is referenced in settings_ui for :cr_onc_types.
+# Note: This file is referenced in settings_ui for :cr_onc_strings.
 
 js_type_check("closure_compile") {
   deps = [
-    ":cr_onc_types",
+    ":cr_onc_strings",
   ]
   if (is_chromeos) {
     deps += [
@@ -25,7 +25,6 @@ js_type_check("closure_compile") {
 if (is_chromeos) {
   js_library("cr_network_icon") {
     deps = [
-      ":cr_onc_types",
       "//ui/webui/resources/js:assert",
       "//ui/webui/resources/js/chromeos:onc_mojo",
     ]
@@ -34,7 +33,6 @@ if (is_chromeos) {
   js_library("cr_network_list") {
     deps = [
       ":cr_network_list_types",
-      ":cr_onc_types",
       "//ui/webui/resources/cr_elements:cr_scrollable_behavior",
     ]
   }
@@ -42,16 +40,13 @@ if (is_chromeos) {
   js_library("cr_network_list_item") {
     deps = [
       ":cr_network_list_types",
-      ":cr_onc_types",
+      ":cr_onc_strings",
       "//ui/webui/resources/cr_elements/policy:cr_policy_network_behavior_mojo",
       "//ui/webui/resources/js:assert",
     ]
   }
 
   js_library("cr_network_list_types") {
-    deps = [
-      ":cr_onc_types",
-    ]
   }
 
   js_library("cr_network_listener_behavior") {
@@ -74,9 +69,5 @@ if (is_chromeos) {
   }
 }
 
-js_library("cr_onc_types") {
-  deps = [
-    "//ui/webui/resources/js:util",
-  ]
-  externs_list = [ "$externs_path/networking_private.js" ]
+js_library("cr_onc_strings") {
 }

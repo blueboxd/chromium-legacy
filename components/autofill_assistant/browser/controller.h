@@ -157,6 +157,19 @@ class Controller : public ScriptExecutorDelegate,
       TermsAndConditionsState terms_and_conditions) override;
   void SetLoginOption(std::string identifier) override;
   void OnTermsAndConditionsLinkClicked(int link) override;
+  void SetDateTimeRangeStart(int year,
+                             int month,
+                             int day,
+                             int hour,
+                             int minute,
+                             int second) override;
+
+  void SetDateTimeRangeEnd(int year,
+                           int month,
+                           int day,
+                           int hour,
+                           int minute,
+                           int second) override;
   void GetTouchableArea(std::vector<RectF>* area) const override;
   void GetRestrictedArea(std::vector<RectF>* area) const override;
   void GetVisualViewport(RectF* visual_viewport) const override;

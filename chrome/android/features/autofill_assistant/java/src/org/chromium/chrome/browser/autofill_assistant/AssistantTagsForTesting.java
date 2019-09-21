@@ -16,6 +16,8 @@ public class AssistantTagsForTesting {
     public static final String COLLECT_USER_DATA_CONTACT_DETAILS_SECTION_TAG = "contact";
     public static final String COLLECT_USER_DATA_PAYMENT_METHOD_SECTION_TAG = "payment";
     public static final String COLLECT_USER_DATA_SHIPPING_ADDRESS_SECTION_TAG = "shipping";
+    public static final String COLLECT_USER_DATA_DATE_RANGE_START_TAG = "date_start";
+    public static final String COLLECT_USER_DATA_DATE_RANGE_END_TAG = "date_end";
     public static final String COLLECT_USER_DATA_TERMS_REQUIRE_REVIEW = "require_review";
     public static final String VERTICAL_EXPANDER_CHEVRON = "chevron";
     public static final String COLLECT_USER_DATA_CHOICE_LIST = "choicelist";

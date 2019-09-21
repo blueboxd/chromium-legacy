@@ -63,6 +63,18 @@ if [[ -f "$ENABLED_FILE" ]]; then
   mv "$ENABLED_FILE" "$ENABLED_FILE_BACKUP"
 fi
 
+# If there is an old launchd script, create a backup of the system's launchd
+# agent plist, so that the postflight script can restore it. This ensures the
+# old launchd script gets used instead of the new one in the host bundle.
+# The script also needs to be backed up and restored, as the new package does
+# not provide it, and the installer deletes it from the system.
+# TODO(lambroslambrou): Remove this after users have authorized the new script.
+if [[ -f "$SCRIPT_FILE" ]]; then
+  logger Backing up launchd agent
+  cp "$PLIST" "$INSTALLER_TEMP/plist_backup"
+  cp "$SCRIPT_FILE" "$INSTALLER_TEMP/script_backup"
+fi
+
 # Stop and unload the service for each user currently running the service, and
 # record the user IDs so the service can be restarted for the same users in the
 # postflight script.

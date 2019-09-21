@@ -25,6 +25,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/libgtkui/app_indicator_icon.h"
+#include "chrome/browser/ui/libgtkui/gtk_event_loop_x11.h"
 #include "chrome/browser/ui/libgtkui/gtk_key_bindings_handler.h"
 #include "chrome/browser/ui/libgtkui/gtk_status_icon.h"
 #include "chrome/browser/ui/libgtkui/gtk_util.h"
@@ -46,6 +47,7 @@
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/ime/linux/fake_input_method_context.h"
 #include "ui/base/ime/linux/linux_input_method_context.h"
+#include "ui/base/ime/linux/linux_input_method_context_factory.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -73,7 +75,6 @@
 #endif
 
 #if defined(USE_X11)
-#include "chrome/browser/ui/libgtkui/gtk_event_loop_x11.h"  // nogncheck
 #include "ui/gfx/x/x11.h"        // nogncheck
 #include "ui/gfx/x/x11_types.h"  // nogncheck
 #endif
@@ -332,11 +333,13 @@ GtkUi::GtkUi() {
       {ActionSource::kMiddleClick, GetDefaultMiddleClickAction()},
       {ActionSource::kRightClick, Action::kMenu}};
 
-  // Force Gtk to use Xwayland if it would have used wayland.  libgtkui assumes
-  // the use of X11 (eg. InputMethodContextImplGtk) and will crash under
-  // other backends.
+#if defined(USE_X11)
+  // Force Gtk to use Xwayland if it would have used wayland. In Aura/X11,
+  // libgtkui assumes the use of X11 (eg. InputMethodContextImplGtk) and will
+  // crash under other backends.
   // TODO(thomasanderson): Change this logic once Wayland support is added.
   gdk_set_allowed_backends("x11");
+#endif
 
   // Avoid GTK initializing atk-bridge, and let AuraLinux implementation
   // do it once it is ready.
@@ -353,6 +356,16 @@ GtkUi::~GtkUi() {
 }
 
 void GtkUi::Initialize() {
+#if defined(USE_OZONE)
+  // Linux ozone platforms may set LinuxInputMethodContextFactory instance at
+  // InitializeUI step (which is called in Toolkit initialization step), so
+  // at this point if it's not set LinuxUI (i.e: GtkUi) implementation is
+  // used. For example, ozone/x11 uses GtkUi context factory, but
+  // ozone/wayland uses it's own implementation.
+  if (!ui::LinuxInputMethodContextFactory::instance())
+    ui::LinuxInputMethodContextFactory::SetInstance(this);
+#endif
+
   GtkSettings* settings = gtk_settings_get_default();
   g_signal_connect_after(settings, "notify::gtk-theme-name",
                          G_CALLBACK(OnThemeChangedThunk), this);
@@ -386,10 +399,8 @@ void GtkUi::Initialize() {
 
   indicators_count = 0;
 
-#if defined(USE_X11)
   // Instantiate the singleton instance of GtkEventLoopX11.
   GtkEventLoopX11::GetInstance();
-#endif
 }
 
 bool GtkUi::GetTint(int id, color_utils::HSL* tint) const {
@@ -653,13 +664,8 @@ void GtkUi::SetWindowFrameAction(WindowFrameActionSource source,
 std::unique_ptr<ui::LinuxInputMethodContext> GtkUi::CreateInputMethodContext(
     ui::LinuxInputMethodContextDelegate* delegate,
     bool is_simple) const {
-#if defined(USE_X11)
   return std::unique_ptr<ui::LinuxInputMethodContext>(
       new InputMethodContextImplGtk(delegate, is_simple));
-#else
-  NOTIMPLEMENTED();
-  return std::make_unique<ui::FakeInputMethodContext>();
-#endif
 }
 
 gfx::FontRenderParams GtkUi::GetDefaultFontRenderParams() const {

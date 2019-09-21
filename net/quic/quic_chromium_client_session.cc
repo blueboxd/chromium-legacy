@@ -134,16 +134,16 @@ void RecordConnectionCloseErrorCode(quic::QuicErrorCode error,
   }
 }
 
-base::Value NetLogQuicConnectionMigrationFailureParams(
+base::Value NetLogQuicMigrationFailureParams(
     quic::QuicConnectionId connection_id,
-    const std::string& reason) {
+    base::StringPiece reason) {
   base::DictionaryValue dict;
   dict.SetString("connection_id", connection_id.ToString());
   dict.SetString("reason", reason);
   return std::move(dict);
 }
 
-base::Value NetLogQuicConnectionMigrationSuccessParams(
+base::Value NetLogQuicMigrationSuccessParams(
     quic::QuicConnectionId connection_id) {
   base::DictionaryValue dict;
   dict.SetString("connection_id", connection_id.ToString());
@@ -713,7 +713,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     bool headers_include_h2_stream_dependency,
     int cert_verify_flags,
     const quic::QuicConfig& config,
-    quic::QuicCryptoClientConfig* crypto_config,
+    std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config,
     const char* const connection_description,
     base::TimeTicks dns_resolution_start_time,
     base::TimeTicks dns_resolution_end_time,
@@ -752,6 +752,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       most_recent_stream_close_time_(tick_clock_->NowTicks()),
       most_recent_write_error_(0),
       most_recent_write_error_timestamp_(base::TimeTicks()),
+      crypto_config_(std::move(crypto_config)),
       stream_factory_(stream_factory),
       transport_security_state_(transport_security_state),
       ssl_config_service_(ssl_config_service),
@@ -798,7 +799,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
           session_key.server_id(), this,
           std::make_unique<ProofVerifyContextChromium>(cert_verify_flags,
                                                        net_log_),
-          crypto_config));
+          crypto_config_->GetConfig()));
   connection->set_debug_visitor(logger_.get());
   connection->set_creator_debug_delegate(logger_.get());
   migrate_back_to_default_timer_.SetTaskRunner(task_runner_);
@@ -2439,25 +2440,22 @@ void QuicChromiumClientSession::MaybeMigrateToDifferentPortOnPathDegrading() {
 
   // Migration before handshake is not allowed.
   if (!IsCryptoHandshakeConfirmed()) {
-    // TODO(zhongyi): add histogram and net log entries.
+    HistogramAndLogMigrationFailure(
+        net_log_, MIGRATION_STATUS_PATH_DEGRADING_BEFORE_HANDSHAKE_CONFIRMED,
+        connection_id(), "Path degrading before handshake confirmed");
     return;
   }
 
-  // TODO(zhongyi): replace with port migration net log.
   const NetLogWithSource migration_net_log = NetLogWithSource::Make(
-      net_log_.net_log(), NetLogSourceType::QUIC_CONNECTION_MIGRATION);
-  migration_net_log.BeginEventWithStringParams(
-      NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED, "trigger",
-      "port migration on PathDegrading");
+      net_log_.net_log(), NetLogSourceType::QUIC_PORT_MIGRATION);
+  migration_net_log.BeginEvent(NetLogEventType::QUIC_PORT_MIGRATION_TRIGGERED);
 
   if (!stream_factory_)
     return;
 
   // Probe a different port, session will migrate to the probed port on success.
-  // TODO(zhongyi): maybe pass in the network handle current socket is on?
   StartProbing(default_network_, peer_address(), migration_net_log);
-  migration_net_log.EndEvent(
-      NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED);
+  migration_net_log.EndEvent(NetLogEventType::QUIC_PORT_MIGRATION_TRIGGERED);
 }
 
 void QuicChromiumClientSession::
@@ -2798,19 +2796,33 @@ void QuicChromiumClientSession::HistogramAndLogMigrationFailure(
     const NetLogWithSource& net_log,
     QuicConnectionMigrationStatus status,
     quic::QuicConnectionId connection_id,
-    const std::string& reason) {
-  net_log.AddEvent(NetLogEventType::QUIC_CONNECTION_MIGRATION_FAILURE, [&] {
-    return NetLogQuicConnectionMigrationFailureParams(connection_id, reason);
+    const char* reason) {
+  NetLogEventType event_type =
+      current_migration_cause_ == CHANGE_PORT_ON_PATH_DEGRADING
+          ? NetLogEventType::QUIC_PORT_MIGRATION_FAILURE
+          : NetLogEventType::QUIC_CONNECTION_MIGRATION_FAILURE;
+
+  net_log.AddEvent(event_type, [&] {
+    return NetLogQuicMigrationFailureParams(connection_id, reason);
   });
+
+  // |current_migration_cause_| will be reset afterwards.
   LogMigrationResultToHistogram(status);
 }
 
 void QuicChromiumClientSession::HistogramAndLogMigrationSuccess(
     const NetLogWithSource& net_log,
     quic::QuicConnectionId connection_id) {
-  net_log.AddEvent(NetLogEventType::QUIC_CONNECTION_MIGRATION_SUCCESS, [&] {
-    return NetLogQuicConnectionMigrationSuccessParams(connection_id);
+  NetLogEventType event_type =
+      current_migration_cause_ == CHANGE_PORT_ON_PATH_DEGRADING
+          ? NetLogEventType::QUIC_PORT_MIGRATION_SUCCESS
+          : NetLogEventType::QUIC_CONNECTION_MIGRATION_SUCCESS;
+
+  net_log.AddEvent(event_type, [&] {
+    return NetLogQuicMigrationSuccessParams(connection_id);
   });
+
+  // |current_migration_cause_| will be reset afterwards.
   LogMigrationResultToHistogram(MIGRATION_STATUS_SUCCESS);
 }
 

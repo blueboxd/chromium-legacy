@@ -2055,22 +2055,23 @@ EVENT_TYPE(QUIC_CHROMIUM_CLIENT_STREAM_READ_RESPONSE_TRAILERS)
 //     "connection_migration_mode": <The connection migration mode>
 //  }
 EVENT_TYPE(QUIC_CONNECTION_MIGRATION_MODE)
+
 // Records that QUIC connection migration has been triggered.
 //  {
 //     "trigger": <The reason for the migration attempt>
 //  }
 EVENT_TYPE(QUIC_CONNECTION_MIGRATION_TRIGGERED)
 
-// Records that a QUIC connection migration attempt of the session
-// identified by connection_id failed.
+// Records a failed QUIC connection migration attempt of the session
+// identified by connection_id.
 //  {
 //     "connection_id": <Connection ID of the session>
-//     "reason": <Failure reason>
+//     "reason": <String of the failure reason>
 //  }
 EVENT_TYPE(QUIC_CONNECTION_MIGRATION_FAILURE)
 
-// Records that a QUIC connection migration attempt of the session
-// identified by connection_id succeeded.
+// Records a successful QUIC connection migration attempt of the session
+// identified by connection_id.
 //  {
 //     "connection_id": <Connection ID of the session>
 //  }
@@ -2141,6 +2142,28 @@ EVENT_TYPE(QUIC_CONNECTIVITY_PROBING_MANAGER_PROBE_SENT)
 //     "peer_address": <Peer address on the probed path>
 //  }
 EVENT_TYPE(QUIC_CONNECTIVITY_PROBING_MANAGER_PROBE_RECEIVED)
+
+// ------------------------------------------------------------------------
+// QuicPortMigration
+// ------------------------------------------------------------------------
+
+// Records that QUIC port migration has been triggered.
+EVENT_TYPE(QUIC_PORT_MIGRATION_TRIGGERED)
+
+// Records a failed QUIC port migration attempt of the session identified
+// by connection_id.
+//  {
+//     "connection_id": <Connection ID of the session>
+//     "reason": <String of the failure reason>
+//  }
+EVENT_TYPE(QUIC_PORT_MIGRATION_FAILURE)
+
+// Records a successful QUIC port migration attempt of the session
+// identified by connection_id.
+//  {
+//     "connection_id": <Connection ID of the session>
+//  }
+EVENT_TYPE(QUIC_PORT_MIGRATION_SUCCESS)
 
 // ------------------------------------------------------------------------
 // HttpStreamParser

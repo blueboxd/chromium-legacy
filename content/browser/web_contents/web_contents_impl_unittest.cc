@@ -3208,13 +3208,13 @@ TEST_F(WebContentsImplTest, MediaWakeLock) {
   // Send a fake audio stream monitor notification.  The audio wake lock
   // should be created.
   monitor->set_was_recently_audible_for_testing(true);
-  contents()->NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
+  contents()->NotifyNavigationStateChanged(INVALIDATE_TYPE_AUDIO);
   EXPECT_TRUE(has_audio_wake_lock());
 
   // Send another fake notification, this time when WasRecentlyAudible() will
   // be false.  The wake lock should be released.
   monitor->set_was_recently_audible_for_testing(false);
-  contents()->NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
+  contents()->NotifyNavigationStateChanged(INVALIDATE_TYPE_AUDIO);
   EXPECT_FALSE(has_audio_wake_lock());
 
   main_test_rfh()->GetProcess()->SimulateCrash();

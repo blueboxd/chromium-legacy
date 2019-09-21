@@ -163,7 +163,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_47, false)
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_48_2, true)
 
 // If true, disable QUIC version 39.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_39, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_39, true)
 
 // If true and using Leto for QUIC shared-key calculations, GFE will react to a
 // failure to contact Leto by sending a REJ containing a fallback ServerConfig,
@@ -205,12 +205,6 @@ QUIC_FLAG(bool,
 // If true, use predictable version negotiation versions.
 QUIC_FLAG(bool, FLAGS_quic_disable_version_negotiation_grease_randomness, false)
 
-// Calls ClearQueuedPackets after sending a connection close packet.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_clear_queued_packets_on_connection_close,
-    true)
-
 // If true and --quic_lumpy_pacing_size is 1, QUIC will use a lumpy size of two
 // for pacing.
 QUIC_FLAG(
@@ -225,9 +219,6 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_reject_unprocessable_packets_statelessly,
     false)
-
-// When true, QuicConnectionId::Hash uses SipHash instead of XOR.
-QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_connection_id_use_siphash, true)
 
 // If true, when RTO fires and there is no packet to be RTOed, let connection
 // send.
@@ -275,7 +266,7 @@ QUIC_FLAG(
 // destruction.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_active_streams_never_negative,
-          false)
+          true)
 
 // If true and FIFO connection option is received, write_blocked_streams uses
 // FIFO(stream with smallest ID has highest priority) write scheduler.
@@ -319,7 +310,7 @@ QUIC_FLAG(bool,
           true)
 
 // If true, enable IETF style probe timeout.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pto, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pto, true)
 
 // When true, QuicFramer will use QueueUndecryptablePacket on all QUIC versions.
 QUIC_FLAG(bool,
@@ -336,7 +327,7 @@ QUIC_FLAG(bool,
 // invalid packet that is sent by an Android UDP network conformance test.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_reply_to_old_android_conformance_test,
-          false)
+          true)
 
 // If true, no SPDY SETTINGS will be sent after handshake is confirmed.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_do_not_send_settings, true)
@@ -346,7 +337,7 @@ QUIC_FLAG(int32_t, FLAGS_quic_max_buffered_crypto_bytes, 16 * 1024)
 
 // If true, use the saved time of the last sent inflight packet rather than
 // traversing the deque.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_simple_inflight_time, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_simple_inflight_time, true)
 
 // If true, QUIC supports both QUIC Crypto and TLS 1.3 for the handshake
 // protocol.
@@ -385,6 +376,18 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_grant_enough_credits, false)
 // If true, combine QuicPacketGenerator and QuicPacketCreator.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_combine_generator_and_creator,
+          false)
+
+// If true, QuicFramer does not create an encrypter/decrypter for the
+// ENCRYPTION_INITIAL level.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_framer_doesnt_create_initial_encrypter,
+    false)
+
+// If true, server drops client initial packets in datagrams < 1200 bytes.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_donot_process_small_initial_packets,
           false)
 
 // If true, support HTTP/3 priority in v99.

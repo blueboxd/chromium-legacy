@@ -56,10 +56,21 @@ struct LastMuteMetadata
 
 namespace chrome {
 
-// Returns the alert state to be shown by the tab's alert indicator.  When
-// multiple states apply (e.g., tab capture with audio playback), the one most
-// relevant to user privacy concerns is selected.
-TabAlertState GetTabAlertStateForContents(content::WebContents* contents);
+// Returns the alert states to be shown by the tab's alert indicator.
+// The returned list is in descending order of importance to user
+// privacy, i.e. if only one is to be shown, it should be the first.
+// TabAlertState::NONE will never be present in the list; an empty list
+// is returned instead.
+std::vector<TabAlertState> GetTabAlertStatesForContents(
+    content::WebContents* contents);
+
+// Returns the highest priority tab alert from
+// GetTabAlertStatesForContents, or TabAlertState::NONE.
+//
+// TODO(collinbaker): migrate callers away from this. It rarely makes
+// sense to only consider one of the alerts.
+TabAlertState GetHighestPriorityTabAlertStateForContents(
+    content::WebContents* contents);
 
 // Returns a localized string describing the |alert_state|.
 base::string16 GetTabAlertStateText(const TabAlertState alert_state);

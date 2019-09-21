@@ -20,10 +20,6 @@
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 
-namespace {
-constexpr float kToolbarInkDropHighlightVisibleOpacity = 0.08f;
-}
-
 gfx::Insets GetToolbarInkDropInsets(const views::View* host_view,
                                     const gfx::Insets& margin_insets) {
   // Inset the inkdrop insets so that the end result matches the target inkdrop

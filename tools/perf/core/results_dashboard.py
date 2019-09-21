@@ -356,8 +356,8 @@ def _RevisionNumberColumns(data, prefix):
   Args:
     data: A dict of information from one line of the log file.
     master: The name of the buildbot master.
-    prefix: Prefix for revision type keys. 'r_' for non-telemetry json, '' for
-        telemetry json.
+    prefix: Prefix for revision type keys. 'r_' for non-telemetry JSON, '' for
+    telemetry JSON.
 
   Returns:
     A tuple with the point id (which must be an int), and a dict of
@@ -370,9 +370,9 @@ def _RevisionNumberColumns(data, prefix):
   # that it's a git commit hash and use timestamp as the x-value.
   try:
     revision = int(data['rev'])
-    if revision and revision > 300000 and revision < 1000000:
-      # Revision is the commit pos.
-      # TODO(sullivan,qyearsley): use got_revision_cp when available.
+    if revision and 300000 < revision < 1000000:
+      # Assume that revision is the commit position number for the master
+      # branch in the chromium/src repo.
       revision_supplemental_columns[prefix + 'commit_pos'] = revision
   except ValueError:
     # The dashboard requires ordered integer revision numbers. If the revision

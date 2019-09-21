@@ -93,6 +93,7 @@
 <translation id="2149973817440762519">북마크 수정</translation>
 <translation id="2179182049312275900">언제든지 설정에서 동기화를 사용 설정할 수 있습니다.</translation>
 <translation id="2198757192731523470">Google에서 검색, 광고 및 다른 Google 서비스를 맞춤설정하기 위하여 내 방문 기록을 사용할 수 있습니다.</translation>
+<translation id="2207590065820824892">읽기 목록에 읽지 않은 기사가 <ph name="UNREAD_COUNT" />개 있습니다.</translation>
 <translation id="2230173723195178503">웹페이지 로드됨</translation>
 <translation id="2239626343334228536">인터넷 사용 기록 삭제 중...</translation>
 <translation id="2256128224215992540">검색 및 사이트 제안</translation>
@@ -108,6 +109,7 @@
 <translation id="2360196772093551345">모바일 버전으로 보기</translation>
 <translation id="2381405137052800939">기본설정</translation>
 <translation id="2386793615875593361">1장 선택됨</translation>
+<translation id="2421044535038393232">수정 계속</translation>
 <translation id="2435457462613246316">비밀번호 표시</translation>
 <translation id="2481538920734869610">계정 추가</translation>
 <translation id="2497852260688568942">관리자가 동기화를 사용 중지했습니다.</translation>
@@ -227,6 +229,7 @@
 <translation id="418156467088430727">새 탭에서 오프라인 버전 보기</translation>
 <translation id="4181841719683918333">언어</translation>
 <translation id="424315890655130736">암호 입력</translation>
+<translation id="4263576668337963058">사용 가능한 페이지 작업 표시</translation>
 <translation id="4272631900155121838">QR 코드를 스캔하려면 설정에서 카메라를 사용하도록 설정하세요.</translation>
 <translation id="4281844954008187215">서비스 약관</translation>
 <translation id="430793432425771671">모두 동기화</translation>
@@ -264,6 +267,7 @@
 
 이 설정을 변경하려면 <ph name="BEGIN_LINK" />동기화를 재설정<ph name="END_LINK" />하세요.</translation>
 <translation id="4805759445554688327">카드 번호가 잘못됨</translation>
+<translation id="4807020197310989387">읽기 목록에 읽지 않은 기사가 1개 있습니다.</translation>
 <translation id="4818522717893377262">언어 추가...</translation>
 <translation id="481968316161811770">쿠키, 사이트 데이터</translation>
 <translation id="4833786495304741580">사용 통계 및 비정상 종료 보고서를 Google에 자동으로 전송합니다.</translation>

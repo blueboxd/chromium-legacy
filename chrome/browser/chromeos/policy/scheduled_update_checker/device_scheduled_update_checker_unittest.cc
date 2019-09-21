@@ -1192,4 +1192,36 @@ TEST_F(DeviceScheduledUpdateCheckerTest, CheckWakeLockAcquireAndRelease) {
   EXPECT_EQ(active_wake_locks_after_update_check.value(), 0);
 }
 
+// Checks if an update check is aborted after the stipulated hard timeout.
+TEST_F(DeviceScheduledUpdateCheckerTest, CheckUpdateCheckHardTimeout) {
+  base::TimeDelta delay_from_now = base::TimeDelta::FromHours(1);
+  auto policy_and_next_update_check_time = CreatePolicy(
+      delay_from_now, DeviceScheduledUpdateChecker::Frequency::kDaily);
+
+  cros_settings_.device_settings()->Set(
+      chromeos::kDeviceScheduledUpdateCheck,
+      std::move(policy_and_next_update_check_time.first));
+  task_environment_.FastForwardBy(delay_from_now);
+
+  // Don't simulate update check succeeding, the update check should abort after
+  // |kOsAndPoliciesUpdateCheckHardTimeout|.
+  int expected_update_checks = 1;
+  int expected_update_check_requests = 1;
+  int expected_update_check_completions = 0;
+  task_environment_.FastForwardBy(
+      update_checker_internal::kOsAndPoliciesUpdateCheckHardTimeout);
+  EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
+                         expected_update_check_completions));
+
+  // The next update check timer should be scheduled regardless of the previous
+  // update check failure.
+  expected_update_checks = 2;
+  expected_update_check_requests = 2;
+  task_environment_.FastForwardBy(
+      base::TimeDelta::FromDays(1) -
+      update_checker_internal::kOsAndPoliciesUpdateCheckHardTimeout);
+  EXPECT_TRUE(CheckStats(expected_update_checks, expected_update_check_requests,
+                         expected_update_check_completions));
+}
+
 }  // namespace policy

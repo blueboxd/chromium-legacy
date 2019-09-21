@@ -96,6 +96,7 @@
 <translation id="1136712381129578788">تم قفل مفتاح الأمان بسبب إدخال رقم التعريف الشخصي غير الصحيح عدّة مرات. لفتح قفله، يمكنك إزالته وإعادة إدخاله.</translation>
 <translation id="1137673463384776352">فتح الرابط في <ph name="APP" /></translation>
 <translation id="1140351953533677694">الوصول إلى بلوتوث والأجهزة التسلسلية</translation>
+<translation id="114036956334641753">الصوت والترجمة</translation>
 <translation id="1140610710803014750">للحصول على الإشارات المرجعية على جميع أجهزتك، يُرجى تسجيل الدخول وتفعيل المزامنة.</translation>
 <translation id="1140746652461896221">حظر المحتوى على أي صفحة تزورها</translation>
 <translation id="1143142264369994168">الموقّع على الشهادات</translation>
@@ -173,6 +174,7 @@
 <translation id="1235458158152011030">الشبكات المعروفة</translation>
 <translation id="123578888592755962">القرص ممتلئ</translation>
 <translation id="1238191093934674082">‏فتح الشبكة الظاهرية الخاصة (VPN)</translation>
+<translation id="1239594683407221485">يمكنك استكشاف محتوى الجهاز في تطبيق الملفات.</translation>
 <translation id="124116460088058876">مزيد من اللغات</translation>
 <translation id="1241753985463165747">قراءة جميع بياناتك وتغييرها على موقع الويب الحالي عند الاستدعاء</translation>
 <translation id="1242633766021457174">يريد <ph name="THIRD_PARTY_TOOL_NAME" /> إعادة تعيين إعداداتك.</translation>
@@ -312,6 +314,7 @@
 <translation id="146220085323579959">تم قطع الاتصال بالإنترنت. يُرجى التحقق من الاتصال بالإنترنت وإعادة المحاولة.</translation>
 <translation id="1463112138205428654">تم حظر <ph name="FILE_NAME" /> من خلال برنامج "الحماية المتقدمة".</translation>
 <translation id="1464258312790801189">حساباتك</translation>
+<translation id="1464781208867302907">بالنسبة إلى الإعدادات المفضلة، يُرجى الانتقال إلى "الإعدادات".</translation>
 <translation id="1465176863081977902">ن&amp;سخ عنوان الصوت</translation>
 <translation id="1465827627707997754">شريحة بيتزا</translation>
 <translation id="1468571364034902819">يتعذّر استخدام هذا الملف الشخصي</translation>
@@ -744,6 +747,7 @@
 <translation id="2099686503067610784">هل تريد حذف شهادة الخادم "<ph name="CERTIFICATE_NAME" />"؟</translation>
 <translation id="2100273922101894616">تسجيل الدخول تلقائيًا</translation>
 <translation id="2101225219012730419">الإصدار:</translation>
+<translation id="2111670510994270194">وضع علامة جديدة يمينًا</translation>
 <translation id="21133533946938348">تثبيت علامة التبويب</translation>
 <translation id="2113479184312716848">فتح &amp;ملف...</translation>
 <translation id="2113921862428609753">الدخول إلى معلومات الصلاحية</translation>
@@ -1790,6 +1794,7 @@
 <translation id="3630995161997703415">أضف موقع الويب هذا إلى الرف لاستخدامه في أي وقت.</translation>
 <translation id="3636096452488277381">مرحبًا، <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - <ph name="TIME" /> وقت متبقٍ</translation>
+<translation id="3637561406135221044">جارٍ فحص الملفات للبحث عن البيانات الحسّاسة...</translation>
 <translation id="3637682276779847508">‏سيتم إيقاف شريحة SIM نهائيًا إذا لم تتمكن من إدخال مفتاح إلغاء القفل باستخدام رقم التعريف الشخصي الصحيح.</translation>
 <translation id="3640214691812501263">هل تريد إضافة "<ph name="EXTENSION_NAME" />" لـ <ph name="USER_NAME" />؟</translation>
 <translation id="3640613767643722554">‏تدريب "مساعد Google" على التعرُّف على صوتك</translation>
@@ -1877,7 +1882,7 @@
 <translation id="3748026146096797577">غير متصل</translation>
 <translation id="3752582316358263300">موافق...</translation>
 <translation id="3752673729237782832">أجهزتي</translation>
-<translation id="3753033997400164841">التخزين لمرة واحدة الاستخدام في كل مكان</translation>
+<translation id="3753033997400164841">التخزين لمرة واحدة والاستخدام في كل مكان</translation>
 <translation id="3755411799582650620">بإمكان هاتفك <ph name="PHONE_NAME" /> أن يلغي قفل جهاز<ph name="DEVICE_TYPE" /> أيضًا.</translation>
 <translation id="375636864092143889">يستخدم موقع الويب الميكروفون.</translation>
 <translation id="3757733214359997190">لم يتم العثور على أي مواقع</translation>
@@ -2225,6 +2230,7 @@
 <translation id="425573743389990240">بطارية تفريغ شحن البطارية بوحدة الوات (القيمة السالب تعني أنه جارٍ شحن البطارية)</translation>
 <translation id="4256316378292851214">حف&amp;ظ الفيديو باسم...</translation>
 <translation id="4258348331913189841">أنظمة الملفات</translation>
+<translation id="4263223596040212967">يُرجى التحقق من تنسيق لوحة المفاتيح وإعادة المحاولة.</translation>
 <translation id="4263757076580287579">تم إلغاء تسجيل الطابعة.</translation>
 <translation id="426564820080660648">‏للتحقق من وجود تحديثات، يُرجى استخدام شبكة Ethernet أو Wi-Fi أو بيانات الجوّال.</translation>
 <translation id="4267953847983678297">الاتصال بشبكة الجوّال تلقائيًا</translation>
@@ -2320,6 +2326,7 @@
 <translation id="4416582610654027550">‏يُرجى كتابة عنوان URL صالح</translation>
 <translation id="4419409365248380979">السماح للموقع <ph name="HOST" /> بتعيين ملفات تعريف الارتباط دومًا</translation>
 <translation id="4419610272958564173">جهاز غير معروف (المورّد: <ph name="VENDOR_ID" />، المنتج: <ph name="PRODUCT_ID" />)</translation>
+<translation id="4421167684395067330">حدثت مشكلة أثناء الاتصال. يُرجى التواصل مع <ph name="CARRIER_NAME" /> للحصول على المساعدة.</translation>
 <translation id="4421932782753506458">الانتفاش</translation>
 <translation id="4423376891418188461">استعادة الإعدادات</translation>
 <translation id="442397852638519243">يا <ph name="USER_NAME" />، يطلب منك مشرفك تغيير كلمة المرور.</translation>
@@ -2995,6 +3002,7 @@
 <translation id="5457599981699367932">تصفَّح كزائر</translation>
 <translation id="5457991019809708398">مفعَّل، بلا تجوال</translation>
 <translation id="5458998536542739734">ملاحظات شاشة التأمين</translation>
+<translation id="546322474339998983">‏يتم استخدام محرك البحث من قِبَل متصفح Chromre ومشغّل التطبيقات للجهاز <ph name="DEVICE_TYPE" />.</translation>
 <translation id="5463231940765244860">Enter</translation>
 <translation id="5463275305984126951">فهرس المجلد <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">قائمة تحتوي على إشارات مخفية</translation>
@@ -3292,6 +3300,7 @@
 <translation id="5869948122057593679">إغلاق جميع النوافذ</translation>
 <translation id="5870086504539785141">إغلاق قائمة إمكانية الوصول</translation>
 <translation id="5870155679953074650">الأخطاء الجسيمة</translation>
+<translation id="5876851302954717356">وضع علامة جديدة يمينًا</translation>
 <translation id="5877064549588274448">تم تغيير القناة. يمكنك إعادة تشغيل الجهاز لتدخل التغييرات حيز التنفيذ.</translation>
 <translation id="5877584842898320529">الطابعة المُختارة غير متاحة أو لم يتم تثبيتها بشكلٍ صحيح. <ph name="BR" /> يُرجى التحقُّق من الطابعة أو تجربة اختيار طابعة أخرى.</translation>
 <translation id="5882919346125742463">الشبكات المعروفة</translation>
@@ -4338,7 +4347,7 @@
 <translation id="7441830548568730290">المستخدمون الآخرون</translation>
 <translation id="7442465037756169001">‏جهاز Hangouts Meet جاهز للإعداد.</translation>
 <translation id="744341768939279100">إنشاء ملف شخصي جديد</translation>
-<translation id="7443806024147773267">‏يمكنك الوصول إلى كلمات المرور وقتما تسجّل الدخول إلى حسابك على Google.</translation>
+<translation id="7443806024147773267">‏يمكنك الوصول إلى كلمات المرور عند تسجيل الدخول إلى حسابك على Google.</translation>
 <translation id="7444046173054089907">تم حظر هذا الموقع</translation>
 <translation id="7444983668544353857">إيقاف <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">يمكنك تثبيت التطبيقات تلقائيًا.</translation>
@@ -4491,6 +4500,7 @@
 <translation id="7685049629764448582">ذاكرة جافا سكريبت</translation>
 <translation id="7685087414635069102">رقم التعريف الشخصي مطلوب</translation>
 <translation id="7685301384041462804">تأكّد من أنك تثق في هذا الموقع الإلكتروني قبل الانتقال إلى وضع "الواقع الافتراضي".</translation>
+<translation id="768549422429443215">يمكنك إضافة اللغات أو إعادة ترتيب القائمة.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">تأكيد كلمة المرور الجديدة</translation>
 <translation id="7690378713476594306">اختيار من القائمة</translation>
@@ -4552,6 +4562,7 @@
 <translation id="7773726648746946405">مساحة تخزين الجلسة</translation>
 <translation id="7774365994322694683">طائر</translation>
 <translation id="7776701556330691704">لم يتم العثور على الإعدادات الصوتية في ميزة "تحويل النص إلى كلام"</translation>
+<translation id="7780252971640011240">حدثت مشكلة أثناء الاتصال. يُرجى الاتصال بمشغّل شبكة الجوّال للحصول على المساعدة.</translation>
 <translation id="7781335840981796660">ستتم إزالة جميع حسابات المستخدمين والبيانات المحلية.</translation>
 <translation id="7782102568078991263">‏ليس هناك المزيد من الاقتراحات من Google</translation>
 <translation id="7782717250816686129">يمكنك تخزين البيانات الثابتة في شاشة تسجيل الدخول وإدخال بيانات الاعتماد في الجلسة.</translation>
@@ -4931,7 +4942,7 @@
     <ph name="BEGIN_PARAGRAPH2" />لن يؤثر إيقاف هذه الميزة في قدرة هذا الجهاز على إرسال المعلومات المطلوبة للحصول على خدمات أساسية، مثل تحديثات النظام والأمان.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />يمكن للمالك التحكُّم في هذه الميزة من "الإعدادات" &gt; "إعدادات متقدمة" &gt; إرسال بيانات التشخيص والاستخدام إلى Google تلقائيًا.<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />في حال تفعيل إعداد "النشاط على الويب وفي التطبيقات" الإضافي في حساب طفلك على Google، قد يتم حفظ هذه البيانات في هذا الحساب. ويمكنك معرفة مزيد من المعلومات عن هذه الإعدادات وكيفية ضبطها على families.google.com.<ph name="END_PARAGRAPH4" /></translation>
-<translation id="826905130698769948">شهادة عميل غير صالحة</translation>
+<translation id="826905130698769948">شهادة العميل غير صالحة</translation>
 <translation id="8270242299912238708">‏مستندات PDF</translation>
 <translation id="827097179112817503">عرض زر الصفحة الرئيسية</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{تم حذف إشارة مرجعية واحدة}zero{تم حذف # إشارة مرجعية}two{تم حذف إشارتين مرجعيتين (#)}few{تم حذف # إشارات مرجعية}many{تم حذف # إشارةً مرجعيةً}other{تم حذف # إشارة مرجعية}}</translation>
@@ -5343,7 +5354,7 @@
 <translation id="8874184842967597500">غير متصل</translation>
 <translation id="8876307312329369159">لا يمكن تغيير هذا الإعداد في جلسة تجريبية.</translation>
 <translation id="8877448029301136595">[الدليل الأصل]</translation>
-<translation id="8879220587046205278">‏يمكن أن تتطلب التطبيقات من Google Play إذن الوصول الكامل إلى نظام الملفات لقراءة الملفات وكتابتها على أجهزة التخزين الخارجية. تكون الملفات والمجلدات التي تم إنشاؤها على الجهاز مرئية لأيِّ شخص يستخدم محرك الأقراص الخارجي.</translation>
+<translation id="8879220587046205278">‏يمكن أن تتطلب التطبيقات من Google Play إذن الوصول الكامل إلى نظام الملفات لقراءة الملفات وكتابتها على أجهزة التخزين الخارجية. تظهر الملفات والمجلدات التي تم إنشاؤها على الجهاز لأيّ شخص يستخدم محرك الأقراص الخارجي.</translation>
 <translation id="8879284080359814990">إ&amp;ظهار كعلامة تبويب</translation>
 <translation id="8879921471468674457">تذكّر معلومات تسجيل الدخول</translation>
 <translation id="8881020143150461183">يُرجى إعادة المحاولة. للحصول على الدعم الفني، يُرجى التواصل مع <ph name="CARRIER_NAME" />.</translation>

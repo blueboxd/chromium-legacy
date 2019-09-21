@@ -169,6 +169,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="2220529011494928058">Pranešti apie problemą</translation>
 <translation id="2223693656926968778">Imtis veiksmų dėl dabartinio elemento</translation>
 <translation id="225732394367814946">Padidinti kalbos tempą</translation>
+<translation id="2267538686624070261">Palikta rašybos klaida</translation>
 <translation id="2267945578749931355">Kitas simbolis</translation>
 <translation id="2278490101488436824">Perbraukite trim pirštais kairėn</translation>
 <translation id="2281234842553884450">Ankstesnis šliaužiklis</translation>
@@ -207,6 +208,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="257674075312929031">Grupė</translation>
 <translation id="2582407057977008361">Šalia</translation>
 <translation id="2592212930811759050">Norėdami pradėti redaguoti palieskite dukart</translation>
+<translation id="2598495320872286378">Gramatikos klaida</translation>
 <translation id="2614981083756825552">Matematikos žymėjimo kalbos išdėstymas</translation>
 <translation id="2624431853467395961">Atidarykite mokomąjį režimą</translation>
 <translation id="2626530649491650971">spustelėjamas</translation>
@@ -821,6 +823,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="6833103209700200188">Poraštė</translation>
 <translation id="6858047746862060282">Prologas</translation>
 <translation id="6859876496651143278">Perbraukite vienu pirštu kairėn</translation>
+<translation id="6865519907510167493">Rašybos klaida</translation>
 <translation id="6871161210040114857">Nepaisoma didžiųjų ir mažųjų raidžių rašybos.</translation>
 <translation id="6877435256196695200">Nėra kito grafinio elemento.</translation>
 <translation id="6897341342232909480">Perkelti į kairę</translation>
@@ -1111,6 +1114,7 @@ Jei norite atidaryti „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.
 <translation id="8446884382197647889">Sužinokite daugiau</translation>
 <translation id="8455868257606149352">Maks. <ph name="X" /></translation>
 <translation id="84575901236241018">turi prieigos klavišą, <ph name="KEY" /></translation>
+<translation id="8463645336674919227">Palikta gramatikos klaida</translation>
 <translation id="847154984256717791">užimtas</translation>
 <translation id="8476408756881832830">Pristabdyti atkūrimą, kai kalba „ChromeVox“</translation>
 <translation id="8476508772960940536">lango apžvalga</translation>

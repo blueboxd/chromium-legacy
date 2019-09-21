@@ -262,11 +262,7 @@ AccessibilityControllerImpl::AccessibilityControllerImpl()
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }
 
-AccessibilityControllerImpl::~AccessibilityControllerImpl() {
-  if (Shell::Get()->tablet_mode_controller())
-    Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
-  Shell::Get()->session_controller()->RemoveObserver(this);
-}
+AccessibilityControllerImpl::~AccessibilityControllerImpl() = default;
 
 // static
 void AccessibilityControllerImpl::RegisterProfilePrefs(
@@ -357,6 +353,14 @@ void AccessibilityControllerImpl::RegisterProfilePrefs(
 
   // In production the prefs are owned by chrome.
   // TODO(jamescook): Move ownership to ash.
+}
+
+void AccessibilityControllerImpl::Shutdown() {
+  Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
+  Shell::Get()->session_controller()->RemoveObserver(this);
+
+  for (auto& observer : observers_)
+    observer.OnAccessibilityControllerShutdown();
 }
 
 void AccessibilityControllerImpl::SetHighContrastAcceleratorDialogAccepted() {

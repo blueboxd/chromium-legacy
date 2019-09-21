@@ -83,8 +83,7 @@ InterpolatingLayoutManager::GetInterpolation(
   return result;
 }
 
-views::LayoutManagerBase::ProposedLayout
-InterpolatingLayoutManager::CalculateProposedLayout(
+views::ProposedLayout InterpolatingLayoutManager::CalculateProposedLayout(
     const views::SizeBounds& size_bounds) const {
   // For interpolating layout we will never call this method except for fully-
   // specified sizes.
@@ -93,14 +92,17 @@ InterpolatingLayoutManager::CalculateProposedLayout(
   const gfx::Size size(*size_bounds.width(), *size_bounds.height());
 
   const LayoutInterpolation interpolation = GetInterpolation(size_bounds);
-  const ProposedLayout first = interpolation.first->GetProposedLayout(size);
+  const views::ProposedLayout first =
+      interpolation.first->GetProposedLayout(size);
 
   if (!interpolation.second)
     return first;
 
   // If the target size falls in an interpolation range, get the other layout.
-  const ProposedLayout second = interpolation.second->GetProposedLayout(size);
-  return Interpolate(interpolation.percent_second, first, second);
+  const views::ProposedLayout second =
+      interpolation.second->GetProposedLayout(size);
+  return views::ProposedLayoutBetween(interpolation.percent_second, first,
+                                      second);
 }
 
 void InterpolatingLayoutManager::SetDefaultLayout(

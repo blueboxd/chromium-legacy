@@ -323,10 +323,12 @@ ShelfLayoutManager::~ShelfLayoutManager() {
     Shell::Get()->app_list_controller()->RemoveObserver(this);
   if (Shell::Get()->overview_controller())
     Shell::Get()->overview_controller()->RemoveObserver(this);
+  Shell::Get()->split_view_controller()->RemoveObserver(this);
 }
 
 void ShelfLayoutManager::InitObservers() {
   Shell::Get()->AddShellObserver(this);
+  Shell::Get()->split_view_controller()->AddObserver(this);
   Shell::Get()->overview_controller()->AddObserver(this);
   Shell::Get()->app_list_controller()->AddObserver(this);
   Shell::Get()
@@ -759,12 +761,12 @@ void ShelfLayoutManager::OnPinnedStateChanged(aura::Window* pinned_window) {
   UpdateVisibilityState();
 }
 
-void ShelfLayoutManager::OnSplitViewModeStarted() {
-  MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
-}
-
-void ShelfLayoutManager::OnSplitViewModeEnded() {
-  MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
+void ShelfLayoutManager::OnSplitViewStateChanged(SplitViewState previous_state,
+                                                 SplitViewState state) {
+  if (previous_state == SplitViewState::kNoSnap ||
+      state == SplitViewState::kNoSnap) {
+    MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
+  }
 }
 
 void ShelfLayoutManager::OnOverviewModeStarting() {
@@ -962,7 +964,7 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   state.window_state =
       GetShelfWorkspaceWindowState(shelf_widget_->GetNativeWindow());
   state.hotseat_state =
-      GetHotseatState(state.visibility_state, state.auto_hide_state);
+      CalculateHotseatState(state.visibility_state, state.auto_hide_state);
   // Preserve the log in screen states.
   state.session_state = state_.session_state;
   state.pre_lock_screen_animation_active =
@@ -1043,10 +1045,9 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   }
 }
 
-HotseatState ShelfLayoutManager::GetHotseatState(
+HotseatState ShelfLayoutManager::CalculateHotseatState(
     ShelfVisibilityState visibility_state,
     ShelfAutoHideState auto_hide_state) {
-  // TODO(https://crbug.com/1002132): Add tests for this behavior.
   if (!IsHotseatEnabled() || !shelf_->IsHorizontalAlignment())
     return HotseatState::kShown;
 
@@ -1100,6 +1101,11 @@ HotseatState ShelfLayoutManager::GetHotseatState(
         return HotseatState::kHidden;
       return HotseatState::kExtended;
     }
+    case kDragAppListInProgress:
+      if (is_app_list_visible_ && home_launcher_animation_state_ == kFinished) {
+        return HotseatState::kShown;
+      }
+      return state_.hotseat_state;
     default:
       // Do not change the hotseat state until the drag is complete or
       // canceled.

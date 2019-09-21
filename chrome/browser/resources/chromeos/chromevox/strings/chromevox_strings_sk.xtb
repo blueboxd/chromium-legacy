@@ -168,6 +168,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="2220529011494928058">Nahlásiť problém</translation>
 <translation id="2223693656926968778">Prejsť na aktuálnu položku</translation>
 <translation id="225732394367814946">Zvýšiť rýchlosť reči</translation>
+<translation id="2267538686624070261">Preklep nebol opravený</translation>
 <translation id="2267945578749931355">Ďalší znak</translation>
 <translation id="2278490101488436824">Potiahnite troma prstami doľava</translation>
 <translation id="2281234842553884450">Predchádzajúci posúvač</translation>
@@ -206,6 +207,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="257674075312929031">Skupina</translation>
 <translation id="2582407057977008361">Vedľa</translation>
 <translation id="2592212930811759050">Začnite upravovať dvojitým klepnutím</translation>
+<translation id="2598495320872286378">Gramatická chyba</translation>
 <translation id="2614981083756825552">Rozloženie jazyka Math ML</translation>
 <translation id="2624431853467395961">Otvoriť režim učenia</translation>
 <translation id="2626530649491650971">kliknuteľné</translation>
@@ -820,6 +822,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="6833103209700200188">Päta</translation>
 <translation id="6858047746862060282">Prológ</translation>
 <translation id="6859876496651143278">Potiahnite prstom doľava</translation>
+<translation id="6865519907510167493">Preklep</translation>
 <translation id="6871161210040114857">Malé a veľké písmená sa ignorujú.</translation>
 <translation id="6877435256196695200">Žiadna ďalšia grafika</translation>
 <translation id="6897341342232909480">Posunúť doľava</translation>
@@ -1110,6 +1113,7 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="8446884382197647889">Ďalšie informácie</translation>
 <translation id="8455868257606149352">Max. <ph name="X" /></translation>
 <translation id="84575901236241018">má prístupový kľúč <ph name="KEY" /></translation>
+<translation id="8463645336674919227">Gramatická chyba sa neopraví</translation>
 <translation id="847154984256717791">zaneprázdnené</translation>
 <translation id="8476408756881832830">Pri hlasovej odozve ChromeVox pozastaviť prehrávanie</translation>
 <translation id="8476508772960940536">prehľad okien</translation>

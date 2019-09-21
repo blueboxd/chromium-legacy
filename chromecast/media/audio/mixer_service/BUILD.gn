@@ -16,33 +16,54 @@ proto_library("proto") {
 cast_source_set("common") {
   sources = [
     "constants.h",
-    "proto_helpers.cc",
-    "proto_helpers.h",
+    "conversions.cc",
+    "conversions.h",
+    "mixer_socket.cc",
+    "mixer_socket.h",
   ]
 
   deps = [
-    ":proto",
     "//base",
-    "//chromecast/net:small_message_socket",
+    "//chromecast/public",
+    "//chromecast/public/media",
     "//net",
+  ]
+
+  public_deps = [
+    ":proto",
+    "//chromecast/net:small_message_socket",
   ]
 }
 
 cast_source_set("connection") {
   sources = [
-    "mixer_service_connection.cc",
-    "mixer_service_connection.h",
-    "mixer_service_connection_factory.cc",
-    "mixer_service_connection_factory.h",
+    "mixer_connection.cc",
+    "mixer_connection.h",
   ]
 
   deps = [
     ":common",
-    ":proto",
     "//base",
     "//chromecast/base",
     "//chromecast/media/audio:audio_buildflags",
-    "//chromecast/net:small_message_socket",
     "//net",
+  ]
+}
+
+cast_source_set("output_stream_connection") {
+  sources = [
+    "output_stream_connection.cc",
+    "output_stream_connection.h",
+  ]
+
+  deps = [
+    ":common",
+    ":connection",
+    "//base",
+    "//net",
+  ]
+
+  public_deps = [
+    ":proto",
   ]
 }

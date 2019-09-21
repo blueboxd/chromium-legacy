@@ -26,19 +26,23 @@ export class TestTabsApiProxy extends TestBrowserProxy {
       'activateTab',
       'closeTab',
       'getCurrentWindow',
+      'getTab',
       'moveTab',
       'trackThumbnailForTab',
     ]);
 
     this.callbackRouter = {
       onActivated: new EventDispatcher(),
+      onAttached: new EventDispatcher(),
       onCreated: new EventDispatcher(),
+      onDetached: new EventDispatcher(),
       onMoved: new EventDispatcher(),
       onRemoved: new EventDispatcher(),
       onUpdated: new EventDispatcher(),
     };
 
     this.currentWindow_;
+    this.tab_;
   }
 
   activateTab(tabId) {
@@ -56,6 +60,11 @@ export class TestTabsApiProxy extends TestBrowserProxy {
     return Promise.resolve(this.currentWindow_);
   }
 
+  getTab(tabId) {
+    this.methodCalled('getTab', tabId);
+    return Promise.resolve(this.tab_);
+  }
+
   moveTab(tabId, newIndex) {
     this.methodCalled('moveTab', [tabId, newIndex]);
     return Promise.resolve();
@@ -63,6 +72,10 @@ export class TestTabsApiProxy extends TestBrowserProxy {
 
   setCurrentWindow(currentWindow) {
     this.currentWindow_ = currentWindow;
+  }
+
+  setTab(tab) {
+    this.tab_ = tab;
   }
 
   trackThumbnailForTab(tabId) {

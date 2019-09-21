@@ -18,7 +18,7 @@ ExtensionTabUtilDelegateChromeOS::ExtensionTabUtilDelegateChromeOS() {}
 
 ExtensionTabUtilDelegateChromeOS::~ExtensionTabUtilDelegateChromeOS() {}
 
-ExtensionTabUtil::ScrubTabBehavior
+ExtensionTabUtil::ScrubTabBehaviorType
 ExtensionTabUtilDelegateChromeOS::GetScrubTabBehavior(
     const Extension* extension) {
   if (!profiles::ArePublicSessionRestrictionsEnabled() ||

@@ -93,6 +93,7 @@
 <translation id="2149973817440762519">Yer İşaretini Düzenle</translation>
 <translation id="2179182049312275900">Senkronizasyonu istediğiniz zaman ayarlardan açabilirsiniz</translation>
 <translation id="2198757192731523470">Google; Arama, reklamlar ve diğer Google hizmetlerini kişiselleştirmek için geçmişinizi kullanabilir</translation>
+<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> okunmamış Okuma Listesi makalesi.</translation>
 <translation id="2230173723195178503">Web sayfası yüklendi</translation>
 <translation id="2239626343334228536">Göz atma verileri temizleniyor...</translation>
 <translation id="2256128224215992540">Arama ve Site Önerileri</translation>
@@ -108,6 +109,7 @@
 <translation id="2360196772093551345">Mobil Site İste</translation>
 <translation id="2381405137052800939">Temel ayarlar</translation>
 <translation id="2386793615875593361">1 fotoğraf seçildi</translation>
+<translation id="2421044535038393232">Düzenlemeye Devam Et</translation>
 <translation id="2435457462613246316">Şifreyi göster</translation>
 <translation id="2481538920734869610">HESAP EKLE</translation>
 <translation id="2497852260688568942">Yöneticiniz senkronizasyonu devre dışı bıraktı</translation>
@@ -227,6 +229,7 @@
 <translation id="418156467088430727">Çevrimdışı Sürümü Yeni Sekmede Göster</translation>
 <translation id="4181841719683918333">Diller</translation>
 <translation id="424315890655130736">Parolayı Girin</translation>
+<translation id="4263576668337963058">Kullanılabilir sayfa işlemlerini göster</translation>
 <translation id="4272631900155121838">QR kodu taramak için ayarlardan kamerayı etkinleştirin.</translation>
 <translation id="4281844954008187215">Hizmet Şartları</translation>
 <translation id="430793432425771671">Her Şeyi Senkronize Et</translation>
@@ -264,6 +267,7 @@ Verileriniz senkronizasyon parolanızla şifrelendi. Senkronizasyonu başlatmak 
 
 Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlayın<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">Geçersiz Kart Numarası</translation>
+<translation id="4807020197310989387">1 okunmamış Okuma Listesi makalesi.</translation>
 <translation id="4818522717893377262">Dil Ekle...</translation>
 <translation id="481968316161811770">Çerezler, Site Verileri</translation>
 <translation id="4833786495304741580">Kullanım istatistiklerini ve kilitlenme raporlarını Google'a otomatik olarak gönderir.</translation>

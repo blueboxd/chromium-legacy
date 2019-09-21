@@ -40,7 +40,7 @@ void MarkURLRequestDestroyed(bool* url_request_destroyed) {
 // data. Erases the sent reports from |expect_reports|.
 void CheckUploadData(const URLRequest& request,
                      std::set<std::string>* expect_reports) {
-  const UploadDataStream* upload = request.get_upload();
+  const UploadDataStream* upload = request.get_upload_for_testing();
   ASSERT_TRUE(upload);
   ASSERT_TRUE(upload->GetElementReaders());
   ASSERT_EQ(1u, upload->GetElementReaders()->size());

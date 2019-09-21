@@ -407,6 +407,13 @@ void ArcGraphicsTracingHandler::StartTracing() {
       "gfx,disabled-by-default-android hal,disabled-by-default-android view",
       base::trace_event::RECORD_CONTINUOUSLY);
   config.EnableSystrace();
+  // By default, systracing starts pre-defined set of categories with predefined
+  // set of events in each category. Limit events to what we actually analyze in
+  // ArcTracingModel.
+  config.EnableSystraceEvent("i915:intel_gpu_freq_change");
+  config.EnableSystraceEvent("power:cpu_idle");
+  config.EnableSystraceEvent("sched:sched_wakeup");
+  config.EnableSystraceEvent("sched:sched_switch");
   tracing_active_ = true;
   if (jank_detector_)
     jank_detector_->Reset();

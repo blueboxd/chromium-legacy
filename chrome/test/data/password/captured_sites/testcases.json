@@ -12,7 +12,7 @@
     { "scenario_dir":"capture_update_pass", "site_name":"librus" },
     { "scenario_dir":"capture_update_pass", "site_name":"mit" },
     { "scenario_dir":"capture_update_pass", "site_name":"naukri" },
-    { "scenario_dir":"capture_update_pass", "site_name":"nexon" },
+    { "scenario_dir":"capture_update_pass", "site_name":"nexon", "disabled":true, "bug_number":1006335 },
     { "scenario_dir":"capture_update_pass", "site_name":"paypal", "disabled":true, "bug_number":951847 },
     { "scenario_dir":"capture_update_pass", "site_name":"rakuten" },
     { "scenario_dir":"capture_update_pass", "site_name":"readtheory" },

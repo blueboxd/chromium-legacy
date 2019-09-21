@@ -43,9 +43,6 @@ namespace mswr = Microsoft::WRL;
 
 namespace content {
 
-using namespace dwrite_font_uma_logging;
-using namespace dwrite_font_file_util;
-
 namespace {
 
 // These are the fonts that Blink tries to load in getLastResortFallbackFont,

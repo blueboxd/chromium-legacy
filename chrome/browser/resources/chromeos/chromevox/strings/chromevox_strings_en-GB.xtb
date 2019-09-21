@@ -169,6 +169,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="2220529011494928058">Report an issue</translation>
 <translation id="2223693656926968778">Take action on current item</translation>
 <translation id="225732394367814946">Increase rate of speech</translation>
+<translation id="2267538686624070261">Leaving misspelled</translation>
 <translation id="2267945578749931355">Next Character</translation>
 <translation id="2278490101488436824">Swipe three fingers left</translation>
 <translation id="2281234842553884450">Previous slider</translation>
@@ -207,6 +208,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="257674075312929031">Group</translation>
 <translation id="2582407057977008361">Aside</translation>
 <translation id="2592212930811759050">Double-tap to start editing</translation>
+<translation id="2598495320872286378">Grammar error</translation>
 <translation id="2614981083756825552">Math ML Layout</translation>
 <translation id="2624431853467395961">Open learn mode</translation>
 <translation id="2626530649491650971">clickable</translation>
@@ -821,6 +823,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="6833103209700200188">Footer</translation>
 <translation id="6858047746862060282">Prologue</translation>
 <translation id="6859876496651143278">Swipe one finger left</translation>
+<translation id="6865519907510167493">Misspelled</translation>
 <translation id="6871161210040114857">Ignoring case.</translation>
 <translation id="6877435256196695200">No next graphic.</translation>
 <translation id="6897341342232909480">Move left</translation>
@@ -1111,6 +1114,7 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="8446884382197647889">Learn More</translation>
 <translation id="8455868257606149352">Max <ph name="X" /></translation>
 <translation id="84575901236241018">has access key, <ph name="KEY" /></translation>
+<translation id="8463645336674919227">Leaving grammar error</translation>
 <translation id="847154984256717791">busy</translation>
 <translation id="8476408756881832830">Pause playback when ChromeVox is speaking</translation>
 <translation id="8476508772960940536">window overview</translation>

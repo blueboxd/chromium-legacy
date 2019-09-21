@@ -701,14 +701,6 @@ BlendMode GraphicsLayer::GetBlendMode() const {
   return BlendModeFromSkBlendMode(CcLayer()->blend_mode());
 }
 
-bool GraphicsLayer::IsRootForIsolatedGroup() const {
-  return CcLayer()->is_root_for_isolated_group();
-}
-
-void GraphicsLayer::SetIsRootForIsolatedGroup(bool isolated) {
-  CcLayer()->SetIsRootForIsolatedGroup(isolated);
-}
-
 void GraphicsLayer::SetHitTestable(bool should_hit_test) {
   if (hit_testable_ == should_hit_test)
     return;

@@ -12,7 +12,6 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
-#include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
@@ -476,7 +475,7 @@ class AssistantOptInFlowTest : public MixinBasedInProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, Basic) {
-  arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(
+  ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
 
   SetUpAssistantScreensForTest();
@@ -512,7 +511,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, Basic) {
 }
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, DisableScreenContext) {
-  arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(
+  ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
 
   SetUpAssistantScreensForTest();
@@ -564,7 +563,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AssistantStateUpdateAfterShow) {
   test::OobeJS().ExpectHiddenPath({"assistant-optin-flow-card", "value-prop"});
   test::OobeJS().ExpectVisiblePath({"assistant-optin-flow-card", "loading"});
 
-  arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(
+  ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
 
   WaitForAssistantScreen("value-prop");
@@ -595,7 +594,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, RetryOnWebviewLoadFail) {
 
   assistant_optin_flow_screen_->Show();
 
-  arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(
+  ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
 
   OobeScreenWaiter screen_waiter(AssistantOptInFlowScreenView::kScreenId);
@@ -631,7 +630,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, RetryOnWebviewLoadFail) {
 
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, RejectValueProp) {
   SetUpAssistantScreensForTest();
-  arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(
+  ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
 
   assistant_optin_flow_screen_->Show();
@@ -656,7 +655,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, RejectValueProp) {
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AskEmailOptIn_NotChecked) {
   assistant_settings_->set_consent_ui_flags(
       FakeAssistantSettings::CONSENT_UI_FLAG_ASK_EMAIL_OPT_IN);
-  arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(
+  ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
 
   SetUpAssistantScreensForTest();
@@ -697,7 +696,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AskEmailOptIn_NotChecked) {
 IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AskEmailOptIn_Accepted) {
   assistant_settings_->set_consent_ui_flags(
       FakeAssistantSettings::CONSENT_UI_FLAG_ASK_EMAIL_OPT_IN);
-  arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(
+  ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
 
   SetUpAssistantScreensForTest();
@@ -743,7 +742,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, SkipShowingValueProp) {
       FakeAssistantSettings::CONSENT_UI_FLAG_SKIP_ACTIVITY_CONTROL);
 
   SetUpAssistantScreensForTest();
-  arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(
+  ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
 
   assistant_optin_flow_screen_->Show();
@@ -778,7 +777,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
       FakeAssistantSettings::CONSENT_UI_FLAG_SKIP_THIRD_PARTY_DISCLOSURE);
 
   SetUpAssistantScreensForTest();
-  arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(
+  ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
 
   assistant_optin_flow_screen_->Show();
@@ -811,7 +810,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, SpeakerIdEnrollment) {
       FakeAssistantSettings::SpeakerIdEnrollmentMode::STEP_BY_STEP);
 
   SetUpAssistantScreensForTest();
-  arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(
+  ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
 
   assistant_optin_flow_screen_->Show();
@@ -901,7 +900,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
       FakeAssistantSettings::SpeakerIdEnrollmentMode::STEP_BY_STEP);
 
   SetUpAssistantScreensForTest();
-  arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(
+  ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
 
   assistant_optin_flow_screen_->Show();
@@ -953,7 +952,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest,
       FakeAssistantSettings::SpeakerIdEnrollmentMode::STEP_BY_STEP);
 
   SetUpAssistantScreensForTest();
-  arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(
+  ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
 
   assistant_optin_flow_screen_->Show();
@@ -1004,7 +1003,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, WAADisabledByPolicy) {
   assistant_settings_->set_consent_ui_flags(
       FakeAssistantSettings::CONSENT_UI_FLAG_WAA_DISABLED_BY_POLICY);
 
-  arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(
+  ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
   SetUpAssistantScreensForTest();
   assistant_optin_flow_screen_->Show();
@@ -1022,7 +1021,7 @@ IN_PROC_BROWSER_TEST_F(AssistantOptInFlowTest, AssistantDisabledByPolicy) {
   assistant_settings_->set_consent_ui_flags(
       FakeAssistantSettings::CONSENT_UI_FLAG_ASSISTANT_DISABLED_BY_POLICY);
 
-  arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(
+  ash::AssistantState::Get()->NotifyStatusChanged(
       ash::mojom::AssistantState::READY);
   SetUpAssistantScreensForTest();
   assistant_optin_flow_screen_->Show();

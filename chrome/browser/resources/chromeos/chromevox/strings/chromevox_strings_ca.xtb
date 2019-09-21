@@ -168,6 +168,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="2220529011494928058">Informa d'un problema</translation>
 <translation id="2223693656926968778">Emprèn una acció sobre l'element actual</translation>
 <translation id="225732394367814946">Augmenta la velocitat de la veu.</translation>
+<translation id="2267538686624070261">S'està deixant la paraula amb errors ortogràfics</translation>
 <translation id="2267945578749931355">Caràcter següent</translation>
 <translation id="2278490101488436824">Fes lliscar tres dits cap a l'esquerra</translation>
 <translation id="2281234842553884450">Control lliscant anterior</translation>
@@ -206,6 +207,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="257674075312929031">Grup</translation>
 <translation id="2582407057977008361">A part</translation>
 <translation id="2592212930811759050">Fes doble toc per començar a editar</translation>
+<translation id="2598495320872286378">Error gramatical</translation>
 <translation id="2614981083756825552">Disseny de MathML</translation>
 <translation id="2624431853467395961">Obre el mode d'aprenentatge</translation>
 <translation id="2626530649491650971">s'hi pot fer clic</translation>
@@ -820,6 +822,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="6833103209700200188">Peu</translation>
 <translation id="6858047746862060282">Pròleg</translation>
 <translation id="6859876496651143278">Fes lliscar un dit cap a l'esquerra</translation>
+<translation id="6865519907510167493">Conté errors ortogràfics</translation>
 <translation id="6871161210040114857">No es distingeix entre majúscula i minúscula.</translation>
 <translation id="6877435256196695200">No hi ha cap gràfic més.</translation>
 <translation id="6897341342232909480">Desplaça a l'esquerra</translation>
@@ -1110,6 +1113,7 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="8446884382197647889">Més informació</translation>
 <translation id="8455868257606149352">Màx.: <ph name="X" /></translation>
 <translation id="84575901236241018">té una tecla d'accés, <ph name="KEY" /></translation>
+<translation id="8463645336674919227">S'està ometent l'error gramatical</translation>
 <translation id="847154984256717791">ocupat</translation>
 <translation id="8476408756881832830">Pausa la reproducció quan ChromeVox parli</translation>
 <translation id="8476508772960940536">visió general de la finestra</translation>

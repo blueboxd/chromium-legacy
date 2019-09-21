@@ -7,11 +7,10 @@
 #include "base/stl_util.h"
 #include "chrome/browser/extensions/chrome_app_icon.h"
 #include "chrome/browser/extensions/chrome_app_icon_service.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 
@@ -20,11 +19,7 @@ namespace extensions {
 namespace {
 
 const Extension* GetExtensionByID(Profile* profile, const std::string& id) {
-  ExtensionService* service =
-      ExtensionSystem::Get(profile)->extension_service();
-  if (!service)
-    return nullptr;
-  return service->GetInstalledExtension(id);
+  return ExtensionRegistry::Get(profile)->GetInstalledExtension(id);
 }
 
 }  // namespace

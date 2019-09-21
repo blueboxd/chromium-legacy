@@ -256,7 +256,7 @@ IN_PROC_BROWSER_TEST_F(CastMirroringServiceHostBrowserTest, CaptureTabAudio) {
 
 IN_PROC_BROWSER_TEST_F(CastMirroringServiceHostBrowserTest, TabIndicator) {
   ASSERT_EQ(TabAlertState::NONE,
-            chrome::GetTabAlertStateForContents(
+            chrome::GetHighestPriorityTabAlertStateForContents(
                 browser()->tab_strip_model()->GetActiveWebContents()));
 
   // A TabStripModelObserver that quits the MessageLoop whenever the UI's model
@@ -265,7 +265,7 @@ IN_PROC_BROWSER_TEST_F(CastMirroringServiceHostBrowserTest, TabIndicator) {
    public:
     explicit IndicatorChangeObserver(Browser* browser)
         : browser_(browser),
-          last_alert_state_(chrome::GetTabAlertStateForContents(
+          last_alert_state_(chrome::GetHighestPriorityTabAlertStateForContents(
               browser->tab_strip_model()->GetActiveWebContents())) {
       browser_->tab_strip_model()->AddObserver(this);
     }
@@ -276,7 +276,7 @@ IN_PROC_BROWSER_TEST_F(CastMirroringServiceHostBrowserTest, TabIndicator) {
                       int index,
                       TabChangeType change_type) override {
       const TabAlertState alert_state =
-          chrome::GetTabAlertStateForContents(contents);
+          chrome::GetHighestPriorityTabAlertStateForContents(contents);
       if (alert_state != last_alert_state_) {
         last_alert_state_ = alert_state;
         if (on_tab_changed_)

@@ -7,10 +7,11 @@
 
 #include <memory>
 
-#include "ash/app_list/app_list_controller_observer.h"
 #include "ash/ash_export.h"
 #include "ash/home_screen/home_launcher_gesture_handler_observer.h"
+#include "ash/public/cpp/app_list/app_list_controller_observer.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/split_view.h"
 #include "ash/public/cpp/wallpaper_controller.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/session/session_observer.h"
@@ -47,7 +48,7 @@ enum class AnimationChangeType;
 class PanelLayoutManagerTest;
 class Shelf;
 class ShelfLayoutManagerObserver;
-class ShelfLayoutManagerTest;
+class ShelfLayoutManagerTestBase;
 class ShelfWidget;
 
 // ShelfLayoutManager is the layout manager responsible for the shelf and
@@ -60,6 +61,7 @@ class ShelfWidget;
 class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
                                       public HomeLauncherGestureHandlerObserver,
                                       public ShellObserver,
+                                      public SplitViewObserver,
                                       public OverviewObserver,
                                       public ::wm::ActivationChangeObserver,
                                       public LockStateObserver,
@@ -170,8 +172,10 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   void OnShelfAutoHideBehaviorChanged(aura::Window* root_window) override;
   void OnUserWorkAreaInsetsChanged(aura::Window* root_window) override;
   void OnPinnedStateChanged(aura::Window* pinned_window) override;
-  void OnSplitViewModeStarted() override;
-  void OnSplitViewModeEnded() override;
+
+  // SplitViewObserver:
+  void OnSplitViewStateChanged(SplitViewState previous_state,
+                               SplitViewState state) override;
 
   // OverviewObserver:
   void OnOverviewModeStarting() override;
@@ -231,6 +235,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
   bool updating_bounds() const { return updating_bounds_; }
   bool is_app_list_visible() const { return is_app_list_visible_; }
   ShelfAutoHideState auto_hide_state() const { return state_.auto_hide_state; }
+  HotseatState hotseat_state() const { return state_.hotseat_state; }
 
   // TODO(harrym|oshima): These templates will be moved to a new Shelf class.
   // A helper function for choosing values specific to a shelf alignment.
@@ -257,7 +262,7 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
  private:
   class UpdateShelfObserver;
   friend class PanelLayoutManagerTest;
-  friend class ShelfLayoutManagerTest;
+  friend class ShelfLayoutManagerTestBase;
   friend class NotificationTrayTest;
 
   struct TargetBounds {
@@ -312,8 +317,8 @@ class ASH_EXPORT ShelfLayoutManager : public AppListControllerObserver,
 
   // Gets the target HotseatState based on the current state of HomeLauncher,
   // Overview, Shelf, and any active gestures.
-  HotseatState GetHotseatState(ShelfVisibilityState visibility_state,
-                               ShelfAutoHideState auto_hide_state);
+  HotseatState CalculateHotseatState(ShelfVisibilityState visibility_state,
+                                     ShelfAutoHideState auto_hide_state);
 
   // Returns shelf visibility state based on current value of auto hide
   // behavior setting.

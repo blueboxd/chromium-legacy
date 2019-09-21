@@ -154,9 +154,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 
   int provisional_frame_routing_id() { return provisional_frame_routing_id_; }
 
-  // Returns the widget used for the local frame root.
-  RenderWidget* render_widget() { return render_widget_; }
-
   void SynchronizeVisualProperties();
 
   const gfx::Rect& screen_space_rect() const {
@@ -299,7 +296,11 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   std::unique_ptr<ChildFrameCompositingHelper> compositing_helper_;
 
   RenderViewImpl* render_view_;
-  RenderWidget* render_widget_;
+
+  // The widget used for the local frame root. Can be nullptr if there
+  // is no local frame root. This happens for main frame proxies or subframes of
+  // main frame proxies.
+  RenderWidget* render_widget_ = nullptr;
 
   // Contains token to be used as a frame id in the devtools protocol.
   // It is derived from the content's devtools_frame_token, is

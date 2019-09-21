@@ -3217,6 +3217,8 @@ class DetachToBrowserTabDragControllerTestTouch
   DetachToBrowserTabDragControllerTestTouch() {}
   virtual ~DetachToBrowserTabDragControllerTestTouch() {}
 
+  void TearDown() override { ui::SetEventTickClockForTesting(nullptr); }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DetachToBrowserTabDragControllerTestTouch);
 };
@@ -3434,7 +3436,6 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTestTouch,
   ASSERT_FALSE(tab_strip->GetDragContext()->IsDragSessionActive());
   ASSERT_FALSE(TabDragController::IsActive());
   EXPECT_EQ(2u, browser_list->size());
-  ui::SetEventTickClockForTesting(nullptr);
 }
 
 #endif  // OS_CHROMEOS

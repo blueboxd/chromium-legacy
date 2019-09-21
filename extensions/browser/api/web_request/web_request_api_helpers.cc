@@ -328,7 +328,7 @@ static_assert(ValidateHeaderEntries(kResponseHeaderEntries),
 bool HasMatchingRemovedDNRRequestHeader(
     const extensions::WebRequestInfo& request,
     const std::string& header) {
-  for (const auto& action : request.dnr_actions) {
+  for (const auto& action : *request.dnr_actions) {
     if (std::find_if(action.request_headers_to_remove.begin(),
                      action.request_headers_to_remove.end(),
                      [&header](const char* header_to_remove) {
@@ -345,7 +345,7 @@ bool HasMatchingRemovedDNRRequestHeader(
 bool HasMatchingRemovedDNRResponseHeader(
     const extensions::WebRequestInfo& request,
     const std::string& header) {
-  for (const auto& action : request.dnr_actions) {
+  for (const auto& action : *request.dnr_actions) {
     if (std::find_if(action.response_headers_to_remove.begin(),
                      action.response_headers_to_remove.end(),
                      [&header](const char* header_to_remove) {
@@ -968,7 +968,7 @@ void MergeOnBeforeSendHeadersResponses(
 
         // Prevent extensions from adding any header removed by the Declarative
         // Net Request API.
-        DCHECK(!request.dnr_actions.empty());
+        DCHECK(request.dnr_actions);
         if (HasMatchingRemovedDNRRequestHeader(request, key)) {
           extension_conflicts = true;
           break;
@@ -1340,8 +1340,7 @@ void MergeOnHeadersReceivedResponses(
 
     // Prevent extensions from adding any response header which was removed by
     // the Declarative Net Request API.
-    DCHECK(!request.dnr_actions.empty());
-
+    DCHECK(request.dnr_actions);
     if (!extension_conflicts) {
       for (const ResponseHeader& header : delta.added_response_headers) {
         if (HasMatchingRemovedDNRResponseHeader(request, header.first)) {

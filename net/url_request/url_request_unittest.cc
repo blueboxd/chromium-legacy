@@ -1195,20 +1195,6 @@ TEST_F(URLRequestInterceptorTest, InterceptLoadTimingEarlyConnectWithProxy) {
                                    CONNECT_TIMING_HAS_CONNECT_TIMES_ONLY);
 }
 
-// Check that two different URL requests have different identifiers.
-TEST_F(URLRequestTest, Identifiers) {
-  TestDelegate d;
-  TestURLRequestContext context;
-  std::unique_ptr<URLRequest> req(
-      context.CreateRequest(GURL("http://example.com"), DEFAULT_PRIORITY, &d,
-                            TRAFFIC_ANNOTATION_FOR_TESTS));
-  std::unique_ptr<URLRequest> other_req(
-      context.CreateRequest(GURL("http://example.com"), DEFAULT_PRIORITY, &d,
-                            TRAFFIC_ANNOTATION_FOR_TESTS));
-
-  ASSERT_NE(req->identifier(), other_req->identifier());
-}
-
 TEST_F(URLRequestTest, NetworkDelegateProxyError) {
   MockHostResolver host_resolver;
   host_resolver.rules()->AddSimulatedFailure("*");

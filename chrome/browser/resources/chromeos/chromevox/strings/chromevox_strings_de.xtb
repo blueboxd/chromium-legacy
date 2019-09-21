@@ -168,6 +168,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="2220529011494928058">Problem melden</translation>
 <translation id="2223693656926968778">Aktion für aktuelles Element durchführen</translation>
 <translation id="225732394367814946">Sprechgeschwindigkeit erhöhen</translation>
+<translation id="2267538686624070261">Rechtschreibfehler ignoriert</translation>
 <translation id="2267945578749931355">Nächstes Zeichen</translation>
 <translation id="2278490101488436824">Mit drei Fingern nach links wischen</translation>
 <translation id="2281234842553884450">Vorheriger Schieberegler</translation>
@@ -206,6 +207,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="257674075312929031">Gruppe</translation>
 <translation id="2582407057977008361">Aside-Element</translation>
 <translation id="2592212930811759050">Zum Bearbeiten doppeltippen</translation>
+<translation id="2598495320872286378">Grammatikfehler</translation>
 <translation id="2614981083756825552">MathML-Layout</translation>
 <translation id="2624431853467395961">Lernmodus öffnen</translation>
 <translation id="2626530649491650971">anklickbar</translation>
@@ -820,6 +822,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="6833103209700200188">Footer-Element</translation>
 <translation id="6858047746862060282">Prolog</translation>
 <translation id="6859876496651143278">Mit einem Finger nach links wischen</translation>
+<translation id="6865519907510167493">Rechtschreibfehler</translation>
 <translation id="6871161210040114857">Groß- und Kleinschreibung wird nicht beachtet.</translation>
 <translation id="6877435256196695200">Keine nächste Grafik</translation>
 <translation id="6897341342232909480">Nach links</translation>
@@ -1110,6 +1113,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="8446884382197647889">Weitere Informationen</translation>
 <translation id="8455868257606149352">Max.: <ph name="X" /></translation>
 <translation id="84575901236241018">verfügt über den Zugriffsschlüssel <ph name="KEY" />.</translation>
+<translation id="8463645336674919227">Grammatikfehler ignoriert</translation>
 <translation id="847154984256717791">beschäftigt</translation>
 <translation id="8476408756881832830">Wiedergabe pausieren, wenn eine Sprachausgabe durch ChromeVox stattfindet</translation>
 <translation id="8476508772960940536">Fensterübersicht</translation>

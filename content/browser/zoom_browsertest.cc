@@ -366,10 +366,6 @@ IN_PROC_BROWSER_TEST_F(IFrameZoomBrowserTest, SubframesDontZoomIndependently) {
   EXPECT_EQ(scale_one_child_width, GetSubframeWidth(child));
   EXPECT_EQ(scale_one_grandchild_width, GetSubframeWidth(grandchild));
 
-  // We exclude the remainder of this test on Android since Android does not
-  // set page zoom levels for loading pages.
-  // See RenderFrameImpl::SetHostZoomLevel().
-#if !defined(OS_ANDROID)
   // When we navigate so that b.com is the top-level site, then it has the
   // expected zoom.
   GURL new_url = embedded_test_server()->GetURL("b.com", "/title1.html");
@@ -377,7 +373,6 @@ IN_PROC_BROWSER_TEST_F(IFrameZoomBrowserTest, SubframesDontZoomIndependently) {
   EXPECT_DOUBLE_EQ(
       new_zoom_factor,
       GetMainFrameZoomFactor(web_contents(), main_frame_window_border));
-#endif
 }
 
 IN_PROC_BROWSER_TEST_F(IFrameZoomBrowserTest, AllFramesGetDefaultZoom) {
@@ -553,7 +548,6 @@ IN_PROC_BROWSER_TEST_F(IFrameZoomBrowserTest, SubframeRetainsZoomOnNavigation) {
 }
 
 // http://crbug.com/609213
-#if !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(IFrameZoomBrowserTest,
                        RedirectToPageWithSubframeZoomsCorrectly) {
   std::string initial_host("a.com");
@@ -585,15 +579,10 @@ IN_PROC_BROWSER_TEST_F(IFrameZoomBrowserTest,
               GetMainFrameZoomFactor(web_contents(), main_frame_window_border),
               0.01);
 }
-#endif
 
 // Tests that on cross-site navigation from a page that has a subframe, the
 // appropriate zoom is applied to the new page.
 // crbug.com/673065
-// Note: We exclude the this test on Android since Android does not set page
-// zoom levels for loading pages.
-// See RenderFrameImpl::SetHostZoomLevel().
-#if !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(IFrameZoomBrowserTest,
                        SubframesDontBreakConnectionToRenderer) {
   std::string top_level_host("a.com");
@@ -652,6 +641,5 @@ IN_PROC_BROWSER_TEST_F(IFrameZoomBrowserTest,
       GetMainFrameZoomFactor(web_contents(), main_frame_window_border),
       .1);
 }
-#endif
 
 }  // namespace content

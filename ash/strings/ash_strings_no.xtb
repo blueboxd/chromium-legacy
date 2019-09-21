@@ -41,6 +41,7 @@
 <translation id="1460620680449458626">Lyden er dempet.</translation>
 <translation id="1467432559032391204">Venstre</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
+<translation id="1516740043221086139">Ikke forstyrr er på.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Vis innstillinger for varsler. Varsler er slått av for en app}other{Vis innstillinger for varsler. Varsler er slått av for # apper}}</translation>
 <translation id="1525508553941733066">AVVIS</translation>
 <translation id="1537254971476575106">Lupe for hele skjermen</translation>
@@ -255,6 +256,7 @@
 <translation id="4585337515783392668">Stopp casting på en ukjent mottaker</translation>
 <translation id="4628757576491864469">Enheter</translation>
 <translation id="4659419629803378708">ChromeVox er slått på</translation>
+<translation id="4665114317261903604">Slå av/på Ikke forstyrr. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Lås opp enheten med foreldrekode</translation>
 <translation id="4731797938093519117">Foreldretilgang</translation>
 <translation id="4734965478015604180">Horisontal</translation>
@@ -353,6 +355,7 @@
 <translation id="6254629735336163724">Låst til horisontal</translation>
 <translation id="6259254695169772643">Bruk pekepennen til å velge</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: aktiveres …</translation>
+<translation id="6283712521836204486">Ikke forstyrr er av.</translation>
 <translation id="6284232397434400372">Oppløsningen er endret</translation>
 <translation id="6297287540776456956">Bruk pekepennen til å velge et område</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ble rotert til <ph name="ROTATION" /></translation>

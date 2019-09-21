@@ -96,6 +96,7 @@
 <translation id="1136712381129578788">The security key is locked because the wrong PIN was entered too many times. To unlock it, remove and reinsert it.</translation>
 <translation id="1137673463384776352">Open link in <ph name="APP" /></translation>
 <translation id="1140351953533677694">Access your Bluetooth and Serial devices</translation>
+<translation id="114036956334641753">Audio and captions</translation>
 <translation id="1140610710803014750">To get your bookmarks on all your devices, sign in and turn on sync.</translation>
 <translation id="1140746652461896221">Block content on any page that you visit</translation>
 <translation id="1143142264369994168">Certificate Signer</translation>
@@ -173,6 +174,7 @@
 <translation id="1235458158152011030">Known networks</translation>
 <translation id="123578888592755962">Disk full</translation>
 <translation id="1238191093934674082">Open VPN</translation>
+<translation id="1239594683407221485">Explore the device’s content in the Files app.</translation>
 <translation id="124116460088058876">More languages</translation>
 <translation id="1241753985463165747">Read and change all your data on the current website when invoked</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> wants to reset your settings.</translation>
@@ -312,6 +314,7 @@
 <translation id="146220085323579959">Internet disconnected. Please check your internet connection and try again.</translation>
 <translation id="1463112138205428654"><ph name="FILE_NAME" /> was blocked by Advanced Protection.</translation>
 <translation id="1464258312790801189">Your Accounts</translation>
+<translation id="1464781208867302907">For device preferences, go to Settings.</translation>
 <translation id="1465176863081977902">C&amp;opy Audio Address</translation>
 <translation id="1465827627707997754">Pizza slice</translation>
 <translation id="1468571364034902819">Can't use this profile</translation>
@@ -744,6 +747,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2099686503067610784">Delete server certificate "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="2100273922101894616">Auto Sign-in</translation>
 <translation id="2101225219012730419">Version:</translation>
+<translation id="2111670510994270194">New tab to the right</translation>
 <translation id="21133533946938348">Pin Tab</translation>
 <translation id="2113479184312716848">Open &amp;File...</translation>
 <translation id="2113921862428609753">Authority Information Access</translation>
@@ -1790,6 +1794,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3630995161997703415">Add this site to your shelf to use it at any time</translation>
 <translation id="3636096452488277381">Hi, <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - <ph name="TIME" /> left</translation>
+<translation id="3637561406135221044">Scanning files for sensitive data...</translation>
 <translation id="3637682276779847508">Your SIM card will be permanently disabled if you cannot enter the correct PIN Unlock Key.</translation>
 <translation id="3640214691812501263">Add "<ph name="EXTENSION_NAME" />" for <ph name="USER_NAME" />?</translation>
 <translation id="3640613767643722554">Teach your Assistant to recognise your voice</translation>
@@ -2228,6 +2233,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="425573743389990240">Battery Discharge Rate in Watts (Negative value means battery is charging)</translation>
 <translation id="4256316378292851214">Sa&amp;ve Video As...</translation>
 <translation id="4258348331913189841">File System</translation>
+<translation id="4263223596040212967">Check your keyboard layout and try again.</translation>
 <translation id="4263757076580287579">Printer registration has been cancelled.</translation>
 <translation id="426564820080660648">To check for updates, please use Ethernet, Wi-Fi or mobile data.</translation>
 <translation id="4267953847983678297">Automatically connect to mobile network</translation>
@@ -2323,6 +2329,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4416582610654027550">Type a valid URL</translation>
 <translation id="4419409365248380979">Always allow <ph name="HOST" /> to set cookies</translation>
 <translation id="4419610272958564173">Unknown Device (Vendor: <ph name="VENDOR_ID" />, Product: <ph name="PRODUCT_ID" />)</translation>
+<translation id="4421167684395067330">Trouble connecting. Please contact <ph name="CARRIER_NAME" /> for assistance.</translation>
 <translation id="4421932782753506458">Fluffy</translation>
 <translation id="4423376891418188461">Restore Settings</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, your administrator requires you to change your password.</translation>
@@ -2998,6 +3005,7 @@ Make sure that you trust this site before entering VR.</translation>
 <translation id="5457599981699367932">Browse as Guest</translation>
 <translation id="5457991019809708398">On, not roaming</translation>
 <translation id="5458998536542739734">Lock screen notes</translation>
+<translation id="546322474339998983">Used by Chrome browser and <ph name="DEVICE_TYPE" /> Launcher</translation>
 <translation id="5463231940765244860">Enter</translation>
 <translation id="5463275305984126951">Index of <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Menu containing hidden bookmarks</translation>
@@ -3295,6 +3303,7 @@ Make sure that you trust this site before entering VR.</translation>
 <translation id="5869948122057593679">Close all your windows</translation>
 <translation id="5870086504539785141">Close accessibility menu</translation>
 <translation id="5870155679953074650">Hard faults</translation>
+<translation id="5876851302954717356">New Tab to the Right</translation>
 <translation id="5877064549588274448">Channel changed. Restart your device to apply changes.</translation>
 <translation id="5877584842898320529">The selected printer is not available or not installed correctly. <ph name="BR" /> Check your printer or try selecting another printer.</translation>
 <translation id="5882919346125742463">Known Networks</translation>
@@ -4493,6 +4502,7 @@ Make sure that you trust this site before entering VR.</translation>
 <translation id="7685049629764448582">JavaScript memory</translation>
 <translation id="7685087414635069102">PIN required</translation>
 <translation id="7685301384041462804">Make sure that you trust this site before entering VR.</translation>
+<translation id="768549422429443215">Add languages or reorder list.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Confirm new password</translation>
 <translation id="7690378713476594306">Choose from list</translation>
@@ -4554,6 +4564,7 @@ Make sure that you trust this site before entering VR.</translation>
 <translation id="7773726648746946405">Session Storage</translation>
 <translation id="7774365994322694683">Bird</translation>
 <translation id="7776701556330691704">No voices found</translation>
+<translation id="7780252971640011240">Trouble connecting. Please contact your operator for assistance.</translation>
 <translation id="7781335840981796660">All user accounts and local data will be removed.</translation>
 <translation id="7782102568078991263">No more suggestions from Google</translation>
 <translation id="7782717250816686129">Store persistent data on the login screen and inject credentials into the session.</translation>

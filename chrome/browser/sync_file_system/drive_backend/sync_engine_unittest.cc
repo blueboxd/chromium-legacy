@@ -56,6 +56,7 @@ class SyncEngineTest : public testing::Test,
         nullptr,    // task_logger
         nullptr,    // notification_manager
         nullptr,    // extension_service
+        nullptr,    // extension_registry
         nullptr,    // identity_manager
         nullptr,    // url_loader_factory
         nullptr,    // drive_service_factory

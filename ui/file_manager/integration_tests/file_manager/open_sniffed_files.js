@@ -41,8 +41,10 @@
     // Check we have only one tab opened from trying to open the file.
     const tabs = normalWindow.tabs;
     chrome.test.assertTrue(tabs.length === 1);
+    // Get the url of the tab, which may still be pending.
+    const url = tabs[0].pendingUrl || tabs[0].url;
     // Check the end of the URL matches the file we tried to open.
-    const tail = tabs[0].url.replace(/.*\//, '');
+    const tail = url.replace(/.*\//, '');
     chrome.test.assertTrue(tail === entry.targetPath);
   }
 

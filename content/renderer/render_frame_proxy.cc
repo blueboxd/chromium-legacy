@@ -100,7 +100,7 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyToReplaceFrame(
           ? frame_to_replace->GetLocalRootRenderWidget()
           : RenderFrameProxy::FromWebFrame(
                 frame_to_replace->GetWebFrame()->Parent()->ToWebRemoteFrame())
-                ->render_widget();
+                ->render_widget_;
   proxy->Init(web_frame, frame_to_replace->render_view(), widget,
               parent_is_local);
   return proxy.release();
@@ -146,7 +146,7 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
         replicated_state.frame_owner_element_type, proxy.get(), opener);
     proxy->unique_name_ = replicated_state.unique_name;
     render_view = parent->render_view();
-    render_widget = parent->render_widget();
+    render_widget = parent->render_widget_;
   }
 
   proxy->Init(web_frame, render_view, render_widget, false);
@@ -221,7 +221,8 @@ RenderFrameProxy::RenderFrameProxy(int routing_id)
 }
 
 RenderFrameProxy::~RenderFrameProxy() {
-  render_widget_->UnregisterRenderFrameProxy(this);
+  if (render_widget_)
+    render_widget_->UnregisterRenderFrameProxy(this);
 
   CHECK(!web_frame_);
   RenderThread::Get()->RemoveRoute(routing_id_);
@@ -234,13 +235,21 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
                             bool parent_is_local) {
   CHECK(web_frame);
   CHECK(render_view);
-  CHECK(render_widget);
 
   web_frame_ = web_frame;
   render_view_ = render_view;
   render_widget_ = render_widget;
 
-  render_widget_->RegisterRenderFrameProxy(this);
+  // |render_widget_| can be null if this is a proxy for a remote main frame, or
+  // a subframe of that proxy. We don't need to register as an observer [since
+  // the RenderWidget is undead/won't exist]. The observer is used to propagate
+  // VisualProperty changes down the frame/process hierarchy. Remote main frame
+  // proxies do not participate in this flow.
+  if (render_widget_) {
+    render_widget_->RegisterRenderFrameProxy(this);
+    pending_visual_properties_.screen_info =
+        render_widget_->GetOriginalScreenInfo();
+  }
 
   std::pair<FrameProxyMap::iterator, bool> result =
       g_frame_proxy_map.Get().insert(std::make_pair(web_frame_, this));
@@ -248,9 +257,6 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
 
   if (parent_is_local)
     compositing_helper_ = std::make_unique<ChildFrameCompositingHelper>(this);
-
-  pending_visual_properties_.screen_info =
-      render_widget_->GetOriginalScreenInfo();
 }
 
 void RenderFrameProxy::ResendVisualProperties() {
@@ -810,8 +816,10 @@ void RenderFrameProxy::FrameRectsChanged(
   pending_visual_properties_.screen_space_rect = gfx::Rect(screen_space_rect);
   pending_visual_properties_.local_frame_size =
       gfx::Size(local_frame_rect.width, local_frame_rect.height);
-  pending_visual_properties_.screen_info =
-      render_widget_->GetOriginalScreenInfo();
+  if (render_widget_) {
+    pending_visual_properties_.screen_info =
+        render_widget_->GetOriginalScreenInfo();
+  }
   if (crashed_) {
     // Update the sad page to match the current size.
     compositing_helper_->ChildFrameGone(local_frame_size(),

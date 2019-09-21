@@ -4,16 +4,16 @@
 
 #include "chrome/browser/supervised_user/logged_in_user_mixin.h"
 
+#include <vector>
+
 #include "chromeos/login/auth/stub_authenticator_builder.h"
 #include "chromeos/login/auth/user_context.h"
+#include "components/account_id/account_id.h"
 #include "net/dns/mock_host_resolver.h"
 
 namespace chromeos {
 
 namespace {
-
-constexpr char kTestUserName[] = "user@gmail.com";
-constexpr char kTestUserGaiaId[] = "user";
 
 user_manager::UserType ConvertUserType(LoggedInUserMixin::LogInType type) {
   switch (type) {
@@ -24,16 +24,28 @@ user_manager::UserType ConvertUserType(LoggedInUserMixin::LogInType type) {
   }
 }
 
+std::vector<LoginManagerMixin::TestUserInfo> GetInitialUsers(
+    const LoginManagerMixin::TestUserInfo& user,
+    bool include_initial_user) {
+  if (include_initial_user)
+    return {user};
+  return {};
+}
+
 }  // namespace
 
 LoggedInUserMixin::LoggedInUserMixin(
     InProcessBrowserTestMixinHost* mixin_host,
     LogInType type,
     net::EmbeddedTestServer* embedded_test_server,
-    bool should_launch_browser)
-    : user_(AccountId::FromUserEmailGaiaId(kTestUserName, kTestUserGaiaId),
+    bool should_launch_browser,
+    base::Optional<AccountId> account_id,
+    bool include_initial_user)
+    : user_(account_id.value_or(
+                AccountId::FromUserEmailGaiaId(FakeGaiaMixin::kFakeUserEmail,
+                                               FakeGaiaMixin::kFakeUserGaiaId)),
             ConvertUserType(type)),
-      login_manager_(mixin_host, {user_}),
+      login_manager_(mixin_host, GetInitialUsers(user_, include_initial_user)),
       policy_server_(mixin_host),
       user_policy_(mixin_host, user_.account_id, &policy_server_),
       embedded_test_server_setup_(mixin_host, embedded_test_server),
@@ -67,6 +79,7 @@ void LoggedInUserMixin::SetUpOnMainThreadHelper(
 void LoggedInUserMixin::LogInUser(bool issue_any_scope_token,
                                   bool wait_for_active_session) {
   UserContext user_context = LoginManagerMixin::CreateDefaultUserContext(user_);
+  user_context.SetRefreshToken(FakeGaiaMixin::kFakeRefreshToken);
   if (user_.user_type == user_manager::USER_TYPE_CHILD) {
     fake_gaia_.SetupFakeGaiaForChildUser(
         user_.account_id.GetUserEmail(), user_.account_id.GetGaiaId(),
@@ -76,7 +89,6 @@ void LoggedInUserMixin::LogInUser(bool issue_any_scope_token,
                                      user_.account_id.GetGaiaId(),
                                      FakeGaiaMixin::kFakeRefreshToken);
   }
-  user_context.SetRefreshToken(FakeGaiaMixin::kFakeRefreshToken);
   if (wait_for_active_session) {
     login_manager_.LoginAndWaitForActiveSession(user_context);
   } else {

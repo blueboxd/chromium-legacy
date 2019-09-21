@@ -128,7 +128,7 @@ vars = {
   'checkout_simplechrome': '(checkout_chromeos and host_os == "linux") and ("{cros_board}" != "")',
   # Surround the board var in quotes so gclient doesn't try parsing the string
   # as an expression.
-  'cros_download_vm': '("{cros_board}" == "amd64-generic") or ("{cros_board}" == "betty")',
+  'cros_download_vm': '("{cros_board}" == "amd64-generic") or ("{cros_board}" == "betty") or ("{cros_board}" == "betty-pi-arc")',
   # Should we build and test for public (ie: full) CrOS images, or private
   # (ie: release) images.
   'use_public_cros_config': 'not checkout_src_internal',
@@ -162,11 +162,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '9a98411780788d33bb954e32bb5d1271b3c2571e',
+  'skia_revision': 'bd67d0035a80966b328b5399be1b6c973b7c4caf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '32d64a5d971d397fae73de81e7b44d15b0252701',
+  'v8_revision': '39f2488bb6d5bfb55b7725624094320254438966',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -174,15 +174,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '8f2d41d1be9ddf3c48e3de17b76d3d358b75f03e',
+  'angle_revision': '2249fef2195411e7dafce7d999b4ef98c19d7213',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'b6fa949c45397bd1fbfda769a104b9e8884f343e',
+  'swiftshader_revision': '1f89f58faeb8287f29e3e5ba7d03d62f667404a0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': 'b93f7decd493f62b06dfb36ebb377f59d4ba76fe',
+  'pdfium_revision': 'bf5be75f420ce3882089ba05a01f93ad43284db2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -293,15 +293,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'shaderc_revision': '5903ef1f95a0acdbbd3ae645af1a6d6b30320f10',
+  'shaderc_revision': 'cb8b3fc5caf99c54fba88ac3c0a45ed6e50c0f43',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '785ec66b66a3577e4f17306a10ab30b7f92c49ae',
+  'dawn_revision': 'd46cabd73fb4b06bc5a18ce56b2803bb4bb64d21',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': '08a6c955af009f7cd047c543316a6debb9db63f1',
+  'quiche_revision': 'e3f2f7bd0dddec518b59fed97a3a6d48cbbd1f59',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -432,7 +432,7 @@ deps = {
     'packages': [
       {
         'package': 'chromium/chrome/test/data/autofill/captured_sites',
-        'version': 'kjkXzXl3YbAXBvhJUskHnFF9nh60tc9mlCin0liTyb4C',
+        'version': 'cFtFEyZBGjBU4BHMQTdV6FTWMjZoP-Xfg8AkpN8zzrkC',
       }
     ],
     'condition': 'checkout_chromium_autofill_test_dependencies',
@@ -853,7 +853,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '8b762286def9ae495f2d299bddb9dcb034383e35',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'ea0e7864b0ec00f616340a55ae37b18434919314',
       'condition': 'checkout_linux',
   },
 
@@ -878,7 +878,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '7735f52c6d421af7dd77bdab374798c60bf571b3',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'd4d1ba4971aa0bb0cf2cf059251a12d31b275587',
 
   'src/third_party/devtools-node-modules':
     Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision'),
@@ -1425,7 +1425,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '7c4e67ff117d6c640e6dd17989afe2fb7da7eecb',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'fb59a6aa3f718241506fb644f4daa295f992d596',
+    Var('webrtc_git') + '/src.git' + '@' + '4854b9f8047e2dad15ff0536ed0a6d6f22bdc79e',
 
   'src/third_party/xdg-utils': {
       'url': Var('chromium_git') + '/chromium/deps/xdg-utils.git' + '@' + 'd80274d5869b17b8c9067a1022e4416ee7ed5e0d',
@@ -1487,7 +1487,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b5271b8e5167df71642c65bdab5599ec58e80061',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@6b43e50bae25e064f95e1c3ccb4ed7cf4effb755',
     'condition': 'checkout_src_internal',
   },
 
@@ -2081,6 +2081,17 @@ deps = {
           {
               'package': 'chromium/third_party/android_deps/libs/androidx_test_runner',
               'version': 'version:1.1.0-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/androidx_test_uiautomator_uiautomator': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/androidx_test_uiautomator_uiautomator',
+              'version': 'version:2.2.0-cr0',
           },
       ],
       'condition': 'checkout_android',

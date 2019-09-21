@@ -252,23 +252,14 @@ base::span<const InteractionsStats> PasswordFormManager::GetInteractionsStats()
 }
 
 bool PasswordFormManager::IsBlacklisted() const {
-  return !blacklisted_matches_.empty() || newly_blacklisted_;
+  return !form_fetcher_->GetBlacklistedMatches().empty() || newly_blacklisted_;
 }
 
 void PasswordFormManager::Save() {
   DCHECK_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   DCHECK(!client_->IsIncognito());
-
-  for (auto blacklisted_iterator = blacklisted_matches_.begin();
-       blacklisted_iterator != blacklisted_matches_.end();) {
-    form_saver_->Remove(**blacklisted_iterator);
-    blacklisted_iterator = blacklisted_matches_.erase(blacklisted_iterator);
-  }
-  if (newly_blacklisted_) {
-    PasswordForm newly_blacklisted_form =
-        password_manager_util::MakeNormalizedBlacklistedForm(
-            ConstructObservedFormDigest());
-    form_saver_->Remove(newly_blacklisted_form);
+  if (IsBlacklisted()) {
+    form_saver_->Unblacklist(ConstructObservedFormDigest());
     newly_blacklisted_ = false;
   }
 
@@ -605,8 +596,6 @@ void PasswordFormManager::OnFetchCompleted() {
 
   // Copy out blacklisted matches.
   newly_blacklisted_ = false;
-  blacklisted_matches_ = form_fetcher_->GetBlacklistedMatches();
-
   autofills_left_ = kMaxTimesAutofill;
 
   if (IsCredentialAPISave()) {

@@ -2,60 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/path_service.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/signin/e2e_tests/live_test.h"
 #include "chrome/browser/signin/e2e_tests/test_accounts_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
-#include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
-#include "net/dns/mock_host_resolver.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 
 using signin::test::TestAccount;
 using signin::test::TestAccountsUtil;
 
-base::FilePath::StringPieceType kTestAccountFilePath = FILE_PATH_LITERAL(
-    "chrome/browser/internal/resources/signin/test_accounts.json");
-
-const char* kRunLiveTestFlag = "run-live-tests";
-
-class DemoSignInTest : public InProcessBrowserTest {
- protected:
-  void SetUpInProcessBrowserTestFixture() override {
-    // Whitelists a bunch of hosts.
-    host_resolver()->AllowDirectLookup("*.google.com");
-    host_resolver()->AllowDirectLookup("*.geotrust.com");
-    host_resolver()->AllowDirectLookup("*.gstatic.com");
-    host_resolver()->AllowDirectLookup("*.googleapis.com");
-
-    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-  }
-
-  void SetUp() override {
-    // Only run live tests when specified.
-    auto* cmd_line = base::CommandLine::ForCurrentProcess();
-    if (!cmd_line->HasSwitch(kRunLiveTestFlag)) {
-      GTEST_SKIP();
-    }
-
-    base::FilePath root_path;
-    base::PathService::Get(base::BasePathKey::DIR_SOURCE_ROOT, &root_path);
-    base::FilePath config_path =
-        base::MakeAbsoluteFilePath(root_path.Append(kTestAccountFilePath));
-    test_accounts_.Init(config_path);
-    InProcessBrowserTest::SetUp();
-  }
-
-  const TestAccountsUtil* GetTestAccountsUtil() const {
-    return &test_accounts_;
-  }
-
- private:
-  TestAccountsUtil test_accounts_;
-};
+class DemoSignInTest : public signin::test::LiveTest {};
 
 IN_PROC_BROWSER_TEST_F(DemoSignInTest, SimpleSignInFlow) {
   // Always disable animation for stability.

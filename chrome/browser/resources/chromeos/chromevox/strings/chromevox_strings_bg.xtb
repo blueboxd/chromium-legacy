@@ -168,6 +168,7 @@
 <translation id="2220529011494928058">Подаване на сигнал за проблем</translation>
 <translation id="2223693656926968778">Извършване на действие върху текущия елемент</translation>
 <translation id="225732394367814946">Увеличаване на скоростта на говора</translation>
+<translation id="2267538686624070261">Напускате мястото с правописна грешка</translation>
 <translation id="2267945578749931355">Следващият знак</translation>
 <translation id="2278490101488436824">Прекарайте три пръста наляво</translation>
 <translation id="2281234842553884450">Предишният плъзгач</translation>
@@ -206,6 +207,7 @@
 <translation id="257674075312929031">Група</translation>
 <translation id="2582407057977008361">Странично съдържание</translation>
 <translation id="2592212930811759050">Докоснете двукратно, за да започнете да редактирате</translation>
+<translation id="2598495320872286378">Граматическа грешка</translation>
 <translation id="2614981083756825552">Оформление в Math ML</translation>
 <translation id="2624431853467395961">Включване на режима за изговаряне на клавишите</translation>
 <translation id="2626530649491650971">с възможност за кликване</translation>
@@ -820,6 +822,7 @@
 <translation id="6833103209700200188">Долен колонтитул</translation>
 <translation id="6858047746862060282">Пролог</translation>
 <translation id="6859876496651143278">Прекарайте пръст наляво</translation>
+<translation id="6865519907510167493">Правописна грешка</translation>
 <translation id="6871161210040114857">Регистърът на буквите се пренебрегва.</translation>
 <translation id="6877435256196695200">Няма следваща графика.</translation>
 <translation id="6897341342232909480">Преместване наляво</translation>
@@ -1110,6 +1113,7 @@
 <translation id="8446884382197647889">Научете повече</translation>
 <translation id="8455868257606149352">Максимум <ph name="X" /></translation>
 <translation id="84575901236241018">има клавиш за достъп, „<ph name="KEY" />“</translation>
+<translation id="8463645336674919227">Напускате мястото с граматична грешка</translation>
 <translation id="847154984256717791">заето</translation>
 <translation id="8476408756881832830">Поставяне на възпроизвеждането на пауза, когато ChromeVox говори</translation>
 <translation id="8476508772960940536">общ преглед на прозорците</translation>

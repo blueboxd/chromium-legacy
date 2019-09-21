@@ -30,6 +30,7 @@
 
 #if BUILDFLAG(ENABLE_REPORTING)
 #include "net/network_error_logging/network_error_logging_service.h"
+#include "net/network_error_logging/persistent_reporting_and_nel_store.h"
 #include "net/reporting/reporting_service.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
@@ -157,6 +158,13 @@ void URLRequestContextStorage::set_ftp_auth_cache(
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
 #if BUILDFLAG(ENABLE_REPORTING)
+void URLRequestContextStorage::set_persistent_reporting_and_nel_store(
+    std::unique_ptr<PersistentReportingAndNelStore>
+        persistent_reporting_and_nel_store) {
+  persistent_reporting_and_nel_store_ =
+      std::move(persistent_reporting_and_nel_store);
+}
+
 void URLRequestContextStorage::set_reporting_service(
     std::unique_ptr<ReportingService> reporting_service) {
   context_->set_reporting_service(reporting_service.get());

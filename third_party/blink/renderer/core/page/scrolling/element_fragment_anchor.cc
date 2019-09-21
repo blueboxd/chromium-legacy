@@ -213,4 +213,8 @@ void ElementFragmentAnchor::ApplyFocusIfNeeded() {
   needs_focus_ = false;
 }
 
+bool ElementFragmentAnchor::Dismiss() {
+  return false;
+}
+
 }  // namespace blink

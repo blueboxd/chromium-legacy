@@ -52,6 +52,11 @@ const char kAllowSyncXHRInPageDismissalDescription[] =
     "Allows synchronous XHR requests during page dismissal when the page is "
     "being navigated away or closed by the user.";
 
+const char kEnableClipboardProviderTextSuggestionsName[] =
+    "Omnibox clipboard text search suggestions";
+const char kEnableClipboardProviderTextSuggestionsDescription[] =
+    "Enables search suggestions in omnibox";
+
 const char kEnableSignedExchangeSubresourcePrefetchName[] =
     "Enable Signed Exchange subresource prefetching";
 const char kEnableSignedExchangeSubresourcePrefetchDescription[] =
@@ -2374,10 +2379,11 @@ const char kClickToCallOpenDialerDirectlyName[] =
 const char kClickToCallOpenDialerDirectlyDescription[] =
     "Enables opening the dialer directly instead of displaying a notification. "
     "Only available on Android P- and when the screen is on and unlocked.";
-const char kCloseTabSuggestionsStaleName[] = "Suggest to close stale Tabs";
-const char kCloseTabSuggestionsStaleDescription[] =
-    "Suggests to the user to close Tabs that have not been used above a "
-    "threshold such as 1 day. The threshold is configurable.";
+const char kCloseTabSuggestionsName[] = "Suggest to close Tabs";
+const char kCloseTabSuggestionsDescription[] =
+    "Suggests to the user to close Tabs that haven't been used beyond a "
+    "configurable threshold or where duplicates of Tabs exist. "
+    "The threshold is configurable.";
 
 const char kClickToCallReceiverName[] =
     "Enable receiver device to handle click to call feature";

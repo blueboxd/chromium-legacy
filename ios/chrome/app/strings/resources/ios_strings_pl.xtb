@@ -93,6 +93,7 @@
 <translation id="2149973817440762519">Edytuj zakładkę</translation>
 <translation id="2179182049312275900">W każdej chwili możesz włączyć synchronizację w ustawieniach.</translation>
 <translation id="2198757192731523470">Google może korzystać z Twojej historii, by personalizować wyniki wyszukiwania, reklamy i działanie innych usług.</translation>
+<translation id="2207590065820824892">Nieprzeczytane artykuły na liście Do przeczytania: <ph name="UNREAD_COUNT" />.</translation>
 <translation id="2230173723195178503">Wczytano stronę internetową</translation>
 <translation id="2239626343334228536">Czyszczę dane przeglądania…</translation>
 <translation id="2256128224215992540">Podpowiadanie stron internetowych i wyszukiwanych słów</translation>
@@ -108,6 +109,7 @@
 <translation id="2360196772093551345">Żądaj strony mobilnej</translation>
 <translation id="2381405137052800939">Podstawowe</translation>
 <translation id="2386793615875593361">Wybrano: 1</translation>
+<translation id="2421044535038393232">Edytuj dalej</translation>
 <translation id="2435457462613246316">Pokaż hasło</translation>
 <translation id="2481538920734869610">DODAJ KONTO</translation>
 <translation id="2497852260688568942">Synchronizację wyłączył administrator</translation>
@@ -227,6 +229,7 @@
 <translation id="418156467088430727">Wyświetl wersję offline w nowej karcie</translation>
 <translation id="4181841719683918333">Języki</translation>
 <translation id="424315890655130736">Wpisz hasło</translation>
+<translation id="4263576668337963058">Pokaż dostępne działania dotyczące strony</translation>
 <translation id="4272631900155121838">Aby zeskanować kod QR, włącz aparat w ustawieniach</translation>
 <translation id="4281844954008187215">Warunki korzystania z usługi</translation>
 <translation id="430793432425771671">Synchronizuj wszystko</translation>
@@ -264,6 +267,7 @@ Dane zostały zaszyfrowane z użyciem Twojego hasła synchronizacji. Wpisz je, 
 
 Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph name="END_LINK" />.</translation>
 <translation id="4805759445554688327">Nieprawidłowy numer karty</translation>
+<translation id="4807020197310989387">1 nieprzeczytany artykuł na liście Do przeczytania.</translation>
 <translation id="4818522717893377262">Dodaj język...</translation>
 <translation id="481968316161811770">Cookie i dane stron</translation>
 <translation id="4833786495304741580">Automatycznie przesyła do Google statystyki użytkowania i raporty o awariach.</translation>

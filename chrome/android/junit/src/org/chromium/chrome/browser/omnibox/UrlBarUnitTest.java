@@ -43,7 +43,7 @@ public class UrlBarUnitTest {
 
         Activity activity = Robolectric.buildActivity(Activity.class).setup().get();
 
-        mUrlBar = new UrlBar(activity, null);
+        mUrlBar = new UrlBarApi26(activity, null);
         mUrlBar.setDelegate(mUrlBarDelegate);
     }
 

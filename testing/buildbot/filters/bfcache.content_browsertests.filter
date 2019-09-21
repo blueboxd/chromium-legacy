@@ -81,3 +81,6 @@
 # https://crbug.com/1004786
 -SitePerProcessBrowserTest.TestChildProcessImportance
 
+# In debug mode. The FrameHostInterceptor fails, because it doesn't take into
+# account pages in the BackForwardCache.
+-SecurityExploitBrowserTest.InvalidBeginNavigationInitiator

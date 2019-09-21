@@ -169,6 +169,7 @@
 <translation id="2220529011494928058">문제 신고</translation>
 <translation id="2223693656926968778">현재 항목에서 작업 수행</translation>
 <translation id="225732394367814946">말하기 속도 증가</translation>
+<translation id="2267538686624070261">맞춤법 오류에서 벗어남</translation>
 <translation id="2267945578749931355">다음 문자</translation>
 <translation id="2278490101488436824">손가락 세 개를 사용하여 왼쪽으로 스와이프</translation>
 <translation id="2281234842553884450">이전 슬라이더</translation>
@@ -207,6 +208,7 @@
 <translation id="257674075312929031">그룹</translation>
 <translation id="2582407057977008361">사이드 바</translation>
 <translation id="2592212930811759050">수정하려면 두 번 탭하세요.</translation>
+<translation id="2598495320872286378">문법 오류</translation>
 <translation id="2614981083756825552">Math ML 레이아웃</translation>
 <translation id="2624431853467395961">학습 모드 열기</translation>
 <translation id="2626530649491650971">clickable</translation>
@@ -821,6 +823,7 @@
 <translation id="6833103209700200188">바닥글</translation>
 <translation id="6858047746862060282">프롤로그</translation>
 <translation id="6859876496651143278">손가락 한 개를 사용하여 왼쪽으로 스와이프</translation>
+<translation id="6865519907510167493">맞춤법 오류</translation>
 <translation id="6871161210040114857">대소문자를 구분하지 않습니다.</translation>
 <translation id="6877435256196695200">다음 그래픽이 없습니다.</translation>
 <translation id="6897341342232909480">왼쪽으로 이동</translation>
@@ -1111,6 +1114,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="8446884382197647889">자세히 알아보기</translation>
 <translation id="8455868257606149352">최대 <ph name="X" /></translation>
 <translation id="84575901236241018">액세스 키(<ph name="KEY" />) 있음</translation>
+<translation id="8463645336674919227">문법 오류에서 벗어남</translation>
 <translation id="847154984256717791">바쁨</translation>
 <translation id="8476408756881832830">ChromeVox 음성이 나올 때는 재생을 일시중지합니다.</translation>
 <translation id="8476508772960940536">창 전체보기</translation>

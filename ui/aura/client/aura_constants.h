@@ -94,12 +94,6 @@ AURA_EXPORT extern const WindowProperty<FocusClient*>* const kFocusClientKey;
 // WebContentsViews find the windows that should constrain NPAPI plugins.
 AURA_EXPORT extern const WindowProperty<Window*>* const kHostWindowKey;
 
-// A property key to store the maximum size of the window.
-AURA_EXPORT extern const WindowProperty<gfx::Size*>* const kMaximumSize;
-
-// A property key to store the minimum size of the window.
-AURA_EXPORT extern const WindowProperty<gfx::Size*>* const kMinimumSize;
-
 // The modal parent of a child modal window.
 AURA_EXPORT extern const WindowProperty<Window*>* const kChildModalParentKey;
 

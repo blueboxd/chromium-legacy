@@ -51,6 +51,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_requirements_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/security_state/core/security_state.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -501,20 +502,15 @@ void ChromeAutofillClient::DidFillOrPreviewField(
 }
 
 bool ChromeAutofillClient::IsContextSecure() {
-  content::SSLStatus ssl_status;
-  content::NavigationEntry* navigation_entry =
-      web_contents()->GetController().GetLastCommittedEntry();
-  if (!navigation_entry)
-    return false;
+  // Note: Defer to SecurityStateTabHelper to determine what pages
+  // are secure so that autofill behavior matches that shown in the omnibox.
 
-  ssl_status = navigation_entry->GetSSL();
-  // Note: If changing the implementation below, also change
-  // AwAutofillClient::IsContextSecure. See crbug.com/505388
-  return navigation_entry->GetURL().SchemeIsCryptographic() &&
-         ssl_status.certificate &&
-         !net::IsCertStatusError(ssl_status.cert_status) &&
-         !(ssl_status.content_status &
-           content::SSLStatus::RAN_INSECURE_CONTENT);
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(web_contents());
+
+  // There may be no SecurityStateTabHelper attached in some tests.
+  return helper &&
+         security_state::IsSslCertificateValid(helper->GetSecurityLevel());
 }
 
 bool ChromeAutofillClient::ShouldShowSigninPromo() {

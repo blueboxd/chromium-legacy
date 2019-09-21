@@ -22,6 +22,36 @@ namespace ui {
 
 namespace {
 
+Event::Properties GetEventPropertiesFromXKeyEvent(const XKeyEvent& xev) {
+  using Values = std::vector<uint8_t>;
+  Event::Properties properties;
+
+  // Keyboard group
+  uint8_t group = XkbGroupForCoreState(xev.state);
+  properties.emplace(kPropertyKeyboardGroup, Values{group});
+
+  // IBus-gtk specific flags
+  uint8_t ibus_flags = (xev.state >> kPropertyKeyboardIBusFlagOffset) &
+                       kPropertyKeyboardIBusFlagMask;
+  properties.emplace(kPropertyKeyboardIBusFlag, Values{ibus_flags});
+
+  return properties;
+}
+
+std::unique_ptr<KeyEvent> CreateKeyEvent(const XEvent& xev) {
+  base::TimeTicks timestamp = EventTimeFromXEvent(xev);
+  ValidateEventTimeClock(&timestamp);
+
+  auto key_event = std::make_unique<KeyEvent>(
+      EventTypeFromXEvent(xev), KeyboardCodeFromXKeyEvent(&xev),
+      CodeFromXEvent(&xev), EventFlagsFromXEvent(xev),
+      GetDomKeyFromXEvent(&xev), timestamp);
+
+  // Attach keyboard group to |key_event|'s properties
+  key_event->SetProperties(GetEventPropertiesFromXKeyEvent(xev.xkey));
+  return key_event;
+}
+
 std::unique_ptr<TouchEvent> CreateTouchEvent(EventType event_type,
                                              const XEvent& xev) {
   std::unique_ptr<TouchEvent> event = std::make_unique<TouchEvent>(
@@ -41,10 +71,11 @@ std::unique_ptr<ui::Event> TranslateXI2EventToEvent(const XEvent& xev) {
   EventType event_type = EventTypeFromXEvent(xev);
   switch (event_type) {
     case ET_KEY_PRESSED:
-    case ET_KEY_RELEASED:
-      return std::make_unique<KeyEvent>(event_type,
-                                        KeyboardCodeFromXKeyEvent(&xev),
-                                        EventFlagsFromXEvent(xev));
+    case ET_KEY_RELEASED: {
+      XEvent xkeyevent = {0};
+      InitXKeyEventFromXIDeviceEvent(xev, &xkeyevent);
+      return CreateKeyEvent(xkeyevent);
+    }
     case ET_MOUSE_PRESSED:
     case ET_MOUSE_MOVED:
     case ET_MOUSE_DRAGGED:
@@ -109,9 +140,7 @@ std::unique_ptr<ui::Event> TranslateXEventToEvent(const XEvent& xev) {
 
     case KeyPress:
     case KeyRelease:
-      return std::make_unique<KeyEvent>(EventTypeFromXEvent(xev),
-                                        KeyboardCodeFromXKeyEvent(&xev), flags);
-
+      return CreateKeyEvent(xev);
     case ButtonPress:
     case ButtonRelease: {
       switch (EventTypeFromXEvent(xev)) {

@@ -176,7 +176,6 @@
 #include "services/device/public/mojom/nfc.mojom.h"
 #else  // !OS_ANDROID
 #include "content/browser/host_zoom_map_impl.h"
-#include "content/browser/host_zoom_map_observer.h"
 #endif  // OS_ANDROID
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -604,10 +603,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
   pepper_playback_observer_.reset(new PepperPlaybackObserver(this));
 #endif
 
-#if !defined(OS_ANDROID)
-  host_zoom_map_observer_.reset(new HostZoomMapObserver(this));
-#endif  // !defined(OS_ANDROID)
-
 #if defined(OS_ANDROID)
   display_cutout_host_impl_ = std::make_unique<DisplayCutoutHostImpl>(this);
 #endif
@@ -870,7 +865,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHostImpl* render_view_host,
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(WebContentsImpl, message, render_view_host)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateZoomLimits, OnUpdateZoomLimits)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PageScaleFactorChanged,
                         OnPageScaleFactorChanged)
     IPC_MESSAGE_HANDLER(
@@ -1557,7 +1551,7 @@ void WebContentsImpl::SetAudioMuted(bool mute) {
     observer.DidUpdateAudioMutingState(mute);
 
   // Notification for UI updates in response to the changed muting state.
-  NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
+  NotifyNavigationStateChanged(INVALIDATE_TYPE_AUDIO);
 }
 
 bool WebContentsImpl::IsCurrentlyAudible() {
@@ -1658,7 +1652,7 @@ bool WebContentsImpl::IsBeingDestroyed() {
 void WebContentsImpl::NotifyNavigationStateChanged(
     InvalidateTypes changed_flags) {
   // Notify the media observer of potential audibility changes.
-  if (changed_flags & INVALIDATE_TYPE_TAB) {
+  if (changed_flags & INVALIDATE_TYPE_AUDIO) {
     media_web_contents_observer_->MaybeUpdateAudibleState();
   }
 
@@ -1700,7 +1694,7 @@ void WebContentsImpl::OnAudioStateChanged() {
       new PageMsg_AudioStateChanged(MSG_ROUTING_NONE, is_currently_audible_));
 
   // Notification for UI updates in response to the changed audio state.
-  NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
+  NotifyNavigationStateChanged(INVALIDATE_TYPE_AUDIO);
 
   // Ensure that audio state changes propagate from innermost to outermost
   // WebContents.
@@ -4877,13 +4871,6 @@ void WebContentsImpl::OnGoToEntryAtOffset(RenderFrameHostImpl* source,
       controller_.GoToOffset(offset);
     }
   }
-}
-
-void WebContentsImpl::OnUpdateZoomLimits(RenderViewHostImpl* source,
-                                         int minimum_percent,
-                                         int maximum_percent) {
-  minimum_zoom_percent_ = minimum_percent;
-  maximum_zoom_percent_ = maximum_percent;
 }
 
 void WebContentsImpl::OnPageScaleFactorChanged(RenderViewHostImpl* source,

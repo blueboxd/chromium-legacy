@@ -85,7 +85,7 @@ class WebLayerListTest : public PaintTestConfigurations, public testing::Test {
   }
 
   cc::LayerTreeHost* LayerTreeHost() {
-    return web_widget_client_.layer_tree_view()->layer_tree_host();
+    return web_widget_client_.layer_tree_host();
   }
 
   Element* GetElementById(const AtomicString& id) {
@@ -262,7 +262,7 @@ class WebLayerListSimTest : public PaintTestConfigurations, public SimTest {
   }
 
   cc::PropertyTrees* GetPropertyTrees() {
-    return Compositor().layer_tree_view().layer_tree_host()->property_trees();
+    return Compositor().layer_tree_host().property_trees();
   }
 
   cc::TransformNode* GetTransformNode(const cc::Layer* layer) {
@@ -316,20 +316,20 @@ TEST_P(WebLayerListSimTest, LayerUpdatesDoNotInvalidateEarlierLayers) {
                                        CompositorElementIdNamespace::kPrimary));
 
   // Initially, neither a nor b should have a layer that should push properties.
-  auto* host = Compositor().layer_tree_view().layer_tree_host();
-  EXPECT_FALSE(host->LayersThatShouldPushProperties().count(a_layer));
-  EXPECT_FALSE(host->LayersThatShouldPushProperties().count(b_layer));
+  cc::LayerTreeHost& host = Compositor().layer_tree_host();
+  EXPECT_FALSE(host.LayersThatShouldPushProperties().count(a_layer));
+  EXPECT_FALSE(host.LayersThatShouldPushProperties().count(b_layer));
 
   // Modifying b should only cause the b layer to need to push properties.
   b_element->setAttribute(html_names::kStyleAttr, "opacity: 0.2");
   UpdateAllLifecyclePhases();
-  EXPECT_FALSE(host->LayersThatShouldPushProperties().count(a_layer));
-  EXPECT_TRUE(host->LayersThatShouldPushProperties().count(b_layer));
+  EXPECT_FALSE(host.LayersThatShouldPushProperties().count(a_layer));
+  EXPECT_TRUE(host.LayersThatShouldPushProperties().count(b_layer));
 
   // After a frame, no layers should need to push properties again.
   Compositor().BeginFrame();
-  EXPECT_FALSE(host->LayersThatShouldPushProperties().count(a_layer));
-  EXPECT_FALSE(host->LayersThatShouldPushProperties().count(b_layer));
+  EXPECT_FALSE(host.LayersThatShouldPushProperties().count(a_layer));
+  EXPECT_FALSE(host.LayersThatShouldPushProperties().count(b_layer));
 }
 
 TEST_P(WebLayerListSimTest, LayerUpdatesDoNotInvalidateLaterLayers) {
@@ -373,25 +373,25 @@ TEST_P(WebLayerListSimTest, LayerUpdatesDoNotInvalidateLaterLayers) {
                                        CompositorElementIdNamespace::kPrimary));
 
   // Initially, no layer should need to push properties.
-  auto* host = Compositor().layer_tree_view().layer_tree_host();
-  EXPECT_FALSE(host->LayersThatShouldPushProperties().count(a_layer));
-  EXPECT_FALSE(host->LayersThatShouldPushProperties().count(b_layer));
-  EXPECT_FALSE(host->LayersThatShouldPushProperties().count(c_layer));
+  cc::LayerTreeHost& host = Compositor().layer_tree_host();
+  EXPECT_FALSE(host.LayersThatShouldPushProperties().count(a_layer));
+  EXPECT_FALSE(host.LayersThatShouldPushProperties().count(b_layer));
+  EXPECT_FALSE(host.LayersThatShouldPushProperties().count(c_layer));
 
   // Modifying a and b (adding opacity to a and removing opacity from b) should
   // not cause the c layer to push properties.
   a_element->setAttribute(html_names::kStyleAttr, "opacity: 0.3");
   b_element->setAttribute(html_names::kStyleAttr, "");
   UpdateAllLifecyclePhases();
-  EXPECT_TRUE(host->LayersThatShouldPushProperties().count(a_layer));
-  EXPECT_TRUE(host->LayersThatShouldPushProperties().count(b_layer));
-  EXPECT_FALSE(host->LayersThatShouldPushProperties().count(c_layer));
+  EXPECT_TRUE(host.LayersThatShouldPushProperties().count(a_layer));
+  EXPECT_TRUE(host.LayersThatShouldPushProperties().count(b_layer));
+  EXPECT_FALSE(host.LayersThatShouldPushProperties().count(c_layer));
 
   // After a frame, no layers should need to push properties again.
   Compositor().BeginFrame();
-  EXPECT_FALSE(host->LayersThatShouldPushProperties().count(a_layer));
-  EXPECT_FALSE(host->LayersThatShouldPushProperties().count(b_layer));
-  EXPECT_FALSE(host->LayersThatShouldPushProperties().count(c_layer));
+  EXPECT_FALSE(host.LayersThatShouldPushProperties().count(a_layer));
+  EXPECT_FALSE(host.LayersThatShouldPushProperties().count(b_layer));
+  EXPECT_FALSE(host.LayersThatShouldPushProperties().count(c_layer));
 }
 
 TEST_P(WebLayerListSimTest,
@@ -411,14 +411,14 @@ TEST_P(WebLayerListSimTest,
   Compositor().BeginFrame();
 
   // Initially the host should not need to sync.
-  auto* layer_tree_host = Compositor().layer_tree_view().layer_tree_host();
-  EXPECT_FALSE(layer_tree_host->needs_full_tree_sync());
+  cc::LayerTreeHost& layer_tree_host = Compositor().layer_tree_host();
+  EXPECT_FALSE(layer_tree_host.needs_full_tree_sync());
   int sequence_number = GetPropertyTrees()->sequence_number;
   EXPECT_GT(sequence_number, 0);
 
   // A no-op update should not cause the host to need a full tree sync.
   UpdateAllLifecyclePhases();
-  EXPECT_FALSE(layer_tree_host->needs_full_tree_sync());
+  EXPECT_FALSE(layer_tree_host.needs_full_tree_sync());
   // It should also not cause a property tree update - the sequence number
   // should not change.
   EXPECT_EQ(sequence_number, GetPropertyTrees()->sequence_number);

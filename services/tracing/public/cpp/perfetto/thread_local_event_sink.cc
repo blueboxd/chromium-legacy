@@ -4,6 +4,7 @@
 
 #include "services/tracing/public/cpp/perfetto/thread_local_event_sink.h"
 
+#include <atomic>
 #include <utility>
 
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
@@ -17,7 +18,10 @@ ThreadLocalEventSink::ThreadLocalEventSink(
     bool disable_interning)
     : trace_writer_(std::move(trace_writer)),
       session_id_(session_id),
-      disable_interning_(disable_interning) {}
+      disable_interning_(disable_interning) {
+  static std::atomic<uint32_t> g_sink_id_counter{0};
+  sink_id_ = ++g_sink_id_counter;
+}
 
 ThreadLocalEventSink::~ThreadLocalEventSink() {
   // Subclass has already destroyed its message handles at this point.

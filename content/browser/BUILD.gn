@@ -2458,8 +2458,6 @@ jumbo_source_set("browser") {
       "host_zoom_level_context.h",
       "host_zoom_map_impl.cc",
       "host_zoom_map_impl.h",
-      "host_zoom_map_observer.cc",
-      "host_zoom_map_observer.h",
 
       # The Serial API is not implemented on Android.
       "serial/serial_service.cc",

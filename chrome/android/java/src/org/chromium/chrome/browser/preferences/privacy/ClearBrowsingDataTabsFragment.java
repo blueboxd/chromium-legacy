@@ -188,9 +188,9 @@ public class ClearBrowsingDataTabsFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_id_targeted_help) {
-            HelpAndFeedback.getInstance(getActivity())
-                    .show(getActivity(), getString(R.string.help_context_clear_browsing_data),
-                            Profile.getLastUsedProfile(), null);
+            HelpAndFeedback.getInstance().show(getActivity(),
+                    getString(R.string.help_context_clear_browsing_data),
+                    Profile.getLastUsedProfile(), null);
             return true;
         }
         return false;

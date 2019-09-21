@@ -169,6 +169,7 @@ Une fois le tutoriel terminé, utilisez ChromeVox pour accéder au bouton de fer
 <translation id="2220529011494928058">Signaler un problème</translation>
 <translation id="2223693656926968778">Effectuer une action sur l'élément actuel</translation>
 <translation id="225732394367814946">Accélérer la cadence de la voix</translation>
+<translation id="2267538686624070261">Abandon de la faute d'orthographe</translation>
 <translation id="2267945578749931355">Caractère suivant</translation>
 <translation id="2278490101488436824">Balayer l'écran vers la gauche avec trois doigts</translation>
 <translation id="2281234842553884450">Curseur précédent</translation>
@@ -207,6 +208,7 @@ Une fois le tutoriel terminé, utilisez ChromeVox pour accéder au bouton de fer
 <translation id="257674075312929031">Groupe</translation>
 <translation id="2582407057977008361">Contenu relatif</translation>
 <translation id="2592212930811759050">Appuyer deux fois pour commencer la modification</translation>
+<translation id="2598495320872286378">Erreur grammaticale</translation>
 <translation id="2614981083756825552">Mise en page MathML</translation>
 <translation id="2624431853467395961">Ouvrir le mode d'apprentissage</translation>
 <translation id="2626530649491650971">cliquable</translation>
@@ -233,7 +235,7 @@ Une fois le tutoriel terminé, utilisez ChromeVox pour accéder au bouton de fer
 <translation id="27527859628328957">Renvoyer à l'élément suivant pouvant être agrandi</translation>
 <translation id="2770781857296573485">Passer en mode d'exploration par groupe</translation>
 <translation id="2777845298774924149">Fermé</translation>
-<translation id="2783001728278437613">{COUNT,plural, =1{+#}one{+#}other{+#}}</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{+ #}one{+ #}other{+ #}}</translation>
 <translation id="2784959586797362050">Comme toujours, vous pouvez nous envoyer directement vos commentaires en appuyant sur la touche de recherche+a, puis sur la touche i. Nous avons hâte de connaître votre avis.</translation>
 <translation id="2800204403141299078">Aucun autre élément différent</translation>
 <translation id="2800780099804980316">Aucun titre de niveau 1 précédent</translation>
@@ -821,6 +823,7 @@ Une fois le tutoriel terminé, utilisez ChromeVox pour accéder au bouton de fer
 <translation id="6833103209700200188">Pied de page</translation>
 <translation id="6858047746862060282">Prologue</translation>
 <translation id="6859876496651143278">Balayer l'écran vers la gauche avec un doigt</translation>
+<translation id="6865519907510167493">Faute d'orthographe</translation>
 <translation id="6871161210040114857">Insensible à la casse</translation>
 <translation id="6877435256196695200">Aucune image suivante</translation>
 <translation id="6897341342232909480">Déplacer vers la gauche</translation>
@@ -1111,6 +1114,7 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="8446884382197647889">En savoir plus</translation>
 <translation id="8455868257606149352">max. <ph name="X" /></translation>
 <translation id="84575901236241018">dispose d'une clé d'accès, <ph name="KEY" /></translation>
+<translation id="8463645336674919227">Abandon de l'erreur grammaticale</translation>
 <translation id="847154984256717791">occupé</translation>
 <translation id="8476408756881832830">Interrompre la lecture pendant la diffusion des commentaires audio ChromeVox</translation>
 <translation id="8476508772960940536">vue d'ensemble des fenêtres</translation>

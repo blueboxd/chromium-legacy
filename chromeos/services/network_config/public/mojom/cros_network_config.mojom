@@ -461,6 +461,7 @@ struct ManagedIPSecProperties {
 
 struct ManagedL2TPProperties {
   ManagedBoolean? lcp_echo_disabled;
+  ManagedString? password;
   ManagedBoolean? save_credentials;
   ManagedString? username;
 };
@@ -624,14 +625,19 @@ struct ManagedProperties {
   ManagedWiFiProperties? wifi;
 };
 
-// Properties for SetProperties.
+// Properties for SetProperties and ConfigureNetwork. All of the top level
+// properties and many nested properties are optional so that sparse
+// configurations can be provided, e.g. just the |auto_connect| property can
+// be changed. The ONC validation code (chromeos/network/onc/onc_validator.cc)
+// ensures that configurations are valid before translating and passing them to
+// Shill.
 
-// Wrappers for optional configuration properties. If not provided the existing
-// property will not be changed.
+// Wrapper to allow optional configuration auto_connect configuration.
 struct AutoConnectConfig {
   bool value;
 };
 
+// Wrapper to allow optional configuration priority configuration.
 struct PriorityConfig {
   int32 value;
 };
@@ -655,32 +661,101 @@ struct ProxySettings {
   string? pac;
 };
 
+struct EAPConfigProperties {
+  string? anonymous_identity;
+  string? client_cert_pkcs11_id;
+  string? client_cert_type;
+  string? identity;
+  string? inner;
+  string? outer;
+  string? password;
+  bool save_credentials = false;
+  array<string>? server_ca_pems;
+  string? subject_match;
+  bool use_system_cas = true;
+};
+
+// Subset of currently implemented config properties in the UI. Additional
+// optional propreties from onc_spec.md may be added as needed.
+struct IPSecConfigProperties {
+  string authentication_type;
+  string? client_cert_pkcs11_id;
+  string? client_cert_type;
+  string? group;
+  int32 ike_version = 1;
+  string? psk;
+  bool save_credentials = false;
+  array<string>? server_ca_pems;
+  array<string>? server_ca_refs;
+};
+
+// Subset of currently implemented config properties in the UI. Additional
+// optional propreties from onc_spec.md may be added as needed.
+struct L2TPConfigProperties {
+  bool lcp_echo_disabled = false;
+  string? password;
+  bool save_credentials = false;
+  string? username;
+};
+
+// Subset of currently implemented config properties in the UI. Additional
+// optional propreties from onc_spec.md may be added as needed.
+struct OpenVPNConfigProperties {
+  string? client_cert_pkcs11_id;
+  string? client_cert_type;
+  array<string>? extra_hosts;
+  string? otp;
+  string? password;
+  bool save_credentials = false;
+  array<string>? server_ca_pems;
+  array<string>? server_ca_refs;
+  string? username;
+  string? user_authentication_type;
+};
+
+// Only one of {Cellular|Ethernet|VPN|Wifi}ConfigProperties is allowed.
+// TODO(stevenjb): Make these a union.
 struct CellularConfigProperties {
   ApnProperties? apn;
 };
 
-struct OpenVPNConfigProperties {
-  array<string>? extra_hosts;
-  string? username;
+struct EthernetConfigProperties {
+  string authentication;
+  EAPConfigProperties? eap;
 };
 
 struct VPNConfigProperties {
   string? host;
+  IPSecConfigProperties? ip_sec;
+  L2TPConfigProperties? l2tp;
   OpenVPNConfigProperties? open_vpn;
   // For existing configurations, this must match the VPN type. Only
   // configuration of internal VPN types (kOpenVPN and kL2TPIPsec) is supported.
   VpnType type;
 };
 
+struct WiFiConfigProperties {
+  EAPConfigProperties? eap;
+  string? passphrase;
+  string ssid;
+  SecurityType security = kNone;
+};
+
 struct ConfigProperties {
   AutoConnectConfig? auto_connect;
   CellularConfigProperties? cellular;
+  EthernetConfigProperties? ethernet;
   string? ip_address_config_type;
+  // Name is only required for new configurations.
+  string? name;
   string? name_servers_config_type;
   PriorityConfig? priority;
   ProxySettings? proxy_settings;
   IPConfigProperties? static_ip_config;
+  // |type| must match the existing configuration when used with SetProperties.
+  NetworkType type;
   VPNConfigProperties? vpn;
+  WiFiConfigProperties? wifi;
 };
 
 // Properties provided to SetCellularSimState.
@@ -756,8 +831,25 @@ interface CrosNetworkConfig {
   // available returns null.
   GetManagedProperties(string guid) => (ManagedProperties? result);
 
-  // Sets properties for the network matching |guid|. Returns true on success.
-  SetProperties(string guid, ConfigProperties properties) => (bool success);
+  // Sets properties for the network matching |guid|. If |success| is false,
+  // |error_message| provides a string identifying the error. The string may
+  // be a Shill error, or an error token provided by the NetworkHandler layer.
+  // JS localization for a common subset of these is provided by
+  // network_element::AddErrorLocalizedStrings. TODO(1004434): Consider
+  // enumerating these.
+  SetProperties(string guid, ConfigProperties properties) =>
+    (bool success, string error_message);
+
+  // Configures a new network with |properties|. Returns the guid of the new
+  // network configuration on success. A null guid indicates that the properties
+  // were invalid or incomplete. See SetProperties for notes on errorMessage.
+  ConfigureNetwork(ConfigProperties properties, bool shared) =>
+    (string? guid, string error_message);
+
+  // Forgets an existing network configuration matching |guid| by clearing all
+  // configured properties. Returns true if the network exists and is
+  // successfully removed.
+  ForgetNetwork(string guid) => (bool success);
 
   // Sets a single network type (e.g. WiFi) to enabled or disabled. Types
   // describing multiple technologies (e.g. kWireless) are not supported.

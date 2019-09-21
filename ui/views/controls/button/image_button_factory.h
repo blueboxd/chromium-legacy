@@ -30,6 +30,10 @@ VIEWS_EXPORT std::unique_ptr<ImageButton> CreateVectorImageButton(
 VIEWS_EXPORT std::unique_ptr<ToggleImageButton> CreateVectorToggleImageButton(
     ButtonListener* listener);
 
+// Configures an existing ImageButton with an ink drop and a centered image in
+// preparation for applying a vector icon with SetImageFromVectorIcon below.
+VIEWS_EXPORT void ConfigureVectorImageButton(ImageButton* button);
+
 // Sets images on |button| for STATE_NORMAL and STATE_DISABLED from the given
 // vector icon using the default color from the current NativeTheme.
 VIEWS_EXPORT void SetImageFromVectorIcon(ImageButton* button,

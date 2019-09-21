@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
@@ -26,6 +27,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "crypto/openssl_util.h"
+#include "net/base/features.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/base/trace_constants.h"
@@ -272,10 +274,13 @@ class QuicStreamFactory::CertVerifierJob {
     CertVerifierJob* job_;
   };
 
-  CertVerifierJob(const quic::QuicServerId& server_id,
-                  int cert_verify_flags,
-                  const NetLogWithSource& net_log)
-      : server_id_(server_id),
+  CertVerifierJob(
+      std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config_handle,
+      const quic::QuicServerId& server_id,
+      int cert_verify_flags,
+      const NetLogWithSource& net_log)
+      : crypto_config_handle_(std::move(crypto_config_handle)),
+        server_id_(server_id),
         verify_callback_(nullptr),
         verify_context_(
             std::make_unique<ProofVerifyContextChromium>(cert_verify_flags,
@@ -289,8 +294,9 @@ class QuicStreamFactory::CertVerifierJob {
   }
 
   // Starts verification of certs cached in the |crypto_config|.
-  quic::QuicAsyncStatus Run(quic::QuicCryptoClientConfig* crypto_config,
-                            CompletionOnceCallback callback) {
+  quic::QuicAsyncStatus Run(CompletionOnceCallback callback) {
+    quic::QuicCryptoClientConfig* crypto_config =
+        crypto_config_handle_->GetConfig();
     quic::QuicCryptoClientConfig::CachedState* cached =
         crypto_config->LookupOrCreate(server_id_);
     auto verify_callback = std::make_unique<ProofVerifierCallbackImpl>(this);
@@ -324,6 +330,7 @@ class QuicStreamFactory::CertVerifierJob {
   }
 
  private:
+  const std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config_handle_;
   const quic::QuicServerId server_id_;
   ProofVerifierCallbackImpl* verify_callback_;
   std::unique_ptr<quic::ProofVerifyContext> verify_context_;
@@ -337,14 +344,96 @@ class QuicStreamFactory::CertVerifierJob {
   DISALLOW_COPY_AND_ASSIGN(CertVerifierJob);
 };
 
+// Refcounted class that owns quic::QuicCryptoClientConfig and tracks how many
+// consumers are using it currently. When the last reference is freed, the
+// QuicCryptoClientConfigHandle informs the owning QuicStreamFactory, moves it
+// into an MRU cache.
+class QuicStreamFactory::QuicCryptoClientConfigOwner {
+ public:
+  QuicCryptoClientConfigOwner(
+      std::unique_ptr<quic::ProofVerifier> proof_verifier,
+      QuicStreamFactory* quic_stream_factory)
+      : config_(std::move(proof_verifier)),
+        quic_stream_factory_(quic_stream_factory) {
+    DCHECK(quic_stream_factory_);
+  }
+
+  ~QuicCryptoClientConfigOwner() { DCHECK_EQ(num_refs_, 0); }
+
+  quic::QuicCryptoClientConfig* config() { return &config_; }
+
+  int num_refs() const { return num_refs_; }
+
+  QuicStreamFactory* quic_stream_factory() { return quic_stream_factory_; }
+
+ private:
+  friend class CryptoClientConfigHandle;
+
+  // Simple ref counting. Not using scoped_refptr allows for both keeping around
+  // an MRU cache of 0-reference objects, and DCHECKing that there are no
+  // outstanding referenced QuicCryptoClientConfigOwner on destruction. Private
+  // so that only CryptoClientConfigHandle can add and remove refs.
+
+  void AddRef() { num_refs_++; }
+
+  void ReleaseRef() {
+    DCHECK_GT(num_refs_, 0);
+    num_refs_--;
+  }
+
+  int num_refs_ = 0;
+  quic::QuicCryptoClientConfig config_;
+  QuicStreamFactory* const quic_stream_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuicCryptoClientConfigOwner);
+};
+
+// Class that owns a reference to a QuicCryptoClientConfigOwner. Handles
+// incrementing the refcount on construction, and decrementing it on
+// destruction.
+class QuicStreamFactory::CryptoClientConfigHandle
+    : public QuicCryptoClientConfigHandle {
+ public:
+  explicit CryptoClientConfigHandle(
+      const QuicCryptoClientConfigMap::iterator& map_iterator)
+      : map_iterator_(map_iterator) {
+    DCHECK_GE(map_iterator_->second->num_refs(), 0);
+    map_iterator->second->AddRef();
+  }
+
+  explicit CryptoClientConfigHandle(const CryptoClientConfigHandle& other)
+      : CryptoClientConfigHandle(other.map_iterator_) {}
+
+  ~CryptoClientConfigHandle() override {
+    DCHECK_GT(map_iterator_->second->num_refs(), 0);
+    map_iterator_->second->ReleaseRef();
+    if (map_iterator_->second->num_refs() == 0) {
+      map_iterator_->second->quic_stream_factory()
+          ->OnAllCryptoClientRefReleased(map_iterator_);
+    }
+  }
+
+  quic::QuicCryptoClientConfig* GetConfig() const override {
+    return map_iterator_->second->config();
+  }
+
+ private:
+  QuicCryptoClientConfigMap::iterator map_iterator_;
+
+  DISALLOW_ASSIGN(CryptoClientConfigHandle);
+};
+
 // Responsible for creating a new QUIC session to the specified server, and
-// for notifying any associated requests when complete.
+// for notifying any associated requests when complete. |client_config_handle|
+// is not actually used, but serves to keep the corresponding CryptoClientConfig
+// alive until the Job completes.
 class QuicStreamFactory::Job {
  public:
   Job(QuicStreamFactory* factory,
       quic::ParsedQuicVersion quic_version,
       HostResolver* host_resolver,
       const QuicSessionAliasKey& key,
+      std::unique_ptr<CryptoClientConfigHandle> client_config_handle,
       bool was_alternative_service_recently_broken,
       bool retry_on_alternate_network_before_handshake,
       bool race_stale_dns_on_connection,
@@ -482,6 +571,7 @@ class QuicStreamFactory::Job {
   quic::ParsedQuicVersion quic_version_;
   HostResolver* host_resolver_;
   const QuicSessionAliasKey key_;
+  const std::unique_ptr<CryptoClientConfigHandle> client_config_handle_;
   RequestPriority priority_;
   const int cert_verify_flags_;
   const bool was_alternative_service_recently_broken_;
@@ -508,21 +598,24 @@ class QuicStreamFactory::Job {
   DISALLOW_COPY_AND_ASSIGN(Job);
 };
 
-QuicStreamFactory::Job::Job(QuicStreamFactory* factory,
-                            quic::ParsedQuicVersion quic_version,
-                            HostResolver* host_resolver,
-                            const QuicSessionAliasKey& key,
-                            bool was_alternative_service_recently_broken,
-                            bool retry_on_alternate_network_before_handshake,
-                            bool race_stale_dns_on_connection,
-                            RequestPriority priority,
-                            int cert_verify_flags,
-                            const NetLogWithSource& net_log)
+QuicStreamFactory::Job::Job(
+    QuicStreamFactory* factory,
+    quic::ParsedQuicVersion quic_version,
+    HostResolver* host_resolver,
+    const QuicSessionAliasKey& key,
+    std::unique_ptr<CryptoClientConfigHandle> client_config_handle,
+    bool was_alternative_service_recently_broken,
+    bool retry_on_alternate_network_before_handshake,
+    bool race_stale_dns_on_connection,
+    RequestPriority priority,
+    int cert_verify_flags,
+    const NetLogWithSource& net_log)
     : io_state_(STATE_RESOLVE_HOST),
       factory_(factory),
       quic_version_(quic_version),
       host_resolver_(host_resolver),
       key_(key),
+      client_config_handle_(std::move(client_config_handle)),
       priority_(priority),
       cert_verify_flags_(cert_verify_flags),
       was_alternative_service_recently_broken_(
@@ -1085,6 +1178,8 @@ QuicStreamFactory::QuicStreamFactory(
       client_socket_factory_(client_socket_factory),
       http_server_properties_(http_server_properties),
       push_delegate_(nullptr),
+      cert_verifier_(cert_verifier),
+      ct_policy_enforcer_(ct_policy_enforcer),
       transport_security_state_(transport_security_state),
       cert_transparency_verifier_(cert_transparency_verifier),
       quic_crypto_client_stream_factory_(quic_crypto_client_stream_factory),
@@ -1093,18 +1188,13 @@ QuicStreamFactory::QuicStreamFactory(
       params_(params),
       clock_skew_detector_(base::TimeTicks::Now(), base::Time::Now()),
       socket_performance_watcher_factory_(socket_performance_watcher_factory),
+      recent_crypto_config_map_(kMaxRecentCryptoConfigs),
       config_(
           InitializeQuicConfig(params.connection_options,
                                params.client_connection_options,
                                params.idle_connection_timeout,
                                params.max_time_before_crypto_handshake,
                                params.max_idle_time_before_crypto_handshake)),
-      crypto_config_(std::make_unique<ProofVerifierChromium>(
-          cert_verifier,
-          ct_policy_enforcer,
-          transport_security_state,
-          cert_transparency_verifier,
-          HostsFromOrigins(params.origins_to_force_quic_on))),
       ping_timeout_(quic::QuicTime::Delta::FromSeconds(quic::kPingTimeoutSecs)),
       reduced_ping_timeout_(quic::QuicTime::Delta::FromMicroseconds(
           params.reduced_ping_timeout.InMicroseconds())),
@@ -1115,20 +1205,16 @@ QuicStreamFactory::QuicStreamFactory(
           kQuicYieldAfterDurationMilliseconds)),
       default_network_(NetworkChangeNotifier::kInvalidNetworkHandle),
       need_to_check_persisted_supports_quic_(true),
+      prefer_aes_gcm_recorded_(false),
       num_push_streams_created_(0),
       tick_clock_(nullptr),
       task_runner_(nullptr),
-      ssl_config_service_(ssl_config_service) {
+      ssl_config_service_(ssl_config_service),
+      use_network_isolation_key_for_crypto_configs_(
+          base::FeatureList::IsEnabled(
+              features::kPartitionHttpServerPropertiesByNetworkIsolationKey)) {
   DCHECK(transport_security_state_);
   DCHECK(http_server_properties_);
-  crypto_config_.set_user_agent_id(params.user_agent_id);
-  crypto_config_.AddCanonicalSuffix(".c.youtube.com");
-  crypto_config_.AddCanonicalSuffix(".ggpht.com");
-  crypto_config_.AddCanonicalSuffix(".googlevideo.com");
-  crypto_config_.AddCanonicalSuffix(".googleusercontent.com");
-  bool prefer_aes_gcm =
-      !crypto_config_.aead.empty() && (crypto_config_.aead[0] == quic::kAESG);
-  UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.PreferAesGcm", prefer_aes_gcm);
   InitializeMigrationOptions();
 }
 
@@ -1223,6 +1309,11 @@ QuicStreamFactory::~QuicStreamFactory() {
   active_jobs_.clear();
   while (!active_cert_verifier_jobs_.empty())
     active_cert_verifier_jobs_.erase(active_cert_verifier_jobs_.begin());
+
+  // This should have been moved to the recent map when all consumers of
+  // QuicCryptoClientConfigs were deleted, in the above lines.
+  DCHECK(active_crypto_config_map_.empty());
+
   if (params_.close_sessions_on_ip_change ||
       params_.goaway_sessions_on_ip_change) {
     NetworkChangeNotifier::RemoveIPAddressObserver(this);
@@ -1421,16 +1512,19 @@ int QuicStreamFactory::Create(const QuicSessionKey& session_key,
   if (!tick_clock_)
     tick_clock_ = base::DefaultTickClock::GetInstance();
 
-  ignore_result(
-      StartCertVerifyJob(session_key.server_id(), cert_verify_flags, net_log));
+  std::unique_ptr<CryptoClientConfigHandle> crypto_config_handle =
+      CreateCryptoConfigHandle(session_key.network_isolation_key());
+  ignore_result(StartCertVerifyJob(*crypto_config_handle,
+                                   session_key.server_id(), cert_verify_flags,
+                                   net_log));
 
   QuicSessionAliasKey key(destination, session_key);
-  std::unique_ptr<Job> job =
-      std::make_unique<Job>(this, quic_version, host_resolver_, key,
-                            WasQuicRecentlyBroken(session_key),
-                            params_.retry_on_alternate_network_before_handshake,
-                            params_.race_stale_dns_on_connection, priority,
-                            cert_verify_flags, net_log);
+  std::unique_ptr<Job> job = std::make_unique<Job>(
+      this, quic_version, host_resolver_, key, std::move(crypto_config_handle),
+      WasQuicRecentlyBroken(session_key),
+      params_.retry_on_alternate_network_before_handshake,
+      params_.race_stale_dns_on_connection, priority, cert_verify_flags,
+      net_log);
   int rv = job->Run(base::BindOnce(&QuicStreamFactory::OnJobComplete,
                                    base::Unretained(this), job.get()));
   if (rv == ERR_IO_PENDING) {
@@ -1634,7 +1728,13 @@ std::unique_ptr<base::Value> QuicStreamFactory::QuicStreamFactoryInfoToValue()
 void QuicStreamFactory::ClearCachedStatesInCryptoConfig(
     const base::Callback<bool(const GURL&)>& origin_filter) {
   ServerIdOriginFilter filter(origin_filter);
-  crypto_config_.ClearCachedStates(filter);
+  for (const auto& crypto_config : active_crypto_config_map_) {
+    crypto_config.second->config()->ClearCachedStates(filter);
+  }
+
+  for (const auto& crypto_config : recent_crypto_config_map_) {
+    crypto_config.second->config()->ClearCachedStates(filter);
+  }
 }
 
 void QuicStreamFactory::OnIPAddressChanged() {
@@ -1884,9 +1984,13 @@ int QuicStreamFactory::CreateSession(
   std::unique_ptr<QuicServerInfo> server_info;
   if (params_.max_server_configs_stored_in_properties > 0) {
     server_info = std::make_unique<PropertiesBasedQuicServerInfo>(
-        server_id, http_server_properties_);
+        server_id, key.session_key().network_isolation_key(),
+        http_server_properties_);
   }
-  InitializeCachedStateInCryptoConfig(server_id, server_info, &connection_id);
+  std::unique_ptr<CryptoClientConfigHandle> crypto_config_handle =
+      CreateCryptoConfigHandle(key.session_key().network_isolation_key());
+  InitializeCachedStateInCryptoConfig(*crypto_config_handle, server_id,
+                                      server_info, &connection_id);
 
   QuicChromiumPacketWriter* writer =
       new QuicChromiumPacketWriter(socket.get(), task_runner_);
@@ -1942,10 +2046,11 @@ int QuicStreamFactory::CreateSession(
       yield_after_packets_, yield_after_duration_,
       params_.go_away_on_path_degrading,
       params_.headers_include_h2_stream_dependency, cert_verify_flags, config,
-      &crypto_config_, network_connection_.connection_description(),
-      dns_resolution_start_time, dns_resolution_end_time, &push_promise_index_,
-      push_delegate_, tick_clock_, task_runner_,
-      std::move(socket_performance_watcher), net_log.net_log());
+      std::move(crypto_config_handle),
+      network_connection_.connection_description(), dns_resolution_start_time,
+      dns_resolution_end_time, &push_promise_index_, push_delegate_,
+      tick_clock_, task_runner_, std::move(socket_performance_watcher),
+      net_log.net_log());
 
   all_sessions_[*session] = key;  // owning pointer
   writer->set_delegate(*session);
@@ -2048,28 +2153,43 @@ bool QuicStreamFactory::WasQuicRecentlyBroken(
 }
 
 bool QuicStreamFactory::CryptoConfigCacheIsEmpty(
-    const quic::QuicServerId& server_id) {
-  quic::QuicCryptoClientConfig::CachedState* cached =
-      crypto_config_.LookupOrCreate(server_id);
-  return cached->IsEmpty();
+    const quic::QuicServerId& server_id,
+    const NetworkIsolationKey& network_isolation_key) {
+  quic::QuicCryptoClientConfig::CachedState* cached = nullptr;
+  NetworkIsolationKey actual_network_isolation_key =
+      use_network_isolation_key_for_crypto_configs_ ? network_isolation_key
+                                                    : NetworkIsolationKey();
+  auto map_iterator =
+      active_crypto_config_map_.find(actual_network_isolation_key);
+  if (map_iterator != active_crypto_config_map_.end()) {
+    cached = map_iterator->second->config()->LookupOrCreate(server_id);
+  } else {
+    auto mru_iterator =
+        recent_crypto_config_map_.Peek(actual_network_isolation_key);
+    if (mru_iterator != recent_crypto_config_map_.end()) {
+      cached = mru_iterator->second->config()->LookupOrCreate(server_id);
+    }
+  }
+  return !cached || cached->IsEmpty();
 }
 
 quic::QuicAsyncStatus QuicStreamFactory::StartCertVerifyJob(
+    const CryptoClientConfigHandle& crypto_config_handle,
     const quic::QuicServerId& server_id,
     int cert_verify_flags,
     const NetLogWithSource& net_log) {
   if (!params_.race_cert_verification)
     return quic::QUIC_FAILURE;
   quic::QuicCryptoClientConfig::CachedState* cached =
-      crypto_config_.LookupOrCreate(server_id);
+      crypto_config_handle.GetConfig()->LookupOrCreate(server_id);
   if (!cached || cached->certs().empty() ||
       HasActiveCertVerifierJob(server_id)) {
     return quic::QUIC_FAILURE;
   }
-  std::unique_ptr<CertVerifierJob> cert_verifier_job(
-      new CertVerifierJob(server_id, cert_verify_flags, net_log));
+  std::unique_ptr<CertVerifierJob> cert_verifier_job(new CertVerifierJob(
+      std::make_unique<CryptoClientConfigHandle>(crypto_config_handle),
+      server_id, cert_verify_flags, net_log));
   quic::QuicAsyncStatus status = cert_verifier_job->Run(
-      &crypto_config_,
       base::BindOnce(&QuicStreamFactory::OnCertVerifyJobComplete,
                      base::Unretained(this), cert_verifier_job.get()));
   if (status == quic::QUIC_PENDING)
@@ -2078,11 +2198,12 @@ quic::QuicAsyncStatus QuicStreamFactory::StartCertVerifyJob(
 }
 
 void QuicStreamFactory::InitializeCachedStateInCryptoConfig(
+    const CryptoClientConfigHandle& crypto_config_handle,
     const quic::QuicServerId& server_id,
     const std::unique_ptr<QuicServerInfo>& server_info,
     quic::QuicConnectionId* connection_id) {
   quic::QuicCryptoClientConfig::CachedState* cached =
-      crypto_config_.LookupOrCreate(server_id);
+      crypto_config_handle.GetConfig()->LookupOrCreate(server_id);
   if (cached->has_server_designated_connection_id())
     *connection_id = cached->GetNextServerDesignatedConnectionId();
 
@@ -2156,6 +2277,99 @@ void QuicStreamFactory::ProcessGoingAwaySession(
   // broken, which means that 0-RTT will be disabled but we'll still race.
   http_server_properties_->MarkAlternativeServiceRecentlyBroken(
       alternative_service, session->quic_session_key().network_isolation_key());
+}
+
+std::unique_ptr<QuicStreamFactory::CryptoClientConfigHandle>
+QuicStreamFactory::CreateCryptoConfigHandle(
+    const NetworkIsolationKey& network_isolation_key) {
+  NetworkIsolationKey actual_network_isolation_key =
+      use_network_isolation_key_for_crypto_configs_ ? network_isolation_key
+                                                    : NetworkIsolationKey();
+
+  // If there's a matching entry in |active_crypto_config_map_|, create a
+  // CryptoClientConfigHandle for it.
+  auto map_iterator =
+      active_crypto_config_map_.find(actual_network_isolation_key);
+  if (map_iterator != active_crypto_config_map_.end()) {
+    DCHECK_GT(map_iterator->second->num_refs(), 0);
+
+    // If there's an active matching crypto config, there shouldn't also be an
+    // inactive matching crypto config.
+    DCHECK(recent_crypto_config_map_.Peek(actual_network_isolation_key) ==
+           recent_crypto_config_map_.end());
+
+    return std::make_unique<CryptoClientConfigHandle>(map_iterator);
+  }
+
+  // If there's a matching entry in |recent_crypto_config_map_|, move it to
+  // |active_crypto_config_map_| and create a CryptoClientConfigHandle for it.
+  auto mru_iterator =
+      recent_crypto_config_map_.Peek(actual_network_isolation_key);
+  if (mru_iterator != recent_crypto_config_map_.end()) {
+    DCHECK_EQ(mru_iterator->second->num_refs(), 0);
+
+    map_iterator = active_crypto_config_map_
+                       .emplace(std::make_pair(actual_network_isolation_key,
+                                               std::move(mru_iterator->second)))
+                       .first;
+    recent_crypto_config_map_.Erase(mru_iterator);
+    return std::make_unique<CryptoClientConfigHandle>(map_iterator);
+  }
+
+  // Otherwise, create a new QuicCryptoClientConfigOwner and add it to
+  // |active_crypto_config_map_|.
+  std::unique_ptr<QuicCryptoClientConfigOwner> crypto_config_owner =
+      std::make_unique<QuicCryptoClientConfigOwner>(
+          std::make_unique<ProofVerifierChromium>(
+              cert_verifier_, ct_policy_enforcer_, transport_security_state_,
+              cert_transparency_verifier_,
+              HostsFromOrigins(params_.origins_to_force_quic_on)),
+          this);
+
+  quic::QuicCryptoClientConfig* crypto_config = crypto_config_owner->config();
+  crypto_config->set_user_agent_id(params_.user_agent_id);
+  crypto_config->AddCanonicalSuffix(".c.youtube.com");
+  crypto_config->AddCanonicalSuffix(".ggpht.com");
+  crypto_config->AddCanonicalSuffix(".googlevideo.com");
+  crypto_config->AddCanonicalSuffix(".googleusercontent.com");
+
+  if (!prefer_aes_gcm_recorded_) {
+    bool prefer_aes_gcm =
+        !crypto_config->aead.empty() && (crypto_config->aead[0] == quic::kAESG);
+    UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.PreferAesGcm", prefer_aes_gcm);
+    prefer_aes_gcm_recorded_ = true;
+  }
+
+  map_iterator = active_crypto_config_map_
+                     .emplace(std::make_pair(actual_network_isolation_key,
+                                             std::move(crypto_config_owner)))
+                     .first;
+  return std::make_unique<CryptoClientConfigHandle>(map_iterator);
+}
+
+void QuicStreamFactory::OnAllCryptoClientRefReleased(
+    QuicCryptoClientConfigMap::iterator& map_iterator) {
+  DCHECK_EQ(0, map_iterator->second->num_refs());
+  recent_crypto_config_map_.Put(map_iterator->first,
+                                std::move(map_iterator->second));
+  active_crypto_config_map_.erase(map_iterator);
+}
+
+std::unique_ptr<QuicCryptoClientConfigHandle>
+QuicStreamFactory::GetCryptoConfigForTesting(
+    const NetworkIsolationKey& network_isolation_key) {
+  return CreateCryptoConfigHandle(network_isolation_key);
+}
+
+quic::QuicAsyncStatus QuicStreamFactory::StartCertVerifyJobForTesting(
+    const quic::QuicServerId& server_id,
+    const NetworkIsolationKey& network_isolation_key,
+    int cert_verify_flags,
+    const NetLogWithSource& net_log) {
+  std::unique_ptr<QuicStreamFactory::CryptoClientConfigHandle>
+      crypto_config_handle = CreateCryptoConfigHandle(network_isolation_key);
+  return StartCertVerifyJob(*crypto_config_handle, server_id, cert_verify_flags,
+                            net_log);
 }
 
 }  // namespace net

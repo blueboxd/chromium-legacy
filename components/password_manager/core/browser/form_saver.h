@@ -30,6 +30,10 @@ class FormSaver {
   virtual autofill::PasswordForm PermanentlyBlacklist(
       PasswordStore::FormDigest digest) = 0;
 
+  // Unblacklist the origin described by |digest| by deleting all corresponding
+  // blacklisted entries.
+  virtual void Unblacklist(const PasswordStore::FormDigest& digest) = 0;
+
   // Saves the |pending| form.
   // |matches| are relevant credentials for the site. After saving |pending|,
   // the following clean up steps are performed on the credentials stored on

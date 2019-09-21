@@ -28,6 +28,19 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="base/android/junit/src"/>
     <classpathentry kind="src" path="base/test/android/javatests/src"/>
     <classpathentry kind="src" path="base/test/android/junit/src"/>
+    <classpathentry kind="src" path="chrome/android/features/keyboard_accessory/internal/java/src"/>
+    <classpathentry kind="src" path="chrome/android/features/keyboard_accessory/public/java/src"/>
+    <classpathentry kind="src" path="chrome/android/features/keyboard_accessory/factory/java/src"/>
+    <classpathentry kind="src" path="chrome/android/features/start_surface/internal/java/src"/>
+    <classpathentry kind="src" path="chrome/android/features/start_surface/internal/dummy/java/src"/>
+    <classpathentry kind="src" path="chrome/android/features/start_surface/public/java/src"/>
+    <classpathentry kind="src" path="chrome/android/features/media_router/java/src"/>
+    <classpathentry kind="src" path="chrome/android/features/dev_ui/java/src"/>
+    <classpathentry kind="src" path="chrome/android/features/dev_ui/public/java/src"/>
+    <classpathentry kind="src" path="chrome/android/features/vr/java/src"/>
+    <classpathentry kind="src" path="chrome/android/features/tab_ui/java/src"/>
+    <classpathentry kind="src" path="chrome/android/features/autofill_assistant/java/src"/>
+    <classpathentry kind="src" path="chrome/android/features/autofill_assistant/public/java/src"/>
     <classpathentry kind="src" path="chrome/android/feed/core/java/src"/>
     <classpathentry kind="src" path="chrome/android/feed/dummy/java/src"/>
     <classpathentry kind="src" path="chrome/android/java/src"/>
@@ -40,6 +53,11 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="chrome/android/webapk/shell_apk/javatests/dex_optimizer/src"/>
     <classpathentry kind="src" path="chrome/android/webapk/shell_apk/javatests/src"/>
     <classpathentry kind="src" path="chrome/android/webapk/shell_apk/src"/>
+    <classpathentry kind="src" path="chrome/browser/android/thin_webview/internal/java/src"/>
+    <classpathentry kind="src" path="chrome/browser/android/thin_webview/java/src"/>
+    <classpathentry kind="src" path="chrome/browser/ui/android/widget/java/src"/>
+    <classpathentry kind="src" path="chrome/browser/ui/android/widget/test/java/src"/>
+    <classpathentry kind="src" path="chrome/browser/util/android/java/src"/>
     <classpathentry kind="src" path="chrome/test/android/cast_emulator/src"/>
     <classpathentry kind="src" path="chrome/test/android/javatests/src"/>
     <classpathentry kind="src" path="chrome/test/chromedriver/test/webview_shell/java/src"/>
@@ -67,6 +85,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="components/policy/android/java/src"/>
     <classpathentry kind="src" path="components/policy/android/javatests/src"/>
     <classpathentry kind="src" path="components/policy/android/junit/src"/>
+    <classpathentry kind="src" path="components/search_engines/android/java/src"/>
     <classpathentry kind="src" path="components/signin/core/browser/android/java/src"/>
     <classpathentry kind="src" path="components/signin/core/browser/android/javatests/src"/>
     <classpathentry kind="src" path="components/sync/android/java/src"/>
@@ -125,11 +144,6 @@ to the classpath for downstream development. See "additional_entries" below.
             <attribute name="javadoc_location" value="http://developer.android.com/reference/"/>
         </attributes>
     </classpathentry>
-    <classpathentry kind="lib" path="../src/third_party/android_sdk/public/extras/android/support/design/libs/android-support-design.jar" sourcepath="../src/third_party/android_sdk/public/sources"/>
-    <classpathentry kind="lib" path="../src/third_party/android_sdk/public/extras/android/support/v7/mediarouter/libs/android-support-v7-mediarouter.jar" sourcepath="../src/third_party/android_sdk/public/sources"/>
-    <classpathentry kind="lib" path="../src/third_party/android_sdk/public/extras/android/support/v7/recyclerview/libs/android-support-v7-recyclerview.jar" sourcepath="../src/third_party/android_sdk/public/sources"/>
-    <classpathentry kind="lib" path="../src/third_party/android_sdk/public/extras/android/support/v13/android-support-v13.jar" sourcepath="../src/third_party/android_sdk/public/sources"/>
-    <classpathentry kind="lib" path="../src/third_party/android_sdk/public/extras/android/support/v7/appcompat/libs/android-support-v7-appcompat.jar" sourcepath="../src/third_party/android_sdk/public/sources"/>
     <classpathentry kind="lib" path="../src/third_party/junit/src/lib/hamcrest-core-1.3.jar" sourcepath="../src/third_party/junit/src/lib/hamcrest-core-1.3-sources.jar"/>
 
     <!-- GN: R (resources) and NativeLibraries classes. -->
@@ -161,6 +175,54 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/printing/printing_java.jar"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/services/service_manager/public/mojom/mojom_java.jar"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_data_chart/android_data_chart_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/android_arch_core_common.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/android_arch_core_runtime_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/android_arch_lifecycle_common.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/android_arch_lifecycle_common_java8.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/android_arch_lifecycle_livedata_core_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/android_arch_lifecycle_livedata_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/android_arch_lifecycle_runtime_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/android_arch_lifecycle_viewmodel_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/androidx_annotation_annotation.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/androidx_lifecycle_lifecycle_common.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/androidx_test_core_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/androidx_test_ext_junit_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/androidx_test_monitor_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_animated_vector_drawable_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_appcompat_v7_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_asynclayoutinflater_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_cardview_v7_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_collections.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_coordinatorlayout_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_cursoradapter_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_customview_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_design_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_documentfile_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_drawerlayout_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_gridlayout_v7_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_interpolator_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_loader_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_localbroadcastmanager_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_mediarouter_v7_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_multidex_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_palette_v7_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_preference_v7_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_print_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_recyclerview_v7_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_slidingpanelayout_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_support_annotations.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_support_compat_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_support_core_ui_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_support_core_utils_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_support_fragment_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_support_media_compat_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_support_v13_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_support_v4_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_support_vector_drawable_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_swiperefreshlayout_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_transition_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_versionedparcelable_java.jar"/>
+    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_viewpager_java.jar"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_media/android_media_java.jar"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_protobuf/protobuf_nano_javalib.jar"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_swipe_refresh/android_swipe_refresh_java.jar"/>
@@ -172,7 +234,6 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/robolectric/robolectric_resources_java.jar" sourcepath="../src/third_party/robolectric/robolectric/robolectric-resources/src/main/java"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/robolectric/robolectric_utils_java.jar" sourcepath="../src/third_party/robolectric/robolectric/robolectric-utils/src/main/java"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/robolectric/shadows-core-3.2.jar" sourcepath="../src/third_party/robolectric/robolectric/robolectric-shadows/shadows-core/src/main/java"/>
-    <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_deps/com_android_support_support_compat_java.jar"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/android_support_test_runner/rules_java.jar"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/third_party/blink/public/blink_headers_java.jar"/>
     <classpathentry kind="lib" path="../src/out/Debug/lib.java/ui/android/ui_full_java.interface.jar"/>

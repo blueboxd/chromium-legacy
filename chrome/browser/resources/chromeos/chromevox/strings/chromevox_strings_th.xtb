@@ -168,6 +168,7 @@
 <translation id="2220529011494928058">รายงานปัญหา</translation>
 <translation id="2223693656926968778">ดำเนินการกับรายการปัจจุบัน</translation>
 <translation id="225732394367814946">เพิ่มอัตราการพูด</translation>
+<translation id="2267538686624070261">กำลังออกจากคำที่สะกดผิด</translation>
 <translation id="2267945578749931355">อักขระถัดไป</translation>
 <translation id="2278490101488436824">เลื่อน 3 นิ้วไปทางซ้าย</translation>
 <translation id="2281234842553884450">แถบเลื่อนก่อนหน้า</translation>
@@ -206,6 +207,7 @@
 <translation id="257674075312929031">กลุ่ม</translation>
 <translation id="2582407057977008361">ส่วนที่ไม่เกี่ยวข้อง</translation>
 <translation id="2592212930811759050">แตะสองครั้งเพื่อเริ่มแก้ไข</translation>
+<translation id="2598495320872286378">ข้อผิดพลาดด้านไวยากรณ์</translation>
 <translation id="2614981083756825552">รูปแบบ ML คณิตศาสตร์</translation>
 <translation id="2624431853467395961">เปิดโหมดการเรียนรู้</translation>
 <translation id="2626530649491650971">คลิกได้</translation>
@@ -820,6 +822,7 @@
 <translation id="6833103209700200188">ส่วนท้าย</translation>
 <translation id="6858047746862060282">อารัมภบท</translation>
 <translation id="6859876496651143278">เลื่อน 1 นิ้วไปทางซ้าย</translation>
+<translation id="6865519907510167493">สะกดผิด</translation>
 <translation id="6871161210040114857">ไม่สนใจตัวพิมพ์เล็กหรือใหญ่</translation>
 <translation id="6877435256196695200">ไม่มีกราฟิกถัดไป</translation>
 <translation id="6897341342232909480">เลื่อนไปทางซ้าย</translation>
@@ -1110,6 +1113,7 @@
 <translation id="8446884382197647889">ดูข้อมูลเพิ่มเติม</translation>
 <translation id="8455868257606149352">สูงสุด <ph name="X" /></translation>
 <translation id="84575901236241018">มีรหัสการเข้าถึง <ph name="KEY" /></translation>
+<translation id="8463645336674919227">ออกจากข้อผิดพลาดทางไวยากรณ์</translation>
 <translation id="847154984256717791">ไม่ว่าง</translation>
 <translation id="8476408756881832830">หยุดเล่นชั่วคราวเมื่อ ChromeVox กำลังพูด</translation>
 <translation id="8476508772960940536">ภาพรวมหน้าต่าง</translation>

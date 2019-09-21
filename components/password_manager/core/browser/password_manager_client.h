@@ -301,7 +301,9 @@ class PasswordManagerClient {
       const std::string& username,
       const std::vector<std::string>& matching_domains,
       bool password_field_exists) = 0;
+#endif
 
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
   // Records a Chrome Sync event that GAIA password reuse was detected.
   virtual void LogPasswordReuseDetectedEvent() = 0;
 #endif

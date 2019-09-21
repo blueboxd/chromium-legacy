@@ -21,7 +21,7 @@ import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.feedback.FeedbackCollector;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.UrlConstants;
-import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.chrome.browser.util.UrlUtilitiesJni;
 
 import javax.annotation.Nonnull;
 
@@ -38,8 +38,7 @@ public class HelpAndFeedback {
     /**
      * Returns the singleton instance of HelpAndFeedback, creating it if needed.
      */
-    // TODO(chouinard): Remove unused context parameter.
-    public static HelpAndFeedback getInstance(Context context) {
+    public static HelpAndFeedback getInstance() {
         ThreadUtils.assertOnUiThread();
         if (sInstance == null) {
             sInstance = AppHooks.get().createHelpAndFeedback();
@@ -139,7 +138,7 @@ public class HelpAndFeedback {
         } else if (url.equals(UrlConstants.HISTORY_URL)) {
             return context.getString(R.string.help_context_history);
         // Note: For www.google.com the following function returns false.
-        } else if (UrlUtilities.nativeIsGoogleSearchUrl(url)) {
+        } else if (UrlUtilitiesJni.get().isGoogleSearchUrl(url)) {
             return context.getString(R.string.help_context_search_results);
         // For incognito NTP, we want to show incognito help.
         } else if (isIncognito) {

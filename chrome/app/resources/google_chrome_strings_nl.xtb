@@ -55,7 +55,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="2120620239521071941">Hiermee worden <ph name="ITEMS_COUNT" /> items verwijderd van dit apparaat. Als je je gegevens later wilt terughalen, log je in bij Chrome als <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Help Chrome beter te maken door de <ph name="BEGIN_LINK" />huidige instellingen<ph name="END_LINK" /> te melden</translation>
 <translation id="2128103434102193461">Ga naar <ph name="LINK_BEGIN" />Over Chrome OS<ph name="LINK_END" /> voor meer informatie over Chrome OS</translation>
-<translation id="2151406531797534936">Start Chrome nu opnieuw op</translation>
+<translation id="2151406531797534936">Chrome nu opnieuw opstarten</translation>
 <translation id="216054706567564023">Installeer Chrome op je telefoon. We sturen een sms naar het hersteltelefoonnummer voor je account.</translation>
 <translation id="2246246234298806438">Google Chrome kan het afdrukvoorbeeld niet weergeven wanneer de ingebouwde pdf-viewer ontbreekt.</translation>
 <translation id="2252923619938421629">Help Google Chrome beter te maken door de huidige instellingen te melden</translation>
@@ -165,7 +165,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="5543953544073077331">Er zijn andere exemplaren van Chrome actief. Sluit ze om een update uit te voeren.</translation>
 <translation id="556024056938947818">Google Chrome probeert wachtwoorden weer te geven.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
-<translation id="5657226924540934362">Kijk je in de <ph name="LINK_BEGIN" />Chrome OS-instellingen<ph name="LINK_END" />als een instelling ontbreekt op deze pagina.</translation>
+<translation id="5657226924540934362">Als je een instelling niet ziet op deze pagina, kijk je in de <ph name="LINK_BEGIN" />Chrome OS-instellingen<ph name="LINK_END" /></translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> kan gevaarlijk zijn en is daarom door Chrome geblokkeerd.</translation>
 <translation id="5686916850681061684">Pas Google Chrome aan en beheer de instellingen. Je aandacht is vereist. Klik voor meer informatie.</translation>
 <translation id="5690427481109656848">Google LLC</translation>

@@ -654,8 +654,6 @@ TEST_F(DataReductionProxyCompressionStatsTest, BackwardTwoDays) {
   histogram_tester.ExpectUniqueSample(
       "DataReductionProxy.SavingsCleared.Reason",
       DataReductionProxySavingsClearedReason::SYSTEM_CLOCK_MOVED_BACK, 1);
-  VerifyPrefInt64(prefs::kDataReductionProxySavingsClearedNegativeSystemClock,
-                  FakeNow().ToInternalValue());
 
   // Backward another two days, expect SYSTEM_CLOCK_MOVED_BACK.
   SetFakeTimeDeltaInHours(-4 * 24);

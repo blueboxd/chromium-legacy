@@ -30,12 +30,32 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
         return true;
     }
 
+    /**
+     * Specify SuggestionDrawableState for suggestion decoration.
+     *
+     * @param decoration SuggestionDrawableState object defining decoration for the suggestion.
+     */
+    protected void setSuggestionDrawableState(
+            PropertyModel model, SuggestionDrawableState decoration) {
+        model.set(BaseSuggestionViewProperties.ICON, decoration);
+    }
+
+    /**
+     * Specify SuggestionDrawableState for action button.
+     *
+     * @param decoration SuggestionDrawableState object defining decoration for the action button.
+     */
+    protected void setActionDrawableState(PropertyModel model, SuggestionDrawableState decoration) {
+        model.set(BaseSuggestionViewProperties.ACTION_ICON, decoration);
+    }
+
     @Override
     public void populateModel(OmniboxSuggestion suggestion, PropertyModel model, int position) {
         SuggestionViewDelegate delegate =
                 mSuggestionHost.createSuggestionViewDelegate(suggestion, position);
 
         model.set(BaseSuggestionViewProperties.SUGGESTION_DELEGATE, delegate);
-        model.set(BaseSuggestionViewProperties.REFINE_VISIBLE, canRefine(suggestion));
+        model.set(BaseSuggestionViewProperties.ICON, null);
+        model.set(BaseSuggestionViewProperties.ACTION_ICON, null);
     }
 }

@@ -27,6 +27,7 @@
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -78,7 +79,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
       AssistantSettingsManager* manager);
 
   void SetIdentityAccessorForTesting(
-      identity::mojom::IdentityAccessorPtr identity_accessor);
+      mojo::PendingRemote<identity::mojom::IdentityAccessor> identity_accessor);
 
   void SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer);
 
@@ -160,7 +161,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   mojo::Remote<mojom::Client> client_;
   mojo::Remote<mojom::DeviceActions> device_actions_;
 
-  identity::mojom::IdentityAccessorPtr identity_accessor_;
+  mojo::Remote<identity::mojom::IdentityAccessor> identity_accessor_;
 
   AccountId account_id_;
   std::unique_ptr<AssistantManagerService> assistant_manager_service_;

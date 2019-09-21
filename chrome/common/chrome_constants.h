@@ -38,8 +38,8 @@ extern const base::FilePath::CharType kElfDll[];
 extern const base::FilePath::CharType kStatusTrayWindowClass[];
 #endif  // defined(OS_WIN)
 
-extern const char    kInitialProfile[];
-extern const char    kMultiProfileDirPrefix[];
+extern const char kInitialProfile[];
+extern const char kMultiProfileDirPrefix[];
 extern const base::FilePath::CharType kGuestProfileDir[];
 extern const base::FilePath::CharType kSystemProfileDir[];
 
@@ -74,6 +74,7 @@ extern const base::FilePath::CharType kSingletonSocketFilename[];
 extern const base::FilePath::CharType kSupervisedUserSettingsFilename[];
 extern const base::FilePath::CharType kThemePackFilename[];
 extern const base::FilePath::CharType kWebAppDirname[];
+extern const base::FilePath::CharType kReportingAndNelStoreFilename[];
 
 #if defined(OS_WIN)
 extern const base::FilePath::CharType kJumpListIconDirname[];

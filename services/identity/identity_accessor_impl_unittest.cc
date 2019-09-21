@@ -11,6 +11,7 @@
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "google_apis/gaia/core_account_id.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/identity/identity_service.h"
 #include "services/identity/public/cpp/account_state.h"
 #include "services/identity/public/cpp/scope_set.h"
@@ -87,7 +88,7 @@ class IdentityAccessorImplTest : public testing::Test {
   mojom::IdentityAccessor* GetIdentityAccessorImpl() {
     if (!identity_accessor_) {
       remote_service_->BindIdentityAccessor(
-          mojo::MakeRequest(&identity_accessor_));
+          identity_accessor_.BindNewPipeAndPassReceiver());
     }
     return identity_accessor_.get();
   }
@@ -102,12 +103,12 @@ class IdentityAccessorImplTest : public testing::Test {
   void SetIdentityAccessorImplConnectionErrorHandler(
       base::RepeatingClosure handler) {
     GetIdentityAccessorImpl();
-    identity_accessor_.set_connection_error_handler(handler);
+    identity_accessor_.set_disconnect_handler(handler);
   }
 
   base::test::TaskEnvironment task_environemnt_;
 
-  mojom::IdentityAccessorPtr identity_accessor_;
+  mojo::Remote<mojom::IdentityAccessor> identity_accessor_;
   base::Optional<CoreAccountInfo> primary_account_info_;
   AccountState primary_account_state_;
   base::Optional<CoreAccountInfo> account_info_from_gaia_id_;

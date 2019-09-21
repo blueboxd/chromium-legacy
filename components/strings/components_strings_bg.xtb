@@ -42,6 +42,7 @@
 <translation id="1161325031994447685">Свържете се отново с Wi-Fi.</translation>
 <translation id="1165039591588034296">Грешка</translation>
 <translation id="1175364870820465910">&amp;Печат...</translation>
+<translation id="1175875016430184367">Триточково телбодиране отдясно</translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1181037720776840403">Премахване</translation>
 <translation id="1197088940767939838">оранжево</translation>
@@ -74,10 +75,12 @@
 <translation id="1298536327547837046">Сканиране за злонамерен софтуер</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Опитайте да изчистите „бисквитките“ си<ph name="END_LINK" /></translation>
 <translation id="1307966114820526988">Оттеглени функции</translation>
+<translation id="1314509827145471431">Подвързване отдясно</translation>
 <translation id="1320233736580025032">Prc1 (плик)</translation>
 <translation id="132301787627749051">Търсене на изображението от буферната памет</translation>
 <translation id="1323433172918577554">Показване на още</translation>
 <translation id="132390688737681464">Запазване и попълване на адреси</translation>
+<translation id="1330449323196174374">Сгъване на левия край навътре</translation>
 <translation id="1333989956347591814">Активността ви <ph name="BEGIN_EMPHASIS" />може да остане видима<ph name="END_EMPHASIS" /> за:
 <ph name="BEGIN_LIST" />
 <ph name="LIST_ITEM" />уебсайтовете, които посещавате;
@@ -95,14 +98,18 @@
 <translation id="1375198122581997741">Всичко за версията</translation>
 <translation id="1376836354785490390">Показване на по-малко</translation>
 <translation id="1377321085342047638">№ на картата</translation>
+<translation id="1380591466760231819">Сгъване тип „писмо“</translation>
 <translation id="138218114945450791">светлосиньо</translation>
 <translation id="1382194467192730611">USB устройството е разрешено от администратора</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> не изпрати данни.</translation>
 <translation id="1405567553485452995">светлозелено</translation>
 <translation id="1407135791313364759">Отваряне на всички</translation>
+<translation id="1408787208417187241">Триточково телбодиране в горната част</translation>
 <translation id="1413809658975081374">Грешка, свързана в поверителността</translation>
 <translation id="1426410128494586442">Да</translation>
 <translation id="1430915738399379752">Печат</translation>
+<translation id="1442386063175183758">Сгъване на десния край навътре</translation>
+<translation id="1442987760062738829">Перфориране</translation>
 <translation id="1455413310270022028">Гума</translation>
 <translation id="1463543813647160932">5 x 7</translation>
 <translation id="1472675084647422956">Показване на още</translation>
@@ -203,6 +210,7 @@
 <translation id="1927235823738766038">Приемани кредитни и дебитни карти</translation>
 <translation id="194030505837763158">Към <ph name="LINK" /></translation>
 <translation id="1945968466830820669">Възможно е да загубите достъп до профила си в организацията или самоличността ви да бъде открадната. Chromium препоръчва да промените паролата си сега.</translation>
+<translation id="1947454675006758438">Телбодиране горе вдясно</translation>
 <translation id="1948773908305951926">Приемани предплатени карти</translation>
 <translation id="1962204205936693436">Отметки от <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Грешка при сериализирането</translation>
@@ -212,6 +220,7 @@
 <translation id="1981206234434200693">Изчистване на данните за историята на сърфиране в Chrome</translation>
 <translation id="2001146170449793414">{COUNT,plural, =1{и още 1}other{и още #}}</translation>
 <translation id="2003709556000175978">Задайте повторно паролата си сега</translation>
+<translation id="2003775180883135320">Четворно перфориране в горната част</translation>
 <translation id="2025186561304664664">За прокси сървъра е зададена автоматична конфигурация.</translation>
 <translation id="202813660234680402">Не, не искам</translation>
 <translation id="2030481566774242610">Може би имахте предвид <ph name="LINK" />?</translation>
@@ -226,12 +235,14 @@
 <translation id="2091887806945687916">Звук</translation>
 <translation id="2094505752054353250">Несъответствие в домейна</translation>
 <translation id="2096368010154057602">Департамент</translation>
+<translation id="2099652385553570808">Триточково телбодиране отляво</translation>
 <translation id="2102134110707549001">Предложение за надеждна парола…</translation>
 <translation id="2108755909498034140">Рестартирайте компютъра си.</translation>
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Карта</translation>
 <translation id="2114841414352855701">Бе пренебрегнато, защото бе отменено от <ph name="POLICY_NAME" />.</translation>
 <translation id="2119505898009119320">Издаден на: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
+<translation id="2119867082804433120">Перфориране долу вдясно</translation>
 <translation id="2129079103035905234">Сензори за движение</translation>
 <translation id="213826338245044447">Мобилни отметки</translation>
 <translation id="214556005048008348">Анулиране на плащането</translation>
@@ -246,6 +257,7 @@
 <translation id="2183608646556468874">Телефонен номер</translation>
 <translation id="2184405333245229118">{COUNT,plural, =1{1 адрес}other{# адреса}}</translation>
 <translation id="2187317261103489799">Откриване (по подразбиране)</translation>
+<translation id="2188375229972301266">Няколко перфорации в долната част</translation>
 <translation id="2202020181578195191">Въведете валидна година на изтичане</translation>
 <translation id="2212735316055980242">Правилото не е намерено</translation>
 <translation id="2213606439339815911">Записите се извличат...</translation>
@@ -255,6 +267,7 @@
 <translation id="2230458221926704099">Поправете връзката си посредством <ph name="BEGIN_LINK" />приложението за диагностика<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">Изпращане сега</translation>
 <translation id="2248949050832152960">Използване на WebAuthn</translation>
+<translation id="2250931979407627383">Зашиване на левия ръб</translation>
 <translation id="225207911366869382">Стойността е оттеглена за това правило.</translation>
 <translation id="2257315177824333709">За съжаление, картата ви не може да бъде запазена в момента</translation>
 <translation id="2262243747453050782">HTTP грешка</translation>
@@ -262,6 +275,7 @@
 <translation id="2270484714375784793">Телефонен номер</translation>
 <translation id="2277103315734023688">Придвижване напред</translation>
 <translation id="2283340219607151381">Запазване и попълване на адреси</translation>
+<translation id="2289385804009217824">Отрязване</translation>
 <translation id="2292556288342944218">Достъпът ви до интернет е блокиран</translation>
 <translation id="2297722699537546652">B5 (плик)</translation>
 <translation id="2310021320168182093">Chou2 (плик)</translation>
@@ -289,10 +303,12 @@
 <translation id="2409589295040002961">Администраторът ви може отдалечено да променя настройките на браузъра. Възможно е активността на това устройство да се управлява и извън Chrome. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="2410754574180102685">Government-Legal</translation>
 <translation id="2413528052993050574">Сървърът не можа да докаже, че е <ph name="DOMAIN" />; възможно е сертификатът му за сигурност да е оттеглен. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от атакуващ.</translation>
+<translation id="2438874542388153331">Четворно перфориране отдясно</translation>
 <translation id="2463193859425327265">Промяна на началната страница</translation>
 <translation id="2463739503403862330">Попълване</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">Избиране на начин на бърза доставка</translation>
+<translation id="2465688316154986572">Телбодиране</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Стартирайте мрежова диагностика<ph name="END_LINK" /></translation>
 <translation id="2473195200299095979">Превод на тази страница</translation>
 <translation id="2479410451996844060">Невалиден URL адрес за търсене.</translation>
@@ -309,6 +325,7 @@
 <translation id="2505268675989099013">Защита на профила</translation>
 <translation id="2515335152965840738">ПРЕНЕБРЕГВАНЕ</translation>
 <translation id="2515629240566999685">Проверете сигнала в района.</translation>
+<translation id="2521385132275182522">Телбодиране долу вдясно</translation>
 <translation id="2523886232349826891">Запазено само на това устройство</translation>
 <translation id="2524461107774643265">Добавяне на още информация</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{и още 1}other{и още #}}</translation>
@@ -326,10 +343,20 @@
 <translation id="2618023639789766142">C10 (плик)</translation>
 <translation id="2625385379895617796">Часовникът ви е напред</translation>
 <translation id="2634124572758952069">IP адресът на сървъра на <ph name="HOST_NAME" /> не можа да бъде намерен.</translation>
+<translation id="2638745661847473633">Сървърът, който посещавате (<ph name="ORIGIN" />), изисква
+за всички заявки към него да се прилага правило за източник. Той обаче
+предостави невалидно правило, което означава, че браузърът не може да изпълни
+заявката ви за <ph name="SITE" />. Операторите на сайтове могат да използват правилата за източник,
+за да конфигурират сигурността и други свойства за даден сайт.</translation>
 <translation id="2639739919103226564">Състояние:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
 <translation id="2650446666397867134">Достъпът до файла бе отказан</translation>
 <translation id="2653659639078652383">Изпращане</translation>
+<translation id="2660650542324841986">Сървърът, който посещавате (<ph name="ORIGIN" />), изисква
+за всички заявки към него да се прилага правило за източник. Той обаче
+не успя да предостави правило, поради което браузърът не може да изпълни
+заявката ви за <ph name="SITE" />. Операторите на сайтове могат да използват правилата за източник,
+за да конфигурират сигурността и други свойства за даден сайт.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{Няма}=1{1 парола (за <ph name="DOMAIN_LIST" />)}=2{2 пароли (за <ph name="DOMAIN_LIST" />)}other{# пароли (за <ph name="DOMAIN_LIST" />)}}</translation>
 <translation id="2666117266261740852">Затворете другите раздели или приложения.</translation>
 <translation id="2674170444375937751">Наистина ли искате да изтриете тези страници от историята си?</translation>
@@ -344,6 +371,7 @@
 <translation id="2713444072780614174">бяло</translation>
 <translation id="2720342946869265578">В близост</translation>
 <translation id="2721148159707890343">Заявката е успешна</translation>
+<translation id="272451190272506600">Докоснете сензора, за да платите</translation>
 <translation id="2728127805433021124">Сертификатът на сървъра е подписан със слаб алгоритъм.</translation>
 <translation id="2730326759066348565"><ph name="BEGIN_LINK" />Стартирайте диагностика на свързаността<ph name="END_LINK" /></translation>
 <translation id="2734544361860335147">Активирането на тези функции може да доведе до загуба на данни на браузъра или компрометиране на сигурността или поверителността ви. Активираните функции се прилагат за всички потребители на този браузър.</translation>
@@ -367,8 +395,10 @@
 <translation id="2847118875340931228">Отваряне на прозорец в режим „инкогнито“</translation>
 <translation id="2850739647070081192">Invite (плик)</translation>
 <translation id="2856444702002559011">Възможно е извършители на атака да опитват да откраднат информацията ви от <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (например пароли, съобщения или номера на кредитни карти). <ph name="BEGIN_LEARN_MORE_LINK" />Научете повече<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2878197950673342043">Кръстосано сгъване</translation>
 <translation id="2878424575911748999">A1</translation>
 <translation id="2881276955470682203">Да се запази ли картата?</translation>
+<translation id="2882949212241984732">Сгъване на двата края навътре и прегъване в средата</translation>
 <translation id="2903493209154104877">Адреси</translation>
 <translation id="290376772003165898">Страницата не е на <ph name="LANGUAGE" />?</translation>
 <translation id="2909946352844186028">Установена бе промяна в мрежата.</translation>
@@ -378,6 +408,7 @@
 <translation id="2925673989565098301">Начин на бърза доставка</translation>
 <translation id="2928905813689894207">Адрес за фактуриране</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> и още <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> и още <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
+<translation id="2930577230479659665">Отрязване след всяко копие</translation>
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Сървърът не можа да докаже, че е <ph name="DOMAIN" />; сертификатът му за сигурност е от <ph name="DOMAIN2" />. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от атакуващ.</translation>
 <translation id="2948083400971632585">Можете да деактивирате всички конфигурирани за дадена връзка прокси сървъри от страницата „Настройки“.</translation>
@@ -391,6 +422,7 @@
 <translation id="2985398929374701810">Въведете валиден адрес</translation>
 <translation id="2986368408720340940">Този начин на вземане не се поддържа. Опитайте с друг.</translation>
 <translation id="2987034854559945715">Няма съответстващи функции</translation>
+<translation id="2989742184762224133">Двуточково телбодиране в горната част</translation>
 <translation id="2991174974383378012">Споделяне с уебсайтове</translation>
 <translation id="2991571918955627853">В момента не можете да посетите <ph name="SITE" />, тъй като уебсайтът използва HSTS. Обикновено грешките в мрежата и атаките срещу нея са временни, така че тази страница вероятно ще работи по-късно.</translation>
 <translation id="3005723025932146533">Показване на запазено копие</translation>
@@ -409,6 +441,7 @@
 <translation id="3096100844101284527">Добавяне на адрес за вземане</translation>
 <translation id="3105172416063519923">ID на актива:</translation>
 <translation id="3109728660330352905">Нямате пълномощия за преглед на тази страница.</translation>
+<translation id="3116158981186517402">Ламиниране</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Опитайте да стартирате диагностика на свързаността<ph name="END_LINK" />.</translation>
 <translation id="3137507986424712703">{COUNT,plural, =0{Няма}=1{данни за вход за 1 профил}other{данни за вход за # профила}}</translation>
@@ -424,6 +457,7 @@
 проверете настройките му или се свържете със системния си администратор. Ако смятате, че не трябва
 да използвате прокси сървър:
 <ph name="PLATFORM_TEXT" /></translation>
+<translation id="3188393374551744535">Салдо по сметката</translation>
 <translation id="3195213714973468956"><ph name="PRINTER_NAME" /> на <ph name="SERVER_NAME" /></translation>
 <translation id="320323717674993345">Анулиране на плащането</translation>
 <translation id="3207960819495026254">С отметка</translation>
@@ -494,6 +528,7 @@
 <translation id="358285529439630156">Приемат се кредитни и предплатени карти.</translation>
 <translation id="3582930987043644930">Добавете име</translation>
 <translation id="3583757800736429874">&amp;Възстановяване на преместването</translation>
+<translation id="3584299510153766161">Двойно перфориране в долната част</translation>
 <translation id="3586931643579894722">Скриване на подробностите</translation>
 <translation id="3592413004129370115">Italian (плик)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
@@ -514,6 +549,12 @@
 <translation id="3678529606614285348">Отворете страницата в нов прозорец в режим „инкогнито“ (Ctrl-Shift-N).</translation>
 <translation id="3679803492151881375">Сигналът за срив е записан в/ъв <ph name="CRASH_TIME" /> и качен в/ъв <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Информация за сертификата</translation>
+<translation id="3688109723158850780">Сървърът, който посещавате (<ph name="ORIGIN" />), изисква
+за всички заявки към него да се прилага правило за източник. Вместо
+да предостави правило обаче, той пренасочи браузъра към друг адрес, поради което
+браузърът не може да изпълни заявката ви за <ph name="SITE" />. Операторите на сайтове
+могат да използват правилата за източник, за да конфигурират сигурността и други
+свойства за даден сайт.</translation>
 <translation id="3701427423622901115">Нулирането е потвърдено.</translation>
 <translation id="3704162925118123524">Използваната от вас мрежа може да изисква да посетите страницата й за вход.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> „<ph name="TITLE" />“ <ph name="DOMAIN" /></translation>
@@ -546,6 +587,7 @@
 <translation id="382518646247711829">Ако използвате прокси сървър...</translation>
 <translation id="3828924085048779000">Не може пропускът да не се попълни.</translation>
 <translation id="3831915413245941253">От <ph name="ENROLLMENT_DOMAIN" /> са инсталирани разширения за допълнителни функции. Разширенията имат достъп до част от данните ви.</translation>
+<translation id="3832522519263485449">Няколко перфорации отляво</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3858027520442213535">Актуализиране на датата и часа</translation>
 <translation id="3884278016824448484">Идентификационният номер на устройството е несъвместим</translation>
@@ -567,6 +609,7 @@
 <translation id="3973234410852337861">Хостът <ph name="HOST_NAME" /> е блокиран</translation>
 <translation id="3981540111851280311"><ph name="ENROLLMENT_DOMAIN" /> активира защитата срещу заплахи на Chrome Enterprise в браузъра ви. Функцията има достъп до някои от данните ви.</translation>
 <translation id="3987940399970879459">По-малко от 1 МБ</translation>
+<translation id="3990250421422698716">Разделно офсетово отпечатване</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{1 уеб страница в близост}other{# уеб страници в близост}}</translation>
 <translation id="4030383055268325496">&amp;Отмяна на добавянето</translation>
 <translation id="4032320456957708163">Браузърът ви се управлява от <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -587,6 +630,7 @@
 <translation id="4112140312785995938">Придвижване назад</translation>
 <translation id="4116663294526079822">Разрешаване винаги на този сайт</translation>
 <translation id="4117700440116928470">Обхватът на правилата не се поддържа.</translation>
+<translation id="4123572138124678573">Тройно перфориране в долната част</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{още 1 елемент}other{още # елемента}}</translation>
 <translation id="4130226655945681476">Проверете мрежовите кабели, модема и маршрутизатора.</translation>
 <translation id="413544239732274901">Научете повече</translation>
@@ -623,6 +667,7 @@
 &lt;h4&gt;Стъпка 5: Получете допълнителна помощ&lt;/h4&gt;
 &lt;p&gt;Ако продължавате да виждате грешката, свържете се със собственика на уебсайта.&lt;/p&gt;</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Опитайте да стартирате мрежова диагностика<ph name="END_LINK" />.</translation>
+<translation id="4234495348042597185"><ph name="BEGIN_LINK" />Продължаване към <ph name="SITE" /><ph name="END_LINK" /></translation>
 <translation id="4235360514405112390">Валиден сертификат</translation>
 <translation id="4250431568374086873">Връзката ви с този сайт не е напълно защитена</translation>
 <translation id="4250680216510889253">Не</translation>
@@ -636,6 +681,7 @@
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{Тази карта е запазена в профила ви в Google}other{Тези карти са запазени в профила ви в Google}}</translation>
 <translation id="428847186335018806">Сканиране на файловете, които изтегляте или качвате в Chrome.</translation>
 <translation id="42981349822642051">Разгъване</translation>
+<translation id="4300675098767811073">Няколко перфорации отдясно</translation>
 <translation id="4302965934281694568">Chou3 (плик)</translation>
 <translation id="4305817255990598646">Превключване</translation>
 <translation id="4312613361423056926">B2</translation>
@@ -650,6 +696,7 @@
 <translation id="4356973930735388585">Извършители на атака, използващи този сайт, може да опитат да инсталират опасни програми на компютъра ви, които крадат или изтриват информацията ви (например снимки, пароли, съобщения и номера на кредитни карти).</translation>
 <translation id="4358461427845829800">Управление на начините на плащане...</translation>
 <translation id="4367563149485757821">Number-12 (плик)</translation>
+<translation id="437058704415269440">Салдо по сметката</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
 <translation id="4372948949327679948">Очаквана е стойност от тип <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">Направихте опит да се свържете с/ъс <ph name="DOMAIN" />, но сървърът предoстави сертификат, анулиран от издателя си. Това означава, че в никакъв случай не трябва да се доверявате на представените от сървъра идентификационни данни за сигурност. Възможно е да сте се свързали с извършител на атака.</translation>
@@ -691,8 +738,11 @@
 <translation id="4594403342090139922">&amp;Отмяна на изтриването</translation>
 <translation id="4597348597567598915">Размер 8</translation>
 <translation id="4600854749408232102">C6/C5 (плик)</translation>
+<translation id="4635654612248442824">Сайтът <ph name="ORIGIN" /> изисква за всички заявки към него
+да се прилага правило за източник, но понастоящем то не може да бъде приложено.</translation>
 <translation id="464342062220857295">Функции за търсене</translation>
 <translation id="4646534391647090355">Към изтеглянията</translation>
+<translation id="4658638640878098064">Телбодиране горе вляво</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Сървърът не можа да докаже, че е <ph name="DOMAIN" />; сертификатът му за сигурност съдържа грешки. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от атакуващ.</translation>
 <translation id="467809019005607715">Google Презентации</translation>
@@ -714,6 +764,7 @@
 <translation id="4756388243121344051">&amp;История</translation>
 <translation id="4758311279753947758">Добавяне на информация за връзка</translation>
 <translation id="4764776831041365478">До уеб страницата на адрес <ph name="URL" /> може временно да няма достъп или да е преместена за постоянно на нов уеб адрес.</translation>
+<translation id="4766713847338118463">Двуточково телбодиране в долната част</translation>
 <translation id="4771973620359291008">Възникна неизвестна грешка.</translation>
 <translation id="4780900888022378816">Устройството ви се управлява от <ph name="ENROLLMENT_DOMAIN" />, а профилът ви се управлява от <ph name="ACCOUNT_DOMAIN" />.</translation>
 <translation id="4785689107224900852">Превключване към този раздел</translation>
@@ -736,6 +787,7 @@
 <translation id="4880827082731008257">Търсене в историята</translation>
 <translation id="4881695831933465202">Отваряне</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> и <ph name="TYPE_3" /></translation>
+<translation id="4913987521957242411">Перфориране горе вляво</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{и още 1 уеб страница}other{и още # уеб страници}}</translation>
 <translation id="4923417429809017348">Тази страница е преведена от непознат език на <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Плащане</translation>
@@ -747,6 +799,7 @@
 <translation id="495170559598752135">Действия</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
 <translation id="4958444002117714549">Разгъване на списъка</translation>
+<translation id="4973922308112707173">Двойно перфориране в горната част</translation>
 <translation id="4974590756084640048">Повторно активиране на предупрежденията</translation>
 <translation id="4984339528288761049">Prc5 (плик)</translation>
 <translation id="4989163558385430922">Преглед на всички</translation>
@@ -774,6 +827,7 @@
 <translation id="5087286274860437796">Понастоящем сертификатът на сървъра не е валиден.</translation>
 <translation id="5087580092889165836">Добавяне на карта</translation>
 <translation id="5089810972385038852">Щат</translation>
+<translation id="5093232627742069661">Z-образно сгъване</translation>
 <translation id="5094747076828555589">Сървърът не можа да докаже, че е <ph name="DOMAIN" />; Chromium няма доверие на сертификата му за сигурност. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от атакуващ.</translation>
 <translation id="5095208057601539847">Провинция</translation>
 <translation id="5097099694988056070">Статистически данни за устройството, например за използването на процесора/RAM паметта</translation>
@@ -810,6 +864,9 @@
 <translation id="5251803541071282808">Облак</translation>
 <translation id="5252000469029418751">C7 (плик)</translation>
 <translation id="5254958791078852567">E1</translation>
+<translation id="5261548214279761072">Плащането бе извършено</translation>
+<translation id="5266128565379329178">Подвързване в горната част</translation>
+<translation id="5269225904387178860">Четворно перфориране в долната част</translation>
 <translation id="5269999699920406580">Функциите, които се прилагат за цялата система, могат да бъдат зададени само от собственика: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="5273658854610202413">Предупреждение: Това правило не бе обединено според посоченото в правилото PolicyDictionaryMultipleSourceMergeList, тъй като не е част от правилата речници с възможност за обединяване.</translation>
 <translation id="5283044957620376778">B1</translation>
@@ -822,6 +879,7 @@
 <translation id="5300589172476337783">Показване</translation>
 <translation id="5308380583665731573">Свързване</translation>
 <translation id="5308689395849655368">Изпращането на сигнали за сривове е деактивирано.</translation>
+<translation id="5314967030527622926">Дизайнер на брошури</translation>
 <translation id="5317780077021120954">Запазване</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> от <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Избиране на информация за връзка</translation>
@@ -837,6 +895,7 @@
 <translation id="5384855140246857529">За да използвате картите си на всичките си устройства, влезте в профила си и включете синхронизирането.</translation>
 <translation id="5386426401304769735">Веригата от сертификати за този сайт съдържа сертификат, подписан с SHA-1.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
+<translation id="5396631636586785122">Зашиване на десния ръб</translation>
 <translation id="540969355065856584">Сървърът не можа да докаже, че е <ph name="DOMAIN" />. Понастоящем сертификатът му за сигурност не е валиден. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от извършител на атака.</translation>
 <translation id="5421136146218899937">Изчистване на данните за сърфирането...</translation>
 <translation id="5430298929874300616">Премахване на отметката</translation>
@@ -861,6 +920,7 @@
 <translation id="5510766032865166053">Възможно е да е преместен или изтрит.</translation>
 <translation id="5523118979700054094">Име на правилото</translation>
 <translation id="552553974213252141">Текстът правилно ли бе извлечен?</translation>
+<translation id="55293785478302737">Зашиване на ръба</translation>
 <translation id="553484882784876924">Prc6 (плик)</translation>
 <translation id="5540224163453853">Заявената статия не можа да бъде намерена.</translation>
 <translation id="5541546772353173584">Добавяне на имейл адрес</translation>
@@ -929,6 +989,7 @@
 <translation id="5893752035575986141">Приемат се кредитни карти.</translation>
 <translation id="5895138241574237353">Рестартиране</translation>
 <translation id="5901630391730855834">жълто</translation>
+<translation id="5905445707201418379">Блокирано според правилото за източник на <ph name="ORIGIN" />.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (синхронизирано)</translation>
 <translation id="5916664084637901428">Включено</translation>
 <translation id="59174027418879706">Активирано</translation>
@@ -947,6 +1008,7 @@
 <translation id="598637245381783098">Приложението за плащане не може да се отвори</translation>
 <translation id="5989320800837274978">Не са посочени нито фиксирани прокси сървъри, нито URL адрес на скрипт във формат .pac.</translation>
 <translation id="5990559369517809815">Заявките към сървъра са блокирани от разширение.</translation>
+<translation id="5992691462791905444">Z-образно сгъване на A3 до размер A4</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> резултата за „<ph name="SEARCH_TEXT" />“</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">Година</translation>
@@ -955,8 +1017,11 @@
 <translation id="6017850046339264347">Извършители на атака срещу <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> могат да инсталират измамни приложения, които се представят за нещо друго или събират данни, които може да се използват за проследяването ви. <ph name="BEGIN_LEARN_MORE_LINK" />Научете повече<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (синхронизирани)</translation>
 <translation id="6027201098523975773">Въведете име</translation>
+<translation id="603068602130820122">Двуточково телбодиране отдясно</translation>
+<translation id="6032955021262906325">Подвързване отляво</translation>
 <translation id="6034000775414344507">светлосиво</translation>
 <translation id="6034283069659657473">10 x 14 (плик)</translation>
+<translation id="6034514109191629503">Сгъване тип „акордеон“</translation>
 <translation id="6039846035001940113">Ако проблемът не бъде отстранен, свържете се със собственика на сайта.</translation>
 <translation id="6040143037577758943">Затваряне</translation>
 <translation id="6044573915096792553">Размер 12</translation>
@@ -974,6 +1039,7 @@
 <translation id="6146055958333702838">Проверете всички кабели и рестартирайте маршрутизаторите, модемите или другите мрежови
 устройства, които може да използвате.</translation>
 <translation id="614940544461990577">Изпробвайте следното:</translation>
+<translation id="6150036310511284407">Тройно перфориране отляво</translation>
 <translation id="6151417162996330722">Сертификатът на сървъра има твърде дълъг период на валидност.</translation>
 <translation id="6157877588268064908">За да видите начините на доставка и изискванията, изберете адрес</translation>
 <translation id="6165508094623778733">Научете повече</translation>
@@ -981,7 +1047,9 @@
 <translation id="6177128806592000436">Връзката ви с този сайт не е защитена</translation>
 <translation id="6203231073485539293">Проверете връзката си с интернет</translation>
 <translation id="6218753634732582820">Адресът да се премахне ли от Chromium?</translation>
+<translation id="622039917539443112">Паралелно сгъване</translation>
 <translation id="6221345481584921695">Google Безопасно сърфиране наскоро <ph name="BEGIN_LINK" />откри злонамерен софтуер<ph name="END_LINK" /> на <ph name="SITE" />. Уебсайтовете, които обикновено са надеждни, понякога се заразяват с опасен софтуер. Въпросното съдържание произлиза от <ph name="SUBRESOURCE_HOST" /> – известен разпространител на злонамерени програми.</translation>
+<translation id="6234122620015464377">Отрязване след всеки документ</translation>
 <translation id="6240447795304464094">Лого на Google Pay</translation>
 <translation id="6251924700383757765">Декларация за поверителност</translation>
 <translation id="6254436959401408446">Няма достатъчно памет за отваряне на тази страница</translation>
@@ -1007,17 +1075,20 @@
 <translation id="6353505687280762741">{COUNT,plural, =0{Няма}=1{1 парола (за <ph name="DOMAIN_LIST" />, синхронизирана)}=2{2 пароли (за <ph name="DOMAIN_LIST" />, синхронизирани)}other{# пароли (за <ph name="DOMAIN_LIST" />, синхронизирани)}}</translation>
 <translation id="6358450015545214790">Какво означават тези неща?</translation>
 <translation id="6361757823711327522">B7</translation>
+<translation id="6366710531182496394">Двуточково телбодиране отляво</translation>
 <translation id="6377268785556383139">1 резултат за „<ph name="SEARCH_TEXT" />“</translation>
 <translation id="6380497234672085559">A0</translation>
 <translation id="6383221683286411806">Възможно е таксуване.</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{още 1 предложение}other{още # предложения}}</translation>
 <translation id="6387754724289022810">За да платите по-бързо следващия път, запазете картата и адреса си за фактуриране в профила си в Google и на това устройство.</translation>
+<translation id="6390200185239044127">Двойно Z-образно сгъване</translation>
 <translation id="6390662030813198813">Engineering-E</translation>
 <translation id="6401136357288658127">Това правило е оттеглено. Вместо него използвайте <ph name="NEW_POLICY" />.</translation>
 <translation id="6404511346730675251">Редактиране на отметката</translation>
 <translation id="6406765186087300643">C0 (плик)</translation>
 <translation id="6410264514553301377">Въвеждане на датата на валидност и кода за проверка за <ph name="CREDIT_CARD" /></translation>
 <translation id="6415778972515849510">Chromium може да ви помогне да защитите профила си в Google и да промените паролата си.</translation>
+<translation id="6427730057873428458">Сгъване на двата края навътре</translation>
 <translation id="6431585503458005759">Без съхраняване</translation>
 <translation id="6433490469411711332">Редактиране на информацията за връзка</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> отказа да установи връзка.</translation>
@@ -1028,6 +1099,7 @@
 <translation id="6446608382365791566">Добавяне на още информация</translation>
 <translation id="6447842834002726250">„Бисквитки“</translation>
 <translation id="6451458296329894277">Потвърдете повторното изпращане на формуляра</translation>
+<translation id="6457206614190510200">Седловидно зашиване</translation>
 <translation id="6465306955648956876">Управление на паролите...</translation>
 <translation id="647261751007945333">Правила за устройството</translation>
 <translation id="6476284679642588870">Управление на начините на плащане</translation>
@@ -1042,9 +1114,11 @@
 <translation id="6529602333819889595">&amp;Възстановяване на изтриването</translation>
 <translation id="6534179046333460208">Предложения от Физическата мрежа</translation>
 <translation id="6545864417968258051">Сканиране за устройства с Bluetooth</translation>
+<translation id="6547208576736763147">Двойно перфориране отляво</translation>
 <translation id="6554795675067793129">Профилът ви се управлява от <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Възстановяване</translation>
 <translation id="6569060085658103619">Преглеждате страница на разширение</translation>
+<translation id="6573200754375280815">Двойно перфориране отдясно</translation>
 <translation id="6578796323535178455">C2 (плик)</translation>
 <translation id="6579990219486187401">светлорозово</translation>
 <translation id="6583674473685352014">B6 (плик)</translation>
@@ -1063,6 +1137,7 @@
 <translation id="6646269444027925224">{COUNT,plural, =0{Няма}=1{От 1 сайт (няма да излезете от профила си в Google)}other{От # сайта (няма да излезете от профила си в Google)}}</translation>
 <translation id="6652101503459149953">Използване на Windows Hello</translation>
 <translation id="6657585470893396449">Парола</translation>
+<translation id="6665553082534466207">Тройно перфориране отдясно</translation>
 <translation id="6670613747977017428">Назад към безопасната страница.</translation>
 <translation id="6671697161687535275">Предложението за формуляри да се премахне ли от Chromium?</translation>
 <translation id="6685834062052613830">Излизане от профила и завършване на настройването</translation>
@@ -1283,6 +1358,7 @@
 <translation id="7764225426217299476">Добавяне на адрес</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="777702478322588152">Префектура</translation>
+<translation id="7791196057686275387">Пакетиране</translation>
 <translation id="7791543448312431591">Добавяне</translation>
 <translation id="7800304661137206267">Връзката е шифрована посредством <ph name="CIPHER" />, с/ъс <ph name="MAC" /> за удостоверяване за съобщения и <ph name="KX" /> като механизъм за обмен на ключове.</translation>
 <translation id="7802523362929240268">Сайтът е легитимен</translation>
@@ -1303,22 +1379,27 @@
 <translation id="7882421473871500483">кафяво</translation>
 <translation id="7887683347370398519">Прегледайте кода за проверка и опитайте отново</translation>
 <translation id="7904208859782148177">C3 (плик)</translation>
+<translation id="7932579305932748336">Покритие</translation>
 <translation id="79338296614623784">Въведете валиден телефонен номер</translation>
+<translation id="7934052535022478634">Плащането бе извършено</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7937554595067888181">Изтича на <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="7938958445268990899">Сертификатът на сървъра още не е валиден.</translation>
 <translation id="7942349550061667556">червено</translation>
 <translation id="7947285636476623132">Проверете годината на валидност и опитайте отново</translation>
 <translation id="7951415247503192394">(32 бита)</translation>
+<translation id="7953569069500808819">Зашиване на горния ръб</translation>
 <translation id="7956713633345437162">Мобилни отметки</translation>
 <translation id="7961015016161918242">Никога</translation>
 <translation id="7977894662897852582">Edp</translation>
+<translation id="799149739215780103">Подвързване</translation>
 <translation id="7995512525968007366">Не е посочено</translation>
 <translation id="800218591365569300">Затворете другите раздели или програми, за да освободите памет.</translation>
 <translation id="8004582292198964060">Браузър</translation>
 <translation id="8009225694047762179">Управление на паролите</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{Тази карта и адресът й за фактуриране ще бъдат запазени. Ще можете да я използвате, когато сте влезли в профила <ph name="USER_EMAIL" />.}other{Тези карти и адресите им за фактуриране ще бъдат запазени. Ще можете да ги използвате, когато сте влезли в профила <ph name="USER_EMAIL" />.}}</translation>
 <translation id="8025119109950072390">Извършителите на атаки, използващи този сайт, може да ви подведат да направите нещо опасно, като например да инсталирате софтуер или да разкриете лична информация (например пароли, телефонни номера или номера на кредитни карти).</translation>
+<translation id="8028960012888758725">Отрязване след отпечатване</translation>
 <translation id="8034522405403831421">Тази страница е на <ph name="SOURCE_LANGUAGE" />. Да се преведе ли на <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8035152190676905274">Писалка</translation>
 <translation id="8037117624646282037">Кой е използвал устройството наскоро</translation>
@@ -1333,6 +1414,7 @@
 <translation id="8074253406171541171">10 x 13 (плик)</translation>
 <translation id="8078141288243656252">Добавянето на пояснения не е възможно, когато документът е завъртян</translation>
 <translation id="8079031581361219619">Искате ли да презаредите сайта?</translation>
+<translation id="8086971161893892807">Чернова</translation>
 <translation id="8088680233425245692">Преглеждането на статията не бе успешно.</translation>
 <translation id="808894953321890993">Промяна на паролата</translation>
 <translation id="8090403583893450254">Размер 20</translation>
@@ -1348,6 +1430,7 @@
 <translation id="8131740175452115882">Потвърждаване</translation>
 <translation id="8149426793427495338">Компютърът ви премина в спящ режим.</translation>
 <translation id="8150722005171944719">Файлът на адрес <ph name="URL" /> не може да бъде прочетен.  Възможно е да е премахнат, преместен или разрешенията му да предотвратяват достъпа.</translation>
+<translation id="8163866351304776260">Четворно перфориране отляво</translation>
 <translation id="8175796834047840627">Chrome предлага да запази картите ви в профила ви в Google, защото сте влезли в него. Можете да промените това поведение от настройките.</translation>
 <translation id="8184538546369750125">Използване на глобалната стандартна стойност (разрешаване)</translation>
 <translation id="8194797478851900357">&amp;Отмяна на преместването</translation>
@@ -1370,6 +1453,7 @@
 <translation id="8253091569723639551">Адресът за фактуриране е задължителен</translation>
 <translation id="825929999321470778">Показване на всички запазени пароли</translation>
 <translation id="8261506727792406068">Изтриване</translation>
+<translation id="8262952874573525464">Зашиване на долния ръб</translation>
 <translation id="8267698848189296333">Влизате като <ph name="USERNAME" /></translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">Вход</translation>
@@ -1378,6 +1462,7 @@
 <translation id="8293206222192510085">Добавяне на отметка</translation>
 <translation id="8294431847097064396">Източник</translation>
 <translation id="8298115750975731693">Използваната от вас Wi-Fi мрежа (<ph name="WIFI_NAME" />) може да изисква да посетите <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
+<translation id="830498451218851433">Сгъване в средата</translation>
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8308427013383895095">Преводът не бе успешен поради проблем с връзката към мрежата.</translation>
 <translation id="8332188693563227489">Достъпът до <ph name="HOST_NAME" /> бе отказан</translation>
@@ -1406,6 +1491,7 @@
 <translation id="8461694314515752532">Шифроване на синхронизираните данни със собствения ви пропуск за синхронизиране</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 кредитна карта}other{# кредитни карти}}</translation>
 <translation id="8473863474539038330">Адреси и др.</translation>
+<translation id="8479754468255770962">Телбодиране долу вляво</translation>
 <translation id="8483780878231876732">За да използвате картите от профила си в Google, влезте в Chrome</translation>
 <translation id="8488350697529856933">Прилага се към</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> не отговаря твърде дълго време.</translation>
@@ -1413,6 +1499,7 @@
 <translation id="8503813439785031346">Потребителско име</translation>
 <translation id="8508648098325802031">Икона за търсене</translation>
 <translation id="8522552481199248698">Chrome може да ви помогне да защитите профила си в Google и да промените паролата си.</translation>
+<translation id="8542014550340843547">Триточково телбодиране в долната част</translation>
 <translation id="8543181531796978784">Можете да <ph name="BEGIN_ERROR_LINK" />подадете сигнал за проблем при откриването<ph name="END_ERROR_LINK" /> или, ако разбирате рисковете за сигурността си, да <ph name="BEGIN_LINK" />посетите този небезопасен сайт<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">Преводът не бе успешен, защото езикът на страницата не можа да бъде определен.</translation>
 <translation id="8557066899867184262">Кодът за проверка се намира на гърба на картата ви.</translation>
@@ -1434,6 +1521,7 @@
 <translation id="8703575177326907206">Връзката ви с <ph name="DOMAIN" /> не е шифрована.</translation>
 <translation id="8718314106902482036">Плащането не е завършено</translation>
 <translation id="8719263113926255150"><ph name="ENTITY" />, <ph name="DESCRIPTION" />, предложение за търсене</translation>
+<translation id="8719528812645237045">Няколко перфорации в горната част</translation>
 <translation id="8723954843026426558">Приемам общите условия, декларацията за поверителност и правото на оттегляне от <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /></translation>
 <translation id="8725066075913043281">Опитайте отново</translation>
 <translation id="8728672262656704056">Преминахте в режим „инкогнито“</translation>
@@ -1452,6 +1540,7 @@
 <translation id="8792621596287649091">Възможно е да загубите достъп до профила си в/ъв <ph name="ORG_NAME" /> или самоличността ви да бъде открадната. Chromium препоръчва да промените паролата си сега.</translation>
 <translation id="8800988563907321413">Тук ще се показват предложения за неща в близост</translation>
 <translation id="8805819170075074995">Списъчен запис „<ph name="LANGUAGE_ID" />“: Записът е пренебрегнат, защото е включен и в правилото SpellcheckLanguage.</translation>
+<translation id="8807160976559152894">Отрязване след всяка страница</translation>
 <translation id="8820817407110198400">Отметки</translation>
 <translation id="883848425547221593">Други отметки</translation>
 <translation id="884264119367021077">Адрес за доставка</translation>
@@ -1459,6 +1548,7 @@
 <translation id="885730110891505394">Споделяне с Google</translation>
 <translation id="8858065207712248076">Chrome препоръчва да зададете повторно паролата си за <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />, ако сте я използвали и на други сайтове.</translation>
 <translation id="8866481888320382733">Грешка при синтактичния анализ на настройките за правилото</translation>
+<translation id="8866928039507595380">Сгъване</translation>
 <translation id="886872106311861689">B3</translation>
 <translation id="8870413625673593573">Наскоро затворени</translation>
 <translation id="8874824191258364635">Въведете валиден номер на карта</translation>
@@ -1466,6 +1556,7 @@
 <translation id="8903921497873541725">Увеличаване на мащаба</translation>
 <translation id="890485472659500557">Engineering-C</translation>
 <translation id="8912362522468806198">Профил в Google</translation>
+<translation id="892588693504540538">Перфориране горе вдясно</translation>
 <translation id="8931333241327730545">Искате ли да запазите тази карта в профила си в Google?</translation>
 <translation id="8932102934695377596">Часовникът ви е назад</translation>
 <translation id="893332455753468063">Добавяне на име</translation>
@@ -1527,6 +1618,7 @@
 <translation id="9174917557437862841">Бутон за превключване между раздели. Натиснете Enter, за да преминете към този раздел</translation>
 <translation id="9183302530794969518">Google Документи</translation>
 <translation id="9183425211371246419"><ph name="HOST_NAME" /> използва неподдържан протокол.</translation>
+<translation id="9191834167571392248">Перфориране долу вляво</translation>
 <translation id="9205078245616868884">Данните ви са шифровани с пропуска ви за синхронизиране. Въведете го, за да стартирате синхронизирането.</translation>
 <translation id="9207861905230894330">Добавянето на статията не бе успешно.</translation>
 <translation id="9215416866750762878">Приложение пречи на Chrome да се свърже безопасно с този сайт</translation>
@@ -1537,7 +1629,9 @@
 <translation id="936602727769022409">Възможно е да загубите достъп до профила си в Google. Chromium препоръчва да промените паролата си сега. Ще получите подкана за влизане в профила си.</translation>
 <translation id="939736085109172342">Нова папка</translation>
 <translation id="945855313015696284">Проверете информацията по-долу и изтрийте невалидните карти</translation>
+<translation id="950736567201356821">Тройно перфориране в горната част</translation>
 <translation id="951104842009476243">Приемани дебитни и предплатени карти</translation>
+<translation id="961663415146723894">Подвързване на долната част</translation>
 <translation id="962484866189421427">Въпросното съдържание може да се опита да инсталира измамни приложения, които се представят за нещо друго или събират данни, които може да се използват за проследяването ви. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Официално издание</translation>
 <translation id="973773823069644502">Добавяне на адрес за бърза доставка</translation>

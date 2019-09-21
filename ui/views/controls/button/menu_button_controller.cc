@@ -13,6 +13,7 @@
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/mouse_constants.h"
+#include "ui/views/style/platform_style.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -125,12 +126,18 @@ void MenuButtonController::OnMouseExited(const ui::MouseEvent& event) {
 }
 
 bool MenuButtonController::OnKeyPressed(const ui::KeyEvent& event) {
+  // Alt-space on windows should show the window menu.
+  if (event.key_code() == ui::VKEY_SPACE && event.IsAltDown())
+    return false;
+
+  // If Return doesn't normally click buttons, don't do it here either.
+  if (event.key_code() == ui::VKEY_RETURN &&
+      !PlatformStyle::kReturnClicksFocusedControl) {
+    return false;
+  }
+
   switch (event.key_code()) {
     case ui::VKEY_SPACE:
-      // Alt-space on windows should show the window menu.
-      if (event.IsAltDown())
-        break;
-      FALLTHROUGH;
     case ui::VKEY_RETURN:
     case ui::VKEY_UP:
     case ui::VKEY_DOWN: {

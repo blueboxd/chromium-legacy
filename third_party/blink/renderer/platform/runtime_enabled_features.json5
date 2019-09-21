@@ -262,9 +262,6 @@
       status: "experimental",
     },
     {
-      name: "Canvas2dSwapChain",
-    },
-    {
       name: "CanvasColorManagement",
       status: "experimental",
     },
@@ -1753,9 +1750,6 @@
     },
     {
       name: "WebGLImageChromium",
-    },
-    {
-      name: "WebGLSwapChain",
     },
     // WebGPU adds a large attack surface area to the GPU process and allows
     // running arbitrary programs on the GPU (compute shaders), which may

@@ -96,6 +96,7 @@
 <translation id="1136712381129578788">La llave de seguridad está bloqueada porque se ha introducido el PIN de forma incorrecta demasiadas veces. Para desbloquearla, quítala y vuelve a introducirla.</translation>
 <translation id="1137673463384776352">Abrir enlace en <ph name="APP" /></translation>
 <translation id="1140351953533677694">Acceder a tus dispositivos en serie y Bluetooth</translation>
+<translation id="114036956334641753">Audio y subtítulos</translation>
 <translation id="1140610710803014750">Inicia sesión y activa la sincronización para ver tus marcadores en todos tus dispositivos.</translation>
 <translation id="1140746652461896221">Bloquea contenido en cualquier página web que visites</translation>
 <translation id="1143142264369994168">Titular del certificado</translation>
@@ -173,6 +174,7 @@
 <translation id="1235458158152011030">Redes conocidas</translation>
 <translation id="123578888592755962">Disco lleno</translation>
 <translation id="1238191093934674082">OpenVPN</translation>
+<translation id="1239594683407221485">Explora el contenido del dispositivo con la aplicación Archivos.</translation>
 <translation id="124116460088058876">Más idiomas</translation>
 <translation id="1241753985463165747">Leer y modificar todos los datos del sitio web actual cuando se ejecute</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> quiere restablecer la configuración.</translation>
@@ -312,6 +314,7 @@
 <translation id="146220085323579959">Internet está desconectado. Comprueba la conexión a Internet y vuelve a intentarlo.</translation>
 <translation id="1463112138205428654">Protección Avanzada ha bloqueado <ph name="FILE_NAME" />.</translation>
 <translation id="1464258312790801189">Tus cuentas</translation>
+<translation id="1464781208867302907">Para ver las preferencias del dispositivo, ve a Configuración.</translation>
 <translation id="1465176863081977902">C&amp;opiar dirección de audio</translation>
 <translation id="1465827627707997754">Porción de pizza</translation>
 <translation id="1468571364034902819">No se puede utilizar este perfil</translation>
@@ -744,6 +747,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="2099686503067610784">¿Quieres eliminar el certificado de servidor "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="2100273922101894616">Iniciar sesión automáticamente</translation>
 <translation id="2101225219012730419">Versión:</translation>
+<translation id="2111670510994270194">Nueva pestaña a la derecha</translation>
 <translation id="21133533946938348">Fijar pestaña</translation>
 <translation id="2113479184312716848">Abrir &amp;archivo...</translation>
 <translation id="2113921862428609753">Acceso a la información de la entidad emisora</translation>
@@ -1790,6 +1794,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3630995161997703415">Añade este sitio web a tu estantería para usarlo en cualquier momento</translation>
 <translation id="3636096452488277381">Hola, <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - <ph name="TIME" /> hasta agotar la batería</translation>
+<translation id="3637561406135221044">Escaneando archivos en busca de datos sensibles...</translation>
 <translation id="3637682276779847508">La tarjeta SIM se inhabilitará de forma permanente si no introduces el código PUK correcto.</translation>
 <translation id="3640214691812501263">¿Añadir <ph name="EXTENSION_NAME" /> para <ph name="USER_NAME" />?</translation>
 <translation id="3640613767643722554">Enseña al Asistente a reconocer tu voz</translation>
@@ -2227,6 +2232,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="425573743389990240">Tasa de descarga de la batería en vatios (si el valor es negativo, significa que la batería se está cargando)</translation>
 <translation id="4256316378292851214">Gu&amp;ardar vídeo como...</translation>
 <translation id="4258348331913189841">Sistemas de archivos</translation>
+<translation id="4263223596040212967">Revisa el diseño del teclado y vuelve a intentarlo.</translation>
 <translation id="4263757076580287579">Se ha cancelado el registro en la impresora.</translation>
 <translation id="426564820080660648">Para comprobar si hay actualizaciones, utiliza una conexión Ethernet, Wi-Fi o de datos móviles.</translation>
 <translation id="4267953847983678297">Conectar automáticamente a la red móvil</translation>
@@ -2322,6 +2328,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4416582610654027550">Escribe una URL válida</translation>
 <translation id="4419409365248380979">Permitir siempre que <ph name="HOST" /> pueda establecer cookies.</translation>
 <translation id="4419610272958564173">Dispositivo desconocido (proveedor: <ph name="VENDOR_ID" />, producto: <ph name="PRODUCT_ID" />)</translation>
+<translation id="4421167684395067330">No se ha podido conectar. Ponte en contacto con <ph name="CARRIER_NAME" /> para obtener ayuda.</translation>
 <translation id="4421932782753506458">Gatito</translation>
 <translation id="4423376891418188461">Restaurar configuración</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, tu administrador solicita que cambies la contraseña.</translation>
@@ -2997,6 +3004,7 @@ Asegúrate de que este sitio web sea de confianza antes de acceder al modo de re
 <translation id="5457599981699367932">Navegar como invitado</translation>
 <translation id="5457991019809708398">Activado, sin itinerancia</translation>
 <translation id="5458998536542739734">Notas en la pantalla de bloqueo</translation>
+<translation id="546322474339998983">Se usa en el navegador Chrome y en el menú de aplicaciones de <ph name="DEVICE_TYPE" /></translation>
 <translation id="5463231940765244860">Introducir</translation>
 <translation id="5463275305984126951">Índice de <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Menú con marcadores ocultos</translation>
@@ -3294,6 +3302,7 @@ Asegúrate de que este sitio web sea de confianza antes de acceder al modo de re
 <translation id="5869948122057593679">Cerrar todas las ventanas</translation>
 <translation id="5870086504539785141">Cerrar menú de accesibilidad</translation>
 <translation id="5870155679953074650">Fallos graves</translation>
+<translation id="5876851302954717356">Nueva pestaña a la derecha</translation>
 <translation id="5877064549588274448">Se ha cambiado el canal. Reinicia el dispositivo para aplicar los cambios.</translation>
 <translation id="5877584842898320529">La impresora seleccionada no se encuentra disponible o no está bien instalada. <ph name="BR" /> Compruébala o prueba a seleccionar otra.</translation>
 <translation id="5882919346125742463">Redes conocidas</translation>
@@ -4492,6 +4501,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7685049629764448582">Memoria de JavaScript</translation>
 <translation id="7685087414635069102">PIN necesario</translation>
 <translation id="7685301384041462804">Asegúrate de que este sitio web sea de confianza antes de acceder al modo de realidad virtual.</translation>
+<translation id="768549422429443215">Añadir o reordenar idiomas</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Confirma la nueva contraseña</translation>
 <translation id="7690378713476594306">Elegir una opción de la lista</translation>
@@ -4553,6 +4563,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7773726648746946405">Almacenamiento de sesión</translation>
 <translation id="7774365994322694683">Pájaro</translation>
 <translation id="7776701556330691704">No se ha encontrado ninguna voz</translation>
+<translation id="7780252971640011240">No se ha podido conectar. Ponte en contacto con tu operador para obtener ayuda.</translation>
 <translation id="7781335840981796660">Se eliminarán todas las cuentas de usuario y todos los datos locales.</translation>
 <translation id="7782102568078991263">No hay más sugerencias de Google.</translation>
 <translation id="7782717250816686129">Almacenar los datos persistentes en la pantalla de inicio de sesión e introducir las credenciales en la sesión.</translation>

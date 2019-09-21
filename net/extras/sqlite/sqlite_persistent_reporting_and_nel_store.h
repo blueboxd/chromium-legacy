@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/task_traits.h"
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/network_error_logging/persistent_reporting_and_nel_store.h"
 #include "net/reporting/reporting_cache.h"
@@ -21,6 +22,10 @@ class SequencedTaskRunner;
 }  // namespace base
 
 namespace net {
+
+// Returns recommended task priority for |background_task_runner|.
+base::TaskPriority COMPONENT_EXPORT(NET_EXTRAS)
+    GetReportingAndNelStoreBackgroundSequencePriority();
 
 class COMPONENT_EXPORT(NET_EXTRAS) SQLitePersistentReportingAndNelStore
     : public PersistentReportingAndNelStore {

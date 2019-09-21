@@ -419,7 +419,7 @@ TEST_P(NativeFileSystemFileWriterImplWriteTest, WriteWithOffsetPastFile) {
   result = CloseSync();
   EXPECT_EQ(result, NativeFileSystemStatus::kOk);
 
-  using namespace std::string_literals;
+  using std::string_literals::operator""s;
   EXPECT_EQ("\0\0\0\0abc"s, ReadFile(test_file_url_));
 }
 

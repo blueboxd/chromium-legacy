@@ -1480,11 +1480,6 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   render_widget->InitForMainFrame(std::move(show_callback), web_frame_widget);
   render_view->AttachWebFrameWidget(web_frame_widget);
 
-  // This call makes sure the page zoom is propagated to the provisional frame
-  // since it has to go through the WebViewImpl, and it may not be be changed
-  // in OnSynchronizeVisualProperties(), which would pass it along if it did
-  // change.
-  render_widget->UpdateWebViewWithDeviceScaleFactor();
   render_widget->SynchronizeVisualPropertiesFromRenderView(
       params->visual_properties);
 
@@ -1654,12 +1649,6 @@ void RenderFrameImpl::CreateFrame(
     // WebFrameWidget since that would be part of creating the RenderWidget).
     render_widget->SetIsUndead(false);
 
-    // TODO(crbug.com/419087): This was added in 6ccadf770766e89c3 to prevent
-    // an empty ScreenInfo, but the WebView has already been created and
-    // initialized by RenderViewImpl, so this is surely redundant? It will be
-    // pulling the device scale factor off the WebView itself.
-    render_widget->UpdateWebViewWithDeviceScaleFactor();
-
     // Note that we do *not* call WebViewImpl's DidAttachLocalMainFrame() here
     // yet because this frame is provisional and not attached to the Page yet.
     // We will tell WebViewImpl about it once it is swapped in.
@@ -1699,11 +1688,6 @@ void RenderFrameImpl::CreateFrame(
     // will not be destroyed by scoped_refptr unless Close() has been called
     // and run.
     render_widget->InitForChildLocalRoot(web_frame_widget);
-    // TODO(crbug.com/419087): This was added in 6ccadf770766e89c3 to prevent
-    // an empty ScreenInfo, but the WebView has already been created and
-    // initialized by RenderViewImpl, so this is surely redundant? It will be
-    // pulling the device scale factor off the WebView itself.
-    render_widget->UpdateWebViewWithDeviceScaleFactor();
 
     render_frame->render_widget_ = render_widget.get();
     render_frame->owned_render_widget_ = std::move(render_widget);
@@ -1893,7 +1877,6 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
 #endif
       autoplay_configuration_binding_(this),
       frame_binding_(this),
-      host_zoom_binding_(this),
       frame_bindings_control_binding_(this),
       frame_navigation_control_receiver_(this),
       fullscreen_binding_(this),
@@ -3283,12 +3266,19 @@ void RenderFrameImpl::SetSelectedText(const base::string16& selection_text,
                                          static_cast<uint32_t>(offset), range));
 }
 
-void RenderFrameImpl::SetZoomLevel(double zoom_level) {
-  render_view_->UpdateZoomLevel(zoom_level);
+bool RenderFrameImpl::SetZoomLevelOnRenderView(double zoom_level) {
+  return render_view_->SetZoomLevel(zoom_level);
 }
 
-double RenderFrameImpl::GetZoomLevel() {
-  return render_view_->page_zoom_level();
+void RenderFrameImpl::SetPreferCompositingToLCDTextEnabledOnRenderView(
+    bool prefer) {
+  render_view_->SetPreferCompositingToLCDTextEnabled(prefer);
+}
+
+void RenderFrameImpl::SetDeviceScaleFactorOnRenderView(
+    bool use_zoom_for_dsf,
+    float device_scale_factor) {
+  render_view_->SetDeviceScaleFactor(use_zoom_for_dsf, device_scale_factor);
 }
 
 void RenderFrameImpl::AddMessageToConsole(
@@ -4068,22 +4058,6 @@ void RenderFrameImpl::BindDevToolsAgent(
   frame_->BindDevToolsAgent(host.PassHandle(), receiver.PassHandle());
 }
 
-// mojom::HostZoom implementation ----------------------------------------------
-
-void RenderFrameImpl::SetHostZoomLevel(const GURL& url, double zoom_level) {
-  // TODO(wjmaclean): We should see if this restriction is really necessary,
-  // since it isn't enforced in other parts of the page zoom system (e.g.
-  // when a users changes the zoom of a currently displayed page). Android
-  // has no UI for this, so in theory the following code would normally just use
-  // the default zoom anyways.
-#if !defined(OS_ANDROID)
-  // On Android, page zoom isn't used, and in case of WebView, text zoom is used
-  // for legacy WebView text scaling emulation. Thus, the code that resets
-  // the zoom level from this map will be effectively resetting text zoom level.
-  host_zoom_levels_[url] = zoom_level;
-#endif
-}
-
 // blink::WebLocalFrameClient implementation
 // ----------------------------------------
 blink::BrowserInterfaceBrokerProxy*
@@ -4184,11 +4158,10 @@ blink::WebMediaPlayer* RenderFrameImpl::CreateMediaPlayer(
     WebMediaPlayerEncryptedMediaClient* encrypted_client,
     WebContentDecryptionModule* initial_cdm,
     const blink::WebString& sink_id) {
-  const cc::LayerTreeSettings& settings =
-      GetLocalRootRenderWidget()->layer_tree_view()->GetLayerTreeSettings();
   return media_factory_.CreateMediaPlayer(
       source, client, inspector_context, encrypted_client, initial_cdm, sink_id,
-      GetLocalRootRenderWidget()->GetFrameSinkId(), settings);
+      GetLocalRootRenderWidget()->GetFrameSinkId(),
+      GetLocalRootRenderWidget()->layer_tree_host()->GetSettings());
 }
 
 std::unique_ptr<blink::WebContentSettingsClient>
@@ -4803,7 +4776,7 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
     // represents a new UKM source.
     // Note that this is only done for the main frame since the metrics for all
     // frames are keyed to the main frame's URL.
-    GetLocalRootRenderWidget()->layer_tree_view()->SetSourceURL(
+    GetLocalRootRenderWidget()->layer_tree_host()->SetSourceURL(
         frame_->GetDocument().GetUkmSourceId(), GetLoadingUrl());
   }
 
@@ -6096,45 +6069,6 @@ RenderFrameImpl::MakeDidCommitProvisionalLoadParams(
   return params;
 }
 
-void RenderFrameImpl::UpdateZoomLevel() {
-  if (!frame_->Parent()) {
-    // Reset the zoom limits in case a plugin had changed them previously. This
-    // will also call us back which will cause us to send a message to
-    // update WebContentsImpl.
-    render_view_->webview()->ZoomLimitsChanged(
-        ZoomFactorToZoomLevel(kMinimumZoomFactor),
-        ZoomFactorToZoomLevel(kMaximumZoomFactor));
-
-    // Set zoom level, but don't do it for full-page plugin since they don't use
-    // the same zoom settings.
-    auto host_zoom = host_zoom_levels_.find(GetLoadingUrl());
-    if (render_view_->webview()->MainFrame()->IsWebLocalFrame() &&
-        render_view_->webview()
-            ->MainFrame()
-            ->ToWebLocalFrame()
-            ->GetDocument()
-            .IsPluginDocument()) {
-      // Reset the zoom levels for plugins.
-      render_view_->SetZoomLevel(0);
-    } else {
-      // If the zoom level is not found, then do nothing. In-page navigation
-      // relies on not changing the zoom level in this case.
-      if (host_zoom != host_zoom_levels_.end())
-        render_view_->SetZoomLevel(host_zoom->second);
-    }
-
-    if (host_zoom != host_zoom_levels_.end()) {
-      // This zoom level was merely recorded transiently for this load.  We can
-      // erase it now.  If at some point we reload this page, the browser will
-      // send us a new, up-to-date zoom level.
-      host_zoom_levels_.erase(host_zoom);
-    }
-  } else {
-    // Subframes should match the zoom level of the main frame.
-    render_view_->SetZoomLevel(render_view_->page_zoom_level());
-  }
-}
-
 bool RenderFrameImpl::UpdateNavigationHistory(
     const blink::WebHistoryItem& item,
     blink::WebHistoryCommitType commit_type) {
@@ -6206,14 +6140,32 @@ void RenderFrameImpl::UpdateStateForCommit(
     render_view_->webview()->ResetScrollAndScaleState();
     internal_data->set_must_reset_scroll_and_scale_state(false);
   }
-  UpdateZoomLevel();
-
   if (!frame_->Parent()) {  // Only for top frames.
     RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
     if (render_thread_impl) {  // Can be NULL in tests.
       render_thread_impl->histogram_customizer()->RenderViewNavigatedToHost(
           GURL(GetLoadingUrl()).host(), RenderView::GetRenderViewCount());
     }
+  }
+
+  if (render_widget_) {
+    // This goes to WebViewImpl and sets the zoom factor which will be
+    // propagated down to this RenderFrameImpl's LocalFrame in blink.
+    // Non-local-roots are able to grab the value off their parents but local
+    // roots can not and this is a huge action-at-a-distance to make up for that
+    // flaw in how LocalFrame determines the zoom factor.
+    // TODO(danakj): This should not be needed if the zoom factor/device scale
+    // factor did not need to be propagated to each frame. Since they are a
+    // global that should be okay?? The test that fails without this, for
+    // child frames, is in content_browsertests:
+    //     SitePerProcessHighDPIBrowserTest.
+    //         SubframeLoadsWithCorrectDeviceScaleFactor
+    // And when UseZoomForDSF is disabled, in content_browsertests:
+    //     IFrameZoomBrowserTest.SubframesDontZoomIndependently (and the whole
+    //     suite).
+    render_view_->PropagatePageZoomToNewlyAttachedFrame(
+        render_widget_->compositor_deps()->IsUseZoomForDSFEnabled(),
+        render_view_->page_properties()->GetDeviceScaleFactor());
   }
 
   // Remember that we've already processed this request, so we don't update
@@ -6385,11 +6337,6 @@ bool RenderFrameImpl::SwapIn() {
   if (is_main_frame_) {
     CHECK(!render_view_->main_render_frame_);
     render_view_->main_render_frame_ = this;
-
-    // TODO(danakj): This was added in 02dffc89d823832ac8 due to the zoom factor
-    // not being scaled by DSF when the frame was provisional. We should
-    // properly scale the zoom factor all along.
-    render_view_->GetWidget()->UpdateWebViewWithDeviceScaleFactor();
 
     // The WebFrame being swapped in here has now been attached to the Page as
     // its main frame, and the WebFrameWidget was previously initialized when
@@ -7468,19 +7415,6 @@ void RenderFrameImpl::RegisterMojoInterfaces() {
 
   GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
       &RenderFrameImpl::BindMhtmlFileWriter, base::Unretained(this)));
-
-  if (!frame_->Parent()) {
-    // Host zoom is per-page, so only added on the main frame.
-    GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
-        &RenderFrameImpl::OnHostZoomClientRequest, weak_factory_.GetWeakPtr()));
-  }
-}
-
-void RenderFrameImpl::OnHostZoomClientRequest(
-    mojom::HostZoomAssociatedRequest request) {
-  DCHECK(!host_zoom_binding_.is_bound());
-  host_zoom_binding_.Bind(std::move(request),
-                          GetTaskRunner(blink::TaskType::kInternalIPC));
 }
 
 void RenderFrameImpl::BindMhtmlFileWriter(

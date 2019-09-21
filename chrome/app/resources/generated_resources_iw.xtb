@@ -2924,7 +2924,7 @@
 <translation id="5360150013186312835">הצג בסרגל הכלים</translation>
 <translation id="5362741141255528695">בחר קובץ מפתח פרטי.</translation>
 <translation id="5363109466694494651">‏בצע Powerwash וחזור לגרסה הקודמת</translation>
-<translation id="5365716706805792666">‏Google יכולה לבדוק אם הסיסמאות שלך היו חלק מפרצה באבטחת המידע. האפשרות הזו תופעל אחרי כניסה באמצעות חשבון Google שלך.</translation>
+<translation id="5365716706805792666">‏Google יכולה לבדוק אם הייתה פרצה באבטחת מידע שכללה את הסיסמאות שלך. האפשרות הזו תופעל אחרי כניסה באמצעות חשבון Google שלך.</translation>
 <translation id="5365881113273618889">התיקייה שבחרת מכילה קבצים רגישים. האפליקציה <ph name="APP_NAME" /> תקבל הרשאת כתיבה קבועה לתיקייה הזו. להמשיך?</translation>
 <translation id="5367091008316207019">קורא את הקובץ..</translation>
 <translation id="5368720394188453070">הטלפון שלך נעול. בטל את הנעילה כדי להיכנס.</translation>
@@ -3877,7 +3877,7 @@
 <translation id="6769712124046837540">הוספת מדפסת...</translation>
 <translation id="6770664076092644100">‏אימות באמצעות NFC</translation>
 <translation id="6771503742377376720">הוא רשות אישורים</translation>
-<translation id="6775163072363532304">כל המכשירים הזמינים יופיעו כאן.</translation>
+<translation id="6775163072363532304">כאן יופיעו מכשירים זמינים.</translation>
 <translation id="6777817260680419853">הפניה לכתובת אתר אחרת נחסמה</translation>
 <translation id="6778737459546443941">ההורה ששאלת עדיין לא אישר זאת</translation>
 <translation id="677965093459947883">קטן מאוד</translation>
@@ -4337,7 +4337,7 @@
 <translation id="7441830548568730290">משתמשים אחרים</translation>
 <translation id="7442465037756169001">‏Hangouts Meet hardware מוכן להגדרה.</translation>
 <translation id="744341768939279100">צור פרופיל חדש</translation>
-<translation id="7443806024147773267">‏הסיסמאות שלך תמיד זמינות אם נכנסת לחשבון Google</translation>
+<translation id="7443806024147773267">‏לאחר שנכנסת לחשבון Google, הסיסמאות שלך תמיד זמינות</translation>
 <translation id="7444046173054089907">האתר הזה חסום</translation>
 <translation id="7444983668544353857">השבת <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">התקנה אוטומטית של אפליקציות</translation>
@@ -5347,7 +5347,7 @@
 <translation id="8879284080359814990">הצ&amp;ג ככרטיסייה</translation>
 <translation id="8879921471468674457">שמירת פרטי הכניסה</translation>
 <translation id="8881020143150461183">יש לנסות שוב. לתמיכה טכנית יש לפנות אל <ph name="CARRIER_NAME" />.</translation>
-<translation id="8884570509232205463">המכשיר שלך יינעל עכשיו ב-<ph name="UNLOCK_TIME" />.</translation>
+<translation id="8884570509232205463">המכשיר שלך יינעל רק ב-<ph name="UNLOCK_TIME" />.</translation>
 <translation id="8885197664446363138">‏Smart Lock אינו זמין</translation>
 <translation id="8888253246822647887">האפליקציה תיפתח בסיום השדרוג. פעולת השדרוג יכולה להימשך כמה דקות.</translation>
 <translation id="8888432776533519951">צבע:</translation>

@@ -67,6 +67,14 @@ if [[ -f "$ENABLED_FILE_BACKUP" ]]; then
   mv "$ENABLED_FILE_BACKUP" "$ENABLED_FILE"
 fi
 
+# If there is a backup plist, restore it in order to use the old launchd
+# service script instead of the new one.
+if [[ -f "$INSTALLER_TEMP/plist_backup" ]]; then
+  logger Restoring original launchd agent
+  mv "$INSTALLER_TEMP/plist_backup" "$PLIST"
+  mv "$INSTALLER_TEMP/script_backup" "$SCRIPT_FILE"
+fi
+
 # Create the PAM configuration unless it already exists and has been edited.
 update_pam=1
 CONTROL_LINE="# If you edit this file, please delete this line."

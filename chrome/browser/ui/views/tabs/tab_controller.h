@@ -54,11 +54,6 @@ class TabController {
   // Closes the tab.
   virtual void CloseTab(Tab* tab, CloseTabSource source) = 0;
 
-  // Shows a context menu for the tab at the specified point in screen coords.
-  virtual void ShowContextMenuForTab(Tab* tab,
-                                     const gfx::Point& p,
-                                     ui::MenuSourceType source_type) = 0;
-
   // Returns whether |tab| is the active tab. The active tab is the one whose
   // content is shown in the browser.
   virtual bool IsActiveTab(const Tab* tab) const = 0;

@@ -5421,7 +5421,7 @@
       converter: "ConvertStyleColor",
       style_builder_template: "visited_color",
       style_builder_template_args: {
-        initial_color: "blink::Color",
+        initial_color: "StyleColor::CurrentColor",
       },
     },
     {
@@ -5438,7 +5438,7 @@
       converter: "ConvertStyleColor",
       style_builder_template: "visited_color",
       style_builder_template_args: {
-        initial_color: "blink::Color",
+        initial_color: "StyleColor::CurrentColor",
       },
     },
     {
@@ -5455,7 +5455,7 @@
       converter: "ConvertStyleColor",
       style_builder_template: "visited_color",
       style_builder_template_args: {
-        initial_color: "blink::Color",
+        initial_color: "StyleColor::CurrentColor",
       },
     },
     {

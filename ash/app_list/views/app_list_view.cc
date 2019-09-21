@@ -1447,13 +1447,6 @@ void AppListView::OnTabletModeChanged(bool started) {
   if (started && !is_fullscreen())
     SetState(app_list_state_);
 
-  // In tablet mode, AppListView should not be moved because of the change in
-  // virtual keyboard's visibility.
-  if (started) {
-    GetWidget()->GetNativeView()->ClearProperty(
-        wm::kVirtualKeyboardRestoreBoundsKey);
-  }
-
   app_list_background_shield_->UpdateBackground(
       /*use_blur*/ is_background_blur_enabled_ && !started);
 
@@ -2071,14 +2064,31 @@ void AppListView::OnScreenKeyboardShown(bool shown) {
   if (shown && GetAppsContainerView()->IsInFolderView()) {
     // Move the app list up to prevent folders being blocked by the
     // on-screen keyboard.
-    OffsetYPositionOfAppList(
-        GetAppsContainerView()->app_list_folder_view()->GetYOffsetForFolder());
-  } else {
+    const int folder_offset =
+        GetAppsContainerView()->app_list_folder_view()->GetYOffsetForFolder();
+    if (folder_offset != 0) {
+      OffsetYPositionOfAppList(folder_offset);
+      offset_to_show_folder_with_onscreen_keyboard_ = true;
+      app_list_main_view_->contents_view()->NotifySearchBoxBoundsUpdated();
+    }
+  } else if (offset_to_show_folder_with_onscreen_keyboard_) {
     // If the keyboard is closing or a folder isn't being shown, reset
     // the app list's position
     OffsetYPositionOfAppList(0);
+    offset_to_show_folder_with_onscreen_keyboard_ = false;
+    app_list_main_view_->contents_view()->NotifySearchBoxBoundsUpdated();
   }
-  app_list_main_view_->contents_view()->NotifySearchBoxBoundsUpdated();
+
+  if (!shown) {
+    // When the virtual keyboard is hidden, it will attempt to restore the app
+    // list bounds from when the keyboard was first shown - this might misplace
+    // the app list view if its intended bounds changed in the mean time. To
+    // avoid that, clear saved "restore bounds", and call SetState() to make
+    // sure app list bounds match the current app list view state.
+    GetWidget()->GetNativeView()->ClearProperty(
+        wm::kVirtualKeyboardRestoreBoundsKey);
+    SetState(app_list_state_);
+  }
 }
 
 bool AppListView::CloseKeyboardIfVisible() {

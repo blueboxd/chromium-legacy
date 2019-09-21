@@ -279,12 +279,12 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
                      std::unique_ptr<base::DictionaryValue> /* error_data */) {
     NET_LOG(ERROR) << "Shill Error: " << error_name << " id=" << guid_or_type;
     base::ListValue return_arg_list;
-    std::unique_ptr<base::DictionaryValue> dictionary;
+    base::Value dictionary(base::Value::Type::DICTIONARY);
     std::string key = function_name == kGetDeviceProperties
                           ? shill::kTypeProperty
                           : shill::kGuidProperty;
-    dictionary->SetKey(key, base::Value(guid_or_type));
-    dictionary->SetKey("ShillError", base::Value(error_name));
+    dictionary.SetKey(key, base::Value(guid_or_type));
+    dictionary.SetKey("ShillError", base::Value(error_name));
     return_arg_list.Append(std::move(dictionary));
 
     AllowJavascript();

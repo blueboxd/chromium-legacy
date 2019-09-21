@@ -20,6 +20,8 @@
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "storage/browser/quota/quota_manager.h"
@@ -79,6 +81,8 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
     content::BrowserContext* context = browser()->profile();
     extensions::ExtensionServiceInterface* extension_service =
         extensions::ExtensionSystem::Get(context)->extension_service();
+    extensions::ExtensionRegistry* extension_registry =
+        extensions::ExtensionRegistry::Get(context);
 
     std::unique_ptr<drive_backend::SyncEngine::DriveServiceFactory>
         drive_service_factory(new FakeDriveServiceFactory(this));
@@ -91,7 +95,7 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
         base_dir_.GetPath(),
         nullptr,  // task_logger
         nullptr,  // notification_manager
-        extension_service,
+        extension_service, extension_registry,
         identity_test_env_->identity_manager(),  // identity_manager
         nullptr,                                 // url_loader_factory
         std::move(drive_service_factory), in_memory_env_.get());

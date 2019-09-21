@@ -691,10 +691,12 @@ void MenuManager::ExecuteCommand(content::BrowserContext* context,
 
       // We intentionally don't scrub the tab data here, since the user chose to
       // invoke the extension on the page.
-      // NOTE(devlin): We could potentially gate this on whether the extension
-      // has activeTab.
+      // TODO(tjudkins) Potentially use GetScrubTabBehavior here to gate based
+      // on permissions.
+      ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior = {
+          ExtensionTabUtil::kDontScrubTab, ExtensionTabUtil::kDontScrubTab};
       args->Append(ExtensionTabUtil::CreateTabObject(
-                       web_contents, ExtensionTabUtil::kDontScrubTab, extension)
+                       web_contents, scrub_tab_behavior, extension)
                        ->ToValue());
     } else {
       args->Append(std::make_unique<base::DictionaryValue>());

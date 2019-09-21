@@ -20,59 +20,62 @@
 #include <windows.h>
 #endif
 
-using namespace mojo::core;
+using mojo::core::Channel;
+using mojo::core::ConnectionParams;
+using mojo::core::ports::NodeName;
 
 // Implementation of NodeChannel::Delegate which does nothing. All of the
 // interesting NodeChannel control message message parsing is done by
 // NodeChannel by the time any of the delegate methods are invoked, so there's
 // no need for this to do any work.
-class FakeNodeChannelDelegate : public NodeChannel::Delegate {
+class FakeNodeChannelDelegate : public mojo::core::NodeChannel::Delegate {
  public:
   FakeNodeChannelDelegate() = default;
   ~FakeNodeChannelDelegate() override = default;
 
-  void OnAcceptInvitee(const ports::NodeName& from_node,
-                       const ports::NodeName& inviter_name,
-                       const ports::NodeName& token) override {}
-  void OnAcceptInvitation(const ports::NodeName& from_node,
-                          const ports::NodeName& token,
-                          const ports::NodeName& invitee_name) override {}
-  void OnAddBrokerClient(const ports::NodeName& from_node,
-                         const ports::NodeName& client_name,
+  void OnAcceptInvitee(const NodeName& from_node,
+                       const NodeName& inviter_name,
+                       const NodeName& token) override {}
+  void OnAcceptInvitation(const NodeName& from_node,
+                          const NodeName& token,
+                          const NodeName& invitee_name) override {}
+  void OnAddBrokerClient(const NodeName& from_node,
+                         const NodeName& client_name,
                          base::ProcessHandle process_handle) override {}
-  void OnBrokerClientAdded(const ports::NodeName& from_node,
-                           const ports::NodeName& client_name,
+  void OnBrokerClientAdded(const NodeName& from_node,
+                           const NodeName& client_name,
                            mojo::PlatformHandle broker_channel) override {}
-  void OnAcceptBrokerClient(const ports::NodeName& from_node,
-                            const ports::NodeName& broker_name,
+  void OnAcceptBrokerClient(const NodeName& from_node,
+                            const NodeName& broker_name,
                             mojo::PlatformHandle broker_channel) override {}
-  void OnEventMessage(const ports::NodeName& from_node,
+  void OnEventMessage(const NodeName& from_node,
                       Channel::MessagePtr message) override {}
-  void OnRequestPortMerge(const ports::NodeName& from_node,
-                          const ports::PortName& connector_port_name,
-                          const std::string& token) override {}
-  void OnRequestIntroduction(const ports::NodeName& from_node,
-                             const ports::NodeName& name) override {}
-  void OnIntroduce(const ports::NodeName& from_node,
-                   const ports::NodeName& name,
+  void OnRequestPortMerge(
+      const NodeName& from_node,
+      const mojo::core::ports::PortName& connector_port_name,
+      const std::string& token) override {}
+  void OnRequestIntroduction(const NodeName& from_node,
+                             const NodeName& name) override {}
+  void OnIntroduce(const NodeName& from_node,
+                   const NodeName& name,
                    mojo::PlatformHandle channel_handle) override {}
-  void OnBroadcast(const ports::NodeName& from_node,
+  void OnBroadcast(const NodeName& from_node,
                    Channel::MessagePtr message) override {}
 #if defined(OS_WIN)
-  void OnRelayEventMessage(const ports::NodeName& from_node,
+  void OnRelayEventMessage(const NodeName& from_node,
                            base::ProcessHandle from_process,
-                           const ports::NodeName& destination,
+                           const NodeName& destination,
                            Channel::MessagePtr message) override {}
-  void OnEventMessageFromRelay(const ports::NodeName& from_node,
-                               const ports::NodeName& source_node,
+  void OnEventMessageFromRelay(const NodeName& from_node,
+                               const NodeName& source_node,
                                Channel::MessagePtr message) override {}
 #endif
-  void OnAcceptPeer(const ports::NodeName& from_node,
-                    const ports::NodeName& token,
-                    const ports::NodeName& peer_name,
-                    const ports::PortName& port_name) override {}
-  void OnChannelError(const ports::NodeName& node,
-                      NodeChannel* channel) override {}
+  void OnAcceptPeer(const NodeName& from_node,
+                    const NodeName& token,
+                    const NodeName& peer_name,
+                    const mojo::core::ports::PortName& port_name) override {}
+  void OnChannelError(const NodeName& node,
+                      mojo::core::NodeChannel* channel) override {}
 };
 
 // A fake delegate for the sending Channel endpoint. The sending Channel is not
@@ -93,7 +96,7 @@ class FakeChannelDelegate : public Channel::Delegate {
 // need to initialize Core for that to be OK.
 struct Environment {
   Environment() : main_thread_task_executor(base::MessagePumpType::IO) {
-    InitializeCore();
+    mojo::core::InitializeCore();
   }
 
   base::SingleThreadTaskExecutor main_thread_task_executor;
@@ -107,7 +110,7 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   mojo::PlatformChannel channel;
 
   FakeNodeChannelDelegate receiver_delegate;
-  auto receiver = NodeChannel::Create(
+  auto receiver = mojo::core::NodeChannel::Create(
       &receiver_delegate, ConnectionParams(channel.TakeLocalEndpoint()),
       Channel::HandlePolicy::kRejectHandles,
       environment->main_thread_task_executor.task_runner(), base::DoNothing());

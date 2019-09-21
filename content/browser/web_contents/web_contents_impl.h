@@ -132,9 +132,7 @@ class CreateNewWindowParams;
 
 #if defined(OS_ANDROID)
 class WebContentsAndroid;
-#else  // !defined(OS_ANDROID)
-class HostZoomMapObserver;
-#endif  // defined(OS_ANDROID)
+#endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 class PepperPlaybackObserver;
@@ -1717,8 +1715,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool closed_by_user_gesture_;
 
   // Minimum/maximum zoom percent.
-  int minimum_zoom_percent_;
-  int maximum_zoom_percent_;
+  const int minimum_zoom_percent_;
+  const int maximum_zoom_percent_;
 
   // Used to correctly handle integer zooming through a smooth scroll device.
   float zoom_scroll_remainder_;
@@ -1840,10 +1838,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Observes pepper playback changes, and notifies MediaSession.
   std::unique_ptr<PepperPlaybackObserver> pepper_playback_observer_;
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
-
-#if !defined(OS_ANDROID)
-  std::unique_ptr<HostZoomMapObserver> host_zoom_map_observer_;
-#endif  // !defined(OS_ANDROID)
 
   std::unique_ptr<RenderWidgetHostInputEventRouter> rwh_input_event_router_;
 

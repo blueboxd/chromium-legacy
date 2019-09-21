@@ -116,7 +116,9 @@ void StubPasswordManagerClient::CheckProtectedPasswordEntry(
     const std::string& username,
     const std::vector<std::string>& matching_domains,
     bool password_field_exists) {}
+#endif
 
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
 void StubPasswordManagerClient::LogPasswordReuseDetectedEvent() {}
 #endif
 

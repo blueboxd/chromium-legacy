@@ -41,16 +41,6 @@ class ASH_EXPORT ShellObserver {
   // Invoked when |pinned_window| enter or exit pinned mode.
   virtual void OnPinnedStateChanged(aura::Window* pinned_window) {}
 
-  // Called when the split view mode is about to be started before the window
-  // gets snapped and activated).
-  virtual void OnSplitViewModeStarting() {}
-
-  // Called when the split view mode has been started.
-  virtual void OnSplitViewModeStarted() {}
-
-  // Called after split view mode has ended.
-  virtual void OnSplitViewModeEnded() {}
-
   // Called when dictation is activated.
   virtual void OnDictationStarted() {}
 

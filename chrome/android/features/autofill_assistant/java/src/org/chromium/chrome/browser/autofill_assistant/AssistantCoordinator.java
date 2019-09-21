@@ -77,7 +77,7 @@ class AssistantCoordinator {
      * Show the Chrome feedback form.
      */
     public void showFeedback(String debugContext) {
-        HelpAndFeedback.getInstance(mActivity).showFeedback(mActivity, Profile.getLastUsedProfile(),
+        HelpAndFeedback.getInstance().showFeedback(mActivity, Profile.getLastUsedProfile(),
                 mActivity.getActivityTab().getUrl(), FEEDBACK_CATEGORY_TAG,
                 FeedbackContext.buildContextString(mActivity, debugContext, 4));
     }

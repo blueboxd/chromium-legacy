@@ -34,4 +34,11 @@ public interface AssistantCollectUserDataDelegate {
 
     /** The currently selected login choice has changed. */
     void onLoginChoiceChanged(@Nullable AssistantLoginChoice loginChoice);
+
+    /** The start of the date/time range has changed. */
+    void onDateTimeRangeStartChanged(
+            int year, int month, int day, int hour, int minute, int second);
+
+    /** The end of the date/time range has changed. */
+    void onDateTimeRangeEndChanged(int year, int month, int day, int hour, int minute, int second);
 }

@@ -229,9 +229,9 @@ class ConversionContext {
   const TransformPaintPropertyNode* previous_transform_ = nullptr;
 
   // This structure accumulates bounds of all chunks under an effect. When an
-  // effect starts, we emit a SaveLayer[Alpha]Op with null bounds starts, and
-  // push a new |EffectBoundsInfo| onto |effect_bounds_stack_|. When the effect
-  // ends, we update the bounds of the op.
+  // effect starts, we emit a SaveLayer[Alpha]Op with null bounds, and push a
+  // new |EffectBoundsInfo| onto |effect_bounds_stack_|. When the effect ends,
+  // we update the bounds of the op.
   struct EffectBoundsInfo {
     // The id of the SaveLayer[Alpha]Op for this effect. It's recorded when we
     // push the op for this effect, and used when this effect ends in

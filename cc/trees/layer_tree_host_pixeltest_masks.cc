@@ -833,7 +833,6 @@ TEST_P(LayerTreeHostMaskAsBlendingPixelTest, PixelAlignedNoop) {
   mask_isolation->SetPosition(gfx::PointF(20, 20));
   mask_isolation->SetBounds(gfx::Size(350, 250));
   mask_isolation->SetMasksToBounds(true);
-  mask_isolation->SetIsRootForIsolatedGroup(true);
   root->AddChild(mask_isolation);
 
   scoped_refptr<Layer> content =
@@ -858,7 +857,7 @@ TEST_P(LayerTreeHostMaskAsBlendingPixelTest, PixelAlignedClippedCircle) {
   mask_isolation->SetPosition(gfx::PointF(20, 20));
   mask_isolation->SetBounds(gfx::Size(350, 250));
   mask_isolation->SetMasksToBounds(true);
-  mask_isolation->SetIsRootForIsolatedGroup(true);
+  mask_isolation->SetForceRenderSurfaceForTesting(true);
   root->AddChild(mask_isolation);
 
   scoped_refptr<Layer> content =
@@ -895,7 +894,7 @@ TEST_P(LayerTreeHostMaskAsBlendingPixelTest,
   mask_isolation->SetPosition(gfx::PointF(20, 20));
   mask_isolation->SetBounds(gfx::Size(350, 250));
   mask_isolation->SetMasksToBounds(true);
-  mask_isolation->SetIsRootForIsolatedGroup(true);
+  mask_isolation->SetForceRenderSurfaceForTesting(true);
   root->AddChild(mask_isolation);
 
   scoped_refptr<Layer> content =
@@ -936,7 +935,6 @@ TEST_P(LayerTreeHostMaskAsBlendingPixelTest, RotatedClippedCircle) {
   }
   mask_isolation->SetBounds(gfx::Size(350, 250));
   mask_isolation->SetMasksToBounds(true);
-  mask_isolation->SetIsRootForIsolatedGroup(true);
   root->AddChild(mask_isolation);
 
   scoped_refptr<Layer> content =
@@ -983,7 +981,6 @@ TEST_P(LayerTreeHostMaskAsBlendingPixelTest, RotatedClippedCircleUnderflow) {
   }
   mask_isolation->SetBounds(gfx::Size(350, 250));
   mask_isolation->SetMasksToBounds(true);
-  mask_isolation->SetIsRootForIsolatedGroup(true);
   root->AddChild(mask_isolation);
 
   scoped_refptr<Layer> content =

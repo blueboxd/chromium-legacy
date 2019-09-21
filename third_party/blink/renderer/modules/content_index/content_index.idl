@@ -10,5 +10,5 @@
 ] interface ContentIndex {
     [CallWith=ScriptState, MeasureAs=ContentIndexAdd] Promise<void> add(ContentDescription description);
     [CallWith=ScriptState, MeasureAs=ContentIndexDelete, ImplementedAs=deleteDescription] Promise<void> delete(DOMString id);
-    [CallWith=ScriptState, MeasureAs=ContentIndexGet] Promise<sequence<ContentDescription>> getDescriptions();
+    [CallWith=ScriptState, MeasureAs=ContentIndexGet, ImplementedAs=getDescriptions] Promise<sequence<ContentDescription>> getAll();
 };

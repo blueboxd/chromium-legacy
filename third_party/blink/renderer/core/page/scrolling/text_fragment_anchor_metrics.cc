@@ -113,6 +113,14 @@ void TextFragmentAnchorMetrics::ReportMetrics() {
 #endif
 }
 
+void TextFragmentAnchorMetrics::Dismissed() {
+  // We report Dismissed separately from ReportMetrics as it may or may not
+  // get called in the lifetime of the TextFragmentAnchor.
+  UseCounter::Count(document_, WebFeature::kTextFragmentAnchorTapToDismiss);
+  TRACE_EVENT_INSTANT0("blink", "TextFragmentAnchorMetrics::Dismissed",
+                       TRACE_EVENT_SCOPE_THREAD);
+}
+
 void TextFragmentAnchorMetrics::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_);
 }

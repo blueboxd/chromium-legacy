@@ -251,12 +251,10 @@ class WebViewTest : public testing::Test {
 
  protected:
   void SetViewportSize(const WebSize& size) {
-    content::LayerTreeView* layer_tree_view =
-        web_view_helper_.GetLayerTreeView();
-    layer_tree_view->SetViewportRectAndScale(
+    cc::LayerTreeHost* layer_tree_host = web_view_helper_.GetLayerTreeHost();
+    layer_tree_host->SetViewportRectAndScale(
         gfx::Rect(static_cast<gfx::Size>(size)), /*device_scale_factor=*/1.f,
-        layer_tree_view->layer_tree_host()
-            ->local_surface_id_allocation_from_parent());
+        layer_tree_host->local_surface_id_allocation_from_parent());
   }
 
   std::string RegisterMockedHttpURLLoad(const std::string& file_name) {
@@ -5729,14 +5727,14 @@ TEST_F(WebViewTest, RootLayerAttachment) {
 
   // Layers (including the root layer) should not be attached until the paint
   // lifecycle phase.
-  auto* layer_tree_view = web_view_helper_.GetLayerTreeView();
-  EXPECT_FALSE(layer_tree_view->GetRootLayer());
+  cc::LayerTreeHost* layer_tree_host = web_view_helper_.GetLayerTreeHost();
+  EXPECT_FALSE(layer_tree_host->root_layer());
 
   // Do a full lifecycle update and ensure that the root layer has been added.
   web_view->MainFrameWidget()->UpdateLifecycle(
       WebFrameWidget::LifecycleUpdate::kAll,
       WebWidget::LifecycleUpdateReason::kTest);
-  EXPECT_TRUE(layer_tree_view->GetRootLayer());
+  EXPECT_TRUE(layer_tree_host->root_layer());
 }
 
 // Verifies that we emit Blink.UseCounter.FeaturePolicy.PotentialAnimation for

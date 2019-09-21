@@ -6,6 +6,7 @@
 #define CHROMECAST_MEDIA_AUDIO_CAST_AUDIO_OUTPUT_STREAM_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -34,7 +35,6 @@ enum AudioOutputState {
 };
 
 class CastAudioManager;
-class MixerServiceConnectionFactory;
 
 // Chromecast implementation of AudioOutputStream.
 // This class forwards to MixerService if valid
@@ -91,11 +91,11 @@ class MixerServiceConnectionFactory;
 //
 // When MixerService is used in place of CMA backend, the state transition is
 // similar but a little simpler.
-// MixerServiceWrapper creates a new MixerServiceConnection at Start() and
-// destroys the MixerServiceConnection at Stop(). When the volume is adjusted
-// between a Stop() and the next Start(), the volume is recorded and then
-// applied to MixerServiceConnection after the MixerServiceConnection is
-// established on the Start() call.
+// MixerServiceWrapper creates a new mixer service connection at Start() and
+// destroys the connection at Stop(). When the volume is adjusted between a
+// Stop() and the next Start(), the volume is recorded and then applied to the
+// mixer service connection after the connection is established on the Start()
+// call.
 
 // TODO(b/117980762): CastAudioOutputStream should be refactored
 // to be more unit test friendly. And the unit tests can be improved.
@@ -111,12 +111,11 @@ class CastAudioOutputStream : public ::media::AudioOutputStream {
   // the |device_id_| is set to kDefaultDeviceId. Valid device_id's are either
   // ::media::AudioDeviceDescription::kDefaultDeviceId or
   // ::media::AudioDeviceDescription::kCommunicationsId.
-  CastAudioOutputStream(
-      CastAudioManager* audio_manager,
-      service_manager::Connector* connector,
-      const ::media::AudioParameters& audio_params,
-      const std::string& device_id_or_group_id,
-      MixerServiceConnectionFactory* mixer_service_connection_factory);
+  CastAudioOutputStream(CastAudioManager* audio_manager,
+                        service_manager::Connector* connector,
+                        const ::media::AudioParameters& audio_params,
+                        const std::string& device_id_or_group_id,
+                        bool use_mixer_service);
   ~CastAudioOutputStream() override;
 
   // ::media::AudioOutputStream implementation.
@@ -148,7 +147,7 @@ class CastAudioOutputStream : public ::media::AudioOutputStream {
   // |group_id_|s are uuids mapped to session_ids for multizone. Should be an
   // empty string if group_id is unused.
   const std::string group_id_;
-  MixerServiceConnectionFactory* mixer_service_connection_factory_;
+  const bool use_mixer_service_;
   mojo::Remote<chromecast::mojom::MultiroomManager> multiroom_manager_;
   std::unique_ptr<CmaWrapper> cma_wrapper_;
   std::unique_ptr<MixerServiceWrapper> mixer_service_wrapper_;

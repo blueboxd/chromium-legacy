@@ -247,23 +247,17 @@ Polymer({
    */
   getProperty_: function(key, propertyDict) {
     const property = this.get(key, this.propertyDict);
-    if (property === undefined || property === null) {
+    if ((property === undefined || property === null) &&
+        propertyDict.source !== undefined) {
       // If the dictionary is policy controlled, provide an empty property
-      // object with the network policy source. See https://crbug.com/819837 for
-      // more info.
-      const source = propertyDict.source;
-      if (source == chromeos.networkConfig.mojom.OncSource.kUserPolicy) {
+      // object with the network policy source. See https://crbug.com/819837
+      // for more info.
+      const policySource =
+          OncMojo.getEnforcedPolicySourceFromOncSource(propertyDict.source);
+      if (policySource != chromeos.networkConfig.mojom.PolicySource.kNone) {
         return /** @type{!OncMojo.ManagedProperty} */ ({
           activeValue: '',
-          policySource:
-              chromeos.networkConfig.mojom.PolicySource.kUserPolicyEnforced,
-        });
-      }
-      if (source == chromeos.networkConfig.mojom.OncSource.kDevicePolicy) {
-        return /** @type{!OncMojo.ManagedProperty} */ ({
-          activeValue: '',
-          policySource:
-              chromeos.networkConfig.mojom.PolicySource.kDevicePolicyEnforced,
+          policySource: policySource,
         });
       }
       // Otherwise just return undefined.

@@ -459,14 +459,24 @@ bool AXPlatformNodeBase::IsSelectionItemSupported() const {
       return table->GetData().role == ax::mojom::Role::kGrid ||
              table->GetData().role == ax::mojom::Role::kTreeGrid;
     }
+    // https://www.w3.org/TR/core-aam-1.1/#mapping_state-property_table
+    // SelectionItem.IsSelected is exposed when aria-checked is True or False,
+    // for 'radio' and 'menuitemradio' roles.
+    case ax::mojom::Role::kRadioButton:
+    case ax::mojom::Role::kMenuItemRadio: {
+      if (GetData().GetCheckedState() == ax::mojom::CheckedState::kTrue ||
+          GetData().GetCheckedState() == ax::mojom::CheckedState::kFalse)
+        return true;
+      return false;
+    }
+    // https://www.w3.org/TR/wai-aria-1.1/#aria-selected
+    // SelectionItem.IsSelected is exposed when aria-select is True or False.
     case ax::mojom::Role::kListBoxOption:
     case ax::mojom::Role::kListItem:
-    case ax::mojom::Role::kMenuItemRadio:
     case ax::mojom::Role::kMenuListOption:
-    case ax::mojom::Role::kRadioButton:
     case ax::mojom::Role::kTab:
     case ax::mojom::Role::kTreeItem:
-      return true;
+      return HasBoolAttribute(ax::mojom::BoolAttribute::kSelected);
     default:
       return false;
   }

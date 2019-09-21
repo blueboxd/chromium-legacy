@@ -276,8 +276,7 @@ GPURenderPipeline* GPURenderPipeline::Create(
   dawn_desc.colorStateCount =
       static_cast<uint32_t>(webgpu_desc->colorStates().size());
 
-  DawnColorStateDescriptor* color_state_descriptors = color_states.get();
-  dawn_desc.colorStates = &color_state_descriptors;
+  dawn_desc.colorStates = color_states.get();
 
   dawn_desc.sampleMask = webgpu_desc->sampleMask();
   dawn_desc.alphaToCoverageEnabled = webgpu_desc->alphaToCoverageEnabled();

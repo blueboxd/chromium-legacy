@@ -40,21 +40,20 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
       return instrumentation_test_instance.InstrumentationTestInstance(
           mock.MagicMock(), mock.MagicMock(), lambda s: None)
 
-  _FlagAttributesArgs = collections.namedtuple(
-      '_FlagAttributesArgs',
-      [
-        'command_line_flags',
-        'device_flags_file',
-        'strict_mode',
-        'use_apk_under_test_flags_file'
-      ])
+  _FlagAttributesArgs = collections.namedtuple('_FlagAttributesArgs', [
+      'command_line_flags', 'device_flags_file', 'strict_mode',
+      'use_apk_under_test_flags_file', 'coverage_dir'
+  ])
 
-  def createFlagAttributesArgs(
-      self, command_line_flags=None, device_flags_file=None,
-      strict_mode=None, use_apk_under_test_flags_file=False):
-    return self._FlagAttributesArgs(
-        command_line_flags, device_flags_file, strict_mode,
-        use_apk_under_test_flags_file)
+  def createFlagAttributesArgs(self,
+                               command_line_flags=None,
+                               device_flags_file=None,
+                               strict_mode=None,
+                               use_apk_under_test_flags_file=False,
+                               coverage_dir=None):
+    return self._FlagAttributesArgs(command_line_flags, device_flags_file,
+                                    strict_mode, use_apk_under_test_flags_file,
+                                    coverage_dir)
 
   def test_initializeFlagAttributes_commandLineFlags(self):
     o = self.createTestInstance()
@@ -77,6 +76,13 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
     args = self.createFlagAttributesArgs(strict_mode='on')
     o._initializeFlagAttributes(args)
     self.assertEquals(o._flags, ['--enable-test-intents', '--strict-mode=on'])
+
+  def test_initializeFlagAttributes_strictModeOn_coverageOn(self):
+    o = self.createTestInstance()
+    args = self.createFlagAttributesArgs(
+        strict_mode='on', coverage_dir='/coverage/dir')
+    o._initializeFlagAttributes(args)
+    self.assertEquals(o._flags, ['--enable-test-intents'])
 
   def test_initializeFlagAttributes_strictModeOff(self):
     o = self.createTestInstance()

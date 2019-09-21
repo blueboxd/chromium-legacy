@@ -13,7 +13,7 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
-class PreviewsLitePageNavigationThrottleManager;
+class PreviewsLitePageDecider;
 
 // If the given URL is a LitePage Preview URL, this returns true but does not
 // change the |url|. This will set |update_virtual_url_with_url| on
@@ -33,93 +33,16 @@ bool HandlePreviewsLitePageURLRewriteReverse(
 
 class PreviewsLitePageNavigationThrottle {
  public:
-  // Reasons that a navigation is blacklisted from this preview. This enum must
-  // remain synchronized with the enum |PreviewsServerLitePageBlacklistReason|
-  // in tools/metrics/histograms/enums.xml.
-  enum class BlacklistReason {
-    kPathSuffixBlacklisted_DEPRECATED = 0,
-    kNavigationToPreviewsDomain = 1,
-    kNavigationToPrivateDomain = 2,
-    kHostBypassBlacklisted = 3,
-    kMaxValue = kHostBypassBlacklisted,
-  };
-
-  // Reasons that a navigation is not eligible for this preview. This enum must
-  // remain synchronized with the enum |PreviewsServerLitePageIneligibleReason|
-  // in tools/metrics/histograms/enums.xml.
-  enum class IneligibleReason {
-    kNonHttpsScheme = 0,
-    kHttpPost_DEPRECATED = 1,
-    kSubframeNavigation = 2,
-    kServerUnavailable = 3,
-    kInfoBarNotSeen = 4,
-    kNetworkNotSlow_DEPRECATED = 5,
-    kLoadOriginalReload = 6,
-    kCookiesBlocked = 7,
-    kECTUnknown_DEPRECATED = 8,
-    kExceededMaxNavigationRestarts = 9,
-    kPreviewsState_DEPRECATED = 10,
-    kInvalidProxyHeaders = 11,
-    kServiceProbeIncomplete = 12,
-    kServiceProbeFailed = 13,
-    kMaxValue = kServiceProbeFailed,
-  };
-
-  // The response type from the previews server. This enum must
-  // remain synchronized with the enum |PreviewsServerLitePageServerResponse| in
-  // tools/metrics/histograms/enums.xml.
-  enum class ServerResponse {
-    // A preview was served (HTTP 200).
-    kOk = 0,
-
-    // The client was redirected to another page (HTTP 307).
-    kRedirect = 1,
-
-    // The requested preview was not available (HTTP 307).
-    kPreviewUnavailable = 2,
-
-    // The previews server is not available (HTTP 503).
-    kServiceUnavailable = 3,
-
-    // The previews server responded with some other HTTP code.
-    kOther = 4,
-
-    // There was some network error and we did not get a response from the
-    // previews server.
-    kFailed = 5,
-
-    // The previews server did not respond after a timeout.
-    kTimeout = 6,
-
-    // The previews server rejected our authentication (HTTP 403).
-    kAuthFailure = 7,
-
-    // No response headers were available from the preview server.
-    kNoResponseHeaders = 8,
-
-    // The connection was closed without getting a response.
-    kOnCompleteBeforeOnResponse = 9,
-
-    // There was an error connecting to the previews server.
-    kConnectionError = 10,
-
-    kMaxValue = kConnectionError,
-  };
-
   // Returns the URL for a preview given by the url.
   static GURL GetPreviewsURLForURL(const GURL& original_url);
-
-  // Records an entry in the ineligibility histogram.
-  static void LogIneligibleReason(IneligibleReason reason);
 
   // Gets the ServerLitePageInfo struct from an existing attempted lite page
   // navigation, if there is one. If not, returns a new ServerLitePageInfo
   // initialized with metadata from navigation_handle() and |this| that is owned
   // by the PreviewsUserData associated with navigation_handle().
   static previews::PreviewsUserData::ServerLitePageInfo*
-  GetOrCreateServerLitePageInfo(
-      content::NavigationHandle* navigation_handle,
-      PreviewsLitePageNavigationThrottleManager* manager);
+  GetOrCreateServerLitePageInfo(content::NavigationHandle* navigation_handle,
+                                PreviewsLitePageDecider* manager);
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsLitePageNavigationThrottle);
 };

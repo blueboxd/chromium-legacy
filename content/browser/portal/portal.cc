@@ -189,7 +189,9 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
   return proxy_host;
 }
 
-void Portal::Navigate(const GURL& url, blink::mojom::ReferrerPtr referrer) {
+void Portal::Navigate(const GURL& url,
+                      blink::mojom::ReferrerPtr referrer,
+                      NavigateCallback callback) {
   if (!url.SchemeIsHTTPOrHTTPS()) {
     mojo::ReportBadMessage("Portal::Navigate tried to use non-HTTP protocol.");
     binding_->Close();  // Also deletes |this|.
@@ -212,6 +214,8 @@ void Portal::Navigate(const GURL& url, blink::mojom::ReferrerPtr referrer) {
       owner_render_frame_host_->GetSiteInstance(),
       mojo::ConvertTo<Referrer>(referrer), ui::PAGE_TRANSITION_LINK, false,
       download_policy, "GET", nullptr, "", nullptr, false);
+
+  std::move(callback).Run();
 }
 
 namespace {

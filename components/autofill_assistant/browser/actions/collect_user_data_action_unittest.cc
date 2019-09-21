@@ -30,6 +30,28 @@ const char kMemoryLocation[] = "billing";
 namespace autofill_assistant {
 namespace {
 
+void SetDateTimeProto(DateTimeProto* proto,
+                      int year,
+                      int month,
+                      int day,
+                      int hour,
+                      int minute,
+                      int second) {
+  proto->mutable_date()->set_year(year);
+  proto->mutable_date()->set_month(month);
+  proto->mutable_date()->set_day(day);
+  proto->mutable_time()->set_hour(hour);
+  proto->mutable_time()->set_minute(minute);
+  proto->mutable_time()->set_second(second);
+}
+
+MATCHER_P(EqualsProto, message, "") {
+  std::string expected_serialized, actual_serialized;
+  message.SerializeToString(&expected_serialized);
+  arg.SerializeToString(&actual_serialized);
+  return expected_serialized == actual_serialized;
+}
+
 using ::base::test::RunOnceCallback;
 using ::testing::_;
 using ::testing::Eq;
@@ -481,6 +503,67 @@ TEST_F(CollectUserDataActionTest, UserDataComplete_ShippingAddress) {
                                          base::UTF8ToUTF16("91601"));
   EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(
       &mock_personal_data_manager_, user_data, options));
+}
+
+TEST_F(CollectUserDataActionTest, UserDataComplete_DateTimeRange) {
+  UserData user_data;
+  CollectUserDataOptions options;
+  options.request_date_time_range = true;
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(
+      &mock_personal_data_manager_, user_data, options));
+
+  SetDateTimeProto(&user_data.date_time_range_start, 2019, 12, 31, 10, 30, 0);
+  SetDateTimeProto(&user_data.date_time_range_end, 2019, 1, 28, 16, 0, 0);
+
+  // Start date not before end date.
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(
+      &mock_personal_data_manager_, user_data, options));
+
+  user_data.date_time_range_end.mutable_date()->set_year(2020);
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(
+      &mock_personal_data_manager_, user_data, options));
+}
+
+TEST_F(CollectUserDataActionTest, SelectDateTimeRange) {
+  ActionProto action_proto;
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  collect_user_data_proto->set_request_terms_and_conditions(false);
+  auto* date_time_proto = collect_user_data_proto->mutable_date_time_range();
+  SetDateTimeProto(date_time_proto->mutable_start(), 2019, 10, 21, 8, 0, 0);
+  SetDateTimeProto(date_time_proto->mutable_end(), 2019, 11, 5, 16, 0, 0);
+  SetDateTimeProto(date_time_proto->mutable_min(), 2019, 11, 5, 16, 0, 0);
+  SetDateTimeProto(date_time_proto->mutable_max(), 2020, 11, 5, 16, 0, 0);
+  date_time_proto->set_start_label("Pick up");
+  date_time_proto->set_end_label("Return");
+
+  DateTimeProto actual_pickup_time;
+  DateTimeProto actual_return_time;
+  SetDateTimeProto(&actual_pickup_time, 2019, 10, 21, 7, 0, 0);
+  SetDateTimeProto(&actual_return_time, 2019, 10, 25, 19, 0, 0);
+
+  ON_CALL(mock_action_delegate_, CollectUserData(_, _))
+      .WillByDefault(Invoke(
+          [&](std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
+              std::unique_ptr<UserData> user_data) {
+            user_data->succeed = true;
+            user_data->date_time_range_start = actual_pickup_time;
+            user_data->date_time_range_end = actual_return_time;
+            std::move(collect_user_data_options->confirm_callback)
+                .Run(std::move(user_data));
+          }));
+
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(
+          AllOf(Property(&ProcessedActionProto::status, ACTION_APPLIED),
+                Property(&ProcessedActionProto::collect_user_data_result,
+                         Property(&CollectUserDataResultProto::date_time_start,
+                                  EqualsProto(actual_pickup_time))),
+                Property(&ProcessedActionProto::collect_user_data_result,
+                         Property(&CollectUserDataResultProto::date_time_end,
+                                  EqualsProto(actual_return_time)))))));
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
 }
 
 }  // namespace

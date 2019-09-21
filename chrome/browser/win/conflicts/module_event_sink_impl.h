@@ -14,6 +14,7 @@
 #include "base/process/process.h"
 #include "chrome/common/conflicts/module_event_sink_win.mojom.h"
 #include "content/public/common/process_type.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace base {
 class FilePath;
@@ -49,7 +50,7 @@ class ModuleEventSinkImpl : public mojom::ModuleEventSink {
   static void Create(GetProcessCallback get_process,
                      content::ProcessType process_type,
                      const OnModuleLoadCallback& on_module_load_callback,
-                     mojom::ModuleEventSinkRequest request);
+                     mojo::PendingReceiver<mojom::ModuleEventSink> receiver);
 
   // mojom::ModuleEventSink implementation:
   void OnModuleEvents(

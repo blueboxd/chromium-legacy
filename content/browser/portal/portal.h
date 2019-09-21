@@ -68,7 +68,9 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
   RenderFrameProxyHost* CreateProxyAndAttachPortal();
 
   // blink::mojom::Portal implementation.
-  void Navigate(const GURL& url, blink::mojom::ReferrerPtr referrer) override;
+  void Navigate(const GURL& url,
+                blink::mojom::ReferrerPtr referrer,
+                NavigateCallback callback) override;
   void Activate(blink::TransferableMessage data,
                 ActivateCallback callback) override;
   void PostMessageToGuest(

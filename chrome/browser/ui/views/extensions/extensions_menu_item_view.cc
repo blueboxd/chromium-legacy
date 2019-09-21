@@ -30,6 +30,9 @@ std::unique_ptr<views::ImageButton> CreateButton(
     int id,
     views::ButtonListener* listener) {
   auto button = views::CreateVectorImageButton(listener);
+
+  // Items within a menu should not show focus rings.
+  button->SetInstallFocusRingOnFocus(false);
   button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   button->SetID(id);
   return button;

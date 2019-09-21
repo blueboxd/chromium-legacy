@@ -54,11 +54,6 @@ const char kDataReductionProxyWasEnabledBefore[] =
 const char kDataReductionProxyLastEnabledTime[] =
     "data_reduction.last_enabled_time";
 
-// An integer pref that contains the time when the data reduction proxy savings
-// were last cleared because the system clock was moved back by more than 1 day.
-const char kDataReductionProxySavingsClearedNegativeSystemClock[] =
-    "data_reduction.savings_cleared_negative_system_clock";
-
 // An int64_t pref that contains the total size of all HTTP content received
 // from the network.
 const char kHttpReceivedContentLength[] = "http_received_content_length";

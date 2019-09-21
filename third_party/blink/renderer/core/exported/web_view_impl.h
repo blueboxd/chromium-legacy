@@ -153,8 +153,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
                                 WebLocalFrame* to) override;
   double ZoomLevel() override;
   double SetZoomLevel(double) override;
-  void ZoomLimitsChanged(double minimum_zoom_level,
-                         double maximum_zoom_level) override;
   float TextZoomFactor() override;
   float SetTextZoomFactor(float) override;
   float PageScaleFactor() const override;
@@ -595,9 +593,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // mean zoom in, negative numbers mean zoom out.
   double zoom_level_ = 0.;
 
-  double minimum_zoom_level_;
-
-  double maximum_zoom_level_;
+  const double minimum_zoom_level_;
+  const double maximum_zoom_level_;
 
   // Additional zoom factor used to scale the content by device scale factor.
   double zoom_factor_for_device_scale_factor_ = 0.;

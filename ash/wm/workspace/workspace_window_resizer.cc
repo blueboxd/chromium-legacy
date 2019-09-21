@@ -53,25 +53,6 @@ namespace {
 constexpr double kMinHorizVelocityForWindowSwipe = 1100;
 constexpr double kMinVertVelocityForWindowMinimize = 1000;
 
-// The drag delegate for app windows. It not only includes the logic in
-// TabletModeWindowDragDelegate, but also has special logic for app windows.
-class TabletModeAppWindowDragDelegate : public TabletModeWindowDragDelegate {
- public:
-  TabletModeAppWindowDragDelegate() = default;
-  ~TabletModeAppWindowDragDelegate() override = default;
-
- private:
-  // TabletModeWindowDragDelegate:
-  void PrepareWindowDrag(const gfx::Point& location_in_screen) override {}
-  void UpdateWindowDrag(const gfx::Point& location_in_screen) override {}
-  void EndingWindowDrag(ToplevelWindowEventHandler::DragResult result,
-                        const gfx::Point& location_in_screen) override {}
-  void EndedWindowDrag(const gfx::Point& location_in_screen) override {}
-  void StartFling(const ui::GestureEvent* event) override {}
-
-  DISALLOW_COPY_AND_ASSIGN(TabletModeAppWindowDragDelegate);
-};
-
 // Returns true if |window| can be dragged from the top of the screen in tablet
 // mode.
 std::unique_ptr<WindowResizer> CreateWindowResizerForTabletMode(
@@ -97,7 +78,7 @@ std::unique_ptr<WindowResizer> CreateWindowResizerForTabletMode(
                                     ::wm::WINDOW_MOVE_SOURCE_TOUCH);
     std::unique_ptr<WindowResizer> window_resizer =
         std::make_unique<TabletModeWindowDragController>(
-            window_state, std::make_unique<TabletModeAppWindowDragDelegate>());
+            window_state, std::make_unique<TabletModeWindowDragDelegate>());
     return std::make_unique<DragWindowResizer>(std::move(window_resizer),
                                                window_state);
   }

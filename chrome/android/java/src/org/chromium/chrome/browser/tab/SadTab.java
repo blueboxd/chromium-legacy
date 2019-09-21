@@ -89,7 +89,7 @@ public class SadTab extends EmptyTabObserver implements UserData {
             public void run() {
                 Activity activity = mTab.getWindowAndroid().getActivity().get();
                 assert activity != null;
-                HelpAndFeedback.getInstance(activity).show(activity,
+                HelpAndFeedback.getInstance().show(activity,
                         activity.getString(R.string.help_context_sad_tab),
                         Profile.getLastUsedProfile(), null);
             }

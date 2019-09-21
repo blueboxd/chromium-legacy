@@ -47,7 +47,7 @@ class SupervisionTransitionScreenTest
   }
 
   void SetUpOnMainThread() override {
-    ASSERT_TRUE(logged_in_user_mixin_.RequestPolicyUpdate());
+    CHECK(logged_in_user_mixin_.GetUserPolicyMixin()->RequestPolicyUpdate());
 
     arc::ArcServiceLauncher::Get()->ResetForTesting();
     arc::ArcSessionManager::Get()->SetArcSessionRunnerForTesting(
@@ -108,7 +108,7 @@ IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest, SuccessfulTransition) {
   EXPECT_FALSE(ProfileManager::GetPrimaryUserProfile()->GetPrefs()->GetBoolean(
       arc::prefs::kArcDataRemoveRequested));
 
-  logged_in_user_mixin().WaitForActiveSession();
+  logged_in_user_mixin().GetLoginManagerMixin()->WaitForActiveSession();
 }
 
 IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest, PRE_TransitionTimeout) {
@@ -151,7 +151,7 @@ IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest, TransitionTimeout) {
 
   test::OobeJS().TapOnPath({"supervision-transition-md", "accept-button"});
 
-  logged_in_user_mixin().WaitForActiveSession();
+  logged_in_user_mixin().GetLoginManagerMixin()->WaitForActiveSession();
 }
 
 IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest,
@@ -161,7 +161,7 @@ IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest,
 IN_PROC_BROWSER_TEST_P(SupervisionTransitionScreenTest,
                        SkipTransitionIfArcNeverStarted) {
   // Login should go through without being interrupted.
-  logged_in_user_mixin().WaitForActiveSession();
+  logged_in_user_mixin().GetLoginManagerMixin()->WaitForActiveSession();
 }
 
 INSTANTIATE_TEST_SUITE_P(/* no prefix */,

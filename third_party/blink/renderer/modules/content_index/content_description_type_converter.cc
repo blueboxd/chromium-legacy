@@ -13,6 +13,8 @@ namespace mojo {
 namespace {
 
 blink::mojom::ContentCategory GetContentCategory(const WTF::String& category) {
+  if (category == "")
+    return blink::mojom::ContentCategory::NONE;
   if (category == "homepage")
     return blink::mojom::ContentCategory::HOME_PAGE;
   if (category == "article")
@@ -23,11 +25,13 @@ blink::mojom::ContentCategory GetContentCategory(const WTF::String& category) {
     return blink::mojom::ContentCategory::AUDIO;
 
   NOTREACHED();
-  return blink::mojom::ContentCategory::ARTICLE;
+  return blink::mojom::ContentCategory::NONE;
 }
 
 WTF::String GetContentCategory(blink::mojom::ContentCategory category) {
   switch (category) {
+    case blink::mojom::ContentCategory::NONE:
+      return "";
     case blink::mojom::ContentCategory::HOME_PAGE:
       return "homepage";
     case blink::mojom::ContentCategory::ARTICLE:

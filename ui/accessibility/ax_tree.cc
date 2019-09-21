@@ -1141,6 +1141,15 @@ bool AXTree::ComputePendingChanges(const AXTreeUpdate& update,
 bool AXTree::ComputePendingChangesToNode(const AXNodeData& new_data,
                                          bool is_new_root,
                                          AXTreeUpdateState* update_state) {
+  // Compare every child's index in parent in the update with the existing
+  // index in parent.  If the order has changed, invalidate the cached
+  // unignored index in parent.
+  for (size_t j = 0; j < new_data.child_ids.size(); j++) {
+    AXNode* node = GetFromId(new_data.child_ids[j]);
+    if (node && node->GetIndexInParent() != j)
+      update_state->InvalidateParentNodeUnignoredCacheValues(node->id());
+  }
+
   // If the node does not exist in the tree throw an error unless this
   // is the new root and it can be created.
   if (!update_state->ShouldPendingNodeExistInTree(new_data.id)) {

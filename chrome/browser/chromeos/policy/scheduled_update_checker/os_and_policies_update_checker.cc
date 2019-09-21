@@ -30,7 +30,8 @@ OsAndPoliciesUpdateChecker::~OsAndPoliciesUpdateChecker() {
   ResetState();
 }
 
-void OsAndPoliciesUpdateChecker::Start(UpdateCheckCompletionCallback cb) {
+void OsAndPoliciesUpdateChecker::Start(UpdateCheckCompletionCallback cb,
+                                       base::TimeDelta timeout) {
   // Override any previous calls by resetting state.
   ResetState();
   is_running_ = true;
@@ -38,6 +39,12 @@ void OsAndPoliciesUpdateChecker::Start(UpdateCheckCompletionCallback cb) {
   // Must be set before starting the task runner, as callbacks may be called
   // synchronously.
   update_check_completion_cb_ = std::move(cb);
+
+  timeout_timer_.Start(
+      FROM_HERE, timeout,
+      base::BindOnce(
+          &OsAndPoliciesUpdateChecker::RunCompletionCallbackAndResetState,
+          base::Unretained(this), false /* update_check_result */));
 
   // If there is no network then wait for a network connection before starting
   // an update check. If then network isn't found for a maximum time then report
@@ -103,19 +110,19 @@ void OsAndPoliciesUpdateChecker::OnUpdateCheckFailure() {
 }
 
 void OsAndPoliciesUpdateChecker::RunCompletionCallbackAndResetState(
-    bool result) {
+    bool update_check_result) {
   // Flag must be set because |IsRunning| maybe queried when the callback is
   // called below.
   is_running_ = false;
   if (update_check_completion_cb_)
-    std::move(update_check_completion_cb_).Run(result);
+    std::move(update_check_completion_cb_).Run(update_check_result);
   ResetState();
 }
 
 void OsAndPoliciesUpdateChecker::OnNetworkWaitTimeout() {
   // No network has been detected, no point querying the server for an update
   // check or polivy refresh. Report failure to the caller.
-  RunCompletionCallbackAndResetState(false);
+  RunCompletionCallbackAndResetState(false /* update_check_result */);
 }
 
 void OsAndPoliciesUpdateChecker::StartUpdateCheck() {
@@ -224,6 +231,7 @@ void OsAndPoliciesUpdateChecker::ResetState() {
   ignore_idle_status_ = true;
   is_running_ = false;
   wait_for_network_timer_.Stop();
+  timeout_timer_.Stop();
 }
 
 }  // namespace policy

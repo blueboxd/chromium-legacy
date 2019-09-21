@@ -9,6 +9,7 @@ import org.chromium.base.ImportantFileWriterAndroid;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.BackgroundOnlyAsyncTask;
 import org.chromium.chrome.browser.crypto.CipherFactory;
@@ -57,7 +58,7 @@ public class CookiesFetcher {
      */
     public static void persistCookies() {
         try {
-            nativePersistCookies();
+            CookiesFetcherJni.get().persistCookies();
         } catch (RuntimeException e) {
             e.printStackTrace();
         }
@@ -121,10 +122,11 @@ public class CookiesFetcher {
             protected void onPostExecute(List<CanonicalCookie> cookies) {
                 // We can only access cookies and profiles on the UI thread.
                 for (CanonicalCookie cookie : cookies) {
-                    nativeRestoreCookies(cookie.getName(), cookie.getValue(), cookie.getDomain(),
-                            cookie.getPath(), cookie.getCreationDate(), cookie.getExpirationDate(),
-                            cookie.getLastAccessDate(), cookie.isSecure(), cookie.isHttpOnly(),
-                            cookie.getSameSite(), cookie.getPriority());
+                    CookiesFetcherJni.get().restoreCookies(cookie.getName(), cookie.getValue(),
+                            cookie.getDomain(), cookie.getPath(), cookie.getCreationDate(),
+                            cookie.getExpirationDate(), cookie.getLastAccessDate(),
+                            cookie.isSecure(), cookie.isHttpOnly(), cookie.getSameSite(),
+                            cookie.getPriority());
                 }
             }
         }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
@@ -220,8 +222,11 @@ public class CookiesFetcher {
         return new CanonicalCookie[size];
     }
 
-    private static native void nativePersistCookies();
-    private static native void nativeRestoreCookies(String name, String value, String domain,
-            String path, long creation, long expiration, long lastAccess, boolean secure,
-            boolean httpOnly, int sameSite, int priority);
+    @NativeMethods
+    interface Natives {
+        void persistCookies();
+        void restoreCookies(String name, String value, String domain, String path, long creation,
+                long expiration, long lastAccess, boolean secure, boolean httpOnly, int sameSite,
+                int priority);
+    }
 }

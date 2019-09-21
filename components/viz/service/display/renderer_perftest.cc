@@ -47,7 +47,7 @@
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
@@ -60,6 +60,15 @@ namespace {
 static constexpr FrameSinkId kArbitraryFrameSinkId(3, 3);
 static constexpr gfx::Size kSurfaceSize(1000, 1000);
 static constexpr gfx::Rect kSurfaceRect(kSurfaceSize);
+
+constexpr char kMetricPrefixRenderer[] = "Renderer.";
+constexpr char kMetricFps[] = "frames_per_second";
+
+perf_test::PerfResultReporter SetUpRendererReporter(const std::string& story) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixRenderer, story);
+  reporter.RegisterImportantMetric(kMetricFps, "fps");
+  return reporter;
+}
 
 base::TimeDelta TestTimeLimit() {
   static const char kPerfTestTimeMillis[] = "perf-test-time-ms";
@@ -278,8 +287,11 @@ class RendererPerfTest : public testing::Test {
   }
 
   void TearDown() override {
-    perf_test::PrintResult("Can draw", "", "frames", timer_.LapsPerSecond(),
-                           "runs/s", true);
+    std::string story =
+        renderer_settings_.use_skia_renderer ? "SkiaRenderer_" : "GLRenderer_";
+    story += ::testing::UnitTest::GetInstance()->current_test_info()->name();
+    auto reporter = SetUpRendererReporter(story);
+    reporter.AddResult(kMetricFps, timer_.LapsPerSecond());
 
     auto* histogram = base::StatisticsRecorder::FindHistogram(
         "Compositing.Display.DrawToSwapUs");

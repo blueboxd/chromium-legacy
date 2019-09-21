@@ -15,17 +15,6 @@
 #include "content/public/common/page_state.h"
 #endif
 
-namespace {
-
-bool ShouldClearPageState(const GURL& url) {
-  return url.SchemeIs(content::kChromeUIScheme) &&
-         (url.host_piece() == chrome::kChromeUIHistoryHost ||
-          url.host_piece() == chrome::kChromeUISettingsHost ||
-          url.host_piece() == chrome::kChromeUIHelpHost);
-}
-
-}  // namespace
-
 ChromeSerializedNavigationDriver::~ChromeSerializedNavigationDriver() {}
 
 // static
@@ -43,11 +32,6 @@ void ChromeSerializedNavigationDriver::Sanitize(
                                      navigation->referrer_policy()));
   content::Referrer new_referrer = content::Referrer::SanitizeForRequest(
       navigation->virtual_url(), old_referrer);
-
-  if (ShouldClearPageState(navigation->virtual_url()) &&
-      ShouldClearPageState(navigation->original_request_url())) {
-    navigation->set_encoded_page_state(std::string());
-  }
 
   // No need to compare the policy, as it doesn't change during
   // sanitization. If there has been a change, the referrer needs to be

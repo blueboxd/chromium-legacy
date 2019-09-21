@@ -169,7 +169,7 @@ std::string CastAudioManager::GetSessionId(std::string audio_group_id) {
     return new CastAudioOutputStream(
         this, GetConnector(), params,
         ::media::AudioDeviceDescription::kDefaultDeviceId,
-        GetMixerServiceConnectionFactoryForOutputStream(params));
+        UseMixerOutputStream(params));
   }
 }
 
@@ -192,7 +192,7 @@ std::string CastAudioManager::GetSessionId(std::string audio_group_id) {
         device_id_or_group_id.empty()
             ? ::media::AudioDeviceDescription::kDefaultDeviceId
             : device_id_or_group_id,
-        GetMixerServiceConnectionFactoryForOutputStream(params));
+        UseMixerOutputStream(params));
   }
 }
 
@@ -259,7 +259,7 @@ std::string CastAudioManager::GetSessionId(std::string audio_group_id) {
   mixer_output_stream_.reset(new CastAudioOutputStream(
       this, GetConnector(), params,
       ::media::AudioDeviceDescription::kDefaultDeviceId,
-      GetMixerServiceConnectionFactoryForOutputStream(params)));
+      UseMixerOutputStream(params)));
   return mixer_output_stream_.get();
 }
 
@@ -284,18 +284,14 @@ void CastAudioManager::BindConnectorRequest(
   browser_connector_->BindConnectorRequest(std::move(request));
 }
 
-MixerServiceConnectionFactory*
-CastAudioManager::GetMixerServiceConnectionFactoryForOutputStream(
+bool CastAudioManager::UseMixerOutputStream(
     const ::media::AudioParameters& params) {
   bool use_cma_backend =
       (params.effects() & ::media::AudioParameters::MULTIZONE) ||
       !CastMediaShlib::AddDirectAudioSource ||
       force_use_cma_backend_for_output_;
 
-  if (use_cma_backend)
-    return nullptr;
-  else
-    return &mixer_service_connection_factory_;
+  return !use_cma_backend;
 }
 
 #if defined(OS_ANDROID)

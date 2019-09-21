@@ -96,6 +96,7 @@
 <translation id="1136712381129578788">Il token di sicurezza è stato bloccato perché è stato inserito troppe volte il PIN errato. Per sbloccarlo, rimuovilo e inseriscilo di nuovo.</translation>
 <translation id="1137673463384776352">Apri link in <ph name="APP" /></translation>
 <translation id="1140351953533677694">Accesso ai dispositivi seriali e Bluetooth</translation>
+<translation id="114036956334641753">Audio e sottotitoli</translation>
 <translation id="1140610710803014750">Accedi e attiva la sincronizzazione per trovare i tuoi preferiti su tutti i dispositivi.</translation>
 <translation id="1140746652461896221">Blocco dei contenuti nelle pagine visitate</translation>
 <translation id="1143142264369994168">Firmatario del certificato</translation>
@@ -173,6 +174,7 @@
 <translation id="1235458158152011030">Reti note</translation>
 <translation id="123578888592755962">Disco pieno</translation>
 <translation id="1238191093934674082">VPN aperta</translation>
+<translation id="1239594683407221485">Esplora i contenuti del dispositivo nell'app File.</translation>
 <translation id="124116460088058876">Altre lingue</translation>
 <translation id="1241753985463165747">Lettura e modifica di tutti i dati sul sito web corrente (se richiamato)</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> vuole ripristinare le impostazioni.</translation>
@@ -312,6 +314,7 @@
 <translation id="146220085323579959">Rete Internet scollegata. Controlla la connessione Internet e riprova.</translation>
 <translation id="1463112138205428654">Il file <ph name="FILE_NAME" /> è stato bloccato dalla protezione avanzata.</translation>
 <translation id="1464258312790801189">I tuoi account</translation>
+<translation id="1464781208867302907">Per le preferenze del dispositivo, vai alle Impostazioni.</translation>
 <translation id="1465176863081977902">C&amp;opia l'indirizzo dell'audio</translation>
 <translation id="1465827627707997754">Fetta di pizza</translation>
 <translation id="1468571364034902819">Impossibile utilizzare questo profilo</translation>
@@ -744,6 +747,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2099686503067610784">Eliminare il certificato del server "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="2100273922101894616">Accesso automatico</translation>
 <translation id="2101225219012730419">Versione:</translation>
+<translation id="2111670510994270194">Nuova scheda a destra</translation>
 <translation id="21133533946938348">Blocca scheda</translation>
 <translation id="2113479184312716848">Apri &amp;file...</translation>
 <translation id="2113921862428609753">Accesso alle informazioni sull'autorità</translation>
@@ -1576,7 +1580,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3317459757438853210">Fronte retro</translation>
 <translation id="3317678681329786349">Videocamera e microfono bloccati</translation>
 <translation id="3319048459796106952">Nuova f&amp;inestra di navigazione in incognito</translation>
-<translation id="3323521181261657960">Bonus. Hai più tempo di utilizzo</translation>
+<translation id="3323521181261657960">Premio! Hai più tempo di utilizzo</translation>
 <translation id="3325910708063135066">La videocamera e il microfono sono disattivati nelle Preferenze di Sistema del Mac</translation>
 <translation id="3328489342742826322">Il ripristino da un backup elimina le applicazioni Linux esistenti e i dati nelle tue cartelle di file Linux.</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
@@ -1789,6 +1793,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3630995161997703415">Aggiungi questo sito alla shelf per usarlo in qualsiasi momento</translation>
 <translation id="3636096452488277381">Salve <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - <ph name="TIME" /> rimanenti</translation>
+<translation id="3637561406135221044">Scansione dei file alla ricerca di dati sensibili…</translation>
 <translation id="3637682276779847508">La scheda SIM verrà definitivamente disabilitata se non sei in grado di inserire il codice di sblocco PIN corretto.</translation>
 <translation id="3640214691812501263">Aggiungere "<ph name="EXTENSION_NAME" />" per <ph name="USER_NAME" />?</translation>
 <translation id="3640613767643722554">Insegna all'assistente a riconoscere la tua voce</translation>
@@ -2227,6 +2232,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="425573743389990240">Velocità di esaurimento della batteria in watt (un valore negativo indica che la batteria è in carica)</translation>
 <translation id="4256316378292851214">Sal&amp;va video come...</translation>
 <translation id="4258348331913189841">File system</translation>
+<translation id="4263223596040212967">Controlla il layout della tastiera e riprova.</translation>
 <translation id="4263757076580287579">Registrazione della stampante annullata.</translation>
 <translation id="426564820080660648">Per verificare la disponibilità di aggiornamenti, utilizza una rete Ethernet, Wi-Fi o dati mobili.</translation>
 <translation id="4267953847983678297">Collegati automaticamente alla rete mobile</translation>
@@ -2322,6 +2328,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4416582610654027550">Digita un URL valido</translation>
 <translation id="4419409365248380979">Consenti sempre a <ph name="HOST" /> di impostare cookie</translation>
 <translation id="4419610272958564173">Dispositivo sconosciuto (fornitore: <ph name="VENDOR_ID" />, prodotto: <ph name="PRODUCT_ID" />)</translation>
+<translation id="4421167684395067330">Problemi di connessione. Contatta <ph name="CARRIER_NAME" /> per ricevere assistenza.</translation>
 <translation id="4421932782753506458">Micio</translation>
 <translation id="4423376891418188461">Ripristina impostazioni</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, il tuo amministratore ti chiede di cambiare la password.</translation>
@@ -2997,6 +3004,7 @@ Prima di accedere alla VR, verifica che questo sito sia attendibile.</translatio
 <translation id="5457599981699367932">Esplora come ospite</translation>
 <translation id="5457991019809708398">Attivo, non in roaming</translation>
 <translation id="5458998536542739734">Note sulla schermata di blocco</translation>
+<translation id="546322474339998983">Usato dal browser Chrome e da Avvio app di <ph name="DEVICE_TYPE" /></translation>
 <translation id="5463231940765244860">Inserisci</translation>
 <translation id="5463275305984126951">Indice di <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Menu contenente i Preferiti nascosti</translation>
@@ -3294,6 +3302,7 @@ Prima di accedere alla VR, verifica che questo sito sia attendibile.</translatio
 <translation id="5869948122057593679">Chiudi tutte le finestre</translation>
 <translation id="5870086504539785141">Chiudi menu accessibilità</translation>
 <translation id="5870155679953074650">Errori hardware</translation>
+<translation id="5876851302954717356">Nuova scheda a destra</translation>
 <translation id="5877064549588274448">Canale cambiato. Riavvia il dispositivo per applicare le modifiche.</translation>
 <translation id="5877584842898320529">La stampante selezionata non è disponibile o non è installata correttamente. <ph name="BR" /> Controlla la stampante o prova a selezionarne un'altra.</translation>
 <translation id="5882919346125742463">Reti note</translation>
@@ -4492,6 +4501,7 @@ Prima di accedere alla VR, verifica che questo sito sia attendibile.</translatio
 <translation id="7685049629764448582">Memoria JavaScript</translation>
 <translation id="7685087414635069102">PIN obbligatorio</translation>
 <translation id="7685301384041462804">Prima di accedere alla VR, verifica che questo sito sia attendibile.</translation>
+<translation id="768549422429443215">Aggiungi lingue o cambia l'ordine dell'elenco.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Conferma nuova password</translation>
 <translation id="7690378713476594306">Scegli dall'elenco</translation>
@@ -4553,6 +4563,7 @@ Prima di accedere alla VR, verifica che questo sito sia attendibile.</translatio
 <translation id="7773726648746946405">Session storage</translation>
 <translation id="7774365994322694683">Uccellino</translation>
 <translation id="7776701556330691704">Nessuna voce trovata</translation>
+<translation id="7780252971640011240">Problemi di connessione. Contatta il tuo operatore per ricevere assistenza.</translation>
 <translation id="7781335840981796660">Tutti gli account utente e i dati locali verranno rimossi.</translation>
 <translation id="7782102568078991263">Nessun altro suggerimento da Google</translation>
 <translation id="7782717250816686129">Archivia i dati persistenti nella schermata di accesso e inserisci le credenziali nella sessione.</translation>

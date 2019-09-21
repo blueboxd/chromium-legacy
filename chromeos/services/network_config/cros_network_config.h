@@ -55,6 +55,11 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
   void SetProperties(const std::string& guid,
                      mojom::ConfigPropertiesPtr properties,
                      SetPropertiesCallback callback) override;
+  void ConfigureNetwork(mojom::ConfigPropertiesPtr properties,
+                        bool shared,
+                        ConfigureNetworkCallback callback) override;
+  void ForgetNetwork(const std::string& guid,
+                     ForgetNetworkCallback callback) override;
   void SetNetworkTypeEnabledState(
       mojom::NetworkType type,
       bool enabled,
@@ -92,7 +97,22 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
       const std::string& error_name,
       std::unique_ptr<base::DictionaryValue> error_data);
   void SetPropertiesSuccess(int callback_id);
+  void SetPropertiesConfigureSuccess(int callback_id,
+                                     const std::string& service_path,
+                                     const std::string& guid);
   void SetPropertiesFailure(const std::string& guid,
+                            int callback_id,
+                            const std::string& error_name,
+                            std::unique_ptr<base::DictionaryValue> error_data);
+  void ConfigureNetworkSuccess(int callback_id,
+                               const std::string& service_path,
+                               const std::string& guid);
+  void ConfigureNetworkFailure(
+      int callback_id,
+      const std::string& error_name,
+      std::unique_ptr<base::DictionaryValue> error_data);
+  void ForgetNetworkSuccess(int callback_id);
+  void ForgetNetworkFailure(const std::string& guid,
                             int callback_id,
                             const std::string& error_name,
                             std::unique_ptr<base::DictionaryValue> error_data);
@@ -141,6 +161,8 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
   base::flat_map<int, GetManagedPropertiesCallback>
       get_managed_properties_callbacks_;
   base::flat_map<int, SetPropertiesCallback> set_properties_callbacks_;
+  base::flat_map<int, ConfigureNetworkCallback> configure_network_callbacks_;
+  base::flat_map<int, ForgetNetworkCallback> forget_network_callbacks_;
   base::flat_map<int, SetCellularSimStateCallback>
       set_cellular_sim_state_callbacks_;
   base::flat_map<int, SelectCellularMobileNetworkCallback>

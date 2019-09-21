@@ -42,7 +42,6 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_mode_idle_app_name_notification.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
-#include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/crostini/crostini_unsupported_action_notifier.h"
 #include "chrome/browser/chromeos/crostini/crosvm_metrics.h"
@@ -121,6 +120,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
+#include "chrome/browser/ui/ash/assistant/assistant_state_client.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_manager.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector_chromeos.h"
@@ -636,14 +636,13 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   MagnificationManager::Initialize();
 
   // Requires UserManager.
-  arc_voice_interaction_controller_client_ =
-      std::make_unique<arc::VoiceInteractionControllerClient>();
+  assistant_state_client_ = std::make_unique<AssistantStateClient>();
 
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
   // Assistant has to be initialized before
   // ChromeBrowserMainExtraPartsAsh::session_controller_client_ to avoid race of
   // SessionChanged event and assistant_client initialization. It must come
-  // after VoiceInteractionControllerClient.
+  // after AssistantStateClient.
   assistant_client_ = std::make_unique<AssistantClient>();
 #endif
 
@@ -970,7 +969,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   assistant_client_.reset();
 #endif
 
-  arc_voice_interaction_controller_client_.reset();
+  assistant_state_client_.reset();
 
   // Unregister CrosSettings observers before CrosSettings is destroyed.
   shutdown_policy_forwarder_.reset();

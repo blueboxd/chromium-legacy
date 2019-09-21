@@ -267,7 +267,7 @@ class InstallManagerBookmarkAppTest : public ExtensionServiceTestBase {
 
     run_loop.Run();
 
-    const Extension* extension = service_->GetInstalledExtension(app_id);
+    const Extension* extension = registry()->GetInstalledExtension(app_id);
     DCHECK(extension);
     return extension;
   }
@@ -292,7 +292,7 @@ class InstallManagerBookmarkAppTest : public ExtensionServiceTestBase {
 
     run_loop.Run();
 
-    const Extension* extension = service_->GetInstalledExtension(app_id);
+    const Extension* extension = registry()->GetInstalledExtension(app_id);
     DCHECK(extension);
     return extension;
   }
@@ -608,7 +608,7 @@ TEST_F(InstallManagerBookmarkAppTest, CreateWebAppFromInfo) {
 
   run_loop.Run();
 
-  const Extension* extension = service_->GetInstalledExtension(app_id);
+  const Extension* extension = registry()->GetInstalledExtension(app_id);
   ASSERT_TRUE(extension);
 
   EXPECT_EQ(1u, registry()->enabled_extensions().size());

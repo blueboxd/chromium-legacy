@@ -514,8 +514,7 @@ void OnDNRActionMatched(
           ->ruleset_manager()
           ->action_tracker();
 
-  DCHECK(action.extension_id.has_value());
-  action_tracker.OnRuleMatched(action.extension_id.value(), tab_id);
+  action_tracker.OnRuleMatched(action.extension_id, tab_id);
 }
 
 // Helper to remove request headers based on a matched DNR action. Returns
@@ -1044,7 +1043,7 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
   DCHECK(should_collapse_initiator);
 
   if (ShouldHideEvent(browser_context, *request)) {
-    request->dnr_actions.emplace_back(Action::Type::NONE);
+    request->dnr_actions = std::vector<Action>();
     return net::OK;
   }
 
@@ -1101,9 +1100,6 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
           ->EvaluateRequest(*request, is_incognito_context);
   for (const auto& action : actions) {
     switch (action.type) {
-      case Action::Type::NONE:
-        DCHECK_EQ(1u, actions.size());
-        break;
       case Action::Type::BLOCK:
         ClearPendingCallbacks(*request);
         DCHECK_EQ(1u, actions.size());
@@ -1126,8 +1122,8 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
         // Unlike other actions, allow web request extensions to intercept the
         // request here. The headers will be removed during subsequent request
         // stages.
-        DCHECK(std::all_of(request->dnr_actions.begin(),
-                           request->dnr_actions.end(), [](const auto& action) {
+        DCHECK(std::all_of(request->dnr_actions->begin(),
+                           request->dnr_actions->end(), [](const auto& action) {
                              return action.type == Action::Type::REMOVE_HEADERS;
                            }));
         break;
@@ -1163,10 +1159,10 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
   // Remove request headers for the Declarative Net Request API. It is given
   // preference over the Web Request API and this also hides the removed headers
   // from extensions using the Web Request API.
-  DCHECK(!request->dnr_actions.empty());
+  DCHECK(request->dnr_actions);
   std::set<std::string> removed_headers;
 
-  for (const auto& action : request->dnr_actions) {
+  for (const auto& action : *request->dnr_actions) {
     bool headers_removed_for_action =
         RemoveRequestHeadersForAction(headers, action, &removed_headers);
 
@@ -1258,9 +1254,10 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
   // Handle header removal by the Declarative Net Request API. We filter these
   // headers so that headers removed by Declarative Net Request API are not
   // visible to web request extensions.
-  DCHECK(!request->dnr_actions.empty());
+  DCHECK(request->dnr_actions);
   bool should_remove_headers =
-      request->dnr_actions[0].type == Action::Type::REMOVE_HEADERS &&
+      !request->dnr_actions->empty() &&
+      (*request->dnr_actions)[0].type == Action::Type::REMOVE_HEADERS &&
       original_response_headers;
 
   scoped_refptr<const net::HttpResponseHeaders> filtered_response_headers;
@@ -1274,7 +1271,7 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
             original_response_headers->raw_headers());
 
     bool headers_filtered = false;
-    for (const auto& action : request->dnr_actions) {
+    for (const auto& action : *request->dnr_actions) {
       bool headers_filtered_for_action = FilterResponseHeaders(
           mutable_response_headers.get(), action.response_headers_to_remove);
 

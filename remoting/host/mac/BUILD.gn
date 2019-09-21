@@ -55,6 +55,15 @@ bundle_data("remoting_host_resources") {
   }
 }
 
+bundle_data("remoting_me2me_script") {
+  sources = [
+    "host_service",
+  ]
+  outputs = [
+    "{{bundle_executable_dir}}/{{source_file_part}}",
+  ]
+}
+
 target("mac_app_bundle", "remoting_me2me_host") {
   extra_configs = [ "//remoting/build/config:version" ]
   info_plist = "remoting_me2me_host-Info.plist"
@@ -91,6 +100,7 @@ target("mac_app_bundle", "remoting_me2me_host") {
   }
   deps += [
     ":remoting_host_resources",
+    ":remoting_me2me_script",
     "//remoting/host:remoting_infoplist_strings",
     "//remoting/resources:copy_locales",
   ]

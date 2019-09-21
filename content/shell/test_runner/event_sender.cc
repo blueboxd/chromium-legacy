@@ -23,6 +23,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/input/web_mouse_wheel_event_traits.h"
+#include "content/renderer/render_widget.h"
 #include "content/shell/test_runner/mock_spell_check.h"
 #include "content/shell/test_runner/test_interfaces.h"
 #include "content/shell/test_runner/web_test_delegate.h"
@@ -1312,6 +1313,11 @@ void EventSender::Reset() {
   is_drag_mode_ = true;
   force_layout_on_events_ = true;
 
+  // Disable the zoom level override. Reset() also happens during creation of
+  // the RenderWidget, which we can detect by checking for the WebWidget.
+  if (web_widget_test_proxy_->GetWebWidget())
+    web_widget_test_proxy_->ResetZoomLevelForTesting();
+
 #if defined(OS_WIN)
   wm_key_down_ = WM_KEYDOWN;
   wm_key_up_ = WM_KEYUP;
@@ -1811,32 +1817,23 @@ void EventSender::TextZoomOut() {
 }
 
 void EventSender::ZoomPageIn() {
-  const std::vector<WebViewTestProxy*>& window_list =
-      interfaces()->GetWindowList();
-
-  for (size_t i = 0; i < window_list.size(); ++i) {
-    window_list.at(i)->webview()->SetZoomLevel(
-        window_list.at(i)->webview()->ZoomLevel() + 1);
+  for (WebViewTestProxy* view_proxy : interfaces()->GetWindowList()) {
+    view_proxy->GetWidget()->SetZoomLevelForTesting(
+        view_proxy->webview()->ZoomLevel() + 1);
   }
 }
 
 void EventSender::ZoomPageOut() {
-  const std::vector<WebViewTestProxy*>& window_list =
-      interfaces()->GetWindowList();
-
-  for (size_t i = 0; i < window_list.size(); ++i) {
-    window_list.at(i)->webview()->SetZoomLevel(
-        window_list.at(i)->webview()->ZoomLevel() - 1);
+  for (WebViewTestProxy* view_proxy : interfaces()->GetWindowList()) {
+    view_proxy->GetWidget()->SetZoomLevelForTesting(
+        view_proxy->webview()->ZoomLevel() - 1);
   }
 }
 
 void EventSender::SetPageZoomFactor(double zoom_factor) {
-  const std::vector<WebViewTestProxy*>& window_list =
-      interfaces()->GetWindowList();
-
-  for (size_t i = 0; i < window_list.size(); ++i) {
-    window_list.at(i)->webview()->SetZoomLevel(std::log(zoom_factor) /
-                                               std::log(1.2));
+  for (WebViewTestProxy* view_proxy : interfaces()->GetWindowList()) {
+    view_proxy->GetWidget()->SetZoomLevelForTesting(std::log(zoom_factor) /
+                                                    std::log(1.2));
   }
 }
 

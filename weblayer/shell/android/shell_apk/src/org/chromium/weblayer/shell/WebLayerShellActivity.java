@@ -16,9 +16,12 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
@@ -38,6 +41,7 @@ public class WebLayerShellActivity extends FragmentActivity {
     private BrowserFragmentImpl mBrowserFragment;
     private BrowserController mBrowserController;
     private EditText mUrlView;
+    private ProgressBar mLoadProgressBar;
     private View mMainView;
 
     public static class ShellFragment extends Fragment {
@@ -76,6 +80,7 @@ public class WebLayerShellActivity extends FragmentActivity {
         setContentView(mainView);
 
         mUrlView = new EditText(this);
+        mUrlView.setId(View.generateViewId());
         mUrlView.setSelectAllOnFocus(true);
         mUrlView.setInputType(InputType.TYPE_TEXT_VARIATION_URI);
         mUrlView.setImeOptions(EditorInfo.IME_ACTION_GO);
@@ -95,6 +100,23 @@ public class WebLayerShellActivity extends FragmentActivity {
             }
         });
 
+        mLoadProgressBar = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+        mLoadProgressBar.setIndeterminate(false);
+        mLoadProgressBar.setMax(100);
+        mLoadProgressBar.setVisibility(View.INVISIBLE);
+
+        // The progress bar sits above the URL bar in Z order and at its bottom in Y.
+        RelativeLayout topContentsContainer = new RelativeLayout(this);
+        topContentsContainer.addView(mUrlView,
+                new RelativeLayout.LayoutParams(
+                        LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+
+        RelativeLayout.LayoutParams progressLayoutParams = new RelativeLayout.LayoutParams(
+                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+        progressLayoutParams.addRule(RelativeLayout.ALIGN_BOTTOM, mUrlView.getId());
+        progressLayoutParams.setMargins(0, 0, 0, -10);
+        topContentsContainer.addView(mLoadProgressBar, progressLayoutParams);
+
         mProfile = WebLayer.getInstance().createProfile(null);
         mBrowserFragment = mProfile.createBrowserFragment(this);
         mBrowserController = mBrowserFragment.getBrowserController();
@@ -103,7 +125,7 @@ public class WebLayerShellActivity extends FragmentActivity {
         transaction.add(viewId, new ShellFragment(mBrowserFragment));
         transaction.commit();
 
-        mBrowserFragment.setTopView(mUrlView);
+        mBrowserFragment.setTopView(topContentsContainer);
 
         String startupUrl = getUrlFromIntent(getIntent());
         if (TextUtils.isEmpty(startupUrl)) {
@@ -114,6 +136,17 @@ public class WebLayerShellActivity extends FragmentActivity {
             @Override
             public void displayURLChanged(Uri uri) {
                 mUrlView.setText(uri.toString());
+            }
+
+            @Override
+            public void loadingStateChanged(boolean isLoading, boolean toDifferentDocument) {
+                mLoadProgressBar.setVisibility(
+                        isLoading && toDifferentDocument ? View.VISIBLE : View.INVISIBLE);
+            }
+
+            @Override
+            public void loadProgressChanged(double progress) {
+                mLoadProgressBar.setProgress((int) Math.round(100 * progress));
             }
         });
     }

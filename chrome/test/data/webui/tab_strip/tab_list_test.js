@@ -219,64 +219,6 @@ suite('TabList', () => {
     assertEquals(unpinnedTabElements[0].tab.id, tabToPin.id);
   });
 
-  test('updates [empty] attribute on container for pinned tabs', async () => {
-    assertTrue(tabList.shadowRoot.querySelector('#pinnedTabsContainer')
-                   .hasAttribute('empty'));
-    const tabToPin = currentWindow.tabs[1];
-    const changeInfo = {index: 0, pinned: true};
-    const updatedTab = Object.assign({}, tabToPin, changeInfo);
-    callbackRouter.onUpdated.dispatchEvent(tabToPin.id, changeInfo, updatedTab);
-    assertFalse(tabList.shadowRoot.querySelector('#pinnedTabsContainer')
-                    .hasAttribute('empty'));
-
-    // Remove the pinned tab
-    callbackRouter.onRemoved.dispatchEvent(
-        tabToPin.id, {windowId: currentWindow.id});
-    await tabList.animationPromises;
-    assertTrue(tabList.shadowRoot.querySelector('#pinnedTabsContainer')
-                   .hasAttribute('empty'));
-  });
-
-  test('shows and hides the ghost pinned tabs based on pinned tabs', () => {
-    const ghostPinnedTabs =
-        tabList.shadowRoot.querySelectorAll('.ghost-pinned-tab');
-    assertEquals(3, ghostPinnedTabs.length);
-
-    // all are hidden by default when there are no pinned tabs
-    assertEquals('none', window.getComputedStyle(ghostPinnedTabs[0]).display);
-    assertEquals('none', window.getComputedStyle(ghostPinnedTabs[1]).display);
-    assertEquals('none', window.getComputedStyle(ghostPinnedTabs[2]).display);
-
-    // all are visible because 1 pinned tabs leaves room for 3 placeholders
-    pinTabAt(currentWindow.tabs[0], 0);
-    assertEquals('block', window.getComputedStyle(ghostPinnedTabs[0]).display);
-    assertEquals('block', window.getComputedStyle(ghostPinnedTabs[1]).display);
-    assertEquals('block', window.getComputedStyle(ghostPinnedTabs[2]).display);
-
-    // only 2 are visible because 2 pinned tabs leaves room for 2 placeholders
-    pinTabAt(currentWindow.tabs[1], 1);
-    assertEquals('block', window.getComputedStyle(ghostPinnedTabs[0]).display);
-    assertEquals('block', window.getComputedStyle(ghostPinnedTabs[1]).display);
-    assertEquals('none', window.getComputedStyle(ghostPinnedTabs[2]).display);
-
-    // only 2 are visible because 3 pinned tabs leaves room for 1 placeholders
-    pinTabAt(currentWindow.tabs[2], 1);
-    assertEquals('block', window.getComputedStyle(ghostPinnedTabs[0]).display);
-    assertEquals('none', window.getComputedStyle(ghostPinnedTabs[1]).display);
-    assertEquals('none', window.getComputedStyle(ghostPinnedTabs[2]).display);
-
-    // all are hidden because 4 pinned tabs means no room for placeholders
-    callbackRouter.onCreated.dispatchEvent({
-      index: 3,
-      pinned: true,
-      title: 'New pinned tab',
-      windowId: currentWindow.id,
-    });
-    assertEquals('none', window.getComputedStyle(ghostPinnedTabs[0]).display);
-    assertEquals('none', window.getComputedStyle(ghostPinnedTabs[1]).display);
-    assertEquals('none', window.getComputedStyle(ghostPinnedTabs[2]).display);
-  });
-
   test('moves tab elements when tabs move', () => {
     const tabElementsBeforeMove = getUnpinnedTabs();
     const tabToMove = currentWindow.tabs[0];
@@ -331,6 +273,65 @@ suite('TabList', () => {
     await tabList.animationPromises;
     assertEquals(fakeScroller.scrollLeft, activeTab.offsetLeft - scrollPadding);
   });
+
+  test('attaching a tab creates a new tab element', async () => {
+    const attachedTab = {
+      index: 2,
+      id: 9001,
+      title: 'My new tab',
+      windowId: currentWindow.id,
+    };
+    testTabsApiProxy.setTab(attachedTab);
+    callbackRouter.onAttached.dispatchEvent(attachedTab.id, {
+      newPosition: attachedTab.index,
+      newWindowId: attachedTab.windowId,
+    });
+
+    const tabId = await testTabsApiProxy.whenCalled('getTab');
+    assertEquals(tabId, attachedTab.id);
+    assertEquals(getUnpinnedTabs().length, currentWindow.tabs.length + 1);
+    assertEquals(getUnpinnedTabs()[attachedTab.index].tab, attachedTab);
+  });
+
+  test('detaching a tab removes the tab element', () => {
+    const detachedTab = currentWindow.tabs[1];
+    callbackRouter.onDetached.dispatchEvent(detachedTab.id, {
+      oldPosition: 1,
+      oldWindowId: currentWindow.id,
+    });
+    assertEquals(getUnpinnedTabs().length, currentWindow.tabs.length - 1);
+  });
+
+  test(
+      'respects the last attached/detached event when multiple events are ' +
+          'dispatched for the same tab',
+      async () => {
+        const attachedTab = {
+          index: 2,
+          id: 9001,
+          title: 'My new tab',
+          windowId: currentWindow.id,
+        };
+        testTabsApiProxy.setTab(attachedTab);
+        callbackRouter.onAttached.dispatchEvent(attachedTab.id, {
+          newPosition: attachedTab.index,
+          newWindowId: attachedTab.windowId,
+        });
+        callbackRouter.onDetached.dispatchEvent(attachedTab.id, {
+          oldPosition: attachedTab.index,
+          oldWindowId: attachedTab.windowId,
+        });
+        callbackRouter.onAttached.dispatchEvent(attachedTab.id, {
+          newPosition: attachedTab.index,
+          newWindowId: attachedTab.windowId,
+        });
+        callbackRouter.onDetached.dispatchEvent(attachedTab.id, {
+          oldPosition: attachedTab.index,
+          oldWindowId: attachedTab.windowId,
+        });
+        await testTabsApiProxy.whenCalled('getTab');
+        assertEquals(getUnpinnedTabs().length, currentWindow.tabs.length);
+      });
 
   test('dragstart sets a drag image offset by the event coordinates', () => {
     const draggedTab = getUnpinnedTabs()[0];

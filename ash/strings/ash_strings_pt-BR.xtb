@@ -41,6 +41,7 @@
 <translation id="1460620680449458626">O som está desativado.</translation>
 <translation id="1467432559032391204">Para a esquerda</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
+<translation id="1516740043221086139">O "Não perturbe" está ativado.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Mostrar configurações de notificação. As notificações estão desativadas para um app}one{Mostrar configurações de notificação. As notificações estão desativadas para # app}other{Mostrar configurações de notificação. As notificações estão desativadas para # apps}}</translation>
 <translation id="1525508553941733066">DISPENSAR</translation>
 <translation id="1537254971476575106">Lupa de tela cheia</translation>
@@ -255,6 +256,7 @@
 <translation id="4585337515783392668">Parar de transmitir para um destinatário desconhecido</translation>
 <translation id="4628757576491864469">Dispositivos</translation>
 <translation id="4659419629803378708">ChromeVox ativado</translation>
+<translation id="4665114317261903604">Alternar "Não perturbe". <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Desbloquear dispositivo usando o código de pai/mãe</translation>
 <translation id="4731797938093519117">Acesso de pai/mãe</translation>
 <translation id="4734965478015604180">Horizontal</translation>
@@ -354,6 +356,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6254629735336163724">Bloqueado na horizontal</translation>
 <translation id="6259254695169772643">Use a stylus para selecionar</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Ativando...</translation>
+<translation id="6283712521836204486">O "Não perturbe" está desativado.</translation>
 <translation id="6284232397434400372">Resolução alterada</translation>
 <translation id="6297287540776456956">Use a stylus para selecionar uma região</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> foi substituída por <ph name="ROTATION" /></translation>

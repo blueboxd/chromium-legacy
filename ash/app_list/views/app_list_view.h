@@ -543,6 +543,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Whether the on-screen keyboard is shown.
   bool onscreen_keyboard_shown_ = false;
 
+  // Whether the app list has been translated up to ensure app list folder
+  // view header is visible when onscreen keyboard is shown.
+  bool offset_to_show_folder_with_onscreen_keyboard_ = false;
+
   // View used to announce:
   // 1. state transition for peeking and fullscreen
   // 2. folder opening and closing.

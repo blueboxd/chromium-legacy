@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.profiles;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.browser.cookies.CookiesFetcher;
 import org.chromium.content_public.browser.BrowserStartupController;
@@ -22,7 +23,7 @@ public class Profile {
 
     private Profile(long nativeProfileAndroid) {
         mNativeProfileAndroid = nativeProfileAndroid;
-        mIsOffTheRecord = nativeIsOffTheRecord(mNativeProfileAndroid);
+        mIsOffTheRecord = ProfileJni.get().isOffTheRecord(mNativeProfileAndroid, Profile.this);
     }
 
     public static Profile getLastUsedProfile() {
@@ -31,7 +32,7 @@ public class Profile {
                         .isFullBrowserStarted()) {
             throw new IllegalStateException("Browser hasn't finished initialization yet!");
         }
-        return (Profile) nativeGetLastUsedProfile();
+        return (Profile) ProfileJni.get().getLastUsedProfile();
     }
 
     /**
@@ -40,23 +41,24 @@ public class Profile {
      * this call.
      */
     public void destroyWhenAppropriate() {
-        nativeDestroyWhenAppropriate(mNativeProfileAndroid);
+        ProfileJni.get().destroyWhenAppropriate(mNativeProfileAndroid, Profile.this);
     }
 
     public Profile getOriginalProfile() {
-        return (Profile) nativeGetOriginalProfile(mNativeProfileAndroid);
+        return (Profile) ProfileJni.get().getOriginalProfile(mNativeProfileAndroid, Profile.this);
     }
 
     public Profile getOffTheRecordProfile() {
-        return (Profile) nativeGetOffTheRecordProfile(mNativeProfileAndroid);
+        return (Profile) ProfileJni.get().getOffTheRecordProfile(
+                mNativeProfileAndroid, Profile.this);
     }
 
     public boolean hasOffTheRecordProfile() {
-        return nativeHasOffTheRecordProfile(mNativeProfileAndroid);
+        return ProfileJni.get().hasOffTheRecordProfile(mNativeProfileAndroid, Profile.this);
     }
 
     public ProfileKey getProfileKey() {
-        return (ProfileKey) nativeGetProfileKey(mNativeProfileAndroid);
+        return (ProfileKey) ProfileJni.get().getProfileKey(mNativeProfileAndroid, Profile.this);
     }
 
     public boolean isOffTheRecord() {
@@ -67,14 +69,14 @@ public class Profile {
      * @return Whether the profile is signed in to a child account.
      */
     public boolean isChild() {
-        return nativeIsChild(mNativeProfileAndroid);
+        return ProfileJni.get().isChild(mNativeProfileAndroid, Profile.this);
     }
 
     /**
      * Wipes all data for this profile.
      */
     public void wipe() {
-        nativeWipe(mNativeProfileAndroid);
+        ProfileJni.get().wipe(mNativeProfileAndroid, Profile.this);
     }
 
     /**
@@ -104,13 +106,16 @@ public class Profile {
         return mNativeProfileAndroid;
     }
 
-    private static native Object nativeGetLastUsedProfile();
-    private native void nativeDestroyWhenAppropriate(long nativeProfileAndroid);
-    private native Object nativeGetOriginalProfile(long nativeProfileAndroid);
-    private native Object nativeGetOffTheRecordProfile(long nativeProfileAndroid);
-    private native boolean nativeHasOffTheRecordProfile(long nativeProfileAndroid);
-    private native boolean nativeIsOffTheRecord(long nativeProfileAndroid);
-    private native boolean nativeIsChild(long nativeProfileAndroid);
-    private native void nativeWipe(long nativeProfileAndroid);
-    private native Object nativeGetProfileKey(long nativeProfileAndroid);
+    @NativeMethods
+    interface Natives {
+        Object getLastUsedProfile();
+        void destroyWhenAppropriate(long nativeProfileAndroid, Profile caller);
+        Object getOriginalProfile(long nativeProfileAndroid, Profile caller);
+        Object getOffTheRecordProfile(long nativeProfileAndroid, Profile caller);
+        boolean hasOffTheRecordProfile(long nativeProfileAndroid, Profile caller);
+        boolean isOffTheRecord(long nativeProfileAndroid, Profile caller);
+        boolean isChild(long nativeProfileAndroid, Profile caller);
+        void wipe(long nativeProfileAndroid, Profile caller);
+        Object getProfileKey(long nativeProfileAndroid, Profile caller);
+    }
 }

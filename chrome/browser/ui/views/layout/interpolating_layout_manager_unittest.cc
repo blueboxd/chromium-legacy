@@ -46,8 +46,8 @@ class TestLayout : public LayoutManagerBase {
   mutable int num_layouts_generated_ = 0;
 };
 
-void CompareProposedLayouts(const LayoutManagerBase::ProposedLayout& left,
-                            const LayoutManagerBase::ProposedLayout& right) {
+void CompareProposedLayouts(const ProposedLayout& left,
+                            const ProposedLayout& right) {
   EXPECT_EQ(left.host_size, right.host_size);
   EXPECT_EQ(left.child_layouts.size(), right.child_layouts.size());
   for (auto left_it = left.child_layouts.begin(),
@@ -284,9 +284,9 @@ TEST_F(InterpolatingLayoutManagerTest, GetProposedLayout) {
   constexpr gfx::Size kLargeSize{11, 10};
   constexpr gfx::Size kOneThirdSize{7, 10};
   constexpr gfx::Size kOneHalfSize{8, 10};
-  const LayoutManagerBase::ProposedLayout expected_default =
+  const ProposedLayout expected_default =
       first_layout->GetProposedLayout(kSmallSize);
-  const LayoutManagerBase::ProposedLayout expected_other =
+  const ProposedLayout expected_other =
       second_layout->GetProposedLayout(kLargeSize);
 
   CompareProposedLayouts(expected_default,
@@ -294,8 +294,7 @@ TEST_F(InterpolatingLayoutManagerTest, GetProposedLayout) {
   CompareProposedLayouts(expected_other,
                          layout_manager()->GetProposedLayout(kLargeSize));
 
-  LayoutManagerBase::ProposedLayout actual =
-      layout_manager()->GetProposedLayout(kOneThirdSize);
+  ProposedLayout actual = layout_manager()->GetProposedLayout(kOneThirdSize);
   EXPECT_EQ(gfx::Tween::SizeValueBetween(0.3333, expected_default.host_size,
                                          expected_other.host_size),
             actual.host_size);

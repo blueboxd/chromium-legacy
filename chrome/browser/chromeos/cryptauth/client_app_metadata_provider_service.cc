@@ -123,8 +123,7 @@ ClientAppMetadataProviderService::ClientAppMetadataProviderService(
     instance_id::InstanceIDProfileService* instance_id_profile_service)
     : pref_service_(pref_service),
       network_state_handler_(network_state_handler),
-      instance_id_(instance_id_profile_service->driver()->GetInstanceID(
-          device_sync::kCryptAuthGcmAppId)) {}
+      instance_id_profile_service_(instance_id_profile_service) {}
 
 ClientAppMetadataProviderService::~ClientAppMetadataProviderService() {
   // If there are any pending callbacks, invoke them before this object is
@@ -150,10 +149,10 @@ void ClientAppMetadataProviderService::GetClientAppMetadata(
     return;
   }
 
-  // If |instance_id_| is null, Shutdown() has been called and there should be
-  // no further attempt to calculate the ClientAppMetadata, since this could
-  // result in touching deleted memory.
-  if (!instance_id_) {
+  // If |instance_id_profile_service_| is null, Shutdown() has been called and
+  // there should be no further attempt to calculate the ClientAppMetadata,
+  // since this could result in touching deleted memory.
+  if (!instance_id_profile_service_) {
     InvokePendingCallbacks();
     return;
   }
@@ -173,8 +172,9 @@ void ClientAppMetadataProviderService::GetClientAppMetadata(
 }
 
 void ClientAppMetadataProviderService::Shutdown() {
-  // Null out |instance_id_| to signify that it should no longer be used.
-  instance_id_ = nullptr;
+  // Null out |instance_id_profile_service_| to signify that it should no longer
+  // be used.
+  instance_id_profile_service_ = nullptr;
 
   // If the ClientAppMetadata is currently being computed and this class is
   // waiting for an asynchronous operation to return, stop the computation now
@@ -195,7 +195,7 @@ void ClientAppMetadataProviderService::OnBluetoothAdapterFetched(
 void ClientAppMetadataProviderService::OnHardwareInfoFetched(
     scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
     base::SysInfo::HardwareInfo hardware_info) {
-  instance_id_->GetID(base::Bind(
+  GetInstanceId()->GetID(base::Bind(
       &ClientAppMetadataProviderService::OnInstanceIdFetched,
       weak_ptr_factory_.GetWeakPtr(), bluetooth_adapter, hardware_info));
 }
@@ -205,7 +205,7 @@ void ClientAppMetadataProviderService::OnInstanceIdFetched(
     const base::SysInfo::HardwareInfo& hardware_info,
     const std::string& instance_id) {
   DCHECK(!instance_id.empty());
-  instance_id_->GetToken(
+  GetInstanceId()->GetToken(
       device_sync::
           kCryptAuthV2EnrollmentAuthorizedEntity /* authorized_entity */,
       kInstanceIdScope /* scope */,
@@ -305,6 +305,13 @@ void ClientAppMetadataProviderService::OnInstanceIdTokenFetched(
 
   client_app_metadata_ = metadata;
   InvokePendingCallbacks();
+}
+
+instance_id::InstanceID* ClientAppMetadataProviderService::GetInstanceId() {
+  DCHECK(instance_id_profile_service_);
+  DCHECK(instance_id_profile_service_->driver());
+  return instance_id_profile_service_->driver()->GetInstanceID(
+      device_sync::kCryptAuthGcmAppId);
 }
 
 int64_t ClientAppMetadataProviderService::SoftwareVersionCodeAsInt64() {

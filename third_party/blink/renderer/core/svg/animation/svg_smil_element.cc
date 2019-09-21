@@ -809,30 +809,27 @@ SMILTime SVGSMILElement::ResolveActiveEnd(SMILTime resolved_begin,
 SMILInterval SVGSMILElement::ResolveInterval(
     IntervalSelector interval_selector) const {
   bool first = interval_selector == kFirstInterval;
-  // See the pseudocode in http://www.w3.org/TR/SMIL3/smil-timing.html#q90.
+  // Simplified version of the pseudocode in
+  // http://www.w3.org/TR/SMIL3/smil-timing.html#q90.
   SMILTime begin_after = first ? SMILTime::Earliest() : interval_.end;
-  SMILTime last_interval_temp_end = SMILTime::Indefinite();
   while (true) {
-    bool equals_minimum_ok = !first || interval_.end > interval_.begin;
-    SMILTime temp_begin =
-        FindInstanceTime(kBegin, begin_after, equals_minimum_ok);
+    SMILTime temp_begin = FindInstanceTime(kBegin, begin_after, true);
     if (temp_begin.IsUnresolved())
       break;
-    SMILTime temp_end = FindInstanceTime(kEnd, temp_begin, true);
-    if (!end_times_.IsEmpty()) {
-      if ((first && temp_begin == temp_end &&
-           temp_end == last_interval_temp_end) ||
-          (!first && temp_end == interval_.end))
-        temp_end = FindInstanceTime(kEnd, temp_begin, false);
-      if (temp_end.IsUnresolved() && !has_end_event_conditions_)
+    SMILTime temp_end = FindInstanceTime(kEnd, temp_begin, false);
+    if (temp_end.IsUnresolved()) {
+      // If we have no pending end conditions, don't generate a new interval.
+      if (!end_times_.IsEmpty() && !has_end_event_conditions_)
         break;
     }
     temp_end = ResolveActiveEnd(temp_begin, temp_end);
-    if (!first || temp_end > SMILTime() || (!temp_begin && !temp_end))
+    // If this is the first interval being resolved, don't allow it to end
+    // before the origin of the timeline.
+    // TODO(fs): Don't resolve intervals that end "in the past".
+    if (!first || temp_end > SMILTime())
       return SMILInterval(temp_begin, temp_end);
 
     begin_after = temp_end;
-    last_interval_temp_end = temp_end;
   }
   return SMILInterval(SMILTime::Unresolved(), SMILTime::Unresolved());
 }

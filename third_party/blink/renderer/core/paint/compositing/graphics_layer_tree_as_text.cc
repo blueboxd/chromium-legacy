@@ -101,9 +101,6 @@ std::unique_ptr<JSONObject> GraphicsLayerAsJSON(
                                                        layer->GetBlendMode()));
   }
 
-  if (layer->IsRootForIsolatedGroup())
-    json->SetBoolean("isolate", true);
-
   if (layer->ContentsOpaque())
     json->SetBoolean("contentsOpaque", true);
 

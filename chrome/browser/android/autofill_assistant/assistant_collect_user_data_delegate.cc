@@ -129,6 +129,32 @@ void AssistantCollectUserDataDelegate::OnLoginChoiceChanged(
   ui_controller_->OnLoginChoiceChanged(identifier);
 }
 
+void AssistantCollectUserDataDelegate::OnDateTimeRangeStartChanged(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    jint year,
+    jint month,
+    jint day,
+    jint hour,
+    jint minute,
+    jint second) {
+  ui_controller_->OnDateTimeRangeStartChanged(year, month, day, hour, minute,
+                                              second);
+}
+
+void AssistantCollectUserDataDelegate::OnDateTimeRangeEndChanged(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    jint year,
+    jint month,
+    jint day,
+    jint hour,
+    jint minute,
+    jint second) {
+  ui_controller_->OnDateTimeRangeEndChanged(year, month, day, hour, minute,
+                                            second);
+}
+
 base::android::ScopedJavaGlobalRef<jobject>
 AssistantCollectUserDataDelegate::GetJavaObject() {
   return java_assistant_collect_user_data_delegate_;

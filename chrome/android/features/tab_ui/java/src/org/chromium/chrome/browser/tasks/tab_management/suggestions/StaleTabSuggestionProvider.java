@@ -25,8 +25,8 @@ public class StaleTabSuggestionProvider implements TabSuggestionProvider {
         }
 
         long staleThreshold = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                ChromeFeatureList.CLOSE_TAB_SUGGESTIONS_STALE,
-                "close_tab_suggestions_stale_time_ms", DEFAULT_THRESHOLD);
+                ChromeFeatureList.CLOSE_TAB_SUGGESTIONS, "close_tab_suggestions_stale_time_ms",
+                DEFAULT_THRESHOLD);
 
         long now = System.currentTimeMillis();
         List<TabContext.TabInfo> staleTabs = new ArrayList<>();

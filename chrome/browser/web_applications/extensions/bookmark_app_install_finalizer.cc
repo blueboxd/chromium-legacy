@@ -14,7 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/crx_installer.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -179,11 +178,11 @@ void BookmarkAppInstallFinalizer::RevealAppShim(const web_app::AppId& app_id) {
 bool BookmarkAppInstallFinalizer::CanSkipAppUpdateForSync(
     const web_app::AppId& app_id,
     const WebApplicationInfo& web_app_info) const {
-  ExtensionService* extension_service =
-      ExtensionSystem::Get(profile_)->extension_service();
-  DCHECK(extension_service);
+  ExtensionRegistry* extension_registry = ExtensionRegistry::Get(profile_);
+  DCHECK(extension_registry);
 
-  const Extension* extension = extension_service->GetInstalledExtension(app_id);
+  const Extension* extension =
+      extension_registry->GetInstalledExtension(app_id);
   if (!extension)
     return false;
 

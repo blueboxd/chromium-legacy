@@ -55,6 +55,8 @@ struct UserData {
   std::unique_ptr<autofill::AutofillProfile> billing_address;
   std::string login_choice_identifier;
   TermsAndConditionsState terms_and_conditions = NOT_SELECTED;
+  DateTimeProto date_time_range_start;
+  DateTimeProto date_time_range_end;
 };
 
 // Struct for holding the payment request options.
@@ -68,6 +70,7 @@ struct CollectUserDataOptions {
   bool request_shipping = false;
   bool request_payment_method = false;
   bool request_login_choice = false;
+  bool request_date_time_range = false;
 
   bool require_billing_postal_code = false;
   std::string billing_postal_code_missing_text;
@@ -83,6 +86,7 @@ struct CollectUserDataOptions {
   UserActionProto confirm_action;
   std::vector<UserActionProto> additional_actions;
   TermsAndConditionsState initial_terms_and_conditions = NOT_SELECTED;
+  DateTimeRangeProto date_time_range;
 
   base::OnceCallback<void(std::unique_ptr<UserData>)> confirm_callback;
   base::OnceCallback<void(int)> additional_actions_callback;

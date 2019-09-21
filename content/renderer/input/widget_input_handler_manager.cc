@@ -162,7 +162,7 @@ void WidgetInputHandlerManager::InitInputHandler() {
   uses_input_handler_ = true;
   base::OnceClosure init_closure = base::BindOnce(
       &WidgetInputHandlerManager::InitOnInputHandlingThread, this,
-      render_widget_->layer_tree_view()->GetInputHandler(),
+      render_widget_->layer_tree_host()->GetInputHandler(),
       render_widget_->compositor_deps()->IsScrollAnimatorEnabled(),
       sync_compositing);
   InputThreadTaskRunner()->PostTask(FROM_HERE, std::move(init_closure));

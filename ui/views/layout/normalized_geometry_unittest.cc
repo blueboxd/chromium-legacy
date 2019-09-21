@@ -7,7 +7,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace views {
-namespace layout {
 
 TEST(NormalizedRectTest, Inset_NormalizedInsets) {
   NormalizedRect rect(1, 2, 10, 11);
@@ -46,5 +45,4 @@ TEST(NormalizedRectTest, Inset_Negative) {
   EXPECT_EQ(17, rect.size_cross());
 }
 
-}  // namespace layout
 }  // namespace views

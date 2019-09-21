@@ -3074,15 +3074,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6559057113164934677">Jangan izinkan situs apa pun mengakses kamera dan mikrofon</translation>
 <translation id="6561396069801924653">Tampilkan opsi aksesibilitas di menu baki sistem</translation>
 <translation id="6563458316362153786">Aktifkan Transisi Cepat 802.11r</translation>
-<translation id="6565312346072273043">Menyetel status default fitur aksesibilitas keyboard di layar pada layar masuk.
-
-          Jika kebijakan ini disetel ke true, keyboard di layar akan diaktifkan saat layar masuk ditampilkan.
-
-          Jika kebijakan ini disetel ke false, keyboard di layar akan dinonaktifkan saat layar masuk ditampilkan.
-
-          Jika Anda menyetel kebijakan ini, pengguna dapat menggantinya untuk sementara dengan mengaktifkan atau menonaktifkan keyboard di layar. Akan tetapi, pilihan pengguna tidak bersifat tetap dan setelan default akan dipulihkan ketika layar masuk ditampilkan kembali atau pengguna menganggur di layar masuk selama satu menit.
-
-          Jika kebijakan ini tidak disetel, keyboard di layar akan dinonaktifkan ketika layar masuk ditampilkan untuk pertama kali. Pengguna dapat mengaktifkan atau menonaktifkan keyboard di layar kapan saja dan statusnya pada layar masuk bersifat tetap antarpengguna.</translation>
 <translation id="6573305661369899995">Setel sumber eksternal batasan URL</translation>
 <translation id="6583851521569686409">Mengonfigurasi daftar printer.
 

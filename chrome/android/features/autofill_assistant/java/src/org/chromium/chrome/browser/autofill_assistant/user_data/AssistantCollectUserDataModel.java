@@ -104,6 +104,21 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     public static final WritableObjectPropertyKey<String> BILLING_POSTAL_CODE_MISSING_TEXT =
             new WritableObjectPropertyKey<>();
 
+    public static final WritableBooleanPropertyKey REQUEST_DATE_RANGE =
+            new WritableBooleanPropertyKey();
+
+    public static final WritableObjectPropertyKey<AssistantDateChoiceOptions> DATE_RANGE_START =
+            new WritableObjectPropertyKey<>();
+
+    public static final WritableObjectPropertyKey<String> DATE_RANGE_START_LABEL =
+            new WritableObjectPropertyKey<>();
+
+    public static final WritableObjectPropertyKey<AssistantDateChoiceOptions> DATE_RANGE_END =
+            new WritableObjectPropertyKey<>();
+
+    public static final WritableObjectPropertyKey<String> DATE_RANGE_END_LABEL =
+            new WritableObjectPropertyKey<>();
+
     public AssistantCollectUserDataModel() {
         super(DELEGATE, WEB_CONTENTS, VISIBLE, SHIPPING_ADDRESS, PAYMENT_METHOD, CONTACT_DETAILS,
                 LOGIN_SECTION_TITLE, SELECTED_LOGIN, TERMS_STATUS, DEFAULT_EMAIL, REQUEST_NAME,
@@ -111,7 +126,9 @@ public class AssistantCollectUserDataModel extends PropertyModel {
                 ACCEPT_TERMS_AND_CONDITIONS_TEXT, SHOW_TERMS_AS_CHECKBOX, REQUEST_LOGIN_CHOICE,
                 AVAILABLE_PROFILES, AVAILABLE_AUTOFILL_PAYMENT_METHODS,
                 SUPPORTED_BASIC_CARD_NETWORKS, SUPPORTED_PAYMENT_METHODS, AVAILABLE_LOGINS,
-                EXPANDED_SECTION, REQUIRE_BILLING_POSTAL_CODE, BILLING_POSTAL_CODE_MISSING_TEXT);
+                EXPANDED_SECTION, REQUIRE_BILLING_POSTAL_CODE, BILLING_POSTAL_CODE_MISSING_TEXT,
+                REQUEST_DATE_RANGE, DATE_RANGE_START, DATE_RANGE_START_LABEL, DATE_RANGE_END,
+                DATE_RANGE_END_LABEL);
 
         /**
          * Set initial state for basic type properties (others are implicitly null).
@@ -127,6 +144,8 @@ public class AssistantCollectUserDataModel extends PropertyModel {
         set(REQUEST_LOGIN_CHOICE, false);
         set(REQUIRE_BILLING_POSTAL_CODE, false);
         set(DEFAULT_EMAIL, "");
+        set(DATE_RANGE_START_LABEL, "");
+        set(DATE_RANGE_END_LABEL, "");
     }
 
     @CalledByNative
@@ -215,7 +234,7 @@ public class AssistantCollectUserDataModel extends PropertyModel {
         return new ArrayList<>();
     }
 
-    /** Appends a login choice to {@code logins}. */
+    /** Appends a login choice to {@code loginChoices}. */
     @CalledByNative
     private void addLoginChoice(List<AssistantLoginChoice> loginChoices, String identifier,
             String label, int priority) {
@@ -226,5 +245,45 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     @CalledByNative
     private void setLoginChoices(List<AssistantLoginChoice> loginChoices) {
         set(AVAILABLE_LOGINS, loginChoices);
+    }
+
+    @CalledByNative
+    private void setRequestDateRange(boolean requestDateRange) {
+        set(REQUEST_DATE_RANGE, requestDateRange);
+    }
+
+    /** Create an instance of {@code AssistantDateTime}. */
+    @CalledByNative
+    private static AssistantDateTime createAssistantDateTime(
+            int year, int month, int day, int hour, int minute, int second) {
+        return new AssistantDateTime(year, month, day, hour, minute, second);
+    }
+
+    /** Configures the start of the date/time range. */
+    @CalledByNative
+    private void setDateTimeRangeStart(AssistantDateTime initialValue, AssistantDateTime minValue,
+            AssistantDateTime maxValue) {
+        AssistantDateChoiceOptions options =
+                new AssistantDateChoiceOptions(initialValue, minValue, maxValue);
+        set(DATE_RANGE_START, options);
+    }
+
+    /** Configures the end of the date/time range. */
+    @CalledByNative
+    private void setDateTimeRangeEnd(AssistantDateTime initialValue, AssistantDateTime minValue,
+            AssistantDateTime maxValue) {
+        AssistantDateChoiceOptions options =
+                new AssistantDateChoiceOptions(initialValue, minValue, maxValue);
+        set(DATE_RANGE_END, options);
+    }
+
+    @CalledByNative
+    private void setDateTimeRangeStartLabel(String label) {
+        set(DATE_RANGE_START_LABEL, label);
+    }
+
+    @CalledByNative
+    private void setDateTimeRangeEndLabel(String label) {
+        set(DATE_RANGE_END_LABEL, label);
     }
 }

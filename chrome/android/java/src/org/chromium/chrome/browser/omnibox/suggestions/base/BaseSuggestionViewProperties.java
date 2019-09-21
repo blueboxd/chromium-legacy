@@ -8,21 +8,24 @@ import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonPropertie
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewDelegate;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
-import org.chromium.ui.modelutil.PropertyModel.WritableBooleanPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
 /** The base set of properties for most omnibox suggestions. */
 public class BaseSuggestionViewProperties {
-    /** Whether refine icon should be visible. */
-    public static final WritableBooleanPropertyKey REFINE_VISIBLE =
-            new WritableBooleanPropertyKey();
+    /** SuggestionDrawableState to show as a suggestion icon. */
+    public static final WritableObjectPropertyKey<SuggestionDrawableState> ICON =
+            new WritableObjectPropertyKey();
+
+    /** SuggestionDrawableState to show as an action icon. */
+    public static final WritableObjectPropertyKey<SuggestionDrawableState> ACTION_ICON =
+            new WritableObjectPropertyKey();
 
     /** Delegate receiving user events. */
     public static final WritableObjectPropertyKey<SuggestionViewDelegate> SUGGESTION_DELEGATE =
             new WritableObjectPropertyKey<>();
 
     public static final PropertyKey[] ALL_UNIQUE_KEYS =
-            new PropertyKey[] {REFINE_VISIBLE, SUGGESTION_DELEGATE};
+            new PropertyKey[] {ICON, ACTION_ICON, SUGGESTION_DELEGATE};
 
     public static final PropertyKey[] ALL_KEYS =
             PropertyModel.concatKeys(ALL_UNIQUE_KEYS, SuggestionCommonProperties.ALL_KEYS);

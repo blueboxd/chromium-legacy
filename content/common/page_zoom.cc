@@ -8,8 +8,10 @@
 
 namespace content {
 
+// Mirrored in third_party/blink/renderer/core/exported/web_view_impl.cc.
 const double kMinimumZoomFactor = 0.25;
 const double kMaximumZoomFactor = 5.0;
+
 const double kEpsilon = 0.001;
 const double kTextSizeMultiplierRatio = 1.2;
 

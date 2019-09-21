@@ -205,8 +205,6 @@ void DownloadManagerService::Init(JNIEnv* env,
                                   bool is_full_browser_started) {
   java_ref_.Reset(env, obj);
   if (is_full_browser_started) {
-    DownloadStartupUtils::EnsureDownloadSystemInitialized(
-        true /* is_full_browser_started */, false /* is_incognito */);
     OnFullBrowserStarted(env, obj);
   } else {
     // In reduced mode, only non-incognito downloads should be loaded.
@@ -221,10 +219,14 @@ void DownloadManagerService::OnFullBrowserStarted(JNIEnv* env, jobject obj) {
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
                  content::NotificationService::AllSources());
   // Register coordinator for each available profile.
+  DownloadStartupUtils::EnsureDownloadSystemInitialized(
+      true /* is_full_browser_started */, false /* is_incognito */);
   Profile* profile =
       ProfileManager::GetActiveUserProfile()->GetOriginalProfile();
   ResetCoordinatorIfNeeded(profile->GetProfileKey());
   if (profile->HasOffTheRecordProfile()) {
+    DownloadStartupUtils::EnsureDownloadSystemInitialized(
+        true /* is_full_browser_started */, true /* is_incognito */);
     ResetCoordinatorIfNeeded(
         profile->GetOffTheRecordProfile()->GetProfileKey());
   }
@@ -237,6 +239,8 @@ void DownloadManagerService::Observe(
   switch (type) {
     case chrome::NOTIFICATION_PROFILE_CREATED: {
       Profile* profile = content::Source<Profile>(source).ptr();
+      DownloadStartupUtils::EnsureDownloadSystemInitialized(
+          true /* is_full_browser_started */, profile->IsOffTheRecord());
       ResetCoordinatorIfNeeded(profile->GetProfileKey());
     } break;
     default:

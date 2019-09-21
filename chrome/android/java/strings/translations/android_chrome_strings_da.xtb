@@ -66,7 +66,7 @@
 <translation id="1407135791313364759">Åbn alle</translation>
 <translation id="1409426117486808224">Enkel visning af åbne faner</translation>
 <translation id="1409879593029778104">Download af <ph name="FILE_NAME" /> blev forhindret, fordi filen allerede findes.</translation>
-<translation id="1413136574162415971">Google kan tjekke, om dine adgangskoder har været del af et brud på datasikkerheden. Denne funktion aktiveres, når du logger ind med din Google-konto og aktiverer synkronisering.</translation>
+<translation id="1413136574162415971">Google kan tjekke, om dine adgangskoder har været involveret i et brud på datasikkerheden. Denne funktion aktiveres, når du logger ind med din Google-konto og aktiverer synkronisering.</translation>
 <translation id="1414981605391750300">Kontakter Google. Dette kan tage et øjeblik…</translation>
 <translation id="1416550906796893042">Appversion</translation>
 <translation id="1430915738399379752">Udskriv</translation>
@@ -729,6 +729,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6364438453358674297">Vil du fjerne forslaget fra historikken?</translation>
 <translation id="6369229450655021117">Herfra kan du søge på nettet, dele indhold med venner og se åbne sider</translation>
 <translation id="6378173571450987352">Info: Sorteret efter mængden af brugte data</translation>
+<translation id="6381421346744604172">Gør websites mørkere</translation>
 <translation id="6388207532828177975">Ryd og nulstil</translation>
 <translation id="6393863479814692971">Chrome skal have tilladelse til at bruge dit kamera og din mikrofon på dette website.</translation>
 <translation id="6395288395575013217">LINK</translation>
@@ -958,7 +959,7 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="8007176423574883786">Deaktiveret på denne enhed</translation>
 <translation id="8013372441983637696">Ryd også dine Chrome-data fra enheden</translation>
 <translation id="8015452622527143194">Nulstil alt på siden til standardstørrelsen</translation>
-<translation id="8015780634880457457">Google kan tjekke, om dine adgangskoder har været del af et brud på datasikkerheden</translation>
+<translation id="8015780634880457457">Google kan tjekke, om dine adgangskoder har været involveret i et brud på datasikkerheden</translation>
 <translation id="802154636333426148">Download mislykkedes</translation>
 <translation id="8026334261755873520">Ryd browserdata</translation>
 <translation id="8035133914807600019">Ny mappe…</translation>
@@ -1091,7 +1092,7 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="8993760627012879038">Åbn en ny fane i inkognitotilstand</translation>
 <translation id="8998729206196772491">Du er ved at logge ind med en konto, der administreres af <ph name="MANAGED_DOMAIN" />, hvilket giver administratoren kontrol over dine Chrome-data. Dine data tilknyttes denne konto permanent. Hvis du logger ud af Chrome, slettes dine data fra denne enhed, men de forbliver gemt på din Google-konto.</translation>
 <translation id="9019902583201351841">Administreret af dine forældre</translation>
-<translation id="9028914725102941583">Aktivér for at synkronisere på flere enheder</translation>
+<translation id="9028914725102941583">Aktivér synkronisering for at dele mellem enheder</translation>
 <translation id="9029323097866369874">Vil du tillade, at <ph name="DOMAIN" /> starter VR?</translation>
 <translation id="9040142327097499898">Notifikationer er tilladt. Placering er deaktiveret for denne enhed.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# video}one{# video}other{# videoer}}</translation>
@@ -1110,6 +1111,7 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="9139068048179869749">Spørg, før websites sender notifikationer (anbefales)</translation>
 <translation id="9139318394846604261">Shopping</translation>
 <translation id="9155898266292537608">Du kan også søge med et hurtigt tryk på et ord</translation>
+<translation id="9169507124922466868">Navigationshistorikken er åbnet halvt</translation>
 <translation id="9188680907066685419">Log ud af den administrerede konto</translation>
 <translation id="9204836675896933765">1 fil tilbage</translation>
 <translation id="9206873250291191720">A</translation>

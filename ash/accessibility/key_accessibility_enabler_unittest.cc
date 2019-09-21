@@ -30,6 +30,7 @@ class KeyAccessibilityEnablerTest : public AshTestBase,
 
   void TearDown() override {
     ui::SetEventTickClockForTesting(nullptr);
+    Shell::Get()->accessibility_controller()->RemoveObserver(this);
     AshTestBase::TearDown();
   }
 

@@ -52,7 +52,7 @@ void DriveFsAuth::GetAccessToken(
   timer_->Start(FROM_HERE, base::TimeDelta::FromSeconds(30),
                 base::BindOnce(&DriveFsAuth::AuthTimeout,
                                weak_ptr_factory_.GetWeakPtr()));
-  GetIdentityAccessor().GetPrimaryAccountWhenAvailable(base::BindOnce(
+  GetIdentityAccessor()->GetPrimaryAccountWhenAvailable(base::BindOnce(
       &DriveFsAuth::AccountReady, weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -63,7 +63,7 @@ void DriveFsAuth::AccountReady(const CoreAccountId& account_id,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   weak_ptr_factory_.InvalidateWeakPtrs();
   timer_->Stop();
-  GetIdentityAccessor().GetAccessToken(
+  GetIdentityAccessor()->GetAccessToken(
       account_id, {"https://www.googleapis.com/auth/drive"},
       kIdentityConsumerId,
       base::BindOnce(&DriveFsAuth::GotChromeAccessToken,
@@ -108,11 +108,13 @@ void DriveFsAuth::AuthTimeout() {
       .Run(mojom::AccessTokenStatus::kAuthError, "");
 }
 
-identity::mojom::IdentityAccessor& DriveFsAuth::GetIdentityAccessor() {
+identity::mojom::IdentityAccessor* DriveFsAuth::GetIdentityAccessor() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!identity_accessor_)
-    delegate_->BindIdentityAccessor(mojo::MakeRequest(&identity_accessor_));
-  return *identity_accessor_;
+  if (!identity_accessor_) {
+    delegate_->BindIdentityAccessor(
+        identity_accessor_.BindNewPipeAndPassReceiver());
+  }
+  return identity_accessor_.get();
 }
 
 }  // namespace drivefs

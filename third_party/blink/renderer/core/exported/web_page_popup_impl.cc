@@ -485,6 +485,8 @@ void WebPagePopupImpl::SetFocus(bool enable) {
 }
 
 WebURL WebPagePopupImpl::GetURLForDebugTrace() {
+  if (!page_)
+    return {};
   WebFrame* main_frame = web_view_->MainFrame();
   if (main_frame->IsWebLocalFrame())
     return main_frame->ToWebLocalFrame()->GetDocument().Url();

@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/extension_with_management_policy_apitest.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
@@ -142,6 +144,55 @@ class CancelLoginDialog : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(CancelLoginDialog);
 };
 
+// Observer that listens for messages from chrome.test.sendMessage to allow them
+// to be used to trigger browser initiated naviagations from the javascript for
+// testing purposes.
+class NavigateTabMessageHandler : public content::NotificationObserver {
+ public:
+  explicit NavigateTabMessageHandler(Profile* profile) : profile_(profile) {
+    registrar_.Add(this, extensions::NOTIFICATION_EXTENSION_TEST_MESSAGE,
+                   content::NotificationService::AllSources());
+  }
+
+  ~NavigateTabMessageHandler() override {}
+
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
+    HandleNavigateTabMessage(type, source, details, profile_);
+  }
+
+ private:
+  void HandleNavigateTabMessage(int type,
+                                const content::NotificationSource& source,
+                                const content::NotificationDetails& details,
+                                Profile* profile) {
+    DCHECK_EQ(NOTIFICATION_EXTENSION_TEST_MESSAGE, type);
+    const auto message =
+        content::Details<std::pair<std::string, bool*>>(details)->first;
+    base::Optional<base::Value> command = base::JSONReader::Read(message);
+    if (command && command->is_dict()) {  // Check the message decoded from JSON
+      base::Value* data = command->FindDictKey("navigate");
+      if (data && data->is_dict()) {
+        int tab_id = *data->FindIntKey("tabId");
+        GURL url = GURL(*data->FindStringKey("url"));
+        ASSERT_TRUE(url.is_valid());
+
+        content::WebContents* contents = nullptr;
+        ExtensionTabUtil::GetTabById(
+            tab_id, profile, profile->HasOffTheRecordProfile(), &contents);
+        ASSERT_NE(contents, nullptr)
+            << "Could not find tab with id: " << tab_id;
+        content::NavigationController::LoadURLParams params(url);
+        contents->GetController().LoadURLWithParams(params);
+      }
+    }
+  }
+
+  content::NotificationRegistrar registrar_;
+  Profile* profile_;
+};
+
 // Sends an XHR request to the provided host, port, and path, and responds when
 // the request was sent.
 const char kPerformXhrJs[] =
@@ -231,6 +282,7 @@ class ExtensionWebRequestApiTest : public ExtensionApiTest {
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
+    navigationHandler_ = std::make_unique<NavigateTabMessageHandler>(profile());
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -275,6 +327,7 @@ class ExtensionWebRequestApiTest : public ExtensionApiTest {
 
  private:
   std::vector<std::unique_ptr<TestExtensionDir>> test_dirs_;
+  std::unique_ptr<NavigateTabMessageHandler> navigationHandler_;
 };
 
 class DevToolsFrontendInWebRequestApiTest : public ExtensionApiTest {
@@ -288,6 +341,8 @@ class DevToolsFrontendInWebRequestApiTest : public ExtensionApiTest {
     url_loader_interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
         base::BindRepeating(&DevToolsFrontendInWebRequestApiTest::OnIntercept,
                             base::Unretained(this), port));
+
+    navigationHandler_ = std::make_unique<NavigateTabMessageHandler>(profile());
   }
 
   void TearDownOnMainThread() override {
@@ -353,6 +408,7 @@ class DevToolsFrontendInWebRequestApiTest : public ExtensionApiTest {
 
   base::FilePath test_root_dir_;
   std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
+  std::unique_ptr<NavigateTabMessageHandler> navigationHandler_;
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestApi) {

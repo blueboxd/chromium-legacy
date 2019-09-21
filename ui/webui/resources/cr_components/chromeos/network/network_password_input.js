@@ -16,7 +16,7 @@ Polymer({
 
   behaviors: [
     I18nBehavior,
-    CrPolicyNetworkBehavior,
+    CrPolicyNetworkBehaviorMojo,
     NetworkConfigElementBehavior,
   ],
 

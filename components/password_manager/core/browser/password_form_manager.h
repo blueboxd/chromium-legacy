@@ -296,10 +296,6 @@ class PasswordFormManager : public PasswordFormManagerInterface,
   // API.
   base::Optional<PasswordStore::FormDigest> observed_not_web_form_digest_;
 
-  // Set of blacklisted forms from the PasswordStore that best match the current
-  // form. They are owned by |form_fetcher_|.
-  std::vector<const autofill::PasswordForm*> blacklisted_matches_;
-
   // If the observed form gets blacklisted through |this|, we keep the
   // information in this boolean flag until data is potentially refreshed by
   // reading from PasswordStore again. Upon reading from the store again, we set

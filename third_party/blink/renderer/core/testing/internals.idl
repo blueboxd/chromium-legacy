@@ -303,8 +303,6 @@
 
     [RaisesException] void forceCompositingUpdate(Document document);
 
-    void setZoomFactor(float factor);
-
     [RaisesException] void setShouldRevealPassword(Element element, boolean reveal);
 
     [CallWith=ScriptState] Promise<any> createResolvedPromise(any value);

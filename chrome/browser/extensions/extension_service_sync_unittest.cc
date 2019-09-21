@@ -696,7 +696,7 @@ TEST_F(ExtensionServiceSyncTest, DontSelfNotify) {
 TEST_F(ExtensionServiceSyncTest, GetSyncData) {
   InitializeEmptyExtensionService();
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
-  const Extension* extension = service()->GetInstalledExtension(good_crx);
+  const Extension* extension = registry()->GetInstalledExtension(good_crx);
   ASSERT_TRUE(extension);
 
   extension_sync_service()->MergeDataAndStartSyncing(
@@ -803,7 +803,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncDataTerminated) {
   InitializeEmptyExtensionService();
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
   TerminateExtension(good_crx);
-  const Extension* extension = service()->GetInstalledExtension(good_crx);
+  const Extension* extension = registry()->GetInstalledExtension(good_crx);
   ASSERT_TRUE(extension);
 
   extension_sync_service()->MergeDataAndStartSyncing(
@@ -831,7 +831,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncDataTerminated) {
 TEST_F(ExtensionServiceSyncTest, GetSyncDataFilter) {
   InitializeEmptyExtensionService();
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
-  const Extension* extension = service()->GetInstalledExtension(good_crx);
+  const Extension* extension = registry()->GetInstalledExtension(good_crx);
   ASSERT_TRUE(extension);
 
   extension_sync_service()->MergeDataAndStartSyncing(
@@ -847,7 +847,7 @@ TEST_F(ExtensionServiceSyncTest, GetSyncDataFilter) {
 TEST_F(ExtensionServiceSyncTest, GetSyncExtensionDataUserSettings) {
   InitializeEmptyExtensionService();
   InstallCRX(data_dir().AppendASCII("good.crx"), INSTALL_NEW);
-  const Extension* extension = service()->GetInstalledExtension(good_crx);
+  const Extension* extension = registry()->GetInstalledExtension(good_crx);
   ASSERT_TRUE(extension);
 
   extension_sync_service()->MergeDataAndStartSyncing(
@@ -908,7 +908,7 @@ TEST_F(ExtensionServiceSyncTest, SyncForUninstalledExternalExtension) {
   InitializeEmptyExtensionService();
   InstallCRX(data_dir().AppendASCII("good.crx"), Manifest::EXTERNAL_PREF,
              INSTALL_NEW, Extension::NO_FLAGS);
-  const Extension* extension = service()->GetInstalledExtension(good_crx);
+  const Extension* extension = registry()->GetInstalledExtension(good_crx);
   ASSERT_TRUE(extension);
 
   extension_sync_service()->MergeDataAndStartSyncing(
@@ -1120,7 +1120,7 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataWrongType) {
       app_specifics->mutable_extension();
   extension_specifics->set_id(good_crx);
   extension_specifics->set_version(
-      service()->GetInstalledExtension(good_crx)->version().GetString());
+      registry()->GetInstalledExtension(good_crx)->version().GetString());
 
   {
     extension_specifics->set_enabled(true);
@@ -1162,7 +1162,7 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataSettings) {
   sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();
   ext_specifics->set_id(good_crx);
   ext_specifics->set_version(
-      service()->GetInstalledExtension(good_crx)->version().GetString());
+      registry()->GetInstalledExtension(good_crx)->version().GetString());
   ext_specifics->set_enabled(false);
 
   {
@@ -1307,7 +1307,7 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataTerminatedExtension) {
   sync_pb::ExtensionSpecifics* ext_specifics = specifics.mutable_extension();
   ext_specifics->set_id(good_crx);
   ext_specifics->set_version(
-      service()->GetInstalledExtension(good_crx)->version().GetString());
+      registry()->GetInstalledExtension(good_crx)->version().GetString());
   ext_specifics->set_enabled(false);
   ext_specifics->set_incognito_enabled(true);
 
@@ -1338,7 +1338,7 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataVersionCheck) {
   ext_specifics->set_enabled(true);
 
   const base::Version installed_version =
-      service()->GetInstalledExtension(good_crx)->version();
+      registry()->GetInstalledExtension(good_crx)->version();
 
   {
     ext_specifics->set_version(installed_version.GetString());

@@ -567,7 +567,7 @@
 <translation id="3964661563329879394">{COUNT,plural, =0{ללא}=1{מאתר אחד }two{משני אתרים }many{מ-# אתרים }other{מ-# אתרים }}</translation>
 <translation id="397105322502079400">מחשב...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> חסום</translation>
-<translation id="3981540111851280311">‏ההגנה מפני איומים של Chrome Enterprise הופעלה על ידי <ph name="ENROLLMENT_DOMAIN" /> בדפדפן שלך. להגנה מפני איומים של Chrome Enterprise יש גישה לחלק מהנתונים שלך.</translation>
+<translation id="3981540111851280311">‏הכלי להגנה מפני איומים של Chrome Enterprise הופעל על ידי <ph name="ENROLLMENT_DOMAIN" /> בדפדפן שלך. לכלי להגנה מפני איומים של Chrome Enterprise יש גישה לחלק מהנתונים שלך.</translation>
 <translation id="3987940399970879459">‏פחות מ-‎1 MB</translation>
 <translation id="40103911065039147">{URL_count,plural, =1{דף אינטרנט קרוב אחד}two{# דפי אינטרנט קרובים}many{# דפי אינטרנט קרובים}other{# דפי אינטרנט קרובים}}</translation>
 <translation id="4030383055268325496">&amp;ביטול הוספה</translation>
@@ -1006,7 +1006,7 @@ Del</translation>
 <translation id="6302269476990306341">‏Google Assistant ב-Chrome מופסק</translation>
 <translation id="6305205051461490394">לא ניתן לגשת אל <ph name="URL" />.</translation>
 <translation id="6321917430147971392">‏בדוק את הגדרות ה-DNS</translation>
-<translation id="6322182122604171028">‏לא ניתן להשתמש ב-Windows Hello</translation>
+<translation id="6322182122604171028">‏לא ניתן היה להשתמש ב-Windows Hello</translation>
 <translation id="6328639280570009161">נסה להשבית את חיזוי הרשת</translation>
 <translation id="6328784461820205019">‏"החיבור שלך אינו פרטי" או "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;" או "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;" או "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;" או "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" או "שגיאת אישור SSL"</translation>
 <translation id="6328786501058569169">האתר הזה מטעה</translation>
@@ -1030,7 +1030,7 @@ Del</translation>
 <translation id="6433490469411711332">עריכת הפרטים ליצירת קשר</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> סירב להתחבר.</translation>
 <translation id="6434309073475700221">התעלם</translation>
-<translation id="6435221585574090192">‏הנתונים של אירועי האבטחה שסומנו על-ידי ההגנה מפני איומים של Chrome Enterprise עוברים שיתוף עם מנהל המערכת. הנתונים האלה עשויים לכלול כתובות URL של דפים, שם קובץ ומטא-נתונים של קובץ, שם המשתמש במכשיר ושם המשתמש ב-Chrome.</translation>
+<translation id="6435221585574090192">‏הנתונים של אירועי האבטחה שסומנו על-ידי הכלי להגנה מפני איומים של Chrome Enterprise ישותפו עם מנהל המערכת. הנתונים האלה עשויים לכלול כתובות URL של דפים, שמות ומטא-נתונים של קבצים, שם המשתמש במכשיר ושם המשתמש ב-Chrome.</translation>
 <translation id="6440503408713884761">המערכת מתעלמת מהפריט</translation>
 <translation id="6446163441502663861">Kahu (Envelope)‎</translation>
 <translation id="6446608382365791566">הוסף מידע</translation>
@@ -1256,7 +1256,7 @@ Del</translation>
 <translation id="7610193165460212391">הערך מחוץ לטווח <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">תפוגה: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">‏יש לך כבר נתונים שהוצפנו באמצעות גירסה אחרת של סיסמת חשבון Google שלך. הזן אותה למטה.</translation>
-<translation id="7625784245512586808">‏ההגנה מפני איומים של Chrome Enterprise</translation>
+<translation id="7625784245512586808">‏הכלי להגנה מפני איומים של Chrome Enterprise</translation>
 <translation id="7633909222644580952">נתוני ביצועים ודוחות קריסה</translation>
 <translation id="7637571805876720304">‏האם להסיר מ-Chromium את כרטיס האשראי?</translation>
 <translation id="7638605456503525968">יציאות טוריות</translation>
@@ -1516,7 +1516,7 @@ Del</translation>
 <translation id="9080712759204168376">סיכום הזמנה</translation>
 <translation id="9089260154716455634">מדיניות לשעות ללא פעילות:</translation>
 <translation id="9095388113577226029">שפות נוספות...</translation>
-<translation id="9098981495403789647">‏ההגנה מפני איומים של Chrome Enterprise הופעלה על ידי מנהל המערכת בדפדפן שלך. להגנה מפני איומים של Chrome Enterprise יש גישה לחלק מהנתונים שלך.</translation>
+<translation id="9098981495403789647">‏הכלי להגנה מפני איומים של Chrome Enterprise הופעל על ידי מנהל המערכת בדפדפן שלך. לכלי להגנה מפני איומים של Chrome Enterprise יש גישה לחלק מהנתונים שלך.</translation>
 <translation id="9103872766612412690">‏האתר <ph name="SITE" /> משתמש בדרך כלל בהצפנה כדי להגן על המידע שלך. כאשר Chromium ניסה הפעם להתחבר ל-<ph name="SITE" />, האתר שלח חזרה אישורים חריגים ושגויים. ייתכן שתוקף מנסה להתחזות לאתר <ph name="SITE" />, או שמסך כניסה ל-Wi-Fi הפריע לחיבור. המידע שלך עדיין מאובטח מכיוון ש-Chromium הפסיק את החיבור לפני חילופי הנתונים.</translation>
 <translation id="9106062320799175032">הוספה של כתובת לחיוב</translation>
 <translation id="9114524666733003316">אישור הכרטיס מתבצע...</translation>

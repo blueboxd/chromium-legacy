@@ -488,8 +488,14 @@ void TabDragController::Init(TabDragContext* source_context,
 
   // Gestures don't automatically do a capture. We don't allow multiple drags at
   // the same time, so we explicitly capture.
-  if (event_source == EVENT_SOURCE_TOUCH)
+  if (event_source == EVENT_SOURCE_TOUCH) {
+    // Taking capture may cause capture to be lost, ending the drag and
+    // destroying |this|.
+    base::WeakPtr<TabDragController> ref(weak_factory_.GetWeakPtr());
     SetCapture(source_context_);
+    if (!ref)
+      return;
+  }
 
   window_finder_ = std::make_unique<WindowFinder>();
 }

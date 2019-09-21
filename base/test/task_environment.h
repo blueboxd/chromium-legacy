@@ -224,6 +224,12 @@ class TaskEnvironment {
   // to spin forever (any RepeatingTimer will cause this).
   void FastForwardUntilNoTasksRemain();
 
+  // Only valid for instances using TimeSource::MOCK_TIME. Advances virtual time
+  // by |delta|. Unlike FastForwardBy, this does not run tasks. Prefer
+  // FastForwardBy() when possible but this can be useful when testing blocked
+  // pending tasks where being idle (required to fast-forward) is not possible.
+  void AdvanceClock(TimeDelta delta);
+
   // Only valid for instances using TimeSource::MOCK_TIME. Returns a
   // TickClock whose time is updated by FastForward(By|UntilNoTasksRemain).
   const TickClock* GetMockTickClock() const;

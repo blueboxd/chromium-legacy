@@ -273,17 +273,6 @@ void BrowserNonClientFrameViewAsh::UpdateThrobber(bool running) {
     window_icon_->Update();
 }
 
-void BrowserNonClientFrameViewAsh::UpdateMinimumSize() {
-  gfx::Size min_size = GetMinimumSize();
-  aura::Window* frame_window = frame()->GetNativeWindow();
-  const gfx::Size* previous_min_size =
-      frame_window->GetProperty(aura::client::kMinimumSize);
-  if (!previous_min_size || *previous_min_size != min_size) {
-    frame_window->SetProperty(aura::client::kMinimumSize,
-                              new gfx::Size(min_size));
-  }
-}
-
 bool BrowserNonClientFrameViewAsh::CanUserExitFullscreen() const {
   return !platform_util::IsBrowserLockedFullscreen(browser_view()->browser());
 }

@@ -245,7 +245,7 @@ void TabletModeWindowManager::Init() {
   }
   AddWindowCreationObservers();
   display::Screen::GetScreen()->AddObserver(this);
-  Shell::Get()->AddShellObserver(this);
+  Shell::Get()->split_view_controller()->AddObserver(this);
   Shell::Get()->session_controller()->AddObserver(this);
   Shell::Get()->overview_controller()->AddObserver(this);
   accounts_since_entering_tablet_.insert(
@@ -303,7 +303,7 @@ void TabletModeWindowManager::Shutdown() {
   for (aura::Window* window : added_windows_)
     window->RemoveObserver(this);
   added_windows_.clear();
-  Shell::Get()->RemoveShellObserver(this);
+  Shell::Get()->split_view_controller()->RemoveObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
   Shell::Get()->overview_controller()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
@@ -378,8 +378,11 @@ void TabletModeWindowManager::OnOverviewModeEndingAnimationComplete(
   }
 }
 
-// ShellObserver:
-void TabletModeWindowManager::OnSplitViewModeEnded() {
+void TabletModeWindowManager::OnSplitViewStateChanged(
+    SplitViewState previous_state,
+    SplitViewState state) {
+  if (state != SplitViewState::kNoSnap)
+    return;
   switch (Shell::Get()->split_view_controller()->end_reason()) {
     case SplitViewController::EndReason::kNormal:
     case SplitViewController::EndReason::kUnsnappableWindowActivated:

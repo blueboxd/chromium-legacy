@@ -41,6 +41,7 @@
 <translation id="1460620680449458626">Le volume est désactivé.</translation>
 <translation id="1467432559032391204">Vers la gauche</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
+<translation id="1516740043221086139">Le mode Ne pas déranger est activé.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Afficher les paramètres de notification. Les notifications sont désactivées pour une application}one{Afficher les paramètres de notification. Les notifications sont désactivées pour # application}other{Afficher les paramètres de notification. Les notifications sont désactivées pour # applications}}</translation>
 <translation id="1525508553941733066">IGNORER</translation>
 <translation id="1537254971476575106">Loupe plein écran</translation>
@@ -255,6 +256,7 @@
 <translation id="4585337515783392668">Arrêter la diffusion vers un destinataire inconnu</translation>
 <translation id="4628757576491864469">Appareils</translation>
 <translation id="4659419629803378708">ChromeVox activé</translation>
+<translation id="4665114317261903604">Activer/Désactiver le mode Ne pas déranger. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Déverrouiller l'appareil avec le code parental</translation>
 <translation id="4731797938093519117">Accès parental</translation>
 <translation id="4734965478015604180">Horizontal</translation>
@@ -353,6 +355,7 @@
 <translation id="6254629735336163724">Verrouillée en position horizontale</translation>
 <translation id="6259254695169772643">Effectuez une sélection à l'aide de votre stylet</translation>
 <translation id="6267036997247669271"><ph name="NAME" /> : activation en cours…</translation>
+<translation id="6283712521836204486">Le mode Ne pas déranger est désactivé.</translation>
 <translation id="6284232397434400372">Résolution modifiée</translation>
 <translation id="6297287540776456956">Utiliser le stylet pour sélectionner une zone</translation>
 <translation id="6310121235600822547">L'écran "<ph name="DISPLAY_NAME" />" a effectué une rotation de <ph name="ROTATION" />.</translation>

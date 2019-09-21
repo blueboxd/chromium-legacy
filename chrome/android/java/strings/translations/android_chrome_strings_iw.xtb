@@ -66,7 +66,7 @@
 <translation id="1407135791313364759">פתח הכל</translation>
 <translation id="1409426117486808224">תצוגה פשוטה של כרטיסיות פתוחות</translation>
 <translation id="1409879593029778104">הורדת <ph name="FILE_NAME" /> נמנעה מכיוון שהקובץ כבר קיים.</translation>
-<translation id="1413136574162415971">‏Google יכולה לבדוק אם הסיסמאות שלך היו חלק מפרצה באבטחת המידע. האפשרות הזאת תופעל אחרי כניסה באמצעות חשבון Google והפעלת הסנכרון.</translation>
+<translation id="1413136574162415971">‏Google יכולה לבדוק אם הייתה פרצה באבטחת מידע שכללה את הסיסמאות שלך. האפשרות הזאת תופעל אחרי כניסה באמצעות חשבון Google והפעלת הסנכרון.</translation>
 <translation id="1414981605391750300">‏המערכת יוצרת קשר עם Google. עוד מעט מסיימים…</translation>
 <translation id="1416550906796893042">גרסת אפליקציה</translation>
 <translation id="1430915738399379752">הדפסה</translation>
@@ -256,7 +256,7 @@
 <translation id="2836148919159985482">כדי לצאת ממסך מלא, גע בלחצן 'הקודם'.</translation>
 <translation id="2842985007712546952">תיקיית אב</translation>
 <translation id="2858138569776157458">אתרים נבחרים</translation>
-<translation id="2860954141821109167">יש לוודא שמופעלת במכשיר הזה אפליקציה לטלפון</translation>
+<translation id="2860954141821109167">יש לוודא שמופעלת במכשיר הזה אפליקציית טלפון</translation>
 <translation id="2870560284913253234">אתר</translation>
 <translation id="2874939134665556319">הרצועה הקודמת</translation>
 <translation id="2876369937070532032">‏שולחת ל-Google כתובות URL של חלק מהדפים שאליהם נכנסת, אם מתגלה סיכון אבטחה</translation>

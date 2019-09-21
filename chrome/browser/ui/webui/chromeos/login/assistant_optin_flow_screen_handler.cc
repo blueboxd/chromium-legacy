@@ -54,12 +54,10 @@ AssistantOptInFlowScreenHandler::AssistantOptInFlowScreenHandler(
 }
 
 AssistantOptInFlowScreenHandler::~AssistantOptInFlowScreenHandler() {
-  if (arc::VoiceInteractionControllerClient::Get()) {
-    arc::VoiceInteractionControllerClient::Get()->RemoveObserver(this);
-  }
-  if (screen_) {
+  if (ash::AssistantState::Get())
+    ash::AssistantState::Get()->RemoveObserver(this);
+  if (screen_)
     screen_->OnViewDestroyed(this);
-  }
 }
 
 void AssistantOptInFlowScreenHandler::DeclareLocalizedValues(
@@ -215,9 +213,9 @@ void AssistantOptInFlowScreenHandler::SetupAssistantConnection() {
   // Make sure enable Assistant service since we need it during the flow.
   prefs->SetBoolean(chromeos::assistant::prefs::kAssistantEnabled, true);
 
-  if (arc::VoiceInteractionControllerClient::Get()->assistant_state() ==
+  if (ash::AssistantState::Get()->assistant_state() ==
       ash::mojom::AssistantState::NOT_READY) {
-    arc::VoiceInteractionControllerClient::Get()->AddObserver(this);
+    ash::AssistantState::Get()->AddObserver(this);
   } else {
     BindAssistantSettingsManager();
   }
@@ -269,11 +267,11 @@ void AssistantOptInFlowScreenHandler::OnDialogClosed() {
   }
 }
 
-void AssistantOptInFlowScreenHandler::OnStateChanged(
+void AssistantOptInFlowScreenHandler::OnAssistantStatusChanged(
     ash::mojom::AssistantState state) {
   if (state != ash::mojom::AssistantState::NOT_READY) {
     BindAssistantSettingsManager();
-    arc::VoiceInteractionControllerClient::Get()->RemoveObserver(this);
+    ash::AssistantState::Get()->RemoveObserver(this);
   }
 }
 

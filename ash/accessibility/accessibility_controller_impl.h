@@ -56,6 +56,8 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   // See Shell::RegisterProfilePrefs().
   static void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test);
 
+  void Shutdown();
+
   void AddObserver(AccessibilityObserver* observer);
   void RemoveObserver(AccessibilityObserver* observer);
 
@@ -335,7 +337,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   // Used to force the backlights off to darken the screen.
   std::unique_ptr<ScopedBacklightsForcedOff> scoped_backlights_forced_off_;
 
-  base::ObserverList<AccessibilityObserver>::Unchecked observers_;
+  base::ObserverList<AccessibilityObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityControllerImpl);
 };

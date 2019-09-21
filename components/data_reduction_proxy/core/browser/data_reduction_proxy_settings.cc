@@ -244,22 +244,6 @@ void DataReductionProxySettings::MaybeActivateDataReductionProxy(
           (clock_->Now() - base::Time::FromInternalValue(last_enabled_time))
               .InDays());
     }
-
-    int64_t last_savings_cleared_time = prefs->GetInt64(
-        prefs::kDataReductionProxySavingsClearedNegativeSystemClock);
-    if (last_savings_cleared_time != 0) {
-      int32_t days_since_savings_cleared =
-          (clock_->Now() -
-           base::Time::FromInternalValue(last_savings_cleared_time))
-              .InDays();
-
-      // Sample in the UMA histograms must be at least 1.
-      if (days_since_savings_cleared == 0)
-        days_since_savings_cleared = 1;
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "DataReductionProxy.DaysSinceSavingsCleared.NegativeSystemClock",
-          days_since_savings_cleared, 1, 365, 50);
-    }
   }
 
   if (enabled &&

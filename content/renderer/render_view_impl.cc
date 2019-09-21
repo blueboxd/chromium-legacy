@@ -54,11 +54,9 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_importance_signals.h"
 #include "content/public/common/page_state.h"
-#include "content/public/common/page_zoom.h"
 #include "content/public/common/referrer_type_converters.h"
 #include "content/public/common/three_d_api_types.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/document_state.h"
@@ -1090,13 +1088,6 @@ const blink::WebView* RenderViewImpl::webview() const {
 
 // RenderWidgetOwnerDelegate -----------------------------------------
 
-bool RenderViewImpl::RenderWidgetWillHandleMouseEventForWidget(
-    const blink::WebMouseEvent& event) {
-  // If the mouse is locked, only the current owner of the mouse lock can
-  // process mouse events.
-  return render_widget_->mouse_lock_dispatcher()->WillHandleMouseEvent(event);
-}
-
 void RenderViewImpl::SetActiveForWidget(bool active) {
   if (webview())
     webview()->SetIsActive(active);
@@ -1449,6 +1440,12 @@ WebView* RenderViewImpl::CreateView(
 
 blink::WebPagePopup* RenderViewImpl::CreatePopup(
     blink::WebLocalFrame* creator) {
+  return CreatePopupAndGetWidget(creator, nullptr);
+}
+
+blink::WebPagePopup* RenderViewImpl::CreatePopupAndGetWidget(
+    blink::WebLocalFrame* creator,
+    RenderWidget** output_widget) {
   mojo::PendingRemote<mojom::Widget> widget_channel;
   mojo::PendingReceiver<mojom::Widget> widget_channel_receiver =
       widget_channel.InitWithNewPipeAndPassReceiver();
@@ -1466,18 +1463,12 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
   RenderWidget::ShowCallback opener_callback = base::BindOnce(
       &RenderViewImpl::ShowCreatedPopupWidget, weak_ptr_factory_.GetWeakPtr());
 
-  // The RenderWidget associated with the RenderView. This should be the
-  // RenderWidget for the main frame, but may be a zombie RenderWidget when
-  // the main frame is remote (we don't need a RenderWidget for it then).
-  // However for now (https://crbug.com/419087) we know it exists and grab
-  // state off it for the popup.
-  // TODO(crbug.com/419087): This should probably be using the local root's
-  // RenderWidget for the frame making the popup.
-  RenderWidget* view_render_widget = render_widget_.get();
+  RenderWidget* render_widget =
+      RenderFrameImpl::FromWebFrame(creator)->GetLocalRootRenderWidget();
 
   RenderWidget* popup_widget = RenderWidget::CreateForPopup(
-      widget_routing_id, view_render_widget->compositor_deps(),
-      page_properties(), blink::kWebDisplayModeUndefined,
+      widget_routing_id, render_widget->compositor_deps(), page_properties(),
+      blink::kWebDisplayModeUndefined,
       /*hidden=*/false,
       /*never_visible=*/false, std::move(widget_channel_receiver));
 
@@ -1498,7 +1489,10 @@ blink::WebPagePopup* RenderViewImpl::CreatePopup(
   // Devtools emulation, which may be currently applied to the
   // |view_render_widget|, should also apply to the new popup. This doesn't
   // happen automatically.
-  popup_widget->ApplyEmulatedScreenMetricsForPopupWidget(view_render_widget);
+  popup_widget->ApplyEmulatedScreenMetricsForPopupWidget(render_widget);
+
+  if (output_widget)
+    *output_widget = popup_widget;
 
   return popup_web_widget;
 }
@@ -1512,7 +1506,7 @@ void RenderViewImpl::DoDeferredClose() {
 
 void RenderViewImpl::CloseWindowSoon() {
   DCHECK(RenderThread::IsMainThread());
-  if (render_widget_->IsUndeadOrProvisional()) {
+  if (!render_widget_ || render_widget_->IsUndeadOrProvisional()) {
     // Ask the RenderViewHost with a local main frame to initiate close.  We
     // could be called from deep in Javascript.  If we ask the RenderViewHost to
     // close now, the window could be closed before the JS finishes executing,
@@ -1536,8 +1530,11 @@ base::StringPiece RenderViewImpl::GetSessionStorageNamespaceId() {
 }
 
 void RenderViewImpl::PrintPage(WebLocalFrame* frame) {
-  RenderFrameImpl::FromWebFrame(frame)->ScriptedPrint(
-      render_widget_->input_handler().handling_input_event());
+  RenderFrameImpl* render_frame = RenderFrameImpl::FromWebFrame(frame);
+  RenderWidget* render_widget = render_frame->GetLocalRootRenderWidget();
+
+  render_frame->ScriptedPrint(
+      render_widget->input_handler().handling_input_event());
 }
 
 void RenderViewImpl::AttachWebFrameWidget(blink::WebFrameWidget* frame_widget) {
@@ -1569,14 +1566,38 @@ void RenderViewImpl::DetachWebFrameWidget() {
   render_widget_->SetWebWidgetInternal(nullptr);
 }
 
-void RenderViewImpl::SetZoomLevel(double zoom_level) {
+bool RenderViewImpl::SetZoomLevel(double zoom_level) {
+  if (zoom_level == page_zoom_level_)
+    return false;
+
   // If we change the zoom level for the view, make sure any subsequent subframe
   // loads reflect the current zoom level.
   page_zoom_level_ = zoom_level;
-
   webview()->SetZoomLevel(zoom_level);
   for (auto& observer : observers_)
     observer.OnZoomLevelChanged();
+  return true;
+}
+
+void RenderViewImpl::SetPreferCompositingToLCDTextEnabled(bool prefer) {
+  webview()->GetSettings()->SetPreferCompositingToLCDTextEnabled(prefer);
+}
+
+void RenderViewImpl::SetDeviceScaleFactor(bool use_zoom_for_dsf,
+                                          float device_scale_factor) {
+  if (use_zoom_for_dsf)
+    webview()->SetZoomFactorForDeviceScaleFactor(device_scale_factor);
+  else
+    webview()->SetDeviceScaleFactor(device_scale_factor);
+}
+
+void RenderViewImpl::PropagatePageZoomToNewlyAttachedFrame(
+    bool use_zoom_for_dsf,
+    float device_scale_factor) {
+  if (use_zoom_for_dsf)
+    webview()->SetZoomFactorForDeviceScaleFactor(device_scale_factor);
+  else
+    webview()->SetZoomLevel(page_zoom_level_);
 }
 
 void RenderViewImpl::SetValidationMessageDirection(
@@ -1769,9 +1790,6 @@ bool RenderViewImpl::CanUpdateLayout() {
   return true;
 }
 
-// blink::WebLocalFrameClient
-// -----------------------------------------------------
-
 void RenderViewImpl::SetEditCommandForNextKeyEvent(const std::string& name,
                                                    const std::string& value) {
   render_widget_->SetEditCommandForNextKeyEvent(name, value);
@@ -1844,12 +1862,6 @@ bool RenderViewImpl::Send(IPC::Message* message) {
   // No messages sent through RenderView come without a routing id, yay. Let's
   // keep that up.
   CHECK_NE(message->routing_id(), MSG_ROUTING_NONE);
-
-  // Don't send any messages after the browser has told us to close.
-  if (render_widget_->is_closing()) {
-    delete message;
-    return false;
-  }
   return RenderThread::Get()->Send(message);
 }
 
@@ -1901,11 +1913,6 @@ void RenderViewImpl::OnSetPageScale(float page_scale_factor) {
   if (!webview())
     return;
   webview()->SetPageScaleFactor(page_scale_factor);
-}
-
-void RenderViewImpl::UpdateZoomLevel(double zoom_level) {
-  webview()->CancelPagePopup();
-  SetZoomLevel(zoom_level);
 }
 
 void RenderViewImpl::ApplyPageHidden(bool hidden, bool initial_setting) {
@@ -2096,19 +2103,6 @@ void RenderViewImpl::SetFocus(bool enable) {
   // This is only called from RenderFrameProxy.
   CHECK(!webview()->MainFrame()->IsWebLocalFrame());
   webview()->SetFocus(enable);
-}
-
-void RenderViewImpl::ZoomLimitsChanged(double minimum_level,
-                                       double maximum_level) {
-  // Round the double to avoid returning incorrect minimum/maximum zoom
-  // percentages.
-  int minimum_percent = round(
-      ZoomLevelToZoomFactor(minimum_level) * 100);
-  int maximum_percent = round(
-      ZoomLevelToZoomFactor(maximum_level) * 100);
-
-  Send(new ViewHostMsg_UpdateZoomLimits(GetRoutingID(), minimum_percent,
-                                        maximum_percent));
 }
 
 void RenderViewImpl::PageScaleFactorChanged(float page_scale_factor) {

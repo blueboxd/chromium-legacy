@@ -117,13 +117,18 @@ disk_cache::Backend* GetDiskCacheBackend(URLRequestContext* context) {
 // Returns true if |request1| was created before |request2|.
 bool RequestCreatedBefore(const URLRequest* request1,
                           const URLRequest* request2) {
+  // Only supported when both requests have the same non-null NetLog.
+  DCHECK(request1->net_log().net_log());
+  DCHECK_EQ(request1->net_log().net_log(), request2->net_log().net_log());
+
   if (request1->creation_time() < request2->creation_time())
     return true;
   if (request1->creation_time() > request2->creation_time())
     return false;
-  // If requests were created at the same time, sort by ID.  Mostly matters for
-  // testing purposes.
-  return request1->identifier() < request2->identifier();
+  // If requests were created at the same time, sort by NetLogSource ID. Some
+  // NetLog tests assume the returned order exactly matches creation order, even
+  // creation times of two events are potentially the same.
+  return request1->net_log().source().id < request2->net_log().source().id;
 }
 
 }  // namespace

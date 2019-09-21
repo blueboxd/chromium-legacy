@@ -21,7 +21,6 @@
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -53,7 +52,6 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/was_activated_option.mojom.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -253,15 +251,15 @@ void ChromeNewWindowClient::NewWindow(bool is_incognito) {
 void ChromeNewWindowClient::OpenFileManager() {
   using file_manager::kFileManagerAppId;
   Profile* const profile = ProfileManager::GetActiveUserProfile();
-  const extensions::ExtensionService* const service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  if (!service || !extensions::util::IsAppLaunchableWithoutEnabling(
-                      kFileManagerAppId, profile)) {
+  const extensions::ExtensionRegistry* const registry =
+      extensions::ExtensionRegistry::Get(profile);
+  if (!extensions::util::IsAppLaunchableWithoutEnabling(kFileManagerAppId,
+                                                        profile)) {
     return;
   }
 
   const extensions::Extension* const extension =
-      service->GetInstalledExtension(kFileManagerAppId);
+      registry->GetInstalledExtension(kFileManagerAppId);
   apps::LaunchService::Get(profile)->OpenApplication(
       CreateAppLaunchParamsUserContainer(
           profile, extension, WindowOpenDisposition::NEW_FOREGROUND_TAB,

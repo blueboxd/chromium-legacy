@@ -66,7 +66,7 @@
 <translation id="1407135791313364759">Összes megnyitása</translation>
 <translation id="1409426117486808224">A megnyitott lapok egyszerűsített nézete</translation>
 <translation id="1409879593029778104">A következő fájl letöltését a böngésző megakadályozta, mert a fájl már létezik: <ph name="FILE_NAME" />.</translation>
-<translation id="1413136574162415971">A Google ellenőrizheti, hogy érintik-e adatvédelmi incidensek az Ön jelszavait. Ez a funkció akkor kapcsol be, amikor bejelentkezik Google-fiókjával, és bekapcsolja a szinkronizálást.</translation>
+<translation id="1413136574162415971">A Google ellenőrizheti, hogy jelszavai érintettek-e adatvédelmi incidensben. Ez a funkció akkor kapcsol be, amikor bejelentkezik Google-fiókjával, és bekapcsolja a szinkronizálást.</translation>
 <translation id="1414981605391750300">Kapcsolatfelvétel a Google-lal… ez eltarthat pár percig…</translation>
 <translation id="1416550906796893042">Alkalmazás verziószáma</translation>
 <translation id="1430915738399379752">Nyomtatás</translation>
@@ -729,6 +729,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6364438453358674297">Eltávolítja a javaslatot az előzményekből?</translation>
 <translation id="6369229450655021117">Itt internetes kereséseket indíthat, megoszthat tartalmakat barátaival, és megtekintheti a megnyitott oldalakat</translation>
 <translation id="6378173571450987352">Részletek: Felhasznált adatmennyiség szerinti rendezés</translation>
+<translation id="6381421346744604172">Webhelyek sötétítése</translation>
 <translation id="6388207532828177975">Törlés és visszaállítás</translation>
 <translation id="6393863479814692971">A Chrome számára engedély szükséges, hogy hozzáférjen a kamerához és a mikrofonhoz ennél a webhelynél.</translation>
 <translation id="6395288395575013217">LINK</translation>
@@ -958,7 +959,7 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="8007176423574883786">Kikapcsolva ezen az eszközön</translation>
 <translation id="8013372441983637696">Az Ön Chrome-adatai is törlődjenek erről az eszközről</translation>
 <translation id="8015452622527143194">Minden visszaállítása alapértelmezett méretűre</translation>
-<translation id="8015780634880457457">A Google ellenőrizheti, hogy érintik-e adatvédelmi incidensek az Ön jelszavait</translation>
+<translation id="8015780634880457457">A Google ellenőrizheti, hogy jelszavai érintettek-e adatvédelmi incidensben</translation>
 <translation id="802154636333426148">Nem sikerült a letöltés</translation>
 <translation id="8026334261755873520">Böngészési adatok törlése</translation>
 <translation id="8035133914807600019">Új mappa…</translation>
@@ -1110,6 +1111,7 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="9139068048179869749">Kérdezzen rá, mielőtt engedélyezné a webhelyek számára az értesítések küldését (ajánlott)</translation>
 <translation id="9139318394846604261">Vásárlás</translation>
 <translation id="9155898266292537608">Úgy is végrehajthat keresést, hogy gyorsan rákoppint valamelyik szóra</translation>
+<translation id="9169507124922466868">Félmagasságban megnyitott navigációs előzmények</translation>
 <translation id="9188680907066685419">Kijelentkezés felügyelt fiókból</translation>
 <translation id="9204836675896933765">1 fájl maradt</translation>
 <translation id="9206873250291191720">A</translation>

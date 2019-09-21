@@ -30,7 +30,6 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/extension_system.h"
 
 namespace safe_browsing {
 
@@ -49,6 +48,7 @@ ChromeCleanerRunner::ProcessStatus::ProcessStatus(LaunchStatus launch_status,
 // static
 void ChromeCleanerRunner::RunChromeCleanerAndReplyWithExitCode(
     extensions::ExtensionService* extension_service,
+    extensions::ExtensionRegistry* extension_registry,
     const base::FilePath& cleaner_executable_path,
     const SwReporterInvocation& reporter_invocation,
     ChromeMetricsStatus metrics_status,
@@ -63,9 +63,10 @@ void ChromeCleanerRunner::RunChromeCleanerAndReplyWithExitCode(
   auto launch_and_wait = base::BindOnce(
       &ChromeCleanerRunner::LaunchAndWaitForExitOnBackgroundThread,
       cleaner_runner,
-      // base::Unretained is safe because this is a long-running service that
+      // base::Unretained is safe because these are long-running services that
       // will outlive ChromeCleanerRunner.
-      base::Unretained(extension_service));
+      base::Unretained(extension_service),
+      base::Unretained(extension_registry));
   auto process_done =
       base::BindOnce(&ChromeCleanerRunner::OnProcessDone, cleaner_runner);
   base::PostTaskAndReplyWithResult(
@@ -153,15 +154,16 @@ ChromeCleanerRunner::ChromeCleanerRunner(
 
 ChromeCleanerRunner::ProcessStatus
 ChromeCleanerRunner::LaunchAndWaitForExitOnBackgroundThread(
-    extensions::ExtensionService* extension_service) {
+    extensions::ExtensionService* extension_service,
+    extensions::ExtensionRegistry* extension_registry) {
   TRACE_EVENT0("safe_browsing",
                "ChromeCleanerRunner::LaunchAndWaitForExitOnBackgroundThread");
-
   auto on_connection_closed = base::BindOnce(
       &ChromeCleanerRunner::OnConnectionClosed, base::RetainedRef(this));
   auto actions = std::make_unique<ChromePromptActions>(
-      extension_service, base::BindOnce(&ChromeCleanerRunner::OnPromptUser,
-                                        base::RetainedRef(this)));
+      extension_service, extension_registry,
+      base::BindOnce(&ChromeCleanerRunner::OnPromptUser,
+                     base::RetainedRef(this)));
 
   // ChromePromptChannel method calls will be posted to this sequence using
   // WeakPtr's, so the channel must be deleted on the same sequence.

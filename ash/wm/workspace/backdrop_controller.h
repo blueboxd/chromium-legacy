@@ -12,7 +12,6 @@
 #include "ash/public/cpp/split_view.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
-#include "ash/shell_observer.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
@@ -41,7 +40,6 @@ namespace ash {
 //        - Bottom-most snapped window in splitview,
 //        - Top-most activatable window if splitview is inactive.
 class ASH_EXPORT BackdropController : public AccessibilityObserver,
-                                      public ShellObserver,
                                       public OverviewObserver,
                                       public SplitViewObserver,
                                       public WallpaperControllerObserver,
@@ -69,10 +67,6 @@ class ASH_EXPORT BackdropController : public AccessibilityObserver,
   aura::Window* GetTopmostWindowWithBackdrop();
 
   aura::Window* backdrop_window() { return backdrop_window_; }
-
-  // ShellObserver:
-  void OnSplitViewModeStarting() override;
-  void OnSplitViewModeEnded() override;
 
   // OverviewObserver:
   void OnOverviewModeStarting() override;

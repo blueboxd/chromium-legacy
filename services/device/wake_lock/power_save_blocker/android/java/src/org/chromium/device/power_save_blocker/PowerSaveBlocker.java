@@ -10,13 +10,13 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
 import java.lang.ref.WeakReference;
-import java.util.HashMap;
+import java.util.WeakHashMap;
 
 @JNINamespace("device")
 class PowerSaveBlocker {
     // Counter associated to a view to know how many PowerSaveBlocker are
-    // currently registered.
-    private static HashMap<View, Integer> sBlockViewCounter = new HashMap<View, Integer>();
+    // currently registered. Using WeakHashMap to prevent leaks in Android WebView.
+    private static WeakHashMap<View, Integer> sBlockViewCounter = new WeakHashMap<View, Integer>();
 
     // WeakReference to prevent leaks in Android WebView.
     private WeakReference<View> mKeepScreenOnView;
@@ -53,6 +53,9 @@ class PowerSaveBlocker {
 
         View view = mKeepScreenOnView.get();
         mKeepScreenOnView = null;
+
+        // View has been garbage collected. No need to worry about clean up.
+        if (view == null) return;
 
         Integer prev_counter = sBlockViewCounter.get(view);
         assert prev_counter != null;

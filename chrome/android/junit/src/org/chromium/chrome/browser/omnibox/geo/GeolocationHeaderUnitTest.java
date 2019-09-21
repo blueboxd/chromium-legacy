@@ -32,7 +32,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordHistogramJni;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
-import org.chromium.chrome.browser.omnibox.geo.GeolocationHeaderUnitTest.ShadowUrlUtilities;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleCell;
 import org.chromium.chrome.browser.omnibox.geo.VisibleNetworks.VisibleWifi;
 import org.chromium.chrome.browser.preferences.website.ContentSettingValues;
@@ -40,6 +39,7 @@ import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridgeJni;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.chrome.browser.util.UrlUtilitiesJni;
 import org.chromium.chrome.test.util.browser.Features;
 
 import java.util.Arrays;
@@ -49,7 +49,7 @@ import java.util.HashSet;
  * Robolectric tests for {@link GeolocationHeader}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = {ShadowUrlUtilities.class})
+@Config(manifest = Config.NONE)
 public class GeolocationHeaderUnitTest {
     private static final String SEARCH_URL = "https://www.google.com/search?q=potatoes";
 
@@ -102,10 +102,13 @@ public class GeolocationHeaderUnitTest {
     public JniMocker mocker = new JniMocker();
 
     @Mock
-    RecordHistogram.Natives mRecordHistogramMock;
+    RecordHistogram.Natives mRecordHistogramJniMock;
 
     @Mock
-    WebsitePreferenceBridge.Natives mWebsitePreferenceBridgeMock;
+    UrlUtilities.Natives mUrlUtilitiesJniMock;
+
+    @Mock
+    WebsitePreferenceBridge.Natives mWebsitePreferenceBridgeJniMock;
 
     @Mock
     private Tab mTab;
@@ -113,19 +116,21 @@ public class GeolocationHeaderUnitTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mocker.mock(RecordHistogramJni.TEST_HOOKS, mRecordHistogramMock);
-        mocker.mock(WebsitePreferenceBridgeJni.TEST_HOOKS, mWebsitePreferenceBridgeMock);
+        mocker.mock(RecordHistogramJni.TEST_HOOKS, mRecordHistogramJniMock);
+        mocker.mock(UrlUtilitiesJni.TEST_HOOKS, mUrlUtilitiesJniMock);
+        mocker.mock(WebsitePreferenceBridgeJni.TEST_HOOKS, mWebsitePreferenceBridgeJniMock);
         GeolocationTracker.setLocationAgeForTesting(null);
         GeolocationHeader.setLocationSourceForTesting(
                 GeolocationHeader.LocationSource.HIGH_ACCURACY);
         GeolocationHeader.setAppPermissionGrantedForTesting(true);
         when(mTab.isIncognito()).thenReturn(false);
-        when(mWebsitePreferenceBridgeMock.getGeolocationSettingForOrigin(
+        when(mWebsitePreferenceBridgeJniMock.getGeolocationSettingForOrigin(
                      anyString(), anyString(), anyBoolean()))
                 .thenReturn(ContentSettingValues.ALLOW);
-        when(mWebsitePreferenceBridgeMock.isPermissionControlledByDSE(
+        when(mWebsitePreferenceBridgeJniMock.isPermissionControlledByDSE(
                      anyInt(), anyString(), anyBoolean()))
                 .thenReturn(true);
+        when(mUrlUtilitiesJniMock.isGoogleSearchUrl(anyString())).thenReturn(true);
         sRefreshVisibleNetworksRequests = 0;
         sRefreshLastKnownLocation = 0;
     }
@@ -295,28 +300,6 @@ public class GeolocationHeaderUnitTest {
         location.setElapsedRealtimeNanos(
                 SystemClock.elapsedRealtimeNanos() + 1000000 * (time - System.currentTimeMillis()));
         return location;
-    }
-
-    /**
-     * Shadow for UrlUtilities
-     */
-    @Implements(UrlUtilities.class)
-    public static class ShadowUrlUtilities {
-        @Implementation
-        public static boolean nativeIsGoogleSearchUrl(String url) {
-            return true;
-        }
-    }
-
-    /**
-     * Shadow for RecordHistogram
-     */
-    @Implements(RecordHistogram.class)
-    public static class ShadowRecordHistogram {
-        @Implementation
-        public static void recordEnumeratedHistogram(String name, int sample, int boundary) {
-            // Noop.
-        }
     }
 
     /**

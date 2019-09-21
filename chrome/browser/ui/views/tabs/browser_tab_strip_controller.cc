@@ -580,7 +580,8 @@ TabRendererData BrowserTabStripController::TabRendererDataFromModel(
   data.pinned = model_->IsTabPinned(model_index);
   data.show_icon = data.pinned || favicon::ShouldDisplayFavicon(contents);
   data.blocked = model_->IsTabBlocked(model_index);
-  data.alert_state = chrome::GetTabAlertStateForContents(contents);
+  data.alert_state =
+      chrome::GetHighestPriorityTabAlertStateForContents(contents);
   data.should_hide_throbber = tab_ui_helper->ShouldHideThrobber();
   return data;
 }

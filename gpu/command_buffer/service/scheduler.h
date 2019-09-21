@@ -92,6 +92,8 @@ class GPU_EXPORT Scheduler {
   // If the sequence should yield so that a higher priority sequence may run.
   bool ShouldYield(SequenceId sequence_id);
 
+  base::WeakPtr<Scheduler> AsWeakPtr();
+
  private:
 
   struct SchedulingState {

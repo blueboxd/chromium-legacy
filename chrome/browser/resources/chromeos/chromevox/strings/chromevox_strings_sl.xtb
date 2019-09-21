@@ -169,6 +169,7 @@
 <translation id="2220529011494928058">Prijavite težavo</translation>
 <translation id="2223693656926968778">Ukrepanje za trenutni element</translation>
 <translation id="225732394367814946">Povečanje hitrosti govora</translation>
+<translation id="2267538686624070261">Zapuščanje napačnega črkovanja</translation>
 <translation id="2267945578749931355">Naslednji znak</translation>
 <translation id="2278490101488436824">S tremi prsti povlecite v levo</translation>
 <translation id="2281234842553884450">Prejšnji drsnik</translation>
@@ -207,6 +208,7 @@
 <translation id="257674075312929031">Skupina</translation>
 <translation id="2582407057977008361">Razen</translation>
 <translation id="2592212930811759050">Dvakrat se dotaknite, če želite začeti urejati</translation>
+<translation id="2598495320872286378">Slovnična napaka</translation>
 <translation id="2614981083756825552">Postavitev Math ML</translation>
 <translation id="2624431853467395961">Odpiranje načina za učenje</translation>
 <translation id="2626530649491650971">omogoča klikanje</translation>
@@ -821,6 +823,7 @@
 <translation id="6833103209700200188">Noga</translation>
 <translation id="6858047746862060282">Uvod</translation>
 <translation id="6859876496651143278">Z enim prstom povlecite v levo</translation>
+<translation id="6865519907510167493">Napačno črkovano</translation>
 <translation id="6871161210040114857">Prezrtje razlikovanja velikih in malih črk.</translation>
 <translation id="6877435256196695200">Ni naslednje grafike.</translation>
 <translation id="6897341342232909480">Pomik v levo</translation>
@@ -1111,6 +1114,7 @@
 <translation id="8446884382197647889">Več o tem</translation>
 <translation id="8455868257606149352">Največ <ph name="X" /></translation>
 <translation id="84575901236241018">ima tipko za dostop <ph name="KEY" /></translation>
+<translation id="8463645336674919227">Zapuščanje slovnične napake</translation>
 <translation id="847154984256717791">zaseden</translation>
 <translation id="8476408756881832830">Zaustavi predvajanje, ko ChromeVox govori</translation>
 <translation id="8476508772960940536">pregled okna</translation>

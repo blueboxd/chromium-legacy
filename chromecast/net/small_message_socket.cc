@@ -33,16 +33,41 @@ const int kDefaultBufferSize = 2048;
 
 }  // namespace
 
+class SmallMessageSocket::WriteBuffer : public ::net::IOBuffer {
+ public:
+  void SetUnderlyingBuffer(scoped_refptr<IOBuffer> base, size_t size) {
+    base_ = std::move(base);
+    size_ = size;
+    used_ = 0;
+    data_ = base_->data();
+  }
+
+  void DidConsume(size_t bytes) {
+    used_ += bytes;
+    data_ = base_->data() + used_;
+  }
+
+  size_t BytesRemaining() { return size_ - used_; }
+
+ private:
+  ~WriteBuffer() override { data_ = nullptr; }
+
+  scoped_refptr<IOBuffer> base_;
+  size_t size_;
+  size_t used_;
+};
+
 SmallMessageSocket::SmallMessageSocket(std::unique_ptr<net::Socket> socket)
     : socket_(std::move(socket)),
       task_runner_(base::SequencedTaskRunnerHandle::Get()),
+      write_buffer_(base::MakeRefCounted<WriteBuffer>()),
       weak_factory_(this) {}
 
 SmallMessageSocket::~SmallMessageSocket() = default;
 
 void* SmallMessageSocket::PrepareSend(int message_size) {
   DCHECK_LE(message_size, std::numeric_limits<uint16_t>::max());
-  if (write_buffer_) {
+  if (write_buffer_->BytesRemaining()) {
     send_blocked_ = true;
     return nullptr;
   }
@@ -57,27 +82,26 @@ void* SmallMessageSocket::PrepareSend(int message_size) {
     write_storage_->SetCapacity(total_size);
   }
 
-  write_buffer_ = base::MakeRefCounted<net::DrainableIOBuffer>(
-      write_storage_.get(), total_size);
+  write_buffer_->SetUnderlyingBuffer(write_storage_, total_size);
   char* data = write_buffer_->data();
   base::WriteBigEndian(data, static_cast<uint16_t>(message_size));
   return data + sizeof(uint16_t);
 }
 
-bool SmallMessageSocket::SendBuffer(net::IOBuffer* data, int size) {
-  if (write_buffer_) {
+bool SmallMessageSocket::SendBuffer(scoped_refptr<net::IOBuffer> data,
+                                    int size) {
+  if (write_buffer_->BytesRemaining()) {
     send_blocked_ = true;
     return false;
   }
 
-  write_buffer_ = base::MakeRefCounted<net::DrainableIOBuffer>(data, size);
+  write_buffer_->SetUnderlyingBuffer(std::move(data), size);
   Send();
   return true;
 }
 
 void SmallMessageSocket::Send() {
   for (int i = 0; i < kMaxIOLoop; ++i) {
-    DCHECK(write_buffer_);
     int result =
         socket_->Write(write_buffer_.get(), write_buffer_->BytesRemaining(),
                        base::BindOnce(&SmallMessageSocket::OnWriteComplete,
@@ -88,7 +112,6 @@ void SmallMessageSocket::Send() {
     }
   }
 
-  DCHECK(write_buffer_);
   task_runner_->PostTask(FROM_HERE, base::BindOnce(&SmallMessageSocket::Send,
                                                    weak_factory_.GetWeakPtr()));
 }
@@ -109,11 +132,10 @@ bool SmallMessageSocket::HandleWriteResult(int result) {
   }
 
   write_buffer_->DidConsume(result);
-  if (write_buffer_->BytesRemaining() != 0) {
+  if (write_buffer_->BytesRemaining()) {
     return true;
   }
 
-  write_buffer_ = nullptr;
   if (send_blocked_) {
     send_blocked_ = false;
     OnSendUnblocked();

@@ -16,7 +16,7 @@ import "url/mojom/origin.mojom";
 // (content::Portal). It is 1:1 with PortalClient (defined below).
 interface Portal {
   // Navigates the portal to |url|.
-  Navigate(url.mojom.Url url, Referrer referrer);
+  Navigate(url.mojom.Url url, Referrer referrer) => ();
 
   // When a portal is activated, it'll replace the current tab with the portal.
   Activate(TransferableMessage data) => (bool was_adopted);

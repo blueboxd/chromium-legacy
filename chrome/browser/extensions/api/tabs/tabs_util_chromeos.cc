@@ -4,13 +4,13 @@
 
 #include "chrome/browser/extensions/api/tabs/tabs_util.h"
 
+#include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
 #include "chrome/browser/ui/browser.h"
@@ -62,8 +62,7 @@ void SetLockedFullscreenState(Browser* browser, bool locked) {
 
   if (assistant::IsAssistantAllowedForProfile(profile) ==
       ash::mojom::AssistantAllowedState::ALLOWED) {
-    arc::VoiceInteractionControllerClient::Get()
-        ->NotifyLockedFullScreenStateChanged(locked);
+    ash::AssistantState::Get()->NotifyLockedFullScreenStateChanged(locked);
   }
 }
 

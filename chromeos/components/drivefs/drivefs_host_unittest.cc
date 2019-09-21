@@ -27,7 +27,7 @@
 #include "components/drive/drive_notification_observer.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/identity/public/mojom/identity_accessor.mojom-test-utils.h"
 #include "services/identity/public/mojom/identity_service.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -190,7 +190,7 @@ class MockIdentityAccessor {
   bool pause_requests_ = false;
   std::vector<identity::mojom::IdentityAccessor::GetAccessTokenCallback>
       callbacks_;
-  mojo::BindingSet<identity::mojom::IdentityAccessor>* bindings_ = nullptr;
+  mojo::ReceiverSet<identity::mojom::IdentityAccessor>* receivers_ = nullptr;
 };
 
 class FakeIdentityService
@@ -198,17 +198,17 @@ class FakeIdentityService
       public identity::mojom::IdentityService {
  public:
   explicit FakeIdentityService(MockIdentityAccessor* mock) : mock_(mock) {
-    mock_->bindings_ = &bindings_;
+    mock_->receivers_ = &receivers_;
   }
 
-  ~FakeIdentityService() override { mock_->bindings_ = nullptr; }
+  ~FakeIdentityService() override { mock_->receivers_ = nullptr; }
 
  private:
   // identity::mojom::IdentityService:
   void BindIdentityAccessor(
       mojo::PendingReceiver<identity::mojom::IdentityAccessor> receiver)
       override {
-    bindings_.AddBinding(this, std::move(receiver));
+    receivers_.Add(this, std::move(receiver));
   }
 
   // identity::mojom::IdentityAccessorInterceptorForTesting overrides:
@@ -234,7 +234,7 @@ class FakeIdentityService
   }
 
   MockIdentityAccessor* const mock_;
-  mojo::BindingSet<identity::mojom::IdentityAccessor> bindings_;
+  mojo::ReceiverSet<identity::mojom::IdentityAccessor> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeIdentityService);
 };
@@ -544,8 +544,8 @@ TEST_F(DriveFsHostTest, GetAccessToken_UnmountDuringMojoRequest) {
   run_loop.Run();
   EXPECT_FALSE(host_->IsMounted());
 
-  // Wait for the response to reach the InterfacePtr if it's still open.
-  mock_identity_accessor_.bindings_->FlushForTesting();
+  // Wait for the response to reach the remote if it's still open.
+  mock_identity_accessor_.receivers_->FlushForTesting();
 }
 
 ACTION_P(CloneStruct, output) {
@@ -748,7 +748,7 @@ TEST_F(DriveFsHostTest, Remount_RequestInflight) {
   std::move(mock_identity_accessor_.callbacks().front())
       .Run("auth token", clock_.Now() + base::TimeDelta::FromHours(1),
            GoogleServiceAuthError(GoogleServiceAuthError::NONE));
-  mock_identity_accessor_.bindings_->FlushForTesting();
+  mock_identity_accessor_.receivers_->FlushForTesting();
 
   // Second mount will reuse previous token.
   ASSERT_NO_FATAL_FAILURE(DoMount());
@@ -779,7 +779,7 @@ TEST_F(DriveFsHostTest, Remount_RequestInflightCompleteAfterMount) {
   std::move(mock_identity_accessor_.callbacks().front())
       .Run("auth token", clock_.Now() + base::TimeDelta::FromHours(1),
            GoogleServiceAuthError(GoogleServiceAuthError::NONE));
-  mock_identity_accessor_.bindings_->FlushForTesting();
+  mock_identity_accessor_.receivers_->FlushForTesting();
 
   // A new request will reuse the cached token.
   ExpectAccessToken(mojom::AccessTokenStatus::kSuccess, "auth token");

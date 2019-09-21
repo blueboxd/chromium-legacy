@@ -159,7 +159,7 @@ HttpAuthHandlerRegistryFactory::Create(
     HttpAuthHandlerNTLM::Factory* ntlm_factory =
         new HttpAuthHandlerNTLM::Factory();
 #if defined(OS_WIN)
-    ntlm_factory->set_sspi_library(new SSPILibraryDefault());
+    ntlm_factory->set_sspi_library(std::make_unique<SSPILibraryDefault>());
 #endif  // defined(OS_WIN)
     registry_factory->RegisterSchemeFactory(kNtlmAuthScheme, ntlm_factory);
   }

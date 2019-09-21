@@ -54,7 +54,7 @@ function testRefocusExistingOptionsPage() {
     chrome.tabs.create({url: testUrl}, callbackPass(function(tab) {
       // Make sure the new tab is active.
       getActiveTab(function(activeTab) {
-        assertEq(testUrl, activeTab.url);
+        assertEq(testUrl, activeTab.url || activeTab.pendingUrl);
         // Open options page should refocus it.
         chrome.runtime.openOptionsPage(callbackPass(function() {
           getActiveTab(function(activeTab) {

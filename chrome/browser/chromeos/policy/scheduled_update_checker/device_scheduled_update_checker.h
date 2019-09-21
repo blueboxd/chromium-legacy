@@ -160,6 +160,10 @@ class DeviceScheduledUpdateChecker
 
 namespace update_checker_internal {
 
+// The timeout after which an OS and policies update is aborted.
+constexpr base::TimeDelta kOsAndPoliciesUpdateCheckHardTimeout =
+    base::TimeDelta::FromMinutes(40);
+
 // The maximum iterations allowed to start an update check timer if the
 // operation fails.
 constexpr int kMaxStartUpdateCheckTimerRetryIterations = 5;

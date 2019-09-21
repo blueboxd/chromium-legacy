@@ -7,20 +7,19 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
-#include "base/optional.h"
+#include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task_runner_util.h"
+#include "base/trace_event/trace_event.h"
+#include "gpu/command_buffer/common/shared_image_usage.h"
+#include "gpu/command_buffer/service/scheduler.h"
+#include "gpu/ipc/service/gpu_channel.h"
+#include "gpu/ipc/service/shared_image_stub.h"
 #include "media/base/format_utils.h"
 #include "media/gpu/linux/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 #include "ui/gfx/gpu_memory_buffer.h"
-#include "ui/gfx/native_pixmap.h"
-#include "ui/gl/gl_image_native_pixmap.h"
-#include "ui/gl/scoped_binders.h"
-
-#if defined(USE_OZONE)
-#include "ui/ozone/public/ozone_platform.h"
-#include "ui/ozone/public/surface_factory_ozone.h"
-#endif  // defined(USE_OZONE)
+#include "ui/gl/gl_bindings.h"
 
 namespace media {
 
@@ -28,47 +27,41 @@ namespace {
 
 constexpr GLenum kTextureTarget = GL_TEXTURE_EXTERNAL_OES;
 
-// Destroy the GL texture. This is called when the origin DMA-buf VideoFrame
-// is destroyed.
-void DestroyTexture(scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
-                    scoped_refptr<CommandBufferHelper> command_buffer_helper,
-                    GLuint service_id) {
-  DVLOGF(4);
+}  // anonymous namespace
 
-  if (!gpu_task_runner->BelongsToCurrentThread()) {
-    gpu_task_runner->PostTask(
+// A SharedImage wrapper that calls |destroy_shared_image_cb| in dtor on
+// |gpu_task_runner|.
+class MailboxVideoFrameConverter::ScopedSharedImage {
+ public:
+  using DestroySharedImageCB =
+      gpu::SharedImageStub::SharedImageDestructionCallback;
+
+  ScopedSharedImage(
+      const gpu::Mailbox& mailbox,
+      const scoped_refptr<base::SingleThreadTaskRunner>& gpu_task_runner,
+      DestroySharedImageCB destroy_shared_image_cb)
+      : mailbox_(mailbox),
+        destroy_shared_image_cb_(std::move(destroy_shared_image_cb)),
+        destruction_task_runner_(gpu_task_runner) {}
+  ~ScopedSharedImage() {
+    if (destruction_task_runner_->RunsTasksInCurrentSequence()) {
+      std::move(destroy_shared_image_cb_).Run(gpu::SyncToken());
+      return;
+    }
+    destruction_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&DestroyTexture, std::move(gpu_task_runner),
-                       std::move(command_buffer_helper), service_id));
-    return;
+        base::BindOnce(std::move(destroy_shared_image_cb_), gpu::SyncToken()));
   }
 
-  if (!command_buffer_helper->MakeContextCurrent()) {
-    VLOGF(1) << "Failed to make context current";
-    return;
-  }
-  command_buffer_helper->DestroyTexture(service_id);
-}
+  const gpu::Mailbox& mailbox() const { return mailbox_; }
 
-// ReleaseMailbox callback of the mailbox VideoFrame.
-// Keep the wrapped DMA-buf VideoFrame until WaitForSyncToken() is done.
-void WaitForSyncToken(
-    scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
-    scoped_refptr<CommandBufferHelper> command_buffer_helper,
-    scoped_refptr<VideoFrame> frame,
-    const gpu::SyncToken& sync_token) {
-  DVLOGF(4);
+ private:
+  const gpu::Mailbox mailbox_;
+  DestroySharedImageCB destroy_shared_image_cb_;
+  const scoped_refptr<base::SequencedTaskRunner> destruction_task_runner_;
 
-  gpu_task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &CommandBufferHelper::WaitForSyncToken,
-          std::move(command_buffer_helper), sync_token,
-          base::BindOnce(base::DoNothing::Once<scoped_refptr<VideoFrame>>(),
-                         std::move(frame))));
-}
-
-}  // namespace
+  DISALLOW_COPY_AND_ASSIGN(ScopedSharedImage);
+};
 
 // static
 std::unique_ptr<VideoFrameConverter> MailboxVideoFrameConverter::Create(
@@ -78,18 +71,28 @@ std::unique_ptr<VideoFrameConverter> MailboxVideoFrameConverter::Create(
   if (!unwrap_frame_cb || !gpu_task_runner || !get_stub_cb)
     return nullptr;
 
+  auto get_gpu_channel_cb = base::BindRepeating(
+      [](base::RepeatingCallback<gpu::CommandBufferStub*()> get_stub_cb) {
+        gpu::CommandBufferStub* stub = get_stub_cb.Run();
+        if (!stub)
+          return base::WeakPtr<gpu::GpuChannel>();
+        DCHECK(stub->channel());
+        return stub->channel()->AsWeakPtr();
+      },
+      get_stub_cb);
+
   return base::WrapUnique<VideoFrameConverter>(new MailboxVideoFrameConverter(
       std::move(unwrap_frame_cb), std::move(gpu_task_runner),
-      std::move(get_stub_cb)));
+      get_gpu_channel_cb));
 }
 
 MailboxVideoFrameConverter::MailboxVideoFrameConverter(
     UnwrapFrameCB unwrap_frame_cb,
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
-    GetCommandBufferStubCB get_stub_cb)
+    GetGpuChannelCB get_gpu_channel_cb)
     : unwrap_frame_cb_(std::move(unwrap_frame_cb)),
       gpu_task_runner_(std::move(gpu_task_runner)),
-      get_stub_cb_(std::move(get_stub_cb)) {
+      get_gpu_channel_cb_(get_gpu_channel_cb) {
   DVLOGF(2);
 
   parent_weak_this_ = parent_weak_this_factory_.GetWeakPtr();
@@ -121,19 +124,16 @@ MailboxVideoFrameConverter::~MailboxVideoFrameConverter() {
   DVLOGF(2);
 }
 
-bool MailboxVideoFrameConverter::CreateCommandBufferHelper() {
-  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
-  DCHECK(get_stub_cb_);
+bool MailboxVideoFrameConverter::InitializeOnGPUThread() {
   DVLOGF(4);
+  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
 
-  gpu::CommandBufferStub* stub = std::move(get_stub_cb_).Run();
-  if (!stub) {
-    VLOGF(1) << "Failed to obtain command buffer stub";
-    return false;
-  }
+  // Use |gpu_channel_| as a marker that we have been initialized already.
+  if (gpu_channel_)
+    return true;
 
-  command_buffer_helper_ = CommandBufferHelper::Create(stub);
-  return command_buffer_helper_ != nullptr;
+  gpu_channel_ = get_gpu_channel_cb_.Run();
+  return !!gpu_channel_;
 }
 
 void MailboxVideoFrameConverter::ConvertFrame(scoped_refptr<VideoFrame> frame) {
@@ -147,165 +147,243 @@ void MailboxVideoFrameConverter::ConvertFrame(scoped_refptr<VideoFrame> frame) {
   if (!origin_frame)
     return OnError("Failed to get origin frame.");
 
-  // Generate mailbox at gpu thread if we haven't.
+  gpu::Mailbox mailbox;
   const int origin_frame_id = origin_frame->unique_id();
-  if (mailbox_table_.find(origin_frame_id) == mailbox_table_.end()) {
-    DVLOGF(4) << "Generate mailbox for frame: " << origin_frame_id;
-    // Set an empty mailbox first to prevent generating mailbox multiple times.
-    mailbox_table_.emplace(origin_frame_id, gpu::Mailbox());
+  if (shared_images_.find(origin_frame_id) != shared_images_.end())
+    mailbox = shared_images_[origin_frame_id]->mailbox();
 
-    // |frame| keeps a refptr of |origin_frame|. |origin_frame| is guaranteed
-    // alive by carrying |frame|. So it's safe to use base::Unretained here.
-    gpu_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&MailboxVideoFrameConverter::GenerateMailbox,
-                       gpu_weak_this_, base::Unretained(origin_frame), frame));
-  }
-
-  input_frame_queue_.emplace(std::move(frame), origin_frame_id);
-  TryOutputFrames();
-}
-
-void MailboxVideoFrameConverter::TryOutputFrames() {
-  DCHECK(parent_task_runner_->RunsTasksInCurrentSequence());
-  DVLOGF(4) << "input_frame_queue_ size: " << input_frame_queue_.size();
-
-  while (!input_frame_queue_.empty()) {
-    const int origin_frame_id = input_frame_queue_.front().second;
-    const gpu::Mailbox& mailbox = mailbox_table_[origin_frame_id];
-    if (mailbox.IsZero()) {
-      DVLOGF(4) << "Mailbox for frame: " << origin_frame_id
-                << " is not generated yet.";
-      return;
-    }
-
-    auto frame = std::move(input_frame_queue_.front().first);
-    input_frame_queue_.pop();
-
-    gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes];
-    mailbox_holders[0] =
-        gpu::MailboxHolder(mailbox, gpu::SyncToken(), kTextureTarget);
-    scoped_refptr<VideoFrame> mailbox_frame = VideoFrame::WrapNativeTextures(
-        frame->format(), mailbox_holders,
-        base::BindOnce(&WaitForSyncToken, gpu_task_runner_,
-                       command_buffer_helper_, frame),
-        frame->coded_size(), frame->visible_rect(), frame->natural_size(),
-        frame->timestamp());
-    mailbox_frame->metadata()->MergeMetadataFrom(frame->metadata());
-
-    mailbox_frame->metadata()->SetBoolean(
-        VideoFrameMetadata::READ_LOCK_FENCES_ENABLED, true);
-
-    output_cb_.Run(mailbox_frame);
-  }
-}
-
-void MailboxVideoFrameConverter::GenerateMailbox(
-    VideoFrame* origin_frame,
-    scoped_refptr<VideoFrame> frame) {
-  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
-  DVLOGF(4) << "frame: " << origin_frame->unique_id();
-
-  // CreateCommandBufferHelper() should be called on |gpu_task_runner_| so we
-  // call it here lazily instead of at constructor.
-  if (!command_buffer_helper_ && !CreateCommandBufferHelper())
-    return OnError("Failed to create command buffer helper.");
-
-  // Get NativePixmap.
-  scoped_refptr<gfx::NativePixmap> pixmap;
-  auto buffer_format =
-      VideoPixelFormatToGfxBufferFormat(origin_frame->format());
-  if (!buffer_format) {
-    return OnError("Unsupported format: " +
-                   VideoPixelFormatToString(origin_frame->format()));
-  }
-
-#if defined(USE_OZONE)
-  gfx::GpuMemoryBufferHandle handle = CreateGpuMemoryBufferHandle(origin_frame);
-  DCHECK(!handle.is_null());
-  pixmap = ui::OzonePlatform::GetInstance()
-               ->GetSurfaceFactoryOzone()
-               ->CreateNativePixmapFromHandle(
-                   gfx::kNullAcceleratedWidget, origin_frame->coded_size(),
-                   *buffer_format, std::move(handle.native_pixmap_handle));
-#endif  // defined(USE_OZONE)
-  if (!pixmap)
-    return OnError("Cannot create NativePixmap.");
-
-  // Create GLImage.
-  auto image = base::MakeRefCounted<gl::GLImageNativePixmap>(
-      origin_frame->coded_size(), *buffer_format);
-  if (!image->Initialize(std::move(pixmap)))
-    return OnError("Failed to initialize GLImage.");
-
-  // Create texture and bind image to texture.
-  if (!command_buffer_helper_->MakeContextCurrent())
-    return OnError("Failed to make context current.");
-
-  GLuint service_id = command_buffer_helper_->CreateTexture(
-      kTextureTarget, GL_RGBA, origin_frame->coded_size().width(),
-      origin_frame->coded_size().height(), GL_RGBA, GL_UNSIGNED_BYTE);
-  DCHECK(service_id);
-  gl::ScopedTextureBinder bind_restore(kTextureTarget, service_id);
-  bool ret = image->BindTexImage(kTextureTarget);
-  DCHECK(ret);
-  command_buffer_helper_->BindImage(service_id, image.get(), true);
-  command_buffer_helper_->SetCleared(service_id);
-  gpu::Mailbox mailbox = command_buffer_helper_->CreateMailbox(service_id);
-
-  // Destroy the texture after the DMA-buf VideoFrame is destructed.
-  origin_frame->AddDestructionObserver(base::BindOnce(
-      &DestroyTexture, gpu_task_runner_, command_buffer_helper_, service_id));
+  input_frame_queue_.emplace(frame, origin_frame_id);
 
   // |frame| keeps a refptr of |origin_frame|. |origin_frame| is guaranteed
   // alive by carrying |frame|. So it's safe to use base::Unretained here.
-  parent_task_runner_->PostTask(
+  gpu_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&MailboxVideoFrameConverter::RegisterMailbox,
-                     parent_weak_this_, base::Unretained(origin_frame), mailbox,
-                     std::move(frame)));
+      base::BindOnce(&MailboxVideoFrameConverter::ConvertFrameOnGPUThread,
+                     gpu_weak_this_, base::Unretained(origin_frame),
+                     std::move(frame), mailbox));
 }
 
-void MailboxVideoFrameConverter::RegisterMailbox(
+void MailboxVideoFrameConverter::WrapMailboxAndVideoFrameAndOutput(
     VideoFrame* origin_frame,
-    const gpu::Mailbox& mailbox,
-    scoped_refptr<VideoFrame> frame) {
+    scoped_refptr<VideoFrame> frame,
+    const gpu::Mailbox& mailbox) {
   DCHECK(parent_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!mailbox.IsZero());
+
+  const int origin_frame_id = origin_frame->unique_id();
+  DCHECK(base::Contains(shared_images_, origin_frame_id));
+
+  // While we were on |gpu_task_runner_|, AbortPendingFrames() might have been
+  // called and/or possibly different frames enqueued in |input_frame_queue_|.
+  if (input_frame_queue_.empty())
+    return;
+  if (input_frame_queue_.front().second != origin_frame_id)
+    return;
+  input_frame_queue_.pop();
+
+  gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes];
+  mailbox_holders[0] =
+      gpu::MailboxHolder(mailbox, gpu::SyncToken(), kTextureTarget);
+
+  VideoFrame::ReleaseMailboxCB release_mailbox_cb = base::BindOnce(
+      [](scoped_refptr<base::SequencedTaskRunner> gpu_task_runner,
+         base::WeakPtr<MailboxVideoFrameConverter> gpu_weak_ptr,
+         scoped_refptr<VideoFrame> frame, const gpu::SyncToken& sync_token) {
+        if (gpu_task_runner->RunsTasksInCurrentSequence()) {
+          if (gpu_weak_ptr) {
+            gpu_weak_ptr->WaitOnSyncTokenAndReleaseFrameOnGPUThread(
+                std::move(frame), sync_token);
+          }
+          return;
+        }
+        gpu_task_runner->PostTask(
+            FROM_HERE,
+            base::BindOnce(&MailboxVideoFrameConverter::
+                               WaitOnSyncTokenAndReleaseFrameOnGPUThread,
+                           gpu_weak_ptr, std::move(frame), sync_token));
+      },
+      gpu_task_runner_, gpu_weak_this_, frame);
+
+  scoped_refptr<VideoFrame> mailbox_frame = VideoFrame::WrapNativeTextures(
+      frame->format(), mailbox_holders, std::move(release_mailbox_cb),
+      frame->coded_size(), frame->visible_rect(), frame->natural_size(),
+      frame->timestamp());
+  mailbox_frame->metadata()->MergeMetadataFrom(frame->metadata());
+  mailbox_frame->metadata()->SetBoolean(
+      VideoFrameMetadata::READ_LOCK_FENCES_ENABLED, true);
+  // TODO(crbug.com/998547): Remove this specific statement when not needed.
+  mailbox_frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT,
+                                        true);
+
+  output_cb_.Run(mailbox_frame);
+}
+
+void MailboxVideoFrameConverter::ConvertFrameOnGPUThread(
+    VideoFrame* origin_frame,
+    scoped_refptr<VideoFrame> frame,
+    gpu::Mailbox stored_mailbox) {
+  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
+  TRACE_EVENT1("media,gpu", "ConvertFrameOnGPUThread", "VideoFrame id",
+               origin_frame->unique_id());
+
+  // |origin_frame| is kept alive by |frame|.
+  auto wrap_mailbox_and_video_frame_and_output_cb = base::BindOnce(
+      &MailboxVideoFrameConverter::WrapMailboxAndVideoFrameAndOutput,
+      parent_weak_this_, base::Unretained(origin_frame), std::move(frame));
+
+  // If there's a |stored_mailbox| associated with |origin_frame|, update it and
+  // call the continuation callback, otherwise create a Mailbox and register it.
+  if (!stored_mailbox.IsZero()) {
+    if (!UpdateSharedImageOnGPUThread(stored_mailbox))
+      return;
+    parent_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(wrap_mailbox_and_video_frame_and_output_cb),
+                       stored_mailbox));
+    return;
+  }
+
+  std::unique_ptr<ScopedSharedImage> scoped_shared_image;
+  scoped_shared_image = GenerateSharedImageOnGPUThread(origin_frame);
+  if (!scoped_shared_image)
+    return;
+
+  gpu::Mailbox mailbox = scoped_shared_image->mailbox();
+  // |origin_frame| is kept alive by |frame| in
+  // |wrap_mailbox_and_video_frame_and_output_cb|.
+  parent_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&MailboxVideoFrameConverter::RegisterSharedImage,
+                     parent_weak_this_, base::Unretained(origin_frame),
+                     std::move(scoped_shared_image)));
+  parent_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(wrap_mailbox_and_video_frame_and_output_cb),
+                     mailbox));
+}
+
+std::unique_ptr<MailboxVideoFrameConverter::ScopedSharedImage>
+MailboxVideoFrameConverter::GenerateSharedImageOnGPUThread(
+    VideoFrame* video_frame) {
+  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
+  DVLOGF(4) << "frame: " << video_frame->unique_id();
+
+  // TODO(crbug.com/998279): consider eager initialization.
+  if (!InitializeOnGPUThread()) {
+    OnError("InitializeOnGPUThread failed");
+    return nullptr;
+  }
+
+  const auto buffer_format =
+      VideoPixelFormatToGfxBufferFormat(video_frame->format());
+  if (!buffer_format) {
+    OnError("Unsupported format: " +
+            VideoPixelFormatToString(video_frame->format()));
+    return nullptr;
+  }
+
+  auto gpu_memory_buffer_handle = CreateGpuMemoryBufferHandle(video_frame);
+  DCHECK(!gpu_memory_buffer_handle.is_null());
+  DCHECK_EQ(gpu_memory_buffer_handle.type, gfx::NATIVE_PIXMAP);
+
+  gpu::Mailbox mailbox = gpu::Mailbox::GenerateForSharedImage();
+
+  if (!gpu_channel_) {
+    OnError("GpuChannel is gone!");
+    return nullptr;
+  }
+  gpu::SharedImageStub* shared_image_stub = gpu_channel_->shared_image_stub();
+  DCHECK(shared_image_stub);
+
+  // The allocated SharedImages should be usable for the (Display) compositor
+  // and, potentially, for overlays (Scanout).
+  const uint32_t shared_image_usage =
+      gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT;
+  const bool success = shared_image_stub->CreateSharedImage(
+      mailbox, shared_image_stub->channel()->client_id(),
+      std::move(gpu_memory_buffer_handle), *buffer_format,
+      gpu::kNullSurfaceHandle, video_frame->coded_size(),
+      video_frame->ColorSpace(), shared_image_usage);
+  if (!success) {
+    OnError("Failed to create shared image.");
+    return nullptr;
+  }
+  // There's no need to UpdateSharedImage() after CreateSharedImage().
+
+  return std::make_unique<ScopedSharedImage>(
+      mailbox, gpu_task_runner_,
+      shared_image_stub->GetSharedImageDestructionCallback(mailbox));
+}
+
+void MailboxVideoFrameConverter::RegisterSharedImage(
+    VideoFrame* origin_frame,
+    std::unique_ptr<ScopedSharedImage> scoped_shared_image) {
   DVLOGF(4) << "frame: " << origin_frame->unique_id();
+  DCHECK(parent_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(scoped_shared_image);
+  DCHECK(!scoped_shared_image->mailbox().IsZero());
+  DCHECK(!base::Contains(shared_images_, origin_frame->unique_id()));
 
-  mailbox_table_[origin_frame->unique_id()] = mailbox;
+  shared_images_[origin_frame->unique_id()] = std::move(scoped_shared_image);
   origin_frame->AddDestructionObserver(base::BindOnce(
-      &MailboxVideoFrameConverter::UnregisterMailboxThunk, parent_task_runner_,
-      parent_weak_this_, origin_frame->unique_id()));
-
-  // Mailbox has been generated. It's time to convert frame again.
-  TryOutputFrames();
+      [](scoped_refptr<base::SequencedTaskRunner> parent_task_runner,
+         base::WeakPtr<MailboxVideoFrameConverter> parent_weak_ptr,
+         int origin_frame_id) {
+        if (parent_task_runner->RunsTasksInCurrentSequence()) {
+          if (parent_weak_ptr)
+            parent_weak_ptr->UnregisterSharedImage(origin_frame_id);
+          return;
+        }
+        parent_task_runner->PostTask(
+            FROM_HERE,
+            base::BindOnce(&MailboxVideoFrameConverter::UnregisterSharedImage,
+                           parent_weak_ptr, origin_frame_id));
+      },
+      parent_task_runner_, parent_weak_this_, origin_frame->unique_id()));
 }
 
-// static
-void MailboxVideoFrameConverter::UnregisterMailboxThunk(
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    base::Optional<base::WeakPtr<MailboxVideoFrameConverter>> converter,
-    const int origin_frame_id) {
-  DCHECK(converter);
-  DVLOGF(4) << "frame: " << origin_frame_id;
-
-  // MailboxVideoFrameConverter might have already been destroyed when this
-  // method is called. In this case, the WeakPtr will have been invalidated at
-  // |parent_task_runner_|, and UnregisterMailbox() will not get executed.
-  task_runner->PostTask(
-      FROM_HERE, base::BindOnce(&MailboxVideoFrameConverter::UnregisterMailbox,
-                                *converter, origin_frame_id));
+bool MailboxVideoFrameConverter::UpdateSharedImageOnGPUThread(
+    const gpu::Mailbox& mailbox) {
+  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
+  if (!gpu_channel_) {
+    OnError("GpuChannel is gone!");
+    return false;
+  }
+  gpu::SharedImageStub* shared_image_stub = gpu_channel_->shared_image_stub();
+  DCHECK(shared_image_stub);
+  if (!shared_image_stub->UpdateSharedImage(mailbox, gfx::GpuFenceHandle())) {
+    OnError("Could not update shared image");
+    return false;
+  }
+  return true;
 }
 
-void MailboxVideoFrameConverter::UnregisterMailbox(const int origin_frame_id) {
+void MailboxVideoFrameConverter::WaitOnSyncTokenAndReleaseFrameOnGPUThread(
+    scoped_refptr<VideoFrame> frame,
+    const gpu::SyncToken& sync_token) {
+  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
+
+  if (!gpu_channel_)
+    return OnError("GpuChannel is gone!");
+  gpu::SharedImageStub* shared_image_stub = gpu_channel_->shared_image_stub();
+  DCHECK(shared_image_stub);
+
+  auto keep_video_frame_alive = base::BindOnce(
+      base::DoNothing::Once<scoped_refptr<VideoFrame>>(), std::move(frame));
+  auto* scheduler = gpu_channel_->scheduler();
+  DCHECK(scheduler);
+  scheduler->ScheduleTask(gpu::Scheduler::Task(
+      shared_image_stub->sequence(), std::move(keep_video_frame_alive),
+      std::vector<gpu::SyncToken>({sync_token})));
+}
+
+void MailboxVideoFrameConverter::UnregisterSharedImage(int origin_frame_id) {
   DCHECK(parent_task_runner_->RunsTasksInCurrentSequence());
   DVLOGF(4);
 
-  auto it = mailbox_table_.find(origin_frame_id);
-  DCHECK(it != mailbox_table_.end());
-  mailbox_table_.erase(it);
+  auto it = shared_images_.find(origin_frame_id);
+  DCHECK(it != shared_images_.end());
+  shared_images_.erase(it);
 }
 
 void MailboxVideoFrameConverter::AbortPendingFrames() {

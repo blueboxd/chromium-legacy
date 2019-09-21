@@ -88,7 +88,8 @@
 <translation id="4230135487732243613">Связать данные Chromium с этим аккаунтом?</translation>
 <translation id="4271805377592243930">Справка Chromium</translation>
 <translation id="4285930937574705105">Установка не удалась из-за неизвестной ошибки. Если Chromium продолжает работать, закройте его и повторите попытку.</translation>
-<translation id="4371648796594901282">Подробнее <ph name="LINK_BEGIN" />о Chromium OS<ph name="LINK_END" /></translation>
+<translation id="4371648796594901282">Узнайте больше <ph name="LINK_BEGIN" />
+      о Chromium OS<ph name="LINK_END" /></translation>
 <translation id="4407044323746248786">Закрыть Chromium?</translation>
 <translation id="4415566066719264597">Разрешить Chromium работать в фоновом режиме</translation>
 <translation id="4423735387467980091">Настройка и управление Chromium</translation>

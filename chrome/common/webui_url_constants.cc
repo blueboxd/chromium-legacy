@@ -390,6 +390,7 @@ const char kBluetoothSubPage[] = "bluetoothDevices";
 const char kChangePictureSubPage[] = "changePicture";
 // 'multidevice/features' is a child of the 'multidevice' route
 const char kConnectedDevicesSubPage[] = "multidevice/features";
+const char kCrostiniSharedPathsSubPage[] = "crostini/sharedPaths";
 const char kCrostiniSharedUsbDevicesSubPage[] = "crostini/sharedUsbDevices";
 const char kCrostiniExportImportSubPage[] = "crostini/exportImport";
 const char kDateTimeSubPage[] = "dateTime";
@@ -433,6 +434,7 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       kBluetoothSubPage,
       kChangePictureSubPage,
       kConnectedDevicesSubPage,
+      kCrostiniSharedPathsSubPage,
       kCrostiniSharedUsbDevicesSubPage,
       kDateTimeSubPage,
       kDisplaySubPage,

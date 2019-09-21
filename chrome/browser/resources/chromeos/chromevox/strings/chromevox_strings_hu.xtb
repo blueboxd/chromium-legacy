@@ -169,6 +169,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="2220529011494928058">Probléma bejelentése</translation>
 <translation id="2223693656926968778">Művelet végrehajtása az aktuális elemen</translation>
 <translation id="225732394367814946">Beszédsebesség növelése</translation>
+<translation id="2267538686624070261">Elgépelés elhagyása</translation>
 <translation id="2267945578749931355">Következő karakter</translation>
 <translation id="2278490101488436824">Csúsztassa három ujját balra</translation>
 <translation id="2281234842553884450">Előző dia</translation>
@@ -207,6 +208,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="257674075312929031">Csoport</translation>
 <translation id="2582407057977008361">Oldaltartalom</translation>
 <translation id="2592212930811759050">Koppintson duplán a szerkesztés megkezdéséhez</translation>
+<translation id="2598495320872286378">Nyelvhelyességi hiba</translation>
 <translation id="2614981083756825552">Matematikai „ML” elrendezés</translation>
 <translation id="2624431853467395961">Tanuló mód megnyitása</translation>
 <translation id="2626530649491650971">rákattintható</translation>
@@ -821,6 +823,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="6833103209700200188">Lábléc</translation>
 <translation id="6858047746862060282">Prológus</translation>
 <translation id="6859876496651143278">Csúsztassa egy ujját balra</translation>
+<translation id="6865519907510167493">Elgépelés</translation>
 <translation id="6871161210040114857">A kis- és nagybetűk nem különbözők.</translation>
 <translation id="6877435256196695200">Nincs következő ábra.</translation>
 <translation id="6897341342232909480">Mozgatás balra</translation>
@@ -1111,6 +1114,7 @@ A Chrome böngésző menüjének megnyitásához nyomja le az Alt + F billentyű
 <translation id="8446884382197647889">További információ</translation>
 <translation id="8455868257606149352">Max <ph name="X" /></translation>
 <translation id="84575901236241018">hozzáférési kulccsal rendelkezik: <ph name="KEY" /></translation>
+<translation id="8463645336674919227">Nyelvhelyességi hiba elhagyása</translation>
 <translation id="847154984256717791">elfoglalt</translation>
 <translation id="8476408756881832830">Lejátszás szüneteltetése, amikor a ChromeVox beszél</translation>
 <translation id="8476508772960940536">ablakáttekintési mód</translation>

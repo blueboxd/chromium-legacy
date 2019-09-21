@@ -324,12 +324,14 @@ void DeviceScheduledUpdateChecker::OnUpdateCheckTimerExpired() {
   // very little chance of stepping on an existing update check that hasn't
   // finished for a day. Timeouts will ensure that an update check completes,
   // successfully or unsuccessfully, way before a day.
-  os_and_policies_update_checker_.Start(base::BindOnce(
-      &DeviceScheduledUpdateChecker::OnUpdateCheckCompletion,
-      base::Unretained(this),
-      ScopedWakeLock(connector_,
-                     device::mojom::WakeLockType::kPreventAppSuspension,
-                     kWakeLockReason)));
+  os_and_policies_update_checker_.Start(
+      base::BindOnce(
+          &DeviceScheduledUpdateChecker::OnUpdateCheckCompletion,
+          base::Unretained(this),
+          ScopedWakeLock(connector_,
+                         device::mojom::WakeLockType::kPreventAppSuspension,
+                         kWakeLockReason)),
+      update_checker_internal::kOsAndPoliciesUpdateCheckHardTimeout);
 }
 
 void DeviceScheduledUpdateChecker::TimezoneChanged(

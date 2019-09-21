@@ -180,10 +180,6 @@ def GetObjDumpPath(tool_prefix):
 
 
 def GetReadElfPath(tool_prefix):
-  # Work-around for llvm-readobj bug where 'File: ...' info is not printed:
-  # https://bugs.llvm.org/show_bug.cgi?id=35351
-  if tool_prefix[-5:] == 'llvm-':
-    return 'readelf'
   return tool_prefix + 'readelf'
 
 

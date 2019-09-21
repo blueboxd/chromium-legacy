@@ -651,6 +651,54 @@ TEST(AXTreeTest, ImplicitChildrenDelete) {
   EXPECT_EQ(tree.GetFromId(3), nullptr);
 }
 
+TEST(AXTreeTest, IndexInParentAfterReorder) {
+  // This test covers the case where an AXTreeUpdate includes
+  // reordered children.  The unignored index in parent
+  // values should be updated.
+
+  // Setup initial tree state.
+  // Tree:
+  //        1
+  //    2   3  4
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(4);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].child_ids.resize(3);
+  initial_state.nodes[0].child_ids[0] = 2;
+  initial_state.nodes[0].child_ids[1] = 3;
+  initial_state.nodes[0].child_ids[2] = 4;
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[3].id = 4;
+  AXTree tree(initial_state);
+
+  // Index in parent correct.
+  EXPECT_EQ(tree.GetFromId(2)->GetUnignoredIndexInParent(), (size_t)0);
+  EXPECT_EQ(tree.GetFromId(3)->GetUnignoredIndexInParent(), (size_t)1);
+  EXPECT_EQ(tree.GetFromId(4)->GetUnignoredIndexInParent(), (size_t)2);
+
+  // Perform an update where we reorder children to [ 4 3 2 ]
+  AXTreeUpdate update;
+  update.nodes.resize(4);
+  update.root_id = 1;
+  update.nodes[0].id = 1;
+  update.nodes[0].child_ids.resize(3);
+  update.nodes[0].child_ids[0] = 4;
+  update.nodes[0].child_ids[1] = 3;
+  update.nodes[0].child_ids[2] = 2;
+  update.nodes[1].id = 2;
+  update.nodes[2].id = 3;
+  update.nodes[3].id = 4;
+
+  ASSERT_TRUE(tree.Unserialize(update));
+
+  // Index in parent should have changed as well.
+  EXPECT_EQ((size_t)0, tree.GetFromId(4)->GetUnignoredIndexInParent());
+  EXPECT_EQ((size_t)1, tree.GetFromId(3)->GetUnignoredIndexInParent());
+  EXPECT_EQ((size_t)2, tree.GetFromId(2)->GetUnignoredIndexInParent());
+}
+
 TEST(AXTreeTest, ImplicitAttributeDelete) {
   // This test covers the case where an AXTreeUpdate includes a node without
   // mentioning one of that node's attributes, this should cause a delete of any

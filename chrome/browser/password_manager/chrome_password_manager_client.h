@@ -195,7 +195,9 @@ class ChromePasswordManagerClient
       const std::string& username,
       const std::vector<std::string>& matching_domains,
       bool password_field_exists) override;
+#endif
 
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
   void LogPasswordReuseDetectedEvent() override;
 #endif
 
@@ -248,7 +250,7 @@ class ChromePasswordManagerClient
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#if !defined(OS_ANDROID)
   void OnPaste() override;
 #endif
 

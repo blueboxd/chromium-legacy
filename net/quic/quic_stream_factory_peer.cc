@@ -27,9 +27,11 @@ const quic::QuicConfig* QuicStreamFactoryPeer::GetConfig(
   return &factory->config_;
 }
 
-quic::QuicCryptoClientConfig* QuicStreamFactoryPeer::GetCryptoConfig(
-    QuicStreamFactory* factory) {
-  return &factory->crypto_config_;
+std::unique_ptr<QuicCryptoClientConfigHandle>
+QuicStreamFactoryPeer::GetCryptoConfig(
+    QuicStreamFactory* factory,
+    const NetworkIsolationKey& network_isolation_key) {
+  return factory->GetCryptoConfigForTesting(network_isolation_key);
 }
 
 bool QuicStreamFactoryPeer::HasActiveSession(
@@ -128,9 +130,11 @@ void QuicStreamFactoryPeer::SetRaceCertVerification(
 quic::QuicAsyncStatus QuicStreamFactoryPeer::StartCertVerifyJob(
     QuicStreamFactory* factory,
     const quic::QuicServerId& server_id,
+    const NetworkIsolationKey& network_isolation_key,
     int cert_verify_flags,
     const NetLogWithSource& net_log) {
-  return factory->StartCertVerifyJob(server_id, cert_verify_flags, net_log);
+  return factory->StartCertVerifyJobForTesting(server_id, network_isolation_key,
+                                               cert_verify_flags, net_log);
 }
 
 void QuicStreamFactoryPeer::SetYieldAfterPackets(QuicStreamFactory* factory,
@@ -146,13 +150,16 @@ void QuicStreamFactoryPeer::SetYieldAfterDuration(
 
 bool QuicStreamFactoryPeer::CryptoConfigCacheIsEmpty(
     QuicStreamFactory* factory,
-    const quic::QuicServerId& quic_server_id) {
-  return factory->CryptoConfigCacheIsEmpty(quic_server_id);
+    const quic::QuicServerId& quic_server_id,
+    const NetworkIsolationKey& network_isolation_key) {
+  return factory->CryptoConfigCacheIsEmpty(quic_server_id,
+                                           network_isolation_key);
 }
 
 void QuicStreamFactoryPeer::CacheDummyServerConfig(
     QuicStreamFactory* factory,
-    const quic::QuicServerId& quic_server_id) {
+    const quic::QuicServerId& quic_server_id,
+    const NetworkIsolationKey& network_isolation_key) {
   // Minimum SCFG that passes config validation checks.
   const char scfg[] = {// SCFG
                        0x53, 0x43, 0x46, 0x47,
@@ -178,9 +185,10 @@ void QuicStreamFactoryPeer::CacheDummyServerConfig(
   DCHECK(cert);
   certs.emplace_back(x509_util::CryptoBufferAsStringPiece(cert->cert_buffer()));
 
-  quic::QuicCryptoClientConfig* crypto_config = &factory->crypto_config_;
+  std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config_handle =
+      GetCryptoConfig(factory, network_isolation_key);
   quic::QuicCryptoClientConfig::CachedState* cached =
-      crypto_config->LookupOrCreate(quic_server_id);
+      crypto_config_handle->GetConfig()->LookupOrCreate(quic_server_id);
   quic::QuicChromiumClock clock;
   cached->Initialize(server_config, source_address_token, certs, "", "",
                      signature, clock.WallNow(), quic::QuicWallTime::Zero());

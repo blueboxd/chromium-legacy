@@ -430,6 +430,10 @@ bool Scheduler::ShouldYield(SequenceId sequence_id) {
   return running_sequence->ShouldYieldTo(next_sequence);
 }
 
+base::WeakPtr<Scheduler> Scheduler::AsWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 void Scheduler::SyncTokenFenceReleased(const SyncToken& sync_token,
                                        uint32_t order_num,
                                        SequenceId release_sequence_id,

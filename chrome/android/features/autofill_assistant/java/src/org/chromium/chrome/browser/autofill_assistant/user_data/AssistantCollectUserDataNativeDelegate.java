@@ -96,6 +96,28 @@ public class AssistantCollectUserDataNativeDelegate implements AssistantCollectU
         }
     }
 
+    @Override
+    public void onDateTimeRangeStartChanged(
+            int year, int month, int day, int hour, int minute, int second) {
+        if (mNativeAssistantCollectUserDataDelegate != 0) {
+            AssistantCollectUserDataNativeDelegateJni.get().onDateTimeRangeStartChanged(
+                    mNativeAssistantCollectUserDataDelegate,
+                    AssistantCollectUserDataNativeDelegate.this, year, month, day, hour, minute,
+                    second);
+        }
+    }
+
+    @Override
+    public void onDateTimeRangeEndChanged(
+            int year, int month, int day, int hour, int minute, int second) {
+        if (mNativeAssistantCollectUserDataDelegate != 0) {
+            AssistantCollectUserDataNativeDelegateJni.get().onDateTimeRangeEndChanged(
+                    mNativeAssistantCollectUserDataDelegate,
+                    AssistantCollectUserDataNativeDelegate.this, year, month, day, hour, minute,
+                    second);
+        }
+    }
+
     @CalledByNative
     private void clearNativePtr() {
         mNativeAssistantCollectUserDataDelegate = 0;
@@ -118,5 +140,11 @@ public class AssistantCollectUserDataNativeDelegate implements AssistantCollectU
                 AssistantCollectUserDataNativeDelegate caller, int link);
         void onLoginChoiceChanged(long nativeAssistantCollectUserDataDelegate,
                 AssistantCollectUserDataNativeDelegate caller, String choice);
+        void onDateTimeRangeStartChanged(long nativeAssistantCollectUserDataDelegate,
+                AssistantCollectUserDataNativeDelegate caller, int year, int month, int day,
+                int hour, int minute, int second);
+        void onDateTimeRangeEndChanged(long nativeAssistantCollectUserDataDelegate,
+                AssistantCollectUserDataNativeDelegate caller, int year, int month, int day,
+                int hour, int minute, int second);
     }
 }

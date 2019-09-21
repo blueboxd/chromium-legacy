@@ -371,7 +371,9 @@ void AddExtensionDisabledErrorWithIcon(base::WeakPtr<ExtensionService> service,
                                        const gfx::Image& icon) {
   if (!service.get())
     return;
-  const Extension* extension = service->GetInstalledExtension(extension_id);
+  const ExtensionRegistry* registry =
+      ExtensionRegistry::Get(service->profile());
+  const Extension* extension = registry->GetInstalledExtension(extension_id);
   if (extension) {
     GlobalErrorServiceFactory::GetForProfile(service->profile())
         ->AddGlobalError(std::make_unique<ExtensionDisabledGlobalError>(

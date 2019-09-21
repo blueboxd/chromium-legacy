@@ -624,7 +624,7 @@ class ExtensionServiceTest : public ExtensionServiceTestWithInstall {
   // Grants all optional permissions stated in manifest to active permission
   // set for extension |id|.
   void GrantAllOptionalPermissions(const std::string& id) {
-    const Extension* extension = service()->GetInstalledExtension(id);
+    const Extension* extension = registry()->GetInstalledExtension(id);
     const PermissionSet& all_optional_permissions =
         PermissionsParser::GetOptionalPermissions(extension);
     permissions_test_util::GrantOptionalPermissionsAndWaitForCompletion(
@@ -1059,7 +1059,7 @@ TEST_F(ExtensionServiceTest, ReloadExtensionWithPendingImports) {
   content::RunAllTasksUntilIdle();
 
   EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
-  extension = service()->GetInstalledExtension(id);
+  extension = registry()->GetInstalledExtension(id);
   ASSERT_TRUE(extension);
 
   // The extension update should be delayed at this point - the old version
@@ -1085,7 +1085,7 @@ TEST_F(ExtensionServiceTest, ReloadExtensionWithPendingImports) {
   EXPECT_EQ(id, reload_observer.last_extension_unloaded);
   registry()->RemoveObserver(&reload_observer);
 
-  extension = service()->GetInstalledExtension(id);
+  extension = registry()->GetInstalledExtension(id);
   ASSERT_TRUE(extension);
   EXPECT_EQ("1.0.0", extension->VersionString());
 
@@ -1098,7 +1098,7 @@ TEST_F(ExtensionServiceTest, ReloadExtensionWithPendingImports) {
   // should remain delayed.
   EXPECT_FALSE(service()->FinishDelayedInstallationIfReady(id, true));
 
-  extension = service()->GetInstalledExtension(id);
+  extension = registry()->GetInstalledExtension(id);
   ASSERT_TRUE(extension);
   EXPECT_EQ("1.0.0", extension->VersionString());
   EXPECT_EQ(ExtensionPrefs::DELAY_REASON_WAIT_FOR_IMPORTS,
@@ -1524,7 +1524,7 @@ TEST_F(ExtensionServiceTest, GrantedPermissionsOnUpdate) {
   // separate message, but is implied by kHistory. The extension should remain
   // enabled.
   PackCRXAndUpdateExtension(id, path2, pem_path, ENABLED);
-  extension = service()->GetInstalledExtension(id);
+  extension = registry()->GetInstalledExtension(id);
   ASSERT_TRUE(extension);
   EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
 
@@ -1540,7 +1540,7 @@ TEST_F(ExtensionServiceTest, GrantedPermissionsOnUpdate) {
   // Update to version 3 that adds the kStorage permission, which does not have
   // a message. The extension should remain enabled.
   PackCRXAndUpdateExtension(id, path3, pem_path, ENABLED);
-  extension = service()->GetInstalledExtension(id);
+  extension = registry()->GetInstalledExtension(id);
   ASSERT_TRUE(extension);
   EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
 
@@ -1557,7 +1557,7 @@ TEST_F(ExtensionServiceTest, GrantedPermissionsOnUpdate) {
   // message and hence is considered a permission increase. Now the extension
   // should get disabled.
   PackCRXAndUpdateExtension(id, path4, pem_path, DISABLED);
-  extension = service()->GetInstalledExtension(id);
+  extension = registry()->GetInstalledExtension(id);
   ASSERT_TRUE(extension);
   EXPECT_TRUE(registry()->disabled_extensions().Contains(id));
 
@@ -1597,7 +1597,7 @@ TEST_F(ExtensionServiceTest, ReenableWithAllPermissionsGranted) {
   // message and hence is considered a permission increase. The extension
   // should get disabled due to a permissions increase.
   PackCRXAndUpdateExtension(id, path4, pem_path, DISABLED);
-  extension = service()->GetInstalledExtension(id);
+  extension = registry()->GetInstalledExtension(id);
   ASSERT_TRUE(extension);
   EXPECT_TRUE(registry()->disabled_extensions().Contains(id));
   EXPECT_TRUE(prefs->HasDisableReason(
@@ -1606,7 +1606,7 @@ TEST_F(ExtensionServiceTest, ReenableWithAllPermissionsGranted) {
   // Update to version 5 that removes the kNotifications permission again.
   // The extension should get re-enabled.
   PackCRXAndUpdateExtension(id, path5, pem_path, ENABLED);
-  extension = service()->GetInstalledExtension(id);
+  extension = registry()->GetInstalledExtension(id);
   ASSERT_TRUE(extension);
   EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
 }
@@ -1678,7 +1678,7 @@ TEST_F(ExtensionServiceTest,
   // message and hence is considered a permission increase. The extension
   // should get disabled due to a permissions increase.
   PackCRXAndUpdateExtension(id, path4, pem_path, DISABLED);
-  extension = service()->GetInstalledExtension(id);
+  extension = registry()->GetInstalledExtension(id);
   ASSERT_TRUE(extension);
   EXPECT_TRUE(registry()->disabled_extensions().Contains(id));
   EXPECT_TRUE(prefs->HasDisableReason(
@@ -1690,7 +1690,7 @@ TEST_F(ExtensionServiceTest,
   // The PERMISSIONS_INCREASE should be removed, but the extension should stay
   // disabled since USER_ACTION is still there.
   PackCRXAndUpdateExtension(id, path5, pem_path, DISABLED);
-  extension = service()->GetInstalledExtension(id);
+  extension = registry()->GetInstalledExtension(id);
   ASSERT_TRUE(extension);
   EXPECT_TRUE(registry()->disabled_extensions().Contains(id));
   EXPECT_EQ(disable_reason::DISABLE_USER_ACTION, prefs->GetDisableReasons(id));
@@ -4178,7 +4178,7 @@ TEST_F(ExtensionServiceTest, PolicyBlockedPermissionConflictsWithForceInstall) {
   WaitForExternalExtensionInstalled();
 
   // The extension should not be installed.
-  ASSERT_FALSE(service()->GetInstalledExtension(permissions_blocklist));
+  ASSERT_FALSE(registry()->GetInstalledExtension(permissions_blocklist));
 
   // Remove this extension from pending extension manager as we would like to
   // give another attempt later.
@@ -4194,7 +4194,7 @@ TEST_F(ExtensionServiceTest, PolicyBlockedPermissionConflictsWithForceInstall) {
   WaitForExternalExtensionInstalled();
 
   const Extension* installed =
-      service()->GetInstalledExtension(permissions_blocklist);
+      registry()->GetInstalledExtension(permissions_blocklist);
   ASSERT_TRUE(installed);
   EXPECT_EQ(installed->location(), Manifest::EXTERNAL_POLICY_DOWNLOAD);
 }
@@ -7180,7 +7180,7 @@ TEST_F(ExtensionServiceTest, InstallBlacklistedExtension) {
 
   // Extension was installed but not loaded.
   observer.WaitForExtensionWillBeInstalled();
-  EXPECT_TRUE(service()->GetInstalledExtension(id));
+  EXPECT_TRUE(registry()->GetInstalledExtension(id));
 
   EXPECT_FALSE(registry()->enabled_extensions().Contains(id));
   EXPECT_TRUE(registry()->blacklisted_extensions().Contains(id));
@@ -7373,8 +7373,8 @@ TEST_F(ExtensionServiceTest, UninstallMigratedExtensions) {
   ASSERT_TRUE(registry()->enabled_extensions().Contains(cast_beta));
 
   service()->UninstallMigratedExtensionsForTest();
-  EXPECT_FALSE(service()->GetInstalledExtension(cast_stable));
-  EXPECT_FALSE(service()->GetInstalledExtension(cast_beta));
+  EXPECT_FALSE(registry()->GetInstalledExtension(cast_stable));
+  EXPECT_FALSE(registry()->GetInstalledExtension(cast_beta));
 }
 
 // Tests that extensions that have been migrated to component extensions can be
@@ -7392,7 +7392,7 @@ TEST_F(ExtensionServiceTest, UninstallDisabledMigratedExtension) {
   ASSERT_TRUE(registry()->disabled_extensions().Contains(cast_stable));
 
   service()->UninstallMigratedExtensionsForTest();
-  EXPECT_FALSE(service()->GetInstalledExtension(cast_stable));
+  EXPECT_FALSE(registry()->GetInstalledExtension(cast_stable));
 }
 
 // Tests the case of a user installing a non-policy extension (e.g. through the

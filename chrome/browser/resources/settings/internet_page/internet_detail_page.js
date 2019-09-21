@@ -104,12 +104,6 @@ Polymer({
     },
 
     /**
-     * Interface for networkingPrivate calls, passed from internet_page.
-     * @type {NetworkingPrivate}
-     */
-    networkingPrivate: Object,
-
-    /**
      * The network AutoConnect state as a fake preference object.
      * @private {!chrome.settingsPrivate.PrefObject|undefined}
      */
@@ -205,12 +199,7 @@ Polymer({
   /** @private  {settings.InternetPageBrowserProxy} */
   browserProxy_: null,
 
-  /**
-   * This UI will use both the networkingPrivate extension API and the
-   * networkConfig mojo API until we provide all of the required functionality
-   * in networkConfig. TODO(stevenjb): Remove use of networkingPrivate api.
-   * @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote}
-   */
+  /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
   networkConfig_: null,
 
   /** @override */
@@ -389,7 +378,7 @@ Polymer({
     if (!this.propertiesReceived_) {
       return;
     }
-    const config = {};
+    const config = this.getDefaultConfigProperties_();
     config.autoConnect = {value: !!this.autoConnectPref_.value};
     this.setMojoNetworkProperties_(config);
   },
@@ -441,7 +430,7 @@ Polymer({
     if (!this.propertiesReceived_) {
       return;
     }
-    const config = {};
+    const config = this.getDefaultConfigProperties_();
     config.priority = {value: this.preferNetwork_ ? 1 : 0};
     this.setMojoNetworkProperties_(config);
   },
@@ -556,6 +545,14 @@ Polymer({
       return undefined;
     }
     return OncMojo.managedPropertiesToNetworkState(properties);
+  },
+
+  /**
+   * @return {!mojom.ConfigProperties}
+   * @private
+   */
+  getDefaultConfigProperties_: function() {
+    return {type: this.managedProperties_.type};
   },
 
   /**
@@ -1068,7 +1065,11 @@ Polymer({
 
   /** @private */
   onForgetTap_: function() {
-    this.networkingPrivate.forgetNetwork(this.guid);
+    this.networkConfig_.forgetNetwork(this.guid).then(response => {
+      if (!response.success) {
+        console.error('Froget network failed for: ' + this.guid);
+      }
+    });
     // A forgotten network no longer has a valid GUID, close the subpage.
     this.close();
   },
@@ -1134,7 +1135,7 @@ Polymer({
     }
     const field = e.detail.field;
     const value = e.detail.value;
-    const config = {};
+    const config = this.getDefaultConfigProperties_();
     const valueType = typeof value;
     if (valueType != 'string' && valueType != 'number' &&
         valueType != 'boolean' && !Array.isArray(value)) {
@@ -1160,8 +1161,9 @@ Polymer({
     if (!this.propertiesReceived_) {
       return;
     }
+    const config = this.getDefaultConfigProperties_();
     const apn = event.detail;
-    const config = {cellular: {apn: apn}};
+    config.cellular = {apn: apn};
     this.setMojoNetworkProperties_(config);
   },
 
@@ -1194,7 +1196,9 @@ Polymer({
     if (!this.propertiesReceived_) {
       return;
     }
-    this.setMojoNetworkProperties_({proxySettings: event.detail});
+    const config = this.getDefaultConfigProperties_();
+    config.proxySetings = event.detail;
+    this.setMojoNetworkProperties_(config);
   },
 
   /**
@@ -1330,39 +1334,44 @@ Polymer({
     }
 
     /** @type {!Array<string>} */ const fields = [];
-    const type = this.managedProperties_.type;
-    if (type == mojom.NetworkType.kCellular) {
-      fields.push('cellular.activationState', 'cellular.servingOperator.name');
-      if (this.managedProperties_.restrictedConnectivity) {
-        fields.push('restrictedConnectivity');
-      }
-    } else if (type == mojom.NetworkType.kTether) {
-      fields.push(
-          'tether.batteryPercentage', 'tether.signalStrength',
-          'tether.carrier');
-    } else if (type == mojom.NetworkType.kVPN) {
-      const vpnType = this.managedProperties_.vpn.type;
-      switch (vpnType) {
-        case mojom.VpnType.kExtension:
-          fields.push('vpn.providerName');
-          break;
-        case mojom.VpnType.kArc:
-          fields.push('vpn.type');
-          fields.push('vpn.providerName');
-          break;
-        case mojom.VpnType.kOpenVPN:
-          fields.push(
-              'vpn.type', 'vpn.host', 'vpn.openVpn.username',
-              'vpn.openVpn.extraHosts');
-          break;
-        case mojom.VpnType.kL2TPIPsec:
-          fields.push('vpn.type', 'vpn.host', 'vpn.l2tp.username');
-          break;
-      }
-    } else if (type == mojom.NetworkType.kWiFi) {
-      if (this.managedProperties_.restrictedConnectivity) {
-        fields.push('restrictedConnectivity');
-      }
+    switch (this.managedProperties_.type) {
+      case mojom.NetworkType.kCellular:
+        fields.push(
+            'cellular.activationState', 'cellular.servingOperator.name');
+        if (this.managedProperties_.restrictedConnectivity) {
+          fields.push('restrictedConnectivity');
+        }
+        break;
+      case mojom.NetworkType.kTether:
+        fields.push(
+            'tether.batteryPercentage', 'tether.signalStrength',
+            'tether.carrier');
+        break;
+      case mojom.NetworkType.kVPN:
+        const vpnType = this.managedProperties_.vpn.type;
+        switch (vpnType) {
+          case mojom.VpnType.kExtension:
+            fields.push('vpn.providerName');
+            break;
+          case mojom.VpnType.kArc:
+            fields.push('vpn.type');
+            fields.push('vpn.providerName');
+            break;
+          case mojom.VpnType.kOpenVPN:
+            fields.push(
+                'vpn.type', 'vpn.host', 'vpn.openVpn.username',
+                'vpn.openVpn.extraHosts');
+            break;
+          case mojom.VpnType.kL2TPIPsec:
+            fields.push('vpn.type', 'vpn.host', 'vpn.l2tp.username');
+            break;
+        }
+        break;
+      case mojom.NetworkType.kWiFi:
+        if (this.managedProperties_.restrictedConnectivity) {
+          fields.push('restrictedConnectivity');
+        }
+        break;
     }
     return fields;
   },
@@ -1405,18 +1414,23 @@ Polymer({
 
     /** @type {!Array<string>} */ const fields = [];
     const type = this.managedProperties_.type;
+    // All networks except Tether show MAC address.
     if (type != mojom.NetworkType.kTether) {
       fields.push('macAddress');
     }
-    if (type == mojom.NetworkType.kCellular) {
-      fields.push(
-          'cellular.family', 'cellular.networkTechnology',
-          'cellular.servingOperator.code');
-    } else if (type == mojom.NetworkType.kWiFi) {
-      fields.push(
-          'wifi.ssid', 'wifi.bssid', 'wifi.signalStrength', 'wifi.security',
-          'wifi.eap.outer', 'wifi.eap.inner', 'wifi.eap.subjectMatch',
-          'wifi.eap.identity', 'wifi.eap.anonymousIdentity', 'wifi.frequency');
+    switch (type) {
+      case mojom.NetworkType.kCellular:
+        fields.push(
+            'cellular.family', 'cellular.networkTechnology',
+            'cellular.servingOperator.code');
+        break;
+      case mojom.NetworkType.kWiFi:
+        fields.push(
+            'wifi.ssid', 'wifi.bssid', 'wifi.signalStrength', 'wifi.security',
+            'wifi.eap.outer', 'wifi.eap.inner', 'wifi.eap.subjectMatch',
+            'wifi.eap.identity', 'wifi.eap.anonymousIdentity',
+            'wifi.frequency');
+        break;
     }
     return fields;
   },

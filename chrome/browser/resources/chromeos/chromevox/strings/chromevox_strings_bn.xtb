@@ -169,6 +169,7 @@
 <translation id="2220529011494928058">কোনো সমস্যার অভিযোগ করুন</translation>
 <translation id="2223693656926968778">বর্তমান আইটেমের উপর অ্যাকশন নিন</translation>
 <translation id="225732394367814946">কথনের হার বাড়ান</translation>
+<translation id="2267538686624070261">ভুল বানান ছেড়ে দেওয়া হচ্ছে</translation>
 <translation id="2267945578749931355">পরবর্তী অক্ষর</translation>
 <translation id="2278490101488436824">তিন আঙ্গুল দিয়ে বাঁ দিকে সোয়াইপ করুন</translation>
 <translation id="2281234842553884450">পূর্ববর্তী স্লাইডার</translation>
@@ -207,6 +208,7 @@
 <translation id="257674075312929031">গ্রুপ</translation>
 <translation id="2582407057977008361">একপাশে</translation>
 <translation id="2592212930811759050">এডিট শুরু করতে ডবল-ট্যাপ করুন</translation>
+<translation id="2598495320872286378">ব্যাকরণগত ভুল</translation>
 <translation id="2614981083756825552">গাণিতিক ML লেআউট</translation>
 <translation id="2624431853467395961">শিখন মোড খুলুন</translation>
 <translation id="2626530649491650971">ক্লিক যোগ্য</translation>
@@ -821,6 +823,7 @@
 <translation id="6833103209700200188">পাদলেখ</translation>
 <translation id="6858047746862060282">ভূমিকা</translation>
 <translation id="6859876496651143278">এক আঙ্গুল দিয়ে বাঁ দিকে সোয়াইপ করুন</translation>
+<translation id="6865519907510167493">বানান ভুল</translation>
 <translation id="6871161210040114857">কেস সংবেদনশীলতা উপেক্ষা করছে।</translation>
 <translation id="6877435256196695200">কোনো পরবর্তী গ্রাফিক নেই৷</translation>
 <translation id="6897341342232909480">বামদিকে সরান</translation>
@@ -1111,6 +1114,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F প্রে
 <translation id="8446884382197647889">আরও জানুন</translation>
 <translation id="8455868257606149352">সর্বোচ্চ <ph name="X" /></translation>
 <translation id="84575901236241018">অ্যাক্সেস কী আছে, <ph name="KEY" /></translation>
+<translation id="8463645336674919227">ব্যাকরণগত ভুল ছেড়ে দেওয়া হচ্ছে</translation>
 <translation id="847154984256717791">ব্যস্ত</translation>
 <translation id="8476408756881832830">ChromeVox কথা বলতে থাকলে প্লেব্যাক সাময়িকভাবে থামান</translation>
 <translation id="8476508772960940536">এক নজরে উইন্ডো</translation>

@@ -403,6 +403,13 @@ struct NetworkContextParams {
 
   // Extra CORS safelisted request headers names.
   array<string> cors_extra_safelisted_request_header_names;
+
+  // Points to a sqlite database containing persisted Reporting clients and NEL
+  // policies. If Reporting and NEL persistence is disabled, then we'll ignore
+  // this field. If this field is null then persistence will be disabled
+  // regardless. This field should not be used if the ENABLE_REPORTING build
+  // flag is false.
+  mojo_base.mojom.FilePath? reporting_and_nel_store_path;
 };
 
 struct NetworkConditions {

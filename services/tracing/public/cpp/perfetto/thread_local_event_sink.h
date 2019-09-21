@@ -52,6 +52,7 @@ class COMPONENT_EXPORT(TRACING_CPP) ThreadLocalEventSink {
   std::unique_ptr<perfetto::StartupTraceWriter> trace_writer_;
   uint32_t session_id_;
   bool disable_interning_;
+  uint32_t sink_id_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ThreadLocalEventSink);

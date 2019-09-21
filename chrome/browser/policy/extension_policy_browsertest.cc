@@ -255,8 +255,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
 IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionInstallRemovedPolicy) {
   EXPECT_TRUE(InstallExtension(kGoodCrxName));
 
-  extensions::ExtensionService* service = extension_service();
-  EXPECT_TRUE(service->GetInstalledExtension(kGoodCrxId));
+  extensions::ExtensionRegistry* registry = extension_registry();
+  EXPECT_TRUE(registry->GetInstalledExtension(kGoodCrxId));
 
   // Should uninstall good_v1.crx.
   base::DictionaryValue dict_value;
@@ -267,11 +267,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionInstallRemovedPolicy) {
   policies.Set(key::kExtensionSettings, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                dict_value.CreateDeepCopy(), nullptr);
-  extensions::TestExtensionRegistryObserver observer(extension_registry());
+  extensions::TestExtensionRegistryObserver observer(registry);
   UpdateProviderPolicy(policies);
   observer.WaitForExtensionUnloaded();
 
-  EXPECT_FALSE(service->GetInstalledExtension(kGoodCrxId));
+  EXPECT_FALSE(registry->GetInstalledExtension(kGoodCrxId));
 }
 
 // Ensure that when INSTALLATION_REMOVED is set for wildcard
@@ -279,8 +279,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionInstallRemovedPolicy) {
 IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionWildcardRemovedPolicy) {
   EXPECT_TRUE(InstallExtension(kGoodCrxName));
 
-  extensions::ExtensionService* service = extension_service();
-  EXPECT_TRUE(service->GetInstalledExtension(kGoodCrxId));
+  extensions::ExtensionRegistry* registry = extension_registry();
+  EXPECT_TRUE(registry->GetInstalledExtension(kGoodCrxId));
 
   // Should uninstall good_v1.crx.
   base::DictionaryValue dict_value;
@@ -291,11 +291,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionWildcardRemovedPolicy) {
   policies.Set(key::kExtensionSettings, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                dict_value.CreateDeepCopy(), nullptr);
-  extensions::TestExtensionRegistryObserver observer(extension_registry());
+  extensions::TestExtensionRegistryObserver observer(registry);
   UpdateProviderPolicy(policies);
   observer.WaitForExtensionUnloaded();
 
-  EXPECT_FALSE(service->GetInstalledExtension(kGoodCrxId));
+  EXPECT_FALSE(registry->GetInstalledExtension(kGoodCrxId));
 }
 
 // Ensure that bookmark apps are not blocked by the ExtensionAllowedTypes
@@ -1036,7 +1036,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionMinimumVersionRequired) {
 
   // The extension should be auto-updated to newer version and re-enabled.
   EXPECT_EQ("1.0.0.1",
-            service->GetInstalledExtension(kGoodCrxId)->version().GetString());
+            registry->GetInstalledExtension(kGoodCrxId)->version().GetString());
   EXPECT_TRUE(registry->enabled_extensions().Contains(kGoodCrxId));
 }
 
@@ -1060,7 +1060,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
         return false;
       }));
 
-  extensions::ExtensionService* service = extension_service();
   extensions::ExtensionRegistry* registry = extension_registry();
   extensions::ExtensionPrefs* extension_prefs =
       extensions::ExtensionPrefs::Get(browser()->profile());
@@ -1078,7 +1077,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
   EXPECT_EQ(extensions::disable_reason::DISABLE_UPDATE_REQUIRED_BY_POLICY,
             extension_prefs->GetDisableReasons(kGoodCrxId));
   EXPECT_EQ("1.0.0.0",
-            service->GetInstalledExtension(kGoodCrxId)->version().GetString());
+            registry->GetInstalledExtension(kGoodCrxId)->version().GetString());
 
   // An extension management policy update should trigger an update as well.
   EXPECT_TRUE(update_extension_count.IsZero());
@@ -1097,7 +1096,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
 
   // It should be updated to 1.0.0.1 but remain disabled.
   EXPECT_EQ("1.0.0.1",
-            service->GetInstalledExtension(kGoodCrxId)->version().GetString());
+            registry->GetInstalledExtension(kGoodCrxId)->version().GetString());
   EXPECT_TRUE(registry->disabled_extensions().Contains(kGoodCrxId));
   EXPECT_EQ(extensions::disable_reason::DISABLE_UPDATE_REQUIRED_BY_POLICY,
             extension_prefs->GetDisableReasons(kGoodCrxId));

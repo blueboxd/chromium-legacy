@@ -476,7 +476,6 @@ mojom("mojo_bindings") {
     "frame_proxy.mojom",
     "frame_sink_provider.mojom",
     "histogram_fetcher.mojom",
-    "host_zoom.mojom",
     "input/input_handler.mojom",
     "input/input_injector.mojom",
     "input/synchronous_compositor.mojom",

@@ -55,6 +55,9 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
 
   void DidCompleteLoad() override;
 
+  // Removes text match highlights if any highlight is in view.
+  bool Dismiss() override;
+
   void Trace(blink::Visitor*) override;
 
   // TextFragmentFinder::Client interface
@@ -89,6 +92,9 @@ class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
   // If the text fragment anchor is defined as a fragment directive and we don't
   // find a match, we fall back to the element anchor if it is present.
   Member<ElementFragmentAnchor> element_fragment_anchor_;
+  // Whether the text fragment anchor has been dismissed yet. This should be
+  // kept alive until dismissed so we can remove text highlighting.
+  bool dismissed_ = false;
 
   Member<TextFragmentAnchorMetrics> metrics_;
 

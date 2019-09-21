@@ -19,6 +19,7 @@ static_library("network_config") {
     "//components/device_event_log",
     "//components/onc",
     "//components/proxy_config",
+    "//components/user_manager",
     "//net",
   ]
 }

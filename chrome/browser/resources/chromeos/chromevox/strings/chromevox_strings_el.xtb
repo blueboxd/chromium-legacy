@@ -169,6 +169,7 @@
 <translation id="2220529011494928058">Αναφορά προβλήματος</translation>
 <translation id="2223693656926968778">Εκτέλεση ενέργειας για το τρέχον αντικείμενο</translation>
 <translation id="225732394367814946">Αύξηση ταχύτητας ομιλίας</translation>
+<translation id="2267538686624070261">Αποχώρηση από σφάλμα ορθογραφίας</translation>
 <translation id="2267945578749931355">Επόμενος χαρακτήρας</translation>
 <translation id="2278490101488436824">Σύρετε τρία δάκτυλα προς τα αριστερά</translation>
 <translation id="2281234842553884450">Προηγούμενο ρυθμιστικό</translation>
@@ -207,6 +208,7 @@
 <translation id="257674075312929031">Ομάδα</translation>
 <translation id="2582407057977008361">Ετικέτα "εκτός" (aside)</translation>
 <translation id="2592212930811759050">Πατήστε δύο φορές για να ξεκινήσετε την επεξεργασία</translation>
+<translation id="2598495320872286378">Σφάλμα γραμματικής</translation>
 <translation id="2614981083756825552">Διάταξη Math ML</translation>
 <translation id="2624431853467395961">Άνοιγμα λειτουργίας εκμάθησης</translation>
 <translation id="2626530649491650971">με δυνατότητα κλικ</translation>
@@ -821,6 +823,7 @@
 <translation id="6833103209700200188">Υποσέλιδο</translation>
 <translation id="6858047746862060282">Πρόλογος</translation>
 <translation id="6859876496651143278">Σύρετε ένα δάκτυλο προς τα αριστερά</translation>
+<translation id="6865519907510167493">Σφάλμα ορθογραφίας</translation>
 <translation id="6871161210040114857">Παράβλεψη διάκρισης πεζών-κεφαλαίων.</translation>
 <translation id="6877435256196695200">Δεν υπάρχει επόμενο γραφικό.</translation>
 <translation id="6897341342232909480">Μετακίνηση αριστερά</translation>
@@ -1112,6 +1115,7 @@
 <translation id="8446884382197647889">Μάθετε περισσότερα</translation>
 <translation id="8455868257606149352">Μέγιστο <ph name="X" /></translation>
 <translation id="84575901236241018">διαθέτει το κλειδί πρόσβασης, <ph name="KEY" /></translation>
+<translation id="8463645336674919227">Αποχώρηση από σφάλμα γραμματικής</translation>
 <translation id="847154984256717791">απασχολημένο</translation>
 <translation id="8476408756881832830">Παύση αναπαραγωγής κατά την εκφώνηση από το ChromeVox</translation>
 <translation id="8476508772960940536">επισκόπηση παραθύρου</translation>

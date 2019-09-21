@@ -472,6 +472,16 @@ android_aar_prebuilt("androidx_test_runner_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("androidx_test_uiautomator_uiautomator_java") {
+  aar_path = "libs/androidx_test_uiautomator_uiautomator/uiautomator-2.2.0.aar"
+  info_path = "libs/androidx_test_uiautomator_uiautomator/androidx_test_uiautomator_uiautomator.info"
+  testonly = true
+  deps = [
+    ":androidx_test_runner_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("androidx_viewpager_viewpager_java") {
   aar_path = "libs/androidx_viewpager_viewpager/viewpager-1.0.0.aar"
   info_path =

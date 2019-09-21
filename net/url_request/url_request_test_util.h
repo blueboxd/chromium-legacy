@@ -361,6 +361,10 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
 
   void InitRequestStatesIfNew(int request_id);
 
+  // Gets a request ID if it already has one, assigns a new one and returns that
+  // if not.
+  int GetRequestId(URLRequest* request);
+
   GURL redirect_on_headers_received_url_;
   // URL marked as safe for redirection at the onHeadersReceived stage.
   GURL allowed_unsafe_redirect_url_;
@@ -398,6 +402,7 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   bool cancel_request_with_policy_violating_referrer_;  // false by default
   bool before_start_transaction_fails_;
   bool add_header_to_first_response_;
+  int next_request_id_;
 };
 
 //-----------------------------------------------------------------------------

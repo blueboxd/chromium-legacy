@@ -31,6 +31,7 @@
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/navigation/web_state_policy_decider_bridge.h"
 #include "ios/web/public/thread/web_thread.h"
+#import "ios/web/public/ui/java_script_dialog_presenter.h"
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_observer_bridge.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
@@ -43,77 +44,10 @@
 
 using web::WebStatePolicyDecider;
 
-namespace {
-
-// PrerenderFinalStatus values are used in the "Prerender.FinalStatus" histogram
-// and new values needs to be kept in sync with histogram.xml.
-enum PrerenderFinalStatus {
-  PRERENDER_FINAL_STATUS_USED = 0,
-  PRERENDER_FINAL_STATUS_MEMORY_LIMIT_EXCEEDED = 12,
-  PRERENDER_FINAL_STATUS_CANCELLED = 32,
-  PRERENDER_FINAL_STATUS_MAX = 52,
-};
-
-// Delay before starting to prerender a URL.
-const NSTimeInterval kPrerenderDelay = 0.5;
-
-// The finch experiment to turn off prerendering as a field trial.
-const char kTabEvictionFieldTrialName[] = "TabEviction";
-// The associated group.
-const char kPrerenderTabEvictionTrialGroup[] = "NoPrerendering";
-// The name of the histogram for recording final status (e.g. used/cancelled)
-// of prerender requests.
-const char kPrerenderFinalStatusHistogramName[] = "Prerender.FinalStatus";
-// The name of the histogram for recording the number of successful prerenders.
-const char kPrerendersPerSessionCountHistogramName[] =
-    "Prerender.PrerendersPerSessionCount";
-// The name of the histogram for recording time until a successful prerender.
-const char kPrerenderStartToReleaseContentsTime[] =
-    "Prerender.PrerenderStartToReleaseContentsTime";
-
-// Is this install selected for this particular experiment.
-bool IsPrerenderTabEvictionExperimentalGroup() {
-  base::FieldTrial* trial =
-      base::FieldTrialList::Find(kTabEvictionFieldTrialName);
-  return trial && trial->group_name() == kPrerenderTabEvictionTrialGroup;
-}
-
-}  // namespace
-
-@interface PreloadController (PrivateMethods)
-
-// Returns YES if prerendering is enabled.
-- (BOOL)isPrerenderingEnabled;
-
-// Returns YES if the |url| is valid for prerendering.
-- (BOOL)shouldPreloadURL:(const GURL&)url;
-
-// Called to start any scheduled prerendering requests.
-- (void)startPrerender;
-
-// Destroys the preview Tab and resets |prerenderURL_| to the empty URL.
-- (void)destroyPreviewContents;
-
-// Schedules the current prerender to be cancelled during the next run of the
-// event loop.
-- (void)schedulePrerenderCancel;
-
-// Removes any scheduled prerender requests and resets |scheduledURL| to the
-// empty URL.
-- (void)removeScheduledPrerenderRequests;
-
-// Records metric on a successful prerender.
-- (void)recordReleaseMetrics;
-
-@end
-
-@interface PreloadController ()<CRWWebStateObserver,
-                                CRWWebStatePolicyDecider,
-                                ManageAccountsDelegate,
-                                PrefObserverDelegate>
-@end
-
-@implementation PreloadController {
+@interface PreloadController () <CRWWebStateObserver,
+                                 CRWWebStatePolicyDecider,
+                                 ManageAccountsDelegate,
+                                 PrefObserverDelegate> {
   ios::ChromeBrowserState* browserState_;  // Weak.
 
   // The WebState used for prerendering.
@@ -170,10 +104,99 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
 
   // Bridge to provide navigation policies for |webState_|.
   std::unique_ptr<web::WebStatePolicyDeciderBridge> policyDeciderBridge_;
+
+  // The dialog presenter.
+  std::unique_ptr<web::JavaScriptDialogPresenter> dialog_presenter_;
 }
 
-@synthesize prerenderedURL = prerenderedURL_;
-@synthesize delegate = delegate_;
+// Returns YES if prerendering is enabled.
+- (BOOL)isPrerenderingEnabled;
+
+// Returns YES if the |url| is valid for prerendering.
+- (BOOL)shouldPreloadURL:(const GURL&)url;
+
+// Called to start any scheduled prerendering requests.
+- (void)startPrerender;
+
+// Destroys the preview Tab and resets |prerenderURL_| to the empty URL.
+- (void)destroyPreviewContents;
+
+// Schedules the current prerender to be cancelled during the next run of the
+// event loop.
+- (void)schedulePrerenderCancel;
+
+// Removes any scheduled prerender requests and resets |scheduledURL| to the
+// empty URL.
+- (void)removeScheduledPrerenderRequests;
+
+// Records metric on a successful prerender.
+- (void)recordReleaseMetrics;
+
+@end
+
+namespace {
+
+// PrerenderFinalStatus values are used in the "Prerender.FinalStatus" histogram
+// and new values needs to be kept in sync with histogram.xml.
+enum PrerenderFinalStatus {
+  PRERENDER_FINAL_STATUS_USED = 0,
+  PRERENDER_FINAL_STATUS_MEMORY_LIMIT_EXCEEDED = 12,
+  PRERENDER_FINAL_STATUS_CANCELLED = 32,
+  PRERENDER_FINAL_STATUS_MAX = 52,
+};
+
+// Delay before starting to prerender a URL.
+const NSTimeInterval kPrerenderDelay = 0.5;
+
+// The finch experiment to turn off prerendering as a field trial.
+const char kTabEvictionFieldTrialName[] = "TabEviction";
+// The associated group.
+const char kPrerenderTabEvictionTrialGroup[] = "NoPrerendering";
+// The name of the histogram for recording final status (e.g. used/cancelled)
+// of prerender requests.
+const char kPrerenderFinalStatusHistogramName[] = "Prerender.FinalStatus";
+// The name of the histogram for recording the number of successful prerenders.
+const char kPrerendersPerSessionCountHistogramName[] =
+    "Prerender.PrerendersPerSessionCount";
+// The name of the histogram for recording time until a successful prerender.
+const char kPrerenderStartToReleaseContentsTime[] =
+    "Prerender.PrerenderStartToReleaseContentsTime";
+
+// Is this install selected for this particular experiment.
+bool IsPrerenderTabEvictionExperimentalGroup() {
+  base::FieldTrial* trial =
+      base::FieldTrialList::Find(kTabEvictionFieldTrialName);
+  return trial && trial->group_name() == kPrerenderTabEvictionTrialGroup;
+}
+
+// A no-op JavaScriptDialogPresenter that cancels prerendering when the
+// prerendered page attempts to show dialogs.
+class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
+ public:
+  explicit PreloadJavaScriptDialogPresenter(PreloadController* controller)
+      : controller_(controller) {
+    DCHECK(controller_);
+  }
+
+  // web::JavaScriptDialogPresenter:
+  void RunJavaScriptDialog(web::WebState* web_state,
+                           const GURL& origin_url,
+                           web::JavaScriptDialogType dialog_type,
+                           NSString* message_text,
+                           NSString* default_prompt_text,
+                           web::DialogClosedCallback callback) override {
+    std::move(callback).Run(NO, nil);
+    [controller_ schedulePrerenderCancel];
+  }
+
+  void CancelDialogs(web::WebState* web_state) override {}
+
+ private:
+  __weak PreloadController* controller_ = nil;
+};
+}  // namespace
+
+@implementation PreloadController
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
   DCHECK(browserState);
@@ -194,6 +217,8 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
         prefs::kNetworkPredictionEnabled, &prefChangeRegistrar_);
     observerBridge_->ObserveChangesForPreference(
         prefs::kNetworkPredictionWifiOnly, &prefChangeRegistrar_);
+    dialog_presenter_ =
+        std::make_unique<PreloadJavaScriptDialogPresenter>(self);
     if (enabled_ && wifiOnly_) {
       connectionTypeObserverBridge_ =
           std::make_unique<ConnectionTypeObserverBridge>(self);
@@ -345,7 +370,7 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   if (!webState_)
     return NO;
 
-  return [delegate_ preloadHasNativeControllerForURL:url];
+  return [self.delegate preloadHasNativeControllerForURL:url];
 }
 
 // Override the CRWNativeContentProvider methods to cancel any prerenders that
@@ -416,7 +441,7 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   web::NavigationManager::WebLoadParams loadParams(prerenderedURL_);
   loadParams.referrer = scheduledReferrer_;
   loadParams.transition_type = scheduledTransition_;
-  if ([delegate_ preloadShouldUseDesktopUserAgent]) {
+  if ([self.delegate preloadShouldUseDesktopUserAgent]) {
     loadParams.user_agent_override_option =
         web::NavigationManager::UserAgentOverrideOption::DESKTOP;
   }
@@ -478,8 +503,7 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
 - (web::JavaScriptDialogPresenter*)javaScriptDialogPresenterForWebState:
     (web::WebState*)webState {
   DCHECK([self isWebStatePrerendered:webState]);
-  [self schedulePrerenderCancel];
-  return nullptr;
+  return dialog_presenter_.get();
 }
 
 - (void)webState:(web::WebState*)webState

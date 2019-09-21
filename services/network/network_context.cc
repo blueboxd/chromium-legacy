@@ -121,6 +121,7 @@
 
 #if BUILDFLAG(ENABLE_REPORTING)
 #include "net/base/http_user_agent_settings.h"
+#include "net/extras/sqlite/sqlite_persistent_reporting_and_nel_store.h"
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_browsing_data_remover.h"
 #include "net/reporting/reporting_policy.h"
@@ -1720,7 +1721,8 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
 #endif
 
 #if BUILDFLAG(ENABLE_REPORTING)
-  if (base::FeatureList::IsEnabled(features::kReporting)) {
+  bool reporting_enabled = base::FeatureList::IsEnabled(features::kReporting);
+  if (reporting_enabled) {
     auto reporting_policy = net::ReportingPolicy::Create();
     if (params_->reporting_delivery_interval) {
       reporting_policy->delivery_interval =
@@ -1731,8 +1733,28 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
     builder.set_reporting_policy(nullptr);
   }
 
-  builder.set_network_error_logging_enabled(
-      base::FeatureList::IsEnabled(features::kNetworkErrorLogging));
+  bool nel_enabled =
+      base::FeatureList::IsEnabled(features::kNetworkErrorLogging);
+  builder.set_network_error_logging_enabled(nel_enabled);
+
+  if (params_->reporting_and_nel_store_path &&
+      (reporting_enabled || nel_enabled)) {
+    scoped_refptr<base::SequencedTaskRunner> client_task_runner =
+        base::ThreadTaskRunnerHandle::Get();
+    scoped_refptr<base::SequencedTaskRunner> background_task_runner =
+        base::CreateSequencedTaskRunner(
+            {base::ThreadPool(), base::MayBlock(),
+             net::GetReportingAndNelStoreBackgroundSequencePriority(),
+             base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
+    std::unique_ptr<net::SQLitePersistentReportingAndNelStore> sqlite_store(
+        new net::SQLitePersistentReportingAndNelStore(
+            params_->reporting_and_nel_store_path.value(), client_task_runner,
+            background_task_runner));
+    builder.set_persistent_reporting_and_nel_store(std::move(sqlite_store));
+  } else {
+    builder.set_persistent_reporting_and_nel_store(nullptr);
+  }
+
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
   net::HttpNetworkSession::Params session_params;
@@ -1753,7 +1775,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
 
   builder.SetCreateHttpTransactionFactoryCallback(
       base::BindOnce([](net::HttpNetworkSession* session)
-                        -> std::unique_ptr<net::HttpTransactionFactory> {
+                         -> std::unique_ptr<net::HttpTransactionFactory> {
         return std::make_unique<ThrottlingNetworkTransactionFactory>(session);
       }));
 

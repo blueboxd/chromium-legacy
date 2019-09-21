@@ -48,6 +48,7 @@ class DocumentPortals final : public GarbageCollected<DocumentPortals>,
     DCHECK(!activating_portal_);
     activating_portal_ = portal;
   }
+  void ClearActivatingPortalContents() { activating_portal_ = nullptr; }
 
   explicit DocumentPortals(Document&);
 

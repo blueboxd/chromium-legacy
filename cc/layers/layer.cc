@@ -94,7 +94,6 @@ Layer::Inputs::Inputs(int layer_id)
       opacity(1.f),
       blend_mode(SkBlendMode::kSrcOver),
       masks_to_bounds(false),
-      is_root_for_isolated_group(false),
       hit_testable(false),
       contents_opaque(false),
       is_drawable(false),
@@ -779,15 +778,6 @@ void Layer::SetBlendMode(SkBlendMode blend_mode) {
   SetNeedsCommit();
   SetSubtreePropertyChanged();
   SetPropertyTreesNeedRebuild();
-}
-
-void Layer::SetIsRootForIsolatedGroup(bool root) {
-  DCHECK(IsPropertyChangeAllowed());
-  if (inputs_.is_root_for_isolated_group == root)
-    return;
-  inputs_.is_root_for_isolated_group = root;
-  SetPropertyTreesNeedRebuild();
-  SetNeedsCommit();
 }
 
 void Layer::SetHitTestable(bool should_hit_test) {

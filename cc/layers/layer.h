@@ -258,15 +258,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetBlendMode(SkBlendMode blend_mode);
   SkBlendMode blend_mode() const { return inputs_.blend_mode; }
 
-  // A layer is root for an isolated group when it and all its descendants are
-  // drawn over a black and fully transparent background, creating an isolated
-  // group. It should be used along with SetBlendMode(), in order to restrict
-  // layers within the group to blend with layers outside this group.
-  void SetIsRootForIsolatedGroup(bool root);
-  bool is_root_for_isolated_group() const {
-    return inputs_.is_root_for_isolated_group;
-  }
-
   // Set or get the list of filter effects to be applied to the contents of the
   // layer and its subtree (together as a single composited entity) when
   // drawing them into their target.
@@ -860,8 +851,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     SkBlendMode blend_mode;
 
     bool masks_to_bounds : 1;
-
-    bool is_root_for_isolated_group : 1;
 
     // Hit testing depends on this bit.
     bool hit_testable : 1;

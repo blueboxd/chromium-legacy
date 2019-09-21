@@ -57,21 +57,25 @@ chrome.test.runTests([
     var pages = [kChromeUINewTabURL, pageUrl('a'), pageUrl('b'),
                    pageUrl('c'), pageUrl('d'), pageUrl('e')];
     createWindow(pages, {}, pass(function(winId, tabIds) {
-      firstWindowId = winId;
-      moveTabIds['a'] = tabIds[1];
-      moveTabIds['b'] = tabIds[2];
-      moveTabIds['c'] = tabIds[3];
-      moveTabIds['d'] = tabIds[4];
-      moveTabIds['e'] = tabIds[5];
-      createWindow([kChromeUINewTabURL], {}, pass(function(winId, tabIds) {
-        secondWindowId = winId;
-      }));
-      chrome.tabs.getAllInWindow(firstWindowId, pass(function(tabs) {
-        assertEq(pages.length, tabs.length);
-        assertTrue(newTabUrls.includes(tabs[0].url));
-        for (var i = 1; i < tabs.length; i++) {
-          assertEq(pages[i], tabs[i].url);
-        }
+      waitForAllTabs(pass(function() {
+        firstWindowId = winId;
+        moveTabIds['a'] = tabIds[1];
+        moveTabIds['b'] = tabIds[2];
+        moveTabIds['c'] = tabIds[3];
+        moveTabIds['d'] = tabIds[4];
+        moveTabIds['e'] = tabIds[5];
+        createWindow([kChromeUINewTabURL], {}, pass(function(winId, tabIds) {
+          waitForAllTabs(pass(function() {
+            secondWindowId = winId;
+          }));
+        }));
+        chrome.tabs.getAllInWindow(firstWindowId, pass(function(tabs) {
+          assertEq(pages.length, tabs.length);
+          assertTrue(newTabUrls.includes(tabs[0].url));
+          for (var i = 1; i < tabs.length; i++) {
+            assertEq(pages[i], tabs[i].url);
+          }
+        }));
       }));
     }));
   },

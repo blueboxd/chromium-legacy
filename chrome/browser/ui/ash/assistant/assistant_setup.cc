@@ -25,11 +25,11 @@ using chromeos::assistant::ConsentFlowUi;
 AssistantSetup::AssistantSetup(
     chromeos::assistant::mojom::AssistantService* service)
     : service_(service) {
-  arc::VoiceInteractionControllerClient::Get()->AddObserver(this);
+  ash::AssistantState::Get()->AddObserver(this);
 }
 
 AssistantSetup::~AssistantSetup() {
-  arc::VoiceInteractionControllerClient::Get()->RemoveObserver(this);
+  ash::AssistantState::Get()->RemoveObserver(this);
 }
 
 void AssistantSetup::StartAssistantOptInFlow(
@@ -42,7 +42,8 @@ bool AssistantSetup::BounceOptInWindowIfActive() {
   return chromeos::AssistantOptInDialog::BounceIfActive();
 }
 
-void AssistantSetup::OnStateChanged(ash::mojom::AssistantState state) {
+void AssistantSetup::OnAssistantStatusChanged(
+    ash::mojom::AssistantState state) {
   if (state == ash::mojom::AssistantState::NOT_READY)
     return;
 

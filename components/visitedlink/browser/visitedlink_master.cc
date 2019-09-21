@@ -63,11 +63,10 @@ namespace {
 // Fills the given salt structure with some quasi-random values
 // It is not necessary to generate a cryptographically strong random string,
 // only that it be reasonably different for different users.
-void GenerateSalt(uint8_t salt[LINK_SALT_LENGTH]) {
-  static_assert(LINK_SALT_LENGTH == 8,
-                "This code assumes the length of the salt");
+void GenerateSalt(uint8_t (&salt)[LINK_SALT_LENGTH]) {
   uint64_t randval = base::RandUint64();
-  memcpy(salt, &randval, 8);
+  static_assert(sizeof(salt) == sizeof(randval), "Salt size mismatch");
+  memcpy(salt, &randval, sizeof(salt));
 }
 
 // Opens file on a background thread to not block UI thread.

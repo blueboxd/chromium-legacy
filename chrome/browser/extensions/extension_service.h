@@ -92,15 +92,6 @@ class ExtensionServiceInterface
                                bool file_ownership_passed,
                                CrxInstaller** out_crx_installer) = 0;
 
-  // DEPRECATED: Use ExtensionRegistry instead.
-  //
-  // Looks up an extension by ID, regardless of whether it's enabled,
-  // disabled, blacklisted, or terminated. Use instead:
-  //
-  // ExtensionRegistry::GetInstalledExtension(id).
-  virtual const Extension* GetInstalledExtension(
-      const std::string& id) const = 0;
-
   // Returns an update for an extension with the specified id, if installation
   // of that update was previously delayed because the extension was in use. If
   // no updates are pending for the extension returns NULL.
@@ -180,9 +171,7 @@ class ExtensionService : public ExtensionServiceInterface,
 
   // ExtensionServiceInterface implementation.
   //
-  // NOTE: Many of these methods are DEPRECATED. See the interface for details.
   PendingExtensionManager* pending_extension_manager() override;
-  const Extension* GetInstalledExtension(const std::string& id) const override;
   bool UpdateExtension(const CRXFileInfo& file,
                        bool file_ownership_passed,
                        CrxInstaller** out_crx_installer) override;

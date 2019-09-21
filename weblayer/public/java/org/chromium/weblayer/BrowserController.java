@@ -76,5 +76,19 @@ public final class BrowserController {
                 observer.displayURLChanged(uri);
             }
         }
+
+        @Override
+        public void loadingStateChanged(boolean isLoading, boolean toDifferentDocument) {
+            for (BrowserObserver observer : mObservers) {
+                observer.loadingStateChanged(isLoading, toDifferentDocument);
+            }
+        }
+
+        @Override
+        public void loadProgressChanged(double progress) {
+            for (BrowserObserver observer : mObservers) {
+                observer.loadProgressChanged(progress);
+            }
+        }
     }
 }

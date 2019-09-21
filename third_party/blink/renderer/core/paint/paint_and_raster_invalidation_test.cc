@@ -874,26 +874,14 @@ TEST_P(PaintAndRasterInvalidationTest, SVGHiddenContainer) {
   EXPECT_EQ(IntRect(55, 66, 7, 8), real_rect->FirstFragment().VisualRect());
 
   // Should invalidate raster for real_rect only.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    // CAP creates composited layers for the rect and its mask.
-    EXPECT_THAT(GetRasterInvalidationTracking(1)->Invalidations(),
-                UnorderedElementsAre(RasterInvalidationInfo{
-                    real_rect, real_rect->DebugName(), IntRect(0, 0, 7, 8),
-                    PaintInvalidationReason::kFull}));
-    EXPECT_THAT(GetRasterInvalidationTracking(2)->Invalidations(),
-                UnorderedElementsAre(RasterInvalidationInfo{
-                    real_rect, real_rect->DebugName(), IntRect(0, 0, 7, 8),
-                    PaintInvalidationReason::kFull}));
-  } else {
-    EXPECT_THAT(GetRasterInvalidationTracking(1)->Invalidations(),
-                UnorderedElementsAre(
-                    RasterInvalidationInfo{real_rect, real_rect->DebugName(),
-                                           IntRect(155, 166, 7, 8),
-                                           PaintInvalidationReason::kFull},
-                    RasterInvalidationInfo{real_rect, real_rect->DebugName(),
-                                           IntRect(155, 166, 7, 8),
-                                           PaintInvalidationReason::kFull}));
-  }
+  EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre(
+                  RasterInvalidationInfo{real_rect, real_rect->DebugName(),
+                                         IntRect(155, 166, 7, 8),
+                                         PaintInvalidationReason::kFull},
+                  RasterInvalidationInfo{real_rect, real_rect->DebugName(),
+                                         IntRect(155, 166, 7, 8),
+                                         PaintInvalidationReason::kFull}));
 
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }

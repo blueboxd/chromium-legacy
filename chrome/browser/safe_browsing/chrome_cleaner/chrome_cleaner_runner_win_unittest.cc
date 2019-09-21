@@ -107,6 +107,7 @@ class ChromeCleanerRunnerSimpleTest
 
     ChromeCleanerRunner::RunChromeCleanerAndReplyWithExitCode(
         /*extension_service=*/nullptr,
+        /*extension_registry=*/nullptr,
         base::FilePath(FILE_PATH_LITERAL("cleaner.exe")), reporter_invocation,
         metrics_status_,
         base::BindOnce(&ChromeCleanerRunnerSimpleTest::OnPromptUser,
@@ -280,6 +281,7 @@ class ChromeCleanerRunnerTest
     base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
     ChromeCleanerRunner::RunChromeCleanerAndReplyWithExitCode(
         /*extension_service=*/nullptr,
+        /*extension_registry=*/nullptr,
         base::FilePath(FILE_PATH_LITERAL("cleaner.exe")),
         SwReporterInvocation(command_line), ChromeMetricsStatus::kDisabled,
         base::BindOnce(&ChromeCleanerRunnerTest::OnPromptUser,

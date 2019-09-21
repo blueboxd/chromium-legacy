@@ -93,9 +93,6 @@
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#endif
-
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
 #endif
@@ -205,7 +202,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
           ProfileSyncServiceFactory::GetForProfile(profile_)),
       httpauth_manager_(this),
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
-#if !defined(OS_ANDROID)
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
       password_reuse_detection_manager_(this),
 #endif
       driver_factory_(nullptr),
@@ -582,7 +579,9 @@ void ChromePasswordManagerClient::CheckProtectedPasswordEntry(
       web_contents(), web_contents()->GetLastCommittedURL(), username,
       password_type, matching_domains, password_field_exists);
 }
+#endif  // defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
 void ChromePasswordManagerClient::LogPasswordReuseDetectedEvent() {
   safe_browsing::PasswordProtectionService* pps =
       GetPasswordProtectionService();
@@ -590,7 +589,7 @@ void ChromePasswordManagerClient::LogPasswordReuseDetectedEvent() {
     pps->MaybeLogPasswordReuseDetectedEvent(web_contents());
   }
 }
-#endif  // defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#endif  // defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
 
 ukm::SourceId ChromePasswordManagerClient::GetUkmSourceId() {
   return ukm::GetSourceIdForWebContentsDocument(web_contents());
@@ -642,9 +641,9 @@ void ChromePasswordManagerClient::DidFinishNavigation(
     content_credential_manager_.DisconnectBinding();
 
 // TODO(crbug.com/706392): Fix password reuse detection for Android.
-#if !defined(OS_ANDROID)
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   password_reuse_detection_manager_.DidNavigateMainFrame(GetMainFrameURL());
-#endif  // !defined(OS_ANDROID)
+#endif  // defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   AddToWidgetInputEventObservers(
       web_contents()->GetRenderViewHost()->GetWidget(), this);
 #if defined(OS_ANDROID)
@@ -665,12 +664,11 @@ void ChromePasswordManagerClient::RenderFrameCreated(
 #if defined(OS_ANDROID)
 void ChromePasswordManagerClient::OnImeTextCommittedEvent(
     const base::string16& text_str) {
-  // TODO(crbug.com/1004842): Enable password reuse detection
-  // password_reuse_detection_manager_.OnKeyPressed(text_str);
-}
-#endif
-
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+  password_reuse_detection_manager_.OnKeyPressed(text_str);
+#endif  // defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+}
+#else   // defined(OS_ANDROID)
 void ChromePasswordManagerClient::OnInputEvent(
     const blink::WebInputEvent& event) {
   if (event.GetType() != blink::WebInputEvent::kChar)
@@ -685,7 +683,7 @@ void ChromePasswordManagerClient::OnInputEvent(
     password_reuse_detection_manager_.OnKeyPressed(key_event.text);
   }
 }
-#endif
+#endif  // defined(OS_ANDROID)
 
 PrefService* ChromePasswordManagerClient::GetPrefs() const {
   return profile_->GetPrefs();
@@ -790,7 +788,7 @@ void ChromePasswordManagerClient::DidStartNavigation(
   log_manager_->SetSuspended(web_contents()->GetWebUI() != nullptr);
 }
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#if !defined(OS_ANDROID)
 void ChromePasswordManagerClient::OnPaste() {
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   base::string16 text;

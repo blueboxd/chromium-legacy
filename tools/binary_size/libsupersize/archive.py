@@ -5,6 +5,7 @@
 """Main Python API for analyzing binary size."""
 
 import argparse
+import bisect
 import calendar
 import collections
 import datetime
@@ -118,6 +119,9 @@ class SectionSizeKnobs(object):
     self.analyze_native = True
 
     self.src_root = path_util.SRC_ROOT
+
+    # Whether to count number of relative relocations instead of binary size
+    self.relocations_mode = False
 
 
 def _OpenMaybeGz(path):
@@ -1286,6 +1290,47 @@ def _CalculateElfOverhead(section_sizes, elf_path):
   return 0
 
 
+def _OverwriteSymbolSizesWithRelocationCount(raw_symbols, tool_prefix,
+                                             elf_path):
+  logging.info('Overwriting symbol sizes with relocation count')
+  native_symbols = [sym for sym in raw_symbols if sym.IsNative()]
+  symbol_addresses = [0] * (1 + len(native_symbols))
+
+  for i, symbol in enumerate(native_symbols):
+    symbol_addresses[i] = symbol.address
+
+  # Last symbol address is the end of the last symbol, so we don't misattribute
+  # all relros after the last symbol to that symbol.
+  symbol_addresses[-1] = native_symbols[-1].address + native_symbols[-1].size
+
+  for symbol in raw_symbols:
+    symbol.address = 0
+    symbol.size = 0
+    symbol.padding = 0
+
+  relocs_cmd = [path_util.GetReadElfPath(tool_prefix), '--relocs', elf_path]
+  relro_addresses = subprocess.check_output(relocs_cmd).split('\n')
+  # Grab first column from (sample output) '02de6d5c  00000017 R_ARM_RELATIVE'
+  relro_addresses = [
+      int(l.split()[0], 16) for l in relro_addresses if 'R_ARM_RELATIVE' in l
+  ]
+  # More likely for there to be a bug in supersize than an ELF to have any
+  # relative relocations.
+  assert relro_addresses
+
+  logging.info('Adding %d relocations', len(relro_addresses))
+  for addr in relro_addresses:
+    # Attribute relros to largest symbol start address that precede them.
+    idx = bisect.bisect_right(symbol_addresses, addr) - 1
+    if 0 <= idx < len(native_symbols):
+      symbol = native_symbols[idx]
+      for alias in symbol.aliases or [symbol]:
+        alias.size += 1
+
+  logging.info('Removing non-native symbols...')
+  raw_symbols[:] = [sym for sym in raw_symbols if sym.size or sym.IsNative()]
+
+
 def CreateSectionSizesAndSymbols(map_path=None,
                                  tool_prefix=None,
                                  output_directory=None,
@@ -1450,6 +1495,10 @@ def CreateSectionSizesAndSymbols(map_path=None,
   _CompactLargeAliasesIntoSharedSymbols(raw_symbols, knobs)
   logging.debug('Connecting nm aliases')
   _ConnectNmAliases(raw_symbols)
+
+  if elf_path and knobs.relocations_mode:
+    _OverwriteSymbolSizesWithRelocationCount(raw_symbols, tool_prefix, elf_path)
+
   return section_sizes, raw_symbols
 
 
@@ -1627,6 +1676,11 @@ def AddArguments(parser):
                       default=True, action='store_false',
                       help='Disable breaking down "** merge strings" into more '
                            'granular symbols.')
+  parser.add_argument(
+      '--relocations',
+      action='store_true',
+      help='Instead of counting binary size, count number of relative'
+      'relocation instructions in ELF code.')
   parser.add_argument('--source-directory',
                       help='Custom path to the root source directory.')
   parser.add_argument(
@@ -1782,6 +1836,10 @@ def _RunInternal(args, parser, extracted_minimal_apk_path):
   if args.no_native:
     knobs.analyze_native = False
 
+  if args.relocations:
+    knobs.relocations_mode = True
+    knobs.analyze_java = False
+
   if not knobs.analyze_native:
     map_path = None
     elf_path = None
@@ -1790,7 +1848,6 @@ def _RunInternal(args, parser, extracted_minimal_apk_path):
   metadata = CreateMetadata(map_path, elf_path, args.apk_file,
                             args.minimal_apks_file, tool_prefix,
                             output_directory, linker_name)
-
   section_sizes, raw_symbols = CreateSectionSizesAndSymbols(
       map_path=map_path,
       tool_prefix=tool_prefix,

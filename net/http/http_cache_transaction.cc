@@ -1430,8 +1430,15 @@ int HttpCache::Transaction::DoDoneHeadersAddToEntryComplete(int result) {
   DCHECK(response_.headers);
 
   cache_pending_ = false;
-  entry_ = new_entry_;
   done_headers_create_new_entry_ = false;
+
+  // Speculative fix for rare crash. crbug.com/959194
+  if (result == ERR_CACHE_RACE) {
+    TransitionToState(STATE_HEADERS_PHASE_CANNOT_PROCEED);
+    return OK;
+  }
+
+  entry_ = new_entry_;
   DCHECK_NE(response_.headers->response_code(), 304);
   DCHECK(cache_->CanTransactionWriteResponseHeaders(
       entry_, this, partial_ != nullptr, false));
@@ -2078,6 +2085,7 @@ int HttpCache::Transaction::DoHeadersPhaseCannotProceed(int result) {
   SetRequest(net_log_);
 
   entry_ = nullptr;
+  new_entry_ = nullptr;
 
   // Bypass the cache for timeout scenario.
   if (result == ERR_CACHE_LOCK_TIMEOUT)

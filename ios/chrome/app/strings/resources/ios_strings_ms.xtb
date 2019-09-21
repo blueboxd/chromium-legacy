@@ -93,6 +93,7 @@
 <translation id="2149973817440762519">Edit Penanda Halaman</translation>
 <translation id="2179182049312275900">Anda boleh menghidupkan penyegerakan pada bila-bila masa dalam tetapan.</translation>
 <translation id="2198757192731523470">Google boleh menggunakan sejarah anda untuk memperibadikan Carian, iklan dan perkhidmatan Google yang lain.</translation>
+<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> artikel Senarai Bacaan yang belum dibaca.</translation>
 <translation id="2230173723195178503">Halaman web dimuatkan</translation>
 <translation id="2239626343334228536">Mengosongkan data semakan imbas...</translation>
 <translation id="2256128224215992540">Cadangan Carian dan Tapak</translation>
@@ -108,6 +109,7 @@
 <translation id="2360196772093551345">Minta Tapak Mudah Alih</translation>
 <translation id="2381405137052800939">Asas</translation>
 <translation id="2386793615875593361">1 dipilih</translation>
+<translation id="2421044535038393232">Teruskan Mengedit</translation>
 <translation id="2435457462613246316">Paparkan kata laluan</translation>
 <translation id="2481538920734869610">TAMBAH AKAUN</translation>
 <translation id="2497852260688568942">Penyegerakan dilumpuhkan oleh pentadbir anda</translation>
@@ -227,6 +229,7 @@
 <translation id="418156467088430727">Lihat Versi Luar Talian di Tab Baharu</translation>
 <translation id="4181841719683918333">Bahasa</translation>
 <translation id="424315890655130736">Masukkan Ungkapan Laluan</translation>
+<translation id="4263576668337963058">Tunjukkan tindakan halaman yang tersedia</translation>
 <translation id="4272631900155121838">Untuk mengimbas kod QR, dayakan kamera daripada tetapan</translation>
 <translation id="4281844954008187215">Syarat Perkhidmatan</translation>
 <translation id="430793432425771671">Segerakkan Semua</translation>
@@ -264,6 +267,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda. Masukkannya untuk memu
 
 Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">Nombor Kad Tidak Sah</translation>
+<translation id="4807020197310989387">1 artikel Senarai Bacaan yang belum dibaca.</translation>
 <translation id="4818522717893377262">Tambahkan Bahasa...</translation>
 <translation id="481968316161811770">Kuki, Data Tapak</translation>
 <translation id="4833786495304741580">Menghantar perangkaan penggunaan dan laporan ranap sistem secara automatik kepada Google.</translation>

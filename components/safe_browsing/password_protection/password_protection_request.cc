@@ -515,7 +515,9 @@ void PasswordProtectionRequest::Finish(
     } else {
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
       LogPasswordEntryRequestOutcome(outcome, password_account_type);
+#endif
 
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
       if (password_type_ == PasswordType::PRIMARY_ACCOUNT_PASSWORD) {
         password_protection_service_->MaybeLogPasswordReuseLookupEvent(
             web_contents_, outcome, password_type_, response.get());

@@ -11,7 +11,7 @@
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 
 namespace viz {
@@ -20,6 +20,15 @@ namespace {
 static const int kTimeLimitMillis = 2000;
 static const int kWarmupRuns = 5;
 static const int kTimeCheckInterval = 10;
+
+constexpr char kMetricPrefixDrawQuad[] = "DrawQuad.";
+constexpr char kMetricIterateResourcesRunsPerS[] = "iterate_resources";
+
+perf_test::PerfResultReporter SetUpDrawQuadReporter(const std::string& story) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixDrawQuad, story);
+  reporter.RegisterImportantMetric(kMetricIterateResourcesRunsPerS, "runs/s");
+  return reporter;
+}
 
 SharedQuadState* CreateSharedQuadState(RenderPass* render_pass) {
   gfx::Transform quad_transform = gfx::Transform(1.0, 0.0, 0.5, 1.0, 0.5, 0.0);
@@ -82,7 +91,7 @@ class DrawQuadPerfTest : public testing::Test {
     }
   }
 
-  void RunIterateResourceTest(const std::string& test_name, int quad_count) {
+  void RunIterateResourceTest(const std::string& story, int quad_count) {
     CreateRenderPass();
     std::vector<DrawQuad*> quads;
     GenerateTextureDrawQuads(quad_count, &quads);
@@ -96,8 +105,8 @@ class DrawQuadPerfTest : public testing::Test {
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    perf_test::PrintResult("draw_quad_iterate_resources", "", test_name,
-                           timer_.LapsPerSecond(), "runs/s", true);
+    auto reporter = SetUpDrawQuadReporter(story);
+    reporter.AddResult(kMetricIterateResourcesRunsPerS, timer_.LapsPerSecond());
     CleanUpRenderPass();
   }
 

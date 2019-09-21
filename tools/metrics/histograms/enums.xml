@@ -24713,6 +24713,7 @@ Called by update_net_error_codes.py.-->
   <int value="3033" label="ThirdPartyBroadcastChannel"/>
   <int value="3034"
       label="MediaSourceGroupEndTimestampDecreaseWithinMediaSegment"/>
+  <int value="3035" label="TextFragmentAnchorTapToDismiss"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -34987,6 +34988,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1838482444" label="disable-settings-window"/>
   <int value="-1837401779" label="EnableFileManagerFormatDialog:enabled"/>
   <int value="-1837329460" label="NewEncodeCpuLoadEstimator:enabled"/>
+  <int value="-1836854634" label="CloseTabSuggestions:enabled"/>
   <int value="-1835975804" label="disable-offline-auto-reload"/>
   <int value="-1835608319" label="EnableHeuristicPalmDetectionFilter:disabled"/>
   <int value="-1834536026" label="AppServiceIntentHandling:enabled"/>
@@ -35431,6 +35433,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1256747007"
       label="OminboxUIExperimentUseGenericSearchEngineIcon:disabled"/>
   <int value="-1255427595" label="HomePageButtonForceEnabled:enabled"/>
+  <int value="-1254640444"
+      label="OmniboxEnableClipboardProviderTextSuggestions:disabled"/>
   <int value="-1254070521" label="enable-slimming-paint-invalidation"/>
   <int value="-1253608371" label="IncognitoStrings:disabled"/>
   <int value="-1252976780" label="ShillSandboxing:disabled"/>
@@ -35726,6 +35730,8 @@ from previous Chrome versions.
   <int value="-879055117" label="ClipboardContentSetting:enabled"/>
   <int value="-879031960" label="FetchKeepaliveTimeoutSetting:disabled"/>
   <int value="-876148583" label="ArcBootCompletedBroadcast:disabled"/>
+  <int value="-875217114"
+      label="OmniboxEnableClipboardProviderTextSuggestions:enabled"/>
   <int value="-874602599" label="HorizontalTabSwitcherAndroid:enabled"/>
   <int value="-872764392" label="ContextualSuggestionsBottomSheet:disabled"/>
   <int value="-872302695" label="PeriodicBackgroundSync:enabled"/>
@@ -36307,7 +36313,6 @@ from previous Chrome versions.
   <int value="-78035185" label="custom_summary"/>
   <int value="-77872983" label="BookmarkAppsMac:disabled"/>
   <int value="-77084779" label="ExperimentalFlingAnimation:enabled"/>
-  <int value="-76953963" label="CloseTabSuggestionsStale:enabled"/>
   <int value="-76631048" label="disable-offline-auto-reload-visible-only"/>
   <int value="-76445689" label="WasmCodeCache:enabled"/>
   <int value="-76348564" label="PointerLockOptions:enabled"/>
@@ -36448,6 +36453,7 @@ from previous Chrome versions.
   <int value="89785725"
       label="DataReductionProxyEnabledWithNetworkService:disabled"/>
   <int value="91938915" label="enable-suggestions-service"/>
+  <int value="92106937" label="CloseTabSuggestions:disabled"/>
   <int value="92327255" label="DisplayMoveWindowAccels:disabled"/>
   <int value="93832899" label="NtpCustomizationMenuV2:enabled"/>
   <int value="97091906" label="AutofillSaveCardShowNoThanks:enabled"/>
@@ -37119,7 +37125,6 @@ from previous Chrome versions.
   <int value="1060319397" label="enable-data-reduction-proxy-carrier-test"/>
   <int value="1062357243" label="remember-cert-error-decisions"/>
   <int value="1064288458" label="OfflineRecentPages:enabled"/>
-  <int value="1065216170" label="CloseTabSuggestionsStale:disabled"/>
   <int value="1067618884" label="enable-experimental-input-view-features"/>
   <int value="1067990299" label="enable-ui-devtools"/>
   <int value="1069325321" label="CrostiniGpuSupport:enabled"/>

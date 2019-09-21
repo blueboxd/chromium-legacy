@@ -155,7 +155,7 @@ GpuMojoMediaClient::GetSupportedVideoDecoderConfigs() {
   supported_config_map[VideoDecoderImplementation::kAlternate] =
       *d3d11_supported_configs_;
 
-#elif defined(OS_CHROMEOS)
+#elif defined(USE_CHROMEOS_MEDIA_ACCELERATION)
   if (base::FeatureList::IsEnabled(kChromeosVideoDecoder)) {
     if (!cros_supported_configs_) {
       cros_supported_configs_ =
@@ -165,7 +165,7 @@ GpuMojoMediaClient::GetSupportedVideoDecoderConfigs() {
         *cros_supported_configs_;
     return supported_config_map;
   }
-#endif  // defined(OS_WIN)
+#endif
 
   auto& default_configs =
       supported_config_map[VideoDecoderImplementation::kDefault];
@@ -235,10 +235,10 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
             base::BindRepeating(&DmabufVideoFramePool::UnwrapFrame,
                                 base::Unretained(frame_pool.get())),
             gpu_task_runner_,
-            base::BindOnce(&GetCommandBufferStub, gpu_task_runner_,
-                           media_gpu_channel_manager_,
-                           command_buffer_id->channel_token,
-                           command_buffer_id->route_id));
+            base::BindRepeating(&GetCommandBufferStub, gpu_task_runner_,
+                                media_gpu_channel_manager_,
+                                command_buffer_id->channel_token,
+                                command_buffer_id->route_id));
         video_decoder = ChromeosVideoDecoderFactory::Create(
             task_runner, std::move(frame_pool), std::move(frame_converter));
 #endif  // BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)

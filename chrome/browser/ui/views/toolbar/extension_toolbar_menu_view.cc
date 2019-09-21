@@ -9,6 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
@@ -28,6 +29,7 @@ ExtensionToolbarMenuView::ExtensionToolbarMenuView(
     Browser* browser,
     views::MenuItemView* menu_item)
     : browser_(browser), menu_item_(menu_item) {
+  CHECK(!base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
   auto* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
   auto* toolbar_button_provider = browser_view->toolbar_button_provider();
   auto* app_menu_button = toolbar_button_provider->GetAppMenuButton();

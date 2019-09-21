@@ -6,26 +6,46 @@
 #define CHROME_BROWSER_SUPERVISED_USER_LOGGED_IN_USER_MIXIN_H_
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chrome/browser/chromeos/login/test/embedded_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/user_policy_mixin.h"
 
+class AccountId;
+
 namespace chromeos {
 
-// Compound mixin class for child user browser tests.
-// Supports logging in as regular or child accounts.
-// Initiates other mixins required to log in users, sets up their user policies
-// and gaia auth.
+// Compound mixin class for easily logging in as regular or child accounts for
+// browser tests. Initiates other mixins required to log in users, sets up their
+// user policies and gaia auth.
 class LoggedInUserMixin {
  public:
   enum class LogInType { kRegular, kChild };
 
+  // |mixin_host| coordinates the other mixins and usually gets passed in from a
+  // descendant of MixinBasedInProcessBrowserTest.
+  // |type| specifies the desired user log in type, currently either regular or
+  // child.
+  // |embedded_test_server| usually gets passed in from a descendant of
+  // BrowserTestBase.
+  // |should_launch_browser| determines whether a browser instance is launched
+  // after successful login. Call SelectFirstBrowser() afterwards to ensure
+  // calls to browser() don't return nullptr. SetUpOnMainThreadHelper() already
+  // packages the calls to LoginUser() and SelectFirstBrowser() together for
+  // convenience.
+  // |account_id| is the desired test account id for logging in. The default
+  // test account already works for the majority of test cases, unless an
+  // enterprise account is needed for setting up policy.
+  // |include_initial_user| determines whether the TestUserInfo should be passed
+  // to the initial users list of the LoginManagerMixin.
   LoggedInUserMixin(InProcessBrowserTestMixinHost* mixin_host,
                     LogInType type,
                     net::EmbeddedTestServer* embedded_test_server,
-                    bool should_launch_browser = true);
+                    bool should_launch_browser = true,
+                    base::Optional<AccountId> account_id = base::nullopt,
+                    bool include_initial_user = true);
   ~LoggedInUserMixin();
 
   // Helper function for refactoring common setup code.
@@ -52,15 +72,15 @@ class LoggedInUserMixin {
   void LogInUser(bool issue_any_scope_token = false,
                  bool wait_for_active_session = true);
 
-  // Waits for the session state to change to ACTIVE. Returns immediately if the
-  // session is already active.
-  void WaitForActiveSession() { login_manager_.WaitForActiveSession(); }
+  LoginManagerMixin* GetLoginManagerMixin() { return &login_manager_; }
 
-  // Creates scoped user policy update from UserPolicyMixin.
-  // See UserPolicyMixin::RequestPolicyUpdate() for more info.
-  std::unique_ptr<ScopedUserPolicyUpdate> RequestPolicyUpdate() {
-    return user_policy_.RequestPolicyUpdate();
+  LocalPolicyTestServerMixin* GetLocalPolicyTestServerMixin() {
+    return &policy_server_;
   }
+
+  UserPolicyMixin* GetUserPolicyMixin() { return &user_policy_; }
+
+  const AccountId& GetAccountId() { return user_.account_id; }
 
  private:
   LoginManagerMixin::TestUserInfo user_;

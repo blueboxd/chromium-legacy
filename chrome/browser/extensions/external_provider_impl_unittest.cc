@@ -173,7 +173,7 @@ TEST_F(ExternalProviderImplTest, InAppPayments) {
   service_->CheckForExternalUpdates();
   runner->Run();
 
-  EXPECT_TRUE(service_->GetInstalledExtension(
+  EXPECT_TRUE(registry()->GetInstalledExtension(
       extension_misc::kInAppPaymentsSupportAppId));
   EXPECT_TRUE(service_->IsExtensionEnabled(
       extension_misc::kInAppPaymentsSupportAppId));

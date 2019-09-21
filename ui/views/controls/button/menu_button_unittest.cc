@@ -12,12 +12,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
 #include "ui/views/animation/test/test_ink_drop.h"
 #include "ui/views/controls/button/menu_button_controller.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/drag_controller.h"
+#include "ui/views/style/platform_style.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget_utils.h"
 
@@ -167,6 +169,11 @@ class TestMenuButtonListener : public MenuButtonListener {
 
   View* last_source() { return last_source_; }
   Button::ButtonState last_source_state() { return last_source_state_; }
+
+  void Reset() {
+    last_source_ = nullptr;
+    last_source_state_ = Button::STATE_NORMAL;
+  }
 
  private:
   View* last_source_ = nullptr;
@@ -341,6 +348,28 @@ TEST_F(MenuButtonTest, ActivateDropDownOnMouseClick) {
   // state.
   EXPECT_EQ(button(), menu_button_listener.last_source());
   EXPECT_EQ(Button::STATE_HOVERED, menu_button_listener.last_source_state());
+}
+
+TEST_F(MenuButtonTest, ActivateOnKeyPress) {
+  TestMenuButtonListener menu_button_listener;
+  CreateMenuButtonWithMenuButtonListener(&menu_button_listener);
+
+  EXPECT_EQ(nullptr, menu_button_listener.last_source());
+  button()->OnKeyPressed(ui::KeyEvent(
+      ui::ET_KEY_PRESSED, ui::KeyboardCode::VKEY_SPACE, ui::DomCode::SPACE, 0));
+  EXPECT_EQ(button(), menu_button_listener.last_source());
+
+  menu_button_listener.Reset();
+  EXPECT_EQ(nullptr, menu_button_listener.last_source());
+
+  button()->OnKeyPressed(ui::KeyEvent(ui::ET_KEY_PRESSED,
+                                      ui::KeyboardCode::VKEY_RETURN,
+                                      ui::DomCode::ENTER, 0));
+  if (PlatformStyle::kReturnClicksFocusedControl) {
+    EXPECT_EQ(button(), menu_button_listener.last_source());
+  } else {
+    EXPECT_EQ(nullptr, menu_button_listener.last_source());
+  }
 }
 
 // Tests that the ink drop center point is set from the mouse click point.

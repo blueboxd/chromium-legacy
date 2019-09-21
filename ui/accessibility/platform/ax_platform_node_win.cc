@@ -2024,9 +2024,6 @@ IFACEMETHODIMP AXPlatformNodeWin::get_VerticalViewSize(double* result) {
 HRESULT AXPlatformNodeWin::ISelectionItemProviderSetSelected(bool selected) {
   UIA_VALIDATE_CALL();
 
-  if (!IsSelectionItemSupported())
-    return UIA_E_INVALIDOPERATION;
-
   int restriction;
   if (GetIntAttribute(ax::mojom::IntAttribute::kRestriction, &restriction)) {
     if (restriction == static_cast<int>(ax::mojom::Restriction::kDisabled))
@@ -2064,38 +2061,23 @@ IFACEMETHODIMP AXPlatformNodeWin::Select() {
 IFACEMETHODIMP AXPlatformNodeWin::get_IsSelected(BOOL* result) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_SELECTIONITEM_GET_ISSELECTED);
   UIA_VALIDATE_CALL_1_ARG(result);
-
-  if (!IsSelectionItemSupported())
-    return UIA_E_INVALIDOPERATION;
-
   // https://www.w3.org/TR/core-aam-1.1/#mapping_state-property_table
-  // SelectionItem.IsSelected is exposed when aria-checked is True or False,
-  // for 'radio' and 'menuitemradio' roles
+  // SelectionItem.IsSelected is set according to the True or False value of
+  // aria-checked for 'radio' and 'menuitemradio' roles.
   if (GetData().role == ax::mojom::Role::kRadioButton ||
       GetData().role == ax::mojom::Role::kMenuItemRadio) {
-    const auto checked_state = GetData().GetCheckedState();
-    switch (checked_state) {
-      case ax::mojom::CheckedState::kTrue:
-      case ax::mojom::CheckedState::kFalse: {
-        *result = (checked_state == ax::mojom::CheckedState::kTrue);
-        return S_OK;
-      }
-      case ax::mojom::CheckedState::kMixed:
-      case ax::mojom::CheckedState::kNone: {
-        return UIA_E_INVALIDOPERATION;
-      }
-    }
-  }
-
-  // https://www.w3.org/TR/wai-aria-1.1/#aria-selected
-  // Elements are not selectable when aria-selected is undefined
-  bool is_selected;
-  if (GetBoolAttribute(ax::mojom::BoolAttribute::kSelected, &is_selected)) {
-    *result = is_selected;
+    *result = (GetData().GetCheckedState() == ax::mojom::CheckedState::kTrue);
     return S_OK;
   }
 
-  return UIA_E_INVALIDOPERATION;
+  // https://www.w3.org/TR/wai-aria-1.1/#aria-selected
+  // SelectionItem.IsSelected is set according to the True or False value of
+  // aria-selected.
+  bool is_selected;
+  if (GetBoolAttribute(ax::mojom::BoolAttribute::kSelected, &is_selected))
+    *result = is_selected;
+
+  return S_OK;
 }
 
 IFACEMETHODIMP AXPlatformNodeWin::get_SelectionContainer(

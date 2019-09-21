@@ -11,6 +11,9 @@ js_type_check("closure_compile") {
 }
 
 js_library("ink_api") {
+  deps = [
+    "..:annotation_tool",
+  ]
   externs_list = [
     "//third_party/ink/build/ink_lib_externs.js",
     "$externs_path/pending.js",

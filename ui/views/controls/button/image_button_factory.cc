@@ -15,19 +15,6 @@
 
 namespace views {
 
-namespace {
-
-void ConfigureVectorImageButton(ImageButton* button) {
-  button->SetInkDropMode(Button::InkDropMode::ON);
-  button->set_has_ink_drop_action_on_click(true);
-  button->SetImageHorizontalAlignment(ImageButton::ALIGN_CENTER);
-  button->SetImageVerticalAlignment(ImageButton::ALIGN_MIDDLE);
-  button->SetBorder(CreateEmptyBorder(
-      LayoutProvider::Get()->GetInsetsMetric(INSETS_VECTOR_IMAGE_BUTTON)));
-}
-
-}  // namespace
-
 std::unique_ptr<ImageButton> CreateVectorImageButton(ButtonListener* listener) {
   auto button = std::make_unique<ImageButton>(listener);
   ConfigureVectorImageButton(button.get());
@@ -39,6 +26,15 @@ std::unique_ptr<ToggleImageButton> CreateVectorToggleImageButton(
   auto button = std::make_unique<ToggleImageButton>(listener);
   ConfigureVectorImageButton(button.get());
   return button;
+}
+
+void ConfigureVectorImageButton(ImageButton* button) {
+  button->SetInkDropMode(Button::InkDropMode::ON);
+  button->set_has_ink_drop_action_on_click(true);
+  button->SetImageHorizontalAlignment(ImageButton::ALIGN_CENTER);
+  button->SetImageVerticalAlignment(ImageButton::ALIGN_MIDDLE);
+  button->SetBorder(CreateEmptyBorder(
+      LayoutProvider::Get()->GetInsetsMetric(INSETS_VECTOR_IMAGE_BUTTON)));
 }
 
 void SetImageFromVectorIcon(ImageButton* button, const gfx::VectorIcon& icon) {

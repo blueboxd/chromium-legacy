@@ -74,21 +74,15 @@ class LoaderBrowserTest : public ContentBrowserTest,
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
-  void OnDownloadCreated(DownloadManager* manager,
-                         download::DownloadItem* item) override {
-    if (!got_downloads_)
-      got_downloads_ = !!manager->InProgressCount();
-  }
-
   void CheckTitleTest(const GURL& url, const std::string& expected_title) {
     base::string16 expected_title16(ASCIIToUTF16(expected_title));
     TitleWatcher title_watcher(shell()->web_contents(), expected_title16);
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     EXPECT_EQ(expected_title16, title_watcher.WaitAndGetTitle());
   }
 
   bool GetPopupTitle(const GURL& url, base::string16* title) {
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
 
     ShellAddedObserver new_shell_observer;
 
@@ -216,8 +210,8 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, ContentDispositionInline) {
 // Test for bug #1091358.
 IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, SyncXMLHttpRequest) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  NavigateToURL(shell(),
-                embedded_test_server()->GetURL("/sync_xmlhttprequest.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/sync_xmlhttprequest.html")));
 
   // Let's check the XMLHttpRequest ran successfully.
   bool success = false;
@@ -230,8 +224,9 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, SyncXMLHttpRequest) {
 // If this flakes, use http://crbug.com/62776.
 IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, SyncXMLHttpRequest_Disallowed) {
   ASSERT_TRUE(embedded_test_server()->Start());
-  NavigateToURL(shell(), embedded_test_server()->GetURL(
-                             "/sync_xmlhttprequest_disallowed.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(),
+      embedded_test_server()->GetURL("/sync_xmlhttprequest_disallowed.html")));
 
   // Let's check the XMLHttpRequest ran successfully.
   bool success = false;
@@ -309,8 +304,9 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, SyncXMLHttpRequest_Cancelled) {
   ASSERT_TRUE(embedded_test_server()->Start());
   WaitForLoadStop(shell()->web_contents());
 
-  NavigateToURL(shell(), embedded_test_server()->GetURL(
-                             "/sync_xmlhttprequest_cancelled.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(),
+      embedded_test_server()->GetURL("/sync_xmlhttprequest_cancelled.html")));
 
   int status_code = -1;
   EXPECT_TRUE(ExecuteScriptAndExtractInt(
@@ -351,7 +347,7 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest,
 
   // Navigate to a cross-site page that loads immediately without making a
   // network request.  The unload event should still be run.
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   // Check that the cookie was set.
   EXPECT_EQ("onunloadCookie=foo", GetCookies(url));
@@ -389,7 +385,8 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, CrossSiteNoUnloadOn204) {
   CheckTitleTest(url, "set cookie on unload");
 
   // Navigate to a cross-site URL that returns a 204 No Content response.
-  NavigateToURL(shell(), embedded_test_server()->GetURL(kNoContentPath));
+  EXPECT_TRUE(NavigateToURLAndExpectNoCommit(
+      shell(), embedded_test_server()->GetURL(kNoContentPath)));
 
   // Check that the unload cookie was not set.
   EXPECT_EQ("", GetCookies(url));
@@ -410,13 +407,13 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, CrossSiteNoUnloadOn204) {
 #endif
 IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, MAYBE_CrossSiteAfterCrash) {
   // Make sure we have a live process before trying to kill it.
-  NavigateToURL(shell(), GURL("about:blank"));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
 
   // Cause the renderer to crash.
   RenderProcessHostWatcher crash_observer(
       shell()->web_contents(),
       RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  NavigateToURL(shell(), GURL(kChromeUICrashURL));
+  EXPECT_FALSE(NavigateToURL(shell(), GURL(kChromeUICrashURL)));
   // Wait for browser to notice the renderer crash.
   crash_observer.Wait();
 
@@ -456,9 +453,11 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest,
   // TODO(creis): If this causes crashes or hangs, it might be for the same
   // reason as ErrorPageTest::DNSError.  See bug 1199491 and
   // http://crbug.com/22877.
-  GURL failed_url =
-      net::URLRequestFailedJob::GetMockHttpUrl(net::ERR_NAME_NOT_RESOLVED);
-  NavigateToURL(shell(), failed_url);
+  GURL failed_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  std::unique_ptr<URLLoaderInterceptor> url_interceptor =
+      URLLoaderInterceptor::SetupRequestFailForURL(failed_url,
+                                                   net::ERR_NAME_NOT_RESOLVED);
+  EXPECT_FALSE(NavigateToURL(shell(), failed_url));
 
   EXPECT_NE(ASCIIToUTF16("set cookie on unload"),
             shell()->web_contents()->GetTitle());
@@ -497,15 +496,17 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, CrossSiteNavigationErrorPage2) {
   // TODO(creis): If this causes crashes or hangs, it might be for the same
   // reason as ErrorPageTest::DNSError.  See bug 1199491 and
   // http://crbug.com/22877.
-  GURL failed_url =
-      net::URLRequestFailedJob::GetMockHttpUrl(net::ERR_NAME_NOT_RESOLVED);
+  GURL failed_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  std::unique_ptr<URLLoaderInterceptor> url_interceptor =
+      URLLoaderInterceptor::SetupRequestFailForURL(failed_url,
+                                                   net::ERR_NAME_NOT_RESOLVED);
 
-  NavigateToURL(shell(), failed_url);
+  EXPECT_FALSE(NavigateToURL(shell(), failed_url));
   EXPECT_NE(ASCIIToUTF16("Title Of Awesomeness"),
             shell()->web_contents()->GetTitle());
 
   // Repeat navigation.  We are testing that this completes.
-  NavigateToURL(shell(), failed_url);
+  EXPECT_FALSE(NavigateToURL(shell(), failed_url));
   EXPECT_NE(ASCIIToUTF16("Title Of Awesomeness"),
             shell()->web_contents()->GetTitle());
 }
@@ -535,11 +536,11 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, CrossOriginRedirectBlocked) {
 // See bug 40250.
 IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, CrossSiteFailedRequest) {
   // Visit another URL first to trigger a cross-site navigation.
-  NavigateToURL(shell(), GetTestUrl("", "simple_page.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), GetTestUrl("", "simple_page.html")));
 
   // Visit a URL that fails without calling ResourceDispatcherHost::Read.
   GURL broken_url("chrome://theme");
-  NavigateToURL(shell(), broken_url);
+  EXPECT_FALSE(NavigateToURL(shell(), broken_url));
 }
 
 namespace {
@@ -572,7 +573,11 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, CookiePolicy) {
       "http://localhost:%u/set_cookie.html", embedded_test_server()->port()));
   GURL url(embedded_test_server()->GetURL("/redirect?" + set_cookie_url));
 
-  CheckTitleTest(url, "cookie set");
+  base::string16 expected_title16(ASCIIToUTF16("cookie set"));
+  TitleWatcher title_watcher(shell()->web_contents(), expected_title16);
+  EXPECT_TRUE(NavigateToURL(shell(), url,
+                            GURL(set_cookie_url) /* expected_commit_url */));
+  EXPECT_EQ(expected_title16, title_watcher.WaitAndGetTitle());
 }
 
 // Test that ui::PAGE_TRANSITION_CLIENT_REDIRECT is correctly set
@@ -1184,10 +1189,11 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, URLLoaderThrottleStartModify) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url = embedded_test_server()->GetURL("/simple_page.html");
-  NavigateToURL(shell(), url);
+  GURL expected_url(url.spec() + "?foo=bar");
+  EXPECT_TRUE(
+      NavigateToURL(shell(), url, expected_url /* expected_commit_url */));
 
   {
-    GURL expected_url(url.spec() + "?foo=bar");
     base::AutoLock auto_lock(lock);
     ASSERT_TRUE(urls_requested.find(expected_url) != urls_requested.end());
     ASSERT_TRUE(header_map[expected_url]["Foo"] == "Bar");
@@ -1217,10 +1223,10 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, URLLoaderThrottleRedirectModify) {
 
   GURL url =
       embedded_test_server()->GetURL("/server-redirect?simple_page.html");
-  NavigateToURL(shell(), url);
-
-  GURL expected_url;
-  expected_url = embedded_test_server()->GetURL("/simple_page.html?foo=bar");
+  GURL expected_url =
+      embedded_test_server()->GetURL("/simple_page.html?foo=bar");
+  EXPECT_TRUE(
+      NavigateToURL(shell(), url, expected_url /* expected_commit_url */));
 
   {
     base::AutoLock auto_lock(lock);

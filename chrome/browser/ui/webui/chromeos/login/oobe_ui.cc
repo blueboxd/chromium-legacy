@@ -179,6 +179,12 @@ void AddArcScreensResources(content::WebUIDataSource* source) {
                           IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_HTML);
 }
 
+void AddAssistantScreensResources(content::WebUIDataSource* source) {
+  source->AddResourcePath("voice_match_animation.json",
+                          IDR_ASSISTANT_VOICE_MATCH_ANIMATION);
+  source->OverrideContentSecurityPolicyWorkerSrc("worker-src blob: 'self';");
+}
+
 void AddFingerprintResources(content::WebUIDataSource* source) {
   int animation_id;
   bool is_lottie_animation = false;
@@ -269,6 +275,7 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   AddFingerprintResources(source);
   AddSyncConsentResources(source);
   AddArcScreensResources(source);
+  AddAssistantScreensResources(source);
 
   source->AddResourcePath(kKeyboardUtilsJSPath, IDR_KEYBOARD_UTILS_JS);
   source->OverrideContentSecurityPolicyObjectSrc(

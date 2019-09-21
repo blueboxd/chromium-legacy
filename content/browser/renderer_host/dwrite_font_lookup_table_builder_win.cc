@@ -40,9 +40,6 @@
 
 namespace content {
 
-using namespace dwrite_font_file_util;
-using namespace dwrite_font_uma_logging;
-
 namespace {
 
 const base::FilePath::CharType kProtobufFilename[] =

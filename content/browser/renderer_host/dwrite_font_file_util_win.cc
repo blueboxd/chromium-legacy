@@ -17,10 +17,6 @@
 
 namespace content {
 
-using namespace dwrite_font_uma_logging;
-
-namespace dwrite_font_file_util {
-
 bool FontFilePathAndTtcIndex(IDWriteFont* font,
                              base::string16& file_path,
                              uint32_t& ttc_index) {
@@ -178,5 +174,4 @@ base::string16 GetWindowsFontsPath() {
   return base::i18n::FoldCase(font_path_chars.data());
 }
 
-}  // namespace dwrite_font_file_util
 }  // namespace content

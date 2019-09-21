@@ -3286,12 +3286,12 @@ const FeatureEntry kFeatureEntries[] = {
                                     kStartSurfaceAndroidVariations,
                                     "StartSurfaceAndroid")},
 
-    {"enable-close-tab-suggestions-stale",
-     flag_descriptions::kCloseTabSuggestionsStaleName,
-     flag_descriptions::kCloseTabSuggestionsStaleDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kCloseTabSuggestionsStale,
+    {"enable-close-tab-suggestions",
+     flag_descriptions::kCloseTabSuggestionsName,
+     flag_descriptions::kCloseTabSuggestionsDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kCloseTabSuggestions,
                                     kCloseTabSuggestionsStaleVariations,
-                                    "CloseSuggestionsStaleTab")},
+                                    "CloseSuggestionsTab")},
 
     {"enable-horizontal-tab-switcher",
      flag_descriptions::kHorizontalTabSwitcherAndroidName,
@@ -4579,6 +4579,14 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAndroidSetupSearchEngineName,
      flag_descriptions::kAndroidSetupSearchEngineDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kAndroidSetupSearchEngine)},
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+    {"enable-clipboard-provider-text-suggestions",
+     flag_descriptions::kEnableClipboardProviderTextSuggestionsName,
+     flag_descriptions::kEnableClipboardProviderTextSuggestionsDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(omnibox::kEnableClipboardProviderTextSuggestions)},
 #endif  // defined(OS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

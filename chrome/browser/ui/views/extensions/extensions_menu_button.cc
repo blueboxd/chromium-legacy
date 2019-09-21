@@ -27,6 +27,9 @@ ExtensionsMenuButton::ExtensionsMenuButton(
       parent_(parent),
       controller_(controller) {
   SetInkDropMode(InkDropMode::ON);
+
+  // Items within a menu should not show focus rings.
+  SetInstallFocusRingOnFocus(false);
   SetFocusBehavior(FocusBehavior::ALWAYS);
   SetButtonController(std::make_unique<HoverButtonController>(
       this, this,

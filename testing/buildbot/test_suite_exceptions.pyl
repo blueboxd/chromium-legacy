@@ -1742,6 +1742,7 @@
       },
       'linux-bfcache-debug': {
         'args': [
+          '--debug',
           '--additional-driver-flag=--enable-features=BackForwardCache',
         ],
       },

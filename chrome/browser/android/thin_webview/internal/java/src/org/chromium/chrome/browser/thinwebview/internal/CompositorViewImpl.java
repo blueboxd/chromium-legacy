@@ -16,6 +16,7 @@ import android.view.View;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.thinwebview.CompositorView;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -40,7 +41,8 @@ public class CompositorViewImpl implements CompositorView {
     public CompositorViewImpl(Context context, WindowAndroid windowAndroid) {
         mContext = context;
         mView = useSurfaceView() ? createSurfaceView() : createTextureView();
-        mNativeCompositorViewImpl = nativeInit(windowAndroid);
+        mNativeCompositorViewImpl =
+                CompositorViewImplJni.get().init(CompositorViewImpl.this, windowAndroid);
     }
 
     @Override
@@ -50,12 +52,17 @@ public class CompositorViewImpl implements CompositorView {
 
     @Override
     public void destroy() {
-        if (mNativeCompositorViewImpl != 0) nativeDestroy(mNativeCompositorViewImpl);
+        if (mNativeCompositorViewImpl != 0) {
+            CompositorViewImplJni.get().destroy(mNativeCompositorViewImpl, CompositorViewImpl.this);
+        }
     }
 
     @Override
     public void requestRender() {
-        if (mNativeCompositorViewImpl != 0) nativeSetNeedsComposite(mNativeCompositorViewImpl);
+        if (mNativeCompositorViewImpl != 0) {
+            CompositorViewImplJni.get().setNeedsComposite(
+                    mNativeCompositorViewImpl, CompositorViewImpl.this);
+        }
     }
 
     private SurfaceView createSurfaceView() {
@@ -64,21 +71,23 @@ public class CompositorViewImpl implements CompositorView {
             @Override
             public void surfaceCreated(SurfaceHolder surfaceHolder) {
                 if (mNativeCompositorViewImpl == 0) return;
-                nativeSurfaceCreated(mNativeCompositorViewImpl);
+                CompositorViewImplJni.get().surfaceCreated(
+                        mNativeCompositorViewImpl, CompositorViewImpl.this);
             }
 
             @Override
             public void surfaceChanged(
                     SurfaceHolder surfaceHolder, int format, int width, int height) {
                 if (mNativeCompositorViewImpl == 0) return;
-                nativeSurfaceChanged(mNativeCompositorViewImpl, format, width, height,
-                        surfaceHolder.getSurface());
+                CompositorViewImplJni.get().surfaceChanged(mNativeCompositorViewImpl,
+                        CompositorViewImpl.this, format, width, height, surfaceHolder.getSurface());
             }
 
             @Override
             public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
                 if (mNativeCompositorViewImpl == 0) return;
-                nativeSurfaceDestroyed(mNativeCompositorViewImpl);
+                CompositorViewImplJni.get().surfaceDestroyed(
+                        mNativeCompositorViewImpl, CompositorViewImpl.this);
             }
         });
 
@@ -95,14 +104,16 @@ public class CompositorViewImpl implements CompositorView {
             public void onSurfaceTextureSizeChanged(
                     SurfaceTexture surfaceTexture, int width, int height) {
                 if (mNativeCompositorViewImpl == 0) return;
-                nativeSurfaceChanged(mNativeCompositorViewImpl, PixelFormat.OPAQUE, width, height,
+                CompositorViewImplJni.get().surfaceChanged(mNativeCompositorViewImpl,
+                        CompositorViewImpl.this, PixelFormat.OPAQUE, width, height,
                         new Surface(surfaceTexture));
             }
 
             @Override
             public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
                 if (mNativeCompositorViewImpl == 0) return false;
-                nativeSurfaceDestroyed(mNativeCompositorViewImpl);
+                CompositorViewImplJni.get().surfaceDestroyed(
+                        mNativeCompositorViewImpl, CompositorViewImpl.this);
                 return false;
             }
 
@@ -110,8 +121,10 @@ public class CompositorViewImpl implements CompositorView {
             public void onSurfaceTextureAvailable(
                     SurfaceTexture surfaceTexture, int width, int height) {
                 if (mNativeCompositorViewImpl == 0) return;
-                nativeSurfaceCreated(mNativeCompositorViewImpl);
-                nativeSurfaceChanged(mNativeCompositorViewImpl, PixelFormat.OPAQUE, width, height,
+                CompositorViewImplJni.get().surfaceCreated(
+                        mNativeCompositorViewImpl, CompositorViewImpl.this);
+                CompositorViewImplJni.get().surfaceChanged(mNativeCompositorViewImpl,
+                        CompositorViewImpl.this, PixelFormat.OPAQUE, width, height,
                         new Surface(surfaceTexture));
             }
         });
@@ -136,11 +149,14 @@ public class CompositorViewImpl implements CompositorView {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
     }
 
-    private native long nativeInit(WindowAndroid windowAndroid);
-    private native void nativeDestroy(long nativeCompositorViewImpl);
-    private native void nativeSurfaceCreated(long nativeCompositorViewImpl);
-    private native void nativeSurfaceDestroyed(long nativeCompositorViewImpl);
-    private native void nativeSurfaceChanged(
-            long nativeCompositorViewImpl, int format, int width, int height, Surface surface);
-    private native void nativeSetNeedsComposite(long nativeCompositorViewImpl);
+    @NativeMethods
+    interface Natives {
+        long init(CompositorViewImpl caller, WindowAndroid windowAndroid);
+        void destroy(long nativeCompositorViewImpl, CompositorViewImpl caller);
+        void surfaceCreated(long nativeCompositorViewImpl, CompositorViewImpl caller);
+        void surfaceDestroyed(long nativeCompositorViewImpl, CompositorViewImpl caller);
+        void surfaceChanged(long nativeCompositorViewImpl, CompositorViewImpl caller, int format,
+                int width, int height, Surface surface);
+        void setNeedsComposite(long nativeCompositorViewImpl, CompositorViewImpl caller);
+    }
 }

@@ -252,6 +252,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       GetNSString(IDS_IOS_MANAGE_SYNC_GOOGLE_ACTIVITY_CONTROLS_TITLE);
   googleActivityControlsItem.detailText =
       GetNSString(IDS_IOS_MANAGE_SYNC_GOOGLE_ACTIVITY_CONTROLS_DESCRIPTION);
+  googleActivityControlsItem.accessibilityTraits |= UIAccessibilityTraitButton;
   [model addItem:googleActivityControlsItem
       toSectionWithIdentifier:AdvancedSettingsSectionIdentifier];
 
@@ -264,6 +265,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       GetNSString(IDS_IOS_MANAGE_SYNC_DATA_FROM_CHROME_SYNC_DESCRIPTION);
   dataFromChromeSyncItem.accessibilityIdentifier =
       kDataFromChromeSyncAccessibilityIdentifier;
+  dataFromChromeSyncItem.accessibilityTraits |= UIAccessibilityTraitButton;
   [model addItem:dataFromChromeSyncItem
       toSectionWithIdentifier:AdvancedSettingsSectionIdentifier];
 }

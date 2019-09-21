@@ -22,13 +22,6 @@ namespace views {
 
 class SizeBounds;
 
-// NOTE: Types in this file are intended for use by layout managers, preferably
-// only in ui/views/layout. They are marked as VIEWS_EXPORT for use in unit
-// tests as well as experimental layout managers currently not in the Views
-// library.
-
-namespace layout {
-
 // Represents a point in layout space - that is, a point on the main and cross
 // axes of the layout (regardless of whether it is vertically or horizontally
 // oriented.
@@ -285,7 +278,6 @@ NormalizedRect VIEWS_EXPORT Normalize(LayoutOrientation orientation,
 gfx::Rect VIEWS_EXPORT Denormalize(LayoutOrientation orientation,
                                    const NormalizedRect& rect);
 
-}  // namespace layout
 }  // namespace views
 
 #endif  // UI_VIEWS_LAYOUT_NORMALIZED_GEOMETRY_H_

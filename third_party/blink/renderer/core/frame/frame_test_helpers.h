@@ -39,6 +39,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/test/test_task_graph_runner.h"
+#include "cc/trees/layer_tree_host.h"
 #include "content/renderer/compositor/layer_tree_view.h"
 #include "content/test/stub_layer_tree_view_delegate.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -243,7 +244,6 @@ class TestWebWidgetClient : public WebWidgetClient {
                                 bool shrink_viewport) override;
   viz::FrameSinkId GetFrameSinkId() override;
 
-  content::LayerTreeView* layer_tree_view() { return layer_tree_view_; }
   cc::LayerTreeHost* layer_tree_host() {
     return layer_tree_view_->layer_tree_host();
   }
@@ -371,8 +371,8 @@ class WebViewHelper {
   void Reset();
 
   WebViewImpl* GetWebView() const { return web_view_; }
-  content::LayerTreeView* GetLayerTreeView() const {
-    return test_web_widget_client_->layer_tree_view();
+  cc::LayerTreeHost* GetLayerTreeHost() const {
+    return test_web_widget_client_->layer_tree_host();
   }
   TestWebWidgetClient* GetWebWidgetClient() const {
     return test_web_widget_client_;

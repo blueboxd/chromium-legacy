@@ -212,6 +212,7 @@ class ASH_EXPORT SplitViewController : public SplitViewNotifier,
 
   // AccessibilityObserver:
   void OnAccessibilityStatusChanged() override;
+  void OnAccessibilityControllerShutdown() override;
 
   aura::Window* left_window() { return left_window_; }
   aura::Window* right_window() { return right_window_; }

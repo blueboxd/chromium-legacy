@@ -13,7 +13,7 @@
 #include "base/test/task_environment.h"
 #include "base/timer/mock_timer.h"
 #include "components/account_id/account_id.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/identity/public/mojom/identity_accessor.mojom-test-utils.h"
 #include "services/identity/public/mojom/identity_service.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -66,7 +66,7 @@ class MockIdentityAccessor {
           const ::identity::ScopeSet& scopes,
           const std::string& consumer_id));
 
-  mojo::BindingSet<identity::mojom::IdentityAccessor>* bindings_ = nullptr;
+  mojo::ReceiverSet<identity::mojom::IdentityAccessor>* receivers_ = nullptr;
 };
 
 class FakeIdentityService
@@ -76,10 +76,10 @@ class FakeIdentityService
   explicit FakeIdentityService(MockIdentityAccessor* mock,
                                const base::Clock* clock)
       : mock_(mock), clock_(clock) {
-    mock_->bindings_ = &bindings_;
+    mock_->receivers_ = &receivers_;
   }
 
-  ~FakeIdentityService() override { mock_->bindings_ = nullptr; }
+  ~FakeIdentityService() override { mock_->receivers_ = nullptr; }
 
   void set_auth_enabled(bool enabled) { auth_enabled_ = enabled; }
 
@@ -88,7 +88,7 @@ class FakeIdentityService
   void BindIdentityAccessor(
       mojo::PendingReceiver<identity::mojom::IdentityAccessor> receiver)
       override {
-    bindings_.AddBinding(this, std::move(receiver));
+    receivers_.Add(this, std::move(receiver));
   }
 
   // identity::mojom::IdentityAccessorInterceptorForTesting overrides:
@@ -120,7 +120,7 @@ class FakeIdentityService
 
   MockIdentityAccessor* const mock_;
   const base::Clock* const clock_;
-  mojo::BindingSet<identity::mojom::IdentityAccessor> bindings_;
+  mojo::ReceiverSet<identity::mojom::IdentityAccessor> receivers_;
   bool auth_enabled_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(FakeIdentityService);

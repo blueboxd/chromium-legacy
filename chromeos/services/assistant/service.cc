@@ -150,8 +150,8 @@ void Service::OverrideSettingsManagerForTesting(
 }
 
 void Service::SetIdentityAccessorForTesting(
-    identity::mojom::IdentityAccessorPtr identity_accessor) {
-  identity_accessor_ = std::move(identity_accessor);
+    mojo::PendingRemote<identity::mojom::IdentityAccessor> identity_accessor) {
+  identity_accessor_.Bind(std::move(identity_accessor));
 }
 
 void Service::SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer) {
@@ -341,7 +341,8 @@ void Service::UpdateAssistantManagerState() {
 identity::mojom::IdentityAccessor* Service::GetIdentityAccessor() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!identity_accessor_)
-    client_->RequestIdentityAccessor(mojo::MakeRequest(&identity_accessor_));
+    client_->RequestIdentityAccessor(
+        identity_accessor_.BindNewPipeAndPassReceiver());
   return identity_accessor_.get();
 }
 

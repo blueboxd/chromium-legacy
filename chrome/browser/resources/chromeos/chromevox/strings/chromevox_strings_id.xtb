@@ -169,6 +169,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="2220529011494928058">Laporkan masalah</translation>
 <translation id="2223693656926968778">Mengambil tindakan pada item ini</translation>
 <translation id="225732394367814946">Meningkatkan laju ucapan</translation>
+<translation id="2267538686624070261">Salah eja diabaikan</translation>
 <translation id="2267945578749931355">Karakter Berikutnya</translation>
 <translation id="2278490101488436824">Geser tiga jari ke kiri</translation>
 <translation id="2281234842553884450">Penggeser sebelumnya</translation>
@@ -207,6 +208,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="257674075312929031">Grup</translation>
 <translation id="2582407057977008361">Pinggir</translation>
 <translation id="2592212930811759050">Ketuk dua kali untuk mulai mengedit</translation>
+<translation id="2598495320872286378">Kesalahan tata bahasa</translation>
 <translation id="2614981083756825552">Tata Letak Math ML</translation>
 <translation id="2624431853467395961">Buka mode pembelajaran</translation>
 <translation id="2626530649491650971">dapat diklik</translation>
@@ -821,6 +823,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="6833103209700200188">Footer</translation>
 <translation id="6858047746862060282">Prolog</translation>
 <translation id="6859876496651143278">Geser satu jari ke kiri</translation>
+<translation id="6865519907510167493">Salah eja</translation>
 <translation id="6871161210040114857">Mengabaikan huruf besar/kecil.</translation>
 <translation id="6877435256196695200">Tidak ada grafik berikutnya.</translation>
 <translation id="6897341342232909480">Pindah ke kiri</translation>
@@ -1029,6 +1032,7 @@ Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="8446884382197647889">Pelajari Lebih Lanjut</translation>
 <translation id="8455868257606149352">Maks <ph name="X" /></translation>
 <translation id="84575901236241018">memiliki tombol akses, <ph name="KEY" /></translation>
+<translation id="8463645336674919227">Kesalahan tata bahasa diabaikan</translation>
 <translation id="847154984256717791">sibuk</translation>
 <translation id="8476408756881832830">Jeda pemutaran saat ChromeVox sedang berbicara</translation>
 <translation id="8476508772960940536">ringkasan jendela</translation>

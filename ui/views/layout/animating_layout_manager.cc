@@ -19,12 +19,6 @@
 
 namespace views {
 
-using layout::Denormalize;
-using layout::Normalize;
-using layout::NormalizedInsets;
-using layout::NormalizedRect;
-using layout::NormalizedSize;
-
 // Holds data about a view that is fading in or out as part of an animation.
 struct AnimatingLayoutManager::LayoutFadeInfo {
   // Whether the view is fading in or out.
@@ -381,8 +375,7 @@ void AnimatingLayoutManager::EnableAnimationForTesting() {
   DCHECK(animation_delegate_->ready_to_animate());
 }
 
-LayoutManagerBase::ProposedLayout
-AnimatingLayoutManager::CalculateProposedLayout(
+ProposedLayout AnimatingLayoutManager::CalculateProposedLayout(
     const SizeBounds& size_bounds) const {
   // This class directly overrides Layout() so GetProposedLayout() and
   // CalculateProposedLayout() are not called.
@@ -482,7 +475,8 @@ void AnimatingLayoutManager::RunDelayedActions() {
 void AnimatingLayoutManager::UpdateCurrentLayout(double percent) {
   // This drops out any child view elements that don't exist in the target
   // layout. We'll add them back in later.
-  current_layout_ = Interpolate(percent, starting_layout_, target_layout_);
+  current_layout_ =
+      ProposedLayoutBetween(percent, starting_layout_, target_layout_);
 
   if (default_fade_mode_ == FadeInOutMode::kHide || fade_infos_.empty())
     return;
@@ -676,7 +670,7 @@ void AnimatingLayoutManager::CalculateFadeInfos() {
   }
 }
 
-LayoutManagerBase::ChildLayout AnimatingLayoutManager::CalculateScaleFade(
+ChildLayout AnimatingLayoutManager::CalculateScaleFade(
     const LayoutFadeInfo& fade_info,
     base::Optional<size_t> prev_index,
     base::Optional<size_t> next_index,
@@ -726,7 +720,7 @@ LayoutManagerBase::ChildLayout AnimatingLayoutManager::CalculateScaleFade(
   return child_layout;
 }
 
-LayoutManagerBase::ChildLayout AnimatingLayoutManager::CalculateSlideFade(
+ChildLayout AnimatingLayoutManager::CalculateSlideFade(
     const LayoutFadeInfo& fade_info,
     base::Optional<size_t> prev_index,
     base::Optional<size_t> next_index,

@@ -261,9 +261,9 @@ bool AwAutofillClient::IsContextSecure() {
     return false;
 
   ssl_status = navigation_entry->GetSSL();
-  // Note: The implementation below is a copy of the one in
-  // ChromeAutofillClient::IsContextSecure, and should be kept in sync
-  // until crbug.com/505388 gets implemented.
+  // Note: As of crbug.com/701018, Chrome relies on SecurityStateTabHelper to
+  // determine whether the page is secure, but WebView has no equivalent class.
+
   return navigation_entry->GetURL().SchemeIsCryptographic() &&
          ssl_status.certificate &&
          !net::IsCertStatusError(ssl_status.cert_status) &&

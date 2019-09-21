@@ -176,7 +176,7 @@ public class EditorDialog
 
     /** Launches the Autofill help page on top of the current Context. */
     public static void launchAutofillHelpPage(Context context) {
-        HelpAndFeedback.getInstance(context).show((Activity) context,
+        HelpAndFeedback.getInstance().show((Activity) context,
                 context.getString(R.string.help_context_autofill), Profile.getLastUsedProfile(),
                 null);
     }

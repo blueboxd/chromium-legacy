@@ -16,14 +16,17 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_scanner_results_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "components/crx_file/id_util.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/uninstall_reason.h"
 
 namespace safe_browsing {
 
 ChromePromptActions::ChromePromptActions(
     extensions::ExtensionService* extension_service,
+    extensions::ExtensionRegistry* extension_registry,
     PromptUserCallback on_prompt_user)
     : extension_service_(extension_service),
+      extension_registry_(extension_registry),
       on_prompt_user_(std::move(on_prompt_user)) {
   DCHECK(on_prompt_user_);
 }
@@ -79,7 +82,7 @@ bool ChromePromptActions::DisableExtensions(
         std::string id_utf8 = base::UTF16ToUTF8(id);
         return crx_file::id_util::IdIsValid(id_utf8) &&
                base::Contains(verified_extension_ids, id) &&
-               extension_service_->GetInstalledExtension(id_utf8) != nullptr;
+               extension_registry_->GetInstalledExtension(id_utf8) != nullptr;
       });
   if (!ids_are_valid) {
     return false;

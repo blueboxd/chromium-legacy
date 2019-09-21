@@ -6,12 +6,11 @@ package org.chromium.chromoting;
 
 import android.content.Context;
 import android.os.SystemClock;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.filters.SmallTest;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
-
-import androidx.test.InstrumentationRegistry;
-import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;

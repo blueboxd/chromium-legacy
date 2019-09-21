@@ -14,23 +14,7 @@
     margin-inline-end: 16px;
   }
 
-  #pinnedTabsContainer[empty] {
-    display: none;
-  }
-
-  .ghost-pinned-tab {
-    background: var(--tabstrip-card-background-color);
-    border-radius: var(--tabstrip-card-border-radius);
-    box-shadow: var(--tabstrip-elevation-box-shadow);
-    opacity: 0.5;
-  }
-
-  /* The #pinnedTabsContainer can only fit a maximum of 4 pinned tabs. The
-   * ghost-pinned-tab elements are meant to add as placeholders if there
-   * are not enough actual pinned tabs to fill an entire column. Therefore,
-   * all ghost-pinned-tabs after the 4 * nth element should be hidden. */
-  .ghost-pinned-tab:nth-child(4n + 1),
-  .ghost-pinned-tab:nth-child(4n + 1) ~ .ghost-pinned-tab {
+  #pinnedTabsContainer:empty {
     display: none;
   }
 
@@ -43,9 +27,5 @@
   }
 </style>
 
-<div id="pinnedTabsContainer" empty>
-  <div class="ghost-pinned-tab"></div>
-  <div class="ghost-pinned-tab"></div>
-  <div class="ghost-pinned-tab"></div>
-</div>
+<div id="pinnedTabsContainer"></div>
 <div id="tabsContainer"></div>

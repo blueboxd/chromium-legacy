@@ -164,6 +164,8 @@ class TabletModeControllerTest : public AshTestBase {
     test_api_->SuspendDone(sleep_duration);
   }
 
+  bool IsScreenshotShown() const { return test_api_->IsScreenshotShown(); }
+
   // Creates a test window snapped on the left in desktop mode.
   std::unique_ptr<aura::Window> CreateDesktopWindowSnappedLeft() {
     std::unique_ptr<aura::Window> window = CreateTestWindow();
@@ -1614,6 +1616,117 @@ TEST_F(TabletModeControllerTest, TabletModeTransitionHistogramsSnappedWindows) {
   window2->layer()->GetAnimator()->StopAnimating();
   histogram_tester.ExpectTotalCount(kEnterHistogram, 0);
   histogram_tester.ExpectTotalCount(kExitHistogram, 0);
+}
+
+class TabletModeControllerScreenshotTest : public TabletModeControllerTest {
+ public:
+  TabletModeControllerScreenshotTest() = default;
+  ~TabletModeControllerScreenshotTest() override = default;
+
+  void SetUp() override {
+    TabletModeControllerTest::SetUp();
+    TabletModeController::SetUseScreenshotForTest(true);
+
+    // Remove TabletModeController as an observer of input device events to
+    // prevent interfering with the test.
+    ui::DeviceDataManager::GetInstance()->RemoveObserver(
+        tablet_mode_controller());
+
+    scoped_animation_duration_scale_mode_ =
+        std::make_unique<ui::ScopedAnimationDurationScaleMode>(
+            ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+    // PowerManagerClient callback is a posted task.
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void TearDown() override {
+    scoped_animation_duration_scale_mode_.reset();
+    ui::DeviceDataManager::GetInstance()->AddObserver(tablet_mode_controller());
+    TabletModeControllerTest::TearDown();
+  }
+
+ private:
+  std::unique_ptr<ui::ScopedAnimationDurationScaleMode>
+      scoped_animation_duration_scale_mode_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabletModeControllerScreenshotTest);
+};
+
+// Tests that when there are no animations, no screenshot is taken.
+TEST_F(TabletModeControllerScreenshotTest, NoAnimationNoScreenshot) {
+  // Tests that no windows means no screenshot.
+  SetTabletMode(true);
+  EXPECT_FALSE(IsScreenshotShown());
+  SetTabletMode(false);
+
+  // If the top window is already maximized, there is no animation, so no
+  // screenshot should be shown.
+  auto window = CreateTestWindow(gfx::Rect(200, 200));
+  WindowState::Get(window.get())->Maximize();
+  window->layer()->GetAnimator()->StopAnimating();
+
+  TabletMode::Waiter waiter(/*enable=*/true);
+  SetTabletMode(true);
+  EXPECT_FALSE(IsScreenshotShown());
+
+  waiter.Wait();
+  EXPECT_FALSE(IsScreenshotShown());
+  EXPECT_FALSE(window->layer()->GetAnimator()->is_animating());
+}
+
+// Regression test for screenshot staying visible when entering tablet mode when
+// already in overview mode. See https://crbug.com/1002735.
+TEST_F(TabletModeControllerScreenshotTest, FromOverviewNoScreenshot) {
+  // Create two maximized windows.
+  auto window = CreateTestWindow(gfx::Rect(200, 200));
+  auto window2 = CreateTestWindow(gfx::Rect(200, 200));
+  WindowState::Get(window.get())->Maximize();
+  WindowState::Get(window2.get())->Maximize();
+  window->layer()->GetAnimator()->StopAnimating();
+  window2->layer()->GetAnimator()->StopAnimating();
+
+  // Enter overview.
+  Shell::Get()->overview_controller()->StartOverview();
+  window->layer()->GetAnimator()->StopAnimating();
+  window2->layer()->GetAnimator()->StopAnimating();
+
+  // Enter tablet mode.
+  TabletMode::Waiter waiter(/*enable=*/true);
+  SetTabletMode(true);
+  EXPECT_FALSE(IsScreenshotShown());
+
+  waiter.Wait();
+  EXPECT_TRUE(IsScreenshotShown());
+
+  // Tests that after ending the overview animation, the screenshot is
+  // destroyed.
+  window->layer()->GetAnimator()->StopAnimating();
+  window2->layer()->GetAnimator()->StopAnimating();
+  EXPECT_FALSE(IsScreenshotShown());
+}
+
+// Tests that the screenshot is visible when a window animation happens when
+// entering tablet mode.
+TEST_F(TabletModeControllerScreenshotTest, ScreenshotVisibility) {
+  auto window = CreateTestWindow(gfx::Rect(200, 200));
+  auto window2 = CreateTestWindow(gfx::Rect(300, 200));
+  ui::Layer* layer = window2->layer();
+  ASSERT_FALSE(IsScreenshotShown());
+
+  TabletMode::Waiter waiter(/*enable=*/true);
+  SetTabletMode(true);
+  EXPECT_FALSE(IsScreenshotShown());
+
+  // Tests that after waiting for the async tablet mode entry, the screenshot is
+  // shown.
+  waiter.Wait();
+  EXPECT_TRUE(IsScreenshotShown());
+  EXPECT_TRUE(layer->GetAnimator()->is_animating());
+
+  // Tests that the screenshot is destroyed after the window is done animating.
+  layer->GetAnimator()->StopAnimating();
+  EXPECT_FALSE(IsScreenshotShown());
 }
 
 }  // namespace ash

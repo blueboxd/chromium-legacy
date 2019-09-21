@@ -122,7 +122,6 @@ class RenderFrameImpl;
 class RenderFrameProxy;
 class RenderViewImpl;
 class RenderWidgetDelegate;
-class RenderWidgetScreenMetricsEmulator;
 class WidgetInputHandlerManager;
 struct ContextMenuParams;
 struct VisualProperties;
@@ -318,12 +317,7 @@ class CONTENT_EXPORT RenderWidget
   // is in a nested message loop and will unwind back up to javascript (from
   // plugins). So this will be true between those two things, to avoid work
   // when the RenderWidget will be closed.
-  // Additionally, as an optimization, this is true after we know the renderer
-  // has asked the browser to close this RenderWidget.
-  //
-  // TODO(crbug.com/545684): Once RenderViewImpl and RenderWidget are split,
-  // attempt to combine two states so the shutdown logic is cleaner.
-  bool is_closing() const { return host_will_close_this_ || closing_; }
+  bool is_closing() const { return closing_; }
 
   // Manage edit commands to be used for the next keyboard event.
   const EditCommands& edit_commands() const { return edit_commands_; }
@@ -532,6 +526,7 @@ class CONTENT_EXPORT RenderWidget
       float initial_device_scale_factor);
 
   LayerTreeView* layer_tree_view() const { return layer_tree_view_.get(); }
+  cc::LayerTreeHost* layer_tree_host() { return layer_tree_host_; }
   WidgetInputHandlerManager* widget_input_handler_manager() {
     return widget_input_handler_manager_.get();
   }
@@ -674,15 +669,14 @@ class CONTENT_EXPORT RenderWidget
 
   void UseSynchronousResizeModeForTesting(bool enable);
   void SetDeviceScaleFactorForTesting(float factor);
+  void SetZoomLevelForTesting(double zoom_level);
+  void ResetZoomLevelForTesting();
   void SetDeviceColorSpaceForTesting(const gfx::ColorSpace& color_space);
+  void SetPageZoomLevelForTesting(double zoom_level);
   void SetWindowRectSynchronouslyForTesting(const gfx::Rect& new_window_rect);
   void EnableAutoResizeForTesting(const gfx::Size& min_size,
                                   const gfx::Size& max_size);
   void DisableAutoResizeForTesting(const gfx::Size& new_size);
-
-  // Update the WebView's device scale factor.
-  // TODO(ajwong): This should be moved into RenderView.
-  void UpdateWebViewWithDeviceScaleFactor();
 
   // Forces a redraw and invokes the callback once the frame's been displayed
   // to the user.
@@ -728,8 +722,9 @@ class CONTENT_EXPORT RenderWidget
   friend class PopupRenderWidget;
   friend class QueueMessageSwapPromiseTest;
   friend class RenderWidgetTest;
-  friend class RenderViewImplTest;  // TODO(ajwong): Can this be removed?
+  friend class RenderViewImplTest;
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetPopupUnittest, EmulatingPopupRect);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, EmulatingPopupRect);
 
   static scoped_refptr<base::SingleThreadTaskRunner> GetCleanupTaskRunner();
 
@@ -761,6 +756,10 @@ class CONTENT_EXPORT RenderWidget
                          const gfx::Size& min_size_before_dsf,
                          const gfx::Size& max_size_before_dsf,
                          float device_scale_factor);
+
+  // Sets the zoom level on the RenderView. This is part of
+  // OnSynchronizeVisualProperties though tests may call to it more directly.
+  void SetZoomLevel(double zoom_level);
 
   // Helper method to get the device_viewport_rect() from the compositor, which
   // is always in physical pixels.
@@ -908,8 +907,6 @@ class CONTENT_EXPORT RenderWidget
 
   gfx::ColorSpace GetRasterColorSpace() const;
 
-  void UpdateZoom(double zoom_level);
-
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Returns the focused pepper plugin, if any, inside the WebWidget. That is
   // the pepper plugin which is focused inside a frame which belongs to the
@@ -955,6 +952,8 @@ class CONTENT_EXPORT RenderWidget
 
   // This is lazily constructed and must not outlive webwidget_.
   std::unique_ptr<LayerTreeView> layer_tree_view_;
+  // This is valid while |layer_tree_view_| is valid.
+  cc::LayerTreeHost* layer_tree_host_ = nullptr;
 
   // The rect where this view should be initially shown.
   gfx::Rect initial_rect_;
@@ -962,7 +961,11 @@ class CONTENT_EXPORT RenderWidget
   // Web tests override the device scale factor in the renderer with this. We
   // store it to keep the override if the browser passes along VisualProperties
   // with the real device scale factor. A value of 0.f means this is ignored.
-  float device_scale_factor_for_testing_ = 0.f;
+  float device_scale_factor_for_testing_ = 0;
+  // Web tests override the zoom factor in the renderer with this. We store it
+  // to keep the override if the browser passes along VisualProperties with the
+  // real device scale factor. A value of -INFINITY means this is ignored.
+  double zoom_level_for_testing_ = -INFINITY;
 
   // The size of the RenderWidget in DIPs. This may differ from the viewport
   // set in the compositor, as the viewport can be a subset of the RenderWidget
@@ -1004,9 +1007,6 @@ class CONTENT_EXPORT RenderWidget
   // True if we have requested this widget be closed.  No more messages will
   // be sent, except for a Close.
   bool closing_ = false;
-
-  // True if it is known that the host is in the process of being shut down.
-  bool host_will_close_this_ = false;
 
   // A RenderWidget is undead if it is the RenderWidget attached to the
   // RenderViewImpl for its main frame, but there is a proxy main frame in
@@ -1091,8 +1091,6 @@ class CONTENT_EXPORT RenderWidget
 
   // True if the IME requests updated composition info.
   bool monitor_composition_info_ = false;
-
-  std::unique_ptr<RenderWidgetScreenMetricsEmulator> screen_metrics_emulator_;
 
   // Popups may be displaced when screen metrics emulation is enabled.
   // These values are used to properly adjust popup position.

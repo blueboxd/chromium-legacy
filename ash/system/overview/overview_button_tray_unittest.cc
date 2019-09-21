@@ -7,7 +7,7 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/login_status.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/public/cpp/tablet_mode_observer.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/session/session_controller_impl.h"
@@ -71,23 +71,6 @@ void PerformDoubleTap() {
   GetTray()->PerformAction(tap);
 }
 
-class TabletModeWaiter : public TabletModeObserver {
- public:
-  TabletModeWaiter() {
-    Shell::Get()->tablet_mode_controller()->AddObserver(this);
-    loop_.Run();
-  }
-  ~TabletModeWaiter() override {
-    Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
-  }
-  void OnTabletModeStarted() override { loop_.QuitWhenIdle(); }
-
- private:
-  base::RunLoop loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabletModeWaiter);
-};
-
 }  // namespace
 
 class OverviewButtonTrayTest : public AshTestBase {
@@ -142,16 +125,17 @@ TEST_F(OverviewButtonTrayTest, VisibilityTest) {
   EXPECT_FALSE(Shell::Get()->tablet_mode_controller()->InTabletMode());
 
   // When there is an window, it'll take an screenshot and
-  // switch becomes asynchronous
+  // switch becomes asynchronous.
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
 
   ASSERT_FALSE(GetTray()->GetVisible());
+  TabletMode::Waiter waiter(/*enable=*/true);
   TabletModeControllerTestApi().EnterTabletMode();
   EXPECT_TRUE(Shell::Get()->tablet_mode_controller()->InTabletMode());
   EXPECT_FALSE(GetTray()->GetVisible());
 
-  TabletModeWaiter wait;
+  waiter.Wait();
 
   EXPECT_TRUE(Shell::Get()->tablet_mode_controller()->InTabletMode());
   EXPECT_TRUE(GetTray()->GetVisible());
@@ -176,9 +160,9 @@ TEST_F(OverviewButtonTrayTest, PerformAction) {
   EXPECT_FALSE(Shell::Get()->overview_controller()->InOverviewSession());
 
   // Test in tablet mode.
+  TabletMode::Waiter waiter(/*enable=*/true);
   TabletModeControllerTestApi().EnterTabletMode();
-
-  TabletModeWaiter wait;
+  waiter.Wait();
 
   GetTray()->PerformAction(CreateTapEvent());
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());

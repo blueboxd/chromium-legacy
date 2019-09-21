@@ -349,7 +349,7 @@ void RenderWidgetFullscreenPepper::SetLayer(cc::Layer* layer) {
   UpdateLayerBounds();
   layer_->SetIsDrawable(true);
   layer_->SetHitTestable(true);
-  layer_tree_view()->SetNonBlinkManagedRootLayer(layer_);
+  layer_tree_host()->SetNonBlinkManagedRootLayer(layer_);
 }
 
 bool RenderWidgetFullscreenPepper::OnMessageReceived(const IPC::Message& msg) {

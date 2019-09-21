@@ -106,7 +106,7 @@ const gfx::VectorIcon& SharedClipboardUiController::GetVectorIcon() const {
 
 base::string16 SharedClipboardUiController::GetTextForTooltipAndAccessibleName()
     const {
-  // TODO(yasmo): Update the text after approval.
+  // There is no left click dialog and no dialog title for shared clipboard.
   return base::string16();
 }
 

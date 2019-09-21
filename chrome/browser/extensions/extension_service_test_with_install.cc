@@ -342,7 +342,7 @@ void ExtensionServiceTestWithInstall::UninstallExtension(
   EXPECT_EQ(extension_id, unloaded_id_);
 
   // The extension should not be in the service anymore.
-  EXPECT_FALSE(service()->GetInstalledExtension(extension_id));
+  EXPECT_FALSE(registry()->GetInstalledExtension(extension_id));
   EXPECT_FALSE(prefs->GetInstalledExtensionInfo(extension_id));
   content::RunAllTasksUntilIdle();
 
@@ -352,7 +352,7 @@ void ExtensionServiceTestWithInstall::UninstallExtension(
 
 void ExtensionServiceTestWithInstall::TerminateExtension(
     const std::string& id) {
-  if (!service()->GetInstalledExtension(id)) {
+  if (!registry()->GetInstalledExtension(id)) {
     ADD_FAILURE();
     return;
   }

@@ -49,7 +49,8 @@ TouchExplorationManager::TouchExplorationManager(
 }
 
 TouchExplorationManager::~TouchExplorationManager() {
-  // TODO(jamescook): Clean up shutdown order so this check isn't needed.
+  // TODO(jamescook): Clean up shutdown order so this check isn't needed. See
+  // also the TODO in |OnAccessibilityControllerShutdown|.
   if (Shell::Get()->accessibility_controller())
     Shell::Get()->accessibility_controller()->RemoveObserver(this);
   Shell::Get()->activation_client()->RemoveObserver(this);
@@ -62,6 +63,18 @@ TouchExplorationManager::~TouchExplorationManager() {
 
 void TouchExplorationManager::OnAccessibilityStatusChanged() {
   UpdateTouchExplorationState();
+}
+
+void TouchExplorationManager::OnAccessibilityControllerShutdown() {
+  // This code helps with shutdown, but it does not obviate the need for similar
+  // code in |TouchExplorationManager::~TouchExplorationManager|. That is
+  // because there is a |TouchExplorationManager| per display, but only one
+  // |AccessibilityController|. If you disconnect an external display, then the
+  // corresponding |TouchExplorationManager| will be destroyed, but
+  // |OnAccessibilityControllerShutdown| will not be called thereon.
+  // TODO(jamescook): Clean up shutdown order so this code is not reached (and
+  // then remove it). See also the TODO in |~TouchExplorationManager|.
+  Shell::Get()->accessibility_controller()->RemoveObserver(this);
 }
 
 void TouchExplorationManager::OnWindowPropertyChanged(aura::Window* winodw,

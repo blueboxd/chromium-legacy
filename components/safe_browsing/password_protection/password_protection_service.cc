@@ -125,23 +125,29 @@ void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
       CanSendPing(LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
                   main_frame_url, reused_password_account_type, &reason);
   if (IsSupportedPasswordTypeForPinging(password_type)) {
+#if BUILDFLAG(FULL_SAFE_BROWSING)
     // Collect metrics about typical page-zoom on login pages.
     double zoom_level =
         zoom::ZoomController::GetZoomLevelForWebContents(web_contents);
     UMA_HISTOGRAM_COUNTS_1000(
         "PasswordProtection.PageZoomFactor",
         static_cast<int>(100 * content::ZoomLevelToZoomFactor(zoom_level)));
+#endif  // defined(FULL_SAFE_BROWSING)
     if (can_send_ping) {
       StartRequest(web_contents, main_frame_url, GURL(), GURL(), username,
                    password_type, matching_domains,
                    LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
                    password_field_exists);
     } else {
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
       if (reused_password_account_type.is_account_syncing())
         MaybeLogPasswordReuseLookupEvent(web_contents, reason, password_type,
                                          nullptr);
+#endif  // defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
     }
   }
+
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
   if (CanShowInterstitial(reason, reused_password_account_type,
                           main_frame_url)) {
     username_for_last_shown_warning_ = username;
@@ -149,8 +155,11 @@ void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
         reused_password_account_type;
     ShowInterstitial(web_contents, reused_password_account_type);
   }
+#endif  // defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
 }
+#endif  // defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
 bool PasswordProtectionService::ShouldShowModalWarning(
     LoginReputationClientRequest::TriggerType trigger_type,
     ReusedPasswordAccountType password_type,
@@ -275,7 +284,7 @@ void PasswordProtectionService::RequestFinished(
       return;
     }
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
     if (ShouldShowModalWarning(request->trigger_type(), password_type,
                                response->verdict_type())) {
       username_for_last_shown_warning_ = request->username();
@@ -290,7 +299,7 @@ void PasswordProtectionService::RequestFinished(
 
   request->HandleDeferredNavigations();
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
   // If the request is canceled, the PasswordProtectionService is already
   // partially destroyed, and we won't be able to log accurate metrics.
   if (outcome != RequestOutcome::CANCELED) {

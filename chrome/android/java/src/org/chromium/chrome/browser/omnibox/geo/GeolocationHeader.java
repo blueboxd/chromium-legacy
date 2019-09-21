@@ -33,7 +33,7 @@ import org.chromium.chrome.browser.preferences.website.PermissionInfo;
 import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlConstants;
-import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.chrome.browser.util.UrlUtilitiesJni;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -250,7 +250,7 @@ public class GeolocationHeader {
         if (isIncognito) return HeaderState.INCOGNITO;
 
         // Only send X-Geo header to Google domains.
-        if (!UrlUtilities.nativeIsGoogleSearchUrl(url)) return HeaderState.UNSUITABLE_URL;
+        if (!UrlUtilitiesJni.get().isGoogleSearchUrl(url)) return HeaderState.UNSUITABLE_URL;
 
         Uri uri = Uri.parse(url);
         if (!UrlConstants.HTTPS_SCHEME.equals(uri.getScheme())) return HeaderState.NOT_HTTPS;

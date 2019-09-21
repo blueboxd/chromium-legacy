@@ -96,6 +96,7 @@
 <translation id="1136712381129578788">PIN の入力間違いが許容回数を超えたため、セキュリティ キーがロックされています。ロックを解除するには、セキュリティ キーをいったん取り外し、もう一度挿入してください。</translation>
 <translation id="1137673463384776352"><ph name="APP" /> でリンクを開く</translation>
 <translation id="1140351953533677694">Bluetooth デバイスとシリアル デバイスへのアクセス</translation>
+<translation id="114036956334641753">音声、字幕</translation>
 <translation id="1140610710803014750">お使いのどのデバイスでも同じブックマークを使用するには、ログインして同期を有効にします。</translation>
 <translation id="1140746652461896221">アクセスするあらゆるページのコンテンツをブロックする</translation>
 <translation id="1143142264369994168">証明書の署名者</translation>
@@ -173,6 +174,7 @@
 <translation id="1235458158152011030">既知のネットワーク</translation>
 <translation id="123578888592755962">ディスクがいっぱいです</translation>
 <translation id="1238191093934674082">Open VPN</translation>
+<translation id="1239594683407221485">ファイルアプリでデバイスのコンテンツを検索します。</translation>
 <translation id="124116460088058876">その他の言語</translation>
 <translation id="1241753985463165747">呼び出しの時点でアクセスしているウェブサイト上の全データの読み取りと変更</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> が設定のリセットを求めています。</translation>
@@ -312,6 +314,7 @@
 <translation id="146220085323579959">インターネットが切断されました。お使いのインターネット接続を確認してから、もう一度お試しください。</translation>
 <translation id="1463112138205428654"><ph name="FILE_NAME" /> は高度な保護機能によってブロックされました。</translation>
 <translation id="1464258312790801189">お使いのアカウント</translation>
+<translation id="1464781208867302907">デバイス設定を行うには、[設定] に移動してください。</translation>
 <translation id="1465176863081977902">オーディオ アドレスをコピー(&amp;C)</translation>
 <translation id="1465827627707997754">ピザ</translation>
 <translation id="1468571364034902819">このプロフィールは使用できません</translation>
@@ -744,6 +747,7 @@
 <translation id="2099686503067610784">サーバー証明書「<ph name="CERTIFICATE_NAME" />」を削除しますか？</translation>
 <translation id="2100273922101894616">自動ログイン</translation>
 <translation id="2101225219012730419">バージョン:</translation>
+<translation id="2111670510994270194">右端に新しいタブを開く</translation>
 <translation id="21133533946938348">タブを固定</translation>
 <translation id="2113479184312716848">ファイルを開く（&amp;F）...</translation>
 <translation id="2113921862428609753">認証局アクセス情報</translation>
@@ -1790,6 +1794,7 @@
 <translation id="3630995161997703415">このサイトをシェルフに追加するといつでも使えるようになります</translation>
 <translation id="3636096452488277381">こんにちは、<ph name="USER_GIVEN_NAME" /> さん。</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - 残り <ph name="TIME" /></translation>
+<translation id="3637561406135221044">ファイルをスキャンして機密データを確認しています...</translation>
 <translation id="3637682276779847508">正しい PIN ロック解除キーを入力できない場合、SIM カードは永久的に無効になります。</translation>
 <translation id="3640214691812501263"><ph name="USER_NAME" /> さんのアイテムとして「<ph name="EXTENSION_NAME" />」を追加しますか？</translation>
 <translation id="3640613767643722554">アシスタントに声を認識させましょう</translation>
@@ -1941,7 +1946,7 @@
 <translation id="3827774300009121996">全画面表示(&amp;F)</translation>
 <translation id="3828029223314399057">ブックマークを検索</translation>
 <translation id="3829765597456725595">SMB ファイル共有</translation>
-<translation id="3831436149286513437">Google ドライブの検索候補</translation>
+<translation id="3831436149286513437">Google ドライブのファイル候補</translation>
 <translation id="383161972796689579">このデバイスの所有者は新規ユーザーの追加を無効にしています</translation>
 <translation id="3834775135533257713">「<ph name="INSTALLED_APP_NAME" />」と競合するため、アプリケーション「<ph name="TO_INSTALL_APP_NAME" />」を追加できませんでした。</translation>
 <translation id="3835522725882634757">このサーバーから、<ph name="PRODUCT_NAME" /> が認識できないデータが送信されています。<ph name="BEGIN_LINK" />バグを報告<ph name="END_LINK" />してください。報告には<ph name="BEGIN2_LINK" />未加工のリスト<ph name="END2_LINK" />を含めてください。</translation>
@@ -2228,6 +2233,7 @@
 <translation id="425573743389990240">バッテリーの放電率（ワット、負の値の場合は充電中）</translation>
 <translation id="4256316378292851214">名前を付けて動画を保存(&amp;V)...</translation>
 <translation id="4258348331913189841">ファイル システム</translation>
+<translation id="4263223596040212967">キーボード レイアウトを確認してから、もう一度お試しください。</translation>
 <translation id="4263757076580287579">プリンタの登録がキャンセルされました。</translation>
 <translation id="426564820080660648">アップデートの有無を確認するには、イーサネット、Wi-Fi、またはモバイル データを使用してください。</translation>
 <translation id="4267953847983678297">モバイル ネットワークに自動接続する</translation>
@@ -2323,6 +2329,7 @@
 <translation id="4416582610654027550">有効な URL を入力してください</translation>
 <translation id="4419409365248380979"><ph name="HOST" /> による Cookie 設定を常に許可する</translation>
 <translation id="4419610272958564173">不明なデバイス（ベンダー: <ph name="VENDOR_ID" />、プロダクト: <ph name="PRODUCT_ID" />）</translation>
+<translation id="4421167684395067330">接続できません。サポートが必要な場合は、<ph name="CARRIER_NAME" /> にお問い合わせください。</translation>
 <translation id="4421932782753506458">フワフワ</translation>
 <translation id="4423376891418188461">設定を元に戻す</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" /> さん、管理者がパスワードの変更をリクエストしています。</translation>
@@ -2998,6 +3005,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="5457599981699367932">ゲストとしてブラウジング</translation>
 <translation id="5457991019809708398">オン（ローミングなし）</translation>
 <translation id="5458998536542739734">ロック画面のメモ</translation>
+<translation id="546322474339998983">Chrome ブラウザと <ph name="DEVICE_TYPE" /> ランチャーで使用されます</translation>
 <translation id="5463231940765244860">入力</translation>
 <translation id="5463275305984126951"><ph name="LOCATION" /> のインデックス</translation>
 <translation id="5463856536939868464">非表示のブックマークを含むメニュー</translation>
@@ -3295,6 +3303,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="5869948122057593679">すべてのウィンドウを閉じる</translation>
 <translation id="5870086504539785141">ユーザー補助メニューを閉じる</translation>
 <translation id="5870155679953074650">ハードの障害数</translation>
+<translation id="5876851302954717356">右端に新しいタブを開く</translation>
 <translation id="5877064549588274448">チャンネルが変更されました。変更を適用するには、デバイスを再起動してください。</translation>
 <translation id="5877584842898320529">選択したプリンタは利用できないか、正しくインストールされていません。<ph name="BR" />プリンタを確認するか、別のプリンタを選択してみてください。</translation>
 <translation id="5882919346125742463">既知のネットワーク</translation>
@@ -4493,6 +4502,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="7685049629764448582">JavaScript メモリ</translation>
 <translation id="7685087414635069102">PIN が必要です</translation>
 <translation id="7685301384041462804">VR を開始する前に、信頼できるサイトかどうかを確認してください。</translation>
+<translation id="768549422429443215">言語を追加するか、リストを並べ替えます。</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" />（<ph name="DEVICE_PATH" />）</translation>
 <translation id="7690294790491645610">新しいパスワードの確認入力</translation>
 <translation id="7690378713476594306">リストから選択</translation>
@@ -4554,6 +4564,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="7773726648746946405">セッション ストレージ</translation>
 <translation id="7774365994322694683">鳥</translation>
 <translation id="7776701556330691704">音声が見つかりません</translation>
+<translation id="7780252971640011240">接続できません。サポートが必要な場合は、ご利用の携帯通信会社にお問い合わせください。</translation>
 <translation id="7781335840981796660">すべてのユーザー アカウントとローカル データは削除されます。</translation>
 <translation id="7782102568078991263">候補は以上です</translation>
 <translation id="7782717250816686129">ログイン画面での永続データの保存とセッションへの認証情報の入力。</translation>

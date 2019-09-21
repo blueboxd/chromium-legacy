@@ -1,0 +1,8 @@
+Tests that the console works correctly with portals
+
+Running: testMainConsole
+!!window.portalHost = false
+
+Running: testPortalConsole
+!!window.portalHost = true
+

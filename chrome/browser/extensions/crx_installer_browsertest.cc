@@ -237,13 +237,8 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
         strict_manifest_checks);
   }
 
-  ExtensionService* extension_service() {
-    return extensions::ExtensionSystem::Get(browser()->profile())
-        ->extension_service();
-  }
-
   const Extension* GetInstalledExtension(const std::string& extension_id) {
-    return extension_service()->GetInstalledExtension(extension_id);
+    return extension_registry()->GetInstalledExtension(extension_id);
   }
 
   std::unique_ptr<base::ScopedTempDir> UnpackedCrxTempDir() {

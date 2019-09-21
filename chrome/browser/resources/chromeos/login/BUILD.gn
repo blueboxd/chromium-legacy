@@ -235,7 +235,7 @@ js_library("navigation_bar") {
 js_library("network_select_login") {
   deps = [
     "//ui/webui/resources/cr_elements/chromeos/network:cr_network_select",
-    "//ui/webui/resources/cr_elements/chromeos/network:cr_onc_types",
+    "//ui/webui/resources/cr_elements/chromeos/network:cr_onc_strings",
     "//ui/webui/resources/js/chromeos:onc_mojo",
   ]
 }

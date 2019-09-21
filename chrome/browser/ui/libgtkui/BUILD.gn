@@ -8,6 +8,7 @@ import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/linux/gtk/gtk.gni")
 import("//printing/buildflags/buildflags.gni")
+import("//ui/ozone/ozone.gni")
 
 jumbo_component("libgtkui") {
   sources = [
@@ -122,7 +123,7 @@ jumbo_component("libgtkui") {
     "//chrome/browser:theme_properties",
   ]
 
-  if (use_x11) {
+  if (use_x11 || ozone_platform_x11) {
     sources += [
       "gtk_event_loop_x11.cc",
       "gtk_event_loop_x11.h",

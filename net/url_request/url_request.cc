@@ -10,8 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/lazy_instance.h"
-#include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
@@ -49,21 +47,6 @@ using std::string;
 namespace net {
 
 namespace {
-
-// TODO(battre): Delete this, see http://crbug.com/89321:
-// This counter keeps track of the identifiers used for URL requests so far.
-// 0 is reserved to represent an invalid ID.
-uint64_t g_next_url_request_identifier = 1;
-
-// This lock protects g_next_url_request_identifier.
-base::LazyInstance<base::Lock>::Leaky g_next_url_request_identifier_lock =
-    LAZY_INSTANCE_INITIALIZER;
-
-// Returns an prior unused identifier for URL requests.
-uint64_t GenerateURLRequestIdentifier() {
-  base::AutoLock lock(g_next_url_request_identifier_lock.Get());
-  return g_next_url_request_identifier++;
-}
 
 // True once the first URLRequest was started.
 bool g_url_requests_started = false;
@@ -207,7 +190,7 @@ void URLRequest::set_upload(std::unique_ptr<UploadDataStream> upload) {
   upload_data_stream_ = std::move(upload);
 }
 
-const UploadDataStream* URLRequest::get_upload() const {
+const UploadDataStream* URLRequest::get_upload_for_testing() const {
   return upload_data_stream_.get();
 }
 
@@ -515,12 +498,6 @@ void URLRequest::set_referrer_policy(ReferrerPolicy referrer_policy) {
   referrer_policy_ = referrer_policy;
 }
 
-void URLRequest::set_delegate(Delegate* delegate) {
-  DCHECK(!delegate_);
-  DCHECK(delegate);
-  delegate_ = delegate;
-}
-
 void URLRequest::set_allow_credentials(bool allow_credentials) {
   if (allow_credentials) {
     load_flags_ &= ~(LOAD_DO_NOT_SAVE_COOKIES | LOAD_DO_NOT_SEND_COOKIES |
@@ -598,7 +575,6 @@ URLRequest::URLRequest(const GURL& url,
       is_redirecting_(false),
       redirect_limit_(kMaxRedirects),
       priority_(priority),
-      identifier_(GenerateURLRequestIdentifier()),
       delegate_event_type_(NetLogEventType::FAILED),
       calling_delegate_(false),
       use_blocked_by_as_load_param_(false),

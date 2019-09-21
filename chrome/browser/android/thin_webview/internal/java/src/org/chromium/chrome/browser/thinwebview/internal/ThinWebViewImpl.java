@@ -12,6 +12,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.thinwebview.CompositorView;
 import org.chromium.chrome.browser.thinwebview.ThinWebView;
 import org.chromium.content_public.browser.WebContents;
@@ -41,7 +42,8 @@ public class ThinWebViewImpl extends FrameLayout implements ThinWebView {
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         addView(mCompositorView.getView(), layoutParams);
 
-        mNativeThinWebViewImpl = nativeInit(mCompositorView, windowAndroid);
+        mNativeThinWebViewImpl =
+                ThinWebViewImplJni.get().init(ThinWebViewImpl.this, mCompositorView, windowAndroid);
     }
 
     @Override
@@ -54,20 +56,24 @@ public class ThinWebViewImpl extends FrameLayout implements ThinWebView {
         mWebContents = webContents;
 
         setContentView(contentView);
-        nativeSetWebContents(mNativeThinWebViewImpl, mWebContents);
+        ThinWebViewImplJni.get().setWebContents(
+                mNativeThinWebViewImpl, ThinWebViewImpl.this, mWebContents);
         mWebContents.onShow();
     }
 
     @Override
     public void destroy() {
         mCompositorView.destroy();
-        if (mNativeThinWebViewImpl != 0) nativeDestroy(mNativeThinWebViewImpl);
+        if (mNativeThinWebViewImpl != 0) {
+            ThinWebViewImplJni.get().destroy(mNativeThinWebViewImpl, ThinWebViewImpl.this);
+        }
     }
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         if (w != oldw || h != oldh) {
-            nativeSizeChanged(mNativeThinWebViewImpl, w, h);
+            ThinWebViewImplJni.get().sizeChanged(
+                    mNativeThinWebViewImpl, ThinWebViewImpl.this, w, h);
         }
     }
 
@@ -83,8 +89,13 @@ public class ThinWebViewImpl extends FrameLayout implements ThinWebView {
         if (mContentView != null) addView(mContentView, 1);
     }
 
-    private native long nativeInit(CompositorView compositorView, WindowAndroid windowAndroid);
-    private native void nativeDestroy(long nativeThinWebView);
-    private native void nativeSetWebContents(long nativeThinWebView, WebContents webContents);
-    private native void nativeSizeChanged(long nativeThinWebView, int width, int height);
+    @NativeMethods
+    interface Natives {
+        long init(
+                ThinWebViewImpl caller, CompositorView compositorView, WindowAndroid windowAndroid);
+        void destroy(long nativeThinWebView, ThinWebViewImpl caller);
+        void setWebContents(
+                long nativeThinWebView, ThinWebViewImpl caller, WebContents webContents);
+        void sizeChanged(long nativeThinWebView, ThinWebViewImpl caller, int width, int height);
+    }
 }

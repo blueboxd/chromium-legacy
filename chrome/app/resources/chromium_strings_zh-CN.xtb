@@ -91,7 +91,7 @@
 <translation id="4271805377592243930">获取有关 Chromium 的帮助</translation>
 <translation id="4285930937574705105">未知错误导致安装失败。如果 Chromium 正在运行，请将其关闭，然后重试。</translation>
 <translation id="4371648796594901282">如需详细了解 Chromium 操作系统，请参阅 <ph name="LINK_BEGIN" />
-      Chromium 操作系统简介<ph name="LINK_END" /></translation>
+Chromium 操作系统简介<ph name="LINK_END" /></translation>
 <translation id="4407044323746248786">仍要退出 Chromium？</translation>
 <translation id="4415566066719264597">让 Chromium 在后台运行</translation>
 <translation id="4423735387467980091">自定义及控制 Chromium</translation>

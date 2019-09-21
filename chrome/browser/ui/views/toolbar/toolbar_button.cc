@@ -17,6 +17,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
@@ -37,6 +38,25 @@
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
+namespace {
+
+constexpr int kBorderThicknessDp = 1;
+
+SkColor GetDefaultTextColor(const ui::ThemeProvider* theme_provider) {
+  DCHECK(theme_provider);
+  // TODO(crbug.com/967317): Update to match mocks, i.e. return
+  // gfx::kGoogleGrey900, if needed.
+  return color_utils::GetColorWithMaxContrast(
+      theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR));
+}
+
+SkColor GetDefaultBackgroundColor(const ui::ThemeProvider* theme_provider) {
+  return color_utils::GetColorWithMaxContrast(
+      GetDefaultTextColor(theme_provider));
+}
+
+}  // namespace
+
 ToolbarButton::ToolbarButton(views::ButtonListener* listener)
     : ToolbarButton(listener, nullptr, nullptr) {}
 
@@ -47,7 +67,8 @@ ToolbarButton::ToolbarButton(views::ButtonListener* listener,
     : views::LabelButton(listener, base::string16(), CONTEXT_TOOLBAR_BUTTON),
       model_(std::move(model)),
       tab_strip_model_(tab_strip_model),
-      trigger_menu_on_long_press_(trigger_menu_on_long_press) {
+      trigger_menu_on_long_press_(trigger_menu_on_long_press),
+      highlight_color_animation_(this) {
   set_has_ink_drop_action_on_click(true);
   set_context_menu_controller(this);
 
@@ -73,7 +94,7 @@ ToolbarButton::ToolbarButton(views::ButtonListener* listener,
   // allocate the property once and modify the value.
   SetProperty(views::kInternalPaddingKey, gfx::Insets());
 
-  UpdateHighlightBackgroundAndInsets();
+  UpdateColorsAndInsets();
 }
 
 ToolbarButton::~ToolbarButton() {}
@@ -84,16 +105,13 @@ void ToolbarButton::Init() {
 
 void ToolbarButton::SetHighlight(const base::string16& highlight_text,
                                  base::Optional<SkColor> highlight_color) {
-  if (highlight_color_ == highlight_color && GetText() == highlight_text)
-    return;
   if (highlight_text.empty() && !highlight_color.has_value()) {
     ClearHighlight();
     return;
   }
 
+  highlight_color_animation_.Show(highlight_color);
   LabelButton::SetText(highlight_text);
-  highlight_color_ = highlight_color;
-  UpdateHighlightBackgroundAndInsets();
 }
 
 void ToolbarButton::SetText(const base::string16& text) {
@@ -101,37 +119,58 @@ void ToolbarButton::SetText(const base::string16& text) {
 }
 
 void ToolbarButton::ClearHighlight() {
-  DCHECK(!GetText().empty() || highlight_color_.has_value());
-
+  highlight_color_animation_.Hide();
+  // TODO(crbug.com/1002160): Support AnimatingLayoutManager by reporting
+  // preferred size without the label, clear the label only once the layout
+  // animation is completed.
   LabelButton::SetText(base::string16());
-  highlight_color_.reset();
-  UpdateHighlightBackgroundAndInsets();
 }
 
-void ToolbarButton::UpdateHighlightBackgroundAndInsets() {
+void ToolbarButton::UpdateColorsAndInsets() {
   const int highlight_radius =
       ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
           views::EMPHASIS_MAXIMUM, size());
-  if (!highlight_color_) {
-    SetBackground(nullptr);
+
+  base::Optional<SkColor> text_color =
+      highlight_color_animation_.GetTextColor();
+  if (text_color) {
+    SetEnabledTextColors(*text_color);
   } else {
+    ResetColorsFromNativeTheme();
+  }
+
+  base::Optional<SkColor> background_color =
+      highlight_color_animation_.GetBackgroundColor();
+  if (background_color) {
     // ToolbarButtons are always the height the location bar.
     const gfx::Insets bg_insets(
         (height() - GetLayoutConstant(LOCATION_BAR_HEIGHT)) / 2);
-    const SkColor bg_color =
-        SkColorSetA(*highlight_color_, kToolbarButtonBackgroundAlpha);
     SetBackground(views::CreateBackgroundFromPainter(
-        views::Painter::CreateSolidRoundRectPainter(bg_color, highlight_radius,
-                                                    bg_insets)));
-    SetEnabledTextColors(*highlight_color_);
+        views::Painter::CreateSolidRoundRectPainter(
+            *background_color, highlight_radius, bg_insets)));
+  } else {
+    SetBackground(nullptr);
   }
 
   gfx::Insets new_insets = GetLayoutInsets(TOOLBAR_BUTTON) +
                            layout_inset_delta_ +
                            *GetProperty(views::kInternalPaddingKey);
-
-  if (!border() || new_insets != border()->GetInsets())
-    SetBorder(views::CreateEmptyBorder(new_insets));
+  base::Optional<SkColor> border_color =
+      highlight_color_animation_.GetBorderColor();
+  if (!border() || new_insets != border()->GetInsets() ||
+      last_border_color_ != border_color) {
+    if (border_color) {
+      // Create a border with insets equal to |new_insets|, just split into a
+      // solid border and padding.
+      SetBorder(views::CreatePaddedBorder(
+          views::CreateRoundedRectBorder(kBorderThicknessDp, highlight_radius,
+                                         *border_color),
+          new_insets - gfx::Insets(kBorderThicknessDp)));
+    } else {
+      SetBorder(views::CreateEmptyBorder(new_insets));
+    }
+    last_border_color_ = border_color;
+  }
 
   // Update spacing on the outer-side of the label to match the current
   // highlight radius.
@@ -161,7 +200,7 @@ void ToolbarButton::SetLayoutInsetDelta(const gfx::Insets& inset_delta) {
   if (layout_inset_delta_ == inset_delta)
     return;
   layout_inset_delta_ = inset_delta;
-  UpdateHighlightBackgroundAndInsets();
+  UpdateColorsAndInsets();
 }
 
 void ToolbarButton::SetLeadingMargin(int margin) {
@@ -169,7 +208,7 @@ void ToolbarButton::SetLeadingMargin(int margin) {
   if (internal_padding->left() == margin)
     return;
   internal_padding->set_left(margin);
-  UpdateHighlightBackgroundAndInsets();
+  UpdateColorsAndInsets();
 }
 
 void ToolbarButton::ClearPendingMenu() {
@@ -183,7 +222,7 @@ bool ToolbarButton::IsMenuShowing() const {
 void ToolbarButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   SetToolbarButtonHighlightPath(this, *GetProperty(views::kInternalPaddingKey));
 
-  UpdateHighlightBackgroundAndInsets();
+  UpdateColorsAndInsets();
   LabelButton::OnBoundsChanged(previous_bounds);
 }
 
@@ -299,8 +338,10 @@ std::unique_ptr<views::InkDropHighlight> ToolbarButton::CreateInkDropHighlight()
 SkColor ToolbarButton::GetInkDropBaseColor() const {
   // Ensure this doesn't get called when InstallableInkDrops are enabled.
   DCHECK(!base::FeatureList::IsEnabled(views::kInstallableInkDropFeature));
-  if (highlight_color_)
-    return *highlight_color_;
+  base::Optional<SkColor> drop_base_color =
+      highlight_color_animation_.GetInkDropBaseColor();
+  if (drop_base_color)
+    return *drop_base_color;
   return GetToolbarInkDropBaseColor(this);
 }
 
@@ -329,10 +370,12 @@ SkColor ToolbarButton::AdjustHighlightColorForContrast(
     SkColor light_extreme) {
   if (!theme_provider)
     return desired_light_color;
-  const SkColor toolbar_color =
-      theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR);
+  const SkColor background_color =
+      base::FeatureList::IsEnabled(features::kAnimatedAvatarButton)
+          ? GetDefaultBackgroundColor(theme_provider)
+          : theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR);
   const SkColor contrasting_color = color_utils::PickContrastingColor(
-      desired_dark_color, desired_light_color, toolbar_color);
+      desired_dark_color, desired_light_color, background_color);
   const SkColor limit =
       contrasting_color == desired_dark_color ? dark_extreme : light_extreme;
   // Setting highlight color will set the text to the highlight color, and the
@@ -340,7 +383,7 @@ SkColor ToolbarButton::AdjustHighlightColorForContrast(
   // contrast is between the text (the highlight color) and a blend of the
   // highlight color and the toolbar color.
   const SkColor base_color = color_utils::AlphaBlend(
-      contrasting_color, toolbar_color, kToolbarButtonBackgroundAlpha);
+      contrasting_color, background_color, kToolbarButtonBackgroundAlpha);
 
   // Add a fudge factor to the minimum contrast ratio since we'll actually be
   // blending with the adjusted color.
@@ -422,4 +465,153 @@ void ToolbarButton::OnMenuClosed() {
 
 const char* ToolbarButton::GetClassName() const {
   return "ToolbarButton";
+}
+
+namespace {
+
+// The default duration does not work well for dark mode where the animation has
+// to make a big contrast difference.
+// TODO(crbug.com/967317): This needs to be consistent with the duration of the
+// border animation in ToolbarIconContainerView.
+constexpr base::TimeDelta kHighlightAnimationDuration =
+    base::TimeDelta::FromMilliseconds(300);
+constexpr SkAlpha kBackgroundBaseLayerAlpha = 204;
+
+SkColor FadeWithAnimation(SkColor color, const gfx::Animation& animation) {
+  return SkColorSetA(color, SkColorGetA(color) * animation.GetCurrentValue());
+}
+
+}  // namespace
+
+ToolbarButton::HighlightColorAnimation::HighlightColorAnimation(
+    ToolbarButton* parent)
+    : parent_(parent), highlight_color_animation_(this) {
+  DCHECK(parent_);
+  highlight_color_animation_.SetTweenType(gfx::Tween::EASE_IN_OUT);
+  highlight_color_animation_.SetSlideDuration(kHighlightAnimationDuration);
+}
+
+ToolbarButton::HighlightColorAnimation::~HighlightColorAnimation() {}
+
+void ToolbarButton::HighlightColorAnimation::Show(
+    base::Optional<SkColor> highlight_color) {
+  if (base::FeatureList::IsEnabled(features::kAnimatedAvatarButton)) {
+    // If the animation is showing, we will jump to a different color in the
+    // middle of the animation and continue animating towards the new
+    // |highlight_color_|. If the animation is fully shown, we will jump
+    // directly to the new |highlight_color_|. This is not ideal but making it
+    // smoother is not worth the extra complexity given this should be very
+    // rare.
+    if (highlight_color_animation_.GetCurrentValue() == 0.0f ||
+        highlight_color_animation_.IsClosing()) {
+      highlight_color_animation_.Show();
+    }
+  } else {
+    // If the animation is disabled, jump directly to the final state.
+    highlight_color_animation_.Reset(1.0f);
+  }
+
+  highlight_color_ = highlight_color;
+  parent_->UpdateColorsAndInsets();
+}
+
+void ToolbarButton::HighlightColorAnimation::Hide() {
+  if (base::FeatureList::IsEnabled(features::kAnimatedAvatarButton)) {
+    highlight_color_animation_.Hide();
+  } else {
+    ClearHighlightColor();
+  }
+}
+
+base::Optional<SkColor> ToolbarButton::HighlightColorAnimation::GetTextColor()
+    const {
+  if (!base::FeatureList::IsEnabled(features::kAnimatedAvatarButton))
+    return highlight_color_;
+
+  if (!IsShown() || !parent_->GetThemeProvider())
+    return base::nullopt;
+  SkColor text_color;
+  if (highlight_color_) {
+    text_color = *highlight_color_;
+  } else {
+    text_color = GetDefaultTextColor(parent_->GetThemeProvider());
+  }
+  return FadeWithAnimation(text_color, highlight_color_animation_);
+}
+
+base::Optional<SkColor> ToolbarButton::HighlightColorAnimation::GetBorderColor()
+    const {
+  if (!IsShown() ||
+      !base::FeatureList::IsEnabled(features::kAnimatedAvatarButton) ||
+      !parent_->GetThemeProvider()) {
+    return base::nullopt;
+  }
+
+  SkColor border_color;
+  if (highlight_color_) {
+    border_color = *highlight_color_;
+  } else {
+    // TODO(crbug.com/967317): Update to match mocks. If
+    // !color_utils::IsDark(..COLOR_TOOLBAR), return black with 30% alpha.
+    // Otherwise, consider returning GetDefaultTextColor(), instead.
+    border_color = parent_->GetThemeProvider()->GetColor(
+        ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+  }
+  return FadeWithAnimation(border_color, highlight_color_animation_);
+}
+
+base::Optional<SkColor>
+ToolbarButton::HighlightColorAnimation::GetBackgroundColor() const {
+  if (!base::FeatureList::IsEnabled(features::kAnimatedAvatarButton)) {
+    if (!highlight_color_)
+      return base::nullopt;
+    return SkColorSetA(*highlight_color_, kToolbarButtonBackgroundAlpha);
+  }
+
+  if (!IsShown() || !parent_->GetThemeProvider())
+    return base::nullopt;
+  SkColor bg_color =
+      SkColorSetA(GetDefaultBackgroundColor(parent_->GetThemeProvider()),
+                  kBackgroundBaseLayerAlpha);
+  if (highlight_color_) {
+    // TODO(crbug.com/967317): Change the highlight opacity to 4% to match the
+    // mocks, if needed.
+    bg_color = color_utils::GetResultingPaintColor(
+        /*fg=*/SkColorSetA(*highlight_color_,
+                           SkColorGetA(*highlight_color_) *
+                               kToolbarInkDropHighlightVisibleOpacity),
+        /*bg=*/bg_color);
+  }
+  return FadeWithAnimation(bg_color, highlight_color_animation_);
+}
+
+base::Optional<SkColor>
+ToolbarButton::HighlightColorAnimation::GetInkDropBaseColor() const {
+  if (!highlight_color_)
+    return base::nullopt;
+  return *highlight_color_;
+}
+
+void ToolbarButton::HighlightColorAnimation::AnimationEnded(
+    const gfx::Animation* animation) {
+  // Only reset the color after the animation slides _back_ and not when it
+  // finishes sliding fully _open_.
+  if (highlight_color_animation_.GetCurrentValue() == 0.0f)
+    ClearHighlightColor();
+}
+
+void ToolbarButton::HighlightColorAnimation::AnimationProgressed(
+    const gfx::Animation* animation) {
+  parent_->UpdateColorsAndInsets();
+}
+
+bool ToolbarButton::HighlightColorAnimation::IsShown() const {
+  return highlight_color_animation_.is_animating() ||
+         highlight_color_animation_.GetCurrentValue() == 1.0f;
+}
+
+void ToolbarButton::HighlightColorAnimation::ClearHighlightColor() {
+  highlight_color_animation_.Reset(0.0f);
+  highlight_color_.reset();
+  parent_->UpdateColorsAndInsets();
 }

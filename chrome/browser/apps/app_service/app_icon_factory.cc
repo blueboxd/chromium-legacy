@@ -20,11 +20,10 @@
 #include "chrome/browser/apps/app_service/dip_px_util.h"
 #include "chrome/browser/extensions/chrome_app_icon.h"
 #include "chrome/browser/extensions/chrome_app_icon_loader.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/system_connector.h"
 #include "extensions/browser/component_extension_resource_manager.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/common/manifest.h"
@@ -338,9 +337,8 @@ void LoadIconFromExtension(apps::mojom::IconCompression icon_compression,
   constexpr int default_icon_resource = IDR_APP_DEFAULT_ICON;
 
   const extensions::Extension* extension =
-      extensions::ExtensionSystem::Get(context)
-          ->extension_service()
-          ->GetInstalledExtension(extension_id);
+      extensions::ExtensionRegistry::Get(context)->GetInstalledExtension(
+          extension_id);
   if (extension) {
     switch (icon_compression) {
       case apps::mojom::IconCompression::kUnknown:

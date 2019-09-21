@@ -53,6 +53,9 @@ class CORE_EXPORT ElementFragmentAnchor final : public FragmentAnchor {
   // We can dispose of the fragment once load has been completed.
   void DidCompleteLoad() override;
 
+  // Does nothing as an element anchor does not have any dismissal work.
+  bool Dismiss() override;
+
   void Trace(blink::Visitor*) override;
 
  private:

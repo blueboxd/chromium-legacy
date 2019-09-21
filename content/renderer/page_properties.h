@@ -10,6 +10,8 @@
 
 namespace content {
 
+class RenderWidgetScreenMetricsEmulator;
+
 // This interface exposes "page global" concepts to child frames. Historically
 // such state was managed by the RenderView API. However RenderView also has
 // to be have as the WebViewClient as well as the IPC anchor for content. As
@@ -34,9 +36,20 @@ class CONTENT_EXPORT PageProperties {
   // reduces boilerplate code.
   float GetDeviceScaleFactor() { return screen_info_.device_scale_factor; }
 
+  RenderWidgetScreenMetricsEmulator* ScreenMetricsEmulator() {
+    return screen_metrics_emulator_.get();
+  }
+  void SetScreenMetricsEmulator(
+      std::unique_ptr<RenderWidgetScreenMetricsEmulator> emulator);
+
  private:
   // Properties of the screen hosting the page.
   ScreenInfo screen_info_;
+
+  // TODO(https://crbug.com/1006052): Rename RenderWidgetScreenMetricsEmulator
+  // to RenderViewScreenMetricsEmulator and reroute IPCs through RenderView
+  // instead of RenderWidget.
+  std::unique_ptr<RenderWidgetScreenMetricsEmulator> screen_metrics_emulator_;
 };
 
 }  // namespace content

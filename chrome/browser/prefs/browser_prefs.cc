@@ -499,6 +499,8 @@ const char kHintLoadedCounts[] = "optimization_guide.hint_loaded_counts";
 // Deprecated 9/2019
 const char kGoogleServicesUsername[] = "google.services.username";
 const char kGoogleServicesUserAccountId[] = "google.services.user_account_id";
+const char kDataReductionProxySavingsClearedNegativeSystemClock[] =
+    "data_reduction.savings_cleared_negative_system_clock";
 
 // Register prefs used only for migration (clearing or moving to a new key).
 void RegisterProfilePrefsForMigration(
@@ -578,6 +580,8 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterDictionaryPref(kHintLoadedCounts);
   registry->RegisterStringPref(kGoogleServicesUsername, std::string());
   registry->RegisterStringPref(kGoogleServicesUserAccountId, std::string());
+  registry->RegisterInt64Pref(
+      kDataReductionProxySavingsClearedNegativeSystemClock, 0);
 }
 
 }  // namespace
@@ -1191,4 +1195,6 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // Added 9/2019
   profile_prefs->ClearPref(kGoogleServicesUsername);
   profile_prefs->ClearPref(kGoogleServicesUserAccountId);
+  profile_prefs->ClearPref(
+      kDataReductionProxySavingsClearedNegativeSystemClock);
 }

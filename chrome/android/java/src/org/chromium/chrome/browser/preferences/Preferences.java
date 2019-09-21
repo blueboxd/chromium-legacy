@@ -263,7 +263,7 @@ public class Preferences extends ChromeBaseAppCompatActivity
             finish();
             return true;
         } else if (item.getItemId() == R.id.menu_id_general_help) {
-            HelpAndFeedback.getInstance(this).show(this, getString(R.string.help_context_settings),
+            HelpAndFeedback.getInstance().show(this, getString(R.string.help_context_settings),
                     Profile.getLastUsedProfile(), null);
             return true;
         }

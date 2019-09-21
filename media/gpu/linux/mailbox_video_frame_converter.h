@@ -13,91 +13,104 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_frame.h"
-#include "media/gpu/command_buffer_helper.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/video_frame_converter.h"
 
+namespace gpu {
+class GpuChannel;
+class CommandBufferStub;
+}  // namespace gpu
+
 namespace media {
 
-// The linux VideoDecoder implementations request DMA-buf VideoFrame from the
-// DmabufVideoFramePool, and store the decoded data into DMA-buf. However the
-// client of the VideoDecoder may only accept mailbox VideoFrame.
-// This class is used for converting DMA-buf VideoFrame to mailbox VideoFrame.
+// This class is used for converting DMA-buf backed VideoFrames to mailbox-based
+// VideoFrames. See ConvertFrame() for more details.
 // After conversion, the mailbox VideoFrame will retain a reference of the
 // VideoFrame passed to ConvertFrame().
 class MEDIA_GPU_EXPORT MailboxVideoFrameConverter : public VideoFrameConverter {
  public:
   using UnwrapFrameCB =
       base::RepeatingCallback<VideoFrame*(const VideoFrame& wrapped_frame)>;
-  using GetCommandBufferStubCB = base::OnceCallback<gpu::CommandBufferStub*()>;
+  using GetCommandBufferStubCB =
+      base::RepeatingCallback<gpu::CommandBufferStub*()>;
+  using GetGpuChannelCB =
+      base::RepeatingCallback<base::WeakPtr<gpu::GpuChannel>()>;
 
-  // Create a MailboxVideoFrameConverter instance. Return nullptr if any
-  // argument is invalid.
+  // Creates a MailboxVideoFrameConverter instance. The callers will send
+  // wrapped VideoFrames to ConvertFrame(), |unwrap_frame_cb| is the callback
+  // used to get the original, unwrapped, VideoFrame. |gpu_task_runner| is the
+  // task runner of the GPU main thread. Returns nullptr if any argument is
+  // invalid.
   static std::unique_ptr<VideoFrameConverter> Create(
       UnwrapFrameCB unwrap_frame_cb,
       scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
       GetCommandBufferStubCB get_stub_cb);
 
-  // Convert DMA-buf VideoFrame to mailbox VideoFrame.
-  // For each frame, we bind DMA-buf to GL texture and create mailbox on the GPU
-  // main thread.
-  // The mailbox of each frame will be stored at |mailbox_table_|. When
-  // converting a frame second time, we just lookup the table instead of
-  // creating texture and mailbox.
+  // Enqueues |frame| to be converted to a gpu::Mailbox backed VideoFrame.
+  // |frame| must wrap a DMA-buf backed VideoFrame that is retrieved via
+  // |unwrap_frame_cb_|. The generated gpu::Mailbox-based VideoFrame is kept
+  // alive until the original (i.e. the unwrapped) DMA-Buf based VideoFrame one
+  // goes out of scope.
   void ConvertFrame(scoped_refptr<VideoFrame> frame) override;
   void AbortPendingFrames() override;
   bool HasPendingFrames() const override;
 
  private:
-  // In order to recycle VideoFrame, the DmabufVideoFramePool implementation may
-  // wrap the frame. We want to create texture only once for the same buffer, so
-  // we need to get the original frame at ConvertFrame(). |unwrap_frame_cb| is
-  // the callback used to get the original frame.
-  // |gpu_task_runner| is the task runner of the GPU main thread. We generate
-  // mailbox on it.
-  // |get_stub_cb| is the callback used to get the CommandBufferStub, which is
-  // used to create CommandBufferHelper.
+  // A self-cleaning SharedImage, with move-only semantics.
+  class ScopedSharedImage;
+
   MailboxVideoFrameConverter(
       UnwrapFrameCB unwrap_frame_cb,
       scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
-      GetCommandBufferStubCB get_stub_cb);
+      GetGpuChannelCB get_gpu_channel_cb);
   // Destructor runs on the GPU main thread.
   ~MailboxVideoFrameConverter() override;
   void Destroy() override;
   void DestroyOnGPUThread();
 
-  bool CreateCommandBufferHelper();
+  // TODO(crbug.com/998279): replace s/OnGPUThread/OnGPUTaskRunner/.
+  bool InitializeOnGPUThread();
 
-  // Try to convert frames in |input_frame_queue_| and output the converted
-  // frames to client.
-  void TryOutputFrames();
+  // Wraps |mailbox| and |frame| into a new VideoFrame and sends it via
+  // |output_cb_|.
+  void WrapMailboxAndVideoFrameAndOutput(VideoFrame* origin_frame,
+                                         scoped_refptr<VideoFrame> frame,
+                                         const gpu::Mailbox& mailbox);
 
-  // Generate mailbox for the DMA-buf VideoFrame. This method runs on the GPU
-  // main thread.
-  // |origin_frame| is unwrapped from |frame| passed from ConvertFrame().
-  // |frame| is passed only for keeping |origin_frame| alive.
-  void GenerateMailbox(VideoFrame* origin_frame,
-                       scoped_refptr<VideoFrame> frame);
+  // ConvertFrame() delegates to this method to GenerateSharedImageOnGPUThread()
+  // or just UpdateSharedImageOnGPUThread(), then to jump back to
+  // WrapMailboxAndVideoFrameAndOutput().
+  void ConvertFrameOnGPUThread(VideoFrame* origin_frame,
+                               scoped_refptr<VideoFrame> frame,
+                               gpu::Mailbox mailbox);
 
-  // Register the mapping between DMA-buf VideoFrame and the mailbox.
-  // |frame| is passed only for keeping |origin_frame| alive.
-  void RegisterMailbox(VideoFrame* origin_frame,
-                       const gpu::Mailbox& mailbox,
-                       scoped_refptr<VideoFrame> frame);
+  // Generates a ScopedSharedImage from a DMA-buf backed |video_frame|, and
+  // returns it or nullptr if that could not be done. |video_frame| must be kept
+  // alive for the duration of this method. This method runs on
+  // |gpu_task_runner_|.
+  std::unique_ptr<ScopedSharedImage> GenerateSharedImageOnGPUThread(
+      VideoFrame* video_frame);
 
-  // Thunk for calling UnregisterMailbox() on |task_runner|.
-  // Because this thunk may be called in any thread, We cannot dereference
-  // WeakPtr. Therefore we wrap the WeakPtr by base::Optional to avoid task
-  // runner defererence the WeakPtr.
-  static void UnregisterMailboxThunk(
-      scoped_refptr<base::SequencedTaskRunner> task_runner,
-      base::Optional<base::WeakPtr<MailboxVideoFrameConverter>> converter,
-      const int origin_frame_id);
-  // Remove the mapping between the frame whose unique id is |origin_frame_id|
-  // and the mailbox.
-  void UnregisterMailbox(const int origin_frame_id);
+  // Registers the mapping between a DMA-buf VideoFrame and the SharedImage.
+  // |origin_frame| must be kept alive for the duration of this method.
+  void RegisterSharedImage(
+      VideoFrame* origin_frame,
+      std::unique_ptr<ScopedSharedImage> scoped_shared_image);
+  // Unregisters the |origin_frame_id| and associated SharedImage.
+  void UnregisterSharedImage(int origin_frame_id);
+
+  // Updates the SharedImage associated to |mailbox|. Returns true if the update
+  // could be carried out, false otherwise.
+  bool UpdateSharedImageOnGPUThread(const gpu::Mailbox& mailbox);
+
+  // Waits on |sync_token|, keeping |frame| alive until it is signalled. It
+  // trampolines threads to |gpu_task_runner| if necessary.
+  void WaitOnSyncTokenAndReleaseFrameOnGPUThread(
+      scoped_refptr<VideoFrame> frame,
+      const gpu::SyncToken& sync_token);
 
   // Invoked when any error occurs. |msg| is the error message.
   void OnError(const std::string& msg);
@@ -112,24 +125,29 @@ class MEDIA_GPU_EXPORT MailboxVideoFrameConverter : public VideoFrameConverter {
   UnwrapFrameCB unwrap_frame_cb_;
 
   const scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
-  GetCommandBufferStubCB get_stub_cb_;
-  // The interface to communicate with command buffer. We use this to create and
-  // destroy texture, wait for SyncToken, and generate mailbox.
-  scoped_refptr<CommandBufferHelper> command_buffer_helper_;
+  const GetGpuChannelCB get_gpu_channel_cb_;
 
-  // Mapping from the unique id of the frame to its corresponding mailbox.
+  // |gpu_channel_| will outlive CommandBufferStub, keep the former as a WeakPtr
+  // to guarantee proper resource cleanup. To be dereferenced on
+  // |gpu_task_runner_| only.
+  base::WeakPtr<gpu::GpuChannel> gpu_channel_;
+
+  // Mapping from the unique id of the frame to its corresponding SharedImage.
   // Accessed only on |parent_task_runner_|.
-  std::map<int, gpu::Mailbox> mailbox_table_;
+  // TODO(crbug.com/998279): use base::small_map.
+  // TODO(crbug.com/998279): use VideoFrame::unique_id() return type.
+  std::map<int, std::unique_ptr<ScopedSharedImage>> shared_images_;
 
   // The queue of input frames and the unique_id of their origin frame.
   // Accessed only on |parent_task_runner_|.
+  // TODO(crbug.com/998279): remove this member entirely.
   base::queue<std::pair<scoped_refptr<VideoFrame>, int>> input_frame_queue_;
 
   // The weak pointer of this, bound to |parent_task_runner_|.
   // Used at the VideoFrame destruction callback.
   base::WeakPtr<MailboxVideoFrameConverter> parent_weak_this_;
   // The weak pointer of this, bound to |gpu_task_runner_|.
-  // Used to generate mailbox on the GPU main thread.
+  // Used to generate SharedImages on the GPU main thread.
   base::WeakPtr<MailboxVideoFrameConverter> gpu_weak_this_;
   base::WeakPtrFactory<MailboxVideoFrameConverter> parent_weak_this_factory_{
       this};

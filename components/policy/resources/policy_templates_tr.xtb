@@ -3163,15 +3163,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 <translation id="6559057113164934677">Hiçbir sitenin kamera ve mikrofona erişmesine izin verme</translation>
 <translation id="6561396069801924653">Erişilebilirlik seçeneklerini sistem tepsisi menüsünde göster</translation>
 <translation id="6563458316362153786">802.11r Fast Transition'ı Etkinleştirme</translation>
-<translation id="6565312346072273043">Giriş ekranında ekran klavyesi erişilebilirlik özelliğinin varsayılan durumunu ayarlayın.
-
-          Bu politikayı doğru seçeneğine ayarlarsanız giriş ekranı gösterildiğinde ekran klavyesi etkinleştirilir.
-
-          Bu politikayı yanlış seçeneğine ayarlarsanız giriş ekranı gösterildiğinde ekran klavyesi devre dışı bırakılır.
-
-          Bu politikayı ayarlarsanız kullanıcılar ekran klavyesini etkinleştirip veya devre dışı bırakıp onu geçici olarak geçersiz kılabilir. Ancak, kullanıcının seçimi kalıcı değildir ve giriş ekranı yeniden gösterildiğinde veya kullanıcı giriş ekranında bir dakika boyunca hiçbir işlem yapmazsa varsayılan geri yüklenir.
-
-          Bu politika ayarlanmadan bırakılırsa giriş ekranı ilk gösterildiğinde ekran klavyesi devre dışı bırakılır. Kullanıcılar istedikleri zaman ekran klavyesini etkinleştirebilir veya devre dışı bırakabilirler ve klavyenin giriş ekranındaki durumu kullanıcılar arasında değişmez.</translation>
 <translation id="6573305661369899995">URL kısıtlamaları için harici kaynak ayarla</translation>
 <translation id="6583851521569686409">Yazıcılar listesini yapılandırır.
 

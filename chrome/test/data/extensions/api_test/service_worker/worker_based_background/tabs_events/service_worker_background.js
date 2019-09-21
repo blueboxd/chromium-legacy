@@ -23,8 +23,8 @@ chrome.test.runTests([
   // before the onUpdated events for the create call are finished.
   function testTabCreate() {
     chrome.tabs.onCreated.addListener(function localListener(tab) {
-      chrome.test.assertEq(NEW_TAB_URL, tab.url);
-      tabProps.push({id: tab.id, url: tab.url});
+      chrome.test.assertEq(NEW_TAB_URL, tab.pendingUrl);
+      tabProps.push({id: tab.id, url: tab.pendingUrl});
       chrome.tabs.onCreated.removeListener(localListener);
     });
     chrome.tabs.onUpdated.addListener(function localListener (

@@ -16,6 +16,22 @@ let TabActivatedInfo;
 
 /**
  * @typedef {{
+ *    newPosition: number,
+ *    newWindowId: number,
+ * }}
+ */
+let TabAttachedInfo;
+
+/**
+ * @typedef {{
+ *    oldPosition: number,
+ *    oldWindowId: number,
+ * }}
+ */
+let TabDetachedInfo;
+
+/**
+ * @typedef {{
  *    fromIndex: number,
  *    toIndex: number,
  *    windowId: number,

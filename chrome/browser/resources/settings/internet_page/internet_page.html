@@ -94,7 +94,6 @@
           <settings-internet-detail-page prefs="{{prefs}}"
               default-network="[[defaultNetwork]]"
               global-policy="[[globalPolicy_]]"
-              networking-private="[[networkingPrivate]]"
               managed-network-available="[[managedNetworkAvailable]]">
           </settings-internet-detail-page>
         </settings-subpage>
@@ -103,8 +102,7 @@
       <template is="dom-if" route-path="/knownNetworks" no-search restamp>
         <settings-subpage page-title="$i18n{internetKnownNetworksPageTitle}">
           <settings-internet-known-networks-page
-              network-type="[[knownNetworksType_]]"
-              networking-private="[[networkingPrivate]]">
+              network-type="[[knownNetworksType_]]">
           </settings-internet-known-networks-page>
         </settings-subpage>
       </template>
@@ -126,10 +124,12 @@
 
     </settings-animated-pages>
 
-    <internet-config id="configDialog"
-        networking-private="[[networkingPrivate]]"
-        global-policy="[[globalPolicy_]]">
-    </internet-config>
+    <template is="dom-if" if="[[showInternetConfig_]]" restamp>
+      <internet-config id="configDialog"
+          networking-private="[[networkingPrivate]]"
+          on-close="onInternetConfigClose_">
+      </internet-config>
+    </template>
 
   </template>
   <script src="internet_page.js"></script>

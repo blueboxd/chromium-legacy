@@ -14,7 +14,6 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/view.h"
-#include "ui/views/view_targeter_delegate.h"
 
 class FindBarHost;
 class FindNotificationDetails;
@@ -24,7 +23,6 @@ class Range;
 }
 
 namespace views {
-class ImageButton;
 class Painter;
 class Separator;
 class Textfield;
@@ -40,8 +38,7 @@ class Textfield;
 class FindBarView : public views::View,
                     public DropdownBarHostDelegate,
                     public views::ButtonListener,
-                    public views::TextfieldController,
-                    public views::ViewTargeterDelegate {
+                    public views::TextfieldController {
  public:
   explicit FindBarView(FindBarHost* host);
   ~FindBarView() override;
@@ -68,7 +65,7 @@ class FindBarView : public views::View,
 
   // views::View:
   const char* GetClassName() const override;
-  void Layout() override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
   gfx::Size CalculatePreferredSize() const override;
   void OnThemeChanged() override;
 
@@ -84,14 +81,12 @@ class FindBarView : public views::View,
   void OnAfterUserAction(views::Textfield* sender) override;
   void OnAfterPaste() override;
 
-  // views::ViewTargeterDelegate:
-  views::View* TargetForRect(View* root, const gfx::Rect& rect) override;
-
  protected:
   // views::View overrides:
   void AddedToWidget() override;
 
  private:
+  class FindBarButton;
   class MatchCountLabel;
 
   // Starts finding |search_text|.  If the text is empty, stops finding.
@@ -115,11 +110,10 @@ class FindBarView : public views::View,
   views::Textfield* find_text_;
   std::unique_ptr<views::Painter> find_text_border_;
   MatchCountLabel* match_count_text_;
-  views::View* focus_forwarder_view_;
   views::Separator* separator_;
-  views::ImageButton* find_previous_button_;
-  views::ImageButton* find_next_button_;
-  views::ImageButton* close_button_;
+  FindBarButton* find_previous_button_;
+  FindBarButton* find_next_button_;
+  FindBarButton* close_button_;
 
   // The preferred height of the find bar.
   int preferred_height_;

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "services/network/network_context.h"
+
 #include <algorithm>
 #include <map>
 #include <memory>
@@ -103,7 +105,6 @@
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/cookie_manager.h"
 #include "services/network/net_log_exporter.h"
-#include "services/network/network_context.h"
 #include "services/network/network_qualities_pref_delegate.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
@@ -151,6 +152,11 @@ constexpr char kMockHost[] = "mock.host";
 constexpr char kCustomProxyResponse[] = "CustomProxyResponse";
 constexpr int kProcessId = 11;
 constexpr int kRouteId = 12;
+
+#if BUILDFLAG(ENABLE_REPORTING)
+const base::FilePath::CharType kFilename[] =
+    FILE_PATH_LITERAL("TempReportingAndNelStore");
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 #if BUILDFLAG(IS_CT_SUPPORTED)
 void StoreBool(bool* result, const base::Closure& callback, bool value) {
@@ -657,13 +663,36 @@ TEST_F(NetworkContextTest, DisableReporting) {
   EXPECT_FALSE(network_context->url_request_context()->reporting_service());
 }
 
-TEST_F(NetworkContextTest, EnableReporting) {
+TEST_F(NetworkContextTest, EnableReportingWithoutStore) {
   base::test::ScopedFeatureList scoped_feature_list_;
   scoped_feature_list_.InitAndEnableFeature(features::kReporting);
 
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
   EXPECT_TRUE(network_context->url_request_context()->reporting_service());
+  EXPECT_FALSE(network_context->url_request_context()
+                   ->reporting_service()
+                   ->GetContextForTesting()
+                   ->store());
+}
+
+TEST_F(NetworkContextTest, EnableReportingWithStore) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(features::kReporting);
+
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  context_params->reporting_and_nel_store_path =
+      temp_dir.GetPath().Append(kFilename);
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(std::move(context_params));
+  EXPECT_TRUE(network_context->url_request_context()->reporting_service());
+  EXPECT_TRUE(network_context->url_request_context()
+                  ->reporting_service()
+                  ->GetContextForTesting()
+                  ->store());
 }
 
 TEST_F(NetworkContextTest, DisableNetworkErrorLogging) {
@@ -676,14 +705,48 @@ TEST_F(NetworkContextTest, DisableNetworkErrorLogging) {
       network_context->url_request_context()->network_error_logging_service());
 }
 
-TEST_F(NetworkContextTest, EnableNetworkErrorLogging) {
+TEST_F(NetworkContextTest, EnableNetworkErrorLoggingWithoutStore) {
   base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeature(features::kNetworkErrorLogging);
+  scoped_feature_list_.InitWithFeatures(
+      {features::kNetworkErrorLogging, features::kReporting}, {});
 
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
   EXPECT_TRUE(
       network_context->url_request_context()->network_error_logging_service());
+  EXPECT_FALSE(network_context->url_request_context()
+                   ->network_error_logging_service()
+                   ->GetPersistentNelStoreForTesting());
+  EXPECT_FALSE(network_context->url_request_context()
+                   ->network_error_logging_service()
+                   ->GetReportingServiceForTesting()
+                   ->GetContextForTesting()
+                   ->store());
+}
+
+TEST_F(NetworkContextTest, EnableNetworkErrorLoggingWithStore) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitWithFeatures(
+      {features::kNetworkErrorLogging, features::kReporting}, {});
+
+  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  context_params->reporting_and_nel_store_path =
+      temp_dir.GetPath().Append(kFilename);
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(std::move(context_params));
+  EXPECT_TRUE(
+      network_context->url_request_context()->network_error_logging_service());
+  EXPECT_TRUE(network_context->url_request_context()
+                  ->network_error_logging_service()
+                  ->GetPersistentNelStoreForTesting());
+  EXPECT_TRUE(network_context->url_request_context()
+                  ->network_error_logging_service()
+                  ->GetReportingServiceForTesting()
+                  ->GetContextForTesting()
+                  ->store());
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 

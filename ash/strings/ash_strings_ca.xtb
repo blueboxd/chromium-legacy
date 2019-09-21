@@ -41,6 +41,7 @@
 <translation id="1460620680449458626">El volum està silenciat.</translation>
 <translation id="1467432559032391204">A l'esquerra</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
+<translation id="1516740043221086139">El mode No molestis està activat.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Mostra la configuració de les notificacions. Les notificacions estan desactivades per a una aplicació.}other{Mostra la configuració de les notificacions. Les notificacions estan desactivades per a # aplicacions.}}</translation>
 <translation id="1525508553941733066">IGNORA</translation>
 <translation id="1537254971476575106">Lupa de pantalla completa</translation>
@@ -255,6 +256,7 @@
 <translation id="4585337515783392668">Deixa d'emetre en un receptor desconegut</translation>
 <translation id="4628757576491864469">Dispositius</translation>
 <translation id="4659419629803378708">S'ha activat ChromeVox</translation>
+<translation id="4665114317261903604">Activa o desactiva el mode No molestis. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Desbloqueja el dispositiu amb el codi parental</translation>
 <translation id="4731797938093519117">Accés parental</translation>
 <translation id="4734965478015604180">Horitzontal</translation>
@@ -353,6 +355,7 @@
 <translation id="6254629735336163724">Bloquejada en horitzontal</translation>
 <translation id="6259254695169772643">Fes servir el llapis òptic per seleccionar</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: s'està activant...</translation>
+<translation id="6283712521836204486">El mode No molestis està desactivat.</translation>
 <translation id="6284232397434400372">S'ha canviat la resolució</translation>
 <translation id="6297287540776456956">Utilitza el llapis òptic per seleccionar una part</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> s'ha canviat a <ph name="ROTATION" /></translation>

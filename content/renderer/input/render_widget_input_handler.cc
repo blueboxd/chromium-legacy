@@ -13,7 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "cc/paint/element_id.h"
-#include "cc/trees/swap_promise_monitor.h"
+#include "cc/trees/latency_info_swap_promise_monitor.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "content/common/input/input_event_ack.h"
 #include "content/public/common/content_switches.h"
@@ -364,16 +364,9 @@ void RenderWidgetInputHandler::HandleInputEvent(
   if (!start_time.is_null())
     LogInputEventLatencyUma(input_event, start_time);
 
-  std::unique_ptr<cc::SwapPromiseMonitor> latency_info_swap_promise_monitor;
   ui::LatencyInfo swap_latency_info(latency_info);
-
   swap_latency_info.AddLatencyNumber(
       ui::LatencyComponentType::INPUT_EVENT_LATENCY_RENDERER_MAIN_COMPONENT);
-  if (widget_->layer_tree_view()) {
-    latency_info_swap_promise_monitor =
-        widget_->layer_tree_view()->CreateLatencyInfoSwapPromiseMonitor(
-            &swap_latency_info);
-  }
 
   bool prevent_default = false;
   bool show_virtual_keyboard_for_mouse = false;
@@ -383,7 +376,13 @@ void RenderWidgetInputHandler::HandleInputEvent(
     TRACE_EVENT2("renderer", "HandleMouseMove", "x",
                  mouse_event.PositionInWidget().x, "y",
                  mouse_event.PositionInWidget().y);
-    prevent_default = delegate_->WillHandleMouseEvent(mouse_event);
+
+    {
+      cc::LatencyInfoSwapPromiseMonitor swap_promise_monitor(
+          &swap_latency_info,
+          widget_->layer_tree_host()->GetSwapPromiseManager(), nullptr);
+      prevent_default = delegate_->WillHandleMouseEvent(mouse_event);
+    }
 
     // Reset the last known cursor if mouse has left this widget. So next
     // time that the mouse enters we always set the cursor accordingly.
@@ -665,13 +664,6 @@ void RenderWidgetInputHandler::HandleInjectedScrollGestures(
       }
     }
 
-    std::unique_ptr<cc::SwapPromiseMonitor> swap_promise_monitor;
-    if (widget_->layer_tree_view()) {
-      swap_promise_monitor =
-          widget_->layer_tree_view()->CreateLatencyInfoSwapPromiseMonitor(
-              &scrollbar_latency_info);
-    }
-
     std::unique_ptr<WebGestureEvent> gesture_event =
         ui::GenerateInjectedScrollGesture(
             params.type, input_event.TimeStamp(), params.device, position,
@@ -684,8 +676,13 @@ void RenderWidgetInputHandler::HandleInjectedScrollGestures(
       last_injected_gesture_was_begin_ = false;
     }
 
-    widget_->GetWebWidget()->HandleInputEvent(
-        blink::WebCoalescedInputEvent(*gesture_event.get()));
+    {
+      cc::LatencyInfoSwapPromiseMonitor swap_promise_monitor(
+          &scrollbar_latency_info,
+          widget_->layer_tree_host()->GetSwapPromiseManager(), nullptr);
+      widget_->GetWebWidget()->HandleInputEvent(
+          blink::WebCoalescedInputEvent(*gesture_event.get()));
+    }
   }
 }
 

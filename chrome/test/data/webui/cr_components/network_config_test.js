@@ -8,17 +8,34 @@ suite('network-config', function() {
   /** @type {NetworkingPrivate} */
   var api_;
 
+  /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
+  let mojoApi_ = null;
+
   suiteSetup(function() {
-    api_ = new chrome.FakeNetworkingPrivate();
+    api_ = new chrome.FakeNetworkingPrivate();  // For certificates
+    mojoApi_ = new FakeNetworkConfig();
+    network_config.MojoInterfaceProviderImpl.getInstance().remote_ = mojoApi_;
     CrOncTest.overrideCrOncStrings();
   });
 
   function setNetworkConfig(properties) {
+    assert(properties.guid);
+    mojoApi_.setManagedPropertiesForTest(properties);
     PolymerTest.clearBody();
     networkConfig = document.createElement('network-config');
     networkConfig.networkingPrivate = api_;
-    networkConfig.managedProperties =
-        CrOncTest.convertToManagedProperties(properties);
+    networkConfig.guid = properties.guid;
+    networkConfig.managedProperties = properties;
+  }
+
+  function setNetworkType(type, security) {
+    PolymerTest.clearBody();
+    networkConfig = document.createElement('network-config');
+    networkConfig.networkingPrivate = api_;
+    networkConfig.type = OncMojo.getNetworkTypeString(type);
+    if (security !== undefined) {
+      networkConfig.securityType = security;
+    }
   }
 
   function initNetworkConfig() {
@@ -36,8 +53,8 @@ suite('network-config', function() {
 
   suite('New WiFi Config', function() {
     setup(function() {
-      api_.resetForTest();
-      setNetworkConfig({GUID: '', Name: '', Type: 'WiFi'});
+      mojoApi_.resetForTest();
+      setNetworkType(chromeos.networkConfig.mojom.NetworkType.kWiFi);
       initNetworkConfig();
     });
 
@@ -55,16 +72,13 @@ suite('network-config', function() {
 
   suite('Existing WiFi Config', function() {
     setup(function() {
-      api_.resetForTest();
-      var network = {
-        GUID: 'someguid',
-        Name: 'somename',
-        Source: 'Device',
-        Type: 'WiFi',
-        WiFi: {SSID: 'somessid', Security: 'None'}
-      };
-      api_.addNetworksForTest([network]);
-      setNetworkConfig({GUID: 'someguid', Name: '', Type: 'WiFi'});
+      mojoApi_.resetForTest();
+      const wifi1 = OncMojo.getDefaultManagedProperties(
+          chromeos.networkConfig.mojom.NetworkType.kWiFi, 'someguid', '');
+      wifi1.name = OncMojo.createManagedString('somename');
+      wifi1.source = chromeos.networkConfig.mojom.OncSource.kDevice;
+      wifi1.wifi.security = chromeos.networkConfig.mojom.SecurityType.kWepPsk;
+      setNetworkConfig(wifi1);
       initNetworkConfig();
     });
 
@@ -74,10 +88,9 @@ suite('network-config', function() {
 
     test('Default', function() {
       return flushAsync().then(() => {
-        assertEquals('someguid', networkConfig.managedProperties.GUID);
+        assertEquals('someguid', networkConfig.managedProperties.guid);
         assertEquals(
-            'somename',
-            CrOnc.getActiveValue(networkConfig.managedProperties.Name));
+            'somename', networkConfig.managedProperties.name.activeValue);
         assertFalse(!!networkConfig.$$('#share'));
         assertTrue(!!networkConfig.$$('#ssid'));
         assertTrue(!!networkConfig.$$('#security'));
@@ -88,7 +101,7 @@ suite('network-config', function() {
 
   suite('Share', function() {
     setup(function() {
-      api_.resetForTest();
+      mojoApi_.resetForTest();
     });
 
     teardown(function() {
@@ -126,8 +139,9 @@ suite('network-config', function() {
 
     test('New Config: Login or guest', function() {
       // Insecure networks are always shared so test a secure config.
-      setNetworkConfig(
-          {GUID: '', Name: '', Type: 'WiFi', WiFi: {Security: 'WEP-PSK'}});
+      setNetworkType(
+          chromeos.networkConfig.mojom.NetworkType.kWiFi,
+          chromeos.networkConfig.mojom.SecurityType.kWepPsk);
       setLoginOrGuest();
       initNetworkConfig();
       return flushAsync().then(() => {
@@ -140,8 +154,9 @@ suite('network-config', function() {
 
     test('New Config: Kiosk', function() {
       // Insecure networks are always shared so test a secure config.
-      setNetworkConfig(
-          {GUID: '', Name: '', Type: 'WiFi', WiFi: {Security: 'WEP-PSK'}});
+      setNetworkType(
+          chromeos.networkConfig.mojom.NetworkType.kWiFi,
+          chromeos.networkConfig.mojom.SecurityType.kWepPsk);
       setKiosk();
       initNetworkConfig();
       return flushAsync().then(() => {
@@ -153,8 +168,7 @@ suite('network-config', function() {
     });
 
     test('New Config: Authenticated, Not secure', function() {
-      setNetworkConfig(
-          {GUID: '', Name: '', Type: 'WiFi', WiFi: {Security: 'None'}});
+      setNetworkType(chromeos.networkConfig.mojom.NetworkType.kWiFi);
       setAuthenticated();
       initNetworkConfig();
       return flushAsync().then(() => {
@@ -166,8 +180,9 @@ suite('network-config', function() {
     });
 
     test('New Config: Authenticated, Secure', function() {
-      setNetworkConfig(
-          {GUID: '', Name: '', Type: 'WiFi', WiFi: {Security: 'WEP-PSK'}});
+      setNetworkType(
+          chromeos.networkConfig.mojom.NetworkType.kWiFi,
+          chromeos.networkConfig.mojom.SecurityType.kWepPsk);
       setAuthenticated();
       initNetworkConfig();
       return flushAsync().then(() => {
@@ -180,15 +195,11 @@ suite('network-config', function() {
 
     // Existing networks hide the shared control in the config UI.
     test('Existing Hides Shared', function() {
-      var network = {
-        GUID: 'someguid',
-        Name: 'somename',
-        Source: 'User',
-        Type: 'WiFi',
-        WiFi: {SSID: 'somessid', Security: 'WEP-PSK'}
-      };
-      api_.addNetworksForTest([network]);
-      setNetworkConfig({GUID: 'someguid', Name: '', Type: 'WiFi'});
+      const wifi1 = OncMojo.getDefaultManagedProperties(
+          chromeos.networkConfig.mojom.NetworkType.kWiFi, 'someguid', '');
+      wifi1.source = chromeos.networkConfig.mojom.OncSource.kUser;
+      wifi1.wifi.security = chromeos.networkConfig.mojom.SecurityType.kWepPsk;
+      setNetworkConfig(wifi1);
       setAuthenticated();
       initNetworkConfig();
       return flushAsync().then(() => {
@@ -197,51 +208,37 @@ suite('network-config', function() {
     });
 
     test('Ethernet', function() {
-      var ethernet = {
-        GUID: 'ethernetguid',
-        Name: 'Ethernet',
-        Type: 'Ethernet',
-        Ethernet: {Authentication: 'None'}
-      };
-      api_.addNetworksForTest([ethernet]);
-      setNetworkConfig({GUID: 'ethernetguid', Name: '', Type: 'Ethernet'});
+      const eth = OncMojo.getDefaultManagedProperties(
+          chromeos.networkConfig.mojom.NetworkType.kEthernet, 'ethernetguid',
+          '');
+      eth.ethernet.authentication = OncMojo.createManagedString('None');
+      setNetworkConfig(eth);
       initNetworkConfig();
       return flushAsync().then(() => {
         assertEquals('ethernetguid', networkConfig.guid);
-        assertEquals('None', networkConfig.security_);
+        assertEquals(
+            chromeos.networkConfig.mojom.SecurityType.kNone,
+            networkConfig.securityType);
         let outer = networkConfig.$$('#outer');
         assertFalse(!!outer);
       });
     });
 
     test('Ethernet EAP', function() {
-      var ethernet = {
-        GUID: 'ethernetguid',
-        Name: 'Ethernet',
-        Type: 'Ethernet',
-        Ethernet: {Authentication: 'None'}
-      };
-      var ethernetEap = {
-        GUID: 'eapguid',
-        Name: 'EthernetEap',
-        Type: 'Ethernet',
-        Ethernet: {
-          Authentication: '8021X',
-          EAP: {Outer: 'PEAP'},
-        }
-      };
-      api_.addNetworksForTest([ethernet, ethernetEap]);
-      setNetworkConfig({GUID: 'ethernetguid', Name: '', Type: 'Ethernet'});
+      const eth = OncMojo.getDefaultManagedProperties(
+          chromeos.networkConfig.mojom.NetworkType.kEthernet, 'eapguid', '');
+      eth.ethernet.authentication = OncMojo.createManagedString('8021x');
+      eth.ethernet.eap = {outer: OncMojo.createManagedString('PEAP')};
+      setNetworkConfig(eth);
       initNetworkConfig();
       return flushAsync().then(() => {
         assertEquals('eapguid', networkConfig.guid);
-        assertEquals('WPA-EAP', networkConfig.security_);
+        assertEquals(
+            chromeos.networkConfig.mojom.SecurityType.kWpaEap,
+            networkConfig.securityType);
         assertEquals(
             'PEAP',
-            CrOnc.getActiveValue(
-                /** @type {chrome.networkingPrivate.ManagedDOMString|undefined} */
-                (networkConfig.get(
-                    'Ethernet.EAP.Outer', networkConfig.managedProperties))));
+            networkConfig.managedProperties.ethernet.eap.outer.activeValue);
         let outer = networkConfig.$$('#outer');
         assertTrue(!!outer);
         assertTrue(!outer.disabled);
@@ -250,14 +247,11 @@ suite('network-config', function() {
     });
 
     test('WiFi EAP TLS', function() {
-      var network = {
-        GUID: 'eaptlsguid',
-        Name: '',
-        Type: 'WiFi',
-        WiFi: {Security: 'WPA-EAP', EAP: {Outer: 'EAP-TLS'}}
-      };
-      api_.addNetworksForTest([network]);
-      setNetworkConfig({GUID: 'eaptlsguid', Name: '', Type: 'WiFi'});
+      const wifi1 = OncMojo.getDefaultManagedProperties(
+          chromeos.networkConfig.mojom.NetworkType.kWiFi, 'eaptlsguid', '');
+      wifi1.wifi.security = chromeos.networkConfig.mojom.SecurityType.kWpaEap;
+      wifi1.wifi.eap = {outer: OncMojo.createManagedString('EAP-TLS')};
+      setNetworkConfig(wifi1);
       setCertificatesForTest();
       setAuthenticated();
       initNetworkConfig();
@@ -289,7 +283,5 @@ suite('network-config', function() {
         assertTrue(!!caCert);
       });
     });
-
   });
-
 });

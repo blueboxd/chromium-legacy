@@ -262,6 +262,9 @@ class NET_EXPORT NetworkErrorLoggingService {
   // Gets the origins of all currently stored policies, including expired ones.
   virtual std::set<url::Origin> GetPolicyOriginsForTesting();
 
+  virtual PersistentNelStore* GetPersistentNelStoreForTesting();
+  virtual ReportingService* GetReportingServiceForTesting();
+
  protected:
   NetworkErrorLoggingService();
 

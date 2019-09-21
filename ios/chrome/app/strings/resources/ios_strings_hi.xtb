@@ -93,6 +93,7 @@
 <translation id="2149973817440762519">बुकमार्क में बदलाव करें</translation>
 <translation id="2179182049312275900">आप सेटिंग में किसी भी समय सिंक चालू कर सकते हैं</translation>
 <translation id="2198757192731523470">खोज, विज्ञापन, और दूसरी Google सेवाओं को मनमुताबिक बनाने के लिए Google आपके इतिहास का इस्तेमाल कर सकता है.</translation>
+<translation id="2207590065820824892">पढ़ने की सूची में <ph name="UNREAD_COUNT" /> ऐसे लेख हैं जो पढ़े नहीं गए हैं.</translation>
 <translation id="2230173723195178503">वेबपेज लोड हो गया है</translation>
 <translation id="2239626343334228536">ब्राउज़िंग डेटा साफ़ हो रहा है...</translation>
 <translation id="2256128224215992540">खोज और साइट के लिए सुझाव</translation>
@@ -264,6 +265,7 @@
 
 यह सेटिंग बदलने के लिए, <ph name="BEGIN_LINK" />सिंक रीसेट करें<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">कार्ड संख्या अमान्य है</translation>
+<translation id="4807020197310989387">पढ़ने की सूची में एक ऐसा लेख है जो पढ़ा नहीं गया है.</translation>
 <translation id="4818522717893377262">भाषा जोड़ें...</translation>
 <translation id="481968316161811770">कुकी, साइट डेटा</translation>
 <translation id="4833786495304741580">Google को इस्तेमाल के आंकड़े और खराबी रिपोर्ट अपने आप भेजती है.</translation>

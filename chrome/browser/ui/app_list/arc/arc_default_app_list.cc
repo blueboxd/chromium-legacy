@@ -12,7 +12,6 @@
 #include "base/path_service.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_scoped_pref_update.h"
@@ -20,7 +19,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 
 namespace {
 
@@ -201,10 +200,10 @@ void ArcDefaultAppList::OnAppsReady() {
   const PrefService* const prefs = profile_->GetPrefs();
   // Register Play Store as default app. Some services and ArcSupportHost may
   // not be available in tests.
-  extensions::ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile_);
   const extensions::Extension* arc_host =
-      service ? service->GetInstalledExtension(arc::kPlayStoreAppId) : nullptr;
+      registry->GetInstalledExtension(arc::kPlayStoreAppId);
   if (arc_host && arc::IsPlayStoreAvailable()) {
     std::unique_ptr<ArcDefaultAppList::AppInfo> play_store_app =
         std::make_unique<ArcDefaultAppList::AppInfo>(arc_host->name(),

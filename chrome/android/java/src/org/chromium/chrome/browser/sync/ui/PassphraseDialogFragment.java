@@ -182,8 +182,8 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
                 new SpanInfo("<learnmore>", "</learnmore>", new ClickableSpan() {
                     @Override
                     public void onClick(View view) {
-                        HelpAndFeedback help = HelpAndFeedback.getInstance(getActivity());
-                        help.show(getActivity(), helpContext, Profile.getLastUsedProfile(), null);
+                        HelpAndFeedback.getInstance().show(
+                                getActivity(), helpContext, Profile.getLastUsedProfile(), null);
                     }
                 }));
     }

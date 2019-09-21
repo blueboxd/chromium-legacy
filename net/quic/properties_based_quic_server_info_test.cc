@@ -32,7 +32,9 @@ class PropertiesBasedQuicServerInfoTest : public ::testing::Test {
  protected:
   PropertiesBasedQuicServerInfoTest()
       : server_id_("www.google.com", 443, PRIVACY_MODE_DISABLED),
-        server_info_(server_id_, &http_server_properties_) {}
+        server_info_(server_id_,
+                     NetworkIsolationKey(),
+                     &http_server_properties_) {}
 
   // Initialize |server_info_| object and persist it.
   void InitializeAndPersist() {
@@ -68,7 +70,7 @@ TEST_F(PropertiesBasedQuicServerInfoTest, Update) {
   InitializeAndPersist();
 
   // Read the persisted data and verify we have read the data correctly.
-  PropertiesBasedQuicServerInfo server_info1(server_id_,
+  PropertiesBasedQuicServerInfo server_info1(server_id_, NetworkIsolationKey(),
                                              &http_server_properties_);
   EXPECT_TRUE(server_info1.Load());
 
@@ -83,7 +85,7 @@ TEST_F(PropertiesBasedQuicServerInfoTest, Update) {
   server_info1.Persist();
 
   // Read the persisted data and verify we have read the data correctly.
-  PropertiesBasedQuicServerInfo server_info2(server_id_,
+  PropertiesBasedQuicServerInfo server_info2(server_id_, NetworkIsolationKey(),
                                              &http_server_properties_);
   EXPECT_TRUE(server_info2.Load());
 

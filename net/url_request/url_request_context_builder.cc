@@ -154,9 +154,7 @@ class ContainerURLRequestContext final : public URLRequestContext {
     AssertNoURLRequests();
   }
 
-  URLRequestContextStorage* storage() {
-    return &storage_;
-  }
+  URLRequestContextStorage* storage() { return &storage_; }
 
   void set_transport_security_persister(
       std::unique_ptr<TransportSecurityPersister>
@@ -174,8 +172,7 @@ class ContainerURLRequestContext final : public URLRequestContext {
 }  // namespace
 
 URLRequestContextBuilder::HttpCacheParams::HttpCacheParams()
-    : type(IN_MEMORY),
-      max_size(0) {}
+    : type(IN_MEMORY), max_size(0) {}
 URLRequestContextBuilder::HttpCacheParams::~HttpCacheParams() = default;
 
 URLRequestContextBuilder::URLRequestContextBuilder() = default;
@@ -274,6 +271,13 @@ void URLRequestContextBuilder::SetSharedCertVerifier(
 void URLRequestContextBuilder::set_reporting_policy(
     std::unique_ptr<ReportingPolicy> reporting_policy) {
   reporting_policy_ = std::move(reporting_policy);
+}
+
+void URLRequestContextBuilder::set_persistent_reporting_and_nel_store(
+    std::unique_ptr<PersistentReportingAndNelStore>
+        persistent_reporting_and_nel_store) {
+  persistent_reporting_and_nel_store_ =
+      std::move(persistent_reporting_and_nel_store);
 }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
@@ -513,18 +517,21 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   // Note: ReportingService::Create and NetworkErrorLoggingService::Create can
   // both return nullptr if the corresponding base::Feature is disabled.
 
-  // TODO(chlily): Use a real one to enable persistent storage. (This is just a
-  // placeholder for now.)
-  PersistentReportingAndNelStore* store = nullptr;
-
   if (reporting_policy_) {
     storage->set_reporting_service(
-        ReportingService::Create(*reporting_policy_, context.get(), store));
+        ReportingService::Create(*reporting_policy_, context.get(),
+                                 persistent_reporting_and_nel_store_.get()));
   }
 
   if (network_error_logging_enabled_) {
     storage->set_network_error_logging_service(
-        NetworkErrorLoggingService::Create(store));
+        NetworkErrorLoggingService::Create(
+            persistent_reporting_and_nel_store_.get()));
+  }
+
+  if (persistent_reporting_and_nel_store_) {
+    storage->set_persistent_reporting_and_nel_store(
+        std::move(persistent_reporting_and_nel_store_));
   }
 
   // If both Reporting and Network Error Logging are actually enabled, then

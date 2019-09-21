@@ -66,7 +66,7 @@ const CrPolicyNetworkBehaviorMojo = {
   },
 
   /**
-   * @param {!CrOnc.ManagedProperty} property
+   * @param {!OncMojo.ManagedProperty} property
    * @return {boolean} True if the network property is recommended by a policy.
    */
   isNetworkPolicyRecommended: function(property) {
@@ -105,7 +105,7 @@ const CrPolicyNetworkBehaviorMojo = {
 
   /**
    * Get policy indicator type for the setting at |path|.
-   * @param {!CrOnc.ManagedProperty} property
+   * @param {!OncMojo.ManagedProperty} property
    * @return {CrPolicyIndicatorType}
    */
   getPolicyIndicatorType: function(property) {

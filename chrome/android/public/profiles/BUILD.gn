@@ -9,9 +9,11 @@ import("//build/config/android/rules.gni")
 android_library("java") {
   deps = [
     "//base:base_java",
+    "//base:jni_java",
     "//chrome/android/public/crypto:java",
     "//content/public/android:content_java",
   ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   java_files = [
     "java/src/org/chromium/chrome/browser/cookies/CanonicalCookie.java",
     "java/src/org/chromium/chrome/browser/cookies/CookiesFetcher.java",

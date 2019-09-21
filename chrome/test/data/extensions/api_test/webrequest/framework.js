@@ -27,9 +27,10 @@ var listeners = {
   'onCompleted': [],
   'onErrorOccurred': []
 };
-// Requests initiated by an extension or user interaction with the browser is a
-// BROWSER_INITIATED action. If the request was instead initiated by a website
-// or code run in the context of a website then it's WEB_INITIATED.
+// Requests initiated by a user interaction with the browser is a
+// BROWSER_INITIATED action. If the request was instead initiated by the tabs
+// extension API, a website or code run in the context of a website then it's
+// WEB_INITIATED.
 const initiators = {
   BROWSER_INITIATED: 2,
   WEB_INITIATED: 3
@@ -123,7 +124,7 @@ function navigateAndWait(url, callback) {
       done();
     }
   });
-  chrome.tabs.update(tabId, {url: url});
+  chrome.test.sendMessage(JSON.stringify({navigate: {tabId: tabId, url: url}}));
 }
 
 function deepCopy(obj) {

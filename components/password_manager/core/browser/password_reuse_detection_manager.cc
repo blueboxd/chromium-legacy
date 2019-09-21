@@ -124,10 +124,13 @@ void PasswordReuseDetectionManager::OnReuseFound(
   metrics_util::LogPasswordReuse(password_length, saved_passwords,
                                  matching_domains.size(),
                                  password_field_detected, reused_password_type);
-#if BUILDFLAG(FULL_SAFE_BROWSING)
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
   if (reused_password_type ==
       metrics_util::PasswordType::PRIMARY_ACCOUNT_PASSWORD)
     client_->LogPasswordReuseDetectedEvent();
+#endif
+
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   std::string username = reused_protected_password_hash.has_value()
                              ? reused_protected_password_hash->username
                              : "";

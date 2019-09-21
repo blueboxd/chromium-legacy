@@ -408,6 +408,7 @@ class CORE_EXPORT LocalFrameView final
                           bool should_scroll = true);
   FragmentAnchor* GetFragmentAnchor() { return fragment_anchor_; }
   void InvokeFragmentAnchor();
+  void DismissFragmentAnchor();
 
   // Methods to convert points and rects between the coordinate space of the
   // layoutObject, and this view.

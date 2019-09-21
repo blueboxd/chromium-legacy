@@ -20,7 +20,6 @@
     {
       "name": "LayoutBlockFlow DIV class='accelerated-stacking-context'",
       "bounds": [784, 90],
-      "isolate": true,
       "contentsOpaque": true,
       "backgroundColor": "#0000FF",
       "transform": 1

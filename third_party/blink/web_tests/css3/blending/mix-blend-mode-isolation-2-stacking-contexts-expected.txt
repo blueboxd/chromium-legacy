@@ -33,7 +33,6 @@
       "name": "LayoutBlockFlow (positioned) DIV class='stacking-context'",
       "position": [8, 8],
       "bounds": [160, 90],
-      "isolate": true,
       "contentsOpaque": true,
       "backgroundColor": "#008000"
     },
@@ -59,7 +58,6 @@
     {
       "name": "LayoutBlockFlow (positioned) DIV class='stacking-context'",
       "bounds": [160, 90],
-      "isolate": true,
       "contentsOpaque": true,
       "backgroundColor": "#008000",
       "transform": 2

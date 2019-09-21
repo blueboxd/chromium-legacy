@@ -35,9 +35,9 @@ base::DictionaryValue* ToDictionary(base::Value* val);
 // If |val| is a list, return it as one, otherwise NULL.
 base::ListValue* ToList(base::Value* val);
 
-// Returns true if |val| contains privacy information, e.g. url,
-// title, and faviconUrl.
-bool HasPrivacySensitiveFields(base::DictionaryValue* val);
+// Returns true if |val| contains any privacy information, e.g. url,
+// pendingUrl, title or faviconUrl.
+bool HasAnyPrivacySensitiveFields(base::DictionaryValue* val);
 
 // Run |function| with |args| and return the resulting error. Adds an error to
 // the current test if |function| returns a result. Takes ownership of

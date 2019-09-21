@@ -1357,15 +1357,13 @@ bool TabsUpdateFunction::UpdateURL(const std::string& url_string,
 
   NavigationController::LoadURLParams load_params(url);
 
-  // For the PDF extension, treat it as renderer-initiated so that it does not
-  // show in the omnibox until it commits.  This avoids URL spoofs since urls
-  // can be opened on behalf of untrusted content.
-  // TODO(devlin|nasko): Make this the default for all extensions.
-  if (extension() && extension()->id() == extension_misc::kPdfExtensionId) {
-    load_params.is_renderer_initiated = true;
-    load_params.initiator_origin = url::Origin::Create(
-        Extension::GetBaseURLFromExtensionId(extension()->id()));
-  }
+  // Treat extension-initiated navigations as renderer-initiated so that the URL
+  // does not show in the omnibox until it commits.  This avoids URL spoofs
+  // since URLs can be opened on behalf of untrusted content.
+  load_params.is_renderer_initiated = true;
+  load_params.initiator_origin = url::Origin::Create(
+      Extension::GetBaseURLFromExtensionId(extension()->id()));
+
   web_contents_->GetController().LoadURLWithParams(load_params);
 
   DCHECK_EQ(url,

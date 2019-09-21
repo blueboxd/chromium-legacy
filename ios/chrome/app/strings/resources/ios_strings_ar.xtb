@@ -43,7 +43,7 @@
 <translation id="1449835205994625556">إخفاء كلمة المرور</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> من العناصر</translation>
 <translation id="1491277525950327607">انقر مرّتين لتبديل الإعداد</translation>
-<translation id="1509486075633541495">تسجيل الدخول إلى موقع إلكتروني</translation>
+<translation id="1509486075633541495">تسجيل الدخول إلى الموقع الإلكتروني</translation>
 <translation id="152234381334907219">المواقع التي لن تحفظ كلمات المرور أبدًا</translation>
 <translation id="1540800554400757039">العنوان 1</translation>
 <translation id="1545749641540134597">فحص رمز الاستجابة السريعة</translation>
@@ -93,6 +93,7 @@
 <translation id="2149973817440762519">تعديل الإشارة</translation>
 <translation id="2179182049312275900">يمكنك تفعيل المزامنة في أي وقت في الإعدادات.</translation>
 <translation id="2198757192731523470">‏قد تستخدم Google السجلّ لتخصيص "بحث Google" والإعلانات وخدمات Google الأخرى.</translation>
+<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> من مقالات "قائمة القراءة" غير المقروءة.</translation>
 <translation id="2230173723195178503">تم تحميل الصفحة المطلوبة</translation>
 <translation id="2239626343334228536">جارٍ محو بيانات التصفُّح...</translation>
 <translation id="2256128224215992540">اقتراحات البحث والمواقع</translation>
@@ -108,6 +109,7 @@
 <translation id="2360196772093551345">طلب موقع ويب متوافق مع الأجهزة الجوَّالة</translation>
 <translation id="2381405137052800939">الإعدادات الأساسية</translation>
 <translation id="2386793615875593361">تم تحديد عنصر واحد</translation>
+<translation id="2421044535038393232">متابعة التعديل</translation>
 <translation id="2435457462613246316">عرض كلمة المرور</translation>
 <translation id="2481538920734869610">إضافة حساب</translation>
 <translation id="2497852260688568942">تم إيقاف المزامنة من قِبل المشرف</translation>
@@ -227,6 +229,7 @@
 <translation id="418156467088430727">عرض إصدار بلا إنترنت في علامة تبويب جديدة</translation>
 <translation id="4181841719683918333">اللغات</translation>
 <translation id="424315890655130736">إدخال عبارة المرور</translation>
+<translation id="4263576668337963058">عرض الإجراءات المتاحة على الصفحة</translation>
 <translation id="4272631900155121838">لمسح رمز الاستجابة السريعة ضوئيًا، يمكنك تفعيل الكاميرا من الإعدادات</translation>
 <translation id="4281844954008187215">بنود الخدمة</translation>
 <translation id="430793432425771671">مزامنة كل شيء</translation>
@@ -264,6 +267,7 @@
 
 لتغيير هذا الإعداد، يُرجى <ph name="BEGIN_LINK" />إعادة ضبط المزامنة<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">رقم البطاقة غير صحيح</translation>
+<translation id="4807020197310989387">مقالة "قائمة قراءة" واحدة غير مقروءة.</translation>
 <translation id="4818522717893377262">إضافة لغة...</translation>
 <translation id="481968316161811770">ملفات تعريف الارتباط، وبيانات موقع الويب</translation>
 <translation id="4833786495304741580">‏إرسال إحصاءات الاستخدام وتقارير الأعطال إلى Google تلقائيًا</translation>

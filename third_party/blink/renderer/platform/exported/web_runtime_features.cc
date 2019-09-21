@@ -132,10 +132,6 @@ void WebRuntimeFeatures::EnableCanvas2dImageChromium(bool enable) {
   RuntimeEnabledFeatures::SetCanvas2dImageChromiumEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableCanvas2dSwapChain(bool enable) {
-  RuntimeEnabledFeatures::SetCanvas2dSwapChainEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableCompositedSelectionUpdate(bool enable) {
   RuntimeEnabledFeatures::SetCompositedSelectionUpdateEnabled(enable);
 }
@@ -399,10 +395,6 @@ void WebRuntimeFeatures::EnableWebGLDraftExtensions(bool enable) {
 
 void WebRuntimeFeatures::EnableWebGLImageChromium(bool enable) {
   RuntimeEnabledFeatures::SetWebGLImageChromiumEnabled(enable);
-}
-
-void WebRuntimeFeatures::EnableWebGLSwapChain(bool enable) {
-  RuntimeEnabledFeatures::SetWebGLSwapChainEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableXSLT(bool enable) {

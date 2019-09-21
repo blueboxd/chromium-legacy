@@ -71,7 +71,7 @@
 <translation id="1292701964462482250">"உங்கள் கம்ப்யூட்டரில் உள்ள மென்பொருள் இணையத்துடன் பாதுகாப்பாக இணைவதிலிருந்து Chromeமைத் தடுக்கிறது" (Windows கம்ப்யூட்டர்கள் மட்டும்)</translation>
 <translation id="1294154142200295408">கட்டளை வரி மாற்று வடிவங்கள்</translation>
 <translation id="129553762522093515">சமீபத்தில் மூடியவை</translation>
-<translation id="1298536327547837046">மால்வேரை ஸ்கேன் செய்கிறது</translation>
+<translation id="1298536327547837046">மால்வேர் ஸ்கேனிங்</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />குக்கீகளை அழிக்கவும்<ph name="END_LINK" /></translation>
 <translation id="1307966114820526988">தடுக்கப்பட்ட அம்சங்கள்</translation>
 <translation id="1320233736580025032">Prc1 (என்வலப்)</translation>
@@ -1017,7 +1017,7 @@
 <translation id="6433490469411711332">தொடர்புத் தகவலை மாற்று</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> இணைக்க மறுத்தது.</translation>
 <translation id="6434309073475700221">நிராகரி</translation>
-<translation id="6435221585574090192">உங்கள் நிர்வாகியுடன் Chrome Enterprise Threat Protection கொடியிட்டுள்ள பாதுகாப்பு தொடர்பான செயல்பாடுகளின் தரவைப் பகிரும். இவற்றில் பக்க URLகள், கோப்பின் பெயரும் தரவுத்தகவலும், உங்கள் சாதன மற்றும் Chrome பயனர்பெயர் ஆகியவை அடங்கும்.</translation>
+<translation id="6435221585574090192">உங்கள் நிர்வாகியுடன் Chrome Enterprise Threat Protection கொடியிட்டுள்ள பாதுகாப்பு தொடர்பான செயல்பாடுகளின் தரவைப் பகிரும். இவற்றில் பக்க URLகள், கோப்பின் பெயர் மற்றும் தரவுத்தகவல், உங்கள் சாதன மற்றும் Chrome பயனர்பெயர் ஆகியவை அடங்கும்.</translation>
 <translation id="6440503408713884761">புறக்கணிக்கப்பட்டது</translation>
 <translation id="6446163441502663861">Kahu (என்வலப்)</translation>
 <translation id="6446608382365791566">மேலும் தகவலைச் சேர்க்கவும்</translation>

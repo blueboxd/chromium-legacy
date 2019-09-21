@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
 #include "ui/web_dialogs/web_dialog_ui.h"
 
 namespace chromeos {
@@ -49,12 +49,15 @@ class InternetConfigDialog : public SystemWebDialogDelegate {
 
 // A WebUI to host the network configuration UI in a dialog, used in the
 // login screen and when a new network is configured from the system tray.
-class InternetConfigDialogUI : public ui::WebDialogUI {
+class InternetConfigDialogUI : public ui::MojoWebDialogUI {
  public:
   explicit InternetConfigDialogUI(content::WebUI* web_ui);
   ~InternetConfigDialogUI() override;
 
  private:
+  void BindCrosNetworkConfig(
+      chromeos::network_config::mojom::CrosNetworkConfigRequest request);
+
   DISALLOW_COPY_AND_ASSIGN(InternetConfigDialogUI);
 };
 

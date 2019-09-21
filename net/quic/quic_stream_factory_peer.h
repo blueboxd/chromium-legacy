@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/time/tick_clock.h"
@@ -22,13 +24,13 @@ namespace quic {
 class QuicAlarmFactory;
 class QuicClientPushPromiseIndex;
 class QuicConfig;
-class QuicCryptoClientConfig;
 }  // namespace quic
 
 namespace net {
 
 class NetLogWithSource;
 class QuicChromiumClientSession;
+class QuicCryptoClientConfigHandle;
 class QuicStreamFactory;
 
 namespace test {
@@ -37,8 +39,9 @@ class QuicStreamFactoryPeer {
  public:
   static const quic::QuicConfig* GetConfig(QuicStreamFactory* factory);
 
-  static quic::QuicCryptoClientConfig* GetCryptoConfig(
-      QuicStreamFactory* factory);
+  static std::unique_ptr<QuicCryptoClientConfigHandle> GetCryptoConfig(
+      QuicStreamFactory* factory,
+      const NetworkIsolationKey& network_isolation_key);
 
   static bool HasActiveSession(
       QuicStreamFactory* factory,
@@ -81,9 +84,13 @@ class QuicStreamFactoryPeer {
   static void SetRaceCertVerification(QuicStreamFactory* factory,
                                       bool race_cert_verification);
 
+  // When using this method, the caller should be holding onto a live
+  // NetworkIsolationKey, if it wants the results to stay alive in the
+  // per-NetworkIsolationKey cache.
   static quic::QuicAsyncStatus StartCertVerifyJob(
       QuicStreamFactory* factory,
       const quic::QuicServerId& server_id,
+      const NetworkIsolationKey& network_isolation_key,
       int cert_verify_flags,
       const NetLogWithSource& net_log);
 
@@ -98,11 +105,16 @@ class QuicStreamFactoryPeer {
 
   static bool CryptoConfigCacheIsEmpty(
       QuicStreamFactory* factory,
-      const quic::QuicServerId& quic_server_id);
+      const quic::QuicServerId& quic_server_id,
+      const NetworkIsolationKey& network_isolation_key);
 
-  // Creates a dummy QUIC server config and caches it.
-  static void CacheDummyServerConfig(QuicStreamFactory* factory,
-                                     const quic::QuicServerId& quic_server_id);
+  // Creates a dummy QUIC server config and caches it. Caller must be holding
+  // onto a QuicCryptoClientConfigHandle for the corresponding
+  // |network_isolation_key|.
+  static void CacheDummyServerConfig(
+      QuicStreamFactory* factory,
+      const quic::QuicServerId& quic_server_id,
+      const NetworkIsolationKey& network_isolation_key);
 
   static quic::QuicClientPushPromiseIndex* GetPushPromiseIndex(
       QuicStreamFactory* factory);

@@ -24,12 +24,6 @@ bool TestExtensionService::UpdateExtension(
   return false;
 }
 
-const Extension* TestExtensionService::GetInstalledExtension(
-    const std::string& id) const {
-  ADD_FAILURE();
-  return NULL;
-}
-
 const Extension* TestExtensionService::GetPendingExtensionUpdate(
     const std::string& id) const {
   ADD_FAILURE();

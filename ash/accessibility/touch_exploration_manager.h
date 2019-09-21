@@ -49,6 +49,7 @@ class ASH_EXPORT TouchExplorationManager
 
   // AccessibilityObserver overrides:
   void OnAccessibilityStatusChanged() override;
+  void OnAccessibilityControllerShutdown() override;
 
   // aura::WindowObserver overrides:
   void OnWindowPropertyChanged(aura::Window* window,

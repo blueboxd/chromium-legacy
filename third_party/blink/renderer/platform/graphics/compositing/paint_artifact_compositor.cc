@@ -396,14 +396,15 @@ void PaintArtifactCompositor::PendingLayer::Merge(const PendingLayer& guest) {
 static bool CanUpcastTo(const PropertyTreeState& guest,
                         const PropertyTreeState& home);
 bool PaintArtifactCompositor::PendingLayer::CanMerge(
-    const PendingLayer& guest) const {
+    const PendingLayer& guest,
+    const PropertyTreeState& guest_state) const {
   if (requires_own_layer || guest.requires_own_layer)
     return false;
   if (&property_tree_state.Effect().Unalias() !=
-      &guest.property_tree_state.Effect().Unalias()) {
+      &guest_state.Effect().Unalias()) {
     return false;
   }
-  return CanUpcastTo(guest.property_tree_state, property_tree_state);
+  return CanUpcastTo(guest_state, property_tree_state);
 }
 
 void PaintArtifactCompositor::PendingLayer::Upcast(
@@ -507,29 +508,48 @@ bool PaintArtifactCompositor::MightOverlap(const PendingLayer& layer_a,
   return bounds_a.Rect().Intersects(bounds_b.Rect());
 }
 
-bool PaintArtifactCompositor::CanDecompositeEffect(
+bool PaintArtifactCompositor::DecompositeEffect(
+    const EffectPaintPropertyNode& unaliased_parent_effect,
+    size_t first_layer_in_parent_group_index,
     const EffectPaintPropertyNode& unaliased_effect,
-    const PendingLayer& layer) {
+    size_t layer_index) {
+  // The layer must be the last layer in pending_layers_.
+  DCHECK_EQ(layer_index, pending_layers_.size() - 1);
+
   // If the effect associated with the layer is deeper than than the effect
   // we are attempting to decomposite, than implies some previous decision
   // did not allow to decomposite intermediate effects.
+  PendingLayer& layer = pending_layers_[layer_index];
   if (&layer.property_tree_state.Effect().Unalias() != &unaliased_effect)
     return false;
   if (layer.requires_own_layer)
     return false;
-  // TODO(trchen): Exotic blending layer may be decomposited only if it could
-  // be merged into the first layer of the current group.
-  if (unaliased_effect.BlendMode() != SkBlendMode::kSrcOver)
-    return false;
   if (unaliased_effect.HasDirectCompositingReasons())
     return false;
-  if (!CanUpcastTo(layer.property_tree_state,
-                   PropertyTreeState(unaliased_effect.LocalTransformSpace(),
-                                     unaliased_effect.OutputClip()
-                                         ? *unaliased_effect.OutputClip()
-                                         : layer.property_tree_state.Clip(),
-                                     unaliased_effect)))
+
+  PropertyTreeState group_state(unaliased_effect.LocalTransformSpace(),
+                                unaliased_effect.OutputClip()
+                                    ? *unaliased_effect.OutputClip()
+                                    : layer.property_tree_state.Clip(),
+                                unaliased_effect);
+  if (!CanUpcastTo(layer.property_tree_state, group_state))
     return false;
+
+  PropertyTreeState upcast_state = group_state;
+  upcast_state.SetEffect(unaliased_parent_effect);
+
+  // Exotic blending layer can be decomposited only if its parent group
+  // (which defines the scope of the blending) has only one layer before it,
+  // and it can be merged into that layer.
+  if (unaliased_effect.BlendMode() != SkBlendMode::kSrcOver) {
+    if (layer_index - 1 != first_layer_in_parent_group_index)
+      return false;
+    if (!pending_layers_[first_layer_in_parent_group_index].CanMerge(
+            layer, upcast_state))
+      return false;
+  }
+
+  layer.Upcast(upcast_state);
   return true;
 }
 
@@ -641,25 +661,16 @@ void PaintArtifactCompositor::LayerizeGroup(
       //         a recursion call.
       wtf_size_t first_layer_in_subgroup = pending_layers_.size();
       LayerizeGroup(paint_artifact, settings, *unaliased_subgroup, chunk_it);
-      // Now the chunk iterator stepped over the subgroup we just saw.
-      // If the subgroup generated 2 or more layers then the subgroup must be
-      // composited to satisfy grouping requirement.
-      // i.e. Grouping effects generally must be applied atomically,
-      // for example,  Opacity(A+B) != Opacity(A) + Opacity(B), thus an effect
-      // either applied 100% within a layer, or not at all applied within layer
-      // (i.e. applied by compositor render surface instead).
-      if (pending_layers_.size() != first_layer_in_subgroup + 1)
+      // The above LayerizeGroup generated new layers in pending_layers_
+      // [first_layer_in_subgroup .. pending_layers.size() - 1]. If it generated
+      // 2 or more layer that we already know can't be merged together, we
+      // should not decomposite and try to merge any of them into the previous
+      // layers.
+      if (first_layer_in_subgroup != pending_layers_.size() - 1)
         continue;
-      // Now attempt to "decomposite" subgroup.
-      PendingLayer& subgroup_layer = pending_layers_[first_layer_in_subgroup];
-      if (!CanDecompositeEffect(*unaliased_subgroup, subgroup_layer))
+      if (!DecompositeEffect(unaliased_group, first_layer_in_current_group,
+                             *unaliased_subgroup, first_layer_in_subgroup))
         continue;
-      subgroup_layer.Upcast(
-          PropertyTreeState(unaliased_subgroup->LocalTransformSpace(),
-                            unaliased_subgroup->OutputClip()
-                                ? *unaliased_subgroup->OutputClip()
-                                : subgroup_layer.property_tree_state.Clip(),
-                            unaliased_group));
     }
     // At this point pending_layers_.back() is the either a layer from a
     // "decomposited" subgroup or a layer created from a chunk we just
@@ -673,7 +684,7 @@ void PaintArtifactCompositor::LayerizeGroup(
     for (wtf_size_t candidate_index = pending_layers_.size() - 1;
          candidate_index-- > first_layer_in_current_group;) {
       PendingLayer& candidate_layer = pending_layers_[candidate_index];
-      if (candidate_layer.CanMerge(new_layer)) {
+      if (candidate_layer.CanMerge(new_layer, new_layer.property_tree_state)) {
         candidate_layer.Merge(new_layer);
         pending_layers_.pop_back();
         break;
@@ -749,7 +760,7 @@ scoped_refptr<cc::DisplayItemList> SynthesizedClip::PaintContentsToDisplayList(
     cc_list->push<cc::DrawRRectOp>(local_rrect_, flags);
   } else {
     cc_list->push<cc::SaveOp>();
-    cc_list->push<cc::TranslateOp>(-layer_origin_.x(), -layer_origin_.x());
+    cc_list->push<cc::TranslateOp>(-layer_origin_.x(), -layer_origin_.y());
     cc_list->push<cc::ClipPathOp>(path_->GetSkPath(), SkClipOp::kIntersect,
                                   true);
     SkRRect rrect = local_rrect_;

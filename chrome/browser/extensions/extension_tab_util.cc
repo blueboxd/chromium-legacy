@@ -119,7 +119,7 @@ ExtensionTabUtil::Delegate* GetExtensionTabUtilDelegate() {
   return GetExtensionTabUtilDelegateWrapper().get();
 }
 
-ExtensionTabUtil::ScrubTabBehavior GetScrubTabBehaviorImpl(
+ExtensionTabUtil::ScrubTabBehaviorType GetScrubTabBehaviorImpl(
     const Extension* extension,
     Feature::Context context,
     const GURL& url,
@@ -430,13 +430,21 @@ std::unique_ptr<api::tabs::Tab> ExtensionTabUtil::CreateTabObject(
   tab_object->width = std::make_unique<int>(contents_size.width());
   tab_object->height = std::make_unique<int>(contents_size.height());
 
-  tab_object->url = std::make_unique<std::string>(contents->GetURL().spec());
+  tab_object->url =
+      std::make_unique<std::string>(contents->GetLastCommittedURL().spec());
+  NavigationEntry* pending_entry = contents->GetController().GetPendingEntry();
+  if (pending_entry) {
+    tab_object->pending_url =
+        std::make_unique<std::string>(pending_entry->GetVirtualURL().spec());
+  }
   tab_object->title =
       std::make_unique<std::string>(base::UTF16ToUTF8(contents->GetTitle()));
-  NavigationEntry* entry = contents->GetController().GetVisibleEntry();
-  if (entry && entry->GetFavicon().valid) {
+  // TODO(tjudkins) This should probably use the LastCommittedEntry() for
+  // consistency.
+  NavigationEntry* visible_entry = contents->GetController().GetVisibleEntry();
+  if (visible_entry && visible_entry->GetFavicon().valid) {
     tab_object->fav_icon_url =
-        std::make_unique<std::string>(entry->GetFavicon().url.spec());
+        std::make_unique<std::string>(visible_entry->GetFavicon().url.spec());
   }
   if (tab_strip) {
     WebContents* opener = tab_strip->GetOpenerOfWebContentsAt(tab_index);
@@ -446,9 +454,8 @@ std::unique_ptr<api::tabs::Tab> ExtensionTabUtil::CreateTabObject(
     }
   }
 
-  if (scrub_tab_behavior != kDontScrubTab)
-    ScrubTabForExtension(extension, contents, tab_object.get(),
-                         scrub_tab_behavior);
+  ScrubTabForExtension(extension, contents, tab_object.get(),
+                       scrub_tab_behavior);
   return tab_object;
 }
 
@@ -558,8 +565,18 @@ ExtensionTabUtil::ScrubTabBehavior ExtensionTabUtil::GetScrubTabBehavior(
     const Extension* extension,
     Feature::Context context,
     content::WebContents* contents) {
-  return GetScrubTabBehaviorImpl(extension, context, contents->GetURL(),
-                                 GetTabId(contents));
+  int tab_id = GetTabId(contents);
+  ScrubTabBehavior behavior;
+  behavior.committed_info = GetScrubTabBehaviorImpl(
+      extension, context, contents->GetLastCommittedURL(), tab_id);
+  NavigationEntry* entry = contents->GetController().GetPendingEntry();
+  GURL pending_url;
+  if (entry) {
+    pending_url = entry->GetVirtualURL();
+  }
+  behavior.pending_info =
+      GetScrubTabBehaviorImpl(extension, context, pending_url, tab_id);
+  return behavior;
 }
 
 // static
@@ -567,8 +584,9 @@ ExtensionTabUtil::ScrubTabBehavior ExtensionTabUtil::GetScrubTabBehavior(
     const Extension* extension,
     Feature::Context context,
     const GURL& url) {
-  return GetScrubTabBehaviorImpl(extension, context, url,
-                                 api::tabs::TAB_ID_NONE);
+  ScrubTabBehaviorType type =
+      GetScrubTabBehaviorImpl(extension, context, url, api::tabs::TAB_ID_NONE);
+  return {type, type};
 }
 
 // static
@@ -577,7 +595,8 @@ void ExtensionTabUtil::ScrubTabForExtension(
     content::WebContents* contents,
     api::tabs::Tab* tab,
     ScrubTabBehavior scrub_tab_behavior) {
-  switch (scrub_tab_behavior) {
+  // Remove sensitive committed tab info if necessary.
+  switch (scrub_tab_behavior.committed_info) {
     case kScrubTabFully:
       tab->url.reset();
       tab->title.reset();
@@ -588,7 +607,22 @@ void ExtensionTabUtil::ScrubTabForExtension(
           std::make_unique<std::string>(GURL(*tab->url).GetOrigin().spec());
       break;
     case kDontScrubTab:
-      NOTREACHED();
+      break;
+  }
+
+  // Remove sensitive pending tab info if necessary.
+  if (tab->pending_url) {
+    switch (scrub_tab_behavior.pending_info) {
+      case kScrubTabFully:
+        tab->pending_url.reset();
+        break;
+      case kScrubTabUrlToOrigin:
+        tab->pending_url = std::make_unique<std::string>(
+            GURL(*tab->pending_url).GetOrigin().spec());
+        break;
+      case kDontScrubTab:
+        break;
+    }
   }
 }
 

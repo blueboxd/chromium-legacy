@@ -394,7 +394,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   void UpdateOpacity(const ComputedStyle&);
   void UpdateTransform(const ComputedStyle&);
   void UpdateLayerBlendMode(const ComputedStyle&);
-  void UpdateIsRootForIsolatedGroup();
   // Return the opacity value that this layer should use for compositing.
   float CompositingOpacity(float layout_object_opacity) const;
 

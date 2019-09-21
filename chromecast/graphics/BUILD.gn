@@ -127,6 +127,7 @@ if (use_aura && !is_cast_audio_only) {
       "accessibility/partial_magnification_controller_unittest.cc",
       "cast_display_util_unittest.cc",
       "cast_focus_client_aura_test.cc",
+      "cast_screen_unittest.cc",
       "cast_touch_event_gate_test.cc",
       "cast_views_test.cc",
       "cast_window_manager_aura_test.cc",

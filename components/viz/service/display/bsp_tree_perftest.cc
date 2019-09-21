@@ -25,7 +25,7 @@
 #include "components/viz/service/display/bsp_tree.h"
 #include "components/viz/service/display/draw_polygon.h"
 #include "components/viz/test/paths.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 
 namespace viz {
 namespace {
@@ -33,6 +33,15 @@ namespace {
 static const int kTimeLimitMillis = 2000;
 static const int kWarmupRuns = 5;
 static const int kTimeCheckInterval = 10;
+
+const char kMetricPrefixBspTree[] = "BspTree.";
+const char kMetricCalcDrawPropsTimeUs[] = "calc_draw_props_time";
+
+perf_test::PerfResultReporter SetUpBspTreeReporter(const std::string& story) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixBspTree, story);
+  reporter.RegisterImportantMetric(kMetricCalcDrawPropsTimeUs, "us");
+  return reporter;
+}
 
 class BspTreePerfTest : public cc::LayerTreeTest {
  public:
@@ -52,7 +61,7 @@ class BspTreePerfTest : public cc::LayerTreeTest {
     content_layer_client_.set_bounds(viewport);
   }
 
-  void SetTestName(const std::string& name) { test_name_ = name; }
+  void SetStory(const std::string& story) { story_ = story; }
 
   void SetNumberOfDuplicates(int num_duplicates) {
     num_duplicates_ = num_duplicates;
@@ -109,55 +118,56 @@ class BspTreePerfTest : public cc::LayerTreeTest {
   }
 
   void AfterTest() override {
-    CHECK(!test_name_.empty()) << "Must SetTestName() before TearDown().";
-    perf_test::PrintResult("calc_draw_props_time", "", test_name_,
-                           timer_.TimePerLap().InMicrosecondsF(), "us", true);
+    CHECK(!story_.empty()) << "Must SetStory() before TearDown().";
+    auto reporter = SetUpBspTreeReporter(story_);
+    reporter.AddResult(kMetricCalcDrawPropsTimeUs,
+                       timer_.TimePerLap().InMicrosecondsF());
   }
 
  private:
   cc::FakeContentLayerClient content_layer_client_;
   base::LapTimer timer_;
-  std::string test_name_;
+  std::string story_;
   std::string json_;
   cc::LayerImplList base_list_;
   int num_duplicates_ = 1;
 };
 
 TEST_F(BspTreePerfTest, LayerSorterCubes) {
-  SetTestName("layer_sort_cubes");
+  SetStory("layer_sort_cubes");
   ReadTestFile("layer_sort_cubes");
   RunTest(cc::CompositorMode::SINGLE_THREADED);
 }
 
 TEST_F(BspTreePerfTest, LayerSorterRubik) {
-  SetTestName("layer_sort_rubik");
+  SetStory("layer_sort_rubik");
   ReadTestFile("layer_sort_rubik");
   RunTest(cc::CompositorMode::SINGLE_THREADED);
 }
 
 TEST_F(BspTreePerfTest, BspTreeCubes) {
-  SetTestName("bsp_tree_cubes");
+  SetStory("bsp_tree_cubes");
   SetNumberOfDuplicates(1);
   ReadTestFile("layer_sort_cubes");
   RunTest(cc::CompositorMode::SINGLE_THREADED);
 }
 
 TEST_F(BspTreePerfTest, BspTreeRubik) {
-  SetTestName("bsp_tree_rubik");
+  SetStory("bsp_tree_rubik");
   SetNumberOfDuplicates(1);
   ReadTestFile("layer_sort_rubik");
   RunTest(cc::CompositorMode::SINGLE_THREADED);
 }
 
 TEST_F(BspTreePerfTest, BspTreeCubes_2) {
-  SetTestName("bsp_tree_cubes_2");
+  SetStory("bsp_tree_cubes_2");
   SetNumberOfDuplicates(2);
   ReadTestFile("layer_sort_cubes");
   RunTest(cc::CompositorMode::SINGLE_THREADED);
 }
 
 TEST_F(BspTreePerfTest, BspTreeCubes_4) {
-  SetTestName("bsp_tree_cubes_4");
+  SetStory("bsp_tree_cubes_4");
   SetNumberOfDuplicates(4);
   ReadTestFile("layer_sort_cubes");
   RunTest(cc::CompositorMode::SINGLE_THREADED);

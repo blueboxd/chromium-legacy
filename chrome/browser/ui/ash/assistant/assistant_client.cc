@@ -8,7 +8,6 @@
 
 #include "ash/public/cpp/assistant/assistant_interface_binder.h"
 #include "ash/public/cpp/network_config_service.h"
-#include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chrome/browser/chromeos/assistant/assistant_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -123,10 +122,7 @@ void AssistantClient::BindAssistant(
 }
 
 void AssistantClient::OnAssistantStatusChanged(bool running) {
-  // |running| means assistent mojom service is running. This maps to
-  // |STOPPED| and |NOT_READY|. |RUNNING| maps to UI is shown and an assistant
-  // session is running.
-  arc::VoiceInteractionControllerClient::Get()->NotifyStatusChanged(
+  ash::AssistantState::Get()->NotifyStatusChanged(
       running ? ash::mojom::AssistantState::READY
               : ash::mojom::AssistantState::NOT_READY);
 }

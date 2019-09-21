@@ -88,6 +88,7 @@
   #thumbnailImg {
     height: calc(var(--tabstrip-tab-height) - var(--tabstrip-tab-title-height));
     object-fit: contain;
+    pointer-events: none;
     width: var(--tabstrip-tab-width);
   }
 
@@ -119,10 +120,6 @@
     border-radius: var(--tabstrip-card-border-radius);
     height: 100%;
     width: 100%;
-  }
-
-  :host([dragging][active]) #dragPlaceholder {
-    box-shadow: 0 0 0 2px var(--tabstrip-focus-color);
   }
 
   /* When being dragged, the contents of the drag image needs to be off-screen

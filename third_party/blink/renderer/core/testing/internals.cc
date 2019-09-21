@@ -3017,13 +3017,6 @@ void Internals::forceCompositingUpdate(Document* document,
       DocumentLifecycle::LifecycleUpdateReason::kTest);
 }
 
-void Internals::setZoomFactor(float factor) {
-  if (!GetFrame())
-    return;
-
-  GetFrame()->SetPageZoomFactor(factor);
-}
-
 void Internals::setShouldRevealPassword(Element* element,
                                         bool reveal,
                                         ExceptionState& exception_state) {

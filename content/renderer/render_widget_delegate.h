@@ -8,7 +8,6 @@
 #include "content/common/content_export.h"
 
 namespace blink {
-class WebMouseEvent;
 class WebWidget;
 struct WebDeviceEmulationParams;
 }  // namespace blink
@@ -24,11 +23,6 @@ namespace content {
 class CONTENT_EXPORT RenderWidgetDelegate {
  public:
   virtual ~RenderWidgetDelegate() = default;
-
-  // As in RenderWidgetInputHandlerDelegate. Return true if the event was
-  // handled.
-  virtual bool RenderWidgetWillHandleMouseEventForWidget(
-      const blink::WebMouseEvent& event) = 0;
 
   // See comment in RenderWidgetHost::SetActive().
   virtual void SetActiveForWidget(bool active) = 0;

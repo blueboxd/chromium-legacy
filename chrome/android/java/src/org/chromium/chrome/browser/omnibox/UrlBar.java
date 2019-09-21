@@ -25,7 +25,6 @@ import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewStructure;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
@@ -50,7 +49,7 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * The URL text entry view for the Omnibox.
  */
-public class UrlBar extends AutocompleteEditText {
+public abstract class UrlBar extends AutocompleteEditText {
     private static final String TAG = "cr_UrlBar";
 
     private static final boolean DEBUG = false;
@@ -162,7 +161,7 @@ public class UrlBar extends AutocompleteEditText {
      * rely on AccessibilityNodeInfo data to apply related form-fill data.
      */
     private CharSequence mTextForAutofillServices;
-    private boolean mRequestingAutofillStructure;
+    protected boolean mRequestingAutofillStructure;
 
     /**
      * Implement this to get updates when the direction of the text in the URL bar changes.
@@ -482,14 +481,6 @@ public class UrlBar extends AutocompleteEditText {
             Log.w(TAG, "Ignoring IndexOutOfBoundsException in UrlBar#onTouchEvent.", e);
             return true;
         }
-    }
-
-    @Override
-    public boolean performLongClick(float x, float y) {
-        if (!shouldPerformLongClick()) return false;
-
-        releaseSuppressedTouchDownEvent();
-        return super.performLongClick(x, y);
     }
 
     @Override
@@ -888,8 +879,8 @@ public class UrlBar extends AutocompleteEditText {
         // To limit displayable length we replace middle portion of the string with ellipsis.
         // That affects only presentation of the text, and doesn't affect other aspects like
         // copying to the clipboard, getting text with getText(), etc.
-        final int maxLength = SysUtils.isLowEndDevice()
-                ? MAX_DISPLAYABLE_LENGTH_LOW_END : MAX_DISPLAYABLE_LENGTH;
+        final int maxLength =
+                SysUtils.isLowEndDevice() ? MAX_DISPLAYABLE_LENGTH_LOW_END : MAX_DISPLAYABLE_LENGTH;
 
         Editable text = getText();
         int textLength = text.length();
@@ -927,15 +918,6 @@ public class UrlBar extends AutocompleteEditText {
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
-    }
-
-    @Override
-    public void onProvideAutofillStructure(ViewStructure structure, int autofillFlags) {
-        // https://crbug.com/996402: Prevent breaking autofill services on newer versions of
-        // Android.
-        mRequestingAutofillStructure = true;
-        super.onProvideAutofillStructure(structure, autofillFlags);
-        mRequestingAutofillStructure = false;
     }
 
     @Override
@@ -984,14 +966,14 @@ public class UrlBar extends AutocompleteEditText {
         public static final EllipsisSpan INSTANCE = new EllipsisSpan();
 
         @Override
-        public int getSize(Paint paint, CharSequence text,
-                int start, int end, Paint.FontMetricsInt fm) {
+        public int getSize(
+                Paint paint, CharSequence text, int start, int end, Paint.FontMetricsInt fm) {
             return (int) paint.measureText(ELLIPSIS);
         }
 
         @Override
-        public void draw(Canvas canvas, CharSequence text, int start, int end,
-                float x, int top, int y, int bottom, Paint paint) {
+        public void draw(Canvas canvas, CharSequence text, int start, int end, float x, int top,
+                int y, int bottom, Paint paint) {
             canvas.drawText(ELLIPSIS, x, y, paint);
         }
     }

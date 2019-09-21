@@ -70,6 +70,14 @@ std::vector<float> ToFloatVector(const std::vector<RectF>& areas) {
   return flattened;
 }
 
+base::android::ScopedJavaLocalRef<jobject> CreateJavaDateTime(
+    JNIEnv* env,
+    const DateTimeProto& proto) {
+  return Java_AssistantCollectUserDataModel_createAssistantDateTime(
+      env, (int)proto.date().year(), proto.date().month(), proto.date().day(),
+      proto.time().hour(), proto.time().minute(), proto.time().second());
+}
+
 }  // namespace
 
 // static
@@ -723,6 +731,24 @@ void UiControllerAndroid::OnTermsAndConditionsLinkClicked(int link) {
   ui_delegate_->OnTermsAndConditionsLinkClicked(link);
 }
 
+void UiControllerAndroid::OnDateTimeRangeStartChanged(int year,
+                                                      int month,
+                                                      int day,
+                                                      int hour,
+                                                      int minute,
+                                                      int second) {
+  ui_delegate_->SetDateTimeRangeStart(year, month, day, hour, minute, second);
+}
+
+void UiControllerAndroid::OnDateTimeRangeEndChanged(int year,
+                                                    int month,
+                                                    int day,
+                                                    int hour,
+                                                    int minute,
+                                                    int second) {
+  ui_delegate_->SetDateTimeRangeEnd(year, month, day, hour, minute, second);
+}
+
 void UiControllerAndroid::OnCollectUserDataOptionsChanged(
     const CollectUserDataOptions* collect_user_data_options) {
   JNIEnv* env = AttachCurrentThread();
@@ -774,6 +800,30 @@ void UiControllerAndroid::OnCollectUserDataOptionsChanged(
           login_choice.preselect_priority);
     }
     Java_AssistantCollectUserDataModel_setLoginChoices(env, jmodel, jlist);
+  }
+  Java_AssistantCollectUserDataModel_setRequestDateRange(
+      env, jmodel, collect_user_data_options->request_date_time_range);
+  if (collect_user_data_options->request_date_time_range) {
+    auto jstart_date = CreateJavaDateTime(
+        env, collect_user_data_options->date_time_range.start());
+    auto jend_date = CreateJavaDateTime(
+        env, collect_user_data_options->date_time_range.end());
+    auto jmin_date = CreateJavaDateTime(
+        env, collect_user_data_options->date_time_range.min());
+    auto jmax_date = CreateJavaDateTime(
+        env, collect_user_data_options->date_time_range.max());
+    Java_AssistantCollectUserDataModel_setDateTimeRangeStart(
+        env, jmodel, jstart_date, jmin_date, jmax_date);
+    Java_AssistantCollectUserDataModel_setDateTimeRangeEnd(
+        env, jmodel, jend_date, jmin_date, jmax_date);
+    Java_AssistantCollectUserDataModel_setDateTimeRangeStartLabel(
+        env, jmodel,
+        base::android::ConvertUTF8ToJavaString(
+            env, collect_user_data_options->date_time_range.start_label()));
+    Java_AssistantCollectUserDataModel_setDateTimeRangeEndLabel(
+        env, jmodel,
+        base::android::ConvertUTF8ToJavaString(
+            env, collect_user_data_options->date_time_range.end_label()));
   }
 
   Java_AssistantCollectUserDataModel_setVisible(env, jmodel, true);

@@ -83,6 +83,7 @@ EntryKeyComponents GetEntryKeyComponents(const std::string& key) {
 
 OfflineItemFilter CategoryToFilter(blink::mojom::ContentCategory category) {
   switch (category) {
+    case blink::mojom::ContentCategory::NONE:
     case blink::mojom::ContentCategory::HOME_PAGE:
     case blink::mojom::ContentCategory::ARTICLE:
       return OfflineItemFilter::FILTER_PAGE;

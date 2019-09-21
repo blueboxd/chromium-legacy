@@ -36,6 +36,7 @@ class DriveUploaderInterface;
 }
 
 namespace extensions {
+class ExtensionRegistry;
 class ExtensionServiceInterface;
 }
 
@@ -166,6 +167,7 @@ class SyncEngine
              TaskLogger* task_logger,
              drive::DriveNotificationManager* notification_manager,
              extensions::ExtensionServiceInterface* extension_service,
+             extensions::ExtensionRegistry* extension_registry,
              signin::IdentityManager* identity_manager,
              scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
              std::unique_ptr<DriveServiceFactory> drive_service_factory,
@@ -196,6 +198,7 @@ class SyncEngine
   // KeyedService::DependsOn().
   drive::DriveNotificationManager* notification_manager_;
   extensions::ExtensionServiceInterface* extension_service_;
+  extensions::ExtensionRegistry* extension_registry_;
   signin::IdentityManager* identity_manager_;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;

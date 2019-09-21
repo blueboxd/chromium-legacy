@@ -12,8 +12,8 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/split_view.h"
 #include "ash/session/session_observer.h"
-#include "ash/shell_observer.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -41,7 +41,7 @@ class TabletModeWindowState;
 class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
                                            public display::DisplayObserver,
                                            public OverviewObserver,
-                                           public ShellObserver,
+                                           public SplitViewObserver,
                                            public SessionObserver {
  public:
   // This should only be created or deleted by the creator
@@ -82,8 +82,9 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   // OverviewObserver:
   void OnOverviewModeEndingAnimationComplete(bool canceled) override;
 
-  // ShellObserver:
-  void OnSplitViewModeEnded() override;
+  // SplitViewObserver:
+  void OnSplitViewStateChanged(SplitViewState previous_state,
+                               SplitViewState state) override;
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;

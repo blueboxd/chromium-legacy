@@ -9,7 +9,7 @@
  */
 
 /**
- * Combination of CrOnc.VPNType + AuthenticationType for IPsec.
+ * Combination of VpnType + AuthenticationType for IPsec.
  * Note: closure does not always recognize this if inside function() {}.
  * @enum {string}
  */
@@ -20,13 +20,17 @@ const VPNConfigType = {
 };
 
 (function() {
-'use strict';
+
+// Note: This pattern does not work for elements that are stamped on initial
+// load because chromeos.networkConfig is not defined yet. <network-config>
+// however is always embedded in a <cr-dialog> so it is not stamped immediately.
+// TODO(stevenjb): Figure out a better way to do this.
+const mojom = chromeos.networkConfig.mojom;
 
 /** @type {string}  */ const DEFAULT_HASH = 'default';
 /** @type {string}  */ const DO_NOT_CHECK_HASH = 'do-not-check';
 /** @type {string}  */ const NO_CERTS_HASH = 'no-certs';
 /** @type {string}  */ const NO_USER_CERT_HASH = 'no-user-cert';
-
 
 Polymer({
   is: 'network-config',
@@ -40,8 +44,8 @@ Polymer({
      */
     networkingPrivate: Object,
 
-    /** @type {!chrome.networkingPrivate.GlobalPolicy|undefined} */
-    globalPolicy: Object,
+    /** @type {!chromeos.networkConfig.mojom.GlobalPolicy|undefined} */
+    globalPolicy_: Object,
 
     /**
      * The GUID when an existing network is being configured. This will be
@@ -49,11 +53,14 @@ Polymer({
      */
     guid: String,
 
-    /**
-     * The type of network being configured.
-     * @type {!chrome.networkingPrivate.NetworkType}
-     */
+    /** The type of network being configured as a string. */
     type: String,
+
+    /**
+     * The type of network being configured as an enum.
+     * @private{chromeos.networkConfig.mojom.NetworkType|undefined}
+     */
+    mojoType_: Number,
 
     /** True if the user configuring the network can toggle the shared state. */
     shareAllowEnable: Boolean,
@@ -89,45 +96,25 @@ Polymer({
       notify: true,
     },
 
-    /**
-     * The managed properties of an existing network.
-     * This is used for determination of managed fields.
-     * This will be undefined when configuring a new network.
-     * @type {!chrome.networkingPrivate.ManagedProperties|undefined}
-     */
-    managedProperties: {
-      type: Object,
-      notify: true,
-    },
+    /** @private {!chromeos.networkConfig.mojom.ManagedProperties|undefined} */
+    managedProperties_: Object,
 
     /**
      * Managed EAP properties used for determination of managed EAP fields.
-     * @private {?chrome.networkingPrivate.ManagedEAPProperties}
+     * @private {?chromeos.networkConfig.mojom.ManagedEAPProperties}
      */
     managedEapProperties_: {
       type: Object,
       value: null,
     },
 
-    /**
-     * Whether this element is waiting for additional properties of the network
-     * to configure. If a network GUID is supplied, an asynchronous request is
-     * required to fetch these properties; otherwise, there is no need to wait
-     * for more properties to arrive.
-     * @private
-     */
-    waitingForProperties_: {
-      type: Boolean,
-      value: true,
-    },
-
-    /** Set once managedProperties have been sent; prevents multiple saves. */
+    /** Set once managedProperties_ have been sent; prevents multiple saves. */
     propertiesSent_: Boolean,
 
     /**
-     * The configuration properties for the network. |configProperties_.Type|
+     * The configuration properties for the network. |configProperties_.type|
      * will always be defined as the network type being configured.
-     * @private {!chrome.networkingPrivate.NetworkConfigProperties}
+     * @private {!chromeos.networkConfig.mojom.ConfigProperties|undefined}
      */
     configProperties_: Object,
 
@@ -137,7 +124,7 @@ Polymer({
      * Note: even though this references an entry in configProperties_, we
      * need to send a separate notification when it changes for data binding
      * (e.g. by using 'set').
-     * @private {?chrome.networkingPrivate.EAPProperties}
+     * @private {?chromeos.networkConfig.mojom.EAPConfigProperties}
      */
     eapProperties_: {
       type: Object,
@@ -205,12 +192,9 @@ Polymer({
     /**
      * Security value, used for Ethernet and Wifi and to detect when Security
      * changes.
-     * @private
+     * @private {!chromeos.networkConfig.mojom.SecurityType|undefined}
      */
-    security_: {
-      type: String,
-      value: '',
-    },
+    securityType: Number,
 
     /**
      * 'SaveCredentials' value used for VPN (OpenVPN, IPsec, and L2TP).
@@ -226,10 +210,7 @@ Polymer({
      * VPN.IPsec.AuthenticationType.
      * @private {VPNConfigType|undefined}
      */
-    vpnType_: {
-      type: String,
-      value: '',
-    },
+    vpnType_: String,
 
     /**
      * Dictionary of boolean values determining which EAP properties to show,
@@ -264,33 +245,13 @@ Polymer({
     },
 
     /**
-     * Object providing network type values for data binding. Note: Currently
-     * we only support WiFi, but support for other types will be following
-     * shortly.
-     * @const
-     * @private
-     */
-    NetworkType_: {
-      type: Object,
-      value: {
-        ETHERNET: CrOnc.Type.ETHERNET,
-        VPN: CrOnc.Type.VPN,
-        WI_FI: CrOnc.Type.WI_FI,
-      },
-      readOnly: true
-    },
-
-    /**
      * Array of values for the EAP Method (Outer) dropdown.
      * @private {!Array<string>}
      */
     eapOuterItems_: {
       type: Array,
       readOnly: true,
-      value: [
-        CrOnc.EAPType.LEAP, CrOnc.EAPType.PEAP, CrOnc.EAPType.EAP_TLS,
-        CrOnc.EAPType.EAP_TTLS
-      ],
+      value: ['LEAP', 'PEAP', 'EAP-TLS', 'EAP-TTLS'],
     },
 
     /**
@@ -347,21 +308,23 @@ Polymer({
 
   observers: [
     'setEnableConnect_(isConfigured_, propertiesSent_)',
-    'setEnableSave_(isConfigured_, waitingForProperties_)',
+    'setEnableSave_(isConfigured_, managedProperties_)',
+    'setShareNetwork_(mojoType_, managedProperties_, securityType,' +
+        'shareDefault, shareAllowEnable)',
     'updateHiddenNetworkWarning_(autoConnect_)',
-    'updateConfigProperties_(managedProperties)',
-    'updateSecurity_(configProperties_, security_)',
-    'updateEapOuter_(eapProperties_.Outer)',
+    'updateConfigProperties_(mojoType_, managedProperties_)',
+    'updateSecurity_(configProperties_, securityType)',
+    'updateEapOuter_(eapProperties_.outer)',
     'updateEapCerts_(eapProperties_.*, serverCaCerts_, userCerts_)',
-    'updateShowEap_(configProperties_.*, eapProperties_.*, security_)',
+    'updateShowEap_(configProperties_.*, eapProperties_.*, securityType)',
     'updateVpnType_(configProperties_, vpnType_)',
-    'updateVpnIPsecCerts_(vpnType_, configProperties_.VPN.IPsec.*)',
-    'updateOpenVPNCerts_(vpnType_, configProperties_.VPN.OpenVPN.*)',
+    'updateVpnIPsecCerts_(vpnType_, configProperties_.vpn.ipSec.*)',
+    'updateOpenVPNCerts_(vpnType_, configProperties_.vpn.openVpn.*)',
     // Multiple updateIsConfigured observers for different configurations.
-    'updateIsConfigured_(configProperties_.*, security_)',
+    'updateIsConfigured_(configProperties_.*, securityType)',
     'updateIsConfigured_(configProperties_, eapProperties_.*)',
-    'updateIsConfigured_(configProperties_.WiFi.*)',
-    'updateIsConfigured_(configProperties_.VPN.*, vpnType_)',
+    'updateIsConfigured_(configProperties_.wifi.*)',
+    'updateIsConfigured_(configProperties_.vpn.*, vpnType_)',
     'updateIsConfigured_(selectedUserCertHash_)',
   ],
 
@@ -375,12 +338,29 @@ Polymer({
    */
   certificateListsChangedListener_: null,
 
+  /**
+   * This UI will use both the networkingPrivate extension API and the
+   * networkConfig mojo API until we provide all of the required functionality
+   * in networkConfig. TODO(stevenjb): Remove use of networkingPrivate api.
+   * @private {?mojom.CrosNetworkConfigRemote}
+   */
+  networkConfig_: null,
+
+  /** @override */
+  created: function() {
+    this.networkConfig_ = network_config.MojoInterfaceProviderImpl.getInstance()
+                              .getMojoServiceRemote();
+  },
+
   /** @override */
   attached: function() {
     this.certificateListsChangedListener_ =
         this.onCertificateListsChanged_.bind(this);
     this.networkingPrivate.onCertificateListsChanged.addListener(
         this.certificateListsChangedListener_);
+    this.networkConfig_.getGlobalPolicy().then(response => {
+      this.globalPolicy_ = response.result;
+    });
   },
 
   /** @override */
@@ -392,36 +372,44 @@ Polymer({
   },
 
   init: function() {
+    this.mojoType_ = undefined;
+    this.vpnType_ = undefined;
+    this.managedProperties_ = undefined;
+    this.configProperties_ = undefined;
     this.propertiesSent_ = false;
     this.selectedServerCaHash_ = undefined;
     this.selectedUserCertHash_ = undefined;
-    this.guid = this.managedProperties.GUID;
-    this.type = this.managedProperties.Type;
-    this.waitingForProperties_ = !!this.guid;
 
     if (this.guid) {
-      this.networkingPrivate.getManagedProperties(
-          this.guid, (managedProperties) => {
-            this.getManagedPropertiesCallback_(managedProperties);
-          });
+      this.networkConfig_.getManagedProperties(this.guid).then(response => {
+        this.getManagedPropertiesCallback_(response.result);
+      });
     } else {
+      const mojoType = OncMojo.getNetworkTypeFromString(this.type);
+      const managedProperties =
+          OncMojo.getDefaultManagedProperties(mojoType, this.guid, this.name);
+      // Allow wifi securityType to be set externally (e.g. in tests).
+      if (mojoType == mojom.NetworkType.kWiFi &&
+          this.securityType !== undefined) {
+        managedProperties.wifi.security = this.securityType;
+      }
+      this.managedProperties_ = managedProperties;
+      this.mojoType_ = mojoType;
       setTimeout(() => {
         this.focusFirstInput_();
       });
     }
 
-    if (this.type == CrOnc.Type.VPN ||
-        (this.globalPolicy &&
-         this.globalPolicy.AllowOnlyPolicyNetworksToConnect)) {
+    if (this.mojoType_ == mojom.NetworkType.kVPN ||
+        (this.globalPolicy_ &&
+         this.globalPolicy_.allowOnlyPolicyNetworksToConnect)) {
       this.autoConnect_ = false;
     } else {
       this.autoConnect_ = true;
     }
     this.hiddenNetworkWarning_ = this.showHiddenNetworkWarning_();
 
-    this.onCertificateListsChanged_();
     this.updateIsConfigured_();
-    this.setShareNetwork_();
     this.updateDeviceCertsOnly_();
   },
 
@@ -433,33 +421,44 @@ Polymer({
     this.saveAndConnect_(true /* connect */);
   },
 
+
+  /** @private */
+  focusPassphrase_: function() {
+    const passphraseInput = this.$$('#wifi-passphrase');
+    if (passphraseInput) {
+      passphraseInput.focus();
+    }
+  },
+
   /**
    * @param {boolean} connect If true, connect after save.
    * @private
    */
   saveAndConnect_: function(connect) {
-    if (this.propertiesSent_) {
+    if (!this.managedProperties_ || this.propertiesSent_) {
       return;
     }
     this.propertiesSent_ = true;
     this.error = '';
 
     const propertiesToSet = this.getPropertiesToSet_();
-    if (this.getSource_(this.guid, this.managedProperties) ==
-        CrOnc.Source.NONE) {
+    if (this.managedProperties_.source == mojom.OncSource.kNone) {
       if (!this.autoConnect_) {
-        // Note: Do not set AutoConnect to true, the connection manager will do
+        // Note: Do not set autoConnect to true, the connection manager will do
         // that on a successful connection (unless set to false here).
-        CrOnc.setTypeProperty(propertiesToSet, 'AutoConnect', false);
+        propertiesToSet.autoConnect = {value: false};
       }
-      this.networkingPrivate.createNetwork(
-          this.shareNetwork_, propertiesToSet, (guid) => {
-            this.createNetworkCallback_(connect, guid);
+      this.networkConfig_.configureNetwork(propertiesToSet, this.shareNetwork_)
+          .then(response => {
+            this.createNetworkCallback_(
+                response.guid, response.errorMessage, connect);
           });
     } else {
-      this.networkingPrivate.setProperties(this.guid, propertiesToSet, () => {
-        this.setPropertiesCallback_(connect);
-      });
+      this.networkConfig_.setProperties(this.guid, propertiesToSet)
+          .then(response => {
+            this.setPropertiesCallback_(
+                response.success, response.errorMessage, connect);
+          });
     }
   },
 
@@ -490,6 +489,9 @@ Polymer({
 
   /** @private */
   close_: function() {
+    this.guid = '';
+    this.type = '';
+    this.securityType = undefined;
     this.fire('close');
   },
 
@@ -501,28 +503,11 @@ Polymer({
     return !!this.guid;
   },
 
-  /**
-   * Returns a valid CrOnc.Source.
-   * @param {string} guid
-   * @param {!chrome.networkingPrivate.ManagedProperties|undefined}
-   *     managedProperties
-   * @private
-   * @return {!CrOnc.Source}
-   */
-  getSource_: function(guid, managedProperties) {
-    if (!guid) {
-      return CrOnc.Source.NONE;
-    }
-    const source = managedProperties.Source;
-    return source ? /** @type {!CrOnc.Source} */ (source) : CrOnc.Source.NONE;
-  },
-
   /** @private */
   onCertificateListsChanged_: function() {
     this.networkingPrivate.getCertificateLists(function(certificateLists) {
-      const isOpenVpn = this.type == CrOnc.Type.VPN &&
-          this.get('VPN.Type', this.configProperties_) ==
-              CrOnc.VPNType.OPEN_VPN;
+      const isOpenVpn = this.configProperties_.type == mojom.NetworkType.kVPN &&
+          this.configProperties_.vpn.type == mojom.VpnType.kOpenVPN;
 
       const caCerts = certificateLists.serverCaCertificates.slice();
       if (!isOpenVpn) {
@@ -576,131 +561,103 @@ Polymer({
   },
 
   /**
-   * networkingPrivate.getManagedProperties callback.
-   * @param {!chrome.networkingPrivate.ManagedProperties} managedProperties
+   * @param {!mojom.ManagedBoolean|undefined} property
+   * @return {boolean}
+   * @private
+   */
+  getActiveBoolean_: function(property) {
+    if (!property) {
+      return false;
+    }
+    return property.activeValue;
+  },
+
+  /**
+   * @param {!mojom.ManagedStringList|undefined} property
+   * @return {!Array<string>|undefined}
+   * @private
+   */
+  getActiveStringList_: function(property) {
+    if (!property) {
+      return undefined;
+    }
+    return property.activeValue;
+  },
+
+  /**
+   * @param {?mojom.ManagedProperties} managedProperties
    * @private
    */
   getManagedPropertiesCallback_: function(managedProperties) {
     if (!managedProperties) {
-      // If |managedProperties| is null,
-      // the network no longer exists; close the page.
+      // The network no longer exists; close the page.
       console.error('Network no longer exists: ' + this.guid);
       this.close_();
       return;
     }
 
-    if (managedProperties.Type == CrOnc.Type.ETHERNET &&
-        CrOnc.getActiveValue(
-            /** @type {chrome.networkingPrivate.ManagedDOMString|undefined} */
-            (this.get('Ethernet.Authentication', managedProperties))) !=
-            CrOnc.Authentication.WEP_8021X) {
-      // Ethernet may have EAP properties set in a separate EthernetEap
-      // configuration. Request that before calling |setManagedProperties_|.
-      this.networkingPrivate.getNetworks(
-          {networkType: CrOnc.Type.ETHERNET, visible: false, configured: true},
-          this.getEthernetEap_.bind(this, managedProperties));
-      return;
-    }
-
-    if (managedProperties.Type == CrOnc.Type.VPN) {
-      this.vpnSaveCredentials_ =
-          !!CrOnc.getActiveValue(
-              /** @type {chrome.networkingPrivate.ManagedBoolean|undefined} */
-              (this.get('VPN.OpenVPN.SaveCredentials', managedProperties))) ||
-          !!CrOnc.getActiveValue(
-              /** @type {chrome.networkingPrivate.ManagedBoolean|undefined} */
-              (this.get('VPN.IPsec.SaveCredentials', managedProperties))) ||
-          !!CrOnc.getActiveValue(
-              /** @type {chrome.networkingPrivate.ManagedBoolean|undefined} */
-              (this.get('VPN.L2TP.SaveCredentials', managedProperties)));
-    }
-
-    this.setManagedProperties_(managedProperties);
-  },
-  /**
-   * @param {!chrome.networkingPrivate.ManagedProperties} managedProperties
-   * @private
-   */
-  setManagedProperties_: function(managedProperties) {
-    this.managedProperties = managedProperties;
+    this.managedProperties_ = managedProperties;
     this.managedEapProperties_ = this.getManagedEap_(managedProperties);
-    this.setError_(managedProperties.ErrorState);
+    this.mojoType_ = managedProperties.type;
+
+    if (this.mojoType_ == mojom.NetworkType.kVPN) {
+      let saveCredentials = false;
+      if (managedProperties.vpn.type == mojom.VpnType.kOpenVPN) {
+        saveCredentials = this.getActiveBoolean_(
+            managedProperties.vpn.openVpn.saveCredentials);
+      } else if (managedProperties.vpn.type == mojom.VpnType.kL2TPIPsec) {
+        saveCredentials = this.getActiveBoolean_(
+                              managedProperties.vpn.ipSec.saveCredentials) ||
+            this.getActiveBoolean_(managedProperties.vpn.l2tp.saveCredentials);
+      }
+      this.vpnSaveCredentials_ = saveCredentials;
+    }
+
+    this.setError_(managedProperties.errorState);
     this.updateCertError_();
-
-    this.waitingForProperties_ = false;
     this.focusFirstInput_();
-
-    // Set the current shareNetwork_ value when properties are received.
-    this.setShareNetwork_();
   },
 
   /**
-   * networkingPrivate.getNetworks callback. Expects an array of Ethernet
-   * networks and looks for an EAP configuration to apply.
-   * @param {!chrome.networkingPrivate.ManagedProperties} managedProperties
-   * @param {!Array<chrome.networkingPrivate.NetworkStateProperties>} networks
-   * @private
-   */
-  getEthernetEap_: function(managedProperties, networks) {
-    if (this.getRuntimeError_()) {
-      this.setManagedProperties_(managedProperties);
-      return;
-    }
-
-    // Look for an existing EAP configuration. This may be stored in a
-    // separate 'Ethernet EAP Parameters' configuration.
-    const ethernetEap = networks.find(function(network) {
-      return !!network.Ethernet &&
-          network.Ethernet.Authentication == CrOnc.Authentication.WEP_8021X;
-    });
-    if (!ethernetEap) {
-      this.setManagedProperties_(managedProperties);
-      return;
-    }
-
-    this.networkingPrivate.getManagedProperties(
-        ethernetEap.GUID, (eapProperties) => {
-          if (!this.getRuntimeError_() && eapProperties.Ethernet.EAP) {
-            this.guid = eapProperties.GUID;
-            this.security_ = CrOnc.Security.WPA_EAP;
-            managedProperties.GUID = eapProperties.GUID;
-            managedProperties.Ethernet.EAP = eapProperties.Ethernet.EAP;
-          }
-          this.setManagedProperties_(managedProperties);
-        });
-  },
-
-  /**
-   * @return {!Array<string>}
+   * @return {!Array<mojom.SecurityType>}
    * @private
    */
   getSecurityItems_() {
-    if (this.managedProperties.Type == CrOnc.Type.WI_FI) {
+    if (this.mojoType_ == mojom.NetworkType.kWiFi) {
       return [
-        CrOnc.Security.NONE, CrOnc.Security.WEP_PSK, CrOnc.Security.WPA_PSK,
-        CrOnc.Security.WPA_EAP
+        mojom.SecurityType.kNone,
+        mojom.SecurityType.kWepPsk,
+        mojom.SecurityType.kWpaPsk,
+        mojom.SecurityType.kWpaEap,
       ];
     }
-    return [CrOnc.Security.NONE, CrOnc.Security.WPA_EAP];
+    return [
+      mojom.SecurityType.kNone,
+      mojom.SecurityType.kWpaEap,
+    ];
   },
 
   /** @private */
   setShareNetwork_: function() {
-    const source = this.getSource_(this.guid, this.managedProperties);
-    if (source != CrOnc.Source.NONE) {
-      // Configured networks can not change whether they are shared.
-      this.shareNetwork_ =
-          source == CrOnc.Source.DEVICE || source == CrOnc.Source.DEVICE_POLICY;
+    if (this.mojoType_ === undefined || !this.managedProperties_ ||
+        !this.securityType === undefined) {
       return;
     }
-    if (!this.shareIsVisible_(this.guid, this.type, this.managedProperties)) {
+    const source = this.managedProperties_.source;
+    if (source != mojom.OncSource.kNone) {
+      // Configured networks can not change whether they are shared.
+      this.shareNetwork_ = source == mojom.OncSource.kDevice ||
+          source == mojom.OncSource.kDevicePolicy;
+      return;
+    }
+    if (!this.shareIsVisible_()) {
       this.shareNetwork_ = false;
       return;
     }
     if (this.shareAllowEnable) {
       // New insecure WiFi networks are always shared.
-      if (this.managedProperties.Type == CrOnc.Type.WI_FI &&
-          this.security_ == CrOnc.Security.NONE) {
+      if (this.mojoType_ == mojom.NetworkType.kWiFi &&
+          this.managedProperties_.wifi.security == mojom.SecurityType.kNone) {
         this.shareNetwork_ = true;
         return;
       }
@@ -714,131 +671,191 @@ Polymer({
   },
 
   /**
+   * @param {!mojom.ManagedEAPProperties} eap
+   * @return {!mojom.EAPConfigProperties}
+   * @private
+   */
+  getEAPConfigProperties_: function(eap) {
+    return {
+      anonymousIdentity: OncMojo.getActiveString(eap.anonymousIdentity),
+      clientCertType: OncMojo.getActiveString(eap.clientCertType),
+      clientCertPkcs11Id: OncMojo.getActiveString(eap.clientCertPkcs11Id),
+      identity: OncMojo.getActiveString(eap.identity),
+      inner: OncMojo.getActiveString(eap.inner),
+      outer: OncMojo.getActiveString(eap.outer) || 'LEAP',
+      password: '',
+      saveCredentials: this.getActiveBoolean_(eap.saveCredentials),
+      serverCaPems: this.getActiveStringList_(eap.serverCaPems),
+      subjectMatch: OncMojo.getActiveString(eap.subjectMatch),
+      useSystemCas: this.getActiveBoolean_(eap.useSystemCas),
+    };
+  },
+
+  /**
+   * @param {!mojom.ManagedIPSecProperties} ipSec
+   * @return {!mojom.IPSecConfigProperties}
+   * @private
+   */
+  getIPSecConfigProperties_: function(ipSec) {
+    return {
+      authenticationType:
+          OncMojo.getActiveString(ipSec.authenticationType) || 'PSK',
+      clientCertPkcs11Id: OncMojo.getActiveString(ipSec.clientCertPkcs11Id),
+      clientCertType: OncMojo.getActiveString(ipSec.clientCertType),
+      group: OncMojo.getActiveString(ipSec.group),
+      ikeVersion: 1,
+      psk: OncMojo.getActiveString(ipSec.psk),
+      saveCredentials: this.getActiveBoolean_(ipSec.saveCredentials),
+      serverCaPems: this.getActiveStringList_(ipSec.serverCaPems),
+      serverCaRefs: this.getActiveStringList_(ipSec.serverCaRefs),
+    };
+  },
+
+  /**
+   * @param {!mojom.ManagedL2TPProperties} l2tp
+   * @return {!mojom.L2TPConfigProperties}
+   * @private
+   */
+  getL2TPConfigProperties_: function(l2tp) {
+    return {
+      lcpEchoDisabled: this.getActiveBoolean_(l2tp.lcpEchoDisabled),
+      password: OncMojo.getActiveString(l2tp.password),
+      saveCredentials: this.getActiveBoolean_(l2tp.saveCredentials),
+      username: OncMojo.getActiveString(l2tp.username),
+    };
+  },
+
+  /**
+   * @param {!mojom.ManagedOpenVPNProperties} openVpn
+   * @return {!mojom.OpenVPNConfigProperties}
+   * @private
+   */
+  getOpenVPNConfigProperties_: function(openVpn) {
+    return {
+      clientCertPkcs11Id: OncMojo.getActiveString(openVpn.clientCertPkcs11Id),
+      clientCertType: OncMojo.getActiveString(openVpn.clientCertType),
+      extraHosts: this.getActiveStringList_(openVpn.extraHosts),
+      saveCredentials: this.getActiveBoolean_(openVpn.saveCredentials),
+      serverCaPems: this.getActiveStringList_(openVpn.serverCaPems),
+      serverCaRefs: this.getActiveStringList_(openVpn.serverCaRefs),
+      otp: OncMojo.getActiveString(openVpn.otp),
+      password: OncMojo.getActiveString(openVpn.password),
+      userAuthenticationType:
+          OncMojo.getActiveString(openVpn.userAuthenticationType),
+      username: OncMojo.getActiveString(openVpn.username),
+    };
+  },
+
+  /**
    * Updates the config properties when |this.managedProperties| changes.
    * This gets called once when navigating to the page when default properties
    * are set, and again for existing networks when the properties are received.
    * @private
    */
   updateConfigProperties_: function() {
+    if (this.mojoType_ === undefined || !this.managedProperties_) {
+      return;
+    }
     this.showEap_ = null;
     this.showVpn_ = null;
     this.vpnType_ = undefined;
 
-    const managedProperties = this.managedProperties;
-    const configProperties =
-        /** @type {chrome.networkingPrivate.NetworkConfigProperties} */ ({
-          Name: CrOnc.getActiveValue(managedProperties.Name) || '',
-          Type: managedProperties.Type,
-        });
-    switch (managedProperties.Type) {
-      case CrOnc.Type.WI_FI:
-        if (managedProperties.WiFi) {
-          configProperties.WiFi = {
-            AutoConnect:
-                /** @type {boolean|undefined} */ (
-                    CrOnc.getActiveValue(managedProperties.WiFi.AutoConnect)),
-            EAP: Object.assign(
-                {}, CrOnc.getActiveProperties(managedProperties.WiFi.EAP)),
-            Passphrase: /** @type {string|undefined} */ (
-                CrOnc.getActiveValue(managedProperties.WiFi.Passphrase)),
-            SSID: /** @type {string|undefined} */ (
-                CrOnc.getActiveValue(managedProperties.WiFi.SSID)),
-            Security: /** @type {string|undefined} */ (
-                CrOnc.getActiveValue(managedProperties.WiFi.Security))
-          };
-        } else {
-          configProperties.WiFi = {
-            AutoConnect: false,
-            SSID: '',
-            Security: CrOnc.Security.NONE,
-          };
+    const managedProperties = this.managedProperties_;
+    const configProperties = {
+      name: OncMojo.getActiveString(managedProperties.name),
+      type: managedProperties.type,
+    };
+    let autoConnect;
+    let security = mojom.SecurityType.kNone;
+    switch (managedProperties.type) {
+      case mojom.NetworkType.kWiFi:
+        autoConnect =
+            this.getActiveBoolean_(managedProperties.wifi.autoConnect);
+        configProperties.wifi = {
+          passphrase: '',
+          ssid: OncMojo.getActiveString(managedProperties.wifi.ssid),
+          security: managedProperties.wifi.security,
+        };
+        if (managedProperties.wifi.eap) {
+          configProperties.wifi.eap =
+              this.getEAPConfigProperties_(managedProperties.wifi.eap);
         }
-        this.security_ = configProperties.WiFi.Security || CrOnc.Security.NONE;
+        security = configProperties.wifi.security;
         // updateSecurity_ will ensure that EAP properties are set correctly.
         break;
-      case CrOnc.Type.ETHERNET:
-        configProperties.Ethernet = {
-          AutoConnect: !!CrOnc.getActiveValue(
-              /** @type {chrome.networkingPrivate.ManagedBoolean|undefined} */ (
-                  this.get('Ethernet.AutoConnect', managedProperties)))
+      case mojom.NetworkType.kEthernet:
+        autoConnect =
+            this.getActiveBoolean_(managedProperties.ethernet.autoConnect);
+        const eap = managedProperties.ethernet.eap ?
+            this.getEAPConfigProperties_(managedProperties.ethernet.eap) :
+            undefined;
+        security = eap ? mojom.SecurityType.kWpaEap : mojom.SecurityType.kNone;
+        const auth = security == mojom.SecurityType.kWpaEap ? '8021X' : 'None';
+        configProperties.ethernet = {
+          authentication: auth,
+          eap: eap,
         };
-        if (managedProperties.Ethernet && managedProperties.Ethernet.EAP) {
-          configProperties.Ethernet.EAP = Object.assign(
-              {}, CrOnc.getActiveProperties(managedProperties.Ethernet.EAP)),
-          configProperties.Ethernet.EAP.Outer =
-              configProperties.Ethernet.EAP.Outer || CrOnc.EAPType.LEAP;
-        }
-        this.security_ = configProperties.Ethernet.EAP ?
-            CrOnc.Security.WPA_EAP :
-            CrOnc.Security.NONE;
         break;
-      case CrOnc.Type.VPN:
-        if (managedProperties.VPN) {
-          const vpn = {
-            Host: /** @type {string|undefined} */ (
-                CrOnc.getActiveValue(managedProperties.VPN.Host)),
-            Type: /** @type {string|undefined} */ (
-                CrOnc.getActiveValue(managedProperties.VPN.Type)),
-          };
-          if (vpn.Type == CrOnc.VPNType.L2TP_IPSEC) {
-            vpn.IPsec =
-                /** @type {chrome.networkingPrivate.IPSecProperties} */ (
-                    Object.assign(
-                        {AuthenticationType: CrOnc.IPsecAuthenticationType.PSK},
-                        CrOnc.getActiveProperties(
-                            managedProperties.VPN.IPsec)));
-            vpn.L2TP = Object.assign(
-                {Username: ''},
-                CrOnc.getActiveProperties(managedProperties.VPN.L2TP));
-          } else {
-            assert(vpn.Type == CrOnc.VPNType.OPEN_VPN);
-            vpn.OpenVPN = Object.assign(
-                {}, CrOnc.getActiveProperties(managedProperties.VPN.OpenVPN));
-          }
-          configProperties.VPN = vpn;
+      case mojom.NetworkType.kVPN:
+        const vpnType = managedProperties.vpn.type;
+        configProperties.vpn = {
+          host: OncMojo.getActiveString(managedProperties.vpn.host),
+          type: vpnType,
+        };
+        if (vpnType == mojom.VpnType.kL2TPIPsec) {
+          assert(managedProperties.vpn.ipSec);
+          configProperties.vpn.ipSec =
+              this.getIPSecConfigProperties_(managedProperties.vpn.ipSec);
+          assert(managedProperties.vpn.l2tp);
+          configProperties.vpn.l2tp =
+              this.getL2TPConfigProperties_(managedProperties.vpn.l2tp);
         } else {
-          configProperties.VPN = {
-            Type: CrOnc.VPNType.L2TP_IPSEC,
-            IPsec: {AuthenticationType: CrOnc.IPsecAuthenticationType.PSK},
-            L2TP: {Username: ''},
-          };
+          assert(vpnType == mojom.VpnType.kOpenVPN);
+          assert(managedProperties.vpn.openVpn);
+          configProperties.vpn.openVpn =
+              this.getOpenVPNConfigProperties_(managedProperties.vpn.openVpn);
         }
-        this.security_ = CrOnc.Security.NONE;
+        security = mojom.SecurityType.kNone;
         break;
     }
+    if (autoConnect !== undefined) {
+      configProperties.autoConnect = {value: autoConnect};
+    }
     this.configProperties_ = configProperties;
+    this.securityType = security;
     this.set('eapProperties_', this.getEap_(this.configProperties_));
     if (!this.eapProperties_) {
       this.showEap_ = null;
     }
-    if (managedProperties.Type == CrOnc.Type.VPN) {
+    if (managedProperties.type == mojom.NetworkType.kVPN) {
       this.vpnType_ = this.getVpnTypeFromProperties_(this.configProperties_);
     }
+    this.onCertificateListsChanged_();
   },
 
   /**
-   * Ensures that the appropriate properties are set or deleted when |security_|
-   * changes.
+   * Ensures that the appropriate properties are set or deleted when
+   * |securityType| changes.
    * @private
    */
   updateSecurity_: function() {
-    if (this.type == CrOnc.Type.WI_FI) {
-      this.set('WiFi.Security', this.security_, this.configProperties_);
-      // Set the share value to its default when the security type changes.
-      this.setShareNetwork_();
-    } else if (this.type == CrOnc.Type.ETHERNET) {
-      const auth = this.security_ == CrOnc.Security.WPA_EAP ?
-          CrOnc.Authentication.WEP_8021X :
-          CrOnc.Authentication.NONE;
-      this.set('Ethernet.Authentication', auth, this.configProperties_);
+    if (this.securityType === undefined || !this.configProperties_) {
+      return;
     }
-    if (this.security_ == CrOnc.Security.WPA_EAP) {
-      const eap = this.getEap_(this.configProperties_, true);
-      eap.Outer = eap.Outer || CrOnc.EAPType.LEAP;
-      this.setEap_(eap);
-    } else {
-      this.setEap_(null);
+    const type = this.mojoType_;
+    const security = this.securityType;
+    if (type == mojom.NetworkType.kWiFi) {
+      this.configProperties_.wifi.security = security;
+    } else if (type == mojom.NetworkType.kEthernet) {
+      const auth = security == mojom.SecurityType.kWpaEap ? '8021X' : 'None';
+      this.configProperties_.ethernet.authentication = auth;
     }
+    let eap;
+    if (security == mojom.SecurityType.kWpaEap) {
+      eap = this.getEap_(this.configProperties_, true);
+      eap.outer = eap.outer || 'LEAP';
+    }
+    this.setEap_(eap);
   },
 
   /**
@@ -848,55 +865,52 @@ Polymer({
    */
   updateEapOuter_: function() {
     const eap = this.eapProperties_;
-    if (!eap || !eap.Outer) {
+    if (!eap || !eap.outer) {
       return;
     }
-    const innerItems = this.getEapInnerItems_(eap.Outer);
+    const innerItems = this.getEapInnerItems_(eap.outer);
     if (innerItems.length > 0) {
-      if (!eap.Inner || innerItems.indexOf(eap.Inner) < 0) {
-        this.set('eapProperties_.Inner', innerItems[0]);
+      if (!eap.inner || innerItems.indexOf(eap.inner) < 0) {
+        this.set('eapProperties_.inner', innerItems[0]);
       }
     } else {
-      this.set('eapProperties_.Inner', undefined);
+      this.set('eapProperties_.inner', undefined);
     }
-    // Set the share value to its default when the EAP.Outer value changes.
-    this.setShareNetwork_();
   },
 
   /** @private */
   updateEapCerts_: function() {
     // EAP is used for all configurable types except VPN.
-    if (this.type == CrOnc.Type.VPN) {
+    if (this.mojoType_ == mojom.NetworkType.kVPN) {
       return;
     }
     const eap = this.eapProperties_;
     const pem = eap && eap.ServerCAPEMs ? eap.ServerCAPEMs[0] : '';
     const certId =
-        eap && eap.ClientCertType == 'PKCS11Id' ? eap.ClientCertPKCS11Id : '';
+        eap && eap.clientCertType == 'PKCS11Id' ? eap.clientCertPkcs11Id : '';
     this.setSelectedCerts_(pem, certId);
   },
 
   /** @private */
   updateShowEap_: function() {
-    if (!this.eapProperties_ || this.security_ == CrOnc.Security.NONE) {
+    if (!this.eapProperties_ || this.securityType == mojom.SecurityType.kNone) {
       this.showEap_ = null;
       this.updateCertError_();
       return;
     }
-    const outer = this.eapProperties_.Outer;
-    switch (this.type) {
-      case CrOnc.Type.WI_FI:
-      case CrOnc.Type.ETHERNET:
+    const outer = this.eapProperties_.outer;
+    switch (this.mojoType_) {
+      case mojom.NetworkType.kWiFi:
+      case mojom.NetworkType.kEthernet:
         this.showEap_ = {
           Outer: true,
-          Inner: outer == CrOnc.EAPType.PEAP || outer == CrOnc.EAPType.EAP_TTLS,
-          ServerCA: outer != CrOnc.EAPType.LEAP,
-          SubjectMatch: outer == CrOnc.EAPType.EAP_TLS,
-          UserCert: outer == CrOnc.EAPType.EAP_TLS,
+          Inner: outer == 'PEAP' || outer == 'EAP-TTLS',
+          ServerCA: outer != 'LEAP',
+          SubjectMatch: outer == 'EAP-TLS',
+          UserCert: outer == 'EAP-TLS',
           Identity: true,
-          Password: outer != CrOnc.EAPType.EAP_TLS,
-          AnonymousIdentity:
-              outer == CrOnc.EAPType.PEAP || outer == CrOnc.EAPType.EAP_TTLS,
+          Password: outer != 'EAP-TLS',
+          AnonymousIdentity: outer == 'PEAP' || outer == 'EAP-TTLS',
         };
         break;
     }
@@ -904,75 +918,74 @@ Polymer({
   },
 
   /**
-   * @param {!chrome.networkingPrivate.NetworkConfigProperties} properties
+   * @param {!mojom.ConfigProperties} properties
    * @param {boolean=} opt_create
-   * @return {?chrome.networkingPrivate.EAPProperties}
+   * @return {?mojom.EAPConfigProperties}
    * @private
    */
   getEap_: function(properties, opt_create) {
     let eap;
-    switch (properties.Type) {
-      case CrOnc.Type.WI_FI:
-        eap = properties.WiFi && properties.WiFi.EAP;
+    switch (properties.type) {
+      case mojom.NetworkType.kWiFi:
+        eap = properties.wifi.eap;
         break;
-      case CrOnc.Type.ETHERNET:
-        eap = properties.Ethernet && properties.Ethernet.EAP;
+      case mojom.NetworkType.kEthernet:
+        eap = properties.ethernet.eap;
         break;
     }
     if (opt_create) {
-      return eap || {};
-    }
-    if (eap) {
-      eap.SaveCredentials = eap.SaveCredentials || false;
+      return eap || {
+        saveCredentials: false,
+        useSystemCas: true,
+      };
     }
     return eap || null;
   },
 
   /**
-   * @param {?chrome.networkingPrivate.EAPProperties} eapProperties
+   * @param {!mojom.EAPConfigProperties|undefined} eapProperties
    * @private
    */
   setEap_: function(eapProperties) {
-    switch (this.type) {
-      case CrOnc.Type.WI_FI:
-        this.set('WiFi.EAP', eapProperties, this.configProperties_);
+    switch (this.mojoType_) {
+      case mojom.NetworkType.kWiFi:
+        this.configProperties_.wifi.eap = eapProperties;
         break;
-      case CrOnc.Type.ETHERNET:
-        this.set('Ethernet.EAP', eapProperties, this.configProperties_);
+      case mojom.NetworkType.kEthernet:
+        this.configProperties_.ethernet.eap = eapProperties;
         break;
     }
     this.set('eapProperties_', eapProperties);
   },
 
   /**
-   * @param {!chrome.networkingPrivate.ManagedProperties} managedProperties
-   * @return {?chrome.networkingPrivate.ManagedEAPProperties}
+   * @param {!mojom.ManagedProperties} managedProperties
+   * @return {?mojom.ManagedEAPProperties}
    * @private
    */
   getManagedEap_: function(managedProperties) {
     let managedEap;
-    switch (managedProperties.Type) {
-      case CrOnc.Type.WI_FI:
-        managedEap = managedProperties.WiFi && managedProperties.WiFi.EAP;
+    switch (managedProperties.type) {
+      case mojom.NetworkType.kWiFi:
+        managedEap = managedProperties.wifi.eap;
         break;
-      case CrOnc.Type.ETHERNET:
-        managedEap =
-            managedProperties.Ethernet && managedProperties.Ethernet.EAP;
+      case mojom.NetworkType.kEthernet:
+        managedEap = managedProperties.ethernet.eap;
         break;
     }
     return managedEap || null;
   },
 
   /**
-   * @param {!chrome.networkingPrivate.NetworkConfigProperties} properties
+   * @param {!mojom.ConfigProperties} properties
+   * @return {!VPNConfigType}
    * @private
    */
   getVpnTypeFromProperties_: function(properties) {
-    const vpn = properties.VPN;
+    const vpn = properties.vpn;
     assert(vpn);
-    if (vpn.Type == CrOnc.VPNType.L2TP_IPSEC) {
-      return vpn.IPsec.AuthenticationType ==
-              CrOnc.IPsecAuthenticationType.CERT ?
+    if (vpn.type == mojom.VpnType.kL2TPIPsec) {
+      return vpn.ipSec.authenticationType == 'Cert' ?
           VPNConfigType.L2TP_IPSEC_CERT :
           VPNConfigType.L2TP_IPSEC_PSK;
     }
@@ -985,7 +998,7 @@ Polymer({
       return;
     }
 
-    const vpn = this.configProperties_.VPN;
+    const vpn = this.configProperties_.vpn;
     if (!vpn) {
       this.showVpn_ = null;
       this.updateCertError_();
@@ -993,28 +1006,48 @@ Polymer({
     }
     switch (this.vpnType_) {
       case VPNConfigType.L2TP_IPSEC_PSK:
-        vpn.Type = CrOnc.VPNType.L2TP_IPSEC;
-        if (vpn.IPsec) {
-          vpn.IPsec.AuthenticationType = CrOnc.IPsecAuthenticationType.PSK;
+        vpn.type = mojom.VpnType.kL2TPIPsec;
+        if (vpn.ipSec) {
+          vpn.ipSec.authenticationType = 'PSK';
         } else {
-          vpn.IPsec = {AuthenticationType: CrOnc.IPsecAuthenticationType.PSK};
+          vpn.ipSec = {
+            authenticationType: 'PSK',
+            ikeVersion: 1,
+            saveCredentials: false,
+          };
         }
         this.showVpn_ = {Cert: false, OpenVPN: false};
+        delete vpn.openVpn;
         break;
       case VPNConfigType.L2TP_IPSEC_CERT:
-        vpn.Type = CrOnc.VPNType.L2TP_IPSEC;
-        if (vpn.IPsec) {
-          vpn.IPsec.AuthenticationType = CrOnc.IPsecAuthenticationType.CERT;
+        vpn.type = mojom.VpnType.kL2TPIPsec;
+        if (vpn.ipSec) {
+          vpn.ipSec.authenticationType = 'Cert';
         } else {
-          vpn.IPsec = {AuthenticationType: CrOnc.IPsecAuthenticationType.CERT};
+          vpn.ipSec = {
+            authenticationType: 'Cert',
+            ikeVersion: 1,
+            saveCredentials: false,
+          };
         }
+        delete vpn.openVpn;
         this.showVpn_ = {Cert: true, OpenVPN: false};
         break;
       case VPNConfigType.OPEN_VPN:
-        vpn.Type = CrOnc.VPNType.OPEN_VPN;
-        vpn.OpenVPN = vpn.OpenVPN || {};
+        vpn.type = mojom.VpnType.kOpenVPN;
+        vpn.openVpn = vpn.openVpn || {saveCredentials: false};
         this.showVpn_ = {Cert: true, OpenVPN: true};
+        delete vpn.l2tp;
+        delete vpn.ipSec;
         break;
+    }
+    if (vpn.type == mojom.VpnType.kL2TPIPsec && !vpn.l2tp) {
+      vpn.l2tp = {
+        lcpEchoDisabled: false,
+        password: '',
+        saveCredentials: false,
+        username: '',
+      };
     }
     this.updateCertError_();
     this.onCertificateListsChanged_();
@@ -1025,14 +1058,10 @@ Polymer({
     if (this.vpnType_ != VPNConfigType.L2TP_IPSEC_CERT) {
       return;
     }
-    let pem, certId;
-    const ipsec = /** @type {chrome.networkingPrivate.IPSecProperties} */ (
-        this.get('VPN.IPsec', this.configProperties_));
-    if (ipsec) {
-      pem = ipsec.ServerCAPEMs && ipsec.ServerCAPEMs[0];
-      certId =
-          ipsec.ClientCertType == 'PKCS11Id' ? ipsec.ClientCertPKCS11Id : '';
-    }
+    const ipSec = this.configProperties_.vpn.ipSec;
+    const pem = ipSec.serverCAPEMs && ipSec.serverCAPEMs[0];
+    const certId =
+        ipSec.clientCertType == 'PKCS11Id' ? ipSec.clientCertPkcs11Id : '';
     this.setSelectedCerts_(pem, certId);
   },
 
@@ -1041,15 +1070,10 @@ Polymer({
     if (this.vpnType_ != VPNConfigType.OPEN_VPN) {
       return;
     }
-    let pem, certId;
-    const openvpn = /** @type {chrome.networkingPrivate.OpenVPNProperties} */ (
-        this.get('VPN.OpenVPN', this.configProperties_));
-    if (openvpn) {
-      pem = openvpn.ServerCAPEMs && openvpn.ServerCAPEMs[0];
-      certId = openvpn.ClientCertType == 'PKCS11Id' ?
-          openvpn.ClientCertPKCS11Id :
-          '';
-    }
+    const openVpn = this.configProperties_.vpn.openVpn;
+    const pem = openVpn.serverCaPems ? openVpn.serverCaPems[0] : undefined;
+    const certId =
+        openVpn.clientCertType == 'PKCS11Id' ? openVpn.clientCertPkcs11Id : '';
     this.setSelectedCerts_(pem, certId);
   },
 
@@ -1146,7 +1170,7 @@ Polymer({
     if (!this.selectedServerCaHash_ ||
         this.selectedServerCaHash_ == DEFAULT_HASH) {
       const eap = this.eapProperties_;
-      if (eap && eap.UseSystemCAs === false) {
+      if (eap && eap.useSystemCas === false) {
         this.selectedServerCaHash_ = DO_NOT_CHECK_HASH;
       }
     }
@@ -1172,26 +1196,27 @@ Polymer({
    * @private
    */
   getIsConfigured_: function() {
-    if (!this.configProperties_) {
+    if (this.securityType === undefined || !this.configProperties_) {
       return false;
     }
 
-    if (this.configProperties_.Type == CrOnc.Type.VPN) {
+    const type = this.configProperties_.type;
+    if (type == mojom.NetworkType.kVPN) {
       return this.vpnIsConfigured_();
     }
 
-    if (this.type == CrOnc.Type.WI_FI) {
-      if (!this.get('WiFi.SSID', this.configProperties_)) {
+    if (type == mojom.NetworkType.kWiFi) {
+      if (!this.configProperties_.wifi.ssid) {
         return false;
       }
-      if (this.configRequiresPassphrase_(this.type, this.security_)) {
-        const passphrase = this.get('WiFi.Passphrase', this.configProperties_);
+      if (this.configRequiresPassphrase_(type, this.securityType)) {
+        const passphrase = this.configProperties_.wifi.passphrase;
         if (!passphrase || passphrase.length < this.MIN_PASSPHRASE_LENGTH) {
           return false;
         }
       }
     }
-    if (this.security_ == CrOnc.Security.WPA_EAP) {
+    if (this.securityType == mojom.SecurityType.kWpaEap) {
       return this.eapIsConfigured_();
     }
     return true;
@@ -1207,7 +1232,7 @@ Polymer({
     // Only device-wide certificates can be used for networks that require a
     // certificate and are shared.
     const eap = this.eapProperties_;
-    if (!this.shareNetwork_ || !eap || eap.Outer != CrOnc.EAPType.EAP_TLS) {
+    if (!this.shareNetwork_ || !eap || eap.outer != 'EAP-TLS') {
       this.deviceCertsOnly_ = false;
       return;
     }
@@ -1224,18 +1249,17 @@ Polymer({
   },
 
   /**
-   * @param {CrOnc.Type} type The type to compare against.
-   * @param {CrOnc.Type} networkType The current network type.
-   * @return {boolean} True if the network type matches 'type'.
+   * @param {mojom.NetworkType} networkType
+   * @return {boolean}
    * @private
    */
-  isType_: function(type, networkType) {
-    return type == networkType;
+  isWiFi_: function(networkType) {
+    return networkType == mojom.NetworkType.kWiFi;
   },
 
   /** @private */
   setEnableSave_: function() {
-    this.enableSave = this.isConfigured_ && !this.waitingForProperties_;
+    this.enableSave = this.isConfigured_ && !!this.managedProperties_;
   },
 
   /** @private */
@@ -1244,12 +1268,13 @@ Polymer({
   },
 
   /**
-   * @param {string} type
+   * @param {mojom.NetworkType} networkType
    * @return {boolean}
    * @private
    */
-  securityIsVisible_: function(type) {
-    return type == CrOnc.Type.WI_FI || type == CrOnc.Type.ETHERNET;
+  securityIsVisible_: function(networkType) {
+    return networkType == mojom.NetworkType.kWiFi ||
+        networkType == mojom.NetworkType.kEthernet;
   },
 
   /**
@@ -1258,20 +1283,19 @@ Polymer({
    */
   securityIsEnabled_: function() {
     // WiFi Security type cannot be changed once configured.
-    return !this.guid || this.type == CrOnc.Type.ETHERNET;
+    return !this.guid || this.mojoType_ == mojom.NetworkType.kEthernet;
   },
 
   /**
-   * @param {string} guid
-   * @param {string} type
-   * @param {!chrome.networkingPrivate.ManagedProperties|undefined}
-   *     managedProperties
    * @return {boolean}
    * @private
    */
-  shareIsVisible_: function(guid, type, managedProperties) {
-    return this.getSource_(guid, managedProperties) == CrOnc.Source.NONE &&
-        type == CrOnc.Type.WI_FI;
+  shareIsVisible_: function() {
+    if (!this.managedProperties_) {
+      return false;
+    }
+    return this.managedProperties_.source == mojom.OncSource.kNone &&
+        this.managedProperties_.type == mojom.NetworkType.kWiFi;
   },
 
   /**
@@ -1279,17 +1303,18 @@ Polymer({
    * @private
    */
   shareIsEnabled_: function() {
+    if (!this.managedProperties_) {
+      return false;
+    }
     if (!this.shareAllowEnable ||
-        this.getSource_(this.guid, this.managedProperties) !=
-            CrOnc.Source.NONE) {
+        this.managedProperties_.source != mojom.OncSource.kNone) {
       return false;
     }
 
-    if (this.type == CrOnc.Type.WI_FI) {
-      // Insecure WiFi networks are always shared.
-      if (this.security_ == CrOnc.Security.NONE) {
-        return false;
-      }
+    // Insecure WiFi networks are always shared.
+    if (this.mojoType_ == mojom.NetworkType.kWiFi &&
+        this.securityType == mojom.SecurityType.kNone) {
+      return false;
     }
     return true;
   },
@@ -1301,7 +1326,7 @@ Polymer({
   configCanAutoConnect_: function() {
     // Only WiFi can choose whether or not to autoConnect.
     return loadTimeData.getBoolean('showHiddenNetworkWarning') &&
-        this.type == CrOnc.Type.WI_FI;
+        this.mojoType_ == mojom.NetworkType.kWiFi;
   },
 
   /**
@@ -1317,8 +1342,8 @@ Polymer({
    * @private
    */
   isAutoConnectEnforcedByPolicy_: function() {
-    return !!this.globalPolicy &&
-        !!this.globalPolicy.AllowOnlyPolicyNetworksToAutoconnect;
+    return !!this.globalPolicy_ &&
+        !!this.globalPolicy_.allowOnlyPolicyNetworksToAutoconnect;
   },
 
   /**
@@ -1352,11 +1377,14 @@ Polymer({
    * @private
    */
   eapIsConfigured_: function() {
+    if (!this.configProperties_) {
+      return false;
+    }
     const eap = this.getEap_(this.configProperties_);
     if (!eap) {
       return false;
     }
-    if (eap.Outer != CrOnc.EAPType.EAP_TLS) {
+    if (eap.outer != 'EAP-TLS') {
       return true;
     }
     // EAP TLS networks can be shared only for device-wide certificates.
@@ -1379,17 +1407,16 @@ Polymer({
    * @private
    */
   vpnIsConfigured_: function() {
-    const vpn = this.configProperties_.VPN;
-    if (!this.configProperties_.Name || !vpn || !vpn.Host) {
+    const vpn = this.configProperties_.vpn;
+    if (!this.configProperties_.name || !vpn || !vpn.host) {
       return false;
     }
 
     switch (this.vpnType_) {
       case VPNConfigType.L2TP_IPSEC_PSK:
-        return !!this.get('L2TP.Username', vpn) && !!this.get('IPsec.PSK', vpn);
+        return !!vpn.l2tp.username && !!vpn.ipSec.psk;
       case VPNConfigType.L2TP_IPSEC_CERT:
-        return !!this.get('L2TP.Username', vpn) &&
-            this.selectedUserCertHashIsValid_();
+        return !!vpn.l2tp.username && this.selectedUserCertHashIsValid_();
       case VPNConfigType.OPEN_VPN:
         // OpenVPN should require username + password OR a user cert. However,
         // there may be servers with different requirements so err on the side
@@ -1401,10 +1428,12 @@ Polymer({
 
   /** @private */
   getPropertiesToSet_: function() {
-    const propertiesToSet = Object.assign({}, this.configProperties_);
+    const propertiesToSet =
+        /** @type{!mojom.ConfigProperties}*/ (
+            Object.assign({}, this.configProperties_));
     // Do not set AutoConnect by default, the connection manager will set
     // it to true on a successful connection.
-    CrOnc.setTypeProperty(propertiesToSet, 'AutoConnect', undefined);
+    delete propertiesToSet.autoConnect;
     if (this.guid) {
       propertiesToSet.GUID = this.guid;
     }
@@ -1412,16 +1441,19 @@ Polymer({
     if (eap) {
       this.setEapProperties_(eap);
     }
-    if (this.configProperties_.Type == CrOnc.Type.VPN) {
+    if (this.mojoType_ == mojom.NetworkType.kVPN) {
       // VPN.Host can be an IP address but will not be recognized as such if
       // there is initial whitespace, so trim it.
-      if (typeof propertiesToSet.VPN.Host == 'string') {
-        propertiesToSet.VPN.Host = propertiesToSet.VPN.Host.trim();
+      if (propertiesToSet.vpn.host != undefined) {
+        propertiesToSet.vpn.host = propertiesToSet.vpn.host.trim();
       }
-      if (this.get('VPN.Type', propertiesToSet) == CrOnc.VPNType.OPEN_VPN) {
+      if (propertiesToSet.vpn.type == mojom.VpnType.kOpenVPN) {
         this.setOpenVPNProperties_(propertiesToSet);
-      } else {
+        delete propertiesToSet.ipSec;
+        delete propertiesToSet.l2tp;
+      } else if (propertiesToSet.vpn.type == mojom.VpnType.kL2TPIPsec) {
         this.setVpnIPsecProperties_(propertiesToSet);
+        delete propertiesToSet.openVpn;
       }
     }
     return propertiesToSet;
@@ -1455,7 +1487,7 @@ Polymer({
   },
 
   /**
-   * @param {!chrome.networkingPrivate.EAPProperties} eap
+   * @param {!mojom.EAPConfigProperties} eap
    * @private
    */
   setEapProperties_: function(eap) {
@@ -1469,47 +1501,49 @@ Polymer({
   },
 
   /**
-   * @param {!chrome.networkingPrivate.NetworkConfigProperties} propertiesToSet
+   * @param {!mojom.ConfigProperties} propertiesToSet
    * @private
    */
   setOpenVPNProperties_: function(propertiesToSet) {
-    const openvpn = propertiesToSet.VPN.OpenVPN || {};
+    const openVpn = propertiesToSet.vpn.openVpn;
+    assert(!!openVpn);
 
-    openvpn.ServerCAPEMs = this.getServerCaPems_();
+    openVpn.serverCaPems = this.getServerCaPems_();
 
     const pkcs11Id = this.getUserCertPkcs11Id_();
-    openvpn.ClientCertType = pkcs11Id ? 'PKCS11Id' : 'None';
-    openvpn.ClientCertPKCS11Id = pkcs11Id || '';
+    openVpn.clientCertType = pkcs11Id ? 'PKCS11Id' : 'None';
+    openVpn.clientCertPkcs11Id = pkcs11Id || '';
 
-    if (openvpn.Password) {
-      openvpn.UserAuthenticationType = openvpn.OTP ?
-          CrOnc.UserAuthenticationType.PASSWORD_AND_OTP :
-          CrOnc.UserAuthenticationType.PASSWORD;
-    } else if (openvpn.OTP) {
-      openvpn.UserAuthenticationType = CrOnc.UserAuthenticationType.OTP;
+    if (openVpn.password) {
+      openVpn.userAuthenticationType =
+          openVpn.otp ? 'PasswordAndOTP' : 'Password';
+    } else if (openVpn.otp) {
+      openVpn.userAuthenticationType = 'OTP';
     } else {
-      openvpn.UserAuthenticationType = CrOnc.UserAuthenticationType.NONE;
+      openVpn.userAuthenticationType = 'None';
     }
 
-    openvpn.SaveCredentials = this.vpnSaveCredentials_;
-    propertiesToSet.VPN.OpenVPN = openvpn;
+    openVpn.saveCredentials = this.vpnSaveCredentials_;
+    propertiesToSet.vpn.openVpn = openVpn;
   },
 
   /**
-   * @param {!chrome.networkingPrivate.NetworkConfigProperties} propertiesToSet
+   * @param {!mojom.ConfigProperties} propertiesToSet
    * @private
    */
   setVpnIPsecProperties_: function(propertiesToSet) {
-    const vpn = propertiesToSet.VPN;
-    assert(vpn.IPsec);
-    if (vpn.IPsec.AuthenticationType == CrOnc.IPsecAuthenticationType.CERT) {
-      vpn.IPsec.ClientCertType = 'PKCS11Id';
-      vpn.IPsec.ClientCertPKCS11Id = this.getUserCertPkcs11Id_();
-      vpn.IPsec.ServerCAPEMs = this.getServerCaPems_();
+    const vpn = propertiesToSet.vpn;
+    assert(vpn.ipSec);
+    assert(vpn.l2tp);
+
+    if (vpn.ipSec.authenticationType == 'Cert') {
+      vpn.ipSec.clientCertType = 'PKCS11Id';
+      vpn.ipSec.clientCertPkcs11Id = this.getUserCertPkcs11Id_();
+      vpn.ipSec.serverCaPems = this.getServerCaPems_();
     }
-    vpn.IPsec.IKEVersion = 1;
-    vpn.IPsec.SaveCredentials = this.vpnSaveCredentials_;
-    vpn.L2TP.SaveCredentials = this.vpnSaveCredentials_;
+    vpn.ipSec.ikeVersion = 1;
+    vpn.ipSec.saveCredentials = this.vpnSaveCredentials_;
+    vpn.l2tp.saveCredentials = this.vpnSaveCredentials_;
   },
 
   /**
@@ -1521,53 +1555,53 @@ Polymer({
   },
 
   /**
+   * @param {boolean} success
+   * @param {string} errorMessage
    * @param {boolean} connect If true, connect after save.
    * @private
    */
-  setPropertiesCallback_: function(connect) {
-    // Only attempt a connection if the network is not yet connected.
-    const connectState = this.managedProperties.ConnectionState;
-    const shouldConnect = connect &&
-        (!connectState || connectState == CrOnc.ConnectionState.NOT_CONNECTED);
-
-    this.handleNetworkConfigurationResponse_(
-        shouldConnect, this.guid, 'setProperties() error');
-  },
-
-  /**
-   * @param {boolean} connect If true, connect after save.
-   * @param {string} guid
-   * @private
-   */
-  createNetworkCallback_: function(connect, guid) {
-    this.handleNetworkConfigurationResponse_(
-        connect, guid,
-        'createNetworkError() error; type: ' + this.managedProperties.Type);
-  },
-
-  /**
-   * @param {boolean} connect If true, connect after save.
-   * @param {string} guid
-   * @param {string} errorMessage The message to use in the case of an error.
-   * @private
-   */
-  handleNetworkConfigurationResponse_: function(connect, guid, errorMessage) {
-    this.setError_(this.getRuntimeError_());
-    if (this.error) {
+  setPropertiesCallback_: function(success, errorMessage, connect) {
+    if (!success) {
       console.error(
-          errorMessage + ', GUID: ' + guid + ', error: ' + this.error);
+          'Unable to set properties for: ' + this.guid +
+          ' Error: ' + errorMessage);
       this.propertiesSent_ = false;
-      const passphraseInput = this.$$('#wifi-passphrase');
-      if (passphraseInput) {
-        passphraseInput.focus();
-      }
+      this.setError_(errorMessage);
+      this.focusPassphrase_();
       return;
     }
+
+    // Only attempt a connection if the network is not yet connected.
+    if (connect &&
+        this.managedProperties_.connectionState ==
+            mojom.ConnectionStateType.kNotConnected) {
+      this.startConnect_(this.guid);
+    } else {
+      this.close_();
+    }
+  },
+
+  /**
+   * @param {?string} guid
+   * @param {string} errorMessage
+   * @param {boolean} connect If true, connect after save.
+   * @private
+   */
+  createNetworkCallback_: function(guid, errorMessage, connect) {
+    if (!guid) {
+      console.error(
+          'Unable to configure network: ' + guid + ' Error: ' + errorMessage);
+      this.propertiesSent_ = false;
+      this.setError_(errorMessage);
+      this.focusPassphrase_();
+      return;
+    }
+
     if (connect) {
       this.startConnect_(guid);
-      return;
+    } else {
+      this.close_();
     }
-    this.close_();
   },
 
   /**
@@ -1575,31 +1609,36 @@ Polymer({
    * @private
    */
   startConnect_: function(guid) {
-    this.networkingPrivate.startConnect(guid, () => {
-      const error = this.getRuntimeError_();
-      if (!error || error == 'connected' || error == 'connect-canceled' ||
-          error == 'connecting') {
-        // Connect is in progress, completed or canceled, close the dialog.
+    this.networkConfig_.startConnect(guid).then(response => {
+      const result = response.result;
+      if (result == mojom.StartConnectResult.kSuccess ||
+          result == mojom.StartConnectResult.kInvalidGuid ||
+          result == mojom.StartConnectResult.kInvalidState ||
+          result == mojom.StartConnectResult.kCanceled) {
+        // Connect succeeded, or is in progress completed or canceled.
+        // Close the dialog.
         this.close_();
         return;
       }
-      this.setError_(error);
-      console.error('Error connecting to network: ' + error);
+      this.setError_(response.message);
+      console.error(
+          'Error connecting to network: ' + guid + ': ' + result.toString() +
+          ' Message: ' + response.message);
       this.propertiesSent_ = false;
     });
   },
 
   /**
-   * @param {string} type
-   * @param {string} security
+   * @param {mojom.NetworkType} type
+   * @param {mojom.SecurityType} security
    * @return {boolean}
    * @private
    */
   configRequiresPassphrase_: function(type, security) {
     // Note: 'Passphrase' is only used by WiFi; Ethernet uses EAP.Password.
-    return type == CrOnc.Type.WI_FI &&
-        (security == CrOnc.Security.WEP_PSK ||
-         security == CrOnc.Security.WPA_PSK);
+    return type == mojom.NetworkType.kWiFi &&
+        (security == mojom.SecurityType.kWepPsk ||
+         security == mojom.SecurityType.kWpaPsk);
   },
 
   /**
@@ -1608,10 +1647,10 @@ Polymer({
    * @private
    */
   getEapInnerItems_: function(outer) {
-    if (outer == CrOnc.EAPType.PEAP) {
+    if (outer == 'PEAP') {
       return this.eapInnerItemsPeap_;
     }
-    if (outer == CrOnc.EAPType.EAP_TTLS) {
+    if (outer == 'EAP-TTLS') {
       return this.eapInnerItemsTtls_;
     }
     return [];
@@ -1626,57 +1665,85 @@ Polymer({
   },
 
   /**
-   * @param {!chrome.networkingPrivate.ManagedProperties} managedProperties
-   * @return {chrome.networkingPrivate.ManagedDOMString|undefined}
+   * Returns a managed property for policy controlled networks.
+   * @param {!mojom.ManagedProperties} managedProperties
+   * @return {mojom.ManagedString|undefined}
    * @private
    */
   getManagedSecurity_: function(managedProperties) {
-    let managedSecurity = undefined;
-    switch (managedProperties.Type) {
-      case CrOnc.Type.WI_FI:
-        managedSecurity =
-            managedProperties.WiFi && managedProperties.WiFi.Security;
+    const policySource =
+        OncMojo.getEnforcedPolicySourceFromOncSource(managedProperties.source);
+    if (policySource == mojom.PolicySource.kNone) {
+      return undefined;
+    }
+    switch (managedProperties.type) {
+      case mojom.NetworkType.kWiFi:
+        return {
+          activeValue:
+              OncMojo.getSecurityTypeString(managedProperties.wifi.security),
+          policySource: policySource,
+        };
         break;
-      case CrOnc.Type.ETHERNET:
-        managedSecurity = managedProperties.Ethernet &&
-            managedProperties.Ethernet.Authentication;
+      case mojom.NetworkType.kEthernet:
+        return {
+          activeValue: OncMojo.getActiveString(
+              managedProperties.ethernet.authentication),
+          policySource: policySource,
+        };
         break;
     }
-    return managedSecurity;
+    return undefined;
   },
 
   /**
-   * @param {!chrome.networkingPrivate.ManagedProperties} managedProperties
-   * @return {!chrome.networkingPrivate.ManagedBoolean|undefined}
+   * @param {!mojom.ManagedProperties} managedProperties
+   * @return {!mojom.ManagedBoolean|undefined}
    * @private
    */
   getManagedVpnSaveCredentials_: function(managedProperties) {
-    return /** @type {chrome.networkingPrivate.ManagedBoolean|undefined} */ (
-        this.get('VPN.OpenVPN.SaveCredentials', managedProperties) ||
-        this.get('VPN.IPsec.SaveCredentials', managedProperties) ||
-        this.get('VPN.L2TP.SaveCredentials', managedProperties));
+    const vpn = managedProperties.vpn;
+    switch (vpn.type) {
+      case mojom.VpnType.kOpenVPN:
+        return vpn.openVpn.saveCredentials;
+      case mojom.VpnType.kL2TPIPsec:
+        return vpn.ipSec.saveCredentials || vpn.l2tp.saveCredentials;
+    }
+    assertNotReached();
+    return undefined;
   },
 
   /**
-   * @param {!chrome.networkingPrivate.ManagedProperties} managedProperties
-   * @return {!chrome.networkingPrivate.ManagedDOMStringList|undefined}
+   * @param {!mojom.ManagedProperties} managedProperties
+   * @return {!mojom.ManagedStringList|undefined}
    * @private
    */
   getManagedVpnServerCaRefs_: function(managedProperties) {
-    return /** @type {chrome.networkingPrivate.ManagedDOMStringList|undefined} */ (
-        this.get('VPN.OpenVPN.ServerCARefs', managedProperties) ||
-        this.get('VPN.IPsec.ServerCARefs', managedProperties));
+    const vpn = managedProperties.vpn;
+    switch (vpn.type) {
+      case mojom.VpnType.kOpenVPN:
+        return vpn.openVpn.serverCaRefs;
+      case mojom.VpnType.kL2TPIPsec:
+        return vpn.ipSec.serverCaRefs;
+    }
+    assertNotReached();
+    return undefined;
   },
 
   /**
-   * @param {!chrome.networkingPrivate.ManagedProperties} managedProperties
-   * @return {!chrome.networkingPrivate.ManagedDOMString|undefined}
+   * @param {!mojom.ManagedProperties} managedProperties
+   * @return {!mojom.ManagedString|undefined}
    * @private
    */
   getManagedVpnClientCertType_: function(managedProperties) {
-    return /** @type {chrome.networkingPrivate.ManagedDOMString|undefined} */ (
-        this.get('VPN.OpenVPN.ClientCertType', managedProperties) ||
-        this.get('VPN.IPsec.ClientCertType', managedProperties));
+    const vpn = managedProperties.vpn;
+    switch (vpn.type) {
+      case mojom.VpnType.kOpenVPN:
+        return vpn.openVpn.clientCertType;
+      case mojom.VpnType.kL2TPIPsec:
+        return vpn.ipSec.clientCertType;
+    }
+    assertNotReached();
+    return undefined;
   },
 });
 })();

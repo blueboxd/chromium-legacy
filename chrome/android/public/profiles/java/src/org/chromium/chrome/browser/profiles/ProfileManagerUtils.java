@@ -9,6 +9,7 @@ import android.os.SystemClock;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.annotations.NativeMethods;
 
 /**
  * A utility class for applying operations on all loaded profiles.
@@ -26,7 +27,7 @@ public class ProfileManagerUtils {
     public static void flushPersistentDataForAllProfiles() {
         try {
             TraceEvent.begin("ProfileManagerUtils.commitPendingWritesForAllProfiles");
-            nativeFlushPersistentDataForAllProfiles();
+            ProfileManagerUtilsJni.get().flushPersistentDataForAllProfiles();
         } finally {
             TraceEvent.end("ProfileManagerUtils.commitPendingWritesForAllProfiles");
         }
@@ -47,7 +48,7 @@ public class ProfileManagerUtils {
 
         // Allow some leeway to account for fractions of milliseconds.
         if (Math.abs(difference) > BOOT_TIMESTAMP_MARGIN_MS) {
-            nativeRemoveSessionCookiesForAllProfiles();
+            ProfileManagerUtilsJni.get().removeSessionCookiesForAllProfiles();
 
             SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
             SharedPreferences.Editor editor = prefs.edit();
@@ -56,6 +57,9 @@ public class ProfileManagerUtils {
         }
     }
 
-    private static native void nativeFlushPersistentDataForAllProfiles();
-    private static native void nativeRemoveSessionCookiesForAllProfiles();
+    @NativeMethods
+    interface Natives {
+        void flushPersistentDataForAllProfiles();
+        void removeSessionCookiesForAllProfiles();
+    }
 }

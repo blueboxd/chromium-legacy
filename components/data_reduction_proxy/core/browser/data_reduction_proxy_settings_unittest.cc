@@ -504,28 +504,6 @@ TEST(DataReductionProxySettingsStandaloneTest,
                    prefs::kDataReductionProxyLastEnabledTime));
 }
 
-TEST_F(DataReductionProxySettingsTest, TestDaysSinceSavingsCleared) {
-  base::SimpleTestClock clock;
-  clock.Advance(base::TimeDelta::FromDays(1));
-  ResetSettings(&clock);
-
-  base::HistogramTester histogram_tester;
-  test_context_->pref_service()->SetInt64(
-      prefs::kDataReductionProxySavingsClearedNegativeSystemClock,
-      clock.Now().ToInternalValue());
-
-  test_context_->RunUntilIdle();
-
-  clock.Advance(base::TimeDelta::FromDays(100));
-
-  // Simulate Chromium startup with data reduction proxy already enabled.
-  test_context_->SetDataReductionProxyEnabled(true);
-  settings_->MaybeActivateDataReductionProxy(true /* at_startup */);
-  test_context_->RunUntilIdle();
-  histogram_tester.ExpectUniqueSample(
-      "DataReductionProxy.DaysSinceSavingsCleared.NegativeSystemClock", 100, 1);
-}
-
 TEST_F(DataReductionProxySettingsTest, TestGetDailyContentLengths) {
   ContentLengthList result =
       settings_->GetDailyContentLengths(prefs::kDailyHttpOriginalContentLength);

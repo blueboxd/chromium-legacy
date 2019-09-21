@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/frame/location.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
@@ -54,6 +55,25 @@ class TextFragmentAnchorTest : public SimTest {
   IntRect BoundingRectInFrame(Node& node) {
     return node.GetLayoutObject()->AbsoluteBoundingBoxRect();
   }
+
+  void SimulateClick(int x, int y) {
+    WebMouseEvent event(
+        WebInputEvent::kMouseDown, WebFloatPoint(x, y), WebFloatPoint(x, y),
+        WebPointerProperties::Button::kLeft, 0,
+        WebInputEvent::Modifiers::kLeftButtonDown, base::TimeTicks::Now());
+    event.SetFrameScale(1);
+    GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(event);
+  }
+
+  void SimulateTap(int x, int y) {
+    WebGestureEvent event(WebInputEvent::kGestureTap,
+                          WebInputEvent::kNoModifiers, base::TimeTicks::Now(),
+                          WebGestureDevice::kTouchscreen);
+    event.SetPositionInWidget(FloatPoint(x, y));
+    event.SetPositionInScreen(FloatPoint(x, y));
+    event.SetFrameScale(1);
+    GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(event);
+  }
 };
 
 // Basic test case, ensure we scroll the matching text into view.
@@ -83,36 +103,6 @@ TEST_F(TextFragmentAnchorTest, BasicSmokeTest) {
   EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(p)))
       << "<p> Element wasn't scrolled into view, viewport's scroll offset: "
       << LayoutViewport()->GetScrollOffset().ToString();
-}
-
-// Make sure the fragment is uninstalled once the match has been completed.
-// This may require a layout since the anchor is uninstalled at invocation
-// time.
-TEST_F(TextFragmentAnchorTest, RemoveAnchorAfterMatch) {
-  SimRequest request("https://example.com/test.html#targetText=test",
-                     "text/html");
-  LoadURL("https://example.com/test.html#targetText=test");
-  request.Complete(R"HTML(
-    <!DOCTYPE html>
-    <style>
-      body {
-        height: 1200px;
-      }
-      p {
-        position: absolute;
-        top: 1000px;
-      }
-    </style>
-    <p id="text">This is a test page</p>
-  )HTML");
-  Compositor().BeginFrame();
-  RunAsyncMatchingTasks();
-
-  // Force a layout
-  GetDocument().body()->setAttribute(html_names::kStyleAttr, "height: 1300px");
-  Compositor().BeginFrame();
-
-  EXPECT_FALSE(GetDocument().View()->GetFragmentAnchor());
 }
 
 // Make sure a non-matching string doesn't cause scroll and the fragment is
@@ -1413,6 +1403,163 @@ TEST_F(TextFragmentAnchorTest, CheckForWordBoundaryWithPartialWord) {
   ASSERT_EQ(1u, markers.size());
   EXPECT_EQ(10u, markers.at(0)->StartOffset());
   EXPECT_EQ(17u, markers.at(0)->EndOffset());
+}
+
+// Test dismissing the text highlight with a click
+TEST_F(TextFragmentAnchorTest, DismissTextHighlightWithClick) {
+  SimRequest request(
+      "https://example.com/"
+      "test.html#targetText=test%20page&targetText=more%20text",
+      "text/html");
+  LoadURL(
+      "https://example.com/"
+      "test.html#targetText=test%20page&targetText=more%20text");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 2200px;
+      }
+      #first {
+        position: absolute;
+        top: 1000px;
+      }
+      #second {
+        position: absolute;
+        top: 2000px;
+      }
+    </style>
+    <p id="first">This is a test page</p>
+    <p id="second">With some more text</p>
+  )HTML");
+  Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(2u, GetDocument().Markers().Markers().size());
+
+  SimulateClick(100, 100);
+
+  EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
+
+  // Ensure the fragment is uninstalled
+  EXPECT_FALSE(GetDocument().View()->GetFragmentAnchor());
+}
+
+// Test dismissing the text highlight with a tap
+TEST_F(TextFragmentAnchorTest, DismissTextHighlightWithTap) {
+  SimRequest request(
+      "https://example.com/"
+      "test.html#targetText=test%20page&targetText=more%20text",
+      "text/html");
+  LoadURL(
+      "https://example.com/"
+      "test.html#targetText=test%20page&targetText=more%20text");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 2200px;
+      }
+      #first {
+        position: absolute;
+        top: 1000px;
+      }
+      #second {
+        position: absolute;
+        top: 2000px;
+      }
+    </style>
+    <p id="first">This is a test page</p>
+    <p id="second">With some more text</p>
+  )HTML");
+  Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(2u, GetDocument().Markers().Markers().size());
+
+  SimulateTap(100, 100);
+
+  EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
+
+  // Ensure the fragment is uninstalled
+  EXPECT_FALSE(GetDocument().View()->GetFragmentAnchor());
+}
+
+// Test that we don't dismiss a text highlight before it's scrolled into view
+TEST_F(TextFragmentAnchorTest, DismissTextHighlightOutOfView) {
+  SimRequest request("https://example.com/test.html#targetText=test",
+                     "text/html");
+  SimSubresourceRequest css_request("https://example.com/test.css", "text/css");
+  LoadURL("https://example.com/test.html#targetText=test");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+        visibility: hidden;
+      }
+    </style>
+    <link rel=stylesheet href=test.css>
+    <p id="text">This is a test page</p>
+  )HTML");
+
+  Compositor().PaintFrame();
+  ASSERT_EQ(0u, GetDocument().Markers().Markers().size());
+  SimulateClick(100, 100);
+
+  // Set the target text to visible and change its position to cause a layout
+  // and invoke the fragment anchor.
+  css_request.Complete("p { visibility: visible; top: 1001px; }");
+
+  Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+
+  // Click to dismiss
+  SimulateClick(100, 100);
+  EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
+  EXPECT_FALSE(GetDocument().View()->GetFragmentAnchor());
+}
+
+// Test dismissing a text highlight that didn't require a scroll into view
+TEST_F(TextFragmentAnchorTest, DismissTextHighlightInView) {
+  SimRequest request(
+      "https://example.com/"
+      "test.html#targetText=test%20page&targetText=more%20text",
+      "text/html");
+  LoadURL(
+      "https://example.com/"
+      "test.html#targetText=test%20page&targetText=more%20text");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 100px;
+      }
+    </style>
+    <p>This is a test page</p>
+  )HTML");
+  Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(ScrollOffset(), LayoutViewport()->GetScrollOffset());
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+
+  SimulateTap(100, 100);
+
+  EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
+
+  // Ensure the fragment is uninstalled
+  EXPECT_FALSE(GetDocument().View()->GetFragmentAnchor());
 }
 
 }  // namespace

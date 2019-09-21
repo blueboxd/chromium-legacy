@@ -26,11 +26,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.test.ShadowUrlUtilities;
+import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.chrome.browser.util.UrlUtilitiesJni;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -39,9 +43,8 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
  * properly loaded in Custom Tabs in different conditions.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = {ShadowUrlUtilities.class})
+@Config(manifest = Config.NONE)
 public class CustomTabActivityUrlLoadingTest {
-
     @Rule
     public final CustomTabActivityContentTestEnvironment env =
             new CustomTabActivityContentTestEnvironment();
@@ -50,8 +53,16 @@ public class CustomTabActivityUrlLoadingTest {
     private CustomTabActivityNavigationController mNavigationController;
     private CustomTabIntentHandler mIntentHandler;
 
+    @Rule
+    public JniMocker mocker = new JniMocker();
+
+    @Mock
+    UrlUtilities.Natives mUrlUtilitiesJniMock;
+
     @Before
     public void setUp() {
+        MockitoAnnotations.initMocks(this);
+        mocker.mock(UrlUtilitiesJni.TEST_HOOKS, mUrlUtilitiesJniMock);
         mTabController = env.createTabController();
         mNavigationController = env.createNavigationController(mTabController);
         mIntentHandler = env.createIntentHandler(mNavigationController);

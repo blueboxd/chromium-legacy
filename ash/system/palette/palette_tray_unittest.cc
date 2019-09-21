@@ -260,6 +260,7 @@ class PaletteTrayTestWithAssistant : public PaletteTrayTest {
   }
 
   void TearDown() override {
+    ui::SetEventTickClockForTesting(nullptr);
     // This needs to be called first to reset the controller state before the
     // shell instance gets torn down.
     highlighter_test_api_.reset();

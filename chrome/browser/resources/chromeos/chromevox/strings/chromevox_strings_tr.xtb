@@ -168,6 +168,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="2220529011494928058">Sorun bildir</translation>
 <translation id="2223693656926968778">Mevcut öğe üzerinde işlem yap</translation>
 <translation id="225732394367814946">Konuşma hızını artır</translation>
+<translation id="2267538686624070261">Yazım hatasından çıkılıyor</translation>
 <translation id="2267945578749931355">Sonraki Karakter</translation>
 <translation id="2278490101488436824">Üç parmağınızı sola kaydırın</translation>
 <translation id="2281234842553884450">Önceki kaydırma çubuğu</translation>
@@ -206,6 +207,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="257674075312929031">Grup</translation>
 <translation id="2582407057977008361">Kenar</translation>
 <translation id="2592212930811759050">Düzenlemeye başlamak için iki kez dokunun</translation>
+<translation id="2598495320872286378">Dil bilgisi hatası</translation>
 <translation id="2614981083756825552">Matematik ML Düzeni</translation>
 <translation id="2624431853467395961">Öğrenme modunu açar</translation>
 <translation id="2626530649491650971">tıklanabilir</translation>
@@ -820,6 +822,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="6833103209700200188">Alt bilgi</translation>
 <translation id="6858047746862060282">Prolog</translation>
 <translation id="6859876496651143278">Bir parmağınızı sola kaydırın</translation>
+<translation id="6865519907510167493">Yazım hatası</translation>
 <translation id="6871161210040114857">Büyük/küçük harf kullanımı yoksayılıyor.</translation>
 <translation id="6877435256196695200">Sonraki grafik yok.</translation>
 <translation id="6897341342232909480">Sola git</translation>
@@ -1110,6 +1113,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="8446884382197647889">Daha Fazla Bilgi Edinin</translation>
 <translation id="8455868257606149352">En çok: <ph name="X" /></translation>
 <translation id="84575901236241018">erişim tuşu var, <ph name="KEY" /></translation>
+<translation id="8463645336674919227">Dil bilgisi hatasından çıkılıyor</translation>
 <translation id="847154984256717791">meşgul</translation>
 <translation id="8476408756881832830">ChromeVox konuşurken çalmayı duraklat</translation>
 <translation id="8476508772960940536">pencere genel bakışı</translation>

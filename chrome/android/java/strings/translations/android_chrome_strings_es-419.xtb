@@ -174,7 +174,7 @@
 <translation id="2154484045852737596">Editar tarjeta</translation>
 <translation id="2154710561487035718">Copiar URL</translation>
 <translation id="2156074688469523661">Sitios restantes (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2157851137955077194">Si quieres compartir contenido desde tu teléfono a otro dispositivo, activa la sincronización en la configuración de Chrome en ambos dispositivos.</translation>
+<translation id="2157851137955077194">Si quieres compartir contenido entre tu teléfono y otro dispositivo, activa la sincronización en la configuración de Chrome en ambos dispositivos.</translation>
 <translation id="2170088579611075216">Permitir y acceder a la RV</translation>
 <translation id="218608176142494674">Uso compartido</translation>
 <translation id="2227444325776770048">Continuar como <ph name="USER_FULL_NAME" /></translation>
@@ -729,6 +729,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6364438453358674297">¿Borrar la sugerencia del historial?</translation>
 <translation id="6369229450655021117">Desde aquí, puedes realizar búsquedas en la Web, compartir contenido con amigos y ver las páginas abiertas</translation>
 <translation id="6378173571450987352">Detalles: Ordenados por cantidad de datos utilizados</translation>
+<translation id="6381421346744604172">Oscurecer sitios web</translation>
 <translation id="6388207532828177975">Borrar y restablecer</translation>
 <translation id="6393863479814692971">Chrome necesita permiso para acceder a tu cámara y micrófono para este sitio.</translation>
 <translation id="6395288395575013217">VÍNCULO</translation>
@@ -1110,6 +1111,7 @@ El sitio NO podrá acceder a la cámara. Solo tú podrás ver las imágenes de l
 <translation id="9139068048179869749">Preguntar antes de permitir que los sitios envíen notificaciones (recomendado)</translation>
 <translation id="9139318394846604261">Compras</translation>
 <translation id="9155898266292537608">También puedes presionar brevemente la palabra para realizar una búsqueda</translation>
+<translation id="9169507124922466868">El historial de navegación está abierto a la mitad</translation>
 <translation id="9188680907066685419">Salir de la cuenta administrada</translation>
 <translation id="9204836675896933765">Queda 1 archivo</translation>
 <translation id="9206873250291191720">A</translation>

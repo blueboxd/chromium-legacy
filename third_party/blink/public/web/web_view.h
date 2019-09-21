@@ -201,10 +201,6 @@ class WebView {
   // change.
   virtual double SetZoomLevel(double) = 0;
 
-  // Updates the zoom limits for this view.
-  virtual void ZoomLimitsChanged(double minimum_zoom_level,
-                                 double maximum_zoom_level) = 0;
-
   // Helper functions to convert between zoom level and zoom factor.  zoom
   // factor is zoom percent / 100, so 300% = 3.0.
   BLINK_EXPORT static double ZoomLevelToZoomFactor(double zoom_level);

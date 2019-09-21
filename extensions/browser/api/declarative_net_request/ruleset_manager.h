@@ -41,7 +41,6 @@ class RulesetManager {
  public:
   struct Action {
     enum class Type {
-      NONE,
       // Block the network request.
       BLOCK,
       // Block the network request and collapse the corresponding DOM element.
@@ -57,14 +56,13 @@ class RulesetManager {
     Action(Action&&);
     Action& operator=(Action&&);
 
-    Type type = Type::NONE;
+    Type type = Type::BLOCK;
 
     // Valid iff |type| is |REDIRECT|.
     base::Optional<GURL> redirect_url;
 
-    // The id of the extension the action is attributed to. Valid iff |type| is
-    // not |NONE|.
-    base::Optional<ExtensionId> extension_id;
+    // The id of the extension the action is attributed to.
+    ExtensionId extension_id;
 
     // Valid iff |type| is |REMOVE_HEADERS|. The vectors point to strings of
     // static storage duration.

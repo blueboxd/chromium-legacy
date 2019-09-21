@@ -12,7 +12,9 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -556,7 +558,29 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
   }
 
   // Verifies that the QUIC stream factory is initialized correctly.
-  void VerifyInitialization() {
+  // If |vary_network_isolation_key| is true, stores data for two different
+  // NetworkIsolationKeys, but the same server. If false, stores data for two
+  // different servers, using the same NetworkIsolationKey.
+  void VerifyInitialization(bool vary_network_isolation_key) {
+    const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
+    const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
+
+    NetworkIsolationKey network_isolation_key1(kOrigin1, kOrigin1);
+    quic::QuicServerId quic_server_id1(
+        kDefaultServerHostName, kDefaultServerPort, PRIVACY_MODE_DISABLED);
+
+    NetworkIsolationKey network_isolation_key2;
+    quic::QuicServerId quic_server_id2;
+
+    if (vary_network_isolation_key) {
+      network_isolation_key2 = NetworkIsolationKey(kOrigin2, kOrigin2);
+      quic_server_id2 = quic_server_id1;
+    } else {
+      network_isolation_key2 = network_isolation_key1;
+      quic_server_id2 = quic::QuicServerId(kServer2HostName, kDefaultServerPort,
+                                           PRIVACY_MODE_DISABLED);
+    }
+
     test_params_.quic_params.max_server_configs_stored_in_properties = 1;
     test_params_.quic_params.idle_connection_timeout =
         base::TimeDelta::FromSeconds(500);
@@ -581,20 +605,21 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
         AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
             alternative_service1, expiration, {version_}));
     http_server_properties_->SetAlternativeServices(
-        url::SchemeHostPort(url_), NetworkIsolationKey(),
-        alternative_service_info_vector);
+        url::SchemeHostPort("https", quic_server_id1.host(),
+                            quic_server_id1.port()),
+        network_isolation_key1, alternative_service_info_vector);
 
-    HostPortPair host_port_pair2(kServer2HostName, kDefaultServerPort);
-    url::SchemeHostPort server2("https", kServer2HostName, kDefaultServerPort);
     const AlternativeService alternative_service2(
-        kProtoQUIC, host_port_pair2.host(), host_port_pair2.port());
+        kProtoQUIC, quic_server_id2.host(), quic_server_id2.port());
     AlternativeServiceInfoVector alternative_service_info_vector2;
     alternative_service_info_vector2.push_back(
         AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
             alternative_service2, expiration, {version_}));
 
     http_server_properties_->SetAlternativeServices(
-        server2, NetworkIsolationKey(), alternative_service_info_vector2);
+        url::SchemeHostPort("https", quic_server_id2.host(),
+                            quic_server_id2.port()),
+        network_isolation_key2, alternative_service_info_vector2);
     // Verify that the properties of both QUIC servers are stored in the
     // HTTP properties map.
     EXPECT_EQ(2U,
@@ -603,11 +628,10 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
     http_server_properties_->SetMaxServerConfigsStoredInProperties(
         kDefaultMaxQuicServerEntries);
 
-    quic::QuicServerId quic_server_id(kDefaultServerHostName, 443,
-                                      PRIVACY_MODE_DISABLED);
     std::unique_ptr<QuicServerInfo> quic_server_info =
         std::make_unique<PropertiesBasedQuicServerInfo>(
-            quic_server_id, http_server_properties_.get());
+            quic_server_id1, network_isolation_key1,
+            http_server_properties_.get());
 
     // Update quic_server_info's server_config and persist it.
     QuicServerInfo::State* state = quic_server_info->mutable_state();
@@ -625,7 +649,7 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
                          // Value
                          '1', '2', '3', '4', '5', '6', '7', '8'};
 
-    // Create temporary strings becasue Persist() clears string data in |state|.
+    // Create temporary strings because Persist() clears string data in |state|.
     string server_config(reinterpret_cast<const char*>(&scfg), sizeof(scfg));
     string source_address_token("test_source_address_token");
     string cert_sct("test_cert_sct");
@@ -643,11 +667,10 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
 
     quic_server_info->Persist();
 
-    quic::QuicServerId quic_server_id2(kServer2HostName, 443,
-                                       PRIVACY_MODE_DISABLED);
     std::unique_ptr<QuicServerInfo> quic_server_info2 =
         std::make_unique<PropertiesBasedQuicServerInfo>(
-            quic_server_id2, http_server_properties_.get());
+            quic_server_id2, network_isolation_key2,
+            http_server_properties_.get());
     // Update quic_server_info2's server_config and persist it.
     QuicServerInfo::State* state2 = quic_server_info2->mutable_state();
 
@@ -665,7 +688,7 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
                           // Value
                           '8', '7', '3', '4', '5', '6', '2', '1'};
 
-    // Create temporary strings becasue Persist() clears string data in
+    // Create temporary strings because Persist() clears string data in
     // |state2|.
     string server_config2(reinterpret_cast<const char*>(&scfg2), sizeof(scfg2));
     string source_address_token2("test_source_address_token2");
@@ -691,7 +714,7 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
     auto quic_server_info_map_it = quic_server_info_map.begin();
     EXPECT_EQ(quic_server_info_map_it->first.server_id, quic_server_id2);
     ++quic_server_info_map_it;
-    EXPECT_EQ(quic_server_info_map_it->first.server_id, quic_server_id);
+    EXPECT_EQ(quic_server_info_map_it->first.server_id, quic_server_id1);
 
     host_resolver_->rules()->AddIPLiteralRule(host_port_pair_.host(),
                                               "192.168.0.1", "");
@@ -707,19 +730,21 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
     QuicStreamRequest request(factory_.get());
     EXPECT_EQ(ERR_IO_PENDING,
               request.Request(
-                  HostPortPair(quic_server_id.host(), quic_server_id.port()),
+                  HostPortPair(quic_server_id1.host(), quic_server_id1.port()),
                   version_, privacy_mode_, DEFAULT_PRIORITY, SocketTag(),
-                  NetworkIsolationKey(),
+                  network_isolation_key1,
                   /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
                   failed_on_default_network_callback_, callback_.callback()));
     EXPECT_THAT(callback_.WaitForResult(), IsOk());
 
     EXPECT_FALSE(QuicStreamFactoryPeer::CryptoConfigCacheIsEmpty(
-        factory_.get(), quic_server_id));
-    quic::QuicCryptoClientConfig* crypto_config =
-        QuicStreamFactoryPeer::GetCryptoConfig(factory_.get());
+        factory_.get(), quic_server_id1, network_isolation_key1));
+
+    std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config_handle1 =
+        QuicStreamFactoryPeer::GetCryptoConfig(factory_.get(),
+                                               network_isolation_key1);
     quic::QuicCryptoClientConfig::CachedState* cached =
-        crypto_config->LookupOrCreate(quic_server_id);
+        crypto_config_handle1->GetConfig()->LookupOrCreate(quic_server_id1);
     EXPECT_FALSE(cached->server_config().empty());
     EXPECT_TRUE(cached->GetServerConfig());
     EXPECT_EQ(server_config, cached->server_config());
@@ -744,20 +769,26 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
                                               "192.168.0.2", "");
 
     QuicStreamRequest request2(factory_.get());
-    EXPECT_EQ(ERR_IO_PENDING,
-              request2.Request(
-                  HostPortPair(quic_server_id2.host(), quic_server_id2.port()),
-                  version_, privacy_mode_, DEFAULT_PRIORITY, SocketTag(),
-                  NetworkIsolationKey(),
-                  /*cert_verify_flags=*/0, GURL("https://mail.example.org/"),
-                  net_log_, &net_error_details_,
-                  failed_on_default_network_callback_, callback_.callback()));
+    EXPECT_EQ(
+        ERR_IO_PENDING,
+        request2.Request(
+            HostPortPair(quic_server_id2.host(), quic_server_id2.port()),
+            version_, privacy_mode_, DEFAULT_PRIORITY, SocketTag(),
+            network_isolation_key2,
+            /*cert_verify_flags=*/0,
+            vary_network_isolation_key ? url_
+                                       : GURL("https://mail.example.org/"),
+            net_log_, &net_error_details_, failed_on_default_network_callback_,
+            callback_.callback()));
     EXPECT_THAT(callback_.WaitForResult(), IsOk());
 
     EXPECT_FALSE(QuicStreamFactoryPeer::CryptoConfigCacheIsEmpty(
-        factory_.get(), quic_server_id2));
+        factory_.get(), quic_server_id2, network_isolation_key2));
+    std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config_handle2 =
+        QuicStreamFactoryPeer::GetCryptoConfig(factory_.get(),
+                                               network_isolation_key2);
     quic::QuicCryptoClientConfig::CachedState* cached2 =
-        crypto_config->LookupOrCreate(quic_server_id2);
+        crypto_config_handle2->GetConfig()->LookupOrCreate(quic_server_id2);
     EXPECT_FALSE(cached2->server_config().empty());
     EXPECT_TRUE(cached2->GetServerConfig());
     EXPECT_EQ(server_config2, cached2->server_config());
@@ -9475,12 +9506,15 @@ TEST_P(QuicStreamFactoryTest, SharedCryptoConfig) {
     r2_host_name.append(cannoncial_suffixes[i]);
 
     HostPortPair host_port_pair1(r1_host_name, 80);
-    quic::QuicCryptoClientConfig* crypto_config =
-        QuicStreamFactoryPeer::GetCryptoConfig(factory_.get());
+    // Need to hold onto this through the test, to keep the
+    // QuicCryptoClientConfig alive.
+    std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config_handle =
+        QuicStreamFactoryPeer::GetCryptoConfig(factory_.get(),
+                                               NetworkIsolationKey());
     quic::QuicServerId server_id1(host_port_pair1.host(),
                                   host_port_pair1.port(), privacy_mode_);
     quic::QuicCryptoClientConfig::CachedState* cached1 =
-        crypto_config->LookupOrCreate(server_id1);
+        crypto_config_handle->GetConfig()->LookupOrCreate(server_id1);
     EXPECT_FALSE(cached1->proof_valid());
     EXPECT_TRUE(cached1->source_address_token().empty());
 
@@ -9493,7 +9527,7 @@ TEST_P(QuicStreamFactoryTest, SharedCryptoConfig) {
     quic::QuicServerId server_id2(host_port_pair2.host(),
                                   host_port_pair2.port(), privacy_mode_);
     quic::QuicCryptoClientConfig::CachedState* cached2 =
-        crypto_config->LookupOrCreate(server_id2);
+        crypto_config_handle->GetConfig()->LookupOrCreate(server_id2);
     EXPECT_EQ(cached1->source_address_token(), cached2->source_address_token());
     EXPECT_TRUE(cached2->proof_valid());
   }
@@ -9512,12 +9546,15 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
     r4_host_name.append(cannoncial_suffixes[i]);
 
     HostPortPair host_port_pair1(r3_host_name, 80);
-    quic::QuicCryptoClientConfig* crypto_config =
-        QuicStreamFactoryPeer::GetCryptoConfig(factory_.get());
+    // Need to hold onto this through the test, to keep the
+    // QuicCryptoClientConfig alive.
+    std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config_handle =
+        QuicStreamFactoryPeer::GetCryptoConfig(factory_.get(),
+                                               NetworkIsolationKey());
     quic::QuicServerId server_id1(host_port_pair1.host(),
                                   host_port_pair1.port(), privacy_mode_);
     quic::QuicCryptoClientConfig::CachedState* cached1 =
-        crypto_config->LookupOrCreate(server_id1);
+        crypto_config_handle->GetConfig()->LookupOrCreate(server_id1);
     EXPECT_FALSE(cached1->proof_valid());
     EXPECT_TRUE(cached1->source_address_token().empty());
 
@@ -9530,7 +9567,7 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
     quic::QuicServerId server_id2(host_port_pair2.host(),
                                   host_port_pair2.port(), privacy_mode_);
     quic::QuicCryptoClientConfig::CachedState* cached2 =
-        crypto_config->LookupOrCreate(server_id2);
+        crypto_config_handle->GetConfig()->LookupOrCreate(server_id2);
     EXPECT_NE(cached1->source_address_token(), cached2->source_address_token());
     EXPECT_TRUE(cached2->source_address_token().empty());
     EXPECT_FALSE(cached2->proof_valid());
@@ -9682,7 +9719,375 @@ TEST_P(QuicStreamFactoryTest, ReducePingTimeoutOnConnectionTimeOutOpenStreams) {
 
 // Verifies that the QUIC stream factory is initialized correctly.
 TEST_P(QuicStreamFactoryTest, MaybeInitialize) {
-  VerifyInitialization();
+  VerifyInitialization(false /* vary_network_isolation_key */);
+}
+
+TEST_P(QuicStreamFactoryTest, MaybeInitializeWithNetworkIsolationKey) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // enabled_features
+      {features::kPartitionHttpServerPropertiesByNetworkIsolationKey,
+       // Need to partition connections by NetworkIsolationKey for
+       // QuicSessionAliasKey to include NetworkIsolationKeys.
+       features::kPartitionConnectionsByNetworkIsolationKey},
+      // disabled_features
+      {});
+  // Since HttpServerProperties caches the feature value, have to create a new
+  // one.
+  http_server_properties_ = std::make_unique<HttpServerProperties>();
+
+  VerifyInitialization(true /* vary_network_isolation_key */);
+}
+
+// Without NetworkIsolationKeys enabled for HttpServerProperties, there should
+// only be one global CryptoCache.
+TEST_P(QuicStreamFactoryTest, CryptoConfigCache) {
+  const char kUserAgentId[] = "spoon";
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionConnectionsByNetworkIsolationKey);
+
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+  const url::Origin kOrigin3 = url::Origin::Create(GURL("https://baz.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey3(kOrigin3, kOrigin3);
+
+  Initialize();
+
+  // Create a QuicCryptoClientConfigHandle for kNetworkIsolationKey1, and set
+  // the user agent.
+  std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config_handle1 =
+      QuicStreamFactoryPeer::GetCryptoConfig(factory_.get(),
+                                             kNetworkIsolationKey1);
+  crypto_config_handle1->GetConfig()->set_user_agent_id(kUserAgentId);
+  EXPECT_EQ(kUserAgentId, crypto_config_handle1->GetConfig()->user_agent_id());
+
+  // Create another crypto config handle using a different NetworkIsolationKey
+  // while the first one is still alive should return the same config, with the
+  // user agent that was just set.
+  std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config_handle2 =
+      QuicStreamFactoryPeer::GetCryptoConfig(factory_.get(),
+                                             kNetworkIsolationKey2);
+  EXPECT_EQ(kUserAgentId, crypto_config_handle2->GetConfig()->user_agent_id());
+
+  // Destroying both handles and creating a new one with yet another
+  // NetworkIsolationKey should again return the same config.
+  crypto_config_handle1.reset();
+  crypto_config_handle2.reset();
+
+  std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config_handle3 =
+      QuicStreamFactoryPeer::GetCryptoConfig(factory_.get(),
+                                             kNetworkIsolationKey3);
+  EXPECT_EQ(kUserAgentId, crypto_config_handle3->GetConfig()->user_agent_id());
+}
+
+// With different NetworkIsolationKeys enabled for HttpServerProperties, there
+// should only be one global CryptoCache per NetworkIsolationKey.
+TEST_P(QuicStreamFactoryTest, CryptoConfigCacheWithNetworkIsolationKey) {
+  const char kUserAgentId1[] = "spoon";
+  const char kUserAgentId2[] = "fork";
+  const char kUserAgentId3[] = "another spoon";
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // enabled_features
+      {features::kPartitionHttpServerPropertiesByNetworkIsolationKey,
+       // Need to partition connections by NetworkIsolationKey for
+       // QuicSessionAliasKey to include NetworkIsolationKeys.
+       features::kPartitionConnectionsByNetworkIsolationKey},
+      // disabled_features
+      {});
+
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+  const url::Origin kOrigin3 = url::Origin::Create(GURL("https://baz.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey3(kOrigin3, kOrigin3);
+
+  Initialize();
+
+  // Create a QuicCryptoClientConfigHandle for kNetworkIsolationKey1, and set
+  // the user agent.
+  std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config_handle1 =
+      QuicStreamFactoryPeer::GetCryptoConfig(factory_.get(),
+                                             kNetworkIsolationKey1);
+  crypto_config_handle1->GetConfig()->set_user_agent_id(kUserAgentId1);
+  EXPECT_EQ(kUserAgentId1, crypto_config_handle1->GetConfig()->user_agent_id());
+
+  // Create another crypto config handle using a different NetworkIsolationKey
+  // while the first one is still alive should return a different config.
+  std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config_handle2 =
+      QuicStreamFactoryPeer::GetCryptoConfig(factory_.get(),
+                                             kNetworkIsolationKey2);
+  EXPECT_EQ("", crypto_config_handle2->GetConfig()->user_agent_id());
+  crypto_config_handle2->GetConfig()->set_user_agent_id(kUserAgentId2);
+  EXPECT_EQ(kUserAgentId1, crypto_config_handle1->GetConfig()->user_agent_id());
+  EXPECT_EQ(kUserAgentId2, crypto_config_handle2->GetConfig()->user_agent_id());
+
+  // Creating handles with the same NIKs while the old handles are still alive
+  // should result in getting the same CryptoConfigs.
+  std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config_handle1_2 =
+      QuicStreamFactoryPeer::GetCryptoConfig(factory_.get(),
+                                             kNetworkIsolationKey1);
+  std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config_handle2_2 =
+      QuicStreamFactoryPeer::GetCryptoConfig(factory_.get(),
+                                             kNetworkIsolationKey2);
+  EXPECT_EQ(kUserAgentId1,
+            crypto_config_handle1_2->GetConfig()->user_agent_id());
+  EXPECT_EQ(kUserAgentId2,
+            crypto_config_handle2_2->GetConfig()->user_agent_id());
+
+  // Destroying all handles and creating a new one with yet another
+  // NetworkIsolationKey return yet another config.
+  crypto_config_handle1.reset();
+  crypto_config_handle2.reset();
+  crypto_config_handle1_2.reset();
+  crypto_config_handle2_2.reset();
+
+  std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config_handle3 =
+      QuicStreamFactoryPeer::GetCryptoConfig(factory_.get(),
+                                             kNetworkIsolationKey3);
+  EXPECT_EQ("", crypto_config_handle3->GetConfig()->user_agent_id());
+  crypto_config_handle3->GetConfig()->set_user_agent_id(kUserAgentId3);
+  EXPECT_EQ(kUserAgentId3, crypto_config_handle3->GetConfig()->user_agent_id());
+  crypto_config_handle3.reset();
+
+  // The old CryptoConfigs should be recovered when creating handles with the
+  // same NIKs as before.
+  crypto_config_handle2 = QuicStreamFactoryPeer::GetCryptoConfig(
+      factory_.get(), kNetworkIsolationKey2);
+  crypto_config_handle1 = QuicStreamFactoryPeer::GetCryptoConfig(
+      factory_.get(), kNetworkIsolationKey1);
+  crypto_config_handle3 = QuicStreamFactoryPeer::GetCryptoConfig(
+      factory_.get(), kNetworkIsolationKey3);
+  EXPECT_EQ(kUserAgentId1, crypto_config_handle1->GetConfig()->user_agent_id());
+  EXPECT_EQ(kUserAgentId2, crypto_config_handle2->GetConfig()->user_agent_id());
+  EXPECT_EQ(kUserAgentId3, crypto_config_handle3->GetConfig()->user_agent_id());
+}
+
+// Makes Verifies MRU behavior of the crypto config caches. Without
+// NetworkIsolationKeys enabled, behavior is uninteresting, since there's only
+// one cache, so nothing is ever evicted.
+TEST_P(QuicStreamFactoryTest, CryptoConfigCacheMRUWithNetworkIsolationKey) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // enabled_features
+      {features::kPartitionHttpServerPropertiesByNetworkIsolationKey,
+       // Need to partition connections by NetworkIsolationKey for
+       // QuicSessionAliasKey to include NetworkIsolationKeys.
+       features::kPartitionConnectionsByNetworkIsolationKey},
+      // disabled_features
+      {});
+
+  const int kNumSessionsToMake = kMaxRecentCryptoConfigs + 5;
+
+  Initialize();
+
+  // Make more entries than the maximum, setting a unique user agent for each,
+  // and keeping the handles alives.
+  std::vector<std::unique_ptr<QuicCryptoClientConfigHandle>>
+      crypto_config_handles;
+  std::vector<NetworkIsolationKey> network_isolation_keys;
+  for (int i = 0; i < kNumSessionsToMake; ++i) {
+    url::Origin origin =
+        url::Origin::Create(GURL(base::StringPrintf("https://foo%i.test/", i)));
+    network_isolation_keys.push_back(NetworkIsolationKey(origin, origin));
+
+    std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config_handle =
+        QuicStreamFactoryPeer::GetCryptoConfig(factory_.get(),
+                                               network_isolation_keys[i]);
+    crypto_config_handle->GetConfig()->set_user_agent_id(
+        base::NumberToString(i));
+    crypto_config_handles.emplace_back(std::move(crypto_config_handle));
+  }
+
+  // Since all the handles are still alive, nothing should be evicted yet.
+  for (int i = 0; i < kNumSessionsToMake; ++i) {
+    SCOPED_TRACE(i);
+    EXPECT_EQ(base::NumberToString(i),
+              crypto_config_handles[i]->GetConfig()->user_agent_id());
+
+    // A new handle for the same NIK returns the same crypto config.
+    std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config_handle =
+        QuicStreamFactoryPeer::GetCryptoConfig(factory_.get(),
+                                               network_isolation_keys[i]);
+    EXPECT_EQ(base::NumberToString(i),
+              crypto_config_handle->GetConfig()->user_agent_id());
+  }
+
+  // Destroying the only remaining handle for a NIK results in evicting entries,
+  // until there are exactly |kMaxRecentCryptoConfigs| handles.
+  for (int i = 0; i < kNumSessionsToMake; ++i) {
+    SCOPED_TRACE(i);
+    EXPECT_EQ(base::NumberToString(i),
+              crypto_config_handles[i]->GetConfig()->user_agent_id());
+
+    crypto_config_handles[i].reset();
+
+    // A new handle for the same NIK will return a new config, if the config was
+    // evicted. Otherwise, it will return the same one.
+    std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config_handle =
+        QuicStreamFactoryPeer::GetCryptoConfig(factory_.get(),
+                                               network_isolation_keys[i]);
+    if (kNumSessionsToMake - i > kNumSessionsToMake) {
+      EXPECT_EQ("", crypto_config_handle->GetConfig()->user_agent_id());
+    } else {
+      EXPECT_EQ(base::NumberToString(i),
+                crypto_config_handle->GetConfig()->user_agent_id());
+    }
+  }
+}
+
+// Similar to above test, but uses real requests, and doesn't keep Handles
+// around, so evictions happen immediately.
+TEST_P(QuicStreamFactoryTest,
+       CryptoConfigCacheMRUWithRealRequestsAndWithNetworkIsolationKey) {
+  const int kNumSessionsToMake = kMaxRecentCryptoConfigs + 5;
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // enabled_features
+      {features::kPartitionHttpServerPropertiesByNetworkIsolationKey,
+       // Need to partition connections by NetworkIsolationKey for
+       // QuicSessionAliasKey to include NetworkIsolationKeys.
+       features::kPartitionConnectionsByNetworkIsolationKey},
+      // disabled_features
+      {});
+  // Since HttpServerProperties caches the feature value, have to create a new
+  // one.
+  http_server_properties_ = std::make_unique<HttpServerProperties>();
+
+  std::vector<NetworkIsolationKey> network_isolation_keys;
+  for (int i = 0; i < kNumSessionsToMake; ++i) {
+    url::Origin origin =
+        url::Origin::Create(GURL(base::StringPrintf("https://foo%i.test/", i)));
+    network_isolation_keys.push_back(NetworkIsolationKey(origin, origin));
+  }
+
+  const quic::QuicServerId kQuicServerId(
+      kDefaultServerHostName, kDefaultServerPort, PRIVACY_MODE_DISABLED);
+
+  test_params_.quic_params.max_server_configs_stored_in_properties = 1;
+  test_params_.quic_params.idle_connection_timeout =
+      base::TimeDelta::FromSeconds(500);
+  Initialize();
+  factory_->set_is_quic_known_to_work_on_current_network(true);
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::ZERO_RTT);
+  const quic::QuicConfig* config =
+      QuicStreamFactoryPeer::GetConfig(factory_.get());
+  EXPECT_EQ(500, config->IdleNetworkTimeout().ToSeconds());
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+
+  for (int i = 0; i < kNumSessionsToMake; ++i) {
+    SCOPED_TRACE(i);
+    crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+    QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), runner_.get());
+
+    const AlternativeService alternative_service1(
+        kProtoQUIC, host_port_pair_.host(), host_port_pair_.port());
+    AlternativeServiceInfoVector alternative_service_info_vector;
+    base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+    alternative_service_info_vector.push_back(
+        AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
+            alternative_service1, expiration, {version_}));
+    http_server_properties_->SetAlternativeServices(
+        url::SchemeHostPort(url_), network_isolation_keys[i],
+        alternative_service_info_vector);
+
+    http_server_properties_->SetMaxServerConfigsStoredInProperties(
+        kDefaultMaxQuicServerEntries);
+
+    std::unique_ptr<QuicServerInfo> quic_server_info =
+        std::make_unique<PropertiesBasedQuicServerInfo>(
+            kQuicServerId, network_isolation_keys[i],
+            http_server_properties_.get());
+
+    // Update quic_server_info's server_config and persist it.
+    QuicServerInfo::State* state = quic_server_info->mutable_state();
+    // Minimum SCFG that passes config validation checks.
+    const char scfg[] = {// SCFG
+                         0x53, 0x43, 0x46, 0x47,
+                         // num entries
+                         0x01, 0x00,
+                         // padding
+                         0x00, 0x00,
+                         // EXPY
+                         0x45, 0x58, 0x50, 0x59,
+                         // EXPY end offset
+                         0x08, 0x00, 0x00, 0x00,
+                         // Value
+                         '1', '2', '3', '4', '5', '6', '7', '8'};
+
+    // Create temporary strings because Persist() clears string data in |state|.
+    string server_config(reinterpret_cast<const char*>(&scfg), sizeof(scfg));
+    string source_address_token("test_source_address_token");
+    string cert_sct("test_cert_sct");
+    string chlo_hash("test_chlo_hash");
+    string signature("test_signature");
+    string test_cert("test_cert");
+    std::vector<string> certs;
+    certs.push_back(test_cert);
+    state->server_config = server_config;
+    state->source_address_token = source_address_token;
+    state->cert_sct = cert_sct;
+    state->chlo_hash = chlo_hash;
+    state->server_config_sig = signature;
+    state->certs = certs;
+
+    quic_server_info->Persist();
+
+    // Create a session and verify that the cached state is loaded.
+    MockQuicData socket_data(version_);
+    socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+    client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+    if (VersionUsesQpack(version_.transport_version))
+      socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
+    // For the close socket message.
+    socket_data.AddWrite(SYNCHRONOUS, ERR_IO_PENDING);
+    socket_data.AddSocketDataToFactory(socket_factory_.get());
+    client_maker_.Reset();
+
+    QuicStreamRequest request(factory_.get());
+    int rv = request.Request(
+        HostPortPair(kDefaultServerHostName, kDefaultServerPort), version_,
+        privacy_mode_, DEFAULT_PRIORITY, SocketTag(), network_isolation_keys[i],
+        /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
+        failed_on_default_network_callback_, callback_.callback());
+    EXPECT_THAT(callback_.GetResult(rv), IsOk());
+
+    // While the session is still alive, there should be
+    // kMaxRecentCryptoConfigs+1 CryptoConfigCaches alive, since active configs
+    // don't count towards the limit.
+    for (int j = 0; j < kNumSessionsToMake; ++j) {
+      SCOPED_TRACE(j);
+      EXPECT_EQ(i - (kMaxRecentCryptoConfigs + 1) < j && j <= i,
+                !QuicStreamFactoryPeer::CryptoConfigCacheIsEmpty(
+                    factory_.get(), kQuicServerId, network_isolation_keys[j]));
+    }
+
+    // Close the sessions, which should cause its CryptoConfigCache to be moved
+    // to the MRU cache, potentially evicting the oldest entry..
+    factory_->CloseAllSessions(ERR_FAILED, quic::QUIC_PEER_GOING_AWAY);
+
+    // There should now be at most kMaxRecentCryptoConfigs live
+    // CryptoConfigCaches
+    for (int j = 0; j < kNumSessionsToMake; ++j) {
+      SCOPED_TRACE(j);
+      EXPECT_EQ(i - kMaxRecentCryptoConfigs < j && j <= i,
+                !QuicStreamFactoryPeer::CryptoConfigCacheIsEmpty(
+                    factory_.get(), kQuicServerId, network_isolation_keys[j]));
+    }
+  }
 }
 
 TEST_P(QuicStreamFactoryTest, StartCertVerifyJob) {
@@ -9698,19 +10103,27 @@ TEST_P(QuicStreamFactoryTest, StartCertVerifyJob) {
   bool race_cert_verification =
       QuicStreamFactoryPeer::GetRaceCertVerification(factory_.get());
 
+  // Need to hold onto this through the test, to keep the QuicCryptoClientConfig
+  // alive.
+  std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config_handle =
+      QuicStreamFactoryPeer::GetCryptoConfig(factory_.get(),
+                                             NetworkIsolationKey());
+
   // Load server config.
   HostPortPair host_port_pair(kDefaultServerHostName, kDefaultServerPort);
   quic::QuicServerId quic_server_id(host_port_pair_.host(),
                                     host_port_pair_.port(),
                                     privacy_mode_ == PRIVACY_MODE_ENABLED);
-  QuicStreamFactoryPeer::CacheDummyServerConfig(factory_.get(), quic_server_id);
+  QuicStreamFactoryPeer::CacheDummyServerConfig(factory_.get(), quic_server_id,
+                                                NetworkIsolationKey());
 
   QuicStreamFactoryPeer::SetRaceCertVerification(factory_.get(), true);
   EXPECT_FALSE(HasActiveCertVerifierJob(quic_server_id));
 
   // Start CertVerifyJob.
   quic::QuicAsyncStatus status = QuicStreamFactoryPeer::StartCertVerifyJob(
-      factory_.get(), quic_server_id, /*cert_verify_flags=*/0, net_log_);
+      factory_.get(), quic_server_id, NetworkIsolationKey(),
+      /*cert_verify_flags=*/0, net_log_);
   if (status == quic::QUIC_PENDING) {
     // Verify CertVerifierJob has started.
     EXPECT_TRUE(HasActiveCertVerifierJob(quic_server_id));
@@ -10368,8 +10781,11 @@ TEST_P(QuicStreamFactoryWithDestinationTest, DisjointCertificate) {
 // deletion itself works correctly is tested in QuicCryptoClientConfigTest.
 TEST_P(QuicStreamFactoryTest, ClearCachedStatesInCryptoConfig) {
   Initialize();
-  quic::QuicCryptoClientConfig* crypto_config =
-      QuicStreamFactoryPeer::GetCryptoConfig(factory_.get());
+  // Need to hold onto this through the test, to keep the QuicCryptoClientConfig
+  // alive.
+  std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config_handle =
+      QuicStreamFactoryPeer::GetCryptoConfig(factory_.get(),
+                                             NetworkIsolationKey());
 
   struct TestCase {
     TestCase(const std::string& host,
@@ -10389,10 +10805,12 @@ TEST_P(QuicStreamFactoryTest, ClearCachedStatesInCryptoConfig) {
 
     quic::QuicServerId server_id;
     quic::QuicCryptoClientConfig::CachedState* state;
-  } test_cases[] = {
-      TestCase("www.google.com", 443, privacy_mode_, crypto_config),
-      TestCase("www.example.com", 443, privacy_mode_, crypto_config),
-      TestCase("www.example.com", 4433, privacy_mode_, crypto_config)};
+  } test_cases[] = {TestCase("www.google.com", 443, privacy_mode_,
+                             crypto_config_handle->GetConfig()),
+                    TestCase("www.example.com", 443, privacy_mode_,
+                             crypto_config_handle->GetConfig()),
+                    TestCase("www.example.com", 4433, privacy_mode_,
+                             crypto_config_handle->GetConfig())};
 
   // Clear cached states for the origin https://www.example.com:4433.
   GURL origin("https://www.example.com:4433");

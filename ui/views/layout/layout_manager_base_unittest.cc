@@ -13,8 +13,6 @@
 
 namespace views {
 
-// Test LayoutManagerBase-specific functionality:
-
 namespace {
 
 constexpr int kChildViewPadding = 5;
@@ -340,7 +338,7 @@ TEST_F(LayoutManagerBaseManagerTest, ApplyLayout) {
   // doesn't change.
   const gfx::Size old_size = host_view()->size();
 
-  LayoutManagerBase::ProposedLayout layout;
+  ProposedLayout layout;
   // This should be ignored.
   layout.host_size = {123, 456};
 
@@ -366,7 +364,7 @@ TEST_F(LayoutManagerBaseManagerTest, ApplyLayout_SkipsOmittedViews) {
   AddChildView(gfx::Size());
   AddChildView(gfx::Size());
 
-  LayoutManagerBase::ProposedLayout layout;
+  ProposedLayout layout;
   // Set the child visibility and bounds.
   constexpr gfx::Rect kChild1Bounds(3, 4, 10, 15);
   constexpr gfx::Rect kChild2Bounds(1, 2, 3, 4);
@@ -597,7 +595,6 @@ TEST(LayoutManagerBase_ProposedLayoutTest, Equality) {
   View* ptr0 = nullptr;
   View* ptr1 = ptr0 + 1;
   View* ptr2 = ptr0 + 2;
-  using ProposedLayout = LayoutManagerBase::ProposedLayout;
   ProposedLayout a;
   ProposedLayout b;
   EXPECT_TRUE(a == b);

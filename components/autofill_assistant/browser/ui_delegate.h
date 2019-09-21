@@ -123,6 +123,22 @@ class UiDelegate {
   // Called when the user clicks a link on the terms & conditions message.
   virtual void OnTermsAndConditionsLinkClicked(int link) = 0;
 
+  // Sets the start of the date/time range.
+  virtual void SetDateTimeRangeStart(int year,
+                                     int month,
+                                     int day,
+                                     int hour,
+                                     int minute,
+                                     int second) = 0;
+
+  // Sets the end of the date/time range.
+  virtual void SetDateTimeRangeEnd(int year,
+                                   int month,
+                                   int day,
+                                   int hour,
+                                   int minute,
+                                   int second) = 0;
+
   // Adds the rectangles that correspond to the current touchable area to
   // the given vector.
   //

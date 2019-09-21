@@ -149,7 +149,7 @@ interface ContentIndex
     method add
     method constructor
     method delete
-    method getDescriptions
+    method getAll
 interface ContentIndexEvent : ExtendableEvent
     attribute @@toStringTag
     getter id

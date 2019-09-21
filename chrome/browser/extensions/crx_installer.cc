@@ -269,7 +269,8 @@ void CrxInstaller::UpdateExtensionFromUnpackedCrx(
   if (!service || service->browser_terminating())
     return;
 
-  const Extension* extension = service->GetInstalledExtension(extension_id);
+  const Extension* extension = ExtensionRegistry::Get(service->profile())
+                                   ->GetInstalledExtension(extension_id);
   if (!extension) {
     LOG(WARNING) << "Will not update extension " << extension_id
                  << " because it is not installed";
@@ -1047,7 +1048,8 @@ void CrxInstaller::CheckUpdateFromSettingsPage() {
     return;
 
   const Extension* installed_extension =
-      service->GetInstalledExtension(extension()->id());
+      ExtensionRegistry::Get(service->profile())
+          ->GetInstalledExtension(extension()->id());
   if (installed_extension) {
     // Previous version of the extension exists.
     update_from_settings_page_ = true;

@@ -2389,8 +2389,8 @@ void Browser::ProcessPendingUIUpdates() {
     }
 
     // Updates that don't depend upon the selected state go here.
-    if (flags &
-        (content::INVALIDATE_TYPE_TAB | content::INVALIDATE_TYPE_TITLE)) {
+    if (flags & (content::INVALIDATE_TYPE_TAB | content::INVALIDATE_TYPE_TITLE |
+                 content::INVALIDATE_TYPE_AUDIO)) {
       tab_strip_model_->UpdateWebContentsStateAt(
           tab_strip_model_->GetIndexOfWebContents(contents),
           TabChangeType::kAll);

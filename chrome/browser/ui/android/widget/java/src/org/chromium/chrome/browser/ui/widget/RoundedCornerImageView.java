@@ -21,7 +21,6 @@ import android.graphics.drawable.shapes.Shape;
 import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.widget.ImageView;
-
 import androidx.annotation.ColorRes;
 import androidx.annotation.Nullable;
 
@@ -89,7 +88,7 @@ public class RoundedCornerImageView extends ImageView {
     /**
      * Updates the rounded corners, using the radius set in the layout.
      */
-    private void setRoundedCorners(int cornerRadiusTopStart, int cornerRadiusTopEnd,
+    public void setRoundedCorners(int cornerRadiusTopStart, int cornerRadiusTopEnd,
             int cornerRadiusBottomStart, int cornerRadiusBottomEnd) {
         float[] radii;
         if (ViewCompat.getLayoutDirection(this) == ViewCompat.LAYOUT_DIRECTION_LTR) {

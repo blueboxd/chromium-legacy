@@ -256,8 +256,19 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
                                       has_ongoing_compositor_scroll_or_pinch_
                                           ? ONGOING_SCROLL_PINCH
                                           : SCROLL_PINCH);
+  const auto& gesture_event = ToWebGestureEvent(event_with_callback->event());
+  const bool is_first_gesture_scroll_update =
+      !has_seen_first_gesture_scroll_update_after_begin_ &&
+      gesture_event.GetType() == blink::WebGestureEvent::kGestureScrollUpdate;
+
+  if (gesture_event.GetType() == blink::WebGestureEvent::kGestureScrollBegin) {
+    has_seen_first_gesture_scroll_update_after_begin_ = false;
+  } else if (gesture_event.GetType() ==
+             blink::WebGestureEvent::kGestureScrollUpdate) {
+    has_seen_first_gesture_scroll_update_after_begin_ = true;
+  }
+
   if (has_ongoing_compositor_scroll_or_pinch_) {
-    const auto& gesture_event = ToWebGestureEvent(event_with_callback->event());
     bool is_from_set_non_blocking_touch =
         gesture_event.SourceDevice() == blink::WebGestureDevice::kTouchscreen &&
         gesture_event.is_source_touch_event_set_non_blocking;
@@ -266,17 +277,7 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
         gesture_event.GetType() == blink::WebGestureEvent::kGestureScrollEnd;
     bool scroll_update_has_blocking_wheel_source =
         gesture_event.SourceDevice() == blink::WebGestureDevice::kTouchpad &&
-        gesture_event.GetType() ==
-            blink::WebGestureEvent::kGestureScrollUpdate &&
-        !has_seen_first_gesture_scroll_update_after_begin_;
-
-    if (gesture_event.GetType() ==
-        blink::WebGestureEvent::kGestureScrollBegin) {
-      has_seen_first_gesture_scroll_update_after_begin_ = false;
-    } else if (gesture_event.GetType() ==
-               blink::WebGestureEvent::kGestureScrollUpdate) {
-      has_seen_first_gesture_scroll_update_after_begin_ = true;
-    }
+        is_first_gesture_scroll_update;
 
     if (is_from_set_non_blocking_touch || is_scroll_end_from_wheel ||
         scroll_update_has_blocking_wheel_source || synchronous_input_handler_) {

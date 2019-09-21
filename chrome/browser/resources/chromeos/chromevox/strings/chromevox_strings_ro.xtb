@@ -169,6 +169,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="2220529011494928058">Semnalați o problemă</translation>
 <translation id="2223693656926968778">Acționați asupra elementului curent</translation>
 <translation id="225732394367814946">Creșteți viteza de vorbire</translation>
+<translation id="2267538686624070261">Se închide cuvântul scris greșit</translation>
 <translation id="2267945578749931355">Caracterul următor</translation>
 <translation id="2278490101488436824">Glisează cu trei degete la stânga</translation>
 <translation id="2281234842553884450">Glisorul anterior</translation>
@@ -207,6 +208,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="257674075312929031">Grup</translation>
 <translation id="2582407057977008361">Separat</translation>
 <translation id="2592212930811759050">Atinge de două ori pentru a începe editarea</translation>
+<translation id="2598495320872286378">Greșeală de gramatică</translation>
 <translation id="2614981083756825552">Aspect Math ML</translation>
 <translation id="2624431853467395961">Deschide modul de învățare</translation>
 <translation id="2626530649491650971">pe care se poate da clic</translation>
@@ -821,6 +823,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="6833103209700200188">Notă de subsol</translation>
 <translation id="6858047746862060282">Prolog</translation>
 <translation id="6859876496651143278">Glisează cu un deget la stânga</translation>
+<translation id="6865519907510167493">Scris greșit</translation>
 <translation id="6871161210040114857">Se ignoră scrierea cu minuscule/majuscule.</translation>
 <translation id="6877435256196695200">Nu există un grafic următor.</translation>
 <translation id="6897341342232909480">Deplasează spre stânga</translation>
@@ -1111,6 +1114,7 @@ Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
 <translation id="8446884382197647889">Află mai multe</translation>
 <translation id="8455868257606149352">Max. <ph name="X" /></translation>
 <translation id="84575901236241018">are tastă de acces, <ph name="KEY" /></translation>
+<translation id="8463645336674919227">Se închide greșeala de gramatică</translation>
 <translation id="847154984256717791">ocupat</translation>
 <translation id="8476408756881832830">Întrerupe redarea când ChromeVox vorbește</translation>
 <translation id="8476508772960940536">prezentarea ferestrei</translation>

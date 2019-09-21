@@ -71,6 +71,7 @@ class Smoke(IntegrationTest):
       self.assertGreater(num_chrome_proxy_request_headers, 0)
 
   # Ensure pageload metric pingback with DataSaver.
+  @ChromeVersionBeforeM(79)
   def testPingback(self):
     with TestDriver() as t:
       t.AddChromeArg('--enable-spdy-proxy-auth')
@@ -87,6 +88,7 @@ class Smoke(IntegrationTest):
 
   # Ensure pageload metric pingback with DataSaver has the variations header.
   @ChromeVersionEqualOrAfterM(62)
+  @ChromeVersionBeforeM(79)
   def testPingbackHasVariations(self):
     with TestDriver() as t:
       t.AddChromeArg('--enable-spdy-proxy-auth')

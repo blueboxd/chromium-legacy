@@ -22,26 +22,26 @@
       "drawsContent": false
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV id='target'",
+      "name": "LayoutNGBlockFlow (positioned) DIV id='target'",
       "position": [5, 55],
-      "bounds": [406, 546],
+      "bounds": [206, 206],
       "backfaceVisibility": "hidden",
       "backgroundColor": "#FFFF00",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='target'",
-          "rect": [0, 0, 406, 546],
+          "object": "LayoutNGBlockFlow (positioned) DIV id='target'",
+          "rect": [0, 0, 206, 206],
           "reason": "full layer"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='target'",
+          "object": "LayoutNGBlockFlow (positioned) DIV id='target'",
           "rect": [0, 0, 200, 200],
           "reason": "full layer"
         }
       ]
     },
     {
-      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV)",
+      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV)",
       "position": [108, 158],
       "bounds": [300, 440]
     }

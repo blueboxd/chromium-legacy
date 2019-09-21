@@ -93,6 +93,7 @@
 <translation id="2149973817440762519">Editați marcajul</translation>
 <translation id="2179182049312275900">Poți să activezi sincronizarea oricând în setări.</translation>
 <translation id="2198757192731523470">Google poate folosi istoricul pentru a personaliza Căutarea, anunțurile și alte servicii Google.</translation>
+<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> articole necitite în Lista de lectură.</translation>
 <translation id="2230173723195178503">Pagina web s-a încărcat</translation>
 <translation id="2239626343334228536">Se șterg datele de navigare...</translation>
 <translation id="2256128224215992540">Sugestii de căutare și de site-uri</translation>
@@ -108,6 +109,7 @@
 <translation id="2360196772093551345">Solicită site mobil</translation>
 <translation id="2381405137052800939">Setări de bază</translation>
 <translation id="2386793615875593361">1 selectată</translation>
+<translation id="2421044535038393232">Continuă editarea</translation>
 <translation id="2435457462613246316">Afișați parola</translation>
 <translation id="2481538920734869610">ADAUGĂ UN CONT</translation>
 <translation id="2497852260688568942">Sincronizarea este dezactivată de administrator</translation>
@@ -227,6 +229,7 @@
 <translation id="418156467088430727">Vezi versiunea offline într-o filă nouă</translation>
 <translation id="4181841719683918333">Limbi</translation>
 <translation id="424315890655130736">Introdu expresia de acces</translation>
+<translation id="4263576668337963058">Afișează acțiunile în pagină disponibile</translation>
 <translation id="4272631900155121838">Pentru a scana un cod QR, activează camera foto din setări</translation>
 <translation id="4281844954008187215">Condiții de furnizare a serviciilor</translation>
 <translation id="430793432425771671">Sincronizează tot</translation>
@@ -264,6 +267,7 @@ Datele sunt criptate cu expresia de acces pentru sincronizare. Introdu-o pentru 
 
 Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincronizarea<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">Numărul cardului nu este valid</translation>
+<translation id="4807020197310989387">Un articol necitit în Lista de lectură.</translation>
 <translation id="4818522717893377262">Adaugă o limbă...</translation>
 <translation id="481968316161811770">Cookie-urile, datele privind site-urile</translation>
 <translation id="4833786495304741580">Trimite automat statistici de utilizare și rapoarte de blocare la Google.</translation>

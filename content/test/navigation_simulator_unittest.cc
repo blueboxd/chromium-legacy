@@ -293,7 +293,7 @@ TEST_P(NavigationSimulatorTestCancelFail, Fail) {
 TEST_P(NavigationSimulatorTestCancelFail, FailWithResponseHeaders) {
   simulator_->Start();
 
-  using namespace std::string_literals;
+  using std::string_literals::operator""s;
   std::string header =
       "HTTP/1.1 404 Not Found\0"
       "content-encoding: gzip\0\0"s;

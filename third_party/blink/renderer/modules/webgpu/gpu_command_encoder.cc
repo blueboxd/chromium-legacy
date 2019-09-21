@@ -178,23 +178,11 @@ GPURenderPassEncoder* GPUCommandEncoder::beginRenderPass(
   dawn_desc.colorAttachmentCount = color_attachment_count;
   dawn_desc.colorAttachments = nullptr;
 
-  using DescriptorPtr = DawnRenderPassColorAttachmentDescriptor*;
-  using DescriptorArray = DawnRenderPassColorAttachmentDescriptor[];
-  using DescriptorPtrArray = DescriptorPtr[];
-
-  std::unique_ptr<DescriptorArray> color_attachments;
-  std::unique_ptr<DescriptorPtrArray> color_attachment_ptrs;
+  std::unique_ptr<DawnRenderPassColorAttachmentDescriptor[]> color_attachments;
 
   if (color_attachment_count > 0) {
     color_attachments = AsDawnType(descriptor->colorAttachments());
-
-    color_attachment_ptrs = std::unique_ptr<DescriptorPtrArray>(
-        new DescriptorPtr[color_attachment_count]);
-
-    for (uint32_t i = 0; i < color_attachment_count; ++i) {
-      color_attachment_ptrs[i] = color_attachments.get() + i;
-    }
-    dawn_desc.colorAttachments = color_attachment_ptrs.get();
+    dawn_desc.colorAttachments = color_attachments.get();
   }
 
   DawnRenderPassDepthStencilAttachmentDescriptor depthStencilAttachment = {};

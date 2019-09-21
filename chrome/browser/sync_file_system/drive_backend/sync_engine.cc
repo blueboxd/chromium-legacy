@@ -50,6 +50,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/system_connector.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -216,13 +217,15 @@ std::unique_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(context)
           ->GetURLLoaderFactoryForBrowserProcess();
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(context);
 
   std::unique_ptr<drive_backend::SyncEngine> sync_engine(new SyncEngine(
       ui_task_runner.get(), worker_task_runner.get(), drive_task_runner.get(),
       GetSyncFileSystemDir(context->GetPath()), task_logger,
-      notification_manager, extension_service, identity_manager,
-      url_loader_factory, std::make_unique<DriveServiceFactory>(),
-      nullptr /* env_override */));
+      notification_manager, extension_service, extension_registry,
+      identity_manager, url_loader_factory,
+      std::make_unique<DriveServiceFactory>(), nullptr /* env_override */));
 
   sync_engine->Initialize();
   return sync_engine;
@@ -339,10 +342,9 @@ void SyncEngine::InitializeInternal(
     extension_service_weak_ptr = extension_service_->AsWeakPtr();
 
   if (!sync_worker) {
-    sync_worker.reset(new SyncWorker(
-        sync_file_system_dir_,
-        extension_service_weak_ptr,
-        env_override_));
+    sync_worker.reset(new SyncWorker(sync_file_system_dir_,
+                                     extension_service_weak_ptr,
+                                     extension_registry_, env_override_));
   }
 
   sync_worker_ = std::move(sync_worker);
@@ -723,6 +725,7 @@ SyncEngine::SyncEngine(
     TaskLogger* task_logger,
     drive::DriveNotificationManager* notification_manager,
     extensions::ExtensionServiceInterface* extension_service,
+    extensions::ExtensionRegistry* extension_registry,
     signin::IdentityManager* identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::unique_ptr<DriveServiceFactory> drive_service_factory,
@@ -734,6 +737,7 @@ SyncEngine::SyncEngine(
       task_logger_(task_logger),
       notification_manager_(notification_manager),
       extension_service_(extension_service),
+      extension_registry_(extension_registry),
       identity_manager_(identity_manager),
       url_loader_factory_(url_loader_factory),
       drive_service_factory_(std::move(drive_service_factory)),

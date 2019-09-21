@@ -122,8 +122,6 @@ const char* RenderSurfaceReasonToString(RenderSurfaceReason reason) {
       return "clip axis alignment";
     case RenderSurfaceReason::kMask:
       return "mask";
-    case RenderSurfaceReason::kRootOrIsolatedGroup:
-      return "root or isolated group";
     case RenderSurfaceReason::kTrilinearFiltering:
       return "trilinear filtering";
     case RenderSurfaceReason::kCache:

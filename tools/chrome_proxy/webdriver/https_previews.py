@@ -11,40 +11,24 @@ from common import TestDriver
 from common import IntegrationTest
 from decorators import AndroidOnly
 from decorators import ChromeVersionEqualOrAfterM
+from decorators import ChromeVersionBeforeM
 
 from selenium.common.exceptions import TimeoutException
 
-NAV_THROTTLE_VERSION = "v1_NavThrottle"
-URL_LOADER_VERSION = "v2_URLLoader"
 LITEPAGES_REGEXP = r'https://\w+\.litepages\.googlezip\.net/.*'
 
 # These are integration tests for server provided previews and the
-# protocol that supports them. This class is intended as an abstract base class
-# to allow the two versions of this feature implementation to reuse the same
-# tests.
-class HttpsPreviewsBaseClass():
-  # Abstract function for subclasses to override.
-  def getVersion(self):
-    raise Exception( "Please override this method")
+# protocol that supports them.
+class HttpsPreviews(IntegrationTest):
 
   def EnableLitePageServerPreviewsAndInit(self, t):
-    version = self.getVersion()
-
-    # These feature flags are common to both versions.
     t.EnableChromeFeature('Previews')
     t.EnableChromeFeature('LitePageServerPreviews')
+    t.EnableChromeFeature('HTTPSServerPreviewsUsingURLLoader')
 
     # RLH and NoScript may disable use of LitePageRedirect Previews.
     t.DisableChromeFeature('ResourceLoadingHints')
     t.DisableChromeFeature('NoScriptPreviews')
-
-    if version == NAV_THROTTLE_VERSION:
-      # No additional flags here, but explicitly check it given the else below.
-      pass
-    elif version == URL_LOADER_VERSION:
-      t.EnableChromeFeature('HTTPSServerPreviewsUsingURLLoader')
-    else:
-      raise Exception('"%s" is not a valid version' % version)
 
     t.AddChromeArg('--enable-spdy-proxy-auth')
     t.AddChromeArg('--dont-require-litepage-redirect-infobar')
@@ -153,6 +137,7 @@ class HttpsPreviewsBaseClass():
 
   # Verifies that a Lite Page pageload sends a DRP pingback.
   @ChromeVersionEqualOrAfterM(74)
+  @ChromeVersionBeforeM(79)
   def testPingbackSent(self):
     with TestDriver() as t:
       t.AddChromeArg('--enable-data-reduction-proxy-force-pingback')
@@ -271,14 +256,6 @@ class HttpsPreviewsBaseClass():
             if ":status: 200" in value:
               ok_responses += 1
       self.assertNotEqual(0, ok_responses)
-
-class HttpsPreviewsNavigationThrottle(HttpsPreviewsBaseClass, IntegrationTest):
-  def getVersion(self):
-    return NAV_THROTTLE_VERSION
-
-class HttpsPreviewsURLLoader(HttpsPreviewsBaseClass, IntegrationTest):
-  def getVersion(self):
-    return URL_LOADER_VERSION
 
   # Verifies that if a streaming preview is being served but needs to be
   # aborted, changing location.href will load the original page.

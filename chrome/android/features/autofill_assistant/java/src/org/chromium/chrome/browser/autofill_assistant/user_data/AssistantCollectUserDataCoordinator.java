@@ -5,14 +5,19 @@
 package org.chromium.chrome.browser.autofill_assistant.user_data;
 
 import android.app.Activity;
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
+
+import java.text.DateFormat;
+import java.util.Locale;
 
 // TODO(crbug.com/806868): Use mCarouselCoordinator to show chips.
 
@@ -28,6 +33,21 @@ public class AssistantCollectUserDataCoordinator {
 
     public AssistantCollectUserDataCoordinator(
             Activity activity, AssistantCollectUserDataModel model) {
+        this(activity, model,
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+                        ? activity.getResources().getConfiguration().getLocales().get(0)
+                        : activity.getResources().getConfiguration().locale);
+    }
+
+    private AssistantCollectUserDataCoordinator(
+            Activity activity, AssistantCollectUserDataModel model, Locale locale) {
+        this(activity, model, locale,
+                DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, locale));
+    }
+
+    @VisibleForTesting
+    public AssistantCollectUserDataCoordinator(Activity activity,
+            AssistantCollectUserDataModel model, Locale locale, DateFormat dateFormat) {
         mActivity = activity;
         mModel = model;
         int sectionToSectionPadding = activity.getResources().getDimensionPixelSize(
@@ -58,6 +78,14 @@ public class AssistantCollectUserDataCoordinator {
         AssistantContactDetailsSection contactDetailsSection =
                 new AssistantContactDetailsSection(mActivity, paymentRequestExpanderAccordion);
         createSeparator(paymentRequestExpanderAccordion);
+
+        AssistantDateSection dateRangeStartSection = new AssistantDateSection(
+                mActivity, paymentRequestExpanderAccordion, locale, dateFormat);
+        createSeparator(paymentRequestExpanderAccordion);
+        AssistantDateSection dateRangeEndSection = new AssistantDateSection(
+                mActivity, paymentRequestExpanderAccordion, locale, dateFormat);
+        createSeparator(paymentRequestExpanderAccordion);
+
         AssistantPaymentMethodSection paymentMethodSection =
                 new AssistantPaymentMethodSection(mActivity, paymentRequestExpanderAccordion);
         createSeparator(paymentRequestExpanderAccordion);
@@ -73,6 +101,10 @@ public class AssistantCollectUserDataCoordinator {
         paymentRequestExpanderAccordion.setTag(
                 AssistantTagsForTesting.COLLECT_USER_DATA_ACCORDION_TAG);
         loginSection.getView().setTag(AssistantTagsForTesting.COLLECT_USER_DATA_LOGIN_SECTION_TAG);
+        dateRangeStartSection.getView().setTag(
+                AssistantTagsForTesting.COLLECT_USER_DATA_DATE_RANGE_START_TAG);
+        dateRangeEndSection.getView().setTag(
+                AssistantTagsForTesting.COLLECT_USER_DATA_DATE_RANGE_END_TAG);
         contactDetailsSection.getView().setTag(
                 AssistantTagsForTesting.COLLECT_USER_DATA_CONTACT_DETAILS_SECTION_TAG);
         paymentMethodSection.getView().setTag(
@@ -83,8 +115,9 @@ public class AssistantCollectUserDataCoordinator {
         // Bind view and mediator through the model.
         mViewHolder = new AssistantCollectUserDataBinder.ViewHolder(mPaymentRequestUI,
                 paymentRequestExpanderAccordion, sectionToSectionPadding, loginSection,
-                contactDetailsSection, paymentMethodSection, shippingAddressSection, termsSection,
-                termsAsCheckboxSection, DIVIDER_TAG, activity);
+                contactDetailsSection, dateRangeStartSection, dateRangeEndSection,
+                paymentMethodSection, shippingAddressSection, termsSection, termsAsCheckboxSection,
+                DIVIDER_TAG, activity);
         AssistantCollectUserDataBinder binder = new AssistantCollectUserDataBinder();
         PropertyModelChangeProcessor.create(model, mViewHolder, binder);
 

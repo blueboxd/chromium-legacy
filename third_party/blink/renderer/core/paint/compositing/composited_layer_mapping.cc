@@ -249,7 +249,6 @@ void CompositedLayerMapping::CreatePrimaryGraphicsLayer() {
   UpdateOpacity(GetLayoutObject().StyleRef());
   UpdateTransform(GetLayoutObject().StyleRef());
   UpdateLayerBlendMode(GetLayoutObject().StyleRef());
-  UpdateIsRootForIsolatedGroup();
 }
 
 void CompositedLayerMapping::DestroyGraphicsLayers() {
@@ -287,16 +286,6 @@ void CompositedLayerMapping::UpdateTransform(const ComputedStyle& style) {
 
 void CompositedLayerMapping::UpdateLayerBlendMode(const ComputedStyle& style) {
   SetBlendMode(style.GetBlendMode());
-}
-
-void CompositedLayerMapping::UpdateIsRootForIsolatedGroup() {
-  bool isolate = owning_layer_.ShouldIsolateCompositedDescendants();
-
-  // non stacking context layers should never isolate
-  DCHECK(owning_layer_.GetLayoutObject().StyleRef().IsStackingContext() ||
-         !isolate);
-
-  graphics_layer_->SetIsRootForIsolatedGroup(isolate);
 }
 
 void CompositedLayerMapping::UpdateBackgroundPaintsOntoScrollingContentsLayer(
@@ -898,7 +887,6 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
     owning_layer_.GetScrollableArea()->PositionOverflowControls();
 
   UpdateLayerBlendMode(GetLayoutObject().StyleRef());
-  UpdateIsRootForIsolatedGroup();
   UpdateContentsRect();
   UpdateBackgroundColor();
 

@@ -1389,7 +1389,7 @@ Se questa norma viene impostata su False o non viene impostata, i ritardi di ges
 <translation id="3480961938508521469">Carica completamente la batteria con la modalità standard.</translation>
 <translation id="3483729306380590354">Consente di impostare il valore personalizzato espresso in percentuale raggiunto il quale viene avviata la ricarica della batteria.
 
-          La ricarica della batteria viene avviata quando viene raggiunto il valore di avvio della ricarica personalizzato.
+          La batteria inizia a caricarsi quando raggiunge il valore di avvio della ricarica personalizzato.
 
           Il valore <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> deve essere di almeno cinque punti percentuali inferiore al valore <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />.
 
@@ -1916,7 +1916,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
       Se viene impostata l'opzione "Invia caricamenti degli utenti da analizzare", i caricamenti degli utenti verranno inviati tramite la rete alla funzionalità Navigazione sicura per verificare l'eventuale presenza di malware.
 
-      Se viene impostata l'opzione "Invia caricamenti e download degli utenti da analizzare", il comportamento del criterio è basato sulle regole descritte nelle impostazioni "Invia caricamenti degli utenti da analizzare" e "Invia download degli utenti da analizzare".
+      Se viene impostata l'opzione "Invia caricamenti e download degli utenti da analizzare", il criterio si comporta secondo le regole descritte nelle impostazioni "Invia caricamenti degli utenti da analizzare" e "Invia download degli utenti da analizzare".
 
       Per informazioni dettagliate sulla modalità di visualizzazione dei risultati dell'analisi per l'utente e l'amministratore, vedi i criteri <ph name="DELAY_DELIVER_UNTIL_VERDICT_POLICY_NAME" /> e <ph name="UNSAFE_EVENTS_REPORTING_ENABLED" />.</translation>
 <translation id="4344356660952451291">Elenco di domini per i quali è necessario verificare la conformità dei contenuti scaricati</translation>
@@ -2480,7 +2480,7 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
       Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
 
       Se il criterio non è impostato, l'utente può scegliere un'immagine da visualizzare sul desktop e sullo sfondo della schermata di accesso.</translation>
-<translation id="5437214086679373363">Consente di stabilire se consentire o meno agli utenti di caricare o scaricare i file protetti da password quando è richiesta l'analisi.  Tale limitazione si applica esclusivamente ai file che dovrebbero essere analizzati secondo quanto stabilito da <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> e dai criteri che controllano l'elenco di domini per i quali sono attivi i controlli.
+<translation id="5437214086679373363">Consente di permettere o meno agli utenti di caricare o scaricare i file protetti da password quando è richiesta l'analisi.  Tale limitazione si applica esclusivamente ai file che dovrebbero essere analizzati secondo quanto stabilito da <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> e dai criteri che controllano l'elenco di domini per i quali sono attivi i controlli.
 
       Se questo criterio viene impostato su "Nessuno", <ph name="PRODUCT_NAME" /> impedisce all'utente di caricare o scaricare file protetti da password.
 
@@ -3062,15 +3062,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="6559057113164934677">Non consentire ad alcun sito di accedere alla fotocamera e al microfono</translation>
 <translation id="6561396069801924653">Mostra le opzioni di accessibilità nel menu della barra delle applicazioni di sistema</translation>
 <translation id="6563458316362153786">Attiva 802.11r Fast Transition</translation>
-<translation id="6565312346072273043">Imposta lo stato predefinito della funzione di accessibilità della tastiera sullo schermo nella schermata di accesso.
-
-          Se questa norma viene impostata su true, la tastiera sullo schermo viene attivata quando viene visualizzata la schermata di accesso.
-
-          Se questa norma viene impostata su false, la tastiera sullo schermo viene disattivata quando viene visualizzata la schermata di accesso.
-
-          Se questa norma viene impostata, gli utenti possono ignorarla temporaneamente attivando o disattivando la tastiera sullo schermo. Tuttavia, la scelta dell'utente non è permanente e l'impostazione predefinita viene ripristinata ogni volta che viene visualizzata la schermata di accesso o se l'utente rimane inattivo sulla schermata di acceso per un minuto.
-
-          Se questa norma non viene impostata, la tastiera sullo schermo è disattivata alla prima visualizzazione della schermata di accesso. Gli utenti possono attivare o disattivare la tastiera sullo schermo in qualsiasi momento e il relativo stato sulla schermata di accesso viene mantenuto tra utenti differenti.</translation>
 <translation id="6573305661369899995">Imposta una fonte esterna di limitazioni relative agli URL</translation>
 <translation id="6583851521569686409">Consente di configurare un elenco di stampanti.
 
@@ -3427,7 +3418,7 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="7187447094921703950">Consente di attivare il criterio di gestione della variazione dei picchi energetici.
 
-          Variazione dei picchi è un criterio per il risparmio energetico che riduce al minimo l'utilizzo della corrente alternata durante i momenti della giornata di utilizzo più intenso. Per ogni giorno feriale è possibile impostare un orario di inizio e di fine per l'esecuzione della modalità Variazione dei picchi energetici. Nel periodo impostato, il sistema usa la batteria, anche se è presente il collegamento alla corrente alternata, finché il livello della batteria rimane al di sopra della soglia specificata. Dopo l'orario di fine specificato, il sistema usa la corrente alternata, se è presente il collegamento, ma non ricarica la batteria. Il sistema funzionerà di nuovo normalmente con la corrente alternata e la ricarica della batteria, dopo l'orario di inizio della ricarica specificato.
+          Variazione dei picchi è un criterio per il risparmio energetico che riduce al minimo l'utilizzo della corrente alternata durante i momenti della giornata di utilizzo più intenso. È possibile impostare un orario di inizio e di fine della modalità energetica Variazione dei picchi per ogni giorno della settimana. Nel periodo impostato, il sistema usa la batteria, anche se è collegato alla corrente alternata, fintanto che il livello della batteria rimane al di sopra della soglia specificata. Dopo l'orario di fine specificato, il sistema usa la corrente alternata, se è presente il collegamento, ma non ricarica la batteria. Il sistema funzionerà di nuovo normalmente con la corrente alternata e la ricarica della batteria, dopo l'orario di inizio della ricarica specificato.
 
           Se questo criterio viene impostato su true e sono impostati i criteri <ph name="DEVICE_POWER_PEAK_SHIFT_BATTERY_THRESHOLD_NAME" /> e <ph name="DEVICE_POWER_PEAK_SHIFT_DAY_CONFIG_NAME" />, la variazione dei picchi energetici sarà sempre attiva, se supportata dal dispositivo.
 

@@ -42,7 +42,7 @@ public class IncognitoNewTabPage
     private final int mIncognitoNTPBackgroundColor;
 
     private void showIncognitoLearnMore() {
-        HelpAndFeedback.getInstance(mActivity).show(mActivity,
+        HelpAndFeedback.getInstance().show(mActivity,
                 mActivity.getString(R.string.help_context_incognito_learn_more),
                 Profile.getLastUsedProfile(), null);
     }

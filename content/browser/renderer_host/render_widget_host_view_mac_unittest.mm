@@ -477,11 +477,11 @@ class MockRenderWidgetHostOwnerDelegate
 class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
  public:
   RenderWidgetHostViewMacTest() : rwhv_mac_(nullptr) {
-    mock_clock_.Advance(base::TimeDelta::FromMilliseconds(100));
-    ui::SetEventTickClockForTesting(&mock_clock_);
   }
 
   void SetUp() override {
+    mock_clock_.Advance(base::TimeDelta::FromMilliseconds(100));
+    ui::SetEventTickClockForTesting(&mock_clock_);
     RenderViewHostImplTestHarness::SetUp();
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(features::kDirectManipulationStylus);
@@ -506,6 +506,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
   }
 
   void TearDown() override {
+    ui::SetEventTickClockForTesting(nullptr);
     rwhv_cocoa_.reset();
     // RenderWidgetHostImpls with an owner delegate are not expected to be self-
     // deleting.

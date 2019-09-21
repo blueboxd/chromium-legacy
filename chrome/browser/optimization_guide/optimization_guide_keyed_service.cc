@@ -6,10 +6,10 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
-#include "chrome/browser/data_saver/data_saver_top_host_provider.h"
 #include "chrome/browser/optimization_guide/optimization_guide_hints_manager.h"
 #include "chrome/browser/optimization_guide/optimization_guide_navigation_data.h"
 #include "chrome/browser/optimization_guide/optimization_guide_session_statistic.h"
+#include "chrome/browser/optimization_guide/optimization_guide_top_host_provider.h"
 #include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
@@ -37,7 +37,7 @@ GetTopHostProviderIfUserPermitted(content::BrowserContext* browser_context) {
 
   // If not enabled by flag, see if the user is a Data Saver user and has seen
   // all the right prompts for it.
-  return DataSaverTopHostProvider::CreateIfAllowed(browser_context);
+  return OptimizationGuideTopHostProvider::CreateIfAllowed(browser_context);
 }
 
 // Logs |optimization_target_decision| for |optimization_target| and the

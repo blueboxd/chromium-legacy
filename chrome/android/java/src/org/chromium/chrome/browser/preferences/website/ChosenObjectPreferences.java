@@ -130,9 +130,8 @@ public class ChosenObjectPreferences extends PreferenceFragmentCompat {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_id_targeted_help) {
-            HelpAndFeedback.getInstance(getActivity())
-                    .show(getActivity(), getString(R.string.help_context_settings),
-                            Profile.getLastUsedProfile(), null);
+            HelpAndFeedback.getInstance().show(getActivity(),
+                    getString(R.string.help_context_settings), Profile.getLastUsedProfile(), null);
             return true;
         }
         return false;
@@ -157,10 +156,11 @@ public class ChosenObjectPreferences extends PreferenceFragmentCompat {
     public void revokeObjectPermissions() {
         boolean hasManagedObject = false;
         for (ChosenObjectInfo info : mObjectInfos) {
-            if (info.isManaged())
+            if (info.isManaged()) {
                 hasManagedObject = true;
-            else
+            } else {
                 info.revoke();
+            }
         }
 
         // Managed objects cannot be revoked, so finish the activity only if the list did not

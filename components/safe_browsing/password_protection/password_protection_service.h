@@ -121,7 +121,9 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
       PasswordType password_type,
       const std::vector<std::string>& matching_domains,
       bool password_field_exists);
+#endif
 
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
   // Records a Chrome Sync event that sync password reuse was detected.
   virtual void MaybeLogPasswordReuseDetectedEvent(
       content::WebContents* web_contents) = 0;
@@ -335,7 +337,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual bool IsUnderAdvancedProtection() = 0;
 #endif
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
   // Records a Chrome Sync event for the result of the URL reputation lookup
   // if the user enters their sync password on a website.
   virtual void MaybeLogPasswordReuseLookupEvent(

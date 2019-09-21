@@ -169,6 +169,7 @@
 <translation id="2220529011494928058">الإبلاغ عن مشكلة</translation>
 <translation id="2223693656926968778">اتخاذ إجراء للعنصر الحالي</translation>
 <translation id="225732394367814946">زيادة تقييم النطق</translation>
+<translation id="2267538686624070261">جارٍ تجاهل الخطأ الإملائي</translation>
 <translation id="2267945578749931355">الحرف التالي</translation>
 <translation id="2278490101488436824">التمرير السريع بثلاثة أصابع إلى يمين الشاشة</translation>
 <translation id="2281234842553884450">شريط التمرير السابق</translation>
@@ -207,6 +208,7 @@
 <translation id="257674075312929031">مجموعة</translation>
 <translation id="2582407057977008361">جانبًا</translation>
 <translation id="2592212930811759050">انقر مرّتين لبدء التعديل</translation>
+<translation id="2598495320872286378">خطأ في قاعدة نحوية</translation>
 <translation id="2614981083756825552">تخطيط لغة التوصيف الرياضية</translation>
 <translation id="2624431853467395961">فتح وضع التعلّم</translation>
 <translation id="2626530649491650971">قابل للنقر</translation>
@@ -233,7 +235,7 @@
 <translation id="27527859628328957">الانتقال إلى العنصر التالي القابل للتركيز</translation>
 <translation id="2770781857296573485">الدخول إلى استكشاف المجموعات</translation>
 <translation id="2777845298774924149">تم الإنهاء</translation>
-<translation id="2783001728278437613">{COUNT,plural, =1{أكثر من عنصر واحد (#)}zero{أكثر من # عنصر}two{أكثر من عنصرَين (#)}few{أكثر من # عناصر}many{أكثر من # عنصرًا}other{أكثر من # عنصر}}</translation>
+<translation id="2783001728278437613">{COUNT,plural, =1{بالإضافة إلى عنصر واحد}zero{بالإضافة إلى # عنصر}two{بالإضافة إلى عنصرَين (#)}few{بالإضافة إلى # عناصر}many{بالإضافة إلى # عنصرًا}other{بالإضافة إلى # عنصر}}</translation>
 <translation id="2784959586797362050">‏يمكنك دائمًا إرسال تعليقات إلينا مباشرةً بالضغط على "Search+a" ثم "i". نتطلع بشدة لمعرفة رأيك.</translation>
 <translation id="2800204403141299078">ليس هناك المزيد من العناصر المختلفة.</translation>
 <translation id="2800780099804980316">ليس هناك عنوان سابق من المستوى الأول.</translation>
@@ -714,7 +716,7 @@
 <translation id="5956928062748260866">مربع حوار</translation>
 <translation id="5963413905009737549">قسم</translation>
 <translation id="5968607524793740041">عرض قائمة السياقات</translation>
-<translation id="597121107011153418">{COUNT,plural, =1{تتضمن عنصرًا واحدًا (#)}zero{لا تتضمن أيَّ عناصر (#)}two{تتضمن عنصرَين (#)}few{تتضمن # عناصر}many{تتضمن # عنصرًا}other{تتضمن # عنصر}}</translation>
+<translation id="597121107011153418">{COUNT,plural, =1{تتضمن عنصرًا واحدًا}zero{لا تتضمن أيَّ عناصر}two{تتضمن عنصرَين (#)}few{تتضمن # عناصر}many{تتضمن # عنصرًا}other{تتضمن # عنصر}}</translation>
 <translation id="5981446804259161541">سماوي فاتح</translation>
 <translation id="5983179082906765664">زيادة دقة التنقل</translation>
 <translation id="5992285135956208197">مستند رسومي</translation>
@@ -821,6 +823,7 @@
 <translation id="6833103209700200188">تذييل</translation>
 <translation id="6858047746862060282">فاتحة</translation>
 <translation id="6859876496651143278">التمرير السريع بإصبع واحد إلى يمين الشاشة</translation>
+<translation id="6865519907510167493">خطأ إملائي</translation>
 <translation id="6871161210040114857">تجاهل حالة الأحرف.</translation>
 <translation id="6877435256196695200">ليس هناك رسم تالٍ.</translation>
 <translation id="6897341342232909480">الانتقال يسارًا</translation>
@@ -1111,6 +1114,7 @@
 <translation id="8446884382197647889">مزيد من المعلومات</translation>
 <translation id="8455868257606149352">الحد الأقصى <ph name="X" /></translation>
 <translation id="84575901236241018">لديه مفتاح دخول، <ph name="KEY" /></translation>
+<translation id="8463645336674919227">جارٍ تجاهل الخطأ النحوي</translation>
 <translation id="847154984256717791">مشغول</translation>
 <translation id="8476408756881832830">‏إيقاف التشغيل مؤقتًا أثناء تحدُّث ChromeVox</translation>
 <translation id="8476508772960940536">نظرة عامة للنافذة</translation>

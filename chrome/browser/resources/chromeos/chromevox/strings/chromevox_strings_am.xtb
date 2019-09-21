@@ -168,6 +168,7 @@
 <translation id="2220529011494928058">ችግር ሪፖርት አድርግ</translation>
 <translation id="2223693656926968778">በአሁኑ ንጥል ላይ እርምጃ ይውሰዱ</translation>
 <translation id="225732394367814946">የንግግር ፍጥነት ይጨምሩ</translation>
+<translation id="2267538686624070261">መተው ተሳስቶ ተጽፏል</translation>
 <translation id="2267945578749931355">ቀጣዩ ቁምፊ</translation>
 <translation id="2278490101488436824">ሶስት ጣቶችን ወደ ግራ ያንሸራትቱ</translation>
 <translation id="2281234842553884450">ቀዳሚ ተንሸራታች</translation>
@@ -206,6 +207,7 @@
 <translation id="257674075312929031">ቡድን</translation>
 <translation id="2582407057977008361">ከጎን</translation>
 <translation id="2592212930811759050">ማርትዕ ለመጀመር ሁለቴ መታ ያድርጉ</translation>
+<translation id="2598495320872286378">የሰዋስው ስሕተት</translation>
 <translation id="2614981083756825552">የMath ML አቀማመጥ</translation>
 <translation id="2624431853467395961">የመማር ሁነታን ይክፈቱ</translation>
 <translation id="2626530649491650971">ጠቅ ሊደረግ የሚችል</translation>
@@ -820,6 +822,7 @@
 <translation id="6833103209700200188">ግርጌ</translation>
 <translation id="6858047746862060282">ቅድመ-ታሪክ</translation>
 <translation id="6859876496651143278">አንድ ጣት ወደ ግራ ያንሸራትቱ</translation>
+<translation id="6865519907510167493">የተሳሰተ ጽሑፍ</translation>
 <translation id="6871161210040114857">የሆሄ አቢይ/ንዑስ ችላ በማለት ላይ።</translation>
 <translation id="6877435256196695200">ምንም ቀጣይ ስዕላዊ የለም።</translation>
 <translation id="6897341342232909480">ወደ ግራ ያንቀሳቅሱ</translation>
@@ -1110,6 +1113,7 @@
 <translation id="8446884382197647889">ተጨማሪ ለመረዳት</translation>
 <translation id="8455868257606149352">ከፍተኛ <ph name="X" /></translation>
 <translation id="84575901236241018">የመዳረሻ ቁልፍ <ph name="KEY" /> አለው</translation>
+<translation id="8463645336674919227">የሰዋስው ስሕተትን መተው</translation>
 <translation id="847154984256717791">ስራ ላይ</translation>
 <translation id="8476408756881832830">ChromeVox እየተናገረ ሳለ መልሶ ማጫወትን ባለበት አቁም</translation>
 <translation id="8476508772960940536">የመስኮት አጠቃላይ እይታ</translation>

@@ -10,7 +10,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
-import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.chrome.browser.util.UrlUtilitiesJni;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -234,7 +234,7 @@ class ContextualSearchRequest {
      */
     @VisibleForTesting
     boolean isGoogleUrl(@Nullable String someUrl) {
-        return !TextUtils.isEmpty(someUrl) && UrlUtilities.nativeIsGoogleSubDomainUrl(someUrl);
+        return !TextUtils.isEmpty(someUrl) && UrlUtilitiesJni.get().isGoogleSubDomainUrl(someUrl);
     }
 
     /**

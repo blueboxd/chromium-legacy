@@ -36,7 +36,7 @@ bool IsVPNVisibleInSystemTray() {
     return true;
 
   // Also show the VPN entry if at least one VPN network is configured.
-  return Shell::Get()->system_tray_model()->network_state_model()->active_vpn();
+  return Shell::Get()->system_tray_model()->network_state_model()->has_vpn();
 }
 
 }  // namespace

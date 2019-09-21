@@ -201,8 +201,6 @@ Tab::Tab(TabController* controller)
   tab_close_button_observer_ = std::make_unique<TabCloseButtonObserver>(
       this, close_button_, controller_);
 
-  set_context_menu_controller(this);
-
   title_animation_.SetDuration(base::TimeDelta::FromMilliseconds(100));
 
   // Enable keyboard focus.
@@ -246,13 +244,6 @@ void Tab::ButtonPressed(views::Button* sender, const ui::Event& event) {
   controller_->CloseTab(this, source);
   if (event.type() == ui::ET_GESTURE_TAP)
     TouchUMA::RecordGestureAction(TouchUMA::kGestureTabCloseTap);
-}
-
-void Tab::ShowContextMenuForViewImpl(views::View* source,
-                                     const gfx::Point& point,
-                                     ui::MenuSourceType source_type) {
-  if (!closing_)
-    controller_->ShowContextMenuForTab(this, point, source_type);
 }
 
 bool Tab::GetHitTestMask(SkPath* mask) const {

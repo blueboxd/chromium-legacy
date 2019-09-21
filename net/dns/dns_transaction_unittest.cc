@@ -439,7 +439,7 @@ class URLRequestMockDohJob : public URLRequestJob, public AsyncSocket {
           encoded_query, base::Base64UrlDecodePolicy::IGNORE_PADDING,
           &decoded_query));
     } else if (request->method() == "POST") {
-      const UploadDataStream* stream = request->get_upload();
+      const UploadDataStream* stream = request->get_upload_for_testing();
       auto* readers = stream->GetElementReaders();
       EXPECT_TRUE(readers);
       EXPECT_FALSE(readers->empty());

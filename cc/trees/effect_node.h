@@ -37,7 +37,6 @@ enum class RenderSurfaceReason : uint8_t {
   kClipPath,
   kClipAxisAlignment,
   kMask,
-  kRootOrIsolatedGroup,
   kTrilinearFiltering,
   kCache,
   kCopyRequest,

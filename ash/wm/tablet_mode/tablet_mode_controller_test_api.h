@@ -83,6 +83,10 @@ class TabletModeControllerTestApi {
     return tablet_mode_controller_->AreInternalInputDeviceEventsBlocked();
   }
 
+  bool IsScreenshotShown() const {
+    return !!tablet_mode_controller_->screenshot_layer_;
+  }
+
  private:
   TabletModeController* tablet_mode_controller_;
 

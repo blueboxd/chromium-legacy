@@ -24,17 +24,17 @@ from core import results_dashboard
 RESULTS_LINK_PATH = '/report?masters=%s&bots=%s&tests=%s&rev=%s'
 
 
-def _GetMainRevision(commit_pos):
-  """Return revision to use as the numerical x-value in the perf dashboard.
-  This will be used as the value of "rev" in the data passed to
-  results_dashboard.SendResults.
-  This function returns the value of "got_revision_cp" in build properties.
+def _CommitPositionNumber(commit_pos):
+  """Extracts the number part of a commit position.
+
+  This is used to extract the number from got_revision_cp; This will be used
+  as the value of "rev" in the data passed to results_dashboard.SendResults.
   """
   return int(re.search(r'{#(\d+)}', commit_pos).group(1))
 
 
 def _GetDashboardJson(options):
-  main_revision = _GetMainRevision(options.got_revision_cp)
+  main_revision = _CommitPositionNumber(options.got_revision_cp)
   revisions = _GetPerfDashboardRevisionsWithProperties(
     options.got_webrtc_revision, options.got_v8_revision,
     options.git_revision, main_revision)
@@ -65,7 +65,8 @@ def _GetDashboardJson(options):
 
 def _GetDashboardHistogramData(options):
   revisions = {
-      '--chromium_commit_positions': _GetMainRevision(options.got_revision_cp),
+      '--chromium_commit_positions': _CommitPositionNumber(
+          options.got_revision_cp),
       '--chromium_revisions': options.git_revision
   }
 
@@ -188,15 +189,15 @@ if __name__ == '__main__':
 
 def GetDashboardUrl(name, configuration_name, results_url,
     got_revision_cp, perf_dashboard_machine_group):
-  """Optionally writes the dashboard url to a file
-    and returns a link to the dashboard.
+  """Optionally writes the dashboard URL to a file and returns a link to the
+  dashboard.
   """
   name = name.replace('.reference', '')
   dashboard_url = results_url + RESULTS_LINK_PATH % (
       urllib.quote(perf_dashboard_machine_group),
       urllib.quote(configuration_name),
       urllib.quote(name),
-      _GetMainRevision(got_revision_cp))
+      _CommitPositionNumber(got_revision_cp))
 
   return dashboard_url
 
@@ -205,7 +206,6 @@ def _GetPerfDashboardRevisionsWithProperties(
     got_webrtc_revision, got_v8_revision, git_revision, main_revision,
     point_id=None):
   """Fills in the same revisions fields that process_log_utils does."""
-
   versions = {}
   versions['rev'] = main_revision
   versions['webrtc_git'] = got_webrtc_revision

@@ -178,10 +178,6 @@ class WebViewClient {
 
   // Zoom ----------------------------------------------------------------
 
-  // Informs the browser that the zoom levels for this frame have changed from
-  // the default values.
-  virtual void ZoomLimitsChanged(double minimum_level, double maximum_level) {}
-
   // Informs the browser that the page scale has changed and/or a pinch gesture
   // has started or ended.
   virtual void PageScaleFactorChanged(float page_scale_factor) {}

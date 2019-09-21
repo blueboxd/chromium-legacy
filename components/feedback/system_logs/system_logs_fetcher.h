@@ -70,14 +70,17 @@ class SystemLogsFetcher {
   void AddResponse(const std::string& source_name,
                    std::unique_ptr<SystemLogsResponse> response);
 
+  // Runs the callback provided to Fetch and posts a task to delete |this|.
+  void RunCallbackAndDeleteSoon();
+
   std::vector<std::unique_ptr<SystemLogsSource>> data_sources_;
   SysLogsFetcherCallback callback_;
 
   std::unique_ptr<SystemLogsResponse> response_;  // The actual response data.
   size_t num_pending_requests_;  // The number of callbacks it should get.
 
-  std::unique_ptr<feedback::AnonymizerTool> anonymizer_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_for_anonymizer_;
+  std::unique_ptr<feedback::AnonymizerTool> anonymizer_;
 
   base::WeakPtrFactory<SystemLogsFetcher> weak_ptr_factory_{this};
 

@@ -74,11 +74,12 @@ base::ListValue* ToList(base::Value* val) {
   return static_cast<base::ListValue*>(val);
 }
 
-bool HasPrivacySensitiveFields(base::DictionaryValue* val) {
+bool HasAnyPrivacySensitiveFields(base::DictionaryValue* val) {
   std::string result;
   if (val->GetString(keys::kUrlKey, &result) ||
       val->GetString(keys::kTitleKey, &result) ||
-      val->GetString(keys::kFaviconUrlKey, &result))
+      val->GetString(keys::kFaviconUrlKey, &result) ||
+      val->GetString(keys::kPendingUrlKey, &result))
     return true;
   return false;
 }

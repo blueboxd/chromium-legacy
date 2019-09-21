@@ -213,7 +213,7 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
     complete_event_stack_[current_stack_depth_] = std::move(*trace_event);
     handle->event_index = ++current_stack_depth_;
     handle->chunk_index = kMagicChunkIndex;
-    handle->chunk_seq = session_id_;
+    handle->chunk_seq = sink_id_;
     return;
   }
 
@@ -568,7 +568,7 @@ void TrackEventThreadLocalEventSink::UpdateDuration(
     const base::ThreadTicks& thread_now,
     base::trace_event::ThreadInstructionCount thread_instruction_now) {
   if (!handle.event_index || handle.chunk_index != kMagicChunkIndex ||
-      handle.chunk_seq != session_id_) {
+      handle.chunk_seq != sink_id_) {
     return;
   }
 

@@ -96,6 +96,7 @@
 <translation id="1136712381129578788">Sikkerhetsnøkkelen er låst fordi feil PIN-kode ble skrevet inn for mange ganger. For å låse den opp, ta den ut og sett den inn på nytt.</translation>
 <translation id="1137673463384776352">Åpne linken i <ph name="APP" /></translation>
 <translation id="1140351953533677694">bruke Bluetooth og de seriekoblede enhetene dine</translation>
+<translation id="114036956334641753">Lyd og teksting</translation>
 <translation id="1140610710803014750">For å få bokmerkene dine på alle enhetene dine, logg på og slå på synkronisering.</translation>
 <translation id="1140746652461896221">Blokkér innhold på sider du besøker</translation>
 <translation id="1143142264369994168">Sertifikat-signatar</translation>
@@ -173,6 +174,7 @@
 <translation id="1235458158152011030">Kjente nettverk:</translation>
 <translation id="123578888592755962">Harddisken er full</translation>
 <translation id="1238191093934674082">OpenVPN</translation>
+<translation id="1239594683407221485">Utforsk innholdet på enheten i Filer-appen.</translation>
 <translation id="124116460088058876">Flere språk</translation>
 <translation id="1241753985463165747">lese og endre alle dataene dine på det nåværende nettstedet ved start</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> vil tilbakestille innstillingene dine.</translation>
@@ -312,6 +314,7 @@
 <translation id="146220085323579959">Internett er ikke tilkoblet. Sjekk Internett-tilkoblingen og prøv på nytt.</translation>
 <translation id="1463112138205428654"><ph name="FILE_NAME" /> ble blokkert av Avansert beskyttelse.</translation>
 <translation id="1464258312790801189">Kontoene dine</translation>
+<translation id="1464781208867302907">For enhetspreferanser, gå til Innstillinger.</translation>
 <translation id="1465176863081977902">K&amp;opiér lydadressen</translation>
 <translation id="1465827627707997754">Pizzastykke</translation>
 <translation id="1468571364034902819">Du kan ikke bruke denne profilen</translation>
@@ -526,7 +529,7 @@
 <translation id="1764226536771329714">beta</translation>
 <translation id="176587472219019965">&amp;Nytt vindu</translation>
 <translation id="1766575458646819543">Gikk ut av fullskjerm</translation>
-<translation id="1766957085594317166">Lagre passordene sikkert i Google-kontoen, så trenger du aldri å skrive dem inn igjen</translation>
+<translation id="1766957085594317166">Lagre passordene sikkert i Google-kontoen din, så trenger du aldri å skrive dem inn igjen</translation>
 <translation id="1768278914020124551">Beklager. Det oppsto et problem ved forsøket på å kontakte påloggingstjeneren. Sjekk nettverkstilkoblingen din og domenenavnet, og prøv på nytt.</translation>
 <translation id="1769104665586091481">&amp;Åpne link i nytt vindu</translation>
 <translation id="1773212559869067373">Autentiseringssertifikatet ble avvist lokalt</translation>
@@ -741,6 +744,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2099686503067610784">Slette tjenersertifikatet «<ph name="CERTIFICATE_NAME" />»?</translation>
 <translation id="2100273922101894616">Automatisk pålogging</translation>
 <translation id="2101225219012730419">Versjon:</translation>
+<translation id="2111670510994270194">Ny fane til høyre</translation>
 <translation id="21133533946938348">Fest fanen</translation>
 <translation id="2113479184312716848">Åpne &amp;fil ...</translation>
 <translation id="2113921862428609753">Informasjonstilgang til instans</translation>
@@ -1787,6 +1791,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="3630995161997703415">Legg til dette nettstedet på hyllen din, slik at det kan brukes når som helst</translation>
 <translation id="3636096452488277381">Heisann, <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" /> % – <ph name="TIME" /> til batteriet er tomt</translation>
+<translation id="3637561406135221044">Søker etter sensitive data i filene …</translation>
 <translation id="3637682276779847508">SIM-kortet ditt blir deaktivert permanent hvis du ikke angir riktig PUK-kode.</translation>
 <translation id="3640214691812501263">Vil du legge til «<ph name="EXTENSION_NAME" />» for <ph name="USER_NAME" />?</translation>
 <translation id="3640613767643722554">Lær assistenten å gjenkjenne stemmen din</translation>
@@ -2223,6 +2228,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="425573743389990240">Batteriets utladningshastighet i watt (negativ verdi indikerer at batteriet lades)</translation>
 <translation id="4256316378292851214">La&amp;gre video som</translation>
 <translation id="4258348331913189841">Filsystemer</translation>
+<translation id="4263223596040212967">Kontrollér tastaturoppsettet og prøv på nytt.</translation>
 <translation id="4263757076580287579">Skriverregistreringen er kansellert.</translation>
 <translation id="426564820080660648">For å sjekke etter oppdateringer, kan du bruke Ethernet eller Wi-Fi.</translation>
 <translation id="4267953847983678297">Koble til mobilnettverk automatisk</translation>
@@ -2318,6 +2324,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4416582610654027550">Skriv inn en gyldig nettadresse</translation>
 <translation id="4419409365248380979">Tillat alltid at <ph name="HOST" /> angir informasjonskapsler</translation>
 <translation id="4419610272958564173">Ukjent enhet (leverandør: <ph name="VENDOR_ID" />, produkt: <ph name="PRODUCT_ID" />)</translation>
+<translation id="4421167684395067330">Problemer med å koble til. Kontakt <ph name="CARRIER_NAME" /> for å få hjelp.</translation>
 <translation id="4421932782753506458">Pus</translation>
 <translation id="4423376891418188461">Gjenopprett innstillingene</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, administratoren din krever at du endrer passord.</translation>
@@ -2993,6 +3000,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5457599981699367932">Surf som gjest</translation>
 <translation id="5457991019809708398">På – roamer ikke</translation>
 <translation id="5458998536542739734">Notater på låseskjermen</translation>
+<translation id="546322474339998983">Brukes av Chrome-nettleseren og appoversikten for <ph name="DEVICE_TYPE" /></translation>
 <translation id="5463231940765244860">Skriv inn</translation>
 <translation id="5463275305984126951">Indeks for <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Meny med skjulte bokmerker</translation>
@@ -3290,6 +3298,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5869948122057593679">Lukk alle vinduene dine</translation>
 <translation id="5870086504539785141">Lukk tilgjengelighetsmenyen</translation>
 <translation id="5870155679953074650">Harde feil</translation>
+<translation id="5876851302954717356">Ny fane til høyre</translation>
 <translation id="5877064549588274448">Kanalen ble endret. Start enheten på nytt for å aktivere endringene.</translation>
 <translation id="5877584842898320529">Den valgte skriveren er ikke tilgjengelig, eller den er ikke installert på riktig måte. <ph name="BR" /> Kontrollér skriveren din, eller prøv å velge en annen skriver.</translation>
 <translation id="5882919346125742463">Kjente nettverk</translation>
@@ -4488,6 +4497,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7685049629764448582">JavaScript-minne</translation>
 <translation id="7685087414635069102">PIN-kode kreves</translation>
 <translation id="7685301384041462804">Forsikre deg om at du stoler på dette nettstedet før du går inn i VR.</translation>
+<translation id="768549422429443215">Legg til språk eller endre rekkefølgen på listen.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Bekreft det nye passordet</translation>
 <translation id="7690378713476594306">Velg fra listen</translation>
@@ -4549,6 +4559,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7773726648746946405">Øktlagring</translation>
 <translation id="7774365994322694683">Fugl</translation>
 <translation id="7776701556330691704">Fant ingen stemmer</translation>
+<translation id="7780252971640011240">Problemer med å koble til. Kontakt operatøren din for å få hjelp.</translation>
 <translation id="7781335840981796660">Alle brukerkontoer og lokale data fjernes.</translation>
 <translation id="7782102568078991263">Google har ikke flere forslag</translation>
 <translation id="7782717250816686129">Lagre vedvarende data på påloggingsskjermen, og bruk legitimasjon i økten.</translation>

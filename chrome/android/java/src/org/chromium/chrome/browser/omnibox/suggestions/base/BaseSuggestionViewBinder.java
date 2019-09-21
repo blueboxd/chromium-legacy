@@ -4,11 +4,16 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.base;
 
+import android.content.res.Resources;
+import android.support.annotation.CallSuper;
 import android.support.v4.view.ViewCompat;
+import android.view.View;
+import android.widget.ImageView;
 
-import androidx.annotation.CallSuper;
-
+import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
+import org.chromium.chrome.browser.ui.widget.RoundedCornerImageView;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -24,15 +29,72 @@ public class BaseSuggestionViewBinder
     public void bind(PropertyModel model, BaseSuggestionView view, PropertyKey propertyKey) {
         if (BaseSuggestionViewProperties.SUGGESTION_DELEGATE == propertyKey) {
             view.setDelegate(model.get(BaseSuggestionViewProperties.SUGGESTION_DELEGATE));
-        } else if (BaseSuggestionViewProperties.REFINE_VISIBLE == propertyKey) {
-            view.setRefineVisible(model.get(BaseSuggestionViewProperties.REFINE_VISIBLE));
+        } else if (BaseSuggestionViewProperties.ICON == propertyKey) {
+            updateSuggestionIcon(model, view);
+        } else if (BaseSuggestionViewProperties.ACTION_ICON == propertyKey) {
+            updateActionIcon(model, view);
         } else if (SuggestionCommonProperties.LAYOUT_DIRECTION == propertyKey) {
             ViewCompat.setLayoutDirection(
                     view, model.get(SuggestionCommonProperties.LAYOUT_DIRECTION));
         } else if (SuggestionCommonProperties.USE_DARK_COLORS == propertyKey) {
-            boolean useDarkColors = model.get(SuggestionCommonProperties.USE_DARK_COLORS);
-            int tint = ColorUtils.getIconTint(view.getContext(), !useDarkColors).getDefaultColor();
-            view.updateIconTint(tint);
+            updateSuggestionIcon(model, view);
+            updateActionIcon(model, view);
+        }
+    }
+
+    /** Returns which color scheme should be used to tint drawables. */
+    private static boolean isDarkMode(PropertyModel model) {
+        return model.get(SuggestionCommonProperties.USE_DARK_COLORS);
+    }
+
+    /** Update attributes of decorated suggestion icon. */
+    private static void updateSuggestionIcon(PropertyModel model, BaseSuggestionView baseView) {
+        final RoundedCornerImageView view = baseView.getSuggestionImageView();
+        final SuggestionDrawableState sds = model.get(BaseSuggestionViewProperties.ICON);
+        final Resources res = view.getContext().getResources();
+        final int paddingStart = res.getDimensionPixelSize(sds.isLarge()
+                        ? R.dimen.omnibox_suggestion_36dp_icon_margin_start
+                        : R.dimen.omnibox_suggestion_24dp_icon_margin_start);
+
+        final int paddingEnd = res.getDimensionPixelSize(sds.isLarge()
+                        ? R.dimen.omnibox_suggestion_36dp_icon_margin_end
+                        : R.dimen.omnibox_suggestion_24dp_icon_margin_end);
+
+        // TODO(ender): move logic applying corner rounding to updateIcon when action images use
+        // RoundedCornerImageView too.
+        RoundedCornerImageView rciv = (RoundedCornerImageView) view;
+        int radius = sds.isRounded()
+                ? res.getDimensionPixelSize(R.dimen.default_rounded_corner_radius)
+                : 0;
+        rciv.setRoundedCorners(radius, radius, radius, radius);
+
+        view.setPadding(paddingStart, 0, paddingEnd, 0);
+        updateIcon(view, sds, isDarkMode(model));
+    }
+
+    /** Update attributes of decorated suggestion icon. */
+    private static void updateActionIcon(PropertyModel model, BaseSuggestionView baseView) {
+        final ImageView view = baseView.getActionImageView();
+        final SuggestionDrawableState sds = model.get(BaseSuggestionViewProperties.ACTION_ICON);
+        updateIcon(view, sds, isDarkMode(model));
+    }
+
+    /** Update image view using supplied drawable state object */
+    private static void updateIcon(
+            ImageView view, SuggestionDrawableState sds, boolean useDarkColors) {
+        final Resources res = view.getContext().getResources();
+
+        view.setVisibility(sds == null ? View.GONE : View.VISIBLE);
+        if (sds == null) {
+            // Release any drawable that is still attached to this view to reclaim memory.
+            view.setImageDrawable(null);
+            return;
+        }
+
+        view.setImageDrawable(sds.getDrawable());
+        if (sds.isTintable()) {
+            ApiCompatibilityUtils.setImageTintList(
+                    view, ColorUtils.getIconTint(view.getContext(), !useDarkColors));
         }
     }
 }

@@ -42,12 +42,12 @@ setup() {
 
   # Binaries to sign.
   ME2ME_HOST="PrivilegedHelperTools/${HOST_BUNDLE_NAME}"
-  ME2ME_NM_HOST="PrivilegedHelperTools/${HOST_BUNDLE_NAME}/Contents/MacOS/"`
-                `"${NATIVE_MESSAGING_HOST_BUNDLE_NAME}/Contents/MacOS/"`
-                `"native_messaging_host"
-  IT2ME_NM_HOST="PrivilegedHelperTools/${HOST_BUNDLE_NAME}/Contents/MacOS/"`
-                `"${REMOTE_ASSISTANCE_HOST_BUNDLE_NAME}/Contents/MacOS/"`
-                `"remote_assistance_host"
+  ME2ME_EXE_DIR="${ME2ME_HOST}/Contents/MacOS/"
+  ME2ME_LAUNCHD_SERVICE="${ME2ME_EXE_DIR}/host_service"
+  ME2ME_NM_HOST="${ME2ME_EXE_DIR}/${NATIVE_MESSAGING_HOST_BUNDLE_NAME}/"`
+                `"Contents/MacOS/native_messaging_host"
+  IT2ME_NM_HOST="${ME2ME_EXE_DIR}/${REMOTE_ASSISTANCE_HOST_BUNDLE_NAME}/"`
+                `"Contents/MacOS/remote_assistance_host"
   UNINSTALLER="Applications/${HOST_UNINSTALLER_NAME}.app"
 
   # The Chromoting Host installer is a meta-package that consists of 3
@@ -144,10 +144,16 @@ sign_binaries() {
   local keychain="${2}"
   local id="${3}"
 
-  sign "${input_dir}/${ME2ME_NM_HOST}" "${keychain}" "${id}"
-  sign "${input_dir}/${IT2ME_NM_HOST}" "${keychain}" "${id}"
-  sign "${input_dir}/${ME2ME_HOST}" "${keychain}" "${id}"
-  sign "${input_dir}/${UNINSTALLER}" "${keychain}" "${id}"
+  local binaries=(\
+    "${ME2ME_LAUNCHD_SERVICE}" \
+    "${ME2ME_NM_HOST}" \
+    "${IT2ME_NM_HOST}" \
+    "${ME2ME_HOST}" \
+    "${UNINSTALLER}" \
+  )
+  for binary in "${binaries[@]}"; do
+    sign "${input_dir}/${binary}" "${keychain}" "${id}"
+  done
 }
 
 sign_installer() {

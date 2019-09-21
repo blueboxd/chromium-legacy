@@ -107,6 +107,11 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
 
  private:
   // WebWidget implementation.
+  // NOTE: The WebWidget may still be used after requesting the popup to be
+  // closed and destroyed. But the Page and the MainFrame are destroyed
+  // immediately. So all methods (outside of initialization) that are part
+  // of the WebWidget need to check if close has already been initiated (they
+  // can do so by checking |page_|) and not crash! https://crbug.com/906340
   void SetAnimationHost(cc::AnimationHost*) override;
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool) final;
   void BeginFrame(base::TimeTicks last_frame_time,

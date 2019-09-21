@@ -217,11 +217,11 @@ ScreenOrientationController::ScreenOrientationController()
       user_rotation_(display::Display::ROTATE_0),
       current_rotation_(display::Display::ROTATE_0) {
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
-  Shell::Get()->AddShellObserver(this);
+  Shell::Get()->split_view_controller()->AddObserver(this);
 }
 
 ScreenOrientationController::~ScreenOrientationController() {
-  Shell::Get()->RemoveShellObserver(this);
+  Shell::Get()->split_view_controller()->RemoveObserver(this);
   Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   AccelerometerReader::GetInstance()->RemoveObserver(this);
   Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
@@ -416,12 +416,13 @@ void ScreenOrientationController::OnTabletModeEnded() {
   UnlockAll();
 }
 
-void ScreenOrientationController::OnSplitViewModeStarted() {
-  ApplyLockForActiveWindow();
-}
-
-void ScreenOrientationController::OnSplitViewModeEnded() {
-  ApplyLockForActiveWindow();
+void ScreenOrientationController::OnSplitViewStateChanged(
+    SplitViewState previous_state,
+    SplitViewState state) {
+  if (previous_state == SplitViewState::kNoSnap ||
+      state == SplitViewState::kNoSnap) {
+    ApplyLockForActiveWindow();
+  }
 }
 
 void ScreenOrientationController::SetDisplayRotation(

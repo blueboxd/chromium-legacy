@@ -44,6 +44,7 @@
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/extension_registry.h"
 #include "net/http/http_status_code.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -479,6 +480,7 @@ void ChromeCleanerControllerImpl::ReplyWithUserResponse(
       new_state = State::kCleaning;
       delegate_->TagForResetting(profile);
       extension_service_ = extension_service;
+      extension_registry_ = extensions::ExtensionRegistry::Get(profile);
       break;
     case UserResponse::kAcceptedWithoutLogs:
       acceptance = PromptAcceptance::ACCEPTED_WITHOUT_LOGS;
@@ -487,6 +489,7 @@ void ChromeCleanerControllerImpl::ReplyWithUserResponse(
       new_state = State::kCleaning;
       delegate_->TagForResetting(profile);
       extension_service_ = extension_service;
+      extension_registry_ = extensions::ExtensionRegistry::Get(profile);
       break;
     case UserResponse::kDenied:  // Fallthrough
     case UserResponse::kDismissed:
@@ -606,8 +609,8 @@ void ChromeCleanerControllerImpl::OnChromeCleanerFetchedAndVerified(
           : ChromeCleanerRunner::ChromeMetricsStatus::kDisabled;
 
   ChromeCleanerRunner::RunChromeCleanerAndReplyWithExitCode(
-      extension_service_, executable_path, *reporter_invocation_,
-      metrics_status,
+      extension_service_, extension_registry_, executable_path,
+      *reporter_invocation_, metrics_status,
       base::Bind(&ChromeCleanerControllerImpl::WeakOnPromptUser,
                  weak_factory_.GetWeakPtr()),
       base::Bind(&ChromeCleanerControllerImpl::OnConnectionClosed,

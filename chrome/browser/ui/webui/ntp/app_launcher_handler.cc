@@ -303,7 +303,8 @@ void AppLauncherHandler::Observe(int type,
           content::Details<const std::string>(details).ptr();
       if (id) {
         const Extension* extension =
-            extension_service_->GetInstalledExtension(*id);
+            ExtensionRegistry::Get(extension_service_->profile())
+                ->GetInstalledExtension(*id);
         if (!extension) {
           // Extension could still be downloading or installing.
           return;
@@ -376,8 +377,10 @@ void AppLauncherHandler::FillAppDictionary(base::DictionaryValue* dictionary) {
   Profile* profile = Profile::FromWebUI(web_ui());
   PrefService* prefs = profile->GetPrefs();
 
+  ExtensionRegistry* registry =
+      ExtensionRegistry::Get(extension_service_->profile());
   for (auto it = visible_apps_.begin(); it != visible_apps_.end(); ++it) {
-    const Extension* extension = extension_service_->GetInstalledExtension(*it);
+    const Extension* extension = registry->GetInstalledExtension(*it);
     if (extension && extensions::ui_util::ShouldDisplayInNewTabPage(
             extension, profile)) {
       installed_extensions->Append(GetAppInfo(extension));
@@ -583,8 +586,9 @@ void AppLauncherHandler::HandleUninstallApp(const base::ListValue* args) {
   std::string extension_id;
   CHECK(args->GetString(0, &extension_id));
 
-  const Extension* extension = extension_service_->GetInstalledExtension(
-      extension_id);
+  const Extension* extension =
+      ExtensionRegistry::Get(extension_service_->profile())
+          ->GetInstalledExtension(extension_id);
   if (!extension)
     return;
 

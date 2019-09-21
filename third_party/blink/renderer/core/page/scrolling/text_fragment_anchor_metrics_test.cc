@@ -4,7 +4,9 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
@@ -30,6 +32,15 @@ class TextFragmentAnchorMetricsTest : public SimTest {
     blink::scheduler::RunIdleTasksForTesting(scheduler,
                                              base::BindOnce([]() {}));
     RunPendingTasks();
+  }
+
+  void SimulateClick(int x, int y) {
+    WebMouseEvent event(
+        WebInputEvent::kMouseDown, WebFloatPoint(x, y), WebFloatPoint(x, y),
+        WebPointerProperties::Button::kLeft, 0,
+        WebInputEvent::Modifiers::kLeftButtonDown, base::TimeTicks::Now());
+    event.SetFrameScale(1);
+    GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(event);
   }
 
   HistogramTester histogram_tester_;
@@ -241,6 +252,40 @@ TEST_F(TextFragmentAnchorMetricsTest, ScrollCancelled) {
 
   histogram_tester_.ExpectTotalCount("TextFragmentAnchor.TimeToScrollIntoView",
                                      0);
+}
+
+// Test that the TapToDismiss feature gets use counted when the user taps to
+// dismiss the text highlight
+TEST_F(TextFragmentAnchorMetricsTest, TapToDismiss) {
+  SimRequest request("https://example.com/test.html#targetText=test%20page",
+                     "text/html");
+  LoadURL("https://example.com/test.html#targetText=test%20page");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 2200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <p>This is a test page</p>
+  )HTML");
+  Compositor().BeginFrame();
+  RunAsyncMatchingTasks();
+
+  EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kTextFragmentAnchor));
+  EXPECT_TRUE(
+      GetDocument().IsUseCounted(WebFeature::kTextFragmentAnchorMatchFound));
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kTextFragmentAnchorTapToDismiss));
+
+  SimulateClick(100, 100);
+
+  EXPECT_TRUE(
+      GetDocument().IsUseCounted(WebFeature::kTextFragmentAnchorTapToDismiss));
 }
 
 class TextFragmentRelatedMetricTest : public TextFragmentAnchorMetricsTest,

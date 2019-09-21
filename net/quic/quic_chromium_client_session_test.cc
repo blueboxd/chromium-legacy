@@ -32,10 +32,12 @@
 #include "net/quic/quic_chromium_connection_helper.h"
 #include "net/quic/quic_chromium_packet_reader.h"
 #include "net/quic/quic_chromium_packet_writer.h"
+#include "net/quic/quic_crypto_client_config_handle.h"
 #include "net/quic/quic_crypto_client_stream_factory.h"
 #include "net/quic/quic_http_utils.h"
 #include "net/quic/quic_server_info.h"
 #include "net/quic/quic_test_packet_maker.h"
+#include "net/quic/test_quic_crypto_client_config_handle.h"
 #include "net/socket/datagram_client_socket.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_test_util_common.h"
@@ -165,9 +167,11 @@ class QuicChromiumClientSessionTest
             kQuicYieldAfterDurationMilliseconds),
         /*cert_verify_flags=*/0, /*go_away_on_path_degrading*/ false,
         client_headers_include_h2_stream_dependency_,
-        quic::test::DefaultQuicConfig(), &crypto_config_, "CONNECTION_UNKNOWN",
-        base::TimeTicks::Now(), base::TimeTicks::Now(), &push_promise_index_,
-        &test_push_delegate_, base::DefaultTickClock::GetInstance(),
+        quic::test::DefaultQuicConfig(),
+        std::make_unique<TestQuicCryptoClientConfigHandle>(&crypto_config_),
+        "CONNECTION_UNKNOWN", base::TimeTicks::Now(), base::TimeTicks::Now(),
+        &push_promise_index_, &test_push_delegate_,
+        base::DefaultTickClock::GetInstance(),
         base::ThreadTaskRunnerHandle::Get().get(),
         /*socket_performance_watcher=*/nullptr, &net_log_));
 
@@ -222,7 +226,7 @@ class QuicChromiumClientSessionTest
     // These tests are only concerned with dynamic streams (that is, the number
     // of streams that they can create), so back out the static header stream.
     return quic::test::QuicSessionPeer::v99_streamid_manager(quic_session)
-        ->max_allowed_outgoing_bidirectional_streams();
+        ->max_outgoing_bidirectional_streams();
   }
 
   const quic::ParsedQuicVersion version_;

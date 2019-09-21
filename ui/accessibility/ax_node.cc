@@ -66,6 +66,11 @@ size_t AXNode::GetUnignoredIndexInParent() const {
   return unignored_index_in_parent_;
 }
 
+size_t AXNode::GetIndexInParent() const {
+  DCHECK(!tree_->GetTreeUpdateInProgressState());
+  return index_in_parent_;
+}
+
 AXNode* AXNode::GetFirstUnignoredChild() const {
   DCHECK(!tree_->GetTreeUpdateInProgressState());
   return ComputeFirstUnignoredChildRecursive();

@@ -31,7 +31,7 @@ cast_source_set("audio") {
     "//chromecast/base",
     "//chromecast/common/mojom",
     "//chromecast/media/audio/capture_service:receiver",
-    "//chromecast/media/audio/mixer_service:connection",
+    "//chromecast/media/audio/mixer_service:output_stream_connection",
     "//chromecast/media/audio/mixer_service:proto",
     "//chromecast/media/base",
     "//chromecast/media/base:monotonic_clock",

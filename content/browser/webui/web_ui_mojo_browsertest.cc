@@ -37,8 +37,8 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/data/web_ui_test_mojo_bindings.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace content {
@@ -83,8 +83,8 @@ void GetResource(const std::string& id,
 class BrowserTargetImpl : public mojom::BrowserTarget {
  public:
   BrowserTargetImpl(base::RunLoop* run_loop,
-                    mojo::InterfaceRequest<mojom::BrowserTarget> request)
-      : run_loop_(run_loop), binding_(this, std::move(request)) {}
+                    mojo::PendingReceiver<mojom::BrowserTarget> receiver)
+      : run_loop_(run_loop), receiver_(this, std::move(receiver)) {}
 
   ~BrowserTargetImpl() override {}
 
@@ -99,7 +99,7 @@ class BrowserTargetImpl : public mojom::BrowserTarget {
   base::RunLoop* const run_loop_;
 
  private:
-  mojo::Binding<mojom::BrowserTarget> binding_;
+  mojo::Receiver<mojom::BrowserTarget> receiver_;
   DISALLOW_COPY_AND_ASSIGN(BrowserTargetImpl);
 };
 

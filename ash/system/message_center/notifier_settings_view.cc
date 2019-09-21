@@ -419,6 +419,7 @@ NotifierSettingsView::NotifierSettingsView()
       quiet_mode_toggle_(nullptr),
       header_view_(nullptr),
       top_label_(nullptr),
+      scroll_bar_(nullptr),
       scroller_(nullptr),
       no_notifiers_view_(nullptr) {
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
@@ -486,10 +487,11 @@ NotifierSettingsView::NotifierSettingsView()
 
   header_view_ = AddChildView(std::move(header_view));
 
+  scroll_bar_ = new views::OverlayScrollBar(/*horizontal=*/false);
+
   auto scroller = std::make_unique<views::ScrollView>();
   scroller->SetBackgroundColor(SK_ColorTRANSPARENT);
-  scroller->SetVerticalScrollBar(new views::OverlayScrollBar(false));
-  scroller->SetHorizontalScrollBar(new views::OverlayScrollBar(true));
+  scroller->SetVerticalScrollBar(scroll_bar_);
   scroller->SetDrawOverflowIndicator(false);
   scroller_ = AddChildView(std::move(scroller));
 
@@ -577,6 +579,7 @@ void NotifierSettingsView::OnNotifierIconUpdated(const NotifierId& notifier_id,
 }
 
 void NotifierSettingsView::Layout() {
+  int original_scroll_position = scroller_->GetVisibleRect().y();
   int header_height = header_view_->GetHeightForWidth(width());
   header_view_->SetBounds(0, 0, width(), header_height);
 
@@ -591,6 +594,9 @@ void NotifierSettingsView::Layout() {
   scroller_->SetBounds(0, header_height, width(), height() - header_height);
   no_notifiers_view_->SetBounds(0, header_height, width(),
                                 height() - header_height);
+
+  // The scroll position may have changed after the layout.
+  scroller_->ScrollToPosition(scroll_bar_, original_scroll_position);
 }
 
 gfx::Size NotifierSettingsView::GetMinimumSize() const {

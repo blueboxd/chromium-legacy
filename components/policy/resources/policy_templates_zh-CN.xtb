@@ -925,7 +925,7 @@
 <translation id="2665422249821137126">在登录屏幕上启用大号光标</translation>
 <translation id="2672012807430078509">控制是否允许将 NTLM 作为 SMB 装载功能的身份验证协议</translation>
 <translation id="267596348720209223">指定搜索服务提供商支持的字符编码。编码是指类似于 UTF-8、GB2312 和 ISO-8859-1 的代码页名称，并按此顺序进行尝试。此政策是可选的，如果未设置，将使用默认值 UTF-8。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
-<translation id="2679827548357140943">以列表形式指定：对于哪些网域，系统需要在上传内容时检查恶意软件</translation>
+<translation id="2679827548357140943">以列表形式指定：对于哪些网域，系统需要在上传内容时检查是否有恶意软件</translation>
 <translation id="268577405881275241">启用数据压缩代理功能</translation>
 <translation id="2693108589792503178">配置用于更改密码的网址。</translation>
 <translation id="2694143893026486692">已启用停靠的放大镜</translation>
@@ -1295,7 +1295,7 @@
 <translation id="332771718998993005">将广告中宣传的名称确定为 <ph name="PRODUCT_NAME" /> 目标名称。
 
           如果此政策设为非空字符串，该字符串将被用作 <ph name="PRODUCT_NAME" /> 目标名称。否则，目标名称便是设备名称。如果此政策未设置，则目标名称将是设备名称，且设备所有者（或者该设备的托管网域内的用户）将能更改该名称。该名称的长度不得超过 24 个字符。</translation>
-<translation id="3331950121151548952">以列表形式指定：对于哪些网域，系统需要在上传内容时执行恶意软件检查。仅当 <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> 的值设为允许或强制对上传内容执行恶意软件检查时，才会用到此政策。
+<translation id="3331950121151548952">以列表形式指定：对于哪些网域，系统需要对上传内容执行恶意软件检查。仅当 <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> 的值设为允许或强制对上传内容执行恶意软件检查时，才会用到此政策。
 
       如果此政策设为一个空的网域列表或未设置，系统便无需对任何上传内容执行恶意软件检查。
       </translation>
@@ -1366,9 +1366,9 @@
           如果该政策设置为 False 或未设置，电源管理延迟和会话长度限制将在会话启动后立即开始计算。</translation>
 <translation id="3478024346823118645">退出时清除用户数据</translation>
 <translation id="3480961938508521469">以标准速率将电池充满。</translation>
-<translation id="3483729306380590354">设置自定义电池充电起始电量（以百分比表示）。
+<translation id="3483729306380590354">设置给电池充电的自定义起始电量（以百分比表示）。
 
-          当电池电量消耗到自定义电池充电起始电量时，电池就会开始充电。
+          当电池电量消耗到给电池充电的自定义起始电量时，电池就会开始充电。
 
           <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> 必须至少比 <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" /> 低 5 个百分点。
 
@@ -3021,15 +3021,6 @@
 <translation id="6559057113164934677">不允许任何网站使用摄像头和麦克风</translation>
 <translation id="6561396069801924653">在系统任务栏菜单中显示无障碍选项</translation>
 <translation id="6563458316362153786">启用 802.11r 快速切换</translation>
-<translation id="6565312346072273043">设置屏幕键盘辅助功能在登录屏幕上的默认状态。
-
-          如果此政策设为true，登录屏幕打开后，屏幕键盘将处于启用状态。
-
-          如果此政策设为false，登录屏幕打开后，屏幕键盘将处于停用状态。
-
-          如果您设置了此政策，用户可以通过启用或停用屏幕键盘暂时将其覆盖。但用户的选择只是暂时有效，登录屏幕重新打开或用户在登录屏幕上停止操作一定时间后，该政策即会恢复默认设置。
-
-          如果此政策未设置，登录屏幕初次打开时会停用屏幕键盘。用户可以随时启用或停用屏幕键盘，并且屏幕键盘在登录屏幕上的状态对各用户均有效。</translation>
 <translation id="6573305661369899995">设置网址限制条件的外部来源</translation>
 <translation id="6583851521569686409">配置打印机列表。
 
@@ -3335,9 +3326,9 @@
 
           注意：<ph name="START_TIME_FIELD_NAME" />、<ph name="END_TIME_FIELD_NAME" /> 和 <ph name="CHARGE_START_TIME_FIELD_NAME" /> 所允许的 <ph name="MINUTE_FIELD_NAME" /> 字段值为 0、15、30、45。</translation>
 <translation id="7138678301420049075">其他</translation>
-<translation id="7139809614375682935">设置电池充电自定义停止充电值（以百分比表示）。
+<translation id="7139809614375682935">设置电池停止充电的自定义值（以百分比表示）。
 
-          当电池电量达到电池充电自定义停止充电值时，电池就会停止充电。
+          当电池电量达到自定义的停止充电值时，电池就会停止充电。
 
           <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> 必须至少比 <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" /> 低 5 个百分点。
 

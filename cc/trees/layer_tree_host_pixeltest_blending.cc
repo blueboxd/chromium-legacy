@@ -223,7 +223,7 @@ class LayerTreeHostBlendingPixelTest
     scoped_refptr<Layer> background =
         CreateColorfulBackdropLayer(kRootWidth, kRootHeight);
 
-    background->SetIsRootForIsolatedGroup(true);
+    background->SetForceRenderSurfaceForTesting(true);
     root->AddChild(background);
 
     CreateBlendingColorLayers(kRootWidth, kRootHeight, background.get(), flags);
@@ -351,7 +351,7 @@ TEST_P(LayerTreeHostBlendingPixelTest, BlendingWithTransparent) {
       CreateSolidColorLayer(gfx::Rect(kRootWidth, kRootHeight), kCSSOrange);
 
   root->AddChild(background);
-  background->SetIsRootForIsolatedGroup(true);
+  background->SetForceRenderSurfaceForTesting(true);
 
   // Orange child layers will blend with the green background
   gfx::Rect child_rect(kRootWidth, kRootHeight);

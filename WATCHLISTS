@@ -241,6 +241,12 @@
                   'content/test/data/battery_status/|'\
                   'device/battery/',
     },
+    'bfcache': {
+      'filepath': 'content/browser/frame_host/back_forward_cache.*|'\
+                  'content/browser/back_forward_cache_browsertest.cc|'\
+                  'content/test/data/back_forward_cache/|'\
+                  'content/public/browser/back_forward_cache.h',
+    },
     'binary_size': {
       'filepath': 'build/android/binary_size/|'\
                   'tools/binary_size/',
@@ -2011,6 +2017,7 @@
                  'robliao+watch@chromium.org',
                  'wfh+watch@chromium.org'],
     'battery_status': ['timvolodine@chromium.org'],
+    'bfcache': ['bfcache-bugs@chromium.org'],
     'binary_size': ['agrieve+watch@chromium.org',
                     'estevenson+watch@chromium.org'],
     'blink': ['blink-reviews@chromium.org'],
@@ -2051,11 +2058,7 @@
                                  'mlamouri+watch-blink@chromium.org',
                                  'rijubrata.bhaumik@intel.com',
                                  'timvolodine@chromium.org'],
-    'blink_devtools': ['apavlov+blink@chromium.org',
-                       'caseq+blink@chromium.org',
-                       'devtools-reviews+blink@chromium.org',
-                       'lushnikov+blink@chromium.org',
-                       'pfeldman+blink@chromium.org'],
+    'blink_devtools': ['devtools-reviews+blink@chromium.org'],
     'blink_dom': ['blink-reviews-dom@chromium.org',
                   'eae+blinkwatch@chromium.org'],
     'blink_dom_events': ['hayato+watch@chromium.org'],
@@ -2301,8 +2304,7 @@
     'device_chooser': ['juncai+watch@chromium.org',
                        'mattreynolds+watch@chromium.org',
                        'odejesush+watch@chromium.org'],
-    'devtools': ['devtools-reviews@chromium.org',
-                 'pfeldman@chromium.org'],
+    'devtools': ['devtools-reviews@chromium.org'],
     'disk_cache': ['gavinp+disk@chromium.org'],
     'download': ['dtrainor+watch@chromium.org'],
     'downloads_ui': ['dbeam+watch-downloads-ui@chromium.org',

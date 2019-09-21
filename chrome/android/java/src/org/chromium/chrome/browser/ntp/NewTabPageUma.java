@@ -21,7 +21,7 @@ import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.chrome.browser.util.UrlUtilitiesJni;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
 
@@ -176,7 +176,7 @@ public final class NewTabPageUma {
         if ((transitionType & PageTransition.CORE_MASK) == PageTransition.GENERATED) {
             recordAction(ACTION_SEARCHED_USING_OMNIBOX);
         } else {
-            if (UrlUtilities.nativeIsGoogleHomePageUrl(destinationUrl)) {
+            if (UrlUtilitiesJni.get().isGoogleHomePageUrl(destinationUrl)) {
                 recordAction(ACTION_NAVIGATED_TO_GOOGLE_HOMEPAGE);
             } else {
                 recordAction(ACTION_NAVIGATED_USING_OMNIBOX);

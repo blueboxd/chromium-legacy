@@ -173,7 +173,7 @@ void ExtensionService::CheckExternalUninstall(const std::string& id) {
   // For example, an extension that requires experimental permissions
   // will not be loaded if the experimental command line flag is not used.
   // In this case, do not uninstall.
-  if (!GetInstalledExtension(id)) {
+  if (!registry_->GetInstalledExtension(id)) {
     // We can't call UninstallExtension with an unloaded/invalid
     // extension ID.
     LOG(WARNING) << "Attempted uninstallation of unloaded/invalid extension "
@@ -497,7 +497,7 @@ bool ExtensionService::UpdateExtension(const CRXFileInfo& file,
   const PendingExtensionInfo* pending_extension_info =
       pending_extension_manager()->GetById(id);
 
-  const Extension* extension = GetInstalledExtension(id);
+  const Extension* extension = registry_->GetInstalledExtension(id);
   if (!pending_extension_info && !extension) {
     LOG(WARNING) << "Will not update extension " << id
                  << " because it is not installed or pending";
@@ -644,7 +644,7 @@ bool ExtensionService::UninstallExtension(
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   scoped_refptr<const Extension> extension =
-      GetInstalledExtension(transient_extension_id);
+      registry_->GetInstalledExtension(transient_extension_id);
 
   // Callers should not send us nonexistent extensions.
   CHECK(extension.get());
@@ -1479,7 +1479,7 @@ void ExtensionService::OnExtensionInstalled(
                               Manifest::NUM_LOCATIONS);
   }
 
-  if (!GetInstalledExtension(extension->id())) {
+  if (!registry_->GetInstalledExtension(extension->id())) {
     UMA_HISTOGRAM_ENUMERATION("Extensions.InstallType",
                               extension->GetType(), 100);
     UMA_HISTOGRAM_ENUMERATION("Extensions.InstallSource",
@@ -1571,7 +1571,7 @@ void ExtensionService::AddNewOrUpdatedExtension(
   if (InstallVerifier::NeedsVerification(*extension))
     InstallVerifier::Get(GetBrowserContext())->VerifyExtension(extension->id());
 
-  const Extension* old = GetInstalledExtension(extension->id());
+  const Extension* old = registry_->GetInstalledExtension(extension->id());
   if (AppDataMigrator::NeedsMigration(old, extension)) {
     app_data_migrator_->DoMigrationAndReply(
         old, extension, base::Bind(&ExtensionService::FinishInstallation,
@@ -1622,7 +1622,8 @@ bool ExtensionService::FinishDelayedInstallationIfReady(
 
 void ExtensionService::FinishInstallation(
     const Extension* extension) {
-  const Extension* existing_extension = GetInstalledExtension(extension->id());
+  const Extension* existing_extension =
+      registry_->GetInstalledExtension(extension->id());
   bool is_update = false;
   std::string old_name;
   if (existing_extension) {
@@ -1676,11 +1677,6 @@ void ExtensionService::RegisterContentSettings(
 
 void ExtensionService::TerminateExtension(const std::string& extension_id) {
   extension_registrar_.TerminateExtension(extension_id);
-}
-
-const Extension* ExtensionService::GetInstalledExtension(
-    const std::string& id) const {
-  return registry_->GetExtensionById(id, ExtensionRegistry::EVERYTHING);
 }
 
 bool ExtensionService::OnExternalExtensionFileFound(
@@ -1853,7 +1849,7 @@ int ExtensionService::GetDisableReasonsOnInstalled(const Extension* extension) {
   bool is_update_from_same_type = false;
   {
     const Extension* existing_extension =
-        GetInstalledExtension(extension->id());
+        registry_->GetInstalledExtension(extension->id());
     is_update_from_same_type =
         existing_extension &&
         existing_extension->manifest()->type() == extension->manifest()->type();
@@ -2077,7 +2073,8 @@ void ExtensionService::UpdateBlacklistedExtensions(
   }
 
   for (auto it = not_yet_blocked.begin(); it != not_yet_blocked.end(); ++it) {
-    scoped_refptr<const Extension> extension = GetInstalledExtension(*it);
+    scoped_refptr<const Extension> extension =
+        registry_->GetInstalledExtension(*it);
     if (!extension.get()) {
       NOTREACHED() << "Extension " << *it << " needs to be "
                    << "blacklisted, but it's not installed.";
@@ -2121,7 +2118,8 @@ void ExtensionService::UpdateGreylistedExtensions(
 
   for (auto it = not_yet_greylisted.begin(); it != not_yet_greylisted.end();
        ++it) {
-    scoped_refptr<const Extension> extension = GetInstalledExtension(*it);
+    scoped_refptr<const Extension> extension =
+        registry_->GetInstalledExtension(*it);
     if (!extension.get()) {
       NOTREACHED() << "Extension " << *it << " needs to be "
                    << "disabled, but it's not installed.";

@@ -81,6 +81,7 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/app_window/native_app_window.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/sandboxed_unpacker.h"
 #include "extensions/common/manifest.h"
@@ -246,8 +247,7 @@ bool IsAppInstalled(const std::string& app_id, const std::string& version) {
   Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
   DCHECK(app_profile);
   const extensions::Extension* app =
-      extensions::ExtensionSystem::Get(app_profile)
-          ->extension_service()
+      extensions::ExtensionRegistry::Get(app_profile)
           ->GetInstalledExtension(app_id);
   return app != nullptr && version == app->version().GetString();
 }
@@ -256,8 +256,7 @@ extensions::Manifest::Type GetAppType(const std::string& app_id) {
   Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
   DCHECK(app_profile);
   const extensions::Extension* app =
-      extensions::ExtensionSystem::Get(app_profile)
-          ->extension_service()
+      extensions::ExtensionRegistry::Get(app_profile)
           ->GetInstalledExtension(app_id);
   DCHECK(app);
   return app->GetType();
@@ -612,8 +611,7 @@ class KioskTest : public OobeBaseTest {
 
   const extensions::Extension* GetInstalledApp() {
     Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
-    return extensions::ExtensionSystem::Get(app_profile)
-        ->extension_service()
+    return extensions::ExtensionRegistry::Get(app_profile)
         ->GetInstalledExtension(test_app_id_);
   }
 
@@ -645,8 +643,7 @@ class KioskTest : public OobeBaseTest {
 
     // Check if the kiosk webapp is really installed for the default profile.
     const extensions::Extension* app =
-        extensions::ExtensionSystem::Get(app_profile)
-            ->extension_service()
+        extensions::ExtensionRegistry::Get(app_profile)
             ->GetInstalledExtension(test_app_id_);
     EXPECT_TRUE(app);
 

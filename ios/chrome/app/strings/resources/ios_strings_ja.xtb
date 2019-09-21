@@ -93,6 +93,7 @@
 <translation id="2149973817440762519">ブックマークを編集</translation>
 <translation id="2179182049312275900">同期は設定でいつでもオンにできます。</translation>
 <translation id="2198757192731523470">検索、広告、その他の Google サービスをカスタマイズする目的で、Google が履歴を使用することがあります。</translation>
+<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> 件のリーディング リストの記事が未読です。</translation>
 <translation id="2230173723195178503">ウェブページを読み込みました</translation>
 <translation id="2239626343334228536">閲覧データを削除しています...</translation>
 <translation id="2256128224215992540">検索とサイトの候補を表示</translation>
@@ -108,6 +109,7 @@
 <translation id="2360196772093551345">モバイルサイトをリクエスト</translation>
 <translation id="2381405137052800939">基本設定</translation>
 <translation id="2386793615875593361">1 枚選択されています</translation>
+<translation id="2421044535038393232">編集を続ける</translation>
 <translation id="2435457462613246316">パスワードを表示</translation>
 <translation id="2481538920734869610">アカウントを追加</translation>
 <translation id="2497852260688568942">同期は管理者により無効にされています</translation>
@@ -227,6 +229,7 @@
 <translation id="418156467088430727">オフライン版を新しいタブで表示</translation>
 <translation id="4181841719683918333">言語</translation>
 <translation id="424315890655130736">パスフレーズの入力</translation>
+<translation id="4263576668337963058">利用可能なページ操作を表示</translation>
 <translation id="4272631900155121838">QR コードをスキャンするには、設定でカメラを有効にしてください</translation>
 <translation id="4281844954008187215">利用規約</translation>
 <translation id="430793432425771671">すべて同期</translation>
@@ -264,6 +267,7 @@
 
 この設定を変更する場合は<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />してください</translation>
 <translation id="4805759445554688327">無効なカード番号</translation>
+<translation id="4807020197310989387">1 件のリーディング リストの記事が未読です。</translation>
 <translation id="4818522717893377262">言語を追加...</translation>
 <translation id="481968316161811770">Cookie、サイトデータ</translation>
 <translation id="4833786495304741580">使用統計情報や障害レポートを Google に自動送信します。</translation>

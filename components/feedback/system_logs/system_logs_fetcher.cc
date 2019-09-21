@@ -51,21 +51,25 @@ SystemLogsFetcher::SystemLogsFetcher(
     const char* const first_party_extension_ids[])
     : response_(std::make_unique<SystemLogsResponse>()),
       num_pending_requests_(0),
-      task_runner_for_anonymizer_(base::CreateSequencedTaskRunner(
-          {base::ThreadPool(),  // User visible because this is called when the
-                                // user is looking at the send feedback dialog,
-                                // watching a spinner.
-           base::TaskPriority::USER_VISIBLE,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})) {
-  if (scrub_data)
-    anonymizer_ =
-        std::make_unique<feedback::AnonymizerTool>(first_party_extension_ids);
-}
+      task_runner_for_anonymizer_(
+          scrub_data
+              ? base::CreateSequencedTaskRunner(
+                    // User visible because this is called when the user is
+                    // looking at the send feedback dialog, watching a spinner.
+                    {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+                     base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})
+              : nullptr),
+      anonymizer_(scrub_data ? std::make_unique<feedback::AnonymizerTool>(
+                                   first_party_extension_ids)
+                             : nullptr) {}
 
 SystemLogsFetcher::~SystemLogsFetcher() {
   // Ensure that destruction happens on same sequence where the object is being
   // accessed.
-  task_runner_for_anonymizer_->DeleteSoon(FROM_HERE, std::move(anonymizer_));
+  if (anonymizer_) {
+    DCHECK(task_runner_for_anonymizer_);
+    task_runner_for_anonymizer_->DeleteSoon(FROM_HERE, std::move(anonymizer_));
+  }
 }
 
 void SystemLogsFetcher::AddSource(std::unique_ptr<SystemLogsSource> source) {
@@ -79,6 +83,12 @@ void SystemLogsFetcher::Fetch(SysLogsFetcherCallback callback) {
   DCHECK(!callback.is_null());
 
   callback_ = std::move(callback);
+
+  if (data_sources_.empty()) {
+    RunCallbackAndDeleteSoon();
+    return;
+  }
+
   for (size_t i = 0; i < data_sources_.size(); ++i) {
     VLOG(1) << "Fetching SystemLogSource: " << data_sources_[i]->source_name();
     data_sources_[i]->Fetch(base::BindOnce(&SystemLogsFetcher::OnFetched,
@@ -124,6 +134,10 @@ void SystemLogsFetcher::AddResponse(
   if (num_pending_requests_ > 0)
     return;
 
+  RunCallbackAndDeleteSoon();
+}
+
+void SystemLogsFetcher::RunCallbackAndDeleteSoon() {
   DCHECK(!callback_.is_null());
   std::move(callback_).Run(std::move(response_));
 

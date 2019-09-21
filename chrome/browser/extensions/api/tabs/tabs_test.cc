@@ -98,6 +98,8 @@ class ExtensionWindowCreateTest : public InProcessBrowserTest {
 };
 
 const int kUndefinedId = INT_MIN;
+const ExtensionTabUtil::ScrubTabBehavior kDontScrubBehavior = {
+    ExtensionTabUtil::kDontScrubTab, ExtensionTabUtil::kDontScrubTab};
 
 int GetTabId(base::DictionaryValue* tab) {
   int id = kUndefinedId;
@@ -1136,9 +1138,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTab) {
   EXPECT_EQ(window_id, duplicate_tab_window_id);
   EXPECT_EQ(tab_index + 1, duplicate_tab_index);
   // The test empty tab extension has tabs permissions, therefore
-  // |duplicate_result| should contain url, title, and faviconUrl
+  // |duplicate_result| should contain url, pendingUrl, title or faviconUrl
   // in the function result.
-  EXPECT_TRUE(utils::HasPrivacySensitiveFields(duplicate_result.get()));
+  EXPECT_TRUE(utils::HasAnyPrivacySensitiveFields(duplicate_result.get()));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTabNoPermission) {
@@ -1174,8 +1176,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DuplicateTabNoPermission) {
   EXPECT_EQ(window_id, duplicate_tab_window_id);
   EXPECT_EQ(tab_index + 1, duplicate_tab_index);
   // The test empty extension has no permissions, therefore |duplicate_result|
-  // should not contain url, title, and faviconUrl in the function result.
-  EXPECT_FALSE(utils::HasPrivacySensitiveFields(duplicate_result.get()));
+  // should not contain url, pendingUrl, title and faviconUrl in the function
+  // result.
+  EXPECT_FALSE(utils::HasAnyPrivacySensitiveFields(duplicate_result.get()));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, NoTabsEventOnDevTools) {
@@ -1323,8 +1326,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardedProperty) {
 
   // Creates Tab object to ensure the property is correct for the extension.
   std::unique_ptr<api::tabs::Tab> tab_object_a =
-      ExtensionTabUtil::CreateTabObject(web_contents_a,
-                                        ExtensionTabUtil::kDontScrubTab,
+      ExtensionTabUtil::CreateTabObject(web_contents_a, kDontScrubBehavior,
                                         nullptr, tab_strip_model, 0);
   EXPECT_FALSE(tab_object_a->discarded);
 
@@ -1334,8 +1336,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DiscardedProperty) {
 
   // Make sure the property is changed accordingly after discarding the tab.
   tab_object_a = ExtensionTabUtil::CreateTabObject(
-      web_contents_a, ExtensionTabUtil::kDontScrubTab, nullptr, tab_strip_model,
-      0);
+      web_contents_a, kDontScrubBehavior, nullptr, tab_strip_model, 0);
   EXPECT_TRUE(tab_object_a->discarded);
 
   // Get non-discarded tabs after discarding one tab.
@@ -1530,8 +1531,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, AutoDiscardableProperty) {
   // Creates Tab object to ensure the property is correct for the extension.
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
   std::unique_ptr<api::tabs::Tab> tab_object_a =
-      ExtensionTabUtil::CreateTabObject(web_contents_a,
-                                        ExtensionTabUtil::kDontScrubTab,
+      ExtensionTabUtil::CreateTabObject(web_contents_a, kDontScrubBehavior,
                                         nullptr, tab_strip_model, 0);
   EXPECT_TRUE(tab_object_a->auto_discardable);
 
@@ -1575,8 +1575,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, AutoDiscardableProperty) {
 
   // Make sure the property is changed accordingly after updating the tab.
   tab_object_a = ExtensionTabUtil::CreateTabObject(
-      web_contents_a, ExtensionTabUtil::kDontScrubTab, nullptr, tab_strip_model,
-      0);
+      web_contents_a, kDontScrubBehavior, nullptr, tab_strip_model, 0);
   EXPECT_FALSE(tab_object_a->auto_discardable);
 
   // Get auto-discardable tabs after changing the status of web contents A.

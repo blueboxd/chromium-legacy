@@ -7,6 +7,7 @@
 #include "third_party/blink/public/mojom/referrer.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document_shutdown_observer.h"
+#include "third_party/blink/renderer/core/dom/increment_load_event_delay_count.h"
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/html/portal/document_portals.h"
 #include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
@@ -69,6 +70,11 @@ ScriptPromise PortalContents::Activate(ScriptState* script_state,
 void PortalContents::OnActivateResponse(bool was_adopted) {
   if (was_adopted)
     GetDocument().GetPage()->SetInsidePortal(true);
+
+  DocumentPortals& document_portals = DocumentPortals::From(GetDocument());
+  DCHECK_EQ(document_portals.GetActivatingPortalContents(), this);
+  document_portals.ClearActivatingPortalContents();
+
   activate_resolver_->Resolve();
   activate_resolver_ = nullptr;
   Destroy();
@@ -101,7 +107,20 @@ void PortalContents::Navigate(
   auto mojo_referrer = mojom::blink::Referrer::New(
       KURL(NullURL(), referrer.referrer), referrer.referrer_policy);
 
-  remote_portal_->Navigate(url, std::move(mojo_referrer));
+  // There is a brief window of time between when Navigate is called and its
+  // callback is run, during which the Portal's content frame is not marked as
+  // loading. We use IncrementLoadEventDelayCount to block its document's load
+  // event in this time window. Once it goes out of scope,
+  // IncrementLoadEventDelayCount will call Document::CheckCompleted and fire
+  // load events if necessary.
+  std::unique_ptr<IncrementLoadEventDelayCount>
+      increment_load_event_delay_count =
+          std::make_unique<IncrementLoadEventDelayCount>(GetDocument());
+  remote_portal_->Navigate(
+      url, std::move(mojo_referrer),
+      WTF::Bind([](std::unique_ptr<IncrementLoadEventDelayCount>
+                       increment_load_event_delay_count) {},
+                std::move(increment_load_event_delay_count)));
 }
 
 void PortalContents::Destroy() {

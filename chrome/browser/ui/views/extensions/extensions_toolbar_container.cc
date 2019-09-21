@@ -48,6 +48,8 @@ ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser)
       .SetDefault(views::kMarginsKey,
                   gfx::Insets(0, GetLayoutConstant(TOOLBAR_ELEMENT_PADDING)));
   model_observer_.Add(model_);
+  // Do not flip the Extensions icon in RTL.
+  extensions_button_->EnableCanvasFlippingForRTLUI(false);
   AddMainButton(extensions_button_);
   CreateActions();
 }

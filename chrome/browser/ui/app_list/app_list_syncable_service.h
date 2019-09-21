@@ -35,6 +35,7 @@ class InternalAppModelBuilder;
 class Profile;
 
 namespace extensions {
+class ExtensionRegistry;
 class ExtensionSystem;
 }
 
@@ -315,6 +316,7 @@ class AppListSyncableService : public syncer::SyncableService,
 
   Profile* profile_;
   extensions::ExtensionSystem* extension_system_;
+  extensions::ExtensionRegistry* extension_registry_;
   std::unique_ptr<AppListModelUpdater> model_updater_;
   std::unique_ptr<ModelUpdaterObserver> model_updater_observer_;
 

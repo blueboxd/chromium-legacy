@@ -16,7 +16,6 @@ class SequencedTaskRunner;
 }  // namespace base
 
 namespace net {
-class DrainableIOBuffer;
 class GrowableIOBuffer;
 class IOBuffer;
 class Socket;
@@ -50,7 +49,7 @@ class SmallMessageSocket {
   // sent; returns false if sending is not allowed right now (ie, another send
   // is currently in progress). If false is returned, then OnSendUnblocked()
   // will be called once sending is possible again.
-  bool SendBuffer(net::IOBuffer* data, int size);
+  bool SendBuffer(scoped_refptr<net::IOBuffer> data, int size);
 
   // Enables receiving messages from the stream. Messages will be received and
   // passed to OnMessage() until either an error occurs, the end of stream is
@@ -75,6 +74,8 @@ class SmallMessageSocket {
   virtual bool OnMessage(char* data, int size) = 0;
 
  private:
+  class WriteBuffer;
+
   void OnWriteComplete(int result);
   bool HandleWriteResult(int result);
   void PostError(int error);
@@ -89,7 +90,7 @@ class SmallMessageSocket {
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   scoped_refptr<net::GrowableIOBuffer> write_storage_;
-  scoped_refptr<net::DrainableIOBuffer> write_buffer_;
+  scoped_refptr<WriteBuffer> write_buffer_;
   bool send_blocked_ = false;
 
   scoped_refptr<net::GrowableIOBuffer> read_buffer_;

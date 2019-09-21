@@ -25,6 +25,7 @@ class BluetoothAdapter;
 }  // namespace device
 
 namespace instance_id {
+class InstanceID;
 class InstanceIDProfileService;
 }  // namespace instance_id
 
@@ -81,12 +82,13 @@ class ClientAppMetadataProviderService
       const std::string& token,
       instance_id::InstanceID::Result result);
 
+  instance_id::InstanceID* GetInstanceId();
   int64_t SoftwareVersionCodeAsInt64();
   void InvokePendingCallbacks();
 
   PrefService* pref_service_;
   NetworkStateHandler* network_state_handler_;
-  instance_id::InstanceID* instance_id_;
+  instance_id::InstanceIDProfileService* instance_id_profile_service_;
 
   base::Optional<std::string> pending_gcm_registration_id_;
   base::Optional<cryptauthv2::ClientAppMetadata> client_app_metadata_;

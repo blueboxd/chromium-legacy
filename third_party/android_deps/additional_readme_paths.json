@@ -52,6 +52,7 @@
     "libs/androidx_test_monitor",
     "libs/androidx_test_rules",
     "libs/androidx_test_runner",
+    "libs/androidx_test_uiautomator_uiautomator",
     "libs/androidx_transition_transition",
     "libs/androidx_vectordrawable_vectordrawable",
     "libs/androidx_vectordrawable_vectordrawable_animated",

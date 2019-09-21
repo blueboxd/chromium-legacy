@@ -174,8 +174,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   BlendMode GetBlendMode() const;
   void SetBlendMode(BlendMode);
-  bool IsRootForIsolatedGroup() const;
-  void SetIsRootForIsolatedGroup(bool);
 
   void SetHitTestable(bool);
   bool GetHitTestable() const { return hit_testable_; }

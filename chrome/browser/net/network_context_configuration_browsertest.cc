@@ -66,6 +66,7 @@
 #include "net/cookies/cookie_options.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_headers.h"
+#include "net/reporting/reporting_policy.h"
 #include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_server_config.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
@@ -1968,11 +1969,213 @@ IN_PROC_BROWSER_TEST_P(
   RunMaxConnectionsPerProxyTest();
 }
 
+// Used to test that we persist Reporting clients and NEL policies to disk, but
+// only when appropriate.
+class NetworkContextConfigurationReportingAndNelBrowserTest
+    : public NetworkContextConfigurationBrowserTest {
+ public:
+  struct RequestState {
+    content::SimpleURLLoaderTestHelper helper;
+    std::unique_ptr<network::SimpleURLLoader> loader;
+  };
+
+  NetworkContextConfigurationReportingAndNelBrowserTest()
+      : https_server_(net::test_server::EmbeddedTestServer::TYPE_HTTPS) {
+    // Set up an SSL certificate so we can make requests to "https://localhost"
+    https_server_.SetSSLConfig(
+        net::test_server::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
+    // Only start the server if we actually need it in the test (i.e., we'll
+    // call StartAcceptingConnections somewhere in the test).
+    if (!IsRestartStateWithInProcessNetworkService() &&
+        AreReportingAndNelEnabled()) {
+      EXPECT_TRUE(https_server_.InitializeAndListen());
+    }
+
+    // Make report delivery happen instantly.
+    net::ReportingPolicy policy;
+    policy.delivery_interval = base::TimeDelta::FromSeconds(0);
+    net::ReportingPolicy::UsePolicyForTesting(policy);
+  }
+
+  std::unique_ptr<RequestState> NewSimpleRequest(const GURL& url) {
+    auto request_state = std::make_unique<RequestState>();
+    std::unique_ptr<network::ResourceRequest> request =
+        std::make_unique<network::ResourceRequest>();
+    request->url = url;
+    request_state->loader = network::SimpleURLLoader::Create(
+        std::move(request), TRAFFIC_ANNOTATION_FOR_TESTS);
+    request_state->loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+        loader_factory(), request_state->helper.GetCallback());
+    return request_state;
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kShortReportingDelay);
+    // This switch will cause traffic to *any* port to go to https_server_,
+    // regardless of which arbitrary port https_server_ decides to run on.
+    // NEL and Reporting policies are only valid for a single origin.
+    if (!IsRestartStateWithInProcessNetworkService() &&
+        AreReportingAndNelEnabled()) {
+      command_line->AppendSwitchASCII(switches::kTestingFixedHttpsPort,
+                                      base::StringPrintf("%u", port()));
+    }
+  }
+
+  net::EmbeddedTestServer* http_server() { return &https_server_; }
+  int port() const { return https_server_.port(); }
+
+  static GURL GetCollectorURL() { return GURL("https://localhost/upload"); }
+
+  static std::string GetReportToHeader() {
+    return "Report-To: {\"endpoints\":[{\"url\":\"" + GetCollectorURL().spec() +
+           "\"}],\"max_age\":86400}\r\n";
+  }
+
+  static std::string GetNELHeader() {
+    return "NEL: "
+           "{\"report_to\":\"default\",\"max_age\":86400,\"success_fraction\":"
+           "1.0}\r\n";
+  }
+
+  void RespondWithHeaders(net::test_server::ControllableHttpResponse* resp) {
+    resp->WaitForRequest();
+    resp->Send("HTTP/1.1 200 OK\r\n");
+    resp->Send(GetReportToHeader());
+    resp->Send(GetNELHeader());
+    resp->Send("\r\n");
+    resp->Done();
+  }
+
+  void RespondWithoutHeaders(net::test_server::ControllableHttpResponse* resp) {
+    resp->WaitForRequest();
+    resp->Send("HTTP/1.1 200 OK\r\n");
+    resp->Send("\r\n");
+    resp->Done();
+  }
+
+  bool AreReportingAndNelEnabled() const {
+    switch (GetParam().network_context_type) {
+      case NetworkContextType::kSystem:
+      case NetworkContextType::kSafeBrowsing:
+        return false;
+      case NetworkContextType::kProfile:
+      case NetworkContextType::kIncognitoProfile:
+      case NetworkContextType::kOnDiskApp:
+      case NetworkContextType::kInMemoryApp:
+      case NetworkContextType::kOnDiskAppWithIncognitoProfile:
+        return true;
+    }
+  }
+
+  bool ExpectPersistenceEnabled() const {
+    switch (GetParam().network_context_type) {
+      case NetworkContextType::kSystem:
+      case NetworkContextType::kSafeBrowsing:
+      case NetworkContextType::kIncognitoProfile:
+      case NetworkContextType::kInMemoryApp:
+      case NetworkContextType::kOnDiskAppWithIncognitoProfile:
+        return false;
+      case NetworkContextType::kProfile:
+      case NetworkContextType::kOnDiskApp:
+        return true;
+    }
+  }
+
+ private:
+  net::EmbeddedTestServer https_server_;
+};
+
+namespace {
+
+constexpr char kReportingEnabledURL[] = "https://localhost/page";
+constexpr char kCrossOriginReportingEnabledURL[] = "https://localhost:444/page";
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationReportingAndNelBrowserTest,
+                       PRE_PersistReportingAndNel) {
+  if (IsRestartStateWithInProcessNetworkService() ||
+      !AreReportingAndNelEnabled()) {
+    return;
+  }
+
+  net::test_server::ControllableHttpResponse original_response(http_server(),
+                                                               "/page");
+  net::test_server::ControllableHttpResponse upload_response(http_server(),
+                                                             "/upload");
+  http_server()->StartAcceptingConnections();
+
+  // Make a request to /page and respond with Report-To and NEL headers, which
+  // will turn on NEL for the localhost:443 origin.
+  std::unique_ptr<RequestState> request =
+      NewSimpleRequest(GURL(kReportingEnabledURL));
+  RespondWithHeaders(&original_response);
+  request->helper.WaitForCallback();
+
+  // Wait for a request to /upload, which should happen because the previous
+  // request precipitated a NEL report.
+  upload_response.WaitForRequest();
+  EXPECT_EQ(net::test_server::METHOD_POST,
+            upload_response.http_request()->method);
+}
+
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationReportingAndNelBrowserTest,
+                       PersistReportingAndNel) {
+  if (IsRestartStateWithInProcessNetworkService() ||
+      !AreReportingAndNelEnabled()) {
+    return;
+  }
+
+  net::test_server::ControllableHttpResponse original_response(http_server(),
+                                                               "/page");
+  net::test_server::ControllableHttpResponse cross_origin_response(
+      http_server(), "/page");
+  net::test_server::ControllableHttpResponse upload_response(http_server(),
+                                                             "/upload");
+  http_server()->StartAcceptingConnections();
+
+  // Make a request that will only precipitate a NEL report if we loaded a NEL
+  // policy from the store.
+  std::unique_ptr<RequestState> request =
+      NewSimpleRequest(GURL(kReportingEnabledURL));
+  RespondWithoutHeaders(&original_response);
+  request->helper.WaitForCallback();
+
+  // Make another request that will generate another upload to the same
+  // collector. If the previous request didn't generate a NEL report (e.g.,
+  // because persistence is disabled) then this'll be first upload to the NEL
+  // collector. Note that because this upload is to a different origin than the
+  // request, Reporting will make a CORS preflight request, which is what we
+  // look for.
+  std::unique_ptr<RequestState> cross_origin_request =
+      NewSimpleRequest(GURL(kCrossOriginReportingEnabledURL));
+  RespondWithHeaders(&cross_origin_response);
+  cross_origin_request->helper.WaitForCallback();
+
+  // Wait for a request to /upload, which should happen because the previous
+  // requests precipitated NEL reports.
+  //
+  // We assume that Reporting/NEL will send reports in the order we made the
+  // requests above, which seems to be the case today but may not necessarily
+  // true in general.
+  upload_response.WaitForRequest();
+  if (ExpectPersistenceEnabled()) {
+    // A NEL upload about https://localhost
+    EXPECT_EQ(net::test_server::METHOD_POST,
+              upload_response.http_request()->method);
+  } else {
+    // A CORS preflight request before a cross-origin NEL upload about
+    // https://localhost:444
+    EXPECT_EQ(net::test_server::METHOD_OPTIONS,
+              upload_response.http_request()->method);
+  }
+}
+
 // Instantiates tests with a prefix indicating which NetworkContext is being
 // tested, and a suffix of "/0" if the network service is disabled, "/1" if it's
 // enabled, and "/2" if it's enabled and restarted.
-#define TEST_CASES(network_context_type)                               \
-      TestCase({NetworkServiceState::kEnabled, network_context_type}), \
+#define TEST_CASES(network_context_type)                           \
+  TestCase({NetworkServiceState::kEnabled, network_context_type}), \
       TestCase({NetworkServiceState::kRestarted, network_context_type})
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -2030,5 +2233,7 @@ INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(
     NetworkContextConfigurationProxySettingsBrowserTest);
 INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(
     NetworkContextConfigurationManagedProxySettingsBrowserTest);
+INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(
+    NetworkContextConfigurationReportingAndNelBrowserTest);
 
 }  // namespace

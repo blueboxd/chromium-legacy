@@ -127,17 +127,6 @@ class OzonePlatformWayland : public OzonePlatform {
 
   std::unique_ptr<InputMethod> CreateInputMethod(
       internal::InputMethodDelegate* delegate) override {
-    // Some unit tests may try to set custom input method context factory
-    // after InitializeUI. Thus instead of creating factory in InitializeUI
-    // it is set at this point if none exists
-    if (!LinuxInputMethodContextFactory::instance() &&
-        !input_method_context_factory_) {
-      input_method_context_factory_ =
-          std::make_unique<WaylandInputMethodContextFactory>(connection_.get());
-      LinuxInputMethodContextFactory::SetInstance(
-          input_method_context_factory_.get());
-    }
-
     return std::make_unique<InputMethodAuraLinux>(delegate);
   }
 
@@ -177,6 +166,16 @@ class OzonePlatformWayland : public OzonePlatform {
     input_controller_ = CreateStubInputController();
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
     supported_buffer_formats_ = connection_->GetSupportedBufferFormats();
+
+    // Instantiate and set LinuxInputMethodContextFactory unless it is already
+    // set (e.g: tests may have already set it).
+    if (!LinuxInputMethodContextFactory::instance() &&
+        !input_method_context_factory_) {
+      input_method_context_factory_ =
+          std::make_unique<WaylandInputMethodContextFactory>(connection_.get());
+      LinuxInputMethodContextFactory::SetInstance(
+          input_method_context_factory_.get());
+    }
   }
 
   void InitializeGPU(const InitParams& args) override {

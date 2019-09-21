@@ -54,11 +54,14 @@ void CastScreen::OverridePrimaryDisplaySettings(
 
   stashed_display_settings_ = primary_display;
 
-  LOG(INFO) << "Stashing primary display settings; device_scale_factor: "
+  LOG(INFO) << "Stashing primary display (" << primary_display.id()
+            << ") settings; device_scale_factor: "
             << stashed_display_settings_->device_scale_factor()
             << " rotation: " << stashed_display_settings_->RotationAsDegree()
             << " size (pixels): "
             << stashed_display_settings_->GetSizeInPixel().ToString();
+
+  OnDisplayChanged(primary_display.id(), scale_factor, rotation, bounds);
 }
 
 bool CastScreen::RestorePrimaryDisplaySettings() {

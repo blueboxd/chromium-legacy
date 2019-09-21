@@ -74,10 +74,7 @@ void TransformPDFPageForPrinting(FPDF_PAGE page,
   // Get the source page width and height in points.
   const double src_page_width = FPDF_GetPageWidth(page);
   const double src_page_height = FPDF_GetPageHeight(page);
-
   const int src_page_rotation = FPDFPage_GetRotation(page);
-  const bool fit_to_page = print_settings.print_scaling_option ==
-                           PP_PRINTSCALINGOPTION_FIT_TO_PRINTABLE_AREA;
 
   pp::Size page_size(print_settings.paper_size);
   pp::Rect content_rect(print_settings.printable_area);
@@ -91,10 +88,25 @@ void TransformPDFPageForPrinting(FPDF_PAGE page,
   const int actual_page_height =
       rotated ? page_size.width() : page_size.height();
 
-  const gfx::Rect gfx_content_rect(content_rect.x(), content_rect.y(),
+  gfx::Rect gfx_printed_rect;
+  bool fitted_scaling;
+  switch (print_settings.print_scaling_option) {
+    case PP_PRINTSCALINGOPTION_FIT_TO_PRINTABLE_AREA:
+      gfx_printed_rect = gfx::Rect(content_rect.x(), content_rect.y(),
                                    content_rect.width(), content_rect.height());
-  if (fit_to_page) {
-    scale_factor = CalculateScaleFactor(gfx_content_rect, src_page_width,
+      fitted_scaling = true;
+      break;
+    case PP_PRINTSCALINGOPTION_FIT_TO_PAPER:
+      gfx_printed_rect = gfx::Rect(page_size.width(), page_size.height());
+      fitted_scaling = true;
+      break;
+    default:
+      fitted_scaling = false;
+      break;
+  }
+
+  if (fitted_scaling) {
+    scale_factor = CalculateScaleFactor(gfx_printed_rect, src_page_width,
                                         src_page_height, rotated);
   }
 
@@ -114,8 +126,9 @@ void TransformPDFPageForPrinting(FPDF_PAGE page,
   // Calculate the translation offset values.
   double offset_x = 0;
   double offset_y = 0;
-  if (fit_to_page) {
-    CalculateScaledClipBoxOffset(gfx_content_rect, source_clip_box, &offset_x,
+
+  if (fitted_scaling) {
+    CalculateScaledClipBoxOffset(gfx_printed_rect, source_clip_box, &offset_x,
                                  &offset_y);
   } else {
     CalculateNonScaledClipBoxOffset(src_page_rotation, actual_page_width,

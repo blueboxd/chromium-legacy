@@ -1445,7 +1445,7 @@
 <translation id="3480961938508521469">De batterij volledig opladen met een normale snelheid.</translation>
 <translation id="3483729306380590354">Geef een aangepast startpunt voor batterijoplading op in procenten.
 
-          De batterij begint met opladen wanneer de waarde van het aangepaste startpunt voor batterijoplading wordt bereikt.
+          De batterij begint met opladen als de waarde van het aangepaste startpunt voor batterijoplading wordt bereikt.
 
           <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> moet ten minste vijf procentpunten lager zijn dan <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />.
 
@@ -1977,7 +1977,7 @@
 
       Als 'Gebruikersuploads verzenden voor scannen' is ingesteld, worden gebruikersuploads via het netwerk naar Safe Browsing gestuurd om ze te scannen op malware.
 
-      Als 'Gebruikersuploads en -downloads verzenden voor scannen' is ingesteld, gedraagt deze zich volgens de regels die zijn beschreven onder 'Gebruikersuploads verzenden voor scannen' en 'Gebruikersdownloads verzenden voor scannen'.
+      Als 'Gebruikersuploads en -downloads verzenden om te laten scannen' is ingesteld, gedraagt deze zich volgens de regels die zijn beschreven onder 'Gebruikersuploads verzenden voor scannen' en 'Gebruikersdownloads verzenden voor scannen'.
 
       Lees <ph name="DELAY_DELIVER_UNTIL_VERDICT_POLICY_NAME" /> en <ph name="UNSAFE_EVENTS_REPORTING_ENABLED" /> voor meer informatie over hoe de gebruiker en de beheerder de resultaten van de scans te zien krijgen.</translation>
 <translation id="4344356660952451291">Lijst met domeinen waarvoor gedownloade content moet worden gecontroleerd op naleving</translation>
@@ -3168,15 +3168,6 @@ Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de pagina 'N
 <translation id="6559057113164934677">Niet toestaan dat sites toegang krijgen tot de camera en microfoon</translation>
 <translation id="6561396069801924653">Toegankelijkheidsopties weergeven in het systeemvakmenu</translation>
 <translation id="6563458316362153786">802.11r Fast Transition inschakelen</translation>
-<translation id="6565312346072273043">De standaardstatus van de toegankelijkheidsfunctie voor het schermtoetsenbord op het inlogscherm instellen.
-
-          Als dit beleid is ingesteld op 'True', wordt het schermtoetsenbord ingeschakeld wanneer het inlogscherm wordt weergegeven.
-
-         Als dit beleid is ingesteld op 'False', wordt het schermtoetsenbord uitgeschakeld wanneer het inlogscherm wordt weergegeven.
-
-          Als je dit beleid instelt, kunnen gebruikers dit tijdelijk negeren door het schermtoetsenbord in of uit te schakelen. De keuze van de gebruiker is echter niet permanent en de standaardinstelling wordt hersteld wanneer het inlogscherm opnieuw wordt weergegeven of als de gebruiker gedurende een minuut niet actief is op het inlogscherm.
-
-          Als dit beleid niet is ingesteld, wordt het schermtoetsenbord uitgeschakeld wanneer het inlogscherm voor de eerste keer wordt weergegeven. Gebruikers kunnen het schermtoetsenbord op elk moment in- of uitschakelen en de status op het inlogscherm is van toepassing op alle gebruikers.</translation>
 <translation id="6573305661369899995">Een externe bron voor URL-beperkingen instellen</translation>
 <translation id="6583851521569686409">Hiermee wordt een lijst met printers geconfigureerd.
 
@@ -3497,7 +3488,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7138678301420049075">Overige</translation>
 <translation id="7139809614375682935">Geef een aangepaste batterijoplaadstop op in procenten.
 
-          De batterij stopt met opladen wanneer de waarde van de aangepaste batterijoplaadstop wordt bereikt.
+          De batterij stopt met opladen als de waarde van de aangepaste batterijoplaadstop wordt bereikt.
 
           <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> moet ten minste vijf procentpunten lager zijn dan <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />.
 
@@ -3510,7 +3501,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Als het beleid niet is ingesteld, kan de gebruiker zelf een keuze maken.</translation>
 <translation id="7145335384492396213">Standaardmodus voor afdrukken met pincode</translation>
-<translation id="7149042336307555519"> De typen verbindingen die mogen worden gebruikt voor OS-updates. Vanwege hun grootte kunnen OS-updates de verbinding zwaar belasten, wat kan leiden tot extra kosten. Daarom zijn ze standaard niet ingeschakeld voor verbindingstypen die als duur worden beschouwd (momenteel alleen verbindingen van het type 'mobiel').
+<translation id="7149042336307555519"> De typen verbindingen die mogen worden gebruikt voor OS-updates. Grote OS-updates kunnen belastend zijn voor de verbinding, wat kan leiden tot extra kosten. Daarom zijn ze standaard uitgeschakeld voor verbindingstypen die als duur worden beschouwd (momenteel alleen verbindingen van het type 'mobiel').
 
       De herkende ID's voor verbindingstypen zijn <ph name="CONNECTION_TYPE_ETHERNET_NAME" />, <ph name="CONNECTION_TYPE_WIFI_NAME" /> en <ph name="CONNECTION_TYPE_CELLULAR_NAME" />.</translation>
 <translation id="7152605873936173525">Hiermee wordt de modus van de DNS-over-HTTPS-resolver bepaald. Houd er rekening mee dat dit beleid alleen de standaardmodus voor elke query instelt. De modus kan worden overschreven voor speciale typen query's, zoals verzoeken om de hostnaam van een DNS-over-HTTPS-server om te zetten.
@@ -3546,7 +3537,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="7187447094921703950">Schakel het beleid voor het beheer van stroompiekverschuiving in.
 
-          Piekverschuiving is een energiebesparingsbeleid waarmee het gebruik van wisselstroom op piekuren gedurende de dag wordt geminimaliseerd. Voor elke dag van de week kan een begin- en eindtijd voor stroompiekverschuiving worden ingesteld. Op deze tijden gebruikt het systeem de batterij, ook als de wisselstroom is aangesloten, zolang het batterijniveau maar boven de opgegeven drempel blijft. Na de opgegeven eindtijd gebruikt het systeem wisselstroom als deze is aangesloten maar wordt de batterij niet opgeladen. Het systeem keert terug naar de normale werking waarbij wisselstroom wordt gebruikt en de batterij wordt opgeladen na de opgegeven starttijd voor opladen.
+          Piekverschuiving is een energiebesparingsbeleid waarmee het gebruik van wisselstroom op piekuren gedurende de dag wordt geminimaliseerd. Voor elke doordeweekse dag kan een begin- en eindtijd voor stroompiekverschuiving worden ingesteld. Op deze tijden gebruikt het systeem de batterij, ook als de wisselstroom is aangesloten, zolang het batterijniveau maar boven de opgegeven drempel blijft. Na de opgegeven eindtijd gebruikt het systeem wisselstroom als deze is aangesloten maar wordt de batterij niet opgeladen. Het systeem keert terug naar de normale werking waarbij wisselstroom wordt gebruikt en de batterij wordt opgeladen na de opgegeven starttijd voor opladen.
 
           Als dit beleid is ingesteld op True en <ph name="DEVICE_POWER_PEAK_SHIFT_BATTERY_THRESHOLD_NAME" /> en <ph name="DEVICE_POWER_PEAK_SHIFT_DAY_CONFIG_NAME" /> zijn ingesteld, wordt stroompiekverschuiving altijd ingeschakeld als dit wordt ondersteund door het apparaat.
 
@@ -4208,7 +4199,7 @@ De aanbevolen manier om beleidsregels te configureren op Windows, is via GPO, ma
 <translation id="8382184662529825177">Het gebruik van externe verificatie inschakelen voor het beveiligen van content voor het apparaat</translation>
 <translation id="8382693763260501307">Schakel het stroombeheerbeleid voor de geavanceerde batterijoplaadmodus in.
 
-          In de geavanceerde batterijoplaadmodus kan de gebruiker de staat van de batterij maximaliseren. In de geavanceerde batterijoplaadmodus gebruikt het systeem buiten werktijden een standaard oplaadalgoritme en andere technieken om de staat van de batterij te maximaliseren. Tijdens werktijden wordt snel opgeladen. Dankzij dit snelle opladen is de batterij sneller volledig opgeladen. Voor elke dag wordt een begintijd en een duur opgegeven om aan te geven wanneer het systeem het intensiefst wordt gebruikt.
+          Met de geavanceerde batterijoplaadmodus kan de gebruiker de batterijprestaties maximaliseren. Als deze modus ingeschakeld is, gebruikt het systeem buiten werktijden een standaard oplaadalgoritme en andere technieken om de batterijprestaties te maximaliseren. Tijdens werktijden wordt snel opgeladen. Zo is de batterij sneller helemaal vol. Voor elke dag wordt een begintijd en een duur opgegeven om aan te geven wanneer het systeem het intensiefst wordt gebruikt.
 
           Als dit beleid is ingesteld op True en <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_DAY_CONFIG_NAME" /> is ingesteld, wordt de geavanceerde batterijoplaadmodus altijd ingeschakeld als dit wordt ondersteund door het apparaat.
 

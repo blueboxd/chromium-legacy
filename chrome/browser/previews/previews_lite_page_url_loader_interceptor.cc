@@ -77,6 +77,12 @@ net::HttpRequestHeaders GetChromeProxyHeaders(
 
 }  // namespace
 
+void LogLitePageRedirectIneligibleReason(
+    LitePageRedirectIneligibleReason reason) {
+  UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.IneligibleReasons",
+                            reason);
+}
+
 PreviewsLitePageURLLoaderInterceptor::PreviewsLitePageURLLoaderInterceptor(
     const scoped_refptr<network::SharedURLLoaderFactory>&
         network_loader_factory,

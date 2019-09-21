@@ -119,6 +119,9 @@ def ParseFlags():
   parser.add_argument('--chrome_start_time', type=int, default=0, help='The '
     'number of attempts to check if Chrome has fetched a proxy client config '
     'before starting the test. Each check takes about one second.')
+  parser.add_argument('--ignore_logging_prefs_w3c', action='store_true',
+    help='If given, use the loggingPrefs capability instead of the W3C '
+    'standard goog:loggingPrefs capability.')
   return parser.parse_args(sys.argv[1:])
 
 def GetLogger(name='common'):
@@ -304,9 +307,12 @@ class TestDriver:
         address = 'tcp:%d' % self._emulation_server_port
         _RunAdbCmd(['reverse', address, address])
 
-    capabilities = {
-      'loggingPrefs': {'performance': 'INFO'},
-    }
+    capabilities = {}
+    if self._flags.ignore_logging_prefs_w3c:
+      capabilities = {'loggingPrefs': {'performance': 'INFO'}}
+    else:
+      capabilities = {'goog:loggingPrefs': {'performance': 'INFO'}}
+
     chrome_options = Options()
 
     if self._control_network_connection:

@@ -37,6 +37,7 @@
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/previews/previews_lite_page_decider.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
+#include "chrome/browser/previews/previews_lite_page_url_loader_interceptor.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
@@ -1027,8 +1028,7 @@ IN_PROC_BROWSER_TEST_P(
     ui_test_utils::NavigateToURL(browser(), GURL("https://0.0.0.0/"));
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.BlacklistReasons",
-        PreviewsLitePageNavigationThrottle::BlacklistReason::
-            kNavigationToPrivateDomain,
+        previews::LitePageRedirectBlacklistReason::kNavigationToPrivateDomain,
         1);
     VerifyErrorPageLoaded();
   }
@@ -1041,8 +1041,7 @@ IN_PROC_BROWSER_TEST_P(
     VerifyErrorPageLoaded();
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.BlacklistReasons",
-        PreviewsLitePageNavigationThrottle::BlacklistReason::
-            kNavigationToPrivateDomain,
+        previews::LitePageRedirectBlacklistReason::kNavigationToPrivateDomain,
         1);
   }
 
@@ -1099,8 +1098,7 @@ IN_PROC_BROWSER_TEST_P(
     VerifyPreviewNotLoaded();
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.IneligibleReasons",
-        PreviewsLitePageNavigationThrottle::IneligibleReason::kCookiesBlocked,
-        1);
+        previews::LitePageRedirectIneligibleReason::kCookiesBlocked, 1);
 
     // Reset state for other tests.
     CookieSettingsFactory::GetForProfile(browser()->profile())
@@ -1191,8 +1189,8 @@ IN_PROC_BROWSER_TEST_P(
 
   histogram_tester.ExpectBucketCount(
       "Previews.ServerLitePage.IneligibleReasons",
-      static_cast<int>(PreviewsLitePageNavigationThrottle::IneligibleReason::
-                           kInvalidProxyHeaders),
+      static_cast<int>(
+          previews::LitePageRedirectIneligibleReason::kInvalidProxyHeaders),
       1);
 }
 
@@ -1273,7 +1271,7 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
     ClearDeciderState();
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.ServerResponse",
-        PreviewsLitePageNavigationThrottle::ServerResponse::kRedirect, 1);
+        previews::LitePageRedirectServerResponse::kRedirect, 1);
   }
 
   {
@@ -1286,10 +1284,10 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
 
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.ServerResponse",
-        PreviewsLitePageNavigationThrottle::ServerResponse::kRedirect, 1);
+        previews::LitePageRedirectServerResponse::kRedirect, 1);
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.ServerResponse",
-        PreviewsLitePageNavigationThrottle::ServerResponse::kOk, 1);
+        previews::LitePageRedirectServerResponse::kOk, 1);
   }
 }
 
@@ -1304,8 +1302,7 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
     ClearDeciderState();
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.ServerResponse",
-        PreviewsLitePageNavigationThrottle::ServerResponse::kPreviewUnavailable,
-        1);
+        previews::LitePageRedirectServerResponse::kPreviewUnavailable, 1);
 
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.HostBlacklistedOnBypass", false, 1);
@@ -1321,8 +1318,7 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
 
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.ServerResponse",
-        PreviewsLitePageNavigationThrottle::ServerResponse::kPreviewUnavailable,
-        1);
+        previews::LitePageRedirectServerResponse::kPreviewUnavailable, 1);
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.HostBlacklistedOnBypass", true, 1);
 
@@ -1330,9 +1326,7 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
     VerifyPreviewNotLoaded();
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.BlacklistReasons",
-        PreviewsLitePageNavigationThrottle::BlacklistReason::
-            kHostBypassBlacklisted,
-        1);
+        previews::LitePageRedirectBlacklistReason::kHostBypassBlacklisted, 1);
     ClearDeciderState();
 
     ui_test_utils::NavigateToURL(browser(), HttpsLitePageURL(kSuccess));
@@ -1347,7 +1341,7 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
     ClearDeciderState();
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.ServerResponse",
-        PreviewsLitePageNavigationThrottle::ServerResponse::kAuthFailure, 1);
+        previews::LitePageRedirectServerResponse::kAuthFailure, 1);
   }
 
   {
@@ -1358,8 +1352,7 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerBrowserTest,
     ClearDeciderState();
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.ServerResponse",
-        PreviewsLitePageNavigationThrottle::ServerResponse::kServiceUnavailable,
-        1);
+        previews::LitePageRedirectServerResponse::kServiceUnavailable, 1);
   }
 }
 
@@ -1607,7 +1600,7 @@ IN_PROC_BROWSER_TEST_P(PreviewsLitePageServerTimeoutBrowserTest,
     ClearDeciderState();
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.ServerResponse",
-        PreviewsLitePageNavigationThrottle::ServerResponse::kTimeout, 1);
+        previews::LitePageRedirectServerResponse::kTimeout, 1);
   }
 
   {
@@ -1658,9 +1651,7 @@ IN_PROC_BROWSER_TEST_P(
     VerifyPreviewNotLoaded();
     histogram_tester.ExpectBucketCount(
         "Previews.ServerLitePage.IneligibleReasons",
-        PreviewsLitePageNavigationThrottle::IneligibleReason::
-            kServiceProbeFailed,
-        1);
+        previews::LitePageRedirectIneligibleReason::kServiceProbeFailed, 1);
   }
 }
 
@@ -1786,7 +1777,7 @@ IN_PROC_BROWSER_TEST_P(
                 ->GetMessageText());
   histogram_tester.ExpectBucketCount(
       "Previews.ServerLitePage.IneligibleReasons",
-      PreviewsLitePageNavigationThrottle::IneligibleReason::kInfoBarNotSeen, 1);
+      previews::LitePageRedirectIneligibleReason::kInfoBarNotSeen, 1);
 }
 
 class PreviewsLitePageDSDisabledBrowserTest

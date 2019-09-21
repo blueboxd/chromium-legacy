@@ -189,9 +189,15 @@ trait. This makes it such that delayed tasks and `base::Time::Now()` +
 
 Under this mode, the mock clock will start at the current system time but will
 then only advance when explicitly requested by `TaskEnvironment::FastForward*()`
-methods *or* when `RunLoop::Run()` is running and all managed threads become
-idle (auto-advances to the soonest delayed task, if any, amongst all managed
-threads).
+and `TaskEnvironment::AdvanceClock()` methods *or* when `RunLoop::Run()` is
+running and all managed threads become idle (auto-advances to the soonest
+delayed task, if any, amongst all managed threads).
+
+`TaskEnvironment::FastForwardBy()` repeatedly runs existing immediately
+executable tasks until idle and then advances the mock clock incrementally to
+run the next delayed task within the time delta. It may advance time by more
+than the requested amount if running the tasks causes nested
+time-advancing-method calls.
 
 This makes it possible to test code with flush intervals, repeating timers,
 timeouts, etc. without any test-specific seams in the product code, e.g.:
@@ -228,6 +234,43 @@ TEST_F(FooStorageTest, Set) {
   EXPECT_FALSE(FindKeyInOnDiskStorage("mykey"));
   task_environment.FastForwardBy(FooStorage::kFlushInterval);
   EXPECT_TRUE(FindKeyInOnDiskStorage("mykey"));
+}
+```
+
+In contrast, `TaskEnvironment::AdvanceClock()` simply advances the mock time by
+the requested amount, and does not run tasks. This may be useful in
+cases where `TaskEnvironment::FastForwardBy()` would result in a livelock. For
+example, if one task is blocked on a `WaitableEvent` and there is a delayed
+task that would signal the event (e.g., a timeout), then
+`TaskEnvironment::FastForwardBy()` will never complete. In this case, you could
+advance the clock enough that the delayed task becomes runnable, and then
+`TaskEnvironment::RunUntilIdle()` would run the delayed task, signalling the
+event.
+
+```
+TEST(FooTest, TimeoutExceeded)
+{
+  base::test::TaskEnvironment task_environment{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  base::WaitableEvent event;
+  base::RunLoop run_loop;
+  base::PostTaskAndReply(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+      base::BindOnce(&BlocksOnEvent, base::Unretained(&event)),
+      run_loop.QuitClosure());
+  base::PostDelayedTask(
+      FROM_HERE, {base::ThreadPool()},
+      base::BindOnce(&WaitableEvent::Signal, base::Unretained(&event)),
+      kTimeout);
+  // Can't use task_environment.FastForwardBy() since BlocksOnEvent blocks
+  // and the task pool will not become idle.
+  // Instead, advance time until the timeout task becomes runnable.
+  task_environment.AdvanceClock(kTimeout);
+  // Now the timeout task is runable.
+  task_environment.RunUntilIdle();
+  // The reply task should already have been executed, but run the run_loop to
+  // verify.
+  run_loop.Run();
 }
 ```
 

@@ -51,7 +51,7 @@ public class StaleTabSuggestionProviderTest {
     @Test
     @Feature({"StaleTabSuggestionProvider"})
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-            "enable-features=" + ChromeFeatureList.CLOSE_TAB_SUGGESTIONS_STALE + "<FakeStudyName",
+            "enable-features=" + ChromeFeatureList.CLOSE_TAB_SUGGESTIONS + "<FakeStudyName",
             "force-fieldtrials=FakeStudyName/Enabled",
             "force-fieldtrial-params=FakeStudyName.Enabled:"
                     + "close_tab_suggestions_stale_time_ms/86400000"})

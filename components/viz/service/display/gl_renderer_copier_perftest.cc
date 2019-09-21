@@ -19,7 +19,7 @@
 #include "components/viz/test/test_in_process_context_provider.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
@@ -39,6 +39,16 @@ constexpr gfx::Rect kRequestArea = gfx::Rect(kSourceSize.width() / 2,
                                              kSourceSize.height() / 2,
                                              kSourceSize.width() / 4,
                                              kSourceSize.height() / 4);
+
+constexpr char kMetricPrefixGLRendererCopier[] = "GLRendererCopier.";
+constexpr char kMetricReadbackThroughputRunsPerS[] = "readback_throughput";
+
+perf_test::PerfResultReporter SetUpGLRendererCopierReporter(
+    const std::string& story) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixGLRendererCopier, story);
+  reporter.RegisterImportantMetric(kMetricReadbackThroughputRunsPerS, "runs/s");
+  return reporter;
+}
 
 base::FilePath GetTestFilePath(const base::FilePath::CharType* basename) {
   base::FilePath test_dir;
@@ -162,7 +172,7 @@ class GLRendererCopierPerfTest : public testing::Test {
                                     CopyOutputResult::Format result_format,
                                     bool scale_by_half,
                                     bool flipped_source,
-                                    const std::string& test_name) {
+                                    const std::string& story) {
     std::unique_ptr<CopyOutputResult> result;
 
     gfx::Rect result_selection(kRequestArea);
@@ -241,8 +251,9 @@ class GLRendererCopierPerfTest : public testing::Test {
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
-    perf_test::PrintResult("GLRendererCopier readback ", "", test_name,
-                           timer_.LapsPerSecond(), "runs/s", true);
+    auto reporter = SetUpGLRendererCopierReporter(story);
+    reporter.AddResult(kMetricReadbackThroughputRunsPerS,
+                       timer_.LapsPerSecond());
   }
 
  private:
@@ -262,7 +273,7 @@ TEST_F(GLRendererCopierPerfTest, NoTransformNoNewTextures) {
   CopyFromTextureOrFramebuffer(
       /*have_source_texture=*/false, CopyOutputResult::Format::RGBA_BITMAP,
       /*scale_by_half=*/false, /*flipped_source=*/false,
-      "no transformation and no new textures ");
+      "no_transformation_and_no_new_textures");
 }
 
 // Source texture is the one attached to the framebuffer, better performance
@@ -271,19 +282,19 @@ TEST_F(GLRendererCopierPerfTest, HaveTextureResultRGBABitmap) {
   CopyFromTextureOrFramebuffer(
       /*have_source_texture=*/true, CopyOutputResult::Format::RGBA_BITMAP,
       /*scale_by_half=*/true, /*flipped_source=*/false,
-      "framebuffer has texture and result is RGBA_BITMAP ");
+      "framebuffer_has_texture_and_result_is_RGBA_BITMAP");
 }
 TEST_F(GLRendererCopierPerfTest, HaveTextureResultRGBATexture) {
   CopyFromTextureOrFramebuffer(
       /*have_source_texture=*/true, CopyOutputResult::Format::RGBA_TEXTURE,
       /*scale_by_half=*/true, /*flipped_source=*/false,
-      "framebuffer has texture and result is RGBA_TEXTURE ");
+      "framebuffer_has_texture_and_result_is_RGBA_TEXTURE");
 }
 TEST_F(GLRendererCopierPerfTest, HaveTextureResultI420Planes) {
   CopyFromTextureOrFramebuffer(
       /*have_source_texture=*/true, CopyOutputResult::Format::I420_PLANES,
       /*scale_by_half=*/true, /*flipped_source=*/false,
-      "framebuffer has texture and result is I420_PLANES ");
+      "framebuffer_has_texture_and_result_is_I420_PLANES");
 }
 
 // Have to make a copy of the framebuffer for the source texture.
@@ -291,7 +302,7 @@ TEST_F(GLRendererCopierPerfTest, NoTextureResultI420Planes) {
   CopyFromTextureOrFramebuffer(
       /*have_source_texture=*/false, CopyOutputResult::Format::I420_PLANES,
       /*scale_by_half=*/true, /*flipped_source=*/false,
-      "framebuffer doesn't have texture and result is I420_PLANES ");
+      "framebuffer_doesn't_have_texture_and_result_is_I420_PLANES");
 }
 
 // Source content is vertically flipped.
@@ -299,7 +310,7 @@ TEST_F(GLRendererCopierPerfTest, SourceContentVerticallyFlipped) {
   CopyFromTextureOrFramebuffer(/*have_source_texture=*/true,
                                CopyOutputResult::Format::I420_PLANES,
                                /*scale_by_half=*/true, /*flipped_source=*/true,
-                               "source content is vertically flipped ");
+                               "source_content_is_vertically_flipped");
 }
 
 // Result is not scaled by half.
@@ -307,7 +318,7 @@ TEST_F(GLRendererCopierPerfTest, ResultNotScaled) {
   CopyFromTextureOrFramebuffer(/*have_source_texture=*/true,
                                CopyOutputResult::Format::I420_PLANES,
                                /*scale_by_half=*/false, /*flipped_source=*/true,
-                               "result is not scaled by half ");
+                               "result_is_not_scaled_by_half");
 }
 
 }  // namespace viz

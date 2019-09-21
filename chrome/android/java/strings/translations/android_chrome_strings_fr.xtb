@@ -66,7 +66,7 @@
 <translation id="1407135791313364759">Tout ouvrir</translation>
 <translation id="1409426117486808224">Vue simplifiée pour les onglets ouverts</translation>
 <translation id="1409879593029778104">Le téléchargement du fichier "<ph name="FILE_NAME" />" a été bloqué, car le fichier existe déjà.</translation>
-<translation id="1413136574162415971">Google peut vérifier si vos mots de passe ont été piratés suite à une violation de données. Cette option sera activée si vous vous connectez avec votre compte Google et si vous activez la synchronisation.</translation>
+<translation id="1413136574162415971">Google peut vérifier si vos mots de passe sont concernés par une violation des données. Cette option sera activée lorsque vous vous connecterez avec votre compte Google et que vous aurez activé la synchronisation.</translation>
 <translation id="1414981605391750300">Mise en relation avec Google. Cette opération peut prendre une minute…</translation>
 <translation id="1416550906796893042">Version de l'application</translation>
 <translation id="1430915738399379752">Imprimer</translation>
@@ -161,7 +161,7 @@
 <translation id="2091887806945687916">Son</translation>
 <translation id="2096012225669085171">Synchroniser et personnaliser les données sur tous les appareils</translation>
 <translation id="2100273922101894616">Connexion automatique</translation>
-<translation id="2100314319871056947">Essayez de partager le texte en plusieurs fois</translation>
+<translation id="2100314319871056947">Essayez de scinder le texte pour le partager en plusieurs fois</translation>
 <translation id="2107397443965016585">Demander avant d'autoriser les sites à lire les contenus protégés (recommandé)</translation>
 <translation id="2111511281910874386">Accéder à la page</translation>
 <translation id="2122601567107267586">Impossible d'ouvrir l'application</translation>
@@ -174,7 +174,7 @@
 <translation id="2154484045852737596">Modifier la carte</translation>
 <translation id="2154710561487035718">Copier l'URL</translation>
 <translation id="2156074688469523661">Sites restants (<ph name="NUMBER_OF_SITES" />)</translation>
-<translation id="2157851137955077194">Pour partager un contenu depuis votre téléphone vers un autre appareil, activez la synchronisation dans les paramètres Chrome sur les deux appareils</translation>
+<translation id="2157851137955077194">Pour partager un contenu entre votre téléphone et un autre appareil, activez la synchronisation dans les paramètres Chrome sur les deux appareils</translation>
 <translation id="2170088579611075216">Autoriser et activer la RV</translation>
 <translation id="218608176142494674">Partage</translation>
 <translation id="2227444325776770048">Continuer en tant que <ph name="USER_FULL_NAME" /></translation>
@@ -729,6 +729,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6364438453358674297">Supprimer la suggestion de l'historique ?</translation>
 <translation id="6369229450655021117">Ici, vous pouvez faire des recherches sur le Web, partager des contenus avec vos amis et voir les pages ouvertes</translation>
 <translation id="6378173571450987352">Détails : tri effectué par volume de données utilisées</translation>
+<translation id="6381421346744604172">Asssombrir les sites Web</translation>
 <translation id="6388207532828177975">Effacer et réinitialiser</translation>
 <translation id="6393863479814692971">Chrome a besoin de votre autorisation pour accéder à votre appareil photo et à votre micro pour ce site.</translation>
 <translation id="6395288395575013217">LIEN</translation>
@@ -958,7 +959,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="8007176423574883786">Désactivée pour cet appareil</translation>
 <translation id="8013372441983637696">Supprimer également vos données Chrome sur cet appareil</translation>
 <translation id="8015452622527143194">Rétablir taille par défaut des éléments de la page</translation>
-<translation id="8015780634880457457">Google peut vérifier si vos mots de passe ont été piratés suite à une violation de données</translation>
+<translation id="8015780634880457457">Google peut vérifier si vos mots de passe sont concernés par une violation de données</translation>
 <translation id="802154636333426148">Échec du téléchargement</translation>
 <translation id="8026334261755873520">Effacer les données de navigation</translation>
 <translation id="8035133914807600019">Nouveau dossier…</translation>
@@ -1020,7 +1021,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="8445448999790540984">Impossible d'exporter les mots de passe</translation>
 <translation id="8447861592752582886">Révoquer l'autorisation d'accès à l'appareil</translation>
 <translation id="8461694314515752532">Chiffrer les données synchronisées avec votre propre phrase secrète de synchronisation</translation>
-<translation id="8466613982764129868">Assurez-vous que <ph name="TARGET_DEVICE_NAME" /> est connecté à Internet</translation>
+<translation id="8466613982764129868">Assurez-vous que l'appareil <ph name="TARGET_DEVICE_NAME" /> est connecté à Internet</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">Disponible hors connexion</translation>
 <translation id="8489271220582375723">Ouvrir la page "Historique"</translation>
@@ -1091,7 +1092,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="8993760627012879038">Ouvrir un nouvel onglet en mode navigation privée</translation>
 <translation id="8998729206196772491">Vous vous connectez avec un compte géré par <ph name="MANAGED_DOMAIN" />, ce qui permettra à son administrateur de contrôler vos données Chrome. Celles-ci seront définitivement associées à ce compte. Si vous vous déconnectez de Chrome, vos données seront supprimées de cet appareil, mais elles seront conservées dans votre compte Google.</translation>
 <translation id="9019902583201351841">Géré par tes parents</translation>
-<translation id="9028914725102941583">Activer la synchronisation pour partager des contenus d'un appareil à un autre</translation>
+<translation id="9028914725102941583">Activer la synchronisation pour partager des contenus entre des appareils</translation>
 <translation id="9029323097866369874">Autoriser le site <ph name="DOMAIN" /> à activer la RV ?</translation>
 <translation id="9040142327097499898">Les notifications sont autorisées. La localisation est désactivée pour cet appareil.</translation>
 <translation id="9041669420854607037">{FILE_COUNT,plural, =1{# vidéo}one{# vidéo}other{# vidéos}}</translation>
@@ -1110,6 +1111,7 @@ En revanche, le site n'a PAS accès à la caméra. Vous seul pouvez voir les ima
 <translation id="9139068048179869749">Demander avant d'autoriser des sites à envoyer des notifications (recommandé)</translation>
 <translation id="9139318394846604261">Achats</translation>
 <translation id="9155898266292537608">Vous pouvez également effectuer une recherche en appuyant brièvement sur un mot</translation>
+<translation id="9169507124922466868">L'historique de navigation est ouvert à moitié</translation>
 <translation id="9188680907066685419">Se déconnecter d'un compte géré</translation>
 <translation id="9204836675896933765">1 fichier restant</translation>
 <translation id="9206873250291191720">A</translation>

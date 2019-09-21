@@ -35,7 +35,6 @@
 #include "content/common/download/mhtml_file_writer.mojom.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_delete_intention.h"
-#include "content/common/host_zoom.mojom.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/common/renderer.mojom.h"
@@ -185,7 +184,6 @@ class CONTENT_EXPORT RenderFrameImpl
       mojom::Frame,
       mojom::FrameNavigationControl,
       mojom::FullscreenVideoElementHandler,
-      mojom::HostZoom,
       mojom::FrameBindingsControl,
       mojom::MhtmlFileWriter,
       public blink::WebLocalFrameClient,
@@ -492,8 +490,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void SetSelectedText(const base::string16& selection_text,
                        size_t offset,
                        const gfx::Range& range) override;
-  void SetZoomLevel(double zoom_level) override;
-  double GetZoomLevel() override;
   void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message) override;
   void SetPreviewsState(PreviewsState previews_state) override;
@@ -659,9 +655,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // mojom::FullscreenVideoElementHandler implementation:
   void RequestFullscreenVideoElement() override;
-
-  // mojom::HostZoom implementation:
-  void SetHostZoomLevel(const GURL& url, double zoom_level) override;
 
   // mojom::MhtmlFileWriter implementation:
   void SerializeAsMHTML(const mojom::SerializeAsMHTMLParamsPtr params,
@@ -918,6 +911,16 @@ class CONTENT_EXPORT RenderFrameImpl
 
   media::MediaPermission* GetMediaPermission();
 
+  // Proxies the call to set the zoom level over to the RenderViewImpl and
+  // returns its result.
+  bool SetZoomLevelOnRenderView(double zoom_level);
+  // Proxies the call to set the prefer compositing flag over to the
+  // RenderViewImpl.
+  void SetPreferCompositingToLCDTextEnabledOnRenderView(bool prefer);
+  // Proxies the call to set the device scale factor over to the RenderViewImpl.
+  void SetDeviceScaleFactorOnRenderView(bool use_zoom_for_dsf,
+                                        float device_scale_factor);
+
   // Sends the current frame's navigation state to the browser.
   void SendUpdateState();
 
@@ -1083,8 +1086,6 @@ class CONTENT_EXPORT RenderFrameImpl
   };
 
   class FrameURLLoaderFactory;
-
-  typedef std::map<GURL, double> HostZoomLevels;
 
   // Creates a new RenderFrame. |render_view| is the RenderView object that this
   // frame belongs to, |interface_provider| is the RenderFrameHost's
@@ -1325,8 +1326,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   void RegisterMojoInterfaces();
 
-  void OnHostZoomClientRequest(mojom::HostZoomAssociatedRequest request);
-
   void InitializeBlameContext(RenderFrameImpl* parent_frame);
 
   // service_manager::mojom::InterfaceProvider:
@@ -1350,9 +1349,6 @@ class CONTENT_EXPORT RenderFrameImpl
   std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
   MakeDidCommitProvisionalLoadParams(blink::WebHistoryCommitType commit_type,
                                      ui::PageTransition transition);
-
-  // Updates the Zoom level of the render view to match current content.
-  void UpdateZoomLevel();
 
   // Updates the navigation history depending on the passed parameters.
   // This could result either in the creation of a new entry or a modification
@@ -1679,15 +1675,12 @@ class CONTENT_EXPORT RenderFrameImpl
   PepperPluginInstanceImpl* pepper_last_mouse_event_target_;
 #endif
 
-  HostZoomLevels host_zoom_levels_;
-
   using AutoplayOriginAndFlags = std::pair<url::Origin, int32_t>;
   AutoplayOriginAndFlags autoplay_flags_;
 
   mojo::AssociatedBinding<blink::mojom::AutoplayConfigurationClient>
       autoplay_configuration_binding_;
   mojo::Binding<mojom::Frame> frame_binding_;
-  mojo::AssociatedBinding<mojom::HostZoom> host_zoom_binding_;
   mojo::AssociatedBinding<mojom::FrameBindingsControl>
       frame_bindings_control_binding_;
   mojo::AssociatedReceiver<mojom::FrameNavigationControl>

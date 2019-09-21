@@ -32,6 +32,8 @@ class CORE_EXPORT TextFragmentAnchorMetrics final
 
   void ReportMetrics();
 
+  void Dismissed();
+
   void Trace(blink::Visitor*);
 
  private:

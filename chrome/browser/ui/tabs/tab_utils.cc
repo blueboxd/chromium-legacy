@@ -23,9 +23,11 @@
 
 namespace chrome {
 
-TabAlertState GetTabAlertStateForContents(content::WebContents* contents) {
+std::vector<TabAlertState> GetTabAlertStatesForContents(
+    content::WebContents* contents) {
+  std::vector<TabAlertState> states;
   if (!contents)
-    return TabAlertState::NONE;
+    return states;
 
   scoped_refptr<MediaStreamCaptureIndicator> indicator =
       MediaCaptureDevicesDispatcher::GetInstance()->
@@ -36,32 +38,32 @@ TabAlertState GetTabAlertStateForContents(content::WebContents* contents) {
     // TODO(crbug.com/861961): To show the icon of the highest-priority alert
     // with tooltip that notes all the states in play.
     if (indicator->IsCapturingDesktop(contents))
-      return TabAlertState::DESKTOP_CAPTURING;
+      states.push_back(TabAlertState::DESKTOP_CAPTURING);
     if (indicator->IsBeingMirrored(contents))
-      return TabAlertState::TAB_CAPTURING;
+      states.push_back(TabAlertState::TAB_CAPTURING);
     if (indicator->IsCapturingUserMedia(contents))
-      return TabAlertState::MEDIA_RECORDING;
+      states.push_back(TabAlertState::MEDIA_RECORDING);
   }
 
   if (contents->IsConnectedToBluetoothDevice())
-    return TabAlertState::BLUETOOTH_CONNECTED;
+    states.push_back(TabAlertState::BLUETOOTH_CONNECTED);
 
   UsbTabHelper* usb_tab_helper = UsbTabHelper::FromWebContents(contents);
   if (usb_tab_helper && usb_tab_helper->IsDeviceConnected())
-    return TabAlertState::USB_CONNECTED;
+    states.push_back(TabAlertState::USB_CONNECTED);
 
   if (contents->IsConnectedToSerialPort())
-    return TabAlertState::SERIAL_CONNECTED;
+    states.push_back(TabAlertState::SERIAL_CONNECTED);
 
   // Check if VR content is being presented in a headset.
   // NOTE: This icon must take priority over the audio alert ones
   // because most VR content has audio and its usage is implied by the VR
   // icon.
   if (vr::VrTabHelper::IsContentDisplayedInHeadset(contents))
-    return TabAlertState::VR_PRESENTING_IN_HEADSET;
+    states.push_back(TabAlertState::VR_PRESENTING_IN_HEADSET);
 
   if (contents->HasPictureInPictureVideo())
-    return TabAlertState::PIP_PLAYING;
+    states.push_back(TabAlertState::PIP_PLAYING);
 
   // Only tabs have a RecentlyAudibleHelper, but this function is abused for
   // some non-tab WebContents. In that case fall back to using the realtime
@@ -72,11 +74,19 @@ TabAlertState GetTabAlertStateForContents(content::WebContents* contents) {
     audible = audible_helper->WasRecentlyAudible();
   if (audible) {
     if (contents->IsAudioMuted())
-      return TabAlertState::AUDIO_MUTING;
-    return TabAlertState::AUDIO_PLAYING;
+      states.push_back(TabAlertState::AUDIO_MUTING);
+    states.push_back(TabAlertState::AUDIO_PLAYING);
   }
 
-  return TabAlertState::NONE;
+  return states;
+}
+
+TabAlertState GetHighestPriorityTabAlertStateForContents(
+    content::WebContents* contents) {
+  auto states = GetTabAlertStatesForContents(contents);
+  if (states.empty())
+    return TabAlertState::NONE;
+  return states[0];
 }
 
 base::string16 GetTabAlertStateText(const TabAlertState alert_state) {
@@ -118,7 +128,7 @@ base::string16 GetTabAlertStateText(const TabAlertState alert_state) {
 }
 
 bool CanToggleAudioMute(content::WebContents* contents) {
-  switch (chrome::GetTabAlertStateForContents(contents)) {
+  switch (chrome::GetHighestPriorityTabAlertStateForContents(contents)) {
     case TabAlertState::NONE:
     case TabAlertState::AUDIO_PLAYING:
     case TabAlertState::AUDIO_MUTING:
@@ -147,7 +157,8 @@ TabMutedReason GetTabAudioMutedReason(content::WebContents* contents) {
   LastMuteMetadata::CreateForWebContents(contents);  // Ensures metadata exists.
   LastMuteMetadata* const metadata =
       LastMuteMetadata::FromWebContents(contents);
-  if (GetTabAlertStateForContents(contents) == TabAlertState::TAB_CAPTURING &&
+  if (GetHighestPriorityTabAlertStateForContents(contents) ==
+          TabAlertState::TAB_CAPTURING &&
       !base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams)) {
     // The legacy tab audio capture implementation in libcontent forces muting
     // off because it requires using the same infrastructure.

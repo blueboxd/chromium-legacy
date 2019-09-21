@@ -418,14 +418,6 @@ RenderSurfaceReason ComputeRenderSurfaceReason(const MutatorHost& mutator_host,
     DCHECK(!is_root);
     return RenderSurfaceReason::kOpacity;
   }
-  // If the layer has isolation.
-  // TODO(rosca): to be optimized - create separate rendering surface only when
-  // the blending descendants might have access to the content behind this layer
-  // (layer has transparent background or descendants overflow).
-  // https://code.google.com/p/chromium/issues/detail?id=301738
-  if (layer->is_root_for_isolated_group()) {
-    return RenderSurfaceReason::kRootOrIsolatedGroup;
-  }
 
   // If we force it.
   if (layer->force_render_surface_for_testing())

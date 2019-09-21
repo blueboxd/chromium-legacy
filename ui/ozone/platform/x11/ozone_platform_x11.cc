@@ -31,7 +31,7 @@
 #if defined(OS_CHROMEOS)
 #include "ui/base/ime/chromeos/input_method_chromeos.h"
 #else
-#include "ui/base/ime/input_method_minimal.h"
+#include "ui/base/ime/linux/input_method_auralinux.h"
 #endif
 
 namespace ui {
@@ -111,9 +111,7 @@ class OzonePlatformX11 : public OzonePlatform {
 #if defined(OS_CHROMEOS)
     return std::make_unique<InputMethodChromeOS>(delegate);
 #else
-    // TODO(spang): Fix InputMethodAuraLinux which requires another level
-    // of initization.
-    return std::make_unique<InputMethodMinimal>(delegate);
+    return std::make_unique<InputMethodAuraLinux>(delegate);
 #endif
   }
 

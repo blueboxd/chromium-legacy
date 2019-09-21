@@ -3080,15 +3080,6 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
 <translation id="6559057113164934677">Não permitir que nenhum site acesse minha câmera e meu microfone</translation>
 <translation id="6561396069801924653">Mostrar opções de acessibilidade no menu da bandeja do sistema</translation>
 <translation id="6563458316362153786">Ativa a transição rápida 802.11r</translation>
-<translation id="6565312346072273043">Define o estado padrão do recurso de acessibilidade de teclado na tela na tela de login.
-
-          Se essa política for definida como "true", o teclado na tela será ativado quando a tela de login for exibida.
-
-          Se essa política for definida como "false", o teclado na tela será desativado quando a tela de login for exibida.
-
-          Se você definir essa política, os usuários poderão modificá-la temporariamente ao ativar ou desativar o teclado na tela. No entanto, a opção do usuário não é permanente, e o padrão é restaurado sempre que a tela de login é exibida novamente ou que o usuário permanece inativo na tela de login por um minuto.
-
-          Se essa política não for definida, o teclado na tela será desativado quando a tela de login for exibida pela primeira vez. Os usuários podem ativá-lo ou desativá-lo a qualquer momento e seu status na tela de login é mantido entre os usuários.</translation>
 <translation id="6573305661369899995">Definir uma fonte externa de restrições de URL</translation>
 <translation id="6583851521569686409">Configura uma lista de impressoras.
 

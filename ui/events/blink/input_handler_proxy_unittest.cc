@@ -1874,6 +1874,18 @@ TEST_F(InputHandlerProxyEventQueueTest, TouchpadGestureScrollEndFlushQueue) {
 
   EXPECT_FALSE(
       input_handler_proxy_.gesture_scroll_on_impl_thread_for_testing());
+
+  // Starting a new scroll sequence should have the same behavior (namely that
+  // the first scroll update is not queued but immediately dispatched).
+  HandleGestureEventWithSourceDevice(WebInputEvent::kGestureScrollBegin,
+                                     blink::WebGestureDevice::kTouchpad);
+  HandleGestureEventWithSourceDevice(WebInputEvent::kGestureScrollUpdate,
+                                     blink::WebGestureDevice::kTouchpad, -20);
+
+  // Both GSB and the first GSU must be dispatched immediately since the first
+  // GSU has blocking wheel event source.
+  EXPECT_EQ(0ul, event_queue().size());
+  EXPECT_EQ(6ul, event_disposition_recorder_.size());
 }
 
 TEST_F(InputHandlerProxyEventQueueTest, CoalescedLatencyInfo) {

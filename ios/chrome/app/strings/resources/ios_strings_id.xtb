@@ -93,6 +93,7 @@
 <translation id="2149973817440762519">Edit Bookmark</translation>
 <translation id="2179182049312275900">Anda dapat mengaktifkan sinkronisasi kapan saja di setelan.</translation>
 <translation id="2198757192731523470">Google dapat menggunakan histori Anda untuk mempersonalisasi Penelusuran, iklan, dan layanan Google lainnya.</translation>
+<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> artikel yang belum dibaca di Daftar Bacaan.</translation>
 <translation id="2230173723195178503">Halaman web dimuat</translation>
 <translation id="2239626343334228536">Menghapus data browsing...</translation>
 <translation id="2256128224215992540">Saran Situs dan Penelusuran</translation>
@@ -108,6 +109,7 @@
 <translation id="2360196772093551345">Minta Situs Seluler</translation>
 <translation id="2381405137052800939">Dasar</translation>
 <translation id="2386793615875593361">1 dipilih</translation>
+<translation id="2421044535038393232">Terus Edit</translation>
 <translation id="2435457462613246316">Tampilkan sandi</translation>
 <translation id="2481538920734869610">TAMBAHKAN AKUN</translation>
 <translation id="2497852260688568942">Sinkronisasi dinonaktifkan oleh administrator</translation>
@@ -227,6 +229,7 @@
 <translation id="418156467088430727">Tampilkan Versi Offline di Tab Baru</translation>
 <translation id="4181841719683918333">Bahasa</translation>
 <translation id="424315890655130736">Masukkan Frasa Sandi</translation>
+<translation id="4263576668337963058">Tampilkan tindakan halaman yang tersedia</translation>
 <translation id="4272631900155121838">Untuk memindai kode QR, aktifkan kamera dari setelan</translation>
 <translation id="4281844954008187215">Persyaratan Layanan</translation>
 <translation id="430793432425771671">Sinkronkan Semua</translation>
@@ -264,6 +267,7 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi. Loginkan frasa sandi untuk
 
 Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">Nomor Kartu Tidak Valid</translation>
+<translation id="4807020197310989387">1 artikel yang belum dibaca di Daftar Bacaan.</translation>
 <translation id="4818522717893377262">Tambahkan Bahasa...</translation>
 <translation id="481968316161811770">Cookie, Data Situs</translation>
 <translation id="4833786495304741580">Otomatis mengirim statistik penggunaan dan laporan kerusakan ke Google.</translation>

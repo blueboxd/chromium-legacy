@@ -1,1 +1,10 @@
 # These tests currently fail when run with --enable-features=BackForwardCache
+
+# WebPayment.
+# https://crbug.com/1006256
+-HasEnrolledInstrumentQueryQuotaTest.*
+-HasEnrolledInstrumentTest.*
+-HybridRequestSkipUITest.*
+-PaymentHandlerEnableDelegationsTest.*
+-PaymentHandlerExploitTest.*
+-PaymentRequestCanMakePaymentQueryCCTest.*

@@ -102,6 +102,10 @@ PasswordForm FormSaverImpl::PermanentlyBlacklist(
   return blacklisted;
 }
 
+void FormSaverImpl::Unblacklist(const PasswordStore::FormDigest& digest) {
+  store_->Unblacklist(digest, /*completion=*/base::DoNothing());
+}
+
 void FormSaverImpl::Save(PasswordForm pending,
                          const std::vector<const PasswordForm*>& matches,
                          const base::string16& old_password) {

@@ -78,6 +78,7 @@ class ChromePromptChannelProtobufTest : public ::testing::Test {
             /*on_connection_closed=*/run_loop_.QuitClosure(),
             std::make_unique<ChromePromptActions>(
                 /*extension_service=*/nullptr,
+                /*extension_registry=*/nullptr,
                 /*on_prompt_user=*/base::DoNothing()),
             task_runner),
         base::OnTaskRunnerDeleter(task_runner));

@@ -169,6 +169,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="2220529011494928058">Rapportér et problem</translation>
 <translation id="2223693656926968778">Gjør noe med det aktuelle elementet</translation>
 <translation id="225732394367814946">Øk talehastigheten</translation>
+<translation id="2267538686624070261">Forlater stavefeilen</translation>
 <translation id="2267945578749931355">Neste tegn</translation>
 <translation id="2278490101488436824">Sveip tre fingre til venstre</translation>
 <translation id="2281234842553884450">Forrige glidebryter</translation>
@@ -207,6 +208,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="257674075312929031">Gruppe</translation>
 <translation id="2582407057977008361">Aside-tag</translation>
 <translation id="2592212930811759050">Dobbelttrykk for å begynne å redigere</translation>
+<translation id="2598495320872286378">Grammatikkfeil</translation>
 <translation id="2614981083756825552">MathML-utforming</translation>
 <translation id="2624431853467395961">Åpne læremodus</translation>
 <translation id="2626530649491650971">klikkbart</translation>
@@ -821,6 +823,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="6833103209700200188">Bunntekst</translation>
 <translation id="6858047746862060282">Prolog</translation>
 <translation id="6859876496651143278">Sveip én finger til venstre</translation>
+<translation id="6865519907510167493">Feilstavet</translation>
 <translation id="6871161210040114857">Skiller ikke mellom store og små bokstaver.</translation>
 <translation id="6877435256196695200">Det finnes ikke flere illustrasjoner.</translation>
 <translation id="6897341342232909480">Flytt til venstre</translation>
@@ -1111,6 +1114,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="8446884382197647889">Les mer</translation>
 <translation id="8455868257606149352">Maksimum <ph name="X" /></translation>
 <translation id="84575901236241018">har tilgangstast, <ph name="KEY" /></translation>
+<translation id="8463645336674919227">Forlater grammatikkfeilen</translation>
 <translation id="847154984256717791">opptatt</translation>
 <translation id="8476408756881832830">Sett avspillingen på pause når ChromeVox snakker</translation>
 <translation id="8476508772960940536">vindusoversikt</translation>

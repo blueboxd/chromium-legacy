@@ -28,6 +28,13 @@ import org.chromium.chrome.browser.ui.widget.TintedDrawable;
  * parameters for disambiguation, otherwise the child won't be added at all!
  */
 public class AssistantVerticalExpander extends LinearLayout {
+    /** Controls whether the chevron should be visible. */
+    enum ChevronStyle {
+        AUTO, /** visible if the expander has an expanded view, else invisible. */
+        ALWAYS,
+        NEVER
+    }
+
     private final ViewGroup mTitleContainer;
     private final ViewGroup mCollapsedContainer;
     private final ViewGroup mExpandedContainer;
@@ -39,6 +46,7 @@ public class AssistantVerticalExpander extends LinearLayout {
     private View mExpandedView;
     private boolean mExpanded;
     private boolean mFixed;
+    private ChevronStyle mChevronStyle = ChevronStyle.AUTO;
 
     public AssistantVerticalExpander(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -130,6 +138,13 @@ public class AssistantVerticalExpander extends LinearLayout {
         }
     }
 
+    public void setChevronStyle(ChevronStyle style) {
+        if (style != mChevronStyle) {
+            mChevronStyle = style;
+            update();
+        }
+    }
+
     public boolean isExpanded() {
         return mExpanded;
     }
@@ -185,7 +200,18 @@ public class AssistantVerticalExpander extends LinearLayout {
     }
 
     private void update() {
-        mChevronButton.setVisibility(!mFixed && mExpandedView != null ? View.VISIBLE : View.GONE);
+        switch (mChevronStyle) {
+            case AUTO:
+                mChevronButton.setVisibility(
+                        !mFixed && mExpandedView != null ? View.VISIBLE : View.GONE);
+                break;
+            case ALWAYS:
+                mChevronButton.setVisibility(View.VISIBLE);
+                break;
+            case NEVER:
+                mChevronButton.setVisibility(View.GONE);
+                break;
+        }
 
         if (mExpandedView != null) {
             mExpandedView.setVisibility(mExpanded ? VISIBLE : GONE);

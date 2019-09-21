@@ -66,6 +66,7 @@ class URLRequestInterceptor;
 
 #if BUILDFLAG(ENABLE_REPORTING)
 struct ReportingPolicy;
+class PersistentReportingAndNelStore;
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
 // A URLRequestContextBuilder creates a single URLRequestContext. It provides
@@ -195,15 +196,11 @@ class NET_EXPORT URLRequestContextBuilder {
       std::unique_ptr<HttpUserAgentSettings> http_user_agent_settings);
 
   // Control support for data:// requests. By default it's disabled.
-  void set_data_enabled(bool enable) {
-    data_enabled_ = enable;
-  }
+  void set_data_enabled(bool enable) { data_enabled_ = enable; }
 
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   // Control support for ftp:// requests. By default it's disabled.
-  void set_ftp_enabled(bool enable) {
-    ftp_enabled_ = enable;
-  }
+  void set_ftp_enabled(bool enable) { ftp_enabled_ = enable; }
 #endif
 
   // Sets a valid ProtocolHandler for a scheme.
@@ -277,8 +274,7 @@ class NET_EXPORT URLRequestContextBuilder {
     hsts_policy_bypass_list_ = hsts_policy_bypass_list;
   }
 
-  void SetSpdyAndQuicEnabled(bool spdy_enabled,
-                             bool quic_enabled);
+  void SetSpdyAndQuicEnabled(bool spdy_enabled, bool quic_enabled);
 
   void set_throttling_enabled(bool throttling_enabled) {
     throttling_enabled_ = throttling_enabled;
@@ -300,6 +296,10 @@ class NET_EXPORT URLRequestContextBuilder {
   void set_network_error_logging_enabled(bool network_error_logging_enabled) {
     network_error_logging_enabled_ = network_error_logging_enabled;
   }
+
+  void set_persistent_reporting_and_nel_store(
+      std::unique_ptr<PersistentReportingAndNelStore>
+          persistent_reporting_and_nel_store);
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
   void SetInterceptors(std::vector<std::unique_ptr<URLRequestInterceptor>>
@@ -392,6 +392,8 @@ class NET_EXPORT URLRequestContextBuilder {
 #if BUILDFLAG(ENABLE_REPORTING)
   std::unique_ptr<ReportingPolicy> reporting_policy_;
   bool network_error_logging_enabled_ = false;
+  std::unique_ptr<PersistentReportingAndNelStore>
+      persistent_reporting_and_nel_store_;
 #endif  // BUILDFLAG(ENABLE_REPORTING)
   std::vector<std::unique_ptr<URLRequestInterceptor>> url_request_interceptors_;
   CreateInterceptingJobFactory create_intercepting_job_factory_;

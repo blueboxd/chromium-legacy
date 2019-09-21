@@ -541,16 +541,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   // TODO(oshima): Investigate if we can merge this and |OnLoginStateChanged|.
   void UpdateAfterLoginStatusChange(LoginStatus status);
 
-  // Notifies observers that split view mode is about to be started (before the
-  // window gets snapped and activated).
-  void NotifySplitViewModeStarting();
-
-  // Notifies observers that split view mode has been started.
-  void NotifySplitViewModeStarted();
-
-  // Notifies observers that split view mode has ended.
-  void NotifySplitViewModeEnded();
-
   // Notifies observers that fullscreen mode has changed for |container|.
   // |container| is always the active desk container.
   void NotifyFullscreenStateChanged(bool is_fullscreen,

@@ -20,7 +20,7 @@
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/previews/previews_lite_page_decider.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
-#include "chrome/browser/previews/previews_lite_page_navigation_throttle_manager.h"
+#include "chrome/browser/previews/previews_lite_page_url_loader_interceptor.h"
 #include "chrome/browser/previews/previews_offline_helper.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
@@ -82,17 +82,16 @@ bool ShouldAllowRedirectPreview(content::NavigationHandle* navigation_handle) {
   PreviewsLitePageDecider* decider =
       previews_service->previews_lite_page_decider();
 
-  std::vector<PreviewsLitePageNavigationThrottle::IneligibleReason>
-      ineligible_reasons;
+  std::vector<previews::LitePageRedirectIneligibleReason> ineligible_reasons;
 
   if (!url.SchemeIs(url::kHttpsScheme)) {
     ineligible_reasons.push_back(
-        PreviewsLitePageNavigationThrottle::IneligibleReason::kNonHttpsScheme);
+        previews::LitePageRedirectIneligibleReason::kNonHttpsScheme);
   }
 
   if (decider->IsServerUnavailable()) {
-    ineligible_reasons.push_back(PreviewsLitePageNavigationThrottle::
-                                     IneligibleReason::kServerUnavailable);
+    ineligible_reasons.push_back(
+        previews::LitePageRedirectIneligibleReason::kServerUnavailable);
   }
 
   content_settings::CookieSettings* cookie_settings =
@@ -106,51 +105,46 @@ bool ShouldAllowRedirectPreview(content::NavigationHandle* navigation_handle) {
                                     &setting);
   if (!content_settings::CookieSettingsBase::IsAllowed(setting)) {
     ineligible_reasons.push_back(
-        PreviewsLitePageNavigationThrottle::IneligibleReason::kCookiesBlocked);
+        previews::LitePageRedirectIneligibleReason::kCookiesBlocked);
   }
 
   if (!decider->has_drp_headers()) {
-    ineligible_reasons.push_back(PreviewsLitePageNavigationThrottle::
-                                     IneligibleReason::kInvalidProxyHeaders);
+    ineligible_reasons.push_back(
+        previews::LitePageRedirectIneligibleReason::kInvalidProxyHeaders);
   }
 
   if (previews::params::LitePageRedirectOnlyTriggerOnSuccessfulProbe()) {
     if (!decider->IsServerProbeResultAvailable()) {
       ineligible_reasons.push_back(
-          PreviewsLitePageNavigationThrottle::IneligibleReason::
-              kServiceProbeIncomplete);
+          previews::LitePageRedirectIneligibleReason::kServiceProbeIncomplete);
     } else if (!decider->IsServerReachableByProbe()) {
-      ineligible_reasons.push_back(PreviewsLitePageNavigationThrottle::
-                                       IneligibleReason::kServiceProbeFailed);
+      ineligible_reasons.push_back(
+          previews::LitePageRedirectIneligibleReason::kServiceProbeFailed);
     }
   }
 
   // Record UMA.
-  for (PreviewsLitePageNavigationThrottle::IneligibleReason reason :
-       ineligible_reasons) {
-    PreviewsLitePageNavigationThrottle::LogIneligibleReason(reason);
+  for (previews::LitePageRedirectIneligibleReason reason : ineligible_reasons) {
+    previews::LogLitePageRedirectIneligibleReason(reason);
   }
   if (!ineligible_reasons.empty())
     return false;
 
   // Check dynamic blacklists.
-  std::vector<PreviewsLitePageNavigationThrottle::BlacklistReason>
-      blacklist_reasons;
+  std::vector<previews::LitePageRedirectBlacklistReason> blacklist_reasons;
 
   if (IsPrivateDomain(url)) {
     blacklist_reasons.push_back(
-        PreviewsLitePageNavigationThrottle::BlacklistReason::
-            kNavigationToPrivateDomain);
+        previews::LitePageRedirectBlacklistReason::kNavigationToPrivateDomain);
   }
 
   if (decider->HostBlacklistedFromBypass(url.host())) {
-    blacklist_reasons.push_back(PreviewsLitePageNavigationThrottle::
-                                    BlacklistReason::kHostBypassBlacklisted);
+    blacklist_reasons.push_back(
+        previews::LitePageRedirectBlacklistReason::kHostBypassBlacklisted);
   }
 
   // Record UMA
-  for (PreviewsLitePageNavigationThrottle::BlacklistReason reason :
-       blacklist_reasons) {
+  for (previews::LitePageRedirectBlacklistReason reason : blacklist_reasons) {
     UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.BlacklistReasons",
                               reason);
   }
@@ -160,8 +154,8 @@ bool ShouldAllowRedirectPreview(content::NavigationHandle* navigation_handle) {
 
   // This should always be at the end, but before the control group check.
   if (decider->NeedsToNotifyUser()) {
-    PreviewsLitePageNavigationThrottle::LogIneligibleReason(
-        PreviewsLitePageNavigationThrottle::IneligibleReason::kInfoBarNotSeen);
+    previews::LogLitePageRedirectIneligibleReason(
+        previews::LitePageRedirectIneligibleReason::kInfoBarNotSeen);
     return false;
   }
 

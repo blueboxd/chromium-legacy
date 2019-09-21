@@ -169,6 +169,7 @@
 <translation id="2220529011494928058">گزارش یک مشکل</translation>
 <translation id="2223693656926968778">در خصوص مورد کنونی اقدامی انجام دهید</translation>
 <translation id="225732394367814946">افزایش سرعت گفتار</translation>
+<translation id="2267538686624070261">خارج شدن از کلمه با غلط املایی</translation>
 <translation id="2267945578749931355">نویسه بعدی</translation>
 <translation id="2278490101488436824">تند کشیدن سه انگشت به راست</translation>
 <translation id="2281234842553884450">اسلایدر قبلی</translation>
@@ -207,6 +208,7 @@
 <translation id="257674075312929031">گروه</translation>
 <translation id="2582407057977008361">جدا</translation>
 <translation id="2592212930811759050">برای شروع ویرایش، دو ضربه سریع بزنید</translation>
+<translation id="2598495320872286378">خطای دستور زبانی</translation>
 <translation id="2614981083756825552">‏چیدمان ML ریاضی</translation>
 <translation id="2624431853467395961">باز کردن حالت یادگیری</translation>
 <translation id="2626530649491650971">قابل کلیک</translation>
@@ -821,6 +823,7 @@
 <translation id="6833103209700200188">پاورقی</translation>
 <translation id="6858047746862060282">گفتار آغازین</translation>
 <translation id="6859876496651143278">تند کشیدن یک انگشت به راست</translation>
+<translation id="6865519907510167493">غلط املایی</translation>
 <translation id="6871161210040114857">بزرگی و کوچکی حروف نادیده گرفته شود.</translation>
 <translation id="6877435256196695200">گرافیک بعدی موجود نیست.</translation>
 <translation id="6897341342232909480">حرکت به چپ</translation>
@@ -1111,6 +1114,7 @@
 <translation id="8446884382197647889">بیشتر بیاموزید</translation>
 <translation id="8455868257606149352">حداکثر <ph name="X" /></translation>
 <translation id="84575901236241018">کلید دسترسی دارد، <ph name="KEY" /></translation>
+<translation id="8463645336674919227">خارج شدن از اشتباه دستور زبانی</translation>
 <translation id="847154984256717791">مشغول</translation>
 <translation id="8476408756881832830">‏توقف بازپخش هنگامی که ChromeVox درحال صحبت کردن است</translation>
 <translation id="8476508772960940536">نمای کلی پنجره</translation>

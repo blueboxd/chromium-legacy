@@ -42,6 +42,24 @@ public final class BrowserObserverProxy {
         }
     }
 
+    @CalledByNative
+    private void loadingStateChanged(boolean isLoading, boolean toDifferentDocument) {
+        try {
+            mClient.loadingStateChanged(isLoading, toDifferentDocument);
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    @CalledByNative
+    private void loadProgressChanged(double progress) {
+        try {
+            mClient.loadProgressChanged(progress);
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
     @NativeMethods
     interface Natives {
         long createBrowserObserverProxy(BrowserObserverProxy proxy, long browserController);

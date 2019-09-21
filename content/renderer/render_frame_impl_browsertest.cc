@@ -454,33 +454,6 @@ TEST_F(RenderFrameImplTest, DownloadUrlLimit) {
   EXPECT_FALSE(msg3);
 }
 
-TEST_F(RenderFrameImplTest, ZoomLimit) {
-  const double kMinZoomLevel = ZoomFactorToZoomLevel(kMinimumZoomFactor);
-  const double kMaxZoomLevel = ZoomFactorToZoomLevel(kMaximumZoomFactor);
-
-  // Verifies navigation to a URL with preset zoom level indeed sets the level.
-  // Regression test for http://crbug.com/139559, where the level was not
-  // properly set when it is out of the default zoom limits of WebView.
-  auto common_params = CreateCommonNavigationParams();
-  common_params->url = GURL("data:text/html,min_zoomlimit_test");
-  common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
-  GetMainRenderFrame()->SetHostZoomLevel(common_params->url, kMinZoomLevel);
-  GetMainRenderFrame()->Navigate(common_params.Clone(),
-                                 CreateCommitNavigationParams());
-  base::RunLoop().RunUntilIdle();
-  EXPECT_DOUBLE_EQ(kMinZoomLevel, view_->GetWebView()->ZoomLevel());
-
-  // It should work even when the zoom limit is temporarily changed in the page.
-  view_->GetWebView()->ZoomLimitsChanged(ZoomFactorToZoomLevel(1.0),
-                                         ZoomFactorToZoomLevel(1.0));
-  common_params->url = GURL("data:text/html,max_zoomlimit_test");
-  GetMainRenderFrame()->SetHostZoomLevel(common_params->url, kMaxZoomLevel);
-  GetMainRenderFrame()->Navigate(common_params.Clone(),
-                                 CreateCommitNavigationParams());
-  base::RunLoop().RunUntilIdle();
-  EXPECT_DOUBLE_EQ(kMaxZoomLevel, view_->GetWebView()->ZoomLevel());
-}
-
 // Regression test for crbug.com/692557. It shouldn't crash if we inititate a
 // text finding, and then delete the frame immediately before the text finding
 // returns any text match.

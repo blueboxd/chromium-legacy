@@ -300,12 +300,9 @@ TEST_F(SharedImageBackingFactoryIOSurfaceTest, Dawn_SkiaGL) {
     color_desc.storeOp = dawn::StoreOp::Store;
     color_desc.clearColor = {0, 255, 0, 255};
 
-    dawn::RenderPassColorAttachmentDescriptor* color_attachments_ptr =
-        &color_desc;
-
     dawn::RenderPassDescriptor renderPassDesc;
     renderPassDesc.colorAttachmentCount = 1;
-    renderPassDesc.colorAttachments = &color_attachments_ptr;
+    renderPassDesc.colorAttachments = &color_desc;
     renderPassDesc.depthStencilAttachment = nullptr;
 
     dawn::CommandEncoder encoder = device.CreateCommandEncoder();

@@ -126,6 +126,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
   const CanvasColorParams& ColorParams() const { return color_params_; }
   void SetFilterQuality(SkFilterQuality quality) { filter_quality_ = quality; }
   const IntSize& Size() const { return size_; }
+  bool IsOriginTopLeft() const { return is_origin_top_left_; }
   virtual bool IsValid() const = 0;
   virtual bool IsAccelerated() const = 0;
   // Returns true if the resource can be used by the display compositor.
@@ -196,7 +197,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
     return context_provider_wrapper_;
   }
   unsigned GetMSAASampleCount() const { return msaa_sample_count_; }
-  bool IsOriginTopLeft() const { return is_origin_top_left_; }
   GrSurfaceOrigin GetGrSurfaceOrigin() const {
     return is_origin_top_left_ ? kTopLeft_GrSurfaceOrigin
                                : kBottomLeft_GrSurfaceOrigin;

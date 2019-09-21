@@ -545,11 +545,6 @@ void LocalFrameView::AdjustViewSizeAndLayout() {
   }
 }
 
-void LocalFrameView::UpdateAcceleratedCompositingSettings() {
-  if (auto* layout_view = GetLayoutView())
-    layout_view->Compositor()->UpdateAcceleratedCompositingSettings();
-}
-
 void LocalFrameView::UpdateCountersAfterStyleChange() {
   auto* layout_view = GetLayoutView();
   DCHECK(layout_view);
@@ -1724,6 +1719,14 @@ void LocalFrameView::InvokeFragmentAnchor() {
     return;
 
   if (!fragment_anchor_->Invoke())
+    fragment_anchor_ = nullptr;
+}
+
+void LocalFrameView::DismissFragmentAnchor() {
+  if (!fragment_anchor_)
+    return;
+
+  if (fragment_anchor_->Dismiss())
     fragment_anchor_ = nullptr;
 }
 

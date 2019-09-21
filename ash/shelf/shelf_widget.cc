@@ -413,6 +413,7 @@ void ShelfWidget::OnShelfAlignmentChanged() {
 
 void ShelfWidget::OnTabletModeChanged() {
   hotseat_widget()->GetShelfView()->OnTabletModeChanged();
+  shelf_layout_manager()->UpdateVisibilityState();
 }
 
 void ShelfWidget::PostCreateShelf() {

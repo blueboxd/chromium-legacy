@@ -34,7 +34,7 @@ async function DeleteContent(id) {
 async function GetIds() {
   const registration = await navigator.serviceWorker.ready;
 
-  const descriptions = await registration.index.getDescriptions();
+  const descriptions = await registration.index.getAll();
   return descriptions.map(d => d.id);
 }
 

@@ -464,6 +464,14 @@ ProfileNetworkContextService::CreateNetworkContextParams(
     cookie_path = cookie_path.Append(chrome::kCookieFilename);
     network_context_params->cookie_path = cookie_path;
 
+#if BUILDFLAG(ENABLE_REPORTING)
+    base::FilePath reporting_and_nel_store_path = path;
+    reporting_and_nel_store_path = reporting_and_nel_store_path.Append(
+        chrome::kReportingAndNelStoreFilename);
+    network_context_params->reporting_and_nel_store_path =
+        reporting_and_nel_store_path;
+#endif  // BUILDFLAG(ENABLE_REPORTING)
+
     if (relative_partition_path.empty()) {  // This is the main partition.
       network_context_params->restore_old_session_cookies =
           profile_->ShouldRestoreOldSessionCookies();

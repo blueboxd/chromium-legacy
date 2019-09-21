@@ -42,28 +42,32 @@ constexpr SkScalar kStrokeWidth = SkIntToScalar(2);
 // The padding on top/bottom side of each button.
 constexpr int kVerticalButtonPadding = 0;
 // The selected button color.
-constexpr SkColor kVerticalSelectedButtonColor =
-    SkColorSetARGB(255, 232, 234, 237);
-// The normal button color (54% white).
-constexpr SkColor kVerticalNormalColor = SkColorSetARGB(255, 232, 234, 237);
-constexpr SkColor kVerticalInkDropBaseColor = SkColorSetRGB(241, 243, 244);
-constexpr SkColor kVerticalInkDropRippleColor =
-    SkColorSetA(kVerticalInkDropBaseColor, 15);
-constexpr SkColor kVerticalInkDropHighlightColor =
-    SkColorSetA(kVerticalInkDropBaseColor, 20);
+constexpr SkColor kDarkSelectedButtonColor = SkColorSetARGB(255, 232, 234, 237);
+// The normal button color for the page switcher shown in the app grid (54%
+// white).
+constexpr SkColor kDarkNormalColor = SkColorSetARGB(255, 232, 234, 237);
+constexpr SkColor kDarkInkDropBaseColor = SkColorSetRGB(241, 243, 244);
+constexpr SkColor kDarkInkDropRippleColor =
+    SkColorSetA(kDarkInkDropBaseColor, 15);
+constexpr SkColor kDarkInkDropHighlightColor =
+    SkColorSetA(kDarkInkDropBaseColor, 20);
 
 // Constants for the button strip that grows horizontally.
 // The padding on left/right side of each button.
 constexpr int kHorizontalButtonPadding = 6;
-// The normal button color (54% black).
-constexpr SkColor kHorizontalNormalColor = SkColorSetA(SK_ColorBLACK, 138);
+// The normal button color for the page switcher shown in folders (54% black).
+constexpr SkColor kLightNormalColor = SkColorSetA(SK_ColorBLACK, 138);
+constexpr SkColor kLightInkDropBaseColor = SkColorSetARGB(255, 95, 99, 104);
+constexpr SkColor kLightInkDropRippleColor =
+    SkColorSetA(kLightInkDropBaseColor, 8);
+constexpr SkColor kLightInkDropHighlightColor =
+    SkColorSetA(kLightInkDropBaseColor, 24);
 
 class PageSwitcherButton : public views::Button {
  public:
   PageSwitcherButton(views::ButtonListener* listener, bool vertical)
       : views::Button(listener), vertical_(vertical) {
-    if (vertical)
-      SetInkDropMode(InkDropMode::ON);
+    SetInkDropMode(InkDropMode::ON);
   }
 
   ~PageSwitcherButton() override {}
@@ -111,7 +115,8 @@ class PageSwitcherButton : public views::Button {
                      2 * PageSwitcher::kMaxButtonRadius);
     return std::make_unique<views::FloodFillInkDropRipple>(
         size(), GetLocalBounds().InsetsFrom(bounds),
-        GetInkDropCenterBasedOnLastEvent(), kVerticalInkDropRippleColor, 1.0f);
+        GetInkDropCenterBasedOnLastEvent(),
+        vertical_ ? kDarkInkDropRippleColor : kLightInkDropRippleColor, 1.0f);
   }
 
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
@@ -119,7 +124,9 @@ class PageSwitcherButton : public views::Button {
     return std::make_unique<views::InkDropHighlight>(
         gfx::PointF(GetLocalBounds().CenterPoint()),
         std::make_unique<views::CircleLayerDelegate>(
-            kVerticalInkDropHighlightColor, kInkDropRadius));
+            vertical_ ? kDarkInkDropHighlightColor
+                      : kLightInkDropHighlightColor,
+            kInkDropRadius));
   }
 
   void NotifyClick(const ui::Event& event) override {
@@ -140,13 +147,12 @@ class PageSwitcherButton : public views::Button {
   PaintButtonInfo BuildPaintButtonInfo() {
     PaintButtonInfo info;
     if (selected_) {
-      info.color =
-          vertical_ ? kVerticalSelectedButtonColor : kHorizontalNormalColor;
+      info.color = vertical_ ? kDarkSelectedButtonColor : kLightNormalColor;
       info.style = cc::PaintFlags::kFill_Style;
       info.radius = SkIntToScalar(kSelectedButtonRadius);
       info.stroke_width = SkIntToScalar(0);
     } else {
-      info.color = vertical_ ? kVerticalNormalColor : kHorizontalNormalColor;
+      info.color = vertical_ ? kDarkNormalColor : kLightNormalColor;
       info.style = cc::PaintFlags::kStroke_Style;
       info.radius = SkIntToScalar(kNormalButtonRadius);
       info.stroke_width = kStrokeWidth;

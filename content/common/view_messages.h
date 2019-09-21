@@ -293,14 +293,6 @@ IPC_MESSAGE_ROUTED1(
     ViewHostMsg_NotifyTextAutosizerPageInfoChangedInLocalMainFrame,
     blink::WebTextAutosizerPageInfo /* page_info */)
 
-// Updates the minimum/maximum allowed zoom percent for this tab from the
-// default values.  If |remember| is true, then the zoom setting is applied to
-// other pages in the site and is saved, otherwise it only applies to this
-// tab.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateZoomLimits,
-                    int /* minimum_percent */,
-                    int /* maximum_percent */)
-
 // Send back a string to be recorded by UserMetrics.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_UserMetricsRecordAction,
                      std::string /* action */)

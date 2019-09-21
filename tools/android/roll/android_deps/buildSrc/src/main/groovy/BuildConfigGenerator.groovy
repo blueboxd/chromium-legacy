@@ -250,6 +250,9 @@ class BuildConfigGenerator extends DefaultTask {
                 // Target has AIDL, but we don't support it yet: http://crbug.com/644439
                 sb.append('  ignore_aidl = true\n')
                 break
+            case 'androidx_test_uiautomator_uiautomator':
+	        sb.append('  deps = [":androidx_test_runner_java"]\n')
+                break
             case 'com_android_support_mediarouter_v7':
                 sb.append('  # https://crbug.com/1000382\n')
                 sb.append('  proguard_configs = ["support_mediarouter.flags"]\n')

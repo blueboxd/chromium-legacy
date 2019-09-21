@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
 
+#include "ash/public/cpp/network_config_service.h"
 #include "base/json/json_writer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
@@ -136,7 +137,7 @@ std::string InternetConfigDialog::GetDialogArgs() const {
 // InternetConfigDialogUI
 
 InternetConfigDialogUI::InternetConfigDialogUI(content::WebUI* web_ui)
-    : ui::WebDialogUI(web_ui) {
+    : ui::MojoWebDialogUI(web_ui) {
   content::WebUIDataSource* source = content::WebUIDataSource::Create(
       chrome::kChromeUIInternetConfigDialogHost);
 
@@ -153,8 +154,17 @@ InternetConfigDialogUI::InternetConfigDialogUI(content::WebUI* web_ui)
 #endif
 
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
+
+  // Add Mojo bindings to this WebUI so that Mojo calls can occur in JavaScript.
+  AddHandlerToRegistry(base::BindRepeating(
+      &InternetConfigDialogUI::BindCrosNetworkConfig, base::Unretained(this)));
 }
 
 InternetConfigDialogUI::~InternetConfigDialogUI() {}
+
+void InternetConfigDialogUI::BindCrosNetworkConfig(
+    chromeos::network_config::mojom::CrosNetworkConfigRequest request) {
+  ash::GetNetworkConfigService(std::move(request));
+}
 
 }  // namespace chromeos

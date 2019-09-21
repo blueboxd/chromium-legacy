@@ -4,11 +4,10 @@
 
 package org.chromium.chromoting;
 
+import android.support.test.InstrumentationRegistry;
+import android.support.test.filters.SmallTest;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
-
-import androidx.test.InstrumentationRegistry;
-import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;

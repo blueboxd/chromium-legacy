@@ -51,7 +51,7 @@ public class LearnMorePreference extends Preference {
     @Override
     protected void onClick() {
         Activity activity = ContextUtils.activityFromContext(getContext());
-        HelpAndFeedback.getInstance(activity).show(
+        HelpAndFeedback.getInstance().show(
                 activity, activity.getString(mHelpContext), Profile.getLastUsedProfile(), null);
     }
 

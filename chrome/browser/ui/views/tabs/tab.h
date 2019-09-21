@@ -50,7 +50,6 @@ class View;
 ///////////////////////////////////////////////////////////////////////////////
 class Tab : public gfx::AnimationDelegate,
             public views::ButtonListener,
-            public views::ContextMenuController,
             public views::MaskedTargeterDelegate,
             public views::ViewObserver,
             public TabSlotView {
@@ -73,11 +72,6 @@ class Tab : public gfx::AnimationDelegate,
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  // views::ContextMenuController:
-  void ShowContextMenuForViewImpl(views::View* source,
-                                  const gfx::Point& point,
-                                  ui::MenuSourceType source_type) override;
 
   // views::MaskedTargeterDelegate:
   bool GetHitTestMask(SkPath* mask) const override;

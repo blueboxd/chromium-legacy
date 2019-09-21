@@ -123,8 +123,6 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
   // See https://bugs.webkit.org/show_bug.cgi?id=62054
   bool IsCurrentlyDisplayedInFrame() const;
 
-  bool isSecureContext() const;
-
   InputDeviceCapabilitiesConstants* GetInputDeviceCapabilities();
 
   void PostMessageForTesting(scoped_refptr<SerializedScriptValue> message,

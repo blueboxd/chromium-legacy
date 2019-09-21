@@ -458,6 +458,10 @@ message CollectUserDataResultProto {
   optional int32 terms_link = 5;
   // The payload of the chosen login option.
   optional bytes login_payload = 6;
+  // The start of the date/time range, if requested.
+  optional DateTimeProto date_time_start = 7;
+  // The end of the date/time range, if requested.
+  optional DateTimeProto date_time_end = 8;
 }
 
 message ProcessedActionProto {
@@ -1195,6 +1199,21 @@ message LoginDetailsProto {
   repeated LoginOptionProto login_options = 2;
 }
 
+message DateTimeRangeProto {
+  // The start value of the date/time range.
+  optional DateTimeProto start = 1;
+  // The end value of the date/time range.
+  optional DateTimeProto end = 2;
+  // The minimum allowed value of the date/time range.
+  optional DateTimeProto min = 3;
+  // The maximum allowed value of the date/time range.
+  optional DateTimeProto max = 4;
+  // The label of the start date/time value (e.g., 'Pick-up').
+  optional string start_label = 5;
+  // The label of the end date/time value (e.g., 'Return').
+  optional string end_label = 6;
+}
+
 // Asks to provide the data used by UseAddressAction and
 // UseCreditCardAction.
 message CollectUserDataProto {
@@ -1253,6 +1272,8 @@ message CollectUserDataProto {
   optional string billing_postal_code_missing_text = 15;
   // The login details that should be gathered.
   optional LoginDetailsProto login_details = 16;
+  // The date/time range that should be gathered.
+  optional DateTimeRangeProto date_time_range = 17;
 }
 
 // Resets Autofill Assistant: clears any state and server payload.

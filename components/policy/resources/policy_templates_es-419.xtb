@@ -3096,15 +3096,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6559057113164934677">No permitir que ningún sitio acceda a la cámara ni al micrófono</translation>
 <translation id="6561396069801924653">Mostrar opciones de accesibilidad en el menú de la bandeja del sistema</translation>
 <translation id="6563458316362153786">Habilitar la transición rápida 802.11r</translation>
-<translation id="6565312346072273043">Establece el estado predeterminado de la función de accesibilidad del teclado en pantalla en la pantalla de acceso.
-
-          Si se establece esta política en True, el teclado en pantalla estará habilitado cuando se muestre la pantalla de acceso.
-
-          Si se establece esta política en False, el teclado en pantalla estará inhabilitado cuando se muestre la pantalla de acceso.
-
-          Si estableces esta política, los usuarios pueden anularla de forma temporal al habilitar o inhabilitar el teclado en pantalla, pero esta selección no persiste, sino que se restaura la opción predeterminada cuando la pantalla de acceso se vuelve a mostrar o si el usuario permanece inactivo durante un minuto.
-
-          Si no se establece esta política, el teclado en pantalla se inhabilita la primera vez que aparece la pantalla de acceso. Los usuarios pueden habilitarlo o inhabilitarlo en cualquier momento, y esta selección persiste en el resto de los usuarios.</translation>
 <translation id="6573305661369899995">Establece una fuente externa de restrcicciones de URL</translation>
 <translation id="6583851521569686409">Configura una lista de impresoras.
 

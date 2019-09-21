@@ -343,6 +343,19 @@ message LoginReputationClientRequest {
 
   // DOM features of the current page.
   optional DomFeatures dom_features = 12;
+
+  enum ReportType {
+    UNKNOWN = 0;
+    // Normal/full ping to Safe Browsing containing all the fields in the
+    // PasswordProtectionRequest.
+    FULL_REPORT = 1;
+    // Sample ping to Safe Browsing containing only the stripped URL and
+    // referrer chain.
+    SAMPLE_REPORT = 2;
+  }
+  // Whether the ping sent to Safe Browsing is a normal (full request) ping or a
+  // sample ping for URLs on the allow-list.
+  optional ReportType report_type = 13;
 }
 
 // The message is used for client response for login reputation requests.

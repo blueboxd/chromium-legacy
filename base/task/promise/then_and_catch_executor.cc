@@ -8,14 +8,14 @@ namespace base {
 namespace internal {
 
 bool ThenAndCatchExecutorCommon::IsCancelled() const {
-  if (!resolve_callback_.is_null()) {
+  if (!then_callback_.is_null()) {
     // If there is both a resolve and a reject executor they must be canceled
     // at the same time.
-    DCHECK(reject_callback_.is_null() ||
-           reject_callback_.IsCancelled() == resolve_callback_.IsCancelled());
-    return resolve_callback_.IsCancelled();
+    DCHECK(catch_callback_.is_null() ||
+           catch_callback_.IsCancelled() == then_callback_.IsCancelled());
+    return then_callback_.IsCancelled();
   }
-  return reject_callback_.IsCancelled();
+  return catch_callback_.IsCancelled();
 }
 
 void ThenAndCatchExecutorCommon::Execute(AbstractPromise* promise,
@@ -23,16 +23,16 @@ void ThenAndCatchExecutorCommon::Execute(AbstractPromise* promise,
                                          ExecuteCallback execute_catch) {
   AbstractPromise* prerequisite = promise->GetOnlyPrerequisite();
   if (prerequisite->IsResolved()) {
-    if (ProcessNullCallback(resolve_callback_, prerequisite, promise))
+    if (ProcessNullCallback(then_callback_, prerequisite, promise))
       return;
 
-    execute_then(prerequisite, promise, &resolve_callback_);
+    execute_then(prerequisite, promise, &then_callback_);
   } else {
     DCHECK(prerequisite->IsRejected());
-    if (ProcessNullCallback(reject_callback_, prerequisite, promise))
+    if (ProcessNullCallback(catch_callback_, prerequisite, promise))
       return;
 
-    execute_catch(prerequisite, promise, &reject_callback_);
+    execute_catch(prerequisite, promise, &catch_callback_);
   }
 }
 

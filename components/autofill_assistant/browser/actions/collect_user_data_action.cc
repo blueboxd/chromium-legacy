@@ -32,6 +32,7 @@
 namespace {
 
 using autofill_assistant::CollectUserDataOptions;
+using autofill_assistant::DateTimeProto;
 using autofill_assistant::TermsAndConditionsState;
 bool IsCompleteContact(
     const autofill::AutofillProfile* profile,
@@ -151,6 +152,31 @@ bool IsValidTermsChoice(
     const CollectUserDataOptions& collect_user_data_options) {
   return collect_user_data_options.accept_terms_and_conditions_text.empty() ||
          terms_state != TermsAndConditionsState::NOT_SELECTED;
+}
+
+// Comparison function for |DateTimeProto|.
+// Returns 0 if equal, < 0 if |first| < |second|, > 0 if |second| > |first|.
+int CompareDateTimes(const DateTimeProto& first, const DateTimeProto& second) {
+  auto first_tuple = std::make_tuple(
+      first.date().year(), first.date().month(), first.date().day(),
+      first.time().hour(), first.time().minute(), first.time().second());
+  auto second_tuple = std::make_tuple(
+      second.date().year(), second.date().month(), second.date().day(),
+      second.time().hour(), second.time().minute(), second.time().second());
+  if (first_tuple < second_tuple) {
+    return -1;
+  } else if (second_tuple < first_tuple) {
+    return 1;
+  }
+  return 0;
+}
+
+bool IsValidDateTimeRange(
+    const DateTimeProto& start,
+    const DateTimeProto& end,
+    const CollectUserDataOptions& collect_user_data_options) {
+  return !collect_user_data_options.request_date_time_range ||
+         CompareDateTimes(start, end) < 0;
 }
 
 }  // namespace
@@ -403,6 +429,13 @@ void CollectUserDataAction::OnGetUserData(
           ->set_login_payload(login_details->second->payload);
     }
 
+    if (collect_user_data.has_date_time_range()) {
+      *processed_action_proto_->mutable_collect_user_data_result()
+           ->mutable_date_time_start() = user_data->date_time_range_start;
+      *processed_action_proto_->mutable_collect_user_data_result()
+           ->mutable_date_time_end() = user_data->date_time_range_end;
+    }
+
     processed_action_proto_->mutable_collect_user_data_result()
         ->set_is_terms_and_conditions_accepted(
             user_data->terms_and_conditions ==
@@ -498,6 +531,22 @@ CollectUserDataAction::CreateOptionsFromProto() {
         return nullptr;
       }
     }
+  }
+
+  if (collect_user_data.has_date_time_range()) {
+    if (!collect_user_data.date_time_range().has_start_label() ||
+        !collect_user_data.date_time_range().has_end_label() ||
+        !collect_user_data.date_time_range().has_start() ||
+        !collect_user_data.date_time_range().has_end() ||
+        !collect_user_data.date_time_range().has_min() ||
+        !collect_user_data.date_time_range().has_max()) {
+      DVLOG(1) << "Invalid action: missing one or more of the required fields "
+                  "'start', 'end', 'min', 'max', 'start_label', end_label'.";
+      return nullptr;
+    }
+    collect_user_data_options->request_date_time_range = true;
+    collect_user_data_options->date_time_range =
+        collect_user_data.date_time_range();
   }
 
   // TODO(crbug.com/806868): Maybe we could refactor this to make the confirm
@@ -598,7 +647,9 @@ bool CollectUserDataAction::IsUserDataComplete(
          IsCompleteCreditCard(personal_data_manager, user_data.card.get(),
                               options) &&
          IsValidLoginChoice(user_data.login_choice_identifier, options) &&
-         IsValidTermsChoice(user_data.terms_and_conditions, options);
+         IsValidTermsChoice(user_data.terms_and_conditions, options) &&
+         IsValidDateTimeRange(user_data.date_time_range_start,
+                              user_data.date_time_range_end, options);
 }
 
 void CollectUserDataAction::OnPersonalDataChanged() {

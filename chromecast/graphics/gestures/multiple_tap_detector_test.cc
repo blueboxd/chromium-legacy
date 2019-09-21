@@ -57,6 +57,7 @@ class MultipleTapDetectorTest : public aura::test::AuraTestBase {
   }
 
   void TearDown() override {
+    ui::SetEventTickClockForTesting(nullptr);
     triple_tap_detector_.reset();
     aura::test::AuraTestBase::TearDown();
   }

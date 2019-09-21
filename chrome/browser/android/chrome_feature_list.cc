@@ -96,7 +96,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kAndroidSiteSettingsUIRefresh,
     &kBookmarksShowInFolder,
     &kCastDeviceFilter,
-    &kCloseTabSuggestionsStale,
+    &kCloseTabSuggestions,
     &kCCTBackgroundTab,
     &kCCTExternalLinkHandling,
     &kCCTModule,
@@ -291,8 +291,8 @@ const base::Feature kBookmarksShowInFolder{"BookmarksShowInFolder",
 const base::Feature kCastDeviceFilter{"CastDeviceFilter",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kCloseTabSuggestionsStale{
-    "CloseTabSuggestionsStale", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kCloseTabSuggestions{"CloseTabSuggestions",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCCTBackgroundTab{"CCTBackgroundTab",
                                       base::FEATURE_ENABLED_BY_DEFAULT};

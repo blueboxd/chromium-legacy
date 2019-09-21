@@ -85,6 +85,22 @@ bool StateEndsFlow(AutofillAssistantState state) {
   return false;
 }
 
+// Convenience method to set all fields of a |DateTimeProto|.
+void SetDateTimeProto(DateTimeProto* proto,
+                      int year,
+                      int month,
+                      int day,
+                      int hour,
+                      int minute,
+                      int second) {
+  proto->mutable_date()->set_year(year);
+  proto->mutable_date()->set_month(month);
+  proto->mutable_date()->set_day(day);
+  proto->mutable_time()->set_hour(hour);
+  proto->mutable_time()->set_minute(minute);
+  proto->mutable_time()->set_second(second);
+}
+
 }  // namespace
 
 Controller::Controller(content::WebContents* web_contents,
@@ -966,6 +982,40 @@ void Controller::OnTermsAndConditionsLinkClicked(int link) {
   auto callback = std::move(collect_user_data_options_->terms_link_callback);
   SetCollectUserDataOptions(nullptr, nullptr);
   std::move(callback).Run(link);
+}
+
+void Controller::SetDateTimeRangeStart(int year,
+                                       int month,
+                                       int day,
+                                       int hour,
+                                       int minute,
+                                       int second) {
+  if (!user_data_)
+    return;
+
+  SetDateTimeProto(&user_data_->date_time_range_start, year, month, day, hour,
+                   minute, second);
+  for (ControllerObserver& observer : observers_) {
+    observer.OnUserDataChanged(user_data_.get());
+  }
+  UpdateCollectUserDataActions();
+}
+
+void Controller::SetDateTimeRangeEnd(int year,
+                                     int month,
+                                     int day,
+                                     int hour,
+                                     int minute,
+                                     int second) {
+  if (!user_data_)
+    return;
+
+  SetDateTimeProto(&user_data_->date_time_range_end, year, month, day, hour,
+                   minute, second);
+  for (ControllerObserver& observer : observers_) {
+    observer.OnUserDataChanged(user_data_.get());
+  }
+  UpdateCollectUserDataActions();
 }
 
 void Controller::SetShippingAddress(

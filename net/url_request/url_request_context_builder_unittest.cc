@@ -29,6 +29,10 @@
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_REPORTING)
+#include "base/files/scoped_temp_dir.h"
+#include "base/task/post_task.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "net/extras/sqlite/sqlite_persistent_reporting_and_nel_store.h"
 #include "net/reporting/reporting_context.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/reporting/reporting_service.h"
@@ -168,10 +172,24 @@ TEST_F(URLRequestContextBuilderTest, ShutDownNELAndReportingWithPendingUpload) {
   builder_.set_proxy_resolution_service(ProxyResolutionService::CreateDirect());
   builder_.set_reporting_policy(std::make_unique<ReportingPolicy>());
   builder_.set_network_error_logging_enabled(true);
+  base::ScopedTempDir scoped_temp_dir;
+  ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
+  builder_.set_persistent_reporting_and_nel_store(
+      std::make_unique<SQLitePersistentReportingAndNelStore>(
+          scoped_temp_dir.GetPath().Append(
+              FILE_PATH_LITERAL("ReportingAndNelStore")),
+          base::ThreadTaskRunnerHandle::Get(),
+          base::CreateSequencedTaskRunner(
+              {base::ThreadPool(), base::MayBlock(),
+               net::GetReportingAndNelStoreBackgroundSequencePriority(),
+               base::TaskShutdownBehavior::BLOCK_SHUTDOWN})));
 
   std::unique_ptr<URLRequestContext> context(builder_.Build());
   ASSERT_TRUE(context->network_error_logging_service());
   ASSERT_TRUE(context->reporting_service());
+  ASSERT_TRUE(context->network_error_logging_service()
+                  ->GetPersistentNelStoreForTesting());
+  ASSERT_TRUE(context->reporting_service()->GetContextForTesting()->store());
 
   // Queue a pending upload.
   GURL url("https://www.foo.test");

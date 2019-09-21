@@ -38,6 +38,9 @@ const base::Feature kCaptureSafetyNetId{"SafeBrowsingCaptureSafetyNetId",
 const base::Feature kCommittedSBInterstitials{
     "SafeBrowsingCommittedInterstitials", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kDeepScanningOfDownloads{
+    "SafeBrowsingDeepScanningOfDownloads", base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kForceUseAPDownloadProtection{
     "ForceUseAPDownloadProtection", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -62,6 +65,13 @@ const base::Feature kSendOnFocusPing {
 };
 #endif
 
+const base::Feature kSendSampledPingsForAllowlistDomains{
+    "SafeBrowsingSendSampledPingsForAllowlistDomain",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+constexpr base::FeatureParam<bool> kShouldFillOldPhishGuardProto{
+    &kPasswordProtectionForSignedInUsers, "DeprecateOldProto", false};
+
 const base::Feature kSuspiciousSiteTriggerQuotaFeature{
     "SafeBrowsingSuspiciousSiteTriggerQuota", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -77,12 +87,6 @@ const base::Feature kUseLocalBlacklistsV2{"SafeBrowsingUseLocalBlacklistsV2",
 
 const base::Feature kUploadForMalwareCheck{"SafeBrowsingUploadForMalwareCheck",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kDeepScanningOfDownloads{
-    "SafeBrowsingDeepScanningOfDownloads", base::FEATURE_ENABLED_BY_DEFAULT};
-
-constexpr base::FeatureParam<bool> kShouldFillOldPhishGuardProto{
-    &kPasswordProtectionForSignedInUsers, "DeprecateOldProto", false};
 
 namespace {
 // List of Safe Browsing features. Boolean value for each list member should be
@@ -104,6 +108,7 @@ constexpr struct {
     {&kRealTimeUrlLookupEnabled, true},
     {&kRealTimeUrlLookupFetchAllowlist, true},
     {&kSendOnFocusPing, true},
+    {&kSendSampledPingsForAllowlistDomains, false},
     {&kSuspiciousSiteTriggerQuotaFeature, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kTriggerThrottlerDailyQuotaFeature, false},

@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/supports_user_data.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/host_port_pair.h"
@@ -45,6 +46,20 @@ const int kStageCompletedSuccess = 1 << 5;
 const int kStageCompletedError = 1 << 6;
 const int kStageURLRequestDestroyed = 1 << 7;
 const int kStageDestruction = 1 << 8;
+
+const char kTestNetworkDelegateRequestIdKey[] =
+    "TestNetworkDelegateRequestIdKey";
+
+class TestRequestId : public base::SupportsUserData::Data {
+ public:
+  TestRequestId(int id) : id_(id) {}
+  ~TestRequestId() override = default;
+
+  int id() const { return id_; }
+
+ private:
+  const int id_;
+};
 
 }  // namespace
 
@@ -363,7 +378,8 @@ TestNetworkDelegate::TestNetworkDelegate()
       experimental_cookie_features_enabled_(false),
       cancel_request_with_policy_violating_referrer_(false),
       before_start_transaction_fails_(false),
-      add_header_to_first_response_(false) {}
+      add_header_to_first_response_(false),
+      next_request_id_(0) {}
 
 TestNetworkDelegate::~TestNetworkDelegate() {
   for (auto i = next_states_.begin(); i != next_states_.end(); ++i) {
@@ -392,7 +408,7 @@ void TestNetworkDelegate::InitRequestStatesIfNew(int request_id) {
 int TestNetworkDelegate::OnBeforeURLRequest(URLRequest* request,
                                             CompletionOnceCallback callback,
                                             GURL* new_url) {
-  int req_id = request->identifier();
+  int req_id = GetRequestId(request);
   InitRequestStatesIfNew(req_id);
   event_order_[req_id] += "OnBeforeURLRequest\n";
   EXPECT_TRUE(next_states_[req_id] & kStageBeforeURLRequest) <<
@@ -413,7 +429,7 @@ int TestNetworkDelegate::OnBeforeStartTransaction(
   if (before_start_transaction_fails_)
     return ERR_FAILED;
 
-  int req_id = request->identifier();
+  int req_id = GetRequestId(request);
   InitRequestStatesIfNew(req_id);
   event_order_[req_id] += "OnBeforeStartTransaction\n";
   EXPECT_TRUE(next_states_[req_id] & kStageBeforeStartTransaction)
@@ -444,7 +460,7 @@ int TestNetworkDelegate::OnHeadersReceived(
     const HttpResponseHeaders* original_response_headers,
     scoped_refptr<HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
-  int req_id = request->identifier();
+  int req_id = GetRequestId(request);
   bool is_first_response =
       event_order_[req_id].find("OnHeadersReceived\n") == std::string::npos;
   event_order_[req_id] += "OnHeadersReceived\n";
@@ -491,7 +507,7 @@ void TestNetworkDelegate::OnBeforeRedirect(URLRequest* request,
   EXPECT_FALSE(load_timing_info_before_redirect_.request_start_time.is_null());
   EXPECT_FALSE(load_timing_info_before_redirect_.request_start.is_null());
 
-  int req_id = request->identifier();
+  int req_id = GetRequestId(request);
   InitRequestStatesIfNew(req_id);
   event_order_[req_id] += "OnBeforeRedirect\n";
   EXPECT_TRUE(next_states_[req_id] & kStageBeforeRedirect) <<
@@ -517,7 +533,7 @@ void TestNetworkDelegate::OnResponseStarted(URLRequest* request,
   EXPECT_FALSE(load_timing_info.request_start_time.is_null());
   EXPECT_FALSE(load_timing_info.request_start.is_null());
 
-  int req_id = request->identifier();
+  int req_id = GetRequestId(request);
   InitRequestStatesIfNew(req_id);
   event_order_[req_id] += "OnResponseStarted\n";
   EXPECT_TRUE(next_states_[req_id] & kStageResponseStarted)
@@ -537,7 +553,7 @@ void TestNetworkDelegate::OnCompleted(URLRequest* request,
                                       int net_error) {
   DCHECK_NE(net_error, net::ERR_IO_PENDING);
 
-  int req_id = request->identifier();
+  int req_id = GetRequestId(request);
   InitRequestStatesIfNew(req_id);
   event_order_[req_id] += "OnCompleted\n";
   // Expect "Success -> (next_states_ & kStageCompletedSuccess)"
@@ -561,7 +577,7 @@ void TestNetworkDelegate::OnCompleted(URLRequest* request,
 }
 
 void TestNetworkDelegate::OnURLRequestDestroyed(URLRequest* request) {
-  int req_id = request->identifier();
+  int req_id = GetRequestId(request);
   InitRequestStatesIfNew(req_id);
   event_order_[req_id] += "OnURLRequestDestroyed\n";
   EXPECT_TRUE(next_states_[req_id] & kStageURLRequestDestroyed) <<
@@ -610,6 +626,17 @@ bool TestNetworkDelegate::OnCancelURLRequestWithPolicyViolatingReferrerHeader(
     const GURL& target_url,
     const GURL& referrer_url) const {
   return cancel_request_with_policy_violating_referrer_;
+}
+
+int TestNetworkDelegate::GetRequestId(URLRequest* request) {
+  TestRequestId* test_request_id = reinterpret_cast<TestRequestId*>(
+      request->GetUserData(kTestNetworkDelegateRequestIdKey));
+  if (test_request_id)
+    return test_request_id->id();
+  int id = next_request_id_++;
+  request->SetUserData(kTestNetworkDelegateRequestIdKey,
+                       std::make_unique<TestRequestId>(id));
+  return id;
 }
 
 TestJobInterceptor::TestJobInterceptor() = default;

@@ -2008,6 +2008,46 @@ TEST_F(FlexLayoutTest, Layout_OnlyCallsSetViewVisibilityWhenNecessary) {
   EXPECT_EQ(0, child2->GetSetVisibleCount());
 }
 
+TEST_F(FlexLayoutTest, Between_Child_Spacing) {
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetInteriorMargin(Insets(7));
+  layout_->SetBetweenChildSpacing(8);
+  View* v1 = AddChild(gfx::Size(10, 20));
+  View* v2 = AddChild(gfx::Size(10, 20));
+  EXPECT_EQ(gfx::Size(42, 34), layout_->GetPreferredSize(host_.get()));
+  host_->SetBounds(0, 0, 100, 100);
+  host_->Layout();
+  EXPECT_EQ(gfx::Rect(7, 7, 10, 86), v1->bounds());
+  EXPECT_EQ(gfx::Rect(25, 7, 10, 86), v2->bounds());
+}
+
+TEST_F(FlexLayoutTest, Between_Child_Spacing_With_Margins) {
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetDefault(views::kMarginsKey, Insets(7));
+  layout_->SetBetweenChildSpacing(8);
+  View* v1 = AddChild(gfx::Size(10, 20));
+  View* v2 = AddChild(gfx::Size(10, 20));
+  EXPECT_EQ(gfx::Size(56, 34), layout_->GetPreferredSize(host_.get()));
+  host_->SetBounds(0, 0, 100, 100);
+  host_->Layout();
+  EXPECT_EQ(gfx::Rect(7, 7, 10, 86), v1->bounds());
+  EXPECT_EQ(gfx::Rect(39, 7, 10, 86), v2->bounds());
+}
+
+TEST_F(FlexLayoutTest, Between_Child_Spacing_With_Margins_Collapsed) {
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetDefault(views::kMarginsKey, Insets(7));
+  layout_->SetBetweenChildSpacing(8);
+  layout_->SetCollapseMargins(true);
+  View* v1 = AddChild(gfx::Size(10, 20));
+  View* v2 = AddChild(gfx::Size(10, 20));
+  EXPECT_EQ(gfx::Size(42, 34), layout_->GetPreferredSize(host_.get()));
+  host_->SetBounds(0, 0, 100, 100);
+  host_->Layout();
+  EXPECT_EQ(gfx::Rect(7, 7, 10, 86), v1->bounds());
+  EXPECT_EQ(gfx::Rect(25, 7, 10, 86), v2->bounds());
+}
+
 // Cross-axis Fit Tests --------------------------------------------------------
 
 // Tests for cross-axis alignment that checks three different conditions:

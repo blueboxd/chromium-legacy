@@ -28,6 +28,7 @@
 #include "components/crx_file/id_util.h"
 #include "components/session_manager/core/session_manager.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -354,9 +355,8 @@ bool StartupAppLauncher::AreSecondaryAppsInstalled() const {
   DCHECK(extension);
   extensions::KioskModeInfo* info = extensions::KioskModeInfo::Get(extension);
   for (const auto& app : info->secondary_apps) {
-    if (!extensions::ExtensionSystem::Get(profile_)
-             ->extension_service()
-             ->GetInstalledExtension(app.id)) {
+    if (!extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
+            app.id)) {
       return false;
     }
   }
@@ -404,9 +404,8 @@ bool StartupAppLauncher::DidPrimaryOrSecondaryAppFailedToInstall(
 
 const extensions::Extension* StartupAppLauncher::GetPrimaryAppExtension()
     const {
-  return extensions::ExtensionSystem::Get(profile_)
-      ->extension_service()
-      ->GetInstalledExtension(app_id_);
+  return extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
+      app_id_);
 }
 
 void StartupAppLauncher::LaunchApp() {

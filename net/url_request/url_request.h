@@ -373,11 +373,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   ReferrerPolicy referrer_policy() const { return referrer_policy_; }
   void set_referrer_policy(ReferrerPolicy referrer_policy);
 
-  // Sets the delegate of the request.  This is only to allow creating a request
-  // before creating its delegate.  |delegate| must be non-NULL and the request
-  // must not yet have a Delegate set.
-  void set_delegate(Delegate* delegate);
-
   // Sets whether credentials are allowed.
   // If credentials are allowed, the request will send and save HTTP
   // cookies, as well as authentication to the origin server. If not,
@@ -392,7 +387,7 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   void set_upload(std::unique_ptr<UploadDataStream> upload);
 
   // Gets the upload data.
-  const UploadDataStream* get_upload() const;
+  const UploadDataStream* get_upload_for_testing() const;
 
   // Returns true if the request has a non-empty message body to upload.
   bool has_upload() const;
@@ -586,9 +581,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // Returns true if the request is in the process of redirecting to a new
   // URL but has not yet initiated the new request.
   bool is_redirecting() const { return is_redirecting_; }
-
-  // Returns a globally unique identifier for this request.
-  uint64_t identifier() const { return identifier_; }
 
   // This method is called to start the request.  The delegate will receive
   // a OnResponseStarted callback when the request is started.  The request
@@ -909,15 +901,6 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // ClientSocketPool use this to determine which URLRequest to
   // allocate sockets to first.
   RequestPriority priority_;
-
-  // TODO(battre): The only consumer of the identifier_ is currently the
-  // web request API. We need to match identifiers of requests between the
-  // web request API and the web navigation API. As the URLRequest does not
-  // exist when the web navigation API is triggered, the tracking probably
-  // needs to be done outside of the URLRequest anyway. Therefore, this
-  // identifier should be deleted here. http://crbug.com/89321
-  // A globally unique identifier for this request.
-  const uint64_t identifier_;
 
   // If |calling_delegate_| is true, the event type of the delegate being
   // called.

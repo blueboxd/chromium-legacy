@@ -1111,6 +1111,8 @@ if (!is_android) {
       "../browser/sharing/click_to_call/click_to_call_browsertest.cc",
       "../browser/signin/consistency_cookie_browsertest.cc",
       "../browser/signin/e2e_tests/demo_signin_e2e_test.cc",
+      "../browser/signin/e2e_tests/live_test.cc",
+      "../browser/signin/e2e_tests/live_test.h",
       "../browser/site_isolation/chrome_site_per_process_browsertest.cc",
       "../browser/site_isolation/site_details_browsertest.cc",
       "../browser/ui/blocked_content/popup_tracker_browsertest.cc",
@@ -2930,7 +2932,6 @@ test("unit_tests") {
     "../browser/custom_handlers/protocol_handler_registry_unittest.cc",
     "../browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_unittest.cc",
     "../browser/data_reduction_proxy/data_reduction_proxy_settings_unittest_android.cc",
-    "../browser/data_saver/data_saver_top_host_provider_unittest.cc",
     "../browser/download/chrome_download_manager_delegate_unittest.cc",
     "../browser/download/download_history_unittest.cc",
     "../browser/download/download_item_model_unittest.cc",
@@ -3037,6 +3038,7 @@ test("unit_tests") {
     "../browser/optimization_guide/optimization_guide_hints_manager_unittest.cc",
     "../browser/optimization_guide/optimization_guide_navigation_data_unittest.cc",
     "../browser/optimization_guide/optimization_guide_session_statistic_unittest.cc",
+    "../browser/optimization_guide/optimization_guide_top_host_provider_unittest.cc",
     "../browser/page_load_metrics/metrics_web_contents_observer_unittest.cc",
     "../browser/page_load_metrics/observers/aborts_page_load_metrics_observer_unittest.cc",
     "../browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer_unittest.cc",
@@ -4123,6 +4125,7 @@ test("unit_tests") {
       "../browser/sync/sync_error_notifier_ash_unittest.cc",
       "../browser/ui/ash/accessibility/accessibility_controller_client_unittest.cc",
       "../browser/ui/ash/accessibility/ax_tree_source_aura_unittest.cc",
+      "../browser/ui/ash/assistant/assistant_state_client_unittest.cc",
       "../browser/ui/ash/ime_controller_client_unittest.cc",
       "../browser/ui/ash/keyboard/chrome_keyboard_ui_unittest.cc",
       "../browser/ui/ash/keyboard/chrome_keyboard_web_contents_unittest.cc",
@@ -4146,7 +4149,9 @@ test("unit_tests") {
       "//ash:test_support",
       "//ash/public/cpp/resources:ash_public_unscaled_resources",
       "//ash/strings",
+      "//chrome/browser/chromeos:test_support",
       "//chrome/browser/resources/chromeos/zip_archiver/cpp:ziparchiver_unittests",
+      "//components/arc:arc_test_support",
     ]
   }
 

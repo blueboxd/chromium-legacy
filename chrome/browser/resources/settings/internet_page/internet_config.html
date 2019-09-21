@@ -1,7 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_config.html">
-<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
@@ -23,13 +22,12 @@
 
     <cr-dialog id="dialog" close-text="$i18n{close}">
       <div slot="title">
-        [[getDialogTitle_(managedProperties_, showConnect)]]
+        [[getDialogTitle_(name, type, showConnect)]]
       </div>
       <div slot="body">
         <network-config id="networkConfig" class="flex"
             networking-private="[[networkingPrivate]]"
-            global-policy="[[globalPolicy]]"
-            managed-properties="{{managedProperties_}}"
+            guid="[[guid]]" name="{{name}}" type="{{type}}"
             enable-connect="{{enableConnect_}}" enable-save="{{enableSave_}}"
             share-allow-enable="[[shareAllowEnable_]]"
             share-default="[[shareDefault_]]"

@@ -130,8 +130,8 @@ const base::FilePath::CharType kStatusTrayWindowClass[] =
     FPL("Chrome_StatusTrayWindow");
 #endif  // defined(OS_WIN)
 
-const char    kInitialProfile[] = "Default";
-const char    kMultiProfileDirPrefix[] = "Profile ";
+const char kInitialProfile[] = "Default";
+const char kMultiProfileDirPrefix[] = "Profile ";
 const base::FilePath::CharType kGuestProfileDir[] = FPL("Guest Profile");
 const base::FilePath::CharType kSystemProfileDir[] = FPL("System Profile");
 
@@ -184,6 +184,9 @@ const base::FilePath::CharType kSupervisedUserSettingsFilename[] =
     FPL("Managed Mode Settings");
 const base::FilePath::CharType kThemePackFilename[] = FPL("Cached Theme.pak");
 const base::FilePath::CharType kWebAppDirname[] = FPL("Web Applications");
+// Only use if the ENABLE_REPORTING build flag is true
+const base::FilePath::CharType kReportingAndNelStoreFilename[] =
+    FPL("Reporting and NEL");
 
 #if defined(OS_WIN)
 const base::FilePath::CharType kJumpListIconDirname[] = FPL("JumpListIcons");

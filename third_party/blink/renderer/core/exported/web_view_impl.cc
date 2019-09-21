@@ -197,6 +197,10 @@ static const float minScaleChangeToTriggerZoom = 1.5f;
 static const float leftBoxRatio = 0.3f;
 static const int caretPadding = 10;
 
+// Mirrored from content/common/page_zoom.cc.
+const double kMinimumPageZoomFactor = 0.25;
+const double kMaximumPageZoomFactor = 5.0;
+
 namespace blink {
 
 // Change the text zoom level by kTextSizeMultiplierRatio each time the user
@@ -276,8 +280,8 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
                          WebViewImpl* opener)
     : as_view_(client),
       chrome_client_(MakeGarbageCollected<ChromeClientImpl>(this)),
-      minimum_zoom_level_(ZoomFactorToZoomLevel(kMinTextSizeMultiplier)),
-      maximum_zoom_level_(ZoomFactorToZoomLevel(kMaxTextSizeMultiplier)),
+      minimum_zoom_level_(ZoomFactorToZoomLevel(kMinimumPageZoomFactor)),
+      maximum_zoom_level_(ZoomFactorToZoomLevel(kMaximumPageZoomFactor)),
       does_composite_(does_composite),
       fullscreen_controller_(std::make_unique<FullscreenController>(this)) {
   if (!AsView().client) {
@@ -2398,13 +2402,6 @@ double WebViewImpl::SetZoomLevel(double zoom_level) {
   PropagateZoomFactorToLocalFrameRoots(AsView().page->MainFrame(), zoom_factor);
 
   return zoom_level_;
-}
-
-void WebViewImpl::ZoomLimitsChanged(double minimum_zoom_level,
-                                    double maximum_zoom_level) {
-  minimum_zoom_level_ = minimum_zoom_level;
-  maximum_zoom_level_ = maximum_zoom_level;
-  AsView().client->ZoomLimitsChanged(minimum_zoom_level_, maximum_zoom_level_);
 }
 
 float WebViewImpl::TextZoomFactor() {

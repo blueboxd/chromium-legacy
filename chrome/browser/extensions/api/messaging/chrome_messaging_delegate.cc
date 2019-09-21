@@ -86,8 +86,13 @@ std::unique_ptr<base::DictionaryValue> ChromeMessagingDelegate::MaybeGetTabInfo(
     // reached as a result of a tab (or content script) messaging the extension.
     // We need the extension to see the sender so that it can validate if it
     // trusts it or not.
-    return ExtensionTabUtil::CreateTabObject(
-               web_contents, ExtensionTabUtil::kDontScrubTab, nullptr)
+    // TODO(tjudkins): Adjust scrubbing behavior in this situation to not scrub
+    // the last committed URL, but do scrub the pending URL based on
+    // permissions.
+    ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior = {
+        ExtensionTabUtil::kDontScrubTab, ExtensionTabUtil::kDontScrubTab};
+    return ExtensionTabUtil::CreateTabObject(web_contents, scrub_tab_behavior,
+                                             nullptr)
         ->ToValue();
   }
   return nullptr;

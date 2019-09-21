@@ -219,6 +219,14 @@ Polymer({
   },
 
   /**
+   * @return {!chromeos.networkConfig.mojom.ConfigProperties}
+   * @private
+   */
+  getDefaultConfigProperties_: function() {
+    return {type: this.managedProperties_.type};
+  },
+
+  /**
    * @param {!chromeos.networkConfig.mojom.ConfigProperties} config
    * @private
    */
@@ -445,8 +453,9 @@ Polymer({
     if (!this.propertiesReceived_) {
       return;
     }
+    const config = this.getDefaultConfigProperties_();
     const apn = event.detail;
-    const config = {cellular: {apn: apn}};
+    config.cellular = {apn: apn};
     this.setMojoNetworkProperties_(config);
   },
 
@@ -479,7 +488,9 @@ Polymer({
     if (!this.propertiesReceived_) {
       return;
     }
-    this.setMojoNetworkProperties_({proxySettings: event.detail});
+    const config = this.getDefaultConfigProperties_();
+    config.proxySetings = event.detail;
+    this.setMojoNetworkProperties_(config);
   },
 
   /**

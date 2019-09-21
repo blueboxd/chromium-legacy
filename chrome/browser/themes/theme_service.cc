@@ -1074,8 +1074,13 @@ void ThemeService::SetThemePrefsForColor(SkColor color) {
 bool ThemeService::DisableExtension(const std::string& extension_id) {
   extensions::ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
+  if (!service)
+    return false;
 
-  if (service && service->GetInstalledExtension(extension_id)) {
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile_);
+
+  if (registry->GetInstalledExtension(extension_id)) {
     // Do not disable the previous theme if it is already uninstalled. Sending
     // NOTIFICATION_BROWSER_THEME_CHANGED causes the previous theme to be
     // uninstalled when the notification causes the remaining infobar to close

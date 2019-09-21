@@ -104,10 +104,8 @@ api::tabs::Tab CreateTabModelHelper(
 
   ExtensionTabUtil::ScrubTabBehavior scrub_tab_behavior =
       ExtensionTabUtil::GetScrubTabBehavior(extension, context, url);
-  if (scrub_tab_behavior != ExtensionTabUtil::kDontScrubTab) {
-    ExtensionTabUtil::ScrubTabForExtension(extension, nullptr, &tab_struct,
-                                           scrub_tab_behavior);
-  }
+  ExtensionTabUtil::ScrubTabForExtension(extension, nullptr, &tab_struct,
+                                         scrub_tab_behavior);
   return tab_struct;
 }
 

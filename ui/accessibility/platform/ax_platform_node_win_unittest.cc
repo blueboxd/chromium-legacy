@@ -5328,15 +5328,12 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderNotSupported) {
 
   Init(root);
 
-  ComPtr<ISelectionItemProvider> provider =
-      QueryInterfaceFromNode<ISelectionItemProvider>(GetRootNode());
-
-  BOOL selected;
-
-  EXPECT_UIA_INVALIDOPERATION(provider->AddToSelection());
-  EXPECT_UIA_INVALIDOPERATION(provider->RemoveFromSelection());
-  EXPECT_UIA_INVALIDOPERATION(provider->Select());
-  EXPECT_UIA_INVALIDOPERATION(provider->get_IsSelected(&selected));
+  ComPtr<IRawElementProviderSimple> raw_element_provider_simple =
+      GetRootIRawElementProviderSimple();
+  ComPtr<ISelectionItemProvider> selection_item_provider;
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_SelectionItemPatternId, &selection_item_provider));
+  ASSERT_EQ(nullptr, selection_item_provider.Get());
 }
 
 TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderDisabled) {
@@ -5349,15 +5346,19 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderDisabled) {
 
   Init(root);
 
-  ComPtr<ISelectionItemProvider> provider =
-      QueryInterfaceFromNode<ISelectionItemProvider>(GetRootNode());
+  ComPtr<IRawElementProviderSimple> raw_element_provider_simple =
+      GetRootIRawElementProviderSimple();
+  ComPtr<ISelectionItemProvider> selection_item_provider;
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_SelectionItemPatternId, &selection_item_provider));
+  ASSERT_NE(nullptr, selection_item_provider.Get());
 
   BOOL selected;
 
-  EXPECT_UIA_ELEMENTNOTENABLED(provider->AddToSelection());
-  EXPECT_UIA_ELEMENTNOTENABLED(provider->RemoveFromSelection());
-  EXPECT_UIA_ELEMENTNOTENABLED(provider->Select());
-  EXPECT_HRESULT_SUCCEEDED(provider->get_IsSelected(&selected));
+  EXPECT_UIA_ELEMENTNOTENABLED(selection_item_provider->AddToSelection());
+  EXPECT_UIA_ELEMENTNOTENABLED(selection_item_provider->RemoveFromSelection());
+  EXPECT_UIA_ELEMENTNOTENABLED(selection_item_provider->Select());
+  EXPECT_HRESULT_SUCCEEDED(selection_item_provider->get_IsSelected(&selected));
   EXPECT_TRUE(selected);
 }
 
@@ -5368,15 +5369,12 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderNotSelectable) {
 
   Init(root);
 
-  ComPtr<ISelectionItemProvider> item_provider =
-      QueryInterfaceFromNode<ISelectionItemProvider>(GetRootNode());
-
-  BOOL selected;
-
-  EXPECT_UIA_INVALIDOPERATION(item_provider->AddToSelection());
-  EXPECT_UIA_INVALIDOPERATION(item_provider->RemoveFromSelection());
-  EXPECT_UIA_INVALIDOPERATION(item_provider->Select());
-  EXPECT_UIA_INVALIDOPERATION(item_provider->get_IsSelected(&selected));
+  ComPtr<IRawElementProviderSimple> raw_element_provider_simple =
+      GetRootIRawElementProviderSimple();
+  ComPtr<ISelectionItemProvider> selection_item_provider;
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_SelectionItemPatternId, &selection_item_provider));
+  ASSERT_EQ(nullptr, selection_item_provider.Get());
 }
 
 TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderSimple) {
@@ -5392,9 +5390,12 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderSimple) {
 
   Init(root, option1);
 
-  const auto* root_node = GetRootNode();
-  ComPtr<ISelectionItemProvider> option1_provider =
-      QueryInterfaceFromNode<ISelectionItemProvider>(root_node->children()[0]);
+  ComPtr<IRawElementProviderSimple> raw_element_provider_simple =
+      GetIRawElementProviderSimpleFromChildIndex(0);
+  ComPtr<ISelectionItemProvider> option1_provider;
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_SelectionItemPatternId, &option1_provider));
+  ASSERT_NE(nullptr, option1_provider.Get());
 
   BOOL selected;
 
@@ -5475,31 +5476,41 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderRadioButtonIsSelected) {
 
   Init(root, option1, option2, option3, option4);
 
-  const auto* root_node = GetRootNode();
-  // CheckedState::kNone
-  ComPtr<ISelectionItemProvider> option1_provider =
-      QueryInterfaceFromNode<ISelectionItemProvider>(root_node->children()[0]);
-  // CheckedState::kFalse
-  ComPtr<ISelectionItemProvider> option2_provider =
-      QueryInterfaceFromNode<ISelectionItemProvider>(root_node->children()[1]);
-  // CheckedState::kTrue
-  ComPtr<ISelectionItemProvider> option3_provider =
-      QueryInterfaceFromNode<ISelectionItemProvider>(root_node->children()[2]);
-  // CheckedState::kMixed
-  ComPtr<ISelectionItemProvider> option4_provider =
-      QueryInterfaceFromNode<ISelectionItemProvider>(root_node->children()[3]);
-
   BOOL selected;
 
-  EXPECT_UIA_INVALIDOPERATION(option1_provider->get_IsSelected(&selected));
+  // CheckedState::kNone
+  ComPtr<ISelectionItemProvider> option1_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      GetIRawElementProviderSimpleFromChildIndex(0)->GetPatternProvider(
+          UIA_SelectionItemPatternId, &option1_provider));
+  ASSERT_EQ(nullptr, option1_provider.Get());
+
+  // CheckedState::kFalse
+  ComPtr<ISelectionItemProvider> option2_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      GetIRawElementProviderSimpleFromChildIndex(1)->GetPatternProvider(
+          UIA_SelectionItemPatternId, &option2_provider));
+  ASSERT_NE(nullptr, option2_provider.Get());
 
   EXPECT_HRESULT_SUCCEEDED(option2_provider->get_IsSelected(&selected));
   EXPECT_FALSE(selected);
 
+  // CheckedState::kTrue
+  ComPtr<ISelectionItemProvider> option3_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      GetIRawElementProviderSimpleFromChildIndex(2)->GetPatternProvider(
+          UIA_SelectionItemPatternId, &option3_provider));
+  ASSERT_NE(nullptr, option3_provider.Get());
+
   EXPECT_HRESULT_SUCCEEDED(option3_provider->get_IsSelected(&selected));
   EXPECT_TRUE(selected);
 
-  EXPECT_UIA_INVALIDOPERATION(option4_provider->get_IsSelected(&selected));
+  // CheckedState::kMixed
+  ComPtr<ISelectionItemProvider> option4_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      GetIRawElementProviderSimpleFromChildIndex(3)->GetPatternProvider(
+          UIA_SelectionItemPatternId, &option4_provider));
+  ASSERT_EQ(nullptr, option4_provider.Get());
 }
 
 TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderTable) {
@@ -5520,16 +5531,11 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderTable) {
 
   Init(root, row1, cell1);
 
-  const auto* row = GetRootNode()->children()[0];
-  ComPtr<ISelectionItemProvider> item_provider =
-      QueryInterfaceFromNode<ISelectionItemProvider>(row->children()[0]);
-
-  BOOL selected;
-
-  EXPECT_UIA_INVALIDOPERATION(item_provider->AddToSelection());
-  EXPECT_UIA_INVALIDOPERATION(item_provider->RemoveFromSelection());
-  EXPECT_UIA_INVALIDOPERATION(item_provider->Select());
-  EXPECT_UIA_INVALIDOPERATION(item_provider->get_IsSelected(&selected));
+  ComPtr<ISelectionItemProvider> selection_item_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      GetIRawElementProviderSimpleFromChildIndex(0)->GetPatternProvider(
+          UIA_SelectionItemPatternId, &selection_item_provider));
+  ASSERT_EQ(nullptr, selection_item_provider.Get());
 }
 
 TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderGrid) {
@@ -5551,8 +5557,13 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderGrid) {
   Init(root, row1, cell1);
 
   const auto* row = GetRootNode()->children()[0];
-  ComPtr<ISelectionItemProvider> item_provider =
-      QueryInterfaceFromNode<ISelectionItemProvider>(row->children()[0]);
+  ComPtr<IRawElementProviderSimple> raw_element_provider_simple =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(row->children()[0]);
+
+  ComPtr<ISelectionItemProvider> selection_item_provider;
+  EXPECT_HRESULT_SUCCEEDED(raw_element_provider_simple->GetPatternProvider(
+      UIA_SelectionItemPatternId, &selection_item_provider));
+  ASSERT_NE(nullptr, selection_item_provider.Get());
 
   BOOL selected;
 
@@ -5560,37 +5571,37 @@ TEST_F(AXPlatformNodeWinTest, TestISelectionItemProviderGrid) {
   // flip kSelected for kCell when the kDoDefault action is fired.
 
   // Initial State
-  EXPECT_HRESULT_SUCCEEDED(item_provider->get_IsSelected(&selected));
+  EXPECT_HRESULT_SUCCEEDED(selection_item_provider->get_IsSelected(&selected));
   EXPECT_FALSE(selected);
 
   // AddToSelection should fire event when not selected
-  EXPECT_HRESULT_SUCCEEDED(item_provider->AddToSelection());
-  EXPECT_HRESULT_SUCCEEDED(item_provider->get_IsSelected(&selected));
+  EXPECT_HRESULT_SUCCEEDED(selection_item_provider->AddToSelection());
+  EXPECT_HRESULT_SUCCEEDED(selection_item_provider->get_IsSelected(&selected));
   EXPECT_TRUE(selected);
 
   // AddToSelection should not fire event when selected
-  EXPECT_HRESULT_SUCCEEDED(item_provider->AddToSelection());
-  EXPECT_HRESULT_SUCCEEDED(item_provider->get_IsSelected(&selected));
+  EXPECT_HRESULT_SUCCEEDED(selection_item_provider->AddToSelection());
+  EXPECT_HRESULT_SUCCEEDED(selection_item_provider->get_IsSelected(&selected));
   EXPECT_TRUE(selected);
 
   // RemoveFromSelection should fire event when selected
-  EXPECT_HRESULT_SUCCEEDED(item_provider->RemoveFromSelection());
-  EXPECT_HRESULT_SUCCEEDED(item_provider->get_IsSelected(&selected));
+  EXPECT_HRESULT_SUCCEEDED(selection_item_provider->RemoveFromSelection());
+  EXPECT_HRESULT_SUCCEEDED(selection_item_provider->get_IsSelected(&selected));
   EXPECT_FALSE(selected);
 
   // RemoveFromSelection should not fire event when not selected
-  EXPECT_HRESULT_SUCCEEDED(item_provider->RemoveFromSelection());
-  EXPECT_HRESULT_SUCCEEDED(item_provider->get_IsSelected(&selected));
+  EXPECT_HRESULT_SUCCEEDED(selection_item_provider->RemoveFromSelection());
+  EXPECT_HRESULT_SUCCEEDED(selection_item_provider->get_IsSelected(&selected));
   EXPECT_FALSE(selected);
 
   // Select should fire event when not selected
-  EXPECT_HRESULT_SUCCEEDED(item_provider->Select());
-  EXPECT_HRESULT_SUCCEEDED(item_provider->get_IsSelected(&selected));
+  EXPECT_HRESULT_SUCCEEDED(selection_item_provider->Select());
+  EXPECT_HRESULT_SUCCEEDED(selection_item_provider->get_IsSelected(&selected));
   EXPECT_TRUE(selected);
 
   // Select should not fire event when selected
-  EXPECT_HRESULT_SUCCEEDED(item_provider->Select());
-  EXPECT_HRESULT_SUCCEEDED(item_provider->get_IsSelected(&selected));
+  EXPECT_HRESULT_SUCCEEDED(selection_item_provider->Select());
+  EXPECT_HRESULT_SUCCEEDED(selection_item_provider->get_IsSelected(&selected));
   EXPECT_TRUE(selected);
 }
 

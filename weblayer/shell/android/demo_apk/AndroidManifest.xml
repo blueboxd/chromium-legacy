@@ -30,5 +30,8 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <meta-data android:name="org.chromium.weblayer.WebLayerPackage"
+                   android:value="org.chromium.weblayer.support"/>
     </application>
 </manifest>

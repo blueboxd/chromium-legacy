@@ -19,6 +19,7 @@ struct InstallableInkDropConfig;
 }  // namespace views
 
 constexpr float kToolbarInkDropVisibleOpacity = 0.06f;
+constexpr float kToolbarInkDropHighlightVisibleOpacity = 0.08f;
 constexpr SkAlpha kToolbarButtonBackgroundAlpha = 32;
 
 // Creates insets for a host view so that when insetting from the host view

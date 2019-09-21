@@ -53,9 +53,10 @@ class OsAndPoliciesUpdateChecker
 
   // Starts an update check and possible download. Once the update check is
   // finished it refreshes policies and finally calls |cb| to indicate success
-  // or failure when the process is complete. Overrides any previous calls to
+  // or failure when the process is complete. Calls |cb| with false if |timeout|
+  // passed without the operation completing. Overrides any previous calls to
   // |Start|.
-  void Start(UpdateCheckCompletionCallback cb);
+  void Start(UpdateCheckCompletionCallback cb, base::TimeDelta timeout);
 
   // Stops any pending update checks or policy refreshes. Calls
   // |update_check_completion_cb_| with false. It is safe to call |Start| after
@@ -72,8 +73,9 @@ class OsAndPoliciesUpdateChecker
   // Schedules update check by using |update_check_task_executor_|.
   void ScheduleUpdateCheck();
 
-  // Runs |update_check_completion_cb_| with |result| and runs |ResetState|.
-  void RunCompletionCallbackAndResetState(bool result);
+  // Runs |update_check_completion_cb_| with |update_check_result| and runs
+  // |ResetState|.
+  void RunCompletionCallbackAndResetState(bool update_check_result);
 
   // Runs when |wait_for_network_timer_| expires i.e. a network hasn't been
   // detected after the maximum time out.
@@ -122,6 +124,10 @@ class OsAndPoliciesUpdateChecker
 
   // Timer to wait for a valid network after |Start| is called.
   base::OneShotTimer wait_for_network_timer_;
+
+  // Timer to abort any pending operations and call
+  // |update_check_completion_cb_| with false.
+  base::OneShotTimer timeout_timer_;
 
   // Not owned.
   chromeos::UpdateEngineClient* const update_engine_client_;

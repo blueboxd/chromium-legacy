@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/app_list/app_list_controller_observer.h"
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_presenter_delegate_impl.h"
 #include "ash/app_list/model/app_list_folder_item.h"
@@ -28,6 +27,7 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_client.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "ash/public/cpp/app_list/app_list_controller_observer.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
@@ -1254,7 +1254,8 @@ void AppListControllerImpl::NotifyAppListVisibilityChanged(bool visible,
 
   // Skip adjacent same changes.
   if (last_visible_ == real_visibility &&
-      last_visible_display_id_ == display_id) {
+      (display::kInvalidDisplayId == display_id ||
+       last_visible_display_id_ == display_id)) {
     return;
   }
 

@@ -26,8 +26,11 @@ enum ContentIndexError {
 
 // These values are persisted and recorded, do not change or create gaps.
 enum ContentCategory {
+  // ""
+  NONE = 0,
+
   // "homepage"
-  HOME_PAGE = 1,
+  HOME_PAGE,
 
   // "article"
   ARTICLE,

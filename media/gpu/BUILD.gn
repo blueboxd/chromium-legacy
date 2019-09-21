@@ -65,8 +65,6 @@ component("gpu") {
     ":buildflags",
     ":command_buffer_helper",
     ":common",
-    ":image_processor",
-    ":video_frame_mapper",
     "//base",
     "//gpu",
     "//media",
@@ -83,12 +81,14 @@ component("gpu") {
   libs = []
   ldflags = []
 
+  # TODO(crbug.com/1006266): consider using |use_chromeos_video_acceleration|.
   if (use_v4l2_codec || use_vaapi) {
-    public_deps += [ "//media/gpu/linux:common" ]
-  }
-
-  if (is_chromeos) {
-    public_deps += [ "//media/gpu/chromeos" ]
+    public_deps += [
+      ":image_processor",
+      ":video_frame_mapper",
+      "//media/gpu/chromeos",
+      "//media/gpu/linux:common",
+    ]
   }
 
   if (is_mac) {
@@ -260,6 +260,8 @@ source_set("common") {
     "vp9_reference_frame_vector.cc",
     "vp9_reference_frame_vector.h",
   ]
+
+  # TODO(crbug.com/1006266): consider using |use_chromeos_video_acceleration|.
   if (use_v4l2_codec || use_vaapi) {
     sources += [
       "decode_surface_handler.h",
@@ -303,79 +305,82 @@ source_set("command_buffer_helper") {
   ]
 }
 
-source_set("image_processor") {
-  defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
-  sources = [
-    "image_processor_factory.cc",
-    "libyuv_image_processor.cc",
-    "libyuv_image_processor.h",
-  ]
+# TODO(crbug.com/1006266): consider using |use_chromeos_video_acceleration|.
+if (use_v4l2_codec || use_vaapi) {
+  source_set("image_processor") {
+    defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
+    sources = [
+      "image_processor_factory.cc",
+      "libyuv_image_processor.cc",
+      "libyuv_image_processor.h",
+    ]
 
-  public_deps = [
-    ":image_processor_common",
-  ]
+    public_deps = [
+      ":image_processor_common",
+    ]
 
-  deps = [
-    ":video_frame_mapper",
-    "//third_party/libyuv",
-    "//ui/gl",
-  ]
+    deps = [
+      ":video_frame_mapper",
+      "//third_party/libyuv",
+      "//ui/gl",
+    ]
 
-  if (use_v4l2_codec) {
-    deps += [ "//media/gpu/v4l2" ]
-  }
-}
-
-source_set("image_processor_common") {
-  defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
-  sources = [
-    "image_processor.cc",
-    "image_processor.h",
-    "image_processor_factory.h",
-  ]
-
-  public_deps = [
-    ":buildflags",
-    ":common",
-    "//base",
-    "//media",
-    "//ui/gfx/geometry",
-  ]
-}
-
-source_set("video_frame_mapper") {
-  defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
-  sources = [
-    "video_frame_mapper_factory.cc",
-  ]
-  public_deps = [
-    ":video_frame_mapper_common",
-  ]
-  deps = []
-
-  # generic_dmabuf_video_frame_mapper
-  if (use_v4l2_codec || use_vaapi) {
-    deps += [ "//media/gpu/linux:video_frame_mapper" ]
+    if (use_v4l2_codec) {
+      deps += [ "//media/gpu/v4l2" ]
+    }
   }
 
-  # vaapi_dmabuf_video_frame_mapper
-  if (use_vaapi) {
-    deps += [ "//media/gpu/vaapi" ]
+  source_set("image_processor_common") {
+    defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
+    sources = [
+      "image_processor.cc",
+      "image_processor.h",
+      "image_processor_factory.h",
+    ]
+
+    public_deps = [
+      ":buildflags",
+      ":common",
+      "//base",
+      "//media",
+      "//ui/gfx/geometry",
+    ]
   }
-}
 
-source_set("video_frame_mapper_common") {
-  defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
-  sources = [
-    "video_frame_mapper.h",
-    "video_frame_mapper_factory.h",
-  ]
+  source_set("video_frame_mapper") {
+    defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
+    sources = [
+      "video_frame_mapper_factory.cc",
+    ]
+    public_deps = [
+      ":video_frame_mapper_common",
+    ]
+    deps = []
 
-  public_deps = [
-    ":buildflags",
-    "//base",
-    "//media",
-  ]
+    # generic_dmabuf_video_frame_mapper
+    if (use_v4l2_codec || use_vaapi) {
+      deps += [ "//media/gpu/linux:video_frame_mapper" ]
+    }
+
+    # vaapi_dmabuf_video_frame_mapper
+    if (use_vaapi) {
+      deps += [ "//media/gpu/vaapi" ]
+    }
+  }
+
+  source_set("video_frame_mapper_common") {
+    defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
+    sources = [
+      "video_frame_mapper.h",
+      "video_frame_mapper_factory.h",
+    ]
+
+    public_deps = [
+      ":buildflags",
+      "//base",
+      "//media",
+    ]
+  }
 }
 
 # TODO(watk): Run this on bots. http://crbug.com/461437
@@ -567,6 +572,8 @@ source_set("unit_tests") {
   if (use_v4l2_codec) {
     deps += [ "//media/gpu/v4l2:unit_test" ]
   }
+
+  # TODO(crbug.com/1006266): consider using |use_chromeos_video_acceleration|.
   if (use_v4l2_codec || use_vaapi) {
     sources += [ "vp8_decoder_unittest.cc" ]
   }
@@ -584,57 +591,60 @@ source_set("unit_tests") {
   }
 }
 
-test("video_decode_accelerator_tests") {
-  sources = [
-    "video_decode_accelerator_tests.cc",
-  ]
-  data = [
-    "//media/test/data/",
-  ]
-  deps = [
-    ":buildflags",
-    "test:frame_file_writer",
-    "test:frame_validator",
-    "test:helpers",
-    "test:video_player",
-    "test:video_player_test_environment",
-    "test:video_player_thumbnail_renderer",
-    "//media:test_support",
-    "//testing/gtest",
-  ]
-}
+# TODO(crbug.com/1006266): consider using |use_chromeos_video_acceleration|.
+if (use_v4l2_codec || use_vaapi) {
+  test("video_decode_accelerator_tests") {
+    sources = [
+      "video_decode_accelerator_tests.cc",
+    ]
+    data = [
+      "//media/test/data/",
+    ]
+    deps = [
+      ":buildflags",
+      "test:frame_file_writer",
+      "test:frame_validator",
+      "test:helpers",
+      "test:video_player",
+      "test:video_player_test_environment",
+      "test:video_player_thumbnail_renderer",
+      "//media:test_support",
+      "//testing/gtest",
+    ]
+  }
 
-test("video_decode_accelerator_perf_tests") {
-  sources = [
-    "video_decode_accelerator_perf_tests.cc",
-  ]
-  data = [
-    "//media/test/data/",
-  ]
-  deps = [
-    ":buildflags",
-    "test:video_player",
-    "test:video_player_test_environment",
-    "//media:test_support",
-    "//testing/gtest",
-  ]
-}
+  test("video_decode_accelerator_perf_tests") {
+    sources = [
+      "video_decode_accelerator_perf_tests.cc",
+    ]
+    data = [
+      "//media/test/data/",
+    ]
+    deps = [
+      ":buildflags",
+      "test:video_player",
+      "test:video_player_test_environment",
+      "//media:test_support",
+      "//testing/gtest",
+    ]
+  }
 
-test("image_processor_test") {
-  sources = [
-    "image_processor_test.cc",
-  ]
-  deps = [
-    ":buildflags",
-    ":gpu",
-    "test:frame_file_writer",
-    "test:frame_validator",
-    "test:helpers",
-    "test:image_processor",
-    "test:render_helpers",
-    "//base/test:test_support",
-    "//media:test_support",
-    "//mojo/core/embedder",
-    "//testing/gtest",
-  ]
+  test("image_processor_test") {
+    sources = [
+      "image_processor_test.cc",
+    ]
+    deps = [
+      ":buildflags",
+      ":gpu",
+      "test:frame_file_writer",
+      "test:frame_validator",
+      "test:helpers",
+      "test:image_processor",
+      "test:render_helpers",
+      "//base/test:test_support",
+      "//media:test_support",
+      "//mojo/core/embedder",
+      "//testing/gtest",
+    ]
+  }
 }

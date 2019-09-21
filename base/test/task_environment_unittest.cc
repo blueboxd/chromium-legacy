@@ -451,6 +451,63 @@ TEST_F(TaskEnvironmentTest, FastForwardAdvanceTimeTicks) {
   EXPECT_EQ(start_time + kDelay, base::TimeTicks::Now());
 }
 
+TEST_F(TaskEnvironmentTest, AdvanceClockAdvanceTickClock) {
+  constexpr base::TimeDelta kDelay = TimeDelta::FromSeconds(42);
+  TaskEnvironment task_environment(TaskEnvironment::TimeSource::MOCK_TIME);
+
+  const base::TickClock* tick_clock = task_environment.GetMockTickClock();
+  const base::TimeTicks start_time = tick_clock->NowTicks();
+  task_environment.AdvanceClock(kDelay);
+
+  EXPECT_EQ(start_time + kDelay, tick_clock->NowTicks());
+}
+
+TEST_F(TaskEnvironmentTest, AdvanceClockAdvanceMockClock) {
+  constexpr base::TimeDelta kDelay = TimeDelta::FromSeconds(42);
+  TaskEnvironment task_environment(TaskEnvironment::TimeSource::MOCK_TIME);
+
+  const Clock* clock = task_environment.GetMockClock();
+  const Time start_time = clock->Now();
+  task_environment.AdvanceClock(kDelay);
+
+  EXPECT_EQ(start_time + kDelay, clock->Now());
+}
+
+TEST_F(TaskEnvironmentTest, AdvanceClockAdvanceTime) {
+  constexpr base::TimeDelta kDelay = TimeDelta::FromSeconds(42);
+  TaskEnvironment task_environment(TaskEnvironment::TimeSource::MOCK_TIME);
+
+  const Time start_time = base::Time::Now();
+  task_environment.AdvanceClock(kDelay);
+  EXPECT_EQ(start_time + kDelay, base::Time::Now());
+}
+
+TEST_F(TaskEnvironmentTest, AdvanceClockAdvanceTimeTicks) {
+  constexpr base::TimeDelta kDelay = TimeDelta::FromSeconds(42);
+  TaskEnvironment task_environment(TaskEnvironment::TimeSource::MOCK_TIME);
+
+  const TimeTicks start_time = base::TimeTicks::Now();
+  task_environment.AdvanceClock(kDelay);
+  EXPECT_EQ(start_time + kDelay, base::TimeTicks::Now());
+}
+
+TEST_F(TaskEnvironmentTest, AdvanceClockDoesNotRunTasks) {
+  TaskEnvironment task_environment(TaskEnvironment::TimeSource::MOCK_TIME);
+
+  constexpr base::TimeDelta kTaskDelay = TimeDelta::FromDays(1);
+  ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, base::DoNothing(),
+                                                 kTaskDelay);
+
+  EXPECT_EQ(1U, task_environment.GetPendingMainThreadTaskCount());
+  EXPECT_TRUE(task_environment.NextTaskIsDelayed());
+
+  task_environment.AdvanceClock(kTaskDelay);
+
+  // The task is still pending, but is now runnable.
+  EXPECT_EQ(1U, task_environment.GetPendingMainThreadTaskCount());
+  EXPECT_FALSE(task_environment.NextTaskIsDelayed());
+}
+
 // Verify that FastForwardBy() runs existing immediate tasks before advancing,
 // then advances to the next delayed task, runs it, then advances the remainder
 // of time when out of tasks.

@@ -160,7 +160,6 @@ void SharingDialogView::Init() {
   set_margins(gfx::Insets(insets.top(), 0, insets.bottom(), 0));
   SetBorder(views::CreateEmptyBorder(0, insets.left(), 0, insets.right()));
 
-  // TODO(yasmo): See if GetWidget can be not null:
   if (GetWidget())
     SizeToContents();
 }

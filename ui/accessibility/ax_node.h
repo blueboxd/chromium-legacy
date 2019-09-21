@@ -114,6 +114,7 @@ class AX_EXPORT AXNode final {
   AXNode* GetUnignoredChildAtIndex(size_t index) const;
   AXNode* GetUnignoredParent() const;
   size_t GetUnignoredIndexInParent() const;
+  size_t GetIndexInParent() const;
   AXNode* GetFirstUnignoredChild() const;
   AXNode* GetLastUnignoredChild() const;
   AXNode* GetDeepestFirstUnignoredChild() const;

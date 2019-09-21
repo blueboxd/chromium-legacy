@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.profiles;
 
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 
 /**
  * Wrapper that allows passing a ProfileKey reference around in the Java layer.
@@ -18,17 +19,19 @@ public class ProfileKey {
 
     private ProfileKey(long nativeProfileKeyAndroid) {
         mNativeProfileKeyAndroid = nativeProfileKeyAndroid;
-        mIsOffTheRecord = nativeIsOffTheRecord(mNativeProfileKeyAndroid);
+        mIsOffTheRecord =
+                ProfileKeyJni.get().isOffTheRecord(mNativeProfileKeyAndroid, ProfileKey.this);
     }
 
     public static ProfileKey getLastUsedProfileKey() {
         // TODO(mheikal): Assert at least reduced mode is started when https://crbug.com/973241 is
         // fixed.
-        return (ProfileKey) nativeGetLastUsedProfileKey();
+        return (ProfileKey) ProfileKeyJni.get().getLastUsedProfileKey();
     }
 
     public ProfileKey getOriginalKey() {
-        return (ProfileKey) nativeGetOriginalKey(mNativeProfileKeyAndroid);
+        return (ProfileKey) ProfileKeyJni.get().getOriginalKey(
+                mNativeProfileKeyAndroid, ProfileKey.this);
     }
 
     public boolean isOffTheRecord() {
@@ -50,7 +53,10 @@ public class ProfileKey {
         return mNativeProfileKeyAndroid;
     }
 
-    private static native Object nativeGetLastUsedProfileKey();
-    private native Object nativeGetOriginalKey(long nativeProfileKeyAndroid);
-    private native boolean nativeIsOffTheRecord(long nativeProfileKeyAndroid);
+    @NativeMethods
+    interface Natives {
+        Object getLastUsedProfileKey();
+        Object getOriginalKey(long nativeProfileKeyAndroid, ProfileKey caller);
+        boolean isOffTheRecord(long nativeProfileKeyAndroid, ProfileKey caller);
+    }
 }

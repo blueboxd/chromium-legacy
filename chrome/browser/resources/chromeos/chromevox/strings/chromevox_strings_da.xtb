@@ -169,6 +169,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="2220529011494928058">Rapportér et problem</translation>
 <translation id="2223693656926968778">Foretag handling på aktuelt element</translation>
 <translation id="225732394367814946">Skru op for talehastigheden</translation>
+<translation id="2267538686624070261">Går væk fra stavefejlen</translation>
 <translation id="2267945578749931355">Næste tegn</translation>
 <translation id="2278490101488436824">Stryg til venstre med tre fingre</translation>
 <translation id="2281234842553884450">Forrige skyder</translation>
@@ -207,6 +208,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="257674075312929031">Gruppe</translation>
 <translation id="2582407057977008361">Uden for</translation>
 <translation id="2592212930811759050">Tryk to gange for at redigere</translation>
+<translation id="2598495320872286378">Grammatikfejl</translation>
 <translation id="2614981083756825552">Math ML-layout</translation>
 <translation id="2624431853467395961">Åbn indlæringstilstanden</translation>
 <translation id="2626530649491650971">klikbart</translation>
@@ -821,6 +823,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="6833103209700200188">Sidefod</translation>
 <translation id="6858047746862060282">Prolog</translation>
 <translation id="6859876496651143278">Stryg til venstre med én finger</translation>
+<translation id="6865519907510167493">Stavefejl</translation>
 <translation id="6871161210040114857">Der tages ikke højde for store og små bogstaver.</translation>
 <translation id="6877435256196695200">Ikke flere grafikker.</translation>
 <translation id="6897341342232909480">Flyt til venstre</translation>
@@ -1111,6 +1114,7 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="8446884382197647889">Få flere oplysninger</translation>
 <translation id="8455868257606149352">Maksimum <ph name="X" /></translation>
 <translation id="84575901236241018">har hurtigtasten <ph name="KEY" /></translation>
+<translation id="8463645336674919227">Går væk fra grammatikfejlen</translation>
 <translation id="847154984256717791">optaget</translation>
 <translation id="8476408756881832830">Sæt afspilning på pause, når ChromeVox taler</translation>
 <translation id="8476508772960940536">vinduesoversigt</translation>

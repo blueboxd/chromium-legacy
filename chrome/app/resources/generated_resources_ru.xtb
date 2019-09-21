@@ -96,6 +96,7 @@
 <translation id="1136712381129578788">Слишком много попыток ввода PIN-кода. Электронный ключ заблокирован. Чтобы разблокировать ключ, извлеките его и вставьте снова.</translation>
 <translation id="1137673463384776352">Открыть ссылку в приложении "<ph name="APP" />"</translation>
 <translation id="1140351953533677694">Доступ к Bluetooth- и последовательным устройствам</translation>
+<translation id="114036956334641753">Звук и субтитры</translation>
 <translation id="1140610710803014750">Чтобы получить доступ к закладкам на всех ваших устройствах, войдите в систему и включите синхронизацию.</translation>
 <translation id="1140746652461896221">Блокировать контент на всех страницах</translation>
 <translation id="1143142264369994168">Подписчик сертификата</translation>
@@ -173,6 +174,7 @@
 <translation id="1235458158152011030">Сохраненные сети</translation>
 <translation id="123578888592755962">Недостаточно места на диске</translation>
 <translation id="1238191093934674082">OpenVPN</translation>
+<translation id="1239594683407221485">Чтобы посмотреть контент, хранящийся на устройстве, откройте приложение "Файлы".</translation>
 <translation id="124116460088058876">Другие языки</translation>
 <translation id="1241753985463165747">Просмотр и изменение всех ваших данных на текущем сайте</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> предлагает сбросить настройки</translation>
@@ -312,6 +314,7 @@
 <translation id="146220085323579959">Проверьте подключение к Интернету и повторите попытку.</translation>
 <translation id="1463112138205428654">Файл "<ph name="FILE_NAME" />" заблокирован Дополнительной защитой.</translation>
 <translation id="1464258312790801189">Аккаунты</translation>
+<translation id="1464781208867302907">Чтобы изменить параметры устройства, откройте приложение "Настройки".</translation>
 <translation id="1465176863081977902">&amp;Копировать URL аудио</translation>
 <translation id="1465827627707997754">Кусок пиццы</translation>
 <translation id="1468571364034902819">Нельзя использовать этот профиль</translation>
@@ -743,6 +746,7 @@
 <translation id="2099686503067610784">Удалить сертификат сервера <ph name="CERTIFICATE_NAME" />?</translation>
 <translation id="2100273922101894616">Автоматический вход</translation>
 <translation id="2101225219012730419">Версия:</translation>
+<translation id="2111670510994270194">Новая вкладка справа</translation>
 <translation id="21133533946938348">Закрепить вкладку</translation>
 <translation id="2113479184312716848">Открыть &amp;файл...</translation>
 <translation id="2113921862428609753">Доступ к информации о полномочиях</translation>
@@ -1788,6 +1792,7 @@
 <translation id="3630995161997703415">Добавьте этот сайт на панель запуска, чтобы он всегда был у вас под рукой.</translation>
 <translation id="3636096452488277381">Привет, <ph name="USER_GIVEN_NAME" />!</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% (ещё <ph name="TIME" />)</translation>
+<translation id="3637561406135221044">Проверка файлов на наличие данных деликатного характера…</translation>
 <translation id="3637682276779847508">Если вы введете неправильный PUK-код, SIM-карта будет окончательно заблокирована.</translation>
 <translation id="3640214691812501263">Добавить расширение "<ph name="EXTENSION_NAME" />" для пользователя <ph name="USER_NAME" />?</translation>
 <translation id="3640613767643722554">Научите Ассистента узнавать ваш голос</translation>
@@ -1875,7 +1880,7 @@
 <translation id="3748026146096797577">Нет соединения</translation>
 <translation id="3752582316358263300">ОК...</translation>
 <translation id="3752673729237782832">Мои устройства</translation>
-<translation id="3753033997400164841">Сохраните один раз и используйте повсюду</translation>
+<translation id="3753033997400164841">Автозаполнение паролей</translation>
 <translation id="3755411799582650620">Теперь <ph name="PHONE_NAME" /> может разблокировать <ph name="DEVICE_TYPE" />.</translation>
 <translation id="375636864092143889">Сайт использует микрофон</translation>
 <translation id="3757733214359997190">Ничего не найдено.</translation>
@@ -2208,7 +2213,7 @@
 <translation id="4232375817808480934">Настройка Kerberos</translation>
 <translation id="4235200303672858594">Полноэкранный режим</translation>
 <translation id="4235965441080806197">Отменить вход</translation>
-<translation id="4242145785130247982">Несколько клиентских сертификатов не поддерживаются.</translation>
+<translation id="4242145785130247982">Использование нескольких сертификатов клиента не поддерживается.</translation>
 <translation id="4242533952199664413">Открыть настройки</translation>
 <translation id="4242577469625748426">Не удалось применить к устройству настройки политики: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4244238649050961491">Другие приложения для стилуса</translation>
@@ -2226,6 +2231,7 @@
 <translation id="425573743389990240">Скорость разрядки батареи в ваттах (при зарядке значение отрицательное)</translation>
 <translation id="4256316378292851214">Сохранить видео как...</translation>
 <translation id="4258348331913189841">Файловые системы</translation>
+<translation id="4263223596040212967">Проверьте раскладку клавиатуры и повторите попытку.</translation>
 <translation id="4263757076580287579">Регистрация принтера отменена.</translation>
 <translation id="426564820080660648">Чтобы проверить наличие обновлений, подключитесь через сеть Ethernet или Wi-Fi либо используйте мобильную передачу данных.</translation>
 <translation id="4267953847983678297">Автоматически подключаться к мобильной сети</translation>
@@ -2321,6 +2327,7 @@
 <translation id="4416582610654027550">Введите действительный URL.</translation>
 <translation id="4419409365248380979">Разрешить сайту <ph name="HOST" /> сохранять файлы cookie</translation>
 <translation id="4419610272958564173">Неизвестное устройство (поставщик: <ph name="VENDOR_ID" />, продукт: <ph name="PRODUCT_ID" />)</translation>
+<translation id="4421167684395067330">Проблемы с подключением? Обратитесь за помощью к оператору связи (<ph name="CARRIER_NAME" />).</translation>
 <translation id="4421932782753506458">Пушистик</translation>
 <translation id="4423376891418188461">Восстановить настройки</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, администратор просит вас сменить пароль.</translation>
@@ -2925,7 +2932,7 @@
 <translation id="5360150013186312835">Добавить на Панель инструментов</translation>
 <translation id="5362741141255528695">Выберите файл закрытого ключа.</translation>
 <translation id="5363109466694494651">Powerwash и откат</translation>
-<translation id="5365716706805792666">Google может проверять, были ли ваши пароли скомпрометированы в результате утечки данных. Эта функция будет включена, когда вы войдете в аккаунт Google.</translation>
+<translation id="5365716706805792666">Google может проверять, были ли ваши пароли раскрыты в результате утечки данных. Эта функция будет включена, когда вы войдете в аккаунт Google.</translation>
 <translation id="5365881113273618889">Выбранная папка содержит конфиденциальные файлы. Предоставить приложению "<ph name="APP_NAME" />" постоянный доступ для записи данных?</translation>
 <translation id="5367091008316207019">Чтение файла…</translation>
 <translation id="5368720394188453070">Для входа разблокируйте телефон.</translation>
@@ -2996,6 +3003,7 @@
 <translation id="5457599981699367932">Войти в гостевой режим</translation>
 <translation id="5457991019809708398">Вкл., без роуминга</translation>
 <translation id="5458998536542739734">Заметки на заблокированном экране</translation>
+<translation id="546322474339998983">Используется браузером Chrome и Панелью запуска устройства <ph name="DEVICE_TYPE" /></translation>
 <translation id="5463231940765244860">Ввод</translation>
 <translation id="5463275305984126951">Содержание <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Меню со скрытыми закладками</translation>
@@ -3293,6 +3301,7 @@
 <translation id="5869948122057593679">Закрыть все окна этого профиля</translation>
 <translation id="5870086504539785141">Закрыть меню специальных возможностей</translation>
 <translation id="5870155679953074650">Ошибки отсутствия страницы в памяти</translation>
+<translation id="5876851302954717356">Новая вкладка справа</translation>
 <translation id="5877064549588274448">Канал изменен. Чтобы изменения вступили в силу, перезапустите устройство.</translation>
 <translation id="5877584842898320529">Этот принтер недоступен или настроен неправильно.<ph name="BR" />Проверьте его или выберите другой.</translation>
 <translation id="5882919346125742463">Сохраненные сети</translation>
@@ -4491,6 +4500,7 @@
 <translation id="7685049629764448582">Память JavaScript</translation>
 <translation id="7685087414635069102">Требуется PIN-код</translation>
 <translation id="7685301384041462804">Прежде чем войти в виртуальную реальность, убедитесь, что этот сайт безопасен.</translation>
+<translation id="768549422429443215">Добавьте языки или измените порядок их расположения.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Введите новый пароль ещё раз</translation>
 <translation id="7690378713476594306">Выбрать из списка</translation>
@@ -4552,6 +4562,7 @@
 <translation id="7773726648746946405">Хранение сеансов</translation>
 <translation id="7774365994322694683">Птица</translation>
 <translation id="7776701556330691704">Образцы не найдены.</translation>
+<translation id="7780252971640011240">Проблемы с подключением? Обратитесь за помощью к оператору связи.</translation>
 <translation id="7781335840981796660">Все пользовательские аккаунты и локальные данные будут удалены.</translation>
 <translation id="7782102568078991263">Подсказок от Google больше нет</translation>
 <translation id="7782717250816686129">Хранить неизменные данные на экране входа и вводить учетные данные в начале сеанса.</translation>
@@ -4752,7 +4763,7 @@
 <translation id="8014154204619229810">Работает программа обновлений. Повторите попытку через пару минут.</translation>
 <translation id="8014206674403687691">Невозможно вернуться к предыдущей установленной версии <ph name="IDS_SHORT_PRODUCT_NAME" />. Воспользуйтесь функцией Powerwash.</translation>
 <translation id="8014210335923519270">Отправляя системную и диагностическую информацию в Google, вы помогаете сделать <ph name="IDS_SHORT_PRODUCT_NAME" /> ещё лучше и безопаснее.</translation>
-<translation id="8015780634880457457">Google может проверять, были ли ваши пароли скомпрометированы в результате утечки данных.</translation>
+<translation id="8015780634880457457">Google может проверять, были ли ваши пароли раскрыты в результате утечки данных.</translation>
 <translation id="8016266267177410919">Папка для временного хранения</translation>
 <translation id="8017335670460187064"><ph name="LABEL" /></translation>
 <translation id="8017679124341497925">Ярлык изменен</translation>
@@ -4930,7 +4941,7 @@
     <ph name="BEGIN_PARAGRAPH2" />Отключение этой функции не повлияет на возможность устройства отправлять информацию, необходимую для обновления Android и системы безопасности.<ph name="END_PARAGRAPH2" />
     <ph name="BEGIN_PARAGRAPH3" />Чтобы включить или отключить функцию, нажмите "Настройки &gt; Расширенные настройки &gt; Автоматически отправлять статистику использования и данные диагностики в Google".<ph name="END_PARAGRAPH3" />
     <ph name="BEGIN_PARAGRAPH4" />Если включена запись дополнительной истории приложений и веб-поиска, информация будет сохраняться в аккаунте вашего ребенка. Узнать больше об этих настройках можно на странице families.google.com.<ph name="END_PARAGRAPH4" /></translation>
-<translation id="826905130698769948">Недействительный клиентский сертификат.</translation>
+<translation id="826905130698769948">Недействительный сертификат клиента.</translation>
 <translation id="8270242299912238708">PDF-файлы</translation>
 <translation id="827097179112817503">Показывать кнопку "Главная страница"</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{Удалена 1 закладка.}one{Удалена # закладка.}few{Удалено # закладки.}many{Удалено # закладок.}other{Удалено # закладки.}}</translation>

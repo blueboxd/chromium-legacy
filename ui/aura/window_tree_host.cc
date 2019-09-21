@@ -38,6 +38,7 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/icc_profile.h"
+#include "ui/gfx/switches.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
 #if defined(OS_WIN)
@@ -81,7 +82,9 @@ class ScopedLocalSurfaceIdValidator {
 
 #if defined(OS_WIN)
 bool IsNativeWindowOcclusionEnabled() {
-  return base::FeatureList::IsEnabled(features::kCalculateNativeWinOcclusion);
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kHeadless) &&
+         base::FeatureList::IsEnabled(features::kCalculateNativeWinOcclusion);
 }
 #endif  // OS_WIN
 

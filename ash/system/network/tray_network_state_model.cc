@@ -59,6 +59,8 @@ TrayNetworkStateModel::TrayNetworkStateModel()
   cros_network_config_observer_receiver_.Bind(mojo::MakeRequest(&observer_ptr));
   remote_cros_network_config_->AddObserver(std::move(observer_ptr));
 
+  GetActiveNetworks();
+  GetVirtualNetworks();
   GetDeviceStateList();
 }
 
@@ -105,6 +107,7 @@ void TrayNetworkStateModel::OnNetworkStateChanged(
 
 void TrayNetworkStateModel::OnNetworkStateListChanged() {
   NotifyNetworkListChanged();
+  GetVirtualNetworks();
 }
 
 void TrayNetworkStateModel::OnDeviceStateListChanged() {
@@ -193,6 +196,20 @@ void TrayNetworkStateModel::UpdateActiveNetworks(
 
   active_non_cellular_ =
       GetConnectingOrConnected(connecting_non_cellular, connected_non_cellular);
+}
+
+void TrayNetworkStateModel::GetVirtualNetworks() {
+  DCHECK(remote_cros_network_config_);
+  remote_cros_network_config_->GetNetworkStateList(
+      NetworkFilter::New(FilterType::kConfigured, NetworkType::kVPN,
+                         /*limit=*/0),
+      base::BindOnce(&TrayNetworkStateModel::OnGetVirtualNetworks,
+                     base::Unretained(this)));
+}
+
+void TrayNetworkStateModel::OnGetVirtualNetworks(
+    std::vector<NetworkStatePropertiesPtr> networks) {
+  has_vpn_ = !networks.empty();
 }
 
 void TrayNetworkStateModel::NotifyNetworkListChanged() {

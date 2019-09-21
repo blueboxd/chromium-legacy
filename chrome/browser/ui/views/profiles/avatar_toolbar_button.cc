@@ -165,7 +165,10 @@ void AvatarToolbarButton::UpdateText() {
           IDS_INCOGNITO_BUBBLE_ACCESSIBLE_TITLE, incognito_window_count));
       text = l10n_util::GetPluralStringFUTF16(IDS_AVATAR_BUTTON_INCOGNITO,
                                               incognito_window_count);
-      if (GetThemeProvider()) {
+      // The new feature has styling that has the same text color for Incognito
+      // as for other states.
+      if (!base::FeatureList::IsEnabled(features::kAnimatedAvatarButton) &&
+          GetThemeProvider()) {
         // Note that this chip does not have a highlight color.
         const SkColor text_color = GetThemeProvider()->GetColor(
             ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
@@ -175,11 +178,6 @@ void AvatarToolbarButton::UpdateText() {
     }
     case State::kAnimatedSignIn: {
       text = base::UTF8ToUTF16(*user_email_);
-      if (GetThemeProvider()) {
-        const SkColor text_color =
-            GetThemeProvider()->GetColor(ThemeProperties::COLOR_TAB_TEXT);
-        SetEnabledTextColors(text_color);
-      }
       break;
     }
     case State::kHighlightAnimation:

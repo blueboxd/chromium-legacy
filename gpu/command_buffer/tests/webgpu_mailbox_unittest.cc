@@ -113,12 +113,9 @@ TEST_F(WebGPUMailboxTest, WriteToMailboxThenReadFromIt) {
     color_desc.storeOp = dawn::StoreOp::Store;
     color_desc.clearColor = {0, 255, 0, 255};
 
-    dawn::RenderPassColorAttachmentDescriptor* color_attachments_ptr =
-        &color_desc;
-
     dawn::RenderPassDescriptor render_pass_desc;
     render_pass_desc.colorAttachmentCount = 1;
-    render_pass_desc.colorAttachments = &color_attachments_ptr;
+    render_pass_desc.colorAttachments = &color_desc;
     render_pass_desc.depthStencilAttachment = nullptr;
 
     dawn::CommandEncoder encoder = device.CreateCommandEncoder();

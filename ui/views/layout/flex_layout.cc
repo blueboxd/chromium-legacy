@@ -28,15 +28,6 @@
 
 namespace views {
 
-using layout::NormalizedInsets;
-using layout::NormalizedPoint;
-using layout::NormalizedRect;
-using layout::NormalizedSize;
-using layout::NormalizedSizeBounds;
-
-using layout::Denormalize;
-using layout::Normalize;
-
 namespace {
 
 // Layout information for a specific child view in a proposed layout.
@@ -326,7 +317,15 @@ FlexLayout& FlexLayout::SetMinimumCrossAxisSize(int size) {
   return *this;
 }
 
-LayoutManagerBase::ProposedLayout FlexLayout::CalculateProposedLayout(
+FlexLayout& FlexLayout::SetBetweenChildSpacing(int between_child_spacing) {
+  if (between_child_spacing_ != between_child_spacing) {
+    between_child_spacing_ = between_child_spacing;
+    InvalidateHost(true);
+  }
+  return *this;
+}
+
+ProposedLayout FlexLayout::CalculateProposedLayout(
     const SizeBounds& size_bounds) const {
   FlexLayoutData data;
 
@@ -378,7 +377,7 @@ LayoutManagerBase::ProposedLayout FlexLayout::CalculateProposedLayout(
 }
 
 void FlexLayout::InitializeChildData(
-    const layout::NormalizedSizeBounds& bounds,
+    const NormalizedSizeBounds& bounds,
     FlexLayoutData* data,
     FlexOrderToViewIndexMap* flex_order_to_index) const {
   // Step through the children, creating placeholder layout view elements
@@ -492,9 +491,10 @@ Inset1D FlexLayout::GetCrossAxisMargins(const FlexLayoutData& layout,
 
 int FlexLayout::CalculateMargin(int margin1,
                                 int margin2,
-                                int internal_padding) const {
-  const int result =
-      collapse_margins() ? std::max(margin1, margin2) : margin1 + margin2;
+                                int internal_padding,
+                                int spacing) const {
+  const int result = collapse_margins() ? std::max({margin1, margin2, spacing})
+                                        : margin1 + margin2 + spacing;
   return std::max(0, result - internal_padding);
 }
 
@@ -539,7 +539,8 @@ int FlexLayout::CalculateChildSpacing(
       child2 ? child2->internal_padding.main_leading() : 0;
 
   return CalculateMargin(left_margin, right_margin,
-                         left_padding + right_padding);
+                         left_padding + right_padding,
+                         (child1 && child2) ? between_child_spacing() : 0);
 }
 
 void FlexLayout::UpdateLayoutFromChildren(

@@ -676,9 +676,6 @@ void DataReductionProxyCompressionStats::RecordRequestSizePrefs(
     if (days_since_last_update < -1) {
       RecordSavingsClearedMetric(
           DataReductionProxySavingsClearedReason::SYSTEM_CLOCK_MOVED_BACK);
-      pref_service_->SetInt64(
-          prefs::kDataReductionProxySavingsClearedNegativeSystemClock,
-          now.ToInternalValue());
     }
   }
 

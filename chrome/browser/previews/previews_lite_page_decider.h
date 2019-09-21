@@ -18,7 +18,6 @@
 #include "base/values.h"
 #include "chrome/browser/availability/availability_prober.h"
 #include "chrome/browser/previews/previews_https_notification_infobar_decider.h"
-#include "chrome/browser/previews/previews_lite_page_navigation_throttle_manager.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "net/http/http_request_headers.h"
 
@@ -35,12 +34,9 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-// This class ensures that the feature is enabled and the
-// current Profile is not incognito before handing off the real legwork of the
-// triggering decision to |PreviewsLitePageNavigationThrottle|.
+// This class manages the triggering logic for Lite Page Redirect previews.
 class PreviewsLitePageDecider
     : public AvailabilityProber::Delegate,
-      public PreviewsLitePageNavigationThrottleManager,
       public PreviewsHTTPSNotificationInfoBarDecider,
       public data_reduction_proxy::DataReductionProxySettingsObserver {
  public:
@@ -78,20 +74,47 @@ class PreviewsLitePageDecider
   bool NeedsToNotifyUser() override;
   void NotifyUser(content::WebContents* web_contents) override;
 
-  // PreviewsLitePageNavigationThrottleManager:
-  void SetServerUnavailableFor(base::TimeDelta retry_after) override;
-  bool IsServerUnavailable() override;
-  void AddSingleBypass(std::string url) override;
-  bool CheckSingleBypass(std::string url) override;
-  uint64_t GeneratePageID() override;
+  // Used to notify that the Previews Server should not be sent anymore requests
+  // until after the given duration.
+  void SetServerUnavailableFor(base::TimeDelta retry_after);
+
+  // Returns true if a Preview should not be triggered because the server is
+  // unavailable.
+  bool IsServerUnavailable();
+
+  // Informs that the given URL should be bypassed one time.
+  void AddSingleBypass(std::string url);
+
+  // Queries if the given URL should be bypassed one time, returning true if
+  // yes.
+  bool CheckSingleBypass(std::string url);
+
+  // Generates a new page id for a request to the previews server.
+  uint64_t GeneratePageID();
+
+  // Reports data savings to Data Saver. Only the difference in |original_bytes|
+  // and |network_bytes| will be updated in the data saver calls.
   void ReportDataSavings(int64_t network_bytes,
                          int64_t original_bytes,
-                         const std::string& host) override;
-  void BlacklistBypassedHost(const std::string& host,
-                             base::TimeDelta duration) override;
-  bool HostBlacklistedFromBypass(const std::string& host) override;
-  bool IsServerReachableByProbe() override;
-  bool IsServerProbeResultAvailable() override;
+                         const std::string& host);
+
+  // Blacklists the given |host| for the given |duration| in the server
+  // bypass blacklist for LitePageRedirects.
+  void BlacklistBypassedHost(const std::string& host, base::TimeDelta duration);
+
+  // Returns true if the given |host| is blacklisted in the server bypass
+  // blacklist.
+  bool HostBlacklistedFromBypass(const std::string& host);
+
+  // Returns true if the Preview server is reachable on the network according to
+  // a network probe. This will return the result of the most recent probe,
+  // either from this session or a previous cached session's.
+  bool IsServerReachableByProbe();
+
+  // Returns true if a Preview server probe has completed for the current
+  // network ID. This is session-agnostic because cached values from previous
+  // sessions will be used if they exist for the current network ID.
+  bool IsServerProbeResultAvailable();
 
   // data_reduction_proxy::DataReductionProxySettingsObserver:
   void OnProxyRequestHeadersChanged(

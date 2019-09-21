@@ -38,6 +38,7 @@ class URLRequestThrottlerManager;
 
 #if BUILDFLAG(ENABLE_REPORTING)
 class NetworkErrorLoggingService;
+class PersistentReportingAndNelStore;
 class ReportingService;
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
@@ -88,9 +89,11 @@ class NET_EXPORT URLRequestContextStorage {
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
 #if BUILDFLAG(ENABLE_REPORTING)
+  void set_persistent_reporting_and_nel_store(
+      std::unique_ptr<PersistentReportingAndNelStore>
+          persistent_reporting_and_nel_store);
   void set_reporting_service(
       std::unique_ptr<ReportingService> reporting_service);
-
   void set_network_error_logging_service(
       std::unique_ptr<NetworkErrorLoggingService>
           network_error_logging_service);
@@ -134,6 +137,10 @@ class NET_EXPORT URLRequestContextStorage {
   std::unique_ptr<URLRequestThrottlerManager> throttler_manager_;
 
 #if BUILDFLAG(ENABLE_REPORTING)
+  // Must precede |reporting_service_| and |network_error_logging_service_|
+  std::unique_ptr<PersistentReportingAndNelStore>
+      persistent_reporting_and_nel_store_;
+
   std::unique_ptr<ReportingService> reporting_service_;
   std::unique_ptr<NetworkErrorLoggingService> network_error_logging_service_;
 #endif  // BUILDFLAG(ENABLE_REPORTING)

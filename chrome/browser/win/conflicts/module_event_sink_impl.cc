@@ -21,7 +21,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/win/conflicts/module_database.h"
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace {
 
@@ -157,15 +157,15 @@ void ModuleEventSinkImpl::Create(
     GetProcessCallback get_process,
     content::ProcessType process_type,
     const OnModuleLoadCallback& on_module_load_callback,
-    mojom::ModuleEventSinkRequest request) {
+    mojo::PendingReceiver<mojom::ModuleEventSink> receiver) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::Process process = get_process.Run();
   if (!process.IsValid())
     return;
   auto module_event_sink_impl = std::make_unique<ModuleEventSinkImpl>(
       std::move(process), process_type, on_module_load_callback);
-  mojo::MakeStrongBinding(std::move(module_event_sink_impl),
-                          std::move(request));
+  mojo::MakeSelfOwnedReceiver(std::move(module_event_sink_impl),
+                              std::move(receiver));
 }
 
 void ModuleEventSinkImpl::OnModuleEvents(

@@ -46,10 +46,15 @@ class ExtensionTabUtil {
     kDontPopulateTabs,
   };
 
-  enum ScrubTabBehavior {
+  enum ScrubTabBehaviorType {
     kScrubTabFully,
     kScrubTabUrlToOrigin,
     kDontScrubTab,
+  };
+
+  struct ScrubTabBehavior {
+    ScrubTabBehaviorType committed_info;
+    ScrubTabBehaviorType pending_info;
   };
 
   struct OpenTabParams {
@@ -70,7 +75,7 @@ class ExtensionTabUtil {
    public:
     virtual ~Delegate() {}
     // Platform specific scrubbing of tab info for |extension|.
-    virtual ExtensionTabUtil::ScrubTabBehavior GetScrubTabBehavior(
+    virtual ExtensionTabUtil::ScrubTabBehaviorType GetScrubTabBehavior(
         const Extension* extension) = 0;
   };
 

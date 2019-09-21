@@ -770,8 +770,8 @@ void Page::UpdateAcceleratedCompositingSettings() {
     auto* local_frame = DynamicTo<LocalFrame>(frame);
     if (!local_frame)
       continue;
-    if (LocalFrameView* view = local_frame->View())
-      view->UpdateAcceleratedCompositingSettings();
+    LayoutView* layout_view = local_frame->ContentLayoutObject();
+    layout_view->Compositor()->UpdateAcceleratedCompositingSettings();
   }
 }
 

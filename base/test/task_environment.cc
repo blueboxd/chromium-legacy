@@ -166,6 +166,12 @@ class TaskEnvironment::MockTimeDomain : public sequence_manager::TimeDomain,
     return TimeDomain::NextScheduledRunTime();
   }
 
+  void AdvanceClock(TimeDelta delta) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    AutoLock lock(now_ticks_lock_);
+    now_ticks_ += delta;
+  }
+
   static std::unique_ptr<TaskEnvironment::MockTimeDomain> CreateAndRegister(
       sequence_manager::SequenceManager* sequence_manager) {
     auto mock_time_domain =
@@ -644,6 +650,13 @@ void TaskEnvironment::FastForwardUntilNoTasksRemain() {
   // TimeTicks::operator+(TimeDelta) uses saturated arithmetic so it's safe to
   // pass in TimeDelta::Max().
   FastForwardBy(TimeDelta::Max());
+}
+
+void TaskEnvironment::AdvanceClock(TimeDelta delta) {
+  DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
+  DCHECK(mock_time_domain_);
+  DCHECK_GE(delta, TimeDelta());
+  mock_time_domain_->AdvanceClock(delta);
 }
 
 const TickClock* TaskEnvironment::GetMockTickClock() const {

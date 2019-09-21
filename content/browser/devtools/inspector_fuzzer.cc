@@ -12,22 +12,20 @@
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  using namespace inspector_protocol_encoding;
-
   if (size > 64 * 1024) {
     return 0;
   }
 
-  span<uint8_t> fuzz{data, size};
+  inspector_protocol_encoding::span<uint8_t> fuzz{data, size};
 
   // We need to handle whatever the parser parses. So, we handle the parsed
   // stuff with another CBOR encoder, just because it's conveniently available.
   std::vector<uint8_t> encoded;
-  Status status;
-  std::unique_ptr<StreamingParserHandler> encoder =
-      cbor::NewCBOREncoder(&encoded, &status);
+  inspector_protocol_encoding::Status status;
+  std::unique_ptr<inspector_protocol_encoding::StreamingParserHandler> encoder =
+      inspector_protocol_encoding::cbor::NewCBOREncoder(&encoded, &status);
 
-  cbor::ParseCBOR(fuzz, encoder.get());
+  inspector_protocol_encoding::cbor::ParseCBOR(fuzz, encoder.get());
 
   return 0;
 }

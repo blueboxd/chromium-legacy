@@ -36,7 +36,6 @@
 #include "content/public/renderer/chrome_object_extensions_utils.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/v8_value_converter.h"
-#include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/skia_benchmarking_extension.h"
@@ -213,8 +212,8 @@ class GpuBenchmarkingContext {
     if (!init_compositor)
       return true;
 
-    layer_tree_view_ = render_view_impl_->GetWidget()->layer_tree_view();
-    if (!layer_tree_view_) {
+    layer_tree_host_ = render_view_impl_->GetWidget()->layer_tree_host();
+    if (!layer_tree_host_) {
       web_frame_ = nullptr;
       web_view_ = nullptr;
       render_view_impl_ = nullptr;
@@ -236,16 +235,16 @@ class GpuBenchmarkingContext {
     DCHECK(render_view_impl_ != nullptr);
     return render_view_impl_;
   }
-  LayerTreeView* layer_tree_view() const {
-    DCHECK(layer_tree_view_ != nullptr);
-    return layer_tree_view_;
+  cc::LayerTreeHost* layer_tree_host() const {
+    DCHECK(layer_tree_host_ != nullptr);
+    return layer_tree_host_;
   }
 
  private:
   WebLocalFrame* web_frame_ = nullptr;
   WebView* web_view_ = nullptr;
   RenderViewImpl* render_view_impl_ = nullptr;
-  LayerTreeView* layer_tree_view_ = nullptr;
+  cc::LayerTreeHost* layer_tree_host_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(GpuBenchmarkingContext);
 };
@@ -625,7 +624,7 @@ void GpuBenchmarking::SetNeedsDisplayOnAllLayers() {
   if (!context.Init(true))
     return;
 
-  context.layer_tree_view()->SetNeedsDisplayOnAllLayers();
+  context.layer_tree_host()->SetNeedsDisplayOnAllLayers();
 }
 
 void GpuBenchmarking::SetRasterizeOnlyVisibleContent() {
@@ -633,7 +632,9 @@ void GpuBenchmarking::SetRasterizeOnlyVisibleContent() {
   if (!context.Init(true))
     return;
 
-  context.layer_tree_view()->SetRasterizeOnlyVisibleContent();
+  cc::LayerTreeDebugState current = context.layer_tree_host()->GetDebugState();
+  current.rasterize_only_visible_content = true;
+  context.layer_tree_host()->SetDebugState(current);
 }
 
 namespace {
@@ -665,7 +666,7 @@ void GpuBenchmarking::PrintToSkPicture(v8::Isolate* isolate,
   if (!context.Init(true))
     return;
 
-  const cc::Layer* root_layer = context.layer_tree_view()->GetRootLayer();
+  const cc::Layer* root_layer = context.layer_tree_host()->root_layer();
   if (!root_layer)
     return;
 
@@ -960,7 +961,7 @@ void GpuBenchmarking::SetBrowserControlsShown(bool show) {
   GpuBenchmarkingContext context;
   if (!context.Init(true))
     return;
-  context.layer_tree_view()->layer_tree_host()->UpdateBrowserControlsState(
+  context.layer_tree_host()->UpdateBrowserControlsState(
       cc::BrowserControlsState::kBoth,
       show ? cc::BrowserControlsState::kShown
            : cc::BrowserControlsState::kHidden,
@@ -1132,7 +1133,7 @@ int GpuBenchmarking::RunMicroBenchmark(gin::Arguments* args) {
   std::unique_ptr<base::Value> value =
       V8ValueConverter::Create()->FromV8Value(arguments, v8_context);
 
-  return context.layer_tree_view()->ScheduleMicroBenchmark(
+  return context.layer_tree_host()->ScheduleMicroBenchmark(
       name, std::move(value),
       base::BindOnce(&OnMicroBenchmarkCompleted,
                      base::RetainedRef(callback_and_context)));
@@ -1150,7 +1151,7 @@ bool GpuBenchmarking::SendMessageToMicroBenchmark(
   std::unique_ptr<base::Value> value =
       V8ValueConverter::Create()->FromV8Value(message, v8_context);
 
-  return context.layer_tree_view()->SendMessageToMicroBenchmark(
+  return context.layer_tree_host()->SendMessageToMicroBenchmark(
       id, std::move(value));
 }
 

@@ -425,10 +425,6 @@ class RenderViewImplTest : public RenderViewTest {
     return view()->preferred_size_;
   }
 
-  void SetZoomLevel(double level) { view()->UpdateZoomLevel(level); }
-
-  double GetZoomLevel() { return view()->page_zoom_level(); }
-
   int GetScrollbarWidth() {
     blink::WebView* webview = view()->webview();
     return webview->MainFrameWidget()->Size().width -
@@ -623,6 +619,58 @@ TEST_F(RenderViewImplTest, OnNavStateChanged) {
 
   EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
       FrameHostMsg_UpdateState::ID));
+}
+
+// Popup RenderWidgets should inherit emulation params from the parent.
+TEST_F(RenderViewImplTest, EmulatingPopupRect) {
+  gfx::Rect window_screen_rect(1, 2, 137, 137);
+  gfx::Rect widget_screen_rect(5, 7, 57, 57);
+
+  {
+    // Make a popup widget.
+    RenderWidget* popup_widget = nullptr;
+    view()->CreatePopupAndGetWidget(frame()->GetWebFrame(), &popup_widget);
+    ASSERT_TRUE(popup_widget);
+
+    // Set its size.
+    popup_widget->OnUpdateScreenRects(widget_screen_rect, window_screen_rect);
+
+    // Check that the size was set.
+    EXPECT_EQ(window_screen_rect.x(), popup_widget->WindowRect().x);
+    EXPECT_EQ(window_screen_rect.y(), popup_widget->WindowRect().y);
+
+    EXPECT_EQ(widget_screen_rect.x(), popup_widget->ViewRect().x);
+    EXPECT_EQ(widget_screen_rect.y(), popup_widget->ViewRect().y);
+
+    popup_widget->OnClose();
+  }
+
+  // Enable device emulation on the parent widget.
+  blink::WebDeviceEmulationParams emulation_params;
+  gfx::Rect emulated_window_rect(0, 0, 980, 1200);
+  emulation_params.screen_position = blink::WebDeviceEmulationParams::kMobile;
+  emulation_params.view_size = emulated_window_rect.size();
+  emulation_params.view_position = blink::WebPoint(150, 160);
+  view()->GetWidget()->OnEnableDeviceEmulation(emulation_params);
+
+  {
+    // Make a popup again. It should inherit device emulation params.
+    RenderWidget* popup_widget = nullptr;
+    view()->CreatePopupAndGetWidget(frame()->GetWebFrame(), &popup_widget);
+    ASSERT_TRUE(popup_widget);
+
+    // Set its size again.
+    popup_widget->OnUpdateScreenRects(widget_screen_rect, window_screen_rect);
+
+    // This time, the size should be affected by emulation params.
+    EXPECT_EQ(150 + window_screen_rect.x(), popup_widget->WindowRect().x);
+    EXPECT_EQ(160 + window_screen_rect.y(), popup_widget->WindowRect().y);
+
+    EXPECT_EQ(150 + widget_screen_rect.x(), popup_widget->ViewRect().x);
+    EXPECT_EQ(160 + widget_screen_rect.y(), popup_widget->ViewRect().y);
+
+    popup_widget->OnClose();
+  }
 }
 
 TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
@@ -2350,7 +2398,7 @@ TEST_F(RenderViewImplTest, PreferredSizeZoomed) {
   gfx::Size size = GetPreferredSize();
   EXPECT_EQ(gfx::Size(400 + scrollbar_width, 400), size);
 
-  SetZoomLevel(ZoomFactorToZoomLevel(2.0));
+  EXPECT_TRUE(view()->SetZoomLevel(ZoomFactorToZoomLevel(2.0)));
   size = GetPreferredSize();
   EXPECT_EQ(gfx::Size(800 + scrollbar_width, 800), size);
 }
@@ -2731,13 +2779,12 @@ TEST_F(RenderViewImplScaleFactorTest, AutoResizeWithoutZoomForDSF) {
 }
 
 TEST_F(RenderViewImplTest, ZoomLevelUpdate) {
-  // 0 is the default zoom level, nothing will change.
-  SetZoomLevel(0);
-  EXPECT_NEAR(0.0, GetZoomLevel(), 0.01);
+  // 0 will use the minimum zoom level, which is the default, nothing will
+  // change.
+  EXPECT_FALSE(view()->SetZoomLevel(0));
 
   // Change the zoom level to 25% and check if the view gets the change.
-  SetZoomLevel(content::ZoomFactorToZoomLevel(0.25));
-  EXPECT_NEAR(content::ZoomFactorToZoomLevel(0.25), GetZoomLevel(), 0.01);
+  EXPECT_TRUE(view()->SetZoomLevel(content::ZoomFactorToZoomLevel(0.25)));
 }
 
 #endif

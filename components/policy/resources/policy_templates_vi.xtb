@@ -233,6 +233,7 @@
 
       Nếu bạn không đặt chính sách này, mã nối mạng có thể chạy ngoài quá trình chạy trình duyệt tùy theo kết quả thử nghiệm thực tế của thử nghiệm NetworkService.</translation>
 <translation id="1384459581748403878">Tham khảo: <ph name="REFERENCE_URL" /></translation>
+<translation id="138847842893090358">Báo cáo trạng thái cập nhật hệ điều hành</translation>
 <translation id="1393485621820363363">Đã bật máy in kết nối với thiết bị dành cho doanh nghiệp</translation>
 <translation id="1397855852561539316">URL đề xuất của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="1404043648050567997">Dịch vụ Duyệt web an toàn hiển thị một trang cảnh báo khi người dùng truy cập các trang web bị gắn cờ là có thể độc hại. Khi bạn bật mục cài đặt này, người dùng sẽ không thể tiếp tục truy cập vào trang web độc hại từ trang cảnh báo đó.
@@ -800,6 +801,10 @@
 
       Nếu bạn đặt chính sách này là true thì các sự kiện sẽ được ghi lại.
       Nếu bạn đặt chính sách này là false hoặc không đặt, thì các sự kiện sẽ không được ghi lại.</translation>
+<translation id="2440773021691931148">Báo cáo thống kê phần cứng và mã nhận dạng liên quan đến nguồn.
+
+      Nếu bạn không đặt chính sách này hoặc đặt thành false, thì số liệu thống kê sẽ không được báo cáo.
+      Nếu bạn đặt chính sách này thành true, thì số liệu thống kê sẽ được báo cáo.</translation>
 <translation id="244317009688098048">Bật phím tắt bailout cho tự động đăng nhập.
 
       Nếu chính sách này chưa được đặt hoặc được đặt thành True và tài khoản trong thiết bị được định cấu hình cho tự động đăng nhập không trễ, <ph name="PRODUCT_OS_NAME" /> sẽ đặt phím tắt là Ctrl+Alt+S để bỏ qua tự động đăng nhập và hiển thị màn hình đăng nhập.
@@ -808,6 +813,15 @@
 <translation id="2454228136871844693">Tối ưu hóa cho độ ổn định.</translation>
 <translation id="2463034609187171371">Bật bộ thuật toán mật mã DHE trong TLS</translation>
 <translation id="2463365186486772703">Ngôn ngữ của ứng dụng</translation>
+<translation id="2464012905766911533">Chính sách này cho phép quản trị viên chỉ định rằng một trang có thể gửi các yêu cầu XHR đồng bộ trong khi đóng trang.
+
+      Khi bạn đặt chính sách này thành bật, các trang sẽ được phép gửi các yêu cầu XHR đồng bộ trong khi đóng trang.
+
+      Khi bạn không đặt chính sách này hoặc đặt thành tắt, các trang sẽ không được phép gửi các yêu cầu XHR đồng bộ trong khi đóng trang.
+
+      Chính sách này sẽ bị xóa trong Chrome 82.
+
+      Vui lòng xem tại https://www.chromestatus.com/feature/4664843055398912.</translation>
 <translation id="2466131534462628618">Xác thực cổng cố định bỏ qua proxy</translation>
 <translation id="2466697858869282874">Định cấu hình tính sẵn sàng và hành vi của chức năng cập nhật chương trình cơ sở <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
@@ -1513,6 +1527,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu bạn không đặt chính sách này, thì ban đầu, tính năng chọn để nói sẽ tắt nhưng người dùng có thể bật bất cứ lúc nào.</translation>
 <translation id="3591527072193107424">Bật tính năng Hỗ trợ trình duyệt cũ.</translation>
 <translation id="3591584750136265240">Định cấu hình hành vi xác thực thông tin đăng nhập</translation>
+<translation id="3617743504695003280">Cho phép một trang thực hiện các yêu cầu XHR đồng bộ trong khi đóng trang.</translation>
 <translation id="3627678165642179114">Bật hoặc tắt dịch vụ web kiểm tra lỗi chính tả</translation>
 <translation id="3628480121685794414">Bật chế độ in một mặt</translation>
 <translation id="3631099945620529777">Nếu bạn đặt chính sách này thành false thì nút 'Kết thúc quá trình' sẽ bị tắt trong Trình quản lý tác vụ.
@@ -1708,6 +1723,10 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bạn đặt chính sách hình nền thiết bị, thì thiết bị Chrome OS sẽ tải xuống và sử dụng hình nền trên màn hình đăng nhập nếu chưa có người dùng nào đăng nhập vào thiết bị. Sau khi người dùng đăng nhập, chính sách hình nền của người dùng sẽ kích hoạt.
 
       Nếu bạn không đặt chính sách hình nền thiết bị, thì chính sách hình nền của người dùng sẽ quyết định hình nền nào sẽ hiển thị nếu bạn đặt chính sách hình nền của người dùng.</translation>
+<translation id="3964606652985594895">Báo cáo thống kê phần cứng và mã nhận dạng cho thiết bị lưu trữ.
+
+      Nếu bạn không đặt chính sách này hoặc đặt thành false, thì số liệu thống kê sẽ không được báo cáo.
+      Nếu bạn đặt chính sách này thành true, thì số liệu thống kê sẽ được báo cáo.</translation>
 <translation id="3965339130942650562">Thời gian chờ cho tới khi đăng xuất của người dùng không hoạt động được thực thi</translation>
 <translation id="3973371701361892765">Không bao giờ tự động ẩn giá</translation>
 <translation id="3984028218719007910">Xác định liệu <ph name="PRODUCT_OS_NAME" /> có lưu dữ liệu tài khoản trên máy sau khi đăng xuất hay không. Nếu được đặt thành đúng, không có tài khoản lâu dài nào được <ph name="PRODUCT_OS_NAME" /> lưu và tất cả các dữ liệu từ phiên của người dùng sẽ bị hủy bỏ sau khi đăng xuất. Nếu chính sách này được đặt thành sai hoặc không được định cấu hình, thiết bị có thể lưu lại dữ liệu người dùng trên máy (được mã hóa).</translation>
@@ -2194,9 +2213,18 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4807950475297505572">Người dùng gần đây ít sử dụng nhất sẽ bị xóa cho tới khi có đủ dung lượng trống</translation>
 <translation id="4816674326202173458">Cho phép người dùng doanh nghiệp trở thành người dùng vừa chính vừa phụ  (Hành vi mặc định cho người dùng không được quản lý)</translation>
 <translation id="4826326557828204741">Tác vụ sẽ thực hiện khi đạt độ trễ không hoạt động trong khi chạy bằng nguồn pin</translation>
+<translation id="4830531683854509779">Báo cáo thống kê phần cứng cho các thành phần SoC.
+
+      Nếu bạn không đặt chính sách này hoặc đặt thành false, thì số liệu thống kê sẽ không được báo cáo.
+      Nếu bạn đặt chính sách này thành true, thì số liệu thống kê sẽ được báo cáo.</translation>
 <translation id="4832852360828533362">Báo cáo người dùng và thiết bị</translation>
 <translation id="4834526953114077364">Người dùng gần đây ít sử dụng nhất đã không đăng nhập trong 3 tháng qua và sẽ bị xóa cho tới khi đủ dung lượng trống</translation>
 <translation id="4835622243021053389">Bật tính năng xác thực NTLMv2.</translation>
+<translation id="4856471929724652373">Báo cáo thông tin cập nhật hệ điều hành, chẳng hạn như trạng thái cập nhật, phiên bản nền tảng,
+      lần kiểm tra bản cập nhật sau cùng và lần khởi động lại gần đây nhất.
+
+      Nếu bạn không đặt chính sách này hoặc đặt thành false, thì thông tin cập nhật hệ điều hành sẽ không được
+      báo cáo. Nếu bạn đặt chính sách này thành true, thì thông tin cập nhật hệ điều hành sẽ được báo cáo.</translation>
 <translation id="4858735034935305895">Cho phép chế độ toàn màn hình</translation>
 <translation id="4861767323695239729">Định cấu hình các phương thức nhập được phép trong phiên người dùng</translation>
 <translation id="487460824085252184">Tự động di chuyển, không cần yêu cầu sự chấp thuận của người dùng.</translation>
@@ -3159,15 +3187,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="6559057113164934677">Không cho phép bất kỳ trang web nào truy cập vào máy ảnh và micrô</translation>
 <translation id="6561396069801924653">Hiển thị tùy chọn trợ năng trong menu của khay hệ thống</translation>
 <translation id="6563458316362153786">Bật tính năng Chuyển đổi nhanh 802.11r</translation>
-<translation id="6565312346072273043">Đặt trạng thái mặc định của tính năng trợ năng bàn phím ảo trên màn hình đăng nhập.
-
-          Nếu chính sách này được đặt thành true, bàn phím ảo sẽ được bật khi màn hình đăng nhập hiển thị.
-
-          Nếu chính sách này được đặt thành false, bàn phím ảo sẽ bị tắt khi màn hình đăng nhập hiển thị.
-
-          Nếu bạn đặt chính sách này, người dùng có thể tạm thời ghi đè chính sách này bằng cách bật hoặc tắt bàn phím ảo. Tuy nhiên, lựa chọn của người dùng không cố định và giá trị mặc định được khôi phục bất cứ lúc nào màn hình đăng nhập được hiển thị lại hoặc người dùng duy trì trạng thái rảnh trên màn hình đăng nhập trong một phút.
-
-          Nếu chính sách này không được đặt, bàn phím ảo bị tắt khi màn hình đăng nhập được hiển thị lần đầu tiên. Người dùng có thể bật hoặc tắt bàn phím ảo bất kỳ lúc nào và trạng thái của bàn phím trên màn hình đăng nhập được duy trì giữa những người dùng.</translation>
 <translation id="6573305661369899995">Đặt nguồn bên ngoài cho hạn chế URL</translation>
 <translation id="6583851521569686409">Định cấu hình danh sách máy in.
 
@@ -3225,6 +3244,7 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="6689792153960219308">Báo cáo trạng thái phần cứng</translation>
 <translation id="6698632841807204978">Bật chế độ in đen trắng</translation>
 <translation id="6699880231565102694">Bật xác thực hai bước cho máy chủ truy cập từ xa</translation>
+<translation id="670597451099978576">Tự động cấp quyền cho những trang web này để kết nối với các thiết bị USB bằng mã sản phẩm và mã nhà cung cấp cụ thể trên màn hình đăng nhập.</translation>
 <translation id="6720080634516505446"><ph name="PRODUCT_NAME" /> cung cấp bản cập nhật và chương trình cài đặt an toàn cho tiện ích. Tuy nhiên, bạn chỉ có thể bảo vệ nội dung của một số tiện ích lưu trữ bên ngoài Cửa hàng Chrome trực tuyến bằng các thuật toán ký hoặc băm không an toàn như SHA1. Nếu bạn tắt chính sách này, thì Chrome sẽ không cho phép thực hiện quá trình cài đặt và cập nhật mới đối với những tiện ích đó (cho đến khi nhà phát triển tiện ích tạo lại tiện ích có thuật toán mạnh hơn). Khi bạn bật chính sách này, thì Chrome sẽ cho phép thực hiện quá trình cài đặt và cập nhật đối với những tiện ích đó.
 
           Chính sách này sẽ bật theo mặc định khi bạn không đặt.
@@ -3808,6 +3828,21 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Khi bạn đặt chính sách này, Mã truy cập dành cho cha mẹ có thể được xác minh trên thiết bị của người dùng là trẻ em.
       Khi bạn không đặt chính sách này, Mã truy cập dành cho cha mẹ không xác minh được trên thiết bị của người dùng là trẻ em.</translation>
 <translation id="7625444193696794922">Chỉ định kênh phát hành mà thiết bị này phải bị khóa.</translation>
+<translation id="7625498350540361483">
+      Nếu bạn đặt chính sách này thành true, thì <ph name="PRODUCT_NAME" /> sẽ được phép thu thập nhật ký sự kiện WebRTC từ các dịch vụ của Google (ví dụ: Google Meet) và tải các nhật ký đó lên Google.
+
+      Nếu bạn đặt chính sách này thành false, thì <ph name="PRODUCT_NAME" /> sẽ không thể không thu thập cũng như tải các nhật ký đó lên.
+
+      Nếu bạn không đặt chính sách này, bao gồm cả phiên bản M76, <ph name="PRODUCT_NAME" /> sẽ không thể thu thập cũng như tải các nhật ký đó lên.
+
+      Nếu bạn không đặt chính sách này, thì kể từ phiên bản M77, <ph name="PRODUCT_NAME" /> có thể thu thập hoặc tải các nhật ký đó lên theo mặc định nếu hệ thống coi hồ sơ trình duyệt là được quản lý, tức là nếu hồ sơ nhận được chính sách cấp đám mây hoặc máy và không phải là hồ sơ con, hồ sơ tạm thời, hồ sơ đăng nhập hoặc hồ sơ ẩn danh.
+
+      Các nhật ký này chứa thông tin chẩn đoán hữu ích khi gỡ lỗi các vấn đề về cuộc gọi thoại hoặc video trên Chrome, chẳng hạn như thời gian và kích thước gói RTP gửi đi và nhận được, phản hồi về tình trạng nghẽn mạng cũng như siêu dữ liệu về thời gian và chất lượng của khung video và âm thanh. Các nhật ký này không chứa nội dung âm thanh hoặc video của cuộc gọi.
+
+      Chỉ các dịch vụ web của Google, chẳng hạn như Google Hangouts hoặc Google Meet, mới có thể kích hoạt chức năng thu thập dữ liệu này trên Chrome.
+
+      Thông qua mã phiên, Google có thể liên kết các nhật ký này với các nhật ký khác do dịch vụ của Google tự thu thập, nhằm giúp quá trình gỡ lỗi diễn ra dễ dàng hơn.
+      </translation>
 <translation id="7632724434767231364">Tên thư viện GSSAPI</translation>
 <translation id="7635471475589566552">Định cấu hình ngôn ngữ ứng dụng trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi ngôn ngữ này. Nếu bạn bật cài đặt này, <ph name="PRODUCT_NAME" /> sẽ sử dụng ngôn ngữ được chỉ định. Nếu ngôn ngữ được định cấu hình không được hỗ trợ, 'en-US' sẽ được sử dụng thay thế. Nếu bạn tắt hoặc không thiết lập cài đặt này, <ph name="PRODUCT_NAME" /> sẽ sử dụng ngôn ngữ ưa thích do người dùng chỉ định (nếu được định cấu hình), ngôn ngữ hệ thống hoặc ngôn ngữ dự phòng 'en-US'.</translation>
 <translation id="7641363659597330616">Định cấu hình loại nội dung tải xuống <ph name="PRODUCT_NAME" /> sẽ chặn hoàn toàn, mà không cho phép người dùng ghi đè quyết định bảo mật này.
@@ -4335,6 +4370,11 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       https://support.google.com/a/answer/1668854.
 
       Người dùng không thể thay đổi hoặc ghi đè tùy chọn cài đặt này.</translation>
+<translation id="8625234016727663537">Cho phép bạn đặt danh sách các URL chỉ định những trang web sẽ tự động được cấp quyền truy cập vào thiết bị USB bằng mã sản phẩm và mã nhà cung cấp trên màn hình đăng nhập. Mỗi mục trong danh sách phải chứa cả thiết bị và URL để chính sách có hiệu lực. Mỗi mục trong các thiết bị có thể chứa trường mã sản phẩm và mã nhà cung cấp. Bất kỳ mã nào bị bỏ qua đều được coi là ký tự đại diện có ngoại lệ. Ngoại lệ đó là khi hệ thống không thể chỉ định mã sản phẩm nếu không có mã nhà cung cấp. Nếu không thuộc trường hợp ngoại lệ này thì chính sách sẽ không có hiệu lực và bị bỏ qua.
+
+        Mô hình cấp phép của USB sử dụng URL của trang web yêu cầu ("URL yêu cầu") và URL của trang web khung cấp cao nhất ("URL nhúng") để cấp cho URL yêu cầu quyền truy cập vào thiết bị USB. URL yêu cầu có thể khác với URL nhúng khi bạn tải trang web yêu cầu trong khung nội tuyến. Do đó, trường "urls" có thể chứa tối đa 2 chuỗi URL phân tách bằng dấu phẩy để chỉ định URL yêu cầu và URL nhúng tương ứng. Nếu chỉ có một URL được chỉ định, thì quyền truy cập vào các thiết bị USB tương ứng sẽ được cấp khi URL của trang web yêu cầu khớp với URL này bất kể trạng thái nhúng. Các URL trong "urls" phải là các URL hợp lệ, nếu không, chính sách này sẽ bị bỏ qua.
+
+        Nếu bạn không đặt chính sách này, thì giá trị mặc định chung sẽ được dùng cho tất cả các trang web (không truy cập tự động).</translation>
 <translation id="8631434304112909927">cho đến phiên bản <ph name="UNTIL_VERSION" /></translation>
 <translation id="8649763579836720255">Thiết bị Chrome OS có thể sử dụng chứng thực từ xa (Quyền truy cập đã xác minh) để nhận được chứng chỉ do Chrome OS CA phát hành khẳng định rằng thiết bị đủ điều kiện để phát nội dung được bảo vệ. Quy trình này bao gồm gửi thông tin chứng thực phần cứng tới Chrome OS CA xác định duy nhất thiết bị.
 

@@ -169,6 +169,7 @@
 <translation id="2220529011494928058">問題を報告</translation>
 <translation id="2223693656926968778">現在の項目に対して操作を実行</translation>
 <translation id="225732394367814946">読み上げの速度を上げる</translation>
+<translation id="2267538686624070261">スペルミスが残っています</translation>
 <translation id="2267945578749931355">次の文字</translation>
 <translation id="2278490101488436824">3 本の指で左にスワイプします</translation>
 <translation id="2281234842553884450">前のスライダ</translation>
@@ -207,6 +208,7 @@
 <translation id="257674075312929031">グループ</translation>
 <translation id="2582407057977008361">補足</translation>
 <translation id="2592212930811759050">編集を開始するにはダブルタップします</translation>
+<translation id="2598495320872286378">文法ミス</translation>
 <translation id="2614981083756825552">MathML レイアウト</translation>
 <translation id="2624431853467395961">学習モードを開く</translation>
 <translation id="2626530649491650971">クリック可能</translation>
@@ -821,6 +823,7 @@
 <translation id="6833103209700200188">フッター</translation>
 <translation id="6858047746862060282">プロローグ</translation>
 <translation id="6859876496651143278">1 本の指で左にスワイプします</translation>
+<translation id="6865519907510167493">スペルミス</translation>
 <translation id="6871161210040114857">大文字と小文字を区別しません。</translation>
 <translation id="6877435256196695200">次の図はありません。</translation>
 <translation id="6897341342232909480">左へ移動</translation>
@@ -1111,6 +1114,7 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="8446884382197647889">詳細</translation>
 <translation id="8455868257606149352">最大値 <ph name="X" /></translation>
 <translation id="84575901236241018">アクセス キー <ph name="KEY" /> があります</translation>
+<translation id="8463645336674919227">文法ミスが残っています</translation>
 <translation id="847154984256717791">ビジー</translation>
 <translation id="8476408756881832830">ChromeVox の読み上げ中は再生を一時停止する</translation>
 <translation id="8476508772960940536">ウィンドウ概観</translation>

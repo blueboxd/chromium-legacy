@@ -64,6 +64,7 @@ class ASH_EXPORT TrayNetworkStateModel
       const {
     return active_vpn_.get();
   }
+  bool has_vpn() const { return has_vpn_; }
 
  private:
   // CrosNetworkConfigObserver
@@ -84,6 +85,11 @@ class ASH_EXPORT TrayNetworkStateModel
 
   void GetActiveNetworks();
   void UpdateActiveNetworks(
+      std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
+          networks);
+
+  void GetVirtualNetworks();
+  void OnGetVirtualNetworks(
       std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
           networks);
 
@@ -114,6 +120,7 @@ class ASH_EXPORT TrayNetworkStateModel
       active_non_cellular_;
   chromeos::network_config::mojom::NetworkStatePropertiesPtr active_cellular_;
   chromeos::network_config::mojom::NetworkStatePropertiesPtr active_vpn_;
+  bool has_vpn_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TrayNetworkStateModel);
 };

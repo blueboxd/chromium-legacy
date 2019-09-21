@@ -337,12 +337,12 @@ const std::vector<RulesetManager::Action>& RulesetManager::EvaluateRequest(
   // |is_incognito_context| will stay the same for a given |request|. This also
   // assumes that the core state of the WebRequestInfo isn't changed between the
   // different EvaluateRequest invocations.
-  if (request.dnr_actions.empty()) {
+  if (!request.dnr_actions) {
     request.dnr_actions =
         EvaluateRequestInternal(request, is_incognito_context);
   }
 
-  return request.dnr_actions;
+  return *request.dnr_actions;
 }
 
 bool RulesetManager::HasAnyExtraHeadersMatcher() const {
@@ -496,22 +496,18 @@ std::vector<RulesetManager::Action> RulesetManager::EvaluateRequestInternal(
     const WebRequestInfo& request,
     bool is_incognito_context) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(request.dnr_actions.empty());
+  DCHECK(!request.dnr_actions);
 
   std::vector<Action> actions;
 
-  if (!ShouldEvaluateRequest(request)) {
-    actions.emplace_back(Action::Type::NONE);
+  if (!ShouldEvaluateRequest(request))
     return actions;
-  }
 
   if (test_observer_)
     test_observer_->OnEvaluateRequest(request, is_incognito_context);
 
-  if (rulesets_.empty()) {
-    actions.emplace_back(Action::Type::NONE);
+  if (rulesets_.empty())
     return actions;
-  }
 
   SCOPED_UMA_HISTOGRAM_TIMER(
       "Extensions.DeclarativeNetRequest.EvaluateRequestTime.AllExtensions2");
@@ -574,7 +570,6 @@ std::vector<RulesetManager::Action> RulesetManager::EvaluateRequestInternal(
   if (!remove_headers_actions.empty())
     return remove_headers_actions;
 
-  actions.emplace_back(Action::Type::NONE);
   return actions;
 }
 

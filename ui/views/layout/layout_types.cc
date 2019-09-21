@@ -11,16 +11,6 @@
 
 namespace views {
 
-namespace {
-
-std::string OptionalToString(const base::Optional<int>& opt) {
-  if (!opt.has_value())
-    return "_";
-  return base::StringPrintf("%d", opt.value());
-}
-
-}  // namespace
-
 // SizeBounds ------------------------------------------------------------------
 
 SizeBounds::SizeBounds() = default;
@@ -55,8 +45,17 @@ bool SizeBounds::operator<(const SizeBounds& other) const {
 }
 
 std::string SizeBounds::ToString() const {
-  return base::StringPrintf("%s x %s", OptionalToString(width()).c_str(),
-                            OptionalToString(height()).c_str());
+  std::ostringstream oss;
+  if (width().has_value())
+    oss << *width();
+  else
+    oss << "_";
+  oss << " x ";
+  if (height().has_value())
+    oss << *height();
+  else
+    oss << "_";
+  return oss.str();
 }
 
 }  // namespace views

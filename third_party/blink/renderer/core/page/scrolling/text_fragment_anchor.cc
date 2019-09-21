@@ -143,8 +143,10 @@ bool TextFragmentAnchor::Invoke() {
     return true;
   }
 
+  // If we're done searching, return true if this hasn't been dismissed yet so
+  // that this is kept alive.
   if (search_finished_)
-    return false;
+    return !dismissed_;
 
   frame_->GetDocument()->Markers().RemoveMarkersOfTypes(
       DocumentMarker::MarkerTypes::TextMatch());
@@ -167,9 +169,9 @@ bool TextFragmentAnchor::Invoke() {
   if (frame_->GetDocument()->IsLoadCompleted())
     DidFinishSearch();
 
-  // We need another Invoke if we're not finished searching or if we're proxying
-  // an element fragment anchor.
-  return !search_finished_ || element_fragment_anchor_;
+  // We return true to keep this anchor alive as long as we need another invoke,
+  // are waiting to be dismissed, or are proxying an element fragment anchor.
+  return !search_finished_ || !dismissed_ || element_fragment_anchor_;
 }
 
 void TextFragmentAnchor::Installed() {}
@@ -279,6 +281,9 @@ void TextFragmentAnchor::DidFinishSearch() {
 
   metrics_->ReportMetrics();
 
+  if (!did_find_match_)
+    dismissed_ = true;
+
   if (!did_find_match_ &&
       fragment_format_ == TextFragmentFormat::FragmentDirective) {
     DCHECK(!element_fragment_anchor_);
@@ -290,6 +295,28 @@ void TextFragmentAnchor::DidFinishSearch() {
       frame_->GetPage()->GetChromeClient().ScheduleAnimation(frame_->View());
     }
   }
+}
+
+bool TextFragmentAnchor::Dismiss() {
+  // To decrease the likelihood of the user dismissing the highlight before
+  // seeing it, we only dismiss the anchor after search_finished_, at which
+  // point we've scrolled it into view or the user has started scrolling the
+  // page.
+  if (!search_finished_)
+    return false;
+
+  if (!did_find_match_ || dismissed_)
+    return true;
+
+  DCHECK(did_scroll_into_view_ || user_scrolled_);
+
+  frame_->GetDocument()->Markers().RemoveMarkersOfTypes(
+      DocumentMarker::MarkerTypes::TextMatch());
+  frame_->GetEditor().SetMarkedTextMatchesAreHighlighted(false);
+  dismissed_ = true;
+  metrics_->Dismissed();
+
+  return dismissed_;
 }
 
 }  // namespace blink

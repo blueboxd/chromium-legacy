@@ -111,6 +111,12 @@ Polymer({
       }
     },
 
+    /** @private {boolean} */
+    showInternetConfig_: {
+      type: Boolean,
+      value: false,
+    },
+
     /** @private {!Map<string, Element>} */
     focusConfig_: {
       type: Object,
@@ -273,15 +279,26 @@ Polymer({
     assert(
         type != chromeos.networkConfig.mojom.NetworkType.kCellular &&
         type != chromeos.networkConfig.mojom.NetworkType.kTether);
-    const configDialog =
-        /** @type {!InternetConfigElement} */ (this.$.configDialog);
-    // TODO(stevenjb): Update configDialog to use mojom.NetworkType.
-    configDialog.type = /** @type{!chrome.networkingPrivate.NetworkType}*/ (
-        OncMojo.getNetworkTypeString(type));
-    configDialog.guid = opt_guid || '';
-    configDialog.name = opt_name || '';
-    configDialog.showConnect = configAndConnect;
-    configDialog.open();
+    if (this.showInternetConfig_) {
+      return;
+    }
+    this.showInternetConfig_ = true;
+    // Async call to ensure dialog is stamped.
+    setTimeout(() => {
+      const configDialog =
+          /** @type {!InternetConfigElement} */ (this.$$('#configDialog'));
+      assert(!!configDialog);
+      configDialog.type = OncMojo.getNetworkTypeString(type);
+      configDialog.guid = opt_guid || '';
+      configDialog.name = opt_name || '';
+      configDialog.showConnect = configAndConnect;
+      configDialog.open();
+    });
+  },
+
+  /** @private */
+  onInternetConfigClose_: function() {
+    this.showInternetConfig_ = false;
   },
 
   /**

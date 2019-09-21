@@ -60,6 +60,7 @@ GTEST_CONVERSION_WHITELIST = [
   'load_library_perf_tests',
   'media_perftests',
   'views_perftests',
+  'viz_perftests',
   'xr.vr.common_perftests',
 ]
 

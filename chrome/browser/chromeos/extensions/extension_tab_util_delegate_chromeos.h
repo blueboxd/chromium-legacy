@@ -22,7 +22,7 @@ class ExtensionTabUtilDelegateChromeOS : public ExtensionTabUtil::Delegate {
   ~ExtensionTabUtilDelegateChromeOS() override;
 
   // ExtensionTabUtil::Delegate
-  ExtensionTabUtil::ScrubTabBehavior GetScrubTabBehavior(
+  ExtensionTabUtil::ScrubTabBehaviorType GetScrubTabBehavior(
       const Extension* extension) override;
 
  private:

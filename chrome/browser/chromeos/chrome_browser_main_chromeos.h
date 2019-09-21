@@ -14,6 +14,7 @@
 #include "chrome/browser/memory/memory_kills_monitor.h"
 #include "chromeos/assistant/buildflags.h"
 
+class AssistantStateClient;
 class ChromeKeyboardControllerClient;
 class SpokenFeedbackEventRewriterDelegate;
 
@@ -23,7 +24,6 @@ class StateController;
 
 namespace arc {
 class ArcServiceLauncher;
-class VoiceInteractionControllerClient;
 }  // namespace arc
 
 namespace policy {
@@ -139,8 +139,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
   std::unique_ptr<arc::ArcServiceLauncher> arc_service_launcher_;
 
-  std::unique_ptr<arc::VoiceInteractionControllerClient>
-      arc_voice_interaction_controller_client_;
+  std::unique_ptr<AssistantStateClient> assistant_state_client_;
 
 #if BUILDFLAG(ENABLE_CROS_ASSISTANT)
   std::unique_ptr<AssistantClient> assistant_client_;

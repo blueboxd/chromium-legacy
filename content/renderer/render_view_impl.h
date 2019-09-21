@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/containers/id_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -60,7 +61,6 @@
 #include "ui/surface/transport_dib.h"
 
 namespace blink {
-class WebMouseEvent;
 class WebURLRequest;
 struct WebPluginAction;
 struct WebWindowFeatures;
@@ -141,7 +141,9 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   blink::WebView* webview();
   const blink::WebView* webview() const;
 
-  // Returns the RenderWidget for this RenderView.
+  // Returns the RenderWidget owned by this RenderView. Can be nullptr if the
+  // RenderView does not own a RenderWidget [e.g. for remote main frame in
+  // future].
   RenderWidget* GetWidget();
   const RenderWidget* GetWidget() const;
 
@@ -166,10 +168,20 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void AddObserver(RenderViewObserver* observer);
   void RemoveObserver(RenderViewObserver* observer);
 
-  // Sets the zoom level and notifies observers.
-  void SetZoomLevel(double zoom_level);
+  // Sets the zoom level and notifies observers. Returns true if the zoom level
+  // changed. A value of 0 means the default zoom level.
+  bool SetZoomLevel(double zoom_level);
 
-  double page_zoom_level() { return page_zoom_level_; }
+  // Passes along the prefer compositing preference to the WebView's settings.
+  void SetPreferCompositingToLCDTextEnabled(bool prefer);
+
+  // Passes along the device scale factor to the WebView.
+  void SetDeviceScaleFactor(bool use_zoom_for_dsf, float device_scale_factor);
+
+  // Passes along the page zoom to the WebView to set it on a newly attached
+  // LocalFrame.
+  void PropagatePageZoomToNewlyAttachedFrame(bool use_zoom_for_dsf,
+                                             float device_scale_factor);
 
   // Sets page-level focus in this view and notifies plugins and Blink's
   // FocusController.
@@ -256,7 +268,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   blink::WebString AcceptLanguages() override;
   int HistoryBackListCount() override;
   int HistoryForwardListCount() override;
-  void ZoomLimitsChanged(double minimum_level, double maximum_level) override;
   void PageScaleFactorChanged(float page_scale_factor) override;
   void DidUpdateTextAutosizerPageInfo(
       const blink::WebTextAutosizerPageInfo& page_info) override;
@@ -279,9 +290,13 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void SetWebkitPreferences(const WebPreferences& preferences) override;
   blink::WebView* GetWebView() override;
   bool GetContentStateImmediately() override;
+
+  // Only used for testing.
   void SetEditCommandForNextKeyEvent(const std::string& name,
                                      const std::string& value) override;
+  // Only used for testing.
   void ClearEditCommands() override;
+
   const std::string& GetAcceptLanguages() override;
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   virtual void didScrollWithKeyboard(const blink::WebSize& delta);
@@ -300,7 +315,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   bool renderer_wide_named_frame_lookup() {
     return renderer_wide_named_frame_lookup_;
   }
-  void UpdateZoomLevel(double zoom_level);
 
  protected:
   RenderViewImpl(CompositorDependencies* compositor_deps,
@@ -325,6 +339,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // code away from this class.
   friend class RenderFrameImpl;
 
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, EmulatingPopupRect);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, RenderFrameMessageAfterDetach);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, BeginNavigationForWebUI);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
@@ -389,8 +404,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
 
   // RenderWidgetDelegate implementation ----------------------------------
 
-  bool RenderWidgetWillHandleMouseEventForWidget(
-      const blink::WebMouseEvent& event) override;
   void SetActiveForWidget(bool active) override;
   bool SupportsMultipleWindowsForWidget() override;
   bool ShouldAckSyntheticInputImmediately() override;
@@ -491,6 +504,12 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // Request the window to close from the renderer by sending the request to the
   // browser.
   void DoDeferredClose();
+
+  // Creates a Popup and also returns a reference to the RenderWidget, which is
+  // otherwise owned by the browser and un-referencable. |output_widget| is an
+  // output variable.
+  blink::WebPagePopup* CreatePopupAndGetWidget(blink::WebLocalFrame* creator,
+                                               RenderWidget** output_widget);
 
 #if defined(OS_ANDROID)
   // Make the video capture devices (e.g. webcam) stop/resume delivering video

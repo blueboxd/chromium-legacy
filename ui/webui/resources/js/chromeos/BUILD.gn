@@ -21,7 +21,7 @@ js_type_check("js_resources") {
 js_library("onc_mojo") {
   deps = [
     "//chromeos/services/network_config/public/mojom:mojom_js_library_for_compile",
-    "//ui/webui/resources/cr_elements/chromeos/network:cr_onc_types",
+    "//ui/webui/resources/cr_elements/chromeos/network:cr_onc_strings",
     "//ui/webui/resources/js:assert",
   ]
 }

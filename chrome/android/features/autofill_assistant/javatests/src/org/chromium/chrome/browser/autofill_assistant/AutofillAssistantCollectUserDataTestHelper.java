@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantChoiceList;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataDelegate;
+import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantDateTime;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantLoginChoice;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantTermsAndConditionsState;
 import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantVerticalExpander;
@@ -46,6 +47,8 @@ public class AutofillAssistantCollectUserDataTestHelper {
         final AssistantVerticalExpander mPaymentSection;
         final AssistantVerticalExpander mShippingSection;
         final AssistantVerticalExpander mLoginsSection;
+        final AssistantVerticalExpander mDateRangeStartSection;
+        final AssistantVerticalExpander mDateRangeEndSection;
         final AssistantChoiceList mContactList;
         final AssistantChoiceList mPaymentMethodList;
         final AssistantChoiceList mShippingAddressList;
@@ -63,6 +66,10 @@ public class AutofillAssistantCollectUserDataTestHelper {
                     AssistantTagsForTesting.COLLECT_USER_DATA_SHIPPING_ADDRESS_SECTION_TAG);
             mLoginsSection = coordinator.getView().findViewWithTag(
                     AssistantTagsForTesting.COLLECT_USER_DATA_LOGIN_SECTION_TAG);
+            mDateRangeStartSection = coordinator.getView().findViewWithTag(
+                    AssistantTagsForTesting.COLLECT_USER_DATA_DATE_RANGE_START_TAG);
+            mDateRangeEndSection = coordinator.getView().findViewWithTag(
+                    AssistantTagsForTesting.COLLECT_USER_DATA_DATE_RANGE_END_TAG);
             mDividers = findViewsWithTag(coordinator.getView(), DIVIDER_TAG);
             mContactList = (AssistantChoiceList) (findViewsWithTag(
                     mContactSection, COLLECT_USER_DATA_CHOICE_LIST)
@@ -89,6 +96,8 @@ public class AutofillAssistantCollectUserDataTestHelper {
         AutofillAddress mAddress;
         AutofillPaymentInstrument mPaymentMethod;
         AssistantLoginChoice mLoginChoice;
+        AssistantDateTime mDateRangeStart;
+        AssistantDateTime mDateRangeEnd;
         @AssistantTermsAndConditionsState
         int mTermsStatus;
         @Nullable
@@ -122,6 +131,18 @@ public class AutofillAssistantCollectUserDataTestHelper {
         @Override
         public void onTermsAndConditionsLinkClicked(int link) {
             mLastLinkClicked = link;
+        }
+
+        @Override
+        public void onDateTimeRangeStartChanged(
+                int year, int month, int day, int hour, int minute, int second) {
+            mDateRangeStart = new AssistantDateTime(year, month, day, hour, minute, second);
+        }
+
+        @Override
+        public void onDateTimeRangeEndChanged(
+                int year, int month, int day, int hour, int minute, int second) {
+            mDateRangeEnd = new AssistantDateTime(year, month, day, hour, minute, second);
         }
     }
 

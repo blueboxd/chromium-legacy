@@ -16,17 +16,6 @@
 #include "ui/views/layout/flex_layout_types.h"
 
 namespace views {
-namespace layout {
-
-namespace {
-
-std::string OptionalToString(const base::Optional<int>& opt) {
-  if (!opt.has_value())
-    return "_";
-  return base::StringPrintf("%d", opt.value());
-}
-
-}  // namespace
 
 // NormalizedPoint -------------------------------------------------------------
 
@@ -160,8 +149,17 @@ bool NormalizedSizeBounds::operator<(const NormalizedSizeBounds& other) const {
 }
 
 std::string NormalizedSizeBounds::ToString() const {
-  return base::StringPrintf("%s x %s", OptionalToString(main()).c_str(),
-                            OptionalToString(cross()).c_str());
+  std::ostringstream oss;
+  if (main().has_value())
+    oss << *main();
+  else
+    oss << "_";
+  oss << " x ";
+  if (cross().has_value())
+    oss << *cross();
+  else
+    oss << "_";
+  return oss.str();
 }
 
 // NormalizedRect --------------------------------------------------------------
@@ -379,5 +377,4 @@ gfx::Rect Denormalize(LayoutOrientation orientation,
                    Denormalize(orientation, bounds.size()));
 }
 
-}  // namespace layout
 }  // namespace views

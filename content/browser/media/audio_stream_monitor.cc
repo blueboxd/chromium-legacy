@@ -208,7 +208,7 @@ void AudioStreamMonitor::MaybeToggle() {
 
   if (should_indicator_be_on != indicator_is_on_) {
     indicator_is_on_ = should_indicator_be_on;
-    web_contents_->NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
+    web_contents_->NotifyNavigationStateChanged(INVALIDATE_TYPE_AUDIO);
   }
 
   if (should_stop_timer) {

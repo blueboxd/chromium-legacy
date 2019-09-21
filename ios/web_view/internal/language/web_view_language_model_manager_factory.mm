@@ -9,6 +9,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/language/core/browser/baseline_language_model.h"
+#include "components/language/core/browser/fluent_language_model.h"
 #include "components/language/core/browser/heuristic_language_model.h"
 #include "components/language/core/browser/language_model.h"
 #include "components/language/core/browser/language_model_manager.h"
@@ -41,6 +42,14 @@ void PrepareLanguageModels(WebViewBrowserState* const web_view_browser_state,
               language::prefs::kUserLanguageProfile));
       manager->SetPrimaryModel(
           language::LanguageModelManager::ModelType::HEURISTIC);
+      break;
+    case language::OverrideLanguageModel::FLUENT:
+      manager->AddModel(language::LanguageModelManager::ModelType::FLUENT,
+                        std::make_unique<language::FluentLanguageModel>(
+                            web_view_browser_state->GetPrefs(),
+                            language::prefs::kAcceptLanguages));
+      manager->SetPrimaryModel(
+          language::LanguageModelManager::ModelType::FLUENT);
       break;
     case language::OverrideLanguageModel::DEFAULT:
     default:

@@ -97,7 +97,6 @@ void TestRunnerForSpecificView::Reset() {
   if (web_view()->MainFrame()->IsWebLocalFrame()) {
     web_view()->MainFrame()->ToWebLocalFrame()->EnableViewSourceMode(false);
     web_view()->SetTextZoomFactor(1);
-    web_view()->SetZoomLevel(0);
     // As would the browser via IPC, set visibility on the RenderWidget then on
     // the Page.
     // TODO(danakj): This should set visibility on all RenderWidgets not just

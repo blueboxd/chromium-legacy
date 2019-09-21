@@ -177,9 +177,8 @@ public class SavePasswordsPreferences
             return true;
         }
         if (id == R.id.menu_id_targeted_help) {
-            HelpAndFeedback.getInstance(getActivity())
-                    .show(getActivity(), getString(R.string.help_context_passwords),
-                            Profile.getLastUsedProfile(), null);
+            HelpAndFeedback.getInstance().show(getActivity(),
+                    getString(R.string.help_context_passwords), Profile.getLastUsedProfile(), null);
             return true;
         }
         return super.onOptionsItemSelected(item);

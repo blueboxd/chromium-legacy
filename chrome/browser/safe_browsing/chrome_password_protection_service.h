@@ -55,7 +55,7 @@ using StringProvider = base::RepeatingCallback<std::string()>;
 using password_manager::metrics_util::PasswordType;
 using url::Origin;
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
 // Shows the platform-specific password reuse modal dialog.
 void ShowPasswordReuseModalWarningDialog(
     content::WebContents* web_contents,
@@ -101,7 +101,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   static ChromePasswordProtectionService* GetPasswordProtectionService(
       Profile* profile);
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
   static bool ShouldShowChangePasswordSettingUI(Profile* profile);
 
   // Called by SecurityStateTabHelper to determine if page info bubble should
@@ -296,7 +296,7 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   bool IsUnderAdvancedProtection() override;
 #endif
 
-#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+#if defined(SYNC_PASSWORD_REUSE_WARNING_ENABLED)
   void MaybeLogPasswordReuseDetectedEvent(
       content::WebContents* web_contents) override;
 

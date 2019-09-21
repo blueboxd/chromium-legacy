@@ -61,6 +61,7 @@ void BinaryUploadService::UploadForDeepScanning(
   }
 
   std::string token = base::RandBytesAsString(128);
+  token = base::HexEncode(token.data(), token.size());
   active_tokens_[raw_request] = token;
   binary_fcm_service_->SetCallbackForToken(
       token, base::BindRepeating(&BinaryUploadService::OnGetResponse,

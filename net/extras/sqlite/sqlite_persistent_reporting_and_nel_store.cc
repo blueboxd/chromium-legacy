@@ -17,6 +17,7 @@
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
+#include "base/task/task_traits.h"
 #include "base/thread_annotations.h"
 #include "net/extras/sqlite/sqlite_persistent_store_backend_base.h"
 #include "net/reporting/reporting_endpoint.h"
@@ -70,6 +71,10 @@ const char kNumberOfLoadedReportingEndpointsHistogramName[] =
 const char kNumberOfLoadedReportingEndpointGroupsHistogramName[] =
     "ReportingAndNEL.NumberOfLoadedReportingEndpointGroups";
 }  // namespace
+
+base::TaskPriority GetReportingAndNelStoreBackgroundSequencePriority() {
+  return base::TaskPriority::USER_BLOCKING;
+}
 
 class SQLitePersistentReportingAndNelStore::Backend
     : public SQLitePersistentStoreBackendBase {

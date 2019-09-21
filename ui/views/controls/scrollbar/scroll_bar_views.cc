@@ -67,6 +67,7 @@ class ScrollBarThumb : public BaseScrollBarThumb {
 
 ScrollBarButton::ScrollBarButton(ButtonListener* listener, Type type)
     : BaseScrollBarButton(listener), type_(type) {
+  EnableCanvasFlippingForRTLUI(true);
   SetFocusBehavior(FocusBehavior::NEVER);
 }
 
@@ -196,6 +197,8 @@ ui::NativeTheme::State ScrollBarThumb::GetNativeThemeState() const {
 // ScrollBarViews, public:
 
 ScrollBarViews::ScrollBarViews(bool horizontal) : ScrollBar(horizontal) {
+  EnableCanvasFlippingForRTLUI(true);
+
   using Type = ScrollBarButton::Type;
   SetThumb(new ScrollBarThumb(this));
   if (horizontal) {

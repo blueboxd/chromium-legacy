@@ -345,13 +345,8 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   EXPECT_TRUE(bookmark_bar->GetVisible());
 
   // Minimum window size should grow with the bookmark bar shown.
-  // kMinimumSize window property should get updated.
-  aura::Window* window = browser()->window()->GetNativeWindow();
-  const gfx::Size* min_window_size =
-      window->GetProperty(aura::client::kMinimumSize);
-  ASSERT_NE(nullptr, min_window_size);
-  EXPECT_GT(min_window_size->height(), min_height_no_bookmarks);
-  EXPECT_EQ(*min_window_size, frame_view->GetMinimumSize());
+  gfx::Size min_window_size = frame_view->GetMinimumSize();
+  EXPECT_GT(min_window_size.height(), min_height_no_bookmarks);
 }
 
 // This is a regression test that session restore minimized browser should

@@ -104,6 +104,12 @@ declare_args() {
   clang_use_default_sample_profile = build_with_chromium && is_official_build &&
                                      (is_android || is_desktop_linux)
 
+  # This configuration is used to select a default profile in Chrome OS based on
+  # the microarchitectures we are using. This is only used if
+  # clang_use_default_sample_profile is true and clang_sample_profile_path is
+  # empty.
+  chromeos_afdo_platform = "silvermont"
+
   # Emit debug information for profiling wile building with clang.
   clang_emit_debug_info_for_profiling = false
 
@@ -2162,9 +2168,19 @@ if (is_clang && is_a_target_toolchain) {
   } else if (clang_use_default_sample_profile) {
     assert(build_with_chromium,
            "Our default profiles currently only apply to Chromium")
-    assert(is_android || is_desktop_linux,
+    assert(is_android || is_desktop_linux || is_chromeos,
            "The current platform has no default profile")
-    _clang_sample_profile = "//chrome/android/profiles/afdo.prof"
+    if (is_android || is_desktop_linux) {
+      _clang_sample_profile = "//chrome/android/profiles/afdo.prof"
+    } else {
+      assert(
+          chromeos_afdo_platform == "silvermont" ||
+              chromeos_afdo_platform == "airmont" ||
+              chromeos_afdo_platform == "broadwell",
+          "Only silvermont, airmont and broadwell are valid Chrome OS profiles.")
+      _clang_sample_profile =
+          "//chromeos/profiles/${chromeos_afdo_platform}.afdo.prof"
+    }
   }
 }
 

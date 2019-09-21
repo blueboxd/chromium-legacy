@@ -133,10 +133,15 @@ const char kKeystonePID[] = "com.google.chrome_remote_desktop";
 
   [self shutdownService];
 
+  // Remove the old helper script if it exists. The new helper script is part
+  // of the host bundle.
+  const char kOldHostHelperScriptPath[] =
+      "/Library/PrivilegedHelperTools/org.chromium.chromoting.me2me.sh";
+
   [self sudoDelete:remoting::kServicePlistPath usingAuth:authRef];
   [self sudoDelete:remoting::kHostBinaryPath usingAuth:authRef];
   [self sudoDelete:remoting::kHostLegacyBinaryPath usingAuth:authRef];
-  [self sudoDelete:remoting::kHostHelperScriptPath usingAuth:authRef];
+  [self sudoDelete:kOldHostHelperScriptPath usingAuth:authRef];
   [self sudoDelete:remoting::kHostConfigFilePath usingAuth:authRef];
   [self sudoDelete:remoting::kLogFilePath usingAuth:authRef];
   [self sudoDelete:remoting::kLogFileConfigPath usingAuth:authRef];

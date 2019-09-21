@@ -34,7 +34,7 @@ runInAnimationWorklet(
 
   if (window.testRunner) {
     waitTwoAnimationFrames(_ => {
-      internals.setZoomFactor(2);
+      eventSender.setPageZoomFactor(2);
       waitTwoAnimationFrames(_ => {
         testRunner.notifyDone();
       });

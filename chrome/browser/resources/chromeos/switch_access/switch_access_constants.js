@@ -159,8 +159,6 @@ SAConstants.MenuAction = {
   SELECT: 'select',
   // Open and jump to the Switch Access settings.
   SETTINGS: 'settings',
-  // Show the system context menu for the current element.
-  SHOW_CONTEXT_MENU: chrome.automation.ActionType.SHOW_CONTEXT_MENU,
   // Set the end of a text selection.
   SELECT_END: 'selectEnd',
   // Set the beginning of a text selection.

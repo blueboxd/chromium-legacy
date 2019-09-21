@@ -16,7 +16,7 @@ cr.define('chrome', function() {
     /** @type {!Object<chrome.networkingPrivate.DeviceStateProperties>} */
     this.deviceStates_ = {};
 
-    /** @type {!Array<!CrOnc.NetworkStateProperties>} */
+    /** @type {!Array<!chrome.networkingPrivate.NetworkStateProperties>} */
     this.networkStates_ = [];
 
     /** @type {!{chrome.networkingPrivate.GlobalPolicy}|undefined} */
@@ -61,7 +61,10 @@ cr.define('chrome', function() {
       });
     },
 
-    /** @param {!Array<!CrOnc.NetworkStateProperties>} network */
+    /**
+     * @param {!Array<!chrome.networkingPrivate.NetworkStateProperties>}
+     *     network
+     */
     addNetworksForTest: function(networks) {
       this.networkStates_ = this.networkStates_.concat(networks);
     },

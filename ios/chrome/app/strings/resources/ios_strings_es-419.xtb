@@ -93,6 +93,7 @@
 <translation id="2149973817440762519">Editar marcador</translation>
 <translation id="2179182049312275900">Puedes activar la sincronización en la configuración en cualquier momento.</translation>
 <translation id="2198757192731523470">Es posible que Google use tu historial para personalizar la Búsqueda, los anuncios y otros servicios de Google.</translation>
+<translation id="2207590065820824892"><ph name="UNREAD_COUNT" /> artículos sin leer en tu lista de lectura</translation>
 <translation id="2230173723195178503">Se cargó la página web</translation>
 <translation id="2239626343334228536">Borrando datos de navegación…</translation>
 <translation id="2256128224215992540">Sugerencias de sitios y búsqueda</translation>
@@ -108,6 +109,7 @@
 <translation id="2360196772093551345">Solicitar sitio móvil</translation>
 <translation id="2381405137052800939">Configuración básica</translation>
 <translation id="2386793615875593361">1 foto seleccionada</translation>
+<translation id="2421044535038393232">Seguir editando</translation>
 <translation id="2435457462613246316">Mostrar contraseña</translation>
 <translation id="2481538920734869610">AGREGAR CUENTA</translation>
 <translation id="2497852260688568942">Tu administrador inhabilitó la sincronización</translation>
@@ -227,6 +229,7 @@
 <translation id="418156467088430727">Ver la versión sin conexión en una nueva pestaña</translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="424315890655130736">Ingresar frase de contraseña</translation>
+<translation id="4263576668337963058">Mostrar las acciones de página disponibles</translation>
 <translation id="4272631900155121838">Habilita la cámara en la configuración para escanear un código QR</translation>
 <translation id="4281844954008187215">Condiciones del servicio</translation>
 <translation id="430793432425771671">Sincronizar todo</translation>
@@ -264,6 +267,7 @@ Tus datos están encriptados con tu frase de contraseña para sincronización. D
 
 Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">El número de la tarjeta no es válido</translation>
+<translation id="4807020197310989387">1 artículo sin leer en tu lista de lectura</translation>
 <translation id="4818522717893377262">Agregar idioma…</translation>
 <translation id="481968316161811770">Cookies, datos del sitio</translation>
 <translation id="4833786495304741580">Envía automáticamente informes de fallas y estadísticas de uso a Google.</translation>

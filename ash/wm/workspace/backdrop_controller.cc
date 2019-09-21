@@ -113,7 +113,7 @@ BackdropController::BackdropController(aura::Window* container)
     : container_(container) {
   DCHECK(container_);
   auto* shell = Shell::Get();
-  shell->AddShellObserver(this);
+  shell->split_view_controller()->AddObserver(this);
   shell->overview_controller()->AddObserver(this);
   shell->accessibility_controller()->AddObserver(this);
   shell->wallpaper_controller()->AddObserver(this);
@@ -129,7 +129,7 @@ BackdropController::~BackdropController() {
   shell->wallpaper_controller()->RemoveObserver(this);
   if (shell->overview_controller())
     shell->overview_controller()->RemoveObserver(this);
-  shell->RemoveShellObserver(this);
+  shell->split_view_controller()->RemoveObserver(this);
   // TODO(oshima): animations won't work right with mus:
   // http://crbug.com/548396.
   Hide(/*destroy=*/true);
@@ -208,14 +208,6 @@ aura::Window* BackdropController::GetTopmostWindowWithBackdrop() {
     return window;
   }
   return nullptr;
-}
-
-void BackdropController::OnSplitViewModeStarting() {
-  Shell::Get()->split_view_controller()->AddObserver(this);
-}
-
-void BackdropController::OnSplitViewModeEnded() {
-  Shell::Get()->split_view_controller()->RemoveObserver(this);
 }
 
 void BackdropController::OnOverviewModeStarting() {

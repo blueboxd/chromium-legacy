@@ -46,6 +46,26 @@ class AssistantCollectUserDataDelegate {
       const base::android::JavaParamRef<jobject>& jcaller,
       const base::android::JavaParamRef<jstring>& jidentifier);
 
+  void OnDateTimeRangeStartChanged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      jint year,
+      jint month,
+      jint day,
+      jint hour,
+      jint minute,
+      jint second);
+
+  void OnDateTimeRangeEndChanged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jcaller,
+      jint year,
+      jint month,
+      jint day,
+      jint hour,
+      jint minute,
+      jint second);
+
   base::android::ScopedJavaGlobalRef<jobject> GetJavaObject();
 
  private:

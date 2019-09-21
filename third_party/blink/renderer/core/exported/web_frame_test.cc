@@ -6132,8 +6132,7 @@ class CompositedSelectionBoundsTest
         web_view_helper_.GetWebView()->MainFrameImpl(), base_url_ + test_file);
     UpdateAllLifecyclePhases(web_view_helper_.GetWebView());
 
-    cc::LayerTreeHost* layer_tree_host =
-        web_widget_client_.layer_tree_view()->layer_tree_host();
+    cc::LayerTreeHost* layer_tree_host = web_widget_client_.layer_tree_host();
     const cc::LayerSelection& selection = layer_tree_host->selection();
 
     ASSERT_EQ(selection, cc::LayerSelection());
@@ -6232,8 +6231,7 @@ class CompositedSelectionBoundsTest
         ->GetEventHandler()
         .HandleGestureEvent(gesture_event);
 
-    cc::LayerTreeHost* layer_tree_host =
-        web_widget_client_.layer_tree_view()->layer_tree_host();
+    cc::LayerTreeHost* layer_tree_host = web_widget_client_.layer_tree_host();
     const cc::LayerSelection& selection = layer_tree_host->selection();
 
     ASSERT_NE(selection, cc::LayerSelection());
@@ -8322,7 +8320,7 @@ TEST_F(WebFrameTest, OverlayFullscreenVideo) {
                                         nullptr, nullptr, &web_widget_client);
 
   const cc::LayerTreeHost* layer_tree_host =
-      web_widget_client.layer_tree_view()->layer_tree_host();
+      web_widget_client.layer_tree_host();
 
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
   std::unique_ptr<UserGestureIndicator> gesture =
@@ -8357,7 +8355,7 @@ TEST_F(WebFrameTest, OverlayFullscreenVideoInIframe) {
       &web_widget_client);
 
   const cc::LayerTreeHost* layer_tree_host =
-      web_widget_client.layer_tree_view()->layer_tree_host();
+      web_widget_client.layer_tree_host();
   LocalFrame* iframe =
       To<WebLocalFrameImpl>(
           web_view_helper.GetWebView()->MainFrame()->FirstChild())

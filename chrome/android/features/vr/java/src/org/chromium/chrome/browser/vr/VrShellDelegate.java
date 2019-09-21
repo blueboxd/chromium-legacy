@@ -189,7 +189,7 @@ public class VrShellDelegate
 
     private long mNativeVrShellDelegate;
 
-    /* package */ final static class VrUnsupportedException extends RuntimeException {}
+    /* package */ static final class VrUnsupportedException extends RuntimeException {}
 
     private static final class VrLifecycleObserver
             implements ApplicationStatus.ActivityStateListener {
@@ -247,8 +247,9 @@ public class VrShellDelegate
             }
 
             // We add a black overlay view so that we can show black while the VR UI is loading.
-            if (!sInstance.mInVr)
+            if (!sInstance.mInVr) {
                 VrModuleProvider.getDelegate().addBlackOverlayViewForActivity(sInstance.mActivity);
+            }
 
             // For headset insertion handling it should be impossible in practice to receive this
             // broadcast after being resumed. However, with VR entry flows skipped, these events
@@ -395,8 +396,9 @@ public class VrShellDelegate
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return;
         if (sInstance != null) return; // Will be handled in onResume.
         if (!VrModuleProvider.getDelegate().activitySupportsVrBrowsing(activity)
-                && sRegisteredVrAssetsComponent)
+                && sRegisteredVrAssetsComponent) {
             return;
+        }
 
         // Short-circuit the asnyc task if we've already queried support level previously. Creating
         // the async task takes ~1ms on my Android Go device.
@@ -597,8 +599,9 @@ public class VrShellDelegate
 
         if (sInstance != null) sInstance.setExpectingIntent(false);
 
-        if (VrDelegate.DEBUG_LOGS)
+        if (VrDelegate.DEBUG_LOGS) {
             Log.i(TAG, "maybeHandleVrIntentPreNative: preparing for transition");
+        }
 
         // We add a black overlay view so that we can show black while the VR UI is loading.
         // Note that this alone isn't sufficient to prevent 2D UI from showing when
@@ -798,10 +801,9 @@ public class VrShellDelegate
     private static void startFeedback(Tab tab) {
         // TODO(ymalik): This call will connect to the Google Services api which can be slow. Can we
         // connect to it beforehand when we know that we'll be prompting for feedback?
-        HelpAndFeedback.getInstance(tab.getActivity())
-                .showFeedback(tab.getActivity(), tab.getProfile(), tab.getUrl(),
-                        ContextUtils.getApplicationContext().getPackageName() + "."
-                                + FEEDBACK_REPORT_TYPE);
+        HelpAndFeedback.getInstance().showFeedback(tab.getActivity(), tab.getProfile(),
+                tab.getUrl(),
+                ContextUtils.getApplicationContext().getPackageName() + "." + FEEDBACK_REPORT_TYPE);
     }
 
     private static void promptForFeedback(final Tab tab) {
@@ -1173,9 +1175,10 @@ public class VrShellDelegate
             return;
         }
 
-        if (!mInVr)
+        if (!mInVr) {
             VrShellDelegateJni.get().recordVrStartAction(
                     mNativeVrShellDelegate, VrStartAction.INTENT_LAUNCH);
+        }
 
         mStartedFromVrIntent = true;
         // Setting DON succeeded will cause us to enter VR when resuming.
@@ -1468,8 +1471,9 @@ public class VrShellDelegate
 
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
-            if (mNativeVrShellDelegate != 0)
+            if (mNativeVrShellDelegate != 0) {
                 VrShellDelegateJni.get().onResume(mNativeVrShellDelegate, VrShellDelegate.this);
+            }
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
@@ -1556,8 +1560,9 @@ public class VrShellDelegate
         }
 
         if (mInVr) mVrShell.pause();
-        if (mNativeVrShellDelegate != 0)
+        if (mNativeVrShellDelegate != 0) {
             VrShellDelegateJni.get().onPause(mNativeVrShellDelegate, VrShellDelegate.this);
+        }
 
         mIsDaydreamCurrentViewer = null;
     }
@@ -1654,8 +1659,9 @@ public class VrShellDelegate
 
     @CalledByNative
     private void setListeningForWebVrActivate(boolean listening) {
-        if (VrDelegate.DEBUG_LOGS)
+        if (VrDelegate.DEBUG_LOGS) {
             Log.i(TAG, "WebVR page listening for vrdisplayactivate: " + listening);
+        }
         // Non-Daydream devices do not have the concept of activation.
         if (getVrSupportLevel() != VrSupportLevel.VR_DAYDREAM) return;
         if (mListeningForWebVrActivate == listening) return;
@@ -1953,8 +1959,9 @@ public class VrShellDelegate
     private void destroy() {
         if (sInstance == null) return;
         shutdownVr(false /* disableVrMode */, false /* stayingInChrome */);
-        if (mNativeVrShellDelegate != 0)
+        if (mNativeVrShellDelegate != 0) {
             VrShellDelegateJni.get().destroy(mNativeVrShellDelegate, VrShellDelegate.this);
+        }
         mNativeVrShellDelegate = 0;
         sInstance = null;
     }

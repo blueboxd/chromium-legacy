@@ -244,12 +244,6 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
                                size_t offset,
                                const gfx::Range& range) = 0;
 
-  // Notifies the frame's RenderView that the zoom has changed.
-  virtual void SetZoomLevel(double zoom_level) = 0;
-
-  // Returns the page's zoom level from the frame's RenderView.
-  virtual double GetZoomLevel() = 0;
-
   // Adds |message| to the DevTools console.
   virtual void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                                    const std::string& message) = 0;

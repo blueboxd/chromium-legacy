@@ -120,6 +120,18 @@ class UiControllerAndroid : public ControllerObserver {
   void OnTermsAndConditionsChanged(TermsAndConditionsState state);
   void OnLoginChoiceChanged(std::string identifier);
   void OnTermsAndConditionsLinkClicked(int link);
+  void OnDateTimeRangeStartChanged(int year,
+                                   int month,
+                                   int day,
+                                   int hour,
+                                   int minute,
+                                   int second);
+  void OnDateTimeRangeEndChanged(int year,
+                                 int month,
+                                 int day,
+                                 int hour,
+                                 int minute,
+                                 int second);
 
   // Called by AssistantFormDelegate:
   void OnCounterChanged(int input_index, int counter_index, int value);

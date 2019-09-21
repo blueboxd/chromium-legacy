@@ -34,6 +34,7 @@
 #include "net/quic/quic_chromium_packet_writer.h"
 #include "net/quic/quic_connection_logger.h"
 #include "net/quic/quic_connectivity_probing_manager.h"
+#include "net/quic/quic_crypto_client_config_handle.h"
 #include "net/quic/quic_session_key.h"
 #include "net/socket/socket_performance_watcher.h"
 #include "net/spdy/http2_priority_dependencies.h"
@@ -402,7 +403,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       bool headers_include_h2_stream_dependency,
       int cert_verify_flags,
       const quic::QuicConfig& config,
-      quic::QuicCryptoClientConfig* crypto_config,
+      std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config,
       const char* const connection_description,
       base::TimeTicks dns_resolution_start_time,
       base::TimeTicks dns_resolution_end_time,
@@ -752,7 +753,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   void HistogramAndLogMigrationFailure(const NetLogWithSource& net_log,
                                        QuicConnectionMigrationStatus status,
                                        quic::QuicConnectionId connection_id,
-                                       const std::string& reason);
+                                       const char* reason);
   void HistogramAndLogMigrationSuccess(const NetLogWithSource& net_log,
                                        quic::QuicConnectionId connection_id);
 
@@ -797,6 +798,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
   int most_recent_write_error_;
   base::TimeTicks most_recent_write_error_timestamp_;
+
+  std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config_;
 
   std::unique_ptr<quic::QuicCryptoClientStream> crypto_stream_;
   QuicStreamFactory* stream_factory_;

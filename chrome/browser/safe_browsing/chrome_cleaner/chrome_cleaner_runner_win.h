@@ -21,6 +21,7 @@ struct LaunchOptions;
 }  // namespace base
 
 namespace extensions {
+class ExtensionRegistry;
 class ExtensionService;
 }  // namespace extensions
 
@@ -113,6 +114,7 @@ class ChromeCleanerRunner
   // interface that's actually used.
   static void RunChromeCleanerAndReplyWithExitCode(
       extensions::ExtensionService* extension_service,
+      extensions::ExtensionRegistry* extension_registry,
       const base::FilePath& cleaner_executable_path,
       const SwReporterInvocation& reporter_invocation,
       ChromeMetricsStatus metrics_status,
@@ -148,7 +150,8 @@ class ChromeCleanerRunner
                       scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   ProcessStatus LaunchAndWaitForExitOnBackgroundThread(
-      extensions::ExtensionService* extension_service);
+      extensions::ExtensionService* extension_service,
+      extensions::ExtensionRegistry* extension_registry);
 
   // Invokes the on_process_done_ callback, which should handle the results of
   // a full cleaner execution whose outcome is given by |launch_status|. This

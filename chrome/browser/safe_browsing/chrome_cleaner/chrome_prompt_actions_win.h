@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 
 namespace extensions {
+class ExtensionRegistry;
 class ExtensionService;
 }  // namespace extensions
 
@@ -59,7 +60,9 @@ class ChromePromptActions {
   // Initializes the actions to use |extension_service| to disable extensions
   // when the DisableExtensions method is called, and the |on_prompt_user|
   // callback to display the prompt when the PromptUser method is called.
+  // |extension_registry| is used to query if an extension is installed.
   ChromePromptActions(extensions::ExtensionService* extension_service,
+                      extensions::ExtensionRegistry* extension_registry,
                       PromptUserCallback on_prompt_user);
   ~ChromePromptActions();
 
@@ -87,6 +90,10 @@ class ChromePromptActions {
   // no ExtensionService is available, otherwise it is a long-running service
   // that will outlive ChromePromptActions.
   extensions::ExtensionService* extension_service_;
+
+  // The ExtensionRegistry instance for the current profile. This is a long-
+  // lived object that will outlive ChromePromptActions.
+  extensions::ExtensionRegistry* extension_registry_;
 
   // Callback that will be invoked when PromptUser is called to display the
   // prompt.

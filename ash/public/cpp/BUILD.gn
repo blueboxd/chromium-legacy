@@ -28,6 +28,7 @@ component("cpp") {
     "app_list/app_list_config_provider.h",
     "app_list/app_list_controller.cc",
     "app_list/app_list_controller.h",
+    "app_list/app_list_controller_observer.h",
     "app_list/app_list_features.cc",
     "app_list/app_list_features.h",
     "app_list/app_list_metrics.cc",

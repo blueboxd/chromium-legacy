@@ -41,6 +41,7 @@
 <translation id="1460620680449458626">Звук је искључен.</translation>
 <translation id="1467432559032391204">Улево</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
+<translation id="1516740043221086139">Режим Не узнемиравај је укључен.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Прегледајте подешавања обавештења. Обавештења су искључена за једну апликацију}one{Прегледајте подешавања обавештења. Обавештења су искључена за # апликацију}few{Прегледајте подешавања обавештења. Обавештења су искључена за # апликације}other{Прегледајте подешавања обавештења. Обавештења су искључена за # апликација}}</translation>
 <translation id="1525508553941733066">ОДБАЦИ</translation>
 <translation id="1537254971476575106">Лупа за цео екран</translation>
@@ -255,6 +256,7 @@
 <translation id="4585337515783392668">Заустави пребацивање на непознати пријемник</translation>
 <translation id="4628757576491864469">Уређаји</translation>
 <translation id="4659419629803378708">ChromeVox је омогућен</translation>
+<translation id="4665114317261903604">Укључите/искључите режим Не узнемиравај. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Откључајте уређај помоћу кода родитеља</translation>
 <translation id="4731797938093519117">Родитељски приступ</translation>
 <translation id="4734965478015604180">Хоризонтално</translation>
@@ -353,6 +355,7 @@
 <translation id="6254629735336163724">Хоризонтални приказ је закључан</translation>
 <translation id="6259254695169772643">Изаберите помоћу писаљке</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Активирање...</translation>
+<translation id="6283712521836204486">Режим Не узнемиравај је искључен.</translation>
 <translation id="6284232397434400372">Резолуција је промењена</translation>
 <translation id="6297287540776456956">Користите писаљку да бисте изабрали област</translation>
 <translation id="6310121235600822547">Екран <ph name="DISPLAY_NAME" /> је промењен у <ph name="ROTATION" /></translation>

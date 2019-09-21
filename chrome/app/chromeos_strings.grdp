@@ -3994,8 +3994,8 @@
   </message>
 
   <!-- Strings for Add Supervision screen -->
-  <message name="IDS_ADD_SUPERVISION_PAGE_TITLE" desc="Title for the Chrome OS Add Supervision screen.">
-    Add Supervision
+  <message name="IDS_ADD_SUPERVISION_PAGE_TITLE" desc="Title for the Chrome OS Add Supervision screen. Since the title bar is not visible, this string is only used by screen readers.">
+    Set Up Parental Controls
   </message>
   <message name="IDS_ADD_SUPERVISION_NETWORK_DOWN_HEADING" desc="Heading string shown in the Add Supervision page when the network is not available.">
     Can’t connect to the internet

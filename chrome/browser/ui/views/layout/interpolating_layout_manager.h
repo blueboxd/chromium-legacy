@@ -80,7 +80,7 @@ class InterpolatingLayoutManager : public views::LayoutManagerBase {
                                  int width) const override;
 
  protected:
-  ProposedLayout CalculateProposedLayout(
+  views::ProposedLayout CalculateProposedLayout(
       const views::SizeBounds& size_bounds) const override;
 
  private:

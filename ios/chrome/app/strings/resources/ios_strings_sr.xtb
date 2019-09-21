@@ -93,6 +93,7 @@
 <translation id="2149973817440762519">Измените обележивач</translation>
 <translation id="2179182049312275900">Можете да укључите синхронизацију у подешавањима у било ком тренутку.</translation>
 <translation id="2198757192731523470">Google може да користи историју за персонализацију Претраге, огласа и других Google услуга.</translation>
+<translation id="2207590065820824892">Непрочитани чланци на листи за читање: <ph name="UNREAD_COUNT" />.</translation>
 <translation id="2230173723195178503">Веб-страница је учитана</translation>
 <translation id="2239626343334228536">Бришу се подаци прегледања...</translation>
 <translation id="2256128224215992540">Предлози за претрагу и сајтове</translation>
@@ -108,6 +109,7 @@
 <translation id="2360196772093551345">Захтевај мобилни сајт</translation>
 <translation id="2381405137052800939">Основе</translation>
 <translation id="2386793615875593361">Изабрана је 1 слика</translation>
+<translation id="2421044535038393232">Настави изменe</translation>
 <translation id="2435457462613246316">Прикажи лозинку</translation>
 <translation id="2481538920734869610">ДОДАЈ НАЛОГ</translation>
 <translation id="2497852260688568942">Администратор је онемогућио синхронизацију</translation>
@@ -227,6 +229,7 @@
 <translation id="418156467088430727">Прикажи офлајн верзију на новој картици</translation>
 <translation id="4181841719683918333">Језици</translation>
 <translation id="424315890655130736">Унесите приступну фразу</translation>
+<translation id="4263576668337963058">Прикажи доступне радње за страницу</translation>
 <translation id="4272631900155121838">Да бисте скенирали QR кôд, омогућите камеру у подешавањима</translation>
 <translation id="4281844954008187215">Услови коришћења услуге</translation>
 <translation id="430793432425771671">Синхронизуј све</translation>
@@ -264,6 +267,7 @@
 
 Да бисте променили ово подешавање, <ph name="BEGIN_LINK" />ресетујте синхронизацију<ph name="END_LINK" /></translation>
 <translation id="4805759445554688327">Неважећи број картице</translation>
+<translation id="4807020197310989387">1 непрочитан чланак на листи за читање.</translation>
 <translation id="4818522717893377262">Додајте језик…</translation>
 <translation id="481968316161811770">Колачићи, подаци о сајтовима</translation>
 <translation id="4833786495304741580">Аутоматски шаље Google-у статистику коришћења и извештаје о отказивању.</translation>

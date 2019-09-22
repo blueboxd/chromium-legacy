@@ -166,7 +166,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'b98887e635f10c61bfed0d8e39c40f75abb868fa',
+  'v8_revision': '510fd3c32bb2013f3ce6648b30b9b22f408aa93d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -853,7 +853,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'f85be12f1b2fe58932d231182437ee5229160bfe',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '7b6b405503c1d52ec20b02f1b55b3675d18e6344',
       'condition': 'checkout_linux',
   },
 
@@ -1487,7 +1487,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@4f0c2ae9e2a88c3532e241a79fe338ea0916aab6',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@4d23e51ff772a2d82f66a9c27422d39cc0a690f1',
     'condition': 'checkout_src_internal',
   },
 

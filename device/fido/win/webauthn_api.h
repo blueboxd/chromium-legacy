@@ -70,11 +70,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApi {
 
  protected:
   WinWebAuthnApi();
-
- private:
-  friend class ScopedFakeWinWebAuthnApi;
-  static void SetDefaultForTesting(WinWebAuthnApi* api);
-  static void ClearDefaultForTesting();
 };
 
 std::pair<CtapDeviceResponseCode,

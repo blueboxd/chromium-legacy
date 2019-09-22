@@ -2186,8 +2186,8 @@ bool V4L2VideoDecodeAccelerator::CreateBuffersForFormat(
     egl_image_size_ = visible_size_;
     egl_image_planes_count_ = 0;
     if (!V4L2ImageProcessor::TryOutputFormat(
-            output_format_fourcc_, egl_image_format_fourcc_, &egl_image_size_,
-            &egl_image_planes_count_)) {
+            output_format_fourcc_, egl_image_format_fourcc_, coded_size_,
+            &egl_image_size_, &egl_image_planes_count_)) {
       VLOGF(1) << "Fail to get output size and plane count of processor";
       return false;
     }

@@ -50,12 +50,14 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessor : public ImageProcessor {
   static std::vector<uint32_t> GetSupportedOutputFormats();
 
   // Gets output allocated size and number of planes required by the device
-  // for conversion from |input_pixelformat| to |output_pixelformat|, for
-  // visible size |size|. Returns true on success. Adjusted coded size will be
-  // stored in |size| and the number of planes will be stored in |num_planes|.
+  // for conversion from |input_pixelformat| with |input_size| to
+  // |output_pixelformat| with expected |output_size|.
+  // On success, returns true with adjusted |output_size| and |num_planes|.
+  // On failure, returns false without touching |output_size| and |num_planes|.
   static bool TryOutputFormat(uint32_t input_pixelformat,
                               uint32_t output_pixelformat,
-                              gfx::Size* size,
+                              const gfx::Size& input_size,
+                              gfx::Size* output_size,
                               size_t* num_planes);
 
   // Factory method to create V4L2ImageProcessor to convert from

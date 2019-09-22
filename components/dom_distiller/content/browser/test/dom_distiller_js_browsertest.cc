@@ -113,10 +113,11 @@ class DomDistillerJsTest : public content::ContentBrowserTest {
 
 // Disabled on MSan as well as Android and Linux CFI bots.
 // https://crbug.com/845180
-#if defined(MEMORY_SANITIZER) || defined(OS_WIN) ||              \
-    ((defined(OS_ANDROID) || defined(OS_LINUX)) &&               \
-     (BUILDFLAG(CFI_CAST_CHECK) || BUILDFLAG(CFI_ICALL_CHECK) || \
-      BUILDFLAG(CFI_ENFORCEMENT_DIAGNOSTIC) ||                   \
+// Then disabled more generally on Android: https://crbug.com/979685
+#if defined(MEMORY_SANITIZER) || defined(OS_WIN) || defined(OS_ANDROID) || \
+    (defined(OS_LINUX) &&                                                  \
+     (BUILDFLAG(CFI_CAST_CHECK) || BUILDFLAG(CFI_ICALL_CHECK) ||           \
+      BUILDFLAG(CFI_ENFORCEMENT_DIAGNOSTIC) ||                             \
       BUILDFLAG(CFI_ENFORCEMENT_TRAP)))
 #define MAYBE_RunJsTests DISABLED_RunJsTests
 #else

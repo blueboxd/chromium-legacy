@@ -673,9 +673,9 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
     // coded_size_ may include padding required by the decoder).
     gl_image_size_ = pic_size;
     size_t planes_count;
-    if (!V4L2ImageProcessor::TryOutputFormat(output_format_fourcc_,
-                                             gl_image_format_fourcc_,
-                                             &gl_image_size_, &planes_count)) {
+    if (!V4L2ImageProcessor::TryOutputFormat(
+            output_format_fourcc_, gl_image_format_fourcc_, coded_size_,
+            &gl_image_size_, &planes_count)) {
       VLOGF(1) << "Failed to get output size and plane count of IP";
       return false;
     }

@@ -162,7 +162,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '46203b003a3d60267d2fd40ce9380f48eb493d4e',
+  'skia_revision': '23b8230b5d84911a88b435fdb60580a1a08e80bf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -878,7 +878,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'a79f0e50bb33eac87ed7f64418c2889be2e0fbf5',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '82ae4b4b7d53362d7c8ff27731e9c89747865b93',
 
   'src/third_party/devtools-node-modules':
     Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision'),
@@ -1487,7 +1487,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@11fb7e42a9c56b3a1327fbf39fa3281c3e2660e1',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@4f0c2ae9e2a88c3532e241a79fe338ea0916aab6',
     'condition': 'checkout_src_internal',
   },
 

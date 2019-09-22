@@ -449,8 +449,8 @@ void RTCVideoEncoder::Impl::RequestEncodingParametersChange(
         // TODO(sprang): Clean this up if/when webrtc struct moves to int.
         uint32_t layer_bitrate =
             parameters.bitrate.GetBitrate(spatial_id, temporal_id);
-        RTC_CHECK_LE(layer_bitrate,
-                     static_cast<uint32_t>(std::numeric_limits<int>::max()));
+        CHECK_LE(layer_bitrate,
+                 static_cast<uint32_t>(std::numeric_limits<int>::max()));
         if (!allocation.SetBitrate(spatial_id, temporal_id, layer_bitrate)) {
           LOG(WARNING) << "Overflow in bitrate allocation: "
                        << parameters.bitrate.ToString();

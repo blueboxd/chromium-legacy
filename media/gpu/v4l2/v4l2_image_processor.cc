@@ -345,28 +345,46 @@ std::vector<uint32_t> V4L2ImageProcessor::GetSupportedOutputFormats() {
 // static
 bool V4L2ImageProcessor::TryOutputFormat(uint32_t input_pixelformat,
                                          uint32_t output_pixelformat,
-                                         gfx::Size* size,
+                                         const gfx::Size& input_size,
+                                         gfx::Size* output_size,
                                          size_t* num_planes) {
-  DVLOGF(3) << "input=" << FourccToString(input_pixelformat)
-            << " output=" << FourccToString(output_pixelformat)
-            << " size=" << size->ToString();
+  DVLOGF(3) << "input_format=" << FourccToString(input_pixelformat)
+            << " input_size=" << input_size.ToString()
+            << " output_format=" << FourccToString(output_pixelformat)
+            << " output_size=" << output_size->ToString();
   scoped_refptr<V4L2Device> device = V4L2Device::Create();
   if (!device ||
       !device->Open(V4L2Device::Type::kImageProcessor, input_pixelformat))
     return false;
 
+  // Set input format.
   struct v4l2_format format;
   memset(&format, 0, sizeof(format));
-  format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-  format.fmt.pix_mp.width = size->width();
-  format.fmt.pix_mp.height = size->height();
-  format.fmt.pix_mp.pixelformat = output_pixelformat;
-  if (device->Ioctl(VIDIOC_TRY_FMT, &format) != 0)
+  format.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
+  format.fmt.pix_mp.width = input_size.width();
+  format.fmt.pix_mp.height = input_size.height();
+  format.fmt.pix_mp.pixelformat = input_pixelformat;
+  if (device->Ioctl(VIDIOC_S_FMT, &format) != 0 ||
+      format.fmt.pix_mp.pixelformat != input_pixelformat) {
+    DVLOGF(4) << "Failed to set image processor input format: "
+              << V4L2Device::V4L2FormatToString(format);
     return false;
+  }
+
+  // Try output format.
+  memset(&format, 0, sizeof(format));
+  format.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
+  format.fmt.pix_mp.width = output_size->width();
+  format.fmt.pix_mp.height = output_size->height();
+  format.fmt.pix_mp.pixelformat = output_pixelformat;
+  if (device->Ioctl(VIDIOC_TRY_FMT, &format) != 0 ||
+      format.fmt.pix_mp.pixelformat != output_pixelformat) {
+    return false;
+  }
 
   *num_planes = format.fmt.pix_mp.num_planes;
-  *size = V4L2Device::AllocatedSizeFromV4L2Format(format);
-  DVLOGF(3) << "adjusted output coded size=" << size->ToString()
+  *output_size = V4L2Device::AllocatedSizeFromV4L2Format(format);
+  DVLOGF(3) << "Adjusted output_size=" << output_size->ToString()
             << ", num_planes=" << *num_planes;
   return true;
 }

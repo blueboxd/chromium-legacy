@@ -34,11 +34,9 @@ badge_test(() => { ExperimentalBadge.set({}); }, undefined, undefined,
            'TypeError');
 
 // Wrong origin.
-// TODO(mgiuca): Currently succeeds (failing in the browser).
-// https://crbug.com/1001404
-// badge_test(() => {
-//   ExperimentalBadge.set(1, {scope: 'https://wrongorigin.com/scope'});
-// }, undefined, undefined, 'SecurityError');
+badge_test(() => {
+  ExperimentalBadge.set(1, {scope: 'https://wrongorigin.com/scope'});
+}, undefined, undefined, 'SecurityError');
 
 // Invalid URL.
 badge_test(() => {

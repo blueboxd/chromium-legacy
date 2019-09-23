@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import io
 import os
 import platform
@@ -102,15 +104,15 @@ def main():
       buffer=(not flags.disable_buffer))
     result = testRunner.run(test_suite)
     if result.wasSuccessful():
-      print 'ok'
+      print('ok')
     else:
-      print 'failed'
-      print buf.getvalue()
-      print 'To repeat this test, run: '
-      print "%s %s %s --test_filter=%s --browser_args='%s'" % (sys.executable,
-        os.path.join(os.path.dirname(__file__), 'run_all_tests.py'),
-        ' '.join(sys.argv[1:]), '.'.join(test_id.split('.')[1:]),
-        experiment_args)
+      print('failed')
+      print(buf.getvalue())
+      print('To repeat this test, run: ')
+      print("%s %s %s --test_filter=%s --browser_args='%s'" % (
+          sys.executable,
+          os.path.join(os.path.dirname(__file__), 'run_all_tests.py'), ' '.join(
+              sys.argv[1:]), '.'.join(test_id.split('.')[1:]), experiment_args))
       if flags.failfast:
         return
 

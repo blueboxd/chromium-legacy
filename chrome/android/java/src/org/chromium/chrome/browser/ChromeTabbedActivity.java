@@ -81,6 +81,8 @@ import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.fullscreen.ComposedBrowserControlsVisibilityDelegate;
+import org.chromium.chrome.browser.gesturenav.NavigationSheet;
+import org.chromium.chrome.browser.gesturenav.TabbedSheetDelegate;
 import org.chromium.chrome.browser.incognito.IncognitoNotificationManager;
 import org.chromium.chrome.browser.incognito.IncognitoTabHost;
 import org.chromium.chrome.browser.incognito.IncognitoTabHostRegistry;
@@ -151,6 +153,7 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
+import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
@@ -280,6 +283,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
 
     private Runnable mShowHistoryRunnable;
     private NavigationPopup mNavigationPopup;
+    private NavigationSheet mNavigationSheet;
 
     /**
      * Keeps track of whether or not a specific tab was created based on the startup intent.
@@ -2187,8 +2191,19 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
         if (keyCode == KeyEvent.KEYCODE_BACK && !isTablet()) {
             mHandler.removeCallbacks(mShowHistoryRunnable);
             mShowHistoryRunnable = null;
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M
+                    && event.getEventTime() - event.getDownTime()
+                            >= ViewConfiguration.getLongPressTimeout()) {
+                return true;
+            }
         }
         return super.onKeyUp(keyCode, event);
+    }
+
+    @VisibleForTesting
+    public NavigationSheet getNavigationSheetForTesting() {
+        ThreadUtils.assertOnUiThread();
+        return mNavigationSheet;
     }
 
     @VisibleForTesting
@@ -2198,7 +2213,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
     }
 
     @VisibleForTesting
-    public boolean hasPendingNavigationPopupForTesting() {
+    public boolean hasPendingNavigationRunnableForTesting() {
         ThreadUtils.assertOnUiThread();
         return mShowHistoryRunnable != null;
     }
@@ -2206,12 +2221,34 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
     private void showFullHistoryForTab() {
         Tab tab = getActivityTab();
         if (tab == null || tab.getWebContents() == null || !tab.isUserInteractable()) return;
+        if (NavigationSheet.isEnabled()) {
+            showFullHistoryOnNavigationSheet(tab);
+        } else {
+            mNavigationPopup = new NavigationPopup(tab.getProfile(), this,
+                    tab.getWebContents().getNavigationController(),
+                    NavigationPopup.Type.ANDROID_SYSTEM_BACK);
+            mNavigationPopup.setOnDismissCallback(() -> mNavigationPopup = null);
+            mNavigationPopup.show(findViewById(R.id.navigation_popup_anchor_stub));
+        }
+    }
 
-        mNavigationPopup = new NavigationPopup(tab.getProfile(), this,
-                tab.getWebContents().getNavigationController(),
-                NavigationPopup.Type.ANDROID_SYSTEM_BACK);
-        mNavigationPopup.setOnDismissCallback(() -> mNavigationPopup = null);
-        mNavigationPopup.show(findViewById(R.id.navigation_popup_anchor_stub));
+    private void showFullHistoryOnNavigationSheet(Tab tab) {
+        // TODO(jinsukkim): Make NavigationSheet a per-activity object using RootUiCoordinator.
+        if (NavigationSheet.isInstanceShowing(getBottomSheetController())) {
+            mNavigationSheet = null;
+            return;
+        }
+        mNavigationSheet = NavigationSheet.create(
+                getWindow().getDecorView().findViewById(android.R.id.content),
+                this::getBottomSheetController, new TabbedSheetDelegate(tab));
+        mNavigationSheet.startAndExpand(/* forward=*/false, /* animate=*/true);
+        getBottomSheet().addObserver(new EmptyBottomSheetObserver() {
+            @Override
+            public void onSheetClosed(int reason) {
+                getBottomSheet().removeObserver(this);
+                mNavigationSheet = null;
+            }
+        });
     }
 
     @Override

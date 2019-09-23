@@ -34,6 +34,7 @@ android_library("content_java_test_support") {
     "javatests/src/org/chromium/content_public/browser/test/InterstitialPageDelegateAndroid.java",
     "javatests/src/org/chromium/content_public/browser/test/NativeLibraryTestRule.java",
     "javatests/src/org/chromium/content_public/browser/test/RenderFrameHostTestExt.java",
+    "javatests/src/org/chromium/content_public/browser/test/mock/MockNavigationController.java",
     "javatests/src/org/chromium/content_public/browser/test/mock/MockRenderFrameHost.java",
     "javatests/src/org/chromium/content_public/browser/test/mock/MockWebContents.java",
     "javatests/src/org/chromium/content_public/browser/test/util/BackgroundSyncNetworkUtils.java",

@@ -19,6 +19,7 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
@@ -52,7 +53,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/image/image_skia_source.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_utils.h"
@@ -360,39 +361,6 @@ class AppMenuView : public views::View, public views::ButtonListener {
   DISALLOW_COPY_AND_ASSIGN(AppMenuView);
 };
 
-// Generate the button image for hover state.
-class HoveredImageSource : public gfx::ImageSkiaSource {
- public:
-  HoveredImageSource(const gfx::ImageSkia& image, SkColor color)
-      : image_(image),
-        color_(color) {
-  }
-  ~HoveredImageSource() override {}
-
-  gfx::ImageSkiaRep GetImageForScale(float scale) override {
-    const gfx::ImageSkiaRep& rep = image_.GetRepresentation(scale);
-    SkBitmap bitmap = rep.GetBitmap();
-    SkBitmap white;
-    white.allocN32Pixels(bitmap.width(), bitmap.height());
-    white.eraseARGB(0, 0, 0, 0);
-    for (int y = 0; y < bitmap.height(); ++y) {
-      uint32_t* image_row = bitmap.getAddr32(0, y);
-      uint32_t* dst_row = white.getAddr32(0, y);
-      for (int x = 0; x < bitmap.width(); ++x) {
-        uint32_t image_pixel = image_row[x];
-        // Fill the non transparent pixels with |color_|.
-        dst_row[x] = (image_pixel & 0xFF000000) == 0x0 ? 0x0 : color_;
-      }
-    }
-    return gfx::ImageSkiaRep(white, scale);
-  }
-
- private:
-  const gfx::ImageSkia image_;
-  const SkColor color_;
-  DISALLOW_COPY_AND_ASSIGN(HoveredImageSource);
-};
-
 }  // namespace
 
 // CutCopyPasteView ------------------------------------------------------------
@@ -502,10 +470,14 @@ class AppMenu::ZoomView : public AppMenuView {
     // all buttons on menu should must be a custom button in order for
     // the keyboard navigation to work.
     DCHECK(Button::AsButton(fullscreen_button_));
-    gfx::ImageSkia* full_screen_image =
-        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            IDR_FULLSCREEN_MENU_BUTTON);
-    fullscreen_button_->SetImage(ImageButton::STATE_NORMAL, full_screen_image);
+
+    // TODO(https://crbug.com/957391): Do away with this bespoke color. Ideally
+    // this should be kColorId_EnabledMenuItemForegroundColor. The color here is
+    // ripped directly from the old PNG asset for this image.
+    fullscreen_button_->SetImage(
+        ImageButton::STATE_NORMAL,
+        gfx::CreateVectorIcon(kFullscreenIcon,
+                              SkColorSetRGB(0x98, 0x98, 0x98)));
 
     // Since |fullscreen_button_| will reside in a menu, make it ALWAYS
     // focusable regardless of the platform.
@@ -579,18 +551,14 @@ class AppMenu::ZoomView : public AppMenuView {
     if (theme) {
       zoom_label_->SetEnabledColor(theme->GetSystemColor(
           ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor));
-      gfx::ImageSkia* full_screen_image =
-          ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-              IDR_FULLSCREEN_MENU_BUTTON);
-      SkColor fg_color = theme->GetSystemColor(
-          ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor);
-      gfx::ImageSkia hovered_fullscreen_image(
-          std::make_unique<HoveredImageSource>(*full_screen_image, fg_color),
-          full_screen_image->size());
-      fullscreen_button_->SetImage(
-          ImageButton::STATE_HOVERED, &hovered_fullscreen_image);
-      fullscreen_button_->SetImage(
-          ImageButton::STATE_PRESSED, &hovered_fullscreen_image);
+      gfx::ImageSkia hovered_fullscreen_image = gfx::CreateVectorIcon(
+          kFullscreenIcon,
+          theme->GetSystemColor(
+              ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor));
+      fullscreen_button_->SetImage(ImageButton::STATE_HOVERED,
+                                   hovered_fullscreen_image);
+      fullscreen_button_->SetImage(ImageButton::STATE_PRESSED,
+                                   hovered_fullscreen_image);
     }
   }
 

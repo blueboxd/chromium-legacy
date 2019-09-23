@@ -60,14 +60,15 @@ class OemAppPositionTest : public chromeos::LoginManagerTest {
   DISALLOW_COPY_AND_ASSIGN(OemAppPositionTest);
 };
 
-IN_PROC_BROWSER_TEST_F(OemAppPositionTest, PRE_ValidOemAppPosition) {
+// Flaky. https://crbug.com/1006522 .
+IN_PROC_BROWSER_TEST_F(OemAppPositionTest, DISABLED_PRE_ValidOemAppPosition) {
   RegisterUser(AccountId::FromUserEmailGaiaId(kTestUser, kTestUserGaiaId));
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
 // Tests that an Oem app and its folder are created with valid positions after
 // sign-in.
-IN_PROC_BROWSER_TEST_F(OemAppPositionTest, ValidOemAppPosition) {
+IN_PROC_BROWSER_TEST_F(OemAppPositionTest, DISABLED_ValidOemAppPosition) {
   LoginUser(AccountId::FromUserEmailGaiaId(kTestUser, kTestUserGaiaId));
 
   AppListClientImpl* client = AppListClientImpl::GetInstance();
@@ -79,11 +80,11 @@ IN_PROC_BROWSER_TEST_F(OemAppPositionTest, ValidOemAppPosition) {
   base::RunLoop().RunUntilIdle();
 
   const ChromeAppListItem* oem_app = model_updater->FindItem(kOemAppId);
-  EXPECT_TRUE(oem_app);
+  ASSERT_TRUE(oem_app);
   EXPECT_TRUE(oem_app->position().IsValid());
 
   const ChromeAppListItem* oem_folder =
       model_updater->FindItem(ash::kOemFolderId);
-  EXPECT_TRUE(oem_folder);
+  ASSERT_TRUE(oem_folder);
   EXPECT_TRUE(oem_folder->position().IsValid());
 }

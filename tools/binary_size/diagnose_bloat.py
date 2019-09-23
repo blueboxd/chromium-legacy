@@ -10,6 +10,8 @@ See //tools/binary_size/README.md for example usage.
 Note: this tool will perform gclient sync/git checkout on your local repo.
 """
 
+from __future__ import print_function
+
 import atexit
 import argparse
 import collections
@@ -722,7 +724,7 @@ def _ValidateRevs(rev, reference_rev, subrepo, extra_rev):
 
 
 def _VerifyUserAccepts(message):
-  print message + ' Do you want to proceed? [y/n]'
+  print(message + ' Do you want to proceed? [y/n]')
   if raw_input('> ').lower() != 'y':
     sys.exit()
 

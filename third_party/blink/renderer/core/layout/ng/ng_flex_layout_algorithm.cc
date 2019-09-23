@@ -61,6 +61,18 @@ void NGFlexLayoutAlgorithm::HandleOutOfFlowPositioned(NGBlockNode child) {
               border_scrollbar_padding_.block_start});
 }
 
+bool NGFlexLayoutAlgorithm::IsColumnContainerMainSizeDefinite() const {
+  DCHECK(is_column_);
+  // If this flex container is also a flex item, it might have a definite size
+  // imposed on it by its parent flex container.
+  if (ConstraintSpace().IsFixedBlockSize() &&
+      !ConstraintSpace().IsFixedBlockSizeIndefinite())
+    return true;
+  Length main_size = Style().LogicalHeight();
+  return !BlockLengthUnresolvable(ConstraintSpace(), main_size,
+                                  LengthResolvePhase::kLayout);
+}
+
 bool NGFlexLayoutAlgorithm::IsContainerCrossSizeDefinite() const {
   // A column flexbox's cross axis is an inline size, so is definite.
   if (is_column_)
@@ -90,6 +102,28 @@ bool NGFlexLayoutAlgorithm::DoesItemStretch(const NGBlockNode& child) const {
     return false;
   return FlexLayoutAlgorithm::AlignmentForChild(Style(), child_style) ==
          ItemPosition::kStretch;
+}
+
+// This behavior is under discussion: the item's pre-flexing main size
+// definiteness may no longer imply post-flexing definiteness.
+// TODO(dgrogan): Have https://crbug.com/1003506 and
+// https://github.com/w3c/csswg-drafts/issues/4305 been resolved yet?
+bool NGFlexLayoutAlgorithm::IsItemMainSizeDefinite(
+    const NGBlockNode& child) const {
+  DCHECK(is_column_);
+  // Inline sizes are always definite.
+  // TODO(dgrogan): The relevant tests, the last two cases in
+  // css/css-flexbox/percentage-heights-003.html passed even without this, so it
+  // may be untested or unnecessary.
+  if (MainAxisIsInlineAxis(child))
+    return true;
+  // We need a constraint space for the child to determine resolvability and the
+  // space for flex-basis is sufficient, even though it has some unnecessary
+  // stuff (ShrinkToFit and fixed cross sizes).
+  NGConstraintSpace child_space =
+      BuildConstraintSpaceForDeterminingFlexBasis(child);
+  return !BlockLengthUnresolvable(child_space, child.Style().LogicalHeight(),
+                                  LengthResolvePhase::kLayout);
 }
 
 bool NGFlexLayoutAlgorithm::DoesItemCrossSizeComputeToAuto(
@@ -145,6 +179,33 @@ bool NGFlexLayoutAlgorithm::WillChildCrossSizeBeContainerCrossSize(
          DoesItemStretch(child);
 }
 
+NGConstraintSpace
+NGFlexLayoutAlgorithm::BuildConstraintSpaceForDeterminingFlexBasis(
+    const NGBlockNode& flex_item) const {
+  const ComputedStyle& child_style = flex_item.Style();
+  NGConstraintSpaceBuilder space_builder(ConstraintSpace(),
+                                         child_style.GetWritingMode(),
+                                         /* is_new_fc */ true);
+  SetOrthogonalFallbackInlineSizeIfNeeded(Style(), flex_item, &space_builder);
+
+  if (ShouldItemShrinkToFit(flex_item))
+    space_builder.SetIsShrinkToFit(true);
+  if (WillChildCrossSizeBeContainerCrossSize(flex_item)) {
+    if (is_column_) {
+      space_builder.SetIsFixedInlineSize(true);
+    } else {
+      space_builder.SetIsFixedBlockSize(true);
+      DCHECK_NE(content_box_size_.block_size, kIndefiniteSize);
+    }
+  }
+
+  // TODO(dgrogan): Change SetPercentageResolutionSize everywhere in this file
+  // to use CalculateChildPercentageSize.
+  space_builder.SetAvailableSize(content_box_size_);
+  space_builder.SetPercentageResolutionSize(content_box_size_);
+  return space_builder.ToConstraintSpace();
+}
+
 void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
   for (NGLayoutInputNode generic_child = Node().FirstChild(); generic_child;
        generic_child = generic_child.NextSibling()) {
@@ -155,27 +216,8 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     }
 
     const ComputedStyle& child_style = child.Style();
-    NGConstraintSpaceBuilder space_builder(ConstraintSpace(),
-                                           child_style.GetWritingMode(),
-                                           /* is_new_fc */ true);
-    SetOrthogonalFallbackInlineSizeIfNeeded(Style(), child, &space_builder);
-
-    if (ShouldItemShrinkToFit(child))
-      space_builder.SetIsShrinkToFit(true);
-    if (WillChildCrossSizeBeContainerCrossSize(child)) {
-      if (is_column_) {
-        space_builder.SetIsFixedInlineSize(true);
-      } else {
-        space_builder.SetIsFixedBlockSize(true);
-        DCHECK_NE(content_box_size_.block_size, kIndefiniteSize);
-      }
-    }
-
-    // TODO(dgrogan): Change SetPercentageResolutionSize everywhere in this file
-    // to use CalculateChildPercentageSize.
-    space_builder.SetAvailableSize(content_box_size_);
-    space_builder.SetPercentageResolutionSize(content_box_size_);
-    NGConstraintSpace child_space = space_builder.ToConstraintSpace();
+    NGConstraintSpace child_space =
+        BuildConstraintSpaceForDeterminingFlexBasis(child);
 
     NGBoxStrut border_padding_in_child_writing_mode =
         ComputeBorders(child_space, child) +
@@ -424,9 +466,14 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
         available_size.block_size =
             flex_item.flexed_content_size + flex_item.main_axis_border_padding;
         space_builder.SetIsFixedBlockSize(true);
-        // TODO(dgrogan): Set IsFixedBlockSizeIndefinite if neither the item's
-        // nor container's main size is definite. (The latter being exception 2
-        // from https://drafts.csswg.org/css-flexbox/#definite-sizes )
+        // https://drafts.csswg.org/css-flexbox/#definite-sizes
+        // If the flex container has a definite main size, a flex item's
+        // post-flexing main size is treated as definite, even though it can
+        // rely on the indefinite sizes of any flex items in the same line.
+        if (!IsColumnContainerMainSizeDefinite() &&
+            !IsItemMainSizeDefinite(flex_item.ng_input_node)) {
+          space_builder.SetIsFixedBlockSizeIndefinite(true);
+        }
       } else {
         available_size.inline_size =
             flex_item.flexed_content_size + flex_item.main_axis_border_padding;
@@ -519,9 +566,10 @@ void NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
             flex_item.cross_axis_size);
         if (is_column_) {
           available_size.Transpose();
-          // TODO(dgrogan): Set IsFixedBlockSizeIndefinite if neither the item's
-          // nor container's main size is definite. (The latter being exception
-          // 2 from https://drafts.csswg.org/css-flexbox/#definite-sizes )
+          if (!IsColumnContainerMainSizeDefinite() &&
+              !IsItemMainSizeDefinite(flex_item.ng_input_node)) {
+            space_builder.SetIsFixedBlockSizeIndefinite(true);
+          }
         }
         space_builder.SetAvailableSize(available_size);
         space_builder.SetPercentageResolutionSize(content_box_size_);

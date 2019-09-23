@@ -6,6 +6,8 @@
 """Looks for crash reports in tools/clang/crashreports and uploads them to GCS.
 """
 
+from __future__ import print_function
+
 import argparse
 import datetime
 import getpass
@@ -62,8 +64,8 @@ def ProcessCrashreport(base, source):
     sys.stdout.write('uploading... ')
     sys.stdout.flush()
     subprocess.check_call([sys.executable, GSUTIL, '-q', 'cp', tmp_name, dest])
-    print 'done'
-    print '    %s' % dest
+    print('done')
+    print('    %s' % dest)
   finally:
     if tmp_name:
       os.remove(tmp_name)
@@ -72,11 +74,11 @@ def ProcessCrashreport(base, source):
 def DeleteCrashFiles():
   for root, dirs, files in os.walk(CRASHREPORTS_DIR, topdown=True):
     for d in dirs:
-      print 'removing dir', d
+      print('removing dir', d)
       shutil.rmtree(os.path.join(root, d))
     for f in files:
       if f != '.gitignore':
-        print 'removing', f
+        print('removing', f)
         os.remove(os.path.join(root, f))
     del dirs[:]  # Abort os.walk() after one level.
 
@@ -114,4 +116,4 @@ if __name__ == '__main__':
   try:
     main()
   except Exception as e:
-    print 'got exception:', e
+    print('got exception:', e)

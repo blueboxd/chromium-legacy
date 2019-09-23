@@ -7,17 +7,20 @@
 #include <jni.h>
 #include <utility>
 
+#include "base/android/build_info.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/guid.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/android/chrome_jni_headers/ShortcutHelper_jni.h"
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/color_helpers.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/webapk/chrome_webapk_host.h"
@@ -339,6 +342,13 @@ void ShortcutHelper::SetForceWebApkUpdate(const std::string& id) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_ShortcutHelper_setForceWebApkUpdate(
       env, base::android::ConvertUTF8ToJavaString(env, id));
+}
+
+// static
+bool ShortcutHelper::DoesAndroidSupportMaskableIcons() {
+  return base::FeatureList::IsEnabled(chrome::android::kWebApkAdaptiveIcon) &&
+         base::android::BuildInfo::GetInstance()->sdk_int() >=
+             base::android::SDK_VERSION_OREO;
 }
 
 // Callback used by Java when the shortcut has been created.

@@ -7,6 +7,8 @@
 creates a feature branch, puts this revision into update.py, uploads
 a CL, triggers Clang Upload try bots, and tells what to do next"""
 
+from __future__ import print_function
+
 import argparse
 import fnmatch
 import itertools
@@ -67,10 +69,9 @@ def main():
   git_revision = subprocess.check_output(
       ["git", "rev-parse", "origin/master"], shell=is_win).strip()
 
-  print "Making a patch for Clang {}-{}-{}".format(clang_svn_revision,
-                                                   clang_git_revision[:8],
-                                                   clang_sub_revision)
-  print "Chrome revision: {}".format(git_revision)
+  print("Making a patch for Clang {}-{}-{}".format(
+      clang_svn_revision, clang_git_revision[:8], clang_sub_revision))
+  print("Chrome revision: {}".format(git_revision))
 
   clang_old_revision = PatchRevision(clang_git_revision, clang_svn_revision,
                                      clang_sub_revision)

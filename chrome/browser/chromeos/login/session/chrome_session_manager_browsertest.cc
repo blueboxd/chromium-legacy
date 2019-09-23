@@ -289,7 +289,8 @@ class GuestSessionRlzTest : public InProcessBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(GuestSessionRlzTest);
 };
 
-IN_PROC_BROWSER_TEST_P(GuestSessionRlzTest, DeviceIsLocked) {
+// Flaky. https://crbug.com/997360.
+IN_PROC_BROWSER_TEST_P(GuestSessionRlzTest, DISABLED_DeviceIsLocked) {
   const char* const expected_brand =
       stub_install_attributes()->IsDeviceLocked() ? "TEST" : "";
   EXPECT_EQ(expected_brand, google_brand::chromeos::GetBrand());

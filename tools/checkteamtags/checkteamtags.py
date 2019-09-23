@@ -5,6 +5,7 @@
 
 """Makes sure OWNERS files have consistent TEAM and COMPONENT tags."""
 
+from __future__ import print_function
 
 import json
 import logging
@@ -243,14 +244,14 @@ Examples:
 
   if errors:
     if options.bare:
-      print '\n'.join(e['full_path'] for e in errors)
+      print('\n'.join(e['full_path'] for e in errors))
     else:
-      print '\nFAILED\n'
-      print '\n'.join('%s: %s' % (e['full_path'], e['error']) for e in errors)
+      print('\nFAILED\n')
+      print('\n'.join('%s: %s' % (e['full_path'], e['error']) for e in errors))
     return 1
   if not options.bare:
     if warnings:
-      print warnings
+      print(warnings)
   return 0
 
 

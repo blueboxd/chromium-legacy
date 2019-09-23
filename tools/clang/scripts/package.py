@@ -6,6 +6,8 @@
 """This script will check out llvm and clang, and then package the results up
 to a tgz file."""
 
+from __future__ import print_function
+
 import argparse
 import fnmatch
 import itertools
@@ -34,7 +36,7 @@ EU_STRIP = os.path.join(BUILDTOOLS_DIR, 'third_party', 'eu-strip', 'bin',
 
 def Tee(output, logfile):
   logfile.write(output)
-  print output,
+  print(output, end=' ')
 
 
 def TeeCmd(cmd, logfile, fail_hard=True):
@@ -53,12 +55,12 @@ def TeeCmd(cmd, logfile, fail_hard=True):
       break
   exit_code = proc.wait()
   if exit_code != 0 and fail_hard:
-    print 'Failed:', cmd
+    print('Failed:', cmd)
     sys.exit(1)
 
 
 def PrintTarProgress(tarinfo):
-  print 'Adding', tarinfo.name
+  print('Adding', tarinfo.name)
   return tarinfo
 
 
@@ -92,14 +94,14 @@ def MaybeUpload(do_upload, filename, platform, extra_gsutil_args=[]):
   gsutil_args = ['cp'] + extra_gsutil_args + ['-a', 'public-read', filename,
       'gs://chromium-browser-clang-staging/%s/%s' % (platform, filename)]
   if do_upload:
-    print 'Uploading %s to Google Cloud Storage...' % filename
+    print('Uploading %s to Google Cloud Storage...' % filename)
     exit_code = RunGsutil(gsutil_args)
     if exit_code != 0:
-      print "gsutil failed, exit_code: %s" % exit_code
+      print("gsutil failed, exit_code: %s" % exit_code)
       sys.exit(exit_code)
   else:
-    print 'To upload, run:'
-    print ('gsutil %s' % ' '.join(gsutil_args))
+    print('To upload, run:')
+    print('gsutil %s' % ' '.join(gsutil_args))
 
 
 def UploadPDBToSymbolServer():
@@ -142,12 +144,12 @@ def UploadPDBToSymbolServer():
       f_cab = f[:-1] + '_'
 
       dest = '%s/%s/%s' % (os.path.basename(f), f_id, os.path.basename(f_cab))
-      print 'Uploading %s to Google Cloud Storage...' % dest
+      print('Uploading %s to Google Cloud Storage...' % dest)
       gsutil_args = ['cp', '-n', '-a', 'public-read', f_cab,
                      'gs://chromium-browser-symsrv/' + dest]
       exit_code = RunGsutil(gsutil_args)
       if exit_code != 0:
-        print "gsutil failed, exit_code: %s" % exit_code
+        print("gsutil failed, exit_code: %s" % exit_code)
         sys.exit(exit_code)
 
 
@@ -166,7 +168,7 @@ def main():
 
   expected_stamp = GetExpectedStamp()
   pdir = 'clang-' + expected_stamp
-  print pdir
+  print(pdir)
 
   if sys.platform == 'darwin':
     platform = 'Mac'
@@ -204,7 +206,7 @@ def main():
 
   stamp = open(STAMP_FILE).read().rstrip()
   if stamp != expected_stamp:
-    print 'Actual stamp (%s) != expected stamp (%s).' % (stamp, expected_stamp)
+    print('Actual stamp (%s) != expected stamp (%s).' % (stamp, expected_stamp))
     return 1
 
   shutil.rmtree(pdir, ignore_errors=True)
@@ -355,7 +357,7 @@ def main():
   for w in want:
     if '*' in w: continue
     if os.path.exists(os.path.join(LLVM_RELEASE_DIR, w)): continue
-    print >>sys.stderr, 'wanted file "%s" but it did not exist' % w
+    print('wanted file "%s" but it did not exist' % w, file=sys.stderr)
     return 1
 
   # TODO(thakis): Try walking over want and copying the files in there instead

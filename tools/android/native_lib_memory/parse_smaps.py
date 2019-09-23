@@ -6,6 +6,8 @@
 """Parses /proc/[pid]/smaps on a device and shows the total amount of swap used.
 """
 
+from __future__ import print_function
+
 import argparse
 import collections
 import logging
@@ -149,18 +151,18 @@ def _PrintMappingsMetric(mappings, field_name):
     field_name: (str) Mapping field to process.
   """
   total_kb = sum(m.fields[field_name] for m in mappings)
-  print 'Total Size (kB) = %d' % total_kb
+  print('Total Size (kB) = %d' % total_kb)
   sorted_by_metric = sorted(mappings,
                             key=lambda m: m.fields[field_name], reverse=True)
   for mapping in sorted_by_metric:
     metric = mapping.fields[field_name]
     if not metric:
       break
-    print _SummarizeMapping(mapping, metric)
+    print(_SummarizeMapping(mapping, metric))
 
 
 def _PrintSwapStats(mappings):
-  print 'SWAP:'
+  print('SWAP:')
   _PrintMappingsMetric(mappings, 'Swap')
 
 
@@ -176,17 +178,17 @@ def _FootprintForAnonymousMapping(mapping):
 
 
 def _PrintEstimatedFootprintStats(mappings, page_table_kb):
-  print 'Private Dirty:'
+  print('Private Dirty:')
   _PrintMappingsMetric(mappings, 'Private_Dirty')
-  print '\n\nShared Dirty:'
+  print('\n\nShared Dirty:')
   _PrintMappingsMetric(mappings, 'Shared_Dirty')
-  print '\n\nPrivate Clean:'
+  print('\n\nPrivate Clean:')
   _PrintMappingsMetric(mappings, 'Private_Clean')
-  print '\n\nShared Clean:'
+  print('\n\nShared Clean:')
   _PrintMappingsMetric(mappings, 'Shared_Clean')
-  print '\n\nSwap PSS:'
+  print('\n\nSwap PSS:')
   _PrintMappingsMetric(mappings, 'SwapPss')
-  print '\n\nPage table = %d kiB' % page_table_kb
+  print('\n\nPage table = %d kiB' % page_table_kb)
 
 
 def _ComputeEstimatedFootprint(mappings, page_table_kb):
@@ -233,7 +235,7 @@ def _ShowAllocatorFootprint(mappings, allocator):
   for mapping in mappings:
     if mapping.pathname == pathname:
       total_footprint += _FootprintForAnonymousMapping(mapping)
-  print '\tFootprint from %s: %d kB' % (allocator, total_footprint)
+  print('\tFootprint from %s: %d kB' % (allocator, total_footprint))
 
 
 def _CreateArgumentParser():
@@ -267,12 +269,12 @@ def main():
     page_table_kb = _GetPageTableFootprint(device, args.pid)
     _PrintEstimatedFootprintStats(mappings, page_table_kb)
     footprint = _ComputeEstimatedFootprint(mappings, page_table_kb)
-    print '\n\nEstimated Footprint = %d kiB' % footprint
+    print('\n\nEstimated Footprint = %d kiB' % footprint)
   else:
     _PrintSwapStats(mappings)
 
   if args.show_allocator_footprint:
-    print '\n\nMemory Allocators footprint:'
+    print('\n\nMemory Allocators footprint:')
     for allocator in args.show_allocator_footprint:
       _ShowAllocatorFootprint(mappings, allocator)
 

@@ -1982,7 +1982,7 @@ crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/fle
 crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/negative-margins-001.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/order_value.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/overflow-top-left.html [ Failure ]
-crbug.com/467127 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/percentage-heights-003.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/percentage-heights-007.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/percentage-heights-quirks-node.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/position-absolute-001.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/position-absolute-002.html [ Failure ]

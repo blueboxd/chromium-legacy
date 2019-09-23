@@ -4,6 +4,8 @@
 
 """An interactive console for looking analyzing .size files."""
 
+from __future__ import print_function
+
 import argparse
 import atexit
 import code
@@ -180,7 +182,7 @@ class _Session(object):
         'acl ch -u AllUsers:R gs://chrome-supersize/oneoffs/{shortname}\n'
         '  Then view it at https://storage.googleapis.com/chrome-supersize'
         '/viewer.html?load_url=oneoffs%2F{shortname}')
-    print msg.format(local=to_file, shortname=shortname)
+    print(msg.format(local=to_file, shortname=shortname))
 
   def _SizeStats(self, size_info=None):
     """Prints some statistics for the given size info.
@@ -338,8 +340,8 @@ class _Session(object):
     proc.kill()
 
   def _ShowExamplesFunc(self):
-    print self._CreateBanner()
-    print '\n'.join([
+    print(self._CreateBanner())
+    print('\n'.join([
         '# Show pydoc for main types:',
         'import models',
         'help(models)',
@@ -383,7 +385,7 @@ class _Session(object):
         '',
         '# For even more inspiration, look at canned_queries.py',
         '# (and feel free to add your own!).',
-    ])
+    ]))
 
   def _CreateBanner(self):
     def keys(cls, super_keys=None):

@@ -14,7 +14,6 @@ import androidx.annotation.IntDef;
 
 import org.chromium.base.Supplier;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -46,10 +45,9 @@ public class NavigationHandler {
 
     private final ViewGroup mParentView;
     private final Supplier<NavigationGlow> mGlowEffectSupplier;
-    private final Supplier<BottomSheetController> mBottomSheetController;
 
-    private final ActionDelegate mDelegate;
-    private final NavigationSheet.Delegate mSheetDelegate;
+    private final HistoryNavigationDelegate mDelegate;
+    private final ActionDelegate mActionDelegate;
 
     private NavigationGlow mGlowEffect;
 
@@ -90,13 +88,11 @@ public class NavigationHandler {
         boolean willBackExitApp();
     }
 
-    public NavigationHandler(ViewGroup parentView,
-            Supplier<BottomSheetController> bottomSheetController, ActionDelegate delegate,
-            NavigationSheet.Delegate sheetDelegate, Supplier<NavigationGlow> glowEffectSupplier) {
+    public NavigationHandler(ViewGroup parentView, HistoryNavigationDelegate delegate,
+            Supplier<NavigationGlow> glowEffectSupplier) {
         mParentView = parentView;
-        mBottomSheetController = bottomSheetController;
         mDelegate = delegate;
-        mSheetDelegate = sheetDelegate;
+        mActionDelegate = delegate.createActionDelegate();
         mGlowEffectSupplier = glowEffectSupplier;
         mEdgeWidthPx = EDGE_WIDTH_DP * parentView.getResources().getDisplayMetrics().density;
     }
@@ -106,7 +102,7 @@ public class NavigationHandler {
         mSideSlideLayout.setLayoutParams(
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         mSideSlideLayout.setOnNavigationListener((forward) -> {
-            mDelegate.navigate(forward);
+            mActionDelegate.navigate(forward);
             cancelStopNavigatingRunnable();
             mSideSlideLayout.post(getStopNavigatingRunnable());
         });
@@ -120,9 +116,10 @@ public class NavigationHandler {
             mSideSlideLayout.post(mDetachLayoutRunnable);
         });
 
-        mNavigationSheet = NavigationSheet.isEnabled() ? new NavigationSheetCoordinator(
-                                   mParentView, mBottomSheetController, mSheetDelegate)
-                                                       : NavigationSheet.DUMMY;
+        mNavigationSheet = NavigationSheet.isEnabled()
+                ? NavigationSheet.create(mParentView, mDelegate.getBottomSheetController(),
+                        mDelegate.createSheetDelegate())
+                : NavigationSheet.DUMMY;
     }
 
     /**
@@ -163,7 +160,7 @@ public class NavigationHandler {
         if (mState == GestureState.STARTED) {
             if (shouldTriggerUi(startX, distanceX, distanceY)) {
                 boolean forward = distanceX > 0;
-                if (mDelegate.canNavigate(forward)) {
+                if (mActionDelegate.canNavigate(forward)) {
                     showArrowWidget(forward);
                 } else {
                     // |forward| should be true if we get here, since navigating back
@@ -215,7 +212,7 @@ public class NavigationHandler {
     private boolean shouldShowCloseIndicator(boolean forward) {
         // Some tabs, upon back at the beginning of the history stack, should be just closed
         // than closing the entire app. In such case we do not show the close indicator.
-        return !forward && mDelegate.willBackExitApp();
+        return !forward && mActionDelegate.willBackExitApp();
     }
 
     /**

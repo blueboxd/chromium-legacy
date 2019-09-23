@@ -128,7 +128,6 @@
         <structure type="chrome_scaled_image" name="IDR_FORWARD_H" file="common/browser_forward_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_FORWARD_P" file="common/browser_forward_pressed.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_FULLSCREEN_MENU_BUTTON" file="common/fullscreen_menu_button.png" />
       <if expr="_google_chrome">
         <structure type="chrome_scaled_image" name="IDR_GOOGLE_ICON" file="google_chrome/google_icon.png" />
       </if>

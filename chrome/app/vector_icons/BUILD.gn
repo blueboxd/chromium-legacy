@@ -52,6 +52,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "file_download_shelf.icon",
     "fingerprint.icon",
     "forward_arrow_touch.icon",
+    "fullscreen.icon",
     "generic_stop.icon",
     "globe.icon",
     "hardware_computer.icon",

@@ -891,8 +891,9 @@ void AppMenuModel::CreateZoomMenu() {
                                                   IDS_ZOOM_MINUS2);
   zoom_menu_item_model_->AddGroupItemWithStringId(IDC_ZOOM_PLUS,
                                                   IDS_ZOOM_PLUS2);
-  zoom_menu_item_model_->AddItemWithImage(IDC_FULLSCREEN,
-                                          IDR_FULLSCREEN_MENU_BUTTON);
+  // TODO(https://crbug.com/957391): Remove the former IDR_ parameter here once
+  // the change to remove it from the model (crrev.com/1816118) is in.
+  zoom_menu_item_model_->AddItemWithImage(IDC_FULLSCREEN, -1);
   AddButtonItem(IDC_ZOOM_MENU, zoom_menu_item_model_.get());
 }
 

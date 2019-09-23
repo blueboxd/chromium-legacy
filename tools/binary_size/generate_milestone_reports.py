@@ -22,6 +22,8 @@ Reports can be uploaded automatically with the --sync flag. Otherwise, they can
 be uploaded at a later point.
 """
 
+from __future__ import print_function
+
 import argparse
 import collections
 import contextlib
@@ -307,9 +309,9 @@ def main():
   if args.sync:
     subprocess.check_call(cmd)
   else:
-    print
-    print 'Sync files by running:'
-    print '   ', ' '.join(cmd)
+    print()
+    print('Sync files by running:')
+    print('   ', ' '.join(cmd))
 
 
 if __name__ == '__main__':

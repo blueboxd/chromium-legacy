@@ -29,6 +29,7 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
 
  private:
   bool DoesItemCrossSizeComputeToAuto(const NGBlockNode& child) const;
+  bool IsItemMainSizeDefinite(const NGBlockNode& child) const;
   bool ShouldItemShrinkToFit(const NGBlockNode& child) const;
   bool DoesItemStretch(const NGBlockNode& child) const;
   // This implements the first of the additional scenarios where a flex item
@@ -39,6 +40,8 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   bool IsColumnContainerMainSizeDefinite() const;
   bool IsContainerCrossSizeDefinite() const;
 
+  NGConstraintSpace BuildConstraintSpaceForDeterminingFlexBasis(
+      const NGBlockNode& flex_item) const;
   void ConstructAndAppendFlexItems();
   void GiveLinesAndItemsFinalPositionAndSize();
   // This is same method as FlexItem but we need that logic before FlexItem is

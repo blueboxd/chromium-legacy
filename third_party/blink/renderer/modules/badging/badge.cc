@@ -4,12 +4,14 @@
 
 #include "third_party/blink/renderer/modules/badging/badge.h"
 
+#include "base/memory/scoped_refptr.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/badging/badge_options.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 
@@ -116,10 +118,16 @@ base::Optional<KURL> Badge::ScopeStringToURL(WTF::String& scope,
     return base::nullopt;
   }
 
-  // TODO(mgiuca): Check that URL is same-origin as the execution context. If
-  // not, fail with SecurityError (https://crbug.com/1001404). (This is not a
-  // security bug, since the same-origin check is currently done on the browser
-  // side, but we still want to report the failure as an exception.)
+  // Same-origin check. Note that this is also checked in BadgeManager on the
+  // browser side for security, but it is also checked here to report the error.
+  scoped_refptr<SecurityOrigin> scope_origin =
+      SecurityOrigin::Create(scope_url);
+  if (!execution_context_->GetSecurityOrigin()->IsSameSchemeHostPort(
+          scope_origin.get())) {
+    exception_state.ThrowSecurityError(
+        "Scope URL is not in the current origin");
+    return base::nullopt;
+  }
 
   return base::Optional<KURL>(scope_url);
 }

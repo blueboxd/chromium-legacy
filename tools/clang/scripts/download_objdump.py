@@ -5,6 +5,8 @@
 
 """Script to download llvm-objdump and related utils from google storage."""
 
+from __future__ import print_function
+
 import os
 import re
 import subprocess
@@ -32,9 +34,9 @@ def DownloadAndUnpackLlvmObjDumpPackage(platform):
   try:
     update.DownloadAndUnpack(cds_full_url, update.LLVM_BUILD_DIR)
   except urllib2.URLError:
-    print 'Failed to download prebuilt utils %s' % cds_file
-    print 'Use --force-local-build if you want to build locally.'
-    print 'Exiting.'
+    print('Failed to download prebuilt utils %s' % cds_file)
+    print('Use --force-local-build if you want to build locally.')
+    print('Exiting.')
     sys.exit(1)
 
 

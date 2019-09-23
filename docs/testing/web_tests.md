@@ -130,7 +130,7 @@ out/Default/content_shell.exe --run-web-tests fast/forms/001.html
 but this requires a manual diff against expected results, because the shell
 doesn't do it for you. It also just dumps the text result only (as the dump of
 pixels and audio binary data is not human readable).
-See [Running Web Tests Using the Content Shell](web_tests_in_content_shell.md]
+See [Running Web Tests Using the Content Shell](./web_tests_in_content_shell.md)
 for more details of running `content_shell`.
 
 To see a complete list of arguments supported, run:
@@ -144,7 +144,7 @@ python third_party/blink/tools/run_web_tests.py --help
 matching font metrics and widget metrics. If there's a difference in the render
 tree output, we should see if we can avoid rebaselining by improving our font
 metrics. For additional information on Linux web tests, please see
-[docs/web_tests_linux.md](../web_tests_linux.md).
+[docs/web_tests_linux.md](./web_tests_linux.md).
 ***
 
 *** note

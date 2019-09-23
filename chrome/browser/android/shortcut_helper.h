@@ -104,6 +104,10 @@ class ShortcutHelper {
   // launch.
   static void SetForceWebApkUpdate(const std::string& id);
 
+  // Returns if the Android version supports Adaptive Icon (i.e. API level >=
+  // 26)
+  static bool DoesAndroidSupportMaskableIcons();
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ShortcutHelper);
 };

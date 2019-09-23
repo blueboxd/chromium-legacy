@@ -77,8 +77,7 @@ public class HistoryNavigationDelegateFactory {
 
             @Override
             public Supplier<BottomSheetController> getBottomSheetController() {
-                // TODO(jinsukkim): Consider getting the controller not via Tab. Maybe move this
-                //         create method to TabDelegateFactory to avoid this.
+                // TODO(jinsukkim): Avoid getting activity from tab.
                 return tab.getActivity()::getBottomSheetController;
             }
 

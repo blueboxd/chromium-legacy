@@ -10,6 +10,8 @@ Example: build clangd and clangd-indexer
        clangd-indexer
 """
 
+from __future__ import print_function
+
 import argparse
 import errno
 import os
@@ -84,10 +86,10 @@ def main():
   args = parser.parse_args()
 
   if args.fetch:
-    print 'Fetching LLVM source'
+    print('Fetching LLVM source')
     FetchLLVM(GetCheckoutDir(args.OUT_DIR), args.revision)
 
-  print 'Building targets: %s' % ', '.join(args.TARGETS)
+  print('Building targets: %s' % ', '.join(args.TARGETS))
   BuildTargets(GetBuildDir(args.OUT_DIR), args.TARGETS)
 
 

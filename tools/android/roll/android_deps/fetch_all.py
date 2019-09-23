@@ -29,6 +29,8 @@ state if you're not satisfied with the results of --update-all. Note that
 this preserves local modifications to your build.gradle file.
 """
 
+from __future__ import print_function
+
 import argparse
 import collections
 import contextlib
@@ -292,8 +294,8 @@ def PrintPackageList(packages, list_name):
     packages: list of package names.
     list_name: a simple word describing the package list (e.g. 'new')
   """
-  print '  %d %s packages:' % (len(packages), list_name)
-  print '\n'.join(['    - %s' % p for p in packages])
+  print('  %d %s packages:' % (len(packages), list_name))
+  print('\n'.join(['    - %s' % p for p in packages]))
 
 
 def GenerateCipdUploadCommand(cipd_pkg_info):
@@ -378,19 +380,19 @@ def main():
 
   # Handle --reset-workspace here.
   if args.reset_workspace:
-    print '# Removing .cipd directory.'
+    print('# Removing .cipd directory.')
     cipd_dir = os.path.join(chromium_src, '..', '.cipd')
     if os.path.isdir(cipd_dir):
       RunCommand(['rm', '-rf', cipd_dir])
 
-    print '# Saving build.gradle content'
+    print('# Saving build.gradle content')
     build_gradle_path = os.path.join(chromium_src, args.build_gradle)
     build_gradle = ReadFile(build_gradle_path)
 
-    print '# Resetting and re-syncing workspace. (may take a while).'
+    print('# Resetting and re-syncing workspace. (may take a while).')
     RunCommand(['gclient', 'sync', '--reset', '--nohooks', '-r', 'src@HEAD'])
 
-    print '# Restoring build.gradle.'
+    print('# Restoring build.gradle.')
     WriteFile(build_gradle_path, build_gradle)
     return
 
@@ -414,7 +416,7 @@ def main():
     raise Exception('Missing required python script: ' + aar_py)
 
   with BuildDir(args.build_dir) as build_dir:
-    print '# Setup build directory.'
+    print('# Setup build directory.')
     logging.debug('Using build directory: ' + build_dir)
     for git_file in _UPDATED_GIT_FILES:
       git_data = ReadGitHeadFile(abs_git_dir, git_file)
@@ -424,7 +426,7 @@ def main():
       CopyFileOrDirectory(
           os.path.join(chromium_src, path), os.path.join(build_dir, dest))
 
-    print '# Use Gradle to download packages and edit/create relevant files.'
+    print('# Use Gradle to download packages and edit/create relevant files.')
     # This gradle command generates the new DEPS and BUILD.gn files, it can also
     # handle special cases. Edit BuildConfigGenerator.groovy#addSpecialTreatment
     # for such cases.
@@ -442,14 +444,14 @@ def main():
 
     libs_dir = os.path.join(build_dir, args.git_dir, _ANDROID_DEPS_LIBS_SUBDIR)
 
-    print '# Reformat %s.' % _ANDROID_DEPS_BUILD_GN
+    print('# Reformat %s.' % _ANDROID_DEPS_BUILD_GN)
     gn_args = [
         'gn', 'format',
         os.path.join(build_dir, args.git_dir, _ANDROID_DEPS_BUILD_GN)
     ]
     RunCommand(gn_args)
 
-    print '# Generate Android .aar info and third-party license files.'
+    print('# Generate Android .aar info and third-party license files.')
     aar_files = FindInDirectory(libs_dir, '*.aar')
     for aar_file in aar_files:
       aar_dirname = os.path.dirname(aar_file)
@@ -467,7 +469,7 @@ def main():
               f.write(z.read(_THIRD_PARTY_LICENSE_FILENAME))
 
 
-    print '# Compare CIPD packages.'
+    print('# Compare CIPD packages.')
     existing_packages = ParseDeps(abs_git_dir, _ANDROID_DEPS_LIBS_SUBDIR)
     build_packages = ParseDeps(
         build_dir, os.path.join(args.git_dir, _ANDROID_DEPS_LIBS_SUBDIR))
@@ -505,17 +507,17 @@ def main():
 
     if not args.update_all:
       if not (deleted_packages or new_packages or updated_packages):
-        print 'No changes detected. All good.'
+        print('No changes detected. All good.')
       else:
-        print 'Changes detected:'
+        print('Changes detected:')
         if new_packages:
           PrintPackageList(new_packages, 'new')
         if updated_packages:
           PrintPackageList(updated_packages, 'updated')
         if deleted_packages:
           PrintPackageList(deleted_packages, 'deleted')
-        print ''
-        print 'Run with --update-all to update your checkout!'
+        print('')
+        print('Run with --update-all to update your checkout!')
       return
 
     # Copy updated DEPS and BUILD.gn to build directory.
@@ -538,11 +540,11 @@ def main():
       CopyFileOrDirectory(src_pkg_path, dst_pkg_path)
 
     if cipd_packages_to_upload:
-      print 'Run the following to upload new and updated CIPD packages:'
-      print 'Note: Duplicate instances with the same tag will break the build.'
-      print '------------------------ cut here -----------------------------'
-      print '\n'.join(cipd_commands)
-      print '------------------------ cut here -----------------------------'
+      print('Run the following to upload new and updated CIPD packages:')
+      print('Note: Duplicate instances with the same tag will break the build.')
+      print('------------------------ cut here -----------------------------')
+      print('\n'.join(cipd_commands))
+      print('------------------------ cut here -----------------------------')
 
 
 if __name__ == "__main__":

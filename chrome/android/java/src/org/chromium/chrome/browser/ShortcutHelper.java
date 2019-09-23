@@ -181,9 +181,9 @@ public class ShortcutHelper {
      * Check the running Android version supports adaptive icon (i.e. API level >= 26)
      */
     public static boolean doesAndroidSupportMaskableIcons() {
-        // TODO(crbug.com/977173): re-enable maskable icon support once server support
-        // is ready.
-        return false;
+        return ChromeFeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.WEBAPK_ADAPTIVE_ICON)
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
     }
 
     /**

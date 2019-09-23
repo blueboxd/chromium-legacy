@@ -1044,7 +1044,6 @@ if (!is_android) {
       "../browser/policy/policy_test_utils.cc",
       "../browser/policy/policy_test_utils.h",
       "../browser/policy/site_isolation_policy_browsertest.cc",
-      "../browser/portal/portal_browsertest.cc",
       "../browser/predictors/loading_predictor_browsertest.cc",
       "../browser/prefetch/prefetch_browsertest.cc",
       "../browser/prefs/pref_functional_browsertest.cc",

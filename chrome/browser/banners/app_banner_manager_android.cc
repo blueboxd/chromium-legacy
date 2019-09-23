@@ -161,6 +161,8 @@ AppBannerManagerAndroid::ParamsToPerformInstallableWebAppCheck() {
   InstallableParams params =
       AppBannerManager::ParamsToPerformInstallableWebAppCheck();
   params.valid_badge_icon = can_install_webapk_;
+  params.prefer_maskable_icon =
+      ShortcutHelper::DoesAndroidSupportMaskableIcons();
 
   return params;
 }

@@ -8,6 +8,8 @@
 For a list of command-line options, call this script with '--help'.
 """
 
+from __future__ import print_function
+
 import argparse
 import errno
 import glob
@@ -42,7 +44,7 @@ class ResultsCollector(object):
     }
 
     # Legacy printing, previously used for parsing the text logs.
-    print 'RESULT %s: %s= %s %s' % (name, identifier, value, units)
+    print('RESULT %s: %s= %s %s' % (name, identifier, value, units))
 
 
 def get_size(filename):
@@ -72,7 +74,7 @@ def run_process(result, command):
   p = subprocess.Popen(command, stdout=subprocess.PIPE)
   stdout = p.communicate()[0]
   if p.returncode != 0:
-    print 'ERROR from command "%s": %d' % (' '.join(command), p.returncode)
+    print('ERROR from command "%s": %d' % (' '.join(command), p.returncode))
     if result == 0:
       result = p.returncode
   return result, stdout

@@ -3286,8 +3286,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 
 // This test verifies that MouseEnter and MouseLeave events fire correctly
 // when the mouse cursor moves between processes.
+// Flaky (timeout): https://crbug.com/1006635.
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       CrossProcessMouseEnterAndLeaveTest) {
+                       DISABLED_CrossProcessMouseEnterAndLeaveTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b,c(d))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

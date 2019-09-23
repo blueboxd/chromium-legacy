@@ -23,6 +23,8 @@ The same, but checks the changes only.
        out/Release chrome
 """
 
+from __future__ import print_function
+
 import argparse
 import os
 import subprocess
@@ -214,9 +216,9 @@ def main():
   # Run the steps in sequence.
   for i, (msg, step_func) in enumerate(steps):
     # Print progress message
-    print '-- %s %s' % (script_name, '-' * (80 - len(script_name) - 4))
-    print '-- [%d/%d] %s' % (i + 1, len(steps), msg)
-    print 80 * '-'
+    print('-- %s %s' % (script_name, '-' * (80 - len(script_name) - 4)))
+    print('-- [%d/%d] %s' % (i + 1, len(steps), msg))
+    print(80 * '-')
 
     step_func()
 

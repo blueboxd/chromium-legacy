@@ -208,8 +208,7 @@ class MockMojoProxyResolver : public proxy_resolver::mojom::ProxyResolver {
 
   base::Closure quit_closure_;
 
-  std::vector<
-      std::unique_ptr<proxy_resolver::mojom::ProxyResolverRequestClientPtr>>
+  std::vector<mojo::Remote<proxy_resolver::mojom::ProxyResolverRequestClient>>
       blocked_clients_;
   mojo::Binding<proxy_resolver::mojom::ProxyResolver> binding_;
 };
@@ -288,10 +287,7 @@ void MockMojoProxyResolver::GetProxyForUrl(
       client->ResolveDns(url.host(),
                          net::ProxyResolveDnsOperation::DNS_RESOLVE_EX,
                          std::move(dns_client));
-      blocked_clients_.push_back(
-          std::make_unique<
-              proxy_resolver::mojom::ProxyResolverRequestClientPtr>(
-              client.Unbind()));
+      blocked_clients_.push_back(std::move(client));
       break;
     }
   }
@@ -371,8 +367,8 @@ class MockMojoProxyResolverFactory
 
   base::Closure quit_closure_;
 
-  std::vector<std::unique_ptr<
-      proxy_resolver::mojom::ProxyResolverFactoryRequestClientPtr>>
+  std::vector<
+      mojo::Remote<proxy_resolver::mojom::ProxyResolverFactoryRequestClient>>
       blocked_clients_;
   std::vector<std::unique_ptr<
       mojo::InterfaceRequest<proxy_resolver::mojom::ProxyResolver>>>
@@ -414,7 +410,7 @@ void MockMojoProxyResolverFactory::ClearBlockedClients() {
 void MockMojoProxyResolverFactory::RespondToBlockedClientsWithResult(
     net::Error error) {
   for (const auto& client : blocked_clients_) {
-    (*client)->ReportResult(error);
+    client->ReportResult(error);
   }
 }
 
@@ -450,10 +446,7 @@ void MockMojoProxyResolverFactory::CreateResolver(
     }
     case CreateProxyResolverAction::DROP_RESOLVER: {
       // Save |client| so its pipe isn't closed.
-      blocked_clients_.push_back(
-          std::make_unique<
-              proxy_resolver::mojom::ProxyResolverFactoryRequestClientPtr>(
-              client.Unbind()));
+      blocked_clients_.push_back(std::move(client));
       break;
     }
     case CreateProxyResolverAction::DROP_BOTH: {
@@ -474,10 +467,7 @@ void MockMojoProxyResolverFactory::CreateResolver(
       client->ResolveDns(pac_script,
                          net::ProxyResolveDnsOperation::DNS_RESOLVE_EX,
                          std::move(dns_client));
-      blocked_clients_.push_back(
-          std::make_unique<
-              proxy_resolver::mojom::ProxyResolverFactoryRequestClientPtr>(
-              client.Unbind()));
+      blocked_clients_.push_back(std::move(client));
       break;
     }
   }

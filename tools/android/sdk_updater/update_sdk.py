@@ -33,6 +33,8 @@ r"""This script downloads / packages & uploads Android SDK packages.
    changes, please prepare to upload a CL that updates the SDK version.
 """
 
+from __future__ import print_function
+
 import argparse
 import os
 import re
@@ -96,7 +98,7 @@ def _DownloadSdk(arguments):
   for pkg in arguments.package:
     # If package is not a sdk-style path, try to match a default path to it.
     if pkg in _DEFAULT_PACKAGES_DICT:
-      print 'Coercing %s to %s' % (pkg, _DEFAULT_PACKAGES_DICT[pkg])
+      print('Coercing %s to %s' % (pkg, _DEFAULT_PACKAGES_DICT[pkg]))
       pkg = _DEFAULT_PACKAGES_DICT[pkg]
 
     download_sdk_cmd = [

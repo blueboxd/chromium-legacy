@@ -232,9 +232,7 @@ public class AddToHomescreenManagerTest {
                 MANIFEST_TEST_PAGE_TITLE);
         addShortcutToTab(mTab, "", true);
 
-        // TODO(crbug.com/977173): re-enable maskable icon support once server support
-        // is ready.
-        Assert.assertFalse(mShortcutHelperDelegate.mRequestedShortcutAdaptable);
+        Assert.assertTrue(mShortcutHelperDelegate.mRequestedShortcutAdaptable);
     }
 
     @Test

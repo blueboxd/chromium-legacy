@@ -19,10 +19,13 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.blink_public.platform.WebDisplayMode;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.webapps.WebappTestPage;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ScreenOrientationValues;
@@ -230,7 +233,20 @@ public class WebApkUpdateManagerTest {
     @Test
     @MediumTest
     @Feature({"WebApk"})
-    public void testNewMaskableIconShouldUpdate() throws Exception {
+    @Features.EnableFeatures(ChromeFeatureList.WEBAPK_ADAPTIVE_ICON)
+    public void testNewMaskableIconShouldUpdateWhenFeatureEnabled() throws Exception {
+        testNewMaskableIconShouldUpdate();
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"WebApk"})
+    @Features.DisableFeatures(ChromeFeatureList.WEBAPK_ADAPTIVE_ICON)
+    public void testNewMaskableIconShouldUpdateWhenFeatureDisabled() throws Exception {
+        testNewMaskableIconShouldUpdate();
+    }
+
+    private void testNewMaskableIconShouldUpdate() throws Exception {
         CreationData creationData = defaultCreationData();
         creationData.startUrl = mTestServerRule.getServer().getURL(
                 "/chrome/test/data/banners/manifest_test_page.html");
@@ -239,8 +255,7 @@ public class WebApkUpdateManagerTest {
         WebappTestPage.navigateToServiceWorkerPageWithManifest(
                 mTestServerRule.getServer(), mTab, WEBAPK_MANIFEST_URL);
 
-        // TODO(crbug.com/977173): change to assertTrue once server support for adaptive icon is
-        // ready and we start to diff isPrimaryIconMaskable when checking for updates.
-        Assert.assertFalse(checkUpdateNeeded(creationData));
+        Assert.assertEquals(
+                ShortcutHelper.doesAndroidSupportMaskableIcons(), checkUpdateNeeded(creationData));
     }
 }

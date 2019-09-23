@@ -190,6 +190,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kUsageStatsFeature,
     &kVideoPersistence,
     &kVrBrowsingFeedback,
+    &kWebApkAdaptiveIcon,
     &kOfferWipeDataOnSignout,
     &payments::features::kAlwaysAllowJustInTimePaymentApp,
     &payments::features::kPaymentRequestSkipToGPay,
@@ -586,6 +587,9 @@ const base::Feature kVideoPersistence{"VideoPersistence",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kVrBrowsingFeedback{"VrBrowsingFeedback",
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kWebApkAdaptiveIcon{"WebApkAdaptiveIcon",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kOfferWipeDataOnSignout{"OfferWipeDataOnSignout",

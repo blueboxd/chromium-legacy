@@ -45,16 +45,11 @@ GURL GetShortcutUrl(content::WebContents* web_contents) {
       web_contents->GetVisibleURL());
 }
 
-bool DoesAndroidSupportMaskableIconsForHomescreen() {
-  // TODO(crbug.com/977173): re-enable maskable icon support once server support
-  // is ready.
-  return false;
-}
-
 InstallableParams ParamsToPerformManifestAndIconFetch() {
   InstallableParams params;
   params.valid_primary_icon = true;
-  params.prefer_maskable_icon = DoesAndroidSupportMaskableIconsForHomescreen();
+  params.prefer_maskable_icon =
+      ShortcutHelper::DoesAndroidSupportMaskableIcons();
   params.valid_badge_icon = true;
   params.wait_for_worker = true;
   return params;
@@ -66,7 +61,8 @@ InstallableParams ParamsToPerformInstallableCheck() {
   params.valid_manifest = true;
   params.has_worker = true;
   params.valid_primary_icon = true;
-  params.prefer_maskable_icon = DoesAndroidSupportMaskableIconsForHomescreen();
+  params.prefer_maskable_icon =
+      ShortcutHelper::DoesAndroidSupportMaskableIcons();
   params.wait_for_worker = true;
   return params;
 }

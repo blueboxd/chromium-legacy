@@ -41,11 +41,11 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
 
     // Amount of time to hold the finger still to trigger navigation bottom sheet.
     // with a long swipe. This ensures fling gestures from edge won't invoke the  sheet.
-    private final static int LONG_SWIPE_HOLD_DELAY_MS = 50;
+    private static final int LONG_SWIPE_HOLD_DELAY_MS = 50;
 
     // Amount of time to hold the finger still to trigger navigation bottom sheet
     // with a short swipe.
-    private final static int SHORT_SWIPE_HOLD_DELAY_MS = 400;
+    private static final int SHORT_SWIPE_HOLD_DELAY_MS = 400;
 
     // Amount of distance to trigger navigation sheet with a long swipe.
     // Actual amount is capped so it is at most half the screen width.
@@ -104,6 +104,10 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
     // Metrics. True if sheet has ever been triggered (in peeked state) for an edge swipe.
     private boolean mSheetTriggered;
 
+    // Set to {@code true} for each trigger when the sheet should fully expand with
+    // no peek/half state.
+    private boolean mFullyExpand;
+
     /**
      * Construct a new NavigationSheet.
      */
@@ -133,7 +137,7 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
         ListView listview = (ListView) mContentView.findViewById(R.id.navigation_entries);
         listview.setAdapter(mModelAdapter);
         mOpenSheetRunnable = () -> {
-            if (isHidden()) openSheet();
+            if (isHidden()) openSheet(false, true);
         };
         mLongSwipePeekThreshold = Math.min(
                 context.getResources().getDisplayMetrics().density * LONG_SWIPE_PEEK_THRESHOLD_DP,
@@ -149,14 +153,15 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
     }
 
     // Transition to either peeked or expanded state.
-    private void openSheet() {
+    private void openSheet(boolean fullyExpand, boolean animate) {
         NavigationHistory history = mDelegate.getHistory(mForward);
         mMediator.populateEntries(history);
         mContentView.requestListViewLayout();
         mBottomSheetController.get().requestShowContent(this, true);
         mBottomSheetController.get().getBottomSheet().addObserver(mSheetObserver);
         mSheetTriggered = true;
-        if (history.getEntryCount() <= SKIP_PEEK_COUNT) expandSheet();
+        mFullyExpand = fullyExpand;
+        if (fullyExpand || history.getEntryCount() <= SKIP_PEEK_COUNT) expandSheet();
     }
 
     private void expandSheet() {
@@ -172,6 +177,12 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
         mForward = forward;
         mShowCloseIndicator = showCloseIndicator;
         mSheetTriggered = false;
+    }
+
+    @Override
+    public void startAndExpand(boolean forward, boolean animate) {
+        start(forward, /* showCloseIndicator= */ false);
+        openSheet(/* fullyExpand= */ true, animate);
     }
 
     @Override
@@ -292,7 +303,8 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
 
     @Override
     public float getCustomHalfRatio() {
-        return getCappedHeightRatio(mParentView.getHeight() / 2 + mItemHeight / 2);
+        return mFullyExpand ? getCustomFullRatio()
+                            : getCappedHeightRatio(mParentView.getHeight() / 2 + mItemHeight / 2);
     }
 
     @Override

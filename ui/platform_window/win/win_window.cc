@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/strings/string16.h"
+#include "ui/base/win/shell.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/win/msg_util.h"
@@ -149,6 +150,16 @@ gfx::Rect WinWindow::GetRestoredBoundsInPixels() const {
   return gfx::Rect();
 }
 
+bool WinWindow::ShouldWindowContentsBeTransparent() const {
+  // The window contents need to be transparent when the titlebar area is drawn
+  // by the DWM rather than Chrome, so that area can show through.  This
+  // function does not describe the transparency of the whole window appearance,
+  // but merely of the content Chrome draws, so even when the system titlebars
+  // appear opaque (Win 8+), the content above them needs to be transparent, or
+  // they'll be covered by a black (undrawn) region.
+  return ui::win::IsAeroGlassEnabled() && !IsFullscreen();
+}
+
 void WinWindow::SetZOrderLevel(ZOrderLevel order) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
@@ -164,6 +175,10 @@ void WinWindow::StackAbove(gfx::AcceleratedWidget widget) {
 
 void WinWindow::StackAtTop() {
   NOTIMPLEMENTED_LOG_ONCE();
+}
+
+bool WinWindow::IsFullscreen() const {
+  return GetPlatformWindowState() == PlatformWindowState::kFullScreen;
 }
 
 LRESULT WinWindow::OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {

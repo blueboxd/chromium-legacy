@@ -78,13 +78,16 @@ void TranslateVideoDeviceId(
                  std::move(callback_on_io_thread));
 }
 
-void TriggerCameraIntent(content::BrowserContext* context,
-                         uint32_t intent_id,
-                         bool is_success,
-                         const std::vector<uint8_t>& captured_data) {
+void HandleCameraResult(
+    content::BrowserContext* context,
+    uint32_t intent_id,
+    arc::mojom::CameraIntentAction action,
+    const std::vector<uint8_t>& data,
+    cros::mojom::CameraAppHelper::HandleCameraResultCallback callback) {
   auto* intent_helper =
       arc::ArcIntentHelperBridge::GetForBrowserContext(context);
-  intent_helper->OnCameraIntentHandled(intent_id, is_success, captured_data);
+  intent_helper->HandleCameraResult(intent_id, action, data,
+                                    std::move(callback));
 }
 
 // Connects to CameraAppDeviceProvider which could be used to get
@@ -117,11 +120,11 @@ void ConnectToCameraAppDeviceProvider(
 // Connects to CameraAppHelper that could handle camera intents.
 void ConnectToCameraAppHelper(cros::mojom::CameraAppHelperRequest request,
                               content::RenderFrameHost* source) {
-  auto intent_callback = base::BindRepeating(
-      &TriggerCameraIntent, source->GetProcess()->GetBrowserContext());
+  auto handle_result_callback = base::BindRepeating(
+      &HandleCameraResult, source->GetProcess()->GetBrowserContext());
   auto camera_app_helper =
       std::make_unique<chromeos_camera::CameraAppHelperImpl>(
-          std::move(intent_callback));
+          std::move(handle_result_callback));
   mojo::MakeStrongBinding(std::move(camera_app_helper), std::move(request));
 }
 #endif

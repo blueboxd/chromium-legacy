@@ -91,8 +91,7 @@ class UserCloudPolicyManagerTest
   DISALLOW_COPY_AND_ASSIGN(UserCloudPolicyManagerTest);
 };
 
-// Flaky: crbug.com/1005697, crbug.com/1005450
-IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest, DISABLED_StartSession) {
+IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest, StartSession) {
   // User hasn't signed in yet, so shouldn't know if the user requires policy.
   EXPECT_EQ(user_manager::known_user::ProfileRequiresPolicy::kUnknown,
             user_manager::known_user::GetProfileRequiresPolicy(
@@ -149,9 +148,7 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest, DISABLED_StartSession) {
           arc::prefs::kArcEnabled));
 }
 
-// Flaky: crbug.com/1005697, crbug.com/1005452
-IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest,
-                       DISABLED_ErrorLoadingPolicy) {
+IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest, ErrorLoadingPolicy) {
   logged_in_user_mixin_.GetLocalPolicyTestServerMixin()
       ->SetExpectedPolicyFetchError(500);
 
@@ -167,9 +164,8 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest,
                 logged_in_user_mixin_.GetAccountId()));
 }
 
-// Flaky: crbug.com/1005697, crbug.com/1005455
 IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest,
-                       DISABLED_ErrorLoadingPolicyForUnmanagedUser) {
+                       ErrorLoadingPolicyForUnmanagedUser) {
   // Mark user as not needing policy - errors loading policy should be
   // ignored (unlike previous ErrorLoadingPolicy test).
   user_manager::known_user::SetProfileRequiresPolicy(
@@ -193,9 +189,8 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest,
                 logged_in_user_mixin_.GetAccountId()));
 }
 
-// Flaky: crbug.com/1005697, crbug.com/1005451
 IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest,
-                       DISABLED_NoPolicyForNonEnterpriseUser) {
+                       NoPolicyForNonEnterpriseUser) {
   // Recognize example.com as non-enterprise account. We don't use any
   // available public domain such as gmail.com in order to prevent possible
   // leak of verification keys/signatures.
@@ -225,9 +220,7 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest,
 
 using UserCloudPolicyManagerChildTest = UserCloudPolicyManagerTest;
 
-// Flaky: crbug.com/1005697, crbug.com/1005454
-IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerChildTest,
-                       DISABLED_PolicyForChildUser) {
+IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerChildTest, PolicyForChildUser) {
   policy::BrowserPolicyConnector::SetNonEnterpriseDomainForTesting(
       "example.com");
   EXPECT_TRUE(policy::BrowserPolicyConnector::IsNonEnterpriseUser(
@@ -263,9 +256,8 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerChildTest,
           arc::prefs::kArcEnabled));
 }
 
-// Flaky: crbug.com/1005697, crbug.com/1005453
 IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerChildTest,
-                       DISABLED_PolicyForChildUserMissing) {
+                       PolicyForChildUserMissing) {
   policy::BrowserPolicyConnector::SetNonEnterpriseDomainForTesting(
       "example.com");
   EXPECT_TRUE(policy::BrowserPolicyConnector::IsNonEnterpriseUser(

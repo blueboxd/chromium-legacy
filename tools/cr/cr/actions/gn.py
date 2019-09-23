@@ -4,6 +4,8 @@
 
 """A module to add gn support to cr."""
 
+from __future__ import print_function
+
 import cr
 import os
 import re
@@ -44,11 +46,11 @@ class GnPrepareOut(cr.PrepareOut):
 
     cr.context['GN_ARGS'] = gn_args.strip()
     if cr.context.verbose >= 1:
-      print cr.context.Substitute('GN_ARGS = {GN_ARGS}')
+      print(cr.context.Substitute('GN_ARGS = {GN_ARGS}'))
 
   def Prepare(self):
     if cr.context.verbose >= 1:
-      print cr.context.Substitute('Invoking gn with {GN_ARGS}')
+      print(cr.context.Substitute('Invoking gn with {GN_ARGS}'))
 
     out_path = os.path.join(cr.context['CR_SRC'], cr.context['CR_OUT_FULL'])
     args_file = os.path.join(out_path, 'args.gn')

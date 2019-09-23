@@ -156,9 +156,6 @@ void DesktopWindowTreeHostWin::OnNativeWidgetCreated(
   should_animate_window_close_ =
       content_window()->type() != aura::client::WINDOW_TYPE_NORMAL &&
       !wm::WindowAnimationsDisabled(content_window());
-
-  // TODO this is not invoked *after* Init(), but should be ok.
-  SetWindowTransparency();
 }
 
 void DesktopWindowTreeHostWin::OnActiveWindowChanged(bool active) {}
@@ -439,7 +436,6 @@ bool DesktopWindowTreeHostWin::ShouldWindowContentsBeTransparent() const {
 
 void DesktopWindowTreeHostWin::FrameTypeChanged() {
   message_handler_->FrameTypeChanged();
-  SetWindowTransparency();
 }
 
 void DesktopWindowTreeHostWin::SetFullscreen(bool fullscreen) {
@@ -452,7 +448,7 @@ void DesktopWindowTreeHostWin::SetFullscreen(bool fullscreen) {
       compositor()->SetVisible(true);
     content_window()->Show();
   }
-  SetWindowTransparency();
+  desktop_native_widget_aura_->UpdateWindowTransparency();
 }
 
 bool DesktopWindowTreeHostWin::IsFullscreen() const {
@@ -885,7 +881,7 @@ void DesktopWindowTreeHostWin::HandleClientSizeChanged(
 
 void DesktopWindowTreeHostWin::HandleFrameChanged() {
   CheckForMonitorChange();
-  SetWindowTransparency();
+  desktop_native_widget_aura_->UpdateWindowTransparency();
   // Replace the frame and layout the contents.
   if (GetWidget()->non_client_view())
     GetWidget()->non_client_view()->UpdateFrame();
@@ -1060,14 +1056,6 @@ const Widget* DesktopWindowTreeHostWin::GetWidget() const {
 
 HWND DesktopWindowTreeHostWin::GetHWND() const {
   return message_handler_->hwnd();
-}
-
-void DesktopWindowTreeHostWin::SetWindowTransparency() {
-  bool transparent = ShouldWindowContentsBeTransparent();
-  compositor()->SetBackgroundColor(transparent ? SK_ColorTRANSPARENT
-                                               : SK_ColorWHITE);
-  window()->SetTransparent(transparent);
-  content_window()->SetTransparent(transparent);
 }
 
 bool DesktopWindowTreeHostWin::IsModalWindowActive() const {

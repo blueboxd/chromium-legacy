@@ -14,11 +14,12 @@ void MockVideoSource::CreatePushSubscription(
     mojo::PendingRemote<video_capture::mojom::Receiver> subscriber,
     const media::VideoCaptureParams& requested_settings,
     bool force_reopen_with_new_settings,
-    video_capture::mojom::PushVideoStreamSubscriptionRequest subscription,
+    mojo::PendingReceiver<video_capture::mojom::PushVideoStreamSubscription>
+        subscription,
     CreatePushSubscriptionCallback callback) {
   DoCreatePushSubscription(std::move(subscriber), requested_settings,
-                           force_reopen_with_new_settings, subscription,
-                           callback);
+                           force_reopen_with_new_settings,
+                           std::move(subscription), callback);
 }
 
 }  // namespace video_capture

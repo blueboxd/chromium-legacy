@@ -8,16 +8,18 @@
 
 namespace chromeos_camera {
 
-CameraAppHelperImpl::CameraAppHelperImpl(IntentCallback intent_callback)
-    : intent_callback_(std::move(intent_callback)) {}
+CameraAppHelperImpl::CameraAppHelperImpl(
+    CameraResultCallback camera_result_callback)
+    : camera_result_callback_(std::move(camera_result_callback)) {}
 
 CameraAppHelperImpl::~CameraAppHelperImpl() = default;
 
-void CameraAppHelperImpl::OnIntentHandled(
+void CameraAppHelperImpl::HandleCameraResult(
     uint32_t intent_id,
-    bool is_success,
-    const std::vector<uint8_t>& captured_data) {
-  intent_callback_.Run(intent_id, is_success, captured_data);
+    arc::mojom::CameraIntentAction action,
+    const std::vector<uint8_t>& data,
+    HandleCameraResultCallback callback) {
+  camera_result_callback_.Run(intent_id, action, data, std::move(callback));
 }
 
 void CameraAppHelperImpl::IsTabletMode(IsTabletModeCallback callback) {

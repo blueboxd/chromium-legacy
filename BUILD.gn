@@ -896,6 +896,7 @@ if (is_chromeos) {
     testonly = true
     deps = [
       "//chrome",
+      "//chrome/browser/metrics/perf:profile_provider_unittest",
       "//chrome/test/chromedriver",
       "//components/chromeos_camera:jpeg_decode_accelerator_unittest",
       "//media:media_unittests",

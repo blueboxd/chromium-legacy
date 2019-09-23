@@ -140,6 +140,10 @@
 #include "net/reporting/reporting_test_util.h"
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
+#if defined(OS_CHROMEOS)
+#include "services/network/mock_mojo_dhcp_wpad_url_client.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace network {
 
 namespace {
@@ -4451,6 +4455,13 @@ TEST_F(NetworkContextTest, ProxyErrorClientNotifiedOfPacError) {
       mojom::NetworkContextParams::New();
   context_params->proxy_error_client =
       proxy_error_client.CreateInterfacePtrInfo();
+
+#if defined(OS_CHROMEOS)
+  context_params->dhcp_wpad_url_client =
+      network::MockMojoDhcpWpadUrlClient::CreateWithSelfOwnedReceiver(
+          std::string());
+#endif  // defined(OS_CHROMEOS)
+
   // The PAC URL doesn't matter, since the test is configured to use a
   // mock ProxyResolverFactory which doesn't actually evaluate it. It just
   // needs to be a data: URL to ensure the network fetch doesn't fail.

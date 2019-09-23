@@ -24,6 +24,10 @@
 #include "testing/platform_test.h"
 #include "url/gurl.h"
 
+#if defined(OS_CHROMEOS)
+#include "services/network/mock_mojo_dhcp_wpad_url_client.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace content {
 
 namespace {
@@ -73,6 +77,12 @@ TEST_F(URLRequestContextBuilderMojoTest, MojoProxyResolver) {
       proxy_resolver::mojom::ProxyResolverFactoryPtr(
           test_mojo_proxy_resolver_factory_.CreateFactoryRemote()));
 
+#if defined(OS_CHROMEOS)
+  builder_.SetDhcpWpadUrlClient(network::mojom::DhcpWpadUrlClientPtr(
+      network::MockMojoDhcpWpadUrlClient::CreateWithSelfOwnedReceiver(
+          std::string())));
+#endif  // defined(OS_CHROMEOS)
+
   std::unique_ptr<net::URLRequestContext> context(builder_.Build());
   net::TestDelegate delegate;
   std::unique_ptr<net::URLRequest> request(context->CreateRequest(
@@ -104,6 +114,12 @@ TEST_F(URLRequestContextBuilderMojoTest, ShutdownWithHungRequest) {
   builder_.SetMojoProxyResolverFactory(
       proxy_resolver::mojom::ProxyResolverFactoryPtr(
           test_mojo_proxy_resolver_factory_.CreateFactoryRemote()));
+
+#if defined(OS_CHROMEOS)
+  builder_.SetDhcpWpadUrlClient(network::mojom::DhcpWpadUrlClientPtr(
+      network::MockMojoDhcpWpadUrlClient::CreateWithSelfOwnedReceiver(
+          std::string())));
+#endif  // defined(OS_CHROMEOS)
 
   std::unique_ptr<net::URLRequestContext> context(builder_.Build());
   net::TestDelegate delegate;

@@ -67,16 +67,6 @@ cca.views.Camera = function(
   this.options_ =
       new cca.views.camera.Options(infoUpdater, this.restart.bind(this));
 
-  /**
-   * @type {HTMLElement}
-   */
-  this.banner_ = document.querySelector('#banner');
-
-  /**
-   * @type {HTMLButtonElement}
-   */
-  this.bannerLearnMore_ = document.querySelector('#banner-learn-more');
-
   const doSavePhoto = async (result, name) => {
     cca.metrics.log(
         cca.metrics.Type.CAPTURE, this.facingMode_, 0, result.resolution);
@@ -152,14 +142,6 @@ cca.views.Camera = function(
   document.querySelectorAll('#stop-takephoto, #stop-recordvideo')
       .forEach((btn) => btn.addEventListener('click', () => this.endTake_()));
 
-  document.querySelector('#banner-close').addEventListener('click', () => {
-    cca.util.animateCancel(this.banner_);
-  });
-
-  document.querySelector('#banner-learn-more').addEventListener('click', () => {
-    cca.util.openHelp();
-  });
-
   // Monitor the states to stop camera when locked/minimized.
   chrome.idle.onStateChanged.addListener((newState) => {
     this.locked_ = (newState == 'locked');
@@ -188,21 +170,9 @@ cca.views.Camera.prototype = {
  * @override
  */
 cca.views.Camera.prototype.focus = function() {
-  (async () => {
-    const values = await new Promise((resolve) => {
-      cca.proxy.browserProxy.localStorageGet(['isIntroShown'], resolve);
-    });
-    await this.configuring_;
-    if (!values.isIntroShown) {
-      cca.proxy.browserProxy.localStorageSet({isIntroShown: true});
-      cca.util.animateOnce(this.banner_);
-      this.bannerLearnMore_.focus({preventScroll: true});
-    } else {
-      // Avoid focusing invisible shutters.
-      document.querySelectorAll('.shutter')
-          .forEach((btn) => btn.offsetParent && btn.focus());
-    }
-  })();
+  // Avoid focusing invisible shutters.
+  document.querySelectorAll('.shutter')
+      .forEach((btn) => btn.offsetParent && btn.focus());
 };
 
 

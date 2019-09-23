@@ -44,7 +44,7 @@ class ImeObserver : public input_method::InputMethodEngineBase::Observer {
  public:
   ImeObserver(const std::string& extension_id, Profile* profile);
 
-  ~ImeObserver() override {}
+  ~ImeObserver() override = default;
 
   // input_method::InputMethodEngineBase::Observer overrides.
   void OnActivate(const std::string& component_id) override;
@@ -136,7 +136,7 @@ class InputImeKeyEventHandledFunction : public ExtensionFunction {
                              INPUT_IME_KEYEVENTHANDLED)
 
  protected:
-  ~InputImeKeyEventHandledFunction() override {}
+  ~InputImeKeyEventHandledFunction() override = default;
 
   // ExtensionFunction:
   ResponseAction Run() override;
@@ -148,7 +148,7 @@ class InputImeSetCompositionFunction : public ExtensionFunction {
                              INPUT_IME_SETCOMPOSITION)
 
  protected:
-  ~InputImeSetCompositionFunction() override {}
+  ~InputImeSetCompositionFunction() override = default;
 
   // ExtensionFunction:
   ResponseAction Run() override;
@@ -159,7 +159,7 @@ class InputImeCommitTextFunction : public ExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("input.ime.commitText", INPUT_IME_COMMITTEXT)
 
  protected:
-  ~InputImeCommitTextFunction() override {}
+  ~InputImeCommitTextFunction() override = default;
 
   // ExtensionFunction:
   ResponseAction Run() override;
@@ -170,7 +170,7 @@ class InputImeSendKeyEventsFunction : public ExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("input.ime.sendKeyEvents", INPUT_IME_SENDKEYEVENTS)
 
  protected:
-  ~InputImeSendKeyEventsFunction() override {}
+  ~InputImeSendKeyEventsFunction() override = default;
 
   // ExtensionFunction:
   ResponseAction Run() override;

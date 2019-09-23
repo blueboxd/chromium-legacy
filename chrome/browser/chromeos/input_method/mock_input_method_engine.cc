@@ -9,9 +9,9 @@
 
 namespace chromeos {
 
-MockInputMethodEngine::MockInputMethodEngine() {}
+MockInputMethodEngine::MockInputMethodEngine() = default;
 
-MockInputMethodEngine::~MockInputMethodEngine() {}
+MockInputMethodEngine::~MockInputMethodEngine() = default;
 
 void MockInputMethodEngine::FocusIn(
     const IMEEngineHandlerInterface::InputContext& input_context) {}

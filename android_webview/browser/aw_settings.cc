@@ -73,6 +73,7 @@ AwSettings::AwSettings(JNIEnv* env,
       renderer_prefs_initialized_(false),
       javascript_can_open_windows_automatically_(false),
       allow_third_party_cookies_(false),
+      allow_file_access_(false),
       aw_settings_(env, obj) {
   web_contents->SetUserData(kAwSettingsUserDataKey,
                             std::make_unique<AwSettingsUserData>(this));
@@ -150,6 +151,7 @@ void AwSettings::UpdateEverythingLocked(JNIEnv* env,
   UpdateOffscreenPreRasterLocked(env, obj);
   UpdateWillSuppressErrorStateLocked(env, obj);
   UpdateCookiePolicyLocked(env, obj);
+  UpdateAllowFileAccessLocked(env, obj);
 }
 
 void AwSettings::UpdateUserAgentLocked(JNIEnv* env,
@@ -285,6 +287,14 @@ void AwSettings::UpdateOffscreenPreRasterLocked(
     contents->SetOffscreenPreRaster(
         Java_AwSettings_getOffscreenPreRasterLocked(env, obj));
   }
+}
+
+void AwSettings::UpdateAllowFileAccessLocked(JNIEnv* env,
+                                             const JavaParamRef<jobject>& obj) {
+  if (!web_contents())
+    return;
+
+  allow_file_access_ = Java_AwSettings_getAllowFileAccess(env, obj);
 }
 
 void AwSettings::RenderViewHostChanged(content::RenderViewHost* old_host,
@@ -547,13 +557,7 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
 }
 
 bool AwSettings::GetAllowFileAccess() {
-  // TODO(timvolodine): cache this lazily on update, crbug.com/949590
-  JNIEnv* env = base::android::AttachCurrentThread();
-  CHECK(env);
-  ScopedJavaLocalRef<jobject> scoped_obj = aw_settings_.get(env);
-  if (scoped_obj.is_null())
-    return true;
-  return Java_AwSettings_getAllowFileAccess(env, scoped_obj);
+  return allow_file_access_;
 }
 
 static jlong JNI_AwSettings_Init(JNIEnv* env,

@@ -3401,6 +3401,35 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsRequests) {
   browser()->tab_strip_model()->GetActiveWebContents()->Close();
 }
 
+// Test the scenario for 3 consecutive downloads, where each is triggered by
+// creating an iframe with srcdoc to another iframe with src to a downloadable
+// file. Only the 1st download is expected to happen.
+IN_PROC_BROWSER_TEST_F(DownloadTest, MultipleDownloadsFromIframeSrcdoc) {
+  std::unique_ptr<content::DownloadTestObserver> downloads_observer(
+      CreateWaiter(browser(), 1u));
+
+  OnCanDownloadDecidedObserver can_download_observer;
+  g_browser_process->download_request_limiter()
+      ->SetOnCanDownloadDecidedCallbackForTesting(base::BindRepeating(
+          &OnCanDownloadDecidedObserver::OnCanDownloadDecided,
+          base::Unretained(&can_download_observer)));
+
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL(
+      "/downloads/multiple_download_from_iframe_srcdoc.html");
+
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 1);
+
+  // Only the 1st download should succeed. The following should fail.
+  can_download_observer.Wait({true, false, false});
+
+  downloads_observer->WaitForFinished();
+
+  EXPECT_EQ(
+      1u, downloads_observer->NumDownloadsSeenInState(DownloadItem::COMPLETE));
+}
+
 // Test the scenario for 3 consecutive <a download> download attempts that all
 // trigger a x-origin redirect to another download. No download is expected to
 // happen.

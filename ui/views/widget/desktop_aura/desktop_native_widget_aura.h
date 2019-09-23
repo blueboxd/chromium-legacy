@@ -102,6 +102,10 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // Overridden from internal::NativeWidgetPrivate:
   gfx::NativeWindow GetNativeWindow() const override;
 
+  // Configures the appropriate aura::Windows based on the
+  // DesktopWindowTreeHost's transparency.
+  void UpdateWindowTransparency();
+
  protected:
   // Overridden from internal::NativeWidgetPrivate:
   void InitNativeWidget(Widget::InitParams params) override;
@@ -249,10 +253,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
  private:
   friend class RootWindowDestructionObserver;
-
-  // To save a clear on platforms where the window is never transparent, the
-  // window is only set as transparent when the glass frame is in use.
-  void UpdateWindowTransparency();
 
   void RootWindowDestroyed();
 

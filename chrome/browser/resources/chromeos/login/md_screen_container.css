@@ -125,8 +125,8 @@ html:not([adaptive-oobe]) body:not(.oobe-display) #inner-container {
 html[adaptive-oobe] #oobe {
   box-sizing: border-box;
   height: 100%;
-  max-height: 736px;
-  max-width: 864px;
+  max-height: 864px; /* 768 + 48*2 */
+  max-width: 864px; /* 768 + 48*2 */
   padding-bottom: 48px;
   padding-inline-end: 48px;
   padding-inline-start: 48px;

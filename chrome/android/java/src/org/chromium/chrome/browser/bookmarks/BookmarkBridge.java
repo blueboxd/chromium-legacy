@@ -16,9 +16,11 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +38,25 @@ public class BookmarkBridge {
             new ArrayList<DelayedBookmarkCallback>();
     private final ObserverList<BookmarkModelObserver> mObservers =
             new ObserverList<BookmarkModelObserver>();
+
+    /**
+     * @param tab Tab whose current URL is checked against.
+     * @return {@code true} if the current Tab URL has a bookmark associated with it.
+     */
+    public static boolean hasBookmarkIdForTab(Tab tab) {
+        if (tab.isFrozen()) return false;
+        return BookmarkBridgeJni.get().getBookmarkIdForWebContents(tab.getWebContents(), false)
+                != BookmarkId.INVALID_ID;
+    }
+
+    /**
+     * @param tab Tab whose current URL is checked against.
+     * @return ser-editable bookmark ID.
+     */
+    public static long getUserBookmarkIdForTab(Tab tab) {
+        if (tab.isFrozen()) return BookmarkId.INVALID_ID;
+        return BookmarkBridgeJni.get().getBookmarkIdForWebContents(tab.getWebContents(), true);
+    }
 
     /**
      * Interface for callback object for fetching bookmarks and folder hierarchy.
@@ -926,6 +947,7 @@ public class BookmarkBridge {
 
     @NativeMethods
     interface Natives {
+        long getBookmarkIdForWebContents(WebContents webContents, boolean onlyEditable);
         BookmarkItem getBookmarkByID(
                 long nativeBookmarkBridge, BookmarkBridge caller, long id, int type);
         void getPermanentNodeIDs(

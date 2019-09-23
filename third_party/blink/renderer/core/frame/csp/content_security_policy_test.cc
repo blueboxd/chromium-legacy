@@ -1510,12 +1510,12 @@ TEST_F(ContentSecurityPolicyTest, EmptyCSPIsNoOp) {
   EXPECT_TRUE(csp->AllowInline(
       ContentSecurityPolicy::InlineType::kScriptAttribute, element, source,
       String() /* nonce */, context_url, ordinal_number));
-  EXPECT_TRUE(csp->AllowEval(nullptr, SecurityViolationReportingPolicy::kReport,
+  EXPECT_TRUE(csp->AllowEval(SecurityViolationReportingPolicy::kReport,
                              ContentSecurityPolicy::kWillNotThrowException,
                              g_empty_string));
-  EXPECT_TRUE(csp->AllowWasmEval(
-      nullptr, SecurityViolationReportingPolicy::kReport,
-      ContentSecurityPolicy::kWillNotThrowException, g_empty_string));
+  EXPECT_TRUE(csp->AllowWasmEval(SecurityViolationReportingPolicy::kReport,
+                                 ContentSecurityPolicy::kWillNotThrowException,
+                                 g_empty_string));
   EXPECT_TRUE(csp->AllowPluginType("application/x-type-1",
                                    "application/x-type-1", example_url));
   EXPECT_TRUE(csp->AllowPluginTypeForDocument(

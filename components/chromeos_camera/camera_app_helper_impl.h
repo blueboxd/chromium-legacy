@@ -13,20 +13,24 @@ namespace chromeos_camera {
 
 class CameraAppHelperImpl : public cros::mojom::CameraAppHelper {
  public:
-  using IntentCallback = base::RepeatingCallback<
-      void(uint32_t, bool, const std::vector<uint8_t>&)>;
+  using CameraResultCallback =
+      base::RepeatingCallback<void(uint32_t,
+                                   arc::mojom::CameraIntentAction,
+                                   const std::vector<uint8_t>&,
+                                   HandleCameraResultCallback)>;
 
-  explicit CameraAppHelperImpl(IntentCallback intent_callback);
+  explicit CameraAppHelperImpl(CameraResultCallback camera_result_callback);
   ~CameraAppHelperImpl() override;
 
   // cros::mojom::CameraAppHelper implementations.
-  void OnIntentHandled(uint32_t intent_id,
-                       bool is_success,
-                       const std::vector<uint8_t>& captured_data) override;
+  void HandleCameraResult(uint32_t intent_id,
+                          arc::mojom::CameraIntentAction action,
+                          const std::vector<uint8_t>& data,
+                          HandleCameraResultCallback callback) override;
   void IsTabletMode(IsTabletModeCallback callback) override;
 
  private:
-  IntentCallback intent_callback_;
+  CameraResultCallback camera_result_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CameraAppHelperImpl);
 };

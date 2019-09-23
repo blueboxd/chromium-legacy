@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
@@ -31,7 +32,7 @@ class MetricProvider {
  public:
   explicit MetricProvider(std::unique_ptr<internal::MetricCollector> collector);
 
-  ~MetricProvider();
+  virtual ~MetricProvider();
 
   void Init();
 
@@ -54,6 +55,12 @@ class MetricProvider {
 
   void OnJankStarted();
   void OnJankStopped();
+
+ protected:
+  // For testing.
+  void set_cache_updated_callback(base::RepeatingClosure callback) {
+    cache_updated_callback_ = std::move(callback);
+  }
 
  private:
   // Callback invoked by the collector on every successful profile capture. It
@@ -78,6 +85,9 @@ class MetricProvider {
   // sequence after all non-delayed tasks posted by the provider to the sequence
   // have executed.
   std::unique_ptr<internal::MetricCollector> metric_collector_;
+
+  // Called when |cached_profile_data_| is populated.
+  base::RepeatingClosure cache_updated_callback_;
 
   base::WeakPtrFactory<MetricProvider> weak_factory_;
 

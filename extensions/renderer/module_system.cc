@@ -28,7 +28,10 @@
 
 namespace extensions {
 
-using namespace v8_helpers;
+using v8_helpers::GetPrivateProperty;
+using v8_helpers::SetPrivateProperty;
+using v8_helpers::ToV8String;
+using v8_helpers::ToV8StringUnsafe;
 
 namespace {
 
@@ -447,7 +450,7 @@ void ModuleSystem::LazyFieldGetterInner(
     return;
   }
 
-  if (!IsTrue(module->Has(context, field))) {
+  if (!v8_helpers::IsTrue(module->Has(context, field))) {
     std::string field_str = *v8::String::Utf8Value(isolate, field);
     Fatal(module_system->context_,
           "Lazy require of " + name + "." + field_str + " did not set the " +
@@ -456,7 +459,7 @@ void ModuleSystem::LazyFieldGetterInner(
   }
 
   v8::Local<v8::Value> new_field;
-  if (!GetProperty(context, module, field, &new_field)) {
+  if (!v8_helpers::GetProperty(context, module, field, &new_field)) {
     module_system->HandleException(try_catch);
     return;
   }
@@ -517,13 +520,13 @@ void ModuleSystem::SetLazyField(v8::Local<v8::Object> object,
   // module.
   loaded_modules_.erase(module_name);
   SetPrivateProperty(context, parameters, kModuleName,
-              ToV8StringUnsafe(GetIsolate(), module_name.c_str()));
+                     ToV8StringUnsafe(GetIsolate(), module_name.c_str()));
   SetPrivateProperty(context, parameters, kModuleField,
-              ToV8StringUnsafe(GetIsolate(), module_field.c_str()));
+                     ToV8StringUnsafe(GetIsolate(), module_field.c_str()));
   auto maybe = object->SetAccessor(
       context, ToV8StringUnsafe(GetIsolate(), field.c_str()), getter, NULL,
       parameters);
-  CHECK(IsTrue(maybe));
+  CHECK(v8_helpers::IsTrue(maybe));
 }
 
 void ModuleSystem::SetNativeLazyField(v8::Local<v8::Object> object,
@@ -665,12 +668,11 @@ v8::Local<v8::String> ModuleSystem::WrapSource(v8::Local<v8::String> source) {
 void ModuleSystem::Private(const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(1, args.Length());
   if (!args[0]->IsObject() || args[0]->IsNull()) {
-    GetIsolate()->ThrowException(
-        v8::Exception::TypeError(ToV8StringUnsafe(GetIsolate(),
-            args[0]->IsUndefined()
-                ? "Method called without a valid receiver (this). "
-                  "Did you forget to call .bind()?"
-                : "Invalid invocation: receiver is not an object!")));
+    GetIsolate()->ThrowException(v8::Exception::TypeError(ToV8StringUnsafe(
+        GetIsolate(), args[0]->IsUndefined()
+                          ? "Method called without a valid receiver (this). "
+                            "Did you forget to call .bind()?"
+                          : "Invalid invocation: receiver is not an object!")));
     return;
   }
   v8::Local<v8::Object> obj = args[0].As<v8::Object>();
@@ -732,7 +734,7 @@ v8::Local<v8::Value> ModuleSystem::LoadModuleWithNativeAPIBridge(
       &SetExportsProperty);
   tmpl->RemovePrototype();
   v8::Local<v8::String> v8_key;
-  if (!v8_helpers::ToV8String(GetIsolate(), "$set", &v8_key)) {
+  if (!ToV8String(GetIsolate(), "$set", &v8_key)) {
     NOTREACHED();
     return v8::Undefined(GetIsolate());
   }
@@ -774,17 +776,17 @@ v8::Local<v8::Value> ModuleSystem::LoadModuleWithNativeAPIBridge(
   // These must match the argument order in WrapSource.
   v8::Local<v8::Value> args[] = {
       // CommonJS.
-      GetPropertyUnsafe(v8_context, natives, "require",
-                        v8::NewStringType::kInternalized),
-      GetPropertyUnsafe(v8_context, natives, "requireNative",
-                        v8::NewStringType::kInternalized),
-      GetPropertyUnsafe(v8_context, natives, "loadScript",
-                        v8::NewStringType::kInternalized),
+      v8_helpers::GetPropertyUnsafe(v8_context, natives, "require",
+                                    v8::NewStringType::kInternalized),
+      v8_helpers::GetPropertyUnsafe(v8_context, natives, "requireNative",
+                                    v8::NewStringType::kInternalized),
+      v8_helpers::GetPropertyUnsafe(v8_context, natives, "loadScript",
+                                    v8::NewStringType::kInternalized),
       exports,
       // Libraries that we magically expose to every module.
       console::AsV8Object(GetIsolate()),
-      GetPropertyUnsafe(v8_context, natives, "privates",
-                        v8::NewStringType::kInternalized),
+      v8_helpers::GetPropertyUnsafe(v8_context, natives, "privates",
+                                    v8::NewStringType::kInternalized),
       api_bridge,        // exposed as apiBridge.
       binding_util,      // exposed as bindingUtil.
       get_internal_api,  // exposed as getInternalApi.
@@ -848,7 +850,8 @@ v8::Local<v8::Function> ModuleSystem::GetModuleFunction(
 
   v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(module);
   v8::Local<v8::Value> value;
-  if (!GetProperty(context()->v8_context(), object, v8_method_name, &value) ||
+  if (!v8_helpers::GetProperty(context()->v8_context(), object, v8_method_name,
+                               &value) ||
       !value->IsFunction()) {
     Fatal(context_, module_name + "." + method_name + " is not a function");
     return v8::Local<v8::Function>();

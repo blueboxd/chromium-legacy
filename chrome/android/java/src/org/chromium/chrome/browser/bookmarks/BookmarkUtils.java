@@ -60,7 +60,7 @@ public class BookmarkUtils {
      */
     public static BookmarkId addOrEditBookmark(long existingBookmarkId, BookmarkModel bookmarkModel,
             Tab tab, SnackbarManager snackbarManager, Activity activity, boolean fromCustomTab) {
-        if (existingBookmarkId != Tab.INVALID_BOOKMARK_ID) {
+        if (existingBookmarkId != BookmarkId.INVALID_ID) {
             BookmarkId bookmarkId = new BookmarkId(existingBookmarkId, BookmarkType.NORMAL);
             startEditActivity(activity, bookmarkId);
             bookmarkModel.destroy();

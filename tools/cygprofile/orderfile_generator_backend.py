@@ -14,6 +14,8 @@ Example usage:
     --target-arch=arm
 """
 
+from __future__ import print_function
+
 import argparse
 import hashlib
 import json
@@ -177,7 +179,7 @@ class StepRecorder(object):
     """
     self.EndStep()
     self._previous_step = (name, time.time())
-    print 'Running step: ', name
+    print('Running step: ', name)
 
   def EndStep(self):
     """Records successful completion of the current step.
@@ -186,7 +188,7 @@ class StepRecorder(object):
     """
     if self._previous_step[0]:
       elapsed = time.time() - self._previous_step[1]
-      print 'Step %s took %f seconds' % (self._previous_step[0], elapsed)
+      print('Step %s took %f seconds' % (self._previous_step[0], elapsed))
       self.timings.append((self._previous_step[0], elapsed))
 
     self._previous_step = ('', 0.0)
@@ -200,9 +202,9 @@ class StepRecorder(object):
     Args:
       message: An optional explanation as to why the step failed.
     """
-    print 'STEP FAILED!!'
+    print('STEP FAILED!!')
     if message:
-      print message
+      print(message)
     self._error_recorded = True
     self.EndStep()
 
@@ -228,7 +230,7 @@ class StepRecorder(object):
     Raises:
       CommandError: An error executing the specified command.
     """
-    print 'Executing %s in %s' % (' '.join(cmd), cwd)
+    print('Executing %s in %s' % (' '.join(cmd), cwd))
     process = subprocess.Popen(cmd, stdout=stdout, cwd=cwd, env=os.environ)
     process.wait()
     if raise_on_error and process.returncode != 0:
@@ -438,8 +440,8 @@ class OrderfileUpdater(object):
       cmd.extend(['-z', extension])
     cmd.append(filename)
     self._step_recorder.RunCommand(cmd)
-    print 'Download: https://sandbox.google.com/storage/%s/%s' % (
-        bucket, _GenerateHash(filename))
+    print('Download: https://sandbox.google.com/storage/%s/%s' %
+          (bucket, _GenerateHash(filename)))
 
   def _GetHashFilePathAndContents(self, filename):
     """Gets the name and content of the hash file created from uploading the
@@ -780,8 +782,8 @@ class OrderfileGenerator(object):
     if not os.path.exists(self._DIRECTORY_FOR_DEBUG_FILES):
       os.makedirs(self._DIRECTORY_FOR_DEBUG_FILES)
     shutil.copy(file_name, self._DIRECTORY_FOR_DEBUG_FILES)
-    print 'File: %s, saved in: %s, sha1sum: %s' % (
-        file_name, self._DIRECTORY_FOR_DEBUG_FILES, file_sha1)
+    print('File: %s, saved in: %s, sha1sum: %s' %
+          (file_name, self._DIRECTORY_FOR_DEBUG_FILES, file_sha1))
 
   def _SaveForDebugging(self, filename):
     """Uploads the file to cloud storage or saves to a temporary location."""
@@ -789,7 +791,7 @@ class OrderfileGenerator(object):
     if not self._options.buildbot:
       self._SaveFileLocally(filename, file_sha1)
     else:
-      print 'Uploading file for debugging: ' + filename
+      print('Uploading file for debugging: ' + filename)
       self._orderfile_updater.UploadToCloudStorage(
           filename, use_debug_location=True)
 
@@ -805,14 +807,14 @@ class OrderfileGenerator(object):
     if not self._options.buildbot:
       self._SaveFileLocally(file_name, file_sha1)
     else:
-      print 'Uploading file for debugging: %s, sha1sum: %s' % (
-          file_name, file_sha1)
+      print('Uploading file for debugging: %s, sha1sum: %s' % (file_name,
+                                                               file_sha1))
       upload_location = '%s/%s' % (
           self._CLOUD_STORAGE_BUCKET_FOR_DEBUG, os.path.basename(file_name))
       self._step_recorder.RunCommand([
           'gsutil.py', 'cp', file_name, 'gs://' + upload_location])
-      print ('Uploaded to: https://sandbox.google.com/storage/' +
-             upload_location)
+      print('Uploaded to: https://sandbox.google.com/storage/' +
+            upload_location)
 
   def _MaybeArchiveOrderfile(self, filename):
     """In buildbot configuration, uploads the generated orderfile to
@@ -1245,7 +1247,7 @@ def CreateOrderfile(options, orderfile_updater_class=None):
     if options.json_file:
       with open(options.json_file, 'w') as f:
         f.write(json_output)
-    print json_output
+    print(json_output)
   return False
 
 

@@ -22,6 +22,8 @@ source_set("webui") {
     "mojo_web_ui_ios_controller.h",
     "ntp_tiles_internals_ui.cc",
     "ntp_tiles_internals_ui.h",
+    "prefs_internals_ui.cc",
+    "prefs_internals_ui.h",
     "suggestions_ui.cc",
     "suggestions_ui.h",
     "terms_ui.h",

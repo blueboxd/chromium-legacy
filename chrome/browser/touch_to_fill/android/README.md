@@ -51,6 +51,18 @@ The public build and run target is `touch_to_fill_junit_tests`. Run them with:
 Although the entire suite should run in seconds, you can filter tests with `-f`.
 
 
+#### javatests/
+
+Contains View and Integration tests. These tests need an emulator which means
+that they run slowly but can test rendered Views. Native Calls should be used
+very sparingly and only on Lollipop and higher to ensure access to all methods
+in the Dex path list.
+The public build and run target is `chrome_public_test_apk`. Run them with:
+
+``` bash
+./out/<OutDirectory>/bin/run_chrome_public_test_apk -f *TouchToFill*
+```
+
 ## Example usage
 
 ``` java

@@ -254,6 +254,10 @@ if (use_system_harfbuzz) {
       # implementation at least for vertical metrics.
       "HB_NO_METRICS",
 
+      # Disable .fon file support, not needed for Chrome, and code behind this
+      # flag produces warnings in Clang. Compare https://crbug.com/1002945.
+      "HB_NO_WIN1256",
+
       # TODO(https://crbug.com/949962): Remove once this is fixed upstream.
       "U_DISABLE_VERSION_SUFFIX=0",
     ]

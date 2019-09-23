@@ -59,3 +59,27 @@ junit_binary("touch_to_fill_junit_tests") {
   srcjar_deps =
       [ "//components/module_installer/android:module_installer_build_config" ]
 }
+
+android_library("test_java") {
+  testonly = true
+
+  java_files = [ "javatests/src/org/chromium/chrome/browser/touch_to_fill/TouchToFillViewTest.java" ]
+
+  deps = [
+    ":public_java",
+    "//base:base_java",
+    "//base:base_java_test_support",
+    "//chrome/android:chrome_java",
+    "//chrome/android:chrome_test_java",
+    "//chrome/android:chrome_test_util_java",
+    "//chrome/browser/touch_to_fill/android/internal:java",
+    "//chrome/test/android:chrome_java_test_support",
+    "//content/public/test/android:content_java_test_support",
+    "//third_party/android_deps:com_android_support_recyclerview_v7_java",
+    "//third_party/hamcrest:hamcrest_java",
+    "//third_party/junit",
+    "//third_party/mockito:mockito_java",
+    "//ui/android:ui_full_java",
+    "//ui/android:ui_utils_java",
+  ]
+}

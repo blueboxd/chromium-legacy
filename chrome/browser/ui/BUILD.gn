@@ -3709,6 +3709,7 @@ jumbo_split_static_library("ui") {
         "views/plugin_vm/plugin_vm_launcher_view.h",
       ]
       deps += [
+        "//chrome/browser/chromeos/crostini:crostini_installer_types_mojom",
         "//chrome/services/app_service/public/cpp:app_update",
         "//chrome/services/app_service/public/cpp:icon_loader",
         "//components/services/app_service/public/cpp:app_file_handling",

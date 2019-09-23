@@ -17,7 +17,7 @@
 
 namespace network {
 class SharedURLLoaderFactory;
-}
+}  // namespace network
 
 namespace chromeos {
 

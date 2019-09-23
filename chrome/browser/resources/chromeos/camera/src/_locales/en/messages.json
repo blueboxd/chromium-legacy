@@ -332,21 +332,5 @@
   "MIGRATE_PICTURES_MSG": {
     "message": "Photos and videos taken with the camera will be moved to the Downloads folder. You can access them in Files.\n\nApps with storage permissions will have access to your photos and videos.",
     "description": "Message shown before moving all photos and videos stored in the Camera App to the Downloads folder."
-  },
-  "BANNER_TITLE": {
-    "message": "A whole new look",
-    "description": "Title of banner shown for introducing new camera App UI."
-  },
-  "BANNER_MSG": {
-    "message": "Your camera now supports new modes and your photos and videos will be available under your Downloads folders.",
-    "description": "Message in the banner shown for introducing new camera App UI."
-  },
-  "BANNER_CLOSE_BUTTON": {
-    "message": "Close",
-    "description": "Label for close introducing new camera App UI banner button."
-  },
-  "BANNER_LEARN_MORE_BUTTON": {
-    "message": "Learn more",
-    "description": "Label for learn more about new camera App UI button."
   }
 }

@@ -49,11 +49,11 @@ const int kDefaultPageSize = 9;
 
 }  // namespace
 
-InputMethodEngine::Candidate::Candidate() {}
+InputMethodEngine::Candidate::Candidate() = default;
 
 InputMethodEngine::Candidate::Candidate(const Candidate& other) = default;
 
-InputMethodEngine::Candidate::~Candidate() {}
+InputMethodEngine::Candidate::~Candidate() = default;
 
 // When the default values are changed, please modify
 // CandidateWindow::CandidateWindowProperty defined in chromeos/ime/ too.
@@ -63,7 +63,8 @@ InputMethodEngine::CandidateWindowProperty::CandidateWindowProperty()
       is_vertical(false),
       show_window_at_composition(false) {}
 
-InputMethodEngine::CandidateWindowProperty::~CandidateWindowProperty() {}
+InputMethodEngine::CandidateWindowProperty::~CandidateWindowProperty() =
+    default;
 
 InputMethodEngine::InputMethodEngine()
     : candidate_window_(new ui::CandidateWindow()),
@@ -71,7 +72,7 @@ InputMethodEngine::InputMethodEngine()
       is_mirroring_(false),
       is_casting_(false) {}
 
-InputMethodEngine::~InputMethodEngine() {}
+InputMethodEngine::~InputMethodEngine() = default;
 
 void InputMethodEngine::Enable(const std::string& component_id) {
   InputMethodEngineBase::Enable(component_id);
@@ -173,18 +174,17 @@ bool InputMethodEngine::SetCandidates(
   candidate_ids_.clear();
   candidate_indexes_.clear();
   candidate_window_->mutable_candidates()->clear();
-  for (std::vector<Candidate>::const_iterator ix = candidates.begin();
-       ix != candidates.end(); ++ix) {
+  for (const auto& candidate : candidates) {
     ui::CandidateWindow::Entry entry;
-    entry.value = base::UTF8ToUTF16(ix->value);
-    entry.label = base::UTF8ToUTF16(ix->label);
-    entry.annotation = base::UTF8ToUTF16(ix->annotation);
-    entry.description_title = base::UTF8ToUTF16(ix->usage.title);
-    entry.description_body = base::UTF8ToUTF16(ix->usage.body);
+    entry.value = base::UTF8ToUTF16(candidate.value);
+    entry.label = base::UTF8ToUTF16(candidate.label);
+    entry.annotation = base::UTF8ToUTF16(candidate.annotation);
+    entry.description_title = base::UTF8ToUTF16(candidate.usage.title);
+    entry.description_body = base::UTF8ToUTF16(candidate.usage.body);
 
     // Store a mapping from the user defined ID to the candidate index.
-    candidate_indexes_[ix->id] = candidate_ids_.size();
-    candidate_ids_.push_back(ix->id);
+    candidate_indexes_[candidate.id] = candidate_ids_.size();
+    candidate_ids_.push_back(candidate.id);
 
     candidate_window_->mutable_candidates()->push_back(entry);
   }
@@ -235,11 +235,9 @@ bool InputMethodEngine::UpdateMenuItems(
     return false;
 
   ui::ime::InputMethodMenuItemList menu_item_list;
-  for (std::vector<input_method::InputMethodManager::MenuItem>::const_iterator
-           item = items.begin();
-       item != items.end(); ++item) {
+  for (const auto& item : items) {
     ui::ime::InputMethodMenuItem property;
-    MenuItemToProperty(*item, &property);
+    MenuItemToProperty(item, &property);
     menu_item_list.push_back(property);
   }
 

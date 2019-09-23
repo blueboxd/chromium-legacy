@@ -7,9 +7,11 @@ package org.chromium.chrome.browser.touch_to_fill;
 import android.content.Context;
 
 import org.chromium.base.Callback;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 import java.util.List;
 
@@ -18,19 +20,29 @@ import java.util.List;
  * user select a set of credentials and fills it into the focused form.
  */
 public class TouchToFillCoordinator implements TouchToFillComponent {
-    TouchToFillMediator mMediator = new TouchToFillMediator();
-    PropertyModel mModel = TouchToFillProperties.createDefaultModel(mMediator);
+    private final TouchToFillMediator mMediator = new TouchToFillMediator();
+    private final PropertyModel mModel = TouchToFillProperties.createDefaultModel(mMediator);
 
     @Override
     public void initialize(Context context, BottomSheetController sheetController,
             TouchToFillComponent.Delegate delegate) {
         mMediator.initialize(delegate, mModel);
-        // TODO(crbug.com/957532): Create view and setup view binder(s).
+        setUpModelChangeProcessors(mModel, new TouchToFillView(context, sheetController));
     }
 
     @Override
     public void showCredentials(
             String formattedUrl, List<Credential> credentials, Callback<Credential> callback) {
         mMediator.showCredentials(formattedUrl, credentials, callback);
+    }
+
+    /**
+     * Connects the given model with the given view using Model Change Processors.
+     * @param model A {@link PropertyModel} built with {@link TouchToFillProperties}.
+     * @param view A {@link TouchToFillView}.
+     */
+    @VisibleForTesting
+    static void setUpModelChangeProcessors(PropertyModel model, TouchToFillView view) {
+        PropertyModelChangeProcessor.create(model, view, TouchToFillViewBinder::bind);
     }
 }

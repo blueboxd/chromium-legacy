@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/chromeos/crostini/crostini_installer_types.mojom-forward.h"
 
 namespace crostini {
 
@@ -23,38 +24,12 @@ class CrostiniInstallerUIDelegate {
       crostini::CrostiniInstallerUIDelegate::kDownloadSizeInBytes +
       kMinimumDiskSize;
 
-  enum class InstallationState {
-    START,                 // Just started installation
-    INSTALL_IMAGE_LOADER,  // Loading the Termina VM component.
-    START_CONCIERGE,       // Starting the Concierge D-Bus client.
-    CREATE_DISK_IMAGE,     // Creating the image for the Termina VM.
-    START_TERMINA_VM,      // Starting the Termina VM.
-    CREATE_CONTAINER,      // Creating the container inside the Termina VM.
-    SETUP_CONTAINER,       // Setting up the container inside the Termina VM.
-    START_CONTAINER,       // Starting the container inside the Termina VM.
-    FETCH_SSH_KEYS,        // Fetch ssh keys from concierge.
-    MOUNT_CONTAINER,       // Do sshfs mount of container.
-  };
-
-  enum class Error {
-    NONE,
-    ERROR_LOADING_TERMINA,
-    ERROR_STARTING_CONCIERGE,
-    ERROR_CREATING_DISK_IMAGE,
-    ERROR_STARTING_TERMINA,
-    ERROR_STARTING_CONTAINER,
-    ERROR_OFFLINE,
-    ERROR_FETCHING_SSH_KEYS,
-    ERROR_MOUNTING_CONTAINER,
-    ERROR_SETTING_UP_CONTAINER,
-    ERROR_INSUFFICIENT_DISK_SPACE,
-  };
-
   // |progress_fraction| ranges from 0.0 to 1.0.
   using ProgressCallback =
-      base::RepeatingCallback<void(InstallationState state,
+      base::RepeatingCallback<void(crostini::mojom::InstallerState state,
                                    double progress_fraction)>;
-  using ResultCallback = base::OnceCallback<void(Error error)>;
+  using ResultCallback =
+      base::OnceCallback<void(crostini::mojom::InstallerError error)>;
 
   // Start the installation. |progress_callback| will be called multiple times
   // until |result_callback| is called. The crostini terminal will be launched

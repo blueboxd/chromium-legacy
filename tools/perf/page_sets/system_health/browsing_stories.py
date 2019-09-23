@@ -919,6 +919,61 @@ class GoogleMapsMobileStory(system_health_story.SystemHealthStory):
     action_runner.ClickElement(selector=selector)
 
 
+class GoogleMapsMobileStory2019(system_health_story.SystemHealthStory):
+  """Story that browses google maps mobile page
+
+  This story searches for nearby restaurants on google maps website and finds
+  directions to a chosen restaurant from search results.
+  """
+  NAME = 'browse:tools:maps:2019'
+  URL = 'https://maps.google.com/maps?force=pwa&source=mlpwa'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2019]
+
+  _MAPS_SEARCH_BOX_SELECTOR = '.ml-searchbox-pwa-textarea'
+  _MAPS_SEARCH_BOX_FORM = '[id="ml-searchboxform"]'
+  _RESTAURANTS_LOADED = '.ml-panes-categorical-bottom-bar button'
+  _RESTAURANTS_LINK = '.ml-entity-list-item-info'
+  _DIRECTIONS_LINK = ('.ml-panes-entity-bottom-bar.'
+                      'ml-panes-entity-bottom-bar-expanded '
+                      'button[class$="last"]')
+  _DIRECTIONS_LOADED = ('.ml-panes-directions-bottom-bar.'
+                        'ml-panes-directions-bottom-bar-collapsed '
+                        'button[class$="last"]')
+  _MAP_LAYER = '.ml-map'
+
+  def _DidLoadDocument(self, action_runner):
+    # Submit search query.
+    self._ClickLink(self._MAPS_SEARCH_BOX_SELECTOR, action_runner)
+    action_runner.WaitForElement(selector=self._MAPS_SEARCH_BOX_FORM)
+    action_runner.Wait(1) # Waiting to type
+    action_runner.EnterText('restaurants near me')
+    action_runner.PressKey('Return')
+    action_runner.WaitForElement(selector=self._RESTAURANTS_LOADED)
+    action_runner.WaitForNetworkQuiescence()
+    action_runner.Wait(4) # User looking at restaurants
+
+    # Open the restaurant list and select the first.
+    self._ClickLink(self._RESTAURANTS_LOADED, action_runner)
+    action_runner.WaitForElement(selector=self._RESTAURANTS_LINK)
+    action_runner.Wait(3) # User reads about restaurant
+    self._ClickLink(self._RESTAURANTS_LINK, action_runner)
+    action_runner.Wait(1) # Reading description
+
+    # Open directions to the restaurant from Google.
+    self._ClickLink(self._DIRECTIONS_LINK, action_runner)
+    action_runner.Wait(0.5)
+    action_runner.EnterText('Google UK')
+    action_runner.PressKey('Return')
+    action_runner.WaitForElement(selector=self._DIRECTIONS_LOADED)
+    action_runner.WaitForNetworkQuiescence()
+    action_runner.Wait(2) # Seeing direction
+
+  def _ClickLink(self, selector, action_runner):
+    action_runner.WaitForElement(selector=selector)
+    action_runner.ClickElement(selector=selector)
+
+
 class GoogleMapsStory(_BrowsingStory):
   """
   Google maps story:
@@ -1028,6 +1083,141 @@ class GoogleMapsStory(_BrowsingStory):
     action_runner.PressKey('Return')
     action_runner.WaitForElement(selector=self._DIRECTIONS_LOADED)
     action_runner.Wait(2)
+
+
+class GoogleMapsStory2019(_BrowsingStory):
+  """
+  Google maps story:
+    _ Start at https://www.maps.google.com/maps
+    _ Search for "restaurents near me" and wait for 4 sec.
+    _ Click ZoomIn two times, waiting for 3 sec in between.
+    _ Scroll the map horizontally and vertically.
+    _ Pick a restaurant and ask for directions.
+  """
+  # When recording this story:
+  # Force tactile using this: http://google.com/maps?force=tt
+  # Force webgl using this: http://google.com/maps?force=webgl
+  # Reduce the speed as mentioned in the comment below for
+  # RepeatableBrowserDrivenScroll
+  NAME = 'browse:tools:maps:2019'
+  URL = 'https://www.google.com/maps'
+  _MAPS_SEARCH_BOX_SELECTOR = '#searchboxinput'
+  _MAPS_UPDATE_RESULTS_SELECTOR = '#section-query-on-pan-checkbox-id'
+  _MAPS_ZOOM_IN_SELECTOR = '#widget-zoom-in'
+  _MAPS_ZOOM_OUT_SELECTOR = '#widget-zoom-out'
+  _RESTAURANTS_LOADED = ('[class="searchbox searchbox-shadow noprint '
+                         'clear-button-shown"]')
+  _RESTAURANT_LINK = '[data-result-index="1"]'
+  _DIRECTIONS_LINK = '.section-action-chip-button[data-value=Directions]'
+  _DIRECTIONS_FROM_BOX = '[class="tactile-searchbox-input"]'
+  _DIRECTIONS_LOADED = '[class="section-directions-trip clearfix selected"]'
+  # Get the current server response hash and store it for use
+  # in _CHECK_RESTAURANTS_UPDATED.
+  _GET_RESTAURANT_RESPONSE_HASH = '''
+    document.querySelector({{restaurant_link}}).textContent
+  '''
+  # Check if the current restaurant server response hash is different from
+  # the old one to checks that restaurants started to update. Also wait for
+  # the completion of the loading by waiting for the button to change to loaded.
+  # The response hash gets updated when we scroll or zoom since server provides
+  # a new response for the updated locations with a new hash value.
+  _CHECK_RESTAURANTS_UPDATED = '''
+    (document.querySelector({{restaurant_link}}).textContent
+        != {{ old_restaurant }})
+    && (document.querySelector(
+          '[class="searchbox searchbox-shadow noprint clear-button-shown"]')
+          != null)
+    '''
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.WEBGL,
+          story_tags.YEAR_2018]
+
+  def _DidLoadDocument(self, action_runner):
+    # Click on the search box.
+    action_runner.WaitForElement(selector=self._MAPS_SEARCH_BOX_SELECTOR)
+    action_runner.WaitForElement(selector=self._MAPS_ZOOM_IN_SELECTOR)
+
+    # Submit search query.
+    action_runner.ClickElement(selector=self._MAPS_SEARCH_BOX_SELECTOR)
+    action_runner.EnterText('restaurants near me')
+    action_runner.PressKey('Return')
+    action_runner.WaitForElement(selector=self._RESTAURANTS_LOADED)
+    action_runner.Wait(1)
+
+    # Enable updating the results on map move/zoom.
+    action_runner.WaitForElement(selector=self._MAPS_UPDATE_RESULTS_SELECTOR)
+    action_runner.ClickElement(selector=self._MAPS_UPDATE_RESULTS_SELECTOR)
+
+    # ZoomIn two times.
+    prev_restaurant_hash = action_runner.EvaluateJavaScript(
+        self._GET_RESTAURANT_RESPONSE_HASH,
+        restaurant_link=self._RESTAURANT_LINK)
+    action_runner.ClickElement(selector=self._MAPS_ZOOM_IN_SELECTOR)
+    action_runner.Wait(0.5)
+    action_runner.ClickElement(selector=self._MAPS_ZOOM_IN_SELECTOR)
+    action_runner.Wait(0.5)
+    action_runner.ClickElement(selector=self._MAPS_ZOOM_IN_SELECTOR)
+    action_runner.WaitForJavaScriptCondition(
+        self._CHECK_RESTAURANTS_UPDATED, restaurant_link=self._RESTAURANT_LINK,
+        old_restaurant=prev_restaurant_hash, timeout=90)
+    # This wait is required to fetch the data for all the tiles in the map.
+    action_runner.Wait(1)
+
+    prev_restaurant_hash = action_runner.EvaluateJavaScript(
+        self._GET_RESTAURANT_RESPONSE_HASH,
+        restaurant_link=self._RESTAURANT_LINK)
+    action_runner.ClickElement(selector=self._MAPS_ZOOM_OUT_SELECTOR)
+    action_runner.Wait(0.5)
+    action_runner.ClickElement(selector=self._MAPS_ZOOM_OUT_SELECTOR)
+    action_runner.WaitForJavaScriptCondition(
+        self._CHECK_RESTAURANTS_UPDATED, restaurant_link=self._RESTAURANT_LINK,
+        old_restaurant=prev_restaurant_hash, timeout=90)
+    # This wait is required to fetch the data for all the tiles in the map.
+    action_runner.Wait(1)
+
+    # Reduce the speed (the current wpr is recorded with speed set to 50)  when
+    # recording the wpr. If we scroll too fast, the data will not be recorded
+    # well. After recording reset it back to the original value to have a more
+    # realistic scroll.
+    prev_restaurant_hash = action_runner.EvaluateJavaScript(
+        self._GET_RESTAURANT_RESPONSE_HASH,
+        restaurant_link=self._RESTAURANT_LINK)
+    action_runner.RepeatableBrowserDrivenScroll(
+        x_scroll_distance_ratio=0.0, y_scroll_distance_ratio=0.5,
+        repeat_count=2, speed=500, timeout=120, repeat_delay_ms=2000)
+    action_runner.WaitForJavaScriptCondition(
+        self._CHECK_RESTAURANTS_UPDATED, restaurant_link=self._RESTAURANT_LINK,
+        old_restaurant=prev_restaurant_hash, timeout=90)
+
+    prev_restaurant_hash = action_runner.EvaluateJavaScript(
+        self._GET_RESTAURANT_RESPONSE_HASH,
+        restaurant_link=self._RESTAURANT_LINK)
+    action_runner.RepeatableBrowserDrivenScroll(
+        x_scroll_distance_ratio=0.5, y_scroll_distance_ratio=0,
+        repeat_count=2, speed=500, timeout=120, repeat_delay_ms=2000)
+    action_runner.WaitForJavaScriptCondition(
+        self._CHECK_RESTAURANTS_UPDATED, restaurant_link=self._RESTAURANT_LINK,
+        old_restaurant=prev_restaurant_hash, timeout=90)
+
+    # To make the recording more realistic.
+    action_runner.Wait(1)
+    action_runner.ClickElement(selector=self._RESTAURANT_LINK)
+    # To make the recording more realistic.
+    action_runner.Wait(1)
+    action_runner.WaitForElement(selector=self._DIRECTIONS_LINK)
+    action_runner.ClickElement(selector=self._DIRECTIONS_LINK)
+    action_runner.ClickElement(selector=self._DIRECTIONS_FROM_BOX)
+    action_runner.EnterText('6 Pancras Road London')
+    action_runner.PressKey('Return')
+    action_runner.WaitForElement(selector=self._DIRECTIONS_LOADED)
+    action_runner.Wait(1)
+
+    # Cycle trough the travel modes.
+    for travel_mode in [0,1,2,3,4,6]:
+      selector = 'div[data-travel_mode="%s"]' % travel_mode
+      action_runner.WaitForElement(selector=selector)
+      action_runner.ClickElement(selector=selector)
+      action_runner.Wait(3)
 
 
 class GoogleEarthStory(_BrowsingStory):

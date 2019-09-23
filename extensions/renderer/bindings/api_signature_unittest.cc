@@ -15,6 +15,14 @@
 #include "gin/dictionary.h"
 
 namespace extensions {
+
+using api_errors::ArgumentError;
+using api_errors::InvalidType;
+using api_errors::kTypeBoolean;
+using api_errors::kTypeInteger;
+using api_errors::kTypeString;
+using api_errors::NoMatchingSignature;
+
 namespace {
 
 using SpecVector = std::vector<std::unique_ptr<ArgumentSpec>>;
@@ -276,8 +284,6 @@ class APISignatureTest : public APIBindingTest {
 };
 
 TEST_F(APISignatureTest, BasicSignatureParsing) {
-  using namespace api_errors;
-
   v8::HandleScope handle_scope(isolate());
 
   {
@@ -324,7 +330,7 @@ TEST_F(APISignatureTest, BasicSignatureParsing) {
                binding::AsyncResponseType::kNone);
     ExpectFailure(*signature,
                   "[{ get prop1() { throw new Error('Badness'); } }]",
-                  ArgumentError("obj", ScriptThrewError()));
+                  ArgumentError("obj", api_errors::ScriptThrewError()));
   }
 
   {
@@ -377,7 +383,7 @@ TEST_F(APISignatureTest, BasicSignatureParsing) {
     ExpectPass(*signature, "[4, {foo: 'bar'}, {}]", "[4,{'foo':'bar'},{}]",
                binding::AsyncResponseType::kNone);
     ExpectFailure(*signature, "[4, function() {}]",
-                  ArgumentError("any", UnserializableValue()));
+                  ArgumentError("any", api_errors::UnserializableValue()));
     ExpectFailure(*signature, "[4]", NoMatchingSignature());
   }
 
@@ -389,13 +395,13 @@ TEST_F(APISignatureTest, BasicSignatureParsing) {
     ExpectPass(*signature, "[]", "[null]", binding::AsyncResponseType::kNone);
     ExpectPass(*signature, "[null]", "[null]",
                binding::AsyncResponseType::kNone);
-    ExpectFailure(
-        *signature, "[{prop1: 'str'}]",
-        ArgumentError("obj", PropertyError("prop1", InvalidType(kTypeInteger,
+    ExpectFailure(*signature, "[{prop1: 'str'}]",
+                  ArgumentError("obj", api_errors::PropertyError(
+                                           "prop1", InvalidType(kTypeInteger,
                                                                 kTypeString))));
-    ExpectFailure(
-        *signature, "[{prop1: 'str'}, function() {}]",
-        ArgumentError("obj", PropertyError("prop1", InvalidType(kTypeInteger,
+    ExpectFailure(*signature, "[{prop1: 'str'}, function() {}]",
+                  ArgumentError("obj", api_errors::PropertyError(
+                                           "prop1", InvalidType(kTypeInteger,
                                                                 kTypeString))));
   }
 
@@ -431,8 +437,6 @@ TEST_F(APISignatureTest, BasicSignatureParsing) {
 }
 
 TEST_F(APISignatureTest, TypeRefsTest) {
-  using namespace api_errors;
-
   v8::HandleScope handle_scope(isolate());
 
   {
@@ -442,9 +446,9 @@ TEST_F(APISignatureTest, TypeRefsTest) {
     ExpectPass(*signature, "[{prop1: 'foo', prop2: 2}]",
                "[{'prop1':'foo','prop2':2}]",
                binding::AsyncResponseType::kNone);
-    ExpectFailure(
-        *signature, "[{prop1: 'foo', prop2: 'a'}]",
-        ArgumentError("obj", PropertyError("prop2", InvalidType(kTypeInteger,
+    ExpectFailure(*signature, "[{prop1: 'foo', prop2: 'a'}]",
+                  ArgumentError("obj", api_errors::PropertyError(
+                                           "prop2", InvalidType(kTypeInteger,
                                                                 kTypeString))));
   }
 
@@ -454,8 +458,9 @@ TEST_F(APISignatureTest, TypeRefsTest) {
                binding::AsyncResponseType::kNone);
     ExpectPass(*signature, "['beta']", "['beta']",
                binding::AsyncResponseType::kNone);
-    ExpectFailure(*signature, "['gamma']",
-                  ArgumentError("enum", InvalidEnumValue({"alpha", "beta"})));
+    ExpectFailure(
+        *signature, "['gamma']",
+        ArgumentError("enum", api_errors::InvalidEnumValue({"alpha", "beta"})));
   }
 }
 
@@ -597,8 +602,6 @@ TEST_F(APISignatureTest, ParseArgumentsToV8) {
 
 // Tests response validation, which is stricter than typical validation.
 TEST_F(APISignatureTest, ValidateResponse) {
-  using namespace api_errors;
-
   v8::HandleScope handle_scope(isolate());
 
   {
@@ -650,8 +653,7 @@ TEST_F(APISignatureTest, PromisesSupport) {
         std::make_unique<APISignature>(std::move(required_callback_specs));
     // By default, promises are not supported, and passing in no arguments
     // should fail.
-    ExpectFailure(*required_callback_signature, "[]",
-                  api_errors::NoMatchingSignature());
+    ExpectFailure(*required_callback_signature, "[]", NoMatchingSignature());
     // If we allow promises, parsing the arguments should succeed (with a
     // promise-based response type).
     required_callback_signature->set_promise_support(

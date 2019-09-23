@@ -40,7 +40,7 @@ namespace {
 struct WhitelistedComponentExtensionIME {
   const char* id;
   int manifest_resource_id;
-} whitelisted_component_extension[] = {
+} whitelisted_component_extensions[] = {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {
         // Official Google XKB Input.
@@ -163,8 +163,7 @@ ComponentExtensionIMEManagerImpl::ComponentExtensionIMEManagerImpl() {
   ReadComponentExtensionsInfo(&component_extension_list_);
 }
 
-ComponentExtensionIMEManagerImpl::~ComponentExtensionIMEManagerImpl() {
-}
+ComponentExtensionIMEManagerImpl::~ComponentExtensionIMEManagerImpl() = default;
 
 std::vector<ComponentExtensionIME> ComponentExtensionIMEManagerImpl::ListIME() {
   return component_extension_list_;
@@ -177,7 +176,7 @@ void ComponentExtensionIMEManagerImpl::Load(Profile* profile,
   // Check the existence of file path to avoid unnecessary extension loading
   // and InputMethodEngine creation, so that the virtual keyboard web content
   // url won't be override by IME component extensions.
-  base::FilePath* copied_file_path = new base::FilePath(file_path);
+  auto* copied_file_path = new base::FilePath(file_path);
   base::PostTaskAndReplyWithResult(
       // USER_BLOCKING because it is on the critical path of displaying the
       // virtual keyboard. See https://crbug.com/976542
@@ -214,8 +213,8 @@ ComponentExtensionIMEManagerImpl::GetManifest(
 
 // static
 bool ComponentExtensionIMEManagerImpl::IsIMEExtensionID(const std::string& id) {
-  for (size_t i = 0; i < base::size(whitelisted_component_extension); ++i) {
-    if (base::LowerCaseEqualsASCII(id, whitelisted_component_extension[i].id))
+  for (auto& extension : whitelisted_component_extensions) {
+    if (base::LowerCaseEqualsASCII(id, extension.id))
       return true;
   }
   return false;
@@ -327,18 +326,15 @@ bool ComponentExtensionIMEManagerImpl::ReadExtensionInfo(
 void ComponentExtensionIMEManagerImpl::ReadComponentExtensionsInfo(
     std::vector<ComponentExtensionIME>* out_imes) {
   DCHECK(out_imes);
-  for (size_t i = 0; i < base::size(whitelisted_component_extension); ++i) {
+  for (auto& extension : whitelisted_component_extensions) {
     ComponentExtensionIME component_ime;
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     component_ime.manifest =
-        rb.GetRawDataResource(
-               whitelisted_component_extension[i].manifest_resource_id)
-            .as_string();
+        rb.GetRawDataResource(extension.manifest_resource_id).as_string();
 
     if (component_ime.manifest.empty()) {
       LOG(ERROR) << "Couldn't get manifest from resource_id("
-                 << whitelisted_component_extension[i].manifest_resource_id
-                 << ")";
+                 << extension.manifest_resource_id << ")";
       continue;
     }
 
@@ -350,14 +346,12 @@ void ComponentExtensionIMEManagerImpl::ReadComponentExtensionsInfo(
       continue;
     }
 
-    if (!ReadExtensionInfo(*manifest.get(),
-                           whitelisted_component_extension[i].id,
-                           &component_ime)) {
+    if (!ReadExtensionInfo(*manifest.get(), extension.id, &component_ime)) {
       LOG(ERROR) << "manifest doesn't have needed information for IME.";
       continue;
     }
 
-    component_ime.id = whitelisted_component_extension[i].id;
+    component_ime.id = extension.id;
 
     if (!component_ime.path.IsAbsolute()) {
       base::FilePath resources_path;

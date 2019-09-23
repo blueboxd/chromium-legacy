@@ -7,6 +7,7 @@
 module arc.mojom;
 
 import "components/arc/mojom/bitmap.mojom";
+import "components/arc/mojom/camera_intent.mojom";
 import "components/arc/mojom/intent_common.mojom";
 import "components/arc/mojom/scale_factor.mojom";
 
@@ -171,11 +172,6 @@ interface CustomTabSession {
   [MinVersion=26] OnOpenInChromeClicked@0();
 };
 
-enum CameraIntentMode {
-  PHOTO,
-  VIDEO,
-};
-
 // Handles intents from ARC in Chrome.
 // Deprecated method ID: 4
 // Next method ID: 13
@@ -231,23 +227,23 @@ interface IntentHelperHost {
   [MinVersion=27] FactoryResetArc@11();
 
   // Launches camera app from the camera intent.
+  // |intent_id| is an unique id that used to recognize different intents.
   // |mode| indicates which mode should camera app land on. If
   // |should_handle_result| is true, the intent expects the captured result
   // will be returned after capturing. If |should_down_scale| is true, the
   // intent expects the captured image would be down-scaled to a small enough
   // size. If |is_secure| is true, the intent is fired when the device is
   // secured, which means the camera app should not show any user-sensitive
-  // data. |is_success| indicates that the capture is done successfully. If it
-  // succeed, the result should be filled in |captured_data| as a byte array.
-  [MinVersion=28] LaunchCameraApp@12(CameraIntentMode mode,
+  // data.
+  [MinVersion=28] LaunchCameraApp@12(uint32 intent_id,
+                                     CameraIntentMode mode,
                                      bool should_handle_result,
                                      bool should_down_scale,
-                                     bool is_secure)
-      => (bool is_success, array<uint8> captured_data);
+                                     bool is_secure);
 };
 
 // Sends intents to ARC on behalf of Chrome.
-// Next method ID: 16
+// Next method ID: 17
 interface IntentHelperInstance {
   // Sets the given package as a preferred package. The next time an ACTION_VIEW
   // intent is sent with a URL that requires disambiguation, instead of opening
@@ -320,4 +316,14 @@ interface IntentHelperInstance {
   [MinVersion=22] RequestTextSelectionActions@15(string text,
                                                  ScaleFactor scale_factor)
       => (array<TextSelectionAction> actions);
+
+  // Sends the captured result |data| for corresponding intent recognized by
+  // |intent_id| back to ARC. The handler should handle |data| and maybe notify
+  // the intent caller according to the intention of the |action|. |is_success|
+  // will be set to true if the ARC received the result and set to false for
+  // invalid input.
+  [MinVersion=28] HandleCameraResult@16(uint32 intent_id,
+                                        CameraIntentAction action,
+                                        array<uint8> data)
+      => (bool is_success);
 };

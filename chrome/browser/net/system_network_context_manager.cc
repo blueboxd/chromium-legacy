@@ -74,6 +74,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/net/dhcp_wpad_url_client.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -703,6 +704,10 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
     } else {
       network_context_params->proxy_resolver_factory =
           ChromeMojoProxyResolverFactory::CreateWithSelfOwnedReceiver();
+#if defined(OS_CHROMEOS)
+      network_context_params->dhcp_wpad_url_client =
+          chromeos::DhcpWpadUrlClient::CreateWithSelfOwnedReceiver();
+#endif  // defined(OS_CHROMEOS)
     }
   }
 

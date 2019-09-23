@@ -119,7 +119,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   void EndMoveLoop() override;
   void SetVisibilityChangedAnimationsEnabled(bool value) override;
   bool ShouldUseNativeFrame() const override;
-  bool ShouldWindowContentsBeTransparent() const override;
   void FrameTypeChanged() override;
   void SetFullscreen(bool fullscreen) override;
   bool IsFullscreen() const override;
@@ -132,7 +131,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   bool IsAnimatingClosed() const override;
   bool IsTranslucentWindowOpacitySupported() const override;
   void SizeConstraintsChanged() override;
-  bool ShouldUpdateWindowTransparency() const override;
   bool ShouldUseDesktopNativeCursorManager() const override;
   bool ShouldCreateVisibilityController() const override;
 
@@ -174,8 +172,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
 
   // Map the window (shows it) taking into account the given |show_state|.
   void MapWindow(ui::WindowShowState show_state);
-
-  void SetWindowTransparency();
 
   // Relayout the widget's client and non-client views.
   void Relayout();

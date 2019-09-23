@@ -255,6 +255,7 @@ class DownloadRequestLimiter
   FRIEND_TEST_ALL_PREFIXES(
       DownloadTest,
       MultipleAnchorDownloadsRequestsCrossOriginRedirectToAnotherDownload);
+  FRIEND_TEST_ALL_PREFIXES(DownloadTest, MultipleDownloadsFromIframeSrcdoc);
   FRIEND_TEST_ALL_PREFIXES(ContentSettingBubbleControllerTest, Init);
   FRIEND_TEST_ALL_PREFIXES(ContentSettingImageModelBrowserTest,
                            CreateBubbleModel);

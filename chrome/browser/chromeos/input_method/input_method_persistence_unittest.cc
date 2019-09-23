@@ -30,7 +30,7 @@ namespace input_method {
 namespace {
 const char kInputId1[] = "xkb:us:dvorak:eng";
 const char kInputId2[] = "xkb:us:colemak:eng";
-}
+}  // namespace
 
 class InputMethodPersistenceTest : public testing::Test {
  protected:

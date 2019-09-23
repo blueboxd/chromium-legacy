@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer.h"
+#include "chrome/browser/chromeos/crostini/crostini_installer_types.mojom.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer_ui_delegate.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -39,10 +40,10 @@
 #include "ui/views/window/dialog_client_view.h"
 
 using crostini::CrostiniResult;
+using crostini::mojom::InstallerError;
+using crostini::mojom::InstallerState;
 
 namespace {
-
-using Error = crostini::CrostiniInstallerUIDelegate::Error;
 
 CrostiniInstallerView* g_crostini_installer_view = nullptr;
 
@@ -65,36 +66,36 @@ base::string16 GetHelpUrlWithBoard(const std::string& original_url) {
                             "&b=" + base::SysInfo::GetLsbReleaseBoard());
 }
 
-base::string16 GetErrorMessage(Error error) {
+base::string16 GetErrorMessage(InstallerError error) {
   switch (error) {
-    case Error::ERROR_LOADING_TERMINA:
+    case InstallerError::kErrorLoadingTermina:
       return l10n_util::GetStringUTF16(
           IDS_CROSTINI_INSTALLER_LOAD_TERMINA_ERROR);
-    case Error::ERROR_STARTING_CONCIERGE:
+    case InstallerError::kErrorStartingConcierge:
       return l10n_util::GetStringUTF16(
           IDS_CROSTINI_INSTALLER_START_CONCIERGE_ERROR);
-    case Error::ERROR_CREATING_DISK_IMAGE:
+    case InstallerError::kErrorCreatingDiskImage:
       return l10n_util::GetStringUTF16(
           IDS_CROSTINI_INSTALLER_CREATE_DISK_IMAGE_ERROR);
-    case Error::ERROR_STARTING_TERMINA:
+    case InstallerError::kErrorStartingTermina:
       return l10n_util::GetStringUTF16(
           IDS_CROSTINI_INSTALLER_START_TERMINA_VM_ERROR);
-    case Error::ERROR_STARTING_CONTAINER:
+    case InstallerError::kErrorStartingContainer:
       return l10n_util::GetStringUTF16(
           IDS_CROSTINI_INSTALLER_START_CONTAINER_ERROR);
-    case Error::ERROR_OFFLINE:
+    case InstallerError::kErrorOffline:
       return l10n_util::GetStringFUTF16(IDS_CROSTINI_INSTALLER_OFFLINE_ERROR,
                                         ui::GetChromeOSDeviceName());
-    case Error::ERROR_FETCHING_SSH_KEYS:
+    case InstallerError::kErrorFetchingSshKeys:
       return l10n_util::GetStringUTF16(
           IDS_CROSTINI_INSTALLER_FETCH_SSH_KEYS_ERROR);
-    case Error::ERROR_MOUNTING_CONTAINER:
+    case InstallerError::kErrorMountingContainer:
       return l10n_util::GetStringUTF16(
           IDS_CROSTINI_INSTALLER_MOUNT_CONTAINER_ERROR);
-    case Error::ERROR_SETTING_UP_CONTAINER:
+    case InstallerError::kErrorSettingUpContainer:
       return l10n_util::GetStringUTF16(
           IDS_CROSTINI_INSTALLER_SETUP_CONTAINER_ERROR);
-    case Error::ERROR_INSUFFICIENT_DISK_SPACE:
+    case InstallerError::kErrorInsufficientDiskSpace:
       return l10n_util::GetStringFUTF16(
           IDS_CROSTINI_INSTALLER_INSUFFICIENT_DISK,
           ui::FormatBytesWithUnits(
@@ -212,7 +213,7 @@ bool CrostiniInstallerView::Accept() {
   learn_more_link_ = nullptr;
 
   state_ = State::INSTALLING;
-  installing_state_ = InstallationState::START;
+  installing_state_ = InstallerState::kStart;
   progress_bar_->SetValue(0);
   progress_bar_->SetVisible(true);
   SetMessageLabel();
@@ -367,7 +368,7 @@ CrostiniInstallerView::~CrostiniInstallerView() {
   g_crostini_installer_view = nullptr;
 }
 
-void CrostiniInstallerView::OnProgressUpdate(InstallationState installing_state,
+void CrostiniInstallerView::OnProgressUpdate(InstallerState installing_state,
                                              double progress_fraction) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(state_, State::INSTALLING);
@@ -382,10 +383,10 @@ void CrostiniInstallerView::OnProgressUpdate(InstallationState installing_state,
   GetWidget()->GetRootView()->Layout();
 }
 
-void CrostiniInstallerView::OnInstallFinished(Error error) {
+void CrostiniInstallerView::OnInstallFinished(InstallerError error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (error == Error::NONE) {
+  if (error == InstallerError::kNone) {
     state_ = State::SUCCESS;
     GetWidget()->Close();
     return;
@@ -417,34 +418,34 @@ void CrostiniInstallerView::SetMessageLabel() {
   int message_id = 0;
 
   switch (installing_state_) {
-    case InstallationState::INSTALL_IMAGE_LOADER:
+    case InstallerState::kInstallImageLoader:
       message_id = IDS_CROSTINI_INSTALLER_LOAD_TERMINA_MESSAGE;
       break;
-    case InstallationState::START_CONCIERGE:
+    case InstallerState::kStartConcierge:
       message_id = IDS_CROSTINI_INSTALLER_START_CONCIERGE_MESSAGE;
       break;
-    case InstallationState::CREATE_DISK_IMAGE:
+    case InstallerState::kCreateDiskImage:
       message_id = IDS_CROSTINI_INSTALLER_CREATE_DISK_IMAGE_MESSAGE;
       break;
-    case InstallationState::START_TERMINA_VM:
+    case InstallerState::kStartTerminaVm:
       message_id = IDS_CROSTINI_INSTALLER_START_TERMINA_VM_MESSAGE;
       break;
-    case InstallationState::CREATE_CONTAINER:
+    case InstallerState::kCreateContainer:
       // TODO(lxj): we are using the same message as for |START_CONTAINER|,
       // which is weird because user is going to see message "start container"
       // then "setup container" and then "start container" again.
       message_id = IDS_CROSTINI_INSTALLER_START_CONTAINER_MESSAGE;
       break;
-    case InstallationState::SETUP_CONTAINER:
+    case InstallerState::kSetupContainer:
       message_id = IDS_CROSTINI_INSTALLER_SETUP_CONTAINER_MESSAGE;
       break;
-    case InstallationState::START_CONTAINER:
+    case InstallerState::kStartContainer:
       message_id = IDS_CROSTINI_INSTALLER_START_CONTAINER_MESSAGE;
       break;
-    case InstallationState::FETCH_SSH_KEYS:
+    case InstallerState::kFetchSshKeys:
       message_id = IDS_CROSTINI_INSTALLER_FETCH_SSH_KEYS_MESSAGE;
       break;
-    case InstallationState::MOUNT_CONTAINER:
+    case InstallerState::kMountContainer:
       message_id = IDS_CROSTINI_INSTALLER_MOUNT_CONTAINER_MESSAGE;
       break;
     default:

@@ -125,7 +125,7 @@ class PolicyDetails:
     self.platforms.sort()
     self.is_supported = target_platform in self.platforms
 
-    if not PolicyDetails.TYPE_MAP.has_key(policy['type']):
+    if policy['type'] not in PolicyDetails.TYPE_MAP:
       raise NotImplementedError(
           'Unknown policy type for %s: %s' % (policy['name'], policy['type']))
     self.policy_type, self.protobuf_type, self.policy_protobuf_type, \
@@ -734,8 +734,8 @@ class SchemaNodesGenerator:
 
     |schema|: a valid JSON schema in a dictionary.
     |name|: the name of the current node, for the generated comments."""
-    if schema.has_key('$ref'):
-      if schema.has_key('id'):
+    if '$ref' in schema:
+      if 'id' in schema:
         raise RuntimeError("Schemas with a $ref can't have an id")
       if not isinstance(schema['$ref'], types.StringTypes):
         raise RuntimeError("$ref attribute must be a string")
@@ -817,7 +817,7 @@ class SchemaNodesGenerator:
       # Check that each string in |required_properties| is in |properties|.
       properties = schema.get('properties', {})
       for name in required_properties:
-        assert properties.has_key(name)
+        assert name in properties
 
       extra = len(self.properties_nodes)
       self.properties_nodes.append(
@@ -837,10 +837,10 @@ class SchemaNodesGenerator:
     Generate().
     """
     index = self.Generate(schema, name)
-    if not schema.has_key('id'):
+    if 'id' not in schema:
       return index
     id_str = schema['id']
-    if self.id_map.has_key(id_str):
+    if id_str in self.id_map:
       raise RuntimeError('Duplicated id: ' + id_str)
     self.id_map[id_str] = index
     return index
@@ -923,7 +923,7 @@ class SchemaNodesGenerator:
   def GetByID(self, id_str):
     if not isinstance(id_str, types.StringTypes):
       return id_str
-    if not self.id_map.has_key(id_str):
+    if id_str not in self.id_map:
       raise RuntimeError('Invalid $ref: ' + id_str)
     return self.id_map[id_str]
 

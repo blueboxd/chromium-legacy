@@ -10,6 +10,10 @@ PlatformWindow::PlatformWindow() = default;
 
 PlatformWindow::~PlatformWindow() = default;
 
+bool PlatformWindow::ShouldWindowContentsBeTransparent() const {
+  return false;
+}
+
 void PlatformWindow::SetZOrderLevel(ZOrderLevel order) {}
 
 ZOrderLevel PlatformWindow::GetZOrderLevel() const {

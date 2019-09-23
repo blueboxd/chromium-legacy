@@ -1092,6 +1092,9 @@ enum class EnterTabSwitcherSnapshotResult {
                     if ([SignedInAccountsViewController
                             shouldBePresentedForBrowserState:
                                 [self currentBrowserState]]) {
+                      // TODO(crbug.com/1006717): Remove these logs once
+                      // bug 1006717 is fixed.
+                      NSLog(@"%s %d:", __FUNCTION__, __LINE__);
                       [self
                           presentSignedInAccountsViewControllerForBrowserState:
                               [self currentBrowserState]];
@@ -1456,6 +1459,9 @@ enum class EnterTabSwitcherSnapshotResult {
   // Show the sign-in promo if needed
   if ([SigninPromoViewController
           shouldBePresentedForBrowserState:_mainBrowserState]) {
+    // TODO(crbug.com/1006717): Remove these logs once bug 1006717 is fixed.
+    NSLog(@"%s %d:", __FUNCTION__, __LINE__);
+
     UIViewController* promoController = [[SigninPromoViewController alloc]
         initWithBrowserState:_mainBrowserState
                   dispatcher:self.mainBVC.dispatcher];

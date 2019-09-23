@@ -14,6 +14,9 @@ include_rules = [
   # For WebRTC tests.
   "+chromeos/audio",
   "+chromeos/dbus/audio",
+  "+chromeos/network/network_handler.h",
+  "+chromeos/network/network_state.h",
+  "+chromeos/network/network_state_handler.h",
   # Testing utilities can access anything in content/
   "+content",
   "+device/bluetooth", # For WebBluetooth tests
@@ -24,6 +27,7 @@ include_rules = [
   "+services/network/public/cpp",
   "+services/network/public/mojom",
   "+services/network/test",
+  "+services/network/mock_mojo_dhcp_wpad_url_client.h",
   "+services/network/url_request_context_builder_mojo.h",
   "+services/proxy_resolver",
   "+services/service_manager/public",

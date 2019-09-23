@@ -14,7 +14,7 @@
 
 namespace chromeos {
 
-typedef TextInputTestBase TextInput_SurroundingTextChangedTest;
+using TextInput_SurroundingTextChangedTest = TextInputTestBase;
 
 IN_PROC_BROWSER_TEST_F(TextInput_SurroundingTextChangedTest,
                        SurroundingTextChangedWithInsertText) {

@@ -1781,8 +1781,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
     private void updateBookmarkButtonStatus() {
         Tab currentTab = mLocationBarModel.getTab();
-        boolean isBookmarked =
-                currentTab != null && currentTab.getBookmarkId() != Tab.INVALID_BOOKMARK_ID;
+        boolean isBookmarked = currentTab != null && BookmarkBridge.hasBookmarkIdForTab(currentTab);
         boolean editingAllowed = currentTab == null || mBookmarkBridge == null
                 || mBookmarkBridge.isEditBookmarksEnabled();
         mToolbar.updateBookmarkButton(isBookmarked, editingAllowed);

@@ -20,6 +20,7 @@
 #include "ios/chrome/browser/ui/webui/net_export/net_export_ui.h"
 #include "ios/chrome/browser/ui/webui/ntp_tiles_internals_ui.h"
 #include "ios/chrome/browser/ui/webui/omaha_ui.h"
+#include "ios/chrome/browser/ui/webui/prefs_internals_ui.h"
 #include "ios/chrome/browser/ui/webui/signin_internals_ui_ios.h"
 #include "ios/chrome/browser/ui/webui/suggestions_ui.h"
 #include "ios/chrome/browser/ui/webui/sync_internals/sync_internals_ui.h"
@@ -89,6 +90,8 @@ WebUIIOSFactoryFunction GetWebUIIOSFactoryFunction(const GURL& url) {
     return &NewWebUIIOS<OmahaUI>;
   if (url_host == kChromeUIPasswordManagerInternalsHost)
     return &NewWebUIIOS<PasswordManagerInternalsUIIOS>;
+  if (url_host == kChromeUIPrefsInternalsHost)
+    return &NewWebUIIOS<PrefsInternalsUI>;
   if (url_host == kChromeUISignInInternalsHost)
     return &NewWebUIIOS<SignInInternalsUIIOS>;
   if (url.host_piece() == kChromeUISuggestionsHost)

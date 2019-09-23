@@ -374,9 +374,9 @@ static bool ContentSecurityPolicyCodeGenerationCheck(
                             static_cast<size_t>(source_str.length()));
       memcpy(snippet, *source_str, len * sizeof(UChar));
       snippet[len] = 0;
-      return policy->AllowEval(
-          ScriptState::From(context), SecurityViolationReportingPolicy::kReport,
-          ContentSecurityPolicy::kWillThrowException, snippet);
+      return policy->AllowEval(SecurityViolationReportingPolicy::kReport,
+                               ContentSecurityPolicy::kWillThrowException,
+                               snippet);
     }
   }
   return false;
@@ -450,12 +450,10 @@ static bool WasmCodeGenerationCheckCallbackInMainThread(
       // Wasm code generation is allowed if we have either the wasm-eval
       // directive or the unsafe-eval directive. However, we only recognize
       // wasm-eval for certain schemes
-      return policy->AllowWasmEval(ScriptState::From(context),
-                                   SecurityViolationReportingPolicy::kReport,
+      return policy->AllowWasmEval(SecurityViolationReportingPolicy::kReport,
                                    ContentSecurityPolicy::kWillThrowException,
                                    snippet) ||
-             policy->AllowEval(ScriptState::From(context),
-                               SecurityViolationReportingPolicy::kReport,
+             policy->AllowEval(SecurityViolationReportingPolicy::kReport,
                                ContentSecurityPolicy::kWillThrowException,
                                snippet);
     }

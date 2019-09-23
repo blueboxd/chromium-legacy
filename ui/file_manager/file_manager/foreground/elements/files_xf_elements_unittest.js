@@ -61,12 +61,35 @@ async function testFilesDisplayPanel(done) {
   assertTrue(displayPanel.findPanelItemById('testpanel1') === null);
 
   // Add another panel item and confirm the expanded state persists by
-  // checking the pnel container is not hidden and there is a summary panel.
+  // checking the panel container is not hidden and there is a summary panel.
   progressPanel = displayPanel.addPanelItem('testpanel1');
   progressPanel.panelType = progressPanel.panelTypeProgress;
   assertFalse(panelContainer.hasAttribute('hidden'));
   summaryPanelItem = summaryContainer.querySelector('xf-panel-item');
   assertTrue(summaryPanelItem.panelType === summaryPanelItem.panelTypeSummary);
+
+  // Test create/attach/remove sequences.
+  // Create a progress panel item.
+  progressPanel = displayPanel.createPanelItem('testpanel2');
+  progressPanel.panelType = progressPanel.panelTypeProgress;
+  // Attach the panel to it's host display panel.
+  displayPanel.attachPanelItem(progressPanel);
+  // Verify the panel is attached to the document.
+  assertTrue(!!progressPanel.parentNode);
+  // Remove the panel item.
+  displayPanel.removePanelItem(progressPanel);
+  // Verify the panel item is not attached to the document.
+  assertTrue(progressPanel.parentNode === null);
+
+  // Create a progress panel item.
+  progressPanel = displayPanel.createPanelItem('testpanel3');
+  progressPanel.panelType = progressPanel.panelTypeProgress;
+  // Remove the panel item.
+  displayPanel.removePanelItem(progressPanel);
+  // Try to attach the removed panel to it's host display panel.
+  displayPanel.attachPanelItem(progressPanel);
+  // Verify the panel is not attached to the document.
+  assertTrue(progressPanel.parentNode === null);
 
   done();
 }

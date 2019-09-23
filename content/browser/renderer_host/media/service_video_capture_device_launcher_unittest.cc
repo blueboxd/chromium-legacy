@@ -14,6 +14,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/video_capture/public/cpp/mock_push_subscription.h"
 #include "services/video_capture/public/cpp/mock_video_source.h"
@@ -98,7 +99,8 @@ class ServiceVideoCaptureDeviceLauncherTest : public testing::Test {
                 mojo::PendingRemote<video_capture::mojom::Receiver> subscriber,
                 const media::VideoCaptureParams& requested_settings,
                 bool force_reopen_with_new_settings,
-                video_capture::mojom::PushVideoStreamSubscriptionRequest&
+                mojo::PendingReceiver<
+                    video_capture::mojom::PushVideoStreamSubscription>
                     subscription,
                 video_capture::mojom::VideoSource::
                     CreatePushSubscriptionCallback& callback) {
@@ -207,7 +209,8 @@ void ServiceVideoCaptureDeviceLauncherTest::RunLaunchingDeviceIsAbortedTest(
               mojo::PendingRemote<video_capture::mojom::Receiver> subscriber,
               const media::VideoCaptureParams& requested_settings,
               bool force_reopen_with_new_settings,
-              video_capture::mojom::PushVideoStreamSubscriptionRequest&
+              mojo::PendingReceiver<
+                  video_capture::mojom::PushVideoStreamSubscription>
                   subscription,
               video_capture::mojom::VideoSource::CreatePushSubscriptionCallback&
                   callback) {
@@ -261,7 +264,8 @@ TEST_F(ServiceVideoCaptureDeviceLauncherTest,
           [](mojo::PendingRemote<video_capture::mojom::Receiver> subscriber,
              const media::VideoCaptureParams& requested_settings,
              bool force_reopen_with_new_settings,
-             video_capture::mojom::PushVideoStreamSubscriptionRequest&
+             mojo::PendingReceiver<
+                 video_capture::mojom::PushVideoStreamSubscription>
                  subscription,
              video_capture::mojom::VideoSource::CreatePushSubscriptionCallback&
                  callback) {
@@ -340,7 +344,8 @@ TEST_F(ServiceVideoCaptureDeviceLauncherTest,
               mojo::PendingRemote<video_capture::mojom::Receiver> subscriber,
               const media::VideoCaptureParams& requested_settings,
               bool force_reopen_with_new_settings,
-              video_capture::mojom::PushVideoStreamSubscriptionRequest&
+              mojo::PendingReceiver<
+                  video_capture::mojom::PushVideoStreamSubscription>
                   subscription,
               video_capture::mojom::VideoSource::CreatePushSubscriptionCallback&
                   callback) {

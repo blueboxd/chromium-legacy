@@ -115,7 +115,6 @@ ArcIntentHelperBridge::ArcIntentHelperBridge(content::BrowserContext* context,
                                              ArcBridgeService* bridge_service)
     : context_(context),
       arc_bridge_service_(bridge_service),
-      camera_intent_id_(0),
       allowed_arc_schemes_(std::cbegin(kArcSchemes), std::cend(kArcSchemes)) {
   arc_bridge_service_->intent_helper()->SetHost(this);
 }
@@ -222,28 +221,44 @@ void ArcIntentHelperBridge::RecordShareFilesMetrics(mojom::ShareFiles flag) {
   UMA_HISTOGRAM_ENUMERATION("Arc.ShareFilesOnExit", flag);
 }
 
-void ArcIntentHelperBridge::LaunchCameraApp(arc::mojom::CameraIntentMode mode,
+void ArcIntentHelperBridge::LaunchCameraApp(uint32_t intent_id,
+                                            arc::mojom::CameraIntentMode mode,
                                             bool should_handle_result,
                                             bool should_down_scale,
-                                            bool is_secure,
-                                            LaunchCameraAppCallback callback) {
+                                            bool is_secure) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  launch_camera_app_callback_map_.emplace(camera_intent_id_,
-                                          std::move(callback));
 
   base::DictionaryValue intent_info;
   std::string mode_str =
       mode == arc::mojom::CameraIntentMode::PHOTO ? "photo" : "video";
 
   std::stringstream queries;
-  queries << "?intentId=" << camera_intent_id_ << "&mode=" << mode_str
+  queries << "?intentId=" << intent_id << "&mode=" << mode_str
           << "&shouldHandleResult=" << should_handle_result
           << "&shouldDownScale=" << should_down_scale
           << "&isSecure=" << is_secure;
   ash::NewWindowDelegate::GetInstance()->LaunchCameraApp(queries.str());
+}
 
-  camera_intent_id_++;
+void ArcIntentHelperBridge::HandleCameraResult(
+    uint32_t intent_id,
+    arc::mojom::CameraIntentAction action,
+    const std::vector<uint8_t>& data,
+    arc::mojom::IntentHelperInstance::HandleCameraResultCallback callback) {
+  auto* arc_service_manager = arc::ArcServiceManager::Get();
+  arc::mojom::IntentHelperInstance* instance = nullptr;
+  if (arc_service_manager) {
+    instance = ARC_GET_INSTANCE_FOR_METHOD(
+        arc_service_manager->arc_bridge_service()->intent_helper(),
+        HandleCameraResult);
+  }
+  if (!instance) {
+    LOG(ERROR) << "Failed to get instance for HandleCameraResult().";
+    std::move(callback).Run(false);
+    return;
+  }
+
+  instance->HandleCameraResult(intent_id, action, data, std::move(callback));
 }
 
 ArcIntentHelperBridge::GetResult ArcIntentHelperBridge::GetActivityIcons(
@@ -281,16 +296,6 @@ void ArcIntentHelperBridge::RemoveObserver(ArcIntentHelperObserver* observer) {
 bool ArcIntentHelperBridge::HasObserver(
     ArcIntentHelperObserver* observer) const {
   return observer_list_.HasObserver(observer);
-}
-
-void ArcIntentHelperBridge::OnCameraIntentHandled(
-    uint32_t intent_id,
-    bool is_success,
-    const std::vector<uint8_t>& captured_data) {
-  CHECK(launch_camera_app_callback_map_.find(intent_id) !=
-        launch_camera_app_callback_map_.end());
-  std::move(launch_camera_app_callback_map_[intent_id])
-      .Run(is_success, captured_data);
 }
 
 // static

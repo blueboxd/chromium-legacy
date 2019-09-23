@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/html/forms/file_input_type.h"
 
 #include "third_party/blink/public/platform/file_path_conversion.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
@@ -315,9 +316,8 @@ void FileInputType::CreateShadowSubtree() {
   button->setAttribute(
       kValueAttr,
       AtomicString(GetLocale().QueryString(
-          GetElement().Multiple()
-              ? WebLocalizedString::kFileButtonChooseMultipleFilesLabel
-              : WebLocalizedString::kFileButtonChooseFileLabel)));
+          GetElement().Multiple() ? IDS_FORM_MULTIPLE_FILES_BUTTON_LABEL
+                                  : IDS_FORM_FILE_BUTTON_LABEL)));
   button->SetShadowPseudoId(AtomicString("-webkit-file-upload-button"));
   GetElement().UserAgentShadowRoot()->AppendChild(button);
 }
@@ -337,13 +337,13 @@ void FileInputType::MultipleAttributeChanged() {
   CHECK(!GetElement().UserAgentShadowRoot()->firstChild() ||
         IsA<Element>(GetElement().UserAgentShadowRoot()->firstChild()));
   if (Element* button =
-          To<Element>(GetElement().UserAgentShadowRoot()->firstChild()))
+          To<Element>(GetElement().UserAgentShadowRoot()->firstChild())) {
     button->setAttribute(
         kValueAttr,
         AtomicString(GetLocale().QueryString(
-            GetElement().Multiple()
-                ? WebLocalizedString::kFileButtonChooseMultipleFilesLabel
-                : WebLocalizedString::kFileButtonChooseFileLabel)));
+            GetElement().Multiple() ? IDS_FORM_MULTIPLE_FILES_BUTTON_LABEL
+                                    : IDS_FORM_FILE_BUTTON_LABEL)));
+  }
 }
 
 bool FileInputType::SetFiles(FileList* files) {

@@ -101,6 +101,14 @@ class LoadTwitterStory(_LoadingStory):
   # 'browse:social:twitter_infinite_scroll'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
 
+class LoadTwitterMoibleStory2019(_LoadingStory):
+  NAME = 'load:social:twitter:2019'
+  URL = 'https://www.twitter.com/nasa'
+  TAGS = [story_tags.YEAR_2019]
+
+  # Desktop version is already covered by
+  # 'browse:social:twitter_infinite_scroll'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
 
 class LoadVkStory(_LoadingStory):
   NAME = 'load:social:vk'

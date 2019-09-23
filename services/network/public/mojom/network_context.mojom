@@ -42,6 +42,9 @@ import "services/proxy_resolver/public/mojom/proxy_resolver.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
+[EnableIf=is_chromeos]
+import "services/network/public/mojom/dhcp_wpad_url_client.mojom";
+
 [EnableIf=is_ct_supported]
 import "services/network/public/mojom/ct_log_info.mojom";
 
@@ -195,6 +198,12 @@ struct NetworkContextParams {
   // platform implementation to execute PAC scripts, if available (Only
   // available on Windows and Mac).
   proxy_resolver.mojom.ProxyResolverFactory? proxy_resolver_factory;
+
+  // Retrieves the PAC script URL set via DHCP from the browser process. Only
+  // used if |proxy_resolver_factory| is set. Note: optional because some tests
+  // build their own NetworkContextParams and don't need a DHCP WPAD client.
+  [EnableIf=is_chromeos]
+  DhcpWpadUrlClient? dhcp_wpad_url_client;
 
   // Points to the cookie file. An in-memory cookie store is used if it's empty.
   mojo_base.mojom.FilePath? cookie_path;

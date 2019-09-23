@@ -37,8 +37,7 @@ class FakeIntentHelperInstance : public mojom::IntentHelperInstance {
 
   // Parameters passed to HandleIntent().
   struct HandledIntent {
-    HandledIntent(mojom::IntentInfoPtr intent,
-                  mojom::ActivityNamePtr activity);
+    HandledIntent(mojom::IntentInfoPtr intent, mojom::ActivityNamePtr activity);
     HandledIntent(HandledIntent&& other);
     HandledIntent& operator=(HandledIntent&& other);
     ~HandledIntent();
@@ -60,9 +59,8 @@ class FakeIntentHelperInstance : public mojom::IntentHelperInstance {
 
   // Sets a list of intent handlers to be returned in response to
   // RequestIntentHandlerList() calls with intents containing |action|.
-  void SetIntentHandlers(
-      const std::string& action,
-      std::vector<mojom::IntentHandlerInfoPtr> handlers);
+  void SetIntentHandlers(const std::string& action,
+                         std::vector<mojom::IntentHandlerInfoPtr> handlers);
 
   // mojom::IntentHelperInstance:
   ~FakeIntentHelperInstance() override;
@@ -120,6 +118,11 @@ class FakeIntentHelperInstance : public mojom::IntentHelperInstance {
       const std::string& text,
       ::arc::mojom::ScaleFactor scale_factor,
       RequestTextSelectionActionsCallback callback) override;
+
+  void HandleCameraResult(uint32_t intent_id,
+                          arc::mojom::CameraIntentAction action,
+                          const std::vector<uint8_t>& data,
+                          HandleCameraResultCallback callback) override;
 
  private:
   std::vector<Broadcast> broadcasts_;

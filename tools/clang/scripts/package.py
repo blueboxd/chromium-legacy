@@ -196,10 +196,7 @@ def main():
 
     build_cmd = [sys.executable, os.path.join(THIS_DIR, 'build.py'),
                  '--bootstrap', '--disable-asserts',
-                 '--run-tests']
-    if sys.platform != 'win32':
-      # TODO(hans): Use --pgo for the Windows package too.
-      build_cmd.append('--pgo')
+                 '--run-tests', '--pgo']
     if sys.platform.startswith('linux'):
       build_cmd.append('--lto-lld')
     TeeCmd(build_cmd, log)

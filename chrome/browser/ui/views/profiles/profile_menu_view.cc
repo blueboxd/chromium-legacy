@@ -169,13 +169,21 @@ void ProfileMenuView::BuildMenu() {
     AddProfileMenuView(avatar_menu_.get());
     return;
   }
-  BuildIdentity();
-  BuildSyncInfo();
-  BuildAutofillButtons();
-  BuildAccountFeatureButtons();
+
+  Profile* profile = browser()->profile();
+  if (profile->IsGuestSession()) {
+    BuildGuestIdentity();
+  } else {
+    DCHECK(profile->IsRegularProfile());
+    BuildIdentity();
+    BuildSyncInfo();
+    BuildAccountFeatureButtons();
+    BuildAutofillButtons();
+    BuildProfileFeatureButtons();
+  }
+
   BuildProfileHeading();
   BuildSelectableProfiles();
-  BuildProfileFeatureButtons();
 }
 
 void ProfileMenuView::OnAvatarMenuChanged(
@@ -410,6 +418,11 @@ void ProfileMenuView::BuildIdentity() {
         profile_attributes->GetAvatarIcon(), profile_attributes->GetName(),
         l10n_util::GetStringUTF16(IDS_PROFILES_LOCAL_PROFILE_STATE));
   }
+}
+
+void ProfileMenuView::BuildGuestIdentity() {
+  SetIdentityInfo(gfx::Image(ImageForMenu(kUserAccountAvatarIcon)),
+                  l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME));
 }
 
 void ProfileMenuView::BuildAutofillButtons() {

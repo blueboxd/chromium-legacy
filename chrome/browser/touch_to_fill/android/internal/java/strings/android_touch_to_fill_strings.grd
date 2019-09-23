@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2019 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<grit current_release="1" latest_public_release="0" output_all_resource_defines="false">
+  <outputs>
+    <output filename="values-am/android_touch_to_fill_strings.xml" lang="am" type="android" />
+    <output filename="values-ar/android_touch_to_fill_strings.xml" lang="ar" type="android" />
+    <output filename="values-bg/android_touch_to_fill_strings.xml" lang="bg" type="android" />
+    <output filename="values-ca/android_touch_to_fill_strings.xml" lang="ca" type="android" />
+    <output filename="values-cs/android_touch_to_fill_strings.xml" lang="cs" type="android" />
+    <output filename="values-da/android_touch_to_fill_strings.xml" lang="da" type="android" />
+    <output filename="values-de/android_touch_to_fill_strings.xml" lang="de" type="android" />
+    <output filename="values-el/android_touch_to_fill_strings.xml" lang="el" type="android" />
+    <output filename="values/android_touch_to_fill_strings.xml" lang="en" type="android" />
+    <output filename="values-en-rGB/android_touch_to_fill_strings.xml" lang="en-GB" type="android" />
+    <output filename="values-es/android_touch_to_fill_strings.xml" lang="es" type="android" />
+    <output filename="values-es-rUS/android_touch_to_fill_strings.xml" lang="es-419" type="android" />
+    <output filename="values-fa/android_touch_to_fill_strings.xml" lang="fa" type="android" />
+    <output filename="values-fi/android_touch_to_fill_strings.xml" lang="fi" type="android" />
+    <output filename="values-tl/android_touch_to_fill_strings.xml" lang="fil" type="android" />
+    <output filename="values-fr/android_touch_to_fill_strings.xml" lang="fr" type="android" />
+    <output filename="values-hi/android_touch_to_fill_strings.xml" lang="hi" type="android" />
+    <output filename="values-hr/android_touch_to_fill_strings.xml" lang="hr" type="android" />
+    <output filename="values-hu/android_touch_to_fill_strings.xml" lang="hu" type="android" />
+    <output filename="values-in/android_touch_to_fill_strings.xml" lang="id" type="android" />
+    <output filename="values-it/android_touch_to_fill_strings.xml" lang="it" type="android" />
+    <output filename="values-iw/android_touch_to_fill_strings.xml" lang="iw" type="android" />
+    <output filename="values-ja/android_touch_to_fill_strings.xml" lang="ja" type="android" />
+    <output filename="values-ko/android_touch_to_fill_strings.xml" lang="ko" type="android" />
+    <output filename="values-lt/android_touch_to_fill_strings.xml" lang="lt" type="android" />
+    <output filename="values-lv/android_touch_to_fill_strings.xml" lang="lv" type="android" />
+    <output filename="values-nl/android_touch_to_fill_strings.xml" lang="nl" type="android" />
+    <output filename="values-nb/android_touch_to_fill_strings.xml" lang="no" type="android" />
+    <output filename="values-pl/android_touch_to_fill_strings.xml" lang="pl" type="android" />
+    <output filename="values-pt-rBR/android_touch_to_fill_strings.xml" lang="pt-BR" type="android" />
+    <output filename="values-pt-rPT/android_touch_to_fill_strings.xml" lang="pt-PT" type="android" />
+    <output filename="values-ro/android_touch_to_fill_strings.xml" lang="ro" type="android" />
+    <output filename="values-ru/android_touch_to_fill_strings.xml" lang="ru" type="android" />
+    <output filename="values-sk/android_touch_to_fill_strings.xml" lang="sk" type="android" />
+    <output filename="values-sl/android_touch_to_fill_strings.xml" lang="sl" type="android" />
+    <output filename="values-sr/android_touch_to_fill_strings.xml" lang="sr" type="android" />
+    <output filename="values-sv/android_touch_to_fill_strings.xml" lang="sv" type="android" />
+    <output filename="values-sw/android_touch_to_fill_strings.xml" lang="sw" type="android" />
+    <output filename="values-th/android_touch_to_fill_strings.xml" lang="th" type="android" />
+    <output filename="values-tr/android_touch_to_fill_strings.xml" lang="tr" type="android" />
+    <output filename="values-uk/android_touch_to_fill_strings.xml" lang="uk" type="android" />
+    <output filename="values-vi/android_touch_to_fill_strings.xml" lang="vi" type="android" />
+    <output filename="values-zh-rCN/android_touch_to_fill_strings.xml" lang="zh-CN" type="android" />
+    <output filename="values-zh-rTW/android_touch_to_fill_strings.xml" lang="zh-TW" type="android" />
+  </outputs>
+  <release allow_pseudo="false" seq="1">
+    <messages fallback_to_english="true">
+      <!-- Touch To Fill -->
+      <message name="IDS_TOUCH_TO_FILL_SHEET_TITLE" desc="Header for Touch To FIll sheet where users can pick a credential to fill into a form to.">
+        Choose an account
+      </message>
+      <message name="IDS_TOUCH_TO_FILL_SHEET_SUBTITLE" desc="Subtitle for Touch To FIll sheet where users can pick a credential to fill into a form to.">
+        Sign into <ph name="SITE_NAME">%1$s<ex>airbnb.com</ex></ph> with Chrome
+      </message>
+      <message name="IDS_TOUCH_TO_FILL_CONTENT_DESCRIPTION" desc="Accessibility string read when the Touch To Fill bottom sheet is opened. It describes the bottom sheet where a user can pick a credential to fill into a password form.">
+        List of credentials to be filled on touch.
+      </message>
+      <message name="IDS_TOUCH_TO_FILL_SHEET_HALF_HEIGHT" desc="Accessibility string read when the Touch To Fill bottom sheet showing a list of the user's credentials is opened at half height. The sheet will occupy the bottom half the screen.">
+        List of credentials to be filled on touch opened at half height.
+      </message>
+      <message name="IDS_TOUCH_TO_FILL_SHEET_FULL_HEIGHT" desc="Accessibility string read when the Touch To Fill bottom sheet showing a list of the user's credentials is opened at full height. The sheet will occupy the entire screen.">
+        List of credentials to be filled on touch opened at full height.
+      </message>
+      <message name="IDS_TOUCH_TO_FILL_SHEET_CLOSED" desc="Accessibility string read when the Toch To Fill bottom sheet showing a list of the user's credentials is closed.">
+        List of credentials to be filled on touch is closed.
+      </message>
+    </messages>
+  </release>
+</grit>

@@ -4,6 +4,8 @@
 
 """The android specific platform implementation module."""
 
+from __future__ import print_function
+
 import os
 import subprocess
 
@@ -64,16 +66,16 @@ class AndroidInitHook(cr.InitHook):
     if (url.startswith('https://chrome-internal.googlesource.com/') and
         url.endswith('/internal/apps.git')):
       return
-    print 'This client is not android capable.'
-    print 'It can be made capable by adding android to the target_os list'
-    print 'in the .gclient file, and then syncing again.'
+    print('This client is not android capable.')
+    print('It can be made capable by adding android to the target_os list')
+    print('in the .gclient file, and then syncing again.')
     if not cr.Host.YesNo('Would you like to upgrade this client?'):
-      print 'Abandoning the creation of and android output directory.'
+      print('Abandoning the creation of and android output directory.')
       exit(1)
     target_os.append('android')
     cr.context.gclient['target_os'] = target_os
     cr.base.client.WriteGClient()
-    print 'Client updated.'
-    print 'You may need to sync before an output directory can be made.'
+    print('Client updated.')
+    print('You may need to sync before an output directory can be made.')
     if cr.Host.YesNo('Would you like to sync this client now?'):
       cr.SyncCommand.Sync(["--nohooks"])

@@ -1645,6 +1645,13 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
             std::move(params_->proxy_resolver_factory)));
   }
 
+#if defined(OS_CHROMEOS)
+  if (params_->dhcp_wpad_url_client) {
+    builder.SetDhcpWpadUrlClient(network::mojom::DhcpWpadUrlClientPtr(
+        std::move(params_->dhcp_wpad_url_client)));
+  }
+#endif  // defined(OS_CHROMEOS)
+
   if (!params_->http_cache_enabled) {
     builder.DisableHttpCache();
   } else {

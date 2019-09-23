@@ -52,8 +52,7 @@
 
 namespace blink {
 
-static bool IsAllowed(ScriptState* script_state,
-                      ExecutionContext* execution_context,
+static bool IsAllowed(ExecutionContext* execution_context,
                       bool is_eval,
                       const String& source) {
   if (execution_context->IsDocument()) {
@@ -61,7 +60,7 @@ static bool IsAllowed(ScriptState* script_state,
     if (!document->GetFrame())
       return false;
     if (is_eval && !document->GetContentSecurityPolicy()->AllowEval(
-                       script_state, SecurityViolationReportingPolicy::kReport,
+                       SecurityViolationReportingPolicy::kReport,
                        ContentSecurityPolicy::kWillNotThrowException, source)) {
       return false;
     }
@@ -75,9 +74,9 @@ static bool IsAllowed(ScriptState* script_state,
     ContentSecurityPolicy* policy =
         worker_global_scope->GetContentSecurityPolicy();
     if (is_eval && policy &&
-        !policy->AllowEval(
-            script_state, SecurityViolationReportingPolicy::kReport,
-            ContentSecurityPolicy::kWillNotThrowException, source)) {
+        !policy->AllowEval(SecurityViolationReportingPolicy::kReport,
+                           ContentSecurityPolicy::kWillNotThrowException,
+                           source)) {
       return false;
     }
     return true;
@@ -136,7 +135,7 @@ int WindowOrWorkerGlobalScope::setTimeout(
     int timeout,
     const HeapVector<ScriptValue>& arguments) {
   ExecutionContext* execution_context = event_target.GetExecutionContext();
-  if (!IsAllowed(script_state, execution_context, false, g_empty_string))
+  if (!IsAllowed(execution_context, false, g_empty_string))
     return 0;
   if (timeout >= 0 && execution_context->IsDocument()) {
     // FIXME: Crude hack that attempts to pass idle time to V8. This should
@@ -175,7 +174,7 @@ int WindowOrWorkerGlobalScope::setTimeoutFromString(
     int timeout,
     const HeapVector<ScriptValue>&) {
   ExecutionContext* execution_context = event_target.GetExecutionContext();
-  if (!IsAllowed(script_state, execution_context, true, handler))
+  if (!IsAllowed(execution_context, true, handler))
     return 0;
   // Don't allow setting timeouts to run empty functions.  Was historically a
   // performance issue.
@@ -199,7 +198,7 @@ int WindowOrWorkerGlobalScope::setInterval(
     int timeout,
     const HeapVector<ScriptValue>& arguments) {
   ExecutionContext* execution_context = event_target.GetExecutionContext();
-  if (!IsAllowed(script_state, execution_context, false, g_empty_string))
+  if (!IsAllowed(execution_context, false, g_empty_string))
     return 0;
   ScheduledAction* action = ScheduledAction::Create(
       script_state, execution_context, handler, arguments);
@@ -233,7 +232,7 @@ int WindowOrWorkerGlobalScope::setIntervalFromString(
     int timeout,
     const HeapVector<ScriptValue>&) {
   ExecutionContext* execution_context = event_target.GetExecutionContext();
-  if (!IsAllowed(script_state, execution_context, true, handler))
+  if (!IsAllowed(execution_context, true, handler))
     return 0;
   // Don't allow setting timeouts to run empty functions.  Was historically a
   // performance issue.

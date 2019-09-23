@@ -5,6 +5,8 @@
 
 """Compare the artifacts from two builds."""
 
+from __future__ import print_function
+
 import ast
 import difflib
 import glob
@@ -221,8 +223,10 @@ def get_deps(ninja_path, build_dir, target):
   if build_dir.endswith('.1') or build_dir.endswith('.2'):
     fixed_build_dir = build_dir[:-2]
     if os.path.exists(fixed_build_dir):
-      print >> sys.stderr, ('fixed_build_dir %s exists.'
-                            ' will try to use orig dir.' % fixed_build_dir)
+      print(
+          'fixed_build_dir %s exists.'
+          ' will try to use orig dir.' % fixed_build_dir,
+          file=sys.stderr)
       fixed_build_dir = build_dir
     else:
       shutil.move(build_dir, fixed_build_dir)
@@ -231,7 +235,7 @@ def get_deps(ninja_path, build_dir, target):
     out = subprocess.check_output([ninja_path, '-C', fixed_build_dir,
                                    '-t', 'graph', target])
   except subprocess.CalledProcessError as e:
-    print >> sys.stderr, 'error to get graph for %s: %s' % (target, e)
+    print('error to get graph for %s: %s' % (target, e), file=sys.stderr)
     return []
 
   finally:
@@ -247,8 +251,9 @@ def get_deps(ninja_path, build_dir, target):
       if not os.path.splitext(path)[1] in CHECK_EXTS:
         continue
       if os.path.isabs(path):
-        print >> sys.stderr, ('not support abs path %s used for target %s'
-                              % (path, target))
+        print(
+            'not support abs path %s used for target %s' % (path, target),
+            file=sys.stderr)
         continue
       files.append(path)
   return files
@@ -260,12 +265,12 @@ def compare_deps(first_dir, second_dir, ninja_path, targets):
   for target in targets:
     first_deps = get_deps(ninja_path, first_dir, target)
     second_deps = get_deps(ninja_path, second_dir, target)
-    print 'Checking %s difference: (%s deps)' % (target, len(first_deps))
+    print('Checking %s difference: (%s deps)' % (target, len(first_deps)))
     if set(first_deps) != set(second_deps):
       # Since we do not thiks this case occur, we do not do anything special
       # for this case.
-      print 'deps on %s are different: %s' % (
-          target, set(first_deps).symmetric_difference(set(second_deps)))
+      print('deps on %s are different: %s' %
+            (target, set(first_deps).symmetric_difference(set(second_deps))))
       continue
     max_filepath_len = max([0] + [len(n) for n in first_deps])
     for d in first_deps:
@@ -282,10 +287,10 @@ def compare_build_artifacts(first_dir, second_dir, ninja_path, target_platform,
                             json_output, recursive, use_isolate_files):
   """Compares the artifacts from two distinct builds."""
   if not os.path.isdir(first_dir):
-    print >> sys.stderr, '%s isn\'t a valid directory.' % first_dir
+    print('%s isn\'t a valid directory.' % first_dir, file=sys.stderr)
     return 1
   if not os.path.isdir(second_dir):
-    print >> sys.stderr, '%s isn\'t a valid directory.' % second_dir
+    print('%s isn\'t a valid directory.' % second_dir, file=sys.stderr)
     return 1
 
   epoch_hex = struct.pack('<I', int(time.time())).encode('hex')
@@ -315,8 +320,8 @@ def compare_build_artifacts(first_dir, second_dir, ninja_path, target_platform,
   all_files = sorted(first_list & second_list)
   missing_files = sorted(first_list.symmetric_difference(second_list))
   if missing_files:
-    print >> sys.stderr, 'Different list of files in both directories:'
-    print >> sys.stderr, '\n'.join('  ' + i for i in missing_files)
+    print('Different list of files in both directories:', file=sys.stderr)
+    print('\n'.join('  ' + i for i in missing_files), file=sys.stderr)
     unexpected_diffs.extend(missing_files)
 
   max_filepath_len = 0

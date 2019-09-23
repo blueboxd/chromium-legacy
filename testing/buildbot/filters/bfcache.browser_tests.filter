@@ -1,8 +1,6 @@
 # These tests currently fail when run with --enable-features=BackForwardCache
 
 # Rely on an unload handler to run. It doesn't run.
--CredentialManagerBrowserTest.StoreInUnloadHandler_CrossSite_OnDemandMojoPipe
--CredentialManagerBrowserTest.StoreInUnloadHandler_CrossSite_PreestablishedPipe
 -IsolatedAppTest.IsolatedAppProcessModel
 
 # No focused view.

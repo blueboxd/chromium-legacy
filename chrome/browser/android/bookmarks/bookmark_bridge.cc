@@ -34,12 +34,14 @@
 #include "components/bookmarks/common/android/bookmark_type.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
+#include "components/dom_distiller/core/url_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/query_parser/query_parser.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/undo/bookmark_undo_service.h"
 #include "components/undo/undo_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
@@ -59,6 +61,8 @@ using bookmarks::BookmarkType;
 using content::BrowserThread;
 
 namespace {
+
+const int kInvalidId = -1;
 
 class BookmarkTitleComparer {
  public:
@@ -145,6 +149,39 @@ static jlong JNI_BookmarkBridge_Init(JNIEnv* env,
                                      const JavaParamRef<jobject>& j_profile) {
   BookmarkBridge* delegate = new BookmarkBridge(env, obj, j_profile);
   return reinterpret_cast<intptr_t>(delegate);
+}
+
+static jlong JNI_BookmarkBridge_GetBookmarkIdForWebContents(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jweb_contents,
+    jboolean only_editable) {
+  auto* web_contents = content::WebContents::FromJavaWebContents(jweb_contents);
+  if (!web_contents)
+    return kInvalidId;
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  GURL url = dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
+      web_contents->GetURL());
+
+  // Get all the nodes for |url| and sort them by date added.
+  std::vector<const bookmarks::BookmarkNode*> nodes;
+  bookmarks::ManagedBookmarkService* managed =
+      ManagedBookmarkServiceFactory::GetForProfile(profile);
+  bookmarks::BookmarkModel* model =
+      BookmarkModelFactory::GetForBrowserContext(profile);
+
+  model->GetNodesByURL(url, &nodes);
+  std::sort(nodes.begin(), nodes.end(), &bookmarks::MoreRecentlyAdded);
+
+  // Return the first node matching the search criteria.
+  for (const auto* node : nodes) {
+    if (only_editable && !managed->CanBeEditedByUser(node))
+      continue;
+    return node->id();
+  }
+
+  return kInvalidId;
 }
 
 jboolean BookmarkBridge::IsEditBookmarksEnabled(JNIEnv* env) {

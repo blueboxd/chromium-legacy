@@ -373,8 +373,8 @@ Annotator::~Annotator() {
   }
 }
 
-void Annotator::BindRequest(mojom::AnnotatorRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void Annotator::BindReceiver(mojo::PendingReceiver<mojom::Annotator> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void Annotator::AnnotateImage(

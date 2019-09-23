@@ -239,8 +239,8 @@ class V8VarConverterTest : public testing::Test {
   std::unique_ptr<V8VarConverter> converter_;
 
  private:
-  base::test::SingleThreadTaskEnvironment
-      task_environment_;  // Required to receive callbacks.
+  // Required to receive callbacks.
+  base::test::TaskEnvironment task_environment_;
 
   TestGlobals globals_;
 };

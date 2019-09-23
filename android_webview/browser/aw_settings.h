@@ -79,6 +79,9 @@ class AwSettings : public content::WebContentsObserver {
   void UpdateOffscreenPreRasterLocked(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
+  void UpdateAllowFileAccessLocked(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
 
   void PopulateWebPreferences(content::WebPreferences* web_prefs);
   bool GetAllowFileAccess();
@@ -95,6 +98,7 @@ class AwSettings : public content::WebContentsObserver {
   bool renderer_prefs_initialized_;
   bool javascript_can_open_windows_automatically_;
   bool allow_third_party_cookies_;
+  bool allow_file_access_;
 
   JavaObjectWeakGlobalRef aw_settings_;
 };

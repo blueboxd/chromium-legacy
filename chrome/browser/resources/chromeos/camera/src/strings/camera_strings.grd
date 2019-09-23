@@ -315,18 +315,6 @@
       <message desc="Label for switch to take portrait photo mode button." name="IDS_LABEL_SWITCH_TAKE_PORTRAIT_PHOTO_BUTTON">
         Portrait
       </message>
-      <message desc="Title of banner shown for introducing new camera App UI." name="IDS_BANNER_TITLE">
-        A whole new look
-      </message>
-      <message desc="Message in the banner shown for introducing new camera App UI." name="IDS_BANNER_MSG">
-        Your camera now supports new modes and your photos and videos will be available under your Downloads folders.
-      </message>
-      <message desc="Label for close introducing new camera App UI banner button." name="IDS_BANNER_CLOSE_BUTTON">
-        Close
-      </message>
-      <message desc="Label for learn more about new camera App UI button." name="IDS_BANNER_LEARN_MORE_BUTTON">
-        Learn more
-      </message>
     </messages>
   </release>
 </grit>

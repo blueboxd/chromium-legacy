@@ -315,6 +315,9 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
       _browserLauncher.interfaceProvider.currentInterface.browserState;
   if ([SignedInAccountsViewController
           shouldBePresentedForBrowserState:currentBrowserState]) {
+    // TODO(crbug.com/1006717): Remove these logs once bug 1006717 is fixed.
+    NSLog(@"%s %d:", __FUNCTION__, __LINE__);
+
     [appNavigation presentSignedInAccountsViewControllerForBrowserState:
                        currentBrowserState];
   }

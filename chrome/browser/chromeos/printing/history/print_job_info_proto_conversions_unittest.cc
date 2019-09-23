@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/printing/history/print_job_info_conversions.h"
+#include "chrome/browser/chromeos/printing/history/print_job_info_proto_conversions.h"
 
 #include "base/time/time_override.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
 
-namespace pp = printing::proto;
+namespace proto = printing::proto;
 
 namespace {
 
@@ -23,13 +23,13 @@ constexpr char kUri[] = "ipp://192.168.1.5";
 constexpr char kTitle[] = "title";
 constexpr char kId[] = "id";
 constexpr char kSourceId[] = "extension:123";
-constexpr int kJobCreationTime = 1000;
-constexpr int kJobDuration = 10 * 1000;
+constexpr int64_t kJobCreationTime = 1000;
+constexpr int64_t kJobDuration = 10 * 1000;
 constexpr int kPagesNumber = 3;
 
 }  // namespace
 
-TEST(PrintJobInfoConversionsTest, PrintSettingsToProto) {
+TEST(PrintJobInfoProtoConversionsTest, PrintSettingsToProto) {
   ::printing::PrintSettings settings;
   settings.set_color(::printing::ColorModel::COLOR);
   settings.set_duplex_mode(::printing::DuplexMode::LONG_EDGE);
@@ -39,11 +39,11 @@ TEST(PrintJobInfoConversionsTest, PrintSettingsToProto) {
   settings.set_requested_media(media);
   settings.set_copies(2);
 
-  pp::PrintSettings settings_proto = PrintSettingsToProto(settings);
-  const pp::MediaSize& media_size = settings_proto.media_size();
+  proto::PrintSettings settings_proto = PrintSettingsToProto(settings);
+  const proto::MediaSize& media_size = settings_proto.media_size();
 
-  EXPECT_EQ(pp::PrintSettings_ColorMode_COLOR, settings_proto.color());
-  EXPECT_EQ(pp::PrintSettings_DuplexMode_TWO_SIDED_LONG_EDGE,
+  EXPECT_EQ(proto::PrintSettings_ColorMode_COLOR, settings_proto.color());
+  EXPECT_EQ(proto::PrintSettings_DuplexMode_TWO_SIDED_LONG_EDGE,
             settings_proto.duplex());
   EXPECT_EQ(kWidth, media_size.width());
   EXPECT_EQ(kHeight, media_size.height());
@@ -51,7 +51,7 @@ TEST(PrintJobInfoConversionsTest, PrintSettingsToProto) {
   EXPECT_EQ(2, settings_proto.copies());
 }
 
-TEST(PrintJobInfoConversionsTest, CupsPrintJobToProto) {
+TEST(PrintJobInfoProtoConversionsTest, CupsPrintJobToProto) {
   // Override time so that base::Time::Now() always returns 1 second after the
   // epoch in Unix-like system (Jan 1, 1970).
   base::subtle::ScopedTimeClockOverrides time_override(
@@ -65,8 +65,8 @@ TEST(PrintJobInfoConversionsTest, CupsPrintJobToProto) {
   printer.set_uri(kUri);
   printer.set_source(chromeos::Printer::Source::SRC_POLICY);
 
-  pp::PrintSettings settings;
-  settings.set_color(pp::PrintSettings_ColorMode_COLOR);
+  proto::PrintSettings settings;
+  settings.set_color(proto::PrintSettings_ColorMode_COLOR);
 
   // CupsPrintJob computes the start time of the print job, that's why we have
   // to override base::Time::now() value for the test.
@@ -77,24 +77,24 @@ TEST(PrintJobInfoConversionsTest, CupsPrintJobToProto) {
   base::Time completion_time =
       base::Time::Now() + base::TimeDelta::FromSeconds(10);
 
-  pp::PrintJobInfo print_job_info_proto =
+  proto::PrintJobInfo print_job_info_proto =
       CupsPrintJobToProto(cups_print_job, kId, completion_time);
-  const pp::Printer& printer_proto = print_job_info_proto.printer();
+  const proto::Printer& printer_proto = print_job_info_proto.printer();
 
   EXPECT_EQ(kId, print_job_info_proto.id());
   EXPECT_EQ(kTitle, print_job_info_proto.title());
-  EXPECT_EQ(pp::PrintJobInfo_PrintJobSource_PRINT_PREVIEW,
+  EXPECT_EQ(proto::PrintJobInfo_PrintJobSource_PRINT_PREVIEW,
             print_job_info_proto.source());
   EXPECT_EQ(kSourceId, print_job_info_proto.source_id());
-  EXPECT_EQ(pp::PrintJobInfo_PrintJobStatus_FAILED,
+  EXPECT_EQ(proto::PrintJobInfo_PrintJobStatus_FAILED,
             print_job_info_proto.status());
   EXPECT_EQ(kJobCreationTime, print_job_info_proto.creation_time());
   EXPECT_EQ(kJobCreationTime + kJobDuration,
             print_job_info_proto.completion_time());
   EXPECT_EQ(kName, printer_proto.name());
   EXPECT_EQ(kUri, printer_proto.uri());
-  EXPECT_EQ(pp::Printer_PrinterSource_POLICY, printer_proto.source());
-  EXPECT_EQ(pp::PrintSettings_ColorMode_COLOR,
+  EXPECT_EQ(proto::Printer_PrinterSource_POLICY, printer_proto.source());
+  EXPECT_EQ(proto::PrintSettings_ColorMode_COLOR,
             print_job_info_proto.settings().color());
   EXPECT_EQ(kPagesNumber, print_job_info_proto.number_of_pages());
 }

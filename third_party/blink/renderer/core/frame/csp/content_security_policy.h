@@ -232,12 +232,10 @@ class CORE_EXPORT ContentSecurityPolicy final
   // exception in the event of a violation. When the caller will throw
   // an exception, ContentSecurityPolicy does not log a violation
   // message to the console because it would be redundant.
-  bool AllowEval(ScriptState*,
-                 SecurityViolationReportingPolicy,
+  bool AllowEval(SecurityViolationReportingPolicy,
                  ExceptionStatus,
                  const String& script_content) const;
-  bool AllowWasmEval(ScriptState*,
-                     SecurityViolationReportingPolicy,
+  bool AllowWasmEval(SecurityViolationReportingPolicy,
                      ExceptionStatus,
                      const String& script_content) const;
   bool AllowPluginType(const String& type,

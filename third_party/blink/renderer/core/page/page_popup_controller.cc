@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/page/page_popup_controller.h"
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/page/page_popup.h"
 #include "third_party/blink/renderer/core/page/page_popup_client.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
@@ -100,8 +101,7 @@ String PagePopupController::formatWeek(int year,
   DCHECK(set_week_result);
   String localized_week = popup_client_->GetLocale().FormatDateTime(week);
   return popup_client_->GetLocale().QueryString(
-      WebLocalizedString::kAXCalendarWeekDescription, localized_week,
-      localized_date_string);
+      IDS_AX_CALENDAR_WEEK_DESCRIPTION, localized_week, localized_date_string);
 }
 
 void PagePopupController::ClearPagePopupClient() {

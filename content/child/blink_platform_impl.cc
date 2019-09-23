@@ -92,16 +92,6 @@ int ToMessageID(int resource_id) {
   switch (resource_id) {
     case WebLocalizedString::kAXAMPMFieldText:
       return IDS_AX_AM_PM_FIELD_TEXT;
-    case WebLocalizedString::kAXCalendarShowDatePicker:
-      return IDS_AX_CALENDAR_SHOW_DATE_PICKER;
-    case WebLocalizedString::kAXCalendarShowMonthSelector:
-      return IDS_AX_CALENDAR_SHOW_MONTH_SELECTOR;
-    case WebLocalizedString::kAXCalendarShowNextMonth:
-      return IDS_AX_CALENDAR_SHOW_NEXT_MONTH;
-    case WebLocalizedString::kAXCalendarShowPreviousMonth:
-      return IDS_AX_CALENDAR_SHOW_PREVIOUS_MONTH;
-    case WebLocalizedString::kAXCalendarWeekDescription:
-      return IDS_AX_CALENDAR_WEEK_DESCRIPTION;
     case WebLocalizedString::kAXDayOfMonthFieldText:
       return IDS_AX_DAY_OF_MONTH_FIELD_TEXT;
     case WebLocalizedString::kAXHourFieldText:
@@ -188,10 +178,6 @@ int ToMessageID(int resource_id) {
       return IDS_FORM_CALENDAR_TODAY;
     case WebLocalizedString::kDetailsLabel:
       return IDS_DETAILS_WITHOUT_SUMMARY_LABEL;
-    case WebLocalizedString::kFileButtonChooseFileLabel:
-      return IDS_FORM_FILE_BUTTON_LABEL;
-    case WebLocalizedString::kFileButtonChooseMultipleFilesLabel:
-      return IDS_FORM_MULTIPLE_FILES_BUTTON_LABEL;
     case WebLocalizedString::kFileButtonNoFileSelectedLabel:
       return IDS_FORM_FILE_NO_FILE_LABEL;
     case WebLocalizedString::kInputElementAltText:
@@ -342,14 +328,17 @@ int ToMessageID(int resource_id) {
       return IDS_UNITS_TEBIBYTES;
     case WebLocalizedString::kUnitsPebibytes:
       return IDS_UNITS_PEBIBYTES;
+    // There is no matched IDS_FOO for kBlockedPluginText. Return -1.
+    case WebLocalizedString::kBlockedPluginText:
+      return -1;
     // This "default:" line exists to avoid compile warnings about enum
-    // coverage when we add a new symbol to WebLocalizedString.h in WebKit.
-    // After a planned WebKit patch is landed, we need to add a case statement
+    // coverage when we add a new symbol to WebLocalizedString.h in blink.
+    // After a planned blink patch is landed, we need to add a case statement
     // for the added symbol here.
     default:
       break;
   }
-  return -1;
+  return resource_id;
 }
 
 // This must match third_party/WebKit/public/blink_resources.grd.

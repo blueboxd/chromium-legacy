@@ -771,7 +771,11 @@ def _RunLogcat(device, package_name, mapping_path, verbose):
       try:
         logcat_processor.ProcessLine(line, fast)
       except:
-        sys.stderr.write('Failed to process line: ' + line)
+        sys.stderr.write('Failed to process line: ' + line + '\n')
+        # Skip stack trace for the common case of the adb server being
+        # restarted.
+        if 'unexpected EOF' in line:
+          sys.exit(1)
         raise
       if fast and nonce in line:
         fast = False

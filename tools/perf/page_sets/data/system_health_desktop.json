@@ -111,6 +111,9 @@
         "browse:tools:maps": {
             "DEFAULT": "system_health_desktop_052.wprgo"
         },
+        "browse:tools:maps:2019": {
+            "DEFAULT": "system_health_desktop_feb332ef0c.wprgo"
+        },
         "browse_accessibility:media:youtube": {
             "DEFAULT": "system_health_desktop_062.wprgo"
         },

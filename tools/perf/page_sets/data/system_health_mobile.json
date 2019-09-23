@@ -120,6 +120,9 @@
         "browse:tools:maps": {
             "DEFAULT": "system_health_mobile_059.wprgo"
         },
+        "browse:tools:maps:2019": {
+            "DEFAULT": "system_health_mobile_7cf5a0d314.wprgo"
+        },
         "load:games:bubbles": {
             "DEFAULT": "system_health_mobile_005.wprgo"
         },
@@ -260,6 +263,9 @@
         },
         "load:social:twitter": {
             "DEFAULT": "system_health_mobile_022.wprgo"
+        },
+        "load:social:twitter:2019": {
+            "DEFAULT": "system_health_mobile_b29c43a85b.wprgo"
         },
         "load:tools:docs": {
             "DEFAULT": "system_health_mobile_004.wprgo"

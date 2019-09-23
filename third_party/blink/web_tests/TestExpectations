@@ -194,7 +194,8 @@ crbug.com/774873 [ Mac ] virtual/exotic-color-space/images/color-profile-border-
 crbug.com/774873 [ Linux ] virtual/exotic-color-space/images/color-profile-border-fade.html [ Pass Failure ]
 crbug.com/774873 [ Win ] virtual/exotic-color-space/images/color-profile-border-fade.html [ Pass Failure ]
 
-crbug.com/974652 [ Linux Debug ] virtual/gpu/fast/canvas/OffscreenCanvas-copyImage.html [ Pass Failure ]
+crbug.com/974652 [ Debug ] virtual/gpu/fast/canvas/OffscreenCanvas-copyImage.html [ Pass Failure ]
+crbug.com/974652 [ Debug ] fast/canvas/OffscreenCanvas-copyImage.html [ Pass Failure ]
 
 crbug.com/974666 [ Mac10.13 ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Pass Failure ]
 crbug.com/974720 [ Mac10.13 ] fast/text/firstline/capitalize-transform-2.html [ Pass Crash ]
@@ -2236,8 +2237,6 @@ crbug.com/520611 [ Debug ] fast/filesystem/workers/file-writer-events-shared-wor
 crbug.com/520194 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
 
 crbug.com/771233 [ Win10 ] http/tests/devtools/audits/ [ Skip ]
-
-crbug.com/923269 fast/canvas/OffscreenCanvas-copyImage.html [ Pass Failure ]
 
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]
@@ -4328,9 +4327,9 @@ crbug.com/626703 [ Win ] external/wpt/css/css-writing-modes/box-offsets-rel-pos-
 
 # Sheriff 2019-08-19:
 crbug.com/626703 external/wpt/html/cross-origin-embedder-policy/none.https.html [ Failure ]
-crbug.com/626703 external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure ]
 crbug.com/626703 external/wpt/html/cross-origin-opener-policy/coop-sandbox.https.html [ Failure ]
-crbug.com/626703 [ Linux Mac10.10 ] virtual/cross-origin-embedder-policy/external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Pass Failure ]
+crbug.com/626703 [ Debug ] external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure ]
+crbug.com/626703 [ Debug ] virtual/cross-origin-embedder-policy/external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Pass Failure ]
 crbug.com/626703 [ Linux Mac10.10 ] virtual/cross-origin-embedder-policy/external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure ]
 
 # Failure due to on-going off-thread paint worklet project.
@@ -4818,6 +4817,7 @@ crbug.com/832447 virtual/audio-service/media/controls/controls-page-zoom-in.html
 crbug.com/832447 virtual/audio-service/media/controls/controls-page-zoom-out.html [ Failure Pass ]
 crbug.com/849694 [ Mac ] http/tests/media/controls/toggle-class-with-state-source-buffer.html [ Failure Pass ]
 crbug.com/849694 [ Mac ] virtual/audio-service/http/tests/media/controls/toggle-class-with-state-source-buffer.html [ Failure Pass ]
+crbug.com/832447 virtual/audio-service/media/video-played-reset.html [ Failure Pass ]
 
 # ContentSecurityPolicy modifies the SchemeRegistry before some initialization.
 crbug.com/686118 http/tests/security/contentSecurityPolicy/register-bypassing-scheme.html [ Pass Crash ]

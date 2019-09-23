@@ -7,6 +7,8 @@
 #include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -61,18 +63,17 @@ bool IsInNavigationScopeForLaunchUrl(const GURL& launch_url, const GURL& url) {
          base::StringPiece(url.spec()).substr(0, scope_str_length);
 }
 
-const Extension* GetInstalledShortcutForUrl(
-    content::BrowserContext* browser_context,
-    const GURL& url) {
-  const ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context);
+const Extension* GetInstalledShortcutForUrl(Profile* profile, const GURL& url) {
+  const ExtensionPrefs* prefs = ExtensionPrefs::Get(profile);
+  web_app::AppRegistrar& registrar =
+      web_app::WebAppProviderBase::GetProviderBase(profile)->registrar();
   for (scoped_refptr<const Extension> app :
-       ExtensionRegistry::Get(browser_context)->enabled_extensions()) {
+       ExtensionRegistry::Get(profile)->enabled_extensions()) {
     if (!app->from_bookmark())
       continue;
     if (!BookmarkAppIsLocallyInstalled(prefs, app.get()))
       continue;
-    // Skip PWAs.
-    if (UrlHandlers::CanBookmarkAppHandleUrl(app.get(), url))
+    if (!registrar.IsShortcutApp(app->id()))
       continue;
 
     const GURL launch_url = AppLaunchInfo::GetLaunchWebURL(app.get());

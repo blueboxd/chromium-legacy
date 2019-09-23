@@ -78,6 +78,10 @@ class PlatformWindow : public PropertyHandler {
   virtual void SetRestoredBoundsInPixels(const gfx::Rect& bounds) = 0;
   virtual gfx::Rect GetRestoredBoundsInPixels() const = 0;
 
+  // Tells if the content of the platform window should be transparent. By
+  // default returns false.
+  virtual bool ShouldWindowContentsBeTransparent() const;
+
   // Sets and gets ZOrderLevel of the PlatformWindow. Such platforms that do not
   // support ordering, should not implement these methods as the default
   // implementation always returns ZOrderLevel::kNormal value.

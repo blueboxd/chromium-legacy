@@ -107,7 +107,7 @@ public class AppMenuIconRowFooter extends LinearLayout implements View.OnClickLi
     private void updateBookmarkMenuItem(BookmarkBridge bookmarkBridge, Tab currentTab) {
         mBookmarkButton.setEnabled(bookmarkBridge.isEditBookmarksEnabled());
 
-        if (currentTab.getBookmarkId() != Tab.INVALID_BOOKMARK_ID) {
+        if (BookmarkBridge.hasBookmarkIdForTab(currentTab)) {
             mBookmarkButton.setImageResource(R.drawable.btn_star_filled);
             mBookmarkButton.setContentDescription(getContext().getString(R.string.edit_bookmark));
             ApiCompatibilityUtils.setImageTintList(mBookmarkButton,

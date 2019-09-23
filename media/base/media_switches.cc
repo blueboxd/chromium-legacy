@@ -167,6 +167,10 @@ const char kOverrideEnabledCdmInterfaceVersion[] =
 const char kOverrideHardwareSecureCodecsForTesting[] =
     "override-hardware-secure-codecs-for-testing";
 
+// Enables GpuMemoryBuffer-based buffer pool.
+const char kVideoCaptureUseGpuMemoryBuffer[] =
+    "video-capture-use-gpu-memory-buffer";
+
 namespace autoplay {
 
 // Autoplay policy that requires a document user activation.

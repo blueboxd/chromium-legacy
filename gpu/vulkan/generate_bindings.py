@@ -225,12 +225,12 @@ LICENSE_AND_HEADER = """\
 
 def WriteFunctions(file, functions, template, check_extension=False):
   for group in functions:
-    if group.has_key('ifdef'):
+    if 'ifdef' in group:
       file.write('#if %s\n' % group['ifdef'])
 
-    extension = group['extension'] if group.has_key('extension') else ''
+    extension = group['extension'] if 'extension' in group else ''
     min_api_version = \
-        group['min_api_version'] if group.has_key('min_api_version') else ''
+        group['min_api_version'] if 'min_api_version' in group else ''
 
     if not check_extension:
       for func in group['functions']:
@@ -255,7 +255,7 @@ def WriteFunctions(file, functions, template, check_extension=False):
                    extension)
 
         extension_suffix = \
-            group['extension_suffix'] if group.has_key('extension_suffix') \
+            group['extension_suffix'] if 'extension_suffix' in group \
             else ''
         for func in group['functions']:
           file.write(template.substitute(
@@ -263,7 +263,7 @@ def WriteFunctions(file, functions, template, check_extension=False):
 
         file.write('}\n')
 
-    if group.has_key('ifdef'):
+    if 'ifdef' in group:
       file.write('#endif  // %s\n' % group['ifdef'])
 
     file.write('\n')
@@ -365,7 +365,7 @@ struct VulkanFunctionPointers {
 // Unassociated functions
 """)
 
-  WriteMacros(file, [{'functions':[ 'vkGetInstanceProcAddr' ]}])
+  WriteMacros(file, [{'functions': [ 'vkGetInstanceProcAddr' ]}])
   WriteMacros(file, VULKAN_UNASSOCIATED_FUNCTIONS)
 
   file.write("""\

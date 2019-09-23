@@ -38,7 +38,7 @@ ImageAnnotationService::~ImageAnnotationService() = default;
 
 void ImageAnnotationService::OnStart() {
   registry_.AddInterface<mojom::Annotator>(base::BindRepeating(
-      &Annotator::BindRequest, base::Unretained(&annotator_)));
+      &Annotator::BindReceiver, base::Unretained(&annotator_)));
 }
 
 // service_manager::Service:

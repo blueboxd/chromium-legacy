@@ -620,10 +620,12 @@ class ProfileMenuClickTest : public InProcessBrowserTest,
         GetExpectedActionableItemAtIndex(GetParam()), /*count=*/1);
   }
 
+  void SetTargetBrowser(Browser* browser) { target_browser_ = browser; }
+
  private:
   void OpenProfileMenu() {
-    BrowserView* browser_view =
-        BrowserView::GetBrowserViewForBrowser(browser());
+    BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(
+        target_browser_ ? target_browser_ : browser());
     views::View* avatar_button =
         browser_view->toolbar()->GetAvatarToolbarButton();
     DCHECK(avatar_button);
@@ -661,6 +663,8 @@ class ProfileMenuClickTest : public InProcessBrowserTest,
 
   base::test::ScopedFeatureList scoped_feature_list_;
   base::HistogramTester histogram_tester_;
+
+  Browser* target_browser_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileMenuClickTest);
 };
@@ -837,3 +841,46 @@ INSTANTIATE_TEST_SUITE_P(
         size_t(0),
         base::size(ProfileMenuClickTest_WithUnconsentedPrimaryAccount::
                        kOrderedActionableItems)));
+
+class ProfileMenuClickTest_GuestProfile : public ProfileMenuClickTest {
+ public:
+  // List of actionable items in the correct order as they appear in the menu.
+  // If a new button is added to the menu, it should also be added to this list.
+  static constexpr ProfileMenuView::ActionableItem kOrderedActionableItems[2] =
+      {ProfileMenuView::ActionableItem::kOtherProfileButton,
+       // The first button is added again to finish the cycle and test that
+       // there are no other buttons at the end.
+       ProfileMenuView::ActionableItem::kOtherProfileButton};
+
+  ProfileMenuClickTest_GuestProfile() = default;
+
+  ProfileMenuView::ActionableItem GetExpectedActionableItemAtIndex(
+      size_t index) override {
+    return kOrderedActionableItems[index];
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ProfileMenuClickTest_GuestProfile);
+};
+
+// static
+constexpr ProfileMenuView::ActionableItem
+    ProfileMenuClickTest_GuestProfile::kOrderedActionableItems[];
+
+IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_GuestProfile, SetupAndRunTest) {
+  profiles::SwitchToGuestProfile(ProfileManager::CreateCallback());
+  ui_test_utils::WaitForBrowserToOpen();
+  Profile* guest = g_browser_process->profile_manager()->GetProfileByPath(
+      ProfileManager::GetGuestProfilePath());
+  ASSERT_TRUE(guest);
+  SetTargetBrowser(chrome::FindAnyBrowser(guest, true));
+
+  RunTest();
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    ProfileMenuClickTest_GuestProfile,
+    ::testing::Range(
+        size_t(0),
+        base::size(
+            ProfileMenuClickTest_GuestProfile::kOrderedActionableItems)));

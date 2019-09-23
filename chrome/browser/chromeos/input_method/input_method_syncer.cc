@@ -43,7 +43,7 @@ void CheckAndResolveInputMethodIDs(
                  extension_ime_util::GetInputMethodIDByEngineID);
 
   // Remove values that aren't found in the set of supported input method IDs.
-  std::vector<std::string>::iterator it = values->begin();
+  auto it = values->begin();
   while (it != values->end()) {
     if (it->size() && supported_input_method_ids.find(*it) !=
                       supported_input_method_ids.end()) {
@@ -69,7 +69,7 @@ std::string CheckAndResolveLocales(const std::string& languages) {
   std::sort(accept_language_codes.begin(), accept_language_codes.end());
 
   // Remove unsupported language values.
-  std::vector<std::string>::iterator value_iter = values.begin();
+  auto value_iter = values.begin();
   while (value_iter != values.end()) {
     if (binary_search(accept_language_codes.begin(),
                       accept_language_codes.end(),

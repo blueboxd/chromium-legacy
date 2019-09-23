@@ -36,11 +36,6 @@ namespace blink {
 struct WebLocalizedString {
   enum Name {
     kAXAMPMFieldText,
-    kAXCalendarShowDatePicker,
-    kAXCalendarShowMonthSelector,
-    kAXCalendarShowNextMonth,
-    kAXCalendarShowPreviousMonth,
-    kAXCalendarWeekDescription,
     kAXDayOfMonthFieldText,
     kAXHourFieldText,
     kAXMediaAudioElement,
@@ -86,8 +81,6 @@ struct WebLocalizedString {
     kCalendarClear,
     kCalendarToday,
     kDetailsLabel,
-    kFileButtonChooseFileLabel,
-    kFileButtonChooseMultipleFilesLabel,
     kFileButtonNoFileSelectedLabel,
     kInputElementAltText,
     kMediaRemotingCastText,

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/crostini/crostini_installer_types.mojom.h"
 #include "chrome/browser/ui/views/crostini/crostini_installer_view.h"
 
 #include "base/bind.h"
@@ -22,9 +23,8 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/views/window/dialog_client_view.h"
 
-using Error = crostini::CrostiniInstallerUIDelegate::Error;
-using InstallationState =
-    crostini::CrostiniInstallerUIDelegate::InstallationState;
+using crostini::mojom::InstallerError;
+using crostini::mojom::InstallerState;
 
 class CrostiniInstallerViewBrowserTest : public CrostiniDialogBrowserTest {
  public:
@@ -82,11 +82,9 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, InstallFlow) {
       << "Install() should be called";
   EXPECT_TRUE(fake_delegate_.result_callback_);
 
-  fake_delegate_.progress_callback_.Run(InstallationState::CREATE_CONTAINER,
-                                        0.4);
-  fake_delegate_.progress_callback_.Run(InstallationState::MOUNT_CONTAINER,
-                                        0.8);
-  std::move(fake_delegate_.result_callback_).Run(Error::NONE);
+  fake_delegate_.progress_callback_.Run(InstallerState::kCreateContainer, 0.4);
+  fake_delegate_.progress_callback_.Run(InstallerState::kMountContainer, 0.8);
+  std::move(fake_delegate_.result_callback_).Run(InstallerError::kNone);
 
   // This allow the dialog to be destructed.
   base::RunLoop().RunUntilIdle();
@@ -104,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, ErrorThenCancel) {
 
   ASSERT_TRUE(fake_delegate_.result_callback_);
   std::move(fake_delegate_.result_callback_)
-      .Run(Error::ERROR_CREATING_DISK_IMAGE);
+      .Run(InstallerError::kErrorCreatingDiskImage);
 
   EXPECT_FALSE(ActiveView()->GetWidget()->IsClosed());
   EXPECT_TRUE(HasEnabledAcceptButton());
@@ -129,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, ErrorThenRetry) {
 
   ASSERT_TRUE(fake_delegate_.result_callback_);
   std::move(fake_delegate_.result_callback_)
-      .Run(Error::ERROR_CREATING_DISK_IMAGE);
+      .Run(InstallerError::kErrorCreatingDiskImage);
 
   EXPECT_FALSE(ActiveView()->GetWidget()->IsClosed());
   EXPECT_TRUE(HasEnabledAcceptButton());
@@ -140,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, ErrorThenRetry) {
   EXPECT_TRUE(fake_delegate_.result_callback_)
       << "Install() should be called again";
 
-  std::move(fake_delegate_.result_callback_).Run(Error::NONE);
+  std::move(fake_delegate_.result_callback_).Run(InstallerError::kNone);
 
   // This allow the dialog to be destructed.
   base::RunLoop().RunUntilIdle();

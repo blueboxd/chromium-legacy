@@ -23,7 +23,6 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source_type.h"
 #include "net/proxy_resolution/dhcp_pac_file_fetcher.h"
-#include "net/proxy_resolution/dhcp_pac_file_fetcher_factory.h"
 #include "net/proxy_resolution/pac_file_fetcher.h"
 #include "net/url_request/url_request_context.h"
 

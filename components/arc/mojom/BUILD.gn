@@ -67,6 +67,7 @@ if (is_chromeos) {
     ]
 
     public_deps = [
+      ":camera_intent",
       ":media",
       ":notifications",
       "//media/capture/video/chromeos/mojom:cros_camera",
@@ -77,6 +78,12 @@ if (is_chromeos) {
       "//ui/accessibility/mojom",
       "//ui/gfx/geometry/mojom",
       "//url/mojom:url_mojom_gurl",
+    ]
+  }
+
+  mojom("camera_intent") {
+    sources = [
+      "camera_intent.mojom",
     ]
   }
 

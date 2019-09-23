@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
@@ -435,6 +436,25 @@ void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
 
 gfx::NativeWindow DesktopNativeWidgetAura::GetNativeWindow() const {
   return content_window_;
+}
+
+void DesktopNativeWidgetAura::UpdateWindowTransparency() {
+  if (!desktop_window_tree_host_->ShouldUpdateWindowTransparency())
+    return;
+
+  const bool transparent =
+      desktop_window_tree_host_->ShouldWindowContentsBeTransparent();
+
+  auto* window_tree_host = desktop_window_tree_host_->AsWindowTreeHost();
+  window_tree_host->compositor()->SetBackgroundColor(
+      transparent ? SK_ColorTRANSPARENT : SK_ColorWHITE);
+  window_tree_host->window()->SetTransparent(transparent);
+
+  content_window_->SetTransparent(transparent);
+  // Regardless of transparency or not, this root content window will always
+  // fill its bounds completely, so set this flag to true to avoid an
+  // unecessary clear before update.
+  content_window_->SetFillsBoundsCompletely(true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1250,18 +1270,6 @@ void DesktopNativeWidgetAura::OnHostMovedInPixels(
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopNativeWidgetAura, private:
-
-void DesktopNativeWidgetAura::UpdateWindowTransparency() {
-  if (!desktop_window_tree_host_->ShouldUpdateWindowTransparency())
-    return;
-
-  content_window_->SetTransparent(
-      desktop_window_tree_host_->ShouldWindowContentsBeTransparent());
-  // Regardless of transparency or not, this root content window will always
-  // fill its bounds completely, so set this flag to true to avoid an
-  // unecessary clear before update.
-  content_window_->SetFillsBoundsCompletely(true);
-}
 
 void DesktopNativeWidgetAura::RootWindowDestroyed() {
   cursor_reference_count_--;

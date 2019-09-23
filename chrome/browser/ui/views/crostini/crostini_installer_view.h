@@ -43,10 +43,6 @@ class CrostiniInstallerView : public views::DialogDelegateView,
   void LinkClicked(views::Link* source, int event_flags) override;
 
  private:
-  using InstallationState =
-      crostini::CrostiniInstallerUIDelegate::InstallationState;
-  using Error = crostini::CrostiniInstallerUIDelegate::Error;
-
   enum class State {
     PROMPT,
     INSTALLING,
@@ -61,14 +57,14 @@ class CrostiniInstallerView : public views::DialogDelegateView,
       crostini::CrostiniInstallerUIDelegate* delegate);
   ~CrostiniInstallerView() override;
 
-  void OnProgressUpdate(InstallationState installing_state,
+  void OnProgressUpdate(crostini::mojom::InstallerState installing_state,
                         double progress_fraction);
-  void OnInstallFinished(Error error);
+  void OnInstallFinished(crostini::mojom::InstallerError error);
   void OnCanceled();
   void SetMessageLabel();
 
   State state_ = State::PROMPT;
-  InstallationState installing_state_;
+  crostini::mojom::InstallerState installing_state_;
   Profile* profile_;
   crostini::CrostiniInstallerUIDelegate* delegate_;
 

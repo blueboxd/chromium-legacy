@@ -600,7 +600,7 @@ void DownloadRequestLimiter::CanDownloadImpl(
   GURL initiator = request_initiator ? request_initiator->GetURL()
                                      : originating_contents->GetVisibleURL();
   url::Origin origin =
-      request_initiator
+      request_initiator && !request_initiator->opaque()
           ? request_initiator.value()
           : url::Origin::Create(originating_contents->GetVisibleURL());
   DownloadStatus status = state->GetDownloadStatus(origin);

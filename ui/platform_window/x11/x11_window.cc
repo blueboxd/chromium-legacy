@@ -217,6 +217,10 @@ gfx::Rect X11Window::GetRestoredBoundsInPixels() const {
   return gfx::Rect();
 }
 
+bool X11Window::ShouldWindowContentsBeTransparent() const {
+  return XWindow::has_alpha();
+}
+
 void X11Window::SetZOrderLevel(ZOrderLevel order) {
   z_order_ = order;
 

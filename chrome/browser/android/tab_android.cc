@@ -19,8 +19,6 @@
 #include "chrome/browser/android/metrics/uma_utils.h"
 #include "chrome/browser/android/tab_printer.h"
 #include "chrome/browser/android/tab_web_contents_delegate_android.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -44,11 +42,6 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/common/url_constants.h"
-#include "components/bookmarks/browser/bookmark_model.h"
-#include "components/bookmarks/browser/bookmark_node.h"
-#include "components/bookmarks/browser/bookmark_utils.h"
-#include "components/bookmarks/managed/managed_bookmark_service.h"
-#include "components/dom_distiller/core/url_utils.h"
 #include "components/sessions/content/content_live_tab.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/url_formatter/url_fixer.h"
@@ -519,33 +512,6 @@ void TabAndroid::LoadOriginalImage(JNIEnv* env,
   mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame> renderer;
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&renderer);
   renderer->RequestReloadImageForContextNode();
-}
-
-jlong TabAndroid::GetBookmarkId(JNIEnv* env,
-                                const JavaParamRef<jobject>& obj,
-                                jboolean only_editable) {
-  GURL url = dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
-      web_contents()->GetURL());
-  Profile* profile = GetProfile();
-
-  // Get all the nodes for |url| and sort them by date added.
-  std::vector<const bookmarks::BookmarkNode*> nodes;
-  bookmarks::ManagedBookmarkService* managed =
-      ManagedBookmarkServiceFactory::GetForProfile(profile);
-  bookmarks::BookmarkModel* model =
-      BookmarkModelFactory::GetForBrowserContext(profile);
-
-  model->GetNodesByURL(url, &nodes);
-  std::sort(nodes.begin(), nodes.end(), &bookmarks::MoreRecentlyAdded);
-
-  // Return the first node matching the search criteria.
-  for (const auto* node : nodes) {
-    if (only_editable && !managed->CanBeEditedByUser(node))
-      continue;
-    return node->id();
-  }
-
-  return -1;
 }
 
 bool TabAndroid::HasPrerenderedUrl(JNIEnv* env,

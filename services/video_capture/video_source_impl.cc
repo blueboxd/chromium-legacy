@@ -38,11 +38,12 @@ void VideoSourceImpl::CreatePushSubscription(
     mojo::PendingRemote<mojom::Receiver> subscriber,
     const media::VideoCaptureParams& requested_settings,
     bool force_reopen_with_new_settings,
-    mojom::PushVideoStreamSubscriptionRequest subscription_request,
+    mojo::PendingReceiver<mojom::PushVideoStreamSubscription>
+        subscription_receiver,
     CreatePushSubscriptionCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto subscription = std::make_unique<PushVideoStreamSubscriptionImpl>(
-      std::move(subscription_request), std::move(subscriber),
+      std::move(subscription_receiver), std::move(subscriber),
       requested_settings, std::move(callback), &broadcaster_, &device_);
   subscription->SetOnClosedHandler(base::BindOnce(
       &VideoSourceImpl::OnPushSubscriptionClosedOrDisconnectedOrDiscarded,

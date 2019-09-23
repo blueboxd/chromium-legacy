@@ -81,3 +81,16 @@ appearance. The controller consists of two parts:
   * **TouchToFillMediator** which handles request to the component API and changes
     the model accordingly. Interactions with the view are typically handled here
     and either affect the model or notify callers of the component API.
+
+
+## View
+
+The view contains all parts that are necessary to display the bottom sheet. It
+consists of two parts:
+
+ * **TouchToFillViewBinder** which maps model changes to the view. For the
+   Touch To Fill component, the ViewBinder also supports an Adapter that binds
+   changes to the `CREDENTIAL_LIST` property to the RecyclerView inside the
+   bottom sheet.
+ * **TouchToFillView** which uses the BottomSheetController to create and
+   modify the bottom sheet where credentials are displayed.

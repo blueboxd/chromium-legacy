@@ -14,6 +14,7 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/crostini/crostini_installer_types.mojom.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_terminal.h"
@@ -29,13 +30,13 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 
+using crostini::mojom::InstallerError;
+using crostini::mojom::InstallerState;
+
 namespace crostini {
 
 namespace {
-
-using Error = CrostiniInstallerUIDelegate::Error;
 using SetupResult = CrostiniInstaller::SetupResult;
-using InstallationState = CrostiniInstallerUIDelegate::InstallationState;
 
 class CrostiniInstallerFactory : public BrowserContextKeyedServiceFactory {
  public:
@@ -99,57 +100,57 @@ void RecordTimeFromDeviceSetupToInstallMetric() {
       }));
 }
 
-SetupResult ErrorToSetupResult(Error error) {
+SetupResult ErrorToSetupResult(InstallerError error) {
   switch (error) {
-    case Error::NONE:
+    case InstallerError::kNone:
       return SetupResult::kSuccess;
-    case Error::ERROR_LOADING_TERMINA:
+    case InstallerError::kErrorLoadingTermina:
       return SetupResult::kErrorLoadingTermina;
-    case Error::ERROR_STARTING_CONCIERGE:
+    case InstallerError::kErrorStartingConcierge:
       return SetupResult::kErrorStartingConcierge;
-    case Error::ERROR_CREATING_DISK_IMAGE:
+    case InstallerError::kErrorCreatingDiskImage:
       return SetupResult::kErrorCreatingDiskImage;
-    case Error::ERROR_STARTING_TERMINA:
+    case InstallerError::kErrorStartingTermina:
       return SetupResult::kErrorStartingTermina;
-    case Error::ERROR_STARTING_CONTAINER:
+    case InstallerError::kErrorStartingContainer:
       return SetupResult::kErrorStartingContainer;
-    case Error::ERROR_OFFLINE:
+    case InstallerError::kErrorOffline:
       return SetupResult::kErrorOffline;
-    case Error::ERROR_FETCHING_SSH_KEYS:
+    case InstallerError::kErrorFetchingSshKeys:
       return SetupResult::kErrorFetchingSshKeys;
-    case Error::ERROR_MOUNTING_CONTAINER:
+    case InstallerError::kErrorMountingContainer:
       return SetupResult::kErrorMountingContainer;
-    case Error::ERROR_SETTING_UP_CONTAINER:
+    case InstallerError::kErrorSettingUpContainer:
       return SetupResult::kErrorSettingUpContainer;
-    case Error::ERROR_INSUFFICIENT_DISK_SPACE:
+    case InstallerError::kErrorInsufficientDiskSpace:
       return SetupResult::kErrorInsufficientDiskSpace;
   }
 
   NOTREACHED();
 }
 
-SetupResult InstallationStateToCancelledSetupResult(
-    InstallationState installing_state) {
+SetupResult InstallStateToCancelledSetupResult(
+    InstallerState installing_state) {
   switch (installing_state) {
-    case InstallationState::START:
+    case InstallerState::kStart:
       return SetupResult::kUserCancelledStart;
-    case InstallationState::INSTALL_IMAGE_LOADER:
+    case InstallerState::kInstallImageLoader:
       return SetupResult::kUserCancelledInstallImageLoader;
-    case InstallationState::START_CONCIERGE:
+    case InstallerState::kStartConcierge:
       return SetupResult::kUserCancelledStartConcierge;
-    case InstallationState::CREATE_DISK_IMAGE:
+    case InstallerState::kCreateDiskImage:
       return SetupResult::kUserCancelledCreateDiskImage;
-    case InstallationState::START_TERMINA_VM:
+    case InstallerState::kStartTerminaVm:
       return SetupResult::kUserCancelledStartTerminaVm;
-    case InstallationState::CREATE_CONTAINER:
+    case InstallerState::kCreateContainer:
       return SetupResult::kUserCancelledCreateContainer;
-    case InstallationState::SETUP_CONTAINER:
+    case InstallerState::kSetupContainer:
       return SetupResult::kUserCancelledSetupContainer;
-    case InstallationState::START_CONTAINER:
+    case InstallerState::kStartContainer:
       return SetupResult::kUserCancelledStartContainer;
-    case InstallationState::FETCH_SSH_KEYS:
+    case InstallerState::kFetchSshKeys:
       return SetupResult::kUserCancelledFetchSshKeys;
-    case InstallationState::MOUNT_CONTAINER:
+    case InstallerState::kMountContainer:
       return SetupResult::kUserCancelledMountContainer;
   }
 
@@ -228,7 +229,7 @@ void CrostiniInstaller::Cancel(base::OnceClosure callback) {
   progress_callback_.Reset();
   cancel_callback_ = std::move(callback);
 
-  if (installing_state_ == InstallationState::START) {
+  if (installing_state_ == InstallerState::kStart) {
     // We have not called |RestartCrostini()| yet.
     DCHECK_EQ(restart_id_, CrostiniManager::kUninitializedRestartId);
     // OnAvailableDiskSpace() will take care of |cancel_callback_|.
@@ -248,7 +249,7 @@ void CrostiniInstaller::Cancel(base::OnceClosure callback) {
   crostini::CrostiniManager::GetForProfile(profile_)->AbortRestartCrostini(
       restart_id_, base::DoNothing());
   restart_id_ = CrostiniManager::kUninitializedRestartId;
-  RecordSetupResult(InstallationStateToCancelledSetupResult(installing_state_));
+  RecordSetupResult(InstallStateToCancelledSetupResult(installing_state_));
 
   if (require_cleanup_) {
     // Remove anything that got installed
@@ -280,37 +281,37 @@ void CrostiniInstaller::CancelBeforeStart() {
 }
 
 void CrostiniInstaller::OnComponentLoaded(CrostiniResult result) {
-  DCHECK_EQ(installing_state_, InstallationState::INSTALL_IMAGE_LOADER);
+  DCHECK_EQ(installing_state_, InstallerState::kInstallImageLoader);
 
   if (result != CrostiniResult::SUCCESS) {
     if (content::GetNetworkConnectionTracker()->IsOffline()) {
       LOG(ERROR) << "Network connection dropped while downloading cros-termina";
-      HandleError(Error::ERROR_OFFLINE);
+      HandleError(InstallerError::kErrorOffline);
     } else {
       LOG(ERROR) << "Failed to install the cros-termina component";
-      HandleError(Error::ERROR_LOADING_TERMINA);
+      HandleError(InstallerError::kErrorLoadingTermina);
     }
     return;
   }
-  UpdateInstallingState(InstallationState::START_CONCIERGE);
+  UpdateInstallingState(InstallerState::kStartConcierge);
 }
 
 void CrostiniInstaller::OnConciergeStarted(bool success) {
-  DCHECK_EQ(installing_state_, InstallationState::START_CONCIERGE);
+  DCHECK_EQ(installing_state_, InstallerState::kStartConcierge);
   if (!success) {
-    HandleError(Error::ERROR_STARTING_CONCIERGE);
+    HandleError(InstallerError::kErrorStartingConcierge);
     return;
   }
-  UpdateInstallingState(InstallationState::CREATE_DISK_IMAGE);
+  UpdateInstallingState(InstallerState::kCreateDiskImage);
 }
 
 void CrostiniInstaller::OnDiskImageCreated(
     bool success,
     vm_tools::concierge::DiskImageStatus status,
     int64_t disk_size_available) {
-  DCHECK_EQ(installing_state_, InstallationState::CREATE_DISK_IMAGE);
+  DCHECK_EQ(installing_state_, InstallerState::kCreateDiskImage);
   if (!success) {
-    HandleError(Error::ERROR_CREATING_DISK_IMAGE);
+    HandleError(InstallerError::kErrorCreatingDiskImage);
     return;
   }
   if (status == vm_tools::concierge::DiskImageStatus::DISK_STATUS_EXISTS) {
@@ -320,64 +321,64 @@ void CrostiniInstaller::OnDiskImageCreated(
     base::UmaHistogramCustomCounts(kCrostiniDiskImageSizeHistogram,
                                    disk_size_available >> 30, 1, 1024, 64);
   }
-  UpdateInstallingState(InstallationState::START_TERMINA_VM);
+  UpdateInstallingState(InstallerState::kStartTerminaVm);
 }
 
 void CrostiniInstaller::OnVmStarted(bool success) {
-  DCHECK_EQ(installing_state_, InstallationState::START_TERMINA_VM);
+  DCHECK_EQ(installing_state_, InstallerState::kStartTerminaVm);
   if (!success) {
-    HandleError(Error::ERROR_STARTING_TERMINA);
+    HandleError(InstallerError::kErrorStartingTermina);
     return;
   }
-  UpdateInstallingState(InstallationState::CREATE_CONTAINER);
+  UpdateInstallingState(InstallerState::kCreateContainer);
 }
 
 void CrostiniInstaller::OnContainerDownloading(int32_t download_percent) {
-  DCHECK_EQ(installing_state_, InstallationState::CREATE_CONTAINER);
+  DCHECK_EQ(installing_state_, InstallerState::kCreateContainer);
   container_download_percent_ = base::ClampToRange(download_percent, 0, 100);
   RunProgressCallback();
 }
 
 void CrostiniInstaller::OnContainerCreated(CrostiniResult result) {
-  DCHECK_EQ(installing_state_, InstallationState::CREATE_CONTAINER);
-  UpdateInstallingState(InstallationState::SETUP_CONTAINER);
+  DCHECK_EQ(installing_state_, InstallerState::kCreateContainer);
+  UpdateInstallingState(InstallerState::kSetupContainer);
 }
 
 void CrostiniInstaller::OnContainerSetup(bool success) {
-  DCHECK_EQ(installing_state_, InstallationState::SETUP_CONTAINER);
+  DCHECK_EQ(installing_state_, InstallerState::kSetupContainer);
 
   if (!success) {
     if (content::GetNetworkConnectionTracker()->IsOffline()) {
       LOG(ERROR) << "Network connection dropped while downloading container";
-      HandleError(Error::ERROR_OFFLINE);
+      HandleError(InstallerError::kErrorOffline);
     } else {
-      HandleError(Error::ERROR_SETTING_UP_CONTAINER);
+      HandleError(InstallerError::kErrorSettingUpContainer);
     }
     return;
   }
-  UpdateInstallingState(InstallationState::START_CONTAINER);
+  UpdateInstallingState(InstallerState::kStartContainer);
 }
 
 void CrostiniInstaller::OnContainerStarted(CrostiniResult result) {
-  DCHECK_EQ(installing_state_, InstallationState::START_CONTAINER);
+  DCHECK_EQ(installing_state_, InstallerState::kStartContainer);
 
   if (result != CrostiniResult::SUCCESS) {
     LOG(ERROR) << "Failed to start container with error code: "
                << static_cast<int>(result);
-    HandleError(Error::ERROR_STARTING_CONTAINER);
+    HandleError(InstallerError::kErrorStartingContainer);
     return;
   }
-  UpdateInstallingState(InstallationState::FETCH_SSH_KEYS);
+  UpdateInstallingState(InstallerState::kFetchSshKeys);
 }
 
 void CrostiniInstaller::OnSshKeysFetched(bool success) {
-  DCHECK_EQ(installing_state_, InstallationState::FETCH_SSH_KEYS);
+  DCHECK_EQ(installing_state_, InstallerState::kFetchSshKeys);
 
   if (!success) {
-    HandleError(Error::ERROR_FETCHING_SSH_KEYS);
+    HandleError(InstallerError::kErrorFetchingSshKeys);
     return;
   }
-  UpdateInstallingState(InstallationState::MOUNT_CONTAINER);
+  UpdateInstallingState(InstallerState::kMountContainer);
 }
 
 bool CrostiniInstaller::CanInstall() {
@@ -397,48 +398,48 @@ void CrostiniInstaller::RunProgressCallback() {
   int state_max_seconds = 1;
 
   switch (installing_state_) {
-    case InstallationState::START:
+    case InstallerState::kStart:
       state_start_mark = 0;
       state_end_mark = 0;
       break;
-    case InstallationState::INSTALL_IMAGE_LOADER:
+    case InstallerState::kInstallImageLoader:
       state_start_mark = 0.0;
       state_end_mark = 0.25;
       state_max_seconds = 30;
       break;
-    case InstallationState::START_CONCIERGE:
+    case InstallerState::kStartConcierge:
       state_start_mark = 0.25;
       state_end_mark = 0.26;
       break;
-    case InstallationState::CREATE_DISK_IMAGE:
+    case InstallerState::kCreateDiskImage:
       state_start_mark = 0.26;
       state_end_mark = 0.27;
       break;
-    case InstallationState::START_TERMINA_VM:
+    case InstallerState::kStartTerminaVm:
       state_start_mark = 0.27;
       state_end_mark = 0.35;
       state_max_seconds = 8;
       break;
-    case InstallationState::CREATE_CONTAINER:
+    case InstallerState::kCreateContainer:
       state_start_mark = 0.35;
       state_end_mark = 0.90;
       state_max_seconds = 180;
       break;
-    case InstallationState::SETUP_CONTAINER:
+    case InstallerState::kSetupContainer:
       state_start_mark = 0.90;
       state_end_mark = 0.95;
       state_max_seconds = 8;
       break;
-    case InstallationState::START_CONTAINER:
+    case InstallerState::kStartContainer:
       state_start_mark = 0.95;
       state_end_mark = 0.99;
       state_max_seconds = 8;
       break;
-    case InstallationState::FETCH_SSH_KEYS:
+    case InstallerState::kFetchSshKeys:
       state_start_mark = 0.99;
       state_end_mark = 1;
       break;
-    case InstallationState::MOUNT_CONTAINER:
+    case InstallerState::kMountContainer:
       state_start_mark = 1;
       state_end_mark = 1;
       break;
@@ -448,7 +449,7 @@ void CrostiniInstaller::RunProgressCallback() {
 
   double state_fraction = time_in_state.InSecondsF() / state_max_seconds;
 
-  if (installing_state_ == InstallationState::CREATE_CONTAINER) {
+  if (installing_state_ == InstallerState::kCreateContainer) {
     // In CREATE_CONTAINER, consume half the progress bar with downloading,
     // the rest with time.
     state_fraction =
@@ -470,7 +471,8 @@ void CrostiniInstaller::UpdateState(State new_state) {
     // We are not calling the progress callback here because 1) there is nothing
     // interesting to report; 2) We reach here from |Install()|, so calling the
     // callback risk reentering |Install()|'s caller.
-    UpdateInstallingState(InstallationState::START, /*run_callback=*/false);
+    UpdateInstallingState(InstallerState::kStart,
+                          /*run_callback=*/false);
 
     state_progress_timer_.Start(
         FROM_HERE, base::TimeDelta::FromMilliseconds(500),
@@ -482,7 +484,7 @@ void CrostiniInstaller::UpdateState(State new_state) {
 }
 
 void CrostiniInstaller::UpdateInstallingState(
-    InstallationState new_installing_state,
+    InstallerState new_installing_state,
     bool run_callback) {
   DCHECK_EQ(state_, State::INSTALLING);
   installing_state_start_time_ = base::Time::Now();
@@ -493,9 +495,9 @@ void CrostiniInstaller::UpdateInstallingState(
   }
 }
 
-void CrostiniInstaller::HandleError(Error error) {
+void CrostiniInstaller::HandleError(InstallerError error) {
   DCHECK_EQ(state_, State::INSTALLING);
-  DCHECK_NE(error, Error::NONE);
+  DCHECK_NE(error, InstallerError::kNone);
 
   UMA_HISTOGRAM_LONG_TIMES(kCrostiniTimeToInstallError,
                            base::TimeTicks::Now() - install_start_time_);
@@ -540,12 +542,12 @@ void CrostiniInstaller::OnCrostiniRestartFinished(CrostiniResult result) {
       // |CrostiniRestarter::OnMountEvent()|), so if we reach here (i.e.
       // |state_| has not been set to |ERROR| but this function receives a
       // failure result), something else is probably wrong.
-      HandleError(Error::ERROR_MOUNTING_CONTAINER);
+      HandleError(InstallerError::kErrorMountingContainer);
     }
     return;
   }
 
-  DCHECK_EQ(installing_state_, InstallationState::MOUNT_CONTAINER);
+  DCHECK_EQ(installing_state_, InstallerState::kMountContainer);
   // Reset state to allow |Install()| again in case the user remove and
   // re-install crostini.
   UpdateState(State::IDLE);
@@ -561,7 +563,7 @@ void CrostiniInstaller::OnCrostiniRestartFinished(CrostiniResult result) {
                                free_disk_space_ >> 20);
   }
 
-  std::move(result_callback_).Run(Error::NONE);
+  std::move(result_callback_).Run(InstallerError::kNone);
   progress_callback_.Reset();
 
   if (!skip_launching_terminal_for_testing_) {
@@ -582,23 +584,23 @@ void CrostiniInstaller::OnAvailableDiskSpace(int64_t bytes) {
     return;
   }
 
-  DCHECK_EQ(installing_state_, InstallationState::START);
+  DCHECK_EQ(installing_state_, InstallerState::kStart);
 
   free_disk_space_ = bytes;
   // Don't enforce minimum disk size on dev box or trybots because
   // base::SysInfo::AmountOfFreeDiskSpace returns zero in testing.
   if (free_disk_space_ < kMinimumFreeDiskSpace &&
       base::SysInfo::IsRunningOnChromeOS()) {
-    HandleError(Error::ERROR_INSUFFICIENT_DISK_SPACE);
+    HandleError(InstallerError::kErrorInsufficientDiskSpace);
     return;
   }
 
   if (content::GetNetworkConnectionTracker()->IsOffline()) {
-    HandleError(Error::ERROR_OFFLINE);
+    HandleError(InstallerError::kErrorOffline);
     return;
   }
 
-  UpdateInstallingState(InstallationState::INSTALL_IMAGE_LOADER);
+  UpdateInstallingState(InstallerState::kInstallImageLoader);
 
   // Kick off the Crostini Restart sequence. We will be added as an observer.
   restart_id_ =

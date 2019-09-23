@@ -41,6 +41,10 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/net/dhcp_wpad_url_client.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace {
 
 // Verify kPACScript is installed as the PAC script.
@@ -145,9 +149,9 @@ class BaseHttpProxyScriptBrowserTest : public InProcessBrowserTest {
 
  protected:
   virtual std::string GetPacFilename() = 0;
+  net::EmbeddedTestServer http_server_;
 
  private:
-  net::EmbeddedTestServer http_server_;
   DISALLOW_COPY_AND_ASSIGN(BaseHttpProxyScriptBrowserTest);
 };
 
@@ -169,6 +173,41 @@ class HttpProxyScriptBrowserTest : public BaseHttpProxyScriptBrowserTest {
 IN_PROC_BROWSER_TEST_F(HttpProxyScriptBrowserTest, Verify) {
   VerifyProxyScript(browser());
 }
+
+#if defined(OS_CHROMEOS)
+// Tests the use of a PAC script set via Web Proxy Autodiscovery Protocol.
+// TODO(crbug.com/991867): Add a test case for when DhcpWpadUrlClient
+// returns an empty PAC URL.
+class WPADHttpProxyScriptBrowserTest : public HttpProxyScriptBrowserTest {
+ public:
+  WPADHttpProxyScriptBrowserTest() = default;
+  ~WPADHttpProxyScriptBrowserTest() override {}
+
+  void SetUp() override {
+    ASSERT_TRUE(http_server_.Start());
+    pac_url_ = http_server_.GetURL("/" + GetPacFilename());
+    chromeos::DhcpWpadUrlClient::SetPacUrlForTesting(pac_url_);
+    InProcessBrowserTest::SetUp();
+  }
+
+  void TearDown() override {
+    chromeos::DhcpWpadUrlClient::ClearPacUrlForTesting();
+    InProcessBrowserTest::TearDown();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kProxyAutoDetect);
+  }
+
+ private:
+  GURL pac_url_;
+  DISALLOW_COPY_AND_ASSIGN(WPADHttpProxyScriptBrowserTest);
+};
+
+IN_PROC_BROWSER_TEST_F(WPADHttpProxyScriptBrowserTest, Verify) {
+  VerifyProxyScript(browser());
+}
+#endif  // defined(OS_CHROMEOS)
 
 // Tests the use of a PAC script that rejects requests to http://www.google.com/
 // when myIpAddress() and myIpAddressEx() appear to be working.

@@ -1211,6 +1211,25 @@ IN_PROC_BROWSER_TEST_P(SharedPWATest,
   EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, browser()), kNotPresent);
 }
 
+// Tests that an installed PWA is not used when out of scope by one path level.
+IN_PROC_BROWSER_TEST_P(SharedPWATest, MenuOptionsOutsideInstalledPwaScope) {
+  ASSERT_TRUE(https_server()->Start());
+
+  NavigateToURLAndWait(
+      browser(),
+      https_server()->GetURL("/banners/scope_is_start_url/index.html"));
+  InstallPwaForCurrentUrl();
+
+  // Open a page that is one directory up from the installed PWA.
+  Browser* new_browser = NavigateInNewWindowAndAwaitInstallabilityCheck(
+      https_server()->GetURL("/banners/no_manifest_test_page.html"));
+
+  EXPECT_EQ(GetAppMenuCommandState(IDC_CREATE_SHORTCUT, new_browser), kEnabled);
+  EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, new_browser), kNotPresent);
+  EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, new_browser),
+            kNotPresent);
+}
+
 IN_PROC_BROWSER_TEST_P(SharedPWATest, InstallInstallableSite) {
   base::UserActionTester user_action_tester;
   ASSERT_TRUE(https_server()->Start());

@@ -25,7 +25,7 @@ struct InputTypeExpectation {
 };
 }  // namespace
 
-typedef TextInputTestBase TextInput_TextInputStateChangedTest;
+using TextInput_TextInputStateChangedTest = TextInputTestBase;
 
 IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
                        SwitchToPasswordFieldTest) {
@@ -256,19 +256,19 @@ IN_PROC_BROWSER_TEST_F(TextInput_TextInputStateChangedTest,
     { "contenteditable_id", ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE },
   };  // The order should be same as tab order in all_input_node.html.
 
-  for (size_t i = 0; i < base::size(expectations); ++i) {
+  for (auto& expectation : expectations) {
     content::SimulateKeyPress(tab, ui::DomKey::TAB, ui::DomCode::TAB,
                               ui::VKEY_TAB, false, false, false, false);
 
-    helper.WaitForTextInputStateChanged(expectations[i].type);
-    EXPECT_EQ(expectations[i].type, helper.GetTextInputType());
+    helper.WaitForTextInputStateChanged(expectation.type);
+    EXPECT_EQ(expectation.type, helper.GetTextInputType());
   }
 
-  for (size_t i = 0; i < base::size(expectations); ++i) {
-    helper.ClickElement(expectations[i].node_id, tab);
+  for (auto& expectation : expectations) {
+    helper.ClickElement(expectation.node_id, tab);
 
-    helper.WaitForTextInputStateChanged(expectations[i].type);
-    EXPECT_EQ(expectations[i].type, helper.GetTextInputType());
+    helper.WaitForTextInputStateChanged(expectation.type);
+    EXPECT_EQ(expectation.type, helper.GetTextInputType());
   }
 }
 

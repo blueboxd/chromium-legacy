@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/picker_indicator_element.h"
 
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -167,9 +168,9 @@ void PickerIndicatorElement::DidNotifySubtreeInsertionsToDocument() {
   setAttribute(kTabindexAttr, "0");
   setAttribute(kAriaHaspopupAttr, "menu");
   setAttribute(kRoleAttr, "button");
-  setAttribute(kAriaLabelAttr,
-               AtomicString(GetLocale().QueryString(
-                   WebLocalizedString::kAXCalendarShowDatePicker)));
+  setAttribute(
+      kAriaLabelAttr,
+      AtomicString(GetLocale().QueryString(IDS_AX_CALENDAR_SHOW_DATE_PICKER)));
 }
 
 void PickerIndicatorElement::Trace(Visitor* visitor) {

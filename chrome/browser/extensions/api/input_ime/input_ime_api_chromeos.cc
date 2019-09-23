@@ -100,7 +100,7 @@ class ImeObserverChromeOS : public ui::ImeObserver {
   ImeObserverChromeOS(const std::string& extension_id, Profile* profile)
       : ImeObserver(extension_id, profile) {}
 
-  ~ImeObserverChromeOS() override {}
+  ~ImeObserverChromeOS() override = default;
 
   // input_method::InputMethodEngineBase::Observer overrides.
   void OnInputContextUpdate(
@@ -191,12 +191,12 @@ class ImeObserverChromeOS : public ui::ImeObserver {
 
     // Note: this is a private API event.
     auto bounds_list = std::make_unique<base::ListValue>();
-    for (size_t i = 0; i < bounds.size(); ++i) {
+    for (auto bound : bounds) {
       auto bounds_value = std::make_unique<base::DictionaryValue>();
-      bounds_value->SetInteger("x", bounds[i].x());
-      bounds_value->SetInteger("y", bounds[i].y());
-      bounds_value->SetInteger("w", bounds[i].width());
-      bounds_value->SetInteger("h", bounds[i].height());
+      bounds_value->SetInteger("x", bound.x());
+      bounds_value->SetInteger("y", bound.y());
+      bounds_value->SetInteger("w", bound.width());
+      bounds_value->SetInteger("h", bound.height());
       bounds_list->Append(std::move(bounds_value));
     }
 
@@ -392,7 +392,7 @@ InputMethodEngine* GetEngineIfActive(Profile* profile,
 InputImeEventRouter::InputImeEventRouter(Profile* profile)
     : InputImeEventRouterBase(profile) {}
 
-InputImeEventRouter::~InputImeEventRouter() {}
+InputImeEventRouter::~InputImeEventRouter() = default;
 
 bool InputImeEventRouter::RegisterImeExtension(
     const std::string& extension_id,
@@ -411,11 +411,7 @@ bool InputImeEventRouter::RegisterImeExtension(
   // Only creates descriptors for 3rd party IME extension, because the
   // descriptors for component IME extensions are managed by InputMethodUtil.
   if (!comp_ext_ime_manager->IsWhitelistedExtension(extension_id)) {
-    for (std::vector<InputComponentInfo>::const_iterator it =
-             input_components.begin();
-         it != input_components.end();
-         ++it) {
-      const InputComponentInfo& component = *it;
+    for (const auto& component : input_components) {
       DCHECK(component.type == INPUT_COMPONENT_TYPE_IME);
 
       std::vector<std::string> layouts;
@@ -448,7 +444,7 @@ bool InputImeEventRouter::RegisterImeExtension(
 
   std::unique_ptr<InputMethodEngineBase::Observer> observer(
       new ImeObserverChromeOS(extension_id, profile));
-  chromeos::InputMethodEngine* engine = new chromeos::InputMethodEngine();
+  auto* engine = new chromeos::InputMethodEngine();
   engine->Initialize(std::move(observer), extension_id.c_str(), profile);
   engine_map_[extension_id] = engine;
   chromeos::UserSessionManager::GetInstance()
@@ -459,8 +455,7 @@ bool InputImeEventRouter::RegisterImeExtension(
 }
 
 void InputImeEventRouter::UnregisterAllImes(const std::string& extension_id) {
-  std::map<std::string, InputMethodEngine*>::iterator it =
-      engine_map_.find(extension_id);
+  auto it = engine_map_.find(extension_id);
   if (it != engine_map_.end()) {
     chromeos::input_method::InputMethodManager::Get()
         ->GetActiveIMEState()
@@ -472,15 +467,13 @@ void InputImeEventRouter::UnregisterAllImes(const std::string& extension_id) {
 
 InputMethodEngine* InputImeEventRouter::GetEngine(
     const std::string& extension_id) {
-  std::map<std::string, InputMethodEngine*>::iterator it =
-      engine_map_.find(extension_id);
+  auto it = engine_map_.find(extension_id);
   return (it != engine_map_.end()) ? it->second : nullptr;
 }
 
 InputMethodEngineBase* InputImeEventRouter::GetEngineIfActive(
     const std::string& extension_id) {
-  std::map<std::string, InputMethodEngine*>::iterator it =
-      engine_map_.find(extension_id);
+  auto it = engine_map_.find(extension_id);
   return (it != engine_map_.end() && it->second->IsActive()) ? it->second
                                                              : nullptr;
 }
@@ -601,7 +594,7 @@ ExtensionFunction::ResponseAction InputImeSetCandidatesFunction::Run() {
 
   std::vector<InputMethodEngine::Candidate> candidates_out;
   for (const auto& candidate_in : params.candidates) {
-    candidates_out.push_back(InputMethodEngine::Candidate());
+    candidates_out.emplace_back();
     candidates_out.back().value = candidate_in.candidate;
     candidates_out.back().id = candidate_in.id;
     if (candidate_in.label)
@@ -661,7 +654,7 @@ ExtensionFunction::ResponseAction InputImeSetMenuItemsFunction::Run() {
 
   std::vector<chromeos::input_method::InputMethodManager::MenuItem> items_out;
   for (const input_ime::MenuItem& item_in : params.items) {
-    items_out.push_back(chromeos::input_method::InputMethodManager::MenuItem());
+    items_out.emplace_back();
     SetMenuItemToMenu(item_in, &items_out.back());
   }
 
@@ -685,7 +678,7 @@ ExtensionFunction::ResponseAction InputImeUpdateMenuItemsFunction::Run() {
 
   std::vector<chromeos::input_method::InputMethodManager::MenuItem> items_out;
   for (const input_ime::MenuItem& item_in : params.items) {
-    items_out.push_back(chromeos::input_method::InputMethodManager::MenuItem());
+    items_out.emplace_back();
     SetMenuItemToMenu(item_in, &items_out.back());
   }
 

@@ -10,6 +10,7 @@ class BrowserContext;
 }
 
 class GURL;
+class Profile;
 
 namespace extensions {
 
@@ -40,9 +41,7 @@ bool IsInNavigationScopeForLaunchUrl(const GURL& launch_url, const GURL& url);
 
 // Finds the first Shortcut App (a non-PWA Bookmark App) with |url| in its
 // scope, returns nullptr if there are none.
-const Extension* GetInstalledShortcutForUrl(
-    content::BrowserContext* browser_context,
-    const GURL& url);
+const Extension* GetInstalledShortcutForUrl(Profile* profile, const GURL& url);
 
 // Count a number of all bookmark apps which are installed by user
 // (non default-installed apps).

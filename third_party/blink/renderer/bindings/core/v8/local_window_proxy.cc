@@ -182,9 +182,15 @@ void LocalWindowProxy::Initialize() {
   if (evaluate_csp_for_eval) {
     ContentSecurityPolicy* csp =
         GetFrame()->GetDocument()->GetContentSecurityPolicyForWorld();
-    context->AllowCodeGenerationFromStrings(csp->AllowEval(
-        nullptr, SecurityViolationReportingPolicy::kSuppressReporting,
-        ContentSecurityPolicy::kWillNotThrowException, g_empty_string));
+    // CSP has two mechanisms for controlling eval, script-src and Trusted
+    // Types, and we need to check both.
+    // TODO(vogelheim): Provide a simple(e) API for this use case.
+    bool allow_code_generation =
+        csp->AllowEval(SecurityViolationReportingPolicy::kSuppressReporting,
+                       ContentSecurityPolicy::kWillNotThrowException,
+                       g_empty_string) &&
+        !csp->IsRequireTrustedTypes();
+    context->AllowCodeGenerationFromStrings(allow_code_generation);
     context->SetErrorMessageForCodeGenerationFromStrings(
         V8String(GetIsolate(), csp->EvalDisabledErrorMessage()));
   }

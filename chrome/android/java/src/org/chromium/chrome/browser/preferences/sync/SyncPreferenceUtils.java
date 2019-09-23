@@ -38,8 +38,7 @@ import org.chromium.ui.UiUtils;
  */
 public class SyncPreferenceUtils {
     private static final String DASHBOARD_URL = "https://www.google.com/settings/chrome/sync";
-    private static final String MY_ACCOUNT_URL =
-            "https://accounts.google.com/AccountChooser?Email=%s&continue=https://myaccount.google.com/";
+    private static final String MY_ACCOUNT_URL = "https://myaccount.google.com/smartlink/home";
 
     /**
      * Checks if sync error icon should be shown. Show sync error icon if sync is off because
@@ -233,8 +232,6 @@ public class SyncPreferenceUtils {
     public static void openGoogleMyAccount(Activity activity) {
         assert ChromeSigninController.get().isSignedIn();
         RecordUserAction.record("SyncPreferences_ManageGoogleAccountClicked");
-        openCustomTabWithURL(activity,
-                String.format(
-                        MY_ACCOUNT_URL, ChromeSigninController.get().getSignedInAccountName()));
+        openCustomTabWithURL(activity, MY_ACCOUNT_URL);
     }
 }

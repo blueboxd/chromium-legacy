@@ -96,4 +96,10 @@ std::vector<web_app::AppId> AppRegistrar::FindAppsInScope(
   return in_scope;
 }
 
+bool AppRegistrar::IsShortcutApp(const AppId& app_id) const {
+  // TODO (crbug/910016): Make app scope always return a value and record this
+  //  distinction in some other way.
+  return !GetAppScope(app_id).has_value();
+}
+
 }  // namespace web_app

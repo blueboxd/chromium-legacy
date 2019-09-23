@@ -93,8 +93,6 @@ RESOURCES = \
 	src/images/camera_button_timer_on_10s.svg \
 	src/images/camera_button_timer_on_3s.svg \
 	src/images/camera_focus_aim.svg \
-	src/images/camera_intro_banner_close.svg \
-	src/images/camera_intro_banner_icon.svg \
 	src/images/camera_mode_photo.svg \
 	src/images/camera_mode_portrait.svg \
 	src/images/camera_mode_square.svg \

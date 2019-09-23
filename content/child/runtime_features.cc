@@ -121,7 +121,9 @@ void SetIndividualRuntimeFeatures(
     WebRuntimeFeatures::EnableWebGLDraftExtensions(true);
 
   if (command_line.HasSwitch(switches::kEnableAutomation) ||
-      command_line.HasSwitch(switches::kHeadless)) {
+      command_line.HasSwitch(switches::kHeadless) ||
+      command_line.HasSwitch(switches::kRemoteDebuggingPipe) ||
+      command_line.HasSwitch(switches::kRemoteDebuggingPort)) {
     WebRuntimeFeatures::EnableAutomationControlled(true);
   }
 

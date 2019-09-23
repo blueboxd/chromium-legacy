@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_PRINTING_HISTORY_PRINT_JOB_INFO_CONVERSIONS_H_
-#define CHROME_BROWSER_CHROMEOS_PRINTING_HISTORY_PRINT_JOB_INFO_CONVERSIONS_H_
+#ifndef CHROME_BROWSER_CHROMEOS_PRINTING_HISTORY_PRINT_JOB_INFO_PROTO_CONVERSIONS_H_
+#define CHROME_BROWSER_CHROMEOS_PRINTING_HISTORY_PRINT_JOB_INFO_PROTO_CONVERSIONS_H_
 
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/chromeos/printing/history/print_job_info.pb.h"
@@ -24,4 +24,4 @@ printing::proto::PrintJobInfo CupsPrintJobToProto(
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_PRINTING_HISTORY_PRINT_JOB_INFO_CONVERSIONS_H_
+#endif  // CHROME_BROWSER_CHROMEOS_PRINTING_HISTORY_PRINT_JOB_INFO_PROTO_CONVERSIONS_H_

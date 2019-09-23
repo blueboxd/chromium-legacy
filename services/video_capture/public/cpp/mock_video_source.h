@@ -21,7 +21,8 @@ class MockVideoSource : public video_capture::mojom::VideoSource {
       mojo::PendingRemote<video_capture::mojom::Receiver> subscriber,
       const media::VideoCaptureParams& requested_settings,
       bool force_reopen_with_new_settings,
-      video_capture::mojom::PushVideoStreamSubscriptionRequest subscription,
+      mojo::PendingReceiver<video_capture::mojom::PushVideoStreamSubscription>
+          subscription,
       CreatePushSubscriptionCallback callback) override;
 
   MOCK_METHOD5(
@@ -29,8 +30,8 @@ class MockVideoSource : public video_capture::mojom::VideoSource {
       void(mojo::PendingRemote<video_capture::mojom::Receiver> subscriber,
            const media::VideoCaptureParams& requested_settings,
            bool force_reopen_with_new_settings,
-           video_capture::mojom::PushVideoStreamSubscriptionRequest&
-               subscription,
+           mojo::PendingReceiver<
+               video_capture::mojom::PushVideoStreamSubscription> subscription,
            CreatePushSubscriptionCallback& callback));
 };
 

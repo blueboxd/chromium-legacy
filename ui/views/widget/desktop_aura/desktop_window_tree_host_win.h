@@ -226,8 +226,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
  private:
   friend class ::views::test::DesktopWindowTreeHostWinTestApi;
 
-  void SetWindowTransparency();
-
   // Returns true if a modal window is active in the current root window chain.
   bool IsModalWindowActive() const;
 

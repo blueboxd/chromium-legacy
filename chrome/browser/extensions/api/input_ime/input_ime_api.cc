@@ -25,7 +25,7 @@ using input_method::InputMethodEngineBase;
 namespace {
 const char kInputImeApiErrorEngineNotAvailable[] = "Engine is not available";
 const char kInputImeApiErrorSetKeyEventsFail[] = "Could not send key events";
-}
+}  // namespace
 namespace ui {
 
 ImeObserver::ImeObserver(const std::string& extension_id, Profile* profile)
@@ -103,9 +103,13 @@ void ImeObserver::OnKeyEvent(
 
   input_ime::KeyboardEvent key_data_value;
   key_data_value.type = input_ime::ParseKeyboardEventType(event.type);
-  key_data_value.request_id = request_id;
-  if (!event.extension_id.empty())
-      key_data_value.extension_id.reset(new std::string(event.extension_id));
+  // For legacy reasons, we still put a |requestID| into the keyData, even
+  // though there is already a |requestID| argument in OnKeyEvent.
+  key_data_value.request_id = std::make_unique<std::string>(request_id);
+  if (!event.extension_id.empty()) {
+    key_data_value.extension_id =
+        std::make_unique<std::string>(event.extension_id);
+  }
   key_data_value.key = event.key;
   key_data_value.code = event.code;
   key_data_value.alt_key.reset(new bool(event.alt_key));
@@ -114,7 +118,7 @@ void ImeObserver::OnKeyEvent(
   key_data_value.caps_lock.reset(new bool(event.caps_lock));
 
   std::unique_ptr<base::ListValue> args(
-      input_ime::OnKeyEvent::Create(component_id, key_data_value));
+      input_ime::OnKeyEvent::Create(component_id, key_data_value, request_id));
 
   DispatchEventToExtension(extensions::events::INPUT_IME_ON_KEY_EVENT,
                            input_ime::OnKeyEvent::kEventName, std::move(args));
@@ -266,11 +270,9 @@ InputImeEventRouterFactory* InputImeEventRouterFactory::GetInstance() {
   return base::Singleton<InputImeEventRouterFactory>::get();
 }
 
-InputImeEventRouterFactory::InputImeEventRouterFactory() {
-}
+InputImeEventRouterFactory::InputImeEventRouterFactory() = default;
 
-InputImeEventRouterFactory::~InputImeEventRouterFactory() {
-}
+InputImeEventRouterFactory::~InputImeEventRouterFactory() = default;
 
 InputImeEventRouter* InputImeEventRouterFactory::GetRouter(Profile* profile) {
   if (!profile)
@@ -403,7 +405,7 @@ ExtensionFunction::ResponseAction InputImeSendKeyEventsFunction::Run() {
   std::vector<InputMethodEngineBase::KeyboardEvent> key_data_out;
 
   for (const auto& key_event : params.key_data) {
-    key_data_out.push_back(InputMethodEngineBase::KeyboardEvent());
+    key_data_out.emplace_back();
     InputMethodEngineBase::KeyboardEvent& event = key_data_out.back();
     event.type = input_ime::ToString(key_event.type);
     event.key = key_event.key;

@@ -32,8 +32,6 @@
 
 namespace extensions {
 
-using namespace api_errors;
-
 namespace {
 
 const char kBindingName[] = "test";
@@ -347,19 +345,20 @@ TEST_F(APIBindingUnittest, TestBasicAPICalls) {
   // Argument parsing is tested primarily in APISignature and ArgumentSpec
   // tests, so do a few quick sanity checks...
   ExpectPass(binding_object, "obj.oneString('foo');", "['foo']", false);
-  ExpectFailure(
-      binding_object, "obj.oneString(1);",
-      InvocationError("test.oneString", "string str", NoMatchingSignature()));
+  ExpectFailure(binding_object, "obj.oneString(1);",
+                api_errors::InvocationError("test.oneString", "string str",
+                                            api_errors::NoMatchingSignature()));
   ExpectPass(binding_object, "obj.stringAndInt('foo', 1)", "['foo',1]", false);
   ExpectFailure(binding_object, "obj.stringAndInt(1)",
-                InvocationError("test.stringAndInt", "string str, integer int",
-                                NoMatchingSignature()));
+                api_errors::InvocationError("test.stringAndInt",
+                                            "string str, integer int",
+                                            api_errors::NoMatchingSignature()));
   ExpectPass(binding_object, "obj.intAndCallback(1, function() {})", "[1]",
              true);
-  ExpectFailure(
-      binding_object, "obj.intAndCallback(function() {})",
-      InvocationError("test.intAndCallback", "integer int, function callback",
-                      NoMatchingSignature()));
+  ExpectFailure(binding_object, "obj.intAndCallback(function() {})",
+                api_errors::InvocationError("test.intAndCallback",
+                                            "integer int, function callback",
+                                            api_errors::NoMatchingSignature()));
 
   // ...And an interesting case (throwing an error during parsing).
   ExpectThrow(binding_object,
@@ -467,20 +466,22 @@ TEST_F(APIBindingUnittest, TypeRefsTest) {
   // properties from the API object.
   ExpectPass(binding_object, "obj.takesRefObj({prop1: 'foo'})",
              "[{'prop1':'foo'}]", false);
-  ExpectFailure(
-      binding_object, "obj.takesRefObj({prop1: 'foo', prop2: 'a'})",
-      InvocationError(
-          "test.takesRefObj", "refObj o",
-          ArgumentError(
-              "o",
-              PropertyError("prop2", InvalidType(kTypeInteger, kTypeString)))));
+  ExpectFailure(binding_object, "obj.takesRefObj({prop1: 'foo', prop2: 'a'})",
+                api_errors::InvocationError(
+                    "test.takesRefObj", "refObj o",
+                    api_errors::ArgumentError(
+                        "o", api_errors::PropertyError(
+                                 "prop2", api_errors::InvalidType(
+                                              api_errors::kTypeInteger,
+                                              api_errors::kTypeString)))));
   ExpectPass(binding_object, "obj.takesRefEnum('alpha')", "['alpha']", false);
   ExpectPass(binding_object, "obj.takesRefEnum(obj.refEnum.BETA)", "['beta']",
              false);
-  ExpectFailure(
-      binding_object, "obj.takesRefEnum('gamma')",
-      InvocationError("test.takesRefEnum", "refEnum e",
-                      ArgumentError("e", InvalidEnumValue({"alpha", "beta"}))));
+  ExpectFailure(binding_object, "obj.takesRefEnum('gamma')",
+                api_errors::InvocationError(
+                    "test.takesRefEnum", "refEnum e",
+                    api_errors::ArgumentError(
+                        "e", api_errors::InvalidEnumValue({"alpha", "beta"}))));
 }
 
 TEST_F(APIBindingUnittest, RestrictedAPIs) {
@@ -822,9 +823,9 @@ TEST_F(APIBindingUnittest, TestJSCustomHook) {
 
   // First try calling with an invalid invocation. An error should be raised and
   // the hook should never have been called, since the arguments didn't match.
-  ExpectFailure(
-      binding_object, "obj.oneString(1);",
-      InvocationError("test.oneString", "string str", NoMatchingSignature()));
+  ExpectFailure(binding_object, "obj.oneString(1);",
+                api_errors::InvocationError("test.oneString", "string str",
+                                            api_errors::NoMatchingSignature()));
   v8::Local<v8::Value> property =
       GetPropertyFromObject(context->Global(), context, "requestArguments");
   ASSERT_FALSE(property.IsEmpty());
@@ -875,9 +876,9 @@ TEST_F(APIBindingUnittest, TestUpdateArgumentsPreValidate) {
   // Call the method with a hook. Since the hook updates arguments before
   // validation, we should be able to pass in invalid arguments and still
   // have the hook called.
-  ExpectFailure(
-      binding_object, "obj.oneString(false);",
-      InvocationError("test.oneString", "string str", NoMatchingSignature()));
+  ExpectFailure(binding_object, "obj.oneString(false);",
+                api_errors::InvocationError("test.oneString", "string str",
+                                            api_errors::NoMatchingSignature()));
   EXPECT_EQ("[false]", GetStringPropertyFromObject(
                            context->Global(), context, "requestArguments"));
 
@@ -1162,9 +1163,9 @@ TEST_F(APIBindingUnittest, TestUpdateArgumentsPostValidate) {
 
   // Try calling the method with an invalid signature. Since it's invalid, we
   // should never enter the hook.
-  ExpectFailure(
-      binding_object, "obj.oneString(false);",
-      InvocationError("test.oneString", "string str", NoMatchingSignature()));
+  ExpectFailure(binding_object, "obj.oneString(false);",
+                api_errors::InvocationError("test.oneString", "string str",
+                                            api_errors::NoMatchingSignature()));
   EXPECT_EQ("undefined", GetStringPropertyFromObject(
                              context->Global(), context, "requestArguments"));
 

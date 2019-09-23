@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/video_capture/broadcasting_receiver.h"
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
@@ -35,7 +36,7 @@ class VideoSourceImpl : public mojom::VideoSource {
       mojo::PendingRemote<mojom::Receiver> subscriber,
       const media::VideoCaptureParams& requested_settings,
       bool force_reopen_with_new_settings,
-      mojom::PushVideoStreamSubscriptionRequest subscription,
+      mojo::PendingReceiver<mojom::PushVideoStreamSubscription> subscription,
       CreatePushSubscriptionCallback callback) override;
 
  private:

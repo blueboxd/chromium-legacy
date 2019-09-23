@@ -12,6 +12,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
@@ -32,6 +33,7 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/extensions/extension_metrics.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
@@ -96,6 +98,18 @@ ash::ShelfLaunchSource ConvertLaunchSource(
     case apps::mojom::LaunchSource::kFromShelf:
       return ash::LAUNCH_FROM_SHELF;
   }
+}
+
+apps::mojom::ConditionPtr MakeCondition(
+    apps::mojom::ConditionType condition_type,
+    const std::string& value,
+    apps::mojom::PatternMatchType pattern_match_type) {
+  auto condition = apps::mojom::Condition::New();
+  condition->condition_type = condition_type;
+  condition->value = value;
+  condition->match_type = pattern_match_type;
+
+  return condition;
 }
 
 }  // namespace
@@ -675,6 +689,24 @@ apps::mojom::InstallSource GetInstallSource(
   return apps::mojom::InstallSource::kUser;
 }
 
+void ExtensionApps::PopulateIntentFilters(
+    const base::Optional<GURL>& app_scope,
+    std::vector<mojom::IntentFilterPtr>* target) {
+  if (app_scope) {
+    auto intent_filter = apps::mojom::IntentFilter::New();
+    intent_filter->conditions.push_back(
+        MakeCondition(apps::mojom::ConditionType::kScheme, app_scope->scheme(),
+                      apps::mojom::PatternMatchType::kNone));
+    intent_filter->conditions.push_back(
+        MakeCondition(apps::mojom::ConditionType::kHost, app_scope->host(),
+                      apps::mojom::PatternMatchType::kNone));
+    intent_filter->conditions.push_back(
+        MakeCondition(apps::mojom::ConditionType::kPattern, app_scope->path(),
+                      apps::mojom::PatternMatchType::kPrefix));
+    target->push_back(std::move(intent_filter));
+  }
+}
+
 apps::mojom::AppPtr ExtensionApps::Convert(
     const extensions::Extension* extension,
     apps::mojom::Readiness readiness) {
@@ -727,6 +759,18 @@ apps::mojom::AppPtr ExtensionApps::Convert(
   app->recommendable = apps::mojom::OptionalBool::kTrue;
   app->searchable = apps::mojom::OptionalBool::kTrue;
   SetShowInFields(app, extension, profile_);
+
+  // Get the intent filters for PWAs.
+  if (extension->from_bookmark()) {
+    auto* web_app_provider = web_app::WebAppProvider::Get(profile_);
+
+    if (web_app_provider) {
+      PopulateIntentFilters(
+          web_app_provider->registrar().GetAppScope(extension->id()),
+          &app->intent_filters);
+    }
+  }
+
   return app;
 }
 

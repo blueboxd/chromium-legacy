@@ -327,6 +327,11 @@ class DisplayPanel extends HTMLElement {
    */
   attachPanelItem(panel) {
     const displayPanel = panel.parent;
+    // Only attach the panel if it hasn't been removed.
+    const index = displayPanel.items_.indexOf(panel);
+    if (index === -1) {
+      return;
+    }
     displayPanel.panels_.appendChild(panel);
     displayPanel.updateSummaryPanel();
   }

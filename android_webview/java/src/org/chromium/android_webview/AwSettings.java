@@ -241,6 +241,10 @@ public class AwSettings {
         void updateCookiePolicyLocked() {
             runOnUiThreadBlockingAndLocked(() -> updateCookiePolicyOnUiThreadLocked());
         }
+
+        void updateAllowFileAccessLocked() {
+            runOnUiThreadBlockingAndLocked(() -> updateAllowFileAccessOnUiThreadLocked());
+        }
     }
 
     interface ZoomSupportChangeListener {
@@ -424,6 +428,7 @@ public class AwSettings {
         if (TRACE) Log.i(LOGTAG, "setAllowFileAccess=" + allow);
         synchronized (mAwSettingsLock) {
             mAllowFileUrlAccess = allow;
+            mEventHandler.updateAllowFileAccessLocked();
         }
     }
 
@@ -1888,6 +1893,14 @@ public class AwSettings {
         }
     }
 
+    private void updateAllowFileAccessOnUiThreadLocked() {
+        assert mEventHandler.mHandler != null;
+        ThreadUtils.assertOnUiThread();
+        if (mNativeAwSettings != 0) {
+            AwSettingsJni.get().updateAllowFileAccessLocked(mNativeAwSettings, AwSettings.this);
+        }
+    }
+
     @NativeMethods
     interface Natives {
         long init(AwSettings caller, WebContents webContents);
@@ -1905,5 +1918,6 @@ public class AwSettings {
         void updateOffscreenPreRasterLocked(long nativeAwSettings, AwSettings caller);
         void updateWillSuppressErrorStateLocked(long nativeAwSettings, AwSettings caller);
         void updateCookiePolicyLocked(long nativeAwSettings, AwSettings caller);
+        void updateAllowFileAccessLocked(long nativeAwSettings, AwSettings caller);
     }
 }

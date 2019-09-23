@@ -59,7 +59,11 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
     ContentBrowserTest::SetUpCommandLine(command_line);
   }
 
-  virtual base::FieldTrialParams GetFeatureParams() { return {}; }
+  virtual base::FieldTrialParams GetFeatureParams() {
+    // Set a very long TTL before expiration (longer than the test timeout) so
+    // tests that are expecting deletion don't pass when they shouldn't.
+    return {{"TimeToLiveInBackForwardCacheInSeconds", "3600"}};
+  }
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -2054,10 +2058,6 @@ IN_PROC_BROWSER_TEST_F(GeolocationBackForwardCacheBrowserTest,
 
 // Test that documents are evicted correctly from BackForwardCache after time to
 // live.
-// 1) Navigate to A.
-// 2) Navigate to B.
-// 3) Verify A not deleted before time to live.
-// 4) Verify A is deleted after time to live.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, TimedEviction) {
   // Inject mock time task runner to be used in the eviction timer, so we can,
   // check for the functionality we are interested before and after the time to
@@ -2071,6 +2071,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, TimedEviction) {
 
   base::TimeDelta time_to_live_in_back_forward_cache =
       BackForwardCacheImpl::GetTimeToLiveInBackForwardCache();
+  // This should match the value we set in GetFeatureParams.
+  EXPECT_EQ(time_to_live_in_back_forward_cache,
+            base::TimeDelta::FromSeconds(3600));
 
   base::TimeDelta delta = base::TimeDelta::FromMilliseconds(1);
 
@@ -2087,15 +2090,17 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, TimedEviction) {
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
   RenderFrameHostImpl* rfh_b = current_frame_host();
 
-  // 3) Check if A is in BackForwardCache before time to live.
+  // 3) Fast forward to just before eviction is due.
+  task_runner->FastForwardBy(time_to_live_in_back_forward_cache - delta);
+
+  // 4) Confirm A is still in BackForwardCache.
   ASSERT_FALSE(delete_observer_rfh_a.deleted());
   EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
 
-  // Fast forward by a small delta more than time to live.
-  task_runner->FastForwardBy(time_to_live_in_back_forward_cache + delta);
+  // 5) Fast forward to when eviction is due.
+  task_runner->FastForwardBy(delta);
 
-  // 4) Check if A has been evicted or not from BackForwardCache after time to
-  // live.
+  // 6) Confirm A is evicted.
   EXPECT_TRUE(rfh_a->is_evicted_from_back_forward_cache());
   delete_observer_rfh_a.WaitUntilDeleted();
   EXPECT_EQ(current_frame_host(), rfh_b);

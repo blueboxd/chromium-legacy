@@ -235,8 +235,6 @@ void DesktopWindowTreeHostX11::OnNativeWidgetCreated(
   x11_window_move_client_ = std::make_unique<X11DesktopWindowMoveClient>();
   wm::SetWindowMoveClient(window(), x11_window_move_client_.get());
 
-  SetWindowTransparency();
-
   DesktopWindowTreeHostLinux::OnNativeWidgetCreated(params);
 }
 
@@ -461,10 +459,6 @@ bool DesktopWindowTreeHostX11::ShouldUseNativeFrame() const {
   return GetXWindow()->use_native_frame();
 }
 
-bool DesktopWindowTreeHostX11::ShouldWindowContentsBeTransparent() const {
-  return GetXWindow()->has_alpha();
-}
-
 void DesktopWindowTreeHostX11::FrameTypeChanged() {
   Widget::FrameType new_type =
       native_widget_delegate()->AsWidget()->frame_type();
@@ -580,10 +574,6 @@ bool DesktopWindowTreeHostX11::IsTranslucentWindowOpacitySupported() const {
 
 void DesktopWindowTreeHostX11::SizeConstraintsChanged() {
   GetXWindow()->UpdateMinAndMaxSize();
-}
-
-bool DesktopWindowTreeHostX11::ShouldUpdateWindowTransparency() const {
-  return true;
 }
 
 bool DesktopWindowTreeHostX11::ShouldUseDesktopNativeCursorManager() const {
@@ -771,14 +761,6 @@ void DesktopWindowTreeHostX11::MapWindow(ui::WindowShowState show_state) {
   bool inactive = show_state == ui::SHOW_STATE_INACTIVE;
 
   GetXWindow()->Map(inactive);
-}
-
-void DesktopWindowTreeHostX11::SetWindowTransparency() {
-  bool has_alpha = GetXWindow()->has_alpha();
-  compositor()->SetBackgroundColor(has_alpha ? SK_ColorTRANSPARENT
-                                             : SK_ColorWHITE);
-  window()->SetTransparent(has_alpha);
-  content_window()->SetTransparent(has_alpha);
 }
 
 void DesktopWindowTreeHostX11::Relayout() {

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/printing/history/print_job_info.pb.h"
@@ -126,6 +127,7 @@ class PrintJobDatabaseImplTest : public ::testing::Test {
 
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<PrintJobDatabaseImpl> print_job_database_;
+  base::HistogramTester histogram_tester_;
 
  private:
   base::ScopedTempDir temp_dir_;
@@ -219,6 +221,24 @@ TEST_F(PrintJobDatabaseImplTest, RequestsBeforeInitialization) {
   EXPECT_EQ(1u, print_job_entries.size());
   EXPECT_EQ(kId1, print_job_entries[0].id());
   EXPECT_EQ(kTitle1, print_job_entries[0].title());
+}
+
+TEST_F(PrintJobDatabaseImplTest, Histograms) {
+  Initialize();
+  PrintJobInfo print_job_info = ConstructPrintJobInfo(kId1, kTitle1);
+  SavePrintJob(print_job_info);
+  GetPrintJobs();
+  histogram_tester_.ExpectTotalCount(
+      PrintJobDatabaseImpl::kPrintJobDatabaseEntries, 1);
+  histogram_tester_.ExpectUniqueSample(
+      PrintJobDatabaseImpl::kPrintJobDatabaseEntries, 0, 1);
+  histogram_tester_.ExpectTotalCount(
+      PrintJobDatabaseImpl::kPrintJobDatabaseEntrySize, 1);
+  histogram_tester_.ExpectUniqueSample(
+      PrintJobDatabaseImpl::kPrintJobDatabaseEntrySize,
+      print_job_info.ByteSizeLong(), 1);
+  histogram_tester_.ExpectTotalCount(
+      PrintJobDatabaseImpl::kPrintJobDatabaseLoadTime, 1);
 }
 
 }  // namespace chromeos

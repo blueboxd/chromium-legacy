@@ -11,13 +11,14 @@
 namespace video_capture {
 
 PushVideoStreamSubscriptionImpl::PushVideoStreamSubscriptionImpl(
-    mojom::PushVideoStreamSubscriptionRequest subscription_request,
+    mojo::PendingReceiver<mojom::PushVideoStreamSubscription>
+        subscription_receiver,
     mojo::PendingRemote<mojom::Receiver> subscriber,
     const media::VideoCaptureParams& requested_settings,
     mojom::VideoSource::CreatePushSubscriptionCallback creation_callback,
     BroadcastingReceiver* broadcaster,
     mojom::DevicePtr* device)
-    : binding_(this, std::move(subscription_request)),
+    : receiver_(this, std::move(subscription_receiver)),
       subscriber_(std::move(subscriber)),
       requested_settings_(requested_settings),
       creation_callback_(std::move(creation_callback)),
@@ -34,7 +35,7 @@ PushVideoStreamSubscriptionImpl::~PushVideoStreamSubscriptionImpl() = default;
 void PushVideoStreamSubscriptionImpl::SetOnClosedHandler(
     base::OnceCallback<void(base::OnceClosure done_cb)> handler) {
   on_closed_handler_ = std::move(handler);
-  binding_.set_connection_error_handler(
+  receiver_.set_disconnect_handler(
       base::BindOnce(&PushVideoStreamSubscriptionImpl::OnConnectionLost,
                      weak_factory_.GetWeakPtr()));
 }

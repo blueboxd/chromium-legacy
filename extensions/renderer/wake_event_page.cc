@@ -24,8 +24,6 @@
 
 namespace extensions {
 
-using namespace v8_helpers;
-
 namespace {
 
 base::LazyInstance<WakeEventPage>::DestructorAtExit g_wake_event_page_instance =
@@ -124,8 +122,8 @@ v8::Local<v8::Function> WakeEventPage::GetForContext(ScriptContext* context) {
 
   // Cache the imported function as a hidden property on the global object of
   // |v8_context|. Creating it isn't free.
-  v8::Local<v8::Private> kWakeEventPageKey =
-      v8::Private::ForApi(isolate, ToV8StringUnsafe(isolate, "WakeEventPage"));
+  v8::Local<v8::Private> kWakeEventPageKey = v8::Private::ForApi(
+      isolate, v8_helpers::ToV8StringUnsafe(isolate, "WakeEventPage"));
   v8::Local<v8::Value> wake_event_page;
   if (!v8_context->Global()
            ->GetPrivate(v8_context, kWakeEventPageKey)
@@ -140,7 +138,7 @@ v8::Local<v8::Function> WakeEventPage::GetForContext(ScriptContext* context) {
     native_handler->Initialize();
 
     // Extract and cache the wake-event-page function from the native handler.
-    wake_event_page = GetPropertyUnsafe(
+    wake_event_page = v8_helpers::GetPropertyUnsafe(
         v8_context, native_handler->NewInstance(), kWakeEventPageFunctionName);
     v8_context->Global()
         ->SetPrivate(v8_context, kWakeEventPageKey, wake_event_page)

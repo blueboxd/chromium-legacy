@@ -268,6 +268,9 @@ void CrostiniPackageNotification::Close(bool by_user) {
 void CrostiniPackageNotification::Click(
     const base::Optional<int>& button_index,
     const base::Optional<base::string16>& reply) {
+  if (current_status_ != PackageOperationStatus::SUCCEEDED)
+    return;
+
   if (app_count_ == 0) {
     LaunchCrostiniApp(profile_, kCrostiniTerminalId,
                       display::Screen::GetScreen()->GetPrimaryDisplay().id());

@@ -218,7 +218,7 @@ class PolicyTemplateChecker(object):
         self._Error('Schema is invalid for policy %s' % policy.get('name'))
         self.has_schema_error = True
 
-    if policy.has_key('validation_schema'):
+    if 'validation_schema' in policy:
       validation_schema = policy.get('validation_schema')
       if not self.schema_validator.ValidateSchema(validation_schema):
         self._Error(
@@ -235,7 +235,7 @@ class PolicyTemplateChecker(object):
 
     # Checks that the policy doesn't have a validation_schema - the whole
     # schema should be defined in 'schema'- unless whitelisted as legacy.
-    if (policy.has_key('validation_schema') and
+    if ('validation_schema' in policy and
         policy.get('name') not in LEGACY_EMBEDDED_JSON_WHITELIST):
       self._Error(('"validation_schema" is defined for new policy %s - ' +
                    'entire schema data should be contained in "schema"') %
@@ -556,8 +556,7 @@ class PolicyTemplateChecker(object):
           self._Error(('Example for policy %s does not comply to the policy\'s '
                        'schema or does not use all properties at least once.') %
                       policy.get('name'))
-        if policy.has_key('validation_schema') and policy.has_key(
-            'description_schema'):
+        if 'validation_schema' in policy and 'description_schema' in policy:
           self._Error(('validation_schema and description_schema both defined '
                        'for policy %s.') % policy.get('name'))
         secondary_schema = policy.get('validation_schema',

@@ -179,10 +179,6 @@ class TabAndroid {
   void LoadOriginalImage(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj);
 
-  jlong GetBookmarkId(JNIEnv* env,
-                      const base::android::JavaParamRef<jobject>& obj,
-                      jboolean only_editable);
-
   void SetInterceptNavigationDelegate(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

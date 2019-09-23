@@ -222,14 +222,14 @@ void ProfileMenuViewBase::SetIdentityInfo(const gfx::Image& image,
                                           const base::string16& title,
                                           const base::string16& subtitle) {
   constexpr int kTopMargin = 16;
+  constexpr int kBottomMargin = 8;
   constexpr int kImageToLabelSpacing = 4;
 
   identity_info_container_->RemoveAllChildViews(/*delete_children=*/true);
   identity_info_container_->SetLayoutManager(
       CreateBoxLayout(views::BoxLayout::Orientation::kVertical,
-                      views::BoxLayout::CrossAxisAlignment::kCenter));
-  identity_info_container_->SetBorder(
-      views::CreateEmptyBorder(kTopMargin, 0, 0, 0));
+                      views::BoxLayout::CrossAxisAlignment::kCenter,
+                      gfx::Insets(kTopMargin, 0, kBottomMargin, 0)));
 
   views::ImageView* image_view = identity_info_container_->AddChildView(
       std::make_unique<views::ImageView>());
@@ -294,15 +294,15 @@ void ProfileMenuViewBase::AddShortcutFeatureButton(
     const gfx::ImageSkia& icon,
     const base::string16& text,
     base::RepeatingClosure action) {
-  constexpr auto kMargins = gfx::Insets(8, 0);
+  constexpr int kBottomMargin = 8;
   constexpr int kButtonSpacing = 6;
 
   // Initialize layout if this is the first time a button is added.
   if (!shortcut_features_container_->GetLayoutManager()) {
     views::BoxLayout* layout = shortcut_features_container_->SetLayoutManager(
         std::make_unique<views::BoxLayout>(
-            views::BoxLayout::Orientation::kHorizontal, kMargins,
-            kButtonSpacing));
+            views::BoxLayout::Orientation::kHorizontal,
+            gfx::Insets(0, 0, kBottomMargin, 0), kButtonSpacing));
     layout->set_main_axis_alignment(
         views::BoxLayout::MainAxisAlignment::kCenter);
   }
@@ -353,14 +353,15 @@ void ProfileMenuViewBase::SetProfileHeading(const base::string16& heading) {
 void ProfileMenuViewBase::AddSelectableProfile(const gfx::Image& image,
                                                const base::string16& name,
                                                base::RepeatingClosure action) {
-  constexpr auto kMargins = gfx::Insets(8, 0, 0, 0);
+  constexpr int kTopMargin = 8;
   constexpr int kImageSize = 22;
 
   // Initialize layout if this is the first time a button is added.
   if (!selectable_profiles_container_->GetLayoutManager()) {
     selectable_profiles_container_->SetLayoutManager(
         std::make_unique<views::BoxLayout>(
-            views::BoxLayout::Orientation::kVertical, kMargins));
+            views::BoxLayout::Orientation::kVertical,
+            gfx::Insets(kTopMargin, 0, 0, 0)));
   }
 
   gfx::Image sized_image =

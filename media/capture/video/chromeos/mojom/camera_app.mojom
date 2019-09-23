@@ -4,6 +4,7 @@
 
 module cros.mojom;
 
+import "components/arc/mojom/camera_intent.mojom";
 import "media/capture/mojom/image_capture.mojom";
 import "media/capture/video/chromeos/mojom/camera_common.mojom";
 import "media/capture/video/chromeos/mojom/camera_metadata.mojom";
@@ -58,17 +59,14 @@ interface CameraAppDeviceProvider {
 // Interface for communication between Chrome Camera App (Remote) and Chrome
 // (Receiver).
 interface CameraAppHelper {
-  // Invoked when the Android intent from ARC++ is fulfilled or is failed.
-  // For the intent which expects to have result, it is fulfilled when the
-  // captured is done and is failed if the session ends without finishing the
-  // capture. For the intent which don't expect any result, it is fulfilled when
-  // the camera app is successfully launched and is failed when the camera fails
-  // to launch. |intent_id| should be the same id that was specified in the
-  // query when launching the camera app. |is_success| indicates the result
-  // status of the intent. The |captured_data| will be delivered to the handler
-  // as a byte array.
-  OnIntentHandled(uint32 intent_id, bool is_success,
-                  array<uint8> captured_data);
+  // Sends the captured result |data| for corresponding intent recognized by
+  // |intent_id| back to ARC. The handler should handle |data| and may notify
+  // the intent caller according to the intention of the |action|. |is_success|
+  // will be set to true if the ARC received the result and set to false for
+  // invalid input.
+  HandleCameraResult(uint32 intent_id, arc.mojom.CameraIntentAction action,
+                     array<uint8> data)
+      => (bool is_success);
 
   // Checks if device is under tablet mode currently.
   IsTabletMode() => (bool is_tablet_mode);

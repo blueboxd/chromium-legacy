@@ -97,7 +97,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   // API to build the profile menu.
   void SetIdentityInfo(const gfx::Image& image,
                        const base::string16& title,
-                       const base::string16& subtitle);
+                       const base::string16& subtitle = base::string16());
   void SetSyncInfo(const base::string16& description,
                    const base::string16& link_text,
                    base::RepeatingClosure action);

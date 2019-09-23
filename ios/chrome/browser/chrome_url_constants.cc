@@ -44,6 +44,7 @@ const char kChromeUIOmahaHost[] = "omaha";
 const char kChromeUIPasswordManagerInternalsHost[] =
     "password-manager-internals";
 const char kChromeUIPolicyHost[] = "policy";
+const char kChromeUIPrefsInternalsHost[] = "prefs-internals";
 const char kChromeUISignInInternalsHost[] = "signin-internals";
 const char kChromeUISuggestionsHost[] = "suggestions";
 const char kChromeUISyncInternalsHost[] = "sync-internals";

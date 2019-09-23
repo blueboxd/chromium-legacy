@@ -147,6 +147,17 @@ cr.define('settings_people_page_kerberos_accounts', function() {
           .click();
     }
 
+    // Can be used to wait for event |eventName| on |element|, e.g.
+    //   await onEvent(addDialog, 'close');
+    function onEvent(element, eventName) {
+      return new Promise(function(resolve) {
+        element.addEventListener(eventName, function callback() {
+          element.removeEventListener(eventName, callback);
+          resolve();
+        });
+      });
+    }
+
     test('AccountListIsPopulatedAtStartup', async () => {
       await browserProxy.whenCalled('getAccounts');
       Polymer.dom.flush();
@@ -260,7 +271,7 @@ cr.define('settings_people_page_kerberos_accounts', function() {
       addDialog.$$('.action-button').click();
       Polymer.dom.flush();
 
-      await browserProxy.whenCalled('addAccount');
+      await onEvent(addDialog, 'close');
       await test_util.flushTasks();
       Polymer.dom.flush();
       assertTrue(toast.open);

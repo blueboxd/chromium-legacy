@@ -27,7 +27,7 @@ class InputImeClearCompositionFunction : public ExtensionFunction {
                              INPUT_IME_CLEARCOMPOSITION)
 
  protected:
-  ~InputImeClearCompositionFunction() override {}
+  ~InputImeClearCompositionFunction() override = default;
 
   // ExtensionFunction:
   ResponseAction Run() override;
@@ -39,7 +39,7 @@ class InputImeSetCandidateWindowPropertiesFunction : public ExtensionFunction {
                              INPUT_IME_SETCANDIDATEWINDOWPROPERTIES)
 
  protected:
-  ~InputImeSetCandidateWindowPropertiesFunction() override {}
+  ~InputImeSetCandidateWindowPropertiesFunction() override = default;
 
   // ExtensionFunction:
   ResponseAction Run() override;
@@ -50,7 +50,7 @@ class InputImeSetCandidatesFunction : public ExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("input.ime.setCandidates", INPUT_IME_SETCANDIDATES)
 
  protected:
-  ~InputImeSetCandidatesFunction() override {}
+  ~InputImeSetCandidatesFunction() override = default;
 
   // ExtensionFunction:
   ResponseAction Run() override;
@@ -62,7 +62,7 @@ class InputImeSetCursorPositionFunction : public ExtensionFunction {
                              INPUT_IME_SETCURSORPOSITION)
 
  protected:
-  ~InputImeSetCursorPositionFunction() override {}
+  ~InputImeSetCursorPositionFunction() override = default;
 
   // ExtensionFunction:
   ResponseAction Run() override;
@@ -73,7 +73,7 @@ class InputImeSetMenuItemsFunction : public ExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("input.ime.setMenuItems", INPUT_IME_SETMENUITEMS)
 
  protected:
-  ~InputImeSetMenuItemsFunction() override {}
+  ~InputImeSetMenuItemsFunction() override = default;
 
   // ExtensionFunction:
   ResponseAction Run() override;
@@ -85,7 +85,7 @@ class InputImeUpdateMenuItemsFunction : public ExtensionFunction {
                              INPUT_IME_UPDATEMENUITEMS)
 
  protected:
-  ~InputImeUpdateMenuItemsFunction() override {}
+  ~InputImeUpdateMenuItemsFunction() override = default;
 
   // ExtensionFunction:
   ResponseAction Run() override;
@@ -96,7 +96,7 @@ class InputImeDeleteSurroundingTextFunction : public ExtensionFunction {
   DECLARE_EXTENSION_FUNCTION("input.ime.deleteSurroundingText",
                              INPUT_IME_DELETESURROUNDINGTEXT)
  protected:
-  ~InputImeDeleteSurroundingTextFunction() override {}
+  ~InputImeDeleteSurroundingTextFunction() override = default;
 
   // ExtensionFunction:
   ResponseAction Run() override;
@@ -108,7 +108,7 @@ class InputImeHideInputViewFunction : public ExtensionFunction {
                              INPUT_IME_HIDEINPUTVIEW)
 
  protected:
-  ~InputImeHideInputViewFunction() override {}
+  ~InputImeHideInputViewFunction() override = default;
 
   // ExtensionFunction:
   ResponseAction Run() override;
@@ -117,10 +117,10 @@ class InputImeHideInputViewFunction : public ExtensionFunction {
 class InputMethodPrivateNotifyImeMenuItemActivatedFunction
     : public ExtensionFunction {
  public:
-  InputMethodPrivateNotifyImeMenuItemActivatedFunction() {}
+  InputMethodPrivateNotifyImeMenuItemActivatedFunction() = default;
 
  protected:
-  ~InputMethodPrivateNotifyImeMenuItemActivatedFunction() override {}
+  ~InputMethodPrivateNotifyImeMenuItemActivatedFunction() override = default;
 
   // ExtensionFunction:
   ResponseAction Run() override;
@@ -139,7 +139,7 @@ class InputMethodPrivateGetCompositionBoundsFunction
                              INPUTMETHODPRIVATE_GETCOMPOSITIONBOUNDS)
 
  protected:
-  ~InputMethodPrivateGetCompositionBoundsFunction() override {}
+  ~InputMethodPrivateGetCompositionBoundsFunction() override = default;
 
   // ExtensionFunction:
   ResponseAction Run() override;

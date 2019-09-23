@@ -84,6 +84,9 @@ class AppRegistrar {
   // Finds all apps that are installed under |scope|.
   std::vector<AppId> FindAppsInScope(const GURL& scope) const;
 
+  // Returns whether the app is a shortcut app (as opposed to a PWA).
+  bool IsShortcutApp(const AppId& app_id) const;
+
   // Returns true if the app with the specified |start_url| is currently fully
   // locally installed. The provided |start_url| must exactly match the launch
   // URL for the app; this method does not consult the app scope or match URLs

@@ -21,7 +21,9 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "services/image_annotation/public/cpp/image_processor.h"
@@ -93,8 +95,9 @@ class FakeAnnotator : public image_annotation::mojom::Annotator {
   FakeAnnotator() = default;
   ~FakeAnnotator() override = default;
 
-  void BindRequest(image_annotation::mojom::AnnotatorRequest request) {
-    bindings_.AddBinding(this, std::move(request));
+  void BindReceiver(
+      mojo::PendingReceiver<image_annotation::mojom::Annotator> receiver) {
+    receivers_.Add(this, std::move(receiver));
   }
 
   void AnnotateImage(
@@ -139,7 +142,7 @@ class FakeAnnotator : public image_annotation::mojom::Annotator {
   }
 
  private:
-  mojo::BindingSet<image_annotation::mojom::Annotator> bindings_;
+  mojo::ReceiverSet<image_annotation::mojom::Annotator> receivers_;
   static bool return_ocr_results_;
   static bool return_label_results_;
   static base::Optional<image_annotation::mojom::AnnotateImageError>
@@ -176,7 +179,7 @@ class FakeImageAnnotationService : public service_manager::Service {
 
   void OnStart() override {
     registry_.AddInterface<image_annotation::mojom::Annotator>(
-        base::BindRepeating(&FakeAnnotator::BindRequest,
+        base::BindRepeating(&FakeAnnotator::BindReceiver,
                             base::Unretained(&annotator_)));
   }
 

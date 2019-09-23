@@ -208,9 +208,7 @@ class InitialEnrollmentTest : public EnrollmentLocalPolicyServerBase {
 };
 
 // Simple manual enrollment.
-// TODO(https://crbug.com/992022#c5): Re-enable this test.
-IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
-                       DISABLED_ManualEnrollment) {
+IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase, ManualEnrollment) {
   TriggerEnrollmentAndSignInSuccessfully();
 
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
@@ -379,9 +377,8 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
 }
 
 // Error during enrollment : 500 - Consumer account with packaged license.
-// TODO(https://crbug.com/992022#c4): Re-enable this test.
 IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
-                       DISABLED_EnrollmentErrorServerError) {
+                       EnrollmentErrorServerError) {
   policy_server_.SetExpectedDeviceEnrollmentError(500);
 
   TriggerEnrollmentAndSignInSuccessfully();
@@ -475,17 +472,13 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
 }
 
 // No state keys on the server. Auto enrollment check should proceed to login.
-// Flaky: crbug.com/992022
-IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer,
-                       DISABLED_AutoEnrollmentCheck) {
+IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, AutoEnrollmentCheck) {
   host()->StartWizard(AutoEnrollmentCheckScreenView::kScreenId);
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
 }
 
 // State keys are present but restore mode is not requested.
-// Flaky: crbug.com/992022
-IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer,
-                       DISABLED_ReenrollmentNone) {
+IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, ReenrollmentNone) {
   EXPECT_TRUE(policy_server_.SetDeviceStateRetrievalResponse(
       state_keys_broker(),
       enterprise_management::DeviceStateRetrievalResponse::RESTORE_MODE_NONE,
@@ -495,9 +488,7 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer,
 }
 
 // Reenrollment requested. User can skip.
-// Flaky: crbug.com/992022
-IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer,
-                       DISABLED_ReenrollmentRequested) {
+IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, ReenrollmentRequested) {
   EXPECT_TRUE(policy_server_.SetDeviceStateRetrievalResponse(
       state_keys_broker(),
       enterprise_management::DeviceStateRetrievalResponse::
@@ -510,9 +501,7 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer,
 }
 
 // Reenrollment forced. User can not skip.
-// Flaky: crbug.com/992022
-IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer,
-                       DISABLED_ReenrollmentForced) {
+IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, ReenrollmentForced) {
   EXPECT_TRUE(policy_server_.SetDeviceStateRetrievalResponse(
       state_keys_broker(),
       enterprise_management::DeviceStateRetrievalResponse::
@@ -537,8 +526,7 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, DeviceDisabled) {
 }
 
 // Attestation enrollment.
-// Flaky: crbug.com/992022
-IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, DISABLED_Attestation) {
+IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, Attestation) {
   policy_server_.SetFakeAttestationFlow();
   EXPECT_TRUE(policy_server_.SetDeviceStateRetrievalResponse(
       state_keys_broker(),
@@ -564,17 +552,14 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentNoStateKeys, FREExplicitlyRequired) {
 
 // FRE not explicitly required and the state keys are missing. Should proceed to
 // normal signin.
-// Test is flaky, and crashes occasionally. https://crbug.com/992022
-IN_PROC_BROWSER_TEST_F(AutoEnrollmentNoStateKeys, DISABLED_FRENotRequired) {
+IN_PROC_BROWSER_TEST_F(AutoEnrollmentNoStateKeys, NotRequired) {
   host()->StartWizard(AutoEnrollmentCheckScreenView::kScreenId);
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
 }
 
 // FRE explicitly not required in VPD, so it should not even contact the policy
 // server.
-// Test is flaky, and crashes occasionally. https://crbug.com/992022
-IN_PROC_BROWSER_TEST_F(AutoEnrollmentWithStatistics,
-                       DISABLED_FREExplicitlyNotRequired) {
+IN_PROC_BROWSER_TEST_F(AutoEnrollmentWithStatistics, ExplicitlyNotRequired) {
   SetFRERequiredKey("0");
 
   // Should be ignored.
@@ -589,9 +574,7 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentWithStatistics,
 }
 
 // FRE is not required when VPD is valid and activate date is not there.
-// Test is flaky, and crashes occasionally. https://crbug.com/992022
-IN_PROC_BROWSER_TEST_F(AutoEnrollmentWithStatistics,
-                       DISABLED_MachineNotActivated) {
+IN_PROC_BROWSER_TEST_F(AutoEnrollmentWithStatistics, MachineNotActivated) {
   // Should be ignored.
   EXPECT_TRUE(policy_server_.SetDeviceStateRetrievalResponse(
       state_keys_broker(),

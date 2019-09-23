@@ -32,6 +32,7 @@
 
 #include "third_party/blink/public/mojom/choosers/date_time_chooser.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -160,18 +161,14 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
   AddProperty("weekLabel",
               GetLocale().QueryString(WebLocalizedString::kWeekNumberLabel),
               data);
-  AddProperty(
-      "axShowMonthSelector",
-      GetLocale().QueryString(WebLocalizedString::kAXCalendarShowMonthSelector),
-      data);
-  AddProperty(
-      "axShowNextMonth",
-      GetLocale().QueryString(WebLocalizedString::kAXCalendarShowNextMonth),
-      data);
-  AddProperty(
-      "axShowPreviousMonth",
-      GetLocale().QueryString(WebLocalizedString::kAXCalendarShowPreviousMonth),
-      data);
+  AddProperty("axShowMonthSelector",
+              GetLocale().QueryString(IDS_AX_CALENDAR_SHOW_MONTH_SELECTOR),
+              data);
+  AddProperty("axShowNextMonth",
+              GetLocale().QueryString(IDS_AX_CALENDAR_SHOW_NEXT_MONTH), data);
+  AddProperty("axShowPreviousMonth",
+              GetLocale().QueryString(IDS_AX_CALENDAR_SHOW_PREVIOUS_MONTH),
+              data);
   AddProperty("weekStartDay", locale_->FirstDayOfWeek(), data);
   AddProperty("shortMonthLabels", locale_->ShortMonthLabels(), data);
   AddProperty("dayLabels", locale_->WeekDayShortLabels(), data);

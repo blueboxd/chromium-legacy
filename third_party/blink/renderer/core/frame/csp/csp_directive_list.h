@@ -60,12 +60,10 @@ class CORE_EXPORT CSPDirectiveList final
                    const WTF::OrdinalNumber& context_line,
                    SecurityViolationReportingPolicy) const;
 
-  bool AllowEval(ScriptState*,
-                 SecurityViolationReportingPolicy,
+  bool AllowEval(SecurityViolationReportingPolicy,
                  ContentSecurityPolicy::ExceptionStatus,
                  const String& script_content) const;
-  bool AllowWasmEval(ScriptState*,
-                     SecurityViolationReportingPolicy,
+  bool AllowWasmEval(SecurityViolationReportingPolicy,
                      ContentSecurityPolicy::ExceptionStatus,
                      const String& script_content) const;
   bool AllowPluginType(const String& type,
@@ -219,7 +217,6 @@ class CORE_EXPORT CSPDirectiveList final
                            const ContentSecurityPolicy::DirectiveType,
                            const String& message,
                            const KURL& blocked_url,
-                           ScriptState*,
                            const ContentSecurityPolicy::ExceptionStatus,
                            const String& content) const;
 
@@ -246,12 +243,10 @@ class CORE_EXPORT CSPDirectiveList final
 
   bool CheckEvalAndReportViolation(SourceListDirective*,
                                    const String& console_message,
-                                   ScriptState*,
                                    ContentSecurityPolicy::ExceptionStatus,
                                    const String& script_content) const;
   bool CheckWasmEvalAndReportViolation(SourceListDirective*,
                                        const String& console_message,
-                                       ScriptState*,
                                        ContentSecurityPolicy::ExceptionStatus,
                                        const String& script_content) const;
   bool CheckInlineAndReportViolation(

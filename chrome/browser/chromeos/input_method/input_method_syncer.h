@@ -15,11 +15,11 @@
 
 namespace sync_preferences {
 class PrefServiceSyncable;
-}
+}  // namespace sync_preferences
 
 namespace user_prefs {
 class PrefRegistrySyncable;
-}
+}  // namespace user_prefs
 
 namespace chromeos {
 namespace input_method {

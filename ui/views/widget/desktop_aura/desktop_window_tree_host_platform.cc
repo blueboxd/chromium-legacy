@@ -481,7 +481,7 @@ bool DesktopWindowTreeHostPlatform::ShouldUseNativeFrame() const {
 }
 
 bool DesktopWindowTreeHostPlatform::ShouldWindowContentsBeTransparent() const {
-  return false;
+  return platform_window()->ShouldWindowContentsBeTransparent();
 }
 
 void DesktopWindowTreeHostPlatform::FrameTypeChanged() {
@@ -558,7 +558,7 @@ void DesktopWindowTreeHostPlatform::SizeConstraintsChanged() {
 }
 
 bool DesktopWindowTreeHostPlatform::ShouldUpdateWindowTransparency() const {
-  return false;
+  return true;
 }
 
 bool DesktopWindowTreeHostPlatform::ShouldUseDesktopNativeCursorManager()

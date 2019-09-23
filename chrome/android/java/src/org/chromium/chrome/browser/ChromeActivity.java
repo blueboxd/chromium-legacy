@@ -62,6 +62,7 @@ import org.chromium.chrome.browser.appmenu.AppMenuDelegate;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegateImpl;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
+import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
@@ -1605,11 +1606,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             return;
         }
 
-        // Note the use of getUserBookmarkId() over getBookmarkId() here: Managed bookmarks can't be
+        // Note we get user bookmark ID over just a bookmark ID here: Managed bookmarks can't be
         // edited. If the current URL is only bookmarked by managed bookmarks, this will return
-        // INVALID_BOOKMARK_ID, so the code below will fall back on adding a new bookmark instead.
+        // INVALID_ID, so the code below will fall back on adding a new bookmark instead.
         // TODO(bauerb): This does not take partner bookmarks into account.
-        final long bookmarkId = tabToBookmark.getUserBookmarkId();
+        final long bookmarkId = BookmarkBridge.getUserBookmarkIdForTab(tabToBookmark);
 
         final BookmarkModel bookmarkModel = new BookmarkModel();
 

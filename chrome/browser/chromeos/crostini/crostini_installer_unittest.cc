@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "chrome/browser/chromeos/crostini/crostini_installer_types.mojom.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer_ui_delegate.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/test/base/testing_profile.h"
@@ -22,6 +23,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using crostini::mojom::InstallerError;
+using crostini::mojom::InstallerState;
 using testing::_;
 using testing::AnyNumber;
 using testing::Expectation;
@@ -38,14 +41,12 @@ class CrostiniInstallerTest : public testing::Test {
  public:
   using ResultCallback = CrostiniInstallerUIDelegate::ResultCallback;
   using ProgressCallback = CrostiniInstallerUIDelegate::ProgressCallback;
-  using Error = CrostiniInstallerUIDelegate::Error;
-  using InstallationState = CrostiniInstallerUIDelegate::InstallationState;
 
   class MockCallbacks {
    public:
     MOCK_METHOD2(OnProgress,
-                 void(InstallationState state, double progress_fraction));
-    MOCK_METHOD1(OnFinished, void(Error error));
+                 void(InstallerState state, double progress_fraction));
+    MOCK_METHOD1(OnFinished, void(InstallerError error));
     MOCK_METHOD0(OnCanceled, void());
   };
 
@@ -184,7 +185,8 @@ TEST_F(CrostiniInstallerTest, InstallFlow) {
                   MountPath("sshfs://testing_profile@hostname:", _, _, _, _, _))
           .WillOnce(Invoke(&mount_path_waiter_, &MountPathWaiter::MountPath));
   // |OnProgress()| should not happens after |OnFinished()|
-  EXPECT_CALL(mock_callbacks_, OnFinished(Error::NONE)).After(expectation_set);
+  EXPECT_CALL(mock_callbacks_, OnFinished(InstallerError::kNone))
+      .After(expectation_set);
 
   Install();
   mount_path_waiter_.WaitForMountPathCalled();
@@ -268,11 +270,12 @@ TEST_F(CrostiniInstallerTest, CancelAfterStartBeforeCheckDisk) {
       << "Installer should recover to installable state";
 }
 
-TEST_F(CrostiniInstallerTest, Error) {
+TEST_F(CrostiniInstallerTest, InstallerError) {
   Expectation expect_progresses =
       EXPECT_CALL(mock_callbacks_, OnProgress(_, _)).Times(AnyNumber());
   // |OnProgress()| should not happens after |OnFinished()|
-  EXPECT_CALL(mock_callbacks_, OnFinished(Error::ERROR_STARTING_TERMINA))
+  EXPECT_CALL(mock_callbacks_,
+              OnFinished(InstallerError::kErrorStartingTermina))
       .After(expect_progresses);
 
   // Fake a failure for starting vm.

@@ -101,9 +101,10 @@ class CrostiniInstaller : public KeyedService,
 
   void RunProgressCallback();
   void UpdateState(State new_state);
-  void UpdateInstallingState(InstallationState new_installing_state,
-                             bool run_callback = true);
-  void HandleError(Error error);
+  void UpdateInstallingState(
+      crostini::mojom::InstallerState new_installing_state,
+      bool run_callback = true);
+  void HandleError(crostini::mojom::InstallerError error);
   void FinishCleanup(crostini::CrostiniResult result);
   void RecordSetupResult(SetupResult result);
 
@@ -113,7 +114,7 @@ class CrostiniInstaller : public KeyedService,
   Profile* profile_;
 
   State state_ = State::IDLE;
-  InstallationState installing_state_;
+  crostini::mojom::InstallerState installing_state_;
   base::TimeTicks install_start_time_;
   base::Time installing_state_start_time_;
   base::RepeatingTimer state_progress_timer_;

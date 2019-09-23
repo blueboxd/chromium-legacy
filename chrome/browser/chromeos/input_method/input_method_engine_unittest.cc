@@ -50,18 +50,16 @@ enum CallsBitmap {
 };
 
 void InitInputMethod() {
-  ComponentExtensionIMEManager* comp_ime_manager =
-      new ComponentExtensionIMEManager;
-  MockComponentExtIMEManagerDelegate* delegate =
-      new MockComponentExtIMEManagerDelegate;
+  auto* comp_ime_manager = new ComponentExtensionIMEManager;
+  auto* delegate = new MockComponentExtIMEManagerDelegate;
 
   ComponentExtensionIME ext1;
   ext1.id = kTestExtensionId;
 
   ComponentExtensionEngine ext1_engine1;
   ext1_engine1.engine_id = kTestImeComponentId;
-  ext1_engine1.language_codes.push_back("en-US");
-  ext1_engine1.layouts.push_back("us");
+  ext1_engine1.language_codes.emplace_back("en-US");
+  ext1_engine1.layouts.emplace_back("us");
   ext1.engines.push_back(ext1_engine1);
 
   std::vector<ComponentExtensionIME> ime_list;
@@ -70,7 +68,7 @@ void InitInputMethod() {
   comp_ime_manager->Initialize(
       std::unique_ptr<ComponentExtensionIMEManagerDelegate>(delegate));
 
-  MockInputMethodManagerImpl* manager = new MockInputMethodManagerImpl;
+  auto* manager = new MockInputMethodManagerImpl;
   manager->SetComponentExtensionIMEManager(
       std::unique_ptr<ComponentExtensionIMEManager>(comp_ime_manager));
   InitializeForTesting(manager);
@@ -79,7 +77,7 @@ void InitInputMethod() {
 class TestObserver : public InputMethodEngineBase::Observer {
  public:
   TestObserver() : calls_bitmap_(NONE) {}
-  ~TestObserver() override {}
+  ~TestObserver() override = default;
 
   void OnActivate(const std::string& engine_id) override {
     calls_bitmap_ |= ACTIVATE;
@@ -144,8 +142,8 @@ class TestObserver : public InputMethodEngineBase::Observer {
 class InputMethodEngineTest : public testing::Test {
  public:
   InputMethodEngineTest() : observer_(nullptr), input_view_("inputview.html") {
-    languages_.push_back("en-US");
-    layouts_.push_back("us");
+    languages_.emplace_back("en-US");
+    layouts_.emplace_back("us");
     InitInputMethod();
     ui::IMEBridge::Initialize();
     mock_ime_input_context_handler_.reset(new ui::MockIMEInputContextHandler());
@@ -328,9 +326,7 @@ TEST_F(InputMethodEngineTest, TestHistograms) {
 TEST_F(InputMethodEngineTest, TestCompositionBoundsChanged) {
   CreateEngine(true);
   // Enable/disable with focus.
-  std::vector<gfx::Rect> rects;
-  rects.push_back(gfx::Rect());
-  engine_->SetCompositionBounds(rects);
+  engine_->SetCompositionBounds({gfx::Rect()});
   EXPECT_EQ(ONCOMPOSITIONBOUNDSCHANGED, observer_->GetCallsBitmapAndReset());
 }
 

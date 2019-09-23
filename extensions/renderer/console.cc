@@ -23,8 +23,6 @@
 namespace extensions {
 namespace console {
 
-using namespace v8_helpers;
-
 namespace {
 
 // Writes |message| to stack to show up in minidump, then crashes.

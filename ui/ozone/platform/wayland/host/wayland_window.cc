@@ -525,6 +525,11 @@ gfx::Rect WaylandWindow::GetRestoredBoundsInPixels() const {
   return restored_bounds_px_;
 }
 
+bool WaylandWindow::ShouldWindowContentsBeTransparent() const {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
+}
+
 bool WaylandWindow::CanDispatchEvent(const PlatformEvent& event) {
   // This window is a nested popup window, all the events must be forwarded
   // to the main popup window.

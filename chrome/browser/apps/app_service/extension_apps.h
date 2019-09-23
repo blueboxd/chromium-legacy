@@ -116,6 +116,8 @@ class ExtensionApps : public apps::mojom::Publisher,
 
   void PopulatePermissions(const extensions::Extension* extension,
                            std::vector<mojom::PermissionPtr>* target);
+  void PopulateIntentFilters(const base::Optional<GURL>& app_scope,
+                             std::vector<mojom::IntentFilterPtr>* target);
   apps::mojom::AppPtr Convert(const extensions::Extension* extension,
                               apps::mojom::Readiness readiness);
   void ConvertVector(const extensions::ExtensionSet& extensions,

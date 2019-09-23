@@ -24,7 +24,7 @@ template <> const char* interface_name<PPB_Var_Deprecated>() {
 
 }  // namespace
 
-using namespace deprecated;
+using deprecated::ScriptableObject;
 
 VarPrivate::VarPrivate(const InstanceHandle& instance,
                        ScriptableObject* object) {

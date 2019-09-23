@@ -1102,17 +1102,17 @@
   {
     "prefix": "audio-service",
     "base": "http/tests/media",
-    "args": ["--enable-features=AudioServiceOutOfProcess,AudioServiceSandbox"]
+    "args": ["--enable-features=AudioServiceOutOfProcess,AudioServiceSandbox,WebRtcApmInAudioService"]
   },
   {
     "prefix": "audio-service",
     "base": "media",
-    "args": ["--enable-features=AudioServiceOutOfProcess,AudioServiceSandbox"]
+    "args": ["--enable-features=AudioServiceOutOfProcess,AudioServiceSandbox,WebRtcApmInAudioService"]
   },
   {
     "prefix": "audio-service",
     "base": "external/wpt/mediacapture-streams",
-    "args": ["--enable-features=AudioServiceOutOfProcess,AudioServiceSandbox"]
+    "args": ["--enable-features=AudioServiceOutOfProcess,AudioServiceSandbox,WebRtcApmInAudioService"]
   },
   {
     "prefix": "scheduler",

@@ -193,8 +193,8 @@ public class BookmarkTest {
         BookmarkTestUtil.waitForBookmarkModelLoaded();
         // All actions with BookmarkModel needs to run on UI thread.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            long bookmarkIdLong =
-                    mActivityTestRule.getActivity().getActivityTab().getUserBookmarkId();
+            long bookmarkIdLong = BookmarkBridge.getUserBookmarkIdForTab(
+                    mActivityTestRule.getActivity().getActivityTabProvider().get());
             BookmarkId id = new BookmarkId(bookmarkIdLong, BookmarkType.NORMAL);
             Assert.assertTrue("The test page is not added as bookmark: ",
                     mBookmarkModel.doesBookmarkExist(id));

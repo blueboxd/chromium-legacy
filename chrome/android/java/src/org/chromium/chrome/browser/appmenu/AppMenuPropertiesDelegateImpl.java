@@ -422,7 +422,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
      */
     protected void updateBookmarkMenuItem(MenuItem bookmarkMenuItem, Tab currentTab) {
         bookmarkMenuItem.setEnabled(mBookmarkBridge.isEditBookmarksEnabled());
-        if (currentTab.getBookmarkId() != Tab.INVALID_BOOKMARK_ID) {
+        if (BookmarkBridge.hasBookmarkIdForTab(currentTab)) {
             bookmarkMenuItem.setIcon(R.drawable.btn_star_filled);
             bookmarkMenuItem.setChecked(true);
             bookmarkMenuItem.setTitleCondensed(mContext.getString(R.string.edit_bookmark));

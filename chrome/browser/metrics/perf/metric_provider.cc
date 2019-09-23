@@ -154,6 +154,9 @@ void MetricProvider::AddProfileToCache(
                                 sampled_profile->ByteSize()));
   cached_profile_data_.resize(cached_profile_data_.size() + 1);
   cached_profile_data_.back().Swap(sampled_profile.get());
+
+  if (!cache_updated_callback_.is_null())
+    cache_updated_callback_.Run();
 }
 
 }  // namespace metrics

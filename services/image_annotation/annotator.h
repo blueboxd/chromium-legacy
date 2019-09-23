@@ -17,8 +17,9 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/data_decoder/public/mojom/json_parser.mojom.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
@@ -78,8 +79,8 @@ class Annotator : public mojom::Annotator {
             service_manager::Connector* connector);
   ~Annotator() override;
 
-  // Start providing behavior for the given Mojo request.
-  void BindRequest(mojom::AnnotatorRequest request);
+  // Start providing behavior for the given Mojo receiver.
+  void BindReceiver(mojo::PendingReceiver<mojom::Annotator> receiver);
 
   // mojom::Annotator:
   void AnnotateImage(const std::string& source_id,
@@ -233,7 +234,7 @@ class Annotator : public mojom::Annotator {
 
   service_manager::Connector* const connector_;
 
-  mojo::BindingSet<mojom::Annotator> bindings_;
+  mojo::ReceiverSet<mojom::Annotator> receivers_;
 
   // Should not be used directly; GetJsonParser() should be called instead.
   mojo::Remote<data_decoder::mojom::JsonParser> json_parser_;

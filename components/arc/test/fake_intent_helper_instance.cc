@@ -133,6 +133,12 @@ void FakeIntentHelperInstance::RequestTextSelectionActions(
     ::arc::mojom::ScaleFactor scale_factor,
     RequestTextSelectionActionsCallback callback) {}
 
+void FakeIntentHelperInstance::HandleCameraResult(
+    uint32_t intent_id,
+    arc::mojom::CameraIntentAction action,
+    const std::vector<uint8_t>& data,
+    HandleCameraResultCallback callback) {}
+
 std::vector<FakeIntentHelperInstance::Broadcast>
 FakeIntentHelperInstance::GetBroadcastsForAction(
     const std::string& action) const {

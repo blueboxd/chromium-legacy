@@ -30,7 +30,7 @@ struct InputMethodMenuItem;
 
 namespace input_method {
 class InputMethodEngineBase;
-}
+}  // namespace input_method
 
 namespace chromeos {
 

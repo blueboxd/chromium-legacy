@@ -75,7 +75,7 @@ class ImeObserverNonChromeOS : public ui::ImeObserver {
   ImeObserverNonChromeOS(const std::string& extension_id, Profile* profile)
       : ImeObserver(extension_id, profile) {}
 
-  ~ImeObserverNonChromeOS() override {}
+  ~ImeObserverNonChromeOS() override = default;
 
   void OnCompositionBoundsChanged(
       const std::vector<gfx::Rect>& bounds) override {

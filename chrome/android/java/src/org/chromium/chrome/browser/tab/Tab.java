@@ -83,9 +83,6 @@ import java.lang.annotation.RetentionPolicy;
 public class Tab {
     public static final int INVALID_TAB_ID = -1;
 
-    /** Return value from {@link #getBookmarkId()} if this tab is not bookmarked. */
-    public static final long INVALID_BOOKMARK_ID = -1;
-
     private static final long INVALID_TIMESTAMP = -1;
 
     /** Used for logging. */
@@ -1824,24 +1821,6 @@ public class Tab {
     }
 
     /**
-     * @return The ID of the bookmark associated with the current URL, or
-     *         {@link #INVALID_BOOKMARK_ID} if no such bookmark exists.
-     */
-    public long getBookmarkId() {
-        return isFrozen() ? INVALID_BOOKMARK_ID
-                          : TabJni.get().getBookmarkId(mNativeTabAndroid, Tab.this, false);
-    }
-
-    /**
-     * Same as getBookmarkId() but never returns ids for managed bookmarks, or any other bookmarks
-     * that can't be edited by the user.
-     */
-    public long getUserBookmarkId() {
-        return isFrozen() ? INVALID_BOOKMARK_ID
-                          : TabJni.get().getBookmarkId(mNativeTabAndroid, Tab.this, true);
-    }
-
-    /**
      * @return Original url of the tab, which is the original url from DOMDistiller.
      */
     public String getOriginalUrl() {
@@ -1938,7 +1917,6 @@ public class Tab {
                 long nativeTabAndroid, Tab caller, String url, String title);
         void createHistoricalTab(long nativeTabAndroid, Tab caller);
         void loadOriginalImage(long nativeTabAndroid, Tab caller);
-        long getBookmarkId(long nativeTabAndroid, Tab caller, boolean onlyEditable);
         boolean hasPrerenderedUrl(long nativeTabAndroid, Tab caller, String url);
         void attachDetachedTab(long nativeTabAndroid, Tab caller);
         boolean areRendererInputEventsIgnored(long nativeTabAndroid, Tab caller);

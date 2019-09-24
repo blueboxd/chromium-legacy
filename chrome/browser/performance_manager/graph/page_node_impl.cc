@@ -19,11 +19,13 @@ namespace performance_manager {
 PageNodeImpl::PageNodeImpl(GraphImpl* graph,
                            const WebContentsProxy& contents_proxy,
                            const std::string& browser_context_id,
+                           const GURL& visible_url,
                            bool is_visible,
                            bool is_audible)
     : TypedNodeBase(graph),
       contents_proxy_(contents_proxy),
       visibility_change_time_(base::TimeTicks::Now()),
+      main_frame_url_(visible_url),
       browser_context_id_(browser_context_id),
       is_visible_(is_visible),
       is_audible_(is_audible) {
@@ -97,15 +99,25 @@ void PageNodeImpl::OnTitleUpdated() {
 }
 
 void PageNodeImpl::OnMainFrameNavigationCommitted(
+    bool same_document,
     base::TimeTicks navigation_committed_time,
     int64_t navigation_id,
     const GURL& url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // This should never be invoked with a null navigation, nor should it be
+  // called twice for the same navigation.
+  DCHECK_NE(0, navigation_id);
+  DCHECK_NE(navigation_id_, navigation_id);
   navigation_committed_time_ = navigation_committed_time;
-  main_frame_url_ = url;
   navigation_id_ = navigation_id;
+  main_frame_url_.SetAndMaybeNotify(this, url);
+
+  // No mainframe document change notification on same-document navigations.
+  if (same_document)
+    return;
+
   for (auto* observer : GetObservers())
-    observer->OnMainFrameNavigationCommitted(this);
+    observer->OnMainFrameDocumentChanged(this);
 }
 
 double PageNodeImpl::GetCPUUsage() const {
@@ -215,7 +227,7 @@ bool PageNodeImpl::page_almost_idle() const {
 
 const GURL& PageNodeImpl::main_frame_url() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return main_frame_url_;
+  return main_frame_url_.value();
 }
 
 int64_t PageNodeImpl::navigation_id() const {

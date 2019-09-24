@@ -3074,6 +3074,10 @@ const FeatureEntry kFeatureEntries[] = {
      kOsDesktop,
      FEATURE_VALUE_TYPE(features::kDisableInitialMostVisitedFadeIn)},
 
+    {"ntp-dismiss-promos", flag_descriptions::kNtpDismissPromosName,
+     flag_descriptions::kNtpDismissPromosDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kDismissNtpPromos)},
+
     {"ntp-realbox", flag_descriptions::kNtpRealboxName,
      flag_descriptions::kNtpRealboxDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kNtpRealbox)},

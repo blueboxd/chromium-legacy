@@ -15,28 +15,29 @@
 namespace web_app {
 
 class WebApp;
+class WebAppRegistrarMutable;
 class WebAppSyncBridge;
 
 // An explicit writable "view" for the registry. Any write operations must be
-// batched as a part of WebAppRegistryUpdate object.
+// batched as a part of WebAppRegistryUpdate object. Effectively
+// WebAppRegistryUpdate is a part of WebAppSyncBridge class.
 //
 // TODO(loyso): Support creation and deletion of apps as a part of single
 // update (As in Database CRUD: Create/Update/Delete).
 class WebAppRegistryUpdate {
  public:
+  explicit WebAppRegistryUpdate(WebAppRegistrarMutable* mutable_registrar);
   ~WebAppRegistryUpdate();
 
   // Acquire a mutable app object to set new field values.
   WebApp* UpdateApp(const AppId& app_id);
 
+  using AppsToUpdate = base::flat_set<const WebApp*>;
+  AppsToUpdate TakeAppsToUpdate();
+
  private:
-  friend class WebAppSyncBridge;
-  friend class ScopedRegistryUpdate;
-
-  explicit WebAppRegistryUpdate(WebAppSyncBridge* sync_bridge);
-
-  base::flat_set<const WebApp*> apps_to_update_;
-  WebAppSyncBridge* sync_bridge_;
+  AppsToUpdate apps_to_update_;
+  WebAppRegistrarMutable* mutable_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAppRegistryUpdate);
 };
@@ -52,6 +53,7 @@ class ScopedRegistryUpdate {
 
  private:
   std::unique_ptr<WebAppRegistryUpdate> update_;
+  WebAppSyncBridge* sync_bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedRegistryUpdate);
 };

@@ -36,7 +36,7 @@
 #include "ios/web/public/test/web_test.h"
 #import "ios/web/public/ui/context_menu_params.h"
 #import "ios/web/public/ui/java_script_dialog_presenter.h"
-#import "ios/web/public/web_state/web_state_delegate.h"
+#import "ios/web/public/web_state_delegate.h"
 #include "ios/web/public/web_state_observer.h"
 #import "ios/web/security/web_interstitial_impl.h"
 #import "ios/web/test/fakes/mock_interstitial_delegate.h"

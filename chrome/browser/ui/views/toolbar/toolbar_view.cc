@@ -42,15 +42,15 @@
 #include "chrome/browser/ui/views/global_media_controls/media_toolbar_button_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/media_router/cast_toolbar_button.h"
-#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/home_button.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_account_icon_container_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_page_action_icon_container_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/common/chrome_features.h"
@@ -254,16 +254,16 @@ void ToolbarView::Init() {
         source_id, content::GetSystemConnector(), browser_);
   }
 
-  std::unique_ptr<ToolbarPageActionIconContainerView>
-      toolbar_page_action_container;
+  std::unique_ptr<ToolbarAccountIconContainerView>
+      toolbar_account_icon_container;
   bool show_avatar_toolbar_button = true;
   if (base::FeatureList::IsEnabled(
           autofill::features::kAutofillEnableToolbarStatusChip)) {
     // The avatar button is contained inside the page-action container and
     // should not be created twice.
     show_avatar_toolbar_button = false;
-    toolbar_page_action_container =
-        std::make_unique<ToolbarPageActionIconContainerView>(browser_);
+    toolbar_account_icon_container =
+        std::make_unique<ToolbarAccountIconContainerView>(browser_);
   } else {
 #if defined(OS_CHROMEOS)
     // ChromeOS only badges Incognito and Guest icons in the browser window.
@@ -302,9 +302,10 @@ void ToolbarView::Init() {
   if (media_button)
     media_button_ = AddChildView(std::move(media_button));
 
-  if (toolbar_page_action_container)
-    toolbar_page_action_container_ =
-        AddChildView(std::move(toolbar_page_action_container));
+  if (toolbar_account_icon_container) {
+    toolbar_account_icon_container_ =
+        AddChildView(std::move(toolbar_account_icon_container));
+  }
 
   // TODO(crbug.com/932818): Remove this once the
   // |kAutofillEnableToolbarStatusChip| is fully launched.
@@ -364,8 +365,8 @@ void ToolbarView::Update(WebContents* tab) {
   if (reload_)
     reload_->set_menu_enabled(chrome::IsDebuggerAttachedToCurrentTab(browser_));
 
-  if (toolbar_page_action_container_)
-    toolbar_page_action_container_->UpdateAllIcons();
+  if (toolbar_account_icon_container_)
+    toolbar_account_icon_container_->UpdateAllIcons();
 }
 
 void ToolbarView::SetToolbarVisibility(bool visible) {
@@ -447,9 +448,9 @@ void ToolbarView::ShowBookmarkBubble(
 }
 
 AvatarToolbarButton* ToolbarView::GetAvatarToolbarButton() {
-  if (toolbar_page_action_container_ &&
-      toolbar_page_action_container_->avatar_button()) {
-    return toolbar_page_action_container_->avatar_button();
+  if (toolbar_account_icon_container_ &&
+      toolbar_account_icon_container_->avatar_button()) {
+    return toolbar_account_icon_container_->avatar_button();
   }
 
   if (avatar_)
@@ -821,12 +822,12 @@ views::View* ToolbarView::GetDefaultExtensionDialogAnchorView() {
 PageActionIconView* ToolbarView::GetPageActionIconView(
     PageActionIconType type) {
   PageActionIconView* icon =
-      location_bar()->omnibox_page_action_icon_container_view()->GetIconView(
-          type);
+      location_bar()->page_action_icon_container()->GetIconView(type);
   if (icon)
     return icon;
-  return toolbar_page_action_container_
-             ? toolbar_page_action_container_->GetIconView(type)
+  return toolbar_account_icon_container_
+             ? toolbar_account_icon_container_->page_action_icon_container()
+                   ->GetIconView(type)
              : nullptr;
 }
 
@@ -858,20 +859,20 @@ views::AccessiblePaneView* ToolbarView::GetAsAccessiblePaneView() {
 views::View* ToolbarView::GetAnchorView(PageActionIconType type) {
   // Return the container visually housing the icon so all the bubbles align
   // with the same visible edge.
-  if (toolbar_page_action_container_) {
+  if (toolbar_account_icon_container_) {
     views::View* icon = GetPageActionIconView(type);
-    if (toolbar_page_action_container_->Contains(icon)) {
+    if (toolbar_account_icon_container_->Contains(icon)) {
       DCHECK(base::FeatureList::IsEnabled(
           autofill::features::kAutofillEnableToolbarStatusChip));
-      return toolbar_page_action_container_;
+      return toolbar_account_icon_container_;
     }
   }
   return location_bar_;
 }
 
 void ToolbarView::ZoomChangedForActiveTab(bool can_show_bubble) {
-  location_bar_->omnibox_page_action_icon_container_view()
-      ->ZoomChangedForActiveTab(can_show_bubble);
+  location_bar_->page_action_icon_container()->ZoomChangedForActiveTab(
+      can_show_bubble);
 }
 
 BrowserRootView::DropIndex ToolbarView::GetDropIndex(
@@ -931,8 +932,8 @@ void ToolbarView::LoadImages() {
   if (avatar_)
     avatar_->UpdateIcon();
 
-  if (toolbar_page_action_container_)
-    toolbar_page_action_container_->UpdateAllIcons();
+  if (toolbar_account_icon_container_)
+    toolbar_account_icon_container_->UpdateAllIcons();
 
   app_menu_button_->UpdateIcon();
 

@@ -371,11 +371,6 @@ class MockConnectionManager : public ServerConnectionManager {
   // The keystore key we return for a GetUpdates with need_encryption_key set.
   std::string keystore_key_;
 
-  // The AUTHENTICATE response we'll return for auth requests.
-  sync_pb::AuthenticateResponse auth_response_;
-  // What we use to determine if we should return SUCCESS or BAD_AUTH_TOKEN.
-  std::string valid_access_token_;
-
   // Whether we are faking a server mandating clients to throttle requests.
   // Protected by |response_code_override_lock_|.
   bool throttling_;

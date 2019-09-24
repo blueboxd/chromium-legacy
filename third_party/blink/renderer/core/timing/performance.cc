@@ -755,7 +755,7 @@ PerformanceMeasure* Performance::MeasureInternal(
         /* duration = */ base::nullopt,
         end_mark ? StringOrDouble::FromString(*end_mark)
                  : NativeValueTraits<StringOrDouble>::NullValue(),
-        ScriptValue::CreateNull(script_state), exception_state);
+        ScriptValue::CreateNull(script_state->GetIsolate()), exception_state);
   }
   // For consistency with UserTimingL2: the L2 API took |start| as a string,
   // so any object passed in became a string '[object, object]', null became
@@ -772,7 +772,8 @@ PerformanceMeasure* Performance::MeasureInternal(
                     /* duration = */ base::nullopt,
                     end_mark ? StringOrDouble::FromString(*end_mark)
                              : NativeValueTraits<StringOrDouble>::NullValue(),
-                    ScriptValue::CreateNull(script_state), exception_state);
+                    ScriptValue::CreateNull(script_state->GetIsolate()),
+                    exception_state);
   // Return nullptr to distinguish from L3.
   return nullptr;
 }

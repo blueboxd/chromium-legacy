@@ -29,6 +29,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/file/file_service.h"
 #include "services/file/public/mojom/file_system.mojom.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
 #include "url/origin.h"
@@ -36,10 +37,6 @@
 namespace base {
 class SequencedTaskRunner;
 }  // namespace base
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
 
 namespace content {
 struct SessionStorageUsageInfo;
@@ -81,10 +78,9 @@ class CONTENT_EXPORT SessionStorageContextMojo
   };
 
   SessionStorageContextMojo(
+      const base::FilePath& partition_directory,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
-      service_manager::Connector* connector,
       BackingMode backing_option,
-      base::FilePath local_partition_directory,
       std::string leveldb_name);
 
   void OpenSessionStorage(
@@ -138,6 +134,10 @@ class CONTENT_EXPORT SessionStorageContextMojo
   // base::trace_event::MemoryDumpProvider implementation:
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
+
+  file::FileService* GetFileServiceForTesting() { return &file_service_; }
+
+  void PretendToConnectForTesting();
 
   // Sets the database for testing.
   void SetDatabaseForTesting(
@@ -240,9 +240,7 @@ class CONTENT_EXPORT SessionStorageContextMojo
   // the metadata, make sure it is destroyed last on destruction.
   SessionStorageMetadata metadata_;
 
-  std::unique_ptr<service_manager::Connector> connector_;
   BackingMode backing_mode_;
-  base::FilePath partition_directory_path_;
   std::string leveldb_name_;
 
   enum ConnectionState {
@@ -253,6 +251,8 @@ class CONTENT_EXPORT SessionStorageContextMojo
   } connection_state_ = NO_CONNECTION;
   bool database_initialized_ = false;
 
+  bool force_in_memory_only_;
+  file::FileService file_service_;
   mojo::Remote<file::mojom::FileSystem> file_system_;
   filesystem::mojom::DirectoryPtr partition_directory_;
 

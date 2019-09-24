@@ -71,10 +71,16 @@ Polymer({
     pageVisibility_: {type: Object, value: settings.pageVisibility},
 
     /** @private */
-    showApps_: Boolean,
+    havePlayStoreApp_: Boolean,
 
     /** @private */
     showAndroidApps_: Boolean,
+
+    /** @private */
+    showAppManagement_: Boolean,
+
+    /** @private */
+    showApps_: Boolean,
 
     /** @private */
     showCrostini_: Boolean,
@@ -84,9 +90,6 @@ Polymer({
 
     /** @private */
     showReset_: Boolean,
-
-    /** @private */
-    havePlayStoreApp_: Boolean,
 
     /** @private */
     lastSearchQuery_: {
@@ -168,13 +171,13 @@ Polymer({
       vpnNameTemplate: loadTimeData.getString('vpnNameTemplate'),
     };
 
-    this.showApps_ = loadTimeData.getBoolean('showApps');
+    this.havePlayStoreApp_ = loadTimeData.getBoolean('havePlayStoreApp');
+    this.showAppManagement_ = loadTimeData.getBoolean('showAppManagement');
     this.showAndroidApps_ = loadTimeData.getBoolean('androidAppsVisible');
-
+    this.showApps_ = this.showAppManagement_ || this.showAndroidApps_;
     this.showCrostini_ = loadTimeData.getBoolean('showCrostini');
     this.showPluginVm_ = loadTimeData.getBoolean('showPluginVm');
     this.showReset_ = loadTimeData.getBoolean('allowPowerwash');
-    this.havePlayStoreApp_ = loadTimeData.getBoolean('havePlayStoreApp');
 
     this.addEventListener('show-container', () => {
       this.$.container.style.visibility = 'visible';

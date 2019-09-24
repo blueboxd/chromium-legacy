@@ -24,6 +24,7 @@
 #include "base/win/current_module.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_com_initializer.h"
+#include "build/branding_buildflags.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential.h"
@@ -99,7 +100,7 @@ STDAPI DllRegisterServer(void) {
     LOGFN(INFO) << "_AtlModule.DllRegisterServer hr=" << putHR(hr);
   }
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Register with Google Update.
   if (SUCCEEDED(hr)) {
     base::win::RegKey key(HKEY_LOCAL_MACHINE,
@@ -119,14 +120,14 @@ STDAPI DllRegisterServer(void) {
       }
     }
   }
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   return hr;
 }
 
 // DllUnregisterServer - Removes entries from the system registry.
 STDAPI DllUnregisterServer(void) {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Unregister with Google Update.
   base::win::RegKey key(HKEY_LOCAL_MACHINE, L"", DELETE | KEY_WOW64_32KEY);
   LONG sts = key.DeleteKey(credential_provider::kRegUpdaterClientsAppPath);

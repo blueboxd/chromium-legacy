@@ -205,8 +205,8 @@ void CastActivityRecord::TerminatePresentationConnections() {
 }
 
 void CastActivityRecord::CreateMediaController(
-    mojom::MediaControllerRequest media_controller,
-    mojom::MediaStatusObserverPtr observer) {
+    mojo::PendingReceiver<mojom::MediaController> media_controller,
+    mojo::PendingRemote<mojom::MediaStatusObserver> observer) {
   media_controller_ = std::make_unique<CastMediaController>(
       this, std::move(media_controller), std::move(observer));
 

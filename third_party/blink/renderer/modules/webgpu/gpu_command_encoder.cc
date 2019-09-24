@@ -82,9 +82,10 @@ DawnRenderPassDepthStencilAttachmentDescriptor AsDawnType(
     dawn_desc.stencilLoadOp = AsDawnEnum<DawnLoadOp>(gpuLoadOp);
     dawn_desc.clearStencil = 0;
 
-  } else if (webgpu_desc->stencilLoadValue().IsLong()) {
+  } else if (webgpu_desc->stencilLoadValue().IsUnsignedLong()) {
     dawn_desc.stencilLoadOp = DAWN_LOAD_OP_CLEAR;
-    dawn_desc.clearStencil = webgpu_desc->stencilLoadValue().GetAsLong();
+    dawn_desc.clearStencil =
+        webgpu_desc->stencilLoadValue().GetAsUnsignedLong();
 
   } else {
     NOTREACHED();

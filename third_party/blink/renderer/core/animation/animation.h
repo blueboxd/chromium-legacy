@@ -461,6 +461,8 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
 
   FRIEND_TEST_ALL_PREFIXES(AnimationAnimationTestCompositeAfterPaint,
                            NoCompositeWithoutCompositedElementId);
+  FRIEND_TEST_ALL_PREFIXES(AnimationAnimationTestNoCompositing,
+                           PendingActivityWithFinishedEventListener);
 };
 
 }  // namespace blink

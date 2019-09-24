@@ -94,6 +94,8 @@ source_set("web_applications_test_support") {
     "test/test_system_web_app_manager.h",
     "test/test_web_app_database_factory.cc",
     "test/test_web_app_database_factory.h",
+    "test/test_web_app_registry_controller.cc",
+    "test/test_web_app_registry_controller.h",
     "test/test_web_app_ui_manager.cc",
     "test/test_web_app_ui_manager.h",
     "test/test_web_app_url_loader.cc",

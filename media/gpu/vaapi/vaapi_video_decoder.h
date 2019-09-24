@@ -21,6 +21,7 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/threading/thread.h"
+#include "base/time/time.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_frame_layout.h"

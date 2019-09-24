@@ -89,18 +89,20 @@ class CoordinatorImplTest : public testing::Test {
   }
 
   void RequestGlobalMemoryDump(RequestGlobalMemoryDumpCallback callback) {
-    RequestGlobalMemoryDump(MemoryDumpType::SUMMARY_ONLY,
-                            MemoryDumpLevelOfDetail::BACKGROUND, {},
-                            std::move(callback));
+    RequestGlobalMemoryDump(
+        MemoryDumpType::SUMMARY_ONLY, MemoryDumpLevelOfDetail::BACKGROUND,
+        MemoryDumpDeterminism::NONE, {}, std::move(callback));
   }
 
   void RequestGlobalMemoryDump(
       MemoryDumpType dump_type,
       MemoryDumpLevelOfDetail level_of_detail,
+      MemoryDumpDeterminism determinism,
       const std::vector<std::string>& allocator_dump_names,
       RequestGlobalMemoryDumpCallback callback) {
-    coordinator_->RequestGlobalMemoryDump(
-        dump_type, level_of_detail, allocator_dump_names, std::move(callback));
+    coordinator_->RequestGlobalMemoryDump(dump_type, level_of_detail,
+                                          determinism, allocator_dump_names,
+                                          std::move(callback));
   }
 
   void RequestGlobalMemoryDumpForPid(
@@ -115,7 +117,7 @@ class CoordinatorImplTest : public testing::Test {
       RequestGlobalMemoryDumpAndAppendToTraceCallback callback) {
     coordinator_->RequestGlobalMemoryDumpAndAppendToTrace(
         MemoryDumpType::EXPLICITLY_TRIGGERED, MemoryDumpLevelOfDetail::DETAILED,
-        std::move(callback));
+        MemoryDumpDeterminism::NONE, std::move(callback));
   }
 
   void GetVmRegionsForHeapProfiler(
@@ -805,8 +807,8 @@ TEST_F(CoordinatorImplTest, DumpsArentAddedToTraceUnlessRequested) {
 
   trace_analyzer::Start(MemoryDumpManager::kTraceCategory);
   RequestGlobalMemoryDump(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                          MemoryDumpLevelOfDetail::DETAILED, {},
-                          callback.Get());
+                          MemoryDumpLevelOfDetail::DETAILED,
+                          MemoryDumpDeterminism::NONE, {}, callback.Get());
   run_loop.Run();
   auto analyzer = trace_analyzer::Stop();
 

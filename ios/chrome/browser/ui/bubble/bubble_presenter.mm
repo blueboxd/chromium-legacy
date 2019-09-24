@@ -181,8 +181,8 @@ const CGFloat kBubblePresentationDelay = 1;
 
   BubbleArrowDirection arrowDirection =
       IsSplitToolbarMode() ? BubbleArrowDirectionDown : BubbleArrowDirectionUp;
-  NSString* text = l10n_util::GetNSStringWithFixup(
-      IDS_IOS_LONG_PRESS_TOOLBAR_IPH_PROMOTION_TEXT);
+  NSString* text =
+      l10n_util::GetNSString(IDS_IOS_LONG_PRESS_TOOLBAR_IPH_PROMOTION_TEXT);
   CGPoint searchButtonAnchor =
       IsRegularXRegularSizeClass()
           ? [self anchorPointToGuide:kTabStripTabSwitcherGuide

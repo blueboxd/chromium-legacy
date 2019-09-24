@@ -306,8 +306,8 @@ void SurpriseMeImageFetcher::Start(OnSurpriseMeImageFetched callback) {
             "Backdrop wallpaper service."
           trigger:
             "When ChromeOS Wallpaper Picker extension is open, "
-            "GOOGLE_CHROME_BUILD is defined and user turns on the surprise me "
-            "feature."
+            "BUILDFLAG(GOOGLE_CHROME_BRANDING) is defined and user turns on "
+            "the surprise me feature."
           data:
             "The Backdrop protocol buffer messages. No user data is included."
           destination: GOOGLE_OWNED_SERVICE

@@ -227,13 +227,10 @@ void V4L2SliceVideoDecoder::DestroyTask() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(2);
 
-  if (avd_) {
-    avd_->Reset();
-    avd_ = nullptr;
-  }
-
   // Call all pending decode callback.
   ClearPendingRequests(DecodeStatus::ABORTED);
+
+  avd_ = nullptr;
 
   // Stop and Destroy device.
   StopStreamV4L2Queue();
@@ -543,9 +540,6 @@ void V4L2SliceVideoDecoder::ResetTask(base::OnceClosure closure) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
 
-  if (avd_)
-    avd_->Reset();
-
   // Call all pending decode callback.
   ClearPendingRequests(DecodeStatus::ABORTED);
 
@@ -567,6 +561,9 @@ void V4L2SliceVideoDecoder::ResetTask(base::OnceClosure closure) {
 void V4L2SliceVideoDecoder::ClearPendingRequests(DecodeStatus status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
+
+  if (avd_)
+    avd_->Reset();
 
   // Clear output_request_queue_.
   while (!output_request_queue_.empty())
@@ -601,7 +598,12 @@ void V4L2SliceVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 
 void V4L2SliceVideoDecoder::EnqueueDecodeTask(DecodeRequest request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DCHECK(state_ == State::kDecoding || state_ == State::kFlushing);
+  DCHECK_NE(state_, State::kUninitialized);
+
+  if (state_ == State::kError) {
+    std::move(request.decode_cb).Run(DecodeStatus::DECODE_ERROR);
+    return;
+  }
 
   if (!request.buffer->end_of_stream()) {
     bitstream_id_to_timestamp_.Put(request.bitstream_id,
@@ -615,11 +617,10 @@ void V4L2SliceVideoDecoder::EnqueueDecodeTask(DecodeRequest request) {
 
 void V4L2SliceVideoDecoder::PumpDecodeTask() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DCHECK(state_ == State::kDecoding || state_ == State::kFlushing);
   DVLOGF(3) << "state_:" << static_cast<int>(state_)
             << " Number of Decode requests: " << decode_request_queue_.size();
 
-  if (state_ == State::kFlushing)
+  if (state_ != State::kDecoding)
     return;
 
   pause_reason_ = PauseReason::kNone;
@@ -818,7 +819,6 @@ scoped_refptr<V4L2DecodeSurface> V4L2SliceVideoDecoder::CreateSurface() {
         base::BindOnce(&V4L2SliceVideoDecoder::PumpDecodeTask, weak_this_)));
     return nullptr;
   }
-  frame->set_timestamp(current_decode_request_->buffer->timestamp());
 
   // Request V4L2 input and output buffers.
   V4L2WritableBufferRef input_buf = input_queue_->GetFreeBuffer();
@@ -1100,6 +1100,11 @@ void V4L2SliceVideoDecoder::RunOutputCB(scoped_refptr<VideoFrame> frame,
                                         base::TimeDelta timestamp) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(4) << "timestamp: " << timestamp;
+
+  // |frame| haven't been set timestamp before, we could set the timestamp
+  // directly without wrapping.
+  if (frame->timestamp().is_zero())
+    frame->set_timestamp(timestamp);
 
   // We need to update one or more attributes of the frame. Since we can't
   // modify the attributes of the frame directly, we wrap the frame into a new

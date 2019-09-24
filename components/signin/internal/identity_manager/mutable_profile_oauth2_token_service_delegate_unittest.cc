@@ -708,6 +708,51 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   EXPECT_TRUE(pref_service_.GetBoolean(prefs::kTokenServiceDiceCompatible));
 }
 
+// Checks that tokens are loaded and prefs::kTokenServiceDiceCompatible is set
+// to true if the tokens are loaded after the Dice migration.
+TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, LoadAfterDiceMigration) {
+  InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDice);
+  ASSERT_FALSE(pref_service_.GetBoolean(prefs::kTokenServiceDiceCompatible));
+
+  // Add account info to the account tracker.
+  AccountInfo primary_account = CreateTestAccountInfo(
+      "primary_account", false /* is_hosted_domain*/, true /* is_valid*/);
+  account_tracker_service_.SeedAccountInfo(primary_account);
+  AddAuthTokenManually("AccountId-" + primary_account.account_id.id,
+                       "refresh_token");
+
+  oauth2_service_delegate_->LoadCredentials(std::string());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable(
+      primary_account.account_id));
+  EXPECT_EQ(
+      signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
+      oauth2_service_delegate_->load_credentials_state());
+
+  ASSERT_TRUE(pref_service_.GetBoolean(prefs::kTokenServiceDiceCompatible));
+}
+
+// Checks that prefs::kTokenServiceDiceCompatible is set to true if the tokens
+// are loaded after the Dice migration, even if there was a database read error.
+TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
+       LoadAfterDiceMigrationWithError) {
+  InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDice);
+  ASSERT_FALSE(pref_service_.GetBoolean(prefs::kTokenServiceDiceCompatible));
+
+  // Shutdown the database to trigger a database read error.
+  token_web_data_->ShutdownDatabase();
+
+  oauth2_service_delegate_->LoadCredentials(std::string());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0u, oauth2_service_delegate_->GetAccounts().size());
+  EXPECT_EQ(signin::LoadCredentialsState::
+                LOAD_CREDENTIALS_FINISHED_WITH_DB_CANNOT_BE_OPENED,
+            oauth2_service_delegate_->load_credentials_state());
+
+  ASSERT_TRUE(pref_service_.GetBoolean(prefs::kTokenServiceDiceCompatible));
+}
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 #if !defined(OS_CHROMEOS)

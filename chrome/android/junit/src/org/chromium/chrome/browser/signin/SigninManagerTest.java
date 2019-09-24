@@ -146,7 +146,7 @@ public class SigninManagerTest {
         doReturn(null).when(mNativeMock).getManagementDomain(anyLong());
 
         // Trigger the sign out flow
-        mSigninManager.signOut(SignoutReason.SIGNOUT_TEST, null, null, true);
+        mSigninManager.signOut(SignoutReason.SIGNOUT_TEST, null, true);
 
         // PrimaryAccountCleared should be called *before* clearing any account data.
         // http://crbug.com/589028
@@ -200,7 +200,7 @@ public class SigninManagerTest {
         mSigninManager.runAfterOperationInProgress(callCount::incrementAndGet);
         assertEquals(0, callCount.get());
 
-        mSigninManager.onProfileDataWiped();
+        mSigninManager.finishSignOut();
         assertFalse(mSigninManager.isOperationInProgress());
         assertEquals(1, callCount.get());
     }

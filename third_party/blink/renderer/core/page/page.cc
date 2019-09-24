@@ -25,6 +25,7 @@
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/core/css/media_feature_overrides.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -975,6 +976,26 @@ void Page::UpdateHasRelatedPages() {
         SchedulingPolicy::Feature::kHasScriptableFramesInMultipleTabs,
         {SchedulingPolicy::RecordMetricsForBackForwardCache()});
   }
+}
+
+void Page::SetMediaFeatureOverride(const AtomicString& media_feature,
+                                   const String& value) {
+  if (!media_feature_overrides_) {
+    if (value.IsEmpty())
+      return;
+    media_feature_overrides_ = std::make_unique<MediaFeatureOverrides>();
+  }
+  media_feature_overrides_->SetOverride(media_feature, value);
+  if (media_feature == "prefers-color-scheme")
+    SettingsChanged(SettingsDelegate::kColorSchemeChange);
+  else
+    SettingsChanged(SettingsDelegate::kMediaQueryChange);
+}
+
+void Page::ClearMediaFeatureOverrides() {
+  media_feature_overrides_.reset();
+  SettingsChanged(SettingsDelegate::kMediaQueryChange);
+  SettingsChanged(SettingsDelegate::kColorSchemeChange);
 }
 
 Page::PageClients::PageClients() : chrome_client(nullptr) {}

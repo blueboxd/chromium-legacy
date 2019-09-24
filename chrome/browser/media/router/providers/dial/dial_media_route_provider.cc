@@ -37,14 +37,13 @@ static constexpr int kMaxPendingDialLaunches = 10;
 }  // namespace
 
 DialMediaRouteProvider::DialMediaRouteProvider(
-    mojom::MediaRouteProviderRequest request,
-    mojom::MediaRouterPtrInfo media_router,
+    mojo::PendingReceiver<mojom::MediaRouteProvider> receiver,
+    mojo::PendingRemote<mojom::MediaRouter> media_router,
     DialMediaSinkServiceImpl* media_sink_service,
     service_manager::Connector* connector,
     const std::string& hash_token,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
-    : binding_(this),
-      media_sink_service_(media_sink_service),
+    : media_sink_service_(media_sink_service),
       data_decoder_(std::make_unique<DataDecoder>(connector)),
       internal_message_util_(hash_token) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -53,14 +52,15 @@ DialMediaRouteProvider::DialMediaRouteProvider(
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&DialMediaRouteProvider::Init, base::Unretained(this),
-                     std::move(request), std::move(media_router)));
+                     std::move(receiver), std::move(media_router)));
 }
 
-void DialMediaRouteProvider::Init(mojom::MediaRouteProviderRequest request,
-                                  mojom::MediaRouterPtrInfo media_router) {
+void DialMediaRouteProvider::Init(
+    mojo::PendingReceiver<mojom::MediaRouteProvider> receiver,
+    mojo::PendingRemote<mojom::MediaRouter> media_router) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  binding_.Bind(std::move(request));
+  receiver_.Bind(std::move(receiver));
   media_router_.Bind(std::move(media_router));
   media_sink_service_->AddObserver(this);
 
@@ -510,8 +510,8 @@ void DialMediaRouteProvider::ProvideSinks(
 
 void DialMediaRouteProvider::CreateMediaRouteController(
     const std::string& route_id,
-    mojom::MediaControllerRequest media_controller,
-    mojom::MediaStatusObserverPtr observer,
+    mojo::PendingReceiver<mojom::MediaController> media_controller,
+    mojo::PendingRemote<mojom::MediaStatusObserver> observer,
     CreateMediaRouteControllerCallback callback) {
   NOTIMPLEMENTED();
   std::move(callback).Run(false);

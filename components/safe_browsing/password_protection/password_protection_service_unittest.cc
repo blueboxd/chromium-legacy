@@ -34,6 +34,8 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -81,11 +83,12 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
 
 class TestPhishingDetector : public mojom::PhishingDetector {
  public:
-  TestPhishingDetector() : should_timeout_(false), binding_(this) {}
+  TestPhishingDetector() : should_timeout_(false) {}
   ~TestPhishingDetector() override {}
 
   void Bind(mojo::ScopedMessagePipeHandle handle) {
-    binding_.Bind(mojom::PhishingDetectorRequest(std::move(handle)));
+    receiver_.Bind(
+        mojo::PendingReceiver<mojom::PhishingDetector>(std::move(handle)));
   }
 
   void StartPhishingDetection(
@@ -110,7 +113,7 @@ class TestPhishingDetector : public mojom::PhishingDetector {
  private:
   bool should_timeout_;
   std::vector<StartPhishingDetectionCallback> deferred_callbacks_;
-  mojo::Binding<mojom::PhishingDetector> binding_;
+  mojo::Receiver<mojom::PhishingDetector> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestPhishingDetector);
 };
@@ -153,13 +156,13 @@ class TestPasswordProtectionService : public MockPasswordProtectionService {
 
   void GetPhishingDetector(
       service_manager::InterfaceProvider* provider,
-      mojom::PhishingDetectorPtr* phishing_detector) override {
+      mojo::Remote<mojom::PhishingDetector>* phishing_detector) override {
     service_manager::InterfaceProvider::TestApi test_api(provider);
     test_api.SetBinderForName(
         mojom::PhishingDetector::Name_,
         base::BindRepeating(&TestPhishingDetector::Bind,
                             base::Unretained(&test_phishing_detector_)));
-    provider->GetInterface(phishing_detector);
+    provider->GetInterface(phishing_detector->BindNewPipeAndPassReceiver());
     test_api.ClearBinderForName(mojom::PhishingDetector::Name_);
   }
 

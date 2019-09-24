@@ -52,6 +52,7 @@ js_library("util") {
   deps = [
     ":tooltip",
     "browser_proxy:browser_proxy",
+    "mojo:chrome_helper",
   ]
   externs_list = [ "$externs_path/chrome_extensions.js" ]
 }

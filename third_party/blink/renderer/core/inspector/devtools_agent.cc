@@ -76,7 +76,7 @@ void DevToolsAgent::Dispose() {
   CleanupConnection();
 }
 
-void DevToolsAgent::BindRequest(
+void DevToolsAgent::BindReceiver(
     mojo::PendingRemote<mojom::blink::DevToolsAgentHost> host_remote,
     mojo::PendingReceiver<mojom::blink::DevToolsAgent> receiver,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
@@ -88,7 +88,7 @@ void DevToolsAgent::BindRequest(
       WTF::Bind(&DevToolsAgent::CleanupConnection, WrapWeakPersistent(this)));
 }
 
-void DevToolsAgent::BindRequest(
+void DevToolsAgent::BindReceiver(
     mojo::PendingAssociatedRemote<mojom::blink::DevToolsAgentHost> host_remote,
     mojo::PendingAssociatedReceiver<mojom::blink::DevToolsAgent> receiver,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {

@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_PENDING_IMPORT_MAP_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_PENDING_IMPORT_MAP_H_
 
+#include "third_party/blink/renderer/bindings/core/v8/world_safe_v8_reference.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -57,7 +57,7 @@ class CORE_EXPORT PendingImportMap final
 
   // https://wicg.github.io/import-maps/#import-map-parse-result-error-to-rethrow
   // The error is TypeError if the string is non-null, or null otherwise.
-  TraceWrapperV8Reference<v8::Value> error_to_rethrow_;
+  WorldSafeV8Reference<v8::Value> error_to_rethrow_;
 
   // https://wicg.github.io/import-maps/#import-map-parse-result-settings-object
   // The context document at the time when PrepareScript() is executed.

@@ -31,8 +31,6 @@ var CrManagementA11yTest = class extends PolymerTest {
         'skip-link': {enabled: false},
         // TODO(crbug.com/761461): enable after addressing flaky tests.
         'color-contrast': {enabled: false},
-        // TODO(crbug.com/1002623): remove this line after addressing bug
-        'link-in-text-block': {enabled: false},
       },
     };
   }

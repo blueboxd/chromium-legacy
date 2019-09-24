@@ -3430,15 +3430,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, FrozenAndUnfrozenIPC) {
   EXPECT_TRUE(delete_rfh_c.deleted());
 }
 
-// http://crbug.com/990854
-#if defined(OS_ANDROID)
-#define MAYBE_PopupWindowBrowserNavResumeLoad \
-  DISABLED_PopupWindowBrowserNavResumeLoad
-#else
-#define MAYBE_PopupWindowBrowserNavResumeLoad PopupWindowBrowserNavResumeLoad
-#endif
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
-                       MAYBE_PopupWindowBrowserNavResumeLoad) {
+                       PopupWindowBrowserNavResumeLoad) {
   // This test verifies a pop up that requires navigation from browser side
   // works with a delegate that delays navigations of pop ups.
   // Create a file: scheme pop up from a file: scheme page, which requires
@@ -3460,8 +3453,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
     ShellAddedObserver new_shell_observer;
     bool success = false;
     EXPECT_TRUE(ExecuteScriptAndExtractBool(
-        shell(),
-        "window.domAutomationController.send(clickDeadFileNewWindowLink());",
+        shell(), "window.domAutomationController.send(clickLinkToSelf());",
         &success));
     new_shell = new_shell_observer.GetShell();
     new_contents = new_shell->web_contents();
@@ -3472,10 +3464,8 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_FALSE(new_contents->GetDelegate());
   new_contents->SetDelegate(new_shell);
   new_contents->ResumeLoadingCreatedWebContents();
-  // Dead file link may or may not load depending on OS. The result is not
-  // relevant for this test, so not checking the the result.
   WaitForLoadStop(new_contents);
-  EXPECT_TRUE(new_contents->GetLastCommittedURL().SchemeIs("file"));
+  EXPECT_EQ(url, new_contents->GetLastCommittedURL());
 }
 
 namespace {

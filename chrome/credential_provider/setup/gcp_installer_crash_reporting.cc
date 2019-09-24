@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "base/win/registry.h"
+#include "build/branding_buildflags.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gcp_crash_reporter_client.h"
@@ -39,7 +40,7 @@ void ConfigureGcpInstallerCrashReporting(
   crash_reporter::InitializeCrashpadWithEmbeddedHandler(true, "GCPW Installer",
                                                         "", base::FilePath());
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   SetCommonCrashKeys(command_line);
 
   static crash_reporter::CrashKeyString<64> operation("operation");
@@ -48,7 +49,7 @@ void ConfigureGcpInstallerCrashReporting(
       command_line.HasSwitch(credential_provider::switches::kUninstall);
 
   operation.Set(is_uninstall ? "uninstall" : "install");
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 }  // namespace credential_provider

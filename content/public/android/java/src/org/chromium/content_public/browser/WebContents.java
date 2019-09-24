@@ -401,11 +401,6 @@ public interface WebContents extends Parcelable {
     void setSpatialNavigationDisabled(boolean disabled);
 
     /**
-     * Reloads all the Lo-Fi images in this WebContents.
-     */
-    void reloadLoFiImages();
-
-    /**
      * Sends a request to download the given image {@link url}.
      * This method delegates the call to the downloadImage() method of native WebContents.
      * @param url The URL of the image to download.

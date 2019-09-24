@@ -17,6 +17,8 @@
 #include "components/mirroring/mojom/cast_message_channel.mojom.h"
 #include "components/mirroring/mojom/mirroring_service_host.mojom.h"
 #include "components/mirroring/mojom/session_observer.mojom.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -78,8 +80,9 @@ class MirroringActivityRecord : public ActivityRecord,
   void OnInternalMessage(const cast_channel::InternalMessage& message) override;
 
  protected:
-  void CreateMediaController(mojom::MediaControllerRequest media_controller,
-                             mojom::MediaStatusObserverPtr observer) override;
+  void CreateMediaController(
+      mojo::PendingReceiver<mojom::MediaController> media_controller,
+      mojo::PendingRemote<mojom::MediaStatusObserver> observer) override;
 
  private:
   enum class MirroringType {

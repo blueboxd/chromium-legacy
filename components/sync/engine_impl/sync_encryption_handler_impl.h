@@ -18,8 +18,8 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "components/sync/engine/sync_encryption_handler.h"
-#include "components/sync/nigori/cryptographer.h"
 #include "components/sync/nigori/keystore_keys_handler.h"
+#include "components/sync/syncable/directory_cryptographer.h"
 #include "components/sync/syncable/nigori_handler.h"
 
 namespace syncer {
@@ -82,6 +82,8 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   // Can be called from any thread.
   const Cryptographer* GetCryptographer(
       const syncable::BaseTransaction* const trans) const override;
+  const DirectoryCryptographer* GetDirectoryCryptographerForNigori(
+      const syncable::BaseTransaction* const trans) const override;
   ModelTypeSet GetEncryptedTypes(
       const syncable::BaseTransaction* const trans) const override;
   PassphraseType GetPassphraseType(
@@ -104,9 +106,9 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   // Writes the nigori to the Directory and updates the Cryptographer.
   void RestoreNigori(const SyncEncryptionHandler::NigoriState& nigori_state);
 
-  // Returns mutable Cryptographer, used only in tests to manipulate it
+  // Returns mutable DirectoryCryptographer, used only in tests to manipulate it
   // directly.
-  Cryptographer* GetMutableCryptographerForTesting();
+  DirectoryCryptographer* GetMutableCryptographerForTesting();
 
  private:
   friend class SyncEncryptionHandlerImplTest;
@@ -147,7 +149,7 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
     ~Vault();
 
     // Sync's cryptographer. Used for encrypting and decrypting sync data.
-    Cryptographer cryptographer;
+    DirectoryCryptographer cryptographer;
     // The set of types that require encryption.
     ModelTypeSet encrypted_types;
     // The current state of the passphrase required to decrypt the encryption
@@ -301,7 +303,7 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   // CUSTOM_PASSPHRASE).
   NigoriMigrationReason GetMigrationReason(
       const sync_pb::NigoriSpecifics& nigori,
-      const Cryptographer& cryptographer,
+      const DirectoryCryptographer& cryptographer,
       PassphraseType passphrase_type) const;
 
   // Tries to perform the actual migration of the |nigori_node| to support
@@ -316,7 +318,7 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   // |encrypted_blob|'s contents didn't already contain the key.
   // The keystore decryptor token is the serialized current default encryption
   // key, encrypted with the keystore key.
-  bool GetKeystoreDecryptor(const Cryptographer& cryptographer,
+  bool GetKeystoreDecryptor(const DirectoryCryptographer& cryptographer,
                             const std::string& keystore_key,
                             sync_pb::EncryptedData* encrypted_blob);
 
@@ -326,14 +328,14 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   // Will not update the default key.
   bool AttemptToInstallKeybag(const sync_pb::EncryptedData& keybag,
                               bool update_default,
-                              Cryptographer* cryptographer);
+                              DirectoryCryptographer* cryptographer);
 
   // Helper method for decrypting pending keys with the keystore bootstrap.
   // If successful, the default will become the key encrypted in the keystore
   // bootstrap, and will return true. Else will return false.
   bool DecryptPendingKeysWithKeystoreKey(
       const sync_pb::EncryptedData& keystore_bootstrap,
-      Cryptographer* cryptographer);
+      DirectoryCryptographer* cryptographer);
 
   // Helper to enable encrypt everything, notifying observers if necessary.
   // Will not perform re-encryption.

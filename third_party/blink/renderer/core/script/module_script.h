@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/world_safe_v8_reference.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/script.h"
@@ -115,10 +116,10 @@ class CORE_EXPORT ModuleScript : public Script {
   //   https://github.com/whatwg/html/pull/2991. This shouldn't cause any
   //   observable functional changes, and updating the classic script handling
   //   will require moderate code changes (e.g. to move compilation timing).
-  TraceWrapperV8Reference<v8::Value> parse_error_;
+  WorldSafeV8Reference<v8::Value> parse_error_;
 
   // https://html.spec.whatwg.org/C/#concept-script-error-to-rethrow
-  TraceWrapperV8Reference<v8::Value> error_to_rethrow_;
+  WorldSafeV8Reference<v8::Value> error_to_rethrow_;
 
   mutable HashMap<String, KURL> specifier_to_url_cache_;
   KURL source_url_;

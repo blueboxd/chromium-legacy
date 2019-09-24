@@ -391,15 +391,15 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
 
         final DialogFragment clearDataProgressDialog = new ClearDataProgressDialog();
         IdentityServicesProvider.getSigninManager().signOut(
-                SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS,
-                null, new SigninManager.WipeDataHooks() {
+                SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS, new SigninManager.SignOutCallback() {
                     @Override
                     public void preWipeData() {
                         clearDataProgressDialog.show(
                                 getFragmentManager(), CLEAR_DATA_PROGRESS_DIALOG_TAG);
                     }
+
                     @Override
-                    public void postWipeData() {
+                    public void signOutComplete() {
                         if (clearDataProgressDialog.isAdded()) {
                             clearDataProgressDialog.dismissAllowingStateLoss();
                         }

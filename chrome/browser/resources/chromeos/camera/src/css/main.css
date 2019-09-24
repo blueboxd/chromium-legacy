@@ -259,9 +259,12 @@ div.mode-item>span {
   z-index: 0;
 }
 
-#modes-group.hide,
-.mode-item.hide {
+#modes-group.hide {
   visibility: hidden;
+}
+
+.mode-item.hide {
+  display: none;
 }
 
 .mode-item>input {

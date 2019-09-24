@@ -400,11 +400,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             }
 
             @Override
-            public void didReloadLoFiImages(Tab tab) {
-                mLocationBar.updateStatusIcon();
-            }
-
-            @Override
             public void onTitleUpdated(Tab tab) {
                 mLocationBar.setTitleToPageTitle();
             }

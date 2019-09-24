@@ -492,7 +492,6 @@ class CONTENT_EXPORT RenderFrameImpl
                        const gfx::Range& range) override;
   void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message) override;
-  void SetPreviewsState(PreviewsState previews_state) override;
   PreviewsState GetPreviewsState() override;
   bool IsPasting() override;
   bool IsBrowserSideNavigationPending() override;
@@ -1146,7 +1145,6 @@ class CONTENT_EXPORT RenderFrameImpl
                              bool discard_duplicates);
   void OnVisualStateRequest(uint64_t key);
   void OnReload(bool bypass_cache);
-  void OnReloadLoFiImages();
   void OnSetAccessibilityMode(ui::AXMode new_mode);
   void OnSnapshotAccessibilityTree(int callback_id, ui::AXMode ax_mode);
   void OnUpdateOpener(int opener_routing_id);

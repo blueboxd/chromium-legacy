@@ -27,6 +27,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using base::trace_event::MemoryDumpArgs;
+using base::trace_event::MemoryDumpDeterminism;
 using base::trace_event::MemoryDumpLevelOfDetail;
 using base::trace_event::MemoryDumpManager;
 using base::trace_event::MemoryDumpType;
@@ -85,10 +86,12 @@ class MemoryTracingTest : public ContentBrowserTest {
               RequestGlobalDumpAndAppendToTrace,
           base::Unretained(
               memory_instrumentation::MemoryInstrumentation::GetInstance()),
-          dump_type, level_of_detail, std::move(callback)));
+          dump_type, level_of_detail, MemoryDumpDeterminism::NONE,
+          std::move(callback)));
     } else {
       memory_instrumentation::MemoryInstrumentation::GetInstance()
           ->RequestGlobalDumpAndAppendToTrace(dump_type, level_of_detail,
+                                              MemoryDumpDeterminism::NONE,
                                               std::move(callback));
     }
   }

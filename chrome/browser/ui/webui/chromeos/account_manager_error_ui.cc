@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/account_manager_error_ui.h"
 
 #include "base/bind.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
@@ -31,7 +32,7 @@ AccountManagerErrorUI::AccountManagerErrorUI(content::WebUI* web_ui)
   html_source->AddLocalizedString(
       "errorMessage", IDS_ACCOUNT_MANAGER_SECONDARY_ACCOUNTS_DISABLED_TEXT);
   html_source->AddLocalizedString("okButton", IDS_APP_OK);
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   html_source->AddResourcePath("googleg.svg",
                                IDR_ACCOUNT_MANAGER_WELCOME_GOOGLE_LOGO_SVG);
 #endif

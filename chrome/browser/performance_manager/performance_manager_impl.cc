@@ -155,11 +155,12 @@ std::unique_ptr<FrameNodeImpl> PerformanceManagerImpl::CreateFrameNode(
 std::unique_ptr<PageNodeImpl> PerformanceManagerImpl::CreatePageNode(
     const WebContentsProxy& contents_proxy,
     const std::string& browser_context_id,
+    const GURL& visible_url,
     bool is_visible,
     bool is_audible) {
   return CreateNodeImpl<PageNodeImpl>(base::OnceCallback<void(PageNodeImpl*)>(),
                                       contents_proxy, browser_context_id,
-                                      is_visible, is_audible);
+                                      visible_url, is_visible, is_audible);
 }
 
 std::unique_ptr<ProcessNodeImpl> PerformanceManagerImpl::CreateProcessNode(

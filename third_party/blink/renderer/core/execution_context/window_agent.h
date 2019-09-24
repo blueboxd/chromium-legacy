@@ -23,9 +23,18 @@ class MutationObserverNotifier;
 // shared by associated Documents.
 class WindowAgent final : public Agent {
  public:
-  // Do not create the instance directly. Use
-  // WindowAgentFactory::GetAgentForOrigin() instead.
+  // Normally you don't want to call this constructor; instead, use
+  // WindowAgentFactory::GetAgentForOrigin() so you can get the agent shared
+  // on the same-site frames.
+  //
+  // This constructor creates a unique agent that won't be shared with any
+  // other frames. Use this constructor only if:
+  //   - You want your agent NOT shared with other (possibly same-site) frames
+  //     (i.e. document-access feature policy is disabled), or
+  //   - An appropriate instance of WindowAgentFactory is not available
+  //     (this should only happen in tests).
   explicit WindowAgent(v8::Isolate* isolate);
+
   ~WindowAgent() override;
 
   void Trace(blink::Visitor*) override;

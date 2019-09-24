@@ -5,16 +5,16 @@
 #include "components/spellcheck/browser/spell_check_host_impl.h"
 
 #include "content/public/browser/browser_thread.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 SpellCheckHostImpl::SpellCheckHostImpl() = default;
 SpellCheckHostImpl::~SpellCheckHostImpl() = default;
 
 // static
 void SpellCheckHostImpl::Create(
-    spellcheck::mojom::SpellCheckHostRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<SpellCheckHostImpl>(),
-                          std::move(request));
+    mojo::PendingReceiver<spellcheck::mojom::SpellCheckHost> receiver) {
+  mojo::MakeSelfOwnedReceiver(std::make_unique<SpellCheckHostImpl>(),
+                              std::move(receiver));
 }
 
 void SpellCheckHostImpl::RequestDictionary() {

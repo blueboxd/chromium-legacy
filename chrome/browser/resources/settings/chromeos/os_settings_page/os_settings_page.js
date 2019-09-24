@@ -41,9 +41,11 @@ Polymer({
       notify: true,
     },
 
-    showApps: Boolean,
-
     showAndroidApps: Boolean,
+
+    showAppManagement: Boolean,
+
+    showApps: Boolean,
 
     showCrostini: Boolean,
 

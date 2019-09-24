@@ -26,7 +26,6 @@
 #include "components/arc/session/arc_bridge_service.h"
 #include "content/public/browser/system_connector.h"
 #include "extensions/grit/extensions_browser_resources.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -111,7 +110,7 @@ ArcApps* ArcApps::CreateForTesting(Profile* profile,
 ArcApps::ArcApps(Profile* profile) : ArcApps(profile, nullptr) {}
 
 ArcApps::ArcApps(Profile* profile, apps::AppServiceProxy* proxy)
-    : binding_(this), profile_(profile), arc_icon_once_loader_(profile) {
+    : profile_(profile), arc_icon_once_loader_(profile) {
   if (!arc::IsArcAllowedForProfile(profile_) ||
       (arc::ArcServiceManager::Get() == nullptr)) {
     return;
@@ -132,9 +131,7 @@ ArcApps::ArcApps(Profile* profile, apps::AppServiceProxy* proxy)
   }
   prefs->AddObserver(this);
 
-  apps::mojom::PublisherPtr publisher;
-  binding_.Bind(mojo::MakeRequest(&publisher));
-  app_service->RegisterPublisher(std::move(publisher),
+  app_service->RegisterPublisher(receiver_.BindNewPipeAndPassRemote(),
                                  apps::mojom::AppType::kArc);
 }
 

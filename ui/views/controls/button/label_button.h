@@ -48,6 +48,15 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   base::string16 GetText() const;
   virtual void SetText(const base::string16& text);
 
+  // Makes the button report its preferred size without the label. This lets
+  // AnimatingLayoutManager gradually shrink the button until the text is
+  // invisible, at which point the text gets cleared. Think of this as
+  // transitioning from the current text to SetText("").
+  // Note that the layout manager (or manual SetBounds calls) need to be
+  // configured to eventually hit the the button's preferred size (or smaller)
+  // or the text will never be cleared.
+  void ShrinkDownThenClearText();
+
   // Sets the text color shown for the specified button |for_state| to |color|.
   void SetTextColor(ButtonState for_state, SkColor color);
 
@@ -88,6 +97,7 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
 
   // Button:
   void SetBorder(std::unique_ptr<Border> border) override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int w) const override;
   void Layout() override;
@@ -157,6 +167,8 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
  private:
   void SetTextInternal(const base::string16& text);
 
+  void ClearTextIfShrunkDown();
+
   // Resets |cached_preferred_size_|.
   void ResetCachedPreferredSize();
 
@@ -201,6 +213,11 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
 
   // Cache the last computed preferred size.
   mutable base::Optional<gfx::Size> cached_preferred_size_;
+
+  // A flag indicating that this button should not include the label in its
+  // desired size. Furthermore, once the bounds of the button adapt to this
+  // desired size, the text in the label should get cleared.
+  bool shrinking_down_label_ = false;
 
   // Flag indicating default handling of the return key via an accelerator.
   // Whether or not the button appears or behaves as the default button in its

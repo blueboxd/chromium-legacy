@@ -5,7 +5,9 @@
 #include "ash/public/cpp/shelf_config.h"
 
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/gfx/color_palette.h"
@@ -73,8 +75,10 @@ void ShelfConfig::Init() {
   if (!chromeos::switches::ShouldShowShelfHotseat())
     return;
 
-  Shell::Get()->tablet_mode_controller()->AddObserver(this);
-  Shell::Get()->app_list_controller()->AddObserver(this);
+  Shell* shell = Shell::Get();
+  shell->tablet_mode_controller()->AddObserver(this);
+  shell->app_list_controller()->AddObserver(this);
+  shell->overview_controller()->AddObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
 }
 
@@ -82,9 +86,11 @@ void ShelfConfig::Shutdown() {
   if (!chromeos::switches::ShouldShowShelfHotseat())
     return;
 
+  Shell* shell = Shell::Get();
   display::Screen::GetScreen()->RemoveObserver(this);
-  Shell::Get()->app_list_controller()->RemoveObserver(this);
-  Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
+  shell->overview_controller()->RemoveObserver(this);
+  shell->app_list_controller()->RemoveObserver(this);
+  shell->tablet_mode_controller()->RemoveObserver(this);
 }
 
 void ShelfConfig::OnTabletModeStarted() {
@@ -106,8 +112,15 @@ void ShelfConfig::OnAppListVisibilityChanged(bool shown, int64_t display_id) {
   DCHECK_NE(is_app_list_visible_, shown);
 
   is_app_list_visible_ = shown;
-  for (auto& observer : observers_)
-    observer.OnShelfConfigUpdated();
+  OnShelfConfigUpdated();
+}
+
+void ShelfConfig::OnOverviewModeStartingAnimationComplete(bool canceled) {
+  OnShelfConfigUpdated();
+}
+
+void ShelfConfig::OnOverviewModeEnded() {
+  OnShelfConfigUpdated();
 }
 
 int ShelfConfig::shelf_size() const {
@@ -123,9 +136,9 @@ int ShelfConfig::shelf_size() const {
     return 48;
 
   if (is_dense_)
-    return is_app_list_visible_ ? 48 : 36;
+    return is_in_app() ? 36 : 48;
   else
-    return is_app_list_visible_ ? 56 : 40;
+    return is_in_app() ? 40 : 56;
 }
 
 int ShelfConfig::button_size() const {
@@ -148,9 +161,9 @@ int ShelfConfig::control_size() const {
     return 36;
 
   if (is_dense_)
-    return is_app_list_visible_ ? 36 : 28;
+    return is_in_app() ? 28 : 36;
   else
-    return is_app_list_visible_ ? 40 : 30;
+    return is_in_app() ? 30 : 40;
 }
 
 int ShelfConfig::control_border_radius() const {
@@ -170,6 +183,14 @@ int ShelfConfig::status_area_hit_region_padding() const {
                    : shelf_status_area_hit_region_padding_;
 }
 
+bool ShelfConfig::is_in_app() const {
+  Shell* shell = Shell::Get();
+  return !shell->overview_controller()->InOverviewSession() &&
+         shell->session_controller()->GetSessionState() ==
+             session_manager::SessionState::ACTIVE &&
+         !is_app_list_visible_;
+}
+
 void ShelfConfig::UpdateIsDense() {
   const gfx::Rect screen_size =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
@@ -183,7 +204,10 @@ void ShelfConfig::UpdateIsDense() {
     return;
 
   is_dense_ = new_is_dense;
+  OnShelfConfigUpdated();
+}
 
+void ShelfConfig::OnShelfConfigUpdated() {
   for (auto& observer : observers_)
     observer.OnShelfConfigUpdated();
 }

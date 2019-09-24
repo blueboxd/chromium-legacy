@@ -6,13 +6,19 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/logging.h"
+#include "base/path_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
@@ -45,6 +51,9 @@
 
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#include "chrome/browser/google/google_update_win.h"
+#endif
 #include "ui/base/win/hidden_window.h"
 #endif
 
@@ -74,6 +83,12 @@ constexpr char kOsVersionTag[] = "OS VERSION";
 constexpr char kUsbKeyboardDetected[] = "usb_keyboard_detected";
 constexpr char kIsEnrolledToDomain[] = "enrolled_to_domain";
 constexpr char kInstallerBrandCode[] = "installer_brand_code";
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+constexpr char kUpdateErrorCode[] = "update_error_code";
+constexpr char kUpdateHresult[] = "update_hresult";
+constexpr char kInstallResultCode[] = "install_result_code";
+constexpr char kInstallLocation[] = "install_location";
+#endif
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -192,6 +207,38 @@ void PopulateEntriesAsync(SystemLogsResponse* response) {
 }
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+// Returns true if the path identified by |key| with the PathService is a parent
+// or ancestor of |child|.
+bool IsParentOf(int key, const base::FilePath& child) {
+  base::FilePath path;
+  return base::PathService::Get(key, &path) && path.IsParent(child);
+}
+
+// Returns a string representing the overall install location of the browser.
+// "Program Files" and "Program Files (x86)" are both considered "per-machine"
+// locations (for all users), whereas anything in a user's local app data dir is
+// considered a "per-user" location. This function returns an answer that gives,
+// in essence, the broad category of location without checking that the browser
+// is operating out of the exact expected install directory. It is interesting
+// to know via feedback reports if updates are failing with
+// CANNOT_UPGRADE_CHROME_IN_THIS_DIRECTORY, which checks the exact directory,
+// yet the reported install_location is not "unknown".
+std::string DetermineInstallLocation() {
+  base::FilePath exe_path;
+
+  if (base::PathService::Get(base::FILE_EXE, &exe_path)) {
+    if (IsParentOf(base::DIR_PROGRAM_FILESX86, exe_path) ||
+        IsParentOf(base::DIR_PROGRAM_FILES, exe_path)) {
+      return "per-machine";
+    }
+    if (IsParentOf(base::DIR_LOCAL_APP_DATA, exe_path))
+      return "per-user";
+  }
+  return "unknown";
+}
+#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
 }  // namespace
 
 ChromeInternalLogSource::ChromeInternalLogSource()
@@ -230,6 +277,7 @@ void ChromeInternalLogSource::Fetch(SysLogsSourceCallback callback) {
   PopulateUsbKeyboardDetected(response.get());
   PopulateEnrolledToDomain(response.get());
   PopulateInstallerBrandCode(response.get());
+  PopulateLastUpdateState(response.get());
 #endif
 
   if (ProfileManager::GetLastUsedProfile()->IsChild())
@@ -410,6 +458,29 @@ void ChromeInternalLogSource::PopulateInstallerBrandCode(
   response->emplace(kInstallerBrandCode,
                     brand.empty() ? "Unknown brand code" : brand);
 }
-#endif
+
+void ChromeInternalLogSource::PopulateLastUpdateState(
+    SystemLogsResponse* response) {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  const base::Optional<UpdateState> update_state = GetLastUpdateState();
+  if (!update_state)
+    return;  // There is nothing to include if no update check has completed.
+
+  response->emplace(kUpdateErrorCode,
+                    base::NumberToString(update_state->error_code));
+  response->emplace(kInstallLocation, DetermineInstallLocation());
+
+  if (update_state->error_code == GOOGLE_UPDATE_NO_ERROR)
+    return;  // There is nothing more to include if the last check succeeded.
+
+  response->emplace(kUpdateHresult,
+                    base::StringPrintf("0x%08lX", update_state->hresult));
+  if (update_state->installer_exit_code) {
+    response->emplace(kInstallResultCode,
+                      base::NumberToString(*update_state->installer_exit_code));
+  }
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+}
+#endif  // defined(OS_WIN)
 
 }  // namespace system_logs

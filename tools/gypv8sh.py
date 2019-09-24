@@ -7,6 +7,8 @@
 argument lists and to generate inlinable tests.
 """
 
+from __future__ import print_function
+
 import json
 import optparse
 import os
@@ -50,7 +52,7 @@ def main ():
   cmd.extend(['-e', "arguments=" + json.dumps(arguments), mock_js,
          test_api, js2webui])
   if opts.verbose or opts.impotent:
-    print cmd
+    print(cmd)
   if not opts.impotent:
     try:
       p = subprocess.Popen(

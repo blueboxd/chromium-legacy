@@ -19,18 +19,40 @@
 namespace content {
 
 // static
-void ContentIndexServiceImpl::Create(
-    mojo::PendingReceiver<blink::mojom::ContentIndexService> receiver,
-    RenderProcessHost* render_process_host,
-    const url::Origin& origin) {
+void ContentIndexServiceImpl::CreateForFrame(
+    RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<blink::mojom::ContentIndexService> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  RenderProcessHost* render_process_host = render_frame_host->GetProcess();
+  DCHECK(render_process_host);
+  auto* storage_partition = static_cast<StoragePartitionImpl*>(
+      render_process_host->GetStoragePartition());
+
+  mojo::MakeSelfOwnedReceiver(std::make_unique<ContentIndexServiceImpl>(
+                                  render_frame_host->GetLastCommittedOrigin(),
+                                  storage_partition->GetContentIndexContext()),
+                              std::move(receiver));
+}
+
+// static
+void ContentIndexServiceImpl::CreateForWorker(
+    const ServiceWorkerVersionInfo& info,
+    mojo::PendingReceiver<blink::mojom::ContentIndexService> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  RenderProcessHost* render_process_host =
+      RenderProcessHost::FromID(info.process_id);
+
+  if (!render_process_host)
+    return;
 
   auto* storage_partition = static_cast<StoragePartitionImpl*>(
       render_process_host->GetStoragePartition());
 
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<ContentIndexServiceImpl>(
-          origin, storage_partition->GetContentIndexContext()),
+          info.script_origin, storage_partition->GetContentIndexContext()),
       std::move(receiver));
 }
 

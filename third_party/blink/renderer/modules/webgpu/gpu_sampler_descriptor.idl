@@ -13,7 +13,7 @@ dictionary GPUSamplerDescriptor {
     GPUFilterMode mipmapFilter = "nearest";
     float lodMinClamp = 0;
     float lodMaxClamp = 0xffffffff;
-    GPUCompareFunction compareFunction = "never";
+    GPUCompareFunction compare = "never";
 };
 
 enum GPUAddressMode {

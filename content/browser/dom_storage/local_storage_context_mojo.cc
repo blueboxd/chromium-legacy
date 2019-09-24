@@ -30,8 +30,6 @@
 #include "content/browser/dom_storage/local_storage_database.pb.h"
 #include "content/browser/dom_storage/storage_area_impl.h"
 #include "content/public/browser/storage_usage_info.h"
-#include "services/file/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "sql/database.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "storage/common/database/database_identifier.h"
@@ -396,15 +394,16 @@ url::Origin LocalStorageContextMojo::OriginFromLegacyDatabaseFileName(
 }
 
 LocalStorageContextMojo::LocalStorageContextMojo(
+    const base::FilePath& partition_directory,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    service_manager::Connector* connector,
     scoped_refptr<DOMStorageTaskRunner> legacy_task_runner,
     const base::FilePath& old_localstorage_path,
     const base::FilePath& subdirectory,
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy)
-    : connector_(connector ? connector->Clone() : nullptr),
-      subdirectory_(subdirectory),
+    : subdirectory_(subdirectory),
       special_storage_policy_(std::move(special_storage_policy)),
+      force_in_memory_only_(partition_directory.empty()),
+      file_service_(partition_directory),
       memory_dump_id_(base::StringPrintf("LocalStorage/0x%" PRIXPTR,
                                          reinterpret_cast<uintptr_t>(this))),
       task_runner_(std::move(legacy_task_runner)),
@@ -702,19 +701,11 @@ void LocalStorageContextMojo::RunWhenConnected(base::OnceClosure callback) {
 
 void LocalStorageContextMojo::InitiateConnection(bool in_memory_only) {
   DCHECK_EQ(connection_state_, CONNECTION_IN_PROGRESS);
-  // Unit tests might not always have a Connector, use in-memory only if that
-  // happens.
-  if (!connector_) {
-    OnDatabaseOpened(false, leveldb::mojom::DatabaseError::OK);
-    return;
-  }
-
-  if (!subdirectory_.empty() && !in_memory_only) {
+  if (!subdirectory_.empty() && !in_memory_only && !force_in_memory_only_) {
     // We were given a subdirectory to write to. Get it and use a disk backed
     // database.
-    file_system_.reset();
-    connector_->Connect(file::mojom::kServiceName,
-                        file_system_.BindNewPipeAndPassReceiver());
+    if (!file_system_)
+      file_service_.BindFileSystem(file_system_.BindNewPipeAndPassReceiver());
     file_system_->GetSubDirectory(
         subdirectory_.AsUTF8Unsafe(), MakeRequest(&directory_),
         base::BindOnce(&LocalStorageContextMojo::OnDirectoryOpened,
@@ -722,8 +713,8 @@ void LocalStorageContextMojo::InitiateConnection(bool in_memory_only) {
   } else {
     // We were not given a subdirectory. Use a memory backed database.
     leveldb_service_.reset();
-    connector_->Connect(file::mojom::kServiceName,
-                        leveldb_service_.BindNewPipeAndPassReceiver());
+    file_service_.BindLevelDBService(
+        leveldb_service_.BindNewPipeAndPassReceiver());
 
     database_.reset();
     leveldb_service_->OpenInMemory(
@@ -761,8 +752,8 @@ void LocalStorageContextMojo::OnDirectoryOpened(base::File::Error err) {
   // Now that we have a directory, connect to the LevelDB service and get our
   // database.
   leveldb_service_.reset();
-  connector_->Connect(file::mojom::kServiceName,
-                      leveldb_service_.BindNewPipeAndPassReceiver());
+  file_service_.BindLevelDBService(
+      leveldb_service_.BindNewPipeAndPassReceiver());
 
   // We might still need to use the directory, so create a clone.
   filesystem::mojom::DirectoryPtr directory_clone;

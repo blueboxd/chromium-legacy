@@ -115,7 +115,7 @@ const String& PaymentRequestEvent::instrumentKey() const {
 const ScriptValue PaymentRequestEvent::paymentOptions(
     ScriptState* script_state) const {
   if (!payment_options_)
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
   return ScriptValue::From(script_state, payment_options_);
 }
 

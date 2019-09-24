@@ -625,10 +625,6 @@ class WebContents : public PageNavigator,
   // Reloads the focused frame.
   virtual void ReloadFocusedFrame(bool bypass_cache) = 0;
 
-  // Reloads all the Lo-Fi images in this WebContents. Ignores the cache and
-  // reloads from the network.
-  virtual void ReloadLoFiImages() = 0;
-
   // Attains PauseSubresourceLoadingHandles for each frame in the web contents.
   // As long as these handles are not deleted, subresources will continue to be
   // deferred until an internal navigation happens in the frame. Holding handles

@@ -4,6 +4,8 @@
 
 #include "chrome/credential_provider/common/gcp_strings.h"
 
+#include "build/branding_buildflags.h"
+
 namespace credential_provider {
 
 // Names of keys returned on json data from UI process.
@@ -81,10 +83,10 @@ const char kGcpwEndpointPathPromoParameter[] = "gcpw_endpoint_path";
 
 const wchar_t kRunAsCrashpadHandlerEntryPoint[] = L"RunAsCrashpadHandler";
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 const wchar_t kRegHkcuAccountsPath[] = L"Software\\Google\\Accounts";
 #else
 const wchar_t kRegHkcuAccountsPath[] = L"Software\\Chromium\\Accounts";
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 }  // namespace credential_provider

@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/modules/badging/badge.h"
 
 #include "base/memory/scoped_refptr.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/badging/badge_options.h"
@@ -98,7 +98,7 @@ void Badge::Trace(blink::Visitor* visitor) {
 }
 
 Badge::Badge(ExecutionContext* context) : execution_context_(context) {
-  context->GetInterfaceProvider()->GetInterface(
+  context->GetBrowserInterfaceBroker().GetInterface(
       badge_service_.BindNewPipeAndPassReceiver());
   DCHECK(badge_service_);
 }

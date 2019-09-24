@@ -12,7 +12,6 @@
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/content_index/content_index_service_impl.h"
 #include "content/browser/cookie_store/cookie_store_context.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
@@ -248,8 +247,6 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
         host->GetBrowserContext()->GetVideoDecodePerfHistory()->BindRequest(
             std::move(request));
       }));
-  parameterized_binder_registry_.AddInterface(
-      base::BindRepeating(&ContentIndexServiceImpl::Create));
 }
 
 RendererInterfaceBinders& GetRendererInterfaceBinders() {

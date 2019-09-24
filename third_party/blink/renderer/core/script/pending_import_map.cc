@@ -37,9 +37,7 @@ PendingImportMap::PendingImportMap(ScriptElementBase& element,
       import_map_(import_map),
       original_context_document_(&original_context_document) {
   if (!error_to_rethrow.IsEmpty()) {
-    ScriptState::Scope scope(error_to_rethrow.GetScriptState());
-    error_to_rethrow_.Set(error_to_rethrow.GetIsolate(),
-                          error_to_rethrow.V8Value());
+    error_to_rethrow_ = error_to_rethrow.ToWorldSafeV8Reference();
   }
 }
 
@@ -83,10 +81,8 @@ void PendingImportMap::RegisterImportMap() const {
 
   Modulator* modulator = Modulator::From(ToScriptStateForMainWorld(frame));
 
-  ScriptState* script_state = modulator->GetScriptState();
-  ScriptState::Scope scope(script_state);
-  ScriptValue error(script_state,
-                    error_to_rethrow_.NewLocal(script_state->GetIsolate()));
+  v8::Isolate* isolate = modulator->GetScriptState()->GetIsolate();
+  ScriptValue error(isolate, error_to_rethrow_);
   modulator->RegisterImportMap(import_map_, error);
 
   // <spec step="9">If element is from an external file, then fire an event

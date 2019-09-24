@@ -26,6 +26,10 @@
         android:id="@+id/tab_switcher_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:paddingStart="12dp"
+        android:paddingEnd="4dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
         android:visibility="gone"
         android:background="@color/modern_primary_color"
         android:orientation="horizontal">
@@ -34,19 +38,24 @@
             android:layout_height="wrap_content"
             android:layout_weight="1.0"
             android:layout_gravity="center_vertical"
-            android:paddingTop="@dimen/tasks_view_items_vertical_spacing"
-            android:paddingBottom="@dimen/tasks_view_items_vertical_spacing"
-            android:paddingStart="24dp"
-            android:paddingEnd="16dp"
-            android:textAlignment="viewStart"
-            android:textAppearance="@style/TextAppearance.BlackCaption"
+            android:gravity="center_vertical"
+            android:paddingStart="6dp"
+            android:singleLine="true"
+            android:textAppearance="@style/TextAppearance.BlackTitle2"
             android:text="@string/tab_switcher_carousel_title" />
-        <org.chromium.ui.widget.ChromeImageButton
+        <org.chromium.ui.widget.ChromeImageView
             android:id="@+id/more_tabs"
-            style="@style/ToolbarButton"
-            android:layout_height="wrap_content"
-            android:src="@drawable/breadcrumb_arrow"
-            tools:tint="@color/standard_mode_tint"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center_vertical|end"
+            android:layout_marginTop="-16dp"
+            android:layout_marginBottom="-16dp"
+            android:scaleType="center"
+            android:src="@drawable/ic_arrow_right"
+            android:tint="@color/default_icon_color"
+            android:tintMode="src_in"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"
             android:contentDescription="@string/accessibility_tab_switcher_carousel_more_tabs"/>
     </LinearLayout>
     <FrameLayout

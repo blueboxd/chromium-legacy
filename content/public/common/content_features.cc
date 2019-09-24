@@ -525,11 +525,6 @@ const base::Feature kSmsReceiver{"SmsReceiver",
 const base::Feature kSpareRendererForSitePerProcess{
     "SpareRendererForSitePerProcess", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables StaleWhileRevalidate support.
-// https://www.chromestatus.com/features/5050913014153216
-const base::Feature kStaleWhileRevalidate{"StaleWhileRevalidate",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables Storage Pressure notifications and settings pages.
 const base::Feature kStoragePressureUI{"StoragePressureUI",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

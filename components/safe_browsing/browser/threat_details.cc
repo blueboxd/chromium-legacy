@@ -653,8 +653,9 @@ void ThreatDetails::StartCollection() {
 
 void ThreatDetails::RequestThreatDOMDetails(content::RenderFrameHost* frame) {
   DisableBackForwardCache(frame, "safe_browsing::ThreatDetails");
-  safe_browsing::mojom::ThreatReporterPtr threat_reporter;
-  frame->GetRemoteInterfaces()->GetInterface(&threat_reporter);
+  mojo::Remote<safe_browsing::mojom::ThreatReporter> threat_reporter;
+  frame->GetRemoteInterfaces()->GetInterface(
+      threat_reporter.BindNewPipeAndPassReceiver());
   safe_browsing::mojom::ThreatReporter* raw_threat_report =
       threat_reporter.get();
   pending_render_frame_hosts_.push_back(frame);
@@ -665,7 +666,7 @@ void ThreatDetails::RequestThreatDOMDetails(content::RenderFrameHost* frame) {
 
 // When the renderer is done, this is called.
 void ThreatDetails::OnReceivedThreatDOMDetails(
-    mojom::ThreatReporterPtr threat_reporter,
+    mojo::Remote<mojom::ThreatReporter> threat_reporter,
     content::RenderFrameHost* sender,
     std::vector<mojom::ThreatDOMDetailsNodePtr> params) {
   // If the RenderFrameHost was closed between sending the IPC and this callback

@@ -29,7 +29,9 @@
 #include "ui/views/controls/tabbed_pane/tabbed_pane_listener.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/layout_manager.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -307,6 +309,80 @@ TabStrip::TabStrip(TabbedPane::Orientation orientation,
 
 TabStrip::~TabStrip() = default;
 
+void TabStrip::AnimationProgressed(const gfx::Animation* animation) {
+  SchedulePaint();
+}
+
+void TabStrip::AnimationEnded(const gfx::Animation* animation) {
+  if (animation == expand_animation_.get())
+    contract_animation_->Start();
+}
+
+void TabStrip::OnSelectedTabChanged(Tab* from_tab, Tab* to_tab) {
+  DCHECK(!from_tab->selected());
+  DCHECK(to_tab->selected());
+
+  if (GetOrientation() == TabbedPane::Orientation::kHorizontal) {
+    animating_from_ = gfx::Range(from_tab->GetMirroredX(),
+                                 from_tab->GetMirroredX() + from_tab->width());
+    animating_to_ = gfx::Range(to_tab->GetMirroredX(),
+                               to_tab->GetMirroredX() + to_tab->width());
+  } else {
+    animating_from_ = gfx::Range(from_tab->bounds().y(),
+                                 from_tab->bounds().y() + from_tab->height());
+    animating_to_ = gfx::Range(to_tab->bounds().y(),
+                               to_tab->bounds().y() + to_tab->height());
+  }
+
+  contract_animation_->Stop();
+  expand_animation_->Start();
+}
+
+Tab* TabStrip::GetSelectedTab() const {
+  size_t index = GetSelectedTabIndex();
+  return index == kNoSelectedTab ? nullptr : GetTabAtIndex(index);
+}
+
+Tab* TabStrip::GetTabAtDeltaFromSelected(int delta) const {
+  const size_t selected_tab_index = GetSelectedTabIndex();
+  DCHECK_NE(kNoSelectedTab, selected_tab_index);
+  const size_t num_children = children().size();
+  // Clamping |delta| here ensures that even a large negative |delta| will not
+  // cause the addition in the next statement to wrap below 0.
+  delta %= static_cast<int>(num_children);
+  return GetTabAtIndex((selected_tab_index + num_children + delta) %
+                       num_children);
+}
+
+Tab* TabStrip::GetTabAtIndex(size_t index) const {
+  DCHECK_LT(index, children().size());
+  return static_cast<Tab*>(children()[index]);
+}
+
+size_t TabStrip::GetSelectedTabIndex() const {
+  for (size_t i = 0; i < children().size(); ++i)
+    if (GetTabAtIndex(i)->selected())
+      return i;
+  return kNoSelectedTab;
+}
+
+TabbedPane::Orientation TabStrip::GetOrientation() const {
+  return orientation_;
+}
+
+TabbedPane::TabStripStyle TabStrip::GetStyle() const {
+  return style_;
+}
+
+gfx::Size TabStrip::CalculatePreferredSize() const {
+  // Tabstrips don't require any minimum space along their main axis, and can
+  // shrink all the way to zero size.  Only the cross axis thickness matters.
+  const gfx::Size size = GetLayoutManager()->GetPreferredSize(this);
+  return (GetOrientation() == TabbedPane::Orientation::kHorizontal)
+             ? gfx::Size(0, size.height())
+             : gfx::Size(size.width(), 0);
+}
+
 void TabStrip::OnPaintBorder(gfx::Canvas* canvas) {
   // Do not draw border line in kHighlight mode.
   if (GetStyle() == TabbedPane::TabStripStyle::kHighlight)
@@ -394,71 +470,6 @@ void TabStrip::OnPaintBorder(gfx::Canvas* canvas) {
                         SK_AlphaOPAQUE));
 }
 
-void TabStrip::AnimationProgressed(const gfx::Animation* animation) {
-  SchedulePaint();
-}
-
-void TabStrip::AnimationEnded(const gfx::Animation* animation) {
-  if (animation == expand_animation_.get())
-    contract_animation_->Start();
-}
-
-void TabStrip::OnSelectedTabChanged(Tab* from_tab, Tab* to_tab) {
-  DCHECK(!from_tab->selected());
-  DCHECK(to_tab->selected());
-
-  if (GetOrientation() == TabbedPane::Orientation::kHorizontal) {
-    animating_from_ = gfx::Range(from_tab->GetMirroredX(),
-                                 from_tab->GetMirroredX() + from_tab->width());
-    animating_to_ = gfx::Range(to_tab->GetMirroredX(),
-                               to_tab->GetMirroredX() + to_tab->width());
-  } else {
-    animating_from_ = gfx::Range(from_tab->bounds().y(),
-                                 from_tab->bounds().y() + from_tab->height());
-    animating_to_ = gfx::Range(to_tab->bounds().y(),
-                               to_tab->bounds().y() + to_tab->height());
-  }
-
-  contract_animation_->Stop();
-  expand_animation_->Start();
-}
-
-Tab* TabStrip::GetSelectedTab() const {
-  size_t index = GetSelectedTabIndex();
-  return index == kNoSelectedTab ? nullptr : GetTabAtIndex(index);
-}
-
-Tab* TabStrip::GetTabAtDeltaFromSelected(int delta) const {
-  const size_t selected_tab_index = GetSelectedTabIndex();
-  DCHECK_NE(kNoSelectedTab, selected_tab_index);
-  const size_t num_children = children().size();
-  // Clamping |delta| here ensures that even a large negative |delta| will not
-  // cause the addition in the next statement to wrap below 0.
-  delta %= static_cast<int>(num_children);
-  return GetTabAtIndex((selected_tab_index + num_children + delta) %
-                       num_children);
-}
-
-Tab* TabStrip::GetTabAtIndex(size_t index) const {
-  DCHECK_LT(index, children().size());
-  return static_cast<Tab*>(children()[index]);
-}
-
-size_t TabStrip::GetSelectedTabIndex() const {
-  for (size_t i = 0; i < children().size(); ++i)
-    if (GetTabAtIndex(i)->selected())
-      return i;
-  return kNoSelectedTab;
-}
-
-TabbedPane::Orientation TabStrip::GetOrientation() const {
-  return orientation_;
-}
-
-TabbedPane::TabStripStyle TabStrip::GetStyle() const {
-  return style_;
-}
-
 DEFINE_ENUM_CONVERTERS(TabbedPane::Orientation,
                        {TabbedPane::Orientation::kHorizontal,
                         base::ASCIIToUTF16("HORIZONTAL")},
@@ -482,8 +493,16 @@ TabbedPane::TabbedPane(TabbedPane::Orientation orientation,
                        TabbedPane::TabStripStyle style) {
   DCHECK(orientation != TabbedPane::Orientation::kHorizontal ||
          style != TabbedPane::TabStripStyle::kHighlight);
+  auto* layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
+  if (orientation == TabbedPane::Orientation::kHorizontal)
+    layout->SetOrientation(views::LayoutOrientation::kVertical);
   tab_strip_ = AddChildView(std::make_unique<TabStrip>(orientation, style));
   contents_ = AddChildView(std::make_unique<View>());
+  contents_->SetProperty(views::kFlexBehaviorKey,
+                         views::FlexSpecification::ForSizeRule(
+                             views::MinimumFlexSizeRule::kScaleToZero,
+                             views::MaximumFlexSizeRule::kUnbounded));
+  contents_->SetLayoutManager(std::make_unique<views::FillLayout>());
 }
 
 TabbedPane::~TabbedPane() = default;
@@ -546,17 +565,6 @@ void TabbedPane::SelectTabAt(size_t index) {
     SelectTab(tab);
 }
 
-gfx::Size TabbedPane::CalculatePreferredSize() const {
-  gfx::Size size;
-  for (const View* child : contents_->children())
-    size.SetToMax(child->GetPreferredSize());
-  if (GetOrientation() == Orientation::kHorizontal)
-    size.Enlarge(0, tab_strip_->GetPreferredSize().height());
-  else
-    size.Enlarge(tab_strip_->GetPreferredSize().width(), 0);
-  return size;
-}
-
 TabbedPane::Orientation TabbedPane::GetOrientation() const {
   return tab_strip_->GetOrientation();
 }
@@ -582,21 +590,6 @@ bool TabbedPane::MoveSelectionBy(int delta) {
     return false;
   SelectTab(tab_strip_->GetTabAtDeltaFromSelected(delta));
   return true;
-}
-
-void TabbedPane::Layout() {
-  const gfx::Size size = tab_strip_->GetPreferredSize();
-  if (GetOrientation() == Orientation::kHorizontal) {
-    tab_strip_->SetBounds(0, 0, width(), size.height());
-    contents_->SetBounds(0, tab_strip_->bounds().bottom(), width(),
-                         std::max(0, height() - size.height()));
-  } else {
-    tab_strip_->SetBounds(0, 0, size.width(), height());
-    contents_->SetBounds(tab_strip_->bounds().width(), 0,
-                         std::max(0, width() - size.width()), height());
-  }
-  for (View* child : contents_->children())
-    child->SetSize(contents_->size());
 }
 
 void TabbedPane::ViewHierarchyChanged(

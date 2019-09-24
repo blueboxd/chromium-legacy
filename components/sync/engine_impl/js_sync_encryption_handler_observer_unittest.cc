@@ -17,7 +17,7 @@
 #include "components/sync/engine/sync_string_conversions.h"
 #include "components/sync/js/js_event_details.h"
 #include "components/sync/js/js_test_util.h"
-#include "components/sync/nigori/cryptographer.h"
+#include "components/sync/syncable/directory_cryptographer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -136,7 +136,7 @@ TEST_F(JsSyncEncryptionHandlerObserverTest, OnCryptographerStateChanged) {
   base::DictionaryValue expected_details;
   bool expected_ready = false;
   bool expected_pending = false;
-  expected_details.SetBoolean("ready", expected_ready);
+  expected_details.SetBoolean("canEncrypt", expected_ready);
   expected_details.SetBoolean("hasPendingKeys", expected_pending);
   ModelTypeSet encrypted_types;
 
@@ -144,7 +144,7 @@ TEST_F(JsSyncEncryptionHandlerObserverTest, OnCryptographerStateChanged) {
               HandleJsEvent("onCryptographerStateChanged",
                             HasDetailsAsDictionary(expected_details)));
 
-  Cryptographer cryptographer;
+  DirectoryCryptographer cryptographer;
   js_sync_encryption_handler_observer_.OnCryptographerStateChanged(
       &cryptographer);
   PumpLoop();

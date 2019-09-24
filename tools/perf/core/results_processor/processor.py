@@ -13,12 +13,14 @@ import os
 
 from core.results_processor import command_line
 from core.results_processor import json3_output
+from core.results_processor import histograms_output
 
 
 HTML_TRACE_NAME = 'trace.html'
 TELEMETRY_RESULTS = '_telemetry_results.jsonl'
 FORMATTERS = {
     'json-test-results': json3_output,
+    'histograms': histograms_output,
 }
 
 
@@ -48,7 +50,7 @@ def ProcessResults(options):
       raise NotImplementedError(output_format)
 
     formatter = FORMATTERS[output_format]
-    formatter.Process(intermediate_results, options.output_dir)
+    formatter.Process(intermediate_results, options)
 
 
 def _LoadIntermediateResults(intermediate_file):

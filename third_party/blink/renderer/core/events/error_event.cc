@@ -44,7 +44,8 @@ ErrorEvent* ErrorEvent::CreateSanitizedError(ScriptState* script_state) {
   return MakeGarbageCollected<ErrorEvent>(
       "Script error.",
       std::make_unique<SourceLocation>(String(), 0, 0, nullptr),
-      ScriptValue::CreateNull(script_state), &script_state->World());
+      ScriptValue::CreateNull(script_state->GetIsolate()),
+      &script_state->World());
 }
 
 ErrorEvent::ErrorEvent()
@@ -65,7 +66,7 @@ ErrorEvent::ErrorEvent(ScriptState* script_state,
       initializer->hasLineno() ? initializer->lineno() : 0,
       initializer->hasColno() ? initializer->colno() : 0, nullptr);
   if (initializer->hasError()) {
-    error_.Set(script_state->GetIsolate(), initializer->error().V8Value());
+    error_ = initializer->error().ToWorldSafeV8Reference();
   }
 }
 
@@ -78,7 +79,7 @@ ErrorEvent::ErrorEvent(const String& message,
       location_(std::move(location)),
       world_(world) {
   if (!error.IsEmpty())
-    error_.Set(error.GetIsolate(), error.V8Value());
+    error_ = error.ToWorldSafeV8Reference();
 }
 
 void ErrorEvent::SetUnsanitizedMessage(const String& message) {
@@ -108,7 +109,7 @@ ScriptValue ErrorEvent::error(ScriptState* script_state) const {
   //    thus passing it around would cause leakage.
   // 2) Errors cannot be cloned (or serialized):
   if (World() != &script_state->World() || error_.IsEmpty())
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
   return ScriptValue(script_state, error_.Get(script_state));
 }
 

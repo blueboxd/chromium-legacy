@@ -26,6 +26,7 @@
 #include "chrome/browser/web_applications/test/test_file_utils.h"
 #include "chrome/browser/web_applications/test/test_install_finalizer.h"
 #include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
+#include "chrome/browser/web_applications/test/test_web_app_registry_controller.h"
 #include "chrome/browser/web_applications/test/test_web_app_ui_manager.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
@@ -38,8 +39,6 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "components/sync/model/mock_model_type_change_processor.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -119,23 +118,21 @@ class WebAppInstallTaskTest : public WebAppTest {
   void SetUp() override {
     WebAppTest::SetUp();
 
-    database_factory_ = std::make_unique<TestWebAppDatabaseFactory>();
-    registrar_ = std::make_unique<WebAppRegistrar>(profile());
-    sync_bridge_ = std::make_unique<WebAppSyncBridge>(
-        profile(), database_factory_.get(), registrar_.get(),
-        mock_processor_.CreateForwardingProcessor());
+    test_registry_controller_ =
+        std::make_unique<TestWebAppRegistryController>();
+    test_registry_controller_->SetUp(profile());
 
     auto file_utils = std::make_unique<TestFileUtils>();
     file_utils_ = file_utils.get();
 
-    icon_manager_ = std::make_unique<WebAppIconManager>(profile(), *registrar_,
+    icon_manager_ = std::make_unique<WebAppIconManager>(profile(), registrar(),
                                                         std::move(file_utils));
 
     ui_manager_ = std::make_unique<TestWebAppUiManager>();
 
     install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
-        sync_bridge_.get(), icon_manager_.get());
-    install_finalizer_->SetSubsystems(registrar_.get(), ui_manager_.get());
+        &controller().sync_bridge(), icon_manager_.get());
+    install_finalizer_->SetSubsystems(&registrar(), ui_manager_.get());
 
     auto data_retriever = std::make_unique<TestDataRetriever>();
     data_retriever_ = data_retriever.get();
@@ -143,12 +140,7 @@ class WebAppInstallTaskTest : public WebAppTest {
     install_task_ = std::make_unique<WebAppInstallTask>(
         profile(), install_finalizer_.get(), std::move(data_retriever));
 
-    ON_CALL(processor(), IsTrackingMetadata())
-        .WillByDefault(testing::Return(true));
-
-    base::RunLoop run_loop;
-    sync_bridge_->Init(base::BindLambdaForTesting([&]() { run_loop.Quit(); }));
-    run_loop.Run();
+    controller().Init();
 
 #if defined(OS_CHROMEOS)
     arc_test_.SetUp(profile());
@@ -175,6 +167,13 @@ class WebAppInstallTaskTest : public WebAppTest {
     intent_helper_bridge_.reset();
     arc_test_.TearDown();
 #endif
+    install_task_.reset();
+    install_finalizer_.reset();
+    ui_manager_.reset();
+    icon_manager_.reset();
+
+    test_registry_controller_.reset();
+
     WebAppTest::TearDown();
   }
 
@@ -325,12 +324,11 @@ class WebAppInstallTaskTest : public WebAppTest {
   }
 
  protected:
-  syncer::MockModelTypeChangeProcessor& processor() { return mock_processor_; }
+  TestWebAppRegistryController& controller() {
+    return *test_registry_controller_;
+  }
 
-  std::unique_ptr<TestWebAppDatabaseFactory> database_factory_;
-  std::unique_ptr<WebAppRegistrar> registrar_;
-  testing::NiceMock<syncer::MockModelTypeChangeProcessor> mock_processor_;
-  std::unique_ptr<WebAppSyncBridge> sync_bridge_;
+  WebAppRegistrar& registrar() { return controller().registrar(); }
 
   std::unique_ptr<WebAppIconManager> icon_manager_;
   std::unique_ptr<WebAppInstallTask> install_task_;
@@ -348,6 +346,7 @@ class WebAppInstallTaskTest : public WebAppTest {
 #endif
 
  private:
+  std::unique_ptr<TestWebAppRegistryController> test_registry_controller_;
   TestInstallFinalizer* test_install_finalizer_ = nullptr;
 };
 
@@ -384,7 +383,7 @@ TEST_F(WebAppInstallTaskTest, InstallFromWebContents) {
 
   EXPECT_TRUE(callback_called);
 
-  const WebApp* web_app = registrar_->GetAppById(app_id);
+  const WebApp* web_app = registrar().GetAppById(app_id);
   EXPECT_NE(nullptr, web_app);
 
   EXPECT_EQ(app_id, web_app->app_id());
@@ -522,7 +521,7 @@ TEST_F(WebAppInstallTaskTest, InstallableCheck) {
 
   EXPECT_TRUE(callback_called);
 
-  const WebApp* web_app = registrar_->GetAppById(app_id);
+  const WebApp* web_app = registrar().GetAppById(app_id);
   EXPECT_NE(nullptr, web_app);
 
   // Manifest data overrides Renderer data, except |description|.
@@ -732,7 +731,7 @@ TEST_F(WebAppInstallTaskTest, UserInstallDeclined) {
 
   EXPECT_TRUE(callback_called);
 
-  const WebApp* web_app = registrar_->GetAppById(app_id);
+  const WebApp* web_app = registrar().GetAppById(app_id);
   EXPECT_EQ(nullptr, web_app);
 }
 
@@ -1104,7 +1103,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_LaunchContainer) {
     auto app_id = InstallWebAppWithParams(params);
 
     EXPECT_EQ(LaunchContainer::kTab,
-              registrar_->GetAppById(app_id)->launch_container());
+              registrar().GetAppById(app_id)->launch_container());
   }
   {
     CreateDataToRetrieve(GURL("https://example.org/"), /*open_as_window*/ true);
@@ -1114,7 +1113,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_LaunchContainer) {
     auto app_id = InstallWebAppWithParams(params);
 
     EXPECT_EQ(LaunchContainer::kWindow,
-              registrar_->GetAppById(app_id)->launch_container());
+              registrar().GetAppById(app_id)->launch_container());
   }
   {
     CreateDataToRetrieve(GURL("https://example.au/"), /*open_as_window*/ true);
@@ -1124,7 +1123,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_LaunchContainer) {
     auto app_id = InstallWebAppWithParams(params);
 
     EXPECT_EQ(LaunchContainer::kTab,
-              registrar_->GetAppById(app_id)->launch_container());
+              registrar().GetAppById(app_id)->launch_container());
   }
   {
     CreateDataToRetrieve(GURL("https://example.app/"),
@@ -1135,7 +1134,7 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppWithParams_LaunchContainer) {
     auto app_id = InstallWebAppWithParams(params);
 
     EXPECT_EQ(LaunchContainer::kWindow,
-              registrar_->GetAppById(app_id)->launch_container());
+              registrar().GetAppById(app_id)->launch_container());
   }
 }
 
@@ -1146,14 +1145,14 @@ TEST_F(WebAppInstallTaskTest,
     CreateDataToRetrieve(url, /*open_as_window*/ false);
     auto app_id =
         InstallWebAppFromInfoRetrieveIcons(url, /*is_locally_installed*/ false);
-    EXPECT_FALSE(registrar_->GetAppById(app_id)->is_locally_installed());
+    EXPECT_FALSE(registrar().GetAppById(app_id)->is_locally_installed());
   }
   {
     const auto url = GURL("https://example.org/");
     CreateDataToRetrieve(url, /*open_as_window*/ false);
     auto app_id =
         InstallWebAppFromInfoRetrieveIcons(url, /*is_locally_installed*/ true);
-    EXPECT_TRUE(registrar_->GetAppById(app_id)->is_locally_installed());
+    EXPECT_TRUE(registrar().GetAppById(app_id)->is_locally_installed());
   }
 }
 

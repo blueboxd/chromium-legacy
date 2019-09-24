@@ -29,6 +29,8 @@
 # pylint: disable=R0201
 # pylint: disable=C0301
 
+from __future__ import print_function
+
 import os.path
 import sys
 import time
@@ -1187,11 +1189,11 @@ class IDLParser(object):
       out = IDLNode(cls, filename, lineno, pos, childlist)
       return out
     except:
-      print 'Exception while parsing:'
+      print('Exception while parsing:')
       for num, item in enumerate(p):
-        print '  [%d] %s' % (num, ExpandProduction(item))
+        print('  [%d] %s' % (num, ExpandProduction(item)))
       if self.LastToken():
-        print 'Last token: %s' % str(self.LastToken())
+        print('Last token: %s' % str(self.LastToken()))
       raise
 
   def BuildNamed(self, cls, p, index, childlist=None):
@@ -1296,9 +1298,9 @@ def main(argv):
 
   ast = IDLNode('AST', '__AST__', 0, 0, nodes)
 
-  print '\n'.join(ast.Tree())
+  print('\n'.join(ast.Tree()))
   if errors:
-    print '\nFound %d errors.\n' % errors
+    print('\nFound %d errors.\n' % errors)
 
   return errors
 

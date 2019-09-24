@@ -298,12 +298,8 @@ AccountConsistencyModeManager::ComputeAccountConsistencyMethod(
     if (IsDiceMigrationCompleted(profile))
       return AccountConsistencyMethod::kDice;
 
-    if (!IsReadyForDiceMigration(profile) &&
-        profile->GetPrefs()->GetBoolean(prefs::kTokenServiceDiceCompatible) &&
-        base::FeatureList::IsEnabled(kForceDiceMigration)) {
-      // Force migration to Dice.
+    if (base::FeatureList::IsEnabled(kForceDiceMigration))
       return AccountConsistencyMethod::kDice;
-    }
   }
 
   return method;

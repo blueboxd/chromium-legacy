@@ -45,7 +45,7 @@ void MemoryInstrumentation::RequestGlobalDump(
     RequestGlobalDumpCallback callback) {
   coordinator_->RequestGlobalMemoryDump(
       MemoryDumpType::SUMMARY_ONLY, MemoryDumpLevelOfDetail::BACKGROUND,
-      allocator_dump_names,
+      MemoryDumpDeterminism::NONE, allocator_dump_names,
       base::BindOnce(&WrapGlobalMemoryDump, std::move(callback)));
 }
 
@@ -68,9 +68,10 @@ void MemoryInstrumentation::RequestGlobalDumpForPid(
 void MemoryInstrumentation::RequestGlobalDumpAndAppendToTrace(
     MemoryDumpType dump_type,
     MemoryDumpLevelOfDetail level_of_detail,
+    MemoryDumpDeterminism determinism,
     RequestGlobalMemoryDumpAndAppendToTraceCallback callback) {
   coordinator_->RequestGlobalMemoryDumpAndAppendToTrace(
-      dump_type, level_of_detail, std::move(callback));
+      dump_type, level_of_detail, determinism, std::move(callback));
 }
 
 }  // namespace memory_instrumentation

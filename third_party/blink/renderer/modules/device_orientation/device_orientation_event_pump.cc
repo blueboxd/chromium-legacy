@@ -98,8 +98,8 @@ void DeviceOrientationEventPump::SendStartMessage(LocalFrame* frame) {
     DCHECK(frame);
 
     frame->GetInterfaceProvider().GetInterface(
-        mojo::MakeRequest(&sensor_provider_));
-    sensor_provider_.set_connection_error_handler(
+        sensor_provider_.BindNewPipeAndPassReceiver());
+    sensor_provider_.set_disconnect_handler(
         WTF::Bind(&DeviceSensorEventPump::HandleSensorProviderError,
                   WrapWeakPersistent(this)));
   }

@@ -207,6 +207,10 @@ void NavigationContextImpl::SetItem(std::unique_ptr<NavigationItemImpl> item) {
   item_ = std::move(item);
 }
 
+base::TimeDelta NavigationContextImpl::GetElapsedTimeSinceCreation() const {
+  return elapsed_timer_.Elapsed();
+}
+
 NavigationContextImpl::NavigationContextImpl(WebState* web_state,
                                              const GURL& url,
                                              bool has_user_gesture,
@@ -220,7 +224,8 @@ NavigationContextImpl::NavigationContextImpl(WebState* web_state,
       is_same_document_(false),
       error_(nil),
       response_headers_(nullptr),
-      is_renderer_initiated_(is_renderer_initiated) {}
+      is_renderer_initiated_(is_renderer_initiated),
+      elapsed_timer_(base::ElapsedTimer()) {}
 
 NavigationContextImpl::~NavigationContextImpl() = default;
 

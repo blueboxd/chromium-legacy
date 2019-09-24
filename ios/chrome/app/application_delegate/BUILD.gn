@@ -102,6 +102,7 @@ source_set("application_delegate_internal") {
   deps = [
     ":application_delegate",
     "//base",
+    "//build:branding_buildflags",
     "//components/crash/core/common",
     "//components/feature_engagement",
     "//components/handoff",

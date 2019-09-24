@@ -39,6 +39,8 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "ipc/ipc_test_sink.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -205,9 +207,9 @@ class FakePhishingDetector : public mojom::PhishingDetector {
 
   ~FakePhishingDetector() override = default;
 
-  void BindRequest(mojo::ScopedMessagePipeHandle handle) {
-    bindings_.AddBinding(this,
-                         mojom::PhishingDetectorRequest(std::move(handle)));
+  void BindReceiver(mojo::ScopedMessagePipeHandle handle) {
+    receivers_.Add(this, mojo::PendingReceiver<mojom::PhishingDetector>(
+                             std::move(handle)));
   }
 
   // mojom::PhishingDetector
@@ -241,7 +243,7 @@ class FakePhishingDetector : public mojom::PhishingDetector {
   }
 
  private:
-  mojo::BindingSet<mojom::PhishingDetector> bindings_;
+  mojo::ReceiverSet<mojom::PhishingDetector> receivers_;
   bool phishing_detection_started_ = false;
   GURL url_;
 
@@ -263,7 +265,7 @@ class ClientSideDetectionHostTestBase : public ChromeRenderViewHostTestHarness {
 
     test_api.SetBinderForName(
         mojom::PhishingDetector::Name_,
-        base::BindRepeating(&FakePhishingDetector::BindRequest,
+        base::BindRepeating(&FakePhishingDetector::BindReceiver,
                             base::Unretained(&fake_phishing_detector_)));
   }
 

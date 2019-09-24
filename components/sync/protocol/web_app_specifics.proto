@@ -11,10 +11,9 @@ option optimize_for = LITE_RUNTIME;
 
 package sync_pb;
 
-// WebApp data. This should be a subset of WebAppProto in
-// chrome/browser/web_applications/proto/web_app.proto
+// WebApp data. This is a synced part of
+// chrome/browser/web_applications/proto/web_app.proto data.
 message WebAppSpecifics {
-  // Keep in sync with WebAppProto::LaunchContainer.
   enum LaunchContainer {
     TAB = 1;
     WINDOW = 2;

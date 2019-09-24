@@ -17753,7 +17753,7 @@
       'id': 601,
       'caption': '''List of names that will bypass the HSTS policy check''',
       'tags': ['system-security'],
-      'desc': '''Hostnames specified in this list will be exempt from the HSTS policy check that could potentially upgrade requests from http to https. Only single-label hostnames are allowed in this policy. Hostnames must be canonicalized: any IDNs must be convered to their A-label format, and all ASCII letters must be lowercase. This policy only applies to the specific hostnames specified; it does not apply to subdomains of the names specified.''',
+      'desc': '''Hostnames specified in this list will be exempt from the HSTS policy check that could potentially upgrade requests from http to https. Only single-label hostnames are allowed in this policy. Hostnames must be canonicalized: any IDNs must be converted to their A-label format, and all ASCII letters must be lowercase. This policy only applies to the specific hostnames specified; it does not apply to subdomains of the names specified.''',
     },
     {
       'name': 'AllowSyncXHRInPageDismissal',

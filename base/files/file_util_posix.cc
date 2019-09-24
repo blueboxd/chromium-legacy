@@ -43,6 +43,7 @@
 #include "base/system/sys_info.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 
 #if defined(OS_MACOSX)
@@ -134,7 +135,7 @@ std::string TempFileName() {
   return StringPrintf(".%s.XXXXXX", base::mac::BaseBundleID());
 #endif
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return std::string(".com.google.Chrome.XXXXXX");
 #else
   return std::string(".org.chromium.Chromium.XXXXXX");

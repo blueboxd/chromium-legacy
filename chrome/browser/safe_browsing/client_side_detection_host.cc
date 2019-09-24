@@ -508,7 +508,9 @@ void ClientSideDetectionHost::OnPhishingPreClassificationDone(
     DVLOG(1) << "Instruct renderer to start phishing detection for URL: "
              << browse_info_->url;
     content::RenderFrameHost* rfh = web_contents()->GetMainFrame();
-    rfh->GetRemoteInterfaces()->GetInterface(&phishing_detector_);
+    phishing_detector_.reset();
+    rfh->GetRemoteInterfaces()->GetInterface(
+        phishing_detector_.BindNewPipeAndPassReceiver());
     phishing_detector_->StartPhishingDetection(
         browse_info_->url,
         base::BindRepeating(&ClientSideDetectionHost::PhishingDetectionDone,

@@ -115,7 +115,7 @@ PerformanceMark* UserTiming::CreatePerformanceMark(
     start = performance_->now();
   }
 
-  ScriptValue detail = ScriptValue::CreateNull(script_state);
+  ScriptValue detail = ScriptValue::CreateNull(script_state->GetIsolate());
   if (RuntimeEnabledFeatures::CustomUserTimingEnabled() && mark_options)
     detail = mark_options->detail();
 

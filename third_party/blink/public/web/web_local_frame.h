@@ -542,10 +542,6 @@ class WebLocalFrame : public WebFrame {
   // If the provided node is an image, reload the image disabling Lo-Fi.
   virtual void ReloadImage(const WebNode&) = 0;
 
-  // Reloads all the Lo-Fi images in this WebLocalFrame. Ignores the cache and
-  // reloads from the network.
-  virtual void ReloadLoFiImages() = 0;
-
   // Feature usage logging --------------------------------------------------
 
   virtual void DidCallAddSearchProvider() = 0;

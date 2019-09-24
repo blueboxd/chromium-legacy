@@ -2331,6 +2331,9 @@ void BackgroundSyncManager::OnStorageWipedImpl(base::OnceClosure callback) {
 void BackgroundSyncManager::OnNetworkChanged() {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
+  if (!AreOptionConditionsMet())
+    return;
+
   FireReadyEvents(BackgroundSyncType::ONE_SHOT, /* reschedule= */ true,
                   base::DoNothing::Once());
   FireReadyEvents(BackgroundSyncType::PERIODIC, /* reschedule= */ true,

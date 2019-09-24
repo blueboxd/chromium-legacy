@@ -105,8 +105,8 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("unifiedConsentEnabled",
                           unified_consent::IsUnifiedConsentFeatureEnabled());
 
-  html_source->AddBoolean(
-      "showApps", base::FeatureList::IsEnabled(features::kAppManagement));
+  html_source->AddBoolean("showAppManagement", base::FeatureList::IsEnabled(
+                                                   features::kAppManagement));
 
 #if defined(OS_CHROMEOS)
   html_source->AddBoolean(

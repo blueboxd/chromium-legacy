@@ -284,9 +284,9 @@ ThreatDOMDetails* ThreatDOMDetails::Create(
   return new ThreatDOMDetails(render_frame, registry);
 }
 
-void ThreatDOMDetails::OnThreatReporterRequest(
-    mojom::ThreatReporterRequest request) {
-  threat_reporter_bindings_.AddBinding(this, std::move(request));
+void ThreatDOMDetails::OnThreatReporterReceiver(
+    mojo::PendingReceiver<mojom::ThreatReporter> receiver) {
+  threat_reporter_receivers_.Add(this, std::move(receiver));
 }
 
 ThreatDOMDetails::ThreatDOMDetails(content::RenderFrame* render_frame,
@@ -296,7 +296,7 @@ ThreatDOMDetails::ThreatDOMDetails(content::RenderFrame* render_frame,
   // Base::Unretained() is safe here because both the registry and the
   // ThreatDOMDetails are scoped to the same render frame.
   registry->AddInterface(base::BindRepeating(
-      &ThreatDOMDetails::OnThreatReporterRequest, base::Unretained(this)));
+      &ThreatDOMDetails::OnThreatReporterReceiver, base::Unretained(this)));
 }
 
 ThreatDOMDetails::~ThreatDOMDetails() {}

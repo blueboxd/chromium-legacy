@@ -41,7 +41,7 @@ class PageAlmostIdleDecorator : public FrameNode::ObserverDefaultImpl,
 
   // PageNodeObserver implementation:
   void OnIsLoadingChanged(const PageNode* page_node) override;
-  void OnMainFrameNavigationCommitted(const PageNode* page_node) override;
+  void OnMainFrameDocumentChanged(const PageNode* page_node) override;
 
   // ProcessNodeObserver implementation:
   void OnMainThreadTaskLoadIsLow(const ProcessNode* process_node) override;

@@ -31,7 +31,8 @@
 #include "components/signin/internal/identity_manager/primary_account_policy_manager_impl.h"
 #endif
 
-class PrimaryAccountManagerTest : public testing::Test {
+class PrimaryAccountManagerTest : public testing::Test,
+                                  public PrimaryAccountManager::Observer {
  public:
   PrimaryAccountManagerTest()
       : test_signin_client_(&user_prefs_),
@@ -94,21 +95,13 @@ class PrimaryAccountManagerTest : public testing::Test {
         &test_signin_client_, &token_service_, &account_tracker_,
         account_consistency_, std::move(policy_manager));
     manager_->Initialize(&local_state_);
-
-    // PrimaryAccountManagerTest will outlive the PrimaryAccountManager, so
-    // base::Unretained is safe.
-    manager_->SetGoogleSigninSucceededCallback(
-        base::BindRepeating(&PrimaryAccountManagerTest::GoogleSigninSucceeded,
-                            base::Unretained(this)));
-#if !defined(OS_CHROMEOS)
-    manager_->SetGoogleSignedOutCallback(base::BindRepeating(
-        &PrimaryAccountManagerTest::GoogleSignedOut, base::Unretained(this)));
-#endif
+    manager_->AddObserver(this);
   }
 
   // Shuts down |manager_|.
   void ShutDownManager() {
     DCHECK(manager_);
+    manager_->RemoveObserver(this);
     manager_.reset();
   }
 
@@ -124,11 +117,15 @@ class PrimaryAccountManagerTest : public testing::Test {
     EXPECT_EQ(1, num_successful_signins_);
   }
 
-  void GoogleSigninSucceeded(const CoreAccountInfo& account_info) {
+  void GoogleSigninSucceeded(const CoreAccountInfo& account_info) override {
     num_successful_signins_++;
   }
 
-  void GoogleSignedOut(const CoreAccountInfo& account_info) { num_signouts_++; }
+#if !defined(OS_CHROMEOS)
+  void GoogleSignedOut(const CoreAccountInfo& account_info) override {
+    num_signouts_++;
+  }
+#endif
 
   base::test::TaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable user_prefs_;

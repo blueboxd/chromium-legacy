@@ -133,8 +133,11 @@ TEST_F(DiscardsGraphDumpImplTest, ChangeStream) {
   base::TimeTicks now = base::TimeTicks::Now();
 
   const GURL kExampleUrl("http://www.example.org");
-  mock_graph.page->OnMainFrameNavigationCommitted(now, 1, kExampleUrl);
-  mock_graph.other_page->OnMainFrameNavigationCommitted(now, 2, kExampleUrl);
+  int64_t next_navigation_id = 1;
+  mock_graph.page->OnMainFrameNavigationCommitted(
+      false, now, next_navigation_id++, kExampleUrl);
+  mock_graph.other_page->OnMainFrameNavigationCommitted(
+      false, now, next_navigation_id++, kExampleUrl);
 
   auto* main_frame = mock_graph.page->GetMainFrameNodeImpl();
   main_frame->OnNavigationCommitted(kExampleUrl, /* same_document */ false);
@@ -193,7 +196,8 @@ TEST_F(DiscardsGraphDumpImplTest, ChangeStream) {
 
   // Test change notifications.
   const GURL kAnotherURL("http://www.google.com/");
-  mock_graph.page->OnMainFrameNavigationCommitted(now, 1, kAnotherURL);
+  mock_graph.page->OnMainFrameNavigationCommitted(
+      false, now, next_navigation_id++, kAnotherURL);
 
   size_t child_frame_id =
       NodeBase::GetSerializationId(mock_graph.child_frame.get());
@@ -201,6 +205,7 @@ TEST_F(DiscardsGraphDumpImplTest, ChangeStream) {
 
   task_environment.RunUntilIdle();
 
+  // Main frame navigation results in a notification for the url.
   EXPECT_EQ(1u, change_stream.num_changes());
   EXPECT_FALSE(base::Contains(change_stream.id_set(), child_frame_id));
 

@@ -140,16 +140,16 @@ class PageNodeObserver {
   virtual void OnPageOriginTrialFreezePolicyChanged(
       const PageNode* page_node) = 0;
 
+  // Invoked when the MainFrameUrl property changes.
+  virtual void OnMainFrameUrlChanged(const PageNode* page_node) = 0;
+
   // Invoked when the PageAlmostIdle property changes.
   virtual void OnPageAlmostIdleChanged(const PageNode* page_node) = 0;
 
-  // This is fired when a main frame navigation commits. It indicates that the
-  // |main_frame_url| and possibly the |navigation_id| properties have changed.
-  // Prior to loading and initial navigation of page, the |main_frame_url| can
-  // change, while the |navigation_id| stays zero.
-  // TODO(siggi): Maybe #hash navigation can work the same way, or perhaps the
-  //     two each properties deserve their own notification?
-  virtual void OnMainFrameNavigationCommitted(const PageNode* page_node) = 0;
+  // This is fired when a non-same document navigation commits in the main
+  // frame. It indicates that the the |NavigationId| property and possibly the
+  // |MainFrameUrl| properties have changed.
+  virtual void OnMainFrameDocumentChanged(const PageNode* page_node) = 0;
 
   // Events with no property changes.
 
@@ -184,7 +184,8 @@ class PageNode::ObserverDefaultImpl : public PageNodeObserver {
   void OnPageOriginTrialFreezePolicyChanged(
       const PageNode* page_node) override {}
   void OnPageAlmostIdleChanged(const PageNode* page_node) override {}
-  void OnMainFrameNavigationCommitted(const PageNode* page_node) override {}
+  void OnMainFrameUrlChanged(const PageNode* page_node) override {}
+  void OnMainFrameDocumentChanged(const PageNode* page_node) override {}
   void OnTitleUpdated(const PageNode* page_node) override {}
   void OnFaviconUpdated(const PageNode* page_node) override {}
 

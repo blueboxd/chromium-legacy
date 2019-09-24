@@ -903,3 +903,13 @@ cca.util.blobToImage = function(blob) {
     img.src = URL.createObjectURL(blob);
   });
 };
+
+/**
+ * Gets default facing according to device mode.
+ * @return {!Promise<string>}
+ */
+cca.util.getDefaultFacing = async function() {
+  return await cca.mojo.ChromeHelper.getInstance().isTabletMode() ?
+      'environment' :
+      'user';
+};

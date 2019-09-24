@@ -63,6 +63,11 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     is_initial_block_size_indefinite_ = size_.block_size == kIndefiniteSize;
   }
 
+  const NGFragmentGeometry& InitialFragmentGeometry() const {
+    DCHECK(initial_fragment_geometry_);
+    return *initial_fragment_geometry_;
+  }
+
   void SetIntrinsicBlockSize(LayoutUnit intrinsic_block_size) {
     intrinsic_block_size_ = intrinsic_block_size;
   }
@@ -88,9 +93,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // its first fragment is to be produced in the next fragmentainer. This will
   // add a break token for the child, but no fragment.
   void AddBreakBeforeChild(NGLayoutInputNode child, bool is_forced_break);
-
-  // Prepare for a break token before the specified line.
-  void AddBreakBeforeLine(int line_number);
 
   // Add a layout result. This involves appending the fragment and its relative
   // offset to the builder, but also keeping track of out-of-flow positioned
@@ -128,6 +130,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     if (minimal_space_shortage_ > space_shortage)
       minimal_space_shortage_ = space_shortage;
   }
+  LayoutUnit MinimalSpaceShortage() const { return minimal_space_shortage_; }
 
   void SetInitialBreakBefore(EBreakBetween break_before) {
     initial_break_before_ = break_before;
@@ -163,6 +166,9 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 
   void SetColumnSpanner(NGBlockNode spanner) { column_spanner_ = spanner; }
   bool FoundColumnSpanner() const { return !!column_spanner_; }
+
+  void SetEarlyBreak(NGEarlyBreak breakpoint) { early_break_ = breakpoint; }
+  bool HasEarlyBreak() const { return early_break_.has_value(); }
 
   // Offsets are not supposed to be set during fragment construction, so we
   // do not provide a setter here.

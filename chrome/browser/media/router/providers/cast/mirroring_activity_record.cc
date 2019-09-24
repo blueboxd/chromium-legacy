@@ -252,8 +252,8 @@ void MirroringActivityRecord::OnInternalMessage(
 }
 
 void MirroringActivityRecord::CreateMediaController(
-    mojom::MediaControllerRequest media_controller,
-    mojom::MediaStatusObserverPtr observer) {}
+    mojo::PendingReceiver<mojom::MediaController> media_controller,
+    mojo::PendingRemote<mojom::MediaStatusObserver> observer) {}
 
 void MirroringActivityRecord::StopMirroring() {
   // Running the callback will cause this object to be deleted.

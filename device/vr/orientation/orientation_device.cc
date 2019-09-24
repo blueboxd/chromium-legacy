@@ -52,15 +52,13 @@ display::Display::Rotation GetRotation() {
 
 }  // namespace
 
-VROrientationDevice::VROrientationDevice(
-    mojom::SensorProviderPtr* sensor_provider,
-    base::OnceClosure ready_callback)
+VROrientationDevice::VROrientationDevice(mojom::SensorProvider* sensor_provider,
+                                         base::OnceClosure ready_callback)
     : VRDeviceBase(mojom::XRDeviceId::ORIENTATION_DEVICE_ID),
       ready_callback_(std::move(ready_callback)) {
-  (*sensor_provider)
-      ->GetSensor(kOrientationSensorType,
-                  base::BindOnce(&VROrientationDevice::SensorReady,
-                                 base::Unretained(this)));
+  sensor_provider->GetSensor(kOrientationSensorType,
+                             base::BindOnce(&VROrientationDevice::SensorReady,
+                                            base::Unretained(this)));
 
   SetVRDisplayInfo(CreateVRDisplayInfo(GetId()));
 }

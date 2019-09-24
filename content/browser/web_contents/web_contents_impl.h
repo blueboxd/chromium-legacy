@@ -410,7 +410,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void ReplaceMisspelling(const base::string16& word) override;
   void NotifyContextMenuClosed(
       const CustomContextMenuContext& context) override;
-  void ReloadLoFiImages() override;
   std::vector<mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>>
   PauseSubresourceLoading() override;
   void ExecuteCustomContextMenuCommand(

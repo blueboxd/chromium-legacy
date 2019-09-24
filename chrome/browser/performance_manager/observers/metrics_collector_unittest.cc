@@ -57,8 +57,8 @@ class MAYBE_MetricsCollectorTest : public GraphTestHarness {
 TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstTitleUpdatedUMA) {
   auto page_node = CreateNode<PageNodeImpl>();
 
-  page_node->OnMainFrameNavigationCommitted(base::TimeTicks::Now(), kDummyID,
-                                            kDummyUrl);
+  page_node->OnMainFrameNavigationCommitted(false, base::TimeTicks::Now(),
+                                            kDummyID, kDummyUrl);
   AdvanceClock(kTestMetricsReportDelayTimeout);
 
   page_node->SetIsVisible(true);
@@ -90,8 +90,8 @@ TEST_F(MAYBE_MetricsCollectorTest,
        FromBackgroundedToFirstTitleUpdatedUMA5MinutesTimeout) {
   auto page_node = CreateNode<PageNodeImpl>();
 
-  page_node->OnMainFrameNavigationCommitted(base::TimeTicks::Now(), kDummyID,
-                                            kDummyUrl);
+  page_node->OnMainFrameNavigationCommitted(false, base::TimeTicks::Now(),
+                                            kDummyID, kDummyUrl);
   page_node->SetIsVisible(false);
   page_node->OnTitleUpdated();
   // The page is within 5 minutes after main frame navigation was committed,
@@ -111,8 +111,8 @@ TEST_F(MAYBE_MetricsCollectorTest,
   auto frame_node =
       CreateNode<FrameNodeImpl>(process_node.get(), page_node.get());
 
-  page_node->OnMainFrameNavigationCommitted(base::TimeTicks::Now(), kDummyID,
-                                            kDummyUrl);
+  page_node->OnMainFrameNavigationCommitted(false, base::TimeTicks::Now(),
+                                            kDummyID, kDummyUrl);
   AdvanceClock(kTestMetricsReportDelayTimeout);
 
   page_node->SetIsVisible(true);
@@ -148,8 +148,8 @@ TEST_F(
   auto frame_node =
       CreateNode<FrameNodeImpl>(process_node.get(), page_node.get());
 
-  page_node->OnMainFrameNavigationCommitted(base::TimeTicks::Now(), kDummyID,
-                                            kDummyUrl);
+  page_node->OnMainFrameNavigationCommitted(false, base::TimeTicks::Now(),
+                                            kDummyID, kDummyUrl);
   page_node->SetIsVisible(false);
   frame_node->OnNonPersistentNotificationCreated();
   // The page is within 5 minutes after main frame navigation was committed,
@@ -165,8 +165,8 @@ TEST_F(
 TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstFaviconUpdatedUMA) {
   auto page_node = CreateNode<PageNodeImpl>();
 
-  page_node->OnMainFrameNavigationCommitted(base::TimeTicks::Now(), kDummyID,
-                                            kDummyUrl);
+  page_node->OnMainFrameNavigationCommitted(false, base::TimeTicks::Now(),
+                                            kDummyID, kDummyUrl);
   AdvanceClock(kTestMetricsReportDelayTimeout);
 
   page_node->SetIsVisible(true);
@@ -198,8 +198,8 @@ TEST_F(MAYBE_MetricsCollectorTest,
        FromBackgroundedToFirstFaviconUpdatedUMA5MinutesTimeout) {
   auto page_node = CreateNode<PageNodeImpl>();
 
-  page_node->OnMainFrameNavigationCommitted(base::TimeTicks::Now(), kDummyID,
-                                            kDummyUrl);
+  page_node->OnMainFrameNavigationCommitted(false, base::TimeTicks::Now(),
+                                            kDummyID, kDummyUrl);
   page_node->SetIsVisible(false);
   page_node->OnFaviconUpdated();
   // The page is within 5 minutes after main frame navigation was committed,
@@ -226,8 +226,8 @@ TEST_F(MAYBE_MetricsCollectorTest, ResponsivenessMetric) {
   GURL url = GURL("https://google.com/foobar");
   ukm_recorder.UpdateSourceURL(id, url);
   page_node->SetUkmSourceId(id);
-  page_node->OnMainFrameNavigationCommitted(base::TimeTicks::Now(), kDummyID,
-                                            kDummyUrl);
+  page_node->OnMainFrameNavigationCommitted(false, base::TimeTicks::Now(),
+                                            kDummyID, kDummyUrl);
 
   for (int count = 1; count < kDefaultFrequencyUkmEQTReported; ++count) {
     process_node->SetExpectedTaskQueueingDuration(

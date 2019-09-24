@@ -27,10 +27,11 @@ bool GetServerNigori(fake_server::FakeServer* fake_server,
   return true;
 }
 
-void InitCustomPassphraseCryptographerFromNigori(
+std::unique_ptr<syncer::Cryptographer>
+InitCustomPassphraseCryptographerFromNigori(
     const sync_pb::NigoriSpecifics& nigori,
-    syncer::Cryptographer* cryptographer,
     const std::string& passphrase) {
+  auto cryptographer = std::make_unique<syncer::DirectoryCryptographer>();
   sync_pb::EncryptedData keybag = nigori.encryption_keybag();
   cryptographer->SetPendingKeys(keybag);
 
@@ -38,22 +39,24 @@ void InitCustomPassphraseCryptographerFromNigori(
   switch (syncer::ProtoKeyDerivationMethodToEnum(
       nigori.custom_passphrase_key_derivation_method())) {
     case syncer::KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003:
-      ASSERT_TRUE(cryptographer->DecryptPendingKeys(
+      EXPECT_TRUE(cryptographer->DecryptPendingKeys(
           {syncer::KeyDerivationParams::CreateForPbkdf2(), passphrase}));
       break;
     case syncer::KeyDerivationMethod::SCRYPT_8192_8_11:
-      ASSERT_TRUE(base::Base64Decode(
+      EXPECT_TRUE(base::Base64Decode(
           nigori.custom_passphrase_key_derivation_salt(), &decoded_salt));
-      ASSERT_TRUE(cryptographer->DecryptPendingKeys(
+      EXPECT_TRUE(cryptographer->DecryptPendingKeys(
           {syncer::KeyDerivationParams::CreateForScrypt(decoded_salt),
            passphrase}));
       break;
     case syncer::KeyDerivationMethod::UNSUPPORTED:
       // This test cannot pass since we wouldn't know how to decrypt data
       // encrypted using an unsupported method.
-      FAIL() << "Unsupported key derivation method encountered: "
-             << nigori.custom_passphrase_key_derivation_method();
+      ADD_FAILURE() << "Unsupported key derivation method encountered: "
+                    << nigori.custom_passphrase_key_derivation_method();
   }
+
+  return cryptographer;
 }
 
 sync_pb::NigoriSpecifics CreateCustomPassphraseNigori(
@@ -95,7 +98,7 @@ sync_pb::NigoriSpecifics CreateCustomPassphraseNigori(
   // keybag using a key derived from that passphrase). However, in some migrated
   // states, the keybag might also additionally contain an old, pre-migration
   // key.
-  syncer::Cryptographer cryptographer;
+  syncer::DirectoryCryptographer cryptographer;
   bool add_key_result = cryptographer.AddKey(params);
   DCHECK(add_key_result);
   bool get_keys_result =
@@ -112,7 +115,7 @@ sync_pb::EntitySpecifics GetEncryptedBookmarkEntitySpecifics(
 
   sync_pb::EntitySpecifics wrapped_entity_specifics;
   *wrapped_entity_specifics.mutable_bookmark() = bookmark_specifics;
-  syncer::Cryptographer cryptographer;
+  syncer::DirectoryCryptographer cryptographer;
   bool add_key_result = cryptographer.AddKey(key_params);
   DCHECK(add_key_result);
   bool encrypt_result = cryptographer.Encrypt(

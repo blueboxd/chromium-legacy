@@ -4,9 +4,12 @@
 
 #include "third_party/blink/renderer/platform/webrtc/webrtc_video_frame_adapter.h"
 
+#include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "third_party/libyuv/include/libyuv.h"
 #include "third_party/webrtc/common_video/include/video_frame_buffer.h"
 #include "third_party/webrtc/rtc_base/ref_counted_object.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace {
 
@@ -78,6 +81,37 @@ void IsValidFrame(const media::VideoFrame& frame) {
   CHECK(frame.stride(media::VideoFrame::kVPlane));
 }
 
+scoped_refptr<media::VideoFrame> ConstructI420VideoFrame(
+    const media::VideoFrame& source_frame) {
+  // NV12 is the only supported format.
+  DCHECK_EQ(source_frame.format(), media::PIXEL_FORMAT_NV12);
+  gfx::GpuMemoryBuffer* gmb = source_frame.GetGpuMemoryBuffer();
+  if (!gmb || !gmb->Map()) {
+    return nullptr;
+  }
+  scoped_refptr<media::VideoFrame> i420_frame = media::VideoFrame::CreateFrame(
+      media::PIXEL_FORMAT_I420, source_frame.coded_size(),
+      source_frame.visible_rect(), source_frame.natural_size(),
+      source_frame.timestamp());
+  i420_frame->metadata()->MergeMetadataFrom(source_frame.metadata());
+  const auto& i420_planes = i420_frame->layout().planes();
+  int ret = libyuv::NV12ToI420(
+      reinterpret_cast<const uint8_t*>(gmb->memory(0)), gmb->stride(0),
+      reinterpret_cast<const uint8_t*>(gmb->memory(1)), gmb->stride(1),
+      i420_frame->data(media::VideoFrame::kYPlane),
+      i420_planes[media::VideoFrame::kYPlane].stride,
+      i420_frame->data(media::VideoFrame::kUPlane),
+      i420_planes[media::VideoFrame::kUPlane].stride,
+      i420_frame->data(media::VideoFrame::kVPlane),
+      i420_planes[media::VideoFrame::kVPlane].stride,
+      i420_frame->coded_size().width(), i420_frame->coded_size().height());
+  gmb->Unmap();
+  if (ret) {
+    return nullptr;
+  }
+  return i420_frame;
+}
+
 }  // anonymous namespace
 
 namespace blink {
@@ -102,6 +136,25 @@ int WebRtcVideoFrameAdapter::height() const {
 
 rtc::scoped_refptr<webrtc::I420BufferInterface>
 WebRtcVideoFrameAdapter::CreateFrameAdapter() const {
+  if (frame_->storage_type() ==
+      media::VideoFrame::StorageType::STORAGE_GPU_MEMORY_BUFFER) {
+    auto i420_frame = ConstructI420VideoFrame(*frame_);
+    if (!i420_frame) {
+      return new rtc::RefCountedObject<
+          FrameAdapter<webrtc::I420BufferInterface>>(
+          media::VideoFrame::CreateColorFrame(frame_->visible_rect().size(), 0u,
+                                              0x80, 0x80, frame_->timestamp()));
+    }
+
+    // Keep |frame_| alive until |i420_frame| is destroyed.
+    i420_frame->AddDestructionObserver(base::BindOnce(
+        base::DoNothing::Once<scoped_refptr<media::VideoFrame>>(), frame_));
+
+    IsValidFrame(*i420_frame);
+    return new rtc::RefCountedObject<FrameAdapter<webrtc::I420BufferInterface>>(
+        i420_frame);
+  }
+
   // We cant convert texture synchronously due to threading issues, see
   // https://crbug.com/663452. Instead, return a black frame (yuv = {0, 0x80,
   // 0x80}).

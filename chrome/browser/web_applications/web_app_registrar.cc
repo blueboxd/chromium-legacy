@@ -25,11 +25,6 @@ const WebApp* WebAppRegistrar::GetAppById(const AppId& app_id) const {
   return it == registry_.end() ? nullptr : it->second.get();
 }
 
-void WebAppRegistrar::InitRegistry(Registry&& registry) {
-  DCHECK(is_empty());
-  registry_ = std::move(registry);
-}
-
 bool WebAppRegistrar::IsInstalled(const AppId& app_id) const {
   return GetAppById(app_id) != nullptr;
 }
@@ -162,18 +157,32 @@ const WebAppRegistrar::AppSet WebAppRegistrar::AllApps() const {
   return AppSet(this);
 }
 
-WebApp* WebAppRegistrar::GetAppByIdMutable(const AppId& app_id) {
-  return const_cast<WebApp*>(GetAppById(app_id));
-}
-
-WebAppRegistrar::AppSet WebAppRegistrar::AllAppsMutable() {
-  return AppSet(this);
+void WebAppRegistrar::SetRegistry(Registry&& registry) {
+  registry_ = std::move(registry);
 }
 
 void WebAppRegistrar::CountMutation() {
 #if DCHECK_IS_ON()
   ++mutations_count_;
 #endif
+}
+
+WebAppRegistrarMutable::WebAppRegistrarMutable(Profile* profile)
+    : WebAppRegistrar(profile) {}
+
+WebAppRegistrarMutable::~WebAppRegistrarMutable() = default;
+
+void WebAppRegistrarMutable::InitRegistry(Registry&& registry) {
+  DCHECK(is_empty());
+  SetRegistry(std::move(registry));
+}
+
+WebApp* WebAppRegistrarMutable::GetAppByIdMutable(const AppId& app_id) {
+  return const_cast<WebApp*>(GetAppById(app_id));
+}
+
+WebAppRegistrar::AppSet WebAppRegistrarMutable::AllAppsMutable() {
+  return AppSet(this);
 }
 
 bool IsRegistryEqual(const Registry& registry, const Registry& registry2) {

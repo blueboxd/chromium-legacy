@@ -59,7 +59,7 @@ TEST_F(CWVCreditCardTest, Initialization) {
   autofill::CreditCard credit_card = autofill::test::GetCreditCard();
   CWVCreditCard* cwv_credit_card =
       [[CWVCreditCard alloc] initWithCreditCard:credit_card];
-  EXPECT_EQ(credit_card, *cwv_credit_card.internalCard);
+  EXPECT_EQ(credit_card, *[cwv_credit_card internalCard]);
 
   // It is not sufficient to simply test for networkIcon != nil because
   // ui::ResourceBundle will return a placeholder image at @1x scale if the

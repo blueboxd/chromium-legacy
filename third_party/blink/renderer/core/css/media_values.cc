@@ -6,6 +6,7 @@
 
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/renderer/core/css/css_resolution_units.h"
+#include "third_party/blink/renderer/core/css/media_feature_overrides.h"
 #include "third_party/blink/renderer/core/css/media_values_cached.h"
 #include "third_party/blink/renderer/core/css/media_values_dynamic.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -21,6 +22,20 @@
 #include "third_party/blink/renderer/platform/graphics/color_space_gamut.h"
 
 namespace blink {
+
+PreferredColorScheme CSSValueIDToPreferredColorScheme(CSSValueID id) {
+  switch (id) {
+    case CSSValueID::kNoPreference:
+      return PreferredColorScheme::kNoPreference;
+    case CSSValueID::kLight:
+      return PreferredColorScheme::kLight;
+    case CSSValueID::kDark:
+      return PreferredColorScheme::kDark;
+    default:
+      NOTREACHED();
+      return PreferredColorScheme::kNoPreference;
+  }
+}
 
 MediaValues* MediaValues::CreateDynamicIfFrameExists(LocalFrame* frame) {
   if (frame)
@@ -181,6 +196,12 @@ PreferredColorScheme MediaValues::CalculatePreferredColorScheme(
   DCHECK(frame);
   DCHECK(frame->GetSettings());
   DCHECK(frame->GetDocument());
+  DCHECK(frame->GetPage());
+  if (auto* overrides = frame->GetPage()->GetMediaFeatureOverrides()) {
+    MediaQueryExpValue value = overrides->GetOverride("prefers-color-scheme");
+    if (value.IsValid())
+      return CSSValueIDToPreferredColorScheme(value.id);
+  }
   return frame->GetDocument()->GetStyleEngine().GetPreferredColorScheme();
 }
 

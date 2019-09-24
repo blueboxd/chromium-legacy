@@ -24,13 +24,10 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/file/file_service.h"
 #include "services/file/public/mojom/file_system.mojom.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 #include "url/origin.h"
-
-namespace service_manager {
-class Connector;
-}
 
 namespace storage {
 class SpecialStoragePolicy;
@@ -61,8 +58,8 @@ class CONTENT_EXPORT LocalStorageContextMojo
       const base::FilePath& file_name);
 
   LocalStorageContextMojo(
+      const base::FilePath& partition_directory,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
-      service_manager::Connector* connector,
       scoped_refptr<DOMStorageTaskRunner> legacy_task_runner,
       const base::FilePath& old_localstorage_path,
       const base::FilePath& subdirectory,
@@ -98,6 +95,8 @@ class CONTENT_EXPORT LocalStorageContextMojo
 
   // Clears unused storage areas, when thresholds are reached.
   void PurgeUnusedAreasIfNeeded();
+
+  file::FileService* GetFileServiceForTesting() { return &file_service_; }
 
   void SetDatabaseForTesting(
       mojo::PendingAssociatedRemote<leveldb::mojom::LevelDBDatabase> database);
@@ -170,7 +169,6 @@ class CONTENT_EXPORT LocalStorageContextMojo
 
   void LogDatabaseOpenResult(OpenResult result);
 
-  std::unique_ptr<service_manager::Connector> connector_;
   const base::FilePath subdirectory_;
 
   enum ConnectionState {
@@ -184,6 +182,8 @@ class CONTENT_EXPORT LocalStorageContextMojo
   bool force_keep_session_state_ = false;
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
 
+  bool force_in_memory_only_;
+  file::FileService file_service_;
   mojo::Remote<file::mojom::FileSystem> file_system_;
   filesystem::mojom::DirectoryPtr directory_;
 

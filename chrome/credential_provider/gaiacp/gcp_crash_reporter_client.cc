@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
+#include "build/branding_buildflags.h"
 #include "chrome/credential_provider/gaiacp/gcp_crash_reporting_utils.h"
 
 namespace credential_provider {
@@ -101,7 +102,7 @@ bool GcpCrashReporterClient::IsRunningUnattended() {
 }
 
 bool GcpCrashReporterClient::GetCollectStatsConsent() {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return GetGCPWCollectStatsConsent();
 #else
   return false;

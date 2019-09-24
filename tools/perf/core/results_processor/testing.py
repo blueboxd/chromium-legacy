@@ -11,7 +11,7 @@ _BENCHMARK_START_KEYS = set(['startTime'])
 
 
 def IntermediateResults(test_results, start_time='2015-10-21T07:28:00.000Z',
-                        finalized=True, interrupted=False):
+                        finalized=True, interrupted=False, diagnostics=None):
   """Build a dict of 'parsed' intermediate results.
 
   Args:
@@ -28,6 +28,7 @@ def IntermediateResults(test_results, start_time='2015-10-21T07:28:00.000Z',
           'startTime': start_time,
           'finalized': finalized,
           'interrupted': interrupted,
+          'diagnostics': diagnostics or {},
       },
       'testResults': list(test_results)
   }

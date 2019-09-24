@@ -80,4 +80,17 @@ GPUSwapChain* GPUCanvasContext::configureSwapChain(
   return swapchain_;
 }
 
+ScriptPromise GPUCanvasContext::getSwapChainPreferredFormat(
+    ScriptState* script_state,
+    const GPUDevice* device) {
+  ScriptPromiseResolver* resolver =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  // TODO(crbug.com/1007166): Return actual preferred format for the swap chain.
+  resolver->Resolve("bgra8unorm");
+
+  return promise;
+}
+
 }  // namespace blink

@@ -102,7 +102,7 @@ void DebugInfoEventListener::OnCryptographerStateChanged(
     Cryptographer* cryptographer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   cryptographer_has_pending_keys_ = cryptographer->has_pending_keys();
-  cryptographer_ready_ = cryptographer->is_ready();
+  cryptographer_ready_ = cryptographer->CanEncrypt();
 }
 
 void DebugInfoEventListener::OnPassphraseTypeChanged(

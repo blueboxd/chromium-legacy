@@ -127,7 +127,7 @@ void PageAlmostIdleDecoratorTest::TestPageAlmostIdleTransitions(bool timeout) {
   EXPECT_FALSE(Data::GetForTesting(page_node));
 
   // Post a navigation. The state should reset.
-  page_node->OnMainFrameNavigationCommitted(base::TimeTicks::Now(), 1,
+  page_node->OnMainFrameNavigationCommitted(false, base::TimeTicks::Now(), 1,
                                             GURL("https://www.example.org"));
   page_data = Data::GetForTesting(page_node);
   EXPECT_EQ(LIS::kLoadingNotStarted, page_data->load_idle_state_);

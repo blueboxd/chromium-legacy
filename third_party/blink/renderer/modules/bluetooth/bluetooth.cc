@@ -10,7 +10,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -469,7 +469,7 @@ void Bluetooth::EnsureServiceConnection(ExecutionContext* context) {
   if (!service_) {
     // See https://bit.ly/2S0zRAS for task types.
     auto task_runner = context->GetTaskRunner(TaskType::kMiscPlatformAPI);
-    context->GetInterfaceProvider()->GetInterface(
+    context->GetBrowserInterfaceBroker().GetInterface(
         service_.BindNewPipeAndPassReceiver(task_runner));
   }
 }

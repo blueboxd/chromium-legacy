@@ -40,7 +40,7 @@ static constexpr mojom::SensorType kOrientationSensorType =
 class DEVICE_VR_EXPORT VROrientationDevice : public VRDeviceBase,
                                              public mojom::SensorClient {
  public:
-  VROrientationDevice(mojom::SensorProviderPtr* sensor_provider,
+  VROrientationDevice(mojom::SensorProvider* sensor_provider,
                       base::OnceClosure ready_callback);
   ~VROrientationDevice() override;
 

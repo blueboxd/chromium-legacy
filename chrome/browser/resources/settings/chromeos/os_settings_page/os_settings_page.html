@@ -170,18 +170,13 @@
         </settings-section>
         <template is="dom-if" if="[[showApps]]" restamp>
           <settings-section page-title="$i18n{appsPageTitle}" section="apps">
-            <os-settings-apps-page>
-            </os-settings-apps-page>
-          </settings-section>
-        </template>
-        <template is="dom-if" if="[[showAndroidApps]]" restamp>
-          <settings-section page-title="$i18n{androidAppsPageTitle}"
-              section="androidApps" hidden$="[[!shouldShowAndroidAppsSection_(
-              androidAppsInfo)]]">
-            <settings-android-apps-page prefs="{{prefs}}"
+            <os-settings-apps-page
+                prefs="{{prefs}}"
                 android-apps-info="[[androidAppsInfo]]"
-                have-play-store-app="[[havePlayStoreApp]]">
-            </settings-android-apps-page>
+                have-play-store-app="[[havePlayStoreApp]]"
+                show-android-apps="[[showAndroidApps]]"
+                show-app-management="[[showAppManagement]]">
+            </os-settings-apps-page>
           </settings-section>
         </template>
         <template is="dom-if" if="[[showCrostini]]" restamp>

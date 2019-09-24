@@ -194,6 +194,11 @@ std::unique_ptr<content::WebContents> CreateArcCustomTabWebContents(
     Profile* profile,
     const GURL& url);
 
+// Adds a suffix to the name based on the account type. If profile is not
+// provided, then defaults to the primary user profile.
+std::string GetHistogramNameByUserType(const std::string& base_name,
+                                       const Profile* profile = nullptr);
+
 }  // namespace arc
 
 #endif  // CHROME_BROWSER_CHROMEOS_ARC_ARC_UTIL_H_

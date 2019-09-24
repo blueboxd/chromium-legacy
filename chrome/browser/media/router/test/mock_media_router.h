@@ -15,6 +15,8 @@
 #include "chrome/common/media_router/media_route.h"
 #include "chrome/common/media_router/media_sink.h"
 #include "chrome/common/media_router/media_source.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/origin.h"
 
@@ -135,7 +137,7 @@ class MockMediaRouter : public MediaRouterBase {
   MOCK_METHOD3(GetMediaController,
                void(const MediaRoute::Id& route_id,
                     mojo::PendingReceiver<mojom::MediaController> controller,
-                    mojom::MediaStatusObserverPtr observer));
+                    mojo::PendingRemote<mojom::MediaStatusObserver> observer));
 #endif  // !defined(OS_ANDROID)
   MOCK_METHOD1(OnAddPresentationConnectionStateChangedCallbackInvoked,
                void(const content::PresentationConnectionStateChangedCallback&

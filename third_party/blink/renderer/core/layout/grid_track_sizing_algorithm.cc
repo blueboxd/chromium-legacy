@@ -135,6 +135,10 @@ class DefiniteSizeStrategy final : public GridTrackSizingAlgorithmStrategy {
     return false;
   }
   LayoutUnit FreeSpaceForStretchAutoTracksStep() const override;
+  LayoutUnit MinContentForChild(LayoutBox&) const override;
+  LayoutUnit MinLogicalSizeForChild(LayoutBox&,
+                                    const Length& child_min_size,
+                                    LayoutUnit available_size) const override;
   bool IsComputingSizeContainment() const override { return false; }
 };
 
@@ -149,10 +153,18 @@ bool GridTrackSizingAlgorithmStrategy::
       GridLayoutUtils::FlowAwareDirectionForChild(grid, child, kForColumns);
   if (direction == child_inline_direction) {
     return child.HasRelativeLogicalWidth() ||
-           child.StyleRef().LogicalWidth().IsIntrinsicOrAuto();
+           child.StyleRef().LogicalWidth().IsIntrinsicOrAuto() ||
+           child.StyleRef().MarginStart().IsPercentOrCalc() ||
+           child.StyleRef().MarginEnd().IsPercentOrCalc() ||
+           child.StyleRef().PaddingStart().IsPercentOrCalc() ||
+           child.StyleRef().PaddingEnd().IsPercentOrCalc();
   }
   return child.HasRelativeLogicalHeight() ||
-         child.StyleRef().LogicalHeight().IsIntrinsicOrAuto();
+         child.StyleRef().LogicalHeight().IsIntrinsicOrAuto() ||
+         child.StyleRef().MarginBefore().IsPercentOrCalc() ||
+         child.StyleRef().MarginAfter().IsPercentOrCalc() ||
+         child.StyleRef().PaddingBefore().IsPercentOrCalc() ||
+         child.StyleRef().PaddingAfter().IsPercentOrCalc();
 }
 
 void GridTrackSizingAlgorithmStrategy::
@@ -404,21 +416,8 @@ LayoutUnit GridTrackSizingAlgorithmStrategy::MinSizeForChild(
 
   LayoutUnit grid_area_size =
       algorithm_.GridAreaBreadthForChild(child, child_inline_direction);
-
-  if (is_row_axis) {
-    return MinLogicalWidthForChild(child, child_min_size, grid_area_size) +
-           baseline_shim;
-  }
-
-  bool override_size_has_changed =
-      UpdateOverrideContainingBlockContentSizeForChild(
-          child, child_inline_direction, grid_area_size);
-  LayoutGridItemForMinSizeComputation(child, override_size_has_changed);
-
-  return child.ComputeLogicalHeightUsing(kMinSize, child_min_size,
-                                         child.IntrinsicLogicalHeight()) +
-         GridLayoutUtils::MarginLogicalHeightForChild(*GetLayoutGrid(), child) +
-         child.ScrollbarLogicalHeight() + baseline_shim;
+  return MinLogicalSizeForChild(child, child_min_size, grid_area_size) +
+         baseline_shim;
 }
 
 bool GridTrackSizingAlgorithm::CanParticipateInBaselineAlignment(
@@ -526,13 +525,47 @@ void GridTrackSizingAlgorithmStrategy::DistributeSpaceToTracks(
                                                       available_logical_space);
 }
 
-LayoutUnit GridTrackSizingAlgorithmStrategy::MinLogicalWidthForChild(
+LayoutUnit GridTrackSizingAlgorithmStrategy::MinLogicalSizeForChild(
     LayoutBox& child,
     const Length& child_min_size,
     LayoutUnit available_size) const {
-  return child.ComputeLogicalWidthUsing(kMinSize, child_min_size,
-                                        available_size, GetLayoutGrid()) +
-         GridLayoutUtils::MarginLogicalWidthForChild(*GetLayoutGrid(), child);
+  GridTrackSizingDirection child_inline_direction =
+      GridLayoutUtils::FlowAwareDirectionForChild(*GetLayoutGrid(), child,
+                                                  kForColumns);
+  bool is_row_axis = Direction() == child_inline_direction;
+
+  if (is_row_axis) {
+    return child.ComputeLogicalWidthUsing(kMinSize, child_min_size,
+                                          available_size, GetLayoutGrid()) +
+           GridLayoutUtils::MarginLogicalWidthForChild(*GetLayoutGrid(), child);
+  }
+
+  bool override_size_has_changed =
+      UpdateOverrideContainingBlockContentSizeForChild(
+          child, child_inline_direction, available_size);
+  LayoutGridItemForMinSizeComputation(child, override_size_has_changed);
+
+  return child.ComputeLogicalHeightUsing(kMinSize, child_min_size,
+                                         child.IntrinsicLogicalHeight()) +
+         GridLayoutUtils::MarginLogicalHeightForChild(*GetLayoutGrid(), child);
+}
+
+LayoutUnit DefiniteSizeStrategy::MinLogicalSizeForChild(
+    LayoutBox& child,
+    const Length& child_min_size,
+    LayoutUnit available_size) const {
+  GridTrackSizingDirection child_inline_direction =
+      GridLayoutUtils::FlowAwareDirectionForChild(*GetLayoutGrid(), child,
+                                                  kForColumns);
+  LayoutUnit indefinite_size =
+      Direction() == child_inline_direction ? LayoutUnit() : LayoutUnit(-1);
+  if (ShouldClearOverrideContainingBlockContentSizeForChild(
+          *GetLayoutGrid(), child, Direction())) {
+    SetOverrideContainingBlockContentSizeForChild(child, Direction(),
+                                                  indefinite_size);
+  }
+  return GridTrackSizingAlgorithmStrategy::MinLogicalSizeForChild(
+      child, child_min_size, available_size);
 }
 
 void DefiniteSizeStrategy::LayoutGridItemForMinSizeComputation(
@@ -575,6 +608,21 @@ double DefiniteSizeStrategy::FindUsedFlexFraction(
 LayoutUnit DefiniteSizeStrategy::FreeSpaceForStretchAutoTracksStep() const {
   DCHECK(algorithm_.FreeSpace(Direction()));
   return algorithm_.FreeSpace(Direction()).value();
+}
+
+DISABLE_CFI_PERF
+LayoutUnit DefiniteSizeStrategy::MinContentForChild(LayoutBox& child) const {
+  GridTrackSizingDirection child_inline_direction =
+      GridLayoutUtils::FlowAwareDirectionForChild(*GetLayoutGrid(), child,
+                                                  kForColumns);
+  if (Direction() == child_inline_direction && child.NeedsLayout() &&
+      ShouldClearOverrideContainingBlockContentSizeForChild(
+          *GetLayoutGrid(), child, child_inline_direction)) {
+    SetOverrideContainingBlockContentSizeForChild(child, child_inline_direction,
+                                                  LayoutUnit());
+  }
+
+  return GridTrackSizingAlgorithmStrategy::MinContentForChild(child);
 }
 
 void IndefiniteSizeStrategy::LayoutGridItemForMinSizeComputation(

@@ -36,7 +36,7 @@
 #import "ios/web/public/ui/context_menu_params.h"
 #import "ios/web/public/ui/java_script_dialog_presenter.h"
 #import "ios/web/public/web_client.h"
-#import "ios/web/public/web_state/web_state_delegate.h"
+#import "ios/web/public/web_state_delegate.h"
 #include "ios/web/public/web_state_observer.h"
 #include "ios/web/public/webui/web_ui_ios_controller.h"
 #import "ios/web/security/web_interstitial_impl.h"

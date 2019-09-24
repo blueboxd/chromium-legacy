@@ -58,7 +58,7 @@ bool TestUserShare::Reload() {
   return true;
 }
 
-Cryptographer* TestUserShare::GetCryptographer(
+DirectoryCryptographer* TestUserShare::GetCryptographer(
     const syncable::BaseTransaction* trans) {
   return dir_maker_->GetCryptographer(trans);
 }

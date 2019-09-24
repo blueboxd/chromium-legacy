@@ -10,11 +10,12 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/task_environment.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
 #include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
+#include "chrome/browser/web_applications/test/test_web_app_registry_controller.h"
+#include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
@@ -24,21 +25,14 @@
 
 namespace web_app {
 
-class WebAppDatabaseTest : public testing::Test {
+class WebAppDatabaseTest : public WebAppTest {
  public:
-  WebAppDatabaseTest() {
-    database_factory_ = std::make_unique<TestWebAppDatabaseFactory>();
-    registrar_ = std::make_unique<WebAppRegistrar>(nullptr);
-    sync_bridge_ = std::make_unique<WebAppSyncBridge>(
-        nullptr, database_factory_.get(), registrar_.get());
-  }
+  void SetUp() override {
+    WebAppTest::SetUp();
 
-  void InitRegistrar() {
-    base::RunLoop run_loop;
-
-    sync_bridge().Init(base::BindLambdaForTesting([&]() { run_loop.Quit(); }));
-
-    run_loop.Run();
+    test_registry_controller_ =
+        std::make_unique<TestWebAppRegistryController>();
+    test_registry_controller_->SetUp(profile());
   }
 
   static std::unique_ptr<WebApp> CreateWebApp(const std::string& base_url,
@@ -91,14 +85,14 @@ class WebAppDatabaseTest : public testing::Test {
 
   bool IsDatabaseRegistryEqualToRegistrar() {
     Registry registry = database_factory().ReadRegistry();
-    return IsRegistryEqual(registrar_->registry_for_testing(), registry);
+    return IsRegistryEqual(mutable_registrar().registry(), registry);
   }
 
   void WriteBatch(
       std::unique_ptr<syncer::ModelTypeStore::WriteBatch> write_batch) {
     base::RunLoop run_loop;
 
-    database_factory_->store()->CommitWriteBatch(
+    database_factory().store()->CommitWriteBatch(
         std::move(write_batch),
         base::BindLambdaForTesting(
             [&](const base::Optional<syncer::ModelError>& error) {
@@ -112,7 +106,7 @@ class WebAppDatabaseTest : public testing::Test {
   Registry WriteWebApps(const std::string& base_url, int num_apps) {
     Registry registry;
 
-    auto write_batch = database_factory_->store()->CreateWriteBatch();
+    auto write_batch = database_factory().store()->CreateWriteBatch();
 
     for (int i = 0; i < num_apps; ++i) {
       auto app = CreateWebApp(base_url, i);
@@ -130,22 +124,32 @@ class WebAppDatabaseTest : public testing::Test {
   }
 
  protected:
-  TestWebAppDatabaseFactory& database_factory() { return *database_factory_; }
-  WebAppDatabase& database() { return sync_bridge().database_for_testing(); }
-  WebAppSyncBridge& sync_bridge() { return *sync_bridge_; }
-  WebAppRegistrar& registrar() { return *registrar_; }
+  TestWebAppRegistryController& controller() {
+    return *test_registry_controller_;
+  }
+
+  TestWebAppDatabaseFactory& database_factory() {
+    return controller().database_factory();
+  }
+
+  WebAppDatabase& database() {
+    return controller().sync_bridge().database_for_testing();
+  }
+
+  WebAppRegistrar& registrar() { return controller().registrar(); }
+
+  WebAppRegistrarMutable& mutable_registrar() {
+    return controller().mutable_registrar();
+  }
+
+  WebAppSyncBridge& sync_bridge() { return controller().sync_bridge(); }
 
  private:
-  // Must be created before TestWebAppDatabaseFactory.
-  base::test::SingleThreadTaskEnvironment task_environment_;
-
-  std::unique_ptr<TestWebAppDatabaseFactory> database_factory_;
-  std::unique_ptr<WebAppSyncBridge> sync_bridge_;
-  std::unique_ptr<WebAppRegistrar> registrar_;
+  std::unique_ptr<TestWebAppRegistryController> test_registry_controller_;
 };
 
 TEST_F(WebAppDatabaseTest, WriteAndReadRegistry) {
-  InitRegistrar();
+  controller().Init();
   EXPECT_TRUE(registrar().is_empty());
 
   const int num_apps = 100;
@@ -170,7 +174,7 @@ TEST_F(WebAppDatabaseTest, WriteAndReadRegistry) {
 }
 
 TEST_F(WebAppDatabaseTest, WriteAndDeleteAppsWithCallbacks) {
-  InitRegistrar();
+  controller().Init();
   EXPECT_TRUE(registrar().is_empty());
 
   const int num_apps = 10;
@@ -217,12 +221,12 @@ TEST_F(WebAppDatabaseTest, WriteAndDeleteAppsWithCallbacks) {
 TEST_F(WebAppDatabaseTest, OpenDatabaseAndReadRegistry) {
   Registry registry = WriteWebApps("https://example.com/path", 100);
 
-  InitRegistrar();
-  EXPECT_TRUE(IsRegistryEqual(registrar().registry_for_testing(), registry));
+  controller().Init();
+  EXPECT_TRUE(IsRegistryEqual(mutable_registrar().registry(), registry));
 }
 
 TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
-  InitRegistrar();
+  controller().Init();
 
   const auto launch_url = GURL("https://example.com/");
   const AppId app_id = GenerateAppIdFromURL(GURL(launch_url));
@@ -276,7 +280,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
 }
 
 TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {
-  InitRegistrar();
+  controller().Init();
 
   const int num_icons = 32;
   const std::string base_url = "https://example.com/path";

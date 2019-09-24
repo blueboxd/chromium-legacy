@@ -301,11 +301,11 @@ TEST_F(AuthenticationServiceTest,
       EXPECT_EQ("fooID", accounts[2].account_id);
 }
 
-TEST_F(AuthenticationServiceTest, HaveAccountsNotChangedDefault) {
+TEST_F(AuthenticationServiceTest, HaveAccountsChanged_Default) {
   EXPECT_FALSE(authentication_service()->HaveAccountsChanged());
 }
 
-TEST_F(AuthenticationServiceTest, HaveAccountsNotChanged) {
+TEST_F(AuthenticationServiceTest, HaveAccountsChanged_NoChange) {
   SetExpectationsForSignIn();
   authentication_service()->SignIn(identity(0));
 
@@ -313,45 +313,87 @@ TEST_F(AuthenticationServiceTest, HaveAccountsNotChanged) {
   FireIdentityListChanged();
   base::RunLoop().RunUntilIdle();
 
-  // Simulate a switching to background and back to foreground.
+  // If an account is added while the application is in foreground, then the
+  // have accounts changed state should stay false.
+  EXPECT_FALSE(authentication_service()->HaveAccountsChanged());
+
+  // Backgrounding the app should not change the have accounts changed state.
   FireApplicationDidEnterBackground();
-  FireApplicationWillEnterForeground();
+  EXPECT_FALSE(authentication_service()->HaveAccountsChanged());
 
+  // Foregrounding the app should not change the have accounts changed state.
+  FireApplicationWillEnterForeground();
   EXPECT_FALSE(authentication_service()->HaveAccountsChanged());
 }
 
-TEST_F(AuthenticationServiceTest, HaveAccountsChanged) {
+TEST_F(AuthenticationServiceTest, HaveAccountsChanged_ChangedInBackground) {
   SetExpectationsForSignIn();
   authentication_service()->SignIn(identity(0));
 
   identity_service()->AddIdentities(@[ @"foo3" ]);
   FireIdentityListChanged();
   base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(authentication_service()->HaveAccountsChanged());
 
   // Simulate a switching to background and back to foreground, changing the
-  // accounts while in background.
+  // accounts while in background (no notification fired by |identity_service|).
   FireApplicationDidEnterBackground();
   identity_service()->AddIdentities(@[ @"foo4" ]);
   FireApplicationWillEnterForeground();
-
   EXPECT_TRUE(authentication_service()->HaveAccountsChanged());
 }
 
-TEST_F(AuthenticationServiceTest, HaveAccountsChangedBackground) {
+TEST_F(AuthenticationServiceTest, HaveAccountsChanged_CalledInBackground) {
   SetExpectationsForSignIn();
   authentication_service()->SignIn(identity(0));
 
   identity_service()->AddIdentities(@[ @"foo3" ]);
   FireIdentityListChanged();
   base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(authentication_service()->HaveAccountsChanged());
 
   // Simulate a switching to background, changing the accounts while in
   // background.
   FireApplicationDidEnterBackground();
   identity_service()->AddIdentities(@[ @"foo4" ]);
+  FireIdentityListChanged();
   base::RunLoop().RunUntilIdle();
-
   EXPECT_TRUE(authentication_service()->HaveAccountsChanged());
+
+  // Entering foreground should not change the have accounts changed state.
+  FireApplicationWillEnterForeground();
+  EXPECT_TRUE(authentication_service()->HaveAccountsChanged());
+}
+
+// Regression test for http://crbug.com/1006717
+TEST_F(AuthenticationServiceTest, HaveAccountsChanged_ResetOntwoBackgrounds) {
+  SetExpectationsForSignIn();
+  authentication_service()->SignIn(identity(0));
+
+  identity_service()->AddIdentities(@[ @"foo3" ]);
+  FireIdentityListChanged();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(authentication_service()->HaveAccountsChanged());
+
+  // Simulate a switching to background, changing the accounts while in
+  // background.
+  FireApplicationDidEnterBackground();
+
+  // Clear |kSigninLastAccounts| pref to simulate a case when the list of
+  // accounts in pref |kSigninLastAccounts| are no the same as the ones
+  browser_state_->GetPrefs()->ClearPref(prefs::kSigninLastAccounts);
+
+  // When entering foreground, the have accounts changed state should be
+  // updated.
+  FireApplicationWillEnterForeground();
+  EXPECT_TRUE(authentication_service()->HaveAccountsChanged());
+
+  // Backgrounding and foregrounding the application a second time should update
+  // the list of accounts in |kSigninLastAccounts| and should reset the have
+  // account changed state.
+  FireApplicationDidEnterBackground();
+  FireApplicationWillEnterForeground();
+  EXPECT_FALSE(authentication_service()->HaveAccountsChanged());
 }
 
 TEST_F(AuthenticationServiceTest, IsAuthenticatedBackground) {

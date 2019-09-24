@@ -42,9 +42,9 @@ class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
   // Sets the delegate used for setting/clearing badges.
   void SetDelegate(std::unique_ptr<BadgeManagerDelegate> delegate);
 
-  static void BindRequest(
-      mojo::PendingReceiver<blink::mojom::BadgeService> receiver,
-      content::RenderFrameHost* frame);
+  static void BindReceiver(
+      content::RenderFrameHost* frame,
+      mojo::PendingReceiver<blink::mojom::BadgeService> receiver);
 
   // Returns whether there is a more specific badge for |url| than |scope|.
   // Note: This function does not check that there is a badge for |scope|.

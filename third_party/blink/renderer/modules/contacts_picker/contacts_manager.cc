@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/contacts_picker/contacts_manager.h"
 
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -72,8 +72,8 @@ mojo::Remote<mojom::blink::ContactsManager>&
 ContactsManager::GetContactsManager(ScriptState* script_state) {
   if (!contacts_manager_) {
     ExecutionContext::From(script_state)
-        ->GetInterfaceProvider()
-        ->GetInterface(contacts_manager_.BindNewPipeAndPassReceiver());
+        ->GetBrowserInterfaceBroker()
+        .GetInterface(contacts_manager_.BindNewPipeAndPassReceiver());
   }
   return contacts_manager_;
 }

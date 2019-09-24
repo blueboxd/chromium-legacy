@@ -33,9 +33,11 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits.h"
+#include "third_party/blink/renderer/bindings/core/v8/world_safe_v8_reference.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/shared_persistent.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "v8/include/v8.h"
@@ -69,51 +71,66 @@ class CORE_EXPORT ScriptValue final {
 
   ScriptValue() = default;
 
+  // TODO(rikaf): Forbid passing empty v8::Local<v8::Value> to ScriptValue's
+  // ctor.
+
+  // TODO(crbug.com/998994): Remove ScriptValue(ScriptState*,
+  // v8::Local<v8::Value>) once we finish replacing with ScriptValue(Isolate*,
+  // v8::Local<v8::Value>)
   ScriptValue(ScriptState* script_state, v8::Local<v8::Value> value)
-      : script_state_(script_state),
-        value_(value.IsEmpty() ? nullptr
-                               : SharedPersistent<v8::Value>::Create(
-                                     value,
-                                     script_state->GetIsolate())) {
-    DCHECK(IsEmpty() || script_state_);
+      : isolate_(script_state->GetIsolate()),
+        value_(value.IsEmpty()
+                   ? WorldSafeV8Reference<v8::Value>()
+                   : WorldSafeV8Reference<v8::Value>(script_state->GetIsolate(),
+                                                     value)) {
+    DCHECK(isolate_);
+  }
+
+  ScriptValue(v8::Isolate* isolate, v8::Local<v8::Value> value)
+      : isolate_(isolate),
+        value_(value.IsEmpty()
+                   ? WorldSafeV8Reference<v8::Value>()
+                   : WorldSafeV8Reference<v8::Value>(isolate, value)) {
+    DCHECK(isolate_);
   }
 
   template <typename T>
-  ScriptValue(ScriptState* script_state, v8::MaybeLocal<T> value)
-      : script_state_(script_state),
-        value_(value.IsEmpty() ? nullptr
-                               : SharedPersistent<v8::Value>::Create(
-                                     value.ToLocalChecked(),
-                                     script_state->GetIsolate())) {
-    DCHECK(IsEmpty() || script_state_);
+  ScriptValue(v8::Isolate* isolate, v8::MaybeLocal<T> value)
+      : isolate_(isolate),
+        value_(value.IsEmpty()
+                   ? WorldSafeV8Reference<v8::Value>()
+                   : WorldSafeV8Reference<v8::Value>(isolate,
+                                                     value.ToLocalChecked())) {
+    DCHECK(isolate_);
   }
 
-  ScriptValue(const ScriptValue& value)
-      : script_state_(value.script_state_), value_(value.value_) {
-    DCHECK(IsEmpty() || script_state_);
+  ScriptValue(v8::Isolate* isolate, WorldSafeV8Reference<v8::Value> value)
+      : isolate_(isolate), value_(value) {
+    DCHECK(isolate_);
   }
 
-  ScriptState* GetScriptState() const { return script_state_; }
-
-  v8::Isolate* GetIsolate() const {
-    return script_state_ ? script_state_->GetIsolate()
-                         : v8::Isolate::GetCurrent();
-  }
-
-  ScriptValue& operator=(const ScriptValue& value) {
-    if (this != &value) {
-      script_state_ = value.script_state_;
+  ScriptValue(const ScriptValue& value) {
+    // TODO(crbug.com/v8/9773): Deal with null value at the side of v8.
+    if (value.IsEmpty()) {
+      isolate_ = nullptr;
+      value_.Reset();
+    } else {
+      isolate_ = value.isolate_;
       value_ = value.value_;
+      DCHECK(isolate_);
     }
-    return *this;
   }
+
+  // Use this GetIsolate() to do DCHECK inside ScriptValue.
+  v8::Isolate* GetIsolate() const {
+    DCHECK(isolate_);
+    return isolate_;
+  }
+
+  ScriptValue& operator=(const ScriptValue& value) = default;
 
   bool operator==(const ScriptValue& value) const {
-    if (IsEmpty())
-      return value.IsEmpty();
-    if (value.IsEmpty())
-      return false;
-    return *value_ == *value.value_;
+    return value_ == value.value_;
   }
 
   bool operator!=(const ScriptValue& value) const { return !operator==(value); }
@@ -150,9 +167,12 @@ class CORE_EXPORT ScriptValue final {
     return !value.IsEmpty() && value->IsObject();
   }
 
-  bool IsEmpty() const { return !value_.get() || value_->IsEmpty(); }
+  bool IsEmpty() const { return value_.IsEmpty(); }
 
-  void Clear() { value_ = nullptr; }
+  void Clear() {
+    isolate_ = nullptr;
+    value_.Reset();
+  }
 
   v8::Local<v8::Value> V8Value() const;
   // Returns v8Value() if a given ScriptState is the same as the
@@ -160,15 +180,19 @@ class CORE_EXPORT ScriptValue final {
   // this "clones" the v8 value and returns it.
   v8::Local<v8::Value> V8ValueFor(ScriptState*) const;
 
+  const WorldSafeV8Reference<v8::Value>& ToWorldSafeV8Reference() const {
+    return value_;
+  }
+
   bool ToString(String&) const;
 
-  static ScriptValue CreateNull(ScriptState*);
+  static ScriptValue CreateNull(v8::Isolate*);
 
-  void Trace(Visitor* visitor) { visitor->Trace(script_state_); }
+  void Trace(Visitor* visitor) { visitor->Trace(value_); }
 
  private:
-  Member<ScriptState> script_state_;
-  scoped_refptr<SharedPersistent<v8::Value>> value_;
+  v8::Isolate* isolate_ = nullptr;
+  WorldSafeV8Reference<v8::Value> value_;
 };
 
 template <>

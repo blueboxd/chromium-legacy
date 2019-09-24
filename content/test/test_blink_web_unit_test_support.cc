@@ -40,6 +40,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/public/web/blink.h"
 #include "v8/include/v8.h"
 
@@ -230,9 +231,9 @@ blink::WebString TestBlinkWebUnitTestSupport::QueryLocalizedString(
       return WebString::FromASCII("<<OtherMonthLabel>>");
     case blink::WebLocalizedString::kOtherWeekLabel:
       return WebString::FromASCII("<<OtherWeekLabel>>");
-    case blink::WebLocalizedString::kCalendarClear:
+    case IDS_FORM_CALENDAR_CLEAR:
       return WebString::FromASCII("<<CalendarClear>>");
-    case blink::WebLocalizedString::kCalendarToday:
+    case IDS_FORM_CALENDAR_TODAY:
       return WebString::FromASCII("<<CalendarToday>>");
     case blink::WebLocalizedString::kThisMonthButtonLabel:
       return WebString::FromASCII("<<ThisMonthLabel>>");

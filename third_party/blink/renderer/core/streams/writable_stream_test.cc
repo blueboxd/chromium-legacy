@@ -52,7 +52,7 @@ TEST_P(WritableStreamTest, GetWriter) {
   EXPECT_EQ(stream->IsLocked(script_state, ASSERT_NO_EXCEPTION),
             base::make_optional(false));
 
-  ScriptValue writer = stream->getWriter(script_state, ASSERT_NO_EXCEPTION);
+  stream->getWriter(script_state, ASSERT_NO_EXCEPTION);
 
   EXPECT_TRUE(stream->locked(script_state, ASSERT_NO_EXCEPTION));
   EXPECT_EQ(stream->IsLocked(script_state, ASSERT_NO_EXCEPTION),

@@ -153,7 +153,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   v8::Local<v8::Object> GlobalProxy() const override;
   void StartReload(WebFrameLoadType) override;
   void ReloadImage(const WebNode&) override;
-  void ReloadLoFiImages() override;
   void StartNavigation(const WebURLRequest&) override;
   void CheckCompleted() override;
   void StopLoading() override;

@@ -315,8 +315,7 @@ String ScriptPromiseUtils::GetPromiseResolutionAsString(
   if (v8_promise->State() == v8::Promise::kPending) {
     return g_empty_string;
   }
-  ScriptValue promise_result(promise.GetScriptValue().GetScriptState(),
-                             v8_promise->Result());
+  ScriptValue promise_result(promise.GetIsolate(), v8_promise->Result());
   String value;
   if (!promise_result.ToString(value)) {
     return g_empty_string;

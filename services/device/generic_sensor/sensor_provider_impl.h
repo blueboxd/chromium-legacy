@@ -7,7 +7,8 @@
 
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
 
@@ -25,7 +26,7 @@ class SensorProviderImpl final : public mojom::SensorProvider {
   explicit SensorProviderImpl(std::unique_ptr<PlatformSensorProvider> provider);
   ~SensorProviderImpl() override;
 
-  void Bind(mojom::SensorProviderRequest request);
+  void Bind(mojo::PendingReceiver<mojom::SensorProvider> receiver);
 
  private:
   // SensorProvider implementation.
@@ -39,7 +40,7 @@ class SensorProviderImpl final : public mojom::SensorProvider {
                      scoped_refptr<PlatformSensor> sensor);
 
   std::unique_ptr<PlatformSensorProvider> provider_;
-  mojo::BindingSet<mojom::SensorProvider> bindings_;
+  mojo::ReceiverSet<mojom::SensorProvider> receivers_;
   mojo::UniqueReceiverSet<mojom::Sensor> sensor_receivers_;
   base::WeakPtrFactory<SensorProviderImpl> weak_ptr_factory_{this};
 

@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "media/capture/mojom/image_capture.mojom-blink.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
@@ -99,7 +100,7 @@ class MODULES_EXPORT ImageCapture final
 
   Member<MediaStreamTrack> stream_track_;
   std::unique_ptr<ImageCaptureFrameGrabber> frame_grabber_;
-  media::mojom::blink::ImageCapturePtr service_;
+  mojo::Remote<media::mojom::blink::ImageCapture> service_;
 
   Member<MediaTrackCapabilities> capabilities_;
   Member<MediaTrackSettings> settings_;

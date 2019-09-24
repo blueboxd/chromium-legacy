@@ -1223,7 +1223,6 @@ void StoragePartitionImpl::Initialize() {
       browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy.get());
 
   dom_storage_context_ = DOMStorageContextWrapper::Create(
-      BrowserContext::GetConnectorFor(browser_context_),
       is_in_memory_ ? base::FilePath() : browser_context_->GetPath(),
       relative_partition_path_, browser_context_->GetSpecialStoragePolicy());
 
@@ -2068,7 +2067,8 @@ void StoragePartitionImpl::DataDeletionHelper::ClearDataOnUIThread(
         base::WrapRefCounted(dom_storage_context),
         base::WrapRefCounted(special_storage_policy), origin_matcher,
         storage_origin, perform_storage_cleanup, begin, end,
-        CreateTaskCompletionClosure(TracingDataType::kLocalStorage));
+        mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+            CreateTaskCompletionClosure(TracingDataType::kLocalStorage)));
 
     // ClearDataImpl cannot clear session storage data when a particular origin
     // is specified. Therefore we ignore clearing session storage in this case.

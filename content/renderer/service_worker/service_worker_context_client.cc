@@ -199,19 +199,6 @@ void ServiceWorkerContextClient::WorkerReadyForInspectionOnInitiatorThread(
                                        std::move(receiver));
 }
 
-void ServiceWorkerContextClient::WorkerContextFailedToStartOnInitiatorThread() {
-  DCHECK(initiator_thread_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK(!proxy_);
-
-  instance_host_->OnStopped();
-
-  TRACE_EVENT_NESTABLE_ASYNC_END1(
-      "ServiceWorker", "ServiceWorkerContextClient", this, "Status",
-      "WorkerContextFailedToStartOnInitiatorThread");
-
-  owner_->WorkerContextDestroyed();
-}
-
 void ServiceWorkerContextClient::FailedToLoadClassicScript() {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "LOAD_SCRIPT", this,

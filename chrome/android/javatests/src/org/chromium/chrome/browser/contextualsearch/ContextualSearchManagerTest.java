@@ -949,11 +949,11 @@ public class ContextualSearchManagerTest {
     }
 
     /**
-     * Tap on the peeking Bar to expand the panel, then taps on the base page to close it.
+     * Tap on the peeking Bar to expand the panel, then close it.
      */
     private void tapBarToExpandAndClosePanel() throws InterruptedException {
         tapPeekingBarToExpandAndAssert();
-        tapBasePageToClosePanel();
+        closePanel();
     }
 
     /**
@@ -1836,7 +1836,7 @@ public class ContextualSearchManagerTest {
         pressAppMenuKey();
         assertAppMenuVisibility(false);
 
-        tapBasePageToClosePanel();
+        closePanel();
 
         pressAppMenuKey();
         assertAppMenuVisibility(true);

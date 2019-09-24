@@ -527,10 +527,9 @@ void TestRenderFrameHost::SimulateCommitProcessed(
 
 WebBluetoothServiceImpl*
 TestRenderFrameHost::CreateWebBluetoothServiceForTesting() {
-  WebBluetoothServiceImpl* service =
-      RenderFrameHostImpl::CreateWebBluetoothService(
-          dummy_web_bluetooth_service_remote_.InitWithNewPipeAndPassReceiver());
-  return service;
+  RenderFrameHostImpl::CreateWebBluetoothService(
+      dummy_web_bluetooth_service_remote_.InitWithNewPipeAndPassReceiver());
+  return RenderFrameHostImpl::GetWebBluetoothServiceForTesting();
 }
 
 void TestRenderFrameHost::SendFramePolicy(

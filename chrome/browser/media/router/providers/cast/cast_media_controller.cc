@@ -59,12 +59,13 @@ base::Optional<gfx::Size> GetValidSize(const base::Value* value) {
 
 }  // namespace
 
-CastMediaController::CastMediaController(ActivityRecord* activity,
-                                         mojom::MediaControllerRequest request,
-                                         mojom::MediaStatusObserverPtr observer)
+CastMediaController::CastMediaController(
+    ActivityRecord* activity,
+    mojo::PendingReceiver<mojom::MediaController> receiver,
+    mojo::PendingRemote<mojom::MediaStatusObserver> observer)
     : sender_id_("sender-" + base::NumberToString(base::RandUint64())),
       activity_(activity),
-      binding_(this, std::move(request)),
+      receiver_(this, std::move(receiver)),
       observer_(std::move(observer)) {}
 
 CastMediaController::~CastMediaController() {}

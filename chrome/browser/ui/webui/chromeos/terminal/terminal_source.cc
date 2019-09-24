@@ -71,3 +71,8 @@ std::string TerminalSource::GetMimeType(const std::string& path) {
     net::GetWellKnownMimeTypeFromExtension(ext.substr(1), &mime_type);
   return mime_type;
 }
+
+bool TerminalSource::ShouldServeMimeTypeAsContentTypeHeader() {
+  // TerminalSource pages include js modules which require an explicit MimeType.
+  return true;
+}

@@ -224,6 +224,8 @@ void AvatarToolbarButton::SetAutofillIconVisible(bool autofill_icon_visible) {
 
 void AvatarToolbarButton::NotifyClick(const ui::Event& event) {
   Button::NotifyClick(event);
+  if (should_reset_user_email_when_no_longer_hovered_or_focused_)
+    ResetUserEmailWhenNotHoveredOrFocused();
   // TODO(bsep): Other toolbar buttons have ToolbarView as a listener and let it
   // call ExecuteCommandWithDisposition on their behalf. Unfortunately, it's not
   // possible to plumb IsKeyEvent through, so this has to be a special case.
@@ -231,6 +233,18 @@ void AvatarToolbarButton::NotifyClick(const ui::Event& event) {
       BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT,
       signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
       event.IsKeyEvent());
+}
+
+void AvatarToolbarButton::OnMouseExited(const ui::MouseEvent& event) {
+  if (should_reset_user_email_when_no_longer_hovered_or_focused_)
+    ResetUserEmailWhenNotHoveredOrFocused();
+  ToolbarButton::OnMouseExited(event);
+}
+
+void AvatarToolbarButton::OnBlur() {
+  if (should_reset_user_email_when_no_longer_hovered_or_focused_)
+    ResetUserEmailWhenNotHoveredOrFocused();
+  ToolbarButton::OnBlur();
 }
 
 void AvatarToolbarButton::OnThemeChanged() {
@@ -336,9 +350,26 @@ void AvatarToolbarButton::ExpandToShowEmail() {
   // Hide the pill after a while.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(&AvatarToolbarButton::ResetUserEmail,
-                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(
+          &AvatarToolbarButton::ResetUserEmailWhenNotHoveredOrFocused,
+          weak_ptr_factory_.GetWeakPtr()),
       kEmailExpansionDuration);
+}
+
+void AvatarToolbarButton::ResetUserEmailWhenNotHoveredOrFocused() {
+  // No-op if it has been reset already.
+  if (!user_email_)
+    return;
+
+  // Keep email visible while hovering or being focused.
+  if (IsMouseHovered() || HasFocus()) {
+    // TODO(crbug.com/967317): Include also the case when some other button from
+    // the parent container is shown and hovered / focused.
+    should_reset_user_email_when_no_longer_hovered_or_focused_ = true;
+    return;
+  }
+  should_reset_user_email_when_no_longer_hovered_or_focused_ = false;
+  ResetUserEmail();
 }
 
 void AvatarToolbarButton::ResetUserEmail() {

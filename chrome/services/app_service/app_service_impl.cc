@@ -33,8 +33,10 @@ void AppServiceImpl::BindReceiver(
   receivers_.Add(this, std::move(receiver));
 }
 
-void AppServiceImpl::RegisterPublisher(apps::mojom::PublisherPtr publisher,
-                                       apps::mojom::AppType app_type) {
+void AppServiceImpl::RegisterPublisher(
+    mojo::PendingRemote<apps::mojom::Publisher> publisher_remote,
+    apps::mojom::AppType app_type) {
+  mojo::Remote<apps::mojom::Publisher> publisher(std::move(publisher_remote));
   // Connect the new publisher with every registered subscriber.
   subscribers_.ForAllPtrs([&publisher](auto* subscriber) {
     ::Connect(publisher.get(), subscriber);
@@ -44,7 +46,7 @@ void AppServiceImpl::RegisterPublisher(apps::mojom::PublisherPtr publisher,
   CHECK(publishers_.find(app_type) == publishers_.end());
 
   // Add the new publisher to the set.
-  publisher.set_connection_error_handler(
+  publisher.set_disconnect_handler(
       base::BindOnce(&AppServiceImpl::OnPublisherDisconnected,
                      base::Unretained(this), app_type));
   auto result = publishers_.emplace(app_type, std::move(publisher));

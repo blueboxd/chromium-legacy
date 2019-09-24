@@ -13,7 +13,7 @@
 #import "ios/chrome/browser/net/connection_type_observer_bridge.h"
 #import "ios/web/public/deprecated/crw_native_content_provider.h"
 #include "ios/web/public/navigation/referrer.h"
-#import "ios/web/public/web_state/web_state_delegate_bridge.h"
+#import "ios/web/public/web_state_delegate_bridge.h"
 #import "net/url_request/url_fetcher.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"

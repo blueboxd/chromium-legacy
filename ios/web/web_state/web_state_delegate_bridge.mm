@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/public/web_state/web_state_delegate_bridge.h"
+#import "ios/web/public/web_state_delegate_bridge.h"
 
 #include "base/logging.h"
 #import "ios/web/public/ui/context_menu_params.h"

@@ -26,7 +26,6 @@ public abstract class TabModelFilter extends EmptyTabModelObserver implements Ta
             Collections.unmodifiableList(new ArrayList<Tab>());
     private TabModel mTabModel;
     protected ObserverList<TabModelObserver> mFilteredObservers = new ObserverList<>();
-    private boolean mTabRestoreCompleted;
 
     public TabModelFilter(TabModel tabModel) {
         mTabModel = tabModel;
@@ -89,7 +88,7 @@ public abstract class TabModelFilter extends EmptyTabModelObserver implements Ta
      * @return An unmodifiable list of {@link Tab}s that are not related to any tabs
      */
     @NonNull
-    public final List<Tab> getTabsWithNoOtherRelatedTabs() {
+    final public List<Tab> getTabsWithNoOtherRelatedTabs() {
         List<Tab> tabs = new ArrayList<>();
         for (int i = 0; i < mTabModel.getCount(); i++) {
             Tab tab = mTabModel.getTabAt(i);
@@ -140,13 +139,6 @@ public abstract class TabModelFilter extends EmptyTabModelObserver implements Ta
      * Concrete class requires to define what to clean up.
      */
     protected abstract void resetFilterStateInternal();
-
-    /**
-     * @return Whether the tab model is fully restored.
-     */
-    public boolean isTabModelRestored() {
-        return mTabRestoreCompleted || isIncognito();
-    }
 
     /**
      * Concrete class requires to define what's the behavior when {@link TabModel} removed a
@@ -272,8 +264,6 @@ public abstract class TabModelFilter extends EmptyTabModelObserver implements Ta
 
     @Override
     public void restoreCompleted() {
-        mTabRestoreCompleted = true;
-
         if (getCount() != 0) reorder();
 
         for (TabModelObserver observer : mFilteredObservers) {

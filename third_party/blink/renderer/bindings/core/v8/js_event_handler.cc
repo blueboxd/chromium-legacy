@@ -99,9 +99,10 @@ void JSEventHandler::InvokeInternal(EventTarget& event_target,
     // https://html.spec.whatwg.org/C/#runtime-script-errors-2
     ScriptValue error_attribute = error_event->error(script_state_of_listener);
     if (error_attribute.IsEmpty() ||
-        error_event->target()->InterfaceName() == event_target_names::kWorker)
-      error_attribute = ScriptValue::CreateNull(script_state_of_listener);
-
+        error_event->target()->InterfaceName() == event_target_names::kWorker) {
+      error_attribute =
+          ScriptValue::CreateNull(script_state_of_listener->GetIsolate());
+    }
     arguments = {
         ScriptValue::From(script_state_of_listener, error_event->message()),
         ScriptValue::From(script_state_of_listener, error_event->filename()),

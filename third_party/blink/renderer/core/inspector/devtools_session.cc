@@ -159,13 +159,15 @@ class DevToolsSession::IOSession : public mojom::blink::DevToolsSession {
 
 DevToolsSession::DevToolsSession(
     DevToolsAgent* agent,
-    mojom::blink::DevToolsSessionHostAssociatedPtrInfo host_ptr_info,
-    mojom::blink::DevToolsSessionAssociatedRequest main_request,
+    mojo::PendingAssociatedRemote<mojom::blink::DevToolsSessionHost>
+        host_remote,
+    mojo::PendingAssociatedReceiver<mojom::blink::DevToolsSession>
+        main_receiver,
     mojo::PendingReceiver<mojom::blink::DevToolsSession> io_receiver,
     mojom::blink::DevToolsSessionStatePtr reattach_session_state,
     bool client_expects_binary_responses)
     : agent_(agent),
-      binding_(this, std::move(main_request)),
+      receiver_(this, std::move(main_receiver)),
       inspector_backend_dispatcher_(new protocol::UberDispatcher(this)),
       session_state_(std::move(reattach_session_state)),
       client_expects_binary_responses_(client_expects_binary_responses),
@@ -176,8 +178,8 @@ DevToolsSession::DevToolsSession(
       agent_->io_task_runner_, agent_->inspector_task_runner_,
       WrapCrossThreadWeakPersistent(this), std::move(io_receiver));
 
-  host_ptr_.Bind(std::move(host_ptr_info));
-  host_ptr_.set_connection_error_handler(
+  host_remote_.Bind(std::move(host_remote));
+  host_remote_.set_disconnect_handler(
       WTF::Bind(&DevToolsSession::Detach, WrapWeakPersistent(this)));
 
   bool restore = !!session_state_.ReattachState();
@@ -203,7 +205,7 @@ void DevToolsSession::ConnectToV8(v8_inspector::V8Inspector* inspector,
 }
 
 bool DevToolsSession::IsDetached() {
-  return !host_ptr_.is_bound();
+  return !host_remote_.is_bound();
 }
 
 void DevToolsSession::Append(InspectorAgent* agent) {
@@ -216,8 +218,8 @@ void DevToolsSession::Detach() {
   agent_->client_->DebuggerTaskStarted();
   agent_->client_->DetachSession(this);
   agent_->sessions_.erase(this);
-  binding_.Close();
-  host_ptr_.reset();
+  receiver_.reset();
+  host_remote_.reset();
   CHECK(io_session_);
   io_session_->DeleteSoon();
   io_session_ = nullptr;
@@ -337,8 +339,8 @@ void DevToolsSession::SendProtocolResponse(
     CHECK(status.ok()) << status.ToASCIIString();
     serialized->data = mojo_base::BigBuffer(json);
   }
-  host_ptr_->DispatchProtocolResponse(std::move(serialized), call_id,
-                                      session_state_.TakeUpdates());
+  host_remote_->DispatchProtocolResponse(std::move(serialized), call_id,
+                                         session_state_.TakeUpdates());
 }
 
 class DevToolsSession::Notification {
@@ -415,8 +417,8 @@ void DevToolsSession::flushProtocolNotifications() {
       CHECK(status.ok()) << status.ToASCIIString();
       serialized->data = mojo_base::BigBuffer(json);
     }
-    host_ptr_->DispatchProtocolNotification(std::move(serialized),
-                                            session_state_.TakeUpdates());
+    host_remote_->DispatchProtocolNotification(std::move(serialized),
+                                               session_state_.TakeUpdates());
   }
   notification_queue_.clear();
 }

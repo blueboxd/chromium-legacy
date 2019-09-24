@@ -161,6 +161,22 @@ class InstagramMobileStory(_ArticleBrowsingStory):
     action_runner.NavigateBack()
 
 
+class InstagramMobileStory2019(_ArticleBrowsingStory):
+  NAME = 'browse:social:instagram:2019'
+  URL = 'https://www.instagram.com/badgalriri/'
+  ITEM_SELECTOR = '[class="v1Nh3 kIKUG  _bz0w"] a'
+  ITEMS_TO_VISIT = 8
+
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2019]
+
+  def _WaitForNavigation(self, action_runner):
+    action_runner.WaitForElement(selector='[title="badgalriri"]')
+
+  def _NavigateBack(self, action_runner):
+    action_runner.NavigateBack()
+
+
 class FlipboardDesktopStory2018(_ArticleBrowsingStory):
   NAME = 'browse:news:flipboard:2018'
   URL = 'https://flipboard.com/explore'
@@ -222,6 +238,30 @@ class RedditMobileStory(_ArticleBrowsingStory):
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   TAGS = [story_tags.YEAR_2016]
 
+class RedditMobileStory2019(_ArticleBrowsingStory):
+  NAME = 'browse:news:reddit:2019'
+  URL = 'https://www.reddit.com/r/news/top/?sort=top&t=week'
+  IS_SINGLE_PAGE_APP = True
+  ITEM_SELECTOR = '.PostHeader__post-title-line'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.YEAR_2019]
+
+  def _DidLoadDocument(self, action_runner):
+    # We encountered ads disguised as articles on the Reddit one so far. The
+    # following code skips that ad.
+    # If we encounter it more often it will make sense to have a more generic
+    # approach, e.g an OFFSET to start iterating from, or an index to skip.
+
+    # Add one to the items to visit since we are going to skip the ad and we
+    # want to still visit the same amount of articles.
+    for i in xrange(self.ITEMS_TO_VISIT + 1):
+      # Skip the ad disguised as an article.
+      if i == 1:
+           continue
+      self._NavigateToItem(action_runner, i)
+      self._ReadNextArticle(action_runner)
+      self._NavigateBack(action_runner)
+      self._ScrollMainPage(action_runner)
 
 class TwitterMobileStory(_ArticleBrowsingStory):
   NAME = 'browse:social:twitter'
@@ -1267,6 +1307,116 @@ class GoogleEarthStory(_BrowsingStory):
     action_runner.RepeatableBrowserDrivenScroll(
         x_scroll_distance_ratio = 1, y_scroll_distance_ratio = 0,
         repeat_count=3, speed=500, timeout=120)
+
+
+##############################################################################
+# Google sheets browsing story.
+##############################################################################
+
+
+class GoogleSheetsDesktopStory(system_health_story.SystemHealthStory):
+  NAME = 'browse:tools:sheets:2019'
+  URL = ('https://docs.google.com/spreadsheets/d/' +
+         '16jfsJs14QrWKhsbxpdJXgoYumxNpnDt08DTK82Puc2A/' +
+         'edit#gid=896027318&range=C:C')
+  SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
+  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2019]
+
+  # This map translates page-specific event names to event names needed for
+  # the reported_by_page:* metric.
+  EVENTS_REPORTED_BY_PAGE = '''
+    window.__telemetry_reported_page_events = {
+      'ccv':
+          'telemetry:reported_by_page:viewable',
+      'fcoe':
+          'telemetry:reported_by_page:interactive',
+      'first_meaningful_calc_begin':
+          'telemetry:reported_by_page:benchmark_begin',
+      'first_meaningful_calc_end':
+          'telemetry:reported_by_page:benchmark_end'
+    };
+  '''
+
+  # Patch performance.mark to get notified about page events.
+  PERFOMANCE_MARK = '''
+    window.__telemetry_observed_page_events = new Set();
+    (function () {
+      let reported = window.__telemetry_reported_page_events;
+      let observed = window.__telemetry_observed_page_events;
+      let performance_mark = window.performance.mark;
+      window.performance.mark = function (label) {
+        performance_mark.call(window.performance, label);
+        if (reported.hasOwnProperty(label)) {
+          performance_mark.call(
+              window.performance, reported[label]);
+          observed.add(reported[label]);
+        }
+      }
+    })();
+  '''
+
+  # Page event queries.
+  INTERACTIVE_EVENT = '''
+    (window.__telemetry_observed_page_events.has(
+        "telemetry:reported_by_page:interactive"))
+  '''
+  CALC_BEGIN_EVENT = '''
+    (window.__telemetry_observed_page_events.has(
+        "telemetry:reported_by_page:benchmark_begin"))
+  '''
+  CALC_END_EVENT = '''
+    (window.__telemetry_observed_page_events.has(
+        "telemetry:reported_by_page:benchmark_end"))
+  '''
+  CLEAR_EVENTS = 'window.__telemetry_observed_page_events.clear()'
+
+  # Start recalculation of the current column by invoking
+  # trixApp.module$contents$waffle$DesktopRitzApp_DesktopRitzApp$actionRegistry_
+  #   .f_actions__com_google_apps_docs_xplat_controller_ActionRegistryImpl_
+  #   ['trix-fill-right'].fireAction()
+  RECALCULATE_COLUMN = "trixApp.Cb.D['trix-fill-right'].Eb();"
+
+  # Patch the goog$Uri.prototype.setParameterValue to fix the
+  # session parameters that depend on Math.random and Date.now.
+  DETERMINISITIC_SESSION = '''
+    if (window.xk) {
+      window.xk.prototype.wc = function (a, b) {
+          if (a === "rand") { b = "1566829321650"; }
+          if (a === "zx") { b = "9azccr4i1bz5"; }
+          if (a === "ssfi") { b = "0"; }
+          this.C.set(a, b);
+          return this;
+      }
+    }
+  '''
+
+  def __init__(self, story_set, take_memory_measurement):
+    super(GoogleSheetsDesktopStory, self).__init__(story_set,
+        take_memory_measurement)
+    self.script_to_evaluate_on_commit = js_template.Render(
+        '''{{@events_reported_by_page}}
+        {{@performance_mark}}
+        document.addEventListener('readystatechange', event => {
+          if (event.target.readyState === 'interactive') {
+            {{@deterministic_session}}
+          }
+        });''',
+        events_reported_by_page=self.EVENTS_REPORTED_BY_PAGE,
+        performance_mark=self.PERFOMANCE_MARK,
+        deterministic_session=self.DETERMINISITIC_SESSION)
+
+  def _DidLoadDocument(self, action_runner):
+    # 1. Wait until the spreadsheet loads.
+    action_runner.WaitForJavaScriptCondition(self.INTERACTIVE_EVENT)
+    # 2. Idle for 5 seconds for Chrome's timeToInteractive metric.
+    action_runner.Wait(5)
+    # 3. Prepare for observing calcuation events.
+    action_runner.EvaluateJavaScript(self.CLEAR_EVENTS)
+    # 4. Recalculate the column.
+    action_runner.EvaluateJavaScript(self.RECALCULATE_COLUMN)
+    # 5. Wait for calculation completion.
+    action_runner.WaitForJavaScriptCondition(self.CALC_BEGIN_EVENT)
+    action_runner.WaitForJavaScriptCondition(self.CALC_END_EVENT)
 
 
 ##############################################################################

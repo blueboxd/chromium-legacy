@@ -1249,6 +1249,7 @@ jumbo_component("base") {
     "//base/allocator:buildflags",
     "//base/third_party/double_conversion",
     "//base/third_party/dynamic_annotations",
+    "//build:branding_buildflags",
     "//third_party/modp_b64",
   ]
 

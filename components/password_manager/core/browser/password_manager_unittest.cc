@@ -110,7 +110,7 @@ class MockStoreResultFilter : public StubCredentialsFilter {
  public:
   MOCK_CONST_METHOD1(ShouldSave, bool(const autofill::PasswordForm& form));
   MOCK_CONST_METHOD1(ReportFormLoginSuccess,
-                     void(const PasswordFormManagerInterface& form_manager));
+                     void(const PasswordFormManager& form_manager));
   MOCK_CONST_METHOD1(IsSyncAccountEmail, bool(const std::string&));
   MOCK_CONST_METHOD1(ShouldSaveGaiaPasswordHash,
                      bool(const autofill::PasswordForm&));
@@ -2123,7 +2123,7 @@ TEST_F(PasswordManagerTest, SetGenerationElementAndReasonForForm) {
   EXPECT_CALL(*store_, AddLogin(_));
   manager()->OnPresaveGeneratedPassword(&driver_, form);
 
-  const PasswordFormManagerInterface* form_manager =
+  const PasswordFormManager* form_manager =
       manager()->form_managers().front().get();
 
   EXPECT_TRUE(form_manager->HasGeneratedPassword());

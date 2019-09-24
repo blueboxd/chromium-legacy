@@ -21,9 +21,9 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
-#include "base/callback_list.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "base/optional.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_observer.h"
 #include "components/signin/public/base/account_consistency_method.h"
@@ -43,8 +43,17 @@ enum class SignoutDelete;
 
 class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
  public:
-  typedef base::RepeatingCallback<void(const CoreAccountInfo&)>
-      AccountSigninCallback;
+  class Observer : public base::CheckedObserver {
+   public:
+    // Called whenever a user signs into Google services such as sync.
+    // Not called during a reauth.
+    virtual void GoogleSigninSucceeded(const CoreAccountInfo& info) {}
+
+#if !defined(OS_CHROMEOS)
+    // Called whenever the currently signed-in user has been signed out.
+    virtual void GoogleSignedOut(const CoreAccountInfo& info) {}
+#endif
+  };
 
 #if !defined(OS_CHROMEOS)
   // Used to remove accounts from the token service and the account tracker.
@@ -95,16 +104,6 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
   // Returns true if there is an authenticated user.
   bool IsAuthenticated() const;
 
-  // If set, this callback will be invoked whenever a user signs into Google
-  // services such as sync. This callback is not called during a reauth.
-  void SetGoogleSigninSucceededCallback(AccountSigninCallback callback);
-
-#if !defined(OS_CHROMEOS)
-  // If set, this callback will be invoked whenever the currently signed-in user
-  // for a user has been signed out.
-  void SetGoogleSignedOutCallback(AccountSigninCallback callback);
-#endif
-
   // Signs a user in. PrimaryAccountManager assumes that |username| can be used
   // to look up the corresponding account_id and gaia_id for this email.
   void SignIn(const std::string& username);
@@ -139,6 +138,10 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
       signin_metrics::ProfileSignout signout_source_metric,
       signin_metrics::SignoutDelete signout_delete_metric);
 #endif
+
+  // Adds and removes observers.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(const Observer* observer);
 
  private:
   // Sets the authenticated user's account id.
@@ -179,20 +182,12 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
   // Account id after successful authentication.
   base::Optional<CoreAccountInfo> authenticated_account_info_;
 
-  // Callbacks which will be invoked, if set, for signin-related events.
-  AccountSigninCallback on_google_signin_succeeded_callback_;
-#if !defined(OS_CHROMEOS)
-  AccountSigninCallback on_google_signed_out_callback_;
-#endif
-
-  // The list of callbacks notified on shutdown.
-  base::CallbackList<void()> on_shutdown_callback_list_;
-
 #if !defined(OS_CHROMEOS)
   signin::AccountConsistencyMethod account_consistency_;
 #endif
 
   std::unique_ptr<PrimaryAccountPolicyManager> policy_manager_;
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(PrimaryAccountManager);
 };

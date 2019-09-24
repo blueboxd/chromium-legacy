@@ -17,8 +17,8 @@ namespace device {
 
 VROrientationDeviceProvider::VROrientationDeviceProvider(
     service_manager::Connector* connector) {
-  connector->BindInterface(device::mojom::kServiceName,
-                           mojo::MakeRequest(&sensor_provider_));
+  connector->Connect(device::mojom::kServiceName,
+                     sensor_provider_.BindNewPipeAndPassReceiver());
 }
 
 VROrientationDeviceProvider::~VROrientationDeviceProvider() = default;
@@ -45,7 +45,7 @@ void VROrientationDeviceProvider::Initialize(
 
   if (!device_) {
     device_ = std::make_unique<VROrientationDevice>(
-        &sensor_provider_,
+        sensor_provider_.get(),
         base::BindOnce(&VROrientationDeviceProvider::DeviceInitialized,
                        base::Unretained(this)));
     add_device_callback_ = add_device_callback;

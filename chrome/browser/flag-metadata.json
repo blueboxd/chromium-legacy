@@ -2479,6 +2479,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "ntp-dismiss-promos",
+    "owners": ["dbeam"],
+    "expiry_milestone": 82
+  },
+  {
     "name": "ntp-realbox",
     "owners": ["dbeam", "mahmadi"],
     "expiry_milestone": 85

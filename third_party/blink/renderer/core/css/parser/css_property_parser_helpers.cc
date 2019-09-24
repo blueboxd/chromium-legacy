@@ -216,8 +216,12 @@ class CalcParser {
               CSSMathExpressionNode::ParseMax(ConsumeFunction(range_)),
               value_range);
           return;
+        case CSSValueID::kClamp:
+          calc_value_ = CSSMathFunctionValue::Create(
+              CSSMathExpressionNode::ParseClamp(ConsumeFunction(range_)),
+              value_range);
+          return;
         default:
-          // TODO(crbug.com/825895): Support clamp() when min()/max() are done.
           break;
       }
     }

@@ -101,7 +101,7 @@ void ModelTypeRegistry::ConnectNonBlockingType(
 
   std::unique_ptr<Cryptographer> cryptographer_copy;
   if (encrypted_types_.Has(type))
-    cryptographer_copy = std::make_unique<Cryptographer>(*cryptographer_);
+    cryptographer_copy = cryptographer_->Clone();
 
   DataTypeDebugInfoEmitter* emitter = GetEmitter(type);
   if (emitter == nullptr) {
@@ -352,7 +352,7 @@ void ModelTypeRegistry::OnEncryptionComplete() {}
 
 void ModelTypeRegistry::OnCryptographerStateChanged(
     Cryptographer* cryptographer) {
-  cryptographer_ = std::make_unique<Cryptographer>(*cryptographer);
+  cryptographer_ = cryptographer->Clone();
   OnEncryptionStateChanged();
 }
 
@@ -369,8 +369,7 @@ void ModelTypeRegistry::OnPassphraseTypeChanged(PassphraseType type,
 void ModelTypeRegistry::OnEncryptionStateChanged() {
   for (const auto& worker : model_type_workers_) {
     if (encrypted_types_.Has(worker->GetModelType())) {
-      worker->UpdateCryptographer(
-          std::make_unique<Cryptographer>(*cryptographer_));
+      worker->UpdateCryptographer(cryptographer_->Clone());
     }
   }
 }

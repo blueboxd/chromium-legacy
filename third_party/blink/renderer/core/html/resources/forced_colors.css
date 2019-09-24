@@ -106,6 +106,45 @@
     color: GrayText;
   }
 
+  select:-internal-list-box {
+    background-color: Window !important;
+    border-color: ButtonText;
+  }
+
+  /* option disabled */
+  select:-internal-list-box option:disabled,
+  select:-internal-list-box option:disabled:hover,
+  select:-internal-list-box:disabled option,
+  select:-internal-list-box:disabled option:hover {
+    background-color: Window !important;
+    color: GrayText !important;
+  }
+
+  /* option selected */
+  select:-internal-list-box:focus option:checked,
+  select:-internal-list-box:focus option:checked:hover,
+  select:-internal-list-box option:checked,
+  select:-internal-list-box option:checked:hover {
+    background-color: Window !important;
+    color: Highlight !important;
+  }
+
+  /* option both disabled and selected */
+  select:-internal-list-box:focus option:checked:disabled,
+  select:-internal-list-box:focus option:checked:disabled:hover,
+  select:-internal-list-box:disabled option:checked,
+  select:-internal-list-box:disabled option:checked:hover,
+  select:-internal-list-box option:checked:disabled,
+  select:-internal-list-box option:checked:disabled:hover {
+    background-color: Window !important;
+    color: GrayText !important;
+  }
+
+  select:-internal-list-box option:hover {
+    background-color: Window;
+    color: Highlight;
+  }
+
   select {
     background: Window;
     border-color: WindowText;

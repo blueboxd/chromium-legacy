@@ -39,6 +39,8 @@
 #include "third_party/blink/renderer/core/css/document_style_sheet_collector.h"
 #include "third_party/blink/renderer/core/css/font_face_cache.h"
 #include "third_party/blink/renderer/core/css/invalidation/invalidation_set.h"
+#include "third_party/blink/renderer/core/css/media_feature_overrides.h"
+#include "third_party/blink/renderer/core/css/media_values.h"
 #include "third_party/blink/renderer/core/css/property_registration.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
@@ -1863,6 +1865,11 @@ void StyleEngine::UpdateColorScheme() {
 
   PreferredColorScheme old_preferred_color_scheme = preferred_color_scheme_;
   preferred_color_scheme_ = settings->GetPreferredColorScheme();
+  if (auto* overrides = GetDocument().GetPage()->GetMediaFeatureOverrides()) {
+    MediaQueryExpValue value = overrides->GetOverride("prefers-color-scheme");
+    if (value.IsValid())
+      preferred_color_scheme_ = CSSValueIDToPreferredColorScheme(value.id);
+  }
   bool use_dark_scheme =
       preferred_color_scheme_ == PreferredColorScheme::kDark &&
       SupportsDarkColorScheme();

@@ -15,8 +15,8 @@
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "extensions/browser/extension_prefs_observer.h"
 #include "extensions/browser/extension_registry_observer.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 class Profile;
@@ -125,7 +125,7 @@ class ExtensionApps : public apps::mojom::Publisher,
                      apps::mojom::Readiness readiness,
                      std::vector<apps::mojom::AppPtr>* apps_out);
 
-  mojo::Binding<apps::mojom::Publisher> binding_;
+  mojo::Receiver<apps::mojom::Publisher> receiver_{this};
   mojo::InterfacePtrSet<apps::mojom::Subscriber> subscribers_;
 
   Profile* profile_;

@@ -32,6 +32,7 @@ test("gcp_unittests") {
     "../gaiacp:version",
     "../setup:common",
     "//base",
+    "//build:branding_buildflags",
     "//chrome/test:credential_provider_test_utils",
     "//net:test_support",
     "//testing/gmock",

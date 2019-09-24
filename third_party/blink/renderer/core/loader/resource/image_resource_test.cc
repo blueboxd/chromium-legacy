@@ -662,36 +662,6 @@ TEST(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderForPlaceholder) {
                                          observer.get(), false);
 }
 
-TEST(ImageResourceReloadTest, ReloadLoFiImagesWithDuplicateURLs) {
-  KURL test_url(kTestURL);
-  ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
-  ResourceFetcher* fetcher = CreateFetcher();
-
-  FetchParameters placeholder_params{ResourceRequest(test_url)};
-  placeholder_params.SetAllowImagePlaceholder();
-  ImageResource* placeholder_resource =
-      ImageResource::Fetch(placeholder_params, fetcher);
-  EXPECT_EQ(FetchParameters::kAllowPlaceholder,
-            placeholder_params.GetImageRequestOptimization());
-  EXPECT_TRUE(placeholder_resource->ShouldShowPlaceholder());
-
-  FetchParameters full_image_params{ResourceRequest(test_url)};
-  ImageResource* full_image_resource =
-      ImageResource::Fetch(full_image_params, fetcher);
-  EXPECT_EQ(FetchParameters::kNone,
-            full_image_params.GetImageRequestOptimization());
-  EXPECT_FALSE(full_image_resource->ShouldShowPlaceholder());
-
-  // The |placeholder_resource| should not be reused for the
-  // |full_image_resource|.
-  EXPECT_NE(placeholder_resource, full_image_resource);
-
-  fetcher->ReloadLoFiImages();
-
-  EXPECT_FALSE(placeholder_resource->ShouldShowPlaceholder());
-  EXPECT_FALSE(full_image_resource->ShouldShowPlaceholder());
-}
-
 TEST(ImageResourceTest, SVGImage) {
   KURL url("http://127.0.0.1:8000/foo");
   ImageResource* image_resource = ImageResource::CreateForTest(url);

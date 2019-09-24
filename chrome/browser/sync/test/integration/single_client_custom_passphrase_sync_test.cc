@@ -144,10 +144,7 @@ class SingleClientCustomPassphraseSyncTest : public SyncTest {
     EXPECT_TRUE(GetServerNigori(GetFakeServer(), &nigori));
     EXPECT_EQ(ProtoPassphraseInt32ToEnum(nigori.passphrase_type()),
               PassphraseType::kCustomPassphrase);
-    auto cryptographer = std::make_unique<Cryptographer>();
-    InitCustomPassphraseCryptographerFromNigori(nigori, cryptographer.get(),
-                                                passphrase);
-    return cryptographer;
+    return InitCustomPassphraseCryptographerFromNigori(nigori, passphrase);
   }
 
   // A cryptographer initialized with the given KeyParams has not "seen" the
@@ -155,7 +152,7 @@ class SingleClientCustomPassphraseSyncTest : public SyncTest {
   // does not depend on external info.
   std::unique_ptr<Cryptographer> CreateCryptographerWithKeyParams(
       const KeyParams& key_params) {
-    auto cryptographer = std::make_unique<Cryptographer>();
+    auto cryptographer = std::make_unique<syncer::DirectoryCryptographer>();
     cryptographer->AddKey(key_params);
     return cryptographer;
   }

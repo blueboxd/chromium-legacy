@@ -15,8 +15,8 @@
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 class PrefChangeRegistrar;
@@ -93,7 +93,7 @@ class CrostiniApps : public KeyedService,
   void PublishAppID(const std::string& app_id, PublishAppIDType type);
   void Publish(apps::mojom::AppPtr app);
 
-  mojo::Binding<apps::mojom::Publisher> binding_;
+  mojo::Receiver<apps::mojom::Publisher> receiver_{this};
   mojo::InterfacePtrSet<apps::mojom::Subscriber> subscribers_;
 
   Profile* profile_;

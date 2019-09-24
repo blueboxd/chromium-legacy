@@ -25,6 +25,7 @@ class COMPONENT_EXPORT(RESOURCE_COORDINATOR_PUBLIC_MEMORY_INSTRUMENTATION)
  public:
   using MemoryDumpType = base::trace_event::MemoryDumpType;
   using MemoryDumpLevelOfDetail = base::trace_event::MemoryDumpLevelOfDetail;
+  using MemoryDumpDeterminism = base::trace_event::MemoryDumpDeterminism;
   using RequestGlobalDumpCallback =
       base::OnceCallback<void(bool success,
                               std::unique_ptr<GlobalMemoryDump> dump)>;
@@ -93,6 +94,7 @@ class COMPONENT_EXPORT(RESOURCE_COORDINATOR_PUBLIC_MEMORY_INSTRUMENTATION)
   void RequestGlobalDumpAndAppendToTrace(
       MemoryDumpType,
       MemoryDumpLevelOfDetail,
+      MemoryDumpDeterminism,
       RequestGlobalMemoryDumpAndAppendToTraceCallback);
 
  private:

@@ -5,28 +5,36 @@
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 
 #include "base/bind_helpers.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 
 namespace web_app {
 
-WebAppRegistryUpdate::WebAppRegistryUpdate(WebAppSyncBridge* sync_bridge)
-    : sync_bridge_(sync_bridge) {}
+WebAppRegistryUpdate::WebAppRegistryUpdate(
+    WebAppRegistrarMutable* mutable_registrar)
+    : mutable_registrar_(mutable_registrar) {}
 
 WebAppRegistryUpdate::~WebAppRegistryUpdate() = default;
 
 WebApp* WebAppRegistryUpdate::UpdateApp(const AppId& app_id) {
-  WebApp* app = sync_bridge_->GetAppByIdMutable(app_id);
+  WebApp* app = mutable_registrar_->GetAppByIdMutable(app_id);
   if (app)
     apps_to_update_.insert(app);
 
   return app;
 }
 
+WebAppRegistryUpdate::AppsToUpdate WebAppRegistryUpdate::TakeAppsToUpdate() {
+  AppsToUpdate apps_to_update = std::move(apps_to_update_);
+  apps_to_update_.clear();
+  return apps_to_update;
+}
+
 ScopedRegistryUpdate::ScopedRegistryUpdate(WebAppSyncBridge* sync_bridge)
-    : update_(sync_bridge->BeginUpdate()) {}
+    : update_(sync_bridge->BeginUpdate()), sync_bridge_(sync_bridge) {}
 
 ScopedRegistryUpdate::~ScopedRegistryUpdate() {
-  update_->sync_bridge_->CommitUpdate(std::move(update_), base::DoNothing());
+  sync_bridge_->CommitUpdate(std::move(update_), base::DoNothing());
 }
 
 }  // namespace web_app

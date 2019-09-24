@@ -113,6 +113,9 @@
         },
         "browse:tools:maps:2019": {
             "DEFAULT": "system_health_desktop_feb332ef0c.wprgo"
+	},
+        "browse:tools:sheets:2019": {
+            "DEFAULT": "system_health_desktop_d7b02362d8.wprgo"
         },
         "browse_accessibility:media:youtube": {
             "DEFAULT": "system_health_desktop_062.wprgo"

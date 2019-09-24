@@ -285,10 +285,6 @@
       status: "experimental",
     },
     {
-      name: "ClientHintsFeaturePolicy",
-      status: "experimental",
-    },
-    {
       name: "ClientPlaceholdersForServerLoFi",
     },
     {
@@ -1567,11 +1563,6 @@
     {
       name: "StackedCSSPropertyAnimations",
       status: "experimental",
-    },
-    {
-      name: "StaleWhileRevalidate",
-      origin_trial_feature_name: "StaleWhileRevalidate",
-      status: "stable",
     },
     {
       // Enabled when blink::features::kStorageAccessAPI is enabled.

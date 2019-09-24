@@ -7,7 +7,6 @@
 #include "base/no_destructor.h"
 #include "content/public/common/service_names.mojom.h"
 #include "services/content/public/cpp/manifest.h"
-#include "services/file/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
 
 namespace content {
@@ -200,7 +199,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
               "navigation:service_worker", "renderer",
               std::set<const char*>{
                   "blink.mojom.CacheStorage", "blink.mojom.CookieStore",
-                  "blink.mojom.ContentIndexService", "blink.mojom.IDBFactory",
+                  "blink.mojom.IDBFactory",
                   "blink.mojom.NativeFileSystemManager",
                   "blink.mojom.NotificationService",
                   "blink.mojom.PermissionService",
@@ -220,13 +219,10 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.AnchorElementMetricsHost",
                   "blink.mojom.CacheStorage",
                   "blink.mojom.ColorChooserFactory",
-                  "blink.mojom.ContactsManager",
-                  "blink.mojom.ContentIndexService",
                   "blink.mojom.DateTimeChooser",
                   "blink.mojom.DisplayCutoutHost",
                   "blink.mojom.DedicatedWorkerHostFactory",
                   "blink.mojom.GeolocationService",
-                  "blink.mojom.HidService",
                   "blink.mojom.IDBFactory",
                   "blink.mojom.InsecureInputService",
                   "blink.mojom.KeyboardLockService",
@@ -247,7 +243,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.TextSuggestionHost",
                   "blink.mojom.UnhandledTapNotifier",
                   "blink.mojom.WakeLockService",
-                  "blink.mojom.WebBluetoothService",
                   "blink.mojom.WebUsbService",
                   "content.mojom.BrowserTarget",
                   "content.mojom.InputInjector",
@@ -261,7 +256,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "device.mojom.VRService",
                   "discardable_memory.mojom.DiscardableSharedMemoryManager",
                   "media.mojom.FuchsiaCdmProvider",
-                  "media.mojom.ImageCapture",
                   "media.mojom.InterfaceFactory",
                   "media.mojom.MediaMetricsProvider",
                   "media.mojom.RemoterFactory",
@@ -280,7 +274,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .RequireInterfaceFilterCapability_Deprecated(
               mojom::kRendererServiceName, "navigation:frame", "browser")
           .PackageService(content::GetManifest())
-          .PackageService(file::GetManifest())
           .Build()};
   return *manifest;
   // clang-format on

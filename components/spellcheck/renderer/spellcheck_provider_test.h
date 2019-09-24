@@ -12,7 +12,7 @@
 #include "build/build_config.h"
 #include "components/spellcheck/renderer/empty_local_interface_provider.h"
 #include "components/spellcheck/renderer/spellcheck_provider.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_text_checking_completion.h"
@@ -109,8 +109,8 @@ class TestingSpellCheckProvider : public SpellCheckProvider,
   // Message loop (if needed) to deliver the SpellCheckHost request flow.
   std::unique_ptr<base::MessageLoop> loop_;
 
-  // Binding to receive the SpellCheckHost request flow.
-  mojo::Binding<spellcheck::mojom::SpellCheckHost> binding_;
+  // Receiver to receive the SpellCheckHost request flow.
+  mojo::Receiver<spellcheck::mojom::SpellCheckHost> receiver_{this};
 };
 
 // SpellCheckProvider test fixture.

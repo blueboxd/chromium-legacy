@@ -25,6 +25,7 @@
 #include "components/security_interstitials/content/unsafe_resource.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace history {
 class HistoryService;
@@ -166,7 +167,7 @@ class ThreatDetails : public content::WebContentsObserver {
   void RequestThreatDOMDetails(content::RenderFrameHost* frame);
 
   void OnReceivedThreatDOMDetails(
-      mojom::ThreatReporterPtr threat_reporter,
+      mojo::Remote<mojom::ThreatReporter> threat_reporter,
       content::RenderFrameHost* sender,
       std::vector<mojom::ThreatDOMDetailsNodePtr> params);
 

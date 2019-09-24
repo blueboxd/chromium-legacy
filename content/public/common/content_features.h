@@ -118,7 +118,6 @@ CONTENT_EXPORT extern const base::Feature kSignedHTTPExchange;
 CONTENT_EXPORT extern const base::Feature kSignedHTTPExchangePingValidity;
 CONTENT_EXPORT extern const base::Feature kSmsReceiver;
 CONTENT_EXPORT extern const base::Feature kSpareRendererForSitePerProcess;
-CONTENT_EXPORT extern const base::Feature kStaleWhileRevalidate;
 CONTENT_EXPORT extern const base::Feature kStoragePressureUI;
 CONTENT_EXPORT extern const base::Feature kStrictOriginIsolation;
 CONTENT_EXPORT extern const base::Feature kSyntheticPointerActions;

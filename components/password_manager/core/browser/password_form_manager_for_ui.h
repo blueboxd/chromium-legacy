@@ -19,7 +19,6 @@ struct PasswordForm;
 
 namespace password_manager {
 
-class FormFetcher;
 struct InteractionsStats;
 class PasswordFormMetricsRecorder;
 
@@ -96,64 +95,6 @@ class PasswordFormManagerForUI {
 
   // Called when the passwords were shown on on the bubble without obfuscation.
   virtual void OnPasswordsRevealed() = 0;
-};
-
-class PasswordManagerDriver;
-
-// This is a temporary class for unification of processing of old an new
-// PasswordFormManager in PasswordManager.
-// TODO(https://crbug.com/831123): Remove when the old PasswordFormManager is
-// gone.
-class PasswordFormManagerInterface : public PasswordFormManagerForUI {
- public:
-  // Returns whether it is a new (i.e. not saved yet) credentials.
-  virtual bool IsNewLogin() const = 0;
-
-  // Returns the form fetcher which is responsible for fetching saved matches
-  // from the store for the observed from.
-  virtual FormFetcher* GetFormFetcher() = 0;
-
-  // Returns true if the current pending credentials were found using
-  // origin matching of the public suffix, instead of the signon realm of the
-  // form.
-  virtual bool IsPendingCredentialsPublicSuffixMatch() const = 0;
-
-  // Called when generated password is accepted or changed by user.
-  virtual void PresaveGeneratedPassword(const autofill::PasswordForm& form) = 0;
-
-  // Called when user removed a generated password.
-  virtual void PasswordNoLongerGenerated() = 0;
-
-  // Returns if the password was generated.
-  virtual bool HasGeneratedPassword() const = 0;
-
-  // Called when the generation popup is shown. |is_manual_generation| true if
-  // the generation was initiated by the user. It is used for metrics and votes
-  // uploading.
-  // TODO(https://crbug.com/831123): Remove |generation_popup_was_shown| it is
-  // always true.
-  virtual void SetGenerationPopupWasShown(bool generation_popup_was_shown,
-                                          bool is_manual_generation) = 0;
-
-  // Called when the generation element with identifier |generation_element| is
-  // found on the page. It is used for metrics and votes uploading.
-  virtual void SetGenerationElement(
-      const base::string16& generation_element) = 0;
-
-  // True if we consider this form to be a change password form without username
-  // field. We use only client heuristics, so it could include signup forms.
-  virtual bool IsPossibleChangePasswordFormWithoutUsername() const = 0;
-
-  // Helper function that determines whether update or save prompt should be
-  // shown for credentials in |provisional_save_manager|.
-  virtual bool IsPasswordUpdate() const = 0;
-
-  // Returns the drivers representing all the frames for the form.
-  virtual std::vector<base::WeakPtr<PasswordManagerDriver>> GetDrivers()
-      const = 0;
-
-  // Returns the submitted form, if it exists, otherwise nullptr.
-  virtual const autofill::PasswordForm* GetSubmittedForm() const = 0;
 };
 
 }  // namespace  password_manager

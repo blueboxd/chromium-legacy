@@ -5,8 +5,10 @@
 #include "ash/public/cpp/shelf_config.h"
 
 #include "ash/app_list/test/app_list_test_helper.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -139,6 +141,40 @@ TEST_F(ShelfConfigTest, ShelfSizeChangesWithContext) {
   EXPECT_EQ(control_tablet_dense_home, control_clamshell_home);
   EXPECT_EQ(control_clamshell_home, control_clamshell_in_app);
   EXPECT_LT(control_tablet_dense_home, control_tablet_standard_home);
+}
+
+// Make sure that we consider ourselves inside an app when appropriate.
+TEST_F(ShelfConfigTest, InAppMode) {
+  SessionInfo info;
+  info.state = session_manager::SessionState::ACTIVE;
+  Shell::Get()->session_controller()->SetSessionInfo(info);
+
+  // Go into tablet mode, open a window. Now we're in an app.
+  SetTabletMode(true);
+  std::unique_ptr<views::Widget> widget = CreateTestWidget();
+  EXPECT_TRUE(ShelfConfig::Get()->is_in_app());
+
+  // Close the window. We should be back on the home screen.
+  widget->Close();
+  EXPECT_FALSE(ShelfConfig::Get()->is_in_app());
+
+  // Open a window again.
+  widget = CreateTestWidget();
+  EXPECT_TRUE(ShelfConfig::Get()->is_in_app());
+
+  // Now go into overview.
+  OverviewController* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+  EXPECT_FALSE(ShelfConfig::Get()->is_in_app());
+
+  // Back to the app.
+  overview_controller->EndOverview();
+  EXPECT_TRUE(ShelfConfig::Get()->is_in_app());
+
+  // Leave the session.
+  info.state = session_manager::SessionState::LOGIN_PRIMARY;
+  Shell::Get()->session_controller()->SetSessionInfo(info);
+  EXPECT_FALSE(ShelfConfig::Get()->is_in_app());
 }
 
 }  // namespace ash

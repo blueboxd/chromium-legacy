@@ -14,6 +14,8 @@
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/web/web_text_check_client.h"
 
 class SpellCheck;
@@ -68,8 +70,9 @@ class SpellCheckProvider
   class DictionaryUpdateObserverImpl;
 
   // Sets the SpellCheckHost (for unit tests).
-  void SetSpellCheckHostForTesting(spellcheck::mojom::SpellCheckHostPtr host) {
-    spell_check_host_ = std::move(host);
+  void SetSpellCheckHostForTesting(
+      mojo::PendingRemote<spellcheck::mojom::SpellCheckHost> host) {
+    spell_check_host_.Bind(std::move(host));
   }
 
   // Reset dictionary_update_observer_ in TestingSpellCheckProvider dtor.
@@ -132,7 +135,7 @@ class SpellCheckProvider
   service_manager::LocalInterfaceProvider* embedder_provider_;
 
   // Interface to the SpellCheckHost.
-  spellcheck::mojom::SpellCheckHostPtr spell_check_host_;
+  mojo::Remote<spellcheck::mojom::SpellCheckHost> spell_check_host_;
 
   // Dictionary updated observer.
   std::unique_ptr<DictionaryUpdateObserverImpl> dictionary_update_observer_;

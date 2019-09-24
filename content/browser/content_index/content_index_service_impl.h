@@ -15,17 +15,21 @@ class GURL;
 
 namespace content {
 
-class RenderProcessHost;
+class RenderFrameHost;
+struct ServiceWorkerVersionInfo;
 
 // Lazily constructed by the corresponding renderer when the Content Index API
 // is triggered.
 class CONTENT_EXPORT ContentIndexServiceImpl
     : public blink::mojom::ContentIndexService {
  public:
-  static void Create(
-      mojo::PendingReceiver<blink::mojom::ContentIndexService> receiver,
-      RenderProcessHost* render_process_host,
-      const url::Origin& origin);
+  static void CreateForFrame(
+      RenderFrameHost* render_frame_host,
+      mojo::PendingReceiver<blink::mojom::ContentIndexService> receiver);
+
+  static void CreateForWorker(
+      const ServiceWorkerVersionInfo& info,
+      mojo::PendingReceiver<blink::mojom::ContentIndexService> receiver);
 
   ContentIndexServiceImpl(
       const url::Origin& origin,

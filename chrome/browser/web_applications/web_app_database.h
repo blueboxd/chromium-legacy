@@ -45,19 +45,15 @@ class WebAppDatabase {
   // Exposed for testing.
   static std::unique_ptr<WebAppProto> CreateWebAppProto(const WebApp& web_app);
   // Exposed for testing.
-  static std::unique_ptr<WebApp> CreateWebApp(const WebAppProto& proto);
-  // Exposed for testing.
-  void ReadRegistry(RegistryOpenedCallback callback);
-  // Exposed for testing.
   static std::unique_ptr<WebApp> ParseWebApp(const AppId& app_id,
                                              const std::string& value);
 
  private:
-  void CreateStore(syncer::OnceModelTypeStoreFactory store_factory,
-                   base::OnceClosure closure);
-  void OnStoreCreated(base::OnceClosure closure,
-                      const base::Optional<syncer::ModelError>& error,
-                      std::unique_ptr<syncer::ModelTypeStore> store);
+  static std::unique_ptr<WebApp> CreateWebApp(const WebAppProto& proto);
+
+  void OnDatabaseOpened(RegistryOpenedCallback callback,
+                        const base::Optional<syncer::ModelError>& error,
+                        std::unique_ptr<syncer::ModelTypeStore> store);
 
   void OnAllDataRead(
       RegistryOpenedCallback callback,

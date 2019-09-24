@@ -36,9 +36,6 @@
 class FakeProfileOAuth2TokenService : public ProfileOAuth2TokenService {
  public:
   explicit FakeProfileOAuth2TokenService(PrefService* user_prefs);
-  FakeProfileOAuth2TokenService(
-      PrefService* user_prefs,
-      std::unique_ptr<ProfileOAuth2TokenServiceDelegate> delegate);
   ~FakeProfileOAuth2TokenService() override;
 
   // Gets a list of active requests (can be used by tests to validate that the

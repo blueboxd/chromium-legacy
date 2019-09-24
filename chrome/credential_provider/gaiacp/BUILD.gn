@@ -37,6 +37,7 @@ source_set("common") {
   deps = [
     ":string_resources",
     "//base",
+    "//build:branding_buildflags",
     "//chrome/common:version_header",
     "//components/crash/core/common",
     "//components/version_info",
@@ -105,6 +106,7 @@ source_set("gaiacp_lib") {
     ":gaia_credential_provider_idl",
     ":static_resources",
     "../eventlog:gcp_eventlog_messages",
+    "//build:branding_buildflags",
     "//chrome/common:version_header",
     "//chrome/installer/launcher_support",
     "//components/crash/content/app:app",
@@ -212,6 +214,7 @@ shared_library("gaia1_0") {
     ":common",
     ":gaiacp_lib",
     ":version",
+    "//build:branding_buildflags",
     "//chrome/common:version_header",
   ]
   configs += [ "//build/config/win:windowed" ]

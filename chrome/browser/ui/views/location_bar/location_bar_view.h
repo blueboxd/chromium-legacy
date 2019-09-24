@@ -44,7 +44,7 @@ class KeywordHintView;
 class LocationIconView;
 enum class OmniboxPart;
 class OmniboxPopupView;
-class OmniboxPageActionIconContainerView;
+class PageActionIconContainerView;
 class Profile;
 class SelectedKeywordView;
 
@@ -129,9 +129,8 @@ class LocationBarView : public LocationBar,
   // Returns the delegate.
   Delegate* delegate() const { return delegate_; }
 
-  OmniboxPageActionIconContainerView*
-  omnibox_page_action_icon_container_view() {
-    return omnibox_page_action_icon_container_view_;
+  PageActionIconContainerView* page_action_icon_container() {
+    return page_action_icon_container_;
   }
 
   // Returns the screen coordinates of the omnibox (where the URL text appears,
@@ -374,8 +373,7 @@ class LocationBarView : public LocationBar,
   ContentSettingViews content_setting_views_;
 
   // The page action icons.
-  OmniboxPageActionIconContainerView* omnibox_page_action_icon_container_view_ =
-      nullptr;
+  PageActionIconContainerView* page_action_icon_container_ = nullptr;
 
   // An [x] that appears in touch mode (when the OSK is visible) and allows the
   // user to clear all text.

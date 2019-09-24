@@ -5,6 +5,5 @@
 // https://gpuweb.github.io/gpuweb/
 
 dictionary GPUPipelineDescriptorBase {
-    DOMString label;
     required GPUPipelineLayout layout;
 };

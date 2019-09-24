@@ -648,6 +648,7 @@
       'android-cronet-arm-dbg': 'android_cronet_debug_static_bot_arm_no_neon',
       'android-kitkat-arm-coverage-rel': 'android_release_trybot_java_coverage',
       'android-kitkat-arm-rel': 'android_release_trybot',
+      'android-marshmallow-arm64-coverage-rel': 'gpu_tests_android_release_trybot_arm64_resource_whitelisting_java_coverage',
       'android-marshmallow-arm64-rel': 'gpu_tests_android_release_trybot_arm64_resource_whitelisting',
       'android-marshmallow-x86-fyi-rel': 'android_release_trybot_x86_resource_whitelisting',
       'android-oreo-arm64-cts-networkservice-dbg': 'android_debug_trybot_arm64',
@@ -1584,6 +1585,11 @@
 
     'gpu_tests_android_release_trybot_arm64_resource_whitelisting': [
       'android', 'release_trybot', 'arm64', 'static_angle', 'resource_whitelisting',
+    ],
+
+    'gpu_tests_android_release_trybot_arm64_resource_whitelisting_java_coverage': [
+      'android', 'release_trybot', 'arm64', 'static_angle', 'resource_whitelisting',
+      'java_coverage',
     ],
 
     'gpu_tests_android_vulkan_release_trybot': [

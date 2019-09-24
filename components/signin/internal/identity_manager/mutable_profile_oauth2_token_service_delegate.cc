@@ -438,6 +438,7 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadCredentials(
     set_load_credentials_state(
         signin::LoadCredentialsState::
             LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS);
+    MaybeDeletePreDiceTokens();
     FinishLoadingCredentials();
     return;
   }
@@ -476,6 +477,7 @@ void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
     set_load_credentials_state(
         signin::LoadCredentialsState::
             LOAD_CREDENTIALS_FINISHED_WITH_DB_CANNOT_BE_OPENED);
+    MaybeDeletePreDiceTokens();
   }
 
   // Make sure that we have an entry for |loading_primary_account_id_| in the
@@ -848,6 +850,10 @@ void MutableProfileOAuth2TokenServiceDelegate::AddAccountStatus(
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::FinishLoadingCredentials() {
+#if !defined(OS_CHROMEOS)
+  if (account_consistency_ == signin::AccountConsistencyMethod::kDice)
+    DCHECK(client_->GetPrefs()->GetBoolean(prefs::kTokenServiceDiceCompatible));
+#endif
   FireRefreshTokensLoaded();
 }
 
@@ -866,5 +872,20 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeCredentialsImpl(
     refresh_tokens_.erase(account_id);
     ClearPersistedCredentials(account_id);
     FireRefreshTokenRevoked(account_id);
+  }
+}
+
+void MutableProfileOAuth2TokenServiceDelegate::MaybeDeletePreDiceTokens() {
+  DCHECK(load_credentials_state() ==
+             signin::LoadCredentialsState::
+                 LOAD_CREDENTIALS_FINISHED_WITH_UNKNOWN_ERRORS ||
+         load_credentials_state() ==
+             signin::LoadCredentialsState::
+                 LOAD_CREDENTIALS_FINISHED_WITH_DB_CANNOT_BE_OPENED);
+
+  if (account_consistency_ == signin::AccountConsistencyMethod::kDice &&
+      !client_->GetPrefs()->GetBoolean(prefs::kTokenServiceDiceCompatible)) {
+    RevokeAllCredentials();
+    client_->GetPrefs()->SetBoolean(prefs::kTokenServiceDiceCompatible, true);
   }
 }

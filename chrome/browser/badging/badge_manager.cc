@@ -47,9 +47,9 @@ void BadgeManager::SetDelegate(std::unique_ptr<BadgeManagerDelegate> delegate) {
   delegate_ = std::move(delegate);
 }
 
-void BadgeManager::BindRequest(
-    mojo::PendingReceiver<blink::mojom::BadgeService> receiver,
-    content::RenderFrameHost* frame) {
+void BadgeManager::BindReceiver(
+    content::RenderFrameHost* frame,
+    mojo::PendingReceiver<blink::mojom::BadgeService> receiver) {
   Profile* profile = Profile::FromBrowserContext(
       content::WebContents::FromRenderFrameHost(frame)->GetBrowserContext());
   badging::BadgeManager* badge_manager =

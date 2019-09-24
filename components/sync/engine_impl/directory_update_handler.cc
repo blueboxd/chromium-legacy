@@ -16,6 +16,7 @@
 #include "components/sync/engine_impl/cycle/status_controller.h"
 #include "components/sync/engine_impl/update_applicator.h"
 #include "components/sync/syncable/directory.h"
+#include "components/sync/syncable/directory_cryptographer.h"
 #include "components/sync/syncable/model_neutral_mutable_entry.h"
 #include "components/sync/syncable/syncable_changes_version.h"
 #include "components/sync/syncable/syncable_model_neutral_write_transaction.h"

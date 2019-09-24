@@ -27,7 +27,7 @@
 class AppMenuButton;
 class BrowserView;
 class ExtensionsToolbarContainer;
-class OmniboxPageActionIconContainerView;
+class PageActionIconContainerView;
 class WebAppOriginText;
 class WebAppMenuButton;
 
@@ -177,8 +177,7 @@ class WebAppFrameToolbarView : public views::AccessiblePaneView,
   // Owned by the views hierarchy.
   WebAppOriginText* web_app_origin_text_ = nullptr;
   ContentSettingsContainer* content_settings_container_ = nullptr;
-  OmniboxPageActionIconContainerView* omnibox_page_action_icon_container_view_ =
-      nullptr;
+  PageActionIconContainerView* page_action_icon_container_view_ = nullptr;
   BrowserActionsContainer* browser_actions_container_ = nullptr;
   ExtensionsToolbarContainer* extensions_container_ = nullptr;
   WebAppMenuButton* web_app_menu_button_ = nullptr;

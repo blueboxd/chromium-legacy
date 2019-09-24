@@ -932,7 +932,7 @@ function injectPromo(promo) {
   if (promo.promoId) {
     const dismiss = document.createElement('button');
     dismiss.classList.add(CLASSES.DISMISS_PROMO);
-    // TODO(crbug.com/1003508): title or aria-label.
+    dismiss.title = configData.translatedStrings.dismissPromo;
     dismiss.onclick = e => {
       ntpApiHandle.blocklistPromo(promo.promoId);
       promoContainer.remove();

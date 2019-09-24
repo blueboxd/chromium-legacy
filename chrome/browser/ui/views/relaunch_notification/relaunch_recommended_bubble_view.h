@@ -41,8 +41,6 @@ class RelaunchRecommendedBubbleView : public LocationBarBubbleDelegateView {
   bool ShouldShowCloseButton() const override;
   gfx::ImageSkia GetWindowIcon() override;
   bool ShouldShowWindowIcon() const override;
-  int GetHeightForWidth(int width) const override;
-  void Layout() override;
 
  protected:
   // LocationBarBubbleDelegateView:

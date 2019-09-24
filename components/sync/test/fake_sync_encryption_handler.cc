@@ -45,7 +45,7 @@ bool FakeSyncEncryptionHandler::ApplyNigoriUpdate(
       observer.OnPassphraseRequired(REASON_DECRYPTION,
                                     KeyDerivationParams::CreateForPbkdf2(),
                                     pending_keys);
-  } else if (!cryptographer_.is_ready()) {
+  } else if (!cryptographer_.CanEncrypt()) {
     DVLOG(1) << "OnPassphraseRequired sent because cryptographer is not "
              << "ready";
     for (auto& observer : observers_) {
@@ -86,6 +86,12 @@ bool FakeSyncEncryptionHandler::SetKeystoreKeys(
 }
 
 const Cryptographer* FakeSyncEncryptionHandler::GetCryptographer(
+    const syncable::BaseTransaction* const trans) const {
+  return &cryptographer_;
+}
+
+const DirectoryCryptographer*
+FakeSyncEncryptionHandler::GetDirectoryCryptographerForNigori(
     const syncable::BaseTransaction* const trans) const {
   return &cryptographer_;
 }
@@ -139,7 +145,7 @@ KeystoreKeysHandler* FakeSyncEncryptionHandler::GetKeystoreKeysHandler() {
   return this;
 }
 
-Cryptographer* FakeSyncEncryptionHandler::GetMutableCryptographer() {
+DirectoryCryptographer* FakeSyncEncryptionHandler::GetMutableCryptographer() {
   return &cryptographer_;
 }
 

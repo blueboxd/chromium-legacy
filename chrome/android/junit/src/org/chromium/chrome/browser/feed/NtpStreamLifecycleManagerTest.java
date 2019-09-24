@@ -120,12 +120,6 @@ public class NtpStreamLifecycleManagerTest {
         // Verify that onHide is called after tab is hidden.
         mNtpStreamLifecycleManager.getTabObserverForTesting().onHidden(mTab, CHANGED_TABS);
         verify(mStream, times(1)).onHide();
-
-        // Verify that onShow is called when articles are set hidden by the user within the same
-        // session.
-        when(mPrefServiceBridge.getBoolean(Pref.NTP_ARTICLES_LIST_VISIBLE)).thenReturn(false);
-        mNtpStreamLifecycleManager.getTabObserverForTesting().onShown(mTab, FROM_NEW);
-        verify(mStream, times(2)).onShow();
     }
 
     @Test

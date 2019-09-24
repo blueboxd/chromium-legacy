@@ -654,11 +654,6 @@ void WebContentsAndroid::SetSpatialNavigationDisabled(
   web_contents_->SetSpatialNavigationDisabled(disabled);
 }
 
-void WebContentsAndroid::ReloadLoFiImages(JNIEnv* env,
-                                          const JavaParamRef<jobject>& obj) {
-  static_cast<WebContentsImpl*>(web_contents_)->ReloadLoFiImages();
-}
-
 int WebContentsAndroid::DownloadImage(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,

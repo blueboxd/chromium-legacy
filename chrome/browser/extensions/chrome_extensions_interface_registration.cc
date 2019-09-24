@@ -143,7 +143,7 @@ void RegisterChromeInterfacesForExtension(
       extension->permissions_data()->HasAPIPermission(
           APIPermission::kMediaRouterPrivate)) {
     registry->AddInterface(
-        base::Bind(&media_router::MediaRouterDesktop::BindToRequest,
+        base::Bind(&media_router::MediaRouterDesktop::BindToReceiver,
                    base::RetainedRef(extension), context));
   }
 

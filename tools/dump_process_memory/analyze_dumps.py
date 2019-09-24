@@ -8,6 +8,8 @@
 its content.
 """
 
+from __future__ import print_function
+
 import argparse
 import array
 import collections
@@ -179,9 +181,9 @@ def _FindPageFromHash(mappings, page_hash):
 def _PrintPage(page):
   """Prints the content of a page."""
   for i, x in enumerate(page):
-    print '{:08x}'.format(x),
+    print('{:08x}'.format(x), end=' ')
     if i % 16 == 15:
-      print
+      print()
 
 
 AggregateStats = collections.namedtuple(
@@ -245,38 +247,40 @@ def PrintStats(dumps, verbose):
   max_common_pages = count_and_hashes[0][0] - 1
   total_size_non_zero_pages = (total.pages - total.zero_pages) * PAGE_SIZE
 
-  print 'Total pages = %d (%s)' % (total.pages,
-                                   _PrettyPrintSize(total.pages * PAGE_SIZE))
-  print 'Total zero pages = %d (%.02f%%)' % (
-      total.zero_pages, (100. * total.zero_pages) / total.pages)
-  print 'Total present zero pages = %d (%s)' % (
-      total.present_zero_pages,
-      _PrettyPrintSize(total.present_zero_pages * PAGE_SIZE))
-  print 'Total size of non-zero pages = %d (%s)' % (
-      total_size_non_zero_pages, _PrettyPrintSize(total_size_non_zero_pages))
-  print 'Total compressed size = %d (%.02f%%)' % (
-      total.compressed_size,
-      (100. * total.compressed_size) / total_size_non_zero_pages)
-  print 'Duplicated non-zero pages = %d' % duplicated_pages
-  print 'Max non-zero pages with the same content = %d' % max_common_pages
-  print 'Swapped pages = %d (%s)' % (
-      total.swapped_pages, _PrettyPrintSize(total.swapped_pages * PAGE_SIZE))
-  print 'Non-present pages = %d (%s)' % (
-      total.not_present_pages,
-      _PrettyPrintSize(total.not_present_pages * PAGE_SIZE))
-  print 'Freed: '
+  print('Total pages = %d (%s)' % (total.pages,
+                                   _PrettyPrintSize(total.pages * PAGE_SIZE)))
+  print('Total zero pages = %d (%.02f%%)' %
+        (total.zero_pages, (100. * total.zero_pages) / total.pages))
+  print('Total present zero pages = %d (%s)' %
+        (total.present_zero_pages,
+         _PrettyPrintSize(total.present_zero_pages * PAGE_SIZE)))
+  print(
+      'Total size of non-zero pages = %d (%s)' %
+      (total_size_non_zero_pages, _PrettyPrintSize(total_size_non_zero_pages)))
+  print('Total compressed size = %d (%.02f%%)' %
+        (total.compressed_size,
+         (100. * total.compressed_size) / total_size_non_zero_pages))
+  print('Duplicated non-zero pages = %d' % duplicated_pages)
+  print('Max non-zero pages with the same content = %d' % max_common_pages)
+  print(
+      'Swapped pages = %d (%s)' %
+      (total.swapped_pages, _PrettyPrintSize(total.swapped_pages * PAGE_SIZE)))
+  print('Non-present pages = %d (%s)' %
+        (total.not_present_pages,
+         _PrettyPrintSize(total.not_present_pages * PAGE_SIZE)))
+  print('Freed: ')
   for k in total.freed:
-    print '  %s = %d (%s)' % (
-        k, total.freed[k], _PrettyPrintSize(total.freed[k]))
+    print('  %s = %d (%s)' % (k, total.freed[k], _PrettyPrintSize(
+        total.freed[k])))
 
   if verbose:
-    print 'Top Duplicated Pages:'
+    print('Top Duplicated Pages:')
     for i in range(10):
       count, page_hash = count_and_hashes[i]
-      print '%d common pages' % count
+      print('%d common pages' % count)
       page = _FindPageFromHash(dump_stats, page_hash)
       _PrintPage(page)
-      print
+      print()
 
 
 def _CreateArgumentParser():

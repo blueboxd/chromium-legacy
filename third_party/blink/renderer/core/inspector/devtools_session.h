@@ -8,7 +8,10 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -34,8 +37,10 @@ class CORE_EXPORT DevToolsSession : public GarbageCollected<DevToolsSession>,
  public:
   DevToolsSession(
       DevToolsAgent*,
-      mojom::blink::DevToolsSessionHostAssociatedPtrInfo host_ptr_info,
-      mojom::blink::DevToolsSessionAssociatedRequest main_request,
+      mojo::PendingAssociatedRemote<mojom::blink::DevToolsSessionHost>
+          host_remote,
+      mojo::PendingAssociatedReceiver<mojom::blink::DevToolsSession>
+          main_receiver,
       mojo::PendingReceiver<mojom::blink::DevToolsSession> io_receiver,
       mojom::blink::DevToolsSessionStatePtr reattach_session_state,
       bool client_expects_binary_responses);
@@ -89,8 +94,8 @@ class CORE_EXPORT DevToolsSession : public GarbageCollected<DevToolsSession>,
                             const protocol::ProtocolMessage& message);
 
   Member<DevToolsAgent> agent_;
-  mojo::AssociatedBinding<mojom::blink::DevToolsSession> binding_;
-  mojom::blink::DevToolsSessionHostAssociatedPtr host_ptr_;
+  mojo::AssociatedReceiver<mojom::blink::DevToolsSession> receiver_;
+  mojo::AssociatedRemote<mojom::blink::DevToolsSessionHost> host_remote_;
   IOSession* io_session_;
   std::unique_ptr<v8_inspector::V8InspectorSession> v8_session_;
   std::unique_ptr<protocol::UberDispatcher> inspector_backend_dispatcher_;

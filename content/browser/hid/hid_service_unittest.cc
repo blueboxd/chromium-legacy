@@ -86,10 +86,9 @@ class HidServiceTest : public RenderViewHostImplTestHarness {
 TEST_F(HidServiceTest, GetDevicesWithPermission) {
   NavigateAndCommit(GURL(kTestUrl));
 
-  blink::mojom::HidServicePtr service;
-  contents()->GetMainFrame()->BinderRegistryForTesting().BindInterface(
-      blink::mojom::HidService::Name_,
-      mojo::MakeRequest(&service).PassMessagePipe());
+  mojo::Remote<blink::mojom::HidService> service;
+  contents()->GetMainFrame()->GetHidService(
+      service.BindNewPipeAndPassReceiver());
 
   auto device_info = device::mojom::HidDeviceInfo::New();
   device_info->guid = kTestGuid;
@@ -112,10 +111,9 @@ TEST_F(HidServiceTest, GetDevicesWithPermission) {
 TEST_F(HidServiceTest, GetDevicesWithoutPermission) {
   NavigateAndCommit(GURL(kTestUrl));
 
-  blink::mojom::HidServicePtr service;
-  contents()->GetMainFrame()->BinderRegistryForTesting().BindInterface(
-      blink::mojom::HidService::Name_,
-      mojo::MakeRequest(&service).PassMessagePipe());
+  mojo::Remote<blink::mojom::HidService> service;
+  contents()->GetMainFrame()->GetHidService(
+      service.BindNewPipeAndPassReceiver());
 
   auto device_info = device::mojom::HidDeviceInfo::New();
   device_info->guid = kTestGuid;
@@ -138,10 +136,9 @@ TEST_F(HidServiceTest, GetDevicesWithoutPermission) {
 TEST_F(HidServiceTest, RequestDevice) {
   NavigateAndCommit(GURL(kTestUrl));
 
-  blink::mojom::HidServicePtr service;
-  contents()->GetMainFrame()->BinderRegistryForTesting().BindInterface(
-      blink::mojom::HidService::Name_,
-      mojo::MakeRequest(&service).PassMessagePipe());
+  mojo::Remote<blink::mojom::HidService> service;
+  contents()->GetMainFrame()->GetHidService(
+      service.BindNewPipeAndPassReceiver());
 
   auto device_info = device::mojom::HidDeviceInfo::New();
   device_info->guid = kTestGuid;
@@ -168,10 +165,9 @@ TEST_F(HidServiceTest, RequestDevice) {
 TEST_F(HidServiceTest, OpenAndCloseHidConnection) {
   NavigateAndCommit(GURL(kTestUrl));
 
-  blink::mojom::HidServicePtr service;
-  contents()->GetMainFrame()->BinderRegistryForTesting().BindInterface(
-      blink::mojom::HidService::Name_,
-      mojo::MakeRequest(&service).PassMessagePipe());
+  mojo::Remote<blink::mojom::HidService> service;
+  contents()->GetMainFrame()->GetHidService(
+      service.BindNewPipeAndPassReceiver());
 
   auto device_info = device::mojom::HidDeviceInfo::New();
   device_info->guid = kTestGuid;

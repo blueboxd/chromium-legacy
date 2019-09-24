@@ -235,7 +235,6 @@ class WebRuntimeFeatures {
       bool);
   BLINK_PLATFORM_EXPORT static void EnableIdleDetection(bool);
   BLINK_PLATFORM_EXPORT static void EnableSkipTouchEventFilter(bool);
-  BLINK_PLATFORM_EXPORT static void EnableStaleWhileRevalidate(bool);
   BLINK_PLATFORM_EXPORT static void EnableSmsReceiver(bool);
   BLINK_PLATFORM_EXPORT static void EnableDisplayLocking(bool);
   BLINK_PLATFORM_EXPORT static void

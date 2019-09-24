@@ -33,7 +33,7 @@ ScriptValue Eval(V8TestingScope* scope, const char* script_as_string) {
     ADD_FAILURE() << "Compilation fails";
     return ScriptValue();
   }
-  return ScriptValue(scope->GetScriptState(), script->Run(scope->GetContext()));
+  return ScriptValue(scope->GetIsolate(), script->Run(scope->GetContext()));
 }
 
 ScriptValue EvalWithPrintingError(V8TestingScope* scope, const char* script) {

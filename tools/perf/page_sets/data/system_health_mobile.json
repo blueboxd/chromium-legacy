@@ -63,6 +63,9 @@
         "browse:news:reddit": {
             "DEFAULT": "system_health_mobile_027.wprgo"
         },
+        "browse:news:reddit:2019": {
+            "DEFAULT": "system_health_mobile_1a5563286a.wprgo"
+        },
         "browse:news:toi": {
             "DEFAULT": "system_health_mobile_064.wprgo"
         },
@@ -98,6 +101,9 @@
         },
         "browse:social:instagram": {
             "DEFAULT": "system_health_mobile_060.wprgo"
+        },
+        "browse:social:instagram:2019": {
+            "DEFAULT": "system_health_mobile_c38cfb84fc.wprgo"
         },
         "browse:social:pinterest_infinite_scroll": {
             "DEFAULT": "system_health_mobile_063.wprgo"
@@ -209,6 +215,9 @@
         },
         "load:news:washingtonpost": {
             "DEFAULT": "system_health_mobile_013.wprgo"
+        },
+        "load:news:washingtonpost:2019": {
+            "DEFAULT": "system_health_mobile_f2584469fe.wprgo"
         },
         "load:news:wikipedia": {
             "DEFAULT": "system_health_mobile_002.wprgo"

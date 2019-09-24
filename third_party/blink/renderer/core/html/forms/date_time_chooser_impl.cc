@@ -117,8 +117,7 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
     other_date_label_string =
         GetLocale().QueryString(WebLocalizedString::kOtherWeekLabel);
   } else {
-    today_label_string =
-        GetLocale().QueryString(WebLocalizedString::kCalendarToday);
+    today_label_string = GetLocale().QueryString(IDS_FORM_CALENDAR_TODAY);
     other_date_label_string =
         GetLocale().QueryString(WebLocalizedString::kOtherDateLabel);
   }
@@ -155,8 +154,7 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
       data);
   AddProperty("locale", parameters_->locale.GetString(), data);
   AddProperty("todayLabel", today_label_string, data);
-  AddProperty("clearLabel",
-              GetLocale().QueryString(WebLocalizedString::kCalendarClear),
+  AddProperty("clearLabel", GetLocale().QueryString(IDS_FORM_CALENDAR_CLEAR),
               data);
   AddProperty("weekLabel",
               GetLocale().QueryString(WebLocalizedString::kWeekNumberLabel),

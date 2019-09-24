@@ -358,9 +358,14 @@ void ArcInputMethodManagerService::OnImeInfoChanged(
   using chromeos::input_method::InputMethodDescriptors;
   using chromeos::input_method::InputMethodManager;
 
+  InputMethodManager* imm = InputMethodManager::Get();
+  if (!imm || !imm->GetActiveIMEState()) {
+    LOG(WARNING) << "InputMethodManager is not ready yet.";
+    return;
+  }
+
   base::AutoReset<bool> in_updating(&is_updating_imm_entry_, true);
-  scoped_refptr<InputMethodManager::State> state =
-      InputMethodManager::Get()->GetActiveIMEState();
+  scoped_refptr<InputMethodManager::State> state = imm->GetActiveIMEState();
   const std::string active_ime_id = state->GetCurrentInputMethod().id();
 
   // Remove the old registered entry.

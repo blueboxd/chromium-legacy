@@ -27,7 +27,7 @@
 #import "ios/web/public/ui/java_script_dialog_callback.h"
 #include "ios/web/public/ui/java_script_dialog_type.h"
 #import "ios/web/public/web_state.h"
-#import "ios/web/public/web_state/web_state_delegate.h"
+#import "ios/web/public/web_state_delegate.h"
 #include "url/gurl.h"
 
 @class CRWSessionStorage;

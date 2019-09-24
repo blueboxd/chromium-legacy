@@ -20,7 +20,7 @@
 #include "media/capture/mojom/image_capture_types.h"
 #include "media/capture/video/video_capture_device.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 
 namespace content {
@@ -80,9 +80,9 @@ ImageCaptureImpl::~ImageCaptureImpl() {}
 
 // static
 void ImageCaptureImpl::Create(
-    media::mojom::ImageCaptureRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<ImageCaptureImpl>(),
-                          std::move(request));
+    mojo::PendingReceiver<media::mojom::ImageCapture> receiver) {
+  mojo::MakeSelfOwnedReceiver(std::make_unique<ImageCaptureImpl>(),
+                              std::move(receiver));
 }
 
 void ImageCaptureImpl::GetPhotoState(const std::string& source_id,

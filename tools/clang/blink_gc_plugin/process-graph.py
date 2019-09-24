@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
 import argparse, os, sys, json, subprocess, pickle, StringIO
 
 parser = argparse.ArgumentParser(
@@ -312,7 +313,7 @@ def report_cycle(root_edge):
   sout = out.getvalue()
   if not is_ignored_cycle(sout):
     print("\nFound a potentially leaking cycle starting from a GC root:\n",
-          sout)
+          sout, sep="")
     set_reported_error(True)
 
 def load_graph():

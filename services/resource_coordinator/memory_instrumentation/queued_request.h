@@ -15,6 +15,7 @@
 #include "base/trace_event/memory_dump_request_args.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 
+using base::trace_event::MemoryDumpDeterminism;
 using base::trace_event::MemoryDumpLevelOfDetail;
 using base::trace_event::MemoryDumpType;
 
@@ -32,6 +33,7 @@ struct QueuedRequest {
   struct Args {
     Args(MemoryDumpType dump_type,
          MemoryDumpLevelOfDetail level_of_detail,
+         MemoryDumpDeterminism determinism,
          const std::vector<std::string>& allocator_dump_names,
          bool add_to_trace,
          base::ProcessId pid,
@@ -41,6 +43,7 @@ struct QueuedRequest {
 
     const MemoryDumpType dump_type;
     const MemoryDumpLevelOfDetail level_of_detail;
+    const MemoryDumpDeterminism determinism;
     const std::vector<std::string> allocator_dump_names;
     const bool add_to_trace;
     const base::ProcessId pid;

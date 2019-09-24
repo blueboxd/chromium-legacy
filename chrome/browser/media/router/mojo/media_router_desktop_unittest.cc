@@ -11,6 +11,7 @@
 #include <string>
 #include <utility>
 
+#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -208,13 +209,13 @@ TEST_F(MediaRouterDesktopTest, ExtensionMrpRecoversFromConnectionError) {
   // |extension_mrp_proxy|.
   for (int i = 0; i < MediaRouterDesktop::kMaxMediaRouteProviderErrorCount;
        i++) {
-    extension_mrp_proxy->binding_.Unbind();
+    ignore_result(extension_mrp_proxy->receiver_.Unbind());
     base::RunLoop().RunUntilIdle();
-    EXPECT_TRUE(extension_mrp_proxy->binding_.is_bound());
+    EXPECT_TRUE(extension_mrp_proxy->receiver_.is_bound());
   }
-  extension_mrp_proxy->binding_.Unbind();
+  ignore_result(extension_mrp_proxy->receiver_.Unbind());
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(extension_mrp_proxy->binding_.is_bound());
+  EXPECT_FALSE(extension_mrp_proxy->receiver_.is_bound());
 }
 
 }  // namespace media_router

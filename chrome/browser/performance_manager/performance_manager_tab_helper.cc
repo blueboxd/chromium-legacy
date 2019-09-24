@@ -46,21 +46,9 @@ PerformanceManagerTabHelper::PerformanceManagerTabHelper(
   page_node_ = performance_manager_->CreatePageNode(
       WebContentsProxy(weak_factory_.GetWeakPtr()),
       web_contents->GetBrowserContext()->UniqueId(),
+      web_contents->GetVisibleURL(),
       web_contents->GetVisibility() == content::Visibility::VISIBLE,
       web_contents->IsCurrentlyAudible());
-
-  // Set the initial (visible) URL of the page early. In the rare and unlikely
-  // case the main frame has been navigated, this URL will be overridden with
-  // the main frame's last committed URL and navigation ID in the loop below.
-  GURL visible_url = web_contents->GetVisibleURL();
-  if (visible_url.is_valid()) {
-    // Post the visible URL as a navigation to the zero navigation ID.
-    constexpr int64_t kZeroNavigationId = 0;
-    PostToGraph(FROM_HERE, &PageNodeImpl::OnMainFrameNavigationCommitted,
-                page_node_.get(), base::TimeTicks::Now(), kZeroNavigationId,
-                visible_url);
-  }
-
   // Dispatch creation notifications for any pre-existing frames.
   std::vector<content::RenderFrameHost*> existing_frames =
       web_contents->GetAllFrames();
@@ -286,17 +274,16 @@ void PerformanceManagerTabHelper::DidFinishNavigation(
   PostToGraph(FROM_HERE, &FrameNodeImpl::OnNavigationCommitted, frame_node, url,
               navigation_handle->IsSameDocument());
 
-  if (navigation_handle->IsSameDocument() ||
-      !navigation_handle->IsInMainFrame()) {
+  if (!navigation_handle->IsInMainFrame())
     return;
-  }
 
   // Make sure the hierarchical structure is constructed before sending signal
   // to the performance manager.
   OnMainFrameNavigation(navigation_handle->GetNavigationId());
   PostToGraph(FROM_HERE, &PageNodeImpl::OnMainFrameNavigationCommitted,
-              page_node_.get(), navigation_committed_time,
-              navigation_handle->GetNavigationId(), url);
+              page_node_.get(), navigation_handle->IsSameDocument(),
+              navigation_committed_time, navigation_handle->GetNavigationId(),
+              url);
 }
 
 void PerformanceManagerTabHelper::TitleWasSet(content::NavigationEntry* entry) {

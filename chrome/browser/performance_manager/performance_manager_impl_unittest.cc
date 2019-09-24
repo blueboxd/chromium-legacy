@@ -60,7 +60,7 @@ TEST_F(PerformanceManagerTest, InstantiateNodes) {
   EXPECT_NE(nullptr, process_node.get());
   std::unique_ptr<PageNodeImpl> page_node =
       performance_manager()->CreatePageNode(WebContentsProxy(), std::string(),
-                                            false, false);
+                                            GURL(), false, false);
   EXPECT_NE(nullptr, page_node.get());
 
   // Create a node of each type.
@@ -81,7 +81,7 @@ TEST_F(PerformanceManagerTest, BatchDeleteNodes) {
       performance_manager()->CreateProcessNode(RenderProcessHostProxy());
   std::unique_ptr<PageNodeImpl> page_node =
       performance_manager()->CreatePageNode(WebContentsProxy(), std::string(),
-                                            false, false);
+                                            GURL(), false, false);
 
   std::unique_ptr<FrameNodeImpl> parent1_frame =
       performance_manager()->CreateFrameNode(
@@ -125,7 +125,7 @@ TEST_F(PerformanceManagerTest, CallOnGraphImpl) {
   // Create a page node for something to target.
   std::unique_ptr<PageNodeImpl> page_node =
       performance_manager()->CreatePageNode(WebContentsProxy(), std::string(),
-                                            false, false);
+                                            GURL(), false, false);
   base::RunLoop run_loop;
   base::OnceClosure quit_closure = run_loop.QuitClosure();
   EXPECT_FALSE(performance_manager()->OnPMTaskRunnerForTesting());
@@ -147,7 +147,7 @@ TEST_F(PerformanceManagerTest, CallOnGraphAndReplyWithResult) {
   // Create a page node for something to target.
   std::unique_ptr<PageNodeImpl> page_node =
       performance_manager()->CreatePageNode(WebContentsProxy(), std::string(),
-                                            false, false);
+                                            GURL(), false, false);
   base::RunLoop run_loop;
 
   EXPECT_FALSE(performance_manager()->OnPMTaskRunnerForTesting());

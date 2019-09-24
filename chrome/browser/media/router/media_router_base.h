@@ -22,6 +22,7 @@
 #if !defined(OS_ANDROID)
 #include "chrome/common/media_router/mojom/media_controller.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #endif  // !defined(OS_ANDROID)
 
 namespace media_router {
@@ -45,7 +46,7 @@ class MediaRouterBase : public MediaRouter {
   void GetMediaController(
       const MediaRoute::Id& route_id,
       mojo::PendingReceiver<mojom::MediaController> controller,
-      mojom::MediaStatusObserverPtr observer) override;
+      mojo::PendingRemote<mojom::MediaStatusObserver> observer) override;
 #endif  // !defined(OS_ANDROID)
   void RegisterRemotingSource(SessionID tab_id,
                               CastRemotingConnector* remoting_source) override;

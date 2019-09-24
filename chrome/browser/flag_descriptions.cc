@@ -2835,7 +2835,12 @@ const char kNtpCustomizationMenuV2Description[] =
 const char kNtpDisableInitialMostVisitedFadeInName[] =
     "Disable NTP initial most visited fade in";
 const char kNtpDisableInitialMostVisitedFadeInDescription[] =
-    "Do now initially fade in most visited tiles on the New Tab Page";
+    "Do not initially fade in most visited tiles on the New Tab Page";
+
+const char kNtpDismissPromosName[] = "Dismiss promos on the New Tab Page";
+const char kNtpDismissPromosDescription[] =
+    "Enables a UI to persistently dismiss [non-emergency] promos on the "
+    "bottom/middle of the New Tab Page";
 
 const char kNtpRealboxName[] = "Real search box in New Tab Page";
 const char kNtpRealboxDescription[] =

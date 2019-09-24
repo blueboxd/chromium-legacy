@@ -1051,7 +1051,7 @@ def literal_cpp_value(idl_type, idl_literal):
     """Converts an expression that is a valid C++ literal for this type."""
     # FIXME: add validation that idl_type and idl_literal are compatible
     if idl_type.base_type in ('any', 'object') and idl_literal.is_null:
-        return 'ScriptValue::CreateNull(script_state)'
+        return 'ScriptValue::CreateNull(script_state->GetIsolate())'
     literal_value = str(idl_literal)
     if idl_type.base_type in ('octet', 'unsigned short', 'unsigned long'):
         return literal_value + 'u'

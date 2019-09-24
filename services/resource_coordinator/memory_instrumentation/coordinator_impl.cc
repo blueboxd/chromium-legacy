@@ -33,6 +33,7 @@
 #include "base/mac/mac_util.h"
 #endif
 
+using base::trace_event::MemoryDumpDeterminism;
 using base::trace_event::MemoryDumpLevelOfDetail;
 using base::trace_event::MemoryDumpType;
 
@@ -118,6 +119,7 @@ void CoordinatorImpl::RegisterClientProcess(
 void CoordinatorImpl::RequestGlobalMemoryDump(
     MemoryDumpType dump_type,
     MemoryDumpLevelOfDetail level_of_detail,
+    MemoryDumpDeterminism determinism,
     const std::vector<std::string>& allocator_dump_names,
     RequestGlobalMemoryDumpCallback callback) {
   // This merely strips out the |dump_guid| argument.
@@ -126,8 +128,9 @@ void CoordinatorImpl::RequestGlobalMemoryDump(
     std::move(callback).Run(success, std::move(global_memory_dump));
   };
 
-  QueuedRequest::Args args(dump_type, level_of_detail, allocator_dump_names,
-                           false /* add_to_trace */, base::kNullProcessId,
+  QueuedRequest::Args args(dump_type, level_of_detail, determinism,
+                           allocator_dump_names, false /* add_to_trace */,
+                           base::kNullProcessId,
                            /*memory_footprint_only=*/false);
   RequestGlobalMemoryDumpInternal(args,
                                   base::BindOnce(adapter, std::move(callback)));
@@ -155,7 +158,8 @@ void CoordinatorImpl::RequestGlobalMemoryDumpForPid(
   QueuedRequest::Args args(
       base::trace_event::MemoryDumpType::SUMMARY_ONLY,
       base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND,
-      allocator_dump_names, false /* add_to_trace */, pid,
+      base::trace_event::MemoryDumpDeterminism::NONE, allocator_dump_names,
+      false /* add_to_trace */, pid,
       /*memory_footprint_only=*/false);
   RequestGlobalMemoryDumpInternal(args,
                                   base::BindOnce(adapter, std::move(callback)));
@@ -174,7 +178,8 @@ void CoordinatorImpl::RequestPrivateMemoryFootprint(
 
   QueuedRequest::Args args(
       base::trace_event::MemoryDumpType::SUMMARY_ONLY,
-      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND, {},
+      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND,
+      base::trace_event::MemoryDumpDeterminism::NONE, {},
       false /* add_to_trace */, pid, /*memory_footprint_only=*/true);
   RequestGlobalMemoryDumpInternal(args,
                                   base::BindOnce(adapter, std::move(callback)));
@@ -183,6 +188,7 @@ void CoordinatorImpl::RequestPrivateMemoryFootprint(
 void CoordinatorImpl::RequestGlobalMemoryDumpAndAppendToTrace(
     MemoryDumpType dump_type,
     MemoryDumpLevelOfDetail level_of_detail,
+    MemoryDumpDeterminism determinism,
     RequestGlobalMemoryDumpAndAppendToTraceCallback callback) {
   // This merely strips out the |dump_ptr| argument.
   auto adapter = [](RequestGlobalMemoryDumpAndAppendToTraceCallback callback,
@@ -191,7 +197,7 @@ void CoordinatorImpl::RequestGlobalMemoryDumpAndAppendToTrace(
     std::move(callback).Run(success, dump_guid);
   };
 
-  QueuedRequest::Args args(dump_type, level_of_detail, {},
+  QueuedRequest::Args args(dump_type, level_of_detail, determinism, {},
                            true /* add_to_trace */, base::kNullProcessId,
                            /*memory_footprint_only=*/false);
   RequestGlobalMemoryDumpInternal(args,

@@ -9,6 +9,7 @@
 #include "chrome/common/media_router/media_route_provider_helper.h"
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media_router {
@@ -21,14 +22,15 @@ class MockMojoMediaRouter : public MockMediaRouter, public mojom::MediaRouter {
   // mojom::MediaRouter overrides:
   void RegisterMediaRouteProvider(
       MediaRouteProviderId provider_id,
-      mojom::MediaRouteProviderPtr provider_ptr,
+      mojo::PendingRemote<mojom::MediaRouteProvider> provider_remote,
       RegisterMediaRouteProviderCallback callback) override {
-    RegisterMediaRouteProviderInternal(provider_id, provider_ptr, callback);
+    RegisterMediaRouteProviderInternal(provider_id, provider_remote, callback);
   }
-  MOCK_METHOD3(RegisterMediaRouteProviderInternal,
-               void(MediaRouteProviderId provider_id,
-                    mojom::MediaRouteProviderPtr& provider_ptr,
-                    RegisterMediaRouteProviderCallback& callback));
+  MOCK_METHOD3(
+      RegisterMediaRouteProviderInternal,
+      void(MediaRouteProviderId provider_id,
+           mojo::PendingRemote<mojom::MediaRouteProvider>& provider_remote,
+           RegisterMediaRouteProviderCallback& callback));
   MOCK_METHOD1(OnIssue, void(const IssueInfo& issue));
   MOCK_METHOD4(OnSinksReceived,
                void(MediaRouteProviderId provider_id,

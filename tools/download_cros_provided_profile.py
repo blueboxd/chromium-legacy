@@ -16,6 +16,8 @@ No authentication is necessary if you pull these profiles directly over
 https.
 """
 
+from __future__ import print_function
+
 import argparse
 import contextlib
 import os
@@ -60,7 +62,7 @@ def CheckCallOrExit(cmd):
       '## Stdout:\n' + stdout,
       '## Stderr:\n' + stderr,
   ]
-  print >>sys.stderr, '\n'.join(complaint_lines)
+  print('\n'.join(complaint_lines), file=sys.stderr)
   sys.exit(1)
 
 

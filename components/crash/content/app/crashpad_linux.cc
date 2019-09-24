@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/posix/global_descriptors.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/branding_buildflags.h"
 #include "components/crash/content/app/crash_reporter_client.h"
 #include "components/crash/content/app/crash_switches.h"
 #include "content/public/common/content_descriptors.h"
@@ -84,7 +85,7 @@ base::FilePath PlatformCrashpadInitialization(
     // to ChromeOS's /sbin/crash_reporter which in turn passes the dump to
     // crash_sender which handles the upload.
     std::string url;
-#if defined(GOOGLE_CHROME_BUILD) && defined(OFFICIAL_BUILD) && \
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OFFICIAL_BUILD) && \
     !defined(OS_CHROMEOS)
     url = "https://clients2.google.com/cr/report";
 #else
@@ -99,7 +100,7 @@ base::FilePath PlatformCrashpadInitialization(
     annotations["prod"] = product_name;
     annotations["ver"] = product_version;
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     // Empty means stable.
     const bool allow_empty_channel = true;
 #else

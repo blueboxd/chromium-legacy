@@ -53,8 +53,8 @@ def ZapTimestamp(filename):
     # First: Type string (0x8), followed by 0x3e characters.
     assert contents[custom_off:custom_off+6] == '\x08\x00\x3e\x00\x00\x00'
     assert re.match(
-        'Created by MIDL version 8\.\d\d\.\d{4} at ... Jan 1. ..:..:.. 2038\n',
-        contents[custom_off+6:custom_off+6+0x3e])
+        r'Created by MIDL version 8\.\d\d\.\d{4} at ... Jan 1. ..:..:.. 2038\n',
+        contents[custom_off + 6:custom_off + 6 + 0x3e])
     # Second: Type uint32 (0x13) storing 0x7fffffff (followed by WW / 0x57 pad)
     assert contents[custom_off+6+0x3e:custom_off+6+0x3e+8] == \
         '\x13\x00\xff\xff\xff\x7f\x57\x57'
@@ -69,15 +69,14 @@ def ZapTimestamp(filename):
         contents[custom_off + 0x54:])
   else:
     contents = re.sub(
-        'File created by MIDL compiler version 8\.\d\d\.\d{4} \*/\r\n'
-        '/\* at ... Jan 1. ..:..:.. 2038',
-        'File created by MIDL compiler version 8.xx.xxxx */\r\n'
-        '/* at a redacted point in time',
-        contents)
+        r'File created by MIDL compiler version 8\.\d\d\.\d{4} \*/\r\n'
+        r'/\* at ... Jan 1. ..:..:.. 2038',
+        r'File created by MIDL compiler version 8.xx.xxxx */\r\n'
+        r'/* at a redacted point in time', contents)
     contents = re.sub(
-        '    Oicf, W1, Zp8, env=(.....) \(32b run\), '
-        'target_arch=(AMD64|X86) 8\.\d\d\.\d{4}',
-        '    Oicf, W1, Zp8, env=\\1 (32b run), target_arch=\\2 8.xx.xxxx',
+        r'    Oicf, W1, Zp8, env=(.....) \(32b run\), '
+        r'target_arch=(AMD64|X86) 8\.\d\d\.\d{4}',
+        r'    Oicf, W1, Zp8, env=\1 (32b run), target_arch=\2 8.xx.xxxx',
         contents)
     # TODO(thakis): If we need more hacks than these, try to verify checked-in
     # outputs when we're using the hermetic toolchain.
@@ -94,8 +93,8 @@ def ZapTimestamp(filename):
 
 def overwrite_cls_guid_h(h_file, dynamic_guid):
   contents = open(h_file, 'rb').read()
-  contents = re.sub('class DECLSPEC_UUID\("[^"]*"\)',
-                    'class DECLSPEC_UUID("%s")' % str(dynamic_guid), contents)
+  contents = re.sub(r'class DECLSPEC_UUID\("[^"]*"\)',
+                    r'class DECLSPEC_UUID("%s")' % str(dynamic_guid), contents)
   open(h_file, 'wb').write(contents)
 
 
@@ -228,7 +227,7 @@ def main(arch, gendir, outdir, dynamic_guid, tlb, h, dlldata, iid, proxy, idl,
                 open(tofile, 'U').readlines(), fromfile, tofile)))
       delete_tmp_dir = False
       print('To rebaseline:')
-      print('  copy /y %s\* %s' % (tmp_dir, source))
+      print(r'  copy /y %s\* %s' % (tmp_dir, source))
       sys.exit(1)
     return 0
   finally:

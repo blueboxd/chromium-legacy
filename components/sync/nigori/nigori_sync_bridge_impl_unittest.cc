@@ -45,7 +45,8 @@ MATCHER_P(HasDefaultKeyDerivedFrom, key_params, "") {
   std::string expected_default_key_name;
   EXPECT_TRUE(expected_default_nigori->Permute(
       Nigori::Type::Password, kNigoriKeyName, &expected_default_key_name));
-  return cryptographer.GetDefaultNigoriKeyName() == expected_default_key_name;
+  return cryptographer.GetDefaultEncryptionKeyName() ==
+         expected_default_key_name;
 }
 
 MATCHER(HasKeystoreNigori, "") {
@@ -143,7 +144,7 @@ KeyParams ScryptKeyParams(const std::string& key) {
 
 std::string PackKeyAsExplicitPassphrase(const KeyParams& key_params,
                                         const Encryptor& encryptor) {
-  Cryptographer cryptographer;
+  DirectoryCryptographer cryptographer;
   cryptographer.AddKey(key_params);
   return NigoriSyncBridgeImpl::PackExplicitPassphraseKeyForTesting(
       encryptor, cryptographer);
@@ -165,7 +166,7 @@ sync_pb::NigoriSpecifics BuildKeystoreNigoriSpecifics(
     const KeyParams& keystore_key_params) {
   sync_pb::NigoriSpecifics specifics;
 
-  Cryptographer cryptographer;
+  DirectoryCryptographer cryptographer;
   cryptographer.AddKey(keystore_decryptor_params);
   for (const KeyParams& key_params : keybag_keys_params) {
     cryptographer.AddNonDefaultKey(key_params);
@@ -174,7 +175,7 @@ sync_pb::NigoriSpecifics BuildKeystoreNigoriSpecifics(
 
   std::string serialized_keystore_decryptor =
       cryptographer.GetDefaultNigoriKeyData();
-  Cryptographer keystore_cryptographer;
+  DirectoryCryptographer keystore_cryptographer;
   keystore_cryptographer.AddKey(keystore_key_params);
   EXPECT_TRUE(keystore_cryptographer.EncryptString(
       serialized_keystore_decryptor,
@@ -186,7 +187,7 @@ sync_pb::NigoriSpecifics BuildKeystoreNigoriSpecifics(
 
 sync_pb::NigoriSpecifics BuildTrustedVaultNigoriSpecifics(
     const std::vector<KeyParams>& trusted_vault_key_params) {
-  syncer::Cryptographer cryptographer;
+  DirectoryCryptographer cryptographer;
   for (const KeyParams& key_params : trusted_vault_key_params) {
     cryptographer.AddKey(key_params);
   }
@@ -211,7 +212,7 @@ sync_pb::NigoriSpecifics BuildCustomPassphraseNigoriSpecifics(
     const base::Optional<KeyParams>& old_key_params = base::nullopt) {
   sync_pb::NigoriSpecifics specifics;
 
-  Cryptographer cryptographer;
+  DirectoryCryptographer cryptographer;
   cryptographer.AddKey(passphrase_key_params);
   if (old_key_params) {
     cryptographer.AddNonDefaultKey(*old_key_params);

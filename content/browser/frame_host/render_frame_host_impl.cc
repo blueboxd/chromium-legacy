@@ -65,7 +65,6 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/generic_sensor/sensor_provider_proxy_impl.h"
 #include "content/browser/geolocation/geolocation_service_impl.h"
-#include "content/browser/image_capture/image_capture_impl.h"
 #include "content/browser/installedapp/installed_app_provider_impl_default.h"
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/keyboard_lock/keyboard_lock_service_impl.h"
@@ -4339,10 +4338,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(
       base::Bind(&MediaSessionServiceImpl::Create, base::Unretained(this)));
 
-  registry_->AddInterface(base::Bind(
-      base::IgnoreResult(&RenderFrameHostImpl::CreateWebBluetoothService),
-      base::Unretained(this)));
-
   registry_->AddInterface(base::BindRepeating(
       &RenderFrameHostImpl::CreateWebUsbService, base::Unretained(this)));
 
@@ -4401,7 +4396,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(base::BindRepeating(
       &KeyboardLockServiceImpl::CreateMojoService, base::Unretained(this)));
 
-  registry_->AddInterface(base::Bind(&ImageCaptureImpl::Create));
 
   sensor_provider_proxy_.reset(
       new SensorProviderProxyImpl(permission_controller, this));
@@ -4415,8 +4409,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
     registry_->AddInterface(
         base::BindRepeating(&RenderFrameHostImpl::BindSerialServiceReceiver,
                             base::Unretained(this)));
-    registry_->AddInterface(
-        base::BindRepeating(&HidService::Create, base::Unretained(this)));
   }
 #endif  // !defined(OS_ANDROID)
 
@@ -4483,9 +4475,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       GetProcess()->GetID(),
       GetProcess()->GetStoragePartition()->GetFileSystemContext(),
       ChromeBlobStorageContext::GetFor(GetProcess()->GetBrowserContext())));
-
-  registry_->AddInterface(base::BindRepeating(&ContactsManagerImpl::Create,
-                                              base::Unretained(this)));
 
   registry_->AddInterface(base::BindRepeating(&WakeLockServiceImpl::Create,
                                               base::Unretained(this)));
@@ -6188,7 +6177,7 @@ void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(
   dst->focused_tree_id = focused_frame->GetAXTreeID();
 }
 
-WebBluetoothServiceImpl* RenderFrameHostImpl::CreateWebBluetoothService(
+void RenderFrameHostImpl::CreateWebBluetoothService(
     mojo::PendingReceiver<blink::mojom::WebBluetoothService> receiver) {
   // RFHI owns |web_bluetooth_services_| and |web_bluetooth_service| owns the
   // |receiver_| which may run the error handler. |receiver_| can't run the
@@ -6200,6 +6189,11 @@ WebBluetoothServiceImpl* RenderFrameHostImpl::CreateWebBluetoothService(
       base::BindOnce(&RenderFrameHostImpl::DeleteWebBluetoothService,
                      base::Unretained(this), web_bluetooth_service.get()));
   web_bluetooth_services_.push_back(std::move(web_bluetooth_service));
+}
+
+WebBluetoothServiceImpl*
+RenderFrameHostImpl::GetWebBluetoothServiceForTesting() {
+  DCHECK(web_bluetooth_services_.back());
   return web_bluetooth_services_.back().get();
 }
 
@@ -6344,6 +6338,11 @@ void RenderFrameHostImpl::BindAuthenticatorRequest(
 
   authenticator_impl_->Bind(std::move(receiver));
 }
+
+void RenderFrameHostImpl::GetHidService(
+    mojo::PendingReceiver<blink::mojom::HidService> receiver) {
+  HidService::Create(this, std::move(receiver));
+}
 #endif
 
 void RenderFrameHostImpl::GetIdleManager(
@@ -6443,6 +6442,11 @@ void RenderFrameHostImpl::CreateAppCacheBackend(
 void RenderFrameHostImpl::GetAudioContextManager(
     mojo::PendingReceiver<blink::mojom::AudioContextManager> receiver) {
   AudioContextManagerImpl::Create(this, std::move(receiver));
+}
+
+void RenderFrameHostImpl::GetContactsManager(
+    mojo::PendingReceiver<blink::mojom::ContactsManager> receiver) {
+  ContactsManagerImpl::Create(this, std::move(receiver));
 }
 
 void RenderFrameHostImpl::GetFileSystemManager(

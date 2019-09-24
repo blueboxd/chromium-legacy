@@ -159,7 +159,7 @@ void DeviceService::OnStart() {
       base::Bind(&DeviceService::BindScreenOrientationListenerReceiver,
                  base::Unretained(this)));
   registry_.AddInterface<mojom::SensorProvider>(base::Bind(
-      &DeviceService::BindSensorProviderRequest, base::Unretained(this)));
+      &DeviceService::BindSensorProviderReceiver, base::Unretained(this)));
   registry_.AddInterface<mojom::TimeZoneMonitor>(base::Bind(
       &DeviceService::BindTimeZoneMonitorReceiver, base::Unretained(this)));
   registry_.AddInterface<mojom::WakeLockProvider>(base::Bind(
@@ -329,8 +329,8 @@ void DeviceService::BindScreenOrientationListenerReceiver(
 #endif
 }
 
-void DeviceService::BindSensorProviderRequest(
-    mojom::SensorProviderRequest request) {
+void DeviceService::BindSensorProviderReceiver(
+    mojo::PendingReceiver<mojom::SensorProvider> receiver) {
   if (!sensor_provider_) {
     auto platform_provider = PlatformSensorProvider::Create();
     if (!platform_provider)
@@ -338,7 +338,7 @@ void DeviceService::BindSensorProviderRequest(
     sensor_provider_ =
         std::make_unique<SensorProviderImpl>(std::move(platform_provider));
   }
-  sensor_provider_->Bind(std::move(request));
+  sensor_provider_->Bind(std::move(receiver));
 }
 
 void DeviceService::BindTimeZoneMonitorReceiver(

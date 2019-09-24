@@ -92,7 +92,7 @@ MediaRouterBase::GetFlingingController(const MediaRoute::Id& route_id) {
 void MediaRouterBase::GetMediaController(
     const MediaRoute::Id& route_id,
     mojo::PendingReceiver<mojom::MediaController> controller,
-    mojom::MediaStatusObserverPtr observer) {}
+    mojo::PendingRemote<mojom::MediaStatusObserver> observer) {}
 #endif  // !defined(OS_ANDROID)
 
 MediaRouterBase::MediaRouterBase() : initialized_(false) {}

@@ -528,7 +528,8 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
     return articles_emitter_.GetUpdateCounters();
   }
 
-  Cryptographer* GetCryptographer(const syncable::BaseTransaction* trans) {
+  DirectoryCryptographer* GetCryptographer(
+      const syncable::BaseTransaction* trans) {
     return dir_maker_.GetCryptographer(trans);
   }
 
@@ -947,7 +948,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, ItemsBothKnownAndUnknown) {
 // Attempt application of password upates where the passphrase is known.
 TEST_F(DirectoryUpdateHandlerApplyUpdateTest, DecryptablePassword) {
   // Decryptable password updates should be applied.
-  Cryptographer* cryptographer;
+  DirectoryCryptographer* cryptographer;
   {
     // Storing the cryptographer separately is bad, but for this test we
     // know it's safe.
@@ -1031,7 +1032,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, UndecryptableData) {
 
 // Test a mix of decryptable and undecryptable updates.
 TEST_F(DirectoryUpdateHandlerApplyUpdateTest, SomeUndecryptablePassword) {
-  Cryptographer* cryptographer;
+  DirectoryCryptographer* cryptographer;
 
   int64_t decryptable_handle = -1;
   int64_t undecryptable_handle = -1;
@@ -1056,7 +1057,7 @@ TEST_F(DirectoryUpdateHandlerApplyUpdateTest, SomeUndecryptablePassword) {
   }
   {
     // Create a new cryptographer, independent of the one in the cycle.
-    Cryptographer other_cryptographer;
+    DirectoryCryptographer other_cryptographer;
     KeyParams params = {KeyDerivationParams::CreateForPbkdf2(), "bazqux"};
     other_cryptographer.AddKey(params);
 

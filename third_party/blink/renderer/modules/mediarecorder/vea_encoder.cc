@@ -41,6 +41,7 @@ scoped_refptr<VEAEncoder> VEAEncoder::Create(
     int32_t bits_per_second,
     media::VideoCodecProfile codec,
     const gfx::Size& size,
+    bool use_native_input,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   auto encoder = base::AdoptRef(
       new VEAEncoder(on_encoded_video_callback, on_error_callback,
@@ -48,7 +49,7 @@ scoped_refptr<VEAEncoder> VEAEncoder::Create(
   PostCrossThreadTask(
       *encoder->encoding_task_runner_.get(), FROM_HERE,
       CrossThreadBindOnce(&VEAEncoder::ConfigureEncoderOnEncodingTaskRunner,
-                          encoder, size));
+                          encoder, size, use_native_input));
   return encoder;
 }
 
@@ -186,8 +187,12 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
   if (input_visible_size_ != frame->visible_rect().size() && video_encoder_)
     video_encoder_.reset();
 
-  if (!video_encoder_)
-    ConfigureEncoderOnEncodingTaskRunner(frame->visible_rect().size());
+  if (!video_encoder_) {
+    bool use_native_input =
+        frame->storage_type() == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER;
+    ConfigureEncoderOnEncodingTaskRunner(frame->visible_rect().size(),
+                                         use_native_input);
+  }
 
   if (error_notified_) {
     DVLOG(3) << "An error occurred in VEA encoder";
@@ -214,13 +219,16 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
   // Therefore, a copy is necessary to release the current frame.
   // Only STORAGE_SHMEM backed frames can be shared with GPU process, therefore
   // a copy is required for other storage types.
+  // With STORAGE_GPU_MEMORY_BUFFER we delay the scaling of the frame to the end
+  // of the encoding pipeline.
   scoped_refptr<media::VideoFrame> video_frame = frame;
   bool can_share_frame =
       (video_frame->storage_type() == media::VideoFrame::STORAGE_SHMEM);
-  if (!can_share_frame ||
-      vea_requested_input_coded_size_ != frame->coded_size() ||
-      input_visible_size_.width() < kVEAEncoderMinResolutionWidth ||
-      input_visible_size_.height() < kVEAEncoderMinResolutionHeight) {
+  if (frame->storage_type() != media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER &&
+      (!can_share_frame ||
+       vea_requested_input_coded_size_ != frame->coded_size() ||
+       input_visible_size_.width() < kVEAEncoderMinResolutionWidth ||
+       input_visible_size_.height() < kVEAEncoderMinResolutionHeight)) {
     // Create SharedMemory backed input buffers as necessary. These SharedMemory
     // instances will be shared with GPU process.
     const size_t desired_mapped_size = media::VideoFrame::AllocationSize(
@@ -274,7 +282,8 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
   force_next_frame_to_be_keyframe_ = false;
 }
 
-void VEAEncoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) {
+void VEAEncoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size,
+                                                      bool use_native_input) {
   DVLOG(3) << __func__;
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
   DCHECK(gpu_factories_->GetTaskRunner()->BelongsToCurrentThread());
@@ -283,8 +292,20 @@ void VEAEncoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) {
   input_visible_size_ = size;
   vea_requested_input_coded_size_ = gfx::Size();
   video_encoder_ = gpu_factories_->CreateVideoEncodeAccelerator();
+
+  auto pixel_format = media::VideoPixelFormat::PIXEL_FORMAT_I420;
+  auto storage_type =
+      media::VideoEncodeAccelerator::Config::StorageType::kShmem;
+  if (use_native_input) {
+    // Currently the VAAPI and V4L2 VEA support only native input mode with NV12
+    // DMA-buf buffers.
+    pixel_format = media::PIXEL_FORMAT_NV12;
+    storage_type = media::VideoEncodeAccelerator::Config::StorageType::kDmabuf;
+  }
   const media::VideoEncodeAccelerator::Config config(
-      media::PIXEL_FORMAT_I420, input_visible_size_, codec_, bits_per_second_);
+      pixel_format, input_visible_size_, codec_, bits_per_second_,
+      base::nullopt, base::nullopt, base::nullopt, storage_type,
+      media::VideoEncodeAccelerator::Config::ContentType::kCamera);
   if (!video_encoder_ || !video_encoder_->Initialize(config, this))
     NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
 }

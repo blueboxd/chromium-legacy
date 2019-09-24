@@ -15,6 +15,9 @@
 #include "chrome/browser/media/router/route_message_util.h"
 #include "chrome/browser/media/router/test/test_helper.h"
 #include "content/public/test/browser_task_environment.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_status_code.h"
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/data_decoder/public/cpp/testing_json_parser.h"
@@ -93,13 +96,13 @@ class DialMediaRouteProviderTest : public ::testing::Test {
         mock_sink_service_(connector_factory_.GetDefaultConnector()) {}
 
   void SetUp() override {
-    mojom::MediaRouterPtr router_ptr;
-    router_binding_ = std::make_unique<mojo::Binding<mojom::MediaRouter>>(
-        &mock_router_, mojo::MakeRequest(&router_ptr));
+    mojo::PendingRemote<mojom::MediaRouter> router_remote;
+    router_receiver_ = std::make_unique<mojo::Receiver<mojom::MediaRouter>>(
+        &mock_router_, router_remote.InitWithNewPipeAndPassReceiver());
 
     EXPECT_CALL(mock_router_, OnSinkAvailabilityUpdated(_, _));
     provider_ = std::make_unique<DialMediaRouteProvider>(
-        mojo::MakeRequest(&provider_ptr_), router_ptr.PassInterface(),
+        provider_remote_.BindNewPipeAndPassReceiver(), std::move(router_remote),
         &mock_sink_service_, connector_factory_.GetDefaultConnector(),
         "hash-token", base::SequencedTaskRunnerHandle::Get());
 
@@ -382,9 +385,9 @@ class DialMediaRouteProviderTest : public ::testing::Test {
 
   network::TestURLLoaderFactory loader_factory_;
 
-  mojom::MediaRouteProviderPtr provider_ptr_;
+  mojo::Remote<mojom::MediaRouteProvider> provider_remote_;
   MockMojoMediaRouter mock_router_;
-  std::unique_ptr<mojo::Binding<mojom::MediaRouter>> router_binding_;
+  std::unique_ptr<mojo::Receiver<mojom::MediaRouter>> router_receiver_;
 
   data_decoder::TestingJsonParser::ScopedFactoryOverride parser_override_;
 

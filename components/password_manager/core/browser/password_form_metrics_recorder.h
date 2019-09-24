@@ -276,6 +276,15 @@ class PasswordFormMetricsRecorder
     kMaxValue = kNotSaved,
   };
 
+  // Used in UMA histogram, please do NOT reorder.
+  // Metric: "PasswordManager.JavaScriptOnlyValueInSubmittedForm"
+  enum class JsOnlyInput {
+    kOnlyJsInputNoFocus = 0,
+    kOnlyJsInputWithFocus = 1,
+    kAutofillOrUserInput = 2,
+    kMaxValue = kAutofillOrUserInput,
+  };
+
   // The maximum number of combinations of the ManagerAction, UserAction and
   // SubmitResult enums.
   // This is used when recording the actions taken by the form in UMA.
@@ -394,6 +403,10 @@ class PasswordFormMetricsRecorder
       bool is_blacklisted,
       const std::vector<InteractionsStats>& interactions_stats);
 
+  // Calculates whether all field values in |submitted_form| came from
+  // JavaScript. The result is stored in |js_only_input_|.
+  void CalculateJsOnlyInput(const autofill::FormData& submitted_form);
+
   void set_user_typed_password_on_chrome_sign_in_page() {
     user_typed_password_on_chrome_sign_in_page_ = true;
   }
@@ -500,6 +513,8 @@ class PasswordFormMetricsRecorder
 
   bool possible_username_used_ = false;
   bool username_updated_in_bubble_ = false;
+
+  base::Optional<JsOnlyInput> js_only_input_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordFormMetricsRecorder);
 };

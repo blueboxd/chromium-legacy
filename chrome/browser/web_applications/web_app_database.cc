@@ -12,6 +12,7 @@
 #include "chrome/browser/web_applications/web_app_database_factory.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/model_error.h"
+#include "components/sync/protocol/web_app_specifics.pb.h"
 
 namespace web_app {
 
@@ -25,16 +26,16 @@ WebAppDatabase::~WebAppDatabase() {
 }
 
 void WebAppDatabase::OpenDatabase(RegistryOpenedCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!store_);
 
   syncer::OnceModelTypeStoreFactory store_factory =
       database_factory_->GetStoreFactory();
 
-  // CreateStore then ReadRegistry.
-  CreateStore(
-      std::move(store_factory),
-      base::BindOnce(&WebAppDatabase::ReadRegistry,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  std::move(store_factory)
+      .Run(syncer::WEB_APPS,
+           base::BindOnce(&WebAppDatabase::OnDatabaseOpened,
+                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void WebAppDatabase::WriteWebApps(AppsToWrite apps,
@@ -77,15 +78,17 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   DCHECK(!web_app.app_id().empty());
   DCHECK_EQ(web_app.app_id(), GenerateAppIdFromURL(launch_url));
 
-  proto->set_launch_url(launch_url.spec());
+  sync_pb::WebAppSpecifics* specifics = proto->mutable_specifics();
 
-  proto->set_name(web_app.name());
+  specifics->set_launch_url(launch_url.spec());
+
+  specifics->set_name(web_app.name());
 
   DCHECK_NE(LaunchContainer::kDefault, web_app.launch_container());
-  proto->set_launch_container(web_app.launch_container() ==
-                                      LaunchContainer::kWindow
-                                  ? WebAppProto::WINDOW
-                                  : WebAppProto::TAB);
+  specifics->set_launch_container(web_app.launch_container() ==
+                                          LaunchContainer::kWindow
+                                      ? sync_pb::WebAppSpecifics::WINDOW
+                                      : sync_pb::WebAppSpecifics::TAB);
 
   DCHECK(web_app.sources_.any());
   proto->mutable_sources()->set_system(web_app.sources_[Source::kSystem]);
@@ -102,7 +105,7 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   if (!web_app.scope().is_empty())
     proto->set_scope(web_app.scope().spec());
   if (web_app.theme_color().has_value())
-    proto->set_theme_color(web_app.theme_color().value());
+    specifics->set_theme_color(web_app.theme_color().value());
 
   for (const WebApp::IconInfo& icon : web_app.icons()) {
     WebAppIconInfoProto* icon_proto = proto->add_icons();
@@ -115,8 +118,15 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
 
 // static
 std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(const WebAppProto& proto) {
+  if (!proto.has_specifics()) {
+    DLOG(ERROR) << "WebApp proto parse error: no specifics field";
+    return nullptr;
+  }
+
+  const sync_pb::WebAppSpecifics& specifics = proto.specifics();
+
   // AppId is a hash of launch_url. Read launch_url first:
-  GURL launch_url(proto.launch_url());
+  GURL launch_url(specifics.launch_url());
   if (launch_url.is_empty() || !launch_url.is_valid()) {
     DLOG(ERROR) << "WebApp proto launch_url parse error: "
                 << launch_url.possibly_invalid_spec();
@@ -146,17 +156,18 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(const WebAppProto& proto) {
   }
   web_app->sources_ = sources;
 
-  if (!proto.has_name()) {
+  if (!specifics.has_name()) {
     DLOG(ERROR) << "WebApp proto parse error: no name field";
     return nullptr;
   }
-  web_app->SetName(proto.name());
+  web_app->SetName(specifics.name());
 
-  if (!proto.has_launch_container()) {
+  if (!specifics.has_launch_container()) {
     DLOG(ERROR) << "WebApp proto parse error: no launch_container field";
     return nullptr;
   }
-  web_app->SetLaunchContainer(proto.launch_container() == WebAppProto::WINDOW
+  web_app->SetLaunchContainer(specifics.launch_container() ==
+                                      sync_pb::WebAppSpecifics::WINDOW
                                   ? LaunchContainer::kWindow
                                   : LaunchContainer::kTab);
 
@@ -180,8 +191,8 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(const WebAppProto& proto) {
     web_app->SetScope(scope);
   }
 
-  if (proto.has_theme_color())
-    web_app->SetThemeColor(proto.theme_color());
+  if (specifics.has_theme_color())
+    web_app->SetThemeColor(specifics.theme_color());
 
   WebApp::Icons icons;
   for (int i = 0; i < proto.icons_size(); ++i) {
@@ -201,27 +212,8 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(const WebAppProto& proto) {
   return web_app;
 }
 
-void WebAppDatabase::ReadRegistry(RegistryOpenedCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(store_);
-  store_->ReadAllData(base::BindOnce(&WebAppDatabase::OnAllDataRead,
-                                     weak_ptr_factory_.GetWeakPtr(),
-                                     std::move(callback)));
-}
-
-void WebAppDatabase::CreateStore(
-    syncer::OnceModelTypeStoreFactory store_factory,
-    base::OnceClosure closure) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  std::move(store_factory)
-      .Run(syncer::WEB_APPS,
-           base::BindOnce(&WebAppDatabase::OnStoreCreated,
-                          weak_ptr_factory_.GetWeakPtr(), std::move(closure)));
-}
-
-void WebAppDatabase::OnStoreCreated(
-    base::OnceClosure closure,
+void WebAppDatabase::OnDatabaseOpened(
+    RegistryOpenedCallback callback,
     const base::Optional<syncer::ModelError>& error,
     std::unique_ptr<syncer::ModelTypeStore> store) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -231,7 +223,9 @@ void WebAppDatabase::OnStoreCreated(
   }
 
   store_ = std::move(store);
-  std::move(closure).Run();
+  store_->ReadAllData(base::BindOnce(&WebAppDatabase::OnAllDataRead,
+                                     weak_ptr_factory_.GetWeakPtr(),
+                                     std::move(callback)));
 }
 
 void WebAppDatabase::OnAllDataRead(

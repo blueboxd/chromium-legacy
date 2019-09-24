@@ -248,10 +248,6 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   virtual void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                                    const std::string& message) = 0;
 
-  // Sets the PreviewsState of this frame, a bitmask of potentially several
-  // Previews optimizations.
-  virtual void SetPreviewsState(PreviewsState previews_state) = 0;
-
   // Returns the PreviewsState of this frame, a bitmask of potentially several
   // Previews optimizations.
   virtual PreviewsState GetPreviewsState() = 0;

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/run_loop.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/cpp/test/fake_sensor_and_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -75,15 +76,14 @@ class DeviceMotionEventPumpTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    device::mojom::SensorProviderPtrInfo sensor_provider_ptr_info;
-    sensor_provider_.Bind(mojo::MakeRequest(&sensor_provider_ptr_info));
+    mojo::PendingRemote<device::mojom::SensorProvider> sensor_provider;
+    sensor_provider_.Bind(sensor_provider.InitWithNewPipeAndPassReceiver());
     auto* motion_pump = MakeGarbageCollected<DeviceMotionEventPump>(
         base::ThreadTaskRunnerHandle::Get());
     motion_pump->SetSensorProviderForTesting(
-        device::mojom::blink::SensorProviderPtr(
-            device::mojom::blink::SensorProviderPtrInfo(
-                sensor_provider_ptr_info.PassHandle(),
-                device::mojom::SensorProvider::Version_)));
+        mojo::PendingRemote<device::mojom::blink::SensorProvider>(
+            sensor_provider.PassPipe(),
+            device::mojom::SensorProvider::Version_));
 
     controller_ = MakeGarbageCollected<MockDeviceMotionController>(motion_pump);
 

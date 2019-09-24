@@ -93,7 +93,7 @@ void FakeSensor::SensorReadingChanged() {
     client_->SensorReadingChanged();
 }
 
-FakeSensorProvider::FakeSensorProvider() : binding_(this) {}
+FakeSensorProvider::FakeSensorProvider() = default;
 
 FakeSensorProvider::~FakeSensorProvider() = default;
 
@@ -186,9 +186,10 @@ void FakeSensorProvider::GetSensor(mojom::SensorType type,
   }
 }
 
-void FakeSensorProvider::Bind(mojom::SensorProviderRequest request) {
-  DCHECK(!binding_.is_bound());
-  binding_.Bind(std::move(request));
+void FakeSensorProvider::Bind(
+    mojo::PendingReceiver<mojom::SensorProvider> receiver) {
+  DCHECK(!receiver_.is_bound());
+  receiver_.Bind(std::move(receiver));
 }
 
 void FakeSensorProvider::SetAmbientLightSensorData(double value) {

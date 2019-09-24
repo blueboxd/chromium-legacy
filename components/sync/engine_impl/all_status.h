@@ -55,6 +55,8 @@ class AllStatus : public SyncEngineEventListener {
   void IncrementNotificationsReceived();
 
   void SetEncryptedTypes(ModelTypeSet types);
+  // TODO(crbug.com/967417): Rename Ready->CanEncrypt in consistency with
+  // Cryptographer's API.
   void SetCryptographerReady(bool ready);
   void SetCryptoHasPendingKeys(bool has_pending_keys);
   void SetPassphraseType(PassphraseType type);

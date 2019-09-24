@@ -93,6 +93,7 @@ class PerformanceManagerImpl : public PerformanceManager {
   std::unique_ptr<PageNodeImpl> CreatePageNode(
       const WebContentsProxy& contents_proxy,
       const std::string& browser_context_id,
+      const GURL& visible_url,
       bool is_visible,
       bool is_audible);
   std::unique_ptr<ProcessNodeImpl> CreateProcessNode(

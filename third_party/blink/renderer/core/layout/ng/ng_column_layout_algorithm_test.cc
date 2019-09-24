@@ -1876,6 +1876,57 @@ TEST_F(NGColumnLayoutAlgorithmTest, UnsatisfiableOrphansAndWidows) {
   EXPECT_EQ(expectation, dump);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, WidowsAndAbspos) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-fill: auto;
+        column-gap: 10px;
+        width: 320px;
+        height: 70px;
+        line-height: 20px;
+        orphans: 1;
+        widows: 3;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="position:relative;">
+          <br>
+          <br>
+          <br>
+          <br>
+          <div style="position:absolute; width:33px; height:33px;"></div>
+          <br>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x70
+    offset:0,0 size:320x70
+      offset:0,0 size:100x70
+        offset:0,0 size:100x70
+          offset:0,0 size:0x20
+            offset:0,9 size:0x1
+          offset:0,20 size:0x20
+            offset:0,9 size:0x1
+      offset:110,0 size:100x60
+        offset:0,0 size:100x60
+          offset:0,0 size:0x20
+            offset:0,9 size:0x1
+          offset:0,20 size:0x20
+            offset:0,9 size:0x1
+          offset:0,40 size:0x20
+            offset:0,9 size:0x1
+          offset:0,40 size:33x33
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 // TODO(crbug.com/915929): Fix inline-level float fragmentation.
 TEST_F(NGColumnLayoutAlgorithmTest, DISABLED_FloatInBlockMovedByOrphans) {
   SetBodyInnerHTML(R"HTML(

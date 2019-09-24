@@ -674,9 +674,9 @@ TEST(AXTreeTest, IndexInParentAfterReorder) {
   AXTree tree(initial_state);
 
   // Index in parent correct.
-  EXPECT_EQ(tree.GetFromId(2)->GetUnignoredIndexInParent(), (size_t)0);
-  EXPECT_EQ(tree.GetFromId(3)->GetUnignoredIndexInParent(), (size_t)1);
-  EXPECT_EQ(tree.GetFromId(4)->GetUnignoredIndexInParent(), (size_t)2);
+  EXPECT_EQ(0U, tree.GetFromId(2)->GetUnignoredIndexInParent());
+  EXPECT_EQ(1U, tree.GetFromId(3)->GetUnignoredIndexInParent());
+  EXPECT_EQ(2U, tree.GetFromId(4)->GetUnignoredIndexInParent());
 
   // Perform an update where we reorder children to [ 4 3 2 ]
   AXTreeUpdate update;
@@ -694,9 +694,73 @@ TEST(AXTreeTest, IndexInParentAfterReorder) {
   ASSERT_TRUE(tree.Unserialize(update));
 
   // Index in parent should have changed as well.
-  EXPECT_EQ((size_t)0, tree.GetFromId(4)->GetUnignoredIndexInParent());
-  EXPECT_EQ((size_t)1, tree.GetFromId(3)->GetUnignoredIndexInParent());
-  EXPECT_EQ((size_t)2, tree.GetFromId(2)->GetUnignoredIndexInParent());
+  EXPECT_EQ(0U, tree.GetFromId(4)->GetUnignoredIndexInParent());
+  EXPECT_EQ(1U, tree.GetFromId(3)->GetUnignoredIndexInParent());
+  EXPECT_EQ(2U, tree.GetFromId(2)->GetUnignoredIndexInParent());
+}
+
+TEST(AXTreeTest, IndexInParentAfterReorderIgnoredNode) {
+  // This test covers another case where an AXTreeUpdate includes
+  // reordered children.  If one of the reordered nodes is ignored, its
+  // children's unignored index in parent should also be updated.
+
+  // Setup initial tree state.
+  // Tree:
+  //        1
+  //    2   3i  4
+  //       5  6
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(6);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].child_ids.resize(3);
+  initial_state.nodes[0].child_ids[0] = 2;
+  initial_state.nodes[0].child_ids[1] = 3;
+  initial_state.nodes[0].child_ids[2] = 4;
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[2].AddState(ax::mojom::State::kIgnored);
+  initial_state.nodes[2].child_ids.resize(2);
+  initial_state.nodes[2].child_ids[0] = 5;
+  initial_state.nodes[2].child_ids[1] = 6;
+  initial_state.nodes[3].id = 4;
+  initial_state.nodes[4].id = 5;
+  initial_state.nodes[5].id = 6;
+  AXTree tree(initial_state);
+
+  // Index in parent correct.
+  EXPECT_EQ(0U, tree.GetFromId(2)->GetUnignoredIndexInParent());
+  EXPECT_EQ(1U, tree.GetFromId(5)->GetUnignoredIndexInParent());
+  EXPECT_EQ(2U, tree.GetFromId(6)->GetUnignoredIndexInParent());
+  EXPECT_EQ(3U, tree.GetFromId(4)->GetUnignoredIndexInParent());
+
+  // Perform an update where we reorder children to [ 3i 2 4 ]. The
+  // unignored index in parent for the children of the ignored node (3) should
+  // be updated.
+  AXTreeUpdate update;
+  update.root_id = 1;
+  update.nodes.resize(6);
+  update.nodes[0].id = 1;
+  update.nodes[0].child_ids.resize(3);
+  update.nodes[0].child_ids[0] = 3;
+  update.nodes[0].child_ids[1] = 2;
+  update.nodes[0].child_ids[2] = 4;
+  update.nodes[1].id = 2;
+  update.nodes[2].id = 3;
+  update.nodes[2].AddState(ax::mojom::State::kIgnored);
+  update.nodes[2].child_ids.resize(2);
+  update.nodes[2].child_ids[0] = 5;
+  update.nodes[2].child_ids[1] = 6;
+  update.nodes[3].id = 4;
+  update.nodes[4].id = 5;
+  update.nodes[5].id = 6;
+
+  ASSERT_TRUE(tree.Unserialize(update));
+
+  EXPECT_EQ(2U, tree.GetFromId(2)->GetUnignoredIndexInParent());
+  EXPECT_EQ(0U, tree.GetFromId(5)->GetUnignoredIndexInParent());
+  EXPECT_EQ(1U, tree.GetFromId(6)->GetUnignoredIndexInParent());
+  EXPECT_EQ(3U, tree.GetFromId(4)->GetUnignoredIndexInParent());
 }
 
 TEST(AXTreeTest, ImplicitAttributeDelete) {

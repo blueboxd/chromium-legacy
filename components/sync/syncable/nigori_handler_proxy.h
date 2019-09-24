@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_SYNCABLE_NIGORI_HANDLER_PROXY_H_
 #define COMPONENTS_SYNC_SYNCABLE_NIGORI_HANDLER_PROXY_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -59,6 +60,8 @@ class NigoriHandlerProxy : public SyncEncryptionHandler::Observer,
       const syncable::BaseTransaction* const trans) const override;
   const Cryptographer* GetCryptographer(
       const syncable::BaseTransaction* const trans) const override;
+  const DirectoryCryptographer* GetDirectoryCryptographerForNigori(
+      const syncable::BaseTransaction* const trans) const override;
   ModelTypeSet GetEncryptedTypes(
       const syncable::BaseTransaction* const trans) const override;
   PassphraseType GetPassphraseType(
@@ -67,7 +70,7 @@ class NigoriHandlerProxy : public SyncEncryptionHandler::Observer,
  private:
   UserShare* user_share_;
 
-  Cryptographer cryptographer_;
+  std::unique_ptr<Cryptographer> cryptographer_;
   ModelTypeSet encrypted_types_;
   PassphraseType passphrase_type_;
 

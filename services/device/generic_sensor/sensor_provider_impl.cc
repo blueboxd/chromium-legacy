@@ -45,8 +45,9 @@ SensorProviderImpl::SensorProviderImpl(
 
 SensorProviderImpl::~SensorProviderImpl() {}
 
-void SensorProviderImpl::Bind(mojom::SensorProviderRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void SensorProviderImpl::Bind(
+    mojo::PendingReceiver<mojom::SensorProvider> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void SensorProviderImpl::GetSensor(mojom::SensorType type,

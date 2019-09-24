@@ -20,6 +20,7 @@
 namespace blink {
 
 class NGConstraintSpace;
+class NGEarlyBreak;
 class NGFragment;
 class NGLayoutResult;
 class NGPhysicalLineBoxFragment;
@@ -66,10 +67,21 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   NOINLINE scoped_refptr<const NGLayoutResult> LayoutWithItemsBuilder(
       NGInlineChildLayoutContext* context);
 
+  // Lay out again, this time with a predefined good breakpoint that we
+  // discovered in the first pass. This happens when we run out of space in a
+  // fragmentainer at an less-than-ideal location, due to breaking restrictions,
+  // such as orphans or widows.
+  NOINLINE scoped_refptr<const NGLayoutResult> RelayoutAndBreakEarlier(
+      const NGEarlyBreak&);
+
   inline scoped_refptr<const NGLayoutResult> Layout(
       NGInlineChildLayoutContext* inline_child_layout_context);
 
   scoped_refptr<const NGLayoutResult> FinishLayout(NGPreviousInflowPosition*);
+
+  // If the child is the one we have already determined to break before, do so
+  // and return true. Otherwise, return false.
+  bool FindEarlyBreakpoint(NGLayoutInputNode child, NGPreviousInflowPosition*);
 
   // Return the BFC block offset of this block.
   LayoutUnit BfcBlockOffset() const {
@@ -230,10 +242,13 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
                                  LayoutUnit block_offset,
                                  bool is_pushed_by_floats) const;
 
-  // Final adjustments before fragment creation. We need to prevent the
-  // fragment from crossing fragmentainer boundaries, and rather create a break
-  // token if we're out of space.
-  void FinalizeForFragmentation();
+  // Final adjustments before fragment creation. We need to prevent the fragment
+  // from crossing fragmentainer boundaries, and rather create a break token if
+  // we're out of space. As part of finalizing we may also discover that we need
+  // to abort layout, because we've run out of space at a less-than-ideal
+  // location. In this case, false will be returned. Otherwise, true will be
+  // returned.
+  bool FinalizeForFragmentation();
 
   void PropagateBaselinesFromChildren();
   bool AddBaseline(const NGBaselineRequest&,
@@ -364,6 +379,9 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   bool has_processed_first_child_ = false;
 
   NGExclusionSpace exclusion_space_;
+
+  // When set, this will specify where to break before or inside.
+  const NGEarlyBreak* early_break_ = nullptr;
 };
 
 }  // namespace blink

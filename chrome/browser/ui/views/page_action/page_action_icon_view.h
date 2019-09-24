@@ -46,7 +46,7 @@ class PageActionIconView : public IconLabelBubbleView {
 
     // Returns the border the icon should use. It depends on what kind of
     // delegate this icon has.
-    virtual std::unique_ptr<views::Border> GetPageActionIconBorder() const;
+    virtual std::unique_ptr<views::Border> CreatePageActionIconBorder() const;
 
     // Delegate should override and return true when the user is editing the
     // location bar contents.

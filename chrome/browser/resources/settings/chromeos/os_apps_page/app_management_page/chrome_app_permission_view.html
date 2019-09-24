@@ -81,7 +81,8 @@
               based on the app. -->
         <div id="more-settings"
           class="permission-card-row separated-row header-text clickable"
-          on-click="onClickExtensionsSettingsButton_">
+          on-click="onClickExtensionsSettingsButton_"
+          hidden$="[[app_.hideMoreSettings]]">
           <div id="label" class="header-text">$i18n{moreSettings}</div>
           <div class="permission-row-controls">
             <cr-icon-button class="native-settings-icon icon-external" role="link"

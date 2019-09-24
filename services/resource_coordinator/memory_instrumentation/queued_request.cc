@@ -8,12 +8,14 @@ namespace memory_instrumentation {
 
 QueuedRequest::Args::Args(MemoryDumpType dump_type,
                           MemoryDumpLevelOfDetail level_of_detail,
+                          MemoryDumpDeterminism determinism,
                           const std::vector<std::string>& allocator_dump_names,
                           bool add_to_trace,
                           base::ProcessId pid,
                           bool memory_footprint_only)
     : dump_type(dump_type),
       level_of_detail(level_of_detail),
+      determinism(determinism),
       allocator_dump_names(allocator_dump_names),
       add_to_trace(add_to_trace),
       pid(pid),
@@ -45,6 +47,7 @@ base::trace_event::MemoryDumpRequestArgs QueuedRequest::GetRequestArgs() {
   request_args.dump_guid = dump_guid;
   request_args.dump_type = args.dump_type;
   request_args.level_of_detail = args.level_of_detail;
+  request_args.determinism = args.determinism;
   return request_args;
 }
 

@@ -74,6 +74,16 @@ void LabelButton::SetText(const base::string16& text) {
   SetTextInternal(text);
 }
 
+void LabelButton::ShrinkDownThenClearText() {
+  if (GetText().empty())
+    return;
+  // First, we recalculate preferred size for the new mode (without the label).
+  shrinking_down_label_ = true;
+  PreferredSizeChanged();
+  // Second, we clear the label right away if the button is already small.
+  ClearTextIfShrunkDown();
+}
+
 void LabelButton::SetTextColor(ButtonState for_state, SkColor color) {
   button_state_colors_[for_state] = color;
   if (for_state == STATE_DISABLED)
@@ -178,16 +188,26 @@ void LabelButton::SetBorder(std::unique_ptr<Border> border) {
   ResetCachedPreferredSize();
 }
 
+void LabelButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  ClearTextIfShrunkDown();
+  Button::OnBoundsChanged(previous_bounds);
+}
+
 gfx::Size LabelButton::CalculatePreferredSize() const {
   // Cache the computed size, as recomputing it is an expensive operation.
   if (!cached_preferred_size_) {
-    const gfx::Size preferred_label_size = label_->GetPreferredSize();
     gfx::Size size = GetUnclampedSizeWithoutLabel();
-    size.Enlarge(preferred_label_size.width(), 0);
 
-    // Increase the height of the label (with insets) if larger.
-    size.set_height(std::max(
-        preferred_label_size.height() + GetInsets().height(), size.height()));
+    // Disregard label in the preferred size if the button is shrinking down to
+    // show no label soon.
+    if (!shrinking_down_label_) {
+      const gfx::Size preferred_label_size = label_->GetPreferredSize();
+      size.Enlarge(preferred_label_size.width(), 0);
+
+      // Increase the height of the label (with insets) if larger.
+      size.set_height(std::max(
+          preferred_label_size.height() + GetInsets().height(), size.height()));
+    }
 
     size.SetToMax(GetMinSize());
 
@@ -475,9 +495,28 @@ void LabelButton::StateChanged(ButtonState old_state) {
 void LabelButton::SetTextInternal(const base::string16& text) {
   SetAccessibleName(text);
   label_->SetText(text);
+
+  // Setting text cancels ShrinkDownThenClearText().
+  if (shrinking_down_label_) {
+    shrinking_down_label_ = false;
+    PreferredSizeChanged();
+  }
+
   // TODO(pkasting): Remove this and forward callback subscriptions to the
   // underlying label property when Label is converted to properties.
   OnPropertyChanged(label_, kPropertyEffectsNone);
+}
+
+void LabelButton::ClearTextIfShrunkDown() {
+  if (!cached_preferred_size_)
+    CalculatePreferredSize();
+  if (shrinking_down_label_ && width() <= cached_preferred_size_->width() &&
+      height() <= cached_preferred_size_->height()) {
+    // Once the button shrinks down to its preferred size (that disregards the
+    // current text), we finish the operation by clearing the text.
+    shrinking_down_label_ = false;
+    SetTextInternal(base::string16());
+  }
 }
 
 void LabelButton::ResetCachedPreferredSize() {

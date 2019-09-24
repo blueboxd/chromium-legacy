@@ -377,6 +377,100 @@ TEST_F(AXRangeTest, EqualityOperators) {
   EXPECT_EQ(test_positions_1_and_2, test_positions_1_and_3);
 }
 
+TEST_F(AXRangeTest, AsForwardRange) {
+  TestPositionRange null_range(AXNodePosition::CreateNullPosition(),
+                               AXNodePosition::CreateNullPosition());
+  null_range = null_range.AsForwardRange();
+  EXPECT_TRUE(null_range.IsNull());
+
+  TestPositionInstance tree_position = AXNodePosition::CreateTreePosition(
+      tree_->data().tree_id, button_.id, 0 /* child_index */);
+  TestPositionInstance text_position1 = AXNodePosition::CreateTextPosition(
+      tree_->data().tree_id, line_break1_.id, 1 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  TestPositionInstance text_position2 = AXNodePosition::CreateTextPosition(
+      tree_->data().tree_id, inline_box2_.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+
+  TestPositionRange tree_to_text_range(text_position1->Clone(),
+                                       tree_position->Clone());
+  tree_to_text_range = tree_to_text_range.AsForwardRange();
+  EXPECT_EQ(*tree_position, *tree_to_text_range.anchor());
+  EXPECT_EQ(*text_position1, *tree_to_text_range.focus());
+
+  TestPositionRange text_to_text_range(text_position2->Clone(),
+                                       text_position1->Clone());
+  text_to_text_range = text_to_text_range.AsForwardRange();
+  EXPECT_EQ(*text_position1, *text_to_text_range.anchor());
+  EXPECT_EQ(*text_position2, *text_to_text_range.focus());
+}
+
+TEST_F(AXRangeTest, IsCollapsed) {
+  TestPositionRange null_range(AXNodePosition::CreateNullPosition(),
+                               AXNodePosition::CreateNullPosition());
+  null_range = null_range.AsForwardRange();
+  EXPECT_FALSE(null_range.IsCollapsed());
+
+  TestPositionInstance tree_position1 = AXNodePosition::CreateTreePosition(
+      tree_->data().tree_id, text_field_.id, 0 /* child_index */);
+  // Since there are no children in inline_box1_, the following is essentially
+  // an "after text" position which should not compare as equivalent to the
+  // above tree position which is a "before text" position inside the text
+  // field.
+  TestPositionInstance tree_position2 = AXNodePosition::CreateTreePosition(
+      tree_->data().tree_id, inline_box1_.id, 0 /* child_index */);
+
+  TestPositionInstance text_position1 = AXNodePosition::CreateTextPosition(
+      tree_->data().tree_id, static_text1_.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  TestPositionInstance text_position2 = AXNodePosition::CreateTextPosition(
+      tree_->data().tree_id, inline_box1_.id, 0 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  TestPositionInstance text_position3 = AXNodePosition::CreateTextPosition(
+      tree_->data().tree_id, inline_box2_.id, 1 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+
+  TestPositionRange tree_to_null_range(tree_position1->Clone(),
+                                       AXNodePosition::CreateNullPosition());
+  EXPECT_TRUE(tree_to_null_range.IsNull());
+  EXPECT_FALSE(tree_to_null_range.IsCollapsed());
+
+  TestPositionRange null_to_text_range(AXNodePosition::CreateNullPosition(),
+                                       text_position1->Clone());
+  EXPECT_TRUE(null_to_text_range.IsNull());
+  EXPECT_FALSE(null_to_text_range.IsCollapsed());
+
+  TestPositionRange tree_to_tree_range(tree_position2->Clone(),
+                                       tree_position1->Clone());
+  EXPECT_TRUE(tree_to_tree_range.IsCollapsed());
+
+  // A tree and a text position that essentially point to the same text offset
+  // are equivalent, even if they are anchored to a different node.
+  TestPositionRange tree_to_text_range(tree_position1->Clone(),
+                                       text_position1->Clone());
+  EXPECT_TRUE(tree_to_text_range.IsCollapsed());
+
+  // The following positions are not equivalent since tree_position2 is an
+  // "after text" position.
+  tree_to_text_range =
+      TestPositionRange(tree_position2->Clone(), text_position2->Clone());
+  EXPECT_FALSE(tree_to_text_range.IsCollapsed());
+
+  TestPositionRange text_to_text_range(text_position1->Clone(),
+                                       text_position1->Clone());
+  EXPECT_TRUE(text_to_text_range.IsCollapsed());
+
+  // Two text positions that essentially point to the same text offset are
+  // equivalent, even if they are anchored to a different node.
+  text_to_text_range =
+      TestPositionRange(text_position1->Clone(), text_position2->Clone());
+  EXPECT_TRUE(text_to_text_range.IsCollapsed());
+
+  text_to_text_range =
+      TestPositionRange(text_position1->Clone(), text_position3->Clone());
+  EXPECT_FALSE(text_to_text_range.IsCollapsed());
+}
+
 TEST_F(AXRangeTest, BeginAndEndIterators) {
   TestPositionInstance null_position = AXNodePosition::CreateNullPosition();
   TestPositionInstance test_position1 = AXNodePosition::CreateTextPosition(

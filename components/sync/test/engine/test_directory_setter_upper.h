@@ -65,7 +65,8 @@ class TestDirectorySetterUpper {
   virtual void TearDown();
 
   // Returns mutable version of Cryptographer owned by |encryption_handler_|.
-  Cryptographer* GetCryptographer(const syncable::BaseTransaction* trans);
+  DirectoryCryptographer* GetCryptographer(
+      const syncable::BaseTransaction* trans);
 
   syncable::Directory* directory() { return directory_.get(); }
 

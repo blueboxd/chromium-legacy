@@ -268,6 +268,11 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
     }
   }
 
+  if (submit_result_ == kSubmitResultPassed && js_only_input_) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "PasswordManager.JavaScriptOnlyValueInSubmittedForm", *js_only_input_);
+  }
+
   if (user_typed_password_on_chrome_sign_in_page_ ||
       password_hash_saved_on_chrome_sing_in_page_) {
     auto value = password_hash_saved_on_chrome_sing_in_page_
@@ -495,6 +500,8 @@ void PasswordFormMetricsRecorder::CalculateFillingAssistanceMetric(
     const std::set<base::string16>& saved_passwords,
     bool is_blacklisted,
     const std::vector<InteractionsStats>& interactions_stats) {
+  CalculateJsOnlyInput(submitted_form);
+
   if (saved_passwords.empty() && is_blacklisted) {
     filling_assistance_ = FillingAssistance::kNoSavedCredentialsAndBlacklisted;
     return;
@@ -549,6 +556,25 @@ void PasswordFormMetricsRecorder::CalculateFillingAssistanceMetric(
 
   // If execution gets here, we have a bug in our state machine.
   NOTREACHED();
+}
+
+void PasswordFormMetricsRecorder::CalculateJsOnlyInput(
+    const FormData& submitted_form) {
+  bool had_focus = false;
+  bool had_user_input_or_autofill_on_password = false;
+  for (const auto& field : submitted_form.fields) {
+    if (field.HadFocus())
+      had_focus = true;
+    if (field.IsPasswordInputElement() &&
+        (field.DidUserType() || field.WasAutofilled())) {
+      had_user_input_or_autofill_on_password = true;
+    }
+  }
+
+  js_only_input_ = had_user_input_or_autofill_on_password
+                       ? JsOnlyInput::kAutofillOrUserInput
+                       : (had_focus ? JsOnlyInput::kOnlyJsInputWithFocus
+                                    : JsOnlyInput::kOnlyJsInputNoFocus);
 }
 
 int PasswordFormMetricsRecorder::GetActionsTaken() const {

@@ -146,7 +146,7 @@ FormFieldData::FormFieldData() = default;
 
 FormFieldData::FormFieldData(const FormFieldData& other) = default;
 
-FormFieldData::~FormFieldData() {}
+FormFieldData::~FormFieldData() = default;
 
 bool FormFieldData::SameFieldAs(const FormFieldData& field) const {
 // TODO(crbug.com/896689): On iOS the unique_id member uniquely addresses
@@ -204,6 +204,22 @@ bool FormFieldData::IsTextInputElement() const {
   return form_control_type == "text" || form_control_type == "password" ||
          form_control_type == "search" || form_control_type == "tel" ||
          form_control_type == "url" || form_control_type == "email";
+}
+
+bool FormFieldData::IsPasswordInputElement() const {
+  return form_control_type == "password";
+}
+
+bool FormFieldData::DidUserType() const {
+  return properties_mask & USER_TYPED;
+}
+
+bool FormFieldData::HadFocus() const {
+  return properties_mask & HAD_FOCUS;
+}
+
+bool FormFieldData::WasAutofilled() const {
+  return properties_mask & AUTOFILLED;
 }
 
 bool FormFieldData::operator==(const FormFieldData& field) const {

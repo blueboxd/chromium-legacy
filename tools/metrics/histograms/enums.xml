@@ -13147,6 +13147,17 @@ Called by update_net_error_codes.py.-->
   <int value="6" label="Texture array has one element"/>
 </enum>
 
+<enum name="DefaultAppName">
+  <int value="0" label="Calculator"/>
+  <int value="1" label="Text"/>
+  <int value="2" label="Get Help"/>
+  <int value="3" label="Gallery"/>
+  <int value="4" label="Video Player"/>
+  <int value="5" label="Audio Player"/>
+  <int value="6" label="Chrome Canvas"/>
+  <int value="7" label="Camera"/>
+</enum>
+
 <enum name="DefaultBrowserAsyncAttemptResult">
   <obsolete>
     Deprecated 2015/11. Renamed to SetDefaultAttemptResult.
@@ -32751,6 +32762,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   </int>
 </enum>
 
+<enum name="JavaScriptOnlyValueInPasswordForm">
+  <int value="0" label="Only values from JavaScript, and no user focus"/>
+  <int value="1" label="Only values from JavaScript, and user focus"/>
+  <int value="2" label="User typed or autofilled values"/>
+</enum>
+
 <enum name="JpegColorSpace">
   <int value="0" label="Unknown color space">
     This is the bucket that counts the images that did not fall under any of the
@@ -35221,6 +35238,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1532014193" label="disable-encryption-migration"/>
   <int value="-1529907580" label="ImeServiceConnectable:disabled"/>
   <int value="-1528455406" label="OmniboxPedalSuggestions:enabled"/>
+  <int value="-1521160841" label="DismissNtpPromos:enabled"/>
   <int value="-1520952503" label="SearchReadyOmnibox:enabled"/>
   <int value="-1520855274" label="PWAFullCodeCache:disabled"/>
   <int value="-1517518406" label="force-update-menu-type"/>
@@ -35732,6 +35750,7 @@ from previous Chrome versions.
   <int value="-902125579" label="ImmersiveUiMode:disabled"/>
   <int value="-899393472" label="enable-new-app-menu-icon"/>
   <int value="-899334103" label="disable-fast-text-autosizing"/>
+  <int value="-899265865" label="DismissNtpPromos:disabled"/>
   <int value="-898594349" label="ash-enable-stable-overview-order"/>
   <int value="-898499262" label="ImprovedA2HS:enabled"/>
   <int value="-898005938" label="disable-pinch-virtual-viewport"/>

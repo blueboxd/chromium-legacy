@@ -8,11 +8,13 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/common/importer/profile_import.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
 class ExternalProcessImporterBridge;
@@ -38,7 +40,8 @@ class ProfileImportImpl : public chrome::mojom::ProfileImport {
       const importer::SourceProfile& source_profile,
       uint16_t items,
       const base::flat_map<uint32_t, std::string>& localized_strings,
-      chrome::mojom::ProfileImportObserverPtr observer) override;
+      mojo::PendingRemote<chrome::mojom::ProfileImportObserver> observer)
+      override;
   void CancelImport() override;
   void ReportImportItemFinished(importer::ImportItem item) override;
 

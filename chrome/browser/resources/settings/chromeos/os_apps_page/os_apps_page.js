@@ -12,9 +12,42 @@ Polymer({
 
   behaviors: [
     app_management.StoreClient,
+    I18nBehavior,
+    PrefsBehavior,
   ],
 
   properties: {
+    /** Preferences state. */
+    prefs: {
+      type: Object,
+      notify: true,
+    },
+
+    /**
+     * This object holds the playStoreEnabled and settingsAppAvailable boolean.
+     * @type {Object}
+     */
+    androidAppsInfo: Object,
+
+    /**
+     * If the Play Store app is available.
+     * @type {boolean}
+     */
+    havePlayStoreApp: Boolean,
+
+    /**
+     * Show ARC++ related settings and sub-page.
+     * @type {boolean}
+     */
+    showAndroidApps: Boolean,
+
+
+    /**
+     * Show link to App Management.
+     * @type {boolean}
+     */
+    showAppManagement: Boolean,
+
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
@@ -22,6 +55,11 @@ Polymer({
         const map = new Map();
         if (settings.routes.APP_MANAGEMENT) {
           map.set(settings.routes.APP_MANAGEMENT.path, '#appManagement');
+        }
+        if (settings.routes.ANDROID_APPS_DETAILS) {
+          map.set(
+              settings.routes.ANDROID_APPS_DETAILS.path,
+              '#android-apps .subpage-arrow');
         }
         return map;
       },
@@ -54,5 +92,44 @@ Polymer({
   onClickAppManagement_: function() {
     chrome.metricsPrivate.recordUserAction('SettingsPage.OpenAppManagement');
     settings.navigateTo(settings.routes.APP_MANAGEMENT);
+  },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onEnableAndroidAppsTap_: function(event) {
+    this.setPrefValue('arc.enabled', true);
+    event.stopPropagation();
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  isEnforced_: function(pref) {
+    return pref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED;
+  },
+
+  /** @private */
+  onAndroidAppsSubpageTap_: function(event) {
+    if (event.target && event.target.tagName == 'A') {
+      // Filter out events coming from 'Learn more' link
+      return;
+    }
+    if (this.androidAppsInfo.playStoreEnabled) {
+      settings.navigateTo(settings.routes.ANDROID_APPS_DETAILS);
+    }
+  },
+
+  /**
+   * @param {!MouseEvent} event
+   * @private
+   */
+  onManageAndroidAppsTap_: function(event) {
+    // |event.detail| is the click count. Keyboard events will have 0 clicks.
+    const isKeyboardAction = event.detail == 0;
+    settings.AndroidAppsBrowserProxyImpl.getInstance().showAndroidAppsSettings(
+        isKeyboardAction);
   },
 });

@@ -189,6 +189,11 @@ class MutableProfileOAuth2TokenServiceDelegate
   void RevokeCredentialsImpl(const CoreAccountId& account_id,
                              bool revoke_on_server);
 
+  // If the Dice migration happened before the tokens could be migrated, delete
+  // all the tokens. This is only called if the tokens could not be loaded
+  // successfully.
+  void MaybeDeletePreDiceTokens();
+
   // Maps the |account_id| of accounts known to ProfileOAuth2TokenService
   // to information about the account.
   typedef std::map<CoreAccountId, AccountStatus> AccountStatusMap;

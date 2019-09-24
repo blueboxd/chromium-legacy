@@ -179,7 +179,8 @@ class DeviceService : public service_manager::Service {
   void BindScreenOrientationListenerReceiver(
       mojo::PendingReceiver<mojom::ScreenOrientationListener> receiver);
 
-  void BindSensorProviderRequest(mojom::SensorProviderRequest request);
+  void BindSensorProviderReceiver(
+      mojo::PendingReceiver<mojom::SensorProvider> receiver);
 
   void BindTimeZoneMonitorReceiver(
       mojo::PendingReceiver<mojom::TimeZoneMonitor> receiver);

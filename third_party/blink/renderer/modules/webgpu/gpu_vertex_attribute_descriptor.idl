@@ -4,12 +4,10 @@
 
 // https://gpuweb.github.io/gpuweb/
 
-typedef unsigned long GPUShaderAttributeIndex;
-
 dictionary GPUVertexAttributeDescriptor {
     unsigned long long offset = 0;
     required GPUVertexFormat format;
-    required GPUShaderAttributeIndex shaderLocation;
+    required unsigned long shaderLocation;
 };
 
 enum GPUVertexFormat {

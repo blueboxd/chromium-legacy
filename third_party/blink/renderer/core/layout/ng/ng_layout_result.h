@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_early_break.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_link.h"
@@ -38,6 +39,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   enum NGLayoutResultStatus {
     kSuccess = 0,
     kBfcBlockOffsetResolved = 1,
+    kNeedsEarlierBreak = 2,
     // When adding new values, make sure the bit size of |Bitfields::status| is
     // large enough to store.
   };
@@ -73,6 +75,12 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   // Get the column spanner (if any) that interrupted column layout.
   NGBlockNode ColumnSpanner() const {
     return HasRareData() ? rare_data_->column_spanner : NGBlockNode(nullptr);
+  }
+
+  const NGEarlyBreak* GetEarlyBreak() const {
+    if (!HasRareData())
+      return nullptr;
+    return &rare_data_->early_break.value();
   }
 
   const NGExclusionSpace& ExclusionSpace() const {
@@ -294,6 +302,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     LayoutUnit bfc_line_offset;
     base::Optional<LayoutUnit> bfc_block_offset;
 
+    base::Optional<NGEarlyBreak> early_break;
     LogicalOffset oof_positioned_offset;
     NGMarginStrut end_margin_strut;
     NGUnpositionedListMarker unpositioned_list_marker;
@@ -362,7 +371,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     unsigned initial_break_before : 4;  // EBreakBetween
     unsigned final_break_after : 4;     // EBreakBetween
 
-    unsigned status : 1;  // NGLayoutResultStatus
+    unsigned status : 2;  // NGLayoutResultStatus
   };
 
   // The constraint space which generated this layout result, may not be valid

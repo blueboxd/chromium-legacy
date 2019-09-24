@@ -11,7 +11,6 @@
 #include "components/signin/internal/identity_manager/account_fetcher_service.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
 #include "components/signin/internal/identity_manager/gaia_cookie_manager_service.h"
-#include "components/signin/internal/identity_manager/primary_account_manager.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
 #include "components/signin/internal/identity_manager/ubertoken_fetcher_impl.h"
 #include "components/signin/public/identity_manager/accounts_cookie_mutator.h"
@@ -52,21 +51,14 @@ IdentityManager::IdentityManager(
                         std::move(accounts_mutator),
                         std::move(accounts_cookie_mutator),
                         std::move(device_accounts_synchronizer)),
-      diagnostics_provider_(std::move(diagnostics_provider)) {
+      diagnostics_provider_(std::move(diagnostics_provider)),
+      primary_account_manager_observer_(this),
+      token_service_observer_(this) {
   DCHECK(account_fetcher_service_);
   DCHECK(diagnostics_provider_);
 
-  // IdentityManager will outlive the PrimaryAccountManager, so base::Unretained
-  // is safe.
-  primary_account_manager_->SetGoogleSigninSucceededCallback(
-      base::BindRepeating(&IdentityManager::GoogleSigninSucceeded,
-                          base::Unretained(this)));
-#if !defined(OS_CHROMEOS)
-  primary_account_manager_->SetGoogleSignedOutCallback(base::BindRepeating(
-      &IdentityManager::GoogleSignedOut, base::Unretained(this)));
-#endif
-
-  token_service_->AddObserver(this);
+  primary_account_manager_observer_.Add(primary_account_manager_.get());
+  token_service_observer_.Add(token_service_.get());
   token_service_->AddAccessTokenDiagnosticsObserver(this);
 
   // IdentityManager owns the ATS, GCMS and PO2TS instances and will outlive
@@ -106,7 +98,6 @@ IdentityManager::~IdentityManager() {
   token_service_->Shutdown();
   account_tracker_service_->Shutdown();
 
-  token_service_->RemoveObserver(this);
   token_service_->RemoveAccessTokenDiagnosticsObserver(this);
 
 #if defined(OS_ANDROID)
@@ -526,6 +517,7 @@ void IdentityManager::GoogleSigninSucceeded(
 #endif
 }
 
+#if !defined(OS_CHROMEOS)
 void IdentityManager::GoogleSignedOut(const CoreAccountInfo& account_info) {
   DCHECK(!HasPrimaryAccount());
   DCHECK(!account_info.IsEmpty());
@@ -542,6 +534,7 @@ void IdentityManager::GoogleSignedOut(const CoreAccountInfo& account_info) {
   }
 #endif
 }
+#endif  // !defined(OS_CHROMEOS)
 
 void IdentityManager::OnRefreshTokenAvailable(const CoreAccountId& account_id) {
   UpdateUnconsentedPrimaryAccount();

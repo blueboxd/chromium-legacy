@@ -202,14 +202,10 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
   if (!browserState || browserState->IsOffTheRecord()) {
     return NO;
   }
-  // Temporary fix for regression for http://crbug.com/1006744: Disable showing
-  // the signed-in account modal dialog.
-  //
-  // AuthenticationService* authService =
-  //    AuthenticationServiceFactory::GetForBrowserState(browserState);
-  // return !gSignedInAccountsViewControllerIsShown &&
-  //       authService->IsAuthenticated() && authService->HaveAccountsChanged();
-  return NO;
+  AuthenticationService* authService =
+      AuthenticationServiceFactory::GetForBrowserState(browserState);
+  return !gSignedInAccountsViewControllerIsShown &&
+         authService->IsAuthenticated() && authService->HaveAccountsChanged();
 }
 
 #pragma mark Initialization

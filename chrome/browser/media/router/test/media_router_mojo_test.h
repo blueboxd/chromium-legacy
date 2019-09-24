@@ -21,7 +21,10 @@
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/event_page_tracker.h"
 #include "extensions/common/extension.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -140,17 +143,18 @@ class MockMediaRouteProvider : public mojom::MediaRouteProvider {
                void(const std::string&, const std::vector<MediaSinkInternal>&));
   void CreateMediaRouteController(
       const std::string& route_id,
-      mojom::MediaControllerRequest media_controller,
-      mojom::MediaStatusObserverPtr observer,
+      mojo::PendingReceiver<mojom::MediaController> media_controller,
+      mojo::PendingRemote<mojom::MediaStatusObserver> observer,
       CreateMediaRouteControllerCallback callback) override {
     CreateMediaRouteControllerInternal(route_id, media_controller, observer,
                                        callback);
   }
-  MOCK_METHOD4(CreateMediaRouteControllerInternal,
-               void(const std::string& route_id,
-                    mojom::MediaControllerRequest& media_controller,
-                    mojom::MediaStatusObserverPtr& observer,
-                    CreateMediaRouteControllerCallback& callback));
+  MOCK_METHOD4(
+      CreateMediaRouteControllerInternal,
+      void(const std::string& route_id,
+           mojo::PendingReceiver<mojom::MediaController>& media_controller,
+           mojo::PendingRemote<mojom::MediaStatusObserver>& observer,
+           CreateMediaRouteControllerCallback& callback));
 
   // These methods execute the callbacks with the success or timeout result
   // code. If the callback takes a route, the route set in SetRouteToReturn() is
@@ -205,13 +209,14 @@ class MockEventPageRequestManager : public EventPageRequestManager {
 
 class MockMediaStatusObserver : public mojom::MediaStatusObserver {
  public:
-  explicit MockMediaStatusObserver(mojom::MediaStatusObserverRequest request);
+  explicit MockMediaStatusObserver(
+      mojo::PendingReceiver<mojom::MediaStatusObserver> receiver);
   ~MockMediaStatusObserver() override;
 
   MOCK_METHOD1(OnMediaStatusUpdated, void(mojom::MediaStatusPtr status));
 
  private:
-  mojo::Binding<mojom::MediaStatusObserver> binding_;
+  mojo::Receiver<mojom::MediaStatusObserver> receiver_;
 };
 
 class MockMediaController : public mojom::MediaController {
@@ -219,9 +224,9 @@ class MockMediaController : public mojom::MediaController {
   MockMediaController();
   ~MockMediaController() override;
 
-  void Bind(mojom::MediaControllerRequest request);
-  mojom::MediaControllerPtr BindInterfacePtr();
-  void CloseBinding();
+  void Bind(mojo::PendingReceiver<mojom::MediaController> receiver);
+  mojo::PendingRemote<mojom::MediaController> BindInterfaceRemote();
+  void CloseReceiver();
 
   MOCK_METHOD0(Play, void());
   MOCK_METHOD0(Pause, void());
@@ -232,7 +237,7 @@ class MockMediaController : public mojom::MediaController {
   MOCK_METHOD0(PreviousTrack, void());
 
  private:
-  mojo::Binding<mojom::MediaController> binding_;
+  mojo::Receiver<mojom::MediaController> receiver_{this};
 };
 
 // Tests the API call flow between the MediaRouterMojoImpl and the Media Router
@@ -293,7 +298,7 @@ class MediaRouterMojoTest : public ::testing::Test {
   scoped_refptr<const extensions::Extension> extension_;
   TestingProfile profile_;
   std::unique_ptr<MediaRouterMojoImpl> media_router_;
-  mojo::BindingSet<mojom::MediaRouteProvider> provider_bindings_;
+  mojo::ReceiverSet<mojom::MediaRouteProvider> provider_receivers_;
   std::unique_ptr<MediaRoutesObserver> routes_observer_;
   std::unique_ptr<MockMediaSinksObserver> sinks_observer_;
 

@@ -140,6 +140,29 @@ TEST_F('OSSettingsAndroidAppsPageTest', 'DISABLED_AllJsTests', () => {
   mocha.run();
 });
 
+// Tests for the Android App section in Google Play Store.
+// eslint-disable-next-line no-var
+var OSSettingsAppsPageTest = class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'chromeos/os_apps_page/os_apps_page.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '//ui/webui/resources/js/promise_resolver.js',
+      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      BROWSER_SETTINGS_PATH + 'chromeos/test_android_apps_browser_proxy.js',
+      'apps_page_test.js',
+    ]);
+  }
+};
+
+TEST_F('OSSettingsAppsPageTest', 'AllJsTests', () => {
+  mocha.run();
+});
+
 // Generic test fixture for CrOS Polymer App Management elements to be
 // overridden by individual element tests.
 const OSSettingsAppManagementBrowserTest = class extends OSSettingsBrowserTest {
@@ -230,11 +253,9 @@ var OSSettingsAppManagementPwaPermissionViewTest =
   }
 };
 
-TEST_F(
-    'OSSettingsAppManagementPwaPermissionViewTest', 'DISABLED_AllJsTests',
-    () => {
-      mocha.run();
-    });
+TEST_F('OSSettingsAppManagementPwaPermissionViewTest', 'AllJsTests', () => {
+  mocha.run();
+});
 
 // Test fixture for the app management arc permission view element.
 // eslint-disable-next-line no-var
@@ -253,11 +274,9 @@ var OSSettingsAppManagementArcPermissionViewTest =
   }
 };
 
-TEST_F(
-    'OSSettingsAppManagementArcPermissionViewTest', 'DISABLED_AllJsTests',
-    () => {
-      mocha.run();
-    });
+TEST_F('OSSettingsAppManagementArcPermissionViewTest', 'AllJsTests', () => {
+  mocha.run();
+});
 
 // Test fixture for the app management managed app view.
 // eslint-disable-next-line no-var
@@ -293,7 +312,7 @@ var OSSettingsAppManagementReducersTest =
   }
 };
 
-TEST_F('OSSettingsAppManagementReducersTest', 'DISABLED_AllJsTests', () => {
+TEST_F('OSSettingsAppManagementReducersTest', 'AllJsTests', () => {
   mocha.run();
 });
 

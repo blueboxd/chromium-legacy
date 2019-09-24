@@ -116,27 +116,28 @@ void MockEventPageRequestManager::RunOrDefer(
 }
 
 MockMediaStatusObserver::MockMediaStatusObserver(
-    mojom::MediaStatusObserverRequest request)
-    : binding_(this, std::move(request)) {}
+    mojo::PendingReceiver<mojom::MediaStatusObserver> receiver)
+    : receiver_(this, std::move(receiver)) {}
 
 MockMediaStatusObserver::~MockMediaStatusObserver() {}
 
-MockMediaController::MockMediaController() : binding_(this) {}
+MockMediaController::MockMediaController() = default;
 
-MockMediaController::~MockMediaController() {}
+MockMediaController::~MockMediaController() = default;
 
-void MockMediaController::Bind(mojom::MediaControllerRequest request) {
-  binding_.Bind(std::move(request));
+void MockMediaController::Bind(
+    mojo::PendingReceiver<mojom::MediaController> receiver) {
+  receiver_.reset();
+  receiver_.Bind(std::move(receiver));
 }
 
-mojom::MediaControllerPtr MockMediaController::BindInterfacePtr() {
-  mojom::MediaControllerPtr controller;
-  binding_.Bind(mojo::MakeRequest(&controller));
-  return controller;
+mojo::PendingRemote<mojom::MediaController>
+MockMediaController::BindInterfaceRemote() {
+  return receiver_.BindNewPipeAndPassRemote();
 }
 
-void MockMediaController::CloseBinding() {
-  binding_.Close();
+void MockMediaController::CloseReceiver() {
+  receiver_.reset();
 }
 
 MediaRouterMojoTest::MediaRouterMojoTest() {
@@ -394,8 +395,9 @@ void MediaRouterMojoTest::TestSearchSinks() {
 void MediaRouterMojoTest::RegisterMediaRouteProvider(
     mojom::MediaRouteProvider* provider,
     MediaRouteProviderId provider_id) {
-  mojom::MediaRouteProviderPtr mojo_provider;
-  provider_bindings_.AddBinding(provider, mojo::MakeRequest(&mojo_provider));
+  mojo::PendingRemote<mojom::MediaRouteProvider> mojo_provider;
+  provider_receivers_.Add(provider,
+                          mojo_provider.InitWithNewPipeAndPassReceiver());
   media_router_->RegisterMediaRouteProvider(
       provider_id, std::move(mojo_provider),
       base::BindOnce([](const std::string& instance_id,

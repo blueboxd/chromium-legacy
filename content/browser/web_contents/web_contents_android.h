@@ -185,9 +185,6 @@ class CONTENT_EXPORT WebContentsAndroid {
       const base::android::JavaParamRef<jobject>& obj,
       bool disabled);
 
-  void ReloadLoFiImages(JNIEnv* env,
-                        const base::android::JavaParamRef<jobject>& obj);
-
   int DownloadImage(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,
                     const base::android::JavaParamRef<jstring>& url,

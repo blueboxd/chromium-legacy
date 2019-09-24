@@ -940,7 +940,7 @@ bool BookmarkModelAssociator::CryptoReadyIfNecessary() {
   syncer::ReadTransaction trans(FROM_HERE, user_share_);
   const syncer::ModelTypeSet encrypted_types = trans.GetEncryptedTypes();
   return !encrypted_types.Has(syncer::BOOKMARKS) ||
-      trans.GetCryptographer()->is_ready();
+         trans.GetCryptographer()->CanEncrypt();
 }
 
 syncer::SyncError BookmarkModelAssociator::CheckModelSyncState(

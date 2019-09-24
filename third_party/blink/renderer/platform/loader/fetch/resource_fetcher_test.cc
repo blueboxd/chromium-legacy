@@ -945,7 +945,6 @@ TEST_F(ResourceFetcherTest, StaleWhileRevalidate) {
   EXPECT_TRUE(resource->IsLoaded());
   EXPECT_TRUE(GetMemoryCache()->Contains(resource));
 
-  fetcher->SetStaleWhileRevalidateEnabled(true);
   ResourceRequest resource_request(url);
   resource_request.SetRequestContext(mojom::RequestContextType::INTERNAL);
   fetch_params = FetchParameters(resource_request);

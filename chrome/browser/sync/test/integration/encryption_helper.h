@@ -5,12 +5,13 @@
 #ifndef CHROME_BROWSER_SYNC_TEST_INTEGRATION_ENCRYPTION_HELPER_H_
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_ENCRYPTION_HELPER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
-#include "components/sync/nigori/cryptographer.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
+#include "components/sync/syncable/directory_cryptographer.h"
 #include "components/sync/test/fake_server/fake_server.h"
 
 namespace encryption_helper {
@@ -30,9 +31,9 @@ void SetNigoriInFakeServer(fake_server::FakeServer* fake_server,
 // Nigori is encrypted (by design), the provided |passphrase| will be used to
 // decrypt it. This function will fail the test (using ASSERT) if the Nigori is
 // not a custom passphrase one, or if the key cannot be decrypted.
-void InitCustomPassphraseCryptographerFromNigori(
+std::unique_ptr<syncer::Cryptographer>
+InitCustomPassphraseCryptographerFromNigori(
     const sync_pb::NigoriSpecifics& nigori,
-    syncer::Cryptographer* cryptographer,
     const std::string& passphrase);
 
 // Returns an EntitySpecifics containing encrypted data corresponding to the

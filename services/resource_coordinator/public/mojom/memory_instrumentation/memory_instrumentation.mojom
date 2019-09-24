@@ -22,6 +22,13 @@ enum LevelOfDetail {
   DETAILED
 };
 
+// Tells the MemoryDumpProvider(s) if they should try to make the result
+// more deterministic by forcing garbage collection.
+enum Determinism {
+  NONE,
+  FORCE_GC
+};
+
 enum ProcessType {
   OTHER,
   BROWSER,
@@ -53,6 +60,7 @@ struct RequestArgs {
   uint64 dump_guid;
   DumpType dump_type;
   LevelOfDetail level_of_detail;
+  Determinism determinism;
 };
 
 struct RawAllocatorDumpEdge {
@@ -301,6 +309,7 @@ interface Coordinator {
   // entries which contain fields such as "size" and "effective_size".
   RequestGlobalMemoryDump(DumpType dump_type,
                           LevelOfDetail level_of_detail,
+                          Determinism determinsm,
                           array<string> allocator_dump_names) =>
       (bool success, GlobalMemoryDump? global_memory_dump);
 
@@ -319,7 +328,8 @@ interface Coordinator {
   // Broadcasts a dump request to all registered client processes and injects the
   // dump in the trace buffer (if tracing is enabled).
   RequestGlobalMemoryDumpAndAppendToTrace(DumpType dump_type,
-                                          LevelOfDetail level_of_detail) =>
+                                          LevelOfDetail level_of_detail,
+                                          Determinism determinism) =>
       (bool success, uint64 dump_id);
 };
 

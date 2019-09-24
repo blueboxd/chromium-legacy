@@ -62,10 +62,6 @@ class ScriptWrappable;
 #define V8_PRIVATE_PROPERTY_GETTER_NAME(InterfaceName, PrivateKeyName) \
   Get##InterfaceName##PrivateKeyName
 
-// The member variable's name for a private property.
-#define V8_PRIVATE_PROPERTY_MEMBER_NAME(InterfaceName, PrivateKeyName) \
-  m_symbol##InterfaceName##PrivateKeyName
-
 // The string used to create a private symbol.  Must be unique per V8 instance.
 #define V8_PRIVATE_PROPERTY_SYMBOL_STRING(InterfaceName, PrivateKeyName) \
   #InterfaceName "#" #PrivateKeyName  // NOLINT(whitespace/indent)
@@ -149,20 +145,15 @@ class PLATFORM_EXPORT V8PrivateProperty {
     v8::Isolate* isolate_;
   };
 
-#define V8_PRIVATE_PROPERTY_DEFINE_GETTER(InterfaceName, KeyName)              \
-  static Symbol V8_PRIVATE_PROPERTY_GETTER_NAME(/* // NOLINT */                \
-                                                InterfaceName, KeyName)(       \
-      v8::Isolate * isolate) {                                                 \
-    V8PrivateProperty* private_prop =                                          \
-        V8PerIsolateData::From(isolate)->PrivateProperty();                    \
-    v8::Eternal<v8::Private>& property_handle =                                \
-        private_prop->V8_PRIVATE_PROPERTY_MEMBER_NAME(InterfaceName, KeyName); \
-    if (UNLIKELY(property_handle.IsEmpty())) {                                 \
-      property_handle.Set(                                                     \
-          isolate, CreateV8Private(isolate, V8_PRIVATE_PROPERTY_SYMBOL_STRING( \
-                                                InterfaceName, KeyName)));     \
-    }                                                                          \
-    return Symbol(isolate, property_handle.Get(isolate));                      \
+#define V8_PRIVATE_PROPERTY_DEFINE_GETTER(InterfaceName, KeyName)        \
+  static Symbol V8_PRIVATE_PROPERTY_GETTER_NAME(/* // NOLINT */          \
+                                                InterfaceName, KeyName)( \
+      v8::Isolate * isolate) {                                           \
+    /* This key is used for uniquely identifying v8::Private. */         \
+    static int private_property_key;                                     \
+    return GetSymbol(                                                    \
+        isolate, &private_property_key,                                  \
+        V8_PRIVATE_PROPERTY_SYMBOL_STRING(InterfaceName, KeyName));      \
   }
 
   V8_PRIVATE_PROPERTY_FOR_EACH(V8_PRIVATE_PROPERTY_DEFINE_GETTER)
@@ -225,12 +216,6 @@ class PLATFORM_EXPORT V8PrivateProperty {
   // TODO(peria): Remove this method. We should not use v8::Private::ForApi().
   static v8::Local<v8::Private> CreateCachedV8Private(v8::Isolate*,
                                                       const char* symbol);
-
-#define V8_PRIVATE_PROPERTY_DECLARE_MEMBER(InterfaceName, KeyName) \
-  v8::Eternal<v8::Private> V8_PRIVATE_PROPERTY_MEMBER_NAME(        \
-      InterfaceName, KeyName);  // NOLINT(readability/naming/underscores)
-  V8_PRIVATE_PROPERTY_FOR_EACH(V8_PRIVATE_PROPERTY_DECLARE_MEMBER)
-#undef V8_PRIVATE_PROPERTY_DECLARE_MEMBER
 
   // TODO(peria): Do not use this specialized hack for
   // Window#DocumentCachedAccessor. This is required to put v8::Private key in

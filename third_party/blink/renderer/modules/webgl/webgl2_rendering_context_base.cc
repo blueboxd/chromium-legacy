@@ -487,12 +487,12 @@ ScriptValue WebGL2RenderingContextBase::getInternalformatParameter(
     GLenum internalformat,
     GLenum pname) {
   if (isContextLost())
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
 
   if (target != GL_RENDERBUFFER) {
     SynthesizeGLError(GL_INVALID_ENUM, "getInternalformatParameter",
                       "invalid target");
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
   }
 
   switch (internalformat) {
@@ -549,13 +549,13 @@ ScriptValue WebGL2RenderingContextBase::getInternalformatParameter(
         SynthesizeGLError(GL_INVALID_ENUM, "getInternalformatParameter",
                           "invalid internalformat when EXT_color_buffer_float "
                           "is not enabled");
-        return ScriptValue::CreateNull(script_state);
+        return ScriptValue::CreateNull(script_state->GetIsolate());
       }
       break;
     default:
       SynthesizeGLError(GL_INVALID_ENUM, "getInternalformatParameter",
                         "invalid internalformat");
-      return ScriptValue::CreateNull(script_state);
+      return ScriptValue::CreateNull(script_state->GetIsolate());
   }
 
   switch (pname) {
@@ -577,7 +577,7 @@ ScriptValue WebGL2RenderingContextBase::getInternalformatParameter(
     default:
       SynthesizeGLError(GL_INVALID_ENUM, "getInternalformatParameter",
                         "invalid parameter name");
-      return ScriptValue::CreateNull(script_state);
+      return ScriptValue::CreateNull(script_state->GetIsolate());
   }
 }
 
@@ -3935,7 +3935,7 @@ ScriptValue WebGL2RenderingContextBase::getQuery(ScriptState* script_state,
                                                  GLenum target,
                                                  GLenum pname) {
   if (isContextLost())
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
 
   if (ExtensionEnabled(kEXTDisjointTimerQueryWebGL2Name)) {
     if (pname == GL_QUERY_COUNTER_BITS_EXT) {
@@ -3946,23 +3946,23 @@ ScriptValue WebGL2RenderingContextBase::getQuery(ScriptState* script_state,
       }
       SynthesizeGLError(GL_INVALID_ENUM, "getQuery",
                         "invalid target/pname combination");
-      return ScriptValue::CreateNull(script_state);
+      return ScriptValue::CreateNull(script_state->GetIsolate());
     }
 
     if (target == GL_TIME_ELAPSED_EXT && pname == GL_CURRENT_QUERY) {
       return current_elapsed_query_
                  ? WebGLAny(script_state, current_elapsed_query_)
-                 : ScriptValue::CreateNull(script_state);
+                 : ScriptValue::CreateNull(script_state->GetIsolate());
     }
 
     if (target == GL_TIMESTAMP_EXT && pname == GL_CURRENT_QUERY) {
-      return ScriptValue::CreateNull(script_state);
+      return ScriptValue::CreateNull(script_state->GetIsolate());
     }
   }
 
   if (pname != GL_CURRENT_QUERY) {
     SynthesizeGLError(GL_INVALID_ENUM, "getQuery", "invalid parameter name");
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
   }
 
   switch (target) {
@@ -3977,9 +3977,9 @@ ScriptValue WebGL2RenderingContextBase::getQuery(ScriptState* script_state,
                       current_transform_feedback_primitives_written_query_);
     default:
       SynthesizeGLError(GL_INVALID_ENUM, "getQuery", "invalid target");
-      return ScriptValue::CreateNull(script_state);
+      return ScriptValue::CreateNull(script_state->GetIsolate());
   }
-  return ScriptValue::CreateNull(script_state);
+  return ScriptValue::CreateNull(script_state->GetIsolate());
 }
 
 ScriptValue WebGL2RenderingContextBase::getQueryParameter(
@@ -3987,21 +3987,21 @@ ScriptValue WebGL2RenderingContextBase::getQueryParameter(
     WebGLQuery* query,
     GLenum pname) {
   if (!ValidateWebGLObject("getQueryParameter", query))
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
 
   // Query is non-null at this point.
   if (!query->GetTarget()) {
     SynthesizeGLError(GL_INVALID_OPERATION, "getQueryParameter",
                       "'query' is not a query object yet, since it has't been "
                       "used by beginQuery");
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
   }
   if (query == current_boolean_occlusion_query_ ||
       query == current_transform_feedback_primitives_written_query_ ||
       query == current_elapsed_query_) {
     SynthesizeGLError(GL_INVALID_OPERATION, "getQueryParameter",
                       "query is currently active");
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
   }
 
   switch (pname) {
@@ -4016,7 +4016,7 @@ ScriptValue WebGL2RenderingContextBase::getQueryParameter(
     default:
       SynthesizeGLError(GL_INVALID_ENUM, "getQueryParameter",
                         "invalid parameter name");
-      return ScriptValue::CreateNull(script_state);
+      return ScriptValue::CreateNull(script_state->GetIsolate());
   }
 }
 
@@ -4189,7 +4189,7 @@ ScriptValue WebGL2RenderingContextBase::getSamplerParameter(
     WebGLSampler* sampler,
     GLenum pname) {
   if (!ValidateWebGLObject("getSamplerParameter", sampler))
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
 
   switch (pname) {
     case GL_TEXTURE_COMPARE_FUNC:
@@ -4213,7 +4213,7 @@ ScriptValue WebGL2RenderingContextBase::getSamplerParameter(
       if (!ExtensionEnabled(kEXTTextureFilterAnisotropicName)) {
         SynthesizeGLError(GL_INVALID_ENUM, "samplerParameter",
                           "EXT_texture_filter_anisotropic not enabled");
-        return ScriptValue::CreateNull(script_state);
+        return ScriptValue::CreateNull(script_state->GetIsolate());
       }
       GLfloat value = 0.f;
       ContextGL()->GetSamplerParameterfv(ObjectOrZero(sampler), pname, &value);
@@ -4222,7 +4222,7 @@ ScriptValue WebGL2RenderingContextBase::getSamplerParameter(
     default:
       SynthesizeGLError(GL_INVALID_ENUM, "getSamplerParameter",
                         "invalid parameter name");
-      return ScriptValue::CreateNull(script_state);
+      return ScriptValue::CreateNull(script_state->GetIsolate());
   }
 }
 
@@ -4314,7 +4314,7 @@ ScriptValue WebGL2RenderingContextBase::getSyncParameter(
     WebGLSync* sync,
     GLenum pname) {
   if (!ValidateWebGLObject("getSyncParameter", sync))
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
 
   switch (pname) {
     case GL_OBJECT_TYPE:
@@ -4327,7 +4327,7 @@ ScriptValue WebGL2RenderingContextBase::getSyncParameter(
     default:
       SynthesizeGLError(GL_INVALID_ENUM, "getSyncParameter",
                         "invalid parameter name");
-      return ScriptValue::CreateNull(script_state);
+      return ScriptValue::CreateNull(script_state->GetIsolate());
   }
 }
 
@@ -4661,7 +4661,7 @@ ScriptValue WebGL2RenderingContextBase::getIndexedParameter(
     GLenum target,
     GLuint index) {
   if (isContextLost())
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
 
   switch (target) {
     case GL_TRANSFORM_FEEDBACK_BUFFER_BINDING: {
@@ -4670,7 +4670,7 @@ ScriptValue WebGL2RenderingContextBase::getIndexedParameter(
               index, &buffer)) {
         SynthesizeGLError(GL_INVALID_VALUE, "getIndexedParameter",
                           "index out of range");
-        return ScriptValue::CreateNull(script_state);
+        return ScriptValue::CreateNull(script_state->GetIsolate());
       }
       return WebGLAny(script_state, buffer);
     }
@@ -4678,7 +4678,7 @@ ScriptValue WebGL2RenderingContextBase::getIndexedParameter(
       if (index >= bound_indexed_uniform_buffers_.size()) {
         SynthesizeGLError(GL_INVALID_VALUE, "getIndexedParameter",
                           "index out of range");
-        return ScriptValue::CreateNull(script_state);
+        return ScriptValue::CreateNull(script_state->GetIsolate());
       }
       return WebGLAny(script_state,
                       bound_indexed_uniform_buffers_[index].Get());
@@ -4693,7 +4693,7 @@ ScriptValue WebGL2RenderingContextBase::getIndexedParameter(
     default:
       SynthesizeGLError(GL_INVALID_ENUM, "getIndexedParameter",
                         "invalid parameter name");
-      return ScriptValue::CreateNull(script_state);
+      return ScriptValue::CreateNull(script_state->GetIsolate());
   }
 }
 
@@ -4718,7 +4718,7 @@ ScriptValue WebGL2RenderingContextBase::getActiveUniforms(
     const Vector<GLuint>& uniform_indices,
     GLenum pname) {
   if (!ValidateWebGLProgramOrShader("getActiveUniforms", program))
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
 
   enum ReturnType { kEnumType, kUnsignedIntType, kIntType, kBoolType };
 
@@ -4742,7 +4742,7 @@ ScriptValue WebGL2RenderingContextBase::getActiveUniforms(
     default:
       SynthesizeGLError(GL_INVALID_ENUM, "getActiveUniforms",
                         "invalid parameter name");
-      return ScriptValue::CreateNull(script_state);
+      return ScriptValue::CreateNull(script_state->GetIsolate());
   }
 
   GLint active_uniforms = -1;
@@ -4755,7 +4755,7 @@ ScriptValue WebGL2RenderingContextBase::getActiveUniforms(
     if (index >= active_uniforms_unsigned) {
       SynthesizeGLError(GL_INVALID_VALUE, "getActiveUniforms",
                         "uniform index greater than ACTIVE_UNIFORMS");
-      return ScriptValue::CreateNull(script_state);
+      return ScriptValue::CreateNull(script_state->GetIsolate());
     }
   }
 
@@ -4787,7 +4787,7 @@ ScriptValue WebGL2RenderingContextBase::getActiveUniforms(
     }
     default:
       NOTREACHED();
-      return ScriptValue::CreateNull(script_state);
+      return ScriptValue::CreateNull(script_state->GetIsolate());
   }
 }
 
@@ -4830,11 +4830,11 @@ ScriptValue WebGL2RenderingContextBase::getActiveUniformBlockParameter(
     GLuint uniform_block_index,
     GLenum pname) {
   if (!ValidateWebGLProgramOrShader("getActiveUniformBlockParameter", program))
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
 
   if (!ValidateUniformBlockIndex("getActiveUniformBlockParameter", program,
                                  uniform_block_index))
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
 
   switch (pname) {
     case GL_UNIFORM_BLOCK_BINDING:
@@ -4869,7 +4869,7 @@ ScriptValue WebGL2RenderingContextBase::getActiveUniformBlockParameter(
     default:
       SynthesizeGLError(GL_INVALID_ENUM, "getActiveUniformBlockParameter",
                         "invalid parameter name");
-      return ScriptValue::CreateNull(script_state);
+      return ScriptValue::CreateNull(script_state->GetIsolate());
   }
 }
 
@@ -5033,7 +5033,7 @@ void WebGL2RenderingContextBase::deleteFramebuffer(
 ScriptValue WebGL2RenderingContextBase::getParameter(ScriptState* script_state,
                                                      GLenum pname) {
   if (isContextLost())
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
   switch (pname) {
     case GL_SHADING_LANGUAGE_VERSION: {
       return WebGLAny(
@@ -5155,7 +5155,7 @@ ScriptValue WebGL2RenderingContextBase::getParameter(ScriptState* script_state,
       if (!transform_feedback_binding_->IsDefaultObject()) {
         return WebGLAny(script_state, transform_feedback_binding_.Get());
       }
-      return ScriptValue::CreateNull(script_state);
+      return ScriptValue::CreateNull(script_state->GetIsolate());
     case GL_TRANSFORM_FEEDBACK_PAUSED:
       return GetBooleanParameter(script_state, pname);
     case GL_UNIFORM_BUFFER_BINDING:
@@ -5179,7 +5179,7 @@ ScriptValue WebGL2RenderingContextBase::getParameter(ScriptState* script_state,
       SynthesizeGLError(GL_INVALID_ENUM, "getParameter",
                         "invalid parameter name, "
                         "EXT_disjoint_timer_query_webgl2 not enabled");
-      return ScriptValue::CreateNull(script_state);
+      return ScriptValue::CreateNull(script_state->GetIsolate());
     case GL_GPU_DISJOINT_EXT:
       if (ExtensionEnabled(kEXTDisjointTimerQueryWebGL2Name)) {
         return GetBooleanParameter(script_state, GL_GPU_DISJOINT_EXT);
@@ -5187,7 +5187,7 @@ ScriptValue WebGL2RenderingContextBase::getParameter(ScriptState* script_state,
       SynthesizeGLError(GL_INVALID_ENUM, "getParameter",
                         "invalid parameter name, "
                         "EXT_disjoint_timer_query_webgl2 not enabled");
-      return ScriptValue::CreateNull(script_state);
+      return ScriptValue::CreateNull(script_state->GetIsolate());
 
     default:
       return WebGLRenderingContextBase::getParameter(script_state, pname);
@@ -5574,7 +5574,7 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(
   const char kFunctionName[] = "getFramebufferAttachmentParameter";
   if (isContextLost() || !ValidateGetFramebufferAttachmentParameterFunc(
                              kFunctionName, target, attachment))
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
 
   WebGLFramebuffer* framebuffer_binding = GetFramebufferBinding(target);
   DCHECK(!framebuffer_binding || framebuffer_binding->Object());
@@ -5595,7 +5595,7 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(
         default:
           SynthesizeGLError(GL_INVALID_OPERATION, kFunctionName,
                             "invalid parameter name");
-          return ScriptValue::CreateNull(script_state);
+          return ScriptValue::CreateNull(script_state->GetIsolate());
       }
     }
     switch (pname) {
@@ -5629,17 +5629,17 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(
           return WebGLAny(script_state, 0);
         SynthesizeGLError(GL_INVALID_ENUM, kFunctionName,
                           "invalid parameter name, OVR_multiview2 not enabled");
-        return ScriptValue::CreateNull(script_state);
+        return ScriptValue::CreateNull(script_state->GetIsolate());
       case GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_NUM_VIEWS_OVR:
         if (ExtensionEnabled(kOVRMultiview2Name))
           return WebGLAny(script_state, 0);
         SynthesizeGLError(GL_INVALID_ENUM, kFunctionName,
                           "invalid parameter name, OVR_multiview2 not enabled");
-        return ScriptValue::CreateNull(script_state);
+        return ScriptValue::CreateNull(script_state->GetIsolate());
       default:
         SynthesizeGLError(GL_INVALID_ENUM, kFunctionName,
                           "invalid parameter name");
-        return ScriptValue::CreateNull(script_state);
+        return ScriptValue::CreateNull(script_state->GetIsolate());
     }
   }
 
@@ -5653,7 +5653,7 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(
       SynthesizeGLError(
           GL_INVALID_OPERATION, kFunctionName,
           "different objects bound to DEPTH_ATTACHMENT and STENCIL_ATTACHMENT");
-      return ScriptValue::CreateNull(script_state);
+      return ScriptValue::CreateNull(script_state->GetIsolate());
     }
     attachment_object = depth_attachment;
   } else {
@@ -5665,11 +5665,11 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(
       case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE:
         return WebGLAny(script_state, GL_NONE);
       case GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME:
-        return ScriptValue::CreateNull(script_state);
+        return ScriptValue::CreateNull(script_state->GetIsolate());
       default:
         SynthesizeGLError(GL_INVALID_OPERATION, kFunctionName,
                           "invalid parameter name");
-        return ScriptValue::CreateNull(script_state);
+        return ScriptValue::CreateNull(script_state->GetIsolate());
     }
   }
   DCHECK(attachment_object->IsTexture() || attachment_object->IsRenderbuffer());
@@ -5703,7 +5703,7 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(
         SynthesizeGLError(
             GL_INVALID_OPERATION, kFunctionName,
             "COMPONENT_TYPE can't be queried for DEPTH_STENCIL_ATTACHMENT");
-        return ScriptValue::CreateNull(script_state);
+        return ScriptValue::CreateNull(script_state->GetIsolate());
       }
       FALLTHROUGH;
     case GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING: {
@@ -5717,7 +5717,7 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(
       if (!ExtensionEnabled(kOVRMultiview2Name)) {
         SynthesizeGLError(GL_INVALID_ENUM, kFunctionName,
                           "invalid parameter name, OVR_multiview2 not enabled");
-        return ScriptValue::CreateNull(script_state);
+        return ScriptValue::CreateNull(script_state->GetIsolate());
       }
       GLint value = 0;
       ContextGL()->GetFramebufferAttachmentParameteriv(target, attachment,
@@ -5728,7 +5728,7 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(
       break;
   }
   SynthesizeGLError(GL_INVALID_ENUM, kFunctionName, "invalid parameter name");
-  return ScriptValue::CreateNull(script_state);
+  return ScriptValue::CreateNull(script_state->GetIsolate());
 }
 
 void WebGL2RenderingContextBase::Trace(blink::Visitor* visitor) {
@@ -5786,7 +5786,7 @@ ScriptValue WebGL2RenderingContextBase::getTexParameter(
     GLenum target,
     GLenum pname) {
   if (isContextLost() || !ValidateTextureBinding("getTexParameter", target))
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
 
   switch (pname) {
     case GL_TEXTURE_WRAP_R:

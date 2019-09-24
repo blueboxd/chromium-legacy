@@ -6,6 +6,8 @@ source_set("crash_report") {
   sources = [
     "breakpad_helper.h",
     "breakpad_helper.mm",
+    "crash_loop_detection_util.h",
+    "crash_loop_detection_util.mm",
     "crash_report_multi_parameter.h",
     "crash_report_multi_parameter.mm",
     "crash_report_user_application_state.h",
@@ -73,6 +75,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "breakpad_helper_unittest.mm",
+    "crash_loop_detection_util_unittest.mm",
     "crash_restore_helper_unittest.mm",
   ]
   deps = [

@@ -75,15 +75,15 @@ ScriptValue WebGL2ComputeRenderingContextBase::getProgramInterfaceParameter(
     GLenum program_interface,
     GLenum pname) {
   if (!ValidateWebGLProgramOrShader("getProgramInterfaceParameter", program))
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
   if (!ValidateProgramInterface(
       "getProgramInterfaceParameter", program_interface))
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
   if (program_interface == GL_ATOMIC_COUNTER_BUFFER &&
       pname == GL_MAX_NAME_LENGTH) {
     SynthesizeGLError(GL_INVALID_OPERATION, "getProgramInterfaceParameter",
                       "atomic counter resources are not assigned name strings");
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
   }
   if (program_interface != GL_ATOMIC_COUNTER_BUFFER &&
       program_interface != GL_SHADER_STORAGE_BLOCK &&
@@ -92,7 +92,7 @@ ScriptValue WebGL2ComputeRenderingContextBase::getProgramInterfaceParameter(
     SynthesizeGLError(
         GL_INVALID_OPERATION, "getProgramInterfaceParameter",
         "invalid parameter name for the specified program interface");
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
   }
 
   switch (pname) {
@@ -107,7 +107,7 @@ ScriptValue WebGL2ComputeRenderingContextBase::getProgramInterfaceParameter(
     default:
       SynthesizeGLError(GL_INVALID_ENUM, "getProgramInterfaceParameter",
                         "invalid parameter name");
-      return ScriptValue::CreateNull(script_state);
+      return ScriptValue::CreateNull(script_state->GetIsolate());
   }
 }
 
@@ -346,7 +346,7 @@ ScriptValue WebGL2ComputeRenderingContextBase::getParameter(
     ScriptState* script_state,
     GLenum pname) {
   if (isContextLost())
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
   switch (pname) {
     case GL_SHADING_LANGUAGE_VERSION: {
       return WebGLAny(
@@ -397,14 +397,14 @@ ScriptValue WebGL2ComputeRenderingContextBase::getIndexedParameter(
     GLenum target,
     GLuint index) {
   if (isContextLost())
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
 
   switch (target) {
     case GL_ATOMIC_COUNTER_BUFFER_BINDING:
       if (index >= bound_indexed_atomic_counter_buffers_.size()) {
         SynthesizeGLError(GL_INVALID_VALUE, "getIndexedParameter",
                           "index out of range");
-        return ScriptValue::CreateNull(script_state);
+        return ScriptValue::CreateNull(script_state->GetIsolate());
       }
       return WebGLAny(script_state,
                       bound_indexed_atomic_counter_buffers_[index].Get());
@@ -412,7 +412,7 @@ ScriptValue WebGL2ComputeRenderingContextBase::getIndexedParameter(
       if (index >= bound_indexed_shader_storage_buffers_.size()) {
         SynthesizeGLError(GL_INVALID_VALUE, "getIndexedParameter",
                           "index out of range");
-        return ScriptValue::CreateNull(script_state);
+        return ScriptValue::CreateNull(script_state->GetIsolate());
       }
       return WebGLAny(script_state,
                       bound_indexed_shader_storage_buffers_[index].Get());
@@ -620,7 +620,7 @@ ScriptValue WebGL2ComputeRenderingContextBase::WrapLocation(
     }
     case GL_UNIFORM: {
       if (location == -1)
-        return ScriptValue::CreateNull(script_state);
+        return ScriptValue::CreateNull(script_state->GetIsolate());
       DCHECK_GE(location, 0);
       WebGLUniformLocation* uniform_location =
           WebGLUniformLocation::Create(program, location);

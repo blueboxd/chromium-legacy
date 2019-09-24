@@ -177,11 +177,6 @@ public abstract class WebContentsObserver {
     public void viewportFitChanged(@ViewportFitType int value) {}
 
     /**
-     * This method is invoked when the WebContents reloads the LoFi images on the page.
-     */
-    public void didReloadLoFiImages() {}
-
-    /**
      * This method is invoked when a RenderWidgetHost for a WebContents gains focus.
      */
     public void onWebContentsFocused() {}

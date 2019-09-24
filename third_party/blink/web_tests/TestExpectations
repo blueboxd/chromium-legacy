@@ -84,6 +84,8 @@ crbug.com/901502 http/tests/devtools/oopif/oopif-storage.js [ Pass Failure ]
 crbug.com/906879 http/tests/inspector-protocol/network/navigation-blocking-xorigin-iframe.js [ Pass Failure ]
 crbug.com/949003 http/tests/printing/cross-site-frame-scrolled.html [ Pass Failure ]
 crbug.com/949003 http/tests/printing/cross-site-frame.html [ Pass Failure ]
+crbug.com/1007228 external/wpt/fullscreen/api/element-request-fullscreen-and-move-to-iframe-manual.html [ Pass Failure ]
+crbug.com/1007229 external/wpt/intersection-observer/same-origin-grand-child-iframe.sub.html [ Pass Failure ]
 # ====== Site Isolation failures until here ======
 
 # ====== Oilpan-only failures from here ======
@@ -249,6 +251,7 @@ crbug.com/980969 [ Mac ] http/tests/input/discard-events-to-unstable-iframe.html
 crbug.com/1002049 external/wpt/css/mediaqueries/aspect-ratio-005.html [ Failure ]
 crbug.com/1002049 external/wpt/css/mediaqueries/aspect-ratio-006.html [ Failure ]
 
+crbug.com/1007134 external/wpt/intersection-observer/v2/delay-test.html [ Pass Failure ]
 crbug.com/1004547 external/wpt/intersection-observer/cross-origin-iframe.sub.html [ Pass Failure ]
 crbug.com/1004650 http/tests/security/contentSecurityPolicy/frame-src-cross-origin-load.html [ Pass Failure ]
 
@@ -2157,6 +2160,7 @@ crbug.com/983789 [ Win7 ] http/tests/cookies/js-set-null.html [ Pass Failure ]
 crbug.com/983788 http/tests/cookies/http-get-cookie-set-in-js.html [ Pass Failure ]
 crbug.com/983788 http/tests/cookies/same-site/popup-cross-site.https.html [ Pass Timeout ]
 crbug.com/984438 external/wpt/css/css-scroll-snap/snap-at-user-scroll-end-manual.html [ Failure Pass ]
+crbug.com/964239 [ Win7 ] virtual/threaded/external/wpt/css/css-scroll-snap/scroll-margin.html [ Failure ]
 crbug.com/984467 virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Pass Timeout ]
 
 ### sheriff 2018-05-28
@@ -4408,6 +4412,7 @@ crbug.com/835717 virtual/omt-worker-fetch/external/wpt/workers/opaque-origin.htm
 # Needs investigation. These are timing out.
 crbug.com/835717 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/sandboxed-iframe-fetch-event.https.html [ Skip ]
 crbug.com/835717 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/worker-in-sandboxed-iframe-by-csp-fetch-event.https.html [ Skip ]
+crbug.com/1002377 [ Win7 ] virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/update-bytecheck.https.html [ Timeout ]
 
 crbug.com/435547 http/tests/cachestorage/serviceworker/ignore-search-with-credentials.html [ Skip ]
 

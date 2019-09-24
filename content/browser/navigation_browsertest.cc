@@ -2514,8 +2514,6 @@ IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest,
 
   // 5. Start history cross-document navigation, cancelling 4.
   EXPECT_TRUE(ExecJs(shell()->web_contents(), "history.back()"));
-  // TODO(arthursonzogni): The embedder_url_tracker should update the visible
-  // URL here.
   {
     EXPECT_EQ(url_b, shell()->web_contents()->GetVisibleURL());
     EXPECT_EQ(url_b, embedder_url_tracker.url());
@@ -2537,9 +2535,6 @@ IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest,
     EXPECT_EQ(url_b, shell()->web_contents()->GetVisibleURL());
     EXPECT_EQ(url_b, embedder_url_tracker.url());
   }
-
-  // TODO(https://crbug.com/998284): The URL tracked by the embedder should have
-  // been invalidated. At some point, |url_b| should be displayed, not |url_c|.
 }
 
 // Regression test for https://crbug.com/1001283

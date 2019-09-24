@@ -49,7 +49,7 @@ TEST(TransferableStreamsTest, SmokeTest) {
           .V8Value()
           .As<v8::Object>());
 
-  writer->write(script_state, ScriptValue::CreateNull(script_state));
+  writer->write(script_state, ScriptValue::CreateNull(scope.GetIsolate()));
 
   class ExpectNullResponse : public ScriptFunction {
    public:

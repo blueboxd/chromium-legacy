@@ -12,8 +12,8 @@
 #include "components/sync/engine_impl/conflict_resolver.h"
 #include "components/sync/engine_impl/conflict_util.h"
 #include "components/sync/engine_impl/syncer_util.h"
-#include "components/sync/nigori/cryptographer.h"
 #include "components/sync/syncable/directory.h"
+#include "components/sync/syncable/directory_cryptographer.h"
 #include "components/sync/syncable/mutable_entry.h"
 #include "components/sync/syncable/nigori_handler.h"
 #include "components/sync/syncable/nigori_util.h"
@@ -35,7 +35,14 @@ namespace syncer {
 void ApplyNigoriUpdate(syncable::Directory* dir) {
   syncable::WriteTransaction trans(FROM_HERE, syncable::SYNCER, dir);
   syncable::MutableEntry entry(&trans, syncable::GET_TYPE_ROOT, NIGORI);
-  const Cryptographer* cryptographer = dir->GetCryptographer(&trans);
+  const DirectoryCryptographer* cryptographer =
+      dir->GetNigoriHandler()->GetDirectoryCryptographerForNigori(&trans);
+
+  if (!cryptographer) {
+    // This indicates that the USS implementation of NIGORI is active, hence
+    // there's nothing to do here.
+    return;
+  }
 
   if (!entry.good()) {
     return;
@@ -59,7 +66,7 @@ void ApplyNigoriUpdate(syncable::Directory* dir) {
   // re-encrypted at SetDecryptionPassphrase time (via ReEncryptEverything).
   // This logic covers the case where the nigori update marked new datatypes
   // for encryption, but didn't change the passphrase.
-  if (cryptographer->is_ready()) {
+  if (cryptographer->CanEncrypt()) {
     // Note that we don't bother to encrypt any data for which IS_UNSYNCED
     // == false here. The machine that turned on encryption should know about
     // and re-encrypt all synced data. It's possible it could get interrupted
@@ -97,7 +104,7 @@ void ApplyNigoriUpdate(syncable::Directory* dir) {
     // Note: we only update the encryption keybag if we're sure that we aren't
     // invalidating the keystore_decryptor_token (i.e. we're either
     // not migrated or we copying over all local state).
-    if (cryptographer->is_ready()) {
+    if (cryptographer->CanEncrypt()) {
       if (local_nigori.has_passphrase_type() &&
           server_nigori.has_passphrase_type()) {
         // They're both migrated, preserve the local nigori if the passphrase

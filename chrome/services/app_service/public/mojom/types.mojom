@@ -190,12 +190,20 @@ enum PatternMatchType {
   kGlob,
 };
 
+// For pattern type of condition, the value match will be based on the pattern
+// match type. If the match_type is kNone, then an exact match with the value
+// will be required.
+struct ConditionValue {
+  string value;
+  PatternMatchType match_type; // This will be None for non pattern conditions.
+};
+
 // The condition for an intent filter. It matches if the intent contains this
-// condition type and the corresponding value matches with the value.
+// condition type and the corresponding value matches with any of the
+// condition_values.
 struct Condition {
   ConditionType condition_type;
-  string value;
-  PatternMatchType match_type;  //This will be None for non pattern conditions.
+  array<ConditionValue> condition_values;
 };
 
 // An intent filter is defined by an app, and contains a list of conditions that

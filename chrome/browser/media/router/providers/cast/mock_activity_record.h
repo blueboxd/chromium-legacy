@@ -10,6 +10,8 @@
 #include "chrome/browser/media/router/providers/cast/cast_activity_record.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_client.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media_router {
@@ -65,9 +67,10 @@ class MockActivityRecord : public ActivityRecord {
   MOCK_METHOD1(OnAppMessage, void(const cast_channel::CastMessage& message));
   MOCK_METHOD1(OnInternalMessage,
                void(const cast_channel::InternalMessage& message));
-  MOCK_METHOD2(CreateMediaController,
-               void(mojom::MediaControllerRequest media_controller,
-                    mojom::MediaStatusObserverPtr observer));
+  MOCK_METHOD2(
+      CreateMediaController,
+      void(mojo::PendingReceiver<mojom::MediaController> media_controller,
+           mojo::PendingRemote<mojom::MediaStatusObserver> observer));
 };
 
 }  // namespace media_router

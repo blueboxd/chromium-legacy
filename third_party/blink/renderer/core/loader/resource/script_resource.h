@@ -37,6 +37,10 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
 
+namespace mojo {
+class SimpleWatcher;
+}
+
 namespace blink {
 
 class FetchParameters;

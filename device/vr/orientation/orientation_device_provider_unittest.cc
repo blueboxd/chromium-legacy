@@ -140,7 +140,7 @@ class VROrientationDeviceProviderTest : public testing::Test {
   std::unique_ptr<VROrientationDeviceProvider> provider_;
 
   std::unique_ptr<FakeSensorProvider> fake_sensor_provider_;
-  mojom::SensorProviderPtr sensor_provider_ptr_;
+  mojo::Remote<mojom::SensorProvider> sensor_provider_;
 
   // Fake Sensor Init params objects
   std::unique_ptr<FakeOrientationSensor> fake_sensor_;

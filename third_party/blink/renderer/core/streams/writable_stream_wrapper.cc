@@ -233,8 +233,8 @@ WritableStreamWrapper* WritableStreamWrapper::Deserialize(
   DCHECK(!port_v8.IsEmpty());
   v8::Local<v8::Value> args[] = {port_v8};
   ScriptValue internal_stream(
-      script_state, V8ScriptRunner::CallExtra(
-                        script_state, "WritableStreamDeserialize", args));
+      isolate, V8ScriptRunner::CallExtra(script_state,
+                                         "WritableStreamDeserialize", args));
   if (block.HasCaught()) {
     exception_state.RethrowV8Exception(block.Exception());
     return nullptr;

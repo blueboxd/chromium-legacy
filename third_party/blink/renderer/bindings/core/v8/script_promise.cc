@@ -168,7 +168,7 @@ class PromiseAllHandler final : public GarbageCollected<PromiseAllHandler> {
 
 ScriptPromise::InternalResolver::InternalResolver(ScriptState* script_state)
     : script_state_(script_state),
-      resolver_(script_state,
+      resolver_(script_state->GetIsolate(),
                 v8::Promise::Resolver::New(script_state->GetContext())) {
   // |resolver| can be empty when the thread is being terminated. We ignore such
   // errors.
@@ -219,7 +219,7 @@ ScriptPromise::ScriptPromise(ScriptState* script_state,
     return;
 
   if (!value->IsPromise()) {
-    promise_ = ScriptValue(script_state, v8::Local<v8::Value>());
+    promise_ = ScriptValue();
     V8ThrowException::ThrowTypeError(script_state->GetIsolate(),
                                      "the given value is not a Promise");
     return;

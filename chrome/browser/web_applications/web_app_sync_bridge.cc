@@ -24,7 +24,7 @@ namespace web_app {
 WebAppSyncBridge::WebAppSyncBridge(
     Profile* profile,
     AbstractWebAppDatabaseFactory* database_factory,
-    WebAppRegistrar* registrar)
+    WebAppRegistrarMutable* registrar)
     : WebAppSyncBridge(
           profile,
           database_factory,
@@ -37,7 +37,7 @@ WebAppSyncBridge::WebAppSyncBridge(
 WebAppSyncBridge::WebAppSyncBridge(
     Profile* profile,
     AbstractWebAppDatabaseFactory* database_factory,
-    WebAppRegistrar* registrar,
+    WebAppRegistrarMutable* registrar,
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor)
     : AppRegistryController(profile),
       syncer::ModelTypeSyncBridge(std::move(change_processor)),
@@ -74,7 +74,7 @@ std::unique_ptr<WebApp> WebAppSyncBridge::UnregisterApp(const AppId& app_id) {
   DCHECK(it != registrar_->registry().end());
 
   auto web_app = std::move(it->second);
-  registrar_->registry_.erase(it);
+  registrar_->registry().erase(it);
   return web_app;
 }
 
@@ -90,7 +90,7 @@ std::unique_ptr<WebAppRegistryUpdate> WebAppSyncBridge::BeginUpdate() {
   DCHECK(!is_in_update_);
   is_in_update_ = true;
 
-  return base::WrapUnique(new WebAppRegistryUpdate(this));
+  return base::WrapUnique(new WebAppRegistryUpdate(registrar_));
 }
 
 void WebAppSyncBridge::CommitUpdate(
@@ -98,18 +98,27 @@ void WebAppSyncBridge::CommitUpdate(
     CommitCallback callback) {
   DCHECK(is_in_update_);
   is_in_update_ = false;
-  if (update == nullptr || update->apps_to_update_.empty()) {
+
+  if (update == nullptr) {
+    std::move(callback).Run(/*success*/ true);
+    return;
+  }
+
+  WebAppRegistryUpdate::AppsToUpdate apps_to_update =
+      update->TakeAppsToUpdate();
+
+  if (apps_to_update.empty()) {
     std::move(callback).Run(/*success*/ true);
     return;
   }
 
 #if DCHECK_IS_ON()
-  for (auto* app : update->apps_to_update_)
+  for (auto* app : apps_to_update)
     DCHECK(registrar_->GetAppById(app->app_id()));
 #endif
 
   database_->WriteWebApps(
-      std::move(update->apps_to_update_),
+      std::move(apps_to_update),
       base::BindOnce(&WebAppSyncBridge::OnDataWritten,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
@@ -130,10 +139,6 @@ void WebAppSyncBridge::SetAppLaunchContainer(const AppId& app_id,
 
 WebAppSyncBridge* WebAppSyncBridge::AsWebAppSyncBridge() {
   return this;
-}
-
-WebApp* WebAppSyncBridge::GetAppByIdMutable(const AppId& app_id) {
-  return registrar_->GetAppByIdMutable(app_id);
 }
 
 void WebAppSyncBridge::OnDatabaseOpened(base::OnceClosure callback,

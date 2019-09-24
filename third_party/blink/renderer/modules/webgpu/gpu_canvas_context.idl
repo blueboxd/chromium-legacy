@@ -8,4 +8,6 @@
     RuntimeEnabled=WebGPU
 ] interface GPUCanvasContext {
     GPUSwapChain configureSwapChain(GPUSwapChainDescriptor descriptor);
+
+    [CallWith=ScriptState] Promise<GPUTextureFormat> getSwapChainPreferredFormat(GPUDevice device);
 };

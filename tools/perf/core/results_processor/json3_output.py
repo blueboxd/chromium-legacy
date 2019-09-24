@@ -19,10 +19,10 @@ import urllib
 OUTPUT_FILENAME = 'test-results.json'
 
 
-def Process(intermediate_results, output_dir):
+def Process(intermediate_results, options):
   """Process intermediate results and write output in output_dir."""
-  results = Convert(intermediate_results, output_dir)
-  with open(os.path.join(output_dir, OUTPUT_FILENAME), 'w') as f:
+  results = Convert(intermediate_results, options.output_dir)
+  with open(os.path.join(options.output_dir, OUTPUT_FILENAME), 'w') as f:
     json.dump(results, f, sort_keys=True, indent=4, separators=(',', ': '))
 
 

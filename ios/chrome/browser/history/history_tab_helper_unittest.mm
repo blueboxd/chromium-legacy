@@ -202,3 +202,23 @@ TEST_F(HistoryTabHelperTest, TestNTPNotAdded) {
   QueryURL(ntp_url);
   EXPECT_NE(ntp_url, latest_row_result_.url());
 }
+
+// Tests that a file:// URL isn't added to history.
+TEST_F(HistoryTabHelperTest, TestFileNotAdded) {
+  HistoryTabHelper* helper = HistoryTabHelper::FromWebState(&web_state_);
+  ASSERT_TRUE(helper);
+
+  std::unique_ptr<web::NavigationItem> item = web::NavigationItem::Create();
+  GURL test_url("https://www.google.com/");
+  item->SetVirtualURL(test_url);
+  AddVisitForURL(test_url);
+  QueryURL(test_url);
+  EXPECT_EQ(test_url, latest_row_result_.url());
+
+  item = web::NavigationItem::Create();
+  GURL file_url("file://path/to/file");
+  item->SetVirtualURL(file_url);
+  AddVisitForURL(file_url);
+  QueryURL(file_url);
+  EXPECT_NE(file_url, latest_row_result_.url());
+}

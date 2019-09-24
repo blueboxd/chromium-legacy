@@ -153,9 +153,6 @@ public class EmptyTabObserver implements TabObserver {
             Tab tab, @BrowserControlsState int constraints) {}
 
     @Override
-    public void didReloadLoFiImages(Tab tab) {}
-
-    @Override
     public void onFindResultAvailable(FindNotificationDetails result) {}
 
     @Override

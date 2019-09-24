@@ -120,8 +120,7 @@ bool AreAllFieldsEmpty(const PasswordForm& form) {
 // Returns true if the user needs to be prompted before a password can be
 // saved (instead of automatically saving the password), based on inspecting
 // the state of |manager|.
-bool ShouldPromptUserToSavePassword(
-    const PasswordFormManagerInterface& manager) {
+bool ShouldPromptUserToSavePassword(const PasswordFormManager& manager) {
   if (manager.IsPasswordUpdate()) {
     // Updating a credential might erase a useful stored value by accident.
     // Always ask the user to confirm.
@@ -275,7 +274,7 @@ void PasswordManager::OnGeneratedPasswordAccepted(
 void PasswordManager::OnPresaveGeneratedPassword(PasswordManagerDriver* driver,
                                                  const PasswordForm& form) {
   DCHECK(client_->IsSavingAndFillingEnabled(form.origin));
-  PasswordFormManagerInterface* form_manager = GetMatchedManager(driver, form);
+  PasswordFormManager* form_manager = GetMatchedManager(driver, form);
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.GeneratedFormHasNoFormManager",
                         !form_manager);
   if (form_manager)
@@ -286,7 +285,7 @@ void PasswordManager::OnPasswordNoLongerGenerated(PasswordManagerDriver* driver,
                                                   const PasswordForm& form) {
   DCHECK(client_->IsSavingAndFillingEnabled(form.origin));
 
-  PasswordFormManagerInterface* form_manager = GetMatchedManager(driver, form);
+  PasswordFormManager* form_manager = GetMatchedManager(driver, form);
   if (form_manager)
     form_manager->PasswordNoLongerGenerated();
 }
@@ -298,7 +297,7 @@ void PasswordManager::SetGenerationElementAndReasonForForm(
     bool is_manually_triggered) {
   DCHECK(client_->IsSavingAndFillingEnabled(form.origin));
 
-  PasswordFormManagerInterface* form_manager = GetMatchedManager(driver, form);
+  PasswordFormManager* form_manager = GetMatchedManager(driver, form);
   if (form_manager) {
     form_manager->SetGenerationElement(generation_element);
     form_manager->SetGenerationPopupWasShown(true, is_manually_triggered);
@@ -321,7 +320,7 @@ void PasswordManager::DidNavigateMainFrame(bool form_may_be_submitted) {
     // (ntp). OnPasswordFormsRendered is not called on ntp. That is why the
     // standard flow for saving hash does not work. Save a password hash now
     // since a navigation to ntp is the sign of successful sign-in.
-    PasswordFormManagerInterface* manager = GetSubmittedManager();
+    PasswordFormManager* manager = GetSubmittedManager();
     if (manager && manager->GetSubmittedForm()
                        ->form_data.is_gaia_with_skip_save_password_form) {
       MaybeSavePasswordHash(manager);
@@ -340,14 +339,14 @@ void PasswordManager::DidNavigateMainFrame(bool form_may_be_submitted) {
 }
 
 void PasswordManager::UpdateFormManagers() {
-  std::vector<PasswordFormManagerInterface*> form_managers;
+  std::vector<PasswordFormManager*> form_managers;
   for (const auto& form_manager : form_managers_)
     form_managers.push_back(form_manager.get());
 
   // Get the fetchers and all the drivers.
   std::vector<FormFetcher*> fetchers;
   std::vector<PasswordManagerDriver*> drivers;
-  for (PasswordFormManagerInterface* form_manager : form_managers) {
+  for (PasswordFormManager* form_manager : form_managers) {
     fetchers.push_back(form_manager->GetFormFetcher());
     for (const auto& driver : form_manager->GetDrivers()) {
       if (driver)
@@ -707,7 +706,7 @@ bool PasswordManager::IsAutomaticSavePromptAvailable() {
     logger->LogMessage(Logger::STRING_CAN_PROVISIONAL_MANAGER_SAVE_METHOD);
   }
 
-  PasswordFormManagerInterface* submitted_manager = GetSubmittedManager();
+  PasswordFormManager* submitted_manager = GetSubmittedManager();
 
   if (!submitted_manager) {
     if (logger) {
@@ -751,7 +750,7 @@ void PasswordManager::OnPasswordFormsRendered(
   if (!IsAutomaticSavePromptAvailable())
     return;
 
-  PasswordFormManagerInterface* submitted_manager = GetSubmittedManager();
+  PasswordFormManager* submitted_manager = GetSubmittedManager();
 
   // If the server throws an internal error, access denied page, page not
   // found etc. after a login attempt, we do not save the credentials.
@@ -828,7 +827,7 @@ void PasswordManager::OnLoginSuccessful() {
     logger->LogMessage(Logger::STRING_ON_ASK_USER_OR_SAVE_PASSWORD);
   }
 
-  PasswordFormManagerInterface* submitted_manager = GetSubmittedManager();
+  PasswordFormManager* submitted_manager = GetSubmittedManager();
   DCHECK(submitted_manager);
   DCHECK(submitted_manager->GetSubmittedForm());
 
@@ -907,7 +906,7 @@ void PasswordManager::OnLoginSuccessful() {
 }
 
 void PasswordManager::MaybeSavePasswordHash(
-    PasswordFormManagerInterface* submitted_manager) {
+    PasswordFormManager* submitted_manager) {
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   const PasswordForm* submitted_form = submitted_manager->GetSubmittedForm();
   // When |username_value| is empty, it's not clear whether the submitted
@@ -1003,7 +1002,7 @@ void PasswordManager::ProcessAutofillPredictions(
 
 }
 
-PasswordFormManagerInterface* PasswordManager::GetSubmittedManager() const {
+PasswordFormManager* PasswordManager::GetSubmittedManager() const {
   if (owned_submitted_form_manager_)
     return owned_submitted_form_manager_.get();
 
@@ -1045,7 +1044,7 @@ void PasswordManager::RecordProvisionalSaveFailure(
 
 // TODO(https://crbug.com/831123): Implement creating missing
 // PasswordFormManager when PasswordFormManager is gone.
-PasswordFormManagerInterface* PasswordManager::GetMatchedManager(
+PasswordFormManager* PasswordManager::GetMatchedManager(
     const PasswordManagerDriver* driver,
     const PasswordForm& form) {
   return GetMatchedManager(driver, form.form_data);

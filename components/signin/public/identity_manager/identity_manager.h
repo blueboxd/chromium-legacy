@@ -10,8 +10,10 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/signin/internal/identity_manager/primary_account_manager.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_observer.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -55,6 +57,7 @@ struct CookieParamsForTest;
 // ./README.md for detailed documentation.
 class IdentityManager : public KeyedService,
                         public OAuth2AccessTokenManager::DiagnosticsObserver,
+                        public PrimaryAccountManager::Observer,
                         public ProfileOAuth2TokenServiceObserver {
  public:
   class Observer {
@@ -596,9 +599,11 @@ class IdentityManager : public KeyedService,
   // current cookies.
   base::Optional<CoreAccountInfo> ComputeUnconsentedPrimaryAccountInfo() const;
 
-  // PrimaryAccountManager callbacks:
-  void GoogleSigninSucceeded(const CoreAccountInfo& account_info);
-  void GoogleSignedOut(const CoreAccountInfo& account_info);
+  // PrimaryAccountManager::Observer:
+  void GoogleSigninSucceeded(const CoreAccountInfo& account_info) override;
+#if !defined(OS_CHROMEOS)
+  void GoogleSignedOut(const CoreAccountInfo& account_info) override;
+#endif
 
   // ProfileOAuth2TokenServiceObserver:
   void OnRefreshTokenAvailable(const CoreAccountId& account_id) override;
@@ -649,6 +654,12 @@ class IdentityManager : public KeyedService,
 
   // DiagnosticsProvider instance.
   std::unique_ptr<DiagnosticsProvider> diagnostics_provider_;
+
+  // Scoped observers.
+  ScopedObserver<PrimaryAccountManager, IdentityManager>
+      primary_account_manager_observer_;
+  ScopedObserver<ProfileOAuth2TokenService, IdentityManager>
+      token_service_observer_;
 
   // Lists of observers.
   // Makes sure lists are empty on destruction.

@@ -849,6 +849,7 @@ bool ParseBackgroundOrMask(bool important,
     CSSValue* origin_value = nullptr;
     do {
       bool found_property = false;
+      bool bg_position_parsed_in_current_layer = false;
       for (unsigned i = 0; i < longhand_count; ++i) {
         if (parsed_longhand[i])
           continue;
@@ -866,6 +867,8 @@ bool ParseBackgroundOrMask(bool important,
                   css_property_parser_helpers::UnitlessQuirk::kForbid,
                   WebFeature::kThreeValuedPositionBackground, value, value_y))
             continue;
+          if (value)
+            bg_position_parsed_in_current_layer = true;
         } else if (property.IDEquals(CSSPropertyID::kBackgroundSize) ||
                    property.IDEquals(CSSPropertyID::kWebkitMaskSize)) {
           if (!css_property_parser_helpers::ConsumeSlashIncludingWhitespace(
@@ -877,12 +880,8 @@ bool ParseBackgroundOrMask(bool important,
                   ? WebFeature::kNegativeBackgroundSize
                   : WebFeature::kNegativeMaskSize,
               ParsingStyle::kNotLegacy);
-          if (!value ||
-              !parsed_longhand[i - 1])  // Position must have been
-                                        // parsed in the current layer.
-          {
+          if (!value || !bg_position_parsed_in_current_layer)
             return false;
-          }
         } else if (property.IDEquals(CSSPropertyID::kBackgroundPositionY) ||
                    property.IDEquals(CSSPropertyID::kBackgroundRepeatY) ||
                    property.IDEquals(CSSPropertyID::kWebkitMaskPositionY) ||

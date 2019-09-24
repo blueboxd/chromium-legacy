@@ -31,6 +31,7 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_handle.h"
+#include "build/branding_buildflags.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/auth_utils.h"
@@ -1116,7 +1117,7 @@ HRESULT CGaiaCredentialBase::HandleAutologon(
 
 // static
 void CGaiaCredentialBase::TellOmahaDidRun() {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Tell omaha that product was used.  Best effort only.
   //
   // This code always runs as LocalSystem, which means that HKCU maps to
@@ -1132,7 +1133,7 @@ void CGaiaCredentialBase::TellOmahaDidRun() {
     if (sts != ERROR_SUCCESS)
       LOGFN(INFO) << "Unable to write omaha dr value sts=" << sts;
   }
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 void CGaiaCredentialBase::PreventDenyAccessUpdate() {

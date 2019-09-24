@@ -573,8 +573,6 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
       allow_stale_resources_(false),
       image_fetched_(false),
       should_log_request_as_invalid_in_imported_document_(false) {
-  stale_while_revalidate_enabled_ =
-      RuntimeEnabledFeatures::StaleWhileRevalidateEnabledByRuntimeFlag();
   InstanceCounters::IncrementCounter(InstanceCounters::kResourceFetcherCounter);
   if (IsMainThread())
     MainThreadFetchersSet().insert(this);
@@ -871,8 +869,7 @@ base::Optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
   // stale resource is returned a StaleRevalidation request will be scheduled.
   // Explicitly disallow stale responses for fetchers that don't have SWR
   // enabled (via origin trial), and non-GET requests.
-  resource_request.SetAllowStaleResponse(stale_while_revalidate_enabled_ &&
-                                         resource_request.HttpMethod() ==
+  resource_request.SetAllowStaleResponse(resource_request.HttpMethod() ==
                                              http_names::kGET &&
                                          !params.IsStaleRevalidation());
 
@@ -2032,18 +2029,6 @@ void ResourceFetcher::UpdateAllImageResourcePriorities() {
   to_be_removed.clear();
 }
 
-void ResourceFetcher::ReloadLoFiImages() {
-  for (Resource* resource : image_resources_) {
-    resource->ReloadIfLoFiOrPlaceholderImage(this, Resource::kReloadAlways);
-  }
-
-  // |Resource::ReloadIfLoFiOrPlaceholderImage| can make images pending again,
-  // so we set |not_loaded_image_resources_| to be all the images
-  // conservatively. This isn't expected to cause performance problems as
-  // |ReloadLoFiImages| is relatively rare.
-  not_loaded_image_resources_ = image_resources_;
-}
-
 String ResourceFetcher::GetCacheIdentifier() const {
   if (properties_->GetControllerServiceWorkerMode() !=
       mojom::ControllerServiceWorkerMode::kNoController)
@@ -2085,10 +2070,6 @@ void ResourceFetcher::PrepareForLeakDetection() {
   // Stop loaders including keepalive ones that may persist after page
   // navigation and thus affect instance counters of leak detection.
   StopFetchingIncludingKeepaliveLoaders();
-}
-
-void ResourceFetcher::SetStaleWhileRevalidateEnabled(bool enabled) {
-  stale_while_revalidate_enabled_ = enabled;
 }
 
 void ResourceFetcher::StopFetchingInternal(StopFetchingTarget target) {

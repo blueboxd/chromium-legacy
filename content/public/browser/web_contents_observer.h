@@ -339,12 +339,6 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // failure methods will also be invoked.
   virtual void NavigationStopped() {}
 
-  // This method is invoked when the WebContents reloads all the LoFi images in
-  // the frame. LoFi is a type of Preview where Chrome shows gray boxes in place
-  // of the images on a webpage in order to conserve data for data-sensitive
-  // users. See http://bit.ly/LoFiPublicDoc.
-  virtual void DidReloadLoFiImages() {}
-
   // Called when there has been direct user interaction with the WebContents.
   // The type argument specifies the kind of interaction. Direct user input
   // signalled through this callback includes:

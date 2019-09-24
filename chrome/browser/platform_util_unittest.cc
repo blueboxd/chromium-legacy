@@ -252,7 +252,8 @@ class PlatformUtilPosixTest : public PlatformUtilTest {
 // ChromeOS doesn't follow symbolic links in sandboxed filesystems. So all the
 // symbolic link tests should return PATH_NOT_FOUND.
 
-TEST_F(PlatformUtilPosixTest, OpenFileWithPosixSymlinksChromeOS) {
+// Very flaky due to memory unsafety: crbug.com/1007240
+TEST_F(PlatformUtilPosixTest, DISABLED_OpenFileWithPosixSymlinksChromeOS) {
   EXPECT_EQ(OPEN_FAILED_PATH_NOT_FOUND,
             CallOpenItem(symlink_to_file_, OPEN_FILE));
   EXPECT_EQ(OPEN_FAILED_PATH_NOT_FOUND,
@@ -270,7 +271,8 @@ TEST_F(PlatformUtilPosixTest, OpenFolderWithPosixSymlinksChromeOS) {
             CallOpenItem(symlink_to_nowhere_, OPEN_FOLDER));
 }
 
-TEST_F(PlatformUtilTest, OpenFileWithUnhandledFileType) {
+// Very flaky due to memory unsafety: crbug.com/1007240
+TEST_F(PlatformUtilTest, DISABLED_OpenFileWithUnhandledFileType) {
   base::FilePath unhandled_file =
       directory_.GetPath().AppendASCII("myfile.filetype");
   ASSERT_EQ(3, base::WriteFile(unhandled_file, "cat", 3));

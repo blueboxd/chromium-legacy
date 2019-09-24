@@ -36,10 +36,8 @@ class PasswordManagerDriver;
 struct PossibleUsernameData;
 
 // This class helps with filling the observed form and with saving/updating the
-// stored information about it. It is aimed to replace PasswordFormManager and
-// to be renamed in new Password Manager design. Details
-// go/new-cpm-design-refactoring.
-class PasswordFormManager : public PasswordFormManagerInterface,
+// stored information about it.
+class PasswordFormManager : public PasswordFormManagerForUI,
                             public FormFetcher::Consumer {
  public:
   // TODO(crbug.com/621355): So far, |form_fetcher| can be null. In that case
@@ -159,20 +157,19 @@ class PasswordFormManager : public PasswordFormManagerInterface,
   void PermanentlyBlacklist() override;
   void OnPasswordsRevealed() override;
 
-  // PasswordFormManagerInterface:
-  bool IsNewLogin() const override;
-  FormFetcher* GetFormFetcher() override;
-  bool IsPendingCredentialsPublicSuffixMatch() const override;
-  void PresaveGeneratedPassword(const autofill::PasswordForm& form) override;
-  void PasswordNoLongerGenerated() override;
-  bool HasGeneratedPassword() const override;
+  bool IsNewLogin() const;
+  FormFetcher* GetFormFetcher();
+  bool IsPendingCredentialsPublicSuffixMatch() const;
+  void PresaveGeneratedPassword(const autofill::PasswordForm& form);
+  void PasswordNoLongerGenerated();
+  bool HasGeneratedPassword() const;
   void SetGenerationPopupWasShown(bool generation_popup_was_shown,
-                                  bool is_manual_generation) override;
-  void SetGenerationElement(const base::string16& generation_element) override;
-  bool IsPossibleChangePasswordFormWithoutUsername() const override;
-  bool IsPasswordUpdate() const override;
-  std::vector<base::WeakPtr<PasswordManagerDriver>> GetDrivers() const override;
-  const autofill::PasswordForm* GetSubmittedForm() const override;
+                                  bool is_manual_generation);
+  void SetGenerationElement(const base::string16& generation_element);
+  bool IsPossibleChangePasswordFormWithoutUsername() const;
+  bool IsPasswordUpdate() const;
+  std::vector<base::WeakPtr<PasswordManagerDriver>> GetDrivers() const;
+  const autofill::PasswordForm* GetSubmittedForm() const;
 
 #if defined(OS_IOS)
   // Presaves the form with |generated_password|. This function is called once

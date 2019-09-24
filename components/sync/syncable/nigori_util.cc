@@ -25,13 +25,22 @@
 
 namespace syncer {
 namespace syncable {
+namespace {
+
+bool CanDecryptUsingDefaultKey(const Cryptographer& cryptographer,
+                               const sync_pb::EncryptedData& encrypted) {
+  return !encrypted.key_name().empty() &&
+         encrypted.key_name() == cryptographer.GetDefaultEncryptionKeyName();
+}
+
+}  // namespace
 
 bool ProcessUnsyncedChangesForEncryption(WriteTransaction* const trans) {
   NigoriHandler* nigori_handler = trans->directory()->GetNigoriHandler();
   ModelTypeSet encrypted_types = nigori_handler->GetEncryptedTypes(trans);
   const Cryptographer* cryptographer =
       trans->directory()->GetCryptographer(trans);
-  DCHECK(cryptographer->is_ready());
+  DCHECK(cryptographer->CanEncrypt());
 
   // Get list of all datatypes with unsynced changes. It's possible that our
   // local changes need to be encrypted if encryption for that datatype was
@@ -139,7 +148,7 @@ bool VerifyDataTypeEncryptionForTest(BaseTransaction* const trans,
       if (specifics.has_encrypted()) {
         if (child.GetNonUniqueName() != kEncryptedString)
           return false;
-        if (!cryptographer->CanDecryptUsingDefaultKey(specifics.encrypted()))
+        if (!CanDecryptUsingDefaultKey(*cryptographer, specifics.encrypted()))
           return false;
       }
     }
@@ -169,10 +178,14 @@ bool UpdateEntryWithEncryption(BaseTransaction* const trans,
     NOTREACHED() << "New specifics already has an encrypted blob.";
     return false;
   }
-  if ((!SpecificsNeedsEncryption(encrypted_types, new_specifics) &&
-       !was_encrypted) ||
-      !cryptographer || !cryptographer->is_initialized()) {
-    // No encryption required or we are unable to encrypt.
+  if (!SpecificsNeedsEncryption(encrypted_types, new_specifics) &&
+      !was_encrypted) {
+    // No encryption required.
+    generated_specifics.CopyFrom(new_specifics);
+  } else if (!cryptographer || !cryptographer->CanEncrypt()) {
+    // We are currently unable to encrypt, so store unencrypted. The data will
+    // be reencrypted when the encryption key becomes available, via
+    // SyncEncryptionHandlerImpl::ReEncryptEverything().
     generated_specifics.CopyFrom(new_specifics);
   } else {
     // Encrypt new_specifics into generated_specifics.

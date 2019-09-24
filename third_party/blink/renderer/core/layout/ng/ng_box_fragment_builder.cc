@@ -100,33 +100,6 @@ void NGBoxFragmentBuilder::AddBreakBeforeChild(NGLayoutInputNode child,
   child_break_tokens_.push_back(token);
 }
 
-void NGBoxFragmentBuilder::AddBreakBeforeLine(int line_number) {
-  DCHECK(has_block_fragmentation_);
-  DCHECK_GT(line_number, 0);
-  DCHECK_LE(unsigned(line_number), inline_break_tokens_.size());
-  SetDidBreak();
-  int lines_to_remove = inline_break_tokens_.size() - line_number;
-  if (lines_to_remove > 0) {
-    // Remove widows that should be pushed to the next fragment. We'll also
-    // remove all other child fragments than line boxes (typically floats) that
-    // come after the first line that's moved, as those also have to be re-laid
-    // out in the next fragment.
-    inline_break_tokens_.resize(line_number);
-    DCHECK_GT(children_.size(), 0UL);
-    for (int i = children_.size() - 1; i >= 0; i--) {
-      DCHECK_NE(i, 0);
-      if (!children_[i].fragment->IsLineBox())
-        continue;
-      if (!--lines_to_remove) {
-        // This is the first line that is going to the next fragment. Remove it,
-        // and everything after it.
-        children_.resize(i);
-        break;
-      }
-    }
-  }
-}
-
 void NGBoxFragmentBuilder::AddResult(const NGLayoutResult& child_layout_result,
                                      const LogicalOffset offset,
                                      const LayoutInline* inline_container) {

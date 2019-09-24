@@ -107,14 +107,19 @@ class WorldSafeV8Reference final {
 
   void Trace(blink::Visitor* visitor) { visitor->Trace(v8_reference_); }
 
+  WorldSafeV8Reference& operator=(const WorldSafeV8Reference<V8Type>& other) =
+      default;
+
+  bool operator==(const WorldSafeV8Reference<V8Type>& other) const {
+    return v8_reference_ == other.v8_reference_;
+  }
+
  private:
   TraceWrapperV8Reference<V8Type> v8_reference_;
   // The world of the current context at the time when |v8_reference_| was set.
   // It's guaranteed that, if |v8_reference_| is a v8::Object, the world of the
   // creation context of |v8_reference_| is the same as |world_|.
   scoped_refptr<const DOMWrapperWorld> world_;
-
-  DISALLOW_COPY_AND_ASSIGN(WorldSafeV8Reference);
 };
 
 }  // namespace blink

@@ -238,7 +238,7 @@ DOMArrayBuffer* NDEFRecord::toArrayBuffer() const {
 ScriptValue NDEFRecord::toJSON(ScriptState* script_state,
                                ExceptionState& exception_state) const {
   if (record_type_ != "json" && record_type_ != "opaque") {
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
   }
 
   ScriptState::Scope scope(script_state);
@@ -247,7 +247,7 @@ ScriptValue NDEFRecord::toJSON(ScriptState* script_state,
       String::FromUTF8WithLatin1Fallback(data_.data(), data_.size()),
       exception_state);
   if (exception_state.HadException())
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
   return ScriptValue(script_state, json_object);
 }
 

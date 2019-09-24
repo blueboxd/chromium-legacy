@@ -16,6 +16,7 @@ class NigoriSpecifics;
 namespace syncer {
 
 class Cryptographer;
+class DirectoryCryptographer;
 enum class PassphraseType;
 
 namespace syncable {
@@ -43,6 +44,11 @@ class NigoriHandler {
 
   // Returns the original cryptographer.
   virtual const Cryptographer* GetCryptographer(
+      const syncable::BaseTransaction* const trans) const = 0;
+
+  // Returns the full-blown DirectoryCryptographer API, available only if the
+  // legacy directory-based implementation of NIGORI is active.
+  virtual const DirectoryCryptographer* GetDirectoryCryptographerForNigori(
       const syncable::BaseTransaction* const trans) const = 0;
 
   // Returns the set of currently encrypted types.

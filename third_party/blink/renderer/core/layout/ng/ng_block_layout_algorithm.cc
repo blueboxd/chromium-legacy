@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_early_break.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
@@ -135,6 +136,11 @@ LogicalOffset LogicalFromBfcOffsets(const NGBfcOffset& child_bfc_offset,
 
   return {inline_offset,
           child_bfc_offset.block_offset - parent_bfc_offset.block_offset};
+}
+
+inline bool IsEarlyBreakpoint(const NGEarlyBreak& breakpoint,
+                              const NGBoxFragmentBuilder& builder) {
+  return breakpoint.LineNumber() == builder.LineCount();
 }
 
 }  // namespace
@@ -326,12 +332,22 @@ LogicalOffset NGBlockLayoutAlgorithm::CalculateLogicalOffset(
 }
 
 scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
+  scoped_refptr<const NGLayoutResult> result;
   // Inline children require an inline child layout context to be
   // passed between siblings. We want to stack-allocate that one, but
   // only on demand, as it's quite big.
   if (Node().ChildrenInline())
-    return LayoutWithInlineChildLayoutContext();
-  return Layout(nullptr);
+    result = LayoutWithInlineChildLayoutContext();
+  else
+    result = Layout(nullptr);
+  if (UNLIKELY(result->Status() == NGLayoutResult::kNeedsEarlierBreak)) {
+    // If we found a good break somewhere inside this block, re-layout and break
+    // at that location.
+    DCHECK(!early_break_);
+    DCHECK(result->GetEarlyBreak());
+    return RelayoutAndBreakEarlier(*result->GetEarlyBreak());
+  }
+  return result;
 }
 
 NOINLINE scoped_refptr<const NGLayoutResult>
@@ -355,6 +371,23 @@ NGBlockLayoutAlgorithm::LayoutWithItemsBuilder(
   container_builder_.SetItemsBuilder(nullptr);
   context->SetItemsBuilder(nullptr);
   return result;
+}
+
+NOINLINE scoped_refptr<const NGLayoutResult>
+NGBlockLayoutAlgorithm::RelayoutAndBreakEarlier(
+    const NGEarlyBreak& breakpoint) {
+  NGLayoutAlgorithmParams params(Node(),
+                                 container_builder_.InitialFragmentGeometry(),
+                                 ConstraintSpace(), BreakToken());
+  NGBlockLayoutAlgorithm algorithm_with_break(params);
+  algorithm_with_break.early_break_ = &breakpoint;
+  NGBoxFragmentBuilder& new_builder = algorithm_with_break.container_builder_;
+  new_builder.SetBoxType(container_builder_.BoxType());
+  // We're not going to run out of space in the next layout pass, since we're
+  // breaking earlier, so no space shortage will be detected. Repeat what we
+  // found in this pass.
+  new_builder.PropagateSpaceShortage(container_builder_.MinimalSpaceShortage());
+  return algorithm_with_break.Layout();
 }
 
 inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
@@ -526,6 +559,10 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
       }
       break;
     } else {
+      if (UNLIKELY(early_break_ &&
+                   FindEarlyBreakpoint(child, &previous_inflow_position)))
+        break;
+
       bool abort;
       if (child.CreatesNewFormattingContext()) {
         abort = !HandleNewFormattingContext(child, child_break_token,
@@ -726,8 +763,10 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
   // This may occur with a zero block size fragment. We need to know the BFC
   // block offset to determine where the fragmentation line is relative to us.
   if (container_builder_.BfcBlockOffset() &&
-      ConstraintSpace().HasBlockFragmentation())
-    FinalizeForFragmentation();
+      ConstraintSpace().HasBlockFragmentation()) {
+    if (!FinalizeForFragmentation())
+      return container_builder_.Abort(NGLayoutResult::kNeedsEarlierBreak);
+  }
 
   NGOutOfFlowLayoutPart(
       Node(), ConstraintSpace(),
@@ -753,6 +792,19 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
     container_builder_.SetStyleVariant(NGStyleVariant::kFirstLine);
 
   return container_builder_.ToBoxFragment();
+}
+
+bool NGBlockLayoutAlgorithm::FindEarlyBreakpoint(
+    NGLayoutInputNode child,
+    NGPreviousInflowPosition* previous_inflow_position) {
+  DCHECK(early_break_);
+  if (!IsEarlyBreakpoint(*early_break_, container_builder_))
+    return false;
+
+  container_builder_.AddBreakBeforeChild(child, /* is_forced_break */ false);
+  previous_inflow_position->logical_block_offset =
+      FragmentainerSpaceAvailable();
+  return true;
 }
 
 const NGInlineBreakToken* NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
@@ -1879,7 +1931,7 @@ bool NGBlockLayoutAlgorithm::IsFragmentainerOutOfSpace(
   return block_offset >= FragmentainerSpaceAvailable();
 }
 
-void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
+bool NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
   if (first_overflowing_line_ && !fit_all_lines_) {
     // A line box overflowed the fragmentainer, but we continued layout anyway,
     // in order to determine where to break in order to honor the widows
@@ -1913,26 +1965,36 @@ void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
     // detect that there's no room for a fragment for this node, and drop the
     // fragment on the floor. Therefore it doesn't matter how we set up the
     // container builder, so just return.
-    return;
+    return true;
   }
 
-  if (container_builder_.DidBreak() && first_overflowing_line_) {
-    int line_number;
-    if (fit_all_lines_) {
-      line_number = first_overflowing_line_;
-    } else {
-      // We managed to finish layout of all the lines for the node, which means
-      // that we won't have enough widows, unless we break earlier than where we
-      // overflowed.
-      int line_count = container_builder_.LineCount();
-      line_number = std::max(line_count - Style().Widows(),
-                             std::min(line_count, int(Style().Orphans())));
+  if (Node().ChildrenInline()) {
+    if (container_builder_.DidBreak() || first_overflowing_line_) {
+      if (first_overflowing_line_ &&
+          first_overflowing_line_ < container_builder_.LineCount()) {
+        int line_number;
+        if (fit_all_lines_) {
+          line_number = first_overflowing_line_;
+        } else {
+          // We managed to finish layout of all the lines for the node, which
+          // means that we won't have enough widows, unless we break earlier
+          // than where we overflowed.
+          int line_count = container_builder_.LineCount();
+          line_number = std::max(line_count - Style().Widows(),
+                                 std::min(line_count, int(Style().Orphans())));
+        }
+        // We need to layout again, and stop at the right line number.
+        NGEarlyBreak breakpoint(line_number);
+        container_builder_.SetEarlyBreak(breakpoint);
+        return false;
+      }
     }
-    container_builder_.AddBreakBeforeLine(line_number);
   }
 
   FinishFragmentation(&container_builder_, block_size, intrinsic_block_size_,
                       consumed_block_size, space_left);
+
+  return true;
 }
 
 bool NGBlockLayoutAlgorithm::BreakBeforeChild(

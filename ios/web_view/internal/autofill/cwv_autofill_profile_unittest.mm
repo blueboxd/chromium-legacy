@@ -44,7 +44,7 @@ TEST_F(CWVAutofillProfileTest, Initialization) {
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
   CWVAutofillProfile* cwv_profile =
       [[CWVAutofillProfile alloc] initWithProfile:profile];
-  EXPECT_EQ(profile, *cwv_profile.internalProfile);
+  EXPECT_EQ(profile, *[cwv_profile internalProfile]);
 }
 
 // Tests CWVAutofillProfile updates properties.

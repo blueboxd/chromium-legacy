@@ -9,7 +9,6 @@
 #include <memory>
 #include <string>
 
-#include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -22,7 +21,7 @@ class WebApp;
 
 using Registry = std::map<AppId, std::unique_ptr<WebApp>>;
 
-// A registry. This is a read-only container, which owns WebApp objects.
+// A registry model. This is a read-only container, which owns WebApp objects.
 class WebAppRegistrar : public AppRegistrar {
  public:
   explicit WebAppRegistrar(Profile* profile);
@@ -95,29 +94,34 @@ class WebAppRegistrar : public AppRegistrar {
 
   const AppSet AllApps() const;
 
-  const Registry& registry_for_testing() const { return registry_; }
+ protected:
+  Registry& registry() { return registry_; }
+  void SetRegistry(Registry&& registry);
+
+  void CountMutation();
 
  private:
-  friend class WebAppSyncBridge;
-  FRIEND_TEST_ALL_PREFIXES(WebAppRegistrarTest, AllAppsMutable);
+  Registry registry_;
+#if DCHECK_IS_ON()
+  size_t mutations_count_ = 0;
+#endif
+  DISALLOW_COPY_AND_ASSIGN(WebAppRegistrar);
+};
+
+// A writable API for the registry model. Mutable WebAppRegistrar must be used
+// only by WebAppSyncBridge.
+class WebAppRegistrarMutable : public WebAppRegistrar {
+ public:
+  explicit WebAppRegistrarMutable(Profile* profile);
+  ~WebAppRegistrarMutable() override;
+
+  void InitRegistry(Registry&& registry);
 
   WebApp* GetAppByIdMutable(const AppId& app_id);
   AppSet AllAppsMutable();
 
-  void InitRegistry(Registry&& registry);
-
-  void CountMutation();
-
-  // Used by WebAppSyncBridge controller to to raw updates.
-  Registry& registry() { return registry_; }
-
-  Registry registry_;
-
-#if DCHECK_IS_ON()
-  size_t mutations_count_ = 0;
-#endif
-
-  DISALLOW_COPY_AND_ASSIGN(WebAppRegistrar);
+  using WebAppRegistrar::CountMutation;
+  using WebAppRegistrar::registry;
 };
 
 // For testing and debug purposes.

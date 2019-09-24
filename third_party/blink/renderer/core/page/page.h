@@ -63,6 +63,7 @@ class Frame;
 class LinkHighlights;
 class LocalFrame;
 class LocalFrameView;
+class MediaFeatureOverrides;
 class OverscrollController;
 struct PageScaleConstraints;
 class PageScaleConstraintsSet;
@@ -323,6 +324,13 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
     return web_text_autosizer_page_info_;
   }
 
+  void SetMediaFeatureOverride(const AtomicString& media_feature,
+                               const String& value);
+  const MediaFeatureOverrides* GetMediaFeatureOverrides() const {
+    return media_feature_overrides_.get();
+  }
+  void ClearMediaFeatureOverrides();
+
  private:
   friend class ScopedPagePauser;
 
@@ -418,6 +426,9 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   FrameScheduler::SchedulingAffectingFeatureHandle has_related_pages_;
 
   std::unique_ptr<PageScheduler> page_scheduler_;
+
+  // Overrides for various media features set from the devtools.
+  std::unique_ptr<MediaFeatureOverrides> media_feature_overrides_;
 
   int32_t autoplay_flags_;
 

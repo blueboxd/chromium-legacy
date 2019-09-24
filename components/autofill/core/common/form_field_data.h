@@ -83,10 +83,18 @@ struct FormFieldData {
   // a textarea.
   bool IsTextInputElement() const;
 
+  bool IsPasswordInputElement() const;
+
   // Returns true if the field is visible to the user.
   bool IsVisible() const {
     return is_focusable && role != RoleAttribute::kPresentation;
   }
+
+  // These functions do not work for Autofill code.
+  // TODO(https://crbug.com/1006745): Fix this.
+  bool DidUserType() const;
+  bool HadFocus() const;
+  bool WasAutofilled() const;
 
   // Note: operator==() performs a full-field-comparison(byte by byte), this is
   // different from SameFieldAs(), which ignores comparison for those "values"

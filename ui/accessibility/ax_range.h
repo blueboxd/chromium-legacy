@@ -50,7 +50,7 @@ class AXRange {
     focus_.swap(other.focus_);
   }
 
-  virtual ~AXRange() {}
+  virtual ~AXRange() = default;
 
   AXPositionType* anchor() const {
     DCHECK(anchor_);
@@ -62,15 +62,10 @@ class AXRange {
     return focus_.get();
   }
 
-  bool IsNull() const {
-    DCHECK(anchor_ && focus_);
-    return anchor_->IsNullPosition() || focus_->IsNullPosition();
-  }
-
   AXRange& operator=(const AXRange& other) = delete;
 
-  AXRange& operator=(const AXRange&& other) {
-    if (this != other) {
+  AXRange& operator=(AXRange&& other) {
+    if (this != &other) {
       anchor_ = AXPositionType::CreateNullPosition();
       focus_ = AXPositionType::CreateNullPosition();
       anchor_.swap(other.anchor_);
@@ -88,7 +83,7 @@ class AXRange {
 
   bool operator!=(const AXRange& other) const { return !(*this == other); }
 
-  AXRange GetForwardRange() const {
+  AXRange AsForwardRange() const {
     // When we have a range with an empty text representation, its endpoints
     // would be considered equal as text positions, but they could be located in
     // different anchors of the AXTree. Compare them as tree positions first to
@@ -102,11 +97,18 @@ class AXRange {
                : AXRange(anchor_->Clone(), focus_->Clone());
   }
 
+  bool IsCollapsed() const { return !IsNull() && *anchor_ == *focus_; }
+
   // We define a "leaf text range" as an AXRange whose endpoints are leaf text
   // positions located within the same anchor of the AXTree.
   bool IsLeafTextRange() const {
     return !IsNull() && anchor_->GetAnchor() == focus_->GetAnchor() &&
            anchor_->IsLeafTextPosition() && focus_->IsLeafTextPosition();
+  }
+
+  bool IsNull() const {
+    DCHECK(anchor_ && focus_);
+    return anchor_->IsNullPosition() || focus_->IsNullPosition();
   }
 
   // We can decompose any given AXRange into multiple "leaf text ranges".
@@ -208,13 +210,13 @@ class AXRange {
   };
 
   Iterator begin() const {
-    AXRange forward_range = GetForwardRange();
+    AXRange forward_range = AsForwardRange();
     return Iterator(std::move(forward_range.anchor_),
                     std::move(forward_range.focus_));
   }
 
   Iterator end() const {
-    AXRange forward_range = GetForwardRange();
+    AXRange forward_range = AsForwardRange();
     return Iterator(nullptr, std::move(forward_range.focus_));
   }
 

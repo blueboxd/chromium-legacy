@@ -12,14 +12,13 @@
 #include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/test/test_file_utils.h"
 #include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
+#include "chrome/browser/web_applications/test/test_web_app_registry_controller.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/sync/model/mock_model_type_change_processor.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -29,25 +28,17 @@ class WebAppIconManagerTest : public WebAppTest {
   void SetUp() override {
     WebAppTest::SetUp();
 
-    database_factory_ = std::make_unique<TestWebAppDatabaseFactory>();
-    registrar_ = std::make_unique<WebAppRegistrar>(profile());
-
-    sync_bridge_ = std::make_unique<WebAppSyncBridge>(
-        profile(), database_factory_.get(), registrar_.get(),
-        mock_processor_.CreateForwardingProcessor());
-
-    ON_CALL(processor(), IsTrackingMetadata())
-        .WillByDefault(testing::Return(true));
+    test_registry_controller_ =
+        std::make_unique<TestWebAppRegistryController>();
+    test_registry_controller_->SetUp(profile());
 
     auto file_utils = std::make_unique<TestFileUtils>();
     file_utils_ = file_utils.get();
 
-    icon_manager_ = std::make_unique<WebAppIconManager>(profile(), *registrar_,
+    icon_manager_ = std::make_unique<WebAppIconManager>(profile(), registrar(),
                                                         std::move(file_utils));
 
-    base::RunLoop run_loop;
-    sync_bridge_->Init(base::BindLambdaForTesting([&]() { run_loop.Quit(); }));
-    run_loop.Run();
+    controller().Init();
   }
 
  protected:
@@ -99,13 +90,16 @@ class WebAppIconManagerTest : public WebAppTest {
     return web_app;
   }
 
-  syncer::MockModelTypeChangeProcessor& processor() { return mock_processor_; }
+  TestWebAppRegistryController& controller() {
+    return *test_registry_controller_;
+  }
 
-  std::unique_ptr<TestWebAppDatabaseFactory> database_factory_;
-  std::unique_ptr<WebAppRegistrar> registrar_;
-  std::unique_ptr<WebAppSyncBridge> sync_bridge_;
-  testing::NiceMock<syncer::MockModelTypeChangeProcessor> mock_processor_;
+  WebAppRegistrar& registrar() { return controller().registrar(); }
+  WebAppSyncBridge& sync_bridge() { return controller().sync_bridge(); }
+  WebAppIconManager& icon_manager() { return *icon_manager_; }
 
+ private:
+  std::unique_ptr<TestWebAppRegistryController> test_registry_controller_;
   std::unique_ptr<WebAppIconManager> icon_manager_;
 
   // Owned by icon_manager_:
@@ -122,12 +116,12 @@ TEST_F(WebAppIconManagerTest, WriteAndReadIcon) {
 
   web_app->SetIcons(ListIcons(web_app->launch_url(), sizes_px));
 
-  sync_bridge_->RegisterApp(std::move(web_app));
+  sync_bridge().RegisterApp(std::move(web_app));
 
   {
     base::RunLoop run_loop;
 
-    const bool icon_requested = icon_manager_->ReadIcon(
+    const bool icon_requested = icon_manager().ReadIcon(
         app_id, sizes_px[0], base::BindLambdaForTesting([&](SkBitmap bitmap) {
           EXPECT_FALSE(bitmap.empty());
           EXPECT_EQ(colors[0], bitmap.getColor(0, 0));
@@ -151,16 +145,16 @@ TEST_F(WebAppIconManagerTest, ReadIconFailed) {
   icons.push_back({icon_url, icon_size_px});
   web_app->SetIcons(std::move(icons));
 
-  sync_bridge_->RegisterApp(std::move(web_app));
+  sync_bridge().RegisterApp(std::move(web_app));
 
   // Request non-existing icon size.
   EXPECT_FALSE(
-      icon_manager_->ReadIcon(app_id, icon_size::k96, base::DoNothing()));
+      icon_manager().ReadIcon(app_id, icon_size::k96, base::DoNothing()));
 
   // Request existing icon size which doesn't exist on disk.
   base::RunLoop run_loop;
 
-  const bool icon_requested = icon_manager_->ReadIcon(
+  const bool icon_requested = icon_manager().ReadIcon(
       app_id, icon_size_px, base::BindLambdaForTesting([&](SkBitmap bitmap) {
         EXPECT_TRUE(bitmap.empty());
         run_loop.Quit();
@@ -181,10 +175,10 @@ TEST_F(WebAppIconManagerTest, FindExact) {
 
   web_app->SetIcons(ListIcons(web_app->launch_url(), sizes_px));
 
-  sync_bridge_->RegisterApp(std::move(web_app));
+  sync_bridge().RegisterApp(std::move(web_app));
 
   {
-    const bool icon_requested = icon_manager_->ReadIcon(
+    const bool icon_requested = icon_manager().ReadIcon(
         app_id, 40,
         base::BindLambdaForTesting([&](SkBitmap bitmap) { NOTREACHED(); }));
     EXPECT_FALSE(icon_requested);
@@ -193,7 +187,7 @@ TEST_F(WebAppIconManagerTest, FindExact) {
   {
     base::RunLoop run_loop;
 
-    const bool icon_requested = icon_manager_->ReadIcon(
+    const bool icon_requested = icon_manager().ReadIcon(
         app_id, 20, base::BindLambdaForTesting([&](SkBitmap bitmap) {
           EXPECT_FALSE(bitmap.empty());
           EXPECT_EQ(SK_ColorBLUE, bitmap.getColor(0, 0));
@@ -216,10 +210,10 @@ TEST_F(WebAppIconManagerTest, FindSmallest) {
 
   web_app->SetIcons(ListIcons(web_app->launch_url(), sizes_px));
 
-  sync_bridge_->RegisterApp(std::move(web_app));
+  sync_bridge().RegisterApp(std::move(web_app));
 
   {
-    const bool icon_requested = icon_manager_->ReadSmallestIcon(
+    const bool icon_requested = icon_manager().ReadSmallestIcon(
         app_id, 70,
         base::BindLambdaForTesting([&](SkBitmap bitmap) { NOTREACHED(); }));
     EXPECT_FALSE(icon_requested);
@@ -228,7 +222,7 @@ TEST_F(WebAppIconManagerTest, FindSmallest) {
   {
     base::RunLoop run_loop;
 
-    const bool icon_requested = icon_manager_->ReadSmallestIcon(
+    const bool icon_requested = icon_manager().ReadSmallestIcon(
         app_id, 40, base::BindLambdaForTesting([&](SkBitmap bitmap) {
           EXPECT_FALSE(bitmap.empty());
           EXPECT_EQ(SK_ColorGREEN, bitmap.getColor(0, 0));
@@ -242,7 +236,7 @@ TEST_F(WebAppIconManagerTest, FindSmallest) {
   {
     base::RunLoop run_loop;
 
-    const bool icon_requested = icon_manager_->ReadSmallestIcon(
+    const bool icon_requested = icon_manager().ReadSmallestIcon(
         app_id, 20, base::BindLambdaForTesting([&](SkBitmap bitmap) {
           EXPECT_FALSE(bitmap.empty());
           EXPECT_EQ(SK_ColorBLUE, bitmap.getColor(0, 0));

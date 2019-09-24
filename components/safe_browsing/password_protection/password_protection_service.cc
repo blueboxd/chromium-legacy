@@ -560,8 +560,8 @@ bool PasswordProtectionService::IsSupportedPasswordTypeForModalWarning(
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 void PasswordProtectionService::GetPhishingDetector(
     service_manager::InterfaceProvider* provider,
-    mojom::PhishingDetectorPtr* phishing_detector) {
-  provider->GetInterface(phishing_detector);
+    mojo::Remote<mojom::PhishingDetector>* phishing_detector) {
+  provider->GetInterface(phishing_detector->BindNewPipeAndPassReceiver());
 }
 #endif
 

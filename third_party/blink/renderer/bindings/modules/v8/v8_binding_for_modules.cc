@@ -724,7 +724,7 @@ ScriptValue DeserializeScriptValue(ScriptState* script_state,
   v8::Isolate* isolate = script_state->GetIsolate();
   v8::HandleScope handle_scope(isolate);
   if (!serialized_value)
-    return ScriptValue::CreateNull(script_state);
+    return ScriptValue::CreateNull(script_state->GetIsolate());
 
   SerializedScriptValue::DeserializeOptions options;
   options.blob_info = blob_info;

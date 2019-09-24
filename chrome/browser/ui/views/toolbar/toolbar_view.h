@@ -48,7 +48,7 @@ class HomeButton;
 class MediaToolbarButtonView;
 class ReloadButton;
 class ToolbarButton;
-class ToolbarPageActionIconContainerView;
+class ToolbarAccountIconContainerView;
 
 namespace bookmarks {
 class BookmarkBubbleObserver;
@@ -144,8 +144,8 @@ class ToolbarView : public views::AccessiblePaneView,
   CustomTabBarView* custom_tab_bar() { return custom_tab_bar_; }
   media_router::CastToolbarButton* cast_button() const { return cast_; }
   MediaToolbarButtonView* media_button() const { return media_button_; }
-  ToolbarPageActionIconContainerView* toolbar_page_action_container() const {
-    return toolbar_page_action_container_;
+  ToolbarAccountIconContainerView* toolbar_account_icon_container() const {
+    return toolbar_account_icon_container_;
   }
   BrowserAppMenuButton* app_menu_button() const { return app_menu_button_; }
   HomeButton* home_button() const { return home_; }
@@ -271,7 +271,7 @@ class ToolbarView : public views::AccessiblePaneView,
   BrowserActionsContainer* browser_actions_ = nullptr;
   ExtensionsToolbarContainer* extensions_container_ = nullptr;
   media_router::CastToolbarButton* cast_ = nullptr;
-  ToolbarPageActionIconContainerView* toolbar_page_action_container_ = nullptr;
+  ToolbarAccountIconContainerView* toolbar_account_icon_container_ = nullptr;
   AvatarToolbarButton* avatar_ = nullptr;
   MediaToolbarButtonView* media_button_ = nullptr;
   BrowserAppMenuButton* app_menu_button_ = nullptr;

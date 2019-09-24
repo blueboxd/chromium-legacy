@@ -34,7 +34,6 @@
 #include <memory>
 #include <utility>
 
-#include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -364,11 +363,11 @@ void WebDevToolsAgentImpl::WillBeDestroyed() {
   resource_content_loader_->Dispose();
 }
 
-void WebDevToolsAgentImpl::BindRequest(
-    mojom::blink::DevToolsAgentHostAssociatedPtrInfo host_ptr_info,
-    mojom::blink::DevToolsAgentAssociatedRequest request) {
-  agent_->BindRequest(
-      std::move(host_ptr_info), std::move(request),
+void WebDevToolsAgentImpl::BindReceiver(
+    mojo::PendingAssociatedRemote<mojom::blink::DevToolsAgentHost> host_remote,
+    mojo::PendingAssociatedReceiver<mojom::blink::DevToolsAgent> receiver) {
+  agent_->BindReceiver(
+      std::move(host_remote), std::move(receiver),
       web_local_frame_impl_->GetTaskRunner(TaskType::kInternalInspector));
 }
 

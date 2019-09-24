@@ -1637,10 +1637,6 @@ void DocumentLoader::InstallNewDocument(
     OriginTrialContext::ActivateNavigationFeaturesFromInitiator(
         document, &initiator_origin_trial_features_);
   }
-  bool stale_while_revalidate_enabled =
-      RuntimeEnabledFeatures::StaleWhileRevalidateEnabled(document);
-  document->Fetcher()->SetStaleWhileRevalidateEnabled(
-      stale_while_revalidate_enabled);
 
   bool opted_out_mixed_autoupgrade = EqualIgnoringASCIICase(
       response_.HttpHeaderField("mixed-content"), "noupgrade");
@@ -1650,11 +1646,6 @@ void DocumentLoader::InstallNewDocument(
   }
   UMA_HISTOGRAM_BOOLEAN("MixedAutoupgrade.Navigation.OptedOut",
                         opted_out_mixed_autoupgrade);
-
-  // If stale while revalidate is enabled via Origin Trials count it as such.
-  if (stale_while_revalidate_enabled &&
-      !RuntimeEnabledFeatures::StaleWhileRevalidateEnabledByRuntimeFlag())
-    UseCounter::Count(document, WebFeature::kStaleWhileRevalidateEnabled);
 
   parser_ = document->OpenForNavigation(parsing_policy, mime_type, encoding);
 

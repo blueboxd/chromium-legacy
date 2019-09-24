@@ -98,11 +98,13 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
   // Ignored.
   void OnPageOriginTrialFreezePolicyChanged(
       const performance_manager::PageNode* page_node) override {}
+  void OnMainFrameUrlChanged(
+      const performance_manager::PageNode* page_node) override;
   // Ignored.
   void OnPageAlmostIdleChanged(
       const performance_manager::PageNode* page_node) override {}
-  void OnMainFrameNavigationCommitted(
-      const performance_manager::PageNode* page_node) override;
+  void OnMainFrameDocumentChanged(
+      const performance_manager::PageNode* page_node) override {}
   void OnTitleUpdated(const performance_manager::PageNode* page_node) override {
   }  // Ignored.
   void OnFaviconUpdated(

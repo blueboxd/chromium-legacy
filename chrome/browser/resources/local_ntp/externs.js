@@ -33,7 +33,7 @@ let MostVisitedData;
  *            isGooglePage: boolean,
  *            realboxEnabled: boolean,
  *            richerPicker: boolean,
- *            translatedStrings: Array<string>}}
+ *            translatedStrings: Object<string>}}
  */
 let configData;
 
@@ -435,7 +435,6 @@ window.chrome.embeddedSearch.searchBox.onqueryautocompletedone;
  * chrome/browser/search/local_ntp_source.cc:
  *  GetTranslatedStrings()
  */
-
 configData.translatedStrings.addLinkTitle;
 configData.translatedStrings.addLinkTooltip;
 configData.translatedStrings.attributionIntro;
@@ -449,6 +448,7 @@ configData.translatedStrings.copyLink;
 configData.translatedStrings.customizeThisPage;
 configData.translatedStrings.defaultWallpapers;
 configData.translatedStrings.details;
+configData.translatedStrings.dismissPromo;
 configData.translatedStrings.editLinkTitle;
 configData.translatedStrings.editLinkTooltip;
 configData.translatedStrings.fakeboxMicrophoneTooltip;

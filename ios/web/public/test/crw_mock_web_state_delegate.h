@@ -6,7 +6,7 @@
 #define IOS_WEB_PUBLIC_TEST_CRW_MOCK_WEB_STATE_DELEGATE_H_
 
 #import "ios/testing/ocmock_complex_type_helper.h"
-#import "ios/web/public/web_state/web_state_delegate_bridge.h"
+#import "ios/web/public/web_state_delegate_bridge.h"
 
 // Stub implementation for CRWWebStateDelegate protocol.
 @interface CRWMockWebStateDelegate

@@ -528,7 +528,8 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
             // TODO(https://crbug.com/873116): Pass the correct reason for the signout.
             IdentityServicesProvider.getSigninManager().signOut(
                     SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS,
-                    () -> IdentityServicesProvider.getSigninManager().signIn(account, null, null));
+                    () -> IdentityServicesProvider.getSigninManager().signIn(account, null, null),
+                    false);
             return;
         }
 

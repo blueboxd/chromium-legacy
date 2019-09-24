@@ -186,12 +186,7 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
         final Semaphore s = new Semaphore(0);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             IdentityServicesProvider.getSigninManager().signOut(
-                    SignoutReason.SIGNOUT_TEST, new Runnable() {
-                        @Override
-                        public void run() {
-                            s.release();
-                        }
-                    });
+                    SignoutReason.SIGNOUT_TEST, s::release, false);
         });
         Assert.assertTrue(s.tryAcquire(SyncTestUtil.TIMEOUT_MS, TimeUnit.MILLISECONDS));
         Assert.assertNull(SigninTestUtil.getCurrentAccount());

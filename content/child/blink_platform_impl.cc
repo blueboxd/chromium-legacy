@@ -160,22 +160,6 @@ int ToMessageID(int resource_id) {
       return IDS_AX_MEDIA_TOUCHLESS_SEEK_ACTION;
     case WebLocalizedString::kAXMediaTouchLessVolumeAction:
       return IDS_AX_MEDIA_TOUCHLESS_VOLUME_ACTION;
-    case WebLocalizedString::kAXMillisecondFieldText:
-      return IDS_AX_MILLISECOND_FIELD_TEXT;
-    case WebLocalizedString::kAXMinuteFieldText:
-      return IDS_AX_MINUTE_FIELD_TEXT;
-    case WebLocalizedString::kAXMonthFieldText:
-      return IDS_AX_MONTH_FIELD_TEXT;
-    case WebLocalizedString::kAXSecondFieldText:
-      return IDS_AX_SECOND_FIELD_TEXT;
-    case WebLocalizedString::kAXWeekOfYearFieldText:
-      return IDS_AX_WEEK_OF_YEAR_FIELD_TEXT;
-    case WebLocalizedString::kAXYearFieldText:
-      return IDS_AX_YEAR_FIELD_TEXT;
-    case WebLocalizedString::kCalendarClear:
-      return IDS_FORM_CALENDAR_CLEAR;
-    case WebLocalizedString::kCalendarToday:
-      return IDS_FORM_CALENDAR_TODAY;
     case WebLocalizedString::kDetailsLabel:
       return IDS_DETAILS_WITHOUT_SUMMARY_LABEL;
     case WebLocalizedString::kFileButtonNoFileSelectedLabel:

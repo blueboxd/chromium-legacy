@@ -870,7 +870,31 @@ double CSSMathExpressionVariadicOperation::ComputeLengthPx(
   return result;
 }
 
+String CSSMathExpressionVariadicOperation::CSSTextAsClamp() const {
+  DCHECK(is_clamp_);
+  DCHECK_EQ(CSSMathOperator::kMax, operator_);
+  DCHECK_EQ(2u, operands_.size());
+  DCHECK(operands_[1]->IsVariadicOperation());
+  const auto& nested = To<CSSMathExpressionVariadicOperation>(*operands_[1]);
+  DCHECK(!nested.is_clamp_);
+  DCHECK_EQ(CSSMathOperator::kMin, nested.operator_);
+  DCHECK_EQ(2u, nested.operands_.size());
+
+  StringBuilder result;
+  result.Append("clamp(");
+  result.Append(operands_[0]->CustomCSSText());
+  result.Append(", ");
+  result.Append(nested.operands_[0]->CustomCSSText());
+  result.Append(", ");
+  result.Append(nested.operands_[1]->CustomCSSText());
+  result.Append(")");
+  return result.ToString();
+}
+
 String CSSMathExpressionVariadicOperation::CustomCSSText() const {
+  if (is_clamp_)
+    return CSSTextAsClamp();
+
   StringBuilder result;
   result.Append(ToString(operator_));
   result.Append('(');
@@ -1023,6 +1047,41 @@ class CSSMathExpressionNodeParser {
     return CSSMathExpressionVariadicOperation::Create(std::move(operands), op);
   }
 
+  CSSMathExpressionNode* ParseClamp(CSSParserTokenRange tokens, int depth) {
+    if (CheckDepthAndIndex(&depth, tokens) != OK)
+      return nullptr;
+
+    CSSMathExpressionNode* min_operand = ParseValueExpression(tokens, depth);
+    if (!min_operand)
+      return nullptr;
+
+    if (!css_property_parser_helpers::ConsumeCommaIncludingWhitespace(tokens))
+      return nullptr;
+
+    CSSMathExpressionNode* val_operand = ParseValueExpression(tokens, depth);
+    if (!val_operand)
+      return nullptr;
+
+    if (!css_property_parser_helpers::ConsumeCommaIncludingWhitespace(tokens))
+      return nullptr;
+
+    CSSMathExpressionNode* max_operand = ParseValueExpression(tokens, depth);
+    if (!max_operand)
+      return nullptr;
+
+    if (!tokens.AtEnd())
+      return nullptr;
+
+    // clamp(MIN, VAL, MAX) is identical to max(MIN, min(VAL, MAX))
+
+    auto* nested = CSSMathExpressionVariadicOperation::Create(
+        {val_operand, max_operand}, CSSMathOperator::kMin);
+    auto* result = CSSMathExpressionVariadicOperation::Create(
+        {min_operand, nested}, CSSMathOperator::kMax);
+    result->SetIsClamp();
+    return result;
+  }
+
  private:
   CSSMathExpressionNode* ParseValue(CSSParserTokenRange& tokens) {
     CSSParserToken token = tokens.ConsumeIncludingWhitespace();
@@ -1068,8 +1127,9 @@ class CSSMathExpressionNodeParser {
             return ParseMinOrMax(inner_range, CSSMathOperator::kMin, depth);
           case CSSValueID::kMax:
             return ParseMinOrMax(inner_range, CSSMathOperator::kMax, depth);
+          case CSSValueID::kClamp:
+            return ParseClamp(inner_range, depth);
           default:
-            // TODO(crbug.com/825895): Support clamp when min/max are done.
             break;
         }
       }
@@ -1250,6 +1310,13 @@ CSSMathExpressionNode* CSSMathExpressionNode::ParseMax(
     const CSSParserTokenRange& tokens) {
   CSSMathExpressionNodeParser parser;
   return parser.ParseMinOrMax(tokens, CSSMathOperator::kMax, 0);
+}
+
+// static
+CSSMathExpressionNode* CSSMathExpressionNode::ParseClamp(
+    const CSSParserTokenRange& tokens) {
+  CSSMathExpressionNodeParser parser;
+  return parser.ParseClamp(tokens, 0);
 }
 
 }  // namespace blink

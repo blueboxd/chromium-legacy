@@ -12,6 +12,7 @@
 #include "device/vr/orientation/orientation_device.h"
 #include "device/vr/vr_device_provider.h"
 #include "device/vr/vr_export.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -37,7 +38,7 @@ class DEVICE_VR_EXPORT VROrientationDeviceProvider : public VRDeviceProvider {
 
   bool initialized_ = false;
 
-  device::mojom::SensorProviderPtr sensor_provider_;
+  mojo::Remote<device::mojom::SensorProvider> sensor_provider_;
 
   std::unique_ptr<VROrientationDevice> device_;
 

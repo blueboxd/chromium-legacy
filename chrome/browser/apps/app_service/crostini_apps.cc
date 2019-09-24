@@ -22,10 +22,7 @@
 namespace apps {
 
 CrostiniApps::CrostiniApps()
-    : binding_(this),
-      profile_(nullptr),
-      registry_(nullptr),
-      crostini_enabled_(false) {}
+    : profile_(nullptr), registry_(nullptr), crostini_enabled_(false) {}
 
 CrostiniApps::~CrostiniApps() {
   if (registry_) {
@@ -59,9 +56,7 @@ void CrostiniApps::Initialize(
       base::BindRepeating(&CrostiniApps::OnCrostiniEnabledChanged,
                           base::Unretained(this)));
 
-  apps::mojom::PublisherPtr publisher;
-  binding_.Bind(mojo::MakeRequest(&publisher));
-  app_service->RegisterPublisher(std::move(publisher),
+  app_service->RegisterPublisher(receiver_.BindNewPipeAndPassRemote(),
                                  apps::mojom::AppType::kCrostini);
 }
 

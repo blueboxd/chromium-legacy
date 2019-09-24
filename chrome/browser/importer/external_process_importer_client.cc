@@ -71,10 +71,8 @@ void ExternalProcessImporterClient::Start() {
 
   // If the utility process hasn't started yet the message will queue until it
   // does.
-  chrome::mojom::ProfileImportObserverPtr observer;
-  receiver_.Bind(mojo::MakeRequest(&observer));
   profile_import_->StartImport(source_profile_, items_, localized_strings,
-                               std::move(observer));
+                               receiver_.BindNewPipeAndPassRemote());
 }
 
 void ExternalProcessImporterClient::Cancel() {

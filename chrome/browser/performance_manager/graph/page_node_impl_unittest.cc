@@ -123,8 +123,8 @@ TEST_F(PageNodeImplTest, TimeSinceLastNavigation) {
 
   // 1st navigation.
   GURL url("http://www.example.org");
-  mock_graph.page->OnMainFrameNavigationCommitted(base::TimeTicks::Now(), 10u,
-                                                  url);
+  mock_graph.page->OnMainFrameNavigationCommitted(false, base::TimeTicks::Now(),
+                                                  10u, url);
   EXPECT_EQ(url, mock_graph.page->main_frame_url());
   EXPECT_EQ(10u, mock_graph.page->navigation_id());
   AdvanceClock(base::TimeDelta::FromSeconds(11));
@@ -133,10 +133,20 @@ TEST_F(PageNodeImplTest, TimeSinceLastNavigation) {
 
   // 2nd navigation.
   url = GURL("http://www.example.org/bobcat");
-  mock_graph.page->OnMainFrameNavigationCommitted(base::TimeTicks::Now(), 20u,
-                                                  url);
+  mock_graph.page->OnMainFrameNavigationCommitted(false, base::TimeTicks::Now(),
+                                                  20u, url);
   EXPECT_EQ(url, mock_graph.page->main_frame_url());
   EXPECT_EQ(20u, mock_graph.page->navigation_id());
+  AdvanceClock(base::TimeDelta::FromSeconds(17));
+  EXPECT_EQ(base::TimeDelta::FromSeconds(17),
+            mock_graph.page->TimeSinceLastNavigation());
+
+  // Test a same-document navigation.
+  url = GURL("http://www.example.org/bobcat#fun");
+  mock_graph.page->OnMainFrameNavigationCommitted(true, base::TimeTicks::Now(),
+                                                  30u, url);
+  EXPECT_EQ(url, mock_graph.page->main_frame_url());
+  EXPECT_EQ(30u, mock_graph.page->navigation_id());
   AdvanceClock(base::TimeDelta::FromSeconds(17));
   EXPECT_EQ(base::TimeDelta::FromSeconds(17),
             mock_graph.page->TimeSinceLastNavigation());
@@ -188,8 +198,9 @@ class LenientMockObserver : public PageNodeImpl::Observer {
   MOCK_METHOD1(OnUkmSourceIdChanged, void(const PageNode*));
   MOCK_METHOD1(OnPageLifecycleStateChanged, void(const PageNode*));
   MOCK_METHOD1(OnPageOriginTrialFreezePolicyChanged, void(const PageNode*));
+  MOCK_METHOD1(OnMainFrameUrlChanged, void(const PageNode*));
   MOCK_METHOD1(OnPageAlmostIdleChanged, void(const PageNode*));
-  MOCK_METHOD1(OnMainFrameNavigationCommitted, void(const PageNode*));
+  MOCK_METHOD1(OnMainFrameDocumentChanged, void(const PageNode*));
   MOCK_METHOD1(OnTitleUpdated, void(const PageNode*));
   MOCK_METHOD1(OnFaviconUpdated, void(const PageNode*));
 
@@ -257,10 +268,19 @@ TEST_F(PageNodeImplTest, ObserverWorks) {
   page_node->SetPageAlmostIdleForTesting(true);
   EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
 
-  EXPECT_CALL(obs, OnMainFrameNavigationCommitted(_))
+  const GURL kTestUrl = GURL("https://foo.com/");
+  int64_t navigation_id = 0x1234;
+  EXPECT_CALL(obs, OnMainFrameUrlChanged(_))
       .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
-  page_node->OnMainFrameNavigationCommitted(base::TimeTicks::Now(), 0x1234ull,
-                                            GURL("https://foo.com/"));
+  // Expect no OnMainFrameDocumentChanged for same-document navigation
+  page_node->OnMainFrameNavigationCommitted(true, base::TimeTicks::Now(),
+                                            ++navigation_id, kTestUrl);
+  EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
+
+  EXPECT_CALL(obs, OnMainFrameDocumentChanged(_))
+      .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedPageNode));
+  page_node->OnMainFrameNavigationCommitted(false, base::TimeTicks::Now(),
+                                            ++navigation_id, kTestUrl);
   EXPECT_EQ(raw_page_node, obs.TakeNotifiedPageNode());
 
   EXPECT_CALL(obs, OnTitleUpdated(_))

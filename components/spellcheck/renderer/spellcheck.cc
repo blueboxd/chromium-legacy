@@ -160,7 +160,7 @@ SpellCheck::SpellCheck(
   DCHECK(embedder_provider);
   if (!registry)
     return;  // Can be NULL in tests.
-  registry->AddInterface(base::BindRepeating(&SpellCheck::SpellCheckerRequest,
+  registry->AddInterface(base::BindRepeating(&SpellCheck::SpellCheckerReceiver,
                                              weak_factory_.GetWeakPtr()),
                          base::ThreadTaskRunnerHandle::Get());
 }
@@ -197,9 +197,9 @@ void SpellCheck::FillSuggestions(
   }
 }
 
-void SpellCheck::SpellCheckerRequest(
-    spellcheck::mojom::SpellCheckerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void SpellCheck::SpellCheckerReceiver(
+    mojo::PendingReceiver<spellcheck::mojom::SpellChecker> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void SpellCheck::Initialize(

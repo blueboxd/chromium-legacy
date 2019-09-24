@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Changes to this file should be reflected in android_apps_page_test.js
+
+// TODO(crbug.com/1006152): Delete this file once the split-settings flag is
+// removed.
+
 /** @type {?SettingsAndroidAppsPageElement} */
 let androidAppsPage = null;
 
@@ -56,6 +61,7 @@ suite('AndroidAppsPageTests', function() {
     });
   });
 
+  // TODO(crbug.com/1006662): Fix test suite.
   suite('SubPage', function() {
     let subpage;
 
@@ -139,6 +145,7 @@ suite('AndroidAppsPageTests', function() {
     });
   });
 
+  // TODO(crbug.com/1006662): Fix test suite.
   suite('Enforced', function() {
     let subpage;
 

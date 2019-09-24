@@ -153,22 +153,6 @@ bool PrimaryAccountManager::IsAuthenticated() const {
   return authenticated_account_info_.has_value();
 }
 
-void PrimaryAccountManager::SetGoogleSigninSucceededCallback(
-    AccountSigninCallback callback) {
-  DCHECK(!on_google_signin_succeeded_callback_)
-      << "GoogleSigninSucceededCallback shouldn't be set multiple times.";
-  on_google_signin_succeeded_callback_ = callback;
-}
-
-#if !defined(OS_CHROMEOS)
-void PrimaryAccountManager::SetGoogleSignedOutCallback(
-    AccountSigninCallback callback) {
-  DCHECK(!on_google_signed_out_callback_)
-      << "GoogleSignedOutCallback shouldn't be set multiple times.";
-  on_google_signed_out_callback_ = callback;
-}
-#endif  // !defined(OS_CHROMEOS)
-
 void PrimaryAccountManager::SignIn(const std::string& username) {
   CoreAccountInfo info =
       account_tracker_service_->FindAccountInfoByEmail(username);
@@ -184,8 +168,8 @@ void PrimaryAccountManager::SignIn(const std::string& username) {
 
   SetAuthenticatedAccountInfo(info);
 
-  if (on_google_signin_succeeded_callback_)
-    on_google_signin_succeeded_callback_.Run(GetAuthenticatedAccountInfo());
+  for (Observer& observer : observers_)
+    observer.GoogleSigninSucceeded(info);
 }
 
 void PrimaryAccountManager::UpdateAuthenticatedAccountInfo() {
@@ -194,6 +178,14 @@ void PrimaryAccountManager::UpdateAuthenticatedAccountInfo() {
       authenticated_account_info_->account_id);
   DCHECK_EQ(info.account_id, authenticated_account_info_->account_id);
   authenticated_account_info_ = info;
+}
+
+void PrimaryAccountManager::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void PrimaryAccountManager::RemoveObserver(const Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 #if !defined(OS_CHROMEOS)
@@ -283,8 +275,8 @@ void PrimaryAccountManager::OnSignoutDecisionReached(
       break;
   }
 
-  if (on_google_signed_out_callback_)
-    on_google_signed_out_callback_.Run(account_info);
+  for (Observer& observer : observers_)
+    observer.GoogleSignedOut(account_info);
 }
 
 void PrimaryAccountManager::OnRefreshTokensLoaded() {

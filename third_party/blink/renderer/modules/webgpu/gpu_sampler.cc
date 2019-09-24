@@ -29,8 +29,7 @@ DawnSamplerDescriptor AsDawnType(const GPUSamplerDescriptor* webgpu_desc) {
       AsDawnEnum<DawnFilterMode>(webgpu_desc->mipmapFilter());
   dawn_desc.lodMinClamp = webgpu_desc->lodMinClamp();
   dawn_desc.lodMaxClamp = webgpu_desc->lodMaxClamp();
-  dawn_desc.compare =
-      AsDawnEnum<DawnCompareFunction>(webgpu_desc->compareFunction());
+  dawn_desc.compare = AsDawnEnum<DawnCompareFunction>(webgpu_desc->compare());
 
   return dawn_desc;
 }

@@ -153,6 +153,7 @@ void Supervisor::RequestTraceWithHeapDump(TraceFinishedCallback callback,
             ->RequestGlobalDumpAndAppendToTrace(
                 base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
                 base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND,
+                base::trace_event::MemoryDumpDeterminism::NONE,
                 base::AdaptCallbackForRepeating(
                     std::move(finished_dump_callback)));
       },

@@ -81,12 +81,9 @@ void PageAlmostIdleDecorator::OnIsLoadingChanged(const PageNode* page_node) {
   UpdateLoadIdleStatePage(PageNodeImpl::FromNode(page_node));
 }
 
-void PageAlmostIdleDecorator::OnMainFrameNavigationCommitted(
+void PageAlmostIdleDecorator::OnMainFrameDocumentChanged(
     const PageNode* page_node) {
-  // Filter out the initial visible URL notification.
-  if (page_node->GetNavigationID() == 0)
-    return;
-
+  DCHECK_NE(0, page_node->GetNavigationID());
   // Reset the load-idle state associated with this page as a new navigation has
   // started.
   auto* page_impl = PageNodeImpl::FromNode(page_node);

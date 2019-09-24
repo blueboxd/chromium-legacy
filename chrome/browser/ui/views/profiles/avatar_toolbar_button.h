@@ -56,6 +56,8 @@ class AvatarToolbarButton : public ToolbarButton,
 
   // ToolbarButton:
   void NotifyClick(const ui::Event& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
+  void OnBlur() override;
   void OnThemeChanged() override;
   void AddedToWidget() override;
 
@@ -93,6 +95,7 @@ class AvatarToolbarButton : public ToolbarButton,
   void OnCreditCardSaved() override;
 
   void ExpandToShowEmail();
+  void ResetUserEmailWhenNotHoveredOrFocused();
   void ResetUserEmail();
 
   base::string16 GetAvatarTooltipText() const;
@@ -130,6 +133,8 @@ class AvatarToolbarButton : public ToolbarButton,
   base::Optional<std::string> user_email_;
   // We cannot show the animation before we fetch the new avatar.
   bool waiting_for_image_to_show_user_email_ = false;
+  // We cannot hide the animation when the button is hovered or focused.
+  bool should_reset_user_email_when_no_longer_hovered_or_focused_ = false;
 
   ScopedObserver<ProfileAttributesStorage, ProfileAttributesStorage::Observer>
       profile_observer_{this};

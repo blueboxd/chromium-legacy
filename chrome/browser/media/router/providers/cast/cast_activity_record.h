@@ -15,6 +15,8 @@
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
 #include "components/cast_channel/cast_message_handler.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace url {
 class Origin;
@@ -82,8 +84,9 @@ class CastActivityRecord : public ActivityRecord {
   void TerminatePresentationConnections() override;
   void OnAppMessage(const cast_channel::CastMessage& message) override;
   void OnInternalMessage(const cast_channel::InternalMessage& message) override;
-  void CreateMediaController(mojom::MediaControllerRequest media_controller,
-                             mojom::MediaStatusObserverPtr observer) override;
+  void CreateMediaController(
+      mojo::PendingReceiver<mojom::MediaController> media_controller,
+      mojo::PendingRemote<mojom::MediaStatusObserver> observer) override;
 
   static void SetClientFactoryForTest(
       CastSessionClientFactoryForTest* factory) {

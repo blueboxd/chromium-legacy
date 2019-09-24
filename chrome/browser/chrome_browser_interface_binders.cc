@@ -3,12 +3,18 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chrome_browser_interface_binders.h"
+
+#include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "services/image_annotation/public/mojom/constants.mojom-forward.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/badging/badge_manager.h"
+#endif
 
 namespace chrome {
 namespace internal {
@@ -28,6 +34,11 @@ void PopulateChromeFrameBinders(
     service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
   map->Add<image_annotation::mojom::Annotator>(
       base::BindRepeating(&BindImageAnnotator));
+
+#if !defined(OS_ANDROID)
+  map->Add<blink::mojom::BadgeService>(
+      base::BindRepeating(&badging::BadgeManager::BindReceiver));
+#endif
 }
 
 }  // namespace internal

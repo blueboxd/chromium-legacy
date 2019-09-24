@@ -79,9 +79,11 @@ Polymer({
      */
     pageVisibility: Object,
 
-    showApps: Boolean,
-
     showAndroidApps: Boolean,
+
+    showAppManagement: Boolean,
+
+    showApps: Boolean,
 
     showCrostini: Boolean,
 

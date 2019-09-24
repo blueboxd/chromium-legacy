@@ -27,10 +27,6 @@ namespace base {
 class FilePath;
 }
 
-namespace service_manager {
-class Connector;
-}
-
 namespace storage {
 class SpecialStoragePolicy;
 }
@@ -64,7 +60,6 @@ class CONTENT_EXPORT DOMStorageContextWrapper
 
   // If |profile_path| is empty, nothing will be saved to disk.
   static scoped_refptr<DOMStorageContextWrapper> Create(
-      service_manager::Connector* connector,
       const base::FilePath& profile_path,
       const base::FilePath& local_partition_path,
       storage::SpecialStoragePolicy* special_storage_policy);

@@ -43,9 +43,8 @@ class BrowserSavePasswordProgressLogger;
 class PasswordManagerClient;
 class PasswordManagerDriver;
 class PasswordFormManagerForUI;
-class PasswordFormManagerInterface;
-class PasswordManagerMetricsRecorder;
 class PasswordFormManager;
+class PasswordManagerMetricsRecorder;
 struct PossibleUsernameData;
 
 // Per-tab password manager. Handles creation and management of UI elements,
@@ -151,7 +150,7 @@ class PasswordManager : public FormSubmissionObserver {
     return form_managers_;
   }
 
-  PasswordFormManagerInterface* GetSubmittedManagerForTest() const {
+  PasswordFormManager* GetSubmittedManagerForTest() const {
     return GetSubmittedManager();
   }
 #if !defined(OS_IOS)
@@ -227,7 +226,7 @@ class PasswordManager : public FormSubmissionObserver {
 
   // Helper function called inside OnLoginSuccessful() to save password hash
   // data from |submitted_manager| for password reuse detection purpose.
-  void MaybeSavePasswordHash(PasswordFormManagerInterface* submitted_manager);
+  void MaybeSavePasswordHash(PasswordFormManager* submitted_manager);
 
   // Checks for every form in |forms| whether |pending_login_managers_| already
   // contain a manager for that form. If not, adds a manager for each such form.
@@ -262,7 +261,7 @@ class PasswordManager : public FormSubmissionObserver {
   // be nullptr if there is no submitted form.
   // TODO(https://crbug.com/831123): Remove when the old PasswordFormManager is
   // gone.
-  PasswordFormManagerInterface* GetSubmittedManager() const;
+  PasswordFormManager* GetSubmittedManager() const;
 
   // Returns the form manager that corresponds to the submitted form. It also
   // sets |submitted_form_manager_| to nullptr.
@@ -279,9 +278,8 @@ class PasswordManager : public FormSubmissionObserver {
 
   // Returns the manager which manages |form|. |driver| is needed to determine
   // the match. Returns nullptr when no matched manager is found.
-  PasswordFormManagerInterface* GetMatchedManager(
-      const PasswordManagerDriver* driver,
-      const autofill::PasswordForm& form);
+  PasswordFormManager* GetMatchedManager(const PasswordManagerDriver* driver,
+                                         const autofill::PasswordForm& form);
 
   // Returns the manager which manages |form|. |driver| is needed to determine
   // the match. Returns nullptr when no matched manager is found.

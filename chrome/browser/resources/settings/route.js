@@ -13,8 +13,9 @@
  *   ACCOUNT_MANAGER: (undefined|!settings.Route),
  *   ADVANCED: (undefined|!settings.Route),
  *   ADDRESSES: (undefined|!settings.Route),
+ *   APP_MANAGEMENT: (undefined|!settings.Route),
+ *   APP_MANAGEMENT_DETAIL: (undefined|!settings.Route),
  *   APPS: (undefined|!settings.Route),
- *   ANDROID_APPS: (undefined|!settings.Route),
  *   ANDROID_APPS_DETAILS: (undefined|!settings.Route),
  *   CROSTINI: (undefined|!settings.Route),
  *   CROSTINI_DETAILS: (undefined|!settings.Route),
@@ -454,13 +455,6 @@ cr.define('settings', function() {
       r.FINGERPRINT = r.LOCK_SCREEN.createChild('/lockScreen/fingerprint');
     }
 
-    if (loadTimeData.valueExists('androidAppsVisible') &&
-        loadTimeData.getBoolean('androidAppsVisible')) {
-      r.ANDROID_APPS = r.BASIC.createSection('/androidApps', 'androidApps');
-      r.ANDROID_APPS_DETAILS =
-          r.ANDROID_APPS.createChild('/androidApps/details');
-    }
-
     if (loadTimeData.valueExists('showCrostini') &&
         loadTimeData.getBoolean('showCrostini')) {
       r.CROSTINI = r.BASIC.createSection('/crostini', 'crostini');
@@ -525,13 +519,21 @@ cr.define('settings', function() {
         r.RESET = r.ADVANCED.createSection('/reset', 'reset');
       }
 
+      const showAppManagement = loadTimeData.valueExists('showAppManagement') &&
+          loadTimeData.getBoolean('showAppManagement');
+      const showAndroidApps = loadTimeData.valueExists('androidAppsVisible') &&
+          loadTimeData.getBoolean('androidAppsVisible');
       // Apps
-      if (loadTimeData.valueExists('showApps') &&
-          loadTimeData.getBoolean('showApps')) {
+      if (showAppManagement || showAndroidApps) {
         r.APPS = r.BASIC.createSection('/apps', 'apps');
-        r.APP_MANAGEMENT = r.APPS.createChild('/app-management');
-        r.APP_MANAGEMENT_DETAIL =
-            r.APP_MANAGEMENT.createChild('/app-management/detail');
+        if (showAppManagement) {
+          r.APP_MANAGEMENT = r.APPS.createChild('/app-management');
+          r.APP_MANAGEMENT_DETAIL =
+              r.APP_MANAGEMENT.createChild('/app-management/detail');
+        }
+        if (showAndroidApps) {
+          r.ANDROID_APPS_DETAILS = r.APPS.createChild('/androidAppsDetails');
+        }
       }
     } else {
       assert(r.ADVANCED, 'ADVANCED route should exist');

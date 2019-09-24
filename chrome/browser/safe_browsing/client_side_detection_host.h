@@ -18,7 +18,7 @@
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "url/gurl.h"
 
@@ -155,7 +155,7 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   // Current host, used to help determine cur_host_redirects_.
   std::string cur_host_;
   // The currently active message pipe to the renderer PhishingDetector.
-  mojom::PhishingDetectorPtr phishing_detector_;
+  mojo::Remote<mojom::PhishingDetector> phishing_detector_;
 
   // Max number of ips we save for each browse
   static const size_t kMaxIPsPerBrowse;

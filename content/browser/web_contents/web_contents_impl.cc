@@ -3670,12 +3670,6 @@ void WebContentsImpl::ReloadFocusedFrame(bool bypass_cache) {
       focused_frame->GetRoutingID(), bypass_cache));
 }
 
-void WebContentsImpl::ReloadLoFiImages() {
-  SendToAllFrames(new FrameMsg_ReloadLoFiImages(MSG_ROUTING_NONE));
-  for (auto& observer : observers_)
-    observer.DidReloadLoFiImages();
-}
-
 std::vector<mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>>
 WebContentsImpl::PauseSubresourceLoading() {
   std::vector<mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>>

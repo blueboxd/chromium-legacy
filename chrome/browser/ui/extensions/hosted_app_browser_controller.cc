@@ -256,6 +256,10 @@ GURL HostedAppBrowserController::GetAppLaunchURL() const {
 
 bool HostedAppBrowserController::IsUrlInAppScope(const GURL& url) const {
   const Extension* extension = GetExtension();
+
+  if (!extension)
+    return false;
+
   const std::vector<UrlHandlerInfo>* url_handlers =
       UrlHandlers::GetUrlHandlers(extension);
 

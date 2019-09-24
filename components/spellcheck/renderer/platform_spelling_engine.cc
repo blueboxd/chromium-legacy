@@ -20,7 +20,8 @@ PlatformSpellingEngine::GetOrBindSpellCheckHost() {
   if (spell_check_host_)
     return *spell_check_host_;
 
-  embedder_provider_->GetInterface(&spell_check_host_);
+  embedder_provider_->GetInterface(
+      spell_check_host_.BindNewPipeAndPassReceiver());
   return *spell_check_host_;
 }
 

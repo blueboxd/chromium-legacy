@@ -86,9 +86,6 @@ class VIEWS_EXPORT TabbedPane : public View {
   // Selects |tab| (the tabstrip view, not its content) if it is valid.
   void SelectTab(Tab* tab);
 
-  // Overridden from View:
-  gfx::Size CalculatePreferredSize() const override;
-
   // Gets the orientation of the tab alignment.
   Orientation GetOrientation() const;
 
@@ -125,7 +122,6 @@ class VIEWS_EXPORT TabbedPane : public View {
   bool MoveSelectionBy(int delta);
 
   // Overridden from View:
-  void Layout() override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
@@ -207,10 +203,7 @@ class TabStrip : public View, public gfx::AnimationDelegate {
            TabbedPane::TabStripStyle style);
   ~TabStrip() override;
 
-  // Overridden from View:
-  void OnPaintBorder(gfx::Canvas* canvas) override;
-
-  // Overridden from AnimationDelegate:
+  // AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
 
@@ -227,6 +220,11 @@ class TabStrip : public View, public gfx::AnimationDelegate {
   TabbedPane::Orientation GetOrientation() const;
 
   TabbedPane::TabStripStyle GetStyle() const;
+
+ protected:
+  // View:
+  gfx::Size CalculatePreferredSize() const override;
+  void OnPaintBorder(gfx::Canvas* canvas) override;
 
  private:
   // The orientation of the tab alignment.

@@ -72,7 +72,7 @@ interface ProfileImport {
       SourceProfile source_profile,
       uint16 items,
       map<uint32, string> localized_strings,
-      ProfileImportObserver observer);
+      pending_remote<ProfileImportObserver> observer);
 
   // Stop the importer.
   CancelImport();

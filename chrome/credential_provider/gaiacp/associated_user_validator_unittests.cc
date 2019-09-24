@@ -9,6 +9,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/time/time_override.h"
+#include "build/branding_buildflags.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider.h"
@@ -377,7 +378,7 @@ TEST_P(AssociatedUserValidatorUserAccessBlockingTest, BlockUserAccessAsNeeded) {
   const bool contains_stored_password = std::get<6>(GetParam());
   GoogleMdmEnrolledStatusForTesting forced_status(mdm_enrolled);
 
-#if !defined(GOOGLE_CHROME_BUILD)
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   GoogleMdmEscrowServiceEnablerForTesting escrow_service_enabler(true);
 #endif
 
@@ -513,7 +514,7 @@ TEST_F(AssociatedUserValidatorTest, ValidTokenHandle_Refresh) {
 }
 
 TEST_F(AssociatedUserValidatorTest, InvalidTokenHandle_MissingPasswordLsaData) {
-#if !defined(GOOGLE_CHROME_BUILD)
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   GoogleMdmEscrowServiceEnablerForTesting escrow_service_enabler(true);
 #endif
 
@@ -544,7 +545,7 @@ TEST_F(AssociatedUserValidatorTest, InvalidTokenHandle_MissingPasswordLsaData) {
 }
 
 TEST_F(AssociatedUserValidatorTest, ValidTokenHandle_PresentPasswordLsaData) {
-#if !defined(GOOGLE_CHROME_BUILD)
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   GoogleMdmEscrowServiceEnablerForTesting escrow_service_enabler(true);
 #endif
 

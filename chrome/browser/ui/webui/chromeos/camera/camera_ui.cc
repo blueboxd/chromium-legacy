@@ -37,6 +37,8 @@ content::WebUIDataSource* CreateCameraUIHTMLSource() {
                           IDR_CAMERA_WEBUI_BROWSER_PROXY);
 
   // Add mojom-lite files under expected paths.
+  source->AddResourcePath("src/js/mojo/camera_intent.mojom-lite.js",
+                          IDR_CAMERA_CAMERA_INTENT_MOJOM_LITE_JS);
   source->AddResourcePath("src/js/mojo/image_capture.mojom-lite.js",
                           IDR_CAMERA_IMAGE_CAPTURE_MOJOM_LITE_JS);
   source->AddResourcePath("src/js/mojo/camera_common.mojom-lite.js",

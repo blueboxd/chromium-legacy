@@ -1362,34 +1362,7 @@ void PasswordAutofillAgent::ReadyToCommitNavigation(
   CleanupOnDocumentShutdown();
 }
 
-void PasswordAutofillAgent::OnProbablyFormSubmitted() {
-  std::unique_ptr<RendererSavePasswordProgressLogger> logger;
-  if (logging_state_active_) {
-    logger.reset(new RendererSavePasswordProgressLogger(
-        GetPasswordManagerDriver().get()));
-    logger->LogMessage(Logger::STRING_DID_START_PROVISIONAL_LOAD_METHOD);
-  }
-
-  if (!FrameCanAccessPasswordManager()) {
-    if (logger)
-      logger->LogMessage(Logger::STRING_SECURITY_ORIGIN_FAILURE);
-    return;
-  }
-
-  // If onsubmit has been called, try and save that form.
-  if (provisionally_saved_form_.IsSet()) {
-    if (logger) {
-      logger->LogPasswordForm(Logger::STRING_PROVISIONALLY_SAVED_FORM_FOR_FRAME,
-                              provisionally_saved_form_.password_form());
-    }
-    provisionally_saved_form_.SetSubmissionIndicatorEvent(
-        SubmissionIndicatorEvent::
-            PROVISIONALLY_SAVED_FORM_ON_START_PROVISIONAL_LOAD);
-    GetPasswordManagerDriver()->PasswordFormSubmitted(
-        provisionally_saved_form_.password_form());
-    provisionally_saved_form_.Reset();
-  }
-}
+void PasswordAutofillAgent::OnProbablyFormSubmitted() {}
 
 // mojom::PasswordAutofillAgent:
 void PasswordAutofillAgent::FillPasswordForm(

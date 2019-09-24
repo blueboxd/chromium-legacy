@@ -226,7 +226,7 @@ public class SigninHelper {
             // signed-out.
             clearNewSignedInAccountName();
             performResignin(newName);
-        });
+        }, false);
     }
 
     private void performResignin(String newName) {

@@ -11,7 +11,9 @@
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace apps {
 
@@ -28,8 +30,9 @@ class AppServiceImpl : public apps::mojom::AppService {
   void BindReceiver(mojo::PendingReceiver<apps::mojom::AppService> receiver);
 
   // apps::mojom::AppService overrides.
-  void RegisterPublisher(apps::mojom::PublisherPtr publisher,
-                         apps::mojom::AppType app_type) override;
+  void RegisterPublisher(
+      mojo::PendingRemote<apps::mojom::Publisher> publisher_remote,
+      apps::mojom::AppType app_type) override;
   void RegisterSubscriber(apps::mojom::SubscriberPtr subscriber,
                           apps::mojom::ConnectOptionsPtr opts) override;
   void LoadIcon(apps::mojom::AppType app_type,
@@ -55,9 +58,10 @@ class AppServiceImpl : public apps::mojom::AppService {
  private:
   void OnPublisherDisconnected(apps::mojom::AppType app_type);
 
-  // publishers_ is a std::map, not a mojo::InterfacePtrSet, since we want to
+  // publishers_ is a std::map, not a mojo::RemoteSet, since we want to
   // be able to find *the* publisher for a given apps::mojom::AppType.
-  std::map<apps::mojom::AppType, apps::mojom::PublisherPtr> publishers_;
+  std::map<apps::mojom::AppType, mojo::Remote<apps::mojom::Publisher>>
+      publishers_;
   mojo::InterfacePtrSet<apps::mojom::Subscriber> subscribers_;
 
   // Must come after the publisher and subscriber maps to ensure it is

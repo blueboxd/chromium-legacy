@@ -9,6 +9,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
+#include "build/branding_buildflags.h"
 #include "components/crash/core/common/crash_keys.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
@@ -191,7 +192,7 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 - (BOOL)areMetricsEnabled {
 // If this if-def changes, it needs to be changed in
 // IOSChromeMainParts::IsMetricsReportingEnabled and settings_egtest.mm.
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   BOOL optIn = GetApplicationContext()->GetLocalState()->GetBoolean(
       metrics::prefs::kMetricsReportingEnabled);
 #else

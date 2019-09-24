@@ -17,8 +17,8 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 class Profile;
 
@@ -95,7 +95,7 @@ class ArcApps : public KeyedService,
   void ConvertAndPublishPackageApps(
       const arc::mojom::ArcPackageInfo& package_info);
 
-  mojo::Binding<apps::mojom::Publisher> binding_;
+  mojo::Receiver<apps::mojom::Publisher> receiver_{this};
   mojo::InterfacePtrSet<apps::mojom::Subscriber> subscribers_;
 
   Profile* profile_;

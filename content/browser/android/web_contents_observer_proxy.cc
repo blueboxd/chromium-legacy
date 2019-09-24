@@ -266,11 +266,6 @@ void WebContentsObserverProxy::ViewportFitChanged(
       env, java_observer_, as_jint(static_cast<int>(value)));
 }
 
-void WebContentsObserverProxy::DidReloadLoFiImages() {
-  JNIEnv* env = AttachCurrentThread();
-  Java_WebContentsObserverProxy_didReloadLoFiImages(env, java_observer_);
-}
-
 void WebContentsObserverProxy::OnWebContentsFocused(RenderWidgetHost*) {
   JNIEnv* env = AttachCurrentThread();
   Java_WebContentsObserverProxy_onWebContentsFocused(env, java_observer_);

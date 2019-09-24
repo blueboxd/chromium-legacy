@@ -34,17 +34,15 @@ TestingSpellCheckProvider::TestingSpellCheckProvider(
     service_manager::LocalInterfaceProvider* embedder_provider)
     : SpellCheckProvider(nullptr,
                          new SpellCheck(nullptr, embedder_provider),
-                         embedder_provider),
-      binding_(this) {}
+                         embedder_provider) {}
 
 TestingSpellCheckProvider::TestingSpellCheckProvider(
     SpellCheck* spellcheck,
     service_manager::LocalInterfaceProvider* embedder_provider)
-    : SpellCheckProvider(nullptr, spellcheck, embedder_provider),
-      binding_(this) {}
+    : SpellCheckProvider(nullptr, spellcheck, embedder_provider) {}
 
 TestingSpellCheckProvider::~TestingSpellCheckProvider() {
-  binding_.Close();
+  receiver_.reset();
   // dictionary_update_observer_ must be released before deleting spellcheck_.
   ResetDictionaryUpdateObserverForTesting();
   delete spellcheck_;
@@ -55,11 +53,8 @@ void TestingSpellCheckProvider::RequestTextChecking(
     std::unique_ptr<blink::WebTextCheckingCompletion> completion) {
   if (!loop_ && !base::MessageLoopCurrent::Get())
     loop_ = std::make_unique<base::MessageLoop>();
-  if (!binding_.is_bound()) {
-    spellcheck::mojom::SpellCheckHostPtr host_proxy;
-    binding_.Bind(mojo::MakeRequest(&host_proxy));
-    SetSpellCheckHostForTesting(std::move(host_proxy));
-  }
+  if (!receiver_.is_bound())
+    SetSpellCheckHostForTesting(receiver_.BindNewPipeAndPassRemote());
   SpellCheckProvider::RequestTextChecking(text, std::move(completion));
   base::RunLoop().RunUntilIdle();
 }

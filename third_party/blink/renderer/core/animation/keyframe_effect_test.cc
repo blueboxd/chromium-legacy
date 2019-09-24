@@ -168,7 +168,7 @@ TEST_F(AnimationKeyframeEffectV8Test, SetAndRetrieveEffectComposite) {
                                   effect_options_dictionary, exception_state);
   EXPECT_FALSE(exception_state.HadException());
 
-  ScriptValue js_keyframes = ScriptValue::CreateNull(script_state);
+  ScriptValue js_keyframes = ScriptValue::CreateNull(scope.GetIsolate());
   KeyframeEffect* effect = CreateAnimationFromOption(
       script_state, element.Get(), js_keyframes, effect_options_dictionary);
   EXPECT_EQ("add", effect->composite());
@@ -220,7 +220,7 @@ TEST_F(AnimationKeyframeEffectV8Test, KeyframeCompositeOverridesEffect) {
 TEST_F(AnimationKeyframeEffectV8Test, CanSetDuration) {
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
-  ScriptValue js_keyframes = ScriptValue::CreateNull(script_state);
+  ScriptValue js_keyframes = ScriptValue::CreateNull(scope.GetIsolate());
   double duration = 2000;
 
   KeyframeEffect* animation = CreateAnimationFromTiming(
@@ -233,7 +233,7 @@ TEST_F(AnimationKeyframeEffectV8Test, CanSetDuration) {
 TEST_F(AnimationKeyframeEffectV8Test, CanOmitSpecifiedDuration) {
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
-  ScriptValue js_keyframes = ScriptValue::CreateNull(script_state);
+  ScriptValue js_keyframes = ScriptValue::CreateNull(scope.GetIsolate());
   KeyframeEffect* animation =
       CreateAnimation(script_state, element.Get(), js_keyframes);
   EXPECT_FALSE(animation->SpecifiedTiming().iteration_duration);
@@ -242,7 +242,7 @@ TEST_F(AnimationKeyframeEffectV8Test, CanOmitSpecifiedDuration) {
 TEST_F(AnimationKeyframeEffectV8Test, SpecifiedGetters) {
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
-  ScriptValue js_keyframes = ScriptValue::CreateNull(script_state);
+  ScriptValue js_keyframes = ScriptValue::CreateNull(scope.GetIsolate());
 
   v8::Local<v8::Object> timing_input = v8::Object::New(scope.GetIsolate());
   SetV8ObjectPropertyAsNumber(scope.GetIsolate(), timing_input, "delay", 2);
@@ -281,7 +281,7 @@ TEST_F(AnimationKeyframeEffectV8Test, SpecifiedGetters) {
 TEST_F(AnimationKeyframeEffectV8Test, SpecifiedDurationGetter) {
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
-  ScriptValue js_keyframes = ScriptValue::CreateNull(script_state);
+  ScriptValue js_keyframes = ScriptValue::CreateNull(scope.GetIsolate());
 
   v8::Local<v8::Object> timing_input_with_duration =
       v8::Object::New(scope.GetIsolate());
@@ -329,7 +329,7 @@ TEST_F(AnimationKeyframeEffectV8Test, SetKeyframesAdditiveCompositeOperation) {
   ScopedCSSAdditiveAnimationsForTest css_additive_animation(false);
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
-  ScriptValue js_keyframes = ScriptValue::CreateNull(script_state);
+  ScriptValue js_keyframes = ScriptValue::CreateNull(scope.GetIsolate());
   v8::Local<v8::Object> timing_input = v8::Object::New(scope.GetIsolate());
   KeyframeEffectOptions* timing_input_dictionary =
       KeyframeEffectOptions::Create();

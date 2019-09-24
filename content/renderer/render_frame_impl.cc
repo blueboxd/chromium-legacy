@@ -2289,7 +2289,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_VisualStateRequest,
                         OnVisualStateRequest)
     IPC_MESSAGE_HANDLER(FrameMsg_Reload, OnReload)
-    IPC_MESSAGE_HANDLER(FrameMsg_ReloadLoFiImages, OnReloadLoFiImages)
     IPC_MESSAGE_HANDLER(FrameMsg_SetAccessibilityMode,
                         OnSetAccessibilityMode)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_SnapshotTree,
@@ -2957,11 +2956,6 @@ void RenderFrameImpl::OnReload(bool bypass_cache) {
                                    : WebFrameLoadType::kReload);
 }
 
-void RenderFrameImpl::OnReloadLoFiImages() {
-  previews_state_ = PREVIEWS_NO_TRANSFORM;
-  GetWebFrame()->ReloadLoFiImages();
-}
-
 bool RenderFrameImpl::RunJavaScriptDialog(JavaScriptDialogType type,
                                           const base::string16& message,
                                           const base::string16& default_value,
@@ -3285,10 +3279,6 @@ void RenderFrameImpl::AddMessageToConsole(
     blink::mojom::ConsoleMessageLevel level,
     const std::string& message) {
   AddMessageToConsoleImpl(level, message, false /* discard_duplicates */);
-}
-
-void RenderFrameImpl::SetPreviewsState(PreviewsState previews_state) {
-  previews_state_ = previews_state;
 }
 
 PreviewsState RenderFrameImpl::GetPreviewsState() {

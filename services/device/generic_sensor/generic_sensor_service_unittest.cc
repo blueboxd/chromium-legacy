@@ -159,10 +159,11 @@ class GenericSensorServiceTest : public DeviceServiceTestBase {
     fake_platform_sensor_provider_ = new FakePlatformSensorProvider();
     device_service()->SetPlatformSensorProviderForTesting(
         base::WrapUnique(fake_platform_sensor_provider_));
-    connector()->BindInterface(mojom::kServiceName, &sensor_provider_);
+    connector()->Connect(mojom::kServiceName,
+                         sensor_provider_.BindNewPipeAndPassReceiver());
   }
 
-  mojom::SensorProviderPtr sensor_provider_;
+  mojo::Remote<mojom::SensorProvider> sensor_provider_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   // This object is owned by the DeviceService instance.

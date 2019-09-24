@@ -16,6 +16,7 @@ UI.
 This program can be run with no arguments to run its own unit tests.
 """
 
+from __future__ import print_function
 
 import list_flags
 import os
@@ -113,7 +114,7 @@ def main():
   doctest.testmod()
 
   if len(sys.argv) < 3:
-    print '{}: only ran tests'.format(sys.argv[0])
+    print('{}: only ran tests'.format(sys.argv[0]))
     return
 
   output = gen_expiry_file(sys.argv[0], sys.argv[1])

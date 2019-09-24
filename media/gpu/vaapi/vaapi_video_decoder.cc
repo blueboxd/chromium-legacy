@@ -404,8 +404,6 @@ scoped_refptr<VASurface> VaapiVideoDecoder::CreateSurface() {
     return nullptr;
   }
 
-  frame->set_timestamp(current_decode_task_->buffer_->timestamp());
-
   // Create VASurface from the native pixmap.
   scoped_refptr<VASurface> va_surface =
       vaapi_wrapper_->CreateVASurfaceForVideoFrame(frame.get());
@@ -472,6 +470,11 @@ void VaapiVideoDecoder::OutputFrameTask(scoped_refptr<VideoFrame> video_frame,
   DCHECK_EQ(state_, State::kDecoding);
   DCHECK(video_frame);
   DVLOGF(4);
+
+  // |video_frame| haven't been set timestamp before, we could set the timestamp
+  // directly without wrapping.
+  if (video_frame->timestamp().is_zero())
+    video_frame->set_timestamp(timestamp);
 
   // We need to update one or more attributes of the frame. Since we can't
   // modify the attributes of the frame directly, we wrap the frame into a new

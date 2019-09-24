@@ -14,7 +14,6 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/file/public/mojom/file_system.mojom.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace content {
 namespace test {
@@ -85,8 +84,7 @@ class FakeLevelDBService : public leveldb::mojom::LevelDBService {
     on_open_callback_ = std::move(on_open_callback);
   }
 
-  void Bind(const service_manager::Identity& remote_identity,
-            mojo::PendingReceiver<leveldb::mojom::LevelDBService> receiver);
+  void Bind(mojo::PendingReceiver<leveldb::mojom::LevelDBService> receiver);
 
   void FlushBindingsForTesting();
 

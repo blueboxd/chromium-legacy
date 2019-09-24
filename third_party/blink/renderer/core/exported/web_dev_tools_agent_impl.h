@@ -33,6 +33,8 @@
 
 #include <memory>
 
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -79,8 +81,9 @@ class CORE_EXPORT WebDevToolsAgentImpl final
 
   WebInputEventResult HandleInputEvent(const WebInputEvent&);
   void DispatchBufferedTouchEvents();
-  void BindRequest(mojom::blink::DevToolsAgentHostAssociatedPtrInfo,
-                   mojom::blink::DevToolsAgentAssociatedRequest);
+  void BindReceiver(
+      mojo::PendingAssociatedRemote<mojom::blink::DevToolsAgentHost>,
+      mojo::PendingAssociatedReceiver<mojom::blink::DevToolsAgent>);
 
   // Instrumentation from web/ layer.
   void DidCommitLoadForLocalFrame(LocalFrame*);

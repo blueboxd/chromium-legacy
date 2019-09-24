@@ -30,6 +30,7 @@
 #if !defined(OS_ANDROID)
 #include "chrome/common/media_router/mojom/media_controller.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #endif  // !defined(OS_ANDROID)
 
 namespace content {
@@ -204,7 +205,7 @@ class MediaRouter : public KeyedService {
   virtual void GetMediaController(
       const MediaRoute::Id& route_id,
       mojo::PendingReceiver<mojom::MediaController> controller,
-      mojom::MediaStatusObserverPtr observer) = 0;
+      mojo::PendingRemote<mojom::MediaStatusObserver> observer) = 0;
 #endif  // !defined(OS_ANDROID)
 
   // Registers/Unregisters a CastRemotingConnector with the |tab_id|. For a

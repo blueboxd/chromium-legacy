@@ -218,9 +218,10 @@ cca.views.camera.Modes.prototype.updateModeUI_ = function(mode) {
  * Returns a set of available constraints for HALv1 device.
  * @param {boolean} videoMode Is getting constraints for video mode.
  * @param {?string} deviceId Id of video device.
- * @return {Array<Object>} Result of constraints-candidates.
+ * @return {!Promise<Array<Object>>} Result of constraints-candidates.
  */
-cca.views.camera.Modes.getV1Constraints = function(videoMode, deviceId) {
+cca.views.camera.Modes.getV1Constraints = async function(videoMode, deviceId) {
+  const defaultFacing = await cca.util.getDefaultFacing();
   return [
     {
       aspectRatio: {ideal: videoMode ? 1.7777777778 : 1.3333333333},
@@ -236,8 +237,8 @@ cca.views.camera.Modes.getV1Constraints = function(videoMode, deviceId) {
       constraint.deviceId = {exact: deviceId};
     } else {
       // HALv1 devices are unable to know facing before stream configuration,
-      // deviceId is set to null for requesting user facing camera as default.
-      constraint.facingMode = {exact: 'user'};
+      // deviceId is set to null for requesting camera with default facing.
+      constraint.facingMode = {exact: defaultFacing};
     }
     return {audio: videoMode, video: constraint};
   });
@@ -294,13 +295,13 @@ cca.views.camera.Modes.prototype.getResolutionCandidates = function(
  * given mode on camera HALv1 device.
  * @param {string} mode
  * @param {?string} deviceId
- * @return {Array<[?[number, number], Array<Object>]>} Result capture resolution
- *     width, height and constraints-candidates for its preview.
+ * @return {!Promise<Array<[?[number, number], Array<Object>]>>} Result capture
+ *     resolution width, height and constraints-candidates for its preview.
  */
-cca.views.camera.Modes.prototype.getResolutionCandidatesV1 = function(
-    mode, deviceId) {
-  return this.allModes_[mode].v1Config(deviceId).map(
-      (constraints) => [null, [constraints]]);
+cca.views.camera.Modes.prototype.getResolutionCandidatesV1 =
+    async function(mode, deviceId) {
+  const v1Configs = await this.allModes_[mode].v1Config(deviceId);
+  return v1Configs.map((constraints) => [null, [constraints]]);
 };
 
 /**

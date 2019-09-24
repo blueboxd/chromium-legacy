@@ -99,18 +99,18 @@ public class SigninManager
     }
 
     /**
-     * Hooks for wiping data during sign out.
+     * Callbacks for the sign-out flow.
      */
-    public interface WipeDataHooks {
+    public interface SignOutCallback {
         /**
-         * Called before data is wiped.
+         * Called before the data wiping is started.
          */
-        void preWipeData();
+        default void preWipeData() {}
 
         /**
-         * Called after data is wiped.
+         * Called after the data is wiped.
          */
-        void postWipeData();
+        void signOutComplete();
     }
 
     /**
@@ -171,20 +171,16 @@ public class SigninManager
      * cleared atomically, and all final fields to be set upon initialization.
      */
     private static class SignOutState {
-        final Runnable mCallback;
-        final WipeDataHooks mWipeDataHooks;
+        final @Nullable SignOutCallback mSignOutCallback;
         final boolean mShouldWipeUserData;
 
         /**
-         * @param callback Called after sign-out finishes and all data has been cleared.
-         * @param wipeDataHooks Hooks to call before/after data wiping phase of sign-out.
+         * @param signOutCallback Hooks to call before/after data wiping phase of sign-out.
          * @param shouldWipeUserData Flag to wipe user data as requested by the user and enforced
          *         for managed users.
          */
-        SignOutState(@Nullable Runnable callback, @Nullable WipeDataHooks wipeDataHooks,
-                boolean shouldWipeUserData) {
-            this.mCallback = callback;
-            this.mWipeDataHooks = wipeDataHooks;
+        SignOutState(@Nullable SignOutCallback signOutCallback, boolean shouldWipeUserData) {
+            this.mSignOutCallback = signOutCallback;
             this.mShouldWipeUserData = shouldWipeUserData;
         }
     }
@@ -587,40 +583,30 @@ public class SigninManager
     }
 
     /**
-     * Invokes signOut with no callback or wipeDataHooks.
+     * Invokes signOut with no callback.
      */
     public void signOut(@SignoutReason int signoutSource) {
-        signOut(signoutSource, null, null, false);
+        signOut(signoutSource, null, false);
     }
 
     /**
-     * Invokes signOut() with no wipeDataHooks.
-     */
-    public void signOut(@SignoutReason int signoutSource, Runnable callback) {
-        signOut(signoutSource, callback, null, false);
-    }
-
-    /**
-     * Signs out of Chrome.
-     * <p/>
-     * This method clears the signed-in username, stops sync and sends out a
+     * Signs out of Chrome. This method clears the signed-in username, stops sync and sends out a
      * sign-out notification on the native side.
      *
      * @param signoutSource describes the event driving the signout (e.g.
      *         {@link SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS}).
-     * @param callback Will be invoked after sign-out completes, if not null.
-     * @param wipeDataHooks Hooks to call before/after data wiping phase of sign-out.
+     * @param signOutCallback Callback to notify about the sign-out progress.
      * @param forceWipeUserData Whether user selected to wipe all device data.
      */
-    public void signOut(@SignoutReason int signoutSource, Runnable callback,
-            WipeDataHooks wipeDataHooks, boolean forceWipeUserData) {
+    public void signOut(@SignoutReason int signoutSource, SignOutCallback signOutCallback,
+            boolean forceWipeUserData) {
         // Only one signOut at a time!
         assert mSignOutState == null;
 
         // Grab the management domain before nativeSignOut() potentially clears it.
         String managementDomain = getManagementDomain();
-        mSignOutState = new SignOutState(
-                callback, wipeDataHooks, forceWipeUserData || managementDomain != null);
+        mSignOutState =
+                new SignOutState(signOutCallback, forceWipeUserData || managementDomain != null);
         Log.d(TAG, "Signing out, management domain: " + managementDomain);
 
         // User data will be wiped in disableSyncAndWipeData(), called from
@@ -668,7 +654,7 @@ public class SigninManager
             // native (since otherwise SigninManager.signOut would have created
             // it). As sign out from native can only happen from policy code,
             // the account is managed and the user data must be wiped.
-            mSignOutState = new SignOutState(null, null, true);
+            mSignOutState = new SignOutState(null, true);
         }
 
         Log.d(TAG, "On native signout, wipe user data: " + mSignOutState.mShouldWipeUserData);
@@ -676,28 +662,19 @@ public class SigninManager
         // Native sign-out must happen before resetting the account so data is deleted correctly.
         // http://crbug.com/589028
         ChromeSigninController.get().setSignedInAccountName(null);
-        if (mSignOutState.mWipeDataHooks != null) mSignOutState.mWipeDataHooks.preWipeData();
-        disableSyncAndWipeData(mSignOutState.mShouldWipeUserData, this::onProfileDataWiped);
+        if (mSignOutState.mSignOutCallback != null) mSignOutState.mSignOutCallback.preWipeData();
+        disableSyncAndWipeData(mSignOutState.mShouldWipeUserData, this::finishSignOut);
         mAccountTrackerService.invalidateAccountSeedStatus(true);
     }
 
-    @VisibleForTesting
-    protected void onProfileDataWiped() {
+    void finishSignOut() {
         // Should be set at start of sign-out flow.
         assert mSignOutState != null;
 
-        if (mSignOutState.mWipeDataHooks != null) mSignOutState.mWipeDataHooks.postWipeData();
-        finishSignOut();
-    }
-
-    private void finishSignOut() {
-        // Should be set at start of sign-out flow.
-        assert mSignOutState != null;
-
-        if (mSignOutState.mCallback != null) {
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT, mSignOutState.mCallback);
-        }
+        SignOutCallback signOutCallback = mSignOutState.mSignOutCallback;
         mSignOutState = null;
+
+        if (signOutCallback != null) signOutCallback.signOutComplete();
         notifyCallbacksWaitingForOperation();
 
         for (SignInStateObserver observer : mSignInStateObservers) {

@@ -35,6 +35,7 @@ using testing::Return;
 
 using base::trace_event::MemoryAllocatorDump;
 using base::trace_event::MemoryDumpArgs;
+using base::trace_event::MemoryDumpDeterminism;
 using base::trace_event::MemoryDumpLevelOfDetail;
 using base::trace_event::MemoryDumpManager;
 using base::trace_event::MemoryDumpProvider;
@@ -110,6 +111,7 @@ class MockCoordinator : public mojom::Coordinator {
   void RequestGlobalMemoryDump(
       MemoryDumpType dump_type,
       MemoryDumpLevelOfDetail level_of_detail,
+      MemoryDumpDeterminism determinism,
       const std::vector<std::string>& allocator_dump_names,
       RequestGlobalMemoryDumpCallback) override;
 
@@ -125,6 +127,7 @@ class MockCoordinator : public mojom::Coordinator {
   void RequestGlobalMemoryDumpAndAppendToTrace(
       MemoryDumpType dump_type,
       MemoryDumpLevelOfDetail level_of_detail,
+      MemoryDumpDeterminism determinism,
       RequestGlobalMemoryDumpAndAppendToTraceCallback) override;
 
  private:
@@ -193,9 +196,11 @@ class MemoryTracingIntegrationTest : public testing::Test {
   }
 
   void RequestChromeDump(MemoryDumpType dump_type,
-                         MemoryDumpLevelOfDetail level_of_detail) {
+                         MemoryDumpLevelOfDetail level_of_detail,
+                         MemoryDumpDeterminism determinism) {
     uint64_t req_guid = ++guid_counter_;
-    MemoryDumpRequestArgs request_args{req_guid, dump_type, level_of_detail};
+    MemoryDumpRequestArgs request_args{req_guid, dump_type, level_of_detail,
+                                       determinism};
     ClientProcessImpl::RequestChromeMemoryDumpCallback callback =
         base::BindOnce(
             [](bool success, uint64_t dump_guid,
@@ -251,17 +256,19 @@ class MemoryTracingIntegrationTest : public testing::Test {
 void MockCoordinator::RequestGlobalMemoryDump(
     MemoryDumpType dump_type,
     MemoryDumpLevelOfDetail level_of_detail,
+    MemoryDumpDeterminism determinism,
     const std::vector<std::string>& allocator_dump_names,
     RequestGlobalMemoryDumpCallback callback) {
-  client_->RequestChromeDump(dump_type, level_of_detail);
+  client_->RequestChromeDump(dump_type, level_of_detail, determinism);
   std::move(callback).Run(true, mojom::GlobalMemoryDumpPtr());
 }
 
 void MockCoordinator::RequestGlobalMemoryDumpAndAppendToTrace(
     MemoryDumpType dump_type,
     MemoryDumpLevelOfDetail level_of_detail,
+    MemoryDumpDeterminism determinism,
     RequestGlobalMemoryDumpAndAppendToTraceCallback callback) {
-  client_->RequestChromeDump(dump_type, level_of_detail);
+  client_->RequestChromeDump(dump_type, level_of_detail, determinism);
   std::move(callback).Run(1, true);
 }
 

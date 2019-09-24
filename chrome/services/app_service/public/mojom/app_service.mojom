@@ -15,7 +15,7 @@ import "chrome/services/app_service/public/mojom/types.mojom";
 // See chrome/services/app_service/README.md.
 interface AppService {
   // App Registry methods.
-  RegisterPublisher(Publisher publisher, AppType app_type);
+  RegisterPublisher(pending_remote<Publisher> publisher, AppType app_type);
   RegisterSubscriber(Subscriber subscriber, ConnectOptions? opts);
 
   // App Icon Factory methods.

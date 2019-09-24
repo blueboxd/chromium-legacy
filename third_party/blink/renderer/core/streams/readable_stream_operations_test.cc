@@ -143,7 +143,7 @@ TEST(ReadableStreamOperationsTest, IsReadableStream) {
                    .value_or(true));
   EXPECT_FALSE(ReadableStreamOperations::IsReadableStream(
                    scope.GetScriptState(),
-                   ScriptValue::CreateNull(scope.GetScriptState()),
+                   ScriptValue::CreateNull(scope.GetIsolate()),
                    ASSERT_NO_EXCEPTION)
                    .value_or(true));
   EXPECT_FALSE(ReadableStreamOperations::IsReadableStream(
@@ -181,7 +181,7 @@ TEST(ReadableStreamOperationsTest, IsReadableStreamDefaultReaderInvalid) {
                    .value_or(true));
   EXPECT_FALSE(ReadableStreamOperations::IsReadableStreamDefaultReader(
                    scope.GetScriptState(),
-                   ScriptValue::CreateNull(scope.GetScriptState()),
+                   ScriptValue::CreateNull(scope.GetIsolate()),
                    ASSERT_NO_EXCEPTION)
                    .value_or(true));
   EXPECT_FALSE(ReadableStreamOperations::IsReadableStreamDefaultReader(

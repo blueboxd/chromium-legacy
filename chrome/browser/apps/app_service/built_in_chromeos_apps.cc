@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/app_list/search/internal_app_result.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -68,17 +67,14 @@ apps::mojom::AppPtr Convert(const app_list::InternalApp& internal_app) {
 
 namespace apps {
 
-BuiltInChromeOsApps::BuiltInChromeOsApps()
-    : binding_(this), profile_(nullptr) {}
+BuiltInChromeOsApps::BuiltInChromeOsApps() : profile_(nullptr) {}
 
 BuiltInChromeOsApps::~BuiltInChromeOsApps() = default;
 
 void BuiltInChromeOsApps::Initialize(
     const mojo::Remote<apps::mojom::AppService>& app_service,
     Profile* profile) {
-  apps::mojom::PublisherPtr publisher;
-  binding_.Bind(mojo::MakeRequest(&publisher));
-  app_service->RegisterPublisher(std::move(publisher),
+  app_service->RegisterPublisher(receiver_.BindNewPipeAndPassRemote(),
                                  apps::mojom::AppType::kBuiltIn);
 
   profile_ = profile;

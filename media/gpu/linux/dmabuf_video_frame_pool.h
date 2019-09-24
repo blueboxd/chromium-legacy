@@ -45,7 +45,8 @@ class MEDIA_GPU_EXPORT DmabufVideoFramePool {
       const gfx::Size& natural_size) = 0;
 
   // Returns a frame from the pool with the parameters assigned by
-  // SetFrameFormat(). Returns nullptr if the pool is exhausted.
+  // SetFrameFormat() and zero timestamp. Returns nullptr if the pool is
+  // exhausted.
   virtual scoped_refptr<VideoFrame> GetFrame() = 0;
 
   // Checks whether the pool is exhausted. This happens when the pool reached

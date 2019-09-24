@@ -77,6 +77,7 @@
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom.h"
+#include "third_party/blink/public/mojom/contacts/contacts_manager.mojom.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
@@ -108,6 +109,7 @@
 #if defined(OS_ANDROID)
 #include "services/device/public/mojom/nfc.mojom.h"
 #else
+#include "third_party/blink/public/mojom/hid/hid.mojom.h"
 #include "third_party/blink/public/mojom/serial/serial.mojom.h"
 #endif
 
@@ -1047,8 +1049,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void GetAudioContextManager(
       mojo::PendingReceiver<blink::mojom::AudioContextManager> receiver);
 
+  void GetContactsManager(
+      mojo::PendingReceiver<blink::mojom::ContactsManager> receiver);
+
   void GetFileSystemManager(
       mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver);
+
+#if !defined(OS_ANDROID)
+  void GetHidService(mojo::PendingReceiver<blink::mojom::HidService> receiver);
+#endif
 
   void GetIdleManager(
       mojo::PendingReceiver<blink::mojom::IdleManager> receiver);
@@ -1063,6 +1072,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingReceiver<blink::mojom::LockManager> receiver);
   void GetFileChooser(
       mojo::PendingReceiver<blink::mojom::FileChooser> receiver);
+
+  void CreateWebBluetoothService(
+      mojo::PendingReceiver<blink::mojom::WebBluetoothService> receiver);
 
   // https://mikewest.github.io/corpp/#initialize-embedder-policy-for-global
   network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy()
@@ -1522,10 +1534,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   FrameTreeNode* FindAndVerifyChild(int32_t child_frame_routing_id,
                                     bad_message::BadMessageReason reason);
 
-  // Creates Web Bluetooth Service owned by the frame. Returns a raw pointer
-  // to it.
-  WebBluetoothServiceImpl* CreateWebBluetoothService(
-      mojo::PendingReceiver<blink::mojom::WebBluetoothService> receiver);
+  // Returns a raw pointer to the Web Bluetooth Service owned by the frame. Used
+  // for testing purposes only (see |TestRenderFrameHost|).
+  WebBluetoothServiceImpl* GetWebBluetoothServiceForTesting();
 
   // Deletes the Web Bluetooth Service owned by the frame.
   void DeleteWebBluetoothService(

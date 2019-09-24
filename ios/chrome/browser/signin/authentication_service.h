@@ -145,9 +145,9 @@ class AuthenticationService : public KeyedService,
   // |should_store_accounts_| is true, it will also store the available accounts
   // in the  browser state prefs.
   //
-  // |should_prompt| indicates whether the user should be prompted with the
-  // resign-in infobar if the method signs out.
-  void HandleIdentityListChanged(bool should_prompt);
+  // |in_foreground| indicates whether the application was in foreground when
+  // the identity list change notification was received.
+  void HandleIdentityListChanged(bool in_foreground);
 
   // Verifies that the authenticated user is still associated with a valid
   // ChromeIdentity. This method must only be called when the user is
@@ -172,9 +172,10 @@ class AuthenticationService : public KeyedService,
 
   // Computes whether the available accounts have changed since the last time
   // they were stored in the  browser state prefs.
-  // |should_prompt| indicates whether the user should be prompted if the
-  // authenticated identity was removed.
-  void ComputeHaveAccountsChanged(bool should_prompt);
+  //
+  // This method should only be called when the application is in background
+  // or when the application is entering foregorund.
+  void UpdateHaveAccountsChangedWhileInBackground();
 
   // signin::IdentityManager::Observer implementation.
   void OnEndBatchOfRefreshTokenStateChanges() override;

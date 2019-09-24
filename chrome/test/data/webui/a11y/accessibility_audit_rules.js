@@ -52,6 +52,7 @@ AccessibilityTest.ruleIds = [
   'frame-title',
   'heading-order',
   'hidden-content',
+  'href-no-hash',
   'html-has-lang',
   'html-lang-valid',
   'image-alt',

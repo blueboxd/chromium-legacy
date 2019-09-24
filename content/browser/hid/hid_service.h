@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/frame_service_base.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/hid.mojom.h"
 #include "third_party/blink/public/mojom/hid/hid.mojom.h"
@@ -26,7 +26,8 @@ class RenderFrameHost;
 // interface is used by Blink to implement the WebHID API.
 class HidService : public content::FrameServiceBase<blink::mojom::HidService> {
  public:
-  static void Create(RenderFrameHost*, blink::mojom::HidServiceRequest);
+  static void Create(RenderFrameHost*,
+                     mojo::PendingReceiver<blink::mojom::HidService>);
 
   // blink::mojom::HidService:
   void GetDevices(GetDevicesCallback callback) override;
@@ -37,7 +38,7 @@ class HidService : public content::FrameServiceBase<blink::mojom::HidService> {
                ConnectCallback callback) override;
 
  private:
-  HidService(RenderFrameHost*, blink::mojom::HidServiceRequest);
+  HidService(RenderFrameHost*, mojo::PendingReceiver<blink::mojom::HidService>);
   ~HidService() override;
 
   void FinishGetDevices(GetDevicesCallback callback,

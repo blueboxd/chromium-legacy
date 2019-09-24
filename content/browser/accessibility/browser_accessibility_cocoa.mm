@@ -9,6 +9,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <algorithm>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <utility>
@@ -368,6 +370,38 @@ AXPlatformRange CreateAXPlatformRange(const BrowserAccessibility& start_object,
           : CreateTreePosition(end_object, end_offset);
   // |AXPlatformRange| takes ownership of its anchor and focus.
   return AXPlatformRange(std::move(anchor), std::move(focus));
+}
+
+AXPlatformRange GetSelectedRange(BrowserAccessibility& owner) {
+  const BrowserAccessibilityManager* manager = owner.manager();
+  if (!manager)
+    return {};
+
+  const ui::AXTree::Selection unignored_selection =
+      manager->ax_tree()->GetUnignoredSelection();
+  int32_t anchor_id = unignored_selection.anchor_object_id;
+  const BrowserAccessibility* anchor_object = manager->GetFromID(anchor_id);
+  if (!anchor_object)
+    return {};
+
+  int32_t focus_id = unignored_selection.focus_object_id;
+  const BrowserAccessibility* focus_object = manager->GetFromID(focus_id);
+  if (!focus_object)
+    return {};
+
+  // |anchor_offset| and / or |focus_offset| refer to a character offset if
+  // |anchor_object| / |focus_object| are text-only objects or native text
+  // fields. Otherwise, they should be treated as child indices.
+  int anchor_offset = unignored_selection.anchor_offset;
+  int focus_offset = unignored_selection.focus_offset;
+  DCHECK_GE(anchor_offset, 0);
+  DCHECK_GE(focus_offset, 0);
+
+  ax::mojom::TextAffinity anchor_affinity = unignored_selection.anchor_affinity;
+  ax::mojom::TextAffinity focus_affinity = unignored_selection.focus_affinity;
+
+  return CreateAXPlatformRange(*anchor_object, anchor_offset, anchor_affinity,
+                               *focus_object, focus_offset, focus_affinity);
 }
 
 void AddMisspelledTextAttributes(const AXPlatformRange& ax_range,
@@ -826,11 +860,10 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSNumber*)ariaColumnIndex {
   if (![self instanceActive])
     return nil;
-  base::Optional<int> aria_col_index =
-      owner_->node()->GetTableCellAriaColIndex();
-  if (!aria_col_index)
+  base::Optional<int> ariaColIndex = owner_->node()->GetTableCellAriaColIndex();
+  if (!ariaColIndex)
     return nil;
-  return [NSNumber numberWithInt:*aria_col_index];
+  return [NSNumber numberWithInt:*ariaColIndex];
 }
 
 - (NSString*)ariaLive {
@@ -843,10 +876,10 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSNumber*)ariaPosInSet {
   if (![self instanceActive])
     return nil;
-  base::Optional<int> pos_in_set = owner_->node()->GetPosInSet();
-  if (!pos_in_set)
+  base::Optional<int> posInSet = owner_->node()->GetPosInSet();
+  if (!posInSet)
     return nil;
-  return [NSNumber numberWithInt:*pos_in_set];
+  return [NSNumber numberWithInt:*posInSet];
 }
 
 - (NSString*)ariaRelevant {
@@ -859,29 +892,28 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSNumber*)ariaRowCount {
   if (![self instanceActive])
     return nil;
-  base::Optional<int> aria_row_count = owner_->node()->GetTableAriaRowCount();
-  if (!aria_row_count)
+  base::Optional<int> ariaRowCount = owner_->node()->GetTableAriaRowCount();
+  if (!ariaRowCount)
     return nil;
-  return [NSNumber numberWithInt:*aria_row_count];
+  return [NSNumber numberWithInt:*ariaRowCount];
 }
 
 - (NSNumber*)ariaRowIndex {
   if (![self instanceActive])
     return nil;
-  base::Optional<int> aria_row_index =
-      owner_->node()->GetTableCellAriaRowIndex();
-  if (!aria_row_index)
+  base::Optional<int> ariaRowIndex = owner_->node()->GetTableCellAriaRowIndex();
+  if (!ariaRowIndex)
     return nil;
-  return [NSNumber numberWithInt:*aria_row_index];
+  return [NSNumber numberWithInt:*ariaRowIndex];
 }
 
 - (NSNumber*)ariaSetSize {
   if (![self instanceActive])
     return nil;
-  base::Optional<int> set_size = owner_->node()->GetSetSize();
-  if (!set_size)
+  base::Optional<int> setSize = owner_->node()->GetSetSize();
+  if (!setSize)
     return nil;
-  return [NSNumber numberWithInt:*set_size];
+  return [NSNumber numberWithInt:*setSize];
 }
 
 - (NSString*)autocompleteValue {
@@ -1396,25 +1428,24 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSNumber*)insertionPointLineNumber {
   if (![self instanceActive])
     return nil;
-
-  // TODO(nektar): Deprecate sel_start and sel_end attributes.
-  int selStart, selEnd;
-  if (!owner_->GetIntAttribute(ax::mojom::IntAttribute::kTextSelStart,
-                               &selStart) ||
-      !owner_->GetIntAttribute(ax::mojom::IntAttribute::kTextSelEnd, &selEnd)) {
+  if (!owner_->HasVisibleCaretOrSelection())
     return nil;
-  }
 
-  if (selStart > selEnd)
-    std::swap(selStart, selEnd);
+  const AXPlatformRange range = GetSelectedRange(*owner_);
+  // If the selection is not collapsed, then there is no visible caret.
+  if (!range.IsCollapsed())
+    return nil;
 
-  const std::vector<int> line_breaks = owner_->GetLineStartOffsets();
-  for (int i = 0; i < static_cast<int>(line_breaks.size()); ++i) {
-    if (line_breaks[i] > selStart)
-      return [NSNumber numberWithInt:i];
-  }
-
-  return [NSNumber numberWithInt:static_cast<int>(line_breaks.size())];
+  const BrowserAccessibilityPositionInstance caretPosition =
+      range.focus()->LowestCommonAncestor(*owner_->CreatePositionAt(0));
+  DCHECK(!caretPosition->IsNullPosition())
+      << "Calling HasVisibleCaretOrSelection() should have ensured that there "
+         "is a valid selection focus inside the current object.";
+  const std::vector<int> lineBreaks = owner_->GetLineStartOffsets();
+  auto iterator =
+      std::upper_bound(lineBreaks.begin(), lineBreaks.end(),
+                       caretPosition->AsTextPosition()->text_offset());
+  return @(std::distance(lineBreaks.begin(), iterator));
 }
 
 // Returns whether or not this node should be ignored in the
@@ -2083,79 +2114,44 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (NSString*)selectedText {
   if (![self instanceActive])
     return nil;
-
-  // TODO(nektar): Deprecate sel_start and sel_end attributes.
-  int selStart, selEnd;
-  if (!owner_->GetIntAttribute(ax::mojom::IntAttribute::kTextSelStart,
-                               &selStart) ||
-      !owner_->GetIntAttribute(ax::mojom::IntAttribute::kTextSelEnd, &selEnd)) {
+  if (!owner_->HasVisibleCaretOrSelection())
     return nil;
-  }
 
-  if (selStart > selEnd)
-    std::swap(selStart, selEnd);
-
-  int selLength = selEnd - selStart;
-  base::string16 value = owner_->GetValue();
-  return base::SysUTF16ToNSString(value.substr(selStart, selLength));
+  const AXPlatformRange range = GetSelectedRange(*owner_);
+  if (range.IsNull())
+    return nil;
+  return base::SysUTF16ToNSString(range.GetText());
 }
 
+// Returns range of text under the current object that is selected.
+//
 // Example, caret at offset 5:
-// AXSelectedTextRange:  “pos=5 len=0”
+// NSRange:  “pos=5 len=0”
 - (NSValue*)selectedTextRange {
   if (![self instanceActive])
     return nil;
-
-  // TODO(nektar): Deprecate sel_start and sel_end attributes.
-  int selStart, selEnd;
-  if (!owner_->GetIntAttribute(ax::mojom::IntAttribute::kTextSelStart,
-                               &selStart) ||
-      !owner_->GetIntAttribute(ax::mojom::IntAttribute::kTextSelEnd, &selEnd)) {
-    // TODO(accessibility) Incorrectly reaches this line in a rich text area.
+  if (!owner_->HasVisibleCaretOrSelection())
     return nil;
-  }
 
-  if (selStart > selEnd)
-    std::swap(selStart, selEnd);
+  const AXPlatformRange range = GetSelectedRange(*owner_).AsForwardRange();
+  if (range.IsNull())
+    return nil;
 
-  int selLength = selEnd - selStart;
+  const BrowserAccessibilityPositionInstance startPosition =
+      range.anchor()->LowestCommonAncestor(*owner_->CreatePositionAt(0));
+  DCHECK(!startPosition->IsNullPosition())
+      << "Calling HasVisibleCaretOrSelection() should have ensured that there "
+         "is a valid selection anchor inside the current object.";
+  int selStart = startPosition->AsTextPosition()->text_offset();
+  DCHECK_GE(selStart, 0);
+  int selLength = range.GetText().length();
   return [NSValue valueWithRange:NSMakeRange(selStart, selLength)];
 }
 
 - (id)selectedTextMarkerRange {
   if (![self instanceActive])
     return nil;
-
-  BrowserAccessibilityManager* manager = owner_->manager();
-  if (!manager)
-    return nil;
-
-  ui::AXTree::Selection unignored_selection =
-      manager->ax_tree()->GetUnignoredSelection();
-  int32_t anchorId = unignored_selection.anchor_object_id;
-  const BrowserAccessibility* anchorObject = manager->GetFromID(anchorId);
-  if (!anchorObject)
-    return nil;
-
-  int32_t focusId = unignored_selection.focus_object_id;
-  const BrowserAccessibility* focusObject = manager->GetFromID(focusId);
-  if (!focusObject)
-    return nil;
-
-  // |anchorOffset| and / or |focusOffset| refer to a character offset if
-  // |anchorObject| / |focusObject| are text-only objects. Otherwise, they
-  // should be treated as child indices.
-  int anchorOffset = unignored_selection.anchor_offset;
-  int focusOffset = unignored_selection.focus_offset;
-  if (anchorOffset < 0 || focusOffset < 0)
-    return nil;
-
-  ax::mojom::TextAffinity anchorAffinity = unignored_selection.anchor_affinity;
-  ax::mojom::TextAffinity focusAffinity = unignored_selection.focus_affinity;
-
-  return CreateTextMarkerRange(
-      CreateAXPlatformRange(*anchorObject, anchorOffset, anchorAffinity,
-                            *focusObject, focusOffset, focusAffinity));
+  return CreateTextMarkerRange(GetSelectedRange(*owner_));
 }
 
 - (NSValue*)size {
@@ -2519,9 +2515,11 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (![self instanceActive])
     return nil;
 
-  const std::vector<int> line_breaks = owner_->GetLineStartOffsets();
+  const std::vector<int> lineBreaks = owner_->GetLineStartOffsets();
   base::string16 value = owner_->GetValue();
-  int len = static_cast<int>(value.size());
+  if (owner_->IsTextOnlyObject() && value.empty())
+    value = owner_->GetText();
+  int valueLength = static_cast<int>(value.size());
 
   if ([attribute isEqualToString:
                      NSAccessibilityStringForRangeParameterizedAttribute]) {
@@ -2536,22 +2534,21 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 
   if ([attribute
           isEqualToString:NSAccessibilityLineForIndexParameterizedAttribute]) {
-    int index = [(NSNumber*)parameter intValue];
-    for (int i = 0; i < static_cast<int>(line_breaks.size()); ++i) {
-      if (line_breaks[i] > index)
-        return [NSNumber numberWithInt:i];
-    }
-    return [NSNumber numberWithInt:static_cast<int>(line_breaks.size())];
+    int lineIndex = [(NSNumber*)parameter intValue];
+    auto iterator =
+        std::upper_bound(lineBreaks.begin(), lineBreaks.end(), lineIndex);
+    return @(std::distance(lineBreaks.begin(), iterator));
   }
 
   if ([attribute
           isEqualToString:NSAccessibilityRangeForLineParameterizedAttribute]) {
-    int line_index = [(NSNumber*)parameter intValue];
-    int line_count = static_cast<int>(line_breaks.size()) + 1;
-    if (line_index < 0 || line_index >= line_count)
+    int lineIndex = [(NSNumber*)parameter intValue];
+    int lineCount = static_cast<int>(lineBreaks.size()) + 1;
+    if (lineIndex < 0 || lineIndex >= lineCount)
       return nil;
-    int start = line_index > 0 ? line_breaks[line_index - 1] : 0;
-    int end = line_index < line_count - 1 ? line_breaks[line_index] : len;
+    int start = (lineIndex > 0) ? lineBreaks[lineIndex - 1] : 0;
+    int end =
+        (lineIndex < (lineCount - 1)) ? lineBreaks[lineIndex] : valueLength;
     return [NSValue valueWithRange:NSMakeRange(start, end - start)];
   }
 
@@ -2568,11 +2565,11 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     int column = [[array objectAtIndex:0] intValue];
     int row = [[array objectAtIndex:1] intValue];
 
-    ui::AXNode* cell_node = owner_->node()->GetTableCellFromCoords(row, column);
-    if (!cell_node)
+    ui::AXNode* cellNode = owner_->node()->GetTableCellFromCoords(row, column);
+    if (!cellNode)
       return nil;
 
-    BrowserAccessibility* cell = owner_->manager()->GetFromID(cell_node->id());
+    BrowserAccessibility* cell = owner_->manager()->GetFromID(cellNode->id());
     if (cell)
       return ToBrowserAccessibilityCocoa(cell);
   }
@@ -2696,21 +2693,42 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
         ui::AXBoundaryBehavior::CrossBoundary));
   }
 
-  if ([attribute
-          isEqualToString:
-              NSAccessibilityTextMarkerRangeForLineParameterizedAttribute]) {
+  if ([attribute isEqualToString:
+                     NSAccessibilityLineForTextMarkerParameterizedAttribute]) {
     BrowserAccessibilityPositionInstance position =
         CreatePositionFromTextMarker(parameter);
     if (position->IsNullPosition())
       return nil;
 
-    BrowserAccessibilityPositionInstance startPosition =
-        position->CreatePreviousLineStartPosition(
-            ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
-    BrowserAccessibilityPositionInstance endPosition =
-        position->CreateNextLineEndPosition(
-            ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
-    AXPlatformRange range(std::move(startPosition), std::move(endPosition));
+    int textOffset = position->AsTextPosition()->text_offset();
+    const auto iterator =
+        std::upper_bound(lineBreaks.begin(), lineBreaks.end(), textOffset);
+    return @(std::distance(lineBreaks.begin(), iterator));
+  }
+
+  if ([attribute
+          isEqualToString:
+              NSAccessibilityTextMarkerRangeForLineParameterizedAttribute]) {
+    int lineIndex = [(NSNumber*)parameter intValue];
+    int lineCount = static_cast<int>(lineBreaks.size()) + 1;
+    if (lineIndex < 0 || lineIndex >= lineCount)
+      return nil;
+
+    int lineStartOffset = (lineIndex > 0) ? lineBreaks[lineIndex - 1] : 0;
+    BrowserAccessibilityPositionInstance lineStartPosition = CreateTextPosition(
+        *owner_, lineStartOffset, ax::mojom::TextAffinity::kDownstream);
+    if (lineStartPosition->IsNullPosition())
+      return nil;
+
+    // Make sure that the line start position is really at the start of the
+    // current line.
+    lineStartPosition = lineStartPosition->CreatePreviousLineStartPosition(
+        ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
+    BrowserAccessibilityPositionInstance lineEndPosition =
+        lineStartPosition->CreateNextLineEndPosition(
+            ui::AXBoundaryBehavior::StopAtAnchorBoundary);
+    AXPlatformRange range(std::move(lineStartPosition),
+                          std::move(lineEndPosition));
     return CreateTextMarkerRange(std::move(range));
   }
 
@@ -2948,14 +2966,14 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     if (![parameter isKindOfClass:[NSArray class]])
       return nil;
 
-    NSArray* text_marker_array = parameter;
-    if ([text_marker_array count] != 2)
+    NSArray* textMarkerArray = parameter;
+    if ([textMarkerArray count] != 2)
       return nil;
 
     BrowserAccessibilityPositionInstance startPosition =
-        CreatePositionFromTextMarker([text_marker_array objectAtIndex:0]);
+        CreatePositionFromTextMarker([textMarkerArray objectAtIndex:0]);
     BrowserAccessibilityPositionInstance endPosition =
-        CreatePositionFromTextMarker([text_marker_array objectAtIndex:1]);
+        CreatePositionFromTextMarker([textMarkerArray objectAtIndex:1]);
     if (*startPosition <= *endPosition) {
       return CreateTextMarkerRange(
           AXPlatformRange(std::move(startPosition), std::move(endPosition)));

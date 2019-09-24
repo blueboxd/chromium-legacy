@@ -244,10 +244,10 @@ ScriptPromise GPUDevice::popErrorScope(ScriptState* script_state,
 void GPUDevice::OnPopErrorScopeCallback(ScriptPromiseResolver* resolver,
                                         DawnErrorType type,
                                         const char* message) {
-  ScriptState* script_state = resolver->GetScriptState();
+  v8::Isolate* isolate = resolver->GetScriptState()->GetIsolate();
   switch (type) {
     case DAWN_ERROR_TYPE_NO_ERROR:
-      resolver->Resolve(ScriptValue::CreateNull(script_state));
+      resolver->Resolve(ScriptValue::CreateNull(isolate));
       break;
     case DAWN_ERROR_TYPE_OUT_OF_MEMORY:
       resolver->Resolve(GPUOutOfMemoryError::Create());

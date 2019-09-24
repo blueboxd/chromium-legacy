@@ -12,21 +12,21 @@
 #include "content/public/browser/hid_chooser.h"
 #include "content/public/browser/hid_delegate.h"
 #include "content/public/browser/render_frame_host.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 
 namespace content {
 
 HidService::HidService(RenderFrameHost* render_frame_host,
-                       blink::mojom::HidServiceRequest request)
-    : FrameServiceBase(render_frame_host, std::move(request)) {}
+                       mojo::PendingReceiver<blink::mojom::HidService> receiver)
+    : FrameServiceBase(render_frame_host, std::move(receiver)) {}
 
 HidService::~HidService() = default;
 
 // static
-void HidService::Create(RenderFrameHost* render_frame_host,
-                        blink::mojom::HidServiceRequest request) {
+void HidService::Create(
+    RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<blink::mojom::HidService> receiver) {
   DCHECK(render_frame_host);
 
   if (!render_frame_host->IsFeatureEnabled(
@@ -43,7 +43,7 @@ void HidService::Create(RenderFrameHost* render_frame_host,
   // HidService owns itself. It will self-destruct when a mojo interface error
   // occurs, the render frame host is deleted, or the render frame host
   // navigates to a new document.
-  new HidService(render_frame_host, std::move(request));
+  new HidService(render_frame_host, std::move(receiver));
 }
 
 void HidService::GetDevices(GetDevicesCallback callback) {

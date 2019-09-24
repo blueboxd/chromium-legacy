@@ -243,7 +243,9 @@ void VideoTrackRecorder::Encoder::StartFrameEncode(
     return;
   }
 
-  if (video_frame->HasTextures()) {
+  if (video_frame->HasTextures() &&
+      video_frame->storage_type() !=
+          media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
     PostCrossThreadTask(
         *main_task_runner_.get(), FROM_HERE,
         CrossThreadBindOnce(&Encoder::RetrieveFrameOnMainThread,
@@ -253,28 +255,29 @@ void VideoTrackRecorder::Encoder::StartFrameEncode(
     return;
   }
 
-  scoped_refptr<media::VideoFrame> wrapped_frame;
-  // Drop alpha channel if the encoder does not support it yet.
-  if (!CanEncodeAlphaChannel() &&
-      video_frame->format() == media::PIXEL_FORMAT_I420A) {
-    wrapped_frame = media::WrapAsI420VideoFrame(video_frame);
-  } else {
-    wrapped_frame = media::VideoFrame::WrapVideoFrame(
-        *video_frame, video_frame->format(), video_frame->visible_rect(),
-        video_frame->natural_size());
+  scoped_refptr<media::VideoFrame> frame = video_frame;
+  if (frame->storage_type() != media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
+    // Drop alpha channel if the encoder does not support it yet.
+    if (!CanEncodeAlphaChannel() &&
+        video_frame->format() == media::PIXEL_FORMAT_I420A) {
+      frame = media::WrapAsI420VideoFrame(video_frame);
+    } else {
+      frame = media::VideoFrame::WrapVideoFrame(
+          *video_frame, video_frame->format(), video_frame->visible_rect(),
+          video_frame->natural_size());
+    }
+    frame->AddDestructionObserver(ConvertToBaseOnceCallback(CrossThreadBindOnce(
+        [](scoped_refptr<VideoFrame> video_frame) {}, std::move(video_frame))));
   }
-  wrapped_frame->AddDestructionObserver(media::BindToCurrentLoop(
+  frame->AddDestructionObserver(media::BindToCurrentLoop(
       WTF::Bind(&VideoTrackRecorder::Counter::DecreaseCount,
                 num_frames_in_encode_->GetWeakPtr())));
-  wrapped_frame->AddDestructionObserver(ConvertToBaseOnceCallback(
-      CrossThreadBindOnce([](scoped_refptr<VideoFrame> video_frame) {},
-                          std::move(video_frame))));
   num_frames_in_encode_->IncreaseCount();
 
-  PostCrossThreadTask(*encoding_task_runner_.get(), FROM_HERE,
-                      CrossThreadBindOnce(&Encoder::EncodeOnEncodingTaskRunner,
-                                          WrapRefCounted(this), wrapped_frame,
-                                          capture_timestamp));
+  PostCrossThreadTask(
+      *encoding_task_runner_.get(), FROM_HERE,
+      CrossThreadBindOnce(&Encoder::EncodeOnEncodingTaskRunner,
+                          WrapRefCounted(this), frame, capture_timestamp));
 }
 
 void VideoTrackRecorder::Encoder::RetrieveFrameOnMainThread(
@@ -505,11 +508,14 @@ void VideoTrackRecorder::InitializeEncoder(
     UMA_HISTOGRAM_BOOLEAN("Media.MediaRecorder.VEAUsed", true);
     const auto vea_profile =
         GetCodecEnumerator()->GetFirstSupportedVideoCodecProfile(codec);
+    bool use_import_mode =
+        frame->storage_type() == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER;
     encoder_ = VEAEncoder::Create(
         on_encoded_video_callback,
         media::BindToCurrentLoop(WTF::BindRepeating(
             &VideoTrackRecorder::OnError, WrapWeakPersistent(this))),
-        bits_per_second, vea_profile, input_size, main_task_runner_);
+        bits_per_second, vea_profile, input_size, use_import_mode,
+        main_task_runner_);
   } else {
     UMA_HISTOGRAM_BOOLEAN("Media.MediaRecorder.VEAUsed", false);
     switch (codec) {

@@ -35,6 +35,7 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
       int32_t bits_per_second,
       media::VideoCodecProfile codec,
       const gfx::Size& size,
+      bool use_native_input,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // media::VideoEncodeAccelerator::Client implementation.
@@ -73,7 +74,8 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
   void EncodeOnEncodingTaskRunner(scoped_refptr<media::VideoFrame> frame,
                                   base::TimeTicks capture_timestamp) override;
 
-  void ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size);
+  void ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size,
+                                            bool use_native_input);
 
   void DestroyOnEncodingTaskRunner(base::WaitableEvent* async_waiter = nullptr);
 

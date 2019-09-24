@@ -20,7 +20,7 @@ promise_test((t) => {
 
 promise_test(async (t) => {
   let interceptor =
-      new MojoInterfaceInterceptor(blink.mojom.HidService.name);
+      new MojoInterfaceInterceptor(blink.mojom.HidService.name, "context", true);
   interceptor.oninterfacerequest = e => e.handle.close();
   interceptor.start();
 

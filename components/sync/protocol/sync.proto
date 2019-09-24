@@ -311,10 +311,8 @@ message SyncEntity {
   // include |position_in_parent| instead.
   optional string insert_after_item_id = 16;
 
-  // Arbitrary key/value pairs associated with this item.
-  // Present in both GetUpdatesResponse and CommitMessage.
-  // Deprecated.
-  // optional ExtendedAttributes extended_attributes = 17;
+  reserved 17;
+  reserved "extended_attributes";
 
   // If true, indicates that this item has been (or should be) deleted.
   // Present in both GetUpdatesResponse and CommitMessage.
@@ -401,7 +399,8 @@ message SyncEntity {
 
   // This used to be a list of sync attachment IDs, but it was never launched
   // and the code has been removed as of M66.
-  repeated DeprecatedMessage attachment_id = 26 [deprecated = true];
+  reserved 26;
+  reserved "attachment_id";
 };
 
 // This message contains diagnostic information used to correlate
@@ -565,11 +564,8 @@ message GarbageCollectionDirective {
   // based on last modified time.
   optional int32 age_watermark_in_days = 3;
 
-  // This field specifies the max number of items that the client should keep
-  // for a specific datatype.  If the number of items exceeds this limit, the
-  // client should purge the extra sync entities based on the LRU rule.
-  // Deprecated in M76.
-  optional int32 deprecated_max_number_of_items = 4 [deprecated = true];
+  reserved 4;
+  reserved "max_number_of_items";
 }
 
 message DataTypeProgressMarker {
@@ -700,15 +696,7 @@ message GetUpdatesMessage {
   reserved "requested_types";
 };
 
-message AuthenticateMessage {
-  required string auth_token = 1;
-};
-
 // Message from a client asking the server to clear its data.
-//
-// A client makes a ClearServerData request when it transitions to passphrase
-// encryption to ensure the server deletes any plaintext data that may have been
-// synced previously.
 message ClearServerDataMessage {
   // No arguments needed as the store birthday and user identifier are part of
   // an enclosing message.
@@ -775,7 +763,7 @@ message ClientToServerMessage {
   enum Contents {
     COMMIT = 1;
     GET_UPDATES = 2;
-    AUTHENTICATE = 3;
+    DEPRECATED_3 = 3;
     DEPRECATED_4 = 4;
     CLEAR_SERVER_DATA = 5;
   }
@@ -787,9 +775,10 @@ message ClientToServerMessage {
   required Contents message_contents = 3;
   optional CommitMessage commit = 4;
   optional GetUpdatesMessage get_updates = 5;
-  optional AuthenticateMessage authenticate = 6;
+  reserved 6;
+  reserved "authenticate";
 
-  optional DeprecatedMessage deprecated_field_9 = 9 [deprecated = true];
+  reserved 9;
 
   optional string store_birthday = 7;  // Opaque store ID; if it changes, duck!
   // The client sets this if it detects a sync issue. The server will tell it
@@ -865,9 +854,8 @@ message CommitResponse {
     // should be filled if our parent was assigned a new ID.
     optional string parent_id_string = 4;
 
-    // This used to be set to the same as the position_in_parent value in
-    // the SyncEntity message in GetUpdatesResponse, but it's not set anymore.
-    optional int64 deprecated_position_in_parent = 5 [deprecated = true];
+    reserved 5;
+    reserved "position_in_parent";
 
     // The item's current version.
     optional int64 version = 6;
@@ -903,8 +891,8 @@ message GetUpdatesResponse {
   // instead.
   optional int64 new_timestamp = 2;
 
-  // DEPRECATED FIELD - server does not set this anymore.
-  optional int64 deprecated_newest_timestamp = 3;
+  reserved 3;
+  reserved "newest_timestamp";
 
   // Approximate count of changes remaining - use this for UI feedback.
   // If present and zero, this estimate is firm: the server has no changes
@@ -965,25 +953,11 @@ message GetUpdatesStreamingResponse {
   repeated SyncEntity entries = 1;
 };
 
-// A user-identifying struct.  For a given Google account the email and display
-// name can change, but obfuscated_id should be constant.
-// The obfuscated id is optional because at least one planned use of the proto
-// (sharing) does not require it.
-message UserIdentification {
-  required string email = 1;          // the user's full primary email address.
-  optional string display_name = 2;   // the user's display name.
-  optional string obfuscated_id = 3;  // an obfuscated, opaque user id.
-};
-
-message AuthenticateResponse {
-  // Optional only for backward compatibility.
-  optional UserIdentification user = 1;
-};
-
 message ClientToServerResponse {
   optional CommitResponse commit = 1;
   optional GetUpdatesResponse get_updates = 2;
-  optional AuthenticateResponse authenticate = 3;
+  reserved 3;
+  reserved "authenticate";
 
   // Up until protocol_version 24, the default was SUCCESS which made it
   // impossible to add new enum values since older clients would parse any
@@ -1003,7 +977,7 @@ message ClientToServerResponse {
 
   optional ClientCommand client_command = 7;
   optional ProfilingData profiling_data = 8;
-  optional DeprecatedMessage deprecated_field_9 = 9 [deprecated = true];
+  reserved 9;
   optional GetUpdatesMetadataResponse stream_metadata = 10;
   // If GetUpdatesStreamingResponse is contained in the ClientToServerResponse,
   // none of the other fields (error_code and etc) will be set.

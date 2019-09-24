@@ -71,6 +71,7 @@ class CORE_EXPORT CSSMathExpressionNode
   static CSSMathExpressionNode* ParseCalc(const CSSParserTokenRange& tokens);
   static CSSMathExpressionNode* ParseMin(const CSSParserTokenRange& tokens);
   static CSSMathExpressionNode* ParseMax(const CSSParserTokenRange& tokens);
+  static CSSMathExpressionNode* ParseClamp(const CSSParserTokenRange& tokens);
 
   virtual bool IsNumericLiteral() const { return false; }
   virtual bool IsBinaryOperation() const { return false; }
@@ -300,6 +301,9 @@ class CSSMathExpressionVariadicOperation final : public CSSMathExpressionNode {
 
   bool IsVariadicOperation() const final { return true; }
 
+  void SetIsClamp() { is_clamp_ = true; }
+  String CSSTextAsClamp() const;
+
   bool IsZero() const final;
   String CustomCSSText() const final;
   scoped_refptr<const CalculationExpressionNode> ToCalculationExpression(
@@ -335,6 +339,7 @@ class CSSMathExpressionVariadicOperation final : public CSSMathExpressionNode {
 
   Operands operands_;
   const CSSMathOperator operator_;
+  bool is_clamp_ = false;
 };
 
 template <>

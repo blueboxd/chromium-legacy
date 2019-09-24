@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
-#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/web_apps/web_app_menu_button.h"
 #include "chrome/browser/ui/views/web_apps/web_app_origin_text.h"
@@ -220,7 +220,7 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
                                static_cast<int>(HTCLIENT));
   }
 
-  OmniboxPageActionIconContainerView::Params params;
+  PageActionIconContainerView::Params params;
   params.types_enabled.push_back(PageActionIconType::kFind);
   params.types_enabled.push_back(PageActionIconType::kManagePasswords);
   params.types_enabled.push_back(PageActionIconType::kTranslate);
@@ -236,9 +236,9 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
   params.browser = browser_view_->browser();
   params.command_updater = browser_view_->browser()->command_controller();
   params.page_action_icon_delegate = this;
-  omnibox_page_action_icon_container_view_ = AddChildView(
-      std::make_unique<OmniboxPageActionIconContainerView>(params));
-  views::SetHitTestComponent(omnibox_page_action_icon_container_view_,
+  page_action_icon_container_view_ =
+      AddChildView(std::make_unique<PageActionIconContainerView>(params));
+  views::SetHitTestComponent(page_action_icon_container_view_,
                              static_cast<int>(HTCLIENT));
 
   if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
@@ -292,7 +292,7 @@ WebAppFrameToolbarView::~WebAppFrameToolbarView() {
 void WebAppFrameToolbarView::UpdateStatusIconsVisibility() {
   if (content_settings_container_)
     content_settings_container_->UpdateContentSettingViewsVisibility();
-  omnibox_page_action_icon_container_view_->UpdateAll();
+  page_action_icon_container_view_->UpdateAll();
 }
 
 void WebAppFrameToolbarView::UpdateCaptionColors() {
@@ -414,7 +414,7 @@ views::View* WebAppFrameToolbarView::GetDefaultExtensionDialogAnchorView() {
 
 PageActionIconView* WebAppFrameToolbarView::GetPageActionIconView(
     PageActionIconType type) {
-  return omnibox_page_action_icon_container_view_->GetIconView(type);
+  return page_action_icon_container_view_->GetIconView(type);
 }
 
 AppMenuButton* WebAppFrameToolbarView::GetAppMenuButton() {
@@ -452,8 +452,7 @@ views::View* WebAppFrameToolbarView::GetAnchorView(PageActionIconType type) {
 }
 
 void WebAppFrameToolbarView::ZoomChangedForActiveTab(bool can_show_bubble) {
-  omnibox_page_action_icon_container_view_->ZoomChangedForActiveTab(
-      can_show_bubble);
+  page_action_icon_container_view_->ZoomChangedForActiveTab(can_show_bubble);
 }
 
 void WebAppFrameToolbarView::OnWidgetVisibilityChanged(views::Widget* widget,
@@ -475,7 +474,7 @@ void WebAppFrameToolbarView::DisableAnimationForTesting() {
 }
 
 views::View* WebAppFrameToolbarView::GetPageActionIconContainerForTesting() {
-  return omnibox_page_action_icon_container_view_;
+  return page_action_icon_container_view_;
 }
 
 gfx::Size WebAppFrameToolbarView::CalculatePreferredSize() const {
@@ -537,6 +536,6 @@ void WebAppFrameToolbarView::UpdateChildrenColor() {
     web_app_origin_text_->SetTextColor(icon_color);
   if (content_settings_container_)
     content_settings_container_->SetIconColor(icon_color);
-  omnibox_page_action_icon_container_view_->SetIconColor(icon_color);
+  page_action_icon_container_view_->SetIconColor(icon_color);
   web_app_menu_button_->SetColor(icon_color);
 }

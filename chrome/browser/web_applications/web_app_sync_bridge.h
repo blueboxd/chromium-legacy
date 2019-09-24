@@ -35,12 +35,12 @@ class WebAppSyncBridge : public AppRegistryController,
  public:
   WebAppSyncBridge(Profile* profile,
                    AbstractWebAppDatabaseFactory* database_factory,
-                   WebAppRegistrar* registrar);
+                   WebAppRegistrarMutable* registrar);
   // Tests may inject mocks using this ctor.
   WebAppSyncBridge(
       Profile* profile,
       AbstractWebAppDatabaseFactory* database_factory,
-      WebAppRegistrar* registrar,
+      WebAppRegistrarMutable* registrar,
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor);
   ~WebAppSyncBridge() override;
 
@@ -66,10 +66,6 @@ class WebAppSyncBridge : public AppRegistryController,
   WebAppDatabase& database_for_testing() { return *database_; }
 
  private:
-  friend class WebAppRegistryUpdate;
-
-  WebApp* GetAppByIdMutable(const AppId& app_id);
-
   void OnDatabaseOpened(base::OnceClosure callback, Registry registry);
   void OnDataWritten(CommitCallback callback, bool success);
 
@@ -88,7 +84,7 @@ class WebAppSyncBridge : public AppRegistryController,
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
 
   std::unique_ptr<WebAppDatabase> database_;
-  WebAppRegistrar* registrar_;
+  WebAppRegistrarMutable* registrar_;
 
   bool is_in_update_ = false;
 

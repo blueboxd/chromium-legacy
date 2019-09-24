@@ -161,15 +161,28 @@ void WebAppProvider::CreateCommonSubsystems(Profile* profile) {
 
 void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
   database_factory_ = std::make_unique<WebAppDatabaseFactory>(profile);
-  auto registrar = std::make_unique<WebAppRegistrar>(profile);
-  auto sync_bridge = std::make_unique<WebAppSyncBridge>(
-      profile, database_factory_.get(), registrar.get());
+
+  std::unique_ptr<WebAppRegistrar> registrar;
+  std::unique_ptr<WebAppSyncBridge> sync_bridge;
+
+  // Only WebAppSyncBridge must have an access to mutable WebAppRegistrar.
+  {
+    auto mutable_registrar = std::make_unique<WebAppRegistrarMutable>(profile);
+
+    sync_bridge = std::make_unique<WebAppSyncBridge>(
+        profile, database_factory_.get(), mutable_registrar.get());
+
+    // Upcast to read-only WebAppRegistrar.
+    registrar = std::move(mutable_registrar);
+  }
+
   auto icon_manager = std::make_unique<WebAppIconManager>(
       profile, *registrar, std::make_unique<FileUtilsWrapper>());
   install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
       sync_bridge.get(), icon_manager.get());
   file_handler_manager_ = std::make_unique<WebAppFileHandlerManager>(profile);
 
+  // Upcast to unified subsystem types:
   registrar_ = std::move(registrar);
   registry_controller_ = std::move(sync_bridge);
   icon_manager_ = std::move(icon_manager);

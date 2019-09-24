@@ -341,11 +341,6 @@ public interface TabObserver {
     void onBrowserControlsConstraintsUpdated(Tab tab, @BrowserControlsState int constraints);
 
     /**
-     * This method is invoked when the WebContents reloads the LoFi images on the page.
-     */
-    void didReloadLoFiImages(Tab tab);
-
-    /**
      * Called when a find result is received.
      * @param result Detail information on the find result.
      */

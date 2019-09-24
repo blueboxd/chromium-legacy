@@ -198,6 +198,8 @@ ios_web_view_sources = [
   "internal/translate/web_view_translate_ranker_factory.mm",
   "internal/translate/web_view_translate_service.h",
   "internal/translate/web_view_translate_service.mm",
+  "internal/utils/nsobject_description_utils.h",
+  "internal/utils/nsobject_description_utils.mm",
   "internal/web_view_browser_state.h",
   "internal/web_view_browser_state.mm",
   "internal/web_view_download_manager.h",

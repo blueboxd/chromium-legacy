@@ -146,7 +146,6 @@ bool MockConnectionManager::PostBufferToPath(PostBufferParams* params,
   }
   bool result = true;
   EXPECT_TRUE(!store_birthday_sent_ || post.has_store_birthday() ||
-              post.message_contents() == ClientToServerMessage::AUTHENTICATE ||
               post.message_contents() ==
                   ClientToServerMessage::CLEAR_SERVER_DATA);
   store_birthday_sent_ = true;

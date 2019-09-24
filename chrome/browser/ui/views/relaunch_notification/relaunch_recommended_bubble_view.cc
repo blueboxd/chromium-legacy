@@ -32,6 +32,7 @@
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/widget/widget.h"
 
@@ -107,17 +108,8 @@ bool RelaunchRecommendedBubbleView::ShouldShowWindowIcon() const {
   return true;
 }
 
-int RelaunchRecommendedBubbleView::GetHeightForWidth(int width) const {
-  const gfx::Insets insets = GetInsets();
-  return body_label_->GetHeightForWidth(width - insets.width()) +
-         insets.height();
-}
-
-void RelaunchRecommendedBubbleView::Layout() {
-  body_label_->SetBoundsRect(GetContentsBounds());
-}
-
 void RelaunchRecommendedBubbleView::Init() {
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   body_label_ =
       new views::Label(l10n_util::GetStringUTF16(IDS_RELAUNCH_RECOMMENDED_BODY),
                        views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT);

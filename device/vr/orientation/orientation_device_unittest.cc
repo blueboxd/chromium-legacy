@@ -81,7 +81,7 @@ class VROrientationDeviceTest : public testing::Test {
   ~VROrientationDeviceTest() override = default;
   void SetUp() override {
     fake_sensor_provider_ = std::make_unique<FakeSensorProvider>(
-        mojo::MakeRequest(&sensor_provider_ptr_));
+        sensor_provider_.BindNewPipeAndPassReceiver());
 
     fake_sensor_ = std::make_unique<FakeOrientationSensor>(
         sensor_.InitWithNewPipeAndPassReceiver());
@@ -110,13 +110,8 @@ class VROrientationDeviceTest : public testing::Test {
   void InitializeDevice(mojom::SensorInitParamsPtr params) {
     base::RunLoop loop;
 
-    device_ = std::make_unique<VROrientationDevice>(
-        &sensor_provider_ptr_, base::BindOnce(
-                                   [](base::OnceClosure quit_closure) {
-                                     // The callback was called.
-                                     std::move(quit_closure).Run();
-                                   },
-                                   loop.QuitClosure()));
+    device_ = std::make_unique<VROrientationDevice>(sensor_provider_.get(),
+                                                    loop.QuitClosure());
 
     // Complete the creation of device_ by letting the GetSensor function go
     // through.
@@ -231,7 +226,7 @@ class VROrientationDeviceTest : public testing::Test {
 
   std::unique_ptr<VROrientationDevice> device_;
   std::unique_ptr<FakeSensorProvider> fake_sensor_provider_;
-  mojom::SensorProviderPtr sensor_provider_ptr_;
+  mojo::Remote<mojom::SensorProvider> sensor_provider_;
 
   // Fake Sensor Init params objects
   std::unique_ptr<FakeOrientationSensor> fake_sensor_;
@@ -250,8 +245,8 @@ TEST_F(VROrientationDeviceTest, InitializationTest) {
   // Check that without running anything, the device will return not available,
   // without crashing.
 
-  device_ = std::make_unique<VROrientationDevice>(&sensor_provider_ptr_,
-                                                  base::BindOnce([]() {}));
+  device_ = std::make_unique<VROrientationDevice>(sensor_provider_.get(),
+                                                  base::DoNothing());
   task_environment_.RunUntilIdle();
 
   EXPECT_FALSE(device_->IsAvailable());

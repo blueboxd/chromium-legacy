@@ -6,6 +6,8 @@
 """Emits a formatted, optionally filtered view of the list of flags.
 """
 
+from __future__ import print_function
+
 import argparse
 import os
 import re
@@ -103,10 +105,10 @@ def print_flags(flags, verbose):
   """
   for f in flags:
     if verbose:
-      print '%s,%d,%s,%s' % (f['name'], f['expiry_milestone'],
-        ' '.join(f['owners']), ' '.join(f['resolved_owners']))
+      print('%s,%d,%s,%s' % (f['name'], f['expiry_milestone'], ' '.join(
+          f['owners']), ' '.join(f['resolved_owners'])))
     else:
-      print f['name']
+      print(f['name'])
 
 
 def main():

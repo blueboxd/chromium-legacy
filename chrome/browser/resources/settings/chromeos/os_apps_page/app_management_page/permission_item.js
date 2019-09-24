@@ -86,13 +86,14 @@ Polymer({
    * @return {boolean}
    */
   isManaged_: function(app, permissionType) {
-    if (app === undefined || permissionType === undefined) {
+    if (app === undefined || permissionType === undefined ||
+        !this.isAvailable_(app, permissionType)) {
       return false;
     }
 
     assert(app);
-
     const permission = app_management.util.getPermission(app, permissionType);
+
     assert(permission);
     return permission.isManaged;
   },
@@ -116,7 +117,7 @@ Polymer({
    * @private
    */
   onClick_: function() {
-    this.root.querySelector('#toggleRow').click();
+    this.$$('#toggle-row').click();
   },
 
   /**

@@ -85,10 +85,10 @@ std::string WiredDisplayMediaRouteProvider::GetRouteDescription(
 }
 
 WiredDisplayMediaRouteProvider::WiredDisplayMediaRouteProvider(
-    mojom::MediaRouteProviderRequest request,
-    mojom::MediaRouterPtr media_router,
+    mojo::PendingReceiver<mojom::MediaRouteProvider> receiver,
+    mojo::PendingRemote<mojom::MediaRouter> media_router,
     Profile* profile)
-    : binding_(this, std::move(request)),
+    : receiver_(this, std::move(receiver)),
       media_router_(std::move(media_router)),
       profile_(profile) {
   media_router_->OnSinkAvailabilityUpdated(
@@ -272,8 +272,8 @@ void WiredDisplayMediaRouteProvider::ProvideSinks(
 
 void WiredDisplayMediaRouteProvider::CreateMediaRouteController(
     const std::string& route_id,
-    mojom::MediaControllerRequest media_controller,
-    mojom::MediaStatusObserverPtr observer,
+    mojo::PendingReceiver<mojom::MediaController> media_controller,
+    mojo::PendingRemote<mojom::MediaStatusObserver> observer,
     CreateMediaRouteControllerCallback callback) {
   // Local screens do not support media controls.
   auto it = presentations_.find(route_id);
@@ -345,21 +345,22 @@ void WiredDisplayMediaRouteProvider::Presentation::UpdatePresentationTitle(
 
 void WiredDisplayMediaRouteProvider::Presentation::SetMojoConnections(
     mojo::PendingReceiver<mojom::MediaController> media_controller,
-    mojom::MediaStatusObserverPtr observer) {
+    mojo::PendingRemote<mojom::MediaStatusObserver> observer) {
   // This provider does not support media controls, so we do not bind
   // |media_controller| to a controller implementation.
   media_controller_receiver_ = std::move(media_controller);
 
-  media_status_observer_ = std::move(observer);
+  media_status_observer_.reset();
+  media_status_observer_.Bind(std::move(observer));
   media_status_observer_->OnMediaStatusUpdated(status_.Clone());
-  media_status_observer_.set_connection_error_handler(base::BindOnce(
+  media_status_observer_.set_disconnect_handler(base::BindOnce(
       &WiredDisplayMediaRouteProvider::Presentation::ResetMojoConnections,
       base::Unretained(this)));
 }
 
 void WiredDisplayMediaRouteProvider::Presentation::ResetMojoConnections() {
   media_controller_receiver_.reset();
-  media_status_observer_ = nullptr;
+  media_status_observer_.reset();
 }
 
 void WiredDisplayMediaRouteProvider::NotifyRouteObservers() const {

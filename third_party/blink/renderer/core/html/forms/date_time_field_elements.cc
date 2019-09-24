@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/date_time_field_elements.h"
 
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/html/forms/date_time_fields_state.h"
 #include "third_party/blink/renderer/platform/text/date_components.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
@@ -34,8 +35,8 @@ namespace blink {
 
 using blink::WebLocalizedString;
 
-static String QueryString(WebLocalizedString::Name name) {
-  return Locale::DefaultLocale().QueryString(name);
+static String QueryString(int resource_id) {
+  return Locale::DefaultLocale().QueryString(resource_id);
 }
 
 DateTimeAMPMFieldElement::DateTimeAMPMFieldElement(
@@ -386,8 +387,7 @@ DateTimeMillisecondFieldElement::DateTimeMillisecondFieldElement(
                                   step) {
   DEFINE_STATIC_LOCAL(AtomicString, millisecond_pseudo_id,
                       ("-webkit-datetime-edit-millisecond-field"));
-  Initialize(millisecond_pseudo_id,
-             QueryString(WebLocalizedString::kAXMillisecondFieldText));
+  Initialize(millisecond_pseudo_id, QueryString(IDS_AX_MILLISECOND_FIELD_TEXT));
 }
 
 void DateTimeMillisecondFieldElement::PopulateDateTimeFieldsState(
@@ -431,8 +431,7 @@ DateTimeMinuteFieldElement::DateTimeMinuteFieldElement(Document& document,
                                   step) {
   DEFINE_STATIC_LOCAL(AtomicString, minute_pseudo_id,
                       ("-webkit-datetime-edit-minute-field"));
-  Initialize(minute_pseudo_id,
-             QueryString(WebLocalizedString::kAXMinuteFieldText));
+  Initialize(minute_pseudo_id, QueryString(IDS_AX_MINUTE_FIELD_TEXT));
 }
 
 void DateTimeMinuteFieldElement::PopulateDateTimeFieldsState(
@@ -474,8 +473,7 @@ DateTimeMonthFieldElement::DateTimeMonthFieldElement(Document& document,
                                   placeholder.IsEmpty() ? "--" : placeholder) {
   DEFINE_STATIC_LOCAL(AtomicString, month_pseudo_id,
                       ("-webkit-datetime-edit-month-field"));
-  Initialize(month_pseudo_id,
-             QueryString(WebLocalizedString::kAXMonthFieldText));
+  Initialize(month_pseudo_id, QueryString(IDS_AX_MONTH_FIELD_TEXT));
 }
 
 void DateTimeMonthFieldElement::PopulateDateTimeFieldsState(
@@ -518,8 +516,7 @@ DateTimeSecondFieldElement::DateTimeSecondFieldElement(Document& document,
                                   step) {
   DEFINE_STATIC_LOCAL(AtomicString, second_pseudo_id,
                       ("-webkit-datetime-edit-second-field"));
-  Initialize(second_pseudo_id,
-             QueryString(WebLocalizedString::kAXSecondFieldText));
+  Initialize(second_pseudo_id, QueryString(IDS_AX_SECOND_FIELD_TEXT));
 }
 
 void DateTimeSecondFieldElement::PopulateDateTimeFieldsState(
@@ -563,8 +560,7 @@ DateTimeSymbolicMonthFieldElement::DateTimeSymbolicMonthFieldElement(
                                    maximum) {
   DEFINE_STATIC_LOCAL(AtomicString, month_pseudo_id,
                       ("-webkit-datetime-edit-month-field"));
-  Initialize(month_pseudo_id,
-             QueryString(WebLocalizedString::kAXMonthFieldText));
+  Initialize(month_pseudo_id, QueryString(IDS_AX_MONTH_FIELD_TEXT));
 }
 
 void DateTimeSymbolicMonthFieldElement::PopulateDateTimeFieldsState(
@@ -609,8 +605,7 @@ DateTimeWeekFieldElement::DateTimeWeekFieldElement(Document& document,
                                   "--") {
   DEFINE_STATIC_LOCAL(AtomicString, week_pseudo_id,
                       ("-webkit-datetime-edit-week-field"));
-  Initialize(week_pseudo_id,
-             QueryString(WebLocalizedString::kAXWeekOfYearFieldText));
+  Initialize(week_pseudo_id, QueryString(IDS_AX_WEEK_OF_YEAR_FIELD_TEXT));
 }
 
 void DateTimeWeekFieldElement::PopulateDateTimeFieldsState(
@@ -658,7 +653,7 @@ DateTimeYearFieldElement::DateTimeYearFieldElement(
 
   DEFINE_STATIC_LOCAL(AtomicString, year_pseudo_id,
                       ("-webkit-datetime-edit-year-field"));
-  Initialize(year_pseudo_id, QueryString(WebLocalizedString::kAXYearFieldText));
+  Initialize(year_pseudo_id, QueryString(IDS_AX_YEAR_FIELD_TEXT));
 }
 
 static int CurrentFullYear() {

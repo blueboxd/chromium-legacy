@@ -9,6 +9,8 @@ from page_sets.system_health import system_health_story
 from page_sets.login_helpers import dropbox_login
 from page_sets.login_helpers import google_login
 
+from telemetry.util import js_template
+
 
 class _LoadingStory(system_health_story.SystemHealthStory):
   """Abstract base class for single-page System Health user stories."""
@@ -240,6 +242,33 @@ class LoadWashingtonPostMobileStory(_LoadingStory):
         selector=self._CLOSE_BUTTON_SELECTOR)
     if has_button:
       action_runner.ClickElement(selector=self._CLOSE_BUTTON_SELECTOR)
+
+class LoadWashingtonPostMobileStory2019(_LoadingStory):
+  NAME = 'load:news:washingtonpost:2019'
+  URL = 'https://www.washingtonpost.com/pwa'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2019]
+  _CONTINUE_FREE_BUTTON_SELECTOR = '.continue-btn.button.free'
+  _ACCEPT_GDPR_SELECTOR = '.agree-ckb'
+  _CONTINUE_TO_SITE_SELECTOR = '.continue-btn.button.accept-consent'
+
+  def _DidLoadDocument(self, action_runner):
+    # Close the popup window. On Nexus 9 (and probably other tables) the popup
+    # window does not have a "Close" button, instead it has only a "Send link
+    # to phone" button. So on tablets we run with the popup window open. The
+    # popup is transparent, so this is mostly an aesthetical issue.
+    has_button = action_runner.EvaluateJavaScript(
+        '!!document.querySelector({{ selector }})',
+        selector=self._CONTINUE_FREE_BUTTON_SELECTOR)
+    if has_button:
+      action_runner.ClickElement(selector=self._CONTINUE_FREE_BUTTON_SELECTOR)
+      action_runner.ScrollPageToElement(selector=self._ACCEPT_GDPR_SELECTOR)
+      action_runner.ClickElement(selector=self._ACCEPT_GDPR_SELECTOR)
+      element_function = js_template.Render(
+        'document.querySelectorAll({{ selector }})[{{ index }}]',
+        selector=self._CONTINUE_TO_SITE_SELECTOR, index=0)
+      action_runner.ClickElement(element_function=element_function)
+
 
 
 class LoadWikipediaStory2018(_LoadingStory):

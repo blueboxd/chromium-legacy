@@ -38,6 +38,7 @@ class ChromeInternalLogSource : public SystemLogsSource {
   void PopulateUsbKeyboardDetected(SystemLogsResponse* response);
   void PopulateEnrolledToDomain(SystemLogsResponse* response);
   void PopulateInstallerBrandCode(SystemLogsResponse* response);
+  void PopulateLastUpdateState(SystemLogsResponse* response);
 #endif
 
 #if defined(OS_CHROMEOS)

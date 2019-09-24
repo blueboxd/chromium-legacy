@@ -668,10 +668,6 @@ void WebRuntimeFeatures::EnableSkipTouchEventFilter(bool enable) {
   RuntimeEnabledFeatures::SetSkipTouchEventFilterEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableStaleWhileRevalidate(bool enable) {
-  RuntimeEnabledFeatures::SetStaleWhileRevalidateEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableSmsReceiver(bool enable) {
   RuntimeEnabledFeatures::SetSmsReceiverEnabled(enable);
 }

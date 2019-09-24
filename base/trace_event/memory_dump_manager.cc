@@ -529,7 +529,8 @@ MemoryDumpManager::ProcessMemoryDumpAsyncState::ProcessMemoryDumpAsyncState(
       dump_thread_task_runner(std::move(dump_thread_task_runner)) {
   pending_dump_providers.reserve(dump_providers.size());
   pending_dump_providers.assign(dump_providers.rbegin(), dump_providers.rend());
-  MemoryDumpArgs args = {req_args.level_of_detail, req_args.dump_guid};
+  MemoryDumpArgs args = {req_args.level_of_detail, req_args.determinism,
+                         req_args.dump_guid};
   process_memory_dump = std::make_unique<ProcessMemoryDump>(args);
 }
 

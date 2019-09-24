@@ -59,6 +59,7 @@ class CoordinatorImpl : public mojom::CoordinatorController,
   void RequestGlobalMemoryDump(
       base::trace_event::MemoryDumpType,
       base::trace_event::MemoryDumpLevelOfDetail,
+      base::trace_event::MemoryDumpDeterminism,
       const std::vector<std::string>& allocator_dump_names,
       RequestGlobalMemoryDumpCallback) override;
   void RequestGlobalMemoryDumpForPid(
@@ -71,6 +72,7 @@ class CoordinatorImpl : public mojom::CoordinatorController,
   void RequestGlobalMemoryDumpAndAppendToTrace(
       base::trace_event::MemoryDumpType,
       base::trace_event::MemoryDumpLevelOfDetail,
+      base::trace_event::MemoryDumpDeterminism,
       RequestGlobalMemoryDumpAndAppendToTraceCallback) override;
 
   // mojom::HeapProfilerHelper implementation.

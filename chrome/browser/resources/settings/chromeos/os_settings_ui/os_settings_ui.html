@@ -124,8 +124,8 @@
         icon-title="$i18n{close}">
       <div class="drawer-content">
         <template is="dom-if" id="drawerTemplate">
-          <os-settings-menu show-apps="[[showApps_]]"
-              show-android-apps="[[showAndroidApps_]]"
+          <os-settings-menu
+              show-apps="[[showApps_]]"
               show-crostini="[[showCrostini_]]"
               show-plugin-vm="[[showPluginVm_]]"
               show-reset="[[showReset_]]"
@@ -140,7 +140,6 @@
       <div id="left">
         <os-settings-menu page-visibility="[[pageVisibility_]]"
             show-apps="[[showApps_]]"
-            show-android-apps="[[showAndroidApps_]]"
             show-crostini="[[showCrostini_]]"
             show-plugin-vm="[[showPluginVm_]]"
             show-reset="[[showReset_]]"
@@ -152,8 +151,9 @@
       <os-settings-main id="main" prefs="{{prefs}}"
           toolbar-spinner-active="{{toolbarSpinnerActive_}}"
           page-visibility="[[pageVisibility_]]"
-          show-apps="[[showApps_]]"
           show-android-apps="[[showAndroidApps_]]"
+          show-app-management="[[showAppManagement_]]"
+          show-apps="[[showApps_]]"
           show-crostini="[[showCrostini_]]"
           show-plugin-vm="[[showPluginVm_]]"
           show-reset="[[showReset_]]"

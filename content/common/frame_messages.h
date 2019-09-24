@@ -693,10 +693,6 @@ IPC_MESSAGE_ROUTED0(FrameMsg_ChildFrameProcessGone)
 IPC_MESSAGE_ROUTED1(FrameMsg_ContextMenuClosed,
                     content::CustomContextMenuContext /* custom_context */)
 
-// Reloads all the Lo-Fi images in the RenderFrame. Ignores the cache and
-// reloads from the network.
-IPC_MESSAGE_ROUTED0(FrameMsg_ReloadLoFiImages)
-
 // Executes custom context menu action that was provided from Blink.
 IPC_MESSAGE_ROUTED2(FrameMsg_CustomContextMenuAction,
                     content::CustomContextMenuContext /* custom_context */,

@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/timer/elapsed_timer.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #include "url/gurl.h"
 
@@ -60,6 +61,9 @@ class NavigationContextImpl : public NavigationContext {
   void SetError(NSError* error);
   void SetResponseHeaders(
       const scoped_refptr<net::HttpResponseHeaders>& response_headers);
+
+  // Get elapsed time since context was created.
+  base::TimeDelta GetElapsedTimeSinceCreation() const;
 
   // Optional unique id of the navigation item associated with this navigaiton.
   int GetNavigationItemUniqueID() const;
@@ -133,6 +137,7 @@ class NavigationContextImpl : public NavigationContext {
   bool is_native_content_presented_ = false;
   bool is_placeholder_navigation_ = false;
   NSString* mime_type_ = nil;
+  base::ElapsedTimer elapsed_timer_;
 
   // Holds pending navigation item in this object. Pending item is stored in
   // NavigationContext after context is created. The item is still stored in

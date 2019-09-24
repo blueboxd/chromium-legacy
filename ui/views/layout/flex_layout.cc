@@ -421,8 +421,7 @@ void FlexLayout::InitializeChildData(
 
       // Keep track of non-hidden flex controls.
       const bool can_flex =
-          (flex_child.flex.weight() > 0 &&
-           flex_child.preferred_size.main() > 0) ||
+          flex_child.flex.weight() > 0 ||
           flex_child.current_size.main() < flex_child.preferred_size.main();
       if (can_flex)
         (*flex_order_to_index)[flex_child.flex.order()].push_back(view_index);

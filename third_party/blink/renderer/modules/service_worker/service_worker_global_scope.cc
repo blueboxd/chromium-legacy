@@ -440,6 +440,8 @@ void ServiceWorkerGlobalScope::DidFetchClassicScript(
     // Step 9.3. "Invoke Finish Job with job and abort these steps."
     // The browser process takes care of these steps.
     ReportingProxy().DidFailToFetchClassicScript();
+    // Close the worker global scope to terminate the thread.
+    close();
     return;
   }
   // The app cache ID is not used.

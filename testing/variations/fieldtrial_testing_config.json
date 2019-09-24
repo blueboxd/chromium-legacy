@@ -4053,27 +4053,6 @@
             ]
         }
     ],
-    "OutOfBlinkCors": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OutOfBlinkCors"
-                    ]
-                }
-            ]
-        }
-    ],
     "OutOfProcessQuarantine": [
         {
             "platforms": [
@@ -4103,6 +4082,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "OverflowIconsForMediaControls"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OverlayNewLayout": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "OverlayNewLayout",
+                    "enable_features": [
+                        "OverlayNewLayout"
                     ]
                 }
             ]

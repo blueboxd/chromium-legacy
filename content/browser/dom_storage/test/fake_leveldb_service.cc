@@ -72,7 +72,6 @@ void FakeLevelDBService::Destroy(filesystem::mojom::DirectoryPtr,
 }
 
 void FakeLevelDBService::Bind(
-    const service_manager::Identity& remote_identity,
     mojo::PendingReceiver<leveldb::mojom::LevelDBService> receiver) {
   receivers_.Add(this, std::move(receiver));
 }

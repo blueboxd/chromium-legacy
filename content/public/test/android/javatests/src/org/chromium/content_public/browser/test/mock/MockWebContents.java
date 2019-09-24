@@ -230,9 +230,6 @@ public class MockWebContents implements WebContents {
     public void setSpatialNavigationDisabled(boolean disabled) {}
 
     @Override
-    public void reloadLoFiImages() {}
-
-    @Override
     public int downloadImage(String url, boolean isFavicon, int maxBitmapSize, boolean bypassCache,
             ImageDownloadCallback callback) {
         return 0;

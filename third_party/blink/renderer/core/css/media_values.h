@@ -17,9 +17,12 @@ namespace blink {
 class Document;
 class CSSPrimitiveValue;
 class LocalFrame;
+enum class CSSValueID;
 enum class ColorSpaceGamut;
 enum class PreferredColorScheme;
 enum class ForcedColors;
+
+PreferredColorScheme CSSValueIDToPreferredColorScheme(CSSValueID id);
 
 class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues> {
  public:

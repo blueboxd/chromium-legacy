@@ -1656,6 +1656,41 @@ TEST_F(StyleEngineTest, MediaQueriesChangeForcedColorsAndPreferredColorScheme) {
                 GetCSSPropertyColor()));
 }
 
+TEST_F(StyleEngineTest, MediaQueriesColorSchemeOverride) {
+  ScopedMediaQueryPrefersColorSchemeForTest feature_scope(true);
+
+  EXPECT_EQ(PreferredColorScheme::kNoPreference,
+            GetDocument().GetSettings()->GetPreferredColorScheme());
+
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      body { color: red }
+      @media (prefers-color-scheme: dark) {
+        body { color: green }
+      }
+    </style>
+    <body></body>
+  )HTML");
+
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(255, 0, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+
+  GetDocument().GetPage()->SetMediaFeatureOverride("prefers-color-scheme",
+                                                   "dark");
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(0, 128, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+
+  GetDocument().GetPage()->ClearMediaFeatureOverrides();
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(255, 0, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+}
+
 TEST_F(StyleEngineTest, ShadowRootStyleRecalcCrash) {
   GetDocument().body()->SetInnerHTMLFromString("<div id=host></div>");
   auto* host = To<HTMLElement>(GetDocument().getElementById("host"));
@@ -2033,6 +2068,26 @@ TEST_F(StyleEngineTest, ColorSchemeBaseBackgroundChange) {
   UpdateAllLifecyclePhases();
 
   EXPECT_EQ(Color::kBlack, GetDocument().View()->BaseBackgroundColor());
+}
+
+TEST_F(StyleEngineTest, ColorSchemeOverride) {
+  ScopedCSSColorSchemeForTest enable_color_scheme(true);
+
+  GetDocument().documentElement()->SetInlineStyleProperty(
+      CSSPropertyID::kColorScheme, "light dark");
+  UpdateAllLifecyclePhases();
+
+  EXPECT_EQ(
+      WebColorScheme::kLight,
+      GetDocument().documentElement()->GetComputedStyle()->UsedColorScheme());
+
+  GetDocument().GetPage()->SetMediaFeatureOverride("prefers-color-scheme",
+                                                   "dark");
+
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(
+      WebColorScheme::kDark,
+      GetDocument().documentElement()->GetComputedStyle()->UsedColorScheme());
 }
 
 TEST_F(StyleEngineTest, PseudoElementBaseComputedStyle) {

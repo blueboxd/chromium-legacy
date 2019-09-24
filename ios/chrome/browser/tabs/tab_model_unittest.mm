@@ -175,6 +175,18 @@ TEST_P(TabModelTest, InsertUrlSingle) {
   EXPECT_EQ(web_state, tab_model_.webStateList->GetWebStateAt(0));
 }
 
+TEST_P(TabModelTest, BrowserStateDestroyedMultiple) {
+  [tab_model_ insertWebStateWithURL:GURL(kURL1)
+                           referrer:web::Referrer()
+                         transition:ui::PAGE_TRANSITION_TYPED
+                             opener:nil
+                        openedByDOM:NO
+                            atIndex:0
+                       inBackground:NO];
+  [tab_model_ browserStateDestroyed];
+  [tab_model_ browserStateDestroyed];
+}
+
 TEST_P(TabModelTest, InsertUrlMultiple) {
   web::WebState* web_state0 =
       [tab_model_ insertWebStateWithURL:GURL(kURL1)
@@ -608,6 +620,45 @@ TEST_P(TabModelTest, AddWithOrderController) {
                inBackground:NO];
   EXPECT_EQ(tab_model_.webStateList->GetIndexOfWebState(web_state4),
             tab_model_.webStateList->GetIndexOfWebState(web_state3) + 1);
+}
+
+// Test that saving a non-empty session, then saving an empty session, then
+// restoring, restores zero tabs, and not the non-empty session.
+TEST_P(TabModelTest, RestorePersistedSessionAfterEmpty) {
+  // Reset the TabModel with a custom SessionServiceIOS (to control whether
+  // data is saved to disk).
+  TestSessionService* test_session_service = [[TestSessionService alloc] init];
+  SetTabModel(CreateTabModel(test_session_service, nil));
+
+  [tab_model_ insertWebStateWithURL:GURL(kURL1)
+                           referrer:web::Referrer()
+                         transition:ui::PAGE_TRANSITION_TYPED
+                             opener:nil
+                        openedByDOM:NO
+                            atIndex:0
+                       inBackground:NO];
+  [test_session_service setPerformIO:YES];
+  [tab_model_ saveSessionImmediately:YES];
+  [test_session_service setPerformIO:NO];
+
+  // Session should be saved, now remove the tab.
+  [tab_model_ closeTabAtIndex:0];
+  [test_session_service setPerformIO:YES];
+  [tab_model_ saveSessionImmediately:YES];
+  [test_session_service setPerformIO:NO];
+
+  // Restore, expect that there are no sessions.
+  NSString* state_path = base::SysUTF8ToNSString(
+      chrome_browser_state_->GetStatePath().AsUTF8Unsafe());
+  SessionIOS* session =
+      [test_session_service loadSessionFromDirectory:state_path];
+  ASSERT_EQ(1u, session.sessionWindows.count);
+  SessionWindowIOS* session_window = session.sessionWindows[0];
+  [tab_model_ restoreSessionWindow:session_window forInitialRestore:NO];
+
+  EXPECT_EQ(0U, [tab_model_ count]);
+  EXPECT_TRUE([[NSFileManager defaultManager] removeItemAtPath:state_path
+                                                         error:nullptr]);
 }
 
 TEST_P(TabModelTest, DISABLED_PersistSelectionChange) {

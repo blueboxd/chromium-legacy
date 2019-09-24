@@ -225,8 +225,6 @@ class PLATFORM_EXPORT ResourceFetcher
 
   void UpdateAllImageResourcePriorities();
 
-  void ReloadLoFiImages();
-
   // Returns whether the given resource is contained as a preloaded resource.
   bool ContainsAsPreload(Resource*) const;
 
@@ -245,8 +243,6 @@ class PLATFORM_EXPORT ResourceFetcher
   // leak detector) to clean up loaders after page navigation before instance
   // counting.
   void PrepareForLeakDetection();
-
-  void SetStaleWhileRevalidateEnabled(bool enabled);
 
   using ResourceFetcherSet = HeapHashSet<WeakMember<ResourceFetcher>>;
   static const ResourceFetcherSet& MainThreadFetchers();

@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 class Profile;
@@ -48,7 +48,7 @@ class BuiltInChromeOsApps : public apps::mojom::Publisher {
   void Uninstall(const std::string& app_id) override;
   void OpenNativeSettings(const std::string& app_id) override;
 
-  mojo::Binding<apps::mojom::Publisher> binding_;
+  mojo::Receiver<apps::mojom::Publisher> receiver_{this};
 
   Profile* profile_;
 

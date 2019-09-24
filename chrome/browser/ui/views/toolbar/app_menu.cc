@@ -471,13 +471,12 @@ class AppMenu::ZoomView : public AppMenuView {
     // the keyboard navigation to work.
     DCHECK(Button::AsButton(fullscreen_button_));
 
-    // TODO(https://crbug.com/957391): Do away with this bespoke color. Ideally
-    // this should be kColorId_EnabledMenuItemForegroundColor. The color here is
-    // ripped directly from the old PNG asset for this image.
     fullscreen_button_->SetImage(
         ImageButton::STATE_NORMAL,
-        gfx::CreateVectorIcon(kFullscreenIcon,
-                              SkColorSetRGB(0x98, 0x98, 0x98)));
+        gfx::CreateVectorIcon(
+            kFullscreenIcon,
+            GetNativeTheme()->GetSystemColor(
+                ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor)));
 
     // Since |fullscreen_button_| will reside in a menu, make it ALWAYS
     // focusable regardless of the platform.
@@ -548,18 +547,16 @@ class AppMenu::ZoomView : public AppMenuView {
     zoom_label_max_width_valid_ = false;
 
     ui::NativeTheme* theme = GetNativeTheme();
-    if (theme) {
-      zoom_label_->SetEnabledColor(theme->GetSystemColor(
-          ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor));
-      gfx::ImageSkia hovered_fullscreen_image = gfx::CreateVectorIcon(
-          kFullscreenIcon,
-          theme->GetSystemColor(
-              ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor));
-      fullscreen_button_->SetImage(ImageButton::STATE_HOVERED,
-                                   hovered_fullscreen_image);
-      fullscreen_button_->SetImage(ImageButton::STATE_PRESSED,
-                                   hovered_fullscreen_image);
-    }
+    zoom_label_->SetEnabledColor(theme->GetSystemColor(
+        ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor));
+    gfx::ImageSkia hovered_fullscreen_image = gfx::CreateVectorIcon(
+        kFullscreenIcon,
+        theme->GetSystemColor(
+            ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor));
+    fullscreen_button_->SetImage(ImageButton::STATE_HOVERED,
+                                 hovered_fullscreen_image);
+    fullscreen_button_->SetImage(ImageButton::STATE_PRESSED,
+                                 hovered_fullscreen_image);
   }
 
   // Overridden from ButtonListener.

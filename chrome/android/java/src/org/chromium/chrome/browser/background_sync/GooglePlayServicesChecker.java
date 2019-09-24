@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.background_sync;
 
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
@@ -15,7 +16,6 @@ import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
  */
 final class GooglePlayServicesChecker {
     private static final String TAG = "PlayServicesChecker";
-
     private GooglePlayServicesChecker() {}
 
     /**
@@ -25,14 +25,16 @@ final class GooglePlayServicesChecker {
      * wait until Play Services is updated before attempting them.
      */
     @CalledByNative
-    private static boolean shouldDisableBackgroundSync() {
+    @VisibleForTesting
+    protected static boolean shouldDisableBackgroundSync() {
         boolean isAvailable = true;
         if (!ExternalAuthUtils.canUseGooglePlayServices()) {
             Log.i(TAG, "Disabling Background Sync because Play Services is not up to date.");
             isAvailable = false;
         }
+
         RecordHistogram.recordBooleanHistogram(
                 "BackgroundSync.LaunchTask.PlayServicesAvailable", isAvailable);
-        return isAvailable;
+        return !isAvailable;
     }
 }

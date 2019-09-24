@@ -28,6 +28,7 @@
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "components/sessions/core/session_id.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
@@ -411,7 +412,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // |provider|.
   virtual void GetPhishingDetector(
       service_manager::InterfaceProvider* provider,
-      mojom::PhishingDetectorPtr* phishing_detector);
+      mojo::Remote<mojom::PhishingDetector>* phishing_detector);
 #endif
 
   // The username of the account which password has been reused on. It is only

@@ -4,8 +4,11 @@
 
 #include "content/browser/browser_interface_binders.h"
 
+#include "build/build_config.h"
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
+#include "content/browser/content_index/content_index_service_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/image_capture/image_capture_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/screen_enumeration/screen_enumeration_impl.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
@@ -13,14 +16,21 @@
 #include "content/browser/worker_host/shared_worker_host.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/shared_worker_instance.h"
+#include "media/capture/mojom/image_capture.mojom.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
+#include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
+#include "third_party/blink/public/mojom/content_index/content_index.mojom.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
 #include "third_party/blink/public/mojom/locks/lock_manager.mojom.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "third_party/blink/public/mojom/speech/speech_synthesis.mojom.h"
 #include "third_party/blink/public/mojom/webaudio/audio_context_manager.mojom.h"
+
+#if !defined(OS_ANDROID)
+#include "third_party/blink/public/mojom/hid/hid.mojom.h"
+#endif
 
 namespace content {
 namespace internal {
@@ -34,8 +44,16 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
   map->Add<blink::mojom::AudioContextManager>(base::BindRepeating(
       &RenderFrameHostImpl::GetAudioContextManager, base::Unretained(host)));
 
+  map->Add<blink::mojom::ContactsManager>(base::BindRepeating(
+      &RenderFrameHostImpl::GetContactsManager, base::Unretained(host)));
+
   map->Add<blink::mojom::FileSystemManager>(base::BindRepeating(
       &RenderFrameHostImpl::GetFileSystemManager, base::Unretained(host)));
+
+#if !defined(OS_ANDROID)
+  map->Add<blink::mojom::HidService>(base::BindRepeating(
+      &RenderFrameHostImpl::GetHidService, base::Unretained(host)));
+#endif
 
   map->Add<blink::mojom::IdleManager>(base::BindRepeating(
       &RenderFrameHostImpl::GetIdleManager, base::Unretained(host)));
@@ -51,8 +69,15 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
 
   map->Add<blink::mojom::LockManager>(base::BindRepeating(
       &RenderFrameHostImpl::CreateLockManager, base::Unretained(host)));
+
   map->Add<blink::mojom::FileChooser>(base::BindRepeating(
       &RenderFrameHostImpl::GetFileChooser, base::Unretained(host)));
+
+  map->Add<media::mojom::ImageCapture>(
+      base::BindRepeating(&ImageCaptureImpl::Create));
+
+  map->Add<blink::mojom::WebBluetoothService>(base::BindRepeating(
+      &RenderFrameHostImpl::CreateWebBluetoothService, base::Unretained(host)));
 }
 
 void PopulateBinderMapWithContext(
@@ -60,6 +85,8 @@ void PopulateBinderMapWithContext(
     service_manager::BinderMapWithContext<RenderFrameHost*>* map) {
   map->Add<blink::mojom::BackgroundFetchService>(
       base::BindRepeating(&BackgroundFetchServiceImpl::CreateForFrame));
+  map->Add<blink::mojom::ContentIndexService>(
+      base::BindRepeating(&ContentIndexServiceImpl::CreateForFrame));
   GetContentClient()->browser()->RegisterBrowserInterfaceBindersForFrame(map);
 }
 
@@ -162,9 +189,14 @@ void PopulateBinderMapWithContext(
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     map->Add<blink::mojom::BackgroundFetchService>(
         base::BindRepeating(&BackgroundFetchServiceImpl::CreateForWorker));
+    map->Add<blink::mojom::ContentIndexService>(
+        base::BindRepeating(&ContentIndexServiceImpl::CreateForWorker));
   } else {
     map->Add<blink::mojom::BackgroundFetchService>(
         base::BindRepeating(&BackgroundFetchServiceImpl::CreateForWorker),
+        base::CreateSingleThreadTaskRunner(BrowserThread::UI));
+    map->Add<blink::mojom::ContentIndexService>(
+        base::BindRepeating(&ContentIndexServiceImpl::CreateForWorker),
         base::CreateSingleThreadTaskRunner(BrowserThread::UI));
   }
 }

@@ -18,10 +18,10 @@
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/model/conflict_resolution.h"
 #include "components/sync/model/model_error.h"
-#include "components/sync/nigori/cryptographer.h"
 #include "components/sync/nigori/keystore_keys_handler.h"
 #include "components/sync/nigori/nigori_local_change_processor.h"
 #include "components/sync/nigori/nigori_sync_bridge.h"
+#include "components/sync/syncable/directory_cryptographer.h"
 
 namespace sync_pb {
 class NigoriLocalData;
@@ -81,13 +81,13 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   // TODO(crbug.com/922900): investigate whether we need this getter outside of
   // tests and decide whether this method should be a part of
   // SyncEncryptionHandler interface.
-  const Cryptographer& GetCryptographerForTesting() const;
+  const DirectoryCryptographer& GetCryptographerForTesting() const;
   sync_pb::NigoriSpecifics::PassphraseType GetPassphraseTypeForTesting() const;
   ModelTypeSet GetEncryptedTypesForTesting() const;
 
   static std::string PackExplicitPassphraseKeyForTesting(
       const Encryptor& encryptor,
-      const Cryptographer& cryptographer);
+      const DirectoryCryptographer& cryptographer);
 
  private:
   base::Optional<ModelError> UpdateLocalState(
@@ -134,7 +134,7 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   // separately. Should be encrypted with OSCrypt before persisting.
   std::vector<std::string> keystore_keys_;
 
-  Cryptographer cryptographer_;
+  DirectoryCryptographer cryptographer_;
   // TODO(mmoskvitin): Consider adopting the C++ enum PassphraseType here and
   // if so remove function ProtoPassphraseInt32ToProtoEnum() from
   // passphrase_enums.h.

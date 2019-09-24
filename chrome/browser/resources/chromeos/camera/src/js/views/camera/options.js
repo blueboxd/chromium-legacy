@@ -275,15 +275,18 @@ cca.views.camera.Options.prototype.videoDeviceIds = async function() {
   } else {
     devices = await this.infoUpdater_.getDevicesInfo();
   }
+
+  const defaultFacing =
+      await cca.mojo.ChromeHelper.getInstance().isTabletMode() ?
+      cros.mojom.CameraFacing.CAMERA_FACING_BACK :
+      cros.mojom.CameraFacing.CAMERA_FACING_FRONT;
   // Put the selected video device id first.
   var sorted = devices.map((device) => device.deviceId).sort((a, b) => {
     if (a == b) {
       return 0;
     }
-    if (this.videoDeviceId_ ?
-            a === this.videoDeviceId_ :
-            (facings &&
-             facings[a] === cros.mojom.CameraFacing.CAMERA_FACING_FRONT)) {
+    if (this.videoDeviceId_ ? a === this.videoDeviceId_ :
+                              (facings && facings[a] === defaultFacing)) {
       return -1;
     }
     return 1;

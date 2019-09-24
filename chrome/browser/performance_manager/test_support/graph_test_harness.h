@@ -107,10 +107,11 @@ struct TestNodeWrapper<PageNodeImpl>::Factory {
       GraphImpl* graph,
       const WebContentsProxy& wc_proxy = WebContentsProxy(),
       const std::string& browser_context_id = std::string(),
+      const GURL& url = GURL(),
       bool is_visible = false,
       bool is_audible = false) {
     return std::make_unique<PageNodeImpl>(graph, wc_proxy, browser_context_id,
-                                          is_visible, is_audible);
+                                          url, is_visible, is_audible);
   }
 };
 

@@ -20,7 +20,7 @@
 #include "components/sync/base/time.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
-#include "components/sync/nigori/cryptographer.h"
+#include "components/sync/syncable/directory_cryptographer.h"
 
 namespace {
 
@@ -52,7 +52,7 @@ syncer::KeyParams KeystoreKeyParams(const std::string& key) {
 sync_pb::PasswordSpecifics EncryptPasswordSpecifics(
     const syncer::KeyParams& key_params,
     const sync_pb::PasswordSpecificsData& password_data) {
-  syncer::Cryptographer cryptographer;
+  syncer::DirectoryCryptographer cryptographer;
   cryptographer.AddKey(key_params);
 
   sync_pb::PasswordSpecifics encrypted_specifics;
@@ -338,12 +338,12 @@ class SingleClientPasswordsWithAccountStorageSyncTest : public SyncTest {
     nigori.set_encrypt_everything(false);
     nigori.set_passphrase_type(sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE);
 
-    syncer::Cryptographer cryptographer;
+    syncer::DirectoryCryptographer cryptographer;
     ASSERT_TRUE(cryptographer.AddKey(key_params));
     ASSERT_TRUE(cryptographer.AddNonDefaultKey(key_params));
     ASSERT_TRUE(cryptographer.GetKeys(nigori.mutable_encryption_keybag()));
 
-    syncer::Cryptographer keystore_cryptographer;
+    syncer::DirectoryCryptographer keystore_cryptographer;
     ASSERT_TRUE(keystore_cryptographer.AddKey(key_params));
     ASSERT_TRUE(keystore_cryptographer.EncryptString(
         cryptographer.GetDefaultNigoriKeyData(),

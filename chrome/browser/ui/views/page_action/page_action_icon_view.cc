@@ -26,7 +26,7 @@
 #include "ui/views/style/platform_style.h"
 
 std::unique_ptr<views::Border>
-PageActionIconView::Delegate::GetPageActionIconBorder() const {
+PageActionIconView::Delegate::CreatePageActionIconBorder() const {
   return views::CreateEmptyBorder(
       GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING));
 }
@@ -216,5 +216,5 @@ content::WebContents* PageActionIconView::GetWebContents() const {
 }
 
 void PageActionIconView::UpdateBorder() {
-  SetBorder(delegate_->GetPageActionIconBorder());
+  SetBorder(delegate_->CreatePageActionIconBorder());
 }

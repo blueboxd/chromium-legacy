@@ -19,6 +19,7 @@
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class GURL;
@@ -257,7 +258,7 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
   base::TimeTicks visual_feature_start_time_;
 
   // The Mojo pipe used for extracting DOM features from the renderer.
-  safe_browsing::mojom::PhishingDetectorPtr phishing_detector_;
+  mojo::Remote<safe_browsing::mojom::PhishingDetector> phishing_detector_;
 
   // When we start extracting DOM features. Used to compute the duration of DOM
   // feature extraction, which is logged at

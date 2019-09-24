@@ -575,7 +575,7 @@ bool GenericChangeProcessor::CryptoReadyIfNecessary() {
   // We only access the cryptographer while holding a transaction.
   ReadTransaction trans(FROM_HERE, share_handle());
   const ModelTypeSet encrypted_types = trans.GetEncryptedTypes();
-  return !encrypted_types.Has(type_) || trans.GetCryptographer()->is_ready();
+  return !encrypted_types.Has(type_) || trans.GetCryptographer()->CanEncrypt();
 }
 
 void GenericChangeProcessor::StartImpl() {}

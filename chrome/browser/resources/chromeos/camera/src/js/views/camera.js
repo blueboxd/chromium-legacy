@@ -283,7 +283,8 @@ cca.views.Camera.prototype.startWithDevice_ = async function(deviceId) {
       // Assume the exception here is thrown from error of HALv1 not support
       // resolution query, fallback to use v1 constraints-candidates.
       if (e.message == 'HALv1-api') {
-        resolCandidates = this.modes_.getResolutionCandidatesV1(mode, deviceId);
+        resolCandidates =
+            await this.modes_.getResolutionCandidatesV1(mode, deviceId);
       } else {
         throw e;
       }

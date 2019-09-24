@@ -26,6 +26,7 @@
 #include "ui/gfx/text_constants.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view.h"
@@ -107,16 +108,6 @@ bool RelaunchRequiredDialogView::ShouldShowWindowIcon() const {
   return true;
 }
 
-int RelaunchRequiredDialogView::GetHeightForWidth(int width) const {
-  const gfx::Insets insets = GetInsets();
-  return body_label_->GetHeightForWidth(width - insets.width()) +
-         insets.height();
-}
-
-void RelaunchRequiredDialogView::Layout() {
-  body_label_->SetBoundsRect(GetContentsBounds());
-}
-
 gfx::Size RelaunchRequiredDialogView::CalculatePreferredSize() const {
   const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
                         DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
@@ -135,6 +126,7 @@ RelaunchRequiredDialogView::RelaunchRequiredDialogView(
           deadline,
           base::BindRepeating(&RelaunchRequiredDialogView::UpdateWindowTitle,
                               base::Unretained(this))) {
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   chrome::RecordDialogCreation(chrome::DialogIdentifier::RELAUNCH_REQUIRED);
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));

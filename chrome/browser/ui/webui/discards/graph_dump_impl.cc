@@ -249,10 +249,10 @@ void DiscardsGraphDumpImpl::OnFaviconUpdated(
   StartPageFaviconRequest(page_node);
 }
 
-void DiscardsGraphDumpImpl::OnMainFrameNavigationCommitted(
+void DiscardsGraphDumpImpl::OnMainFrameUrlChanged(
     const performance_manager::PageNode* page_node) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   SendPageNotification(page_node, false);
-  StartPageFaviconRequest(page_node);
 }
 
 void DiscardsGraphDumpImpl::OnProcessNodeAdded(

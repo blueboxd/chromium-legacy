@@ -167,15 +167,8 @@ void WebEmbeddedWorkerImpl::TerminateWorkerContext() {
   if (asked_to_terminate_)
     return;
   asked_to_terminate_ = true;
-  if (!worker_thread_) {
-    // The worker thread has not been created yet if the worker is asked to
-    // terminate during waiting for debugger.
-    DCHECK_EQ(WebEmbeddedWorkerStartData::kWaitForDebugger,
-              worker_start_data_.wait_for_debugger_mode);
-    // This deletes 'this'.
-    worker_context_client_->WorkerContextFailedToStartOnInitiatorThread();
-    return;
-  }
+  // StartWorkerThread() must be called before.
+  DCHECK(worker_thread_);
   worker_thread_->Terminate();
 }
 

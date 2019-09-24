@@ -155,6 +155,11 @@ NGLayoutResult::NGLayoutResult(
     space_.ExclusionSpace().MoveDerivedGeometry(builder->exclusion_space_);
   }
 
+  // If we found an early breakpoint inside that we need to break at, we're
+  // going to re-layout now, and break at the early breakpoint.
+  if (builder->early_break_ && !physical_fragment_)
+    EnsureRareData()->early_break = *builder->early_break_;
+
   if (HasRareData()) {
     rare_data_->bfc_line_offset = builder->bfc_line_offset_;
     rare_data_->bfc_block_offset = builder->bfc_block_offset_;

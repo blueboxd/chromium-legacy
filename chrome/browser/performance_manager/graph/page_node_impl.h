@@ -31,6 +31,7 @@ class PageNodeImpl
   PageNodeImpl(GraphImpl* graph,
                const WebContentsProxy& contents_proxy,
                const std::string& browser_context_id,
+               const GURL& visible_url,
                bool is_visible,
                bool is_audible);
   ~PageNodeImpl() override;
@@ -46,7 +47,8 @@ class PageNodeImpl
   void SetUkmSourceId(ukm::SourceId ukm_source_id);
   void OnFaviconUpdated();
   void OnTitleUpdated();
-  void OnMainFrameNavigationCommitted(base::TimeTicks navigation_committed_time,
+  void OnMainFrameNavigationCommitted(bool same_document,
+                                      base::TimeTicks navigation_committed_time,
                                       int64_t navigation_id,
                                       const GURL& url);
 
@@ -174,7 +176,10 @@ class PageNodeImpl
 
   // The URL the main frame last committed, or the initial URL a page was
   // initialized with. The latter case is distinguished by a zero navigation ID.
-  GURL main_frame_url_;
+  ObservedProperty::
+      NotifiesOnlyOnChanges<GURL, &PageNodeObserver::OnMainFrameUrlChanged>
+          main_frame_url_;
+
   // The unique ID of the navigation handle the main frame last committed, or
   // zero if the page has never committed a navigation.
   int64_t navigation_id_ = 0;

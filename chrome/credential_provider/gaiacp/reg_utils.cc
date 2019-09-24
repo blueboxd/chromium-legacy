@@ -12,16 +12,17 @@
 #include "base/strings/stringprintf.h"
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
+#include "build/branding_buildflags.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 
 namespace credential_provider {
 
 // Root registry key for GCP configuration and state.
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #define CREDENTIAL_PROVIDER_REGISTRY_KEY L"Software\\Google\\GCP"
 #else
 #define CREDENTIAL_PROVIDER_REGISTRY_KEY L"Software\\Chromium\\GCP"
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 const wchar_t kGcpRootKeyName[] = CREDENTIAL_PROVIDER_REGISTRY_KEY;
 

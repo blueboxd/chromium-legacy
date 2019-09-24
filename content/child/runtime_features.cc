@@ -515,9 +515,6 @@ void SetIndividualRuntimeFeatures(
   WebRuntimeFeatures::EnableSkipTouchEventFilter(
       base::FeatureList::IsEnabled(features::kSkipTouchEventFilter));
 
-  WebRuntimeFeatures::EnableStaleWhileRevalidate(
-      base::FeatureList::IsEnabled(features::kStaleWhileRevalidate));
-
   if (!base::FeatureList::IsEnabled(features::kSmsReceiver))
     WebRuntimeFeatures::EnableSmsReceiver(false);
 

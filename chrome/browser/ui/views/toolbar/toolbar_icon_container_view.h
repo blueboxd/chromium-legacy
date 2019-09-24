@@ -39,7 +39,7 @@ class ToolbarIconContainerView : public views::View,
   bool uses_highlight() { return uses_highlight_; }
 
  private:
-  friend class ToolbarPageActionIconContainerViewBrowserTest;
+  friend class ToolbarAccountIconContainerViewBrowserTest;
 
   // views::View:
   void OnMouseEntered(const ui::MouseEvent& event) override;

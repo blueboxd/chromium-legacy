@@ -1038,6 +1038,7 @@
       # Don't run on trybots; waterfall is enough.
       'android-kitkat-arm-coverage-rel',
       'android-kitkat-arm-rel',
+      'android-marshmallow-arm64-coverage-rel',
       'android-marshmallow-arm64-rel',
       # No capacity for tablet testers.
       'KitKat Tablet Tester',
@@ -1052,6 +1053,7 @@
       # Don't run on trybots; waterfall is enough.
       'android-kitkat-arm-coverage-rel',
       'android-kitkat-arm-rel',
+      'android-marshmallow-arm64-coverage-rel',
       'android-marshmallow-arm64-rel',
       # No capacity for tablet testers.
       'KitKat Tablet Tester',
@@ -1066,6 +1068,7 @@
       # Don't run on trybots; waterfall is enough.
       'android-kitkat-arm-coverage-rel',
       'android-kitkat-arm-rel',
+      'android-marshmallow-arm64-coverage-rel',
       'android-marshmallow-arm64-rel',
       # No capacity for tablet testers.
       'KitKat Tablet Tester',
@@ -1087,6 +1090,7 @@
       # Don't run on trybots; waterfall is enough.
       'android-kitkat-arm-coverage-rel',
       'android-kitkat-arm-rel',
+      'android-marshmallow-arm64-coverage-rel',
       'android-marshmallow-arm64-rel',
       # No capacity for tablet testers.
       'KitKat Tablet Tester',
@@ -1100,6 +1104,7 @@
       # chromium.android
       'android-kitkat-arm-coverage-rel',
       'android-kitkat-arm-rel',
+      'android-marshmallow-arm64-coverage-rel',
       'android-marshmallow-arm64-rel',
       'KitKat Tablet Tester',
       'Lollipop Tablet Tester',
@@ -1230,6 +1235,7 @@
       'android-code-coverage',
       'android-kitkat-arm-coverage-rel',
       'android-kitkat-arm-rel',
+      'android-marshmallow-arm64-coverage-rel',
       'android-marshmallow-arm64-rel',
       'Android CFI',
       'KitKat Phone Tester (dbg)',
@@ -1440,6 +1446,20 @@
         },
       },
       'android-kitkat-arm-rel': {
+        'args': [
+          '--browser=android-chromium',
+          '--device=android',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'temp_band': '<30',
+            },
+          ],
+          'shards': 15,
+        },
+      },
+      'android-marshmallow-arm64-coverage-rel': {
         'args': [
           '--browser=android-chromium',
           '--device=android',

@@ -451,74 +451,103 @@ void RecordReadyToCommitMetrics(
     RenderFrameHostImpl* new_rfh,
     const mojom::CommonNavigationParams& common_params,
     base::TimeTicks ready_to_commit_time) {
+  bool is_main_frame = !new_rfh->GetParent();
   bool is_same_process =
       old_rfh->GetProcess()->GetID() == new_rfh->GetProcess()->GetID();
 
-  bool is_same_browsing_instance =
-      old_rfh->GetSiteInstance()->IsRelatedSiteInstance(
-          new_rfh->GetSiteInstance());
+  // Navigation.IsSameBrowsingInstance
+  if (is_main_frame) {
+    bool is_same_browsing_instance =
+        old_rfh->GetSiteInstance()->IsRelatedSiteInstance(
+            new_rfh->GetSiteInstance());
 
-  bool is_same_site_instance =
-      old_rfh->GetSiteInstance() == new_rfh->GetSiteInstance();
-
-  // Log overall value, then log specific value per type of navigation.
-  UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameProcess", is_same_process);
-  UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameSiteInstance", is_same_site_instance);
-  UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameBrowsingInstance",
-                        is_same_browsing_instance);
-
-  UMA_HISTOGRAM_BOOLEAN("Navigation.RequiresDedicatedProcess",
-                        new_rfh->GetSiteInstance()->RequiresDedicatedProcess());
-  if (common_params.url.SchemeIsHTTPOrHTTPS()) {
-    UMA_HISTOGRAM_BOOLEAN(
-        "Navigation.RequiresDedicatedProcess.HTTPOrHTTPS",
-        new_rfh->GetSiteInstance()->RequiresDedicatedProcess());
+    UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameBrowsingInstance",
+                          is_same_browsing_instance);
   }
 
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-  GURL process_lock = policy->GetOriginLock(new_rfh->GetProcess()->GetID());
-  UMA_HISTOGRAM_BOOLEAN("Navigation.IsLockedProcess", !process_lock.is_empty());
-  if (common_params.url.SchemeIsHTTPOrHTTPS()) {
-    UMA_HISTOGRAM_BOOLEAN("Navigation.IsLockedProcess.HTTPOrHTTPS",
+  // Navigation.IsSameSiteInstance
+  {
+    bool is_same_site_instance =
+        old_rfh->GetSiteInstance() == new_rfh->GetSiteInstance();
+    UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameSiteInstance",
+                          is_same_site_instance);
+    if (is_main_frame) {
+      UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameSiteInstance.MainFrame",
+                            is_same_site_instance);
+    } else {
+      UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameSiteInstance.Subframe",
+                            is_same_site_instance);
+    }
+  }
+
+  // Navigation.IsLockedProcess
+  {
+    ChildProcessSecurityPolicyImpl* policy =
+        ChildProcessSecurityPolicyImpl::GetInstance();
+    GURL process_lock = policy->GetOriginLock(new_rfh->GetProcess()->GetID());
+    UMA_HISTOGRAM_BOOLEAN("Navigation.IsLockedProcess",
                           !process_lock.is_empty());
+    if (common_params.url.SchemeIsHTTPOrHTTPS()) {
+      UMA_HISTOGRAM_BOOLEAN("Navigation.IsLockedProcess.HTTPOrHTTPS",
+                            !process_lock.is_empty());
+    }
   }
 
-  if (common_params.transition & ui::PAGE_TRANSITION_FORWARD_BACK) {
-    UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameProcess.BackForward",
-                          is_same_process);
-  } else if (ui::PageTransitionCoreTypeIs(common_params.transition,
-                                          ui::PAGE_TRANSITION_RELOAD)) {
-    UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameProcess.Reload", is_same_process);
-  } else if (ui::PageTransitionIsNewNavigation(common_params.transition)) {
-    UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameProcess.NewNavigation",
-                          is_same_process);
-  } else {
-    NOTREACHED() << "Invalid page transition: " << common_params.transition;
+  // Navigation.RequiresDedicatedProcess
+  {
+    UMA_HISTOGRAM_BOOLEAN(
+        "Navigation.RequiresDedicatedProcess",
+        new_rfh->GetSiteInstance()->RequiresDedicatedProcess());
+    if (common_params.url.SchemeIsHTTPOrHTTPS()) {
+      UMA_HISTOGRAM_BOOLEAN(
+          "Navigation.RequiresDedicatedProcess.HTTPOrHTTPS",
+          new_rfh->GetSiteInstance()->RequiresDedicatedProcess());
+    }
   }
 
-  constexpr base::Optional<bool> kIsBackground = base::nullopt;
-  base::TimeDelta delta = ready_to_commit_time - common_params.navigation_start;
-
-  LOG_NAVIGATION_TIMING_HISTOGRAM(
-      "TimeToReadyToCommit2", common_params.transition, kIsBackground, delta);
-  if (!old_rfh->GetParent()) {
-    LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit2.MainFrame",
-                                    common_params.transition, kIsBackground,
-                                    delta);
-  } else {
-    LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit2.Subframe",
-                                    common_params.transition, kIsBackground,
-                                    delta);
+  // Navigation.IsSameProcess
+  {
+    UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameProcess", is_same_process);
+    if (common_params.transition & ui::PAGE_TRANSITION_FORWARD_BACK) {
+      UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameProcess.BackForward",
+                            is_same_process);
+    } else if (ui::PageTransitionCoreTypeIs(common_params.transition,
+                                            ui::PAGE_TRANSITION_RELOAD)) {
+      UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameProcess.Reload", is_same_process);
+    } else if (ui::PageTransitionIsNewNavigation(common_params.transition)) {
+      UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameProcess.NewNavigation",
+                            is_same_process);
+    } else {
+      NOTREACHED() << "Invalid page transition: " << common_params.transition;
+    }
   }
-  if (is_same_process) {
-    LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit2.SameProcess",
-                                    common_params.transition, kIsBackground,
-                                    delta);
-  } else {
-    LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit2.CrossProcess",
-                                    common_params.transition, kIsBackground,
-                                    delta);
+
+  // TimeToReadyToCommit2
+  {
+    constexpr base::Optional<bool> kIsBackground = base::nullopt;
+    base::TimeDelta delta =
+        ready_to_commit_time - common_params.navigation_start;
+
+    LOG_NAVIGATION_TIMING_HISTOGRAM(
+        "TimeToReadyToCommit2", common_params.transition, kIsBackground, delta);
+    if (is_main_frame) {
+      LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit2.MainFrame",
+                                      common_params.transition, kIsBackground,
+                                      delta);
+    } else {
+      LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit2.Subframe",
+                                      common_params.transition, kIsBackground,
+                                      delta);
+    }
+    if (is_same_process) {
+      LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit2.SameProcess",
+                                      common_params.transition, kIsBackground,
+                                      delta);
+    } else {
+      LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit2.CrossProcess",
+                                      common_params.transition, kIsBackground,
+                                      delta);
+    }
   }
 }
 

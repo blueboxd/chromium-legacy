@@ -168,12 +168,6 @@ public class CustomTabToolbarCoordinator implements InflationObserver {
             }
 
             @Override
-            public void didReloadLoFiImages(Tab tab) {
-                // Update the color when the LoFi preview is reloaded.
-                updateColor(tab);
-            }
-
-            @Override
             public void onUrlUpdated(Tab tab) {
                 // Update the color on every new URL.
                 updateColor(tab);

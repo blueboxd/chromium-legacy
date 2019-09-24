@@ -87,7 +87,7 @@ ScriptValue ReadableStreamOperations::CreateReadableStream(
   v8::Local<v8::Value> js_strategy = strategy.V8Value();
   v8::Local<v8::Value> args[] = {js_underlying_source, js_strategy};
   return ScriptValue(
-      script_state,
+      script_state->GetIsolate(),
       V8ScriptRunner::CallExtra(
           script_state, "createReadableStreamWithExternalController", args));
 }
@@ -122,7 +122,7 @@ ScriptValue ReadableStreamOperations::CreateCountQueuingStrategy(
   v8::Local<v8::Value> args[] = {
       v8::Number::New(script_state->GetIsolate(), high_water_mark)};
   return ScriptValue(
-      script_state,
+      script_state->GetIsolate(),
       V8ScriptRunner::CallExtra(script_state,
                                 "createBuiltInCountQueuingStrategy", args));
 }
@@ -136,7 +136,7 @@ ScriptValue ReadableStreamOperations::GetReader(
   v8::TryCatch block(script_state->GetIsolate());
   v8::Local<v8::Value> args[] = {stream.V8Value()};
   ScriptValue result(
-      script_state,
+      script_state->GetIsolate(),
       V8ScriptRunner::CallExtra(script_state,
                                 "AcquireReadableStreamDefaultReader", args));
   if (block.HasCaught()) {
@@ -276,7 +276,7 @@ void ReadableStreamOperations::Serialize(ScriptState* script_state,
   DCHECK(!port_v8_value.IsEmpty());
   v8::Local<v8::Value> args[] = {stream.V8Value(), port_v8_value};
   ScriptValue result(
-      script_state,
+      script_state->GetIsolate(),
       V8ScriptRunner::CallExtra(script_state, "ReadableStreamSerialize", args));
   if (block.HasCaught()) {
     exception_state.RethrowV8Exception(block.Exception());
@@ -296,7 +296,7 @@ ScriptValue ReadableStreamOperations::Deserialize(
   v8::Local<v8::Value> port_v8 = ToV8(port, script_state);
   DCHECK(!port_v8.IsEmpty());
   v8::Local<v8::Value> args[] = {port_v8};
-  ScriptValue result(script_state,
+  ScriptValue result(script_state->GetIsolate(),
                      V8ScriptRunner::CallExtra(
                          script_state, "ReadableStreamDeserialize", args));
   if (block.HasCaught()) {

@@ -10,7 +10,8 @@
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/common/media_router/mojom/media_router_traits_test_service.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media_router {
@@ -22,10 +23,10 @@ class MediaRouterStructTraitsTest
   MediaRouterStructTraitsTest() {}
 
  protected:
-  mojom::MediaRouterTraitsTestServicePtr GetTraitsTestProxy() {
-    mojom::MediaRouterTraitsTestServicePtr proxy;
-    traits_test_bindings_.AddBinding(this, mojo::MakeRequest(&proxy));
-    return proxy;
+  mojo::Remote<mojom::MediaRouterTraitsTestService> GetTraitsTestRemote() {
+    mojo::Remote<mojom::MediaRouterTraitsTestService> remote;
+    traits_test_receivers_.Add(this, remote.BindNewPipeAndPassReceiver());
+    return remote;
   }
 
  private:
@@ -36,7 +37,7 @@ class MediaRouterStructTraitsTest
   }
 
   base::test::TaskEnvironment task_environment_;
-  mojo::BindingSet<MediaRouterTraitsTestService> traits_test_bindings_;
+  mojo::ReceiverSet<MediaRouterTraitsTestService> traits_test_receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterStructTraitsTest);
 };
@@ -58,9 +59,10 @@ TEST_F(MediaRouterStructTraitsTest, DialMediaSink) {
 
   MediaSinkInternal dial_sink(sink, extra_data);
 
-  mojom::MediaRouterTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::MediaRouterTraitsTestService> remote =
+      GetTraitsTestRemote();
   MediaSinkInternal output;
-  proxy->EchoMediaSink(dial_sink, &output);
+  remote->EchoMediaSink(dial_sink, &output);
 
   EXPECT_EQ(dial_sink, output);
 }
@@ -81,9 +83,10 @@ TEST_F(MediaRouterStructTraitsTest, CastMediaSink) {
 
   MediaSinkInternal cast_sink(sink, extra_data);
 
-  mojom::MediaRouterTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::MediaRouterTraitsTestService> remote =
+      GetTraitsTestRemote();
   MediaSinkInternal output;
-  proxy->EchoMediaSink(cast_sink, &output);
+  remote->EchoMediaSink(cast_sink, &output);
 
   EXPECT_EQ(cast_sink, output);
 }
@@ -98,9 +101,10 @@ TEST_F(MediaRouterStructTraitsTest, GenericMediaSink) {
   MediaSinkInternal generic_sink;
   generic_sink.set_sink(sink);
 
-  mojom::MediaRouterTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  mojo::Remote<mojom::MediaRouterTraitsTestService> remote =
+      GetTraitsTestRemote();
   MediaSinkInternal output;
-  proxy->EchoMediaSink(generic_sink, &output);
+  remote->EchoMediaSink(generic_sink, &output);
 
   EXPECT_EQ(generic_sink, output);
 }

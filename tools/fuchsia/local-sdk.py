@@ -4,6 +4,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import hashlib
 import json
 import os
@@ -20,7 +22,7 @@ REPOSITORY_ROOT = os.path.abspath(os.path.join(
 
 
 def Run(*args):
-  print 'Run:', ' '.join(args)
+  print('Run:', ' '.join(args))
   subprocess.check_call(args)
 
 
@@ -28,7 +30,7 @@ def EnsureEmptyDir(path):
   if os.path.isdir(path):
     shutil.rmtree(path)
   if not os.path.exists(path):
-    print 'Creating directory', path
+    print('Creating directory', path)
     os.makedirs(path)
 
 
@@ -43,15 +45,15 @@ def BuildForArch(arch):
 
 def main(args):
   if len(args) == 0 or len(args) > 2 or not os.path.isdir(args[0]):
-    print """usage: %s <path_to_fuchsia_tree> [architecture]""" % SELF_FILE
+    print("""usage: %s <path_to_fuchsia_tree> [architecture]""" % SELF_FILE)
     return 1
 
   target_archs = []
   if len(args) > 1:
     arch = args[1]
     if arch not in ['x64', 'arm64']:
-      print 'Unknown architecture: ' + arch
-      print 'Must be "x64" or "arm64".'
+      print('Unknown architecture: ' + arch)
+      print('Must be "x64" or "arm64".')
       return 1
     target_archs = [arch]
   else:
@@ -128,7 +130,7 @@ def main(args):
   with open(manifest_path, 'w') as manifest_file:
     json.dump(merged_manifest, manifest_file, indent=2)
 
-  print 'Hashing sysroot...'
+  print('Hashing sysroot...')
   # Hash the sysroot to catch updates to the headers, but don't hash the whole
   # tree, as we want to avoid rebuilding all of Chromium if it's only e.g. the
   # kernel blob has changed. https://crbug.com/793956.

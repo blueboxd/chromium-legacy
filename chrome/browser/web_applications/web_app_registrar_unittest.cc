@@ -17,12 +17,11 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
+#include "chrome/browser/web_applications/test/test_web_app_registry_controller.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
-#include "components/sync/model/mock_model_type_change_processor.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -55,28 +54,21 @@ class WebAppRegistrarTest : public WebAppTest {
   void SetUp() override {
     WebAppTest::SetUp();
 
-    database_factory_ = std::make_unique<TestWebAppDatabaseFactory>();
-    registrar_ = std::make_unique<WebAppRegistrar>(profile());
-
-    sync_bridge_ = std::make_unique<WebAppSyncBridge>(
-        profile(), database_factory_.get(), registrar_.get(),
-        mock_processor_.CreateForwardingProcessor());
-
-    ON_CALL(processor(), IsTrackingMetadata())
-        .WillByDefault(testing::Return(true));
+    test_registry_controller_ =
+        std::make_unique<TestWebAppRegistryController>();
+    test_registry_controller_->SetUp(profile());
   }
 
  protected:
-  syncer::MockModelTypeChangeProcessor& processor() { return mock_processor_; }
-  TestWebAppDatabaseFactory& database_factory() { return *database_factory_; }
-  WebAppRegistrar& registrar() { return *registrar_; }
-  WebAppSyncBridge& sync_bridge() { return *sync_bridge_; }
-
-  void InitSyncBridge() {
-    base::RunLoop run_loop;
-    sync_bridge_->Init(base::BindLambdaForTesting([&]() { run_loop.Quit(); }));
-    run_loop.Run();
+  TestWebAppRegistryController& controller() {
+    return *test_registry_controller_;
   }
+
+  TestWebAppDatabaseFactory& database_factory() {
+    return controller().database_factory();
+  }
+  WebAppRegistrar& registrar() { return controller().registrar(); }
+  WebAppSyncBridge& sync_bridge() { return controller().sync_bridge(); }
 
   std::set<AppId> RegisterAppsForTesting(Registry registry) {
     std::set<AppId> ids;
@@ -115,7 +107,7 @@ class WebAppRegistrarTest : public WebAppTest {
       app_ids.insert(kv.second->app_id());
 
     database_factory().WriteRegistry(registry);
-    InitSyncBridge();
+    controller().Init();
 
     return app_ids;
   }
@@ -144,20 +136,12 @@ class WebAppRegistrarTest : public WebAppTest {
     run_loop.Run();
   }
 
-  void DestroySubsystems() {
-    registrar_.reset();
-    sync_bridge_.reset();
-  }
-
  private:
-  std::unique_ptr<TestWebAppDatabaseFactory> database_factory_;
-  std::unique_ptr<WebAppRegistrar> registrar_;
-  testing::NiceMock<syncer::MockModelTypeChangeProcessor> mock_processor_;
-  std::unique_ptr<WebAppSyncBridge> sync_bridge_;
+  std::unique_ptr<TestWebAppRegistryController> test_registry_controller_;
 };
 
 TEST_F(WebAppRegistrarTest, CreateRegisterUnregister) {
-  InitSyncBridge();
+  controller().Init();
 
   EXPECT_EQ(nullptr, registrar().GetAppById(AppId()));
   EXPECT_FALSE(registrar().GetAppById(AppId()));
@@ -228,7 +212,7 @@ TEST_F(WebAppRegistrarTest, CreateRegisterUnregister) {
 }
 
 TEST_F(WebAppRegistrarTest, DestroyRegistrarOwningRegisteredApps) {
-  InitSyncBridge();
+  controller().Init();
 
   auto web_app = CreateWebApp("https://example.com/path");
   sync_bridge().RegisterApp(std::move(web_app));
@@ -236,7 +220,7 @@ TEST_F(WebAppRegistrarTest, DestroyRegistrarOwningRegisteredApps) {
   auto web_app2 = CreateWebApp("https://example.com/path2");
   sync_bridge().RegisterApp(std::move(web_app2));
 
-  DestroySubsystems();
+  controller().DestroySubsystems();
 }
 
 TEST_F(WebAppRegistrarTest, InitRegistrarAndDoForEachApp) {
@@ -253,7 +237,7 @@ TEST_F(WebAppRegistrarTest, InitRegistrarAndDoForEachApp) {
 TEST_F(WebAppRegistrarTest, AllAppsMutable) {
   std::set<AppId> ids = InitRegistrarWithApps("https://example.com/path", 10);
 
-  for (WebApp& web_app : registrar().AllAppsMutable()) {
+  for (WebApp& web_app : controller().mutable_registrar().AllAppsMutable()) {
     web_app.SetLaunchContainer(LaunchContainer::kWindow);
     const size_t num_removed = ids.erase(web_app.app_id());
     EXPECT_EQ(1U, num_removed);
@@ -263,7 +247,7 @@ TEST_F(WebAppRegistrarTest, AllAppsMutable) {
 }
 
 TEST_F(WebAppRegistrarTest, DoForEachAndUnregisterAllApps) {
-  InitSyncBridge();
+  controller().Init();
 
   Registry registry = CreateRegistryForTesting("https://example.com/path", 100);
   auto ids = RegisterAppsForTesting(std::move(registry));
@@ -290,11 +274,11 @@ TEST_F(WebAppRegistrarTest, WebAppSyncBridge) {
   sync_bridge().RegisterApp(std::move(web_app));
 
   EXPECT_EQ(101UL, database_factory().ReadAllAppIds().size());
-  EXPECT_EQ(101UL, registrar().registry_for_testing().size());
+  EXPECT_EQ(101UL, controller().mutable_registrar().registry().size());
 
   // Remove 1 app after Init.
   sync_bridge().UnregisterApp(app_id);
-  EXPECT_EQ(100UL, registrar().registry_for_testing().size());
+  EXPECT_EQ(100UL, controller().mutable_registrar().registry().size());
   EXPECT_EQ(100UL, database_factory().ReadAllAppIds().size());
 
   // Remove 100 apps after Init.
@@ -304,7 +288,7 @@ TEST_F(WebAppRegistrarTest, WebAppSyncBridge) {
 }
 
 TEST_F(WebAppRegistrarTest, GetAppDataFields) {
-  InitSyncBridge();
+  controller().Init();
 
   const GURL launch_url = GURL("https://example.com/path");
   const AppId app_id = GenerateAppIdFromURL(launch_url);
@@ -356,7 +340,7 @@ TEST_F(WebAppRegistrarTest, GetAppDataFields) {
 }
 
 TEST_F(WebAppRegistrarTest, CanFindAppsInScope) {
-  InitSyncBridge();
+  controller().Init();
 
   const GURL origin_scope("https://example.com/");
 
@@ -407,7 +391,7 @@ TEST_F(WebAppRegistrarTest, CanFindAppsInScope) {
 }
 
 TEST_F(WebAppRegistrarTest, CanFindAppWithUrlInScope) {
-  InitSyncBridge();
+  controller().Init();
 
   const GURL origin_scope("https://example.com/");
 
@@ -459,7 +443,7 @@ TEST_F(WebAppRegistrarTest, CanFindAppWithUrlInScope) {
 }
 
 TEST_F(WebAppRegistrarTest, CanFindShortcutWithUrlInScope) {
-  InitSyncBridge();
+  controller().Init();
 
   const GURL app1_page("https://example.com/app/page");
   const GURL app2_page("https://example.com/app-two/page");
@@ -506,7 +490,7 @@ TEST_F(WebAppRegistrarTest, CanFindShortcutWithUrlInScope) {
 }
 
 TEST_F(WebAppRegistrarTest, FindPwaOverShortcut) {
-  InitSyncBridge();
+  controller().Init();
 
   const GURL app1_launch("https://example.com/app/specific/launch1");
 

@@ -26,8 +26,8 @@ source_set("public") {
     "browser_state.h",
     "web_client.h",
     "web_state.h",
-    "web_state/web_state_delegate.h",
-    "web_state/web_state_delegate_bridge.h",
+    "web_state_delegate.h",
+    "web_state_delegate_bridge.h",
     "web_state_observer_bridge.h",
     "web_state_user_data.h",
   ]

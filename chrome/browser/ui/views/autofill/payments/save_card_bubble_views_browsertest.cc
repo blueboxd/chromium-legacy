@@ -32,7 +32,8 @@
 #include "chrome/browser/ui/views/autofill/payments/save_card_icon_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_account_icon_container_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -695,8 +696,9 @@ class SaveCardBubbleViewsFullFormBrowserTest
             PageActionIconType::kSaveCard);
     if (base::FeatureList::IsEnabled(
             features::kAutofillEnableToolbarStatusChip)) {
-      DCHECK(browser_view->toolbar()->toolbar_page_action_container()->Contains(
-          icon));
+      DCHECK(
+          browser_view->toolbar()->toolbar_account_icon_container()->Contains(
+              icon));
     } else {
       DCHECK(browser_view->GetLocationBarView()->Contains(icon));
     }
@@ -2682,7 +2684,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
                        MAYBE_ActivateFirstInactiveBubbleForAccessibility) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   ToolbarView* toolbar_view = browser_view->toolbar();
-  EXPECT_FALSE(toolbar_view->toolbar_page_action_container()
+  EXPECT_FALSE(toolbar_view->toolbar_account_icon_container()
+                   ->page_action_icon_container()
                    ->ActivateFirstInactiveBubbleForAccessibility());
 
   FillForm();
@@ -2696,7 +2699,8 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
   EXPECT_TRUE(widget->IsVisible());
   EXPECT_FALSE(widget->IsActive());
 
-  EXPECT_TRUE(toolbar_view->toolbar_page_action_container()
+  EXPECT_TRUE(toolbar_view->toolbar_account_icon_container()
+                  ->page_action_icon_container()
                   ->ActivateFirstInactiveBubbleForAccessibility());
 
   // Ensure the bubble's widget refreshed appropriately.

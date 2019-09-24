@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import argparse
 import subprocess
 import pickle
@@ -26,7 +28,7 @@ CACHE_FILENAME = 'suggest_owners.cache'
 def _RunGitCommand(options, cmd_args):
   repo_path = path.join(options.repo_path, '.git')
   cmd = ['git', '--git-dir', repo_path] + cmd_args
-  print '>', ' '.join(cmd)
+  print('>', ' '.join(cmd))
   return subprocess.check_output(cmd)
 
 
@@ -123,10 +125,10 @@ def _ParseFileStatsLine(current_commit, line):
 
 def processAllCommits(options):
   if not options.subdirectory and options.days_ago > 100:
-    print ('git log for your query might take > 5 minutes, limit by a '
-           'subdirectory or reduce the number of days of history to low double '
-           'digits to make this faster. There is no progress indicator, it is '
-           'all waiting for single git log to finish.')
+    print('git log for your query might take > 5 minutes, limit by a '
+          'subdirectory or reduce the number of days of history to low double '
+          'digits to make this faster. There is no progress indicator, it is '
+          'all waiting for single git log to finish.')
   output = _RunGitCommand(options, _GetGitLogCmd(options))
   current_commit = None
   for line in output.splitlines():
@@ -242,21 +244,21 @@ def computeSuggestions(options):
 
 
 def _PrintSettings(options):
-  print ('Showing directories with at least ({}) commits in the last ({}) '
-         'days.'.format(options.dir_commit_limit, options.days_ago))
-  print ('Showing top ({}) committers who have commited at least ({}) commits '
-         'to the directory in the last ({}) days.'.format(
-             options.max_suggestions, options.author_cl_limit,
-             options.days_ago))
-  print '(owners+N) represents distance through OWNERS files for said owner\n'
+  print('Showing directories with at least ({}) commits in the last ({}) '
+        'days.'.format(options.dir_commit_limit, options.days_ago))
+  print('Showing top ({}) committers who have commited at least ({}) commits '
+        'to the directory in the last ({}) days.'.format(
+            options.max_suggestions, options.author_cl_limit,
+            options.days_ago))
+  print('(owners+N) represents distance through OWNERS files for said owner\n')
 
 
 def printSuggestions(options, directory_suggestions):
-  print '\nCommit stats:'
+  print('\nCommit stats:')
   _PrintSettings(options)
   for directory, suggestions in directory_suggestions:
-    print '{}: {} commits in the last {} days'.format(
-        directory, _CountCommits(directory), options.days_ago)
+    print('{}: {} commits in the last {} days'.format(
+        directory, _CountCommits(directory), options.days_ago))
     non_owner_suggestions = 0
     for author, (commit_count, additions, deletions) in suggestions:
       owner_level = _GetOwnerLevel(options, author, directory)
@@ -265,11 +267,11 @@ def printSuggestions(options, directory_suggestions):
       else:
         non_owner_suggestions +=1
         owner_string = ''
-      print '{}{}, commits: {}, additions:{}, deletions: {}'.format(
-          author, owner_string, commit_count, additions, deletions)
+      print('{}{}, commits: {}, additions:{}, deletions: {}'.format(
+          author, owner_string, commit_count, additions, deletions))
       if non_owner_suggestions >= options.max_suggestions:
         break
-    print
+    print()
 
 
 def _GetHeadCommitHash(options):
@@ -305,11 +307,11 @@ def maybeRestoreProcessedCommits(options):
   with open(CACHE_FILENAME) as f:
     stored_metadata, cached_directory_authors = pickle.load(f)
     if _IsCacheValid(options, stored_metadata):
-      print 'Loading from cache'
+      print('Loading from cache')
       DIRECTORY_AUTHORS = cached_directory_authors
       return True
     else:
-      print 'Cache is stale or invalid, must rerun `git log`'
+      print('Cache is stale or invalid, must rerun `git log`')
       return False
 
 def do(options):

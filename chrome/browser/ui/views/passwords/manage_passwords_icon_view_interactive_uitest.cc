@@ -7,9 +7,9 @@
 #include "chrome/browser/ui/passwords/manage_passwords_test.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_account_icon_container_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
@@ -41,18 +41,10 @@ class ManagePasswordsIconViewTest : public ManagePasswordsTest,
   }
 
   ManagePasswordsIconViews* GetView() {
-    views::View* view = nullptr;
-    if (base::FeatureList::IsEnabled(
-            autofill::features::kAutofillEnableToolbarStatusChip)) {
-      view = BrowserView::GetBrowserViewForBrowser(browser())
-                 ->toolbar()
-                 ->toolbar_page_action_container()
-                 ->manage_passwords_icon_views();
-    } else {
-      view = BrowserView::GetBrowserViewForBrowser(browser())
-                 ->toolbar_button_provider()
-                 ->GetPageActionIconView(PageActionIconType::kManagePasswords);
-    }
+    views::View* const view =
+        BrowserView::GetBrowserViewForBrowser(browser())
+            ->toolbar_button_provider()
+            ->GetPageActionIconView(PageActionIconType::kManagePasswords);
     DCHECK_EQ(view->GetClassName(), ManagePasswordsIconViews::kClassName);
     return static_cast<ManagePasswordsIconViews*>(view);
   }

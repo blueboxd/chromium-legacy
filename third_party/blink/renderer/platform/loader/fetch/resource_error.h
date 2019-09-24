@@ -30,7 +30,6 @@
 #include <iosfwd>
 #include "base/optional.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
-#include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -38,6 +37,7 @@
 
 namespace blink {
 
+struct WebURLError;
 enum class ResourceRequestBlockedReason;
 
 // ResourceError represents an error for loading a resource. There is no

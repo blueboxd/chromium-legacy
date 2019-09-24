@@ -489,86 +489,90 @@ void FocusTraversalTest::InitContentView() {
   y += 40;
 
   // Left bottom box with style checkboxes.
-  auto contents = std::make_unique<View>();
-  contents->SetBackground(CreateSolidBackground(SK_ColorWHITE));
+  auto tabbed_pane_contents = std::make_unique<View>();
+  tabbed_pane_contents->SetBackground(CreateSolidBackground(SK_ColorWHITE));
   cb = std::make_unique<Checkbox>(ASCIIToUTF16("Bold"));
-  cb_ptr = contents->AddChildView(std::move(cb));
+  cb_ptr = tabbed_pane_contents->AddChildView(std::move(cb));
   cb_ptr->SetBounds(10, 10, 50, 20);
   cb_ptr->SetID(BOLD_CHECKBOX_ID);
 
   cb = std::make_unique<Checkbox>(ASCIIToUTF16("Italic"));
-  cb_ptr = contents->AddChildView(std::move(cb));
+  cb_ptr = tabbed_pane_contents->AddChildView(std::move(cb));
   cb_ptr->SetBounds(70, 10, 50, 20);
   cb_ptr->SetID(ITALIC_CHECKBOX_ID);
 
   cb = std::make_unique<Checkbox>(ASCIIToUTF16("Underlined"));
-  cb_ptr = contents->AddChildView(std::move(cb));
+  cb_ptr = tabbed_pane_contents->AddChildView(std::move(cb));
   cb_ptr->SetBounds(130, 10, 70, 20);
   cb_ptr->SetID(UNDERLINED_CHECKBOX_ID);
 
   auto link = std::make_unique<Link>(ASCIIToUTF16("Help"));
-  auto* link_ptr = contents->AddChildView(std::move(link));
+  auto* link_ptr = tabbed_pane_contents->AddChildView(std::move(link));
   link_ptr->SetBounds(10, 35, 70, 10);
   link_ptr->SetID(STYLE_HELP_LINK_ID);
 
   text_field = std::make_unique<Textfield>();
-  text_field_ptr = contents->AddChildView(std::move(text_field));
+  text_field_ptr = tabbed_pane_contents->AddChildView(std::move(text_field));
   text_field_ptr->SetBounds(10, 50, 100, 20);
   text_field_ptr->SetID(STYLE_TEXT_EDIT_ID);
 
   auto style_tab = std::make_unique<TabbedPane>();
   style_tab_ = GetContentsView()->AddChildView(std::move(style_tab));
   style_tab_->SetBounds(10, y, 210, 100);
-  style_tab_->AddTab(ASCIIToUTF16("Style"), std::move(contents));
+  style_tab_->AddTab(ASCIIToUTF16("Style"), std::move(tabbed_pane_contents));
   style_tab_->GetSelectedTab()->SetID(STYLE_CONTAINER_ID);
   style_tab_->AddTab(ASCIIToUTF16("Other"), std::make_unique<View>());
 
   // Right bottom box with search.
-  contents = std::make_unique<View>();
-  contents->SetBackground(CreateSolidBackground(SK_ColorWHITE));
+  auto border_contents = std::make_unique<View>();
+  border_contents->SetBackground(CreateSolidBackground(SK_ColorWHITE));
   text_field = std::make_unique<Textfield>();
-  text_field_ptr = contents->AddChildView(std::move(text_field));
+  text_field_ptr = border_contents->AddChildView(std::move(text_field));
   text_field_ptr->SetBounds(10, 10, 100, 20);
   text_field_ptr->SetID(SEARCH_TEXTFIELD_ID);
 
   button = MdTextButton::Create(nullptr, ASCIIToUTF16("Search"));
   button->SetBounds(112, 5, 60, 30);
   button->SetID(SEARCH_BUTTON_ID);
-  contents->AddChildView(std::move(button));
+  border_contents->AddChildView(std::move(button));
 
   link = std::make_unique<Link>(ASCIIToUTF16("Help"));
   link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   link->SetID(HELP_LINK_ID);
-  link_ptr = contents->AddChildView(std::move(link));
+  link_ptr = border_contents->AddChildView(std::move(link));
   link_ptr->SetBounds(175, 10, 30, 20);
 
-  auto search_border_view = std::make_unique<BorderView>(contents.release());
+  auto search_border_view =
+      std::make_unique<BorderView>(border_contents.release());
   search_border_view->SetID(SEARCH_CONTAINER_ID);
-
   search_border_view_ =
       GetContentsView()->AddChildView(std::move(search_border_view));
   search_border_view_->SetBounds(300, y, 240, 50);
 
   y += 60;
 
-  contents = std::make_unique<View>();
-  contents->SetFocusBehavior(View::FocusBehavior::ALWAYS);
-  contents->SetBackground(CreateSolidBackground(SK_ColorBLUE));
-  contents->SetID(THUMBNAIL_CONTAINER_ID);
+  auto view_contents = std::make_unique<View>();
+  view_contents->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  view_contents->SetBackground(CreateSolidBackground(SK_ColorBLUE));
+  view_contents->SetID(THUMBNAIL_CONTAINER_ID);
   button = MdTextButton::Create(nullptr, ASCIIToUTF16("Star"));
   button->SetBounds(5, 5, 50, 30);
   button->SetID(THUMBNAIL_STAR_ID);
-  contents->AddChildView(std::move(button));
+  view_contents->AddChildView(std::move(button));
   button = MdTextButton::Create(nullptr, ASCIIToUTF16("SuperStar"));
   button->SetBounds(60, 5, 100, 30);
   button->SetID(THUMBNAIL_SUPER_STAR_ID);
-  contents->AddChildView(std::move(button));
+  view_contents->AddChildView(std::move(button));
 
-  auto* contents_ptr = GetContentsView()->AddChildView(std::move(contents));
+  auto* contents_ptr =
+      GetContentsView()->AddChildView(std::move(view_contents));
   contents_ptr->SetBounds(250, y, 200, 50);
   // We can only call RadioButton::SetChecked() on the radio-button is part of
   // the view hierarchy.
   radio_button_to_check->SetChecked(true);
+
+  // Perform any pending layouts.
+  GetWidget()->LayoutRootViewIfNecessary();
 }
 
 TEST_F(FocusTraversalTest, NormalTraversal) {

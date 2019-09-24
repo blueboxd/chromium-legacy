@@ -125,7 +125,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   void WorkerReadyForInspectionOnInitiatorThread(
       mojo::ScopedMessagePipeHandle devtools_agent_ptr_info,
       mojo::ScopedMessagePipeHandle devtools_agent_host_request) override;
-  void WorkerContextFailedToStartOnInitiatorThread() override;
   void FailedToLoadClassicScript() override;
   void FailedToFetchModuleScript() override;
   void WorkerScriptLoadedOnWorkerThread() override;

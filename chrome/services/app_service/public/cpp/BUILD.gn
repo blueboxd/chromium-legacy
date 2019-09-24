@@ -55,6 +55,18 @@ source_set("manifest") {
   ]
 }
 
+source_set("intent_filter_util") {
+  sources = [
+    "intent_filter_util.cc",
+    "intent_filter_util.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chrome/services/app_service/public/mojom",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
 

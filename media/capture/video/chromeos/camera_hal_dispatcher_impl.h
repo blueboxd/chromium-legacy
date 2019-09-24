@@ -93,6 +93,8 @@ class CAPTURE_EXPORT CameraHalDispatcherImpl final
   // Runs on |blocking_io_thread_|.
   void StartServiceLoop(base::ScopedFD socket_fd, base::WaitableEvent* started);
 
+  void RegisterClientOnProxyThread(
+      mojo::InterfacePtrInfo<cros::mojom::CameraHalClient> client_ptr_info);
   void AddClientObserverOnProxyThread(
       std::unique_ptr<CameraClientObserver> observer);
 

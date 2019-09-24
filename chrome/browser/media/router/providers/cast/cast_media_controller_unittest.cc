@@ -10,6 +10,7 @@
 #include "chrome/browser/media/router/test/media_router_mojo_test.h"
 #include "chrome/common/media_router/media_route.h"
 #include "content/public/test/browser_task_environment.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -126,11 +127,11 @@ class CastMediaControllerTest : public testing::Test {
   void SetUp() override {
     testing::Test::SetUp();
 
-    mojom::MediaStatusObserverPtr mojo_status_observer;
+    mojo::PendingRemote<mojom::MediaStatusObserver> mojo_status_observer;
     status_observer_ = std::make_unique<MockMediaStatusObserver>(
-        mojo::MakeRequest(&mojo_status_observer));
+        mojo_status_observer.InitWithNewPipeAndPassReceiver());
     controller_ = std::make_unique<CastMediaController>(
-        &activity_, mojo::MakeRequest(&mojo_controller_),
+        &activity_, mojo_controller_.BindNewPipeAndPassReceiver(),
         std::move(mojo_status_observer));
   }
 
@@ -178,7 +179,7 @@ class CastMediaControllerTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   MockActivityRecord activity_;
   std::unique_ptr<CastMediaController> controller_;
-  mojom::MediaControllerPtr mojo_controller_;
+  mojo::Remote<mojom::MediaController> mojo_controller_;
   std::unique_ptr<MockMediaStatusObserver> status_observer_;
 };
 

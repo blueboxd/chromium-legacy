@@ -23,7 +23,7 @@ DawnBindGroupLayoutBinding AsDawnType(
   dawn_binding.textureComponentType = AsDawnEnum<DawnTextureComponentType>(
       webgpu_binding->textureComponentType());
   dawn_binding.multisampled = webgpu_binding->multisampled();
-  dawn_binding.dynamic = webgpu_binding->dynamic();
+  dawn_binding.hasDynamicOffset = webgpu_binding->hasDynamicOffset();
 
   return dawn_binding;
 }

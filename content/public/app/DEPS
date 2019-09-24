@@ -12,6 +12,5 @@ include_rules = [
 specific_include_rules = {
   "content_browser_manifest\.cc": [
     "+services/content/public/cpp/manifest.h",
-    "+services/file/public/cpp/manifest.h",
   ],
 }

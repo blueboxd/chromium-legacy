@@ -21,6 +21,8 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/system_connector.h"
 #include "extensions/common/extension.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/connector.h"
 #if defined(OS_WIN)
 #include "chrome/browser/media/router/mojo/media_route_provider_util_win.h"
@@ -43,15 +45,16 @@ service_manager::Connector* GetConnector() {
 MediaRouterDesktop::~MediaRouterDesktop() = default;
 
 // static
-void MediaRouterDesktop::BindToRequest(const extensions::Extension* extension,
-                                       content::BrowserContext* context,
-                                       mojom::MediaRouterRequest request,
-                                       content::RenderFrameHost* source) {
+void MediaRouterDesktop::BindToReceiver(
+    const extensions::Extension* extension,
+    content::BrowserContext* context,
+    mojo::PendingReceiver<mojom::MediaRouter> receiver,
+    content::RenderFrameHost* source) {
   MediaRouterDesktop* impl = static_cast<MediaRouterDesktop*>(
       MediaRouterFactory::GetApiForBrowserContext(context));
   DCHECK(impl);
 
-  impl->BindToMojoRequest(std::move(request), *extension);
+  impl->BindToMojoReceiver(std::move(receiver), *extension);
 }
 
 void MediaRouterDesktop::OnUserGesture() {
@@ -106,7 +109,7 @@ MediaRouterDesktop::MediaRouterDesktop(content::BrowserContext* context,
 
 void MediaRouterDesktop::RegisterMediaRouteProvider(
     MediaRouteProviderId provider_id,
-    mojom::MediaRouteProviderPtr media_route_provider_ptr,
+    mojo::PendingRemote<mojom::MediaRouteProvider> media_route_provider_remote,
     mojom::MediaRouter::RegisterMediaRouteProviderCallback callback) {
   auto config = mojom::MediaRouteProviderConfig::New();
   // Enabling browser side discovery / sink query means disabling extension side
@@ -122,12 +125,14 @@ void MediaRouterDesktop::RegisterMediaRouteProvider(
   SyncStateToMediaRouteProvider(provider_id);
 
   if (provider_id == MediaRouteProviderId::EXTENSION) {
-    RegisterExtensionMediaRouteProvider(std::move(media_route_provider_ptr));
+    RegisterExtensionMediaRouteProvider(std::move(media_route_provider_remote));
   } else {
-    media_route_provider_ptr.set_connection_error_handler(
+    mojo::Remote<mojom::MediaRouteProvider> bound_remote(
+        std::move(media_route_provider_remote));
+    bound_remote.set_disconnect_handler(
         base::BindOnce(&MediaRouterDesktop::OnProviderConnectionError,
                        weak_factory_.GetWeakPtr(), provider_id));
-    media_route_providers_[provider_id] = std::move(media_route_provider_ptr);
+    media_route_providers_[provider_id] = std::move(bound_remote);
   }
 }
 
@@ -148,7 +153,7 @@ void MediaRouterDesktop::GetMediaSinkServiceStatus(
 }
 
 void MediaRouterDesktop::RegisterExtensionMediaRouteProvider(
-    mojom::MediaRouteProviderPtr extension_provider_ptr) {
+    mojo::PendingRemote<mojom::MediaRouteProvider> extension_provider_remote) {
   ProvideSinksToExtension();
 #if defined(OS_WIN)
   // The extension MRP already turns on mDNS discovery for platforms other than
@@ -160,14 +165,14 @@ void MediaRouterDesktop::RegisterExtensionMediaRouteProvider(
     EnsureMdnsDiscoveryEnabled();
 #endif
   extension_provider_proxy_->RegisterMediaRouteProvider(
-      std::move(extension_provider_ptr));
+      std::move(extension_provider_remote));
 }
 
-void MediaRouterDesktop::BindToMojoRequest(
-    mojo::InterfaceRequest<mojom::MediaRouter> request,
+void MediaRouterDesktop::BindToMojoReceiver(
+    mojo::PendingReceiver<mojom::MediaRouter> receiver,
     const extensions::Extension& extension) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  MediaRouterMojoImpl::BindToMojoRequest(std::move(request));
+  MediaRouterMojoImpl::BindToMojoReceiver(std::move(receiver));
   extension_provider_proxy_->SetExtensionId(extension.id());
   if (!provider_version_was_recorded_) {
     MediaRouterMojoMetrics::RecordMediaRouteProviderVersion(extension);
@@ -217,13 +222,13 @@ void MediaRouterDesktop::InitializeExtensionMediaRouteProviderProxy() {
     extension_provider_proxy_ =
         std::make_unique<ExtensionMediaRouteProviderProxy>(context());
   }
-  mojom::MediaRouteProviderPtr extension_provider_proxy_ptr;
+  mojo::Remote<mojom::MediaRouteProvider> extension_provider_proxy_remote;
   extension_provider_proxy_->Bind(
-      mojo::MakeRequest(&extension_provider_proxy_ptr));
-  extension_provider_proxy_ptr.set_connection_error_handler(base::BindOnce(
+      extension_provider_proxy_remote.BindNewPipeAndPassReceiver());
+  extension_provider_proxy_remote.set_disconnect_handler(base::BindOnce(
       &MediaRouterDesktop::OnExtensionProviderError, base::Unretained(this)));
   media_route_providers_[MediaRouteProviderId::EXTENSION] =
-      std::move(extension_provider_proxy_ptr);
+      std::move(extension_provider_proxy_remote);
 }
 
 void MediaRouterDesktop::OnExtensionProviderError() {
@@ -241,14 +246,15 @@ void MediaRouterDesktop::OnExtensionProviderError() {
 }
 
 void MediaRouterDesktop::InitializeWiredDisplayMediaRouteProvider() {
-  mojom::MediaRouterPtr media_router_ptr;
-  MediaRouterMojoImpl::BindToMojoRequest(mojo::MakeRequest(&media_router_ptr));
-  mojom::MediaRouteProviderPtr wired_display_provider_ptr;
+  mojo::PendingRemote<mojom::MediaRouter> media_router_remote;
+  MediaRouterMojoImpl::BindToMojoReceiver(
+      media_router_remote.InitWithNewPipeAndPassReceiver());
+  mojo::PendingRemote<mojom::MediaRouteProvider> wired_display_provider_remote;
   wired_display_provider_ = std::make_unique<WiredDisplayMediaRouteProvider>(
-      mojo::MakeRequest(&wired_display_provider_ptr),
-      std::move(media_router_ptr), Profile::FromBrowserContext(context()));
+      wired_display_provider_remote.InitWithNewPipeAndPassReceiver(),
+      std::move(media_router_remote), Profile::FromBrowserContext(context()));
   RegisterMediaRouteProvider(MediaRouteProviderId::WIRED_DISPLAY,
-                             std::move(wired_display_provider_ptr),
+                             std::move(wired_display_provider_remote),
                              base::DoNothing());
 }
 
@@ -260,27 +266,30 @@ std::string MediaRouterDesktop::GetHashToken() {
 void MediaRouterDesktop::InitializeCastMediaRouteProvider() {
   auto task_runner =
       cast_channel::CastSocketService::GetInstance()->task_runner();
-  mojom::MediaRouterPtr media_router_ptr;
-  MediaRouterMojoImpl::BindToMojoRequest(mojo::MakeRequest(&media_router_ptr));
-  mojom::MediaRouteProviderPtr cast_provider_ptr;
+  mojo::PendingRemote<mojom::MediaRouter> media_router_remote;
+  MediaRouterMojoImpl::BindToMojoReceiver(
+      media_router_remote.InitWithNewPipeAndPassReceiver());
+  mojo::PendingRemote<mojom::MediaRouteProvider> cast_provider_remote;
   cast_provider_ =
       std::unique_ptr<CastMediaRouteProvider, base::OnTaskRunnerDeleter>(
           new CastMediaRouteProvider(
-              mojo::MakeRequest(&cast_provider_ptr),
-              media_router_ptr.PassInterface(),
+              cast_provider_remote.InitWithNewPipeAndPassReceiver(),
+              std::move(media_router_remote),
               media_sink_service_->GetCastMediaSinkServiceImpl(),
               media_sink_service_->cast_app_discovery_service(),
               GetCastMessageHandler(), GetConnector(), GetHashToken(),
               task_runner),
           base::OnTaskRunnerDeleter(task_runner));
   RegisterMediaRouteProvider(MediaRouteProviderId::CAST,
-                             std::move(cast_provider_ptr), base::DoNothing());
+                             std::move(cast_provider_remote),
+                             base::DoNothing());
 }
 
 void MediaRouterDesktop::InitializeDialMediaRouteProvider() {
-  mojom::MediaRouterPtr media_router_ptr;
-  MediaRouterMojoImpl::BindToMojoRequest(mojo::MakeRequest(&media_router_ptr));
-  mojom::MediaRouteProviderPtr dial_provider_ptr;
+  mojo::PendingRemote<mojom::MediaRouter> media_router_remote;
+  MediaRouterMojoImpl::BindToMojoReceiver(
+      media_router_remote.InitWithNewPipeAndPassReceiver());
+  mojo::PendingRemote<mojom::MediaRouteProvider> dial_provider_remote;
 
   auto* dial_media_sink_service =
       media_sink_service_->GetDialMediaSinkServiceImpl();
@@ -288,13 +297,14 @@ void MediaRouterDesktop::InitializeDialMediaRouteProvider() {
 
   dial_provider_ =
       std::unique_ptr<DialMediaRouteProvider, base::OnTaskRunnerDeleter>(
-          new DialMediaRouteProvider(mojo::MakeRequest(&dial_provider_ptr),
-                                     media_router_ptr.PassInterface(),
-                                     dial_media_sink_service, GetConnector(),
-                                     GetHashToken(), task_runner),
+          new DialMediaRouteProvider(
+              dial_provider_remote.InitWithNewPipeAndPassReceiver(),
+              std::move(media_router_remote), dial_media_sink_service,
+              GetConnector(), GetHashToken(), task_runner),
           base::OnTaskRunnerDeleter(task_runner));
   RegisterMediaRouteProvider(MediaRouteProviderId::DIAL,
-                             std::move(dial_provider_ptr), base::DoNothing());
+                             std::move(dial_provider_remote),
+                             base::DoNothing());
 }
 
 #if defined(OS_WIN)

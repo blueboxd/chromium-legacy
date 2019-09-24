@@ -172,6 +172,92 @@ TEST_F(LabelButtonTest, Label) {
             gfx::Size(long_text_width, font_list.GetHeight() * 2));
 }
 
+TEST_F(LabelButtonTest, LabelShrinkDown) {
+  ASSERT_TRUE(button_->GetText().empty());
+
+  const gfx::FontList font_list = button_->label()->font_list();
+  const base::string16 text(ASCIIToUTF16("abcdefghijklm"));
+  const int text_width = gfx::GetStringWidth(text, font_list);
+
+  ASSERT_LT(button_->GetPreferredSize().width(), text_width);
+  button_->SetText(text);
+  EXPECT_GT(button_->GetPreferredSize().width(), text_width);
+  button_->SetSize(button_->GetPreferredSize());
+
+  // When shrinking, the button should report again the size with no label
+  // (while keeping the label).
+  button_->ShrinkDownThenClearText();
+  EXPECT_EQ(button_->GetText(), text);
+  EXPECT_LT(button_->GetPreferredSize().width(), text_width);
+
+  // After the layout manager resizes the button to it's desired size, it's text
+  // should be empty again.
+  button_->SetSize(button_->GetPreferredSize());
+  EXPECT_TRUE(button_->GetText().empty());
+}
+
+TEST_F(LabelButtonTest, LabelShrinksDownOnManualSetBounds) {
+  ASSERT_TRUE(button_->GetText().empty());
+  ASSERT_GT(button_->GetPreferredSize().width(), 1);
+
+  const base::string16 text(ASCIIToUTF16("abcdefghijklm"));
+
+  button_->SetText(text);
+  EXPECT_EQ(button_->GetText(), text);
+  button_->SetSize(button_->GetPreferredSize());
+  button_->SetBoundsRect(gfx::Rect(button_->GetPreferredSize()));
+
+  button_->ShrinkDownThenClearText();
+
+  // Manually setting a smaller size should also clear text.
+  button_->SetBoundsRect(gfx::Rect(1, 1));
+  EXPECT_TRUE(button_->GetText().empty());
+}
+
+TEST_F(LabelButtonTest, LabelShrinksDownCanceledBySettingText) {
+  ASSERT_TRUE(button_->GetText().empty());
+
+  const gfx::FontList font_list = button_->label()->font_list();
+  const base::string16 text(ASCIIToUTF16("abcdefghijklm"));
+  const int text_width = gfx::GetStringWidth(text, font_list);
+
+  ASSERT_LT(button_->GetPreferredSize().width(), text_width);
+  button_->SetText(text);
+  EXPECT_GT(button_->GetPreferredSize().width(), text_width);
+  button_->SetBoundsRect(gfx::Rect(button_->GetPreferredSize()));
+
+  // When shrinking, the button should report again the size with no label
+  // (while keeping the label).
+  button_->ShrinkDownThenClearText();
+  EXPECT_EQ(button_->GetText(), text);
+  gfx::Size shrinking_size = button_->GetPreferredSize();
+  EXPECT_LT(shrinking_size.width(), text_width);
+
+  // When we SetText() again, the shrinking gets canceled.
+  button_->SetText(text);
+  EXPECT_GT(button_->GetPreferredSize().width(), text_width);
+
+  // Even if the layout manager resizes the button to it's size desired for
+  // shrinking, it's text does not get cleared and it still prefers having space
+  // for its label.
+  button_->SetSize(shrinking_size);
+  EXPECT_FALSE(button_->GetText().empty());
+  EXPECT_GT(button_->GetPreferredSize().width(), text_width);
+}
+
+TEST_F(
+    LabelButtonTest,
+    LabelShrinksDownImmediatelyIfAlreadySmallerThanPreferredSizeWithoutLabel) {
+  button_->SetBoundsRect(gfx::Rect(1, 1));
+  button_->SetText(ASCIIToUTF16("abcdefghijklm"));
+
+  // Shrinking the text down when it's already shrunk down (its size is smaller
+  // than preferred without label) should clear the text immediately.
+  EXPECT_FALSE(button_->GetText().empty());
+  button_->ShrinkDownThenClearText();
+  EXPECT_TRUE(button_->GetText().empty());
+}
+
 // Test behavior of View::GetAccessibleNodeData() for buttons when setting a
 // label.
 TEST_F(LabelButtonTest, AccessibleState) {

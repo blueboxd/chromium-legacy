@@ -120,10 +120,7 @@ void ToolbarButton::SetText(const base::string16& text) {
 
 void ToolbarButton::ClearHighlight() {
   highlight_color_animation_.Hide();
-  // TODO(crbug.com/1002160): Support AnimatingLayoutManager by reporting
-  // preferred size without the label, clear the label only once the layout
-  // animation is completed.
-  LabelButton::SetText(base::string16());
+  ShrinkDownThenClearText();
 }
 
 void ToolbarButton::UpdateColorsAndInsets() {

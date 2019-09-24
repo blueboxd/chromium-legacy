@@ -7,7 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #import "ios/chrome/browser/ui/dialogs/overlay_java_script_dialog_presenter.h"
-#import "ios/web/public/web_state/web_state_delegate.h"
+#import "ios/web/public/web_state_delegate.h"
 #include "ios/web/public/web_state_observer.h"
 #import "ios/web/public/web_state_user_data.h"
 

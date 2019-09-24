@@ -21,6 +21,7 @@
 #include "components/sync/engine_impl/commit_contribution.h"
 #include "components/sync/engine_impl/cycle/non_blocking_type_debug_info_emitter.h"
 #include "components/sync/engine_impl/cycle/status_controller.h"
+#include "components/sync/syncable/directory_cryptographer.h"
 #include "components/sync/test/engine/mock_model_type_processor.h"
 #include "components/sync/test/engine/mock_nudge_handler.h"
 #include "components/sync/test/engine/single_type_mock_server.h"
@@ -218,7 +219,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
 
     std::unique_ptr<Cryptographer> cryptographer_copy;
     if (cryptographer_) {
-      cryptographer_copy = std::make_unique<Cryptographer>(*cryptographer_);
+      cryptographer_copy = cryptographer_->Clone();
     }
 
     worker_ = std::make_unique<ModelTypeWorker>(
@@ -229,7 +230,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
 
   void InitializeCryptographer() {
     if (!cryptographer_) {
-      cryptographer_ = std::make_unique<Cryptographer>();
+      cryptographer_ = std::make_unique<DirectoryCryptographer>();
     }
   }
 
@@ -271,8 +272,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
 
     // Update the worker with the latest cryptographer.
     if (worker()) {
-      worker()->UpdateCryptographer(
-          std::make_unique<Cryptographer>(*cryptographer_));
+      worker()->UpdateCryptographer(cryptographer_->Clone());
     }
   }
 
@@ -286,8 +286,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
 
     // Update the worker with the latest cryptographer.
     if (worker()) {
-      worker()->UpdateCryptographer(
-          std::make_unique<Cryptographer>(*cryptographer_));
+      worker()->UpdateCryptographer(cryptographer_->Clone());
       worker()->EncryptionAcceptedMaybeApplyUpdates();
     }
   }
@@ -488,7 +487,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
     if (!cryptographer_) {
       return std::string();
     }
-    return cryptographer_->GetDefaultNigoriKeyName();
+    return cryptographer_->GetDefaultEncryptionKeyName();
   }
 
   MockModelTypeProcessor* processor() { return mock_type_processor_; }
@@ -502,7 +501,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
   const ModelType model_type_;
 
   // The cryptographer itself. Null if we're not encrypting the type.
-  std::unique_ptr<Cryptographer> cryptographer_;
+  std::unique_ptr<DirectoryCryptographer> cryptographer_;
 
   // The number of the most recent foreign encryption key known to our
   // cryptographer. Note that not all of these will be decryptable.
@@ -1305,7 +1304,6 @@ TEST_F(ModelTypeWorkerTest, CommitOnly) {
   const SyncEntity entity =
       server()->GetNthCommitMessage(0).commit().entries(0);
 
-  EXPECT_EQ(0, entity.attachment_id_size());
   EXPECT_FALSE(entity.has_ctime());
   EXPECT_FALSE(entity.has_deleted());
   EXPECT_FALSE(entity.has_folder());
@@ -1344,7 +1342,7 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseData) {
   *entity.mutable_specifics() = GenerateSpecifics(kTag1, kValue1);
   UpdateResponseData response_data;
 
-  Cryptographer cryptographer;
+  DirectoryCryptographer cryptographer;
   base::HistogramTester histogram_tester;
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
@@ -1385,7 +1383,7 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataForBookmarkTombstone) {
   // Add default value field for a Bookmark.
   entity.mutable_specifics()->mutable_bookmark();
 
-  Cryptographer cryptographer;
+  DirectoryCryptographer cryptographer;
 
   UpdateResponseData response_data;
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
@@ -1407,7 +1405,7 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithPositionInParent) {
   *entity.mutable_specifics() = GenerateSpecifics(kTag1, kValue1);
 
   UpdateResponseData response_data;
-  Cryptographer cryptographer;
+  DirectoryCryptographer cryptographer;
   base::HistogramTester histogram_tester;
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
@@ -1434,7 +1432,7 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithInsertAfterItemId) {
   *entity.mutable_specifics() = GenerateSpecifics(kTag1, kValue1);
 
   UpdateResponseData response_data;
-  Cryptographer cryptographer;
+  DirectoryCryptographer cryptographer;
   base::HistogramTester histogram_tester;
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
@@ -1463,7 +1461,7 @@ TEST_F(ModelTypeWorkerTest,
   *entity.mutable_specifics() = specifics;
 
   UpdateResponseData response_data;
-  Cryptographer cryptographer;
+  DirectoryCryptographer cryptographer;
   base::HistogramTester histogram_tester;
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
@@ -1487,7 +1485,7 @@ TEST_F(ModelTypeWorkerTest,
   *entity.mutable_specifics() = GenerateSpecifics(kTag1, kValue1);
 
   UpdateResponseData response_data;
-  Cryptographer cryptographer;
+  DirectoryCryptographer cryptographer;
   base::HistogramTester histogram_tester;
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
@@ -1514,7 +1512,7 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithBookmarkGUID) {
       UniquePosition::InitialPosition(UniquePosition::RandomSuffix()).ToProto();
 
   UpdateResponseData response_data;
-  Cryptographer cryptographer;
+  DirectoryCryptographer cryptographer;
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
             ModelTypeWorker::PopulateUpdateResponseData(
@@ -1538,7 +1536,7 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseDataWithMissingBookmarkGUID) {
       UniquePosition::InitialPosition(UniquePosition::RandomSuffix()).ToProto();
 
   UpdateResponseData response_data;
-  Cryptographer cryptographer;
+  DirectoryCryptographer cryptographer;
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
             ModelTypeWorker::PopulateUpdateResponseData(
@@ -1564,7 +1562,7 @@ TEST_F(ModelTypeWorkerTest,
       UniquePosition::InitialPosition(UniquePosition::RandomSuffix()).ToProto();
 
   UpdateResponseData response_data;
-  Cryptographer cryptographer;
+  DirectoryCryptographer cryptographer;
 
   EXPECT_EQ(ModelTypeWorker::SUCCESS,
             ModelTypeWorker::PopulateUpdateResponseData(

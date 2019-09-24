@@ -101,7 +101,7 @@ public class TabGroupModelFilter extends TabModelFilter {
      * group.
      */
     private class TabGroup {
-        private static final int INVALID_GROUP_ID = -1;
+        private final static int INVALID_GROUP_ID = -1;
         private final Set<Integer> mTabIds;
         private int mLastShownTabId;
         private int mGroupId;
@@ -174,6 +174,7 @@ public class TabGroupModelFilter extends TabModelFilter {
     private int mActualGroupCount;
     private Tab mAbsentSelectedTab;
     private boolean mShouldRecordUma = true;
+    private boolean mTabRestoreCompleted;
     private boolean mIsResetting;
 
     public TabGroupModelFilter(TabModel tabModel) {
@@ -187,6 +188,7 @@ public class TabGroupModelFilter extends TabModelFilter {
                 RecordHistogram.recordCountHistogram("TabGroups.UserGroupCount", mActualGroupCount);
                 Tab currentTab = TabModelUtils.getCurrentTab(getTabModel());
                 if (currentTab != null) recordSessionsCount(currentTab);
+                mTabRestoreCompleted = true;
                 removeObserver(this);
             }
         });
@@ -652,7 +654,7 @@ public class TabGroupModelFilter extends TabModelFilter {
     public void didMoveTab(Tab tab, int newIndex, int curIndex) {
         // Ignore didMoveTab calls in tab restoring stage. For incognito mode, bypass this check
         // since there is no restoring stage.
-        if (!isTabModelRestored()) return;
+        if (!mTabRestoreCompleted && !isIncognito()) return;
         // Need to cache the flags before resetting the internal data map.
         boolean isMergeTabToGroup = isMergeTabToGroup(tab);
         boolean isMoveTabOutOfGroup = isMoveTabOutOfGroup(tab);

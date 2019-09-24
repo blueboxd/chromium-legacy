@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/modules/content_index/content_index.h"
 
 #include "base/optional.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -279,8 +279,10 @@ void ContentIndex::Trace(blink::Visitor* visitor) {
 
 mojom::blink::ContentIndexService* ContentIndex::GetService() {
   if (!content_index_service_) {
-    registration_->GetExecutionContext()->GetInterfaceProvider()->GetInterface(
-        content_index_service_.BindNewPipeAndPassReceiver(task_runner_));
+    registration_->GetExecutionContext()
+        ->GetBrowserInterfaceBroker()
+        .GetInterface(
+            content_index_service_.BindNewPipeAndPassReceiver(task_runner_));
   }
   return content_index_service_.get();
 }

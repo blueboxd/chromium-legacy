@@ -33,6 +33,7 @@
 #include <memory>
 
 #include "base/bits.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_double.h"
@@ -45,6 +46,8 @@
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
+#include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -1347,6 +1350,122 @@ TEST_F(AnimationAnimationTestNoCompositing, ScrollLinkedAnimationCreation) {
   scrollable_area->SetScrollOffset(ScrollOffset(0, 40), kProgrammaticScroll);
   EXPECT_EQ(40, scroll_animation->currentTime(is_null));
   EXPECT_FALSE(is_null);
+}
+
+TEST_F(AnimationAnimationTestNoCompositing,
+       RemoveCanceledAnimationFromActiveSet) {
+  EXPECT_EQ("running", animation->playState());
+  EXPECT_TRUE(animation->Update(kTimingUpdateForAnimationFrame));
+  SimulateFrame(1000);
+  EXPECT_TRUE(animation->Update(kTimingUpdateForAnimationFrame));
+  animation->cancel();
+  EXPECT_EQ("idle", animation->playState());
+  EXPECT_FALSE(animation->Update(kTimingUpdateForAnimationFrame));
+}
+
+TEST_F(AnimationAnimationTestNoCompositing,
+       RemoveFinishedAnimationFromActiveSet) {
+  EXPECT_EQ("running", animation->playState());
+  EXPECT_TRUE(animation->Update(kTimingUpdateForAnimationFrame));
+  SimulateFrame(1000);
+  EXPECT_TRUE(animation->Update(kTimingUpdateForAnimationFrame));
+
+  // Synchronous completion.
+  animation->finish();
+  EXPECT_EQ("finished", animation->playState());
+  EXPECT_FALSE(animation->Update(kTimingUpdateForAnimationFrame));
+
+  // Play creates a new pending finished promise.
+  animation->play();
+  EXPECT_EQ("running", animation->playState());
+  EXPECT_TRUE(animation->Update(kTimingUpdateForAnimationFrame));
+
+  // Asynchronous completion.
+  animation->setCurrentTime(50000, false);
+  EXPECT_EQ("finished", animation->playState());
+  EXPECT_FALSE(animation->Update(kTimingUpdateForAnimationFrame));
+}
+
+TEST_F(AnimationAnimationTestNoCompositing,
+       PendingActivityWithFinishedPromise) {
+  // No pending activity even when running if there is no finished promise
+  // or event listener.
+  EXPECT_EQ("running", animation->playState());
+  SimulateFrame(1000);
+  EXPECT_FALSE(animation->HasPendingActivity());
+
+  // An unresolved finished promise indicates pending activity.
+  ScriptState* script_state =
+      ToScriptStateForMainWorld(GetDocument().GetFrame());
+  animation->finished(script_state);
+  EXPECT_TRUE(animation->HasPendingActivity());
+
+  // Resolving the finished promise clears the pending activity.
+  animation->setCurrentTime(50000, false);
+  EXPECT_EQ("finished", animation->playState());
+  EXPECT_FALSE(animation->Update(kTimingUpdateForAnimationFrame));
+  EXPECT_FALSE(animation->HasPendingActivity());
+
+  // Playing an already finished animation creates a new pending finished
+  // promise.
+  animation->play();
+  EXPECT_EQ("running", animation->playState());
+  SimulateFrame(2000);
+  EXPECT_TRUE(animation->HasPendingActivity());
+  // Cancel rejects the finished promise and creates a new pending finished
+  // promise.
+  // TODO(crbug.com/960944): Investigate if this should return false to prevent
+  // holding onto the animation indefinitely.
+  animation->cancel();
+  EXPECT_TRUE(animation->HasPendingActivity());
+}
+
+class MockEventListener final : public NativeEventListener {
+ public:
+  MOCK_METHOD2(Invoke, void(ExecutionContext*, Event*));
+};
+
+TEST_F(AnimationAnimationTestNoCompositing,
+       PendingActivityWithFinishedEventListener) {
+  EXPECT_EQ("running", animation->playState());
+  EXPECT_FALSE(animation->HasPendingActivity());
+
+  // Attaching a listener for the finished event indicates pending activity.
+  Persistent<MockEventListener> event_listener =
+      MakeGarbageCollected<MockEventListener>();
+  animation->addEventListener(event_type_names::kFinish, event_listener);
+  EXPECT_TRUE(animation->HasPendingActivity());
+
+  // Synchronous finish clears pending activity.
+  animation->finish();
+  EXPECT_EQ("finished", animation->playState());
+  EXPECT_FALSE(animation->Update(kTimingUpdateForAnimationFrame));
+  EXPECT_TRUE(animation->HasPendingActivity());
+  animation->pending_finished_event_ = nullptr;
+  EXPECT_FALSE(animation->HasPendingActivity());
+
+  // Playing an already finished animation resets the finished state.
+  animation->play();
+  EXPECT_EQ("running", animation->playState());
+  SimulateFrame(2000);
+  EXPECT_TRUE(animation->HasPendingActivity());
+
+  // Finishing the animation asynchronously clears the pending activity.
+  animation->setCurrentTime(50000, false);
+  EXPECT_EQ("finished", animation->playState());
+  EXPECT_FALSE(animation->Update(kTimingUpdateForAnimationFrame));
+  EXPECT_TRUE(animation->HasPendingActivity());
+  animation->pending_finished_event_ = nullptr;
+  EXPECT_FALSE(animation->HasPendingActivity());
+
+  // Canceling an animation clears the pending activity.
+  animation->play();
+  EXPECT_EQ("running", animation->playState());
+  SimulateFrame(2000);
+  animation->cancel();
+  EXPECT_EQ("idle", animation->playState());
+  EXPECT_FALSE(animation->Update(kTimingUpdateForAnimationFrame));
+  EXPECT_FALSE(animation->HasPendingActivity());
 }
 
 }  // namespace blink

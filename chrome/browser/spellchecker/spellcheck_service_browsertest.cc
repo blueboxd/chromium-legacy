@@ -38,6 +38,7 @@
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 using content::BrowserContext;
 using content::RenderProcessHost;
@@ -231,14 +232,14 @@ class SpellcheckServiceHostBrowserTest : public SpellcheckServiceBrowserTest {
   SpellcheckServiceHostBrowserTest() = default;
 
   void RequestDictionary() {
-    spellcheck::mojom::SpellCheckHostPtr interface;
+    mojo::Remote<spellcheck::mojom::SpellCheckHost> interface;
     RequestSpellCheckHost(&interface);
 
     interface->RequestDictionary();
   }
 
   void NotifyChecked() {
-    spellcheck::mojom::SpellCheckHostPtr interface;
+    mojo::Remote<spellcheck::mojom::SpellCheckHost> interface;
     RequestSpellCheckHost(&interface);
 
     const bool misspelt = true;
@@ -248,7 +249,7 @@ class SpellcheckServiceHostBrowserTest : public SpellcheckServiceBrowserTest {
   }
 
   void CallSpellingService() {
-    spellcheck::mojom::SpellCheckHostPtr interface;
+    mojo::Remote<spellcheck::mojom::SpellCheckHost> interface;
     RequestSpellCheckHost(&interface);
 
     base::UTF8ToUTF16("hello", 5, &word_);
@@ -265,9 +266,10 @@ class SpellcheckServiceHostBrowserTest : public SpellcheckServiceBrowserTest {
   }
 
  private:
-  void RequestSpellCheckHost(spellcheck::mojom::SpellCheckHostPtr* interface) {
+  void RequestSpellCheckHost(
+      mojo::Remote<spellcheck::mojom::SpellCheckHost>* interface) {
     SpellCheckHostChromeImpl::Create(GetRenderer()->GetID(),
-                                     mojo::MakeRequest(interface));
+                                     interface->BindNewPipeAndPassReceiver());
   }
 
   void SpellingServiceDone(bool success,

@@ -94,6 +94,8 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -908,10 +910,6 @@ void WebLocalFrameImpl::ReloadImage(const WebNode& web_node) {
   node = hit_test_result.InnerNodeOrImageMapImage();
   if (auto* image_element = ToHTMLImageElementOrNull(*node))
     image_element->ForceReload();
-}
-
-void WebLocalFrameImpl::ReloadLoFiImages() {
-  GetFrame()->GetDocument()->Fetcher()->ReloadLoFiImages();
 }
 
 void WebLocalFrameImpl::StartNavigation(const WebURLRequest& request) {
@@ -2651,16 +2649,17 @@ WebDevToolsAgentImpl* WebLocalFrameImpl::DevToolsAgentImpl() {
 }
 
 void WebLocalFrameImpl::BindDevToolsAgent(
-    mojo::ScopedInterfaceEndpointHandle devtools_agent_host_ptr_info,
-    mojo::ScopedInterfaceEndpointHandle devtools_agent_request) {
+    mojo::ScopedInterfaceEndpointHandle devtools_agent_host_remote,
+    mojo::ScopedInterfaceEndpointHandle devtools_agent_receiver) {
   WebDevToolsAgentImpl* agent = DevToolsAgentImpl();
   if (!agent)
     return;
-  agent->BindRequest(mojom::blink::DevToolsAgentHostAssociatedPtrInfo(
-                         std::move(devtools_agent_host_ptr_info),
-                         mojom::blink::DevToolsAgentHost::Version_),
-                     mojom::blink::DevToolsAgentAssociatedRequest(
-                         std::move(devtools_agent_request)));
+  agent->BindReceiver(
+      mojo::PendingAssociatedRemote<mojom::blink::DevToolsAgentHost>(
+          std::move(devtools_agent_host_remote),
+          mojom::blink::DevToolsAgentHost::Version_),
+      mojo::PendingAssociatedReceiver<mojom::blink::DevToolsAgent>(
+          std::move(devtools_agent_receiver)));
 }
 
 void WebLocalFrameImpl::SetLifecycleState(mojom::FrameLifecycleState state) {

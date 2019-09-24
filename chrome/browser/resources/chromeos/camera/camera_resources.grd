@@ -56,6 +56,10 @@
     </structures>
     <includes>
       <!-- Mojo Lite Bindings -->
+      <include name="IDR_CAMERA_CAMERA_INTENT_MOJOM_LITE_JS"
+          file="${root_gen_dir}/components/arc/mojom/camera_intent.mojom-lite.js"
+          use_base_dir="false"
+          type="BINDATA"/>
       <include name="IDR_CAMERA_IMAGE_CAPTURE_MOJOM_LITE_JS"
           file="${root_gen_dir}/media/capture/mojom/image_capture.mojom-lite.js"
           use_base_dir="false"

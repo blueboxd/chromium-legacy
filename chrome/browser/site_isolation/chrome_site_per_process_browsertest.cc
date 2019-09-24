@@ -51,6 +51,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/extensions_api_client.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
@@ -68,7 +69,7 @@
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #if BUILDFLAG(HAS_SPELLCHECK_PANEL)
 #include "chrome/browser/spellchecker/test/spellcheck_panel_browsertest_helper.h"
@@ -873,7 +874,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
 class MockSpellCheckHost : spellcheck::mojom::SpellCheckHost {
  public:
   explicit MockSpellCheckHost(content::RenderProcessHost* process_host)
-      : process_host_(process_host), binding_(this) {}
+      : process_host_(process_host) {}
   ~MockSpellCheckHost() override {}
 
   content::RenderProcessHost* process_host() const { return process_host_; }
@@ -907,16 +908,17 @@ class MockSpellCheckHost : spellcheck::mojom::SpellCheckHost {
     run_loop.Run();
   }
 
-  void SpellCheckHostRequest(spellcheck::mojom::SpellCheckHostRequest request) {
-    EXPECT_FALSE(binding_.is_bound());
-    binding_.Bind(std::move(request));
+  void SpellCheckHostReceiver(
+      mojo::PendingReceiver<spellcheck::mojom::SpellCheckHost> receiver) {
+    EXPECT_FALSE(receiver_.is_bound());
+    receiver_.Bind(std::move(receiver));
   }
 
  private:
   void TextReceived(const base::string16& text) {
     text_received_ = true;
     text_ = text;
-    binding_.Close();
+    receiver_.reset();
     if (quit_)
       std::move(quit_).Run();
   }
@@ -963,7 +965,7 @@ class MockSpellCheckHost : spellcheck::mojom::SpellCheckHost {
   content::RenderProcessHost* process_host_;
   bool text_received_ = false;
   base::string16 text_;
-  mojo::Binding<spellcheck::mojom::SpellCheckHost> binding_;
+  mojo::Receiver<spellcheck::mojom::SpellCheckHost> receiver_{this};
   base::OnceClosure quit_;
 
   DISALLOW_COPY_AND_ASSIGN(MockSpellCheckHost);
@@ -1027,7 +1029,7 @@ class SpellCheckBrowserTestHelper {
     content::RenderProcessHost* host =
         content::RenderProcessHost::FromID(render_process_id);
     auto spell_check_host = std::make_unique<MockSpellCheckHost>(host);
-    spell_check_host->SpellCheckHostRequest(std::move(receiver));
+    spell_check_host->SpellCheckHostReceiver(std::move(receiver));
     spell_check_hosts_.push_back(std::move(spell_check_host));
     if (quit_on_bind_closure_)
       std::move(quit_on_bind_closure_).Run();
@@ -1098,7 +1100,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, OOPIFDisabledSpellCheckTest) {
       spell_check_helper.GetSpellCheckHostForProcess(
           cross_site_subframe->GetProcess());
 
-  // The renderer makes no SpellCheckHostRequest at all, in which case no
+  // The renderer makes no SpellCheckHostReceiver at all, in which case no
   // SpellCheckHost is bound and no spellchecking will be done.
   EXPECT_FALSE(spell_check_host);
 

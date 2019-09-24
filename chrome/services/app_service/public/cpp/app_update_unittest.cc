@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/services/app_service/public/cpp/app_update.h"
+#include "chrome/services/app_service/public/cpp/intent_filter_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -78,15 +79,6 @@ class AppUpdateTest : public testing::Test {
     permission->value_type = apps::mojom::PermissionValueType::kTriState;
     permission->value = static_cast<uint32_t>(value);
     return permission;
-  }
-
-  apps::mojom::ConditionPtr MakeCondition(
-      apps::mojom::ConditionType condition_type,
-      std::string value) {
-    auto condition = apps::mojom::Condition::New();
-    condition->condition_type = condition_type;
-    condition->value = value;
-    return condition;
   }
 
   void ExpectNoChange() {
@@ -591,10 +583,21 @@ class AppUpdateTest : public testing::Test {
 
     if (state) {
       auto intent_filter = apps::mojom::IntentFilter::New();
+
+      std::vector<apps::mojom::ConditionValuePtr> scheme_condition_values;
+      scheme_condition_values.push_back(apps_util::MakeConditionValue(
+          "https", apps::mojom::PatternMatchType::kNone));
       auto scheme_condition =
-          MakeCondition(apps::mojom::ConditionType::kScheme, "https");
-      auto host_condition =
-          MakeCondition(apps::mojom::ConditionType::kHost, "www.google.com");
+          apps_util::MakeCondition(apps::mojom::ConditionType::kScheme,
+                                   std::move(scheme_condition_values));
+      intent_filter->conditions.push_back(std::move(scheme_condition));
+
+      std::vector<apps::mojom::ConditionValuePtr> host_condition_values;
+      host_condition_values.push_back(apps_util::MakeConditionValue(
+          "www.google.com", apps::mojom::PatternMatchType::kNone));
+      auto host_condition = apps_util::MakeCondition(
+          apps::mojom::ConditionType::kHost, std::move(host_condition_values));
+      intent_filter->conditions.push_back(std::move(host_condition));
 
       intent_filter->conditions.push_back(scheme_condition.Clone());
       intent_filter->conditions.push_back(host_condition.Clone());
@@ -610,10 +613,20 @@ class AppUpdateTest : public testing::Test {
 
       auto intent_filter = apps::mojom::IntentFilter::New();
 
+      std::vector<apps::mojom::ConditionValuePtr> scheme_condition_values;
+      scheme_condition_values.push_back(apps_util::MakeConditionValue(
+          "https", apps::mojom::PatternMatchType::kNone));
       auto scheme_condition =
-          MakeCondition(apps::mojom::ConditionType::kScheme, "https");
-      auto host_condition =
-          MakeCondition(apps::mojom::ConditionType::kHost, "www.abc.com");
+          apps_util::MakeCondition(apps::mojom::ConditionType::kScheme,
+                                   std::move(scheme_condition_values));
+      intent_filter->conditions.push_back(std::move(scheme_condition));
+
+      std::vector<apps::mojom::ConditionValuePtr> host_condition_values;
+      host_condition_values.push_back(apps_util::MakeConditionValue(
+          "www.abc.com", apps::mojom::PatternMatchType::kNone));
+      auto host_condition = apps_util::MakeCondition(
+          apps::mojom::ConditionType::kHost, std::move(host_condition_values));
+      intent_filter->conditions.push_back(std::move(host_condition));
 
       intent_filter->conditions.push_back(scheme_condition.Clone());
       intent_filter->conditions.push_back(host_condition.Clone());

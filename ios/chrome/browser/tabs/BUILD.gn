@@ -62,6 +62,7 @@ source_set("tabs_internal") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browser_state_metrics",
     "//ios/chrome/browser/complex_tasks",
+    "//ios/chrome/browser/crash_report",
     "//ios/chrome/browser/download",
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/find_in_page",

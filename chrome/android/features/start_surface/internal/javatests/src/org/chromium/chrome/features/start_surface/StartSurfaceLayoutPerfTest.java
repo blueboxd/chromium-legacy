@@ -106,12 +106,6 @@ public class StartSurfaceLayoutPerfTest {
             mTabNumCap = 0;
         }
         assertTrue(FeatureUtilities.isTabToGtsAnimationEnabled());
-
-        CriteriaHelper.pollUiThread(Criteria.equals(true,
-                mActivityTestRule.getActivity()
-                        .getTabModelSelector()
-                        .getTabModelFilterProvider()
-                        .getCurrentTabModelFilter()::isTabModelRestored));
     }
 
     @Test

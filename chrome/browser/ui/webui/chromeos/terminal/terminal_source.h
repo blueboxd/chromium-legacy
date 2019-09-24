@@ -31,6 +31,8 @@ class TerminalSource : public content::URLDataSource {
 
   std::string GetMimeType(const std::string& path) override;
 
+  bool ShouldServeMimeTypeAsContentTypeHeader() override;
+
   DISALLOW_COPY_AND_ASSIGN(TerminalSource);
 };
 

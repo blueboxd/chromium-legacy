@@ -7,8 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
@@ -704,9 +703,10 @@ ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)
   if (!GetFrame())
     return;
 
-  GetFrame()->GetInterfaceProvider().GetInterface(mojo::MakeRequest(&service_));
+  GetFrame()->GetBrowserInterfaceBroker().GetInterface(
+      service_.BindNewPipeAndPassReceiver());
 
-  service_.set_connection_error_handler(WTF::Bind(
+  service_.set_disconnect_handler(WTF::Bind(
       &ImageCapture::OnServiceConnectionError, WrapWeakPersistent(this)));
 
   // Launch a retrieval of the current photo state, which arrive asynchronously
